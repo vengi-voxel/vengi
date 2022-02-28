@@ -42,7 +42,7 @@ protected:
 public:
 	void SetUp() override {
 		Super::SetUp();
-		voxel::initDefaultMaterialColors();
+		voxel::initDefaultPalette();
 		_volume = new voxel::RawVolume(_region);
 	}
 

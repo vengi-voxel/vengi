@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/Color.h"
 #include "core/ScopedPtr.h"
+#include "voxel/MaterialColor.h"
 
 namespace voxel {
 
@@ -34,7 +35,7 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
-	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
+	const voxel::Region region(0, 0, 0, (int)width - 1, (int)height - 1, (int)depth - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region: %i:%i:%i", width, height, depth);
 		return false;
@@ -62,7 +63,7 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 				const int index = findClosestIndex(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 				// we have to flip depth with height for our own coordinate system
-				volume->setVoxel(w, h, d, voxel);
+				volume->setVoxel((int)w, (int)h, (int)d, voxel);
 			}
 		}
 	}
@@ -89,6 +90,7 @@ bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapBool(stream.writeUInt32(depth))
 	wrapBool(stream.writeUInt32(height))
 
+	const voxel::Palette &palette = voxel::getPalette();
 	for (uint32_t y = 0u; y < height; ++y) {
 		for (uint32_t z = 0u; z < depth; ++z) {
 			for (uint32_t x = 0u; x < width; ++x) {
@@ -100,8 +102,8 @@ bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 					wrapBool(stream.writeUInt8(0))
 					continue;
 				}
-				const glm::vec4& color = getColor(voxel);
-				const glm::u8vec4& rgba = core::Color::getRGBAVec(color);
+
+				const glm::u8vec4 &rgba = core::Color::toRGBA(palette.colors[voxel.getColor()]);
 				wrapBool(stream.writeUInt8(rgba.r))
 				wrapBool(stream.writeUInt8(rgba.g))
 				wrapBool(stream.writeUInt8(rgba.b))

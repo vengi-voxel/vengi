@@ -70,7 +70,7 @@ app::AppState TestGPUMC::onInit() {
 		Log::info("write to buffers");
 	}
 
-	if (!voxel::initDefaultMaterialColors()) {
+	if (!voxel::initDefaultPalette()) {
 		Log::error("Failed to initialize the palette data");
 		return app::AppState::InitFailure;
 	}

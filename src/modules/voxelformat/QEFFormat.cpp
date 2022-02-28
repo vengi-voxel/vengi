@@ -79,7 +79,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		return false;
 	}
 
-	_paletteColors.colorCount = paletteSize;
+	_palette.colorCount = paletteSize;
 
 	for (int i = 0; i < paletteSize; ++i) {
 		float r, g, b;
@@ -89,7 +89,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			return false;
 		}
 		const glm::vec4 color(r, g, b, 1.0f);
-		_paletteColors._colors[i] = core::Color::getRGBA(color);
+		_palette.colors[i] = core::Color::getRGBA(color);
 		_paletteMapping[i] = findClosestIndex(color);
 	}
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
@@ -123,15 +123,16 @@ bool QEFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	RawVolume::Sampler sampler(mergedVolume);
 	const glm::ivec3& lower = region.getLowerCorner();
 
-	const MaterialColorArray& materialColors = getMaterialColors();
-
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
 	const uint32_t depth = region.getDepthInVoxels();
 	stream.writeStringFormat(false, "%i %i %i\n", width, depth, height);
-	stream.writeStringFormat(false, "%i\n", (int)materialColors.size());
-	for (size_t i = 0; i < materialColors.size(); ++i) {
-		stream.writeStringFormat(false, "%f %f %f\n", materialColors[i].r, materialColors[i].g, materialColors[i].b);
+	const voxel::Palette& palette = voxel::getPalette();
+	stream.writeStringFormat(false, "%i\n", palette.colorCount);
+	for (int i = 0; i < palette.colorCount; ++i) {
+		const uint32_t c = palette.colors[i];
+		const glm::vec4 &cv = core::Color::fromRGBA(c);
+		stream.writeStringFormat(false, "%f %f %f\n", cv.r, cv.g, cv.b);
 	}
 
 	for (uint32_t x = 0u; x < width; ++x) {

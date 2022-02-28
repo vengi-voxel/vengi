@@ -43,7 +43,7 @@ app::AppState TestBiomes::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	if (!voxel::initDefaultMaterialColors()) {
+	if (!voxel::initDefaultPalette()) {
 		Log::error("Failed to initialize the material colors");
 		return app::AppState::InitFailure;
 	}

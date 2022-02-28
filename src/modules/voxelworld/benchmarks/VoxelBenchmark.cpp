@@ -21,7 +21,7 @@ public:
 	}
 
 	bool onInitApp() override {
-		voxel::initDefaultMaterialColors();
+		voxel::initDefaultPalette();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		return _volumeCache->init();
 	}

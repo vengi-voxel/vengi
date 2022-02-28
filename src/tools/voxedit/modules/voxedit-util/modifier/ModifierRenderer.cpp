@@ -33,7 +33,9 @@ void ModifierRenderer::shutdown() {
 
 void ModifierRenderer::updateCursor(const voxel::Voxel& voxel) {
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::alpha(core::Color::darker(voxel::getMaterialColor(voxel)), 0.6f));
+	const voxel::Palette &palette = voxel::getPalette();
+	const glm::vec4& color = core::Color::fromRGBA(palette.colors[voxel.getColor()]);
+	_shapeBuilder.setColor(core::Color::alpha(core::Color::darker(color), 0.6f));
 	_shapeBuilder.cube(glm::vec3(-0.01f), glm::vec3(1.01f));
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }

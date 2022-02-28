@@ -41,7 +41,7 @@ public:
 	};
 
 	bool onInitApp() override {
-		if (!voxel::initDefaultMaterialColors()) {
+		if (!voxel::initDefaultPalette()) {
 			return false;
 		}
 		return true;

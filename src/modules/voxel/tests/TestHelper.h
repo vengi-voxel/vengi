@@ -49,7 +49,9 @@ inline bool volumeComparator(const voxel::RawVolume& volume1, const voxel::RawVo
 	const int32_t upperX = region.getUpperX();
 	const int32_t upperY = region.getUpperY();
 	const int32_t upperZ = region.getUpperZ();
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+	core::DynamicArray<glm::vec4> materialColors;
+	const voxel::Palette &palette = voxel::getPalette();
+	palette.toVec4f(materialColors);
 
 	for (int32_t z = lowerZ; z <= upperZ; ++z) {
 		for (int32_t y = lowerY; y <= upperY; ++y) {

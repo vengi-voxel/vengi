@@ -67,7 +67,7 @@ public:
 	void SetUp() override {
 		_volData.flushAll();
 		app::AbstractTest::SetUp();
-		ASSERT_TRUE(voxel::initDefaultMaterialColors());
+		ASSERT_TRUE(voxel::initDefaultPalette());
 		_random.setSeed(_seed);
 		_ctx = voxel::PagedVolumeWrapper(&_volData, _volData.chunk(_region.getCenter()), _region);
 	}

@@ -28,7 +28,7 @@ protected:
 	voxelformat::VolumeCachePtr _volumeCache;
 
 	bool onInitApp() override {
-		voxel::initDefaultMaterialColors();
+		voxel::initDefaultPalette();
 		_volumeCache = std::make_shared<voxelformat::VolumeCache>();
 		if (!_volumeCache->init()) {
 			return false;

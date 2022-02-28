@@ -5,6 +5,7 @@
 #pragma once
 
 #include "app/tests/AbstractTest.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/tests/TestHelper.h"
 
 namespace voxel {
@@ -60,10 +61,15 @@ public:
 	void SetUp() override {
 		_volData.flushAll();
 		app::AbstractTest::SetUp();
-		ASSERT_TRUE(voxel::initDefaultMaterialColors());
+		ASSERT_TRUE(voxel::initDefaultPalette());
 		_random.setSeed(_seed);
 		_ctx = PagedVolumeWrapper(&_volData, _volData.chunk(_region.getCenter()), _region);
 		VolumePrintThreshold = 10;
+	}
+
+	void TearDown() override {
+		voxel::shutdownMaterialColors();
+		app::AbstractTest::TearDown();
 	}
 };
 

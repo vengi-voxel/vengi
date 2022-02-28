@@ -59,10 +59,9 @@ bool OBJFormat::writeMtlFile(const core::String &mtlName, const core::String &pa
 
 bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 						   float scale, bool quad, bool withColor, bool withTexCoords) {
-	const MaterialColorArray &colors = getMaterialColors();
-
+	const voxel::Palette& palette = voxel::getPalette();
 	// 1 x 256 is the texture format that we are using for our palette
-	const float texcoord = 1.0f / (float)colors.size();
+	const float texcoord = 1.0f / (float)palette.colorCount;
 	// it is only 1 pixel high - sample the middle
 	const float v1 = 0.5f;
 
@@ -106,7 +105,7 @@ bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, i
 									 (offset.y + (float)v.position.y) * scale,
 									 (offset.z + (float)v.position.z) * scale);
 			if (withColor) {
-				const glm::vec4 &color = colors[v.colorIndex];
+				const glm::vec4& color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
 				stream.writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
 			}
 			wrapBool(stream.writeStringFormat(false, "\n"))
@@ -168,10 +167,7 @@ bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, i
 	if (!writeMtlFile(mtlname, palettename)) {
 		return false;
 	}
-	if (!voxel::saveMaterialColorPng(palettename)) {
-		return false;
-	}
-	return true;
+	return voxel::getPalette().save(palettename.c_str());
 }
 
 #undef wrapBool
@@ -311,7 +307,10 @@ static void voxelizeShape(const tinyobj::shape_t &shape, const core::StringMap<i
 
 	core::DynamicArray<uint8_t> palette;
 	palette.reserve(subdivided.size());
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+
+	const voxel::Palette &pal = voxel::getPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	pal.toVec4f(materialColors);
 
 	for (const Tri &tri : subdivided) {
 		const glm::vec2 &uv = tri.centerUV();

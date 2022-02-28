@@ -23,7 +23,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	if (image && image->isLoaded()) {
 		return image;
 	}
-	if (!voxel::initDefaultMaterialColors()) {
+	if (!voxel::initDefaultPalette()) {
 		Log::warn("Failed to initialize the default materials");
 	}
 
@@ -31,7 +31,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	voxel::Palette palette;
 	const size_t paletteCount = voxelformat::loadPalette(fileName, stream, palette);
 	if (paletteCount > 0) {
-		voxel::overrideMaterialColors(palette);
+		voxel::overridePalette(palette);
 	}
 
 	voxel::SceneGraph sceneGraph;

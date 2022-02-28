@@ -12,7 +12,7 @@
 #include "core/collection/Array.h"
 
 namespace voxel {
-struct Palette;
+class Palette;
 }
 
 namespace voxelformat {

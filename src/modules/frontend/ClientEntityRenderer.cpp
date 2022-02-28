@@ -49,8 +49,15 @@ bool ClientEntityRenderer::init() {
 		Log::error("Failed to init the animation system");
 		return false;
 	}
+
+	const voxel::Palette &palette = voxel::getPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	palette.toVec4f(materialColors);
+	core::DynamicArray<glm::vec4> glowColors;
+	palette.glowToVec4f(glowColors);
+
 	const int shaderMaterialColorsArraySize = lengthof(shader::SkeletonData::MaterialblockData::materialcolor);
-	const int materialColorsArraySize = (int)voxel::getMaterialColors().size();
+	const int materialColorsArraySize = palette.colorCount;
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
 				shaderMaterialColorsArraySize, materialColorsArraySize);
@@ -58,8 +65,8 @@ bool ClientEntityRenderer::init() {
 	}
 
 	shader::SkeletonData::MaterialblockData materialBlock;
-	core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-	core_memcpy(materialBlock.glowcolor, &voxel::getGlowColors().front(), sizeof(materialBlock.glowcolor));
+	core_memcpy(materialBlock.materialcolor, &materialColors.front(), sizeof(materialBlock.materialcolor));
+	core_memcpy(materialBlock.glowcolor, &glowColors.front(), sizeof(materialBlock.glowcolor));
 	_materialBlock.create(materialBlock);
 
 	video::TextureConfig textureCfg;
@@ -182,7 +189,7 @@ int ClientEntityRenderer::renderEntities(const core::List<ClientEntity*>& entiti
 	_chrShader.setFogrange(_fogRange);
 	_chrShader.setFocuspos(_focusPos);
 	_chrShader.setLightdir(shadow.sunDirection());
-	_chrShader.setTime(_seconds);
+	_chrShader.setTime((float)_seconds);
 	_chrShader.setClipplane(clipPlane);
 	_chrShader.setViewprojection(viewProjectionMatrix);
 

@@ -61,17 +61,16 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 		Log::error("Could not load scene %s", filename.c_str());
 		return 0;
 	}
-	_paletteColors.colorCount = lengthof(scene->palette.color);
-	for (size_t i = 0; i < _paletteColors.colorCount; ++i) {
+	palette.colorCount = lengthof(scene->palette.color);
+	for (int i = 0; i < palette.colorCount; ++i) {
 		const ogt_vox_rgba& c = scene->palette.color[i];
 		const ogt_vox_matl& matl = scene->materials.matl[i];
-		_paletteColors._colors[i] = palette._colors[i] = core::Color::getRGBA(c.r, c.g, c.b, c.a);
+		palette.colors[i] = core::Color::getRGBA(c.r, c.g, c.b, c.a);
 		if (matl.emit > 0.0f) {
-			_paletteColors._glowColors[i] = _paletteColors._colors[i]; // TODO: multiply by matl.emit?
+			palette.setGlow(i, matl.emit);
 		} else {
-			_paletteColors._glowColors[i] = 0;
+			palette.removeGlow(i);
 		}
-		_paletteMapping[i] = i;
 	}
 	ogt_vox_destroy_scene(scene);
 	return palette.size();
@@ -202,20 +201,19 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		return false;
 	}
 
-	for (int i = 0; i < (int)_paletteMapping.size(); ++i) {
+	_palette.colorCount = lengthof(scene->palette.color);
+	for (int i = 0; i < _palette.colorCount; ++i) {
 		const ogt_vox_rgba color = scene->palette.color[i];
 		const glm::vec4& colorVec = core::Color::fromRGBA(color.r, color.g, color.b, color.a);
-		_paletteColors._colors[i] = core::Color::getRGBA(colorVec);
-		const uint8_t index = findClosestIndex(colorVec);
-		_paletteMapping[i] = index;
+		_palette.colors[i] = core::Color::getRGBA(colorVec);
 		const ogt_vox_matl& matl = scene->materials.matl[i];
 		if (matl.emit > 0.0f) {
-			_paletteColors._glowColors[i] = _paletteColors._colors[i]; // TODO: multiply by matl.emit?
+			_palette.setGlow(i, matl.emit);
 		} else {
-			_paletteColors._glowColors[i] = 0;
+			_palette.removeGlow(i);
 		}
+		_paletteMapping[i] = findClosestIndex(colorVec);
 	}
-	_paletteColors.colorCount = _paletteColors.size();
 	// rotation matrix to convert into our coordinate system (z pointing upwards)
 	const glm::mat4 zUpMat = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -252,7 +250,9 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 int VoxFormat::findClosestPaletteIndex() {
 	// we have to find a replacement for the first palette entry - as this is used
 	// as the empty voxel in magicavoxel
-	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
+	const voxel::Palette &palette = voxel::getPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	palette.toVec4f(materialColors);
 	const glm::vec4 first = materialColors[0];
 	materialColors.erase(materialColors.begin());
 	return core::Color::getClosestMatch(first, materialColors) + 1;
@@ -268,9 +268,10 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	default_group.parent_group_index = k_invalid_group_index;
 	default_group.transform = ogt_identity_transform;
 
+	const voxel::Palette &palette = voxel::getPalette();
 	const int replacement = findClosestPaletteIndex();
-	const glm::vec4 emptyColor = getColor(voxel::Voxel(voxel::VoxelType::Generic, 0));
-	const glm::vec4 replaceColor = getColor(voxel::Voxel(voxel::VoxelType::Generic, replacement));
+	const glm::vec4 emptyColor = core::Color::toRGBA(palette.colors[0]);
+	const glm::vec4 replaceColor = core::Color::toRGBA(palette.colors[replacement]);
 	Log::debug("Replacement for %f:%f:%f:%f is at %i (%f:%f:%f:%f)", emptyColor.r, emptyColor.g, emptyColor.b,
 			   emptyColor.a, replacement, replaceColor.r, replaceColor.g, replaceColor.b, replaceColor.a);
 
@@ -336,16 +337,16 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 
 	ogt_vox_palette& pal = output_scene.palette;
 	ogt_vox_matl_array& mat = output_scene.materials;
-	const MaterialColorArray& materialColors = getMaterialColors();
-	const MaterialColorArray& glowColors = getGlowColors();
 
 	for (int i = 0; i < 256; ++i) {
-		pal.color[i].r = (uint8_t)(materialColors[i].r * 255.0f);
-		pal.color[i].g = (uint8_t)(materialColors[i].g * 255.0f);
-		pal.color[i].b = (uint8_t)(materialColors[i].b * 255.0f);
-		pal.color[i].a = (uint8_t)(materialColors[i].a * 255.0f);
+		const glm::u8vec4 rgba = core::Color::toRGBA(palette.colors[i]);
+		pal.color[i].r = rgba.r;
+		pal.color[i].g = rgba.g;
+		pal.color[i].b = rgba.b;
+		pal.color[i].a = rgba.a;
 
-		if (glowColors[i].a != 0) {
+		const glm::u8vec4 glowColor = core::Color::toRGBA(palette.glowColors[i]);
+		if (glowColor.a != 0) {
 			mat.matl[i].content_flags |= k_ogt_vox_matl_have_emit;
 			mat.matl[i].type = ogt_matl_type::ogt_matl_type_emit;
 			mat.matl[i].emit = 1.0f;

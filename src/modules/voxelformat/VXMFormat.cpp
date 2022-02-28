@@ -128,8 +128,9 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 #endif
 	}
 
-	MaterialColorArray materialColors = getMaterialColors();
-	const MaterialColorArray &glowColors = getGlowColors();
+	const voxel::Palette &palette = voxel::getPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	palette.toVec4f(materialColors);
 
 	core::ScopedPtr<RawVolume> scopedPtr(mergedVolume);
 	const voxel::Region& region = mergedVolume->region();
@@ -150,23 +151,22 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	const glm::vec4 emptyColor = materialColors[EMPTY_PALETTE];
 	materialColors.pop();
 	const uint8_t emptyColorReplacement = core::Color::getClosestMatch(emptyColor, materialColors);
-	materialColors.push_back(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-	int numColors = (int)materialColors.size();
+	int numColors = palette.colorCount;
 	if (numColors > 255) {
 		numColors = 255;
 	}
 	if (numColors <= 0) {
 		return false;
 	}
-	wrapBool(stream.writeUInt8(numColors))
+	wrapBool(stream.writeUInt8(materialColors.size()))
 	for (int i = 0; i < numColors; ++i) {
-		const glm::u8vec4 &matcolor = core::Color::getRGBAVec(materialColors[i]);
+		const glm::u8vec4 &matcolor = core::Color::toRGBA(palette.colors[i]);
 		wrapBool(stream.writeUInt8(matcolor.b))
 		wrapBool(stream.writeUInt8(matcolor.g))
 		wrapBool(stream.writeUInt8(matcolor.r))
 		wrapBool(stream.writeUInt8(matcolor.a))
-		const glm::u8vec4 &glowcolor = core::Color::getRGBAVec(glowColors[i]);
+		const glm::u8vec4 &glowcolor = core::Color::toRGBA(palette.glowColors[i]);
 		const bool emissive = glowcolor.a > 0;
 		wrapBool(stream.writeBool(emissive))
 	}
@@ -410,15 +410,15 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		uint8_t emissive;
 		wrap(stream.readUInt8(emissive));
 		const glm::vec4& rgbaColor = core::Color::fromRGBA(red, green, blue, alpha);
-		_paletteColors._colors[i] = core::Color::getRGBA(rgbaColor);
+		_palette.colors[i] = core::Color::getRGBA(rgbaColor);
 		_paletteMapping[i] = findClosestIndex(rgbaColor);
 		if (emissive) {
-			_paletteColors._glowColors[i] = _paletteColors._colors[i];
+			_palette.setGlow(i);
 		} else {
-			_paletteColors._glowColors[i] = 0;
+			_palette.removeGlow(i);
 		}
 	}
-	_paletteColors.colorCount = materialAmount;
+	_palette.colorCount = materialAmount;
 
 	const Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 

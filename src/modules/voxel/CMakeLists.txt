@@ -7,6 +7,7 @@ set(SRCS
 	MaterialColor.h MaterialColor.cpp
 	Mesh.h Mesh.cpp
 	Morton.h
+	Palette.h Palette.cpp
 	PagedVolume.h PagedVolume.cpp
 	PagedVolumeSampler.cpp PagedVolumeChunk.cpp
 	PagedVolumeWrapper.h PagedVolumeWrapper.cpp

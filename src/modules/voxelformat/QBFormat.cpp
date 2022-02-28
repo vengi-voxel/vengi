@@ -9,6 +9,7 @@
 #include "core/Log.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
+#include "voxel/MaterialColor.h"
 
 namespace voxel {
 
@@ -70,31 +71,29 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 	wrapSave(stream.writeUInt32(region.getLowerZ()));
 
 	constexpr voxel::Voxel Empty;
-	const glm::ivec4 EmptyColor(0);
+	const glm::u8vec4 EmptyColor(0);
 
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
 
-	glm::ivec4 currentColor = EmptyColor;
+	glm::u8vec4 currentColor = EmptyColor;
 	int count = 0;
+
+	const voxel::Palette& palette = voxel::getPalette();
 
 	for (int z = mins.z; z <= maxs.z; ++z) {
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			for (int x = mins.x; x <= maxs.x; ++x) {
 				const Voxel& voxel = node.volume()->voxel(x, y, z);
-				glm::ivec4 newColor;
+				glm::u8vec4 newColor;
 				if (voxel == Empty) {
 					newColor = EmptyColor;
 					Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
 				} else {
-					const glm::vec4& voxelColor = getColor(voxel);
-					const uint8_t red = (uint8_t)(voxelColor.r * 255.0f);
-					const uint8_t green = (uint8_t)(voxelColor.g * 255.0f);
-					const uint8_t blue = (uint8_t)(voxelColor.b * 255.0f);
-					const uint8_t alpha = (uint8_t)(voxelColor.a * 255.0f);
-					newColor = glm::ivec4(red, green, blue, alpha);
+					const uint32_t voxelColor = palette.colors[voxel.getColor()];
+					newColor = core::Color::toRGBA(voxelColor);
 					Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
-							x, y, z, (int)voxel.getColor(), (int)red, (int)green, (int)blue, (int)alpha);
+							x, y, z, (int)voxel.getColor(), (int)newColor.r, (int)newColor.g, (int)newColor.b, (int)newColor.a);
 				}
 
 				if (newColor != currentColor) {
@@ -238,7 +237,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
 					const voxel::Voxel& voxel = getVoxel(state, stream);
-					v->setVoxel(offset.x + x, offset.y + y, offset.z + z, voxel);
+					v->setVoxel(offset.x + (int)x, offset.y + (int)y, offset.z + (int)z, voxel);
 				}
 			}
 		}
@@ -273,7 +272,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 			for (uint32_t j = 0; j < count; ++j) {
 				const uint32_t x = (index + j) % size.x;
 				const uint32_t y = (index + j) / size.x;
-				v->setVoxel(offset.x + x, offset.y + y, offset.z + z, voxel);
+				v->setVoxel(offset.x + (int)x, offset.y + (int)y, offset.z + (int)z, voxel);
 			}
 			index += count;
 		}

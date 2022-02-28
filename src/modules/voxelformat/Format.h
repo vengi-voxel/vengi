@@ -28,10 +28,8 @@ class Mesh;
 class Format {
 protected:
 	core::Array<uint8_t, 256> _paletteMapping;
-	Palette _paletteColors;
+	Palette _palette;
 
-	const glm::vec4& getColor(const Voxel& voxel) const;
-	glm::vec4 findClosestMatch(const glm::vec4& color) const;
 	uint8_t findClosestIndex(const glm::vec4& color) const;
 	/**
 	 * @brief Maps a custum palette index to our own 256 color palette by a closest match

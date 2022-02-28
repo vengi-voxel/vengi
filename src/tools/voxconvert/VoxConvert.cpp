@@ -68,7 +68,7 @@ app::AppState VoxConvert::onConstruct() {
 	_quads = core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST, "Export as quads. If this false, triangles will be used.");
 	_withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST, "Export with vertex colors");
 	_withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST, "Export with uv coordinates of the palette image");
-	_palette = core::Var::get("palette", voxel::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
+	_palette = core::Var::get("palette", voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 
 	if (!filesystem()->registerPath("scripts/")) {
 		Log::warn("Failed to register lua generator script path");
@@ -177,13 +177,11 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* resize volumes:                - %s", (_resizeVolumes ? "true" : "false"));
 
 	if (!_srcPalette) {
-		io::FilePtr paletteFile = filesystem()->open(_palette->strVal());
-		if (!paletteFile->exists()) {
-			paletteFile = filesystem()->open(core::string::format("palette-%s.png", _palette->strVal().c_str()));
-		}
-		if (paletteFile->exists() && !voxel::initMaterialColors(paletteFile, io::FilePtr())) {
+		voxel::Palette palette;
+		if (!palette.load(_palette->strVal().c_str())) {
 			Log::warn("Failed to init material colors");
 		}
+		voxel::initPalette(palette);
 	}
 
 	io::FilePtr outputFile;
@@ -339,7 +337,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &
 			Log::error("Failed to load palette");
 			return false;
 		}
-		if (!voxel::initMaterialColors((const uint8_t*)palette._colors.begin(), numColors * 4, "")) {
+		if (!voxel::initPalette(palette)) {
 			Log::error("Failed to initialize material colors from loaded palette");
 			return false;
 		}
@@ -380,7 +378,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &
 
 	if (_exportPalette) {
 		const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
-		voxel::saveMaterialColorPng(paletteFile);
+		voxel::getPalette().save(paletteFile.c_str());
 		if (!_srcPalette) {
 			Log::info(" .. not using the input file palette");
 		}

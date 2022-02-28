@@ -65,7 +65,9 @@ voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness)
 	}
 	Log::info("Import image as plane: w(%i), h(%i), d(%i)", imageWidth, imageHeight, thickness);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, thickness - 1);
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+	const voxel::Palette &palette = voxel::getPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	palette.toVec4f(materialColors);
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {

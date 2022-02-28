@@ -46,7 +46,9 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 	core_trace_scoped(RescaleVolume);
 	typename SourceVolume::Sampler srcSampler(sourceVolume);
 
-	const MaterialColorArray& colors = getMaterialColors();
+	const voxel::Palette &palette = voxel::getPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	palette.toVec4f(materialColors);
 
 	const int32_t depth = destRegion.getDepthInVoxels();
 	const int32_t height = destRegion.getHeightInVoxels();
@@ -81,7 +83,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 									colorGuardVoxel = child;
 									continue;
 								}
-								const glm::vec4& color = colors[child.getColor()];
+								const glm::vec4& color = core::Color::fromRGBA(palette.colors[child.getColor()]);
 								avgColorRed += color.r;
 								avgColorGreen += color.g;
 								avgColorBlue += color.b;
@@ -95,14 +97,14 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 				// means that higher LOD meshes actually shrink away which ensures cracks aren't visible.
 				if (solidVoxels >= 7.0f) {
 					if (colorContributors <= 0.0f) {
-						const glm::vec4 &color = colors[colorGuardVoxel.getColor()];
+						const glm::vec4 &color = core::Color::fromRGBA(palette.colors[colorGuardVoxel.getColor()]);
 						avgColorRed += color.r;
 						avgColorGreen += color.g;
 						avgColorBlue += color.b;
 						++colorContributors;
 					}
 					const glm::vec4 avgColor(avgColorRed / colorContributors, avgColorGreen / colorContributors, avgColorBlue / colorContributors, 1.0f);
-					const int index = core::Color::getClosestMatch(avgColor, colors);
+					const int index = core::Color::getClosestMatch(avgColor, materialColors);
 					Voxel voxel = createVoxel(VoxelType::Generic, index);
 					destVolume.setVoxel(dstPos, voxel);
 				} else {
@@ -178,7 +180,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 								++exposedFaces;
 							}
 
-							const glm::vec4& color = colors[child.getColor()];
+							const glm::vec4& color = core::Color::fromRGBA(palette.colors[child.getColor()]);
 							totalRed += color.r * exposedFaces;
 							totalGreen += color.g * exposedFaces;
 							totalBlue += color.b * exposedFaces;
@@ -194,7 +196,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 				}
 
 				const glm::vec4 avgColor(totalRed / totalExposedFaces, totalGreen / totalExposedFaces, totalBlue / totalExposedFaces, 1.0f);
-				const int index = core::Color::getClosestMatch(avgColor, colors);
+				const int index = core::Color::getClosestMatch(avgColor, materialColors);
 				const Voxel voxel = createVoxel(VoxelType::Generic, index);
 				destVolume.setVoxel(dstPos, voxel);
 			}

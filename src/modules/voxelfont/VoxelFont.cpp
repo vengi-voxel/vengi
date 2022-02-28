@@ -27,7 +27,6 @@
 #include "voxel/RawVolume.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
-#include "voxel/MaterialColor.h"
 #include <glm/common.hpp>
 
 namespace voxel {
@@ -127,7 +126,7 @@ void VoxelFont::shutdown() {
 }
 
 bool VoxelFont::renderGlyphs(const char* string) {
-	static const voxel::Voxel& voxel = voxel::createColorVoxel(VoxelType::Generic, 0);
+	static const voxel::Voxel& voxel = voxel::createVoxel(VoxelType::Generic, 1);
 	const char **s = &string;
 	int spaceWidth = 0;
 	int chars = 0;

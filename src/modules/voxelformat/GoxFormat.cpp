@@ -458,14 +458,13 @@ bool GoxFormat::saveChunk_LIGH(io::SeekableWriteStream& stream) {
 
 bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream& stream) {
 	GoxScopedChunkWriter scoped(stream, FourCC('M', 'A', 'T', 'E'));
-	const MaterialColorArray& materialColors = getMaterialColors();
-	const int numColors = (int)materialColors.size();
+	const voxel::Palette& palette = voxel::getPalette();
 
-	for (int i = 0; i < numColors; ++i) {
-		const core::String name = core::string::format("mat%i", i);
+	for (int i = 0; i < palette.colorCount; ++i) {
+		const core::String& name = core::string::format("mat%i", i);
 		const float value[3] = {0.0f, 0.0f, 0.0f};
 		wrapBool(saveChunk_DictEntry(stream, "name", name.c_str(), name.size()))
-		wrapBool(saveChunk_DictEntry(stream, "color", core::Color::getRGBA(materialColors[i])))
+		wrapBool(saveChunk_DictEntry(stream, "color", palette.colors[i]))
 		wrapBool(saveChunk_DictEntry(stream, "metallic", value[0]))
 		wrapBool(saveChunk_DictEntry(stream, "roughness", value[0]))
 		wrapBool(saveChunk_DictEntry(stream, "emission", value))
@@ -554,11 +553,12 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const SceneGraph
 					const size_t size = (size_t)BlockSize * BlockSize * BlockSize * 4;
 					uint32_t *data = (uint32_t*)core_malloc(size);
 					int offset = 0;
+					const voxel::Palette& palette = voxel::getPalette();
 					voxelutil::visitVolume(*mirrored, blockRegion, [&](int, int, int, const voxel::Voxel& voxel) {
 						if (voxel::isAir(voxel.getMaterial())) {
 							data[offset++] = 0;
 						} else {
-							data[offset++] = core::Color::getRGBA(getColor(voxel));
+							data[offset++] = palette.colors[voxel.getColor()];
 						}
 					}, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZX);
 

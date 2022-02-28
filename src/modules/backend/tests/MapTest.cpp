@@ -35,7 +35,7 @@ public:
 		app::AbstractTest::SetUp();
 		core::Var::get(cfg::ServerSeed, "1");
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-		voxel::initDefaultMaterialColors();
+		voxel::initDefaultPalette();
 		_entityStorage = std::make_shared<EntityStorage>(_testApp->eventBus());
 		ASSERT_TRUE(_entityStorage->init());
 		_protocolHandlerRegistry = core::make_shared<network::ProtocolHandlerRegistry>();

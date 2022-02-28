@@ -48,7 +48,7 @@ TEST_F(LUAGeneratorTest, testExecute) {
 		end
 	)";
 
-	ASSERT_TRUE(voxel::initDefaultMaterialColors());
+	ASSERT_TRUE(voxel::initDefaultPalette());
 
 	voxel::Region region(0, 0, 0, 7, 7, 7);
 	voxel::RawVolume volume(region);
@@ -85,7 +85,7 @@ TEST_F(LUAGeneratorTest, testArguments) {
 		end
 	)";
 
-	ASSERT_TRUE(voxel::initDefaultMaterialColors());
+	ASSERT_TRUE(voxel::initDefaultPalette());
 
 	voxel::Region region(0, 0, 0, 7, 7, 7);
 	voxel::RawVolume volume(region);

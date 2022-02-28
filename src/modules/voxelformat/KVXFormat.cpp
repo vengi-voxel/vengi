@@ -53,7 +53,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
-	const voxel::Region region(0, 0, 0, xsiz - 1, zsiz - 1, ysiz - 1);
+	const voxel::Region region(0, 0, 0, (int)xsiz - 1, (int)zsiz - 1, (int)ysiz - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region: %i:%i:%i", xsiz, zsiz, ysiz);
 		return false;
@@ -70,7 +70,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	wrap(stream.readUInt32(xoffset))
 
 	core_assert(((xsiz + 1) << 2) == sizeof(uint32_t) * (xsiz + 1));
-	stream.skip(sizeof(uint32_t) * xsiz);
+	stream.skip((int64_t)sizeof(uint32_t) * xsiz);
 	for (uint32_t x = 0u; x < xsiz; ++x) {
 		for (uint32_t y = 0u; y <= ysiz; ++y) {
 			wrap(stream.readUInt16(xyoffset[x][y]))
@@ -83,15 +83,15 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 	// Read the color palette from the end of the file and convert to our palette
 	const size_t currentPos = stream.pos();
-	_paletteColors.colorCount = _paletteMapping.size();
-	stream.seek(stream.size() - 3 * _paletteColors.colorCount);
+	_palette.colorCount = (int)_paletteMapping.size();
+	stream.seek(stream.size() - 3 * _palette.colorCount);
 
 	/**
 	 * The last 768 bytes of the KVX file is a standard 256-color VGA palette.
 	 * The palette is in (Red:0, Green:1, Blue:2) order and intensities range
 	 * from 0-63.
 	 */
-	for (size_t i = 0; i < _paletteColors.colorCount; ++i) {
+	for (int i = 0; i < _palette.colorCount; ++i) {
 		uint8_t r, g, b;
 		wrap(stream.readUInt8(r))
 		wrap(stream.readUInt8(g))
@@ -103,9 +103,9 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 		const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255);
 		_paletteMapping[i] = findClosestIndex(color);
-		_paletteColors._colors[i] = core::Color::getRGBA(color);
+		_palette.colors[i] = core::Color::getRGBA(color);
 	}
-	stream.seek(currentPos);
+	stream.seek((int64_t)currentPos);
 
 	RawVolume *volume = new RawVolume(region);
 	SceneGraphNode node;
@@ -164,7 +164,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 					uint8_t col;
 					wrap(stream.readUInt8(col))
 					lastCol = voxel::createVoxel(voxel::VoxelType::Generic, convertPaletteIndex(col));
-					volume->setVoxel(x, (zsiz - 1) - (header.slabztop + i), y, lastCol);
+					volume->setVoxel((int)x, (int)((zsiz - 1) - (header.slabztop + i)), (int)y, lastCol);
 				}
 
 				/**
@@ -173,13 +173,13 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 				 */
 				if (!(header.slabbackfacecullinfo & (1 << 4))) {
 					for (uint32_t i = lastZ + 1; i < header.slabztop; ++i) {
-						volume->setVoxel(x, (zsiz - 1) - i, y, lastCol);
+						volume->setVoxel((int)x, (int)((zsiz - 1) - i), (int)y, lastCol);
 					}
 				}
 				if (!(header.slabbackfacecullinfo & (1 << 5))) {
 					lastZ = header.slabztop + header.slabzleng;
 				}
-				n -= (header.slabzleng + sizeof(header));
+				n -= (int32_t)(header.slabzleng + sizeof(header));
 			}
 		}
 	}

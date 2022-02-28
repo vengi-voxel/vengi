@@ -74,7 +74,7 @@ protected:
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		core::Var::get(cfg::DatabaseMinConnections, "0");
 		core::Var::get(cfg::DatabaseMaxConnections, "0");
-		voxel::initDefaultMaterialColors();
+		voxel::initDefaultPalette();
 		entityStorage = std::make_shared<EntityStorage>(_testApp->eventBus());
 		protocolHandlerRegistry = core::make_shared<network::ProtocolHandlerRegistry>();
 		network = std::make_shared<network::ServerNetwork>(protocolHandlerRegistry, _testApp->eventBus(), _testApp->metric());

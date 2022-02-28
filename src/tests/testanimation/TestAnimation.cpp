@@ -150,7 +150,7 @@ app::AppState TestAnimation::onInit() {
 	camera().setWorldPosition(glm::vec3(10.0f, 5.0f, 10.0f));
 	camera().lookAt(glm::zero<glm::vec3>());
 
-	if (!voxel::initDefaultMaterialColors()) {
+	if (!voxel::initDefaultPalette()) {
 		Log::error("Failed to initialize the default material colors");
 		return app::AppState::InitFailure;
 	}

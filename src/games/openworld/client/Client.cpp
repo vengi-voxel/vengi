@@ -213,7 +213,7 @@ app::AppState Client::onInit() {
 		Log::warn("Failed to initialize the sound manager");
 	}
 
-	if (!voxel::initDefaultMaterialColors()) {
+	if (!voxel::initDefaultPalette()) {
 		Log::error("Failed to initialize the palette data");
 		return app::AppState::InitFailure;
 	}

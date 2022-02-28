@@ -62,6 +62,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	uint8_t * const zlibBuffer = new uint8_t[zlibBufSize];
 	const uint32_t compressedBufSize = core::zip::compressBound(zlibBufSize);
 	uint8_t *compressedBuf = new uint8_t[compressedBufSize];
+	const voxel::Palette& palette = voxel::getPalette();
 
 	uint8_t* zlibBuf = zlibBuffer;
 	for (int x = mins.x; x <= maxs.x; ++x) {
@@ -80,14 +81,11 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 					*zlibBuf++ = 0;
 					*zlibBuf++ = 0;
 				} else {
-					const glm::vec4& voxelColor = getColor(voxel);
-					const uint8_t red = (uint8_t)(voxelColor.r * 255.0f);
-					const uint8_t green = (uint8_t)(voxelColor.g * 255.0f);
-					const uint8_t blue = (uint8_t)(voxelColor.b * 255.0f);
+					const glm::u8vec4 &voxelColor = core::Color::toRGBA(palette.colors[voxel.getColor()]);
 					//const uint8_t alpha = voxelColor.a * 255.0f;
-					*zlibBuf++ = red;
-					*zlibBuf++ = green;
-					*zlibBuf++ = blue;
+					*zlibBuf++ = voxelColor.r;
+					*zlibBuf++ = voxelColor.g;
+					*zlibBuf++ = voxelColor.b;
 				}
 				// mask != 0 means solid, 1 is core (surrounded by others and not visible)
 				*zlibBuf++ = 0xff;
@@ -154,11 +152,10 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 
 bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream) const {
 	wrapSave(stream.writeString("COLORMAP", false));
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
-	wrapSave(stream.writeUInt32(materialColors.size()));
-	for (const glm::vec4& c : materialColors) {
-		const uint32_t rgba = core::Color::getRGBA(c);
-		wrapSave(stream.writeUInt32(rgba));
+	const voxel::Palette& palette = voxel::getPalette();
+	wrapSave(stream.writeUInt32(palette.colorCount));
+	for (int i = 0; i < palette.colorCount; ++i) {
+		wrapSave(stream.writeUInt32(palette.colors[i]));
 	}
 	return true;
 }
@@ -363,7 +360,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 				if (mask == 0u) {
 					continue;
 				}
-				if (_paletteColors.colorCount > 0) {
+				if (_palette.colorCount > 0) {
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, red);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 				} else {
@@ -459,7 +456,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 		Log::error("Sanity check for max colors failed (%u)", colorCount);
 		return false;
 	}
-	_paletteColors.colorCount = colorCount;
+	_palette.colorCount = (int)colorCount;
 	for (uint32_t i = 0; i < colorCount; ++i) {
 		uint8_t colorByteR;
 		uint8_t colorByteG;
@@ -476,7 +473,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 		const uint32_t alpha = ((uint32_t)255) << 0;
 
 		const glm::vec4& color = core::Color::fromRGBA(red | green | blue | alpha);
-		_paletteColors._colors[i] = core::Color::getRGBA(color);
+		_palette.colors[i] = core::Color::getRGBA(color);
 		const uint8_t index = findClosestIndex(color);
 		_paletteMapping[i] = index;
 	}
@@ -529,7 +526,7 @@ bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& scene
 				Log::error("Failed to load color map");
 				return false;
 			}
-			if (_paletteColors.colorCount == 0) {
+			if (_palette.colorCount == 0) {
 				Log::debug("No color map found");
 			} else {
 				Log::debug("Color map loaded");

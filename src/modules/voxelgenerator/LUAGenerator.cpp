@@ -86,11 +86,11 @@ static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
 }
 
 static int luaVoxel_palette_colors(lua_State* s) {
-	const voxel::MaterialColorArray& colors = voxel::getMaterialColors();
-	lua_createtable(s, (int)colors.size(), 0);
-	for (size_t i = 0; i < colors.size(); ++i) {
-		const glm::vec4& c = colors[i];
-		lua_pushinteger(s, (int)i + 1);
+	const voxel::Palette &palette = voxel::getPalette();
+	lua_createtable(s, palette.colorCount, 0);
+	for (int i = 0; i < palette.colorCount; ++i) {
+		const glm::vec4& c = core::Color::fromRGBA(palette.colors[i]);
+		lua_pushinteger(s, i + 1);
 		clua_push(s, c);
 		lua_settable(s, -3);
 	}
@@ -99,17 +99,20 @@ static int luaVoxel_palette_colors(lua_State* s) {
 
 static int luaVoxel_palette_color(lua_State* s) {
 	const uint8_t color = luaL_checkinteger(s, 1);
-	const glm::vec4& rgba = voxel::getMaterialColor(voxel::createVoxel(voxel::VoxelType::Generic, color));
+	const voxel::Palette &palette = voxel::getPalette();
+	const glm::vec4& rgba = core::Color::fromRGBA(palette.colors[color]);
 	return clua_push(s, rgba);
 }
 
 static int luaVoxel_palette_closestmatch(lua_State* s) {
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+	const voxel::Palette &palette = voxel::getPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	palette.toVec4f(materialColors);
 	const float r = (float)luaL_checkinteger(s, 1) / 255.0f;
 	const float g = (float)luaL_checkinteger(s, 2) / 255.0f;
 	const float b = (float)luaL_checkinteger(s, 3) / 255.0f;
 	const int match = core::Color::getClosestMatch(glm::vec4(r, b, g, 1.0f), materialColors);
-	if (match < 0 || match > (int)materialColors.size()) {
+	if (match < 0 || match > palette.colorCount) {
 		return clua_error(s, "Given color index is not valid or palette is not loaded");
 	}
 	lua_pushinteger(s, match);
@@ -119,10 +122,13 @@ static int luaVoxel_palette_closestmatch(lua_State* s) {
 static int luaVoxel_palette_similar(lua_State* s) {
 	const int paletteIndex = lua_tointeger(s, 1);
 	const int colorCount = lua_tointeger(s, 2);
-	voxel::MaterialColorArray colors = voxel::getMaterialColors();
-	if (paletteIndex < 0 || paletteIndex >= (int)colors.size()) {
+	const voxel::Palette &palette = voxel::getPalette();
+	if (paletteIndex < 0 || paletteIndex >= palette.colorCount) {
 		return clua_error(s, "Palette index out of bounds");
 	}
+	core::DynamicArray<glm::vec4> colors;
+	palette.toVec4f(colors);
+	const core::DynamicArray<glm::vec4> materialColors = colors;
 	const glm::vec4 color = colors[paletteIndex];
 	voxel::MaterialColorIndices newColorIndices;
 	newColorIndices.resize(colorCount);
@@ -134,7 +140,7 @@ static int luaVoxel_palette_similar(lua_State* s) {
 			break;
 		}
 		const glm::vec4& c = colors[index];
-		const int materialIndex = core::Color::getClosestMatch(c, voxel::getMaterialColors());
+		const int materialIndex = core::Color::getClosestMatch(c, materialColors);
 		colors.erase(index);
 		newColorIndices[maxColorIndices] = materialIndex;
 	}

@@ -10,6 +10,7 @@
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include "ui/imgui/IconsFontAwesome5.h"
+#include "voxel/MaterialColor.h"
 
 namespace voxedit {
 
@@ -48,19 +49,19 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 			const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
 			switch (p.type) {
 			case voxelgenerator::LUAParameterType::ColorIndex: {
-				const voxel::MaterialColorArray &colors = voxel::getMaterialColors();
+				const voxel::Palette &palette = voxel::getPalette();
 				core::String &str = _scriptParameters[i];
 				int val = core::string::toInt(str);
-				if (val >= 0 && val < (int)colors.size()) {
+				if (val >= 0 && val < palette.colorCount) {
 					const float size = 20;
 					const ImVec2 v1(ImGui::GetWindowPos().x + ImGui::GetCursorPosX(), ImGui::GetWindowPos().y + ImGui::GetCursorPosY());
 					const ImVec2 v2(v1.x + size, v1.y + size);
 					ImDrawList* drawList = ImGui::GetWindowDrawList();
-					drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(colors[val]));
+					drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(palette.colors[val]));
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + size);
 				}
 				if (ImGui::InputInt(p.name.c_str(), &val)) {
-					if (val >= 0 && val < (int)colors.size()) {
+					if (val >= 0 && val < palette.colorCount) {
 						str = core::string::toString(val);
 					}
 				}

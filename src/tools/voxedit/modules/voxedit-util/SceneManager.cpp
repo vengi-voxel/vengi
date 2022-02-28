@@ -71,10 +71,11 @@ SceneManager::~SceneManager() {
 }
 
 bool SceneManager::loadPalette(const core::String& paletteName) {
-	const io::FilesystemPtr& filesystem = io::filesystem();
-	const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", paletteName.c_str()));
-	const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", paletteName.c_str()));
-	if (voxel::overrideMaterialColors(paletteFile, luaFile)) {
+	voxel::Palette palette;
+	if (!palette.load(paletteName.c_str())) {
+		return false;
+	}
+	if (voxel::overridePalette(palette)) {
 		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
 		return true;
 	}
@@ -82,11 +83,10 @@ bool SceneManager::loadPalette(const core::String& paletteName) {
 }
 
 bool SceneManager::importPalette(const core::String& file) {
-	const core::String luaString = "";
 	const core::String& ext = core::string::extractExtension(file);
 	const core::String paletteName(core::string::extractFilename(file.c_str()));
 	const core::String& paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
-
+	voxel::Palette palette;
 	bool paletteLoaded = false;
 	for (const io::FormatDescription* desc = io::format::images(); desc->name != nullptr; ++desc) {
 		if (ext == desc->ext) {
@@ -95,12 +95,11 @@ bool SceneManager::importPalette(const core::String& file) {
 				Log::warn("Failed to load image %s", file.c_str());
 				break;
 			}
-			core::Array<uint32_t, 256> buf;
-			if (!voxel::createPalette(img, buf.begin(), buf.size())) {
+			if (!voxel::Palette::createPalette(img, palette)) {
 				Log::warn("Failed to create palette for image %s", file.c_str());
 				return false;
 			}
-			if (!voxel::overrideMaterialColors((const uint8_t*)buf.begin(), buf.size() * sizeof(uint32_t), luaString)) {
+			if (!voxel::overridePalette(palette)) {
 				Log::warn("Failed to import palette for image %s", file.c_str());
 				return false;
 			}
@@ -116,20 +115,17 @@ bool SceneManager::importPalette(const core::String& file) {
 			return false;
 		}
 		io::FileStream stream(palFile);
-		voxel::Palette pal;
-		if (voxelformat::loadPalette(file, stream, pal) <= 0) {
+		if (voxelformat::loadPalette(file, stream, palette) <= 0) {
 			Log::warn("Failed to load palette from %s", file.c_str());
 			return false;
 		}
-		if (!voxel::overrideMaterialColors((const uint8_t*)pal._colors.begin(), pal.size() * sizeof(uint32_t), luaString)) {
+		if (!voxel::overridePalette(palette)) {
 			Log::warn("Failed to import palette for model %s", file.c_str());
 			return false;
 		}
 	}
 	const io::FilePtr& pngFile = fs->open(paletteFilename, io::FileMode::Write);
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
-	if (image::Image::writePng(pngFile->name().c_str(), (const uint8_t*)materialColors.data(), (int)materialColors.size(), 1, 4)) {
-		fs->write(core::string::format("palette-%s.lua", paletteName.c_str()), luaString);
+	if (palette.save(pngFile->name().c_str())) {
 		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
 	} else {
 		Log::warn("Failed to write image");
@@ -1492,7 +1488,9 @@ void SceneManager::construct() {
 		const float green = core::string::toFloat(args[1]);
 		const float blue = core::string::toFloat(args[2]);
 		const glm::vec4 color(red / 255.0f, green / 255.0, blue / 255.0, 1.0f);
-		const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+		core::DynamicArray<glm::vec4> materialColors;
+		const voxel::Palette &palette = voxel::getPalette();
+		palette.toVec4f(materialColors);
 		const int index = core::Color::getClosestMatch(color, materialColors);
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 		_modifier.setCursorVoxel(voxel);
@@ -1679,7 +1677,7 @@ void SceneManager::construct() {
 	core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST, "Export as quads. If this false, triangles will be used.");
 	core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST, "Export with vertex colors");
 	core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST, "Export with uv coordinates of the palette image");
-	core::Var::get("palette", voxel::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
+	core::Var::get("palette", voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 }
 
 int SceneManager::addModelChild(const core::String& name, int width, int height, int depth) {
@@ -1733,12 +1731,13 @@ bool SceneManager::init() {
 	}
 
 	const char *paletteName = core::Var::getSafe(cfg::VoxEditLastPalette)->strVal().c_str();
-	const io::FilesystemPtr& filesystem = io::filesystem();
-	const io::FilePtr& paletteFile = filesystem->open(core::string::format("palette-%s.png", paletteName));
-	const io::FilePtr& luaFile = filesystem->open(core::string::format("palette-%s.lua", paletteName));
-	if (!voxel::initMaterialColors(paletteFile, luaFile)) {
+	voxel::Palette palette;
+	if (!palette.load(paletteName)) {
+		Log::warn("Failed to load the palette data");
+	}
+	if (!voxel::initPalette(palette)) {
 		Log::warn("Failed to initialize the palette data for %s, falling back to default", paletteName);
-		if (!voxel::initDefaultMaterialColors()) {
+		if (!voxel::initDefaultPalette()) {
 			Log::error("Failed to initialize the palette data");
 			return false;
 		}

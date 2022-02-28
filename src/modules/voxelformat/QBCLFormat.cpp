@@ -81,8 +81,8 @@ static int writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t 
 	}
 	glm::u8vec4 color(0);
 	if (!voxel::isAir(voxel.getMaterial())) {
-		const glm::vec4 &rgbaColor = getMaterialColor(voxel);
-		color = core::Color::getRGBAVec(rgbaColor);
+		const voxel::Palette& palette = voxel::getPalette();
+		color = core::Color::toRGBA(palette.colors[voxel.getColor()]);
 	}
 	if (count == 1) {
 		wrapSaveColor(stream.writeUInt8(color.r))
@@ -350,7 +350,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 					for (int j = 0; j < rleLength; ++j) {
 						const uint32_t x = (index / size.z);
 						const uint32_t z = index % size.z;
-						volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
+						volume->setVoxel(position.x + (int)x, position.y + y, position.z + (int)z, voxel);
 						++y;
 					}
 				}
@@ -365,7 +365,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				const glm::vec4& color = core::Color::fromRGBA(red, green, blue, 255);
 				const uint8_t palIndex = findClosestIndex(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
-				volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
+				volume->setVoxel(position.x + (int)x, position.y + y, position.z + (int)z, voxel);
 				++y;
 			}
 		}
@@ -481,7 +481,7 @@ bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 	wrap(stream.readUInt32(thumbWidth))
 	uint32_t thumbHeight;
 	wrap(stream.readUInt32(thumbHeight))
-	if (stream.skip((int64_t)(thumbWidth * thumbHeight * 4)) == -1) {
+	if (stream.skip(((int64_t)thumbWidth * (int64_t)thumbHeight * 4)) == -1) {
 		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read));
 		return false;
 	}

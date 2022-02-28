@@ -101,13 +101,14 @@ int WorldRenderer::renderPostProcessEffects(const video::Camera& camera) {
 	const int currentEyeHeight = (int)camera.eye().y;
 	if (currentEyeHeight <= voxel::MAX_WATER_HEIGHT) {
 		static const voxel::Voxel waterVoxel = voxel::createColorVoxel(voxel::VoxelType::Water, 0);
-		const glm::vec4& waterColor = voxel::getMaterialColor(waterVoxel);
+		const voxel::Palette &palette = voxel::getPalette();
+		const glm::vec4& waterColor = core::Color::fromRGBA(palette.colors[waterVoxel.getColor()]);
 		_postProcessShader.setColor(waterColor);
 	} else {
 		_postProcessShader.setColor(glm::one<glm::vec4>());
 	}
 	_postProcessShader.setTexture(video::TextureUnit::Zero);
-	const int elements = _postProcessBuf.elements(_postProcessBufId, _postProcessShader.getComponentsPos());
+	const int elements = (int)_postProcessBuf.elements(_postProcessBufId, _postProcessShader.getComponentsPos());
 	video::drawArrays(video::Primitive::Triangles, elements);
 	return 1;
 }
@@ -279,7 +280,7 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	_waterShader.setCamerapos(camera.worldPosition());
 	_waterShader.setLightdir(_shadow.sunDirection());
 	_waterShader.setFogrange(_fogRange);
-	_waterShader.setTime(_seconds);
+	_waterShader.setTime((float)_seconds);
 	_waterShader.setFar(camera.farPlane());
 	_waterShader.setNear(camera.nearPlane());
 	_skybox.bind(video::TextureUnit::Two);
@@ -298,7 +299,7 @@ int WorldRenderer::renderWater(const video::Camera& camera, const glm::vec4& cli
 	}
 
 	video::ScopedBuffer scopedBuf(_waterBuffer);
-	const int elements = _waterBuffer.elements(_waterVbo, core::remove_reference<decltype(waterPlaneVecs[0])>::type::length());
+	const int elements = (int)_waterBuffer.elements(_waterVbo, core::remove_reference<decltype(waterPlaneVecs[0])>::type::length());
 	video::drawArrays(video::Primitive::Triangles, elements);
 
 	_skybox.unbind(video::TextureUnit::Two);
@@ -393,8 +394,15 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 		Log::error("Failed to init shadowmap shader");
 		return false;
 	}
+
+	const voxel::Palette &palette = voxel::getPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	palette.toVec4f(materialColors);
+	core::DynamicArray<glm::vec4> glowColors;
+	palette.glowToVec4f(glowColors);
+
 	const int shaderMaterialColorsArraySize = lengthof(shader::WorldData::MaterialblockData::materialcolor);
-	const int materialColorsArraySize = (int)voxel::getMaterialColors().size();
+	const int materialColorsArraySize = palette.colorCount;
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
 				shaderMaterialColorsArraySize, materialColorsArraySize);
@@ -402,8 +410,8 @@ bool WorldRenderer::init(voxel::PagedVolume* volume, const glm::ivec2& position,
 	}
 
 	shader::WorldData::MaterialblockData materialBlock;
-	core_memcpy(materialBlock.materialcolor, &voxel::getMaterialColors().front(), sizeof(materialBlock.materialcolor));
-	core_memcpy(materialBlock.glowcolor, &voxel::getGlowColors().front(), sizeof(materialBlock.glowcolor));
+	core_memcpy(materialBlock.materialcolor, &materialColors.front(), sizeof(materialBlock.materialcolor));
+	core_memcpy(materialBlock.glowcolor, &glowColors.front(), sizeof(materialBlock.glowcolor));
 	_materialBlock.create(materialBlock);
 
 	_waterVbo = _waterBuffer.create(waterPlaneVecs, sizeof(waterPlaneVecs));

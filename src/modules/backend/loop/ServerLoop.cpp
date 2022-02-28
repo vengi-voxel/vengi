@@ -335,7 +335,7 @@ bool ServerLoop::init() {
 	r->registerHandler(network::ClientMsgType::VarUpdate, std::make_shared<VarUpdateHandler>());
 
 	Log::info("Init material");
-	if (!voxel::initDefaultMaterialColors()) {
+	if (!voxel::initDefaultPalette()) {
 		Log::error("Failed to initialize the palette data");
 		return false;
 	}

@@ -21,29 +21,20 @@
 
 namespace voxel {
 
-const glm::vec4& Format::getColor(const Voxel& voxel) const {
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
-	return materialColors[voxel.getColor()];
-}
-
 uint8_t Format::convertPaletteIndex(uint32_t paletteIndex) const {
-	if (paletteIndex >= _paletteColors.colorCount) {
-		if (_paletteColors.colorCount > 0) {
-			return paletteIndex % _paletteColors.colorCount;
+	if (paletteIndex >= (uint32_t)_palette.colorCount) {
+		if (_palette.colorCount > 0) {
+			return paletteIndex % _palette.colorCount;
 		}
 		return paletteIndex % _paletteMapping.size();
 	}
 	return _paletteMapping[paletteIndex];
 }
 
-glm::vec4 Format::findClosestMatch(const glm::vec4& color) const {
-	const int index = findClosestIndex(color);
-	voxel::MaterialColorArray materialColors = voxel::getMaterialColors();
-	return materialColors[index];
-}
-
 uint8_t Format::findClosestIndex(const glm::vec4& color) const {
-	const voxel::MaterialColorArray& materialColors = voxel::getMaterialColors();
+	const voxel::Palette &palette = voxel::getPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	palette.toVec4f(materialColors);
 	//materialColors.erase(materialColors.begin());
 	return core::Color::getClosestMatch(color, materialColors);
 }
@@ -148,7 +139,7 @@ RawVolume* Format::load(const core::String &filename, io::SeekableReadStream& st
 size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& stream, Palette &palette) {
 	SceneGraph sceneGraph;
 	loadGroups(filename, stream, sceneGraph);
-	palette = _paletteColors;
+	palette = _palette;
 	return palette.colorCount;
 }
 

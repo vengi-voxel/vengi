@@ -43,7 +43,7 @@ bool VXLFormat::writeLimbBodyEntry(io::SeekableWriteStream& stream, const voxel:
 }
 
 bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t limbIdx, LimbOffset& offsets, uint64_t limbSectionOffset) const {
-	const SceneGraphNode* node = sceneGraph[limbIdx];
+	const SceneGraphNode* node = sceneGraph[(int)limbIdx];
 	core_assert_always(node != nullptr);
 	const voxel::Region& region = node->region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
@@ -113,7 +113,7 @@ bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const SceneGraph& sce
 
 bool VXLFormat::writeLimbHeader(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t limbIdx) const {
 	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + limbIdx * LimbHeaderSize));
-	const SceneGraphNode* node = sceneGraph[limbIdx];
+	const SceneGraphNode* node = sceneGraph[(int)limbIdx];
 	core_assert_always(node != nullptr);
 	char name[15];
 	core_memcpy(name, node->name().c_str(), sizeof(name));
@@ -129,7 +129,7 @@ bool VXLFormat::writeLimbHeader(io::SeekableWriteStream& stream, const SceneGrap
 }
 
 bool VXLFormat::writeLimbFooter(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t limbIdx, const LimbOffset& offsets) const {
-	const SceneGraphNode* node = sceneGraph[limbIdx];
+	const SceneGraphNode* node = sceneGraph[(int)limbIdx];
 	core_assert_always(node != nullptr);
 	wrapBool(stream.writeUInt32(offsets.start))
 	wrapBool(stream.writeUInt32(offsets.end))
@@ -158,10 +158,10 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, const SceneGraph& s
 	wrapBool(stream.writeUInt32(sceneGraph.size()))
 	wrapBool(stream.writeUInt32(0)) // bodysize is filled later
 	wrapBool(stream.writeUInt16(0x1f10U))
-	const MaterialColorArray& materialColors = getMaterialColors();
-	const uint32_t paletteSize = materialColors.size();
-	for (uint32_t i = 0; i < paletteSize; ++i) {
-		const glm::u8vec4& rgba = core::Color::getRGBAVec(materialColors[i]);
+
+	const voxel::Palette &palette = voxel::getPalette();
+	for (int i = 0; i < palette.colorCount; ++i) {
+		const glm::u8vec4& rgba = core::Color::toRGBA(palette.colors[i]);
 		wrapBool(stream.writeUInt8(rgba[0]))
 		wrapBool(stream.writeUInt8(rgba[1]))
 		wrapBool(stream.writeUInt8(rgba[2]))
@@ -215,12 +215,12 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 	wrap(stream.seek(limbOffset))
 	Log::debug("limbOffset: %u", (uint32_t)limbOffset);
 	for (uint32_t i = 0; i < baseSize; ++i) {
-		uint32_t v;
-		wrap(stream.readUInt32(v))
+		int32_t v;
+		wrap(stream.readInt32(v))
 		colStart[i] = v;
 	}
 	// skip spanPosEnd values
-	stream.skip(sizeof(uint32_t) * baseSize);
+	stream.skip((int64_t)sizeof(uint32_t) * baseSize);
 
 	const uint64_t dataStart = stream.pos();
 
@@ -357,9 +357,9 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 
 	Log::debug("Found %u limbs", hdr.n_limbs);
 
-	_paletteColors.colorCount = _paletteMapping.size();
+	_palette.colorCount = voxel::PaletteMaxColors;
 	bool valid = false;
-	for (size_t i = 0; i < _paletteColors.colorCount; ++i) {
+	for (int i = 0; i < _palette.colorCount; ++i) {
 		wrap(stream.readUInt8(hdr.palette[i][0]))
 		wrap(stream.readUInt8(hdr.palette[i][1]))
 		wrap(stream.readUInt8(hdr.palette[i][2]))
@@ -370,15 +370,15 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 
 	if (valid) {
 		// convert to our palette
-		for (size_t i = 0; i < _paletteColors.colorCount; ++i) {
+		for (int i = 0; i < _palette.colorCount; ++i) {
 			const uint8_t *p = hdr.palette[i];
 			const glm::vec4& color = core::Color::fromRGBA(p[0], p[1], p[2], 0xffu);
 			const int index = findClosestIndex(color);
-			_paletteColors._colors[i] = core::Color::getRGBA(color);
+			_palette.colors[i] = core::Color::getRGBA(color);
 			_paletteMapping[i] = index;
 		}
 	} else {
-		_paletteColors.colorCount = 0;
+		_palette.colorCount = 0;
 	}
 
 	return true;

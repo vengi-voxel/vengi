@@ -26,7 +26,7 @@ namespace voxel {
 	}
 
 bool BinVoxFormat::readData(State& state, const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
-	const voxel::Region region(0, 0, 0, state._d - 1, state._w - 1, state._h - 1);
+	const voxel::Region region(0, 0, 0, (int)state._d - 1, (int)state._w - 1, (int)state._h - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region found in file");
 		return false;

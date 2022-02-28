@@ -30,7 +30,7 @@ app::AppState TestVoxelGPU::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	if (!voxel::initDefaultMaterialColors()) {
+	if (!voxel::initDefaultPalette()) {
 		Log::error("Failed to initialize the palette data");
 		return app::AppState::InitFailure;
 	}

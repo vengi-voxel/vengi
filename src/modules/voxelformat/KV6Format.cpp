@@ -49,7 +49,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", xsiz, zsiz, ysiz);
 		return false;
 	}
-	const voxel::Region region(0, 0, 0, xsiz - 1, zsiz - 1, ysiz - 1);
+	const voxel::Region region(0, 0, 0, (int)xsiz - 1, (int)zsiz - 1, (int)ysiz - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region: %i:%i:%i", xsiz, zsiz, ysiz);
 		return false;
@@ -69,8 +69,8 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 			uint32_t palMagic;
 			wrap(stream.readUInt32(palMagic))
 			if (palMagic == FourCC('S','P','a','l')) {
-				_paletteColors.colorCount = _paletteMapping.size();
-				for (size_t i = 0; i < _paletteColors.colorCount; ++i) {
+				_palette.colorCount = (int)_paletteMapping.size();
+				for (int i = 0; i < _palette.colorCount; ++i) {
 					uint8_t r, g, b;
 					wrap(stream.readUInt8(b))
 					wrap(stream.readUInt8(g))
@@ -83,7 +83,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 					const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255u);
 					const int index = findClosestIndex(color);
 					_paletteMapping[i] = index;
-					_paletteColors._colors[i] = core::Color::getRGBA(color);
+					_palette.colors[i] = core::Color::getRGBA(color);
 				}
 			}
 		}
@@ -131,7 +131,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 			for (int end = idx + xyoffset[x][y]; idx < end; ++idx) {
 				const voxtype& vox = voxdata[idx];
 				const voxel::Voxel col = voxel::createVoxel(voxel::VoxelType::Generic, vox.col);
-				volume->setVoxel(x, (zsiz - 1) - vox.z, y, col);
+				volume->setVoxel((int)x, (int)((zsiz - 1) - vox.z), (int)y, col);
 			}
 		}
 	}
@@ -149,7 +149,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 				}
 				if (vox.vis & (1 << 5)) {
 					for (; lastZ < vox.z; ++lastZ) {
-						volume->setVoxel(x, (zsiz - 1) - lastZ, y, lastCol);
+						volume->setVoxel((int)x, (int)((zsiz - 1) - lastZ), (int)y, lastCol);
 					}
 				}
 			}

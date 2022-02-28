@@ -5,6 +5,7 @@
 #include "PLYFormat.h"
 #include "core/Log.h"
 #include "core/Var.h"
+#include "core/Color.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "voxel/MaterialColor.h"
@@ -16,9 +17,10 @@
 namespace voxel {
 
 bool PLYFormat::saveMeshes(const Meshes& meshes, const core::String &filename, io::SeekableWriteStream& stream, float scale, bool quad, bool withColor, bool withTexCoords) {
+	const char *paletteName = voxel::Palette::getDefaultPaletteName();
 	stream.writeStringFormat(false, "ply\nformat ascii 1.0\n");
 	stream.writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/mgerhardy/vengi\n");
-	stream.writeStringFormat(false, "comment TextureFile palette-%s.png\n", voxel::getDefaultPaletteName());
+	stream.writeStringFormat(false, "comment TextureFile palette-%s.png\n", paletteName);
 
 	int elements = 0;
 	int indices = 0;
@@ -53,9 +55,9 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const core::String &filename, i
 	stream.writeStringFormat(false, "property list uchar uint vertex_indices\n");
 	stream.writeStringFormat(false, "end_header\n");
 
-	const MaterialColorArray& colors = getMaterialColors();
+	const voxel::Palette& palette = voxel::getPalette();
 	// 1 x 256 is the texture format that we are using for our palette
-	const float texcoord = 1.0f / (float)colors.size();
+	const float texcoord = 1.0f / (float)palette.colorCount;
 	// it is only 1 pixel high - sample the middle
 	const float v1 = 0.5f;
 
@@ -67,7 +69,6 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const core::String &filename, i
 
 		for (int i = 0; i < nv; ++i) {
 			const voxel::VoxelVertex& v = vertices[i];
-			const glm::vec4& color = colors[v.colorIndex];
 			stream.writeStringFormat(false, "%f %f %f",
 				(offset.x + (float)v.position.x) * scale, (offset.y + (float)v.position.y) * scale, -(offset.z + (float)v.position.z) * scale);
 			if (withTexCoords) {
@@ -75,8 +76,9 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const core::String &filename, i
 				stream.writeStringFormat(false, " %f %f", u, v1);
 			}
 			if (withColor) {
-				stream.writeStringFormat(false, " %u %u %u",
-					(uint8_t)(color.r * 255.0f), (uint8_t)(color.g * 255.0f), (uint8_t)(color.b * 255.0f));
+				const uint32_t color = palette.colors[v.colorIndex];
+				const glm::u8vec4& cv = core::Color::toRGBA(color);
+				stream.writeStringFormat(false, " %u %u %u", cv.r, cv.g, cv.b);
 			}
 			stream.writeStringFormat(false, "\n");
 		}
@@ -110,7 +112,7 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const core::String &filename, i
 		}
 		idxOffset += nv;
 	}
-	return true;
+	return voxel::getPalette().save(paletteName);
 }
 
 }

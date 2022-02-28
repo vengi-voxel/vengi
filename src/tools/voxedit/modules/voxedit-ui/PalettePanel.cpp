@@ -14,7 +14,7 @@
 namespace voxedit {
 
 PalettePanel::PalettePanel() {
-	_currentSelectedPalette = voxel::getDefaultPaletteName();
+	_currentSelectedPalette = voxel::Palette::getDefaultPaletteName();
 }
 
 void PalettePanel::reloadAvailablePalettes() {
@@ -28,14 +28,14 @@ void PalettePanel::reloadAvailablePalettes() {
 		if (file.type != io::Filesystem::DirEntry::Type::file) {
 			continue;
 		}
-		const core::String& name = voxel::extractPaletteName(file.name);
+		const core::String& name = voxel::Palette::extractPaletteName(file.name);
 		_availablePalettes.push_back(name);
 	}
 }
 
 void PalettePanel::update(const char *title, command::CommandExecutionListener &listener) {
-	const voxel::MaterialColorArray &colors = voxel::getMaterialColors();
-	const int maxPaletteEntries = (int)colors.size();
+	voxel::Palette &palette = voxel::getPalette();
+	const int maxPaletteEntries = palette.colorCount;
 	const float height = ImGui::GetContentRegionMax().y;
 	const ImVec2 windowSize(120.0f, height);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
@@ -62,7 +62,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			const ImVec2 v1(globalCursorPos.x + borderWidth, globalCursorPos.y + borderWidth);
 			const ImVec2 v2(globalCursorPos.x + colorButtonSize.x, globalCursorPos.y + colorButtonSize.y);
 
-			drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(colors[palIdx]));
+			drawList->AddRectFilled(v1, v2, palette.colors[palIdx]);
 
 			const core::String &id = core::string::format("##palitem-%i", palIdx);
 			if (ImGui::InvisibleButton(id.c_str(), colorButtonSize)) {
@@ -72,13 +72,13 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 				const core::String &layerFromColorCmd = core::string::format("colortolayer %i", palIdx);
 				ImGui::CommandMenuItem(ICON_FA_OBJECT_UNGROUP " Layer from color" PALETTEACTIONPOPUP, layerFromColorCmd.c_str(), true, &listener);
-				if (voxel::materialColorIsGlow(palIdx)) {
+				if (palette.hasGlow(palIdx)) {
 					if (ImGui::MenuItem("Remove Glow")) {
-						voxel::materialColorRemoveGlow(palIdx);
+						palette.removeGlow(palIdx);
 					}
 				} else {
 					if (ImGui::MenuItem("Glow")) {
-						voxel::materialColorSetGlow(palIdx);
+						palette.setGlow(palIdx);
 					}
 				}
 				ImGui::EndPopup();
