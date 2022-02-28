@@ -71,6 +71,12 @@ bool initState(io::FilesystemState &state) {
 		Log::debug("Can't read xdg user dirs: HOME env var not found");
 		return false;
 	}
+#if defined __APPLE__
+	state._directories[FilesystemDirectories::FS_Dir_Download] = core::string::path(envHome, "Downloads");
+	state._directories[FilesystemDirectories::FS_Dir_Documents] = core::string::path(envHome, "Documents");
+	state._directories[FilesystemDirectories::FS_Dir_Pictures] = core::string::path(envHome, "Pictures");
+	state._directories[FilesystemDirectories::FS_Dir_Public] = core::string::path(envHome, "Public");
+#else
 	core::String xdgDir = core::string::path(envHome, ".config", "user-dirs.dirs");
 	if (access(xdgDir.c_str(), F_OK) != 0) {
 		Log::debug("Can't read xdg user dirs: %s doesn't exists", xdgDir.c_str());
@@ -107,6 +113,7 @@ bool initState(io::FilesystemState &state) {
 			state._directories[FilesystemDirectories::FS_Dir_Public] = priv::replaceHome(value);
 		}
 	}
+#endif
 
 	for (int n = 0; n < FilesystemDirectories::FS_Dir_Max; ++n) {
 		if (state._directories[n].empty()) {
