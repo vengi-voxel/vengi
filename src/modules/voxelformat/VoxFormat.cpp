@@ -66,7 +66,7 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 		const ogt_vox_rgba &c = scene->palette.color[i];
 		const ogt_vox_matl &matl = scene->materials.matl[i];
 		palette.colors[i] = core::Color::getRGBA(c.r, c.g, c.b, c.a);
-		if (matl.emit > 0.0f) {
+		if (matl.type == ogt_matl_type_emit) {
 			palette.setGlow(i, matl.emit);
 		} else {
 			palette.removeGlow(i);
@@ -207,7 +207,7 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		const glm::vec4 &colorVec = core::Color::fromRGBA(color.r, color.g, color.b, color.a);
 		_palette.colors[i] = core::Color::getRGBA(colorVec);
 		const ogt_vox_matl &matl = scene->materials.matl[i];
-		if (matl.emit > 0.0f) {
+		if (matl.type == ogt_matl_type_emit) {
 			_palette.setGlow(i, matl.emit);
 		} else {
 			_palette.removeGlow(i);
