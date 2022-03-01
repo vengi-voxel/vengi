@@ -5,7 +5,6 @@
 #include "MaterialColor.h"
 #include "app/App.h"
 #include "core/Enum.h"
-#include "math/Random.h"
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "io/Filesystem.h"
@@ -189,27 +188,6 @@ public:
 		}
 		return voxel::createVoxel(type, index);
 	}
-
-	Voxel createRandomColorVoxel(VoxelType type, math::Random& random) const {
-		core_assert_msg(_initialized, "Material colors are not yet initialized");
-		uint8_t index = 0;
-		if (type != VoxelType::Air) {
-			auto i = _colorMapping.find(type);
-			if (i == _colorMapping.end()) {
-				Log::debug("Failed to find color indices for voxel type %s (random color)", VoxelTypeStr[(int)type]);
-			} else {
-				const MaterialColorIndices& indices = i->second;
-				if (indices.empty()) {
-					Log::debug("Failed to get color indices for voxel type %s (random color)", VoxelTypeStr[(int)type]);
-				} else if (indices.size() == 1) {
-					index = indices.front();
-				} else {
-					index = *random.randomElement(indices.begin(), indices.end());
-				}
-			}
-		}
-		return voxel::createVoxel(type, index);
-	}
 };
 
 static MaterialColor& getInstance() {
@@ -251,17 +229,8 @@ const MaterialColorIndices& getMaterialIndices(VoxelType type) {
 	return getInstance().getColorIndices(type);
 }
 
-Voxel createRandomColorVoxel(VoxelType type) {
-	math::Random random;
-	return createRandomColorVoxel(type, random);
-}
-
 Voxel createColorVoxel(VoxelType type, uint32_t colorIndex) {
 	return getInstance().createColorVoxel(type, colorIndex);
-}
-
-Voxel createRandomColorVoxel(VoxelType type, math::Random& random) {
-	return getInstance().createRandomColorVoxel(type, random);
 }
 
 }

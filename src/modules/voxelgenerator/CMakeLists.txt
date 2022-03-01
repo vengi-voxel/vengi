@@ -23,7 +23,6 @@ set(SRCS
 	TreeContext.h
 	LSystem.h LSystem.cpp
 	LUAGenerator.h LUAGenerator.cpp
-	NoiseGenerator.h NoiseGenerator.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} LUA_SRCS ${LUA_SRCS} DEPENDENCIES voxelutil noise commonlua)
 

@@ -7,10 +7,6 @@
 #include "voxel/Voxel.h"
 #include "core/collection/DynamicArray.h"
 
-namespace math {
-class Random;
-}
-
 namespace voxel {
 
 class Palette;
@@ -30,8 +26,6 @@ typedef core::DynamicArray<uint8_t> MaterialColorIndices;
  * @return Indices to the palette color array for the given VoxelType
  */
 extern const MaterialColorIndices& getMaterialIndices(VoxelType type);
-extern Voxel createRandomColorVoxel(VoxelType type);
-extern Voxel createRandomColorVoxel(VoxelType type, math::Random& random);
 /**
  * @brief Creates a voxel of the given type with the fixed colorindex that is relative to the
  * valid color indices for this type.
