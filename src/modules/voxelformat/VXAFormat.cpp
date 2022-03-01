@@ -75,6 +75,7 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		wrap(stream.readFloat(localRot.w))
 		wrap(stream.readFloat(nodeFrame.transform.scale))
 		wrap(stream.readFloat(localScale))
+		nodeFrame.transform.update();
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))
