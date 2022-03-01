@@ -1166,7 +1166,6 @@
                         layers[layer_id].hidden = (hidden_string[0] == '1' ? true : false);
                     break;
                 }
-                // we don't handle MATL/MATT/rOBJ or any other chunks for now, so we just skip the chunk payload.
                 case CHUNK_ID_MATL:
                 {
                     int32_t material_id = 0;
@@ -1267,6 +1266,60 @@
                     break;
                 }
                 case CHUNK_ID_MATT:
+                {
+                    int32_t material_id = 0;
+                    _vox_file_read(fp, &material_id, sizeof(material_id));
+                    material_id = material_id & 0xFF; // incoming material 256 is material 0
+
+                    // 0 : diffuse
+                    // 1 : metal
+                    // 2 : glass
+                    // 3 : emissive
+                    int32_t material_type = 0;
+                    _vox_file_read(fp, &material_type, sizeof(material_type));
+
+                    // diffuse  : 1.0
+                    // metal    : (0.0 - 1.0] : blend between metal and diffuse material
+                    // glass    : (0.0 - 1.0] : blend between glass and diffuse material
+                    // emissive : (0.0 - 1.0] : self-illuminated material
+                    float material_weight = 0.0f;
+                    _vox_file_read(fp, &material_weight, sizeof(material_weight));
+
+                    // bit(0) : Plastic
+                    // bit(1) : Roughness
+                    // bit(2) : Specular
+                    // bit(3) : IOR
+                    // bit(4) : Attenuation
+                    // bit(5) : Power
+                    // bit(6) : Glow
+                    // bit(7) : isTotalPower (*no value)
+                    uint32_t property_bits = 0u;
+                    _vox_file_read(fp, &property_bits, sizeof(property_bits));
+
+                    materials.matl[material_id].type = (ogt_matl_type)material_type;
+                    switch (material_type) {
+                    case ogt_matl_type_diffuse:
+                        break;
+                    case ogt_matl_type_metal:
+                        materials.matl[material_id].content_flags |= k_ogt_vox_matl_have_metal;
+                        materials.matl[material_id].metal = material_weight;
+                        break;
+                    case ogt_matl_type_glass:
+                        materials.matl[material_id].content_flags |= k_ogt_vox_matl_have_trans;
+                        materials.matl[material_id].trans = material_weight;
+                        break;
+                    case ogt_matl_type_emit:
+                        materials.matl[material_id].content_flags |= k_ogt_vox_matl_have_emit;
+                        materials.matl[material_id].emit = material_weight;
+                        break;
+                    }
+
+                    assert(chunk_size >= 16u);
+                    const uint32_t remaining = chunk_size - 16u;
+                    _vox_file_seek_forwards(fp, remaining);
+                    break;
+                }
+                // we don't handle rOBJ (just a dict of render settings), so we just skip the chunk payload.
                 case CHUNK_ID_rOBJ:
                 default:
                 {
@@ -1816,6 +1869,157 @@
             _vox_file_write_uint32(fp, 0);
             // write the palette chunk payload
             _vox_file_write(fp, &rotated_palette, sizeof(ogt_vox_palette));
+        }
+
+        // write out MATL chunk
+        {
+            // keep in sync with ogt_matl_type
+            static const char *type_str[] = {"_diffuse", "_metal", "_glass", "_emit", "_blend", "_media"};
+
+            for (int32_t i = 0; i < 256; ++i) {
+                const ogt_vox_matl &matl = scene->materials.matl[i];
+                if (matl.content_flags == 0u) {
+                    continue;
+                }
+                char matl_metal[16] = "";
+                char matl_rough[16] = "";
+                char matl_spec[16] = "";
+                char matl_ior[16] = "";
+                char matl_att[16] = "";
+                char matl_flux[16] = "";
+                char matl_emit[16] = "";
+                char matl_ldr[16] = "";
+                char matl_trans[16] = "";
+                char matl_alpha[16] = "";
+                char matl_d[16] = "";
+                char matl_sp[16] = "";
+                char matl_g[16] = "";
+                char matl_media[16] = "";
+                uint32_t matl_dict_size = 0;
+                uint32_t matl_dict_keyvalue_count = 0;
+
+                if (matl.content_flags & k_ogt_vox_matl_have_metal) {
+                    _vox_sprintf(matl_metal, sizeof(matl_metal), "%f", matl.metal);
+                    matl_dict_size += _vox_dict_key_value_size("_metal", matl_metal);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_rough) {
+                    _vox_sprintf(matl_rough, sizeof(matl_rough), "%f", matl.rough);
+                    matl_dict_size += _vox_dict_key_value_size("_rough", matl_rough);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_spec) {
+                    _vox_sprintf(matl_spec, sizeof(matl_spec), "%f", matl.spec);
+                    matl_dict_size += _vox_dict_key_value_size("_spec", matl_spec);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_ior) {
+                    _vox_sprintf(matl_ior, sizeof(matl_ior), "%f", matl.ior);
+                    matl_dict_size += _vox_dict_key_value_size("_ior", matl_ior);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_att) {
+                    _vox_sprintf(matl_att, sizeof(matl_att), "%f", matl.att);
+                    matl_dict_size += _vox_dict_key_value_size("_att", matl_att);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_flux) {
+                    _vox_sprintf(matl_flux, sizeof(matl_flux), "%f", matl.flux);
+                    matl_dict_size += _vox_dict_key_value_size("_flux", matl_flux);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_emit) {
+                    _vox_sprintf(matl_emit, sizeof(matl_emit), "%f", matl.emit);
+                    matl_dict_size += _vox_dict_key_value_size("_emit", matl_emit);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_ldr) {
+                    _vox_sprintf(matl_ldr, sizeof(matl_ldr), "%f", matl.ldr);
+                    matl_dict_size += _vox_dict_key_value_size("_ldr", matl_ldr);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_trans) {
+                    _vox_sprintf(matl_trans, sizeof(matl_trans), "%f", matl.trans);
+                    matl_dict_size += _vox_dict_key_value_size("_trans", matl_trans);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_alpha) {
+                    _vox_sprintf(matl_alpha, sizeof(matl_alpha), "%f", matl.alpha);
+                    matl_dict_size += _vox_dict_key_value_size("_alpha", matl_alpha);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_d) {
+                    _vox_sprintf(matl_d, sizeof(matl_d), "%f", matl.d);
+                    matl_dict_size += _vox_dict_key_value_size("_d", matl_d);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_sp) {
+                    _vox_sprintf(matl_sp, sizeof(matl_sp), "%f", matl.sp);
+                    matl_dict_size += _vox_dict_key_value_size("_sp", matl_sp);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_g) {
+                    _vox_sprintf(matl_g, sizeof(matl_g), "%f", matl.g);
+                    matl_dict_size += _vox_dict_key_value_size("_g", matl_g);
+                    ++matl_dict_keyvalue_count;
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_media) {
+                    _vox_sprintf(matl_media, sizeof(matl_media), "%f", matl.media);
+                    matl_dict_size += _vox_dict_key_value_size("_media", matl_media);
+                    ++matl_dict_keyvalue_count;
+                }
+                matl_dict_size += _vox_dict_key_value_size("_type", type_str[matl.type]);
+
+                // write the material chunk header
+                _vox_file_write_uint32(fp, CHUNK_ID_MATL);
+                _vox_file_write_uint32(fp, sizeof(uint32_t) + sizeof(uint32_t) + matl_dict_size);
+                _vox_file_write_uint32(fp, 0);
+                _vox_file_write_uint32(fp, i); // material id
+                _vox_file_write_uint32(fp, matl_dict_keyvalue_count);
+                _vox_file_write_dict_key_value(fp, "_type", type_str[matl.type]);
+                if (matl.content_flags & k_ogt_vox_matl_have_metal) {
+                    _vox_file_write_dict_key_value(fp, "_metal", matl_metal);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_rough) {
+                    _vox_file_write_dict_key_value(fp, "_rough", matl_rough);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_spec) {
+                    _vox_file_write_dict_key_value(fp, "_spec", matl_spec);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_ior) {
+                    _vox_file_write_dict_key_value(fp, "_ior", matl_ior);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_att) {
+                    _vox_file_write_dict_key_value(fp, "_att", matl_att);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_flux) {
+                    _vox_file_write_dict_key_value(fp, "_flux", matl_flux);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_emit) {
+                    _vox_file_write_dict_key_value(fp, "_emit", matl_emit);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_ldr) {
+                    _vox_file_write_dict_key_value(fp, "_ldr", matl_ldr);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_trans) {
+                    _vox_file_write_dict_key_value(fp, "_trans", matl_trans);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_alpha) {
+                    _vox_file_write_dict_key_value(fp, "_alpha", matl_alpha);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_d) {
+                    _vox_file_write_dict_key_value(fp, "_d", matl_d);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_sp) {
+                    _vox_file_write_dict_key_value(fp, "_sp", matl_sp);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_g) {
+                    _vox_file_write_dict_key_value(fp, "_g", matl_g);
+                }
+                if (matl.content_flags & k_ogt_vox_matl_have_media) {
+                    _vox_file_write_dict_key_value(fp, "_media", matl_media);
+                }
+            }
         }
 
         // write all layer chunks out.
