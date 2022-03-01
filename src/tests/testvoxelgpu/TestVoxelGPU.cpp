@@ -6,8 +6,6 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxel/RawVolumeWrapper.h"
-#include "voxelgenerator/NoiseGenerator.h"
 #include "testcore/TestAppMain.h"
 #include <memory>
 
@@ -36,11 +34,16 @@ app::AppState TestVoxelGPU::onInit() {
 	}
 
 	voxel::Region region(0, 0, 0, _workSize.x - 1, _workSize.y - 1, _workSize.z - 1);
-	_volume = std::make_shared<voxel::RawVolume>(region);
-	math::Random random;
-	voxel::RawVolumeWrapper wrapper(_volume.get());
-	voxelgenerator::noise::generate(wrapper, 4, 2.0f, 0.01f, 0.5f, voxelgenerator::noise::NoiseType::ridgedMF, random);
-
+	_volume = core::make_shared<voxel::RawVolume>(region);
+	_volume->setVoxel(0, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
+	_volume->setVoxel(1, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
+	_volume->setVoxel(2, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
+	_volume->setVoxel(0, 1, 1, createVoxel(voxel::VoxelType::Dirt, 0));
+	_volume->setVoxel(1, 1, 1, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(2, 1, 1, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(0, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(1, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(2, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
 	compute::TextureConfig cfg3d;
 	cfg3d.type(compute::TextureType::Texture3D).format(compute::TextureFormat::RG).dataformat(compute::TextureDataFormat::UNSIGNED_INT8);
 	static_assert(sizeof(voxel::Voxel) == 2, "Texture type must be changed if the voxel size is not 16 bits anymore");
@@ -60,7 +63,7 @@ app::AppState TestVoxelGPU::onInit() {
 app::AppState TestVoxelGPU::onCleanup() {
 	_mesher.shutdown();
 	_volumeTexture->shutdown();
-	_volume = std::shared_ptr<voxel::RawVolume>();
+	_volume = core::SharedPtr<voxel::RawVolume>();
 	return Super::onCleanup();
 }
 

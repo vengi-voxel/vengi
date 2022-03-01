@@ -9,9 +9,7 @@
 #include "computevideo/ComputeVideo.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/VolumeVisitor.h"
-#include "voxelgenerator/NoiseGenerator.h"
 #include <memory>
 
 #define GL_INTEROP 0
@@ -77,9 +75,15 @@ app::AppState TestGPUMC::onInit() {
 
 	voxel::Region region(0, 0, 0, REGION_SIZE - 1, REGION_SIZE - 1, REGION_SIZE - 1);
 	_volume = std::make_shared<voxel::RawVolume>(region);
-	math::Random random;
-	voxel::RawVolumeWrapper wrapper(_volume.get());
-	voxelgenerator::noise::generate(wrapper, 4, 2.0f, 0.01f, 0.5f, voxelgenerator::noise::NoiseType::ridgedMF, random);
+	_volume->setVoxel(0, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
+	_volume->setVoxel(1, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
+	_volume->setVoxel(2, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
+	_volume->setVoxel(0, 1, 1, createVoxel(voxel::VoxelType::Dirt, 0));
+	_volume->setVoxel(1, 1, 1, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(2, 1, 1, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(0, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(1, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(2, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
 	const int amount = voxelutil::visitVolume(*_volume.get(), [] (int x, int y, int z, const voxel::Voxel& voxel) {
 	});
 	Log::info("%i voxels", amount);

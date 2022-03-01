@@ -8,7 +8,7 @@
 #include "compute/Texture.h"
 #include "voxel/RawVolume.h"
 #include "TestvoxelgpuComputeShaders.h"
-#include <memory>
+#include <vector>
 
 class TestVoxelGPU: public TestApp {
 private:
@@ -16,7 +16,7 @@ private:
 	compute::MesherShader& _mesher;
 	std::vector<uint8_t> _output;
 	compute::TexturePtr _volumeTexture;
-	std::shared_ptr<voxel::RawVolume> _volume;
+	core::SharedPtr<voxel::RawVolume> _volume;
 	glm::ivec3 _workSize { 64, 64, 64 };
 
 	void onRenderUI() override;

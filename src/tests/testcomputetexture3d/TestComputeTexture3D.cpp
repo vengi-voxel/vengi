@@ -6,9 +6,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/VolumeVisitor.h"
-#include "voxelgenerator/NoiseGenerator.h"
 #include "video/ScopedViewPort.h"
 #include <glm/gtc/type_ptr.hpp>
 
@@ -60,9 +58,15 @@ void TestComputeTexture3D::initVolume() {
 
 	voxel::Region region(0, 0, 0, width - 1, height - 1, _depth - 1);
 	_volume = std::make_shared<voxel::RawVolume>(region);
-	math::Random random;
-	voxel::RawVolumeWrapper wrapper(_volume.get());
-	voxelgenerator::noise::generate(wrapper, 4, 2.0f, 0.01f, 0.5f, voxelgenerator::noise::NoiseType::ridgedMF, random);
+	_volume->setVoxel(0, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
+	_volume->setVoxel(1, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
+	_volume->setVoxel(2, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
+	_volume->setVoxel(0, 1, 1, createVoxel(voxel::VoxelType::Dirt, 0));
+	_volume->setVoxel(1, 1, 1, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(2, 1, 1, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(0, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(1, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(2, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
 	const int amount = voxelutil::visitVolume(*_volume.get(), [] (int x, int y, int z, const voxel::Voxel& voxel) {
 	});
 	Log::info("%i voxels", amount);
