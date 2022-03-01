@@ -136,7 +136,6 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	const voxel::Region& region = mergedVolume->region();
 	RawVolume::Sampler sampler(mergedVolume);
 	const glm::ivec3& mins = region.getLowerCorner();
-	const glm::ivec3& maxs = region.getUpperCorner();
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
 	const uint32_t depth = region.getDepthInVoxels();
@@ -176,7 +175,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	for (uint32_t x = 0u; x < width; ++x) {
 		for (uint32_t y = 0u; y < height; ++y) {
 			for (uint32_t z = 0u; z < depth; ++z) {
-				core_assert_always(sampler.setPosition(maxs.x - x, mins.y + y, mins.z + z));
+				core_assert_always(sampler.setPosition(mins.x + x, mins.y + y, mins.z + z));
 				const voxel::Voxel &voxel = sampler.voxel();
 				if (prevVoxel.getColor() != voxel.getColor() || rleCount >= 255) {
 					wrapBool(writeRLE(stream, rleCount, prevVoxel, emptyColorReplacement))
@@ -465,7 +464,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 				const int x = i / (int)(size.y * size.z);
 				const int y = (i / (int)size.z) % (int)size.y;
 				const int z = i % (int)size.z;
-				volume->setVoxel((int)size.x - 1 - x, y, z, voxel);
+				volume->setVoxel(x, y, z, voxel);
 			}
 			idx += length;
 		}
