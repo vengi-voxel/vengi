@@ -11,12 +11,12 @@ fi
 
 OUTFILE="@CMAKE_BINARY_DIR@/${FILE%.*}.png"
 $BINARY -s 128 "@DATA_DIR@/$FILE" "$OUTFILE"
-if [ -f "$OUTPUT" ]
+if [ -f "$OUTPUT" ]; then
   md5=`md5sum "$OUTPUT"`
   if [ "$md5" != "de83e46c2ae5405a0fe7236dd6f14634" ]; then
     echo "Md5 sums don't match: $md5"
     xdg-open "$OUTPUT"
     exit 1;
   fi
+  echo "Md5 of generated screenshot matches"
 fi
-echo "Md5 of generated screenshot matches"

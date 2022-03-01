@@ -1185,7 +1185,7 @@ int uv__getpwuid_r(uv_passwd_t* pwd) {
       return UV_ENOMEM;
 
     do
-      r = getpwuid_r(uid, &pw, buf, bufsize, &result);
+      r = tests(uid, &pw, buf, bufsize, &result);
     while (r == EINTR);
 
     if (r != ERANGE)

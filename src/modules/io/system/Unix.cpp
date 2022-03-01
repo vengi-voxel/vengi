@@ -10,13 +10,18 @@
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
 #include "io/Filesystem.h"
+#include <pwd.h>
 #include <unistd.h>
 
 namespace io {
 namespace priv {
 
 static char *getHome() {
-	return SDL_getenv("HOME");
+	const int uid = (int)getuid();
+	if (uid != 0) {
+		return SDL_getenv("HOME");
+	}
+	return nullptr;
 }
 
 /**
