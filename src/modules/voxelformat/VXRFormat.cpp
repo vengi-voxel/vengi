@@ -150,6 +150,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
 		float localScale = 1.0f;
 		wrap(stream.readFloat(nodeFrame.transform.position.x))
+		nodeFrame.transform.position.x *= -1.0f;
 		wrap(stream.readFloat(nodeFrame.transform.position.y))
 		wrap(stream.readFloat(nodeFrame.transform.position.z))
 		if (version >= 3) {
