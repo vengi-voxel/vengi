@@ -29,7 +29,6 @@
 #define TITLE_TOOLS "Tools##title"
 #define TITLE_TREES ICON_FA_TREE " Trees##title"
 #define TITLE_SCENEGRAPH "Scenegraph##title"
-#define TITLE_NOISEPANEL ICON_FA_RANDOM " Noise##title"
 #define TITLE_SCRIPTPANEL ICON_FA_CODE " Script##title"
 #define TITLE_LSYSTEMPANEL ICON_FA_LEAF " L-System##title"
 #define TITLE_ANIMATION_SETTINGS "Animation##animationsettings"
@@ -231,7 +230,6 @@ void MainWindow::rightWidget() {
 	_layerPanel.update(TITLE_LAYERS, &_layerSettings, _lastExecutedCommand);
 	_sceneGraphPanel.update(_scene->camera(), TITLE_SCENEGRAPH, _lastExecutedCommand);
 	_scriptPanel.update(TITLE_SCRIPTPANEL, WINDOW_TITLE_SCRIPT_EDITOR, _app, _dockIdMainDown);
-	_noisePanel.update(TITLE_NOISEPANEL);
 	_treePanel.update(TITLE_TREES);
 	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 }
@@ -445,7 +443,6 @@ void MainWindow::update() {
 		ImGui::DockBuilderDockWindow(TITLE_LAYERS, _dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_TREES, _dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, _dockIdRightDown);
-		ImGui::DockBuilderDockWindow(TITLE_NOISEPANEL, _dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, _dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_SCRIPTPANEL, _dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_TOOLS, _dockIdLeftDown);

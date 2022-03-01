@@ -8,7 +8,6 @@ set(SRCS
 	MainWindow.h MainWindow.cpp
 	MenuBar.h MenuBar.cpp
 	ModifierPanel.h ModifierPanel.cpp
-	NoisePanel.h NoisePanel.cpp
 	PalettePanel.h PalettePanel.cpp
 	SceneGraphPanel.h SceneGraphPanel.cpp
 	ScriptPanel.h ScriptPanel.cpp

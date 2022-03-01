@@ -14,7 +14,6 @@
 #include "voxedit-ui/LayerPanel.h"
 #include "voxedit-ui/MenuBar.h"
 #include "voxedit-ui/ModifierPanel.h"
-#include "voxedit-ui/NoisePanel.h"
 #include "voxedit-ui/PalettePanel.h"
 #include "voxedit-ui/SceneGraphPanel.h"
 #include "voxedit-ui/ScriptPanel.h"
@@ -79,7 +78,6 @@ private:
 	core::String _loadFile;
 
 	LastExecutedCommand _lastExecutedCommand;
-	NoisePanel _noisePanel;
 	LSystemPanel _lsystemPanel;
 	ScriptPanel _scriptPanel;
 	SceneGraphPanel _sceneGraphPanel;
