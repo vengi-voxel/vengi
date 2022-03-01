@@ -13,7 +13,6 @@
 #include "voxel/RawVolume.h"
 #include "voxelgenerator/TreeContext.h"
 #include "voxelgenerator/LSystem.h"
-#include "voxelgenerator/NoiseGenerator.h"
 #include "voxelrender/SceneGraphRenderer.h"
 #include "voxelformat/Format.h"
 #include "video/ShapeBuilder.h"
@@ -309,10 +308,6 @@ public:
 	 * @note The name is extended to a filename like this @c palette-<paletteName>.[lua.png]
 	 */
 	bool loadPalette(const core::String& paletteName);
-	/**
-	 * @brief Fill the volume with the given noise type
-	 */
-	void noise(int octaves, float persistence, float lacunarity, float gain, voxelgenerator::noise::NoiseType type);
 	/**
 	 * @brief Create a new procgen tree
 	 */

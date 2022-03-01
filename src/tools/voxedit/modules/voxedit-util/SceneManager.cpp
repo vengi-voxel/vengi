@@ -1204,20 +1204,6 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Create a new scene (with a given name and width, height, depth - all optional)");
 
-	command::Command::registerCommand("noise", [&] (const command::CmdArgs& args) {
-		const int argc = (int)args.size();
-		if (argc != 4) {
-			Log::info("Usage: noise <octaves> <lacunarity> <frequency> <gain>");
-			return;
-		}
-		int octaves = core::string::toInt(args[0]);
-		float lacunarity = core::string::toFloat(args[0]);
-		float frequency = core::string::toFloat(args[0]);
-		float gain = core::string::toFloat(args[0]);
-		voxelgenerator::noise::NoiseType type = voxelgenerator::noise::NoiseType::ridgedMF;
-		noise(octaves, lacunarity, frequency, gain, type);
-	}).setHelp("Fill the volume with noise");
-
 	command::Command::registerCommand("crop", [&] (const command::CmdArgs& args) {
 		crop();
 	}).setHelp("Crop the current layer to the voxel boundaries");
@@ -2059,21 +2045,6 @@ bool SceneManager::extractVolume() {
 	}
 	_extractRegions.clear();
 	return true;
-}
-
-void SceneManager::noise(int octaves, float lacunarity, float frequency, float gain, voxelgenerator::noise::NoiseType type) {
-	math::Random random;
-	const int nodeId = activeNode();
-	voxel::RawVolumeWrapper wrapper(volume(nodeId));
-	if (voxelgenerator::noise::generate(wrapper, octaves, lacunarity, frequency, gain, type, random) <= 0) {
-		Log::warn("Could not generate noise");
-		return;
-	}
-	// if the same noise is generated again - the wrapper doesn't override anything, but the voxels are still somehow placed.
-	if (!wrapper.dirtyRegion().isValid()) {
-		return;
-	}
-	modified(nodeId, wrapper.dirtyRegion());
 }
 
 void SceneManager::lsystem(const core::String &axiom, const core::DynamicArray<voxelgenerator::lsystem::Rule> &rules, float angle, float length,
