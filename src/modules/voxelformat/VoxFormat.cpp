@@ -260,7 +260,7 @@ int VoxFormat::findClosestPaletteIndex() {
 
 bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
 	SceneGraph newSceneGraph;
-	splitVolumes(sceneGraph, newSceneGraph, glm::ivec3(126));
+	splitVolumes(sceneGraph, newSceneGraph, glm::ivec3(256));
 
 	ogt_vox_group default_group;
 	default_group.hidden = false;
