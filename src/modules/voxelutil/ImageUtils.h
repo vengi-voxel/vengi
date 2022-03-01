@@ -9,7 +9,7 @@
 
 namespace voxelutil {
 
-extern void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& image);
+extern void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& image, const voxel::Voxel &underground, const voxel::Voxel &surface);
 extern voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness = 1);
 
 }

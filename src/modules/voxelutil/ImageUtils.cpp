@@ -15,7 +15,7 @@
 
 namespace voxelutil {
 
-void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& image) {
+void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& image, const voxel::Voxel &underground, const voxel::Voxel &surface) {
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
 	const voxel::Region& region = volume.region();
@@ -41,9 +41,9 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 				}
 				voxel::Voxel voxel;
 				if (y < pixelValue) {
-					voxel = voxel::createRandomColorVoxel(voxel::VoxelType::Dirt);
+					voxel = underground;
 				} else if (y == pixelValue) {
-					voxel = voxel::createRandomColorVoxel(voxel::VoxelType::Grass);
+					voxel = surface;
 				}
 				volume.setVoxel(regionPos, voxel);
 			}

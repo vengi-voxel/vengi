@@ -152,7 +152,9 @@ bool SceneManager::importHeightmap(const core::String& file) {
 		return false;
 	}
 	voxel::RawVolumeWrapper wrapper(v);
-	voxelutil::importHeightmap(wrapper, img);
+	const voxel::Voxel dirtVoxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
+	const voxel::Voxel grassVoxel = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
+	voxelutil::importHeightmap(wrapper, img, dirtVoxel, grassVoxel);
 	modified(nodeId, wrapper.dirtyRegion());
 	return true;
 }

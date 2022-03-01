@@ -361,7 +361,9 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &
 		node.setName(infile);
 		sceneGraph.emplace(core::move(node));
 		voxel::RawVolumeWrapper wrapper(volume);
-		voxelutil::importHeightmap(wrapper, image);
+		const voxel::Voxel dirtVoxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
+		const voxel::Voxel grassVoxel = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
+		voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
 	} else {
 		io::FileStream inputFileStream(inputFile);
 		voxel::SceneGraph newSceneGraph;
