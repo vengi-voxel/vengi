@@ -36,7 +36,7 @@ protected:
 					const float distance = glm::distance(pos, center);
 					Voxel uVoxelValue;
 					if (distance <= 30.0f) {
-						uVoxelValue = createRandomColorVoxel(VoxelType::Grass);
+						uVoxelValue = createColorVoxel(VoxelType::Grass, 0);
 					}
 
 					chunk->setVoxel(x, y, z, uVoxelValue);

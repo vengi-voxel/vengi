@@ -19,11 +19,12 @@ public:
 
 	template<class Volume>
 	void fill(const voxel::Region& region, Volume* v) const {
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 		for (int x = region.getLowerX(); x < region.getUpperX(); ++x) {
 			for (int y = region.getLowerY(); y < region.getUpperY(); ++y) {
 				for (int z = region.getLowerZ(); z < region.getUpperZ(); ++z) {
 					if (x + y + z % 2 == 0) {
-						v->setVoxel(x, y, z, voxel::createColorVoxel(voxel::VoxelType::Generic, 1));
+						v->setVoxel(x, y, z, voxel);
 					}
 				}
 			}

@@ -92,7 +92,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 
 	TurtleStep step;
 	step.width = width;
-	step.voxel = voxel::createRandomColorVoxel(voxel::VoxelType::Wood);
+	step.voxel = voxel::createColorVoxel(voxel::VoxelType::Wood, 0);
 
 	for (size_t i = 0u; i < sentence.size(); ++i) {
 		const char c = sentence[i];
