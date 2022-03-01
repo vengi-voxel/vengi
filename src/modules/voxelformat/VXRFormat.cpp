@@ -283,9 +283,10 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 	wrap(stream.readUInt32(childAndModelCount))
 	uint32_t children = 0;
 	wrap(stream.readUInt32(children))
-	const int rootNode = sceneGraph.root().id();
+	const int rootNodeId = sceneGraph.root().id();
+	voxel::SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
 	for (uint32_t i = 0; i < children; ++i) {
-		wrapBool(importChildVersion3AndEarlier(filename, stream, sceneGraph, version, rootNode))
+		wrapBool(importChildVersion3AndEarlier(filename, stream, sceneGraph, version, rootNodeId))
 	}
 	int32_t modelCount;
 	wrap(stream.readInt32(modelCount))
@@ -306,6 +307,9 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 			}
 		}
 	}
+	const uint8_t frameIdx = core::Var::getSafe(cfg::VoxformatFrame)->intVal();
+	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transform(frameIdx), frameIdx);
+
 	return true;
 }
 
