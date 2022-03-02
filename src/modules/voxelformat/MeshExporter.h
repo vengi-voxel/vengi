@@ -14,7 +14,7 @@ namespace voxel {
 class MeshExporter : public Format {
 protected:
 	struct MeshExt {
-		MeshExt(voxel::Mesh* mesh, const SceneGraphNode& node, bool applyTransform);
+		MeshExt(voxel::Mesh* mesh, const SceneGraphNode& node, const glm::vec3 _size, bool applyTransform);
 		voxel::Mesh* mesh;
 		core::String name;
 		bool applyTransform = false;

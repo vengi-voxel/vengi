@@ -15,10 +15,10 @@
 
 namespace voxel {
 
-MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const SceneGraphNode& node, bool _applyTransform) :
+MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const SceneGraphNode& node, const glm::vec3 _size, bool _applyTransform) :
 		mesh(_mesh), name(node.name()), applyTransform(_applyTransform) {
 	transform = node.transform();
-	size = node.region().getDimensionsInVoxels();
+	size = _size;
 }
 
 bool MeshExporter::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) {
@@ -47,7 +47,7 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 			region.shiftUpperCorner(1, 1, 1);
 			voxel::extractCubicMesh(node.volume(), region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
 			core::ScopedLock scoped(lock);
-			meshes.emplace_back(mesh, node, applyTransform);
+			meshes.emplace_back(mesh, node, region.getDimensionsInVoxels(), applyTransform);
 		};
 		threadPool.enqueue(lambda);
 	}
