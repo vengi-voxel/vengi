@@ -101,9 +101,15 @@ bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, i
 
 		for (int i = 0; i < nv; ++i) {
 			const voxel::VoxelVertex &v = vertices[i];
-			stream.writeStringFormat(false, "v %.04f %.04f %.04f", (offset.x + (float)v.position.x) * scale,
-									 (offset.y + (float)v.position.y) * scale,
-									 (offset.z + (float)v.position.z) * scale);
+
+			glm::vec3 pos;
+			if (meshExt.applyTransform) {
+				pos = meshExt.transform.apply(v.position, meshExt.size);
+			} else {
+				pos = v.position;
+			}
+			pos = (offset + pos) * scale;
+			stream.writeStringFormat(false, "v %.04f %.04f %.04f", pos.x, pos.y, pos.z);
 			if (withColor) {
 				const glm::vec4& color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
 				stream.writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);

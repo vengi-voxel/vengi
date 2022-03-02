@@ -39,9 +39,11 @@ struct SceneGraphTransform {
 	void print() const;
 	void update();
 	void updateFromMat();
+	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &size) const;
 };
 
-struct SceneGraphFrame {
+struct SceneGraphKeyFrame {
+	uint32_t frame = 0;
 	SceneGraphTransform transform;
 };
 
@@ -62,7 +64,7 @@ protected:
 	SceneGraphNodeType _type;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
-	core::DynamicArray<SceneGraphFrame> _frames;
+	core::DynamicArray<SceneGraphKeyFrame> _keyFrames;
 	/**
 	 * this will ensure that we are releasing the volume memory in this instance
 	 * @sa release()
@@ -90,6 +92,9 @@ public:
 	void releaseOwnership();
 	bool owns() const;
 
+	const core::DynamicArray<SceneGraphKeyFrame> keyFrames() const;
+	void setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame>&);
+
 	int id() const;
 	void setId(int id);
 	int parent() const;
@@ -99,11 +104,11 @@ public:
 	bool addChild(int id);
 	bool removeChild(int id);
 	const glm::mat4 &matrix(uint8_t frameIdx = 0) const;
-	void setTransform(const SceneGraphTransform &transform, bool updateMatrix);
+	void setTransform(uint8_t frameIdx, const SceneGraphTransform &transform, bool updateMatrix);
 	SceneGraphTransform &transform(uint8_t frameIdx = 0);
 	const SceneGraphTransform &transform(uint8_t frameIdx = 0) const;
 
-	SceneGraphFrame &frame(uint8_t frameIdx);
+	SceneGraphKeyFrame &keyFrame(uint8_t frameIdx);
 
 	/**
 	 * @return voxel::RawVolume - might be @c nullptr
@@ -166,19 +171,19 @@ public:
 	}
 };
 
-inline SceneGraphFrame& SceneGraphNode::frame(uint8_t frameIdx) {
-	if ((int)_frames.size() <= frameIdx) {
-		_frames.resize((int)frameIdx + 1);
+inline SceneGraphKeyFrame& SceneGraphNode::keyFrame(uint8_t frameIdx) {
+	if ((int)_keyFrames.size() <= frameIdx) {
+		_keyFrames.resize((int)frameIdx + 1);
 	}
-	return _frames[frameIdx];
+	return _keyFrames[frameIdx];
 }
 
 inline SceneGraphTransform& SceneGraphNode::transform(uint8_t frameIdx) {
-	return _frames[frameIdx].transform;
+	return _keyFrames[frameIdx].transform;
 }
 
 inline const SceneGraphTransform& SceneGraphNode::transform(uint8_t frameIdx) const {
-	return _frames[frameIdx].transform;
+	return _keyFrames[frameIdx].transform;
 }
 
 inline bool SceneGraphNode::owns() const {
@@ -238,11 +243,11 @@ inline void SceneGraphNode::setLocked(bool locked) {
 }
 
 inline const glm::vec3 &SceneGraphNode::normalizedPivot(uint8_t frameIdx) const {
-	return _frames[frameIdx].transform.normalizedPivot;
+	return _keyFrames[frameIdx].transform.normalizedPivot;
 }
 
 inline const glm::mat4 &SceneGraphNode::matrix(uint8_t frameIdx) const {
-	return _frames[frameIdx].transform.mat;
+	return _keyFrames[frameIdx].transform.mat;
 }
 
 } // namespace voxel

@@ -99,6 +99,13 @@ void SceneGraphRenderer::prepare(voxel::SceneGraph &sceneGraph, bool hideInactiv
 			_renderer.setVolume(node.id(), node.volume(), true);
 			_renderer.extractRegion(node.id(), node.region());
 		}
+		if (_sceneMode) {
+			const voxel::SceneGraphTransform &transform = node.transform(0);
+			const glm::vec3 pivot = transform.normalizedPivot * glm::vec3(node.region().getDimensionsInVoxels());
+			_renderer.setModelMatrix(node.id(), transform.mat, pivot);
+		} else {
+			_renderer.setModelMatrix(node.id(), glm::mat4(1.0f), glm::vec3(0.0f));
+		}
 		if (hideInactive) {
 			_renderer.hide(node.id(), node.id() != activeNode);
 		} else {

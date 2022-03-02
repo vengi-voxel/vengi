@@ -94,7 +94,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
-	node.setTransform(transform, true);
+	node.setTransform(0, transform, true);
 	sceneGraph.emplace(core::move(node));
 
 	typedef struct {

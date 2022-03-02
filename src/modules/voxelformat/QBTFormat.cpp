@@ -375,7 +375,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(name);
-	node.setTransform(transform, true);
+	node.setTransform(0, transform, true);
 	const int id = sceneGraph.emplace(core::move(node), parent);
 	return id != -1;
 }

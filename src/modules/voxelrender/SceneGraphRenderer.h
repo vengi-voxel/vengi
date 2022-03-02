@@ -20,6 +20,7 @@ class SceneGraphRenderer : public core::IComponent {
 protected:
 	RawVolumeRenderer _renderer;
 	voxel::SceneGraph _sceneGraph;
+	bool _sceneMode = true;
 
 public:
 	void construct() override;
@@ -30,6 +31,7 @@ public:
 	void setAmbientColor(const glm::vec3& color);
 	void setDiffuseColor(const glm::vec3& color);
 
+	void setSceneMode(bool sceneMode);
 	bool extractRegion(voxel::SceneGraphNode &node, const voxel::Region& region);
 	void translate(voxel::SceneGraphNode &node, const glm::ivec3 &v);
 	bool toMesh(voxel::SceneGraphNode &node, voxel::Mesh* mesh);
@@ -41,5 +43,9 @@ public:
 	void render(const video::Camera& camera, bool shadow = true, bool waitPending = false);
 	void clear();
 };
+
+inline void SceneGraphRenderer::setSceneMode(bool sceneMode) {
+	_sceneMode = sceneMode;
+}
 
 } // namespace voxelrender

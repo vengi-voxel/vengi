@@ -700,8 +700,7 @@ bool SceneManager::merge(int nodeId1, int nodeId2) {
 void SceneManager::resetSceneState() {
 	_animationNodeIdDirtyState = -1;
 	_animationIdx = 0;
-	_animationUpdate = false;
-	_editMode = EditMode::Model;
+	setEditMode(EditMode::Model);
 	_mementoHandler.clearStates();
 	voxel::SceneGraphNode &node = *_sceneGraph.begin();
 	_sceneGraph.setActiveNode(node.id());
@@ -721,7 +720,7 @@ int SceneManager::addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent) {
 	{
 		voxel::SceneGraphNode newNode(type);
 		newNode.setName(name);
-		newNode.setTransform(node.transform(), false);
+		newNode.setKeyFrames(node.keyFrames());
 		newNode.setVisible(node.visible());
 		newNode.addProperties(node.properties());
 		if (newNode.type() == voxel::SceneGraphNodeType::Model) {
@@ -802,14 +801,18 @@ bool SceneManager::loadSceneGraph(voxel::SceneGraph& sceneGraph) {
 	return true;
 }
 
-static inline math::AABB<float> toAABB(const voxel::Region& region) {
+math::AABB<float> SceneManager::toAABB(const voxel::Region& region, const voxel::SceneGraphTransform &transform) const {
 	core_assert(region.isValid());
-	const math::AABB<int> intaabb(region.getLowerCorner(), region.getUpperCorner() + 1);
-	return math::AABB<float>(glm::vec3(intaabb.getLowerCorner()), glm::vec3(intaabb.getUpperCorner()));
+	if (_editMode == EditMode::Scene) {
+		const glm::vec3 mins(glm::floor(transform.apply(region.getLowerCornerf(), region.getDimensionsInVoxels())));
+		const glm::vec3 maxs(glm::floor(transform.apply(region.getUpperCornerf(), region.getDimensionsInVoxels())));
+		return math::AABB<float>(mins, maxs + 1.0f);
+	}
+	return math::AABB<float>(glm::floor(region.getLowerCornerf()), glm::floor(glm::vec3(region.getUpperCornerf() + 1.0f)));
 }
 
 void SceneManager::updateGridRenderer(const voxel::Region& region) {
-	_gridRenderer.update(toAABB(region));
+	_gridRenderer.update(toAABB(region, voxel::SceneGraphTransform{}));
 }
 
 voxel::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {
@@ -1031,18 +1034,17 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 void SceneManager::updateAABBMesh() {
 	Log::debug("Update aabb mesh");
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::Gray);
 	for (voxel::SceneGraphNode &node : _sceneGraph) {
 		const voxel::RawVolume* v = node.volume();
 		const voxel::Region& region = v->region();
-		_shapeBuilder.aabb(toAABB(region));
+		if (v == activeVolume()) {
+			_shapeBuilder.setColor(core::Color::Gray);
+		} else {
+			_shapeBuilder.setColor(core::Color::White);
+		}
+		_shapeBuilder.aabb(toAABB(region, node.transform()));
 	}
-	if (const voxel::RawVolume* v = activeVolume()) {
-		const voxel::Region& region = v->region();
-		_shapeBuilder.aabb(toAABB(region));
-		_shapeBuilder.setColor(core::Color::White);
-		_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
-	}
+	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
 
 void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
@@ -1052,9 +1054,10 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 	if (renderUI) {
 		if (_editMode == EditMode::Scene) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);
-		} else if (const voxel::RawVolume *v = activeVolume()) {
-			const voxel::Region& region = v->region();
-			_gridRenderer.render(camera, toAABB(region));
+		} else if (const int nodeId = activeNode()) {
+			const voxel::SceneGraphNode *n = sceneGraphNode(nodeId);
+			const voxel::Region& region = n->volume()->region();
+			_gridRenderer.render(camera, toAABB(region, n->transform()));
 		}
 	}
 	if (renderScene) {
@@ -1665,6 +1668,7 @@ void SceneManager::construct() {
 	core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST, "Export as quads. If this false, triangles will be used.");
 	core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST, "Export with vertex colors");
 	core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST, "Export with uv coordinates of the palette image");
+	core::Var::get(cfg::VoxformatTransform, "false", core::CV_NOPERSIST, "Apply the scene graph transform to mesh exports");
 	core::Var::get("palette", voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 }
 
@@ -1701,13 +1705,27 @@ void SceneManager::flip(math::Axis axis) {
 
 void SceneManager::toggleEditMode() {
 	if (_editMode == EditMode::Model) {
-		_editMode = EditMode::Scene;
-		_modifier.aabbAbort();
+		setEditMode(EditMode::Scene);
 	} else if (_editMode == EditMode::Scene) {
-		_editMode = EditMode::Model;
+		setEditMode(EditMode::Model);
+	}
+}
+
+void SceneManager::setEditMode(EditMode mode) {
+	_editMode = mode;
+	if (_editMode == EditMode::Scene) {
+		_modifier.aabbAbort();
+		_volumeRenderer.setSceneMode(true);
+		_animationUpdate = false;
+	} else if (_editMode == EditMode::Model) {
 		_gizmo.resetMode();
+		_volumeRenderer.setSceneMode(false);
+		_animationUpdate = false;
+	} else if (_editMode == EditMode::Animation) {
+		_animationUpdate = true;
 	}
 	setGizmoPosition();
+	updateAABBMesh();
 	// don't abort or toggle any other mode
 }
 
@@ -2020,9 +2038,7 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 	}
 
 	loadSceneGraph(newSceneGraph);
-	_animationUpdate = true;
-	_editMode = EditMode::Animation;
-
+	setEditMode(EditMode::Animation);
 	animationEntity().setAnimation(animation::Animation::IDLE, true);
 
 	return true;
@@ -2154,7 +2170,7 @@ bool SceneManager::trace(bool force, voxel::PickResult *result) {
 			}
 			const voxel::Region& region = node.region();
 			float distance = 0.0f;
-			const math::AABB<float>& aabb = toAABB(region);
+			const math::AABB<float>& aabb = toAABB(region, node.transform());
 			if (aabb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
 				if (distance < intersectDist) {
 					intersectDist = distance;
@@ -2381,7 +2397,7 @@ void SceneManager::nodeDuplicate(voxel::SceneGraphNode &node) {
 	voxel::SceneGraphNode newNode;
 	newNode.setVolume(new voxel::RawVolume(v), true);
 	newNode.setName(node.name());
-	newNode.setTransform(node.transform(), false);
+	newNode.setKeyFrames(node.keyFrames());
 	newNode.setVisible(node.visible());
 	newNode.setLocked(node.locked());
 	newNode.addProperties(node.properties());

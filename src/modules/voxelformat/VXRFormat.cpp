@@ -129,9 +129,8 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	int32_t keyFrameCount;
 	wrap(stream.readInt32(keyFrameCount))
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
-		uint32_t frame;
-		wrap(stream.readUInt32(frame)) // frame index
-		SceneGraphFrame& nodeFrame = node.frame(frame);
+		SceneGraphKeyFrame& keyFrame = node.keyFrame(i);
+		wrap(stream.readUInt32(keyFrame.frame)) // frame index
 		int32_t interpolation;
 		// instant = 0
 		// linear = 1
@@ -145,13 +144,14 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		if (version > 1) {
 			stream.readBool(); // rotation ??
 		}
-		nodeFrame.transform.normalizedPivot = glm::vec3(0.5f);
+		keyFrame.transform.normalizedPivot = glm::vec3(0.5f);
 		glm::vec3 localPosition{0.0f};
 		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
 		float localScale = 1.0f;
-		wrap(stream.readFloat(nodeFrame.transform.position.x))
-		wrap(stream.readFloat(nodeFrame.transform.position.y))
-		wrap(stream.readFloat(nodeFrame.transform.position.z))
+		wrap(stream.readFloat(keyFrame.transform.position.x))
+		//nodeFrame.transform.position.x *= -1.0f;
+		wrap(stream.readFloat(keyFrame.transform.position.y))
+		wrap(stream.readFloat(keyFrame.transform.position.z))
 		if (version >= 3) {
 			wrap(stream.readFloat(localPosition.x))
 			wrap(stream.readFloat(localPosition.y))
@@ -164,26 +164,26 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			nodeFrame.transform.rot = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
+			keyFrame.transform.rot = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
 			localRot = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
 		} else {
-			wrap(stream.readFloat(nodeFrame.transform.rot.x))
-			wrap(stream.readFloat(nodeFrame.transform.rot.y))
-			wrap(stream.readFloat(nodeFrame.transform.rot.z))
-			wrap(stream.readFloat(nodeFrame.transform.rot.w))
+			wrap(stream.readFloat(keyFrame.transform.rot.x))
+			wrap(stream.readFloat(keyFrame.transform.rot.y))
+			wrap(stream.readFloat(keyFrame.transform.rot.z))
+			wrap(stream.readFloat(keyFrame.transform.rot.w))
 			wrap(stream.readFloat(localRot.x))
 			wrap(stream.readFloat(localRot.y))
 			wrap(stream.readFloat(localRot.z))
 			wrap(stream.readFloat(localRot.w))
 		}
-		wrap(stream.readFloat(nodeFrame.transform.scale))
+		wrap(stream.readFloat(keyFrame.transform.scale))
 		if (version >= 3) {
 			wrap(stream.readFloat(localScale))
 		}
-		nodeFrame.transform.update();
+		keyFrame.transform.update();
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))
@@ -407,8 +407,7 @@ void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGrap
 	currentTransform.updateFromMat();
 
 	if (node.type() == SceneGraphNodeType::Model) {
-		voxel::RawVolume *v = transformVolume(currentTransform, node.volume());
-		node.setVolume(v, true);
+		node.setTransform(frameIdx, currentTransform, true);
 	}
 
 	for (int nodeIdx : node.children()) {

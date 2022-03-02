@@ -14,9 +14,13 @@ namespace voxel {
 class MeshExporter : public Format {
 protected:
 	struct MeshExt {
-		MeshExt(voxel::Mesh* mesh, const core::String& name);
-		voxel::Mesh* mesh = nullptr;
+		MeshExt(voxel::Mesh* mesh, const SceneGraphNode& node, bool applyTransform);
+		voxel::Mesh* mesh;
 		core::String name;
+		bool applyTransform = false;
+
+		SceneGraphTransform transform;
+		glm::vec3 size {0.0f};
 	};
 	using Meshes = core::DynamicArray<MeshExt>;
 	virtual bool saveMeshes(const Meshes& meshes, const core::String &filename, io::SeekableWriteStream& stream, float scale = 1.0f, bool quad = false, bool withColor = true, bool withTexCoords = true) = 0;

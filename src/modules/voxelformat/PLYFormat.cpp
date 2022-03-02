@@ -69,8 +69,14 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const core::String &filename, i
 
 		for (int i = 0; i < nv; ++i) {
 			const voxel::VoxelVertex& v = vertices[i];
-			stream.writeStringFormat(false, "%f %f %f",
-				(offset.x + (float)v.position.x) * scale, (offset.y + (float)v.position.y) * scale, -(offset.z + (float)v.position.z) * scale);
+			glm::vec3 pos;
+			if (meshExt.applyTransform) {
+				pos = meshExt.transform.apply(v.position, meshExt.size);
+			} else {
+				pos = v.position;
+			}
+			pos = (offset + pos) * scale;
+			stream.writeStringFormat(false, "%f %f %f", pos.x, pos.y, pos.z);
 			if (withTexCoords) {
 				const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
 				stream.writeStringFormat(false, " %f %f", u, v1);

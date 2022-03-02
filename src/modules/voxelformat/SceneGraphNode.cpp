@@ -12,8 +12,8 @@ namespace voxel {
 
 SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type) {
 	// ensure that there is at least one frame
-	SceneGraphFrame frame;
-	_frames.emplace_back(frame);
+	SceneGraphKeyFrame frame;
+	_keyFrames.emplace_back(frame);
 }
 
 void SceneGraphTransform::print() const {
@@ -28,6 +28,10 @@ void SceneGraphTransform::print() const {
 
 void SceneGraphTransform::update() {
 	mat = glm::translate(position) * glm::mat4_cast(rot) * glm::scale(glm::vec3(scale));
+}
+
+glm::vec3 SceneGraphTransform::apply(const glm::vec3 &pos, const glm::vec3 &size) const {
+	return glm::vec3(mat * glm::vec4(pos, 1.0f)) - glm::vec(normalizedPivot * size);
 }
 
 void SceneGraphTransform::updateFromMat() {
@@ -48,7 +52,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	move._id = -1;
 	_parent = move._parent;
 	move._parent = -1;
-	_frames = move._frames;
+	_keyFrames = move._keyFrames;
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
 	_type = move._type;
@@ -70,7 +74,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	move._id = -1;
 	_parent = move._parent;
 	move._parent = -1;
-	_frames = move._frames;
+	_keyFrames = move._keyFrames;
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
 	_type = move._type;
@@ -161,8 +165,8 @@ void SceneGraphNode::addProperties(const core::StringMap<core::String>& map) {
 	}
 }
 
-void SceneGraphNode::setTransform(const SceneGraphTransform &transform, bool updateMatrix) {
-	SceneGraphFrame &nodeFrame = frame(0);
+void SceneGraphNode::setTransform(uint8_t frameIdx, const SceneGraphTransform &transform, bool updateMatrix) {
+	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
 	nodeFrame.transform = transform;
 	if (updateMatrix) {
 		nodeFrame.transform.update();
@@ -170,13 +174,22 @@ void SceneGraphNode::setTransform(const SceneGraphTransform &transform, bool upd
 }
 
 void SceneGraphNode::setPivot(uint8_t frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
-	SceneGraphFrame &nodeFrame = frame(frameIdx);
+	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
 	nodeFrame.transform.normalizedPivot = glm::vec3(pos) / glm::vec3(size);
 }
 
 void SceneGraphNode::setNormalizedPivot(uint8_t frameIdx, const glm::vec3 &pivot) {
-	SceneGraphFrame &nodeFrame = frame(frameIdx);
+	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
 	nodeFrame.transform.normalizedPivot = pivot;
 }
+
+const core::DynamicArray<SceneGraphKeyFrame> SceneGraphNode::keyFrames() const {
+	return _keyFrames;
+}
+
+void SceneGraphNode::setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame>& kf) {
+	_keyFrames = kf;
+}
+
 
 } // namespace voxel

@@ -41,9 +41,8 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 	wrap(stream.readInt32(keyFrameCount))
 	Log::debug("Found %i keyframes", keyFrameCount);
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
-		uint32_t frame;
-		wrap(stream.readUInt32(frame))
-		SceneGraphFrame &nodeFrame = node.frame(frame);
+		SceneGraphKeyFrame &keyFrame = node.keyFrame(i);
+		wrap(stream.readUInt32(keyFrame.frame))
 		int32_t interpolation;
 		// instant = 0
 		// linear = 1
@@ -59,23 +58,23 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		glm::vec3 localPosition{0.0f};
 		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
 		float localScale = 1.0f;
-		wrap(stream.readFloat(nodeFrame.transform.position.x))
-		wrap(stream.readFloat(nodeFrame.transform.position.y))
-		wrap(stream.readFloat(nodeFrame.transform.position.z))
+		wrap(stream.readFloat(keyFrame.transform.position.x))
+		wrap(stream.readFloat(keyFrame.transform.position.y))
+		wrap(stream.readFloat(keyFrame.transform.position.z))
 		wrap(stream.readFloat(localPosition.x))
 		wrap(stream.readFloat(localPosition.y))
 		wrap(stream.readFloat(localPosition.z))
-		wrap(stream.readFloat(nodeFrame.transform.rot.x))
-		wrap(stream.readFloat(nodeFrame.transform.rot.y))
-		wrap(stream.readFloat(nodeFrame.transform.rot.z))
-		wrap(stream.readFloat(nodeFrame.transform.rot.w))
+		wrap(stream.readFloat(keyFrame.transform.rot.x))
+		wrap(stream.readFloat(keyFrame.transform.rot.y))
+		wrap(stream.readFloat(keyFrame.transform.rot.z))
+		wrap(stream.readFloat(keyFrame.transform.rot.w))
 		wrap(stream.readFloat(localRot.x))
 		wrap(stream.readFloat(localRot.y))
 		wrap(stream.readFloat(localRot.z))
 		wrap(stream.readFloat(localRot.w))
-		wrap(stream.readFloat(nodeFrame.transform.scale))
+		wrap(stream.readFloat(keyFrame.transform.scale))
 		wrap(stream.readFloat(localScale))
-		nodeFrame.transform.update();
+		keyFrame.transform.update();
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))

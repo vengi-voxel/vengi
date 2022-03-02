@@ -10,12 +10,15 @@
 #include "core/concurrent/ThreadPool.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
+#include "voxel/RawVolume.h"
 #include <SDL_timer.h>
 
 namespace voxel {
 
-MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const core::String &_name) :
-		mesh(_mesh), name(_name) {
+MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const SceneGraphNode& node, bool _applyTransform) :
+		mesh(_mesh), name(node.name()), applyTransform(_applyTransform) {
+	transform = node.transform();
+	size = node.region().getDimensionsInVoxels();
 }
 
 bool MeshExporter::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) {
@@ -31,6 +34,7 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 	const bool quads = core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST)->boolVal();
 	const bool withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST)->boolVal();
 	const bool withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST)->boolVal();
+	const bool applyTransform = core::Var::get(cfg::VoxformatTransform, "false", core::CV_NOPERSIST)->boolVal();
 
 	const size_t models = sceneGraph.size();
 	core::ThreadPool& threadPool = app::App::getInstance()->threadPool();
@@ -43,7 +47,7 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 			region.shiftUpperCorner(1, 1, 1);
 			voxel::extractCubicMesh(node.volume(), region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
 			core::ScopedLock scoped(lock);
-			meshes.emplace_back(mesh, node.name());
+			meshes.emplace_back(mesh, node, applyTransform);
 		};
 		threadPool.enqueue(lambda);
 	}

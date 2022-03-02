@@ -57,6 +57,7 @@ protected:
 	};
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
 	core::Array<glm::mat4[shader::VoxelInstancedShaderConstants::getMaxInstances()], MAX_VOLUMES> _models;
+	core::Array<glm::vec3[shader::VoxelInstancedShaderConstants::getMaxInstances()], MAX_VOLUMES> _pivots;
 	static_assert(shader::VoxelInstancedShaderConstants::getMaxInstances() == shader::ShadowmapInstancedShaderConstants::getMaxInstances(), "max instances must match between shaders");
 	int _amounts[MAX_VOLUMES] = { 1 };
 	core::Array<State, MAX_VOLUMES> _state {};
@@ -136,7 +137,7 @@ public:
 	 */
 	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
 	voxel::RawVolume* setVolume(int idx, voxel::SceneGraphNode& node, bool deleteMesh = true);
-	bool setModelMatrix(int idx, const glm::mat4& model, bool reset = true);
+	bool setModelMatrix(int idx, const glm::mat4& model, const glm::vec3 &pivot, bool reset = true);
 	/**
 	 * @note Keep in mind to set the model matrices properly
 	 */

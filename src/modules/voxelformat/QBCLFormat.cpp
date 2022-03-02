@@ -379,7 +379,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	} else {
 		node.setName(name);
 	}
-	node.setTransform(transform, true);
+	node.setTransform(0, transform, true);
 	const int id = sceneGraph.emplace(core::move(node), parent);
 	return id != -1;
 }

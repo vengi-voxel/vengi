@@ -190,7 +190,7 @@ private:
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
 	void updateAABBMesh();
-
+	math::AABB<float> toAABB(const voxel::Region& region, const voxel::SceneGraphTransform &transform) const;
 protected:
 	voxel::SceneGraphNode *sceneGraphNode(int nodeId);
 	const voxel::SceneGraphNode *sceneGraphNode(int nodeId) const;
@@ -236,6 +236,7 @@ protected:
 
 	void executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode);
 	void toggleEditMode();
+	void setEditMode(EditMode mode);
 
 	bool saveModels(const core::String& dir);
 	bool saveNode(int nodeId, const core::String& file);
