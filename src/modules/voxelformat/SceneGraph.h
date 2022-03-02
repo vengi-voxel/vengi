@@ -23,6 +23,7 @@ protected:
 	core::Map<int, SceneGraphNode> _nodes;
 	int _nextNodeId = 0;
 	int _activeNodeId = -1;
+	core::DynamicArray<core::String> _animations;
 
 public:
 	SceneGraph();
@@ -36,6 +37,9 @@ public:
 	 * @return The full region of the whole scene
 	 */
 	voxel::Region region() const;
+
+	const core::DynamicArray<core::String> animations();
+	void addAnimation(const core::String& animation);
 
 	/**
 	 * @brief We move into the scene graph to make it clear who is owning the volume.

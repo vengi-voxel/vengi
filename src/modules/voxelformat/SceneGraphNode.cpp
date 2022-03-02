@@ -183,7 +183,7 @@ void SceneGraphNode::setNormalizedPivot(uint8_t frameIdx, const glm::vec3 &pivot
 	nodeFrame.transform.normalizedPivot = pivot;
 }
 
-const core::DynamicArray<SceneGraphKeyFrame> SceneGraphNode::keyFrames() const {
+const core::DynamicArray<SceneGraphKeyFrame>& SceneGraphNode::keyFrames() const {
 	return _keyFrames;
 }
 

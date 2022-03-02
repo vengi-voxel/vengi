@@ -19,6 +19,14 @@ SceneGraph::~SceneGraph() {
 	clear();
 }
 
+const core::DynamicArray<core::String> SceneGraph::animations() {
+	return _animations;
+}
+
+void SceneGraph::addAnimation(const core::String& animation) {
+	_animations.push_back(animation);
+}
+
 int SceneGraph::activeNode() const {
 	return _activeNodeId;
 }

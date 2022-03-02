@@ -126,6 +126,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	char animationId[1024];
 	wrapBool(stream.readString(sizeof(animationId), animationId, true))
 	node.setProperty("animationid", animationId);
+	sceneGraph.addAnimation(animationId);
 	int32_t keyFrameCount;
 	wrap(stream.readInt32(keyFrameCount))
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
@@ -375,22 +376,28 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 		wrapBool(importChild(filename, stream, sceneGraph, version, rootNodeId))
 	}
 
-	core::String vxaPath;
 	const core::String& basePath = core::string::extractPath(filename);
+	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	io::filesystem()->list(basePath, entities, "*.vxa");
+	core::String vxaPath;
+	const core::String& baseName = core::string::extractFilename(filename);
 	if (defaultAnim[0] != '\0') {
-		const core::String& baseName = core::string::extractFilename(filename);
 		vxaPath = core::string::path(basePath, core::string::format("%s.%s.vxa", baseName.c_str(), defaultAnim));
+		Log::debug("Load the default animation %s", defaultAnim);
+	} else if (!entities.empty()) {
+		vxaPath = core::string::path(basePath, entities[0].name);
+		Log::debug("No default animation set, use the first available vxa: %s", entities[0].name.c_str());
 	} else {
-		core::DynamicArray<io::Filesystem::DirEntry> entities;
-		io::filesystem()->list(basePath, entities, "*.vxa");
-		if (entities.empty()) {
-			Log::warn("Could not find any vxa file in %s", basePath.c_str());
-			return true;
-		}
-		vxaPath = core::string::path(basePath, entities[3].name);
+		Log::warn("Could not find any vxa file in %s", basePath.c_str());
 	}
 
-	if (!loadVXA(sceneGraph, vxaPath)) {
+	for (const io::Filesystem::DirEntry& entry : entities) {
+		const core::String &animWithExt = entry.name.substr(baseName.size() + 1);
+		const core::String &anim = core::string::extractFilename(animWithExt);
+		sceneGraph.addAnimation(anim);
+	}
+
+	if (!vxaPath.empty() && !loadVXA(sceneGraph, vxaPath)) {
 		Log::warn("Failed to load %s", vxaPath.c_str());
 	}
 

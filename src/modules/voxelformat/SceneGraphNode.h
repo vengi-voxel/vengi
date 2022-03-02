@@ -92,7 +92,7 @@ public:
 	void releaseOwnership();
 	bool owns() const;
 
-	const core::DynamicArray<SceneGraphKeyFrame> keyFrames() const;
+	const core::DynamicArray<SceneGraphKeyFrame> &keyFrames() const;
 	void setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame>&);
 
 	int id() const;
