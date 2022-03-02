@@ -49,6 +49,8 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 		return image::ImagePtr();
 	}
 
+	volumeRenderer.setSceneMode(true);
+
 	video::clearColor(::core::Color::Black);
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
