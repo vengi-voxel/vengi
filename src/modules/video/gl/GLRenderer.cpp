@@ -250,8 +250,7 @@ bool clearColor(const glm::vec4& clearColor) {
 	return true;
 }
 
-void clear(ClearFlag flag) {
-	video_trace_scoped(Clear);
+static GLbitfield getBitField(ClearFlag flag) {
 	GLbitfield glValue = 0;
 	if ((flag & ClearFlag::Color) == ClearFlag::Color) {
 		glValue |= GL_COLOR_BUFFER_BIT;
@@ -262,6 +261,12 @@ void clear(ClearFlag flag) {
 	if ((flag & ClearFlag::Depth) == ClearFlag::Depth) {
 		glValue |= GL_DEPTH_BUFFER_BIT;
 	}
+	return glValue;
+}
+
+void clear(ClearFlag flag) {
+	video_trace_scoped(Clear);
+	const GLbitfield glValue = getBitField(flag);
 	if (glValue == 0) {
 		return;
 	}
