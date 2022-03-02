@@ -29,9 +29,9 @@ void main(void) {
 	uint a_flags = ((a_info[0] & ~3u) >> 2u);
 	uint a_colorindex = a_info[1];
 #if INSTANCED > 0
-	v_pos = u_model[gl_InstanceID] * vec4(a_pos, 1.0) - vec4(u_pivot[gl_InstanceID], 0.0);
+	v_pos = u_model[gl_InstanceID] * vec4(a_pos - u_pivot[gl_InstanceID], 1.0);
 #else
-	v_pos = u_model * vec4(a_pos, 1.0) - vec4(u_pivot, 0.0);
+	v_pos = u_model * vec4(a_pos - u_pivot, 1.0);
 #endif
 
 	int materialColorIndex = int(a_colorindex);

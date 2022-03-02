@@ -17,9 +17,9 @@ uniform vec3 u_pivot;
 void main()
 {
 #if INSTANCED > 0
-	vec4 worldpos = u_model[gl_InstanceID] * vec4(a_pos, 1.0f) - vec4(u_pivot[gl_InstanceID], 0.0);
+	vec4 worldpos = u_model[gl_InstanceID] * vec4(a_pos - u_pivot[gl_InstanceID], 1.0f);
 #else
-	vec4 worldpos = u_model * vec4(a_pos, 1.0f) - vec4(u_pivot, 0.0);
+	vec4 worldpos = u_model * vec4(a_pos - u_pivot, 1.0f);
 #endif
 	gl_Position = u_lightviewprojection * worldpos;
 }

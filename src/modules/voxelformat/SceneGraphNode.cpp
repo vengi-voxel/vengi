@@ -31,7 +31,7 @@ void SceneGraphTransform::update() {
 }
 
 glm::vec3 SceneGraphTransform::apply(const glm::vec3 &pos, const glm::vec3 &size) const {
-	return glm::vec3(mat * glm::vec4(pos, 1.0f)) - glm::vec(normalizedPivot * size);
+	return glm::vec3(mat * (glm::vec4(pos, 1.0f) - glm::vec4(normalizedPivot * size, 0.0f)));
 }
 
 void SceneGraphTransform::updateFromMat() {
