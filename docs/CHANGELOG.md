@@ -13,15 +13,23 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 General:
 
    - Removed minecraft support via external lib enkiMI
-   - Added support for Sandbox VXA format (via VXR)
+   - Added support for Sandbox VXA format (via VXR) and improved VXR
    - Allow to change the ui colors via cvar (`ui_style`)
    - Added bloom render support for vox and vxm
+   - Added support for loading key frames if the format supports it
+   - Improved apple support in file dialog
+   - The palette handling was refactored
+   - Allow to save the MATL chunk in magicavoxel vox files
 
 VoxEdit:
 
    - Added new command to fill hollows in models
    - Fixed escape key not closing the dialogs
    - Added support for drag and drop the nodes of the scene graph
+   - Scene graph rendering improved
+   - Removed noise panel (use the lua scripts for noise support)
+   - Fixed a lot of undo/redo cases and improved the test cases a lot
+   - Fixed viewport screenshot creation (now also bound to F5)
 
 ## 0.0.18 (2022-02-12)
 
