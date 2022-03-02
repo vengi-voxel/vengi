@@ -59,10 +59,7 @@ void Viewport::update() {
 	style.setWindowRounding(0.0f);
 	style.setWindowBorderSize(0.0f);
 	style.setWindowPadding(ImVec2(0.0f, 0.0f));
-	int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-	if (sceneMgr().dirty()) {
-		sceneWindowFlags |= ImGuiWindowFlags_UnsavedDocument;
-	}
+	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	if (ImGui::Begin(_id.c_str(), nullptr, sceneWindowFlags)) {
 		core_trace_scoped(Viewport);
 
