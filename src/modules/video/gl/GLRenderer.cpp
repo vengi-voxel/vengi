@@ -1204,10 +1204,11 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
 	core_assert_always(_oldFramebuffer == (GLint)old);
 #endif
-	if (old == handle) {
+	if (old == handle && mode == _priv::s.framebufferMode) {
 		return handle;
 	}
 	_priv::s.framebufferHandle = handle;
+	_priv::s.framebufferMode = mode;
 	const int typeIndex = core::enumVal(mode);
 	const GLenum glType = _priv::FrameBufferModes[typeIndex];
 	glBindFramebuffer(glType, handle);

@@ -76,6 +76,7 @@ struct GLState {
 	std::bitset<core::enumVal(State::Max)> states;
 	Id bufferHandle[core::enumVal(BufferType::Max)] = {};
 	Id framebufferHandle = InvalidId;
+	FrameBufferMode framebufferMode = FrameBufferMode::Default;
 	Id renderBufferHandle = InvalidId;
 	glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);
 	glm::vec2 aliasedLineWidth = glm::vec2(-1.0f);
