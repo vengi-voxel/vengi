@@ -6,6 +6,7 @@
 #include "core/Log.h"
 #include "voxel/RawVolume.h"
 #include <glm/gtx/transform.hpp>
+#include <glm/ext/scalar_constants.hpp>
 
 namespace voxel {
 
@@ -32,6 +33,9 @@ void SceneGraphTransform::update() {
 void SceneGraphTransform::updateFromMat() {
 	position = mat[3];
 	scale = glm::length(glm::vec3(mat[0]));
+	if (glm::abs(scale) < glm::epsilon<float>()) {
+		scale = 1.0f;
+	}
 	const glm::mat3 rotMtx(glm::vec3(mat[0]) / scale, glm::vec3(mat[1]) / scale, glm::vec3(mat[2]) / scale);
 	rot = glm::quat_cast(rotMtx);
 }

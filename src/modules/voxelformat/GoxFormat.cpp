@@ -274,7 +274,8 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 			for (int i = 0; i < 16; ++i) {
 				stream.readFloat(transform.mat[i / 4][i % 4]);
 			}
-			node.setTransform(transform, true);
+			transform.updateFromMat();
+			node.setTransform(0, transform, true);
 		} else if (!strcmp(dictKey, "img-path") || !strcmp(dictKey, "id")) {
 			// "img-path" layer texture path
 			// "id" unique id
@@ -350,7 +351,8 @@ bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableRead
 			for (int i = 0; i < 16; ++i) {
 				stream.readFloat(transform.mat[i / 4][i % 4]);
 			}
-			node.setTransform(transform, true);
+			transform.updateFromMat();
+			node.setTransform(0, transform, true);
 		}
 	}
 	sceneGraph.emplace(core::move(node));
@@ -509,7 +511,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const SceneGraph
 			return false;
 		}
 		wrapBool(saveChunk_DictEntry(stream, "name", node.name().c_str(), node.name().size()))
-		glm::mat4 mat(0.0f);
+		glm::mat4 mat(1.0f);
 		wrapBool(saveChunk_DictEntry(stream, "mat", (const uint8_t*)glm::value_ptr(mat), sizeof(mat)))
 		wrapBool(saveChunk_DictEntry(stream, "id", layerId))
 #if 0
