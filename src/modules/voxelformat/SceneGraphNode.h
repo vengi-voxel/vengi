@@ -13,6 +13,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace voxel {
 
@@ -32,7 +33,7 @@ struct SceneGraphTransform {
 	// should be the normalized value between 0 and 1
 	glm::vec3 normalizedPivot{0.0f};
 	glm::vec3 position{0.0f};
-	glm::quat rot{1.0f, 0.0f, 0.0f, 0.0f};
+	glm::quat rot{glm::quat_identity<float, glm::defaultp>()};
 	float scale{1.0f};
 	glm::mat4x4 mat{1.0f};
 
