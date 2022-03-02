@@ -1186,15 +1186,13 @@ int getOcclusionQueryResult(Id id, bool wait) {
 	return (int)samples;
 }
 
-void blitFramebufferToViewport(Id handle) {
+void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
 	video::bindFramebuffer(handle, FrameBufferMode::Read);
-	video::bindFramebuffer(0, FrameBufferMode::Draw);
-	glBlitFramebuffer(
-		_priv::s.viewportX, _priv::s.viewportY,
-		_priv::s.viewportX + _priv::s.viewportW, _priv::s.viewportY + _priv::s.viewportH,
-		0, 0, _priv::s.windowWidth / _priv::s.scaleFactor, _priv::s.windowHeight / _priv::s.scaleFactor,
-		GL_COLOR_BUFFER_BIT, GL_LINEAR);
-	video::bindFramebuffer(0, FrameBufferMode::Default);
+	video::bindFramebuffer(target, FrameBufferMode::Draw);
+	const GLbitfield glValue = getBitField(flag);
+	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, glValue, GL_NEAREST);
+	video::bindFramebuffer(target, FrameBufferMode::Default);
+	video::bindFramebuffer(handle, FrameBufferMode::Default);
 }
 
 Id bindFramebuffer(Id handle, FrameBufferMode mode) {
