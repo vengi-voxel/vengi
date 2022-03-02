@@ -493,8 +493,12 @@ void RawVolumeRenderer::renderVolumes(const video::Camera& camera, bool shadow) 
 		indices[idx] = nIndices;
 	}
 	if (numIndices == 0u) {
-		video::ScopedFrameBuffer scoped(_frameBuffer);
-		video::clear(video::ClearFlag::Color);
+		if (_bloom->boolVal()) {
+			video::ScopedFrameBuffer scoped(_frameBuffer);
+			video::clear(video::ClearFlag::Color);
+		} else {
+			video::clear(video::ClearFlag::Color);
+		}
 		return;
 	}
 
