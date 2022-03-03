@@ -35,6 +35,16 @@ int64_t ZipReadStream::remaining() const {
 	return _readStream.remaining();
 }
 
+int64_t ZipReadStream::skip(int64_t delta) {
+	for (int64_t i = 0; i < delta; ++i) {
+		uint8_t b = 0;
+		if (readUInt8(b) == -1) {
+			return -1;
+		}
+	}
+	return delta;
+}
+
 int ZipReadStream::read(void *buf, size_t size) {
 	uint8_t *targetPtr = (uint8_t *)buf;
 	const size_t originalSize = size;

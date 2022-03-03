@@ -40,6 +40,14 @@ public:
 	 * @return @c true if the end of the compressed stream was found
 	 */
 	bool eos() const override;
+
+	/**
+	 * @brief Advances the position in the stream without reading the bytes.
+	 * @param delta the bytes to skip
+	 * @return -1 on error
+	 */
+	int64_t skip(int64_t delta);
+
 	/**
 	 * @brief The remaining amount of bytes to read from the input stream. This is
 	 * either the amount of remaining bytes in the input stream, or if the @c size
