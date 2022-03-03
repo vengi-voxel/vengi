@@ -9,6 +9,8 @@
 #include "voxel/tests/AbstractVoxelTest.h"
 #include "voxelformat/Format.h"
 #include "io/Filesystem.h"
+#include "core/Var.h"
+#include "core/GameConfig.h"
 
 namespace voxel {
 
@@ -49,6 +51,14 @@ protected:
 		io::FileStream stream(file);
 		voxel::RawVolume* v = format.load(filename, stream);
 		return v;
+	}
+
+	virtual bool onInitApp() {
+		if (!AbstractVoxelTest::onInitApp()) {
+			return false;
+		}
+		core::Var::get(cfg::VoxformatFrame, "0");
+		return true;
 	}
 };
 
