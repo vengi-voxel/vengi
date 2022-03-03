@@ -185,7 +185,7 @@ inline core::String path() {
 inline core::String extractPath(const core::String& str) {
 	const size_t pos = str.rfind("/");
 	if (pos == core::String::npos) {
-		return "";
+		return "./";
 	}
 	return str.substr(0, pos + 1) ;
 }
