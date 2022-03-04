@@ -6,6 +6,10 @@
 
 #include "Format.h"
 
+namespace io {
+class ZipReadStream;
+}
+
 namespace voxel {
 
 /**
@@ -15,6 +19,7 @@ namespace voxel {
  *
  * @note This is stored in NBT format
  *
+ * older version:
  * @code
  * root tag (compound)
  *   \-- DataVersion - version of the nbt chunk
@@ -29,6 +34,8 @@ namespace voxel {
  *         \-- BlockStates
  *         \-- SkyLight
  * @endcode
+ * newer version
+ * the block_states are under a sections compound
  *
  * @code
  * byte Nibble4(byte[] arr, int index) {
@@ -43,6 +50,9 @@ namespace voxel {
  * @endcode
  *
  * @note https://github.com/Voxtric/Minecraft-Level-Ripper/blob/master/WorldConverterV2/Processor.cs
+ * @note https://minecraft.fandom.com/wiki/Region_file_format
+ * @note https://minecraft.fandom.com/wiki/Chunk_format
+ * @note https://minecraft.fandom.com/wiki/NBT_format
  */
 class MCRFormat : public Format {
 private:
@@ -54,6 +64,9 @@ private:
 	static constexpr int MAX_LEVELS = 512;
 
 	enum class TagId : uint8_t {
+		/**
+		 * @brief Marks the end of compound tags. There is no name for this tag. It may also be used for empty List tags.
+		 */
 		END = 0,
 		BYTE = 1,
 		SHORT = 2,
@@ -66,29 +79,39 @@ private:
 		LIST = 9,
 		COMPOUND = 10,
 		INT_ARRAY = 11,
-		LONG_ARRAY = 12
+		LONG_ARRAY = 12,
+
+		MAX
 	};
 
 	struct NamedBinaryTag {
 		core::String name;
 		TagId id = TagId::END;
+		TagId listId = TagId::END;
+		uint32_t listItems = 0;
 		int level = 0;
 	};
 
 	struct Offsets {
-		uint32_t offset : 24;
-		uint32_t sectorCount : 8;
+		uint32_t offset;
+		uint8_t sectorCount;
 	} _offsets[SECTOR_INTS];
 	uint32_t _chunkTimestamps[SECTOR_INTS];
 
 	void reset();
 
-	bool skip(io::SeekableReadStream &stream, TagId id);
-	bool getNext(io::SeekableReadStream &stream, NamedBinaryTag& nbt);
+	bool skip(io::ZipReadStream &stream, NamedBinaryTag &nbt, bool marker);
+	bool getNext(io::ReadStream &stream, NamedBinaryTag &nbt);
 
-	bool parseNBTChunk(SceneGraph& sceneGraph, const uint8_t* buffer, int length);
-	bool readCompressedNBT(SceneGraph& sceneGraph, const uint8_t* buffer, int length, io::SeekableReadStream &stream);
-	bool loadMinecraftRegion(SceneGraph& sceneGraph, const uint8_t* buffer, int length, io::SeekableReadStream &stream, int chunkX, int chunkZ);
+	// DataVersion >= 2844
+	bool parseSections(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt);
+	bool parseBlockStates(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt);
+	bool parsePalette(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt);
+	bool parseData(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt);
+
+	bool parseNBTChunk(SceneGraph& sceneGraph, io::ZipReadStream &stream);
+	bool readCompressedNBT(SceneGraph& sceneGraph, io::SeekableReadStream &stream);
+	bool loadMinecraftRegion(SceneGraph& sceneGraph, io::SeekableReadStream &stream, int chunkX, int chunkZ);
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override {
