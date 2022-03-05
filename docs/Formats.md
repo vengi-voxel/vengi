@@ -32,7 +32,10 @@ Exporting to ply and obj is also supported. A few [cvars](Configuration.md) exis
 * `voxformat_ambientocclusion`: Don't export extra quads for ambient occlusion voxels
 * `voxformat_mergequads`: Merge similar quads to optimize the mesh
 * `voxformat_reusevertices`: Reuse vertices or always create new ones
-* `voxformat_scale`: Scale the vertices by the given factor
+* `voxformat_scale`: Scale the vertices on all axis by the given factor
+* `voxformat_scale_x`: Scale the vertices on X axis by the given factor
+* `voxformat_scale_y`: Scale the vertices on Y axis by the given factor
+* `voxformat_scale_z`: Scale the vertices on Z axis by the given factor
 * `voxformat_quads`: Export to quads
 * `voxformat_withcolor`: Export vertex colors
 * `voxformat_withtexcoords`: Export texture coordinates

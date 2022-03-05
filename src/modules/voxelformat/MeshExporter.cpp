@@ -30,7 +30,17 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 	const bool mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST)->boolVal();
 	const bool reuseVertices = core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST)->boolVal();
 	const bool ambientOcclusion = core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST)->boolVal();
+
 	const float scale = core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST)->floatVal();
+
+	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
+	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
+	float scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ)->floatVal();
+
+	scaleX = scaleX != 1.0f ? scaleX : scale;
+	scaleY = scaleY != 1.0f ? scaleY : scale;
+	scaleZ = scaleZ != 1.0f ? scaleZ : scale;
+
 	const bool quads = core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST)->boolVal();
 	const bool withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST)->boolVal();
 	const bool withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST)->boolVal();
@@ -55,7 +65,7 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 		SDL_Delay(10);
 	}
 	Log::debug("Save meshes");
-	const bool state = saveMeshes(meshes, filename, stream, scale, quads, withColor, withTexCoords);
+	const bool state = saveMeshes(meshes, filename, stream, glm::vec3(scaleX, scaleY, scaleZ), quads, withColor, withTexCoords);
 	for (MeshExt& meshext : meshes) {
 		delete meshext.mesh;
 	}

@@ -63,7 +63,10 @@ app::AppState VoxConvert::onConstruct() {
 	_mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, "Merge similar quads to optimize the mesh");
 	_reuseVertices = core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST, "Reuse vertices or always create new ones");
 	_ambientOcclusion = core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST, "Extra vertices for ambient occlusion");
-	_scale = core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST, "Scale the vertices by the given factor");
+	_scale = core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST, "Scale the vertices on all axis by the given factor");
+	_scaleX = core::Var::get(cfg::VoxformatScaleX, "1.0", core::CV_NOPERSIST, "Scale the vertices on X axis by the given factor");
+	_scaleY = core::Var::get(cfg::VoxformatScaleY, "1.0", core::CV_NOPERSIST, "Scale the vertices on Y axis by the given factor");
+	_scaleZ = core::Var::get(cfg::VoxformatScaleZ, "1.0", core::CV_NOPERSIST, "Scale the vertices on Z axis by the given factor");
 	_frame = core::Var::get(cfg::VoxformatFrame, "0", core::CV_NOPERSIST, "Which frame to import for formats that support this - starting at 0");
 	_quads = core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST, "Export as quads. If this false, triangles will be used.");
 	_withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST, "Export with vertex colors");
@@ -147,6 +150,9 @@ app::AppState VoxConvert::onInit() {
 		Log::info("* reuseVertices:                 - %s", _reuseVertices->strVal().c_str());
 		Log::info("* ambientOcclusion:              - %s", _ambientOcclusion->strVal().c_str());
 		Log::info("* scale:                         - %s", _scale->strVal().c_str());
+		Log::info("* scaleX:                        - %s", _scaleX->strVal().c_str());
+		Log::info("* scaleY:                        - %s", _scaleY->strVal().c_str());
+		Log::info("* scaleZ:                        - %s", _scaleZ->strVal().c_str());
 		Log::info("* quads:                         - %s", _quads->strVal().c_str());
 		Log::info("* withColor:                     - %s", _withColor->strVal().c_str());
 		Log::info("* withTexCoords:                 - %s", _withTexCoords->strVal().c_str());

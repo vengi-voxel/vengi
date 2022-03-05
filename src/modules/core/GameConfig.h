@@ -93,10 +93,13 @@ constexpr const char *VoxformatMergequads = "voxformat_mergequads";
 constexpr const char *VoxformatReusevertices = "voxformat_reusevertices";
 constexpr const char *VoxformatAmbientocclusion = "voxformat_ambientocclusion";
 constexpr const char *VoxformatScale = "voxformat_scale";
+constexpr const char *VoxformatScaleX = "voxformat_scale_x";
+constexpr const char *VoxformatScaleY = "voxformat_scale_y";
+constexpr const char *VoxformatScaleZ = "voxformat_scale_z";
 constexpr const char *VoxformatQuads = "voxformat_quads";
 constexpr const char *VoxformatFrame = "voxformat_frame";
 constexpr const char *VoxformatWithcolor = "voxformat_withcolor";
 constexpr const char *VoxformatWithtexcoords = "voxformat_withtexcoords";
-constexpr const char *VoxformatTransform = "voxformat_transform";
+constexpr const char *VoxformatTransform = "voxformat_transform_mesh";
 
 }

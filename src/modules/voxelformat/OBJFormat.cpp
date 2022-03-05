@@ -58,7 +58,7 @@ bool OBJFormat::writeMtlFile(const core::String &mtlName, const core::String &pa
 }
 
 bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
-						   float scale, bool quad, bool withColor, bool withTexCoords) {
+						   const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
 	const voxel::Palette& palette = voxel::getPalette();
 	// 1 x 256 is the texture format that we are using for our palette
 	const float texcoord = 1.0f / (float)palette.colorCount;

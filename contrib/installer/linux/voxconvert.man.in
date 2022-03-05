@@ -282,7 +282,13 @@ Config vars to control the meshing:
 .PP
 \fBvoxformat_reusevertices\fP: Reuse vertices or always create new ones
 .PP
-\fBvoxformat_scale\fP: Scale the vertices by the given factor
+\fBvoxformat_scale\fP: Scale the vertices on all axis by the given factor
+.PP
+\fBvoxformat_scale_x\fP: Scale the vertices on X axis by the given factor
+.PP
+\fBvoxformat_scale_y\fP: Scale the vertices on Y axis by the given factor
+.PP
+\fBvoxformat_scale_z\fP: Scale the vertices on Z axis by the given factor
 .PP
 \fBvoxformat_quads\fP: Export to quads
 .PP
