@@ -20,6 +20,9 @@ private:
 	core::VarPtr _reuseVertices;
 	core::VarPtr _ambientOcclusion;
 	core::VarPtr _scale;
+	core::VarPtr _scaleX;
+	core::VarPtr _scaleY;
+	core::VarPtr _scaleZ;
 	core::VarPtr _frame;
 	core::VarPtr _quads;
 	core::VarPtr _withColor;
