@@ -61,7 +61,9 @@ private:
 	static constexpr int SECTOR_BYTES = 4096;
 	static constexpr int SECTOR_INTS = SECTOR_BYTES / 4;
 	static constexpr int CHUNK_HEADER_SIZE = 5;
+	static constexpr int CHUNK_SECTIONS = 256;
 	static constexpr int MAX_LEVELS = 512;
+	static constexpr int MAX_SIZE = 16;
 
 	enum class TagId : uint8_t {
 		/**
@@ -98,16 +100,31 @@ private:
 	} _offsets[SECTOR_INTS];
 	uint32_t _chunkTimestamps[SECTOR_INTS];
 
+	struct VoxelData {
+		uint8_t buf[512 * 8] {};
+		bool dataFound = false;
+		bool paletteFound = false;
+
+		int get(int x, int y, int z) const {
+			const uint32_t offset = y * MAX_SIZE * MAX_SIZE + z * MAX_SIZE + x;
+			if (offset >= sizeof(buf)) {
+				return 0;
+			}
+			return buf[offset];
+		}
+	};
+
 	void reset();
 
 	bool skip(io::ZipReadStream &stream, NamedBinaryTag &nbt, bool marker);
 	bool getNext(io::ReadStream &stream, NamedBinaryTag &nbt);
 
 	// DataVersion >= 2844
-	bool parseSections(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt);
-	bool parseBlockStates(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt);
-	bool parsePalette(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt);
-	bool parseData(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt);
+	bool parseSections(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, int xPos, int zPos);
+	bool parseBlockStates(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, int y, int xPos, int zPos);
+	bool parsePalette(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, VoxelData &voxelData);
+	bool parseData(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, VoxelData &voxelData);
+	uint8_t chunkVoxelColor(VoxelData &voxelData, int section, const glm::ivec3 &pos);
 
 	bool parseNBTChunk(SceneGraph& sceneGraph, io::ZipReadStream &stream);
 	bool readCompressedNBT(SceneGraph& sceneGraph, io::SeekableReadStream &stream);

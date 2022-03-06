@@ -36,6 +36,22 @@ namespace voxel {
 		}                                                                                                              \
 	} while (0)
 
+static const char *nbtTagNames[] = {
+	"END",
+	"BYTE",
+	"SHORT",
+	"INT",
+	"LONG",
+	"FLOAT",
+	"DOUBLE",
+	"BYTE_ARRAY",
+	"STRING",
+	"LIST",
+	"COMPOUND",
+	"INT_ARRAY",
+	"LONG_ARRAY"
+};
+
 void MCRFormat::reset() {
 	core_memset(_chunkTimestamps, 0, sizeof(_chunkTimestamps));
 }
@@ -95,17 +111,19 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 bool MCRFormat::loadMinecraftRegion(SceneGraph &sceneGraph, io::SeekableReadStream &stream, int chunkX, int chunkZ) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
-		if (_offsets[i].sectorCount == 0u || _offsets[i].offset == 0u) {
+		if (_offsets[i].sectorCount == 0u || _offsets[i].offset < sizeof(_offsets)) {
+			Log::debug("Skip sector %i (offset: %u)", i, _offsets[i].offset);
 			continue;
 		}
-		if (_offsets[i].offset >= (uint32_t)stream.size()) {
+		if (_offsets[i].offset + 6 >= (uint32_t)stream.size()) {
 			Log::error("Exceeded stream boundaries: %u, %i", (int)_offsets[i].offset, (int)stream.size());
 			return false;
 		}
 		if (stream.seek(_offsets[i].offset) == -1) {
-			Log::error("Failed to load minecraft chunk section %i for offset %u", i, (int)_offsets[i].offset);
-			return false;
+			Log::debug("Failed to load minecraft chunk section %i for offset %u", i, (int)_offsets[i].offset);
+			continue;
 		}
+		Log::debug("Chunk %i:%i sector %i", chunkX, chunkZ, i);
 		if (!readCompressedNBT(sceneGraph, stream)) {
 			Log::error("Failed to load minecraft chunk section %i for offset %u", i, (int)_offsets[i].offset);
 			return false;
@@ -137,8 +155,13 @@ bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream
 
 	// the version is included in the length
 	--nbtSize;
+
+	const int64_t pos = stream.pos();
 	io::ZipReadStream zipStream(stream, nbtSize);
-	return parseNBTChunk(sceneGraph, zipStream);
+	if (!parseNBTChunk(sceneGraph, zipStream)) {
+		return false;
+	}
+	return stream.seek(pos + nbtSize) != -1;
 }
 
 // this list was found in enkiMI by Doug Binks
@@ -408,15 +431,18 @@ static const struct {
 			 {"minecraft:gray_concrete_powder", 252},
 			 {"minecraft:structure_block", 255}};
 
-bool MCRFormat::parseData(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt) {
-	wrapBool(skip(stream, nbt, true)); // TODO: read me
-	return true;
+bool MCRFormat::parseData(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, VoxelData &voxelData) {
+	core_assert(nbt.id == TagId::LONG_ARRAY);
+	core_assert(nbt.listItems < lengthof(voxelData.buf));
+	voxelData.dataFound = nbt.listItems > 0;
+	return stream.read(voxelData.buf, nbt.listItems * 8) == (int)nbt.listItems * 8;
 }
 
-bool MCRFormat::parsePalette(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt) {
+bool MCRFormat::parsePalette(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, VoxelData &voxelData) {
 	const uint32_t items = nbt.listItems;
 	const int compoundLevel = nbt.level;
 	++nbt.level;
+	voxelData.paletteFound = true;
 	core::DynamicArray<uint32_t> idMapping(items);
 	uint32_t paletteNum = 0;
 	uint32_t numBlockIDs = lengthof(TYPES);
@@ -426,7 +452,7 @@ bool MCRFormat::parsePalette(SceneGraph &sceneGraph, io::ZipReadStream &stream, 
 			if (nbt.name == "Name" && nbt.id == TagId::STRING) {
 				uint16_t nameLength;
 				wrap(stream.readUInt16BE(nameLength));
-				Log::debug("Load palette name of length %u", nameLength);
+				Log::debug("%*sLoad palette name of length %u", nbt.level * 3, " ", nameLength);
 
 				core::String name;
 				for (uint16_t i = 0u; i < nameLength; ++i) {
@@ -434,7 +460,7 @@ bool MCRFormat::parsePalette(SceneGraph &sceneGraph, io::ZipReadStream &stream, 
 					wrap(stream.readUInt8(chr));
 					name += (char)chr;
 				}
-				Log::debug("Palette name: %s", name.c_str());
+				Log::debug("%*sPalette name: %s", nbt.level * 3, " ", name.c_str());
 				idMapping[paletteNum] = 0;
 
 				for (uint32_t id = 0; id < numBlockIDs; ++id) {
@@ -457,68 +483,92 @@ bool MCRFormat::parsePalette(SceneGraph &sceneGraph, io::ZipReadStream &stream, 
 	return true;
 }
 
-bool MCRFormat::parseBlockStates(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt) {
+uint8_t MCRFormat::chunkVoxelColor(VoxelData &voxelData, int section, const glm::ivec3 &pos) {
+	core_assert(0 <= pos.x && pos.x < MAX_SIZE);
+	core_assert(0 <= pos.y && pos.y < MAX_SIZE);
+	core_assert(0 <= pos.z && pos.z < MAX_SIZE);
+	return voxelData.get(pos.x, pos.y, pos.z);
+}
+
+bool MCRFormat::parseBlockStates(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, int y, int xPos, int zPos) {
 	const int compoundLevel = nbt.level;
+
+	VoxelData voxelData;
 	while (nbt.level >= compoundLevel) {
 		wrapBool(getNext(stream, nbt));
 		if (nbt.name == "data" && nbt.id == TagId::LONG_ARRAY) {
-			wrapBool(parseData(sceneGraph, stream, nbt));
+			wrapBool(parseData(sceneGraph, stream, nbt, voxelData));
 		} else if (nbt.name == "palette" && nbt.id == TagId::LIST) {
-			wrapBool(parsePalette(sceneGraph, stream, nbt));
+			wrapBool(parsePalette(sceneGraph, stream, nbt, voxelData));
+		} else if (nbt.id == TagId::END) {
+			break;
 		} else {
-			Log::debug("%*sunknown nbt %s", nbt.level * 3, " ", nbt.name.c_str());
+			Log::debug("%*sunknown nbt '%s' (type %s)", nbt.level * 3, " ", nbt.name.c_str(), nbtTagNames[(int)nbt.listId]);
 			wrapBool(skip(stream, nbt, true));
 		}
+	}
+
+	if (!voxelData.dataFound) {
+		return true;
+	}
+
+	const glm::ivec3 chunkSize(MAX_SIZE - 1);
+	for (int section = 0; section < CHUNK_SECTIONS; ++section) {
+		const glm::ivec3 chunkMins(xPos, (section - 128) * MAX_SIZE, zPos);
+		const voxel::Region region(chunkMins, chunkMins + chunkSize);
+		voxel::RawVolume *v = new voxel::RawVolume(region);
+		glm::ivec3 sPos;
+		for (sPos.y = 0; sPos.y <= chunkSize.y; ++sPos.y) {
+			for (sPos.z = 0; sPos.z <= chunkSize.z; ++sPos.z) {
+				for (sPos.x = 0; sPos.x <= chunkSize.x; ++sPos.x) {
+					const uint8_t color = chunkVoxelColor(voxelData, section, sPos);
+					if (color) {
+						const uint8_t index = convertPaletteIndex(color);
+						const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+						v->setVoxel(chunkMins.x + sPos.x, chunkMins.y + sPos.y, chunkMins.z + sPos.z, voxel);
+					}
+				}
+			}
+		}
+		SceneGraphNode node;
+		node.setVolume(v, true);
+		sceneGraph.emplace(core::move(node));
 	}
 	return true;
 }
 
-bool MCRFormat::parseSections(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt) {
+bool MCRFormat::parseSections(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, int xPos, int zPos) {
 	const uint32_t items = nbt.listItems;
 	const int compoundLevel = nbt.level;
 	++nbt.level;
-	const uint8_t *sectionPointers[16];
+	const core::String name = nbt.name;
+	Log::debug("Parse section with %i items ('%s')", items, name.c_str());
 	for (uint32_t n = 0; n < items; ++n) {
-		uint8_t y = 0;
-		const uint8_t *blockStates = nullptr;
-		const uint8_t *blocks = nullptr;
+		int8_t y = 0;
 		while (nbt.level >= compoundLevel) {
 			wrapBool(getNext(stream, nbt));
 			if (nbt.name == "Y" && nbt.id == TagId::BYTE) {
-				wrap(stream.readUInt8(y));
-				if (y >= lengthof(sectionPointers)) {
-					Log::error("section y value exceeds the max allowed value of 15: %u", y);
-					return false;
-				}
+				wrap(stream.readInt8(y));
 				Log::debug("%*sSection y: %u", nbt.level * 3, " ", y);
 			} else if (nbt.name == "block_states" && nbt.id == TagId::COMPOUND) {
-				wrapBool(parseBlockStates(sceneGraph, stream, nbt));
+				wrapBool(parseBlockStates(sceneGraph, stream, nbt, y, xPos, zPos));
 			} else if (nbt.name == "biomes" && nbt.id == TagId::COMPOUND) {
-				const int expectedLevelAfterSkip = nbt.level - 1;
 				wrapBool(skip(stream, nbt, true));
-				if (nbt.level != expectedLevelAfterSkip) {
-					Log::error("Unexpected nesting");
-					return false;
-				}
 			} else if (nbt.name == "BlockLight" && nbt.id == TagId::BYTE_ARRAY) {
 				wrapBool(skip(stream, nbt, true));
 			} else if (nbt.name == "SkyLight" && nbt.id == TagId::BYTE_ARRAY) {
 				wrapBool(skip(stream, nbt, true));
+			} else if (nbt.id == TagId::END) {
 			} else {
-				Log::debug("%*sunknown nbt %s", nbt.level * 3, " ", nbt.name.c_str());
+				Log::debug("%*sunknown nbt '%s' (type %s)", nbt.level * 3, " ", nbt.name.c_str(), nbtTagNames[(int)nbt.listId]);
 				wrapBool(skip(stream, nbt, true));
 			}
 		}
 		if (n != items - 1) {
 			++nbt.level;
 		}
-		if (blocks != nullptr) {
-			sectionPointers[y] = blocks;
-		}
-		if (blockStates) {
-			sectionPointers[y] = blockStates;
-		}
 	}
+	Log::debug("End section");
 	--nbt.level;
 
 	return true;
@@ -546,7 +596,7 @@ bool MCRFormat::parseNBTChunk(SceneGraph &sceneGraph, io::ZipReadStream &stream)
 		} else if (nbt.name == "DataVersion" && nbt.id == TagId::INT) {
 			wrap(stream.readInt32BE(version));
 		} else if (nbt.name == "sections" && nbt.id == TagId::LIST) {
-			wrapBool(parseSections(sceneGraph, stream, nbt));
+			return parseSections(sceneGraph, stream, nbt, xPos, zPos);
 		} else {
 			wrapBool(skip(stream, nbt, true));
 		}
@@ -626,15 +676,15 @@ bool MCRFormat::skip(io::ZipReadStream &stream, NamedBinaryTag &nbt, bool marker
 		break;
 	}
 	case TagId::LIST: {
-		// the them as compound types
 		++nbt.level;
+		core_assert(nbt.level < 16);
 		if (marker) {
 			Log::debug("------------------start");
 		}
 		const uint32_t items = nbt.listItems;
 		if (nbt.listId == TagId::COMPOUND) {
 			const int compoundLevel = nbt.level;
-			Log::debug("%*sskip %i compounds %s at level %i ('%s')", nbt.level * 3, " ", items, nbt.name.c_str(), compoundLevel, nbt.name.c_str());
+			Log::debug("%*sskip %i compounds at level %i ('%s')", nbt.level * 3, " ", items, compoundLevel, nbt.name.c_str());
 			for (uint32_t n = 0; n < items; ++n) {
 				Log::debug("%*sskip compound %u", nbt.level * 3, " ", n);
 				while (nbt.level >= compoundLevel) {
@@ -646,11 +696,33 @@ bool MCRFormat::skip(io::ZipReadStream &stream, NamedBinaryTag &nbt, bool marker
 				}
 			}
 		} else {
-			Log::debug("%*sskip list %s at level %i ('%s') with %i items", nbt.level * 3, " ", nbt.name.c_str(), nbt.level, nbt.name.c_str(), items);
-			for (uint32_t n = 0; n < items; ++n) {
-				Log::debug("%*sskip item %u", nbt.level * 3, " ", n);
-				wrapBool(getNext(stream, nbt));
-				wrapBool(skip(stream, nbt, false));
+			// list of lists
+			TagId listId = nbt.listId;
+			if (listId == TagId::LIST) {
+				if (stream.read(&nbt.id, sizeof(nbt.id)) != 1) {
+					Log::debug("Failed to read type id");
+					return false;
+				}
+				if (nbt.id == TagId::COMPOUND) {
+					++nbt.level;
+				}
+
+				wrap(stream.readUInt32BE(nbt.listItems));
+				Log::debug("%*sskip sublist %s with %i items of type %s", nbt.level * 3, " ", nbt.name.c_str(),
+						   nbt.listItems, nbtTagNames[(int)nbt.id]);
+				for (uint32_t n = 0; n < items; ++n) {
+					Log::debug("%*sskip item %u", nbt.level * 3, " ", n);
+					wrapBool(skip(stream, nbt, false));
+				}
+			} else {
+				nbt.id = nbt.listId;
+
+				Log::debug("%*sskip list %s at level %i ('%s') with %i items of type %s", nbt.level * 3, " ",
+						nbt.name.c_str(), nbt.level, nbt.name.c_str(), items, nbtTagNames[(int)nbt.listId]);
+				for (uint32_t n = 0; n < items; ++n) {
+					Log::debug("%*sskip item %u", nbt.level * 3, " ", n);
+					wrapBool(skip(stream, nbt, false));
+				}
 			}
 		}
 		if (marker) {
@@ -683,28 +755,13 @@ bool MCRFormat::skip(io::ZipReadStream &stream, NamedBinaryTag &nbt, bool marker
 	return true;
 }
 
-static const char *nbtTagNames[] = {
-	"END",
-	"BYTE",
-	"SHORT",
-	"INT",
-	"LONG",
-	"FLOAT",
-	"DOUBLE",
-	"BYTE_ARRAY",
-	"STRING",
-	"LIST",
-	"COMPOUND",
-	"INT_ARRAY",
-	"LONG_ARRAY"
-};
-
 bool MCRFormat::getNext(io::ReadStream &stream, MCRFormat::NamedBinaryTag &nbt) {
 	static_assert(lengthof(nbtTagNames) == (int)TagId::MAX);
 	if (stream.read(&nbt.id, sizeof(nbt.id)) != 1) {
 		Log::debug("Failed to read type id");
 		return false;
 	}
+	core_assert_msg(nbt.id >= TagId::END && nbt.id < TagId::MAX, "Found unknown id of type %s", nbtTagNames[(int)nbt.listId]);
 	if (nbt.id == TagId::END) {
 		--nbt.level;
 		Log::debug("%*sFound compound end at level %i", nbt.level * 3, " ", nbt.level);

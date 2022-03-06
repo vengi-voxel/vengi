@@ -11,7 +11,7 @@
 
 namespace voxel {
 
-SceneGraph::SceneGraph() {
+SceneGraph::SceneGraph() : _nodes(8192) {
 	clear();
 }
 
