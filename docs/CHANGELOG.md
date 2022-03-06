@@ -20,6 +20,7 @@ General:
    - Improved apple support in file dialog
    - The palette handling was refactored
    - Allow to save the MATL chunk in magicavoxel vox files
+   - Ability to scale exported mesh with different values for each axis
 
 VoxEdit:
 
