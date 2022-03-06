@@ -53,6 +53,8 @@ namespace voxel {
  * @note https://minecraft.fandom.com/wiki/Region_file_format
  * @note https://minecraft.fandom.com/wiki/Chunk_format
  * @note https://minecraft.fandom.com/wiki/NBT_format
+ * @note https://wiki.vg/NBT
+ * @note https://github.com/UnknownShadow200/ClassiCube/blob/master/src/Formats.c
  */
 class MCRFormat : public Format {
 private:
