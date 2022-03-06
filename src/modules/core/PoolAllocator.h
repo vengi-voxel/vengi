@@ -61,6 +61,34 @@ public:
 		shutdown();
 	}
 
+	PoolAllocator() {}
+
+	PoolAllocator(PoolAllocator&& other) noexcept {
+		_poolBuf = other._poolBuf;
+		other._poolBuf = nullptr;
+		_nextFreeSlot = other._nextFreeSlot;
+		other._nextFreeSlot = nullptr;
+		_maxPoolSize = other._maxPoolSize;
+		other._maxPoolSize = 0u;
+		_currentAllocatedItems = other._currentAllocatedItems;
+		other._currentAllocatedItems = 0u;
+	}
+
+	PoolAllocator &operator=(PoolAllocator &&other) noexcept {
+		if (this != &other) {
+			shutdown();
+			_poolBuf = other._poolBuf;
+			other._poolBuf = nullptr;
+			_nextFreeSlot = other._nextFreeSlot;
+			other._nextFreeSlot = nullptr;
+			_maxPoolSize = other._maxPoolSize;
+			other._maxPoolSize = 0u;
+			_currentAllocatedItems = other._currentAllocatedItems;
+			other._currentAllocatedItems = 0u;
+		}
+		return *this;
+	}
+
 	bool init(SizeType poolSize) {
 		if (_poolBuf != nullptr) {
 			if (_maxPoolSize == poolSize + 1) {
