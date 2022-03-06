@@ -93,9 +93,24 @@ public:
 			put(i->key, i->value);
 		}
 	}
+	Map(Map&& other) noexcept {
+		_allocator = core::move(other._allocator);
+		_buckets = other._buckets;
+		_hasher = other._hasher;
+		other._buckets.fill(nullptr);
+	}
 	~Map() {
 		clear();
 		_allocator.shutdown();
+	}
+	Map &operator=(Map &&other) noexcept {
+		if (this != &other) {
+			_allocator = core::move(other._allocator);
+			_buckets = other._buckets;
+			_hasher = other._hasher;
+			other._buckets.fill(nullptr);
+		}
+		return *this;
 	}
 
 	Map& operator=(const Map& other) {
