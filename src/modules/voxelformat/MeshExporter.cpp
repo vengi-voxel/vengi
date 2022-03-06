@@ -27,11 +27,11 @@ bool MeshExporter::loadGroups(const core::String &filename, io::SeekableReadStre
 }
 
 bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	const bool mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST)->boolVal();
-	const bool reuseVertices = core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST)->boolVal();
-	const bool ambientOcclusion = core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST)->boolVal();
+	const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
+	const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
+	const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
 
-	const float scale = core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST)->floatVal();
+	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
 
 	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
 	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
@@ -41,10 +41,10 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 	scaleY = scaleY != 1.0f ? scaleY : scale;
 	scaleZ = scaleZ != 1.0f ? scaleZ : scale;
 
-	const bool quads = core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST)->boolVal();
-	const bool withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST)->boolVal();
-	const bool withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST)->boolVal();
-	const bool applyTransform = core::Var::get(cfg::VoxformatTransform, "false", core::CV_NOPERSIST)->boolVal();
+	const bool quads = core::Var::getSafe(cfg::VoxformatQuads)->boolVal();
+	const bool withColor = core::Var::getSafe(cfg::VoxformatWithcolor)->boolVal();
+	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
+	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
 
 	const size_t models = sceneGraph.size();
 	core::ThreadPool& threadPool = app::App::getInstance()->threadPool();
