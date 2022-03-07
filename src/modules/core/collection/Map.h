@@ -105,6 +105,7 @@ public:
 	}
 	Map &operator=(Map &&other) noexcept {
 		if (this != &other) {
+			clear();
 			_allocator = core::move(other._allocator);
 			_buckets = other._buckets;
 			_hasher = other._hasher;
