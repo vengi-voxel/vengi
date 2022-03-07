@@ -175,6 +175,8 @@ Qubicle Exchange (*.qef)
 Chronovox (*.csm)
 .TP
 Nicks Voxel Model (*.nvm)
+.TP
+Wavefront Object (*.obj)
 
 .SH SAVE
 .TP
@@ -199,10 +201,6 @@ CubeWorld (*.cub)
 Tiberian Sun (*.vxl)
 .TP
 Qubicle Exchange (*.qef)
-.TP
-WaveFront OBJ (*.obj)
-.TP
-Polygon File Format (*.ply)
 .TP
 Wavefront Object (*.obj)
 .TP
