@@ -568,8 +568,6 @@ void RawVolumeRenderer::renderVolumes(const video::Camera& camera, bool shadow) 
 		if (indices[idx] <= 0u) {
 			continue;
 		}
-		const glm::vec2 offset(-0.25f * (float)idx, -0.5f * (float)idx);
-		video::ScopedPolygonMode polygonMode(mode, offset);
 		video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
 		_voxelShader.setGray(_state[idx]._gray);
 		_voxelShader.setModel(_models[idx]);
