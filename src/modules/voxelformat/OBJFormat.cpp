@@ -21,7 +21,6 @@
 #include "voxel/Mesh.h"
 #include "voxelformat/SceneGraph.h"
 #include "engine-config.h"
-#include "voxelutil/VoxelUtil.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "external/tiny_obj_loader.h"
@@ -179,102 +178,9 @@ bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, i
 
 #undef wrapBool
 
-struct Tri {
-	glm::vec3 vertices[3];
-	glm::vec2 uv[3];
-	image::ImagePtr texture;
-	uint32_t color = 0xFFFFFFFF;
-
-	glm::vec2 centerUV() const {
-		return (uv[0] + uv[1] + uv[2]) / 3.0f;
-	}
-
-	glm::vec3 center() const {
-		return (vertices[0] + vertices[1] + vertices[2]) / 3.0f;
-	}
-
-	glm::vec3 mins() const {
-		glm::vec3 v;
-		for (int i = 0; i < 3; ++i) {
-			v[i] = core_min(vertices[0][i], core_min(vertices[1][i], vertices[2][i]));
-		}
-		return v;
-	}
-
-	glm::vec3 maxs() const {
-		glm::vec3 v;
-		for (int i = 0; i < 3; ++i) {
-			v[i] = core_max(vertices[0][i], core_max(vertices[1][i], vertices[2][i]));
-		}
-		return v;
-	}
-
-	uint32_t colorAt(const glm::vec2 &uv) const {
-		if (texture) {
-			const float w = (float)texture->width();
-			const float h = (float)texture->height();
-			float x = uv.x * w;
-			float y = uv.y * h;
-			while (x < 0.0f)
-				x += w;
-			while (x > w)
-				x -= w;
-			while (y < 0.0f)
-				y += h;
-			while (y > h)
-				y -= h;
-
-			const int xint = (int)glm::round(x - 0.5f);
-			const int yint = texture->height() - (int)glm::round(y - 0.5f) - 1;
-			const uint8_t *ptr = texture->at(xint, yint);
-			return *(const uint32_t*)ptr;
-		}
-		return color;
-	}
-
-	// Sierpinski gasket with keeping the middle
-	void subdivide(Tri out[4]) const {
-		const glm::vec3 midv[]{
-			glm::mix(vertices[0], vertices[1], 0.5f),
-			glm::mix(vertices[1], vertices[2], 0.5f),
-			glm::mix(vertices[2], vertices[0], 0.5f)
-		};
-		const glm::vec2 miduv[]{
-			glm::mix(uv[0], uv[1], 0.5f),
-			glm::mix(uv[1], uv[2], 0.5f),
-			glm::mix(uv[2], uv[0], 0.5f)
-		};
-
-		// the subdivided new three triangles
-		out[0] = Tri{{vertices[0], midv[0], midv[2]}, {uv[0], miduv[0], miduv[2]}, texture, color};
-		out[1] = Tri{{vertices[1], midv[1], midv[0]}, {uv[1], miduv[1], miduv[0]}, texture, color};
-		out[2] = Tri{{vertices[2], midv[2], midv[1]}, {uv[2], miduv[2], miduv[1]}, texture, color};
-		// keep the middle
-		out[3] = Tri{{midv[0], midv[1], midv[2]}, {miduv[0], miduv[1], miduv[2]}, texture, color};
-	}
-};
-
-/**
- * Subdivide until we brought the triangles down to the size of 1 or smaller
- */
-static void subdivideTri(const Tri& tri, core::DynamicArray<Tri> &tinyTris) {
-	const glm::vec3& mins = tri.mins();
-	const glm::vec3& maxs = tri.maxs();
-	const glm::vec3 size = maxs - mins;
-	if (glm::any(glm::greaterThan(size, glm::vec3(1.0f)))) {
-		Tri out[4];
-		tri.subdivide(out);
-		for (int i = 0; i < lengthof(out); ++i) {
-			subdivideTri(out[i], tinyTris);
-		}
-		return;
-	}
-	tinyTris.push_back(tri);
-}
-
-static void voxelizeShape(const tinyobj::mesh_t &mesh, const core::StringMap<image::ImagePtr> &textures,
-						  const tinyobj::attrib_t &attrib, const std::vector<tinyobj::material_t> &materials, voxel::RawVolume *volume) {
-	core::DynamicArray<Tri> subdivided;
+void OBJFormat::subdivideShape(const tinyobj::mesh_t &mesh, const core::StringMap<image::ImagePtr> &textures,
+							  const tinyobj::attrib_t &attrib, const std::vector<tinyobj::material_t> &materials,
+							  core::DynamicArray<Tri> &subdivided) {
 
 	int indexOffset = 0;
 	for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
@@ -310,39 +216,10 @@ static void voxelizeShape(const tinyobj::mesh_t &mesh, const core::StringMap<ima
 		indexOffset += faceVertices;
 		subdivideTri(tri, subdivided);
 	}
-
-	core::DynamicArray<uint8_t> palette;
-	palette.reserve(subdivided.size());
-
-	const voxel::Palette &pal = voxel::getPalette();
-	core::DynamicArray<glm::vec4> materialColors;
-	pal.toVec4f(materialColors);
-
-	for (const Tri &tri : subdivided) {
-		const glm::vec2 &uv = tri.centerUV();
-		const uint32_t rgba = tri.colorAt(uv);
-		const glm::vec4 &color = core::Color::fromRGBA(rgba);
-		const uint8_t index = core::Color::getClosestMatch(color, materialColors);
-		palette.push_back(index);
-	}
-
-	for (size_t i = 0; i < subdivided.size(); ++i) {
-		const Tri &tri = subdivided[i];
-		const uint8_t index = palette[i];
-		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-		// TODO: different tris might contribute to the same voxel - merge the color values here
-		for (int v = 0; v < 3; v++) {
-			const glm::ivec3 p(glm::floor(tri.vertices[v]));
-			volume->setVoxel(p, voxel);
-		}
-
-		const glm::vec3 &center = tri.center();
-		const glm::ivec3 p2(glm::floor(center));
-		volume->setVoxel(p2, voxel);
-	}
 }
 
-static void calculateAABB(const tinyobj::mesh_t &mesh, const tinyobj::attrib_t &attrib, glm::vec3 &mins, glm::vec3 &maxs) {
+void OBJFormat::calculateAABB(const tinyobj::mesh_t &mesh, const tinyobj::attrib_t &attrib, glm::vec3 &mins,
+							  glm::vec3 &maxs) {
 	maxs = glm::vec3(-100000.0f);
 	mins = glm::vec3(+100000.0f);
 
@@ -438,8 +315,9 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			SceneGraphNode node;
 			node.setVolume(volume, true);
 			node.setName(shape.name.c_str());
-			voxelizeShape(shape.mesh, textures, attrib, materials, volume);
-			voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
+			core::DynamicArray<Tri> subdivided;
+			subdivideShape(shape.mesh, textures, attrib, materials, subdivided);
+			voxelizeTris(volume, subdivided);
 			return core::move(node);
 		}));
 	}

@@ -4,16 +4,67 @@
 
 #include "MeshExporter.h"
 #include "app/App.h"
+#include "core/Color.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ThreadPool.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
+#include "voxelutil/VoxelUtil.h"
 #include <SDL_timer.h>
 
 namespace voxel {
+
+void MeshExporter::subdivideTri(const Tri &tri, core::DynamicArray<Tri> &tinyTris) {
+	const glm::vec3 &mins = tri.mins();
+	const glm::vec3 &maxs = tri.maxs();
+	const glm::vec3 size = maxs - mins;
+	if (glm::any(glm::greaterThan(size, glm::vec3(1.0f)))) {
+		Tri out[4];
+		tri.subdivide(out);
+		for (int i = 0; i < lengthof(out); ++i) {
+			subdivideTri(out[i], tinyTris);
+		}
+		return;
+	}
+	tinyTris.push_back(tri);
+}
+
+void MeshExporter::voxelizeTris(voxel::RawVolume *volume, const core::DynamicArray<Tri> &subdivided) {
+	core::DynamicArray<uint8_t> palette;
+	palette.reserve(subdivided.size());
+
+	const voxel::Palette &pal = voxel::getPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	pal.toVec4f(materialColors);
+
+	for (const Tri &tri : subdivided) {
+		const glm::vec2 &uv = tri.centerUV();
+		const uint32_t rgba = tri.colorAt(uv);
+		const glm::vec4 &color = core::Color::fromRGBA(rgba);
+		const uint8_t index = core::Color::getClosestMatch(color, materialColors);
+		palette.push_back(index);
+	}
+
+	for (size_t i = 0; i < subdivided.size(); ++i) {
+		const Tri &tri = subdivided[i];
+		const uint8_t index = palette[i];
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+		// TODO: different tris might contribute to the same voxel - merge the color values here
+		for (int v = 0; v < 3; v++) {
+			const glm::ivec3 p(glm::floor(tri.vertices[v]));
+			volume->setVoxel(p, voxel);
+		}
+
+		const glm::vec3 &center = tri.center();
+		const glm::ivec3 p2(glm::floor(center));
+		volume->setVoxel(p2, voxel);
+	}
+	voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
+}
 
 MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const SceneGraphNode& node, bool _applyTransform) :
 		mesh(_mesh), name(node.name()), applyTransform(_applyTransform) {
