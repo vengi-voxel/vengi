@@ -20,7 +20,7 @@ RawVolume* merge(const core::DynamicArray<const RawVolume*>& volumes) {
 		maxs = (glm::max)(maxs, region.getUpperCorner());
 	}
 
-	const voxel::Region mergedRegion(glm::ivec3(0), maxs - mins);
+	const voxel::Region mergedRegion(mins, maxs);
 	Log::debug("Starting to merge volumes into one: %i:%i:%i - %i:%i:%i",
 			mergedRegion.getLowerX(), mergedRegion.getLowerY(), mergedRegion.getLowerZ(),
 			mergedRegion.getUpperX(), mergedRegion.getUpperY(), mergedRegion.getUpperZ());
@@ -28,14 +28,7 @@ RawVolume* merge(const core::DynamicArray<const RawVolume*>& volumes) {
 	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
 	for (const voxel::RawVolume* v : volumes) {
 		const voxel::Region& sr = v->region();
-		const glm::ivec3& destMins = sr.getLowerCorner() - mins;
-		const voxel::Region dr(destMins, destMins + sr.getDimensionsInCells());
-		Log::debug("Merge %i:%i:%i - %i:%i:%i into %i:%i:%i - %i:%i:%i",
-				sr.getLowerX(), sr.getLowerY(), sr.getLowerZ(),
-				sr.getUpperX(), sr.getUpperY(), sr.getUpperZ(),
-				dr.getLowerX(), dr.getLowerY(), dr.getLowerZ(),
-				dr.getUpperX(), dr.getUpperY(), dr.getUpperZ());
-		voxel::mergeVolumes(merged, v, dr, sr);
+		voxel::mergeVolumes(merged, v, sr, sr);
 	}
 	return merged;
 }
