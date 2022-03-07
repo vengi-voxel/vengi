@@ -47,12 +47,12 @@ void SceneGraphTransform::updateFromMat() {
 SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_volume = move._volume;
 	move._volume = nullptr;
-	_name = move._name;
+	_name = core::move(move._name);
 	_id = move._id;
 	move._id = -1;
 	_parent = move._parent;
 	move._parent = -1;
-	_keyFrames = move._keyFrames;
+	_keyFrames = core::move(move._keyFrames);
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
 	_type = move._type;
@@ -69,12 +69,12 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	}
 	setVolume(move._volume, move._volumeOwned);
 	move._volume = nullptr;
-	_name = move._name;
+	_name = core::move(move._name);
 	_id = move._id;
 	move._id = -1;
 	_parent = move._parent;
 	move._parent = -1;
-	_keyFrames = move._keyFrames;
+	_keyFrames = core::move(move._keyFrames);
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
 	_type = move._type;

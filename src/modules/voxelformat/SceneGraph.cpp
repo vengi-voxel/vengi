@@ -109,6 +109,7 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 		auto parentIter = _nodes.find(parent);
 		if (parentIter == _nodes.end()) {
 			Log::error("Could not find parent node with id %i", parent);
+			node.release();
 			return -1;
 		}
 		Log::debug("Add child %i to node %i", nodeId, parent);
