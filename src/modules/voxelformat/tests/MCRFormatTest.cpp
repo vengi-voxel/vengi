@@ -12,7 +12,7 @@ namespace voxel {
 class MCRFormatTest: public AbstractVoxFormatTest {
 };
 
-TEST_F(MCRFormatTest, DISABLED_testLoad) {
+TEST_F(MCRFormatTest, testLoad) {
 	MCRFormat f;
 	std::unique_ptr<RawVolume> volume(load("r.0.-2.mca", f));
 	ASSERT_NE(nullptr, volume) << "Could not load mca volume";

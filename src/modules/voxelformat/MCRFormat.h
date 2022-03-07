@@ -10,7 +10,12 @@ namespace io {
 class ZipReadStream;
 }
 
+
 namespace voxel {
+
+namespace priv {
+class NamedBinaryTag;
+}
 
 /**
  * A minecraft chunk contains the terrain and entity information about a grid of the size 16x256x16
@@ -52,8 +57,6 @@ namespace voxel {
  * @note https://github.com/Voxtric/Minecraft-Level-Ripper/blob/master/WorldConverterV2/Processor.cs
  * @note https://minecraft.fandom.com/wiki/Region_file_format
  * @note https://minecraft.fandom.com/wiki/Chunk_format
- * @note https://minecraft.fandom.com/wiki/NBT_format
- * @note https://wiki.vg/NBT
  * @note https://github.com/UnknownShadow200/ClassiCube/blob/master/src/Formats.c
  */
 class MCRFormat : public Format {
@@ -62,79 +65,40 @@ private:
 	static constexpr int VERSION_DEFLATE = 2;
 	static constexpr int SECTOR_BYTES = 4096;
 	static constexpr int SECTOR_INTS = SECTOR_BYTES / 4;
-	static constexpr int CHUNK_HEADER_SIZE = 5;
-	static constexpr int CHUNK_SECTIONS = 256;
-	static constexpr int MAX_LEVELS = 512;
 	static constexpr int MAX_SIZE = 16;
-
-	enum class TagId : uint8_t {
-		/**
-		 * @brief Marks the end of compound tags. There is no name for this tag. It may also be used for empty List tags.
-		 */
-		END = 0,
-		BYTE = 1,
-		SHORT = 2,
-		INT = 3,
-		LONG = 4,
-		FLOAT = 5,
-		DOUBLE = 6,
-		BYTE_ARRAY = 7,
-		STRING = 8,
-		LIST = 9,
-		COMPOUND = 10,
-		INT_ARRAY = 11,
-		LONG_ARRAY = 12,
-
-		MAX
-	};
-
-	struct NamedBinaryTag {
-		core::String name;
-		TagId id = TagId::END;
-		TagId listId = TagId::END;
-		uint32_t listItems = 0;
-		int level = 0;
-	};
 
 	struct Offsets {
 		uint32_t offset;
 		uint8_t sectorCount;
 	} _offsets[SECTOR_INTS];
-	uint32_t _chunkTimestamps[SECTOR_INTS];
 
-	struct VoxelData {
-		uint8_t buf[512 * 8] {};
-		bool dataFound = false;
-		bool paletteFound = false;
-
-		int get(int x, int y, int z) const {
-			const uint32_t offset = y * MAX_SIZE * MAX_SIZE + z * MAX_SIZE + x;
-			if (offset >= sizeof(buf)) {
-				return 0;
-			}
-			return buf[offset];
-		}
+	struct MinecraftSectionPalette {
+		core::Buffer<uint8_t> pal;
+		uint32_t numBits;
 	};
 
-	void reset();
+	using SectionVolumes = core::DynamicArray<voxel::RawVolume *>;
 
-	bool skip(io::ZipReadStream &stream, NamedBinaryTag &nbt, bool marker);
-	bool getNext(io::ReadStream &stream, NamedBinaryTag &nbt);
+	voxel::RawVolume* error(SectionVolumes &volumes);
+	voxel::RawVolume* finalize(SectionVolumes& volumes, int xPos, int zPos);
 
-	// DataVersion >= 2844
-	bool parseSections(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, int xPos, int zPos);
-	bool parseBlockStates(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, int y, int xPos, int zPos);
-	bool parsePalette(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, VoxelData &voxelData);
-	bool parseData(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, VoxelData &voxelData);
-	uint8_t chunkVoxelColor(VoxelData &voxelData, int section, const glm::ivec3 &pos);
+	static uint8_t getVoxel(const priv::NamedBinaryTag &data, const glm::ivec3 &pos);
+	static uint8_t getVoxel(const MinecraftSectionPalette& secPal, const priv::NamedBinaryTag& data, const glm::ivec3 &pos);
 
-	bool parseNBTChunk(SceneGraph& sceneGraph, io::ZipReadStream &stream);
-	bool readCompressedNBT(SceneGraph& sceneGraph, io::SeekableReadStream &stream);
-	bool loadMinecraftRegion(SceneGraph& sceneGraph, io::SeekableReadStream &stream, int chunkX, int chunkZ);
+	// shared across versions
+	bool parsePaletteList(const priv::NamedBinaryTag& palette, MinecraftSectionPalette &sectionPal);
+
+	// new version (>= 2844)
+	voxel::RawVolume* parseSections(const priv::NamedBinaryTag &root, int sector);
+
+	// old version (< 2844)
+	voxel::RawVolume* parseLevelCompound(const priv::NamedBinaryTag &root, int sector, bool paletteMultiBits);
+
+	bool readCompressedNBT(SceneGraph& sceneGraph, io::SeekableReadStream &stream, int sector);
+	bool loadMinecraftRegion(SceneGraph& sceneGraph, io::SeekableReadStream &stream);
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override {
-		reset();
 		return false;
 	}
 };

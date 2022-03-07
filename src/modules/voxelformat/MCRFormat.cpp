@@ -3,14 +3,19 @@
  */
 
 #include "MCRFormat.h"
-#include "SDL_endian.h"
+#include "core/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/StringMap.h"
 #include "io/File.h"
-#include "io/ZipReadStream.h"
 #include "io/MemoryReadStream.h"
+#include "io/ZipReadStream.h"
+#include "private/NamedBinaryTag.h"
+#include "voxel/RawVolumeWrapper.h"
+#include "voxelutil/VolumeCropper.h"
+#include "voxelutil/VolumeMerger.h"
 
 #include <glm/common.hpp>
 
@@ -26,38 +31,7 @@ namespace voxel {
 		}                                                                                                              \
 	} while (0)
 
-#define wrapBool(expression)                                                                                           \
-	do {                                                                                                               \
-		if (!(expression)) {                                                                                           \
-			Log::error("Could not load file: Not enough data in stream " CORE_STRINGIFY(#expression) " at " SDL_FILE   \
-																									 ":%i",            \
-					   SDL_LINE);                                                                                      \
-			return false;                                                                                              \
-		}                                                                                                              \
-	} while (0)
-
-static const char *nbtTagNames[] = {
-	"END",
-	"BYTE",
-	"SHORT",
-	"INT",
-	"LONG",
-	"FLOAT",
-	"DOUBLE",
-	"BYTE_ARRAY",
-	"STRING",
-	"LIST",
-	"COMPOUND",
-	"INT_ARRAY",
-	"LONG_ARRAY"
-};
-
-void MCRFormat::reset() {
-	core_memset(_chunkTimestamps, 0, sizeof(_chunkTimestamps));
-}
-
 bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
-	reset();
 	const int64_t length = stream.size();
 	if (length < SECTOR_BYTES) {
 		Log::error("File does not contain enough data");
@@ -74,6 +48,11 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		type = extension.last();
 		chunkX = 0;
 		chunkZ = 0;
+	}
+
+	_palette.minecraft();
+	for (size_t i = 0; i < _palette.size(); ++i) {
+		_paletteMapping[i] = findClosestIndex(core::Color::fromRGBA(_palette.colors[i]));
 	}
 
 	switch (type) {
@@ -98,10 +77,9 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		for (int i = 0; i < SECTOR_INTS; ++i) {
 			uint32_t lastModValue;
 			wrap(stream.readUInt32BE(lastModValue));
-			_chunkTimestamps[i] = lastModValue;
 		}
 
-		const bool success = loadMinecraftRegion(sceneGraph, stream, chunkX, chunkZ);
+		const bool success = loadMinecraftRegion(sceneGraph, stream);
 		return success;
 	}
 	}
@@ -109,22 +87,18 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	return false;
 }
 
-bool MCRFormat::loadMinecraftRegion(SceneGraph &sceneGraph, io::SeekableReadStream &stream, int chunkX, int chunkZ) {
+bool MCRFormat::loadMinecraftRegion(SceneGraph &sceneGraph, io::SeekableReadStream &stream) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		if (_offsets[i].sectorCount == 0u || _offsets[i].offset < sizeof(_offsets)) {
-			Log::debug("Skip sector %i (offset: %u)", i, _offsets[i].offset);
 			continue;
 		}
 		if (_offsets[i].offset + 6 >= (uint32_t)stream.size()) {
-			Log::error("Exceeded stream boundaries: %u, %i", (int)_offsets[i].offset, (int)stream.size());
 			return false;
 		}
 		if (stream.seek(_offsets[i].offset) == -1) {
-			Log::debug("Failed to load minecraft chunk section %i for offset %u", i, (int)_offsets[i].offset);
 			continue;
 		}
-		Log::debug("Chunk %i:%i sector %i", chunkX, chunkZ, i);
-		if (!readCompressedNBT(sceneGraph, stream)) {
+		if (!readCompressedNBT(sceneGraph, stream, i)) {
 			Log::error("Failed to load minecraft chunk section %i for offset %u", i, (int)_offsets[i].offset);
 			return false;
 		}
@@ -133,7 +107,7 @@ bool MCRFormat::loadMinecraftRegion(SceneGraph &sceneGraph, io::SeekableReadStre
 	return true;
 }
 
-bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream &stream) {
+bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream &stream, int sector) {
 	uint32_t nbtSize;
 	wrap(stream.readUInt32BE(nbtSize));
 	if (nbtSize == 0) {
@@ -156,653 +130,567 @@ bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream
 	// the version is included in the length
 	--nbtSize;
 
-	const int64_t pos = stream.pos();
-	io::ZipReadStream zipStream(stream, nbtSize);
-	if (!parseNBTChunk(sceneGraph, zipStream)) {
+	io::ZipReadStream zipStream(stream, (int)nbtSize);
+	priv::NamedBinaryTagContext ctx;
+	ctx.stream = &zipStream;
+	const priv::NamedBinaryTag &root = priv::NamedBinaryTag::parse(ctx);
+	if (!root.valid()) {
+		Log::error("Could not parse nbt structure");
 		return false;
 	}
-	return stream.seek(pos + nbtSize) != -1;
-}
 
-// this list was found in enkiMI by Doug Binks
-static const struct {
-	const core::String name;
-	const uint8_t id;
-} TYPES[] = {{"minecraft:air", 0},
-			 {"minecraft:stone", 1},
-			 {"minecraft:andesite", 1},
-			 {"minecraft:seagrass", 2},
-			 {"minecraft:grass", 2},
-			 {"minecraft:grass_block", 2},
-			 {"minecraft:dirt", 3},
-			 {"minecraft:cobblestone", 4},
-			 {"minecraft:oak_planks", 5},
-			 {"minecraft:oak_sapling", 6},
-			 {"minecraft:bedrock", 7},
-			 {"minecraft:flowing_water", 8},
-			 {"minecraft:water", 9},
-			 {"minecraft:flowing_lava", 10},
-			 {"minecraft:lava", 11},
-			 {"minecraft:sand", 12},
-			 {"minecraft:gravel", 13},
-			 {"minecraft:gold_ore", 14},
-			 {"minecraft:iron_ore", 15},
-			 {"minecraft:coal_ore", 16},
-			 {"minecraft:oak_log", 17},
-			 {"minecraft:acacia_leaves", 18},
-			 {"minecraft:spruce_leaves", 18},
-			 {"minecraft:oak_leaves", 18},
-			 {"minecraft:jungle_leaves", 18},
-			 {"minecraft:birch_leaves", 18},
-			 {"minecraft:sponge", 19},
-			 {"minecraft:glass", 20},
-			 {"minecraft:lapis_ore", 21},
-			 {"minecraft:lapis_block", 22},
-			 {"minecraft:dispenser", 23},
-			 {"minecraft:sandstone", 24},
-			 {"minecraft:note_block", 25},
-			 {"minecraft:red_bed", 26},
-			 {"minecraft:powered_rail", 27},
-			 {"minecraft:detector_rail", 28},
-			 {"minecraft:sticky_piston", 29},
-			 {"minecraft:cobweb", 30},
-			 {"minecraft:tall_grass", 31},
-			 {"minecraft:tall_seagrass", 31},
-			 {"minecraft:dead_bush", 32},
-			 {"minecraft:piston", 33},
-			 {"minecraft:piston_head", 34},
-			 {"minecraft:white_concrete", 35},
-			 {"minecraft:dandelion", 37},
-			 {"minecraft:poppy", 38},
-			 {"minecraft:brown_mushroom", 39},
-			 {"minecraft:red_mushroom", 40},
-			 {"minecraft:gold_block", 41},
-			 {"minecraft:iron_block", 42},
-			 {"minecraft:smooth_stone_slab", 43},
-			 {"minecraft:stone_slab", 44},
-			 {"minecraft:brick_wall", 45},
-			 {"minecraft:bricks", 45},
-			 {"minecraft:tnt", 46},
-			 {"minecraft:bookshelf", 47},
-			 {"minecraft:mossy_cobblestone", 48},
-			 {"minecraft:obsidian", 49},
-			 {"minecraft:torch", 50},
-			 {"minecraft:fire", 51},
-			 {"minecraft:spawner", 52},
-			 {"minecraft:oak_stairs", 53},
-			 {"minecraft:chest", 54},
-			 {"minecraft:redstone_wire", 55},
-			 {"minecraft:diamond_ore", 56},
-			 {"minecraft:diamond_block", 57},
-			 {"minecraft:crafting_table", 58},
-			 {"minecraft:wheat", 59},
-			 {"minecraft:farmland", 60},
-			 {"minecraft:furnace", 61},
-			 {"minecraft:campfire", 62},
-			 {"minecraft:oak_sign", 63},
-			 {"minecraft:oak_door", 64},
-			 {"minecraft:ladder", 65},
-			 {"minecraft:rail", 66},
-			 {"minecraft:stone_stairs", 67},
-			 {"minecraft:oak_wall_sign", 68},
-			 {"minecraft:lever", 69},
-			 {"minecraft:stone_pressure_plate", 70},
-			 {"minecraft:iron_door", 71},
-			 {"minecraft:oak_pressure_plate", 72},
-			 {"minecraft:redstone_ore", 73},
-			 {"minecraft:red_concrete", 74},
-			 {"minecraft:redstone_wall_torch", 75},
-			 {"minecraft:redstone_torch", 76},
-			 {"minecraft:stone_button", 77},
-			 {"minecraft:snow_block", 78},
-			 {"minecraft:ice", 79},
-			 {"minecraft:snow", 80},
-			 {"minecraft:cactus", 81},
-			 {"minecraft:clay", 82},
-			 {"minecraft:bamboo", 83},
-			 {"minecraft:jukebox", 84},
-			 {"minecraft:oak_fence", 85},
-			 {"minecraft:pumpkin", 86},
-			 {"minecraft:netherrack", 87},
-			 {"minecraft:soul_sand", 88},
-			 {"minecraft:glowstone", 89},
-			 {"minecraft:portal", 90},
-			 {"minecraft:carved_pumpkin", 91},
-			 {"minecraft:cake", 92},
-			 {"minecraft:repeater", 93},
-			 {"minecraft:skeleton_skull", 94},
-			 {"minecraft:white_stained_glass", 95},
-			 {"minecraft:oak_trapdoor", 96},
-			 {"minecraft:turtle_egg", 97},
-			 {"minecraft:stone_bricks", 98},
-			 {"minecraft:brown_mushroom_block", 99},
-			 {"minecraft:red_mushroom_block", 100},
-			 {"minecraft:iron_bars", 101},
-			 {"minecraft:light_blue_stained_glass_pane", 102},
-			 {"minecraft:melon", 103},
-			 {"minecraft:pumpkin_stem", 104},
-			 {"minecraft:melon_stem", 105},
-			 {"minecraft:vine", 106},
-			 {"minecraft:oak_fence_gate", 107},
-			 {"minecraft:brick_stairs", 108},
-			 {"minecraft:stone_brick_stairs", 109},
-			 {"minecraft:mycelium", 110},
-			 {"minecraft:light_gray_concrete", 111},
-			 {"minecraft:nether_brick", 112},
-			 {"minecraft:nether_brick_fence", 113},
-			 {"minecraft:nether_brick_stairs", 114},
-			 {"minecraft:nether_wart", 115},
-			 {"minecraft:enchanting_table", 116},
-			 {"minecraft:brewing_stand", 117},
-			 {"minecraft:cauldron", 118},
-			 {"minecraft:end_portal", 119},
-			 {"minecraft:end_portal_frame", 120},
-			 {"minecraft:end_stone", 121},
-			 {"minecraft:dragon_egg", 122},
-			 {"minecraft:redstone_lamp", 123},
-			 {"minecraft:shroomlight", 124},
-			 {"minecraft:oak_wood", 125},
-			 {"minecraft:oak_slab", 126},
-			 {"minecraft:cocoa", 127},
-			 {"minecraft:sandstone_stairs", 128},
-			 {"minecraft:emerald_ore", 129},
-			 {"minecraft:ender_chest", 130},
-			 {"minecraft:tripwire_hook", 131},
-			 {"minecraft:tripwire", 132},
-			 {"minecraft:emerald_block", 133},
-			 {"minecraft:spruce_stairs", 134},
-			 {"minecraft:birch_stairs", 135},
-			 {"minecraft:jungle_stairs", 136},
-			 {"minecraft:command_block", 137},
-			 {"minecraft:beacon", 138},
-			 {"minecraft:cobblestone_wall", 139},
-			 {"minecraft:flower_pot", 140},
-			 {"minecraft:carrots", 141},
-			 {"minecraft:potatoes", 142},
-			 {"minecraft:oak_button", 143},
-			 {"minecraft:skeleton_wall_skull", 144},
-			 {"minecraft:anvil", 145},
-			 {"minecraft:trapped_chest", 146},
-			 {"minecraft:light_weighted_pressure_plate", 147},
-			 {"minecraft:heavy_weighted_pressure_plate", 148},
-			 {"minecraft:comparator", 149},
-			 {"minecraft:chain", 150},
-			 {"minecraft:daylight_detector", 151},
-			 {"minecraft:redstone_block", 152},
-			 {"minecraft:nether_quartz_ore", 153},
-			 {"minecraft:hopper", 154},
-			 {"minecraft:quartz_block", 155},
-			 {"minecraft:quartz_stairs", 156},
-			 {"minecraft:activator_rail", 157},
-			 {"minecraft:dropper", 158},
-			 {"minecraft:pink_stained_glass", 159},
-			 {"minecraft:white_stained_glass_pane", 160},
-			 {"minecraft:dead_brain_coral", 161},
-			 {"minecraft:acacia_planks", 162},
-			 {"minecraft:acacia_stairs", 163},
-			 {"minecraft:dark_oak_stairs", 164},
-			 {"minecraft:slime_block", 165},
-			 {"minecraft:barrier", 166},
-			 {"minecraft:iron_trapdoor", 167},
-			 {"minecraft:prismarine", 168},
-			 {"minecraft:sea_lantern", 169},
-			 {"minecraft:hay_block", 170},
-			 {"minecraft:white_carpet", 171},
-			 {"minecraft:coarse_dirt", 172},
-			 {"minecraft:coal_block", 173},
-			 {"minecraft:packed_ice", 174},
-			 {"minecraft:orange_concrete", 175},
-			 {"minecraft:white_banner", 176},
-			 {"minecraft:white_wall_banner", 177},
-			 {"minecraft:white_concrete_powder", 178},
-			 {"minecraft:red_sandstone", 179},
-			 {"minecraft:red_sandstone_stairs", 180},
-			 {"minecraft:red_sandstone_wall", 181},
-			 {"minecraft:red_sandstone_slab", 182},
-			 {"minecraft:spruce_fence_gate", 183},
-			 {"minecraft:birch_fence_gate", 184},
-			 {"minecraft:jungle_fence_gate", 185},
-			 {"minecraft:dark_oak_fence_gate", 186},
-			 {"minecraft:acacia_fence_gate", 187},
-			 {"minecraft:spruce_fence", 188},
-			 {"minecraft:birch_fence", 189},
-			 {"minecraft:jungle_fence", 190},
-			 {"minecraft:dark_oak_fence", 191},
-			 {"minecraft:acacia_fence", 192},
-			 {"minecraft:spruce_door", 193},
-			 {"minecraft:birch_door", 194},
-			 {"minecraft:jungle_door", 195},
-			 {"minecraft:acacia_door", 196},
-			 {"minecraft:dark_oak_door", 197},
-			 {"minecraft:end_rod", 198},
-			 {"minecraft:chorus_plant", 199},
-			 {"minecraft:chorus_flower", 200},
-			 {"minecraft:purpur_block", 201},
-			 {"minecraft:purpur_pillar", 202},
-			 {"minecraft:purpur_stairs", 203},
-			 {"minecraft:purple_stained_glass", 204},
-			 {"minecraft:purpur_slab", 205},
-			 {"minecraft:end_stone_bricks", 206},
-			 {"minecraft:beetroots", 207},
-			 {"minecraft:grass_path", 208},
-			 {"minecraft:end_gateway", 209},
-			 {"minecraft:repeating_command_block", 210},
-			 {"minecraft:chain_command_block", 211},
-			 {"minecraft:frosted_ice", 212},
-			 {"minecraft:magma_block", 213},
-			 {"minecraft:nether_wart_block", 214},
-			 {"minecraft:red_nether_bricks", 215},
-			 {"minecraft:bone_block", 216},
-			 {"minecraft:structure_void", 217},
-			 {"minecraft:observer", 218},
-			 {"minecraft:white_shulker_box", 219},
-			 {"minecraft:orange_shulker_box", 220},
-			 {"minecraft:magenta_shulker_box", 221},
-			 {"minecraft:light_blue_shulker_box", 222},
-			 {"minecraft:yellow_shulker_box", 223},
-			 {"minecraft:lime_shulker_box", 224},
-			 {"minecraft:pink_shulker_box", 225},
-			 {"minecraft:gray_shulker_box", 226},
-			 {"minecraft:light_gray_shulker_box", 227},
-			 {"minecraft:cyan_shulker_box", 228},
-			 {"minecraft:purple_shulker_box", 229},
-			 {"minecraft:blue_shulker_box", 230},
-			 {"minecraft:brown_shulker_box", 231},
-			 {"minecraft:green_shulker_box", 232},
-			 {"minecraft:red_shulker_box", 233},
-			 {"minecraft:black_shulker_box", 234},
-			 {"minecraft:white_glazed_terracotta", 235},
-			 {"minecraft:orange_glazed_terracotta", 236},
-			 {"minecraft:magenta_glazed_terracotta", 237},
-			 {"minecraft:light_blue_glazed_terracotta", 238},
-			 {"minecraft:yellow_glazed_terracotta", 239},
-			 {"minecraft:lime_glazed_terracotta", 240},
-			 {"minecraft:pink_glazed_terracotta", 241},
-			 {"minecraft:gray_glazed_terracotta", 242},
-			 {"minecraft:light_gray_glazed_terracotta", 243},
-			 {"minecraft:cyan_glazed_terracotta", 244},
-			 {"minecraft:purple_glazed_terracotta", 245},
-			 {"minecraft:blue_glazed_terracotta", 246},
-			 {"minecraft:brown_glazed_terracotta", 247},
-			 {"minecraft:green_glazed_terracotta", 248},
-			 {"minecraft:red_glazed_terracotta", 249},
-			 {"minecraft:black_glazed_terracotta", 250},
-			 {"minecraft:gray_concrete", 251},
-			 {"minecraft:gray_concrete_powder", 252},
-			 {"minecraft:structure_block", 255}};
-
-bool MCRFormat::parseData(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, VoxelData &voxelData) {
-	core_assert(nbt.id == TagId::LONG_ARRAY);
-	core_assert(nbt.listItems < lengthof(voxelData.buf));
-	voxelData.dataFound = nbt.listItems > 0;
-	return stream.read(voxelData.buf, nbt.listItems * 8) == (int)nbt.listItems * 8;
-}
-
-bool MCRFormat::parsePalette(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, VoxelData &voxelData) {
-	const uint32_t items = nbt.listItems;
-	const int compoundLevel = nbt.level;
-	++nbt.level;
-	voxelData.paletteFound = true;
-	core::DynamicArray<uint32_t> idMapping(items);
-	uint32_t paletteNum = 0;
-	uint32_t numBlockIDs = lengthof(TYPES);
-	for (uint32_t n = 0; n < items; ++n) {
-		while (nbt.level >= compoundLevel) {
-			wrapBool(getNext(stream, nbt));
-			if (nbt.name == "Name" && nbt.id == TagId::STRING) {
-				uint16_t nameLength;
-				wrap(stream.readUInt16BE(nameLength));
-				Log::debug("%*sLoad palette name of length %u", nbt.level * 3, " ", nameLength);
-
-				core::String name;
-				for (uint16_t i = 0u; i < nameLength; ++i) {
-					uint8_t chr;
-					wrap(stream.readUInt8(chr));
-					name += (char)chr;
-				}
-				Log::debug("%*sPalette name: %s", nbt.level * 3, " ", name.c_str());
-				idMapping[paletteNum] = 0;
-
-				for (uint32_t id = 0; id < numBlockIDs; ++id) {
-					if (TYPES[id].name != name) {
-						continue;
-					}
-					idMapping[paletteNum] = id;
-					break;
-				}
-				++paletteNum;
-			} else {
-				wrapBool(skip(stream, nbt, true));
-			}
+	voxel::RawVolume *volume;
+	const int32_t dataVersion = root.get("DataVersion").int32();
+	if (dataVersion >= 2844) {
+		volume = parseSections(root, sector);
+		if (volume == nullptr) {
+			return false;
 		}
-		if (n != items - 1) {
-			++nbt.level;
+	} else {
+		// prior to 1.16 (2556) the palette entries used multiple 64bit fields
+		volume = parseLevelCompound(root, sector, dataVersion < 2556);
+		if (volume == nullptr) {
+			return false;
 		}
 	}
-	--nbt.level;
+	SceneGraphNode node(SceneGraphNodeType::Model);
+	node.setVolume(volume, true);
+	sceneGraph.emplace(core::move(node));
 	return true;
 }
 
-uint8_t MCRFormat::chunkVoxelColor(VoxelData &voxelData, int section, const glm::ivec3 &pos) {
-	core_assert(0 <= pos.x && pos.x < MAX_SIZE);
-	core_assert(0 <= pos.y && pos.y < MAX_SIZE);
-	core_assert(0 <= pos.z && pos.z < MAX_SIZE);
-	return voxelData.get(pos.x, pos.y, pos.z);
+uint8_t MCRFormat::getVoxel(const priv::NamedBinaryTag &data, const glm::ivec3 &pos) {
+	uint32_t index = pos.y * MAX_SIZE * MAX_SIZE + pos.z * MAX_SIZE + pos.x;
+	uint64_t val = (*data.longArray())[index / 8];
+	const uint32_t bit = index % 8;
+	return ((val & (1 << bit)) >> bit) & 0xFF;
 }
 
-bool MCRFormat::parseBlockStates(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, int y, int xPos, int zPos) {
-	const int compoundLevel = nbt.level;
+uint8_t MCRFormat::getVoxel(const MinecraftSectionPalette &secPal, const priv::NamedBinaryTag &data,
+							const glm::ivec3 &pos) {
+	const uint32_t i = pos.y * MAX_SIZE * MAX_SIZE + pos.z * MAX_SIZE + pos.x;
+	const uint32_t bitsPerBlock = secPal.numBits;
+	const uint32_t blocksPerLong = 64 / secPal.numBits;
+	const uint64_t mask = UINT64_MAX >> (64 - secPal.numBits);
+	const core::DynamicArray<int64_t> &blocks = *data.longArray();
+	const uint64_t blockIndex = (blocks[i / blocksPerLong] >> (bitsPerBlock * (i % blocksPerLong))) & mask;
 
-	VoxelData voxelData;
-	while (nbt.level >= compoundLevel) {
-		wrapBool(getNext(stream, nbt));
-		if (nbt.name == "data" && nbt.id == TagId::LONG_ARRAY) {
-			wrapBool(parseData(sceneGraph, stream, nbt, voxelData));
-		} else if (nbt.name == "palette" && nbt.id == TagId::LIST) {
-			wrapBool(parsePalette(sceneGraph, stream, nbt, voxelData));
-		} else if (nbt.id == TagId::END) {
-			break;
-		} else {
-			Log::debug("%*sunknown nbt '%s' (type %s)", nbt.level * 3, " ", nbt.name.c_str(), nbtTagNames[(int)nbt.listId]);
-			wrapBool(skip(stream, nbt, true));
+	if (blockIndex < secPal.pal.size()) {
+		return secPal.pal[blockIndex];
+	}
+	return 0;
+}
+
+voxel::RawVolume *MCRFormat::error(SectionVolumes &volumes) {
+	for (voxel::RawVolume *v : volumes) {
+		delete v;
+	}
+	return nullptr;
+}
+
+voxel::RawVolume* MCRFormat::finalize(SectionVolumes& volumes, int xPos, int zPos) {
+	// TODO: only merge connected y chunks - don't fill empty chunks - just a waste of memory
+	voxel::RawVolume *merged = voxel::merge(volumes);
+	for (voxel::RawVolume* v : volumes) {
+		delete v;
+	}
+	merged->translate(glm::ivec3(xPos * MAX_SIZE, 0, zPos * MAX_SIZE));
+	voxel::RawVolume *cropped = voxel::cropVolume(merged);
+	delete merged;
+	return cropped;
+}
+
+voxel::RawVolume *MCRFormat::parseSections(const priv::NamedBinaryTag &root, int sector) {
+	const priv::NamedBinaryTag &sections = root.get("sections");
+	if (sections.type() != priv::TagType::LIST) {
+		return nullptr;
+	}
+
+	const int32_t xPos = root.get("xPos").int32();
+	const int32_t zPos = root.get("zPos").int32();
+
+	Log::debug("xpos: %i, zpos: %i", xPos, zPos);
+
+	const priv::NBTList *sectionsList = sections.list();
+	if (sectionsList == nullptr) {
+		Log::error("Could not find sections entries");
+		return nullptr;
+	}
+	SectionVolumes volumes;
+	for (const priv::NamedBinaryTag &section : *sectionsList) {
+		const priv::NamedBinaryTag &blockStates = section.get("block_states");
+		if (!blockStates.valid()) {
+			Log::error("Could not find 'block_states'");
+			return error(volumes);
 		}
-	}
+		const int8_t sectionY = section.get("Y").int8();
 
-	if (!voxelData.dataFound) {
-		return true;
-	}
+		const priv::NamedBinaryTag &palette = blockStates.get("palette");
+		if (!palette.valid()) {
+			Log::error("Could not find 'palette'");
+			return error(volumes);
+		}
+		MinecraftSectionPalette secPal;
+		if (!parsePaletteList(palette, secPal)) {
+			Log::error("Could not parse palette chunk");
+			return error(volumes);
+		}
+		const priv::NamedBinaryTag &data = blockStates.get("data");
+		const bool hasData = data.type() == priv::TagType::LONG_ARRAY && !data.longArray()->empty();
 
-	const glm::ivec3 chunkSize(MAX_SIZE - 1);
-	for (int section = 0; section < CHUNK_SECTIONS; ++section) {
-		const glm::ivec3 chunkMins(xPos, (section - 128) * MAX_SIZE, zPos);
-		const voxel::Region region(chunkMins, chunkMins + chunkSize);
+		constexpr glm::ivec3 mins(0, 0, 0);
+		constexpr glm::ivec3 maxs(MAX_SIZE - 1, MAX_SIZE - 1, MAX_SIZE - 1);
+		const voxel::Region region(mins, maxs);
 		voxel::RawVolume *v = new voxel::RawVolume(region);
-		glm::ivec3 sPos;
-		for (sPos.y = 0; sPos.y <= chunkSize.y; ++sPos.y) {
-			for (sPos.z = 0; sPos.z <= chunkSize.z; ++sPos.z) {
-				for (sPos.x = 0; sPos.x <= chunkSize.x; ++sPos.x) {
-					const uint8_t color = chunkVoxelColor(voxelData, section, sPos);
-					if (color) {
-						const uint8_t index = convertPaletteIndex(color);
-						const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-						v->setVoxel(chunkMins.x + sPos.x, chunkMins.y + sPos.y, chunkMins.z + sPos.z, voxel);
+		voxel::RawVolumeWrapper wrapper(v);
+
+		if (secPal.pal.empty()) {
+			glm::ivec3 sPos;
+			for (sPos.y = 0; sPos.y < MAX_SIZE; ++sPos.y) {
+				for (sPos.z = 0; sPos.z < MAX_SIZE; ++sPos.z) {
+					for (sPos.x = 0; sPos.x < MAX_SIZE; ++sPos.x) {
+						const uint8_t color = getVoxel(data, sPos);
+						if (color) {
+							const uint8_t index = convertPaletteIndex(color);
+							const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+							wrapper.setVoxel(sPos, voxel);
+						}
+					}
+				}
+			}
+		} else if (hasData) {
+			glm::ivec3 sPos;
+			for (sPos.y = 0; sPos.y < MAX_SIZE; ++sPos.y) {
+				for (sPos.z = 0; sPos.z < MAX_SIZE; ++sPos.z) {
+					for (sPos.x = 0; sPos.x < MAX_SIZE; ++sPos.x) {
+						const uint8_t color = getVoxel(secPal, data, sPos);
+						if (color) {
+							const uint8_t index = convertPaletteIndex(color);
+							const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+							wrapper.setVoxel(sPos, voxel);
+						}
 					}
 				}
 			}
 		}
-		SceneGraphNode node;
-		node.setVolume(v, true);
-		sceneGraph.emplace(core::move(node));
-	}
-	return true;
-}
 
-bool MCRFormat::parseSections(SceneGraph &sceneGraph, io::ZipReadStream &stream, NamedBinaryTag &nbt, int xPos, int zPos) {
-	const uint32_t items = nbt.listItems;
-	const int compoundLevel = nbt.level;
-	++nbt.level;
-	const core::String name = nbt.name;
-	Log::debug("Parse section with %i items ('%s')", items, name.c_str());
-	for (uint32_t n = 0; n < items; ++n) {
-		int8_t y = 0;
-		while (nbt.level >= compoundLevel) {
-			wrapBool(getNext(stream, nbt));
-			if (nbt.name == "Y" && nbt.id == TagId::BYTE) {
-				wrap(stream.readInt8(y));
-				Log::debug("%*sSection y: %u", nbt.level * 3, " ", y);
-			} else if (nbt.name == "block_states" && nbt.id == TagId::COMPOUND) {
-				wrapBool(parseBlockStates(sceneGraph, stream, nbt, y, xPos, zPos));
-			} else if (nbt.name == "biomes" && nbt.id == TagId::COMPOUND) {
-				wrapBool(skip(stream, nbt, true));
-			} else if (nbt.name == "BlockLight" && nbt.id == TagId::BYTE_ARRAY) {
-				wrapBool(skip(stream, nbt, true));
-			} else if (nbt.name == "SkyLight" && nbt.id == TagId::BYTE_ARRAY) {
-				wrapBool(skip(stream, nbt, true));
-			} else if (nbt.id == TagId::END) {
-			} else {
-				Log::debug("%*sunknown nbt '%s' (type %s)", nbt.level * 3, " ", nbt.name.c_str(), nbtTagNames[(int)nbt.listId]);
-				wrapBool(skip(stream, nbt, true));
-			}
-		}
-		if (n != items - 1) {
-			++nbt.level;
+		if (wrapper.dirtyRegion().isValid()) {
+			glm::ivec3 translate;
+			translate.x = 0;
+			translate.y = sectionY * MAX_SIZE;
+			translate.z = 0;
+
+			v->translate(translate);
+			volumes.push_back(v);
+		} else {
+			delete v;
 		}
 	}
-	Log::debug("End section");
-	--nbt.level;
-
-	return true;
+	return finalize(volumes, xPos, zPos);
 }
 
-bool MCRFormat::parseNBTChunk(SceneGraph &sceneGraph, io::ZipReadStream &stream) {
-	NamedBinaryTag nbt;
-	wrapBool(getNext(stream, nbt));
+voxel::RawVolume *MCRFormat::parseLevelCompound(const priv::NamedBinaryTag &root, int sector, bool paletteMultiBits) {
+	const priv::NamedBinaryTag &levels = root.get("Level");
+	if (!levels.valid()) {
+		Log::error("Could not find 'sections' or 'Level' tags");
+		return nullptr;
+	}
+	if (levels.type() != priv::TagType::COMPOUND) {
+		Log::error("Invalid type %i", (int)levels.type());
+		return nullptr;
+	}
+	const int32_t xPos = levels.get("xPos").int32();
+	const int32_t zPos = levels.get("zPos").int32();
 
-	if (nbt.id != TagId::COMPOUND) {
-		Log::error("Failed to read root compound");
+	const priv::NamedBinaryTag &sections = root.get("Sections");
+	if (sections.type() != priv::TagType::LIST) {
+		return nullptr;
+	}
+	SectionVolumes volumes;
+	const priv::NBTList &sectionsList = *sections.list();
+	for (const priv::NamedBinaryTag &section : sectionsList) {
+		// TODO: "Blocks"(byte_array)
+		// const priv::NamedBinaryTag &blocks = section.get("Blocks");
+		// TODO: "Data"(byte_array)
+		// const priv::NamedBinaryTag &data = section.get("Data");
+		// TODO: "Y"(byte)
+		// const int32_t y = section.get("Y").int32();
+		// TODO: "BlockStates"(long_array)
+		// const priv::NamedBinaryTag &blockStates = section.get("BlockStates");
+		const priv::NamedBinaryTag &palette = section.get("Palette");
+		MinecraftSectionPalette sectionPal;
+		if (!parsePaletteList(palette, sectionPal)) {
+			return error(volumes);
+		}
+		// TODO: implement me
+	}
+	return finalize(volumes, xPos, zPos);
+}
+
+using PaletteMap = core::StringMap<int>;
+
+// this list was found in enkiMI by Doug Binks and extended
+static const PaletteMap &getPaletteMap() {
+	static const PaletteMap mcPalette{{"air", 0},
+									  {"stone", 1},
+									  {"andesite", 1},
+									  {"seagrass", 2},
+									  {"grass", 2},
+									  {"grass_block", 2},
+									  {"dirt", 3},
+									  {"cobblestone", 4},
+									  {"oak_planks", 5},
+									  {"oak_sapling", 6},
+									  {"bedrock", 7},
+									  {"flowing_water", 8},
+									  {"water", 9},
+									  {"flowing_lava", 10},
+									  {"lava", 11},
+									  {"sand", 12},
+									  {"gravel", 13},
+									  {"gold_ore", 14},
+									  {"iron_ore", 15},
+									  {"coal_ore", 16},
+									  {"oak_log", 17},
+									  {"acacia_leaves", 18},
+									  {"spruce_leaves", 18},
+									  {"oak_leaves", 18},
+									  {"jungle_leaves", 18},
+									  {"birch_leaves", 18},
+									  {"sponge", 19},
+									  {"glass", 20},
+									  {"lapis_ore", 21},
+									  {"lapis_block", 22},
+									  {"dispenser", 23},
+									  {"sandstone", 24},
+									  {"note_block", 25},
+									  {"red_bed", 26},
+									  {"powered_rail", 27},
+									  {"detector_rail", 28},
+									  {"sticky_piston", 29},
+									  {"cobweb", 30},
+									  {"tall_grass", 31},
+									  {"tall_seagrass", 31},
+									  {"dead_bush", 32},
+									  {"piston", 33},
+									  {"piston_head", 34},
+									  {"white_concrete", 35},
+									  {"dandelion", 37},
+									  {"poppy", 38},
+									  {"brown_mushroom", 39},
+									  {"red_mushroom", 40},
+									  {"gold_block", 41},
+									  {"iron_block", 42},
+									  {"smooth_stone_slab", 43},
+									  {"stone_slab", 44},
+									  {"brick_wall", 45},
+									  {"bricks", 45},
+									  {"tnt", 46},
+									  {"bookshelf", 47},
+									  {"mossy_cobblestone", 48},
+									  {"obsidian", 49},
+									  {"torch", 50},
+									  {"fire", 51},
+									  {"spawner", 52},
+									  {"oak_stairs", 53},
+									  {"chest", 54},
+									  {"redstone_wire", 55},
+									  {"diamond_ore", 56},
+									  {"diamond_block", 57},
+									  {"crafting_table", 58},
+									  {"wheat", 59},
+									  {"farmland", 60},
+									  {"furnace", 61},
+									  {"campfire", 62},
+									  {"oak_sign", 63},
+									  {"oak_door", 64},
+									  {"ladder", 65},
+									  {"rail", 66},
+									  {"stone_stairs", 67},
+									  {"oak_wall_sign", 68},
+									  {"lever", 69},
+									  {"stone_pressure_plate", 70},
+									  {"iron_door", 71},
+									  {"oak_pressure_plate", 72},
+									  {"redstone_ore", 73},
+									  {"red_concrete", 74},
+									  {"redstone_wall_torch", 75},
+									  {"redstone_torch", 76},
+									  {"stone_button", 77},
+									  {"snow_block", 78},
+									  {"ice", 79},
+									  {"snow", 80},
+									  {"cactus", 81},
+									  {"clay", 82},
+									  {"bamboo", 83},
+									  {"jukebox", 84},
+									  {"oak_fence", 85},
+									  {"pumpkin", 86},
+									  {"netherrack", 87},
+									  {"soul_sand", 88},
+									  {"glowstone", 89},
+									  {"portal", 90},
+									  {"carved_pumpkin", 91},
+									  {"cake", 92},
+									  {"repeater", 93},
+									  {"skeleton_skull", 94},
+									  {"white_stained_glass", 95},
+									  {"oak_trapdoor", 96},
+									  {"turtle_egg", 97},
+									  {"stone_bricks", 98},
+									  {"brown_mushroom_block", 99},
+									  {"red_mushroom_block", 100},
+									  {"iron_bars", 101},
+									  {"light_blue_stained_glass_pane", 102},
+									  {"melon", 103},
+									  {"pumpkin_stem", 104},
+									  {"melon_stem", 105},
+									  {"vine", 106},
+									  {"oak_fence_gate", 107},
+									  {"brick_stairs", 108},
+									  {"stone_brick_stairs", 109},
+									  {"mycelium", 110},
+									  {"light_gray_concrete", 111},
+									  {"nether_brick", 112},
+									  {"nether_brick_fence", 113},
+									  {"nether_brick_stairs", 114},
+									  {"nether_wart", 115},
+									  {"enchanting_table", 116},
+									  {"brewing_stand", 117},
+									  {"cauldron", 118},
+									  {"end_portal", 119},
+									  {"end_portal_frame", 120},
+									  {"end_stone", 121},
+									  {"dragon_egg", 122},
+									  {"redstone_lamp", 123},
+									  {"shroomlight", 124},
+									  {"oak_wood", 125},
+									  {"oak_slab", 126},
+									  {"cocoa", 127},
+									  {"sandstone_stairs", 128},
+									  {"emerald_ore", 129},
+									  {"ender_chest", 130},
+									  {"tripwire_hook", 131},
+									  {"tripwire", 132},
+									  {"emerald_block", 133},
+									  {"spruce_stairs", 134},
+									  {"birch_stairs", 135},
+									  {"jungle_stairs", 136},
+									  {"command_block", 137},
+									  {"beacon", 138},
+									  {"cobblestone_wall", 139},
+									  {"flower_pot", 140},
+									  {"carrots", 141},
+									  {"potatoes", 142},
+									  {"oak_button", 143},
+									  {"skeleton_wall_skull", 144},
+									  {"anvil", 145},
+									  {"trapped_chest", 146},
+									  {"light_weighted_pressure_plate", 147},
+									  {"heavy_weighted_pressure_plate", 148},
+									  {"comparator", 149},
+									  {"chain", 150},
+									  {"daylight_detector", 151},
+									  {"redstone_block", 152},
+									  {"nether_quartz_ore", 153},
+									  {"hopper", 154},
+									  {"quartz_block", 155},
+									  {"quartz_stairs", 156},
+									  {"activator_rail", 157},
+									  {"dropper", 158},
+									  {"pink_stained_glass", 159},
+									  {"white_stained_glass_pane", 160},
+									  {"dead_brain_coral", 161},
+									  {"acacia_planks", 162},
+									  {"acacia_stairs", 163},
+									  {"dark_oak_stairs", 164},
+									  {"slime_block", 165},
+									  {"barrier", 166},
+									  {"iron_trapdoor", 167},
+									  {"prismarine", 168},
+									  {"sea_lantern", 169},
+									  {"hay_block", 170},
+									  {"white_carpet", 171},
+									  {"coarse_dirt", 172},
+									  {"coal_block", 173},
+									  {"packed_ice", 174},
+									  {"orange_concrete", 175},
+									  {"white_banner", 176},
+									  {"white_wall_banner", 177},
+									  {"white_concrete_powder", 178},
+									  {"red_sandstone", 179},
+									  {"red_sandstone_stairs", 180},
+									  {"red_sandstone_wall", 181},
+									  {"red_sandstone_slab", 182},
+									  {"spruce_fence_gate", 183},
+									  {"birch_fence_gate", 184},
+									  {"jungle_fence_gate", 185},
+									  {"dark_oak_fence_gate", 186},
+									  {"acacia_fence_gate", 187},
+									  {"spruce_fence", 188},
+									  {"birch_fence", 189},
+									  {"jungle_fence", 190},
+									  {"dark_oak_fence", 191},
+									  {"acacia_fence", 192},
+									  {"spruce_door", 193},
+									  {"birch_door", 194},
+									  {"jungle_door", 195},
+									  {"acacia_door", 196},
+									  {"dark_oak_door", 197},
+									  {"end_rod", 198},
+									  {"chorus_plant", 199},
+									  {"chorus_flower", 200},
+									  {"purpur_block", 201},
+									  {"purpur_pillar", 202},
+									  {"purpur_stairs", 203},
+									  {"purple_stained_glass", 204},
+									  {"purpur_slab", 205},
+									  {"end_stone_bricks", 206},
+									  {"beetroots", 207},
+									  {"grass_path", 208},
+									  {"end_gateway", 209},
+									  {"repeating_command_block", 210},
+									  {"chain_command_block", 211},
+									  {"frosted_ice", 212},
+									  {"magma_block", 213},
+									  {"nether_wart_block", 214},
+									  {"red_nether_bricks", 215},
+									  {"bone_block", 216},
+									  {"structure_void", 217},
+									  {"observer", 218},
+									  {"white_shulker_box", 219},
+									  {"orange_shulker_box", 220},
+									  {"magenta_shulker_box", 221},
+									  {"light_blue_shulker_box", 222},
+									  {"yellow_shulker_box", 223},
+									  {"lime_shulker_box", 224},
+									  {"pink_shulker_box", 225},
+									  {"gray_shulker_box", 226},
+									  {"light_gray_shulker_box", 227},
+									  {"cyan_shulker_box", 228},
+									  {"purple_shulker_box", 229},
+									  {"blue_shulker_box", 230},
+									  {"brown_shulker_box", 231},
+									  {"green_shulker_box", 232},
+									  {"red_shulker_box", 233},
+									  {"black_shulker_box", 234},
+									  {"white_glazed_terracotta", 235},
+									  {"orange_glazed_terracotta", 236},
+									  {"magenta_glazed_terracotta", 237},
+									  {"light_blue_glazed_terracotta", 238},
+									  {"yellow_glazed_terracotta", 239},
+									  {"lime_glazed_terracotta", 240},
+									  {"pink_glazed_terracotta", 241},
+									  {"gray_glazed_terracotta", 242},
+									  {"light_gray_glazed_terracotta", 243},
+									  {"cyan_glazed_terracotta", 244},
+									  {"purple_glazed_terracotta", 245},
+									  {"blue_glazed_terracotta", 246},
+									  {"brown_glazed_terracotta", 247},
+									  {"green_glazed_terracotta", 248},
+									  {"red_glazed_terracotta", 249},
+									  {"black_glazed_terracotta", 250},
+									  {"gray_concrete", 251},
+									  {"gray_concrete_powder", 252},
+									  {"deepslate_redstone_ore", 1}, // TODO
+									  {"deepslate_iron_ore", 1},	 // TODO
+									  {"kelp", 1},					 // TODO
+									  {"deepslate", 1},				 // TODO
+									  {"moss_carpet", 1},			 // TODO
+									  {"granite", 1},				 // TODO
+									  {"diorite", 1},				 // TODO
+									  {"glow_lichen", 1},			 // TODO
+									  {"copper_ore", 1},			 // TODO
+									  {"tuff", 1},					 // TODO
+									  {"deepslate_gold_ore", 1},	 // TODO
+									  {"flowering_azalea", 1},		 // TODO
+									  {"azalea", 1},				 // TODO
+									  {"cave_vines", 1},			 // TODO
+									  {"cave_vines_plant", 1},		 // TODO
+									  {"big_dripleaf", 1},			 // TODO
+									  {"big_dripleaf_stem", 1},		 // TODO
+									  {"spore_blossom", 1},			 // TODO
+									  {"deepslate_diamond_ore", 1},	 // TODO
+									  {"budding_amethyst", 1},		 // TODO
+									  {"smooth_basalt", 1},			 // TODO
+									  {"birch_log", 1},				 // TODO
+									  {"cave_air", 1},				 // TODO
+									  {"kelp_plant", 1},			 // TODO
+									  {"deepslate_lapis_ore", 1},	 // TODO
+									  {"deepslate_copper_ore", 1},	 // TODO
+									  {"moss_block", 1},			 // TODO
+									  {"small_amethyst_bud", 1},	 // TODO
+									  {"calcite", 1},				 // TODO
+									  {"amethyst_block", 1},		 // TODO
+									  {"medium_amethyst_bud", 1},	 // TODO
+									  {"large_amethyst_bud", 1},	 // TODO
+									  {"amethyst_cluster", 1},		 // TODO
+									  {"mossy_stone_bricks", 1},	 // TODO
+									  {"cracked_stone_bricks", 1},	 // TODO
+									  {"small_dripleaf", 1},		 // TODO
+									  {"deepslate_coal_ore", 1},	 // TODO
+									  {"fern", 1},					 // TODO
+									  {"raw_copper_block", 1},		 // TODO
+									  {"raw_iron_block", 1},		 // TODO
+									  {"jungle_log", 1},			 // TODO
+									  {"wall_torch", 1},			 // TODO
+									  {"raw_iron_block", 1},		 // TODO
+									  {"polished_granite", 1},		 // TODO
+									  {"cut_sandstone", 1},			 // TODO
+									  {"oxeye_daisy", 1},			 // TODO
+									  {"sugar_cane", 1},			 // TODO
+									  {"azure_bluet", 1},			 // TODO
+									  {"cornflower", 1},			 // TODO
+									  {"structure_block", 255}};
+	return mcPalette;
+}
+
+bool MCRFormat::parsePaletteList(const priv::NamedBinaryTag &palette, MinecraftSectionPalette &sectionPal) {
+	if (palette.type() != priv::TagType::LIST) {
+		Log::error("Invalid type %i", (int)palette.type());
 		return false;
 	}
-
-	int32_t xPos = 0;
-	int32_t zPos = 0;
-	int32_t version = 0;
-
-	while (!stream.eos()) {
-		wrapBool(getNext(stream, nbt));
-		if (nbt.name == "xPos" && nbt.id == TagId::INT) {
-			wrap(stream.readInt32BE(xPos));
-		} else if (nbt.name == "zPos" && nbt.id == TagId::INT) {
-			wrap(stream.readInt32BE(zPos));
-		} else if (nbt.name == "DataVersion" && nbt.id == TagId::INT) {
-			wrap(stream.readInt32BE(version));
-		} else if (nbt.name == "sections" && nbt.id == TagId::LIST) {
-			return parseSections(sceneGraph, stream, nbt, xPos, zPos);
-		} else {
-			wrapBool(skip(stream, nbt, true));
-		}
-	}
-	return true;
-}
-
-bool MCRFormat::skip(io::ZipReadStream &stream, NamedBinaryTag &nbt, bool marker) {
-	switch (nbt.id) {
-	case TagId::BYTE:
-		Log::debug("%*sskip 1 byte ('%s')", nbt.level * 3, " ", nbt.name.c_str());
-		if (stream.skip(1) != 1) {
-			Log::error("Failed to skip 1 byte");
-			return false;
-		}
-		break;
-	case TagId::SHORT:
-		Log::debug("%*sskip 2 bytes ('%s')", nbt.level * 3, " ", nbt.name.c_str());
-		if (stream.skip(2) != 2) {
-			Log::error("Failed to skip 2 bytes");
-			return false;
-		}
-		break;
-	case TagId::INT:
-	case TagId::FLOAT:
-		Log::debug("%*sskip 4 bytes ('%s')", nbt.level * 3, " ", nbt.name.c_str());
-		if (stream.skip(4) != 4) {
-			Log::error("Failed to skip 4 bytes");
-			return false;
-		}
-		break;
-	case TagId::LONG:
-	case TagId::DOUBLE:
-		Log::debug("%*sskip 8 bytes ('%s')", nbt.level * 3, " ", nbt.name.c_str());
-		if (stream.skip(8) != 8) {
-			Log::error("Failed to skip 8 bytes");
-			return false;
-		}
-		break;
-	case TagId::BYTE_ARRAY: {
-		uint16_t length = nbt.listItems;
-		Log::debug("%*sskip %u bytes ('%s')", nbt.level * 3, " ", length, nbt.name.c_str());
-		if (stream.skip(length) != length) {
-			Log::error("Failed to skip %u bytes", length);
-			return false;
-		}
-		break;
-	}
-	case TagId::STRING: {
-		uint16_t length;
-		wrap(stream.readUInt16BE(length));
-		core::String str;
-		for (uint16_t i = 0u; i < length; ++i) {
-			uint8_t chr;
-			wrap(stream.readUInt8(chr));
-			str += (char)chr;
-		}
-		Log::debug("%*s - skip %u bytes ('%s' = '%s')", nbt.level * 3, " ", length + 2, nbt.name.c_str(), str.c_str());
-		break;
-	}
-	case TagId::INT_ARRAY: {
-		uint32_t length = nbt.listItems * 4;
-		Log::debug("%*sskip %u bytes ('%s')", nbt.level * 3, " ", length, nbt.name.c_str());
-		if (stream.skip(length) != length) {
-			Log::error("Failed to skip %u bytes", length);
-			return false;
-		}
-		break;
-	}
-	case TagId::LONG_ARRAY: {
-		uint32_t length = nbt.listItems * 8;
-		Log::debug("%*sskip %u bytes ('%s')", nbt.level * 3, " ", length, nbt.name.c_str());
-		if (stream.skip(length) != length) {
-			Log::error("Failed to skip %u bytes", length);
-			return false;
-		}
-		break;
-	}
-	case TagId::LIST: {
-		++nbt.level;
-		core_assert(nbt.level < 16);
-		if (marker) {
-			Log::debug("------------------start");
-		}
-		const uint32_t items = nbt.listItems;
-		if (nbt.listId == TagId::COMPOUND) {
-			const int compoundLevel = nbt.level;
-			Log::debug("%*sskip %i compounds at level %i ('%s')", nbt.level * 3, " ", items, compoundLevel, nbt.name.c_str());
-			for (uint32_t n = 0; n < items; ++n) {
-				Log::debug("%*sskip compound %u", nbt.level * 3, " ", n);
-				while (nbt.level >= compoundLevel) {
-					wrapBool(getNext(stream, nbt));
-					wrapBool(skip(stream, nbt, false));
-				}
-				if (n != items - 1) {
-					++nbt.level;
-				}
-			}
-		} else {
-			// list of lists
-			TagId listId = nbt.listId;
-			if (listId == TagId::LIST) {
-				if (stream.read(&nbt.id, sizeof(nbt.id)) != 1) {
-					Log::debug("Failed to read type id");
-					return false;
-				}
-				if (nbt.id == TagId::COMPOUND) {
-					++nbt.level;
-				}
-
-				wrap(stream.readUInt32BE(nbt.listItems));
-				Log::debug("%*sskip sublist %s with %i items of type %s", nbt.level * 3, " ", nbt.name.c_str(),
-						   nbt.listItems, nbtTagNames[(int)nbt.id]);
-				for (uint32_t n = 0; n < items; ++n) {
-					Log::debug("%*sskip item %u", nbt.level * 3, " ", n);
-					wrapBool(skip(stream, nbt, false));
-				}
-			} else {
-				nbt.id = nbt.listId;
-
-				Log::debug("%*sskip list %s at level %i ('%s') with %i items of type %s", nbt.level * 3, " ",
-						nbt.name.c_str(), nbt.level, nbt.name.c_str(), items, nbtTagNames[(int)nbt.listId]);
-				for (uint32_t n = 0; n < items; ++n) {
-					Log::debug("%*sskip item %u", nbt.level * 3, " ", n);
-					wrapBool(skip(stream, nbt, false));
-				}
-			}
-		}
-		if (marker) {
-			Log::debug("------------------end--");
-		}
-		--nbt.level;
-		break;
-	}
-	case TagId::COMPOUND: {
-		const int compoundLevel = nbt.level;
-		Log::debug("%*sskip compound %s at level %i ('%s')", nbt.level * 3, " ", nbt.name.c_str(), compoundLevel, nbt.name.c_str());
-		if (marker) {
-			Log::debug("------------------start");
-		}
-		while (nbt.level >= compoundLevel) {
-			wrapBool(getNext(stream, nbt));
-			wrapBool(skip(stream, nbt, false));
-		}
-		if (marker) {
-			Log::debug("------------------end--");
-		}
-		break;
-	}
-	case TagId::END:
-		break;
-	default:
-		Log::warn("Unknown tag %i ('%s')", (int)nbt.id, nbt.name.c_str());
-		break;
-	}
-	return true;
-}
-
-bool MCRFormat::getNext(io::ReadStream &stream, MCRFormat::NamedBinaryTag &nbt) {
-	static_assert(lengthof(nbtTagNames) == (int)TagId::MAX);
-	if (stream.read(&nbt.id, sizeof(nbt.id)) != 1) {
-		Log::debug("Failed to read type id");
+	const priv::NBTList &paletteList = *palette.list();
+	const size_t paletteCount = paletteList.size();
+	if (paletteCount > 512u) {
+		Log::error("Palette overflow");
 		return false;
 	}
-	core_assert_msg(nbt.id >= TagId::END && nbt.id < TagId::MAX, "Found unknown id of type %s", nbtTagNames[(int)nbt.listId]);
-	if (nbt.id == TagId::END) {
-		--nbt.level;
-		Log::debug("%*sFound compound end at level %i", nbt.level * 3, " ", nbt.level);
-		return true;
-	}
-	uint16_t nameLength;
-	wrap(stream.readUInt16BE(nameLength));
-	Log::trace("Load string of length %u", nameLength);
+	sectionPal.pal.resize(paletteCount);
+	sectionPal.numBits = (uint32_t)glm::max(glm::ceil(glm::log2((float)paletteCount)), 4.0f);
 
-	nbt.name.clear();
-	for (uint16_t i = 0u; i < nameLength; ++i) {
-		uint8_t chr;
-		wrap(stream.readUInt8(chr));
-		nbt.name += (char)chr;
-	}
-	Log::debug("%*sFound tag '%s' at level %i with type %s", nbt.level * 3, " ", nbt.name.c_str(), nbt.level, nbtTagNames[(int)nbt.id]);
-	if (nbt.id == TagId::COMPOUND) {
-		++nbt.level;
-	}
-
-	if (nbt.id == TagId::LIST) {
-		if (stream.read(&nbt.listId, sizeof(nbt.listId)) != 1) {
-			Log::debug("Failed to read type id");
+	int paletteEntry = 0;
+	const PaletteMap &map = getPaletteMap();
+	for (const priv::NamedBinaryTag &block : paletteList) {
+		if (block.type() != priv::TagType::COMPOUND) {
+			Log::error("Invalid block type %i", (int)block.type());
 			return false;
 		}
 
-		if (nbt.listId == TagId::COMPOUND) {
-			++nbt.level;
+		for (const auto &entry : *block.compound()) {
+			if (entry->key != "Name") {
+				continue;
+			}
+			const priv::NamedBinaryTag &nbt = entry->value;
+			const core::String *value = nbt.string();
+			if (value == nullptr) {
+				continue;
+			}
+			// skip minecraft:
+			const core::String key = value->substr(10);
+			auto iter = map.find(key);
+			if (iter == map.end()) {
+				Log::debug("Could not find a color mapping for '%s'", key.c_str());
+				sectionPal.pal[paletteEntry] = -1;
+			} else {
+				sectionPal.pal[paletteEntry] = iter->value;
+			}
 		}
-
-		wrap(stream.readUInt32BE(nbt.listItems));
-		Log::debug("%*sFound list '%s' at level %i with sub type %s and %i entries", nbt.level * 3, " ", nbt.name.c_str(), nbt.level, nbtTagNames[(int)nbt.listId], nbt.listItems);
-	} else if (nbt.id == TagId::LONG_ARRAY || nbt.id == TagId::INT_ARRAY || nbt.id == TagId::BYTE_ARRAY) {
-		wrap(stream.readUInt32BE(nbt.listItems));
-		Log::debug("%*sFound array '%s' at level %i with %i entries", nbt.level * 3, " ", nbt.name.c_str(), nbt.level, nbt.listItems);
+		++paletteEntry;
 	}
-
 	return true;
 }
 
 #undef wrap
-#undef wrapBool
 
 } // namespace voxel

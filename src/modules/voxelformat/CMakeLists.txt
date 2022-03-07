@@ -3,6 +3,8 @@ set(SRCS
 	external/ogt_vox.h
 	external/tiny_obj_loader.h
 
+	private/NamedBinaryTag.h private/NamedBinaryTag.cpp
+
 	Format.h Format.cpp
 	AoSVXLFormat.h AoSVXLFormat.cpp
 	BinVoxFormat.h BinVoxFormat.cpp
