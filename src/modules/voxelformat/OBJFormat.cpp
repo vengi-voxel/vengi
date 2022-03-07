@@ -181,6 +181,15 @@ bool OBJFormat::saveMeshes(const Meshes &meshes, const core::String &filename, i
 void OBJFormat::subdivideShape(const tinyobj::mesh_t &mesh, const core::StringMap<image::ImagePtr> &textures,
 							  const tinyobj::attrib_t &attrib, const std::vector<tinyobj::material_t> &materials,
 							  core::DynamicArray<Tri> &subdivided) {
+	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
+
+	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
+	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
+	float scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ)->floatVal();
+
+	scaleX = scaleX != 1.0f ? scaleX : scale;
+	scaleY = scaleY != 1.0f ? scaleY : scale;
+	scaleZ = scaleZ != 1.0f ? scaleZ : scale;
 
 	int indexOffset = 0;
 	for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
@@ -189,9 +198,9 @@ void OBJFormat::subdivideShape(const tinyobj::mesh_t &mesh, const core::StringMa
 		Tri tri;
 		for (int i = 0; i < faceVertices; ++i) {
 			const tinyobj::index_t &idx = mesh.indices[indexOffset + i];
-			tri.vertices[i].x = attrib.vertices[3 * idx.vertex_index + 0];
-			tri.vertices[i].y = attrib.vertices[3 * idx.vertex_index + 1];
-			tri.vertices[i].z = attrib.vertices[3 * idx.vertex_index + 2];
+			tri.vertices[i].x = attrib.vertices[3 * idx.vertex_index + 0] * scaleX;
+			tri.vertices[i].y = attrib.vertices[3 * idx.vertex_index + 1] * scaleY;
+			tri.vertices[i].z = attrib.vertices[3 * idx.vertex_index + 2] * scaleZ;
 			if (idx.texcoord_index >= 0) {
 				tri.uv[i].x = attrib.texcoords[2 * idx.texcoord_index + 0];
 				tri.uv[i].y = attrib.texcoords[2 * idx.texcoord_index + 1];
@@ -301,9 +310,11 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	}
 
 	core::DynamicArray<std::future<voxel::SceneGraphNode>> futures;
+	futures.reserve(shapes.size());
+
 	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
 	for (tinyobj::shape_t &shape : shapes) {
-		futures.emplace_back(threadPool.enqueue([&shape, attrib, materials, &textures]() {
+		auto func = [&shape, attrib, materials, &textures]() {
 			glm::vec3 mins;
 			glm::vec3 maxs;
 			calculateAABB(shape.mesh, attrib, mins, maxs);
@@ -319,7 +330,12 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			subdivideShape(shape.mesh, textures, attrib, materials, subdivided);
 			voxelizeTris(volume, subdivided);
 			return core::move(node);
-		}));
+		};
+		if (shapes.size() > 1) {
+			futures.emplace_back(threadPool.enqueue(func));
+		} else {
+			sceneGraph.emplace(func());
+		}
 	}
 	for (auto & f : futures) {
 		sceneGraph.emplace(core::move(f.get()));
