@@ -12,6 +12,7 @@
 #include "command/Command.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
+#include "core/concurrent/Concurrency.h"
 #include "image/Image.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -35,7 +36,7 @@
 #define MaxHeightmapHeight 1024
 
 VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+		Super(metric, filesystem, eventBus, timeProvider, core::cpus()) {
 	init(ORGANISATION, "voxconvert");
 }
 
