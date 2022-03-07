@@ -16,7 +16,31 @@ SceneGraph::SceneGraph() : _nodes(8192) {
 }
 
 SceneGraph::~SceneGraph() {
-	clear();
+	for (const auto &entry : _nodes) {
+		entry->value.release();
+	}
+	_nodes.clear();
+}
+
+SceneGraph::SceneGraph(SceneGraph &&other) noexcept {
+	_nodes = core::move(other._nodes);
+	_nextNodeId = other._nextNodeId;
+	other._nextNodeId = 0;
+	_activeNodeId = other._activeNodeId;
+	other._activeNodeId = -1;
+	_animations = core::move(other._animations);
+}
+
+SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
+	if (this != &other) {
+		_nodes = core::move(other._nodes);
+		_nextNodeId = other._nextNodeId;
+		other._nextNodeId = 0;
+		_activeNodeId = other._activeNodeId;
+		other._activeNodeId = -1;
+		_animations = core::move(other._animations);
+	}
+	return *this;
 }
 
 const core::DynamicArray<core::String> SceneGraph::animations() {

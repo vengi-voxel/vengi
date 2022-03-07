@@ -29,6 +29,9 @@ public:
 	SceneGraph();
 	~SceneGraph();
 
+	SceneGraph(SceneGraph&& other) noexcept;
+	SceneGraph &operator=(SceneGraph &&move) noexcept;
+
 	int activeNode() const;
 	bool setActiveNode(int nodeId);
 	void foreachGroup(const std::function<void(int)>& f);
