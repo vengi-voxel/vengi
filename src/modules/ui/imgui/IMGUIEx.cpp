@@ -189,9 +189,13 @@ bool TooltipText(const char* msg, ...) {
 }
 
 void TextCentered(const char *text) {
-	const float w = ImGui::CalcTextSize(text).x;
-	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - w) * 0.5f);
+	const ImVec2& size = ImGui::CalcTextSize(text);
+	const ImVec2& maxs = ImGui::GetWindowContentRegionMax();
+	const ImVec2 restore = ImGui::GetCursorPos();
+	ImGui::SetCursorPosX((maxs.x - size.x) * 0.5f);
+	ImGui::SetCursorPosY((maxs.y - size.y) * 0.5f);
 	ImGui::TextUnformatted(text);
+	ImGui::SetCursorPos(restore);
 }
 
 void Image(video::Id handle, const glm::ivec2 &size, const glm::vec2 &uv0, const glm::vec2 &uv1, const glm::vec4 &tintColor, const glm::vec4 &borderColor) {
