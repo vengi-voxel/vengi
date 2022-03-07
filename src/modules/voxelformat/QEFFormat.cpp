@@ -28,24 +28,24 @@ namespace voxel {
 bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	char buf[64];
 
-	wrapBool(stream.readLine(64, buf))
+	wrapBool(stream.readLine(sizeof(buf), buf))
 	if (SDL_strcmp(buf, "Qubicle Exchange Format") != 0) {
 		Log::error("Unexpected magic line: '%s'", buf);
 		return false;
 	}
-	wrapBool(stream.readLine(64, buf))
+	wrapBool(stream.readLine(sizeof(buf), buf))
 	if (SDL_strcmp(buf, "Version 0.2") != 0) {
 		Log::error("Unexpected version line: '%s'", buf);
 		return false;
 	}
-	wrapBool(stream.readLine(64, buf))
+	wrapBool(stream.readLine(sizeof(buf), buf))
 	if (SDL_strcmp(buf, "www.minddesk.com") != 0) {
 		Log::error("Unexpected url line: '%s'", buf);
 		return false;
 	}
 
 	int width, height, depth;
-	wrapBool(stream.readLine(64, buf))
+	wrapBool(stream.readLine(sizeof(buf), buf))
 	if (SDL_sscanf(buf, "%i %i %i", &width, &depth, &height) != 3) {
 		Log::error("Failed to parse dimensions");
 		return false;
@@ -68,7 +68,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	}
 
 	int paletteSize;
-	wrapBool(stream.readLine(64, buf))
+	wrapBool(stream.readLine(sizeof(buf), buf))
 	if (SDL_sscanf(buf, "%i", &paletteSize) != 1) {
 		Log::error("Failed to parse palette size");
 		return false;
@@ -83,7 +83,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 	for (int i = 0; i < paletteSize; ++i) {
 		float r, g, b;
-		wrapBool(stream.readLine(64, buf))
+		wrapBool(stream.readLine(sizeof(buf), buf))
 		if (SDL_sscanf(buf, "%f %f %f", &r, &g, &b) != 3) {
 			Log::error("Failed to parse palette color");
 			return false;
