@@ -122,6 +122,7 @@ bool MainWindow::init() {
 	loadLastOpenedFiles(_lastOpenedFiles->strVal());
 
 	SceneManager &mgr = sceneMgr();
+	mgr.newScene(true, "", _layerSettings.region());
 	if (mgr.load(_lastOpenedFile->strVal())) {
 		afterLoad(_lastOpenedFile->strVal());
 	} else {

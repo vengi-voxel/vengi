@@ -87,6 +87,7 @@ private:
 	voxel::RawVolume* _copy = nullptr;
 	render::Gizmo _gizmo;
 	EditMode _editMode = EditMode::Model;
+	std::future<voxel::SceneGraph> _loadingFuture;
 
 	animation::AnimationSettings::Type _entityType = animation::AnimationSettings::Type::Max;
 	animation::Character _character;
@@ -329,6 +330,8 @@ public:
 	 * @param[in] file The file to load. The volume format is determined by the file extension.
 	 */
 	bool load(const core::String& file);
+	bool isLoading() const;
+
 	bool loadAnimationEntity(const core::String& luaFile);
 	bool saveAnimationEntity(const char *name);
 

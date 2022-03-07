@@ -296,15 +296,14 @@ bool SceneManager::load(const core::String& file) {
 		Log::error("Failed to open model file '%s'", file.c_str());
 		return false;
 	}
-	voxel::SceneGraph newSceneGraph;
-	io::FileStream stream(filePtr);
-	voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph);
-	if (!loadSceneGraph(newSceneGraph)) {
-		return false;
-	}
+	core::ThreadPool& threadPool = app::App::getInstance()->threadPool();
+	_loadingFuture = threadPool.enqueue([filePtr] () {
+		voxel::SceneGraph newSceneGraph;
+		io::FileStream stream(filePtr);
+		voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph);
+		return core::move(newSceneGraph);
+	});
 	_lastFilename = filePtr->fileName() + "." + filePtr->extension();
-	_needAutoSave = false;
-	_dirty = false;
 	return true;
 }
 
@@ -1865,7 +1864,23 @@ void SceneManager::zoom(video::Camera& camera, float level) const {
 	camera.zoom(value);
 }
 
+bool SceneManager::isLoading() const {
+	return _loadingFuture.valid();
+}
+
 void SceneManager::update(double nowSeconds) {
+	if (_loadingFuture.valid()) {
+		using namespace std::chrono_literals;
+		std::future_status status = _loadingFuture.wait_for(1ms);
+		if (status == std::future_status::ready) {
+			voxel::SceneGraph newSceneGraph = _loadingFuture.get();
+			if (loadSceneGraph(newSceneGraph)) {
+				_needAutoSave = false;
+				_dirty = false;
+			}
+			_loadingFuture = std::future<voxel::SceneGraph>();
+		}
+	}
 	_volumeRenderer.update();
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {

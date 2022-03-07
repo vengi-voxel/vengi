@@ -62,11 +62,13 @@ void Viewport::update() {
 	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	if (ImGui::Begin(_id.c_str(), nullptr, sceneWindowFlags)) {
 		core_trace_scoped(Viewport);
+		ui::imgui::IMGUIApp *app = imguiApp();
 
 		if (_controller.renderMode() == ViewportController::RenderMode::Animation && sceneMgr().editMode() != EditMode::Animation) {
-			ImGui::TextDisabled("No animation loaded");
+			ui::imgui::ScopedStyle style;
+			style.setFont(app->bigFont());
+			ImGui::TextCentered("No animation loaded");
 		} else {
-			const ui::imgui::IMGUIApp *app = imguiApp();
 			const int headerSize = app->fontSize() + (int)(ImGui::GetStyle().FramePadding.y * 2.0f);
 
 			ImVec2 contentSize = ImGui::GetWindowContentRegionMax();
@@ -83,7 +85,11 @@ void Viewport::update() {
 				const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 				ImGui::Image(texture->handle(), contentSize, uva, uvc);
 
-				if (ImGui::IsItemHovered()) {
+				if (sceneMgr().isLoading()) {
+					ui::imgui::ScopedStyle style;
+					style.setFont(app->bigFont());
+					ImGui::TextCentered("Loading");
+				} else if (ImGui::IsItemHovered()) {
 					if (sceneMgr().modifier().modifierType() == ModifierType::ColorPicker) {
 						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 					}
