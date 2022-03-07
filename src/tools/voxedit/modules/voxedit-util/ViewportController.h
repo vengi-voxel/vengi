@@ -43,7 +43,7 @@ public:
 
 	bool init();
 	void setMode(SceneCameraMode mode);
-	void resetCamera(const voxel::Region& region);
+	void resetCamera(const glm::ivec3 &pos, const voxel::Region &region);
 
 	RenderMode renderMode() const;
 	void setRenderMode(RenderMode mode);

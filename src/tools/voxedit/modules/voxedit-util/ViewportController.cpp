@@ -6,18 +6,18 @@
 
 namespace voxedit {
 
-void ViewportController::resetCamera(const voxel::Region& region) {
-	// TODO: broken if camera in in eye-rotation mode
-	core_assert_msg(region.isValid(), "Invalid region given");
+void ViewportController::resetCamera(const glm::ivec3 &pos, const voxel::Region &region) {
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.setFarPlane(5000.0f);
-	const glm::ivec3& center = region.getCenter();
-	const glm::vec3 dim(region.getDimensionsInVoxels());
-	const float distance = glm::length(dim);
-	_camera.setTarget(center);
-	_camera.setTargetDistance(distance * 2.0f);
+	_camera.setTarget(pos);
+	const float distance = 100.0f;
+	glm::ivec3 center = pos;
+	if (region.isValid()) {
+		center = region.getCenter();
+	}
+	_camera.setTargetDistance(distance);
 	if (_renderMode == RenderMode::Animation) {
-		_camera.setTarget(glm::zero<glm::vec3>());
+		_camera.setTarget(pos);
 		const int height = region.getHeightInCells();
 		_camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 	} else if (_camMode == SceneCameraMode::Free) {

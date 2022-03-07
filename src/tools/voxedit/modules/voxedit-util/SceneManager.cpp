@@ -2432,7 +2432,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 	updateGridRenderer(region);
 	updateAABBMesh();
 	if (!region.containsPoint(referencePosition())) {
-		const glm::vec3 &pivot = node.normalizedPivot() * glm::vec3(region.getDimensionsInVoxels());
+		const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.normalizedPivot() * glm::vec3(region.getDimensionsInVoxels()));
 		setReferencePosition(glm::ivec3(pivot));
 	}
 	if (!region.containsPoint(cursorPosition())) {

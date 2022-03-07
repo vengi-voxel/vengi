@@ -168,9 +168,14 @@ bool Viewport::saveImage(const char* filename) {
 }
 
 void Viewport::resetCamera() {
-	const voxel::Region& region = sceneMgr().sceneGraph().region();
-	core_assert_msg(region.isValid(), "Scene not properly initialized");
-	_controller.resetCamera(region);
+	const glm::ivec3& pos = sceneMgr().referencePosition();
+	const int activeNode = sceneMgr().sceneGraph().activeNode();
+	const voxel::RawVolume *v = activeNode != -1 ? sceneMgr().volume(activeNode) : nullptr;
+	voxel::Region region;
+	if (v != nullptr) {
+		region = v->region();
+	}
+	_controller.resetCamera(pos, region);
 }
 
 bool Viewport::setupFrameBuffer(const glm::ivec2& frameBufferSize) {
