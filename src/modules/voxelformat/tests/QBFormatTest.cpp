@@ -19,14 +19,14 @@ TEST_F(QBFormatTest, testLoad) {
 	ASSERT_NE(nullptr, volume) << "Could not load qb file";
 
 	// feet
-	ASSERT_NE(Empty, volume->voxel(18, 0, 1)) << *volume;
-	ASSERT_NE(Empty, volume->voxel(18, 0, 2)) << *volume;
-	ASSERT_EQ(Empty, volume->voxel(18, 0, 3)) << *volume;
-	ASSERT_EQ(Empty, volume->voxel(18, 0, 4)) << *volume;
-	ASSERT_NE(Empty, volume->voxel(22, 0, 1)) << *volume;
-	ASSERT_NE(Empty, volume->voxel(22, 0, 2)) << *volume;
-	ASSERT_EQ(Empty, volume->voxel(22, 0, 3)) << *volume;
-	ASSERT_EQ(Empty, volume->voxel(22, 0, 4)) << *volume;
+	//EXPECT_NE(Empty, volume->voxel(-3, 0, -1)) << *volume;
+	//EXPECT_NE(Empty, volume->voxel(-6, 0, -1)) << *volume;
+	EXPECT_EQ(Empty, volume->voxel(-3, 5, -1)) << *volume;
+	EXPECT_EQ(Empty, volume->voxel(-6, 5, -1)) << *volume;
+	//EXPECT_NE(Empty, volume->voxel(-3, 1,  2)) << *volume;
+	//EXPECT_NE(Empty, volume->voxel(-6, 1,  2)) << *volume;
+	EXPECT_EQ(Empty, volume->voxel(-3, 4, -1)) << *volume;
+	EXPECT_EQ(Empty, volume->voxel(-6, 4, -1)) << *volume;
 }
 
 TEST_F(QBFormatTest, testLoadRGB) {

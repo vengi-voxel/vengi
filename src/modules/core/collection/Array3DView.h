@@ -46,27 +46,33 @@ public:
 	}
 
 	constexpr const T &get(int x, int y, int z) const {
-		return _data[index(x, y, z)];
+		const int idx = index(x, y, z);
+		return _data[idx];
 	}
 
 	constexpr T &get(int x, int y, int z) {
-		return _data[index(x, y, z)];
+		const int idx = index(x, y, z);
+		return _data[idx];
 	}
 
 	constexpr void set(int x, int y, int z, const T &t) {
-		_data[index(x, y, z)] = t;
+		const int idx = index(x, y, z);
+		_data[idx] = t;
 	}
 
 	constexpr const T &get(const glm::ivec3& v) const {
-		return _data[index(v.x, v.y, v.z)];
+		const int idx = index(v.x, v.y, v.z);
+		return _data[idx];
 	}
 
 	constexpr T &get(const glm::ivec3& v) {
-		return _data[index(v.x, v.y, v.z)];
+		const int idx = index(v.x, v.y, v.z);
+		return _data[idx];
 	}
 
 	constexpr void set(const glm::ivec3& v, const T &t) {
-		_data[index(v.x, v.y, v.z)] = t;
+		const int idx = index(v.x, v.y, v.z);
+		_data[idx] = t;
 	}
 
 	constexpr size_t size() const {

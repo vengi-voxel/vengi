@@ -56,34 +56,35 @@ void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel) {
 	const int height = in.height();
 	const int depth = in.depth();
 	const int size = width * height * depth;
+	const glm::ivec3 offset = -in.mins();
 	core::DynamicArray<glm::ivec3> positions;
 	positions.reserve(size);
 	core::Buffer<bool> visitedData(size);
 	core::Array3DView<bool> visited(visitedData.data(), width, height, depth);
 
-	visitVolume(in, [&](int x, int y, int z, const voxel::Voxel &) { visited.set(x, y, z, true); }, SkipEmpty());
+	visitVolume(in, [&](int x, int y, int z, const voxel::Voxel &) { visited.set(offset.x + x, offset.y + y, offset.z + z, true); }, SkipEmpty());
 
 	for (int x = 0; x < width; ++x) {
 		for (int z = 1; z < depth - 1; ++z) {
 			const glm::ivec3 v1(x, 0, z);
-			if (voxel::isAir(in.voxel(v1).getMaterial())) {
+			if (voxel::isAir(in.voxel(offset + v1).getMaterial())) {
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
 			const glm::ivec3 v2(x, height - 1, z);
-			if (voxel::isAir(in.voxel(v2).getMaterial())) {
+			if (voxel::isAir(in.voxel(offset + v2).getMaterial())) {
 				positions.push_back(v2);
 				visited.set(v2, true);
 			}
 		}
 		for (int y = 0; y < height; ++y) {
 			const glm::ivec3 v1(x, y, 0);
-			if (voxel::isAir(in.voxel(v1).getMaterial())) {
+			if (voxel::isAir(in.voxel(offset + v1).getMaterial())) {
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
 			const glm::ivec3 v2(x, y, depth - 1);
-			if (voxel::isAir(in.voxel(v2).getMaterial())) {
+			if (voxel::isAir(in.voxel(offset + v2).getMaterial())) {
 				positions.push_back(v2);
 				visited.set(v2, true);
 			}
@@ -141,7 +142,7 @@ void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel) {
 	}
 
 	visitVolume(in, [&](int x, int y, int z, const voxel::Voxel&) {
-		if (!visited.get(x, y, z)) {
+		if (!visited.get(offset.x + x, offset.y + y, offset.z + z)) {
 			in.setVoxel(x, y, z, voxel);
 		}
 	}, VisitAll());
