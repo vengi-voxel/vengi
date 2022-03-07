@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
+#include "core/concurrent/ThreadPool.h"
 #include "core/Var.h"
 #include "core/collection/StringMap.h"
 #include "core/collection/DynamicArray.h"
@@ -424,21 +425,28 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		}
 	}
 
+	core::DynamicArray<std::future<voxel::SceneGraphNode>> futures;
+	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
 	for (tinyobj::shape_t &shape : shapes) {
-		glm::vec3 mins;
-		glm::vec3 maxs;
-		calculateAABB(shape, attrib, mins, maxs);
-		voxel::Region region(glm::floor(mins), glm::ceil(maxs));
-		if (glm::any(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(512)))) {
-			Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh!");
-		}
-		RawVolume *volume = new RawVolume(region);
-		SceneGraphNode node;
-		node.setVolume(volume, true);
-		node.setName(shape.name.c_str());
-		voxelizeShape(shape, textures, attrib, materials, volume);
-		voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
-		sceneGraph.emplace(core::move(node));
+		futures.emplace_back(threadPool.enqueue([&shape, attrib, materials, &textures]() {
+			glm::vec3 mins;
+			glm::vec3 maxs;
+			calculateAABB(shape, attrib, mins, maxs);
+			voxel::Region region(glm::floor(mins), glm::ceil(maxs));
+			if (glm::any(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(512)))) {
+				Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh!");
+			}
+			RawVolume *volume = new RawVolume(region);
+			SceneGraphNode node;
+			node.setVolume(volume, true);
+			node.setName(shape.name.c_str());
+			voxelizeShape(shape, textures, attrib, materials, volume);
+			voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
+			return core::move(node);
+		}));
+	}
+	for (auto & f : futures) {
+		sceneGraph.emplace(core::move(f.get()));
 	}
 
 	return true;
