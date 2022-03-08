@@ -18,6 +18,7 @@ TEST_F(OBJFormatTest, testVoxelize) {
 	io::FileStream stream(file);
 	SceneGraph sceneGraph;
 	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph));
+	EXPECT_TRUE(sceneGraph.size() > 0);
 }
 
 TEST_F(OBJFormatTest, testExportMesh) {
