@@ -41,4 +41,4 @@ Exporting to ply and obj is also supported. A few [cvars](Configuration.md) exis
 * `voxformat_withcolor`: Export vertex colors
 * `voxformat_withtexcoords`: Export texture coordinates
 
-Basic voxelization is supported for obj files, too.
+Basic voxelization is supported for obj and stl files, too.

@@ -90,10 +90,9 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	//{"Build engine", "kvx", nullptr, 0u},
 	{"Tiberian Sun", "vxl", nullptr, 0u},
 	{"Qubicle Exchange", "qef", nullptr, 0u},
-	{"WaveFront OBJ", "obj", nullptr, 0u},
-	{"Polygon File Format", "ply", nullptr, 0u},
 	{"Wavefront Object", "obj", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"Polygon File Format", "ply", nullptr, VOX_FORMAT_FLAG_MESH},
+	{"Standard Triangle Language", "stl", nullptr, VOX_FORMAT_FLAG_MESH},
 	{nullptr, nullptr, nullptr, 0u}
 };
 
