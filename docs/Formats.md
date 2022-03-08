@@ -28,7 +28,7 @@
 
 ## Meshes
 
-Exporting to ply and obj is also supported. A few [cvars](Configuration.md) exists to tweak the output of the meshing:
+Exporting to ply, stl and obj is also supported. A few [cvars](Configuration.md) exists to tweak the output of the meshing:
 
 * `voxformat_ambientocclusion`: Don't export extra quads for ambient occlusion voxels
 * `voxformat_mergequads`: Merge similar quads to optimize the mesh
