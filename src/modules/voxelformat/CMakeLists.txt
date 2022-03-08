@@ -31,6 +31,7 @@ set(SRCS
 	SceneGraph.h SceneGraph.cpp
 	SceneGraphNode.h SceneGraphNode.cpp
 	SproxelFormat.h SproxelFormat.cpp
+	STLFormat.h STLFormat.cpp
 	VolumeCache.h VolumeCache.cpp
 	VoxFormat.h VoxFormat.cpp
 	VoxOldFormat.h VoxOldFormat.cpp
@@ -56,6 +57,7 @@ set(TEST_SRCS
 	tests/QEFFormatTest.cpp
 	tests/SceneGraphTest.cpp
 	tests/SproxelFormatTest.cpp
+	tests/STLFormatTest.cpp
 	tests/VoxFormatTest.cpp
 	tests/VXLFormatTest.cpp
 	tests/VXRFormatTest.cpp
@@ -82,6 +84,8 @@ set(TEST_FILES
 	tests/magicavoxel.vox
 	tests/cube.obj
 	tests/cube.mtl
+	tests/cube.stl
+	tests/ascii.stl
 	tests/test.gox
 	tests/test.vxm
 	tests/test2.vxm

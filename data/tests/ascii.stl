@@ -1,0 +1,37 @@
+solid test STL
+  facet normal  -0.000000e+000  1.000000e+000  -0.000000e+000
+    outer loop
+      vertex -1.070657e+001  2.020000e+001  1.343576e+001
+      vertex -1.116853e+001  2.020000e+001  1.345557e+001
+      vertex -1.129289e+001  2.020000e+001  1.360711e+001
+    endloop
+  endfacet
+  facet normal  0.000000e+000  1.000000e+000  0.000000e+000
+    outer loop
+      vertex -1.083594e+001  2.020000e+001  1.367780e+001
+      vertex -1.070657e+001  2.020000e+001  1.343576e+001
+      vertex -1.129289e+001  2.020000e+001  1.360711e+001
+    endloop
+  endfacet
+  facet normal  0.000000e+000  9.999999e-001  -0.000000e+000
+    outer loop
+      vertex -1.083594e+001  2.020000e+001  1.367780e+001
+      vertex -1.129289e+001  2.020000e+001  1.360711e+001
+      vertex -1.144443e+001  2.020000e+001  1.373147e+001
+    endloop
+  endfacet
+  facet normal  -0.000000e+000  1.000000e+000  -0.000000e+000
+    outer loop
+      vertex -1.083594e+001  2.020000e+001  1.367780e+001
+      vertex -1.144443e+001  2.020000e+001  1.373147e+001
+      vertex -1.161732e+001  2.020000e+001  1.382388e+001
+    endloop
+  endfacet
+  facet normal  -0.000000e+000  1.000000e+000  -0.000000e+000
+    outer loop
+      vertex -1.083594e+001  2.020000e+001  1.367780e+001
+      vertex -1.161732e+001  2.020000e+001  1.382388e+001
+      vertex -1.180491e+001  2.020000e+001  1.388078e+001
+    endloop
+  endfacet
+endsolid test STL

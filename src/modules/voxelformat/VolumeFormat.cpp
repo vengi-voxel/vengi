@@ -27,6 +27,7 @@
 #include "voxelformat/VXLFormat.h"
 #include "voxelformat/CubFormat.h"
 #include "voxelformat/GoxFormat.h"
+#include "voxelformat/STLFormat.h"
 #include "voxelformat/BinVoxFormat.h"
 #include "voxelformat/KVXFormat.h"
 #include "voxelformat/KV6Format.h"
@@ -62,6 +63,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"Minecraft region", "mca", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Sproxel csv", "csv", nullptr, 0u},
 	{"Wavefront Object", "obj", nullptr, 0u},
+	{"Standard Triangle Language", "stl", nullptr, 0u},
 	{"Build engine", "kvx", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Ace of Spades", "kv6", [] (uint32_t magic) {return magic == FourCC('K','v','x','l');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Tiberian Sun", "vxl", [] (uint32_t magic) {return magic == FourCC('V','o','x','e');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
@@ -176,6 +178,8 @@ static core::SharedPtr<voxel::Format> getFormat(const io::FormatDescription *des
 		format = core::make_shared<voxel::QBCLFormat>();
 	} else if (ext == "obj") {
 		format = core::make_shared<voxel::OBJFormat>();
+	} else if (ext == "stl") {
+		format = core::make_shared<voxel::STLFormat>();
 	} else if (ext == "ply") {
 		format = core::make_shared<voxel::PLYFormat>();
 	}

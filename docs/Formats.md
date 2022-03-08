@@ -23,6 +23,7 @@
 | SLAB6                      | kv6       | X       |        | X          | X       |
 | Sproxel                    | csv       | X       | X      | X          |         |
 | Wavefront Object           | obj       | X       | X      |            |         |
+| Standard Triangle Language | stl       | X       | X      |            |         |
 
 
 ## Meshes
