@@ -12,7 +12,7 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 General:
 
-   - Removed minecraft support via external lib enkiMI
+   - Replaced minecraft support with own implementation
    - Added support for Sandbox VXA format (via VXR) and improved VXR
    - Allow to change the ui colors via cvar (`ui_style`)
    - Added bloom render support for vox and vxm
