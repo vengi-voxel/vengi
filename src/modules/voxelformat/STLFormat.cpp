@@ -44,14 +44,24 @@ void STLFormat::calculateAABB(const core::DynamicArray<Face> &faces, glm::vec3 &
 	maxs = glm::vec3(-100000.0f);
 	mins = glm::vec3(+100000.0f);
 
+	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
+
+	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
+	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
+	float scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ)->floatVal();
+
+	scaleX = scaleX != 1.0f ? scaleX : scale;
+	scaleY = scaleY != 1.0f ? scaleY : scale;
+	scaleZ = scaleZ != 1.0f ? scaleZ : scale;
+
 	for (const Face &face : faces) {
 		for (int i = 0; i < 3; ++i) {
-			maxs.x = core_max(maxs.x, face.tri[i].x);
-			maxs.y = core_max(maxs.y, face.tri[i].y);
-			maxs.z = core_max(maxs.z, face.tri[i].z);
-			mins.x = core_min(mins.x, face.tri[i].x);
-			mins.y = core_min(mins.y, face.tri[i].y);
-			mins.z = core_min(mins.z, face.tri[i].z);
+			maxs.x = core_max(maxs.x, face.tri[i].x) * scaleX;
+			maxs.y = core_max(maxs.y, face.tri[i].y) * scaleY;
+			maxs.z = core_max(maxs.z, face.tri[i].z) * scaleZ;
+			mins.x = core_min(mins.x, face.tri[i].x) * scaleX;
+			mins.y = core_min(mins.y, face.tri[i].y) * scaleY;
+			mins.z = core_min(mins.z, face.tri[i].z) * scaleZ;
 		}
 	}
 }
