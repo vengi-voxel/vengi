@@ -35,6 +35,7 @@
 #include "voxelformat/CSMFormat.h"
 #include "voxelformat/OBJFormat.h"
 #include "voxelformat/VoxOldFormat.h"
+#include "voxelformat/GLTFFormat.h"
 
 namespace voxelformat {
 
@@ -94,6 +95,8 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"Wavefront Object", "obj", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"Polygon File Format", "ply", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"Standard Triangle Language", "stl", nullptr, VOX_FORMAT_FLAG_MESH},
+	{"GL Transmission Format", "gltf", nullptr, VOX_FORMAT_FLAG_MESH},
+	{"GL Transmission Binary Format", "glb", nullptr, VOX_FORMAT_FLAG_MESH},
 	{nullptr, nullptr, nullptr, 0u}
 };
 
@@ -182,6 +185,8 @@ static core::SharedPtr<voxel::Format> getFormat(const io::FormatDescription *des
 		format = core::make_shared<voxel::STLFormat>();
 	} else if (ext == "ply") {
 		format = core::make_shared<voxel::PLYFormat>();
+	} else if (ext == "gltf" || ext == "glb") {
+		format = core::make_shared<voxel::GLTFFormat>();
 	}
 	return format;
 }

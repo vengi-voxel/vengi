@@ -2,6 +2,8 @@ set(LIB voxelformat)
 set(SRCS
 	external/ogt_vox.h
 	external/tiny_obj_loader.h
+	external/tiny_gltf.h
+	external/json.hpp
 
 	private/NamedBinaryTag.h private/NamedBinaryTag.cpp
 	private/PaletteLookup.h
@@ -38,6 +40,7 @@ set(SRCS
 	VoxFormat.h VoxFormat.cpp
 	VoxOldFormat.h VoxOldFormat.cpp
 	VolumeFormat.h VolumeFormat.cpp
+	GLTFFormat.h GLTFFormat.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
 
