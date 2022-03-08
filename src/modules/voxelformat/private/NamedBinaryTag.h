@@ -9,7 +9,6 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
 #include "core/concurrent/ThreadPool.h"
-#include "generated/protocol/ai-shared/AIMessages_generated.h"
 #include "io/Stream.h"
 #include <stdint.h>
 
