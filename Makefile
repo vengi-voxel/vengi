@@ -213,6 +213,10 @@ update-ogt_vox:
 	cp $(UPDATEDIR)/ogl_vox.sync/src/ogt_vox.h src/modules/voxelformat/external
 	sed -i 's/[ \t]*$$//' src/modules/voxelformat/external/ogt_vox.h
 
+update-tinygltf:
+	$(call UPDATE_GIT,tinygltf,https://github.com/syoyo/tinygltf.git)
+	cp $(UPDATEDIR)/tinygltf.sync/tiny_gltf.h $(UPDATEDIR)/tinygltf.sync/json.hpp src/modules/voxelformat/external
+
 update-tinyobjloader:
 	$(call UPDATE_GIT,tinyobjloader,https://github.com/tinyobjloader/tinyobjloader.git)
 	cp $(UPDATEDIR)/tinyobjloader.sync/tiny_obj_loader.h src/modules/voxelformat/external

@@ -11,8 +11,8 @@
 \fB@COMMANDLINE@\fP is a command line application that can convert several voxel
 volume formats into others. Supported formats are e.g. cub (CubeWorld), qb/qbt
 (Qubicle), vox (MagicaVoxel), vmx (VoxEdit Sandbox), kvx (Build engine), kv6 (SLAB6),
-binvox and others. It can also export to mesh formats like obj, stl and ply with a number
-of options.
+binvox and others. It can also export to mesh formats like obj, gltf, stl and ply with
+a number of options.
 .SH OPTIONS
 
 .TP
@@ -209,6 +209,8 @@ Wavefront Object (*.obj)
 Polygon File Format (*.ply)
 .TP
 Standard Triangle Language (*.stl)
+.TP
+GL Transmission Format (*.gltf)
 
 .SH LAYERS
 
