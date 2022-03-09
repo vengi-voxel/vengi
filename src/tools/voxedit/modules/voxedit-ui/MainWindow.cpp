@@ -26,6 +26,7 @@
 #define TITLE_POSITIONS "Positions##title"
 #define TITLE_MODIFIERS "Modifiers##title"
 #define TITLE_LAYERS "Layers##title"
+#define TITLE_FORMAT_SETTINGS "Formats##title"
 #define TITLE_TOOLS "Tools##title"
 #define TITLE_TREES ICON_FA_TREE " Trees##title"
 #define TITLE_SCENEGRAPH "Scenegraph##title"
@@ -228,6 +229,8 @@ void MainWindow::rightWidget() {
 	_cursorPanel.update(TITLE_POSITIONS, _lastExecutedCommand);
 	_modifierPanel.update(TITLE_MODIFIERS, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
+	_formatSettingsPanel.update(TITLE_FORMAT_SETTINGS);
+
 	_layerPanel.update(TITLE_LAYERS, &_layerSettings, _lastExecutedCommand);
 	_sceneGraphPanel.update(_scene->camera(), TITLE_SCENEGRAPH, _lastExecutedCommand);
 	_scriptPanel.update(TITLE_SCRIPTPANEL, WINDOW_TITLE_SCRIPT_EDITOR, _app, _dockIdMainDown);
@@ -441,6 +444,7 @@ void MainWindow::update() {
 		ImGui::DockBuilderDockWindow(TITLE_POSITIONS, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_MODIFIERS, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, _dockIdRight);
+		ImGui::DockBuilderDockWindow(TITLE_FORMAT_SETTINGS, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_LAYERS, _dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_TREES, _dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, _dockIdRightDown);

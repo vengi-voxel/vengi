@@ -3,6 +3,7 @@ set(LIB voxedit-ui)
 set(SRCS
 	AnimationPanel.h AnimationPanel.cpp
 	CursorPanel.h CursorPanel.cpp
+	FormatSettingsPanel.h FormatSettingsPanel.cpp
 	LayerPanel.h LayerPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
 	MainWindow.h MainWindow.cpp

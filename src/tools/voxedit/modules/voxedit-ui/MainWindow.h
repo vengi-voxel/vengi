@@ -19,6 +19,7 @@
 #include "voxedit-ui/ScriptPanel.h"
 #include "voxedit-ui/StatusBar.h"
 #include "voxedit-ui/ToolsPanel.h"
+#include "voxedit-ui/FormatSettingsPanel.h"
 #include "voxedit-ui/TreePanel.h"
 #include "voxedit-util/layer/LayerSettings.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -88,6 +89,7 @@ private:
 	CursorPanel _cursorPanel;
 	ToolsPanel _toolsPanel;
 	PalettePanel _palettePanel;
+	FormatSettingsPanel _formatSettingsPanel;
 	MenuBar _menuBar;
 	StatusBar _statusBar;
 

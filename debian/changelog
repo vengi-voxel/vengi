@@ -11,6 +11,7 @@ vengi (0.0.19.0-1) UNRELEASED; urgency=low
   * Allow to save the MATL chunk in magicavoxel vox files
   * Ability to scale exported mesh with different values for each axis
   * Added stl voxelization support
+  * Allow to modify the camera zoom min/max values
 
   * VoxEdit:
   * Added new command to fill hollows in models
@@ -20,6 +21,7 @@ vengi (0.0.19.0-1) UNRELEASED; urgency=low
   * Removed noise panel (use the lua scripts for noise support)
   * Fixed a lot of undo/redo cases and improved the test cases a lot
   * Fixed viewport screenshot creation (now also bound to F5)
+  * Added dialog to configure the mesh and voxel format settings for loading/saving
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 12 Feb 2022 09:32:14 +0100
 
