@@ -657,7 +657,8 @@ RAWINPUT_QuitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
             __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_Release(wgi_state.gamepad_statics);
             wgi_state.gamepad_statics = NULL;
         }
-        WIN_CoUninitialize();
+        /* Workaround for CoUninitialize() crash in NotifyInitializeSpied() */
+        /*WIN_CoUninitialize();*/
         wgi_state.initialized = SDL_FALSE;
     }
 }
@@ -921,9 +922,12 @@ RAWINPUT_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, co
             return SDL_TRUE;
         }
 
-        /* The Xbox 360 wireless controller shows up as product 0 in WGI */
+        /* The Xbox 360 wireless controller shows up as product 0 in WGI.
+           Try to match it to a Raw Input device via name or known product ID. */
         if (vendor_id == device->vendor_id && product_id == 0 &&
-            name && SDL_strstr(device->name, name) != NULL) {
+            ((name && SDL_strstr(device->name, name) != NULL) ||
+             (device->vendor_id == USB_VENDOR_MICROSOFT &&
+              device->product_id == USB_PRODUCT_XBOX360_XUSB_CONTROLLER))) {
             return SDL_TRUE;
         }
 

@@ -1690,6 +1690,32 @@ GL_SetVSync(SDL_Renderer * renderer, const int vsync)
     return retval;
 }
 
+static SDL_bool
+GL_IsProbablyAccelerated(const GL_RenderData *data)
+{
+    /*const char *vendor = (const char *) data->glGetString(GL_VENDOR);*/
+    const char *renderer = (const char *) data->glGetString(GL_RENDERER);
+
+#ifdef __WINDOWS__
+    if (SDL_strcmp(renderer, "GDI Generic") == 0) {
+        return SDL_FALSE;  /* Microsoft's fallback software renderer. Fix your system! */
+    }
+#endif
+
+#ifdef __APPLE__
+    if (SDL_strcmp(renderer, "Apple Software Renderer") == 0) {
+        return SDL_FALSE;  /* (a probably very old) Apple software-based OpenGL. */
+    }
+#endif
+
+	if (SDL_strcmp(renderer, "Software Rasterizer") == 0) {
+        return SDL_FALSE;  /* (a probably very old) Software Mesa, or some other generic thing. */
+    }
+
+    /* !!! FIXME: swrast? llvmpipe? softpipe? */
+
+    return SDL_TRUE;
+}
 
 static SDL_Renderer *
 GL_CreateRenderer(SDL_Window * window, Uint32 flags)
@@ -1700,6 +1726,8 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     Uint32 window_flags;
     int profile_mask = 0, major = 0, minor = 0;
     SDL_bool changed_window = SDL_FALSE;
+    const char *hint;
+    SDL_bool non_power_of_two_supported = SDL_FALSE;
 
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
@@ -1758,7 +1786,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->GL_BindTexture = GL_BindTexture;
     renderer->GL_UnbindTexture = GL_UnbindTexture;
     renderer->info = GL_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
+    renderer->info.flags = 0;  /* will set some flags below. */
     renderer->driverdata = data;
     renderer->window = window;
 
@@ -1780,6 +1808,10 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         SDL_free(renderer);
         SDL_free(data);
         goto error;
+    }
+
+    if (GL_IsProbablyAccelerated(data)) {
+        renderer->info.flags |= SDL_RENDERER_ACCELERATED;
     }
 
 #ifdef __MACOSX__
@@ -1815,15 +1847,37 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         data->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
     }
 
+    hint = SDL_getenv("GL_ARB_texture_non_power_of_two");
+    if (!hint || *hint != '0') {
+        SDL_bool isGL2 = SDL_FALSE;
+        const char *verstr = (const char *)data->glGetString(GL_VERSION);
+        if (verstr) {
+            char verbuf[16];
+            char *ptr;
+            SDL_strlcpy(verbuf, verstr, sizeof (verbuf));
+            ptr = SDL_strchr(verbuf, '.');
+            if (ptr) {
+                *ptr = '\0';
+                if (SDL_atoi(verbuf) >= 2) {
+                    isGL2 = SDL_TRUE;
+                }
+            }
+        }
+        if (isGL2 || SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+            non_power_of_two_supported = SDL_TRUE;
+        }
+    }
+
     data->textype = GL_TEXTURE_2D;
-    if (SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+    if (non_power_of_two_supported) {
         data->GL_ARB_texture_non_power_of_two_supported = SDL_TRUE;
+        data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
+        renderer->info.max_texture_width = value;
+        renderer->info.max_texture_height = value;
     } else if (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle") ||
                SDL_GL_ExtensionSupported("GL_EXT_texture_rectangle")) {
         data->GL_ARB_texture_rectangle_supported = SDL_TRUE;
         data->textype = GL_TEXTURE_RECTANGLE_ARB;
-    }
-    if (data->GL_ARB_texture_rectangle_supported) {
         data->glGetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB, &value);
         renderer->info.max_texture_width = value;
         renderer->info.max_texture_height = value;
@@ -1848,7 +1902,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",
                 data->shaders ? "ENABLED" : "DISABLED");
-
+#if SDL_HAVE_YUV
     /* We support YV12 textures using 3 textures and a shader */
     if (data->shaders && data->num_texture_units >= 3) {
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
@@ -1856,7 +1910,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
     }
-
+#endif
 #ifdef __MACOSX__
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_UYVY;
 #endif
