@@ -1,5 +1,7 @@
 # Examples
 
+[![asciicast](https://asciinema.org/a/fbcP4hsWvLXYnLyDbkwhEGQaH.svg)](https://asciinema.org/a/fbcP4hsWvLXYnLyDbkwhEGQaH)
+
 ## Level of detail (LOD)
 
 Generate a lod scaled by 50% from the input model.
