@@ -1037,9 +1037,9 @@ void SceneManager::updateAABBMesh() {
 		const voxel::RawVolume* v = node.volume();
 		const voxel::Region& region = v->region();
 		if (v == activeVolume()) {
-			_shapeBuilder.setColor(core::Color::Gray);
-		} else {
 			_shapeBuilder.setColor(core::Color::White);
+		} else {
+			_shapeBuilder.setColor(core::Color::Gray);
 		}
 		_shapeBuilder.aabb(toAABB(region, node.transform()));
 	}
