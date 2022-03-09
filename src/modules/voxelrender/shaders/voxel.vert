@@ -35,7 +35,7 @@ void main(void) {
 #endif
 
 	int materialColorIndex = int(a_colorindex);
-	vec3 materialColor = u_materialcolor[materialColorIndex].rgb;
+	vec4 materialColor = u_materialcolor[materialColorIndex];
 	vec4 glowColor = u_glowcolor[materialColorIndex];
 	v_flags = 0u;
 #if r_renderoutline == 0
@@ -47,9 +47,9 @@ void main(void) {
 
 	if (u_gray != 0) {
 		float gray = (0.21 * materialColor.r + 0.72 * materialColor.g + 0.07 * materialColor.b) / 3.0;
-		v_color = vec4(gray, gray, gray, 1.0);
+		v_color = vec4(gray, gray, gray, materialColor.a);
 	} else {
-		v_color = vec4(materialColor, 1.0);
+		v_color = materialColor;
 	}
 	v_glow = glowColor;
 	v_ambientocclusion = aovalues[a_ao];

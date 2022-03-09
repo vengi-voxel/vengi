@@ -44,7 +44,7 @@ void main(void) {
 		bool overY = (yy >= -epsilonb && yy <= epsilonb);
 		bool overZ = (zz >= -epsilonb && zz <= epsilonb);
 		if ((nearX && !overX) || (nearY && !overY) || (nearZ && !overZ)) {
-			o_color = vec4(v_color.rgb * vec3(0.3, 0.3, 0.3), 1.0);
+			o_color = vec4(v_color.rgb * vec3(0.3, 0.3, 0.3), v_color.a);
 		} else {
 			o_color = calcColor();
 		}
