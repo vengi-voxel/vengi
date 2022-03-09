@@ -170,7 +170,7 @@ IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t z, cons
 			vertex.flags = materialIn.getFlags();
 			vertex.padding = 0u;
 
-			entry.index = meshCurrent->addVertex(vertex) + 1;
+			entry.index = (int32_t)meshCurrent->addVertex(vertex) + 1;
 			entry.voxel = materialIn;
 			entry.ambientOcclusion = vertex.ambientOcclusion;
 
