@@ -568,6 +568,7 @@ void RawVolumeRenderer::renderVolumes(const video::Camera& camera, bool shadow) 
 		if (indices[idx] <= 0u) {
 			continue;
 		}
+		video::ScopedPolygonMode polygonMode(mode);
 		video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
 		_voxelShader.setGray(_state[idx]._gray);
 		_voxelShader.setModel(_models[idx]);
