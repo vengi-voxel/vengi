@@ -237,7 +237,6 @@ protected:
 
 	void executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode);
 	void toggleEditMode();
-	void setEditMode(EditMode mode);
 
 	bool saveModels(const core::String& dir);
 	bool saveNode(int nodeId, const core::String& file);
@@ -415,6 +414,7 @@ public:
 	video::ShapeBuilder& shapeBuilder();
 	render::ShapeRenderer& shapeRenderer();
 	const voxel::SceneGraph &sceneGraph();
+	void setEditMode(EditMode mode);
 
 private:
 	bool nodeRename(voxel::SceneGraphNode &node, const core::String &name);

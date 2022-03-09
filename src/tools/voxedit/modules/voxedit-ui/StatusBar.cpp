@@ -118,6 +118,22 @@ void StatusBar::update(const char *title, float height, const core::String &last
 		ImGui::CheckboxVar("Grayscale", cfg::VoxEditGrayInactive);
 		ImGui::SameLine();
 		ImGui::CheckboxVar("Only active", cfg::VoxEditHideInactive);
+		ImGui::SameLine();
+		const EditMode editMode = sceneMgr.editMode();
+		if (editMode == EditMode::Animation) {
+			ImGui::BeginDisabled();
+		}
+		bool sceneView = editMode == EditMode::Scene;
+		if (ImGui::Checkbox("Scene Mode", &sceneView)) {
+			if (sceneView) {
+				sceneMgr.setEditMode(EditMode::Scene);
+			} else {
+				sceneMgr.setEditMode(EditMode::Model);
+			}
+		}
+		if (editMode == EditMode::Animation) {
+			ImGui::EndDisabled();
+		}
 	}
 	ImGui::End();
 }
