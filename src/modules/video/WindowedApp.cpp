@@ -13,6 +13,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Singleton.h"
+#include "core/StringUtil.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "gl/GLVersion.h"
@@ -409,6 +410,14 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER, "Render voxel outline", core::Var::boolValidator);
 	core::Var::get(cfg::ClientVSync, "true", "Limit the framerate to the monitor refresh rate", core::Var::boolValidator);
 	core::Var::get(cfg::ClientDebugSeverity, "0", 0u, "0 disables it, 1 only highest severity, 2 medium severity, 3 everything");
+	core::Var::get(cfg::ClientCameraMaxZoom, "1000.0", 0u, "", [](const core::String &val) {
+		const float fv = core::string::toFloat(val);
+		return fv > 1.0f && fv < 10000.0f;
+	});
+	core::Var::get(cfg::ClientCameraMinZoom, "1.0", 0u, "", [](const core::String &val) {
+		const float fv = core::string::toFloat(val);
+		return fv > 0.0001f && fv < 10000.0f;
+	});
 
 	command::Command::registerCommand("minimize", [&] (const command::CmdArgs& args) {
 		minimize();

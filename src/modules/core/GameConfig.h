@@ -48,6 +48,8 @@ constexpr const char *ClientWater = "cl_water";
 constexpr const char *ClientFog = "cl_fog";
 constexpr const char *ClientCameraMaxTargetDistance = "cl_cameramaxtargetdistance";
 constexpr const char *ClientCameraZoomSpeed = "cl_camzoomspeed";
+constexpr const char *ClientCameraMinZoom = "cl_camminzoom";
+constexpr const char *ClientCameraMaxZoom = "cl_cammaxzoom";
 
 constexpr const char *ClientDebugShadowMapCascade = "cl_debug_cascade";
 constexpr const char *ClientDebugShadow = "cl_debug_shadow";

@@ -7,9 +7,11 @@
 #include "core/Assert.h"
 #include "core/Singleton.h"
 #include <glm/gtc/epsilon.hpp>
+#include "core/Var.h"
 #include "math/AABB.h"
 #include "core/GLM.h"
 #include "math/Ray.h"
+#include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -462,14 +464,24 @@ glm::vec4 Camera::sphereBoundingBox() const {
 }
 
 void Camera::zoom(float value) {
+	float maxZoom = core::Var::getSafe(cfg::ClientCameraMaxZoom)->floatVal();
+	float minZoom = core::Var::getSafe(cfg::ClientCameraMinZoom)->floatVal();
+	if (minZoom >= maxZoom) {
+		maxZoom = 1000.0f;
+		minZoom = 1.0f;
+		core::Var::getSafe(cfg::ClientCameraMaxZoom)->setVal(maxZoom);
+		core::Var::getSafe(cfg::ClientCameraMinZoom)->setVal(minZoom);
+	}
 	if (_mode == CameraMode::Orthogonal) {
-		_orthoZoom = glm::clamp(_orthoZoom - value * 0.01f, 0.1f, 1000.0f);
+		_orthoZoom = glm::clamp(_orthoZoom - value * 0.01f, minZoom, maxZoom);
 		_dirty |= DIRTY_PERSPECTIVE;
 		return;
 	}
-	const float targetDist = glm::clamp(targetDistance() + value, 0.0f, 1000.0f);
-	if (targetDist > 1.0f) {
-		const glm::vec3& moveDelta = glm::backward * value;
+	const float oldTargetDist = targetDistance();
+	const float targetDist = glm::clamp(oldTargetDist + value, minZoom, maxZoom);
+	const float delta = targetDist - oldTargetDist;
+	if (glm::abs(delta) > glm::epsilon<float>()) {
+		const glm::vec3& moveDelta = glm::backward * delta;
 		move(moveDelta);
 		setTargetDistance(targetDist);
 	}
