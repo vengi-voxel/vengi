@@ -34,6 +34,7 @@ VoxEdit:
    - Fixed a lot of undo/redo cases and improved the test cases a lot
    - Fixed viewport screenshot creation (now also bound to F5)
    - Added dialog to configure the mesh and voxel format settings for loading/saving
+   - Improved the palette panel
 
 ## 0.0.18 (2022-02-12)
 

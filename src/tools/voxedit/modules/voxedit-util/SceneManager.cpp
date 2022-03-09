@@ -83,7 +83,9 @@ bool SceneManager::loadPalette(const core::String& paletteName) {
 
 bool SceneManager::importPalette(const core::String& file) {
 	const core::String& ext = core::string::extractExtension(file);
-	const core::String paletteName(core::string::extractFilename(file.c_str()));
+	core::String paletteName(core::string::extractFilename(file.c_str()));
+	core::string::replaceAllChars(paletteName, ' ', '_');
+	paletteName = paletteName.toLower();
 	const core::String& paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
 	voxel::Palette palette;
 	bool paletteLoaded = false;

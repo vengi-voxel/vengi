@@ -17,11 +17,17 @@
 namespace voxel {
 
 bool Palette::save(const char *name) {
+	if (name == nullptr || name[0] == '\0') {
+		if (_paletteFilename.empty()) {
+			return false;
+		}
+		name = _paletteFilename.c_str();
+	}
 	image::Image img(name);
-	Log::info("Export palette to %s", name);
+	Log::info("Save palette to %s", name);
 	img.loadRGBA((const uint8_t *)colors, sizeof(colors), lengthof(colors), 1);
 	if (!img.writePng()) {
-		Log::warn("Failed to write the palette file");
+		Log::warn("Failed to write the palette file '%s'", name);
 		return false;
 	}
 	return true;
@@ -44,6 +50,7 @@ bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize) {
 	if (!img->loadRGBA(rgbaBuf, ncolors * 4, ncolors, 1)) {
 		return false;
 	}
+	_paletteFilename = "";
 	return load(img);
 }
 
@@ -91,6 +98,7 @@ bool Palette::load(const char *paletteName) {
 	} else {
 		lua = "";
 	}
+	_paletteFilename = paletteFile->name();
 	return load(img);
 }
 
@@ -208,14 +216,6 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 		palette.colors[i] = empty;
 	}
 	return true;
-}
-
-bool Palette::isDirty() const {
-	return _dirty;
-}
-
-void Palette::markClean() {
-	_dirty = false;
 }
 
 bool Palette::hasGlow(uint8_t idx) const {
