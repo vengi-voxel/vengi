@@ -20,7 +20,15 @@ namespace voxel {
 	}
 
 bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
-	const int width = 512, depths = 512, height = 64;
+	int64_t initial = stream.pos();
+	if (!load(filename, stream, sceneGraph, 512, 64, 512)) {
+		stream.seek(initial);
+		return load(filename, stream, sceneGraph, 512, 256, 512);
+	}
+	return true;
+}
+
+bool AoSVXLFormat::load(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, int width, int height, int depths) {
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depths - 1);
 	const int flipHeight = height - 1;
 	core_assert(region.isValid());
