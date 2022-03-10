@@ -33,10 +33,6 @@ bool AoSVXLFormat::load(const core::String& filename, io::SeekableReadStream &st
 	const int flipHeight = height - 1;
 	core_assert(region.isValid());
 	RawVolume *volume = new RawVolume(region);
-	SceneGraphNode node;
-	node.setVolume(volume, true);
-	node.setName(filename);
-	sceneGraph.emplace(core::move(node));
 
 	// TODO: allow to export the palette/colors
 	core::Map<uint32_t, int, 521> paletteMap(32768);
@@ -144,6 +140,10 @@ bool AoSVXLFormat::load(const core::String& filename, io::SeekableReadStream &st
 			}
 		}
 	}
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(filename);
+	sceneGraph.emplace(core::move(node));
 	return true;
 }
 
