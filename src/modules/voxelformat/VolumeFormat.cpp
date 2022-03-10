@@ -254,6 +254,7 @@ bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, vo
 		Log::error("Failed to load model file %s. Broken file.", fileName.c_str());
 		return false;
 	}
+	newSceneGraph.node(newSceneGraph.root().id()).setProperty("Type", desc->name);
 	Log::info("Load model file %s with %i layers", fileName.c_str(), (int)newSceneGraph.size());
 	return true;
 }
@@ -280,12 +281,15 @@ bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& sceneGraph) {
 		return false;
 	}
 
+	const core::String& type = sceneGraph.root().property("Type");
+	Log::info("Save '%s' file to '%s'", type.c_str(), filePtr->name().c_str());
 	io::FileStream stream(filePtr);
 	const core::String& ext = filePtr->extension();
 	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
-		if (ext == desc->ext) {
+		if (ext == desc->ext && (type.empty() || type == desc->name)) {
 			core::SharedPtr<voxel::Format> f = getFormat(desc, 0u);
 			if (f && f->saveGroups(sceneGraph, filePtr->name(), stream)) {
+				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name, desc->ext);
 				return true;
 			}
 		}

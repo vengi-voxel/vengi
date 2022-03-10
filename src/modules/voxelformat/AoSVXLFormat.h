@@ -15,7 +15,14 @@ namespace voxel {
  */
 class AoSVXLFormat : public Format {
 private:
-	bool load(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, int width, int height, int depths);
+	struct Header {
+		uint8_t len;
+		uint8_t colorStartIdx;
+		uint8_t colorEndIdx;
+		uint8_t airStartIdx;
+	};
+	static_assert(sizeof(Header) == 4, "Unexpected size of span header struct");
+	bool loadMap(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, int width, int height, int depths);
 public:
 	bool loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
