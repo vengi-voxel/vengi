@@ -13,6 +13,12 @@
 
 namespace voxel {
 
+#define wrap(read) \
+	if ((read) != 0) { \
+		Log::error("Could not load AoE vxl file: Not enough data in stream " CORE_STRINGIFY(read)); \
+		return false; \
+	}
+
 bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	const int width = 512, depths = 512, height = 64;
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depths - 1);
@@ -24,96 +30,119 @@ bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 	node.setName(filename);
 	sceneGraph.emplace(core::move(node));
 
-	const int64_t length = stream.size();
-	uint8_t *v = new uint8_t[length];
-	if (stream.read(v, length) == -1) {
-		Log::error("AOS vxl: Failed to load file %s", filename.c_str());
-		return false;
-	}
-
-	const uint8_t *base = v;
 	// TODO: allow to export the palette/colors
 	core::Map<uint32_t, int, 521> paletteMap(32768);
 	for (int z = 0; z < depths; ++z) {
 		for (int x = 0; x < width; ++x) {
 			int y = 0;
 			for (;;) {
-				const int number4byteChunks = v[0];
-				const int topColorStart = v[1];
-				const int topColorEnd = v[2]; // inclusive
+				const int64_t cpos = stream.pos();
+				uint8_t number4byteChunks;
+				wrap(stream.readUInt8(number4byteChunks))
+				uint8_t topColorStart;
+				wrap(stream.readUInt8(topColorStart))
+				uint8_t topColorEnd;
+				wrap(stream.readUInt8(topColorEnd))
 				int paletteIndex = 1;
-				const uint32_t *rgba = (const uint32_t *)(v + sizeof(uint32_t));
-				if (topColorStart < 0 || topColorStart >= height) {
-					Log::error("depth (top start) exceeds the max allowed value of %i", height);
+				if (stream.skip(1) == -1) {
+					Log::error("failed to skip");
 					return false;
 				}
-				if (topColorEnd < 0 || topColorEnd >= height) {
-					Log::error("depth (top end) exceeds the max allowed value of %i", height);
+				if ((int)topColorStart >= height) {
+					Log::error("depth (top start %i exceeds the max allowed value of %i", topColorStart, height);
+					return false;
+				}
+				if (topColorEnd >= height) {
+					Log::error("depth (top end %i) exceeds the max allowed value of %i", topColorEnd, height);
 					return false;
 				}
 				for (y = topColorStart; y <= topColorEnd; ++y) {
+					uint32_t rgba;
+					wrap(stream.readUInt32(rgba))
 					// TODO: BGRA with A not being alpha - but some shading stuff?
-					if (!paletteMap.get(*rgba, paletteIndex)) {
-						const glm::vec4& color = core::Color::fromRGBA(*rgba);
+					if (!paletteMap.get(rgba, paletteIndex)) {
+						const glm::vec4& color = core::Color::fromRGBA(rgba);
 						paletteIndex = findClosestIndex(color);
 						if (paletteMap.size() < paletteMap.capacity()) {
-							paletteMap.put(*rgba, paletteIndex);
+							paletteMap.put(rgba, paletteIndex);
 						}
 					}
 					volume->setVoxel(x, flipHeight - y, z, voxel::createVoxel(voxel::VoxelType::Generic, paletteIndex));
-					++rgba;
 				}
 				for (int i = y; i < height; ++i) {
 					volume->setVoxel(x, flipHeight - i, z, voxel::createVoxel(voxel::VoxelType::Generic, paletteIndex));
 				}
-
 				const int lenBottom = topColorEnd - topColorStart + 1;
 
 				// check for end of data marker
 				if (number4byteChunks == 0) {
-					// infer ACTUAL number of 4-byte chunks from the length of the color data
-					v += sizeof(uint32_t) * (lenBottom + 1);
+					if (stream.seek(cpos + (int64_t)(sizeof(uint32_t) * (lenBottom + 1))) == -1) {
+						Log::error("failed to skip");
+						return false;
+					}
 					break;
 				}
 
+				int64_t rgbaPos = stream.pos();
 				// infer the number of bottom colors in next span from chunk length
 				const int len_top = (number4byteChunks - 1) - lenBottom;
 
-				// now skip the v pointer past the data to the beginning of the next span
-				v += v[0] * sizeof(uint32_t);
+				if (stream.seek(cpos + (int64_t)(number4byteChunks * sizeof(uint32_t))) == -1) {
+					Log::error("failed to seek");
+					return false;
+				}
+				uint8_t bottomColorEnd = 0;
+				if (stream.skip(3) == -1) {
+					Log::error("failed to skip");
+					return false;
+				}
+				wrap(stream.readUInt8(bottomColorEnd))
+				if (stream.seek(-4, SEEK_CUR) == -1) {
+					Log::error("failed to seek");
+					return false;
+				}
 
-				const int bottomColorEnd = v[3]; // aka air start - exclusive
+				// aka air start - exclusive
 				const int bottomColorStart = bottomColorEnd - len_top;
 				if (bottomColorStart < 0 || bottomColorStart >= height) {
-					Log::error("depth (bottom start) exceeds the max allowed value of %i", height);
+					Log::error("depth (bottom start %i) exceeds the max allowed value of %i", bottomColorStart, height);
 					return false;
 				}
-				if (bottomColorEnd < 0 || bottomColorEnd >= height) {
-					Log::error("depth (bottom end) exceeds the max allowed value of %i", height);
+				if (bottomColorEnd >= height) {
+					Log::error("depth (bottom end %i) exceeds the max allowed value of %i", bottomColorEnd, height);
 					return false;
 				}
 
+				if (stream.seek(rgbaPos) == -1) {
+					Log::error("failed to seek");
+					return false;
+				}
 				for (y = bottomColorStart; y < bottomColorEnd; ++y) {
-					if (!paletteMap.get(*rgba, paletteIndex)) {
-						const glm::vec4& color = core::Color::fromRGBA(*rgba);
+					uint32_t rgba;
+					wrap(stream.readUInt32(rgba))
+					if (!paletteMap.get(rgba, paletteIndex)) {
+						const glm::vec4& color = core::Color::fromRGBA(rgba);
 						paletteIndex = findClosestIndex(color);
 						if (paletteMap.size() < paletteMap.capacity()) {
-							paletteMap.put(*rgba, paletteIndex);
+							paletteMap.put(rgba, paletteIndex);
 						}
 					}
 					volume->setVoxel(x, flipHeight - y, z, voxel::createVoxel(voxel::VoxelType::Generic, paletteIndex));
-					++rgba;
+				}
+				if (stream.seek(cpos + (int64_t)(number4byteChunks * sizeof(uint32_t))) == -1) {
+					Log::error("failed to seek");
+					return false;
 				}
 			}
 		}
 	}
-	core_assert(v - base == length);
-	delete[] base;
 	return true;
 }
 
 bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	return false;
 }
+
+#undef wrap
 
 }
