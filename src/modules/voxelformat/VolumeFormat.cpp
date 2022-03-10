@@ -90,6 +90,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	//{"Build engine", "kvx", nullptr, 0u},
 	{"Tiberian Sun", "vxl", nullptr, 0u},
 	{"Qubicle Exchange", "qef", nullptr, 0u},
+	{"AceOfSpades", "vxl", nullptr, 0u}, // TODO: handle duplicate extension
 	{"Wavefront Object", "obj", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"Polygon File Format", "ply", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"Standard Triangle Language", "stl", nullptr, VOX_FORMAT_FLAG_MESH},

@@ -175,8 +175,145 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	return true;
 }
 
-bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+bool AoSVXLFormat::isSurface(const RawVolume *v, int x, int y, int z) {
+	const int width = v->width();
+	const int depth = v->depth();
+	const int height = v->height();
+
+	if (voxel::isAir(v->voxel(x, y, z).getMaterial()))
+		return false;
+	if (x > 0 && voxel::isAir(v->voxel(x - 1, y, z).getMaterial()))
+		return true;
+	if (x + 1 < width && voxel::isAir(v->voxel(x + 1, y, z).getMaterial()))
+		return true;
+	if (z > 0 && voxel::isAir(v->voxel(x, y, z - 1).getMaterial()))
+		return true;
+	if (z + 1 < depth && voxel::isAir(v->voxel(x, y, z + 1).getMaterial()))
+		return true;
+	if (y > 0 && voxel::isAir(v->voxel(x, y - 1, z).getMaterial()))
+		return true;
+	if (y + 1 < height && voxel::isAir(v->voxel(x, y + 1, z).getMaterial()))
+		return true;
 	return false;
+}
+
+// code taken from https://silverspaceship.com/aosmap/aos_file_format.html
+bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	RawVolume* mergedVolume = merge(sceneGraph);
+	glm::ivec3 size = mergedVolume->region().getDimensionsInVoxels();
+	glm::ivec3 targetSize(512, size.y, 512);
+	if (targetSize.y < 64) {
+		targetSize.y = 64;
+	} else if (targetSize.y <= 256) {
+		targetSize.y = 256;
+	} else {
+		Log::error("Volume height exceeds the max allowed height of 256 voxels: %i", targetSize.y);
+		delete mergedVolume;
+		return false;
+	}
+	const glm::ivec3 sizeDelta = targetSize - size;
+	RawVolume* v = mergedVolume;
+	if (glm::any(glm::notEqual(glm::ivec3(0), sizeDelta))) {
+		v = resize(mergedVolume, sizeDelta);
+		delete mergedVolume;
+	}
+	if (v == nullptr) {
+		return false;
+	}
+	core::ScopedPtr<RawVolume> scopedPtr(v);
+
+	const voxel::Region& region = v->region();
+	const int width = region.getWidthInVoxels();
+	const int depth = region.getDepthInVoxels();
+	const int height = region.getHeightInVoxels();
+	const int flipHeight = height - 1;
+
+	Log::debug("Save vxl of size %i:%i:%i", width, height, depth);
+
+	v->translate(region.getLowerCorner());
+	RawVolume::Sampler sampler(v);
+
+	const voxel::Palette& palette = voxel::getPalette();
+
+	for (int z = 0; z < depth; ++z) {
+		for (int x = 0; x < width; ++x) {
+			int ypos = 0;
+			while (ypos < height) {
+				sampler.setPosition(x, flipHeight - ypos, z);
+				// find the air region
+				int air_start = ypos;
+				while (ypos < height && voxel::isAir(sampler.voxel().getMaterial())) {
+					++ypos;
+					sampler.moveNegativeY();
+				}
+
+				// find the top region
+				int top_colors_start = ypos;
+				while (ypos < height && isSurface(v, x, flipHeight - ypos, z)) {
+					++ypos;
+				}
+				int top_colors_end = ypos; // exclusive
+
+				sampler.setPosition(x, flipHeight - ypos, z);
+				// now skip past the solid voxels
+				while (ypos < height && voxel::isBlocked(sampler.voxel().getMaterial()) && !isSurface(v, x, flipHeight - ypos, z)) {
+					++ypos;
+					sampler.moveNegativeY();
+				}
+
+				// at the end of the solid voxels, we have colored voxels.
+				// in the "normal" case they're bottom colors; but it's
+				// possible to have air-color-solid-color-solid-color-air,
+				// which we encode as air-color-solid-0, 0-color-solid-air
+
+				// so figure out if we have any bottom colors at this point
+				int bottom_colors_start = ypos;
+
+				int y = ypos;
+				while (y < height && isSurface(v, x, flipHeight - y, z)) {
+					++y;
+				}
+
+				if (y == height || 0) {
+					; // in this case, the bottom colors of this span are empty, because we'll emit as top colors
+				} else {
+					// otherwise, these are real bottom colors so we can write them
+					while (isSurface(v, x, flipHeight - ypos, z)) {
+						++ypos;
+					}
+				}
+				int bottom_colors_end = ypos; // exclusive
+
+				// now we're ready to write a span
+				int top_colors_len = top_colors_end - top_colors_start;
+				int bottom_colors_len = bottom_colors_end - bottom_colors_start;
+
+				int colors = top_colors_len + bottom_colors_len;
+
+				if (ypos == height) {
+					stream.writeUInt8(0); // last span
+				} else {
+					stream.writeUInt8(colors + 1);
+				}
+
+				stream.writeUInt8(top_colors_start);
+				stream.writeUInt8(top_colors_end - 1);
+				stream.writeUInt8(air_start);
+
+				for (y = 0; y < top_colors_len; ++y) {
+					sampler.setPosition(x, flipHeight - (top_colors_start + y), z);
+					const uint32_t color = palette.colors[sampler.voxel().getColor()];
+					stream.writeUInt32(color);
+				}
+				for (y = 0; y < bottom_colors_len; ++y) {
+					sampler.setPosition(x, flipHeight - (bottom_colors_start + y), z);
+					const uint32_t color = palette.colors[sampler.voxel().getColor()];
+					stream.writeUInt32(color);
+				}
+			}
+		}
+	}
+	return true;
 }
 
 #undef wrap
