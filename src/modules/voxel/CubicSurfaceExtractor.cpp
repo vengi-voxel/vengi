@@ -154,9 +154,9 @@ IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t z, cons
 		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const glm::ivec3& offset) {
 	core_trace_scoped(AddVertex);
 	const uint8_t ambientOcclusion = vertexAmbientOcclusion(
-		!isAir(face1) && !isWater(face1),
-		!isAir(face2) && !isWater(face2),
-		!isAir(corner) && !isWater(corner));
+		!isAir(face1) && !isTransparent(face1),
+		!isAir(face2) && !isTransparent(face2),
+		!isAir(corner) && !isTransparent(corner));
 
 	for (uint32_t ct = 0; ct < MaxVerticesPerPosition; ++ct) {
 		VertexData& entry = existingVertices(x, y, ct);

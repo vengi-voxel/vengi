@@ -70,7 +70,11 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			const core::String &id = core::string::format("##palitem-%i", palIdx);
 			if (ImGui::InvisibleButton(id.c_str(), colorButtonSize)) {
 				voxel::VoxelType type;
-				type = voxel::VoxelType::Generic;
+				if (color.a < 1.0f) {
+					type = voxel::VoxelType::Transparent;
+				} else {
+					type = voxel::VoxelType::Generic;
+				}
 				sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(type, palIdx));
 			}
 			const core::String &contextMenuId = core::string::format("Actions##context-palitem-%i", palIdx);
@@ -86,7 +90,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 						palette.setGlow(palIdx);
 					}
 				}
-				if (ImGui::ColorEdit4("Color", glm::value_ptr(color), ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float)) {
+				if (ImGui::ColorEdit4("Color", glm::value_ptr(color), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float)) {
 					palette.colors[palIdx] = core::Color::getRGBA(color);
 					palette.markDirty();
 					palette.markSave();

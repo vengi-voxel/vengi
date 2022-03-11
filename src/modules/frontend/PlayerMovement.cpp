@@ -10,6 +10,7 @@ namespace frontend {
 
 static const char* FootStepSoundStr[] = {
 	nullptr,
+	"footstep_glass",
 	"water_move",
 	"footstep_generic",
 	"footstep_generic",

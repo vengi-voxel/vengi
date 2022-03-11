@@ -21,6 +21,7 @@ namespace voxel {
 enum class VoxelType : uint8_t {
 	// this must be 0
 	Air = 0,
+	Transparent,
 	Water,
 	Generic,
 	Grass,
@@ -43,6 +44,7 @@ enum class VoxelType : uint8_t {
 
 static constexpr const char* VoxelTypeStr[] = {
 	"Air",
+	"Transparent",
 	"Water",
 	"Generic",
 	"Grass",
@@ -157,8 +159,8 @@ inline bool isEnterable(VoxelType material) {
 	return material == VoxelType::Air || material == VoxelType::Water;
 }
 
-inline bool isWater(VoxelType material) {
-	return material == VoxelType::Water;
+inline bool isTransparent(VoxelType material) {
+	return material == VoxelType::Water || material == VoxelType::Transparent;
 }
 
 inline bool isLeaves(VoxelType material) {
