@@ -54,6 +54,10 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	core_assert(region.isValid());
 	RawVolume *volume = new RawVolume(region);
 
+	const voxel::Palette &palette = voxel::getPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	palette.toVec4f(materialColors);
+
 	// TODO: allow to export the palette/colors
 	core::Map<uint32_t, int, 521> paletteMap(32768);
 	for (int z = 0; z < depths; ++z) {
@@ -80,10 +84,11 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 				for (y = header.colorStartIdx; y <= header.colorEndIdx; ++y) {
 					uint32_t rgba;
 					wrap(stream.readUInt32(rgba))
+					rgba = core::Color::alpha(rgba, 0xFF);
 					// TODO: BGRA with A not being alpha - but some shading stuff?
 					if (!paletteMap.get(rgba, paletteIndex)) {
 						const glm::vec4& color = core::Color::fromRGBA(rgba);
-						paletteIndex = findClosestIndex(color);
+						paletteIndex = core::Color::getClosestMatch(color, materialColors);
 						if (paletteMap.size() < paletteMap.capacity()) {
 							paletteMap.put(rgba, paletteIndex);
 						}
@@ -147,9 +152,10 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 				for (y = bottomColorStart; y < bottomColorEnd; ++y) {
 					uint32_t rgba;
 					wrap(stream.readUInt32(rgba))
+					rgba = core::Color::alpha(rgba, 0xFF);
 					if (!paletteMap.get(rgba, paletteIndex)) {
-						const glm::vec4& color = core::Color::fromRGBA(rgba);
-						paletteIndex = findClosestIndex(color);
+						const glm::vec4 &color = core::Color::fromRGBA(rgba);
+						paletteIndex = core::Color::getClosestMatch(color, materialColors);
 						if (paletteMap.size() < paletteMap.capacity()) {
 							paletteMap.put(rgba, paletteIndex);
 						}

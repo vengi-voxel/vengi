@@ -44,14 +44,14 @@ const glm::vec4 Color::Brown        = glm::vec4(107.f,  66,  38, 255) / glm::vec
 const glm::vec4 Color::LightBrown   = glm::vec4(150.f, 107,  72, 255) / glm::vec4(Color::magnitudef);
 const glm::vec4 Color::DarkBrown    = glm::vec4( 82.f,  43,  26, 255) / glm::vec4(Color::magnitudef);
 
-glm::vec4 Color::fromRGB(const unsigned int rgbInt, const float a) {
+glm::vec4 Color::fromRGB(const uint32_t rgbInt, const float a) {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	return glm::vec4(static_cast<float>(rgbInt >> 16 & 0xFF) / Color::magnitudef, static_cast<float>(rgbInt >> 8 & 0xFF) / Color::magnitudef,
 			static_cast<float>(rgbInt & 0xFF) / Color::magnitudef, a);
 #endif
 }
 
-glm::vec4 Color::fromARGB(const unsigned int argbInt) {
+glm::vec4 Color::fromARGB(const uint32_t argbInt) {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	// word order BGRA8888
 	const uint8_t a = (argbInt >> 0) & 0xFF;
@@ -68,7 +68,7 @@ glm::vec4 Color::fromARGB(const unsigned int argbInt) {
 	return fromRGBA(r, g, b, a);
 }
 
-glm::vec4 Color::fromRGBA(const unsigned int rgbaInt) {
+glm::vec4 Color::fromRGBA(const uint32_t rgbaInt) {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	// word order ABGR8888
 	const uint8_t r = (rgbaInt >> 0) & 0xFF;
@@ -85,8 +85,8 @@ glm::vec4 Color::fromRGBA(const unsigned int rgbaInt) {
 	return fromRGBA(r, g, b, a);
 }
 
-glm::u8vec4 Color::toRGBA(const unsigned int rgbaInt) {
-	#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+glm::u8vec4 Color::toRGBA(const uint32_t rgbaInt) {
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	// word order ABGR8888
 	const uint8_t r = (rgbaInt >> 0) & 0xFF;
 	const uint8_t g = (rgbaInt >> 8) & 0xFF;
@@ -155,7 +155,7 @@ glm::vec4 Color::fromHSB(const float hue, const float saturation, const float br
 	return color;
 }
 
-core::String Color::toHex(const unsigned int rgba, bool hashPrefix) {
+core::String Color::toHex(const uint32_t rgba, bool hashPrefix) {
 	core::String hex;
 	if (hashPrefix) {
 		hex.append("#");
@@ -201,20 +201,20 @@ float Color::getDistance(const glm::vec4& color, float hue, float saturation, fl
 	return val;
 }
 
-unsigned int Color::getRGB(const glm::vec4& color) {
+uint32_t Color::getRGB(const glm::vec4& color) {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	return static_cast<int>(color.g * magnitude) << 16 | static_cast<int>(color.b * magnitude) << 8 | static_cast<int>(color.r * magnitude);
 #endif
 }
 
-unsigned int Color::getRGBA(const glm::vec4& color) {
+uint32_t Color::getRGBA(const glm::vec4& color) {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	return static_cast<int>(color.a * magnitude) << 24 | static_cast<int>(color.b * magnitude) << 16 | static_cast<int>(color.g * magnitude) << 8
 			| static_cast<int>(color.r * magnitude);
 #endif
 }
 
-unsigned int Color::getRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+uint32_t Color::getRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	return static_cast<int>(a) << 24 | static_cast<int>(b) << 16 | static_cast<int>(g) << 8 | static_cast<int>(r);
 #endif
@@ -224,7 +224,7 @@ glm::u8vec4 Color::getRGBAVec(const glm::vec4& color) {
 	return glm::u8vec4(static_cast<int>(color.r * magnitude), static_cast<int>(color.g * magnitude), static_cast<int>(color.b * magnitude), static_cast<int>(color.a * magnitude));
 }
 
-unsigned int Color::getBGRA(const glm::vec4& color) {
+uint32_t Color::getBGRA(const glm::vec4& color) {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	return static_cast<int>(color.a * magnitude) << 24 | static_cast<int>(color.r * magnitude) << 16 | static_cast<int>(color.g * magnitude) << 8
 			| static_cast<int>(color.b * magnitude);
@@ -258,6 +258,19 @@ void Color::getHSB(const glm::vec4& color, float& chue, float& csaturation, floa
 
 glm::vec4 Color::alpha(const glm::vec4& c, float alpha) {
 	return glm::vec4(c.r, c.g, c.b, alpha);
+}
+
+uint32_t Color::alpha(const uint32_t rgba, uint8_t alpha) {
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+	const uint8_t r = (rgba >> 0) & 0xFF;
+	const uint8_t g = (rgba >> 8) & 0xFF;
+	const uint8_t b = (rgba >> 16) & 0xFF;
+#else
+	const uint8_t r = (rgba >> 24) & 0xFF;
+	const uint8_t g = (rgba >> 16) & 0xFF;
+	const uint8_t b = (rgba >> 8) & 0xFF;
+#endif
+	return getRGBA(r, g, b, alpha);
 }
 
 float Color::brightness(const glm::vec4& color) {
