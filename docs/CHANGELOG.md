@@ -23,6 +23,8 @@ General:
    - Ability to scale exported mesh with different values for each axis
    - Added stl voxelization support
    - Allow to modify the camera zoom min/max values
+   - Allow to load different sizes for AoS VXL files
+   - Lerp the camera zooming
 
 VoxEdit:
 
