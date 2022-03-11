@@ -166,14 +166,6 @@ IndexType Mesh::addVertex(const VoxelVertex& vertex) {
 	return (IndexType)_vecVertices.size() - 1;
 }
 
-size_t Mesh::size() {
-	constexpr size_t classSize = sizeof(*this);
-	const size_t indicesSize = _vecIndices.size() * sizeof(IndexType);
-	const size_t verticesSize = _vecVertices.size() * sizeof(VoxelVertex);
-	const size_t contentSize = indicesSize + verticesSize;
-	return classSize + contentSize;
-}
-
 void Mesh::removeUnusedVertices() {
 	const size_t vertices = _vecVertices.size();
 	const size_t indices = _vecIndices.size();

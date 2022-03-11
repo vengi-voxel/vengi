@@ -26,11 +26,6 @@ public:
 	Mesh& operator=(const Mesh& other);
 	Mesh& operator=(Mesh&& other) noexcept;
 
-	/**
-	 * @brief Calculate the memory amount this mesh is using
-	 */
-	size_t size();
-
 	size_t getNoOfVertices() const;
 	const VoxelVertex& getVertex(IndexType index) const;
 	const VoxelVertex* getRawVertexData() const;
