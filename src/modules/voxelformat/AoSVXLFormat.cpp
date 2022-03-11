@@ -83,9 +83,8 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 				}
 				for (y = header.colorStartIdx; y <= header.colorEndIdx; ++y) {
 					uint32_t rgba;
-					wrap(stream.readUInt32(rgba))
+					wrap(stream.readUInt32BE(rgba))
 					rgba = core::Color::alpha(rgba, 0xFF);
-					// TODO: BGRA with A not being alpha - but some shading stuff?
 					if (!paletteMap.get(rgba, paletteIndex)) {
 						const glm::vec4& color = core::Color::fromRGBA(rgba);
 						paletteIndex = core::Color::getClosestMatch(color, materialColors);
@@ -151,7 +150,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 				}
 				for (y = bottomColorStart; y < bottomColorEnd; ++y) {
 					uint32_t rgba;
-					wrap(stream.readUInt32(rgba))
+					wrap(stream.readUInt32BE(rgba))
 					rgba = core::Color::alpha(rgba, 0xFF);
 					if (!paletteMap.get(rgba, paletteIndex)) {
 						const glm::vec4 &color = core::Color::fromRGBA(rgba);
