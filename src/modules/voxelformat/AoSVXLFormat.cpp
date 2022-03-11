@@ -26,7 +26,6 @@ namespace voxel {
 bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	int64_t initial = stream.pos();
 
-	size_t n = 0;
 	glm::ivec3 size(0);
 
 	while (stream.remaining() >= (int64_t)sizeof(Header)) {
@@ -38,14 +37,11 @@ bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 		if (header.colorEndIdx + 1 > size.y) {
 			size.y = header.colorEndIdx + 1;
 		}
-		if (!header.len) {
-			++n;
-		}
 		const int64_t spanBytes = header.len > 0 ? header.len * (int)sizeof(uint32_t) : (header.colorEndIdx + 2 - header.colorStartIdx) * (int)sizeof(uint32_t);
 		stream.skip(spanBytes);
 	}
 	size.y = 1 << (int)glm::ceil(glm::log2((float)size.y));
-	size.x = size.z = (int)glm::sqrt((float)n);
+	size.x = size.z = 512;
 
 	stream.seek(initial);
 
