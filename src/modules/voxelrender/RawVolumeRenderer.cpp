@@ -31,27 +31,10 @@
 #include "core/Algorithm.h"
 #include "core/StandardLib.h"
 #include "VoxelShaderConstants.h"
+#include "voxel/IsQuadNeeded.h"
 #include <SDL.h>
 
 namespace voxelrender {
-
-namespace raw {
-/// implementation of a function object for deciding when
-/// the cubic surface extractor should insert a face between two voxels.
-///
-/// The criteria used here are that the voxel in front of the potential
-/// quad should have a value of zero (which would typically indicate empty
-/// space) while the voxel behind the potential quad would have a value
-/// greater than zero (typically indicating it is solid).
-struct CustomIsQuadNeeded {
-	inline bool operator()(const voxel::VoxelType& back, const voxel::VoxelType& front, voxel::FaceNames face) const {
-		if (isBlocked(back) && !isBlocked(front)) {
-			return true;
-		}
-		return false;
-	}
-};
-}
 
 RawVolumeRenderer::RawVolumeRenderer() :
 		_voxelShader(shader::VoxelInstancedShader::getInstance()),
@@ -394,7 +377,7 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 					voxel::Region reg = finalRegion;
 					reg.shiftUpperCorner(1, 1, 1);
 					voxel::Mesh mesh(65536, 65536, true);
-					voxel::extractCubicMesh(&movedCopy, reg, &mesh, raw::CustomIsQuadNeeded(), reg.getLowerCorner());
+					voxel::extractCubicMesh(&movedCopy, reg, &mesh, voxel::IsQuadNeeded(), reg.getLowerCorner());
 					_pendingQueue.emplace(mins, idx, core::move(mesh));
 					Log::debug("Enqueue mesh for idx: %i", idx);
 					--_runningExtractorTasks;
@@ -423,7 +406,7 @@ void RawVolumeRenderer::clearPendingExtractions() {
 void RawVolumeRenderer::extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const {
 	voxel::Region reg = region;
 	reg.shiftUpperCorner(1, 1, 1);
-	voxel::extractCubicMesh(volume, reg, mesh, raw::CustomIsQuadNeeded(), reg.getLowerCorner());
+	voxel::extractCubicMesh(volume, reg, mesh, voxel::IsQuadNeeded(), reg.getLowerCorner());
 }
 
 bool RawVolumeRenderer::hidden(int idx) const {
