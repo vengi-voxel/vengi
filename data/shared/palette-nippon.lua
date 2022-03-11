@@ -48,6 +48,7 @@ function init()
 	end
 
 	MAT.Water(197)
+	MAT.Transparent(0)
 
 	MAT.Cloud(191)
 	MAT.Cloud(192)
