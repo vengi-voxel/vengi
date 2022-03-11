@@ -87,8 +87,8 @@ protected:
 		ExtractionCtx(const glm::ivec3& _mins, int _idx, voxel::Mesh&& _mesh) :
 				mins(_mins), idx(_idx), mesh(_mesh) {
 		}
-		glm::ivec3 mins;
-		int idx;
+		glm::ivec3 mins {};
+		int idx = -1;
 		voxel::Mesh mesh;
 
 		inline bool operator<(const ExtractionCtx &rhs) const {
