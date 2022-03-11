@@ -53,6 +53,7 @@ public:
 		DarkBrown;
 
 	static float getDistance(const glm::vec4& color, float hue, float saturation, float brightness);
+	static float getDistance(uint32_t color, float hue, float saturation, float brightness);
 
 	/**
 	 * @brief Get the nearest matching color index from the list
@@ -60,7 +61,7 @@ public:
 	 * @return index in the colors vector or the first entry if non was found, or @c -1 on error
 	 */
 	template<class T>
-	static int getClosestMatch(const glm::vec4& color, const T& colors) {
+	static int getClosestMatch(const glm::vec4& color, const T& colors, float *distance = nullptr) {
 		if (colors.empty()) {
 			return -1;
 		}
@@ -79,6 +80,9 @@ public:
 				minDistance = val;
 				minIndex = (int)i;
 			}
+		}
+		if (distance) {
+			*distance = minDistance;
 		}
 		return minIndex;
 	}

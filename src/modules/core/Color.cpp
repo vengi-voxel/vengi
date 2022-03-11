@@ -201,6 +201,11 @@ float Color::getDistance(const glm::vec4& color, float hue, float saturation, fl
 	return val;
 }
 
+float Color::getDistance(uint32_t rgba, float hue, float saturation, float brightness) {
+	const glm::vec4 &color = core::Color::fromRGBA(rgba);
+	return getDistance(color, hue, saturation, brightness);
+}
+
 uint32_t Color::getRGB(const glm::vec4& color) {
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	return static_cast<int>(color.g * magnitude) << 16 | static_cast<int>(color.b * magnitude) << 8 | static_cast<int>(color.r * magnitude);
