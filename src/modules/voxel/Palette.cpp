@@ -20,7 +20,7 @@ namespace voxel {
 bool Palette::addColorToPalette(uint32_t rgba) {
 	for (int i = 0; i < colorCount; ++i) {
 		if (colors[i] == rgba) {
-			return true;
+			return false;
 		}
 	}
 

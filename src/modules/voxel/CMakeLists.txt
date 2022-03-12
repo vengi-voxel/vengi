@@ -40,6 +40,7 @@ endif()
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
 	tests/FaceTest.cpp
+	tests/PaletteTest.cpp
 	tests/PolyVoxTest.cpp
 	tests/RegionTest.cpp
 	tests/TestHelper.h
