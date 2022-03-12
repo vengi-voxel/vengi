@@ -37,8 +37,8 @@ glm::ivec3 AoSVXLFormat::dimensions(io::SeekableReadStream &stream) const {
 		if (header.colorEndIdx + 1 > size.y) {
 			size.y = header.colorEndIdx + 1;
 		}
-		const int64_t spanBytes = header.len > 0 ? header.len * (int)sizeof(uint32_t) : (header.colorEndIdx + 2 - header.colorStartIdx) * (int)sizeof(uint32_t);
-		core_assert(spanBytes >= 0);
+		const int64_t spanBytes = header.len > 0 ? header.len * (int)sizeof(uint32_t) : core_max(0, (header.colorEndIdx + 2 - header.colorStartIdx)) * (int)sizeof(uint32_t);
+		core_assert_msg(spanBytes >= 0, "spanbytes: %i, stream pos: %i", (int)spanBytes, (int)stream.pos());
 		stream.skip(spanBytes);
 	}
 	size.y = 1 << (int)glm::ceil(glm::log2((float)size.y));
