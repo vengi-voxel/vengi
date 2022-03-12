@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/StringUtil.h"
 #include "io/FileStream.h"
 #include "voxel/RawVolume.h"
 #include "voxel/tests/AbstractVoxelTest.h"
@@ -51,6 +52,18 @@ protected:
 		io::FileStream stream(file);
 		voxel::RawVolume* v = format.load(filename, stream);
 		return v;
+	}
+
+	int loadPalette(const core::String& filename, voxel::Format& format, voxel::Palette &palette) {
+		const io::FilePtr& file = open(filename);
+		if (!file->validHandle()) {
+			return 0;
+		}
+		io::FileStream stream(file);
+		const int size = (int)format.loadPalette(filename, stream, palette);
+		const core::String paletteFilename = core::string::extractFilename(filename) + ".png";
+		palette.save(paletteFilename.c_str());
+		return size;
 	}
 
 	virtual bool onInitApp() {
