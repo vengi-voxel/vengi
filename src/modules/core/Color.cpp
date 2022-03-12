@@ -266,16 +266,8 @@ glm::vec4 Color::alpha(const glm::vec4& c, float alpha) {
 }
 
 uint32_t Color::alpha(const uint32_t rgba, uint8_t alpha) {
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-	const uint8_t r = (rgba >> 0) & 0xFF;
-	const uint8_t g = (rgba >> 8) & 0xFF;
-	const uint8_t b = (rgba >> 16) & 0xFF;
-#else
-	const uint8_t r = (rgba >> 24) & 0xFF;
-	const uint8_t g = (rgba >> 16) & 0xFF;
-	const uint8_t b = (rgba >> 8) & 0xFF;
-#endif
-	return getRGBA(r, g, b, alpha);
+	const glm::u8vec4& rgbavec = toRGBA(rgba);
+	return getRGBA(rgbavec.r, rgbavec.g, rgbavec.b, alpha);
 }
 
 float Color::brightness(const glm::vec4& color) {
