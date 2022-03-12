@@ -201,6 +201,15 @@ float Color::getDistance(const glm::vec4& color, float hue, float saturation, fl
 	return val;
 }
 
+float Color::getDistance(uint32_t rgba, uint32_t rgba2) {
+	const glm::vec4 &color = core::Color::fromRGBA(rgba);
+	float hue;
+	float saturation;
+	float brightness;
+	core::Color::getHSB(color, hue, saturation, brightness);
+	return core::Color::getDistance(rgba2, hue, saturation, brightness);
+}
+
 float Color::getDistance(uint32_t rgba, float hue, float saturation, float brightness) {
 	const glm::vec4 &color = core::Color::fromRGBA(rgba);
 	return getDistance(color, hue, saturation, brightness);

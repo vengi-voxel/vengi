@@ -52,6 +52,7 @@ public:
 		LightBrown,
 		DarkBrown;
 
+	static float getDistance(uint32_t rgba, uint32_t rgba2);
 	static float getDistance(const glm::vec4& color, float hue, float saturation, float brightness);
 	static float getDistance(uint32_t color, float hue, float saturation, float brightness);
 
