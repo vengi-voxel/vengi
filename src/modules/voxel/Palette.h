@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/String.h"
-#include "core/collection/Array.h"
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include <stdint.h>

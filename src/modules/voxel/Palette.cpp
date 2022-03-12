@@ -8,7 +8,6 @@
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
-#include "core/collection/Array.h"
 #include "image/Image.h"
 #include "io/File.h"
 #include "io/Filesystem.h"
@@ -288,26 +287,14 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
 	Log::debug("Create palette for image: %s", image->name().c_str());
-	core::Map<uint32_t, bool, 64> colorset;
 	uint16_t paletteIndex = 0;
 	uint32_t empty = core::Color::getRGBA(core::Color::White);
-	colorset.put(empty, true);
 	palette.colors[paletteIndex++] = empty;
 	palette._dirty = true;
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const uint8_t *data = image->at(x, y);
-			const uint32_t rgba =
-				core::Color::getRGBA(core::Color::alpha(core::Color::fromRGBA(*(uint32_t *)data), 1.0f));
-			if (colorset.find(rgba) != colorset.end()) {
-				continue;
-			}
-			colorset.put(rgba, true);
-			if (paletteIndex >= colors) {
-				Log::warn("Palette indices exceeded - only %i colors were loaded", colors);
-				return true;
-			}
-			palette.colors[paletteIndex++] = rgba;
+			palette.addColorToPalette(*(uint32_t*)data);
 		}
 	}
 	for (int i = paletteIndex; i < colors; ++i) {
