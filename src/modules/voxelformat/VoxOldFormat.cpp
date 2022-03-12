@@ -44,16 +44,15 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 
 	const int64_t voxelPos = stream.pos();
 	stream.skip((int64_t)width * height * depth);
-	_palette.colorCount = 256;
+	_palette.colorCount = voxel::PaletteMaxColors;
 	for (int i = 0; i < _palette.colorCount; ++i) {
 		uint8_t r, g, b;
 		wrap(stream.readUInt8(r))
 		wrap(stream.readUInt8(g))
 		wrap(stream.readUInt8(b))
 
-		const glm::vec4 color = core::Color::fromRGBA(r, g, b, 255);
-		_palette.colors[i] = core::Color::getRGBA(color);
-		_paletteMapping[i] = findClosestIndex(color);
+		_palette.colors[i] = core::Color::getRGBA(r, g, b);
+		_paletteMapping[i] = findClosestIndex(_palette.colors[i]);
 	}
 
 	stream.seek(voxelPos);

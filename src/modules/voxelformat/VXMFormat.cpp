@@ -408,9 +408,8 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		wrap(stream.readUInt8(alpha));
 		uint8_t emissive;
 		wrap(stream.readUInt8(emissive));
-		const glm::vec4& rgbaColor = core::Color::fromRGBA(red, green, blue, alpha);
-		_palette.colors[i] = core::Color::getRGBA(rgbaColor);
-		_paletteMapping[i] = findClosestIndex(rgbaColor);
+		_palette.colors[i] = core::Color::getRGBA(red, green, blue, alpha);
+		_paletteMapping[i] = findClosestIndex(_palette.colors[i]);
 		if (emissive) {
 			_palette.setGlow(i);
 		} else {

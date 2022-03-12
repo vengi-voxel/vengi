@@ -91,14 +91,14 @@ public:
 	static glm::vec4 fromRGBA(const uint32_t rgbaInt);
 	static glm::u8vec4 toRGBA(const uint32_t rgbaInt);
 	static glm::vec4 fromARGB(const uint32_t argbInt);
-	static glm::vec4 fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+	static glm::vec4 fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 	static glm::vec4 fromHSB(const float hue, const float saturation, const float brightness, const float alpha = 1.0f);
 	static glm::vec4 fromHex(const char* hex);
 	static core::String toHex(const uint32_t rgba, bool hashPrefix = true);
 
 	static uint32_t getRGB(const glm::vec4&);
 	static uint32_t getRGBA(const glm::vec4&);
-	static uint32_t getRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+	static uint32_t getRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 	static glm::u8vec4 getRGBAVec(const glm::vec4&);
 	static uint32_t getBGRA(const glm::vec4& color);
 	static void getHSB(const glm::vec4&, float& hue, float& saturation, float& brightness);

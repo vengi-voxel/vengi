@@ -58,14 +58,14 @@ bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 					return false;
 				}
 				hex[sizeof(hex) - 1] = '\0';
-				const int n = sscanf(hex, "#%02X%02X%02X%02X", &r, &g, &b, &a);
+				const int n = SDL_sscanf(hex, "#%02X%02X%02X%02X", &r, &g, &b, &a);
 				if (n != 4) {
 					Log::error("Failed to parse color %i (%s)", n, hex);
 					delete volume;
 					return false;
 				}
 				if (a != 0) {
-					const glm::vec4 &color = core::Color::fromRGBA(r, g, b, a);
+					const uint32_t color = core::Color::getRGBA(r, g, b, a);
 					const uint8_t index = findClosestIndex(color);
 					const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 					volume->setVoxel(x, y, z, voxel);

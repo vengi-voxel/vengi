@@ -144,7 +144,7 @@ bool Palette::load(const image::ImagePtr &img) {
 		colors[i] = *(uint32_t *)img->at(i, 0);
 	}
 	for (int i = colorCount; i < PaletteMaxColors; ++i) {
-		colors[i] = core::Color::getRGBA(0, 0, 0, 255);
+		colors[i] = core::Color::getRGBA(0, 0, 0);
 	}
 	_dirty = true;
 	Log::debug("Set up %i material colors", colorCount);

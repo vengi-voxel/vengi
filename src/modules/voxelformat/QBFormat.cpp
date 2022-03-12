@@ -157,24 +157,21 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
 	uint8_t green;
 	uint8_t blue;
 	uint8_t alpha;
-	wrapColor(stream.readUInt8(red))
-	wrapColor(stream.readUInt8(green))
-	wrapColor(stream.readUInt8(blue))
+	if (state._colorFormat == ColorFormat::RGBA) {
+		wrapColor(stream.readUInt8(red))
+		wrapColor(stream.readUInt8(green))
+		wrapColor(stream.readUInt8(blue))
+	} else {
+		wrapColor(stream.readUInt8(blue))
+		wrapColor(stream.readUInt8(green))
+		wrapColor(stream.readUInt8(red))
+	}
 	wrapColor(stream.readUInt8(alpha))
 	if (alpha == 0) {
 		return voxel::Voxel();
 	}
-	glm::vec4 color(0.0f);
-	if (state._colorFormat == ColorFormat::RGBA) {
-		color.r = (float)red / 255.0f;
-		color.b = (float)blue / 255.0f;
-	} else {
-		color.r = (float)blue / 255.0f;
-		color.b = (float)red / 255.0f;
-	}
-	color.g = (float)green / 255.0f;
-	color.a = (float)alpha / 255.0f;
-	const uint8_t index = findClosestIndex(color);
+	const uint32_t color = core::Color::getRGBA(red, green, blue, alpha);
+	const uint8_t index = voxel::getPalette().getClosestMatch(color);
 	voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, index);
 	return v;
 }

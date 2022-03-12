@@ -364,8 +364,8 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, red);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 				} else {
-					const glm::vec4& color = core::Color::fromRGBA(red, green, blue, 255);
-					const uint8_t index = findClosestIndex(color);
+					const uint32_t color = core::Color::getRGBA(red, green, blue);
+					const uint8_t index = voxel::getPalette().getClosestMatch(color);
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 				}

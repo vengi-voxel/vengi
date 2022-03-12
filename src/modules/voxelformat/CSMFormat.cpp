@@ -115,7 +115,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 				matrixIndex += count;
 				continue;
 			}
-			const uint32_t color = core::Color::getRGBA(r, g, b, 255);
+			const uint32_t color = core::Color::getRGBA(r, g, b);
 			const int index = findClosestIndex(color);
 			const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 

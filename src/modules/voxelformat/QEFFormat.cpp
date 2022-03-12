@@ -74,7 +74,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		return false;
 	}
 
-	if (paletteSize > 256) {
+	if (paletteSize > voxel::PaletteMaxColors) {
 		Log::error("Max palette size exceeded");
 		return false;
 	}
@@ -90,7 +90,8 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		}
 		const glm::vec4 color(r, g, b, 1.0f);
 		_palette.colors[i] = core::Color::getRGBA(color);
-		_paletteMapping[i] = findClosestIndex(color);
+		const uint8_t index = findClosestIndex(_palette.colors[i]);
+		_paletteMapping[i] = index;
 	}
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	SceneGraphNode node;

@@ -204,15 +204,14 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	_palette.colorCount = lengthof(scene->palette.color);
 	for (int i = 0; i < _palette.colorCount; ++i) {
 		const ogt_vox_rgba color = scene->palette.color[i];
-		const glm::vec4 &colorVec = core::Color::fromRGBA(color.r, color.g, color.b, color.a);
-		_palette.colors[i] = core::Color::getRGBA(colorVec);
+		_palette.colors[i] = core::Color::getRGBA(color.r, color.g, color.b, color.a);
 		const ogt_vox_matl &matl = scene->materials.matl[i];
 		if (matl.type == ogt_matl_type_emit) {
 			_palette.setGlow(i, matl.emit);
 		} else {
 			_palette.removeGlow(i);
 		}
-		_paletteMapping[i] = findClosestIndex(colorVec);
+		_paletteMapping[i] = findClosestIndex(_palette.colors[i]);
 	}
 	// rotation matrix to convert into our coordinate system (z pointing upwards)
 	const glm::mat4 zUpMat = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
