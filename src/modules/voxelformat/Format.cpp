@@ -39,6 +39,45 @@ uint8_t Format::findClosestIndex(const glm::vec4& color) const {
 	return core::Color::getClosestMatch(color, materialColors);
 }
 
+bool Format::addColorToPalette(uint32_t rgba) {
+	if (_palette.colorCount < PaletteMaxColors) {
+		_palette.colors[_palette.colorCount++] = rgba;
+		return true;
+	}
+
+	for (int i = 0; i < PaletteMaxColors; ++i) {
+		if (_palette.colors[i] == rgba) {
+			return true;
+		}
+	}
+
+	// now we are looking for an already existing color that is below the threshold
+	// of the max allowed distance values. This means that that color is looking similar
+	// to already existing other colors in the palette.
+	// if the new color is now not similar to the just-to-be-removed-color - we are going
+	// to add it to the palette.
+	static const float maxDistance = 0.0001f;
+	for (int i = 0; i < PaletteMaxColors; ++i) {
+		const uint32_t existingRgba = _palette.colors[i];
+		const glm::vec4 &color = core::Color::fromRGBA(existingRgba);
+		float colorDistance = 0.0f;
+		const int closestColorIdx = _palette.getClosestMatch(color, &colorDistance);
+		if (colorDistance <= maxDistance) {
+			const glm::vec4 &newcolor = core::Color::fromRGBA(rgba);
+			float hue;
+			float saturation;
+			float brightness;
+			core::Color::getHSB(newcolor, hue, saturation, brightness);
+			const float existingAndNewDiff = core::Color::getDistance(_palette.colors[closestColorIdx], hue, saturation, brightness);
+			if (existingAndNewDiff > maxDistance) {
+				_palette.colors[closestColorIdx] = rgba;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::vec3 &pos, const glm::vec4 &pivot) {
 	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
 }
