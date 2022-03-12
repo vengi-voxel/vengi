@@ -16,6 +16,12 @@ TEST_F(AoSVXLFormatTest, testLoad) {
 	ASSERT_NE(nullptr, volume) << "Could not load ace of spades file";
 }
 
+TEST_F(AoSVXLFormatTest, testLoadPalette) {
+	AoSVXLFormat f;
+	voxel::Palette pal;
+	EXPECT_EQ(voxel::PaletteMaxColors, loadPalette("aceofspades.vxl", f, pal));
+}
+
 TEST_F(AoSVXLFormatTest, DISABLED_testSave) {
 	AoSVXLFormat f;
 	Region region(glm::ivec3(0), glm::ivec3(255, 64, 255));
