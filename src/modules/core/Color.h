@@ -5,18 +5,12 @@
 #pragma once
 
 #include "core/String.h"
+#include "core/RGBA.h"
 #include <glm/fwd.hpp>
 #include <glm/vec4.hpp>
 #include <float.h>
 
 namespace core {
-
-union RGBA {
-	struct {
-		uint8_t r, g, b, a;
-	};
-	uint32_t rgba;
-};
 
 class Color {
 public:
@@ -52,9 +46,9 @@ public:
 		LightBrown,
 		DarkBrown;
 
-	static float getDistance(uint32_t rgba, uint32_t rgba2);
+	static float getDistance(RGBA rgba, RGBA rgba2);
 	static float getDistance(const glm::vec4& color, float hue, float saturation, float brightness);
-	static float getDistance(uint32_t color, float hue, float saturation, float brightness);
+	static float getDistance(RGBA color, float hue, float saturation, float brightness);
 
 	/**
 	 * @brief Get the nearest matching color index from the list
@@ -88,26 +82,20 @@ public:
 		return minIndex;
 	}
 
-	static glm::vec4 fromRGB(const uint32_t rgbInt, const float a = 1.0f);
-	static glm::vec4 fromRGBA(const uint32_t rgbaInt);
-	static glm::u8vec4 toRGBA(const uint32_t rgbaInt);
-	static glm::vec4 fromARGB(const uint32_t argbInt);
+	static glm::vec4 fromRGBA(const RGBA rgba);
 	static glm::vec4 fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 	static glm::vec4 fromHSB(const float hue, const float saturation, const float brightness, const float alpha = 1.0f);
 	static glm::vec4 fromHex(const char* hex);
-	static core::String toHex(const uint32_t rgba, bool hashPrefix = true);
+	static core::String toHex(const RGBA rgba, bool hashPrefix = true);
 
-	static uint32_t getRGB(const glm::vec4&);
-	static uint32_t getRGBA(const glm::vec4&);
-	static uint32_t getRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
-	static glm::u8vec4 getRGBAVec(const glm::vec4&);
-	static uint32_t getBGRA(const glm::vec4& color);
+	static RGBA getRGBA(const glm::vec4&);
+	static RGBA getRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 	static void getHSB(const glm::vec4&, float& hue, float& saturation, float& brightness);
 
 	static glm::vec3 gray(const glm::vec3&);
 	static glm::vec4 gray(const glm::vec4&);
 	static glm::vec4 alpha(const glm::vec4&, float alpha);
-	static uint32_t alpha(const uint32_t rgba, uint8_t alpha);
+	static RGBA alpha(const RGBA rgba, uint8_t alpha);
 	static float brightness(const glm::vec4&);
 	static float intensity(const glm::vec4&);
 

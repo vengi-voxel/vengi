@@ -82,9 +82,8 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const core::String &filename, i
 				stream.writeStringFormat(false, " %f %f", u, v1);
 			}
 			if (withColor) {
-				const uint32_t color = palette.colors[v.colorIndex];
-				const glm::u8vec4& cv = core::Color::toRGBA(color);
-				stream.writeStringFormat(false, " %u %u %u", cv.r, cv.g, cv.b);
+				const core::RGBA color = palette.colors[v.colorIndex];
+				stream.writeStringFormat(false, " %u %u %u", color.r, color.g, color.b);
 			}
 			stream.writeStringFormat(false, "\n");
 		}

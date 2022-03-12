@@ -41,6 +41,7 @@ set(SRCS
 	GLM.cpp GLM.h
 	GLMConst.h
 	Hash.h
+	RGBA.h
 	IComponent.h
 	Log.cpp Log.h
 	MD5.cpp MD5.h

@@ -65,7 +65,7 @@ bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 					return false;
 				}
 				if (a != 0) {
-					const uint32_t color = core::Color::getRGBA(r, g, b, a);
+					const core::RGBA color = core::Color::getRGBA(r, g, b, a);
 					const uint8_t index = findClosestIndex(color);
 					const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 					volume->setVoxel(x, y, z, voxel);
@@ -110,7 +110,7 @@ bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String 
 				if (voxel.getMaterial() == VoxelType::Air) {
 					stream.writeString("#00000000", false);
 				} else {
-					const glm::u8vec4 &rgba = core::Color::toRGBA(palette.colors[voxel.getColor()]);
+					const core::RGBA rgba = palette.colors[voxel.getColor()];
 					stream.writeStringFormat(false, "#%02X%02X%02X%02X", rgba.r, rgba.g, rgba.b, rgba.a);
 				}
 				if (x != width - 1) {

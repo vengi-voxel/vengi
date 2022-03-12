@@ -228,7 +228,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 						voxelType = voxel::VoxelType::Air;
 						index = 0;
 					} else {
-						const uint32_t color = core::Color::getRGBA(v[0], v[1], v[2], v[3]);
+						const core::RGBA color = core::Color::getRGBA(v[0], v[1], v[2], v[3]);
 						index = findClosestIndex(color);
 					}
 					const voxel::Voxel voxel = voxel::createVoxel(voxelType, index);

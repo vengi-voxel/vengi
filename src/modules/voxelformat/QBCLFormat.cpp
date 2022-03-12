@@ -79,10 +79,10 @@ static int writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t 
 	if (count == 0) {
 		return 0;
 	}
-	glm::u8vec4 color(0);
+	core::RGBA color;
 	if (!voxel::isAir(voxel.getMaterial())) {
 		const voxel::Palette& palette = voxel::getPalette();
-		color = core::Color::toRGBA(palette.colors[voxel.getColor()]);
+		color = palette.colors[voxel.getColor()];
 	}
 	if (count == 1) {
 		wrapSaveColor(stream.writeUInt8(color.r))
@@ -348,7 +348,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				if (alpha == 0) {
 					y += rleLength;
 				} else {
-					const uint32_t color = core::Color::getRGBA(red, green, blue, alpha);
+					const core::RGBA color = core::Color::getRGBA(red, green, blue, alpha);
 					const uint8_t palIndex = palette.getClosestMatch(color);
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
 					for (int j = 0; j < rleLength; ++j) {
@@ -366,7 +366,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				// Uncompressed
 				const uint32_t x = (index / size.z);
 				const uint32_t z = index % size.z;
-				const uint32_t color = core::Color::getRGBA(red, green, blue);
+				const core::RGBA color = core::Color::getRGBA(red, green, blue);
 				const uint8_t palIndex = palette.getClosestMatch(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
 				volume->setVoxel(position.x + (int)x, position.y + y, position.z + (int)z, voxel);

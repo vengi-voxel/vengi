@@ -79,22 +79,21 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	for (int i = 0; i < texAmount; ++i) {
 		stream.writeString(texNames[i], true);
 		int rleCount = 0;
-		uint32_t currentColor = 0;
+		core::RGBA currentColor = 0;
 		const int width = 0;
 		const int height = 0;
-		uint32_t *rgb = nullptr;
+		core::RGBA *rgb = nullptr; // TODO:
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
-				uint32_t color = rgb[x + y * width];
+				core::RGBA color = rgb[x + y * width];
 				if (rleCount == 0) {
 					currentColor = color;
 					++rleCount;
 				} else if (rleCount == 255 || currentColor != color) {
 					stream.writeUInt8(rleCount);
-					const glm::u8vec4& colorComp = core::Color::toRGBA(color);
-					stream.writeUInt8(colorComp.r);
-					stream.writeUInt8(colorComp.g);
-					stream.writeUInt8(colorComp.b);
+					stream.writeUInt8(color.r);
+					stream.writeUInt8(color.g);
+					stream.writeUInt8(color.b);
 					rleCount = 1;
 					currentColor = color;
 				} else {
@@ -104,10 +103,9 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		}
 		if (rleCount > 0) {
 			stream.writeUInt8(rleCount);
-			const glm::u8vec4& colorComp = core::Color::toRGBA(currentColor);
-			stream.writeUInt8(colorComp.r);
-			stream.writeUInt8(colorComp.g);
-			stream.writeUInt8(colorComp.b);
+			stream.writeUInt8(currentColor.r);
+			stream.writeUInt8(currentColor.g);
+			stream.writeUInt8(currentColor.b);
 		}
 		stream.writeUInt8(0);
 	}
@@ -160,12 +158,12 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	}
 	wrapBool(stream.writeUInt8(materialColors.size()))
 	for (int i = 0; i < numColors; ++i) {
-		const glm::u8vec4 &matcolor = core::Color::toRGBA(palette.colors[i]);
+		const core::RGBA &matcolor = palette.colors[i];
 		wrapBool(stream.writeUInt8(matcolor.b))
 		wrapBool(stream.writeUInt8(matcolor.g))
 		wrapBool(stream.writeUInt8(matcolor.r))
 		wrapBool(stream.writeUInt8(matcolor.a))
-		const glm::u8vec4 &glowcolor = core::Color::toRGBA(palette.glowColors[i]);
+		const core::RGBA &glowcolor = palette.glowColors[i];
 		const bool emissive = glowcolor.a > 0;
 		wrapBool(stream.writeBool(emissive))
 	}

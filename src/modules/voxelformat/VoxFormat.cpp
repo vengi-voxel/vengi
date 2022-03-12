@@ -269,10 +269,6 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 
 	const voxel::Palette &palette = voxel::getPalette();
 	const int replacement = findClosestPaletteIndex();
-	const glm::vec4 emptyColor = core::Color::toRGBA(palette.colors[0]);
-	const glm::vec4 replaceColor = core::Color::toRGBA(palette.colors[replacement]);
-	Log::debug("Replacement for %f:%f:%f:%f is at %i (%f:%f:%f:%f)", emptyColor.r, emptyColor.g, emptyColor.b,
-			   emptyColor.a, replacement, replaceColor.r, replaceColor.g, replaceColor.b, replaceColor.a);
 
 	const size_t modelCount = newSceneGraph.size();
 	core::Buffer<ogt_vox_model> models(modelCount);
@@ -338,13 +334,13 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	ogt_vox_matl_array &mat = output_scene.materials;
 
 	for (int i = 0; i < 256; ++i) {
-		const glm::u8vec4 &rgba = core::Color::toRGBA(palette.colors[i]);
+		const core::RGBA &rgba = palette.colors[i];
 		pal.color[i].r = rgba.r;
 		pal.color[i].g = rgba.g;
 		pal.color[i].b = rgba.b;
 		pal.color[i].a = rgba.a;
 
-		const glm::u8vec4 &glowColor = core::Color::toRGBA(palette.glowColors[i]);
+		const core::RGBA &glowColor = palette.glowColors[i];
 		if (glowColor.a != 0) {
 			mat.matl[i].content_flags |= k_ogt_vox_matl_have_emit;
 			mat.matl[i].type = ogt_matl_type::ogt_matl_type_emit;

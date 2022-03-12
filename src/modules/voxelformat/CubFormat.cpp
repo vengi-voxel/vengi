@@ -46,7 +46,7 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 					// empty voxel
 					continue;
 				}
-				const uint32_t color = core::Color::getRGBA(r, g, b);
+				const core::RGBA color = core::Color::getRGBA(r, g, b);
 				palette.addColorToPalette(color);
 			}
 		}
@@ -87,7 +87,7 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 					// empty voxel
 					continue;
 				}
-				const uint32_t color = core::Color::getRGBA(r, g, b);
+				const core::RGBA color = core::Color::getRGBA(r, g, b);
 				const int index = findClosestIndex(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 				// we have to flip depth with height for our own coordinate system
@@ -131,7 +131,7 @@ bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 					continue;
 				}
 
-				const glm::u8vec4 &rgba = core::Color::toRGBA(palette.colors[voxel.getColor()]);
+				const core::RGBA rgba = palette.colors[voxel.getColor()];
 				wrapBool(stream.writeUInt8(rgba.r))
 				wrapBool(stream.writeUInt8(rgba.g))
 				wrapBool(stream.writeUInt8(rgba.b))

@@ -52,22 +52,22 @@ bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const SceneGraph& sce
 	const int64_t globalSpanStartPos = stream.pos();
 	Log::debug("size.x: %i, size.z: %i, globalSpanStartPos: %u", size.x, size.z, (uint32_t)globalSpanStartPos);
 
-	offsets.start = stream.pos() - limbSectionOffset;
+	offsets.start = stream.pos() - (int64_t)limbSectionOffset;
 	const size_t limbOffset = HeaderSize + LimbHeaderSize * sceneGraph.size() + offsets.start;
 	Log::debug("limbOffset(%u): %u", limbIdx, (uint32_t)limbOffset);
 
 	for (uint32_t i = 0; i < baseSize; i++) {
 		wrapBool(stream.writeUInt32(-1))
 	}
-	offsets.end = stream.pos() - limbSectionOffset;
+	offsets.end = stream.pos() - (int64_t)limbSectionOffset;
 	for (uint32_t i = 0; i < baseSize; i++) {
 		wrapBool(stream.writeUInt32(-1))
 	}
-	offsets.data = stream.pos() - limbSectionOffset;
+	offsets.data = stream.pos() - (int64_t)limbSectionOffset;
 
 	const int64_t beforePos = stream.pos();
 	for (uint32_t i = 0u; i < baseSize; ++i) {
-		const int32_t spanStartPos = stream.pos() - beforePos;
+		const int64_t spanStartPos = stream.pos() - beforePos;
 
 		const uint8_t x = (uint8_t)(i % size.x);
 		const uint8_t z = (uint8_t)(i / size.x);
@@ -101,7 +101,7 @@ bool VXLFormat::writeLimb(io::SeekableWriteStream& stream, const SceneGraph& sce
 
 		const int64_t spanEndPos = stream.pos();
 		wrap(stream.seek(globalSpanStartPos + i * sizeof(uint32_t)))
-		wrapBool(stream.writeUInt32(spanStartPos))
+		wrapBool(stream.writeUInt32((uint32_t)spanStartPos))
 
 		wrap(stream.seek(globalSpanStartPos + baseSize * sizeof(uint32_t) + i * sizeof(uint32_t)))
 		wrapBool(stream.writeUInt32(spanEndPos - globalSpanStartPos))
@@ -161,10 +161,10 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, const SceneGraph& s
 
 	const voxel::Palette &palette = voxel::getPalette();
 	for (int i = 0; i < palette.colorCount; ++i) {
-		const glm::u8vec4& rgba = core::Color::toRGBA(palette.colors[i]);
-		wrapBool(stream.writeUInt8(rgba[0]))
-		wrapBool(stream.writeUInt8(rgba[1]))
-		wrapBool(stream.writeUInt8(rgba[2]))
+		const core::RGBA& rgba = palette.colors[i];
+		wrapBool(stream.writeUInt8(rgba.r))
+		wrapBool(stream.writeUInt8(rgba.g))
+		wrapBool(stream.writeUInt8(rgba.b))
 	}
 	core_assert(stream.pos() == HeaderSize);
 	return true;

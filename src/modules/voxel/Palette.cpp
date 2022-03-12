@@ -17,7 +17,7 @@
 
 namespace voxel {
 
-bool Palette::addColorToPalette(uint32_t rgba, bool skipSimilar) {
+bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar) {
 	for (int i = 0; i < colorCount; ++i) {
 		if (colors[i] == rgba) {
 			return false;
@@ -90,7 +90,7 @@ int Palette::getClosestMatch(const glm::vec4& color, float *distance, int skip) 
 	return minIndex;
 }
 
-int Palette::getClosestMatch(const uint32_t rgba, float *distance, int skip) const {
+int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) const {
 	for (int i = 0; i < colorCount; ++i) {
 		if (i == skip) {
 			continue;
@@ -288,7 +288,7 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 	const int imageHeight = image->height();
 	Log::debug("Create palette for image: %s", image->name().c_str());
 	uint16_t paletteIndex = 0;
-	uint32_t empty = core::Color::getRGBA(core::Color::White);
+	core::RGBA empty = core::Color::getRGBA(core::Color::White);
 	palette.colors[paletteIndex++] = empty;
 	palette._dirty = true;
 	for (int x = 0; x < imageWidth; ++x) {
@@ -304,7 +304,7 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 }
 
 bool Palette::hasGlow(uint8_t idx) const {
-	return glowColors[idx] != 0;
+	return glowColors[idx] != 0u;
 }
 
 void Palette::removeGlow(uint8_t idx) {

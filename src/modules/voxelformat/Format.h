@@ -11,6 +11,7 @@
 #include "io/File.h"
 #include "image/Image.h"
 #include "SceneGraph.h"
+#include "core/RGBA.h"
 #include "voxel/Palette.h"
 #include <glm/fwd.hpp>
 
@@ -52,7 +53,7 @@ protected:
 	 * @sa core::Color::getClosestMatch()
 	 */
 	uint8_t findClosestIndex(const glm::vec4& color) const;
-	uint8_t findClosestIndex(uint32_t rgba) const;
+	uint8_t findClosestIndex(core::RGBA rgba) const;
 
 	/**
 	 * @brief Maps a custum palette index to our own 256 color palette by a closest match

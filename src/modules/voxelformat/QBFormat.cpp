@@ -71,12 +71,11 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 	wrapSave(stream.writeUInt32(region.getLowerZ()));
 
 	constexpr voxel::Voxel Empty;
-	const glm::u8vec4 EmptyColor(0);
 
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
 
-	glm::u8vec4 currentColor = EmptyColor;
+	core::RGBA currentColor;
 	int count = 0;
 
 	const voxel::Palette& palette = voxel::getPalette();
@@ -85,13 +84,12 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			for (int x = mins.x; x <= maxs.x; ++x) {
 				const Voxel& voxel = node.volume()->voxel(x, y, z);
-				glm::u8vec4 newColor;
+				core::RGBA newColor;
 				if (voxel == Empty) {
-					newColor = EmptyColor;
+					newColor = 0;
 					Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
 				} else {
-					const uint32_t voxelColor = palette.colors[voxel.getColor()];
-					newColor = core::Color::toRGBA(voxelColor);
+					newColor = palette.colors[voxel.getColor()];
 					Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
 							x, y, z, (int)voxel.getColor(), (int)newColor.r, (int)newColor.g, (int)newColor.b, (int)newColor.a);
 				}
@@ -170,7 +168,7 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
 	if (alpha == 0) {
 		return voxel::Voxel();
 	}
-	const uint32_t color = core::Color::getRGBA(red, green, blue, alpha);
+	const core::RGBA color = core::Color::getRGBA(red, green, blue, alpha);
 	const uint8_t index = voxel::getPalette().getClosestMatch(color);
 	voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, index);
 	return v;

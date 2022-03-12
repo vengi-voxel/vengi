@@ -81,7 +81,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 					*zlibBuf++ = 0;
 					*zlibBuf++ = 0;
 				} else {
-					const glm::u8vec4 &voxelColor = core::Color::toRGBA(palette.colors[voxel.getColor()]);
+					const core::RGBA voxelColor = palette.colors[voxel.getColor()];
 					//const uint8_t alpha = voxelColor.a * 255.0f;
 					*zlibBuf++ = voxelColor.r;
 					*zlibBuf++ = voxelColor.g;
@@ -364,7 +364,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, red);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 				} else {
-					const uint32_t color = core::Color::getRGBA(red, green, blue);
+					const core::RGBA color = core::Color::getRGBA(red, green, blue);
 					const uint8_t index = voxel::getPalette().getClosestMatch(color);
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);

@@ -59,7 +59,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	core_assert(region.isValid());
 	RawVolume *volume = new RawVolume(region);
 
-	core::Map<uint32_t, int, 521> paletteMap(32768);
+	core::Map<core::RGBA, int, 521> paletteMap(32768);
 	for (int z = 0; z < depths; ++z) {
 		for (int x = 0; x < width; ++x) {
 			int y = 0;
@@ -87,7 +87,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					stream.readUInt8(g);
 					stream.readUInt8(r);
 					stream.readUInt8(a); // not really alpha - some shading data
-					const uint32_t rgba = core::Color::getRGBA(r, g, b);
+					const core::RGBA rgba = core::Color::getRGBA(r, g, b);
 					if (!paletteMap.get(rgba, paletteIndex)) {
 						paletteIndex = findClosestIndex(rgba);
 						if (paletteMap.size() < paletteMap.capacity()) {
@@ -156,7 +156,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					stream.readUInt8(g);
 					stream.readUInt8(r);
 					stream.readUInt8(a); // not really alpha - some shading data
-					const uint32_t rgba = core::Color::getRGBA(r, g, b);
+					const core::RGBA rgba = core::Color::getRGBA(r, g, b);
 					if (!paletteMap.get(rgba, paletteIndex)) {
 						paletteIndex = findClosestIndex(rgba);
 						if (paletteMap.size() < paletteMap.capacity()) {
@@ -398,12 +398,12 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 
 				for (y = 0; y < top_colors_len; ++y) {
 					sampler.setPosition(x, flipHeight - (top_colors_start + y), z);
-					const uint32_t color = palette.colors[sampler.voxel().getColor()];
+					const core::RGBA color = palette.colors[sampler.voxel().getColor()];
 					stream.writeUInt32(color);
 				}
 				for (y = 0; y < bottom_colors_len; ++y) {
 					sampler.setPosition(x, flipHeight - (bottom_colors_start + y), z);
-					const uint32_t color = palette.colors[sampler.voxel().getColor()];
+					const core::RGBA color = palette.colors[sampler.voxel().getColor()];
 					stream.writeUInt32(color);
 				}
 			}

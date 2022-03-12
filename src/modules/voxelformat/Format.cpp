@@ -36,7 +36,7 @@ uint8_t Format::findClosestIndex(const glm::vec4& color) const {
 	return palette.getClosestMatch(color);
 }
 
-uint8_t Format::findClosestIndex(uint32_t rgba) const {
+uint8_t Format::findClosestIndex(core::RGBA rgba) const {
 	const voxel::Palette &palette = voxel::getPalette();
 	return palette.getClosestMatch(rgba);
 }

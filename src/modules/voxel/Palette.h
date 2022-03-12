@@ -7,6 +7,7 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
+#include "core/RGBA.h"
 #include <stdint.h>
 #include <glm/vec4.hpp>
 
@@ -14,7 +15,7 @@ namespace voxel {
 
 static constexpr int PaletteMaxColors = 256;
 // RGBA color values in the range [0-255]
-using PaletteColorArray = uint32_t[PaletteMaxColors];
+using PaletteColorArray = core::RGBA[PaletteMaxColors];
 
 class Palette {
 private:
@@ -70,13 +71,13 @@ public:
 	 * @return int The index to the palette color
 	 */
 	int getClosestMatch(const glm::vec4& color, float *distance = nullptr, int skip = -1) const;
-	int getClosestMatch(const uint32_t rgba, float *distance = nullptr, int skip = -1) const;
+	int getClosestMatch(const core::RGBA rgba, float *distance = nullptr, int skip = -1) const;
 
 	/**
 	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
 	 * to remove a color that is most similar to another already existing color in the palette.
 	 */
-	bool addColorToPalette(uint32_t rgba, bool skipSimilar = true);
+	bool addColorToPalette(core::RGBA rgba, bool skipSimilar = true);
 
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]

@@ -4,12 +4,12 @@
 
 #include "QEFFormat.h"
 #include "voxel/MaterialColor.h"
-#include "SDL_stdinc.h"
 #include "core/Log.h"
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "voxel/Voxel.h"
 #include <glm/common.hpp>
+#include <SDL_stdinc.h>
 
 namespace voxel {
 
