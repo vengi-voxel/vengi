@@ -320,16 +320,22 @@ void Palette::setGlow(uint8_t idx, float factor) {
 }
 
 void Palette::toVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
-	vec4f.reserve(colorCount);
+	vec4f.reserve(PaletteMaxColors);
 	for (int i = 0; i < colorCount; ++i) {
 		vec4f.push_back(core::Color::fromRGBA(colors[i]));
+	}
+	for (int i = colorCount; i < PaletteMaxColors; ++i) {
+		vec4f.emplace_back(0.0f);
 	}
 }
 
 void Palette::glowToVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
-	vec4f.reserve(colorCount);
+	vec4f.reserve(PaletteMaxColors);
 	for (int i = 0; i < colorCount; ++i) {
 		vec4f.push_back(core::Color::fromRGBA(glowColors[i]));
+	}
+	for (int i = colorCount; i < PaletteMaxColors; ++i) {
+		vec4f.emplace_back(0.0f);
 	}
 }
 

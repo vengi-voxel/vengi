@@ -81,8 +81,13 @@ public:
 
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
+	 * @note The collection will have 256 entries - even if the palette has less entries
 	 */
 	void toVec4f(core::DynamicArray<glm::vec4> &rgba) const;
+	/**
+	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
+	 * @note The collection will have 256 entries - even if the palette has less entries
+	 */
 	void glowToVec4f(core::DynamicArray<glm::vec4> &vec4f) const;
 
 	static const char* getDefaultPaletteName() {
