@@ -33,10 +33,12 @@ uint8_t Format::convertPaletteIndex(uint32_t paletteIndex) const {
 
 uint8_t Format::findClosestIndex(const glm::vec4& color) const {
 	const voxel::Palette &palette = voxel::getPalette();
-	core::DynamicArray<glm::vec4> materialColors;
-	palette.toVec4f(materialColors);
-	//materialColors.erase(materialColors.begin());
-	return core::Color::getClosestMatch(color, materialColors);
+	return palette.getClosestMatch(color);
+}
+
+uint8_t Format::findClosestIndex(uint32_t rgba) const {
+	const voxel::Palette &palette = voxel::getPalette();
+	return palette.getClosestMatch(rgba);
 }
 
 bool Format::addColorToPalette(uint32_t rgba) {
