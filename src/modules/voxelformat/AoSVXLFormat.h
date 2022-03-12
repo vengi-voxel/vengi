@@ -26,6 +26,7 @@ private:
 	glm::ivec3 dimensions(io::SeekableReadStream &stream) const;
 	bool loadMap(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, int width, int height, int depths);
 public:
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, Palette &palette) override;
 	bool loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };

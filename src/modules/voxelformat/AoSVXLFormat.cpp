@@ -180,6 +180,93 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	return true;
 }
 
+size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, Palette &palette) {
+	const glm::ivec3 size = dimensions(stream);
+	for (int z = 0; z < size.z; ++z) {
+		for (int x = 0; x < size.x; ++x) {
+			int y = 0;
+			while (!stream.eos()) {
+				const int64_t cpos = stream.pos();
+				Header header;
+				stream.readUInt8(header.len);
+				stream.readUInt8(header.colorStartIdx);
+				stream.readUInt8(header.colorEndIdx);
+				stream.readUInt8(header.airStartIdx);
+				if ((int)header.colorStartIdx >= size.x) {
+					Log::error("depth (top start %i exceeds the max allowed value of %i", header.colorStartIdx, size.y);
+					return palette.colorCount;
+				}
+				if (header.colorEndIdx >= size.y) {
+					Log::error("depth (top end %i) exceeds the max allowed value of %i", header.colorEndIdx, size.y);
+					return palette.colorCount;
+				}
+				for (y = header.colorStartIdx; y <= header.colorEndIdx; ++y) {
+					uint32_t rgba;
+					stream.readUInt32BE(rgba);
+					rgba = core::Color::alpha(rgba, 0xFF);
+					palette.addColorToPalette(rgba);
+				}
+				const int lenBottom = header.colorEndIdx - header.colorStartIdx + 1;
+
+				// check for end of data marker
+				if (header.len == 0) {
+					if (stream.seek(cpos + (int64_t)(sizeof(uint32_t) * (lenBottom + 1))) == -1) {
+						Log::error("failed to skip");
+						return palette.colorCount;
+					}
+					break;
+				}
+
+				int64_t rgbaPos = stream.pos();
+				// infer the number of bottom colors in next span from chunk length
+				const int len_top = (header.len - 1) - lenBottom;
+
+				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
+					Log::error("failed to seek");
+					return palette.colorCount;
+				}
+				uint8_t bottomColorEnd = 0;
+				if (stream.skip(3) == -1) {
+					Log::error("failed to skip");
+					return palette.colorCount;
+				}
+				stream.readUInt8(bottomColorEnd);
+				if (stream.seek(-4, SEEK_CUR) == -1) {
+					Log::error("failed to seek");
+					return palette.colorCount;
+				}
+
+				// aka air start - exclusive
+				const int bottomColorStart = bottomColorEnd - len_top;
+				if (bottomColorStart < 0 || bottomColorStart >= size.y) {
+					Log::error("depth (bottom start %i) exceeds the max allowed value of %i", bottomColorStart, size.y);
+					return palette.colorCount;
+				}
+				if (bottomColorEnd >= size.y) {
+					Log::error("depth (bottom end %i) exceeds the max allowed value of %i", bottomColorEnd, size.y);
+					return palette.colorCount;
+				}
+
+				if (stream.seek(rgbaPos) == -1) {
+					Log::error("failed to seek");
+					return palette.colorCount;
+				}
+				for (y = bottomColorStart; y < bottomColorEnd; ++y) {
+					uint32_t rgba;
+					stream.readUInt32BE(rgba);
+					rgba = core::Color::alpha(rgba, 0xFF);
+					palette.addColorToPalette(rgba);
+				}
+				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
+					Log::error("failed to seek");
+					return palette.colorCount;
+				}
+			}
+		}
+	}
+	return palette.colorCount;
+}
+
 bool AoSVXLFormat::isSurface(const RawVolume *v, int x, int y, int z) {
 	const int width = v->width();
 	const int depth = v->depth();
