@@ -19,7 +19,7 @@ TEST_F(AoSVXLFormatTest, testLoad) {
 TEST_F(AoSVXLFormatTest, testLoadPalette) {
 	AoSVXLFormat f;
 	voxel::Palette pal;
-	EXPECT_EQ(voxel::PaletteMaxColors, loadPalette("aceofspades.vxl", f, pal));
+	EXPECT_GT(loadPalette("aceofspades.vxl", f, pal), 200);
 }
 
 TEST_F(AoSVXLFormatTest, DISABLED_testSave) {

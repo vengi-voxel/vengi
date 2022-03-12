@@ -70,14 +70,14 @@ public:
 	 * @param distance Optional parameter to get the calculated distance for the selected color entry
 	 * @return int The index to the palette color
 	 */
-	int getClosestMatch(const glm::vec4& color, float *distance = nullptr) const;
-	int getClosestMatch(const uint32_t rgba, float *distance = nullptr) const;
+	int getClosestMatch(const glm::vec4& color, float *distance = nullptr, int skip = -1) const;
+	int getClosestMatch(const uint32_t rgba, float *distance = nullptr, int skip = -1) const;
 
 	/**
 	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
 	 * to remove a color that is most similar to another already existing color in the palette.
 	 */
-	bool addColorToPalette(uint32_t rgba);
+	bool addColorToPalette(uint32_t rgba, bool skipSimilar = true);
 
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]

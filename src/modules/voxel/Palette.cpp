@@ -14,13 +14,23 @@
 #include "io/Filesystem.h"
 #include "math/Math.h"
 #include <SDL_endian.h>
+#include <float.h>
 
 namespace voxel {
 
-bool Palette::addColorToPalette(uint32_t rgba) {
+bool Palette::addColorToPalette(uint32_t rgba, bool skipSimilar) {
 	for (int i = 0; i < colorCount; ++i) {
 		if (colors[i] == rgba) {
 			return false;
+		}
+	}
+	static constexpr float MaxThreshold = 0.00014f;
+	if (skipSimilar) {
+		for (int i = 0; i < colorCount; ++i) {
+			const float dist = core::Color::getDistance(colors[i], rgba);
+			if (dist < MaxThreshold) {
+				return false;
+			}
 		}
 	}
 
@@ -29,34 +39,30 @@ bool Palette::addColorToPalette(uint32_t rgba) {
 		return true;
 	}
 
-	// now we are looking for an already existing color that is below the threshold
-	// of the max allowed distance values. This means that that color is looking similar
-	// to already existing other colors in the palette.
-	// if the new color is now not similar to the just-to-be-removed-color - we are going
-	// to add it to the palette.
-	static const float maxDistance = 0.0001f;
-	for (int i = 0; i < PaletteMaxColors; ++i) {
-		const uint32_t existingRgba = colors[i];
-		const glm::vec4 &color = core::Color::fromRGBA(existingRgba);
-		float colorDistance = 0.0f;
-		const int closestColorIdx = getClosestMatch(color, &colorDistance);
-		if (colorDistance <= maxDistance) {
-			const glm::vec4 &newcolor = core::Color::fromRGBA(rgba);
-			float hue;
-			float saturation;
-			float brightness;
-			core::Color::getHSB(newcolor, hue, saturation, brightness);
-			const float existingAndNewDiff = core::Color::getDistance(colors[closestColorIdx], hue, saturation, brightness);
-			if (existingAndNewDiff > maxDistance) {
-				colors[closestColorIdx] = rgba;
-				return true;
-			}
+	// now we are looking for the color in the existing palette entries that is most similar
+	// to other entries in the palette. If this entry is than above a certain threshold, we
+	// will replace that color with the new rgba value
+	int bestIndex = -1;
+	float bestColorDistance = FLT_MAX;
+	for (int i = 0; i < colorCount; ++i) {
+		float colorDistance;
+		const int closestColorIdx = getClosestMatch(colors[i], &colorDistance, i);
+		if (colorDistance < bestColorDistance) {
+			bestColorDistance = colorDistance;
+			bestIndex = closestColorIdx;
+		}
+	}
+	if (bestIndex != -1) {
+		const float dist = core::Color::getDistance(colors[bestIndex], rgba);
+		if (dist > MaxThreshold) {
+			colors[bestIndex] = rgba;
+			return true;
 		}
 	}
 	return false;
 }
 
-int Palette::getClosestMatch(const glm::vec4& color, float *distance) const {
+int Palette::getClosestMatch(const glm::vec4& color, float *distance, int skip) const {
 	if (size() == 0) {
 		return -1;
 	}
@@ -69,7 +75,10 @@ int Palette::getClosestMatch(const glm::vec4& color, float *distance) const {
 	float brightness;
 	core::Color::getHSB(color, hue, saturation, brightness);
 
-	for (size_t i = 0; i < size(); ++i) {
+	for (int i = 0; i < colorCount; ++i) {
+		if (i == skip) {
+			continue;
+		}
 		const float val = core::Color::getDistance(colors[i], hue, saturation, brightness);
 		if (val < minDistance) {
 			minDistance = val;
@@ -82,13 +91,16 @@ int Palette::getClosestMatch(const glm::vec4& color, float *distance) const {
 	return minIndex;
 }
 
-int Palette::getClosestMatch(const uint32_t rgba, float *distance) const {
-	for (size_t i = 0; i < size(); ++i) {
+int Palette::getClosestMatch(const uint32_t rgba, float *distance, int skip) const {
+	for (int i = 0; i < colorCount; ++i) {
+		if (i == skip) {
+			continue;
+		}
 		if (colors[i] == rgba) {
 			return (int)i;
 		}
 	}
-	return getClosestMatch(core::Color::fromRGBA(rgba), distance);
+	return getClosestMatch(core::Color::fromRGBA(rgba), distance, skip);
 }
 
 bool Palette::save(const char *name) {

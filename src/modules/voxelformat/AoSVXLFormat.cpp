@@ -82,9 +82,12 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					return false;
 				}
 				for (y = header.colorStartIdx; y <= header.colorEndIdx; ++y) {
-					uint32_t rgba;
-					wrap(stream.readUInt32BE(rgba))
-					rgba = core::Color::alpha(rgba, 0xFF);
+					uint8_t b, g, r, a;
+					stream.readUInt8(b);
+					stream.readUInt8(g);
+					stream.readUInt8(r);
+					stream.readUInt8(a); // not really alpha - some shading data
+					const uint32_t rgba = core::Color::getRGBA(r, g, b);
 					if (!paletteMap.get(rgba, paletteIndex)) {
 						paletteIndex = findClosestIndex(rgba);
 						if (paletteMap.size() < paletteMap.capacity()) {
@@ -148,9 +151,12 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					return false;
 				}
 				for (y = bottomColorStart; y < bottomColorEnd; ++y) {
-					uint32_t rgba;
-					wrap(stream.readUInt32BE(rgba))
-					rgba = core::Color::alpha(rgba, 0xFF);
+					uint8_t b, g, r, a;
+					stream.readUInt8(b);
+					stream.readUInt8(g);
+					stream.readUInt8(r);
+					stream.readUInt8(a); // not really alpha - some shading data
+					const uint32_t rgba = core::Color::getRGBA(r, g, b);
 					if (!paletteMap.get(rgba, paletteIndex)) {
 						paletteIndex = findClosestIndex(rgba);
 						if (paletteMap.size() < paletteMap.capacity()) {
@@ -195,10 +201,12 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 					return palette.colorCount;
 				}
 				for (y = header.colorStartIdx; y <= header.colorEndIdx; ++y) {
-					uint32_t rgba;
-					stream.readUInt32BE(rgba);
-					rgba = core::Color::alpha(rgba, 0xFF);
-					palette.addColorToPalette(rgba);
+					uint8_t b, g, r, a;
+					stream.readUInt8(b);
+					stream.readUInt8(g);
+					stream.readUInt8(r);
+					stream.readUInt8(a); // not really alpha - some shading data
+					palette.addColorToPalette(core::Color::getRGBA(r, g, b));
 				}
 				const int lenBottom = header.colorEndIdx - header.colorStartIdx + 1;
 
@@ -246,10 +254,12 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 					return palette.colorCount;
 				}
 				for (y = bottomColorStart; y < bottomColorEnd; ++y) {
-					uint32_t rgba;
-					stream.readUInt32BE(rgba);
-					rgba = core::Color::alpha(rgba, 0xFF);
-					palette.addColorToPalette(rgba);
+					uint8_t b, g, r, a;
+					stream.readUInt8(b);
+					stream.readUInt8(g);
+					stream.readUInt8(r);
+					stream.readUInt8(a); // not really alpha - some shading data
+					palette.addColorToPalette(core::Color::getRGBA(r, g, b));
 				}
 				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
 					Log::error("failed to seek");
