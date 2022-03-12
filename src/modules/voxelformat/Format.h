@@ -61,12 +61,6 @@ protected:
 	RawVolume* merge(const SceneGraph& sceneGraph) const;
 
 	/**
-	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
-	 * to remove a color that is most similar to another already existing color in the palette.
-	 */
-	bool addColorToPalette(uint32_t rgba);
-
-	/**
 	 * @brief Checks whether the given chunk is empty (only contains air).
 	 *
 	 * @param v The volume

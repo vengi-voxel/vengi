@@ -74,6 +74,12 @@ public:
 	int getClosestMatch(const uint32_t rgba, float *distance = nullptr) const;
 
 	/**
+	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
+	 * to remove a color that is most similar to another already existing color in the palette.
+	 */
+	bool addColorToPalette(uint32_t rgba);
+
+	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
 	 */
 	void toVec4f(core::DynamicArray<glm::vec4> &rgba) const;
