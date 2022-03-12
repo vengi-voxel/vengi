@@ -13,19 +13,20 @@
 #include "io/File.h"
 #include "io/Filesystem.h"
 #include "math/Math.h"
+#include <SDL_endian.h>
 
 namespace voxel {
 
 bool Palette::addColorToPalette(uint32_t rgba) {
-	if (colorCount < PaletteMaxColors) {
-		colors[colorCount++] = rgba;
-		return true;
-	}
-
-	for (int i = 0; i < PaletteMaxColors; ++i) {
+	for (int i = 0; i < colorCount; ++i) {
 		if (colors[i] == rgba) {
 			return true;
 		}
+	}
+
+	if (colorCount < PaletteMaxColors) {
+		colors[colorCount++] = rgba;
+		return true;
 	}
 
 	// now we are looking for an already existing color that is below the threshold
@@ -177,7 +178,7 @@ bool Palette::load(const char *paletteName) {
 }
 
 bool Palette::minecraft() {
-	static const uint32_t palette[PaletteMaxColors] = {
+	uint32_t palette[PaletteMaxColors] = {
 		0xff000000, 0xff7d7d7d, 0xff4cb376, 0xff436086, 0xff7a7a7a, 0xff4e7f9c, 0xff256647, 0xff535353, 0xffdcaf70,
 		0xffdcaf70, 0xff135bcf, 0xff125ad4, 0xffa0d3db, 0xff7a7c7e, 0xff7c8b8f, 0xff7e8287, 0xff737373, 0xff315166,
 		0xff31b245, 0xff54c3c2, 0xfff4f0da, 0xff867066, 0xff894326, 0xff838383, 0xff9fd3dc, 0xff324364, 0xff3634b4,
@@ -207,11 +208,17 @@ bool Palette::minecraft() {
 		0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0,
 		0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0,
 		0xfff0f0f0, 0xfff0f0f0, 0xfff0f0f0, 0xff242132};
+
+	uint32_t *swapBuf = palette;
+	for (int i = 0; i < lengthof(palette); ++i) {
+		swapBuf[i] = SDL_SwapLE32(swapBuf[i]);
+	}
+
 	return load((const uint8_t *)palette, sizeof(palette));
 }
 
 bool Palette::magicaVoxel() {
-	static const uint32_t palette[PaletteMaxColors] = {
+	uint32_t palette[PaletteMaxColors] = {
 		0x00000000, 0xffffffff, 0xffccffff, 0xff99ffff, 0xff66ffff, 0xff33ffff, 0xff00ffff, 0xffffccff, 0xffccccff,
 		0xff99ccff, 0xff66ccff, 0xff33ccff, 0xff00ccff, 0xffff99ff, 0xffcc99ff, 0xff9999ff, 0xff6699ff, 0xff3399ff,
 		0xff0099ff, 0xffff66ff, 0xffcc66ff, 0xff9966ff, 0xff6666ff, 0xff3366ff, 0xff0066ff, 0xffff33ff, 0xffcc33ff,
@@ -241,6 +248,11 @@ bool Palette::magicaVoxel() {
 		0xff002200, 0xff001100, 0xffee0000, 0xffdd0000, 0xffbb0000, 0xffaa0000, 0xff880000, 0xff770000, 0xff550000,
 		0xff440000, 0xff220000, 0xff110000, 0xffeeeeee, 0xffdddddd, 0xffbbbbbb, 0xffaaaaaa, 0xff888888, 0xff777777,
 		0xff555555, 0xff444444, 0xff222222, 0xff111111};
+
+	uint32_t *swapBuf = palette;
+	for (int i = 0; i < lengthof(palette); ++i) {
+		swapBuf[i] = SDL_SwapLE32(swapBuf[i]);
+	}
 	return load((const uint8_t *)palette, sizeof(palette));
 }
 
