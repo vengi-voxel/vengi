@@ -59,7 +59,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 			|| magic == FourCC('V','X','R','1');}, 0u},
 	{"BinVox", "binvox", [] (uint32_t magic) {return magic == FourCC('#','b','i','n');}, 0u},
 	{"Goxel", "gox", [] (uint32_t magic) {return magic == FourCC('G','O','X',' ');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
-	{"CubeWorld", "cub", nullptr, 0u},
+	{"CubeWorld", "cub", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Minecraft region", "mca", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Sproxel csv", "csv", nullptr, 0u},
 	{"Wavefront Object", "obj", nullptr, 0u},

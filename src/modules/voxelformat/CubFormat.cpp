@@ -24,6 +24,36 @@ namespace voxel {
 		return false; \
 	}
 
+size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, Palette &palette) {
+	uint32_t width, depth, height;
+	wrap(stream.readUInt32(width))
+	wrap(stream.readUInt32(depth))
+	wrap(stream.readUInt32(height))
+
+	if (width > 2048 || height > 2048 || depth > 2048) {
+		Log::error("Volume exceeds the max allowed size: %i:%i:%i", width, height, depth);
+		return false;
+	}
+
+	for (uint32_t h = 0u; h < height; ++h) {
+		for (uint32_t d = 0u; d < depth; ++d) {
+			for (uint32_t w = 0u; w < width; ++w) {
+				uint8_t r, g, b;
+				wrap(stream.readUInt8(r))
+				wrap(stream.readUInt8(g))
+				wrap(stream.readUInt8(b))
+				if (r == 0u && g == 0u && b == 0u) {
+					// empty voxel
+					continue;
+				}
+				const uint32_t color = core::Color::getRGBA(r, g, b, 255);
+				palette.addColorToPalette(color);
+			}
+		}
+	}
+	return palette.colorCount;
+}
+
 bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
@@ -45,8 +75,6 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	node.setVolume(volume, true);
 	node.setName(filename);
 	sceneGraph.emplace(core::move(node));
-
-	// TODO: support loading own palette
 
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
