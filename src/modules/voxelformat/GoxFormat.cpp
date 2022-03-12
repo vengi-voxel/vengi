@@ -222,13 +222,13 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 		for (int y1 = blockRegion.getLowerY(); y1 <= blockRegion.getUpperY(); ++y1) {
 			for (int z1 = blockRegion.getLowerZ(); z1 <= blockRegion.getUpperZ(); ++z1) {
 				for (int x1 = blockRegion.getLowerX(); x1 <= blockRegion.getUpperX(); ++x1) {
-					const glm::vec4 &color = core::Color::fromRGBA(v[0], v[1], v[2], v[3]);
 					voxel::VoxelType voxelType = voxel::VoxelType::Generic;
 					uint8_t index;
 					if (v[3] == 0u) {
 						voxelType = voxel::VoxelType::Air;
 						index = 0;
 					} else {
+						const uint32_t color = core::Color::getRGBA(v[0], v[1], v[2], v[3]);
 						index = findClosestIndex(color);
 					}
 					const voxel::Voxel voxel = voxel::createVoxel(voxelType, index);
@@ -241,7 +241,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 			}
 		}
 		// this will remove empty blocks and the final volume might have a smaller region.
-		// TODO: we should remove this once we have parse volumes support
+		// TODO: we should remove this once we have sparse volumes support
 		if (!empty) {
 			voxel::Region destReg(layerVolume->region());
 			if (!destReg.containsRegion(blockRegion)) {

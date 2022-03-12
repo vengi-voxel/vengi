@@ -59,7 +59,7 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 					// empty voxel
 					continue;
 				}
-				const glm::vec4& color = core::Color::fromRGBA(r, g, b, 255);
+				const uint32_t color = core::Color::getRGBA(r, g, b, 255);
 				const int index = findClosestIndex(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 				// we have to flip depth with height for our own coordinate system
