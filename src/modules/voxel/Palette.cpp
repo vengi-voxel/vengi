@@ -16,7 +16,7 @@
 
 namespace voxel {
 
-int Palette::getClosestMatch(const glm::vec4& color, float *distance) {
+int Palette::getClosestMatch(const glm::vec4& color, float *distance) const {
 	if (size() == 0) {
 		return -1;
 	}
@@ -40,6 +40,15 @@ int Palette::getClosestMatch(const glm::vec4& color, float *distance) {
 		*distance = minDistance;
 	}
 	return minIndex;
+}
+
+int Palette::getClosestMatch(const uint32_t rgba, float *distance) const {
+	for (size_t i = 0; i < size(); ++i) {
+		if (colors[i] == rgba) {
+			return (int)i;
+		}
+	}
+	return getClosestMatch(core::Color::fromRGBA(rgba), distance);
 }
 
 bool Palette::save(const char *name) {

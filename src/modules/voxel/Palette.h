@@ -65,7 +65,13 @@ public:
 	void removeGlow(uint8_t idx);
 	void setGlow(uint8_t idx, float factor = 1.0f);
 
-	int getClosestMatch(const glm::vec4& color, float *distance = nullptr);
+	/**
+	 * @param color Normalized color value [0.0-1.0]
+	 * @param distance Optional parameter to get the calculated distance for the selected color entry
+	 * @return int The index to the palette color
+	 */
+	int getClosestMatch(const glm::vec4& color, float *distance = nullptr) const;
+	int getClosestMatch(const uint32_t rgba, float *distance = nullptr) const;
 
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
