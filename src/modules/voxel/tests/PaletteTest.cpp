@@ -17,7 +17,7 @@ TEST_F(PaletteTest, testAddColorsNoDup) {
 		0xff31b245, 0xff54c3c2, 0xfff4f0da, 0xff867066, 0xff894326, 0xff838383, 0xff9fd3dc, 0xff324364, 0xff3634b4,
 		0xff23c7f6, 0xff7c7c7c, 0xff77bf8e, 0xffdcdcdc, 0xff296595, 0xff194f7b, 0xff538ba5, 0xff5e96bd, 0xffdddddd};
 	for (int i = 0; i < lengthof(colors); ++i) {
-		EXPECT_TRUE(pal.addColorToPalette(colors[i])) << "color entry " << i << " was not added (" << colors[i] << ")";
+		EXPECT_TRUE(pal.addColorToPalette(colors[i], false)) << "color entry " << i << " was not added (" << colors[i] << ")";
 	}
 	EXPECT_EQ(lengthof(colors), pal.colorCount);
 }
@@ -83,7 +83,7 @@ TEST_F(PaletteTest, testAddColorsQuantize) {
 		0xff440000, 0xff220000, 0xff110000, 0xffeeeeee, 0xffdddddd, 0xffbbbbbb, 0xffaaaaaa, 0xff888888, 0xff777777,
 		0xff555555, 0xff444444, 0xff222222, 0xff111111, 0xff00ffff, 0xffffccff, 0xffccccff};
 	for (int i = 0; i < lengthof(colors); ++i) {
-		pal.addColorToPalette(colors[i]);
+		pal.addColorToPalette(colors[i], false);
 	}
 	EXPECT_EQ(voxel::PaletteMaxColors, pal.colorCount);
 }
