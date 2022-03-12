@@ -23,7 +23,7 @@ namespace voxel {
 		return false; \
 	}
 
-bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+glm::ivec3 AoSVXLFormat::dimensions(io::SeekableReadStream &stream) const {
 	int64_t initial = stream.pos();
 
 	glm::ivec3 size(0);
@@ -44,7 +44,11 @@ bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 	size.x = size.z = 512;
 
 	stream.seek(initial);
+	return size;
+}
 
+bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+	const glm::ivec3 size = dimensions(stream);
 	return loadMap(filename, stream, sceneGraph, size.x, size.y, size.z);
 }
 
@@ -63,7 +67,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	for (int z = 0; z < depths; ++z) {
 		for (int x = 0; x < width; ++x) {
 			int y = 0;
-			for (;;) {
+			while (!stream.eos()) {
 				const int64_t cpos = stream.pos();
 				Header header;
 				wrap(stream.readUInt8(header.len))
