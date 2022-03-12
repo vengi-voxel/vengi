@@ -42,10 +42,14 @@ private:
 	bool _dumpSceneGraph = false;
 	bool _resizeVolumes = false;
 
+	int addNodeToSceneGraph(voxel::SceneGraph& sceneGraph, voxel::SceneGraphNode &node, int parent);
+	int addSceneGraphNode_r(voxel::SceneGraph& sceneGraph, voxel::SceneGraph &newSceneGraph, voxel::SceneGraphNode &node, int parent);
+	int addSceneGraphNodes(voxel::SceneGraph& sceneGraph, voxel::SceneGraph& newSceneGraph, int parent);
+
 protected:
 	glm::ivec3 getArgIvec3(const core::String &name);
 	core::String getFilenameForLayerName(const core::String& inputfile, const core::String &layerName, int id);
-	bool handleInputFile(const core::String &infile, voxel::SceneGraph &sceneGraph);
+	bool handleInputFile(const core::String &infile, voxel::SceneGraph &sceneGraph, bool multipleInputs);
 
 	void usage() const override;
 	void mirror(const core::String& axisStr, voxel::SceneGraph& sceneGraph);
