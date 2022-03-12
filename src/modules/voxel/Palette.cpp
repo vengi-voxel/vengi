@@ -16,6 +16,32 @@
 
 namespace voxel {
 
+int Palette::getClosestMatch(const glm::vec4& color, float *distance) {
+	if (size() == 0) {
+		return -1;
+	}
+
+	float minDistance = FLT_MAX;
+	int minIndex = -1;
+
+	float hue;
+	float saturation;
+	float brightness;
+	core::Color::getHSB(color, hue, saturation, brightness);
+
+	for (size_t i = 0; i < size(); ++i) {
+		const float val = core::Color::getDistance(colors[i], hue, saturation, brightness);
+		if (val < minDistance) {
+			minDistance = val;
+			minIndex = (int)i;
+		}
+	}
+	if (distance) {
+		*distance = minDistance;
+	}
+	return minIndex;
+}
+
 bool Palette::save(const char *name) {
 	if (name == nullptr || name[0] == '\0') {
 		if (_paletteFilename.empty()) {
