@@ -60,7 +60,6 @@ bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, 
 	const voxel::Palette &palette = voxel::getPalette();
 	// 1 x 256 is the texture format that we are using for our palette
 	const float texcoord = 1.0f / (float)palette.colorCount;
-	// it is only 1 pixel high - sample the middle
 	unsigned char uvYVal[4] = {0, 0, 0, 63};
 
 	core::String palettename = core::string::stripExtension(filename);
