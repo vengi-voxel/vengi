@@ -80,30 +80,33 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 	tinygltf::Scene scene;
 
-	tinygltf::Image colorPaletteImg;
-	colorPaletteImg.uri = core::string::extractFilenameWithExtension(palettename).c_str();
-
-	m.images.push_back(colorPaletteImg);
-
-	tinygltf::Texture paletteTexture;
-	paletteTexture.source = 0;
-
-	m.textures.push_back(paletteTexture);
-
-	tinygltf::Material mat;
-
-	if (withTexCoords) {
-		mat.pbrMetallicRoughness.baseColorTexture.index = 0;
-	} else if (withColor) {
-		mat.pbrMetallicRoughness.baseColorFactor = {1.0f, 1.0f, 1.0f, 1.0f};
+	{
+		tinygltf::Image colorPaletteImg;
+		colorPaletteImg.uri = core::string::extractFilenameWithExtension(palettename).c_str();
+		m.images.emplace_back(core::move(colorPaletteImg));
+	}
+	{
+		tinygltf::Texture paletteTexture;
+		paletteTexture.source = 0;
+		m.textures.emplace_back(core::move(paletteTexture));
 	}
 
-	mat.name = "Default";
-	mat.pbrMetallicRoughness.roughnessFactor = 1;
-	mat.pbrMetallicRoughness.metallicFactor = 0;
-	mat.doubleSided = false;
+	{
+		tinygltf::Material mat;
 
-	m.materials.push_back(mat);
+		if (withTexCoords) {
+			mat.pbrMetallicRoughness.baseColorTexture.index = 0;
+		} else if (withColor) {
+			mat.pbrMetallicRoughness.baseColorFactor = {1.0f, 1.0f, 1.0f, 1.0f};
+		}
+
+		mat.name = "Default";
+		mat.pbrMetallicRoughness.roughnessFactor = 1;
+		mat.pbrMetallicRoughness.metallicFactor = 0;
+		mat.doubleSided = false;
+
+		m.materials.emplace_back(core::move(mat));
+	}
 
 	Log::debug("Exporting %i layers", (int)meshes.size());
 
@@ -147,14 +150,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		}
 
 		tinygltf::Mesh expMesh;
-		tinygltf::Primitive meshPrimitive;
-		tinygltf::Node node;
 		tinygltf::Buffer buffer;
-		tinygltf::BufferView indicesBufferView;
-		tinygltf::BufferView verticesUvBufferView;
-		tinygltf::Accessor indeicesAccessor;
-		tinygltf::Accessor verticesAccessor;
-		tinygltf::Accessor colorTexAccessor;
 
 		expMesh.name = std::string(objectName);
 
@@ -272,11 +268,13 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			}
 		}
 
+		tinygltf::BufferView indicesBufferView;
 		indicesBufferView.buffer = nthNodeIdx;
 		indicesBufferView.byteOffset = 0;
 		indicesBufferView.byteLength = FLOAT_BUFFER_OFFSET - paddingBytes;
 		indicesBufferView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
 
+		tinygltf::BufferView verticesUvBufferView;
 		verticesUvBufferView.buffer = nthNodeIdx;
 		verticesUvBufferView.byteOffset = FLOAT_BUFFER_OFFSET;
 		verticesUvBufferView.byteLength = buffer.data.size() - FLOAT_BUFFER_OFFSET;
@@ -288,6 +286,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		verticesUvBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
 		// Describe the layout of indicesBufferView, the indices of the vertices
+		tinygltf::Accessor indeicesAccessor;
 		indeicesAccessor.bufferView = 2 * nthNodeIdx;
 		indeicesAccessor.byteOffset = 0;
 		indeicesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
@@ -297,6 +296,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		indeicesAccessor.minValues.push_back(minIndex);
 
 		// Describe the layout of verticesUvBufferView, the vertices themself
+		tinygltf::Accessor verticesAccessor;
 		verticesAccessor.bufferView = 2 * nthNodeIdx + 1;
 		verticesAccessor.byteOffset = 0;
 		verticesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
@@ -305,6 +305,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		verticesAccessor.maxValues = {maxVertex[0], maxVertex[1], maxVertex[2]};
 		verticesAccessor.minValues = {minVertex[0], minVertex[1], minVertex[2]};
 
+		tinygltf::Accessor colorTexAccessor;
 		if (withTexCoords) {
 			// Uvs
 			colorTexAccessor.bufferView = 2 * nthNodeIdx + 1;
@@ -325,38 +326,41 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 		uint8_t primIdxFactor = (withTexCoords || withColor) ? 3 : 2;
 
-		// Build the mesh meshPrimitive and add it to the mesh
-		meshPrimitive.indices = primIdxFactor * nthNodeIdx; // The index of the accessor for the vertex indices
-		meshPrimitive.attributes["POSITION"] =
-			primIdxFactor * nthNodeIdx + 1; // The index of the accessor for positions
-		if (withTexCoords) {
-			meshPrimitive.attributes["TEXCOORD_0"] = primIdxFactor * nthNodeIdx + 2;
-		} else if (withColor) {
-			meshPrimitive.attributes["COLOR_0"] = primIdxFactor * nthNodeIdx + 2;
+		{
+			// Build the mesh meshPrimitive and add it to the mesh
+			tinygltf::Primitive meshPrimitive;
+			meshPrimitive.indices = primIdxFactor * nthNodeIdx; // The index of the accessor for the vertex indices
+			meshPrimitive.attributes["POSITION"] =
+				primIdxFactor * nthNodeIdx + 1; // The index of the accessor for positions
+			if (withTexCoords) {
+				meshPrimitive.attributes["TEXCOORD_0"] = primIdxFactor * nthNodeIdx + 2;
+			} else if (withColor) {
+				meshPrimitive.attributes["COLOR_0"] = primIdxFactor * nthNodeIdx + 2;
+			}
+			meshPrimitive.material = 0;
+			meshPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
+			expMesh.primitives.emplace_back(core::move(meshPrimitive));
 		}
-		meshPrimitive.material = 0;
-		meshPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
-		expMesh.primitives.push_back(meshPrimitive);
 
+		tinygltf::Node node;
 		node.mesh = nthNodeIdx;
-
 		processGltfNode(m, node, scene, graphNode, stack);
 
-		m.meshes.push_back(expMesh);
-		m.buffers.push_back(buffer);
-		m.bufferViews.push_back(indicesBufferView);
-		m.bufferViews.push_back(verticesUvBufferView);
-		m.accessors.push_back(indeicesAccessor);
-		m.accessors.push_back(verticesAccessor);
+		m.meshes.emplace_back(core::move(expMesh));
+		m.buffers.emplace_back(core::move(buffer));
+		m.bufferViews.emplace_back(core::move(indicesBufferView));
+		m.bufferViews.emplace_back(core::move(verticesUvBufferView));
+		m.accessors.emplace_back(core::move(indeicesAccessor));
+		m.accessors.emplace_back(core::move(verticesAccessor));
 
 		if (withTexCoords || withColor) {
-			m.accessors.push_back(colorTexAccessor);
+			m.accessors.emplace_back(core::move(colorTexAccessor));
 		}
 
 		nthNodeIdx++;
 	}
 
-	m.scenes.push_back(scene);
+	m.scenes.emplace_back(core::move(scene));
 
 	io::StdStreamBuf buf(stream);
 	std::ostream gltfStream(&buf);
