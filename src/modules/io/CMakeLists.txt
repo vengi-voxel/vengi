@@ -5,6 +5,7 @@ set(SRCS
 	Filesystem.cpp Filesystem.h
 	FormatDescription.cpp FormatDescription.h
 	IOResource.h
+	StdOStream.h
 	Stream.cpp Stream.h
 	MemoryReadStream.cpp MemoryReadStream.h
 	BufferedZipReadStream.cpp BufferedZipReadStream.h
