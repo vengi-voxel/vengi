@@ -287,7 +287,11 @@ bool SceneManager::prefab(const core::String& file) {
 	voxel::SceneGraph newSceneGraph;
 	io::FileStream stream(filePtr);
 	voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph);
-	return addSceneGraphNodes(newSceneGraph) > 0;
+	bool state = false;
+	for (voxel::SceneGraphNode& node : newSceneGraph) {
+		state |= addNodeToSceneGraph(node);
+	}
+	return state;
 }
 
 bool SceneManager::load(const core::String& file) {
@@ -644,21 +648,26 @@ void SceneManager::resetLastTrace() {
 
 bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 	core::DynamicArray<const voxel::RawVolume*> volumes;
+	core::DynamicArray<int> nodes;
 	for (voxel::SceneGraphNode &node : _sceneGraph) {
 		const voxel::RawVolume* v = node.volume();
 		if ((flags & LayerMergeFlags::All) != LayerMergeFlags::None) {
 			volumes.push_back(v);
+			nodes.push_back(node.id());
 		} else if ((flags & LayerMergeFlags::Visible) != LayerMergeFlags::None) {
 			if (node.visible()) {
 				volumes.push_back(v);
+				nodes.push_back(node.id());
 			}
 		} else if ((flags & LayerMergeFlags::Invisible) != LayerMergeFlags::None) {
 			if (!node.visible()) {
 				volumes.push_back(v);
+				nodes.push_back(node.id());
 			}
 		} else if ((flags & LayerMergeFlags::Locked) != LayerMergeFlags::None) {
 			if (node.locked()) {
 				volumes.push_back(v);
+				nodes.push_back(node.id());
 			}
 		}
 	}
@@ -668,12 +677,12 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 	}
 
 	voxel::RawVolume* merged = voxel::merge(volumes);
-	voxel::SceneGraph newSceneGraph;
 	voxel::SceneGraphNode node;
 	node.setVolume(merged, true);
-	newSceneGraph.emplace(core::move(node));
-	addSceneGraphNodes(newSceneGraph);
-	// TODO: broken - remove old nodes
+	addNodeToSceneGraph(node);
+	for (int nodeId : nodes) {
+		nodeRemove(nodeId, true);
+	}
 	return true;
 }
 
