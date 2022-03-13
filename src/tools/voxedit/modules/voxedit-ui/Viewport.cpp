@@ -46,8 +46,6 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 }
 
 void Viewport::update() {
-	camera().setTarget(glm::vec3(sceneMgr().referencePosition()));
-
 	static const char *polygonModes[] = {"Points", "Lines", "Solid"};
 	static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
 
