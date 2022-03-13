@@ -747,40 +747,12 @@ int SceneManager::addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent) {
 	return newNodeId;
 }
 
-int SceneManager::addSceneGraphNode_r(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent) {
-	const int newNodeId = addNodeToSceneGraph(node, parent);
-	if (newNodeId == -1) {
-		Log::error("Failed to add node to the scene graph");
-		return 0;
-	}
-
-	const voxel::SceneGraphNode &newNode = sceneGraph.node(newNodeId);
-	int nodesAdded = newNode.type() == voxel::SceneGraphNodeType::Model ? 1 : 0;
-	for (int nodeIdx : newNode.children()) {
-		core_assert(sceneGraph.hasNode(nodeIdx));
-		voxel::SceneGraphNode &childNode = sceneGraph.node(nodeIdx);
-		nodesAdded += addSceneGraphNode_r(sceneGraph, childNode, newNodeId);
-	}
-
-	return nodesAdded;
-}
-
-int SceneManager::addSceneGraphNodes(voxel::SceneGraph& sceneGraph) {
-	const voxel::SceneGraphNode &root = sceneGraph.root();
-	int nodesAdded = 0;
-	_sceneGraph.node(0).addProperties(root.properties());
-	for (int nodeId : root.children()) {
-		nodesAdded += addSceneGraphNode_r(sceneGraph, sceneGraph.node(nodeId), 0);
-	}
-	return nodesAdded;
-}
-
 bool SceneManager::loadSceneGraph(voxel::SceneGraph& sceneGraph) {
 	core_trace_scoped(LoadSceneGraph);
 	_sceneGraph.clear();
 	_volumeRenderer.clear();
 
-	const int nodesAdded = addSceneGraphNodes(sceneGraph);
+	const int nodesAdded = voxel::addSceneGraphNodes(_sceneGraph, sceneGraph, 0);
 	if (nodesAdded == 0) {
 		Log::warn("Failed to load any model volumes");
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));

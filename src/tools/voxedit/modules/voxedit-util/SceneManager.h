@@ -186,7 +186,6 @@ private:
 	void autosave();
 	void setReferencePosition(const glm::ivec3& pos);
 	void updateGridRenderer(const voxel::Region& region);
-	int addSceneGraphNode_r(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent);
 	void zoom(video::Camera& camera, float level) const;
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
@@ -196,7 +195,6 @@ protected:
 	voxel::SceneGraphNode *sceneGraphNode(int nodeId);
 	const voxel::SceneGraphNode *sceneGraphNode(int nodeId) const;
 	bool setSceneGraphNodeVolume(voxel::SceneGraphNode &node, voxel::RawVolume* volume);
-	int addSceneGraphNodes(voxel::SceneGraph& sceneGraph);
 	bool loadSceneGraph(voxel::SceneGraph& sceneGraph);
 	int activeNode() const;
 	int addModelChild(const core::String& name, int width, int height, int depth);
