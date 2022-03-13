@@ -67,7 +67,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"Build engine", "kvx", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Ace of Spades", "kv6", [] (uint32_t magic) {return magic == FourCC('K','v','x','l');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Tiberian Sun", "vxl", [] (uint32_t magic) {return magic == FourCC('V','o','x','e');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"AceOfSpades", "vxl", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+	{"AceOfSpades", "vxl", nullptr, 0u},
 	{"Qubicle Exchange", "qef", [] (uint32_t magic) {return magic == FourCC('Q','u','b','i');}, 0u},
 	{"Chronovox", "csm", [] (uint32_t magic) {return magic == FourCC('.','C','S','M');}, 0u},
 	{"Nicks Voxel Model", "nvm", [] (uint32_t magic) {return magic == FourCC('.','N','V','M');}, 0u},
