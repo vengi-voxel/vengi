@@ -116,10 +116,11 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		float f;
 		uint8_t b[4];
 	};
-	union UInt16Union {
-		uint16_t i;
-		uint8_t b[2];
+	union IndexUnion {
+		voxel::IndexType i;
+		uint8_t b[4];
 	};
+	static_assert(sizeof(IndexUnion) == sizeof(voxel::IndexType), "");
 
 	while (!stack.empty()) {
 		int nodeId = stack.back().first;
@@ -160,7 +161,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 		expMesh.name = std::string(objectName);
 
-		const unsigned int remainder = (sizeof(uint16_t) * ni) % sizeof(FloatUnion);
+		const unsigned int remainder = (sizeof(IndexUnion) * ni) % sizeof(FloatUnion);
 		const unsigned int paddingBytes = remainder != 0 ? sizeof(FloatUnion) - remainder : 0;
 
 		unsigned int maxIndex = 0;
@@ -174,7 +175,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			if (flipWinding) {
 				idx = ni - i - 1;
 			}
-			UInt16Union intCharUn;
+			IndexUnion intCharUn;
 			intCharUn.i = indices[idx];
 
 			if (maxIndex < intCharUn.i) {
@@ -286,7 +287,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		tinygltf::Accessor indeicesAccessor;
 		indeicesAccessor.bufferView = 2 * nthNodeIdx;
 		indeicesAccessor.byteOffset = 0;
-		indeicesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
+		indeicesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
+		static_assert(sizeof(IndexUnion) == 4, "");
 		indeicesAccessor.count = ni;
 		indeicesAccessor.type = TINYGLTF_TYPE_SCALAR;
 		indeicesAccessor.maxValues.push_back(maxIndex);
