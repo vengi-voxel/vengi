@@ -30,7 +30,7 @@ bool GLTFFormat::saveMeshes(const Meshes &meshes, const core::String &filename, 
 void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
 								 voxel::SceneGraphNode &graphNode, Stack &stack) {
 	node.name = graphNode.name().c_str();
-	const auto idx = m.nodes.size();
+	const int idx = (int)m.nodes.size();
 
 	m.nodes.push_back(node);
 
@@ -44,7 +44,7 @@ void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinyg
 
 	auto nodeChidren = graphNode.children();
 
-	for (int i = nodeChidren.size() - 1; i >= 0; i--) {
+	for (int i = (int)nodeChidren.size() - 1; i >= 0; i--) {
 		stack.push_back(std::pair(nodeChidren[i], idx));
 	}
 }
@@ -67,8 +67,8 @@ bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, 
 
 	const core::String &ext = core::string::extractExtension(filename);
 	const bool writeBinary = ext == "glb";
-	// const bool embedImages = false; // TODO resreach
-	// const bool embedBuffers = true; // TODO resreach
+	// const bool embedImages = false; // TODO research
+	// const bool embedBuffers = true; // TODO research
 	const bool prettyPrint = true;
 
 	tinygltf::TinyGLTF gltf;
@@ -77,7 +77,7 @@ bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, 
 	// Define the asset. The version is required
 	tinygltf::Asset asset;
 	asset.version = "2.0";
-	asset.generator = "vengi via tinygltf";
+	asset.generator = app::App::getInstance()->appname().c_str();
 	m.asset = asset;
 
 	tinygltf::Scene scene;
@@ -109,13 +109,12 @@ bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, 
 
 	Log::debug("Exporting %i layers", (int)meshes.size());
 
-	unsigned int nthNodeIdx = 0;
+	int nthNodeIdx = 0;
 
 	Stack stack;
 	stack.push_back(std::pair(0, -1));
 
 	while (!stack.empty()) {
-
 		int nodeId = stack.back().first;
 		auto &graphNode = sceneGraph.node(nodeId);
 
@@ -173,13 +172,13 @@ bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, 
 				unsigned char b[UNSIGNED_SHORT_BYTES];
 			} intCharUn;
 
-			intCharUn.i = indices[i];
+			intCharUn.i = (int)indices[i];
 
-			if (maxIndex < intCharUn.i) {
+			if (maxIndex < (unsigned int)intCharUn.i) {
 				maxIndex = intCharUn.i;
 			}
 
-			if (intCharUn.i < minIndex) {
+			if ((unsigned int)intCharUn.i < minIndex) {
 				minIndex = intCharUn.i;
 			}
 
@@ -199,7 +198,6 @@ bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, 
 		glm::vec2 minMaxUVX(INFINITY, -INFINITY);
 
 		for (int j = 0; j < nv; j++) {
-
 			const voxel::VoxelVertex &v = vertices[j];
 
 			glm::vec3 pos;
@@ -409,7 +407,7 @@ bool GLTFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fi
 			core::ScopedLock scoped(lock);
 			meshes.emplace_back(mesh, node, applyTransform);
 
-			meshIdxNodeMap.put(node.id(), meshes.size() - 1);
+			meshIdxNodeMap.put(node.id(), (int)meshes.size() - 1);
 		};
 		threadPool.enqueue(lambda);
 	}

@@ -6,8 +6,6 @@
 
 #include "MeshExporter.h"
 
-typedef core::DynamicArray<std::pair<int, int>> Stack;
-
 namespace tinygltf {
 	class Model;
 	class Node;
@@ -21,6 +19,7 @@ namespace voxel {
  */
 class GLTFFormat : public MeshExporter {
 private:
+	typedef core::DynamicArray<std::pair<int, int>> Stack;
 	core::Map<int, int> meshIdxNodeMap;
 	void processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
 						 voxel::SceneGraphNode &graphNode, Stack &stack);
