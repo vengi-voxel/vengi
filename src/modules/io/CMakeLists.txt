@@ -5,7 +5,7 @@ set(SRCS
 	Filesystem.cpp Filesystem.h
 	FormatDescription.cpp FormatDescription.h
 	IOResource.h
-	StdOStream.h
+	StdStreamBuf.h
 	Stream.cpp Stream.h
 	MemoryReadStream.cpp MemoryReadStream.h
 	BufferedZipReadStream.cpp BufferedZipReadStream.h
@@ -31,6 +31,7 @@ set(TEST_SRCS
 	tests/FormatDescriptionTest.cpp
 	tests/FileTest.cpp
 	tests/MemoryReadStreamTest.cpp
+	tests/StdStreamBufTest.cpp
 	tests/ZipStreamTest.cpp
 )
 

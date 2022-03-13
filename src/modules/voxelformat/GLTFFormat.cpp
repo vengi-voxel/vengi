@@ -11,7 +11,7 @@
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ThreadPool.h"
 #include "engine-config.h"
-#include "io/StdOStream.h"
+#include "io/StdStreamBuf.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"

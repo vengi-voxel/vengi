@@ -48,8 +48,8 @@ public:
 	 *
 	 *  @note  Base class version does nothing, returns eof().
 	 */
-	virtual int_type overflow(int_type c) {
-		if (_stream.write(&c, sizeof(c)) != sizeof(c)) {
+	int_type overflow(int_type c) override {
+		if (_stream.writeUInt8(c) != 1) {
 			return traits_type::eof();
 		}
 		return c;
