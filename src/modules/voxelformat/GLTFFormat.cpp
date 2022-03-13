@@ -127,7 +127,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 		int meshExtIdx = 0;
 		meshIdxNodeMap.get(nodeId, meshExtIdx);
-		const auto meshExt = meshes[meshExtIdx];
+		const MeshExt& meshExt = meshes[meshExtIdx];
 
 		const voxel::Mesh *mesh = meshExt.mesh;
 		Log::debug("Exporting layer %s", meshExt.name.c_str());
@@ -203,7 +203,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 			pos = (offset + pos) * scale;
 
-			for (int coordIndex = 0; coordIndex < 3; coordIndex++) {
+			for (int coordIndex = 0; coordIndex < glm::vec3::length(); coordIndex++) {
 				union {
 					float f;
 					unsigned char b[FLOAT_BYTES];
@@ -253,7 +253,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			} else if (withColor) {
 				const glm::vec4 &color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
 
-				for (int colorIdx = 0; colorIdx < 4; colorIdx++) {
+				for (int colorIdx = 0; colorIdx < glm::vec4::length(); colorIdx++) {
 					union {
 						float f;
 						unsigned char b[FLOAT_BYTES];
