@@ -413,8 +413,15 @@ bool GLTFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fi
 		};
 		threadPool.enqueue(lambda);
 	}
-	while (meshes.size() < models) {
-		SDL_Delay(10);
+	for (;;) {
+		lock.lock();
+		const size_t size = meshes.size();
+		lock.unlock();
+		if (size < models) {
+			SDL_Delay(10);
+		} else {
+			break;
+		}
 	}
 	Log::debug("Save meshes");
 	const bool state = saveMeshes(sceneGraph, meshes, filename, stream, glm::vec3(scaleX, scaleY, scaleZ), quads,
