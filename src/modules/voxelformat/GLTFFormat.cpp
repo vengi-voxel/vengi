@@ -166,9 +166,16 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		unsigned int maxIndex = 0;
 		unsigned int minIndex = UINT_MAX;
 
-		for (int i = ni - 1; i >= 0; i--) {
+		bool flipWinding = (scale.x * scale.y * scale.z) < 0 ? true : false;
+
+		for (int i = 0; i < ni; i++) {
+			int idx = i;
+
+			if (flipWinding) {
+				idx = ni - i - 1;
+			}
 			UInt16Union intCharUn;
-			intCharUn.i = indices[i];
+			intCharUn.i = indices[idx];
 
 			if (maxIndex < intCharUn.i) {
 				maxIndex = intCharUn.i;
