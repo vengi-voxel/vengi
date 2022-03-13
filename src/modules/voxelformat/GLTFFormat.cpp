@@ -162,17 +162,17 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 		for (int i = ni - 1; i >= 0; i--) {
 			union {
-				int i;
+				uint16_t i;
 				unsigned char b[UNSIGNED_SHORT_BYTES];
 			} intCharUn;
 
-			intCharUn.i = (int)indices[i];
+			intCharUn.i = indices[i];
 
-			if (maxIndex < (unsigned int)intCharUn.i) {
+			if (maxIndex < intCharUn.i) {
 				maxIndex = intCharUn.i;
 			}
 
-			if ((unsigned int)intCharUn.i < minIndex) {
+			if (intCharUn.i < minIndex) {
 				minIndex = intCharUn.i;
 			}
 
