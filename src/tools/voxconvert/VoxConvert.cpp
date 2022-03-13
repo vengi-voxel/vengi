@@ -328,34 +328,6 @@ core::String VoxConvert::getFilenameForLayerName(const core::String &inputfile, 
 	return core::string::path(core::string::extractPath(inputfile), core::string::sanitizeFilename(name));
 }
 
-int VoxConvert::addSceneGraphNode_r(voxel::SceneGraph& sceneGraph, voxel::SceneGraph &newSceneGraph, voxel::SceneGraphNode &node, int parent) {
-	const int newNodeId = voxel::addNodeToSceneGraph(sceneGraph, node, parent);
-	if (newNodeId == -1) {
-		Log::error("Failed to add node to the scene graph");
-		return 0;
-	}
-
-	const voxel::SceneGraphNode &newNode = newSceneGraph.node(newNodeId);
-	int nodesAdded = newNode.type() == voxel::SceneGraphNodeType::Model ? 1 : 0;
-	for (int nodeIdx : newNode.children()) {
-		core_assert(newSceneGraph.hasNode(nodeIdx));
-		voxel::SceneGraphNode &childNode = newSceneGraph.node(nodeIdx);
-		nodesAdded += addSceneGraphNode_r(sceneGraph, newSceneGraph, childNode, newNodeId);
-	}
-
-	return nodesAdded;
-}
-
-int VoxConvert::addSceneGraphNodes(voxel::SceneGraph& sceneGraph, voxel::SceneGraph& newSceneGraph, int parent) {
-	const voxel::SceneGraphNode &root = newSceneGraph.root();
-	int nodesAdded = 0;
-	sceneGraph.node(parent).addProperties(root.properties());
-	for (int nodeId : root.children()) {
-		nodesAdded += addSceneGraphNode_r(sceneGraph, newSceneGraph, newSceneGraph.node(nodeId), parent);
-	}
-	return nodesAdded;
-}
-
 bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &sceneGraph, bool multipleInputs) {
 	Log::info("-- current input file: %s", infile.c_str());
 	const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
@@ -414,7 +386,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &
 			groupNode.setName(core::string::extractFilename(infile));
 			parent = sceneGraph.emplace(core::move(groupNode), parent);
 		}
-		addSceneGraphNodes(sceneGraph, newSceneGraph, parent);
+		voxel::addSceneGraphNodes(sceneGraph, newSceneGraph, parent);
 		if (_dumpSceneGraph) {
 			dump(sceneGraph);
 		}

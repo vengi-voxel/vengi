@@ -42,9 +42,6 @@ private:
 	bool _dumpSceneGraph = false;
 	bool _resizeVolumes = false;
 
-	int addSceneGraphNode_r(voxel::SceneGraph& sceneGraph, voxel::SceneGraph &newSceneGraph, voxel::SceneGraphNode &node, int parent);
-	int addSceneGraphNodes(voxel::SceneGraph& sceneGraph, voxel::SceneGraph& newSceneGraph, int parent);
-
 protected:
 	glm::ivec3 getArgIvec3(const core::String &name);
 	core::String getFilenameForLayerName(const core::String& inputfile, const core::String &layerName, int id);
