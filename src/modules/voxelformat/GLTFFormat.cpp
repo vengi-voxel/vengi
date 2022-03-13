@@ -28,7 +28,7 @@ bool GLTFFormat::saveMeshes(const Meshes &meshes, const core::String &filename, 
 }
 
 void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
-								 voxel::SceneGraphNode &graphNode, Stack &stack) {
+								 const voxel::SceneGraphNode &graphNode, Stack &stack) {
 	node.name = graphNode.name().c_str();
 	const int idx = (int)m.nodes.size();
 
