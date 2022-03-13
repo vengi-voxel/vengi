@@ -681,7 +681,7 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 	node.setVolume(merged, true);
 	addNodeToSceneGraph(node);
 	for (int nodeId : nodes) {
-		nodeRemove(nodeId, true);
+		nodeRemove(nodeId, false);
 	}
 	return true;
 }
