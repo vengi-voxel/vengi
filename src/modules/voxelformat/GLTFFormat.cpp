@@ -50,9 +50,6 @@ void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinyg
 bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const SceneGraph &sceneGraph,
 							const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 							const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
-	const uint8_t UNSIGNED_SHORT_BYTES = 2;
-	const uint8_t FLOAT_BYTES = 4;
-
 	const voxel::Palette &palette = voxel::getPalette();
 	// 1 x 256 is the texture format that we are using for our palette
 	const float texcoord = 1.0f / (float)palette.colorCount;
@@ -115,6 +112,15 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 	Stack stack;
 	stack.emplace_back(0, -1);
 
+	union FloatUnion {
+		float f;
+		uint8_t b[4];
+	};
+	union UInt16Union {
+		uint16_t i;
+		uint8_t b[2];
+	};
+
 	while (!stack.empty()) {
 		int nodeId = stack.back().first;
 		const voxel::SceneGraphNode &graphNode = sceneGraph.node(nodeId);
@@ -154,18 +160,14 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 		expMesh.name = std::string(objectName);
 
-		const unsigned int remainder = (UNSIGNED_SHORT_BYTES * ni) % FLOAT_BYTES;
-		const unsigned int paddingBytes = remainder != 0 ? FLOAT_BYTES - remainder : 0;
+		const unsigned int remainder = (sizeof(uint16_t) * ni) % sizeof(FloatUnion);
+		const unsigned int paddingBytes = remainder != 0 ? sizeof(FloatUnion) - remainder : 0;
 
 		unsigned int maxIndex = 0;
 		unsigned int minIndex = UINT_MAX;
 
 		for (int i = ni - 1; i >= 0; i--) {
-			union {
-				uint16_t i;
-				unsigned char b[UNSIGNED_SHORT_BYTES];
-			} intCharUn;
-
+			UInt16Union intCharUn;
 			intCharUn.i = indices[i];
 
 			if (maxIndex < intCharUn.i) {
@@ -176,7 +178,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 				minIndex = intCharUn.i;
 			}
 
-			for (int u = 0; u < UNSIGNED_SHORT_BYTES; u++) {
+			for (size_t u = 0; u < sizeof(intCharUn); u++) {
 				buffer.data.push_back(intCharUn.b[u]);
 			}
 		}
@@ -204,11 +206,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			pos = (offset + pos) * scale;
 
 			for (int coordIndex = 0; coordIndex < glm::vec3::length(); coordIndex++) {
-				union {
-					float f;
-					unsigned char b[FLOAT_BYTES];
-				} floatCharUn;
-
+				FloatUnion floatCharUn;
 				floatCharUn.f = pos[coordIndex];
 
 				if (maxVertex[coordIndex] < floatCharUn.f) {
@@ -219,7 +217,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 					minVertex[coordIndex] = floatCharUn.f;
 				}
 
-				for (int u = 0; u < FLOAT_BYTES; u++) {
+				for (size_t u = 0; u < sizeof(floatCharUn); u++) {
 					buffer.data.push_back(floatCharUn.b[u]);
 				}
 			}
@@ -227,11 +225,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			if (withTexCoords) {
 				const float uuvYVal = ((float)(v.colorIndex) + 0.5f) * texcoord;
 
-				union {
-					float f;
-					unsigned char b[FLOAT_BYTES];
-				} floatCharUn;
-
+				FloatUnion floatCharUn;
 				floatCharUn.f = uuvYVal;
 
 				if (minMaxUVX[0] > floatCharUn.f) {
@@ -242,11 +236,11 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 					minMaxUVX[1] = floatCharUn.f;
 				}
 
-				for (int u = 0; u < FLOAT_BYTES; u++) {
+				for (size_t u = 0; u < sizeof(floatCharUn); u++) {
 					buffer.data.push_back(floatCharUn.b[u]);
 				}
 
-				for (int u = 0; u < FLOAT_BYTES; u++) {
+				for (size_t u = 0; u < sizeof(floatCharUn); u++) {
 					buffer.data.push_back(uvYVal[u]);
 				}
 
@@ -254,14 +248,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 				const glm::vec4 &color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
 
 				for (int colorIdx = 0; colorIdx < glm::vec4::length(); colorIdx++) {
-					union {
-						float f;
-						unsigned char b[FLOAT_BYTES];
-					} floatCharUn;
-
+					FloatUnion floatCharUn;
 					floatCharUn.f = color[colorIdx];
 
-					for (int u = 0; u < FLOAT_BYTES; u++) {
+					for (size_t u = 0; u < sizeof(floatCharUn); u++) {
 						buffer.data.push_back(floatCharUn.b[u]);
 					}
 				}
