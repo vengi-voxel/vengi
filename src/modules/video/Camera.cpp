@@ -65,8 +65,16 @@ void Camera::rotate(float radians, const glm::vec3& axis) {
 }
 
 void Camera::pan(int x, int y) {
-	const glm::vec3 r = right() * ((float)-x) * 0.1f;
-	const glm::vec3 u = up() * ((float)y) * 0.1f;
+	float zoomFactor = 1.0f;
+	if (mode() == CameraMode::Orthogonal) {
+		zoomFactor = _orthoZoom;
+	}
+	if (_rotationType == CameraRotationType::Target) {
+		const float dist = glm::distance(target(), eye());
+		zoomFactor = dist / 100;
+	}
+	const glm::vec3 r = right() * ((float)-x) * zoomFactor * 0.1f;
+	const glm::vec3 u = up() * ((float)y) * zoomFactor * 0.1f;
 	_panOffset += r;
 	_panOffset += u;
 	_dirty |= DIRTY_POSITION;
