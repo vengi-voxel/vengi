@@ -118,6 +118,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, cons
 			wrapBool(stream.writeStringFormat(false, "\n"))
 		}
 
+		// TODO: const bool flip = flipWinding(scale);
 		if (quad) {
 			if (withTexCoords) {
 				for (int i = 0; i < ni; i += 6) {

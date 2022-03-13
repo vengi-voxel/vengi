@@ -235,6 +235,7 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, cons
 		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 		const voxel::IndexType *indices = mesh->getRawIndexData();
 
+		// TODO: const bool flip = flipWinding(scale);
 		for (int i = 0; i < ni; i += 3) {
 			const uint32_t one = idxOffset + indices[i + 0] + 1;
 			const uint32_t two = idxOffset + indices[i + 1] + 1;

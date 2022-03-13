@@ -101,6 +101,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, cons
 			return false;
 		}
 		const voxel::IndexType* indices = mesh.getRawIndexData();
+		// TODO: const bool flip = flipWinding(scale);
 		if (quad) {
 			for (int i = 0; i < ni; i += 6) {
 				const uint32_t one   = idxOffset + indices[i + 0];
