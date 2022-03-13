@@ -9,13 +9,13 @@
 #include "core/Var.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ThreadPool.h"
+#include "io/StdOStream.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
 #include <SDL_timer.h>
-#include <strstream>
 
 #define TINYGLTF_IMPLEMENTATION
 #include "external/tiny_gltf.h"
@@ -360,11 +360,9 @@ bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, 
 
 	m.scenes.push_back(scene);
 
-	std::strstream gltfStream;
-	if (gltf.WriteGltfSceneToStream(&m, gltfStream, prettyPrint, writeBinary)) {
-		stream.write(gltfStream.str(), gltfStream.pcount());
-		gltfStream.clear();
-	} else {
+	io::StdStreamBuf buf(stream);
+	std::ostream gltfStream(&buf);
+	if (!gltf.WriteGltfSceneToStream(&m, gltfStream, prettyPrint, writeBinary)) {
 		Log::error("Could not save to file");
 		return false;
 	}
