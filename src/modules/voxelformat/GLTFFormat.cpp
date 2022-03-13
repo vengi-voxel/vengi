@@ -17,6 +17,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
+#include <limits.h>
 #include <SDL_timer.h>
 
 #define TINYGLTF_IMPLEMENTATION
@@ -166,7 +167,7 @@ bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, 
 		const unsigned int paddingBytes = remainder != 0 ? FLOAT_BYTES - remainder : 0;
 
 		unsigned int maxIndex = 0;
-		unsigned int minIndex = INFINITY;
+		unsigned int minIndex = UINT_MAX;
 
 		for (int i = ni - 1; i >= 0; i--) {
 			union {
