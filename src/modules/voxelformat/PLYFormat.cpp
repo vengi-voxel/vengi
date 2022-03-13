@@ -16,7 +16,9 @@
 
 namespace voxel {
 
-bool PLYFormat::saveMeshes(const Meshes& meshes, const core::String &filename, io::SeekableWriteStream& stream, const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
+bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &meshes,
+						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
+						   bool quad, bool withColor, bool withTexCoords) {
 	const char *paletteName = voxel::Palette::getDefaultPaletteName();
 	stream.writeStringFormat(false, "ply\nformat ascii 1.0\n");
 	stream.writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/mgerhardy/vengi\n");
@@ -119,5 +121,4 @@ bool PLYFormat::saveMeshes(const Meshes& meshes, const core::String &filename, i
 	}
 	return voxel::getPalette().save(paletteName);
 }
-
 }

@@ -17,18 +17,13 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
-#include <limits.h>
 #include <SDL_timer.h>
+#include <limits.h>
 
 #define TINYGLTF_IMPLEMENTATION
 #include "external/tiny_gltf.h"
 
 namespace voxel {
-
-bool GLTFFormat::saveMeshes(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
-							const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
-	return false;
-}
 
 void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
 								 const voxel::SceneGraphNode &graphNode, Stack &stack) {
@@ -52,9 +47,9 @@ void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinyg
 	}
 }
 
-bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, const core::String &filename,
-							io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
-							bool withTexCoords) {
+bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const SceneGraph &sceneGraph,
+							const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+							const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
 	const uint8_t UNSIGNED_SHORT_BYTES = 2;
 	const uint8_t FLOAT_BYTES = 4;
 
@@ -371,64 +366,6 @@ bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, 
 	}
 
 	return voxel::getPalette().save(palettename.c_str());
-}
-
-bool GLTFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
-							io::SeekableWriteStream &stream) {
-	const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
-	const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
-	const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
-
-	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
-
-	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
-	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
-	float scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ)->floatVal();
-
-	scaleX = scaleX != 1.0f ? scaleX : scale;
-	scaleY = scaleY != 1.0f ? scaleY : scale;
-	scaleZ = scaleZ != 1.0f ? scaleZ : scale;
-
-	const bool quads = core::Var::getSafe(cfg::VoxformatQuads)->boolVal();
-	const bool withColor = core::Var::getSafe(cfg::VoxformatWithcolor)->boolVal();
-	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
-	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
-
-	const size_t models = sceneGraph.size();
-	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
-	Meshes meshes;
-	core_trace_mutex(core::Lock, lock, "MeshExporter");
-	for (const SceneGraphNode &node : sceneGraph) {
-		auto lambda = [&]() {
-			voxel::Mesh *mesh = new voxel::Mesh();
-			voxel::Region region = node.region();
-			region.shiftUpperCorner(1, 1, 1);
-			voxel::extractCubicMesh(node.volume(), region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads,
-									reuseVertices, ambientOcclusion);
-			core::ScopedLock scoped(lock);
-			meshes.emplace_back(mesh, node, applyTransform);
-
-			meshIdxNodeMap.put(node.id(), (int)meshes.size() - 1);
-		};
-		threadPool.enqueue(lambda);
-	}
-	for (;;) {
-		lock.lock();
-		const size_t size = meshes.size();
-		lock.unlock();
-		if (size < models) {
-			SDL_Delay(10);
-		} else {
-			break;
-		}
-	}
-	Log::debug("Save meshes");
-	const bool state = saveMeshes(sceneGraph, meshes, filename, stream, glm::vec3(scaleX, scaleY, scaleZ), quads,
-								  withColor, withTexCoords);
-	for (MeshExt &meshext : meshes) {
-		delete meshext.mesh;
-	}
-	return state;
 }
 
 } // namespace voxel

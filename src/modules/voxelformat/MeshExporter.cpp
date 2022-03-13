@@ -70,6 +70,7 @@ MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const SceneGraphNode& node, b
 		mesh(_mesh), name(node.name()), applyTransform(_applyTransform) {
 	transform = node.transform();
 	size = node.region().getDimensionsInVoxels();
+	nodeId = node.id();
 }
 
 bool MeshExporter::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) {
@@ -100,6 +101,7 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 	const size_t models = sceneGraph.size();
 	core::ThreadPool& threadPool = app::App::getInstance()->threadPool();
 	Meshes meshes;
+	core::Map<int, int> meshIdxNodeMap;
 	core_trace_mutex(core::Lock, lock, "MeshExporter");
 	for (const SceneGraphNode& node : sceneGraph) {
 		auto lambda = [&] () {
@@ -109,6 +111,7 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 			voxel::extractCubicMesh(node.volume(), region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
 			core::ScopedLock scoped(lock);
 			meshes.emplace_back(mesh, node, applyTransform);
+			meshIdxNodeMap.put(node.id(), (int)meshes.size() - 1);
 		};
 		threadPool.enqueue(lambda);
 	}
@@ -123,7 +126,7 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 		}
 	}
 	Log::debug("Save meshes");
-	const bool state = saveMeshes(meshes, filename, stream, glm::vec3(scaleX, scaleY, scaleZ), quads, withColor, withTexCoords);
+	const bool state = saveMeshes(meshIdxNodeMap, sceneGraph, meshes, filename, stream, glm::vec3(scaleX, scaleY, scaleZ), quads, withColor, withTexCoords);
 	for (MeshExt& meshext : meshes) {
 		delete meshext.mesh;
 	}

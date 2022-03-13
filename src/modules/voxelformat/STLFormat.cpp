@@ -220,8 +220,9 @@ bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &mesh
 	return true;
 }
 
-bool STLFormat::saveMeshes(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
-				const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
+bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &meshes,
+						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
+						   bool quad, bool withColor, bool withTexCoords) {
 	stream.writeStringFormat(false, "github.com/mgerhardy/vengi");
 	const size_t delta = priv::BinaryHeaderSize - stream.pos();
 	for (size_t i = 0; i < delta; ++i) {

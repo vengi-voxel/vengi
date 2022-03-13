@@ -41,8 +41,9 @@ private:
 	bool parseAscii(io::SeekableReadStream &stream, core::DynamicArray<Face> &faces);
 
 public:
-	bool saveMeshes(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
-					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override;
+	bool saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &meshes, const core::String &filename,
+					io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
+					bool withTexCoords) override;
 	/**
 	 * @brief Voxelizes the input mesh
 	 */

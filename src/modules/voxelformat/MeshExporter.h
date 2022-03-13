@@ -97,9 +97,11 @@ protected:
 
 		SceneGraphTransform transform;
 		glm::vec3 size{0.0f};
+		int nodeId = -1;
 	};
 	using Meshes = core::DynamicArray<MeshExt>;
-	virtual bool saveMeshes(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+	virtual bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const SceneGraph &sceneGraph,
+							const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 							const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
 							bool withTexCoords = true) = 0;
 
