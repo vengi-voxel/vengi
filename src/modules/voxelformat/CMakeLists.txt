@@ -31,6 +31,7 @@ set(SRCS
 	PLYFormat.h PLYFormat.cpp
 	SceneGraph.h SceneGraph.cpp
 	SceneGraphNode.h SceneGraphNode.cpp
+	SceneGraphUtil.h SceneGraphUtil.cpp
 	SproxelFormat.h SproxelFormat.cpp
 	STLFormat.h STLFormat.cpp
 	VolumeCache.h VolumeCache.cpp

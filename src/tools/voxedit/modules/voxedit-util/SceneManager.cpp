@@ -13,6 +13,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/SceneGraphUtil.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeResizer.h"
@@ -714,31 +715,10 @@ void SceneManager::resetSceneState() {
 }
 
 int SceneManager::addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent) {
-	const voxel::SceneGraphNodeType type = node.type();
 	const voxel::Region region = node.region();
 	const core::String name = node.name();
-	int newNodeId;
-	{
-		voxel::SceneGraphNode newNode(type);
-		newNode.setName(name);
-		newNode.setKeyFrames(node.keyFrames());
-		newNode.setVisible(node.visible());
-		newNode.addProperties(node.properties());
-		if (newNode.type() == voxel::SceneGraphNodeType::Model) {
-			core_assert(node.volume() != nullptr);
-			core_assert(node.owns());
-			newNode.setVolume(node.volume(), true);
-			node.releaseOwnership();
-		} else {
-			core_assert(node.volume() == nullptr);
-		}
-
-		newNodeId = _sceneGraph.emplace(core::move(newNode), parent);
-		if (newNodeId == -1) {
-			Log::error("Failed to add node to the scene");
-			return -1;
-		}
-	}
+	const voxel::SceneGraphNodeType type = node.type();
+	const int newNodeId = voxel::addNodeToSceneGraph(_sceneGraph, node, parent);
 
 	Log::debug("Adding node %i with name %s", newNodeId, name.c_str());
 	_mementoHandler.markNodeAdded(parent, newNodeId, name, node.volume());

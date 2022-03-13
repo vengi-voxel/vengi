@@ -21,6 +21,7 @@
 #include "core/TimeProvider.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/SceneGraphUtil.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/SceneGraph.h"
@@ -327,32 +328,8 @@ core::String VoxConvert::getFilenameForLayerName(const core::String &inputfile, 
 	return core::string::path(core::string::extractPath(inputfile), core::string::sanitizeFilename(name));
 }
 
-int VoxConvert::addNodeToSceneGraph(voxel::SceneGraph& sceneGraph, voxel::SceneGraphNode &node, int parent) {
-	const voxel::SceneGraphNodeType type = node.type();
-	voxel::SceneGraphNode newNode(type);
-	newNode.setName(node.name());
-	newNode.setKeyFrames(node.keyFrames());
-	newNode.setVisible(node.visible());
-	newNode.addProperties(node.properties());
-	if (newNode.type() == voxel::SceneGraphNodeType::Model) {
-		core_assert(node.volume() != nullptr);
-		core_assert(node.owns());
-		newNode.setVolume(node.volume(), true);
-		node.releaseOwnership();
-	} else {
-		core_assert(node.volume() == nullptr);
-	}
-
-	const int newNodeId = sceneGraph.emplace(core::move(newNode), parent);
-	if (newNodeId == -1) {
-		Log::error("Failed to add node to the scene");
-		return -1;
-	}
-	return newNodeId;
-}
-
 int VoxConvert::addSceneGraphNode_r(voxel::SceneGraph& sceneGraph, voxel::SceneGraph &newSceneGraph, voxel::SceneGraphNode &node, int parent) {
-	const int newNodeId = addNodeToSceneGraph(sceneGraph, node, parent);
+	const int newNodeId = voxel::addNodeToSceneGraph(sceneGraph, node, parent);
 	if (newNodeId == -1) {
 		Log::error("Failed to add node to the scene graph");
 		return 0;
