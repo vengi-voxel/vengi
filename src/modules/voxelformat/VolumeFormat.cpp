@@ -288,7 +288,9 @@ bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& sceneGraph) {
 	}
 
 	const core::String& type = sceneGraph.root().property("Type");
-	Log::info("Save '%s' file to '%s'", type.c_str(), filePtr->name().c_str());
+	if (!type.empty()) {
+		Log::debug("Save '%s' file to '%s'", type.c_str(), filePtr->name().c_str());
+	}
 	io::FileStream stream(filePtr);
 	const core::String& ext = filePtr->extension();
 	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
