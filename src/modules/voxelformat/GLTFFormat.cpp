@@ -47,14 +47,13 @@ void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinyg
 	auto nodeChidren = graphNode.children();
 
 	for (int i = (int)nodeChidren.size() - 1; i >= 0; i--) {
-		stack.push_back(std::pair(nodeChidren[i], idx));
+		stack.emplace_back(nodeChidren[i], idx);
 	}
 }
 
 bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, const core::String &filename,
 							io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
 							bool withTexCoords) {
-
 	const uint8_t UNSIGNED_SHORT_BYTES = 2;
 	const uint8_t FLOAT_BYTES = 4;
 
@@ -116,11 +115,11 @@ bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, 
 	int nthNodeIdx = 0;
 
 	Stack stack;
-	stack.push_back(std::pair(0, -1));
+	stack.emplace_back(0, -1);
 
 	while (!stack.empty()) {
 		int nodeId = stack.back().first;
-		auto &graphNode = sceneGraph.node(nodeId);
+		const voxel::SceneGraphNode &graphNode = sceneGraph.node(nodeId);
 
 		if (meshIdxNodeMap.find(nodeId) == meshIdxNodeMap.end()) {
 			tinygltf::Node node;

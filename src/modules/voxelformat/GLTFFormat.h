@@ -19,7 +19,13 @@ namespace voxel {
  */
 class GLTFFormat : public MeshExporter {
 private:
-	typedef core::DynamicArray<std::pair<int, int>> Stack;
+	struct Pair {
+		constexpr Pair(int f, int s) : first(f), second(s) {
+		}
+		int first;
+		int second;
+	};
+	typedef core::DynamicArray<Pair> Stack;
 	core::Map<int, int> meshIdxNodeMap;
 	void processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
 						 const voxel::SceneGraphNode &graphNode, Stack &stack);
