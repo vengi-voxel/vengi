@@ -415,9 +415,11 @@ public:
 	void setEditMode(EditMode mode);
 
 private:
+
+	void onNewNodeAdded(int newNodeId);
 	bool nodeRename(voxel::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(voxel::SceneGraphNode &node, bool recursive);
-	void nodeDuplicate(voxel::SceneGraphNode &node);
+	void nodeDuplicate(const voxel::SceneGraphNode &node);
 public:
 	bool nodeMove(int sourceNodeId, int targetNodeId);
 	bool nodeRename(int nodeId, const core::String &name);

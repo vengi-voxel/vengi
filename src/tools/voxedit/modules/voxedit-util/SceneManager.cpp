@@ -723,27 +723,35 @@ void SceneManager::resetSceneState() {
 	resetLastTrace();
 }
 
-int SceneManager::addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent) {
-	const voxel::Region region = node.region();
-	const core::String name = node.name();
-	const voxel::SceneGraphNodeType type = node.type();
-	const int newNodeId = voxel::addNodeToSceneGraph(_sceneGraph, node, parent);
-
-	Log::debug("Adding node %i with name %s", newNodeId, name.c_str());
-	_mementoHandler.markNodeAdded(parent, newNodeId, name, node.volume());
-
-	Log::debug("Add node %i to scene graph", newNodeId);
-	if (type == voxel::SceneGraphNodeType::Model) {
-		// update the whole volume
-		queueRegionExtraction(newNodeId, region);
-
-		_result = voxel::PickResult();
-		_needAutoSave = true;
-		_dirty = true;
-
-		nodeActivate(newNodeId);
-		handleAnimationViewUpdate(newNodeId);
+void SceneManager::onNewNodeAdded(int newNodeId) {
+	if (newNodeId == -1) {
+		return;
 	}
+	if (voxel::SceneGraphNode *node = sceneGraphNode(newNodeId)) {
+		const voxel::Region &region = node->region();
+		const core::String &name = node->name();
+		const voxel::SceneGraphNodeType type = node->type();
+		Log::debug("Adding node %i with name %s", newNodeId, name.c_str());
+		_mementoHandler.markNodeAdded(node->parent(), newNodeId, name, node->volume());
+
+		Log::debug("Add node %i to scene graph", newNodeId);
+		if (type == voxel::SceneGraphNodeType::Model) {
+			// update the whole volume
+			queueRegionExtraction(newNodeId, region);
+
+			_result = voxel::PickResult();
+			_needAutoSave = true;
+			_dirty = true;
+
+			nodeActivate(newNodeId);
+			handleAnimationViewUpdate(newNodeId);
+		}
+	}
+}
+
+int SceneManager::addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent) {
+	const int newNodeId = voxel::addNodeToSceneGraph(_sceneGraph, node, parent);
+	onNewNodeAdded(newNodeId);
 	return newNodeId;
 }
 
@@ -2370,24 +2378,17 @@ bool SceneManager::nodeRemove(voxel::SceneGraphNode &node, bool recursive) {
 	return true;
 }
 
-void SceneManager::nodeDuplicate(voxel::SceneGraphNode &node) {
-	if (node.type() == voxel::SceneGraphNodeType::Root) {
+void SceneManager::nodeDuplicate(const voxel::SceneGraphNode &node) {
+	if (node.type() != voxel::SceneGraphNodeType::Model) {
 		return;
 	}
-	const voxel::RawVolume* v = node.volume();
-	voxel::SceneGraphNode newNode;
-	newNode.setVolume(new voxel::RawVolume(v), true);
-	newNode.setName(node.name());
-	newNode.setKeyFrames(node.keyFrames());
-	newNode.setVisible(node.visible());
-	newNode.setLocked(node.locked());
-	newNode.addProperties(node.properties());
-	/* int newNodeId = */sceneMgr().addNodeToSceneGraph(newNode, node.parent());
-	#if 0
+	const int newNodeId = voxel::addNodeToSceneGraph(_sceneGraph, node, node.parent());
+	onNewNodeAdded(newNodeId);
+#if 0
 	for (int childNodeId : node.children()) {
 		// TODO: duplicate children
 	}
-	#endif
+#endif
 }
 
 void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {

@@ -4,27 +4,12 @@
 
 #include "SceneGraphUtil.h"
 #include "core/Log.h"
+#include "voxel/RawVolume.h"
 
 namespace voxel {
 
-int addNodeToSceneGraph(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent) {
-	const voxel::SceneGraphNodeType type = node.type();
-	const core::String name = node.name();
-	voxel::SceneGraphNode newNode(type);
-	newNode.setName(name);
-	newNode.setKeyFrames(node.keyFrames());
-	newNode.setVisible(node.visible());
-	newNode.addProperties(node.properties());
-	if (newNode.type() == voxel::SceneGraphNodeType::Model) {
-		core_assert(node.volume() != nullptr);
-		core_assert(node.owns());
-		newNode.setVolume(node.volume(), true);
-		node.releaseOwnership();
-	} else {
-		core_assert(node.volume() == nullptr);
-	}
-
-	int newNodeId = sceneGraph.emplace(core::move(newNode), parent);
+static int addToGraph(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &&node, int parent) {
+	int newNodeId = sceneGraph.emplace(core::move(node), parent);
 	if (newNodeId == -1) {
 		Log::error("Failed to add node to the scene");
 		return -1;
@@ -32,7 +17,39 @@ int addNodeToSceneGraph(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &no
 	return newNodeId;
 }
 
-int addSceneGraphNode_r(voxel::SceneGraph& sceneGraph, voxel::SceneGraph &newSceneGraph, voxel::SceneGraphNode &node, int parent) {
+static void copy(const voxel::SceneGraphNode &node, voxel::SceneGraphNode &target) {
+	target.setName(node.name());
+	target.setKeyFrames(node.keyFrames());
+	target.setVisible(node.visible());
+	target.addProperties(node.properties());
+	if (node.type() == voxel::SceneGraphNodeType::Model) {
+		core_assert(node.volume() != nullptr);
+	} else {
+		core_assert(node.volume() == nullptr);
+	}
+}
+
+int addNodeToSceneGraph(voxel::SceneGraph &sceneGraph, const voxel::SceneGraphNode &node, int parent) {
+	voxel::SceneGraphNode newNode(node.type());
+	copy(node, newNode);
+	if (newNode.type() == voxel::SceneGraphNodeType::Model) {
+		newNode.setVolume(new voxel::RawVolume(node.volume()), true);
+	}
+	return addToGraph(sceneGraph, core::move(newNode), parent);
+}
+
+int addNodeToSceneGraph(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent) {
+	voxel::SceneGraphNode newNode(node.type());
+	copy(node, newNode);
+	if (newNode.type() == voxel::SceneGraphNodeType::Model) {
+		core_assert(node.owns());
+		newNode.setVolume(node.volume(), true);
+		node.releaseOwnership();
+	}
+	return addToGraph(sceneGraph, core::move(newNode), parent);
+}
+
+static int addSceneGraphNode_r(voxel::SceneGraph& sceneGraph, voxel::SceneGraph &newSceneGraph, voxel::SceneGraphNode &node, int parent) {
 	const int newNodeId = addNodeToSceneGraph(sceneGraph, node, parent);
 	if (newNodeId == -1) {
 		Log::error("Failed to add node to the scene graph");
