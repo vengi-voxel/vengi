@@ -6,9 +6,11 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "core/String.h"
 #include "core/Var.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ThreadPool.h"
+#include "engine-config.h"
 #include "io/StdOStream.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
@@ -77,7 +79,9 @@ bool GLTFFormat::saveMeshes(const SceneGraph &sceneGraph, const Meshes &meshes, 
 	// Define the asset. The version is required
 	tinygltf::Asset asset;
 	asset.version = "2.0";
-	asset.generator = app::App::getInstance()->appname().c_str();
+	const core::String &generator =
+		core::string::format("%s " PROJECT_VERSION, app::App::getInstance()->appname().c_str());
+	asset.generator = generator.c_str();
 	m.asset = asset;
 
 	tinygltf::Scene scene;
