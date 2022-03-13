@@ -711,10 +711,10 @@ bool SceneManager::merge(int nodeId1, int nodeId2) {
 void SceneManager::resetSceneState() {
 	_animationNodeIdDirtyState = -1;
 	_animationIdx = 0;
-	setEditMode(EditMode::Model);
-	_mementoHandler.clearStates();
 	voxel::SceneGraphNode &node = *_sceneGraph.begin();
 	_sceneGraph.setActiveNode(node.id());
+	setEditMode(EditMode::Model);
+	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
 	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume());
 	_dirty = false;
