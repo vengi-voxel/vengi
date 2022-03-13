@@ -5,6 +5,7 @@
 #include "VoxOldFormat.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "voxel/MaterialColor.h"
 
 #define wrap(read) \
 	if ((read) != 0) { \
@@ -45,6 +46,7 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 	const int64_t voxelPos = stream.pos();
 	stream.skip((int64_t)width * height * depth);
 	_palette.colorCount = voxel::PaletteMaxColors;
+	const voxel::Palette &palette = voxel::getPalette();
 	for (int i = 0; i < _palette.colorCount; ++i) {
 		uint8_t r, g, b;
 		wrap(stream.readUInt8(r))
@@ -52,7 +54,7 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 		wrap(stream.readUInt8(b))
 
 		_palette.colors[i] = core::Color::getRGBA(r, g, b);
-		_paletteMapping[i] = findClosestIndex(_palette.colors[i]);
+		_paletteMapping[i] = palette.getClosestMatch(_palette.colors[i]);
 	}
 
 	stream.seek(voxelPos);

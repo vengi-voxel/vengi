@@ -395,6 +395,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
+	const voxel::Palette &palette = voxel::getPalette();
 	for (int i = 0; i < (int) materialAmount; ++i) {
 		uint8_t blue;
 		wrap(stream.readUInt8(blue));
@@ -407,7 +408,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		uint8_t emissive;
 		wrap(stream.readUInt8(emissive));
 		_palette.colors[i] = core::Color::getRGBA(red, green, blue, alpha);
-		_paletteMapping[i] = findClosestIndex(_palette.colors[i]);
+		_paletteMapping[i] = palette.getClosestMatch(_palette.colors[i]);
 		if (emissive) {
 			_palette.setGlow(i);
 		} else {

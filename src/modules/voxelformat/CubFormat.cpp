@@ -9,6 +9,7 @@
 #include "core/Color.h"
 #include "core/ScopedPtr.h"
 #include "voxel/MaterialColor.h"
+#include "private/PaletteLookup.h"
 
 namespace voxel {
 
@@ -47,7 +48,7 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 					continue;
 				}
 				const core::RGBA color = core::Color::getRGBA(r, g, b);
-				palette.addColorToPalette(color);
+				palette.addColorToPalette(color, false);
 			}
 		}
 	}
@@ -76,6 +77,7 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	node.setName(filename);
 	sceneGraph.emplace(core::move(node));
 
+	voxel::PaletteLookup palLookup;
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {
@@ -88,7 +90,7 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 					continue;
 				}
 				const core::RGBA color = core::Color::getRGBA(r, g, b);
-				const int index = findClosestIndex(color);
+				const int index = palLookup.findClosestIndex(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 				// we have to flip depth with height for our own coordinate system
 				volume->setVoxel((int)w, (int)h, (int)d, voxel);

@@ -457,6 +457,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 		return false;
 	}
 	_palette.colorCount = (int)colorCount;
+	const voxel::Palette &palette = voxel::getPalette();
 	for (uint32_t i = 0; i < colorCount; ++i) {
 		uint8_t colorByteR;
 		uint8_t colorByteG;
@@ -474,7 +475,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 
 		const glm::vec4& color = core::Color::fromRGBA(red | green | blue | alpha);
 		_palette.colors[i] = core::Color::getRGBA(color);
-		const uint8_t index = findClosestIndex(color);
+		const uint8_t index = palette.getClosestMatch(color);
 		_paletteMapping[i] = index;
 	}
 	return true;

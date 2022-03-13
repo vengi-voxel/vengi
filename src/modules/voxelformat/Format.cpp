@@ -31,16 +31,6 @@ uint8_t Format::convertPaletteIndex(uint32_t paletteIndex) const {
 	return _paletteMapping[paletteIndex];
 }
 
-uint8_t Format::findClosestIndex(const glm::vec4& color) const {
-	const voxel::Palette &palette = voxel::getPalette();
-	return palette.getClosestMatch(color);
-}
-
-uint8_t Format::findClosestIndex(core::RGBA rgba) const {
-	const voxel::Palette &palette = voxel::getPalette();
-	return palette.getClosestMatch(rgba);
-}
-
 static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::vec3 &pos, const glm::vec4 &pivot) {
 	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
 }

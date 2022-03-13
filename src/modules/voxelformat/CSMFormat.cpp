@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "glm/common.hpp"
 #include "voxel/Voxel.h"
+#include "private/PaletteLookup.h"
 
 namespace voxel {
 
@@ -63,6 +64,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 	const bool readStringAsInt = isNVM || version >= 4;
 
+	voxel::PaletteLookup palLookup;
 	for (uint16_t i = 0u; (uint16_t)i < matrixCount; ++i) {
 		core::String name;
 		core::String parent;
@@ -116,7 +118,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 				continue;
 			}
 			const core::RGBA color = core::Color::getRGBA(r, g, b);
-			const int index = findClosestIndex(color);
+			const int index = palLookup.findClosestIndex(color);
 			const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 
 			for (uint32_t v = matrixIndex; v < matrixIndex + count; ++v) {

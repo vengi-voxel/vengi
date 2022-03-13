@@ -13,6 +13,7 @@
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
 #include "private/NamedBinaryTag.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
@@ -51,8 +52,9 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	}
 
 	_palette.minecraft();
+	const voxel::Palette &palette = voxel::getPalette();
 	for (size_t i = 0; i < _palette.size(); ++i) {
-		_paletteMapping[i] = findClosestIndex(core::Color::fromRGBA(_palette.colors[i]));
+		_paletteMapping[i] = palette.getClosestMatch(core::Color::fromRGBA(_palette.colors[i]));
 	}
 
 	switch (type) {

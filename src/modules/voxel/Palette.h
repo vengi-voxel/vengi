@@ -76,9 +76,10 @@ public:
 	/**
 	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
 	 * to remove a color that is most similar to another already existing color in the palette.
+	 * @note Only use this for single colors - not for a lot of them. This method is quite slow
 	 */
 	bool addColorToPalette(core::RGBA rgba, bool skipSimilar = true);
-
+	void quantize(const core::RGBA *inputColors, const size_t inputColorCount);
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
 	 * @note The collection will have 256 entries - even if the palette has less entries

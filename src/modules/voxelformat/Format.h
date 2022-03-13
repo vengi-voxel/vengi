@@ -48,14 +48,6 @@ protected:
 	Palette _palette;
 
 	/**
-	 * @brief Find the closed index in the currently in-use palette for the given color
-	 * @param color Normalized color value [0.0-1.0]
-	 * @sa core::Color::getClosestMatch()
-	 */
-	uint8_t findClosestIndex(const glm::vec4& color) const;
-	uint8_t findClosestIndex(core::RGBA rgba) const;
-
-	/**
 	 * @brief Maps a custum palette index to our own 256 color palette by a closest match
 	 */
 	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;

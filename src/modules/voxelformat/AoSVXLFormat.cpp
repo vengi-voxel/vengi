@@ -9,8 +9,8 @@
 #include "core/collection/Map.h"
 #include "core/Log.h"
 #include "core/Color.h"
-#include "voxel/MaterialColor.h"
 #include "voxelutil/VolumeResizer.h"
+#include "private/PaletteLookup.h"
 #include <SDL_stdinc.h>
 #include <string.h>
 
@@ -59,7 +59,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	core_assert(region.isValid());
 	RawVolume *volume = new RawVolume(region);
 
-	core::Map<core::RGBA, int, 521> paletteMap(32768);
+	voxel::PaletteLookup palLookup;
 	for (int z = 0; z < depths; ++z) {
 		for (int x = 0; x < width; ++x) {
 			int y = 0;
@@ -88,12 +88,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					stream.readUInt8(r);
 					stream.readUInt8(a); // not really alpha - some shading data
 					const core::RGBA rgba = core::Color::getRGBA(r, g, b);
-					if (!paletteMap.get(rgba, paletteIndex)) {
-						paletteIndex = findClosestIndex(rgba);
-						if (paletteMap.size() < paletteMap.capacity()) {
-							paletteMap.put(rgba, paletteIndex);
-						}
-					}
+					paletteIndex = palLookup.findClosestIndex(rgba);
 					volume->setVoxel(x, flipHeight - y, z, voxel::createVoxel(voxel::VoxelType::Generic, paletteIndex));
 				}
 				for (int i = y; i < height; ++i) {
@@ -157,12 +152,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					stream.readUInt8(r);
 					stream.readUInt8(a); // not really alpha - some shading data
 					const core::RGBA rgba = core::Color::getRGBA(r, g, b);
-					if (!paletteMap.get(rgba, paletteIndex)) {
-						paletteIndex = findClosestIndex(rgba);
-						if (paletteMap.size() < paletteMap.capacity()) {
-							paletteMap.put(rgba, paletteIndex);
-						}
-					}
+					paletteIndex = palLookup.findClosestIndex(rgba);
 					volume->setVoxel(x, flipHeight - y, z, voxel::createVoxel(voxel::VoxelType::Generic, paletteIndex));
 				}
 				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
@@ -182,6 +172,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 
 size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, Palette &palette) {
 	const glm::ivec3 size = dimensions(stream);
+	core::Buffer<core::RGBA> colors;
 	for (int z = 0; z < size.z; ++z) {
 		for (int x = 0; x < size.x; ++x) {
 			int y = 0;
@@ -194,11 +185,11 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 				stream.readUInt8(header.airStartIdx);
 				if ((int)header.colorStartIdx >= size.x) {
 					Log::error("depth (top start %i exceeds the max allowed value of %i", header.colorStartIdx, size.y);
-					return palette.colorCount;
+					return 0;
 				}
 				if (header.colorEndIdx >= size.y) {
 					Log::error("depth (top end %i) exceeds the max allowed value of %i", header.colorEndIdx, size.y);
-					return palette.colorCount;
+					return 0;
 				}
 				for (y = header.colorStartIdx; y <= header.colorEndIdx; ++y) {
 					uint8_t b, g, r, a;
@@ -206,7 +197,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 					stream.readUInt8(g);
 					stream.readUInt8(r);
 					stream.readUInt8(a); // not really alpha - some shading data
-					palette.addColorToPalette(core::Color::getRGBA(r, g, b));
+					colors.push_back(core::Color::getRGBA(r, g, b));
 				}
 				const int lenBottom = header.colorEndIdx - header.colorStartIdx + 1;
 
@@ -214,7 +205,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 				if (header.len == 0) {
 					if (stream.seek(cpos + (int64_t)(sizeof(uint32_t) * (lenBottom + 1))) == -1) {
 						Log::error("failed to skip");
-						return palette.colorCount;
+						return 0;
 					}
 					break;
 				}
@@ -225,33 +216,33 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 
 				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
 					Log::error("failed to seek");
-					return palette.colorCount;
+					return 0;
 				}
 				uint8_t bottomColorEnd = 0;
 				if (stream.skip(3) == -1) {
 					Log::error("failed to skip");
-					return palette.colorCount;
+					return 0;
 				}
 				stream.readUInt8(bottomColorEnd);
 				if (stream.seek(-4, SEEK_CUR) == -1) {
 					Log::error("failed to seek");
-					return palette.colorCount;
+					return 0;
 				}
 
 				// aka air start - exclusive
 				const int bottomColorStart = bottomColorEnd - len_top;
 				if (bottomColorStart < 0 || bottomColorStart >= size.y) {
 					Log::error("depth (bottom start %i) exceeds the max allowed value of %i", bottomColorStart, size.y);
-					return palette.colorCount;
+					return 0;
 				}
 				if (bottomColorEnd >= size.y) {
 					Log::error("depth (bottom end %i) exceeds the max allowed value of %i", bottomColorEnd, size.y);
-					return palette.colorCount;
+					return 0;
 				}
 
 				if (stream.seek(rgbaPos) == -1) {
 					Log::error("failed to seek");
-					return palette.colorCount;
+					return 0;
 				}
 				for (y = bottomColorStart; y < bottomColorEnd; ++y) {
 					uint8_t b, g, r, a;
@@ -259,15 +250,16 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 					stream.readUInt8(g);
 					stream.readUInt8(r);
 					stream.readUInt8(a); // not really alpha - some shading data
-					palette.addColorToPalette(core::Color::getRGBA(r, g, b));
+					colors.push_back(core::Color::getRGBA(r, g, b));
 				}
 				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
 					Log::error("failed to seek");
-					return palette.colorCount;
+					return 0;
 				}
 			}
 		}
 	}
+	palette.quantize(colors.data(), colors.size());
 	return palette.colorCount;
 }
 

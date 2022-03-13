@@ -370,12 +370,11 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 
 	if (valid) {
 		// convert to our palette
+		const voxel::Palette &palette = voxel::getPalette();
 		for (int i = 0; i < _palette.colorCount; ++i) {
 			const uint8_t *p = hdr.palette[i];
-			const glm::vec4& color = core::Color::fromRGBA(p[0], p[1], p[2], 0xffu);
-			const int index = findClosestIndex(color);
-			_palette.colors[i] = core::Color::getRGBA(color);
-			_paletteMapping[i] = index;
+			_palette.colors[i] = core::Color::getRGBA(p[0], p[1], p[2]);
+			_paletteMapping[i] = palette.getClosestMatch(_palette.colors[i]);
 		}
 	} else {
 		_palette.colorCount = 0;

@@ -4,6 +4,7 @@ set(SRCS
 	external/tiny_obj_loader.h
 
 	private/NamedBinaryTag.h private/NamedBinaryTag.cpp
+	private/PaletteLookup.h
 
 	Format.h Format.cpp
 	AoSVXLFormat.h AoSVXLFormat.cpp

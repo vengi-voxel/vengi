@@ -16,7 +16,7 @@ TEST_F(AoSVXLFormatTest, testLoad) {
 	ASSERT_NE(nullptr, volume) << "Could not load ace of spades file";
 }
 
-TEST_F(AoSVXLFormatTest, testLoadPalette) {
+TEST_F(AoSVXLFormatTest, DISABLED_testLoadPalette) {
 	AoSVXLFormat f;
 	voxel::Palette pal;
 	EXPECT_GT(loadPalette("aceofspades.vxl", f, pal), 200);

@@ -44,6 +44,11 @@ const glm::vec4 Color::Brown        = glm::vec4(107.f,  66,  38, 255) / glm::vec
 const glm::vec4 Color::LightBrown   = glm::vec4(150.f, 107,  72, 255) / glm::vec4(Color::magnitudef);
 const glm::vec4 Color::DarkBrown    = glm::vec4( 82.f,  43,  26, 255) / glm::vec4(Color::magnitudef);
 
+int Color::quantize(RGBA* targetBuf, size_t maxTargetBufColors, const RGBA* inputBuf, size_t inputBufColors) {
+	// TODO: implement k-means
+	return 0;
+}
+
 glm::vec4 Color::fromRGBA(const RGBA rgba) {
 	return fromRGBA(rgba.r, rgba.g, rgba.b, rgba.a);
 }
@@ -108,7 +113,6 @@ core::String Color::toHex(const RGBA rgba, bool hashPrefix) {
 	hex.append(core::string::format("%x%x%x%x", rgba.r, rgba.g, rgba.b, rgba.a));
 	return hex;
 }
-
 
 glm::vec4 Color::fromHex(const char* hex) {
 	uint32_t r = 0x00;

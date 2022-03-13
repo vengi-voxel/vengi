@@ -20,6 +20,7 @@
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
+#include "private/PaletteLookup.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace voxel {
@@ -183,6 +184,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	voxel::RawVolume *layerVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 	uint32_t blockCount;
 
+	voxel::PaletteLookup palLookup;
 	wrap(stream.readUInt32(blockCount))
 	Log::debug("Found LAYR chunk with %i blocks", blockCount);
 	for (uint32_t i = 0; i < blockCount; ++i) {
@@ -229,7 +231,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 						index = 0;
 					} else {
 						const core::RGBA color = core::Color::getRGBA(v[0], v[1], v[2], v[3]);
-						index = findClosestIndex(color);
+						index = palLookup.findClosestIndex(color);
 					}
 					const voxel::Voxel voxel = voxel::createVoxel(voxelType, index);
 					blockVolume->setVoxel(x1, y1, z1, voxel);

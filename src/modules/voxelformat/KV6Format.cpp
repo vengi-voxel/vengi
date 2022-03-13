@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/Color.h"
 #include "core/FourCC.h"
+#include "private/PaletteLookup.h"
 #include <glm/common.hpp>
 
 namespace voxel {
@@ -64,6 +65,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
+	voxel::PaletteLookup palLookup;
 	if (stream.seek(32 + numvoxs * 8 + (xsiz << 2) + ((xsiz * ysiz) << 1)) != -1) {
 		if (stream.remaining() != 0) {
 			uint32_t palMagic;
@@ -81,7 +83,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 					const uint8_t nb = glm::clamp((uint32_t)glm::round(((float)b * 255.0f) / 63.0f), 0u, 255u);
 
 					const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255u);
-					const int index = findClosestIndex(color);
+					const int index = palLookup.findClosestIndex(color);
 					_paletteMapping[i] = index;
 					_palette.colors[i] = core::Color::getRGBA(color);
 				}
@@ -109,7 +111,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 		wrap(stream.readUInt8(palr))
 		wrap(stream.readUInt8(pala))
 		const glm::vec4& color = core::Color::fromRGBA(palr, palg, palb, pala);
-		voxdata[c].col = findClosestIndex(color);
+		voxdata[c].col = palLookup.findClosestIndex(color);
 		uint16_t zpos;
 		wrap(stream.readUInt16(zpos))
 		voxdata[c].z = zpos;

@@ -17,6 +17,10 @@
 
 namespace voxel {
 
+void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCount) {
+	colorCount = core::Color::quantize(colors, PaletteMaxColors, inputColors, inputColorCount);
+}
+
 bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar) {
 	for (int i = 0; i < colorCount; ++i) {
 		if (colors[i] == rgba) {
