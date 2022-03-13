@@ -182,16 +182,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, cons
 void OBJFormat::subdivideShape(const tinyobj::mesh_t &mesh, const core::StringMap<image::ImagePtr> &textures,
 							  const tinyobj::attrib_t &attrib, const std::vector<tinyobj::material_t> &materials,
 							  core::DynamicArray<Tri> &subdivided) {
-	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
-
-	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
-	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
-	float scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ)->floatVal();
-
-	scaleX = scaleX != 1.0f ? scaleX : scale;
-	scaleY = scaleY != 1.0f ? scaleY : scale;
-	scaleZ = scaleZ != 1.0f ? scaleZ : scale;
-
+	const glm::vec3 &scale = getScale();
 	int indexOffset = 0;
 	for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
 		const int faceVertices = mesh.num_face_vertices[faceNum];
@@ -199,9 +190,9 @@ void OBJFormat::subdivideShape(const tinyobj::mesh_t &mesh, const core::StringMa
 		Tri tri;
 		for (int i = 0; i < faceVertices; ++i) {
 			const tinyobj::index_t &idx = mesh.indices[indexOffset + i];
-			tri.vertices[i].x = attrib.vertices[3 * idx.vertex_index + 0] * scaleX;
-			tri.vertices[i].y = attrib.vertices[3 * idx.vertex_index + 1] * scaleY;
-			tri.vertices[i].z = attrib.vertices[3 * idx.vertex_index + 2] * scaleZ;
+			tri.vertices[i].x = attrib.vertices[3 * idx.vertex_index + 0] * scale.x;
+			tri.vertices[i].y = attrib.vertices[3 * idx.vertex_index + 1] * scale.y;
+			tri.vertices[i].z = attrib.vertices[3 * idx.vertex_index + 2] * scale.z;
 			if (idx.texcoord_index >= 0) {
 				tri.uv[i].x = attrib.texcoords[2 * idx.texcoord_index + 0];
 				tri.uv[i].y = attrib.texcoords[2 * idx.texcoord_index + 1];
@@ -233,15 +224,7 @@ void OBJFormat::calculateAABB(const tinyobj::mesh_t &mesh, const tinyobj::attrib
 	maxs = glm::vec3(-100000.0f);
 	mins = glm::vec3(+100000.0f);
 
-	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
-
-	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
-	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
-	float scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ)->floatVal();
-
-	scaleX = scaleX != 1.0f ? scaleX : scale;
-	scaleY = scaleY != 1.0f ? scaleY : scale;
-	scaleZ = scaleZ != 1.0f ? scaleZ : scale;
+	const glm::vec3 &scale = getScale();
 
 	int indexOffset = 0;
 	for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
@@ -249,9 +232,9 @@ void OBJFormat::calculateAABB(const tinyobj::mesh_t &mesh, const tinyobj::attrib
 		core_assert_msg(faceVertices == 3, "Unexpected indices for triangulated mesh: %i", faceVertices);
 		for (int i = 0; i < faceVertices; ++i) {
 			const tinyobj::index_t &idx = mesh.indices[indexOffset + i];
-			const float x = attrib.vertices[3 * idx.vertex_index + 0] * scaleX;
-			const float y = attrib.vertices[3 * idx.vertex_index + 1] * scaleY;
-			const float z = attrib.vertices[3 * idx.vertex_index + 2] * scaleZ;
+			const float x = attrib.vertices[3 * idx.vertex_index + 0] * scale.x;
+			const float y = attrib.vertices[3 * idx.vertex_index + 1] * scale.y;
+			const float z = attrib.vertices[3 * idx.vertex_index + 2] * scale.z;
 			maxs.x = core_max(maxs.x, x);
 			maxs.y = core_max(maxs.y, y);
 			maxs.z = core_max(maxs.z, z);

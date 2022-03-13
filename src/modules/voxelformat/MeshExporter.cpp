@@ -18,6 +18,19 @@
 
 namespace voxel {
 
+glm::vec3 MeshExporter::getScale() {
+	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
+
+	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
+	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
+	float scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ)->floatVal();
+
+	scaleX = scaleX != 1.0f ? scaleX : scale;
+	scaleY = scaleY != 1.0f ? scaleY : scale;
+	scaleZ = scaleZ != 1.0f ? scaleZ : scale;
+	return {scaleX, scaleY, scaleZ};
+}
+
 void MeshExporter::subdivideTri(const Tri &tri, core::DynamicArray<Tri> &tinyTris) {
 	const glm::vec3 &mins = tri.mins();
 	const glm::vec3 &maxs = tri.maxs();
@@ -83,15 +96,7 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 	const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 	const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
 
-	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
-
-	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
-	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
-	float scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ)->floatVal();
-
-	scaleX = scaleX != 1.0f ? scaleX : scale;
-	scaleY = scaleY != 1.0f ? scaleY : scale;
-	scaleZ = scaleZ != 1.0f ? scaleZ : scale;
+	const glm::vec3 &scale = getScale();
 
 	const bool quads = core::Var::getSafe(cfg::VoxformatQuads)->boolVal();
 	const bool withColor = core::Var::getSafe(cfg::VoxformatWithcolor)->boolVal();
@@ -126,7 +131,7 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 		}
 	}
 	Log::debug("Save meshes");
-	const bool state = saveMeshes(meshIdxNodeMap, sceneGraph, meshes, filename, stream, glm::vec3(scaleX, scaleY, scaleZ), quads, withColor, withTexCoords);
+	const bool state = saveMeshes(meshIdxNodeMap, sceneGraph, meshes, filename, stream, scale, quads, withColor, withTexCoords);
 	for (MeshExt& meshext : meshes) {
 		delete meshext.mesh;
 	}

@@ -105,6 +105,8 @@ protected:
 							const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
 							bool withTexCoords = true) = 0;
 
+	static glm::vec3 getScale();
+
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, SceneGraph &sceneGraph) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,

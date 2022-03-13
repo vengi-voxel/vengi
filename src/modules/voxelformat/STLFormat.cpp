@@ -17,22 +17,14 @@ static constexpr const size_t BinaryHeaderSize = 80;
 }
 
 void STLFormat::subdivideShape(const core::DynamicArray<Face> &faces, core::DynamicArray<Tri> &subdivided) {
-	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
-
-	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
-	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
-	float scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ)->floatVal();
-
-	scaleX = scaleX != 1.0f ? scaleX : scale;
-	scaleY = scaleY != 1.0f ? scaleY : scale;
-	scaleZ = scaleZ != 1.0f ? scaleZ : scale;
+	const glm::vec3 &scale = getScale();
 
 	for (const Face &face : faces) {
 		Tri tri;
 		for (int i = 0; i < 3; ++i) {
-			tri.vertices[i].x = face.tri[i].x * scaleX;
-			tri.vertices[i].y = face.tri[i].y * scaleY;
-			tri.vertices[i].z = face.tri[i].z * scaleZ;
+			tri.vertices[i].x = face.tri[i].x * scale.x;
+			tri.vertices[i].y = face.tri[i].y * scale.y;
+			tri.vertices[i].z = face.tri[i].z * scale.z;
 			tri.uv[i] = glm::vec2(0.0f);
 		}
 
@@ -44,24 +36,16 @@ void STLFormat::calculateAABB(const core::DynamicArray<Face> &faces, glm::vec3 &
 	maxs = glm::vec3(-100000.0f);
 	mins = glm::vec3(+100000.0f);
 
-	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
-
-	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
-	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
-	float scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ)->floatVal();
-
-	scaleX = scaleX != 1.0f ? scaleX : scale;
-	scaleY = scaleY != 1.0f ? scaleY : scale;
-	scaleZ = scaleZ != 1.0f ? scaleZ : scale;
+	const glm::vec3 &scale = getScale();
 
 	for (const Face &face : faces) {
 		for (int i = 0; i < 3; ++i) {
-			maxs.x = core_max(maxs.x, face.tri[i].x) * scaleX;
-			maxs.y = core_max(maxs.y, face.tri[i].y) * scaleY;
-			maxs.z = core_max(maxs.z, face.tri[i].z) * scaleZ;
-			mins.x = core_min(mins.x, face.tri[i].x) * scaleX;
-			mins.y = core_min(mins.y, face.tri[i].y) * scaleY;
-			mins.z = core_min(mins.z, face.tri[i].z) * scaleZ;
+			maxs.x = core_max(maxs.x, face.tri[i].x) * scale.x;
+			maxs.y = core_max(maxs.y, face.tri[i].y) * scale.y;
+			maxs.z = core_max(maxs.z, face.tri[i].z) * scale.z;
+			mins.x = core_min(mins.x, face.tri[i].x) * scale.x;
+			mins.y = core_min(mins.y, face.tri[i].y) * scale.y;
+			mins.z = core_min(mins.z, face.tri[i].z) * scale.z;
 		}
 	}
 }
