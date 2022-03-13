@@ -697,14 +697,17 @@ bool SceneManager::merge(int nodeId1, int nodeId2) {
 	if (volumes[1] == nullptr) {
 		return false;
 	}
-	voxel::RawVolume* volume = voxel::merge(volumes);
-	if (!setNewVolume(nodeId1, volume, true)) {
-		delete volume;
-		return false;
+	voxel::RawVolume* merged = voxel::merge(volumes);
+	voxel::SceneGraphNode node;
+	node.setVolume(merged, true);
+	int parent = 0;
+	if (voxel::SceneGraphNode* node = sceneGraphNode(nodeId1)) {
+		parent = node->parent();
 	}
-	// TODO: the memento states are not yet perfect
-	modified(nodeId1, volume->region(), true);
-	nodeRemove(nodeId2, false);
+	if (addNodeToSceneGraph(node, parent) != -1) {
+		nodeRemove(nodeId1, false);
+		nodeRemove(nodeId2, false);
+	}
 	return true;
 }
 
