@@ -51,6 +51,7 @@ set(TEST_SRCS
 	tests/ConvertTest.cpp
 	tests/CSMFormatTest.cpp
 	tests/CubFormatTest.cpp
+	tests/GLTFFormatTest.cpp
 	tests/GoxFormatTest.cpp
 	tests/KVXFormatTest.cpp
 	tests/KV6FormatTest.cpp
