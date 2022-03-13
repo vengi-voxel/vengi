@@ -106,6 +106,8 @@ protected:
 							bool withTexCoords = true) = 0;
 
 	static glm::vec3 getScale();
+	// checks if the winding needs flipping if the scale values are negative
+	static bool flipWinding(const glm::vec3 &scale);
 
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, SceneGraph &sceneGraph) override;

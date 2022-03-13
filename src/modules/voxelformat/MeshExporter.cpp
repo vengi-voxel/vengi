@@ -31,6 +31,10 @@ glm::vec3 MeshExporter::getScale() {
 	return {scaleX, scaleY, scaleZ};
 }
 
+bool MeshExporter::flipWinding(const glm::vec3 &scale) {
+	return (scale.x * scale.y * scale.z) < 0.0f ? true : false;
+}
+
 void MeshExporter::subdivideTri(const Tri &tri, core::DynamicArray<Tri> &tinyTris) {
 	const glm::vec3 &mins = tri.mins();
 	const glm::vec3 &maxs = tri.maxs();

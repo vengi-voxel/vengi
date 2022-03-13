@@ -167,12 +167,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		unsigned int maxIndex = 0;
 		unsigned int minIndex = UINT_MAX;
 
-		bool flipWinding = (scale.x * scale.y * scale.z) < 0 ? true : false;
+		const bool flip = flipWinding(scale);
 
 		for (int i = 0; i < ni; i++) {
 			int idx = i;
 
-			if (flipWinding) {
+			if (flip) {
 				idx = ni - i - 1;
 			}
 			IndexUnion intCharUn;
