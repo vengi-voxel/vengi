@@ -8,6 +8,8 @@
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
+#include "core/collection/Buffer.h"
+#include "core/RGBA.h"
 #include "image/Image.h"
 #include "io/File.h"
 #include "io/Filesystem.h"
@@ -287,23 +289,18 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 	if (!image || !image->isLoaded()) {
 		return false;
 	}
-	const int colors = (int)PaletteMaxColors;
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
+	core::Buffer<core::RGBA, 1024> colors;
 	Log::debug("Create palette for image: %s", image->name().c_str());
-	uint16_t paletteIndex = 0;
-	core::RGBA empty = core::Color::getRGBA(core::Color::White);
-	palette.colors[paletteIndex++] = empty;
 	palette._dirty = true;
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const uint8_t *data = image->at(x, y);
-			palette.addColorToPalette(*(uint32_t*)data);
+			colors.push_back(*(uint32_t*)data);
 		}
 	}
-	for (int i = paletteIndex; i < colors; ++i) {
-		palette.colors[i] = empty;
-	}
+	palette.quantize(colors.data(), colors.size());
 	return true;
 }
 
