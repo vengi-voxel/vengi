@@ -71,7 +71,7 @@ void Camera::pan(int x, int y) {
 	}
 	if (_rotationType == CameraRotationType::Target) {
 		const float dist = glm::distance(target(), eye());
-		zoomFactor = dist / 100;
+		zoomFactor = dist / 100.0f;
 	}
 	const glm::vec3 r = right() * ((float)-x) * zoomFactor * 0.1f;
 	const glm::vec3 u = up() * ((float)y) * zoomFactor * 0.1f;
