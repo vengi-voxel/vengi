@@ -7,46 +7,99 @@
 #include "core/GLM.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "math/Octree.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
+#include <glm/ext/scalar_integer.hpp>
 
-#include <stdio.h>
 #include <SDL.h>
+#include <stdio.h>
 
 namespace core {
 
-const glm::vec4 Color::Clear        = glm::vec4(  0.f,   0,   0,   0) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::White        = glm::vec4(255.f, 255, 255, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Black        = glm::vec4(  0.f,   0,   0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Lime         = glm::vec4(109.f, 198,   2, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Pink         = glm::vec4(248.f,   4,  62, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::LightBlue    = glm::vec4(  0.f, 153, 203, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::DarkBlue     = glm::vec4( 55.f, 116, 145, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Orange       = glm::vec4(252.f, 167,   0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Yellow       = glm::vec4(255.f, 255,   0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Sandy        = glm::vec4(237.f, 232, 160, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::LightGray    = glm::vec4(192.f, 192, 192, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Gray         = glm::vec4(128.f, 128, 128, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::DarkGray     = glm::vec4( 84.f,  84,  84, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::LightRed     = glm::vec4(255.f,  96,  96, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Red          = glm::vec4(255.f,   0,   0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::DarkRed      = glm::vec4(128.f,   0,   0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::LightGreen   = glm::vec4( 96.f, 255,  96, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Green        = glm::vec4(  0.f, 255,   0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::DarkGreen    = glm::vec4(  0.f, 128,   0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Blue         = glm::vec4(  0.f,   0, 255, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::SteelBlue    = glm::vec4( 35.f, 107, 142, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Olive        = glm::vec4(128.f, 128,   0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Purple       = glm::vec4(128.f,   0, 128, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Cyan         = glm::vec4(  0.f, 255, 255, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Brown        = glm::vec4(107.f,  66,  38, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::LightBrown   = glm::vec4(150.f, 107,  72, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::DarkBrown    = glm::vec4( 82.f,  43,  26, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Clear = glm::vec4(0.f, 0, 0, 0) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::White = glm::vec4(255.f, 255, 255, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Black = glm::vec4(0.f, 0, 0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Lime = glm::vec4(109.f, 198, 2, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Pink = glm::vec4(248.f, 4, 62, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::LightBlue = glm::vec4(0.f, 153, 203, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::DarkBlue = glm::vec4(55.f, 116, 145, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Orange = glm::vec4(252.f, 167, 0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Yellow = glm::vec4(255.f, 255, 0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Sandy = glm::vec4(237.f, 232, 160, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::LightGray = glm::vec4(192.f, 192, 192, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Gray = glm::vec4(128.f, 128, 128, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::DarkGray = glm::vec4(84.f, 84, 84, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::LightRed = glm::vec4(255.f, 96, 96, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Red = glm::vec4(255.f, 0, 0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::DarkRed = glm::vec4(128.f, 0, 0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::LightGreen = glm::vec4(96.f, 255, 96, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Green = glm::vec4(0.f, 255, 0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::DarkGreen = glm::vec4(0.f, 128, 0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Blue = glm::vec4(0.f, 0, 255, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::SteelBlue = glm::vec4(35.f, 107, 142, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Olive = glm::vec4(128.f, 128, 0, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Purple = glm::vec4(128.f, 0, 128, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Cyan = glm::vec4(0.f, 255, 255, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::Brown = glm::vec4(107.f, 66, 38, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::LightBrown = glm::vec4(150.f, 107, 72, 255) / glm::vec4(Color::magnitudef);
+const glm::vec4 Color::DarkBrown = glm::vec4(82.f, 43, 26, 255) / glm::vec4(Color::magnitudef);
 
-int Color::quantize(RGBA* targetBuf, size_t maxTargetBufColors, const RGBA* inputBuf, size_t inputBufColors) {
-	// TODO: implement k-means
-	return 0;
+int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
+	core_assert(glm::isPowerOfTwo(maxTargetBufColors));
+	core_assert(maxTargetBufColors == 256);
+	using BBox = math::AABB<uint8_t>;
+	struct ColorNode {
+		inline ColorNode(core::RGBA c) : color(c){};
+		core::RGBA color;
+		inline BBox aabb() const {
+			return BBox(color.r, color.g, color.b, color.r + 1, color.g + 1, color.b + 1);
+		}
+	};
+	const BBox aabb(0, 0, 0, 255, 255, 255);
+	using Tree = math::Octree<ColorNode, uint8_t>;
+	Tree octree(aabb, 32);
+	for (size_t i = 0; i < inputBufColors; ++i) {
+		octree.insert(inputBuf[i]);
+	}
+	size_t n = 0;
+	constexpr glm::ivec3 dim(8);
+	const int rmax = aabb.getWidthX() + 1 - dim.r;
+	const int gmax = aabb.getWidthY() + 1 - dim.g;
+	const int bmax = aabb.getWidthZ() + 1 - dim.b;
+	for (int r = 0; r <= rmax; r += dim.r) {
+		for (int g = 0; g <= gmax; g += dim.g) {
+			for (int b = 0; b <= bmax; b += dim.b) {
+				Tree::Contents contents;
+				const BBox queryAABB(r, g, b, r + dim.r - 1, g + dim.g - 1, b + dim.b - 1);
+				octree.query(queryAABB, contents);
+				const int k = (int)contents.size();
+				if (k == 0) {
+					continue;
+				}
+				uint32_t sumR = 0, sumG = 0, sumB = 0;
+				for (const auto& con : contents) {
+					sumR += con.color.r;
+					sumG += con.color.g;
+					sumB += con.color.b;
+				}
+				core::RGBA rgba;
+				rgba.r = sumR / k;
+				rgba.g = sumG / k;
+				rgba.b = sumB / k;
+				rgba.a = 0xFF;
+				targetBuf[n++] = rgba;
+				if (n >= maxTargetBufColors) {
+					return (int)n;
+				}
+			}
+		}
+	}
+	for (size_t i = n; i < maxTargetBufColors; ++i) {
+		targetBuf[i] = RGBA(0xFFFFFFFFU);
+	}
+	return (int)n;
 }
 
 glm::vec4 Color::fromRGBA(const RGBA rgba) {
@@ -114,7 +167,7 @@ core::String Color::toHex(const RGBA rgba, bool hashPrefix) {
 	return hex;
 }
 
-glm::vec4 Color::fromHex(const char* hex) {
+glm::vec4 Color::fromHex(const char *hex) {
 	uint32_t r = 0x00;
 	uint32_t g = 0x00;
 	uint32_t b = 0x00;
@@ -130,7 +183,7 @@ glm::vec4 Color::fromHex(const char* hex) {
 	return fromRGBA(r, g, b, a);
 }
 
-float Color::getDistance(const glm::vec4& color, float hue, float saturation, float brightness) {
+float Color::getDistance(const glm::vec4 &color, float hue, float saturation, float brightness) {
 	float chue;
 	float csaturation;
 	float cbrightness;
@@ -143,9 +196,8 @@ float Color::getDistance(const glm::vec4& color, float hue, float saturation, fl
 	const float dH = chue - hue;
 	const float dS = csaturation - saturation;
 	const float dV = cbrightness - brightness;
-	const float val = weightHue * (float)glm::pow(dH, 2) +
-			weightValue * (float)glm::pow(dV, 2) +
-			weightSaturation * (float)glm::pow(dS, 2);
+	const float val = weightHue * (float)glm::pow(dH, 2) + weightValue * (float)glm::pow(dV, 2) +
+					  weightSaturation * (float)glm::pow(dS, 2);
 	return val;
 }
 
@@ -163,7 +215,7 @@ float Color::getDistance(RGBA rgba, float hue, float saturation, float brightnes
 	return getDistance(color, hue, saturation, brightness);
 }
 
-RGBA Color::getRGBA(const glm::vec4& color) {
+RGBA Color::getRGBA(const glm::vec4 &color) {
 	RGBA rgba;
 	rgba.r = (uint8_t)(color.r * magnitude);
 	rgba.g = (uint8_t)(color.g * magnitude);
@@ -181,7 +233,7 @@ RGBA Color::getRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 	return rgba;
 }
 
-void Color::getHSB(const glm::vec4& color, float& chue, float& csaturation, float& cbrightness) {
+void Color::getHSB(const glm::vec4 &color, float &chue, float &csaturation, float &cbrightness) {
 	cbrightness = brightness(color);
 	const float minBrightness = core_min(color.r, core_min(color.g, color.b));
 	if (SDL_fabs(cbrightness - minBrightness) < 0.00001f) {
@@ -206,7 +258,7 @@ void Color::getHSB(const glm::vec4& color, float& chue, float& csaturation, floa
 	csaturation = (cbrightness - minBrightness) / cbrightness;
 }
 
-glm::vec4 Color::alpha(const glm::vec4& c, float alpha) {
+glm::vec4 Color::alpha(const glm::vec4 &c, float alpha) {
 	return glm::vec4(c.r, c.g, c.b, alpha);
 }
 
@@ -214,30 +266,30 @@ RGBA Color::alpha(const RGBA rgba, uint8_t alpha) {
 	return getRGBA(rgba.r, rgba.g, rgba.b, alpha);
 }
 
-float Color::brightness(const glm::vec4& color) {
+float Color::brightness(const glm::vec4 &color) {
 	return core_max(color.r, core_max(color.g, color.b));
 }
 
-float Color::intensity(const glm::vec4& color) {
+float Color::intensity(const glm::vec4 &color) {
 	return (color.r + color.g + color.b) / 3.f;
 }
 
-glm::vec4 Color::gray(const glm::vec4& color) {
+glm::vec4 Color::gray(const glm::vec4 &color) {
 	const float gray = (0.21f * color.r + 0.72f * color.g + 0.07f * color.b) / 3.0f;
 	return glm::vec4(gray, gray, gray, color.a);
 }
 
-glm::vec3 Color::gray(const glm::vec3& color) {
+glm::vec3 Color::gray(const glm::vec3 &color) {
 	const float gray = (0.21f * color.r + 0.72f * color.g + 0.07f * color.b) / 3.0f;
 	return glm::vec3(gray, gray, gray);
 }
 
-glm::vec4 Color::darker(const glm::vec4& color, float f) {
+glm::vec4 Color::darker(const glm::vec4 &color, float f) {
 	f = (float)SDL_pow(scaleFactor, f);
 	return glm::vec4(glm::clamp(glm::vec3(color) * f, 0.0f, 1.0f), color.a);
 }
 
-glm::vec4 Color::brighter(const glm::vec4& color, float f) {
+glm::vec4 Color::brighter(const glm::vec4 &color, float f) {
 	static float min = 21.f / magnitude;
 	glm::vec3 result = glm::vec3(color);
 	f = (float)SDL_pow(scaleFactor, f);
@@ -256,4 +308,4 @@ glm::vec4 Color::brighter(const glm::vec4& color, float f) {
 	return glm::vec4(glm::clamp(result / f, 0.f, 1.f), color.a);
 }
 
-}
+} // namespace core

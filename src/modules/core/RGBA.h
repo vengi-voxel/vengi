@@ -9,7 +9,7 @@
 namespace core {
 
 union RGBA {
-	RGBA(uint32_t val = 0) : rgba(val) {
+	constexpr RGBA(uint32_t val = 0) : rgba(val) {
 	}
 	struct {
 		uint8_t r, g, b, a;

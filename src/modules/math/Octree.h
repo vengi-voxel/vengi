@@ -137,11 +137,11 @@ public:
 			}
 		}
 	public:
-		static inline AABB<TYPE> aabb(const typename std::remove_pointer<NODE>::type* item) {
+		static inline AABB<TYPE> aabb(const typename core::remove_pointer<NODE>::type* item) {
 			return item->aabb();
 		}
 
-		static inline AABB<TYPE> aabb(const typename std::remove_pointer<NODE>::type& item) {
+		static inline AABB<TYPE> aabb(const typename core::remove_pointer<NODE>::type& item) {
 			return item.aabb();
 		}
 
@@ -431,7 +431,7 @@ public:
 
 	inline void getContents(Contents& results) const {
 		results.clear();
-		results.reserve(count());
+		//results.reserve(count());
 		_root.getAllContents(results);
 	}
 
