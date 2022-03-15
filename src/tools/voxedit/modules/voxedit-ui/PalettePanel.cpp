@@ -7,6 +7,7 @@
 #include "core/StringUtil.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUIEx.h"
+#include "ui/imgui/IconsForkAwesome.h"
 #include <glm/gtc/type_ptr.hpp>
 
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
@@ -79,21 +80,35 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			}
 			const core::String &contextMenuId = core::string::format("Actions##context-palitem-%i", palIdx);
 			if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
-				const core::String &layerFromColorCmd = core::string::format("colortolayer %i", palIdx);
-				ImGui::CommandMenuItem(ICON_FA_OBJECT_UNGROUP " Layer from color" PALETTEACTIONPOPUP, layerFromColorCmd.c_str(), true, &listener);
-				if (palette.hasGlow(palIdx)) {
-					if (ImGui::MenuItem("Remove Glow")) {
-						palette.removeGlow(palIdx);
-					}
+				static bool pickerWheel = false;
+				ImGui::Checkbox("Wheel", &pickerWheel);
+				ImGuiColorEditFlags flags = ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB;
+				flags |= ImGuiColorEditFlags_DisplayHex | ImGuiColorEditFlags_NoAlpha;
+				if (pickerWheel)  {
+					flags |= ImGuiColorEditFlags_PickerHueWheel;
 				} else {
-					if (ImGui::MenuItem("Glow")) {
-						palette.setGlow(palIdx);
-					}
+					flags |= ImGuiColorEditFlags_PickerHueBar;
 				}
-				if (ImGui::ColorEdit4("Color", glm::value_ptr(color), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float)) {
+				if (ImGui::ColorPicker4("Color", glm::value_ptr(color), flags)) {
 					palette.colors[palIdx] = core::Color::getRGBA(color);
 					palette.markDirty();
 					palette.markSave();
+				}
+				if (ImGui::CollapsingHeader("Commands", ImGuiTreeNodeFlags_DefaultOpen)) {
+					const core::String &layerFromColorCmd = core::string::format("colortolayer %i", palIdx);
+					ImGui::CommandMenuItem(ICON_FA_OBJECT_UNGROUP " Layer from color" PALETTEACTIONPOPUP, layerFromColorCmd.c_str(), true, &listener);
+				}
+
+				if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+					if (palette.hasGlow(palIdx)) {
+						if (ImGui::MenuItem(ICON_FK_SUN_O " Remove Glow")) {
+							palette.removeGlow(palIdx);
+						}
+					} else {
+						if (ImGui::MenuItem(ICON_FK_SUN " Glow")) {
+							palette.setGlow(palIdx);
+						}
+					}
 				}
 
 				ImGui::EndPopup();
