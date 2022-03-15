@@ -164,7 +164,7 @@ bool Palette::load(const image::ImagePtr &img) {
 	for (int i = colorCount; i < PaletteMaxColors; ++i) {
 		colors[i] = core::Color::getRGBA(0, 0, 0);
 	}
-	_dirty = true;
+	markDirty();
 	Log::debug("Set up %i material colors", colorCount);
 	return true;
 }
@@ -293,7 +293,6 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 	const int imageHeight = image->height();
 	core::Buffer<core::RGBA, 1024> colors;
 	Log::debug("Create palette for image: %s", image->name().c_str());
-	palette._dirty = true;
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const uint8_t *data = image->at(x, y);
@@ -301,6 +300,7 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 		}
 	}
 	palette.quantize(colors.data(), colors.size());
+	palette.markDirty();
 	return true;
 }
 
@@ -310,13 +310,13 @@ bool Palette::hasGlow(uint8_t idx) const {
 
 void Palette::removeGlow(uint8_t idx) {
 	glowColors[idx] = 0;
-	_dirty = true;
+	markDirty();
 }
 
 void Palette::setGlow(uint8_t idx, float factor) {
 	// TODO: handle factor
 	glowColors[idx] = colors[idx];
-	_dirty = true;
+	markDirty();
 }
 
 void Palette::toVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
