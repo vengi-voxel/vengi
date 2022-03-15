@@ -288,6 +288,10 @@ bool AoSVXLFormat::isSurface(const RawVolume *v, int x, int y, int z) {
 // code taken from https://silverspaceship.com/aosmap/aos_file_format.html
 bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	RawVolume* mergedVolume = merge(sceneGraph);
+	if (mergedVolume == nullptr) {
+		Log::error("Failed to merge volumes");
+		return false;
+	}
 	glm::ivec3 size = mergedVolume->region().getDimensionsInVoxels();
 	glm::ivec3 targetSize(512, size.y, 512);
 	if (targetSize.y < 64) {

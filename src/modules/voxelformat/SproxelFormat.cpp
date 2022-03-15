@@ -88,6 +88,10 @@ bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 
 bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
 	RawVolume *mergedVolume = merge(sceneGraph);
+	if (mergedVolume == nullptr) {
+		Log::error("Failed to merge volumes");
+		return false;
+	}
 
 	const voxel::Region &region = mergedVolume->region();
 	RawVolume::Sampler sampler(mergedVolume);

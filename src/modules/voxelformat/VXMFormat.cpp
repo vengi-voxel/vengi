@@ -65,6 +65,10 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 
 bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	RawVolume* mergedVolume = merge(sceneGraph);
+	if (mergedVolume == nullptr) {
+		Log::error("Failed to merge volumes");
+		return false;
+	}
 	wrapBool(stream.writeUInt32(FourCC('V','X','M','5')));
 	const glm::vec3 pivot(0.5f);
 	wrapBool(stream.writeFloat(pivot.x));
