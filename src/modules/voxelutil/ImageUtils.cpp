@@ -61,7 +61,7 @@ voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness)
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
 	if (imageWidth * imageHeight * thickness > 1024 * 1024 * 4) {
-		Log::warn("Did not import plane - max volume size exceeded");
+		Log::warn("Did not import plane - max volume size of 1024x1024 (thickness 4) exceeded (%i:%i:%i)", imageWidth, imageHeight, thickness);
 		return nullptr;
 	}
 	Log::info("Import image as plane: w(%i), h(%i), d(%i)", imageWidth, imageHeight, thickness);
