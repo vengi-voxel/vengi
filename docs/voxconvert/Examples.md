@@ -84,26 +84,33 @@ You can export your volume model into a obj or ply.
 
 To convert a complete directory of e.g. `*.vox` to `*.obj` files, you can use e.g. the bash like this:
 
+### Bash (Linux, OSX)
+
+> Beware - no whitespaces in files
+
 ```bash
-for i in *.vox; do vengi-voxconvert --input $i --output ${i%.vox}.obj; done
+for i in *.vox; do vengi-voxconvert --input "$i" --output "${i%.vox}.obj"; done
 ```
+
+```bash
+for i in *.vxm; do vengi-voxconvert --input "$i" --output "${i%.vxm}.gltf" done
+```
+
+### PowerShell (Windows)
 
 An example for the windows powershell to extract single layers into a new model
 
 ```ps
 $array = "1-2,5", "1-2,7"
 foreach ($i in $array){
-  ./vengi-voxconvert --filter $i --input input.vox --output output_$i.vxm
+  ./vengi-voxconvert --filter $i --input "input.vox" --output "output_$i.vxm"
 }
 ```
 
-In order to convert for example a Sandbox VXM file to gltf, you could do it like this:
+### Batch file (Windows)
 
-> Note that this is using [assimp](https://github.com/assimp/assimp) to do the obj to gltf conversion
+Windows batch (or `cmd.exe`) example to convert all png in the current directory into magicavoxel vox files.
 
-```bash
-for i in *.vxm; do
-  vengi-voxconvert --input "$i" --output "${i%.obj}"
-  assimp export "${i%.obj}" "${i%.gltf}"
-done
+```cmd
+for %f in (*.png) do call vengi-voxconvert --input "%~f" --output "%~nf.vox"
 ```
