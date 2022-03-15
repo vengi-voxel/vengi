@@ -23,12 +23,19 @@ private:
 	bool _dirty = false;
 	bool _needsSave = false;
 	core::String _paletteFilename;
+	union hash {
+		uint32_t _hashColors[2];
+		uint64_t _hash;
+	} _hash {};
 public:
 	PaletteColorArray colors {};
 	PaletteColorArray glowColors {};
 	int colorCount = 0;
 	core::String lua;
 
+	inline uint64_t hash() const {
+		return _hash._hash;
+	}
 	inline size_t size() const {
 		return colorCount;
 	}
@@ -39,25 +46,21 @@ public:
 	bool minecraft();
 	bool magicaVoxel();
 
-	void markDirty() {
-		_dirty = true;
-	}
-
-	bool isDirty() const {
+	void markDirty();
+	inline bool isDirty() const {
 		return _dirty;
 	}
-
-	void markClean() {
+	inline void markClean() {
 		_dirty = false;
 	}
 
-	void markSave() {
+	inline void markSave() {
 		_needsSave = true;
 	}
-	bool needsSave() const {
+	inline bool needsSave() const {
 		return _needsSave;
 	}
-	void markSaved() {
+	inline void markSaved() {
 		_needsSave = false;
 	}
 

@@ -56,6 +56,7 @@ protected:
 		bool _gray;
 	};
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
+	uint64_t _paletteHash = 0;
 	core::Array<glm::mat4[shader::VoxelInstancedShaderConstants::getMaxInstances()], MAX_VOLUMES> _models;
 	core::Array<glm::vec3[shader::VoxelInstancedShaderConstants::getMaxInstances()], MAX_VOLUMES> _pivots;
 	static_assert(shader::VoxelInstancedShaderConstants::getMaxInstances() == shader::ShadowmapInstancedShaderConstants::getMaxInstances(), "max instances must match between shaders");
@@ -100,7 +101,7 @@ protected:
 	core::ConcurrentPriorityQueue<ExtractionCtx> _pendingQueue;
 	void extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const;
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
-	void renderVolumes(const video::Camera& camera, bool shadow);
+	void updatePalette(int idx);
 
 public:
 	RawVolumeRenderer();

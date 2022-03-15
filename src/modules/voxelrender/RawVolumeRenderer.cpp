@@ -437,11 +437,10 @@ void RawVolumeRenderer::gray(int idx, bool gray) {
 	_state[idx]._gray = gray;
 }
 
-void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
-	core_trace_scoped(RawVolumeRendererRender);
-
+void RawVolumeRenderer::updatePalette(int idx) {
 	voxel::Palette &palette = voxel::getPalette();
-	if (palette.isDirty()) {
+	if (palette.hash() != _paletteHash) {
+		_paletteHash = palette.hash();
 		core::DynamicArray<glm::vec4> materialColors;
 		palette.toVec4f(materialColors);
 		core::DynamicArray<glm::vec4> glowColors;
@@ -451,14 +450,11 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		core_memcpy(materialBlock.materialcolor, &materialColors.front(), sizeof(materialBlock.materialcolor));
 		core_memcpy(materialBlock.glowcolor, &glowColors.front(), sizeof(materialBlock.glowcolor));
 		_materialBlock.update(materialBlock);
-		// TODO: updating the global state is crap - what about others - use an event
-		palette.markClean();
 	}
-
-	renderVolumes(camera, shadow);
 }
 
-void RawVolumeRenderer::renderVolumes(const video::Camera& camera, bool shadow) {
+void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
+	core_trace_scoped(RawVolumeRendererRender);
 	uint32_t indices[MAX_VOLUMES];
 
 	core_memset(indices, 0, sizeof(indices));
@@ -551,6 +547,7 @@ void RawVolumeRenderer::renderVolumes(const video::Camera& camera, bool shadow) 
 		if (indices[idx] <= 0u) {
 			continue;
 		}
+		updatePalette(idx);
 		video::ScopedPolygonMode polygonMode(mode);
 		video::ScopedBuffer scopedBuf(_vertexBuffer[idx]);
 		_voxelShader.setGray(_state[idx]._gray);
@@ -618,21 +615,7 @@ voxel::Region RawVolumeRenderer::region() const {
 }
 
 voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::SceneGraphNode& node, bool deleteMesh) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return nullptr;
-	}
-	core_trace_scoped(RawVolumeRendererSetVolume);
-
-	voxel::RawVolume* old = _rawVolume[idx];
-	_rawVolume[idx] = node.volume();
-	if (deleteMesh) {
-		for (auto& i : _meshes) {
-			Meshes& meshes = i.second;
-			delete meshes[idx];
-			meshes[idx] = nullptr;
-		}
-	}
-	return old;
+	return setVolume(idx, node.volume(), deleteMesh);
 }
 
 voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume, bool deleteMesh) {

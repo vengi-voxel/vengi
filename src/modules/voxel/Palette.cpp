@@ -19,6 +19,12 @@
 
 namespace voxel {
 
+void Palette::markDirty() {
+	_dirty = true;
+	_hash._hashColors[0] = core::hash(colors, sizeof(colors));
+	_hash._hashColors[1] = core::hash(glowColors, sizeof(glowColors));
+}
+
 void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCount) {
 	colorCount = core::Color::quantize(colors, PaletteMaxColors, inputColors, inputColorCount);
 }
