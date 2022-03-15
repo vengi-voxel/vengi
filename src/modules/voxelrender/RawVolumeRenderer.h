@@ -35,6 +35,7 @@ class Camera;
 
 namespace voxel {
 class SceneGraphNode;
+class Palette;
 }
 
 /**
@@ -56,6 +57,7 @@ protected:
 		bool _gray;
 	};
 	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
+	voxel::Palette* _palette[MAX_VOLUMES] {};
 	uint64_t _paletteHash = 0;
 	core::Array<glm::mat4[shader::VoxelInstancedShaderConstants::getMaxInstances()], MAX_VOLUMES> _models;
 	core::Array<glm::vec3[shader::VoxelInstancedShaderConstants::getMaxInstances()], MAX_VOLUMES> _pivots;
@@ -136,7 +138,7 @@ public:
 	 *
 	 * @sa volume()
 	 */
-	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
+	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, voxel::Palette* palette = nullptr, bool deleteMesh = true);
 	voxel::RawVolume* setVolume(int idx, voxel::SceneGraphNode& node, bool deleteMesh = true);
 	bool setModelMatrix(int idx, const glm::mat4& model, const glm::vec3 &pivot, bool reset = true);
 	/**

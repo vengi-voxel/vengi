@@ -78,7 +78,7 @@ void SceneGraphRenderer::shutdown() {
 void SceneGraphRenderer::clear() {
 	_renderer.clearPendingExtractions();
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
-		if (_renderer.setVolume(i, nullptr, true) != nullptr) {
+		if (_renderer.setVolume(i, nullptr, nullptr, true) != nullptr) {
 			_renderer.update(i);
 		}
 	}
@@ -88,7 +88,7 @@ void SceneGraphRenderer::prepare(voxel::SceneGraph &sceneGraph, bool hideInactiv
 	// remove those volumes that are no longer part of the scene graph
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
 		if (!sceneGraph.hasNode(i)) {
-			_renderer.setVolume(i, nullptr, true);
+			_renderer.setVolume(i, nullptr, nullptr, true);
 		}
 	}
 
@@ -96,7 +96,7 @@ void SceneGraphRenderer::prepare(voxel::SceneGraph &sceneGraph, bool hideInactiv
 	for (voxel::SceneGraphNode &node : sceneGraph) {
 		voxel::RawVolume *v = _renderer.volume(node.id());
 		if (v != node.volume()) {
-			_renderer.setVolume(node.id(), node.volume(), true);
+			_renderer.setVolume(node.id(), node.volume(), &node.palette(), true);
 			_renderer.extractRegion(node.id(), node.region());
 		}
 		if (_sceneMode) {

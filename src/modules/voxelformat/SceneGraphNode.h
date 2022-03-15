@@ -18,6 +18,7 @@
 namespace voxel {
 
 class RawVolume;
+class Palette;
 
 enum class SceneGraphNodeType {
 	Root,
@@ -119,6 +120,7 @@ public:
 	 * @return voxel::RawVolume - might be @c nullptr
 	 */
 	voxel::RawVolume *volume();
+	voxel::Palette &palette();
 	/**
 	 * @return voxel::Region instance that is invalid when the volume is not set for this instance.
 	 */

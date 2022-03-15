@@ -8,6 +8,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
+#include "voxel/MaterialColor.h"
 #include <glm/gtc/type_ptr.hpp>
 
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
@@ -36,13 +37,18 @@ void PalettePanel::reloadAvailablePalettes() {
 }
 
 void PalettePanel::update(const char *title, command::CommandExecutionListener &listener) {
-	voxel::Palette &palette = voxel::getPalette();
+	const int activeNode = sceneMgr().sceneGraph().activeNode();
+	if (activeNode == -1) {
+		return;
+	}
+	voxel::Palette &palette = sceneMgr().sceneGraph().node(activeNode).palette();
 	const int maxPaletteEntries = palette.colorCount;
 	const float height = ImGui::GetContentRegionMax().y;
 	const ImVec2 windowSize(120.0f, height);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	const int currentSceneHoveredPalIdx = sceneMgr().hitCursorVoxel().getColor();
 	const int currentSelectedPalIdx = sceneMgr().modifier().cursorVoxel().getColor();
+
 	_hasFocus = false;
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
 		_hasFocus = ImGui::IsWindowHovered();

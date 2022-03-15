@@ -4,6 +4,7 @@
 
 #include "SceneGraphNode.h"
 #include "core/Log.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include <glm/gtx/transform.hpp>
 #include <glm/ext/scalar_constants.hpp>
@@ -24,6 +25,10 @@ void SceneGraphTransform::print() const {
 	Log::error("matrix\n%.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f",
 			   mat[0][0], mat[0][1], mat[0][2], mat[0][3], mat[1][0], mat[1][1], mat[1][2], mat[1][3], mat[2][0],
 			   mat[2][1], mat[2][2], mat[2][3], mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
+}
+
+voxel::Palette &SceneGraphNode::palette() {
+	return voxel::getPalette(); // TODO:
 }
 
 void SceneGraphTransform::update() {

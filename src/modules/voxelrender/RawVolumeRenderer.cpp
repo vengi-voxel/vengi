@@ -615,10 +615,10 @@ voxel::Region RawVolumeRenderer::region() const {
 }
 
 voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::SceneGraphNode& node, bool deleteMesh) {
-	return setVolume(idx, node.volume(), deleteMesh);
+	return setVolume(idx, node.volume(), &node.palette(), deleteMesh);
 }
 
-voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume, bool deleteMesh) {
+voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume, voxel::Palette* palette, bool deleteMesh) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
@@ -626,6 +626,7 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 
 	voxel::RawVolume* old = _rawVolume[idx];
 	_rawVolume[idx] = volume;
+	_palette[idx] = palette;
 	if (deleteMesh) {
 		for (auto& i : _meshes) {
 			Meshes& meshes = i.second;
