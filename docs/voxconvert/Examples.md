@@ -98,6 +98,8 @@ for i in *.vxm; do vengi-voxconvert --input "$i" --output "${i%.vxm}.gltf" done
 
 ### PowerShell (Windows)
 
+> https://docs.microsoft.com/en-us/powershell/scripting/learn/ps101/06-flow-control?view=powershell-7.2
+
 An example for the windows powershell to extract single layers into a new model
 
 ```ps
@@ -108,6 +110,8 @@ foreach ($i in $array){
 ```
 
 ### Batch file (Windows)
+
+> https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/for
 
 Windows batch (or `cmd.exe`) example to convert all png in the current directory into magicavoxel vox files.
 
