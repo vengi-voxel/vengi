@@ -9,7 +9,7 @@
 #include "core/Trace.h"
 #include "core/Assert.h"
 
-namespace voxel {
+namespace voxelutil {
 
 /**
  * @brief Will skip air voxels on volume merges
@@ -26,7 +26,7 @@ struct MergeSkipEmpty {
  * @sa MergeSkipEmpty
  */
 template<typename MergeCondition = MergeSkipEmpty, class Volume1, class Volume2>
-int mergeVolumes(Volume1* destination, const Volume2* source, const Region& destReg, const Region& sourceReg, MergeCondition mergeCondition = MergeCondition()) {
+int mergeVolumes(Volume1* destination, const Volume2* source, const voxel::Region& destReg, const voxel::Region& sourceReg, MergeCondition mergeCondition = MergeCondition()) {
 	core_trace_scoped(MergeRawVolumes);
 	int cnt = 0;
 	for (int32_t z = sourceReg.getLowerZ(); z <= sourceReg.getUpperZ(); ++z) {
@@ -34,7 +34,7 @@ int mergeVolumes(Volume1* destination, const Volume2* source, const Region& dest
 		for (int32_t y = sourceReg.getLowerY(); y <= sourceReg.getUpperY(); ++y) {
 			const int destY = destReg.getLowerY() + y - sourceReg.getLowerY();
 			for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
-				const Voxel& voxel = source->voxel(x, y, z);
+				const voxel::Voxel& voxel = source->voxel(x, y, z);
 				if (!mergeCondition(voxel)) {
 					continue;
 				}
@@ -56,12 +56,12 @@ int mergeVolumes(Volume1* destination, const Volume2* source, const Region& dest
  * @sa MergeSkipEmpty
  */
 template<typename MergeCondition = MergeSkipEmpty>
-inline int mergeRawVolumesSameDimension(RawVolume* destination, const RawVolume* source, MergeCondition mergeCondition = MergeCondition()) {
+inline int mergeRawVolumesSameDimension(voxel::RawVolume* destination, const voxel::RawVolume* source, MergeCondition mergeCondition = MergeCondition()) {
 	core_assert(source->region() == destination->region());
 	return mergeVolumes(destination, source, destination->region(), source->region());
 }
 
-extern RawVolume* merge(const core::DynamicArray<RawVolume*>& volumes);
-extern RawVolume* merge(const core::DynamicArray<const RawVolume*>& volumes);
+extern voxel::RawVolume* merge(const core::DynamicArray<voxel::RawVolume*>& volumes);
+extern voxel::RawVolume* merge(const core::DynamicArray<const voxel::RawVolume*>& volumes);
 
 }

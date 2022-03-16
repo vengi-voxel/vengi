@@ -6,8 +6,8 @@
 
 #include "voxel/RawVolume.h"
 
-namespace voxel {
+namespace voxelutil {
 
-extern voxel::RawVolume* resize(const voxel::RawVolume* source, const glm::ivec3& size);
+extern voxel::RawVolume *resize(const voxel::RawVolume *source, const glm::ivec3 &size);
 
 }

@@ -8,7 +8,7 @@
 #include "VolumeMerger.h"
 #include "core/Common.h"
 
-namespace voxel {
+namespace voxelutil {
 
 /**
  * @brief Will skip air voxels on volume cropping
@@ -23,14 +23,14 @@ struct CropSkipEmpty {
  * @brief Resizes a volume to cut off empty parts
  */
 template<class CropSkipCondition = CropSkipEmpty>
-RawVolume* cropVolume(const RawVolume* volume, const glm::ivec3& mins, const glm::ivec3& maxs, CropSkipCondition condition = CropSkipCondition()) {
+voxel::RawVolume* cropVolume(const voxel::RawVolume* volume, const glm::ivec3& mins, const glm::ivec3& maxs, CropSkipCondition condition = CropSkipCondition()) {
 	core_trace_scoped(CropRawVolume);
 	const voxel::Region newRegion(mins, maxs);
 	if (!newRegion.isValid()) {
 		return nullptr;
 	}
 	voxel::RawVolume* newVolume = new voxel::RawVolume(newRegion);
-	voxel::mergeVolumes(newVolume, volume, newRegion, voxel::Region(mins, maxs));
+	voxelutil::mergeVolumes(newVolume, volume, newRegion, voxel::Region(mins, maxs));
 	return newVolume;
 }
 
@@ -38,7 +38,7 @@ RawVolume* cropVolume(const RawVolume* volume, const glm::ivec3& mins, const glm
  * @brief Resizes a volume to cut off empty parts
  */
 template<class CropSkipCondition = CropSkipEmpty>
-RawVolume* cropVolume(const RawVolume* volume, CropSkipCondition condition = CropSkipCondition()) {
+voxel::RawVolume* cropVolume(const voxel::RawVolume* volume, CropSkipCondition condition = CropSkipCondition()) {
 	core_trace_scoped(CropRawVolume);
 	const glm::ivec3& mins = volume->mins();
 	const glm::ivec3& maxs = volume->maxs();

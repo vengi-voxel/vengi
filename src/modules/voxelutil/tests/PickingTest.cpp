@@ -7,14 +7,14 @@
 #include "voxelutil/Picking.h"
 #include "core/GLM.h"
 
-namespace voxel {
+namespace voxelutil {
 
 class PickingTest: public app::AbstractTest {
 };
 
 TEST_F(PickingTest, testPicking) {
-	RawVolume v(Region(glm::ivec3(0), glm::ivec3(10)));
-	v.setVoxel(glm::ivec3(0), createVoxel(VoxelType::Grass, 0));
+	voxel::RawVolume v(voxel::Region(glm::ivec3(0), glm::ivec3(10)));
+	v.setVoxel(glm::ivec3(0), createVoxel(voxel::VoxelType::Grass, 0));
 	const PickResult& result = pickVoxel(&v, glm::vec3(0.0f, 3.0f, 0.0f), glm::down * 100.0f, voxel::Voxel());
 	ASSERT_TRUE(result.didHit);
 	ASSERT_EQ(glm::ivec3(0), result.hitVoxel);

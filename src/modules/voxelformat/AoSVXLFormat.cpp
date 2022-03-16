@@ -306,7 +306,7 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 	const glm::ivec3 sizeDelta = targetSize - size;
 	RawVolume* v = mergedVolume;
 	if (glm::any(glm::notEqual(glm::ivec3(0), sizeDelta))) {
-		v = resize(mergedVolume, sizeDelta);
+		v = voxelutil::resize(mergedVolume, sizeDelta);
 		delete mergedVolume;
 	}
 	if (v == nullptr) {

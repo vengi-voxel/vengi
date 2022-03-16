@@ -7,9 +7,10 @@
 #include "core/Log.h"
 #include "voxelutil/VoxelUtil.h"
 
-namespace voxel {
+namespace voxelutil {
 
-void splitVolume(const RawVolume *volume, const glm::ivec3 &maxSize, core::DynamicArray<voxel::RawVolume *> &rawVolumes) {
+void splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize,
+				 core::DynamicArray<voxel::RawVolume *> &rawVolumes) {
 	const voxel::Region &region = volume->region();
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
@@ -35,4 +36,4 @@ void splitVolume(const RawVolume *volume, const glm::ivec3 &maxSize, core::Dynam
 	}
 }
 
-} // namespace voxel
+} // namespace voxelutil

@@ -6,14 +6,14 @@
 #include "voxel/tests/TestHelper.h"
 #include "voxelutil/VolumeMerger.h"
 
-namespace voxel {
+namespace voxelutil {
 
 class VolumeMergerTest: public app::AbstractTest {
 };
 
 TEST_F(VolumeMergerTest, testMergeDifferentSize) {
 	voxel::RawVolume smallVolume(voxel::Region(0, 1));
-	const voxel::Voxel vox = createVoxel(VoxelType::Generic, 1);
+	const voxel::Voxel vox = createVoxel(voxel::VoxelType::Generic, 1);
 	ASSERT_TRUE(smallVolume.setVoxel(0, 0, 0, vox));
 
 	const voxel::Region region(0, 10);
@@ -21,7 +21,7 @@ TEST_F(VolumeMergerTest, testMergeDifferentSize) {
 	const glm::ivec3 mergedPos = glm::ivec3(5);
 	const voxel::Region& srcRegion = smallVolume.region();
 	const voxel::Region destRegion(mergedPos, mergedPos + srcRegion.getUpperCorner());
-	EXPECT_EQ(1, voxel::mergeVolumes(&bigVolume, &smallVolume, destRegion, srcRegion))
+	EXPECT_EQ(1, voxelutil::mergeVolumes(&bigVolume, &smallVolume, destRegion, srcRegion))
 		<< "The single voxel from the small volume should have been merged into the big volume";
 
 	const int32_t lowerX = region.getLowerX();
@@ -53,7 +53,7 @@ TEST_F(VolumeMergerTest, testOffsets) {
 	ASSERT_TRUE(bigVolume.setVoxel(regionBig.getUpperCorner(), createVoxel(voxel::VoxelType::Generic, 1)));
 	const voxel::Region srcRegion(regionBig.getCenter(), regionBig.getUpperCorner());
 	const voxel::Region& destRegion = smallVolume.region();
-	ASSERT_EQ(2, voxel::mergeVolumes(&smallVolume, &bigVolume, destRegion, srcRegion)) << smallVolume << ", " << bigVolume;
+	ASSERT_EQ(2, voxelutil::mergeVolumes(&smallVolume, &bigVolume, destRegion, srcRegion)) << smallVolume << ", " << bigVolume;
 	ASSERT_EQ(smallVolume.voxel(regionSmall.getLowerCorner()), createVoxel(voxel::VoxelType::Generic, 1)) << smallVolume << ", " << bigVolume;
 	ASSERT_EQ(smallVolume.voxel(regionSmall.getUpperCorner()), createVoxel(voxel::VoxelType::Generic, 1)) << smallVolume << ", " << bigVolume;
 }

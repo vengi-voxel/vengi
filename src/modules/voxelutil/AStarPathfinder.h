@@ -8,11 +8,13 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/GLM.h"
+#include <glm/gtc/constants.hpp>
+#include <glm/geometric.hpp>
 
 #include <functional>
 #include <list>
 
-namespace voxel {
+namespace voxelutil {
 
 /**
  * This function provides the default method for checking whether a given voxel
@@ -41,7 +43,7 @@ public:
 			std::function<bool(const VolumeType*, const glm::ivec3&)> funcIsVoxelValidForPath = &aStarDefaultVoxelValidator, std::function<void(float)> funcProgressCallback =
 					nullptr) :
 			volume(volData), start(v3dStart), end(v3dEnd), result(listResult), connectivity(requiredConnectivity), hBias(fHBias), maxNumberOfNodes(uMaxNoOfNodes), isVoxelValidForPath(
-					funcIsVoxelValidForPath), progressCallback(funcProgressCallback) {
+					funcIsVoxelValidForPath), progressCallback(core::move(funcProgressCallback)) {
 	}
 
 	/// This is the volume through which the AStarPathfinder must find a path.
@@ -148,42 +150,6 @@ private:
 };
 
 /**
- * @section Useful constants
- */
-
-const glm::ivec3 arrayPathfinderFaces[6] = {
-		glm::ivec3(0, 0, -1),
-		glm::ivec3(0, 0, +1),
-		glm::ivec3(0, -1, 0),
-		glm::ivec3(0, +1, 0),
-		glm::ivec3(-1, 0, 0),
-		glm::ivec3(+1, 0, 0) };
-
-const glm::ivec3 arrayPathfinderEdges[12] = {
-		glm::ivec3(0, -1, -1),
-		glm::ivec3(0, -1, +1),
-		glm::ivec3(0, +1, -1),
-		glm::ivec3(0, +1, +1),
-		glm::ivec3(-1, 0, -1),
-		glm::ivec3(-1, 0, +1),
-		glm::ivec3(+1, 0, -1),
-		glm::ivec3(+1, 0, +1),
-		glm::ivec3(-1, -1, 0),
-		glm::ivec3(-1, +1, 0),
-		glm::ivec3(+1, -1, 0),
-		glm::ivec3(+1, +1, 0) };
-
-const glm::ivec3 arrayPathfinderCorners[8] = {
-		glm::ivec3(-1, -1, -1),
-		glm::ivec3(-1, -1, +1),
-		glm::ivec3(-1, +1, -1),
-		glm::ivec3(-1, +1, +1),
-		glm::ivec3(+1, -1, -1),
-		glm::ivec3(+1, -1, +1),
-		glm::ivec3(+1, +1, -1),
-		glm::ivec3(+1, +1, +1) };
-
-/**
  * Using this function, a voxel is considered valid for the path if it is inside the
  * volume.
  * @return true is the voxel is valid for the path
@@ -229,11 +195,43 @@ bool AStarPathfinder<VolumeType>::execute() {
 
 	_openNodes.insert(startNode);
 
-	float fDistStartToEnd = (endNode->position - startNode->position).length();
+	float fDistStartToEnd = glm::distance(glm::vec3(endNode->position), glm::vec3(startNode->position));
 	_progress = 0.0f;
 	if (_params.progressCallback) {
 		_params.progressCallback(_progress);
 	}
+
+	static const glm::ivec3 arrayPathfinderFaces[6] = {
+			glm::ivec3(0, 0, -1),
+			glm::ivec3(0, 0, +1),
+			glm::ivec3(0, -1, 0),
+			glm::ivec3(0, +1, 0),
+			glm::ivec3(-1, 0, 0),
+			glm::ivec3(+1, 0, 0) };
+
+	static const glm::ivec3 arrayPathfinderEdges[12] = {
+			glm::ivec3(0, -1, -1),
+			glm::ivec3(0, -1, +1),
+			glm::ivec3(0, +1, -1),
+			glm::ivec3(0, +1, +1),
+			glm::ivec3(-1, 0, -1),
+			glm::ivec3(-1, 0, +1),
+			glm::ivec3(+1, 0, -1),
+			glm::ivec3(+1, 0, +1),
+			glm::ivec3(-1, -1, 0),
+			glm::ivec3(-1, +1, 0),
+			glm::ivec3(+1, -1, 0),
+			glm::ivec3(+1, +1, 0) };
+
+	static const glm::ivec3 arrayPathfinderCorners[8] = {
+			glm::ivec3(-1, -1, -1),
+			glm::ivec3(-1, -1, +1),
+			glm::ivec3(-1, +1, -1),
+			glm::ivec3(-1, +1, +1),
+			glm::ivec3(+1, -1, -1),
+			glm::ivec3(+1, -1, +1),
+			glm::ivec3(+1, +1, -1),
+			glm::ivec3(+1, +1, +1) };
 
 	while (!_openNodes.empty() && _openNodes.getFirst() != endNode) {
 		//Move the first node from open to closed.
@@ -244,7 +242,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 		//Update the user on our progress
 		if (_params.progressCallback) {
 			const float fMinProgresIncreament = 0.001f;
-			float fDistCurrentToEnd = (endNode->position - _current->position).length();
+			float fDistCurrentToEnd = glm::distance(glm::vec3(endNode->position), glm::vec3(_current->position));
 			float fDistNormalised = fDistCurrentToEnd / fDistStartToEnd;
 			float fProgress = 1.0f - fDistNormalised;
 			if (fProgress >= _progress + fMinProgresIncreament) {
@@ -433,7 +431,7 @@ float AStarPathfinder<VolumeType>::computeH(const glm::ivec3& a, const glm::ivec
 
 	//Sanity checks in debug mode. These can come out eventually, but I
 	//want to make sure that the heuristics I've come up with make sense.
-	core_assert_msg((a - b).length() > TwentySixConnectedCost(a, b), "A* heuristic error.");
+	core_assert_msg(glm::distance(glm::vec3(a), glm::vec3(b)) > TwentySixConnectedCost(a, b), "A* heuristic error.");
 	core_assert_msg(TwentySixConnectedCost(a, b) > EighteenConnectedCost(a, b), "A* heuristic error.");
 	core_assert_msg(EighteenConnectedCost(a, b) > SixConnectedCost(a, b), "A* heuristic error.");
 

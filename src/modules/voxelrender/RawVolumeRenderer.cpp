@@ -283,7 +283,7 @@ bool RawVolumeRenderer::toMesh(voxel::Mesh* mesh) {
 		return false;
 	}
 
-	voxel::RawVolume* mergedVolume = merge(volumes);
+	voxel::RawVolume* mergedVolume = voxelutil::merge(volumes);
 	if (mergedVolume == nullptr) {
 		return false;
 	}

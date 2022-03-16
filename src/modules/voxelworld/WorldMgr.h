@@ -37,8 +37,8 @@ public:
 	 */
 	template<typename Callback>
 	inline bool raycast(const glm::vec3& start, const glm::vec3& direction, float maxDistance, Callback&& callback) const {
-		const voxel::RaycastResults::RaycastResult result = voxel::raycastWithDirection(_volumeData, start, direction * maxDistance, std::forward<Callback>(callback));
-		return result == voxel::RaycastResults::Interupted;
+		const voxelutil::RaycastResults::RaycastResult result = voxelutil::raycastWithDirection(_volumeData, start, direction * maxDistance, std::forward<Callback>(callback));
+		return result == voxelutil::RaycastResults::Interupted;
 	}
 
 	/**
@@ -87,9 +87,9 @@ inline voxel::PagedVolume *WorldMgr::volumeData() {
 
 inline glm::ivec3 WorldMgr::chunkPos(const glm::ivec3& pos) const {
 	const float size = _volumeData->chunkSideLength();
-	const int x = glm::floor(pos.x / size);
-	const int y = glm::floor(pos.y / size);
-	const int z = glm::floor(pos.z / size);
+	const int x = glm::floor((float)pos.x / size);
+	const int y = glm::floor((float)pos.y / size);
+	const int z = glm::floor((float)pos.z / size);
 	return glm::ivec3(x, y, z);
 }
 

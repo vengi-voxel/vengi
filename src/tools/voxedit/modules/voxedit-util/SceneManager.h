@@ -169,7 +169,7 @@ private:
 	command::ActionButton _zoomIn;
 	command::ActionButton _zoomOut;
 
-	voxel::PickResult _result;
+	voxelutil::PickResult _result;
 	// existing voxel under the cursor
 	voxel::Voxel _hitCursorVoxel;
 
@@ -387,7 +387,7 @@ public:
 	 *
 	 * @sa resetLastTrace()
 	 */
-	bool trace(bool force = false, voxel::PickResult *result = nullptr);
+	bool trace(bool force = false, voxelutil::PickResult *result = nullptr);
 	void resetLastTrace();
 
 	math::Axis lockedAxis() const;

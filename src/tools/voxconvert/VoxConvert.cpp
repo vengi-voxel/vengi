@@ -459,7 +459,7 @@ void VoxConvert::split(const glm::ivec3 &size, voxel::SceneGraph& sceneGraph) {
 	voxel::RawVolume *merged = sceneGraph.merge();
 	sceneGraph.clear();
 	core::DynamicArray<voxel::RawVolume *> rawVolumes;
-	voxel::splitVolume(merged, size, rawVolumes);
+	voxelutil::splitVolume(merged, size, rawVolumes);
 	delete merged;
 	for (voxel::RawVolume *v : rawVolumes) {
 		voxel::SceneGraphNode node;
@@ -502,7 +502,7 @@ void VoxConvert::dump(const voxel::SceneGraph& sceneGraph) {
 void VoxConvert::crop(voxel::SceneGraph& sceneGraph) {
 	Log::info("Crop volumes");
 	for (voxel::SceneGraphNode& node : sceneGraph) {
-		node.setVolume(voxel::cropVolume(node.volume()), true);
+		node.setVolume(voxelutil::cropVolume(node.volume()), true);
 	}
 }
 
@@ -552,7 +552,7 @@ void VoxConvert::scale(voxel::SceneGraph& sceneGraph) {
 		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 		if (destRegion.isValid()) {
 			voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
-			rescaleVolume(*node.volume(), *destVolume);
+			voxelutil::rescaleVolume(*node.volume(), *destVolume);
 			node.setVolume(destVolume, true);
 		}
 	}
@@ -561,7 +561,7 @@ void VoxConvert::scale(voxel::SceneGraph& sceneGraph) {
 void VoxConvert::resize(const glm::ivec3 &size, voxel::SceneGraph& sceneGraph) {
 	Log::info("Resize layers");
 	for (voxel::SceneGraphNode& node : sceneGraph) {
-		node.setVolume(voxel::resize(node.volume(), size), true);
+		node.setVolume(voxelutil::resize(node.volume(), size), true);
 	}
 }
 
@@ -605,7 +605,7 @@ void VoxConvert::mirror(const core::String& axisStr, voxel::SceneGraph& sceneGra
 	}
 	Log::info("Mirror on axis %c", axisStr[0]);
 	for (voxel::SceneGraphNode &node : sceneGraph) {
-		node.setVolume(voxel::mirrorAxis(node.volume(), axis), true);
+		node.setVolume(voxelutil::mirrorAxis(node.volume(), axis), true);
 	}
 }
 
@@ -616,7 +616,7 @@ void VoxConvert::rotate(const core::String& axisStr, voxel::SceneGraph& sceneGra
 	}
 	Log::info("Rotate on axis %c", axisStr[0]);
 	for (voxel::SceneGraphNode &node : sceneGraph) {
-		node.setVolume(voxel::rotateAxis(node.volume(), axis), true);
+		node.setVolume(voxelutil::rotateAxis(node.volume(), axis), true);
 	}
 }
 

@@ -286,7 +286,7 @@ voxel::RawVolume *SceneGraph::merge() const {
 	if (rawVolumes.size() == 1) {
 		return new voxel::RawVolume(rawVolumes[0]);
 	}
-	return ::voxel::merge(rawVolumes);
+	return voxelutil::merge(rawVolumes);
 }
 
 } // namespace voxel

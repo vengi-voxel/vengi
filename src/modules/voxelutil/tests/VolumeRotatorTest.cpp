@@ -6,7 +6,7 @@
 #include "voxel/tests/TestHelper.h"
 #include "voxelutil/VolumeRotator.h"
 
-namespace voxel {
+namespace voxelutil {
 
 class VolumeRotatorTest: public app::AbstractTest {
 protected:
@@ -21,7 +21,7 @@ TEST_F(VolumeRotatorTest, testRotateAxisY) {
 	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Rock, 1)));
 	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, createVoxel(voxel::VoxelType::Grass, 1)));
 	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, createVoxel(voxel::VoxelType::Dirt, 1)));
-	voxel::RawVolume* rotated = voxel::rotateAxis(&smallVolume, math::Axis::Y);
+	voxel::RawVolume* rotated = voxelutil::rotateAxis(&smallVolume, math::Axis::Y);
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	EXPECT_EQ(voxel::VoxelType::Rock, rotated->voxel(0, 0, 0).getMaterial());
 	EXPECT_EQ(voxel::VoxelType::Grass, rotated->voxel(0, 1, 0).getMaterial());
@@ -37,7 +37,7 @@ TEST_F(VolumeRotatorTest, testRotate45Y) {
 	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y++, pos.z, createVoxel(voxel::VoxelType::Grass, 0)));
 	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y++, pos.z, createVoxel(voxel::VoxelType::Sand, 0)));
 
-	voxel::RawVolume* rotated = voxel::rotateVolume(&smallVolume, glm::ivec3(0, 45, 0), region.getPivot());
+	voxel::RawVolume* rotated = voxelutil::rotateVolume(&smallVolume, glm::ivec3(0, 45, 0), region.getPivot());
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	const voxel::Region& rotatedRegion = rotated->region();
 	EXPECT_NE(rotatedRegion, region) << "Rotating by 45 degree should increase the size of the volume "
@@ -53,7 +53,7 @@ TEST_F(VolumeRotatorTest, DISABLED_testRotate45YNoExtend) {
 	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y++, pos.z, createVoxel(voxel::VoxelType::Grass, 0)));
 	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y++, pos.z, createVoxel(voxel::VoxelType::Sand, 0)));
 
-	voxel::RawVolume* rotated = voxel::rotateVolume(&smallVolume, glm::ivec3(0, 45, 0), region.getPivot(), false);
+	voxel::RawVolume* rotated = voxelutil::rotateVolume(&smallVolume, glm::ivec3(0, 45, 0), region.getPivot(), false);
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	const voxel::Region& rotatedRegion = rotated->region();
 	EXPECT_EQ(rotatedRegion, region) << "This rotation was forced to not exceed the source bounds "
@@ -73,10 +73,10 @@ TEST_F(VolumeRotatorTest, DISABLED_testRotate90_FourTimes) {
 	EXPECT_TRUE(smallVolume.setVoxel(pos.x, ++pos.y, pos.z, createVoxel(voxel::VoxelType::Grass, 0)));
 	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y, ++pos.z, createVoxel(voxel::VoxelType::Sand, 0)));
 
-	voxel::RawVolume* rotated = voxel::rotateVolume(&smallVolume, glm::ivec3(0, 90, 0), region.getPivot());
+	voxel::RawVolume* rotated = voxelutil::rotateVolume(&smallVolume, glm::ivec3(0, 90, 0), region.getPivot());
 	EXPECT_EQ(rotated->region(), region) << "Expected to get the same region after the first rotation";
 	for (int i = 0; i < 3; ++i) {
-		voxel::RawVolume* rotated2 = voxel::rotateVolume(rotated, glm::ivec3(0, 90, 0), region.getPivot());
+		voxel::RawVolume* rotated2 = voxelutil::rotateVolume(rotated, glm::ivec3(0, 90, 0), region.getPivot());
 		ASSERT_NE(nullptr, rotated2) << "No new volume was returned for the desired rotation";
 		delete rotated;
 		rotated = rotated2;

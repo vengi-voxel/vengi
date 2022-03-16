@@ -253,7 +253,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 				delete layerVolume;
 				layerVolume = newVolume;
 			}
-			voxel::mergeVolumes(layerVolume, blockVolume, blockRegion, blockRegion);
+			voxelutil::mergeVolumes(layerVolume, blockVolume, blockRegion, blockRegion);
 		}
 		delete blockVolume;
 	}
@@ -293,7 +293,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 		}
 	}
 	// TODO: fix this properly - without mirroring
-	node.setVolume(voxel::mirrorAxis(layerVolume, math::Axis::Z), true);
+	node.setVolume(voxelutil::mirrorAxis(layerVolume, math::Axis::Z), true);
 	node.setName(name);
 	node.setVisible(visible);
 	sceneGraph.emplace(core::move(node));
@@ -539,7 +539,7 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const SceneGraph
 		calcMinsMaxs(region, glm::ivec3(BlockSize), mins, maxs);
 
 		// TODO: fix this properly - without mirroring
-		voxel::RawVolume *mirrored = voxel::mirrorAxis(node.volume(), math::Axis::Z);
+		voxel::RawVolume *mirrored = voxelutil::mirrorAxis(node.volume(), math::Axis::Z);
 		for (int by = mins.y; by <= maxs.y; by += BlockSize) {
 			for (int bz = mins.z; bz <= maxs.z; bz += BlockSize) {
 				for (int bx = mins.x; bx <= maxs.x; bx += BlockSize) {

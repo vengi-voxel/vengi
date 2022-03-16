@@ -9,9 +9,9 @@
 #include "voxel/RawVolume.h"
 #include <glm/common.hpp>
 
-namespace voxel {
+namespace voxelutil {
 
-RawVolume* merge(const core::DynamicArray<const RawVolume*>& volumes) {
+voxel::RawVolume* merge(const core::DynamicArray<const voxel::RawVolume*>& volumes) {
 	glm::ivec3 mins((std::numeric_limits<int32_t>::max)() / 2);
 	glm::ivec3 maxs((std::numeric_limits<int32_t>::min)() / 2);
 	for (const voxel::RawVolume* v : volumes) {
@@ -28,15 +28,15 @@ RawVolume* merge(const core::DynamicArray<const RawVolume*>& volumes) {
 	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
 	for (const voxel::RawVolume* v : volumes) {
 		const voxel::Region& sr = v->region();
-		voxel::mergeVolumes(merged, v, sr, sr);
+		voxelutil::mergeVolumes(merged, v, sr, sr);
 	}
 	return merged;
 }
 
-RawVolume* merge(const core::DynamicArray<RawVolume*>& volumes) {
-	core::DynamicArray<const RawVolume*> v;
+voxel::RawVolume* merge(const core::DynamicArray<voxel::RawVolume*>& volumes) {
+	core::DynamicArray<const voxel::RawVolume*> v;
 	v.reserve(volumes.size());
-	for (const RawVolume *v1 : volumes) {
+	for (const voxel::RawVolume *v1 : volumes) {
 		v.push_back(v1);
 	}
 	return merge(v);

@@ -364,7 +364,7 @@ void SceneManager::scale(int nodeId) {
 	}
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 	voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
-	rescaleVolume(*srcVolume, *destVolume);
+	voxelutil::rescaleVolume(*srcVolume, *destVolume);
 	if (!setNewVolume(nodeId, destVolume, true)) {
 		delete destVolume;
 		return;
@@ -382,7 +382,7 @@ void SceneManager::crop() {
 		Log::info("Empty volumes can't be cropped");
 		return;
 	}
-	voxel::RawVolume* newVolume = voxel::cropVolume(node->volume());
+	voxel::RawVolume* newVolume = voxelutil::cropVolume(node->volume());
 	if (newVolume == nullptr) {
 		return;
 	}
@@ -394,7 +394,7 @@ void SceneManager::crop() {
 }
 
 void SceneManager::resize(int nodeId, const glm::ivec3& size) {
-	voxel::RawVolume* newVolume = voxel::resize(volume(nodeId), size);
+	voxel::RawVolume* newVolume = voxelutil::resize(volume(nodeId), size);
 	if (newVolume == nullptr) {
 		return;
 	}
@@ -643,7 +643,7 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 		return false;
 	}
 
-	voxel::RawVolume* merged = voxel::merge(volumes);
+	voxel::RawVolume* merged = voxelutil::merge(volumes);
 	voxel::SceneGraphNode node;
 	node.setVolume(merged, true);
 	addNodeToSceneGraph(node);
@@ -664,7 +664,7 @@ bool SceneManager::merge(int nodeId1, int nodeId2) {
 	if (volumes[1] == nullptr) {
 		return false;
 	}
-	voxel::RawVolume* merged = voxel::merge(volumes);
+	voxel::RawVolume* merged = voxelutil::merge(volumes);
 	voxel::SceneGraphNode node;
 	node.setVolume(merged, true);
 	int parent = 0;
@@ -688,7 +688,7 @@ void SceneManager::resetSceneState() {
 	Log::debug("New volume for node %i", node.id());
 	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume());
 	_dirty = false;
-	_result = voxel::PickResult();
+	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), true);
 	resetLastTrace();
 }
@@ -709,7 +709,7 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 			// update the whole volume
 			queueRegionExtraction(newNodeId, region);
 
-			_result = voxel::PickResult();
+			_result = voxelutil::PickResult();
 			_needAutoSave = true;
 			_dirty = true;
 
@@ -791,7 +791,7 @@ bool SceneManager::setSceneGraphNodeVolume(voxel::SceneGraphNode &node, voxel::R
 	updateAABBMesh();
 
 	_dirty = false;
-	_result = voxel::PickResult();
+	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), true);
 	glm::ivec3 center = region.getCenter();
 	center.y = region.getLowerY();
@@ -834,14 +834,14 @@ void SceneManager::rotate(int nodeId, const glm::ivec3& angle, bool increaseSize
 	voxel::RawVolume* newVolume;
 	const bool axisRotation = !rotateAroundReferencePosition && !increaseSize;
 	if (axisRotation && angle == glm::ivec3(90, 0, 0)) {
-		newVolume = voxel::rotateAxis(model, math::Axis::X);
+		newVolume = voxelutil::rotateAxis(model, math::Axis::X);
 	} else if (axisRotation && angle == glm::ivec3(0, 90, 0)) {
-		newVolume = voxel::rotateAxis(model, math::Axis::Y);
+		newVolume = voxelutil::rotateAxis(model, math::Axis::Y);
 	} else if (axisRotation && angle == glm::ivec3(0, 0, 90)) {
-		newVolume = voxel::rotateAxis(model, math::Axis::Z);
+		newVolume = voxelutil::rotateAxis(model, math::Axis::Z);
 	} else {
 		const glm::vec3 pivot = rotateAroundReferencePosition ? glm::vec3(referencePosition()) : model->region().getPivot();
-		newVolume = voxel::rotateVolume(model, angle, pivot, increaseSize);
+		newVolume = voxelutil::rotateVolume(model, angle, pivot, increaseSize);
 	}
 	voxel::Region r = newVolume->region();
 	r.accumulate(model->region());
@@ -863,7 +863,7 @@ void SceneManager::move(int nodeId, const glm::ivec3& m) {
 	const voxel::RawVolume* model = volume(nodeId);
 	voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
-	voxel::moveVolume(&wrapper, model, m);
+	voxelutil::moveVolume(&wrapper, model, m);
 	if (!setNewVolume(nodeId, newVolume)) {
 		delete newVolume;
 		return;
@@ -1635,7 +1635,7 @@ void SceneManager::flip(math::Axis axis) {
 		if (v == nullptr) {
 			return;
 		}
-		voxel::RawVolume* newVolume = voxel::mirrorAxis(v, axis);
+		voxel::RawVolume* newVolume = voxelutil::mirrorAxis(v, axis);
 		voxel::Region r = newVolume->region();
 		r.accumulate(v->region());
 		if (!setNewVolume(nodeId, newVolume)) {
@@ -2105,7 +2105,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-bool SceneManager::trace(bool force, voxel::PickResult *result) {
+bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
 	if (result) {
 		*result = _result;
 	}
@@ -2178,7 +2178,7 @@ bool SceneManager::trace(bool force, voxel::PickResult *result) {
 	_result.firstValidPosition = false;
 	_result.direction = ray.direction;
 	_result.hitFace = voxel::FaceNames::Max;
-	raycastWithDirection(v, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
+	voxelutil::raycastWithDirection(v, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
 		if (!_result.firstValidPosition && sampler.currentPositionValid()) {
 			_result.firstPosition = sampler.position();
 			_result.firstValidPosition = true;

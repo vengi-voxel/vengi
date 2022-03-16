@@ -8,10 +8,10 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 
-namespace voxel {
+namespace voxelutil {
 
 template<class Volume1, class Volume2>
-int moveVolume(Volume1* destination, const Volume2* source, const glm::ivec3& offsets, const Voxel& skipVoxel = voxel::Voxel()) {
+int moveVolume(Volume1* destination, const Volume2* source, const glm::ivec3& offsets, const voxel::Voxel& skipVoxel = voxel::Voxel()) {
 	core_trace_scoped(MoveVolume);
 	int cnt = 0;
 
@@ -24,7 +24,7 @@ int moveVolume(Volume1* destination, const Volume2* source, const glm::ivec3& of
 			const int destY = destReg.getLowerY() + y - sourceReg.getLowerY() + offsets.y;
 			for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
 				const int destX = destReg.getLowerX() + x - sourceReg.getLowerX() + offsets.x;
-				const Voxel& voxel = source->voxel(x, y, z);
+				const voxel::Voxel& voxel = source->voxel(x, y, z);
 				if (voxel == skipVoxel) {
 					continue;
 				}

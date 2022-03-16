@@ -192,12 +192,12 @@ voxel::RawVolume *MCRFormat::error(SectionVolumes &volumes) {
 
 voxel::RawVolume* MCRFormat::finalize(SectionVolumes& volumes, int xPos, int zPos) {
 	// TODO: only merge connected y chunks - don't fill empty chunks - just a waste of memory
-	voxel::RawVolume *merged = voxel::merge(volumes);
+	voxel::RawVolume *merged = voxelutil::merge(volumes);
 	for (voxel::RawVolume* v : volumes) {
 		delete v;
 	}
 	merged->translate(glm::ivec3(xPos * MAX_SIZE, 0, zPos * MAX_SIZE));
-	voxel::RawVolume *cropped = voxel::cropVolume(merged);
+	voxel::RawVolume *cropped = voxelutil::cropVolume(merged);
 	delete merged;
 	return cropped;
 }

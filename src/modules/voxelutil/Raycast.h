@@ -11,7 +11,7 @@
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/common.hpp>
 
-namespace voxel {
+namespace voxelutil {
 namespace RaycastResults {
 
 /**
@@ -194,12 +194,12 @@ RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dSt
 }
 
 template<typename Callback>
-inline RaycastResult raycastWithEndpointsVolume(const PagedVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
+inline RaycastResult raycastWithEndpointsVolume(const voxel::PagedVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
 	return raycastWithEndpoints(volData, v3dStart, v3dEnd, callback);
 }
 
 template<typename Callback>
-inline RaycastResult raycastWithEndpointsVolume(const RawVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
+inline RaycastResult raycastWithEndpointsVolume(const voxel::RawVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
 	return raycastWithEndpoints(volData, v3dStart, v3dEnd, callback);
 }
 

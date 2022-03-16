@@ -10,7 +10,7 @@
 #include "Raycast.h"
 #include "voxel/Face.h"
 
-namespace voxel {
+namespace voxelutil {
 
 /**
  * @brief A structure containing the information about a picking operation
@@ -35,7 +35,7 @@ struct PickResult {
 
 	glm::vec3 direction;
 
-	FaceNames hitFace = FaceNames::Max;
+	voxel::FaceNames hitFace = voxel::FaceNames::Max;
 };
 
 namespace {
@@ -52,7 +52,7 @@ namespace {
 template<typename VolumeType>
 class RaycastPickingFunctor {
 public:
-	RaycastPickingFunctor(const Voxel& emptyVoxelExample) :
+	RaycastPickingFunctor(const voxel::Voxel& emptyVoxelExample) :
 			_emptyVoxelExample(emptyVoxelExample), _result() {
 	}
 
@@ -70,7 +70,7 @@ public:
 		}
 		return true;
 	}
-	const Voxel& _emptyVoxelExample;
+	const voxel::Voxel& _emptyVoxelExample;
 	PickResult _result;
 };
 
@@ -78,7 +78,7 @@ public:
 
 /** Pick the first solid voxel along a vector */
 template<typename VolumeType>
-PickResult pickVoxel(const VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, const Voxel& emptyVoxelExample) {
+PickResult pickVoxel(const VolumeType* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, const voxel::Voxel& emptyVoxelExample) {
 	core_trace_scoped(pickVoxel);
 	RaycastPickingFunctor<VolumeType> functor(emptyVoxelExample);
 	raycastWithDirection(volData, v3dStart, v3dDirectionAndLength, functor);

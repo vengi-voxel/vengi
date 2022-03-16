@@ -85,7 +85,7 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 			continue;
 		}
 		core::DynamicArray<voxel::RawVolume *> rawVolumes;
-		voxel::splitVolume(node.volume(), maxSize, rawVolumes);
+		voxelutil::splitVolume(node.volume(), maxSize, rawVolumes);
 		for (voxel::RawVolume *v : rawVolumes) {
 			SceneGraphNode newNode;
 			newNode.setVolume(v, true);

@@ -10,7 +10,7 @@
 #include "voxel/Voxel.h"
 #include "voxel/Region.h"
 
-namespace voxel {
+namespace voxelutil {
 
 template<typename Sampler>
 static bool isHidden(Sampler &srcSampler) {
@@ -43,7 +43,7 @@ static bool isHidden(Sampler &srcSampler) {
  * be exactly half of the size of the sourceRegion.
  */
 template<typename SourceVolume, typename DestVolume>
-void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion, DestVolume& destVolume, const Region& destRegion) {
+void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Region& sourceRegion, DestVolume& destVolume, const voxel::Region& destRegion) {
 	core_trace_scoped(RescaleVolume);
 	typename SourceVolume::Sampler srcSampler(sourceVolume);
 
@@ -76,7 +76,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 							if (!srcSampler.currentPositionValid()) {
 								continue;
 							}
-							const Voxel& child = srcSampler.voxel();
+							const voxel::Voxel& child = srcSampler.voxel();
 
 							if (isBlocked(child.getMaterial())) {
 								++solidVoxels;
@@ -106,10 +106,10 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 					}
 					const glm::vec4 avgColor(avgColorRed / colorContributors, avgColorGreen / colorContributors, avgColorBlue / colorContributors, 1.0f);
 					const int index = core::Color::getClosestMatch(avgColor, materialColors);
-					Voxel voxel = createVoxel(VoxelType::Generic, index);
+					voxel::Voxel voxel = createVoxel(voxel::VoxelType::Generic, index);
 					destVolume.setVoxel(dstPos, voxel);
 				} else {
-					const Voxel voxelAir;
+					const voxel::Voxel voxelAir;
 					destVolume.setVoxel(dstPos, voxelAir);
 				}
 			}
@@ -132,13 +132,13 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 				dstSampler.setPosition(dstPos);
 
 				// Skip empty voxels
-				if (dstSampler.voxel().getMaterial() == VoxelType::Air) {
+				if (dstSampler.voxel().getMaterial() == voxel::VoxelType::Air) {
 					continue;
 				}
 				// Only process voxels on a material-air boundary.
-				if (dstSampler.peekVoxel0px0py1nz().getMaterial() != VoxelType::Air && dstSampler.peekVoxel0px0py1pz().getMaterial() != VoxelType::Air
-						&& dstSampler.peekVoxel0px1ny0pz().getMaterial() != VoxelType::Air && dstSampler.peekVoxel0px1py0pz().getMaterial() != VoxelType::Air
-						&& dstSampler.peekVoxel1nx0py0pz().getMaterial() != VoxelType::Air && dstSampler.peekVoxel1px0py0pz().getMaterial() != VoxelType::Air) {
+				if (dstSampler.peekVoxel0px0py1nz().getMaterial() != voxel::VoxelType::Air && dstSampler.peekVoxel0px0py1pz().getMaterial() != voxel::VoxelType::Air
+						&& dstSampler.peekVoxel0px1ny0pz().getMaterial() != voxel::VoxelType::Air && dstSampler.peekVoxel0px1py0pz().getMaterial() != voxel::VoxelType::Air
+						&& dstSampler.peekVoxel1nx0py0pz().getMaterial() != voxel::VoxelType::Air && dstSampler.peekVoxel1px0py0pz().getMaterial() != voxel::VoxelType::Air) {
 					continue;
 				}
 				const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + curPos * 2;
@@ -154,30 +154,30 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 						for (int32_t childX = -1; childX < 3; childX++) {
 							srcSampler.setPosition(srcPos + glm::ivec3(childX, childY, childZ));
 
-							const Voxel& child = srcSampler.voxel();
-							if (child.getMaterial() == VoxelType::Air) {
+							const voxel::Voxel& child = srcSampler.voxel();
+							if (child.getMaterial() == voxel::VoxelType::Air) {
 								continue;
 							}
 
 							// For each small voxel, count the exposed faces and use this
 							// to determine the importance of the color contribution.
 							float exposedFaces = 0.0f;
-							if (srcSampler.peekVoxel0px0py1nz().getMaterial() == VoxelType::Air) {
+							if (srcSampler.peekVoxel0px0py1nz().getMaterial() == voxel::VoxelType::Air) {
 								++exposedFaces;
 							}
-							if (srcSampler.peekVoxel0px0py1pz().getMaterial() == VoxelType::Air) {
+							if (srcSampler.peekVoxel0px0py1pz().getMaterial() == voxel::VoxelType::Air) {
 								++exposedFaces;
 							}
-							if (srcSampler.peekVoxel0px1ny0pz().getMaterial() == VoxelType::Air) {
+							if (srcSampler.peekVoxel0px1ny0pz().getMaterial() == voxel::VoxelType::Air) {
 								++exposedFaces;
 							}
-							if (srcSampler.peekVoxel0px1py0pz().getMaterial() == VoxelType::Air) {
+							if (srcSampler.peekVoxel0px1py0pz().getMaterial() == voxel::VoxelType::Air) {
 								++exposedFaces;
 							}
-							if (srcSampler.peekVoxel1nx0py0pz().getMaterial() == VoxelType::Air) {
+							if (srcSampler.peekVoxel1nx0py0pz().getMaterial() == voxel::VoxelType::Air) {
 								++exposedFaces;
 							}
-							if (srcSampler.peekVoxel1px0py0pz().getMaterial() == VoxelType::Air) {
+							if (srcSampler.peekVoxel1px0py0pz().getMaterial() == voxel::VoxelType::Air) {
 								++exposedFaces;
 							}
 
@@ -198,7 +198,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const Region& sourceRegion,
 
 				const glm::vec4 avgColor(totalRed / totalExposedFaces, totalGreen / totalExposedFaces, totalBlue / totalExposedFaces, 1.0f);
 				const int index = core::Color::getClosestMatch(avgColor, materialColors);
-				const Voxel voxel = createVoxel(VoxelType::Generic, index);
+				const voxel::Voxel voxel = createVoxel(voxel::VoxelType::Generic, index);
 				destVolume.setVoxel(dstPos, voxel);
 			}
 		}
