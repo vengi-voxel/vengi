@@ -9,8 +9,10 @@
 #include <functional>
 
 namespace voxel {
-
 class RawVolume;
+}
+
+namespace voxelformat {
 
 /**
  * @brief The internal format for the save/load methods.

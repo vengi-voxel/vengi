@@ -10,7 +10,7 @@
 #include "voxel/Voxel.h"
 #include "private/PaletteLookup.h"
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(read) \
 	if ((read) != 0) { \
@@ -64,7 +64,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 	const bool readStringAsInt = isNVM || version >= 4;
 
-	voxel::PaletteLookup palLookup;
+	PaletteLookup palLookup;
 	for (uint16_t i = 0u; (uint16_t)i < matrixCount; ++i) {
 		core::String name;
 		core::String parent;
@@ -96,7 +96,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		uint32_t voxels = sizex * sizey * sizez;
 		uint32_t matrixIndex = 0u;
 
-		RawVolume *volume = new RawVolume(region);
+		voxel::RawVolume *volume = new voxel::RawVolume(region);
 		SceneGraphNode node;
 		node.setVolume(volume, true);
 		node.setName(name);

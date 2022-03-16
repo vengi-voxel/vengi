@@ -11,7 +11,7 @@
 #include "io/Stream.h"
 #include "voxel/MaterialColor.h"
 
-namespace voxel {
+namespace voxelformat {
 
 namespace qb {
 const int RLE_FLAG = 2;
@@ -83,7 +83,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 	for (int z = mins.z; z <= maxs.z; ++z) {
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			for (int x = mins.x; x <= maxs.x; ++x) {
-				const Voxel& voxel = node.volume()->voxel(x, y, z);
+				const voxel::Voxel& voxel = node.volume()->voxel(x, y, z);
 				core::RGBA newColor;
 				if (voxel == Empty) {
 					newColor = 0;

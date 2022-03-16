@@ -21,7 +21,7 @@
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(read) \
 	if ((read) != 0) { \

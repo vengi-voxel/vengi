@@ -6,7 +6,7 @@
 
 #include "Format.h"
 
-namespace voxel {
+namespace voxelformat {
 
 /**
  * @brief Sproxel importer (csv)

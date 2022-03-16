@@ -25,7 +25,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "external/tiny_obj_loader.h"
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrapBool(read) \
 	if ((read) == false) { \
@@ -304,7 +304,7 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		}
 	}
 
-	core::DynamicArray<std::future<voxel::SceneGraphNode>> futures;
+	core::DynamicArray<std::future<SceneGraphNode>> futures;
 	futures.reserve(shapes.size());
 
 	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
@@ -317,7 +317,7 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			if (glm::any(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(512)))) {
 				Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh!");
 			}
-			RawVolume *volume = new RawVolume(region);
+			voxel::RawVolume *volume = new voxel::RawVolume(region);
 			SceneGraphNode node;
 			node.setVolume(volume, true);
 			node.setName(shape.name.c_str());

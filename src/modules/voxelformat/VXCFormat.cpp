@@ -10,7 +10,7 @@
 #include "voxelformat/VXMFormat.h"
 #include "voxelformat/VXRFormat.h"
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(read) \
 	if ((read) != 0) { \

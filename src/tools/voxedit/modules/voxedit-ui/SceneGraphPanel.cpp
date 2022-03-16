@@ -12,23 +12,23 @@
 
 namespace voxedit {
 
-static void recursiveAddNodes(video::Camera& camera, const voxel::SceneGraph &sceneGraph, const voxel::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	core::String name;
 	switch (node.type()) {
-	case voxel::SceneGraphNodeType::Model:
+	case voxelformat::SceneGraphNodeType::Model:
 		name = ICON_FA_CUBES;
 		break;
-	case voxel::SceneGraphNodeType::Root:
-	case voxel::SceneGraphNodeType::Group:
+	case voxelformat::SceneGraphNodeType::Root:
+	case voxelformat::SceneGraphNodeType::Group:
 		name = ICON_FA_OBJECT_GROUP;
 		break;
-	case voxel::SceneGraphNodeType::Camera:
+	case voxelformat::SceneGraphNodeType::Camera:
 		name = ICON_FA_CAMERA;
 		break;
-	case voxel::SceneGraphNodeType::Unknown:
+	case voxelformat::SceneGraphNodeType::Unknown:
 		name = ICON_FA_QUESTION_CIRCLE;
 		break;
-	case voxel::SceneGraphNodeType::Max:
+	case voxelformat::SceneGraphNodeType::Max:
 		break;
 	}
 	name.append(core::string::format(" %s##%i", node.name().c_str(), node.id()));
@@ -81,17 +81,17 @@ static void recursiveAddNodes(video::Camera& camera, const voxel::SceneGraph &sc
 
 	ImGui::TableNextColumn();
 	if (open) {
-		if (node.type() == voxel::SceneGraphNodeType::Camera) {
+		if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
 			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
 				video::Camera nodeCamera;
-				const voxel::SceneGraphTransform& transform = node.transform();
+				const voxelformat::SceneGraphTransform& transform = node.transform();
 				nodeCamera.setQuaternion(glm::quat_cast(transform.mat));
 				nodeCamera.setWorldPosition(transform.position);
 				nodeCamera.setMode(video::CameraMode::Perspective);
 				nodeCamera.update(0.0f);
 				camera.lerp(nodeCamera);
 			}
-		} else if (node.type() == voxel::SceneGraphNodeType::Model) {
+		} else if (node.type() == voxelformat::SceneGraphNodeType::Model) {
 			const voxel::Region &region = node.region();
 			const glm::ivec3 &pos = region.getLowerCorner();
 			const glm::ivec3 &size = region.getDimensionsInVoxels();
@@ -114,7 +114,7 @@ static void recursiveAddNodes(video::Camera& camera, const voxel::SceneGraph &sc
 }
 
 void SceneGraphPanel::update(video::Camera& camera, const char *title, command::CommandExecutionListener &listener) {
-	const voxel::SceneGraph &sceneGraph = voxedit::sceneMgr().sceneGraph();
+	const voxelformat::SceneGraph &sceneGraph = voxedit::sceneMgr().sceneGraph();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		core_trace_scoped(SceneGraphPanel);
 		static ImGuiTableFlags flags = ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH |

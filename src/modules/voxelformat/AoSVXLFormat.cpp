@@ -14,7 +14,7 @@
 #include <SDL_stdinc.h>
 #include <string.h>
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(read) \
 	if ((read) != 0) { \
@@ -57,9 +57,9 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depths - 1);
 	const int flipHeight = height - 1;
 	core_assert(region.isValid());
-	RawVolume *volume = new RawVolume(region);
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
 
-	voxel::PaletteLookup palLookup;
+	PaletteLookup palLookup;
 	for (int z = 0; z < depths; ++z) {
 		for (int x = 0; x < width; ++x) {
 			int y = 0;
@@ -170,7 +170,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	return true;
 }
 
-size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, Palette &palette) {
+size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
 	const glm::ivec3 size = dimensions(stream);
 	core::Buffer<core::RGBA> colors;
 	for (int z = 0; z < size.z; ++z) {
@@ -263,7 +263,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 	return palette.colorCount;
 }
 
-bool AoSVXLFormat::isSurface(const RawVolume *v, int x, int y, int z) {
+bool AoSVXLFormat::isSurface(const voxel::RawVolume *v, int x, int y, int z) {
 	const int width = v->width();
 	const int depth = v->depth();
 	const int height = v->height();
@@ -287,7 +287,7 @@ bool AoSVXLFormat::isSurface(const RawVolume *v, int x, int y, int z) {
 
 // code taken from https://silverspaceship.com/aosmap/aos_file_format.html
 bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	RawVolume* mergedVolume = merge(sceneGraph);
+	voxel::RawVolume* mergedVolume = merge(sceneGraph);
 	if (mergedVolume == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
@@ -304,7 +304,7 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 		return false;
 	}
 	const glm::ivec3 sizeDelta = targetSize - size;
-	RawVolume* v = mergedVolume;
+	voxel::RawVolume* v = mergedVolume;
 	if (glm::any(glm::notEqual(glm::ivec3(0), sizeDelta))) {
 		v = voxelutil::resize(mergedVolume, sizeDelta);
 		delete mergedVolume;
@@ -312,7 +312,7 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 	if (v == nullptr) {
 		return false;
 	}
-	core::ScopedPtr<RawVolume> scopedPtr(v);
+	core::ScopedPtr<voxel::RawVolume> scopedPtr(v);
 
 	const voxel::Region& region = v->region();
 	const int width = region.getWidthInVoxels();
@@ -323,7 +323,7 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 	Log::debug("Save vxl of size %i:%i:%i", width, height, depth);
 
 	v->translate(region.getLowerCorner());
-	RawVolume::Sampler sampler(v);
+	voxel::RawVolume::Sampler sampler(v);
 
 	const voxel::Palette& palette = voxel::getPalette();
 

@@ -6,14 +6,14 @@
 
 #include "voxelformat/SceneGraph.h"
 
-namespace voxel {
+namespace voxelformat {
 
 // this makes a copy of the volumes affected
-int addNodeToSceneGraph(voxel::SceneGraph &sceneGraph, const voxel::SceneGraphNode &node, int parent);
+int addNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent);
 
 // this doesn't copy but transfer the volume ownership
-int addNodeToSceneGraph(voxel::SceneGraph &sceneGraph, voxel::SceneGraphNode &node, int parent);
+int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent);
 
-int addSceneGraphNodes(voxel::SceneGraph &sceneGraph, voxel::SceneGraph &newSceneGraph, int parent);
+int addSceneGraphNodes(SceneGraph &sceneGraph, SceneGraph &newSceneGraph, int parent);
 
 } // namespace voxel

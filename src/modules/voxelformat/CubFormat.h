@@ -6,7 +6,7 @@
 
 #include "Format.h"
 
-namespace voxel {
+namespace voxelformat {
 
 /**
  * @brief CubeWorld cub format
@@ -16,7 +16,7 @@ namespace voxel {
  */
 class CubFormat : public Format {
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, Palette &palette) override;
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };

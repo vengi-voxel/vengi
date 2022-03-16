@@ -23,10 +23,10 @@
 #define TINYGLTF_IMPLEMENTATION
 #include "external/tiny_gltf.h"
 
-namespace voxel {
+namespace voxelformat {
 
 void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
-								 const voxel::SceneGraphNode &graphNode, Stack &stack) {
+								 const SceneGraphNode &graphNode, Stack &stack) {
 	node.name = graphNode.name().c_str();
 	const int idx = (int)m.nodes.size();
 
@@ -124,7 +124,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 	while (!stack.empty()) {
 		int nodeId = stack.back().first;
-		const voxel::SceneGraphNode &graphNode = sceneGraph.node(nodeId);
+		const SceneGraphNode &graphNode = sceneGraph.node(nodeId);
 
 		if (meshIdxNodeMap.find(nodeId) == meshIdxNodeMap.end()) {
 			tinygltf::Node node;

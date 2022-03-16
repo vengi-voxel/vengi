@@ -6,7 +6,7 @@
 
 #include "Format.h"
 
-namespace voxel {
+namespace voxelformat {
 
 /**
  * @brief Chronovox Studio Model and Nick's Voxel Model

@@ -20,7 +20,7 @@
 
 #include <glm/common.hpp>
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(expression)                                                                                               \
 	do {                                                                                                               \

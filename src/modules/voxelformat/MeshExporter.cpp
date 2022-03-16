@@ -16,7 +16,7 @@
 #include "voxelutil/VoxelUtil.h"
 #include <SDL_timer.h>
 
-namespace voxel {
+namespace voxelformat {
 
 glm::vec3 MeshExporter::getScale() {
 	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();

@@ -41,11 +41,11 @@ protected:
 	}
 
 	bool save(const LevelVolumes &volumes) const {
-		voxel::SceneGraph sceneGraph;
+		voxelformat::SceneGraph sceneGraph;
 		sceneGraph.reserve(volumes.size());
 		for (int i = 0; i < (int)volumes.size(); ++i) {
 			if (volumes[i] != nullptr) {
-				voxel::SceneGraphNode node;
+				voxelformat::SceneGraphNode node;
 				node.setVolume(volumes[i], false);
 				sceneGraph.emplace(core::move(node));
 			}

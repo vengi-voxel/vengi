@@ -11,7 +11,7 @@
 #include "private/PaletteLookup.h"
 #include <glm/common.hpp>
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(read) \
 	if ((read) != 0) { \
@@ -65,7 +65,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
-	voxel::PaletteLookup palLookup;
+	PaletteLookup palLookup;
 	if (stream.seek(32 + numvoxs * 8 + (xsiz << 2) + ((xsiz * ysiz) << 1)) != -1) {
 		if (stream.remaining() != 0) {
 			uint32_t palMagic;
@@ -92,7 +92,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 	stream.seek(32);
 
-	RawVolume *volume = new RawVolume(region);
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);

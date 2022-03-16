@@ -16,8 +16,10 @@
 #include <glm/gtx/quaternion.hpp>
 
 namespace voxel {
-
 class RawVolume;
+}
+
+namespace voxelformat {
 
 enum class SceneGraphNodeType {
 	Root,

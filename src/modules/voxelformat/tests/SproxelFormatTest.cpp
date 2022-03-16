@@ -5,14 +5,14 @@
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/SproxelFormat.h"
 
-namespace voxel {
+namespace voxelformat {
 
 class SproxelFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(SproxelFormatTest, testLoadRGB) {
 	SproxelFormat f;
-	std::unique_ptr<RawVolume> volume(load("rgb.csv", f));
+	std::unique_ptr<voxel::RawVolume> volume(load("rgb.csv", f));
 	ASSERT_NE(nullptr, volume) << "Could not load sproxel csv file";
 	testRGB(volume.get());
 }

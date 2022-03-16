@@ -30,7 +30,7 @@ protected:
 	voxel::RawVolume *_volume = nullptr;
 
 	void verify(const char* filename) {
-		voxel::QBFormat format;
+		voxelformat::QBFormat format;
 		const io::FilePtr& file = io::filesystem()->open(filename);
 		ASSERT_TRUE(file) << "Can't open " << filename;
 		io::FileStream stream(file);

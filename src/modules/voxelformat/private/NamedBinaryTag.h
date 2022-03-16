@@ -12,7 +12,7 @@
 #include "io/Stream.h"
 #include <stdint.h>
 
-namespace voxel {
+namespace voxelformat {
 
 namespace priv {
 

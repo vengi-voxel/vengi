@@ -23,7 +23,7 @@
 #include "private/PaletteLookup.h"
 #include <glm/gtc/type_ptr.hpp>
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \
@@ -184,7 +184,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	voxel::RawVolume *layerVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 	uint32_t blockCount;
 
-	voxel::PaletteLookup palLookup;
+	PaletteLookup palLookup;
 	wrap(stream.readUInt32(blockCount))
 	Log::debug("Found LAYR chunk with %i blocks", blockCount);
 	for (uint32_t i = 0; i < blockCount; ++i) {
@@ -332,7 +332,7 @@ bool GoxFormat::loadChunk_MATE(State& state, const GoxChunk &c, io::SeekableRead
 bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	char dictKey[256];
 	char dictValue[256];
-	voxel::SceneGraphNode node(voxel::SceneGraphNodeType::Camera);
+	SceneGraphNode node(SceneGraphNodeType::Camera);
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
 		if (!strcmp(dictKey, "name")) {
 			// "name" 127 chars max

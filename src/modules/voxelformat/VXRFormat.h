@@ -6,16 +6,16 @@
 
 #include "Format.h"
 
-namespace voxel {
+namespace voxelformat {
 
 /**
  * @brief VoxEdit (Sandbox) (vxr)
  */
 class VXRFormat : public Format {
 private:
-	bool loadChildVXM(const core::String& vxmPath, voxel::SceneGraphNode &node, int version);
+	bool loadChildVXM(const core::String& vxmPath, SceneGraphNode &node, int version);
 
-	bool handleVersion8AndLater(io::SeekableReadStream& stream, voxel::SceneGraphNode &node);
+	bool handleVersion8AndLater(io::SeekableReadStream& stream, SceneGraphNode &node);
 	bool importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, int parent);
 
 	bool loadGroupsVersion4AndLater(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version);
@@ -24,7 +24,7 @@ private:
 
 	bool loadGroupsVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version);
 	bool importChildVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, int parent);
-	bool saveRecursiveNode(const core::String &name, const voxel::SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream);
+	bool saveRecursiveNode(const core::String &name, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream);
 	bool loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath);
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;

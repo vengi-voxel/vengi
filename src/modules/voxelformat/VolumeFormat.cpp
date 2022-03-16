@@ -136,57 +136,57 @@ static const io::FormatDescription *getDescription(const core::String &ext, uint
 	return nullptr;
 }
 
-static core::SharedPtr<voxel::Format> getFormat(const io::FormatDescription *desc, uint32_t magic) {
-	core::SharedPtr<voxel::Format> format;
+static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint32_t magic) {
+	core::SharedPtr<Format> format;
 	const core::String &ext = desc->ext;
 	if (ext == "qb") {
-		format = core::make_shared<voxel::QBFormat>();
+		format = core::make_shared<QBFormat>();
 	} else if (ext == "vox" && (magic != 0u && magic != FourCC('V','O','X',' '))) {
-		format = core::make_shared<voxel::VoxOldFormat>();
+		format = core::make_shared<VoxOldFormat>();
 	} else if (ext == "vox" || magic == FourCC('V','O','X',' ')) {
-		format = core::make_shared<voxel::VoxFormat>();
+		format = core::make_shared<VoxFormat>();
 	} else if (ext == "qbt" || magic == FourCC('Q','B',' ','2')) {
-		format = core::make_shared<voxel::QBTFormat>();
+		format = core::make_shared<QBTFormat>();
 	} else if (ext == "kvx") {
-		format = core::make_shared<voxel::KVXFormat>();
+		format = core::make_shared<KVXFormat>();
 	} else if (ext == "kv6") {
-		format = core::make_shared<voxel::KV6Format>();
+		format = core::make_shared<KV6Format>();
 	} else if (ext == "csv") {
-		format = core::make_shared<voxel::SproxelFormat>();
+		format = core::make_shared<SproxelFormat>();
 	} else if (ext == "cub") {
-		format = core::make_shared<voxel::CubFormat>();
+		format = core::make_shared<CubFormat>();
 	} else if (ext == "gox") {
-		format = core::make_shared<voxel::GoxFormat>();
+		format = core::make_shared<GoxFormat>();
 	} else if (ext == "mca") {
-		format = core::make_shared<voxel::MCRFormat>();
+		format = core::make_shared<MCRFormat>();
 	} else if (ext == "vxm") {
-		format = core::make_shared<voxel::VXMFormat>();
+		format = core::make_shared<VXMFormat>();
 	} else if (ext == "vxr") {
-		format = core::make_shared<voxel::VXRFormat>();
+		format = core::make_shared<VXRFormat>();
 	} else if (ext == "vxc") {
-		format = core::make_shared<voxel::VXCFormat>();
+		format = core::make_shared<VXCFormat>();
 	} else if (ext == "vxt") {
-		format = core::make_shared<voxel::VXTFormat>();
+		format = core::make_shared<VXTFormat>();
 	} else if (ext == "vxl" && !strcmp(desc->name, "Tiberian Sun")) {
-		format = core::make_shared<voxel::VXLFormat>();
+		format = core::make_shared<VXLFormat>();
 	} else if (ext == "vxl") {
-		format = core::make_shared<voxel::AoSVXLFormat>();
+		format = core::make_shared<AoSVXLFormat>();
 	} else if (ext == "csm" || ext == "nvm") {
-		format = core::make_shared<voxel::CSMFormat>();
+		format = core::make_shared<CSMFormat>();
 	} else if (ext == "binvox") {
-		format = core::make_shared<voxel::BinVoxFormat>();
+		format = core::make_shared<BinVoxFormat>();
 	} else if (ext == "qef") {
-		format = core::make_shared<voxel::QEFFormat>();
+		format = core::make_shared<QEFFormat>();
 	} else if (ext == "qbcl") {
-		format = core::make_shared<voxel::QBCLFormat>();
+		format = core::make_shared<QBCLFormat>();
 	} else if (ext == "obj") {
-		format = core::make_shared<voxel::OBJFormat>();
+		format = core::make_shared<OBJFormat>();
 	} else if (ext == "stl") {
-		format = core::make_shared<voxel::STLFormat>();
+		format = core::make_shared<STLFormat>();
 	} else if (ext == "ply") {
-		format = core::make_shared<voxel::PLYFormat>();
+		format = core::make_shared<PLYFormat>();
 	} else if (ext == "gltf" || ext == "glb") {
-		format = core::make_shared<voxel::GLTFFormat>();
+		format = core::make_shared<GLTFFormat>();
 	}
 	return format;
 }
@@ -204,7 +204,7 @@ image::ImagePtr loadScreenshot(const core::String &fileName, io::SeekableReadStr
 		Log::warn("Format %s doesn't have a screenshot embedded", desc->name);
 		return image::ImagePtr();
 	}
-	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
+	const core::SharedPtr<Format> &f = getFormat(desc, magic);
 	if (f) {
 		stream.seek(0);
 		return f->loadScreenshot(fileName, stream);
@@ -227,7 +227,7 @@ size_t loadPalette(const core::String &fileName, io::SeekableReadStream& stream,
 		Log::warn("Format %s doesn't have a palette embedded", desc->name);
 		return 0;
 	}
-	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
+	const core::SharedPtr<Format> &f = getFormat(desc, magic);
 	if (f) {
 		stream.seek(0);
 		return f->loadPalette(fileName, stream, palette);
@@ -237,7 +237,7 @@ size_t loadPalette(const core::String &fileName, io::SeekableReadStream& stream,
 	return 0;
 }
 
-bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, voxel::SceneGraph& newSceneGraph) {
+bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, SceneGraph& newSceneGraph) {
 	core_trace_scoped(LoadVolumeFormat);
 	const uint32_t magic = loadMagic(stream);
 	const core::String& fileext = core::string::extractExtension(fileName);
@@ -245,7 +245,7 @@ bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, vo
 	if (desc == nullptr) {
 		return false;
 	}
-	const core::SharedPtr<voxel::Format> &f = getFormat(desc, magic);
+	const core::SharedPtr<Format> &f = getFormat(desc, magic);
 	if (f) {
 		stream.seek(0);
 		if (!f->loadGroups(fileName, stream, newSceneGraph)) {
@@ -276,7 +276,7 @@ bool isMeshFormat(const core::String& filename) {
 	return false;
 }
 
-bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& sceneGraph) {
+bool saveFormat(const io::FilePtr& filePtr, SceneGraph& sceneGraph) {
 	if (sceneGraph.empty()) {
 		Log::error("Failed to save model file %s - no volumes given", filePtr->name().c_str());
 		return false;
@@ -295,7 +295,7 @@ bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& sceneGraph) {
 	const core::String& ext = filePtr->extension();
 	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
 		if (ext == desc->ext /*&& (type.empty() || type == desc->name)*/) {
-			core::SharedPtr<voxel::Format> f = getFormat(desc, 0u);
+			core::SharedPtr<Format> f = getFormat(desc, 0u);
 			if (f && f->saveGroups(sceneGraph, filePtr->name(), stream)) {
 				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name, desc->ext);
 				return true;
@@ -307,7 +307,7 @@ bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& sceneGraph) {
 		return false;
 	}
 	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
-	voxel::QBFormat qbFormat;
+	QBFormat qbFormat;
 	return qbFormat.saveGroups(sceneGraph, filePtr->name(), stream);
 }
 

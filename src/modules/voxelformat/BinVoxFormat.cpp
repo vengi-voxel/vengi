@@ -11,7 +11,7 @@
 #include <SDL_stdinc.h>
 #include <string.h>
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(read) \
 	if ((read) != 0) { \
@@ -32,7 +32,7 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 		return false;
 	}
 
-	RawVolume *volume = new RawVolume(region);
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
@@ -116,14 +116,14 @@ bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 }
 
 bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	RawVolume* mergedVolume = merge(sceneGraph);
+	voxel::RawVolume* mergedVolume = merge(sceneGraph);
 	if (mergedVolume == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
 	}
 
 	const voxel::Region& region = mergedVolume->region();
-	RawVolume::Sampler sampler(mergedVolume);
+	voxel::RawVolume::Sampler sampler(mergedVolume);
 
 	const int32_t width = region.getWidthInVoxels();
 	const int32_t height = region.getHeightInVoxels();

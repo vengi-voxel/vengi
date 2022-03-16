@@ -11,7 +11,7 @@
 #include <glm/common.hpp>
 #include <SDL_stdinc.h>
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(read) \
 	if ((read) != 0) { \
@@ -119,14 +119,14 @@ bool QEFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	stream.writeString("Version 0.2\n", false);
 	stream.writeString("www.minddesk.com\n", false);
 
-	RawVolume* mergedVolume = merge(sceneGraph);
+	voxel::RawVolume* mergedVolume = merge(sceneGraph);
 	if (mergedVolume == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
 	}
 
 	const voxel::Region& region = mergedVolume->region();
-	RawVolume::Sampler sampler(mergedVolume);
+	voxel::RawVolume::Sampler sampler(mergedVolume);
 	const glm::ivec3& lower = region.getLowerCorner();
 
 	const uint32_t width = region.getWidthInVoxels();
@@ -146,7 +146,7 @@ bool QEFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 			for (uint32_t z = 0u; z < depth; ++z) {
 				core_assert_always(sampler.setPosition(lower.x + x, lower.y + y, lower.z + z));
 				const voxel::Voxel& voxel = sampler.voxel();
-				if (voxel.getMaterial() == VoxelType::Air) {
+				if (voxel.getMaterial() == voxel::VoxelType::Air) {
 					continue;
 				}
 				// mask != 0 means solid, 1 is core (surrounded by others and not visible)

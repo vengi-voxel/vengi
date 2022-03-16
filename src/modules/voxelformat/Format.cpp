@@ -19,7 +19,7 @@
 #include "voxelutil/VoxelUtil.h"
 #include <limits>
 
-namespace voxel {
+namespace voxelformat {
 
 uint8_t Format::convertPaletteIndex(uint32_t paletteIndex) const {
 	if (paletteIndex >= (uint32_t)_palette.colorCount) {
@@ -115,20 +115,20 @@ void Format::calcMinsMaxs(const voxel::Region& region, const glm::ivec3 &maxSize
 	Log::debug("maxs(%i:%i:%i)", maxs.x, maxs.y, maxs.z);
 }
 
-RawVolume* Format::merge(const SceneGraph& sceneGraph) const {
+voxel::RawVolume* Format::merge(const SceneGraph& sceneGraph) const {
 	return sceneGraph.merge();
 }
 
-RawVolume* Format::load(const core::String &filename, io::SeekableReadStream& stream) {
+voxel::RawVolume* Format::load(const core::String &filename, io::SeekableReadStream& stream) {
 	SceneGraph sceneGraph;
 	if (!loadGroups(filename, stream, sceneGraph)) {
 		return nullptr;
 	}
-	RawVolume* mergedVolume = merge(sceneGraph);
+	voxel::RawVolume* mergedVolume = merge(sceneGraph);
 	return mergedVolume;
 }
 
-size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& stream, Palette &palette) {
+size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
 	SceneGraph sceneGraph;
 	loadGroups(filename, stream, sceneGraph);
 	palette = _palette;
@@ -140,7 +140,7 @@ image::ImagePtr Format::loadScreenshot(const core::String &filename, io::Seekabl
 	return image::ImagePtr();
 }
 
-bool Format::save(const RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream) {
+bool Format::save(const voxel::RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream) {
 	if (volume == nullptr) {
 		return false;
 	}

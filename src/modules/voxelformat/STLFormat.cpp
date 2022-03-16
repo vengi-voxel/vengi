@@ -10,7 +10,7 @@
 #include "voxel/Mesh.h"
 #include <SDL_stdinc.h>
 
-namespace voxel {
+namespace voxelformat {
 
 namespace priv {
 static constexpr const size_t BinaryHeaderSize = 80;
@@ -171,7 +171,7 @@ bool STLFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	if (glm::any(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(512)))) {
 		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh!");
 	}
-	RawVolume *volume = new RawVolume(region);
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);

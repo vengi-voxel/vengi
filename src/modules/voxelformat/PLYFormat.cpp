@@ -14,7 +14,7 @@
 #include "voxelformat/SceneGraph.h"
 #include "engine-config.h"
 
-namespace voxel {
+namespace voxelformat {
 
 bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &meshes,
 						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,

@@ -15,7 +15,7 @@
 #include "voxelformat/SceneGraphNode.h"
 #include <SDL_assert.h>
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(read) \
 	if ((read) != 0) { \
@@ -204,8 +204,8 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 	core::Buffer<int32_t> colStart(baseSize);
 
 	// switch axis
-	RawVolume *volume = new RawVolume(Region{0, 0, 0, footer.xsize - 1, footer.zsize - 1, footer.ysize - 1});
-	voxel::SceneGraphNode node;
+	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region{0, 0, 0, footer.xsize - 1, footer.zsize - 1, footer.ysize - 1});
+	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(header.limb_name);
 	sceneGraph.emplace(core::move(node));

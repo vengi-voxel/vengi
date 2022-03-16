@@ -17,7 +17,7 @@
 namespace voxedit {
 namespace anim {
 
-bool VolumeCache::load(const core::String& fullPath, int volumeIndex, voxel::SceneGraph& sceneGraph, const core::String &name) {
+bool VolumeCache::load(const core::String& fullPath, int volumeIndex, voxelformat::SceneGraph& sceneGraph, const core::String &name) {
 	Log::info("Loading volume from %s into the cache", fullPath.c_str());
 	const io::FilesystemPtr& fs = io::filesystem();
 
@@ -32,7 +32,7 @@ bool VolumeCache::load(const core::String& fullPath, int volumeIndex, voxel::Sce
 		Log::error("Failed to load %s for any of the supported format extensions", fullPath.c_str());
 		return false;
 	}
-	voxel::SceneGraph newSceneGraph;
+	voxelformat::SceneGraph newSceneGraph;
 	// TODO: use the cache luke
 	io::FileStream stream(file);
 	if (!voxelformat::loadFormat(file->name(), stream, newSceneGraph)) {
@@ -43,14 +43,14 @@ bool VolumeCache::load(const core::String& fullPath, int volumeIndex, voxel::Sce
 		Log::error("More than one volume/layer found in %s", file->name().c_str());
 		return false;
 	}
-	voxel::SceneGraphNode* node = newSceneGraph[0];
+	voxelformat::SceneGraphNode* node = newSceneGraph[0];
 	core_assert_always(node != nullptr);
 	node->setProperty("type", core::string::toString(volumeIndex));
 	sceneGraph.emplace(core::move(*node));
 	return true;
 }
 
-bool VolumeCache::getVolumes(const animation::AnimationSettings& settings, voxel::SceneGraph& sceneGraph) {
+bool VolumeCache::getVolumes(const animation::AnimationSettings& settings, voxelformat::SceneGraph& sceneGraph) {
 	for (size_t i = 0; i < animation::AnimationSettings::MAX_ENTRIES; ++i) {
 		if (settings.paths[i].empty()) {
 			continue;

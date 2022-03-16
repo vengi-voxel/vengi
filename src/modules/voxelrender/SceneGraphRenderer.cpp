@@ -47,19 +47,19 @@ void SceneGraphRenderer::update() {
 	_renderer.update();
 }
 
-bool SceneGraphRenderer::empty(voxel::SceneGraphNode &node) {
+bool SceneGraphRenderer::empty(voxelformat::SceneGraphNode &node) {
 	return _renderer.empty(node.id());
 }
 
-bool SceneGraphRenderer::extractRegion(voxel::SceneGraphNode &node, const voxel::Region& region) {
+bool SceneGraphRenderer::extractRegion(voxelformat::SceneGraphNode &node, const voxel::Region& region) {
 	return _renderer.extractRegion(node.id(), region);
 }
 
-void SceneGraphRenderer::translate(voxel::SceneGraphNode &node, const glm::ivec3 &v) {
+void SceneGraphRenderer::translate(voxelformat::SceneGraphNode &node, const glm::ivec3 &v) {
 	_renderer.translate(node.id(), v);
 }
 
-bool SceneGraphRenderer::toMesh(voxel::SceneGraphNode &node, voxel::Mesh* mesh) {
+bool SceneGraphRenderer::toMesh(voxelformat::SceneGraphNode &node, voxel::Mesh* mesh) {
 	return _renderer.toMesh(node.id(), mesh);
 }
 
@@ -84,7 +84,7 @@ void SceneGraphRenderer::clear() {
 	}
 }
 
-void SceneGraphRenderer::prepare(voxel::SceneGraph &sceneGraph, bool hideInactive, bool grayInactive) {
+void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, bool hideInactive, bool grayInactive) {
 	// remove those volumes that are no longer part of the scene graph
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
 		if (!sceneGraph.hasNode(i)) {
@@ -93,14 +93,14 @@ void SceneGraphRenderer::prepare(voxel::SceneGraph &sceneGraph, bool hideInactiv
 	}
 
 	const int activeNode = sceneGraph.activeNode();
-	for (voxel::SceneGraphNode &node : sceneGraph) {
+	for (voxelformat::SceneGraphNode &node : sceneGraph) {
 		voxel::RawVolume *v = _renderer.volume(node.id());
 		if (v != node.volume()) {
 			_renderer.setVolume(node.id(), node.volume(), true);
 			_renderer.extractRegion(node.id(), node.region());
 		}
 		if (_sceneMode) {
-			const voxel::SceneGraphTransform &transform = node.transform(0);
+			const voxelformat::SceneGraphTransform &transform = node.transform(0);
 			const glm::vec3 pivot = transform.normalizedPivot * glm::vec3(node.region().getDimensionsInVoxels());
 			_renderer.setModelMatrix(node.id(), transform.mat, pivot);
 		} else {

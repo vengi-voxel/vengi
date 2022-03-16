@@ -11,7 +11,7 @@
 #include "voxel/MaterialColor.h"
 #include "private/PaletteLookup.h"
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(read) \
 	if ((read) != 0) { \
@@ -25,7 +25,7 @@ namespace voxel {
 		return false; \
 	}
 
-size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, Palette &palette) {
+size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
@@ -71,13 +71,13 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		Log::error("Invalid region: %i:%i:%i", width, height, depth);
 		return false;
 	}
-	RawVolume *volume = new RawVolume(region);
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
 	sceneGraph.emplace(core::move(node));
 
-	voxel::PaletteLookup palLookup;
+	PaletteLookup palLookup;
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {
@@ -104,15 +104,15 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 #undef wrap
 
 bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	RawVolume* mergedVolume = merge(sceneGraph);
+	voxel::RawVolume* mergedVolume = merge(sceneGraph);
 	if (mergedVolume == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
 	}
-	core::ScopedPtr<RawVolume> scopedPtr(mergedVolume);
+	core::ScopedPtr<voxel::RawVolume> scopedPtr(mergedVolume);
 
 	const voxel::Region& region = mergedVolume->region();
-	RawVolume::Sampler sampler(mergedVolume);
+	voxel::RawVolume::Sampler sampler(mergedVolume);
 	const glm::ivec3& lower = region.getLowerCorner();
 
 	const uint32_t width = region.getWidthInVoxels();
@@ -130,7 +130,7 @@ bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 			for (uint32_t x = 0u; x < width; ++x) {
 				core_assert_always(sampler.setPosition(lower.x + x, lower.y + y, lower.z + z));
 				const voxel::Voxel& voxel = sampler.voxel();
-				if (voxel.getMaterial() == VoxelType::Air) {
+				if (voxel.getMaterial() == voxel::VoxelType::Air) {
 					wrapBool(stream.writeUInt8(0))
 					wrapBool(stream.writeUInt8(0))
 					wrapBool(stream.writeUInt8(0))

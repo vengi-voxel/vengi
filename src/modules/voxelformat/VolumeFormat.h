@@ -27,12 +27,12 @@ extern const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[];
 
 extern size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette);
 extern image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream);
-extern bool loadFormat(const core::String &filename, io::SeekableReadStream& stream, voxel::SceneGraph& sceneGraph);
+extern bool loadFormat(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph);
 
 /**
  * @brief Save both to volume or to mesh - depends on the given file extension
  */
-extern bool saveFormat(const io::FilePtr& filePtr, voxel::SceneGraph& sceneGraph);
+extern bool saveFormat(const io::FilePtr& filePtr, SceneGraph& sceneGraph);
 
 extern bool isMeshFormat(const core::String& filename);
 

@@ -12,7 +12,7 @@ class Node;
 class Scene;
 } // namespace tinygltf
 
-namespace voxel {
+namespace voxelformat {
 
 /**
  * @brief GL Transmission Format
@@ -27,7 +27,7 @@ private:
 	};
 	typedef core::DynamicArray<Pair> Stack;
 	void processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
-						 const voxel::SceneGraphNode &graphNode, Stack &stack);
+						 const SceneGraphNode &graphNode, Stack &stack);
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const SceneGraph &sceneGraph, const Meshes &meshes,
 					const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad,

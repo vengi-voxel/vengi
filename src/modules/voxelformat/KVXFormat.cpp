@@ -12,7 +12,7 @@
 #include "private/PaletteLookup.h"
 #include <glm/common.hpp>
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(read) \
 	if ((read) != 0) { \
@@ -92,7 +92,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	 * The palette is in (Red:0, Green:1, Blue:2) order and intensities range
 	 * from 0-63.
 	 */
-	voxel::PaletteLookup palLookup;
+	PaletteLookup palLookup;
 	for (int i = 0; i < _palette.colorCount; ++i) {
 		uint8_t r, g, b;
 		wrap(stream.readUInt8(r))
@@ -109,7 +109,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 	stream.seek((int64_t)currentPos);
 
-	RawVolume *volume = new RawVolume(region);
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);

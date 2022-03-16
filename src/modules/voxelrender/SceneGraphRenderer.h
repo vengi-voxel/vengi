@@ -19,7 +19,7 @@ namespace voxelrender {
 class SceneGraphRenderer : public core::IComponent {
 protected:
 	RawVolumeRenderer _renderer;
-	voxel::SceneGraph _sceneGraph;
+	voxelformat::SceneGraph _sceneGraph;
 	bool _sceneMode = true;
 
 public:
@@ -32,11 +32,11 @@ public:
 	void setDiffuseColor(const glm::vec3& color);
 
 	void setSceneMode(bool sceneMode);
-	bool extractRegion(voxel::SceneGraphNode &node, const voxel::Region& region);
-	void translate(voxel::SceneGraphNode &node, const glm::ivec3 &v);
-	bool toMesh(voxel::SceneGraphNode &node, voxel::Mesh* mesh);
-	bool empty(voxel::SceneGraphNode &node);
-	void prepare(voxel::SceneGraph &sceneGraph, bool hideInactive = false, bool grayInactive = false);
+	bool extractRegion(voxelformat::SceneGraphNode &node, const voxel::Region& region);
+	void translate(voxelformat::SceneGraphNode &node, const glm::ivec3 &v);
+	bool toMesh(voxelformat::SceneGraphNode &node, voxel::Mesh* mesh);
+	bool empty(voxelformat::SceneGraphNode &node);
+	void prepare(voxelformat::SceneGraph &sceneGraph, bool hideInactive = false, bool grayInactive = false);
 	/**
 	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is false, you have to call @c update() manually!
 	 */

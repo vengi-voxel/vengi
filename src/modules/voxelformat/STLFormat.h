@@ -7,8 +7,10 @@
 #include "MeshExporter.h"
 
 namespace voxel {
-
 class VoxelVertex;
+}
+
+namespace voxelformat {
 
 /**
  * @brief Standard Triangle Language

@@ -6,7 +6,7 @@
 
 #include "Format.h"
 
-namespace voxel {
+namespace voxelformat {
 /**
  * @brief Voxel sprite format used by the SLAB6 editor, voxlap and Ace of Spades
  */

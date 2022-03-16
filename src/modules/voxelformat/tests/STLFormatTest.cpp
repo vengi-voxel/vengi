@@ -6,7 +6,7 @@
 #include "AbstractVoxFormatTest.h"
 #include "io/File.h"
 
-namespace voxel {
+namespace voxelformat {
 
 class STLFormatTest : public AbstractVoxFormatTest {};
 

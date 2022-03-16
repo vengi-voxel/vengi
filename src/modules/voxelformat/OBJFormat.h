@@ -12,7 +12,7 @@ struct attrib_t;
 struct material_t;
 }
 
-namespace voxel {
+namespace voxelformat {
 /**
  * @brief Wavefront Object
  */

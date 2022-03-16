@@ -8,7 +8,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/ext/scalar_constants.hpp>
 
-namespace voxel {
+namespace voxelformat {
 
 SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type) {
 	// ensure that there is at least one frame

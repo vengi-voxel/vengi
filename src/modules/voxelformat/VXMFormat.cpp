@@ -20,7 +20,7 @@
 #include "voxelformat/SceneGraphNode.h"
 #include <glm/common.hpp>
 
-namespace voxel {
+namespace voxelformat {
 
 static const uint8_t EMPTY_PALETTE = 0xFFu;
 
@@ -64,7 +64,7 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 }
 
 bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	RawVolume* mergedVolume = merge(sceneGraph);
+	voxel::RawVolume* mergedVolume = merge(sceneGraph);
 	if (mergedVolume == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
@@ -134,9 +134,9 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	core::DynamicArray<glm::vec4> materialColors;
 	palette.toVec4f(materialColors);
 
-	core::ScopedPtr<RawVolume> scopedPtr(mergedVolume);
+	core::ScopedPtr<voxel::RawVolume> scopedPtr(mergedVolume);
 	const voxel::Region& region = mergedVolume->region();
-	RawVolume::Sampler sampler(mergedVolume);
+	voxel::RawVolume::Sampler sampler(mergedVolume);
 	const glm::ivec3& mins = region.getLowerCorner();
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
@@ -421,7 +421,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 	_palette.colorCount = materialAmount;
 
-	const Region region(glm::ivec3(0), glm::ivec3(size) - 1);
+	const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 
 	uint8_t maxLayers = 1;
 	if (version >= 12) {
@@ -438,7 +438,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		} else {
 			core::string::formatBuf(layerName, sizeof(layerName), "Layer %i", layer);
 		}
-		RawVolume* volume = new RawVolume(region);
+		voxel::RawVolume* volume = new voxel::RawVolume(region);
 		for (;;) {
 			uint8_t length;
 			wrapDelete(stream.readUInt8(length), volume);
@@ -459,7 +459,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 			}
 
 			const uint8_t index = _paletteMapping[matIdx];
-			const Voxel voxel = createVoxel(voxel::VoxelType::Generic, index);
+			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 
 			// left to right, bottom to top, front to back
 			for (int i = idx; i < idx + length; i++) {
@@ -470,7 +470,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 			}
 			idx += length;
 		}
-		SceneGraphNode node(voxel::SceneGraphNodeType::Model);
+		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(volume, true);
 		node.setName(layerName);
 		node.setVisible(visible);

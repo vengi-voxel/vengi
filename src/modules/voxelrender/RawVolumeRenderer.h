@@ -33,7 +33,7 @@ namespace video {
 class Camera;
 }
 
-namespace voxel {
+namespace voxelformat {
 class SceneGraphNode;
 }
 
@@ -137,7 +137,7 @@ public:
 	 * @sa volume()
 	 */
 	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
-	voxel::RawVolume* setVolume(int idx, voxel::SceneGraphNode& node, bool deleteMesh = true);
+	voxel::RawVolume* setVolume(int idx, voxelformat::SceneGraphNode& node, bool deleteMesh = true);
 	bool setModelMatrix(int idx, const glm::mat4& model, const glm::vec3 &pivot, bool reset = true);
 	/**
 	 * @note Keep in mind to set the model matrices properly

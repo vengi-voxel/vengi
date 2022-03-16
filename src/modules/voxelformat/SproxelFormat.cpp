@@ -9,7 +9,7 @@
 #include "core/Tokenizer.h"
 #include "voxel/MaterialColor.h"
 
-namespace voxel {
+namespace voxelformat {
 
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \
@@ -87,14 +87,14 @@ bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 }
 
 bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
-	RawVolume *mergedVolume = merge(sceneGraph);
+	voxel::RawVolume *mergedVolume = merge(sceneGraph);
 	if (mergedVolume == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
 	}
 
 	const voxel::Region &region = mergedVolume->region();
-	RawVolume::Sampler sampler(mergedVolume);
+	voxel::RawVolume::Sampler sampler(mergedVolume);
 	const glm::ivec3 &lower = region.getLowerCorner();
 
 	const int width = region.getWidthInVoxels();
@@ -112,7 +112,7 @@ bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String 
 			for (int x = 0u; x < width; ++x) {
 				core_assert_always(sampler.setPosition(lower.x + x, lower.y + y, lower.z + z));
 				const voxel::Voxel &voxel = sampler.voxel();
-				if (voxel.getMaterial() == VoxelType::Air) {
+				if (voxel.getMaterial() == voxel::VoxelType::Air) {
 					stream.writeString("#00000000", false);
 				} else {
 					const core::RGBA rgba = palette.colors[voxel.getColor()];

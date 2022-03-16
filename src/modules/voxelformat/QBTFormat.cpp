@@ -16,7 +16,7 @@
 #include "voxelformat/SceneGraphNode.h"
 #include <glm/common.hpp>
 
-namespace voxel {
+namespace voxelformat {
 
 namespace qbt {
 static const bool MergeCompounds = true;
@@ -68,7 +68,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
 			for (int y = mins.y; y <= maxs.y; ++y) {
-				const Voxel& voxel = node.volume()->voxel(x, y, z);
+				const voxel::Voxel& voxel = node.volume()->voxel(x, y, z);
 				if (isAir(voxel.getMaterial())) {
 					*zlibBuf++ = (uint8_t)0;
 					*zlibBuf++ = (uint8_t)0;

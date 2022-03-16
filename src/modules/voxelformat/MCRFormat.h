@@ -11,7 +11,7 @@ class ZipReadStream;
 }
 
 
-namespace voxel {
+namespace voxelformat {
 
 namespace priv {
 class NamedBinaryTag;

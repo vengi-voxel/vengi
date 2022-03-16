@@ -8,7 +8,7 @@
 #include "core/collection/DynamicArray.h"
 #include "io/Stream.h"
 
-namespace voxel {
+namespace voxelformat {
 /**
  * @brief Taken from gox
  *

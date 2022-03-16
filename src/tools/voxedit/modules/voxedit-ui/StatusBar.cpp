@@ -72,7 +72,7 @@ void StatusBar::update(const char *title, float height, const core::String &last
 	if (ImGui::Begin(title, nullptr, statusBarFlags)) {
 		core_trace_scoped(StatusBar);
 		voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
-		const voxel::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
+		const voxelformat::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
 		const voxedit::ModifierFacade& modifier = sceneMgr.modifier();
 		const float fields = 4.0f;
 		const int nodeId = sceneGraph.activeNode();

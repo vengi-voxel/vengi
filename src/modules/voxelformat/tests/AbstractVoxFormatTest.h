@@ -13,30 +13,30 @@
 #include "core/Var.h"
 #include "core/GameConfig.h"
 
-namespace voxel {
+namespace voxelformat {
 
-class AbstractVoxFormatTest: public AbstractVoxelTest {
+class AbstractVoxFormatTest: public voxel::AbstractVoxelTest {
 protected:
 	static const voxel::Voxel Empty;
 
-	void dump(const core::String& srcFilename, const voxel::SceneGraph &sceneGraph);
+	void dump(const core::String& srcFilename, const SceneGraph &sceneGraph);
 	void dump(const core::String& structName, voxel::RawVolume* v, const core::String& filename);
 
-	void testFirstAndLastPaletteIndex(const core::String &filename, voxel::Format *format, bool includingColor,
+	void testFirstAndLastPaletteIndex(const core::String &filename, Format *format, bool includingColor,
 									  bool includingRegion);
-	void testFirstAndLastPaletteIndexConversion(voxel::Format &srcFormat, const core::String &destFilename,
-												voxel::Format &destFormat, bool includingColor, bool includingRegion);
+	void testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &destFilename,
+												Format &destFormat, bool includingColor, bool includingRegion);
 
-	void testRGB(RawVolume *volume);
+	void testRGB(voxel::RawVolume *volume);
 
-	void testSaveMultipleLayers(const core::String& filename, voxel::Format* format);
+	void testSaveMultipleLayers(const core::String& filename, Format* format);
 
-	void testSave(const core::String& filename, voxel::Format* format);
+	void testSave(const core::String& filename, Format* format);
 
-	void testSaveLoadVoxel(const core::String& filename, voxel::Format* format, int mins = 0, int maxs = 1);
+	void testSaveLoadVoxel(const core::String& filename, Format* format, int mins = 0, int maxs = 1);
 
-	void testLoadSaveAndLoad(const core::String &srcFilename, voxel::Format &srcFormat,
-							 const core::String &destFilename, voxel::Format &destFormat, bool includingColor,
+	void testLoadSaveAndLoad(const core::String &srcFilename, Format &srcFormat,
+							 const core::String &destFilename, Format &destFormat, bool includingColor,
 							 bool includingRegion);
 
 	io::FilePtr open(const core::String& filename, io::FileMode mode = io::FileMode::Read) {
@@ -44,7 +44,7 @@ protected:
 		return file;
 	}
 
-	voxel::RawVolume* load(const core::String& filename, voxel::Format& format) {
+	voxel::RawVolume* load(const core::String& filename, Format& format) {
 		const io::FilePtr& file = open(filename);
 		if (!file->validHandle()) {
 			return nullptr;
@@ -54,7 +54,7 @@ protected:
 		return v;
 	}
 
-	int loadPalette(const core::String& filename, voxel::Format& format, voxel::Palette &palette) {
+	int loadPalette(const core::String& filename, Format& format, voxel::Palette &palette) {
 		const io::FilePtr& file = open(filename);
 		if (!file->validHandle()) {
 			return 0;

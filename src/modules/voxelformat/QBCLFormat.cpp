@@ -20,7 +20,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
-namespace voxel {
+namespace voxelformat {
 
 namespace qbcl {
 const int RLE_FLAG = 2;
@@ -160,7 +160,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 			const int64_t dataSizePos = rleDataStream.pos();
 			wrapSave(rleDataStream.writeUInt16(rleEntries))
 			for (int y = mins.y; y <= maxs.y; ++y) {
-				const Voxel& voxel = v->voxel(x, y, z);
+				const voxel::Voxel& voxel = v->voxel(x, y, z);
 				const int paletteIdx = voxel.getColor();
 				if (previousColor == -1) {
 					previousColor = paletteIdx;

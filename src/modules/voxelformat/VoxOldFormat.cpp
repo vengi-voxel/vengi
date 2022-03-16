@@ -19,7 +19,7 @@
 		return false; \
 	}
 
-namespace voxel {
+namespace voxelformat {
 
 bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	uint32_t depth, height, width;
@@ -37,7 +37,7 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 		Log::error("Invalid region: %i:%i:%i", width, height, depth);
 		return false;
 	}
-	RawVolume *volume = new RawVolume(region);
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);

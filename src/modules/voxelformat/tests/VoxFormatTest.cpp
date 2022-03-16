@@ -14,13 +14,13 @@
 #include "vox_glasses.h"
 #include "8ontop.h"
 
-namespace voxel {
+namespace voxelformat {
 
 class VoxFormatTest : public AbstractVoxFormatTest {};
 
 TEST_F(VoxFormatTest, testLoad) {
 	VoxFormat f;
-	std::unique_ptr<RawVolume> volume(load("magicavoxel.vox", f));
+	std::unique_ptr<voxel::RawVolume> volume(load("magicavoxel.vox", f));
 	ASSERT_NE(nullptr, volume) << "Could not load vox file";
 }
 
@@ -29,7 +29,7 @@ TEST_F(VoxFormatTest, testLoadCharacter) {
 	const io::FilePtr &file = open("vox_character.vox");
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
-	voxel::SceneGraph sceneGraph;
+	SceneGraph sceneGraph;
 	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph));
 	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {
@@ -50,7 +50,7 @@ TEST_F(VoxFormatTest, testLoadGlasses) {
 	const io::FilePtr &file = open("vox_glasses.vox");
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
-	voxel::SceneGraph sceneGraph;
+	SceneGraph sceneGraph;
 	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph));
 	ASSERT_EQ(1u, sceneGraph.size());
 	// dump(file->fileName(), sceneGraph);
@@ -68,7 +68,7 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 	const io::FilePtr &file = open("8ontop.vox");
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
-	voxel::SceneGraph sceneGraph;
+	SceneGraph sceneGraph;
 	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph));
 	ASSERT_EQ(72u, sceneGraph.size());
 	// dump(file->fileName(), sceneGraph);
@@ -102,7 +102,7 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 
 TEST_F(VoxFormatTest, testLoadRGB) {
 	VoxFormat f;
-	std::unique_ptr<RawVolume> volume(load("rgb.vox", f));
+	std::unique_ptr<voxel::RawVolume> volume(load("rgb.vox", f));
 	ASSERT_NE(nullptr, volume) << "Could not load vox file";
 	testRGB(volume.get());
 }
@@ -119,8 +119,8 @@ TEST_F(VoxFormatTest, testSaveMultipleLayers) {
 
 TEST_F(VoxFormatTest, testSaveBigVolume) {
 	VoxFormat f;
-	const Region region(glm::ivec3(0), glm::ivec3(1023, 0, 0));
-	RawVolume bigVolume(region);
+	const voxel::Region region(glm::ivec3(0), glm::ivec3(1023, 0, 0));
+	voxel::RawVolume bigVolume(region);
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	bigVolume.setVoxel(0, 0, 0, voxel);
 	bigVolume.setVoxel(256, 0, 0, voxel);
@@ -146,7 +146,7 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 
 TEST_F(VoxFormatTest, testSave) {
 	VoxFormat f;
-	RawVolume *loadedVolume = load("magicavoxel.vox", f);
+	voxel::RawVolume *loadedVolume = load("magicavoxel.vox", f);
 	ASSERT_NE(nullptr, loadedVolume) << "Could not load vox file";
 
 	const io::FilePtr &fileSave = open("magicavoxel-save.vox", io::FileMode::SysWrite);
@@ -154,7 +154,7 @@ TEST_F(VoxFormatTest, testSave) {
 	EXPECT_TRUE(f.save(loadedVolume, fileSave->name(), sstream));
 	const io::FilePtr &fileLoadAfterSave = open("magicavoxel-save.vox");
 	io::FileStream stream2(fileLoadAfterSave);
-	RawVolume *savedVolume = f.load(fileLoadAfterSave->name(), stream2);
+	voxel::RawVolume *savedVolume = f.load(fileLoadAfterSave->name(), stream2);
 	EXPECT_NE(nullptr, savedVolume) << "Could not load saved vox file";
 	if (savedVolume) {
 		EXPECT_EQ(*savedVolume, *loadedVolume);

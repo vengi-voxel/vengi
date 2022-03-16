@@ -76,7 +76,7 @@ CORE_ENUM_BIT_OPERATIONS(LayerMergeFlags)
  */
 class SceneManager : public core::IComponent {
 private:
-	voxel::SceneGraph _sceneGraph;
+	voxelformat::SceneGraph _sceneGraph;
 	voxelrender::SceneGraphRenderer _volumeRenderer;
 	anim::VolumeCache _volumeCache;
 	render::GridRenderer _gridRenderer;
@@ -87,7 +87,7 @@ private:
 	voxel::RawVolume* _copy = nullptr;
 	render::Gizmo _gizmo;
 	EditMode _editMode = EditMode::Model;
-	std::future<voxel::SceneGraph> _loadingFuture;
+	std::future<voxelformat::SceneGraph> _loadingFuture;
 
 	animation::AnimationSettings::Type _entityType = animation::AnimationSettings::Type::Max;
 	animation::Character _character;
@@ -190,12 +190,12 @@ private:
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
 	void updateAABBMesh();
-	math::AABB<float> toAABB(const voxel::Region& region, const voxel::SceneGraphTransform &transform) const;
+	math::AABB<float> toAABB(const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const;
 protected:
-	voxel::SceneGraphNode *sceneGraphNode(int nodeId);
-	const voxel::SceneGraphNode *sceneGraphNode(int nodeId) const;
-	bool setSceneGraphNodeVolume(voxel::SceneGraphNode &node, voxel::RawVolume* volume);
-	bool loadSceneGraph(voxel::SceneGraph& sceneGraph);
+	voxelformat::SceneGraphNode *sceneGraphNode(int nodeId);
+	const voxelformat::SceneGraphNode *sceneGraphNode(int nodeId) const;
+	bool setSceneGraphNodeVolume(voxelformat::SceneGraphNode &node, voxel::RawVolume* volume);
+	bool loadSceneGraph(voxelformat::SceneGraph& sceneGraph);
 	int activeNode() const;
 	int addModelChild(const core::String& name, int width, int height, int depth);
 
@@ -350,7 +350,7 @@ public:
 	bool runScript(const core::String& script, const core::DynamicArray<core::String>& args);
 
 	bool newScene(bool force, const core::String& name, const voxel::Region& region);
-	int addNodeToSceneGraph(voxel::SceneGraphNode &node, int parent = 0);
+	int addNodeToSceneGraph(voxelformat::SceneGraphNode &node, int parent = 0);
 
 	/**
 	 * @return @c true if the scene was modified and not saved yet
@@ -411,15 +411,15 @@ public:
 	voxelgenerator::LUAGenerator& luaGenerator();
 	video::ShapeBuilder& shapeBuilder();
 	render::ShapeRenderer& shapeRenderer();
-	const voxel::SceneGraph &sceneGraph();
+	const voxelformat::SceneGraph &sceneGraph();
 	void setEditMode(EditMode mode);
 
 private:
 
 	void onNewNodeAdded(int newNodeId);
-	bool nodeRename(voxel::SceneGraphNode &node, const core::String &name);
-	bool nodeRemove(voxel::SceneGraphNode &node, bool recursive);
-	void nodeDuplicate(const voxel::SceneGraphNode &node);
+	bool nodeRename(voxelformat::SceneGraphNode &node, const core::String &name);
+	bool nodeRemove(voxelformat::SceneGraphNode &node, bool recursive);
+	void nodeDuplicate(const voxelformat::SceneGraphNode &node);
 public:
 	bool nodeMove(int sourceNodeId, int targetNodeId);
 	bool nodeRename(int nodeId, const core::String &name);

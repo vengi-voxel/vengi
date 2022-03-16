@@ -6,7 +6,7 @@
 
 #include "MeshExporter.h"
 
-namespace voxel {
+namespace voxelformat {
 /**
  * @brief Polygon File Format or Stanford Triangle Format
  */

@@ -7,11 +7,11 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelutil/VolumeVisitor.h"
 
-namespace voxel {
+namespace voxelformat {
 
 const voxel::Voxel AbstractVoxFormatTest::Empty;
 
-void AbstractVoxFormatTest::dump(const core::String& srcFilename, const voxel::SceneGraph &sceneGraph) {
+void AbstractVoxFormatTest::dump(const core::String& srcFilename, const SceneGraph &sceneGraph) {
 	int i = 0;
 	const core::String& prefix = core::string::extractFilename(srcFilename);
 	for (const auto &node : sceneGraph) {
@@ -42,28 +42,28 @@ void AbstractVoxFormatTest::dump(const core::String& structName, voxel::RawVolum
 	stream.writeString("\treturn v;\n}\n};\n", false);
 }
 
-void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &filename, voxel::Format *format, bool includingColor, bool includingRegion) {
-	Region region(glm::ivec3(0), glm::ivec3(1));
-	RawVolume volume(region);
-	EXPECT_TRUE(volume.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 0)));
-	EXPECT_TRUE(volume.setVoxel(0, 0, 1, createVoxel(VoxelType::Generic, 255)));
+void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &filename, Format *format, bool includingColor, bool includingRegion) {
+	voxel::Region region(glm::ivec3(0), glm::ivec3(1));
+	voxel::RawVolume volume(region);
+	EXPECT_TRUE(volume.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 0)));
+	EXPECT_TRUE(volume.setVoxel(0, 0, 1, createVoxel(voxel::VoxelType::Generic, 255)));
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 	ASSERT_TRUE(format->save(&volume, filename, stream));
 	stream.seek(0);
-	std::unique_ptr<RawVolume> loaded(format->load(filename, stream));
+	std::unique_ptr<voxel::RawVolume> loaded(format->load(filename, stream));
 	ASSERT_NE(nullptr, loaded);
 	EXPECT_TRUE(volumeComparator(volume, *loaded, false, includingRegion)) << "Volumes differ: " << volume << *loaded;
 }
 
-void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(voxel::Format &srcFormat, const core::String& destFilename, voxel::Format &destFormat, bool includingColor, bool includingRegion) {
-	Region region(glm::ivec3(0), glm::ivec3(1));
-	RawVolume original(region);
-	EXPECT_TRUE(original.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 0)));
-	EXPECT_TRUE(original.setVoxel(0, 0, 1, createVoxel(VoxelType::Generic, 255)));
+void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String& destFilename, Format &destFormat, bool includingColor, bool includingRegion) {
+	voxel::Region region(glm::ivec3(0), glm::ivec3(1));
+	voxel::RawVolume original(region);
+	EXPECT_TRUE(original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 0)));
+	EXPECT_TRUE(original.setVoxel(0, 0, 1, createVoxel(voxel::VoxelType::Generic, 255)));
 	io::BufferedReadWriteStream srcFormatStream(10 * 1024 * 1024);
 	EXPECT_TRUE(srcFormat.save(&original, destFilename, srcFormatStream)) << "Could not save " << destFilename;
 	srcFormatStream.seek(0);
-	std::unique_ptr<RawVolume> origReloaded(srcFormat.load(destFilename, srcFormatStream));
+	std::unique_ptr<voxel::RawVolume> origReloaded(srcFormat.load(destFilename, srcFormatStream));
 	if (includingRegion) {
 		ASSERT_EQ(original.region(), origReloaded->region());
 	}
@@ -72,7 +72,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(voxel::Format
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 	EXPECT_TRUE(destFormat.save(origReloaded.get(), destFilename, stream)) << "Could not save " << destFilename;
 	stream.seek(0);
-	std::unique_ptr<RawVolume> loaded(destFormat.load(destFilename, stream));
+	std::unique_ptr<voxel::RawVolume> loaded(destFormat.load(destFilename, stream));
 	ASSERT_NE(nullptr, loaded) << "Could not load " << destFilename;
 	if (includingRegion) {
 		ASSERT_EQ(original.region(), loaded->region());
@@ -80,20 +80,20 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(voxel::Format
 	EXPECT_TRUE(volumeComparator(original, *loaded, includingColor, includingRegion)) << "Volumes differ: " << original << *loaded;
 }
 
-void AbstractVoxFormatTest::testRGB(RawVolume* volume) {
-	EXPECT_EQ(VoxelType::Generic, volume->voxel( 0,  0,  0).getMaterial());
-	EXPECT_EQ(VoxelType::Generic, volume->voxel(31,  0,  0).getMaterial());
-	EXPECT_EQ(VoxelType::Generic, volume->voxel(31,  0, 31).getMaterial());
-	EXPECT_EQ(VoxelType::Generic, volume->voxel( 0,  0, 31).getMaterial());
+void AbstractVoxFormatTest::testRGB(voxel::RawVolume* volume) {
+	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0,  0).getMaterial());
+	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0,  0).getMaterial());
+	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0, 31).getMaterial());
+	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0, 31).getMaterial());
 
-	EXPECT_EQ(VoxelType::Generic, volume->voxel( 0, 31,  0).getMaterial());
-	EXPECT_EQ(VoxelType::Generic, volume->voxel(31, 31,  0).getMaterial());
-	EXPECT_EQ(VoxelType::Generic, volume->voxel(31, 31, 31).getMaterial());
-	EXPECT_EQ(VoxelType::Generic, volume->voxel( 0, 31, 31).getMaterial());
+	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0, 31,  0).getMaterial());
+	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31,  0).getMaterial());
+	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31, 31).getMaterial());
+	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0, 31, 31).getMaterial());
 
-	EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0,  4).getMaterial());
-	EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0, 12).getMaterial());
-	EXPECT_EQ(VoxelType::Generic, volume->voxel( 9,  0, 19).getMaterial());
+	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0,  4).getMaterial());
+	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 12).getMaterial());
+	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 19).getMaterial());
 
 	EXPECT_EQ(245, volume->voxel( 0,  0,  0).getColor()) << "Expected to get the palette index 0";
 	EXPECT_EQ(245, volume->voxel(31,  0,  0).getColor()) << "Expected to get the palette index 0";
@@ -110,13 +110,13 @@ void AbstractVoxFormatTest::testRGB(RawVolume* volume) {
 	EXPECT_EQ(197, volume->voxel( 9,  0, 19).getColor()) << "Expected to get the palette index for blue"; // blue
 }
 
-void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename, voxel::Format &srcFormat, const core::String& destFilename, voxel::Format &destFormat, bool includingColor, bool includingRegion) {
-	std::unique_ptr<RawVolume> src(load(srcFilename, srcFormat));
+void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename, Format &srcFormat, const core::String& destFilename, Format &destFormat, bool includingColor, bool includingRegion) {
+	std::unique_ptr<voxel::RawVolume> src(load(srcFilename, srcFormat));
 	ASSERT_TRUE(src.get() != nullptr);
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 	EXPECT_TRUE(destFormat.save(src.get(), destFilename, stream)) << "Could not save " << destFilename;
 	stream.seek(0);
-	std::unique_ptr<RawVolume> loaded(destFormat.load(destFilename, stream));
+	std::unique_ptr<voxel::RawVolume> loaded(destFormat.load(destFilename, stream));
 	ASSERT_NE(nullptr, loaded) << "Could not load " << destFilename;
 	if (includingRegion) {
 		ASSERT_EQ(src->region(), loaded->region());
@@ -124,24 +124,24 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename,
 	EXPECT_TRUE(volumeComparator(*src.get(), *loaded, includingColor, includingRegion)) << "Volumes differ: " << *src.get() << *loaded;
 }
 
-void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename, voxel::Format *format) {
-	Region region(glm::ivec3(0), glm::ivec3(0));
-	RawVolume layer1(region);
-	RawVolume layer2(region);
-	RawVolume layer3(region);
-	RawVolume layer4(region);
-	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
-	EXPECT_TRUE(layer2.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
-	EXPECT_TRUE(layer3.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
-	EXPECT_TRUE(layer4.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
+void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename, Format *format) {
+	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
+	voxel::RawVolume layer1(region);
+	voxel::RawVolume layer2(region);
+	voxel::RawVolume layer3(region);
+	voxel::RawVolume layer4(region);
+	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(layer2.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(layer3.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(layer4.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
 	SceneGraph sceneGraph;
-	voxel::SceneGraphNode node1;
+	SceneGraphNode node1;
 	node1.setVolume(&layer1, false);
-	voxel::SceneGraphNode node2;
+	SceneGraphNode node2;
 	node2.setVolume(&layer2, false);
-	voxel::SceneGraphNode node3;
+	SceneGraphNode node3;
 	node3.setVolume(&layer3, false);
-	voxel::SceneGraphNode node4;
+	SceneGraphNode node4;
 	node4.setVolume(&layer4, false);
 	sceneGraph.emplace(core::move(node1));
 	sceneGraph.emplace(core::move(node2));
@@ -157,12 +157,12 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
 
-void AbstractVoxFormatTest::testSave(const core::String &filename, voxel::Format *format) {
-	Region region(glm::ivec3(0), glm::ivec3(0));
-	RawVolume layer1(region);
-	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 1)));
+void AbstractVoxFormatTest::testSave(const core::String &filename, Format *format) {
+	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
+	voxel::RawVolume layer1(region);
+	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
 	SceneGraph sceneGraph;
-	voxel::SceneGraphNode node1;
+	SceneGraphNode node1;
 	node1.setVolume(&layer1, false);
 	sceneGraph.emplace(core::move(node1));
 	const io::FilePtr &sfile = open(filename, io::FileMode::SysWrite);
@@ -175,24 +175,24 @@ void AbstractVoxFormatTest::testSave(const core::String &filename, voxel::Format
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
 
-void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, voxel::Format *format, int mins, int maxs) {
-	const Region region(mins, maxs);
-	RawVolume original(region);
+void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Format *format, int mins, int maxs) {
+	const voxel::Region region(mins, maxs);
+	voxel::RawVolume original(region);
 
-	original.setVoxel(mins, mins, mins, createVoxel(VoxelType::Generic, 1));
-	original.setVoxel(mins, mins, maxs, createVoxel(VoxelType::Generic, 245));
-	original.setVoxel(mins, maxs, maxs, createVoxel(VoxelType::Generic, 127));
-	original.setVoxel(mins, maxs, mins, createVoxel(VoxelType::Generic, 200));
+	original.setVoxel(mins, mins, mins, createVoxel(voxel::VoxelType::Generic, 1));
+	original.setVoxel(mins, mins, maxs, createVoxel(voxel::VoxelType::Generic, 245));
+	original.setVoxel(mins, maxs, maxs, createVoxel(voxel::VoxelType::Generic, 127));
+	original.setVoxel(mins, maxs, mins, createVoxel(voxel::VoxelType::Generic, 200));
 
-	original.setVoxel(maxs, maxs, maxs, createVoxel(VoxelType::Generic, 1));
-	original.setVoxel(maxs, maxs, mins, createVoxel(VoxelType::Generic, 245));
-	original.setVoxel(maxs, mins, mins, createVoxel(VoxelType::Generic, 127));
-	original.setVoxel(maxs, mins, maxs, createVoxel(VoxelType::Generic, 200));
+	original.setVoxel(maxs, maxs, maxs, createVoxel(voxel::VoxelType::Generic, 1));
+	original.setVoxel(maxs, maxs, mins, createVoxel(voxel::VoxelType::Generic, 245));
+	original.setVoxel(maxs, mins, mins, createVoxel(voxel::VoxelType::Generic, 127));
+	original.setVoxel(maxs, mins, maxs, createVoxel(voxel::VoxelType::Generic, 200));
 
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 	ASSERT_TRUE(format->save(&original, filename, stream));
 	stream.seek(0);
-	std::unique_ptr<RawVolume> loaded(format->load(filename, stream));
+	std::unique_ptr<voxel::RawVolume> loaded(format->load(filename, stream));
 	ASSERT_NE(nullptr, loaded);
 	EXPECT_EQ(original, *loaded);
 }

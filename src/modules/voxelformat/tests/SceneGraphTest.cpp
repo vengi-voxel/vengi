@@ -7,7 +7,7 @@
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 
-namespace voxel {
+namespace voxelformat {
 
 class SceneGraphTest: public app::AbstractTest {
 };

@@ -16,12 +16,13 @@
 #include <glm/fwd.hpp>
 
 namespace voxel {
+	class Mesh;
+}
+
+namespace voxelformat {
 
 // the max amount of voxels - [0-255]
 static constexpr int MaxRegionSize = 256;
-
-
-class Mesh;
 
 /**
  * @brief Base class for all voxel formats.
@@ -45,13 +46,13 @@ protected:
 	 * This is the loaded palette from the input file. This is not the currently in-use palette. This might differ
 	 * and the colors will get matched to the in-use palette.
 	 */
-	Palette _palette;
+	voxel::Palette _palette;
 
 	/**
 	 * @brief Maps a custum palette index to our own 256 color palette by a closest match
 	 */
 	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;
-	RawVolume* merge(const SceneGraph& sceneGraph) const;
+	voxel::RawVolume* merge(const SceneGraph& sceneGraph) const;
 
 	/**
 	 * @brief Checks whether the given chunk is empty (only contains air).
@@ -92,7 +93,7 @@ public:
 	 *
 	 * @return the amount of colors found in the palette
 	 */
-	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, Palette &palette);
+	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette);
 
 	/**
 	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes
@@ -101,9 +102,9 @@ public:
 	/**
 	 * @brief Merge the loaded volumes into one. The returned memory is yours.
 	 */
-	virtual RawVolume* load(const core::String &filename, io::SeekableReadStream& stream);
+	virtual voxel::RawVolume* load(const core::String &filename, io::SeekableReadStream& stream);
 	virtual bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) = 0;
-	virtual bool save(const RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream);
+	virtual bool save(const voxel::RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream);
 };
 
 }

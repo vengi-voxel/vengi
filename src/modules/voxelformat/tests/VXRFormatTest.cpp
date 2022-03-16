@@ -6,7 +6,7 @@
 #include "voxelformat/VXMFormat.h"
 #include "voxelformat/VXRFormat.h"
 
-namespace voxel {
+namespace voxelformat {
 
 class VXRFormatTest: public AbstractVoxFormatTest {
 };

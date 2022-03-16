@@ -15,7 +15,7 @@
 
 namespace voxedit {
 
-void LayerPanel::addLayerItem(const voxel::SceneGraph& sceneGraph, const voxel::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+void LayerPanel::addLayerItem(const voxelformat::SceneGraph& sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	ImGui::TableNextColumn();
 
 	const int nodeId = node.id();
@@ -82,7 +82,7 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 	_hasFocus = false;
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		_hasFocus = ImGui::IsWindowHovered();
-		const voxel::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
+		const voxelformat::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
 		core_trace_scoped(LayerPanel);
 		ImGui::BeginChild("##layertable", ImVec2(0.0f, 400.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
 		static const uint32_t TableFlags =
@@ -94,7 +94,7 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 			ImGui::TableSetupColumn("Name##layer", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn("##deletelayer", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableHeadersRow();
-			for (voxel::SceneGraphNode &node : sceneGraph) {
+			for (voxelformat::SceneGraphNode &node : sceneGraph) {
 				addLayerItem(sceneGraph, node, listener);
 			}
 			ImGui::EndTable();
@@ -102,7 +102,7 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		ImGui::EndChild();
 		if (ImGui::Button(ICON_FA_PLUS_SQUARE"##newlayer")) {
 			const int nodeId = sceneGraph.activeNode();
-			voxel::SceneGraphNode &node = sceneGraph.node(nodeId);
+			voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
 			const voxel::RawVolume* v = node.volume();
 			const voxel::Region& region = v->region();
 			layerSettings->position = region.getLowerCorner();
@@ -119,7 +119,7 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 			ImGui::InputVec3("Size", layerSettings->size);
 			if (ImGui::Button(ICON_FA_CHECK " OK##layersettings")) {
 				ImGui::CloseCurrentPopup();
-				voxel::SceneGraphNode node;
+				voxelformat::SceneGraphNode node;
 				voxel::RawVolume* v = new voxel::RawVolume(layerSettings->region());
 				node.setVolume(v, true);
 				node.setName(layerSettings->name.c_str());
@@ -134,7 +134,7 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		}
 
 		ImGui::SameLine();
-		const bool multipleModels = sceneGraph.size(voxel::SceneGraphNodeType::Model) <= 1;
+		const bool multipleModels = sceneGraph.size(voxelformat::SceneGraphNodeType::Model) <= 1;
 		if (ImGui::DisabledButton(ICON_FA_PLAY"##animatelayers", multipleModels)) {
 			if (sceneMgr.animateActive()) {
 				command::executeCommands("animate 0", &listener);

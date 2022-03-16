@@ -19,7 +19,7 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFormat.h"
 
-namespace voxel {
+namespace voxelformat {
 
 class ConvertTest: public AbstractVoxFormatTest {
 };

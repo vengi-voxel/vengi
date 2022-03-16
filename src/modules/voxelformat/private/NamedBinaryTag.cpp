@@ -6,7 +6,7 @@
 #include "core/Log.h"
 #include "io/MemoryReadStream.h"
 
-namespace voxel {
+namespace voxelformat {
 
 namespace priv {
 

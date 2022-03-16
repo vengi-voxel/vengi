@@ -7,7 +7,7 @@
 #include "command/CommandHandler.h"
 #include "core/Var.h"
 
-namespace voxel {
+namespace voxelformat {
 class SceneGraph;
 class SceneGraphNode;
 }
@@ -18,7 +18,7 @@ struct LayerSettings;
 
 class LayerPanel {
 private:
-	void addLayerItem(const voxel::SceneGraph& sceneGraph, const voxel::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	void addLayerItem(const voxelformat::SceneGraph& sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	core::VarPtr _animationSpeedVar;
 	bool _hasFocus = false;
 

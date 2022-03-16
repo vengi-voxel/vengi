@@ -53,7 +53,7 @@ static int luaVoxel_scenegraph_new(lua_State* s) {
 	const bool visible = lua_toboolean(s, 2);
 	const voxel::Region* region = voxelgenerator::LUAGenerator::luaVoxel_toRegion(s, 3);
 	voxel::RawVolume *v = new voxel::RawVolume(*region);
-	voxel::SceneGraphNode node;
+	voxelformat::SceneGraphNode node;
 	node.setVolume(v, true);
 	node.setName(name);
 	node.setVisible(visible);
@@ -71,15 +71,15 @@ static int luaVoxel_scenegraph_new(lua_State* s) {
 
 static int luaVoxel_scenegraph_get(lua_State* s) {
 	int nodeId = (int)luaL_optinteger(s, 1, -1);
-	const voxel::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	if (nodeId == -1) {
 		nodeId = sceneGraph.activeNode();
 	}
 	if (!sceneGraph.hasNode(nodeId)) {
 		return clua_error(s, "Could not find node for id %d", nodeId);
 	}
-	const voxel::SceneGraphNode& node = sceneGraph.node(nodeId);
-	if (node.type() != voxel::SceneGraphNodeType::Model) {
+	const voxelformat::SceneGraphNode& node = sceneGraph.node(nodeId);
+	if (node.type() != voxelformat::SceneGraphNodeType::Model) {
 		return clua_error(s, "Invalid node for id %d", nodeId);
 	}
 	LUASceneGraphNode luaNode{nodeId};
@@ -88,11 +88,11 @@ static int luaVoxel_scenegraph_get(lua_State* s) {
 
 static int luaVoxel_scenegraphnode_name(lua_State* s) {
 	LUASceneGraphNode* luaNode = luaVoxel_toSceneGraphNode(s, 1);
-	const voxel::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	if (!sceneGraph.hasNode(luaNode->nodeId)) {
 		return clua_error(s, "Node with id %i not found", luaNode->nodeId);
 	}
-	const voxel::SceneGraphNode& node = sceneGraph.node(luaNode->nodeId);
+	const voxelformat::SceneGraphNode& node = sceneGraph.node(luaNode->nodeId);
 	lua_pushstring(s, node.name().c_str());
 	return 1;
 }
@@ -100,7 +100,7 @@ static int luaVoxel_scenegraphnode_name(lua_State* s) {
 static int luaVoxel_scenegraphnode_setname(lua_State* s) {
 	LUASceneGraphNode* luaNode = luaVoxel_toSceneGraphNode(s, 1);
 	const char *newName = lua_tostring(s, 2);
-	const voxel::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	if (!sceneGraph.hasNode(luaNode->nodeId)) {
 		return clua_error(s, "Node with id %i not found", luaNode->nodeId);
 	}
@@ -110,22 +110,22 @@ static int luaVoxel_scenegraphnode_setname(lua_State* s) {
 
 static int luaVoxel_scenegraphnode_tostring(lua_State *s) {
 	LUASceneGraphNode* luaNode = luaVoxel_toSceneGraphNode(s, 1);
-	const voxel::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	if (!sceneGraph.hasNode(luaNode->nodeId)) {
 		return clua_error(s, "Node with id %i not found", luaNode->nodeId);
 	}
-	voxel::SceneGraphNode& node = sceneGraph.node(luaNode->nodeId);
+	voxelformat::SceneGraphNode& node = sceneGraph.node(luaNode->nodeId);
 	lua_pushfstring(s, "layer: [%d, %s]", luaNode->nodeId, node.name().c_str());
 	return 1;
 }
 
 static int luaVoxel_scenegraphnode_volume(lua_State* s) {
 	LUASceneGraphNode* luaNode = luaVoxel_toSceneGraphNode(s, 1);
-	const voxel::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	if (!sceneGraph.hasNode(luaNode->nodeId)) {
 		return clua_error(s, "Node with id %i not found", luaNode->nodeId);
 	}
-	voxel::SceneGraphNode& node = sceneGraph.node(luaNode->nodeId);
+	voxelformat::SceneGraphNode& node = sceneGraph.node(luaNode->nodeId);
 	voxel::RawVolume* volume = node.volume();
 	if (volume == nullptr) {
 		return clua_error(s, "Invalid node id %d given - no volume found", luaNode->nodeId);

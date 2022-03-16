@@ -7,7 +7,7 @@
 #include "io/File.h"
 #include "voxelformat/QBFormat.h"
 
-namespace voxel {
+namespace voxelformat {
 
 class OBJFormatTest : public AbstractVoxFormatTest {};
 

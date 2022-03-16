@@ -45,22 +45,22 @@ private:
 protected:
 	glm::ivec3 getArgIvec3(const core::String &name);
 	core::String getFilenameForLayerName(const core::String& inputfile, const core::String &layerName, int id);
-	bool handleInputFile(const core::String &infile, voxel::SceneGraph &sceneGraph, bool multipleInputs);
+	bool handleInputFile(const core::String &infile, voxelformat::SceneGraph &sceneGraph, bool multipleInputs);
 
 	void usage() const override;
-	void mirror(const core::String& axisStr, voxel::SceneGraph& sceneGraph);
-	void rotate(const core::String& axisStr, voxel::SceneGraph& sceneGraph);
-	void scale(voxel::SceneGraph& sceneGraph);
-	void resize(const glm::ivec3 &size, voxel::SceneGraph& sceneGraph);
-	void script(const core::String &scriptParameters, voxel::SceneGraph& sceneGraph);
-	void translate(const glm::ivec3& pos, voxel::SceneGraph& sceneGraph);
-	void pivot(const glm::ivec3& pivot, voxel::SceneGraph& sceneGraph);
-	void crop(voxel::SceneGraph& sceneGraph);
-	void dumpNode_r(const voxel::SceneGraph& sceneGraph, int nodeId, int indent);
-	void dump(const voxel::SceneGraph& sceneGraph);
-	void filterVolumes(voxel::SceneGraph& sceneGraph);
-	void exportLayersIntoSingleObjects(voxel::SceneGraph& sceneGraph, const core::String &inputfile);
-	void split(const glm::ivec3 &size, voxel::SceneGraph& sceneGraph);
+	void mirror(const core::String& axisStr, voxelformat::SceneGraph& sceneGraph);
+	void rotate(const core::String& axisStr, voxelformat::SceneGraph& sceneGraph);
+	void scale(voxelformat::SceneGraph& sceneGraph);
+	void resize(const glm::ivec3 &size, voxelformat::SceneGraph& sceneGraph);
+	void script(const core::String &scriptParameters, voxelformat::SceneGraph& sceneGraph);
+	void translate(const glm::ivec3& pos, voxelformat::SceneGraph& sceneGraph);
+	void pivot(const glm::ivec3& pivot, voxelformat::SceneGraph& sceneGraph);
+	void crop(voxelformat::SceneGraph& sceneGraph);
+	void dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId, int indent);
+	void dump(const voxelformat::SceneGraph& sceneGraph);
+	void filterVolumes(voxelformat::SceneGraph& sceneGraph);
+	void exportLayersIntoSingleObjects(voxelformat::SceneGraph& sceneGraph, const core::String &inputfile);
+	void split(const glm::ivec3 &size, voxelformat::SceneGraph& sceneGraph);
 public:
 	VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
 

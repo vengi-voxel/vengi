@@ -7,7 +7,7 @@
 #include "io/File.h"
 #include "voxelformat/QBFormat.h"
 
-namespace voxel {
+namespace voxelformat {
 
 class GLTFFormatTest : public AbstractVoxFormatTest {};
 
@@ -28,4 +28,4 @@ TEST_F(GLTFFormatTest, testExportMesh) {
 	EXPECT_TRUE(f.saveGroups(sceneGraph, outFilename, outStream));
 }
 
-} // namespace voxel
+} // namespace voxelformat
