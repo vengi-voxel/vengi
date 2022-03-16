@@ -67,15 +67,15 @@ bool FrameBuffer::prepareAttachments(const FrameBufferConfig& cfg) {
 		_clearFlag |= ClearFlag::Depth;
 	} else if (cfg.useDepthBuffer() && !depthStencil) {
 		if (cfg.useStencilBuffer()) {
-			addBufferAttachment(FrameBufferAttachment::DepthStencil, video::createRenderBuffer(cfg.depthBufferFormat(), dim.x, dim.y));
+			addBufferAttachment(FrameBufferAttachment::DepthStencil, video::createRenderBuffer(cfg.depthBufferFormat(), dim.x, dim.y, cfg.samples()));
 			_clearFlag |= ClearFlag::Depth;
 			_clearFlag |= ClearFlag::Stencil;
 		} else {
-			addBufferAttachment(FrameBufferAttachment::Depth, video::createRenderBuffer(cfg.depthBufferFormat(), dim.x, dim.y));
+			addBufferAttachment(FrameBufferAttachment::Depth, video::createRenderBuffer(cfg.depthBufferFormat(), dim.x, dim.y, cfg.samples()));
 			_clearFlag |= ClearFlag::Depth;
 		}
 	} else if (cfg.useStencilBuffer()) {
-		addBufferAttachment(FrameBufferAttachment::Stencil, video::createRenderBuffer(TextureFormat::S8, dim.x, dim.y));
+		addBufferAttachment(FrameBufferAttachment::Stencil, video::createRenderBuffer(TextureFormat::S8, dim.x, dim.y, cfg.samples()));
 		_clearFlag |= ClearFlag::Stencil;
 	}
 

@@ -54,6 +54,11 @@ FrameBufferConfig& FrameBufferConfig::stencilBuffer(bool stencilBuffer) {
 	return *this;
 }
 
+FrameBufferConfig& FrameBufferConfig::samples(int samples) {
+	_samples = samples;
+	return *this;
+}
+
 FrameBufferConfig defaultDepthBufferConfig(const glm::ivec2& dimension, int maxDepthBuffers) {
 	TextureConfig cfg;
 	cfg.format(TextureFormat::D32F).type(TextureType::Texture2DArray);

@@ -136,6 +136,8 @@ bool checkFramebufferStatus() {
 }
 
 void setupLimitsAndSpecs() {
+	glGetIntegerv(GL_MAX_SAMPLES, &renderState().limits[core::enumVal(Limit::MaxSamples)]);
+	checkError();
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &renderState().limits[core::enumVal(Limit::MaxTextureSize)]);
 	checkError();
 	glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &renderState().limits[core::enumVal(Limit::MaxCubeMapTextureSize)]);

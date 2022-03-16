@@ -25,6 +25,7 @@ public:
 private:
 	glm::ivec2 _dimension;
 	ColorTextureMap _colorTextures;
+	int _samples = 1;
 	TextureFormat _colorTextureFormat = TextureFormat::RGBA;
 	TextureFormat _depthTextureFormat = TextureFormat::D24;
 	TextureFormat _depthBufferFormat = TextureFormat::D24;
@@ -81,12 +82,19 @@ public:
 	bool useDepthBuffer() const;
 	TextureFormat depthBufferFormat() const;
 
+	FrameBufferConfig& samples(int samples);
+	int samples() const;
+
 	/**
 	 * @brief Enable or disable the stencil buffer binding
 	 */
 	FrameBufferConfig& stencilBuffer(bool depthBuffer);
 	bool useStencilBuffer() const;
 };
+
+inline int FrameBufferConfig::samples() const {
+	return _samples;
+}
 
 inline const glm::ivec2& FrameBufferConfig::dimension() const {
 	return _dimension;

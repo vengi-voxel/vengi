@@ -385,6 +385,7 @@ enum class Spec {
 
 enum class Limit {
 	MaxTextureSize,
+	MaxSamples,
 	MaxCubeMapTextureSize,
 	MaxViewPortWidth,
 	MaxDrawBuffers,
