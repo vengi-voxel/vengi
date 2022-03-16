@@ -8,11 +8,11 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/GLM.h"
+#include "core/collection/List.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/geometric.hpp>
 
 #include <functional>
-#include <list>
 
 namespace voxelutil {
 
@@ -38,7 +38,7 @@ bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3d
 template<typename VolumeType>
 struct AStarPathfinderParams {
 public:
-	AStarPathfinderParams(VolumeType* volData, const glm::ivec3& v3dStart, const glm::ivec3& v3dEnd, std::list<glm::ivec3>* listResult, float fHBias = 1.0,
+	AStarPathfinderParams(VolumeType* volData, const glm::ivec3& v3dStart, const glm::ivec3& v3dEnd, core::List<glm::ivec3>* listResult, float fHBias = 1.0f,
 			uint32_t uMaxNoOfNodes = 10000, Connectivity requiredConnectivity = TwentySixConnected,
 			std::function<bool(const VolumeType*, const glm::ivec3&)> funcIsVoxelValidForPath = &aStarDefaultVoxelValidator, std::function<void(float)> funcProgressCallback =
 					nullptr) :
@@ -57,7 +57,7 @@ public:
 
 	/// The resulting path will be stored as a series of points in
 	/// this list. Any existing contents will be cleared.
-	std::list<glm::ivec3>* result;
+	core::List<glm::ivec3>* result;
 
 	/// The AStarPathfinder performs its search by examining the neighbours
 	/// of each voxel it encounters. This property controls the meaning of
@@ -376,7 +376,7 @@ void AStarPathfinder<VolumeType>::processNeighbour(const glm::ivec3& neighbourPo
 template<typename VolumeType>
 float AStarPathfinder<VolumeType>::SixConnectedCost(const glm::ivec3& a, const glm::ivec3& b) {
 	//This is the only heuristic I'm sure of - just use the manhatten distance for the 6-connected case.
-	const uint32_t faceSteps = std::abs(a.x - b.x) + std::abs(a.y - b.y) + std::abs(a.z - b.z);
+	const uint32_t faceSteps = glm::abs(a.x - b.x) + glm::abs(a.y - b.y) + glm::abs(a.z - b.z);
 	return float(faceSteps);
 }
 
@@ -394,9 +394,9 @@ float AStarPathfinder<VolumeType>::TwentySixConnectedCost(const glm::ivec3& a, c
 	//Can't say I'm certain about this heuristic - if anyone has
 	//a better idea of what it should be then please let me know.
 	uint32_t array[3];
-	array[0] = std::abs(a.x - b.x);
-	array[1] = std::abs(a.y - b.y);
-	array[2] = std::abs(a.z - b.z);
+	array[0] = glm::abs(a.x - b.x);
+	array[1] = glm::abs(a.y - b.y);
+	array[2] = glm::abs(a.z - b.z);
 
 	//Maybe this is better implemented directly
 	//using three compares and two swaps... but not
