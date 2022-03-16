@@ -43,6 +43,8 @@ inline const FormatDescription* images() {
 	return desc;
 }
 
+bool isImage(const core::String& file);
+
 inline const FormatDescription* lua() {
 	static FormatDescription desc[] = {
 		{"LUA script", "lua", nullptr, 0},

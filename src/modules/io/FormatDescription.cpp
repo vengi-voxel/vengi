@@ -7,6 +7,17 @@
 
 namespace io {
 
+bool isImage(const core::String& file) {
+	const core::String& ext = core::string::extractExtension(file);
+	for (const io::FormatDescription *desc = io::format::images(); desc->ext != nullptr; ++desc) {
+		if (ext == desc->ext) {
+			return true;
+		}
+	}
+	return false;
+}
+
+
 core::String convertToFilePattern(const FormatDescription &desc) {
 	if (!desc.name || desc.name[0] == '\0') {
 		return core::string::format("*.%s", desc.ext);
