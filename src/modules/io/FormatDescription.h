@@ -23,6 +23,7 @@ struct FormatDescription {
 
 extern core::String convertToFilePattern(const FormatDescription &desc);
 extern core::String getWildcardsFromPattern(const core::String &pattern);
+extern bool isImage(const core::String& file);
 
 namespace format {
 
@@ -42,8 +43,6 @@ inline const FormatDescription* images() {
 	};
 	return desc;
 }
-
-bool isImage(const core::String& file);
 
 inline const FormatDescription* lua() {
 	static FormatDescription desc[] = {
