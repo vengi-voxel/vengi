@@ -83,54 +83,21 @@ bool SceneManager::loadPalette(const core::String& paletteName) {
 }
 
 bool SceneManager::importPalette(const core::String& file) {
-	const core::String& ext = core::string::extractExtension(file);
 	core::String paletteName(core::string::extractFilename(file.c_str()));
-	core::string::replaceAllChars(paletteName, ' ', '_');
-	paletteName = paletteName.toLower();
 	const core::String& paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
 	voxel::Palette palette;
-	bool paletteLoaded = false;
-	for (const io::FormatDescription* desc = io::format::images(); desc->name != nullptr; ++desc) {
-		if (ext == desc->ext) {
-			const image::ImagePtr &img = image::loadImage(file, false);
-			if (!img->isLoaded()) {
-				Log::warn("Failed to load image %s", file.c_str());
-				break;
-			}
-			if (!voxel::Palette::createPalette(img, palette)) {
-				Log::warn("Failed to create palette for image %s", file.c_str());
-				return false;
-			}
-			if (!voxel::overridePalette(palette)) {
-				Log::warn("Failed to import palette for image %s", file.c_str());
-				return false;
-			}
-			paletteLoaded = true;
-			break;
-		}
-	}
-	const io::FilesystemPtr& fs = io::filesystem();
-	if (!paletteLoaded) {
-		const io::FilePtr& palFile = fs->open(file);
-		if (!palFile->validHandle()) {
-			Log::warn("Failed to load palette from %s", file.c_str());
-			return false;
-		}
-		io::FileStream stream(palFile);
-		if (voxelformat::loadPalette(file, stream, palette) <= 0) {
-			Log::warn("Failed to load palette from %s", file.c_str());
-			return false;
-		}
+	if (voxelutil::importPalette(file, palette)) {
 		if (!voxel::overridePalette(palette)) {
-			Log::warn("Failed to import palette for model %s", file.c_str());
+			Log::warn("Failed to import palette for image %s", file.c_str());
 			return false;
 		}
-	}
-	const io::FilePtr& pngFile = fs->open(paletteFilename, io::FileMode::Write);
-	if (palette.save(pngFile->name().c_str())) {
-		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
-	} else {
-		Log::warn("Failed to write image");
+		const io::FilesystemPtr& fs = io::filesystem();
+		const io::FilePtr& pngFile = fs->open(paletteFilename, io::FileMode::Write);
+		if (palette.save(pngFile->name().c_str())) {
+			core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
+		} else {
+			Log::warn("Failed to write image");
+		}
 	}
 	return true;
 }
