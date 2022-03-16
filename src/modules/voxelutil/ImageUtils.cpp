@@ -3,11 +3,9 @@
  */
 
 #include "ImageUtils.h"
-#include "app/App.h"
 #include "core/StringUtil.h"
 #include "io/FileStream.h"
 #include "io/FormatDescription.h"
-#include "io/Filesystem.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -56,45 +54,6 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 		}
 	}
 }
-
-bool importPalette(const core::String& file, voxel::Palette &palette) {
-	const core::String& ext = core::string::extractExtension(file);
-	core::String paletteName(core::string::extractFilename(file.c_str()));
-	core::string::replaceAllChars(paletteName, ' ', '_');
-	paletteName = paletteName.toLower();
-	bool paletteLoaded = false;
-	for (const io::FormatDescription* desc = io::format::images(); desc->name != nullptr; ++desc) {
-		if (ext == desc->ext) {
-			const image::ImagePtr &img = image::loadImage(file, false);
-			if (!img->isLoaded()) {
-				Log::warn("Failed to load image %s", file.c_str());
-				break;
-			}
-			if (!voxel::Palette::createPalette(img, palette)) {
-				Log::warn("Failed to create palette for image %s", file.c_str());
-				return false;
-			}
-			paletteLoaded = true;
-			break;
-		}
-	}
-	const io::FilesystemPtr& fs = io::filesystem();
-	if (!paletteLoaded) {
-		const io::FilePtr& palFile = fs->open(file);
-		if (!palFile->validHandle()) {
-			Log::warn("Failed to load palette from %s", file.c_str());
-			return false;
-		}
-		io::FileStream stream(palFile);
-		if (voxelformat::loadPalette(file, stream, palette) <= 0) {
-			Log::warn("Failed to load palette from %s", file.c_str());
-			return false;
-		}
-		paletteLoaded = true;
-	}
-	return paletteLoaded;
-}
-
 
 voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness) {
 	if (thickness <= 0) {

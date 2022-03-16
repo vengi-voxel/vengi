@@ -3,12 +3,14 @@
  */
 
 #include "VolumeFormat.h"
+#include "app/App.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "io/FileStream.h"
+#include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "video/Texture.h"
@@ -212,6 +214,44 @@ image::ImagePtr loadScreenshot(const core::String &fileName, io::SeekableReadStr
 	Log::error("Failed to load model screenshot from file %s - unsupported file format for extension '%s'",
 			fileName.c_str(), fileext.c_str());
 	return image::ImagePtr();
+}
+
+bool importPalette(const core::String& file, voxel::Palette &palette) {
+	const core::String& ext = core::string::extractExtension(file);
+	core::String paletteName(core::string::extractFilename(file.c_str()));
+	core::string::replaceAllChars(paletteName, ' ', '_');
+	paletteName = paletteName.toLower();
+	bool paletteLoaded = false;
+	for (const io::FormatDescription* desc = io::format::images(); desc->name != nullptr; ++desc) {
+		if (ext == desc->ext) {
+			const image::ImagePtr &img = image::loadImage(file, false);
+			if (!img->isLoaded()) {
+				Log::warn("Failed to load image %s", file.c_str());
+				break;
+			}
+			if (!voxel::Palette::createPalette(img, palette)) {
+				Log::warn("Failed to create palette for image %s", file.c_str());
+				return false;
+			}
+			paletteLoaded = true;
+			break;
+		}
+	}
+	const io::FilesystemPtr& fs = io::filesystem();
+	if (!paletteLoaded) {
+		const io::FilePtr& palFile = fs->open(file);
+		if (!palFile->validHandle()) {
+			Log::warn("Failed to load palette from %s", file.c_str());
+			return false;
+		}
+		io::FileStream stream(palFile);
+		if (voxelformat::loadPalette(file, stream, palette) <= 0) {
+			Log::warn("Failed to load palette from %s", file.c_str());
+			return false;
+		}
+		paletteLoaded = true;
+	}
+	return paletteLoaded;
 }
 
 size_t loadPalette(const core::String &fileName, io::SeekableReadStream& stream, voxel::Palette &palette) {

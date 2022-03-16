@@ -86,7 +86,7 @@ bool SceneManager::importPalette(const core::String& file) {
 	core::String paletteName(core::string::extractFilename(file.c_str()));
 	const core::String& paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
 	voxel::Palette palette;
-	if (voxelutil::importPalette(file, palette)) {
+	if (voxelformat::importPalette(file, palette)) {
 		if (!voxel::overridePalette(palette)) {
 			Log::warn("Failed to import palette for image %s", file.c_str());
 			return false;

@@ -4,6 +4,7 @@
 
 #include "voxel/Palette.h"
 #include "app/tests/AbstractTest.h"
+#include "voxel/MaterialColor.h"
 
 namespace voxel {
 
@@ -90,6 +91,14 @@ TEST_F(PaletteTest, testAddColorsQuantize) {
 
 TEST_F(PaletteTest, testExtractPaletteName) {
 	EXPECT_EQ("foobar-something", Palette::extractPaletteName("palette-foobar-something.png"));
+}
+
+TEST_F(PaletteTest, testCreateAndLoadPalette) {
+	const image::ImagePtr& img = image::loadImage("test-palette-in.png", false);
+	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
+	voxel::Palette palette;
+	EXPECT_TRUE(voxel::Palette::createPalette(img, palette)) << "Failed to create palette image";
+	EXPECT_TRUE(voxel::overridePalette(palette));
 }
 
 } // namespace voxel
