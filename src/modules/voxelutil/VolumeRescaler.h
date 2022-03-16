@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/Trace.h"
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
