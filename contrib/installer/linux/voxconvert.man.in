@@ -42,6 +42,14 @@ Will filter out layers not mentioned in the expression. E.g. 1-2,4 will handle l
 Overwrite existing files.
 
 .TP
+\fB\--image-as-heightmap\fR
+Import input images as heightmaps (default).
+
+.TP
+\fB\--image-as-plane\fR
+Import input images as planes.
+
+.TP
 \fB\--input|-i <file>\fR
 Allow to specify input files.
 

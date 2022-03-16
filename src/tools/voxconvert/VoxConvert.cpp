@@ -49,6 +49,8 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--export-palette").setDescription("Export the used palette data into an image. Use in combination with --src-palette");
 	registerArg("--filter").setDescription("Layer filter. For example '1-4,6'");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
+	registerArg("--image-as-plane").setDescription("Import given input images as planes");
+	registerArg("--image-as-heightmap").setDescription("Import given input images as heightmaps");
 	registerArg("--input").setShort("-i").setDescription("Allow to specify input files");
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
@@ -358,21 +360,31 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxel::SceneGraph &
 			Log::error("Couldn't load image %s", infile.c_str());
 			return false;
 		}
-		Log::info("Generate from heightmap (%i:%i)", image->width(), image->height());
-		if (image->width() > MaxHeightmapWidth || image->height() >= MaxHeightmapHeight) {
-			Log::warn("Skip creating heightmap - image dimensions exceeds the max allowed boundaries");
-			return false;
+		const bool importAsPlane = hasArg("--image-as-plane");
+		const bool importAsHeightmap = hasArg("--image-as-heightmap");
+		if (importAsHeightmap || !importAsPlane) {
+			Log::info("Generate from heightmap (%i:%i)", image->width(), image->height());
+			if (image->width() > MaxHeightmapWidth || image->height() >= MaxHeightmapHeight) {
+				Log::warn("Skip creating heightmap - image dimensions exceeds the max allowed boundaries");
+				return false;
+			}
+			voxel::Region region(0, 0, 0, image->width(), 255, image->height());
+			voxel::RawVolume* volume = new voxel::RawVolume(region);
+			voxel::RawVolumeWrapper wrapper(volume);
+			const voxel::Voxel dirtVoxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
+			const voxel::Voxel grassVoxel = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
+			voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
+			voxel::SceneGraphNode node;
+			node.setVolume(volume, true);
+			node.setName(infile);
+			sceneGraph.emplace(core::move(node));
 		}
-		voxel::Region region(0, 0, 0, image->width(), 255, image->height());
-		voxel::RawVolume* volume = new voxel::RawVolume(region);
-		voxel::SceneGraphNode node;
-		node.setVolume(volume, true);
-		node.setName(infile);
-		sceneGraph.emplace(core::move(node));
-		voxel::RawVolumeWrapper wrapper(volume);
-		const voxel::Voxel dirtVoxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
-		const voxel::Voxel grassVoxel = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
-		voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
+		if (importAsPlane) {
+			voxel::SceneGraphNode node;
+			node.setVolume(voxelutil::importAsPlane(image), true);
+			node.setName(infile);
+			sceneGraph.emplace(core::move(node));
+		}
 	} else {
 		io::FileStream inputFileStream(inputFile);
 		voxel::SceneGraph newSceneGraph;
