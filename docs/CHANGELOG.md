@@ -42,6 +42,7 @@ VoxEdit:
 VoxConvert:
 
    - Added `--image-as-plane` and `--image-as-heightmap` parameters
+   - Allow to create a palette from input files
 
 ## 0.0.18 (2022-02-12)
 
