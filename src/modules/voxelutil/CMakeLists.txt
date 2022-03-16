@@ -21,6 +21,7 @@ set(SRCS
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxel)
 
 set(TEST_SRCS
+	tests/AStarPathfinderTest.cpp
 	tests/ImageUtilsTest.cpp
 	tests/PickingTest.cpp
 	tests/VolumeMergerTest.cpp

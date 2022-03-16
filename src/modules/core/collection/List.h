@@ -160,6 +160,20 @@ public:
 		return true;
 	}
 
+	bool insert_front(const TYPE& value) {
+		Node* node = _allocator.alloc(value);
+		if (node == nullptr) {
+			return false;
+		}
+		if (_first == nullptr) {
+			_first = _last = node;
+		} else {
+			node->next = _first;
+			_first = node;
+		}
+		return true;
+	}
+
 	const TYPE* back() const {
 		if (_last == nullptr) {
 			return nullptr;

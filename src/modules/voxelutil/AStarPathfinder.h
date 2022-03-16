@@ -17,13 +17,6 @@
 namespace voxelutil {
 
 /**
- * This function provides the default method for checking whether a given voxel
- * is valid for the path computed by the AStarPathfinder.
- */
-template<typename VolumeType>
-bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3dPos);
-
-/**
  * @brief Provides a configuration for the AStarPathfinder.
  *
  * This structure stores the AStarPathfinder%s configuration options, because this
@@ -38,16 +31,22 @@ bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3d
 template<typename VolumeType>
 struct AStarPathfinderParams {
 public:
-	AStarPathfinderParams(VolumeType* volData, const glm::ivec3& v3dStart, const glm::ivec3& v3dEnd, core::List<glm::ivec3>* listResult, float fHBias = 1.0f,
-			uint32_t uMaxNoOfNodes = 10000, Connectivity requiredConnectivity = TwentySixConnected,
-			std::function<bool(const VolumeType*, const glm::ivec3&)> funcIsVoxelValidForPath = &aStarDefaultVoxelValidator, std::function<void(float)> funcProgressCallback =
+	/**
+	 * @param funcIsVoxelValidForPath This function provides the default method for checking whether a given voxel
+	 * is valid for the path computed by the AStarPathfinder.
+	 * Using this function, a voxel is considered valid for the path if it is inside the
+	 * volume. Returns true is the voxel is valid for the path.
+	 */
+	AStarPathfinderParams(const VolumeType* volData, const glm::ivec3& v3dStart, const glm::ivec3& v3dEnd, core::List<glm::ivec3>* listResult, float fHBias,
+			uint32_t uMaxNoOfNodes, Connectivity requiredConnectivity,
+			std::function<bool(const VolumeType*, const glm::ivec3&)> funcIsVoxelValidForPath, std::function<void(float)> funcProgressCallback =
 					nullptr) :
 			volume(volData), start(v3dStart), end(v3dEnd), result(listResult), connectivity(requiredConnectivity), hBias(fHBias), maxNumberOfNodes(uMaxNoOfNodes), isVoxelValidForPath(
-					funcIsVoxelValidForPath), progressCallback(core::move(funcProgressCallback)) {
+					core::move(funcIsVoxelValidForPath)), progressCallback(core::move(funcProgressCallback)) {
 	}
 
 	/// This is the volume through which the AStarPathfinder must find a path.
-	VolumeType* volume;
+	const VolumeType* volume;
 
 	/// The start point for the pathfinding algorithm.
 	glm::ivec3 start;
@@ -80,12 +79,9 @@ public:
 	/// before giving up
 	uint32_t maxNumberOfNodes;
 
-	/// This function is called to determine whether the path can pass though a given voxel. The
-	/// default behaviour is specified by aStarDefaultVoxelValidator(), but users can specify their
-	/// own criteria if desired. For example, if you always want a path to follow a surface then
+	/// This function is called to determine whether the path can pass though a given voxel.
+	/// For example, if you always want a path to follow a surface then
 	/// you could check to ensure that the voxel above is empty and the voxel below is solid.
-	///
-	/// @sa aStarDefaultVoxelValidator
 	std::function<bool(const VolumeType*, const glm::ivec3&)> isVoxelValidForPath;
 
 	/// This function is called by the AStarPathfinder to report on its progress in getting to
@@ -150,16 +146,6 @@ private:
 };
 
 /**
- * Using this function, a voxel is considered valid for the path if it is inside the
- * volume.
- * @return true is the voxel is valid for the path
- */
-template<typename VolumeType>
-bool aStarDefaultVoxelValidator(const VolumeType* volData, const glm::ivec3& v3dPos) {
-	return volData->getRegion().containsPoint(v3dPos);
-}
-
-/**
  * @section AStarPathfinder Class
  */
 template<typename VolumeType>
@@ -195,7 +181,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 
 	_openNodes.insert(startNode);
 
-	float fDistStartToEnd = glm::distance(glm::vec3(endNode->position), glm::vec3(startNode->position));
+	float fDistStartToEnd = glm::length(glm::vec3(endNode->position) - glm::vec3(startNode->position));
 	_progress = 0.0f;
 	if (_params.progressCallback) {
 		_params.progressCallback(_progress);
@@ -242,7 +228,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 		//Update the user on our progress
 		if (_params.progressCallback) {
 			const float fMinProgresIncreament = 0.001f;
-			float fDistCurrentToEnd = glm::distance(glm::vec3(endNode->position), glm::vec3(_current->position));
+			float fDistCurrentToEnd = glm::length(glm::vec3(endNode->position) - glm::vec3(_current->position));
 			float fDistNormalised = fDistCurrentToEnd / fDistStartToEnd;
 			float fProgress = 1.0f - fDistNormalised;
 			if (fProgress >= _progress + fMinProgresIncreament) {
@@ -313,7 +299,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 	//modify other properties of the object while it is in the set.
 	Node* n = const_cast<Node*>(&(*endNode));
 	while (n != 0) {
-		_params.result->push_front(n->position);
+		_params.result->insert_front(n->position);
 		n = n->parent;
 	}
 
@@ -407,7 +393,7 @@ float AStarPathfinder<VolumeType>::TwentySixConnectedCost(const glm::ivec3& a, c
 	const uint32_t edgeSteps = array[1] - array[0];
 	const uint32_t faceSteps = array[2] - array[1];
 
-	return cornerSteps * glm::root_three<float>() + edgeSteps * glm::root_two<float>() + faceSteps;
+	return (float)cornerSteps * glm::root_three<float>() + (float)edgeSteps * glm::root_two<float>() + (float)faceSteps;
 }
 
 template<typename VolumeType>
@@ -429,11 +415,17 @@ float AStarPathfinder<VolumeType>::computeH(const glm::ivec3& a, const glm::ivec
 		core_assert_msg(false, "Connectivity parameter has an unrecognized value.");
 	}
 
+#if 0
 	//Sanity checks in debug mode. These can come out eventually, but I
 	//want to make sure that the heuristics I've come up with make sense.
-	core_assert_msg(glm::distance(glm::vec3(a), glm::vec3(b)) > TwentySixConnectedCost(a, b), "A* heuristic error.");
-	core_assert_msg(TwentySixConnectedCost(a, b) > EighteenConnectedCost(a, b), "A* heuristic error.");
-	core_assert_msg(EighteenConnectedCost(a, b) > SixConnectedCost(a, b), "A* heuristic error.");
+	core_assert_msg(glm::length(glm::vec3(a) - glm::vec3(b)) <= TwentySixConnectedCost(a, b),
+					"A* heuristic error (%f vs %f).", glm::length(glm::vec3(a) - glm::vec3(b)),
+					TwentySixConnectedCost(a, b));
+	core_assert_msg(TwentySixConnectedCost(a, b) <= EighteenConnectedCost(a, b), "A* heuristic error (%f vs %f).",
+					TwentySixConnectedCost(a, b), EighteenConnectedCost(a, b));
+	core_assert_msg(EighteenConnectedCost(a, b) <= SixConnectedCost(a, b), "A* heuristic error (%f vs %f).",
+					EighteenConnectedCost(a, b), SixConnectedCost(a, b));
+#endif
 
 	//Apply the bias to the computed h value;
 	hVal *= _params.hBias;
