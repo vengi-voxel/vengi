@@ -94,16 +94,11 @@ bool RawVolumeRenderer::init() {
 	}
 
 	const voxel::Palette &palette = voxel::getPalette();
-	core::DynamicArray<glm::vec4> materialColors;
-	palette.toVec4f(materialColors);
-	core::DynamicArray<glm::vec4> glowColors;
-	palette.glowToVec4f(glowColors);
 
 	const int shaderMaterialColorsArraySize = lengthof(shader::VoxelData::MaterialblockData::materialcolor);
-	const int materialColorsArraySize = (int)materialColors.size();
-	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
+	if (shaderMaterialColorsArraySize != palette.colorCount) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
-				shaderMaterialColorsArraySize, materialColorsArraySize);
+				shaderMaterialColorsArraySize, palette.colorCount);
 		return false;
 	}
 
@@ -127,8 +122,8 @@ bool RawVolumeRenderer::init() {
 	}
 
 	shader::VoxelData::MaterialblockData materialBlock;
-	core_memcpy(materialBlock.materialcolor, &materialColors.front(), sizeof(materialBlock.materialcolor));
-	core_memcpy(materialBlock.glowcolor, &glowColors.front(), sizeof(materialBlock.glowcolor));
+	core_memset(materialBlock.materialcolor, 0, sizeof(materialBlock.materialcolor));
+	core_memset(materialBlock.glowcolor, 0, sizeof(materialBlock.glowcolor));
 	_materialBlock.create(materialBlock);
 
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
