@@ -27,6 +27,9 @@ vengi (0.0.19.0-1) UNRELEASED; urgency=low
   * Added dialog to configure the mesh and voxel format settings for loading/saving
   * Improved the palette panel
 
+  * VoxConvert:
+  * Added --image-as-plane and --image-as-heightmap parameters
+
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 12 Feb 2022 09:32:14 +0100
 
 vengi (0.0.18.0-1) unstable; urgency=low

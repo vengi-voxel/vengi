@@ -39,6 +39,10 @@ VoxEdit:
    - Added dialog to configure the mesh and voxel format settings for loading/saving
    - Improved the palette panel
 
+VoxConvert:
+
+   - Added `--image-as-plane` and `--image-as-heightmap` parameters
+
 ## 0.0.18 (2022-02-12)
 
 > renamed the github project to **vengi** - the url changed to [https://github.com/mgerhardy/vengi](https://github.com/mgerhardy/vengi).
