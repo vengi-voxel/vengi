@@ -2258,9 +2258,17 @@ void SceneManager::path() {
 		return;
 	}
 
-	voxelutil::AStarPathfinderParams<voxel::RawVolume> params(
-		v, start, end, &listResult,
-		[](const voxel::RawVolume *vol, const glm::ivec3 &pos) { return vol->region().containsPoint(pos); });
+	const auto isVoxelValidForPath = [](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
+		if (voxel::isBlocked(vol->voxel(pos).getMaterial())) {
+			return false;
+		}
+		const glm::ivec3 below(pos.x, pos.y - 1, pos.z);
+		if (!vol->region().containsPoint(below)) {
+			return false;
+		}
+		return voxel::isBlocked(vol->voxel(below).getMaterial());
+	};
+	voxelutil::AStarPathfinderParams<voxel::RawVolume> params(v, start, end, &listResult, isVoxelValidForPath, 4.0f, 10000);
 	voxelutil::AStarPathfinder pathfinder(params);
 	pathfinder.execute();
 	voxel::RawVolumeWrapper w(v);
