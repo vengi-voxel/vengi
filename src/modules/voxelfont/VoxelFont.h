@@ -15,7 +15,7 @@
 
 struct stbtt_fontinfo;
 
-namespace voxel {
+namespace voxelfont {
 
 /**
  * @brief Will take any TTF font and rasterizes into voxels

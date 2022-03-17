@@ -29,7 +29,7 @@
 #include "voxel/IsQuadNeeded.h"
 #include <glm/common.hpp>
 
-namespace voxel {
+namespace voxelfont {
 
 VoxelFont::~VoxelFont() {
 	core_assert_always(_cache.empty());
@@ -126,7 +126,7 @@ void VoxelFont::shutdown() {
 }
 
 bool VoxelFont::renderGlyphs(const char* string) {
-	static const voxel::Voxel& voxel = voxel::createVoxel(VoxelType::Generic, 1);
+	static const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	const char **s = &string;
 	int spaceWidth = 0;
 	int chars = 0;

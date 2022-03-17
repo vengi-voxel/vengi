@@ -14,7 +14,7 @@ class TestVoxelFont: public TestApp {
 private:
 	using Super = TestApp;
 
-	voxel::VoxelFont _voxelFont;
+	voxelfont::VoxelFont _voxelFont;
 	voxelrender::RawVolumeRenderer _rawVolumeRenderer;
 
 	int _fontSize = 20;

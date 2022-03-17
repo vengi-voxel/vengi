@@ -29,7 +29,7 @@ private:
 		}
 	};
 
-	voxel::VoxelFont _voxelFont;
+	voxelfont::VoxelFont _voxelFont;
 	shader::ColorShader& _colorShader;
 	video::Buffer _vertexBuffer;
 	int32_t _vertexBufferId = -1;
@@ -42,7 +42,7 @@ private:
 	const int _depth;
 	const uint8_t _optionMask;
 public:
-	VoxelFontRenderer(int fontSize, int depth = 4, uint8_t optionMask = voxel::VoxelFont::OriginUpperLeft | voxel::VoxelFont::MergeQuads);
+	VoxelFontRenderer(int fontSize, int depth = 4, uint8_t optionMask = voxelfont::VoxelFont::OriginUpperLeft | voxelfont::VoxelFont::MergeQuads);
 
 	bool init() override;
 	void shutdown() override;
