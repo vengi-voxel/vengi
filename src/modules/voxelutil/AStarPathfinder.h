@@ -165,7 +165,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 	AllNodesContainer::iterator startNode = _allNodes.insert(Node(_params.start.x, _params.start.y, _params.start.z)).first;
 	AllNodesContainer::iterator endNode = _allNodes.insert(Node(_params.end.x, _params.end.y, _params.end.z)).first;
 
-	//Regarding the const_cast - normally you should not modify an object which is in an sdt::set.
+	//Regarding the const_cast - normally you should not modify an object which is in an std::set.
 	//The reason is that objects in a set are stored sorted in a tree so they can be accessed quickly,
 	//and changing the object directly can break the sorting. However, in our case we have provided a
 	//custom sort operator for the set which we know only uses the position to sort. Hence we can safely
@@ -290,7 +290,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 		//In this case we failed to find a valid path.
 		return false;
 	}
-	//Regarding the const_cast - normally you should not modify an object which is in an sdt::set.
+	//Regarding the const_cast - normally you should not modify an object which is in an std::set.
 	//The reason is that objects in a set are stored sorted in a tree so they can be accessed quickly,
 	//and changing the object directly can break the sorting. However, in our case we have provided a
 	//custom sort operator for the set which we know only uses the position to sort. Hence we can safely
@@ -345,7 +345,7 @@ void AStarPathfinder<VolumeType>::processNeighbour(const glm::ivec3& neighbourPo
 	}
 
 	if (openIter == _openNodes.end() && closedIter == _closedNodes.end()) {
-		//Regarding the const_cast - normally you should not modify an object which is in an sdt::set.
+		//Regarding the const_cast - normally you should not modify an object which is in an std::set.
 		//The reason is that objects in a set are stored sorted in a tree so they can be accessed quickly,
 		//and changing the object directly can break the sorting. However, in our case we have provided a
 		//custom sort operator for the set which we know only uses the position to sort. Hence we can safely
