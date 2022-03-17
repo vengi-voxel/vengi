@@ -8,9 +8,9 @@ function arguments()
 end
 
 function main(volume, region, color, amount, thickencolor)
-	local activeLayer = layermgr.get()
+	local activeLayer = scenegraph.get()
 	local newName = activeLayer:name() .. "_thickened"
-	local newLayer = layermgr.new(newName, true, region)
+	local newLayer = scenegraph.new(newName, true, region)
 	local newVolume = newLayer:volume()
 
 	local visitor = function (volume, x, y, z)
