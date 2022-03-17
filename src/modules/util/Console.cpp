@@ -644,18 +644,20 @@ void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {
 	const int maxY = (int)_messages.size() * lineH;
 	const glm::ivec2& commandLineSize = stringSize(_commandLine.c_str(), (int)_commandLine.size());
 	const int startY = core_min(rect.getMinZ() + rect.getMaxZ() - commandLineSize.y - 4, maxY);
-	auto i = _messages.end();
-	--i;
-	core::prev(i, _scrollPos);
-	for (int y = startY; ; --i) {
-		if (y < rect.getMinZ()) {
-			break;
-		}
-		const glm::ivec2& size = stringSize(i->c_str(), (int)i->size());
-		y -= size.y;
-		drawString(_consoleMarginLeft, y, *i, (int)i->size());
-		if (i == _messages.begin()) {
-			break;
+	if (!_messages.empty()) {
+		auto i = _messages.end();
+		--i;
+		core::prev(i, _scrollPos);
+		for (int y = startY; ; --i) {
+			if (y < rect.getMinZ()) {
+				break;
+			}
+			const glm::ivec2& size = stringSize(i->c_str(), (int)i->size());
+			y -= size.y;
+			drawString(_consoleMarginLeft, y, *i, (int)i->size());
+			if (i == _messages.begin()) {
+				break;
+			}
 		}
 	}
 
