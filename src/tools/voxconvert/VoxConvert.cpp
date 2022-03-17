@@ -168,6 +168,21 @@ app::AppState VoxConvert::onInit() {
 	if (!outfile.empty()) {
 		Log::info("* output files:                  - %s", outfile.c_str());
 	}
+
+	if (io::isImage(outfile) && infiles.size() == 1) {
+		voxel::Palette palette;
+		if (!voxelutil::importPalette(infiles[0], palette)) {
+			Log::error("Failed to import the palette from %s", infiles[0].c_str());
+			return app::AppState::InitFailure;
+		}
+		if (palette.save(outfile.c_str())) {
+			Log::info("Saved palette with %i colors to %s", palette.colorCount, outfile.c_str());
+			return state;
+		}
+		Log::error("Failed to write %s", outfile.c_str());
+		return app::AppState::InitFailure;
+	}
+
 	core::String scriptParameters;
 	if (hasArg("--script")) {
 		scriptParameters = getArgVal("--script");
