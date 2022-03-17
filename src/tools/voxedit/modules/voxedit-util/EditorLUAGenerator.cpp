@@ -23,7 +23,7 @@ static const char *luaVoxel_metavolume() {
 }
 
 static const char *luaVoxel_metascenegraph() {
-	return "__meta_layermgr";
+	return "__meta_scenegraph";
 }
 
 struct LUASceneGraphNode {
