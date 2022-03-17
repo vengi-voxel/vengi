@@ -21,8 +21,7 @@ TEST_F(AStarPathfinderTest, test) {
 	const glm::ivec3 end(10, 1, 19);
 	core::List<glm::ivec3> listResult;
 
-	AStarPathfinderParams<voxel::RawVolume> params(&volume, start, end, &listResult, 1.0f, 10000,
-												   Connectivity::TwentySixConnected,
+	AStarPathfinderParams<voxel::RawVolume> params(&volume, start, end, &listResult,
 												   [](const voxel::RawVolume *v, const glm::ivec3 &pos) {
 													   const glm::ivec3 below(pos.x, pos.y - 1, pos.z);
 													   return voxel::isBlocked(v->voxel(below).getMaterial());

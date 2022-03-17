@@ -37,10 +37,8 @@ public:
 	 * Using this function, a voxel is considered valid for the path if it is inside the
 	 * volume. Returns true is the voxel is valid for the path.
 	 */
-	AStarPathfinderParams(const VolumeType* volData, const glm::ivec3& v3dStart, const glm::ivec3& v3dEnd, core::List<glm::ivec3>* listResult, float fHBias,
-			uint32_t uMaxNoOfNodes, Connectivity requiredConnectivity,
-			std::function<bool(const VolumeType*, const glm::ivec3&)> funcIsVoxelValidForPath, std::function<void(float)> funcProgressCallback =
-					nullptr) :
+	AStarPathfinderParams(const VolumeType* volData, const glm::ivec3& v3dStart, const glm::ivec3& v3dEnd, core::List<glm::ivec3>* listResult, std::function<bool(const VolumeType*, const glm::ivec3&)> funcIsVoxelValidForPath, float fHBias = 1.0f,
+			uint32_t uMaxNoOfNodes = 10000, Connectivity requiredConnectivity = TwentySixConnected, std::function<void(float)> funcProgressCallback = nullptr) :
 			volume(volData), start(v3dStart), end(v3dEnd), result(listResult), connectivity(requiredConnectivity), hBias(fHBias), maxNumberOfNodes(uMaxNoOfNodes), isVoxelValidForPath(
 					core::move(funcIsVoxelValidForPath)), progressCallback(core::move(funcProgressCallback)) {
 	}

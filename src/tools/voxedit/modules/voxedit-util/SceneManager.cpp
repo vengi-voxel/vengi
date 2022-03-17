@@ -5,60 +5,61 @@
 #include "SceneManager.h"
 
 #include "animation/Animation.h"
-#include "core/collection/DynamicArray.h"
-#include "io/FileStream.h"
-#include "math/AABB.h"
-#include "voxedit-ui/LayerPanel.h"
-#include "voxedit-util/MementoHandler.h"
-#include "voxel/RawVolume.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
-#include "voxelformat/SceneGraphUtil.h"
-#include "voxelutil/VolumeMerger.h"
-#include "voxelutil/VolumeCropper.h"
-#include "voxelutil/VolumeResizer.h"
-#include "voxelutil/VolumeRotator.h"
-#include "voxelutil/VolumeMover.h"
-#include "voxelutil/VolumeRescaler.h"
-#include "voxelutil/VolumeVisitor.h"
-#include "voxel/RawVolumeWrapper.h"
-#include "voxel/RawVolumeMoveWrapper.h"
-#include "voxelutil/Picking.h"
-#include "voxel/Face.h"
-#include "voxelgenerator/TreeGenerator.h"
-#include "voxelutil/VoxelUtil.h"
-#include "voxelworld/BiomeManager.h"
-#include "voxelformat/VolumeFormat.h"
-#include "voxelformat/VoxFormat.h"
-#include "voxelformat/QBTFormat.h"
-#include "voxelformat/CubFormat.h"
-#include "voxelformat/QBFormat.h"
-#include "voxelformat/VXMFormat.h"
-#include "video/ScopedPolygonMode.h"
-#include "video/ScopedLineWidth.h"
-#include "video/ScopedBlendMode.h"
-#include "math/Ray.h"
-#include "math/Random.h"
-#include "math/Axis.h"
+#include "app/App.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/ArrayLength.h"
-#include "app/App.h"
-#include "core/Log.h"
 #include "core/Color.h"
-#include "core/StringUtil.h"
 #include "core/GLM.h"
+#include "core/Log.h"
+#include "core/StringUtil.h"
+#include "core/collection/DynamicArray.h"
+#include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "math/AABB.h"
+#include "math/Axis.h"
+#include "math/Random.h"
+#include "math/Ray.h"
 #include "render/Gizmo.h"
+#include "video/ScopedBlendMode.h"
+#include "video/ScopedLineWidth.h"
+#include "video/ScopedPolygonMode.h"
+#include "voxedit-ui/LayerPanel.h"
+#include "voxedit-util/MementoHandler.h"
+#include "voxel/Face.h"
+#include "voxel/RawVolume.h"
+#include "voxel/RawVolumeMoveWrapper.h"
+#include "voxel/RawVolumeWrapper.h"
+#include "voxelformat/CubFormat.h"
+#include "voxelformat/QBFormat.h"
+#include "voxelformat/QBTFormat.h"
+#include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/SceneGraphUtil.h"
+#include "voxelformat/VXMFormat.h"
+#include "voxelformat/VolumeFormat.h"
+#include "voxelformat/VoxFormat.h"
+#include "voxelgenerator/TreeGenerator.h"
+#include "voxelutil/Picking.h"
+#include "voxelutil/VolumeCropper.h"
+#include "voxelutil/VolumeMerger.h"
+#include "voxelutil/VolumeMover.h"
+#include "voxelutil/VolumeRescaler.h"
+#include "voxelutil/VolumeResizer.h"
+#include "voxelutil/VolumeRotator.h"
+#include "voxelutil/VolumeVisitor.h"
+#include "voxelutil/VoxelUtil.h"
+#include "voxelutil/AStarPathfinder.h"
+#include "voxelworld/BiomeManager.h"
 
 #include "AxisUtil.h"
-#include "CustomBindingContext.h"
 #include "Config.h"
+#include "CustomBindingContext.h"
+#include "anim/AnimationLuaSaver.h"
+#include "attrib/ShadowAttributes.h"
+#include "core/TimeProvider.h"
 #include "tool/Clipboard.h"
 #include "voxelutil/ImageUtils.h"
-#include "anim/AnimationLuaSaver.h"
-#include "core/TimeProvider.h"
-#include "attrib/ShadowAttributes.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
@@ -1162,6 +1163,10 @@ void SceneManager::construct() {
 		scale(nodeId);
 	}).setHelp("Scale the current layer or given layer down");
 
+	command::Command::registerCommand("path", [&] (const command::CmdArgs& args) {
+		path();
+	}).setHelp("Assemble a path from reference position to cursor position");
+
 	command::Command::registerCommand("colortolayer", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
 		if (argc < 1) {
@@ -2238,6 +2243,24 @@ bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
 	}
 
 	return true;
+}
+
+void SceneManager::path() {
+	const glm::ivec3 &start = referencePosition();
+	const glm::ivec3 &end = cursorPosition();
+	core::List<glm::ivec3> listResult;
+	voxel::RawVolume *v = activeVolume();
+
+	voxelutil::AStarPathfinderParams<voxel::RawVolume> params(
+		v, start, end, &listResult,
+		[](const voxel::RawVolume *v, const glm::ivec3 &pos) { return v->region().containsPoint(pos); });
+	voxelutil::AStarPathfinder pathfinder(params);
+	pathfinder.execute();
+	voxel::RawVolumeWrapper w(v);
+	for (const glm::ivec3& p : listResult) {
+		w.setVoxel(p, modifier().cursorVoxel());
+	}
+	modified(activeNode(), w.dirtyRegion());
 }
 
 void SceneManager::updateLockedPlane(math::Axis axis) {

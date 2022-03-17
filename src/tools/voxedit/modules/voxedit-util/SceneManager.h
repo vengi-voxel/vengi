@@ -388,6 +388,7 @@ public:
 	 * @sa resetLastTrace()
 	 */
 	bool trace(bool force = false, voxelutil::PickResult *result = nullptr);
+	void path();
 	void resetLastTrace();
 
 	math::Axis lockedAxis() const;
@@ -415,7 +416,6 @@ public:
 	void setEditMode(EditMode mode);
 
 private:
-
 	void onNewNodeAdded(int newNodeId);
 	bool nodeRename(voxelformat::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(voxelformat::SceneGraphNode &node, bool recursive);
