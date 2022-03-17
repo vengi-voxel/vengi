@@ -275,7 +275,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 		}
 
 		if (_allNodes.size() > _params.maxNumberOfNodes) {
-			Log::debug("We've reached the specified maximum number of nodes. Just give up on the search.");
+			Log::warn("We've reached the specified maximum number of nodes. Just give up on the search.");
 			break;
 		}
 	}
