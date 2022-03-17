@@ -2249,18 +2249,25 @@ void SceneManager::path() {
 	const glm::ivec3 &start = referencePosition();
 	const glm::ivec3 &end = cursorPosition();
 	core::List<glm::ivec3> listResult;
-	voxel::RawVolume *v = activeVolume();
+	const int nodeId = activeNode();
+	if (nodeId == -1) {
+		return;
+	}
+	voxel::RawVolume *v = volume(nodeId);
+	if (v == nullptr) {
+		return;
+	}
 
 	voxelutil::AStarPathfinderParams<voxel::RawVolume> params(
 		v, start, end, &listResult,
-		[](const voxel::RawVolume *v, const glm::ivec3 &pos) { return v->region().containsPoint(pos); });
+		[](const voxel::RawVolume *vol, const glm::ivec3 &pos) { return vol->region().containsPoint(pos); });
 	voxelutil::AStarPathfinder pathfinder(params);
 	pathfinder.execute();
 	voxel::RawVolumeWrapper w(v);
 	for (const glm::ivec3& p : listResult) {
 		w.setVoxel(p, modifier().cursorVoxel());
 	}
-	modified(activeNode(), w.dirtyRegion());
+	modified(nodeId, w.dirtyRegion());
 }
 
 void SceneManager::updateLockedPlane(math::Axis axis) {
