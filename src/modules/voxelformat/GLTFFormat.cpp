@@ -7,17 +7,11 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/String.h"
-#include "core/Var.h"
-#include "core/concurrent/Lock.h"
-#include "core/concurrent/ThreadPool.h"
 #include "engine-config.h"
 #include "io/StdStreamBuf.h"
-#include "voxel/CubicSurfaceExtractor.h"
-#include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
-#include <SDL_timer.h>
 #include <limits.h>
 
 #define TINYGLTF_IMPLEMENTATION

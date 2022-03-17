@@ -5,8 +5,6 @@
 #include "Format.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
-#include "voxel/CubicSurfaceExtractor.h"
-#include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
 #include "VolumeFormat.h"
 #include "core/Common.h"
