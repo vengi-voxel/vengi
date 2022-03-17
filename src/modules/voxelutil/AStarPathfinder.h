@@ -8,6 +8,7 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/GLM.h"
+#include "core/Log.h"
 #include "core/collection/List.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/geometric.hpp>
@@ -31,12 +32,6 @@ namespace voxelutil {
 template<typename VolumeType>
 struct AStarPathfinderParams {
 public:
-	/**
-	 * @param funcIsVoxelValidForPath This function provides the default method for checking whether a given voxel
-	 * is valid for the path computed by the AStarPathfinder.
-	 * Using this function, a voxel is considered valid for the path if it is inside the
-	 * volume. Returns true is the voxel is valid for the path.
-	 */
 	AStarPathfinderParams(const VolumeType* volData, const glm::ivec3& v3dStart, const glm::ivec3& v3dEnd, core::List<glm::ivec3>* listResult, std::function<bool(const VolumeType*, const glm::ivec3&)> funcIsVoxelValidForPath, float fHBias = 1.0f,
 			uint32_t uMaxNoOfNodes = 10000, Connectivity requiredConnectivity = TwentySixConnected, std::function<void(float)> funcProgressCallback = nullptr) :
 			volume(volData), start(v3dStart), end(v3dEnd), result(listResult), connectivity(requiredConnectivity), hBias(fHBias), maxNumberOfNodes(uMaxNoOfNodes), isVoxelValidForPath(
@@ -280,14 +275,13 @@ bool AStarPathfinder<VolumeType>::execute() {
 		}
 
 		if (_allNodes.size() > _params.maxNumberOfNodes) {
-			//We've reached the specified maximum number
-			//of nodes. Just give up on the search.
+			Log::debug("We've reached the specified maximum number of nodes. Just give up on the search.");
 			break;
 		}
 	}
 
 	if (_openNodes.empty() || _openNodes.getFirst() != endNode) {
-		//In this case we failed to find a valid path.
+		Log::debug("We've failed to find a valid path.");
 		return false;
 	}
 	//Regarding the const_cast - normally you should not modify an object which is in an std::set.
