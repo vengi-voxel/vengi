@@ -6,6 +6,7 @@
 
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
+#include "imgui.h"
 #include "video/WindowedApp.h"
 #include "video/gl/GLTypes.h"
 #include "video/Camera.h"
@@ -23,9 +24,12 @@ private:
 	video::TexturePtr _texture;
 	voxedit::ViewportController _controller;
 	core::VarPtr _debug;
+	core::VarPtr _modelSpace;
+	core::VarPtr _showAxisVar;
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
+	void renderGizmo(const video::Camera &camera, const int headerSize, const ImVec2 &size);
 
 public:
 	Viewport(const core::String& id);

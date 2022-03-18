@@ -113,6 +113,12 @@ update-backward:
 	cp -f $(UPDATEDIR)/backward-cpp.sync/backward.hpp contrib/libs/backward/backward.h
 	sed -i 's/backward.hpp/backward.h/g' contrib/libs/backward/backward.cpp
 
+update-imguizmo:
+	$(call UPDATE_GIT,imguizmo,https://github.com/CedricGuillemet/ImGuizmo.git)
+	cp $(UPDATEDIR)/imguizmo.sync/ImSequencer.* $(UPDATEDIR)/imguizmo.sync/ImGuizmo.* src/modules/ui/imgui/dearimgui
+	dos2unix src/modules/ui/imgui/dearimgui/ImSeq*
+	dos2unix src/modules/ui/imgui/dearimgui/ImGuizmo*
+
 # the backend code is just copied to merge in potiential changes
 update-dearimgui:
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git -b docking)

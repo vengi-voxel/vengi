@@ -2,7 +2,6 @@ set(SRCS
 	Axis.cpp Axis.h
 	BloomRenderer.cpp BloomRenderer.h
 	CameraFrustum.cpp CameraFrustum.h
-	Gizmo.cpp Gizmo.h
 	GridRenderer.cpp GridRenderer.h
 	Plane.h Plane.cpp
 	RandomColorTexture.h RandomColorTexture.cpp

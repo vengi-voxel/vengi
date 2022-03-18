@@ -22,7 +22,6 @@
 #include "anim/VolumeCache.h"
 #include "render/ShapeRenderer.h"
 #include "render/GridRenderer.h"
-#include "render/Gizmo.h"
 #include "core/Var.h"
 #include "core/Singleton.h"
 #include "command/ActionButton.h"
@@ -85,7 +84,6 @@ private:
 	MementoHandler _mementoHandler;
 	ModifierFacade _modifier;
 	voxel::RawVolume* _copy = nullptr;
-	render::Gizmo _gizmo;
 	EditMode _editMode = EditMode::Model;
 	std::future<voxelformat::SceneGraph> _loadingFuture;
 
@@ -120,7 +118,6 @@ private:
 	core::VarPtr _ambientColor;
 	core::VarPtr _diffuseColor;
 	core::VarPtr _cameraZoomSpeed;
-	core::VarPtr _modelSpace;
 	core::VarPtr _grayInactive;
 	core::VarPtr _hideInactive;
 
@@ -140,7 +137,6 @@ private:
 	bool _needAutoSave = false;
 
 	bool _renderShadow = true;
-	bool _renderAxis = true;
 	bool _renderLockAxis = true;
 
 	core::String _lastFilename;
@@ -233,7 +229,6 @@ protected:
 	 */
 	void move(int nodeId, const glm::ivec3& m);
 
-	void executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode);
 	void toggleEditMode();
 
 	bool saveModels(const core::String& dir);
@@ -255,8 +250,6 @@ public:
 	 */
 	void shift(int nodeId, const glm::ivec3& m);
 
-	void setGizmoPosition();
-
 	void setMousePos(int x, int y);
 
 	bool cameraRotate() const;
@@ -266,7 +259,6 @@ public:
 	video::Camera* activeCamera();
 
 	const core::String& filename() const;
-
 	const voxel::Voxel& hitCursorVoxel() const;
 
 	const glm::ivec3& cursorPosition() const;
@@ -393,7 +385,6 @@ public:
 
 	math::Axis lockedAxis() const;
 	void setLockedAxis(math::Axis axis, bool unlock);
-	void setRenderAxis(bool renderAxis);
 	void setRenderLockAxis(bool renderLockAxis);
 	void setRenderShadow(bool shadow);
 	bool setGridResolution(int resolution);
@@ -418,8 +409,10 @@ private:
 	void onNewNodeAdded(int newNodeId);
 	bool nodeRename(voxelformat::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(voxelformat::SceneGraphNode &node, bool recursive);
+	bool nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, int frame);
 	void nodeDuplicate(const voxelformat::SceneGraphNode &node);
 public:
+	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, int frame);
 	bool nodeMove(int sourceNodeId, int targetNodeId);
 	bool nodeRename(int nodeId, const core::String &name);
 	bool nodeRemove(int nodeId, bool recursive);
@@ -443,10 +436,6 @@ inline render::ShapeRenderer &SceneManager::shapeRenderer() {
 
 inline voxelgenerator::LUAGenerator& SceneManager::luaGenerator() {
 	return _luaGenerator;
-}
-
-inline void SceneManager::setRenderAxis(bool renderAxis) {
-	_renderAxis = renderAxis;
 }
 
 inline void SceneManager::setRenderLockAxis(bool renderLockAxis) {

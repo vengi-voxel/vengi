@@ -8,16 +8,22 @@
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Var.h"
-#include "ui/imgui/IMGUIEx.h"
-#include "ui/imgui/IMGUIApp.h"
+#include "imgui.h"
+#include "math/Ray.h"
 #include "io/Filesystem.h"
+#include "ui/imgui/IMGUIApp.h"
+#include "ui/imgui/IMGUIEx.h"
+#include "ui/imgui/dearimgui/ImGuizmo.h"
 #include "video/ShapeBuilder.h"
 #include "video/WindowedApp.h"
 
 #include "image/Image.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/ViewportController.h"
+#include "voxel/RawVolume.h"
 
+#include <glm/gtc/type_ptr.hpp>
 
 namespace voxedit {
 
@@ -41,7 +47,10 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	_controller.setMode(ViewportController::SceneCameraMode::Free);
 	resetCamera();
 
-	_debug = core::Var::get("ve_viewportdebugflag", "0", "Debug bit mask. 1 means rendering the traces for the active camera");
+	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "0");
+	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1", "Show the axis", core::Var::boolValidator);
+	_debug = core::Var::get("ve_viewportdebugflag", "0",
+							"Debug bit mask. 1 means rendering the traces for the active camera");
 	return true;
 }
 
@@ -83,6 +92,7 @@ void Viewport::update() {
 				const glm::vec2 uvc(uv.z, uv.w);
 				const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 				ImGui::Image(texture->handle(), contentSize, uva, uvc);
+				renderGizmo(_controller.camera(), headerSize, contentSize);
 
 				if (sceneMgr().isLoading()) {
 					ui::imgui::ScopedStyle style;
@@ -202,6 +212,44 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 
 	_texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	return true;
+}
+
+void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, const ImVec2 &size) {
+	if (!_showAxisVar->boolVal()) {
+		return;
+	}
+	const int activeNode = sceneMgr().sceneGraph().activeNode();
+	if (activeNode == -1) {
+		return;
+	}
+	const EditMode editMode = sceneMgr().editMode();
+
+	ImGuizmo::BeginFrame();
+
+	ImGuizmo::MODE mode;
+	if (editMode == EditMode::Scene) {
+		ImGuizmo::Enable(true);
+		mode = ImGuizmo::MODE::LOCAL;
+	} else {
+		ImGuizmo::Enable(false);
+		mode = _modelSpace->boolVal() ? ImGuizmo::MODE::LOCAL : ImGuizmo::MODE::WORLD;
+	}
+	ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE | ImGuizmo::ROTATE;
+
+	voxelformat::SceneGraphNode &node = sceneMgr().sceneGraph().node(activeNode);
+
+	ImGuizmo::SetDrawlist();
+	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + (float)headerSize, size.x, size.y);
+	ImGuizmo::SetOrthographic(false);
+	const float snap[] = {1.0f, 1.0f, 1.0f};
+	const int frame = 0;
+	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
+	glm::mat4 transformMatrix = transform.mat;
+	const float *viewMatrix = glm::value_ptr(camera.viewMatrix());
+	const float *projMatrix = glm::value_ptr(camera.projectionMatrix());
+	if (ImGuizmo::Manipulate(viewMatrix, projMatrix, operation, mode, glm::value_ptr(transformMatrix), nullptr	, snap)) {
+		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, frame);
+	}
 }
 
 void Viewport::renderToFrameBuffer() {

@@ -107,7 +107,6 @@ bool MainWindow::init() {
 	_sceneAnimation->init(voxedit::ViewportController::RenderMode::Animation);
 	_sceneAnimation->controller().setMode(voxedit::ViewportController::SceneCameraMode::Free);
 
-	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1", "Show the axis", core::Var::boolValidator);
 	_showGridVar = core::Var::get(cfg::VoxEditShowgrid, "1", "Show the grid", core::Var::boolValidator);
 	_modelSpaceVar = core::Var::get(cfg::VoxEditModelSpace, "0", "Model space", core::Var::boolValidator);
 	_showLockedAxisVar = core::Var::get(cfg::VoxEditShowlockedaxis, "1", "Show the currently locked axis", core::Var::boolValidator);
@@ -241,7 +240,6 @@ void MainWindow::rightWidget() {
 void MainWindow::updateSettings() {
 	SceneManager &mgr = sceneMgr();
 	mgr.setGridResolution(_gridSizeVar->intVal());
-	mgr.setRenderAxis(_showAxisVar->boolVal());
 	mgr.setRenderLockAxis(_showLockedAxisVar->boolVal());
 	mgr.setRenderShadow(_renderShadowVar->boolVal());
 

@@ -14,13 +14,13 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "glm/gtx/matrix_decompose.hpp"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "math/AABB.h"
 #include "math/Axis.h"
 #include "math/Random.h"
 #include "math/Ray.h"
-#include "render/Gizmo.h"
 #include "video/ScopedBlendMode.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
@@ -890,7 +890,6 @@ void SceneManager::shift(int nodeId, const glm::ivec3& m) {
 	setReferencePosition(_referencePos + m);
 	_modifier.translate(m);
 	_volumeRenderer.translate(*node, m);
-	setGizmoPosition();
 	const voxel::Region& newRegion = model->region();
 	updateGridRenderer(newRegion);
 	updateAABBMesh();
@@ -903,23 +902,6 @@ void SceneManager::shift(int x, int y, int z) {
 	_sceneGraph.foreachGroup([&] (int nodeId) {
 		shift(nodeId, v);
 	});
-}
-
-void SceneManager::executeGizmoAction(const glm::ivec3& delta, render::GizmoMode mode) {
-	// TODO: memento state at pressing and releasing
-	if (mode == render::GizmoMode::TranslateX) {
-		if (delta.x != 0) {
-			shift(delta.x, 0, 0);
-		}
-	} else if (mode == render::GizmoMode::TranslateY) {
-		if (delta.y != 0) {
-			shift(0, delta.y, 0);
-		}
-	} else if (mode == render::GizmoMode::TranslateZ) {
-		if (delta.z != 0) {
-			shift(0, 0, delta.z);
-		}
-	}
 }
 
 bool SceneManager::setGridResolution(int resolution) {
@@ -1007,9 +989,7 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 		extractVolume();
 	}
 	if (renderUI) {
-		if (_editMode == EditMode::Scene) {
-			_gizmo.render(camera);
-		} else {
+		if (_editMode != EditMode::Scene) {
 			_modifier.render(camera);
 
 			// TODO: render error if rendered last - but be before grid renderer to get transparency.
@@ -1017,9 +997,6 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 				for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
 					_shapeRenderer.render(_planeMeshIndex[i], camera);
 				}
-			}
-			if (_renderAxis) {
-				_gizmo.render(camera);
 			}
 		}
 		if (!depthTest) {
@@ -1061,7 +1038,6 @@ void SceneManager::construct() {
 		.setArgumentCompleter(voxelgenerator::scriptCompleter(io::filesystem()));
 
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
-	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "0");
 
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		command::Command::registerActionButton(
@@ -1248,7 +1224,6 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
 
-	command::Command::registerActionButton("shift", _gizmo).setBindingContext(BindingContext::Scene);
 	command::Command::registerCommand("shift", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
 		if (argc != 3) {
@@ -1666,13 +1641,11 @@ void SceneManager::setEditMode(EditMode mode) {
 		_volumeRenderer.setSceneMode(true);
 		_animationUpdate = false;
 	} else if (_editMode == EditMode::Model) {
-		_gizmo.resetMode();
 		_volumeRenderer.setSceneMode(false);
 		_animationUpdate = false;
 	} else if (_editMode == EditMode::Animation) {
 		_animationUpdate = true;
 	}
-	setGizmoPosition();
 	updateAABBMesh();
 	// don't abort or toggle any other mode
 }
@@ -1695,11 +1668,6 @@ bool SceneManager::init() {
 			Log::error("Failed to initialize the palette data");
 			return false;
 		}
-	}
-
-	if (!_gizmo.init()) {
-		Log::error("Failed to initialize the gizmo");
-		return false;
 	}
 	if (!_mementoHandler.init()) {
 		Log::error("Failed to initialize the memento handler");
@@ -1851,29 +1819,6 @@ void SceneManager::update(double nowSeconds) {
 		});
 	}
 
-	if (_camera != nullptr) {
-		if (_editMode == EditMode::Scene) {
-			_gizmo.setModelSpace();
-			setGizmoPosition();
-		} else if (_modelSpace->boolVal() != _gizmo.isModelSpace()) {
-			const bool newModelSpaceState = _modelSpace->boolVal();
-			if (newModelSpaceState) {
-				Log::debug("switch to model space");
-				_gizmo.setModelSpace();
-			} else {
-				Log::debug("switch to world space");
-				_gizmo.setWorldSpace();
-			}
-			setGizmoPosition();
-		}
-
-		if (_editMode == EditMode::Scene) {
-			_gizmo.updateMode(*_camera, _mouseCursor);
-			_gizmo.execute(nowSeconds, [&] (const glm::vec3& deltaMovement, render::GizmoMode mode) {
-				executeGizmoAction(glm::ivec3(deltaMovement), mode);
-			});
-		}
-	}
 	if (_ambientColor->isDirty()) {
 		_volumeRenderer.setAmbientColor(_ambientColor->vec3Val());
 		_ambientColor->markClean();
@@ -1906,7 +1851,6 @@ void SceneManager::shutdown() {
 	_volumeCache.shutdown();
 	_mementoHandler.shutdown();
 	_modifier.shutdown();
-	_gizmo.shutdown();
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_gridRenderer.shutdown();
@@ -2312,15 +2256,28 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-void SceneManager::setGizmoPosition() {
-	if (_gizmo.isModelSpace()) {
-		if (const voxel::RawVolume *v = activeVolume()) {
-			const voxel::Region& region = v->region();
-			_gizmo.setPosition(region.getLowerCornerf());
-		}
-	} else {
-		_gizmo.setPosition(glm::zero<glm::vec3>());
+bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, int frame) {
+	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeUpdateTransform(*node, matrix, frame);
 	}
+	return false;
+}
+
+bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, int frame) {
+	glm::vec3 translation;
+	glm::quat orientation;
+	glm::vec3 scale;
+	glm::vec3 skew;
+	glm::vec4 perspective;
+	glm::decompose(matrix, scale, orientation, translation, skew, perspective);
+	voxelformat::SceneGraphTransform &transform = node.transform(frame);
+	// TODO: memento
+	//_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume(), MementoType::Transform, transform, frame);
+	transform.position = translation;
+	transform.rot = orientation;
+	transform.update();
+	updateAABBMesh();
+	return true;
 }
 
 bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
@@ -2425,7 +2382,6 @@ bool SceneManager::nodeActivate(int nodeId) {
 	if (!region.containsPoint(cursorPosition())) {
 		setCursorPosition(node.region().getCenter());
 	}
-	setGizmoPosition();
 	resetLastTrace();
 	return true;
 }

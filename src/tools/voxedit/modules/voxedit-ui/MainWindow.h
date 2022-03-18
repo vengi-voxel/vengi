@@ -37,7 +37,6 @@ private:
 		}
 	};
 
-	core::VarPtr _showAxisVar;
 	core::VarPtr _showGridVar;
 	core::VarPtr _modelSpaceVar;
 	core::VarPtr _showLockedAxisVar;
