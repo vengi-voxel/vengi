@@ -408,7 +408,6 @@ public:
 	render::GridRenderer& gridRenderer();
 	animation::SkeletonAttribute* skeletonAttributes();
 	animation::AnimationEntity& animationEntity();
-	const render::Gizmo& gizmo() const;
 	voxelgenerator::LUAGenerator& luaGenerator();
 	video::ShapeBuilder& shapeBuilder();
 	render::ShapeRenderer& shapeRenderer();
@@ -467,10 +466,6 @@ inline void SceneManager::setActiveCamera(video::Camera* camera) {
 
 inline video::Camera* SceneManager::activeCamera() {
 	return _camera;
-}
-
-inline const render::Gizmo& SceneManager::gizmo() const {
-	return _gizmo;
 }
 
 inline voxelrender::SceneGraphRenderer& SceneManager::renderer() {

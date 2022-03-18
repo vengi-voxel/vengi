@@ -25,7 +25,7 @@ namespace _priv {
 static const uint32_t VIEWPORT_DEBUG_TRACE = (1 << 0);
 }
 
-Viewport::Viewport(const core::String& id) : _id(id) {
+Viewport::Viewport(const core::String &id) : _id(id) {
 }
 
 Viewport::~Viewport() {
@@ -62,7 +62,8 @@ void Viewport::update() {
 		core_trace_scoped(Viewport);
 		ui::imgui::IMGUIApp *app = imguiApp();
 
-		if (_controller.renderMode() == ViewportController::RenderMode::Animation && sceneMgr().editMode() != EditMode::Animation) {
+		if (_controller.renderMode() == ViewportController::RenderMode::Animation &&
+			sceneMgr().editMode() != EditMode::Animation) {
 			ui::imgui::ScopedStyle style;
 			style.setFont(app->bigFont());
 			ImGui::TextCentered("No animation loaded");
@@ -146,7 +147,7 @@ void Viewport::shutdown() {
 	_frameBuffer.shutdown();
 }
 
-bool Viewport::saveImage(const char* filename) {
+bool Viewport::saveImage(const char *filename) {
 	core_assert(_texture->format() == video::TextureFormat::RGBA);
 	if (_texture->format() != video::TextureFormat::RGBA) {
 		Log::error("Unsupported texture format");
@@ -159,9 +160,8 @@ bool Viewport::saveImage(const char* filename) {
 	_frameBuffer.unbind();
 
 	uint8_t *pixels;
-	if (!video::readTexture(video::TextureUnit::Upload,
-			_texture->type(), _texture->format(), _texture->handle(),
-			_texture->width(), _texture->height(), &pixels)) {
+	if (!video::readTexture(video::TextureUnit::Upload, _texture->type(), _texture->format(), _texture->handle(),
+							_texture->width(), _texture->height(), &pixels)) {
 		Log::error("Failed to read texture");
 		return false;
 	}
@@ -172,7 +172,7 @@ bool Viewport::saveImage(const char* filename) {
 }
 
 void Viewport::resetCamera() {
-	const glm::ivec3& pos = sceneMgr().referencePosition();
+	const glm::ivec3 &pos = sceneMgr().referencePosition();
 	const int activeNode = sceneMgr().sceneGraph().activeNode();
 	const voxel::RawVolume *v = activeNode != -1 ? sceneMgr().volume(activeNode) : nullptr;
 	voxel::Region region;
@@ -182,7 +182,7 @@ void Viewport::resetCamera() {
 	_controller.resetCamera(pos, region);
 }
 
-bool Viewport::setupFrameBuffer(const glm::ivec2& frameBufferSize) {
+bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	if (frameBufferSize.x <= 0 || frameBufferSize.y <= 0) {
 		return false;
 	}
@@ -217,16 +217,13 @@ void Viewport::renderToFrameBuffer() {
 	if ((_debug->intVal() & _priv::VIEWPORT_DEBUG_TRACE) != 0) {
 		video::Camera *activeCamera = sceneMgr().activeCamera();
 		if (activeCamera) {
-			const math::Ray& ray = activeCamera->mouseRay(glm::ivec2(_controller._mouseX, _controller._mouseY));
+			const math::Ray &ray = activeCamera->mouseRay(glm::ivec2(_controller._mouseX, _controller._mouseY));
 			const float rayLength = activeCamera->farPlane();
-			const glm::vec3& dirWithLength = ray.direction * rayLength;
+			const glm::vec3 &dirWithLength = ray.direction * rayLength;
 
-			Log::trace("%s: origin(%f:%f:%f) dir(%f:%f:%f), rayLength: %f - mouse(%i:%i)",
-					_id.c_str(),
-					ray.origin.x, ray.origin.y, ray.origin.z,
-					dirWithLength.x, dirWithLength.y, dirWithLength.z,
-					rayLength,
-					_controller._mouseX, _controller._mouseY);
+			Log::trace("%s: origin(%f:%f:%f) dir(%f:%f:%f), rayLength: %f - mouse(%i:%i)", _id.c_str(), ray.origin.x,
+					   ray.origin.y, ray.origin.z, dirWithLength.x, dirWithLength.y, dirWithLength.z, rayLength,
+					   _controller._mouseX, _controller._mouseY);
 
 			video::ShapeBuilder &builder = sceneMgr().shapeBuilder();
 			builder.clear();
@@ -248,4 +245,4 @@ void Viewport::renderToFrameBuffer() {
 	_frameBuffer.unbind();
 }
 
-}
+} // namespace voxedit
