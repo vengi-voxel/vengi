@@ -58,21 +58,27 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		glm::vec3 localPosition{0.0f};
 		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
 		float localScale = 1.0f;
-		wrap(stream.readFloat(keyFrame.transform.position.x))
-		wrap(stream.readFloat(keyFrame.transform.position.y))
-		wrap(stream.readFloat(keyFrame.transform.position.z))
+		glm::vec3 translation;
+		wrap(stream.readFloat(translation.x))
+		wrap(stream.readFloat(translation.y))
+		wrap(stream.readFloat(translation.z))
+		keyFrame.transform.setTranslation(translation);
 		wrap(stream.readFloat(localPosition.x))
 		wrap(stream.readFloat(localPosition.y))
 		wrap(stream.readFloat(localPosition.z))
-		wrap(stream.readFloat(keyFrame.transform.rot.x))
-		wrap(stream.readFloat(keyFrame.transform.rot.y))
-		wrap(stream.readFloat(keyFrame.transform.rot.z))
-		wrap(stream.readFloat(keyFrame.transform.rot.w))
+		glm::quat orientation;
+		wrap(stream.readFloat(orientation.x))
+		wrap(stream.readFloat(orientation.y))
+		wrap(stream.readFloat(orientation.z))
+		wrap(stream.readFloat(orientation.w))
+		keyFrame.transform.setOrientation(orientation);
 		wrap(stream.readFloat(localRot.x))
 		wrap(stream.readFloat(localRot.y))
 		wrap(stream.readFloat(localRot.z))
 		wrap(stream.readFloat(localRot.w))
-		wrap(stream.readFloat(keyFrame.transform.scale))
+		float scale;
+		wrap(stream.readFloat(scale))
+		keyFrame.transform.setScale(scale);
 		wrap(stream.readFloat(localScale))
 		keyFrame.transform.update();
 	}

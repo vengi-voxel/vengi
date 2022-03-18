@@ -85,8 +85,8 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
 				video::Camera nodeCamera;
 				const voxelformat::SceneGraphTransform& transform = node.transform();
-				nodeCamera.setQuaternion(glm::quat_cast(transform.mat));
-				nodeCamera.setWorldPosition(transform.position);
+				nodeCamera.setQuaternion(transform.orientation());
+				nodeCamera.setWorldPosition(transform.translation());
 				nodeCamera.setMode(video::CameraMode::Perspective);
 				nodeCamera.update(0.0f);
 				camera.lerp(nodeCamera);

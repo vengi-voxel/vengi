@@ -84,7 +84,7 @@ private:
 	MementoHandler _mementoHandler;
 	ModifierFacade _modifier;
 	voxel::RawVolume* _copy = nullptr;
-	EditMode _editMode = EditMode::Model;
+	EditMode _editMode = EditMode::Scene;
 	std::future<voxelformat::SceneGraph> _loadingFuture;
 
 	animation::AnimationSettings::Type _entityType = animation::AnimationSettings::Type::Max;

@@ -7,6 +7,7 @@
 #include "core/IComponent.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "core/collection/RingBuffer.h"
 #include "core/String.h"
 #include <stdint.h>
@@ -28,6 +29,7 @@ enum class MementoType {
 	SceneNodeAdded,
 	SceneNodeRemoved,
 	SceneNodeRenamed,
+	SceneNodeTransform,
 
 	Max
 };
@@ -85,6 +87,7 @@ struct MementoState {
 	int parentId;
 	int nodeId;
 	core::String name;
+	voxelformat::SceneGraphTransform transform;
 	/**
 	 * @note This region might be different from the region given in the @c MementoData. In case of an @c MementoHandler::undo()
 	 * call, we have to make sure that the region of the previous state is re-extracted.
@@ -97,6 +100,10 @@ struct MementoState {
 
 	MementoState(MementoType _type, const MementoData& _data, int _parentId, int _nodeId, const core::String& _name, const voxel::Region& _region) :
 			type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), name(_name), region(_region) {
+	}
+
+	MementoState(MementoType _type, int _parentId, int _nodeId, const voxelformat::SceneGraphTransform &_transform) :
+			type(_type), parentId(_parentId), nodeId(_nodeId), name(""), transform(_transform), region(voxel::Region::InvalidRegion) {
 	}
 
 	MementoState(MementoType _type, MementoData&& _data, int _parentId, int _nodeId, core::String&& _name, voxel::Region&& _region) :

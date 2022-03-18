@@ -42,9 +42,11 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 	 * Centroid of voxel. For extra precision, this location has been shifted up by 8 bits.
 	 */
 	SceneGraphTransform transform;
-	wrap(stream.readFloat(transform.normalizedPivot.x))
-	wrap(stream.readFloat(transform.normalizedPivot.y))
-	wrap(stream.readFloat(transform.normalizedPivot.z))
+	glm::vec3 normalizedPivot;
+	wrap(stream.readFloat(normalizedPivot.x))
+	wrap(stream.readFloat(normalizedPivot.y))
+	wrap(stream.readFloat(normalizedPivot.z))
+	transform.setPivot(normalizedPivot);
 
 	if (xsiz > MaxRegionSize || ysiz > MaxRegionSize || zsiz > MaxRegionSize) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", xsiz, zsiz, ysiz);

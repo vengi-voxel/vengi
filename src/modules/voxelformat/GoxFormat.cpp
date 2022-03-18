@@ -273,10 +273,12 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 			// "mat" (4x4 matrix)
 			SceneGraphTransform transform;
 			io::MemoryReadStream stream(dictValue, sizeof(float) * 16);
+			glm::mat4 mat;
 			for (int i = 0; i < 16; ++i) {
-				stream.readFloat(transform.mat[i / 4][i % 4]);
+				stream.readFloat(mat[i / 4][i % 4]);
 			}
-			transform.updateFromMat();
+			transform.setMatrix(mat);
+			transform.update();
 			node.setTransform(0, transform, true);
 		} else if (!strcmp(dictKey, "img-path") || !strcmp(dictKey, "id")) {
 			// "img-path" layer texture path
@@ -350,10 +352,12 @@ bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableRead
 			// "mat" 4x4 float
 			SceneGraphTransform transform;
 			io::MemoryReadStream stream(dictValue, sizeof(float) * 16);
+			glm::mat4 mat;
 			for (int i = 0; i < 16; ++i) {
-				stream.readFloat(transform.mat[i / 4][i % 4]);
+				stream.readFloat(mat[i / 4][i % 4]);
 			}
-			transform.updateFromMat();
+			transform.setMatrix(mat);
+			transform.update();
 			node.setTransform(0, transform, true);
 		}
 	}

@@ -34,8 +34,8 @@ static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::vec3 &pos, 
 }
 
 voxel::RawVolume* Format::transformVolume(const SceneGraphTransform &t, const voxel::RawVolume *in) const {
-	const glm::mat4 &mat = t.mat;
-	const glm::vec3 &pivotNormalized = t.normalizedPivot;
+	const glm::mat4 &mat = t.matrix();
+	const glm::vec3 &pivotNormalized = t.pivot();
 	const voxel::Region &inRegion = in->region();
 	const glm::ivec3 &inMins = inRegion.getLowerCorner();
 	const glm::ivec3 &inMaxs = inRegion.getUpperCorner();

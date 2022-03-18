@@ -111,7 +111,9 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraphNode &node, 
 	node.setLocked(childModelNode->locked());
 	node.addProperties(childModelNode->properties());
 	// TODO: this shouldn't be needed - should get set in vxa or vxr (or in vxm version <= 3)
-	node.setNormalizedPivot(0, childModelNode->normalizedPivot(0));
+	const voxelformat::SceneGraphTransform &childTransform = childModelNode->transform(0);
+	voxelformat::SceneGraphTransform &transform = node.transform(0);
+	transform.setPivot(childTransform.pivot());
 	return true;
 }
 
@@ -145,14 +147,16 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		if (version > 1) {
 			stream.readBool(); // rotation ??
 		}
-		keyFrame.transform.normalizedPivot = glm::vec3(0.5f);
+		keyFrame.transform.setPivot(glm::vec3(0.5f));
 		glm::vec3 localPosition{0.0f};
 		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
 		float localScale = 1.0f;
-		wrap(stream.readFloat(keyFrame.transform.position.x))
+		glm::vec3 translation;
+		wrap(stream.readFloat(translation.x))
 		//nodeFrame.transform.position.x *= -1.0f;
-		wrap(stream.readFloat(keyFrame.transform.position.y))
-		wrap(stream.readFloat(keyFrame.transform.position.z))
+		wrap(stream.readFloat(translation.y))
+		wrap(stream.readFloat(translation.z))
+		keyFrame.transform.setTranslation(translation);
 		if (version >= 3) {
 			wrap(stream.readFloat(localPosition.x))
 			wrap(stream.readFloat(localPosition.y))
@@ -165,22 +169,26 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			keyFrame.transform.rot = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
+			keyFrame.transform.setOrientation(glm::quat(glm::vec3(rotationx, rotationy, rotationz)));
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
 			localRot = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
 		} else {
-			wrap(stream.readFloat(keyFrame.transform.rot.x))
-			wrap(stream.readFloat(keyFrame.transform.rot.y))
-			wrap(stream.readFloat(keyFrame.transform.rot.z))
-			wrap(stream.readFloat(keyFrame.transform.rot.w))
+			glm::quat orientation;
+			wrap(stream.readFloat(orientation.x))
+			wrap(stream.readFloat(orientation.y))
+			wrap(stream.readFloat(orientation.z))
+			wrap(stream.readFloat(orientation.w))
+			keyFrame.transform.setOrientation(orientation);
 			wrap(stream.readFloat(localRot.x))
 			wrap(stream.readFloat(localRot.y))
 			wrap(stream.readFloat(localRot.z))
 			wrap(stream.readFloat(localRot.w))
 		}
-		wrap(stream.readFloat(keyFrame.transform.scale))
+		float scale;
+		wrap(stream.readFloat(scale))
+		keyFrame.transform.setScale(scale);
 		if (version >= 3) {
 			wrap(stream.readFloat(localScale))
 		}
@@ -410,8 +418,8 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 
 void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGraphNode &node, const SceneGraphTransform parentTransform, uint8_t frameIdx) {
 	SceneGraphTransform currentTransform = node.transform(frameIdx);
-	currentTransform.mat = parentTransform.mat * node.transform(frameIdx).mat;
-	currentTransform.updateFromMat();
+	currentTransform.setMatrix(parentTransform.matrix() * node.transform(frameIdx).matrix());
+	currentTransform.update();
 
 	if (node.type() == SceneGraphNodeType::Model) {
 		node.setTransform(frameIdx, currentTransform, true);

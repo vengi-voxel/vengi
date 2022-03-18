@@ -37,18 +37,6 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
-	/**
-	 * Centroid of voxel. For extra precision, this location has been shifted up by 8 bits.
-	 */
-	SceneGraphTransform transform;
-	uint32_t pivx, pivy, pivz;
-	wrap(stream.readUInt32(pivx))
-	wrap(stream.readUInt32(pivy))
-	wrap(stream.readUInt32(pivz))
-	transform.normalizedPivot.x = (float)pivx / 256.0f;
-	transform.normalizedPivot.y = (float)pivy / 256.0f;
-	transform.normalizedPivot.z = (float)pivz / 256.0f;
-
 	if (xsiz > MaxRegionSize || ysiz > MaxRegionSize || zsiz > MaxRegionSize) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", xsiz, zsiz, ysiz);
 		return false;
@@ -59,6 +47,23 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		Log::error("Invalid region: %i:%i:%i", xsiz, zsiz, ysiz);
 		return false;
 	}
+
+	/**
+	 * Centroid of voxel. For extra precision, this location has been shifted up by 8 bits.
+	 */
+	SceneGraphTransform transform;
+	uint32_t pivx, pivy, pivz;
+	wrap(stream.readUInt32(pivx))
+	wrap(stream.readUInt32(pivy))
+	wrap(stream.readUInt32(pivz))
+
+#if 0
+	glm::vec3 normalizedPivot;
+	normalizedPivot.x = (float)pivx / 256.0f;
+	normalizedPivot.y = (float)pivy / 256.0f;
+	normalizedPivot.z = (float)pivz / 256.0f;
+	transform.setPivot(normalizedPivot);
+#endif
 
 	/**
 	 * For compression purposes, I store the column pointers

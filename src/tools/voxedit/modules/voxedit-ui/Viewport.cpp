@@ -244,7 +244,7 @@ void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, co
 	const float snap[] = {1.0f, 1.0f, 1.0f};
 	const int frame = 0;
 	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
-	glm::mat4 transformMatrix = transform.mat;
+	glm::mat4 transformMatrix = transform.matrix();
 	const float *viewMatrix = glm::value_ptr(camera.viewMatrix());
 	const float *projMatrix = glm::value_ptr(camera.projectionMatrix());
 	if (ImGuizmo::Manipulate(viewMatrix, projMatrix, operation, mode, glm::value_ptr(transformMatrix), nullptr	, snap)) {

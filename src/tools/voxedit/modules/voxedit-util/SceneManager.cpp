@@ -684,7 +684,7 @@ void SceneManager::resetSceneState() {
 	_animationIdx = 0;
 	voxelformat::SceneGraphNode &node = *_sceneGraph.begin();
 	_sceneGraph.setActiveNode(node.id());
-	setEditMode(EditMode::Model);
+	setEditMode(EditMode::Scene);
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
 	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume());
@@ -2272,9 +2272,9 @@ bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const 
 	glm::decompose(matrix, scale, orientation, translation, skew, perspective);
 	voxelformat::SceneGraphTransform &transform = node.transform(frame);
 	// TODO: memento
-	//_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume(), MementoType::Transform, transform, frame);
-	transform.position = translation;
-	transform.rot = orientation;
+	//_mementoHandler.markUndo(node.parent(), node.id(), MementoType::SceneNodeTransform, transform);
+	transform.setTranslation(translation);
+	transform.setOrientation(orientation);
 	transform.update();
 	updateAABBMesh();
 	return true;
@@ -2376,7 +2376,8 @@ bool SceneManager::nodeActivate(int nodeId) {
 	updateGridRenderer(region);
 	updateAABBMesh();
 	if (!region.containsPoint(referencePosition())) {
-		const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.normalizedPivot() * glm::vec3(region.getDimensionsInVoxels()));
+		const int frame = 0;
+		const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.transform(frame).pivot() * glm::vec3(region.getDimensionsInVoxels()));
 		setReferencePosition(glm::ivec3(pivot));
 	}
 	if (!region.containsPoint(cursorPosition())) {

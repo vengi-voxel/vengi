@@ -131,7 +131,8 @@ void MementoHandler::print() const {
 		"SceneNodeMove",
 		"SceneNodeAdded",
 		"SceneNodeRemoved",
-		"SceneNodeRenamed"
+		"SceneNodeRenamed",
+		"SceneNodeTransform"
 	};
 	static_assert((int)MementoType::Max == lengthof(states), "Array sizes don't match");
 

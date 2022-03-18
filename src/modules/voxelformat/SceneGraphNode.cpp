@@ -3,10 +3,13 @@
  */
 
 #include "SceneGraphNode.h"
+#include "core/Assert.h"
 #include "core/Log.h"
 #include "voxel/RawVolume.h"
-#include <glm/gtx/transform.hpp>
+
 #include <glm/ext/scalar_constants.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/transform.hpp>
 
 namespace voxelformat {
 
@@ -16,32 +19,78 @@ SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type) {
 	_keyFrames.emplace_back(frame);
 }
 
-void SceneGraphTransform::print() const {
-	Log::error("position: %.2f:%.2f:%.2f", position.x, position.y, position.z);
-	Log::error("rot: %.2f:%.2f:%.2f:%.2f", rot.x, rot.y, rot.z, rot.w);
-	Log::error("scale: %.2f", scale);
-	Log::error("pivot: %.2f:%.2f:%.2f", normalizedPivot.x, normalizedPivot.y, normalizedPivot.z);
-	Log::error("matrix\n%.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f",
-			   mat[0][0], mat[0][1], mat[0][2], mat[0][3], mat[1][0], mat[1][1], mat[1][2], mat[1][3], mat[2][0],
-			   mat[2][1], mat[2][2], mat[2][3], mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
+void SceneGraphTransform::setPivot(const glm::vec3 &normalizedPivot) {
+	_dirty |= DIRTY_PIVOT;
+	_normalizedPivot = normalizedPivot;
+#if 0
+	core_assert(glm::all(glm::lessThanEqual(normalizedPivot, glm::vec3(1.0f))));
+	core_assert(glm::all(glm::greaterThanEqual(normalizedPivot, glm::vec3(0.0f))));
+#endif
+}
+
+void SceneGraphTransform::setTranslation(const glm::vec3 &translation) {
+	_dirty |= DIRTY_TRANSLATION;
+	_translation = translation;
+}
+
+void SceneGraphTransform::setOrientation(const glm::quat &orientation) {
+	_dirty |= DIRTY_ORIENTATION;
+	_orientation = orientation;
+}
+
+void SceneGraphTransform::setScale(float scale) {
+	_dirty |= DIRTY_SCALE;
+	_scale = scale;
+}
+
+void SceneGraphTransform::setMatrix(const glm::mat4x4 &matrix) {
+	_dirty |= DIRTY_MATRIX;
+	_mat = matrix;
+}
+
+const glm::mat4x4 &SceneGraphTransform::matrix() const {
+	return _mat;
+}
+
+const glm::vec3 &SceneGraphTransform::pivot() const {
+	return _normalizedPivot;
+}
+
+const glm::vec3 &SceneGraphTransform::translation() const {
+	return _translation;
+}
+
+const glm::quat &SceneGraphTransform::orientation() const {
+	return _orientation;
+}
+
+float SceneGraphTransform::scale() const {
+	return _scale;
 }
 
 void SceneGraphTransform::update() {
-	mat = glm::translate(position) * glm::mat4_cast(rot) * glm::scale(glm::vec3(scale));
+	if (_dirty == 0u) {
+		return;
+	}
+	if (_dirty & DIRTY_MATRIX) {
+		core_assert((_dirty & (DIRTY_TRANSLATION | DIRTY_ORIENTATION | DIRTY_SCALE)) == 0u);
+		_translation = _mat[3];
+		_scale = glm::length(glm::vec3(_mat[0]));
+		if (glm::abs(_scale) < glm::epsilon<float>()) {
+			_scale = 1.0f;
+		}
+		const glm::mat3 rotMtx(glm::vec3(_mat[0]) / _scale, glm::vec3(_mat[1]) / _scale, glm::vec3(_mat[2]) / _scale);
+		_orientation = glm::quat_cast(rotMtx);
+	} else if (_dirty & (DIRTY_TRANSLATION | DIRTY_ORIENTATION | DIRTY_SCALE)) {
+		core_assert((_dirty & DIRTY_MATRIX) == 0u);
+		_mat = glm::translate(_translation) * glm::mat4_cast(_orientation) * glm::scale(glm::vec3(_scale));
+	}
+	_dirty = 0u;
 }
 
 glm::vec3 SceneGraphTransform::apply(const glm::vec3 &pos, const glm::vec3 &size) const {
-	return glm::vec3(mat * (glm::vec4(pos, 1.0f) - glm::vec4(normalizedPivot * size, 0.0f)));
-}
-
-void SceneGraphTransform::updateFromMat() {
-	position = mat[3];
-	scale = glm::length(glm::vec3(mat[0]));
-	if (glm::abs(scale) < glm::epsilon<float>()) {
-		scale = 1.0f;
-	}
-	const glm::mat3 rotMtx(glm::vec3(mat[0]) / scale, glm::vec3(mat[1]) / scale, glm::vec3(mat[2]) / scale);
-	rot = glm::quat_cast(rotMtx);
+	core_assert_msg((_dirty & (DIRTY_TRANSLATION | DIRTY_ORIENTATION | DIRTY_SCALE)) == 0u, "Missing update for transform matrix %i", (int)_dirty);
+	return glm::vec3(_mat * (glm::vec4(pos, 1.0f) - glm::vec4(_normalizedPivot * size, 0.0f)));
 }
 
 SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
@@ -153,14 +202,14 @@ core::StringMap<core::String> &SceneGraphNode::properties() {
 	return _properties;
 }
 
-core::String SceneGraphNode::property(const core::String& key) const {
+core::String SceneGraphNode::property(const core::String &key) const {
 	core::String value;
 	_properties.get(key, value);
 	return value;
 }
 
-void SceneGraphNode::addProperties(const core::StringMap<core::String>& map) {
-	for (const auto& entry : map) {
+void SceneGraphNode::addProperties(const core::StringMap<core::String> &map) {
+	for (const auto &entry : map) {
 		setProperty(entry->key, entry->value);
 	}
 }
@@ -175,21 +224,15 @@ void SceneGraphNode::setTransform(uint8_t frameIdx, const SceneGraphTransform &t
 
 void SceneGraphNode::setPivot(uint8_t frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
 	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
-	nodeFrame.transform.normalizedPivot = glm::vec3(pos) / glm::vec3(size);
+	nodeFrame.transform.setPivot(glm::vec3(pos) / glm::vec3(size));
 }
 
-void SceneGraphNode::setNormalizedPivot(uint8_t frameIdx, const glm::vec3 &pivot) {
-	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
-	nodeFrame.transform.normalizedPivot = pivot;
-}
-
-const core::DynamicArray<SceneGraphKeyFrame>& SceneGraphNode::keyFrames() const {
+const core::DynamicArray<SceneGraphKeyFrame> &SceneGraphNode::keyFrames() const {
 	return _keyFrames;
 }
 
-void SceneGraphNode::setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame>& kf) {
+void SceneGraphNode::setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame> &kf) {
 	_keyFrames = kf;
 }
 
-
-} // namespace voxel
+} // namespace voxelformat

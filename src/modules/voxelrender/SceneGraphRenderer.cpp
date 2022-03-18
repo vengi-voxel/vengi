@@ -101,8 +101,8 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, bool hideI
 		}
 		if (_sceneMode) {
 			const voxelformat::SceneGraphTransform &transform = node.transform(0);
-			const glm::vec3 pivot = transform.normalizedPivot * glm::vec3(node.region().getDimensionsInVoxels());
-			_renderer.setModelMatrix(node.id(), transform.mat, pivot);
+			const glm::vec3 pivot = transform.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
+			_renderer.setModelMatrix(node.id(), transform.matrix(), pivot);
 		} else {
 			_renderer.setModelMatrix(node.id(), glm::mat4(1.0f), glm::vec3(0.0f));
 		}

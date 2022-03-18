@@ -121,6 +121,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
+	const voxelformat::SceneGraphTransform &transform = node.transform(0);
 
 	wrapSave(outStream.writeUInt32(qbcl::NODE_TYPE_MATRIX));
 	wrapSave(outStream.writeUInt32(1)) // unknown
@@ -137,7 +138,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 	wrapSave(outStream.writeInt32(mins.y))
 	wrapSave(outStream.writeInt32(mins.z))
 
-	const glm::vec3 &pivot = node.normalizedPivot();
+	const glm::vec3 &pivot = transform.pivot();
 	wrapSave(outStream.writeFloat(pivot.x))
 	wrapSave(outStream.writeFloat(pivot.y))
 	wrapSave(outStream.writeFloat(pivot.z))
@@ -284,9 +285,12 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	wrap(stream.readInt32(position.z));
 	//transform.position = position;
 
-	wrap(stream.readFloat(transform.normalizedPivot.x));
-	wrap(stream.readFloat(transform.normalizedPivot.y));
-	wrap(stream.readFloat(transform.normalizedPivot.z));
+	glm::vec3 pivot;
+	wrap(stream.readFloat(pivot.x));
+	wrap(stream.readFloat(pivot.y));
+	wrap(stream.readFloat(pivot.z));
+
+	transform.setPivot(pivot / glm::vec3(size));
 
 	uint32_t compressedDataSize;
 	wrap(stream.readUInt32(compressedDataSize));

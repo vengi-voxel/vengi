@@ -31,17 +31,41 @@ enum class SceneGraphNodeType {
 	Max
 };
 
-struct SceneGraphTransform {
-	// should be the normalized value between 0 and 1
-	glm::vec3 normalizedPivot{0.0f};
-	glm::vec3 position{0.0f};
-	glm::quat rot{glm::quat_identity<float, glm::defaultp>()};
-	float scale{1.0f};
-	glm::mat4x4 mat{1.0f};
+class SceneGraphTransform {
+private:
+	enum { DIRTY_PIVOT = 1, DIRTY_TRANSLATION = 2, DIRTY_ORIENTATION = 4, DIRTY_SCALE = 8, DIRTY_MATRIX = 16 };
 
-	void print() const;
+	uint8_t _dirty = 0u;
+	// should be the normalized value between 0 and 1
+	glm::vec3 _normalizedPivot{0.0f};
+	glm::vec3 _translation{0.0f};
+	glm::quat _orientation{glm::quat_identity<float, glm::defaultp>()};
+	/**
+	 * @brief Uniform scale value
+	 */
+	float _scale = 1.0f;
+	/**
+	 * @brief The model matrix that is assembled by the translation, orientation and scale value
+	 */
+	glm::mat4x4 _mat{1.0f};
+public:
+	void setPivot(const glm::vec3 &normalizedPivot);
+	void setTranslation(const glm::vec3 &translation);
+	void setOrientation(const glm::quat& orientation);
+	void setScale(float scale);
+	void setMatrix(const glm::mat4x4 &matrix);
+
+	const glm::mat4x4 &matrix() const;
+	const glm::vec3 &pivot() const;
+	const glm::vec3 &translation() const;
+	const glm::quat &orientation() const;
+	float scale() const;
 	void update();
-	void updateFromMat();
+	/**
+	 * @brief Uses the matrix to perform the transformation
+	 * @note The matrix must be up-to-date
+	 * @note The rotation is applied relatively to the given pivot - that's why we need the real size here.
+	 */
 	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &size) const;
 };
 
@@ -148,12 +172,7 @@ public:
 	void setVisible(bool visible);
 	bool locked() const;
 	void setLocked(bool locked);
-	/**
-	 * @brief Return the normalized pivot between 0.0 and 1.0
-	 */
-	const glm::vec3 &normalizedPivot(uint8_t frameIdx = 0) const;
 	void setPivot(uint8_t frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size);
-	void setNormalizedPivot(uint8_t frameIdx, const glm::vec3 &pivot);
 
 	const core::Buffer<int, 32> &children() const;
 	const core::StringMap<core::String> &properties() const;
@@ -245,12 +264,8 @@ inline void SceneGraphNode::setLocked(bool locked) {
 	_locked = locked;
 }
 
-inline const glm::vec3 &SceneGraphNode::normalizedPivot(uint8_t frameIdx) const {
-	return _keyFrames[frameIdx].transform.normalizedPivot;
-}
-
 inline const glm::mat4 &SceneGraphNode::matrix(uint8_t frameIdx) const {
-	return _keyFrames[frameIdx].transform.mat;
+	return _keyFrames[frameIdx].transform.matrix();
 }
 
 } // namespace voxel

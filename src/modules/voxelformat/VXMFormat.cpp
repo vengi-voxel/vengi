@@ -224,7 +224,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 
 	SceneGraphTransform transform;
-	transform.normalizedPivot = glm::vec3{0.5f, 0.0f, 0.5f};
+	transform.setPivot(glm::vec3{0.5f, 0.0f, 0.5f});
 	glm::uvec3 size(0);
 	Log::debug("Found vxm%i", version);
 	if (version >= 6) {
@@ -233,9 +233,11 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		wrap(stream.readUInt32(size.z));
 	}
 	if (version >= 5) {
-		wrap(stream.readFloat(transform.normalizedPivot.x));
-		wrap(stream.readFloat(transform.normalizedPivot.y));
-		wrap(stream.readFloat(transform.normalizedPivot.z));
+		glm::vec3 normalizedPivot;
+		wrap(stream.readFloat(normalizedPivot.x));
+		wrap(stream.readFloat(normalizedPivot.y));
+		wrap(stream.readFloat(normalizedPivot.z));
+		transform.setPivot(normalizedPivot);
 	}
 	if (version >= 9) {
 		uint8_t surface;
