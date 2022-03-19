@@ -38,6 +38,8 @@ VoxEdit:
    - Fixed viewport screenshot creation (now also bound to F5)
    - Added dialog to configure the mesh and voxel format settings for loading/saving
    - Improved the palette panel
+   - Improved the guizmo for translation and rotation
+   - Open in scene mode as default
 
 VoxConvert:
 
