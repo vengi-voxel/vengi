@@ -86,8 +86,9 @@ struct MementoState {
 	MementoData data;
 	int parentId;
 	int nodeId;
+	int frameId;
 	core::String name;
-	voxelformat::SceneGraphTransform transform;
+	glm::mat4x4 transformMatrix;
 	/**
 	 * @note This region might be different from the region given in the @c MementoData. In case of an @c MementoHandler::undo()
 	 * call, we have to make sure that the region of the previous state is re-extracted.
@@ -95,19 +96,18 @@ struct MementoState {
 	voxel::Region region;
 
 	MementoState() :
-			type(MementoType::Max), parentId(0), nodeId(0) {
+			type(MementoType::Max), parentId(0), nodeId(0), frameId(-1) {
 	}
 
-	MementoState(MementoType _type, const MementoData& _data, int _parentId, int _nodeId, const core::String& _name, const voxel::Region& _region) :
-			type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), name(_name), region(_region) {
+	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, const core::String &_name,
+				 const voxel::Region &_region, const glm::mat4x4 &_transformMatrix, int _frameId = -1)
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), frameId(_frameId), name(_name), transformMatrix(_transformMatrix),
+		  region(_region) {
 	}
 
-	MementoState(MementoType _type, int _parentId, int _nodeId, const voxelformat::SceneGraphTransform &_transform) :
-			type(_type), parentId(_parentId), nodeId(_nodeId), name(""), transform(_transform), region(voxel::Region::InvalidRegion) {
-	}
-
-	MementoState(MementoType _type, MementoData&& _data, int _parentId, int _nodeId, core::String&& _name, voxel::Region&& _region) :
-			type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), name(_name), region(_region) {
+	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, core::String &&_name,
+				 voxel::Region &&_region)
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), frameId(-1), name(_name), region(_region) {
 	}
 
 	inline bool valid() const {
@@ -134,6 +134,8 @@ private:
 	core::RingBuffer<MementoState, 64u> _states;
 	uint8_t _statePosition = 0u;
 	int _locked = 0;
+
+	bool markUndoPreamble(int nodeId);
 public:
 	MementoHandler();
 	~MementoHandler();
@@ -167,9 +169,14 @@ public:
 	 * @param[in] volume The state of the volume
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
-	void markUndo(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume, MementoType type = MementoType::Modification, const voxel::Region& region = voxel::Region::InvalidRegion);
-	void markNodeRemoved(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume);
-	void markNodeAdded(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume);
+	void markUndo(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume, MementoType type,
+				  const voxel::Region &region, const glm::mat4 &transformMatrix, int frameId);
+	void markNodeRemoved(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume,
+						 const glm::mat4 &transformMatrix, int frameId);
+	void markNodeAdded(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume,
+					   const glm::mat4 &transformMatrix, int frameId);
+	void markNodeTransform(int parentId, int nodeId, const core::String &name, const glm::mat4 &transformMatrix,
+						   int frameId);
 
 	/**
 	 * @brief The scene graph is giving new nodes for each insert - thus while undo redo we get new node ids for each new node.

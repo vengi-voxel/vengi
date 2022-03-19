@@ -20,6 +20,7 @@ private:
 	int32_t _mesh = -1;
 	const core::String _id;
 	bool _hovered = false;
+	bool _guizmoActivated = false;
 	video::FrameBuffer _frameBuffer;
 	video::TexturePtr _texture;
 	voxedit::ViewportController _controller;

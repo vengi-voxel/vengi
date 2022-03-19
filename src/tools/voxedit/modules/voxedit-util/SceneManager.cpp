@@ -323,7 +323,9 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
 		voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
-		_mementoHandler.markUndo(node.parent(), nodeId, node.name(), node.volume(), MementoType::Modification, modifiedRegion);
+		int frame = 0;
+		const voxelformat::SceneGraphTransform &transform = node.transform(frame);
+		_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume(), MementoType::Modification, modifiedRegion, transform.matrix(), frame);
 	}
 	if (modifiedRegion.isValid()) {
 		queueRegionExtraction(nodeId, modifiedRegion);
@@ -471,6 +473,9 @@ bool SceneManager::undo() {
 	} else if (s.type == MementoType::SceneNodeMove) {
 		Log::debug("Memento: Undo move of node %i (%s) (move back to parent %i)", s.nodeId, s.name.c_str(), s.parentId);
 		return nodeMove(s.nodeId, s.parentId);
+	} else if (s.type == MementoType::SceneNodeTransform) {
+		Log::debug("Memento: Undo transform of node %i", s.nodeId);
+		return nodeUpdateTransform(s.nodeId, s.transformMatrix, s.frameId, false);
 	} else if (s.type == MementoType::SceneNodeRemoved) {
 		voxel::RawVolume* v = MementoData::toVolume(s.data);
 		voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
@@ -522,6 +527,9 @@ bool SceneManager::redo() {
 	} else if (s.type == MementoType::SceneNodeMove) {
 		Log::debug("Memento: Redo move of node %i (%s) (new parent %i)", s.nodeId, s.name.c_str(), s.parentId);
 		return nodeMove(s.nodeId, s.parentId);
+	} else if (s.type == MementoType::SceneNodeTransform) {
+		Log::debug("Memento: Undo transform of node %i", s.nodeId);
+		return nodeUpdateTransform(s.nodeId, s.transformMatrix, s.frameId, false);
 	} else if (s.type == MementoType::SceneNodeRemoved) {
 		Log::debug("Memento: Redo remove of node %i (%s) from parent %i", s.nodeId, s.name.c_str(), s.parentId);
 		return nodeRemove(s.nodeId, true);
@@ -687,7 +695,8 @@ void SceneManager::resetSceneState() {
 	setEditMode(EditMode::Scene);
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
-	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume());
+	int frame = 0;
+	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume(), MementoType::Modification, voxel::Region::InvalidRegion, node.transform(frame).matrix(), frame);
 	_dirty = false;
 	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), true);
@@ -703,7 +712,10 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 		const core::String &name = node->name();
 		const voxelformat::SceneGraphNodeType type = node->type();
 		Log::debug("Adding node %i with name %s", newNodeId, name.c_str());
-		_mementoHandler.markNodeAdded(node->parent(), newNodeId, name, node->volume());
+		// TODO: all key frames
+		int frame = 0;
+		const voxelformat::SceneGraphTransform &transform = node->transform(frame);
+		_mementoHandler.markNodeAdded(node->parent(), newNodeId, name, node->volume(), transform.matrix(), frame);
 
 		Log::debug("Add node %i to scene graph", newNodeId);
 		if (type == voxelformat::SceneGraphNodeType::Model) {
@@ -2256,26 +2268,30 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, int frame) {
+bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, int frame, bool memento) {
 	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-		return nodeUpdateTransform(*node, matrix, frame);
+		return nodeUpdateTransform(*node, matrix, frame, memento);
 	}
 	return false;
 }
 
-bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, int frame) {
+bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, int frame, bool memento) {
 	glm::vec3 translation;
 	glm::quat orientation;
 	glm::vec3 scale;
 	glm::vec3 skew;
 	glm::vec4 perspective;
 	glm::decompose(matrix, scale, orientation, translation, skew, perspective);
+
 	voxelformat::SceneGraphTransform &transform = node.transform(frame);
-	// TODO: memento
-	//_mementoHandler.markUndo(node.parent(), node.id(), MementoType::SceneNodeTransform, transform);
 	transform.setTranslation(translation);
 	transform.setOrientation(orientation);
 	transform.update();
+
+	if (memento) {
+		_mementoHandler.markNodeTransform(node.parent(), node.id(), node.name(), transform.matrix(), frame);
+	}
+
 	updateAABBMesh();
 	return true;
 }
@@ -2284,7 +2300,7 @@ bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 	if (_sceneGraph.changeParent(sourceNodeId, targetNodeId)) {
 		voxelformat::SceneGraphNode *node = sceneGraphNode(sourceNodeId);
 		core_assert(node != nullptr);
-		_mementoHandler.markUndo(targetNodeId, sourceNodeId, nullptr, nullptr, MementoType::SceneNodeMove);
+		_mementoHandler.markUndo(targetNodeId, sourceNodeId, nullptr, nullptr, MementoType::SceneNodeMove, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 		return true;
 	}
 	return false;
@@ -2298,7 +2314,7 @@ bool SceneManager::nodeRename(int nodeId, const core::String &name) {
 }
 
 bool SceneManager::nodeRename(voxelformat::SceneGraphNode &node, const core::String &name) {
-	_mementoHandler.markUndo(node.parent(), node.id(), name, nullptr, MementoType::SceneNodeRenamed);
+	_mementoHandler.markUndo(node.parent(), node.id(), name, nullptr, MementoType::SceneNodeRenamed, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 	node.setName(name);
 	return true;
 }
@@ -2330,8 +2346,11 @@ bool SceneManager::nodeRemove(voxelformat::SceneGraphNode &node, bool recursive)
 	const int nodeId = node.id();
 	const core::String name = node.name();
 	const int parentId = node.parent();
+	// TODO: this doesn't restore all key frames
+	int frame = 0;
+	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
 	Log::debug("Delete node %i with name %s", nodeId, name.c_str());
-	_mementoHandler.markNodeRemoved(parentId, nodeId, name, node.volume());
+	_mementoHandler.markNodeRemoved(parentId, nodeId, name, node.volume(), transform.matrix(), frame);
 	_needAutoSave = true;
 	_dirty = true;
 	updateAABBMesh();

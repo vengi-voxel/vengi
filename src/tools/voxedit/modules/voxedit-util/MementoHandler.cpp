@@ -13,10 +13,11 @@
 #include "core/StandardLib.h"
 #include "core/Log.h"
 #include "core/Zip.h"
+#include "voxelformat/SceneGraphNode.h"
 
 namespace voxedit {
 
-static const MementoState InvalidMementoState{MementoType::Max, MementoData(), -1, -1, "", voxel::Region::InvalidRegion};
+static const MementoState InvalidMementoState{MementoType::Max, MementoData(), -1, -1, "", voxel::Region::InvalidRegion, glm::mat4(1.0f), -1};
 
 MementoData::MementoData(const uint8_t* buf, size_t bufSize,
 		const voxel::Region& _region) :
@@ -139,8 +140,8 @@ void MementoHandler::print() const {
 	for (const MementoState& state : _states) {
 		const glm::ivec3& mins = state.region.getLowerCorner();
 		const glm::ivec3& maxs = state.region.getUpperCorner();
-		Log::info("%4i: (%s) node id: %i (parent: %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)] (size: %ib)",
-				i++, states[(int)state.type], state.nodeId, state.parentId, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
+		Log::info("%4i: (%s) node id: %i (parent: %i) (frame %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)] (size: %ib)",
+				i++, states[(int)state.type], state.nodeId, state.parentId, state.frameId, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
 						mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, (int)state.data.size());
 	}
 }
@@ -163,19 +164,29 @@ MementoState MementoHandler::undo() {
 	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
 	const MementoState& s = state();
 	--_statePosition;
-	if (s.type != MementoType::Modification) {
-		return s;
-	}
-	for (uint8_t i = _statePosition; i > 0; --i) {
-		MementoState& prevS = _states[i];
-		if ((prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) && prevS.nodeId == s.nodeId) {
-			core_assert(prevS.hasVolumeData());
-			// use the region from the current state - but the volume from the previous state of this node
-			return MementoState{s.type, prevS.data, s.parentId, s.nodeId, s.name, s.region};
+	if (s.type == MementoType::Modification) {
+		for (uint8_t i = _statePosition; i >= 0; --i) {
+			MementoState& prevS = _states[i];
+			if ((prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) && prevS.nodeId == s.nodeId) {
+				core_assert(prevS.hasVolumeData());
+				// use the region from the current state - but the volume from the previous state of this node
+				return MementoState{s.type, prevS.data, s.parentId, s.nodeId, s.name, s.region, s.transformMatrix, s.frameId};
+			}
 		}
+		core_assert(_states[0].type == MementoType::Modification);
+		return _states[0];
 	}
-	core_assert(_states[0].type == MementoType::Modification);
-	return _states[0];
+	if (s.type == MementoType::SceneNodeTransform) {
+		for (uint8_t i = _statePosition; i >= 0; --i) {
+			MementoState& prevS = _states[i];
+			if ((prevS.type == MementoType::SceneNodeTransform || prevS.type == MementoType::SceneNodeAdded || prevS.type == MementoType::Modification) &&
+				prevS.nodeId == s.nodeId && prevS.frameId == s.frameId) {
+				return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, prevS.transformMatrix, s.frameId};
+			}
+		}
+		return _states[0];
+	}
+	return s;
 }
 
 MementoState MementoHandler::redo() {
@@ -198,20 +209,20 @@ void MementoHandler::updateNodeId(int nodeId, int newNodeId) {
 	}
 }
 
-void MementoHandler::markNodeRemoved(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume) {
+void MementoHandler::markNodeRemoved(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume, const glm::mat4 &transformMatrix, int frameId) {
 	Log::debug("Mark node %i as deleted (%s)", nodeId, name.c_str());
-	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeRemoved);
+	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeRemoved, voxel::Region::InvalidRegion, transformMatrix, frameId);
 }
 
-void MementoHandler::markNodeAdded(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume) {
+void MementoHandler::markNodeAdded(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume, const glm::mat4 &transformMatrix, int frameId) {
 	Log::debug("Mark node %i as added (%s)", nodeId, name.c_str());
-	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeAdded);
+	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, transformMatrix, frameId);
 }
 
-void MementoHandler::markUndo(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume, MementoType type, const voxel::Region& region) {
+bool MementoHandler::markUndoPreamble(int nodeId) {
 	if (_locked > 0) {
 		Log::debug("Don't add undo state - we are currently in locked mode");
-		return;
+		return false;
 	}
 	core_assert(nodeId >= 0);
 	if (!_states.empty()) {
@@ -221,11 +232,24 @@ void MementoHandler::markUndo(int parentId, int nodeId, const core::String& name
 		const size_t n = _states.size() - (_statePosition + 1);
 		_states.erase_back(n);
 	}
+	return true;
+}
+
+void MementoHandler::markNodeTransform(int parentId, int nodeId, const core::String& name, const glm::mat4 &transformMatrix, int frameId) {
+	Log::debug("Mark node %i as translated (%s)", nodeId, name.c_str());
+	markUndo(parentId, nodeId, name, nullptr, MementoType::SceneNodeTransform, voxel::Region::InvalidRegion, transformMatrix, frameId);
+}
+
+void MementoHandler::markUndo(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume,
+							  MementoType type, const voxel::Region &region, const glm::mat4 &transformMatrix,
+							  int frameId) {
+	if (!markUndoPreamble(nodeId)) {
+		return;
+	}
 	Log::debug("New undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
 	voxel::logRegion("MarkUndo", region);
 	const MementoData& data = MementoData::fromVolume(volume);
-	_states.emplace_back(type, data, parentId, nodeId, name, region);
+	_states.emplace_back(type, data, parentId, nodeId, name, region, transformMatrix, frameId);
 	_statePosition = stateSize() - 1;
 }
-
 }

@@ -247,8 +247,13 @@ void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, co
 	glm::mat4 transformMatrix = transform.matrix();
 	const float *viewMatrix = glm::value_ptr(camera.viewMatrix());
 	const float *projMatrix = glm::value_ptr(camera.projectionMatrix());
-	if (ImGuizmo::Manipulate(viewMatrix, projMatrix, operation, mode, glm::value_ptr(transformMatrix), nullptr	, snap)) {
-		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, frame);
+	ImGuizmo::Manipulate(viewMatrix, projMatrix, operation, mode, glm::value_ptr(transformMatrix), nullptr, snap);
+	if (ImGuizmo::IsUsing()) {
+		_guizmoActivated = true;
+		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, frame, false);
+	} else if (_guizmoActivated) {
+		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, frame, true);
+		_guizmoActivated = false;
 	}
 }
 

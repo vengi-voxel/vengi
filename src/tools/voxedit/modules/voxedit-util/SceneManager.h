@@ -409,10 +409,10 @@ private:
 	void onNewNodeAdded(int newNodeId);
 	bool nodeRename(voxelformat::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(voxelformat::SceneGraphNode &node, bool recursive);
-	bool nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, int frame);
+	bool nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, int frame, bool memento);
 	void nodeDuplicate(const voxelformat::SceneGraphNode &node);
 public:
-	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, int frame);
+	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, int frame, bool memento);
 	bool nodeMove(int sourceNodeId, int targetNodeId);
 	bool nodeRename(int nodeId, const core::String &name);
 	bool nodeRemove(int nodeId, bool recursive);
