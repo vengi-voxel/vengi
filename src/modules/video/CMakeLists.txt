@@ -28,6 +28,7 @@ set(SRCS
 	ScopedBlendMode.h ScopedBlendMode.cpp
 	ScopedScissor.h ScopedScissor.cpp
 	ScopedPolygonMode.h ScopedPolygonMode.cpp
+	ScopedRenderBuffer.h ScopedRenderBuffer.cpp
 	ShaderStorageBuffer.h ShaderStorageBuffer.cpp
 	StencilConfig.h StencilConfig.cpp
 	Texture.cpp Texture.h
