@@ -17,6 +17,8 @@ enum class TextureType {
 	Texture1D,
 	Texture2D,
 	Texture2DArray,
+	Texture2DMultisample,
+	Texture2DMultisampleArray,
 	Texture3D,
 	TextureCube,
 

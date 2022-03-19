@@ -61,7 +61,7 @@ void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	_height = height;
 	video::bindTexture(TextureUnit::Upload, type(), _handle);
 	video::setupTexture(_config);
-	video::uploadTexture(type(), format(), _width, _height, data, index);
+	video::uploadTexture(type(), format(), _width, _height, data, index, _config.samples());
 	_layerCount = core_max(_layerCount, index);
 	_state = io::IOSTATE_LOADED;
 }
@@ -124,8 +124,10 @@ TexturePtr createTextureFromImage(const core::String& filename) {
 
 TexturePtr createTexture(const TextureConfig& cfg, int width, int height, const core::String& name) {
 	const TexturePtr& ptr = core::make_shared<Texture>(cfg, width, height, name);
-	if (cfg.type() == TextureType::Texture2D && cfg.layers() > 1) {
-		Log::error("Texture with layers given, but normal 2d texture was defined");
+	if ((cfg.type() == TextureType::Texture1D || cfg.type() == TextureType::Texture2D ||
+		 cfg.type() == TextureType::Texture2DMultisample) &&
+		cfg.layers() > 1) {
+		Log::error("Texture with layers given - but texture type doesn't match");
 		return TexturePtr();
 	}
 	ptr->upload(nullptr, cfg.layers());

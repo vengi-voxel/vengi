@@ -28,6 +28,7 @@ private:
 	uint8_t _alignment = 1u;
 	bool _useBorderColor = false;
 	glm::vec4 _borderColor {0.0f};
+	int _samples = 1;
 public:
 	TextureConfig& wrap(TextureWrap wrap);
 	TextureConfig& wrapR(TextureWrap wrap);
@@ -41,6 +42,7 @@ public:
 	TextureConfig& compareFunc(CompareFunc func);
 	TextureConfig& compareMode(TextureCompareMode mode);
 	TextureConfig& borderColor(const glm::vec4& borderColor);
+	TextureConfig& samples(int samples);
 	/**
 	 * @param[in] layers The amount of layers for the given texture.
 	 * @see TextureType
@@ -59,6 +61,7 @@ public:
 	TextureFilter filterMin() const;
 	TextureType type() const;
 	TextureFormat format() const;
+	int samples() const;
 	uint8_t layers() const;
 	uint8_t alignment() const;
 	CompareFunc compareFunc() const;
@@ -66,6 +69,10 @@ public:
 	bool useBorderColor() const;
 	const glm::vec4& borderColor() const;
 };
+
+inline int TextureConfig::samples() const {
+	return _samples;
+}
 
 inline TextureFilter TextureConfig::filterMag() const{
 	return _filterMag;

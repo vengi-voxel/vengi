@@ -3,6 +3,8 @@
  */
 
 #include "TextureConfig.h"
+#include "video/Renderer.h"
+#include <glm/common.hpp>
 
 namespace video {
 
@@ -74,6 +76,11 @@ TextureConfig& TextureConfig::alignment(uint8_t alignment) {
 TextureConfig& TextureConfig::borderColor(const glm::vec4& borderColor) {
 	_useBorderColor = true;
 	_borderColor = borderColor;
+	return *this;
+}
+
+TextureConfig& TextureConfig::samples(int samples) {
+	_samples = glm::clamp(samples, 1, video::limit(Limit::MaxSamples));
 	return *this;
 }
 

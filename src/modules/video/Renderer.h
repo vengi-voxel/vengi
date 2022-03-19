@@ -306,7 +306,7 @@ extern bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachme
 extern bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
 					  const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]);
 extern void setupTexture(const TextureConfig& config);
-extern void uploadTexture(video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t* data, int index);
+extern void uploadTexture(video::TextureType type, video::TextureFormat format, int width, int height, const uint8_t* data, int index, int samples);
 extern void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset = nullptr);
 extern void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount);
 extern void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex);

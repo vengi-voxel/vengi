@@ -205,7 +205,7 @@ void IMGUIApp::loadFonts() {
 	cfg.format(video::TextureFormat::RGBA);
 	video::bindTexture(video::TextureUnit::Upload, cfg.type(), _texture);
 	video::setupTexture(cfg);
-	video::uploadTexture(cfg.type(), cfg.format(), width, height, pixels, 0);
+	video::uploadTexture(cfg.type(), cfg.format(), width, height, pixels, 0, cfg.samples());
 	io.Fonts->TexID = (ImTextureID)(intptr_t)_texture;
 }
 

@@ -34,6 +34,7 @@
 #include <SDL.h>
 #include "core/collection/DynamicArray.h"
 #include "video/Trace.h"
+#include "video/gl/flextGL.h"
 #ifdef TRACY_ENABLE
 #include "core/tracy/TracyOpenGL.hpp"
 #endif
@@ -1470,7 +1471,7 @@ void setupTexture(const TextureConfig& config) {
 	checkError();
 }
 
-void uploadTexture(TextureType type, TextureFormat format, int width, int height, const uint8_t* data, int index) {
+void uploadTexture(TextureType type, TextureFormat format, int width, int height, const uint8_t* data, int index, int samples) {
 	video_trace_scoped(UploadTexture);
 	const _priv::Formats& f = _priv::textureFormats[core::enumVal(format)];
 	const GLenum glType = _priv::TextureTypes[core::enumVal(type)];
@@ -1480,6 +1481,9 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 		glTexImage1D(glType, 0, f.internalFormat, width, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
 	} else if (type == TextureType::Texture2D) {
 		glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
+		checkError();
+	} else if (type == TextureType::Texture2DMultisample) {
+		glTexImage2DMultisample(glType, samples, f.internalFormat, width, height, false);
 		checkError();
 	} else {
 		glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
