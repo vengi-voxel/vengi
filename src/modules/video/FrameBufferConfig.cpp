@@ -5,6 +5,8 @@
 #include "FrameBufferConfig.h"
 #include "TextureConfig.h"
 #include "core/Assert.h"
+#include "video/Renderer.h"
+#include <glm/common.hpp>
 
 namespace video {
 
@@ -55,7 +57,7 @@ FrameBufferConfig& FrameBufferConfig::stencilBuffer(bool stencilBuffer) {
 }
 
 FrameBufferConfig& FrameBufferConfig::samples(int samples) {
-	_samples = samples;
+	_samples = glm::clamp(samples, 1, video::limit(Limit::MaxSamples));
 	return *this;
 }
 
