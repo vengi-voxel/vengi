@@ -323,9 +323,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
 		voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
-		int frame = 0;
-		const voxelformat::SceneGraphTransform &transform = node.transform(frame);
-		_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume(), MementoType::Modification, modifiedRegion, transform.matrix(), frame);
+		_mementoHandler.markModification(node, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
 		queueRegionExtraction(nodeId, modifiedRegion);
@@ -695,8 +693,7 @@ void SceneManager::resetSceneState() {
 	setEditMode(EditMode::Scene);
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
-	int frame = 0;
-	_mementoHandler.markUndo(node.parent(), node.id(), node.name(), node.volume(), MementoType::Modification, voxel::Region::InvalidRegion, node.transform(frame).matrix(), frame);
+	_mementoHandler.markModification(node, voxel::Region::InvalidRegion);
 	_dirty = false;
 	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), true);
@@ -712,10 +709,7 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 		const core::String &name = node->name();
 		const voxelformat::SceneGraphNodeType type = node->type();
 		Log::debug("Adding node %i with name %s", newNodeId, name.c_str());
-		// TODO: all key frames
-		int frame = 0;
-		const voxelformat::SceneGraphTransform &transform = node->transform(frame);
-		_mementoHandler.markNodeAdded(node->parent(), newNodeId, name, node->volume(), transform.matrix(), frame);
+		_mementoHandler.markNodeAdded(*node);
 
 		Log::debug("Add node %i to scene graph", newNodeId);
 		if (type == voxelformat::SceneGraphNodeType::Model) {
@@ -2289,7 +2283,7 @@ bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const 
 	transform.update();
 
 	if (memento) {
-		_mementoHandler.markNodeTransform(node.parent(), node.id(), node.name(), transform.matrix(), frame);
+		_mementoHandler.markNodeTransform(node, frame);
 	}
 
 	updateAABBMesh();
@@ -2300,7 +2294,7 @@ bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 	if (_sceneGraph.changeParent(sourceNodeId, targetNodeId)) {
 		voxelformat::SceneGraphNode *node = sceneGraphNode(sourceNodeId);
 		core_assert(node != nullptr);
-		_mementoHandler.markUndo(targetNodeId, sourceNodeId, nullptr, nullptr, MementoType::SceneNodeMove, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
+		_mementoHandler.markNodeMoved(targetNodeId, sourceNodeId);
 		return true;
 	}
 	return false;
@@ -2314,8 +2308,8 @@ bool SceneManager::nodeRename(int nodeId, const core::String &name) {
 }
 
 bool SceneManager::nodeRename(voxelformat::SceneGraphNode &node, const core::String &name) {
-	_mementoHandler.markUndo(node.parent(), node.id(), name, nullptr, MementoType::SceneNodeRenamed, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 	node.setName(name);
+	_mementoHandler.markNodeRenamed(node);
 	return true;
 }
 
@@ -2344,13 +2338,9 @@ bool SceneManager::nodeRemove(int nodeId, bool recursive) {
 
 bool SceneManager::nodeRemove(voxelformat::SceneGraphNode &node, bool recursive) {
 	const int nodeId = node.id();
-	const core::String name = node.name();
-	const int parentId = node.parent();
-	// TODO: this doesn't restore all key frames
-	int frame = 0;
-	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
+	const core::String &name = node.name();
 	Log::debug("Delete node %i with name %s", nodeId, name.c_str());
-	_mementoHandler.markNodeRemoved(parentId, nodeId, name, node.volume(), transform.matrix(), frame);
+	_mementoHandler.markNodeRemoved(node);
 	_needAutoSave = true;
 	_dirty = true;
 	updateAABBMesh();

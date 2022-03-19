@@ -165,7 +165,7 @@ MementoState MementoHandler::undo() {
 	const MementoState& s = state();
 	--_statePosition;
 	if (s.type == MementoType::Modification) {
-		for (uint8_t i = _statePosition; i >= 0; --i) {
+		for (int i = _statePosition; i >= 0; --i) {
 			MementoState& prevS = _states[i];
 			if ((prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) && prevS.nodeId == s.nodeId) {
 				core_assert(prevS.hasVolumeData());
@@ -177,7 +177,7 @@ MementoState MementoHandler::undo() {
 		return _states[0];
 	}
 	if (s.type == MementoType::SceneNodeTransform) {
-		for (uint8_t i = _statePosition; i >= 0; --i) {
+		for (int i = _statePosition; i >= 0; --i) {
 			MementoState& prevS = _states[i];
 			if ((prevS.type == MementoType::SceneNodeTransform || prevS.type == MementoType::SceneNodeAdded || prevS.type == MementoType::Modification) &&
 				prevS.nodeId == s.nodeId && prevS.frameId == s.frameId) {
@@ -209,14 +209,66 @@ void MementoHandler::updateNodeId(int nodeId, int newNodeId) {
 	}
 }
 
-void MementoHandler::markNodeRemoved(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume, const glm::mat4 &transformMatrix, int frameId) {
+void MementoHandler::markNodeRemoved(const voxelformat::SceneGraphNode &node) {
+	const int nodeId = node.id();
+	const int parentId = node.parent();
+	const core::String &name = node.name();
+	int frameId = 0; // TODO: all key frames
+	voxel::RawVolume *volume = node.volume();
+	const voxelformat::SceneGraphTransform &transform = node.transform(frameId);
+	const glm::mat4 &transformMatrix = transform.matrix();
 	Log::debug("Mark node %i as deleted (%s)", nodeId, name.c_str());
 	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeRemoved, voxel::Region::InvalidRegion, transformMatrix, frameId);
 }
 
-void MementoHandler::markNodeAdded(int parentId, int nodeId, const core::String& name, const voxel::RawVolume* volume, const glm::mat4 &transformMatrix, int frameId) {
+void MementoHandler::markNodeAdded(const voxelformat::SceneGraphNode &node) {
+	const int nodeId = node.id();
+	const int parentId = node.parent();
+	const core::String &name = node.name();
+	int frameId = 0; // TODO: all key frames
+	voxel::RawVolume *volume = node.volume();
+	const voxelformat::SceneGraphTransform &transform = node.transform(frameId);
+	const glm::mat4 &transformMatrix = transform.matrix();
 	Log::debug("Mark node %i as added (%s)", nodeId, name.c_str());
 	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, transformMatrix, frameId);
+}
+
+void MementoHandler::markModification(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion) {
+	const int nodeId = node.id();
+	const int parentId = node.parent();
+	const core::String &name = node.name();
+	int frameId = 0;
+	voxel::RawVolume *volume = node.volume();
+	const voxelformat::SceneGraphTransform &transform = node.transform(frameId);
+	const glm::mat4 &transformMatrix = transform.matrix();
+	Log::debug("Mark node %i modification (%s)", nodeId, name.c_str());
+	markUndo(parentId, nodeId, name, volume, MementoType::Modification, modifiedRegion, transformMatrix, frameId);
+}
+
+void MementoHandler::markNodeRenamed(const voxelformat::SceneGraphNode &node) {
+	const int nodeId = node.id();
+	const int parentId = node.parent();
+	const core::String &name = node.name();
+	int frameId = 0;
+	voxel::RawVolume *volume = node.volume();
+	const voxelformat::SceneGraphTransform &transform = node.transform(frameId);
+	const glm::mat4 &transformMatrix = transform.matrix();
+	Log::debug("Mark node %i renamed (%s)", nodeId, name.c_str());
+	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeRenamed, voxel::Region::InvalidRegion, transformMatrix, frameId);
+}
+
+void MementoHandler::markNodeMoved(int targetId, int sourceId) {
+	markUndo(targetId, sourceId, nullptr, nullptr, MementoType::SceneNodeMove, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
+}
+
+void MementoHandler::markNodeTransform(const voxelformat::SceneGraphNode &node, int frameId) {
+	const int nodeId = node.id();
+	const int parentId = node.parent();
+	const core::String &name = node.name();
+	const voxelformat::SceneGraphTransform &transform = node.transform(frameId);
+	const glm::mat4 &transformMatrix = transform.matrix();
+	Log::debug("Mark node %i as translated (%s)", nodeId, name.c_str());
+	markUndo(parentId, nodeId, name, nullptr, MementoType::SceneNodeTransform, voxel::Region::InvalidRegion, transformMatrix, frameId);
 }
 
 bool MementoHandler::markUndoPreamble(int nodeId) {
@@ -233,11 +285,6 @@ bool MementoHandler::markUndoPreamble(int nodeId) {
 		_states.erase_back(n);
 	}
 	return true;
-}
-
-void MementoHandler::markNodeTransform(int parentId, int nodeId, const core::String& name, const glm::mat4 &transformMatrix, int frameId) {
-	Log::debug("Mark node %i as translated (%s)", nodeId, name.c_str());
-	markUndo(parentId, nodeId, name, nullptr, MementoType::SceneNodeTransform, voxel::Region::InvalidRegion, transformMatrix, frameId);
 }
 
 void MementoHandler::markUndo(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume,

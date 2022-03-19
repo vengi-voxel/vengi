@@ -104,8 +104,8 @@ TEST_F(MementoHandlerTest, testUndoRedoDifferentNodes) {
 	std::shared_ptr<voxel::RawVolume> second = create(2);
 	std::shared_ptr<voxel::RawVolume> third = create(3);
 	mementoHandler.markUndo(0, 0, "Node 0", first.get(), MementoType::Modification, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
-	mementoHandler.markNodeAdded(0, 1, "Node 1", second.get(), glm::mat4(1.0f), 0);
-	mementoHandler.markNodeAdded(0, 2, "Node 2", third.get(), glm::mat4(1.0f), 0);
+	mementoHandler.markUndo(0, 1, "Node 1", second.get(), MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::mat4(1.0f), 0);
+	mementoHandler.markUndo(0, 2, "Node 2", third.get(), MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::mat4(1.0f), 0);
 	EXPECT_EQ(3, (int)mementoHandler.stateSize());
 	EXPECT_EQ(2, mementoHandler.statePosition());
 	EXPECT_TRUE(mementoHandler.canUndo());
@@ -151,7 +151,7 @@ TEST_F(MementoHandlerTest, testCutStates) {
 	mementoHandler.undo();
 	mementoHandler.undo();
 	EXPECT_EQ(1, mementoHandler.statePosition());
-	mementoHandler.markNodeAdded(0, 4, "Node 4", second.get(), glm::mat4(1.0f), -1);
+	mementoHandler.markUndo(0, 4, "Node 4", second.get(), MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 	EXPECT_EQ(2, mementoHandler.statePosition());
 	EXPECT_EQ(3, (int)mementoHandler.stateSize());
 }
@@ -162,7 +162,7 @@ TEST_F(MementoHandlerTest, testAddNewNode) {
 	std::shared_ptr<voxel::RawVolume> third = create(3);
 	mementoHandler.markUndo(0, 0, "Node 0", first.get(), MementoType::Modification, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 	mementoHandler.markUndo(0, 0, "Node 0 Modified", second.get(), MementoType::Modification, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
-	mementoHandler.markNodeAdded(0, 1, "Node 1", third.get(), glm::mat4(1.0f), -1);
+	mementoHandler.markUndo(0, 1, "Node 1", third.get(), MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 	EXPECT_EQ(3, (int)mementoHandler.stateSize());
 	EXPECT_EQ(2, mementoHandler.statePosition());
 	EXPECT_TRUE(mementoHandler.canUndo());
@@ -205,7 +205,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeSimple) {
 	std::shared_ptr<voxel::RawVolume> first = create(1);
 	std::shared_ptr<voxel::RawVolume> second = create(2);
 	mementoHandler.markUndo(0, 0, "Node 0", first.get(), MementoType::Modification, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
-	mementoHandler.markNodeAdded(0, 1, "Node 1", second.get(), glm::mat4(1.0f), -1);
+	mementoHandler.markUndo(0, 1, "Node 1", second.get(), MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 	MementoState state;
 
 	EXPECT_EQ(2, (int)mementoHandler.stateSize());
@@ -240,8 +240,8 @@ TEST_F(MementoHandlerTest, testDeleteNode) {
 	std::shared_ptr<voxel::RawVolume> first = create(1);
 	mementoHandler.markUndo(0, 0, "Node 1", first.get(), MementoType::Modification, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 	std::shared_ptr<voxel::RawVolume> second = create(2);
-	mementoHandler.markNodeAdded(0, 1, "Node 2 Added", second.get(), glm::mat4(1.0f), -1);
-	mementoHandler.markNodeRemoved(0, 1, "Node 2 Deleted", second.get(), glm::mat4(1.0f), -1);
+	mementoHandler.markUndo(0, 1, "Node 2 Added", second.get(), MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
+	mementoHandler.markUndo(0, 1, "Node 2 Deleted", second.get(), MementoType::SceneNodeRemoved, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 
 	EXPECT_EQ(3, (int)mementoHandler.stateSize());
 	EXPECT_EQ(2, mementoHandler.statePosition());
@@ -274,7 +274,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeExt) {
 	std::shared_ptr<voxel::RawVolume> third = create(3);
 	mementoHandler.markUndo(0, 0, "Node 0", first.get(), MementoType::Modification, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 	mementoHandler.markUndo(0, 0, "Node 0 Modified", second.get(), MementoType::Modification, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
-	mementoHandler.markNodeAdded(0, 1, "Node 1 Added", third.get(), glm::mat4(1.0f), -1);
+	mementoHandler.markUndo(0, 1, "Node 1 Added", third.get(), MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 
 	EXPECT_EQ(3, (int)mementoHandler.stateSize());
 	EXPECT_EQ(2, mementoHandler.statePosition());
@@ -324,8 +324,8 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 	std::shared_ptr<voxel::RawVolume> third = create(3);
 	mementoHandler.markUndo(0, 0, "Node 1", first.get(), MementoType::Modification, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 	mementoHandler.markUndo(0, 0, "Node 1 Modified", second.get(), MementoType::Modification, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
-	mementoHandler.markNodeAdded(0, 1, "Node 2 Added", third.get(), glm::mat4(1.0f), -1);
-	mementoHandler.markNodeRemoved(0, 1, "Node 2 Deleted", third.get(), glm::mat4(1.0f), -1);
+	mementoHandler.markUndo(0, 1, "Node 2 Added", third.get(), MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
+	mementoHandler.markUndo(0, 1, "Node 2 Deleted", third.get(), MementoType::SceneNodeRemoved, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 
 	EXPECT_EQ(4, (int)mementoHandler.stateSize());
 	EXPECT_EQ(3, mementoHandler.statePosition());
@@ -447,8 +447,8 @@ TEST_F(MementoHandlerTest, testAddNewNodeMultiple) {
 	std::shared_ptr<voxel::RawVolume> second = create(2);
 	std::shared_ptr<voxel::RawVolume> third = create(3);
 	mementoHandler.markUndo(0, 0, "Node 0", first.get(), MementoType::Modification, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
-	mementoHandler.markNodeAdded(0, 1, "Node 1 Added", second.get(), glm::mat4(1.0f), -1);
-	mementoHandler.markNodeAdded(0, 2, "Node 2 Added", third.get(), glm::mat4(1.0f), -1);
+	mementoHandler.markUndo(0, 1, "Node 1 Added", second.get(), MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
+	mementoHandler.markUndo(0, 2, "Node 2 Added", third.get(), MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 
 	EXPECT_EQ(3, (int)mementoHandler.stateSize());
 	EXPECT_EQ(2, mementoHandler.statePosition());
@@ -500,7 +500,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeEdit) {
 	std::shared_ptr<voxel::RawVolume> second = create(2);
 	std::shared_ptr<voxel::RawVolume> third = create(3);
 	mementoHandler.markUndo(0, 0, "Node 1", first.get(), MementoType::Modification, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
-	mementoHandler.markNodeAdded(0, 1, "Node 2 Added", second.get(), glm::mat4(1.0f), -1);
+	mementoHandler.markUndo(0, 1, "Node 2 Added", second.get(), MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 	mementoHandler.markUndo(0, 1, "Node 2 Modified", third.get(), MementoType::Modification, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 
 	EXPECT_EQ(3, (int)mementoHandler.stateSize());

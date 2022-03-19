@@ -158,6 +158,7 @@ public:
 	void print() const;
 
 	void clearStates();
+
 	/**
 	 * @brief Add a new state entry to the memento handler that you can return to.
 	 * @note This is adding the current active state to the handler - you can then undo to the previous state.
@@ -171,12 +172,13 @@ public:
 	 */
 	void markUndo(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume, MementoType type,
 				  const voxel::Region &region, const glm::mat4 &transformMatrix, int frameId);
-	void markNodeRemoved(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume,
-						 const glm::mat4 &transformMatrix, int frameId);
-	void markNodeAdded(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume,
-					   const glm::mat4 &transformMatrix, int frameId);
-	void markNodeTransform(int parentId, int nodeId, const core::String &name, const glm::mat4 &transformMatrix,
-						   int frameId);
+
+	void markNodeRemoved(const voxelformat::SceneGraphNode &node);
+	void markNodeAdded(const voxelformat::SceneGraphNode &node);
+	void markNodeTransform(const voxelformat::SceneGraphNode &node, int frameId);
+	void markModification(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion);
+	void markNodeRenamed(const voxelformat::SceneGraphNode &node);
+	void markNodeMoved(int targetId, int sourceId);
 
 	/**
 	 * @brief The scene graph is giving new nodes for each insert - thus while undo redo we get new node ids for each new node.
