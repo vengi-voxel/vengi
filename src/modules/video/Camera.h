@@ -147,7 +147,7 @@ public:
 	 */
 	const glm::mat4& orientation() const;
 	const glm::quat& quaternion() const;
-	void setQuaternion(const glm::quat& quat);
+	void setOrientation(const glm::quat& quat);
 
 	void lerp(const Camera& target);
 

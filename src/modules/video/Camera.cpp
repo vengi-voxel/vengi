@@ -111,7 +111,7 @@ glm::vec3 Camera::direction() const {
 void Camera::lerp(const Camera& target) {
 	// TODO: implement me
 	setWorldPosition(target.worldPosition());
-	setQuaternion(target.quaternion());
+	setOrientation(target.quaternion());
 }
 
 void Camera::setOmega(const glm::vec3& omega) {
@@ -137,7 +137,7 @@ void Camera::setAngles(float pitch, float yaw, float roll = 0.0f) {
 	_dirty |= DIRTY_ORIENTATION;
 }
 
-void Camera::setQuaternion(const glm::quat& quat) {
+void Camera::setOrientation(const glm::quat& quat) {
 	_quat = quat;
 	core_assert(!glm::any(glm::isnan(_quat)));
 	core_assert(!glm::any(glm::isinf(_quat)));

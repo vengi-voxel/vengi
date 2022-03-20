@@ -32,7 +32,7 @@ private:
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
-	void renderGizmo(const video::Camera &camera, const int headerSize, const ImVec2 &size, int frame);
+	void renderGizmo(video::Camera &camera, const float headerSize, const ImVec2 &size, int frame);
 
 public:
 	Viewport(const core::String& id);

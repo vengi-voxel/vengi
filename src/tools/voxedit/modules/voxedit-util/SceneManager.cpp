@@ -14,7 +14,6 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
-#include "glm/gtx/matrix_decompose.hpp"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "math/AABB.h"
@@ -64,6 +63,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace voxedit {
 

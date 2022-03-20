@@ -25,6 +25,7 @@
 #include "voxel/RawVolume.h"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace voxedit {
 
@@ -68,17 +69,18 @@ void Viewport::update(int frame) {
 	if (ImGui::Begin(_id.c_str(), nullptr, sceneWindowFlags)) {
 		core_trace_scoped(Viewport);
 		ui::imgui::IMGUIApp *app = imguiApp();
-
-		if (_controller.renderMode() == ViewportController::RenderMode::Animation &&
-			sceneMgr().editMode() != EditMode::Animation) {
+		const EditMode editMode = sceneMgr().editMode();
+		if (_controller.renderMode() == ViewportController::RenderMode::Animation && editMode != EditMode::Animation) {
 			ui::imgui::ScopedStyle style;
 			style.setFont(app->bigFont());
 			ImGui::TextCentered("No animation loaded");
 		} else {
-			const int headerSize = app->fontSize() + (int)(ImGui::GetStyle().FramePadding.y * 2.0f);
+			if (editMode == EditMode::Scene) {
+				// TODO: key frame sequencer
+			}
+			ImVec2 contentSize = ImGui::GetContentRegionMax();
+			const float headerSize = ImGui::GetCursorPosY();
 
-			ImVec2 contentSize = ImGui::GetWindowContentRegionMax();
-			contentSize.y -= (float)headerSize;
 			if (setupFrameBuffer(contentSize)) {
 				const double deltaFrameSeconds = app->deltaFrameSeconds();
 				_controller.update(deltaFrameSeconds);
@@ -212,7 +214,7 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	return true;
 }
 
-void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, const ImVec2 &size, int frame) {
+void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const ImVec2 &size, int frame) {
 	if (!_showAxisVar->boolVal()) {
 		return;
 	}
@@ -242,15 +244,15 @@ void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, co
 	voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
 
 	ImGuizmo::SetDrawlist();
-	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + (float)headerSize, size.x, size.y);
+	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + headerSize, size.x, size.y);
 	ImGuizmo::SetOrthographic(camera.mode() == video::CameraMode::Orthogonal);
 	const float step = (float)core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
 	const float snap[]{step, step, step};
 	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
 	glm::mat4 transformMatrix = transform.matrix();
-	const float *viewMatrix = glm::value_ptr(camera.viewMatrix());
+	glm::mat4 viewMatrix = camera.viewMatrix();
 	const float *projMatrix = glm::value_ptr(camera.projectionMatrix());
-	ImGuizmo::Manipulate(viewMatrix, projMatrix, (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix), nullptr, _guizmoSnap->boolVal() ? snap: nullptr);
+	ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), projMatrix, (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix), nullptr, _guizmoSnap->boolVal() ? snap: nullptr);
 	if (ImGuizmo::IsUsing()) {
 		_guizmoActivated = true;
 		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, frame, false);
@@ -258,6 +260,27 @@ void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, co
 		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, frame, true);
 		_guizmoActivated = false;
 	}
+
+	// TODO: active me
+#if 0
+	ImGuizmo::ViewManipulate(glm::value_ptr(viewMatrix), camera.targetDistance(), ImGui::GetWindowPos(),
+							 ImVec2(128, 128), 0x10101010);
+#if 0
+	glm::vec3 scale;
+	glm::vec3 rotation;
+	glm::vec3 translation;
+	ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(viewMatrix), glm::value_ptr(translation), glm::value_ptr(rotation), glm::value_ptr(scale));
+	const glm::quat orientation(rotation);
+#else
+	glm::vec3 scale;
+	glm::vec3 translation;
+	glm::quat orientation;
+	glm::vec3 skew;
+	glm::vec4 perspective;
+	glm::decompose(viewMatrix, scale, orientation, translation, skew, perspective);
+#endif
+	camera.setOrientation(orientation);
+#endif
 }
 
 void Viewport::renderToFrameBuffer() {
