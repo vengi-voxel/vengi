@@ -49,7 +49,8 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 
 	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "0");
 	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1", "Show the axis", core::Var::boolValidator);
-	_debug = core::Var::get("ve_viewportdebugflag", "0",
+	_guizmoRotation = core::Var::get(cfg::VoxEditGuizmoRotation, "0", "Activate rotations", core::Var::boolValidator);
+	_debug = core::Var::get(cfg::VoxEditViewportDebugflag, "0",
 							"Debug bit mask. 1 means rendering the traces for the active camera");
 	return true;
 }
@@ -218,7 +219,8 @@ void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, co
 	if (!_showAxisVar->boolVal()) {
 		return;
 	}
-	const int activeNode = sceneMgr().sceneGraph().activeNode();
+	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const int activeNode = sceneGraph.activeNode();
 	if (activeNode == -1) {
 		return;
 	}
@@ -234,9 +236,12 @@ void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, co
 		ImGuizmo::Enable(false);
 		mode = _modelSpace->boolVal() ? ImGuizmo::MODE::LOCAL : ImGuizmo::MODE::WORLD;
 	}
-	ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE | ImGuizmo::ROTATE;
+	int operation = ImGuizmo::TRANSLATE;
+	if (_guizmoRotation->boolVal()) {
+		operation |= ImGuizmo::ROTATE;
+	}
 
-	voxelformat::SceneGraphNode &node = sceneMgr().sceneGraph().node(activeNode);
+	voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
 
 	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + (float)headerSize, size.x, size.y);
@@ -247,7 +252,7 @@ void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, co
 	glm::mat4 transformMatrix = transform.matrix();
 	const float *viewMatrix = glm::value_ptr(camera.viewMatrix());
 	const float *projMatrix = glm::value_ptr(camera.projectionMatrix());
-	ImGuizmo::Manipulate(viewMatrix, projMatrix, operation, mode, glm::value_ptr(transformMatrix), nullptr, snap);
+	ImGuizmo::Manipulate(viewMatrix, projMatrix, (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix), nullptr, snap);
 	if (ImGuizmo::IsUsing()) {
 		_guizmoActivated = true;
 		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, frame, false);

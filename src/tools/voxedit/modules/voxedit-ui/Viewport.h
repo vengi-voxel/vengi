@@ -27,6 +27,7 @@ private:
 	core::VarPtr _debug;
 	core::VarPtr _modelSpace;
 	core::VarPtr _showAxisVar;
+	core::VarPtr _guizmoRotation;
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);

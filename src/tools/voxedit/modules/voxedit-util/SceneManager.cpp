@@ -2280,6 +2280,7 @@ bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const 
 	voxelformat::SceneGraphTransform &transform = node.transform(frame);
 	transform.setTranslation(translation);
 	transform.setOrientation(orientation);
+	//transform.setScale(glm::length(scale));
 	transform.update();
 
 	if (memento) {
