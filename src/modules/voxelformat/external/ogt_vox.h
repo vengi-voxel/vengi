@@ -959,7 +959,7 @@
         uint32_t file_version = 0;
         _vox_file_read(fp, &file_header, sizeof(uint32_t));
         _vox_file_read(fp, &file_version, sizeof(uint32_t));
-        if (file_header != CHUNK_ID_VOX_ || file_version != 150)
+        if (file_header != CHUNK_ID_VOX_ || (file_version != 150 && file_version != 200))
             return NULL;
 
         // parse chunks until we reach the end of the file/buffer
@@ -1063,38 +1063,41 @@
                             hidden = (hidden_string[0] == '1' ? true : false);
                     }
 
-
                     // get other properties.
                     uint32_t child_node_id = 0, reserved_id = 0, layer_id = 0, num_frames = 0;
                     _vox_file_read(fp, &child_node_id, sizeof(child_node_id));
                     _vox_file_read(fp, &reserved_id,   sizeof(reserved_id));
                     _vox_file_read(fp, &layer_id,      sizeof(layer_id));
                     _vox_file_read(fp, &num_frames,    sizeof(num_frames));
-                    assert(reserved_id == UINT32_MAX && num_frames == 1); // must be these values according to the spec
+                    assert(reserved_id == UINT32_MAX); // must be these values according to the spec
+                    assert(file_version != 150 || num_frames == 1); // must be these values according to the spec
 
-                    // Parse the frame dictionary that contains:
-                    //   _r : int8 ROTATION (c)
-                    //   _t : int32x3 translation
-                    // and extract a transform
-                    ogt_vox_transform frame_transform;
-                    {
-                        _vox_file_read_dict(&dict, fp);
-                        const char* rotation_value    = _vox_dict_get_value_as_string(&dict, "_r");
-                        const char* translation_value = _vox_dict_get_value_as_string(&dict, "_t");
-                        frame_transform = _vox_make_transform_from_dict_strings(rotation_value, translation_value);
-                    }
-                    // setup the transform node.
-                    {
-                        nodes.grow_to_fit_index(node_id);
-                        _vox_scene_node_* transform_node = &nodes[node_id];
-                        assert(transform_node);
-                        transform_node->node_type = k_nodetype_transform;
-                        transform_node->u.transform.child_node_id = child_node_id;
-                        transform_node->u.transform.layer_id      = layer_id;
-                        transform_node->u.transform.transform     = frame_transform;
-                        transform_node->u.transform.hidden        = hidden;
-                        // assign the name
-                        _vox_strcpy_static(transform_node->u.transform.name, node_name);
+                    // TODO: multiple frames are not yet supported - but at least the vox files from magicavoxel >= 0.99.7 are loading again
+                    for (uint32_t f = 0; f < num_frames; ++f) {
+                        // Parse the frame dictionary that contains:
+                        //   _r : int8 ROTATION (c)
+                        //   _t : int32x3 translation
+                        // and extract a transform
+                        ogt_vox_transform frame_transform;
+                        {
+                            _vox_file_read_dict(&dict, fp);
+                            const char* rotation_value    = _vox_dict_get_value_as_string(&dict, "_r");
+                            const char* translation_value = _vox_dict_get_value_as_string(&dict, "_t");
+                            frame_transform = _vox_make_transform_from_dict_strings(rotation_value, translation_value);
+                        }
+                        // setup the transform node.
+                        {
+                            nodes.grow_to_fit_index(node_id);
+                            _vox_scene_node_* transform_node = &nodes[node_id];
+                            assert(transform_node);
+                            transform_node->node_type = k_nodetype_transform;
+                            transform_node->u.transform.child_node_id = child_node_id;
+                            transform_node->u.transform.layer_id      = layer_id;
+                            transform_node->u.transform.transform     = frame_transform;
+                            transform_node->u.transform.hidden        = hidden;
+                            // assign the name
+                            _vox_strcpy_static(transform_node->u.transform.name, node_name);
+                        }
                     }
                     break;
                 }
