@@ -236,6 +236,13 @@
         ogt_matl_type_media   = 5,
     };
 
+    enum ogt_cam_mode
+    {
+        ogt_cam_mode_perspective = 0,
+        // TODO: other camera types
+        ogt_cam_mode_unknown    = 1
+    };
+
     // Content Flags for ogt_vox_matl values for a given material
     static const uint32_t k_ogt_vox_matl_have_metal  = 1 << 0;
     static const uint32_t k_ogt_vox_matl_have_rough  = 1 << 1;
@@ -271,7 +278,6 @@
         float         sp;
         float         g;
         float         media;
-
     } ogt_vox_matl;
 
     // Extended Material Chunk MATL array of materials
@@ -279,6 +285,17 @@
     {
         ogt_vox_matl matl[256];      // extended material information from Material Chunk MATL
     } ogt_vox_matl_array;
+
+    typedef struct ogt_vox_cam
+    {
+        uint32_t     camera_id;
+        ogt_cam_mode mode;
+        float        focus[3];
+        float        angle[3];
+        int          radius;
+        float        frustum;
+        int          fov;
+    } ogt_vox_cam;
 
     // a 3-dimensional model of voxels
     typedef struct ogt_vox_model
@@ -330,6 +347,8 @@
         const ogt_vox_group*    groups;         // array of groups. size is num_groups
         ogt_vox_palette         palette;        // the palette for this scene
         ogt_vox_matl_array      materials;      // the extended materials for this scene
+        uint32_t                num_cameras;    // number of cameras for this scene
+        const ogt_vox_cam*      cameras;        // the cameras for this scene
     } ogt_vox_scene;
 
     // allocate memory function interface. pass in size, and get a pointer to memory with at least that size available.
@@ -393,6 +412,7 @@
     static const uint32_t CHUNK_ID_MATL = MAKE_VOX_CHUNK_ID('M','A','T','L');
     static const uint32_t CHUNK_ID_MATT = MAKE_VOX_CHUNK_ID('M','A','T','T');
     static const uint32_t CHUNK_ID_rOBJ = MAKE_VOX_CHUNK_ID('r','O','B','J');
+    static const uint32_t CHUNK_ID_rCAM = MAKE_VOX_CHUNK_ID('r','C','A','M');
 
     // Some older .vox files will not store a palette, in which case the following palette will be used!
     static const uint8_t k_default_vox_palette[256 * 4] = {
@@ -898,6 +918,7 @@
         _vox_array<ogt_vox_model*>   model_ptrs;
         _vox_array<_vox_scene_node_> nodes;
         _vox_array<ogt_vox_instance> instances;
+        _vox_array<ogt_vox_cam>      cameras;
         _vox_array<char>             string_data;
         _vox_array<ogt_vox_layer>    layers;
         _vox_array<ogt_vox_group>    groups;
@@ -914,6 +935,7 @@
         // size some of our arrays to prevent resizing during the parsing for smallish cases.
         model_ptrs.reserve(64);
         instances.reserve(256);
+        cameras.reserve(4);
         child_ids.reserve(256);
         nodes.reserve(16);
         layers.reserve(8);
@@ -1319,6 +1341,44 @@
                     _vox_file_seek_forwards(fp, remaining);
                     break;
                 }
+                case CHUNK_ID_rCAM:
+                {
+                    ogt_vox_cam camera;
+                    memset(&camera, 0, sizeof(camera));
+                    _vox_file_read(fp, &camera.camera_id, sizeof(camera.camera_id));
+                    _vox_file_read_dict(&dict, fp);
+
+                    camera.mode = ogt_cam_mode_unknown;
+                    const char* mode_string = _vox_dict_get_value_as_string(&dict, "_mode", NULL);
+                    if (mode_string) {
+                        if (!_vox_strcmp(mode_string, "pers")) {
+                            camera.mode = ogt_cam_mode_perspective;
+                        }
+                    }
+                    const char* focus_string = _vox_dict_get_value_as_string(&dict, "_focus", NULL);
+                    if (focus_string) {
+                        _vox_str_scanf(focus_string, "%f %f %f", &camera.focus[0], &camera.focus[1], &camera.focus[2]);
+                    }
+                    const char* angle_string = _vox_dict_get_value_as_string(&dict, "_angle", NULL);
+                    if (angle_string) {
+                        _vox_str_scanf(angle_string, "%f %f %f", &camera.angle[0], &camera.angle[1], &camera.angle[2]);
+                    }
+                    const char* radius_string = _vox_dict_get_value_as_string(&dict, "_radius", NULL);
+                    if (radius_string) {
+                        _vox_str_scanf(angle_string, "%i", &camera.radius);
+                    }
+                    const char* frustum_string = _vox_dict_get_value_as_string(&dict, "_frustum", NULL);
+                    if (frustum_string) {
+                        _vox_str_scanf(frustum_string, "%f", &camera.frustum);
+                    }
+                    const char* fov_string = _vox_dict_get_value_as_string(&dict, "_fov", NULL);
+                    if (fov_string) {
+                        _vox_str_scanf(angle_string, "%i", &camera.fov);
+                    }
+
+                    cameras.push_back(camera);
+                    break;
+                }
                 // we don't handle rOBJ (just a dict of render settings), so we just skip the chunk payload.
                 case CHUNK_ID_rOBJ:
                 default:
@@ -1503,6 +1563,15 @@
             scene->instances = scene_instances;
             scene->num_instances = (uint32_t)instances.size();
 
+            // copy cameras over to scene
+            size_t num_scene_cameras = cameras.size();
+            ogt_vox_cam* scene_cameras = (ogt_vox_cam*)_vox_malloc(sizeof(ogt_vox_cam) * num_scene_cameras);
+            if (num_scene_cameras) {
+                memcpy(scene_cameras, &cameras[0], sizeof(ogt_vox_cam) * num_scene_cameras);
+            }
+            scene->cameras = scene_cameras;
+            scene->num_cameras = (uint32_t)cameras.size();
+
             // copy model pointers over to the scene,
             size_t num_scene_models = model_ptrs.size();
             ogt_vox_model** scene_models = (ogt_vox_model * *)_vox_malloc(sizeof(ogt_vox_model*) * num_scene_models);
@@ -1564,6 +1633,11 @@
             _vox_free(const_cast<ogt_vox_instance*>(scene->instances));
             scene->instances = NULL;
         }
+        // free cameras array
+        if (scene->cameras) {
+            _vox_free(const_cast<ogt_vox_cam*>(scene->cameras));
+            scene->cameras = NULL;
+        }
         // free layer array
         if (scene->layers) {
             _vox_free(const_cast<ogt_vox_layer*>(scene->layers));
@@ -1579,7 +1653,7 @@
     }
 
     // the vector should be a unit vector aligned along one of the cardinal directions exactly. eg. (1,0,0) or (0, 0, -1)
-       // this function returns the non-zero column index in out_index and the returns whether that entry is negative.
+    // this function returns the non-zero column index in out_index and the returns whether that entry is negative.
     static bool _vox_get_vec3_rotation_bits(const vec3& vec, uint8_t& out_index) {
         const float* f = &vec.x;
         out_index = 3;
@@ -1854,6 +1928,56 @@
             uint32_t node_id       = first_instance_transform_node_id + i;
             uint32_t child_node_id = first_shape_node_id + instance->model_index;
             _vox_file_write_chunk_nTRN(fp, node_id, child_node_id, instance->name, instance->hidden, &instance->transform, instance->layer_index);
+        }
+
+        // write out the rCAM chunks
+        for (uint32_t i = 0; i < scene->num_cameras; i++) {
+            const ogt_vox_cam* camera = &scene->cameras[i];
+            char cam_focus[64] = "";
+            char cam_angle[64] = "";
+            char cam_radius[32] = "";
+            char cam_frustum[32] = "";
+            char cam_fov[32] = "";
+            const char *cam_mode;
+            _vox_sprintf(cam_focus, sizeof(cam_focus), "%.5f %.5f %.5f", camera->focus[0], camera->focus[1], camera->focus[2]);
+            _vox_sprintf(cam_angle, sizeof(cam_angle), "%.5f %.5f %.5f", camera->angle[0], camera->angle[1], camera->angle[2]);
+            _vox_sprintf(cam_radius, sizeof(cam_radius), "%i", camera->radius);
+            _vox_sprintf(cam_frustum, sizeof(cam_frustum), "%.5f", camera->frustum);
+            _vox_sprintf(cam_fov, sizeof(cam_fov), "%i", camera->fov);
+
+            switch (camera->mode) {
+            default:
+            case ogt_cam_mode_unknown:
+            case ogt_cam_mode_perspective:
+                cam_mode = "pers";
+                break;
+            }
+
+            uint32_t cam_dict_size =
+                    sizeof(uint32_t) + // num key value pairs
+                    _vox_dict_key_value_size("_mode", cam_mode) +
+                    _vox_dict_key_value_size("_focus", cam_focus) +
+                    _vox_dict_key_value_size("_angle", cam_angle) +
+                    _vox_dict_key_value_size("_radius", cam_radius) +
+                    _vox_dict_key_value_size("_frustum", cam_frustum) +
+                    _vox_dict_key_value_size("_fov", cam_fov);
+
+            uint32_t chunk_size_rcam =
+                sizeof(uint32_t) +   // camera_id
+                cam_dict_size;
+            // write the rCAM header
+            _vox_file_write_uint32(fp, CHUNK_ID_rCAM);
+            _vox_file_write_uint32(fp, chunk_size_rcam);
+            _vox_file_write_uint32(fp, 0);
+
+            _vox_file_write_uint32(fp, camera->camera_id);
+            _vox_file_write_uint32(fp, 6);  // num key values
+            _vox_file_write_dict_key_value(fp, "_mode", cam_mode);
+            _vox_file_write_dict_key_value(fp, "_focus", cam_focus);
+            _vox_file_write_dict_key_value(fp, "_angle", cam_angle);
+            _vox_file_write_dict_key_value(fp, "_radius", cam_radius);
+            _vox_file_write_dict_key_value(fp, "_frustum", cam_frustum);
+            _vox_file_write_dict_key_value(fp, "_fov", cam_fov);
         }
 
         // write out RGBA chunk for the palette
