@@ -1486,6 +1486,9 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 		core_assert(samples > 0);
 		glTexImage2DMultisample(glType, samples, f.internalFormat, width, height, false);
 		checkError();
+	} else if (type == TextureType::Texture2DMultisampleArray) {
+		glTexImage3DMultisample(glType, samples, f.internalFormat, width, height, index, false);
+		checkError();
 	} else {
 		glTexImage3D(glType, 0, f.internalFormat, width, height, index, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
 		checkError();
