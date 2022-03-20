@@ -80,7 +80,7 @@ TextureConfig& TextureConfig::borderColor(const glm::vec4& borderColor) {
 }
 
 TextureConfig& TextureConfig::samples(int samples) {
-	_samples = glm::clamp(samples, 1, video::limit(Limit::MaxSamples));
+	_samples = glm::clamp(samples, 0, video::limit(Limit::MaxSamples));
 	return *this;
 }
 

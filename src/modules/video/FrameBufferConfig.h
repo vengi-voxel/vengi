@@ -25,7 +25,7 @@ public:
 private:
 	glm::ivec2 _dimension;
 	ColorTextureMap _colorTextures;
-	int _samples = 1;
+	int _samples = 0;
 	TextureFormat _colorTextureFormat = TextureFormat::RGBA;
 	TextureFormat _depthTextureFormat = TextureFormat::D24;
 	TextureFormat _depthBufferFormat = TextureFormat::D24;

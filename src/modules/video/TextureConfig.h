@@ -28,7 +28,7 @@ private:
 	uint8_t _alignment = 1u;
 	bool _useBorderColor = false;
 	glm::vec4 _borderColor {0.0f};
-	int _samples = 1;
+	int _samples = 0;
 public:
 	TextureConfig& wrap(TextureWrap wrap);
 	TextureConfig& wrapR(TextureWrap wrap);

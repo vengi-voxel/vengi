@@ -1217,7 +1217,7 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 
 bool setupRenderBuffer(TextureFormat format, int w, int h, int samples) {
 	video_trace_scoped(SetupRenderBuffer);
-	if (samples > 1) {
+	if (samples > 0) {
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, (GLsizei)samples, _priv::TextureFormats[core::enumVal(format)], w, h);
 		checkError();
 	} else {
@@ -1483,6 +1483,7 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 		glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
 		checkError();
 	} else if (type == TextureType::Texture2DMultisample) {
+		core_assert(samples > 0);
 		glTexImage2DMultisample(glType, samples, f.internalFormat, width, height, false);
 		checkError();
 	} else {
