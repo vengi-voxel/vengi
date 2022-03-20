@@ -321,6 +321,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	}
 
 	ogt_vox_scene output_scene;
+	memset(&output_scene, 0, sizeof(output_scene));
 	output_scene.groups = &default_group;
 	output_scene.num_groups = 1;
 	output_scene.instances = &instances[0];
