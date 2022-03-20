@@ -47,6 +47,7 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "0");
 	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1", "Show the axis", core::Var::boolValidator);
 	_guizmoRotation = core::Var::get(cfg::VoxEditGuizmoRotation, "0", "Activate rotations", core::Var::boolValidator);
+	_guizmoAllowAxisFlip = core::Var::get(cfg::VoxEditGuizmoAllowAxisFlip, "1", "Allow axis flip", core::Var::boolValidator);
 	return true;
 }
 
@@ -235,6 +236,7 @@ void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, co
 	if (_guizmoRotation->boolVal()) {
 		operation |= ImGuizmo::ROTATE;
 	}
+	ImGuizmo::AllowAxisFlip(_guizmoAllowAxisFlip->boolVal());
 
 	voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
 
