@@ -28,10 +28,6 @@
 
 namespace voxedit {
 
-namespace _priv {
-static const uint32_t VIEWPORT_DEBUG_TRACE = (1 << 0);
-}
-
 Viewport::Viewport(const core::String &id) : _id(id) {
 }
 
@@ -51,8 +47,6 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "0");
 	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1", "Show the axis", core::Var::boolValidator);
 	_guizmoRotation = core::Var::get(cfg::VoxEditGuizmoRotation, "0", "Activate rotations", core::Var::boolValidator);
-	_debug = core::Var::get(cfg::VoxEditViewportDebugflag, "0",
-							"Debug bit mask. 1 means rendering the traces for the active camera");
 	return true;
 }
 
@@ -273,33 +267,6 @@ void Viewport::renderToFrameBuffer() {
 		sceneMgr().renderAnimation(camera);
 	} else {
 		sceneMgr().render(camera);
-	}
-	if ((_debug->intVal() & _priv::VIEWPORT_DEBUG_TRACE) != 0) {
-		video::Camera *activeCamera = sceneMgr().activeCamera();
-		if (activeCamera) {
-			const math::Ray &ray = activeCamera->mouseRay(glm::ivec2(_controller._mouseX, _controller._mouseY));
-			const float rayLength = activeCamera->farPlane();
-			const glm::vec3 &dirWithLength = ray.direction * rayLength;
-
-			Log::trace("%s: origin(%f:%f:%f) dir(%f:%f:%f), rayLength: %f - mouse(%i:%i)", _id.c_str(), ray.origin.x,
-					   ray.origin.y, ray.origin.z, dirWithLength.x, dirWithLength.y, dirWithLength.z, rayLength,
-					   _controller._mouseX, _controller._mouseY);
-
-			video::ShapeBuilder &builder = sceneMgr().shapeBuilder();
-			builder.clear();
-			builder.setColor(core::Color::DarkRed);
-			builder.line(glm::vec3(0), ray.origin * dirWithLength);
-			builder.setColor(core::Color::Green);
-			builder.line(glm::vec3(0), ray.origin);
-			builder.setColor(core::Color::Yellow);
-			builder.line(glm::vec3(0), dirWithLength);
-			builder.setColor(core::Color::Blue);
-			builder.line(glm::vec3(0), ray.direction);
-
-			render::ShapeRenderer &renderer = sceneMgr().shapeRenderer();
-			renderer.createOrUpdate(_mesh, builder);
-			renderer.render(_mesh, camera);
-		}
 	}
 
 	_frameBuffer.unbind();
