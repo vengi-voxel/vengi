@@ -9,7 +9,7 @@
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/TextEditor.h"
 #include "voxedit-ui/AnimationPanel.h"
-#include "voxedit-ui/CursorPanel.h"
+#include "voxedit-ui/PositionsPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/LayerPanel.h"
 #include "voxedit-ui/MenuBar.h"
@@ -85,7 +85,7 @@ private:
 	LayerPanel _layerPanel;
 	AnimationPanel _animationPanel;
 	ModifierPanel _modifierPanel;
-	CursorPanel _cursorPanel;
+	PositionsPanel _positionsPanel;
 	ToolsPanel _toolsPanel;
 	PalettePanel _palettePanel;
 	FormatSettingsPanel _formatSettingsPanel;
@@ -93,8 +93,8 @@ private:
 	StatusBar _statusBar;
 
 	void leftWidget();
-	void mainWidget();
-	void rightWidget();
+	void mainWidget(int frame);
+	void rightWidget(int frame);
 
 	void dialog(const char *icon, const char *text);
 

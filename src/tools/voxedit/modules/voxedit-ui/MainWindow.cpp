@@ -216,16 +216,16 @@ void MainWindow::leftWidget() {
 	_toolsPanel.update(TITLE_TOOLS);
 }
 
-void MainWindow::mainWidget() {
-	_scene->update();
-	_sceneTop->update();
-	_sceneLeft->update();
-	_sceneFront->update();
-	_sceneAnimation->update();
+void MainWindow::mainWidget(int frame) {
+	_scene->update(frame);
+	_sceneTop->update(frame);
+	_sceneLeft->update(frame);
+	_sceneFront->update(frame);
+	_sceneAnimation->update(frame);
 }
 
-void MainWindow::rightWidget() {
-	_cursorPanel.update(TITLE_POSITIONS, _lastExecutedCommand);
+void MainWindow::rightWidget(int frame) {
+	_positionsPanel.update(TITLE_POSITIONS, _lastExecutedCommand, frame);
 	_modifierPanel.update(TITLE_MODIFIERS, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
 	_formatSettingsPanel.update(TITLE_FORMAT_SETTINGS);
@@ -417,9 +417,10 @@ void MainWindow::update() {
 	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");
 	ImGui::DockSpace(dockspaceId);
 
+	int frame = 0; // TODO: select the proper key frame
 	leftWidget();
-	mainWidget();
-	rightWidget();
+	mainWidget(frame);
+	rightWidget(frame);
 
 	registerPopups();
 

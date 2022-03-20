@@ -46,12 +46,13 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 
 	_modelSpace = core::Var::get(cfg::VoxEditModelSpace, "0");
 	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1", "Show the axis", core::Var::boolValidator);
-	_guizmoRotation = core::Var::get(cfg::VoxEditGuizmoRotation, "0", "Activate rotations", core::Var::boolValidator);
-	_guizmoAllowAxisFlip = core::Var::get(cfg::VoxEditGuizmoAllowAxisFlip, "1", "Allow axis flip", core::Var::boolValidator);
+	_guizmoRotation = core::Var::get(cfg::VoxEditGuizmoRotation, "0", "Activate rotations for the guizmo in scene mode", core::Var::boolValidator);
+	_guizmoAllowAxisFlip = core::Var::get(cfg::VoxEditGuizmoAllowAxisFlip, "1", "Flip axis or stay along the positive world/local axis", core::Var::boolValidator);
+	_guizmoSnap = core::Var::get(cfg::VoxEditGuizmoSnap, "1", "Use the grid size for snap", core::Var::boolValidator);
 	return true;
 }
 
-void Viewport::update() {
+void Viewport::update(int frame) {
 	static const char *polygonModes[] = {"Points", "Lines", "Solid"};
 	static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
 
@@ -89,7 +90,6 @@ void Viewport::update() {
 				const glm::vec2 uvc(uv.z, uv.w);
 				const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 				ImGui::Image(texture->handle(), contentSize, uva, uvc);
-				int frame = 0; // TODO: select the proper key frame
 				renderGizmo(_controller.camera(), headerSize, contentSize, frame);
 
 				if (sceneMgr().isLoading()) {
@@ -245,12 +245,12 @@ void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, co
 	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + (float)headerSize, size.x, size.y);
 	ImGuizmo::SetOrthographic(camera.mode() == video::CameraMode::Orthogonal);
 	const float step = (float)core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
-	const float snap[] = {step, step, step};
+	const float snap[]{step, step, step};
 	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
 	glm::mat4 transformMatrix = transform.matrix();
 	const float *viewMatrix = glm::value_ptr(camera.viewMatrix());
 	const float *projMatrix = glm::value_ptr(camera.projectionMatrix());
-	ImGuizmo::Manipulate(viewMatrix, projMatrix, (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix), nullptr, snap);
+	ImGuizmo::Manipulate(viewMatrix, projMatrix, (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix), nullptr, _guizmoSnap->boolVal() ? snap: nullptr);
 	if (ImGuizmo::IsUsing()) {
 		_guizmoActivated = true;
 		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, frame, false);

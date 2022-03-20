@@ -28,6 +28,7 @@ private:
 	core::VarPtr _showAxisVar;
 	core::VarPtr _guizmoRotation;
 	core::VarPtr _guizmoAllowAxisFlip;
+	core::VarPtr _guizmoSnap;
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
@@ -38,7 +39,7 @@ public:
 	~Viewport();
 
 	bool isHovered() const;
-	void update();
+	void update(int frame);
 	bool init(ViewportController::RenderMode renderMode = ViewportController::RenderMode::Editor);
 	void shutdown();
 
