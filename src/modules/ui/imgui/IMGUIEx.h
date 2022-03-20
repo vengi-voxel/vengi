@@ -35,6 +35,8 @@ IMGUI_API bool CheckboxVar(const char* label, const core::VarPtr& var);
 IMGUI_API bool CheckboxVar(const char* label, const char* varName);
 IMGUI_API bool MenuItemCmd(const char *label, const char *command);
 IMGUI_API bool Fullscreen(const char *title = "##main", ImGuiWindowFlags additionalFlags = ImGuiWindowFlags_None);
+IMGUI_API void LoadingIndicatorCircle(const char *label, const float indicator_radius = 200, const ImVec4 &main_color = ImVec4(0.0f, 0.0f, 1.0f, 1.0f),
+									  const ImVec4 &backdrop_color = ImVec4(0.0f, 0.0f, 0.5f, 1.0f), const int circle_count = 13, const float speed = 1.0f);
 
 template<class Collection>
 static bool ComboStl(const char* label, int* current_item, const Collection& items, int height_in_items = -1) {

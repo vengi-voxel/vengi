@@ -334,4 +334,46 @@ bool Fullscreen(const char *title, ImGuiWindowFlags additionalFlags) {
 					 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings |
 					 ImGuiWindowFlags_NoDocking);
 }
+
+// https://github.com/ocornut/imgui/issues/1901#issuecomment-444929973
+void LoadingIndicatorCircle(const char *label, const float indicator_radius, const ImVec4 &main_color,
+							const ImVec4 &backdrop_color, const int circle_count, const float speed) {
+	ImGuiWindow *window = GetCurrentWindow();
+	if (window->SkipItems) {
+		return;
+	}
+
+	const ImVec2& maxs = ImGui::GetWindowContentRegionMax();
+	const ImVec2 restore = ImGui::GetCursorPos();
+	ImGui::SetCursorPosX(maxs.x / 2.0f - indicator_radius);
+	ImGui::SetCursorPosY(maxs.y / 2.0f - indicator_radius);
+
+	ImGuiContext &g = *GImGui;
+	const ImGuiID id = window->GetID(label);
+
+	const ImVec2 pos = window->DC.CursorPos;
+	const float circle_radius = indicator_radius / 10.0f;
+	const ImRect bb(pos, ImVec2(pos.x + indicator_radius * 2.0f, pos.y + indicator_radius * 2.0f));
+	ItemSize(bb, g.Style.FramePadding.y);
+	if (!ItemAdd(bb, id)) {
+		ImGui::SetCursorPos(restore);
+		return;
+	}
+	const float t = (float)g.Time;
+	const float degree_offset = 2.0f * glm::pi<float>() / (float)circle_count;
+	for (int i = 0; i < circle_count; ++i) {
+		const float x = indicator_radius * glm::sin(degree_offset * (float)i);
+		const float y = indicator_radius * glm::cos(degree_offset * (float)i);
+		const float growth = core_max(0.0f, glm::sin(t * speed - i * degree_offset));
+		ImVec4 color;
+		color.x = main_color.x * growth + backdrop_color.x * (1.0f - growth);
+		color.y = main_color.y * growth + backdrop_color.y * (1.0f - growth);
+		color.z = main_color.z * growth + backdrop_color.z * (1.0f - growth);
+		color.w = 1.0f;
+		window->DrawList->AddCircleFilled(ImVec2(pos.x + indicator_radius + x, pos.y + indicator_radius - y),
+										  circle_radius + growth * circle_radius, GetColorU32(color));
+	}
+	ImGui::SetCursorPos(restore);
+}
+
 }
