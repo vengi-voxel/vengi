@@ -732,12 +732,12 @@ int SceneManager::addNodeToSceneGraph(voxelformat::SceneGraphNode &node, int par
 	return newNodeId;
 }
 
-bool SceneManager::loadSceneGraph(voxelformat::SceneGraph& sceneGraph) {
+bool SceneManager::loadSceneGraph(voxelformat::SceneGraph&& sceneGraph) {
 	core_trace_scoped(LoadSceneGraph);
-	_sceneGraph.clear();
+	_sceneGraph = core::move(sceneGraph);
 	_volumeRenderer.clear();
 
-	const int nodesAdded = voxelformat::addSceneGraphNodes(_sceneGraph, sceneGraph, 0);
+	const size_t nodesAdded = _sceneGraph.size();
 	if (nodesAdded == 0) {
 		Log::warn("Failed to load any model volumes");
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
@@ -1793,8 +1793,7 @@ void SceneManager::update(double nowSeconds) {
 		using namespace std::chrono_literals;
 		std::future_status status = _loadingFuture.wait_for(1ms);
 		if (status == std::future_status::ready) {
-			voxelformat::SceneGraph newSceneGraph = _loadingFuture.get();
-			if (loadSceneGraph(newSceneGraph)) {
+			if (loadSceneGraph(core::move(_loadingFuture.get()))) {
 				_needAutoSave = false;
 				_dirty = false;
 			}
@@ -1951,7 +1950,7 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 		return false;
 	}
 
-	loadSceneGraph(newSceneGraph);
+	loadSceneGraph(core::move(newSceneGraph));
 	setEditMode(EditMode::Animation);
 	animationEntity().setAnimation(animation::Animation::IDLE, true);
 

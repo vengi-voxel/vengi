@@ -191,7 +191,7 @@ protected:
 	voxelformat::SceneGraphNode *sceneGraphNode(int nodeId);
 	const voxelformat::SceneGraphNode *sceneGraphNode(int nodeId) const;
 	bool setSceneGraphNodeVolume(voxelformat::SceneGraphNode &node, voxel::RawVolume* volume);
-	bool loadSceneGraph(voxelformat::SceneGraph& sceneGraph);
+	bool loadSceneGraph(voxelformat::SceneGraph&& sceneGraph);
 	int activeNode() const;
 	int addModelChild(const core::String& name, int width, int height, int depth);
 
