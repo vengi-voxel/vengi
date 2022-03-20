@@ -44,6 +44,50 @@ RawVolume::RawVolume(const RawVolume& copy) :
 	core_memcpy((void*)_data, (void*)copy._data, size);
 }
 
+RawVolume::RawVolume(const RawVolume& src, const Region& region) : _region(region) {
+	setBorderValue(src.borderValue());
+	_borderVoxel = src._borderVoxel;
+	if (!src.region().containsRegion(_region)) {
+		_region.cropTo(src._region);
+	}
+	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	_data = (Voxel *)core_malloc(size);
+	if (src.region() == _region) {
+		_mins = src._mins;
+		_maxs = src._maxs;
+		_boundsValid = src._boundsValid;
+		core_memcpy((void *)_data, (void *)src._data, size);
+	} else {
+		_mins = glm::ivec3((std::numeric_limits<int>::max)() / 2);
+		_maxs = glm::ivec3((std::numeric_limits<int>::min)() / 2);
+		_boundsValid = false;
+		const glm::ivec3 &tgtMins = _region.getLowerCorner();
+		const glm::ivec3 &tgtMaxs = _region.getUpperCorner();
+		const glm::ivec3 &srcMins = src._region.getLowerCorner();
+		const int tgtYStride = _region.getWidthInVoxels();
+		const int tgtZStride = _region.getWidthInVoxels() * _region.getHeightInVoxels();
+		const int srcYStride = src._region.getWidthInVoxels();
+		const int srcZStride = src._region.getWidthInVoxels() * src._region.getHeightInVoxels();
+		for (int x = tgtMins.x; x <= tgtMaxs.x; ++x) {
+			const int32_t tgtXPos = x - tgtMins.x;
+			const int32_t srcXPos = x - srcMins.x;
+			for (int y = tgtMins.y; y <= tgtMaxs.y; ++y) {
+				const int32_t tgtYPos = y - tgtMins.y;
+				const int32_t srcYPos = y - srcMins.y;
+				const int tgtStrideLocal = tgtXPos + tgtYPos * tgtYStride;
+				const int srcStrideLocal = srcXPos + srcYPos * srcYStride;
+				for (int z = tgtMins.z; z <= tgtMaxs.z; ++z) {
+					const int32_t tgtZPos = z - tgtMins.z;
+					const int32_t srcZPos = z - srcMins.z;
+					const int tgtindex = tgtStrideLocal + tgtZPos * tgtZStride;
+					const int srcindex = srcStrideLocal + srcZPos * srcZStride;
+					_data[tgtindex] = src._data[srcindex];
+				}
+			}
+		}
+	}
+}
+
 RawVolume::RawVolume(RawVolume&& move) noexcept {
 	_data = move._data;
 	move._data = nullptr;

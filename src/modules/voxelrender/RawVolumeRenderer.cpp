@@ -367,7 +367,7 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 					continue;
 				}
 
-				voxel::RawVolume copy(volume);
+				voxel::RawVolume copy(volume, voxel::Region(finalRegion.getLowerCorner(), finalRegion.getUpperCorner() + 1));
 				_threadPool.enqueue([movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
 					++_runningExtractorTasks;
 					voxel::Region reg = finalRegion;

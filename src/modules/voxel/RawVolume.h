@@ -93,6 +93,7 @@ public:
 	RawVolume(const RawVolume* copy);
 	RawVolume(const RawVolume& copy);
 	RawVolume(RawVolume&& move) noexcept;
+	RawVolume(const RawVolume& copy, const Region& region);
 
 	static RawVolume* createRaw(const Voxel* data, const voxel::Region& region) {
 		return new RawVolume(data, region);
