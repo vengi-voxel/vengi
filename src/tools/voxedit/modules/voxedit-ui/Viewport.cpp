@@ -246,7 +246,8 @@ void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, co
 	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + (float)headerSize, size.x, size.y);
 	ImGuizmo::SetOrthographic(false);
-	const float snap[] = {1.0f, 1.0f, 1.0f};
+	const float step = (float)core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
+	const float snap[] = {step, step, step};
 	const int frame = 0;
 	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
 	glm::mat4 transformMatrix = transform.matrix();
