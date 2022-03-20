@@ -89,7 +89,8 @@ void Viewport::update() {
 				const glm::vec2 uvc(uv.z, uv.w);
 				const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 				ImGui::Image(texture->handle(), contentSize, uva, uvc);
-				renderGizmo(_controller.camera(), headerSize, contentSize);
+				int frame = 0; // TODO: select the proper key frame
+				renderGizmo(_controller.camera(), headerSize, contentSize, frame);
 
 				if (sceneMgr().isLoading()) {
 					ui::imgui::ScopedStyle style;
@@ -211,7 +212,7 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	return true;
 }
 
-void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, const ImVec2 &size) {
+void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, const ImVec2 &size, int frame) {
 	if (!_showAxisVar->boolVal()) {
 		return;
 	}
@@ -245,7 +246,6 @@ void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, co
 	ImGuizmo::SetOrthographic(camera.mode() == video::CameraMode::Orthogonal);
 	const float step = (float)core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
 	const float snap[] = {step, step, step};
-	const int frame = 0;
 	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
 	glm::mat4 transformMatrix = transform.matrix();
 	const float *viewMatrix = glm::value_ptr(camera.viewMatrix());
