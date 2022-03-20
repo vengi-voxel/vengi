@@ -14,6 +14,7 @@
 #include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/dearimgui/ImGuizmo.h"
+#include "video/Camera.h"
 #include "video/ShapeBuilder.h"
 #include "video/WindowedApp.h"
 
@@ -245,7 +246,7 @@ void Viewport::renderGizmo(const video::Camera &camera, const int headerSize, co
 
 	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + (float)headerSize, size.x, size.y);
-	ImGuizmo::SetOrthographic(false);
+	ImGuizmo::SetOrthographic(camera.mode() == video::CameraMode::Orthogonal);
 	const float step = (float)core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
 	const float snap[] = {step, step, step};
 	const int frame = 0;
