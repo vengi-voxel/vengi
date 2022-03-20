@@ -28,6 +28,7 @@ RawVolume::RawVolume(const RawVolume* copy) :
 	_mins = copy->_mins;
 	_maxs = copy->_maxs;
 	_boundsValid = copy->_boundsValid;
+	_borderVoxel = copy->_borderVoxel;
 	core_memcpy((void*)_data, (void*)copy->_data, size);
 }
 
@@ -39,6 +40,7 @@ RawVolume::RawVolume(const RawVolume& copy) :
 	_mins = copy._mins;
 	_maxs = copy._maxs;
 	_boundsValid = copy._boundsValid;
+	_borderVoxel = copy._borderVoxel;
 	core_memcpy((void*)_data, (void*)copy._data, size);
 }
 
