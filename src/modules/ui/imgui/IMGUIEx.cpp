@@ -4,6 +4,7 @@
 
 #include "IMGUIEx.h"
 #include "IMGUIApp.h"
+#include "ScopedStyle.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "command/Command.h"
@@ -364,6 +365,13 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 
 	ImGuiContext &g = *GImGui;
 	const ImGuiID id = window->GetID(label);
+
+	{
+		ui::imgui::ScopedStyle style;
+		ui::imgui::IMGUIApp *app = imguiApp();
+		style.setFont(app->bigFont());
+		ImGui::TextCentered(label);
+	}
 
 	const ImVec2 pos = window->DC.CursorPos;
 	const float circle_radius = indicator_radius / 10.0f;

@@ -95,9 +95,7 @@ void Viewport::update(int frame) {
 				renderGizmo(_controller.camera(), headerSize, contentSize, frame);
 
 				if (sceneMgr().isLoading()) {
-					ui::imgui::ScopedStyle style;
-					style.setFont(app->bigFont());
-					ImGui::TextCentered("Loading");
+					ImGui::LoadingIndicatorCircle("Loading", 150, core::Color::White, core::Color::Gray);
 				} else if (ImGui::IsItemHovered()) {
 					if (sceneMgr().modifier().modifierType() == ModifierType::ColorPicker) {
 						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
