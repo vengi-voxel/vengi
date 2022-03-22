@@ -132,7 +132,47 @@ bool RawVolumeRenderer::init() {
 	return true;
 }
 
+bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
+	const size_t n = _extractRegions.size();
+	if (n == 0) {
+		return false;
+	}
+	if (maxExtraction == 0) {
+		return true;
+	}
+	size_t i;
+	for (i = 0; i < n; ++i) {
+		const int idx = _extractRegions[i].idx;
+		if (idx < 0) {
+			// model switch for this slot ignore it
+			continue;
+		}
+		const voxel::RawVolume *volume = _rawVolume[idx];
+		const voxel::Region& finalRegion = _extractRegions[i].region;
+		voxel::RawVolume copy(volume, voxel::Region(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2));
+		const glm::ivec3& mins = finalRegion.getLowerCorner();
+		_threadPool.enqueue([movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
+			++_runningExtractorTasks;
+			voxel::Region reg = finalRegion;
+			reg.shiftUpperCorner(1, 1, 1);
+			voxel::Mesh mesh(65536, 65536, true);
+			voxel::extractCubicMesh(&movedCopy, reg, &mesh, voxel::IsQuadNeeded(), reg.getLowerCorner());
+			_pendingQueue.emplace(mins, idx, core::move(mesh));
+			Log::debug("Enqueue mesh for idx: %i", idx);
+			--_runningExtractorTasks;
+		});
+		--maxExtraction;
+		if (maxExtraction == 0) {
+			break;
+		}
+	}
+	_extractRegions.erase(0, i + 1);
+
+	return true;
+}
+
 void RawVolumeRenderer::update() {
+	scheduleExtractions();
 	ExtractionCtx result;
 	int cnt = 0;
 	while (_pendingQueue.pop(result)) {
@@ -367,17 +407,7 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 					continue;
 				}
 
-				voxel::RawVolume copy(volume, voxel::Region(finalRegion.getLowerCorner(), finalRegion.getUpperCorner() + 1));
-				_threadPool.enqueue([movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
-					++_runningExtractorTasks;
-					voxel::Region reg = finalRegion;
-					reg.shiftUpperCorner(1, 1, 1);
-					voxel::Mesh mesh(65536, 65536, true);
-					voxel::extractCubicMesh(&movedCopy, reg, &mesh, voxel::IsQuadNeeded(), reg.getLowerCorner());
-					_pendingQueue.emplace(mins, idx, core::move(mesh));
-					Log::debug("Enqueue mesh for idx: %i", idx);
-					--_runningExtractorTasks;
-				});
+				_extractRegions.emplace_back(finalRegion, idx);
 			}
 		}
 	}
@@ -618,9 +648,11 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
-	core_trace_scoped(RawVolumeRendererSetVolume);
-
 	voxel::RawVolume* old = _rawVolume[idx];
+	if (old == volume) {
+		return nullptr;
+	}
+	core_trace_scoped(RawVolumeRendererSetVolume);
 	_rawVolume[idx] = volume;
 	if (deleteMesh) {
 		for (auto& i : _meshes) {
@@ -629,6 +661,13 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 			meshes[idx] = nullptr;
 		}
 	}
+	const size_t n = _extractRegions.size();
+	for (size_t i = 0; i < n; ++i) {
+		if (_extractRegions[i].idx == idx) {
+			_extractRegions[i].idx = -1;
+		}
+	}
+
 	return old;
 }
 

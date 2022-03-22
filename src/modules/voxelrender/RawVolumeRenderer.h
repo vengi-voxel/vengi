@@ -83,6 +83,15 @@ protected:
 	glm::vec3 _diffuseColor = frontend::diffuseColor;
 	glm::vec3 _ambientColor = frontend::ambientColor;
 
+	struct ExtractRegion {
+		ExtractRegion(const voxel::Region &_region, int _idx) : region(_region), idx(_idx) {
+		}
+		voxel::Region region;
+		int idx;
+	};
+	using RegionQueue = core::DynamicArray<ExtractRegion>;
+	RegionQueue _extractRegions;
+
 	struct ExtractionCtx {
 		ExtractionCtx() {}
 		ExtractionCtx(const glm::ivec3& _mins, int _idx, voxel::Mesh&& _mesh) :
@@ -168,6 +177,7 @@ public:
 	 */
 	bool init();
 
+	bool scheduleExtractions(size_t maxExtraction = 1);
 	void update();
 
 	/**

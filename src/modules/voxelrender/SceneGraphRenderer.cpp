@@ -121,6 +121,8 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, bool hideI
 
 void SceneGraphRenderer::render(const video::Camera& camera, bool shadow, bool waitPending) {
 	if (waitPending) {
+		while (_renderer.scheduleExtractions(100)) {
+		}
 		_renderer.waitForPendingExtractions();
 		_renderer.update();
 	}
