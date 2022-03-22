@@ -102,7 +102,7 @@ void Viewport::update(int frame) {
 					}
 					const ImVec2 windowPos = ImGui::GetWindowPos();
 					const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
-					const int mouseY = (int)(ImGui::GetIO().MousePos.y - windowPos.y) - headerSize;
+					const int mouseY = (int)((ImGui::GetIO().MousePos.y - windowPos.y) - headerSize);
 					const bool rotate = sceneMgr().cameraRotate();
 					const bool pan = sceneMgr().cameraPan();
 					_controller.move(pan, rotate, mouseX, mouseY);
@@ -201,7 +201,7 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	const glm::vec2 windowSize(video::WindowedApp::getInstance()->windowDimension());
 	const glm::vec2 windowFrameBufferSize(video::WindowedApp::getInstance()->frameBufferDimension());
 	const glm::vec2 scale = windowFrameBufferSize / windowSize;
-	_controller.onResize(frameBufferSize, glm::ivec2(frameBufferSize.x * scale.x, frameBufferSize.y * scale.y));
+	_controller.onResize(frameBufferSize, glm::ivec2((float)frameBufferSize.x * scale.x, (float)frameBufferSize.y * scale.y));
 	_frameBuffer.shutdown();
 
 	video::FrameBufferConfig cfg;
