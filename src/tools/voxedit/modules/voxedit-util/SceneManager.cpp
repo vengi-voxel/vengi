@@ -1951,10 +1951,13 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 
 	voxelformat::SceneGraph newSceneGraph;
 	if (!_volumeCache.getVolumes(animationEntity().animationSettings(), newSceneGraph)) {
+		Log::warn("Failed to load scene graph for animation settings");
 		return false;
 	}
 
-	loadSceneGraph(core::move(newSceneGraph));
+	if (!loadSceneGraph(core::move(newSceneGraph))) {
+		Log::warn("Failed to load scene graph");
+	}
 	setEditMode(EditMode::Animation);
 	animationEntity().setAnimation(animation::Animation::IDLE, true);
 
