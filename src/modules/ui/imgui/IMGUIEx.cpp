@@ -7,6 +7,7 @@
 #include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "command/Command.h"
+#include "imgui.h"
 #include "video/WindowedApp.h"
 #include <SDL_stdinc.h>
 #include <glm/vec2.hpp>
@@ -166,6 +167,19 @@ bool CheckboxVar(const char* label, const char* varName) {
 		return true;
 	}
 	return false;
+}
+
+bool SliderVarInt(const char* label, const core::VarPtr& var, int v_min, int v_max, const char* format, ImGuiSliderFlags flags) {
+	int val = var->intVal();
+	if (SliderInt(label, &val, v_min, v_max, format, flags)) {
+		var->setVal(val);
+	}
+	return false;
+}
+
+bool SliderVarInt(const char* label, const char* varName, int v_min, int v_max, const char* format, ImGuiSliderFlags flags) {
+	core::VarPtr var = core::Var::getSafe(varName);
+	return SliderVarInt(label, var, v_min, v_max, format, flags);
 }
 
 bool TooltipText(const char* msg, ...) {

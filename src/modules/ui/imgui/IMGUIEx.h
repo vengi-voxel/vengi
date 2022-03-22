@@ -33,6 +33,8 @@ IMGUI_API bool InputVarInt(const char* label, const core::VarPtr& var, int step 
 IMGUI_API bool InputVarInt(const char* label, const char* varName, int step = 1, int step_fast = 100, ImGuiInputTextFlags extra_flags = 0);
 IMGUI_API bool CheckboxVar(const char* label, const core::VarPtr& var);
 IMGUI_API bool CheckboxVar(const char* label, const char* varName);
+IMGUI_API bool SliderVarInt(const char* label, const core::VarPtr& var, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderVarInt(const char* label, const char* varName, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
 IMGUI_API bool MenuItemCmd(const char *label, const char *command);
 IMGUI_API bool Fullscreen(const char *title = "##main", ImGuiWindowFlags additionalFlags = ImGuiWindowFlags_None);
 IMGUI_API void LoadingIndicatorCircle(const char *label, const float indicator_radius = 200, const ImVec4 &main_color = ImVec4(0.0f, 0.0f, 1.0f, 1.0f),
