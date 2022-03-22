@@ -23,7 +23,7 @@ private:
 	video::FrameBuffer _frameBuffer;
 	video::TexturePtr _texture;
 	voxedit::ViewportController _controller;
-	core::VarPtr _modelSpace;
+	core::VarPtr _modelSpaceVar;
 	core::VarPtr _showAxisVar;
 	core::VarPtr _guizmoRotation;
 	core::VarPtr _guizmoAllowAxisFlip;

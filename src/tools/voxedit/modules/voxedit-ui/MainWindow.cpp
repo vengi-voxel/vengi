@@ -108,7 +108,7 @@ bool MainWindow::init() {
 	_sceneAnimation->controller().setMode(voxedit::ViewportController::SceneCameraMode::Free);
 
 	_showGridVar = core::Var::get(cfg::VoxEditShowgrid, "1", "Show the grid", core::Var::boolValidator);
-	_modelSpaceVar = core::Var::get(cfg::VoxEditModelSpace, "0", "Model space", core::Var::boolValidator);
+	_modelSpaceVar = core::Var::get(cfg::VoxEditModelSpace, "1", "Model space", core::Var::boolValidator);
 	_showLockedAxisVar = core::Var::get(cfg::VoxEditShowlockedaxis, "1", "Show the currently locked axis", core::Var::boolValidator);
 	_showAabbVar = core::Var::get(cfg::VoxEditShowaabb, "0", "Show the axis aligned bounding box", core::Var::boolValidator);
 	_renderShadowVar = core::Var::get(cfg::VoxEditRendershadow, "1", "Render with shadows", core::Var::boolValidator);

@@ -697,6 +697,8 @@ void SceneManager::resetSceneState() {
 	_dirty = false;
 	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), true);
+	setReferencePosition(node.region().getCenter());
+	// TODO: reset camera
 	resetLastTrace();
 }
 
