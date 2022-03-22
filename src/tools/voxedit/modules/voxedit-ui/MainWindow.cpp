@@ -367,7 +367,6 @@ void MainWindow::registerPopups() {
 
 void MainWindow::update() {
 	core_trace_scoped(MainWindow);
-	const ImVec2 pos(0.0f, 0.0f);
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const float statusBarHeight = (float)_app->fontSize() + 16.0f;
 

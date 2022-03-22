@@ -17,7 +17,6 @@ namespace voxedit {
 
 class Viewport {
 private:
-	int32_t _mesh = -1;
 	const core::String _id;
 	bool _hovered = false;
 	bool _guizmoActivated = false;
