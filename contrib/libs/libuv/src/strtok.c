@@ -19,21 +19,34 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef UV_STRSCPY_H_
-#define UV_STRSCPY_H_
+#include <stdlib.h>
+#include "strtok.h"
 
-/* Include uv.h for its definitions of size_t and ssize_t.
- * size_t can be obtained directly from <stddef.h> but ssize_t requires
- * some hoop jumping on Windows that I didn't want to duplicate here.
- */
-#include "uv.h"
+char* uv__strtok(char* str, const char* sep, char** itr) {
+  const char* sep_itr;
+  char* tmp;
+  char* start;
 
-/* Copies up to |n-1| bytes from |s| to |d| and always zero-terminates
- * the result, except when |n==0|. Returns the number of bytes copied
- * or UV_E2BIG if |d| is too small.
- *
- * See https://www.kernel.org/doc/htmldocs/kernel-api/API-strscpy.html
- */
-ssize_t uv__strscpy(char* d, const char* s, size_t n);
+  if (str == NULL)
+    start = tmp = *itr;
+  else
+    start = tmp = str;
 
-#endif  /* UV_STRSCPY_H_ */
+  if (tmp == NULL)
+    return NULL;
+
+  while (*tmp != '\0') {
+    sep_itr = sep;
+    while (*sep_itr != '\0') {
+      if (*tmp == *sep_itr) {
+        *itr = tmp + 1;
+        *tmp = '\0';
+        return start;
+      }
+      sep_itr++;
+    }
+    tmp++;
+  }
+  *itr = NULL;
+  return start;
+}

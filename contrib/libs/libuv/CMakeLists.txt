@@ -29,6 +29,7 @@ set(uv_sources
     src/inet.c
     src/random.c
     src/strscpy.c
+    src/strtok.c
     src/threadpool.c
     src/timer.c
     src/uv-common.c
@@ -157,6 +158,22 @@ if(APPLE)
        src/unix/darwin-proctitle.c
        src/unix/darwin.c
        src/unix/fsevents.c)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "GNU")
+  list(APPEND uv_libraries dl)
+  list(APPEND uv_sources
+       src/unix/bsd-ifaddrs.c
+       src/unix/no-fsevents.c
+       src/unix/no-proctitle.c
+       src/unix/posix-hrtime.c
+       src/unix/posix-poll.c
+       src/unix/hurd.c)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "kFreeBSD")
+  list(APPEND uv_defines _GNU_SOURCE)
+  list(APPEND uv_libraries dl freebsd-glue)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
