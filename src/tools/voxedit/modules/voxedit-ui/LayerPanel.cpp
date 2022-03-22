@@ -134,8 +134,8 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		}
 
 		ImGui::SameLine();
-		const bool multipleModels = sceneGraph.size(voxelformat::SceneGraphNodeType::Model) <= 1;
-		if (ImGui::DisabledButton(ICON_FA_PLAY"##animatelayers", multipleModels)) {
+		const bool onlyOneModel = sceneGraph.size(voxelformat::SceneGraphNodeType::Model) <= 1;
+		if (ImGui::DisabledButton(ICON_FA_PLAY"##animatelayers", onlyOneModel)) {
 			if (sceneMgr.animateActive()) {
 				command::executeCommands("animate 0", &listener);
 			} else {
@@ -144,16 +144,16 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 			}
 		}
 		ImGui::SameLine();
-		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_UP"##layers", multipleModels)) {
+		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_UP"##layers", onlyOneModel)) {
 			command::executeCommands("layermoveup", &listener);
 		}
 		ImGui::TooltipText("Move the layer one level up");
 		ImGui::SameLine();
-		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_DOWN "##layers", multipleModels)) {
+		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_DOWN "##layers", onlyOneModel)) {
 			command::executeCommands("layermovedown", &listener);
 		}
 		ImGui::TooltipText("Move the layer one level down");
-		if (!multipleModels) {
+		if (!onlyOneModel) {
 			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
 		}
 	}
