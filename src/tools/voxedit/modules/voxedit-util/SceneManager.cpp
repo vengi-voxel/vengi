@@ -698,7 +698,6 @@ void SceneManager::resetSceneState() {
 	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), true);
 	setReferencePosition(node.region().getCenter());
-	// TODO: reset camera
 	resetLastTrace();
 }
 
@@ -1790,7 +1789,8 @@ bool SceneManager::isLoading() const {
 	return _loadingFuture.valid();
 }
 
-void SceneManager::update(double nowSeconds) {
+bool SceneManager::update(double nowSeconds) {
+	bool loadedNewScene = false;
 	if (_loadingFuture.valid()) {
 		using namespace std::chrono_literals;
 		std::future_status status = _loadingFuture.wait_for(1ms);
@@ -1798,6 +1798,7 @@ void SceneManager::update(double nowSeconds) {
 			if (loadSceneGraph(core::move(_loadingFuture.get()))) {
 				_needAutoSave = false;
 				_dirty = false;
+				loadedNewScene = true;
 			}
 			_loadingFuture = std::future<voxelformat::SceneGraph>();
 		}
@@ -1836,6 +1837,7 @@ void SceneManager::update(double nowSeconds) {
 	}
 	animate(nowSeconds);
 	autosave();
+	return loadedNewScene;
 }
 
 void SceneManager::shutdown() {

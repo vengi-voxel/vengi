@@ -240,7 +240,7 @@ public:
 
 	void construct() override;
 	bool init() override;
-	void update(double nowSeconds);
+	bool update(double nowSeconds);
 	void shutdown() override;
 
 	void resize(int nodeId, const glm::ivec3& size);

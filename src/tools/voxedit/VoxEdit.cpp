@@ -240,7 +240,9 @@ app::AppState VoxEdit::onInit() {
 }
 
 void VoxEdit::onRenderUI() {
-	voxedit::sceneMgr().update(_nowSeconds);
+	if (voxedit::sceneMgr().update(_nowSeconds)) {
+		_mainWindow->resetCamera();
+	}
 	_mainWindow->update();
 }
 
