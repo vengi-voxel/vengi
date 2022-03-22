@@ -15,6 +15,7 @@
 #include <limits.h>
 
 #define TINYGLTF_IMPLEMENTATION
+#define JSON_HAS_CPP_11
 #include "external/tiny_gltf.h"
 
 namespace voxelformat {
