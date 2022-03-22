@@ -293,7 +293,7 @@ void MainWindow::registerPopups() {
 		col = core::Var::getSafe(cfg::VoxEditDiffuseColor)->vec3Val();
 		if (ImGui::ColorEdit3("Ambient color", glm::value_ptr(col))) {
 			const core::String &c = core::string::format("%f %f %f", col.x, col.y, col.z);
-			core::Var::getSafe(cfg::VoxEditAmbientColor)->setVal(c);
+			core::Var::getSafe(cfg::VoxEditDiffuseColor)->setVal(c);
 		}
 
 #if 0
