@@ -66,13 +66,14 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 	}
 }
 
-void PositionsPanel::sceneView(command::CommandExecutionListener &listener, int frame) {
+void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader(ICON_FA_ARROWS_ALT " Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 		const int activeNode = sceneGraph.activeNode();
 		if (activeNode != -1) {
 			voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
-			voxelformat::SceneGraphTransform &transform = node.transform(frame);
+			const int frame = sceneMgr().currentFrame();
+			voxelformat::SceneGraphTransform &transform = node.transform(node.keyFrameForFrame(frame));
 			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
 			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform.matrix()), matrixTranslation, matrixRotation, matrixScale);
 			bool change = false;
@@ -97,10 +98,10 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener, int 
 	}
 }
 
-void PositionsPanel::update(const char *title, command::CommandExecutionListener &listener, int frame) {
+void PositionsPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		if (sceneMgr().editMode() == EditMode::Scene) {
-			sceneView(listener, frame);
+			sceneView(listener);
 		} else {
 			modelView(listener);
 		}

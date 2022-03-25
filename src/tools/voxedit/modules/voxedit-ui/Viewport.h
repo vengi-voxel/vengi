@@ -31,14 +31,14 @@ private:
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
-	void renderGizmo(video::Camera &camera, const float headerSize, const ImVec2 &size, int frame);
+	void renderGizmo(video::Camera &camera, const float headerSize, const ImVec2 &size);
 
 public:
 	Viewport(const core::String& id);
 	~Viewport();
 
 	bool isHovered() const;
-	void update(int frame);
+	void update();
 	bool init(ViewportController::RenderMode renderMode = ViewportController::RenderMode::Editor);
 	void shutdown();
 

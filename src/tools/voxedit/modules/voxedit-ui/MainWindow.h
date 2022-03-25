@@ -93,8 +93,8 @@ private:
 	StatusBar _statusBar;
 
 	void leftWidget();
-	void mainWidget(int frame);
-	void rightWidget(int frame);
+	void mainWidget();
+	void rightWidget();
 
 	void dialog(const char *icon, const char *text);
 

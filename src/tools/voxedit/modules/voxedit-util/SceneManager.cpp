@@ -20,6 +20,7 @@
 #include "math/Axis.h"
 #include "math/Random.h"
 #include "math/Ray.h"
+#include "video/Renderer.h"
 #include "video/ScopedBlendMode.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
@@ -972,7 +973,7 @@ void SceneManager::updateAABBMesh() {
 		} else {
 			_shapeBuilder.setColor(core::Color::Gray);
 		}
-		_shapeBuilder.aabb(toAABB(region, node.transform()));
+		_shapeBuilder.aabb(toAABB(region, node.transformForFrame(_currentFrame)));
 	}
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
@@ -985,13 +986,13 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 		if (_editMode == EditMode::Scene) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);
 		} else if (const int nodeId = activeNode()) {
-			const voxelformat::SceneGraphNode *n = sceneGraphNode(nodeId);
+			voxelformat::SceneGraphNode *n = sceneGraphNode(nodeId);
 			const voxel::Region& region = n->volume()->region();
-			_gridRenderer.render(camera, toAABB(region, n->transform()));
+			_gridRenderer.render(camera, toAABB(region, n->transformForFrame(_currentFrame)));
 		}
 	}
 	if (renderScene) {
-		_volumeRenderer.prepare(_sceneGraph, _hideInactive->boolVal(), _grayInactive->boolVal());
+		_volumeRenderer.prepare(_sceneGraph, _currentFrame, _hideInactive->boolVal(), _grayInactive->boolVal());
 		_volumeRenderer.render(camera, _renderShadow, false);
 		extractVolume();
 	}

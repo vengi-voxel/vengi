@@ -5,6 +5,7 @@
 #include "ModifierPanel.h"
 #include "IMGUIApp.h"
 #include "Util.h"
+#include "imgui.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"

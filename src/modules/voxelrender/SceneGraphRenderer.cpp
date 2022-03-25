@@ -84,7 +84,7 @@ void SceneGraphRenderer::clear() {
 	}
 }
 
-void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, bool hideInactive, bool grayInactive) {
+void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, int frame, bool hideInactive, bool grayInactive) {
 	// remove those volumes that are no longer part of the scene graph
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
 		if (!sceneGraph.hasNode(i)) {
@@ -100,7 +100,8 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, bool hideI
 			_renderer.extractRegion(node.id(), node.region());
 		}
 		if (_sceneMode) {
-			const voxelformat::SceneGraphTransform &transform = node.transform(0);
+			// TODO ik solver
+			const voxelformat::SceneGraphTransform &transform = node.transformForFrame(frame);
 			const glm::vec3 pivot = transform.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
 			_renderer.setModelMatrix(node.id(), transform.matrix(), pivot);
 		} else {

@@ -53,7 +53,7 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	return true;
 }
 
-void Viewport::update(int frame) {
+void Viewport::update() {
 	static const char *polygonModes[] = {"Points", "Lines", "Solid"};
 	static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
 
@@ -92,7 +92,7 @@ void Viewport::update(int frame) {
 				const glm::vec2 uvc(uv.z, uv.w);
 				const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 				ImGui::Image(texture->handle(), contentSize, uva, uvc);
-				renderGizmo(_controller.camera(), headerSize, contentSize, frame);
+				renderGizmo(_controller.camera(), headerSize, contentSize);
 
 				if (sceneMgr().isLoading()) {
 					ImGui::LoadingIndicatorCircle("Loading", 150, core::Color::White, core::Color::Gray);
@@ -212,7 +212,7 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	return true;
 }
 
-void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const ImVec2 &size, int frame) {
+void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const ImVec2 &size) {
 	if (!_showAxisVar->boolVal()) {
 		return;
 	}
@@ -253,16 +253,17 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	ImGuizmo::SetOrthographic(camera.mode() == video::CameraMode::Orthogonal);
 	const float step = (float)core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
 	const float snap[]{step, step, step};
-	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
+	const int keyFrame = node.keyFrameForFrame(sceneMgr().currentFrame());
+	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrame);
 	glm::mat4 transformMatrix = transform.matrix();
 	glm::mat4 viewMatrix = camera.viewMatrix();
 	const float *projMatrix = glm::value_ptr(camera.projectionMatrix());
 	ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), projMatrix, (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix), nullptr, _guizmoSnap->boolVal() ? snap: nullptr);
 	if (ImGuizmo::IsUsing()) {
 		_guizmoActivated = true;
-		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, frame, false);
+		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, keyFrame, false);
 	} else if (_guizmoActivated) {
-		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, frame, true);
+		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, keyFrame, true);
 		_guizmoActivated = false;
 	}
 

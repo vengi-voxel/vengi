@@ -36,7 +36,7 @@ public:
 	void translate(voxelformat::SceneGraphNode &node, const glm::ivec3 &v);
 	bool toMesh(voxelformat::SceneGraphNode &node, voxel::Mesh* mesh);
 	bool empty(voxelformat::SceneGraphNode &node);
-	void prepare(voxelformat::SceneGraph &sceneGraph, bool hideInactive = false, bool grayInactive = false);
+	void prepare(voxelformat::SceneGraph &sceneGraph, int frame = 0, bool hideInactive = false, bool grayInactive = false);
 	/**
 	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is false, you have to call @c update() manually!
 	 */
