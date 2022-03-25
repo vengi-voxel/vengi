@@ -216,6 +216,13 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	if (!_showAxisVar->boolVal()) {
 		return;
 	}
+
+	ImGuiIO &io = ImGui::GetIO();
+
+	if (io.MousePos.x == -FLT_MAX || io.MousePos.y == -FLT_MAX) {
+		return;
+	}
+
 	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 	if (activeNode == -1) {
