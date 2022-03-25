@@ -53,7 +53,11 @@ typedef struct {
     int (*mpg123_open_handle)(mpg123_handle *mh, void *iohandle);
     const char* (*mpg123_plain_strerror)(int errcode);
     void (*mpg123_rates)(const long **list, size_t *number);
+#if (MPG123_API_VERSION >= 45) /* api (but not abi) change as of mpg123-1.26.0 */
+    int (*mpg123_read)(mpg123_handle *mh, void *outmemory, size_t outmemsize, size_t *done );
+#else
     int (*mpg123_read)(mpg123_handle *mh, unsigned char *outmemory, size_t outmemsize, size_t *done );
+#endif
     int (*mpg123_replace_reader_handle)( mpg123_handle *mh, MIX_SSIZE_T (*r_read) (void *, void *, size_t), off_t (*r_lseek)(void *, off_t, int), void (*cleanup)(void*) );
     off_t (*mpg123_seek)( mpg123_handle *mh, off_t sampleoff, int whence );
     off_t (*mpg123_tell)( mpg123_handle *mh);
@@ -100,7 +104,11 @@ static int MPG123_Load(void)
         FUNCTION_LOADER(mpg123_open_handle, int (*)(mpg123_handle *mh, void *iohandle))
         FUNCTION_LOADER(mpg123_plain_strerror, const char* (*)(int errcode))
         FUNCTION_LOADER(mpg123_rates, void (*)(const long **list, size_t *number))
+#if (MPG123_API_VERSION >= 45) /* api (but not abi) change as of mpg123-1.26.0 */
+        FUNCTION_LOADER(mpg123_read, int (*)(mpg123_handle *mh, void *outmemory, size_t outmemsize, size_t *done ))
+#else
         FUNCTION_LOADER(mpg123_read, int (*)(mpg123_handle *mh, unsigned char *outmemory, size_t outmemsize, size_t *done ))
+#endif
         FUNCTION_LOADER(mpg123_replace_reader_handle, int (*)( mpg123_handle *mh, MIX_SSIZE_T (*r_read) (void *, void *, size_t), off_t (*r_lseek)(void *, off_t, int), void (*cleanup)(void*) ))
         FUNCTION_LOADER(mpg123_seek, off_t (*)( mpg123_handle *mh, off_t sampleoff, int whence ))
         FUNCTION_LOADER(mpg123_tell, off_t (*)( mpg123_handle *mh))
@@ -263,15 +271,15 @@ static void *MPG123_CreateFromRW(SDL_RWops *src, int freesrc)
         rwops_read, rwops_seek, rwops_cleanup
     );
     if (result != MPG123_OK) {
-        MPG123_Delete(music);
         Mix_SetError("mpg123_replace_reader_handle: %s", mpg_err(music->handle, result));
+        MPG123_Delete(music);
         return NULL;
     }
 
     result = mpg123.mpg123_format_none(music->handle);
     if (result != MPG123_OK) {
-        MPG123_Delete(music);
         Mix_SetError("mpg123_format_none: %s", mpg_err(music->handle, result));
+        MPG123_Delete(music);
         return NULL;
     }
 
@@ -290,15 +298,15 @@ static void *MPG123_CreateFromRW(SDL_RWops *src, int freesrc)
 
     result = mpg123.mpg123_open_handle(music->handle, &music->mp3file);
     if (result != MPG123_OK) {
-        MPG123_Delete(music);
         Mix_SetError("mpg123_open_handle: %s", mpg_err(music->handle, result));
+        MPG123_Delete(music);
         return NULL;
     }
 
     result = mpg123.mpg123_getformat(music->handle, &rate, &channels, &encoding);
     if (result != MPG123_OK) {
-        MPG123_Delete(music);
         Mix_SetError("mpg123_getformat: %s", mpg_err(music->handle, result));
+        MPG123_Delete(music);
         return NULL;
     }
 #ifdef DEBUG_MPG123
