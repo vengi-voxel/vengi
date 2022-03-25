@@ -151,6 +151,7 @@ private:
 	double _animationSpeed = 0.0;
 	int _currentAnimationLayer = 0;
 	double _nextFrameSwitch = 0.0;
+	int _currentFrame = 0;
 
 	int _initialized = 0;
 	int _size = 128;
@@ -254,6 +255,9 @@ public:
 
 	bool cameraRotate() const;
 	bool cameraPan() const;
+
+	int currentFrame() const;
+	void setCurrentFrame(int frame);
 
 	void setActiveCamera(video::Camera* camera);
 	video::Camera* activeCamera();
@@ -421,6 +425,14 @@ public:
 	bool nodeActivate(int nodeId);
 	void nodeForeachGroup(const std::function<void(int)>& f);
 };
+
+inline int SceneManager::currentFrame() const {
+	return _currentFrame;
+}
+
+inline void SceneManager::setCurrentFrame(int frame) {
+	_currentFrame = frame;
+}
 
 inline const core::String& SceneManager::filename() const {
 	return _lastFilename;
