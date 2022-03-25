@@ -55,6 +55,8 @@ public:
 	void setScale(float scale);
 	void setMatrix(const glm::mat4x4 &matrix);
 
+	void lerp(const SceneGraphTransform &dest, double deltaFrameSeconds);
+
 	const glm::mat4x4 &matrix() const;
 	const glm::vec3 &pivot() const;
 	const glm::vec3 &translation() const;
@@ -116,6 +118,8 @@ protected:
 	core::Buffer<int, 32> _children;
 	core::StringMap<core::String> _properties;
 
+	int _currentAnimKeyFrame = -1;
+
 	/**
 	 * @brief Called in emplace() if a parent id is given
 	 */
@@ -135,6 +139,10 @@ public:
 
 	const core::DynamicArray<SceneGraphKeyFrame> &keyFrames() const;
 	void setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame>&);
+	/**
+	 * @brief Get the index of the keyframe for the given frame
+	 */
+	int keyFrameForFrame(int frame) const;
 
 	int id() const;
 	void setId(int id);
@@ -148,6 +156,13 @@ public:
 	void setTransform(uint8_t frameIdx, const SceneGraphTransform &transform, bool updateMatrix);
 	SceneGraphTransform &transform(uint8_t frameIdx = 0);
 	const SceneGraphTransform &transform(uint8_t frameIdx = 0) const;
+
+	/**
+	 * @brief Interpolates the transforms for the given frame. It searches the keyframe before and after
+	 * the given input frame and interpolates according to the given delta frames between the particular
+	 * keyframes.
+	 */
+	SceneGraphTransform transformForFrame(int frame);
 
 	SceneGraphKeyFrame &keyFrame(uint8_t frameIdx);
 

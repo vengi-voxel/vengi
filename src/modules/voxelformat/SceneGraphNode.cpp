@@ -6,9 +6,12 @@
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "voxel/RawVolume.h"
+#include "util/Easing.h"
 
+#include <glm/ext/quaternion_common.hpp>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/compatibility.hpp>
 #include <glm/gtx/transform.hpp>
 
 namespace voxelformat {
@@ -46,6 +49,14 @@ void SceneGraphTransform::setScale(float scale) {
 void SceneGraphTransform::setMatrix(const glm::mat4x4 &matrix) {
 	_dirty |= DIRTY_MATRIX;
 	_mat = matrix;
+}
+
+void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFrameSeconds) {
+	const float factor = glm::clamp((float)(deltaFrameSeconds), 0.0f, 1.0f);
+	setTranslation(glm::mix(_translation, dest._translation, factor));
+	setOrientation(glm::slerp(_orientation, dest._orientation, factor));
+	setScale(glm::mix(_scale, dest._scale, factor));
+	update();
 }
 
 const glm::mat4x4 &SceneGraphTransform::matrix() const {
@@ -233,6 +244,83 @@ const core::DynamicArray<SceneGraphKeyFrame> &SceneGraphNode::keyFrames() const 
 
 void SceneGraphNode::setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame> &kf) {
 	_keyFrames = kf;
+}
+
+int SceneGraphNode::keyFrameForFrame(int frame) const {
+	for (size_t i = 0; i < _keyFrames.size(); ++i) {
+		const SceneGraphKeyFrame &kf = _keyFrames[i];
+		if (kf.frame > frame) {
+			if (i == 0) {
+				break;
+			}
+			return (int)i - 1;
+		}
+	}
+	return 0;
+}
+
+SceneGraphTransform SceneGraphNode::transformForFrame(int current) {
+	const SceneGraphTransform *source = nullptr;
+	const SceneGraphTransform *target = nullptr;
+	int start = 0;
+	int end = 0;
+	InterpolationType interpolationType = InterpolationType::Linear;
+
+	for (const SceneGraphKeyFrame &kf : _keyFrames) {
+		if (kf.frame <= current) {
+			source = &kf.transform;
+			start = kf.frame;
+			interpolationType = kf.interpolation;
+		}
+		if (kf.frame > current && !target) {
+			target = &kf.transform;
+			end = kf.frame;
+		}
+		if (source && target) {
+			break;
+		}
+	}
+
+	if (source == nullptr || target == nullptr) {
+		return transform(0);
+	}
+	if (start != _currentAnimKeyFrame) {
+		_currentAnimKeyFrame = start;
+	}
+
+	double deltaFrameSeconds;
+	switch (interpolationType) {
+	case InterpolationType::Instant:
+		deltaFrameSeconds = util::easing::full((float)current, (double)start, (double)end);
+		break;
+	case InterpolationType::Linear:
+		deltaFrameSeconds = util::easing::linear((float)current, (double)start, (double)end);
+		break;
+	case InterpolationType::QuadEaseIn:
+		deltaFrameSeconds = util::easing::quadIn((float)current, (double)start, (double)end);
+		break;
+	case InterpolationType::QuadEaseOut:
+		deltaFrameSeconds = util::easing::quadOut((float)current, (double)start, (double)end);
+		break;
+	case InterpolationType::QuadEaseInOut:
+		deltaFrameSeconds = util::easing::quadInOut((float)current, (double)start, (double)end);
+		break;
+	case InterpolationType::CubicEaseIn:
+		deltaFrameSeconds = util::easing::cubicIn((float)current, (double)start, (double)end);
+		break;
+	case InterpolationType::CubicEaseOut:
+		deltaFrameSeconds = util::easing::cubicOut((float)current, (double)start, (double)end);
+		break;
+	case InterpolationType::CubicEaseInOut:
+		deltaFrameSeconds = util::easing::cubicInOut((float)current, (double)start, (double)end);
+		break;
+	case InterpolationType::Max:
+		deltaFrameSeconds = 0.0;
+		break;
+	}
+	voxelformat::SceneGraphTransform transform = *source;
+	transform.lerp(*target, deltaFrameSeconds);
+	return transform;
 }
 
 } // namespace voxelformat
