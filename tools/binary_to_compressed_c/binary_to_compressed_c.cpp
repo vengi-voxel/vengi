@@ -365,7 +365,6 @@ static int stb_compress_inner(stb_uchar *input, stb_uint length)
 
     len = stb_compress_chunk(input, input, input+length, length, &literals, chash, stb__hashsize-1);
     assert(len == length);
-    (void)len;
 
     outliterals(input+length - literals, literals);
 
