@@ -2,6 +2,7 @@ set(SRCS
 	EMailValidator.h EMailValidator.cpp
 	BufferUtil.cpp BufferUtil.h
 	Console.h Console.cpp
+	Easing.h
 	KeybindingParser.h KeybindingParser.cpp
 	KeybindingHandler.h KeybindingHandler.cpp
 	IncludeUtil.h IncludeUtil.cpp
