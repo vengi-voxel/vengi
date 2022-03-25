@@ -86,7 +86,7 @@ struct MementoState {
 	MementoData data;
 	int parentId;
 	int nodeId;
-	int frameId;
+	int keyFrame;
 	core::String name;
 	glm::mat4x4 transformMatrix;
 	/**
@@ -96,18 +96,18 @@ struct MementoState {
 	voxel::Region region;
 
 	MementoState() :
-			type(MementoType::Max), parentId(0), nodeId(0), frameId(-1) {
+			type(MementoType::Max), parentId(0), nodeId(0), keyFrame(-1) {
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, const core::String &_name,
 				 const voxel::Region &_region, const glm::mat4x4 &_transformMatrix, int _frameId = -1)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), frameId(_frameId), name(_name), transformMatrix(_transformMatrix),
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(_frameId), name(_name), transformMatrix(_transformMatrix),
 		  region(_region) {
 	}
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, core::String &&_name,
 				 voxel::Region &&_region)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), frameId(-1), name(_name), region(_region) {
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(-1), name(_name), region(_region) {
 	}
 
 	inline bool valid() const {

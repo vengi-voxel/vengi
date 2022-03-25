@@ -141,7 +141,7 @@ void MementoHandler::print() const {
 		const glm::ivec3& mins = state.region.getLowerCorner();
 		const glm::ivec3& maxs = state.region.getUpperCorner();
 		Log::info("%4i: (%s) node id: %i (parent: %i) (frame %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)] (size: %ib)",
-				i++, states[(int)state.type], state.nodeId, state.parentId, state.frameId, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
+				i++, states[(int)state.type], state.nodeId, state.parentId, state.keyFrame, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
 						mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, (int)state.data.size());
 	}
 }
@@ -170,7 +170,7 @@ MementoState MementoHandler::undo() {
 			if ((prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) && prevS.nodeId == s.nodeId) {
 				core_assert(prevS.hasVolumeData());
 				// use the region from the current state - but the volume from the previous state of this node
-				return MementoState{s.type, prevS.data, s.parentId, s.nodeId, s.name, s.region, s.transformMatrix, s.frameId};
+				return MementoState{s.type, prevS.data, s.parentId, s.nodeId, s.name, s.region, s.transformMatrix, s.keyFrame};
 			}
 		}
 		core_assert(_states[0].type == MementoType::Modification);
@@ -180,8 +180,8 @@ MementoState MementoHandler::undo() {
 		for (int i = _statePosition; i >= 0; --i) {
 			MementoState& prevS = _states[i];
 			if ((prevS.type == MementoType::SceneNodeTransform || prevS.type == MementoType::SceneNodeAdded || prevS.type == MementoType::Modification) &&
-				prevS.nodeId == s.nodeId && prevS.frameId == s.frameId) {
-				return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, prevS.transformMatrix, s.frameId};
+				prevS.nodeId == s.nodeId && prevS.keyFrame == s.keyFrame) {
+				return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, prevS.transformMatrix, s.keyFrame};
 			}
 		}
 		return _states[0];

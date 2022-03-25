@@ -473,7 +473,7 @@ bool SceneManager::undo() {
 		return nodeMove(s.nodeId, s.parentId);
 	} else if (s.type == MementoType::SceneNodeTransform) {
 		Log::debug("Memento: Undo transform of node %i", s.nodeId);
-		return nodeUpdateTransform(s.nodeId, s.transformMatrix, s.frameId, false);
+		return nodeUpdateTransform(s.nodeId, s.transformMatrix, s.keyFrame, false);
 	} else if (s.type == MementoType::SceneNodeRemoved) {
 		voxel::RawVolume* v = MementoData::toVolume(s.data);
 		voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
@@ -527,7 +527,7 @@ bool SceneManager::redo() {
 		return nodeMove(s.nodeId, s.parentId);
 	} else if (s.type == MementoType::SceneNodeTransform) {
 		Log::debug("Memento: Undo transform of node %i", s.nodeId);
-		return nodeUpdateTransform(s.nodeId, s.transformMatrix, s.frameId, false);
+		return nodeUpdateTransform(s.nodeId, s.transformMatrix, s.keyFrame, false);
 	} else if (s.type == MementoType::SceneNodeRemoved) {
 		Log::debug("Memento: Redo remove of node %i (%s) from parent %i", s.nodeId, s.name.c_str(), s.parentId);
 		return nodeRemove(s.nodeId, true);
@@ -2268,14 +2268,14 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, int frame, bool memento) {
+bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, int keyFrame, bool memento) {
 	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-		return nodeUpdateTransform(*node, matrix, frame, memento);
+		return nodeUpdateTransform(*node, matrix, keyFrame, memento);
 	}
 	return false;
 }
 
-bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, int frame, bool memento) {
+bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, int keyFrame, bool memento) {
 	glm::vec3 translation;
 	glm::quat orientation;
 	glm::vec3 scale;
@@ -2283,14 +2283,14 @@ bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const 
 	glm::vec4 perspective;
 	glm::decompose(matrix, scale, orientation, translation, skew, perspective);
 
-	voxelformat::SceneGraphTransform &transform = node.transform(frame);
+	voxelformat::SceneGraphTransform &transform = node.transform(keyFrame);
 	transform.setTranslation(translation);
 	transform.setOrientation(orientation);
 	//transform.setScale(glm::length(scale));
 	transform.update();
 
 	if (memento) {
-		_mementoHandler.markNodeTransform(node, frame);
+		_mementoHandler.markNodeTransform(node, keyFrame);
 	}
 
 	updateAABBMesh();
