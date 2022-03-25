@@ -82,8 +82,9 @@ enum class InterpolationType {
 };
 
 struct SceneGraphKeyFrame {
-	uint32_t frame = 0;
+	int frame = 0;
 	InterpolationType interpolation = InterpolationType::Linear;
+	bool longRotation = false;
 	SceneGraphTransform transform;
 };
 

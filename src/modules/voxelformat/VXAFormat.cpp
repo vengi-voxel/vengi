@@ -57,7 +57,7 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		} else {
 			keyFrame.interpolation = interpolationTypes[interpolation];
 		}
-		stream.readBool(); // rotation ??
+		keyFrame.longRotation = stream.readBool();
 
 		glm::vec3 localPosition{0.0f};
 		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};

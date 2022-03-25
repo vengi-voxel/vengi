@@ -117,6 +117,12 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraphNode &node, 
 	return true;
 }
 
+static const InterpolationType interpolationTypes[]{
+	InterpolationType::Instant,		 InterpolationType::Linear,			InterpolationType::QuadEaseIn,
+	InterpolationType::QuadEaseOut,	 InterpolationType::QuadEaseInOut,	InterpolationType::CubicEaseIn,
+	InterpolationType::CubicEaseOut, InterpolationType::CubicEaseInOut,
+};
+
 bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, int parent) {
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	char nodeId[1024];
@@ -133,19 +139,17 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	wrap(stream.readInt32(keyFrameCount))
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
 		SceneGraphKeyFrame& keyFrame = node.keyFrame(i);
-		wrap(stream.readUInt32(keyFrame.frame)) // frame index
+		wrap(stream.readInt32(keyFrame.frame)) // frame index
 		int32_t interpolation;
-		// instant = 0
-		// linear = 1
-		// quad ease in = 2
-		// quad ease out = 3
-		// quad ease in out = 4
-		// cubic ease in = 5
-		// cubic ease out = 6
-		// cubic ease in out = 7
 		wrap(stream.readInt32(interpolation))
+		if (interpolation < 0 || interpolation >= lengthof(interpolationTypes)) {
+			keyFrame.interpolation = InterpolationType::Linear;
+			Log::warn("Could not find a supported easing type for %i", interpolation);
+		} else {
+			keyFrame.interpolation = interpolationTypes[interpolation];
+		}
 		if (version > 1) {
-			stream.readBool(); // rotation ??
+			keyFrame.longRotation = stream.readBool();
 		}
 		keyFrame.transform.setPivot(glm::vec3(0.5f));
 		glm::vec3 localPosition{0.0f};
