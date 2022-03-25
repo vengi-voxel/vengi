@@ -28,6 +28,7 @@
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
+#include "../../SDL_hints_c.h"
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
@@ -170,6 +171,13 @@ WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
     data->expected_resize = SDL_FALSE;
 }
 
+static void SDLCALL
+WIN_MouseRelativeModeCenterChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_WindowData *data = (SDL_WindowData *)userdata;
+    data->mouse_relative_mode_center = SDL_GetStringBoolean(hint, SDL_TRUE);
+}
+
 static int
 SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool created)
 {
@@ -188,10 +196,12 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
     data->hinstance = (HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
     data->created = created;
     data->high_surrogate = 0;
-    data->mouse_button_flags = 0;
+    data->mouse_button_flags = (WPARAM)-1;
     data->last_pointer_update = (LPARAM)-1;
     data->videodata = videodata;
     data->initializing = SDL_TRUE;
+
+    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, WIN_MouseRelativeModeCenterChanged, data);
 
     window->driverdata = data;
 
@@ -297,7 +307,39 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
     return 0;
 }
 
+static void CleanupWindowData(_THIS, SDL_Window * window)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
+    if (data) {
+        SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, WIN_MouseRelativeModeCenterChanged, data);
+
+        if (data->keyboard_hook) {
+            UnhookWindowsHookEx(data->keyboard_hook);
+        }
+        ReleaseDC(data->hwnd, data->hdc);
+        RemoveProp(data->hwnd, TEXT("SDL_WindowData"));
+        if (data->created) {
+            DestroyWindow(data->hwnd);
+            if (data->parent) {
+                DestroyWindow(data->parent);
+            }
+        } else {
+            /* Restore any original event handler... */
+            if (data->wndproc != NULL) {
+#ifdef GWLP_WNDPROC
+                SetWindowLongPtr(data->hwnd, GWLP_WNDPROC,
+                                 (LONG_PTR) data->wndproc);
+#else
+                SetWindowLong(data->hwnd, GWL_WNDPROC,
+                              (LONG_PTR) data->wndproc);
+#endif
+            }
+        }
+        SDL_free(data);
+    }
+    window->driverdata = NULL;
+}
 
 int
 WIN_CreateWindow(_THIS, SDL_Window * window)
@@ -422,6 +464,9 @@ WIN_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
                     }
                 }
             }
+        } else if (window->flags & SDL_WINDOW_OPENGL) {
+            /* Try to set up the pixel format, if it hasn't been set by the application */
+            WIN_GL_SetupWindow(_this, window);
         }
     }
 #endif
@@ -855,15 +900,6 @@ void
 WIN_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     WIN_UpdateClipCursor(window);
-
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        UINT flags = SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE;
-
-        if (!(window->flags & SDL_WINDOW_SHOWN)) {
-            flags |= SWP_NOACTIVATE;
-        }
-        WIN_SetWindowPositionInternal(_this, window, flags);
-    }
 }
 
 void
@@ -879,34 +915,7 @@ WIN_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 void
 WIN_DestroyWindow(_THIS, SDL_Window * window)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-
-    if (data) {
-        if (data->keyboard_hook) {
-            UnhookWindowsHookEx(data->keyboard_hook);
-        }
-        ReleaseDC(data->hwnd, data->hdc);
-        RemoveProp(data->hwnd, TEXT("SDL_WindowData"));
-        if (data->created) {
-            DestroyWindow(data->hwnd);
-            if (data->parent) {
-                DestroyWindow(data->parent);
-            }
-        } else {
-            /* Restore any original event handler... */
-            if (data->wndproc != NULL) {
-#ifdef GWLP_WNDPROC
-                SetWindowLongPtr(data->hwnd, GWLP_WNDPROC,
-                                 (LONG_PTR) data->wndproc);
-#else
-                SetWindowLong(data->hwnd, GWL_WNDPROC,
-                              (LONG_PTR) data->wndproc);
-#endif
-            }
-        }
-        SDL_free(data);
-    }
-    window->driverdata = NULL;
+    CleanupWindowData(_this, window);
 }
 
 SDL_bool
@@ -1038,7 +1047,7 @@ WIN_UpdateClipCursor(SDL_Window *window)
     if ((mouse->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED) ||
          (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)) &&
         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
-        if (mouse->relative_mode && !mouse->relative_mode_warp) {
+        if (mouse->relative_mode && !mouse->relative_mode_warp && data->mouse_relative_mode_center) {
             if (GetWindowRect(data->hwnd, &rect)) {
                 LONG cx, cy;
 

@@ -261,6 +261,7 @@ SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * fo
                                       SDL_TEXTUREACCESS_STREAMING,
                                       window->w, window->h);
     if (!data->texture) {
+        /* codechecker_false_positive [Malloc] Static analyzer doesn't realize allocated `data` is saved to SDL_WINDOWTEXTUREDATA and not leaked here. */
         return -1;
     }
 
@@ -1184,6 +1185,7 @@ SDL_GetWindowDisplayMode(SDL_Window * window, SDL_DisplayMode * mode)
     } else if (!SDL_GetClosestDisplayModeForDisplay(SDL_GetDisplayForWindow(window),
                                              &fullscreen_mode,
                                              &fullscreen_mode)) {
+        SDL_zerop(mode);
         return SDL_SetError("Couldn't find display mode match");
     }
 
@@ -1676,6 +1678,7 @@ SDL_Window *
 SDL_CreateWindowFrom(const void *data)
 {
     SDL_Window *window;
+    Uint32 flags = SDL_WINDOW_FOREIGN;
 
     if (!_this) {
         SDL_UninitializedVideo();
@@ -1685,6 +1688,37 @@ SDL_CreateWindowFrom(const void *data)
         SDL_Unsupported();
         return NULL;
     }
+
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, SDL_FALSE)) {
+        if (!_this->GL_CreateContext) {
+            SDL_SetError("OpenGL support is either not configured in SDL "
+                         "or not available in current SDL video driver "
+                         "(%s) or platform", _this->name);
+            return NULL;
+        }
+        if (SDL_GL_LoadLibrary(NULL) < 0) {
+            return NULL;
+        }
+        flags |= SDL_WINDOW_OPENGL;
+    }
+
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN, SDL_FALSE)) {
+        if (!_this->Vulkan_CreateSurface) {
+            SDL_SetError("Vulkan support is either not configured in SDL "
+                         "or not available in current SDL video driver "
+                         "(%s) or platform", _this->name);
+            return NULL;
+        }
+        if (flags & SDL_WINDOW_OPENGL) {
+            SDL_SetError("Vulkan and OpenGL not supported on same window");
+            return NULL;
+        }
+        if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
+            return NULL;
+        }
+        flags |= SDL_WINDOW_VULKAN;
+    }
+
     window = (SDL_Window *)SDL_calloc(1, sizeof(*window));
     if (!window) {
         SDL_OutOfMemory();
@@ -1692,7 +1726,7 @@ SDL_CreateWindowFrom(const void *data)
     }
     window->magic = &_this->window_magic;
     window->id = _this->next_object_id++;
-    window->flags = SDL_WINDOW_FOREIGN;
+    window->flags = flags;
     window->last_fullscreen_flags = window->flags;
     window->is_destroying = SDL_FALSE;
     window->opacity = 1.0f;
@@ -1738,7 +1772,9 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
     }
 
     /* Restore video mode, etc. */
-    SDL_HideWindow(window);
+    if (!(window->flags & SDL_WINDOW_FOREIGN)) {
+        SDL_HideWindow(window);
+    }
 
     /* Tear down the old native window */
     if (window->surface) {
@@ -2473,6 +2509,11 @@ SDL_CreateWindowFramebuffer(SDL_Window * window)
             attempt_texture_framebuffer = SDL_FALSE;
         }
         #endif
+        #if defined(__EMSCRIPTEN__)
+        else {
+            attempt_texture_framebuffer = SDL_FALSE;
+        }
+        #endif
 
         if (attempt_texture_framebuffer) {
             if (SDL_CreateWindowTexture(_this, window, &format, &pixels, &pitch) == -1) {
@@ -3067,7 +3108,9 @@ SDL_DestroyWindow(SDL_Window * window)
     window->is_destroying = SDL_TRUE;
 
     /* Restore video mode, etc. */
-    SDL_HideWindow(window);
+    if (!(window->flags & SDL_WINDOW_FOREIGN)) {
+        SDL_HideWindow(window);
+    }
 
     /* Make sure this window no longer has focus */
     if (SDL_GetKeyboardFocus() == window) {

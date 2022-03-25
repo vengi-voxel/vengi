@@ -374,7 +374,7 @@ WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
     if (!(keyState & 0x8000)) {
         WIN_CheckWParamMouseButton(SDL_FALSE, mouseFlags, swapButtons, data, SDL_BUTTON_X2, 0);
     }
-    data->mouse_button_flags = 0;
+    data->mouse_button_flags = (WPARAM)-1;
 }
 
 static void
@@ -1167,9 +1167,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SDL_SendWindowEvent(data->window,
                     SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 break;
-            default:
+            case SIZE_RESTORED:
                 SDL_SendWindowEvent(data->window,
                     SDL_WINDOWEVENT_RESTORED, 0, 0);
+                break;
+            default:
                 break;
             }
         }

@@ -886,17 +886,18 @@ SDL_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 h
         result = joystick->driver->Rumble(joystick, low_frequency_rumble, high_frequency_rumble);
     }
 
-    /* Save the rumble value regardless of success, so we don't spam the driver */
-    joystick->low_frequency_rumble = low_frequency_rumble;
-    joystick->high_frequency_rumble = high_frequency_rumble;
+    if (result == 0) {
+        joystick->low_frequency_rumble = low_frequency_rumble;
+        joystick->high_frequency_rumble = high_frequency_rumble;
 
-    if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
-        joystick->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-        if (!joystick->rumble_expiration) {
-            joystick->rumble_expiration = 1;
+        if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
+            joystick->rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
+            if (!joystick->rumble_expiration) {
+                joystick->rumble_expiration = 1;
+            }
+        } else {
+            joystick->rumble_expiration = 0;
         }
-    } else {
-        joystick->rumble_expiration = 0;
     }
     SDL_UnlockJoysticks();
 
@@ -920,17 +921,18 @@ SDL_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 ri
         result = joystick->driver->RumbleTriggers(joystick, left_rumble, right_rumble);
     }
 
-    /* Save the rumble value regardless of success, so we don't spam the driver */
-    joystick->left_trigger_rumble = left_rumble;
-    joystick->right_trigger_rumble = right_rumble;
+    if (result == 0) {
+        joystick->left_trigger_rumble = left_rumble;
+        joystick->right_trigger_rumble = right_rumble;
 
-    if ((left_rumble || right_rumble) && duration_ms) {
-        joystick->trigger_rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
-        if (!joystick->trigger_rumble_expiration) {
-            joystick->trigger_rumble_expiration = 1;
+        if ((left_rumble || right_rumble) && duration_ms) {
+            joystick->trigger_rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
+            if (!joystick->trigger_rumble_expiration) {
+                joystick->trigger_rumble_expiration = 1;
+            }
+        } else {
+            joystick->trigger_rumble_expiration = 0;
         }
-    } else {
-        joystick->trigger_rumble_expiration = 0;
     }
     SDL_UnlockJoysticks();
 
@@ -1588,10 +1590,12 @@ SDL_JoystickUpdate(void)
 
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->attached) {
-            /* This should always be true, but seeing a crash in the wild...? */
-            if (joystick->driver) {
-                joystick->driver->Update(joystick);
+            /* This driver should always be != NULL, but seeing a crash in the wild...? */
+            if (!joystick->driver) {
+                continue;  /* nothing we can do, and other things use joystick->driver below here. */
             }
+
+            joystick->driver->Update(joystick);
 
             if (joystick->delayed_guide_button) {
                 SDL_GameControllerHandleDelayedGuideButton(joystick);
@@ -2156,7 +2160,10 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x044f, 0xb65d),    /* Thrustmaster Wheel FFB */
         MAKE_VIDPID(0x044f, 0xb66d),    /* Thrustmaster Wheel FFB */
         MAKE_VIDPID(0x044f, 0xb677),    /* Thrustmaster T150 */
-        MAKE_VIDPID(0x044f, 0xb66e),    /* Thrustmaster T300RS */
+        MAKE_VIDPID(0x044f, 0xb696),    /* Thrustmaster T248 */
+        MAKE_VIDPID(0x044f, 0xb66e),    /* Thrustmaster T300RS (normal mode) */
+        MAKE_VIDPID(0x044f, 0xb66f),    /* Thrustmaster T300RS (advanced mode) */
+        MAKE_VIDPID(0x044f, 0xb66d),    /* Thrustmaster T300RS (PS4 mode) */
         MAKE_VIDPID(0x044f, 0xb65e),    /* Thrustmaster T500RS */
         MAKE_VIDPID(0x044f, 0xb664),    /* Thrustmaster TX (initial mode) */
         MAKE_VIDPID(0x044f, 0xb669),    /* Thrustmaster TX (active mode) */
@@ -2731,9 +2738,7 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     SDL_JoystickTouchpadInfo *touchpad_info;
     SDL_JoystickTouchpadFingerInfo *finger_info;
     int posted;
-#if !SDL_EVENTS_DISABLED
     Uint32 event_type;
-#endif
 
     if (touchpad < 0 || touchpad >= joystick->ntouchpads) {
         return 0;
@@ -2777,7 +2782,6 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
         }
     }
 
-#if !SDL_EVENTS_DISABLED
     if (state == finger_info->state) {
         event_type = SDL_CONTROLLERTOUCHPADMOTION;
     } else if (state) {
@@ -2785,7 +2789,6 @@ int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick, int touchpad, int finger
     } else {
         event_type = SDL_CONTROLLERTOUCHPADUP;
     }
-#endif
 
     /* We ignore events if we don't have keyboard focus, except for touch release */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {

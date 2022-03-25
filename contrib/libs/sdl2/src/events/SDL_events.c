@@ -35,7 +35,7 @@
 #include "SDL_syswm.h"
 
 #undef SDL_PRIs64
-#ifdef __WIN32__
+#if defined(__WIN32__) && !defined(__CYGWIN__)
 #define SDL_PRIs64  "I64d"
 #else
 #define SDL_PRIs64  "lld"
@@ -684,7 +684,7 @@ SDL_PeepEventsInternal(SDL_Event * events, int numevents, SDL_eventaction action
     /* Don't look after we've quit */
     if (!SDL_AtomicGet(&SDL_EventQ.active)) {
         /* We get a few spurious events at shutdown, so don't warn then */
-        if (action != SDL_ADDEVENT) {
+        if (action == SDL_GETEVENT) {
             SDL_SetError("The event system has been shut down");
         }
         return (-1);

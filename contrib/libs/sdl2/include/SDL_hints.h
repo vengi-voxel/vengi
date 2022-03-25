@@ -934,6 +934,22 @@ extern "C" {
 #define SDL_HINT_MOUSE_NORMAL_SPEED_SCALE    "SDL_MOUSE_NORMAL_SPEED_SCALE"
 
 /**
+ *  \brief  A variable controlling whether relative mouse mode constrains the mouse to the center of the window
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Relative mouse mode constrains the mouse to the window
+ *    "1"       - Relative mouse mode constrains the mouse to the center of the window
+ *
+ *  Constraining to the center of the window works better for FPS games and when the
+ *  application is running over RDP. Constraining to the whole window works better
+ *  for 2D games and increases the chance that the mouse will be in the correct
+ *  position when using high DPI mice.
+ *
+ *  By default SDL will constrain the mouse to the center of the window
+ */
+#define SDL_HINT_MOUSE_RELATIVE_MODE_CENTER    "SDL_MOUSE_RELATIVE_MODE_CENTER"
+
+/**
  *  \brief  A variable controlling whether relative mouse mode is implemented using mouse warping
  *
  *  This variable can be set to the following values:
@@ -968,6 +984,19 @@ extern "C" {
  *    "1"       - Mouse events will generate touch events (default for mobile platforms, such as Android and iOS)
  */
 #define SDL_HINT_MOUSE_TOUCH_EVENTS    "SDL_MOUSE_TOUCH_EVENTS"
+
+/**
+ *  \brief  A variable controlling whether the mouse is captured while mouse buttons are pressed
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - The mouse is not captured while mouse buttons are pressed
+ *    "1"       - The mouse is captured while mouse buttons are pressed
+ *
+ *  By default the mouse is captured while mouse buttons are pressed so if the mouse is dragged
+ *  outside the window, the application continues to receive mouse events until the button is
+ *  released.
+ */
+#define SDL_HINT_MOUSE_AUTO_CAPTURE    "SDL_MOUSE_AUTO_CAPTURE"
 
 /**
  *  \brief Tell SDL not to catch the SIGINT or SIGTERM signals.
@@ -1454,6 +1483,28 @@ extern "C" {
 #define SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT    "SDL_VIDEO_WINDOW_SHARE_PIXEL_FORMAT"
 
 /**
+ *  \brief  When calling SDL_CreateWindowFrom(), make the window compatible with OpenGL.
+ *
+ * This variable can be set to the following values:
+ * "0" - Don't add any graphics flags to the SDL_WindowFlags
+ * "1" - Add SDL_WINDOW_OPENGL to the SDL_WindowFlags
+ *
+ * By default SDL will not make the foreign window compatible with OpenGL.
+ */
+#define SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL "SDL_VIDEO_FOREIGN_WINDOW_OPENGL"
+
+/**
+ *  \brief  When calling SDL_CreateWindowFrom(), make the window compatible with Vulkan.
+ *
+ * This variable can be set to the following values:
+ * "0" - Don't add any graphics flags to the SDL_WindowFlags
+ * "1" - Add SDL_WINDOW_VULKAN to the SDL_WindowFlags
+ *
+ * By default SDL will not make the foreign window compatible with Vulkan.
+ */
+#define SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN "SDL_VIDEO_FOREIGN_WINDOW_VULKAN"
+
+/**
 *  \brief  A variable specifying which shader compiler to preload when using the Chrome ANGLE binaries
 *
 *  SDL has EGL and OpenGL ES2 support on Windows via the ANGLE project. It
@@ -1891,6 +1942,30 @@ extern "C" {
  *  always ignored.
  */
 #define SDL_HINT_X11_WINDOW_TYPE "SDL_X11_WINDOW_TYPE"
+
+/**
+ *  \brief  A variable that decides whether to send SDL_QUIT when closing the final window.
+ *
+ *  By default, SDL sends an SDL_QUIT event when there is only one window
+ *  and it receives an SDL_WINDOWEVENT_CLOSE event, under the assumption most
+ *  apps would also take the loss of this window as a signal to terminate the
+ *  program.
+ *
+ *  However, it's not unreasonable in some cases to have the program continue
+ *  to live on, perhaps to create new windows later.
+ *
+ *  Changing this hint to "0" will cause SDL to not send an SDL_QUIT event
+ *  when the final window is requesting to close. Note that in this case,
+ *  there are still other legitimate reasons one might get an SDL_QUIT
+ *  event: choosing "Quit" from the macOS menu bar, sending a SIGINT (ctrl-c)
+ *  on Unix, etc.
+ *
+ *  The default value is "1".  This hint can be changed at any time.
+ *
+ *  This hint is available since SDL 2.0.22. Before then, you always get
+ *  an SDL_QUIT event when closing the final window.
+ */
+#define SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE "SDL_QUIT_ON_LAST_WINDOW_CLOSE"
 
 
 /**

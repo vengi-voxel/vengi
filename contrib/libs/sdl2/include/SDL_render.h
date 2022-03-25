@@ -262,6 +262,17 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateSoftwareRenderer(SDL_Surface * 
 extern DECLSPEC SDL_Renderer * SDLCALL SDL_GetRenderer(SDL_Window * window);
 
 /**
+ * Get the window associated with a renderer.
+ *
+ * \param renderer the renderer to query
+ * \returns the window on success or NULL on failure; call SDL_GetError() for
+ *          more information.
+ *
+ * \since This function is available since SDL 2.0.22.
+ */
+extern DECLSPEC SDL_Window * SDLCALL SDL_RenderGetWindow(SDL_Renderer *renderer);
+
+/**
  * Get information about a rendering context.
  *
  * \param renderer the rendering context
@@ -1662,7 +1673,8 @@ extern DECLSPEC int SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
  * Read pixels from the current rendering target to an array of pixels.
  *
  * **WARNING**: This is a very slow operation, and should not be used
- * frequently.
+ * frequently. If you're using this on the main rendering target, it should be
+ * called after rendering and before SDL_RenderPresent().
  *
  * `pitch` specifies the number of bytes between rows in the destination
  * `pixels` data. This allows you to write to a subrectangle or have padded

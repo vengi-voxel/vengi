@@ -530,8 +530,7 @@ macro(CheckX11)
             #include <X11/extensions/XInput2.h>
             int event_type = XI_TouchBegin;
             XITouchClassInfo *t;
-            Status XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f)
-            {
+            Status XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f) {
               return (Status)0;
             }
             int main(int argc, char **argv) { return 0; }" HAVE_XINPUT2_MULTITOUCH)
@@ -633,7 +632,7 @@ endmacro()
 # - HAVE_SDL_LOADSO opt
 macro(CheckWayland)
   if(SDL_WAYLAND)
-    pkg_check_modules(WAYLAND wayland-client wayland-egl wayland-cursor egl "xkbcommon>=0.5.0")
+    pkg_check_modules(WAYLAND "wayland-client>=1.18" wayland-egl wayland-cursor egl "xkbcommon>=0.5.0")
 
     if(WAYLAND_FOUND)
       find_program(WAYLAND_SCANNER NAMES wayland-scanner REQUIRED)
@@ -793,7 +792,9 @@ macro(CheckVivante)
       set(SDL_VIDEO_DRIVER_VIVANTE 1)
       if(HAVE_VIVANTE_VDK)
         set(SDL_VIDEO_DRIVER_VIVANTE_VDK 1)
-        list(APPEND EXTRA_LIBS VDK VIVANTE)
+        find_library(VIVANTE_LIBRARY REQUIRED NAMES VIVANTE vivante drm_vivante)
+        find_library(VIVANTE_VDK_LIBRARY VDK REQUIRED)
+        list(APPEND EXTRA_LIBS ${VIVANTE_LIBRARY} ${VIVANTE_VDK_LIBRARY})
       else()
         set(SDL_CFLAGS "${SDL_CFLAGS} -DLINUX -DEGL_API_FB")
         list(APPEND EXTRA_LIBS EGL)
