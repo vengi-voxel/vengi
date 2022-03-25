@@ -69,8 +69,21 @@ public:
 	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &size) const;
 };
 
+enum class InterpolationType {
+	Instant = 0,
+	Linear = 1,
+	QuadEaseIn = 2,
+	QuadEaseOut = 3,
+	QuadEaseInOut = 4,
+	CubicEaseIn = 5,
+	CubicEaseOut = 6,
+	CubicEaseInOut = 7,
+	Max
+};
+
 struct SceneGraphKeyFrame {
 	uint32_t frame = 0;
+	InterpolationType interpolation = InterpolationType::Linear;
 	SceneGraphTransform transform;
 };
 

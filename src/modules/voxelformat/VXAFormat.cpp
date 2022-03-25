@@ -35,6 +35,12 @@ namespace voxelformat {
 		return false; \
 	}
 
+static const InterpolationType interpolationTypes[]{
+	InterpolationType::Instant,		 InterpolationType::Linear,			InterpolationType::QuadEaseIn,
+	InterpolationType::QuadEaseOut,	 InterpolationType::QuadEaseInOut,	InterpolationType::CubicEaseIn,
+	InterpolationType::CubicEaseOut, InterpolationType::CubicEaseInOut,
+};
+
 bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableReadStream &stream,
 									SceneGraph &sceneGraph, SceneGraphNode& node, const core::String &animId) {
 	int32_t keyFrameCount;
@@ -42,17 +48,15 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 	Log::debug("Found %i keyframes", keyFrameCount);
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
 		SceneGraphKeyFrame &keyFrame = node.keyFrame(i);
-		wrap(stream.readUInt32(keyFrame.frame))
+		wrap(stream.readInt32(keyFrame.frame))
 		int32_t interpolation;
-		// instant = 0
-		// linear = 1
-		// quad ease in = 2
-		// quad ease out = 3
-		// quad ease in out = 4
-		// cubic ease in = 5
-		// cubic ease out = 6
-		// cubic ease in out = 7
 		wrap(stream.readInt32(interpolation))
+		if (interpolation < 0 || interpolation >= lengthof(interpolationTypes)) {
+			keyFrame.interpolation = InterpolationType::Linear;
+			Log::warn("Could not find a supported easing type for %i", interpolation);
+		} else {
+			keyFrame.interpolation = interpolationTypes[interpolation];
+		}
 		stream.readBool(); // rotation ??
 
 		glm::vec3 localPosition{0.0f};
