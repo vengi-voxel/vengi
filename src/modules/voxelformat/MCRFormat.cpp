@@ -162,7 +162,10 @@ bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream
 
 int MCRFormat::getVoxel(int dataVersion, const priv::NamedBinaryTag &data, const glm::ivec3 &pos) {
 	const uint32_t i = pos.y * MAX_SIZE * MAX_SIZE + pos.z * MAX_SIZE + pos.x;
-	core_assert(i < data.byteArray()->size());
+	if (data.type() != priv::TagType::BYTE_ARRAY) {
+		Log::error("Unknown block data type: %i for version %i", (int)data.type(), dataVersion);
+		return -1;
+	}
 	if (i >= data.byteArray()->size()) {
 		Log::error("Byte array index out of bounds: %u/%i", i, (int)data.byteArray()->size());
 		return -1;
@@ -177,15 +180,19 @@ int MCRFormat::getVoxel(int dataVersion, const priv::NamedBinaryTag &data, const
 
 int MCRFormat::getVoxel(int dataVersion, const MinecraftSectionPalette &secPal, const priv::NamedBinaryTag &data,
 							const glm::ivec3 &pos) {
+	if (data.type() != priv::TagType::LONG_ARRAY) {
+		Log::error("Unknown block data type: %i for version %i", (int)data.type(), dataVersion);
+		return -1;
+	}
 	const uint32_t i = pos.y * MAX_SIZE * MAX_SIZE + pos.z * MAX_SIZE + pos.x;
 	const uint32_t bitsPerBlock = secPal.numBits;
 	const uint32_t blocksPerLong = 64 / secPal.numBits;
 	const uint64_t mask = UINT64_MAX >> (64 - secPal.numBits);
 	const core::DynamicArray<int64_t> &blocks = *data.longArray();
 	const size_t idx = i / blocksPerLong;
-	core_assert(idx < blocks.size());
 	if (idx >= blocks.size()) {
-		Log::error("Byte array index out of bounds: %i/%i", (int)idx, (int)data.byteArray()->size());
+		// TODO: 1.13 file triggers this sanity check
+		Log::error("Long array index out of bounds: %i/%i", (int)idx, (int)data.longArray()->size());
 		return -1;
 	}
 	const uint64_t blockIndex = (blocks[idx] >> (bitsPerBlock * (i % blocksPerLong))) & mask;
