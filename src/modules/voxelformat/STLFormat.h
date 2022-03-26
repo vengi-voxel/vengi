@@ -7,7 +7,7 @@
 #include "MeshExporter.h"
 
 namespace voxel {
-class VoxelVertex;
+struct VoxelVertex;
 }
 
 namespace voxelformat {

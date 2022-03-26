@@ -9,7 +9,7 @@
 namespace tinygltf {
 class Model;
 class Node;
-class Scene;
+struct Scene;
 } // namespace tinygltf
 
 namespace voxelformat {
@@ -34,4 +34,4 @@ public:
 					bool withColor, bool withTexCoords) override;
 };
 
-} // namespace voxel
+} // namespace voxelformat

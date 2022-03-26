@@ -18,7 +18,7 @@ constexpr double linear(double current, double start, double end) {
 	return (current - start) / (end - start);
 }
 
-constexpr double full(double current, double start, double end) {
+double full(double current, double start, double end) {
 	return glm::round(linear(current, start, end));
 }
 
@@ -35,20 +35,20 @@ constexpr double quadOut(double current, double start, double end) {
 	return v * (2.0 - v);
 }
 
-constexpr double quadIn(double current, double start, double end) {
+double quadIn(double current, double start, double end) {
 	return glm::pow(linear(current, start, end), 2.0);
 }
 
-constexpr double cubicIn(double current, double start, double end) {
+double cubicIn(double current, double start, double end) {
 	return glm::pow(linear(current, start, end), 3.0);
 }
 
-constexpr double cubicOut(double current, double start, double end) {
+double cubicOut(double current, double start, double end) {
 	const double v = linear(current, start, end) - 1.0;
 	return glm::pow(v, 3.0) + 1.0;
 }
 
-constexpr double cubicInOut(double current, double start, double end) {
+double cubicInOut(double current, double start, double end) {
 	const double v = linear(current, start, end);
 	if (v < 0.5) {
 		return glm::pow(v, 3.0) * 4.0;
