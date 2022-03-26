@@ -165,7 +165,7 @@ uint8_t MCRFormat::getVoxel(const priv::NamedBinaryTag &data, const glm::ivec3 &
 	uint32_t index = pos.y * MAX_SIZE * MAX_SIZE + pos.z * MAX_SIZE + pos.x;
 	uint64_t val = (*data.longArray())[index / 8];
 	const uint32_t bit = index % 8;
-	return ((val & (1 << bit)) >> bit) & 0xFF;
+	return ((val & ((uint64_t)1 << bit)) >> bit) & 0xFF;
 }
 
 uint8_t MCRFormat::getVoxel(const MinecraftSectionPalette &secPal, const priv::NamedBinaryTag &data,
