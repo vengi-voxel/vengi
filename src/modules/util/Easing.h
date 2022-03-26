@@ -14,15 +14,15 @@ namespace util {
  */
 namespace easing {
 
-constexpr double linear(double current, double start, double end) {
+inline constexpr double linear(double current, double start, double end) {
 	return (current - start) / (end - start);
 }
 
-double full(double current, double start, double end) {
+inline double full(double current, double start, double end) {
 	return glm::round(linear(current, start, end));
 }
 
-constexpr double quadInOut(double current, double start, double end) {
+inline constexpr double quadInOut(double current, double start, double end) {
 	const double v = linear(current, start, end);
 	if (v < 0.5) {
 		return 2.0 * v * v;
@@ -30,25 +30,25 @@ constexpr double quadInOut(double current, double start, double end) {
 	return -1.0 + (4.0 - 2.0 * v) * v;
 }
 
-constexpr double quadOut(double current, double start, double end) {
+inline constexpr double quadOut(double current, double start, double end) {
 	const double v = linear(current, start, end);
 	return v * (2.0 - v);
 }
 
-double quadIn(double current, double start, double end) {
+inline double quadIn(double current, double start, double end) {
 	return glm::pow(linear(current, start, end), 2.0);
 }
 
-double cubicIn(double current, double start, double end) {
+inline double cubicIn(double current, double start, double end) {
 	return glm::pow(linear(current, start, end), 3.0);
 }
 
-double cubicOut(double current, double start, double end) {
+inline double cubicOut(double current, double start, double end) {
 	const double v = linear(current, start, end) - 1.0;
 	return glm::pow(v, 3.0) + 1.0;
 }
 
-double cubicInOut(double current, double start, double end) {
+inline double cubicInOut(double current, double start, double end) {
 	const double v = linear(current, start, end);
 	if (v < 0.5) {
 		return glm::pow(v, 3.0) * 4.0;
