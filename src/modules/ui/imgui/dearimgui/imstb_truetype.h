@@ -3201,7 +3201,9 @@ static void stbtt__fill_active_edges_new(float *scanline, float *scanline_fill, 
                // check if final y_crossing is blown up; no test case for this
                if (y_final > y_bottom) {
                   y_final = y_bottom;
+				  if (x2  - (x1+1) != 0) {
                   dy = (y_final - y_crossing ) / (x2 - (x1+1)); // if denom=0, y_final = y_crossing, so y_final <= y_bottom
+				  }
                }
 
                // in second pixel, area covered by line segment found in first pixel
