@@ -94,6 +94,9 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, int frame,
 
 	const int activeNode = sceneGraph.activeNode();
 	for (voxelformat::SceneGraphNode &node : sceneGraph) {
+		if (node.id() >= RawVolumeRenderer::MAX_VOLUMES) {
+			continue;
+		}
 		voxel::RawVolume *v = _renderer.volume(node.id());
 		if (v != node.volume()) {
 			_renderer.setVolume(node.id(), node.volume(), true);
