@@ -74,7 +74,7 @@ private:
 
 	struct MinecraftSectionPalette {
 		core::Buffer<uint8_t> pal;
-		uint32_t numBits;
+		uint32_t numBits = 0u;
 	};
 
 	using SectionVolumes = core::DynamicArray<voxel::RawVolume *>;
@@ -82,17 +82,18 @@ private:
 	voxel::RawVolume* error(SectionVolumes &volumes);
 	voxel::RawVolume* finalize(SectionVolumes& volumes, int xPos, int zPos);
 
-	static uint8_t getVoxel(const priv::NamedBinaryTag &data, const glm::ivec3 &pos);
-	static uint8_t getVoxel(const MinecraftSectionPalette& secPal, const priv::NamedBinaryTag& data, const glm::ivec3 &pos);
+	static int getVoxel(int dataVersion, const priv::NamedBinaryTag &data, const glm::ivec3 &pos);
+	static int getVoxel(int dataVersion, const MinecraftSectionPalette& secPal, const priv::NamedBinaryTag& data, const glm::ivec3 &pos);
 
 	// shared across versions
-	bool parsePaletteList(const priv::NamedBinaryTag& palette, MinecraftSectionPalette &sectionPal);
+	bool parsePaletteList(int dataVersion, const priv::NamedBinaryTag& palette, MinecraftSectionPalette &sectionPal);
+	bool parseBlockStates(int dataVersion, const priv::NamedBinaryTag &data, SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal);
 
 	// new version (>= 2844)
-	voxel::RawVolume* parseSections(const priv::NamedBinaryTag &root, int sector);
+	voxel::RawVolume* parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector);
 
 	// old version (< 2844)
-	voxel::RawVolume* parseLevelCompound(const priv::NamedBinaryTag &root, int sector, bool paletteMultiBits);
+	voxel::RawVolume* parseLevelCompound(int dataVersion, const priv::NamedBinaryTag &root, int sector);
 
 	bool readCompressedNBT(SceneGraph& sceneGraph, io::SeekableReadStream &stream, int sector);
 	bool loadMinecraftRegion(SceneGraph& sceneGraph, io::SeekableReadStream &stream);
