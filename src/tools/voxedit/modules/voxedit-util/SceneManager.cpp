@@ -257,6 +257,13 @@ bool SceneManager::prefab(const core::String& file) {
 	io::FileStream stream(filePtr);
 	voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph);
 	bool state = false;
+	if (newSceneGraph.size() > voxelrender::RawVolumeRenderer::MAX_VOLUMES) {
+		voxel::RawVolume *v = newSceneGraph.merge();
+		newSceneGraph.clear();
+		voxelformat::SceneGraphNode node;
+		node.setVolume(v, true);
+		newSceneGraph.emplace(core::move(node));
+	}
 	for (voxelformat::SceneGraphNode& node : newSceneGraph) {
 		state |= addNodeToSceneGraph(node);
 	}
