@@ -26,6 +26,7 @@ General:
    - Allow to load different sizes for AoS VXL files
    - Lerp the camera zooming
    - Added support for GLTF export
+   - Added experimental export support for FBX ascii
 
 VoxEdit:
 

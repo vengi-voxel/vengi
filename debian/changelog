@@ -15,6 +15,7 @@ vengi (0.0.19.0-1) UNRELEASED; urgency=low
   * Allow to load different sizes for AoS VXL files
   * Lerp the camera zooming
   * Added support for GLTF export
+  * Added experimental export support for FBX ascii
 
   * VoxEdit:
   * Added new command to fill hollows in models

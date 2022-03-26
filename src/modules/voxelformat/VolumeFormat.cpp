@@ -16,6 +16,7 @@
 #include "video/Texture.h"
 #include "voxelformat/MCRFormat.h"
 #include "voxelformat/PLYFormat.h"
+#include "voxelformat/FBXFormat.h"
 #include "voxelformat/SproxelFormat.h"
 #include "voxelformat/VXTFormat.h"
 #include "voxelformat/VoxFormat.h"
@@ -96,6 +97,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"AceOfSpades", "vxl", nullptr, 0u}, // TODO: handle duplicate extension
 	{"Wavefront Object", "obj", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"Polygon File Format", "ply", nullptr, VOX_FORMAT_FLAG_MESH},
+	{"FBX Ascii", "fbx", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"Standard Triangle Language", "stl", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"GL Transmission Format", "gltf", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"GL Transmission Binary Format", "glb", nullptr, VOX_FORMAT_FLAG_MESH},
@@ -187,6 +189,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 		format = core::make_shared<STLFormat>();
 	} else if (ext == "ply") {
 		format = core::make_shared<PLYFormat>();
+	} else if (ext == "fbx") {
+		format = core::make_shared<FBXFormat>();
 	} else if (ext == "gltf" || ext == "glb") {
 		format = core::make_shared<GLTFFormat>();
 	}
