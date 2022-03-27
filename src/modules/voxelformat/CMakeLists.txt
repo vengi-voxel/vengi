@@ -5,6 +5,7 @@ set(SRCS
 	external/tiny_gltf.h
 	external/json.hpp
 
+	private/MinecraftPaletteMap.h private/MinecraftPaletteMap.cpp
 	private/NamedBinaryTag.h private/NamedBinaryTag.cpp
 	private/PaletteLookup.h
 
@@ -36,6 +37,7 @@ set(SRCS
 	SceneGraphNode.h SceneGraphNode.cpp
 	SceneGraphUtil.h SceneGraphUtil.cpp
 	SproxelFormat.h SproxelFormat.cpp
+	SchematicFormat.h SchematicFormat.cpp
 	STLFormat.h STLFormat.cpp
 	VolumeCache.h VolumeCache.cpp
 	VoxFormat.h VoxFormat.cpp
@@ -63,6 +65,7 @@ set(TEST_SRCS
 	tests/QBCLFormatTest.cpp
 	tests/QEFFormatTest.cpp
 	tests/SceneGraphTest.cpp
+	tests/SchematicFormatTest.cpp
 	tests/SproxelFormatTest.cpp
 	tests/STLFormatTest.cpp
 	tests/VoxFormatTest.cpp

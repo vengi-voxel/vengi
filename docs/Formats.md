@@ -11,6 +11,7 @@
 | Goxel                      | gox       | X       | X      | X          |         | X      |                                                                  |
 | MagicaVoxel                | vox       | X       | X      | X          | X       | X      | ttps://github.com/ephtracy/voxel-model                           |
 | Minecraft Region           | mcr       | X       |        | X          | X       | X      | https://minecraft.gamepedia.com/Region_file_format               |
+| Minecraft Schematics       | schematic | X       |        | X          | X       | X      | https://minecraft.fandom.com/wiki/Schematic_file_format          |
 | Nick's Voxel Model         | nvm       | X       |        | X          |         | X      |                                                                  |
 | Qubicle Exchange           | qef       | X       | X      | X          |         |        | https://getqubicle.com/qubicle/documentation/docs/file/qef/      |
 | Qubicle Binary Tree        | qbt       | X       | X      | X          |         | X      | https://getqubicle.com/qubicle/documentation/docs/file/qbt/      |

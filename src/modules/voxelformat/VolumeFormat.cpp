@@ -39,6 +39,7 @@
 #include "voxelformat/OBJFormat.h"
 #include "voxelformat/VoxOldFormat.h"
 #include "voxelformat/GLTFFormat.h"
+#include "voxelformat/SchematicFormat.h"
 
 namespace voxelformat {
 
@@ -65,6 +66,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"Goxel", "gox", [] (uint32_t magic) {return magic == FourCC('G','O','X',' ');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 	{"CubeWorld", "cub", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Minecraft region", "mca", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+	{"Minecraft schematic", "schematic", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Sproxel csv", "csv", nullptr, 0u},
 	{"Wavefront Object", "obj", nullptr, 0u},
 	{"Standard Triangle Language", "stl", nullptr, 0u},
@@ -191,6 +193,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 		format = core::make_shared<PLYFormat>();
 	} else if (ext == "fbx") {
 		format = core::make_shared<FBXFormat>();
+	} else if (ext == "schematic") {
+		format = core::make_shared<SchematicFormat>();
 	} else if (ext == "gltf" || ext == "glb") {
 		format = core::make_shared<GLTFFormat>();
 	}
