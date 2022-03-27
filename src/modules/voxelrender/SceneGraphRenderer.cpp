@@ -93,6 +93,7 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, int frame,
 	}
 
 	const int activeNode = sceneGraph.activeNode();
+	// TODO: using the node id here is not good as they are increasing when you modify the scene graph
 	for (voxelformat::SceneGraphNode &node : sceneGraph) {
 		if (node.id() >= RawVolumeRenderer::MAX_VOLUMES) {
 			continue;
