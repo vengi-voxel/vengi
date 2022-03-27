@@ -372,7 +372,9 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		cam.frustum = 0.0f;					 // TODO:
 	}
 	output_scene.num_cameras = output_cameras;
-	output_scene.cameras = &cameras[0];
+	if (output_cameras > 0) {
+		output_scene.cameras = &cameras[0];
+	}
 
 	ogt_vox_palette &pal = output_scene.palette;
 	ogt_vox_matl_array &mat = output_scene.materials;
