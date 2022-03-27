@@ -16,6 +16,7 @@ vengi (0.0.19.0-1) UNRELEASED; urgency=low
   * Lerp the camera zooming
   * Added support for GLTF export
   * Added experimental export support for FBX ascii
+  * Increased the max scene graph model nodes from 256 to 1024
 
   * VoxEdit:
   * Added new command to fill hollows in models

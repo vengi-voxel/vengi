@@ -27,6 +27,7 @@ General:
    - Lerp the camera zooming
    - Added support for GLTF export
    - Added experimental export support for FBX ascii
+   - Increased the max scene graph model nodes from 256 to 1024
 
 VoxEdit:
 
