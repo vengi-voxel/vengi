@@ -1,30 +1,30 @@
 # Formats
 
-| Name                       | Extension | Loading | Saving | Thumbnails | Palette |
-| :------------------------- | --------- | ------- | ------ | ---------- | ------- |
-| Ace Of Spades              | vxl       | X       |        | X          |         |
-| BinVox                     | binvox    | X       | X      | X          |         |
-| Build engine               | kvx       | X       |        | X          | X       |
-| Chronovox-Studio           | csm       | X       |        | X          |         |
-| Command and Conquer        | vxl       | X       | X      | X          | X       |
-| CubeWorld                  | cub       | X       | X      | X          |         |
-| Goxel                      | gox       | X       | X      | X          |         |
-| MagicaVoxel                | vox       | X       | X      | X          | X       |
-| Minecraft Region           | mcr       | X       |        | X          | X       |
-| Nick's Voxel Model         | nvm       | X       |        | X          |         |
-| Qubicle Exchange           | qef       | X       | X      | X          |         |
-| Qubicle Binary Tree        | qbt       | X       | X      | X          |         |
-| Qubicle Binary             | qb        | X       | X      | X          |         |
-| Qubicle Project            | qbcl      | X       | X      | X          |         |
-| Sandbox VoxEdit Collection | vxc       | X       |        |            |         |
-| Sandbox VoxEdit Model      | vxm       | X       | X      | X          | X       |
-| Sandbox VoxEdit            | vxr       | X       | X      | X          |         |
-| Sandbox VoxEdit Tile       | vxt       | X       |        |            |         |
-| SLAB6                      | kv6       | X       |        | X          | X       |
-| Sproxel                    | csv       | X       | X      | X          |         |
-| Wavefront Object           | obj       | X       | X      |            |         |
-| Standard Triangle Language | stl       | X       | X      |            |         |
-| GL Transmission Format     | gltf      |         | X      |            |         |
+| Name                       | Extension | Loading | Saving | Thumbnails | Palette | Binary | Spec                                                             |
+| :------------------------- | --------- | ------- | ------ | ---------- | ------- | ------ | ---------------------------------------------------------------- |
+| Ace Of Spades              | vxl       | X       |        | X          |         | X      |                                                                  |
+| BinVox                     | binvox    | X       | X      | X          |         | X      | https://www.patrickmin.com/binvox/binvox.html                    |
+| Build engine               | kvx       | X       |        | X          | X       | X      | https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt     |
+| Chronovox-Studio           | csm       | X       |        | X          |         | X      |                                                                  |
+| Command and Conquer        | vxl       | X       | X      | X          | X       | X      |                                                                  |
+| CubeWorld                  | cub       | X       | X      | X          |         | X      |                                                                  |
+| Goxel                      | gox       | X       | X      | X          |         | X      |                                                                  |
+| MagicaVoxel                | vox       | X       | X      | X          | X       | X      | ttps://github.com/ephtracy/voxel-model                           |
+| Minecraft Region           | mcr       | X       |        | X          | X       | X      | https://minecraft.gamepedia.com/Region_file_format               |
+| Nick's Voxel Model         | nvm       | X       |        | X          |         | X      |                                                                  |
+| Qubicle Exchange           | qef       | X       | X      | X          |         |        | https://getqubicle.com/qubicle/documentation/docs/file/qef/      |
+| Qubicle Binary Tree        | qbt       | X       | X      | X          |         | X      | https://getqubicle.com/qubicle/documentation/docs/file/qbt/      |
+| Qubicle Binary             | qb        | X       | X      | X          |         | X      | https://getqubicle.com/qubicle/documentation/docs/file/qb/       |
+| Qubicle Project            | qbcl      | X       | X      | X          |         | X      |                                                                  |
+| Sandbox VoxEdit Collection | vxc       | X       |        |            |         | X      |                                                                  |
+| Sandbox VoxEdit Model      | vxm       | X       | X      | X          | X       | X      |                                                                  |
+| Sandbox VoxEdit            | vxr       | X       | X      | X          |         | X      |                                                                  |
+| Sandbox VoxEdit Tile       | vxt       | X       |        |            |         | X      |                                                                  |
+| SLAB6                      | kv6       | X       |        | X          | X       | X      | https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt     |
+| Sproxel                    | csv       | X       | X      | X          |         |        |                                                                  |
+| Wavefront Object           | obj       | X       | X      |            |         |        |                                                                  |
+| Standard Triangle Language | stl       | X       | X      |            |         |        |                                                                  |
+| GL Transmission Format     | gltf      |         | X      |            |         | X      |                                                                  |
 
 
 ## Meshes
