@@ -348,7 +348,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 }
 
 void SceneManager::colorToNewLayer(const voxel::Voxel voxelColor) {
-	voxel::RawVolume* newVolume = new voxel::RawVolume(_sceneGraph.region());
+	voxel::RawVolume* newVolume = new voxel::RawVolume(_sceneGraph.groupRegion());
 	_sceneGraph.foreachGroup([&] (int nodeId) {
 		voxel::RawVolumeWrapper wrapper(volume(nodeId));
 		voxelutil::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
