@@ -15,7 +15,18 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 	core_memset(_stream, 0, sizeof(*_stream));
 	_stream->zalloc = Z_NULL;
 	_stream->zfree = Z_NULL;
-	mz_inflateInit(_stream);
+	uint8_t gzipHeader[2];
+	readStream.readUInt8(gzipHeader[0]);
+	readStream.readUInt8(gzipHeader[1]);
+	if (gzipHeader[0] == 0x1F && gzipHeader[1] == 0x8B) {
+		readStream.skip(8); // gzip header is 10 bytes
+		mz_inflateInit2(_stream, -MZ_DEFAULT_WINDOW_BITS);
+	} else {
+		readStream.seek(-2, SEEK_CUR);
+		if (mz_inflateInit(_stream) != MZ_OK) {
+			Log::error("Failed to initialize zip stream");
+		}
+	}
 }
 
 ZipReadStream::~ZipReadStream() {
@@ -54,9 +65,12 @@ int ZipReadStream::read(void *buf, size_t size) {
 			_stream->next_in = _buf;
 			_stream->avail_in = (unsigned int)core_min(remainingSize, (int64_t)sizeof(_buf));
 			if (remainingSize > 0) {
-				_readStream.read(_buf, _stream->avail_in);
+				const int bytes = _readStream.read(_buf, _stream->avail_in);
+				if (bytes == -1) {
+					return -1;
+				}
 				if (_size >= 0) {
-					_remaining -= (int)_stream->avail_in;
+					_remaining -= bytes;
 				}
 			}
 		}
