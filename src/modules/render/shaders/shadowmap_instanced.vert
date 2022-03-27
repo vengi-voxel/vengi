@@ -1,2 +1,2 @@
-#define INSTANCED 100
+#define INSTANCED 2
 #include "shadowmap.vert"
