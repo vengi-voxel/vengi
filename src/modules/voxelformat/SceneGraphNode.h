@@ -104,6 +104,7 @@ public:
 protected:
 	int _id = -1;
 	int _parent = 0;
+	int _currentAnimKeyFrame = -1;
 	SceneGraphNodeType _type;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
@@ -117,8 +118,6 @@ protected:
 	bool _locked = false;
 	core::Buffer<int, 32> _children;
 	core::StringMap<core::String> _properties;
-
-	int _currentAnimKeyFrame = -1;
 
 	/**
 	 * @brief Called in emplace() if a parent id is given

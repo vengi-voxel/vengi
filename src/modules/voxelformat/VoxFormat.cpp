@@ -26,6 +26,8 @@
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtc/constants.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace voxelformat {
 
@@ -242,6 +244,22 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			return false;
 		}
 	}
+#if 0 // TODO
+	for (uint32_t n = 0; n < scene->num_cameras; ++n) {
+		const ogt_vox_cam& c = scene->cameras[n];
+		cam.setTarget(glm::vec3(c.focus[0], c.focus[1], c.focus[2]));
+		cam.setAngles(c.angle[0], c.angle[1], c.angle[2]);
+		cam.setTargetDistance((float)c.radius);
+		cam.setFieldOfView((float)c.fov);
+		{
+			SceneGraphNode camNode(SceneGraphNodeType::Camera);
+			SceneGraphTransform transform;
+			transform.setMatrix();
+			camNode.setTransform(0, transform, true);
+			sceneGraph.emplace(core::move(camNode), sceneGraph.root().id());
+		}
+	}
+#endif
 
 	ogt_vox_destroy_scene(scene);
 	return true;
@@ -332,6 +350,29 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	output_scene.models = modelsPtr;
 	output_scene.num_models = modelPtr.size();
 	core_memset(&output_scene.materials, 0, sizeof(output_scene.materials));
+
+	size_t output_cameras = newSceneGraph.size(SceneGraphNodeType::Camera);
+	core::Buffer<ogt_vox_cam> cameras(output_cameras);
+	int camIdx = 0;
+	for (auto iter = newSceneGraph.begin(SceneGraphNodeType::Camera); iter != newSceneGraph.end(); ++iter) {
+		const SceneGraphTransform &transform = (*iter).transform(0);
+		ogt_vox_cam &cam = cameras[camIdx];
+		cam.camera_id = camIdx;
+		const glm::vec3 &euler = glm::eulerAngles(transform.orientation());
+		cam.angle[0] = euler[0];
+		cam.angle[1] = euler[1];
+		cam.angle[2] = euler[2];
+		const glm::vec3 &pos = transform.translation();
+		cam.focus[0] = pos[0];
+		cam.focus[1] = pos[1];
+		cam.focus[2] = pos[2];
+		cam.mode = ogt_cam_mode_perspective; // TODO:
+		cam.fov = 90;						 // TODO:
+		cam.radius = 10;					 // TODO:
+		cam.frustum = 0.0f;					 // TODO:
+	}
+	output_scene.num_cameras = output_cameras;
+	output_scene.cameras = &cameras[0];
 
 	ogt_vox_palette &pal = output_scene.palette;
 	ogt_vox_matl_array &mat = output_scene.materials;
