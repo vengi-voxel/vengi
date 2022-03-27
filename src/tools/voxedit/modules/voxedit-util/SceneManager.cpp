@@ -244,6 +244,16 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 	return saved;
 }
 
+static void mergeIfNeeded(voxelformat::SceneGraph &newSceneGraph) {
+	if (newSceneGraph.size() > voxelrender::RawVolumeRenderer::MAX_VOLUMES) {
+		voxel::RawVolume *v = newSceneGraph.merge();
+		newSceneGraph.clear();
+		voxelformat::SceneGraphNode node;
+		node.setVolume(v, true);
+		newSceneGraph.emplace(core::move(node));
+	}
+}
+
 bool SceneManager::prefab(const core::String& file) {
 	if (file.empty()) {
 		return false;
@@ -256,14 +266,8 @@ bool SceneManager::prefab(const core::String& file) {
 	voxelformat::SceneGraph newSceneGraph;
 	io::FileStream stream(filePtr);
 	voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph);
+	mergeIfNeeded(newSceneGraph);
 	bool state = false;
-	if (newSceneGraph.size() > voxelrender::RawVolumeRenderer::MAX_VOLUMES) {
-		voxel::RawVolume *v = newSceneGraph.merge();
-		newSceneGraph.clear();
-		voxelformat::SceneGraphNode node;
-		node.setVolume(v, true);
-		newSceneGraph.emplace(core::move(node));
-	}
 	for (voxelformat::SceneGraphNode& node : newSceneGraph) {
 		state |= addNodeToSceneGraph(node);
 	}
@@ -284,6 +288,7 @@ bool SceneManager::load(const core::String& file) {
 		voxelformat::SceneGraph newSceneGraph;
 		io::FileStream stream(filePtr);
 		voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph);
+		mergeIfNeeded(newSceneGraph);
 		return core::move(newSceneGraph);
 	});
 	_lastFilename = filePtr->fileName() + "." + filePtr->extension();
