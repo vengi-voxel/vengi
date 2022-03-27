@@ -293,7 +293,7 @@ Example implementation: <https://gist.github.com/Eisenwave/799416ac162a4dddeb131
 
 ## QEF Qubicle exchange format
 
-https://getqubicle.com/learn/article.php?id=23
+https://getqubicle.com/qubicle/documentation/docs/file/qef/
 
 ## ZOX Zoxel
 
