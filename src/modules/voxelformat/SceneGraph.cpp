@@ -93,6 +93,19 @@ const SceneGraphNode& SceneGraph::root() const {
 	return node(0);
 }
 
+voxel::Region SceneGraph::groupRegion() const {
+	int nodeId = activeNode();
+	voxel::Region region = node(nodeId).region();
+	if (node(nodeId).locked()) {
+		for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
+			if ((*iter).locked()) {
+				region.accumulate((*iter).region());
+			}
+		}
+	}
+	return region;
+}
+
 voxel::Region SceneGraph::region() const {
 	voxel::Region r;
 	bool validVolume = false;

@@ -42,6 +42,7 @@ public:
 	 * @return The full region of the whole scene
 	 */
 	voxel::Region region() const;
+	voxel::Region groupRegion() const;
 
 	const core::DynamicArray<core::String> animations();
 	void addAnimation(const core::String& animation);
