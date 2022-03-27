@@ -33,6 +33,9 @@
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
 
+#include <glm/gtc/quaternion.hpp>
+#include <glm/trigonometric.hpp>
+
 #define MaxHeightmapWidth 1024
 #define MaxHeightmapHeight 1024
 
@@ -478,6 +481,19 @@ void VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeI
 		"Unknown"
 	};
 	static_assert(core::enumVal(voxelformat::SceneGraphNodeType::Max) == lengthof(NodeTypeStr), "Array sizes don't match Max");
+
+	static const char *InterpolationTypeStr[] {
+		"Instant",
+		"Linear",
+		"QuadEaseIn",
+		"QuadEaseOut",
+		"QuadEaseInOut",
+		"CubicEaseIn",
+		"CubicEaseOut",
+		"CubicEaseInOut"
+	};
+	static_assert(core::enumVal(voxelformat::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
+
 	const voxelformat::SceneGraphNodeType type = node.type();
 
 	Log::info("%*sNode: %i (parent %i)", indent, " ", nodeId, node.parent());
@@ -488,6 +504,22 @@ void VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeI
 	}
 	for (const auto & entry : node.properties()) {
 		Log::info("%*s  |- %s: %s", indent, " ", entry->key.c_str(), entry->value.c_str());
+	}
+	for (const voxelformat::SceneGraphKeyFrame &kf : node.keyFrames()) {
+		Log::info("%*s  |- keyframe: %i", indent, " ", kf.frame);
+		Log::info("%*s    |- long rotation: %s", indent, " ", kf.longRotation ? "true" : "false");
+		Log::info("%*s    |- interpolation: %s", indent, " ", InterpolationTypeStr[core::enumVal(kf.interpolation)]);
+		Log::info("%*s    |- transform", indent, " ");
+		const glm::vec3 &pivot = kf.transform.pivot();
+		Log::info("%*s      |- pivot %f:%f:%f", indent, " ", pivot.x, pivot.y, pivot.z);
+		const glm::vec3 &tr = kf.transform.translation();
+		Log::info("%*s      |- translation %f:%f:%f", indent, " ", tr.x, tr.y, tr.z);
+		const glm::quat &rt = kf.transform.orientation();
+		const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
+		Log::info("%*s      |- orientation %f:%f:%f:%f", indent, " ", rt.x, rt.y, rt.z, rt.w);
+		Log::info("%*s        |- euler %f:%f:%f", indent, " ", rtEuler.x, rtEuler.y, rtEuler.z);
+		const float sc = kf.transform.scale();
+		Log::info("%*s      |- scale %f", indent, " ", sc);
 	}
 	Log::info("%*s  |- children: %i", indent, " ", (int)node.children().size());
 	for (int children : node.children()) {

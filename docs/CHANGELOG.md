@@ -10,7 +10,9 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 ## 0.0.20 (2022-XX-XX)
 
-General:
+VoxConvert:
+
+   - Extended `--dump` to also show the key frames
 
 ## 0.0.19 (2022-03-27)
 

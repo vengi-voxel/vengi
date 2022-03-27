@@ -1,6 +1,7 @@
 vengi (0.0.20.0-1) UNRELEASED; urgency=low
 
-  * General:
+  * VoxConvert:
+  * Extended --dump to also show the key frames
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 27 Mar 2022 11:59:01 +0200
 
