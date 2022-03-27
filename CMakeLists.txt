@@ -184,6 +184,7 @@ add_subdirectory(tools)
 
 if (UNITTESTS)
 	enable_testing()
+	set(CTEST_TEST_TIMEOUT 1800)
 	gtest_suite_begin(tests TEMPLATE src/modules/core/tests/main.cpp.in)
 endif()
 add_subdirectory(src)
