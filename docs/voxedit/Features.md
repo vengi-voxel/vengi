@@ -1,10 +1,12 @@
 # Features
 
-* LUA [scripting](../LUAScript.md) api
-* Layer support
+A few of the features are:
+
+* LUA [scripting](../LUAScript.md) api and built-in editor
+* Layer and scene graph support
 * Auto cropping volumes
 * Auto generate content like trees or noise volumes
-* Import heightmaps
+* Import images as heightmaps, palettes or planes
 * Customizable UI
 * L-System integration
 * Undo/Redo
@@ -13,7 +15,7 @@
 * Layer animation support
 * Custom key bindings
 * Show commands of actions (to configure your own key bindings)
-* Import bitmaps as plane
 * Copy/Cut/Paste - paste to cursor or reference position
-* Exporting single layers into meshes
+* Exporting single layers or whole scenes into meshes and a lot of other formats
 * Generate level of details (LOD) volumes
+* Import meshes and voxelize them
