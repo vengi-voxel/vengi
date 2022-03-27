@@ -1,4 +1,4 @@
-vengi (0.0.19.0-1) UNRELEASED; urgency=low
+vengi (0.0.19.0-1) unstable; urgency=low
 
   * General:
   * Replaced minecraft support with own implementation
@@ -35,7 +35,7 @@ vengi (0.0.19.0-1) UNRELEASED; urgency=low
   * Added --image-as-plane and --image-as-heightmap parameters
   * Allow to create a palette from input files
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sat, 12 Feb 2022 09:32:14 +0100
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 27 Mar 2022 11:59:01 +0200
 
 vengi (0.0.18.0-1) unstable; urgency=low
 
