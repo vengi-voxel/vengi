@@ -49,26 +49,26 @@ namespace voxelrender {
  */
 class RawVolumeRenderer {
 public:
-	static constexpr int MAX_VOLUMES = 256;
+	static constexpr int MAX_VOLUMES = 2048;
 protected:
 	struct State {
-		bool _hidden;
-		bool _gray;
+		bool _hidden = false;
+		bool _gray = false;
+		int32_t _amounts = 1;
+		int32_t _vertexBufferIndex = -1;
+		int32_t _indexBufferIndex = -1;
+		glm::mat4 _models[shader::VoxelInstancedShaderConstants::getMaxInstances()];
+		glm::vec3 _pivots[shader::VoxelInstancedShaderConstants::getMaxInstances()];
+		video::Buffer _vertexBuffer;
+		voxel::RawVolume* _rawVolume = nullptr;
 	};
-	voxel::RawVolume* _rawVolume[MAX_VOLUMES] {};
-	uint64_t _paletteHash = 0;
-	core::Array<glm::mat4[shader::VoxelInstancedShaderConstants::getMaxInstances()], MAX_VOLUMES> _models;
-	core::Array<glm::vec3[shader::VoxelInstancedShaderConstants::getMaxInstances()], MAX_VOLUMES> _pivots;
-	static_assert(shader::VoxelInstancedShaderConstants::getMaxInstances() == shader::ShadowmapInstancedShaderConstants::getMaxInstances(), "max instances must match between shaders");
-	int _amounts[MAX_VOLUMES] = { 1 };
 	core::Array<State, MAX_VOLUMES> _state {};
-	int32_t _vertexBufferIndex[MAX_VOLUMES] = {-1};
-	int32_t _indexBufferIndex[MAX_VOLUMES] = {-1};
 	typedef core::Array<voxel::Mesh*, MAX_VOLUMES> Meshes;
 	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
 	MeshesMap _meshes;
 
-	video::Buffer _vertexBuffer[MAX_VOLUMES];
+	static_assert(shader::VoxelInstancedShaderConstants::getMaxInstances() == shader::ShadowmapInstancedShaderConstants::getMaxInstances(), "max instances must match between shaders");
+	uint64_t _paletteHash = 0;
 	shader::VoxelData _materialBlock;
 	shader::VoxelInstancedShader& _voxelShader;
 	shader::ShadowmapInstancedShader& _shadowMapShader;
@@ -151,7 +151,7 @@ public:
 	/**
 	 * @note Keep in mind to set the model matrices properly
 	 */
-	void setInstancingAmount(int idx, int amount);
+	bool setInstancingAmount(int idx, int amount);
 
 	int amount(int idx) const;
 	bool empty(int idx = 0) const;
@@ -193,14 +193,14 @@ inline voxel::RawVolume* RawVolumeRenderer::volume(int idx) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
-	return _rawVolume[idx];
+	return _state[idx]._rawVolume;
 }
 
 inline const voxel::RawVolume* RawVolumeRenderer::volume(int idx) const {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
-	return _rawVolume[idx];
+	return _state[idx]._rawVolume;
 }
 
 }
