@@ -61,7 +61,6 @@ bool RawVolumeRenderer::init() {
 	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
 	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
 	cfg.depthBuffer(true);
-	cfg.samples(2);
 	if (!_frameBuffer.init(cfg)) {
 		Log::error("Failed to initialize the volume renderer framebuffer");
 		return false;
