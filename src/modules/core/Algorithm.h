@@ -17,7 +17,7 @@ constexpr Iter next(Iter it, int n = 1) {
 
 template<class Iter>
 constexpr Iter prev(Iter it, int n = 1) {
-	for (int i = n; i < 0; --i) {
+	for (int i = n; i > 0; --i) {
 		--it;
 	}
 	return it;
