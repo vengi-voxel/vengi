@@ -212,6 +212,9 @@ voxel::RawVolume *MCRFormat::error(SectionVolumes &volumes) {
 }
 
 voxel::RawVolume* MCRFormat::finalize(SectionVolumes& volumes, int xPos, int zPos) {
+	if (volumes.empty()) {
+		return nullptr;
+	}
 	// TODO: only merge connected y chunks - don't fill empty chunks - just a waste of memory
 	voxel::RawVolume *merged = voxelutil::merge(volumes);
 	for (voxel::RawVolume* v : volumes) {
