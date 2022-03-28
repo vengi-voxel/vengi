@@ -10,30 +10,6 @@ namespace voxelformat {
 
 namespace priv {
 
-constexpr NamedBinaryTag::NamedBinaryTag(int8_t val) : _tagType(TagType::BYTE) {
-	_tagData._byte = val;
-}
-
-constexpr NamedBinaryTag::NamedBinaryTag(int16_t val) : _tagType(TagType::SHORT) {
-	_tagData._short = val;
-}
-
-constexpr NamedBinaryTag::NamedBinaryTag(int32_t val) : _tagType(TagType::INT) {
-	_tagData._int = val;
-}
-
-constexpr NamedBinaryTag::NamedBinaryTag(int64_t val) : _tagType(TagType::LONG) {
-	_tagData._long = val;
-}
-
-constexpr NamedBinaryTag::NamedBinaryTag(float val) : _tagType(TagType::FLOAT) {
-	_tagData._float = val;
-}
-
-constexpr NamedBinaryTag::NamedBinaryTag(double val) : _tagType(TagType::DOUBLE) {
-	_tagData._double = val;
-}
-
 NamedBinaryTag::NamedBinaryTag(core::String &&val) : _tagType(TagType::STRING) {
 	_tagData._string = new core::String(core::move(val));
 }
@@ -199,13 +175,127 @@ void NamedBinaryTag::dump(io::WriteStream &stream) const {
 	stream.writeUInt8(0);
 }
 
+bool NamedBinaryTag::write(const NamedBinaryTag &tag, const core::String &rootTagName, io::WriteStream &stream) {
+	if (!writeTagType(stream, tag.type())) {
+		return false;
+	}
+	if (!stream.writePascalStringUInt16BE(rootTagName)) {
+		return false;
+	}
+	return writeType(stream, tag);
+}
+
+bool NamedBinaryTag::writeTagType(io::WriteStream &stream, TagType type) {
+	return stream.writeUInt8((uint8_t)type);
+}
+
+bool NamedBinaryTag::writeType(io::WriteStream &stream, const NamedBinaryTag &tag) {
+	switch (tag.type()) {
+	case TagType::COMPOUND: {
+		const NBTCompound* compound = tag.compound();
+		for (const auto &c : *compound) {
+			if (!writeTagType(stream, c->second.type())) {
+				return false;
+			}
+			if (!stream.writePascalStringUInt16BE(c->first)) {
+				return false;
+			}
+			if (!writeType(stream, c->second)) {
+				return false;
+			}
+		}
+		if (!writeTagType(stream, TagType::END)) {
+			return false;
+		}
+		return true;
+	}
+	case TagType::BYTE:
+		return stream.writeInt8(tag.int8());
+	case TagType::SHORT:
+		return stream.writeInt16BE(tag.int16());
+	case TagType::FLOAT:
+		return stream.writeFloatBE(tag.float32());
+	case TagType::DOUBLE: {
+		union {
+			double d;
+			uint64_t l;
+		} u;
+		u.d = tag.float64();
+		return stream.writeUInt64BE(u.l);
+	}
+	case TagType::INT:
+		return stream.writeInt32BE(tag.int32());
+	case TagType::LONG:
+		return stream.writeInt64BE(tag.int64());
+	case TagType::BYTE_ARRAY: {
+		const size_t length = tag.byteArray()->size();
+		if (!stream.writeUInt32BE(length)) {
+			return false;
+		}
+		for (size_t i = 0; i < length; i++) {
+			if (!stream.writeInt8((*tag.byteArray())[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	case TagType::INT_ARRAY: {
+		const size_t length = tag.intArray()->size();
+		if (!stream.writeUInt32BE(length)) {
+			return false;
+		}
+		for (size_t i = 0; i < length; i++) {
+			if (!stream.writeInt32((*tag.intArray())[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	case TagType::LONG_ARRAY: {
+		const size_t length = tag.longArray()->size();
+		if (!stream.writeUInt32BE(length)) {
+			return false;
+		}
+		for (size_t i = 0; i < length; i++) {
+			if (!stream.writeInt64((*tag.longArray())[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	case TagType::LIST: {
+		if (tag.list()->empty()) {
+			return writeTagType(stream, TagType::END);
+		}
+		if (!writeTagType(stream, tag.list()->front().type())) {
+			return false;
+		}
+
+		const size_t length = tag.list()->size();
+		if (!stream.writeUInt32BE(length)) {
+			return false;
+		}
+		for (size_t i = 0; i < length; i++) {
+			if (!writeType(stream, (*tag.list())[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	case TagType::STRING:
+		return stream.writePascalStringUInt16BE(*tag.string());
+	default:
+		return false;
+	}
+}
+
 NamedBinaryTag NamedBinaryTag::parse(NamedBinaryTagContext &ctx) {
 	TagType type;
 	if (!readType(*ctx.stream, type) || type != TagType::COMPOUND) {
 		return NamedBinaryTag{};
 	}
 	core::String rootName;
-	if (!readString(*ctx.stream, rootName)) {
+	if (!ctx.stream->readPascalStringUInt16BE(rootName)) {
 		return NamedBinaryTag{};
 	}
 	return parseType(type, ctx, 0);
@@ -218,7 +308,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 		TagType type;
 		while (readType(*ctx.stream, type) && type != TagType::END) {
 			core::String name;
-			if (!readString(*ctx.stream, name)) {
+			if (!ctx.stream->readPascalStringUInt16BE(name)) {
 				return NamedBinaryTag{};
 			}
 			Log::trace("%*sFound %s of type %i", level * 3, " ", name.c_str(), (int)type);
@@ -340,7 +430,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 	}
 	case TagType::STRING: {
 		core::String str;
-		if (!readString(*ctx.stream, str)) {
+		if (!ctx.stream->readPascalStringUInt16BE(str)) {
 			return NamedBinaryTag{};
 		}
 		return NamedBinaryTag{core::move(str)};

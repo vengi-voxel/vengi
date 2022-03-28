@@ -107,23 +107,10 @@ private:
 	TagData _tagData{};
 	TagType _tagType = TagType::MAX;
 
-	static NamedBinaryTag parseType(TagType type, NamedBinaryTagContext &ctx, int level);
+	static bool writeTagType(io::WriteStream &stream, TagType type);
+	static bool writeType(io::WriteStream &stream, const NamedBinaryTag &tag);
 
-	static bool readString(io::ReadStream &stream, core::String &str) {
-		uint16_t length;
-		if (stream.readUInt16BE(length) != 0) {
-			return false;
-		}
-		str.clear();
-		for (uint16_t i = 0u; i < length; ++i) {
-			uint8_t chr;
-			if (stream.readUInt8(chr) != 0) {
-				return false;
-			}
-			str += (char)chr;
-		}
-		return true;
-	}
+	static NamedBinaryTag parseType(TagType type, NamedBinaryTagContext &ctx, int level);
 
 	static bool readType(io::ReadStream &stream, TagType &type) {
 		return stream.read(&type, sizeof(type)) == sizeof(type);
@@ -143,13 +130,30 @@ private:
 public:
 	constexpr NamedBinaryTag() {
 	}
-	constexpr NamedBinaryTag(bool val);
-	constexpr NamedBinaryTag(int64_t val);
-	constexpr NamedBinaryTag(int32_t val);
-	constexpr NamedBinaryTag(int16_t val);
-	constexpr NamedBinaryTag(int8_t val);
-	constexpr NamedBinaryTag(double val);
-	constexpr NamedBinaryTag(float val);
+
+	constexpr NamedBinaryTag(int8_t val) : _tagType(TagType::BYTE) {
+		_tagData._byte = val;
+	}
+
+	constexpr NamedBinaryTag(int16_t val) : _tagType(TagType::SHORT) {
+		_tagData._short = val;
+	}
+
+	constexpr NamedBinaryTag(int32_t val) : _tagType(TagType::INT) {
+		_tagData._int = val;
+	}
+
+	constexpr NamedBinaryTag(int64_t val) : _tagType(TagType::LONG) {
+		_tagData._long = val;
+	}
+
+	constexpr NamedBinaryTag(float val) : _tagType(TagType::FLOAT) {
+		_tagData._float = val;
+	}
+
+	constexpr NamedBinaryTag(double val) : _tagType(TagType::DOUBLE) {
+		_tagData._double = val;
+	}
 
 	NamedBinaryTag(core::String &&val);
 	NamedBinaryTag(core::DynamicArray<int64_t> &&val);
@@ -162,7 +166,8 @@ public:
 	NamedBinaryTag(const NamedBinaryTag &val);
 	NamedBinaryTag(NamedBinaryTag &&val) noexcept;
 
-	static NamedBinaryTag parse(NamedBinaryTagContext &stream);
+	static NamedBinaryTag parse(NamedBinaryTagContext &ctx);
+	static bool write(const NamedBinaryTag &tag, const core::String &rootTagName, io::WriteStream &ctx);
 
 	void dump(io::WriteStream &stream) const;
 
@@ -204,6 +209,20 @@ public:
 			return defaultVal;
 		}
 		return _tagData._short;
+	}
+
+	inline float float32(float defaultVal = 0.0f) const {
+		if (_tagType != TagType::FLOAT) {
+			return defaultVal;
+		}
+		return _tagData._float;
+	}
+
+	inline double float64(double defaultVal = 0.0f) const {
+		if (_tagType != TagType::DOUBLE) {
+			return defaultVal;
+		}
+		return _tagData._double;
 	}
 
 	inline int8_t int8(int8_t defaultVal = 0) const {

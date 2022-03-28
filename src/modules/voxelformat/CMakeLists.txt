@@ -73,6 +73,8 @@ set(TEST_SRCS
 	tests/VXRFormatTest.cpp
 	tests/VXMFormatTest.cpp
 
+	tests/NamedBinaryTagTest.cpp
+
 	tests/8ontop.h
 	tests/vox_character.h
 	tests/vox_glasses.h
