@@ -143,6 +143,7 @@ bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream
 	}
 
 	voxel::RawVolume *volume;
+	// https://minecraft.fandom.com/wiki/Data_version
 	const int32_t dataVersion = root.get("DataVersion").int32();
 	if (dataVersion >= 2844) {
 		volume = parseSections(dataVersion, root, sector);

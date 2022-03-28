@@ -127,6 +127,78 @@ NamedBinaryTag::~NamedBinaryTag() {
 	_tagData._compound = nullptr;
 }
 
+void NamedBinaryTag::dump_r(io::WriteStream &stream, const char *name, const NamedBinaryTag &tag, int level) {
+	static const char *Names[] {
+		"END",
+		"BYTE",
+		"SHORT",
+		"INT",
+		"LONG",
+		"FLOAT",
+		"DOUBLE",
+		"BYTE_ARRAY",
+		"STRING",
+		"LIST",
+		"COMPOUND",
+		"INT_ARRAY",
+		"LONG_ARRAY"
+	};
+	static_assert((int)TagType::MAX == lengthof(Names), "Array size doesn't match tag types");
+
+	if (name == nullptr || *name == '\0') {
+		stream.writeStringFormat(false, "%*s%s", level, " ", Names[(int)tag.type()]);
+	} else {
+		stream.writeStringFormat(false, "%*s%s[%s]", level, " ", name, Names[(int)tag.type()]);
+	}
+	switch (tag.type()) {
+	case TagType::BYTE:
+		stream.writeStringFormat(false, " = %i", tag._tagData._byte);
+		break;
+	case TagType::SHORT:
+		stream.writeStringFormat(false, " = %i", tag._tagData._short);
+		break;
+	case TagType::FLOAT:
+		stream.writeStringFormat(false, " = %f", tag._tagData._float);
+		break;
+	case TagType::DOUBLE:
+		stream.writeStringFormat(false, " = %f", tag._tagData._double);
+		break;
+	case TagType::INT:
+		stream.writeStringFormat(false, " = %i", tag._tagData._int);
+		break;
+	case TagType::LONG:
+		stream.writeStringFormat(false, " = %li", (long int)tag._tagData._long);
+		break;
+	case TagType::STRING:
+		stream.writeStringFormat(false, " = %s", tag.string()->c_str());
+		break;
+	case TagType::COMPOUND:
+		stream.writeStringFormat(false, " (%i)\n", (int)(*tag.compound()).size());
+		for (const auto &c : *tag.compound()) {
+			dump_r(stream, c->first.c_str(), c->second, level + 1);
+		}
+		break;
+	case TagType::LIST:
+		stream.writeStringFormat(false, " (%i)\n", (int)(*tag.list()).size());
+		for (const auto& c : *tag.list()) {
+			dump_r(stream, "", c, level + 1);
+		}
+		break;
+	case TagType::BYTE_ARRAY:
+	case TagType::INT_ARRAY:
+	case TagType::LONG_ARRAY:
+	case TagType::END:
+	case TagType::MAX:
+		break;
+	}
+	stream.writeString("\n", false);
+}
+
+void NamedBinaryTag::dump(io::WriteStream &stream) const {
+	dump_r(stream, "", *this, 0);
+	stream.writeUInt8(0);
+}
+
 NamedBinaryTag NamedBinaryTag::parse(NamedBinaryTagContext &ctx) {
 	TagType type;
 	if (!readType(*ctx.stream, type) || type != TagType::COMPOUND) {

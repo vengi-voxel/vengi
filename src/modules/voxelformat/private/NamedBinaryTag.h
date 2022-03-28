@@ -138,6 +138,8 @@ private:
 		return !isPointerType(type);
 	}
 
+	static void dump_r(io::WriteStream &stream, const char *name, const NamedBinaryTag &tag, int level);
+
 public:
 	constexpr NamedBinaryTag() {
 	}
@@ -161,6 +163,8 @@ public:
 	NamedBinaryTag(NamedBinaryTag &&val) noexcept;
 
 	static NamedBinaryTag parse(NamedBinaryTagContext &stream);
+
+	void dump(io::WriteStream &stream) const;
 
 	inline bool valid() const {
 		return _tagType != TagType::MAX;

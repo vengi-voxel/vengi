@@ -55,6 +55,10 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 		Log::error("Could not find 'Blocks' tag");
 		return false;
 	}
+	if (blocks.type() != priv::TagType::BYTE_ARRAY) {
+		Log::error("Tag 'Blocks' is no byte array (%i)", (int)blocks.type());
+		return false;
+	}
 
 	// const int8_t itemStackVersion = schematic.get("itemStackVersion").int8(); // MCEdit2
 
