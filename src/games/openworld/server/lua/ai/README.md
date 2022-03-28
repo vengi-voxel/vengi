@@ -2,8 +2,6 @@
 
 The behaviour trees are written in lua.
 
-See the documentation given in the [ai module](../../../modules/ai/README.md)
-
 # Functions
 
 ## `AI`
@@ -13,7 +11,7 @@ See the documentation given in the [ai module](../../../modules/ai/README.md)
 ## `Tree`
 
 The object returned by `createTree` calls. The following methods are included:
-* `createRoot(id, name)`: The `id` if the node factory id as given while registering nodes. The name should match the npc type as given in the [network protocol definition](../../../modules/network/definitions/Shared.fbs).
+* `createRoot(id, name)`: The `id` if the node factory id as given while registering nodes. The name should match the npc type as given in the [network protocol definition](../../../modules/shared/protocol/Shared.fbs).
 * `getName()`: Return the name of the root node
 
 ## `Node`
@@ -25,10 +23,10 @@ The object returned by `createRoot`. The following methods are included:
 
 # Nodes
 
-The behaviour tree nodes can either be implemented in C++ - see [src/modules/backend/entity/ai/action](../../../modules/backend/entity/ai/action) for examples or in lua (see  [src/server/lua/behaviourtreenodes.lua](../behaviourtreenodes.lua) for examples.
+The behaviour tree nodes can either be implemented in C++ - see [src/modules/backend/entity/ai/action](../../../modules/backend/entity/ai/action) for examples or in lua (see [src/server/lua/behaviourtreenodes.lua](../behaviourtreenodes.lua) for examples.
 
 ## LUARegistry
 
 The lua registry exposes functions to write lua based ai tree nodes (actions, conditions, filter, ...).
 
-This is most likely not complete and if you write a node in lua you will probably find objects or function not yet exposed that would be needed for your script to work. In that case, just go ahead and extend the [LUARegistry.cpp](../../../modules/ai/LUARegistry.cpp).
+This is most likely not complete and if you write a node in lua you will probably find objects or function not yet exposed that would be needed for your script to work. In that case, just go ahead and extend the [LUARegistry.cpp](../../../modules/backend/entity/ai/LUARegistry.cpp).
