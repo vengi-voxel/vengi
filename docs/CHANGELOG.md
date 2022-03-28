@@ -10,6 +10,10 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 ## 0.0.20 (2022-XX-XX)
 
+General:
+
+   - Added support for minecraft schematic
+
 VoxConvert:
 
    - Extended `--dump` to also show the key frames

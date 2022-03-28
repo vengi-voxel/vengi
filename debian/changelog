@@ -1,5 +1,8 @@
 vengi (0.0.20.0-1) UNRELEASED; urgency=low
 
+  * General:
+  * Added support for minecraft schematic
+
   * VoxConvert:
   * Extended --dump to also show the key frames
 
