@@ -93,6 +93,34 @@ bool WriteStream::writeString(const core::String &string, bool terminate) {
 	return writeUInt8(uint8_t('\0'));
 }
 
+bool WriteStream::writePascalStringUInt16LE(const core::String &str) {
+	uint16_t length = str.size();
+	if (!writeUInt16(length)) {
+		return false;
+	}
+	for (uint16_t i = 0u; i < length; ++i) {
+		uint8_t chr = str[i];
+		if (!writeUInt8(chr)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool WriteStream::writePascalStringUInt16BE(const core::String &str) {
+	uint16_t length = str.size();
+	if (!writeUInt16BE(length)) {
+		return false;
+	}
+	for (uint16_t i = 0u; i < length; ++i) {
+		uint8_t chr = str[i];
+		if (!writeUInt8(chr)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 bool WriteStream::writeInt16(int16_t word) {
 	const int16_t swappedWord = SDL_SwapLE16(word);
 	return write(&swappedWord, sizeof(int16_t)) != -1;
@@ -236,6 +264,38 @@ bool ReadStream::readString(int length, char *strbuff, bool terminated) {
 		if (terminated && chr == '\0') {
 			break;
 		}
+	}
+	return true;
+}
+
+bool ReadStream::readPascalStringUInt16LE(core::String &str) {
+	uint16_t length;
+	if (readUInt16(length) != 0) {
+		return false;
+	}
+	str.clear();
+	for (uint16_t i = 0u; i < length; ++i) {
+		uint8_t chr;
+		if (readUInt8(chr) != 0) {
+			return false;
+		}
+		str += (char)chr;
+	}
+	return true;
+}
+
+bool ReadStream::readPascalStringUInt16BE(core::String &str) {
+	uint16_t length;
+	if (readUInt16BE(length) != 0) {
+		return false;
+	}
+	str.clear();
+	for (uint16_t i = 0u; i < length; ++i) {
+		uint8_t chr;
+		if (readUInt8(chr) != 0) {
+			return false;
+		}
+		str += (char)chr;
 	}
 	return true;
 }

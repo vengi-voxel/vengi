@@ -71,6 +71,9 @@ public:
 	 * @sa WriteStream::writeFormat()
 	 */
 	bool readFormat(const char *fmt, ...);
+
+	bool readPascalStringUInt16LE(core::String &str);
+	bool readPascalStringUInt16BE(core::String &str);
 };
 
 /**
@@ -193,6 +196,9 @@ public:
 	 * @sa ReadStream::readFormat()
 	 */
 	bool writeFormat(const char *fmt, ...);
+
+	bool writePascalStringUInt16LE(const core::String &str);
+	bool writePascalStringUInt16BE(const core::String &str);
 };
 
 /**
