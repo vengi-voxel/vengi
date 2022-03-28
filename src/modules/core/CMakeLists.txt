@@ -4,6 +4,7 @@ set(SRCS
 	collection/Array3DView.h
 	collection/BitSet.h
 	collection/Buffer.h
+	collection/BufferView.h
 	collection/ConcurrentDynamicArray.h
 	collection/ConcurrentQueue.h
 	collection/ConcurrentPriorityQueue.h
