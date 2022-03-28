@@ -12,6 +12,7 @@
 #include "io/File.h"
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
+#include "io/ZipWriteStream.h"
 #include "private/MinecraftPaletteMap.h"
 #include "private/NamedBinaryTag.h"
 #include "voxel/MaterialColor.h"
@@ -49,7 +50,7 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 	const int16_t width = schematic.get("Width").int16();
 	const int16_t height = schematic.get("Height").int16();
 	const int16_t depth = schematic.get("Length").int16();
-	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width, height, depth));
+	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
 	const priv::NamedBinaryTag &blocks = schematic.get("Blocks");
 	if (!blocks.valid()) {
 		Log::error("Could not find 'Blocks' tag");
@@ -118,6 +119,60 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 	node.setVolume(volume, true);
 	sceneGraph.emplace(core::move(node));
 	return true;
+}
+
+bool SchematicFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	voxel::RawVolume* mergedVolume = merge(sceneGraph);
+	if (mergedVolume == nullptr) {
+		Log::error("Failed to merge volumes");
+		return false;
+	}
+	const glm::ivec3 &size = mergedVolume->region().getDimensionsInVoxels();
+	const glm::ivec3 &mins = mergedVolume->region().getLowerCorner();
+
+	io::ZipWriteStream zipStream(stream);
+
+	_palette.minecraft();
+
+	priv::NBTCompound compound;
+	compound.put("Width", (int16_t)size.x);
+	compound.put("Height", (int16_t)size.y);
+	compound.put("Length", (int16_t)size.z);
+	compound.put("x", (int32_t)mins.x);
+	compound.put("y", (int32_t)mins.y);
+	compound.put("z", (int32_t)mins.z);
+	compound.put("Materials", priv::NamedBinaryTag("Alpha"));
+	{
+		const voxel::Palette &palette = voxel::getPalette();
+
+		core::DynamicArray<int8_t> blocks;
+		blocks.resize(size.x * size.y * size.z);
+
+		_paletteMapping.fill(0xFF);
+
+		for (int x = 0; x < size.x; ++x) {
+			for (int y = 0; y < size.y; ++y) {
+				for (int z = 0; z < size.z; ++z) {
+					const int idx = (y * size.z + z) * size.x + x;
+					const voxel::Voxel &voxel = mergedVolume->voxel(mins.x + x, mins.y + y, mins.z + z);
+					if (voxel::isAir(voxel.getMaterial())) {
+						blocks[idx] = 0;
+					} else {
+						const uint8_t currentPalIdx = voxel.getColor();
+						core::RGBA color = palette.colors[currentPalIdx];
+						if (_paletteMapping[currentPalIdx] == 0xFF) {
+							_paletteMapping[currentPalIdx] = _palette.getClosestMatch(color);
+						}
+						blocks[idx] = (int8_t)_paletteMapping[currentPalIdx];
+					}
+				}
+			}
+		}
+		compound.put("Blocks", priv::NamedBinaryTag(core::move(blocks)));
+	}
+	delete mergedVolume;
+	const priv::NamedBinaryTag tag(core::move(compound));
+	return priv::NamedBinaryTag::write(tag, "Schematic", zipStream);
 }
 
 } // namespace voxelformat

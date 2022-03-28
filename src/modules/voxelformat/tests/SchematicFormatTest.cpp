@@ -18,4 +18,9 @@ TEST_F(SchematicFormatTest, DISABLED_testLoad) {
 	ASSERT_NE(nullptr, volume) << "Could not load schematic file";
 }
 
+TEST_F(SchematicFormatTest, DISABLED_testSaveSmallVoxel) {
+	SchematicFormat f;
+	testSaveLoadVoxel("minecraft-smallvolumesavetest.schematic", &f);
+}
+
 } // namespace voxelformat
