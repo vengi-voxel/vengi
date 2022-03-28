@@ -42,6 +42,10 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 		return false;
 	}
 
+	for (const auto &e : *schematic.compound()) {
+		Log::debug("key: %s", e->first.c_str());
+	}
+
 	const int16_t width = schematic.get("Width").int16();
 	const int16_t height = schematic.get("Height").int16();
 	const int16_t depth = schematic.get("Length").int16();
