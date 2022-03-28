@@ -60,6 +60,9 @@ void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t r
 }
 
 bool IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
+	if (_console.onMouseWheel(x, y)) {
+		return true;
+	}
 	if (!Super::onMouseWheel(x, y)) {
 		SDL_Event ev {};
 		ev.type = SDL_MOUSEWHEEL;
