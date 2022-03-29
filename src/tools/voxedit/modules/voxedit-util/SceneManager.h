@@ -27,7 +27,7 @@
 #include "command/ActionButton.h"
 #include "math/Axis.h"
 #include "MementoHandler.h"
-#include "EditorLUAGenerator.h"
+#include "voxelgenerator/LUAGenerator.h"
 #include "modifier/ModifierType.h"
 #include "modifier/ModifierFacade.h"
 #include <functional>
@@ -170,7 +170,7 @@ private:
 	// existing voxel under the cursor
 	voxel::Voxel _hitCursorVoxel;
 
-	EditorLUAGenerator _luaGenerator;
+	voxelgenerator::LUAGenerator _luaGenerator;
 
 	voxel::RawVolume* activeVolume();
 	/**

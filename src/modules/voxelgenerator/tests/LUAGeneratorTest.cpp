@@ -8,6 +8,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelgenerator/LUAGenerator.h"
 
 namespace voxelgenerator {
@@ -53,10 +54,11 @@ TEST_F(LUAGeneratorTest, testExecute) {
 	voxel::Region region(0, 0, 0, 7, 7, 7);
 	voxel::RawVolume volume(region);
 	voxel::RawVolumeWrapper wrapper(&volume);
+	voxelformat::SceneGraph sceneGraph;
 
 	LUAGenerator g;
 	ASSERT_TRUE(g.init());
-	EXPECT_TRUE(g.exec(script, &wrapper, wrapper.region(), voxel::createVoxel(voxel::VoxelType::Generic, 42)));
+	EXPECT_TRUE(g.exec(script, sceneGraph, wrapper, wrapper.region(), voxel::createVoxel(voxel::VoxelType::Generic, 42)));
 	EXPECT_EQ(42, volume.voxel(0, 0, 0).getColor());
 	EXPECT_NE(0, volume.voxel(1, 0, 0).getColor());
 	EXPECT_TRUE(wrapper.dirtyRegion().isValid());
@@ -85,11 +87,10 @@ TEST_F(LUAGeneratorTest, testArguments) {
 		end
 	)";
 
-	ASSERT_TRUE(voxel::initDefaultPalette());
-
 	voxel::Region region(0, 0, 0, 7, 7, 7);
 	voxel::RawVolume volume(region);
 	voxel::RawVolumeWrapper wrapper(&volume);
+	voxelformat::SceneGraph sceneGraph;
 
 	LUAGenerator g;
 	ASSERT_TRUE(g.init());
@@ -105,7 +106,31 @@ TEST_F(LUAGeneratorTest, testArguments) {
 	core::DynamicArray<core::String> args;
 	args.push_back("param1");
 	args.push_back("param2");
-	EXPECT_TRUE(g.exec(script, &wrapper, region, voxel::createVoxel(voxel::VoxelType::Generic, 42), args));
+	EXPECT_TRUE(g.exec(script, sceneGraph, wrapper, region, voxel::createVoxel(voxel::VoxelType::Generic, 42), args));
+	g.shutdown();
+}
+
+TEST_F(LUAGeneratorTest, testSceneGraph) {
+	const core::String script = R"(
+		function main(volume, region, color)
+			local layer = scenegraph.get()
+			layer:setName("foobar")
+			layer:volume():setVoxel(0, 0, 0, color)
+		end
+	)";
+
+	voxelformat::SceneGraph sceneGraph;
+	voxelformat::SceneGraphNode node;
+	voxel::Region region(0, 0, 0, 7, 7, 7);
+	voxel::RawVolume volume(region);
+	node.setVolume(&volume, false);
+	sceneGraph.emplace(core::move(node));
+
+	voxel::RawVolumeWrapper wrapper(&volume);
+	LUAGenerator g;
+	ASSERT_TRUE(g.init());
+	core::DynamicArray<core::String> args;
+	EXPECT_TRUE(g.exec(script, sceneGraph, wrapper, region, voxel::createVoxel(voxel::VoxelType::Generic, 42), args));
 	g.shutdown();
 }
 

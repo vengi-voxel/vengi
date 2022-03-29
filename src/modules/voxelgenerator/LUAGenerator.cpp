@@ -18,11 +18,30 @@
 #include "io/Filesystem.h"
 #include "noise/Simplex.h"
 #include "app/App.h"
+#include "voxelformat/SceneGraphUtil.h"
 #include "voxelutil/VolumeResizer.h"
+#include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphNode.h"
 
 #define GENERATOR_LUA_SANTITY 1
 
 namespace voxelgenerator {
+
+static const char *luaVoxel_globalscenegraph() {
+	return "__global_scenegraph";
+}
+
+static const char *luaVoxel_metascenegraphnode() {
+	return "__meta_scenegraphnode";
+}
+
+static const char *luaVoxel_metascenegraph() {
+	return "__meta_scenegraph";
+}
+
+static const char *luaVoxel_metavolumewrapper_mem() {
+	return "__meta_volumewrappermem";
+}
 
 static const char *luaVoxel_metavolumewrapper() {
 	return "__meta_volumewrapper";
@@ -36,7 +55,18 @@ static const char *luaVoxel_metanoise() {
 	return "__meta_noise";
 }
 
+static voxelformat::SceneGraphNode* luaVoxel_toscenegraphnode(lua_State* s, int n) {
+	return *(voxelformat::SceneGraphNode**)clua_getudata<voxelformat::SceneGraphNode*>(s, n, luaVoxel_metascenegraphnode());
+}
+
+static int luaVoxel_pushscenegraphnode(lua_State* s, voxelformat::SceneGraphNode& node) {
+	return clua_pushudata(s, &node, luaVoxel_metascenegraphnode());
+}
+
 static voxel::RawVolumeWrapper* luaVoxel_tovolumewrapper(lua_State* s, int n) {
+	if (luaL_testudata(s, n, luaVoxel_metavolumewrapper_mem())) {
+		return *(voxel::RawVolumeWrapper**)clua_getudata<voxel::RawVolume*>(s, n, luaVoxel_metavolumewrapper_mem());
+	}
 	return *(voxel::RawVolumeWrapper**)clua_getudata<voxel::RawVolume*>(s, n, luaVoxel_metavolumewrapper());
 }
 
@@ -45,6 +75,13 @@ static int luaVoxel_pushvolumewrapper(lua_State* s, voxel::RawVolumeWrapper* vol
 		return clua_error(s, "No volume given - can't push");
 	}
 	return clua_pushudata(s, volume, luaVoxel_metavolumewrapper());
+}
+
+static int luaVoxel_pushvolumewrapper_mem(lua_State* s, voxel::RawVolumeWrapper* volume) {
+	if (volume == nullptr) {
+		return clua_error(s, "No volume given - can't push");
+	}
+	return clua_pushudata(s, volume, luaVoxel_metavolumewrapper_mem());
 }
 
 static int luaVoxel_volumewrapper_voxel(lua_State* s) {
@@ -98,6 +135,12 @@ static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
 	const bool insideRegion = volume->setVoxel(x, y, z, voxel);
 	lua_pushboolean(s, insideRegion ? 1 : 0);
 	return 1;
+}
+
+static int luaVoxel_volumewrapper_gc(lua_State *s) {
+	voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	delete volume;
+	return 0;
 }
 
 static int luaVoxel_palette_colors(lua_State* s) {
@@ -364,16 +407,82 @@ static int luaVoxel_noise_worley3(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_scenegraph_new_node(lua_State* s) {
+	const char *name = lua_tostring(s, 1);
+	const bool visible = lua_toboolean(s, 2);
+	const voxel::Region* region = voxelgenerator::LUAGenerator::luaVoxel_toRegion(s, 3);
+	voxel::RawVolume *v = new voxel::RawVolume(*region);
+	voxelformat::SceneGraphNode node;
+	node.setVolume(v, true);
+	node.setName(name);
+	node.setVisible(visible);
+	const glm::vec3 rp = v->region().getPivot();
+	const glm::vec3 size = v->region().getDimensionsInVoxels();
+	node.setPivot(0, rp, size);
+	voxelformat::SceneGraph* sceneGraph = lua::LUA::globalData<voxelformat::SceneGraph>(s, luaVoxel_globalscenegraph());
+	const int nodeId = voxelformat::addNodeToSceneGraph(*sceneGraph, node, sceneGraph->root().id());
+	if (nodeId == -1) {
+		return clua_error(s, "Failed to add new node");
+	}
+
+	return luaVoxel_pushscenegraphnode(s, sceneGraph->node(nodeId));
+}
+
+static int luaVoxel_scenegraph_get_node(lua_State* s) {
+	int nodeId = (int)luaL_optinteger(s, 1, -1);
+	voxelformat::SceneGraph* sceneGraph = lua::LUA::globalData<voxelformat::SceneGraph>(s, luaVoxel_globalscenegraph());
+	if (nodeId == -1) {
+		nodeId = sceneGraph->activeNode();
+	}
+	if (!sceneGraph->hasNode(nodeId)) {
+		return clua_error(s, "Could not find node for id %d", nodeId);
+	}
+	voxelformat::SceneGraphNode& node = sceneGraph->node(nodeId);
+	if (node.type() != voxelformat::SceneGraphNodeType::Model) {
+		return clua_error(s, "Invalid node for id %d", nodeId);
+	}
+	return luaVoxel_pushscenegraphnode(s, node);
+}
+
+static int luaVoxel_scenegraphnode_volume(lua_State* s) {
+	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	voxel::RawVolumeWrapper *wrapper = new voxel::RawVolumeWrapper(node->volume());
+	return luaVoxel_pushvolumewrapper_mem(s, wrapper);
+}
+
+static int luaVoxel_scenegraphnode_name(lua_State* s) {
+	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushstring(s, node->name().c_str());
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_setname(lua_State* s) {
+	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	const char *newName = lua_tostring(s, 2);
+	node->setName(newName);
+	return 0;
+}
+
+static int luaVoxel_scenegraphnode_tostring(lua_State *s) {
+	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushfstring(s, "layer: [%d, %s]", node->id(), node->name().c_str());
+	return 1;
+}
+
 static void prepareState(lua_State* s) {
-	static const luaL_Reg volumeFuncs[] = {
+	luaL_Reg volumeFuncs[] = {
 		{"voxel", luaVoxel_volumewrapper_voxel},
 		{"region", luaVoxel_volumewrapper_region},
 		{"translate", luaVoxel_volumewrapper_translate},
 		{"resize", luaVoxel_volumewrapper_resize},
 		{"setVoxel", luaVoxel_volumewrapper_setvoxel},
+		{nullptr, nullptr},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, volumeFuncs, luaVoxel_metavolumewrapper());
+
+	volumeFuncs[lengthof(volumeFuncs) - 2] = {"__gc", luaVoxel_volumewrapper_gc};
+	clua_registerfuncs(s, volumeFuncs, luaVoxel_metavolumewrapper_mem());
 
 	static const luaL_Reg regionFuncs[] = {
 		{"width", luaVoxel_region_width},
@@ -391,6 +500,22 @@ static void prepareState(lua_State* s) {
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, regionFuncs, LUAGenerator::luaVoxel_metaregion());
+
+	static const luaL_Reg sceneGraphFuncs[] = {
+		{"new", luaVoxel_scenegraph_new_node},
+		{"get", luaVoxel_scenegraph_get_node},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, sceneGraphFuncs, luaVoxel_metascenegraph(), "scenegraph");
+
+	static const luaL_Reg sceneGraphNodeFuncs[] = {
+		{"name", luaVoxel_scenegraphnode_name},
+		{"volume", luaVoxel_scenegraphnode_volume},
+		{"setName", luaVoxel_scenegraphnode_setname},
+		{"__tostring", luaVoxel_scenegraphnode_tostring},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncs(s, sceneGraphNodeFuncs, luaVoxel_metascenegraphnode());
 
 	static const luaL_Reg paletteFuncs[] = {
 		{"colors", luaVoxel_palette_colors},
@@ -615,7 +740,7 @@ core::DynamicArray<LUAScript> LUAGenerator::listScripts() const {
 	return scripts;
 }
 
-bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* volume, const voxel::Region& region, const voxel::Voxel& voxel, const core::DynamicArray<core::String>& args) {
+bool LUAGenerator::exec(const core::String& luaScript, voxelformat::SceneGraph &sceneGraph, voxel::RawVolumeWrapper &volume, const voxel::Region& region, const voxel::Voxel& voxel, const core::DynamicArray<core::String>& args) {
 	core::DynamicArray<LUAParameterDescription> argsInfo;
 	if (!argumentInfo(luaScript, argsInfo)) {
 		Log::error("Failed to get argument details");
@@ -631,8 +756,8 @@ bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* 
 	}
 
 	lua::LUA lua;
+	lua.newGlobalData<voxelformat::SceneGraph>(luaVoxel_globalscenegraph(), &sceneGraph);
 	prepareState(lua);
-	initializeCustomState(lua);
 
 	// load and run once to initialize the global variables
 	if (luaL_dostring(lua, luaScript.c_str())) {
@@ -640,7 +765,7 @@ bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* 
 		return false;
 	}
 
-	// get main(volume, region) method
+	// get main(volume, region, color) method
 	lua_getglobal(lua, "main");
 	if (!lua_isfunction(lua, -1)) {
 		Log::error("LUA generator: no main(volume, region, color) function found in '%s'", luaScript.c_str());
@@ -648,7 +773,7 @@ bool LUAGenerator::exec(const core::String& luaScript, voxel::RawVolumeWrapper* 
 	}
 
 	// first parameter is volume
-	if (luaVoxel_pushvolumewrapper(lua, volume) == 0) {
+	if (luaVoxel_pushvolumewrapper(lua, &volume) == 0) {
 		Log::error("Failed to push volume");
 		return false;
 	}

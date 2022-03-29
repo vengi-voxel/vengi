@@ -22,8 +22,6 @@ By default the script files will be searched in a `scripts` folder next to where
 
 There are two functions in each script. One is called `arguments` and one `main`. `arguments` returns a list of parameters for the `main` function. The default parameters for `main` are `volume`, `region` and `color`. `color` is the palette index starting from `0`.
 
-Those functionalities that are marked with `voxedit` are not available outside of the editor (e.g. for the command line tools like [voxconvert](voxconvert/Index.md)).
-
 ## Examples
 
 ### Without parameters
@@ -77,7 +75,7 @@ A `default` value can get set, too.
 
 The order in the arguments table defines the order in which the arguments are passed over to the script.
 
-## SceneGraph (voxedit)
+## SceneGraph
 
 `scenegraph` lets you access different nodes or create new ones.
 
@@ -87,7 +85,7 @@ The functions are:
 
 * `get([nodeId])`: Returns the `node` for the given `nodeId` - if the `nodeId` is not given, it will return the current active node. Which by default is the node for the volume the script is currently executed for.
 
-## SceneGraphNode (voxedit)
+## SceneGraphNode
 
 * `name()`: Returns the current name of the node.
 

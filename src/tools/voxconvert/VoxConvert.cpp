@@ -568,7 +568,7 @@ void VoxConvert::script(const core::String &scriptParameters, voxelformat::Scene
 			Log::info("Execute script %s", tokens[0].c_str());
 			for (voxelformat::SceneGraphNode& node : sceneGraph) {
 				voxel::RawVolumeWrapper wrapper(node.volume());
-				script.exec(luaScript, &wrapper, wrapper.region(), voxel, args);
+				script.exec(luaScript, sceneGraph, wrapper, wrapper.region(), voxel, args);
 				if (wrapper.volume() != node.volume()) {
 					node.setVolume(wrapper.volume(), true);
 				}

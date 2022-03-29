@@ -12,6 +12,10 @@
 
 struct lua_State;
 
+namespace voxelformat {
+class SceneGraph;
+}
+
 namespace voxel {
 class Region;
 class RawVolumeWrapper;
@@ -61,8 +65,6 @@ struct LUAScript {
 };
 
 class LUAGenerator : public core::IComponent {
-protected:
-	virtual void initializeCustomState(lua_State* s) {}
 public:
 	static inline const char *luaVoxel_metaregion() {
 		return "__meta_region";
@@ -78,7 +80,7 @@ public:
 	core::String load(const core::String& scriptName) const;
 	core::DynamicArray<LUAScript> listScripts() const;
 	bool argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params);
-	bool exec(const core::String& luaScript, voxel::RawVolumeWrapper* volume, const voxel::Region& region, const voxel::Voxel& voxel, const core::DynamicArray<core::String>& args = core::DynamicArray<core::String>());
+	bool exec(const core::String& luaScript, voxelformat::SceneGraph &sceneGraph, voxel::RawVolumeWrapper &volume, const voxel::Region& region, const voxel::Voxel& voxel, const core::DynamicArray<core::String>& args = core::DynamicArray<core::String>());
 };
 
 inline auto scriptCompleter(const io::FilesystemPtr& filesystem) {

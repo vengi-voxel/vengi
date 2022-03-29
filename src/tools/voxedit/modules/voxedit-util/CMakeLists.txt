@@ -1,5 +1,4 @@
 set(SRCS
-	EditorLUAGenerator.h EditorLUAGenerator.cpp
 	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp
 	CustomBindingContext.h
