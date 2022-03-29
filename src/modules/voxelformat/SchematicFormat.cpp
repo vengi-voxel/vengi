@@ -43,10 +43,6 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 		return false;
 	}
 
-	for (const auto &e : *schematic.compound()) {
-		Log::debug("key: %s", e->first.c_str());
-	}
-
 	const int16_t width = schematic.get("Width").int16();
 	const int16_t height = schematic.get("Height").int16();
 	const int16_t depth = schematic.get("Length").int16();
@@ -61,10 +57,8 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 		return false;
 	}
 
-	// const int8_t itemStackVersion = schematic.get("itemStackVersion").int8(); // MCEdit2
-
-	core::Buffer<int> pal;
-	pal.resize(voxel::PaletteMaxColors);
+	core::Buffer<int> mcpal;
+	mcpal.resize(voxel::PaletteMaxColors);
 	int paletteEntry = 0;
 	const priv::NamedBinaryTag &blockIds = schematic.get("BlockIDs"); // MCEdit2
 	if (blockIds.valid()) {
@@ -81,30 +75,35 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 			auto iter = map.find(key);
 			if (iter == map.end()) {
 				Log::debug("Could not find a color mapping for '%s'", key.c_str());
-				pal[paletteEntry] = -1;
+				mcpal[paletteEntry] = 1; // map to stone
 			} else {
-				pal[paletteEntry] = iter->value;
+				mcpal[paletteEntry] = iter->value;
 			}
 			++paletteEntry;
 		}
 	}
 
-	// const priv::NamedBinaryTag &materials = schematic.get("Materials");
-	// Classic, Pocket, Alpha
-	// const priv::NamedBinaryTag &schematicaMapping = schematic.get("SchematicaMapping");
-	// const priv::NamedBinaryTag &data = schematic.get("Data");
-
+	_paletteMapping.fill(0xFF);
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {
 			for (int z = 0; z < depth; ++z) {
 				const int idx = (y * depth + z) * width + x;
 				const uint8_t palIdx = (*blocks.byteArray())[idx];
 				if (palIdx != 0u) {
+					uint8_t currentPalIdx;
+					core::RGBA color;
 					if (paletteEntry == 0) {
-						volume->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
+						currentPalIdx = palIdx;
+						color = _palette.colors[palIdx];
 					} else {
-						volume->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, pal[palIdx]));
+						currentPalIdx = mcpal[palIdx];
+						color = _palette.colors[mcpal[palIdx]];
 					}
+
+					if (_paletteMapping[currentPalIdx] == 0xFF) {
+						_paletteMapping[currentPalIdx] = palette.getClosestMatch(color);
+					}
+					volume->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, _paletteMapping[currentPalIdx]));
 				}
 			}
 		}
