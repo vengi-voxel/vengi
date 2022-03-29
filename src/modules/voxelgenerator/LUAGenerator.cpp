@@ -18,6 +18,7 @@
 #include "io/Filesystem.h"
 #include "noise/Simplex.h"
 #include "app/App.h"
+#include "voxelutil/VolumeResizer.h"
 
 #define GENERATOR_LUA_SANTITY 1
 
@@ -71,6 +72,19 @@ static int luaVoxel_volumewrapper_translate(lua_State* s) {
 	const int y = (int)luaL_optinteger(s, 3, 0);
 	const int z = (int)luaL_optinteger(s, 4, 0);
 	volume->translate(glm::ivec3(x, y, z));
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_resize(lua_State *s) {
+	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const int w = (int)luaL_checkinteger(s, 2);
+	const int h = (int)luaL_optinteger(s, 3, 0);
+	const int d = (int)luaL_optinteger(s, 4, 0);
+	const bool extendMins = (int)clua_optboolean(s, 5, false);
+	voxel::RawVolume *v = voxelutil::resize(volume->volume(), glm::ivec3(w, h, d), extendMins);
+	if (v == nullptr) {
+		volume->setVolume(v);
+	}
 	return 0;
 }
 
@@ -355,6 +369,7 @@ static void prepareState(lua_State* s) {
 		{"voxel", luaVoxel_volumewrapper_voxel},
 		{"region", luaVoxel_volumewrapper_region},
 		{"translate", luaVoxel_volumewrapper_translate},
+		{"resize", luaVoxel_volumewrapper_resize},
 		{"setVoxel", luaVoxel_volumewrapper_setvoxel},
 		{nullptr, nullptr}
 	};

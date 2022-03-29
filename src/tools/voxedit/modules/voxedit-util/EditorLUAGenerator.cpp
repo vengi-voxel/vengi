@@ -5,8 +5,6 @@
 #include "EditorLUAGenerator.h"
 #include "commonlua/LUAFunctions.h"
 #include "SceneManager.h"
-#include "lauxlib.h"
-#include "lua.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -48,7 +46,7 @@ static LUAVolume* luaVoxel_tovolume(lua_State* s, int n) {
 	return clua_getudata<LUAVolume*>(s, n, luaVoxel_metavolume());
 }
 
-static int luaVoxel_scenegraph_new(lua_State* s) {
+static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	const char *name = lua_tostring(s, 1);
 	const bool visible = lua_toboolean(s, 2);
 	const voxel::Region* region = voxelgenerator::LUAGenerator::luaVoxel_toRegion(s, 3);
@@ -69,7 +67,7 @@ static int luaVoxel_scenegraph_new(lua_State* s) {
 	return clua_pushudata(s, luaNode, luaVoxel_metascenegraphnode());
 }
 
-static int luaVoxel_scenegraph_get(lua_State* s) {
+static int luaVoxel_scenegraph_get_node(lua_State* s) {
 	int nodeId = (int)luaL_optinteger(s, 1, -1);
 	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	if (nodeId == -1) {
@@ -183,8 +181,8 @@ static int luaVoxel_volume_gc(lua_State *s) {
 
 void EditorLUAGenerator::initializeCustomState(lua_State *s) {
 	static const luaL_Reg sceneGraphFuncs[] = {
-		{"new", luaVoxel_scenegraph_new},
-		{"get", luaVoxel_scenegraph_get},
+		{"new", luaVoxel_scenegraph_new_node},
+		{"get", luaVoxel_scenegraph_get_node},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, sceneGraphFuncs, luaVoxel_metascenegraph(), "scenegraph");

@@ -151,6 +151,8 @@ The functions are:
 
 * `translate(x, [y, z])`: Translates the region of the volume. Keep in mind that this is not supported by every output format.
 
+* `resize(x, [y, z, extendMins])`: Resize the volume by the given sizes. If `extendsMins` is `true` the region dimensions are also increased on the lower corner.
+
 * `setVoxel(x, y, z, color)`: Set the given color at the given coordinates in the volume. `color` must be in the range `[0-255]`.
 
 ## Vectors

@@ -72,6 +72,10 @@ public:
 		return _volume;
 	}
 
+	inline void setVolume(RawVolume* v) {
+		_volume = v;
+	}
+
 	inline const Region& region() const {
 		return _region;
 	}

@@ -1763,6 +1763,10 @@ bool SceneManager::runScript(const core::String& script, const core::DynamicArra
 		wrapper.setRegion(selection);
 	}
 	const bool retVal = _luaGenerator.exec(script, &wrapper, wrapper.region(), _modifier.cursorVoxel(), args);
+	if (wrapper.volume() != volume) {
+		sceneGraphNode(nodeId)->setVolume(wrapper.volume(), true);
+	}
+
 	modified(nodeId, wrapper.dirtyRegion());
 	return retVal;
 }
