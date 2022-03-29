@@ -119,6 +119,11 @@ update-imguizmo:
 	dos2unix src/modules/ui/imgui/dearimgui/ImSeq*
 	dos2unix src/modules/ui/imgui/dearimgui/ImGuizmo*
 
+update-im-neo-sequencer:
+	$(call UPDATE_GIT,im-neo-sequencer,https://gitlab.com/GroGy/im-neo-sequencer.git)
+	cp $(UPDATEDIR)/im-neo-sequencer.sync/imgui*.cpp $(UPDATEDIR)/im-neo-sequencer.sync/imgui*.h src/modules/ui/imgui/dearimgui
+	cp $(UPDATEDIR)/im-neo-sequencer.sync/LICENSE src/modules/ui/imgui/dearimgui/LICENSE-sequencer
+
 # the backend code is just copied to merge in potiential changes
 update-dearimgui:
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git -b docking)

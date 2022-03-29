@@ -25,6 +25,9 @@ set(SRCS
 
 	dearimgui/backends/imgui_impl_sdl.cpp dearimgui/backends/imgui_impl_sdl.h
 
+	dearimgui/imgui_neo_sequencer.cpp dearimgui/imgui_neo_sequencer.h
+	dearimgui/imgui_neo_internal.cpp dearimgui/imgui_neo_internal.h
+
 	dearimgui/ImGuizmo.cpp dearimgui/ImGuizmo.h
 )
 
