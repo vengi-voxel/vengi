@@ -40,10 +40,6 @@ void ModifierPanel::update(const char *title, command::CommandExecutionListener 
 			ImGui::CommandButton(ICON_FA_FILL_DRIP, "fillhollow", nullptr, 0, &listener);
 		}
 
-		uint32_t frame = sceneMgr().currentFrame();
-		ImGui::SliderInt("Frame", (int32_t*)&frame, 0, 100);
-		sceneMgr().setCurrentFrame(frame);
-
 		ImGui::NewLine();
 
 		const float buttonWidth = (float)imguiApp()->fontSize() * 4;
