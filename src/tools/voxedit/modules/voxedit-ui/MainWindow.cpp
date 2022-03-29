@@ -24,6 +24,7 @@
 #define TITLE_STATUSBAR "##statusbar"
 #define TITLE_PALETTE "Palette##title"
 #define TITLE_POSITIONS "Positions##title"
+#define TITLE_ANIMATION_TIMELINE "Animation##animationtimeline"
 #define TITLE_MODIFIERS "Modifiers##title"
 #define TITLE_LAYERS "Layers##title"
 #define TITLE_FORMAT_SETTINGS "Formats##title"
@@ -222,6 +223,7 @@ void MainWindow::mainWidget() {
 	_sceneLeft->update();
 	_sceneFront->update();
 	_sceneAnimation->update();
+	_animationTimeline.update(TITLE_ANIMATION_TIMELINE);
 }
 
 void MainWindow::rightWidget() {
@@ -454,6 +456,7 @@ void MainWindow::update() {
 		ImGui::DockBuilderDockWindow(_sceneFront->id().c_str(), _dockIdMain);
 		ImGui::DockBuilderDockWindow(_sceneAnimation->id().c_str(), _dockIdMain);
 		ImGui::DockBuilderDockWindow(WINDOW_TITLE_SCRIPT_EDITOR, _dockIdMainDown);
+		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_TIMELINE, _dockIdMainDown);
 		ImGui::DockBuilderFinish(dockspaceId);
 		init = true;
 	}

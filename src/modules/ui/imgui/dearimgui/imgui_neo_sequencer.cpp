@@ -429,8 +429,8 @@ namespace ImGui {
 		const auto cursor = GetCursorScreenPos();
 		const auto area = ImGui::GetContentRegionAvail();
 
-		const auto cursorBasePos = GetCursorScreenPos() + window->Scroll;
-		const ImRect clip = { cursorBasePos, cursorBasePos + window->ContentRegionRect.GetSize() };
+		//const auto cursorBasePos = GetCursorScreenPos() + window->Scroll;
+		//const ImRect clip = { cursorBasePos, cursorBasePos + window->ContentRegionRect.GetSize() };
 
 		PushID(idin);
 		const auto id = window->IDStack[window->IDStack.size() - 1];

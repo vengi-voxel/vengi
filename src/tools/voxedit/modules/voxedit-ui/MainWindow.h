@@ -9,6 +9,7 @@
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/TextEditor.h"
 #include "voxedit-ui/AnimationPanel.h"
+#include "voxedit-ui/AnimationTimeline.h"
 #include "voxedit-ui/PositionsPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/LayerPanel.h"
@@ -91,6 +92,7 @@ private:
 	FormatSettingsPanel _formatSettingsPanel;
 	MenuBar _menuBar;
 	StatusBar _statusBar;
+	AnimationTimeline _animationTimeline;
 
 	void leftWidget();
 	void mainWidget();

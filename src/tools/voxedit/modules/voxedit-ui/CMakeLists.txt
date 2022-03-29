@@ -1,6 +1,7 @@
 set(LIB voxedit-ui)
 
 set(SRCS
+	AnimationTimeline.h AnimationTimeline.cpp
 	AnimationPanel.h AnimationPanel.cpp
 	PositionsPanel.h PositionsPanel.cpp
 	FormatSettingsPanel.h FormatSettingsPanel.cpp
