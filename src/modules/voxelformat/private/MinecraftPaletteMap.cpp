@@ -270,17 +270,17 @@ namespace voxelformat {
 	{"gray_concrete_powder", 252},  \
 	{"deepslate_redstone_ore", 1},\
 	{"deepslate_iron_ore", 1},	\
-	{"kelp", 1},					\
-	{"deepslate", 1},				\
+	{"kelp", 2},					\
+	{"deepslate", 118},				\
 	{"moss_carpet", 1},			\
 	{"granite", 1},				\
-	{"diorite", 1},				\
+	{"diorite", 82},				\
 	{"glow_lichen", 1},			\
 	{"copper_ore", 1},			\
 	{"tuff", 1},				\
 	{"deepslate_gold_ore", 1},	\
 	{"flowering_azalea", 1},	\
-	{"azalea", 1},				\
+	{"azalea", 6},				\
 	{"cave_vines", 1},			\
 	{"cave_vines_plant", 1},	\
 	{"big_dripleaf", 1},		\
@@ -305,7 +305,7 @@ namespace voxelformat {
 	{"cracked_stone_bricks", 1},\
 	{"small_dripleaf", 1},		\
 	{"deepslate_coal_ore", 1},	\
-	{"fern", 1},				\
+	{"fern", 165},				\
 	{"raw_copper_block", 1},	\
 	{"raw_iron_block", 1},		\
 	{"jungle_log", 1},			\

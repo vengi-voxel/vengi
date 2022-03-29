@@ -5,6 +5,7 @@
 #include "PalettePanel.h"
 #include "IMGUIApp.h"
 #include "core/StringUtil.h"
+#include "imgui.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
@@ -187,6 +188,28 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 				palette.markSaved();
 			}
 			ImGui::TooltipText("Save the modified palette");
+		}
+
+		ImGui::Dummy(ImVec2(10, 10));
+
+		static int closestMatch = -1;
+		static glm::vec4 closestColor{0.0f};
+		if (ImGui::ColorEdit4("Color closest match", glm::value_ptr(closestColor), ImGuiColorEditFlags_NoInputs)) {
+			closestMatch = palette.getClosestMatch(closestColor);
+		}
+		ImGui::TooltipText("Select a color to find the closest match in the current loaded palette");
+		ImGui::SameLine();
+		char buf[256];
+		core::string::formatBuf(buf, sizeof(buf), "%i##closestmatchpalpanel", closestMatch);
+		if (ImGui::Selectable(buf) && closestMatch != -1) {
+			glm::vec4 color = core::Color::fromRGBA(palette.colors[closestMatch]);
+			voxel::VoxelType type;
+			if (color.a < 1.0f) {
+				type = voxel::VoxelType::Transparent;
+			} else {
+				type = voxel::VoxelType::Generic;
+			}
+			sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(type, closestMatch));
 		}
 	}
 	ImGui::End();
