@@ -138,10 +138,10 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 	wrapSave(outStream.writeInt32(mins.y))
 	wrapSave(outStream.writeInt32(mins.z))
 
-	const glm::vec3 &pivot = transform.pivot();
-	wrapSave(outStream.writeFloat(pivot.x))
-	wrapSave(outStream.writeFloat(pivot.y))
-	wrapSave(outStream.writeFloat(pivot.z))
+	const glm::vec3 &normalizedPivot = transform.pivot();
+	wrapSave(outStream.writeFloat(/* TODO mins.x +*/ normalizedPivot.x * size.x))
+	wrapSave(outStream.writeFloat(/* TODO mins.y +*/ normalizedPivot.y * size.y))
+	wrapSave(outStream.writeFloat(/* TODO mins.z +*/ normalizedPivot.z * size.z))
 
 	uint32_t voxelDataSizePos = outStream.pos();
 	wrapSave(outStream.writeUInt32(0));
@@ -290,6 +290,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	wrap(stream.readFloat(pivot.y));
 	wrap(stream.readFloat(pivot.z));
 
+	// TODO: -position?
 	transform.setPivot(pivot / glm::vec3(size));
 
 	uint32_t compressedDataSize;
