@@ -38,6 +38,10 @@ static LUASceneGraphNode* luaVoxel_toSceneGraphNode(lua_State* s, int n) {
 	return clua_getudata<LUASceneGraphNode*>(s, n, luaVoxel_metascenegraphnode());
 }
 
+static int luaVoxel_pushscenegraphnode(lua_State* s, const LUASceneGraphNode& luaNode) {
+	return clua_pushudata(s, luaNode, luaVoxel_metascenegraphnode());
+}
+
 static int luaVoxel_pushvolume(lua_State* s, const LUAVolume& luaVolume) {
 	return clua_pushudata(s, luaVolume, luaVoxel_metavolume());
 }
@@ -64,7 +68,7 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	}
 
 	LUASceneGraphNode luaNode{nodeId};
-	return clua_pushudata(s, luaNode, luaVoxel_metascenegraphnode());
+	return luaVoxel_pushscenegraphnode(s, luaNode);
 }
 
 static int luaVoxel_scenegraph_get_node(lua_State* s) {
@@ -81,7 +85,7 @@ static int luaVoxel_scenegraph_get_node(lua_State* s) {
 		return clua_error(s, "Invalid node for id %d", nodeId);
 	}
 	LUASceneGraphNode luaNode{nodeId};
-	return clua_pushudata(s, luaNode, luaVoxel_metascenegraphnode());
+	return luaVoxel_pushscenegraphnode(s, luaNode);
 }
 
 static int luaVoxel_scenegraphnode_name(lua_State* s) {
