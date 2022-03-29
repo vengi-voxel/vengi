@@ -26,7 +26,6 @@ set(SRCS
 	dearimgui/backends/imgui_impl_sdl.cpp dearimgui/backends/imgui_impl_sdl.h
 
 	dearimgui/ImGuizmo.cpp dearimgui/ImGuizmo.h
-	dearimgui/ImSequencer.cpp dearimgui/ImSequencer.h
 )
 
 set(GEN_DIR ${GENERATE_DIR}/${LIB})

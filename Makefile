@@ -115,7 +115,7 @@ update-backward:
 
 update-imguizmo:
 	$(call UPDATE_GIT,imguizmo,https://github.com/CedricGuillemet/ImGuizmo.git)
-	cp $(UPDATEDIR)/imguizmo.sync/ImSequencer.* $(UPDATEDIR)/imguizmo.sync/ImGuizmo.* src/modules/ui/imgui/dearimgui
+	cp $(UPDATEDIR)/imguizmo.sync/ImGuizmo.* src/modules/ui/imgui/dearimgui
 	dos2unix src/modules/ui/imgui/dearimgui/ImSeq*
 	dos2unix src/modules/ui/imgui/dearimgui/ImGuizmo*
 
