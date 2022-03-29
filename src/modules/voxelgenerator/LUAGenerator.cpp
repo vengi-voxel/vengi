@@ -379,7 +379,6 @@ static void prepareState(lua_State* s) {
 		{"width", luaVoxel_region_width},
 		{"height", luaVoxel_region_height},
 		{"depth", luaVoxel_region_depth},
-		// TODO: change region
 		{"x", luaVoxel_region_x},
 		{"y", luaVoxel_region_y},
 		{"z", luaVoxel_region_z},
