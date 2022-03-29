@@ -327,7 +327,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		const glm::vec3 &mins = region.getLowerCornerf();
 		const glm::vec3 &maxs = region.getUpperCornerf();
 		const glm::vec3 width = maxs - mins + 1.0f;
-		const int frame = 0;
+		const uint32_t frame = 0;
 		const glm::vec3 transform = mins + node.transform(frame).translation() + width / 2.0f;
 		// y and z are flipped here
 		instance.transform = ogt_identity_transform;

@@ -84,7 +84,7 @@ void SceneGraphRenderer::clear() {
 	}
 }
 
-void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, int frame, bool hideInactive, bool grayInactive) {
+void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, uint32_t frame, bool hideInactive, bool grayInactive) {
 	// remove those volumes that are no longer part of the scene graph
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
 		if (!sceneGraph.hasNode(i)) {

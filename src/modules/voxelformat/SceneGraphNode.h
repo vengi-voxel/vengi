@@ -84,7 +84,7 @@ enum class InterpolationType {
 };
 
 struct SceneGraphKeyFrame {
-	int frame = 0;
+	uint32_t frame = 0;
 	InterpolationType interpolation = InterpolationType::Linear;
 	bool longRotation = false;
 	SceneGraphTransform transform;
@@ -104,7 +104,7 @@ public:
 protected:
 	int _id = -1;
 	int _parent = 0;
-	int _currentAnimKeyFrame = -1;
+	uint32_t _currentAnimKeyFrame = 0;
 	SceneGraphNodeType _type;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
@@ -141,7 +141,7 @@ public:
 	/**
 	 * @brief Get the index of the keyframe for the given frame
 	 */
-	int keyFrameForFrame(int frame) const;
+	uint32_t keyFrameForFrame(uint32_t frame) const;
 
 	int id() const;
 	void setId(int id);
@@ -151,19 +151,19 @@ public:
 
 	bool addChild(int id);
 	bool removeChild(int id);
-	const glm::mat4 &matrix(uint8_t frameIdx = 0) const;
-	void setTransform(uint8_t frameIdx, const SceneGraphTransform &transform, bool updateMatrix);
-	SceneGraphTransform &transform(uint8_t frameIdx = 0);
-	const SceneGraphTransform &transform(uint8_t frameIdx = 0) const;
+	const glm::mat4 &matrix(uint32_t frameIdx = 0) const;
+	void setTransform(uint32_t frameIdx, const SceneGraphTransform &transform, bool updateMatrix);
+	SceneGraphTransform &transform(uint32_t frameIdx = 0);
+	const SceneGraphTransform &transform(uint32_t frameIdx = 0) const;
 
 	/**
 	 * @brief Interpolates the transforms for the given frame. It searches the keyframe before and after
 	 * the given input frame and interpolates according to the given delta frames between the particular
 	 * keyframes.
 	 */
-	SceneGraphTransform transformForFrame(int frame);
+	SceneGraphTransform transformForFrame(uint32_t frame);
 
-	SceneGraphKeyFrame &keyFrame(uint8_t frameIdx);
+	SceneGraphKeyFrame &keyFrame(uint32_t frameIdx);
 
 	/**
 	 * @return voxel::RawVolume - might be @c nullptr
@@ -200,7 +200,7 @@ public:
 	void setVisible(bool visible);
 	bool locked() const;
 	void setLocked(bool locked);
-	void setPivot(uint8_t frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size);
+	void setPivot(uint32_t frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size);
 
 	const core::Buffer<int, 32> &children() const;
 	const core::StringMap<core::String> &properties() const;
@@ -221,18 +221,18 @@ public:
 	}
 };
 
-inline SceneGraphKeyFrame& SceneGraphNode::keyFrame(uint8_t frameIdx) {
-	if ((int)_keyFrames.size() <= frameIdx) {
+inline SceneGraphKeyFrame& SceneGraphNode::keyFrame(uint32_t frameIdx) {
+	if (_keyFrames.size() <= frameIdx) {
 		_keyFrames.resize((int)frameIdx + 1);
 	}
 	return _keyFrames[frameIdx];
 }
 
-inline SceneGraphTransform& SceneGraphNode::transform(uint8_t frameIdx) {
+inline SceneGraphTransform& SceneGraphNode::transform(uint32_t frameIdx) {
 	return _keyFrames[frameIdx].transform;
 }
 
-inline const SceneGraphTransform& SceneGraphNode::transform(uint8_t frameIdx) const {
+inline const SceneGraphTransform& SceneGraphNode::transform(uint32_t frameIdx) const {
 	return _keyFrames[frameIdx].transform;
 }
 
@@ -292,7 +292,7 @@ inline void SceneGraphNode::setLocked(bool locked) {
 	_locked = locked;
 }
 
-inline const glm::mat4 &SceneGraphNode::matrix(uint8_t frameIdx) const {
+inline const glm::mat4 &SceneGraphNode::matrix(uint32_t frameIdx) const {
 	return _keyFrames[frameIdx].transform.matrix();
 }
 

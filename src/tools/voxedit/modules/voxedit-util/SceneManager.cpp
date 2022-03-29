@@ -2281,14 +2281,14 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, int keyFrame, bool memento) {
+bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, uint32_t keyFrame, bool memento) {
 	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeUpdateTransform(*node, matrix, keyFrame, memento);
 	}
 	return false;
 }
 
-bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, int keyFrame, bool memento) {
+bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, uint32_t keyFrame, bool memento) {
 	glm::vec3 translation;
 	glm::quat orientation;
 	glm::vec3 scale;
@@ -2405,7 +2405,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 	updateGridRenderer(region);
 	updateAABBMesh();
 	if (!region.containsPoint(referencePosition())) {
-		const int frame = 0;
+		const uint32_t frame = 0;
 		const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.transform(frame).pivot() * glm::vec3(region.getDimensionsInVoxels()));
 		setReferencePosition(glm::ivec3(pivot));
 	}

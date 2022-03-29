@@ -3,7 +3,6 @@
  */
 
 #include "Viewport.h"
-#include "ScopedStyle.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
 #include "core/Common.h"
@@ -13,6 +12,7 @@
 #include "io/Filesystem.h"
 #include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUIEx.h"
+#include "ui/imgui/ScopedStyle.h"
 #include "ui/imgui/dearimgui/ImGuizmo.h"
 #include "video/Camera.h"
 #include "video/ShapeBuilder.h"
@@ -75,9 +75,6 @@ void Viewport::update() {
 			style.setFont(app->bigFont());
 			ImGui::TextCentered("No animation loaded");
 		} else {
-			if (editMode == EditMode::Scene) {
-				// TODO: key frame sequencer
-			}
 			ImVec2 contentSize = ImGui::GetContentRegionMax();
 			const float headerSize = ImGui::GetCursorPosY();
 
@@ -253,7 +250,7 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	ImGuizmo::SetOrthographic(camera.mode() == video::CameraMode::Orthogonal);
 	const float step = (float)core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
 	const float snap[]{step, step, step};
-	const int keyFrame = node.keyFrameForFrame(sceneMgr().currentFrame());
+	const uint32_t keyFrame = node.keyFrameForFrame(sceneMgr().currentFrame());
 	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrame);
 	glm::mat4 transformMatrix = transform.matrix();
 	glm::mat4 viewMatrix = camera.viewMatrix();

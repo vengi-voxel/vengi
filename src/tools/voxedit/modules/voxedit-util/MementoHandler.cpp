@@ -17,7 +17,7 @@
 
 namespace voxedit {
 
-static const MementoState InvalidMementoState{MementoType::Max, MementoData(), -1, -1, "", voxel::Region::InvalidRegion, glm::mat4(1.0f), -1};
+static const MementoState InvalidMementoState{MementoType::Max, MementoData(), -1, -1, "", voxel::Region::InvalidRegion, glm::mat4(1.0f), 0};
 
 MementoData::MementoData(const uint8_t* buf, size_t bufSize,
 		const voxel::Region& _region) :
@@ -261,7 +261,7 @@ void MementoHandler::markNodeMoved(int targetId, int sourceId) {
 	markUndo(targetId, sourceId, nullptr, nullptr, MementoType::SceneNodeMove, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 }
 
-void MementoHandler::markNodeTransform(const voxelformat::SceneGraphNode &node, int frameId) {
+void MementoHandler::markNodeTransform(const voxelformat::SceneGraphNode &node, uint32_t frameId) {
 	const int nodeId = node.id();
 	const int parentId = node.parent();
 	const core::String &name = node.name();
@@ -289,7 +289,7 @@ bool MementoHandler::markUndoPreamble(int nodeId) {
 
 void MementoHandler::markUndo(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume,
 							  MementoType type, const voxel::Region &region, const glm::mat4 &transformMatrix,
-							  int frameId) {
+							  uint32_t frameId) {
 	if (!markUndoPreamble(nodeId)) {
 		return;
 	}

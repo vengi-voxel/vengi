@@ -125,7 +125,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	wrapSaveFree(stream.writeUInt32(localScale.y));
 	wrapSaveFree(stream.writeUInt32(localScale.z));
 
-	const int frame = 0;
+	const uint32_t frame = 0;
 	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
 	const glm::vec3 &pivot = transform.pivot();
 	wrapSaveFree(stream.writeFloat(pivot.x));

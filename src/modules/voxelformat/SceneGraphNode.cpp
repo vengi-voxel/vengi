@@ -225,7 +225,7 @@ void SceneGraphNode::addProperties(const core::StringMap<core::String> &map) {
 	}
 }
 
-void SceneGraphNode::setTransform(uint8_t frameIdx, const SceneGraphTransform &transform, bool updateMatrix) {
+void SceneGraphNode::setTransform(uint32_t frameIdx, const SceneGraphTransform &transform, bool updateMatrix) {
 	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
 	nodeFrame.transform = transform;
 	if (updateMatrix) {
@@ -233,7 +233,7 @@ void SceneGraphNode::setTransform(uint8_t frameIdx, const SceneGraphTransform &t
 	}
 }
 
-void SceneGraphNode::setPivot(uint8_t frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
+void SceneGraphNode::setPivot(uint32_t frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
 	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
 	nodeFrame.transform.setPivot(glm::vec3(pos) / glm::vec3(size));
 }
@@ -246,24 +246,24 @@ void SceneGraphNode::setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame> &
 	_keyFrames = kf;
 }
 
-int SceneGraphNode::keyFrameForFrame(int frame) const {
+uint32_t SceneGraphNode::keyFrameForFrame(uint32_t frame) const {
 	for (size_t i = 0; i < _keyFrames.size(); ++i) {
 		const SceneGraphKeyFrame &kf = _keyFrames[i];
 		if (kf.frame > frame) {
 			if (i == 0) {
 				break;
 			}
-			return (int)i - 1;
+			return i - 1;
 		}
 	}
 	return 0;
 }
 
-SceneGraphTransform SceneGraphNode::transformForFrame(int current) {
+SceneGraphTransform SceneGraphNode::transformForFrame(uint32_t current) {
 	const SceneGraphTransform *source = nullptr;
 	const SceneGraphTransform *target = nullptr;
-	int start = 0;
-	int end = 0;
+	uint32_t start = 0;
+	uint32_t end = 0;
 	InterpolationType interpolationType = InterpolationType::Linear;
 
 	for (const SceneGraphKeyFrame &kf : _keyFrames) {

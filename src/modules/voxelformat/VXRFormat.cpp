@@ -139,7 +139,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	wrap(stream.readInt32(keyFrameCount))
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
 		SceneGraphKeyFrame& keyFrame = node.keyFrame(i);
-		wrap(stream.readInt32(keyFrame.frame)) // frame index
+		wrap(stream.readUInt32(keyFrame.frame)) // frame index
 		int32_t interpolation;
 		wrap(stream.readInt32(interpolation))
 		if (interpolation < 0 || interpolation >= lengthof(interpolationTypes)) {

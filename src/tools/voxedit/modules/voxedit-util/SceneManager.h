@@ -151,7 +151,7 @@ private:
 	double _animationSpeed = 0.0;
 	int _currentAnimationLayer = 0;
 	double _nextFrameSwitch = 0.0;
-	int _currentFrame = 0;
+	uint32_t _currentFrame = 0;
 
 	int _initialized = 0;
 	int _size = 128;
@@ -256,8 +256,8 @@ public:
 	bool cameraRotate() const;
 	bool cameraPan() const;
 
-	int currentFrame() const;
-	void setCurrentFrame(int frame);
+	uint32_t currentFrame() const;
+	void setCurrentFrame(uint32_t frame);
 
 	void setActiveCamera(video::Camera* camera);
 	video::Camera* activeCamera();
@@ -413,10 +413,10 @@ private:
 	void onNewNodeAdded(int newNodeId);
 	bool nodeRename(voxelformat::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(voxelformat::SceneGraphNode &node, bool recursive);
-	bool nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, int keyFrame, bool memento);
+	bool nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, uint32_t keyFrame, bool memento);
 	void nodeDuplicate(const voxelformat::SceneGraphNode &node);
 public:
-	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, int keyFrame, bool memento);
+	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, uint32_t keyFrame, bool memento);
 	bool nodeMove(int sourceNodeId, int targetNodeId);
 	bool nodeRename(int nodeId, const core::String &name);
 	bool nodeRemove(int nodeId, bool recursive);
@@ -426,11 +426,11 @@ public:
 	void nodeForeachGroup(const std::function<void(int)>& f);
 };
 
-inline int SceneManager::currentFrame() const {
+inline uint32_t SceneManager::currentFrame() const {
 	return _currentFrame;
 }
 
-inline void SceneManager::setCurrentFrame(int frame) {
+inline void SceneManager::setCurrentFrame(uint32_t frame) {
 	_currentFrame = frame;
 }
 

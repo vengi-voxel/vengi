@@ -86,7 +86,7 @@ struct MementoState {
 	MementoData data;
 	int parentId;
 	int nodeId;
-	int keyFrame;
+	uint32_t keyFrame;
 	core::String name;
 	glm::mat4x4 transformMatrix;
 	/**
@@ -96,18 +96,18 @@ struct MementoState {
 	voxel::Region region;
 
 	MementoState() :
-			type(MementoType::Max), parentId(0), nodeId(0), keyFrame(-1) {
+			type(MementoType::Max), parentId(0), nodeId(0), keyFrame(0) {
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, const core::String &_name,
-				 const voxel::Region &_region, const glm::mat4x4 &_transformMatrix, int _frameId = -1)
+				 const voxel::Region &_region, const glm::mat4x4 &_transformMatrix, uint32_t _frameId = 0)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(_frameId), name(_name), transformMatrix(_transformMatrix),
 		  region(_region) {
 	}
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, core::String &&_name,
 				 voxel::Region &&_region)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(-1), name(_name), region(_region) {
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(0), name(_name), region(_region) {
 	}
 
 	inline bool valid() const {
@@ -171,11 +171,11 @@ public:
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
 	void markUndo(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume, MementoType type,
-				  const voxel::Region &region, const glm::mat4 &transformMatrix, int frameId);
+				  const voxel::Region &region, const glm::mat4 &transformMatrix, uint32_t frameId);
 
 	void markNodeRemoved(const voxelformat::SceneGraphNode &node);
 	void markNodeAdded(const voxelformat::SceneGraphNode &node);
-	void markNodeTransform(const voxelformat::SceneGraphNode &node, int frameId);
+	void markNodeTransform(const voxelformat::SceneGraphNode &node, uint32_t frameId);
 	void markModification(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion);
 	void markNodeRenamed(const voxelformat::SceneGraphNode &node);
 	void markNodeMoved(int targetId, int sourceId);

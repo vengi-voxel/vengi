@@ -48,7 +48,7 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 	Log::debug("Found %i keyframes", keyFrameCount);
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
 		SceneGraphKeyFrame &keyFrame = node.keyFrame(i);
-		wrap(stream.readInt32(keyFrame.frame))
+		wrap(stream.readUInt32(keyFrame.frame))
 		int32_t interpolation;
 		wrap(stream.readInt32(interpolation))
 		if (interpolation < 0 || interpolation >= lengthof(interpolationTypes)) {
