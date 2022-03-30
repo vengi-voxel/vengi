@@ -7,7 +7,8 @@ function arguments()
 	}
 end
 
-function main(volume, region, color, density, colors)
+function main(node, region, color, density, colors)
+	local volume = node:volume()
 	local cnt = 0
 
 	local newindices = palette.similar(color, colors)

@@ -7,7 +7,8 @@ function arguments()
 	}
 end
 
-function main(volume, region, color, freq, amplitude)
+function main(node, region, color, freq, amplitude)
+	local volume = node:volume()
 	perlin:load()
 	local mins = region:mins()
 	local maxs = region:maxs()

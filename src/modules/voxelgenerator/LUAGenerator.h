@@ -66,13 +66,6 @@ struct LUAScript {
 
 class LUAGenerator : public core::IComponent {
 public:
-	static inline const char *luaVoxel_metaregion() {
-		return "__meta_region";
-	}
-
-	static int luaVoxel_pushregion(lua_State* s, const voxel::Region* region);
-	static voxel::Region* luaVoxel_toRegion(lua_State* s, int n);
-
 	virtual ~LUAGenerator() {}
 	bool init() override;
 	void shutdown() override;
@@ -80,7 +73,7 @@ public:
 	core::String load(const core::String& scriptName) const;
 	core::DynamicArray<LUAScript> listScripts() const;
 	bool argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params);
-	bool exec(const core::String& luaScript, voxelformat::SceneGraph &sceneGraph, voxel::RawVolumeWrapper &volume, const voxel::Region& region, const voxel::Voxel& voxel, const core::DynamicArray<core::String>& args = core::DynamicArray<core::String>());
+	bool exec(const core::String& luaScript, voxelformat::SceneGraph &sceneGraph, int nodeId, const voxel::Region& region, const voxel::Voxel& voxel, voxel::Region &dirtyRegion, const core::DynamicArray<core::String>& args = {});
 };
 
 inline auto scriptCompleter(const io::FilesystemPtr& filesystem) {

@@ -4,7 +4,8 @@ function arguments()
 	}
 end
 
-function main(volume, region, color, n)
+function main(node, region, color, n)
+	local volume = node:volume()
 	local mins = region:mins()
 	local maxs = region:maxs()
 	for x = mins.x, maxs.x do

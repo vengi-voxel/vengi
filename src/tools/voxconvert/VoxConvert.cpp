@@ -20,6 +20,7 @@
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/SceneGraphUtil.h"
 #include "voxelformat/VolumeFormat.h"
@@ -567,11 +568,8 @@ void VoxConvert::script(const core::String &scriptParameters, voxelformat::Scene
 			}
 			Log::info("Execute script %s", tokens[0].c_str());
 			for (voxelformat::SceneGraphNode& node : sceneGraph) {
-				voxel::RawVolumeWrapper wrapper(node.volume());
-				script.exec(luaScript, sceneGraph, wrapper, wrapper.region(), voxel, args);
-				if (wrapper.volume() != node.volume()) {
-					node.setVolume(wrapper.volume(), true);
-				}
+				voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
+				script.exec(luaScript, sceneGraph, node.id(), node.region(), voxel, dirtyRegion, args);
 			}
 		}
 	}

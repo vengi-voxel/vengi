@@ -6,7 +6,8 @@ function arguments()
 	}
 end
 
-function main(volume, region, color, newcolor)
+function main(node, region, color, newcolor)
+	local volume = node:volume()
 	local visitor = function (volume, x, y, z)
 		volume:setVoxel(x, y, z, newcolor)
 	end

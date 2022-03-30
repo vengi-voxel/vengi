@@ -9,7 +9,8 @@ function arguments()
 	}
 end
 
-function main(volume, region, color, grasscolor, height, density, similarcolors)
+function main(node, region, color, grasscolor, height, density, similarcolors)
+	local volume = node:volume()
 	if grasscolor == -1 then
 		grasscolor = palette.match(0, 255, 0)
 	end

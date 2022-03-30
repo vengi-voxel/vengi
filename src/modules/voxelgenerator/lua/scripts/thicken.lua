@@ -7,7 +7,8 @@ function arguments()
 	}
 end
 
-function main(volume, region, color, amount, thickencolor)
+function main(node, region, color, amount, thickencolor)
+	local volume = node:volume()
 	local activeLayer = scenegraph.get()
 	local newName = activeLayer:name() .. "_thickened"
 	local newLayer = scenegraph.new(newName, true, region)

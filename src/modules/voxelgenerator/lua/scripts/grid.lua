@@ -10,7 +10,8 @@ function arguments()
 	}
 end
 
-function main(volume, region, color, gridcolor, thickness, size_x, size_y, size_z)
+function main(node, region, color, gridcolor, thickness, size_x, size_y, size_z)
+	local volume = node:volume()
 	local visitor = function (volume, x, y, z)
 		if size_x > thickness and x % size_x < thickness then
 			volume:setVoxel(x, y, z, gridcolor)

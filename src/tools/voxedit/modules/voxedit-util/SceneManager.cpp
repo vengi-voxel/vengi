@@ -1758,16 +1758,13 @@ bool SceneManager::runScript(const core::String& script, const core::DynamicArra
 	const int nodeId = activeNode();
 	voxel::RawVolume* volume = this->volume(nodeId);
 	const Selection& selection = _modifier.selection();
-	voxel::RawVolumeWrapper wrapper(volume);
+	voxel::Region region = volume->region();
 	if (selection.isValid()) {
-		wrapper.setRegion(selection);
+		region = selection;
 	}
-	const bool retVal = _luaGenerator.exec(script, _sceneGraph, wrapper, wrapper.region(), _modifier.cursorVoxel(), args);
-	if (wrapper.volume() != volume) {
-		sceneGraphNode(nodeId)->setVolume(wrapper.volume(), true);
-	}
-
-	modified(nodeId, wrapper.dirtyRegion());
+	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
+	const bool retVal = _luaGenerator.exec(script, _sceneGraph, nodeId, region, _modifier.cursorVoxel(), dirtyRegion, args);
+	modified(nodeId, dirtyRegion);
 	return retVal;
 }
 

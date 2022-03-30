@@ -20,14 +20,15 @@ There is a console command (called `xs`) in [voxedit](voxedit/Index.md) and a co
 
 By default the script files will be searched in a `scripts` folder next to where the binary is located and in the usual search paths (see [configuration](Configuration.md) for more details). You can also give the full path to the script file.
 
-There are two functions in each script. One is called `arguments` and one `main`. `arguments` returns a list of parameters for the `main` function. The default parameters for `main` are `volume`, `region` and `color`. `color` is the palette index starting from `0`.
+There are two functions in each script. One is called `arguments` and one `main`. `arguments` returns a list of parameters for the `main` function. The default parameters for `main` are `node`, `region` and `color`. `color` is the palette index starting from `0`.
 
 ## Examples
 
 ### Without parameters
 
 ```lua
-function main(volume, region, color)
+function main(node, region, color)
+	local volume = node:volume()
 	local mins = region:mins()
 	local maxs = region:maxs()
 	for x = mins.x, maxs.x do
@@ -51,7 +52,7 @@ function arguments()
 	}
 end
 
-function main(volume, region, color, n)
+function main(node, region, color, n)
 	[...]
 end
 ```
@@ -218,7 +219,7 @@ Generates a pyramid with the current selected color and with each level being 3 
 
 `xs pyramid.lua 3`
 
-### thicken.lua (voxedit)
+### thicken.lua
 
 Thickens the voxel - take 1 voxel and convert to 8 voxels (creates a new node for the result).
 
