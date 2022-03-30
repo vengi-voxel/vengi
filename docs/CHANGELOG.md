@@ -13,6 +13,11 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 General:
 
    - Added support for minecraft schematic
+   - Refactored and extended the lua script integration
+
+VoxEdit:
+
+   - Allow to drag and drop colors from the palette
 
 VoxConvert:
 

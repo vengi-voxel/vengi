@@ -2,6 +2,10 @@ vengi (0.0.20.0-1) UNRELEASED; urgency=low
 
   * General:
   * Added support for minecraft schematic
+  * Refactored and extended the lua script integration
+
+  * VoxEdit:
+  * Allow to drag and drop colors from the palette
 
   * VoxConvert:
   * Extended --dump to also show the key frames
