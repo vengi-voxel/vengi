@@ -82,7 +82,7 @@ The order in the arguments table defines the order in which the arguments are pa
 
 The functions are:
 
-* `new(name, visible, region)`: Creates a new node with the given `name`, the `visible` boolean, and the given size and position according to the `region`.
+* `new(name, region[, visible])`: Creates a new node with the given `name`, the size and position according to the `region` and an optional `visible` parameter.
 
 * `get([nodeId])`: Returns the `node` for the given `nodeId` - if the `nodeId` is not given, it will return the current active node. Which by default is the node for the volume the script is currently executed for.
 

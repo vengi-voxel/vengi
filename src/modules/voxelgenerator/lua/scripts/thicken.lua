@@ -11,7 +11,7 @@ function main(node, region, color, amount, thickencolor)
 	local volume = node:volume()
 	local activeLayer = scenegraph.get()
 	local newName = activeLayer:name() .. "_thickened"
-	local newLayer = scenegraph.new(newName, true, region)
+	local newLayer = scenegraph.new(newName, region)
 	local newVolume = newLayer:volume()
 
 	local visitor = function (volume, x, y, z)

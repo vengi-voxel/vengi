@@ -426,8 +426,8 @@ static int luaVoxel_noise_worley3(lua_State* s) {
 
 static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	const char *name = lua_tostring(s, 1);
-	const bool visible = lua_toboolean(s, 2);
-	const voxel::Region* region = voxelgenerator::luaVoxel_toRegion(s, 3);
+	const voxel::Region* region = voxelgenerator::luaVoxel_toRegion(s, 2);
+	const bool visible = clua_optboolean(s, 3, true);
 	voxel::RawVolume *v = new voxel::RawVolume(*region);
 	voxelformat::SceneGraphNode node;
 	node.setVolume(v, true);
