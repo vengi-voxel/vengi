@@ -980,7 +980,7 @@ void SceneManager::updateAABBMesh() {
 	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
 		const voxel::RawVolume* v = node.volume();
 		const voxel::Region& region = v->region();
-		if (v == activeVolume()) {
+		if (node.id() == activeNode()) {
 			_shapeBuilder.setColor(core::Color::White);
 		} else {
 			_shapeBuilder.setColor(core::Color::Gray);
