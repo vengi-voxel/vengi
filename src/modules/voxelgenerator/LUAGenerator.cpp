@@ -437,7 +437,8 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	const glm::vec3 size = v->region().getDimensionsInVoxels();
 	node.setPivot(0, rp, size);
 	voxelformat::SceneGraph* sceneGraph = lua::LUA::globalData<voxelformat::SceneGraph>(s, luaVoxel_globalscenegraph());
-	const int nodeId = voxelformat::addNodeToSceneGraph(*sceneGraph, node, sceneGraph->root().id());
+	int* currentNodeId = lua::LUA::globalData<int>(s, luaVoxel_globalnodeid());
+	const int nodeId = voxelformat::addNodeToSceneGraph(*sceneGraph, node, *currentNodeId);
 	if (nodeId == -1) {
 		return clua_error(s, "Failed to add new node");
 	}
