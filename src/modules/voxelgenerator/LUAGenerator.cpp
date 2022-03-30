@@ -796,7 +796,7 @@ bool LUAGenerator::exec(const core::String& luaScript, voxelformat::SceneGraph &
 		Log::error("LUA generate: expected to find volume");
 		return false;
 	}
-	if (!lua_isuserdata(lua, -2)) {
+	if (!luaL_checkudata(lua, -2, luaVoxel_metaregion())) {
 		Log::error("LUA generate: expected to find region");
 		return false;
 	}
