@@ -99,6 +99,10 @@ void VoxConvert::usage() const {
 	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
 		Log::info(" * %s (*.%s)", desc->name, desc->ext);
 	}
+	Log::info("Links:");
+	Log::info(" * Bug reports: https://github.com/mgerhardy/vengi");
+	Log::info(" * Twitter: https://twitter.com/MartinGerhardy");
+	Log::info(" * Discord: https://discord.gg/AgjCPXy");
 }
 
 app::AppState VoxConvert::onInit() {
