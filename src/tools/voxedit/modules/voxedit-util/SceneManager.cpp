@@ -702,7 +702,7 @@ void SceneManager::resetSceneState() {
 	_animationNodeIdDirtyState = -1;
 	_animationIdx = 0;
 	voxelformat::SceneGraphNode &node = *_sceneGraph.begin();
-	_sceneGraph.setActiveNode(node.id());
+	nodeActivate(node.id());
 	setEditMode(EditMode::Scene);
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
