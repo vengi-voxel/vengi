@@ -253,9 +253,7 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	const uint32_t keyFrame = node.keyFrameForFrame(sceneMgr().currentFrame());
 	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrame);
 	glm::mat4 transformMatrix = transform.matrix();
-	glm::mat4 viewMatrix = camera.viewMatrix();
-	const float *projMatrix = glm::value_ptr(camera.projectionMatrix());
-	ImGuizmo::Manipulate(glm::value_ptr(viewMatrix), projMatrix, (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix), nullptr, _guizmoSnap->boolVal() ? snap: nullptr);
+	ImGuizmo::Manipulate(glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()), (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix), nullptr, _guizmoSnap->boolVal() ? snap: nullptr);
 	if (ImGuizmo::IsUsing()) {
 		_guizmoActivated = true;
 		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, keyFrame, false);
@@ -264,26 +262,18 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 		_guizmoActivated = false;
 	}
 
-	// TODO: active me
-#if 0
+	glm::mat4 viewMatrix = camera.viewMatrix();
 	ImGuizmo::ViewManipulate(glm::value_ptr(viewMatrix), camera.targetDistance(), ImGui::GetWindowPos(),
-							 ImVec2(128, 128), 0x10101010);
-#if 0
-	glm::vec3 scale;
-	glm::vec3 rotation;
-	glm::vec3 translation;
-	ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(viewMatrix), glm::value_ptr(translation), glm::value_ptr(rotation), glm::value_ptr(scale));
-	const glm::quat orientation(rotation);
-#else
-	glm::vec3 scale;
-	glm::vec3 translation;
-	glm::quat orientation;
-	glm::vec3 skew;
-	glm::vec4 perspective;
-	glm::decompose(viewMatrix, scale, orientation, translation, skew, perspective);
-#endif
-	camera.setOrientation(orientation);
-#endif
+							 ImVec2(128, 128), 0);
+	if (viewMatrix != camera.viewMatrix()) {
+		glm::vec3 scale;
+		glm::vec3 translation;
+		glm::quat orientation;
+		glm::vec3 skew;
+		glm::vec4 perspective;
+		glm::decompose(viewMatrix, scale, orientation, translation, skew, perspective);
+		camera.setOrientation(orientation);
+	}
 }
 
 void Viewport::renderToFrameBuffer() {
