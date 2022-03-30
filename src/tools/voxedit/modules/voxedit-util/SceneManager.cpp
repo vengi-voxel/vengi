@@ -835,7 +835,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	const glm::vec3 rp = v->region().getPivot();
 	const glm::vec3 size = v->region().getDimensionsInVoxels();
 	node.setPivot(0, rp, size);
-	const int nodeId = addNodeToSceneGraph(node);
+	const int nodeId = voxelformat::addNodeToSceneGraph(_sceneGraph, node, 0);
 	if (nodeId == -1) {
 		Log::error("Failed to add empty volume to new scene graph");
 		return false;

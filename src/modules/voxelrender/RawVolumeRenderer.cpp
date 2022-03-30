@@ -500,8 +500,6 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		if (_bloom->boolVal()) {
 			video::ScopedFrameBuffer scoped(_frameBuffer);
 			video::clear(video::ClearFlag::Color);
-		} else {
-			video::clear(video::ClearFlag::Color);
 		}
 		return;
 	}
