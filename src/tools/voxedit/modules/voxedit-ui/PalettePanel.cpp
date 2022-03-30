@@ -4,6 +4,7 @@
 
 #include "PalettePanel.h"
 #include "IMGUIApp.h"
+#include "DragAndDropPayload.h"
 #include "core/StringUtil.h"
 #include "imgui.h"
 #include "voxedit-util/SceneManager.h"
@@ -79,6 +80,22 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 				}
 				sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(type, palIdx));
 			}
+
+			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+				ImGui::Text("Color %i", palIdx);
+				ImGui::SetDragDropPayload(dragdrop::ColorPayload, (const void*)&palIdx, sizeof(int), ImGuiCond_Always);
+				ImGui::EndDragDropSource();
+			}
+
+			if (ImGui::BeginDragDropTarget()) {
+				if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::ColorPayload)) {
+					const int dragPalIdx = *(int*)payload->Data;
+					core::exchange(palette.colors[palIdx], palette.colors[dragPalIdx]);
+					palette.markDirty();
+				}
+				ImGui::EndDragDropTarget();
+			}
+
 			const core::String &contextMenuId = core::string::format("Actions##context-palitem-%i", palIdx);
 			if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 				static bool pickerWheel = false;

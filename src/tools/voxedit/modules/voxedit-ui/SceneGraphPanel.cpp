@@ -3,6 +3,7 @@
  */
 
 #include "SceneGraphPanel.h"
+#include "DragAndDropPayload.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/SceneGraph.h"
@@ -39,12 +40,12 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 			ImGui::Text("%s", name.c_str());
 			const int sourceNodeId = node.id();
-			ImGui::SetDragDropPayload("scenegraphnode", (const void*)&sourceNodeId, sizeof(int), ImGuiCond_Always);
+			ImGui::SetDragDropPayload(dragdrop::SceneNodePayload, (const void*)&sourceNodeId, sizeof(int), ImGuiCond_Always);
 			ImGui::EndDragDropSource();
 		}
 	}
 	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("scenegraphnode")) {
+		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload)) {
 			const int sourceNodeId = *(int*)payload->Data;
 			const int targetNode = node.id();
 			if (!sceneMgr().nodeMove(sourceNodeId, targetNode)) {

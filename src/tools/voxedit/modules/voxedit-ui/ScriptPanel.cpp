@@ -3,6 +3,7 @@
  */
 
 #include "ScriptPanel.h"
+#include "DragAndDropPayload.h"
 #include "core/Algorithm.h"
 #include "core/StringUtil.h"
 #include "glm/ext/scalar_constants.hpp"
@@ -64,6 +65,15 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 						str = core::string::toString(val);
 					}
 				}
+
+				if (ImGui::BeginDragDropTarget()) {
+					if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::ColorPayload)) {
+						const int palIdx = *(int*)payload->Data;
+						str = core::string::toString(palIdx);
+					}
+					ImGui::EndDragDropTarget();
+				}
+
 				break;
 			}
 			case voxelgenerator::LUAParameterType::Integer: {
