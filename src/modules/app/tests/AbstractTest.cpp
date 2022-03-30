@@ -32,6 +32,7 @@ void AbstractTest::SetUp() {
 	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
 	_testApp = new TestApp(metric, filesystem, eventBus, timeProvider, this);
+	_testApp->run();
 	const bool isRunning = _testApp->_curState == AppState::Running;
 	ASSERT_TRUE(isRunning) << "Failed to setup the test app properly";
 }
@@ -49,6 +50,9 @@ AbstractTest::TestApp::TestApp(const metric::MetricPtr& metric, const io::Filesy
 	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 	_argc = ::_argc;
 	_argv = ::_argv;
+}
+
+void AbstractTest::TestApp::run() {
 	while (_curState < AppState::Running) {
 		core_trace_scoped(AppMainLoop);
 		onFrame();

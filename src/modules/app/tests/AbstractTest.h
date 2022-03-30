@@ -21,6 +21,8 @@ private:
 		TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractTest* test);
 		virtual ~TestApp();
 
+		void run();
+
 		app::AppState onInit() override;
 		app::AppState onCleanup() override;
 	};
