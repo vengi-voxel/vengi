@@ -242,6 +242,28 @@ const core::DynamicArray<SceneGraphKeyFrame> &SceneGraphNode::keyFrames() const 
 	return _keyFrames;
 }
 
+bool SceneGraphNode::addKeyFrame(uint32_t frame) {
+	for (size_t i = 0; i < _keyFrames.size(); ++i) {
+		const SceneGraphKeyFrame &kf = _keyFrames[i];
+		if (kf.frame == frame) {
+			return false;
+		}
+	}
+	SceneGraphKeyFrame keyFrame;
+	keyFrame.frame = frame;
+	_keyFrames.push_back(keyFrame);
+	return true;
+}
+
+bool SceneGraphNode::removeKeyFrame(uint32_t frame) {
+	const uint32_t keyFrameId = keyFrameForFrame(frame);
+	if (keyFrameId == 0) {
+		return false;
+	}
+	_keyFrames.erase(keyFrameId);
+	return true;
+}
+
 void SceneGraphNode::setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame> &kf) {
 	_keyFrames = kf;
 }

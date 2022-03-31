@@ -77,13 +77,16 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
 			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform.matrix()), matrixTranslation, matrixRotation, matrixScale);
 			bool change = false;
+			glm::vec3 pivot = transform.pivot();
 			change |= ImGui::InputFloat3("Tr", matrixTranslation);
 			change |= ImGui::InputFloat3("Rt", matrixRotation);
 			change |= ImGui::InputFloat3("Sc", matrixScale);
+			change |= ImGui::InputFloat3("Pv", glm::value_ptr(pivot));
 			if (change) {
 				glm::mat4 matrix;
 				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, glm::value_ptr(matrix));
 				transform.setMatrix(matrix);
+				transform.setPivot(glm::clamp(pivot, 0.0f, 1.0f));
 				transform.update();
 			}
 		}

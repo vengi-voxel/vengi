@@ -136,6 +136,8 @@ public:
 	void releaseOwnership();
 	bool owns() const;
 
+	bool addKeyFrame(uint32_t frame);
+	bool removeKeyFrame(uint32_t frame);
 	const core::DynamicArray<SceneGraphKeyFrame> &keyFrames() const;
 	void setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame>&);
 	/**
