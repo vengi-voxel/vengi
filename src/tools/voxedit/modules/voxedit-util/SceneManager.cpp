@@ -719,7 +719,11 @@ void SceneManager::resetSceneState() {
 	_animationIdx = 0;
 	voxelformat::SceneGraphNode &node = *_sceneGraph.begin();
 	nodeActivate(node.id());
-	setEditMode(EditMode::Scene);
+	if (_sceneGraph.size() > 1) {
+		setEditMode(EditMode::Scene);
+	} else {
+		setEditMode(EditMode::Model);
+	}
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
 	_mementoHandler.markModification(node, voxel::Region::InvalidRegion);
