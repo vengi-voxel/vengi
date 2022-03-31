@@ -50,6 +50,23 @@ Import input images as heightmaps (default).
 Import input images as planes.
 
 .TP
+\fB\--image-as-volume\fR
+Import given input image as volume. Uses a depth map to make a volume out of the
+image. The depth map R channel is using values from 0 (black) to white (255)
+resulting in voxel heights from 1 to max-height (see --image-as-volume-max-depth).
+
+The \fB\--input\fR with e.g. \fBsomeimage.png\fR will pick the depth map next to
+the image path called \fBsomeimage-dm.png\fR as depth map.
+
+.TP
+\fB\--image-as-volume-max-depth\fR
+Default is 8 - see --image-as-volume.
+
+.TP
+\fB\--image-as-volume-both-sides\fR
+Importing image as volume and use the depth map for both sides.
+
+.TP
 \fB\--input|-i <file>\fR
 Allow to specify input files.
 

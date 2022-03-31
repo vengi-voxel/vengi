@@ -8,6 +8,16 @@ Generate a lod scaled by 50% from the input model.
 
 `./vengi-voxconvert -s --input infile.vox --output output.vox`
 
+## Import 2d image as volume
+
+Imports a 2d image and applies depth to it.
+
+`./vengi-voxconvert --image-as-volume --image-as-volume-max-depth 8 --image-as-volume-both-sides true --input infile.png --output output.vox`
+
+Import given input image as volume. Uses a depth map to make a volume out of the image. The depth map R channel is using values from 0 (black) to white (255) resulting in voxel heights from 1 to max-height (see `--image-as-volume-max-depth`).
+
+The `--input` with e.g. `infile.png` will pick the depth map next to the image path called `infile-dm.png` as depth map.
+
 ## Merge several models
 
 Merge several models into one:

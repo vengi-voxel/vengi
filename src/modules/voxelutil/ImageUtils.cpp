@@ -57,9 +57,15 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 
 voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness) {
 	if (thickness <= 0) {
+		Log::error("Thickness can't be 0");
 		return nullptr;
 	}
 	if (!image || !image->isLoaded()) {
+		Log::error("No color image given");
+		return nullptr;
+	}
+	if (image->depth() != 4) {
+		Log::error("Expected to get an rgba image");
 		return nullptr;
 	}
 	const int imageWidth = image->width();
@@ -71,8 +77,6 @@ voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness)
 	Log::info("Import image as plane: w(%i), h(%i), d(%i)", imageWidth, imageHeight, thickness);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, thickness - 1);
 	const voxel::Palette &palette = voxel::getPalette();
-	core::DynamicArray<glm::vec4> materialColors;
-	palette.toVec4f(materialColors);
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
@@ -81,7 +85,7 @@ voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness)
 			if (data[3] == 0) {
 				continue;
 			}
-			const uint8_t index = core::Color::getClosestMatch(color, materialColors);
+			const uint8_t index = palette.getClosestMatch(color);
 			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 			for (int z = 0; z < thickness; ++z) {
 				volume->setVoxel(x, (imageHeight - 1) - y, z, voxel);
@@ -91,8 +95,8 @@ voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness)
 	return volume;
 }
 
-voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& heightmap, uint8_t maxHeight) {
-	if (maxHeight <= 0) {
+voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& heightmap, uint8_t maxDepth, bool bothSides) {
+	if (maxDepth <= 0) {
 		Log::error("Max height can't be 0");
 		return nullptr;
 	}
@@ -110,31 +114,44 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::Imag
 	}
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
-	if (imageWidth * imageHeight * maxHeight > 1024 * 1024 * 4) {
-		Log::warn("Did not import plane - max volume size of 1024x1024 (thickness 4) exceeded (%i:%i:%i)", imageWidth, imageHeight, maxHeight);
+	int volumeDepth = bothSides ? maxDepth * 2 : maxDepth;
+	if (volumeDepth % 2 == 0) {
+		Log::warn("Make max volume depth uneven");
+		volumeDepth++;
+	}
+	if (imageWidth * imageHeight * volumeDepth > 1024 * 1024 * 4) {
+		Log::warn("Did not import plane - max volume size of 1024x1024 (depth 4) exceeded (%i:%i:%i)", imageWidth, imageHeight, volumeDepth);
 		return nullptr;
 	}
-	Log::info("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, maxHeight);
-	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, maxHeight - 1);
+	Log::info("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, volumeDepth);
+	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, volumeDepth - 1);
 	const voxel::Palette &palette = voxel::getPalette();
-	core::DynamicArray<glm::vec4> materialColors;
-	palette.toVec4f(materialColors);
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const uint8_t* data = image->at(x, y);
-			const glm::vec4& color = core::Color::fromRGBA(data[0], data[1], data[2], data[3]);
 			if (data[3] == 0) {
 				continue;
 			}
-			const uint8_t index = core::Color::getClosestMatch(color, materialColors);
+			const glm::vec4& color = core::Color::fromRGBA(data[0], data[1], data[2], data[3]);
+			const uint8_t index = palette.getClosestMatch(color);
 			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 			const uint8_t* heightdata = heightmap->at(x, y);
 			const float thickness = (float)*heightdata;
-			const float maxthickness = maxHeight;
+			const float maxthickness = maxDepth;
 			const float height = thickness * maxthickness / 255.0f;
-			for (int z = 0; z < (int)glm::ceil(height); ++z) {
-				volume->setVoxel(x, (imageHeight - 1) - y, z, voxel);
+			if (bothSides) {
+				const int heighti = (int)glm::ceil(height/ 2.0f);
+				const int minZ = maxDepth - heighti;
+				const int maxZ = maxDepth + heighti;
+				for (int z = minZ; z <= maxZ; ++z) {
+					volume->setVoxel(x, (imageHeight - 1) - y, z, voxel);
+				}
+			} else {
+				const int heighti = (int)glm::ceil(height);
+				for (int z = 0; z < heighti; ++z) {
+					volume->setVoxel(x, (imageHeight - 1) - y, z, voxel);
+				}
 			}
 		}
 	}

@@ -54,6 +54,9 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--filter").setDescription("Layer filter. For example '1-4,6'");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--image-as-plane").setDescription("Import given input images as planes");
+	registerArg("--image-as-volume").setDescription("Import given input image as volume");
+	registerArg("--image-as-volume-max-depth").setDefaultValue("8").setDescription("Importing image as volume max depth");
+	registerArg("--image-as-volume-both-sides").setDefaultValue("true").setDescription("Importing image as volume for both sides");
 	registerArg("--image-as-heightmap").setDescription("Import given input images as heightmaps");
 	registerArg("--input").setShort("-i").setDescription("Allow to specify input files");
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
@@ -384,8 +387,9 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 			return false;
 		}
 		const bool importAsPlane = hasArg("--image-as-plane");
+		const bool importAsVolume = hasArg("--image-as-volume");
 		const bool importAsHeightmap = hasArg("--image-as-heightmap");
-		if (importAsHeightmap || !importAsPlane) {
+		if (importAsHeightmap || (!importAsPlane && !importAsVolume)) {
 			Log::info("Generate from heightmap (%i:%i)", image->width(), image->height());
 			if (image->width() > MaxHeightmapWidth || image->height() >= MaxHeightmapHeight) {
 				Log::warn("Skip creating heightmap - image dimensions exceeds the max allowed boundaries");
@@ -399,6 +403,23 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 			voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
 			voxelformat::SceneGraphNode node;
 			node.setVolume(volume, true);
+			node.setName(infile);
+			sceneGraph.emplace(core::move(node));
+		}
+		if (importAsVolume) {
+			const core::String &extinfile = core::string::extractExtension(infile);
+			core::String baseinfile = core::string::stripExtension(infile);
+			baseinfile.append("-dm.");
+			baseinfile.append(extinfile);
+			const image::ImagePtr& heightmap = image::loadImage(baseinfile, false);
+			if (!heightmap || !heightmap->isLoaded()) {
+				Log::error("Couldn't load heightmap %s", baseinfile.c_str());
+				return false;
+			}
+			voxelformat::SceneGraphNode node;
+			const int maxDepth = core::string::toInt(getArgVal("--image-as-volume-max-depth"));
+			const bool bothSides = core::string::toBool(getArgVal("--image-as-volume-both-sides"));
+			node.setVolume(voxelutil::importAsVolume(image, heightmap, maxDepth, bothSides), true);
 			node.setName(infile);
 			sceneGraph.emplace(core::move(node));
 		}
