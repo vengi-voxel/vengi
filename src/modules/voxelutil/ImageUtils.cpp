@@ -91,4 +91,54 @@ voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness)
 	return volume;
 }
 
+voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& heightmap, uint8_t maxHeight) {
+	if (maxHeight <= 0) {
+		Log::error("Max height can't be 0");
+		return nullptr;
+	}
+	if (!image || !image->isLoaded()) {
+		Log::error("No color image given");
+		return nullptr;
+	}
+	if (!heightmap || !heightmap->isLoaded()) {
+		Log::error("No heightmap given");
+		return nullptr;
+	}
+	if (heightmap->width() != image->width() || heightmap->height() != image->height()) {
+		Log::error("Image dimensions differ for color and heigtmap");
+		return nullptr;
+	}
+	const int imageWidth = image->width();
+	const int imageHeight = image->height();
+	if (imageWidth * imageHeight * maxHeight > 1024 * 1024 * 4) {
+		Log::warn("Did not import plane - max volume size of 1024x1024 (thickness 4) exceeded (%i:%i:%i)", imageWidth, imageHeight, maxHeight);
+		return nullptr;
+	}
+	Log::info("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, maxHeight);
+	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, maxHeight - 1);
+	const voxel::Palette &palette = voxel::getPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	palette.toVec4f(materialColors);
+	voxel::RawVolume* volume = new voxel::RawVolume(region);
+	for (int x = 0; x < imageWidth; ++x) {
+		for (int y = 0; y < imageHeight; ++y) {
+			const uint8_t* data = image->at(x, y);
+			const glm::vec4& color = core::Color::fromRGBA(data[0], data[1], data[2], data[3]);
+			if (data[3] == 0) {
+				continue;
+			}
+			const uint8_t index = core::Color::getClosestMatch(color, materialColors);
+			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+			const uint8_t* heightdata = heightmap->at(x, y);
+			const float thickness = (float)*heightdata;
+			const float maxthickness = maxHeight;
+			const float height = thickness * maxthickness / 255.0f;
+			for (int z = 0; z < (int)glm::ceil(height); ++z) {
+				volume->setVoxel(x, (imageHeight - 1) - y, z, voxel);
+			}
+		}
+	}
+	return volume;
+}
+
 }
