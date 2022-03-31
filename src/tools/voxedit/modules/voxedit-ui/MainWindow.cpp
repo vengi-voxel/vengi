@@ -111,7 +111,7 @@ bool MainWindow::init() {
 	_showGridVar = core::Var::get(cfg::VoxEditShowgrid, "1", "Show the grid", core::Var::boolValidator);
 	_modelSpaceVar = core::Var::get(cfg::VoxEditModelSpace, "1", "Model space", core::Var::boolValidator);
 	_showLockedAxisVar = core::Var::get(cfg::VoxEditShowlockedaxis, "1", "Show the currently locked axis", core::Var::boolValidator);
-	_showAabbVar = core::Var::get(cfg::VoxEditShowaabb, "0", "Show the axis aligned bounding box", core::Var::boolValidator);
+	_showAabbVar = core::Var::getSafe(cfg::VoxEditShowaabb);
 	_renderShadowVar = core::Var::get(cfg::VoxEditRendershadow, "1", "Render with shadows", core::Var::boolValidator);
 	_animationSpeedVar = core::Var::get(cfg::VoxEditAnimationSpeed, "100", "Millisecond delay between frames");
 	_gridSizeVar = core::Var::get(cfg::VoxEditGridsize, "4", "The size of the voxel grid", [](const core::String &val) {

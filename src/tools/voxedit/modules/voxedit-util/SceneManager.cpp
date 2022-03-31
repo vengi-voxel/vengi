@@ -1012,7 +1012,9 @@ void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderUI) {
 		if (_editMode == EditMode::Scene) {
-			_shapeRenderer.render(_aabbMeshIndex, camera);
+			if (_showAabbVar->boolVal()) {
+				_shapeRenderer.render(_aabbMeshIndex, camera);
+			}
 		} else if (const int nodeId = activeNode()) {
 			voxelformat::SceneGraphNode *n = sceneGraphNode(nodeId);
 			const voxel::Region& region = n->volume()->region();
@@ -1074,6 +1076,7 @@ void SceneManager::construct() {
 		.setArgumentCompleter(voxelgenerator::scriptCompleter(io::filesystem()));
 
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
+	_showAabbVar = core::Var::get(cfg::VoxEditShowaabb, "0", "Show the axis aligned bounding box", core::Var::boolValidator);
 
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		command::Command::registerActionButton(

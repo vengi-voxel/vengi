@@ -120,6 +120,7 @@ private:
 	core::VarPtr _cameraZoomSpeed;
 	core::VarPtr _grayInactive;
 	core::VarPtr _hideInactive;
+	core::VarPtr _showAabbVar;
 
 	math::Axis _lockedAxis = math::Axis::None;
 
