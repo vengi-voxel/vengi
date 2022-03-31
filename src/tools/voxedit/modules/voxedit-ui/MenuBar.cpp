@@ -48,7 +48,8 @@ void MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 			actionMenuItem("Prefab", "prefab", listener);
 			ImGui::Separator();
 			actionMenuItem(ICON_FA_IMAGE " Heightmap", "importheightmap", listener);
-			actionMenuItem(ICON_FA_IMAGE " Image as Plane", "importplane", listener);
+			actionMenuItem(ICON_FA_IMAGE " Image as plane", "importplane", listener);
+			actionMenuItem(ICON_FA_IMAGE " Image as volume", "importvolume", listener);
 			ImGui::Separator();
 			if (ImGui::MenuItem("Quit")) {
 				app->requestQuit();

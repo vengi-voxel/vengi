@@ -95,7 +95,7 @@ voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness)
 	return volume;
 }
 
-voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& heightmap, uint8_t maxDepth, bool bothSides) {
+voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth, bool bothSides) {
 	if (maxDepth <= 0) {
 		Log::error("Max height can't be 0");
 		return nullptr;
@@ -104,8 +104,13 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::Imag
 		Log::error("No color image given");
 		return nullptr;
 	}
+	const core::String &extinfile = core::string::extractExtension(image->name());
+	core::String heightmapFile = core::string::stripExtension(image->name());
+	heightmapFile.append("-dm.");
+	heightmapFile.append(extinfile);
+	const image::ImagePtr& heightmap = image::loadImage(heightmapFile, false);
 	if (!heightmap || !heightmap->isLoaded()) {
-		Log::error("No heightmap given");
+		Log::error("Couldn't load heightmap %s", heightmapFile.c_str());
 		return nullptr;
 	}
 	if (heightmap->width() != image->width() || heightmap->height() != image->height()) {

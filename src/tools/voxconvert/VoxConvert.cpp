@@ -407,19 +407,10 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 			sceneGraph.emplace(core::move(node));
 		}
 		if (importAsVolume) {
-			const core::String &extinfile = core::string::extractExtension(infile);
-			core::String baseinfile = core::string::stripExtension(infile);
-			baseinfile.append("-dm.");
-			baseinfile.append(extinfile);
-			const image::ImagePtr& heightmap = image::loadImage(baseinfile, false);
-			if (!heightmap || !heightmap->isLoaded()) {
-				Log::error("Couldn't load heightmap %s", baseinfile.c_str());
-				return false;
-			}
 			voxelformat::SceneGraphNode node;
 			const int maxDepth = core::string::toInt(getArgVal("--image-as-volume-max-depth"));
 			const bool bothSides = core::string::toBool(getArgVal("--image-as-volume-both-sides"));
-			node.setVolume(voxelutil::importAsVolume(image, heightmap, maxDepth, bothSides), true);
+			node.setVolume(voxelutil::importAsVolume(image, maxDepth, bothSides), true);
 			node.setName(infile);
 			sceneGraph.emplace(core::move(node));
 		}

@@ -155,6 +155,18 @@ app::AppState VoxEdit::onConstruct() {
 		}
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a plane into a new layer");
 
+	command::Command::registerCommand("importvolume", [this](const command::CmdArgs &args) {
+		if (args.empty()) {
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsVolume(file, 8, true); }, io::format::images());
+			return;
+		}
+		const int maxDepth = args.size() >= 2 ? core::string::toInt(args[1]) : 8;
+		const bool bothSides = args.size() >= 3 ? core::string::toBool(args[2]) : true;
+		if (!voxedit::sceneMgr().importAsVolume(args[0], maxDepth, bothSides)) {
+			Log::error("Failed to execute 'importvolume' for file '%s'", args[0].c_str());
+		}
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a volume into a new layer");
+
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
 			openDialog([] (const core::String &file) { voxedit::sceneMgr().importPalette(file); }, &_paletteFormats[0]);

@@ -104,10 +104,26 @@ bool SceneManager::importPalette(const core::String& file) {
 	return true;
 }
 
+bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool bothSides) {
+	const image::ImagePtr& img = image::loadImage(file, false);
+	voxel::RawVolume *v = voxelutil::importAsVolume(img, maxDepth, bothSides);
+	if (v == nullptr) {
+		return false;
+	}
+	voxelformat::SceneGraphNode node;
+	node.setVolume(v, true);
+	node.setName(core::string::extractFilename(img->name().c_str()));
+	return addNodeToSceneGraph(node) != -1;
+}
+
 bool SceneManager::importAsPlane(const core::String& file) {
 	const image::ImagePtr& img = image::loadImage(file, false);
+	voxel::RawVolume *v = voxelutil::importAsPlane(img);
+	if (v == nullptr) {
+		return false;
+	}
 	voxelformat::SceneGraphNode node;
-	node.setVolume(voxelutil::importAsPlane(img), true);
+	node.setVolume(v, true);
 	node.setName(core::string::extractFilename(img->name().c_str()));
 	return addNodeToSceneGraph(node) != -1;
 }

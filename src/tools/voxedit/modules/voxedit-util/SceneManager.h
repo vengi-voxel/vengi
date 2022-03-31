@@ -293,6 +293,10 @@ public:
 	 */
 	bool importAsPlane(const core::String& file);
 	/**
+	 * @brief Import an image as a plane and apply a heightmap to it
+	 */
+	bool importAsVolume(const core::String &file, int maxDepth, bool bothSides);
+	/**
 	 * @brief Import a new palette from the given image file
 	 * @note The amount of colors in the image may not exceed 256
 	 * @param[in] file The image file path
