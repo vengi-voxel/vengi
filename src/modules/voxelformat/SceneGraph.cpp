@@ -68,7 +68,7 @@ void SceneGraph::foreachGroup(const std::function<void(int)>& f) {
 	if (node(nodeId).locked()) {
 		for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
 			if ((*iter).locked()) {
-				f(nodeId);
+				f((*iter).id());
 			}
 		}
 	} else {
