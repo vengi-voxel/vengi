@@ -3,9 +3,11 @@ vengi (0.0.20.0-1) UNRELEASED; urgency=low
   * General:
   * Added support for minecraft schematic
   * Refactored and extended the lua script integration
+  * Implemented applying depth/height map to a 2d plane
 
   * VoxEdit:
   * Allow to drag and drop colors from the palette
+  * Change between the edit and scene mode is now bound to tab
 
   * VoxConvert:
   * Extended --dump to also show the key frames
