@@ -1523,7 +1523,9 @@ void SceneManager::construct() {
 	command::Command::registerCommand("layerdelete", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId)) {
-			nodeRemove(*node, false);
+			if (node->type() == voxelformat::SceneGraphNodeType::Model) {
+				nodeRemove(*node, false);
+			}
 		}
 	}).setHelp("Delete a particular node by id - or the current active one");
 
@@ -2385,14 +2387,18 @@ bool SceneManager::nodeRemove(voxelformat::SceneGraphNode &node, bool recursive)
 	const core::String &name = node.name();
 	Log::debug("Delete node %i with name %s", nodeId, name.c_str());
 	_mementoHandler.markNodeRemoved(node);
+	if (!_sceneGraph.removeNode(nodeId, recursive)) {
+		Log::error("Failed to remove node with id %i", nodeId);
+		// TODO: _mementoHandler.removeLast();
+		return false;
+	}
 	_needAutoSave = true;
 	_dirty = true;
-	updateAABBMesh();
-	_sceneGraph.removeNode(nodeId, recursive);
 	if (_sceneGraph.empty()) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
 		newScene(true, name, region);
 	}
+	updateAABBMesh();
 	return true;
 }
 

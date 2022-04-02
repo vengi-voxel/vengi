@@ -201,6 +201,10 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 		return true;
 	}
 	bool state = true;
+	const int parent = iter->value.parent();
+	SceneGraphNode &parentNode = node(parent);
+	parentNode.removeChild(nodeId);
+
 	if (recursive) {
 		state = iter->value.children().empty();
 		for (int childId : iter->value.children()) {
@@ -208,8 +212,6 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 		}
 	} else {
 		// reparent any children
-		const int parent = iter->value.parent();
-		SceneGraphNode &parentNode = node(parent);
 		for (int childId : iter->value.children()) {
 			node(childId).setParent(parent);
 			parentNode.addChild(childId);
