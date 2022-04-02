@@ -438,9 +438,9 @@ void MainWindow::update() {
 		ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
 		ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->WorkSize);
 		_dockIdMain = dockspaceId;
-		_dockIdLeft = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Left, 0.10f, nullptr, &_dockIdMain);
+		_dockIdLeft = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Left, 0.13f, nullptr, &_dockIdMain);
 		_dockIdRight = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Right, 0.20f, nullptr, &_dockIdMain);
-		_dockIdLeftDown = ImGui::DockBuilderSplitNode(_dockIdLeft, ImGuiDir_Down, 0.50f, nullptr, &_dockIdLeft);
+		_dockIdLeftDown = ImGui::DockBuilderSplitNode(_dockIdLeft, ImGuiDir_Down, 0.35f, nullptr, &_dockIdLeft);
 		_dockIdRightDown = ImGui::DockBuilderSplitNode(_dockIdRight, ImGuiDir_Down, 0.50f, nullptr, &_dockIdRight);
 		_dockIdMainDown = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Down, 0.20f, nullptr, &_dockIdMain);
 		ImGui::DockBuilderDockWindow(TITLE_PALETTE, _dockIdLeft);
