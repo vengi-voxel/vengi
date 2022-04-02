@@ -65,8 +65,8 @@ core::String VoxEdit::getSuggestedFilename(const char *extension) const {
 app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::ClientCameraMaxZoom, "1000.0");
 	core::Var::get(cfg::ClientCameraMinZoom, "0.1");
+	core::Var::get(cfg::ClientFullscreen, "false");
 	const app::AppState state = Super::onConstruct();
-
 	_framesPerSecondsCap->setVal(60.0f);
 
 	_paletteFormats[0] = {"Image", "png", nullptr, 0u};
