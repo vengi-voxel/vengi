@@ -9,6 +9,8 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphNode.h"
+#include "core/ArrayLength.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -140,7 +142,9 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 		if (activeNode != -1) {
 			voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
 			const uint32_t frame = sceneMgr().currentFrame();
-			voxelformat::SceneGraphTransform &transform = node.transform(node.keyFrameForFrame(frame));
+			const uint32_t keyFrame = node.keyFrameForFrame(frame);
+			voxelformat::SceneGraphKeyFrame &sceneGraphKeyFrame = node.keyFrame(keyFrame);
+			voxelformat::SceneGraphTransform &transform = sceneGraphKeyFrame.transform;
 			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
 			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform.matrix()), matrixTranslation, matrixRotation,
 												  matrixScale);
@@ -150,6 +154,26 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			change |= ImGui::InputFloat3("Rt", matrixRotation);
 			change |= ImGui::InputFloat3("Sc", matrixScale);
 			change |= ImGui::InputFloat3("Pv", glm::value_ptr(pivot));
+
+			static const char *interpolationStrings[] = {"Instant",		 "Linear",		  "QuadEaseIn",
+														 "QuadEaseOut",	 "QuadEaseInOut", "CubicEaseIn",
+														 "CubicEaseOut", "CubicEaseInOut"};
+			static_assert((int)voxelformat::InterpolationType::Max == lengthof(interpolationStrings), "Array sizes don't match");
+
+			const int currentInterpolation = (int)sceneGraphKeyFrame.interpolation;
+			if (ImGui::BeginCombo("Interpolation##interpolationstrings", interpolationStrings[currentInterpolation])) {
+				for (int n = 0; n < lengthof(interpolationStrings); n++) {
+					const bool isSelected = (currentInterpolation == n);
+					if (ImGui::Selectable(interpolationStrings[n], isSelected)) {
+						sceneGraphKeyFrame.interpolation = (voxelformat::InterpolationType)n;
+					}
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+
 			if (change) {
 				glm::mat4 matrix;
 				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale,
