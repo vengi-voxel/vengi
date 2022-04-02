@@ -18,6 +18,7 @@ General:
 
 VoxEdit:
 
+   - Fixed start problems on some systems with multisampled framebuffers
    - Allow to drag and drop colors from the palette
    - Change between the edit and scene mode is now bound to `tab`
 
