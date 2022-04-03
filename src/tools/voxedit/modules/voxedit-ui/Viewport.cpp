@@ -213,6 +213,10 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	if (!_showAxisVar->boolVal()) {
 		return;
 	}
+	const EditMode editMode = sceneMgr().editMode();
+	if (editMode != EditMode::Scene) {
+		return;
+	}
 
 	ImGuiIO &io = ImGui::GetIO();
 
@@ -225,7 +229,6 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	if (activeNode == -1) {
 		return;
 	}
-	const EditMode editMode = sceneMgr().editMode();
 
 	ImGuizmo::BeginFrame();
 
