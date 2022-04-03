@@ -121,7 +121,7 @@ float ImGuiToast::fadePercent(int dismissMillis) const {
 
 namespace ImGui {
 
-int RenderNotifications(core::DynamicArray<ImGuiToast> &notifications) {
+int RenderNotifications(ImGuiToasts &notifications) {
 	core_trace_scoped(RenderNotifications);
 	const ImVec2 &vpSize = ImGui::GetMainViewport()->Size;
 

@@ -46,7 +46,9 @@ public:
 
 namespace ImGui {
 
+using ImGuiToasts = core::DynamicArray<ImGuiToast>;
+
 /// Render toasts, call at the end of your rendering!
-int RenderNotifications(core::DynamicArray<ImGuiToast>& notifications);
+int RenderNotifications(ImGuiToasts& notifications);
 
 }
