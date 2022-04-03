@@ -10,7 +10,7 @@
 #include <SDL.h>
 
 #include "IconsFontAwesome5.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/RingBuffer.h"
 #include "core/String.h"
 
 typedef int ImGuiToastType;
@@ -27,11 +27,12 @@ enum ImGuiToastType_ {
 
 class ImGuiToast {
 private:
-	ImGuiToastType _type;
+	ImGuiToastType _type = ImGuiToastType_None;
 	core::String _message;
-	uint64_t _creationTime;
+	uint64_t _creationTime = 0;
 
 public:
+	ImGuiToast() {}
 	ImGuiToast(ImGuiToastType type, const core::String &message);
 
 	const char *defaultTitle() const;
@@ -46,7 +47,7 @@ public:
 
 namespace ImGui {
 
-using ImGuiToasts = core::DynamicArray<ImGuiToast>;
+using ImGuiToasts = core::RingBuffer<ImGuiToast, 3>;
 
 /// Render toasts, call at the end of your rendering!
 int RenderNotifications(ImGuiToasts& notifications);

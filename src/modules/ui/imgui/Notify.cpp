@@ -130,15 +130,16 @@ int RenderNotifications(ImGuiToasts &notifications) {
 
 	const int dismissMillis = core::Var::get(cfg::UINotifyDismissMillis, "3000")->intVal();
 
-	for (size_t i = 0; i < notifications.size(); i++) {
+	for (size_t i = 0; i < notifications.size();) {
 		ImGuiToast *currentToast = &notifications[i];
 
 		// Remove toast if expired
 		if (currentToast->phase(dismissMillis) == ImGuiToastPhase_Expired) {
-			notifications.erase(notifications.begin() + i);
+			notifications.erase_front(1);
 			continue;
 		}
 		++n;
+		++i;
 
 		// Get icon, title and other data
 		const char *icon = currentToast->icon();
