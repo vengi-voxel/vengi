@@ -428,6 +428,7 @@ void SceneManager::resize(int nodeId, const glm::ivec3& size) {
 	if (newVolume == nullptr) {
 		return;
 	}
+	// TODO: _modifier.fixSelection
 	if (!setNewVolume(nodeId, newVolume, false)) {
 		delete newVolume;
 		return;
@@ -728,6 +729,7 @@ void SceneManager::resetSceneState() {
 	Log::debug("New volume for node %i", node.id());
 	_mementoHandler.markModification(node, voxel::Region::InvalidRegion);
 	_dirty = false;
+	_modifier.unselect();
 	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), true);
 	setReferencePosition(node.region().getCenter());
@@ -2386,6 +2388,7 @@ bool SceneManager::nodeRemove(voxelformat::SceneGraphNode &node, bool recursive)
 	const int nodeId = node.id();
 	const core::String &name = node.name();
 	Log::debug("Delete node %i with name %s", nodeId, name.c_str());
+	// TODO: _modifier.fixSelection
 	_mementoHandler.markNodeRemoved(node);
 	if (!_sceneGraph.removeNode(nodeId, recursive)) {
 		Log::error("Failed to remove node with id %i", nodeId);
