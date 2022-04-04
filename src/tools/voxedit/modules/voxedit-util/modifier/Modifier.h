@@ -69,14 +69,15 @@ protected:
 	glm::ivec3 firstPos() const;
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 	bool executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type)>& callback);
-	virtual bool select(const glm::ivec3& mins, const glm::ivec3& maxs);
-	virtual void unselect();
 public:
 	Modifier();
 
 	void construct() override;
 	bool init() override;
 	void shutdown() override;
+
+	virtual bool select(const glm::ivec3& mins, const glm::ivec3& maxs);
+	virtual void unselect();
 
 	void translate(const glm::ivec3& v);
 

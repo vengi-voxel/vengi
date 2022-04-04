@@ -71,10 +71,6 @@ void Modifier::construct() {
 		setShapeType(ShapeType::Dome);
 	}).setHelp("Change the shape type to 'dome'");
 
-	command::Command::registerCommand("unselect", [&] (const command::CmdArgs& args) {
-		unselect();
-	}).setHelp("Unselect all");
-
 	command::Command::registerCommand("mirroraxisx", [&] (const command::CmdArgs& args) {
 		setMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the x axis");

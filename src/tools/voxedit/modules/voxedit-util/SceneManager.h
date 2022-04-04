@@ -414,6 +414,8 @@ public:
 	const voxelformat::SceneGraph &sceneGraph();
 	void setEditMode(EditMode mode);
 
+	bool hasClipboardCopy() const;
+
 private:
 	void onNewNodeAdded(int newNodeId);
 	bool nodeRename(voxelformat::SceneGraphNode &node, const core::String &name);
@@ -430,6 +432,10 @@ public:
 	bool nodeActivate(int nodeId);
 	void nodeForeachGroup(const std::function<void(int)>& f);
 };
+
+inline bool SceneManager::hasClipboardCopy() const {
+	return _copy != nullptr;
+}
 
 inline uint32_t SceneManager::currentFrame() const {
 	return _currentFrame;

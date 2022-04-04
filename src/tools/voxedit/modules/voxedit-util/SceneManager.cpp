@@ -1101,6 +1101,23 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Switch active node to hovered from scene graph mode").setBindingContext(BindingContext::Scene);
 
+	command::Command::registerCommand("select", [&] (const command::CmdArgs& args) {
+		if (args.empty()) {
+			Log::info("Usage: select [all|none|invert]");
+			return;
+		}
+		if (args[0] == "none") {
+			_modifier.unselect();
+		} else if (args[0] == "all") {
+			voxel::RawVolume* v = activeVolume();
+			if (!v) {
+				return;
+			}
+			const voxel::Region &region = v->region();
+			_modifier.select(region.getLowerCorner(), region.getUpperCorner());
+		}
+	}).setHelp("Unselect all");
+
 	command::Command::registerCommand("animation_cycle", [this] (const command::CmdArgs& argv) {
 		int offset = 1;
 		if (argv.size() > 0) {

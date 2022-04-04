@@ -4,6 +4,7 @@
 
 #include "MenuBar.h"
 #include "core/GameConfig.h"
+#include "imgui.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include "ui/imgui/IconsFontAwesome5.h"
@@ -56,19 +57,38 @@ void MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 			}
 			ImGui::EndMenu();
 		}
-		ImGui::CommandMenuItem(ICON_FA_UNDO " Undo", "undo", sceneMgr().mementoHandler().canUndo(), &listener);
-		ImGui::CommandMenuItem(ICON_FA_REDO " Redo", "redo", sceneMgr().mementoHandler().canRedo(), &listener);
-		if (ImGui::BeginMenu(ICON_FA_COG " Options")) {
-			ImGui::CheckboxVar(ICON_FA_BORDER_ALL " Grid", cfg::VoxEditShowgrid);
-			ImGui::CheckboxVar("Show axis", cfg::VoxEditShowaxis);
-			ImGui::CheckboxVar("Model space", cfg::VoxEditModelSpace);
-			ImGui::CheckboxVar("Show locked axis", cfg::VoxEditShowlockedaxis);
-			ImGui::CheckboxVar(ICON_FA_DICE_SIX " Bounding box", cfg::VoxEditShowaabb);
-			ImGui::CheckboxVar("Shadow", cfg::VoxEditRendershadow);
-			ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
-			ImGui::SliderVarInt("Zoom speed", cfg::VoxEditCameraZoomSpeed, 10, 200);
-			ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
-			ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);
+		if (ImGui::BeginMenu(ICON_FA_COG " Edit")) {
+			const SceneManager &sceneManager = sceneMgr();
+			const MementoHandler &mementoHandler = sceneManager.mementoHandler();
+			ImGui::CommandMenuItem(ICON_FA_UNDO " Undo", "undo", mementoHandler.canUndo(), &listener);
+			ImGui::CommandMenuItem(ICON_FA_REDO " Redo", "redo", mementoHandler.canRedo(), &listener);
+			ImGui::Separator();
+			const Modifier &modifier = sceneManager.modifier();
+			const Selection &selection = modifier.selection();
+			ImGui::CommandMenuItem(ICON_FA_CUT " Cut", "cut", selection.isValid(), &listener);
+			ImGui::CommandMenuItem(ICON_FA_COPY " Copy", "copy", selection.isValid(), &listener);
+			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste", "paste", sceneManager.hasClipboardCopy(), &listener);
+			ImGui::Separator();
+			if (ImGui::BeginMenu(ICON_FA_COG " Options")) {
+				ImGui::CheckboxVar(ICON_FA_BORDER_ALL " Grid", cfg::VoxEditShowgrid);
+				ImGui::CheckboxVar("Show axis", cfg::VoxEditShowaxis);
+				ImGui::CheckboxVar("Model space", cfg::VoxEditModelSpace);
+				ImGui::CheckboxVar("Show locked axis", cfg::VoxEditShowlockedaxis);
+				ImGui::CheckboxVar(ICON_FA_DICE_SIX " Bounding box", cfg::VoxEditShowaabb);
+				ImGui::CheckboxVar("Shadow", cfg::VoxEditRendershadow);
+				ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
+				ImGui::SliderVarInt("Zoom speed", cfg::VoxEditCameraZoomSpeed, 10, 200);
+				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
+				ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu(ICON_FA_EYE " View")) {
+				actionMenuItem("Reset camera", "resetcamera", listener);
+				actionMenuItem("Scene view", "togglescene", listener);
+				actionMenuItem("Console", "toggleconsole", listener);
+				ImGui::EndMenu();
+			}
+			ImGui::Separator();
 			if (ImGui::Button("Scene settings")) {
 				_popupSceneSettings = true;
 			}
@@ -77,10 +97,9 @@ void MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu(ICON_FA_EYE " View")) {
-			actionMenuItem("Reset camera", "resetcamera", listener);
-			actionMenuItem("Scene view", "togglescene", listener);
-			actionMenuItem("Console", "toggleconsole", listener);
+		if (ImGui::BeginMenu(ICON_FA_SQUARE " Select")) {
+			actionMenuItem("None", "select none", listener);
+			actionMenuItem("All", "select all", listener);
 			ImGui::EndMenu();
 		}
 #ifdef DEBUG
