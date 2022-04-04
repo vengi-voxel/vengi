@@ -43,9 +43,7 @@ void ViewportController::setMode(ViewportController::SceneCameraMode mode) {
 	if (mode == ViewportController::SceneCameraMode::Free) {
 		_camera.setMode(video::CameraMode::Perspective);
 	} else {
-		// TODO: activate parallel projection
-		//_camera.setMode(video::CameraMode::Orthogonal);
-		_camera.setMode(video::CameraMode::Perspective);
+		_camera.setMode(video::CameraMode::Orthogonal);
 	}
 }
 
