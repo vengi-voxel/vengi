@@ -66,8 +66,8 @@ TEST_F(CameraTest, testScreenRayStraightDown) {
 	Camera camera = setup();
 	// get the world position from the center of the screen
 	const math::Ray& ray = camera.screenRay(glm::vec2(0.5f));
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(glm::down, ray.direction, 0.00001f))) << ray << " - " << ray.direction.x << ", " << ray.direction.y << ", " << ray.direction.z;
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.worldPosition(), ray.origin, 0.00001f))) << ray << " - " << ray.origin.x << ", " << ray.origin.y << ", " << ray.origin.z;
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(glm::down, ray.direction, 0.0001f))) << ray << " - " << ray.direction.x << ", " << ray.direction.y << ", " << ray.direction.z;
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.worldPosition(), ray.origin, 0.0001f))) << ray << " - " << ray.origin.x << ", " << ray.origin.y << ", " << ray.origin.z;
 }
 
 TEST_F(CameraTest, testMotion) {
