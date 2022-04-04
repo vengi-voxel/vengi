@@ -70,10 +70,10 @@ protected:
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 	bool executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type)>& callback);
 	virtual bool select(const glm::ivec3& mins, const glm::ivec3& maxs);
+	virtual void unselect();
 public:
 	Modifier();
 
-	virtual void unselect();
 	void construct() override;
 	bool init() override;
 	void shutdown() override;
@@ -148,6 +148,8 @@ public:
 	voxel::FaceNames cursorFace() const;
 
 	void setGridResolution(int resolution);
+
+	void reset();
 };
 
 inline void Modifier::setModifierType(ModifierType type) {

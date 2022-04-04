@@ -17,9 +17,9 @@ private:
 
 protected:
 	bool select(const glm::ivec3& mins, const glm::ivec3& maxs) override;
+	void unselect() override;
 
 public:
-	void unselect() override;
 	bool init() override;
 	void shutdown() override;
 

@@ -729,7 +729,7 @@ void SceneManager::resetSceneState() {
 	Log::debug("New volume for node %i", node.id());
 	_mementoHandler.markModification(node, voxel::Region::InvalidRegion);
 	_dirty = false;
-	_modifier.unselect();
+	_modifier.reset();
 	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), true);
 	setReferencePosition(node.region().getCenter());
