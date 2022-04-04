@@ -522,7 +522,7 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 		voxel::RawVolume *v = node.volume();
 		Log::info("%*s  |- volume: %s", indent, " ", v != nullptr ? v->region().toString().c_str() : "no volume");
 		if (v) {
-			voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) { ++voxels; });
+			voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &) { ++voxels; });
 		}
 	}
 	for (const auto & entry : node.properties()) {
