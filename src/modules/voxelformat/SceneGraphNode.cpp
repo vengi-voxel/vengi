@@ -17,9 +17,11 @@
 namespace voxelformat {
 
 SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type) {
-	// ensure that there is at least one frame
-	SceneGraphKeyFrame frame;
-	_keyFrames.emplace_back(frame);
+	if (type != SceneGraphNodeType::Root) {
+		// ensure that there is at least one frame
+		SceneGraphKeyFrame frame;
+		_keyFrames.emplace_back(frame);
+	}
 }
 
 void SceneGraphTransform::setPivot(const glm::vec3 &normalizedPivot) {
