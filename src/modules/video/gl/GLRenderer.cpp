@@ -71,9 +71,9 @@ static void validate(Id handle) {
 		glGetProgramInfoLog(lid, logLength, nullptr, &message[0]);
 		video::checkError();
 		if (success == GL_FALSE) {
-			Log::error("Validation output%s", message.c_str());
+			Log::error("Validation output: %s", message.c_str());
 		} else {
-			Log::warn("Validation output%s", message.c_str());
+			Log::trace("Validation output: %s", message.c_str());
 		}
 	}
 #endif
