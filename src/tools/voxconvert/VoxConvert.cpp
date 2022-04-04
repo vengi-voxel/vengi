@@ -33,6 +33,7 @@
 #include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
+#include "voxelutil/VolumeVisitor.h"
 
 #include <glm/gtc/quaternion.hpp>
 #include <glm/trigonometric.hpp>
@@ -488,7 +489,7 @@ void VoxConvert::split(const glm::ivec3 &size, voxelformat::SceneGraph& sceneGra
 	}
 }
 
-void VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId, int indent) {
+int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId, int indent) {
 	const voxelformat::SceneGraphNode& node = sceneGraph.node(nodeId);
 	static const char* NodeTypeStr[] {
 		"Root",
@@ -516,8 +517,13 @@ void VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeI
 	Log::info("%*sNode: %i (parent %i)", indent, " ", nodeId, node.parent());
 	Log::info("%*s  |- name: %s", indent, " ", node.name().c_str());
 	Log::info("%*s  |- type: %s", indent, " ", NodeTypeStr[core::enumVal(type)]);
+	int voxels = 0;
 	if (type == voxelformat::SceneGraphNodeType::Model) {
-		Log::info("%*s  |- volume: %s", indent, " ", node.volume() != nullptr ? node.volume()->region().toString().c_str() : "no volume");
+		voxel::RawVolume *v = node.volume();
+		Log::info("%*s  |- volume: %s", indent, " ", v != nullptr ? v->region().toString().c_str() : "no volume");
+		if (v) {
+			voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) { ++voxels; });
+		}
 	}
 	for (const auto & entry : node.properties()) {
 		Log::info("%*s  |- %s: %s", indent, " ", entry->key.c_str(), entry->value.c_str());
@@ -540,12 +546,14 @@ void VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeI
 	}
 	Log::info("%*s  |- children: %i", indent, " ", (int)node.children().size());
 	for (int children : node.children()) {
-		dumpNode_r(sceneGraph, children, indent + 2);
+		voxels += dumpNode_r(sceneGraph, children, indent + 2);
 	}
+	return voxels;
 }
 
 void VoxConvert::dump(const voxelformat::SceneGraph& sceneGraph) {
-	dumpNode_r(sceneGraph, sceneGraph.root().id(), 0);
+	int voxels = dumpNode_r(sceneGraph, sceneGraph.root().id(), 0);
+	Log::info("Voxel count: %i", voxels);
 }
 
 void VoxConvert::crop(voxelformat::SceneGraph& sceneGraph) {

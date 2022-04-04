@@ -56,7 +56,7 @@ protected:
 	void translate(const glm::ivec3& pos, voxelformat::SceneGraph& sceneGraph);
 	void pivot(const glm::ivec3& pivot, voxelformat::SceneGraph& sceneGraph);
 	void crop(voxelformat::SceneGraph& sceneGraph);
-	void dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId, int indent);
+	int dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId, int indent);
 	void dump(const voxelformat::SceneGraph& sceneGraph);
 	void filterVolumes(voxelformat::SceneGraph& sceneGraph);
 	void exportLayersIntoSingleObjects(voxelformat::SceneGraph& sceneGraph, const core::String &inputfile);
