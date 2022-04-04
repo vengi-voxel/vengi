@@ -524,6 +524,7 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 		if (v) {
 			voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &) { ++voxels; });
 		}
+		Log::info("%*s  |- voxels: %i", indent, " ", voxels);
 	}
 	for (const auto & entry : node.properties()) {
 		Log::info("%*s  |- %s: %s", indent, " ", entry->key.c_str(), entry->value.c_str());
