@@ -8,7 +8,6 @@
 #include "core/Singleton.h"
 #include <glm/gtc/epsilon.hpp>
 #include "core/Var.h"
-#include <glm/ext/matrix_projection.hpp>
 #include "math/AABB.h"
 #include "core/GLM.h"
 #include "math/Ray.h"
@@ -384,13 +383,15 @@ math::Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	// to bring them into homogeneous clip coordinates
 	core_assert(glm::all(glm::lessThanEqual(screenPos, glm::vec2(1.0f))));
 	core_assert(glm::all(glm::greaterThanEqual(screenPos, glm::vec2(0.0f))));
-	const float z = 1.0f;
-	glm::vec4 clipSpacePosition(screenPos * 2.0f - 1.0f, z, 1.0f);
+	const float x = (2.0f * screenPos.x) - 1.0f;
+	const float y = 1.0f - (2.0f * screenPos.y);
+	const glm::vec4 rayClipSpace(x, y, -1.0f, 1.0f);
 
-	glm::vec4 worldSpacePosition = glm::inverse(viewProjectionMatrix()) * clipSpacePosition;
-	worldSpacePosition /= worldSpacePosition.w;
+	glm::vec4 rayEyeSpace = inverseProjectionMatrix() * rayClipSpace;
+	rayEyeSpace.z = -1.0f;
+	rayEyeSpace.w = 0.0f;
 
-	const glm::vec3& rayDirection = glm::normalize(worldSpacePosition);
+	const glm::vec3& rayDirection = glm::normalize(glm::vec3(inverseViewMatrix() * rayEyeSpace));
 	return math::Ray(eye(), rayDirection);
 }
 
