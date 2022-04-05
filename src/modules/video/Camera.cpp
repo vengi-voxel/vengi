@@ -374,10 +374,11 @@ void Camera::updateViewMatrix() {
 math::Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
 	core_assert(glm::all(glm::lessThanEqual(pixelPos, _windowSize)));
 	core_assert(glm::all(glm::greaterThanEqual(pixelPos, glm::ivec2(0))));
-	const glm::vec2 screenPos((float)pixelPos.x / (float)_windowSize.x, ((float)_windowSize.y - (float)pixelPos.y) / (float)_windowSize.y);
+	const glm::vec2 screenPos((float)pixelPos.x / (float)_windowSize.x, (float)pixelPos.y / (float)_windowSize.y);
 	return screenRay(screenPos);
 }
 
+// https://antongerdelan.net/opengl/raycasting.html
 math::Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	// project screen position [0.0-1.0] to [-1.0,1.0] and flip y axis
 	// to bring them into homogeneous clip coordinates
@@ -388,6 +389,8 @@ math::Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	const glm::vec4 rayClipSpace(x, y, -1.0f, 1.0f);
 
 	glm::vec4 rayEyeSpace = inverseProjectionMatrix() * rayClipSpace;
+	// only x and y are needed here
+	// forwards, and not a point
 	rayEyeSpace.z = -1.0f;
 	rayEyeSpace.w = 0.0f;
 
