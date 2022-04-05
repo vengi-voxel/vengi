@@ -321,7 +321,7 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 		}
 	}
 	const uint8_t frameIdx = core::Var::getSafe(cfg::VoxformatFrame)->intVal();
-	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transform(frameIdx), frameIdx);
+	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transformForFrame(frameIdx), frameIdx);
 
 	return true;
 }
@@ -414,15 +414,15 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	}
 
 	const uint8_t frameIdx = core::Var::getSafe(cfg::VoxformatFrame)->intVal();
-	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transform(frameIdx), frameIdx);
+	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transformForFrame(frameIdx), frameIdx);
 
 	// some files since version 6 still have stuff here
 	return true;
 }
 
 void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGraphNode &node, const SceneGraphTransform parentTransform, uint8_t frameIdx) {
-	SceneGraphTransform currentTransform = node.transform(frameIdx);
-	currentTransform.setMatrix(parentTransform.matrix() * node.transform(frameIdx).matrix());
+	SceneGraphTransform currentTransform = node.transformForFrame(frameIdx);
+	currentTransform.setMatrix(parentTransform.matrix() * node.transformForFrame(frameIdx).matrix());
 	currentTransform.update();
 
 	if (node.type() == SceneGraphNodeType::Model) {
