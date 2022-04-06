@@ -68,7 +68,7 @@ void Camera::rotate(float radians, const glm::vec3& axis) {
 void Camera::pan(int x, int y) {
 	float zoomFactor = 1.0f;
 	if (mode() == CameraMode::Orthogonal) {
-		zoomFactor = _orthoZoom;
+		zoomFactor = _zoom;
 	}
 	if (_rotationType == CameraRotationType::Target) {
 		const float dist = glm::distance(target(), eye());
@@ -304,12 +304,12 @@ void Camera::updateZoom(double deltaFrameSeconds) {
 		core::Var::getSafe(cfg::ClientCameraMinZoom)->setVal(minZoom);
 	}
 	if (_mode == CameraMode::Orthogonal) {
-		if (glm::abs(_orthoZoom - _targetZoom) <= 0.001f) {
+		if (glm::abs(_zoom - _targetZoom) <= 0.001f) {
 			_lerpZoom = false;
 			return;
 		}
-		const float lerpedZoom = glm::lerp(_orthoZoom, _targetZoom, (float)deltaFrameSeconds);
-		_orthoZoom = glm::clamp(lerpedZoom, minZoom, maxZoom);
+		const float lerpedZoom = glm::lerp(_zoom, _targetZoom, (float)deltaFrameSeconds);
+		_zoom = glm::clamp(lerpedZoom, minZoom, maxZoom);
 		_dirty |= DIRTY_PERSPECTIVE;
 		return;
 	}
@@ -511,7 +511,7 @@ glm::vec4 Camera::sphereBoundingBox() const {
 
 void Camera::zoom(float value) {
 	if (_mode == CameraMode::Orthogonal) {
-		_targetZoom = _orthoZoom + value;
+		_targetZoom = _zoom + value;
 	} else {
 		_targetZoom = targetDistance() + value;
 	}
@@ -526,12 +526,12 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 		const float bottom = (float)_windowSize.y;
 		core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
 		core_assert_msg(top < bottom, "Invalid dimension given: top must be smaller than bottom but is %f", top);
-		return glm::ortho(left * _orthoZoom, right * _orthoZoom, bottom * _orthoZoom, top * _orthoZoom, nplane, fplane);
+		return glm::ortho(left * _zoom, right * _zoom, bottom * _zoom, top * _zoom, nplane, fplane);
 	}
-	const float left = -ORTHO_BOXSIZE * _orthoZoom;
-	const float right = ORTHO_BOXSIZE * _orthoZoom;
-	const float bottom = -ORTHO_BOXSIZE * _orthoZoom * aspect();
-	const float top = ORTHO_BOXSIZE * _orthoZoom * aspect();
+	const float left = -ORTHO_BOXSIZE * _zoom;
+	const float right = ORTHO_BOXSIZE * _zoom;
+	const float bottom = -ORTHO_BOXSIZE * _zoom * aspect();
+	const float top = ORTHO_BOXSIZE * _zoom * aspect();
 	return glm::orthoRH_NO(left, right, bottom, top, nplane, fplane);
 }
 

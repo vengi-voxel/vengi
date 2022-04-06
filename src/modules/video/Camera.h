@@ -70,7 +70,7 @@ protected:
 	CameraRotationType _rotationType = CameraRotationType::Eye;
 
 	glm::ivec2 _windowSize {0};
-	float _orthoZoom = 10.0f;
+	float _zoom = 10.0f;
 	glm::vec3 _panOffset {0.0f};
 	// the position of the camera in the world
 	glm::vec3 _worldPos {0.0f};
