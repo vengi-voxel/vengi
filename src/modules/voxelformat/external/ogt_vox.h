@@ -314,15 +314,32 @@
         const uint8_t* voxel_data;    // grid of voxel data comprising color indices in x -> y -> z order. a color index of 0 means empty, all other indices mean solid and can be used to index the scene's palette to obtain the color for the voxel.
     } ogt_vox_model;
 
+    // a keyframe for animation of a transform
+    typedef struct ogt_vox_keyframe_transform {
+        uint32_t          frame_index;
+        ogt_vox_transform transform;
+    } ogt_vox_keyframe_transform;
+
+    // a keyframe for animation of a model
+    typedef struct ogt_vox_keyframe_model {
+        uint32_t frame_index;
+        uint32_t model_index;
+    } ogt_vox_keyframe_model;
+
     // an instance of a model within the scene
     typedef struct ogt_vox_instance
     {
-        const char*       name;         // name of the instance if there is one, will be NULL otherwise.
-        ogt_vox_transform transform;    // orientation and position of this instance within the scene. This is relative to its group local transform if group_index is not 0
-        uint32_t          model_index;  // index of the model used by this instance. used to lookup the model in the scene's models[] array.
-        uint32_t          layer_index;  // index of the layer used by this instance. used to lookup the layer in the scene's layers[] array.
-        uint32_t          group_index;  // this will be the index of the group in the scene's groups[] array. If group is zero it will be the scene root group and the instance transform will be a world-space transform, otherwise the transform is relative to the group.
-        bool              hidden;       // whether this instance is individually hidden or not. Note: the instance can also be hidden when its layer is hidden, or if it belongs to a group that is hidden.
+        const char*                       name;                   // name of the instance if there is one, will be NULL otherwise.
+        ogt_vox_transform                 transform;              // orientation and position of this instance on first frame of the scene. This is relative to its group local transform if group_index is not 0
+        uint32_t                          model_index;            // index of the model used by this instance on the first frame of the scene. used to lookup the model in the scene's models[] array.
+        uint32_t                          layer_index;            // index of the layer used by this instance. used to lookup the layer in the scene's layers[] array.
+        uint32_t                          group_index;            // this will be the index of the group in the scene's groups[] array. If group is zero it will be the scene root group and the instance transform will be a world-space transform, otherwise the transform is relative to the group.
+        bool                              hidden;                 // whether this instance is individually hidden or not. Note: the instance can also be hidden when its layer is hidden, or if it belongs to a group that is hidden.
+
+        uint32_t                          num_transform_keyframes;// number of transform keyframes (if any)
+        const ogt_vox_keyframe_transform* transform_keyframes;    // array of transform keyframes (if any)
+        uint32_t                          num_model_keyframes;    // number of model keyframes (if any)
+        const ogt_vox_keyframe_model*     model_keyframes;        // array of model keyframes (if any)
     } ogt_vox_instance;
 
     // describes a layer within the scene
@@ -335,17 +352,20 @@
     // describes a group within the scene
     typedef struct ogt_vox_group
     {
-        ogt_vox_transform transform;            // transform of this group relative to its parent group (if any), otherwise this will be relative to world-space.
-        uint32_t          parent_group_index;   // if this group is parented to another group, this will be the index of its parent in the scene's groups[] array, otherwise this group will be the scene root group and this value will be k_invalid_group_index
-        uint32_t          layer_index;          // which layer this group belongs to. used to lookup the layer in the scene's layers[] array.
-        bool              hidden;               // whether this group is hidden or not.
+        const char*                       name;                    // name of the group if there is one, will be NULL otherwise
+        ogt_vox_transform                 transform;               // transform of this group relative to its parent group (if any), otherwise this will be relative to world-space.
+        uint32_t                          parent_group_index;      // if this group is parented to another group, this will be the index of its parent in the scene's groups[] array, otherwise this group will be the scene root group and this value will be k_invalid_group_index
+        uint32_t                          layer_index;             // which layer this group belongs to. used to lookup the layer in the scene's layers[] array.
+        bool                              hidden;                  // whether this group is hidden or not.
+        uint32_t                          num_transform_keyframes; // number of transform keyframes (if any)
+        const ogt_vox_keyframe_transform* transform_keyframes;     // rray of transform keyframes (if any)
     } ogt_vox_group;
 
     // the scene parsed from a .vox file.
     typedef struct ogt_vox_scene
     {
         uint32_t                num_models;     // number of models within the scene.
-        uint32_t                num_instances;  // number of instances in the scene
+        uint32_t                num_instances;  // number of instances in the scene (on anim frame 0)
         uint32_t                num_layers;     // number of layers in the scene
         uint32_t                num_groups;     // number of groups in the scene
         const ogt_vox_model**   models;         // array of models. size is num_models
@@ -370,7 +390,8 @@
     void  ogt_vox_free(void* mem);
 
     // flags for ogt_vox_read_scene_with_flags
-    static const uint32_t k_read_scene_flags_groups = 1 << 0; // if not specified, all instance transforms will be flattened into world space. If specified, will read group information and keep all transforms as local transform relative to the group they are in.
+    static const uint32_t k_read_scene_flags_groups    = 1 << 0; // if not specified, all instance transforms will be flattened into world space. If specified, will read group information and keep all transforms as local transform relative to the group they are in.
+    static const uint32_t k_read_scene_flags_keyframes = 1 << 1; // if specified, all instances and groups will contain keyframe data.
 
     // creates a scene from a vox file within a memory buffer of a given size.
     // you can destroy the input buffer once you have the scene as this function will allocate separate memory for the scene objecvt.
@@ -401,7 +422,7 @@
     // callers can override asserts in ogt_vox by defining their own macro before the implementation
 #ifndef ogt_assert
     #include <assert.h>
-    #define ogt_assert(x, msg_str)      do { assert( (x) && (msg_str) ); } while( 0 )
+    #define ogt_assert(x, msg_str)      do { assert((x) && (msg_str)); } while(0)
 #endif
     #include <stdlib.h>
     #include <string.h>
@@ -620,6 +641,16 @@
             }
             data[count++] = new_element;
         }
+        void pop_back() {
+            ogt_assert(count > 0, "cannot pop_back on empty array");
+            count--;
+        }
+        const T & peek_back(size_t back_offset = 0) const {
+            ogt_assert(back_offset < count, "can't peek back further than the number of elements in an array");
+            size_t index = count - 1 - back_offset;
+            return data[index];
+        }
+
         void push_back_many(const T * new_elements, size_t num_elements) {
             if (count + num_elements > capacity) {
                 size_t new_capacity = capacity + num_elements;
@@ -630,6 +661,17 @@
             for (size_t i = 0; i < num_elements; i++)
                 data[count + i] = new_elements[i];
             count += num_elements;
+        }
+        T* alloc_many(size_t num_elements) {
+            if (count + num_elements > capacity) {
+                size_t new_capacity = capacity + num_elements;
+                new_capacity = new_capacity ? (new_capacity * 3) >> 1 : 2;   // grow by 50% each time, otherwise start at 2 elements.
+                reserve(new_capacity);
+                ogt_assert(capacity >= (count + num_elements), "failed to push_back_many in array");
+            }
+            T* ret = &data[count];
+            count += num_elements;
+            return ret;
         }
         size_t size() const {
             return count;
@@ -809,16 +851,29 @@
         k_nodetype_shape     = 3,
     };
 
+    struct _vox_keyframe_transform {
+        uint32_t          frame_index;
+        ogt_vox_transform frame_transform;
+    };
+
+    struct _vox_keyframe_shape {
+        uint32_t frame_index;
+        uint32_t model_index;
+    };
+
     struct _vox_scene_node_ {
         _vox_scene_node_type node_type;    // only gets assigned when this has been parsed, otherwise will be k_nodetype_invalid
         union {
             // used only when node_type == k_nodetype_transform
             struct {
-                char              name[65];    // max name size is 64 plus 1 for null terminator
-                ogt_vox_transform transform;
+                char              name[65];                 // max name size is 64 plus 1 for null terminator
+                ogt_vox_transform transform;                // root transform (always the first anim frame transform in the case of animated transform)
                 uint32_t          child_node_id;
                 uint32_t          layer_id;
                 bool              hidden;
+                uint32_t          num_keyframes;           // number of key frames in this transform
+                size_t            keyframe_offset;         // offset in misc_data array where the _vox_keyframe_transform data is stored.
+
             } transform;
             // used only when node_type == k_nodetype_group
             struct {
@@ -827,27 +882,36 @@
             } group;
             // used only when node_type == k_nodetype_shape
             struct {
-                uint32_t model_id;                  // will be UINT32_MAX if there is no model. Unlikely, there should always be a model.
+                uint32_t model_id;                  // always the first model_id in the case of an animated shape
+                uint32_t num_keyframes;            // number of key frames in this transform
+                size_t   keyframe_offset;          // offset in misc_data array where the _vox_keyframe_shape data is stored
             } shape;
         } u;
     };
 
+    // iterates over all transform nodes from root to leaf and computes a flattened transform.
+    static ogt_vox_transform compute_flattened_transform(_vox_array<const _vox_scene_node_*> & stack) {
+        ogt_vox_transform transform = _vox_transform_identity();
+        for (uint32_t i = 0; i < stack.size(); i += 2) {
+            const _vox_scene_node_* transform_node = stack[i];
+            ogt_assert(transform_node->node_type == k_nodetype_transform, "expected transform node");
+            transform = _vox_transform_multiply(transform_node->u.transform.transform, transform);
+        }
+        return transform;
+    }
+
     static void generate_instances_for_node(
-        const _vox_array<_vox_scene_node_> & nodes, uint32_t node_index, const _vox_array<uint32_t> & child_id_array, uint32_t layer_index,
-        const ogt_vox_transform& transform, const _vox_array<ogt_vox_model*> & model_ptrs, const char* transform_last_name, bool transform_last_hidden,
-        _vox_array<ogt_vox_instance> & instances, _vox_array<char> & string_data, _vox_array<ogt_vox_group>& groups, uint32_t group_index, bool generate_groups)
+        _vox_array<const _vox_scene_node_*> & stack, const _vox_array<_vox_scene_node_> & nodes, uint32_t node_index, const _vox_array<uint32_t> & child_id_array, const _vox_array<ogt_vox_model*> & model_ptrs,
+        _vox_array<ogt_vox_instance> & instances, _vox_array<char> & misc_data, _vox_array<ogt_vox_group>& groups, uint32_t group_index, bool generate_groups, bool generate_keyframes)
     {
         const _vox_scene_node_* node = &nodes[node_index];
-        ogt_assert(node, "invalid node index");
         switch (node->node_type)
         {
             case k_nodetype_transform:
             {
-                ogt_vox_transform new_transform = (generate_groups) ? node->u.transform.transform  // don't multiply by the parent transform. caller wants the group-relative transform
-                        : _vox_transform_multiply(node->u.transform.transform, transform);         // flatten the transform if we're not generating groups: child transform * parent transform
-                const char* new_transform_name = node->u.transform.name[0] ? node->u.transform.name : NULL;
-                transform_last_name = new_transform_name ? new_transform_name : transform_last_name;    // if this node has a name, use it instead of our parent name
-                generate_instances_for_node(nodes, node->u.transform.child_node_id, child_id_array, node->u.transform.layer_id, new_transform, model_ptrs, transform_last_name, node->u.transform.hidden, instances, string_data, groups, group_index, generate_groups);
+                stack.push_back(node);
+                generate_instances_for_node(stack, nodes, node->u.transform.child_node_id, child_id_array, model_ptrs, instances, misc_data, groups, group_index, generate_groups, generate_keyframes);
+                stack.pop_back();
                 break;
             }
             case k_nodetype_group:
@@ -855,21 +919,38 @@
                 // create a new group only if we're generating groups.
                 uint32_t next_group_index = 0;
                 if (generate_groups) {
+                    const _vox_scene_node_* last_transform = stack.peek_back(0);
+                    ogt_assert(last_transform->node_type == k_nodetype_transform, "expected transform node prior to group node");
+
                     next_group_index = (uint32_t)groups.size();
                     ogt_vox_group group;
                     group.parent_group_index = group_index;
-                    group.transform          = transform;
-                    group.hidden             = transform_last_hidden;
-                    group.layer_index        = layer_index;
+                    group.transform          = last_transform->u.transform.transform;
+                    group.hidden             = last_transform->u.transform.hidden;
+                    group.layer_index        = last_transform->u.transform.layer_id;
+                    group.name               = 0;
+                    const char* transform_last_name = last_transform->u.transform.name;
+                    if (transform_last_name && transform_last_name[0]) {
+                        group.name = (const char*)(misc_data.size());
+                        size_t name_size = _vox_strlen(transform_last_name) + 1;       // +1 for terminator
+                        misc_data.push_back_many(transform_last_name, name_size);
+                    }
+                    group.num_transform_keyframes = 0;
+                    group.transform_keyframes     = NULL;
+                    if (generate_keyframes) {
+                        group.num_transform_keyframes = last_transform->u.transform.num_keyframes;
+                        group.transform_keyframes     = (const ogt_vox_keyframe_transform*)(last_transform->u.transform.keyframe_offset);
+                    }
+
                     groups.push_back(group);
                 }
-                // child nodes will only be hidden if their immediate transform is hidden.
-                transform_last_hidden = false;
 
+                stack.push_back(node);
                 const uint32_t* child_node_ids = (const uint32_t*)& child_id_array[node->u.group.first_child_node_id_index];
                 for (uint32_t i = 0; i < node->u.group.num_child_nodes; i++) {
-                    generate_instances_for_node(nodes, child_node_ids[i], child_id_array, layer_index, transform, model_ptrs, transform_last_name, transform_last_hidden, instances, string_data, groups, next_group_index, generate_groups);
+                    generate_instances_for_node(stack, nodes, child_node_ids[i], child_id_array, model_ptrs, instances, misc_data, groups, next_group_index, generate_groups, generate_keyframes);
                 }
+                stack.pop_back();
                 break;
             }
             case k_nodetype_shape:
@@ -878,21 +959,39 @@
                 if (node->u.shape.model_id < model_ptrs.size() &&    // model ID is valid
                     model_ptrs[node->u.shape.model_id] != NULL )     // model is non-NULL.
                 {
+                    const _vox_scene_node_* last_transform = stack.peek_back(0);
+                    const _vox_scene_node_* last_group     = stack.peek_back(1);
+                    ogt_assert(last_transform->node_type == k_nodetype_transform, "parent node type to a shape node must be a transform node");
+                    ogt_assert(last_group->node_type == k_nodetype_group, "grandparent node type to a shape node must be a group node");
+
                     ogt_assert(generate_groups || group_index == 0, "if we're not generating groups, group_index should be zero to map to the root group");
                     ogt_vox_instance new_instance;
                     new_instance.model_index = node->u.shape.model_id;
-                    new_instance.transform   = transform;
-                    new_instance.layer_index = layer_index;
+                    new_instance.transform   = generate_groups ? last_transform->u.transform.transform : compute_flattened_transform(stack);
+                    new_instance.layer_index = last_transform->u.transform.layer_id;
                     new_instance.group_index = group_index;
-                    new_instance.hidden      = transform_last_hidden;
-                    // if we got a transform name, allocate space in string_data for it and keep track of the index
+                    new_instance.hidden      = last_transform->u.transform.hidden;
+                    // if we got a transform name, allocate space in misc_data for it and keep track of the index
                     // within string data. This will be patched to a real pointer at the very end.
                     new_instance.name = 0;
+                    const char* transform_last_name = last_transform->u.transform.name;
                     if (transform_last_name && transform_last_name[0]) {
-                        new_instance.name = (const char*)(string_data.size());
+                        new_instance.name = (const char*)(misc_data.size());
                         size_t name_size = _vox_strlen(transform_last_name) + 1;       // +1 for terminator
-                        string_data.push_back_many(transform_last_name, name_size);
+                        misc_data.push_back_many(transform_last_name, name_size);
                     }
+                    // generate keyframes if necessary.
+                    new_instance.num_model_keyframes     = 0;
+                    new_instance.model_keyframes         = NULL;
+                    new_instance.num_transform_keyframes = 0;
+                    new_instance.transform_keyframes     = NULL;
+                    if (generate_keyframes) {
+                        new_instance.num_model_keyframes     = node->u.shape.num_keyframes;
+                        new_instance.model_keyframes         = (const ogt_vox_keyframe_model*)(node->u.shape.keyframe_offset);
+                        new_instance.num_transform_keyframes = last_transform->u.transform.num_keyframes;
+                        new_instance.transform_keyframes     = (const ogt_vox_keyframe_transform*)(last_transform->u.transform.keyframe_offset);
+                    }
+
                     // create the instance
                     instances.push_back(new_instance);
                 }
@@ -930,7 +1029,7 @@
         _vox_array<_vox_scene_node_> nodes;
         _vox_array<ogt_vox_instance> instances;
         _vox_array<ogt_vox_cam>      cameras;
-        _vox_array<char>             string_data;
+        _vox_array<char>             misc_data;
         _vox_array<ogt_vox_layer>    layers;
         _vox_array<ogt_vox_group>    groups;
         _vox_array<uint32_t>         child_ids;
@@ -951,12 +1050,12 @@
         nodes.reserve(16);
         layers.reserve(8);
         groups.reserve(0);
-        string_data.reserve(256);
+        misc_data.reserve(1024);
 
         // push a sentinel character into these datastructures. This allows us to keep indexes
         // rather than pointers into data-structures that grow, and still allow an index of 0
         // to means invalid
-        string_data.push_back('X');
+        misc_data.push_back('X');
         child_ids.push_back(UINT32_MAX);
 
         // copy the default palette into the scene. It may get overwritten by a palette chunk later
@@ -1081,35 +1180,36 @@
                     _vox_file_read(fp, &reserved_id,   sizeof(reserved_id));
                     _vox_file_read(fp, &layer_id,      sizeof(layer_id));
                     _vox_file_read(fp, &num_frames,    sizeof(num_frames));
-                    ogt_assert(reserved_id == UINT32_MAX, "must be these values according to the spec");
-                    ogt_assert(file_version != 150 || num_frames == 1, "must be these values according to the spec");
+                    ogt_assert(reserved_id == UINT32_MAX, "unexpected values for reserved_id in nTRN chunk");
+                    ogt_assert(num_frames > 0, "must have at least 1 frame in nTRN chunk");
 
-                    // TODO: multiple frames are not yet supported - but at least the vox files from magicavoxel >= 0.99.7 are loading again
-                    for (uint32_t f = 0; f < num_frames; ++f) {
+                    // make space in misc_data array for the number of transforms we'll need for this node
+                    size_t keyframe_offset = misc_data.size();
+                    ogt_vox_keyframe_transform* keyframes = (ogt_vox_keyframe_transform*)misc_data.alloc_many(num_frames * sizeof(ogt_vox_keyframe_transform));
+                    for (uint32_t i = 0; i < num_frames; i++) {
                         // Parse the frame dictionary that contains:
                         //   _r : int8 ROTATION (c)
                         //   _t : int32x3 translation
-                        // and extract a transform
-                        ogt_vox_transform frame_transform;
-                        {
-                            _vox_file_read_dict(&dict, fp);
-                            const char* rotation_value    = _vox_dict_get_value_as_string(&dict, "_r");
-                            const char* translation_value = _vox_dict_get_value_as_string(&dict, "_t");
-                            frame_transform = _vox_make_transform_from_dict_strings(rotation_value, translation_value);
-                        }
-                        // setup the transform node.
-                        {
-                            nodes.grow_to_fit_index(node_id);
-                            _vox_scene_node_* transform_node = &nodes[node_id];
-                            ogt_assert(transform_node, "no transform node");
-                            transform_node->node_type = k_nodetype_transform;
-                            transform_node->u.transform.child_node_id = child_node_id;
-                            transform_node->u.transform.layer_id      = layer_id;
-                            transform_node->u.transform.transform     = frame_transform;
-                            transform_node->u.transform.hidden        = hidden;
-                            // assign the name
-                            _vox_strcpy_static(transform_node->u.transform.name, node_name);
-                        }
+                        //   _f : uint32_t frame index
+                        _vox_file_read_dict(&dict, fp);
+                        const char* rotation_value    = _vox_dict_get_value_as_string(&dict, "_r");
+                        const char* translation_value = _vox_dict_get_value_as_string(&dict, "_t");
+                        const char* frame_value       = _vox_dict_get_value_as_string(&dict, "_f", "0");
+                        keyframes[ i ].transform     = _vox_make_transform_from_dict_strings(rotation_value, translation_value);
+                        _vox_str_scanf(frame_value, "%i", &keyframes[ i ].frame_index);
+                    }
+                    // setup the transform node.
+                    {
+                        nodes.grow_to_fit_index(node_id);
+                        _vox_scene_node_* transform_node = &nodes[node_id];
+                        transform_node->node_type                   = k_nodetype_transform;
+                        transform_node->u.transform.child_node_id   = child_node_id;
+                        transform_node->u.transform.layer_id        = layer_id;
+                        transform_node->u.transform.transform       = keyframes[0].transform;
+                        transform_node->u.transform.hidden          = hidden;
+                        transform_node->u.transform.num_keyframes   = num_frames;
+                        transform_node->u.transform.keyframe_offset = keyframe_offset;
+                        _vox_strcpy_static(transform_node->u.transform.name, node_name);
                     }
                     break;
                 }
@@ -1148,25 +1248,33 @@
                     uint32_t node_id = 0;
                     _vox_file_read(fp, &node_id, sizeof(node_id));
 
-                    // setup the shape node
-                    nodes.grow_to_fit_index(node_id);
-                    _vox_scene_node_* shape_node = &nodes[node_id];
-                    shape_node->node_type = k_nodetype_shape;
-                    shape_node->u.shape.model_id = UINT32_MAX;
-
                     // parse the node dictionary - data is unused.
                     _vox_file_read_dict(&dict, fp);
 
                     uint32_t num_models = 0;
                     _vox_file_read(fp, &num_models, sizeof(num_models));
-                    ogt_assert(num_models == 1, "unexpected value for num_models in nSHP chunk"); // must be 1 according to the spec.
+                    ogt_assert(num_models > 0, "must have at least 1 frame in nSHP chunk"); // must be 1 according to the spec.
 
-                    // assign instances
-                    _vox_file_read(fp, &shape_node->u.shape.model_id, sizeof(uint32_t));
-                    ogt_assert(shape_node->u.shape.model_id < model_ptrs.size(), "nSHP chunk references model_id that we have not loaded yet");
+                    uint32_t keyframe_offset = (uint32_t)misc_data.size();
+                    ogt_vox_keyframe_model* keyframes = (ogt_vox_keyframe_model*)misc_data.alloc_many(num_models * sizeof(ogt_vox_keyframe_model));
 
-                    // parse the model dictionary - data is unsued.
-                    _vox_file_read_dict(&dict, fp);
+                    for (uint32_t i = 0; i < num_models; i++) {
+                        // read model id
+                        _vox_file_read(fp, &keyframes[i].model_index, sizeof(uint32_t));
+                        ogt_assert(keyframes[i].model_index < model_ptrs.size(), "nSHP chunk references model_id that we have not loaded yet");
+                        // read frame id
+                        _vox_file_read_dict(&dict, fp);
+                        const char* frame_value = _vox_dict_get_value_as_string(&dict, "_f", "0");
+                        _vox_str_scanf(frame_value, "%i", &keyframes[i].frame_index);
+                    }
+
+                    // setup the shape node
+                    nodes.grow_to_fit_index(node_id);
+                    _vox_scene_node_* shape_node = &nodes[node_id];
+                    shape_node->node_type = k_nodetype_shape;
+                    shape_node->u.shape.model_id        = keyframes[0].model_index;
+                    shape_node->u.shape.num_keyframes   = num_models;
+                    shape_node->u.shape.keyframe_offset = keyframe_offset;
                     break;
                 }
                 case CHUNK_ID_IMAP:
@@ -1189,13 +1297,13 @@
                     layers[layer_id].name = NULL;
                     layers[layer_id].hidden = false;
 
-                    // if we got a layer name from the LAYR dictionary, allocate space in string_data for it and keep track of the index
+                    // if we got a layer name from the LAYR dictionary, allocate space in misc_data for it and keep track of the index
                     // within string data. This will be patched to a real pointer at the very end.
                     const char* name_string = _vox_dict_get_value_as_string(&dict, "_name", NULL);
                     if (name_string) {
-                        layers[layer_id].name = (const char*)(string_data.size());
+                        layers[layer_id].name = (const char*)(misc_data.size());
                         size_t name_size = _vox_strlen(name_string) + 1;       // +1 for terminator
-                        string_data.push_back_many(name_string, name_size);
+                        misc_data.push_back_many(name_string, name_size);
                     }
                     // if we got a hidden attribute - assign it now.
                     const char* hidden_string = _vox_dict_get_value_as_string(&dict, "_hidden", "0");
@@ -1408,27 +1516,38 @@
         // we can't do this while parsing chunks unfortunately because some chunks reference chunks
         // that are later in the file than them.
         if (nodes.size()) {
-            bool generate_groups = read_flags & k_read_scene_flags_groups ? true : false;
+            bool generate_groups    = read_flags & k_read_scene_flags_groups ? true : false;
+            bool generate_keyframes = read_flags & k_read_scene_flags_keyframes ? true : false;
             // if we're not reading scene-embedded groups, we generate only one and then flatten all instance transforms.
             if (!generate_groups) {
                 ogt_vox_group root_group;
-                root_group.transform          = _vox_transform_identity();
-                root_group.parent_group_index = k_invalid_group_index;
-                root_group.layer_index        = 0;
-                root_group.hidden             = false;
+                root_group.name                    = 0;
+                root_group.transform               = _vox_transform_identity();
+                root_group.parent_group_index      = k_invalid_group_index;
+                root_group.layer_index             = 0;
+                root_group.hidden                  = false;
+                root_group.num_transform_keyframes = 0;
+                root_group.transform_keyframes     = NULL;
                 groups.push_back(root_group);
             }
-            generate_instances_for_node(nodes, 0, child_ids, 0, _vox_transform_identity(), model_ptrs, NULL, false, instances, string_data, groups, k_invalid_group_index, generate_groups);
+            _vox_array< const _vox_scene_node_*> stack;
+            stack.reserve(64);
+
+            generate_instances_for_node(stack, nodes, 0, child_ids, model_ptrs, instances, misc_data, groups, k_invalid_group_index, generate_groups, generate_keyframes);
         }
         else if (model_ptrs.size() == 1) {
             // add a single instance
             ogt_vox_instance new_instance;
-            new_instance.model_index = 0;
-            new_instance.group_index = 0;
-            new_instance.transform   = _vox_transform_identity();
-            new_instance.layer_index = 0;
-            new_instance.name        = 0;
-            new_instance.hidden      = false;
+            new_instance.model_index             = 0;
+            new_instance.group_index             = 0;
+            new_instance.transform               = _vox_transform_identity();
+            new_instance.layer_index             = 0;
+            new_instance.name                    = 0;
+            new_instance.hidden                  = false;
+            new_instance.num_model_keyframes     = 0;
+            new_instance.model_keyframes         = NULL;
+            new_instance.num_transform_keyframes = 0;
+            new_instance.transform_keyframes     = NULL;
             instances.push_back(new_instance);
         }
 
@@ -1514,9 +1633,18 @@
                 _vox_free(model_ptrs[j]);
                 model_ptrs[j] = NULL;
                 // remap all instances that were referring to j to now refer to i.
-                for (uint32_t k = 0; k < instances.size(); k++)
+                for (uint32_t k = 0; k < instances.size(); k++) {
                     if (instances[k].model_index == j)
                         instances[k].model_index = i;
+                    if (instances[k].num_model_keyframes) {
+                        ogt_vox_keyframe_model* keyframes = (ogt_vox_keyframe_model* )&misc_data[(size_t)instances[k].model_keyframes];
+                        for (uint32_t f = 0; f < instances[k].num_model_keyframes; f++) {
+                            if (keyframes[f].model_index == j)
+                                keyframes[f].model_index = i;
+                        }
+                    }
+                }
+
             }
         }
 
@@ -1562,12 +1690,12 @@
         }
 
         // finally, construct the output scene..
-        size_t scene_size = sizeof(ogt_vox_scene) + string_data.size();
+        size_t scene_size = sizeof(ogt_vox_scene) + misc_data.size();
         ogt_vox_scene* scene = (ogt_vox_scene*)_vox_calloc(scene_size);
         {
             // copy name data into the scene
-            char* scene_string_data = (char*)&scene[1];
-            memcpy(scene_string_data, &string_data[0], sizeof(char) * string_data.size());
+            char* scene_misc_data = (char*)&scene[1];
+            memcpy(scene_misc_data, &misc_data[0], sizeof(char) * misc_data.size());
 
             // copy instances over to scene
             size_t num_scene_instances = instances.size();
@@ -1610,15 +1738,28 @@
             scene->groups     = scene_groups;
             scene->num_groups = (uint32_t)num_scene_groups;
 
+            // now patch up group name pointers to point into the scene string area
+            for (uint32_t i = 0; i < num_scene_groups; i++) {
+                if (scene_groups[i].name)
+                    scene_groups[i].name = scene_misc_data + (size_t)scene_groups[i].name;
+                if (scene_groups[i].num_transform_keyframes)
+                    scene_groups[i].transform_keyframes = (const ogt_vox_keyframe_transform*)(scene_misc_data + (size_t)scene_groups[i].transform_keyframes);
+            }
+
             // now patch up instance name pointers to point into the scene string area
-            for (uint32_t i = 0; i < num_scene_instances; i++)
+            for (uint32_t i = 0; i < num_scene_instances; i++) {
                 if (scene_instances[i].name)
-                    scene_instances[i].name = scene_string_data + (size_t)scene_instances[i].name;
+                    scene_instances[i].name = scene_misc_data + (size_t)scene_instances[i].name;
+                if (scene_instances[i].num_transform_keyframes)
+                    scene_instances[i].transform_keyframes = (const ogt_vox_keyframe_transform*)(scene_misc_data + (size_t)scene_instances[i].transform_keyframes);
+                if (scene_instances[i].num_model_keyframes)
+                    scene_instances[i].model_keyframes  = (const ogt_vox_keyframe_model*)(scene_misc_data + (size_t)scene_instances[i].model_keyframes);
+            }
 
             // now patch up layer name pointers to point into the scene string area
             for (uint32_t i = 0; i < num_scene_layers; i++)
                 if (scene_layers[i].name)
-                    scene_layers[i].name = scene_string_data + (size_t)scene_layers[i].name;
+                    scene_layers[i].name = scene_misc_data + (size_t)scene_layers[i].name;
 
             // copy the palette.
             scene->palette = palette;
@@ -1715,6 +1856,10 @@
     static void _vox_file_write_uint8(_vox_file_writeable* fp, uint8_t data) {
         fp->data.push_back_many((const uint8_t*)&data, sizeof(uint8_t));
     }
+    static void _vox_file_write_at_offset(_vox_file_writeable* fp, uint32_t offset, const void* data, uint32_t data_size) {
+        ogt_assert((offset + data_size) <= fp->data.count, "write at offset must not be an append write");
+        memcpy(&fp->data[offset], data, data_size);
+    }
     static uint32_t _vox_file_get_offset(const _vox_file_writeable* fp) {
         return (uint32_t)fp->data.count;
     }
@@ -1731,6 +1876,23 @@
         _vox_file_write_uint32(fp, value_len);
         _vox_file_write(fp, value, value_len);
     }
+    static void _vox_file_write_dict_key_value_uint32(_vox_file_writeable* fp, const char* key, uint32_t value) {
+        char value_str[64];
+        _vox_sprintf(value_str, sizeof(value_str), "%i", value);
+        _vox_file_write_dict_key_value(fp, key, value_str);
+    }
+
+    static void _vox_file_write_dict_transform(_vox_file_writeable* fp, const ogt_vox_transform* transform) {
+        char t_string[65];
+        char r_string[65];
+        t_string[0] = 0;
+        r_string[0] = 0;
+        uint8_t packed_rotation_bits = _vox_make_packed_rotation_from_transform(transform);
+        _vox_sprintf(t_string, sizeof(t_string), "%i %i %i", (int32_t)transform->m30, (int32_t)transform->m31, (int32_t)transform->m32);
+        _vox_sprintf(r_string, sizeof(r_string), "%u", packed_rotation_bits);
+        _vox_file_write_dict_key_value(fp, "_r", r_string);
+        _vox_file_write_dict_key_value(fp, "_t", t_string);
+    }
 
     static uint32_t _vox_dict_key_value_size(const char* key, const char* value) {
         if (key == NULL || value == NULL)
@@ -1739,43 +1901,17 @@
         return (uint32_t)size;
     }
 
-    static void _vox_file_write_chunk_nTRN(_vox_file_writeable* fp, uint32_t node_id, uint32_t child_node_id, const char* name, bool hidden, const ogt_vox_transform* transform, uint32_t layer_id)
+    static void _vox_file_write_chunk_nTRN(_vox_file_writeable* fp, uint32_t node_id, uint32_t child_node_id, const char* name, bool hidden, const ogt_vox_transform* transform, uint32_t layer_id,
+        uint32_t num_transform_keyframes, const ogt_vox_keyframe_transform* transform_keyframes)
     {
         // obtain dictionary string pointers
         const char* hidden_string = hidden ? "1" : NULL;
-        const char* t_string = NULL;
-        const char* r_string = NULL;
-        char t_string_buf[65];
-        char r_string_buf[65];
-        t_string_buf[0] = 0;
-        r_string_buf[0] = 0;
-        if (transform != NULL) {
-            uint8_t packed_rotation_bits = _vox_make_packed_rotation_from_transform(transform);
-            _vox_sprintf(t_string_buf, sizeof(t_string_buf), "%i %i %i", (int32_t)transform->m30, (int32_t)transform->m31, (int32_t)transform->m32);
-            _vox_sprintf(r_string_buf, sizeof(r_string_buf), "%u", packed_rotation_bits);
-            t_string = t_string_buf;
-            r_string = r_string_buf;
-        }
 
-        uint32_t node_dict_size =
-            sizeof(uint32_t) + // num key value pairs
-            _vox_dict_key_value_size("_name",   name) +
-            _vox_dict_key_value_size("_hidden", hidden_string);
-
-        uint32_t frame_dict_size =
-            sizeof(uint32_t) + // num key value pairs
-            _vox_dict_key_value_size("_t", t_string) +
-            _vox_dict_key_value_size("_r", r_string);
-
-        uint32_t chunk_size_ntrn =
-            sizeof(uint32_t) +   // node_id
-            node_dict_size +     // node dictionary
-            4 * sizeof(uint32_t) + // middle section - 4 uint32s
-            frame_dict_size;
+        uint32_t offset_of_chunk_header = _vox_file_get_offset(fp);
 
         // write the nTRN header
         _vox_file_write_uint32(fp, CHUNK_ID_nTRN);
-        _vox_file_write_uint32(fp, chunk_size_ntrn);
+        _vox_file_write_uint32(fp, 0); // will get patched up later
         _vox_file_write_uint32(fp, 0);
 
         // write the nTRN payload
@@ -1791,12 +1927,24 @@
         _vox_file_write_uint32(fp, child_node_id);
         _vox_file_write_uint32(fp, UINT32_MAX); // reserved_id must have all bits set.
         _vox_file_write_uint32(fp, layer_id);
-        _vox_file_write_uint32(fp, 1);          // num_frames must be 1
+        if (num_transform_keyframes == 0) {
+            _vox_file_write_uint32(fp, 1);          // num_frames must be 1
+            // write the frame dictionary
+            _vox_file_write_uint32(fp, 2);  // 2 key values: "_r", "_t"
+            _vox_file_write_dict_transform(fp, transform);
+        }
+        else {
+            _vox_file_write_uint32(fp, num_transform_keyframes);          // num_frames must be 1
+            for (uint32_t j = 0; j < num_transform_keyframes; j++) {
+                _vox_file_write_uint32(fp, 3);  // 2 key values: "_r", "_t", "_f"
+                _vox_file_write_dict_transform(fp, &transform_keyframes[j].transform);
+                _vox_file_write_dict_key_value_uint32(fp, "_f", transform_keyframes[j].frame_index);
+            }
+        }
 
-        // write the frame dictionary
-        _vox_file_write_uint32(fp, (r_string ? 1 : 0) + (t_string ? 1 : 0));  // num key values
-        _vox_file_write_dict_key_value(fp, "_r", r_string);
-        _vox_file_write_dict_key_value(fp, "_t", t_string);
+        // patch up the chunk size in the header
+        uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
+        _vox_file_write_at_offset(fp, offset_of_chunk_header + 4, &chunk_size, sizeof(chunk_size));
     }
 
     // saves the scene out to a buffer that when saved as a .vox file can be loaded with magicavoxel.
@@ -1867,12 +2015,12 @@
         uint32_t first_group_transform_node_id    = 0;
         uint32_t first_group_node_id              = first_group_transform_node_id + scene->num_groups;
         uint32_t first_shape_node_id              = first_group_node_id + scene->num_groups;
-        uint32_t first_instance_transform_node_id = first_shape_node_id + scene->num_models;
+        uint32_t first_instance_transform_node_id = first_shape_node_id + scene->num_instances;
 
         // write the nTRN nodes for each of the groups in the scene.
         for (uint32_t group_index = 0; group_index < scene->num_groups; group_index++) {
             const ogt_vox_group* group = &scene->groups[group_index];
-            _vox_file_write_chunk_nTRN(fp, first_group_transform_node_id + group_index, first_group_node_id + group_index, NULL, group->hidden, &group->transform, group->layer_index);
+            _vox_file_write_chunk_nTRN(fp, first_group_transform_node_id + group_index, first_group_node_id + group_index, group->name, group->hidden, &group->transform, group->layer_index, group->num_transform_keyframes, group->transform_keyframes);
         }
         // write the group nodes for each of the groups in the scene
         for (uint32_t group_index = 0; group_index < scene->num_groups; group_index++) {
@@ -1917,32 +2065,41 @@
                     _vox_file_write_uint32(fp, first_instance_transform_node_id + child_instance_index);
         }
 
-        // write out an nSHP chunk for each of the models
-        for (uint32_t i = 0; i < scene->num_models; i++) {
-            // compute the size of the nSHP chunk
-            uint32_t chunk_size_nshp =
-                sizeof(uint32_t) +      // node_id
-                sizeof(uint32_t) +      // num keyvalue pairs in node dictionary
-                sizeof(uint32_t) +      // num_models
-                sizeof(uint32_t) +      // model_id
-                sizeof(uint32_t);       // num keyvalue pairs in model dictionary
+        // write out an nSHP chunk for each of the instances
+        for (uint32_t i = 0; i < scene->num_instances; i++) {
+            const ogt_vox_instance* instance = &scene->instances[i];
+
+            uint32_t offset_of_chunk_header = _vox_file_get_offset(fp);
             // write the nSHP chunk header
             _vox_file_write_uint32(fp, CHUNK_ID_nSHP);
-            _vox_file_write_uint32(fp, chunk_size_nshp);
+            _vox_file_write_uint32(fp, 0); // will get patched up at the end
             _vox_file_write_uint32(fp, 0);
             // write the nSHP chunk payload
             _vox_file_write_uint32(fp, first_shape_node_id + i);    // node_id
             _vox_file_write_uint32(fp, 0);                          // num keyvalue pairs in node dictionary
-            _vox_file_write_uint32(fp, 1);                          // num_models must be 1
-            _vox_file_write_uint32(fp, i);                          // model_id
-            _vox_file_write_uint32(fp, 0);                          // num keyvalue pairs in model dictionary
+            if (instance->num_model_keyframes == 0 ) {
+                _vox_file_write_uint32(fp, 1);                      // num_models must be 1
+                _vox_file_write_uint32(fp, instance->model_index);  // model_id
+                _vox_file_write_uint32(fp, 0);                      // num keyvalue pairs in model dictionary
+            }
+            else {
+                _vox_file_write_uint32(fp, instance->num_model_keyframes);
+                for (uint32_t j = 0; j < instance->num_model_keyframes; j++) {
+                    _vox_file_write_uint32(fp, instance->model_keyframes[j].model_index); // model_id
+                    _vox_file_write_uint32(fp, 1); // num keyvalue pairs in model dictionary
+                    _vox_file_write_dict_key_value_uint32(fp, "_f", instance->model_keyframes[j].frame_index);
+                }
+            }
+            // compute and patch up the chunk size in the chunk header
+            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
+            _vox_file_write_at_offset(fp, offset_of_chunk_header + 4, &chunk_size, sizeof(chunk_size));
         }
-        // write out an nTRN chunk for all instances - and make them point to the relevant nSHP chunk
+        // write out a nTRN chunk for all instances - and make them point to the relevant nSHP chunk
         for (uint32_t i = 0; i < scene->num_instances; i++) {
             const ogt_vox_instance* instance = &scene->instances[i];
             uint32_t node_id       = first_instance_transform_node_id + i;
-            uint32_t child_node_id = first_shape_node_id + instance->model_index;
-            _vox_file_write_chunk_nTRN(fp, node_id, child_node_id, instance->name, instance->hidden, &instance->transform, instance->layer_index);
+            uint32_t child_node_id = first_shape_node_id + i;
+            _vox_file_write_chunk_nTRN(fp, node_id, child_node_id, instance->name, instance->hidden, &instance->transform, instance->layer_index, instance->num_transform_keyframes, instance->transform_keyframes);
         }
 
         // write out the rCAM chunks
@@ -2369,13 +2526,13 @@
         }
 
         // allocate the master instances array
-        ogt_vox_instance* instances = (ogt_vox_instance*)_vox_malloc(sizeof(ogt_vox_instance) * max_instances);
-        ogt_vox_model** models      = (ogt_vox_model**)_vox_malloc(sizeof(ogt_vox_model*) * max_models);
-        ogt_vox_layer* layers       = (ogt_vox_layer*)_vox_malloc(sizeof(ogt_vox_layer) * max_layers);
-        ogt_vox_group* groups       = (ogt_vox_group*)_vox_malloc(sizeof(ogt_vox_group) * max_groups);
-        uint32_t num_instances = 0;
-        uint32_t num_models    = 0;
-        uint32_t num_layers    = 0;
+        ogt_vox_instance* instances     = (ogt_vox_instance*)_vox_malloc(sizeof(ogt_vox_instance) * max_instances);
+        ogt_vox_model**   models        = (ogt_vox_model**)_vox_malloc(sizeof(ogt_vox_model*) * max_models);
+        ogt_vox_layer*    layers        = (ogt_vox_layer*)_vox_malloc(sizeof(ogt_vox_layer) * max_layers);
+        ogt_vox_group*    groups        = (ogt_vox_group*)_vox_malloc(sizeof(ogt_vox_group) * max_groups);
+        uint32_t          num_instances = 0;
+        uint32_t          num_models    = 0;
+        uint32_t          num_layers    = 0;
 
         // add a single layer.
         layers[num_layers].hidden = false;
@@ -2388,16 +2545,21 @@
         uint32_t global_root_group_index = 0;
         {
             ogt_vox_group root_group;
-            root_group.hidden             = false;
-            root_group.layer_index        = 0;
-            root_group.parent_group_index = k_invalid_group_index;
-            root_group.transform          = _vox_transform_identity();
+            root_group.name                    = NULL;
+            root_group.hidden                  = false;
+            root_group.layer_index             = 0;
+            root_group.parent_group_index      = k_invalid_group_index;
+            root_group.transform               = _vox_transform_identity();
+            root_group.num_transform_keyframes = 0;
+            root_group.transform_keyframes     = NULL;
             groups[0] = root_group;
         }
         uint32_t num_groups = 1; // we just wrote the global root group index, so all per-scene groups are allocated after.
 
         // go ahead and do the merge now!
-        size_t string_data_size = 0;
+        _vox_array<uint32_t> per_scene_base_model_index;
+        _vox_array<uint32_t> per_scene_base_instance_index;
+        size_t misc_data_size = 0;
         int32_t offset_x = 0;
         for (uint32_t scene_index = 0; scene_index < scene_count; scene_index++) {
             const ogt_vox_scene* scene = scenes[scene_index];
@@ -2411,6 +2573,9 @@
             // cache away the base model index for this scene.
             uint32_t base_model_index = num_models;
             uint32_t base_group_index = num_groups;
+
+            per_scene_base_model_index.push_back(base_model_index);
+            per_scene_base_instance_index.push_back(num_instances);
 
             // create copies of all models that have color indices remapped.
             for (uint32_t model_index = 0; model_index < scene->num_models; model_index++) {
@@ -2452,6 +2617,10 @@
                 ogt_assert(dst_group.parent_group_index < scene->num_groups, "group index is out of bounds");
                 dst_group.layer_index        = 0;
                 dst_group.parent_group_index = (dst_group.parent_group_index == 0) ? global_root_group_index : base_group_index + (dst_group.parent_group_index - 1);
+                if (dst_group.name)
+                    misc_data_size += _vox_strlen(dst_group.name) + 1; // + 1 for zero terminator
+                if (dst_group.num_transform_keyframes)
+                    misc_data_size += (sizeof(ogt_vox_keyframe_transform) * dst_group.num_transform_keyframes);
                 // if this group belongs to the global root group, it must be translated so it doesn't overlap with other scenes.
                 if (dst_group.parent_group_index == global_root_group_index)
                     dst_group.transform.m30 += scene_offset_x;
@@ -2468,8 +2637,13 @@
                 dst_instance->group_index = (dst_instance->group_index == 0) ? global_root_group_index : base_group_index + (dst_instance->group_index - 1);
                 dst_instance->model_index += base_model_index;
                 if (dst_instance->name)
-                    string_data_size += _vox_strlen(dst_instance->name) + 1; // + 1 for zero terminator
-                // if this instance belongs to the global rot group, it must be translated so it doesn't overlap with other scenes.
+                    misc_data_size += _vox_strlen(dst_instance->name) + 1; // + 1 for zero terminator
+                if (dst_instance->num_transform_keyframes)
+                    misc_data_size += (sizeof(ogt_vox_keyframe_transform) * dst_instance->num_transform_keyframes);
+                if (dst_instance->num_model_keyframes)
+                    misc_data_size += (sizeof(ogt_vox_keyframe_model) * dst_instance->num_model_keyframes);
+
+                // if this instance belongs to the global root group, it must be translated so it doesn't overlap with other scenes.
                 if (dst_instance->group_index == global_root_group_index)
                     dst_instance->transform.m30 += scene_offset_x;
             }
@@ -2483,19 +2657,59 @@
         for (uint32_t color_index = master_palette_count; color_index < 256; color_index++)
             master_palette[color_index] = k_invalid_color;
 
-        // assign the master scene on output. string_data is part of the scene allocation.
-        size_t scene_size = sizeof(ogt_vox_scene) + string_data_size;
+        // assign the master scene on output. misc_data is part of the scene allocation.
+        size_t scene_size = sizeof(ogt_vox_scene) + misc_data_size;
         ogt_vox_scene * merged_scene = (ogt_vox_scene*)_vox_calloc(scene_size);
 
-        // copy name data into the string section and make instances point to it. This makes the merged model self-contained.
-        char* scene_string_data = (char*)&merged_scene[1];
-        for (uint32_t instance_index = 0; instance_index < num_instances; instance_index++) {
-            if (instances[instance_index].name) {
-                size_t string_len = _vox_strlen(instances[instance_index].name) + 1; // +1 for zero terminator
-                memcpy(scene_string_data, instances[instance_index].name, string_len);
-                instances[instance_index].name = scene_string_data;
-                scene_string_data += string_len;
+        // copy name and keyframe data into the misc_data section and make instances/groups point to it.
+        // This makes the merged model self-contained.
+        {
+            char* scene_misc_data = (char*)&merged_scene[1];
+            for (uint32_t instance_index = 0; instance_index < num_instances; instance_index++) {
+                if (instances[instance_index].name) {
+                    size_t string_len = _vox_strlen(instances[instance_index].name) + 1; // +1 for zero terminator
+                    memcpy(scene_misc_data, instances[instance_index].name, string_len);
+                    instances[instance_index].name = scene_misc_data;
+                    scene_misc_data += string_len;
+                }
+                if (instances[instance_index].num_model_keyframes) {
+                    ogt_vox_keyframe_model* model_keyframes = (ogt_vox_keyframe_model*)scene_misc_data;
+                    uint32_t keyframe_size = sizeof(ogt_vox_keyframe_model) * instances[instance_index].num_model_keyframes;
+                    memcpy(scene_misc_data, instances[instance_index].model_keyframes, keyframe_size);
+                    instances[instance_index].model_keyframes = model_keyframes;
+                    scene_misc_data += keyframe_size;
+                    // bias the model_index in model_keyframes back into the range for the scene that this instance came from.
+                    for (int32_t scene_index = (int32_t)(per_scene_base_instance_index.size() - 1); scene_index >= 0; scene_index--) {
+                        if (instance_index >= per_scene_base_instance_index[scene_index]) {
+                            for (uint32_t j = 0; j < instances[instance_index].num_model_keyframes; j++)
+                                model_keyframes[j].model_index += per_scene_base_model_index[scene_index];
+                            break;
+                        }
+                    }
+                }
+                if (instances[instance_index].num_transform_keyframes) {
+                    uint32_t keyframe_size = sizeof(ogt_vox_keyframe_transform) * instances[instance_index].num_transform_keyframes;
+                    memcpy(scene_misc_data, instances[instance_index].transform_keyframes, keyframe_size);
+                    instances[instance_index].transform_keyframes = (ogt_vox_keyframe_transform*)scene_misc_data;
+                    scene_misc_data += keyframe_size;
+                }
             }
+            for (uint32_t group_index = 0; group_index < num_groups; group_index++) {
+                if (groups[group_index].name) {
+                    size_t string_len = _vox_strlen(groups[group_index].name) + 1; // +1 for zero terminator
+                    memcpy(scene_misc_data, groups[group_index].name, string_len);
+                    groups[group_index].name = scene_misc_data;
+                    scene_misc_data += string_len;
+                }
+                if (groups[group_index].num_transform_keyframes) {
+                    uint32_t keyframe_size = sizeof(ogt_vox_keyframe_transform) * groups[group_index].num_transform_keyframes;
+                    memcpy(scene_misc_data, groups[group_index].transform_keyframes, keyframe_size);
+                    groups[group_index].transform_keyframes = (ogt_vox_keyframe_transform*)scene_misc_data;
+                    scene_misc_data += keyframe_size;
+                }
+            }
+
+            ogt_assert(scene_misc_data <= ((char*)&merged_scene[1] + misc_data_size), "misc_data allocation was overrun");
         }
 
         ogt_assert(num_groups <= max_groups, "sanity check failed. we wrote more groups than we allocated");
