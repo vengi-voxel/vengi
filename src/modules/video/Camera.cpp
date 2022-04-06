@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "core/Common.h"
 #include "core/Assert.h"
+#include "core/GLMConst.h"
 #include "core/Singleton.h"
 #include <glm/gtc/epsilon.hpp>
 #include "core/Var.h"
@@ -391,7 +392,7 @@ math::Ray Camera::screenRay(const glm::vec2& screenPos) const {
 	glm::vec4 rayEyeSpace = inverseProjectionMatrix() * rayClipSpace;
 	// only x and y are needed here
 	// forwards, and not a point
-	rayEyeSpace.z = -1.0f;
+	rayEyeSpace.z = glm::forward.z;
 	rayEyeSpace.w = 0.0f;
 
 	const glm::vec3& rayDirection = glm::normalize(glm::vec3(inverseViewMatrix() * rayEyeSpace));
@@ -533,7 +534,7 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 	const float right = ORTHO_BOXSIZE * fovx;
 	const float bottom = -ORTHO_BOXSIZE * fovx * aspect;
 	const float top = ORTHO_BOXSIZE * fovx * aspect;
-	return glm::ortho(left, right, bottom, top, nplane, fplane);
+	return glm::orthoRH_NO(left, right, bottom, top, nplane, fplane);
 }
 
 glm::mat4 Camera::perspectiveMatrix(float nplane, float fplane) const {
