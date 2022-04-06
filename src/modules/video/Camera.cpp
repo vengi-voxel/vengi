@@ -529,7 +529,7 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 		return glm::ortho(left * _orthoZoom, right * _orthoZoom, bottom * _orthoZoom, top * _orthoZoom, nplane, fplane);
 	}
 	const float aspect = (float)_windowSize.y / (float)_windowSize.x;
-	const float fovx = glm::clamp(_fieldOfView * _orthoZoom, 1.0f, 179.0f);
+	const float fovx = _orthoZoom;
 	const float left = -ORTHO_BOXSIZE * fovx;
 	const float right = ORTHO_BOXSIZE * fovx;
 	const float bottom = -ORTHO_BOXSIZE * fovx * aspect;
