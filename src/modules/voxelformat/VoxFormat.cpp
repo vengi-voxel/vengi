@@ -134,6 +134,23 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 			name = "";
 		}
 	}
+	const uint32_t keyFrames = ogtInstance.num_transform_keyframes;
+	core::DynamicArray<SceneGraphKeyFrame> kf;
+	kf.reserve(keyFrames);
+	for (uint32_t k = 0; k < keyFrames; ++k) {
+		const ogt_vox_keyframe_transform& transform_keyframe = ogtInstance.transform_keyframes[k];
+		const ogt_vox_transform& keyframeTransform = transform_keyframe.transform;
+		const glm::vec4 ogtKeyFrameCol0(keyframeTransform.m00, keyframeTransform.m01, keyframeTransform.m02, keyframeTransform.m03);
+		const glm::vec4 ogtKeyFrameCol1(keyframeTransform.m10, keyframeTransform.m11, keyframeTransform.m12, keyframeTransform.m13);
+		const glm::vec4 ogtKeyFrameCol2(keyframeTransform.m20, keyframeTransform.m21, keyframeTransform.m22, keyframeTransform.m23);
+		const glm::vec4 ogtKeyFrameCol3(keyframeTransform.m30, keyframeTransform.m31, keyframeTransform.m32, keyframeTransform.m33);
+		const glm::mat4 ogtKeyFrameMat = glm::mat4{ogtKeyFrameCol0, ogtKeyFrameCol1, ogtKeyFrameCol2, ogtKeyFrameCol3};
+		SceneGraphKeyFrame sceneGraphKeyFrame;
+		sceneGraphKeyFrame.frame = transform_keyframe.frame_index;
+		sceneGraphKeyFrame.transform.setMatrix(ogtKeyFrameMat);
+		sceneGraphKeyFrame.transform.update();
+	}
+	node.setKeyFrames(kf);
 	node.setName(name);
 	node.setVisible(!ogtInstance.hidden && !groupHidden);
 	node.setVolume(v, true);
@@ -196,7 +213,7 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		core_free(buffer);
 		return false;
 	}
-	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, k_read_scene_flags_groups);
+	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, k_read_scene_flags_groups | k_read_scene_flags_keyframes);
 	core_free(buffer);
 	if (scene == nullptr) {
 		Log::error("Could not load scene %s", filename.c_str());
@@ -295,6 +312,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	core::Buffer<ogt_vox_layer> layers(modelCount);
 	core::Buffer<ogt_vox_instance> instances(modelCount);
 	core::Buffer<const ogt_vox_model *> modelPtr(modelCount);
+	core::Buffer<ogt_vox_keyframe_transform> keyframeTransforms[modelCount];
 	int mdlIdx = 0;
 	for (const SceneGraphNode &node : newSceneGraph) {
 		const voxel::Region region = node.region();
@@ -328,13 +346,21 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		const glm::vec3 &mins = region.getLowerCornerf();
 		const glm::vec3 &maxs = region.getUpperCornerf();
 		const glm::vec3 width = maxs - mins + 1.0f;
-		const uint32_t frame = 0;
-		const glm::vec3 transform = mins + node.transform(frame).translation() + width / 2.0f;
-		// y and z are flipped here
-		instance.transform = ogt_identity_transform;
-		instance.transform.m30 = -glm::floor(transform.x + 0.5f);
-		instance.transform.m31 = transform.z;
-		instance.transform.m32 = transform.y;
+
+		core::Buffer<ogt_vox_keyframe_transform> &kft = keyframeTransforms[mdlIdx];
+		kft.resize(node.keyFrames().size());
+		instance.num_transform_keyframes = kft.size();
+		for (uint32_t i = 0; i < instance.num_transform_keyframes; ++i) {
+			const SceneGraphKeyFrame& kf = node.keyFrames()[i];
+			kft[i].frame_index = kf.frame;
+			kft[i].transform = ogt_identity_transform;
+			// y and z are flipped here
+			const glm::vec3 kftransform = mins + kf.transform.translation() + width / 2.0f;
+			kft[i].transform.m30 = -glm::floor(kftransform.x + 0.5f);
+			kft[i].transform.m31 = kftransform.z;
+			kft[i].transform.m32 = kftransform.y;
+		}
+		instance.transform_keyframes = kft.data();
 
 		++mdlIdx;
 	}
