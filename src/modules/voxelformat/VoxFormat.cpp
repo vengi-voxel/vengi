@@ -281,6 +281,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	splitVolumes(sceneGraph, newSceneGraph, glm::ivec3(256));
 
 	ogt_vox_group default_group;
+	memset(&default_group, 0, sizeof(default_group));
 	default_group.hidden = false;
 	default_group.layer_index = 0;
 	default_group.parent_group_index = k_invalid_group_index;
