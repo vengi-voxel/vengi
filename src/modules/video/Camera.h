@@ -123,6 +123,7 @@ public:
 	void setType(CameraType type);
 
 	void zoom(float value);
+	float aspect() const;
 
 	CameraMode mode() const;
 	void setMode(CameraMode mode);
@@ -326,6 +327,10 @@ inline float Camera::nearPlane() const {
 
 inline float Camera::farPlane() const {
 	return _farPlane;
+}
+
+inline float Camera::aspect() const {
+	return (float)_windowSize.y / (float)_windowSize.x;
 }
 
 inline const glm::mat4& Camera::orientation() const {
