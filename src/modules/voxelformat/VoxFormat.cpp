@@ -104,8 +104,11 @@ static bool loadKeyFrames(voxelformat::SceneGraphNode& node, const ogt_vox_keyfr
 		const glm::mat4 ogtKeyFrameMat = glm::mat4{ogtKeyFrameCol0, ogtKeyFrameCol1, ogtKeyFrameCol2, ogtKeyFrameCol3};
 		SceneGraphKeyFrame sceneGraphKeyFrame;
 		sceneGraphKeyFrame.frame = transform_keyframe.frame_index;
+		sceneGraphKeyFrame.interpolation = InterpolationType::Linear;
+		sceneGraphKeyFrame.longRotation = false;
 		sceneGraphKeyFrame.transform.setMatrix(ogtKeyFrameMat);
 		sceneGraphKeyFrame.transform.update();
+		kf.push_back(sceneGraphKeyFrame);
 	}
 	return node.setKeyFrames(kf);
 }
