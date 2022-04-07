@@ -500,18 +500,6 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 	};
 	static_assert(core::enumVal(voxelformat::SceneGraphNodeType::Max) == lengthof(NodeTypeStr), "Array sizes don't match Max");
 
-	static const char *InterpolationTypeStr[] {
-		"Instant",
-		"Linear",
-		"QuadEaseIn",
-		"QuadEaseOut",
-		"QuadEaseInOut",
-		"CubicEaseIn",
-		"CubicEaseOut",
-		"CubicEaseInOut"
-	};
-	static_assert(core::enumVal(voxelformat::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
-
 	const voxelformat::SceneGraphNodeType type = node.type();
 
 	Log::info("%*sNode: %i (parent %i)", indent, " ", nodeId, node.parent());
@@ -532,7 +520,7 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 	for (const voxelformat::SceneGraphKeyFrame &kf : node.keyFrames()) {
 		Log::info("%*s  |- keyframe: %i", indent, " ", kf.frame);
 		Log::info("%*s    |- long rotation: %s", indent, " ", kf.longRotation ? "true" : "false");
-		Log::info("%*s    |- interpolation: %s", indent, " ", InterpolationTypeStr[core::enumVal(kf.interpolation)]);
+		Log::info("%*s    |- interpolation: %s", indent, " ", voxelformat::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
 		Log::info("%*s    |- transform", indent, " ");
 		const glm::vec3 &pivot = kf.transform.pivot();
 		Log::info("%*s      |- pivot %f:%f:%f", indent, " ", pivot.x, pivot.y, pivot.z);

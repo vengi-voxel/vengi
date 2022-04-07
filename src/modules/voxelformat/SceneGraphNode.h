@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Enum.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/collection/Buffer.h"
@@ -83,6 +84,18 @@ enum class InterpolationType {
 	Max
 };
 
+static constexpr const char *InterpolationTypeStr[] {
+	"Instant",
+	"Linear",
+	"QuadEaseIn",
+	"QuadEaseOut",
+	"QuadEaseInOut",
+	"CubicEaseIn",
+	"CubicEaseOut",
+	"CubicEaseInOut"
+};
+static_assert(core::enumVal(voxelformat::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
+
 struct SceneGraphKeyFrame {
 	uint32_t frame = 0;
 	InterpolationType interpolation = InterpolationType::Linear;
@@ -139,7 +152,7 @@ public:
 	bool addKeyFrame(uint32_t frame);
 	bool removeKeyFrame(uint32_t frame);
 	const core::DynamicArray<SceneGraphKeyFrame> &keyFrames() const;
-	void setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame>&);
+	bool setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame>&);
 	/**
 	 * @brief Get the index of the keyframe for the given frame
 	 */

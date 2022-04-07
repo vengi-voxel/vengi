@@ -264,8 +264,12 @@ bool SceneGraphNode::removeKeyFrame(uint32_t frame) {
 	return true;
 }
 
-void SceneGraphNode::setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame> &kf) {
+bool SceneGraphNode::setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame> &kf) {
+	if (kf.empty()) {
+		return false;
+	}
 	_keyFrames = kf;
+	return true;
 }
 
 uint32_t SceneGraphNode::keyFrameForFrame(uint32_t frame) const {

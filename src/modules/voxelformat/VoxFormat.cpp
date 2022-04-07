@@ -91,6 +91,25 @@ static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos,
 	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
 }
 
+static bool loadKeyFrames(voxelformat::SceneGraphNode& node, const ogt_vox_keyframe_transform* transformKeyframes, uint32_t numKeyframes) {
+	core::DynamicArray<SceneGraphKeyFrame> kf;
+	kf.reserve(numKeyframes);
+	for (uint32_t k = 0; k < numKeyframes; ++k) {
+		const ogt_vox_keyframe_transform& transform_keyframe = transformKeyframes[k];
+		const ogt_vox_transform& keyframeTransform = transform_keyframe.transform;
+		const glm::vec4 ogtKeyFrameCol0(keyframeTransform.m00, keyframeTransform.m01, keyframeTransform.m02, keyframeTransform.m03);
+		const glm::vec4 ogtKeyFrameCol1(keyframeTransform.m10, keyframeTransform.m11, keyframeTransform.m12, keyframeTransform.m13);
+		const glm::vec4 ogtKeyFrameCol2(keyframeTransform.m20, keyframeTransform.m21, keyframeTransform.m22, keyframeTransform.m23);
+		const glm::vec4 ogtKeyFrameCol3(keyframeTransform.m30, keyframeTransform.m31, keyframeTransform.m32, keyframeTransform.m33);
+		const glm::mat4 ogtKeyFrameMat = glm::mat4{ogtKeyFrameCol0, ogtKeyFrameCol1, ogtKeyFrameCol2, ogtKeyFrameCol3};
+		SceneGraphKeyFrame sceneGraphKeyFrame;
+		sceneGraphKeyFrame.frame = transform_keyframe.frame_index;
+		sceneGraphKeyFrame.transform.setMatrix(ogtKeyFrameMat);
+		sceneGraphKeyFrame.transform.update();
+	}
+	return node.setKeyFrames(kf);
+}
+
 bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, bool groupHidden) {
 	const ogt_vox_instance& ogtInstance = scene->instances[ogt_instanceIdx];
 	const ogt_vox_transform& ogtTransform = ogtInstance.transform;
@@ -134,23 +153,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 			name = "";
 		}
 	}
-	const uint32_t keyFrames = ogtInstance.num_transform_keyframes;
-	core::DynamicArray<SceneGraphKeyFrame> kf;
-	kf.reserve(keyFrames);
-	for (uint32_t k = 0; k < keyFrames; ++k) {
-		const ogt_vox_keyframe_transform& transform_keyframe = ogtInstance.transform_keyframes[k];
-		const ogt_vox_transform& keyframeTransform = transform_keyframe.transform;
-		const glm::vec4 ogtKeyFrameCol0(keyframeTransform.m00, keyframeTransform.m01, keyframeTransform.m02, keyframeTransform.m03);
-		const glm::vec4 ogtKeyFrameCol1(keyframeTransform.m10, keyframeTransform.m11, keyframeTransform.m12, keyframeTransform.m13);
-		const glm::vec4 ogtKeyFrameCol2(keyframeTransform.m20, keyframeTransform.m21, keyframeTransform.m22, keyframeTransform.m23);
-		const glm::vec4 ogtKeyFrameCol3(keyframeTransform.m30, keyframeTransform.m31, keyframeTransform.m32, keyframeTransform.m33);
-		const glm::mat4 ogtKeyFrameMat = glm::mat4{ogtKeyFrameCol0, ogtKeyFrameCol1, ogtKeyFrameCol2, ogtKeyFrameCol3};
-		SceneGraphKeyFrame sceneGraphKeyFrame;
-		sceneGraphKeyFrame.frame = transform_keyframe.frame_index;
-		sceneGraphKeyFrame.transform.setMatrix(ogtKeyFrameMat);
-		sceneGraphKeyFrame.transform.update();
-	}
-	node.setKeyFrames(kf);
+	loadKeyFrames(node, ogtInstance.transform_keyframes, ogtInstance.num_transform_keyframes);
 	node.setName(name);
 	node.setVisible(!ogtInstance.hidden && !groupHidden);
 	node.setVolume(v, true);
@@ -158,10 +161,10 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 }
 
 bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances) {
-	const ogt_vox_group &group = scene->groups[ogt_parentGroupIdx];
-	bool hidden = group.hidden;
+	const ogt_vox_group &ogt_group = scene->groups[ogt_parentGroupIdx];
+	bool hidden = ogt_group.hidden;
 	const char *name = "Group";
-	const uint32_t layerIdx = group.layer_index;
+	const uint32_t layerIdx = ogt_group.layer_index;
 	if (layerIdx < scene->num_layers) {
 		const ogt_vox_layer &layer = scene->layers[layerIdx];
 		hidden |= layer.hidden;
@@ -170,6 +173,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx
 		}
 	}
 	SceneGraphNode node(SceneGraphNodeType::Group);
+	loadKeyFrames(node, ogt_group.transform_keyframes, ogt_group.num_transform_keyframes);
 	node.setName(name);
 	node.setVisible(!hidden);
 	const int groupId = sceneGraph.emplace(core::move(node), parent);
@@ -349,6 +353,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 
 		core::Buffer<ogt_vox_keyframe_transform> &kft = keyframeTransforms[mdlIdx];
 		kft.resize(node.keyFrames().size());
+		core_assert(!node.keyFrames().empty());
 		instance.num_transform_keyframes = kft.size();
 		for (uint32_t i = 0; i < instance.num_transform_keyframes; ++i) {
 			const SceneGraphKeyFrame& kf = node.keyFrames()[i];
