@@ -54,7 +54,7 @@ private:
 public:
 	using value_type = TYPE;
 
-	Buffer() {
+	constexpr Buffer() {
 	}
 
 	explicit Buffer(size_t amount) {
