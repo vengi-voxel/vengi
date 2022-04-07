@@ -4,6 +4,7 @@ vengi (0.0.20.0-1) UNRELEASED; urgency=low
   * Added support for minecraft schematic
   * Refactored and extended the lua script integration
   * Implemented applying depth/height map to a 2d plane
+  * Added support for new magicavoxel format (animations)
 
   * VoxEdit:
   * Fixed start problems on some systems with multisampled framebuffers
@@ -11,7 +12,7 @@ vengi (0.0.20.0-1) UNRELEASED; urgency=low
   * Change between the edit and scene mode is now bound to tab
 
   * VoxConvert:
-  * Extended --dump to also show the key frames
+  * Extended --dump to also show the key frames and the voxel count
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 27 Mar 2022 11:59:01 +0200
 

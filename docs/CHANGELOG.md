@@ -15,6 +15,7 @@ General:
    - Added support for minecraft schematic
    - Refactored and extended the lua script integration
    - Implemented applying depth/height map to a 2d plane
+   - Added support for new magicavoxel format (animations)
 
 VoxEdit:
 
@@ -24,7 +25,7 @@ VoxEdit:
 
 VoxConvert:
 
-   - Extended `--dump` to also show the key frames
+   - Extended `--dump` to also show the key frames and the voxel count
 
 ## 0.0.19 (2022-03-27)
 
