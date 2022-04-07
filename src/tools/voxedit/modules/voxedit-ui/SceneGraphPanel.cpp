@@ -13,6 +13,21 @@
 
 namespace voxedit {
 
+static core::String toString(const voxelformat::SceneGraphTransform &transform) {
+	core::String str;
+	const glm::vec3 &pivot = transform.pivot();
+	str.append(core::String::format("piv %.2ff:%.2ff:%.2ff\n", pivot.x, pivot.y, pivot.z));
+	const glm::vec3 &tr = transform.translation();
+	str.append(core::String::format("trn %.2ff:%.2ff:%.2ff\n", tr.x, tr.y, tr.z));
+	const glm::quat &rt = transform.orientation();
+	const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
+	str.append(core::String::format("ori %.2ff:%.2ff:%.2ff:%.2ff\n", rt.x, rt.y, rt.z, rt.w));
+	str.append(core::String::format("ang %.2ff:%.2ff:%.2ff\n", rtEuler.x, rtEuler.y, rtEuler.z));
+	const float sc = transform.scale();
+	str.append(core::String::format("sca %.2ff\n", sc));
+	return str;
+}
+
 static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	core::String name;
 	switch (node.type()) {
@@ -108,7 +123,10 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 		}
 		if (node.keyFrames().size() > 1) {
 			for (const auto& entry : node.keyFrames()) {
-				ImGui::LabelText("Keyframe", "%i (%s)", entry.frame, voxelformat::InterpolationTypeStr[core::enumVal(entry.interpolation)]);
+				const core::String &kftText = toString(entry.transform);
+				ImGui::TextWrapped("%i (%s, long rotation: %s)\n%s", entry.frame,
+								   voxelformat::InterpolationTypeStr[core::enumVal(entry.interpolation)],
+								   entry.longRotation ? "true" : "false", kftText.c_str());
 			}
 		}
 		for (int nodeIdx : node.children()) {
