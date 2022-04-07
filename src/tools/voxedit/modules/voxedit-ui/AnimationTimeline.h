@@ -5,12 +5,13 @@
 #pragma once
 
 #include "core/String.h"
+#include "imgui.h"
 
 namespace voxedit {
 
 class AnimationTimeline {
 public:
-	void update(const char *sequencerTitle);
+	void update(const char *sequencerTitle, ImGuiID dockIdMainDown);
 };
 
 } // namespace voxedit

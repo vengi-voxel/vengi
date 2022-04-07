@@ -14,11 +14,12 @@
 
 namespace voxedit {
 
-void AnimationTimeline::update(const char *sequencerTitle) {
+void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDown) {
 	const EditMode editMode = sceneMgr().editMode();
 	uint32_t currentFrame = sceneMgr().currentFrame();
 	if (editMode == EditMode::Scene) {
 		const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+		ImGui::SetNextWindowDockID(dockIdMainDown, ImGuiCond_Appearing);
 		if (ImGui::Begin(sequencerTitle, nullptr, ImGuiWindowFlags_NoSavedSettings)) {
 			if (ImGui::Button(ICON_FA_PLUS_SQUARE " Add")) {
 				sceneMgr().nodeForeachGroup([&] (int nodeId) {
