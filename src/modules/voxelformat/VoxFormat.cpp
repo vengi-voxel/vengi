@@ -319,8 +319,9 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	core::Buffer<ogt_vox_layer> layers(modelCount);
 	core::Buffer<ogt_vox_instance> instances(modelCount);
 	core::Buffer<const ogt_vox_model *> modelPtr(modelCount);
-	core::Buffer<ogt_vox_keyframe_transform> keyframeTransforms[modelCount];
+	core::Array<ogt_vox_keyframe_transform, 4096> keyframeTransforms;
 	int mdlIdx = 0;
+	int transformKeyFrameIdx = 0;
 	for (const SceneGraphNode &node : newSceneGraph) {
 		const voxel::Region region = node.region();
 		ogt_vox_model &model = models[mdlIdx];
@@ -354,21 +355,20 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		const glm::vec3 &maxs = region.getUpperCornerf();
 		const glm::vec3 width = maxs - mins + 1.0f;
 
-		core::Buffer<ogt_vox_keyframe_transform> &kft = keyframeTransforms[mdlIdx];
-		kft.resize(node.keyFrames().size());
-		core_assert(!node.keyFrames().empty());
-		instance.num_transform_keyframes = kft.size();
-		for (uint32_t i = 0; i < instance.num_transform_keyframes; ++i) {
-			const SceneGraphKeyFrame& kf = node.keyFrames()[i];
-			kft[i].frame_index = kf.frame;
-			kft[i].transform = ogt_identity_transform;
+		instance.num_transform_keyframes = node.keyFrames().size();
+		instance.transform_keyframes = instance.num_transform_keyframes ? &keyframeTransforms[transformKeyFrameIdx] : nullptr;
+		for (const SceneGraphKeyFrame& kf : node.keyFrames()) {
+			ogt_vox_keyframe_transform kft;
+			memset(&kft, 0, sizeof(kft));
+			kft.frame_index = kf.frame;
+			kft.transform = ogt_identity_transform;
 			// y and z are flipped here
 			const glm::vec3 kftransform = mins + kf.transform.translation() + width / 2.0f;
-			kft[i].transform.m30 = -glm::floor(kftransform.x + 0.5f);
-			kft[i].transform.m31 = kftransform.z;
-			kft[i].transform.m32 = kftransform.y;
+			kft.transform.m30 = -glm::floor(kftransform.x + 0.5f);
+			kft.transform.m31 = kftransform.z;
+			kft.transform.m32 = kftransform.y;
+			keyframeTransforms[transformKeyFrameIdx++] = kft;
 		}
-		instance.transform_keyframes = kft.data();
 
 		++mdlIdx;
 	}
