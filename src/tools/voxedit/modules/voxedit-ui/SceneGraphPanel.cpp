@@ -106,7 +106,11 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 			// TODO: allow to edit them
 			ImGui::LabelText(entry->value.c_str(), "%s", entry->key.c_str());
 		}
-
+		if (node.keyFrames().size() > 1) {
+			for (const auto& entry : node.keyFrames()) {
+				ImGui::LabelText("Keyframe", "%i (%s)", entry.frame, voxelformat::InterpolationTypeStr[core::enumVal(entry.interpolation)]);
+			}
+		}
 		for (int nodeIdx : node.children()) {
 			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(nodeIdx), listener);
 		}
