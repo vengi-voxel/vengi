@@ -279,7 +279,9 @@ size_t loadPalette(const core::String &fileName, io::SeekableReadStream& stream,
 	const core::SharedPtr<Format> &f = getFormat(desc, magic);
 	if (f) {
 		stream.seek(0);
-		return f->loadPalette(fileName, stream, palette);
+		const size_t n = f->loadPalette(fileName, stream, palette);
+		palette.markDirty();
+		return n;
 	}
 	Log::error("Failed to load model palette from file %s - unsupported file format for extension '%s'",
 			fileName.c_str(), fileext.c_str());

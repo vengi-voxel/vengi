@@ -68,10 +68,8 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 		const ogt_vox_rgba &c = scene->palette.color[i];
 		const ogt_vox_matl &matl = scene->materials.matl[i];
 		palette.colors[i] = core::Color::getRGBA(c.r, c.g, c.b, c.a);
-		if (matl.type == ogt_matl_type_emit) {
-			palette.setGlow(i, matl.emit);
-		} else {
-			palette.removeGlow(i);
+		if (matl.type == ogt_matl_type::ogt_matl_type_emit) {
+			palette.glowColors[i] = palette.colors[i];
 		}
 	}
 	ogt_vox_destroy_scene(scene);
@@ -234,9 +232,7 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		_palette.colors[i] = core::Color::getRGBA(color.r, color.g, color.b, color.a);
 		const ogt_vox_matl &matl = scene->materials.matl[i];
 		if (matl.type == ogt_matl_type_emit) {
-			_palette.setGlow(i, matl.emit);
-		} else {
-			_palette.removeGlow(i);
+			_palette.glowColors[i] = _palette.colors[i];
 		}
 		_paletteMapping[i] = palette.getClosestMatch(_palette.colors[i]);
 	}
@@ -422,7 +418,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		pal.color[i].a = rgba.a;
 
 		const core::RGBA &glowColor = palette.glowColors[i];
-		if (glowColor.a != 0) {
+		if (glowColor.rgba != 0) {
 			mat.matl[i].content_flags |= k_ogt_vox_matl_have_emit;
 			mat.matl[i].type = ogt_matl_type::ogt_matl_type_emit;
 			mat.matl[i].emit = 1.0f;

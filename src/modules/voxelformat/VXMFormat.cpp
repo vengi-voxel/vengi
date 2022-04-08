@@ -416,9 +416,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		_palette.colors[i] = core::Color::getRGBA(red, green, blue, alpha);
 		_paletteMapping[i] = palette.getClosestMatch(_palette.colors[i]);
 		if (emissive) {
-			_palette.setGlow(i);
-		} else {
-			_palette.removeGlow(i);
+			_palette.glowColors[i] = _palette.colors[i];
 		}
 	}
 	_palette.colorCount = materialAmount;
