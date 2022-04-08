@@ -2192,7 +2192,7 @@
                 char matl_g[16] = "";
                 char matl_media[16] = "";
                 uint32_t matl_dict_size = 0;
-                uint32_t matl_dict_keyvalue_count = 0;
+                uint32_t matl_dict_keyvalue_count = 1;
 
                 if (matl.content_flags & k_ogt_vox_matl_have_metal) {
                     _vox_sprintf(matl_metal, sizeof(matl_metal), "%f", matl.metal);
