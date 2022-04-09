@@ -1,5 +1,5 @@
 /*
-    opengametools vox file reader/writer - v0.6 - MIT license - Justin Paver, Oct 2019
+    opengametools vox file reader/writer/merger - v0.997 - MIT license - Justin Paver, Oct 2019
 
     This is a single-header-file library that provides easy-to-use
     support for reading MagicaVoxel .vox files into structures that
@@ -673,6 +673,24 @@
             count += num_elements;
             return ret;
         }
+
+        // returns the index that it was inserted at.
+        uint32_t insert_unique_sorted( const T & value, uint32_t start_index ) {
+            for (uint32_t i = start_index; i < (uint32_t)count; i++) {
+                if (data[i] == value)
+                    return i;
+                if (data[i] >= value) {
+                    resize(count+1);
+                    for (size_t j = count-1; j > i; j--)
+                        data[j] = data[j-1];
+                    data[i] = value;
+                    return i;
+                }
+            }
+            push_back(value);
+            return (uint32_t)(count-1);
+        }
+
         size_t size() const {
             return count;
         }
@@ -889,20 +907,9 @@
         } u;
     };
 
-    // iterates over all transform nodes from root to leaf and computes a flattened transform.
-    static ogt_vox_transform compute_flattened_transform(_vox_array<const _vox_scene_node_*> & stack) {
-        ogt_vox_transform transform = _vox_transform_identity();
-        for (uint32_t i = 0; i < stack.size(); i += 2) {
-            const _vox_scene_node_* transform_node = stack[i];
-            ogt_assert(transform_node->node_type == k_nodetype_transform, "expected transform node");
-            transform = _vox_transform_multiply(transform_node->u.transform.transform, transform);
-        }
-        return transform;
-    }
-
     static void generate_instances_for_node(
         _vox_array<const _vox_scene_node_*> & stack, const _vox_array<_vox_scene_node_> & nodes, uint32_t node_index, const _vox_array<uint32_t> & child_id_array, const _vox_array<ogt_vox_model*> & model_ptrs,
-        _vox_array<ogt_vox_instance> & instances, _vox_array<char> & misc_data, _vox_array<ogt_vox_group>& groups, uint32_t group_index, bool generate_groups, bool generate_keyframes)
+        _vox_array<ogt_vox_instance> & instances, _vox_array<char> & misc_data, _vox_array<ogt_vox_group>& groups, uint32_t group_index, bool generate_keyframes)
     {
         const _vox_scene_node_* node = &nodes[node_index];
         switch (node->node_type)
@@ -910,7 +917,7 @@
             case k_nodetype_transform:
             {
                 stack.push_back(node);
-                generate_instances_for_node(stack, nodes, node->u.transform.child_node_id, child_id_array, model_ptrs, instances, misc_data, groups, group_index, generate_groups, generate_keyframes);
+                generate_instances_for_node(stack, nodes, node->u.transform.child_node_id, child_id_array, model_ptrs, instances, misc_data, groups, group_index,  generate_keyframes);
                 stack.pop_back();
                 break;
             }
@@ -918,7 +925,7 @@
             {
                 // create a new group only if we're generating groups.
                 uint32_t next_group_index = 0;
-                if (generate_groups) {
+                {
                     const _vox_scene_node_* last_transform = stack.peek_back(0);
                     ogt_assert(last_transform->node_type == k_nodetype_transform, "expected transform node prior to group node");
 
@@ -941,14 +948,13 @@
                         group.num_transform_keyframes = last_transform->u.transform.num_keyframes;
                         group.transform_keyframes     = (const ogt_vox_keyframe_transform*)(last_transform->u.transform.keyframe_offset);
                     }
-
                     groups.push_back(group);
                 }
 
                 stack.push_back(node);
                 const uint32_t* child_node_ids = (const uint32_t*)& child_id_array[node->u.group.first_child_node_id_index];
                 for (uint32_t i = 0; i < node->u.group.num_child_nodes; i++) {
-                    generate_instances_for_node(stack, nodes, child_node_ids[i], child_id_array, model_ptrs, instances, misc_data, groups, next_group_index, generate_groups, generate_keyframes);
+                    generate_instances_for_node(stack, nodes, child_node_ids[i], child_id_array, model_ptrs, instances, misc_data, groups, next_group_index, generate_keyframes);
                 }
                 stack.pop_back();
                 break;
@@ -964,10 +970,9 @@
                     ogt_assert(last_transform->node_type == k_nodetype_transform, "parent node type to a shape node must be a transform node");
                     ogt_assert(last_group->node_type == k_nodetype_group, "grandparent node type to a shape node must be a group node");
 
-                    ogt_assert(generate_groups || group_index == 0, "if we're not generating groups, group_index should be zero to map to the root group");
                     ogt_vox_instance new_instance;
                     new_instance.model_index = node->u.shape.model_id;
-                    new_instance.transform   = generate_groups ? last_transform->u.transform.transform : compute_flattened_transform(stack);
+                    new_instance.transform   = last_transform->u.transform.transform;
                     new_instance.layer_index = last_transform->u.transform.layer_id;
                     new_instance.group_index = group_index;
                     new_instance.hidden      = last_transform->u.transform.hidden;
@@ -1018,6 +1023,35 @@
         // Finally, we know their hashes are the same, and their dimensions are the same
         // but they are only equal if they have exactly the same voxel data.
         return memcmp(lhs->voxel_data, rhs->voxel_data, num_voxels_lhs) == 0 ? true : false;
+    }
+
+    ogt_vox_transform sample_keyframe_transform(const ogt_vox_keyframe_transform* keyframes, uint32_t num_keyframes, uint32_t frame_index)
+    {
+        assert(num_keyframes >= 1);
+        if (frame_index <= keyframes[0].frame_index)
+            return keyframes[0].transform;
+        if (frame_index >= keyframes[num_keyframes-1].frame_index)
+            return keyframes[num_keyframes-1].transform;
+        for (uint32_t f = num_keyframes-2; f >= 0; f--) {
+            if (frame_index >= keyframes[f].frame_index) {
+                // orientation always snaps
+                uint32_t next_frame = keyframes[f+1].frame_index;
+                uint32_t curr_frame = keyframes[f+0].frame_index;
+                float t = (frame_index - curr_frame)  / (float)(next_frame - curr_frame);
+                float t_inv = 1.0f - t;
+                // orientation always snaps to the earlier frame
+                ogt_vox_transform curr_transform = keyframes[f+0].transform;
+                // position gets interpolated with rounding towards zero - TODO(jpaver) or should it be -INF?
+                const ogt_vox_transform& next_transform = keyframes[f+1].transform;
+                curr_transform.m30 = (float)(int32_t)((next_transform.m30 * t) + (curr_transform.m30 * t_inv));
+                curr_transform.m31 = (float)(int32_t)((next_transform.m31 * t) + (curr_transform.m31 * t_inv));
+                curr_transform.m32 = (float)(int32_t)((next_transform.m32 * t) + (curr_transform.m32 * t_inv));
+                return curr_transform;
+
+            }
+        }
+        ogt_assert(0, "shouldn't reach here");
+        return keyframes[0].transform;
     }
 
     const ogt_vox_scene* ogt_vox_read_scene_with_flags(const uint8_t * buffer, uint32_t buffer_size, uint32_t read_flags) {
@@ -1519,7 +1553,76 @@
             bool generate_groups    = read_flags & k_read_scene_flags_groups ? true : false;
             bool generate_keyframes = read_flags & k_read_scene_flags_keyframes ? true : false;
             // if we're not reading scene-embedded groups, we generate only one and then flatten all instance transforms.
+
+            _vox_array< const _vox_scene_node_*> stack;
+            stack.reserve(64);
+            generate_instances_for_node(stack, nodes, 0, child_ids, model_ptrs, instances, misc_data, groups, k_invalid_group_index, generate_keyframes);
+
+            // if caller doesn't want groups, we flatten out transforms for all instances and parent them to a single group
             if (!generate_groups) {
+                // flatten all keyframes on instances.
+                if (generate_keyframes) {
+                    _vox_array<uint32_t> frame_indices;
+                    frame_indices.reserve(256);
+                    for (uint32_t i = 0; i < instances.size(); i++) {
+                        ogt_vox_instance* instance = &instances[i];
+                        // populate frame_indices with those that are used by the instance or any parent group of the instance.
+                        {
+                            frame_indices.resize(0);
+                            // first populate frame_indices with the keyframes on the instance itself
+                            uint32_t start_index = 0;
+                            const ogt_vox_keyframe_transform* instance_keyframes = (const ogt_vox_keyframe_transform*)&misc_data[(size_t)instance->transform_keyframes];
+                            for (uint32_t f = 0; f < instance->num_transform_keyframes; f++) {
+                                start_index = frame_indices.insert_unique_sorted(instance_keyframes[f].frame_index, start_index);
+                            }
+                            // now populate frame_index with the keyframes on any parent groups.
+                            uint32_t group_index = instance->group_index;
+                            while (group_index != k_invalid_group_index) {
+                                const ogt_vox_group* group = &groups[group_index];
+                                uint32_t start_index = 0;
+                                const ogt_vox_keyframe_transform* group_keyframes = (const ogt_vox_keyframe_transform*)&misc_data[(size_t)group->transform_keyframes];
+                                for (uint32_t f = 0; f < group->num_transform_keyframes; f++) {
+                                    start_index = frame_indices.insert_unique_sorted(group_keyframes[f].frame_index, start_index);
+                                }
+                                group_index = group->parent_group_index;
+                            }
+                        }
+                        // use the ordered frame indices to sample the flattened transform from the keyframes from the instance and all its parent groups
+                        size_t new_keyframe_offset = misc_data.size();
+                        ogt_vox_keyframe_transform* new_keyframes = (ogt_vox_keyframe_transform*)misc_data.alloc_many(sizeof(ogt_vox_keyframe_transform) * frame_indices.size());
+                        for (uint32_t f = 0; f < frame_indices.size(); f++) {
+                            uint32_t frame_index = frame_indices[f];
+                            const ogt_vox_keyframe_transform* instance_keyframes = (const ogt_vox_keyframe_transform*)&misc_data[(size_t)instance->transform_keyframes];
+                            ogt_vox_transform flattened_transform = sample_keyframe_transform(instance_keyframes, instance->num_transform_keyframes, frame_index);
+                            uint32_t group_index = instance->group_index;
+                            while (group_index != k_invalid_group_index) {
+                                const ogt_vox_group* group = &groups[group_index];
+                                const ogt_vox_keyframe_transform* group_keyframes = (const ogt_vox_keyframe_transform*)&misc_data[(size_t)group->transform_keyframes];
+                                ogt_vox_transform group_transform = sample_keyframe_transform(group_keyframes, group->num_transform_keyframes, frame_index);
+                                flattened_transform = _vox_transform_multiply(flattened_transform, group_transform);
+                                group_index = groups[group_index].parent_group_index;
+                            }
+                            new_keyframes[f].frame_index = frame_index;
+                            new_keyframes[f].transform   = flattened_transform;
+                        }
+                        instance->num_transform_keyframes = (uint32_t)frame_indices.size();
+                        instance->transform_keyframes = (ogt_vox_keyframe_transform*)new_keyframe_offset;
+                    }
+                }
+
+                // now flatten instance transforms if there is no group hierarchy
+                for (uint32_t i = 0; i < instances.size(); i++) {
+                    ogt_vox_instance* instance = &instances[i];
+                    ogt_vox_transform flattened_transform = instance->transform;
+                    uint32_t group_index = instance->group_index;
+                    while (group_index != k_invalid_group_index) {
+                        flattened_transform = _vox_transform_multiply(flattened_transform, groups[group_index].transform);
+                        group_index = groups[group_index].parent_group_index;
+                    }
+                    instance->group_index = 0;
+                }
+                // add just a single parent group.
+                groups.resize(0);
                 ogt_vox_group root_group;
                 root_group.name                    = 0;
                 root_group.transform               = _vox_transform_identity();
@@ -1530,10 +1633,6 @@
                 root_group.transform_keyframes     = NULL;
                 groups.push_back(root_group);
             }
-            _vox_array< const _vox_scene_node_*> stack;
-            stack.reserve(64);
-
-            generate_instances_for_node(stack, nodes, 0, child_ids, model_ptrs, instances, misc_data, groups, k_invalid_group_index, generate_groups, generate_keyframes);
         }
         else if (model_ptrs.size() == 1) {
             // add a single instance
@@ -1597,7 +1696,6 @@
                 uint32_t remapped_index = index_map[remapped_i];
                 materials.matl[i] = old_materials.matl[remapped_index];
             }
-
 
             // ensure that all models are remapped so they are using display order palette indices.
             for (uint32_t i = 0; i < model_ptrs.size(); i++) {

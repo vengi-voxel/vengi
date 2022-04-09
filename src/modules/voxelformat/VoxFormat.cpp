@@ -363,6 +363,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 			kft.transform.m30 = -glm::floor(kftransform.x + 0.5f);
 			kft.transform.m31 = kftransform.z;
 			kft.transform.m32 = kftransform.y;
+			// TODO: apply rotation - but rotations are not interpolated - they must be aligned here somehow...
 			keyframeTransforms[transformKeyFrameIdx++] = kft;
 		}
 
