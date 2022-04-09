@@ -37,48 +37,61 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool VXRFormat::saveRecursiveNode(const core::String &name, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream) {
+	core::String name = node.name();
+	if (name.empty()) {
+		name = core::string::format("%i", node.id());
+	}
 	wrapBool(stream.writeString(node.name(), true))
-	const core::String baseName = core::string::stripExtension(filename);
-	const core::String finalName = baseName + name + ".vxm";
-	wrapBool(stream.writeString(finalName, true))
-	VXMFormat f;
-	io::FilePtr outputFile = io::filesystem()->open(finalName, io::FileMode::SysWrite);
-	if (!outputFile) {
-		Log::error("Failed to open %s for writing", finalName.c_str());
-		return false;
+	if (node.type() != SceneGraphNodeType::Model) {
+		wrapBool(stream.writeString("", true))
+	} else {
+		const core::String baseName = core::string::stripExtension(core::string::extractFilename(filename));
+		const core::String finalName = baseName + name + ".vxm";
+		wrapBool(stream.writeString(finalName, true))
+		VXMFormat f;
+		io::FilePtr outputFile = io::filesystem()->open(finalName, io::FileMode::SysWrite);
+		if (!outputFile) {
+			Log::error("Failed to open %s for writing", finalName.c_str());
+			return false;
+		}
+		io::FileStream wstream(outputFile);
+		SceneGraph newSceneGraph;
+		SceneGraphNode newNode;
+		newNode.setVolume(node.volume(), false);
+		newNode.setName(name);
+		newNode.setVisible(node.visible());
+		newSceneGraph.emplace(core::move(newNode));
+		wrapBool(f.saveGroups(newSceneGraph, finalName, wstream))
 	}
-	io::FileStream wstream(outputFile);
-	SceneGraph newSceneGraph;
-	SceneGraphNode newNode;
-	newNode.setVolume(node.volume(), false);
-	newNode.setName(name);
-	newNode.setVisible(node.visible());
-	newSceneGraph.emplace(core::move(newNode));
-	wrapBool(f.saveGroups(newSceneGraph, finalName, wstream))
 
-	wrapBool(stream.writeInt32(0)); // next child count
-#if 0
-	for (int i = 0; i < childCount; ++i) {
-		wrapBool(saveRecursiveNode(i, volumes, filename, stream))
+	const int32_t childCount = (int32_t)node.children().size();
+	wrapBool(stream.writeInt32(childCount));
+	for (int child : node.children()) {
+		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
+		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
 	}
-#endif
 	return true;
 }
 
 bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	wrapBool(stream.writeUInt32(FourCC('V','X','R','4')));
-
-	const int childCount = (int)sceneGraph.size();
-	wrapBool(stream.writeInt32(childCount))
-	int n = 0;
-	for (const SceneGraphNode& node : sceneGraph) {
-		core::String name = node.name();
-		if (name.empty()) {
-			name = core::string::format("%i", n);
-		}
-		wrapBool(saveRecursiveNode(name, node, filename, stream))
-		++n;
+	const voxelformat::SceneGraphNode &root = sceneGraph.root();
+	const voxelformat::SceneGraphNodeChildren &children = root.children();
+	const int childCount = (int)children.size();
+	if (childCount <= 0) {
+		return false;
+	}
+	wrapBool(stream.writeUInt32(FourCC('V','X','R','4')))
+	wrapBool(stream.writeInt32(1))
+	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
+		// add controller node
+		wrapBool(stream.writeString("Controller", true))
+		wrapBool(stream.writeString("", true))
+		wrapBool(stream.writeInt32(childCount))
+	}
+	for (int child : children) {
+		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
+		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
 	}
 	return true;
 }
@@ -400,7 +413,7 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 		vxaPath = core::string::path(basePath, entities[0].name);
 		Log::debug("No default animation set, use the first available vxa: %s", entities[0].name.c_str());
 	} else {
-		Log::warn("Could not find any vxa file in %s", basePath.c_str());
+		Log::warn("Could not find any vxa file for %s", filename.c_str());
 	}
 
 	for (const io::Filesystem::DirEntry& entry : entities) {

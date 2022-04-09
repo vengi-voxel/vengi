@@ -103,6 +103,8 @@ struct SceneGraphKeyFrame {
 	SceneGraphTransform transform;
 };
 
+using SceneGraphNodeChildren = const core::Buffer<int, 32>;
+
 /**
  * @brief Struct that holds the metadata and the volume
  * @sa SceneGraph
@@ -217,7 +219,7 @@ public:
 	void setLocked(bool locked);
 	void setPivot(uint32_t frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size);
 
-	const core::Buffer<int, 32> &children() const;
+	const SceneGraphNodeChildren &children() const;
 	const core::StringMap<core::String> &properties() const;
 	core::StringMap<core::String> &properties();
 	core::String property(const core::String& key) const;

@@ -3,6 +3,7 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
 #include "io/FileStream.h"
+#include "io/Stream.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -189,10 +190,52 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	original.setVoxel(maxs, mins, mins, createVoxel(voxel::VoxelType::Generic, 127));
 	original.setVoxel(maxs, mins, maxs, createVoxel(voxel::VoxelType::Generic, 200));
 
-	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
-	ASSERT_TRUE(format->save(&original, filename, stream));
-	stream.seek(0);
-	std::unique_ptr<voxel::RawVolume> loaded(format->load(filename, stream));
+	SceneGraph sceneGraph;
+	int nodeId = 0;
+	{
+		SceneGraphNode node;
+		node.setName("first level #1");
+		node.setVolume(&original, false);
+		nodeId = sceneGraph.emplace(core::move(node), nodeId);
+	}
+	{
+		SceneGraphNode node;
+		node.setName("second level #1");
+		node.setVolume(&original, false);
+		sceneGraph.emplace(core::move(node), nodeId);
+	}
+	{
+		SceneGraphNode node;
+		node.setName("second level #2");
+		node.setVolume(&original, false);
+		nodeId = sceneGraph.emplace(core::move(node), nodeId);
+	}
+
+	io::SeekableReadStream *readStream;
+	io::SeekableWriteStream *writeStream;
+#define WRITE_TO_FILE 0
+
+#if WRITE_TO_FILE
+	io::FilePtr sfile = open(filename, io::FileMode::SysWrite);
+	io::FileStream fileWriteStream(sfile);
+	writeStream = &fileWriteStream;
+#else
+	io::BufferedReadWriteStream bufferedStream(10 * 1024 * 1024);
+	writeStream = &bufferedStream;
+#endif
+
+	ASSERT_TRUE(format->saveGroups(sceneGraph, filename, *writeStream));
+
+#if WRITE_TO_FILE
+	io::FilePtr readfile = open(filename);
+	io::FileStream fileReadStream(readfile);
+	readStream = &fileReadStream;
+#else
+	readStream = &bufferedStream;
+#endif
+
+	readStream->seek(0);
+	std::unique_ptr<voxel::RawVolume> loaded(format->load(filename, *readStream));
 	ASSERT_NE(nullptr, loaded);
 	EXPECT_EQ(original, *loaded);
 }

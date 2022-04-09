@@ -201,7 +201,7 @@ bool SceneGraphNode::removeChild(int id) {
 	return false;
 }
 
-const core::Buffer<int, 32> &SceneGraphNode::children() const {
+const SceneGraphNodeChildren &SceneGraphNode::children() const {
 	return _children;
 }
 

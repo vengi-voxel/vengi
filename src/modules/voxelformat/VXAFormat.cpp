@@ -108,7 +108,7 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	wrap(stream.readUInt8(magic[2]))
 	wrap(stream.readUInt8(magic[3]))
 	if (magic[0] != 'V' || magic[1] != 'X' || magic[2] != 'A') {
-		Log::error("Could not load vxr file: Invalid magic found (%c%c%c%c)",
+		Log::error("Could not load vxa file: Invalid magic found (%c%c%c%c)",
 			magic[0], magic[1], magic[2], magic[3]);
 		return false;
 	}
@@ -128,7 +128,7 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 
 	if (sceneGraph.empty()) {
-		Log::error("No previously loaded vma/vxr nodes found");
+		Log::error("No previously loaded vxm/vxr nodes found");
 		return false;
 	}
 

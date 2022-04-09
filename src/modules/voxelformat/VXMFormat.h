@@ -10,6 +10,9 @@ namespace voxelformat {
 
 /**
  * @brief VoxEdit (Sandbox) (vmx)
+ * The voxel model
+ * @sa VXAFormat
+ * @sa VXRFormat
  */
 class VXMFormat : public Format {
 private:

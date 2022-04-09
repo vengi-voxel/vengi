@@ -10,6 +10,9 @@ namespace voxelformat {
 
 /**
  * @brief VoxEdit (Sandbox) (vxr)
+ * Transforms - since version 4 or higher the animations are part of a vxa file
+ * @sa VXMFormat
+ * @sa VXAFormat
  */
 class VXRFormat : public Format {
 private:
@@ -24,7 +27,7 @@ private:
 
 	bool loadGroupsVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version);
 	bool importChildVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, int parent);
-	bool saveRecursiveNode(const core::String &name, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream);
+	bool saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream);
 	bool loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath);
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;

@@ -10,6 +10,9 @@ namespace voxelformat {
 
 /**
  * @brief VoxEdit (Sandbox) (vxa)
+ * Animation file that together with vxr and vxm files form the full asset
+ * @sa VXMFormat
+ * @sa VXRFormat
  */
 class VXAFormat : public Format {
 	bool recursiveImportNode(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, SceneGraphNode& node, const core::String &animId);
