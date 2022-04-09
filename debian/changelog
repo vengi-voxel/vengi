@@ -5,6 +5,7 @@ vengi (0.0.20.0-1) UNRELEASED; urgency=low
   * Refactored and extended the lua script integration
   * Implemented applying depth/height map to a 2d plane
   * Added support for new magicavoxel format (animations)
+  * Preserve node hierarchie when saving vxr
 
   * VoxEdit:
   * Fixed start problems on some systems with multisampled framebuffers

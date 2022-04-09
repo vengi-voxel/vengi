@@ -16,6 +16,7 @@ General:
    - Refactored and extended the lua script integration
    - Implemented applying depth/height map to a 2d plane
    - Added support for new magicavoxel format (animations)
+   - Preserve node hierarchie when saving vxr
 
 VoxEdit:
 
