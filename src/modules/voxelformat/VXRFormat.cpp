@@ -27,13 +27,13 @@ namespace voxelformat {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Could not load vmr file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
+		Log::error("Could not load vxr file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if ((read) != true) { \
-		Log::error("Could not load vmr file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
+		Log::error("Could not load vxr file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
 		return false; \
 	}
 
@@ -68,8 +68,8 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 	const int32_t childCount = (int32_t)node.children().size();
 	wrapBool(stream.writeInt32(childCount));
 	for (int child : node.children()) {
-		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
-		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
+		const voxelformat::SceneGraphNode &cnode = sceneGraph.node(child);
+		wrapBool(saveRecursiveNode(sceneGraph, cnode, filename, stream))
 	}
 	return true;
 }
