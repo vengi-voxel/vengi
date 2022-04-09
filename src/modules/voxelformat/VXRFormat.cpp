@@ -65,6 +65,21 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		wrapBool(f.saveGroups(newSceneGraph, finalName, wstream))
 	}
 
+	wrapBool(stream.writeBool(false)) // mirror x axis
+	wrapBool(stream.writeBool(false)) // mirror y axis
+	wrapBool(stream.writeBool(false)) // mirror z axis
+	wrapBool(stream.writeBool(false)) // preview mirror x axis
+	wrapBool(stream.writeBool(false)) // preview mirror y axis
+	wrapBool(stream.writeBool(false)) // preview mirror z axis
+	wrapBool(stream.writeBool(false)) // ikAnchor
+	wrapBool(stream.writeBool(false)) // ikConstraintsVisible
+	wrapBool(stream.writeFloat(0.0f)) // ikRollMin
+	wrapBool(stream.writeFloat(glm::two_pi<float>())) // ikRollMax
+	wrapBool(stream.writeBool(false))
+	wrapBool(stream.writeBool(false))
+	wrapBool(stream.writeBool(false))
+	wrapBool(stream.writeBool(false))
+
 	const int32_t childCount = (int32_t)node.children().size();
 	wrapBool(stream.writeInt32(childCount));
 	for (int child : node.children()) {
@@ -81,12 +96,26 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	if (childCount <= 0) {
 		return false;
 	}
-	wrapBool(stream.writeUInt32(FourCC('V','X','R','4')))
+	wrapBool(stream.writeUInt32(FourCC('V','X','R','5')))
 	wrapBool(stream.writeInt32(1))
 	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
 		// add controller node
 		wrapBool(stream.writeString("Controller", true))
 		wrapBool(stream.writeString("", true))
+		wrapBool(stream.writeBool(false)) // mirror x axis
+		wrapBool(stream.writeBool(false)) // mirror y axis
+		wrapBool(stream.writeBool(false)) // mirror z axis
+		wrapBool(stream.writeBool(false)) // preview mirror x axis
+		wrapBool(stream.writeBool(false)) // preview mirror y axis
+		wrapBool(stream.writeBool(false)) // preview mirror z axis
+		wrapBool(stream.writeBool(false)) // ikAnchor
+		wrapBool(stream.writeBool(false)) // ikConstraintsVisible
+		wrapBool(stream.writeFloat(0.0f)) // ikRollMin
+		wrapBool(stream.writeFloat(glm::two_pi<float>())) // ikRollMax
+		wrapBool(stream.writeBool(false))
+		wrapBool(stream.writeBool(false))
+		wrapBool(stream.writeBool(false))
+		wrapBool(stream.writeBool(false))
 		wrapBool(stream.writeInt32(childCount))
 	}
 	for (int child : children) {
@@ -278,10 +307,13 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 				wrap(stream.readFloat(inverseKinematicsRadius))
 			}
 		} else {
-			float dummyf;
-			stream.readBool(); // ???
-			wrap(stream.readFloat(dummyf)) // ???
-			wrap(stream.readFloat(dummyf)) // ???
+			node.setProperty("ik constraints visible", stream.readBool());
+			float rollmin;
+			wrap(stream.readFloat(rollmin))
+			node.setProperty("rollmin", core::string::format("%f", rollmin));
+			float rollmax;
+			wrap(stream.readFloat(rollmax))
+			node.setProperty("rollmax", core::string::format("%f", rollmax));
 			stream.readBool(); // ???
 			stream.readBool(); // ???
 			stream.readBool(); // ???
