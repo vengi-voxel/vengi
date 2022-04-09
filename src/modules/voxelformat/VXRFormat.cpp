@@ -65,6 +65,9 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		wrapBool(f.saveGroups(newSceneGraph, finalName, wstream))
 	}
 
+	wrapBool(stream.writeUInt32(0)) // color
+	wrapBool(stream.writeBool(false)) // favorite
+	wrapBool(stream.writeBool(false)) // folded
 	wrapBool(stream.writeBool(false)) // mirror x axis
 	wrapBool(stream.writeBool(false)) // mirror y axis
 	wrapBool(stream.writeBool(false)) // mirror z axis
@@ -96,12 +99,16 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	if (childCount <= 0) {
 		return false;
 	}
-	wrapBool(stream.writeUInt32(FourCC('V','X','R','5')))
+	wrapBool(stream.writeUInt32(FourCC('V','X','R','6')))
 	wrapBool(stream.writeInt32(1))
 	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
 		// add controller node
 		wrapBool(stream.writeString("Controller", true))
 		wrapBool(stream.writeString("", true))
+
+		wrapBool(stream.writeUInt32(0)) // color
+		wrapBool(stream.writeBool(false)) // favorite
+		wrapBool(stream.writeBool(false)) // folded
 		wrapBool(stream.writeBool(false)) // mirror x axis
 		wrapBool(stream.writeBool(false)) // mirror y axis
 		wrapBool(stream.writeBool(false)) // mirror z axis
@@ -122,6 +129,7 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
 		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
 	}
+	wrapBool(stream.writeString("", true)) // baseTemplate
 	return true;
 }
 
