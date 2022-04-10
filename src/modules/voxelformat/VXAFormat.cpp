@@ -181,6 +181,7 @@ bool VXAFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		const int interpolation = getInterpolationType(kf.interpolation);
 		if (interpolation == -1) {
 			Log::error("Could not find valid interpolation mapping for %i", (int)kf.interpolation);
+			return false;
 		}
 		wrapBool(stream.writeInt32(interpolation))
 		wrapBool(stream.writeBool(kf.longRotation))
@@ -242,7 +243,7 @@ bool VXAFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
 		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
 	}
-	return false;
+	return true;
 }
 
 #undef wrap

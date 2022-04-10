@@ -129,7 +129,7 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
 		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
 	}
-	return true; // TODO saveVXA(sceneGraph, filename, stream, animation);
+	return saveVXA(sceneGraph, filename, stream, animation);
 }
 
 bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraphNode &node, int version) {
