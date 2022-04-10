@@ -92,6 +92,16 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 	return true;
 }
 
+bool VXRFormat::saveRecursiveNodeExtra(const SceneGraph& sceneGraph, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream) {
+	wrapBool(stream.writeBool(false)) // collideable
+	wrapBool(stream.writeBool(false)) // decorative
+	for (int child : node.children()) {
+		const voxelformat::SceneGraphNode &cnode = sceneGraph.node(child);
+		wrapBool(saveRecursiveNodeExtra(sceneGraph, cnode, filename, stream))
+	}
+	return true;
+}
+
 bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	const voxelformat::SceneGraphNode &root = sceneGraph.root();
 	const voxelformat::SceneGraphNodeChildren &children = root.children();
@@ -99,9 +109,12 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	if (childCount <= 0) {
 		return false;
 	}
-	wrapBool(stream.writeUInt32(FourCC('V','X','R','7')))
+	wrapBool(stream.writeUInt32(FourCC('V','X','R','8')))
+	// TODO: write vxa with transforms and put the default vxa here
 	wrapBool(stream.writeString("", true)) // defaultAnim
 	wrapBool(stream.writeInt32(1))
+	wrapBool(stream.writeString("", true)) // baseTemplate
+	wrapBool(stream.writeBool(false)) // isStatic
 	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
 		// add controller node
 		wrapBool(stream.writeString("Controller", true))
@@ -130,7 +143,10 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
 		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
 	}
-	wrapBool(stream.writeString("", true)) // baseTemplate
+	for (int child : children) {
+		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
+		wrapBool(saveRecursiveNodeExtra(sceneGraph, node, filename, stream))
+	}
 	return true;
 }
 
