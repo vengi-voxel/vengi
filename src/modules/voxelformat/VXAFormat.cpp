@@ -11,7 +11,9 @@
 #include "core/Log.h"
 #include "app/App.h"
 #include "VXMFormat.h"
+#include "core/MD5.h"
 #include "core/StringUtil.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
@@ -35,11 +37,63 @@ namespace voxelformat {
 		return false; \
 	}
 
+namespace vxa_priv {
 static const InterpolationType interpolationTypes[]{
 	InterpolationType::Instant,		 InterpolationType::Linear,			InterpolationType::QuadEaseIn,
 	InterpolationType::QuadEaseOut,	 InterpolationType::QuadEaseInOut,	InterpolationType::CubicEaseIn,
 	InterpolationType::CubicEaseOut, InterpolationType::CubicEaseInOut,
 };
+
+static void addNodeToHashStream_r(const SceneGraph& sceneGraph, int &n, const SceneGraphNode &node, io::WriteStream &stream) {
+	stream.writeString(node.name(), false);
+	const core::String &childHex = core::string::toHex((int32_t)node.children().size()).toUpper();
+	stream.writeString(childHex, false);
+	for (int child : node.children()) {
+		addNodeToHashStream_r(sceneGraph, n, sceneGraph.node(child), stream);
+	}
+}
+
+static void calculateHash(const SceneGraph& sceneGraph, uint64_t hash[2]) {
+	io::BufferedReadWriteStream stream;
+	const voxelformat::SceneGraphNode &root = sceneGraph.root();
+	const voxelformat::SceneGraphNodeChildren &children = root.children();
+
+	const int childCount = (int)children.size();
+	int n = 0;
+	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
+		// add controller node (see VXRFormat)
+		stream.writeString("Controller", false);
+		stream.writeString(core::string::toHex(childCount).toUpper(), false);
+	}
+	for (int child : children) {
+		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
+		addNodeToHashStream_r(sceneGraph, n, node, stream);
+	}
+	uint8_t digest[16];
+	core::md5sum(stream.getBuffer(), stream.size(), digest);
+	constexpr int half = lengthof(digest) / 2;
+	hash[0] = hash[1] = 0;
+	for (int i = 0; i < half; ++i) {
+		hash[0] <<= 8;
+		hash[0] |= digest[i];
+	}
+	for (int i = half; i < lengthof(digest); ++i) {
+		hash[1] <<= 8;
+		hash[1] |= digest[i];
+	}
+	Log::debug("hash: %s", core::md5ToString(digest).c_str());
+}
+
+static int getInterpolationType(InterpolationType type) {
+	for (int i = 0; i < lengthof(interpolationTypes); ++i) {
+		if (interpolationTypes[i] == type) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+}
 
 bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableReadStream &stream,
 									SceneGraph &sceneGraph, SceneGraphNode& node, const core::String &animId) {
@@ -51,11 +105,11 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		wrap(stream.readUInt32(keyFrame.frame))
 		int32_t interpolation;
 		wrap(stream.readInt32(interpolation))
-		if (interpolation < 0 || interpolation >= lengthof(interpolationTypes)) {
+		if (interpolation < 0 || interpolation >= lengthof(vxa_priv::interpolationTypes)) {
 			keyFrame.interpolation = InterpolationType::Linear;
 			Log::warn("Could not find a supported easing type for %i", interpolation);
 		} else {
-			keyFrame.interpolation = interpolationTypes[interpolation];
+			keyFrame.interpolation = vxa_priv::interpolationTypes[interpolation];
 		}
 		keyFrame.longRotation = stream.readBool();
 
@@ -132,9 +186,17 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
-	int64_t md5[2];
-	wrap(stream.readInt64(md5[0]))
-	wrap(stream.readInt64(md5[1]))
+	uint64_t md5[2];
+	wrap(stream.readUInt64(md5[0]))
+	wrap(stream.readUInt64(md5[1]))
+
+	uint64_t hash[2] {0};
+	vxa_priv::calculateHash(sceneGraph, hash);
+
+	if (SDL_memcmp(md5, hash, sizeof(hash))) {
+		Log::error("hash checksums differ from vxa to current scene graph nodes");
+		return false;
+	}
 
 	char animId[1024];
 	wrapBool(stream.readString(sizeof(animId), animId, true))
@@ -164,21 +226,12 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	return true;
 }
 
-static int getInterpolationType(InterpolationType type) {
-	for (int i = 0; i < lengthof(interpolationTypes); ++i) {
-		if (interpolationTypes[i] == type) {
-			return i;
-		}
-	}
-	return -1;
-}
-
 bool VXAFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream) {
 	const SceneGraphKeyFrames &kfs = node.keyFrames();
 	wrapBool(stream.writeUInt32(kfs.size()))
 	for (const SceneGraphKeyFrame &kf : kfs) {
 		wrapBool(stream.writeInt32(kf.frame))
-		const int interpolation = getInterpolationType(kf.interpolation);
+		const int interpolation = vxa_priv::getInterpolationType(kf.interpolation);
 		if (interpolation == -1) {
 			Log::error("Could not find valid interpolation mapping for %i", (int)kf.interpolation);
 			return false;
@@ -195,10 +248,10 @@ bool VXAFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		wrapBool(stream.writeFloat(kf.transform.orientation().y))
 		wrapBool(stream.writeFloat(kf.transform.orientation().z))
 		wrapBool(stream.writeFloat(kf.transform.orientation().w))
-		wrapBool(stream.writeFloat(0.0f)) // localRotation.X
-		wrapBool(stream.writeFloat(0.0f)) // localRotation.Y
-		wrapBool(stream.writeFloat(0.0f)) // localRotation.Z
-		wrapBool(stream.writeFloat(1.0f)) // localRotation.W
+		wrapBool(stream.writeFloat(0.0f)) // localRotation.x
+		wrapBool(stream.writeFloat(0.0f)) // localRotation.y
+		wrapBool(stream.writeFloat(0.0f)) // localRotation.z
+		wrapBool(stream.writeFloat(1.0f)) // localRotation.w
 		wrapBool(stream.writeFloat(kf.transform.scale()))
 		wrapBool(stream.writeFloat(1.0f))
 	}
@@ -229,11 +282,13 @@ bool VXAFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	const core::String &animationId = baseFilename.substr(idx + 1);
 
 	wrapBool(stream.writeUInt32(FourCC('V','X','A','2')))
-	uint64_t md5[2] {0}; // TODO calculate me
-	wrapBool(stream.writeUInt64(md5[0]))
-	wrapBool(stream.writeUInt64(md5[1]))
+	uint64_t hash[2] {0};
+	vxa_priv::calculateHash(sceneGraph, hash);
+	wrapBool(stream.writeUInt64(hash[0]))
+	wrapBool(stream.writeUInt64(hash[1]))
 	wrapBool(stream.writeString(animationId.c_str(), true))
-	wrapBool(stream.writeInt32(1))
+	Log::debug("Save animation %s", animationId.c_str());
+	wrapBool(stream.writeInt32(1)) // root node has one child
 	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
 		// add controller node (see VXRFormat)
 		wrapBool(stream.writeInt32(0)) // no key frames for controller node
@@ -243,6 +298,7 @@ bool VXAFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
 		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
 	}
+	Log::debug("Save vxa to %s", filename.c_str());
 	return true;
 }
 

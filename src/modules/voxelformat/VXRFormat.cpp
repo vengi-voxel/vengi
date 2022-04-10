@@ -133,14 +133,20 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
 		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
 	}
-#if 0
+	const core::String &basePath = core::string::extractPath(filename);
+	const core::String &baseName = core::string::extractFilename(filename);
 	// TODO: we only support one animation for the transforms at the moment
 	for (const core::String &id : animationIds) {
-		wrapBool(saveVXA(sceneGraph, filename, stream, id))
+		const core::String &vxaFilename = core::string::format("%s.%s.vxa", baseName.c_str(), id.c_str());
+		const core::String &vxaPath = core::string::path(basePath, vxaFilename);
+		io::FilePtr outputFile = io::filesystem()->open(vxaPath, io::FileMode::SysWrite);
+		if (!outputFile) {
+			Log::error("Failed to open %s for writing", vxaPath.c_str());
+			return false;
+		}
+		io::FileStream wstream(outputFile);
+		wrapBool(saveVXA(sceneGraph, vxaPath, wstream, id))
 	}
-#else
-	wrapBool(saveVXA(sceneGraph, filename, stream, defaultAnim))
-#endif
 	return true;
 }
 
@@ -484,13 +490,9 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	return true;
 }
 
-bool VXRFormat::saveVXA(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const core::String &animation) {
-	const core::String &basePath = core::string::extractPath(filename);
-	const core::String &baseName = core::string::extractFilename(filename);
-	const core::String &vxaFilename = core::string::format("%s.%s.vxa", baseName.c_str(), animation.c_str());
-	const core::String &vxaPath = core::string::path(basePath, vxaFilename);
+bool VXRFormat::saveVXA(const SceneGraph& sceneGraph, const core::String &vxaPath, io::SeekableWriteStream& vxaStream, const core::String &animation) {
 	VXAFormat f;
-	return f.saveGroups(sceneGraph, vxaPath, stream);
+	return f.saveGroups(sceneGraph, vxaPath, vxaStream);
 }
 
 bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {
