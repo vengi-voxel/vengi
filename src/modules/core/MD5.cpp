@@ -261,10 +261,8 @@ void md5sum(const uint8_t *buf, uint32_t len, uint8_t digest[16]) {
 	MD5Final(&md5, digest);
 }
 
-core::String md5sum(const uint8_t *buf, uint32_t len) {
-	uint8_t digest[16] { 0 };
-	md5sum(buf, len, digest);
-	constexpr uint32_t size = SDL_arraysize(digest);
+core::String md5ToString(uint8_t digest[16]) {
+	constexpr uint32_t size = 16;
 	char strbuf[size * 2 + 1];
 	char *b = strbuf;
 	for (uint32_t i = 0u; i < size; ++i) {
@@ -273,6 +271,12 @@ core::String md5sum(const uint8_t *buf, uint32_t len) {
 	}
 	strbuf[size * 2] = '\0';
 	return core::String(strbuf);
+}
+
+core::String md5sum(const uint8_t *buf, uint32_t len) {
+	uint8_t digest[16] { 0 };
+	md5sum(buf, len, digest);
+	return md5ToString(digest);
 }
 
 }
