@@ -65,23 +65,7 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		wrapBool(f.saveGroups(newSceneGraph, finalName, wstream))
 	}
 
-	wrapBool(stream.writeUInt32(0)) // color
-	wrapBool(stream.writeBool(false)) // favorite
-	wrapBool(stream.writeBool(false)) // folded
-	wrapBool(stream.writeBool(false)) // mirror x axis
-	wrapBool(stream.writeBool(false)) // mirror y axis
-	wrapBool(stream.writeBool(false)) // mirror z axis
-	wrapBool(stream.writeBool(false)) // preview mirror x axis
-	wrapBool(stream.writeBool(false)) // preview mirror y axis
-	wrapBool(stream.writeBool(false)) // preview mirror z axis
-	wrapBool(stream.writeBool(false)) // ikAnchor
-	wrapBool(stream.writeBool(false)) // ikConstraintsVisible
-	wrapBool(stream.writeFloat(0.0f)) // ikRollMin
-	wrapBool(stream.writeFloat(glm::two_pi<float>())) // ikRollMax
-	wrapBool(stream.writeBool(false))
-	wrapBool(stream.writeBool(false))
-	wrapBool(stream.writeBool(false))
-	wrapBool(stream.writeBool(false))
+	wrapBool(saveNodeProperties(&node, stream))
 
 	const int32_t childCount = (int32_t)node.children().size();
 	wrapBool(stream.writeInt32(childCount));
@@ -92,12 +76,29 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 	return true;
 }
 
-bool VXRFormat::saveRecursiveNodeExtra(const SceneGraph& sceneGraph, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VXRFormat::saveNodeProperties(const SceneGraphNode* node, io::SeekableWriteStream& stream) {
 	wrapBool(stream.writeBool(false)) // collideable
 	wrapBool(stream.writeBool(false)) // decorative
-	for (int child : node.children()) {
-		const voxelformat::SceneGraphNode &cnode = sceneGraph.node(child);
-		wrapBool(saveRecursiveNodeExtra(sceneGraph, cnode, filename, stream))
+	wrapBool(stream.writeUInt32(0)) // color
+	wrapBool(stream.writeBool(false)) // favorite
+	wrapBool(stream.writeBool(false)) // folded
+	wrapBool(stream.writeBool(false)) // mirror x axis
+	wrapBool(stream.writeBool(false)) // mirror y axis
+	wrapBool(stream.writeBool(false)) // mirror z axis
+	wrapBool(stream.writeBool(false)) // preview mirror x axis
+	wrapBool(stream.writeBool(false)) // preview mirror y axis
+	wrapBool(stream.writeBool(false)) // preview mirror z axis
+	wrapBool(stream.writeBool(false)) // ikAnchor
+	wrapBool(stream.writeString("", true)) // ikEffectorID (node id)
+	wrapBool(stream.writeBool(false)) // ikConstraintsVisible
+	wrapBool(stream.writeFloat(0.0f)) // ikRollMin
+	wrapBool(stream.writeFloat(glm::two_pi<float>())) // ikRollMax
+	int ikConstraintAmount = 0;
+	wrapBool(stream.writeUInt32(ikConstraintAmount)) // (max 10)
+	for (int i = 0; i < ikConstraintAmount; ++i) {
+		wrapBool(stream.writeFloat(0.0f)) // ikConstraintX
+		wrapBool(stream.writeFloat(0.0f)) // ikConstraintZ
+		wrapBool(stream.writeFloat(0.0f)) // ikConstraintRadius
 	}
 	return true;
 }
@@ -120,32 +121,13 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		wrapBool(stream.writeString("Controller", true))
 		wrapBool(stream.writeString("", true))
 
-		wrapBool(stream.writeUInt32(0)) // color
-		wrapBool(stream.writeBool(false)) // favorite
-		wrapBool(stream.writeBool(false)) // folded
-		wrapBool(stream.writeBool(false)) // mirror x axis
-		wrapBool(stream.writeBool(false)) // mirror y axis
-		wrapBool(stream.writeBool(false)) // mirror z axis
-		wrapBool(stream.writeBool(false)) // preview mirror x axis
-		wrapBool(stream.writeBool(false)) // preview mirror y axis
-		wrapBool(stream.writeBool(false)) // preview mirror z axis
-		wrapBool(stream.writeBool(false)) // ikAnchor
-		wrapBool(stream.writeBool(false)) // ikConstraintsVisible
-		wrapBool(stream.writeFloat(0.0f)) // ikRollMin
-		wrapBool(stream.writeFloat(glm::two_pi<float>())) // ikRollMax
-		wrapBool(stream.writeBool(false))
-		wrapBool(stream.writeBool(false))
-		wrapBool(stream.writeBool(false))
-		wrapBool(stream.writeBool(false))
+		wrapBool(saveNodeProperties(nullptr, stream))
+
 		wrapBool(stream.writeInt32(childCount))
 	}
 	for (int child : children) {
 		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
 		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
-	}
-	for (int child : children) {
-		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
-		wrapBool(saveRecursiveNodeExtra(sceneGraph, node, filename, stream))
 	}
 	return true;
 }

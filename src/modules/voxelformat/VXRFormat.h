@@ -28,8 +28,7 @@ private:
 	bool loadGroupsVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version);
 	bool importChildVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, int parent);
 	bool saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream);
-	// since version 8
-	bool saveRecursiveNodeExtra(const SceneGraph& sceneGraph, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream);
+	bool saveNodeProperties(const SceneGraphNode* node, io::SeekableWriteStream& stream);
 	bool loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath);
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;
