@@ -99,7 +99,8 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	if (childCount <= 0) {
 		return false;
 	}
-	wrapBool(stream.writeUInt32(FourCC('V','X','R','6')))
+	wrapBool(stream.writeUInt32(FourCC('V','X','R','7')))
+	wrapBool(stream.writeString("", true)) // defaultAnim
 	wrapBool(stream.writeInt32(1))
 	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
 		// add controller node
