@@ -68,8 +68,10 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"Minecraft region", "mca", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Minecraft schematic", "schematic", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Sproxel csv", "csv", nullptr, 0u},
-	{"Wavefront Object", "obj", nullptr, 0u},
-	{"Standard Triangle Language", "stl", nullptr, 0u},
+	{"Wavefront Object", "obj", nullptr, VOX_FORMAT_FLAG_MESH},
+	{"GL Transmission Format", "gltf", nullptr, VOX_FORMAT_FLAG_MESH},
+	{"GL Transmission Binary Format", "glb", nullptr, VOX_FORMAT_FLAG_MESH},
+	{"Standard Triangle Language", "stl", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"Build engine", "kvx", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Ace of Spades", "kv6", [] (uint32_t magic) {return magic == FourCC('K','v','x','l');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Tiberian Sun", "vxl", [] (uint32_t magic) {return magic == FourCC('V','o','x','e');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
@@ -308,7 +310,7 @@ bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, Sc
 		return false;
 	}
 	if (newSceneGraph.empty()) {
-		Log::error("Failed to load model file %s. Broken file.", fileName.c_str());
+		Log::error("Failed to load model file %s. Scene graph doesn't contain models.", fileName.c_str());
 		return false;
 	}
 	//newSceneGraph.node(newSceneGraph.root().id()).setProperty("Type", desc->name);

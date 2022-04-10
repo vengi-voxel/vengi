@@ -17,6 +17,7 @@ General:
    - Implemented applying depth/height map to a 2d plane
    - Added support for new magicavoxel format (animations)
    - Preserve node hierarchie when saving vxr
+   - GLTF voxelization
 
 VoxEdit:
 

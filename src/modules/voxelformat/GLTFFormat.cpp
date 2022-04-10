@@ -5,14 +5,22 @@
 #include "GLTFFormat.h"
 #include "app/App.h"
 #include "core/Color.h"
+#include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/String.h"
+#include "core/concurrent/Lock.h"
 #include "engine-config.h"
 #include "io/StdStreamBuf.h"
+#include "io/Filesystem.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
+#include "core/collection/DynamicArray.h"
+#include "voxelformat/SceneGraph.h"
+
 #include <limits.h>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #define TINYGLTF_IMPLEMENTATION
 #define JSON_HAS_CPP_11
@@ -129,7 +137,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 		int meshExtIdx = 0;
 		meshIdxNodeMap.get(nodeId, meshExtIdx);
-		const MeshExt& meshExt = meshes[meshExtIdx];
+		const MeshExt &meshExt = meshes[meshExtIdx];
 
 		const voxel::Mesh *mesh = meshExt.mesh;
 		Log::debug("Exporting layer %s", meshExt.name.c_str());
@@ -366,4 +374,376 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 	return voxel::getPalette().save(palettename.c_str());
 }
 
-} // namespace voxel
+namespace gltf_priv {
+
+static voxelformat::SceneGraphTransform readTransform(const tinygltf::Node &gltfNode) {
+	SceneGraphTransform transform;
+	if (gltfNode.matrix.size() == 16) {
+		transform.setMatrix(glm::mat4((float)gltfNode.matrix[0], (float)gltfNode.matrix[1], (float)gltfNode.matrix[2],
+									  (float)gltfNode.matrix[3], (float)gltfNode.matrix[4], (float)gltfNode.matrix[5],
+									  (float)gltfNode.matrix[6], (float)gltfNode.matrix[7], (float)gltfNode.matrix[8],
+									  (float)gltfNode.matrix[9], (float)gltfNode.matrix[10], (float)gltfNode.matrix[11],
+									  (float)gltfNode.matrix[12], (float)gltfNode.matrix[13],
+									  (float)gltfNode.matrix[14], (float)gltfNode.matrix[15]));
+	} else {
+		glm::mat4 scaleMat(1.0f);
+		glm::mat4 rotMat(1.0f);
+		glm::mat4 transMat(1.0f);
+		if (gltfNode.scale.size() == 3) {
+			scaleMat = glm::scale(glm::mat4(1.0f), glm::vec3(gltfNode.scale[0], gltfNode.scale[1], gltfNode.scale[2]));
+		}
+		if (gltfNode.rotation.size() == 4) {
+			const glm::quat quat((float)gltfNode.rotation[0], (float)gltfNode.rotation[1], (float)gltfNode.rotation[2],
+								 (float)gltfNode.rotation[3]);
+			rotMat = glm::mat4_cast(quat);
+		}
+		if (gltfNode.translation.size() == 3) {
+			transMat = glm::translate(glm::mat4(1.0f),
+									  glm::vec3((float)gltfNode.translation[0], (float)gltfNode.translation[1],
+												(float)gltfNode.translation[2]));
+		}
+		const glm::mat4 modelMat = scaleMat * rotMat * transMat;
+		transform.setMatrix(modelMat);
+	}
+	return transform;
+}
+
+static size_t getAccessorSize(const tinygltf::Accessor &accessor) {
+	return tinygltf::GetComponentSizeInBytes(accessor.componentType) * tinygltf::GetNumComponentsInType(accessor.type);
+}
+
+const tinygltf::Accessor *getAccessor(const tinygltf::Model &model, int id) {
+	if ((size_t)id >= model.accessors.size()) {
+		return nullptr;
+	}
+
+	const tinygltf::Accessor &accessor = model.accessors[id];
+	if (accessor.sparse.isSparse) {
+		return nullptr;
+	}
+	if (accessor.bufferView < 0 || accessor.bufferView >= (int)model.bufferViews.size()) {
+		return nullptr;
+	}
+
+	const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
+	if (bufferView.buffer < 0 || bufferView.buffer >= (int)model.buffers.size()) {
+		return nullptr;
+	}
+
+	const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+	const size_t viewSize = bufferView.byteOffset + bufferView.byteLength;
+	if (buffer.data.size() < viewSize) {
+		return nullptr;
+	}
+
+	return &accessor;
+}
+
+template<typename T>
+void copyIndices(const uint8_t *data, size_t count, size_t stride, core::DynamicArray<uint32_t> &indices) {
+	for (size_t i = 0; i < count; i++) {
+		indices.push_back(*(const T*)data);
+		data += stride;
+	}
+}
+
+static bool loadIndices(const tinygltf::Model &model, const tinygltf::Primitive &primitive, core::DynamicArray<uint32_t> &indices) {
+	const tinygltf::Accessor *accessor = gltf_priv::getAccessor(model, primitive.indices);
+	if (accessor == nullptr) {
+		Log::warn("Could not get accessor for indices");
+		return false;
+	}
+	const size_t size = gltf_priv::getAccessorSize(*accessor);
+	const tinygltf::BufferView& bufferView = model.bufferViews[accessor->bufferView];
+	const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+	const size_t stride = bufferView.byteStride ? bufferView.byteStride : size;
+
+	const size_t offset = accessor->byteOffset + bufferView.byteOffset;
+	const uint8_t *indexBuf = buffer.data.data() + offset;
+
+	switch (accessor->componentType) {
+	case TINYGLTF_COMPONENT_TYPE_BYTE:
+		gltf_priv::copyIndices<uint8_t>(indexBuf, accessor->count, stride, indices);
+		break;
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+		gltf_priv::copyIndices<uint16_t>(indexBuf, accessor->count, stride, indices);
+		break;
+	case TINYGLTF_COMPONENT_TYPE_SHORT:
+		gltf_priv::copyIndices<int16_t>(indexBuf, accessor->count, stride, indices);
+		break;
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+		gltf_priv::copyIndices<uint32_t>(indexBuf, accessor->count, stride, indices);
+		break;
+	case TINYGLTF_COMPONENT_TYPE_INT:
+		gltf_priv::copyIndices<int32_t>(indexBuf, accessor->count, stride, indices);
+		break;
+	default:
+		Log::error("Unknown component type for indices: %i", accessor->componentType);
+		break;
+	}
+	return true;
+}
+
+} // namespace gltf_priv
+
+bool GLTFFormat::loadAttributes(const core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model,
+								const tinygltf::Primitive &primitive, core::DynamicArray<GLTFVertex> &vertices,
+								core::DynamicArray<glm::vec2> &uvs) {
+	core::String diffuseTexture;
+	if (primitive.material >= 0 && primitive.material < (int)model.materials.size()) {
+		const tinygltf::Material *gltfMaterial = &model.materials[primitive.material];
+
+		auto iter = gltfMaterial->values.find("baseColorTexture");
+		if (iter != gltfMaterial->values.end()) {
+			const tinygltf::Parameter &colorTextureParam = iter->second;
+			if (colorTextureParam.TextureIndex() != -1) {
+				const tinygltf::Texture &colorTexture = model.textures[colorTextureParam.TextureIndex()];
+				diffuseTexture = colorTexture.name.c_str();
+				if (!diffuseTexture.empty()) {
+					auto textureIter = textures.find(diffuseTexture);
+					if (textureIter == textures.end()) {
+						// Load it
+					}
+				}
+			}
+		}
+		// TODO: support vertex colors
+		//const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2], 1.0f);
+		//tri.color = core::Color::getRGBA(diffuseColor);
+	}
+
+	bool foundPosition = false;
+	size_t verticesOffset = 0;
+	size_t uvOffset = 0;
+	for (auto &attrIter : primitive.attributes) {
+		const std::string &attrType = attrIter.first;
+		const tinygltf::Accessor *attributeAccessor = gltf_priv::getAccessor(model, attrIter.second);
+		if (attributeAccessor == nullptr) {
+			Log::warn("Could not get accessor for %s", attrType.c_str());
+			continue;
+		}
+
+		const tinygltf::BufferView &attributeBufferView = model.bufferViews[attributeAccessor->bufferView];
+		const tinygltf::Buffer &attributeBuffer = model.buffers[attributeBufferView.buffer];
+		const size_t offset = attributeAccessor->byteOffset + attributeBufferView.byteOffset;
+		const uint8_t *buf = attributeBuffer.data.data() + offset;
+		if (attrType == "POSITION") {
+			if (attributeAccessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
+				Log::debug("Skip non float type for %s", attrType.c_str());
+				continue;
+			}
+			foundPosition = true;
+			verticesOffset = vertices.size();
+			if (verticesOffset + attributeAccessor->count > vertices.size()) {
+				vertices.resize(verticesOffset + attributeAccessor->count);
+			}
+
+			const float *posData = (const float *)(buf);
+			for (size_t i = 0; i < attributeAccessor->count; i++) {
+				vertices[verticesOffset + i].pos = glm::vec3(posData[i * 3 + 0], posData[i * 3 + 1], posData[i * 3 + 2]);
+				vertices[verticesOffset + i].texture = diffuseTexture;
+			}
+		} else if (core::string::startsWith(attrType.c_str(), "TEXCOORD")) {
+			if (attributeAccessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
+				Log::debug("Skip non float type for %s", attrType.c_str());
+				continue;
+			}
+			uvOffset = uvs.size();
+			if (uvOffset + attributeAccessor->count > uvs.size()) {
+				uvs.resize(uvOffset + attributeAccessor->count);
+			}
+			const float *uvData = (const float *)(buf);
+			for (size_t i = 0; i < attributeAccessor->count; i++) {
+				uvs[uvOffset + i] = glm::vec2(uvData[i * 2 + 0], uvData[i * 2 + 1]);
+			}
+		} else if (core::string::startsWith(attrType.c_str(), "COLOR")) {
+			Log::debug("Skip unhandled color attribute %s", attrType.c_str());
+			// TODO
+		} else {
+			Log::debug("Skip unhandled attribute %s", attrType.c_str());
+		}
+	}
+	return foundPosition;
+}
+
+bool GLTFFormat::subdivideShape(const tinygltf::Model &model, const core::DynamicArray<uint32_t> &indices,
+								const core::DynamicArray<GLTFVertex> &vertices,
+								const core::DynamicArray<glm::vec2> &texcoords,
+								const core::StringMap<image::ImagePtr> &textures,
+								core::DynamicArray<Tri> &subdivided) const {
+	const glm::vec3 &scale = getScale();
+	if (indices.size() % 3 != 0) {
+		Log::error("Unexpected amount of indices %i", (int)indices.size());
+		return false;
+	}
+	for (size_t indexOffset = 0; indexOffset < indices.size(); indexOffset += 3) {
+		Tri tri;
+		for (size_t i = 0; i < 3; ++i) {
+			const size_t idx = indices[i + indexOffset];
+			core_assert_msg(idx < vertices.size(), "Index out of bounds %i/%i", (int)idx, (int)vertices.size());
+			tri.vertices[i] = vertices[idx].pos * scale;
+			if (idx < texcoords.size()) {
+				tri.uv[i] = texcoords[idx];
+			} else {
+				tri.uv[i] = glm::vec2(0.0f);
+			}
+		}
+		const size_t textureIdx = indices[indexOffset];
+		core_assert_msg(textureIdx < vertices.size(), "Index out of bounds %i/%i for textures", (int)textureIdx, (int)vertices.size());
+		const core::String &texture = vertices[textureIdx].texture;
+		if (!texture.empty()) {
+			auto textureIter = textures.find(texture);
+			if (textureIter != textures.end()) {
+				tri.texture = textureIter->second;
+			}
+			// TODO: support vertex colors
+		}
+		subdivideTri(tri, subdivided);
+	}
+	return !subdivided.empty();
+}
+
+void GLTFFormat::calculateAABB(const core::DynamicArray<GLTFVertex> &vertices, glm::vec3 &mins, glm::vec3 &maxs) const {
+	maxs = glm::vec3(-100000.0f);
+	mins = glm::vec3(+100000.0f);
+
+	const glm::vec3 &scale = getScale();
+
+	for (const GLTFVertex &v : vertices) {
+		const glm::vec3 sv = v.pos * scale;
+		maxs.x = core_max(maxs.x, sv.x);
+		maxs.y = core_max(maxs.y, sv.y);
+		maxs.z = core_max(maxs.z, sv.z);
+		mins.x = core_min(mins.x, sv.x);
+		mins.y = core_min(mins.y, sv.y);
+		mins.z = core_min(mins.z, sv.z);
+	}
+}
+
+bool GLTFFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+	uint32_t magic;
+	stream.peekUInt32(magic);
+	const int64_t size = stream.size();
+	uint8_t* data = (uint8_t*)core_malloc(size);
+	if (stream.read(data, size) == -1) {
+		Log::error("Failed to read gltf stream");
+		core_free(data);
+		return false;
+	}
+
+	std::string err;
+	bool state;
+
+	const core::String filePath = core::string::extractPath(filename);
+	tinygltf::TinyGLTF loader;
+	tinygltf::Model model;
+	if (magic == FourCC('g','l','T','F')) {
+		state = loader.LoadBinaryFromMemory(&model, &err, nullptr, data, size, filePath.c_str(), tinygltf::SectionCheck::NO_REQUIRE);
+		if (!state) {
+			Log::error("Failed to load binary gltf file: %s", err.c_str());
+		}
+	} else {
+		state = loader.LoadASCIIFromString(&model, &err, nullptr, (const char *)data, size, filePath.c_str(), tinygltf::SectionCheck::NO_REQUIRE);
+		if (!state) {
+			Log::error("Failed to load ascii gltf file: %s", err.c_str());
+		}
+	}
+	core_free(data);
+	if (!state) {
+		return false;
+	}
+
+	core::StringMap<image::ImagePtr> textures;
+
+	for (tinygltf::Scene &gltfScene : model.scenes) {
+		for (int gltfNodeIdx : gltfScene.nodes) {
+			const tinygltf::Node &gltfNode = model.nodes[gltfNodeIdx];
+
+			if (gltfNode.camera != -1) {
+				const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
+				if (gltfNode.camera < 0 || gltfNode.camera >= (int)model.cameras.size()) {
+					Log::debug("Skip invalid camera node %i", gltfNode.camera);
+					continue;
+				}
+				Log::debug("Camera node %i", gltfNodeIdx);
+				const tinygltf::Camera &cam = model.cameras[gltfNode.camera];
+				SceneGraphNode node(SceneGraphNodeType::Camera);
+				node.setName(gltfNode.name.c_str());
+				node.setTransform(0, transform, true);
+				node.setProperty("type", cam.type.c_str());
+				sceneGraph.emplace(core::move(node));
+				continue;
+			}
+
+			if (gltfNode.mesh < 0 || gltfNode.mesh >= (int)model.meshes.size()) {
+				const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
+				Log::debug("No mesh node (%i) - add a group %i", gltfNode.mesh, gltfNodeIdx);
+				SceneGraphNode node(SceneGraphNodeType::Group);
+				node.setName(gltfNode.name.c_str());
+				node.setTransform(0, transform, true);
+				sceneGraph.emplace(core::move(node));
+				continue;
+			}
+
+			Log::debug("Mesh node %i", gltfNodeIdx);
+			tinygltf::Mesh &mesh = model.meshes[gltfNode.mesh];
+			core::DynamicArray<uint32_t> indices;
+			core::DynamicArray<GLTFVertex> vertices;
+			core::DynamicArray<glm::vec2> uvs;
+			Log::debug("Primitives: %i in mesh %i", (int)mesh.primitives.size(), gltfNode.mesh);
+			for (tinygltf::Primitive &primitive : mesh.primitives) {
+				if (primitive.mode != TINYGLTF_MODE_TRIANGLES) {
+					Log::warn("Unexpected primitive mode: %i", primitive.mode);
+					continue;
+				}
+				if (!gltf_priv::loadIndices(model, primitive, indices)) {
+					Log::warn("Failed to load indices");
+					continue;
+				}
+				if (!loadAttributes(textures, model, primitive, vertices, uvs)) {
+					Log::warn("Failed to load vertices");
+					continue;
+				}
+			};
+			if (indices.empty() || vertices.empty()) {
+				Log::error("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(), gltfNode.mesh);
+				continue;
+			}
+			Log::debug("Indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(), gltfNode.mesh);
+
+			glm::vec3 mins;
+			glm::vec3 maxs;
+			calculateAABB(vertices, mins, maxs);
+			const glm::ivec3 imins = glm::floor(mins);
+			const glm::ivec3 imaxs = glm::ceil(maxs);
+			voxel::Region region(imins, imaxs);
+			if (!region.isValid()) {
+				Log::error("Invalid region found %s", region.toString().c_str());
+				continue;
+			}
+			if (glm::any(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(512)))) {
+				Log::warn(
+					"Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh!");
+			}
+
+			SceneGraphNode node;
+			const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
+			node.setName(gltfNode.name.c_str());
+			// TODO: keyframes
+			node.setTransform(0, transform, true);
+
+			voxel::RawVolume *volume = new voxel::RawVolume(region);
+			node.setVolume(volume, true);
+			core::DynamicArray<Tri> subdivided;
+			if (!subdivideShape(model, indices, vertices, uvs, textures, subdivided)) {
+				Log::error("Failed to subdivide");
+			}
+			voxelizeTris(volume, subdivided);
+			sceneGraph.emplace(core::move(node));
+		}
+	}
+
+	return true;
+}
+
+} // namespace voxelformat
