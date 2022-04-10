@@ -238,7 +238,7 @@ void SceneGraphNode::setPivot(uint32_t frameIdx, const glm::ivec3 &pos, const gl
 	nodeFrame.transform.setPivot(glm::vec3(pos) / glm::vec3(size));
 }
 
-const core::DynamicArray<SceneGraphKeyFrame> &SceneGraphNode::keyFrames() const {
+const SceneGraphKeyFrames &SceneGraphNode::keyFrames() const {
 	return _keyFrames;
 }
 
@@ -264,7 +264,7 @@ bool SceneGraphNode::removeKeyFrame(uint32_t frame) {
 	return true;
 }
 
-bool SceneGraphNode::setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame> &kf) {
+bool SceneGraphNode::setKeyFrames(const SceneGraphKeyFrames &kf) {
 	if (kf.empty()) {
 		return false;
 	}

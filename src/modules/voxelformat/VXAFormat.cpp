@@ -164,6 +164,87 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	return true;
 }
 
+static int getInterpolationType(InterpolationType type) {
+	for (int i = 0; i < lengthof(interpolationTypes); ++i) {
+		if (interpolationTypes[i] == type) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+bool VXAFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream) {
+	const SceneGraphKeyFrames &kfs = node.keyFrames();
+	wrapBool(stream.writeUInt32(kfs.size()))
+	for (const SceneGraphKeyFrame &kf : kfs) {
+		wrapBool(stream.writeInt32(kf.frame))
+		const int interpolation = getInterpolationType(kf.interpolation);
+		if (interpolation == -1) {
+			Log::error("Could not find valid interpolation mapping for %i", (int)kf.interpolation);
+		}
+		wrapBool(stream.writeInt32(interpolation))
+		wrapBool(stream.writeBool(kf.longRotation))
+		wrapBool(stream.writeFloat(kf.transform.translation().x))
+		wrapBool(stream.writeFloat(kf.transform.translation().y))
+		wrapBool(stream.writeFloat(kf.transform.translation().z))
+		wrapBool(stream.writeFloat(0.0f)) // localPosition.x
+		wrapBool(stream.writeFloat(0.0f)) // localPosition.y
+		wrapBool(stream.writeFloat(0.0f)) // localPosition.z
+		wrapBool(stream.writeFloat(kf.transform.orientation().x))
+		wrapBool(stream.writeFloat(kf.transform.orientation().y))
+		wrapBool(stream.writeFloat(kf.transform.orientation().z))
+		wrapBool(stream.writeFloat(kf.transform.orientation().w))
+		wrapBool(stream.writeFloat(0.0f)) // localRotation.X
+		wrapBool(stream.writeFloat(0.0f)) // localRotation.Y
+		wrapBool(stream.writeFloat(0.0f)) // localRotation.Z
+		wrapBool(stream.writeFloat(1.0f)) // localRotation.W
+		wrapBool(stream.writeFloat(kf.transform.scale()))
+		wrapBool(stream.writeFloat(1.0f))
+	}
+	const int32_t childCount = (int32_t)node.children().size();
+	wrapBool(stream.writeInt32(childCount));
+	for (int child : node.children()) {
+		const voxelformat::SceneGraphNode &cnode = sceneGraph.node(child);
+		wrapBool(saveRecursiveNode(sceneGraph, cnode, filename, stream))
+	}
+	return true;
+}
+
+bool VXAFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	const voxelformat::SceneGraphNode &root = sceneGraph.root();
+	const voxelformat::SceneGraphNodeChildren &children = root.children();
+	const int childCount = (int)children.size();
+	if (childCount <= 0) {
+		Log::error("Could not save VXA: Empty scene graph");
+		return false;
+	}
+
+	const core::String &baseFilename = core::string::extractFilename(filename);
+	const size_t idx = baseFilename.find(".");
+	if (idx == core::String::npos) {
+		Log::error("Unexpected filename for VXA given - no animation id found: %s", filename.c_str());
+		return false;
+	}
+	const core::String &animationId = baseFilename.substr(idx + 1);
+
+	wrapBool(stream.writeUInt32(FourCC('V','X','A','2')))
+	uint64_t md5[2] {0}; // TODO calculate me
+	wrapBool(stream.writeUInt64(md5[0]))
+	wrapBool(stream.writeUInt64(md5[1]))
+	wrapBool(stream.writeString(animationId.c_str(), true))
+	wrapBool(stream.writeInt32(1))
+	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
+		// add controller node (see VXRFormat)
+		wrapBool(stream.writeInt32(0)) // no key frames for controller node
+		wrapBool(stream.writeInt32(childCount))
+	}
+	for (int child : children) {
+		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
+		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
+	}
+	return false;
+}
+
 #undef wrap
 #undef wrapBool
 

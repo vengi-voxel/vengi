@@ -110,14 +110,14 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	if (childCount <= 0) {
 		return false;
 	}
-	wrapBool(stream.writeUInt32(FourCC('V','X','R','8')))
-	// TODO: write vxa with transforms and put the default vxa here
-	wrapBool(stream.writeString("", true)) // defaultAnim
+	wrapBool(stream.writeUInt32(FourCC('V','X','R','9')))
+	const core::String animation = "Idle"; // TODO: put the correct animation here
+	wrapBool(stream.writeString(animation.c_str(), true)) // defaultAnim
 	wrapBool(stream.writeInt32(1))
 	wrapBool(stream.writeString("", true)) // baseTemplate
 	wrapBool(stream.writeBool(false)) // isStatic
 	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
-		// add controller node
+		// add controller node (see VXAFormat)
 		wrapBool(stream.writeString("Controller", true))
 		wrapBool(stream.writeString("", true))
 
@@ -129,7 +129,7 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
 		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
 	}
-	return true;
+	return true; // TODO saveVXA(sceneGraph, filename, stream, animation);
 }
 
 bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraphNode &node, int version) {
@@ -472,6 +472,26 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	return true;
 }
 
+bool VXRFormat::saveVXA(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const core::String &animation) {
+	const core::String &basePath = core::string::extractPath(filename);
+	const core::String &baseName = core::string::extractFilename(filename);
+	const core::String &vxaFilename = core::string::format("%s.%s.vxa", baseName.c_str(), animation.c_str());
+	const core::String &vxaPath = core::string::path(basePath, vxaFilename);
+	VXAFormat f;
+	return f.saveGroups(sceneGraph, vxaPath, stream);
+}
+
+bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {
+	Log::debug("Try to load a vxa file: %s", vxaPath.c_str());
+	const io::FilePtr& file = io::filesystem()->open(vxaPath);
+	if (!file->validHandle()) {
+		return false;
+	}
+	io::FileStream stream(file);
+	VXAFormat format;
+	return format.loadGroups(vxaPath, stream, sceneGraph);
+}
+
 void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGraphNode &node, const SceneGraphTransform parentTransform, uint8_t frameIdx) {
 	SceneGraphTransform currentTransform = node.transformForFrame(frameIdx);
 	currentTransform.setMatrix(parentTransform.matrix() * node.transformForFrame(frameIdx).matrix());
@@ -484,17 +504,6 @@ void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGrap
 	for (int nodeIdx : node.children()) {
 		recursiveTransformVolume(sceneGraph, sceneGraph.node(nodeIdx), currentTransform, frameIdx);
 	}
-}
-
-bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {
-	Log::debug("Try to load a vxa file: %s", vxaPath.c_str());
-	const io::FilePtr& file = io::filesystem()->open(vxaPath);
-	if (!file->validHandle()) {
-		return false;
-	}
-	io::FileStream stream(file);
-	VXAFormat format;
-	return format.loadGroups(vxaPath, stream, sceneGraph);
 }
 
 bool VXRFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {

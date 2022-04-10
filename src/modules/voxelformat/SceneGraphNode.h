@@ -104,6 +104,7 @@ struct SceneGraphKeyFrame {
 };
 
 using SceneGraphNodeChildren = const core::Buffer<int, 32>;
+using SceneGraphKeyFrames = core::DynamicArray<SceneGraphKeyFrame>;
 
 /**
  * @brief Struct that holds the metadata and the volume
@@ -123,7 +124,7 @@ protected:
 	SceneGraphNodeType _type;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
-	core::DynamicArray<SceneGraphKeyFrame> _keyFrames;
+	SceneGraphKeyFrames _keyFrames;
 	/**
 	 * this will ensure that we are releasing the volume memory in this instance
 	 * @sa release()
@@ -153,8 +154,8 @@ public:
 
 	bool addKeyFrame(uint32_t frame);
 	bool removeKeyFrame(uint32_t frame);
-	const core::DynamicArray<SceneGraphKeyFrame> &keyFrames() const;
-	bool setKeyFrames(const core::DynamicArray<SceneGraphKeyFrame>&);
+	const SceneGraphKeyFrames &keyFrames() const;
+	bool setKeyFrames(const SceneGraphKeyFrames&);
 	/**
 	 * @brief Get the index of the keyframe for the given frame
 	 */

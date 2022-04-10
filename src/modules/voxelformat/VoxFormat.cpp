@@ -90,7 +90,7 @@ static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos,
 }
 
 static bool loadKeyFrames(voxelformat::SceneGraphNode& node, const ogt_vox_keyframe_transform* transformKeyframes, uint32_t numKeyframes) {
-	core::DynamicArray<SceneGraphKeyFrame> kf;
+	SceneGraphKeyFrames kf;
 	kf.reserve(numKeyframes);
 	for (uint32_t k = 0; k < numKeyframes; ++k) {
 		const ogt_vox_keyframe_transform& transform_keyframe = transformKeyframes[k];
