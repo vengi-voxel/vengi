@@ -40,6 +40,8 @@ inline char toHex(char code) {
 	return _hex[code & 15];
 }
 
+core::String toHex(int32_t number);
+
 inline float toFloat(const core::String& str) {
 	return (float)SDL_atof(str.c_str());
 }

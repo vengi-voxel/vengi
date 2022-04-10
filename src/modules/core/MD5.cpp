@@ -253,13 +253,17 @@ static void MD5Final (struct MD5Context *ctx, unsigned char* digest)
 	SDL_memset(ctx, 0, sizeof(*ctx)); /* In case it's sensitive */
 }
 
-core::String md5sum(const uint8_t *buf, uint32_t len) {
+void md5sum(const uint8_t *buf, uint32_t len, uint8_t digest[16]) {
 	core_assert_always(len > 0);
 	MD5_CTX md5;
 	MD5Init(&md5);
 	MD5Update(&md5, buf, len);
-	unsigned char digest[16] = { "" };
 	MD5Final(&md5, digest);
+}
+
+core::String md5sum(const uint8_t *buf, uint32_t len) {
+	uint8_t digest[16] { 0 };
+	md5sum(buf, len, digest);
 	constexpr uint32_t size = SDL_arraysize(digest);
 	char strbuf[size * 2 + 1];
 	char *b = strbuf;

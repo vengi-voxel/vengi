@@ -17,6 +17,16 @@ int64_t toLong(const char* str) {
 	return ::atol(str);
 }
 
+core::String toHex(int32_t number) {
+	constexpr size_t hexChars = sizeof(int32_t) << 1;
+	static const char *digits = "0123456789abcdef";
+	core::String rc(8, '0');
+	for (size_t i = 0, j = (hexChars - 1) * 4; i < hexChars; ++i, j -= 4) {
+		rc[i] = digits[(number >> j) & 0x0f];
+	}
+	return rc;
+}
+
 core::String eraseAllChars(const core::String& str, char chr) {
 	if (str.empty()) {
 		return str;

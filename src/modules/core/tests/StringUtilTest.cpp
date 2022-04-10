@@ -126,6 +126,10 @@ TEST_F(StringUtilTest, testExtractFilenameWithExtension) {
 	EXPECT_EQ("file.extension", core::string::extractFilenameWithExtension("/path/to/file.extension"));
 }
 
+TEST_F(StringUtilTest, testHex) {
+	EXPECT_EQ("000002df", core::string::toHex(735));
+}
+
 TEST_F(StringUtilTest, testUpperCamelCase) {
 	EXPECT_EQ("FooBar", core::string::upperCamelCase("foo_bar"));
 	EXPECT_EQ("FooBar", core::string::upperCamelCase("FooBar"));
