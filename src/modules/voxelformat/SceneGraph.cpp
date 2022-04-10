@@ -43,7 +43,7 @@ SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
 	return *this;
 }
 
-const core::DynamicArray<core::String> SceneGraph::animations() {
+const core::DynamicArray<core::String> SceneGraph::animations() const {
 	return _animations;
 }
 

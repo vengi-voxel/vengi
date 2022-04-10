@@ -14,6 +14,8 @@ class RawVolume;
 
 namespace voxelformat {
 
+using SceneGraphAnimationIds = core::DynamicArray<core::String>;
+
 /**
  * @brief The internal format for the save/load methods.
  *
@@ -44,7 +46,7 @@ public:
 	voxel::Region region() const;
 	voxel::Region groupRegion() const;
 
-	const core::DynamicArray<core::String> animations();
+	const SceneGraphAnimationIds animations() const;
 	void addAnimation(const core::String& animation);
 
 	/**

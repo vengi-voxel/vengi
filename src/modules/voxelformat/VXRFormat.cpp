@@ -111,8 +111,12 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		return false;
 	}
 	wrapBool(stream.writeUInt32(FourCC('V','X','R','9')))
-	const core::String animation = "Idle"; // TODO: put the correct animation here
-	wrapBool(stream.writeString(animation.c_str(), true)) // defaultAnim
+	SceneGraphAnimationIds animationIds = sceneGraph.animations();
+	if (animationIds.empty()) {
+		animationIds.push_back("Idle");
+	}
+	const core::String defaultAnim = animationIds[0];
+	wrapBool(stream.writeString(defaultAnim.c_str(), true))
 	wrapBool(stream.writeInt32(1))
 	wrapBool(stream.writeString("", true)) // baseTemplate
 	wrapBool(stream.writeBool(false)) // isStatic
@@ -129,7 +133,15 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
 		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
 	}
-	return saveVXA(sceneGraph, filename, stream, animation);
+#if 0
+	// TODO: we only support one animation for the transforms at the moment
+	for (const core::String &id : animationIds) {
+		wrapBool(saveVXA(sceneGraph, filename, stream, id))
+	}
+#else
+	wrapBool(saveVXA(sceneGraph, filename, stream, defaultAnim))
+#endif
+	return true;
 }
 
 bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraphNode &node, int version) {
