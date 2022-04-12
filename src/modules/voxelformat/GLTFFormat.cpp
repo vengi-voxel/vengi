@@ -620,6 +620,109 @@ void GLTFFormat::calculateAABB(const core::DynamicArray<GLTFVertex> &vertices, g
 	}
 }
 
+bool GLTFFormat::addNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImagePtr> &textures, tinygltf::Model &model, int gltfNodeIdx, int parentNodeId) const {
+	tinygltf::Node &gltfNode = model.nodes[gltfNodeIdx];
+	Log::debug("Found node with name '%s'", gltfNode.name.c_str());
+	Log::debug(" - camera: %i", gltfNode.camera);
+	Log::debug(" - mesh: %i", gltfNode.mesh);
+	Log::debug(" - skin: %i", gltfNode.skin);
+	Log::debug(" - children: %i", (int)gltfNode.children.size());
+
+	if (gltfNode.camera != -1) {
+		const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
+		if (gltfNode.camera < 0 || gltfNode.camera >= (int)model.cameras.size()) {
+			Log::debug("Skip invalid camera node %i", gltfNode.camera);
+			return true;
+		}
+		Log::debug("Camera node %i", gltfNodeIdx);
+		const tinygltf::Camera &cam = model.cameras[gltfNode.camera];
+		SceneGraphNode node(SceneGraphNodeType::Camera);
+		node.setName(gltfNode.name.c_str());
+		node.setTransform(0, transform, true);
+		node.setProperty("type", cam.type.c_str());
+		int cameraId = sceneGraph.emplace(core::move(node), parentNodeId);
+		for (int childId : gltfNode.children) {
+			addNode_r(sceneGraph, textures, model, childId, cameraId);
+		}
+		return true;
+	}
+
+	if (gltfNode.mesh < 0 || gltfNode.mesh >= (int)model.meshes.size()) {
+		const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
+		Log::debug("No mesh node (%i) - add a group %i", gltfNode.mesh, gltfNodeIdx);
+		SceneGraphNode node(SceneGraphNodeType::Group);
+		node.setName(gltfNode.name.c_str());
+		node.setTransform(0, transform, true);
+		int groupId = sceneGraph.emplace(core::move(node), parentNodeId);
+		for (int childId : gltfNode.children) {
+			addNode_r(sceneGraph, textures, model, childId, groupId);
+		}
+		return true;
+	}
+
+	Log::debug("Mesh node %i", gltfNodeIdx);
+	tinygltf::Mesh &mesh = model.meshes[gltfNode.mesh];
+	core::DynamicArray<uint32_t> indices;
+	core::DynamicArray<GLTFVertex> vertices;
+	core::DynamicArray<glm::vec2> uvs;
+	Log::debug("Primitives: %i in mesh %i", (int)mesh.primitives.size(), gltfNode.mesh);
+	for (tinygltf::Primitive &primitive : mesh.primitives) {
+		if (primitive.mode != TINYGLTF_MODE_TRIANGLES) {
+			Log::warn("Unexpected primitive mode: %i", primitive.mode);
+			continue;
+		}
+		if (!gltf_priv::loadIndices(model, primitive, indices)) {
+			Log::warn("Failed to load indices");
+			continue;
+		}
+		if (!loadAttributes(textures, model, primitive, vertices, uvs)) {
+			Log::warn("Failed to load vertices");
+			continue;
+		}
+	};
+	if (indices.empty() || vertices.empty()) {
+		Log::error("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(), gltfNode.mesh);
+		return false;
+	}
+	Log::debug("Indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(), gltfNode.mesh);
+
+	glm::vec3 mins;
+	glm::vec3 maxs;
+	calculateAABB(vertices, mins, maxs);
+	const glm::ivec3 imins = glm::floor(mins);
+	const glm::ivec3 imaxs = glm::ceil(maxs);
+	voxel::Region region(imins, imaxs);
+	if (!region.isValid()) {
+		Log::error("Invalid region found %s", region.toString().c_str());
+		return false;
+	}
+	if (glm::any(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(512)))) {
+		Log::warn(
+			"Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh!");
+	}
+
+	SceneGraphNode node;
+	const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
+	node.setName(gltfNode.name.c_str());
+	// TODO: keyframes
+	node.setTransform(0, transform, true);
+
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
+	node.setVolume(volume, true);
+	core::DynamicArray<Tri> subdivided;
+	int newParent = parentNodeId;
+	if (!subdivideShape(model, indices, vertices, uvs, textures, subdivided)) {
+		Log::error("Failed to subdivide node %i", gltfNodeIdx);
+	} else {
+		voxelizeTris(volume, subdivided);
+		newParent = sceneGraph.emplace(core::move(node));
+	}
+	for (int childId : gltfNode.children) {
+		addNode_r(sceneGraph, textures, model, childId, newParent);
+	}
+	return true;
+}
+
 bool GLTFFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	uint32_t magic;
 	stream.peekUInt32(magic);
@@ -638,11 +741,13 @@ bool GLTFFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 	tinygltf::TinyGLTF loader;
 	tinygltf::Model model;
 	if (magic == FourCC('g','l','T','F')) {
+		Log::debug("Detected binary gltf stream");
 		state = loader.LoadBinaryFromMemory(&model, &err, nullptr, data, size, filePath.c_str(), tinygltf::SectionCheck::NO_REQUIRE);
 		if (!state) {
 			Log::error("Failed to load binary gltf file: %s", err.c_str());
 		}
 	} else {
+		Log::debug("Detected ascii gltf stream");
 		state = loader.LoadASCIIFromString(&model, &err, nullptr, (const char *)data, size, filePath.c_str(), tinygltf::SectionCheck::NO_REQUIRE);
 		if (!state) {
 			Log::error("Failed to load ascii gltf file: %s", err.c_str());
@@ -655,91 +760,13 @@ bool GLTFFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 
 	core::StringMap<image::ImagePtr> textures;
 
+	int parentNodeId = sceneGraph.root().id();
+
+	Log::debug("Found %i scenes in gltf", (int)model.scenes.size());
 	for (tinygltf::Scene &gltfScene : model.scenes) {
+		Log::debug("Found %i nodes in scene %s", (int)gltfScene.nodes.size(), gltfScene.name.c_str());
 		for (int gltfNodeIdx : gltfScene.nodes) {
-			const tinygltf::Node &gltfNode = model.nodes[gltfNodeIdx];
-
-			if (gltfNode.camera != -1) {
-				const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
-				if (gltfNode.camera < 0 || gltfNode.camera >= (int)model.cameras.size()) {
-					Log::debug("Skip invalid camera node %i", gltfNode.camera);
-					continue;
-				}
-				Log::debug("Camera node %i", gltfNodeIdx);
-				const tinygltf::Camera &cam = model.cameras[gltfNode.camera];
-				SceneGraphNode node(SceneGraphNodeType::Camera);
-				node.setName(gltfNode.name.c_str());
-				node.setTransform(0, transform, true);
-				node.setProperty("type", cam.type.c_str());
-				sceneGraph.emplace(core::move(node));
-				continue;
-			}
-
-			if (gltfNode.mesh < 0 || gltfNode.mesh >= (int)model.meshes.size()) {
-				const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
-				Log::debug("No mesh node (%i) - add a group %i", gltfNode.mesh, gltfNodeIdx);
-				SceneGraphNode node(SceneGraphNodeType::Group);
-				node.setName(gltfNode.name.c_str());
-				node.setTransform(0, transform, true);
-				sceneGraph.emplace(core::move(node));
-				continue;
-			}
-
-			Log::debug("Mesh node %i", gltfNodeIdx);
-			tinygltf::Mesh &mesh = model.meshes[gltfNode.mesh];
-			core::DynamicArray<uint32_t> indices;
-			core::DynamicArray<GLTFVertex> vertices;
-			core::DynamicArray<glm::vec2> uvs;
-			Log::debug("Primitives: %i in mesh %i", (int)mesh.primitives.size(), gltfNode.mesh);
-			for (tinygltf::Primitive &primitive : mesh.primitives) {
-				if (primitive.mode != TINYGLTF_MODE_TRIANGLES) {
-					Log::warn("Unexpected primitive mode: %i", primitive.mode);
-					continue;
-				}
-				if (!gltf_priv::loadIndices(model, primitive, indices)) {
-					Log::warn("Failed to load indices");
-					continue;
-				}
-				if (!loadAttributes(textures, model, primitive, vertices, uvs)) {
-					Log::warn("Failed to load vertices");
-					continue;
-				}
-			};
-			if (indices.empty() || vertices.empty()) {
-				Log::error("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(), gltfNode.mesh);
-				continue;
-			}
-			Log::debug("Indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(), gltfNode.mesh);
-
-			glm::vec3 mins;
-			glm::vec3 maxs;
-			calculateAABB(vertices, mins, maxs);
-			const glm::ivec3 imins = glm::floor(mins);
-			const glm::ivec3 imaxs = glm::ceil(maxs);
-			voxel::Region region(imins, imaxs);
-			if (!region.isValid()) {
-				Log::error("Invalid region found %s", region.toString().c_str());
-				continue;
-			}
-			if (glm::any(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(512)))) {
-				Log::warn(
-					"Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh!");
-			}
-
-			SceneGraphNode node;
-			const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
-			node.setName(gltfNode.name.c_str());
-			// TODO: keyframes
-			node.setTransform(0, transform, true);
-
-			voxel::RawVolume *volume = new voxel::RawVolume(region);
-			node.setVolume(volume, true);
-			core::DynamicArray<Tri> subdivided;
-			if (!subdivideShape(model, indices, vertices, uvs, textures, subdivided)) {
-				Log::error("Failed to subdivide");
-			}
-			voxelizeTris(volume, subdivided);
-			sceneGraph.emplace(core::move(node));
+			addNode_r(sceneGraph, textures, model, gltfNodeIdx, parentNodeId);
 		}
 	}
 

@@ -43,6 +43,8 @@ private:
 						const core::DynamicArray<GLTFVertex> &vertices, const core::DynamicArray<glm::vec2> &uvs,
 						const core::StringMap<image::ImagePtr> &textures, core::DynamicArray<Tri> &subdivided) const;
 
+	bool addNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImagePtr> &textures, tinygltf::Model &model, int gltfNodeIdx, int parentNodeId) const;
+
 	void calculateAABB(const core::DynamicArray<GLTFVertex> &vertices, glm::vec3 &mins, glm::vec3 &maxs) const;
 
 public:
