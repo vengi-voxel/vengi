@@ -374,9 +374,50 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 	return voxel::getPalette().save(palettename.c_str());
 }
 
+size_t GLTFFormat::getGltfAccessorSize(const tinygltf::Accessor &accessor) const {
+	return tinygltf::GetComponentSizeInBytes(accessor.componentType) * tinygltf::GetNumComponentsInType(accessor.type);
+}
+
+const tinygltf::Accessor *GLTFFormat::getGltfAccessor(const tinygltf::Model &model, int id) const {
+	if ((size_t)id >= model.accessors.size()) {
+		return nullptr;
+	}
+
+	const tinygltf::Accessor &accessor = model.accessors[id];
+	if (accessor.sparse.isSparse) {
+		return nullptr;
+	}
+	if (accessor.bufferView < 0 || accessor.bufferView >= (int)model.bufferViews.size()) {
+		return nullptr;
+	}
+
+	const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
+	if (bufferView.buffer < 0 || bufferView.buffer >= (int)model.buffers.size()) {
+		return nullptr;
+	}
+
+	const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+	const size_t viewSize = bufferView.byteOffset + bufferView.byteLength;
+	if (buffer.data.size() < viewSize) {
+		return nullptr;
+	}
+
+	return &accessor;
+}
+
 namespace gltf_priv {
 
-static voxelformat::SceneGraphTransform readTransform(const tinygltf::Node &gltfNode) {
+template<typename T>
+void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::DynamicArray<uint32_t> &indices) {
+	for (size_t i = 0; i < count; i++) {
+		indices.push_back(*(const T*)data);
+		data += stride;
+	}
+}
+
+} // namespace gltf_priv
+
+voxelformat::SceneGraphTransform GLTFFormat::loadGltfTransform(const tinygltf::Node &gltfNode) const {
 	SceneGraphTransform transform;
 	if (gltfNode.matrix.size() == 16) {
 		transform.setMatrix(glm::mat4((float)gltfNode.matrix[0], (float)gltfNode.matrix[1], (float)gltfNode.matrix[2],
@@ -408,52 +449,13 @@ static voxelformat::SceneGraphTransform readTransform(const tinygltf::Node &gltf
 	return transform;
 }
 
-static size_t getAccessorSize(const tinygltf::Accessor &accessor) {
-	return tinygltf::GetComponentSizeInBytes(accessor.componentType) * tinygltf::GetNumComponentsInType(accessor.type);
-}
-
-const tinygltf::Accessor *getAccessor(const tinygltf::Model &model, int id) {
-	if ((size_t)id >= model.accessors.size()) {
-		return nullptr;
-	}
-
-	const tinygltf::Accessor &accessor = model.accessors[id];
-	if (accessor.sparse.isSparse) {
-		return nullptr;
-	}
-	if (accessor.bufferView < 0 || accessor.bufferView >= (int)model.bufferViews.size()) {
-		return nullptr;
-	}
-
-	const tinygltf::BufferView &bufferView = model.bufferViews[accessor.bufferView];
-	if (bufferView.buffer < 0 || bufferView.buffer >= (int)model.buffers.size()) {
-		return nullptr;
-	}
-
-	const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
-	const size_t viewSize = bufferView.byteOffset + bufferView.byteLength;
-	if (buffer.data.size() < viewSize) {
-		return nullptr;
-	}
-
-	return &accessor;
-}
-
-template<typename T>
-void copyIndices(const uint8_t *data, size_t count, size_t stride, core::DynamicArray<uint32_t> &indices) {
-	for (size_t i = 0; i < count; i++) {
-		indices.push_back(*(const T*)data);
-		data += stride;
-	}
-}
-
-static bool loadIndices(const tinygltf::Model &model, const tinygltf::Primitive &primitive, core::DynamicArray<uint32_t> &indices) {
-	const tinygltf::Accessor *accessor = gltf_priv::getAccessor(model, primitive.indices);
+bool GLTFFormat::loadGltfIndices(const tinygltf::Model &model, const tinygltf::Primitive &primitive, core::DynamicArray<uint32_t> &indices) const {
+	const tinygltf::Accessor *accessor = getGltfAccessor(model, primitive.indices);
 	if (accessor == nullptr) {
 		Log::warn("Could not get accessor for indices");
 		return false;
 	}
-	const size_t size = gltf_priv::getAccessorSize(*accessor);
+	const size_t size = getGltfAccessorSize(*accessor);
 	const tinygltf::BufferView& bufferView = model.bufferViews[accessor->bufferView];
 	const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
 	const size_t stride = bufferView.byteStride ? bufferView.byteStride : size;
@@ -463,19 +465,19 @@ static bool loadIndices(const tinygltf::Model &model, const tinygltf::Primitive 
 
 	switch (accessor->componentType) {
 	case TINYGLTF_COMPONENT_TYPE_BYTE:
-		gltf_priv::copyIndices<uint8_t>(indexBuf, accessor->count, stride, indices);
+		gltf_priv::copyGltfIndices<uint8_t>(indexBuf, accessor->count, stride, indices);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
-		gltf_priv::copyIndices<uint16_t>(indexBuf, accessor->count, stride, indices);
+		gltf_priv::copyGltfIndices<uint16_t>(indexBuf, accessor->count, stride, indices);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_SHORT:
-		gltf_priv::copyIndices<int16_t>(indexBuf, accessor->count, stride, indices);
+		gltf_priv::copyGltfIndices<int16_t>(indexBuf, accessor->count, stride, indices);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
-		gltf_priv::copyIndices<uint32_t>(indexBuf, accessor->count, stride, indices);
+		gltf_priv::copyGltfIndices<uint32_t>(indexBuf, accessor->count, stride, indices);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_INT:
-		gltf_priv::copyIndices<int32_t>(indexBuf, accessor->count, stride, indices);
+		gltf_priv::copyGltfIndices<int32_t>(indexBuf, accessor->count, stride, indices);
 		break;
 	default:
 		Log::error("Unknown component type for indices: %i", accessor->componentType);
@@ -484,11 +486,9 @@ static bool loadIndices(const tinygltf::Model &model, const tinygltf::Primitive 
 	return true;
 }
 
-} // namespace gltf_priv
-
-bool GLTFFormat::loadAttributes(const core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model,
-								const tinygltf::Primitive &primitive, core::DynamicArray<GLTFVertex> &vertices,
-								core::DynamicArray<glm::vec2> &uvs) {
+bool GLTFFormat::loadGlftAttributes(const core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model,
+								const tinygltf::Primitive &primitive, core::DynamicArray<GltfVertex> &vertices,
+								core::DynamicArray<glm::vec2> &uvs) const {
 	core::String diffuseTexture;
 	if (primitive.material >= 0 && primitive.material < (int)model.materials.size()) {
 		const tinygltf::Material *gltfMaterial = &model.materials[primitive.material];
@@ -517,7 +517,7 @@ bool GLTFFormat::loadAttributes(const core::StringMap<image::ImagePtr> &textures
 	size_t uvOffset = 0;
 	for (auto &attrIter : primitive.attributes) {
 		const std::string &attrType = attrIter.first;
-		const tinygltf::Accessor *attributeAccessor = gltf_priv::getAccessor(model, attrIter.second);
+		const tinygltf::Accessor *attributeAccessor = getGltfAccessor(model, attrIter.second);
 		if (attributeAccessor == nullptr) {
 			Log::warn("Could not get accessor for %s", attrType.c_str());
 			continue;
@@ -567,7 +567,7 @@ bool GLTFFormat::loadAttributes(const core::StringMap<image::ImagePtr> &textures
 }
 
 bool GLTFFormat::subdivideShape(const tinygltf::Model &model, const core::DynamicArray<uint32_t> &indices,
-								const core::DynamicArray<GLTFVertex> &vertices,
+								const core::DynamicArray<GltfVertex> &vertices,
 								const core::DynamicArray<glm::vec2> &texcoords,
 								const core::StringMap<image::ImagePtr> &textures,
 								core::DynamicArray<Tri> &subdivided) const {
@@ -603,13 +603,13 @@ bool GLTFFormat::subdivideShape(const tinygltf::Model &model, const core::Dynami
 	return !subdivided.empty();
 }
 
-void GLTFFormat::calculateAABB(const core::DynamicArray<GLTFVertex> &vertices, glm::vec3 &mins, glm::vec3 &maxs) const {
+void GLTFFormat::calculateAABB(const core::DynamicArray<GltfVertex> &vertices, glm::vec3 &mins, glm::vec3 &maxs) const {
 	maxs = glm::vec3(-100000.0f);
 	mins = glm::vec3(+100000.0f);
 
 	const glm::vec3 &scale = getScale();
 
-	for (const GLTFVertex &v : vertices) {
+	for (const GltfVertex &v : vertices) {
 		const glm::vec3 sv = v.pos * scale;
 		maxs.x = core_max(maxs.x, sv.x);
 		maxs.y = core_max(maxs.y, sv.y);
@@ -620,7 +620,7 @@ void GLTFFormat::calculateAABB(const core::DynamicArray<GLTFVertex> &vertices, g
 	}
 }
 
-bool GLTFFormat::addNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImagePtr> &textures, tinygltf::Model &model, int gltfNodeIdx, int parentNodeId) const {
+bool GLTFFormat::loadGltfNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImagePtr> &textures, tinygltf::Model &model, int gltfNodeIdx, int parentNodeId) const {
 	tinygltf::Node &gltfNode = model.nodes[gltfNodeIdx];
 	Log::debug("Found node with name '%s'", gltfNode.name.c_str());
 	Log::debug(" - camera: %i", gltfNode.camera);
@@ -629,7 +629,7 @@ bool GLTFFormat::addNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImageP
 	Log::debug(" - children: %i", (int)gltfNode.children.size());
 
 	if (gltfNode.camera != -1) {
-		const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
+		const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
 		if (gltfNode.camera < 0 || gltfNode.camera >= (int)model.cameras.size()) {
 			Log::debug("Skip invalid camera node %i", gltfNode.camera);
 			return true;
@@ -642,20 +642,20 @@ bool GLTFFormat::addNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImageP
 		node.setProperty("type", cam.type.c_str());
 		int cameraId = sceneGraph.emplace(core::move(node), parentNodeId);
 		for (int childId : gltfNode.children) {
-			addNode_r(sceneGraph, textures, model, childId, cameraId);
+			loadGltfNode_r(sceneGraph, textures, model, childId, cameraId);
 		}
 		return true;
 	}
 
 	if (gltfNode.mesh < 0 || gltfNode.mesh >= (int)model.meshes.size()) {
-		const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
+		const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
 		Log::debug("No mesh node (%i) - add a group %i", gltfNode.mesh, gltfNodeIdx);
 		SceneGraphNode node(SceneGraphNodeType::Group);
 		node.setName(gltfNode.name.c_str());
 		node.setTransform(0, transform, true);
 		int groupId = sceneGraph.emplace(core::move(node), parentNodeId);
 		for (int childId : gltfNode.children) {
-			addNode_r(sceneGraph, textures, model, childId, groupId);
+			loadGltfNode_r(sceneGraph, textures, model, childId, groupId);
 		}
 		return true;
 	}
@@ -663,7 +663,7 @@ bool GLTFFormat::addNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImageP
 	Log::debug("Mesh node %i", gltfNodeIdx);
 	tinygltf::Mesh &mesh = model.meshes[gltfNode.mesh];
 	core::DynamicArray<uint32_t> indices;
-	core::DynamicArray<GLTFVertex> vertices;
+	core::DynamicArray<GltfVertex> vertices;
 	core::DynamicArray<glm::vec2> uvs;
 	Log::debug("Primitives: %i in mesh %i", (int)mesh.primitives.size(), gltfNode.mesh);
 	for (tinygltf::Primitive &primitive : mesh.primitives) {
@@ -671,11 +671,11 @@ bool GLTFFormat::addNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImageP
 			Log::warn("Unexpected primitive mode: %i", primitive.mode);
 			continue;
 		}
-		if (!gltf_priv::loadIndices(model, primitive, indices)) {
+		if (!loadGltfIndices(model, primitive, indices)) {
 			Log::warn("Failed to load indices");
 			continue;
 		}
-		if (!loadAttributes(textures, model, primitive, vertices, uvs)) {
+		if (!loadGlftAttributes(textures, model, primitive, vertices, uvs)) {
 			Log::warn("Failed to load vertices");
 			continue;
 		}
@@ -702,7 +702,7 @@ bool GLTFFormat::addNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImageP
 	}
 
 	SceneGraphNode node;
-	const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
+	const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
 	node.setName(gltfNode.name.c_str());
 	// TODO: keyframes https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_007_Animations.md
 	node.setTransform(0, transform, true);
@@ -718,7 +718,7 @@ bool GLTFFormat::addNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImageP
 		newParent = sceneGraph.emplace(core::move(node));
 	}
 	for (int childId : gltfNode.children) {
-		addNode_r(sceneGraph, textures, model, childId, newParent);
+		loadGltfNode_r(sceneGraph, textures, model, childId, newParent);
 	}
 	return true;
 }
@@ -766,7 +766,7 @@ bool GLTFFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 	for (tinygltf::Scene &gltfScene : model.scenes) {
 		Log::debug("Found %i nodes in scene %s", (int)gltfScene.nodes.size(), gltfScene.name.c_str());
 		for (int gltfNodeIdx : gltfScene.nodes) {
-			addNode_r(sceneGraph, textures, model, gltfNodeIdx, parentNodeId);
+			loadGltfNode_r(sceneGraph, textures, model, gltfNodeIdx, parentNodeId);
 		}
 	}
 

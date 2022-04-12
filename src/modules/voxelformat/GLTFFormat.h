@@ -13,6 +13,7 @@ struct Scene;
 struct Mesh;
 struct Material;
 struct Primitive;
+struct Accessor;
 } // namespace tinygltf
 
 namespace voxelformat {
@@ -22,6 +23,7 @@ namespace voxelformat {
  */
 class GLTFFormat : public MeshExporter {
 private:
+	// exporting
 	struct Pair {
 		constexpr Pair(int f, int s) : first(f), second(s) {
 		}
@@ -32,20 +34,25 @@ private:
 	void processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
 						 const SceneGraphNode &graphNode, Stack &stack);
 
-	struct GLTFVertex {
+	// importing (voxelization)
+	struct GltfVertex {
 		glm::vec3 pos;
 		core::String texture;
 	};
-	static bool loadAttributes(const core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model,
-							   const tinygltf::Primitive &primitive, core::DynamicArray<GLTFVertex> &vertices,
-							   core::DynamicArray<glm::vec2> &uvs);
+	bool loadGlftAttributes(const core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model,
+							   const tinygltf::Primitive &primitive, core::DynamicArray<GltfVertex> &vertices,
+							   core::DynamicArray<glm::vec2> &uvs) const;
+
+	bool loadGltfNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImagePtr> &textures, tinygltf::Model &model, int gltfNodeIdx, int parentNodeId) const;
+	bool loadGltfIndices(const tinygltf::Model &model, const tinygltf::Primitive &primitive, core::DynamicArray<uint32_t> &indices) const;
+	voxelformat::SceneGraphTransform loadGltfTransform(const tinygltf::Node &gltfNode) const;
+	size_t getGltfAccessorSize(const tinygltf::Accessor &accessor) const;
+	const tinygltf::Accessor *getGltfAccessor(const tinygltf::Model &model, int id) const;
+
 	bool subdivideShape(const tinygltf::Model &model, const core::DynamicArray<uint32_t> &indices,
-						const core::DynamicArray<GLTFVertex> &vertices, const core::DynamicArray<glm::vec2> &uvs,
+						const core::DynamicArray<GltfVertex> &vertices, const core::DynamicArray<glm::vec2> &uvs,
 						const core::StringMap<image::ImagePtr> &textures, core::DynamicArray<Tri> &subdivided) const;
-
-	bool addNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImagePtr> &textures, tinygltf::Model &model, int gltfNodeIdx, int parentNodeId) const;
-
-	void calculateAABB(const core::DynamicArray<GLTFVertex> &vertices, glm::vec3 &mins, glm::vec3 &maxs) const;
+	void calculateAABB(const core::DynamicArray<GltfVertex> &vertices, glm::vec3 &mins, glm::vec3 &maxs) const;
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const SceneGraph &sceneGraph, const Meshes &meshes,
