@@ -704,7 +704,7 @@ bool GLTFFormat::addNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImageP
 	SceneGraphNode node;
 	const SceneGraphTransform &transform = gltf_priv::readTransform(gltfNode);
 	node.setName(gltfNode.name.c_str());
-	// TODO: keyframes
+	// TODO: keyframes https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_007_Animations.md
 	node.setTransform(0, transform, true);
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);

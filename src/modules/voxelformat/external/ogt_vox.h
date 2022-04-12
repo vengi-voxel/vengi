@@ -630,7 +630,12 @@
         }
         void resize(size_t new_count) {
             if (new_count > capacity)
-                reserve(new_count);
+            {
+                size_t new_capacity = capacity ? (capacity * 3) >> 1 : 2;   // grow by 50% each time, otherwise start at 2 elements.
+                new_capacity = new_count > new_capacity ? new_count : new_capacity; // ensure fits new_count
+                reserve(new_capacity);
+                assert(capacity >= new_count);
+            }
             count = new_count;
         }
         void push_back(const T & new_element) {
@@ -1032,7 +1037,7 @@
             return keyframes[0].transform;
         if (frame_index >= keyframes[num_keyframes-1].frame_index)
             return keyframes[num_keyframes-1].transform;
-        for (uint32_t f = num_keyframes-2; f >= 0; f--) {
+        for (int32_t f = (int32_t)num_keyframes-2; f >= 0; f--) {
             if (frame_index >= keyframes[f].frame_index) {
                 // orientation always snaps
                 uint32_t next_frame = keyframes[f+1].frame_index;
@@ -1579,8 +1584,8 @@
                             uint32_t group_index = instance->group_index;
                             while (group_index != k_invalid_group_index) {
                                 const ogt_vox_group* group = &groups[group_index];
-                                uint32_t start_index = 0;
                                 const ogt_vox_keyframe_transform* group_keyframes = (const ogt_vox_keyframe_transform*)&misc_data[(size_t)group->transform_keyframes];
+                                start_index = 0;
                                 for (uint32_t f = 0; f < group->num_transform_keyframes; f++) {
                                     start_index = frame_indices.insert_unique_sorted(group_keyframes[f].frame_index, start_index);
                                 }
@@ -1979,7 +1984,11 @@
         _vox_sprintf(value_str, sizeof(value_str), "%i", value);
         _vox_file_write_dict_key_value(fp, key, value_str);
     }
-
+    static void _vox_file_write_dict_key_value_float(_vox_file_writeable* fp, const char* key, float value) {
+        char value_str[64];
+        _vox_sprintf(value_str, sizeof(value_str), "%f", value);
+        _vox_file_write_dict_key_value(fp, key, value_str);
+    }
     static void _vox_file_write_dict_transform(_vox_file_writeable* fp, const ogt_vox_transform* transform) {
         char t_string[65];
         char r_string[65];
@@ -1990,13 +1999,6 @@
         _vox_sprintf(r_string, sizeof(r_string), "%u", packed_rotation_bits);
         _vox_file_write_dict_key_value(fp, "_r", r_string);
         _vox_file_write_dict_key_value(fp, "_t", t_string);
-    }
-
-    static uint32_t _vox_dict_key_value_size(const char* key, const char* value) {
-        if (key == NULL || value == NULL)
-            return 0;
-        size_t size = sizeof(uint32_t) + _vox_strlen(key) + sizeof(uint32_t) + _vox_strlen(value);
-        return (uint32_t)size;
     }
 
     static void _vox_file_write_chunk_nTRN(_vox_file_writeable* fp, uint32_t node_id, uint32_t child_node_id, const char* name, bool hidden, const ogt_vox_transform* transform, uint32_t layer_id,
@@ -2137,16 +2139,11 @@
             uint32_t group_dict_keyvalue_count = (hidden_string ? 1 : 0);
 
             // compute the chunk size.
-            uint32_t chunk_size_ngrp =
-                sizeof(uint32_t) +                   // node_id
-                sizeof(uint32_t) +                   // num keyvalue pairs in node dictionary
-                _vox_dict_key_value_size("_hidden", hidden_string) +
-                sizeof(uint32_t) +                   // num_child_nodes field
-                sizeof(uint32_t) * num_child_nodes;  // uint32_t for each child node id.
+            uint32_t offset_of_chunk_header = _vox_file_get_offset(fp);
 
             // write the nGRP header
             _vox_file_write_uint32(fp, CHUNK_ID_nGRP);
-            _vox_file_write_uint32(fp, chunk_size_ngrp);
+            _vox_file_write_uint32(fp, 0); // chunk_size will get patched up after.
             _vox_file_write_uint32(fp, 0);
             // write the nGRP payload
             _vox_file_write_uint32(fp, first_group_node_id + group_index);       // node_id
@@ -2161,6 +2158,9 @@
             for (uint32_t child_instance_index = 0; child_instance_index < scene->num_instances; child_instance_index++)
                 if (scene->instances[child_instance_index].group_index == group_index)
                     _vox_file_write_uint32(fp, first_instance_transform_node_id + child_instance_index);
+
+            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
+            _vox_file_write_at_offset(fp, offset_of_chunk_header + 4, &chunk_size, sizeof(chunk_size));
         }
 
         // write out an nSHP chunk for each of the instances
@@ -2223,21 +2223,11 @@
                 break;
             }
 
-            uint32_t cam_dict_size =
-                    sizeof(uint32_t) + // num key value pairs
-                    _vox_dict_key_value_size("_mode", cam_mode) +
-                    _vox_dict_key_value_size("_focus", cam_focus) +
-                    _vox_dict_key_value_size("_angle", cam_angle) +
-                    _vox_dict_key_value_size("_radius", cam_radius) +
-                    _vox_dict_key_value_size("_frustum", cam_frustum) +
-                    _vox_dict_key_value_size("_fov", cam_fov);
+            uint32_t offset_of_chunk_header = _vox_file_get_offset(fp);
 
-            uint32_t chunk_size_rcam =
-                sizeof(uint32_t) +   // camera_id
-                cam_dict_size;
             // write the rCAM header
             _vox_file_write_uint32(fp, CHUNK_ID_rCAM);
-            _vox_file_write_uint32(fp, chunk_size_rcam);
+            _vox_file_write_uint32(fp, 0); // chunk_size will get patched up later
             _vox_file_write_uint32(fp, 0);
 
             _vox_file_write_uint32(fp, camera->camera_id);
@@ -2248,6 +2238,10 @@
             _vox_file_write_dict_key_value(fp, "_radius", cam_radius);
             _vox_file_write_dict_key_value(fp, "_frustum", cam_frustum);
             _vox_file_write_dict_key_value(fp, "_fov", cam_fov);
+
+            // compute and patch up the chunk size in the chunk header
+            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
+            _vox_file_write_at_offset(fp, offset_of_chunk_header + 4, &chunk_size, sizeof(chunk_size));
         }
 
         // write out RGBA chunk for the palette
@@ -2275,144 +2269,77 @@
                 if (matl.content_flags == 0u) {
                     continue;
                 }
-                char matl_metal[16] = "";
-                char matl_rough[16] = "";
-                char matl_spec[16] = "";
-                char matl_ior[16] = "";
-                char matl_att[16] = "";
-                char matl_flux[16] = "";
-                char matl_emit[16] = "";
-                char matl_ldr[16] = "";
-                char matl_trans[16] = "";
-                char matl_alpha[16] = "";
-                char matl_d[16] = "";
-                char matl_sp[16] = "";
-                char matl_g[16] = "";
-                char matl_media[16] = "";
-                uint32_t matl_dict_size = 0;
                 uint32_t matl_dict_keyvalue_count = 1;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_metal) ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_rough) ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_spec)  ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_ior)   ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_att)   ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_flux)  ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_emit)  ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_ldr)   ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_trans) ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_alpha) ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_d)     ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_sp)    ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_g)     ? 1 : 0;
+                matl_dict_keyvalue_count += (matl.content_flags & k_ogt_vox_matl_have_media) ? 1 : 0;
 
-                if (matl.content_flags & k_ogt_vox_matl_have_metal) {
-                    _vox_sprintf(matl_metal, sizeof(matl_metal), "%f", matl.metal);
-                    matl_dict_size += _vox_dict_key_value_size("_metal", matl_metal);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_rough) {
-                    _vox_sprintf(matl_rough, sizeof(matl_rough), "%f", matl.rough);
-                    matl_dict_size += _vox_dict_key_value_size("_rough", matl_rough);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_spec) {
-                    _vox_sprintf(matl_spec, sizeof(matl_spec), "%f", matl.spec);
-                    matl_dict_size += _vox_dict_key_value_size("_spec", matl_spec);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_ior) {
-                    _vox_sprintf(matl_ior, sizeof(matl_ior), "%f", matl.ior);
-                    matl_dict_size += _vox_dict_key_value_size("_ior", matl_ior);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_att) {
-                    _vox_sprintf(matl_att, sizeof(matl_att), "%f", matl.att);
-                    matl_dict_size += _vox_dict_key_value_size("_att", matl_att);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_flux) {
-                    _vox_sprintf(matl_flux, sizeof(matl_flux), "%f", matl.flux);
-                    matl_dict_size += _vox_dict_key_value_size("_flux", matl_flux);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_emit) {
-                    _vox_sprintf(matl_emit, sizeof(matl_emit), "%f", matl.emit);
-                    matl_dict_size += _vox_dict_key_value_size("_emit", matl_emit);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_ldr) {
-                    _vox_sprintf(matl_ldr, sizeof(matl_ldr), "%f", matl.ldr);
-                    matl_dict_size += _vox_dict_key_value_size("_ldr", matl_ldr);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_trans) {
-                    _vox_sprintf(matl_trans, sizeof(matl_trans), "%f", matl.trans);
-                    matl_dict_size += _vox_dict_key_value_size("_trans", matl_trans);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_alpha) {
-                    _vox_sprintf(matl_alpha, sizeof(matl_alpha), "%f", matl.alpha);
-                    matl_dict_size += _vox_dict_key_value_size("_alpha", matl_alpha);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_d) {
-                    _vox_sprintf(matl_d, sizeof(matl_d), "%f", matl.d);
-                    matl_dict_size += _vox_dict_key_value_size("_d", matl_d);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_sp) {
-                    _vox_sprintf(matl_sp, sizeof(matl_sp), "%f", matl.sp);
-                    matl_dict_size += _vox_dict_key_value_size("_sp", matl_sp);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_g) {
-                    _vox_sprintf(matl_g, sizeof(matl_g), "%f", matl.g);
-                    matl_dict_size += _vox_dict_key_value_size("_g", matl_g);
-                    ++matl_dict_keyvalue_count;
-                }
-                if (matl.content_flags & k_ogt_vox_matl_have_media) {
-                    _vox_sprintf(matl_media, sizeof(matl_media), "%f", matl.media);
-                    matl_dict_size += _vox_dict_key_value_size("_media", matl_media);
-                    ++matl_dict_keyvalue_count;
-                }
-                matl_dict_size += _vox_dict_key_value_size("_type", type_str[matl.type]);
+                uint32_t offset_of_chunk_header = _vox_file_get_offset(fp);
 
                 // write the material chunk header
                 _vox_file_write_uint32(fp, CHUNK_ID_MATL);
-                _vox_file_write_uint32(fp, sizeof(uint32_t) + sizeof(uint32_t) + matl_dict_size);
+                _vox_file_write_uint32(fp, 0); // chunk_size will get patched up later
                 _vox_file_write_uint32(fp, 0);
+
                 _vox_file_write_uint32(fp, i); // material id
                 _vox_file_write_uint32(fp, matl_dict_keyvalue_count);
                 _vox_file_write_dict_key_value(fp, "_type", type_str[matl.type]);
                 if (matl.content_flags & k_ogt_vox_matl_have_metal) {
-                    _vox_file_write_dict_key_value(fp, "_metal", matl_metal);
+                    _vox_file_write_dict_key_value_float(fp, "_metal", matl.metal);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_rough) {
-                    _vox_file_write_dict_key_value(fp, "_rough", matl_rough);
+                    _vox_file_write_dict_key_value_float(fp, "_rough", matl.rough);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_spec) {
-                    _vox_file_write_dict_key_value(fp, "_spec", matl_spec);
+                    _vox_file_write_dict_key_value_float(fp, "_spec", matl.spec);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_ior) {
-                    _vox_file_write_dict_key_value(fp, "_ior", matl_ior);
+                    _vox_file_write_dict_key_value_float(fp, "_ior", matl.ior);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_att) {
-                    _vox_file_write_dict_key_value(fp, "_att", matl_att);
+                    _vox_file_write_dict_key_value_float(fp, "_att", matl.att);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_flux) {
-                    _vox_file_write_dict_key_value(fp, "_flux", matl_flux);
+                    _vox_file_write_dict_key_value_float(fp, "_flux", matl.flux);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_emit) {
-                    _vox_file_write_dict_key_value(fp, "_emit", matl_emit);
+                    _vox_file_write_dict_key_value_float(fp, "_emit", matl.emit);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_ldr) {
-                    _vox_file_write_dict_key_value(fp, "_ldr", matl_ldr);
+                    _vox_file_write_dict_key_value_float(fp, "_ldr", matl.ldr);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_trans) {
-                    _vox_file_write_dict_key_value(fp, "_trans", matl_trans);
+                    _vox_file_write_dict_key_value_float(fp, "_trans", matl.trans);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_alpha) {
-                    _vox_file_write_dict_key_value(fp, "_alpha", matl_alpha);
+                    _vox_file_write_dict_key_value_float(fp, "_alpha", matl.alpha);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_d) {
-                    _vox_file_write_dict_key_value(fp, "_d", matl_d);
+                    _vox_file_write_dict_key_value_float(fp, "_d", matl.d);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_sp) {
-                    _vox_file_write_dict_key_value(fp, "_sp", matl_sp);
+                    _vox_file_write_dict_key_value_float(fp, "_sp", matl.sp);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_g) {
-                    _vox_file_write_dict_key_value(fp, "_g", matl_g);
+                    _vox_file_write_dict_key_value_float(fp, "_g", matl.g);
                 }
                 if (matl.content_flags & k_ogt_vox_matl_have_media) {
-                    _vox_file_write_dict_key_value(fp, "_media", matl_media);
+                    _vox_file_write_dict_key_value_float(fp, "_media", matl.media);
                 }
+                // compute and patch up the chunk size in the chunk header
+                uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
+                _vox_file_write_at_offset(fp, offset_of_chunk_header + 4, &chunk_size, sizeof(chunk_size));
             }
         }
 
@@ -2420,16 +2347,13 @@
         for (uint32_t i = 0; i < scene->num_layers; i++) {
             const char* layer_name_string = scene->layers[i].name;
             const char* hidden_string = scene->layers[i].hidden ? "1" : NULL;
-            uint32_t layer_chunk_size =
-                sizeof(int32_t) +   // layer_id
-                sizeof(uint32_t) +  // num key value pairs
-                _vox_dict_key_value_size("_name", layer_name_string) +
-                _vox_dict_key_value_size("_hidden", hidden_string) +
-                sizeof(int32_t);    // reserved id, must be -1
             uint32_t layer_dict_keyvalue_count = (layer_name_string ? 1 : 0) + (hidden_string ? 1 : 0);
+
+            uint32_t offset_of_chunk_header = _vox_file_get_offset(fp);
+
             // write the layer chunk header
             _vox_file_write_uint32(fp, CHUNK_ID_LAYR);
-            _vox_file_write_uint32(fp, layer_chunk_size);
+            _vox_file_write_uint32(fp, 0); // chunk_size will get patched up later
             _vox_file_write_uint32(fp, 0);
             // write the layer chunk payload
             _vox_file_write_uint32(fp, i);                          // layer_id
@@ -2437,6 +2361,10 @@
             _vox_file_write_dict_key_value(fp, "_name",   layer_name_string);
             _vox_file_write_dict_key_value(fp, "_hidden", hidden_string);
             _vox_file_write_uint32(fp, UINT32_MAX);                 // reserved id
+
+            // compute and patch up the chunk size in the chunk header
+            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
+            _vox_file_write_at_offset(fp, offset_of_chunk_header + 4, &chunk_size, sizeof(chunk_size));
         }
 
         // we deliberately don't free the fp->data field, just pass the buffer pointer and size out to the caller
