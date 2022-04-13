@@ -25,7 +25,7 @@
 | Sproxel                    | csv       | X       | X      | X          |         |        |                                                                  |
 | Wavefront Object           | obj       | X       | X      |            |         |        |                                                                  |
 | Standard Triangle Language | stl       | X       | X      |            |         |        |                                                                  |
-| GL Transmission Format     | gltf      |         | X      |            |         | X      |                                                                  |
+| GL Transmission Format     | gltf      | X       | X      |            |         | X      | https://github.com/KhronosGroup/glTF/tree/main/specification/2.0 |
 
 
 ## Meshes

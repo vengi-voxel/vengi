@@ -25,9 +25,10 @@ glm::vec3 MeshExporter::getScale() {
 	float scaleY = core::Var::getSafe(cfg::VoxformatScaleY)->floatVal();
 	float scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ)->floatVal();
 
-	scaleX = scaleX != 1.0f ? scaleX : scale;
-	scaleY = scaleY != 1.0f ? scaleY : scale;
-	scaleZ = scaleZ != 1.0f ? scaleZ : scale;
+	scaleX = (scaleX - 1.0f) > 0.00001f ? scaleX : scale;
+	scaleY = (scaleY - 1.0f) > 0.00001f ? scaleY : scale;
+	scaleZ = (scaleZ - 1.0f) > 0.00001f ? scaleZ : scale;
+	Log::debug("scale: %f:%f:%f", scaleX, scaleY, scaleZ);
 	return {scaleX, scaleY, scaleZ};
 }
 
