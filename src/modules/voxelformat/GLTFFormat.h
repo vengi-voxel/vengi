@@ -39,12 +39,14 @@ private:
 		glm::vec3 pos;
 		core::String texture;
 	};
-	bool loadGlftAttributes(const core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model,
-							   const tinygltf::Primitive &primitive, core::DynamicArray<GltfVertex> &vertices,
-							   core::DynamicArray<glm::vec2> &texcoords, core::DynamicArray<glm::vec4> &colors) const;
+	bool loadGlftAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
+							const tinygltf::Model &model, const tinygltf::Primitive &primitive,
+							core::DynamicArray<GltfVertex> &vertices, core::DynamicArray<glm::vec2> &texcoords,
+							core::DynamicArray<glm::vec4> &colors) const;
 
-	bool loadGltfNode_r(SceneGraph &sceneGraph, core::StringMap<image::ImagePtr> &textures, tinygltf::Model &model,
-						int gltfNodeIdx, int parentNodeId) const;
+	bool loadGltfNode_r(const core::String &filename, SceneGraph &sceneGraph,
+						core::StringMap<image::ImagePtr> &textures, tinygltf::Model &model, int gltfNodeIdx,
+						int parentNodeId) const;
 	bool loadGltfIndices(const tinygltf::Model &model, const tinygltf::Primitive &primitive,
 						 core::DynamicArray<uint32_t> &indices) const;
 	voxelformat::SceneGraphTransform loadGltfTransform(const tinygltf::Node &gltfNode) const;
