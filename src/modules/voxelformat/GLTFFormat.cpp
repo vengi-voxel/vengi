@@ -811,7 +811,6 @@ bool GLTFFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 	Log::debug("Lights: %i", (int)model.lights.size());
 	int parentNodeId = sceneGraph.root().id();
 
-	Log::debug("Found %i scenes in gltf", (int)model.scenes.size());
 	for (tinygltf::Scene &gltfScene : model.scenes) {
 		Log::debug("Found %i nodes in scene %s", (int)gltfScene.nodes.size(), gltfScene.name.c_str());
 		for (int gltfNodeIdx : gltfScene.nodes) {
