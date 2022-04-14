@@ -27,7 +27,6 @@
 #endif
 #if SDL_VIDEO_DRIVER_ANDROID
 #include <android/native_window.h>
-#include "../core/android/SDL_android.h"
 #include "../video/android/SDL_androidvideo.h"
 #endif
 #if SDL_VIDEO_DRIVER_RPI
@@ -99,7 +98,7 @@
 #define DEFAULT_OGL_ES "libGLESv1_CM.so.1"
 #endif /* SDL_VIDEO_DRIVER_RPI */
 
-#if SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL && !SDL_VIDEO_VITA_PVR_OGL
 #include "SDL_opengl.h"
 #endif
 
@@ -1062,7 +1061,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
             if (SDL_GL_ExtensionSupported("GL_OES_surfaceless_context")) {
                 _this->gl_allow_no_surface = SDL_TRUE;
             }
-#if SDL_VIDEO_OPENGL
+#if SDL_VIDEO_OPENGL && !defined(SDL_VIDEO_DRIVER_VITA)
         } else {
             /* Desktop OpenGL supports it by default from version 3.0 on. */
             void (APIENTRY * glGetIntegervFunc) (GLenum pname, GLint * params);

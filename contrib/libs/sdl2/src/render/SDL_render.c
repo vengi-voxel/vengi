@@ -580,10 +580,10 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 if (retval < 0) {
                     cmd->command = SDL_RENDERCMD_NO_OP;
                 }
-
-                SDL_small_free(xy, isstack1);
-                SDL_small_free(indices, isstack2);
             }
+            SDL_small_free(xy, isstack1);
+            SDL_small_free(indices, isstack2);
+            
         } else {
             retval = renderer->QueueFillRects(renderer, cmd, rects, count);
             if (retval < 0) {
@@ -698,7 +698,17 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                 renderer->WindowEvent(renderer, &event->window);
             }
 
-            if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+            /* In addition to size changes, we also want to do this block for
+             * moves as well, for two reasons:
+             *
+             * 1. The window could be moved to a new display, which has a new
+             *    DPI and therefore a new window/drawable ratio
+             * 2. For whatever reason, the viewport can get messed up during
+             *    window movement (this has been observed on macOS), so this is
+             *    also a good opportunity to force viewport updates
+             */
+            if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED ||
+                event->window.event == SDL_WINDOWEVENT_MOVED) {
                 /* Make sure we're operating on the default render target */
                 SDL_Texture *saved_target = SDL_GetRenderTarget(renderer);
                 if (saved_target) {
@@ -1592,10 +1602,11 @@ SDL_SetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode scaleMode)
     CHECK_TEXTURE_MAGIC(texture, -1);
 
     renderer = texture->renderer;
-    renderer->SetTextureScaleMode(renderer, texture, scaleMode);
     texture->scaleMode = scaleMode;
     if (texture->native) {
         return SDL_SetTextureScaleMode(texture->native, scaleMode);
+    } else {
+        renderer->SetTextureScaleMode(renderer, texture, scaleMode);
     }
     return 0;
 }
