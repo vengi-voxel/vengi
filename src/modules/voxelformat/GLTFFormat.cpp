@@ -500,6 +500,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 	Log::debug("Primitive mode: %i", primitive.mode);
 	if (primitive.material >= 0 && primitive.material < (int)model.materials.size()) {
 		const tinygltf::Material *gltfMaterial = &model.materials[primitive.material];
+		// TODO: load emissiveTexture
 		const int textureIndex = gltfMaterial->pbrMetallicRoughness.baseColorTexture.index;
 		if (textureIndex != -1 && textureIndex < (int)model.textures.size()) {
 			const tinygltf::Texture &colorTexture = model.textures[textureIndex];
