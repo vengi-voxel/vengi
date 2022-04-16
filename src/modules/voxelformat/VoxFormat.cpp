@@ -154,7 +154,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 			name = "";
 		}
 	}
-	loadKeyFrames(node, ogtInstance.transform_keyframes, ogtInstance.num_transform_keyframes);
+	loadKeyFrames(node, ogtInstance.transform_anim.keyframes, ogtInstance.transform_anim.num_keyframes);
 	node.setName(name);
 	node.setVisible(!ogtInstance.hidden && !groupHidden);
 	node.setVolume(v, true);
@@ -174,7 +174,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx
 		}
 	}
 	SceneGraphNode node(SceneGraphNodeType::Group);
-	loadKeyFrames(node, ogt_group.transform_keyframes, ogt_group.num_transform_keyframes);
+	loadKeyFrames(node, ogt_group.transform_anim.keyframes, ogt_group.transform_anim.num_keyframes);
 	node.setName(name);
 	node.setVisible(!hidden);
 	const int groupId = sceneGraph.emplace(core::move(node), parent);
@@ -218,7 +218,8 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		core_free(buffer);
 		return false;
 	}
-	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, k_read_scene_flags_groups | k_read_scene_flags_keyframes);
+	const uint32_t ogt_vox_flags = k_read_scene_flags_groups | k_read_scene_flags_keyframes | k_read_scene_flags_keep_empty_models_instances;
+	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, ogt_vox_flags);
 	core_free(buffer);
 	if (scene == nullptr) {
 		Log::error("Could not load scene %s", filename.c_str());
@@ -351,8 +352,8 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		const glm::vec3 &maxs = region.getUpperCornerf();
 		const glm::vec3 width = maxs - mins + 1.0f;
 
-		instance.num_transform_keyframes = node.keyFrames().size();
-		instance.transform_keyframes = instance.num_transform_keyframes ? &keyframeTransforms[transformKeyFrameIdx] : nullptr;
+		instance.transform_anim.num_keyframes = node.keyFrames().size();
+		instance.transform_anim.keyframes = instance.transform_anim.num_keyframes ? &keyframeTransforms[transformKeyFrameIdx] : nullptr;
 		for (const SceneGraphKeyFrame& kf : node.keyFrames()) {
 			ogt_vox_keyframe_transform kft;
 			memset(&kft, 0, sizeof(kft));
