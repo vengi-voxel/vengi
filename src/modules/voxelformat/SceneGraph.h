@@ -38,14 +38,23 @@ public:
 
 	int activeNode() const;
 	bool setActiveNode(int nodeId);
+	/**
+	 * @brief Loops over the locked/groups (model) nodes with the given function that receives the node id
+	 */
 	void foreachGroup(const std::function<void(int)>& f);
 
 	/**
 	 * @return The full region of the whole scene
 	 */
 	voxel::Region region() const;
+	/**
+	 * @return The region of the locked/grouped (model) nodes
+	 */
 	voxel::Region groupRegion() const;
 
+	/**
+	 * @brief The list of known animation ids
+	 */
 	const SceneGraphAnimationIds animations() const;
 	void addAnimation(const core::String& animation);
 
@@ -80,6 +89,9 @@ public:
 	 * @brief Pre-allocated memory in the graph without added the nodes
 	 */
 	void reserve(size_t size);
+	/**
+	 * @return whether the given node type isn't available in the current scene graph instance.
+	 */
 	bool empty(SceneGraphNodeType type = SceneGraphNodeType::Model) const;
 	/**
 	 * @return Amount of nodes in the graph
@@ -89,6 +101,7 @@ public:
 	 * @brief Merge all available nodes into one big volume.
 	 * @note If the graph is empty, this returns @c nullptr
 	 * @note The caller is responsible for deleting the returned volume
+	 * @note The palette indices are just taken as they come in. There is no quantization here.
 	 */
 	voxel::RawVolume *merge() const;
 

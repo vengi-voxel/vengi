@@ -287,7 +287,7 @@ bool AoSVXLFormat::isSurface(const voxel::RawVolume *v, int x, int y, int z) {
 
 // code taken from https://silverspaceship.com/aosmap/aos_file_format.html
 bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	voxel::RawVolume* mergedVolume = merge(sceneGraph);
+	voxel::RawVolume* mergedVolume = sceneGraph.merge();
 	if (mergedVolume == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;

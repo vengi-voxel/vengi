@@ -290,7 +290,7 @@ SceneGraphNode *SceneGraph::operator[](int modelIdx) {
 voxel::RawVolume *SceneGraph::merge() const {
 	core::DynamicArray<const voxel::RawVolume *> rawVolumes;
 	rawVolumes.reserve(_nodes.size() - 1);
-	for (const auto &node : *this) {
+	for (const SceneGraphNode &node : *this) {
 		core_assert(node.type() == SceneGraphNodeType::Model);
 		core_assert(node.volume() != nullptr);
 		rawVolumes.push_back(node.volume());

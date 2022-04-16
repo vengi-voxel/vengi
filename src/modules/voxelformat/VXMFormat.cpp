@@ -64,7 +64,7 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 }
 
 bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	voxel::RawVolume* mergedVolume = merge(sceneGraph);
+	voxel::RawVolume* mergedVolume = sceneGraph.merge();
 	if (mergedVolume == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;

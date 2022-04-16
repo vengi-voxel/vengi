@@ -52,7 +52,6 @@ protected:
 	 * @brief Maps a custum palette index to our own 256 color palette by a closest match
 	 */
 	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;
-	voxel::RawVolume* merge(const SceneGraph& sceneGraph) const;
 
 	/**
 	 * @brief Checks whether the given chunk is empty (only contains air).

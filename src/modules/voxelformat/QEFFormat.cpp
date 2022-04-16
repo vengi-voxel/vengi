@@ -119,7 +119,7 @@ bool QEFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	stream.writeString("Version 0.2\n", false);
 	stream.writeString("www.minddesk.com\n", false);
 
-	voxel::RawVolume* mergedVolume = merge(sceneGraph);
+	voxel::RawVolume* mergedVolume = sceneGraph.merge();
 	if (mergedVolume == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
