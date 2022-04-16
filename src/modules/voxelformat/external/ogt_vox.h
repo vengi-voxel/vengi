@@ -634,7 +634,7 @@
                 size_t new_capacity = capacity ? (capacity * 3) >> 1 : 2;   // grow by 50% each time, otherwise start at 2 elements.
                 new_capacity = new_count > new_capacity ? new_count : new_capacity; // ensure fits new_count
                 reserve(new_capacity);
-                assert(capacity >= new_count);
+                ogt_assert(capacity >= new_count, "failed to resize array");
             }
             count = new_count;
         }
@@ -1032,7 +1032,7 @@
 
     ogt_vox_transform sample_keyframe_transform(const ogt_vox_keyframe_transform* keyframes, uint32_t num_keyframes, uint32_t frame_index)
     {
-        assert(num_keyframes >= 1);
+        ogt_assert(num_keyframes >= 1, "need at least one keyframe to sample");
         if (frame_index <= keyframes[0].frame_index)
             return keyframes[0].transform;
         if (frame_index >= keyframes[num_keyframes-1].frame_index)
