@@ -277,7 +277,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	return true;
 }
 
-bool QBFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	State state;
 	wrap(stream.readUInt32(state._version))
 	uint32_t colorFormat;
@@ -316,10 +316,6 @@ bool QBFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& sceneG
 		}
 	}
 	return true;
-}
-
-bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
-	return loadFromStream(stream, sceneGraph);
 }
 
 }

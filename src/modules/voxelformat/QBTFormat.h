@@ -26,7 +26,6 @@ private:
 	bool loadNode(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent);
 
 	bool loadColorMap(io::SeekableReadStream& stream);
-	bool loadFromStream(io::SeekableReadStream& stream, SceneGraph &sceneGraph);
 	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node, bool colorMap) const;
 	bool saveColorMap(io::SeekableWriteStream& stream) const;
 	bool saveModel(io::SeekableWriteStream& stream, const SceneGraph &sceneGraph, bool colorMap) const;

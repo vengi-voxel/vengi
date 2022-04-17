@@ -485,7 +485,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 	return true;
 }
 
-bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool QBTFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	uint32_t header;
 	wrap(stream.readUInt32(header))
 	constexpr uint32_t headerMagic = FourCC('Q','B',' ','2');
@@ -553,10 +553,6 @@ bool QBTFormat::loadFromStream(io::SeekableReadStream& stream, SceneGraph& scene
 		}
 	}
 	return true;
-}
-
-bool QBTFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
-	return loadFromStream(stream, sceneGraph);
 }
 
 #undef wrapSave
