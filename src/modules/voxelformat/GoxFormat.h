@@ -102,7 +102,7 @@ private:
 	bool saveChunk_IMG(io::SeekableWriteStream &stream);
 	bool saveChunk_PREV(io::SeekableWriteStream &stream);
 	// Write all the cameras - not used.
-	bool saveChunk_CAMR(io::SeekableWriteStream &stream);
+	bool saveChunk_CAMR(io::SeekableWriteStream &stream, const SceneGraph &sceneGraph);
 	// Write all the lights - not used.
 	bool saveChunk_LIGH(io::SeekableWriteStream &stream);
 

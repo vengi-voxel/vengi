@@ -442,15 +442,27 @@ bool GoxFormat::saveChunk_DictEntry(io::SeekableWriteStream &stream, const char 
 	return true;
 }
 
+bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream& stream, const SceneGraph &sceneGraph) {
+	// TODO: fill with proper values
+	for (auto iter = sceneGraph.begin(SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
+		GoxScopedChunkWriter scoped(stream, FourCC('C', 'A', 'M', 'R'));
+		wrapBool(saveChunk_DictEntry(stream, "name", (*iter).name().c_str(), (*iter).name().size()))
+		wrapBool(saveChunk_DictEntry(stream, "active", "false", 5))
+		float distance = 10.0f;
+		wrapBool(saveChunk_DictEntry(stream, "active", &distance, sizeof(distance)))
+		char ortho = 0;
+		wrapBool(saveChunk_DictEntry(stream, "ortho", &ortho, sizeof(ortho)))
+		const glm::mat4x4 &mat = (*iter).transformForFrame(0).matrix();
+		wrapBool(saveChunk_DictEntry(stream, "mat", &mat, sizeof(mat)))
+	}
+	return true;
+}
+
 bool GoxFormat::saveChunk_IMG(io::SeekableWriteStream& stream) {
 	return true; // not used
 }
 
 bool GoxFormat::saveChunk_PREV(io::SeekableWriteStream& stream) {
-	return true; // not used
-}
-
-bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream& stream) {
 	return true; // not used
 }
 
@@ -595,7 +607,7 @@ bool GoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	wrapBool(saveChunk_BL16(stream, sceneGraph, blocks))
 	wrapBool(saveChunk_MATE(stream))
 	wrapBool(saveChunk_LAYR(stream, sceneGraph, blocks))
-	wrapBool(saveChunk_CAMR(stream))
+	wrapBool(saveChunk_CAMR(stream, sceneGraph))
 	wrapBool(saveChunk_LIGH(stream))
 
 	return true;
