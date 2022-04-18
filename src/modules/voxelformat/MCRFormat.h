@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Format.h"
+#include "core/collection/DynamicArray.h"
 
 namespace io {
 class ZipReadStream;
@@ -15,6 +16,8 @@ namespace voxelformat {
 
 namespace priv {
 class NamedBinaryTag;
+using NBTCompound = core::StringMap<NamedBinaryTag>;
+using NBTList = core::DynamicArray<NamedBinaryTag>;
 }
 
 /**
@@ -97,6 +100,10 @@ private:
 
 	bool readCompressedNBT(SceneGraph& sceneGraph, io::SeekableReadStream &stream, int sector);
 	bool loadMinecraftRegion(SceneGraph& sceneGraph, io::SeekableReadStream &stream);
+
+	bool saveSections(const voxelformat::SceneGraph &sceneGraph, priv::NBTList &sections, int sector);
+	bool saveCompressedNBT(const voxelformat::SceneGraph &sceneGraph, io::SeekableWriteStream& stream, int sector);
+	bool saveMinecraftRegion(const voxelformat::SceneGraph &sceneGraph, io::SeekableWriteStream& stream);
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;

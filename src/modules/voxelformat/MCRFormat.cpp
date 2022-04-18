@@ -12,10 +12,12 @@
 #include "io/File.h"
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
+#include "io/ZipWriteStream.h"
 #include "private/NamedBinaryTag.h"
 #include "private/MinecraftPaletteMap.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 
@@ -437,10 +439,102 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 	return true;
 }
 
+#undef wrap
+
+#define wrapBool(write) \
+	if ((write) == false) { \
+		Log::error("Could not save mcr file: " CORE_STRINGIFY(write)); \
+		return false; \
+	}
+
 bool MCRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	return false;
+	for (int i = 0; i < SECTOR_INTS; ++i) {
+		uint8_t raw[3] = {0, 0, 0}; // TODO
+		_offsets[i].sectorCount = 0; // TODO
+
+		core_assert(_offsets[i].offset < sizeof(_offsets));
+		wrapBool(stream.writeUInt8(raw[0]));
+		wrapBool(stream.writeUInt8(raw[1]));
+		wrapBool(stream.writeUInt8(raw[2]));
+		wrapBool(stream.writeUInt8(_offsets[i].sectorCount));
+	}
+
+	for (int i = 0; i < SECTOR_INTS; ++i) {
+		uint32_t lastModValue = 0u;
+		wrapBool(stream.writeUInt32BE(lastModValue));
+	}
+
+	return saveMinecraftRegion(sceneGraph, stream);
 }
 
-#undef wrap
+bool MCRFormat::saveMinecraftRegion(const voxelformat::SceneGraph &sceneGraph, io::SeekableWriteStream& stream) {
+	for (int i = 0; i < SECTOR_INTS; ++i) {
+		if (_offsets[i].sectorCount == 0u) {
+			continue;
+		}
+		if (!saveCompressedNBT(sceneGraph, stream, i)) {
+			Log::error("Failed to save minecraft chunk section %i for offset %u", i, (int)_offsets[i].offset);
+			return false;
+		}
+	}
+	return true;
+}
+
+bool MCRFormat::saveCompressedNBT(const voxelformat::SceneGraph &sceneGraph, io::SeekableWriteStream& stream, int sector) {
+	const int64_t sizeOffset = stream.pos();
+	wrapBool(stream.writeUInt32BE(0));
+	// the version is included in the length
+	const int64_t nbtStartOffset = stream.pos();
+	wrapBool(stream.writeUInt8(VERSION_GZIP));
+
+	io::ZipWriteStream zipStream(stream);
+	priv::NBTCompound root;
+	root.put("DataVersion", 2844);
+	int x = 0; // TODO
+	int y = 0; // TODO
+	root.put("xPos", x);
+	root.put("yPos", y);
+	priv::NBTList sections;
+	if (!saveSections(sceneGraph, sections, sector)) {
+		Log::error("Failed to save section for sector %i", sector);
+		return false;
+	}
+	root.emplace("sections", priv::NamedBinaryTag(core::move(sections)));
+	const priv::NamedBinaryTag tag(core::move(root));
+	if (!priv::NamedBinaryTag::write(tag, "", zipStream)) {
+		Log::error("Failed to write nbt");
+		return false;
+	}
+	const int64_t nbtEndOffset = stream.pos();
+
+	const int64_t nbtSize = nbtEndOffset - nbtStartOffset;
+	if (stream.seek(sizeOffset) == -1) {
+		Log::error("Failed to seek for nbt size pos");
+		return false;
+	}
+	wrapBool(stream.writeUInt32BE(nbtSize))
+	return stream.seek(nbtEndOffset) != -1;
+}
+
+bool MCRFormat::saveSections(const voxelformat::SceneGraph &sceneGraph, priv::NBTList &sections, int sector) {
+#if 0
+	for (const SceneGraphNode &node : sceneGraph) {
+		priv::NBTCompound blockStates;
+		blockStates.put("data", 0); // parseBlockStates
+		blockStates.put("palette", 0); // parsePaletteList
+
+		priv::NBTCompound section;
+		section.put("Y", (int8_t)0);
+		section.put("block_states", priv::NamedBinaryTag(core::move(blockStates)));
+
+		sections.emplace_back(core::move(section));
+	}
+	return true;
+#else
+	return false;
+#endif
+}
+
+#undef wrapBool
 
 } // namespace voxelformat
