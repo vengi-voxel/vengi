@@ -437,6 +437,10 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 	return true;
 }
 
+bool MCRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	return false;
+}
+
 #undef wrap
 
 } // namespace voxelformat
