@@ -629,7 +629,7 @@ void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	video_trace_scoped(MapBuffer);
 	const int modeIndex = core::enumVal(mode);
 	const GLenum glMode = _priv::AccessModes[modeIndex];
-	if (hasFeature(Feature::DirectStateAccess)) {
+	if (useFeature(Feature::DirectStateAccess)) {
 		void* data = glMapNamedBuffer(handle, glMode);
 		checkError();
 		return data;
@@ -647,7 +647,7 @@ void* mapBufferRange(Id handle, intptr_t offset, size_t length, BufferType type,
 	video_trace_scoped(MapBuffer);
 	const int modeIndex = core::enumVal(mode);
 	const GLenum glMode = _priv::AccessModes[modeIndex];
-	if (hasFeature(Feature::DirectStateAccess)) {
+	if (useFeature(Feature::DirectStateAccess)) {
 		void* data = glMapNamedBufferRange(handle, (GLintptr)offset, (GLsizeiptr)length, glMode);
 		checkError();
 		return data;
@@ -665,7 +665,7 @@ void unmapBuffer(Id handle, BufferType type) {
 	video_trace_scoped(UnmapBuffer);
 	const int typeIndex = core::enumVal(type);
 	const GLenum glType = _priv::BufferTypes[typeIndex];
-	if (hasFeature(Feature::DirectStateAccess)) {
+	if (useFeature(Feature::DirectStateAccess)) {
 		glUnmapNamedBuffer(handle);
 	} else {
 		bindBuffer(type, handle);
@@ -727,7 +727,7 @@ bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 
 void genBuffers(uint8_t amount, Id* ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
-	if (hasFeature(Feature::DirectStateAccess)) {
+	if (useFeature(Feature::DirectStateAccess)) {
 		glCreateBuffers((GLsizei)amount, (GLuint*)ids);
 		checkError();
 	} else {
@@ -1006,7 +1006,7 @@ Id genOcclusionQuery() {
 }
 
 Id genTransformFeedback() {
-	if (!hasFeature(Feature::TransformFeedback)) {
+	if (!useFeature(Feature::TransformFeedback)) {
 		return InvalidId;
 	}
 	GLuint id;
@@ -1041,7 +1041,7 @@ bool bindTransformFeedback(Id id) {
 }
 
 bool bindTransforFeebackBuffer(int index, Id bufferId) {
-	if (!hasFeature(Feature::TransformFeedback)) {
+	if (!useFeature(Feature::TransformFeedback)) {
 		return false;
 	}
 	// the buffer must be of type GL_TRANSFORM_FEEDBACK_BUFFER
@@ -1053,7 +1053,7 @@ bool bindTransforFeebackBuffer(int index, Id bufferId) {
 }
 
 bool beginTransformFeedback(Primitive primitive) {
-	if (!hasFeature(Feature::TransformFeedback)) {
+	if (!useFeature(Feature::TransformFeedback)) {
 		return false;
 	}
 	const GLenum glMode = _priv::Primitives[core::enumVal(primitive)];
@@ -1065,21 +1065,21 @@ bool beginTransformFeedback(Primitive primitive) {
 }
 
 void pauseTransformFeedback() {
-	if (!hasFeature(Feature::TransformFeedback)) {
+	if (!useFeature(Feature::TransformFeedback)) {
 		return;
 	}
 	glPauseTransformFeedback();
 }
 
 void resumeTransformFeedback() {
-	if (!hasFeature(Feature::TransformFeedback)) {
+	if (!useFeature(Feature::TransformFeedback)) {
 		return;
 	}
 	glResumeTransformFeedback();
 }
 
 void endTransformFeedback() {
-	if (!hasFeature(Feature::TransformFeedback)) {
+	if (!useFeature(Feature::TransformFeedback)) {
 		return;
 	}
 	glEndTransformFeedback();
@@ -1248,7 +1248,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 			"Given size %i exceeds the max allowed of %i", (int)size, limit(Limit::MaxUniformBufferSize));
 	const GLuint lid = (GLuint)handle;
 	const GLenum usage = _priv::BufferModes[core::enumVal(mode)];
-	if (hasFeature(Feature::DirectStateAccess)) {
+	if (useFeature(Feature::DirectStateAccess)) {
 		glNamedBufferData(lid, (GLsizeiptr)size, data, usage);
 		checkError();
 	} else {
@@ -1292,7 +1292,7 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 		return;
 	}
 	const int typeIndex = core::enumVal(type);
-	if (hasFeature(Feature::DirectStateAccess)) {
+	if (useFeature(Feature::DirectStateAccess)) {
 		const GLuint lid = (GLuint)handle;
 		glNamedBufferSubData(lid, (GLintptr)offset, (GLsizeiptr)size, data);
 		checkError();
@@ -1601,7 +1601,7 @@ void enableDebug(DebugSeverity severity) {
 	if (severity == DebugSeverity::None) {
 		return;
 	}
-	if (!hasFeature(Feature::DebugOutput)) {
+	if (!useFeature(Feature::DebugOutput)) {
 		Log::warn("No debug feature support was detected");
 		return;
 	}
@@ -1693,7 +1693,7 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 
 bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode, const core::List<core::String>& varyings) {
 	video_trace_scoped(BindTransformFeedbackVaryings);
-	if (!hasFeature(Feature::TransformFeedback)) {
+	if (!useFeature(Feature::TransformFeedback)) {
 		return false;
 	}
 	if (varyings.empty() || mode == TransformFeedbackCaptureMode::Max) {
@@ -2003,8 +2003,10 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		Log::debug("Activated vsync");
 	}
 
-	if (hasFeature(Feature::DirectStateAccess)) {
+	if (useFeature(Feature::DirectStateAccess)) {
 		Log::debug("Use direct state access");
+	} else {
+		Log::debug("No direct state access");
 	}
 
 	int contextFlags = 0;
