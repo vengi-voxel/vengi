@@ -68,6 +68,7 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 			const priv::NamedBinaryTag &nbt = blockIds.get(core::String::format("%i", i));
 			const core::String *value = nbt.string();
 			if (value == nullptr) {
+				Log::warn("Empty string in BlockIDs for %i", i);
 				continue;
 			}
 			// skip minecraft:
@@ -75,9 +76,9 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 			auto iter = map.find(key);
 			if (iter == map.end()) {
 				Log::warn("Could not find a color mapping for '%s'", key.c_str());
-				mcpal[paletteEntry] = 1; // map to stone
+				mcpal[i] = 1; // map to stone
 			} else {
-				mcpal[paletteEntry] = iter->value.palIdx;
+				mcpal[i] = iter->value.palIdx;
 			}
 			++paletteEntry;
 		}
