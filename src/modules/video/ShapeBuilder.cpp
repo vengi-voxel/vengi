@@ -104,7 +104,10 @@ void ShapeBuilder::line(const glm::vec3& start, const glm::vec3& end, float thic
 	}
 }
 
-void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs) {
+void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuilderCube sides) {
+	if (sides == ShapeBuilderCube::None) {
+		return;
+	}
 	setPrimitive(Primitive::Triangles);
 
 	// indices
@@ -123,24 +126,30 @@ void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs) {
 	addVertex(glm::vec3(maxs.x, maxs.y, mins.z));
 	addVertex(glm::vec3(mins.x, maxs.y, mins.z));
 
-	// front
-	addIndex(startIndex + 0, startIndex + 1, startIndex + 2);
-	addIndex(startIndex + 2, startIndex + 3, startIndex + 0);
-	// right
-	addIndex(startIndex + 1, startIndex + 5, startIndex + 6);
-	addIndex(startIndex + 6, startIndex + 2, startIndex + 1);
-	// back
-	addIndex(startIndex + 7, startIndex + 6, startIndex + 5);
-	addIndex(startIndex + 5, startIndex + 4, startIndex + 7);
-	// left
-	addIndex(startIndex + 4, startIndex + 0, startIndex + 3);
-	addIndex(startIndex + 3, startIndex + 7, startIndex + 4);
-	// bottom
-	addIndex(startIndex + 4, startIndex + 5, startIndex + 1);
-	addIndex(startIndex + 1, startIndex + 0, startIndex + 4);
-	// top
-	addIndex(startIndex + 3, startIndex + 2, startIndex + 6);
-	addIndex(startIndex + 6, startIndex + 7, startIndex + 3);
+	if ((sides & ShapeBuilderCube::Front) == ShapeBuilderCube::Front) {
+		addIndex(startIndex + 0, startIndex + 1, startIndex + 2);
+		addIndex(startIndex + 2, startIndex + 3, startIndex + 0);
+	}
+	if ((sides & ShapeBuilderCube::Right) == ShapeBuilderCube::Right) {
+		addIndex(startIndex + 1, startIndex + 5, startIndex + 6);
+		addIndex(startIndex + 6, startIndex + 2, startIndex + 1);
+	}
+	if ((sides & ShapeBuilderCube::Back) == ShapeBuilderCube::Back) {
+		addIndex(startIndex + 7, startIndex + 6, startIndex + 5);
+		addIndex(startIndex + 5, startIndex + 4, startIndex + 7);
+	}
+	if ((sides & ShapeBuilderCube::Left) == ShapeBuilderCube::Left) {
+		addIndex(startIndex + 4, startIndex + 0, startIndex + 3);
+		addIndex(startIndex + 3, startIndex + 7, startIndex + 4);
+	}
+	if ((sides & ShapeBuilderCube::Bottom) == ShapeBuilderCube::Bottom) {
+		addIndex(startIndex + 4, startIndex + 5, startIndex + 1);
+		addIndex(startIndex + 1, startIndex + 0, startIndex + 4);
+	}
+	if ((sides & ShapeBuilderCube::Top) == ShapeBuilderCube::Top) {
+		addIndex(startIndex + 3, startIndex + 2, startIndex + 6);
+		addIndex(startIndex + 6, startIndex + 7, startIndex + 3);
+	}
 }
 
 void ShapeBuilder::aabb(const math::AABB<float>& aabb, bool renderGrid, float stepWidth) {

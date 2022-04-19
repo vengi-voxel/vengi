@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Enum.h"
 #include "math/AABB.h"
 #include "math/Plane.h"
 #include "ui/imgui/IconsFontAwesome5.h"
@@ -15,6 +16,18 @@
 namespace video {
 
 class Camera;
+
+enum class ShapeBuilderCube {
+	None = 0,
+	Front = 1 << 0,
+	Right = 1 << 1,
+	Back = 1 << 2,
+	Left = 1 << 3,
+	Bottom = 1 << 5,
+	Top = 1 << 6,
+	All = Front | Right | Back | Left | Bottom | Top
+};
+CORE_ENUM_BIT_OPERATIONS(ShapeBuilderCube);
 
 /**
  * @brief Generates primitives and allows to generate geometry from other types like @c AABB,
@@ -99,7 +112,7 @@ public:
 	 */
 	void cone(float baseRadius, float length, int slices = 20);
 
-	void cube(const glm::vec3& mins, const glm::vec3& maxs);
+	void cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuilderCube sides = ShapeBuilderCube::All);
 
 	void line(const glm::vec3& start, const glm::vec3& end, float thickness = 1.0f);
 
