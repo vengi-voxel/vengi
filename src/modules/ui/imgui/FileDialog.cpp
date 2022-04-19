@@ -385,7 +385,7 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 		if (!ImGui::IsPopupOpen(title)) {
 			ImGui::OpenPopup(title);
 		}
-		_showHidden = core::Var::getSafe(cfg::UIShowHidden);
+		_showHidden = core::Var::getSafe(cfg::UIFileDialogShowHidden);
 		if (ImGui::BeginPopupModal(title, open)) {
 			if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 				ImGui::CloseCurrentPopup();

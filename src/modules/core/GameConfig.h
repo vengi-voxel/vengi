@@ -34,7 +34,7 @@ constexpr const char *UILastDirectory = "ui_lastdirectory";
 constexpr const char *UILastFilter = "ui_lastfilter";
 constexpr const char *UIStyle = "ui_style";
 // filedialog
-constexpr const char *UIShowHidden = "ui_showhidden";
+constexpr const char *UIFileDialogShowHidden = "ui_filedialogshowhidden";
 constexpr const char *UINotifyDismissMillis = "ui_notifydismiss";
 constexpr const char *UIBookmarks = "ui_bookmarks";
 
