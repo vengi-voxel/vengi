@@ -3,14 +3,34 @@
  */
 
 #include "Renderer.h"
+#include "core/Enum.h"
 #include "core/Log.h"
 #include "core/Assert.h"
 #include <SDL_video.h>
 #include "TextureConfig.h"
 #include "StencilConfig.h"
+#include "core/Var.h"
 #include "image/Image.h"
 
 namespace video {
+
+static const char *featuresArray[] = {
+	"r_texturecompressiondxt",	"r_texturecompressionpvrtc",
+	"r_texturecompressionetc2", "r_texturecompressionatc",
+	"r_texturefloat",			"r_texturehalffloat",
+	"r_instancedarrays",		"r_debugoutput",
+	"r_directstateaccess",		"r_bufferstorage",
+	"r_multidrawindirect",		"r_computeshaders",
+	"r_transformfeedback",		"r_shaderstoragebufferobject"
+};
+static_assert(core::enumVal(Feature::Max) == (int)SDL_arraysize(featuresArray), "Array sizes don't match with Feature enum");
+static core::VarPtr featureVars[core::enumVal(Feature::Max)];
+
+void construct() {
+	for (int i = 0; i < core::enumVal(Feature::Max); ++i) {
+		featureVars[i] = core::Var::get(featuresArray[i], "true", "Renderer feature cvar", core::Var::boolValidator);
+	}
+}
 
 DataType mapIndexTypeBySize(size_t size) {
 	if (size == 4u) {
@@ -101,5 +121,17 @@ bool checkLimit(int amount, Limit l) {
 	}
 	return v >= amount;
 }
+
+bool useFeature(Feature feature) {
+	if (!hasFeature(feature)) {
+		return false;
+	}
+	const core::VarPtr& v = featureVars[core::enumVal(feature)];
+	if (!v) {
+		return true;
+	}
+	return v->boolVal();
+}
+
 
 }

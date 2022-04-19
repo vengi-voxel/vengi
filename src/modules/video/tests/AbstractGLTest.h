@@ -65,6 +65,7 @@ public:
 		app::AbstractTest::SetUp();
 		SDL_Init(SDL_INIT_VIDEO);
 		video::setup();
+		video::construct();
 		_window = SDL_CreateWindow("test", 0, 0, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
 		if (_window != nullptr) {
 			_ctx = video::createContext(_window);

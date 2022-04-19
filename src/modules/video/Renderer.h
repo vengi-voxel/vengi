@@ -141,6 +141,7 @@ struct RenderState {
 
 extern RenderState& renderState();
 
+extern void construct();
 /**
  * @brief Prepare the renderer initialization
  * @sa init()
@@ -382,6 +383,8 @@ inline void drawElementsBaseVertex(Primitive mode, size_t numIndices, int baseIn
 inline bool hasFeature(Feature feature) {
 	return renderState().supports(feature);
 }
+
+extern bool useFeature(Feature feature);
 
 inline int limit(Limit l) {
 	return renderState().limit(l);

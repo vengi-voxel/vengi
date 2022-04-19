@@ -423,6 +423,8 @@ app::AppState WindowedApp::onConstruct() {
 		minimize();
 	});
 
+	video::construct();
+
 	_keybindingHandler.construct();
 
 	return state;
