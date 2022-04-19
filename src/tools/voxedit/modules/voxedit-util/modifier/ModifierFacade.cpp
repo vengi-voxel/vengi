@@ -25,11 +25,6 @@ bool ModifierFacade::setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos)
 	return false;
 }
 
-void ModifierFacade::setCursorVoxel(const voxel::Voxel& voxel) {
-	Super::setCursorVoxel(voxel);
-	_modifierRenderer.updateCursor(voxel);
-}
-
 void ModifierFacade::render(const video::Camera& camera) {
 	if (_aabbMode) {
 		static glm::ivec3 lastCursor = aabbPosition();
@@ -64,6 +59,7 @@ void ModifierFacade::render(const video::Camera& camera) {
 	}
 	const glm::mat4& translate = glm::translate(glm::vec3(aabbPosition()));
 	const glm::mat4& scale = glm::scale(translate, glm::vec3(_gridResolution));
+	_modifierRenderer.updateCursor(_cursorVoxel, _face);
 	_modifierRenderer.render(camera, scale);
 	if (_selectionValid) {
 		_modifierRenderer.renderSelection(camera);

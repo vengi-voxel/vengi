@@ -22,7 +22,6 @@ public:
 	bool select(const glm::ivec3& mins, const glm::ivec3& maxs) override;
 	void unselect() override;
 
-	void setCursorVoxel(const voxel::Voxel& voxel) override;
 	bool setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) override;
 	void render(const video::Camera& camera);
 };

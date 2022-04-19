@@ -7,6 +7,7 @@
 #include "math/Axis.h"
 #include "video/Camera.h"
 #include "video/ScopedPolygonMode.h"
+#include "video/ShapeBuilder.h"
 #include "voxedit-util/SceneManager.h"
 #include "../AxisUtil.h"
 #include "voxedit-util/modifier/Selection.h"
@@ -31,12 +32,35 @@ void ModifierRenderer::shutdown() {
 	_shapeBuilder.shutdown();
 }
 
-void ModifierRenderer::updateCursor(const voxel::Voxel& voxel) {
+void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames face) {
 	_shapeBuilder.clear();
 	const voxel::Palette &palette = voxel::getPalette();
 	const glm::vec4& color = core::Color::fromRGBA(palette.colors[voxel.getColor()]);
+	video::ShapeBuilderCube flags = video::ShapeBuilderCube::All;
+	switch (face) {
+	case voxel::FaceNames::PositiveX:
+		flags = video::ShapeBuilderCube::Left;
+		break;
+	case voxel::FaceNames::PositiveY:
+		flags = video::ShapeBuilderCube::Bottom;
+		break;
+	case voxel::FaceNames::PositiveZ:
+		flags = video::ShapeBuilderCube::Back;
+		break;
+	case voxel::FaceNames::NegativeX:
+		flags = video::ShapeBuilderCube::Right;
+		break;
+	case voxel::FaceNames::NegativeY:
+		flags = video::ShapeBuilderCube::Top;
+		break;
+	case voxel::FaceNames::NegativeZ:
+		flags = video::ShapeBuilderCube::Front;
+		break;
+	case voxel::FaceNames::Max:
+		break;
+	}
 	_shapeBuilder.setColor(core::Color::alpha(core::Color::darker(color), 0.6f));
-	_shapeBuilder.cube(glm::vec3(-0.01f), glm::vec3(1.01f));
+	_shapeBuilder.cube(glm::vec3(-0.01f), glm::vec3(1.01f), flags);
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
 

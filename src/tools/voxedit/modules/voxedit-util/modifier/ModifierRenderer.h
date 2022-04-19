@@ -9,6 +9,7 @@
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "../modifier/Selection.h"
+#include "voxel/Face.h"
 #include "voxel/Voxel.h"
 
 namespace voxedit {
@@ -35,7 +36,7 @@ public:
 							  const glm::vec3 &maxsMirror);
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos);
 	void updateSelectionBuffers(const Selection &selection);
-	void updateCursor(const voxel::Voxel &voxel);
+	void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face);
 };
 
 }
