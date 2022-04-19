@@ -18,12 +18,14 @@ General:
    - Added support for new magicavoxel format (animations)
    - Preserve node hierarchie when saving vxr
    - GLTF voxelization
+   - Allow to disable certain renderer features
 
 VoxEdit:
 
    - Fixed start problems on some systems with multisampled framebuffers
    - Allow to drag and drop colors from the palette
    - Change between the edit and scene mode is now bound to `tab`
+   - Updated imguizmo to support clicking the view cube
 
 VoxConvert:
 
