@@ -9,7 +9,7 @@
 namespace voxel {
 
 enum class FaceNames {
-	PositiveX, PositiveY, PositiveZ, NegativeX, NegativeY, NegativeZ, Max
+	PositiveX = 0, PositiveY = 1, PositiveZ = 2, NegativeX = 3, NegativeY = 4, NegativeZ = 5, Max
 };
 
 inline bool isHorizontalFace(FaceNames face) {
