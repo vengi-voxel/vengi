@@ -431,7 +431,7 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 				Log::debug("Could not find a color mapping for '%s'", key.c_str());
 				sectionPal.pal[paletteEntry] = -1;
 			} else {
-				sectionPal.pal[paletteEntry] = iter->value;
+				sectionPal.pal[paletteEntry] = iter->value.palIdx;
 			}
 		}
 		++paletteEntry;

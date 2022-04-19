@@ -77,7 +77,7 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 				Log::warn("Could not find a color mapping for '%s'", key.c_str());
 				mcpal[paletteEntry] = 1; // map to stone
 			} else {
-				mcpal[paletteEntry] = iter->value;
+				mcpal[paletteEntry] = iter->value.palIdx;
 			}
 			++paletteEntry;
 		}
