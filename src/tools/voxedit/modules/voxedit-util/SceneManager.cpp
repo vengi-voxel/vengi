@@ -27,6 +27,7 @@
 #include "voxedit-ui/LayerPanel.h"
 #include "voxedit-util/MementoHandler.h"
 #include "voxel/Face.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeMoveWrapper.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -1081,9 +1082,6 @@ void SceneManager::construct() {
 	}).setHelp("Executes a lua script to modify the current active volume")
 		.setArgumentCompleter(voxelgenerator::scriptCompleter(io::filesystem()));
 
-	core::Var::get(cfg::VoxEditLastPalette, "nippon");
-	_showAabbVar = core::Var::getSafe(cfg::VoxEditShowaabb);
-
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		command::Command::registerActionButton(
 				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
@@ -1642,6 +1640,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Duplicates the current node or the given node id");
 
+	_showAabbVar = core::Var::getSafe(cfg::VoxEditShowaabb);
 	_grayInactive = core::Var::getSafe(cfg::VoxEditGrayInactive);
 	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
 }
@@ -1708,13 +1707,16 @@ bool SceneManager::init() {
 		return true;
 	}
 
-	const char *paletteName = core::Var::getSafe(cfg::VoxEditLastPalette)->strVal().c_str();
+	core::String paletteName = core::Var::getSafe(cfg::VoxEditLastPalette)->strVal();
+	if (paletteName.empty()) {
+		paletteName = voxel::Palette::getDefaultPaletteName();
+	}
 	voxel::Palette palette;
-	if (!palette.load(paletteName)) {
+	if (!palette.load(paletteName.c_str())) {
 		Log::warn("Failed to load the palette data");
 	}
 	if (!voxel::initPalette(palette)) {
-		Log::warn("Failed to initialize the palette data for %s, falling back to default", paletteName);
+		Log::warn("Failed to initialize the palette data for %s, falling back to default", paletteName.c_str());
 		if (!voxel::initDefaultPalette()) {
 			Log::error("Failed to initialize the palette data");
 			return false;

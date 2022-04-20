@@ -19,6 +19,10 @@ protected:
 			video::ShaderVarState state;
 			setShaderVars(state);
 			core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
+			core::Var::get(cfg::VoxEditShowaabb, "");
+			core::Var::get(cfg::VoxEditGrayInactive, "");
+			core::Var::get(cfg::VoxEditHideInactive, "");
+			core::Var::get(cfg::VoxEditLastPalette, "");
 			construct();
 			ASSERT_TRUE(init());
 
