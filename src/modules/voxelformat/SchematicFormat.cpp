@@ -74,7 +74,7 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 			const core::String key = value->contains("minecraft:") ? value->substr(10) : *value;
 			auto iter = map.find(key);
 			if (iter == map.end()) {
-				Log::debug("Could not find a color mapping for '%s'", key.c_str());
+				Log::warn("Could not find a color mapping for '%s'", key.c_str());
 				mcpal[paletteEntry] = 1; // map to stone
 			} else {
 				mcpal[paletteEntry] = iter->value;
