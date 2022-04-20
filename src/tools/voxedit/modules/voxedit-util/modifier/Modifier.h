@@ -202,7 +202,10 @@ inline voxel::FaceNames Modifier::cursorFace() const {
 	return _face;
 }
 
-inline void Modifier::setCursorVoxel(const voxel::Voxel& voxel) {
+inline void Modifier::setCursorVoxel(const voxel::Voxel &voxel) {
+	if (voxel::isAir(voxel.getMaterial())) {
+		return;
+	}
 	_cursorVoxel = voxel;
 }
 
