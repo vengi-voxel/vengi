@@ -3,6 +3,7 @@
  */
 
 #include "ModifierFacade.h"
+#include "voxel/Face.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
@@ -59,7 +60,7 @@ void ModifierFacade::render(const video::Camera& camera) {
 	}
 	const glm::mat4& translate = glm::translate(glm::vec3(aabbPosition()));
 	const glm::mat4& scale = glm::scale(translate, glm::vec3(_gridResolution));
-	_modifierRenderer.updateCursor(_cursorVoxel, _face);
+	_modifierRenderer.updateCursor(_cursorVoxel, _gridResolution == 1 ? _face : voxel::FaceNames::Max);
 	_modifierRenderer.render(camera, scale);
 	if (_selectionValid) {
 		_modifierRenderer.renderSelection(camera);
