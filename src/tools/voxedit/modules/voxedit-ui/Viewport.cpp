@@ -45,11 +45,11 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	_controller.setMode(ViewportController::SceneCameraMode::Free);
 	resetCamera();
 
-	_modelSpaceVar = core::Var::get(cfg::VoxEditModelSpace, "1");
-	_showAxisVar = core::Var::get(cfg::VoxEditShowaxis, "1", "Show the axis", core::Var::boolValidator);
-	_guizmoRotation = core::Var::get(cfg::VoxEditGuizmoRotation, "0", "Activate rotations for the guizmo in scene mode", core::Var::boolValidator);
-	_guizmoAllowAxisFlip = core::Var::get(cfg::VoxEditGuizmoAllowAxisFlip, "1", "Flip axis or stay along the positive world/local axis", core::Var::boolValidator);
-	_guizmoSnap = core::Var::get(cfg::VoxEditGuizmoSnap, "1", "Use the grid size for snap", core::Var::boolValidator);
+	_modelSpaceVar = core::Var::getSafe(cfg::VoxEditModelSpace);
+	_showAxisVar = core::Var::getSafe(cfg::VoxEditShowaxis);
+	_guizmoRotation = core::Var::getSafe(cfg::VoxEditGuizmoRotation);
+	_guizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGuizmoAllowAxisFlip);
+	_guizmoSnap = core::Var::getSafe(cfg::VoxEditGuizmoSnap);
 	return true;
 }
 
