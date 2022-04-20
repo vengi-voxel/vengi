@@ -1480,9 +1480,7 @@ void SceneManager::construct() {
 		const glm::ivec3& cursorPos = _modifier.cursorPosition();
 		if (const voxel::RawVolume *v = activeVolume()) {
 			const voxel::Voxel& voxel = v->voxel(cursorPos);
-			if (!voxel::isAir(voxel.getMaterial())) {
-				_modifier.setCursorVoxel(voxel);
-			}
+			_modifier.setCursorVoxel(voxel);
 		}
 	}).setHelp("Pick the current selected color from current cursor voxel");
 
