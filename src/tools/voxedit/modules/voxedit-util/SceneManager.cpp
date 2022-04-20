@@ -2102,11 +2102,10 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	if (!region.containsPoint(pos)) {
 		pos = region.moveInto(pos.x, pos.y, pos.z);
 	}
+	_modifier.setCursorPosition(pos, _result.hitFace);
 	if (oldCursorPos == pos) {
 		return;
 	}
-	_modifier.setCursorPosition(pos, _result.hitFace);
-
 	updateLockedPlane(math::Axis::X);
 	updateLockedPlane(math::Axis::Y);
 	updateLockedPlane(math::Axis::Z);
