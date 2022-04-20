@@ -42,6 +42,7 @@
 #include "voxelformat/VoxFormat.h"
 #include "voxelgenerator/TreeGenerator.h"
 #include "voxelutil/Picking.h"
+#include "voxelutil/Raycast.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeMover.h"
@@ -2183,6 +2184,7 @@ bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
 
 	_result.didHit = false;
 	_result.validPreviousPosition = false;
+	_result.firstInvalidPosition = false;
 	_result.firstValidPosition = false;
 	_result.direction = ray.direction;
 	_result.hitFace = voxel::FaceNames::Max;
@@ -2221,9 +2223,17 @@ bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
 
 			_result.validPreviousPosition = true;
 			_result.previousPosition = sampler.position();
+		} else if (_result.firstValidPosition && !_result.firstInvalidPosition) {
+			_result.firstInvalidPosition = true;
+			_result.hitVoxel = sampler.position();
+			return false;
 		}
 		return true;
 	});
+
+	if (_result.firstInvalidPosition) {
+		_result.hitFace = voxel::raycastFaceDetection(ray.origin, ray.direction, _result.hitVoxel, 0.0f, 1.0f);
+	}
 
 	if (_modifier.modifierTypeRequiresExistingVoxel()) {
 		if (_result.didHit) {

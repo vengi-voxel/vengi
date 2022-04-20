@@ -24,6 +24,7 @@ struct PickResult {
 	/** Indicates whether @c firstPosition is valid */
 	bool firstValidPosition = false;
 	bool validPreviousPosition = false;
+	bool firstInvalidPosition = false;
 
 	/** The location of the solid voxel it hit */
 	glm::ivec3 hitVoxel;
