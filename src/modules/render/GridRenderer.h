@@ -34,7 +34,7 @@ protected:
 	int32_t _gridMeshIndexYZNear = -1;
 	int32_t _gridMeshIndexYZFar = -1;
 
-	int _resolution = 4;
+	int _resolution = 1;
 	bool _renderAABB;
 	bool _renderGrid;
 	bool _dirty = false;

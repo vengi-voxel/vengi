@@ -115,7 +115,7 @@ bool MainWindow::init() {
 	_showAabbVar = core::Var::getSafe(cfg::VoxEditShowaabb);
 	_renderShadowVar = core::Var::get(cfg::VoxEditRendershadow, "1", "Render with shadows", core::Var::boolValidator);
 	_animationSpeedVar = core::Var::get(cfg::VoxEditAnimationSpeed, "100", "Millisecond delay between frames");
-	_gridSizeVar = core::Var::get(cfg::VoxEditGridsize, "4", "The size of the voxel grid", [](const core::String &val) {
+	_gridSizeVar = core::Var::get(cfg::VoxEditGridsize, "1", "The size of the voxel grid", [](const core::String &val) {
 		const int intVal = core::string::toInt(val);
 		return intVal >= 1 && intVal <= 64;
 	});
