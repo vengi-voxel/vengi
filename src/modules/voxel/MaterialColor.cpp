@@ -7,6 +7,7 @@
 #include "core/Enum.h"
 #include "core/Color.h"
 #include "core/GLM.h"
+#include "core/Var.h"
 #include "io/Filesystem.h"
 #include "core/StringUtil.h"
 #include "core/Assert.h"
@@ -213,7 +214,8 @@ bool overridePalette(const voxel::Palette &palette) {
 
 bool initDefaultPalette() {
 	Palette palette;
-	if (!palette.load(Palette::getDefaultPaletteName())) {
+	const core::String &defaultPalette = core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName())->strVal();
+	if (!palette.load(defaultPalette.c_str())) {
 		if (!palette.magicaVoxel()) {
 			return false;
 		}
