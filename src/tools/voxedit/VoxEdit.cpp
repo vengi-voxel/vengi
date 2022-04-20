@@ -69,6 +69,19 @@ app::AppState VoxEdit::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_framesPerSecondsCap->setVal(60.0f);
 
+	core::Var::get(cfg::VoxEditShowgrid, "1", "Show the grid", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditModelSpace, "1", "Model space", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditShowlockedaxis, "1", "Show the currently locked axis", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditShowaabb, "0", "Show the axis aligned bounding box", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditRendershadow, "1", "Render with shadows", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditAnimationSpeed, "100", "Millisecond delay between frames");
+	core::Var::get(cfg::VoxEditGridsize, "1", "The size of the voxel grid", [](const core::String &val) {
+		const int intVal = core::string::toInt(val);
+		return intVal >= 1 && intVal <= 64;
+	});
+	core::Var::get(cfg::VoxEditLastFile, "");
+	core::Var::get(cfg::VoxEditLastFiles, "");
+
 	_paletteFormats[0] = {"Image", "png", nullptr, 0u};
 	int formatIndex = 1;
 	for (const io::FormatDescription* desc = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD; desc->name != nullptr; ++desc) {

@@ -1082,7 +1082,7 @@ void SceneManager::construct() {
 		.setArgumentCompleter(voxelgenerator::scriptCompleter(io::filesystem()));
 
 	core::Var::get(cfg::VoxEditLastPalette, "nippon");
-	_showAabbVar = core::Var::get(cfg::VoxEditShowaabb, "0", "Show the axis aligned bounding box", core::Var::boolValidator);
+	_showAabbVar = core::Var::getSafe(cfg::VoxEditShowaabb);
 
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		command::Command::registerActionButton(

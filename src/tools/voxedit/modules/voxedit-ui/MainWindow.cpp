@@ -109,18 +109,15 @@ bool MainWindow::init() {
 	_sceneAnimation->init(voxedit::ViewportController::RenderMode::Animation);
 	_sceneAnimation->controller().setMode(voxedit::ViewportController::SceneCameraMode::Free);
 
-	_showGridVar = core::Var::get(cfg::VoxEditShowgrid, "1", "Show the grid", core::Var::boolValidator);
-	_modelSpaceVar = core::Var::get(cfg::VoxEditModelSpace, "1", "Model space", core::Var::boolValidator);
-	_showLockedAxisVar = core::Var::get(cfg::VoxEditShowlockedaxis, "1", "Show the currently locked axis", core::Var::boolValidator);
+	_showGridVar = core::Var::getSafe(cfg::VoxEditShowgrid);
+	_modelSpaceVar = core::Var::getSafe(cfg::VoxEditModelSpace);
+	_showLockedAxisVar = core::Var::getSafe(cfg::VoxEditShowlockedaxis);
 	_showAabbVar = core::Var::getSafe(cfg::VoxEditShowaabb);
-	_renderShadowVar = core::Var::get(cfg::VoxEditRendershadow, "1", "Render with shadows", core::Var::boolValidator);
-	_animationSpeedVar = core::Var::get(cfg::VoxEditAnimationSpeed, "100", "Millisecond delay between frames");
-	_gridSizeVar = core::Var::get(cfg::VoxEditGridsize, "1", "The size of the voxel grid", [](const core::String &val) {
-		const int intVal = core::string::toInt(val);
-		return intVal >= 1 && intVal <= 64;
-	});
-	_lastOpenedFile = core::Var::get(cfg::VoxEditLastFile, "");
-	_lastOpenedFiles = core::Var::get(cfg::VoxEditLastFiles, "");
+	_renderShadowVar = core::Var::getSafe(cfg::VoxEditRendershadow);
+	_animationSpeedVar = core::Var::getSafe(cfg::VoxEditAnimationSpeed);
+	_gridSizeVar = core::Var::getSafe(cfg::VoxEditGridsize);
+	_lastOpenedFile = core::Var::getSafe(cfg::VoxEditLastFile);
+	_lastOpenedFiles = core::Var::getSafe(cfg::VoxEditLastFiles);
 	loadLastOpenedFiles(_lastOpenedFiles->strVal());
 
 	SceneManager &mgr = sceneMgr();
