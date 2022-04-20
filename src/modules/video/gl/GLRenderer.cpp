@@ -693,6 +693,7 @@ uint8_t *bufferStorage(BufferType type, size_t size) {
 	if (_priv::s.bufferHandle[typeIndex] == InvalidId) {
 		return nullptr;
 	}
+	core_assert(useFeature(Feature::BufferStorage));
 	const GLbitfield storageFlags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
 	glBufferStorage(GL_ARRAY_BUFFER, (GLsizeiptr)size, nullptr, storageFlags);
 

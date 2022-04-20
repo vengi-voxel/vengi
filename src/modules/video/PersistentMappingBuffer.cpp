@@ -12,6 +12,9 @@ PersistentMappingBuffer::PersistentMappingBuffer(size_t size) :
 }
 
 bool PersistentMappingBuffer::init() {
+	if (!useFeature(Feature::BufferStorage)) {
+		return false;
+	}
 	_handle = video::genBuffer();
 	if (_handle == video::InvalidId) {
 		return false;
