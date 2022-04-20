@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include "command/Command.h"
 #include "voxel/Region.h"
+#include "voxel/Voxel.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "../AxisUtil.h"
 #include "../CustomBindingContext.h"
@@ -110,8 +111,8 @@ void Modifier::reset() {
 	_mirrorPos = glm::ivec3(0);
 	_cursorPosition = glm::ivec3(0);
 	_face = voxel::FaceNames::Max;
-	_cursorVoxel = voxel::Voxel();
 	_shapeType = ShapeType::AABB;
+	setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 0));
 }
 
 glm::ivec3 Modifier::aabbPosition() const {

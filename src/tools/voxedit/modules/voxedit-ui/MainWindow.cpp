@@ -135,9 +135,6 @@ bool MainWindow::init() {
 		}
 		afterLoad("");
 	}
-
-	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
-	mgr.modifier().setCursorVoxel(voxel);
 	return true;
 }
 
