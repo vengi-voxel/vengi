@@ -34,6 +34,7 @@
 #include <SDL.h>
 #include "core/collection/DynamicArray.h"
 #include "video/Trace.h"
+#include "video/Types.h"
 #include "video/gl/flextGL.h"
 #ifdef TRACY_ENABLE
 #include "core/tracy/TracyOpenGL.hpp"
@@ -48,7 +49,6 @@ static RenderState s;
 #endif
 
 #define SANITY_CHECKS_GL 0
-#define DIRECT_STATE_ACCESS 0
 
 static void validate(Id handle) {
 #ifdef DEBUG
@@ -802,7 +802,11 @@ bool waitForSync(IdPtr id) {
 
 void genVertexArrays(uint8_t amount, Id* ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
-	glGenVertexArrays((GLsizei)amount, (GLuint*)ids);
+	if (useFeature(Feature::DirectStateAccess)) {
+		glCreateVertexArrays((GLsizei)amount, (GLuint*)ids);
+	} else {
+		glGenVertexArrays((GLsizei)amount, (GLuint*)ids);
+	}
 	checkError();
 }
 
@@ -879,7 +883,12 @@ void deleteVertexArray(Id& id) {
 
 void genTextures(uint8_t amount, Id* ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
-	glGenTextures((GLsizei)amount, (GLuint*)ids);
+	if (useFeature(Feature::DirectStateAccess)) {
+		const GLenum glUnit = _priv::TextureUnits[core::enumVal(TextureUnit::Upload)];
+		glCreateTextures(glUnit, (GLsizei)amount, (GLuint*)ids);
+	} else {
+		glGenTextures((GLsizei)amount, (GLuint*)ids);
+	}
 	for (int i = 0; i < amount; ++i) {
 		_priv::s.textures.insert(ids[i]);
 	}
@@ -930,7 +939,11 @@ bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t**
 
 void genFramebuffers(uint8_t amount, Id* ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
-	glGenFramebuffers((GLsizei)amount, (GLuint*)ids);
+	if (useFeature(Feature::DirectStateAccess)) {
+		glCreateFramebuffers((GLsizei)amount, (GLuint*)ids);
+	} else {
+		glGenFramebuffers((GLsizei)amount, (GLuint*)ids);
+	}
 	checkError();
 }
 
@@ -958,7 +971,11 @@ void deleteFramebuffers(uint8_t amount, Id* ids) {
 
 void genRenderbuffers(uint8_t amount, Id* ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
-	glGenRenderbuffers((GLsizei)amount, (GLuint*)ids);
+	if (useFeature(Feature::DirectStateAccess)) {
+		glCreateRenderbuffers((GLsizei)amount, (GLuint*)ids);
+	} else {
+		glGenRenderbuffers((GLsizei)amount, (GLuint*)ids);
+	}
 	checkError();
 }
 
@@ -1000,7 +1017,11 @@ void configureAttribute(const Attribute& a) {
 
 Id genOcclusionQuery() {
 	GLuint id;
-	glGenQueries(1, &id);
+	if (useFeature(Feature::DirectStateAccess)) {
+		glCreateQueries(GL_SAMPLES_PASSED, 1, &id);
+	} else {
+		glGenQueries(1, &id);
+	}
 	checkError();
 	return (Id)id;
 }
@@ -1010,7 +1031,11 @@ Id genTransformFeedback() {
 		return InvalidId;
 	}
 	GLuint id;
-	glGenTransformFeedbacks(1, &id);
+	if (useFeature(Feature::DirectStateAccess)) {
+		glCreateTransformFeedbacks(1, &id);
+	} else {
+		glGenTransformFeedbacks(1, &id);
+	}
 	checkError();
 	return (Id)id;
 }
@@ -1252,11 +1277,6 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 		glNamedBufferData(lid, (GLsizeiptr)size, data, usage);
 		checkError();
 	} else {
-#if DIRECT_STATE_ACCESS
-		void *target = mapBuffer(handle, type, AccessMode::Write);
-		core_memcpy(target, data, size);
-		unmapBuffer(handle, type);
-#else
 		const GLenum glType = _priv::BufferTypes[core::enumVal(type)];
 		const Id oldBuffer = boundBuffer(type);
 		const bool changed = bindBuffer(type, handle);
@@ -1269,7 +1289,6 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 				bindBuffer(type, oldBuffer);
 			}
 		}
-#endif
 	}
 	if (_priv::s.vendor[core::enumVal(Vendor::Nouveau)]) {
 		// nouveau needs this if doing the buffer update short before the draw call
@@ -1297,11 +1316,6 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 		glNamedBufferSubData(lid, (GLintptr)offset, (GLsizeiptr)size, data);
 		checkError();
 	} else {
-#if DIRECT_STATE_ACCESS
-		void *target = mapBufferRange(handle, offset, size, type, AccessMode::Write);
-		core_memcpy(target, data, size);
-		unmapBuffer(handle, type);
-#else
 		const GLenum glType = _priv::BufferTypes[typeIndex];
 		const Id oldBuffer = boundBuffer(type);
 		const bool changed = bindBuffer(type, handle);
@@ -1314,7 +1328,6 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 				bindBuffer(type, oldBuffer);
 			}
 		}
-#endif
 	}
 }
 
