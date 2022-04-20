@@ -34,8 +34,6 @@ void ModifierRenderer::shutdown() {
 
 void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames face) {
 	_shapeBuilder.clear();
-	const voxel::Palette &palette = voxel::getPalette();
-	const glm::vec4& color = core::Color::fromRGBA(palette.colors[voxel.getColor()]);
 	video::ShapeBuilderCube flags = video::ShapeBuilderCube::All;
 	switch (face) {
 	case voxel::FaceNames::PositiveX:
@@ -59,8 +57,8 @@ void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames 
 	case voxel::FaceNames::Max:
 		break;
 	}
-	_shapeBuilder.setColor(core::Color::alpha(core::Color::darker(color), 0.6f));
-	_shapeBuilder.cube(glm::vec3(-0.01f), glm::vec3(1.01f), flags);
+	_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.6f));
+	_shapeBuilder.cube(glm::vec3(0.0f), glm::vec3(1.0f), flags);
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
 
