@@ -155,7 +155,7 @@ bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texC
 	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
 
-	const bool retVal = _priv::checkFramebufferStatus();
+	const bool retVal = _priv::checkFramebufferStatus(fbo);
 	bindFramebuffer(prev);
 	return retVal;
 }
@@ -1402,22 +1402,16 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 		}
 		const TextureType textureTarget = colorTextures[i]->type();
 		const GLenum glAttachmentType = _priv::FrameBufferAttachments[i];
-		if (useFeature(Feature::DirectStateAccess)) {
-			if (textureTarget == TextureType::TextureCube) {
-				// TODO glNamedFramebufferTexture2D(_priv::s.framebufferHandle, glAttachmentType, GL_TEXTURE_CUBE_MAP_POSITIVE_X, colorTextures[i]->handle(), 0);
-				checkError();
-			} else {
-				glNamedFramebufferTexture(_priv::s.framebufferHandle, glAttachmentType, colorTextures[i]->handle(), 0);
-				checkError();
-			}
+		const video::Id textureId = colorTextures[i]->handle();
+		if (textureTarget == TextureType::TextureCube) {
+			glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachmentType, GL_TEXTURE_CUBE_MAP_POSITIVE_X, textureId, 0);
+			checkError();
+		} else if (useFeature(Feature::DirectStateAccess)) {
+			glNamedFramebufferTexture(_priv::s.framebufferHandle, glAttachmentType, textureId, 0);
+			checkError();
 		} else {
-			if (textureTarget == TextureType::TextureCube) {
-				glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachmentType, GL_TEXTURE_CUBE_MAP_POSITIVE_X, colorTextures[i]->handle(), 0);
-				checkError();
-			} else {
-				glFramebufferTexture(GL_FRAMEBUFFER, glAttachmentType, colorTextures[i]->handle(), 0);
-				checkError();
-			}
+			glFramebufferTexture(GL_FRAMEBUFFER, glAttachmentType, textureId, 0);
+			checkError();
 		}
 		if (glAttachmentType >= GL_COLOR_ATTACHMENT0 && glAttachmentType <= GL_COLOR_ATTACHMENT15) {
 			attachments.push_back(glAttachmentType);
@@ -1425,7 +1419,11 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 	}
 	if (attachments.empty()) {
 		GLenum buffers[] = {GL_NONE};
-		glDrawBuffers(lengthof(buffers), buffers);
+		if (useFeature(Feature::DirectStateAccess)) {
+			glNamedFramebufferDrawBuffers(_priv::s.framebufferHandle, lengthof(buffers), buffers);
+		} else {
+			glDrawBuffers(lengthof(buffers), buffers);
+		}
 		checkError();
 	} else {
 		if (!checkLimit(attachments.size(), Limit::MaxDrawBuffers)) {
@@ -1433,10 +1431,14 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 			return false;
 		}
 		attachments.sort([] (GLenum lhs, GLenum rhs) { return lhs > rhs; });
-		glDrawBuffers((GLsizei) attachments.size(), attachments.data());
+		if (useFeature(Feature::DirectStateAccess)) {
+			glNamedFramebufferDrawBuffers(_priv::s.framebufferHandle, (GLsizei) attachments.size(), attachments.data());
+		} else {
+			glDrawBuffers((GLsizei) attachments.size(), attachments.data());
+		}
 		checkError();
 	}
-	return _priv::checkFramebufferStatus();
+	return _priv::checkFramebufferStatus(_priv::s.framebufferHandle);
 }
 
 bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool shouldClear) {
@@ -1468,7 +1470,7 @@ bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int
 			clear(ClearFlag::Color);
 		}
 	}
-	if (!_priv::checkFramebufferStatus()) {
+	if (!_priv::checkFramebufferStatus(_priv::s.framebufferHandle)) {
 		return false;
 	}
 	return true;

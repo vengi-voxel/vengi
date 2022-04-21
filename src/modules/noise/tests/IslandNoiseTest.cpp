@@ -54,6 +54,7 @@ protected:
 };
 
 // http://www.redblobgames.com/maps/terrain-from-noise/#elevation
+// https://old.reddit.com/r/proceduralgeneration/comments/kaen7h/new_video_on_procedural_island_noise_generation/gfjmgen/
 TEST_F(IslandNoiseTest, DISABLED_testIslandNoise) {
 	const int components = 4;
 	const int w = 2048;

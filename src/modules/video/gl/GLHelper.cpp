@@ -107,8 +107,13 @@ debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
 	log("GL msg type: %s, src: %s, id: %d, severity: %s\nmsg: %s", typeStr, sourceStr, id, sevStr, message);
 }
 
-bool checkFramebufferStatus() {
-	const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+bool checkFramebufferStatus(video::Id fbo) {
+	GLenum status;
+	if (useFeature(Feature::DirectStateAccess)) {
+		status = glCheckNamedFramebufferStatus(fbo, GL_FRAMEBUFFER);
+	} else {
+		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	}
 	if (status == GL_FRAMEBUFFER_COMPLETE) {
 		return true;
 	}
