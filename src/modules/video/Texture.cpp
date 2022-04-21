@@ -55,7 +55,7 @@ uint8_t* Texture::data() {
 
 void Texture::upload(int width, int height, const uint8_t* data, int index) {
 	if (_handle == InvalidId) {
-		_handle = video::genTexture();
+		_handle = video::genTexture(_config);
 	}
 	_width = width;
 	_height = height;

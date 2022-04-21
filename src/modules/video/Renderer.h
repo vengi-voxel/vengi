@@ -166,7 +166,7 @@ extern void endFrame(SDL_Window* window);
  * @return @c false if no error was found, @c true if an error occurred
  */
 extern bool checkError(bool triggerAssert = true);
-extern bool setupCubemap(Id handle, const image::ImagePtr images[6]);
+extern bool setupCubemap(Id &handle, const image::ImagePtr images[6]);
 extern void readBuffer(GBufferTextureType textureType);
 extern bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, int texCount, Id depthTexture);
 /**
@@ -255,8 +255,8 @@ extern void deleteProgram(Id& id);
 extern Id genProgram();
 extern void deleteVertexArrays(uint8_t amount, Id* ids);
 extern void deleteVertexArray(Id& id);
-extern void genTextures(uint8_t amount, Id* ids);
-extern Id genTexture();
+extern void genTextures(const TextureConfig &cfg, uint8_t amount, Id* ids);
+extern Id genTexture(const TextureConfig &cfg);
 extern const core::Set<Id>& textures();
 extern void deleteTextures(uint8_t amount, Id* ids);
 extern void deleteTexture(Id& id);

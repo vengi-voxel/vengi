@@ -136,6 +136,10 @@ bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texC
 	TextureConfig cfg;
 	// we are going to write vec3 into the out vars in the shaders
 	cfg.format(TextureFormat::RGB32F).filter(TextureFilter::Nearest);
+
+	video::genTextures(cfg, texCount, textures);
+	video::genTextures(cfg, 1, &depthTexture);
+
 	for (size_t i = 0; i < texCount; ++i) {
 		bindTexture(TextureUnit::Upload, cfg.type(), textures[i]);
 		setupTexture(cfg);
@@ -156,10 +160,17 @@ bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texC
 	return retVal;
 }
 
-bool setupCubemap(Id handle, const image::ImagePtr images[6]) {
+bool setupCubemap(Id &handle, const image::ImagePtr images[6]) {
 	video_trace_scoped(SetupCubemap);
-	bindTexture(TextureUnit::Upload, TextureType::TextureCube, handle);
-	checkError();
+	TextureConfig cfg;
+	cfg.type(TextureType::TextureCube);
+	cfg.filterMag(TextureFilter::Linear);
+	cfg.filterMin(TextureFilter::Linear);
+	cfg.wrapR(TextureWrap::ClampToEdge);
+	cfg.wrapS(TextureWrap::ClampToEdge);
+	cfg.wrapT(TextureWrap::ClampToEdge);
+	handle = video::genTexture(cfg);
+	bindTexture(TextureUnit::Upload, cfg.type(), handle);
 
 	static const GLenum types[] = {
 		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -189,18 +200,7 @@ bool setupCubemap(Id handle, const image::ImagePtr images[6]) {
 		checkError();
 	}
 
-	// TODO: use setupTexture
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	checkError();
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	checkError();
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	checkError();
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	checkError();
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	checkError();
-
+	video::setupTexture(cfg);
 	return true;
 }
 
@@ -567,7 +567,7 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	if (useFeature(Feature::DirectStateAccess)) {
 		if (_priv::s.textureHandle[core::enumVal(unit)] != handle) {
 			_priv::s.textureHandle[core::enumVal(unit)] = handle;
-			glBindTextureUnit(_priv::TextureUnits[core::enumVal(unit)], handle);
+			glBindTextureUnit(core::enumVal(unit), handle);
 			checkError();
 			return true;
 		}
@@ -891,18 +891,19 @@ void deleteVertexArray(Id& id) {
 	id = InvalidId;
 }
 
-void genTextures(uint8_t amount, Id* ids) {
+void genTextures(const TextureConfig &cfg, uint8_t amount, Id* ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
-		const GLenum glUnit = _priv::TextureUnits[core::enumVal(TextureUnit::Upload)];
-		glCreateTextures(glUnit, (GLsizei)amount, (GLuint*)ids);
+		const GLenum glTexType = _priv::TextureTypes[core::enumVal(cfg.type())];
+		glCreateTextures(glTexType, (GLsizei)amount, (GLuint*)ids);
+		checkError();
 	} else {
 		glGenTextures((GLsizei)amount, (GLuint*)ids);
+		checkError();
 	}
 	for (int i = 0; i < amount; ++i) {
 		_priv::s.textures.insert(ids[i]);
 	}
-	checkError();
 }
 
 void deleteTextures(uint8_t amount, Id* ids) {

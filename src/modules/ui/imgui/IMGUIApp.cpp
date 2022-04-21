@@ -207,9 +207,14 @@ void IMGUIApp::loadFonts() {
 
 	video::TextureConfig cfg;
 	cfg.format(video::TextureFormat::RGBA);
+	if (_texture == video::InvalidId) {
+		_texture = video::genTexture(cfg);
+	}
+
 	video::bindTexture(video::TextureUnit::Upload, cfg.type(), _texture);
 	video::setupTexture(cfg);
 	video::uploadTexture(cfg.type(), cfg.format(), width, height, pixels, 0, cfg.samples());
+
 	io.Fonts->TexID = (ImTextureID)(intptr_t)_texture;
 }
 
@@ -298,7 +303,6 @@ app::AppState IMGUIApp::onInit() {
 		platform_io.Renderer_RenderWindow = _rendererRenderWindow;
 	}
 
-	_texture = video::genTexture();
 	loadFonts();
 
 	switch (core::Var::get(cfg::UIStyle)->intVal()) {

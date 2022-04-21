@@ -33,11 +33,6 @@ void GBuffer::shutdown() {
 
 bool GBuffer::init(const glm::ivec2& dimension) {
 	_fbo = video::genFramebuffer();
-
-	// +1 for the depth texture
-	const int texCount = (int)SDL_arraysize(_textures);
-	video::genTextures(texCount + 1, _textures);
-
 	return video::setupGBuffer(_fbo, dimension, _textures, SDL_arraysize(_textures), _depthTexture);
 }
 

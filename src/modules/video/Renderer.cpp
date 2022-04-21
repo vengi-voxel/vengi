@@ -67,9 +67,9 @@ void deleteTexture(Id& id) {
 	id = InvalidId;
 }
 
-Id genTexture() {
+Id genTexture(const TextureConfig &cfg) {
 	Id id;
-	genTextures(1, &id);
+	genTextures(cfg, 1, &id);
 	return id;
 }
 

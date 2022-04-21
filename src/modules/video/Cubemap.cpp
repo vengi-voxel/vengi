@@ -25,7 +25,6 @@ void Cubemap::shutdown() {
 
 bool Cubemap::init(const char *filename) {
 	_filename = filename;
-	_textureHandle = video::genTexture();
 	static const char *postfix[] = {
 		"rt", "lf", "up", "dn", "ft", "bk"
 	};
