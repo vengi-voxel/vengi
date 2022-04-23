@@ -46,7 +46,6 @@ RawVolume::RawVolume(const RawVolume& copy) :
 
 RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) : _region(region) {
 	setBorderValue(src.borderValue());
-	_borderVoxel = src._borderVoxel;
 	if (!src.region().containsRegion(_region)) {
 		_region.cropTo(src._region);
 	}
