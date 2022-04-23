@@ -47,7 +47,7 @@ private:
 							core::DynamicArray<GltfVertex> &vertices) const;
 
 	bool loadGltfNode_r(const core::String &filename, SceneGraph &sceneGraph,
-						core::StringMap<image::ImagePtr> &textures, tinygltf::Model &model, int gltfNodeIdx,
+						core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model, int gltfNodeIdx,
 						int parentNodeId) const;
 	bool loadGltfIndices(const tinygltf::Model &model, const tinygltf::Primitive &primitive,
 						 core::DynamicArray<uint32_t> &indices, size_t indicesOffset) const;

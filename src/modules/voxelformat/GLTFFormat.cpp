@@ -670,8 +670,8 @@ void GLTFFormat::calculateAABB(const core::DynamicArray<GltfVertex> &vertices, g
 	}
 }
 
-bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneGraph, core::StringMap<image::ImagePtr> &textures, tinygltf::Model &model, int gltfNodeIdx, int parentNodeId) const {
-	tinygltf::Node &gltfNode = model.nodes[gltfNodeIdx];
+bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneGraph, core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model, int gltfNodeIdx, int parentNodeId) const {
+	const tinygltf::Node &gltfNode = model.nodes[gltfNodeIdx];
 	Log::debug("Found node with name '%s'", gltfNode.name.c_str());
 	Log::debug(" - camera: %i", gltfNode.camera);
 	Log::debug(" - mesh: %i", gltfNode.mesh);
@@ -690,7 +690,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 		node.setName(gltfNode.name.c_str());
 		node.setTransform(0, transform, true);
 		node.setProperty("type", cam.type.c_str());
-		int cameraId = sceneGraph.emplace(core::move(node), parentNodeId);
+		const int cameraId = sceneGraph.emplace(core::move(node), parentNodeId);
 		for (int childId : gltfNode.children) {
 			loadGltfNode_r(filename, sceneGraph, textures, model, childId, cameraId);
 		}
@@ -703,7 +703,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 		SceneGraphNode node(SceneGraphNodeType::Group);
 		node.setName(gltfNode.name.c_str());
 		node.setTransform(0, transform, true);
-		int groupId = sceneGraph.emplace(core::move(node), parentNodeId);
+		const int groupId = sceneGraph.emplace(core::move(node), parentNodeId);
 		for (int childId : gltfNode.children) {
 			loadGltfNode_r(filename, sceneGraph, textures, model, childId, groupId);
 		}
@@ -711,11 +711,11 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	}
 
 	Log::debug("Mesh node %i", gltfNodeIdx);
-	tinygltf::Mesh &mesh = model.meshes[gltfNode.mesh];
+	const tinygltf::Mesh &mesh = model.meshes[gltfNode.mesh];
 	core::DynamicArray<uint32_t> indices;
 	core::DynamicArray<GltfVertex> vertices;
 	Log::debug("Primitives: %i in mesh %i", (int)mesh.primitives.size(), gltfNode.mesh);
-	for (tinygltf::Primitive &primitive : mesh.primitives) {
+	for (const tinygltf::Primitive &primitive : mesh.primitives) {
 		if (!loadGltfIndices(model, primitive, indices, vertices.size())) {
 			Log::warn("Failed to load indices");
 			continue;
@@ -724,7 +724,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 			Log::warn("Failed to load vertices");
 			continue;
 		}
-	};
+	}
 	if (indices.empty() || vertices.empty()) {
 		Log::error("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(), gltfNode.mesh);
 		return false;
@@ -736,7 +736,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	calculateAABB(vertices, mins, maxs);
 	const glm::ivec3 imins = glm::floor(mins);
 	const glm::ivec3 imaxs = glm::ceil(maxs);
-	voxel::Region region(imins, imaxs);
+	const voxel::Region region(imins, imaxs);
 	if (!region.isValid()) {
 		Log::error("Invalid region found %s", region.toString().c_str());
 		return false;
@@ -816,9 +816,9 @@ bool GLTFFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 	Log::debug("Cameras: %i", (int)model.cameras.size());
 	Log::debug("Scenes: %i", (int)model.scenes.size());
 	Log::debug("Lights: %i", (int)model.lights.size());
-	int parentNodeId = sceneGraph.root().id();
+	const int parentNodeId = sceneGraph.root().id();
 
-	for (tinygltf::Scene &gltfScene : model.scenes) {
+	for (const tinygltf::Scene &gltfScene : model.scenes) {
 		Log::debug("Found %i nodes in scene %s", (int)gltfScene.nodes.size(), gltfScene.name.c_str());
 		for (int gltfNodeIdx : gltfScene.nodes) {
 			loadGltfNode_r(filename, sceneGraph, textures, model, gltfNodeIdx, parentNodeId);
