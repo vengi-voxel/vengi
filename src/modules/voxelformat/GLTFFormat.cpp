@@ -411,9 +411,9 @@ const tinygltf::Accessor *GLTFFormat::getGltfAccessor(const tinygltf::Model &mod
 namespace gltf_priv {
 
 template<typename T>
-void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::DynamicArray<uint32_t> &indices) {
+void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::DynamicArray<uint32_t> &indices, uint32_t offset) {
 	for (size_t i = 0; i < count; i++) {
-		indices.push_back(*(const T*)data);
+		indices.push_back((uint32_t)(*(const T*)data) + offset);
 		data += stride;
 	}
 }
@@ -466,24 +466,26 @@ bool GLTFFormat::loadGltfIndices(const tinygltf::Model &model, const tinygltf::P
 	const size_t offset = accessor->byteOffset + bufferView.byteOffset;
 	const uint8_t *indexBuf = buffer.data.data() + offset;
 
+	const size_t applyOffset = indices.size();
+
 	switch (accessor->componentType) {
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
-		gltf_priv::copyGltfIndices<uint8_t>(indexBuf, accessor->count, stride, indices);
+		gltf_priv::copyGltfIndices<uint8_t>(indexBuf, accessor->count, stride, indices, applyOffset);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_BYTE:
-		gltf_priv::copyGltfIndices<int8_t>(indexBuf, accessor->count, stride, indices);
+		gltf_priv::copyGltfIndices<int8_t>(indexBuf, accessor->count, stride, indices, applyOffset);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
-		gltf_priv::copyGltfIndices<uint16_t>(indexBuf, accessor->count, stride, indices);
+		gltf_priv::copyGltfIndices<uint16_t>(indexBuf, accessor->count, stride, indices, applyOffset);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_SHORT:
-		gltf_priv::copyGltfIndices<int16_t>(indexBuf, accessor->count, stride, indices);
+		gltf_priv::copyGltfIndices<int16_t>(indexBuf, accessor->count, stride, indices, applyOffset);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
-		gltf_priv::copyGltfIndices<uint32_t>(indexBuf, accessor->count, stride, indices);
+		gltf_priv::copyGltfIndices<uint32_t>(indexBuf, accessor->count, stride, indices, applyOffset);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_INT:
-		gltf_priv::copyGltfIndices<int32_t>(indexBuf, accessor->count, stride, indices);
+		gltf_priv::copyGltfIndices<int32_t>(indexBuf, accessor->count, stride, indices, applyOffset);
 		break;
 	default:
 		Log::error("Unknown component type for indices: %i", accessor->componentType);
