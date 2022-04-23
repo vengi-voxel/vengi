@@ -496,8 +496,7 @@ bool GLTFFormat::loadGltfIndices(const tinygltf::Model &model, const tinygltf::P
 
 bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 									const tinygltf::Model &model, const tinygltf::Primitive &primitive,
-									core::DynamicArray<GltfVertex> &vertices, core::DynamicArray<glm::vec2> &texcoords,
-									core::DynamicArray<glm::vec4> &color) const {
+									core::DynamicArray<GltfVertex> &vertices) const {
 	core::String diffuseTexture;
 	Log::debug("Primitive material: %i", primitive.material);
 	Log::debug("Primitive mode: %i", primitive.mode);
@@ -551,10 +550,6 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 
 	bool foundPosition = false;
 	size_t verticesOffset = vertices.size();
-	size_t uvOffset = texcoords.size();
-	size_t vertexColorOffset = color.size();
-	size_t verticesCount = 0;
-	size_t texCoordCount = 0;
 	for (auto &attrIter : primitive.attributes) {
 		const std::string &attrType = attrIter.first;
 		const tinygltf::Accessor *attributeAccessor = getGltfAccessor(model, attrIter.second);
@@ -562,7 +557,9 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 			Log::warn("Could not get accessor for %s", attrType.c_str());
 			continue;
 		}
-
+		if (verticesOffset + attributeAccessor->count > vertices.size()) {
+			vertices.resize(verticesOffset + attributeAccessor->count);
+		}
 		const size_t size = getGltfAccessorSize(*attributeAccessor);
 		const tinygltf::BufferView &attributeBufferView = model.bufferViews[attributeAccessor->bufferView];
 		const size_t stride = attributeBufferView.byteStride ? attributeBufferView.byteStride : size;
@@ -576,10 +573,6 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 				continue;
 			}
 			foundPosition = true;
-			if (verticesOffset + attributeAccessor->count > vertices.size()) {
-				vertices.resize(verticesOffset + attributeAccessor->count);
-			}
-			verticesCount = attributeAccessor->count;
 			core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC3);
 			for (size_t i = 0; i < attributeAccessor->count; i++) {
 				const float *posData = (const float *)(buf);
@@ -592,32 +585,25 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 				Log::debug("Skip non float type (%i) for %s", attributeAccessor->componentType, attrType.c_str());
 				continue;
 			}
-			if (uvOffset + attributeAccessor->count > texcoords.size()) {
-				texcoords.resize(uvOffset + attributeAccessor->count);
-			}
-			texCoordCount = attributeAccessor->count;
 			core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC2);
 			for (size_t i = 0; i < attributeAccessor->count; i++) {
 				const float *uvData = (const float *)buf;
-				texcoords[uvOffset + i] = glm::vec2(uvData[0], uvData[1]);
+				vertices[verticesOffset + i].uv = glm::vec2(uvData[0], uvData[1]);
 				buf += stride;
 			}
 		} else if (core::string::startsWith(attrType.c_str(), "COLOR")) {
-			if (vertexColorOffset + attributeAccessor->count > color.size()) {
-				color.resize(vertexColorOffset + attributeAccessor->count);
-			}
 			if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
 				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
 					const float *colorData = (const float *)(buf);
-					color[vertexColorOffset + i] = glm::vec4(colorData[0], colorData[1], colorData[2], colorData[3]);
+					vertices[verticesOffset + i].color = glm::vec4(colorData[0], colorData[1], colorData[2], colorData[3]);
 					buf += stride;
 				}
 			} else if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
 				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
 					const uint8_t *colorData = buf;
-					color[vertexColorOffset + i] = core::Color::fromRGBA(colorData[0], colorData[1], colorData[2], colorData[3]);
+					vertices[verticesOffset + i].color = core::Color::fromRGBA(colorData[0], colorData[1], colorData[2], colorData[3]);
 					buf += stride;
 				}
 			} else {
@@ -628,16 +614,11 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 			Log::debug("Skip unhandled attribute %s", attrType.c_str());
 		}
 	}
-	if (texCoordCount != verticesCount) {
-		Log::warn("Invalid vertex<=>uv numbers (%i vs %i)", (int)verticesCount, (int)texCoordCount);
-	}
 	return foundPosition;
 }
 
 bool GLTFFormat::subdivideShape(const tinygltf::Model &model, const core::DynamicArray<uint32_t> &indices,
 								const core::DynamicArray<GltfVertex> &vertices,
-								const core::DynamicArray<glm::vec2> &texcoords,
-								const core::DynamicArray<glm::vec4> &colors,
 								const core::StringMap<image::ImagePtr> &textures,
 								core::DynamicArray<Tri> &subdivided) const {
 	const glm::vec3 &scale = getScale();
@@ -651,12 +632,9 @@ bool GLTFFormat::subdivideShape(const tinygltf::Model &model, const core::Dynami
 			const size_t idx = indices[i + indexOffset];
 			core_assert_msg(idx < vertices.size(), "Index out of bounds %i/%i", (int)idx, (int)vertices.size());
 			tri.vertices[i] = vertices[idx].pos * scale;
-			if (idx < texcoords.size()) {
-				tri.uv[i] = texcoords[idx];
-			} else {
-				tri.uv[i] = glm::vec2(0.0f);
-			}
+			tri.uv[i] = vertices[idx].uv;
 		}
+		tri.color = core::Color::getRGBA(vertices[indexOffset].color);
 		const size_t textureIdx = indices[indexOffset];
 		core_assert_msg(textureIdx < vertices.size(), "Index out of bounds %i/%i for textures", (int)textureIdx, (int)vertices.size());
 		const core::String &texture = vertices[textureIdx].texture;
@@ -665,9 +643,6 @@ bool GLTFFormat::subdivideShape(const tinygltf::Model &model, const core::Dynami
 			if (textureIter != textures.end()) {
 				tri.texture = textureIter->second;
 			}
-		}
-		if (indexOffset < colors.size()) {
-			tri.color = core::Color::getRGBA(colors[indexOffset]).rgba;
 		}
 		subdivideTri(tri, subdivided);
 	}
@@ -735,8 +710,6 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	tinygltf::Mesh &mesh = model.meshes[gltfNode.mesh];
 	core::DynamicArray<uint32_t> indices;
 	core::DynamicArray<GltfVertex> vertices;
-	core::DynamicArray<glm::vec2> texcoords;
-	core::DynamicArray<glm::vec4> colors;
 	Log::debug("Primitives: %i in mesh %i", (int)mesh.primitives.size(), gltfNode.mesh);
 	for (tinygltf::Primitive &primitive : mesh.primitives) {
 		if (primitive.mode != TINYGLTF_MODE_TRIANGLES) {
@@ -747,7 +720,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 			Log::warn("Failed to load indices");
 			continue;
 		}
-		if (!loadGlftAttributes(filename, textures, model, primitive, vertices, texcoords, colors)) {
+		if (!loadGlftAttributes(filename, textures, model, primitive, vertices)) {
 			Log::warn("Failed to load vertices");
 			continue;
 		}
@@ -783,7 +756,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	node.setVolume(volume, true);
 	core::DynamicArray<Tri> subdivided;
 	int newParent = parentNodeId;
-	if (!subdivideShape(model, indices, vertices, texcoords, colors, textures, subdivided)) {
+	if (!subdivideShape(model, indices, vertices, textures, subdivided)) {
 		Log::error("Failed to subdivide node %i", gltfNodeIdx);
 	} else {
 		voxelizeTris(volume, subdivided);

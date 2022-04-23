@@ -36,13 +36,14 @@ private:
 
 	// importing (voxelization)
 	struct GltfVertex {
-		glm::vec3 pos;
+		glm::vec3 pos {0.0f};
+		glm::vec2 uv {0.0f};
+		glm::vec4 color {1.0f};
 		core::String texture;
 	};
 	bool loadGlftAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 							const tinygltf::Model &model, const tinygltf::Primitive &primitive,
-							core::DynamicArray<GltfVertex> &vertices, core::DynamicArray<glm::vec2> &texcoords,
-							core::DynamicArray<glm::vec4> &colors) const;
+							core::DynamicArray<GltfVertex> &vertices) const;
 
 	bool loadGltfNode_r(const core::String &filename, SceneGraph &sceneGraph,
 						core::StringMap<image::ImagePtr> &textures, tinygltf::Model &model, int gltfNodeIdx,
@@ -54,8 +55,7 @@ private:
 	const tinygltf::Accessor *getGltfAccessor(const tinygltf::Model &model, int id) const;
 
 	bool subdivideShape(const tinygltf::Model &model, const core::DynamicArray<uint32_t> &indices,
-						const core::DynamicArray<GltfVertex> &vertices, const core::DynamicArray<glm::vec2> &texcoords,
-						const core::DynamicArray<glm::vec4> &colors, const core::StringMap<image::ImagePtr> &textures,
+						const core::DynamicArray<GltfVertex> &vertices, const core::StringMap<image::ImagePtr> &textures,
 						core::DynamicArray<Tri> &subdivided) const;
 	void calculateAABB(const core::DynamicArray<GltfVertex> &vertices, glm::vec3 &mins, glm::vec3 &maxs) const;
 
