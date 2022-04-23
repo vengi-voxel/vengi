@@ -78,7 +78,7 @@ protected:
 	 * @brief Split volumes according to their max size into several smaller volumes
 	 * Some formats only support small volumes sizes per object - but multiple objects.
 	 */
-	void splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize);
+	void splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop = false);
 	voxel::RawVolume* transformVolume(const SceneGraphTransform &t, const voxel::RawVolume *in) const;
 
 public:

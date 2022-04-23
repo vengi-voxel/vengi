@@ -12,7 +12,9 @@
 #include "core/Color.h"
 #include "math/Math.h"
 #include "voxel/Mesh.h"
+#include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
+#include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VoxelUtil.h"
 #include <limits>
@@ -69,7 +71,7 @@ voxel::RawVolume* Format::transformVolume(const SceneGraphTransform &t, const vo
 	return v;
 }
 
-void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize) {
+void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop) {
 	destSceneGraph.reserve(srcSceneGraph.size());
 	for (SceneGraphNode &node : srcSceneGraph) {
 		const voxel::Region& region = node.region();
@@ -86,6 +88,11 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 		voxelutil::splitVolume(node.volume(), maxSize, rawVolumes);
 		for (voxel::RawVolume *v : rawVolumes) {
 			SceneGraphNode newNode;
+			if (crop) {
+				voxel::RawVolume *cv = voxelutil::cropVolume(v);
+				delete v;
+				v = cv;
+			}
 			newNode.setVolume(v, true);
 			destSceneGraph.emplace(core::move(newNode));
 		}
