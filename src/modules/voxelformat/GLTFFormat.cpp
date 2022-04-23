@@ -453,6 +453,10 @@ voxelformat::SceneGraphTransform GLTFFormat::loadGltfTransform(const tinygltf::N
 }
 
 bool GLTFFormat::loadGltfIndices(const tinygltf::Model &model, const tinygltf::Primitive &primitive, core::DynamicArray<uint32_t> &indices) const {
+	if (primitive.mode != TINYGLTF_MODE_TRIANGLES) {
+		Log::warn("Unexpected primitive mode: %i", primitive.mode);
+		return false;
+	}
 	const tinygltf::Accessor *accessor = getGltfAccessor(model, primitive.indices);
 	if (accessor == nullptr) {
 		Log::warn("Could not get accessor for indices");
@@ -712,10 +716,6 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	core::DynamicArray<GltfVertex> vertices;
 	Log::debug("Primitives: %i in mesh %i", (int)mesh.primitives.size(), gltfNode.mesh);
 	for (tinygltf::Primitive &primitive : mesh.primitives) {
-		if (primitive.mode != TINYGLTF_MODE_TRIANGLES) {
-			Log::warn("Unexpected primitive mode: %i", primitive.mode);
-			continue;
-		}
 		if (!loadGltfIndices(model, primitive, indices)) {
 			Log::warn("Failed to load indices");
 			continue;
