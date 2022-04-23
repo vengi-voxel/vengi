@@ -47,20 +47,25 @@ void SceneGraphRenderer::update() {
 	_renderer.update();
 }
 
+static inline int volumeId(const voxelformat::SceneGraphNode &node) {
+	// TODO: using the node id here is not good as they are increasing when you modify the scene graph
+	return node.id();
+}
+
 bool SceneGraphRenderer::empty(voxelformat::SceneGraphNode &node) {
-	return _renderer.empty(node.id());
+	return _renderer.empty(volumeId(node));
 }
 
 bool SceneGraphRenderer::extractRegion(voxelformat::SceneGraphNode &node, const voxel::Region& region) {
-	return _renderer.extractRegion(node.id(), region);
+	return _renderer.extractRegion(volumeId(node), region);
 }
 
 void SceneGraphRenderer::translate(voxelformat::SceneGraphNode &node, const glm::ivec3 &v) {
-	_renderer.translate(node.id(), v);
+	_renderer.translate(volumeId(node), v);
 }
 
 bool SceneGraphRenderer::toMesh(voxelformat::SceneGraphNode &node, voxel::Mesh* mesh) {
-	return _renderer.toMesh(node.id(), mesh);
+	return _renderer.toMesh(volumeId(node), mesh);
 }
 
 void SceneGraphRenderer::setAmbientColor(const glm::vec3& color) {
@@ -87,39 +92,40 @@ void SceneGraphRenderer::clear() {
 void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, uint32_t frame, bool hideInactive, bool grayInactive) {
 	// remove those volumes that are no longer part of the scene graph
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
+		// TODO: using the node id here is not good as they are increasing when you modify the scene graph
 		if (!sceneGraph.hasNode(i)) {
 			_renderer.setVolume(i, nullptr, true);
 		}
 	}
 
 	const int activeNode = sceneGraph.activeNode();
-	// TODO: using the node id here is not good as they are increasing when you modify the scene graph
 	for (voxelformat::SceneGraphNode &node : sceneGraph) {
-		if (node.id() >= RawVolumeRenderer::MAX_VOLUMES) {
+		const int id = volumeId(node);
+		if (id >= RawVolumeRenderer::MAX_VOLUMES) {
 			continue;
 		}
-		voxel::RawVolume *v = _renderer.volume(node.id());
+		voxel::RawVolume *v = _renderer.volume(id);
 		if (v != node.volume()) {
-			_renderer.setVolume(node.id(), node.volume(), true);
-			_renderer.extractRegion(node.id(), node.region());
+			_renderer.setVolume(id, node.volume(), true);
+			_renderer.extractRegion(id, node.region());
 		}
 		if (_sceneMode) {
 			// TODO ik solver
 			const voxelformat::SceneGraphTransform &transform = node.transformForFrame(frame);
 			const glm::vec3 pivot = transform.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
-			_renderer.setModelMatrix(node.id(), transform.matrix(), pivot);
+			_renderer.setModelMatrix(id, transform.matrix(), pivot);
 		} else {
-			_renderer.setModelMatrix(node.id(), glm::mat4(1.0f), glm::vec3(0.0f));
+			_renderer.setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f));
 		}
 		if (hideInactive) {
-			_renderer.hide(node.id(), node.id() != activeNode);
+			_renderer.hide(id, id != activeNode);
 		} else {
-			_renderer.hide(node.id(), !node.visible());
+			_renderer.hide(id, !node.visible());
 		}
 		if (grayInactive) {
-			_renderer.gray(node.id(), node.id() != activeNode);
+			_renderer.gray(id, id != activeNode);
 		} else {
-			_renderer.gray(node.id(), false);
+			_renderer.gray(id, false);
 		}
 	}
 }
