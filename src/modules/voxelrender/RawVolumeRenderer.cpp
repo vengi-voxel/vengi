@@ -149,7 +149,11 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 		}
 		const voxel::RawVolume *volume = _state[idx]._rawVolume;
 		const voxel::Region& finalRegion = _extractRegions[i].region;
-		voxel::RawVolume copy(volume, voxel::Region(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2));
+		bool onlyAir = true;
+		voxel::RawVolume copy(volume, voxel::Region(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2), &onlyAir);
+		if (onlyAir) {
+			continue;
+		}
 		const glm::ivec3& mins = finalRegion.getLowerCorner();
 		_threadPool.enqueue([movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
 			++_runningExtractorTasks;

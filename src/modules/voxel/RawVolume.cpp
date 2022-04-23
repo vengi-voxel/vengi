@@ -44,11 +44,14 @@ RawVolume::RawVolume(const RawVolume& copy) :
 	core_memcpy((void*)_data, (void*)copy._data, size);
 }
 
-RawVolume::RawVolume(const RawVolume& src, const Region& region) : _region(region) {
+RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) : _region(region) {
 	setBorderValue(src.borderValue());
 	_borderVoxel = src._borderVoxel;
 	if (!src.region().containsRegion(_region)) {
 		_region.cropTo(src._region);
+	}
+	if (onlyAir) {
+		*onlyAir = true;
 	}
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
 	_data = (Voxel *)core_malloc(size);
@@ -82,6 +85,10 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region) : _region(regio
 					const int tgtindex = tgtStrideLocal + tgtZPos * tgtZStride;
 					const int srcindex = srcStrideLocal + srcZPos * srcZStride;
 					_data[tgtindex] = src._data[srcindex];
+					if (onlyAir && !voxel::isAir(_data[tgtindex].getMaterial())) {
+						*onlyAir = false;
+						onlyAir = nullptr;
+					}
 				}
 			}
 		}
