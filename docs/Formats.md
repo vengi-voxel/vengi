@@ -43,4 +43,9 @@ Exporting to ply, gltf, stl and obj is also supported. A few [cvars](Configurati
 * `voxformat_withcolor`: Export vertex colors
 * `voxformat_withtexcoords`: Export texture coordinates
 
-Basic voxelization is supported for obj and stl files, too.
+Basic voxelization is supported for ply, gltf, stl and obj files, too. The following [cvars](Configuration.md) can be modified here:
+
+* `voxformat_scale`: Scale the vertices on all axis by the given factor
+* `voxformat_scale_x`: Scale the vertices on X axis by the given factor
+* `voxformat_scale_y`: Scale the vertices on Y axis by the given factor
+* `voxformat_scale_z`: Scale the vertices on Z axis by the given factor

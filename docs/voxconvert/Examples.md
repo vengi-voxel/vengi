@@ -24,7 +24,7 @@ Merge several models into one:
 
 `./vengi-voxconvert --input one.vox --input two.vox --output onetwo.vox`
 
-## Voxelize an obj
+## Voxelize an obj, gltf, ply or stl file
 
 Voxelize an obj and save as magicavoxel (including colors):
 
@@ -33,11 +33,15 @@ Voxelize an obj and save as magicavoxel (including colors):
 > This can be done by reducing the color to 256 and import that reduced image in
 > [voxedit](../voxedit/Index.md) as palette.
 >
-> This only works for obj files - but if you have different mesh formats that you
-> would like to voxelize, you can use the [assimp tools](https://github.com/assimp/assimp) to
-> convert to obj.
+> For obj the mtl file must be in the same dir as the obj files, as well as the
+> potential textures.
+>
+> glTF is supported both in ascii and binary - but the satelite files must also
+> reside in the same dir as the `glb` or `gltf` file.
 
-`./vengi-voxconvert -set palette /path/to/palette.png --input mesh.obj --output voxels.vox`
+`./vengi-voxconvert -set voxformat_scale 2 -set palette /path/to/palette.png --input mesh.obj --output voxels.vox`
+
+> See the [supported formats](Formats.md) for a few more details.
 
 ## Generate from heightmap
 
