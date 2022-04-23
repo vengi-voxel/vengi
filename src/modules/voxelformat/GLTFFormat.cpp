@@ -564,6 +564,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 			}
 
 			const float *posData = (const float *)(buf);
+			core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC3);
 			for (size_t i = 0; i < attributeAccessor->count; i++) {
 				vertices[verticesOffset + i].pos = glm::vec3(posData[i * 3 + 0], posData[i * 3 + 1], posData[i * 3 + 2]);
 				vertices[verticesOffset + i].texture = diffuseTexture;
@@ -578,6 +579,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 				texcoords.resize(uvOffset + attributeAccessor->count);
 			}
 			const float *uvData = (const float *)(buf);
+			core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC2);
 			for (size_t i = 0; i < attributeAccessor->count; i++) {
 				texcoords[uvOffset + i] = glm::vec2(uvData[i * 2 + 0], uvData[i * 2 + 1]);
 			}
@@ -588,11 +590,13 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 			}
 			if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
 				const float *colorData = (const float *)(buf);
+				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
 					color[vertexColorOffset + i] = glm::vec4(colorData[i * 4 + 0], colorData[i * 4 + 1], colorData[i * 4 + 2], colorData[i * 4 + 3]);
 				}
 			} else if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
 				const uint8_t *colorData = (const uint8_t *)(buf);
+				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
 					color[vertexColorOffset + i] = core::Color::fromRGBA(colorData[i * 4 + 0], colorData[i * 4 + 1], colorData[i * 4 + 2], colorData[i * 4 + 3]);
 				}
