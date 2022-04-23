@@ -37,6 +37,7 @@ public:
 	bool toMesh(voxelformat::SceneGraphNode &node, voxel::Mesh* mesh);
 	bool empty(voxelformat::SceneGraphNode &node);
 	void prepare(voxelformat::SceneGraph &sceneGraph, uint32_t frame = 0, bool hideInactive = false, bool grayInactive = false);
+	void extractAll();
 	/**
 	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is false, you have to call @c update() manually!
 	 */

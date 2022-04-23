@@ -130,10 +130,14 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, uint32_t f
 	}
 }
 
+void SceneGraphRenderer::extractAll() {
+	while (_renderer.scheduleExtractions(100)) {
+	}
+}
+
 void SceneGraphRenderer::render(const video::Camera& camera, bool shadow, bool waitPending) {
 	if (waitPending) {
-		while (_renderer.scheduleExtractions(100)) {
-		}
+		extractAll();
 		_renderer.waitForPendingExtractions();
 		_renderer.update();
 	}
