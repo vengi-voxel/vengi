@@ -76,6 +76,7 @@ bool RawVolumeRenderer::init() {
 	_bloom = core::Var::getSafe(cfg::ClientBloom);
 
 	_threadPool.init();
+	Log::debug("Threadpool size: %i", (int)_threadPool.size());
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		_state[idx]._models[0] = glm::mat4(1.0f);
