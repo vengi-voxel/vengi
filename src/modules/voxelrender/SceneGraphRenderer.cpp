@@ -79,7 +79,7 @@ void SceneGraphRenderer::clear() {
 	_renderer.clearPendingExtractions();
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
 		if (_renderer.setVolume(i, nullptr, true) != nullptr) {
-			_renderer.update(i);
+			_renderer.updateBufferForVolume(i);
 		}
 	}
 }

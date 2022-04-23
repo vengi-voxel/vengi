@@ -75,7 +75,7 @@ bool TestVoxelFont::changeFontSize(int delta) {
 		return false;
 	}
 
-	if (!_rawVolumeRenderer.update(0, vertices, indices)) {
+	if (!_rawVolumeRenderer.updateBufferForVolume(0, vertices, indices)) {
 		return false;
 	}
 	_vertices = vertices.size();

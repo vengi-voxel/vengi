@@ -185,7 +185,7 @@ void RawVolumeRenderer::update() {
 			delete meshes[result.idx];
 		}
 		meshes[result.idx] = new voxel::Mesh(core::move(result.mesh));
-		if (!update(result.idx)) {
+		if (!updateBufferForVolume(result.idx)) {
 			Log::error("Failed to update the mesh at index %i", result.idx);
 		}
 		++cnt;
@@ -195,7 +195,7 @@ void RawVolumeRenderer::update() {
 	}
 }
 
-bool RawVolumeRenderer::update(int idx) {
+bool RawVolumeRenderer::updateBufferForVolume(int idx) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}
@@ -266,7 +266,7 @@ bool RawVolumeRenderer::update(int idx) {
 	return true;
 }
 
-bool RawVolumeRenderer::update(int idx, const voxel::VertexArray& vertices, const voxel::IndexArray& indices) {
+bool RawVolumeRenderer::updateBufferForVolume(int idx, const voxel::VertexArray& vertices, const voxel::IndexArray& indices) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}

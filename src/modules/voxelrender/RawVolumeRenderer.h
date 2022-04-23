@@ -128,9 +128,9 @@ public:
 	 * @brief Updates the vertex buffers manually
 	 * @sa extract()
 	 */
-	bool update(int idx);
+	bool updateBufferForVolume(int idx);
 
-	bool update(int idx, const voxel::VertexArray& vertices, const voxel::IndexArray& indices);
+	bool updateBufferForVolume(int idx, const voxel::VertexArray& vertices, const voxel::IndexArray& indices);
 
 	bool extractRegion(int idx, const voxel::Region& region);
 
