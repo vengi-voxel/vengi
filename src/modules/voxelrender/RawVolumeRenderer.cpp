@@ -79,16 +79,17 @@ bool RawVolumeRenderer::init() {
 	Log::debug("Threadpool size: %i", (int)_threadPool.size());
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		_state[idx]._models[0] = glm::mat4(1.0f);
-		_state[idx]._amounts = 1;
-		_state[idx]._vertexBufferIndex = _state[idx]._vertexBuffer.create();
-		if (_state[idx]._vertexBufferIndex == -1) {
+		State& state = _state[idx];
+		state._models[0] = glm::mat4(1.0f);
+		state._amounts = 1;
+		state._vertexBufferIndex = state._vertexBuffer.create();
+		if (state._vertexBufferIndex == -1) {
 			Log::error("Could not create the vertex buffer object");
 			return false;
 		}
 
-		_state[idx]._indexBufferIndex = _state[idx]._vertexBuffer.create(nullptr, 0, video::BufferType::IndexBuffer);
-		if (_state[idx]._indexBufferIndex == -1) {
+		state._indexBufferIndex = state._vertexBuffer.create(nullptr, 0, video::BufferType::IndexBuffer);
+		if (state._indexBufferIndex == -1) {
 			Log::error("Could not create the vertex buffer object for the indices");
 			return false;
 		}
@@ -104,15 +105,16 @@ bool RawVolumeRenderer::init() {
 	}
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		State& state = _state[idx];
 		const video::Attribute& attributePos = getPositionVertexAttribute(
-				_state[idx]._vertexBufferIndex, _voxelShader.getLocationPos(),
+				state._vertexBufferIndex, _voxelShader.getLocationPos(),
 				_voxelShader.getComponentsPos());
-		_state[idx]._vertexBuffer.addAttribute(attributePos);
+		state._vertexBuffer.addAttribute(attributePos);
 
 		const video::Attribute& attributeInfo = getInfoVertexAttribute(
-				_state[idx]._vertexBufferIndex, _voxelShader.getLocationInfo(),
+				state._vertexBufferIndex, _voxelShader.getLocationInfo(),
 				_voxelShader.getComponentsInfo());
-		_state[idx]._vertexBuffer.addAttribute(attributeInfo);
+		state._vertexBuffer.addAttribute(attributeInfo);
 	}
 
 	render::ShadowParameters shadowParams;
@@ -143,14 +145,13 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 	size_t i;
 	for (i = 0; i < n; ++i) {
 		const int idx = _extractRegions[i].idx;
-		if (idx < 0) {
-			// model switch for this slot ignore it
+		const voxel::RawVolume *v = volume(idx);
+		if (v == nullptr) {
 			continue;
 		}
-		const voxel::RawVolume *volume = _state[idx]._rawVolume;
 		const voxel::Region& finalRegion = _extractRegions[i].region;
 		bool onlyAir = true;
-		voxel::RawVolume copy(volume, voxel::Region(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2), &onlyAir);
+		voxel::RawVolume copy(v, voxel::Region(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2), &onlyAir);
 		if (!onlyAir) {
 			const glm::ivec3& mins = finalRegion.getLowerCorner();
 			_threadPool.enqueue([movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
@@ -214,9 +215,10 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx) {
 		indCount += indexVector.size();
 	}
 
+	State& state = _state[idx];
 	if (indCount == 0u || vertCount == 0u) {
-		_state[idx]._vertexBuffer.update(_state[idx]._vertexBufferIndex, nullptr, 0);
-		_state[idx]._vertexBuffer.update(_state[idx]._indexBufferIndex, nullptr, 0);
+		state._vertexBuffer.update(state._vertexBufferIndex, nullptr, 0);
+		state._vertexBuffer.update(state._indexBufferIndex, nullptr, 0);
 		return true;
 	}
 
@@ -248,7 +250,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx) {
 		offset += vertexVector.size();
 	}
 
-	if (!_state[idx]._vertexBuffer.update(_state[idx]._vertexBufferIndex, verticesBuf, verticesBufSize)) {
+	if (!state._vertexBuffer.update(state._vertexBufferIndex, verticesBuf, verticesBufSize)) {
 		Log::error("Failed to update the vertex buffer");
 		core_free(indicesBuf);
 		core_free(verticesBuf);
@@ -256,7 +258,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx) {
 	}
 	core_free(verticesBuf);
 
-	if (!_state[idx]._vertexBuffer.update(_state[idx]._indexBufferIndex, indicesBuf, indicesBufSize)) {
+	if (!state._vertexBuffer.update(state._indexBufferIndex, indicesBuf, indicesBufSize)) {
 		Log::error("Failed to update the index buffer");
 		core_free(indicesBuf);
 		return false;
@@ -271,17 +273,18 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, const voxel::VertexArray&
 	}
 	core_trace_scoped(RawVolumeRendererUpdate);
 
+	State& state = _state[idx];
 	if (indices.empty() || vertices.empty()) {
-		_state[idx]._vertexBuffer.update(_state[idx]._vertexBufferIndex, nullptr, 0);
-		_state[idx]._vertexBuffer.update(_state[idx]._indexBufferIndex, nullptr, 0);
+		state._vertexBuffer.update(state._vertexBufferIndex, nullptr, 0);
+		state._vertexBuffer.update(state._indexBufferIndex, nullptr, 0);
 		return true;
 	}
 
-	if (!_state[idx]._vertexBuffer.update(_state[idx]._vertexBufferIndex, &vertices.front(), vertices.size() * sizeof(voxel::VertexArray::value_type))) {
+	if (!state._vertexBuffer.update(state._vertexBufferIndex, &vertices.front(), vertices.size() * sizeof(voxel::VertexArray::value_type))) {
 		Log::error("Failed to update the vertex buffer");
 		return false;
 	}
-	if (!_state[idx]._vertexBuffer.update(_state[idx]._indexBufferIndex, &indices.front(), indices.size() * sizeof(voxel::IndexArray::value_type))) {
+	if (!state._vertexBuffer.update(state._indexBufferIndex, &indices.front(), indices.size() * sizeof(voxel::IndexArray::value_type))) {
 		Log::error("Failed to update the index buffer");
 		return false;
 	}
@@ -316,11 +319,11 @@ bool RawVolumeRenderer::empty(int idx) const {
 bool RawVolumeRenderer::toMesh(voxel::Mesh* mesh) {
 	core::DynamicArray<const voxel::RawVolume*> volumes;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		const voxel::RawVolume* volume = _state[idx]._rawVolume;
-		if (volume == nullptr) {
+		const voxel::RawVolume* v = volume(idx);
+		if (v == nullptr) {
 			continue;
 		}
-		volumes.push_back(volume);
+		volumes.push_back(v);
 	}
 	if (volumes.empty()) {
 		return false;
@@ -336,27 +339,21 @@ bool RawVolumeRenderer::toMesh(voxel::Mesh* mesh) {
 }
 
 bool RawVolumeRenderer::toMesh(int idx, voxel::Mesh* mesh) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return false;
-	}
-	voxel::RawVolume* volume = _state[idx]._rawVolume;
-	if (volume == nullptr) {
+	voxel::RawVolume* v = volume(idx);
+	if (v == nullptr) {
 		return false;
 	}
 
-	extractVolumeRegionToMesh(volume, volume->region(), mesh);
+	extractVolumeRegionToMesh(v, v->region(), mesh);
 	return true;
 }
 
 bool RawVolumeRenderer::translate(int idx, const glm::ivec3& m) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
+	voxel::RawVolume* v = volume(idx);
+	if (v == nullptr) {
 		return false;
 	}
-	voxel::RawVolume* volume = _state[idx]._rawVolume;
-	if (volume == nullptr) {
-		return false;
-	}
-	volume->translate(m);
+	v->translate(m);
 	for (auto& i : _meshes) {
 		Meshes& meshes = i.second;
 		if (meshes[idx] == nullptr) {
@@ -376,18 +373,15 @@ voxel::Region RawVolumeRenderer::calculateExtractRegion(int x, int y, int z, con
 
 bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 	core_trace_scoped(RawVolumeRendererExtract);
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return false;
-	}
-	voxel::RawVolume* volume = _state[idx]._rawVolume;
-	if (volume == nullptr) {
+	voxel::RawVolume* v = volume(idx);
+	if (v == nullptr) {
 		return false;
 	}
 
 	const int s = _meshSize->intVal();
 	const glm::ivec3 meshSize(s);
 	const glm::ivec3 meshSizeMinusOne(s - 1);
-	const voxel::Region& completeRegion = volume->region();
+	const voxel::Region& completeRegion = v->region();
 
 	// convert to step coordinates that are needed to extract
 	// the given region mesh size ranges
@@ -490,10 +484,11 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 
 	uint32_t numIndices = 0u;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		if (_state[idx]._hidden) {
+		const State& state = _state[idx];
+		if (state._hidden) {
 			continue;
 		}
-		const uint32_t nIndices = _state[idx]._vertexBuffer.elements(_state[idx]._indexBufferIndex, 1, sizeof(voxel::IndexType));
+		const uint32_t nIndices = state._vertexBuffer.elements(state._indexBufferIndex, 1, sizeof(voxel::IndexType));
 		if (nIndices <= 0) {
 			continue;
 		}
@@ -524,11 +519,12 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 					if (indices[idx] <= 0u) {
 						continue;
 					}
-					video::ScopedBuffer scopedBuf(_state[idx]._vertexBuffer);
-					_shadowMapShader.setModel(_state[idx]._models);
-					_shadowMapShader.setPivot(_state[idx]._pivots);
+					const State& state = _state[idx];
+					video::ScopedBuffer scopedBuf(state._vertexBuffer);
+					_shadowMapShader.setModel(state._models);
+					_shadowMapShader.setPivot(state._pivots);
 					static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-					video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices[idx], _state[idx]._amounts);
+					video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices[idx], state._amounts);
 				}
 				return true;
 			}, true);
@@ -576,11 +572,12 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		}
 		updatePalette(idx);
 		video::ScopedPolygonMode polygonMode(mode);
-		video::ScopedBuffer scopedBuf(_state[idx]._vertexBuffer);
-		_voxelShader.setGray(_state[idx]._gray);
-		_voxelShader.setModel(_state[idx]._models);
-		_voxelShader.setPivot(_state[idx]._pivots);
-		video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices[idx], _state[idx]._amounts);
+		const State& state = _state[idx];
+		video::ScopedBuffer scopedBuf(state._vertexBuffer);
+		_voxelShader.setGray(state._gray);
+		_voxelShader.setModel(state._models);
+		_voxelShader.setPivot(state._pivots);
+		video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices[idx], state._amounts);
 	}
 	if (mode == video::PolygonMode::Points) {
 		video::disable(video::State::PolygonOffsetPoint);
@@ -607,13 +604,14 @@ bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4& model, const gl
 		Log::error("Given id %i is out of bounds", idx);
 		return false;
 	}
-	if (_state[idx]._rawVolume == nullptr) {
+	State& state = _state[idx];
+	if (state._rawVolume == nullptr) {
 		Log::error("No volume found at: %i", idx);
 		return false;
 	}
-	_state[idx]._amounts = reset ? 1 : _state[idx]._amounts + 1;
-	_state[idx]._models[_state[idx]._amounts - 1] = model;
-	_state[idx]._pivots[_state[idx]._amounts - 1] = pivot;
+	state._amounts = reset ? 1 : state._amounts + 1;
+	state._models[state._amounts - 1] = model;
+	state._pivots[state._amounts - 1] = pivot;
 	return true;
 }
 
@@ -628,15 +626,15 @@ voxel::Region RawVolumeRenderer::region() const {
 	voxel::Region region;
 	bool validVolume = false;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		voxel::RawVolume* volume = _state[idx]._rawVolume;
-		if (volume == nullptr) {
+		const voxel::RawVolume* v = volume(idx);
+		if (v == nullptr) {
 			continue;
 		}
 		if (validVolume) {
-			region.accumulate(volume->region());
+			region.accumulate(v->region());
 			continue;
 		}
-		region = volume->region();
+		region = v->region();
 		validVolume = true;
 	}
 	return region;
@@ -650,12 +648,13 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
-	voxel::RawVolume* old = _state[idx]._rawVolume;
+	State& state = _state[idx];
+	voxel::RawVolume* old = state._rawVolume;
 	if (old == volume) {
 		return nullptr;
 	}
 	core_trace_scoped(RawVolumeRendererSetVolume);
-	_state[idx]._rawVolume = volume;
+	state._rawVolume = volume;
 	if (deleteMesh) {
 		for (auto& i : _meshes) {
 			Meshes& meshes = i.second;
@@ -692,12 +691,13 @@ core::DynamicArray<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_meshes.clear();
 	core::DynamicArray<voxel::RawVolume*> old(MAX_VOLUMES);
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		_state[idx]._vertexBuffer.shutdown();
-		_state[idx]._vertexBufferIndex = -1;
-		_state[idx]._indexBufferIndex = -1;
+		State& state = _state[idx];
+		state._vertexBuffer.shutdown();
+		state._vertexBufferIndex = -1;
+		state._indexBufferIndex = -1;
 		// hand over the ownership to the caller
-		old.push_back(_state[idx]._rawVolume);
-		_state[idx]._rawVolume = nullptr;
+		old.push_back(state._rawVolume);
+		state._rawVolume = nullptr;
 	}
 	_shadow.shutdown();
 	return old;
