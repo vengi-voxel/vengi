@@ -58,13 +58,16 @@ bool FileDialog::openDir(const io::FormatDescription* formats, const core::Strin
 		_currentFilterEntry = -1;
 	} else {
 		_filterTextWidth = 0.0f;
-		while (formats->name != nullptr) {
-			const core::String& str = io::convertToFilePattern(*formats);
+		const io::FormatDescription* f = formats;
+		while (f->name != nullptr) {
+			const core::String& str = io::convertToFilePattern(*f);
 			const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
 			_filterTextWidth = core_max(_filterTextWidth, filterTextSize.x);
 			_filterEntries.push_back(str);
-			++formats;
+			++f;
 		}
+		core::sort(_filterEntries.begin(), _filterEntries.end(), core::Less<core::String>());
+
 		const core::VarPtr &lastFilterVar = core::Var::getSafe(cfg::UILastFilter);
 		int lastFilter = lastFilterVar->intVal();
 		if (lastFilter < 0 || lastFilter >= (int)_filterEntries.size()) {
