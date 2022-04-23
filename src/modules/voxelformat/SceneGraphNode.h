@@ -169,7 +169,6 @@ public:
 
 	bool addChild(int id);
 	bool removeChild(int id);
-	const glm::mat4 &matrix(uint32_t frameIdx = 0) const;
 	void setTransform(uint32_t frameIdx, const SceneGraphTransform &transform, bool updateMatrix);
 	SceneGraphTransform &transform(uint32_t frameIdx = 0);
 	const SceneGraphTransform &transform(uint32_t frameIdx = 0) const;
@@ -314,10 +313,6 @@ inline bool SceneGraphNode::locked() const {
 
 inline void SceneGraphNode::setLocked(bool locked) {
 	_locked = locked;
-}
-
-inline const glm::mat4 &SceneGraphNode::matrix(uint32_t frameIdx) const {
-	return _keyFrames[frameIdx].transform.matrix();
 }
 
 } // namespace voxel
