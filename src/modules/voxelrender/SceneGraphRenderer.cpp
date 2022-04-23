@@ -52,6 +52,11 @@ static inline int volumeId(const voxelformat::SceneGraphNode &node) {
 	return node.id();
 }
 
+static inline int nodeId(int volumeIdx) {
+	// TODO: using the node id here is not good as they are increasing when you modify the scene graph
+	return volumeIdx;
+}
+
 bool SceneGraphRenderer::empty(voxelformat::SceneGraphNode &node) {
 	return _renderer.empty(volumeId(node));
 }
@@ -83,8 +88,9 @@ void SceneGraphRenderer::shutdown() {
 void SceneGraphRenderer::clear() {
 	_renderer.clearPendingExtractions();
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
-		if (_renderer.setVolume(i, nullptr, true) != nullptr) {
-			_renderer.updateBufferForVolume(i);
+		const int nId = nodeId(i);
+		if (_renderer.setVolume(nId, nullptr, true) != nullptr) {
+			_renderer.updateBufferForVolume(nId);
 		}
 	}
 }
@@ -92,9 +98,9 @@ void SceneGraphRenderer::clear() {
 void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, uint32_t frame, bool hideInactive, bool grayInactive) {
 	// remove those volumes that are no longer part of the scene graph
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
-		// TODO: using the node id here is not good as they are increasing when you modify the scene graph
-		if (!sceneGraph.hasNode(i)) {
-			_renderer.setVolume(i, nullptr, true);
+		const int nId = nodeId(i);
+		if (!sceneGraph.hasNode(nId)) {
+			_renderer.setVolume(nId, nullptr, true);
 		}
 	}
 

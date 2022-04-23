@@ -307,6 +307,8 @@ bool SceneManager::load(const core::String& file) {
 		io::FileStream stream(filePtr);
 		voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph);
 		mergeIfNeeded(newSceneGraph);
+		// TODO: stuff that happens in RawVolumeRenderer::extractRegion and
+		// RawVolumeRenderer::scheduleExtractions should happen here
 		return core::move(newSceneGraph);
 	});
 	_lastFilename = filePtr->fileName() + "." + filePtr->extension();
