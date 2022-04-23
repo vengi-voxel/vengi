@@ -116,6 +116,16 @@ set(TEST_FILES
 	tests/rgb.qbcl
 	tests/vox_character.vox
 	tests/vox_glasses.vox
+	tests/glTF/cube/Cube_BaseColor.png
+	tests/glTF/cube/Cube_MetallicRoughness.png
+	tests/glTF/cube/Cube.bin
+	tests/glTF/cube/Cube.gltf
+	tests/glTF/lantern/Lantern_baseColor.png
+	tests/glTF/lantern/Lantern_emissive.png
+	tests/glTF/lantern/Lantern_normal.png
+	tests/glTF/lantern/Lantern_roughnessMetallic.png
+	tests/glTF/lantern/Lantern.bin
+	tests/glTF/lantern/Lantern.gltf
 	voxedit/chr_knight.qb
 )
 

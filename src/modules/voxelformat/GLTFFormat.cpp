@@ -470,6 +470,8 @@ bool GLTFFormat::loadGltfIndices(const tinygltf::Model &model, const tinygltf::P
 	const size_t offset = accessor->byteOffset + bufferView.byteOffset;
 	const uint8_t *indexBuf = buffer.data.data() + offset;
 
+	Log::debug("indicesOffset: %i", (int)indicesOffset);
+
 	switch (accessor->componentType) {
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
 		gltf_priv::copyGltfIndices<uint8_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
@@ -636,8 +638,8 @@ bool GLTFFormat::subdivideShape(const tinygltf::Model &model, const core::Dynami
 			tri.vertices[i] = vertices[idx].pos * scale;
 			tri.uv[i] = vertices[idx].uv;
 		}
-		tri.color = core::Color::getRGBA(vertices[indexOffset].color);
 		const size_t textureIdx = indices[indexOffset];
+		tri.color = core::Color::getRGBA(vertices[textureIdx].color);
 		core_assert_msg(textureIdx < vertices.size(), "Index out of bounds %i/%i for textures", (int)textureIdx, (int)vertices.size());
 		const core::String &texture = vertices[textureIdx].texture;
 		if (!texture.empty()) {
