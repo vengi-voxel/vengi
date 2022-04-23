@@ -151,20 +151,19 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 		const voxel::Region& finalRegion = _extractRegions[i].region;
 		bool onlyAir = true;
 		voxel::RawVolume copy(volume, voxel::Region(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2), &onlyAir);
-		if (onlyAir) {
-			continue;
+		if (!onlyAir) {
+			const glm::ivec3& mins = finalRegion.getLowerCorner();
+			_threadPool.enqueue([movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
+				++_runningExtractorTasks;
+				voxel::Region reg = finalRegion;
+				reg.shiftUpperCorner(1, 1, 1);
+				voxel::Mesh mesh(65536, 65536, true);
+				voxel::extractCubicMesh(&movedCopy, reg, &mesh, voxel::IsQuadNeeded(), reg.getLowerCorner());
+				_pendingQueue.emplace(mins, idx, core::move(mesh));
+				Log::debug("Enqueue mesh for idx: %i", idx);
+				--_runningExtractorTasks;
+			});
 		}
-		const glm::ivec3& mins = finalRegion.getLowerCorner();
-		_threadPool.enqueue([movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
-			++_runningExtractorTasks;
-			voxel::Region reg = finalRegion;
-			reg.shiftUpperCorner(1, 1, 1);
-			voxel::Mesh mesh(65536, 65536, true);
-			voxel::extractCubicMesh(&movedCopy, reg, &mesh, voxel::IsQuadNeeded(), reg.getLowerCorner());
-			_pendingQueue.emplace(mins, idx, core::move(mesh));
-			Log::debug("Enqueue mesh for idx: %i", idx);
-			--_runningExtractorTasks;
-		});
 		--maxExtraction;
 		if (maxExtraction == 0) {
 			break;
