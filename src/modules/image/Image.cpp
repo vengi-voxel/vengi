@@ -87,7 +87,7 @@ ImagePtr loadImage(const core::String& filename, bool async) {
 			}
 		}
 	}
-	if (!file) {
+	if (!file->validHandle()) {
 		return createEmptyImage(filename);
 	}
 	return loadImage(file, async);

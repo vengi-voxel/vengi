@@ -416,6 +416,9 @@ bool Filesystem::pushDir(const core::String &directory) {
 }
 
 io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const {
+	if (isReadableDir(filename)) {
+		return core::make_shared<io::File>("", mode);
+	}
 	if (mode == FileMode::SysWrite) {
 		Log::debug("Use absolute path to open file %s for writing", filename.c_str());
 		return core::make_shared<io::File>(filename, mode);
