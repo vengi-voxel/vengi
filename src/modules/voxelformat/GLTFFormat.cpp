@@ -25,6 +25,7 @@
 #include <glm/gtc/quaternion.hpp>
 
 #define TINYGLTF_IMPLEMENTATION
+// #define TINYGLTF_NO_FS // TODO: use our own file abstraction
 #define JSON_HAS_CPP_11
 #include "external/tiny_gltf.h"
 
@@ -289,15 +290,15 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		verticesUvBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
 		// Describe the layout of indicesBufferView, the indices of the vertices
-		tinygltf::Accessor indeicesAccessor;
-		indeicesAccessor.bufferView = 2 * nthNodeIdx;
-		indeicesAccessor.byteOffset = 0;
-		indeicesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
+		tinygltf::Accessor indicesAccessor;
+		indicesAccessor.bufferView = 2 * nthNodeIdx;
+		indicesAccessor.byteOffset = 0;
+		indicesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
 		static_assert(sizeof(IndexUnion) == 4, "");
-		indeicesAccessor.count = ni;
-		indeicesAccessor.type = TINYGLTF_TYPE_SCALAR;
-		indeicesAccessor.maxValues.push_back(maxIndex);
-		indeicesAccessor.minValues.push_back(minIndex);
+		indicesAccessor.count = ni;
+		indicesAccessor.type = TINYGLTF_TYPE_SCALAR;
+		indicesAccessor.maxValues.push_back(maxIndex);
+		indicesAccessor.minValues.push_back(minIndex);
 
 		// Describe the layout of verticesUvBufferView, the vertices themself
 		tinygltf::Accessor verticesAccessor;
@@ -354,7 +355,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		m.buffers.emplace_back(core::move(buffer));
 		m.bufferViews.emplace_back(core::move(indicesBufferView));
 		m.bufferViews.emplace_back(core::move(verticesUvBufferView));
-		m.accessors.emplace_back(core::move(indeicesAccessor));
+		m.accessors.emplace_back(core::move(indicesAccessor));
 		m.accessors.emplace_back(core::move(verticesAccessor));
 
 		if (withTexCoords || withColor) {
@@ -498,10 +499,12 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 	core::String diffuseTexture;
 	Log::debug("Primitive material: %i", primitive.material);
 	Log::debug("Primitive mode: %i", primitive.mode);
+	int texCoordIndex = 0;
 	if (primitive.material >= 0 && primitive.material < (int)model.materials.size()) {
 		const tinygltf::Material *gltfMaterial = &model.materials[primitive.material];
 		// TODO: load emissiveTexture
-		const int textureIndex = gltfMaterial->pbrMetallicRoughness.baseColorTexture.index;
+		const tinygltf::TextureInfo &textureInfo = gltfMaterial->pbrMetallicRoughness.baseColorTexture;
+		const int textureIndex = textureInfo.index;
 		if (textureIndex != -1 && textureIndex < (int)model.textures.size()) {
 			const tinygltf::Texture &colorTexture = model.textures[textureIndex];
 			if (colorTexture.source >= 0 && colorTexture.source < (int)model.images.size()) {
@@ -518,6 +521,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 						Log::debug("Use image %s", name.c_str());
 						diffuseTexture = image.uri.c_str();
 						textures.put(diffuseTexture, tex);
+						texCoordIndex = textureInfo.texCoord;
 					} else {
 						Log::warn("Failed to load %s", name.c_str());
 					}
@@ -546,6 +550,8 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 		const tinygltf::Buffer &attributeBuffer = model.buffers[attributeBufferView.buffer];
 		const size_t offset = attributeAccessor->byteOffset + attributeBufferView.byteOffset;
 		const uint8_t *buf = attributeBuffer.data.data() + offset;
+		const core::String texCoordAttribute = core::string::format("TEXCOORD_%i", texCoordIndex);
+		Log::debug("Texcoords: %s", texCoordAttribute.c_str());
 		if (attrType == "POSITION") {
 			if (attributeAccessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
 				Log::debug("Skip non float type for %s", attrType.c_str());
@@ -562,7 +568,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 				vertices[verticesOffset + i].pos = glm::vec3(posData[i * 3 + 0], posData[i * 3 + 1], posData[i * 3 + 2]);
 				vertices[verticesOffset + i].texture = diffuseTexture;
 			}
-		} else if (core::string::startsWith(attrType.c_str(), "TEXCOORD")) {
+		} else if (attrType == texCoordAttribute.c_str()) {
 			if (attributeAccessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
 				Log::debug("Skip non float type (%i) for %s", attributeAccessor->componentType, attrType.c_str());
 				continue;
@@ -583,12 +589,12 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 			if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
 				const float *colorData = (const float *)(buf);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
-					color[vertexColorOffset + i] = glm::vec4(colorData[i * 2 + 0], colorData[i * 2 + 1], colorData[i * 2 + 2], colorData[i * 2 + 3]);
+					color[vertexColorOffset + i] = glm::vec4(colorData[i * 4 + 0], colorData[i * 4 + 1], colorData[i * 4 + 2], colorData[i * 4 + 3]);
 				}
 			} else if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
 				const uint8_t *colorData = (const uint8_t *)(buf);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
-					color[vertexColorOffset + i] = core::Color::fromRGBA(colorData[i * 2 + 0], colorData[i * 2 + 1], colorData[i * 2 + 2], colorData[i * 2 + 3]);
+					color[vertexColorOffset + i] = core::Color::fromRGBA(colorData[i * 4 + 0], colorData[i * 4 + 1], colorData[i * 4 + 2], colorData[i * 4 + 3]);
 				}
 			} else {
 				Log::debug("Skip unknown type (%i) for %s", attributeAccessor->componentType, attrType.c_str());
