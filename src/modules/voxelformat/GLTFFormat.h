@@ -20,6 +20,7 @@ namespace voxelformat {
 
 /**
  * @brief GL Transmission Format
+ * https://raw.githubusercontent.com/KhronosGroup/glTF/main/specification/2.0/figures/gltfOverview-2.0.0b.png
  */
 class GLTFFormat : public MeshExporter {
 private:
