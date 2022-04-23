@@ -279,10 +279,16 @@ inline int SceneGraphNode::id() const {
 }
 
 inline voxel::RawVolume *SceneGraphNode::volume() const {
+	if (_type != SceneGraphNodeType::Model) {
+		return nullptr;
+	}
 	return _volume;
 }
 
 inline voxel::RawVolume *SceneGraphNode::volume() {
+	if (_type != SceneGraphNodeType::Model) {
+		return nullptr;
+	}
 	return _volume;
 }
 
