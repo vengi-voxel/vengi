@@ -452,7 +452,7 @@ voxelformat::SceneGraphTransform GLTFFormat::loadGltfTransform(const tinygltf::N
 	return transform;
 }
 
-bool GLTFFormat::loadGltfIndices(const tinygltf::Model &model, const tinygltf::Primitive &primitive, core::DynamicArray<uint32_t> &indices) const {
+bool GLTFFormat::loadGltfIndices(const tinygltf::Model &model, const tinygltf::Primitive &primitive, core::DynamicArray<uint32_t> &indices, size_t indicesOffset) const {
 	if (primitive.mode != TINYGLTF_MODE_TRIANGLES) {
 		Log::warn("Unexpected primitive mode: %i", primitive.mode);
 		return false;
@@ -470,26 +470,24 @@ bool GLTFFormat::loadGltfIndices(const tinygltf::Model &model, const tinygltf::P
 	const size_t offset = accessor->byteOffset + bufferView.byteOffset;
 	const uint8_t *indexBuf = buffer.data.data() + offset;
 
-	const size_t applyOffset = indices.size();
-
 	switch (accessor->componentType) {
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
-		gltf_priv::copyGltfIndices<uint8_t>(indexBuf, accessor->count, stride, indices, applyOffset);
+		gltf_priv::copyGltfIndices<uint8_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_BYTE:
-		gltf_priv::copyGltfIndices<int8_t>(indexBuf, accessor->count, stride, indices, applyOffset);
+		gltf_priv::copyGltfIndices<int8_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
-		gltf_priv::copyGltfIndices<uint16_t>(indexBuf, accessor->count, stride, indices, applyOffset);
+		gltf_priv::copyGltfIndices<uint16_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_SHORT:
-		gltf_priv::copyGltfIndices<int16_t>(indexBuf, accessor->count, stride, indices, applyOffset);
+		gltf_priv::copyGltfIndices<int16_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
-		gltf_priv::copyGltfIndices<uint32_t>(indexBuf, accessor->count, stride, indices, applyOffset);
+		gltf_priv::copyGltfIndices<uint32_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
 		break;
 	case TINYGLTF_COMPONENT_TYPE_INT:
-		gltf_priv::copyGltfIndices<int32_t>(indexBuf, accessor->count, stride, indices, applyOffset);
+		gltf_priv::copyGltfIndices<int32_t>(indexBuf, accessor->count, stride, indices, indicesOffset);
 		break;
 	default:
 		Log::error("Unknown component type for indices: %i", accessor->componentType);
@@ -579,7 +577,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 			foundPosition = true;
 			core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC3);
 			for (size_t i = 0; i < attributeAccessor->count; i++) {
-				const float *posData = (const float *)(buf);
+				const float *posData = (const float *)buf;
 				vertices[verticesOffset + i].pos = glm::vec3(posData[0], posData[1], posData[2]);
 				vertices[verticesOffset + i].texture = diffuseTexture;
 				buf += stride;
@@ -716,7 +714,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	core::DynamicArray<GltfVertex> vertices;
 	Log::debug("Primitives: %i in mesh %i", (int)mesh.primitives.size(), gltfNode.mesh);
 	for (tinygltf::Primitive &primitive : mesh.primitives) {
-		if (!loadGltfIndices(model, primitive, indices)) {
+		if (!loadGltfIndices(model, primitive, indices, vertices.size())) {
 			Log::warn("Failed to load indices");
 			continue;
 		}

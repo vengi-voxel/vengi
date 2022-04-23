@@ -49,7 +49,7 @@ private:
 						core::StringMap<image::ImagePtr> &textures, tinygltf::Model &model, int gltfNodeIdx,
 						int parentNodeId) const;
 	bool loadGltfIndices(const tinygltf::Model &model, const tinygltf::Primitive &primitive,
-						 core::DynamicArray<uint32_t> &indices) const;
+						 core::DynamicArray<uint32_t> &indices, size_t indicesOffset) const;
 	voxelformat::SceneGraphTransform loadGltfTransform(const tinygltf::Node &gltfNode) const;
 	size_t getGltfAccessorSize(const tinygltf::Accessor &accessor) const;
 	const tinygltf::Accessor *getGltfAccessor(const tinygltf::Model &model, int id) const;
