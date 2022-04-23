@@ -548,9 +548,11 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 	Log::debug("Texcoords: %s", texCoordAttribute.c_str());
 
 	bool foundPosition = false;
-	size_t verticesOffset = 0;
-	size_t uvOffset = 0;
-	size_t vertexColorOffset = 0;
+	size_t verticesOffset = vertices.size();
+	size_t uvOffset = texcoords.size();
+	size_t vertexColorOffset = color.size();
+	size_t verticesCount = 0;
+	size_t texCoordCount = 0;
 	for (auto &attrIter : primitive.attributes) {
 		const std::string &attrType = attrIter.first;
 		const tinygltf::Accessor *attributeAccessor = getGltfAccessor(model, attrIter.second);
@@ -559,10 +561,12 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 			continue;
 		}
 
+		const size_t size = getGltfAccessorSize(*attributeAccessor);
 		const tinygltf::BufferView &attributeBufferView = model.bufferViews[attributeAccessor->bufferView];
+		const size_t stride = attributeBufferView.byteStride ? attributeBufferView.byteStride : size;
 		const tinygltf::Buffer &attributeBuffer = model.buffers[attributeBufferView.buffer];
 		const size_t offset = attributeAccessor->byteOffset + attributeBufferView.byteOffset;
-		Log::debug("%s: %i (offset: %i, stride: %i)", attrType.c_str(), (int)attributeAccessor->count, (int)offset, (int)attributeBufferView.byteStride);
+		Log::debug("%s: %i (offset: %i, stride: %i)", attrType.c_str(), (int)attributeAccessor->count, (int)offset, (int)stride);
 		const uint8_t *buf = attributeBuffer.data.data() + offset;
 		if (attrType == "POSITION") {
 			if (attributeAccessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
@@ -570,47 +574,49 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 				continue;
 			}
 			foundPosition = true;
-			verticesOffset = vertices.size();
 			if (verticesOffset + attributeAccessor->count > vertices.size()) {
 				vertices.resize(verticesOffset + attributeAccessor->count);
 			}
-
-			const float *posData = (const float *)(buf);
+			verticesCount = attributeAccessor->count;
 			core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC3);
 			for (size_t i = 0; i < attributeAccessor->count; i++) {
-				vertices[verticesOffset + i].pos = glm::vec3(posData[i * 3 + 0], posData[i * 3 + 1], posData[i * 3 + 2]);
+				const float *posData = (const float *)(buf);
+				vertices[verticesOffset + i].pos = glm::vec3(posData[0], posData[1], posData[2]);
 				vertices[verticesOffset + i].texture = diffuseTexture;
+				buf += stride;
 			}
 		} else if (attrType == texCoordAttribute.c_str()) {
 			if (attributeAccessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
 				Log::debug("Skip non float type (%i) for %s", attributeAccessor->componentType, attrType.c_str());
 				continue;
 			}
-			uvOffset = texcoords.size();
 			if (uvOffset + attributeAccessor->count > texcoords.size()) {
 				texcoords.resize(uvOffset + attributeAccessor->count);
 			}
-			const float *uvData = (const float *)(buf);
+			texCoordCount = attributeAccessor->count;
 			core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC2);
 			for (size_t i = 0; i < attributeAccessor->count; i++) {
-				texcoords[uvOffset + i] = glm::vec2(uvData[i * 2 + 0], uvData[i * 2 + 1]);
+				const float *uvData = (const float *)buf;
+				texcoords[uvOffset + i] = glm::vec2(uvData[0], uvData[1]);
+				buf += stride;
 			}
 		} else if (core::string::startsWith(attrType.c_str(), "COLOR")) {
-			vertexColorOffset = color.size();
 			if (vertexColorOffset + attributeAccessor->count > color.size()) {
 				color.resize(vertexColorOffset + attributeAccessor->count);
 			}
 			if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
-				const float *colorData = (const float *)(buf);
 				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
-					color[vertexColorOffset + i] = glm::vec4(colorData[i * 4 + 0], colorData[i * 4 + 1], colorData[i * 4 + 2], colorData[i * 4 + 3]);
+					const float *colorData = (const float *)(buf);
+					color[vertexColorOffset + i] = glm::vec4(colorData[0], colorData[1], colorData[2], colorData[3]);
+					buf += stride;
 				}
 			} else if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
-				const uint8_t *colorData = (const uint8_t *)(buf);
 				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
-					color[vertexColorOffset + i] = core::Color::fromRGBA(colorData[i * 4 + 0], colorData[i * 4 + 1], colorData[i * 4 + 2], colorData[i * 4 + 3]);
+					const uint8_t *colorData = buf;
+					color[vertexColorOffset + i] = core::Color::fromRGBA(colorData[0], colorData[1], colorData[2], colorData[3]);
+					buf += stride;
 				}
 			} else {
 				Log::debug("Skip unknown type (%i) for %s", attributeAccessor->componentType, attrType.c_str());
@@ -619,6 +625,9 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 		} else {
 			Log::debug("Skip unhandled attribute %s", attrType.c_str());
 		}
+	}
+	if (texCoordCount != verticesCount) {
+		Log::warn("Invalid vertex<=>uv numbers (%i vs %i)", (int)verticesCount, (int)texCoordCount);
 	}
 	return foundPosition;
 }
