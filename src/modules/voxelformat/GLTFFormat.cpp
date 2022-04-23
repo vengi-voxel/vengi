@@ -508,22 +508,32 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 		if (textureIndex != -1 && textureIndex < (int)model.textures.size()) {
 			const tinygltf::Texture &colorTexture = model.textures[textureIndex];
 			if (colorTexture.source >= 0 && colorTexture.source < (int)model.images.size()) {
+				if (colorTexture.sampler >= 0 && colorTexture.sampler < (int)model.samplers.size()) {
+					const tinygltf::Sampler &sampler = model.samplers[colorTexture.sampler];
+					Log::debug("Sampler: %s, wrapS: %i, wrapT: %i", sampler.name.c_str(), sampler.wrapS, sampler.wrapT);
+				}
 				const tinygltf::Image &image = model.images[colorTexture.source];
-				core::String name = image.uri.c_str();
-				if (!textures.hasKey(name)) {
-					if (!core::string::isAbsolutePath(name)) {
-						const core::String& path = core::string::extractPath(filename);
-						Log::debug("Search image %s in path %s", name.c_str(), path.c_str());
-						name = path + name;
-					}
-					image::ImagePtr tex = image::loadImage(name, false);
-					if (tex->isLoaded()) {
-						Log::debug("Use image %s", name.c_str());
-						diffuseTexture = image.uri.c_str();
-						textures.put(diffuseTexture, tex);
-						texCoordIndex = textureInfo.texCoord;
-					} else {
-						Log::warn("Failed to load %s", name.c_str());
+				Log::debug("Image components: %i, width: %i, height: %i, bits: %i", image.component, image.width,
+						   image.height, image.bits);
+				if (image.uri.empty()) {
+					Log::warn("Embedded textures are not yet supported");
+				} else {
+					core::String name = image.uri.c_str();
+					if (!textures.hasKey(name)) {
+						if (!core::string::isAbsolutePath(name)) {
+							const core::String& path = core::string::extractPath(filename);
+							Log::debug("Search image %s in path %s", name.c_str(), path.c_str());
+							name = path + name;
+						}
+						image::ImagePtr tex = image::loadImage(name, false);
+						if (tex->isLoaded()) {
+							Log::debug("Use image %s", name.c_str());
+							diffuseTexture = image.uri.c_str();
+							textures.put(diffuseTexture, tex);
+							texCoordIndex = textureInfo.texCoord;
+						} else {
+							Log::warn("Failed to load %s", name.c_str());
+						}
 					}
 				}
 			} else {
@@ -533,6 +543,9 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 			Log::debug("Invalid texture index given %i", textureIndex);
 		}
 	}
+
+	const core::String texCoordAttribute = core::string::format("TEXCOORD_%i", texCoordIndex);
+	Log::debug("Texcoords: %s", texCoordAttribute.c_str());
 
 	bool foundPosition = false;
 	size_t verticesOffset = 0;
@@ -549,9 +562,8 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 		const tinygltf::BufferView &attributeBufferView = model.bufferViews[attributeAccessor->bufferView];
 		const tinygltf::Buffer &attributeBuffer = model.buffers[attributeBufferView.buffer];
 		const size_t offset = attributeAccessor->byteOffset + attributeBufferView.byteOffset;
+		Log::debug("%s: %i (offset: %i, stride: %i)", attrType.c_str(), (int)attributeAccessor->count, (int)offset, (int)attributeBufferView.byteStride);
 		const uint8_t *buf = attributeBuffer.data.data() + offset;
-		const core::String texCoordAttribute = core::string::format("TEXCOORD_%i", texCoordIndex);
-		Log::debug("Texcoords: %s", texCoordAttribute.c_str());
 		if (attrType == "POSITION") {
 			if (attributeAccessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
 				Log::debug("Skip non float type for %s", attrType.c_str());
