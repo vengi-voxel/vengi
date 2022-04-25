@@ -25,6 +25,7 @@ private:
 	using Super = video::WindowedApp;
 	void loadFonts();
 protected:
+	core::Set<int32_t> _keys;
 	core::VarPtr _renderUI;
 	core::VarPtr _showMetrics;
 	core::VarPtr _uiFontSize;

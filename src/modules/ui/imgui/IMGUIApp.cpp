@@ -122,6 +122,7 @@ bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
 		ev.key.keysym.sym = (SDL_Keycode)key;
 		ev.key.keysym.mod = modifier;
 		ImGui_ImplSDL2_ProcessEvent(&ev);
+		_keys.insert(key);
 	}
 	return true;
 }
@@ -130,13 +131,14 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	if (_console.isActive()) {
 		return true;
 	}
-	if (!Super::onKeyRelease(key, modifier)) {
+	if (!Super::onKeyRelease(key, modifier) || _keys.has(key)) {
 		SDL_Event ev {};
 		ev.type = SDL_KEYUP;
 		ev.key.keysym.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
 		ev.key.keysym.sym = key;
 		ev.key.keysym.mod = modifier;
 		ImGui_ImplSDL2_ProcessEvent(&ev);
+		_keys.remove(key);
 	}
 	return true;
 }
