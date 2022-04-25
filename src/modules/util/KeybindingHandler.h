@@ -6,7 +6,7 @@
 
 #include "core/IComponent.h"
 #include "KeybindingParser.h"
-#include <unordered_set>
+#include "core/collection/Set.h"
 #include <stdint.h>
 
 namespace util {
@@ -19,7 +19,7 @@ extern bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask);
 class KeyBindingHandler : public core::IComponent {
 private:
 	uint32_t _pressedModifierMask = 0u;
-	std::unordered_set<int32_t> _keys;
+	core::Set<int32_t> _keys;
 	BindMap _bindings;
 
 	/**

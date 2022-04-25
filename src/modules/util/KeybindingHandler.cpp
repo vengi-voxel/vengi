@@ -283,7 +283,7 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 		if (code != 0) {
 			// this is the case where a binding that needs a modifier should get executed, but
 			// a key was pressed in the order: "key and then modifier".
-			std::unordered_set<int32_t> recheck;
+			core::Set<int32_t> recheck;
 			for (auto& b : _bindings) {
 				const CommandModifierPair& pair = b.second;
 				if (pair.count != count) {
@@ -308,14 +308,14 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 			}
 			// for those keys that were activated because only a modifier was pressed (bound to e.g. left_shift),
 			// we have to disable the old action button that was just bound to the key without the modifier.
-			for (int32_t checkKey : recheck) {
-				auto range = _bindings.equal_range(checkKey);
+			for (auto checkKey : recheck) {
+				auto range = _bindings.equal_range(checkKey->key);
 				for (auto i = range.first; i != range.second; ++i) {
 					const CommandModifierPair& pair = i->second;
 					if (pair.modifier != 0) {
 						continue;
 					}
-					command::Command::execute(COMMAND_RELEASED "%s %i %f", &(pair.command.c_str()[1]), checkKey, nowSeconds);
+					command::Command::execute(COMMAND_RELEASED "%s %i %f", &(pair.command.c_str()[1]), checkKey->key, nowSeconds);
 				}
 			}
 		}
@@ -350,11 +350,10 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 		const CommandModifierPair& pair = i->second;
 		const core::String& command = pair.command;
 		if (command[0] == COMMAND_PRESSED[0]) {
-			command::Command::execute(COMMAND_RELEASED "%s %i %f", &(command.c_str()[1]), key, nowSeconds);
-			handled = true;
+			handled = command::Command::execute(COMMAND_RELEASED "%s %i %f", &(command.c_str()[1]), key, nowSeconds) > 0;
 		}
 	}
-	_keys.erase(key);
+	_keys.remove(key);
 	return handled;
 }
 
