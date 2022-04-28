@@ -62,6 +62,7 @@ protected:
 
 	virtual bool handleSDLEvent(SDL_Event& event);
 
+	inline bool isPressed(int32_t key) const { return _keybindingHandler.isPressed(key); };
 	bool handleKeyPress(int32_t key, int16_t modifier, uint16_t count = 1u);
 	bool handleKeyRelease(int32_t key, int16_t modifier);
 
