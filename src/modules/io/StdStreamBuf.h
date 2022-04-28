@@ -28,9 +28,9 @@ public:
 	/**
 	 *  @brief  Consumes data from the buffer; writes to the
 	 *          controlled sequence.
-	 *  @param  __c  An additional character to consume.
+	 *  @param  c  An additional character to consume.
 	 *  @return  eof() to indicate failure, something else (usually
-	 *           @a __c, or not_eof())
+	 *           @a c, or not_eof())
 	 *
 	 *  Informally, this function is called when the output buffer
 	 *  is full (or does not exist, as buffering need not actually
@@ -38,7 +38,7 @@ public:
 	 *  <em>some effect</em> on the controlled sequence.
 	 *  (Typically, the buffer is written out to the sequence
 	 *  verbatim.)  In either case, the character @a c is also
-	 *  written out, if @a __c is not @c eof().
+	 *  written out, if @a c is not @c eof().
 	 *
 	 *  For a formal definition of this function, see a good text
 	 *  such as Langer & Kreft, or [27.5.2.4.5]/3-7.
