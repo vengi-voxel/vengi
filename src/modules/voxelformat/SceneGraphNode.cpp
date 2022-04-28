@@ -314,7 +314,7 @@ SceneGraphTransform SceneGraphNode::transformForFrame(uint32_t current) {
 		_currentAnimKeyFrame = start;
 	}
 
-	double deltaFrameSeconds;
+	double deltaFrameSeconds = 0.0f;
 	switch (interpolationType) {
 	case InterpolationType::Instant:
 		deltaFrameSeconds = util::easing::full((float)current, (double)start, (double)end);

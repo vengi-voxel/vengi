@@ -56,7 +56,7 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar) {
 	int bestIndex = -1;
 	float bestColorDistance = FLT_MAX;
 	for (int i = 0; i < colorCount; ++i) {
-		float colorDistance;
+		float colorDistance = 0.0f;
 		const int closestColorIdx = getClosestMatch(colors[i], &colorDistance, i);
 		if (colorDistance < bestColorDistance) {
 			bestColorDistance = colorDistance;
