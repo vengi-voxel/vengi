@@ -15,10 +15,11 @@ void splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize,
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
 
+	const glm::ivec3 step = glm::min(maxs, maxSize);
 	Log::debug("split region: %s", region.toString().c_str());
-	for (int y = mins.y; y <= maxs.y; y += maxSize.y) {
-		for (int z = mins.z; z <= maxs.z; z += maxSize.z) {
-			for (int x = mins.x; x <= maxs.x; x += maxSize.x) {
+	for (int y = mins.y; y <= maxs.y; y += step.y) {
+		for (int z = mins.z; z <= maxs.z; z += step.z) {
+			for (int x = mins.x; x <= maxs.x; x += step.x) {
 				const glm::ivec3 innerMins(x, y, z);
 				const glm::ivec3 innerMaxs = innerMins + maxSize - 1;
 				const voxel::Region innerRegion(innerMins, innerMaxs);
