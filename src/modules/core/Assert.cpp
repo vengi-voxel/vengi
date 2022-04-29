@@ -12,19 +12,23 @@
 
 void core_stacktrace() {
 #ifdef HAVE_BACKWARD
+	std::ostringstream os;
 	backward::StackTrace st;
 	st.load_here(32);
-	backward::TraceResolver tr;
-	tr.load_stacktrace(st);
-	for (size_t __stacktrace_i = 0; __stacktrace_i < st.size(); ++__stacktrace_i) {
-		const backward::ResolvedTrace& trace = tr.resolve(st[__stacktrace_i]);
-		Log::error("#%i %s %s [%p]", int(__stacktrace_i), trace.object_filename.c_str(), trace.object_function.c_str(), trace.addr);
+	backward::Printer printer;
+	printer.print(st, os);
+	std::string stacktrace = os.str();
+	char *c = stacktrace.data();
+	while (char *l = SDL_strchr(c, '\n')) {
+		*l = '\0';
+		Log::error("%s", c);
+		c = l + 1;
 	}
 #endif
 }
 
-SDL_AssertState core_assert_impl_message(SDL_AssertData &sdl_assert_data, char *buf, int bufSize,
-										 const char *function, const char *file, int line, const char *format, ...) {
+SDL_AssertState core_assert_impl_message(SDL_AssertData &sdl_assert_data, char *buf, int bufSize, const char *function,
+										 const char *file, int line, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
 	SDL_vsnprintf(buf, bufSize - 1, format, args);
