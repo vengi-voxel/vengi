@@ -75,6 +75,10 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 	destSceneGraph.reserve(srcSceneGraph.size());
 	for (SceneGraphNode &node : srcSceneGraph) {
 		const voxel::Region& region = node.region();
+		if (!region.isValid()) {
+			Log::debug("invalid region for node %i", node.id());
+			continue;
+		}
 		if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxSize))) {
 			SceneGraphNode newNode;
 			newNode.setVolume(new voxel::RawVolume(node.volume()), true);

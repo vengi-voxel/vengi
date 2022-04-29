@@ -312,6 +312,10 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	const int replacement = findClosestPaletteIndex();
 
 	const size_t modelCount = newSceneGraph.size();
+	if (modelCount == 0) {
+		Log::error("No model nodes found in scene graph");
+		return false;
+	}
 	core::Buffer<ogt_vox_model> models(modelCount);
 	core::Buffer<ogt_vox_layer> layers(modelCount);
 	core::Buffer<ogt_vox_instance> instances(modelCount);
