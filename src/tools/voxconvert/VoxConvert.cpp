@@ -409,7 +409,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 		}
 		if (importAsVolume) {
 			voxelformat::SceneGraphNode node;
-			const int maxDepth = core::string::toInt(getArgVal("--image-as-volume-max-depth"));
+			const int maxDepth = glm::clamp(core::string::toInt(getArgVal("--image-as-volume-max-depth")), 1, 255);
 			const bool bothSides = core::string::toBool(getArgVal("--image-as-volume-both-sides"));
 			node.setVolume(voxelutil::importAsVolume(image, maxDepth, bothSides), true);
 			node.setName(infile);
