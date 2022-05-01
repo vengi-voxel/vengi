@@ -7,12 +7,14 @@
 #include "core/Color.h"
 #include "core/StringUtil.h"
 #include "command/Command.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "../AxisUtil.h"
 #include "../CustomBindingContext.h"
 #include "../SceneManager.h"
+#include "voxelutil/VoxelUtil.h"
 
 namespace voxedit {
 
@@ -342,6 +344,16 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(con
 			return true;
 		}
 		return false;
+	}
+	if (_modifierType == ModifierType::FillPlane) {
+		voxel::RawVolumeWrapper wrapper(volume);
+		voxelutil::fillPlane(wrapper, cursorVoxel(), voxel::Voxel(), cursorPosition(), cursorFace());
+		const voxel::Region& modifiedRegion = wrapper.dirtyRegion();
+		if (modifiedRegion.isValid()) {
+			voxel::logRegion("Dirty region", modifiedRegion);
+			callback(modifiedRegion, _modifierType);
+		}
+		return true;
 	}
 
 	const math::AABB<int> a = aabb();

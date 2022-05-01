@@ -212,6 +212,17 @@ void SceneManager::fillHollow() {
 	}
 }
 
+void SceneManager::fillPlane() {
+	const int nodeId = activeNode();
+	if (nodeId == -1) {
+		return;
+	}
+	voxel::RawVolume* v = volume(nodeId);
+	voxel::RawVolumeWrapper wrapper(v);
+	voxelutil::fillPlane(wrapper, _modifier.cursorVoxel(), voxel::Voxel(), _modifier.cursorPosition(), _modifier.cursorFace());
+	modified(nodeId, wrapper.dirtyRegion());
+}
+
 bool SceneManager::saveModels(const core::String& dir) {
 	bool state = false;
 	for (const voxelformat::SceneGraphNode & node : _sceneGraph) {
@@ -1224,6 +1235,10 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("fillhollow", [&] (const command::CmdArgs& args) {
 		fillHollow();
+	}).setHelp("Fill the inner parts of closed models");
+
+	command::Command::registerCommand("fillplane", [&] (const command::CmdArgs& args) {
+		fillPlane();
 	}).setHelp("Fill the inner parts of closed models");
 
 	command::Command::registerCommand("setreferenceposition", [&] (const command::CmdArgs& args) {

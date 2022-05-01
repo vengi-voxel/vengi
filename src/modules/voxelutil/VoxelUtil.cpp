@@ -59,7 +59,7 @@ static void fillRegion(voxel::RawVolume &in, const voxel::Voxel &voxel, const vo
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
 	const int size = width * height * depth;
-	const glm::ivec3 mins = in.mins();
+	const glm::ivec3 mins = in.region().getLowerCorner();
 	core::DynamicArray<glm::ivec3> positions;
 	positions.reserve(size);
 	core::Buffer<bool> visitedData(size);
@@ -161,30 +161,65 @@ void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel) {
 	fillRegion(in, voxel, in.region());
 }
 
-void fillPlane(voxel::RawVolume &in, const voxel::Voxel &voxel, const glm::ivec3 &position, voxel::FaceNames face) {
-	glm::ivec3 mins(position);
-	glm::ivec3 maxs(position);
+static void fillPlane_r(voxel::RawVolumeWrapper &in, const voxel::Region &region, const voxel::Voxel &voxel,
+						const voxel::Voxel &replace, const glm::ivec3 &position) {
+	if (!region.containsPoint(position)) {
+		return;
+	}
+	if (in.voxel(position).getColor() != replace.getColor()) {
+		return;
+	}
+	if (!in.setVoxel(position, voxel)) {
+		return;
+	}
+	if (region.containsPoint(position.x + 1, position.y, position.z)) {
+		fillPlane_r(in, region, voxel, replace, glm::ivec3(position.x + 1, position.y, position.z));
+	}
+	if (region.containsPoint(position.x - 1, position.y, position.z)) {
+		fillPlane_r(in, region, voxel, replace, glm::ivec3(position.x - 1, position.y, position.z));
+	}
+	if (region.containsPoint(position.x, position.y + 1, position.z)) {
+		fillPlane_r(in, region, voxel, replace, glm::ivec3(position.x, position.y + 1, position.z));
+	}
+	if (region.containsPoint(position.x, position.y - 1, position.z)) {
+		fillPlane_r(in, region, voxel, replace, glm::ivec3(position.x, position.y - 1, position.z));
+	}
+	if (region.containsPoint(position.x, position.y, position.z + 1)) {
+		fillPlane_r(in, region, voxel, replace, glm::ivec3(position.x, position.y, position.z + 1));
+	}
+	if (region.containsPoint(position.x, position.y, position.z - 1)) {
+		fillPlane_r(in, region, voxel, replace, glm::ivec3(position.x, position.y, position.z - 1));
+	}
+}
+
+void fillPlane(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, const voxel::Voxel &replace, const glm::ivec3 &position,
+			   voxel::FaceNames face) {
+	if (voxel.getColor() == replace.getColor()) {
+		return;
+	}
+	glm::ivec3 mins = in.region().getLowerCorner();
+	glm::ivec3 maxs = in.region().getUpperCorner();
 	switch (face) {
 	case voxel::FaceNames::PositiveX:
 	case voxel::FaceNames::NegativeX:
-		mins.x = in.region().getLowerX();
-		maxs.x = in.region().getUpperX();
+		mins.x = position.x;
+		maxs.x = position.x;
 		break;
 	case voxel::FaceNames::PositiveY:
 	case voxel::FaceNames::NegativeY:
-		mins.y = in.region().getLowerY();
-		maxs.y = in.region().getUpperY();
+		mins.y = position.y;
+		maxs.y = position.y;
 		break;
 	case voxel::FaceNames::PositiveZ:
 	case voxel::FaceNames::NegativeZ:
-		mins.z = in.region().getLowerZ();
-		maxs.z = in.region().getUpperZ();
+		mins.z = position.z;
+		maxs.z = position.z;
 		break;
 	case voxel::FaceNames::Max:
 		return;
 	}
 	const voxel::Region region(mins, maxs);
-	fillRegion(in, voxel, region);
+	fillPlane_r(in, region, voxel, replace, position);
 }
 
 } // namespace voxelutil

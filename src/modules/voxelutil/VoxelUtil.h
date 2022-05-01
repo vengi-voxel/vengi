@@ -7,6 +7,10 @@
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 
+namespace voxel {
+class RawVolumeWrapper;
+}
+
 namespace voxelutil {
 
 bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const voxel::Region &targetRegion);
@@ -17,7 +21,7 @@ bool copy(const voxel::RawVolume &in, const voxel::Region& inRegion, voxel::RawV
  * @sa voxel::isBlocked()
  */
 bool isEmpty(const voxel::RawVolume &in, const voxel::Region &region);
-void fillPlane(voxel::RawVolume &in, const voxel::Voxel &voxel, const glm::ivec3 &position, voxel::FaceNames face);
+void fillPlane(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, const voxel::Voxel &replace, const glm::ivec3 &position, voxel::FaceNames face);
 void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel);
 
 }

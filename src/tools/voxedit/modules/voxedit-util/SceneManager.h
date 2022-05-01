@@ -203,6 +203,7 @@ protected:
 	 */
 	void moveCursor(int x, int y, int z);
 	void fillHollow();
+	void fillPlane();
 
 	void colorToNewLayer(const voxel::Voxel voxelColor);
 	void crop();

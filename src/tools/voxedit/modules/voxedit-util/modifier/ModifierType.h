@@ -13,6 +13,7 @@ enum class ModifierType {
 	Delete = (1 << 2),
 	Update = (1 << 3),
 	Select = (1 << 4),
-	ColorPicker = (1 << 5) | Single
+	ColorPicker = (1 << 5) | Single,
+	FillPlane = (1 << 6)
 };
 CORE_ENUM_BIT_OPERATIONS(ModifierType)

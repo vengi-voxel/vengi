@@ -3,6 +3,7 @@
  */
 
 #include "ToolsPanel.h"
+#include "IconsFontAwesome5.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include "voxedit-util/SceneManager.h"
@@ -22,6 +23,7 @@ void ToolsPanel::update(const char *title) {
 		core_trace_scoped(ToolsPanel);
 		modifierRadioButton(ICON_FA_PEN " Place", ModifierType::Place);
 		modifierRadioButton(ICON_FA_PEN " Single", ModifierType::Place | ModifierType::Single);
+		modifierRadioButton(ICON_FA_FILL_DRIP " Fill Plane", ModifierType::FillPlane);
 		modifierRadioButton(ICON_FA_EXPAND " Select", ModifierType::Select);
 		modifierRadioButton(ICON_FA_ERASER " Delete", ModifierType::Delete);
 		modifierRadioButton(ICON_FK_PENCIL " Pick color", ModifierType::ColorPicker);
