@@ -49,9 +49,6 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	if (!src.region().containsRegion(_region)) {
 		_region.cropTo(src._region);
 	}
-	if (onlyAir) {
-		*onlyAir = true;
-	}
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
 	_data = (Voxel *)core_malloc(size);
 	if (src.region() == _region) {
@@ -59,7 +56,13 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		_maxs = src._maxs;
 		_boundsValid = src._boundsValid;
 		core_memcpy((void *)_data, (void *)src._data, size);
+		if (onlyAir) {
+			*onlyAir = false;
+		}
 	} else {
+		if (onlyAir) {
+			*onlyAir = true;
+		}
 		_mins = glm::ivec3((std::numeric_limits<int>::max)() / 2);
 		_maxs = glm::ivec3((std::numeric_limits<int>::min)() / 2);
 		_boundsValid = false;
