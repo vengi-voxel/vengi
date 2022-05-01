@@ -57,7 +57,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--image-as-plane").setDescription("Import given input images as planes");
 	registerArg("--image-as-volume").setDescription("Import given input image as volume");
 	registerArg("--image-as-volume-max-depth").setDefaultValue("8").setDescription("Importing image as volume max depth");
-	registerArg("--image-as-volume-both-sides").setDefaultValue("true").setDescription("Importing image as volume for both sides");
+	registerArg("--image-as-volume-both-sides").setDefaultValue("false").setDescription("Importing image as volume for both sides");
 	registerArg("--image-as-heightmap").setDescription("Import given input images as heightmaps");
 	registerArg("--input").setShort("-i").setDescription("Allow to specify input files");
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
