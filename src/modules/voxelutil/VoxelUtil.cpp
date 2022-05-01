@@ -161,65 +161,87 @@ void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel) {
 	fillRegion(in, voxel, in.region());
 }
 
-static void fillPlane_r(voxel::RawVolumeWrapper &in, const voxel::Region &region, const voxel::Voxel &voxel,
-						const voxel::Voxel &replace, const glm::ivec3 &position) {
+static void fillPlane_r(voxel::RawVolumeWrapper &in, const voxel::Region &region, const voxel::Voxel &targetVoxel,
+						const voxel::Voxel &searchedVoxel, const glm::ivec3 &position, const glm::ivec3 &offset) {
 	if (!region.containsPoint(position)) {
 		return;
 	}
-	if (in.voxel(position).getColor() != replace.getColor()) {
+	if (in.voxel(position) != searchedVoxel) {
 		return;
 	}
-	if (!in.setVoxel(position, voxel)) {
+	const glm::ivec3 &ground = position + offset;
+	if (in.region().containsPoint(ground)) {
+		if (in.voxel(ground) == searchedVoxel) {
+			return;
+		}
+	}
+	if (!in.setVoxel(position, targetVoxel)) {
 		return;
 	}
 	if (region.containsPoint(position.x + 1, position.y, position.z)) {
-		fillPlane_r(in, region, voxel, replace, glm::ivec3(position.x + 1, position.y, position.z));
+		fillPlane_r(in, region, targetVoxel, searchedVoxel, glm::ivec3(position.x + 1, position.y, position.z), offset);
 	}
 	if (region.containsPoint(position.x - 1, position.y, position.z)) {
-		fillPlane_r(in, region, voxel, replace, glm::ivec3(position.x - 1, position.y, position.z));
+		fillPlane_r(in, region, targetVoxel, searchedVoxel, glm::ivec3(position.x - 1, position.y, position.z), offset);
 	}
 	if (region.containsPoint(position.x, position.y + 1, position.z)) {
-		fillPlane_r(in, region, voxel, replace, glm::ivec3(position.x, position.y + 1, position.z));
+		fillPlane_r(in, region, targetVoxel, searchedVoxel, glm::ivec3(position.x, position.y + 1, position.z), offset);
 	}
 	if (region.containsPoint(position.x, position.y - 1, position.z)) {
-		fillPlane_r(in, region, voxel, replace, glm::ivec3(position.x, position.y - 1, position.z));
+		fillPlane_r(in, region, targetVoxel, searchedVoxel, glm::ivec3(position.x, position.y - 1, position.z), offset);
 	}
 	if (region.containsPoint(position.x, position.y, position.z + 1)) {
-		fillPlane_r(in, region, voxel, replace, glm::ivec3(position.x, position.y, position.z + 1));
+		fillPlane_r(in, region, targetVoxel, searchedVoxel, glm::ivec3(position.x, position.y, position.z + 1), offset);
 	}
 	if (region.containsPoint(position.x, position.y, position.z - 1)) {
-		fillPlane_r(in, region, voxel, replace, glm::ivec3(position.x, position.y, position.z - 1));
+		fillPlane_r(in, region, targetVoxel, searchedVoxel, glm::ivec3(position.x, position.y, position.z - 1), offset);
 	}
 }
 
-void fillPlane(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, const voxel::Voxel &replace, const glm::ivec3 &position,
-			   voxel::FaceNames face) {
-	if (voxel.getColor() == replace.getColor()) {
+void fillPlane(voxel::RawVolumeWrapper &in, const voxel::Voxel &targetVoxel, const voxel::Voxel &searchedVoxel,
+			   const glm::ivec3 &position, voxel::FaceNames face) {
+	if (targetVoxel == searchedVoxel) {
 		return;
 	}
 	glm::ivec3 mins = in.region().getLowerCorner();
 	glm::ivec3 maxs = in.region().getUpperCorner();
+	glm::ivec3 offset(0);
 	switch (face) {
 	case voxel::FaceNames::PositiveX:
+		mins.x = position.x;
+		maxs.x = position.x;
+		offset.x = -1;
+		break;
 	case voxel::FaceNames::NegativeX:
 		mins.x = position.x;
 		maxs.x = position.x;
+		offset.x = 1;
 		break;
 	case voxel::FaceNames::PositiveY:
+		mins.y = position.y;
+		maxs.y = position.y;
+		offset.y = -1;
+		break;
 	case voxel::FaceNames::NegativeY:
 		mins.y = position.y;
 		maxs.y = position.y;
+		offset.y = 1;
 		break;
 	case voxel::FaceNames::PositiveZ:
+		mins.z = position.z;
+		maxs.z = position.z;
+		offset.z = -1;
+		break;
 	case voxel::FaceNames::NegativeZ:
 		mins.z = position.z;
 		maxs.z = position.z;
+		offset.z = 1;
 		break;
 	case voxel::FaceNames::Max:
 		return;
 	}
 	const voxel::Region region(mins, maxs);
-	fillPlane_r(in, region, voxel, replace, position);
+	fillPlane_r(in, region, targetVoxel, searchedVoxel, position, offset);
 }
 
 } // namespace voxelutil

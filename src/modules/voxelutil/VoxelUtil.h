@@ -21,7 +21,7 @@ bool copy(const voxel::RawVolume &in, const voxel::Region& inRegion, voxel::RawV
  * @sa voxel::isBlocked()
  */
 bool isEmpty(const voxel::RawVolume &in, const voxel::Region &region);
-void fillPlane(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, const voxel::Voxel &replace, const glm::ivec3 &position, voxel::FaceNames face);
+void fillPlane(voxel::RawVolumeWrapper &in, const voxel::Voxel &targetVoxel, const voxel::Voxel &searchedVoxel, const glm::ivec3 &position, voxel::FaceNames face);
 void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel);
 
 }

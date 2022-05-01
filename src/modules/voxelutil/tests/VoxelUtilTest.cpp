@@ -59,6 +59,20 @@ TEST_F(VoxelUtilTest, testFillHollowLeak) {
 	EXPECT_EQ(0, v.voxel(region.getCenter()).getColor());
 }
 
+TEST_F(VoxelUtilTest, testFillPlanePositiveYExtrude) {
+	voxel::Region region(0, 2);
+	voxel::RawVolume v(region);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	voxel::RawVolumeWrapper wrapper(&v);
+	// build an L
+	v.setVoxel(0, 0, 0, fillVoxel);
+	v.setVoxel(1, 0, 0, fillVoxel);
+	v.setVoxel(2, 0, 0, fillVoxel);
+	v.setVoxel(2, 0, 1, fillVoxel);
+	voxelutil::fillPlane(wrapper, fillVoxel, voxel::Voxel(), glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveY);
+	EXPECT_EQ(8, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
+}
+
 TEST_F(VoxelUtilTest, testFillPlanePositiveY) {
 	voxel::Region region(0, 2);
 	voxel::RawVolume v(region);
