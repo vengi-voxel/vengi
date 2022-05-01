@@ -8,10 +8,11 @@
 
 enum class ModifierType {
 	None = 0,
-	Place = 1 << 0,
-	Delete = 1 << 1,
-	Update = 1 << 2,
-	Select = 1 << 3,
-	ColorPicker = 1 << 4
+	Place = (1 << 0),
+	Single = (1 << 1),
+	Delete = (1 << 2),
+	Update = (1 << 3),
+	Select = (1 << 4),
+	ColorPicker = (1 << 5) | Single
 };
 CORE_ENUM_BIT_OPERATIONS(ModifierType)

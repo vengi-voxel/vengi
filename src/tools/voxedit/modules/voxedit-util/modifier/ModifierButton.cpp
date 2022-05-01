@@ -19,11 +19,11 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 		return initialDown;
 	}
 	if (_secondAction) {
-		execute();
+		execute(false);
 		return initialDown;
 	}
+	Modifier& mgr = sceneMgr().modifier();
 	if (initialDown) {
-		Modifier& mgr = sceneMgr().modifier();
 		if (_newType != ModifierType::None) {
 			_oldType = mgr.modifierType();
 			mgr.setModifierType(_newType);
@@ -47,14 +47,14 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 			mgr.aabbStep();
 			return allUp;
 		}
-		execute();
+		execute(false);
 	} else {
 		Log::debug("Not all modifier keys were released - skipped action execution");
 	}
 	return allUp;
 }
 
-void ModifierButton::execute() {
+void ModifierButton::execute(bool single) {
 	Modifier& mgr = sceneMgr().modifier();
 	sceneMgr().nodeForeachGroup([&] (int nodeId) {
 		Log::debug("Execute modifier action for node %i", nodeId);
@@ -70,7 +70,9 @@ void ModifierButton::execute() {
 		sceneMgr().trace(true);
 		_oldType = ModifierType::None;
 	}
-	mgr.aabbAbort();
+	if (!single) {
+		mgr.aabbAbort();
+	}
 }
 
 }

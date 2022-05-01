@@ -1851,6 +1851,7 @@ bool SceneManager::update(double nowSeconds) {
 			_loadingFuture = std::future<voxelformat::SceneGraph>();
 		}
 	}
+	_modifier.update(nowSeconds);
 	_volumeRenderer.update();
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {

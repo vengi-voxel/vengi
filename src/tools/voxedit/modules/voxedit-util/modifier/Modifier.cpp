@@ -97,6 +97,15 @@ void Modifier::shutdown() {
 	reset();
 }
 
+void Modifier::update(double nowSeconds) {
+	if ((_modifierType & ModifierType::Single) == ModifierType::Single) {
+		if (_actionExecuteButton.pressed() && nowSeconds >= _nextSingleExecution) {
+			_actionExecuteButton.execute(true);
+			_nextSingleExecution = nowSeconds + 0.1;
+		}
+	}
+}
+
 void Modifier::reset() {
 	unselect();
 	_gridResolution = 1;
@@ -147,7 +156,7 @@ bool Modifier::aabbStart() {
 	_aabbFirstPos = aabbPosition();
 	_secondPosValid = false;
 	_aabbSecondActionDirection = math::Axis::None;
-	_aabbMode = _modifierType != ModifierType::ColorPicker;
+	_aabbMode = (_modifierType & ModifierType::Single) != ModifierType::Single;
 	return true;
 }
 
@@ -263,7 +272,7 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 }
 
 bool Modifier::needsSecondAction() {
-	if (_modifierType == ModifierType::ColorPicker) {
+	if ((_modifierType & ModifierType::Single) == ModifierType::Single) {
 		return false;
 	}
 
@@ -308,7 +317,8 @@ glm::ivec3 Modifier::firstPos() const {
 math::AABB<int> Modifier::aabb() const {
 	const int size = _gridResolution;
 	const glm::ivec3& pos = aabbPosition();
-	const glm::ivec3& firstP = firstPos();
+	const bool single = (_modifierType & ModifierType::Single) == ModifierType::Single;
+	const glm::ivec3& firstP = single ? pos : firstPos();
 	const glm::ivec3 mins = (glm::min)(firstP, pos);
 	const glm::ivec3 maxs = (glm::max)(firstP, pos) + (size - 1);
 	return math::AABB<int>(mins, maxs);
@@ -331,10 +341,6 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(con
 			setCursorVoxel(volume->voxel(pos));
 			return true;
 		}
-		return false;
-	}
-	if (!_aabbMode) {
-		Log::debug("Not in aabb mode - can't perform action");
 		return false;
 	}
 

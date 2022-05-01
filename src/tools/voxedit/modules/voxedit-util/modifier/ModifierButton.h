@@ -29,7 +29,7 @@ public:
 	 */
 	ModifierButton(ModifierType newType = ModifierType::None);
 
-	void execute();
+	void execute(bool single);
 	bool handleDown(int32_t key, double pressedMillis) override;
 	bool handleUp(int32_t key, double releasedMillis) override;
 };

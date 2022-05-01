@@ -52,6 +52,7 @@ protected:
 	bool _secondPosValid = false;
 	bool _aabbMode = false;
 	bool _center = false;
+	double _nextSingleExecution = 0;
 	glm::ivec3 _aabbFirstPos {0};
 	glm::ivec3 _aabbSecondPos {0};
 	math::Axis _aabbSecondActionDirection = math::Axis::None;
@@ -74,6 +75,8 @@ public:
 
 	void construct() override;
 	bool init() override;
+	void update(double nowSeconds);
+
 	void shutdown() override;
 
 	virtual bool select(const glm::ivec3& mins, const glm::ivec3& maxs);
