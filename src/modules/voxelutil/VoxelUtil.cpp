@@ -6,7 +6,9 @@
 #include "core/collection/Array3DView.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
+#include "voxel/Face.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -28,7 +30,8 @@ bool isEmpty(const voxel::RawVolume &v, const voxel::Region &region) {
 	return true;
 }
 
-bool copy(const voxel::RawVolume &in, const voxel::Region& inRegion, voxel::RawVolume &out, const voxel::Region &outRegion) {
+bool copy(const voxel::RawVolume &in, const voxel::Region &inRegion, voxel::RawVolume &out,
+		  const voxel::Region &outRegion) {
 	int32_t xIn, yIn, zIn;
 	int32_t xOut, yOut, zOut;
 	voxel::RawVolumeWrapper wrapper(&out);
@@ -51,10 +54,10 @@ bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const vox
 	return copy(in, in.region(), out, targetRegion);
 }
 
-void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel) {
-	const int width = in.width();
-	const int height = in.height();
-	const int depth = in.depth();
+static void fillRegion(voxel::RawVolume &in, const voxel::Voxel &voxel, const voxel::Region &region) {
+	const int width = region.getWidthInVoxels();
+	const int height = region.getHeightInVoxels();
+	const int depth = region.getDepthInVoxels();
 	const int size = width * height * depth;
 	const glm::ivec3 offset = -in.mins();
 	core::DynamicArray<glm::ivec3> positions;
@@ -62,7 +65,10 @@ void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel) {
 	core::Buffer<bool> visitedData(size);
 	core::Array3DView<bool> visited(visitedData.data(), width, height, depth);
 
-	visitVolume(in, [&](int x, int y, int z, const voxel::Voxel &) { visited.set(offset.x + x, offset.y + y, offset.z + z, true); }, SkipEmpty());
+	visitVolume(
+		in, region, 1, 1, 1,
+		[&](int x, int y, int z, const voxel::Voxel &) { visited.set(offset.x + x, offset.y + y, offset.z + z, true); },
+		SkipEmpty());
 
 	for (int x = 0; x < width; ++x) {
 		for (int z = 1; z < depth - 1; ++z) {
@@ -141,11 +147,44 @@ void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel) {
 		}
 	}
 
-	visitVolume(in, [&](int x, int y, int z, const voxel::Voxel&) {
-		if (!visited.get(offset.x + x, offset.y + y, offset.z + z)) {
-			in.setVoxel(x, y, z, voxel);
-		}
-	}, VisitAll());
+	visitVolume(
+		in, region, 1, 1, 1,
+		[&](int x, int y, int z, const voxel::Voxel &) {
+			if (!visited.get(offset.x + x, offset.y + y, offset.z + z)) {
+				in.setVoxel(x, y, z, voxel);
+			}
+		},
+		VisitAll());
+}
+
+void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel) {
+	fillRegion(in, voxel, in.region());
+}
+
+void fillPlane(voxel::RawVolume &in, const voxel::Voxel &voxel, const glm::ivec3 &position, voxel::FaceNames face) {
+	glm::ivec3 mins(position);
+	glm::ivec3 maxs(position);
+	switch (face) {
+	case voxel::FaceNames::PositiveX:
+	case voxel::FaceNames::NegativeX:
+		mins.x = in.region().getLowerX();
+		maxs.x = in.region().getUpperX();
+		break;
+	case voxel::FaceNames::PositiveY:
+	case voxel::FaceNames::NegativeY:
+		mins.y = in.region().getLowerY();
+		maxs.y = in.region().getUpperY();
+		break;
+	case voxel::FaceNames::PositiveZ:
+	case voxel::FaceNames::NegativeZ:
+		mins.z = in.region().getLowerZ();
+		maxs.z = in.region().getUpperZ();
+		break;
+	case voxel::FaceNames::Max:
+		return;
+	}
+	const voxel::Region region(mins, maxs);
+	fillRegion(in, voxel, region);
 }
 
 } // namespace voxelutil
