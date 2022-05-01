@@ -21,12 +21,12 @@ bool ToolsPanel::modifierRadioButton(const char *title, ModifierType type) {
 void ToolsPanel::update(const char *title) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		core_trace_scoped(ToolsPanel);
-		modifierRadioButton(ICON_FA_PEN " Place", ModifierType::Place);
+		modifierRadioButton(ICON_FA_PAINT_ROLLER " Place", ModifierType::Place);
 		modifierRadioButton(ICON_FA_PEN " Single", ModifierType::Place | ModifierType::Single);
 		modifierRadioButton(ICON_FA_FILL_DRIP " Fill Plane", ModifierType::FillPlane);
 		modifierRadioButton(ICON_FA_EXPAND " Select", ModifierType::Select);
 		modifierRadioButton(ICON_FA_ERASER " Delete", ModifierType::Delete);
-		modifierRadioButton(ICON_FK_PENCIL " Pick color", ModifierType::ColorPicker);
+		modifierRadioButton(ICON_FA_EYE_DROPPER " Pick color", ModifierType::ColorPicker);
 		modifierRadioButton(ICON_FA_FILTER " Override", ModifierType::Place | ModifierType::Delete);
 		modifierRadioButton(ICON_FA_PAINT_BRUSH " Colorize", ModifierType::Update);
 
