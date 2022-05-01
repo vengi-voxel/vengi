@@ -336,7 +336,7 @@ glm::ivec3 Modifier::aabbDim() const {
 }
 
 bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
-	if (_modifierType == ModifierType::ColorPicker) {
+	if ((_modifierType & ModifierType::ColorPicker) == ModifierType::ColorPicker) {
 		// TODO:
 		const glm::ivec3 &pos = cursorPosition();
 		if (volume->region().containsPoint(pos)) {
@@ -345,7 +345,7 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(con
 		}
 		return false;
 	}
-	if (_modifierType == ModifierType::FillPlane) {
+	if ((_modifierType & ModifierType::FillPlane) == ModifierType::FillPlane) {
 		voxel::RawVolumeWrapper wrapper(volume);
 		voxelutil::fillPlane(wrapper, cursorVoxel(), voxel::Voxel(), cursorPosition(), cursorFace());
 		const voxel::Region& modifiedRegion = wrapper.dirtyRegion();
