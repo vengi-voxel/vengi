@@ -15,6 +15,9 @@ vengi (0.0.20.0-1) UNRELEASED; urgency=low
   * Change between the edit and scene mode is now bound to tab
   * Updated imguizmo to support clicking the view cube
   * Cursor is no volume anymore but a plane
+  * Implemented plane filling
+  * Added extrude feature
+  * Allow to place a single voxel
 
   * VoxConvert:
   * Extended --dump to also show the key frames and the voxel count

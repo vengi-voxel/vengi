@@ -27,6 +27,9 @@ VoxEdit:
    - Change between the edit and scene mode is now bound to `tab`
    - Updated imguizmo to support clicking the view cube
    - Cursor is no volume anymore but a plane
+   - Implemented plane filling
+   - Added extrude feature
+   - Allow to place a single voxel
 
 VoxConvert:
 
