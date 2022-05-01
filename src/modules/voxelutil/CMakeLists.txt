@@ -28,6 +28,7 @@ set(TEST_SRCS
 	tests/VolumeRotatorTest.cpp
 	tests/VolumeSplitterTest.cpp
 	tests/VolumeCropperTest.cpp
+	tests/VoxelUtilTest.cpp
 )
 
 set(TEST_FILES

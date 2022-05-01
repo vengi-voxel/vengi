@@ -59,7 +59,7 @@ static void fillRegion(voxel::RawVolume &in, const voxel::Voxel &voxel, const vo
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
 	const int size = width * height * depth;
-	const glm::ivec3 offset = -in.mins();
+	const glm::ivec3 mins = in.mins();
 	core::DynamicArray<glm::ivec3> positions;
 	positions.reserve(size);
 	core::Buffer<bool> visitedData(size);
@@ -67,30 +67,30 @@ static void fillRegion(voxel::RawVolume &in, const voxel::Voxel &voxel, const vo
 
 	visitVolume(
 		in, region, 1, 1, 1,
-		[&](int x, int y, int z, const voxel::Voxel &) { visited.set(offset.x + x, offset.y + y, offset.z + z, true); },
+		[&](int x, int y, int z, const voxel::Voxel &) { visited.set(x - mins.x, y - mins.y, z - mins.z, true); },
 		SkipEmpty());
 
 	for (int x = 0; x < width; ++x) {
 		for (int z = 1; z < depth - 1; ++z) {
 			const glm::ivec3 v1(x, 0, z);
-			if (voxel::isAir(in.voxel(offset + v1).getMaterial())) {
+			if (voxel::isAir(in.voxel(v1 + mins).getMaterial())) {
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
 			const glm::ivec3 v2(x, height - 1, z);
-			if (voxel::isAir(in.voxel(offset + v2).getMaterial())) {
+			if (voxel::isAir(in.voxel(v2 + mins).getMaterial())) {
 				positions.push_back(v2);
 				visited.set(v2, true);
 			}
 		}
 		for (int y = 0; y < height; ++y) {
 			const glm::ivec3 v1(x, y, 0);
-			if (voxel::isAir(in.voxel(offset + v1).getMaterial())) {
+			if (voxel::isAir(in.voxel(v1 + mins).getMaterial())) {
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
 			const glm::ivec3 v2(x, y, depth - 1);
-			if (voxel::isAir(in.voxel(offset + v2).getMaterial())) {
+			if (voxel::isAir(in.voxel(v2 + mins).getMaterial())) {
 				positions.push_back(v2);
 				visited.set(v2, true);
 			}
@@ -99,12 +99,12 @@ static void fillRegion(voxel::RawVolume &in, const voxel::Voxel &voxel, const vo
 	for (int y = 1; y < height - 1; ++y) {
 		for (int z = 1; z < depth - 1; ++z) {
 			const glm::ivec3 v1(0, y, z);
-			if (voxel::isAir(in.voxel(v1).getMaterial())) {
+			if (voxel::isAir(in.voxel(v1 + mins).getMaterial())) {
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
 			const glm::ivec3 v2(width - 1, y, z);
-			if (voxel::isAir(in.voxel(v2).getMaterial())) {
+			if (voxel::isAir(in.voxel(v2 + mins).getMaterial())) {
 				positions.push_back(v2);
 				visited.set(v2, true);
 			}
@@ -150,7 +150,7 @@ static void fillRegion(voxel::RawVolume &in, const voxel::Voxel &voxel, const vo
 	visitVolume(
 		in, region, 1, 1, 1,
 		[&](int x, int y, int z, const voxel::Voxel &) {
-			if (!visited.get(offset.x + x, offset.y + y, offset.z + z)) {
+			if (!visited.get(x - mins.x, y - mins.y, z - mins.z)) {
 				in.setVoxel(x, y, z, voxel);
 			}
 		},
