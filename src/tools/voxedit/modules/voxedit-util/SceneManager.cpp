@@ -541,6 +541,7 @@ bool SceneManager::undo() {
 			node->setVolume(v, true);
 			node->setName(s.name);
 			modified(node->id(), s.region, false);
+			_volumeRenderer.prepare(_sceneGraph);
 			return true;
 		} else {
 			Log::warn("Failed to undo - node id %i not found (%s)", s.nodeId, s.name.c_str());
@@ -595,6 +596,7 @@ bool SceneManager::redo() {
 			node->setVolume(v, true);
 			node->setName(s.name);
 			modified(node->id(), s.region, false);
+			_volumeRenderer.prepare(_sceneGraph);
 			return true;
 		} else {
 			Log::warn("Failed to redo - node id %i not found (%s)", s.nodeId, s.name.c_str());
