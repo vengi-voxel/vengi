@@ -140,7 +140,12 @@ static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
 	const int y = (int)luaL_checkinteger(s, 3);
 	const int z = (int)luaL_checkinteger(s, 4);
 	const int color = (int)luaL_checkinteger(s, 5);
-	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
+	voxel::Voxel voxel;
+	if (color == -1) {
+		voxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
+	} else {
+		voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
+	}
 	const bool insideRegion = volume->setVoxel(x, y, z, voxel);
 	lua_pushboolean(s, insideRegion ? 1 : 0);
 	return 1;
