@@ -29,6 +29,17 @@ public:
 	 */
 	ModifierButton(ModifierType newType = ModifierType::None);
 
+	/**
+	 * @brief Execute the @c ModifierType action
+	 *
+	 * @param single @c false if the action should not abort the modifier execution @c true means that the next
+	 * execution of the modifier action needs another @c handleDown() call.
+	 *
+	 * @sa Modifier::aabbStart()
+	 * @sa Modifier::aabbAction()
+	 * @sa Modifier::aabbAbort()
+	 * @sa Modifier::aabbStep()
+	 */
 	void execute(bool single);
 	bool handleDown(int32_t key, double pressedMillis) override;
 	bool handleUp(int32_t key, double releasedMillis) override;
