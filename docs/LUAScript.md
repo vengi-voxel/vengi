@@ -4,6 +4,10 @@ There is a console command (called `xs`) in [voxedit](voxedit/Index.md) and a co
 
 ---
 
+> If you are new to lua you can read more about it on [lua-users](http://lua-users.org/wiki/TutorialDirectory).
+
+---
+
 > **voxedit**
 >
 > Calling `xs <script> help` (in the script console) will print the supported arguments for the given script file in voxedit.
@@ -59,6 +63,19 @@ end
 
 Execute this via console `xs scriptfile 1` where `1` will be the value of `n`. Omitting the `1` will add the `default` value from the argument list.
 
+### Find the best palette match
+
+```lua
+function main(node, region, color)
+	-- find match (palette index) for red in the current palette (RGB value)
+	-- this value can be used in e.g. volume:setVoxel(x, y, z, match)
+	local match = palette.match(255, 0, 0)
+	[...]
+end
+```
+
+This will find the best match in the currently used palette and return the index.
+
 ## Arguments
 
 Supported `type`s are:
@@ -94,6 +111,13 @@ The functions are:
 
 * `volume()`: Gives you access to the volume of the node.
 
+Access these functions like this:
+
+```lua
+local scenegraphnode = [...]
+local name = scenegraphnode:name()
+```
+
 ## Color
 
 `palette` has several methods to work with colors. E.g. to find a closest possible match for the given palette index.
@@ -108,9 +132,11 @@ The functions are:
 
 * `similar(paletteindex, [coloramount])`: Return a table with similar colors given by their palette index.
 
+They are available as e.g. `palette.color([...])`, `palette.match([...])` and so on.
+
 ## Noise
 
-`noise` supports a few noise generators:
+The global `noise` supports a few noise generators:
 
 * `noise2(v)`, `noise3(v)`, `noise4(v)`: Simplex noise. Uses the given `vec2`, `vec3` or `vec4` and returns a float value between `0.0` and `1.0`.
 
@@ -119,6 +145,8 @@ The functions are:
 * `ridgedMF2(v)`, `ridgedMF3(v)`, `ridgedMF4(v)`: Simplex ridged multi-fractal noise sum. Uses the given `vec2`, `vec3` or `vec4` and returns a float value between `0.0` and `1.0`.
 
 * `worley2(v)`, `worley3(v)`: Simplex cellular/worley noise. Uses the given `vec2` or `vec3` and returns a float value between `0.0` and `1.0`.
+
+They are available as e.g. `noise.noise2([...])`, `noise.fBm3([...])` and so on.
 
 ## Region
 
@@ -142,6 +170,13 @@ The functions are:
 
 * `depth()`: The depth of the region measured in voxels.
 
+Access these functions like this:
+
+```lua
+local region = [...]
+local mins = region:mins()
+```
+
 ## Volume
 
 * `voxel(x, y, z)`: Returns the palette index of the voxel at the given position in the volume `[0-255]`. Or `-1` if there is no voxel.
@@ -154,9 +189,18 @@ The functions are:
 
 * `setVoxel(x, y, z, color)`: Set the given color at the given coordinates in the volume. `color` must be in the range `[0-255]`.
 
+Access these functions like this:
+
+```lua
+local volume = [...]
+local region = volume:region()
+```
+
 ## Vectors
 
 Available vector types are `vec2`, `vec3`, `vec4` and their integer types `ivec2`, `ivec3`, `ivec4`.
+
+Access these functions like this:
 
 ```lua
 local v1 = ivec3.new(1, 1, 1)
@@ -226,3 +270,7 @@ Thickens the voxel - take 1 voxel and convert to 8 voxels (creates a new node fo
 ![thickenbefore](img/lua-thicken-before.png) ![thickenafter](img/lua-thicken-after.png)
 
 `xs thicken.lua 1`
+
+### others
+
+There are other scripts available [in the repository](https://github.com/mgerhardy/vengi/blob/master/src/modules/voxelgenerator/lua/scripts/).
