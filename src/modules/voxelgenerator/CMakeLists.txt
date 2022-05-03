@@ -5,6 +5,7 @@ set(LUA_SRCS
 	scripts/modules/volume.lua
 	scripts/cover.lua
 	scripts/delete-rgb.lua
+	scripts/erode.lua
 	scripts/grass.lua
 	scripts/grid.lua
 	scripts/noise.lua
