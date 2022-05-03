@@ -20,6 +20,7 @@
 #include "noise/Simplex.h"
 #include "app/App.h"
 #include "voxelformat/SceneGraphUtil.h"
+#include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeResizer.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -172,6 +173,15 @@ static int luaVoxel_volumewrapper_fillhollow(lua_State *s) {
 	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 2);
 	voxelutil::fillHollow(*volume->volume(), voxel);
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_crop(lua_State *s) {
+	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	voxel::RawVolume* v = voxelutil::cropVolume(volume->volume());
+	if (v != nullptr) {
+		volume->setVolume(v);
+	}
 	return 0;
 }
 
@@ -533,6 +543,7 @@ static void prepareState(lua_State* s) {
 		{"region", luaVoxel_volumewrapper_region},
 		{"translate", luaVoxel_volumewrapper_translate},
 		{"resize", luaVoxel_volumewrapper_resize},
+		{"crop", luaVoxel_volumewrapper_crop},
 		{"fillHollows", luaVoxel_volumewrapper_fillhollow},
 		{"mirrorAxis", luaVoxel_volumewrapper_mirroraxis},
 		{"rotateAxis", luaVoxel_volumewrapper_rotateaxis},

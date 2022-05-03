@@ -185,6 +185,8 @@ local mins = region:mins()
 
 * `fillHollows([color])`: Tries to fill all hollows in the volume.
 
+* `crop()`: Crop the volume and remove empty spaces.
+
 * `mirrorAxis([axis])`: Mirror along the given axis - `y` is default.
 
 * `rotateAxis([axis])`: Rotate along the given axis - `y` is default.
