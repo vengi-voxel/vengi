@@ -23,6 +23,8 @@ General:
    - Expose more volume functions to the lua scripts
    - Allow to delete voxels from within a lua script
    - Improved splitting of volumes (target volume size)
+   - Expose more region functions to the lua scripts
+   - Added more lua example scripts
 
 VoxEdit:
 
