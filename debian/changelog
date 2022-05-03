@@ -8,6 +8,10 @@ vengi (0.0.20.0-1) UNRELEASED; urgency=low
   * Preserve node hierarchie when saving vxr
   * GLTF voxelization
   * Allow to enable certain renderer features
+  * Expose more noise functions to the lua scripts
+  * Expose more volume functions to the lua scripts
+  * Allow to delete voxels from within a lua script
+  * Improved splitting of volumes (target volume size)
 
   * VoxEdit:
   * Fixed start problems on some systems with multisampled framebuffers
@@ -18,6 +22,7 @@ vengi (0.0.20.0-1) UNRELEASED; urgency=low
   * Implemented plane filling
   * Added extrude feature
   * Allow to place a single voxel
+  * Fixed keyboard input errors that made the ui unusable
 
   * VoxConvert:
   * Extended --dump to also show the key frames and the voxel count

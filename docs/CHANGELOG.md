@@ -19,6 +19,10 @@ General:
    - Preserve node hierarchie when saving vxr
    - GLTF voxelization
    - Allow to enable certain renderer features
+   - Expose more noise functions to the lua scripts
+   - Expose more volume functions to the lua scripts
+   - Allow to delete voxels from within a lua script
+   - Improved splitting of volumes (target volume size)
 
 VoxEdit:
 
@@ -30,6 +34,7 @@ VoxEdit:
    - Implemented plane filling
    - Added extrude feature
    - Allow to place a single voxel
+   - Fixed keyboard input errors that made the ui unusable
 
 VoxConvert:
 
