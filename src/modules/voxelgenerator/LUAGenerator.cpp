@@ -7,6 +7,7 @@
 #include "core/StringUtil.h"
 #include "lauxlib.h"
 #include "lua.h"
+#include "math/Axis.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -22,6 +23,8 @@
 #include "voxelutil/VolumeResizer.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelutil/VolumeRotator.h"
+#include "voxelutil/VoxelUtil.h"
 
 #define GENERATOR_LUA_SANTITY 1
 
@@ -128,9 +131,47 @@ static int luaVoxel_volumewrapper_resize(lua_State *s) {
 	const int d = (int)luaL_optinteger(s, 4, 0);
 	const bool extendMins = (int)clua_optboolean(s, 5, false);
 	voxel::RawVolume *v = voxelutil::resize(volume->volume(), glm::ivec3(w, h, d), extendMins);
-	if (v == nullptr) {
+	if (v != nullptr) {
 		volume->setVolume(v);
 	}
+	return 0;
+}
+
+static voxel::Voxel luaVoxel_getVoxel(lua_State *s, int index) {
+	const int color = (int)luaL_optinteger(s, index, 1);
+	if (color == -1) {
+		return voxel::createVoxel(voxel::VoxelType::Air, 0);
+	}
+	return voxel::createVoxel(voxel::VoxelType::Generic, color);
+}
+
+static math::Axis luaVoxel_getAxis(lua_State *s, int index) {
+	const char* axis = luaL_optstring(s, index, "y");
+	return math::toAxis(axis);
+}
+
+static int luaVoxel_volumewrapper_mirroraxis(lua_State *s) {
+	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	voxel::RawVolume* v = voxelutil::mirrorAxis(volume->volume(), luaVoxel_getAxis(s, 2));
+	if (v != nullptr) {
+		volume->setVolume(v);
+	}
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_rotateaxis(lua_State *s) {
+	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	voxel::RawVolume* v = voxelutil::rotateAxis(volume->volume(), luaVoxel_getAxis(s, 2));
+	if (v != nullptr) {
+		volume->setVolume(v);
+	}
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_fillhollow(lua_State *s) {
+	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 2);
+	voxelutil::fillHollow(*volume->volume(), voxel);
 	return 0;
 }
 
@@ -139,13 +180,7 @@ static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
 	const int x = (int)luaL_checkinteger(s, 2);
 	const int y = (int)luaL_checkinteger(s, 3);
 	const int z = (int)luaL_checkinteger(s, 4);
-	const int color = (int)luaL_checkinteger(s, 5);
-	voxel::Voxel voxel;
-	if (color == -1) {
-		voxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
-	} else {
-		voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
-	}
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 5);
 	const bool insideRegion = volume->setVoxel(x, y, z, voxel);
 	lua_pushboolean(s, insideRegion ? 1 : 0);
 	return 1;
@@ -498,6 +533,9 @@ static void prepareState(lua_State* s) {
 		{"region", luaVoxel_volumewrapper_region},
 		{"translate", luaVoxel_volumewrapper_translate},
 		{"resize", luaVoxel_volumewrapper_resize},
+		{"fillHollows", luaVoxel_volumewrapper_fillhollow},
+		{"mirrorAxis", luaVoxel_volumewrapper_mirroraxis},
+		{"rotateAxis", luaVoxel_volumewrapper_rotateaxis},
 		{"setVoxel", luaVoxel_volumewrapper_setvoxel},
 		{"__gc", luaVoxel_volumewrapper_gc},
 		{nullptr, nullptr}
