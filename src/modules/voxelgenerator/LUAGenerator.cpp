@@ -342,6 +342,12 @@ static int luaVoxel_region_maxs(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_region_size(lua_State* s) {
+	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	clua_push(s, region->getDimensionsInVoxels());
+	return 1;
+}
+
 static int luaVoxel_region_setmins(lua_State* s) {
 	voxel::Region* region = luaVoxel_toRegion(s, 1);
 	const glm::ivec3& mins = clua_tovec<glm::ivec3>(s, 2);
@@ -600,6 +606,7 @@ static void prepareState(lua_State* s) {
 		{"center", luaVoxel_region_center},
 		{"mins", luaVoxel_region_mins},
 		{"maxs", luaVoxel_region_maxs},
+		{"size", luaVoxel_region_size},
 		{"setMins", luaVoxel_region_setmins},
 		{"setMaxs", luaVoxel_region_setmaxs},
 		{"__tostring", luaVoxel_region_tostring},

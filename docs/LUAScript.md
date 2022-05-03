@@ -158,6 +158,8 @@ They are available as e.g. `noise.noise2([...])`, `noise.fBm3([...])` and so on.
 
 * `maxs()`: The upper boundary of the region (inclusive).
 
+* `size()`: The size of the region in voxels (`ivec3`).
+
 * `setMins(mins)`: The lower boundary of the region - given as `ivec3`.
 
 * `setMaxs(maxs)`: The upper boundary of the region - given as `ivec3`.
