@@ -40,6 +40,23 @@ function module.conditionYXZDown(volume, region, visitor, condition)
 	end
 end
 
+function module.countEmptyAround(volume, x, y, z)
+	local adjacent = 0
+	for sx = -1, 1, 1 do
+		for sy = -1, 1, 1 do
+			for sz = -1, 1, 1 do
+				if (sx ~= 0 or sy ~= 0 or sz ~= 0) then
+					local color = volume:voxel(x + sx, y + sy, z + sz)
+					if color == -1 then
+						adjacent = adjacent + 1
+					end
+				end
+			end
+		end
+	end
+	return adjacent
+end
+
 function module.visitYXZDown(volume, region, visitor)
 	local condition = function (x, y, z) return true end
 	module.conditionYXZDown(volume, region, visitor, condition)
