@@ -79,6 +79,7 @@ public:
 	double voronoi(const glm::dvec3& pos, bool enableDistance, double frequency = 1.0, int seed = 0) const;
 
 	/**
+	 * https://www.decarpentier.nl/scape-procedural-extensions
 	 * @param lacunarity spacing between successive octaves (use exactly 2.0 for wrapping output)
 	 * @param gain relative weighting applied to each successive octave
 	 */

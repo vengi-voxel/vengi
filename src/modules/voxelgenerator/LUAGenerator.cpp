@@ -39,6 +39,10 @@ static const char *luaVoxel_globalnodeid() {
 	return "__global_nodeid";
 }
 
+static const char *luaVoxel_globalnoise() {
+	return "__global_noise";
+}
+
 static const char *luaVoxel_globaldirtyregion() {
 	return "__global_region";
 }
@@ -413,19 +417,52 @@ static int luaVoxel_noise_simplex4(lua_State* s) {
 
 static int luaVoxel_noise_fBm2(lua_State* s) {
 	int n = 1;
-	lua_pushnumber(s, noise::fBm(to_vec2(s, n)));
+	const uint8_t octaves = luaL_optinteger(s, n + 1, 4);
+	const float lacunarity = (float)luaL_optnumber(s, n + 2, 2.0f);
+	const float gain = (float)luaL_optnumber(s, n + 3, 0.5f);
+	lua_pushnumber(s, noise::fBm(to_vec2(s, n), octaves, lacunarity, gain));
 	return 1;
 }
 
 static int luaVoxel_noise_fBm3(lua_State* s) {
 	int n = 1;
-	lua_pushnumber(s, noise::fBm(to_vec3(s, n)));
+	const uint8_t octaves = luaL_optinteger(s, n + 1, 4);
+	const float lacunarity = (float)luaL_optnumber(s, n + 2, 2.0f);
+	const float gain = (float)luaL_optnumber(s, n + 3, 0.5f);
+	lua_pushnumber(s, noise::fBm(to_vec3(s, n), octaves, lacunarity, gain));
 	return 1;
 }
 
 static int luaVoxel_noise_fBm4(lua_State* s) {
 	int n = 1;
-	lua_pushnumber(s, noise::fBm(to_vec4(s, n)));
+	const uint8_t octaves = luaL_optinteger(s, n + 1, 4);
+	const float lacunarity = (float)luaL_optnumber(s, n + 2, 2.0f);
+	const float gain = (float)luaL_optnumber(s, n + 3, 0.5f);
+	lua_pushnumber(s, noise::fBm(to_vec4(s, n), octaves, lacunarity, gain));
+	return 1;
+}
+
+static int luaVoxel_noise_voronoi(lua_State* s) {
+	noise::Noise* noise = lua::LUA::globalData<noise::Noise>(s, luaVoxel_globalnoise());
+	int n = 1;
+	const glm::vec3 v = to_vec3(s, n);
+	const float frequency = (float)luaL_optnumber(s, n + 1, 1.0f);
+	const int seed = (int)luaL_optinteger(s, n + 2, 0);
+	bool enableDistance = clua_optboolean(s, n + 3, true);
+	lua_pushnumber(s, noise->voronoi(v, enableDistance, frequency, seed));
+	return 1;
+}
+
+static int luaVoxel_noise_swissturbulence(lua_State* s) {
+	noise::Noise* noise = lua::LUA::globalData<noise::Noise>(s, luaVoxel_globalnoise());
+	int n = 1;
+	const glm::vec2 v = to_vec2(s, n);
+	const float offset = (float)luaL_optnumber(s, n + 1, 1.0f);
+	const uint8_t octaves = luaL_optinteger(s, n + 2, 4);
+	const float lacunarity = (float)luaL_optnumber(s, n + 3, 2.0f);
+	const float gain = (float)luaL_optnumber(s, n + 4, 0.6f);
+	const float warp = (float)luaL_optnumber(s, n + 5, 0.15f);
+	lua_pushnumber(s, noise->swissTurbulence(v, offset, octaves, lacunarity, gain, warp));
 	return 1;
 }
 
@@ -602,6 +639,8 @@ static void prepareState(lua_State* s) {
 		{"fBm2", luaVoxel_noise_fBm2},
 		{"fBm3", luaVoxel_noise_fBm3},
 		{"fBm4", luaVoxel_noise_fBm4},
+		{"swissTurbulence", luaVoxel_noise_swissturbulence},
+		{"voronoi", luaVoxel_noise_voronoi},
 		{"ridgedMF2", luaVoxel_noise_ridgedMF2},
 		{"ridgedMF3", luaVoxel_noise_ridgedMF3},
 		{"ridgedMF4", luaVoxel_noise_ridgedMF4},
@@ -615,10 +654,14 @@ static void prepareState(lua_State* s) {
 }
 
 bool LUAGenerator::init() {
+	if (!_noise.init()) {
+		Log::warn("Failed to initialize noise");
+	}
 	return true;
 }
 
 void LUAGenerator::shutdown() {
+	_noise.shutdown();
 }
 
 bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params) {
@@ -826,6 +869,7 @@ bool LUAGenerator::exec(const core::String &luaScript, voxelformat::SceneGraph &
 	lua.newGlobalData<voxelformat::SceneGraph>(luaVoxel_globalscenegraph(), &sceneGraph);
 	lua.newGlobalData<voxel::Region>(luaVoxel_globaldirtyregion(), &dirtyRegion);
 	lua.newGlobalData<int>(luaVoxel_globalnodeid(), &nodeId);
+	lua.newGlobalData<noise::Noise>(luaVoxel_globalnoise(), &_noise);
 	prepareState(lua);
 
 	// load and run once to initialize the global variables

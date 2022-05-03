@@ -9,6 +9,7 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "command/CommandCompleter.h"
+#include "noise/Noise.h"
 
 struct lua_State;
 
@@ -65,6 +66,8 @@ struct LUAScript {
 };
 
 class LUAGenerator : public core::IComponent {
+private:
+	noise::Noise _noise;
 public:
 	virtual ~LUAGenerator() {}
 	bool init() override;

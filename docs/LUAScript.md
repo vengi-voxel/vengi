@@ -140,9 +140,13 @@ The global `noise` supports a few noise generators:
 
 * `noise2(v)`, `noise3(v)`, `noise4(v)`: Simplex noise. Uses the given `vec2`, `vec3` or `vec4` and returns a float value between `0.0` and `1.0`.
 
-* `fBm2(v)`, `fBm3(v)`, `fBm4(v)`: Simplex noise fractal brownian motion sum. Uses the given `vec2`, `vec3` or `vec4` and returns a float value between `0.0` and `1.0`.
+* `fBm2(v, octaves, lacunarity, gain)`, `fBm3(v, octaves, lacunarity, gain)`, `fBm4(v, octaves, lacunarity, gain)`: Simplex noise fractal brownian motion sum. Uses the given `vec2`, `vec3` or `vec4` and returns a float value between `0.0` and `1.0`.
 
-* `ridgedMF2(v)`, `ridgedMF3(v)`, `ridgedMF4(v)`: Simplex ridged multi-fractal noise sum. Uses the given `vec2`, `vec3` or `vec4` and returns a float value between `0.0` and `1.0`.
+* `ridgedMF2(v, offset, octaves, lacunarity, gain)`, `ridgedMF3(v, offset, octaves, lacunarity, gain)`, `ridgedMF4(v, offset, octaves, lacunarity, gain)`: Simplex ridged multi-fractal noise sum. Uses the given `vec2`, `vec3` or `vec4` and returns a float value between `0.0` and `1.0`.
+
+* `swissTurbulence(vec2, offset, octaves, lacunarity, gain, warp)`: [blog post](https://www.decarpentier.nl/scape-procedural-extensions)
+
+* `voronoi(vec3, [frequency, seed, enableDistance])`: Voronoi noise.
 
 * `worley2(v)`, `worley3(v)`: Simplex cellular/worley noise. Uses the given `vec2` or `vec3` and returns a float value between `0.0` and `1.0`.
 
