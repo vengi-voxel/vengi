@@ -5,6 +5,7 @@
 #include "SceneGraphNode.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "util/Easing.h"
 
@@ -15,12 +16,6 @@
 #include <glm/gtx/transform.hpp>
 
 namespace voxelformat {
-
-SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type) {
-	// ensure that there is at least one frame
-	SceneGraphKeyFrame frame;
-	_keyFrames.emplace_back(frame);
-}
 
 void SceneGraphTransform::setPivot(const glm::vec3 &normalizedPivot) {
 	_dirty |= DIRTY_PIVOT;
@@ -110,6 +105,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_name = core::move(move._name);
 	_id = move._id;
 	move._id = -1;
+	_palette = core::move(move._palette);
 	_parent = move._parent;
 	move._parent = -1;
 	_keyFrames = core::move(move._keyFrames);
@@ -132,6 +128,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_name = core::move(move._name);
 	_id = move._id;
 	move._id = -1;
+	_palette = core::move(move._palette);
 	_parent = move._parent;
 	move._parent = -1;
 	_keyFrames = core::move(move._keyFrames);
@@ -142,6 +139,21 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_locked = move._locked;
 	move._volumeOwned = false;
 	return *this;
+}
+
+SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type) {
+	// ensure that there is at least one frame
+	SceneGraphKeyFrame frame;
+	_keyFrames.emplace_back(frame);
+	_palette.setValue(&voxel::getPalette());
+}
+
+void SceneGraphNode::setPalette(const voxel::Palette &palette) {
+	_palette.setValue(palette);
+}
+
+const voxel::Palette &SceneGraphNode::palette() const {
+	return *_palette.value();
 }
 
 void SceneGraphNode::release() {

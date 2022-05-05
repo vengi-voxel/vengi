@@ -5,11 +5,13 @@
 #pragma once
 
 #include "core/Enum.h"
+#include "core/Optional.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
+#include "voxel/Palette.h"
 #include "voxel/Region.h"
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -134,6 +136,7 @@ protected:
 	bool _locked = false;
 	core::Buffer<int, 32> _children;
 	core::StringMap<core::String> _properties;
+	core::Optional<voxel::Palette> _palette;
 
 	/**
 	 * @brief Called in emplace() if a parent id is given
@@ -164,6 +167,8 @@ public:
 	int id() const;
 	void setId(int id);
 	int parent() const;
+	const voxel::Palette &palette() const;
+	void setPalette(const voxel::Palette &palette);
 
 	SceneGraphNodeType type() const;
 
