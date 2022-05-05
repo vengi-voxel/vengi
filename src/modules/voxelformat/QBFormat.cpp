@@ -10,6 +10,7 @@
 #include "io/FileStream.h"
 #include "io/Stream.h"
 #include "voxel/MaterialColor.h"
+#include "voxelformat/private/PaletteLookup.h"
 
 namespace voxelformat {
 
@@ -150,7 +151,7 @@ bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &file
 	return true;
 }
 
-voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
+voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream, PaletteLookup &palLookup) {
 	uint8_t red;
 	uint8_t green;
 	uint8_t blue;
@@ -169,12 +170,12 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream) {
 		return voxel::Voxel();
 	}
 	const core::RGBA color = core::Color::getRGBA(red, green, blue, alpha);
-	const uint8_t index = voxel::getPalette().getClosestMatch(color);
+	const uint8_t index = palLookup.findClosestIndex(color);
 	voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, index);
 	return v;
 }
 
-bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, PaletteLookup &palLookup) {
 	char name[260] = "";
 	uint8_t nameLength;
 	wrap(stream.readUInt8(nameLength));
@@ -231,7 +232,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
-					const voxel::Voxel& voxel = getVoxel(state, stream);
+					const voxel::Voxel& voxel = getVoxel(state, stream, palLookup);
 					v->setVoxel(offset.x + (int)x, offset.y + (int)y, offset.z + (int)z, voxel);
 				}
 			}
@@ -263,7 +264,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 				Log::error("Max RLE count exceeded: %i", (int)count);
 				return false;
 			}
-			const voxel::Voxel& voxel = getVoxel(state, stream);
+			const voxel::Voxel& voxel = getVoxel(state, stream, palLookup);
 			for (uint32_t j = 0; j < count; ++j) {
 				const uint32_t x = (index + j) % size.x;
 				const uint32_t y = (index + j) / size.x;
@@ -308,9 +309,10 @@ bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& 
 	Log::debug("NumMatrices: %u", numMatrices);
 
 	sceneGraph.reserve(numMatrices);
+	PaletteLookup palLookup;
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix: %u", i);
-		if (!loadMatrix(state, stream, sceneGraph)) {
+		if (!loadMatrix(state, stream, sceneGraph, palLookup)) {
 			Log::error("Failed to load the matrix %u", i);
 			break;
 		}

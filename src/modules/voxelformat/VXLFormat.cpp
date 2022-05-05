@@ -13,6 +13,7 @@
 #include "voxel/MaterialColor.h"
 #include "core/collection/Buffer.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/private/PaletteLookup.h"
 #include <SDL_assert.h>
 
 namespace voxelformat {
@@ -370,11 +371,11 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 
 	if (valid) {
 		// convert to our palette
-		const voxel::Palette &palette = voxel::getPalette();
+		PaletteLookup palLookup;
 		for (int i = 0; i < _palette.colorCount; ++i) {
 			const uint8_t *p = hdr.palette[i];
 			_palette.colors[i] = core::Color::getRGBA(p[0], p[1], p[2]);
-			_paletteMapping[i] = palette.getClosestMatch(_palette.colors[i]);
+			_paletteMapping[i] = palLookup.findClosestIndex(_palette.colors[i]);
 		}
 	} else {
 		_palette.colorCount = 0;

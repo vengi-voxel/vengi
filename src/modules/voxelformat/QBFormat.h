@@ -8,6 +8,8 @@
 
 namespace voxelformat {
 
+class PaletteLookup;
+
 /**
  * @brief Qubicle Binary (qb) format.
  *
@@ -57,8 +59,8 @@ private:
 		Back
 	};
 
-	voxel::Voxel getVoxel(State& state, io::SeekableReadStream& stream);
-	bool loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph);
+	voxel::Voxel getVoxel(State& state, io::SeekableReadStream& stream, PaletteLookup &palLookup);
+	bool loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, PaletteLookup &palLookup);
 	bool loadFromStream(io::SeekableReadStream& stream, SceneGraph& sceneGraph);
 
 	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const;

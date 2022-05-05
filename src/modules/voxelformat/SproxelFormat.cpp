@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
 #include "voxel/MaterialColor.h"
+#include "voxelformat/private/PaletteLookup.h"
 
 namespace voxelformat {
 
@@ -47,7 +48,7 @@ bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 	}
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	const voxel::Palette &palette = voxel::getPalette();
+	PaletteLookup palLookup;
 	for (int y = size.y - 1; y >= 0; y--) {
 		for (int z = 0; z < size.z; z++) {
 			for (int x = 0; x < size.x; x++) {
@@ -67,7 +68,7 @@ bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 				}
 				if (a != 0) {
 					const core::RGBA color = core::Color::getRGBA(r, g, b, a);
-					const uint8_t index = palette.getClosestMatch(color);
+					const uint8_t index = palLookup.findClosestIndex(color);
 					const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 					volume->setVoxel(x, y, z, voxel);
 				}
