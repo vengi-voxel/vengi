@@ -159,7 +159,6 @@ void State::checkLastResult(ConnectionType* connection) {
 	case PGRES_NONFATAL_ERROR: {
 		char *lastErrorMsg = PQerrorMessage(connection);
 		Log::warn("Non fatal error: %s", lastErrorMsg);
-		PQfreemem(lastErrorMsg);
 		result = true;
 		break;
 	}
