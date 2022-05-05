@@ -38,10 +38,6 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 		return false;
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	SceneGraphNode node;
-	node.setVolume(volume, true);
-	node.setName(filename);
-	sceneGraph.emplace(core::move(node));
 
 	const int64_t voxelPos = stream.pos();
 	stream.skip((int64_t)width * height * depth);
@@ -72,6 +68,11 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 			}
 		}
 	}
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(filename);
+	sceneGraph.emplace(core::move(node));
+
 	return true;
 }
 
