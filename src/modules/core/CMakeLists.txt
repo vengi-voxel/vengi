@@ -47,6 +47,7 @@ set(SRCS
 	MD5.cpp MD5.h
 	NonCopyable.h
 	Optional.h
+	Pair.h
 	Password.h
 	PoolAllocator.h
 	Process.cpp Process.h
