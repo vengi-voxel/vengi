@@ -61,6 +61,8 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		newNode.setVolume(node.volume(), false);
 		newNode.setName(name);
 		newNode.setVisible(node.visible());
+		newNode.addProperties(newNode.properties());
+		newNode.setPalette(newNode.palette());
 		newSceneGraph.emplace(core::move(newNode));
 		wrapBool(f.saveGroups(newSceneGraph, finalName, wstream))
 	}

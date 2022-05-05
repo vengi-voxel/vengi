@@ -474,6 +474,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		node.setVolume(volume, true);
 		node.setName(layerName);
 		node.setVisible(visible);
+		node.setPalette(_palette);
 		node.setProperty("version", core::string::toString(version));
 		node.setProperty("filename", filename);
 		node.setTransform(0, transform, true);

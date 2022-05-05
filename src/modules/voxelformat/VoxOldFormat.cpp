@@ -71,6 +71,7 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
+	node.setPalette(_palette);
 	sceneGraph.emplace(core::move(node));
 
 	return true;

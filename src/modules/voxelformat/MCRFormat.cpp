@@ -160,6 +160,7 @@ bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream
 	}
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
+	node.setPalette(_palette);
 	sceneGraph.emplace(core::move(node));
 	return true;
 }

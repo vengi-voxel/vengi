@@ -209,6 +209,7 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(header.limb_name);
+	node.setPalette(_palette);
 	sceneGraph.emplace(core::move(node));
 	++mdl.volumeIdx;
 

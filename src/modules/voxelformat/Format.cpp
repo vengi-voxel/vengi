@@ -86,6 +86,7 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 			newNode.setVisible(node.visible());
 			newNode.addProperties(node.properties());
 			newNode.setKeyFrames(node.keyFrames());
+			newNode.setPalette(node.palette());
 			destSceneGraph.emplace(core::move(newNode));
 			continue;
 		}
@@ -103,6 +104,7 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 			newNode.setVisible(node.visible());
 			newNode.addProperties(node.properties());
 			newNode.setKeyFrames(node.keyFrames());
+			newNode.setPalette(node.palette());
 			destSceneGraph.emplace(core::move(newNode));
 		}
 	}

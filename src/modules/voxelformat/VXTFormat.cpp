@@ -117,6 +117,9 @@ bool VXTFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			tileNode.setVolume(new voxel::RawVolume(node->volume()), true);
 			const glm::ivec3 pos(x * tileSize, y * tileSize, z * tileSize);
 			tileNode.volume()->translate(pos); // TODO
+			tileNode.setPalette(node->palette());
+			tileNode.addProperties(node->properties());
+			tileNode.setKeyFrames(node->keyFrames());
 			//tileNode.transform().position = pos;
 			tileGraph.emplace(core::move(tileNode));
 		}

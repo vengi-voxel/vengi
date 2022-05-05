@@ -158,6 +158,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	node.setName(name);
 	node.setVisible(!ogtInstance.hidden && !groupHidden);
 	node.setVolume(v, true);
+	node.setPalette(_palette);
 	return sceneGraph.emplace(core::move(node), parent) != -1;
 }
 

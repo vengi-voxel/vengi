@@ -119,6 +119,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	node.setVolume(volume, true);
 	node.setName(filename);
 	node.setTransform(0, transform, true);
+	node.setPalette(_palette);
 	sceneGraph.emplace(core::move(node));
 
 	/**

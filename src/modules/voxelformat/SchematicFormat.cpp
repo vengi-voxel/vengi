@@ -117,6 +117,7 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
+	node.setPalette(_palette);
 	sceneGraph.emplace(core::move(node));
 	return true;
 }
