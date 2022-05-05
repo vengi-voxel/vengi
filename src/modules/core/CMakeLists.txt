@@ -42,14 +42,15 @@ set(SRCS
 	GLM.cpp GLM.h
 	GLMConst.h
 	Hash.h
-	RGBA.h
 	IComponent.h
 	Log.cpp Log.h
 	MD5.cpp MD5.h
-	PoolAllocator.h
 	NonCopyable.h
+	Optional.h
 	Password.h
+	PoolAllocator.h
 	Process.cpp Process.h
+	RGBA.h
 	SharedPtr.h
 	Singleton.h
 	StandardLib.h
