@@ -62,7 +62,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	uint8_t * const zlibBuffer = new uint8_t[zlibBufSize];
 	const uint32_t compressedBufSize = core::zip::compressBound(zlibBufSize);
 	uint8_t *compressedBuf = new uint8_t[compressedBufSize];
-	const voxel::Palette& palette = voxel::getPalette();
+	const voxel::Palette& palette = node.palette();
 
 	uint8_t* zlibBuf = zlibBuffer;
 	for (int x = mins.x; x <= maxs.x; ++x) {
