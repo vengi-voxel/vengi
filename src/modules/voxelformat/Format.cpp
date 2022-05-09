@@ -14,6 +14,7 @@
 #include "voxel/Mesh.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphUtil.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VoxelUtil.h"
@@ -81,12 +82,7 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 		}
 		if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxSize))) {
 			SceneGraphNode newNode;
-			newNode.setVolume(new voxel::RawVolume(node.volume()), true);
-			newNode.setName(node.name());
-			newNode.setVisible(node.visible());
-			newNode.addProperties(node.properties());
-			newNode.setKeyFrames(node.keyFrames());
-			newNode.setPalette(node.palette());
+			copyNode(node, newNode, true);
 			destSceneGraph.emplace(core::move(newNode));
 			continue;
 		}
@@ -99,12 +95,8 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 				delete v;
 				v = cv;
 			}
+			copyNode(node, newNode, false);
 			newNode.setVolume(v, true);
-			newNode.setName(node.name());
-			newNode.setVisible(node.visible());
-			newNode.addProperties(node.properties());
-			newNode.setKeyFrames(node.keyFrames());
-			newNode.setPalette(node.palette());
 			destSceneGraph.emplace(core::move(newNode));
 		}
 	}

@@ -8,6 +8,8 @@
 
 namespace voxelformat {
 
+void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume);
+
 // this makes a copy of the volumes affected
 int addNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent);
 
