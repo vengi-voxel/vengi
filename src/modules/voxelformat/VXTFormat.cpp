@@ -13,6 +13,7 @@
 #include "io/Filesystem.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/SceneGraphUtil.h"
 #include "voxelformat/VXMFormat.h"
 #include "voxelformat/VXRFormat.h"
 
@@ -114,12 +115,9 @@ bool VXTFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			const int32_t y = (i / depth) % height;
 			const int32_t z = i % depth;
 			SceneGraphNode tileNode(SceneGraphNodeType::Model);
-			tileNode.setVolume(new voxel::RawVolume(node->volume()), true);
+			copyNode(*node, tileNode, true);
 			const glm::ivec3 pos(x * tileSize, y * tileSize, z * tileSize);
 			tileNode.volume()->translate(pos); // TODO
-			tileNode.setPalette(node->palette());
-			tileNode.addProperties(node->properties());
-			tileNode.setKeyFrames(node->keyFrames());
 			//tileNode.transform().position = pos;
 			tileGraph.emplace(core::move(tileNode));
 		}

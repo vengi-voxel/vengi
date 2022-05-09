@@ -9,6 +9,7 @@
 namespace voxelformat {
 
 void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume) {
+	// TODO: also add all children
 	if (copyVolume) {
 		target.setVolume(new voxel::RawVolume(src.volume()), true);
 	} else {

@@ -19,6 +19,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/SceneGraphUtil.h"
 #include "voxelformat/VXAFormat.h"
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -58,11 +59,7 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		io::FileStream wstream(outputFile);
 		SceneGraph newSceneGraph;
 		SceneGraphNode newNode;
-		newNode.setVolume(node.volume(), false);
-		newNode.setName(name);
-		newNode.setVisible(node.visible());
-		newNode.addProperties(newNode.properties());
-		newNode.setPalette(newNode.palette());
+		copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
 		wrapBool(f.saveGroups(newSceneGraph, finalName, wstream))
 	}

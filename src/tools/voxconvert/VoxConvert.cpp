@@ -457,8 +457,7 @@ void VoxConvert::exportLayersIntoSingleObjects(voxelformat::SceneGraph& sceneGra
 	for (voxelformat::SceneGraphNode& node : sceneGraph) {
 		voxelformat::SceneGraph newSceneGraph;
 		voxelformat::SceneGraphNode newNode;
-		newNode.setName(node.name());
-		newNode.setVolume(node.volume(), false);
+		voxelformat::copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
 		const core::String& filename = getFilenameForLayerName(inputfile, node.name(), n);
 		if (voxelformat::saveFormat(filesystem()->open(filename, io::FileMode::SysWrite), newSceneGraph)) {

@@ -193,10 +193,7 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	}
 	voxelformat::SceneGraph newSceneGraph;
 	voxelformat::SceneGraphNode newNode;
-	// TODO: also add all children
-	newNode.setVolume(node->volume(), false);
-	newNode.setName(node->name());
-	newNode.setVisible(node->visible());
+	voxelformat::copyNode(*node, newNode, false);
 	newSceneGraph.emplace(core::move(newNode));
 	if (voxelformat::saveFormat(filePtr, newSceneGraph)) {
 		Log::info("Saved layer %i to %s", nodeId, filePtr->name().c_str());
