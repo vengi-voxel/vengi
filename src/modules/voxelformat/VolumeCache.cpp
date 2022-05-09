@@ -47,11 +47,11 @@ voxel::RawVolume* VolumeCache::loadVolume(const core::String &filename) {
 		_volumes.put(filename, nullptr);
 		return nullptr;
 	}
-	voxel::RawVolume* v = sceneGraph.merge();
+	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 
 	core::ScopedLock lock(_mutex);
-	_volumes.put(filename, v);
-	return v;
+	_volumes.put(filename, merged.first);
+	return merged.first;
 }
 
 bool VolumeCache::removeVolume(const char* fullPath) {

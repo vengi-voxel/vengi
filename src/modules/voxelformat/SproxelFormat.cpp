@@ -5,6 +5,7 @@
 #include "SproxelFormat.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
 #include "voxel/MaterialColor.h"
@@ -88,14 +89,15 @@ bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 }
 
 bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
-	voxel::RawVolume *mergedVolume = sceneGraph.merge();
-	if (mergedVolume == nullptr) {
+	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
 	}
 
-	const voxel::Region &region = mergedVolume->region();
-	voxel::RawVolume::Sampler sampler(mergedVolume);
+	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
+	const voxel::Region &region = merged.first->region();
+	voxel::RawVolume::Sampler sampler(merged.first);
 	const glm::ivec3 &lower = region.getLowerCorner();
 
 	const int width = region.getWidthInVoxels();
@@ -103,7 +105,6 @@ bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String 
 	const int depth = region.getDepthInVoxels();
 	if (!stream.writeStringFormat(false, "%i,%i,%i\n", width, height, depth)) {
 		Log::error("Could not save sproxel csv file");
-		delete mergedVolume;
 		return false;
 	}
 
@@ -127,7 +128,6 @@ bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String 
 		}
 		stream.writeString("\n", false);
 	}
-	delete mergedVolume;
 	return true;
 }
 

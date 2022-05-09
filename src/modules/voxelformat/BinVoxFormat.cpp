@@ -3,6 +3,7 @@
  */
 
 #include "BinVoxFormat.h"
+#include "core/ScopedPtr.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
 #include "core/StringUtil.h"
@@ -116,14 +117,15 @@ bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 }
 
 bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	voxel::RawVolume* mergedVolume = sceneGraph.merge();
-	if (mergedVolume == nullptr) {
+	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
 	}
+	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
 
-	const voxel::Region& region = mergedVolume->region();
-	voxel::RawVolume::Sampler sampler(mergedVolume);
+	const voxel::Region& region = merged.first->region();
+	voxel::RawVolume::Sampler sampler(merged.first);
 
 	const int32_t width = region.getWidthInVoxels();
 	const int32_t height = region.getHeightInVoxels();
@@ -186,7 +188,6 @@ bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &
 			pos.z = mins.z;
 		}
 	}
-	delete mergedVolume;
 	core_assert_msg(count > 0u, "Expected to have at least one voxel left: %i", (int)count);
 	wrapBool(stream.writeUInt8(value))
 	wrapBool(stream.writeUInt8(count))

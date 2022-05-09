@@ -6,6 +6,7 @@
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
@@ -123,13 +124,15 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 }
 
 bool SchematicFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	voxel::RawVolume* mergedVolume = sceneGraph.merge();
-	if (mergedVolume == nullptr) {
+	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
 	}
-	const glm::ivec3 &size = mergedVolume->region().getDimensionsInVoxels();
-	const glm::ivec3 &mins = mergedVolume->region().getLowerCorner();
+	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
+	const voxel::Region &region = merged.first->region();
+	const glm::ivec3 &size = region.getDimensionsInVoxels();
+	const glm::ivec3 &mins = region.getLowerCorner();
 
 	io::ZipWriteStream zipStream(stream);
 
@@ -155,7 +158,7 @@ bool SchematicFormat::saveGroups(const SceneGraph& sceneGraph, const core::Strin
 			for (int y = 0; y < size.y; ++y) {
 				for (int z = 0; z < size.z; ++z) {
 					const int idx = (y * size.z + z) * size.x + x;
-					const voxel::Voxel &voxel = mergedVolume->voxel(mins.x + x, mins.y + y, mins.z + z);
+					const voxel::Voxel &voxel = merged.first->voxel(mins.x + x, mins.y + y, mins.z + z);
 					if (voxel::isAir(voxel.getMaterial())) {
 						blocks[idx] = 0;
 					} else {
@@ -171,7 +174,6 @@ bool SchematicFormat::saveGroups(const SceneGraph& sceneGraph, const core::Strin
 		}
 		compound.put("Blocks", priv::NamedBinaryTag(core::move(blocks)));
 	}
-	delete mergedVolume;
 	const priv::NamedBinaryTag tag(core::move(compound));
 	return priv::NamedBinaryTag::write(tag, "Schematic", zipStream);
 }

@@ -4,6 +4,7 @@
 
 #include "AoSVXLFormat.h"
 #include "core/Assert.h"
+#include "core/Pair.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/Map.h"
@@ -287,12 +288,12 @@ bool AoSVXLFormat::isSurface(const voxel::RawVolume *v, int x, int y, int z) {
 
 // code taken from https://silverspaceship.com/aosmap/aos_file_format.html
 bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	voxel::RawVolume* mergedVolume = sceneGraph.merge();
-	if (mergedVolume == nullptr) {
+	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
 	}
-	glm::ivec3 size = mergedVolume->region().getDimensionsInVoxels();
+	glm::ivec3 size = merged.first->region().getDimensionsInVoxels();
 	glm::ivec3 targetSize(512, size.y, 512);
 	if (targetSize.y < 64) {
 		targetSize.y = 64;
@@ -300,14 +301,14 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 		targetSize.y = 256;
 	} else {
 		Log::error("Volume height exceeds the max allowed height of 256 voxels: %i", targetSize.y);
-		delete mergedVolume;
+		delete merged.first;
 		return false;
 	}
 	const glm::ivec3 sizeDelta = targetSize - size;
-	voxel::RawVolume* v = mergedVolume;
+	voxel::RawVolume* v = merged.first;
 	if (glm::any(glm::notEqual(glm::ivec3(0), sizeDelta))) {
-		v = voxelutil::resize(mergedVolume, sizeDelta);
-		delete mergedVolume;
+		v = voxelutil::resize(merged.first, sizeDelta);
+		delete merged.first;
 	}
 	if (v == nullptr) {
 		return false;

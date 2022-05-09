@@ -287,14 +287,15 @@ app::AppState VoxConvert::onInit() {
 
 	if (_mergeVolumes) {
 		Log::info("Merge layers");
-		voxel::RawVolume* merged = sceneGraph.merge();
-		if (merged == nullptr) {
+		const voxelformat::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+		if (merged.first == nullptr) {
 			Log::error("Failed to merge volumes");
 			return app::AppState::InitFailure;
 		}
 		sceneGraph.clear();
 		voxelformat::SceneGraphNode node;
-		node.setVolume(merged, true);
+		node.setPalette(merged.second);
+		node.setVolume(merged.first, true);
 		node.setName(infilesstr);
 		sceneGraph.emplace(core::move(node));
 	}
@@ -477,14 +478,15 @@ glm::ivec3 VoxConvert::getArgIvec3(const core::String &name) {
 
 void VoxConvert::split(const glm::ivec3 &size, voxelformat::SceneGraph& sceneGraph) {
 	Log::info("split volumes at %i:%i:%i", size.x, size.y, size.z);
-	voxel::RawVolume *merged = sceneGraph.merge();
+	const voxelformat::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	sceneGraph.clear();
 	core::DynamicArray<voxel::RawVolume *> rawVolumes;
-	voxelutil::splitVolume(merged, size, rawVolumes);
-	delete merged;
+	voxelutil::splitVolume(merged.first, size, rawVolumes);
+	delete merged.first;
 	for (voxel::RawVolume *v : rawVolumes) {
 		voxelformat::SceneGraphNode node;
 		node.setVolume(v, true);
+		node.setPalette(merged.second);
 		sceneGraph.emplace(core::move(node));
 	}
 }

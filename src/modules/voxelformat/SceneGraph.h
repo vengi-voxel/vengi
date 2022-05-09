@@ -5,6 +5,7 @@
 #pragma once
 
 #include "SceneGraphNode.h"
+#include "core/Pair.h"
 #include "core/collection/DynamicArray.h"
 #include <functional>
 
@@ -97,13 +98,14 @@ public:
 	 * @return Amount of nodes in the graph
 	 */
 	size_t size(SceneGraphNodeType type = SceneGraphNodeType::Model) const;
+	using MergedVolumePalette = core::Pair<voxel::RawVolume*, voxel::Palette>;
 	/**
 	 * @brief Merge all available nodes into one big volume.
 	 * @note If the graph is empty, this returns @c nullptr
 	 * @note The caller is responsible for deleting the returned volume
 	 * @note The palette indices are just taken as they come in. There is no quantization here.
 	 */
-	voxel::RawVolume *merge() const;
+	MergedVolumePalette merge() const;
 
 	/**
 	 * @brief Delete the owned volumes

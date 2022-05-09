@@ -5,6 +5,7 @@
 #include "SceneGraph.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/Pair.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeMerger.h"
@@ -287,21 +288,25 @@ SceneGraphNode *SceneGraph::operator[](int modelIdx) {
 	return nullptr;
 }
 
-voxel::RawVolume *SceneGraph::merge() const {
+SceneGraph::MergedVolumePalette SceneGraph::merge() const {
 	core::DynamicArray<const voxel::RawVolume *> rawVolumes;
 	rawVolumes.reserve(_nodes.size() - 1);
+	const voxel::Palette *pal = nullptr;
 	for (const SceneGraphNode &node : *this) {
 		core_assert(node.type() == SceneGraphNodeType::Model);
 		core_assert(node.volume() != nullptr);
+		// TODO: this could get improved in trying to build the best possible palette
+		// but we'll just use it like this now...
+		pal = &node.palette();
 		rawVolumes.push_back(node.volume());
 	}
 	if (rawVolumes.empty()) {
-		return nullptr;
+		return MergedVolumePalette{};
 	}
 	if (rawVolumes.size() == 1) {
-		return new voxel::RawVolume(rawVolumes[0]);
+		return MergedVolumePalette{new voxel::RawVolume(rawVolumes[0]), *pal};
 	}
-	return voxelutil::merge(rawVolumes);
+	return MergedVolumePalette{voxelutil::merge(rawVolumes), *pal};
 }
 
 } // namespace voxel

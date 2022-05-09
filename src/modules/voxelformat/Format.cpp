@@ -136,8 +136,8 @@ voxel::RawVolume* Format::load(const core::String &filename, io::SeekableReadStr
 	if (!loadGroups(filename, stream, sceneGraph)) {
 		return nullptr;
 	}
-	voxel::RawVolume* mergedVolume = sceneGraph.merge();
-	return mergedVolume;
+	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+	return merged.first;
 }
 
 size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {

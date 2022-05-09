@@ -275,10 +275,11 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 
 static void mergeIfNeeded(voxelformat::SceneGraph &newSceneGraph) {
 	if (newSceneGraph.size() > voxelrender::RawVolumeRenderer::MAX_VOLUMES) {
-		voxel::RawVolume *v = newSceneGraph.merge();
+		const voxelformat::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();
 		newSceneGraph.clear();
 		voxelformat::SceneGraphNode node;
-		node.setVolume(v, true);
+		node.setVolume(merged.first, true);
+		node.setPalette(merged.second);
 		newSceneGraph.emplace(core::move(node));
 	}
 }

@@ -3,6 +3,7 @@
  */
 
 #include "QEFFormat.h"
+#include "core/ScopedPtr.h"
 #include "voxel/MaterialColor.h"
 #include "core/Log.h"
 #include "core/Color.h"
@@ -120,14 +121,15 @@ bool QEFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	stream.writeString("Version 0.2\n", false);
 	stream.writeString("www.minddesk.com\n", false);
 
-	voxel::RawVolume* mergedVolume = sceneGraph.merge();
-	if (mergedVolume == nullptr) {
+	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
 	}
+	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
 
-	const voxel::Region& region = mergedVolume->region();
-	voxel::RawVolume::Sampler sampler(mergedVolume);
+	const voxel::Region& region = merged.first->region();
+	voxel::RawVolume::Sampler sampler(merged.first);
 	const glm::ivec3& lower = region.getLowerCorner();
 
 	const uint32_t width = region.getWidthInVoxels();
@@ -162,7 +164,6 @@ bool QEFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 			}
 		}
 	}
-	delete mergedVolume;
 	return true;
 }
 

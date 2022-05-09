@@ -104,15 +104,15 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 #undef wrap
 
 bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	voxel::RawVolume* mergedVolume = sceneGraph.merge();
-	if (mergedVolume == nullptr) {
+	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
 	}
-	core::ScopedPtr<voxel::RawVolume> scopedPtr(mergedVolume);
+	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
 
-	const voxel::Region& region = mergedVolume->region();
-	voxel::RawVolume::Sampler sampler(mergedVolume);
+	const voxel::Region& region = merged.first->region();
+	voxel::RawVolume::Sampler sampler(merged.first);
 	const glm::ivec3& lower = region.getLowerCorner();
 
 	const uint32_t width = region.getWidthInVoxels();
