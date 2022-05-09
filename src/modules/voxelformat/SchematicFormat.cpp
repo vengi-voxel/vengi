@@ -147,7 +147,7 @@ bool SchematicFormat::saveGroups(const SceneGraph& sceneGraph, const core::Strin
 	compound.put("z", (int32_t)mins.z);
 	compound.put("Materials", priv::NamedBinaryTag("Alpha"));
 	{
-		const voxel::Palette &palette = voxel::getPalette();
+		const voxel::Palette &palette = merged.second;
 
 		core::DynamicArray<int8_t> blocks;
 		blocks.resize(size.x * size.y * size.z);

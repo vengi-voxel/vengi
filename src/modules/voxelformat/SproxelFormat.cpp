@@ -108,7 +108,7 @@ bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String 
 		return false;
 	}
 
-	const voxel::Palette& palette = voxel::getPalette();
+	const voxel::Palette& palette = merged.second;
 	for (int y = height - 1; y >= 0; y--) {
 		for (int z = 0u; z < depth; ++z) {
 			for (int x = 0u; x < width; ++x) {
