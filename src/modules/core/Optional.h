@@ -47,6 +47,10 @@ public:
 		move._value = nullptr;
 	}
 
+	inline T *value() {
+		return _value;
+	}
+
 	inline const T *value() const {
 		return _value;
 	}
