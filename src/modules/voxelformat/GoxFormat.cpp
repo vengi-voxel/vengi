@@ -567,7 +567,7 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const SceneGraph
 					const size_t size = (size_t)BlockSize * BlockSize * BlockSize * 4;
 					uint32_t *data = (uint32_t*)core_malloc(size);
 					int offset = 0;
-					const voxel::Palette& palette = voxel::getPalette();
+					const voxel::Palette& palette = node.palette();
 					voxelutil::visitVolume(*mirrored, blockRegion, [&](int, int, int, const voxel::Voxel& voxel) {
 						if (voxel::isAir(voxel.getMaterial())) {
 							data[offset++] = 0;
