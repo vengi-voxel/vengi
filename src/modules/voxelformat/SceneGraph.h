@@ -98,10 +98,11 @@ public:
 	 * @return Amount of nodes in the graph
 	 */
 	size_t size(SceneGraphNodeType type = SceneGraphNodeType::Model) const;
+
 	using MergedVolumePalette = core::Pair<voxel::RawVolume*, voxel::Palette>;
 	/**
 	 * @brief Merge all available nodes into one big volume.
-	 * @note If the graph is empty, this returns @c nullptr
+	 * @note If the graph is empty, this returns @c nullptr for the volume and a dummy value for the palette
 	 * @note The caller is responsible for deleting the returned volume
 	 * @note The palette indices are just taken as they come in. There is no quantization here.
 	 */
