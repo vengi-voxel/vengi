@@ -17,6 +17,7 @@
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
@@ -75,13 +76,12 @@ static bool writeString(io::SeekableWriteStream& stream, const core::String& str
 	return true;
 }
 
-static int writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t count) {
+static int writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t count, const voxel::Palette &palette) {
 	if (count == 0) {
 		return 0;
 	}
 	core::RGBA color;
 	if (!voxel::isAir(voxel.getMaterial())) {
-		const voxel::Palette& palette = voxel::getPalette();
 		color = palette.colors[voxel.getColor()];
 	}
 	if (count == 1) {
@@ -168,7 +168,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 					previousVoxel = voxel;
 					rleCount = 1;
 				} else if (previousColor != paletteIdx || rleCount == 255) {
-					rleEntries += writeRLE(rleDataStream, previousVoxel, rleCount);
+					rleEntries += writeRLE(rleDataStream, previousVoxel, rleCount, node.palette());
 					rleCount = 1;
 					previousColor = paletteIdx;
 					previousVoxel = voxel;
@@ -176,7 +176,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 					++rleCount;
 				}
 			}
-			rleEntries += writeRLE(rleDataStream, previousVoxel, rleCount);
+			rleEntries += writeRLE(rleDataStream, previousVoxel, rleCount, node.palette());
 			wrapSaveNegative(rleDataStream.seek(dataSizePos))
 			wrapSave(rleDataStream.writeUInt16(rleEntries))
 			wrapSaveNegative(rleDataStream.seek(0, SEEK_END))
