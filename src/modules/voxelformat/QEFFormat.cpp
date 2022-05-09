@@ -136,7 +136,7 @@ bool QEFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	const uint32_t height = region.getHeightInVoxels();
 	const uint32_t depth = region.getDepthInVoxels();
 	stream.writeStringFormat(false, "%i %i %i\n", width, depth, height);
-	const voxel::Palette& palette = voxel::getPalette();
+	const voxel::Palette& palette = merged.second;
 	stream.writeStringFormat(false, "%i\n", palette.colorCount);
 	for (int i = 0; i < palette.colorCount; ++i) {
 		const uint32_t c = palette.colors[i];
