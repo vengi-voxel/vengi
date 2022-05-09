@@ -11,7 +11,7 @@ namespace voxelformat {
 /**
  * @brief Convert the volume data into a mesh
  */
-class MeshExporter : public Format {
+class MeshFormat : public Format {
 protected:
 	struct Tri {
 		glm::vec3 vertices[3];

@@ -29,7 +29,7 @@ set(SRCS
 	VXTFormat.h VXTFormat.cpp
 	VXLFormat.h VXLFormat.cpp
 	MeshCache.h MeshCache.cpp
-	MeshExporter.h MeshExporter.cpp
+	MeshFormat.h MeshFormat.cpp
 	CubFormat.h CubFormat.cpp
 	OBJFormat.h OBJFormat.cpp
 	PLYFormat.h PLYFormat.cpp

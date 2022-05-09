@@ -62,7 +62,7 @@ using NBTList = core::DynamicArray<NamedBinaryTag>;
  * @note https://minecraft.fandom.com/wiki/Chunk_format
  * @note https://github.com/UnknownShadow200/ClassiCube/blob/master/src/Formats.c
  */
-class MCRFormat : public Format {
+class MCRFormat : public PaletteFormat {
 private:
 	static constexpr int VERSION_GZIP = 1;
 	static constexpr int VERSION_DEFLATE = 2;

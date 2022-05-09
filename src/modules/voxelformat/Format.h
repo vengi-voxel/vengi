@@ -30,30 +30,6 @@ static constexpr int MaxRegionSize = 256;
 class Format {
 protected:
 	/**
-	 * @brief This array contains a mapping between the input colors of the particular format with the internal
-	 * currently in-use palette indices.
-	 * For example. You are loading a format that e.g. contains RGBA colors in a chunk and your particular file
-	 * includes 256 colors as RGBA values. We now try to map the format input RGBA colors values to the ones from
-	 * our own currently in-use palette. This is done by searching for a color in the current in-use palette that
-	 * is very similar to the color from the input file you are loading. The found index in the in-use palette is
-	 * then stored in this array for fast lookup when mapping the voxel data from the internal RGBA index of the
-	 * input file to the currently in-use matching palette index.
-	 *
-	 * @sa findClosestIndex()
-	 */
-	core::Array<uint8_t, 256> _paletteMapping;
-	/**
-	 * This is the loaded palette from the input file. This is not the currently in-use palette. This might differ
-	 * and the colors will get matched to the in-use palette.
-	 */
-	voxel::Palette _palette;
-
-	/**
-	 * @brief Maps a custum palette index to our own 256 color palette by a closest match
-	 */
-	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;
-
-	/**
 	 * @brief Checks whether the given chunk is empty (only contains air).
 	 *
 	 * @param v The volume
@@ -104,6 +80,41 @@ public:
 	virtual voxel::RawVolume* load(const core::String &filename, io::SeekableReadStream& stream);
 	virtual bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) = 0;
 	virtual bool save(const voxel::RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream);
+};
+
+class NoColorFormat : public Format {
+};
+
+class PaletteFormat : public Format {
+protected:
+	/**
+	 * This is the loaded palette from the input file. This is not the currently in-use palette. This might differ
+	 * and the colors will get matched to the in-use palette.
+	 */
+	voxel::Palette _palette;
+	/**
+	 * @brief This array contains a mapping between the input colors of the particular format with the internal
+	 * currently in-use palette indices.
+	 * For example. You are loading a format that e.g. contains RGBA colors in a chunk and your particular file
+	 * includes 256 colors as RGBA values. We now try to map the format input RGBA colors values to the ones from
+	 * our own currently in-use palette. This is done by searching for a color in the current in-use palette that
+	 * is very similar to the color from the input file you are loading. The found index in the in-use palette is
+	 * then stored in this array for fast lookup when mapping the voxel data from the internal RGBA index of the
+	 * input file to the currently in-use matching palette index.
+	 *
+	 * @sa findClosestIndex()
+	 */
+	core::Array<uint8_t, 256> _paletteMapping;
+
+	/**
+	 * @brief Maps a custum palette index to our own 256 color palette by a closest match
+	 */
+	uint8_t convertPaletteIndex(uint32_t paletteIndex) const;
+public:
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
+};
+
+class RGBAFormat : public Format {
 };
 
 }

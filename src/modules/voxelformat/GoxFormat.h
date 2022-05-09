@@ -65,7 +65,7 @@ namespace voxelformat {
  *          yaw: radian
  *          intensity: float
  */
-class GoxFormat : public Format {
+class GoxFormat : public RGBAFormat {
 private:
 	static constexpr int BlockSize = 16;
 

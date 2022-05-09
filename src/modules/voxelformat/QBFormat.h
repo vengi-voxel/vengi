@@ -19,7 +19,7 @@ class PaletteLookup;
  * @see QBCLFormat
  * @see QEFFormat
  */
-class QBFormat : public Format {
+class QBFormat : public RGBAFormat {
 private:
 	enum class ColorFormat : uint32_t {
 		RGBA = 0,

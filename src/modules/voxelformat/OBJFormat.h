@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "MeshExporter.h"
+#include "MeshFormat.h"
 
 namespace tinyobj {
 struct mesh_t;
@@ -16,7 +16,7 @@ namespace voxelformat {
 /**
  * @brief Wavefront Object
  */
-class OBJFormat : public MeshExporter {
+class OBJFormat : public MeshFormat {
 private:
 	bool writeMtlFile(const core::String& mtlName, const core::String &paletteName) const;
 	static void calculateAABB(const tinyobj::mesh_t &mesh, const tinyobj::attrib_t &attrib, glm::vec3 &mins,

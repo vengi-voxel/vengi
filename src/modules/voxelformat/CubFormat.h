@@ -14,7 +14,7 @@ namespace voxelformat {
  * The first 12 bytes of the file are the width, depth and height of the volume (uint32_t little endian).
  * The remaining parts are the RGB values (3 bytes)
  */
-class CubFormat : public Format {
+class CubFormat : public RGBAFormat {
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;

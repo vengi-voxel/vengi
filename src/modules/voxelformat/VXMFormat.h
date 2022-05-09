@@ -14,7 +14,7 @@ namespace voxelformat {
  * @sa VXAFormat
  * @sa VXRFormat
  */
-class VXMFormat : public Format {
+class VXMFormat : public PaletteFormat {
 private:
 	bool writeRLE(io::WriteStream &stream, int rleCount, voxel::Voxel &voxel, uint8_t emptyColorReplacement) const;
 public:

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "MeshExporter.h"
+#include "MeshFormat.h"
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/Log.h"
@@ -18,7 +18,7 @@
 
 namespace voxelformat {
 
-glm::vec3 MeshExporter::getScale() {
+glm::vec3 MeshFormat::getScale() {
 	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
 
 	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
@@ -32,11 +32,11 @@ glm::vec3 MeshExporter::getScale() {
 	return {scaleX, scaleY, scaleZ};
 }
 
-bool MeshExporter::flipWinding(const glm::vec3 &scale) {
+bool MeshFormat::flipWinding(const glm::vec3 &scale) {
 	return (scale.x * scale.y * scale.z) < 0.0f ? true : false;
 }
 
-void MeshExporter::subdivideTri(const Tri &tri, core::DynamicArray<Tri> &tinyTris) {
+void MeshFormat::subdivideTri(const Tri &tri, core::DynamicArray<Tri> &tinyTris) {
 	const glm::vec3 &mins = tri.mins();
 	const glm::vec3 &maxs = tri.maxs();
 	const glm::vec3 size = maxs - mins;
@@ -51,7 +51,7 @@ void MeshExporter::subdivideTri(const Tri &tri, core::DynamicArray<Tri> &tinyTri
 	tinyTris.push_back(tri);
 }
 
-void MeshExporter::voxelizeTris(voxel::RawVolume *volume, const core::DynamicArray<Tri> &subdivided) {
+void MeshFormat::voxelizeTris(voxel::RawVolume *volume, const core::DynamicArray<Tri> &subdivided) {
 	core::DynamicArray<uint8_t> palette;
 	palette.reserve(subdivided.size());
 
@@ -84,19 +84,19 @@ void MeshExporter::voxelizeTris(voxel::RawVolume *volume, const core::DynamicArr
 	voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
 }
 
-MeshExporter::MeshExt::MeshExt(voxel::Mesh *_mesh, const SceneGraphNode& node, bool _applyTransform) :
+MeshFormat::MeshExt::MeshExt(voxel::Mesh *_mesh, const SceneGraphNode& node, bool _applyTransform) :
 		mesh(_mesh), name(node.name()), applyTransform(_applyTransform) {
 	transform = node.transform();
 	size = node.region().getDimensionsInVoxels();
 	nodeId = node.id();
 }
 
-bool MeshExporter::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) {
+bool MeshFormat::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) {
 	Log::debug("Meshes can't get voxelized yet");
 	return false;
 }
 
-bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
 	const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 	const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
@@ -112,7 +112,7 @@ bool MeshExporter::saveGroups(const SceneGraph& sceneGraph, const core::String &
 	core::ThreadPool& threadPool = app::App::getInstance()->threadPool();
 	Meshes meshes;
 	core::Map<int, int> meshIdxNodeMap;
-	core_trace_mutex(core::Lock, lock, "MeshExporter");
+	core_trace_mutex(core::Lock, lock, "MeshFormat");
 	for (const SceneGraphNode& node : sceneGraph) {
 		auto lambda = [&] () {
 			voxel::Mesh *mesh = new voxel::Mesh();

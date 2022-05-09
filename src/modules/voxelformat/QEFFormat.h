@@ -19,7 +19,7 @@ namespace voxelformat {
  *
  * https://getqubicle.com/qubicle/documentation/docs/file/qef/
  */
-class QEFFormat : public Format {
+class QEFFormat : public PaletteFormat {
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;

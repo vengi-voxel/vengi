@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "MeshExporter.h"
+#include "MeshFormat.h"
 
 namespace voxelformat {
 
@@ -14,7 +14,7 @@ namespace voxelformat {
  * https://code.blender.org/2013/08/fbx-binary-file-format-specification/
  * https://github.com/libgdx/fbx-conv/
  */
-class FBXFormat : public MeshExporter {
+class FBXFormat : public MeshFormat {
 private:
 	bool saveMeshesBinary(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 						  const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords);

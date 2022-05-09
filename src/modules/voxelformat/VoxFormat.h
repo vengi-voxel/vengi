@@ -20,7 +20,7 @@ namespace voxelformat {
  * https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
  * https://ephtracy.github.io/
  */
-class VoxFormat : public Format {
+class VoxFormat : public PaletteFormat {
 private:
 	int findClosestPaletteIndex();
 	bool addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, bool groupHidden = false);

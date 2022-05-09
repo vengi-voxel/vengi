@@ -14,7 +14,7 @@ namespace voxelformat {
  * @sa VXMFormat
  * @sa VXAFormat
  */
-class VXRFormat : public Format {
+class VXRFormat : public PaletteFormat {
 private:
 	bool loadChildVXM(const core::String& vxmPath, SceneGraphNode &node, int version);
 

@@ -13,7 +13,7 @@ namespace voxelformat {
  *
  * https://silverspaceship.com/aosmap/
  */
-class AoSVXLFormat : public Format {
+class AoSVXLFormat : public RGBAFormat {
 private:
 	struct Header {
 		uint8_t len = 0;

@@ -13,7 +13,7 @@ namespace voxelformat {
  *
  * https://github.com/emilk/sproxel/blob/master/ImportExport.cpp
  */
-class SproxelFormat : public Format {
+class SproxelFormat : public RGBAFormat {
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;

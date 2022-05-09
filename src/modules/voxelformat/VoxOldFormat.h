@@ -11,7 +11,7 @@ namespace voxelformat {
 /**
  * @brief Old magicavoxel vox file format
  */
-class VoxOldFormat : public Format {
+class VoxOldFormat : public PaletteFormat {
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override {

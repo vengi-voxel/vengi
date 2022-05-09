@@ -17,7 +17,7 @@ namespace voxelformat {
  *
  * https://getqubicle.com/qubicle/documentation/docs/file/qbt/
  */
-class QBTFormat : public Format {
+class QBTFormat : public PaletteFormat {
 private:
 	bool skipNode(io::SeekableReadStream& stream);
 	bool loadMatrix(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent);

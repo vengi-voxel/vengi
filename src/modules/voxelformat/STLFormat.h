@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "MeshExporter.h"
+#include "MeshFormat.h"
 
 namespace voxel {
 struct VoxelVertex;
@@ -26,7 +26,7 @@ namespace voxelformat {
  * UINT16 – Attribute byte count
  * end
  */
-class STLFormat : public MeshExporter {
+class STLFormat : public MeshFormat {
 private:
 	struct Face {
 		glm::vec3 normal {};

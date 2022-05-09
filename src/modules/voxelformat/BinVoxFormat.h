@@ -13,7 +13,7 @@ namespace voxelformat {
  *
  * https://www.patrickmin.com/binvox/binvox.html
  */
-class BinVoxFormat : public Format {
+class BinVoxFormat : public NoColorFormat {
 private:
 	struct State {
 		uint32_t _version = 0u;

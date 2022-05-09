@@ -13,7 +13,7 @@ namespace voxelformat {
  *
  * http://xhp.xwis.net/documents/VXL_Format.txt
  */
-class VXLFormat : public Format {
+class VXLFormat : public PaletteFormat {
 private:
 	static constexpr size_t MaxLimbs = 512;
 	struct vxl_limb_header {

@@ -22,7 +22,7 @@
 
 namespace voxelformat {
 
-uint8_t Format::convertPaletteIndex(uint32_t paletteIndex) const {
+uint8_t PaletteFormat::convertPaletteIndex(uint32_t paletteIndex) const {
 	if (paletteIndex >= (uint32_t)_palette.colorCount) {
 		if (_palette.colorCount > 0) {
 			return paletteIndex % _palette.colorCount;
@@ -133,6 +133,10 @@ voxel::RawVolume* Format::load(const core::String &filename, io::SeekableReadStr
 }
 
 size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+	return 0;
+}
+
+size_t PaletteFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
 	SceneGraph sceneGraph;
 	loadGroups(filename, stream, sceneGraph);
 	palette = _palette;
