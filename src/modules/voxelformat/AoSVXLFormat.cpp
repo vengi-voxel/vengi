@@ -326,7 +326,7 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 	v->translate(region.getLowerCorner());
 	voxel::RawVolume::Sampler sampler(v);
 
-	const voxel::Palette& palette = voxel::getPalette();
+	const voxel::Palette& palette = merged.second;
 
 	for (int z = 0; z < depth; ++z) {
 		for (int x = 0; x < width; ++x) {

@@ -124,7 +124,7 @@ bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapBool(stream.writeUInt32(depth))
 	wrapBool(stream.writeUInt32(height))
 
-	const voxel::Palette &palette = voxel::getPalette();
+	const voxel::Palette &palette = merged.second;
 	for (uint32_t y = 0u; y < height; ++y) {
 		for (uint32_t z = 0u; z < depth; ++z) {
 			for (uint32_t x = 0u; x < width; ++x) {
