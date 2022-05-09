@@ -69,16 +69,18 @@ bool VXTFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		}
 		io::FileStream childStream(file);
 		VXMFormat f;
-		voxel::RawVolume* tileVolume = f.load(path, childStream);
-		if (tileVolume == nullptr) {
+		SceneGraph subGraph;
+		if (!f.loadGroups(path, childStream, subGraph)) {
 			Log::warn("Failed to load vxm tile %s", path);
 			continue;
 		}
-		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setName(path);
-		node.setVolume(tileVolume, true);
-		node.setProperty("tileidx", core::string::format("%i", i));
-		tileGraph.emplace(core::move(node));
+		for (const SceneGraphNode &node : subGraph) {
+			SceneGraphNode newNode(SceneGraphNodeType::Model);
+			copyNode(node, newNode, true);
+			newNode.setProperty("tileidx", core::string::format("%i", i));
+			newNode.setName(path);
+			tileGraph.emplace(core::move(newNode));
+		}
 	}
 
 	int idx = 0;
