@@ -8,21 +8,6 @@
 
 namespace voxelformat {
 
-void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume) {
-	// TODO: also add all children
-	if (copyVolume) {
-		target.setVolume(new voxel::RawVolume(src.volume()), true);
-	} else {
-		target.setVolume(src.volume(), false);
-	}
-	target.setName(src.name());
-	target.setVisible(src.visible());
-	target.setLocked(src.locked());
-	target.addProperties(src.properties());
-	target.setKeyFrames(src.keyFrames());
-	target.setPalette(src.palette());
-}
-
 static int addToGraph(SceneGraph &sceneGraph, SceneGraphNode &&node, int parent) {
 	int newNodeId = sceneGraph.emplace(core::move(node), parent);
 	if (newNodeId == -1) {
@@ -36,12 +21,24 @@ static void copy(const SceneGraphNode &node, SceneGraphNode &target) {
 	target.setName(node.name());
 	target.setKeyFrames(node.keyFrames());
 	target.setVisible(node.visible());
+	target.setLocked(node.locked());
 	target.addProperties(node.properties());
+	target.setPalette(node.palette());
 	if (node.type() == SceneGraphNodeType::Model) {
 		core_assert(node.volume() != nullptr);
 	} else {
 		core_assert(node.volume() == nullptr);
 	}
+}
+
+void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume) {
+	// TODO: also add all children
+	if (copyVolume) {
+		target.setVolume(new voxel::RawVolume(src.volume()), true);
+	} else {
+		target.setVolume(src.volume(), false);
+	}
+	copy(src, target);
 }
 
 int addNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent) {
