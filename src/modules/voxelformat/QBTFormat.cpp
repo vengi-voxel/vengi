@@ -14,6 +14,7 @@
 #include "voxel/MaterialColor.h"
 #include "core/Log.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/private/PaletteLookup.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -347,6 +348,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 		Log::error("Invalid region");
 		return false;
 	}
+	PaletteLookup palLookup;
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	for (int32_t x = 0; x < (int)size.x; x++) {
 		for (int32_t z = 0; z < (int)size.z; z++) {
@@ -367,7 +369,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 				} else {
 					const core::RGBA color = core::Color::getRGBA(red, green, blue);
-					const uint8_t index = voxel::getPalette().getClosestMatch(color);
+					const uint8_t index = palLookup.findClosestIndex(color);
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
 				}
