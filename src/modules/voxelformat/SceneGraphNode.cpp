@@ -150,9 +150,14 @@ SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type) {
 
 void SceneGraphNode::setPalette(const voxel::Palette &palette) {
 	_palette.setValue(palette);
+	_palette.value()->markDirty();
 }
 
 const voxel::Palette &SceneGraphNode::palette() const {
+	return *_palette.value();
+}
+
+voxel::Palette &SceneGraphNode::palette() {
 	return *_palette.value();
 }
 

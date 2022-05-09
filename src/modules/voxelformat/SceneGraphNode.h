@@ -168,6 +168,7 @@ public:
 	void setId(int id);
 	int parent() const;
 	const voxel::Palette &palette() const;
+	voxel::Palette &palette();
 	void setPalette(const voxel::Palette &palette);
 
 	SceneGraphNodeType type() const;
