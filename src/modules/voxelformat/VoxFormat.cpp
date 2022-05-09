@@ -302,6 +302,12 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	SceneGraph newSceneGraph;
 	splitVolumes(sceneGraph, newSceneGraph, glm::ivec3(256));
 
+	const size_t modelCount = newSceneGraph.size();
+	if (modelCount == 0) {
+		Log::error("No model nodes found in scene graph");
+		return false;
+	}
+
 	ogt_vox_group default_group;
 	memset(&default_group, 0, sizeof(default_group));
 	default_group.hidden = false;
@@ -311,12 +317,6 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 
 	const voxel::Palette &palette = voxel::getPalette();
 	const int replacement = findClosestPaletteIndex();
-
-	const size_t modelCount = newSceneGraph.size();
-	if (modelCount == 0) {
-		Log::error("No model nodes found in scene graph");
-		return false;
-	}
 	core::Buffer<ogt_vox_model> models(modelCount);
 	core::Buffer<ogt_vox_layer> layers(modelCount);
 	core::Buffer<ogt_vox_instance> instances(modelCount);
