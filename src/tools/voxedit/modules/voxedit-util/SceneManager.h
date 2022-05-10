@@ -174,6 +174,7 @@ private:
 	voxelgenerator::LUAGenerator _luaGenerator;
 
 	voxel::RawVolume* activeVolume();
+
 	/**
 	 * @brief Assumes that the current active scene is a fresh scene, no undo states
 	 * are left, scene is no longer dirty and so on.
@@ -281,6 +282,7 @@ public:
 	void modified(int nodeId, const voxel::Region& modifiedRegion, bool markUndo = true);
 	voxel::RawVolume* volume(int nodeId);
 	const voxel::RawVolume* volume(int nodeId) const;
+	voxel::Palette &activePalette() const;
 
 	/**
 	 * @brief Import a heightmap in the current layer of the scene

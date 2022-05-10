@@ -89,7 +89,7 @@ void SceneGraphRenderer::clear() {
 	_renderer.clearPendingExtractions();
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
 		const int nId = nodeId(i);
-		if (_renderer.setVolume(nId, nullptr, true) != nullptr) {
+		if (_renderer.setVolume(nId, nullptr, nullptr, true) != nullptr) {
 			_renderer.updateBufferForVolume(nId);
 		}
 	}
@@ -100,7 +100,7 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, uint32_t f
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
 		const int nId = nodeId(i);
 		if (!sceneGraph.hasNode(nId)) {
-			_renderer.setVolume(nId, nullptr, true);
+			_renderer.setVolume(nId, nullptr, nullptr, true);
 		}
 	}
 
@@ -112,7 +112,7 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, uint32_t f
 		}
 		voxel::RawVolume *v = _renderer.volume(id);
 		if (v != node.volume()) {
-			_renderer.setVolume(id, node.volume(), true);
+			_renderer.setVolume(id, node, true);
 			_renderer.extractRegion(id, node.region());
 		}
 		if (_sceneMode) {

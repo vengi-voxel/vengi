@@ -38,7 +38,7 @@ void PalettePanel::reloadAvailablePalettes() {
 }
 
 void PalettePanel::update(const char *title, command::CommandExecutionListener &listener) {
-	voxel::Palette &palette = voxel::getPalette();
+	voxel::Palette &palette = sceneMgr().activePalette();
 	const int maxPaletteEntries = palette.colorCount;
 	const float height = ImGui::GetContentRegionMax().y;
 	const ImVec2 windowSize(120.0f, height);

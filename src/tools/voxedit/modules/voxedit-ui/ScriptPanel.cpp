@@ -49,7 +49,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 			const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
 			switch (p.type) {
 			case voxelgenerator::LUAParameterType::ColorIndex: {
-				const voxel::Palette &palette = voxel::getPalette();
+				const voxel::Palette &palette = sceneMgr().activePalette();
 				core::String &str = _scriptParameters[i];
 				int val = core::string::toInt(str);
 				if (val >= 0 && val < palette.colorCount) {

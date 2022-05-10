@@ -461,13 +461,22 @@ void RawVolumeRenderer::gray(int idx, bool gray) {
 }
 
 void RawVolumeRenderer::updatePalette(int idx) {
-	voxel::Palette &palette = voxel::getPalette();
-	if (palette.hash() != _paletteHash) {
-		_paletteHash = palette.hash();
+	const voxel::Palette *palette;
+	// TODO: activate me
+	// const State &state = _state[idx];
+	// if (state._palette.hasValue()) {
+	// 	palette = state._palette.value();
+	// } else
+	{
+		palette = &voxel::getPalette();
+	}
+
+	if (palette->hash() != _paletteHash) {
+		_paletteHash = palette->hash();
 		core::DynamicArray<glm::vec4> materialColors;
-		palette.toVec4f(materialColors);
+		palette->toVec4f(materialColors);
 		core::DynamicArray<glm::vec4> glowColors;
-		palette.glowToVec4f(glowColors);
+		palette->glowToVec4f(glowColors);
 
 		shader::VoxelData::MaterialblockData materialBlock;
 		core_memcpy(materialBlock.materialcolor, &materialColors.front(), sizeof(materialBlock.materialcolor));
@@ -641,10 +650,10 @@ voxel::Region RawVolumeRenderer::region() const {
 }
 
 voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxelformat::SceneGraphNode& node, bool deleteMesh) {
-	return setVolume(idx, node.volume(), deleteMesh);
+	return setVolume(idx, node.volume(), &node.palette(), deleteMesh);
 }
 
-voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume, bool deleteMesh) {
+voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume, voxel::Palette* palette, bool deleteMesh) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
@@ -655,6 +664,7 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 	}
 	core_trace_scoped(RawVolumeRendererSetVolume);
 	state._rawVolume = volume;
+	state._palette.setValue(palette);
 	if (deleteMesh) {
 		for (auto& i : _meshes) {
 			Meshes& meshes = i.second;

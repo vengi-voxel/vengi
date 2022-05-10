@@ -481,6 +481,15 @@ int SceneManager::activeNode() const {
 	return _sceneGraph.activeNode();
 }
 
+voxel::Palette &SceneManager::activePalette() const {
+	// TODO: activate me - see RawVolumeRenderer::updatePalette
+	// const int nodeId = activeNode();
+	// if (!_sceneGraph.hasNode(nodeId)) {
+	return voxel::getPalette();
+	// }
+	// return _sceneGraph.node(nodeId).palette();
+}
+
 voxel::RawVolume* SceneManager::activeVolume() {
 	const int nodeId = activeNode();
 	if (nodeId == -1) {
@@ -1477,7 +1486,7 @@ void SceneManager::construct() {
 		const float blue = core::string::toFloat(args[2]);
 		const glm::vec4 color(red / 255.0f, green / 255.0, blue / 255.0, 1.0f);
 		core::DynamicArray<glm::vec4> materialColors;
-		const voxel::Palette &palette = voxel::getPalette();
+		const voxel::Palette &palette = activePalette();
 		palette.toVec4f(materialColors);
 		const int index = core::Color::getClosestMatch(color, materialColors);
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);

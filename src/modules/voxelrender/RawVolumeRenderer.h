@@ -5,11 +5,13 @@
 #pragma once
 
 #include "RenderShaders.h"
+#include "core/Optional.h"
 #include "core/collection/ConcurrentPriorityQueue.h"
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Concurrency.h"
 #include "core/concurrent/ThreadPool.h"
 #include "render/BloomRenderer.h"
+#include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "video/Buffer.h"
@@ -61,6 +63,7 @@ protected:
 		glm::vec3 _pivots[shader::VoxelInstancedShaderConstants::getMaxInstances()];
 		video::Buffer _vertexBuffer;
 		voxel::RawVolume* _rawVolume = nullptr;
+		core::Optional<voxel::Palette> _palette;
 	};
 	core::Array<State, MAX_VOLUMES> _state {};
 	typedef core::Array<voxel::Mesh*, MAX_VOLUMES> Meshes;
@@ -145,7 +148,7 @@ public:
 	 *
 	 * @sa volume()
 	 */
-	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, bool deleteMesh = true);
+	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, voxel::Palette* palette, bool deleteMesh = true);
 	voxel::RawVolume* setVolume(int idx, voxelformat::SceneGraphNode& node, bool deleteMesh = true);
 	bool setModelMatrix(int idx, const glm::mat4& model, const glm::vec3 &pivot, bool reset = true);
 	/**
