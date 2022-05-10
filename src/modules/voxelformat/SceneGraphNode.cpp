@@ -149,7 +149,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type) {
 }
 
 void SceneGraphNode::setPalette(const voxel::Palette &palette) {
-	if (palette.colorCount <= 0) {
+	if (palette.size() <= 0) {
 		return;
 	}
 	_palette.setValue(palette);
