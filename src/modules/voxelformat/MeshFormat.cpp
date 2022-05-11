@@ -89,7 +89,7 @@ void MeshFormat::voxelizeTris(voxel::RawVolume *volume, const core::DynamicArray
 	};
 
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
-	PosMap posMap((int)subdivided.size());
+	PosMap posMap((int)subdivided.size() * 3);
 	for (const Tri &tri : subdivided) {
 		const glm::vec2 &uv = tri.centerUV();
 		const core::RGBA rgba = tri.colorAt(uv);
