@@ -50,7 +50,7 @@ bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		uint32_t fileSize;
 		wrap(stream.readUInt32(fileSize))
 		io::BufferedReadWriteStream substream(stream, fileSize);
-		const core::String &ext = core::string::extractPath(path);
+		const core::String &ext = core::string::extractExtension(path);
 		if (ext == "vxr") {
 			VXRFormat f;
 			f.loadGroups(path, substream, sceneGraph);
