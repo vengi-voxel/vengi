@@ -50,7 +50,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"Qubicle Binary Tree", "qbt", [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Qubicle Project", "qbcl", [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 	{"Sandbox VoxEdit Tilemap", "vxt", [] (uint32_t magic) {return magic == FourCC('V','X','T','1');}, 0u},
-	{"Sandbox VoxEdit Collection", "vxc", [] (uint32_t magic) {return magic == FourCC('V','X','C','1');}, 0u},
+	{"Sandbox VoxEdit Collection", "vxc", nullptr, 0u},
 	{"Sandbox VoxEdit Model", "vxm", [] (uint32_t magic) {return magic == FourCC('V','X','M','A')
 			|| magic == FourCC('V','X','M','B') || magic == FourCC('V','X','M','C')
 			|| magic == FourCC('V','X','M','9') || magic == FourCC('V','X','M','8')
