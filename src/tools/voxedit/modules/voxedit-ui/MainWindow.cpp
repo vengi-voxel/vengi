@@ -121,20 +121,15 @@ bool MainWindow::init() {
 	loadLastOpenedFiles(_lastOpenedFiles->strVal());
 
 	SceneManager &mgr = sceneMgr();
-	mgr.newScene(true, "", _layerSettings.region());
-	if (mgr.load(_lastOpenedFile->strVal())) {
-		afterLoad(_lastOpenedFile->strVal());
-	} else {
-		voxel::Region region = _layerSettings.region();
-		if (!region.isValid()) {
-			_layerSettings.reset();
-			region = _layerSettings.region();
-		}
-		if (!mgr.newScene(true, _layerSettings.name, region)) {
-			return false;
-		}
-		afterLoad("");
+	voxel::Region region = _layerSettings.region();
+	if (!region.isValid()) {
+		_layerSettings.reset();
+		region = _layerSettings.region();
 	}
+	if (!mgr.newScene(true, _layerSettings.name, region)) {
+		return false;
+	}
+	afterLoad("");
 	return true;
 }
 
