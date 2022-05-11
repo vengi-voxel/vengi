@@ -52,6 +52,11 @@ public:
 			_volume(volume), _region(volume->region()) {
 	}
 
+	RawVolumeWrapper(voxel::RawVolume* volume, const voxel::Region &region) :
+			_volume(volume), _region(region) {
+		_region.cropTo(volume->region());
+	}
+
 	inline operator RawVolume& () const {
 		return *_volume;
 	}

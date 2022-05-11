@@ -350,7 +350,11 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(con
 		return false;
 	}
 	if ((_modifierType & ModifierType::FillPlane) == ModifierType::FillPlane) {
-		voxel::RawVolumeWrapper wrapper(volume);
+		voxel::Region region = volume->region();
+		if (_selectionValid) {
+			region = _selection;
+		}
+		voxel::RawVolumeWrapper wrapper(volume, region);
 		voxelutil::fillPlane(wrapper, cursorVoxel(), voxel::Voxel(), cursorPosition(), cursorFace());
 		const voxel::Region& modifiedRegion = wrapper.dirtyRegion();
 		if (modifiedRegion.isValid()) {
