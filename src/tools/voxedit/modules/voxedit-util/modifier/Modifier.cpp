@@ -42,6 +42,10 @@ void Modifier::construct() {
 		setModifierType(ModifierType::Place);
 	}).setHelp("Change the modifier type to 'place'");
 
+	command::Command::registerCommand("actionfillplane", [&] (const command::CmdArgs& args) {
+		setModifierType(ModifierType::FillPlane);
+	}).setHelp("Change the modifier type to 'fillplane'");
+
 	command::Command::registerCommand("actioncolorize", [&] (const command::CmdArgs& args) {
 		setModifierType(ModifierType::Update);
 	}).setHelp("Change the modifier type to 'colorize'");
