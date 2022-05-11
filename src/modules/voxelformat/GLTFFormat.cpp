@@ -342,7 +342,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			} else if (withColor) {
 				meshPrimitive.attributes["COLOR_0"] = primIdxFactor * nthNodeIdx + 2;
 			}
-			meshPrimitive.material = 0;
+			meshPrimitive.material = (int)m.materials.size() - 1;
 			meshPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
 			expMesh.primitives.emplace_back(core::move(meshPrimitive));
 		}
