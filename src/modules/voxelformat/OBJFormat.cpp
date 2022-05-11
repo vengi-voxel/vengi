@@ -57,24 +57,12 @@ bool OBJFormat::writeMtlFile(const core::String &mtlName, const core::String &pa
 	return true;
 }
 
-bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &meshes,
+bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneGraph, const Meshes &meshes,
 						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
-	const voxel::Palette &palette = voxel::getPalette();
-	// 1 x 256 is the texture format that we are using for our palette
-	const float texcoord = 1.0f / (float)palette.colorCount;
-	// it is only 1 pixel high - sample the middle
-	const float v1 = 0.5f;
-
 	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/vengi\n");
 	wrapBool(stream.writeStringFormat(false, "\n"))
 	wrapBool(stream.writeStringFormat(false, "g Model\n"))
-
-	core::String mtlname = core::string::stripExtension(filename);
-	mtlname.append(".mtl");
-
-	core::String palettename = core::string::stripExtension(filename);
-	palettename.append(".png");
 
 	Log::debug("Exporting %i layers", (int)meshes.size());
 
@@ -89,6 +77,21 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, cons
 			Log::error("Unexpected indices amount");
 			return false;
 		}
+		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+		const voxel::Palette &palette = graphNode.palette();
+
+		core::String mtlname = core::string::stripExtension(filename);
+		mtlname.append(core::String::format("%" PRIu64, palette.hash()));
+		mtlname.append(".mtl");
+
+		core::String palettename = core::string::stripExtension(filename);
+		palettename.append(core::String::format("%" PRIu64, palette.hash()));
+		palettename.append(".png");
+
+		// 1 x 256 is the texture format that we are using for our palette
+		const float texcoord = 1.0f / (float)palette.colorCount;
+		// it is only 1 pixel high - sample the middle
+		const float v1 = 0.5f;
 		const glm::vec3 offset(mesh->getOffset());
 		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 		const voxel::IndexType *indices = mesh->getRawIndexData();
@@ -170,12 +173,15 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, cons
 			texcoordOffset += ni;
 		}
 		idxOffset += nv;
-	}
 
-	if (!writeMtlFile(mtlname, palettename)) {
-		return false;
+		if (!writeMtlFile(mtlname, palettename)) {
+			return false;
+		}
+		if (!voxel::getPalette().save(palettename.c_str())) {
+			return false;
+		}
 	}
-	return voxel::getPalette().save(palettename.c_str());
+	return true;
 }
 
 #undef wrapBool

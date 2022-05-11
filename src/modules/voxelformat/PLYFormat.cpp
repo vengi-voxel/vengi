@@ -16,7 +16,7 @@
 
 namespace voxelformat {
 
-bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &meshes,
+bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneGraph, const Meshes &meshes,
 						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
 	const char *paletteName = voxel::Palette::getDefaultPaletteName();
@@ -57,17 +57,17 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, cons
 	stream.writeStringFormat(false, "property list uchar uint vertex_indices\n");
 	stream.writeStringFormat(false, "end_header\n");
 
-	const voxel::Palette& palette = voxel::getPalette();
-	// 1 x 256 is the texture format that we are using for our palette
-	const float texcoord = 1.0f / (float)palette.colorCount;
-	// it is only 1 pixel high - sample the middle
-	const float v1 = 0.5f;
-
 	for (const auto& meshExt : meshes) {
 		const voxel::Mesh& mesh = *meshExt.mesh;
 		const glm::vec3 offset(mesh.getOffset());
 		const int nv = (int)mesh.getNoOfVertices();
 		const voxel::VoxelVertex* vertices = mesh.getRawVertexData();
+		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+		const voxel::Palette &palette = graphNode.palette();
+		// 1 x 256 is the texture format that we are using for our palette
+		const float texcoord = 1.0f / (float)palette.colorCount;
+		// it is only 1 pixel high - sample the middle
+		const float v1 = 0.5f;
 
 		for (int i = 0; i < nv; ++i) {
 			const voxel::VoxelVertex& v = vertices[i];

@@ -21,10 +21,10 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool FBXFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &meshes,
+bool FBXFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneGraph, const Meshes &meshes,
 						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
-	return saveMeshesAscii(meshes, filename, stream, scale, quad, withColor, withTexCoords);
+	return saveMeshesAscii(meshes, filename, stream, scale, quad, withColor, withTexCoords, sceneGraph);
 }
 
 class FBXScopedHeader {
@@ -51,7 +51,7 @@ public:
 };
 
 bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad,
-					bool withColor, bool withTexCoords) {
+					bool withColor, bool withTexCoords, const SceneGraph &sceneGraph) {
 	wrapBool(stream.writeString("Kaydara FBX Binary  ", true))
 	stream.writeUInt8(0x1A);  // unknown
 	stream.writeUInt8(0x00);  // unknown
@@ -62,13 +62,7 @@ bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filen
 
 // https://github.com/blender/blender/blob/00e219d8e97afcf3767a6d2b28a6d05bcc984279/release/io/export_fbx.py
 bool FBXFormat::saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad,
-					bool withColor, bool withTexCoords) {
-	const voxel::Palette &palette = voxel::getPalette();
-	// 1 x 256 is the texture format that we are using for our palette
-	const float texcoord = 1.0f / (float)palette.colorCount;
-	// it is only 1 pixel high - sample the middle
-	const float v1 = 0.5f;
-
+					bool withColor, bool withTexCoords, const SceneGraph &sceneGraph) {
 	// TODO: support keyframes (takes)
 	stream.writeStringFormat(false, R"(FBXHeaderExtension:  {
 	FBXHeaderVersion: 1003
@@ -112,6 +106,8 @@ Objects: {
 			Log::error("Unexpected indices amount");
 			return false;
 		}
+		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+		const voxel::Palette &palette = graphNode.palette();
 		const glm::vec3 offset(mesh->getOffset());
 		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 		const voxel::IndexType *indices = mesh->getRawIndexData();
@@ -155,6 +151,10 @@ Objects: {
 		wrapBool(stream.writeString("\t\tGeometryVersion: 124\n", false))
 
 		if (withTexCoords) {
+			// 1 x 256 is the texture format that we are using for our palette
+			const float texcoord = 1.0f / (float)palette.colorCount;
+			// it is only 1 pixel high - sample the middle
+			const float v1 = 0.5f;
 			wrapBool(stream.writeString("\t\tLayerElementUV: 0 {\n", false))
 			wrapBool(stream.writeString("\t\t\tVersion: 101\n", false))
 			stream.writeStringFormat(false, "\t\t\tName: \"%sUV\"\n", objectName);

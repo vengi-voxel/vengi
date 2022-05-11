@@ -56,9 +56,6 @@ void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinyg
 bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const SceneGraph &sceneGraph,
 							const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 							const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
-	const voxel::Palette &palette = voxel::getPalette();
-	// 1 x 256 is the texture format that we are using for our palette
-	const float texcoord = 1.0f / (float)palette.colorCount;
 	unsigned char uvYVal[4] = {0, 0, 0, 63};
 
 	core::String palettename = core::string::stripExtension(filename);
@@ -137,6 +134,9 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			processGltfNode(m, node, scene, graphNode, stack);
 			continue;
 		}
+		const voxel::Palette &palette = graphNode.palette();
+		// 1 x 256 is the texture format that we are using for our palette
+		const float texcoord = 1.0f / (float)palette.colorCount;
 
 		int meshExtIdx = 0;
 		meshIdxNodeMap.get(nodeId, meshExtIdx);

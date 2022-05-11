@@ -17,9 +17,9 @@ namespace voxelformat {
 class FBXFormat : public MeshFormat {
 private:
 	bool saveMeshesBinary(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
-						  const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords);
+						  const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords, const SceneGraph &sceneGraph);
 	bool saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
-						 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords);
+						 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords, const SceneGraph &sceneGraph);
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const SceneGraph &sceneGraph, const Meshes &meshes,
