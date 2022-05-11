@@ -16,5 +16,6 @@ enum class ModifierType {
 	Select = (1 << 4),
 	ColorPicker = (1 << 5) | Single,
 	FillPlane = (1 << 6) | Single
+	// TODO: colorize plane
 };
 CORE_ENUM_BIT_OPERATIONS(ModifierType)
