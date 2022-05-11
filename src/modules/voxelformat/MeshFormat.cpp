@@ -5,14 +5,18 @@
 #include "MeshFormat.h"
 #include "app/App.h"
 #include "core/Color.h"
+#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/Var.h"
+#include "core/collection/DynamicArray.h"
+#include "core/collection/Map.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ThreadPool.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
+#include "voxelformat/private/PaletteLookup.h"
 #include "voxelutil/VoxelUtil.h"
 #include <SDL_timer.h>
 
@@ -52,34 +56,63 @@ void MeshFormat::subdivideTri(const Tri &tri, core::DynamicArray<Tri> &tinyTris)
 }
 
 void MeshFormat::voxelizeTris(voxel::RawVolume *volume, const core::DynamicArray<Tri> &subdivided) {
-	core::DynamicArray<uint8_t> palette;
-	palette.reserve(subdivided.size());
-
 	const voxel::Palette &pal = voxel::getPalette();
 	core::DynamicArray<glm::vec4> materialColors;
 	pal.toVec4f(materialColors);
+	struct PosSamplingEntry {
+		inline PosSamplingEntry(float _area, const glm::vec4 &_color) : area(_area), color(_color) {
+		}
+		float area;
+		glm::vec4 color;
+	};
 
+	struct PosSampling {
+		core::DynamicArray<PosSamplingEntry> entries;
+		inline PosSampling(float area, const glm::vec4 &color) {
+			entries.emplace_back(area, color);
+		}
+		glm::vec4 avgColor() const {
+			if (entries.size() == 1) {
+				return entries[0].color;
+			}
+			float sumArea = 0.0f;
+			for (const PosSamplingEntry& pe : entries) {
+				sumArea += pe.area;
+			}
+			glm::vec4 color{0.0f};
+			for (const PosSamplingEntry& pe : entries) {
+				color += pe.color * pe.area / sumArea;
+			}
+			color[3] = 1.0f;
+			return color;
+		}
+	};
+
+	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
+	PosMap posMap((int)subdivided.size());
 	for (const Tri &tri : subdivided) {
 		const glm::vec2 &uv = tri.centerUV();
-		const uint32_t rgba = tri.colorAt(uv);
+		const core::RGBA rgba = tri.colorAt(uv);
+		const float area = tri.area();
 		const glm::vec4 &color = core::Color::fromRGBA(rgba);
-		const uint8_t index = core::Color::getClosestMatch(color, materialColors);
-		palette.push_back(index);
-	}
-
-	for (size_t i = 0; i < subdivided.size(); ++i) {
-		const Tri &tri = subdivided[i];
-		const uint8_t index = palette[i];
-		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-		// TODO: different tris might contribute to the same voxel - merge the color values here
 		for (int v = 0; v < 3; v++) {
-			const glm::ivec3 p(glm::floor(tri.vertices[v]));
-			volume->setVoxel(p, voxel);
+			const glm::ivec3 p(glm::round(tri.vertices[v]));
+			auto iter = posMap.find(p);
+			if (iter == posMap.end()) {
+				posMap.emplace(p, {area, color});
+			} else {
+				PosSampling &pos = iter->value;
+				pos.entries.emplace_back(area, color);
+			}
 		}
-
-		const glm::vec3 &center = tri.center();
-		const glm::ivec3 p2(glm::floor(center));
-		volume->setVoxel(p2, voxel);
+	}
+	PaletteLookup palLookup;
+	for (const auto &entry : posMap) {
+		const PosSampling &pos = entry->second;
+		const glm::vec4 &color = pos.avgColor();
+		const uint8_t index = palLookup.findClosestIndex(color);
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+		volume->setVoxel(entry->first, voxel);
 	}
 	voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
 }

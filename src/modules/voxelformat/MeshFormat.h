@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Format.h"
+#include <glm/geometric.hpp>
 
 namespace voxelformat {
 
@@ -19,12 +20,16 @@ protected:
 		image::ImagePtr texture;
 		uint32_t color = 0xFFFFFFFF;
 
-		glm::vec2 centerUV() const {
+		constexpr glm::vec2 centerUV() const {
 			return (uv[0] + uv[1] + uv[2]) / 3.0f;
 		}
 
-		glm::vec3 center() const {
+		constexpr glm::vec3 center() const {
 			return (vertices[0] + vertices[1] + vertices[2]) / 3.0f;
+		}
+
+		float area() const {
+			return glm::length(glm::cross(vertices[1] - vertices[0], vertices[2] - vertices[0])) / 2;
 		}
 
 		glm::vec3 mins() const {
@@ -43,7 +48,7 @@ protected:
 			return v;
 		}
 
-		uint32_t colorAt(const glm::vec2 &uv) const {
+		core::RGBA colorAt(const glm::vec2 &uv) const {
 			if (texture) {
 				const float w = (float)texture->width();
 				const float h = (float)texture->height();
@@ -61,7 +66,7 @@ protected:
 				const int xint = (int)glm::round(x - 0.5f);
 				const int yint = texture->height() - (int)glm::round(y - 0.5f) - 1;
 				const uint8_t *ptr = texture->at(xint, yint);
-				return *(const uint32_t *)ptr;
+				return *(const core::RGBA *)ptr;
 			}
 			return color;
 		}
