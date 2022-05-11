@@ -121,6 +121,7 @@ static const io::FormatDescription *getDescription(const core::String &ext, uint
 			continue;
 		}
 		if (magic > 0 && desc->isA && !desc->isA(magic)) {
+			Log::debug("File doesn't have the expected magic number");
 			continue;
 		}
 		return desc;
