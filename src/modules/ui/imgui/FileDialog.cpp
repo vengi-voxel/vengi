@@ -52,8 +52,8 @@ void FileDialog::selectFilter(int index) {
 }
 
 bool FileDialog::openDir(const io::FormatDescription* formats, const core::String& filename) {
+	_filterEntries.clear();
 	if (formats == nullptr) {
-		_filterEntries.clear();
 		_filterTextWidth = 0.0f;
 		_currentFilterEntry = -1;
 	} else {
