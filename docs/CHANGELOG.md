@@ -25,6 +25,9 @@ General:
    - Improved splitting of volumes (target volume size)
    - Expose more region functions to the lua scripts
    - Added more lua example scripts
+   - Improved color sampling for voxelization
+   - Started to support different palettes in one scene
+   - Fixed vxc support
 
 VoxEdit:
 
@@ -37,6 +40,7 @@ VoxEdit:
    - Added extrude feature
    - Allow to place a single voxel
    - Fixed keyboard input errors that made the ui unusable
+   - Don't reload the last opened file with every start
 
 VoxConvert:
 
