@@ -114,7 +114,7 @@ int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) c
 	return getClosestMatch(core::Color::fromRGBA(rgba), distance, skip);
 }
 
-bool Palette::save(const char *name) {
+bool Palette::save(const char *name) const {
 	if (name == nullptr || name[0] == '\0') {
 		if (_paletteFilename.empty()) {
 			return false;
