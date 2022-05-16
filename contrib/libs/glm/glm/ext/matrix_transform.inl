@@ -95,6 +95,60 @@ namespace glm
 		return m * Result;
 	}
 
+    template <typename T, qualifier Q>
+    GLM_FUNC_QUALIFIER mat<4, 4, T, Q> shear(mat<4, 4, T, Q> const &m, vec<3, T, Q> const& p, vec<2, T, Q> const &l_x, vec<2, T, Q> const &l_y, vec<2, T, Q> const &l_z)
+    {
+        T const lambda_xy = l_x[0];
+        T const lambda_xz = l_x[1];
+        T const lambda_yx = l_y[0];
+        T const lambda_yz = l_y[1];
+        T const lambda_zx = l_z[0];
+        T const lambda_zy = l_z[1];
+
+        vec<3, T, Q> point_lambda = vec<3, T, Q>(
+            (lambda_xy + lambda_xz), (lambda_yx + lambda_yz), (lambda_zx + lambda_zy)
+        );
+
+        mat<4, 4, T, Q> Shear = mat<4, 4, T, Q>(
+            1                      , lambda_yx              , lambda_zx              , 0,
+            lambda_xy              , 1                      , lambda_zy              , 0,
+            lambda_xz              , lambda_yz              , 1                      , 0,
+            -point_lambda[0] * p[0], -point_lambda[1] * p[1], -point_lambda[2] * p[2], 1
+        );
+
+        mat<4, 4, T, Q> Result;
+        Result[0] = Shear[0] * m[0][0] + Shear[1] * m[0][1] + Shear[2] * m[0][2] + Shear[3] * m[0][3];
+        Result[1] = Shear[0] * m[1][0] + Shear[1] * m[1][1] + Shear[2] * m[1][2] + Shear[3] * m[1][3];
+        Result[2] = Shear[0] * m[2][0] + Shear[1] * m[2][1] + Shear[2] * m[2][2] + Shear[3] * m[2][3];
+        Result[3] = Shear[0] * m[3][0] + Shear[1] * m[3][1] + Shear[2] * m[3][2] + Shear[3] * m[3][3];
+        return Result;
+    }
+
+    template <typename T, qualifier Q>
+    GLM_FUNC_QUALIFIER mat<4, 4, T, Q> shear_slow(mat<4, 4, T, Q> const &m, vec<3, T, Q> const& p, vec<2, T, Q> const &l_x, vec<2, T, Q> const &l_y, vec<2, T, Q> const &l_z)
+    {
+        T const lambda_xy = static_cast<T>(l_x[0]);
+        T const lambda_xz = static_cast<T>(l_x[1]);
+        T const lambda_yx = static_cast<T>(l_y[0]);
+        T const lambda_yz = static_cast<T>(l_y[1]);
+        T const lambda_zx = static_cast<T>(l_z[0]);
+        T const lambda_zy = static_cast<T>(l_z[1]);
+
+        vec<3, T, Q> point_lambda = vec<3, T, Q>(
+            static_cast<T>(lambda_xy + lambda_xz),
+            static_cast<T>(lambda_yx + lambda_yz),
+            static_cast<T>(lambda_zx + lambda_zy)
+        );
+
+        mat<4, 4, T, Q> Shear = mat<4, 4, T, Q>(
+            1                      , lambda_yx              , lambda_zx              , 0,
+            lambda_xy              , 1                      , lambda_zy              , 0,
+            lambda_xz              , lambda_yz              , 1                      , 0,
+            -point_lambda[0] * p[0], -point_lambda[1] * p[1], -point_lambda[2] * p[2], 1
+        );
+        return m * Shear;
+    }
+
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> lookAtRH(vec<3, T, Q> const& eye, vec<3, T, Q> const& center, vec<3, T, Q> const& up)
 	{

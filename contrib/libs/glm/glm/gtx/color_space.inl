@@ -63,9 +63,9 @@ namespace glm
 	GLM_FUNC_QUALIFIER vec<3, T, Q> hsvColor(const vec<3, T, Q>& rgbColor)
 	{
 		vec<3, T, Q> hsv = rgbColor;
-		float Min   = min(min(rgbColor.r, rgbColor.g), rgbColor.b);
-		float Max   = max(max(rgbColor.r, rgbColor.g), rgbColor.b);
-		float Delta = Max - Min;
+		T Min   = min(min(rgbColor.r, rgbColor.g), rgbColor.b);
+		T Max   = max(max(rgbColor.r, rgbColor.g), rgbColor.b);
+		T Delta = Max - Min;
 
 		hsv.z = Max;
 

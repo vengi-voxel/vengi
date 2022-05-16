@@ -499,7 +499,7 @@ namespace detail {
 		vec<4, int, Q>
 		call(vec<4, int, Q> const& a, vec<4, int, Q> const& b)
 		{
-			vec<4, uint, Q> Result;
+			vec<4, int, Q> Result;
 			Result.data = vaddq_s32(a.data, b.data);
 			return Result;
 		}
@@ -593,7 +593,7 @@ namespace detail {
 			cmp = vpminq_u32(cmp, cmp);
 			uint32_t r = cmp[0];
 #else
-			uint32x2_t cmpx2 = vpmin_u32(vget_low_f32(cmp), vget_high_f32(cmp));
+			uint32x2_t cmpx2 = vpmin_u32(vget_low_u32(cmp), vget_high_u32(cmp));
 			cmpx2 = vpmin_u32(cmpx2, cmpx2);
 			uint32_t r = cmpx2[0];
 #endif
@@ -612,7 +612,7 @@ namespace detail {
 			cmp = vpminq_u32(cmp, cmp);
 			uint32_t r = cmp[0];
 #else
-			uint32x2_t cmpx2 = vpmin_u32(vget_low_f32(cmp), vget_high_f32(cmp));
+			uint32x2_t cmpx2 = vpmin_u32(vget_low_u32(cmp), vget_high_u32(cmp));
 			cmpx2 = vpmin_u32(cmpx2, cmpx2);
 			uint32_t r = cmpx2[0];
 #endif
@@ -631,7 +631,7 @@ namespace detail {
 			cmp = vpminq_u32(cmp, cmp);
 			uint32_t r = cmp[0];
 #else
-			uint32x2_t cmpx2 = vpmin_u32(vget_low_f32(cmp), vget_high_f32(cmp));
+			uint32x2_t cmpx2 = vpmin_u32(vget_low_u32(cmp), vget_high_u32(cmp));
 			cmpx2 = vpmin_u32(cmpx2, cmpx2);
 			uint32_t r = cmpx2[0];
 #endif

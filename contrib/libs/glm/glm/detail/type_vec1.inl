@@ -236,7 +236,7 @@ namespace glm
 	template<typename U>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<1, T, Q> & vec<1, T, Q>::operator|=(vec<1, U, Q> const& v)
 	{
-		this->x |= U(v.x);
+		this->x |= static_cast<T>(v.x);
 		return *this;
 	}
 
