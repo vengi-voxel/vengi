@@ -19,6 +19,7 @@
 #include "voxel/VoxelVertex.h"
 #include "core/collection/DynamicArray.h"
 #include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphNode.h"
 
 #include <limits.h>
 #include <glm/ext/matrix_transform.hpp>
@@ -94,46 +95,54 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 	};
 	static_assert(sizeof(IndexUnion) == sizeof(voxel::IndexType), "");
 
+	core::Map<uint64_t, int> paletteMaterialIndices((int)sceneGraph.size());
 	while (!stack.empty()) {
 		const int nodeId = stack.back().first;
 		const SceneGraphNode &graphNode = sceneGraph.node(nodeId);
 		const voxel::Palette &palette = graphNode.palette();
 
+		int materialId = -1;
 		if (graphNode.type() == SceneGraphNodeType::Model) {
-			// TODO: reduce the amount of texture and images
-			const int textureIndex = (int)m.textures.size();
-			const int imageIndex = (int)m.images.size();
+			const auto palTexIter = paletteMaterialIndices.find(palette.hash());
+			if (palTexIter != paletteMaterialIndices.end()) {
+				materialId = palTexIter->second;
+			} else {
+				const int textureIndex = (int)m.textures.size();
+				const int imageIndex = (int)m.images.size();
 
-			const core::String hashId = core::String::format("%" PRIu64, palette.hash());
-			core::String palettename = core::string::stripExtension(filename);
-			palettename.append(hashId);
-			palettename.append(".png");
+				const core::String hashId = core::String::format("%" PRIu64, palette.hash());
+				core::String palettename = core::string::stripExtension(filename);
+				palettename.append(hashId);
+				palettename.append(".png");
 
-			tinygltf::Image colorPaletteImg;
-			colorPaletteImg.uri = core::string::extractFilenameWithExtension(palettename).c_str();
-			m.images.emplace_back(core::move(colorPaletteImg));
+				tinygltf::Image colorPaletteImg;
+				colorPaletteImg.uri = core::string::extractFilenameWithExtension(palettename).c_str();
+				m.images.emplace_back(core::move(colorPaletteImg));
 
-			if (!palette.save(palettename.c_str())) {
-				Log::error("Failed to save palette data");
+				if (!palette.save(palettename.c_str())) {
+					Log::error("Failed to save palette data");
+				}
+
+				tinygltf::Texture paletteTexture;
+				paletteTexture.source = imageIndex;
+				m.textures.emplace_back(core::move(paletteTexture));
+
+				tinygltf::Material mat;
+				if (withTexCoords) {
+					mat.pbrMetallicRoughness.baseColorTexture.index = textureIndex;
+				} else if (withColor) {
+					mat.pbrMetallicRoughness.baseColorFactor = {1.0f, 1.0f, 1.0f, 1.0f};
+				}
+
+				mat.name = hashId.c_str();
+				mat.pbrMetallicRoughness.roughnessFactor = 1;
+				mat.pbrMetallicRoughness.metallicFactor = 0;
+				mat.doubleSided = false;
+
+				materialId = (int)m.materials.size();
+				m.materials.emplace_back(core::move(mat));
+				paletteMaterialIndices.put(palette.hash(), materialId);
 			}
-
-			tinygltf::Texture paletteTexture;
-			paletteTexture.source = imageIndex;
-			m.textures.emplace_back(core::move(paletteTexture));
-
-			tinygltf::Material mat;
-			if (withTexCoords) {
-				mat.pbrMetallicRoughness.baseColorTexture.index = textureIndex;
-			} else if (withColor) {
-				mat.pbrMetallicRoughness.baseColorFactor = {1.0f, 1.0f, 1.0f, 1.0f};
-			}
-
-			mat.name = hashId.c_str();
-			mat.pbrMetallicRoughness.roughnessFactor = 1;
-			mat.pbrMetallicRoughness.metallicFactor = 0;
-			mat.doubleSided = false;
-
-			m.materials.emplace_back(core::move(mat));
 		}
 
 		if (meshIdxNodeMap.find(nodeId) == meshIdxNodeMap.end()) {
@@ -348,7 +357,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			} else if (withColor) {
 				meshPrimitive.attributes["COLOR_0"] = primIdxFactor * nthNodeIdx + 2;
 			}
-			meshPrimitive.material = (int)m.materials.size() - 1;
+			meshPrimitive.material = materialId;
 			meshPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
 			expMesh.primitives.emplace_back(core::move(meshPrimitive));
 		}
