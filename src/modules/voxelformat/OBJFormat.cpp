@@ -84,8 +84,9 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		mtlname.append(core::String::format("%" PRIu64, palette.hash()));
 		mtlname.append(".mtl");
 
+		const core::String hashId = core::String::format("%" PRIu64, palette.hash());
 		core::String palettename = core::string::stripExtension(filename);
-		palettename.append(core::String::format("%" PRIu64, palette.hash()));
+		palettename.append(hashId);
 		palettename.append(".png");
 
 		// 1 x 256 is the texture format that we are using for our palette
@@ -177,7 +178,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		if (!writeMtlFile(mtlname, palettename)) {
 			return false;
 		}
-		if (!voxel::getPalette().save(palettename.c_str())) {
+		if (!palette.save(palettename.c_str())) {
 			return false;
 		}
 	}

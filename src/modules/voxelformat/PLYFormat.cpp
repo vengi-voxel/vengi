@@ -120,6 +120,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		}
 		idxOffset += nv;
 	}
+	// TODO: palette from node
 	return voxel::getPalette().save(paletteName);
 }
 }
