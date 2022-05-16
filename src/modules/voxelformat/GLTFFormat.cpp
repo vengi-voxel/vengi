@@ -47,7 +47,7 @@ void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinyg
 
 	stack.pop();
 
-	auto nodeChidren = graphNode.children();
+	const voxelformat::SceneGraphNodeChildren &nodeChidren = graphNode.children();
 
 	for (int i = (int)nodeChidren.size() - 1; i >= 0; i--) {
 		stack.emplace_back(nodeChidren[i], idx);
