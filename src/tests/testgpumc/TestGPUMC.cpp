@@ -198,8 +198,8 @@ app::AppState TestGPUMC::onInit() {
 	_vboIdx = _vbo.create();
 
 	struct V {
-		glm::vec3 pos;
-		glm::vec3 norm;
+		glm::vec<3, float, glm::highp> pos;
+		glm::vec<3, float, glm::highp> norm;
 	};
 	static_assert(sizeof(V) == 24, "Padding/Alignment doesn't match requirements");
 	_vbo.addAttribute(_renderShader.getPosAttribute(_vboIdx, &V::pos));
