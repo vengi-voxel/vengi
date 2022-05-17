@@ -334,7 +334,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 						}
 
 						struct TexColor {
-							glm::u8vec3 rgb;
+							glm::vec<3, uint8_t, glm::highp> rgb;
 						};
 						static_assert(sizeof(TexColor) == 3, "Unexpected TexColor size");
 						stream.skip(sizeof(TexColor));
@@ -355,8 +355,8 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 				return false;
 			}
 			struct QuadVertex {
-				glm::vec3 pos;
-				glm::ivec2 uv;
+				glm::vec<3, float, glm::highp> pos;
+				glm::vec<2, int, glm::highp> uv;
 			};
 			static_assert(sizeof(QuadVertex) == 20, "Unexpected QuadVertex size");
 			stream.skip(quadAmount * 4 * sizeof(QuadVertex));
