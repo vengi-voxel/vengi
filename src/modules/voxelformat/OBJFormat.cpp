@@ -300,6 +300,7 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		Log::debug("- displacement_texname '%s'", material.displacement_texname.c_str());
 		Log::debug("- alpha_texname '%s'", material.alpha_texname.c_str());
 		Log::debug("- reflection_texname '%s'", material.reflection_texname.c_str());
+		// TODO: material.diffuse_texopt.scale
 		if (name.empty()) {
 			continue;
 		}
