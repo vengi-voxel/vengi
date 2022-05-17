@@ -290,7 +290,16 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 	for (tinyobj::material_t &material : materials) {
 		core::String name = material.diffuse_texname.c_str();
-		Log::debug("material: '%s'", name.c_str());
+		Log::debug("material: '%s'", material.name.c_str());
+		Log::debug("- emissive_texname '%s'", material.emissive_texname.c_str());
+		Log::debug("- ambient_texname '%s'", material.ambient_texname.c_str());
+		Log::debug("- diffuse_texname '%s'", material.diffuse_texname.c_str());
+		Log::debug("- specular_texname '%s'", material.specular_texname.c_str());
+		Log::debug("- specular_highlight_texname '%s'", material.specular_highlight_texname.c_str());
+		Log::debug("- bump_texname '%s'", material.bump_texname.c_str());
+		Log::debug("- displacement_texname '%s'", material.displacement_texname.c_str());
+		Log::debug("- alpha_texname '%s'", material.alpha_texname.c_str());
+		Log::debug("- reflection_texname '%s'", material.reflection_texname.c_str());
 		if (name.empty()) {
 			continue;
 		}
