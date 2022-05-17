@@ -71,7 +71,7 @@ public:
 		const VALUETYPE &second;
 	};
 private:
-	core::PoolAllocator<KeyValue> _allocator;
+	core::PoolAllocator<KeyValue, uint32_t> _allocator;
 	core::Array<KeyValue *, BUCKETSIZE> _buckets;
 	HASHER _hasher;
 public:
