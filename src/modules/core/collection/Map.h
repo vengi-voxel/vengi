@@ -228,7 +228,7 @@ public:
 
 		if (entry == nullptr) {
 			entry = _allocator.alloc(key, core::forward<VALUETYPE>(value));
-			core_assert_msg(entry != nullptr, "Failed to allocate for hash: %i", (int)hashValue);
+			core_assert_msg(entry != nullptr, "Failed to allocate for hash: %i (size: %i/%i)", (int)hashValue, (int)size(), (int)capacity());
 			if (prev == nullptr) {
 				_buckets[hashValue % BUCKETSIZE] = entry;
 			} else {
