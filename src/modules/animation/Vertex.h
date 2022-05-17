@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/collection/DynamicArray.h"
+#include "math/Math.h"
 #include <stdint.h>
 
 namespace animation {
@@ -13,7 +14,7 @@ namespace animation {
  * @ingroup Animation
  */
 struct alignas(16) Vertex {
-	glm::vec3 pos;
+	glm::vec3h pos;
 	uint8_t colorIndex;
 	uint8_t boneId;
 	uint8_t ambientOcclusion;
