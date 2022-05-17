@@ -286,13 +286,17 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	}
 
 	core::StringMap<image::ImagePtr> textures;
+	Log::debug("%i materials", (int)materials.size());
+
 	for (tinyobj::material_t &material : materials) {
 		core::String name = material.diffuse_texname.c_str();
+		Log::debug("material: '%s'", name.c_str());
 		if (name.empty()) {
 			continue;
 		}
 
 		if (textures.hasKey(name)) {
+			Log::debug("texture for material '%s' is already loaded", name.c_str());
 			continue;
 		}
 
