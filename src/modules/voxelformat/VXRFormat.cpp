@@ -176,6 +176,7 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraphNode &node, 
 	node.setVisible(childModelNode->visible());
 	node.setLocked(childModelNode->locked());
 	node.addProperties(childModelNode->properties());
+	node.setPalette(childModelNode->palette());
 	// TODO: this shouldn't be needed - should get set in vxa or vxr (or in vxm version <= 3)
 	const voxelformat::SceneGraphTransform &childTransform = childModelNode->transform(0);
 	voxelformat::SceneGraphTransform &transform = node.transform(0);
