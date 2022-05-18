@@ -35,6 +35,7 @@ namespace voxelformat {
 void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
 								 const SceneGraphNode &graphNode, Stack &stack) {
 	node.name = graphNode.name().c_str();
+	Log::debug("process node %s", node.name.c_str());
 	const int idx = (int)m.nodes.size();
 
 	m.nodes.push_back(node);
