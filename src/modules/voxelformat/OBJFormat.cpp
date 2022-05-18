@@ -189,7 +189,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 void OBJFormat::subdivideShape(const tinyobj::mesh_t &mesh, const core::StringMap<image::ImagePtr> &textures,
 							  const tinyobj::attrib_t &attrib, const std::vector<tinyobj::material_t> &materials,
-							  core::DynamicArray<Tri> &subdivided) {
+							  TriCollection &subdivided) {
 	const glm::vec3 &scale = getScale();
 	int indexOffset = 0;
 	for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
@@ -342,7 +342,7 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			SceneGraphNode node;
 			node.setVolume(volume, true);
 			node.setName(shape.name.c_str());
-			core::DynamicArray<Tri> subdivided;
+			TriCollection subdivided;
 			subdivideShape(shape.mesh, textures, attrib, materials, subdivided);
 			voxelizeTris(volume, subdivided);
 			return core::move(node);

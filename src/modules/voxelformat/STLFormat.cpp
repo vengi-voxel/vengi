@@ -16,7 +16,7 @@ namespace priv {
 static constexpr const size_t BinaryHeaderSize = 80;
 }
 
-void STLFormat::subdivideShape(const core::DynamicArray<Face> &faces, core::DynamicArray<Tri> &subdivided) {
+void STLFormat::subdivideShape(const core::DynamicArray<Face> &faces, TriCollection &subdivided) {
 	const glm::vec3 &scale = getScale();
 
 	for (const Face &face : faces) {
@@ -175,7 +175,7 @@ bool STLFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
-	core::DynamicArray<Tri> subdivided;
+	TriCollection subdivided;
 	subdivideShape(faces, subdivided);
 	voxelizeTris(volume, subdivided);
 	sceneGraph.emplace(core::move(node));

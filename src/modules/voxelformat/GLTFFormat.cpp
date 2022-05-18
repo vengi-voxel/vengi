@@ -640,7 +640,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 bool GLTFFormat::subdivideShape(const tinygltf::Model &model, const core::DynamicArray<uint32_t> &indices,
 								const core::DynamicArray<GltfVertex> &vertices,
 								const core::StringMap<image::ImagePtr> &textures,
-								core::DynamicArray<Tri> &subdivided) const {
+								TriCollection &subdivided) const {
 	const glm::vec3 &scale = getScale();
 	if (indices.size() % 3 != 0) {
 		Log::error("Unexpected amount of indices %i", (int)indices.size());
@@ -761,6 +761,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 		Log::warn(
 			"Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh!");
 	}
+	Log::debug("region mins(%i:%i:%i)/maxs(%i:%i:%i)", imins.x, imins.y, imins.z, imaxs.x, imaxs.y, imaxs.z);
 
 	SceneGraphNode node;
 	const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
@@ -770,7 +771,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	node.setVolume(volume, true);
-	core::DynamicArray<Tri> subdivided;
+	TriCollection subdivided;
 	int newParent = parentNodeId;
 	if (!subdivideShape(model, indices, vertices, textures, subdivided)) {
 		Log::error("Failed to subdivide node %i", gltfNodeIdx);

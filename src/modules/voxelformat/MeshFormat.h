@@ -87,12 +87,14 @@ protected:
 		}
 	};
 
+	using TriCollection = core::DynamicArray<Tri, 512>;
+
 	/**
 	 * Subdivide until we brought the triangles down to the size of 1 or smaller
 	 */
-	static void subdivideTri(const Tri &tri, core::DynamicArray<Tri> &tinyTris);
+	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
 
-	static void voxelizeTris(voxel::RawVolume *volume, const core::DynamicArray<Tri> &tinyTris);
+	static void voxelizeTris(voxel::RawVolume *volume, const TriCollection &tinyTris);
 
 	struct MeshExt {
 		MeshExt(voxel::Mesh *mesh, const SceneGraphNode &node, bool applyTransform);
