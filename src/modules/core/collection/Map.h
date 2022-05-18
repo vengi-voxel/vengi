@@ -78,7 +78,7 @@ public:
 	Map(std::initializer_list<KeyValue> other, int maxSize = 4096) {
 		core_assert_msg(maxSize > 0, "Max size must be greater than 0 - but is %i", maxSize);
 		core_assert_msg(maxSize >= (int)other.size(), "Max size must be greater than the initializer list: %i vs %i", maxSize, (int)other.size());
-		_allocator.init(core_max(2, maxSize));
+		core_assert_always(_allocator.init(core_max(2, maxSize)));
 		_buckets.fill(nullptr);
 		for (auto i = other.begin(); i != other.end(); ++i) {
 			put(i->key, i->value);
@@ -86,11 +86,11 @@ public:
 	}
 	Map(int maxSize = 4096) {
 		core_assert_msg(maxSize > 0, "Max size must be greater than 0 - but is %i", maxSize);
-		_allocator.init(core_max(2, maxSize));
+		core_assert_always(_allocator.init(core_max(2, maxSize)));
 		_buckets.fill(nullptr);
 	}
 	Map(const Map& other) {
-		_allocator.init((other._allocator.max)());
+		core_assert_always(_allocator.init((other._allocator.max)()));
 		_buckets.fill(nullptr);
 		for (auto i = other.begin(); i != other.end(); ++i) {
 			put(i->key, i->value);
@@ -120,7 +120,7 @@ public:
 	Map& operator=(const Map& other) {
 		clear();
 		_allocator.shutdown(); // TODO: not needed init() will handle this
-		_allocator.init((other._allocator.max)());
+		core_assert_always(_allocator.init((other._allocator.max)()));
 		_buckets.fill(nullptr);
 		for (auto i = other.begin(); i != other.end(); ++i) {
 			put(i->key, i->value);
