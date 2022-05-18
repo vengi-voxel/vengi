@@ -20,6 +20,7 @@
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/private/PaletteLookup.h"
 
 namespace voxelformat {
 
@@ -323,9 +324,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	uint32_t index = 0;
 
-	const voxel::Palette &palette = voxel::getPalette();
-	core::DynamicArray<glm::vec4> materialColors;
-	palette.toVec4f(materialColors);
+	PaletteLookup palLookup;
 
 	while (!zipStream.eos()) {
 		int y = 0;
@@ -354,7 +353,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 					y += rleLength;
 				} else {
 					const core::RGBA color = core::Color::getRGBA(red, green, blue, alpha);
-					const uint8_t palIndex = palette.getClosestMatch(color);
+					const uint8_t palIndex = palLookup.findClosestIndex(color);
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
 					for (int j = 0; j < rleLength; ++j) {
 						const uint32_t x = (index / size.z);
@@ -372,7 +371,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				const uint32_t x = (index / size.z);
 				const uint32_t z = index % size.z;
 				const core::RGBA color = core::Color::getRGBA(red, green, blue);
-				const uint8_t palIndex = palette.getClosestMatch(color);
+				const uint8_t palIndex = palLookup.findClosestIndex(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
 				volume->setVoxel(position.x + (int)x, position.y + y, position.z + (int)z, voxel);
 				++y;
