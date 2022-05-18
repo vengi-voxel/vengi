@@ -76,14 +76,17 @@ private:
 	HASHER _hasher;
 public:
 	Map(std::initializer_list<KeyValue> other, int maxSize = 4096) {
-		_allocator.init(maxSize);
+		core_assert_msg(maxSize > 0, "Max size must be greater than 0 - but is %i", maxSize);
+		core_assert_msg(maxSize >= (int)other.size(), "Max size must be greater than the initializer list: %i vs %i", maxSize, (int)other.size());
+		_allocator.init(core_max(2, maxSize));
 		_buckets.fill(nullptr);
 		for (auto i = other.begin(); i != other.end(); ++i) {
 			put(i->key, i->value);
 		}
 	}
 	Map(int maxSize = 4096) {
-		_allocator.init(maxSize);
+		core_assert_msg(maxSize > 0, "Max size must be greater than 0 - but is %i", maxSize);
+		_allocator.init(core_max(2, maxSize));
 		_buckets.fill(nullptr);
 	}
 	Map(const Map& other) {
@@ -251,7 +254,7 @@ public:
 
 		if (entry == nullptr) {
 			entry = _allocator.alloc(key, value);
-			core_assert_msg(entry != nullptr, "Failed to allocate for hash: %i", (int)hashValue);
+			core_assert_msg(entry != nullptr, "Failed to allocate for hash: %i (size: %i/%i)", (int)hashValue, (int)size(), (int)capacity());
 			if (prev == nullptr) {
 				_buckets[hashValue % BUCKETSIZE] = entry;
 			} else {
