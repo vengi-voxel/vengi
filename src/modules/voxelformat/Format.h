@@ -75,10 +75,6 @@ public:
 	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes
 	 */
 	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) = 0;
-	/**
-	 * @brief Merge the loaded volumes into one. The returned memory is yours.
-	 */
-	virtual voxel::RawVolume* load(const core::String &filename, io::SeekableReadStream& stream);
 	virtual bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) = 0;
 	virtual bool save(const voxel::RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream);
 };

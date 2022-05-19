@@ -12,6 +12,7 @@
 #include "io/Filesystem.h"
 #include "core/Var.h"
 #include "core/GameConfig.h"
+#include "voxelformat/SceneGraph.h"
 
 namespace voxelformat {
 
@@ -44,14 +45,31 @@ protected:
 		return file;
 	}
 
-	voxel::RawVolume* load(const core::String& filename, Format& format) {
-		const io::FilePtr& file = open(filename);
-		if (!file->validHandle()) {
+	voxel::RawVolume* load(const core::String& filename, io::SeekableReadStream& stream, Format& format) {
+		SceneGraph sceneGraph;
+		if (!format.loadGroups(filename, stream, sceneGraph)) {
 			return nullptr;
 		}
+		const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+		return merged.first;
+	}
+
+	voxel::RawVolume* load(const core::String& filename, Format& format) {
+		SceneGraph sceneGraph;
+		if (!loadGroups(filename, format, sceneGraph)) {
+			return nullptr;
+		}
+		const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+		return merged.first;
+	}
+
+	bool loadGroups(const core::String& filename, Format& format, voxelformat::SceneGraph &sceneGraph) {
+		const io::FilePtr& file = open(filename);
+		if (!file->validHandle()) {
+			return false;
+		}
 		io::FileStream stream(file);
-		voxel::RawVolume* v = format.load(filename, stream);
-		return v;
+		return format.loadGroups(filename, stream, sceneGraph);
 	}
 
 	int loadPalette(const core::String& filename, Format& format, voxel::Palette &palette) {

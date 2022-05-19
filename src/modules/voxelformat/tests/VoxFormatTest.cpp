@@ -154,7 +154,7 @@ TEST_F(VoxFormatTest, testSave) {
 	EXPECT_TRUE(f.save(loadedVolume, fileSave->name(), sstream));
 	const io::FilePtr &fileLoadAfterSave = open("magicavoxel-save.vox");
 	io::FileStream stream2(fileLoadAfterSave);
-	voxel::RawVolume *savedVolume = f.load(fileLoadAfterSave->name(), stream2);
+	voxel::RawVolume *savedVolume = load(fileLoadAfterSave->name(), stream2, f);
 	EXPECT_NE(nullptr, savedVolume) << "Could not load saved vox file";
 	if (savedVolume) {
 		EXPECT_EQ(*savedVolume, *loadedVolume);

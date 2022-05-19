@@ -12,6 +12,7 @@
 #include "voxel/Voxel.h"
 #include "voxel/tests/TestHelper.h"
 #include "voxelformat/QBFormat.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -34,7 +35,10 @@ protected:
 		const io::FilePtr& file = io::filesystem()->open(filename);
 		ASSERT_TRUE(file) << "Can't open " << filename;
 		io::FileStream stream(file);
-		voxel::RawVolume* v = format.load(file->fileName(), stream);
+		voxelformat::SceneGraph sceneGraph;
+		ASSERT_TRUE(format.loadGroups(file->fileName(), stream, sceneGraph));
+		voxelformat::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
+		voxel::RawVolume* v = merged.first;
 		ASSERT_NE(nullptr, v) << "Can't load " << filename;
 		EXPECT_EQ(*v, *_volume);
 		delete v;
