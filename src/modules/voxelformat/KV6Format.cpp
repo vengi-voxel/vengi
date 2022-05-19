@@ -9,6 +9,7 @@
 #include "core/Color.h"
 #include "core/FourCC.h"
 #include "private/PaletteLookup.h"
+#include "voxel/Palette.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -67,13 +68,12 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
-	PaletteLookup palLookup;
 	if (stream.seek(32 + numvoxs * 8 + (xsiz << 2) + ((xsiz * ysiz) << 1)) != -1) {
 		if (stream.remaining() != 0) {
 			uint32_t palMagic;
 			wrap(stream.readUInt32(palMagic))
 			if (palMagic == FourCC('S','P','a','l')) {
-				_palette.colorCount = (int)_paletteMapping.size();
+				_palette.colorCount = voxel::PaletteMaxColors;
 				for (int i = 0; i < _palette.colorCount; ++i) {
 					uint8_t r, g, b;
 					wrap(stream.readUInt8(b))
@@ -85,8 +85,6 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 					const uint8_t nb = glm::clamp((uint32_t)glm::round(((float)b * 255.0f) / 63.0f), 0u, 255u);
 
 					const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255u);
-					const int index = palLookup.findClosestIndex(color);
-					_paletteMapping[i] = index;
 					_palette.colors[i] = core::Color::getRGBA(color);
 				}
 			}
@@ -95,18 +93,13 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 	stream.seek(32);
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	SceneGraphNode node;
-	node.setVolume(volume, true);
-	node.setName(filename);
-	node.setTransform(0, transform, true);
-	node.setPalette(_palette);
-	sceneGraph.emplace(core::move(node));
 
 	typedef struct {
 		uint8_t z, col, vis, dir;
 	} voxtype;
 
 	voxtype voxdata[MAXVOXS];
+	PaletteLookup palLookup(_palette);
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		uint8_t palr, palg, palb, pala;
 		wrap(stream.readUInt8(palb))
@@ -160,6 +153,14 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 			}
 		}
 	}
+
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(filename);
+	node.setTransform(0, transform, true);
+	node.setPalette(palLookup.palette());
+	sceneGraph.emplace(core::move(node));
+
 	return true;
 }
 

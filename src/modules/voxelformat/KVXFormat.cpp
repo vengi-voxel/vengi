@@ -10,6 +10,7 @@
 #include "core/Log.h"
 #include "core/Color.h"
 #include "private/PaletteLookup.h"
+#include "voxel/Palette.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -89,7 +90,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 	// Read the color palette from the end of the file and convert to our palette
 	const size_t currentPos = stream.pos();
-	_palette.colorCount = (int)_paletteMapping.size();
+	_palette.colorCount = voxel::PaletteMaxColors;
 	stream.seek(stream.size() - 3 * _palette.colorCount);
 
 	/**
@@ -97,7 +98,6 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	 * The palette is in (Red:0, Green:1, Blue:2) order and intensities range
 	 * from 0-63.
 	 */
-	PaletteLookup palLookup;
 	for (int i = 0; i < _palette.colorCount; ++i) {
 		uint8_t r, g, b;
 		wrap(stream.readUInt8(r))
@@ -109,7 +109,6 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		const uint8_t nb = glm::clamp((uint32_t)glm::round(((float)b * 255.0f) / 63.0f), 0u, 255u);
 
 		const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255);
-		_paletteMapping[i] = palLookup.findClosestIndex(color);
 		_palette.colors[i] = core::Color::getRGBA(color);
 	}
 	stream.seek((int64_t)currentPos);
@@ -171,7 +170,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 				for (uint8_t i = 0u; i < header.slabzleng; ++i) {
 					uint8_t col;
 					wrap(stream.readUInt8(col))
-					lastCol = voxel::createVoxel(voxel::VoxelType::Generic, convertPaletteIndex(col));
+					lastCol = voxel::createVoxel(voxel::VoxelType::Generic, col);
 					volume->setVoxel((int)x, (int)((zsiz - 1) - (header.slabztop + i)), (int)y, lastCol);
 				}
 

@@ -22,7 +22,7 @@ namespace voxelformat {
  */
 class VoxFormat : public PaletteFormat {
 private:
-	int findClosestPaletteIndex();
+	int findClosestPaletteIndex(const voxel::Palette &palette);
 	bool addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, bool groupHidden = false);
 	bool addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances);
 public:

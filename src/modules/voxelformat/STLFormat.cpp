@@ -177,7 +177,7 @@ bool STLFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	node.setName(filename);
 	TriCollection subdivided;
 	subdivideShape(faces, subdivided);
-	voxelizeTris(volume, subdivided);
+	voxelizeTris(node, subdivided);
 	sceneGraph.emplace(core::move(node));
 	return true;
 }

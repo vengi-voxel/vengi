@@ -160,7 +160,7 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, const SceneGraph& s
 	wrapBool(stream.writeUInt32(0)) // bodysize is filled later
 	wrapBool(stream.writeUInt16(0x1f10U))
 
-	const voxel::Palette &palette = voxel::getPalette();
+	const voxel::Palette &palette = sceneGraph.firstPalette();
 	for (int i = 0; i < palette.colorCount; ++i) {
 		const core::RGBA& rgba = palette.colors[i];
 		wrapBool(stream.writeUInt8(rgba.r))
@@ -265,8 +265,7 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 				wrap(stream.readUInt8(color))
 				uint8_t normal;
 				wrap(stream.readUInt8(normal))
-				const uint8_t palIdx = convertPaletteIndex(color);
-				const voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, palIdx);
+				const voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, color);
 				volume->setVoxel(x, z, y, v);
 				++z;
 			}
@@ -371,12 +370,9 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 	}
 
 	if (valid) {
-		// convert to our palette
-		PaletteLookup palLookup;
 		for (int i = 0; i < _palette.colorCount; ++i) {
 			const uint8_t *p = hdr.palette[i];
 			_palette.colors[i] = core::Color::getRGBA(p[0], p[1], p[2]);
-			_paletteMapping[i] = palLookup.findClosestIndex(_palette.colors[i]);
 		}
 	} else {
 		_palette.colorCount = 0;

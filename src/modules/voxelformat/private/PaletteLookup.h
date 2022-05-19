@@ -13,10 +13,20 @@ namespace voxelformat {
 
 class PaletteLookup {
 private:
+	voxel::Palette _palette;
 	core::Map<core::RGBA, uint8_t, 521> _paletteMap;
-
 public:
+	PaletteLookup(const voxel::Palette &palette, int maxSize = 32768) : _palette(palette), _paletteMap(maxSize) {
+		if (_palette.colorCount <= 0) {
+			_palette.magicaVoxel();
+		}
+	}
 	PaletteLookup(int maxSize = 32768) : _paletteMap(maxSize) {
+		_palette.magicaVoxel();
+	}
+
+	inline const voxel::Palette &palette() const {
+		return _palette;
 	}
 
 	/**
@@ -35,8 +45,7 @@ public:
 	uint8_t findClosestIndex(core::RGBA rgba) {
 		uint8_t paletteIndex = 0;
 		if (!_paletteMap.get(rgba, paletteIndex)) {
-			const voxel::Palette &palette = voxel::getPalette();
-			paletteIndex = palette.getClosestMatch(rgba);
+			paletteIndex = _palette.getClosestMatch(rgba);
 			if (_paletteMap.size() < _paletteMap.capacity()) {
 				_paletteMap.put(rgba, paletteIndex);
 			}

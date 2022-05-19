@@ -22,16 +22,6 @@
 
 namespace voxelformat {
 
-uint8_t PaletteFormat::convertPaletteIndex(uint32_t paletteIndex) const {
-	if (paletteIndex >= (uint32_t)_palette.colorCount) {
-		if (_palette.colorCount > 0) {
-			return paletteIndex % _palette.colorCount;
-		}
-		return paletteIndex % _paletteMapping.size();
-	}
-	return _paletteMapping[paletteIndex];
-}
-
 static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::vec3 &pos, const glm::vec4 &pivot) {
 	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
 }

@@ -298,6 +298,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	node.setVolume(voxelutil::mirrorAxis(layerVolume, math::Axis::Z), true);
 	node.setName(name);
 	node.setVisible(visible);
+	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
 	delete layerVolume;
 	return true;
@@ -470,9 +471,9 @@ bool GoxFormat::saveChunk_LIGH(io::SeekableWriteStream& stream) {
 	return true; // not used
 }
 
-bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream& stream) {
+bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream& stream, const SceneGraph &sceneGraph) {
 	GoxScopedChunkWriter scoped(stream, FourCC('M', 'A', 'T', 'E'));
-	const voxel::Palette& palette = voxel::getPalette();
+	const voxel::Palette& palette = sceneGraph.firstPalette();
 
 	for (int i = 0; i < palette.colorCount; ++i) {
 		const core::String& name = core::string::format("mat%i", i);
@@ -605,7 +606,7 @@ bool GoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	wrapBool(saveChunk_PREV(stream))
 	int blocks = 0;
 	wrapBool(saveChunk_BL16(stream, sceneGraph, blocks))
-	wrapBool(saveChunk_MATE(stream))
+	wrapBool(saveChunk_MATE(stream, sceneGraph))
 	wrapBool(saveChunk_LAYR(stream, sceneGraph, blocks))
 	wrapBool(saveChunk_CAMR(stream, sceneGraph))
 	wrapBool(saveChunk_LIGH(stream))

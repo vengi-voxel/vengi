@@ -13,6 +13,7 @@
 #include "io/BufferedZipReadStream.h"
 #include "voxel/MaterialColor.h"
 #include "core/Log.h"
+#include "voxel/Palette.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/private/PaletteLookup.h"
 #include <glm/common.hpp>
@@ -153,9 +154,8 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	return (size_t)datasize == chunkEndPos - chunkStartPos;
 }
 
-bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream) const {
+bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream, const voxel::Palette& palette) const {
 	wrapSave(stream.writeString("COLORMAP", false));
-	const voxel::Palette& palette = voxel::getPalette();
 	wrapSave(stream.writeUInt32(palette.colorCount));
 	for (int i = 0; i < palette.colorCount; ++i) {
 		wrapSave(stream.writeUInt32(palette.colors[i]));
@@ -202,7 +202,8 @@ bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapSave(stream.writeFloat(1.0f));
 	bool colorMap = false;
 	if (colorMap) {
-		if (!saveColorMap(stream)) {
+		const voxel::Palette& palette = sceneGraph.firstPalette();
+		if (!saveColorMap(stream, palette)) {
 			return false;
 		}
 	}
@@ -348,7 +349,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 		Log::error("Invalid region");
 		return false;
 	}
-	PaletteLookup palLookup;
+	PaletteLookup palLookup(_palette);
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	for (int32_t x = 0; x < (int)size.x; x++) {
 		for (int32_t z = 0; z < (int)size.z; z++) {
@@ -381,7 +382,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(name);
-	node.setPalette(_palette);
+	node.setPalette(palLookup.palette());
 	node.setTransform(0, transform, true);
 	const int id = sceneGraph.emplace(core::move(node), parent);
 	return id != -1;
@@ -459,12 +460,11 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 	uint32_t colorCount;
 	wrap(stream.readUInt32(colorCount));
 	Log::debug("Load color map with %u colors", colorCount);
-	if (colorCount > _paletteMapping.size()) {
+	if (colorCount > voxel::PaletteMaxColors) {
 		Log::error("Sanity check for max colors failed (%u)", colorCount);
 		return false;
 	}
 	_palette.colorCount = (int)colorCount;
-	const voxel::Palette &palette = voxel::getPalette();
 	for (uint32_t i = 0; i < colorCount; ++i) {
 		uint8_t colorByteR;
 		uint8_t colorByteG;
@@ -482,8 +482,6 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream) {
 
 		const glm::vec4& color = core::Color::fromRGBA(red | green | blue | alpha);
 		_palette.colors[i] = core::Color::getRGBA(color);
-		const uint8_t index = palette.getClosestMatch(color);
-		_paletteMapping[i] = index;
 	}
 	return true;
 }

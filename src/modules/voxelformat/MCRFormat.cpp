@@ -55,11 +55,6 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	}
 
 	_palette.minecraft();
-	const voxel::Palette &palette = voxel::getPalette();
-	for (size_t i = 0; i < _palette.size(); ++i) {
-		_paletteMapping[i] = palette.getClosestMatch(core::Color::fromRGBA(_palette.colors[i]));
-	}
-
 	switch (type) {
 	case 'r':
 	case 'a': {
@@ -250,8 +245,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &da
 						return false;
 					}
 					if (color) {
-						const uint8_t index = convertPaletteIndex(color);
-						const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+						const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
 						wrapper.setVoxel(sPos, voxel);
 					}
 				}
@@ -269,8 +263,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &da
 						return false;
 					}
 					if (color) {
-						const uint8_t index = convertPaletteIndex(color);
-						const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+						const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
 						wrapper.setVoxel(sPos, voxel);
 					}
 				}

@@ -62,7 +62,7 @@ bool MeshRenderer::init() {
 	palette.glowToVec4f(glowColors);
 
 	const int shaderMaterialColorsArraySize = lengthof(shader::VoxelData::MaterialblockData::materialcolor);
-	const int materialColorsArraySize = palette.colorCount;
+	const int materialColorsArraySize = voxel::PaletteMaxColors;
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
 				shaderMaterialColorsArraySize, materialColorsArraySize);

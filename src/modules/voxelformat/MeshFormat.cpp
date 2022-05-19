@@ -16,6 +16,7 @@
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/private/PaletteLookup.h"
 #include "voxelutil/VoxelUtil.h"
 #include <SDL_timer.h>
@@ -44,7 +45,7 @@ void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
 	const glm::vec3 &mins = tri.mins();
 	const glm::vec3 &maxs = tri.maxs();
 	const glm::vec3 size = maxs - mins;
-	if (size.x * size.y * size.z > 1.0f) {
+	if (glm::any(glm::greaterThan(size, glm::vec3(1.0f)))) {
 		Tri out[4];
 		tri.subdivide(out);
 		for (int i = 0; i < lengthof(out); ++i) {
@@ -55,7 +56,7 @@ void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
 	tinyTris.push_back(tri);
 }
 
-void MeshFormat::voxelizeTris(voxel::RawVolume *volume, const TriCollection &subdivided) {
+void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const TriCollection &subdivided) {
 	struct PosSamplingEntry {
 		inline PosSamplingEntry(float _area, const glm::vec4 &_color) : area(_area), color(_color) {
 		}
@@ -105,6 +106,7 @@ void MeshFormat::voxelizeTris(voxel::RawVolume *volume, const TriCollection &sub
 		}
 	}
 	Log::debug("create voxels");
+	voxel::RawVolume *volume = node.volume();
 	PaletteLookup palLookup;
 	for (const auto &entry : posMap) {
 		const PosSampling &pos = entry->second;
@@ -113,6 +115,7 @@ void MeshFormat::voxelizeTris(voxel::RawVolume *volume, const TriCollection &sub
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 		volume->setVoxel(entry->first, voxel);
 	}
+	node.setPalette(palLookup.palette());
 	Log::debug("fill hollows");
 	voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
 }

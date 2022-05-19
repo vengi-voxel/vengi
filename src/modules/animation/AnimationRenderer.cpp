@@ -38,26 +38,28 @@ bool AnimationRenderer::init() {
 		return false;
 	}
 
-	const voxel::Palette &palette = voxel::getPalette();
-	core::DynamicArray<glm::vec4> materialColors;
-	palette.toVec4f(materialColors);
-	core::DynamicArray<glm::vec4> glowColors;
-	palette.glowToVec4f(glowColors);
-
 	const int shaderMaterialColorsArraySize = lengthof(shader::SkeletonData::MaterialblockData::materialcolor);
-	const int materialColorsArraySize = palette.colorCount;
+	const int materialColorsArraySize = voxel::PaletteMaxColors;
 	if (shaderMaterialColorsArraySize != materialColorsArraySize) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
 				shaderMaterialColorsArraySize, materialColorsArraySize);
 		return false;
 	}
 
-	shader::SkeletonData::MaterialblockData materialBlock;
-	core_memcpy(materialBlock.materialcolor, &materialColors.front(), sizeof(materialBlock.materialcolor));
-	core_memcpy(materialBlock.glowcolor, &glowColors.front(), sizeof(materialBlock.glowcolor));
-	if (!_shaderData.create(materialBlock)) {
-		Log::error("Failed to create material buffer");
-		return false;
+	{
+		const voxel::Palette &palette = voxel::getPalette();
+		core::DynamicArray<glm::vec4> materialColors;
+		palette.toVec4f(materialColors);
+		core::DynamicArray<glm::vec4> glowColors;
+		palette.glowToVec4f(glowColors);
+
+		shader::SkeletonData::MaterialblockData materialBlock;
+		core_memcpy(materialBlock.materialcolor, &materialColors.front(), sizeof(materialBlock.materialcolor));
+		core_memcpy(materialBlock.glowcolor, &glowColors.front(), sizeof(materialBlock.glowcolor));
+		if (!_shaderData.create(materialBlock)) {
+			Log::error("Failed to create material buffer");
+			return false;
+		}
 	}
 
 	_vertices = _vbo.create();

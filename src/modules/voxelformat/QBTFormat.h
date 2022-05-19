@@ -27,7 +27,7 @@ private:
 
 	bool loadColorMap(io::SeekableReadStream& stream);
 	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node, bool colorMap) const;
-	bool saveColorMap(io::SeekableWriteStream& stream) const;
+	bool saveColorMap(io::SeekableWriteStream& stream, const voxel::Palette& palette) const;
 	bool saveModel(io::SeekableWriteStream& stream, const SceneGraph &sceneGraph, bool colorMap) const;
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph) override;

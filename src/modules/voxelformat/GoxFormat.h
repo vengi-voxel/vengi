@@ -109,7 +109,7 @@ private:
 	// Write all the blocks chunks.
 	bool saveChunk_BL16(io::SeekableWriteStream &stream, const SceneGraph &sceneGraph, int &blocks);
 	// Write all the materials.
-	bool saveChunk_MATE(io::SeekableWriteStream &stream);
+	bool saveChunk_MATE(io::SeekableWriteStream &stream, const SceneGraph &sceneGraph);
 	// Write all the layers.
 	bool saveChunk_LAYR(io::SeekableWriteStream &stream, const SceneGraph &sceneGraph, int numBlocks);
 public:

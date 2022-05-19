@@ -40,6 +40,10 @@ public:
 	int activeNode() const;
 	bool setActiveNode(int nodeId);
 	/**
+	 * @brief Returns the first valid palette from any of the nodes
+	 */
+	voxel::Palette &firstPalette() const;
+	/**
 	 * @brief Loops over the locked/groups (model) nodes with the given function that receives the node id
 	 */
 	void foreachGroup(const std::function<void(int)>& f);

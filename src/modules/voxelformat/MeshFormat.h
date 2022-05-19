@@ -94,7 +94,7 @@ protected:
 	 */
 	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
 
-	static void voxelizeTris(voxel::RawVolume *volume, const TriCollection &tinyTris);
+	static void voxelizeTris(voxelformat::SceneGraphNode &node, const TriCollection &tinyTris);
 
 	struct MeshExt {
 		MeshExt(voxel::Mesh *mesh, const SceneGraphNode &node, bool applyTransform);

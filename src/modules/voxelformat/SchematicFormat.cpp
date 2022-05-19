@@ -22,6 +22,7 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/private/PaletteLookup.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 
@@ -31,10 +32,6 @@ namespace voxelformat {
 
 bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	_palette.minecraft();
-	const voxel::Palette &palette = voxel::getPalette();
-	for (size_t i = 0; i < _palette.size(); ++i) {
-		_paletteMapping[i] = palette.getClosestMatch(core::Color::fromRGBA(_palette.colors[i]));
-	}
 	io::ZipReadStream zipStream(stream);
 	priv::NamedBinaryTagContext ctx;
 	ctx.stream = &zipStream;
@@ -85,7 +82,7 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 		}
 	}
 
-	_paletteMapping.fill(0xFF);
+	PaletteLookup palLookup(_palette);
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {
 			for (int z = 0; z < depth; ++z) {
@@ -93,19 +90,12 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 				const uint8_t palIdx = (*blocks.byteArray())[idx];
 				if (palIdx != 0u) {
 					uint8_t currentPalIdx;
-					core::RGBA color;
 					if (paletteEntry == 0) {
 						currentPalIdx = palIdx;
-						color = _palette.colors[palIdx];
 					} else {
 						currentPalIdx = mcpal[palIdx];
-						color = _palette.colors[mcpal[palIdx]];
 					}
-
-					if (_paletteMapping[currentPalIdx] == 0xFF) {
-						_paletteMapping[currentPalIdx] = palette.getClosestMatch(color);
-					}
-					volume->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, _paletteMapping[currentPalIdx]));
+					volume->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, currentPalIdx));
 				}
 			}
 		}
@@ -147,12 +137,8 @@ bool SchematicFormat::saveGroups(const SceneGraph& sceneGraph, const core::Strin
 	compound.put("z", (int32_t)mins.z);
 	compound.put("Materials", priv::NamedBinaryTag("Alpha"));
 	{
-		const voxel::Palette &palette = merged.second;
-
 		core::DynamicArray<int8_t> blocks;
 		blocks.resize(size.x * size.y * size.z);
-
-		_paletteMapping.fill(0xFF);
 
 		for (int x = 0; x < size.x; ++x) {
 			for (int y = 0; y < size.y; ++y) {
@@ -163,11 +149,7 @@ bool SchematicFormat::saveGroups(const SceneGraph& sceneGraph, const core::Strin
 						blocks[idx] = 0;
 					} else {
 						const uint8_t currentPalIdx = voxel.getColor();
-						core::RGBA color = palette.colors[currentPalIdx];
-						if (_paletteMapping[currentPalIdx] == 0xFF) {
-							_paletteMapping[currentPalIdx] = _palette.getClosestMatch(color);
-						}
-						blocks[idx] = (int8_t)_paletteMapping[currentPalIdx];
+						blocks[idx] = (int8_t)currentPalIdx;
 					}
 				}
 			}

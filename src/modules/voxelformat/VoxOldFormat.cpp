@@ -42,7 +42,6 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 	const int64_t voxelPos = stream.pos();
 	stream.skip((int64_t)width * height * depth);
 	_palette.colorCount = voxel::PaletteMaxColors;
-	const voxel::Palette &palette = voxel::getPalette();
 	for (int i = 0; i < _palette.colorCount; ++i) {
 		uint8_t r, g, b;
 		wrap(stream.readUInt8(r))
@@ -50,7 +49,6 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 		wrap(stream.readUInt8(b))
 
 		_palette.colors[i] = core::Color::getRGBA(r, g, b);
-		_paletteMapping[i] = palette.getClosestMatch(_palette.colors[i]);
 	}
 
 	stream.seek(voxelPos);
@@ -62,7 +60,7 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 				if (palIdx == 255) {
 					continue;
 				}
-				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, _paletteMapping[palIdx]);
+				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIdx);
 				// we have to flip depth with height for our own coordinate system
 				volume->setVoxel((int)w, (int)h, (int)d, voxel);
 			}

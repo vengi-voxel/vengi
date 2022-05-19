@@ -226,6 +226,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setVolume(v, true);
 	node.setName(name);
+	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
 	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");

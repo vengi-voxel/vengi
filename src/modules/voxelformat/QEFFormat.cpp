@@ -82,7 +82,6 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 	_palette.colorCount = paletteSize;
 
-	const voxel::Palette &palette = voxel::getPalette();
 	for (int i = 0; i < paletteSize; ++i) {
 		float r, g, b;
 		wrapBool(stream.readLine(sizeof(buf), buf))
@@ -92,8 +91,6 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		}
 		const glm::vec4 color(r, g, b, 1.0f);
 		_palette.colors[i] = core::Color::getRGBA(color);
-		const uint8_t index = palette.getClosestMatch(_palette.colors[i]);
-		_paletteMapping[i] = index;
 	}
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
@@ -109,7 +106,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			Log::error("Failed to parse voxel data line");
 			return false;
 		}
-		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, convertPaletteIndex(color));
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
 		volume->setVoxel(x, y, z, voxel);
 	}
 

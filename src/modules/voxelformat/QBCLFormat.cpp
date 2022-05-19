@@ -382,6 +382,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	}
 	SceneGraphNode node;
 	node.setVolume(volume, true);
+	node.setPalette(palLookup.palette());
 	if (name.empty()) {
 		node.setName("Matrix");
 	} else {

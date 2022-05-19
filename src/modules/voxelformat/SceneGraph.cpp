@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Pair.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeMerger.h"
@@ -62,6 +63,13 @@ bool SceneGraph::setActiveNode(int nodeId) {
 	}
 	_activeNodeId = nodeId;
 	return true;
+}
+
+voxel::Palette &SceneGraph::firstPalette() const {
+	for (SceneGraphNode& node : *this) {
+		return node.palette();
+	}
+	return voxel::getPalette();
 }
 
 void SceneGraph::foreachGroup(const std::function<void(int)>& f) {

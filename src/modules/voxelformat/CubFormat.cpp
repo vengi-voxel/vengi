@@ -72,11 +72,6 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	SceneGraphNode node;
-	node.setVolume(volume, true);
-	node.setName(filename);
-	sceneGraph.emplace(core::move(node));
-
 	PaletteLookup palLookup;
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
@@ -97,6 +92,11 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 			}
 		}
 	}
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(filename);
+	node.setPalette(palLookup.palette());
+	sceneGraph.emplace(core::move(node));
 
 	return true;
 }

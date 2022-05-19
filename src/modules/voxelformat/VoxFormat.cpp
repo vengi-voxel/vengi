@@ -138,7 +138,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 				if (ogtVoxel[0] == 0) {
 					continue;
 				}
-				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, _paletteMapping[ogtVoxel[0]]);
+				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, ogtVoxel[0]);
 				const glm::ivec3 &pos = transform(ogtMat, glm::ivec3(i, j, k), pivot);
 				const glm::ivec3 &poszUp = transform(zUpMat, pos, glm::ivec4(0));
 				v->setVoxel(poszUp, voxel);
@@ -229,7 +229,6 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	}
 
 	_palette.colorCount = lengthof(scene->palette.color);
-	const voxel::Palette &palette = voxel::getPalette();
 	for (int i = 0; i < _palette.colorCount; ++i) {
 		const ogt_vox_rgba color = scene->palette.color[i];
 		_palette.colors[i] = core::Color::getRGBA(color.r, color.g, color.b, color.a);
@@ -237,7 +236,6 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		if (matl.type == ogt_matl_type_emit) {
 			_palette.glowColors[i] = _palette.colors[i];
 		}
-		_paletteMapping[i] = palette.getClosestMatch(_palette.colors[i]);
 	}
 	// rotation matrix to convert into our coordinate system (z pointing upwards)
 	const glm::mat4 zUpMat = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -288,10 +286,9 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	return true;
 }
 
-int VoxFormat::findClosestPaletteIndex() {
+int VoxFormat::findClosestPaletteIndex(const voxel::Palette &palette) {
 	// we have to find a replacement for the first palette entry - as this is used
 	// as the empty voxel in magicavoxel
-	const voxel::Palette &palette = voxel::getPalette();
 	core::DynamicArray<glm::vec4> materialColors;
 	palette.toVec4f(materialColors);
 	const glm::vec4 first = materialColors[0];
@@ -316,8 +313,8 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	default_group.parent_group_index = k_invalid_group_index;
 	default_group.transform = ogt_identity_transform;
 
-	const voxel::Palette &palette = voxel::getPalette();
-	const int replacement = findClosestPaletteIndex();
+	const voxel::Palette &palette = sceneGraph.firstPalette();
+	const int replacement = findClosestPaletteIndex(palette);
 	core::Buffer<ogt_vox_model> models(modelCount);
 	core::Buffer<ogt_vox_layer> layers(modelCount);
 	core::Buffer<ogt_vox_instance> instances(modelCount);

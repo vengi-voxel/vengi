@@ -131,7 +131,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 #endif
 	}
 
-	const voxel::Palette &palette = voxel::getPalette();
+	const voxel::Palette &palette = sceneGraph.firstPalette();
 	core::DynamicArray<glm::vec4> materialColors;
 	palette.toVec4f(materialColors);
 
@@ -401,7 +401,6 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 
-	const voxel::Palette &palette = voxel::getPalette();
 	for (int i = 0; i < (int) materialAmount; ++i) {
 		uint8_t blue;
 		wrap(stream.readUInt8(blue));
@@ -414,7 +413,6 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		uint8_t emissive;
 		wrap(stream.readUInt8(emissive));
 		_palette.colors[i] = core::Color::getRGBA(red, green, blue, alpha);
-		_paletteMapping[i] = palette.getClosestMatch(_palette.colors[i]);
 		if (emissive) {
 			_palette.glowColors[i] = _palette.colors[i];
 		}
@@ -458,8 +456,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 				continue;
 			}
 
-			const uint8_t index = _paletteMapping[matIdx];
-			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, matIdx);
 
 			// left to right, bottom to top, front to back
 			for (int i = idx; i < idx + length; i++) {

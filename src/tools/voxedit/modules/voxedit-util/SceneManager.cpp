@@ -482,12 +482,11 @@ int SceneManager::activeNode() const {
 }
 
 voxel::Palette &SceneManager::activePalette() const {
-	// TODO: activate me - see RawVolumeRenderer::updatePalette
-	// const int nodeId = activeNode();
-	// if (!_sceneGraph.hasNode(nodeId)) {
-	return voxel::getPalette();
-	// }
-	// return _sceneGraph.node(nodeId).palette();
+	const int nodeId = activeNode();
+	if (!_sceneGraph.hasNode(nodeId)) {
+		return _sceneGraph.firstPalette();
+	}
+	return _sceneGraph.node(nodeId).palette();
 }
 
 voxel::RawVolume* SceneManager::activeVolume() {
@@ -2474,6 +2473,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 		return false;
 	}
 	_sceneGraph.setActiveNode(nodeId);
+	voxel::overridePalette(node.palette());
 	const voxel::Region& region = node.region();
 	updateGridRenderer(region);
 	updateAABBMesh();

@@ -443,7 +443,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 
 	if (_exportPalette) {
 		const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
-		voxel::getPalette().save(paletteFile.c_str());
+		sceneGraph.firstPalette().save(paletteFile.c_str());
 		if (!_srcPalette) {
 			Log::info(" .. not using the input file palette");
 		}

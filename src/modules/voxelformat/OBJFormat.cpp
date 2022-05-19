@@ -344,7 +344,7 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			node.setName(shape.name.c_str());
 			TriCollection subdivided;
 			subdivideShape(shape.mesh, textures, attrib, materials, subdivided);
-			voxelizeTris(volume, subdivided);
+			voxelizeTris(node, subdivided);
 			return core::move(node);
 		};
 		if (shapes.size() > 1) {

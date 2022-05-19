@@ -10,6 +10,7 @@
 #include "core/collection/Map.h"
 #include "core/Log.h"
 #include "core/Color.h"
+#include "voxel/MaterialColor.h"
 #include "voxelutil/VolumeResizer.h"
 #include "private/PaletteLookup.h"
 #include <SDL_stdinc.h>
@@ -167,6 +168,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
+	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
 	return true;
 }

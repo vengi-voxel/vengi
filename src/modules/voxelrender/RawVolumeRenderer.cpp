@@ -95,12 +95,10 @@ bool RawVolumeRenderer::init() {
 		}
 	}
 
-	const voxel::Palette &palette = voxel::getPalette();
-
 	const int shaderMaterialColorsArraySize = lengthof(shader::VoxelData::MaterialblockData::materialcolor);
-	if (shaderMaterialColorsArraySize != palette.colorCount) {
+	if (shaderMaterialColorsArraySize != voxel::PaletteMaxColors) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
-				shaderMaterialColorsArraySize, palette.colorCount);
+				shaderMaterialColorsArraySize, voxel::PaletteMaxColors);
 		return false;
 	}
 
@@ -462,12 +460,10 @@ void RawVolumeRenderer::gray(int idx, bool gray) {
 
 void RawVolumeRenderer::updatePalette(int idx) {
 	const voxel::Palette *palette;
-	// TODO: activate me
-	// const State &state = _state[idx];
-	// if (state._palette.hasValue()) {
-	// 	palette = state._palette.value();
-	// } else
-	{
+	const State &state = _state[idx];
+	if (state._palette.hasValue()) {
+		palette = state._palette.value();
+	} else {
 		palette = &voxel::getPalette();
 	}
 
