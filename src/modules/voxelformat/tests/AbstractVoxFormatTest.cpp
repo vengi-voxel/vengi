@@ -4,7 +4,9 @@
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
+#include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -81,34 +83,44 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 	EXPECT_TRUE(volumeComparator(original, *loaded, includingColor, includingRegion)) << "Volumes differ: " << original << *loaded;
 }
 
-void AbstractVoxFormatTest::testRGB(voxel::RawVolume* volume) {
-	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0,  0).getMaterial());
-	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0,  0).getMaterial());
-	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0, 31).getMaterial());
-	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0, 31).getMaterial());
+void AbstractVoxFormatTest::testRGB(const core::String &filename) {
+	voxelformat::SceneGraph sceneGraph;
+	const io::FilePtr& file = open(filename);
+	ASSERT_TRUE(file->validHandle());
+	io::FileStream stream(file);
+	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph));
+	EXPECT_EQ(1, sceneGraph.size());
 
-	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0, 31,  0).getMaterial());
-	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31,  0).getMaterial());
-	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31, 31).getMaterial());
-	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0, 31, 31).getMaterial());
+	for (const voxelformat::SceneGraphNode &node : sceneGraph) {
+		const voxel::RawVolume *volume = node.volume();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0,  0).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0,  0).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0, 31).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0, 31).getMaterial());
 
-	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0,  4).getMaterial());
-	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 12).getMaterial());
-	EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 19).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0, 31,  0).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31,  0).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31, 31).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0, 31, 31).getMaterial());
 
-	EXPECT_EQ(245, volume->voxel( 0,  0,  0).getColor()) << "Expected to get the palette index 245";
-	EXPECT_EQ(245, volume->voxel(31,  0,  0).getColor()) << "Expected to get the palette index 245";
-	EXPECT_EQ(245, volume->voxel(31,  0, 31).getColor()) << "Expected to get the palette index 245";
-	EXPECT_EQ(245, volume->voxel( 0,  0, 31).getColor()) << "Expected to get the palette index 245";
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0,  4).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 12).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 19).getMaterial());
 
-	EXPECT_EQ(  1, volume->voxel( 0, 31,  0).getColor()) << "Expected to get the palette index 1";
-	EXPECT_EQ(  1, volume->voxel(31, 31,  0).getColor()) << "Expected to get the palette index 1";
-	EXPECT_EQ(  1, volume->voxel(31, 31, 31).getColor()) << "Expected to get the palette index 1";
-	EXPECT_EQ(  1, volume->voxel( 0, 31, 31).getColor()) << "Expected to get the palette index 1";
+		EXPECT_EQ(245, volume->voxel( 0,  0,  0).getColor()) << "Expected to get the palette index 245";
+		EXPECT_EQ(245, volume->voxel(31,  0,  0).getColor()) << "Expected to get the palette index 245";
+		EXPECT_EQ(245, volume->voxel(31,  0, 31).getColor()) << "Expected to get the palette index 245";
+		EXPECT_EQ(245, volume->voxel( 0,  0, 31).getColor()) << "Expected to get the palette index 245";
 
-	EXPECT_EQ( 37, volume->voxel( 9,  0,  4).getColor()) << "Expected to get the palette index for red"; // red
-	EXPECT_EQ(149, volume->voxel( 9,  0, 12).getColor()) << "Expected to get the palette index for green"; // green
-	EXPECT_EQ(197, volume->voxel( 9,  0, 19).getColor()) << "Expected to get the palette index for blue"; // blue
+		EXPECT_EQ(  1, volume->voxel( 0, 31,  0).getColor()) << "Expected to get the palette index 1";
+		EXPECT_EQ(  1, volume->voxel(31, 31,  0).getColor()) << "Expected to get the palette index 1";
+		EXPECT_EQ(  1, volume->voxel(31, 31, 31).getColor()) << "Expected to get the palette index 1";
+		EXPECT_EQ(  1, volume->voxel( 0, 31, 31).getColor()) << "Expected to get the palette index 1";
+
+		EXPECT_EQ( 37, volume->voxel( 9,  0,  4).getColor()) << "Expected to get the palette index for red"; // red
+		EXPECT_EQ(149, volume->voxel( 9,  0, 12).getColor()) << "Expected to get the palette index for green"; // green
+		EXPECT_EQ(197, volume->voxel( 9,  0, 19).getColor()) << "Expected to get the palette index for blue"; // blue
+	}
 }
 
 void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename, Format &srcFormat, const core::String& destFilename, Format &destFormat, bool includingColor, bool includingRegion) {

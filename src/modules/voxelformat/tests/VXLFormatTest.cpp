@@ -17,10 +17,7 @@ TEST_F(VXLFormatTest, testLoad) {
 }
 
 TEST_F(VXLFormatTest, testLoadRGB) {
-	VXLFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("rgb.vxl", f));
-	ASSERT_NE(nullptr, volume) << "Could not load vxl file";
-	testRGB(volume.get());
+	testRGB("rgb.vxl");
 }
 
 TEST_F(VXLFormatTest, testSave) {

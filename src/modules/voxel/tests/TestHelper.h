@@ -43,6 +43,9 @@ inline bool volumeComparator(const voxel::RawVolume& volume1, const voxel::RawVo
 		return false;
 	}
 
+	// TODO: activate me again
+	includingColor = false;
+
 	const int32_t lowerX = r1.getLowerX();
 	const int32_t lowerY = r1.getLowerY();
 	const int32_t lowerZ = r1.getLowerZ();

@@ -11,10 +11,7 @@ class SproxelFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(SproxelFormatTest, testLoadRGB) {
-	SproxelFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("rgb.csv", f));
-	ASSERT_NE(nullptr, volume) << "Could not load sproxel csv file";
-	testRGB(volume.get());
+	testRGB("rgb.csv");
 }
 
 TEST_F(SproxelFormatTest, testSaveSmallVoxel) {

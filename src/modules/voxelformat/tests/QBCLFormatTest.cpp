@@ -24,10 +24,7 @@ TEST_F(QBCLFormatTest, testSaveSmallVoxel) {
 }
 
 TEST_F(QBCLFormatTest, testLoadRGB) {
-	QBCLFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("rgb.qbcl", f));
-	ASSERT_NE(nullptr, volume) << "Could not load qbcl file";
-	testRGB(volume.get());
+	testRGB("rgb.qbcl");
 }
 
 }

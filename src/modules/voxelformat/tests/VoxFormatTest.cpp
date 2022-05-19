@@ -101,10 +101,7 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 }
 
 TEST_F(VoxFormatTest, testLoadRGB) {
-	VoxFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("rgb.vox", f));
-	ASSERT_NE(nullptr, volume) << "Could not load vox file";
-	testRGB(volume.get());
+	testRGB("rgb.vox");
 }
 
 TEST_F(VoxFormatTest, testSaveSmallVoxel) {

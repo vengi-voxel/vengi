@@ -22,10 +22,7 @@ TEST_F(GoxFormatTest, testSaveSmallVoxel) {
 }
 
 TEST_F(GoxFormatTest, testLoadRGB) {
-	GoxFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("rgb.gox", f));
-	ASSERT_NE(nullptr, volume) << "Could not load gox file";
-	testRGB(volume.get());
+	testRGB("rgb.gox");
 }
 
 }

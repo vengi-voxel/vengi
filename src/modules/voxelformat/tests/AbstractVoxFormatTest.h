@@ -28,7 +28,7 @@ protected:
 	void testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &destFilename,
 												Format &destFormat, bool includingColor, bool includingRegion);
 
-	void testRGB(voxel::RawVolume *volume);
+	void testRGB(const core::String &filename);
 
 	void testSaveMultipleLayers(const core::String& filename, Format* format);
 

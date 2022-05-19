@@ -24,10 +24,7 @@ TEST_F(QEFFormatTest, testLoad2) {
 }
 
 TEST_F(QEFFormatTest, testLoadRGB) {
-	QEFFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("rgb.qef", f));
-	ASSERT_NE(nullptr, volume) << "Could not load qef file";
-	testRGB(volume.get());
+	testRGB("rgb.qef");
 }
 
 TEST_F(QEFFormatTest, testSaveSmallVoxel) {

@@ -30,10 +30,7 @@ TEST_F(QBFormatTest, testLoad) {
 }
 
 TEST_F(QBFormatTest, testLoadRGB) {
-	QBFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("rgb.qb", f));
-	ASSERT_NE(nullptr, volume) << "Could not load qb file";
-	testRGB(volume.get());
+	testRGB("rgb.qb");
 }
 
 TEST_F(QBFormatTest, testSaveSingleVoxel) {

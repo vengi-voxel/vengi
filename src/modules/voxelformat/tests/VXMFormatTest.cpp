@@ -11,10 +11,7 @@ class VXMFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(VXMFormatTest, DISABLED_testLoadRGB) {
-	VXMFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("rgb.vxm", f));
-	ASSERT_NE(nullptr, volume) << "Could not load vxm file";
-	testRGB(volume.get());
+	testRGB("rgb.vxm");
 }
 
 TEST_F(VXMFormatTest, testLoad) {

@@ -4,6 +4,7 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/CubFormat.h"
+#include "voxelformat/VolumeFormat.h"
 
 namespace voxelformat {
 
@@ -23,10 +24,7 @@ TEST_F(CubFormatTest, testLoadPalette) {
 }
 
 TEST_F(CubFormatTest, testLoadRGB) {
-	CubFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("rgb.cub", f));
-	ASSERT_NE(nullptr, volume) << "Could not load volume";
-	testRGB(volume.get());
+	testRGB("rgb.cub");
 }
 
 TEST_F(CubFormatTest, testSaveSmallVoxel) {
