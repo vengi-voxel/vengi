@@ -29,7 +29,7 @@ TEST_F(QBTFormatTest, testSaveSingleVoxel) {
 	f = QBTFormat();
 	std::unique_ptr<voxel::RawVolume> loaded(load("qubicle-singlevoxelsavetest.qbt", f));
 	ASSERT_NE(nullptr, loaded);
-	EXPECT_EQ(original, *loaded);
+	EXPECT_TRUE(volumeComparator(original, *loaded, true, true)) << "Volumes differ: " << original << *loaded;
 }
 
 TEST_F(QBTFormatTest, testSaveSmallVoxel) {
@@ -53,7 +53,7 @@ TEST_F(QBTFormatTest, testSave) {
 	f = QBTFormat();
 	std::unique_ptr<voxel::RawVolume> loaded(load("qubicle-savetest.qbt", f));
 	ASSERT_NE(nullptr, loaded);
-	EXPECT_EQ(*original, *loaded);
+	EXPECT_TRUE(volumeComparator(*original, *loaded, true, true)) << "Volumes differ: " << *original << *loaded;
 }
 
 TEST_F(QBTFormatTest, testResaveMultipleLayers) {

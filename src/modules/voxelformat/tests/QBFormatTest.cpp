@@ -47,7 +47,7 @@ TEST_F(QBFormatTest, testSaveSingleVoxel) {
 	f = QBFormat();
 	std::unique_ptr<voxel::RawVolume> loaded(load("qubicle-singlevoxelsavetest.qb", f));
 	ASSERT_NE(nullptr, loaded);
-	EXPECT_EQ(original, *loaded);
+	EXPECT_TRUE(volumeComparator(original, *loaded, true, true)) << "Volumes differ: " << original << *loaded;
 }
 
 TEST_F(QBFormatTest, testSaveSmallVoxel) {
@@ -71,6 +71,6 @@ TEST_F(QBFormatTest, testLoadSave) {
 	f = QBFormat();
 	std::unique_ptr<voxel::RawVolume> loaded(load("qubicle-savetest.qb", f));
 	ASSERT_NE(nullptr, loaded);
-	EXPECT_EQ(*original, *loaded);
+	EXPECT_TRUE(volumeComparator(*original, *loaded, true, true)) << "Volumes differ: " << *original << *loaded;
 }
 }

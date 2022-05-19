@@ -86,7 +86,8 @@ TEST_F(VolumeRotatorTest, DISABLED_testRotate90_FourTimes) {
 	EXPECT_EQ(rotatedRegion, region) << "Rotating by 360 degree should increase the size of the volume "
 			<< str(rotatedRegion) << " " << str(region);
 
-	EXPECT_EQ(*rotated, smallVolume) << "Expected to get the same volume after 360 degree rotation";
+	EXPECT_TRUE(volumeComparator(*rotated, smallVolume, true, true))
+		<< "Expected to get the same volume after 360 degree rotation, but volumes differ: " << *rotated << smallVolume;
 	delete rotated;
 }
 }

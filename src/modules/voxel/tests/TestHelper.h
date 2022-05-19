@@ -90,10 +90,6 @@ inline bool volumeComparator(const voxel::RawVolume& volume1, const voxel::RawVo
 	return true;
 }
 
-inline bool operator==(const voxel::RawVolume& volume1, const voxel::RawVolume& volume2) {
-	return volumeComparator(volume1, volume2, true, true);
-}
-
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Region& region) {
 	return os << "region["
 			<< "mins(" << glm::to_string(region.getLowerCorner()) << "), "

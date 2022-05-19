@@ -239,7 +239,7 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	readStream->seek(0);
 	std::unique_ptr<voxel::RawVolume> loaded(load(filename, *readStream, *format));
 	ASSERT_NE(nullptr, loaded);
-	EXPECT_EQ(original, *loaded);
+	EXPECT_TRUE(volumeComparator(original, *loaded, true, true)) << "Volumes differ: " << original << *loaded;
 }
 
 } // namespace voxel

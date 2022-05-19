@@ -43,7 +43,7 @@ TEST_F(VXMFormatTest, testSaveVerySmallVoxel) {
 	f = VXMFormat();
 	std::unique_ptr<voxel::RawVolume> loaded(load("verysmallvolumesavetest.vxm", f));
 	ASSERT_NE(nullptr, loaded);
-	EXPECT_EQ(original, *loaded);
+	EXPECT_TRUE(volumeComparator(original, *loaded, true, true)) << "Volumes differ: " << original << *loaded;
 }
 
 TEST_F(VXMFormatTest, testSaveSmallVoxel) {
@@ -65,7 +65,7 @@ TEST_F(VXMFormatTest, testSaveRLE) {
 	f = VXMFormat();
 	std::unique_ptr<voxel::RawVolume> loaded(load("smallvolumesavetest.vxm", f));
 	ASSERT_NE(nullptr, loaded);
-	EXPECT_EQ(original, *loaded);
+	EXPECT_TRUE(volumeComparator(original, *loaded, true, true)) << "Volumes differ: " << original << *loaded;
 }
 
 }

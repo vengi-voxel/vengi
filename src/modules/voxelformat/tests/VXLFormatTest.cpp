@@ -35,7 +35,7 @@ TEST_F(VXLFormatTest, testSave) {
 	voxel::RawVolume *savedVolume = load("cc-save.vxl", f);
 	EXPECT_NE(nullptr, savedVolume) << "Could not load saved vxl file " << file->name();
 	if (savedVolume) {
-		EXPECT_EQ(*savedVolume, *loadedVolume);
+		EXPECT_TRUE(volumeComparator(*savedVolume, *loadedVolume, true, true)) << "Volumes differ: " << *savedVolume << *loadedVolume;
 		delete savedVolume;
 	}
 	delete loadedVolume;

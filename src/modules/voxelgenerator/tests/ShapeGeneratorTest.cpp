@@ -40,7 +40,7 @@ protected:
 		voxelformat::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
 		voxel::RawVolume* v = merged.first;
 		ASSERT_NE(nullptr, v) << "Can't load " << filename;
-		EXPECT_EQ(*v, *_volume);
+		EXPECT_TRUE(volumeComparator(v, *_volume, true, true)) << "Volumes differ: " << v << *_volume;
 		delete v;
 	}
 public:

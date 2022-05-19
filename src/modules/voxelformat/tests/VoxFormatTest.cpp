@@ -157,7 +157,7 @@ TEST_F(VoxFormatTest, testSave) {
 	voxel::RawVolume *savedVolume = load(fileLoadAfterSave->name(), stream2, f);
 	EXPECT_NE(nullptr, savedVolume) << "Could not load saved vox file";
 	if (savedVolume) {
-		EXPECT_EQ(*savedVolume, *loadedVolume);
+		EXPECT_TRUE(volumeComparator(*savedVolume, *loadedVolume, true, true)) << "Volumes differ: " << *savedVolume << *loadedVolume;
 		delete savedVolume;
 	}
 	delete loadedVolume;
