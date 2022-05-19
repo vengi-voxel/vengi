@@ -12,9 +12,7 @@ class CubFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(CubFormatTest, testLoad) {
-	CubFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("cw.cub", f));
-	ASSERT_NE(nullptr, volume) << "Could not load volume";
+	canLoad("cw.cub");
 }
 
 TEST_F(CubFormatTest, testLoadPalette) {

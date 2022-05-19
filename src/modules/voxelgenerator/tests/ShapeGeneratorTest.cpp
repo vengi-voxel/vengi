@@ -3,6 +3,7 @@
  */
 
 #include "app/App.h"
+#include "core/ScopedPtr.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "app/tests/AbstractTest.h"
@@ -38,10 +39,9 @@ protected:
 		voxelformat::SceneGraph sceneGraph;
 		ASSERT_TRUE(format.loadGroups(file->fileName(), stream, sceneGraph));
 		voxelformat::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
-		voxel::RawVolume* v = merged.first;
+		core::ScopedPtr<voxel::RawVolume> v( merged.first);
 		ASSERT_NE(nullptr, v) << "Can't load " << filename;
-		EXPECT_TRUE(volumeComparator(v, *_volume, true, true)) << "Volumes differ: " << v << *_volume;
-		delete v;
+		volumeComparator(*v, voxel::getPalette(), *_volume, voxel::getPalette(), true, true);
 	}
 public:
 	void SetUp() override {

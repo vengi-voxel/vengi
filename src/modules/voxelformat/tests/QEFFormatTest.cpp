@@ -12,15 +12,11 @@ class QEFFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(QEFFormatTest, testLoad) {
-	QEFFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("qubicle.qef", f));
-	ASSERT_NE(nullptr, volume) << "Could not load qef file";
+	canLoad("qubicle.qef");
 }
 
 TEST_F(QEFFormatTest, testLoad2) {
-	QEFFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("testload.qef", f));
-	ASSERT_NE(nullptr, volume) << "Could not load qef file";
+	canLoad("testload.qef");
 }
 
 TEST_F(QEFFormatTest, testLoadRGB) {

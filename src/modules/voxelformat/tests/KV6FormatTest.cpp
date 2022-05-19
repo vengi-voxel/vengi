@@ -11,9 +11,7 @@ class KV6FormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(KV6FormatTest, testLoad) {
-	KV6Format f;
-	std::unique_ptr<voxel::RawVolume> volume(load("test.kv6", f));
-	ASSERT_NE(nullptr, volume) << "Could not load volume";
+	canLoad("test.kv6");
 }
 
 }

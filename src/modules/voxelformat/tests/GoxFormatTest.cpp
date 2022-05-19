@@ -11,9 +11,7 @@ class GoxFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(GoxFormatTest, testLoad) {
-	GoxFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("test.gox", f));
-	ASSERT_NE(nullptr, volume) << "Could not load volume";
+	canLoad("test.gox");
 }
 
 TEST_F(GoxFormatTest, testSaveSmallVoxel) {

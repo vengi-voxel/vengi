@@ -13,9 +13,7 @@ class QBCLFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(QBCLFormatTest, testLoad) {
-	QBCLFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("qubicle.qbcl", f));
-	ASSERT_NE(nullptr, volume) << "Could not load qbcl file";
+	canLoad("qubicle.qbcl");
 }
 
 TEST_F(QBCLFormatTest, testSaveSmallVoxel) {

@@ -28,9 +28,12 @@ protected:
 	void testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &destFilename,
 												Format &destFormat, bool includingColor, bool includingRegion);
 
+	void canLoad(const core::String &filename, size_t expectedVolumes = 1);
 	void testRGB(const core::String &filename);
 
 	void testSaveMultipleLayers(const core::String& filename, Format* format);
+	void testSaveSingleVoxel(const core::String& filename, Format* format);
+	void testSaveSmallVolume(const core::String& filename, Format* format);
 
 	void testSave(const core::String& filename, Format* format);
 
@@ -45,22 +48,20 @@ protected:
 		return file;
 	}
 
-	voxel::RawVolume* load(const core::String& filename, io::SeekableReadStream& stream, Format& format) {
+	SceneGraph::MergedVolumePalette load(const core::String& filename, io::SeekableReadStream& stream, Format& format) {
 		SceneGraph sceneGraph;
 		if (!format.loadGroups(filename, stream, sceneGraph)) {
-			return nullptr;
+			return SceneGraph::MergedVolumePalette{};
 		}
-		const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-		return merged.first;
+		return sceneGraph.merge();
 	}
 
-	voxel::RawVolume* load(const core::String& filename, Format& format) {
+	SceneGraph::MergedVolumePalette load(const core::String& filename, Format& format) {
 		SceneGraph sceneGraph;
 		if (!loadGroups(filename, format, sceneGraph)) {
-			return nullptr;
+			return SceneGraph::MergedVolumePalette{};
 		}
-		const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-		return merged.first;
+		return sceneGraph.merge();
 	}
 
 	bool loadGroups(const core::String& filename, Format& format, voxelformat::SceneGraph &sceneGraph) {

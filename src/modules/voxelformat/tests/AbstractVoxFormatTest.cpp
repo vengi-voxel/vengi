@@ -4,6 +4,7 @@
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -53,9 +54,10 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &fil
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 	ASSERT_TRUE(format->save(&volume, filename, stream));
 	stream.seek(0);
-	std::unique_ptr<voxel::RawVolume> loaded(load(filename, stream, *format));
-	ASSERT_NE(nullptr, loaded);
-	EXPECT_TRUE(volumeComparator(volume, *loaded, false, includingRegion)) << "Volumes differ: " << volume << *loaded;
+	voxelformat::SceneGraph::MergedVolumePalette merged = load(filename, stream, *format);
+	ASSERT_NE(nullptr, merged.first);
+	std::unique_ptr<voxel::RawVolume> loaded(merged.first);
+	volumeComparator(volume, voxel::getPalette(), *loaded, merged.second, false, includingRegion);
 }
 
 void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String& destFilename, Format &destFormat, bool includingColor, bool includingRegion) {
@@ -66,21 +68,33 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 	io::BufferedReadWriteStream srcFormatStream(10 * 1024 * 1024);
 	EXPECT_TRUE(srcFormat.save(&original, destFilename, srcFormatStream)) << "Could not save " << destFilename;
 	srcFormatStream.seek(0);
-	std::unique_ptr<voxel::RawVolume> origReloaded(load(destFilename, srcFormatStream, srcFormat));
+	voxelformat::SceneGraph::MergedVolumePalette merged = load(destFilename, srcFormatStream, srcFormat);
+	ASSERT_NE(nullptr, merged.first);
+	std::unique_ptr<voxel::RawVolume> origReloaded(merged.first);
 	if (includingRegion) {
 		ASSERT_EQ(original.region(), origReloaded->region());
 	}
-	EXPECT_TRUE(volumeComparator(original, *origReloaded, includingColor, includingRegion)) << "Volumes differ: " << original << *origReloaded;
+	volumeComparator(original, voxel::getPalette(), *origReloaded, merged.second, includingColor, includingRegion);
 
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 	EXPECT_TRUE(destFormat.save(origReloaded.get(), destFilename, stream)) << "Could not save " << destFilename;
 	stream.seek(0);
-	std::unique_ptr<voxel::RawVolume> loaded(load(destFilename, stream, destFormat));
+	voxelformat::SceneGraph::MergedVolumePalette merged2 = load(destFilename, stream, destFormat);
+	std::unique_ptr<voxel::RawVolume> loaded(merged2.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load " << destFilename;
 	if (includingRegion) {
 		ASSERT_EQ(original.region(), loaded->region());
 	}
-	EXPECT_TRUE(volumeComparator(original, *loaded, includingColor, includingRegion)) << "Volumes differ: " << original << *loaded;
+	volumeComparator(original, voxel::getPalette(), *loaded, merged2.second, includingColor, includingRegion);
+}
+
+void AbstractVoxFormatTest::canLoad(const core::String &filename, size_t expectedVolumes) {
+	voxelformat::SceneGraph sceneGraph;
+	const io::FilePtr& file = open(filename);
+	ASSERT_TRUE(file->validHandle()) << "Could not open " << filename;
+	io::FileStream stream(file);
+	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph)) << "Could not load " << filename;
+	ASSERT_EQ(expectedVolumes, sceneGraph.size());
 }
 
 void AbstractVoxFormatTest::testRGB(const core::String &filename) {
@@ -89,7 +103,7 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename) {
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
 	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph));
-	EXPECT_EQ(1, sceneGraph.size());
+	EXPECT_EQ(1u, sceneGraph.size());
 
 	for (const voxelformat::SceneGraphNode &node : sceneGraph) {
 		const voxel::RawVolume *volume = node.volume();
@@ -129,14 +143,44 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename,
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 	EXPECT_TRUE(destFormat.saveGroups(sceneGraph, destFilename, stream)) << "Could not save " << destFilename;
 	stream.seek(0);
-	std::unique_ptr<voxel::RawVolume> loaded(load(destFilename, stream, destFormat));
+	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(destFilename, stream, destFormat);
+	std::unique_ptr<voxel::RawVolume> loaded(mergedLoad.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load " << destFilename;
-	SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
+	voxelformat::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
 	std::unique_ptr<voxel::RawVolume> src(merged.first);
 	if (includingRegion) {
 		ASSERT_EQ(src->region(), loaded->region());
 	}
-	EXPECT_TRUE(volumeComparator(*src, *loaded, includingColor, includingRegion)) << "Volumes differ: " << *src << *loaded;
+	volumeComparator(*src, merged.second, *loaded, mergedLoad.second, includingColor, includingRegion);
+}
+
+void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Format* format) {
+	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
+	voxel::RawVolume original(region);
+	original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1));
+	io::BufferedReadWriteStream bufferedStream(10 * 1024 * 1024);
+	ASSERT_TRUE(format->save(&original, filename, bufferedStream));
+	bufferedStream.seek(0);
+	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
+	std::unique_ptr<voxel::RawVolume> loaded(mergedLoad.first);
+	ASSERT_NE(nullptr, loaded) << "Could not load single voxel file " << filename;
+	volumeComparator(original, voxel::getPalette(), *loaded, mergedLoad.second, true, true);
+}
+
+void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Format* format) {
+	voxel::Region region(glm::ivec3(0), glm::ivec3(0, 1, 1));
+	voxel::RawVolume original(region);
+	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
+	ASSERT_TRUE(original.setVoxel(0, 0, 1, createVoxel(voxel::VoxelType::Generic, 200)));
+	ASSERT_TRUE(original.setVoxel(0, 1, 1, createVoxel(voxel::VoxelType::Generic, 201)));
+	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 202)));
+	io::BufferedReadWriteStream bufferedStream(10 * 1024 * 1024);
+	ASSERT_TRUE(format->save(&original, filename, bufferedStream));
+	bufferedStream.seek(0);
+	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
+	std::unique_ptr<voxel::RawVolume> loaded(mergedLoad.first);
+	ASSERT_NE(nullptr, loaded) << "Could not load single voxel file " << filename;
+	volumeComparator(original, voxel::getPalette(), *loaded, mergedLoad.second, true, true);
 }
 
 void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename, Format *format) {
@@ -149,26 +193,24 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	EXPECT_TRUE(layer2.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
 	EXPECT_TRUE(layer3.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
 	EXPECT_TRUE(layer4.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
-	SceneGraph sceneGraph;
-	SceneGraphNode node1;
+	voxelformat::SceneGraph sceneGraph;
+	voxelformat::SceneGraphNode node1;
 	node1.setVolume(&layer1, false);
-	SceneGraphNode node2;
+	voxelformat::SceneGraphNode node2;
 	node2.setVolume(&layer2, false);
-	SceneGraphNode node3;
+	voxelformat::SceneGraphNode node3;
 	node3.setVolume(&layer3, false);
-	SceneGraphNode node4;
+	voxelformat::SceneGraphNode node4;
 	node4.setVolume(&layer4, false);
 	sceneGraph.emplace(core::move(node1));
 	sceneGraph.emplace(core::move(node2));
 	sceneGraph.emplace(core::move(node3));
 	sceneGraph.emplace(core::move(node4));
-	const io::FilePtr &sfile = open(filename, io::FileMode::SysWrite);
-	io::FileStream sstream(sfile);
-	ASSERT_TRUE(format->saveGroups(sceneGraph, sfile->name(), sstream));
-	SceneGraph sceneGraphLoad;
-	const io::FilePtr &file = open(filename);
-	io::FileStream stream(file);
-	EXPECT_TRUE(format->loadGroups(file->name(), stream, sceneGraphLoad));
+	io::BufferedReadWriteStream bufferedStream(10 * 1024 * 1024);
+	ASSERT_TRUE(format->saveGroups(sceneGraph, filename, bufferedStream));
+	bufferedStream.seek(0);
+	voxelformat::SceneGraph sceneGraphLoad;
+	EXPECT_TRUE(format->loadGroups(filename, bufferedStream, sceneGraphLoad));
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
 
@@ -176,17 +218,15 @@ void AbstractVoxFormatTest::testSave(const core::String &filename, Format *forma
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
 	voxel::RawVolume layer1(region);
 	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
-	SceneGraph sceneGraph;
-	SceneGraphNode node1;
+	voxelformat::SceneGraph sceneGraph;
+	voxelformat::SceneGraphNode node1;
 	node1.setVolume(&layer1, false);
 	sceneGraph.emplace(core::move(node1));
-	const io::FilePtr &sfile = open(filename, io::FileMode::SysWrite);
-	io::FileStream sstream(sfile);
-	ASSERT_TRUE(format->saveGroups(sceneGraph, sfile->name(), sstream));
-	SceneGraph sceneGraphLoad;
-	const io::FilePtr &file = open(filename);
-	io::FileStream stream(file);
-	EXPECT_TRUE(format->loadGroups(file->name(), stream, sceneGraphLoad));
+	io::BufferedReadWriteStream bufferedStream(10 * 1024 * 1024);
+	ASSERT_TRUE(format->saveGroups(sceneGraph, filename, bufferedStream));
+	voxelformat::SceneGraph sceneGraphLoad;
+	bufferedStream.seek(0);
+	EXPECT_TRUE(format->loadGroups(filename, bufferedStream, sceneGraphLoad));
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
 
@@ -249,9 +289,11 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 #endif
 
 	readStream->seek(0);
-	std::unique_ptr<voxel::RawVolume> loaded(load(filename, *readStream, *format));
+
+	voxelformat::SceneGraph::MergedVolumePalette merged = load(filename, *readStream, *format);
+	std::unique_ptr<voxel::RawVolume> loaded(merged.first);
 	ASSERT_NE(nullptr, loaded);
-	EXPECT_TRUE(volumeComparator(original, *loaded, true, true)) << "Volumes differ: " << original << *loaded;
+	volumeComparator(original, voxel::getPalette(), *loaded, merged.second, true, true);
 }
 
 } // namespace voxel

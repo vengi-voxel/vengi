@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include "core/Color.h"
 #include "voxel/PagedVolumeWrapper.h"
 #include "core/Log.h"
 #include "voxel/PagedVolume.h"
@@ -35,16 +36,12 @@ inline int countVoxels(const Volume& volume, const voxel::Voxel &voxel) {
 	return cnt;
 }
 
-inline bool volumeComparator(const voxel::RawVolume& volume1, const voxel::RawVolume& volume2, bool includingColor, bool includingRegion) {
+inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal1, const voxel::RawVolume& volume2, const voxel::Palette &pal2, bool includingColor, bool includingRegion) {
 	const Region& r1 = volume1.region();
 	const Region& r2 = volume2.region();
-	if (includingRegion && r1 != r2) {
-		Log::error("regions differ: %s vs %s", r1.toString().c_str(), r2.toString().c_str());
-		return false;
+	if (includingRegion) {
+		ASSERT_EQ(r1, r2) << "regions differ: " << r1.toString() << " vs " << r2.toString();
 	}
-
-	// TODO: activate me again
-	includingColor = false;
 
 	const int32_t lowerX = r1.getLowerX();
 	const int32_t lowerY = r1.getLowerY();
@@ -58,9 +55,6 @@ inline bool volumeComparator(const voxel::RawVolume& volume1, const voxel::RawVo
 	const int32_t upper2X = r2.getUpperX();
 	const int32_t upper2Y = r2.getUpperY();
 	const int32_t upper2Z = r2.getUpperZ();
-	core::DynamicArray<glm::vec4> materialColors;
-	const voxel::Palette &palette = voxel::getPalette();
-	palette.toVec4f(materialColors);
 
 	voxel::RawVolume::Sampler s1(volume1);
 	voxel::RawVolume::Sampler s2(volume2);
@@ -71,26 +65,25 @@ inline bool volumeComparator(const voxel::RawVolume& volume1, const voxel::RawVo
 				s2.setPosition(x2, y2, z2);
 				const voxel::Voxel& voxel1 = s1.voxel();
 				const voxel::Voxel& voxel2 = s2.voxel();
-				if (voxel1.getMaterial() != voxel2.getMaterial()) {
-					Log::error("Voxel differs at %i:%i:%i in material - voxel1[%s, %i], voxel2[%s, %i]", x1, y1, z1,
-							voxel::VoxelTypeStr[(int)voxel1.getMaterial()], (int)voxel1.getColor(), voxel::VoxelTypeStr[(int)voxel2.getMaterial()], (int)voxel2.getColor());
-					return false;
-				}
+				ASSERT_EQ(voxel1.getMaterial(), voxel2.getMaterial())
+					<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " in material - voxel1["
+					<< voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", " << (int)voxel1.getColor() << "], voxel2["
+					<< voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", " << (int)voxel2.getColor() << "]";
 				if (!includingColor) {
 					continue;
 				}
-				const glm::vec4& c1 = materialColors[voxel1.getColor()];
-				const glm::vec4& c2 = materialColors[voxel2.getColor()];
-				const glm::vec4& delta = c1 - c2;
-				if (glm::any(glm::greaterThan(delta, glm::vec4(glm::epsilon<float>())))) {
-					Log::error("Voxel differs at %i:%i:%i in color - voxel1[%s, %i], voxel2[%s, %i]", x1, y1, z1,
-							voxel::VoxelTypeStr[(int)voxel1.getMaterial()], (int)voxel1.getColor(), voxel::VoxelTypeStr[(int)voxel2.getMaterial()], (int)voxel2.getColor());
-					return false;
-				}
+				const core::RGBA& c1 = pal1.colors[voxel1.getColor()];
+				const core::RGBA& c2 = pal2.colors[voxel2.getColor()];
+				const float delta = core::Color::getDistance(c1, c2);
+				ASSERT_LT(delta, 1.0f) << "Voxel differs at " << x1 << ":" << y1 << ":" << z1
+									   << " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()]
+									   << ", " << (int)voxel1.getColor() << "], voxel2["
+									   << voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", "
+									   << (int)voxel2.getColor() << "], color1[" << core::Color::toHex(c1) << "], color2["
+									   << core::Color::toHex(c2) << "], delta[" << delta << "]";
 			}
 		}
 	}
-	return true;
 }
 
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Region& region) {

@@ -7,6 +7,7 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
 #include "io/FileStream.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/VolumeFormat.h"
@@ -19,9 +20,7 @@ namespace voxelformat {
 class VoxFormatTest : public AbstractVoxFormatTest {};
 
 TEST_F(VoxFormatTest, testLoad) {
-	VoxFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("magicavoxel.vox", f));
-	ASSERT_NE(nullptr, volume) << "Could not load vox file";
+	canLoad("magicavoxel.vox");
 }
 
 TEST_F(VoxFormatTest, testLoadCharacter) {
@@ -41,7 +40,7 @@ TEST_F(VoxFormatTest, testLoadCharacter) {
 	for (int i = 0; i < lengthof(volumes); ++i) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
 		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
-		EXPECT_TRUE(volumeComparator(v1, v2, true, true)) << "Volumes differ: " << v1 << v2;
+		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), true, true);
 	}
 }
 
@@ -59,7 +58,7 @@ TEST_F(VoxFormatTest, testLoadGlasses) {
 	for (int i = 0; i < lengthof(volumes); ++i) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
 		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
-		EXPECT_TRUE(volumeComparator(v1, v2, true, true)) << "Volumes differ: " << v1 << v2;
+		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), true, true);
 	}
 }
 
@@ -96,7 +95,7 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 	for (int i = 0; i < lengthof(volumes); ++i) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
 		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
-		EXPECT_TRUE(volumeComparator(v1, v2, true, true)) << "Volumes differ: " << v1 << v2;
+		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), true, true);
 	}
 }
 
@@ -143,21 +142,7 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 
 TEST_F(VoxFormatTest, testSave) {
 	VoxFormat f;
-	voxel::RawVolume *loadedVolume = load("magicavoxel.vox", f);
-	ASSERT_NE(nullptr, loadedVolume) << "Could not load vox file";
-
-	const io::FilePtr &fileSave = open("magicavoxel-save.vox", io::FileMode::SysWrite);
-	io::FileStream sstream(fileSave);
-	EXPECT_TRUE(f.save(loadedVolume, fileSave->name(), sstream));
-	const io::FilePtr &fileLoadAfterSave = open("magicavoxel-save.vox");
-	io::FileStream stream2(fileLoadAfterSave);
-	voxel::RawVolume *savedVolume = load(fileLoadAfterSave->name(), stream2, f);
-	EXPECT_NE(nullptr, savedVolume) << "Could not load saved vox file";
-	if (savedVolume) {
-		EXPECT_TRUE(volumeComparator(*savedVolume, *loadedVolume, true, true)) << "Volumes differ: " << *savedVolume << *loadedVolume;
-		delete savedVolume;
-	}
-	delete loadedVolume;
+	testLoadSaveAndLoad("magicavoxel.vox", f, "magicavoxel-save.vox", f, true, true);
 }
 
 } // namespace voxel

@@ -11,9 +11,7 @@ class AoSVXLFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(AoSVXLFormatTest, testLoad) {
-	AoSVXLFormat f;
-	std::unique_ptr<voxel::RawVolume> volume(load("aceofspades.vxl", f));
-	ASSERT_NE(nullptr, volume) << "Could not load ace of spades file";
+	canLoad("aceofspades.vxl");
 }
 
 TEST_F(AoSVXLFormatTest, testLoadPalette) {
