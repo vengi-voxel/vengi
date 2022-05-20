@@ -31,9 +31,9 @@ private:
 	bool saveNodeProperties(const SceneGraphNode* node, io::SeekableWriteStream& stream);
 	bool saveVXA(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const core::String &animation);
 	bool loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath);
+	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 

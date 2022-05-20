@@ -20,7 +20,7 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 	if (magic != FourCC('K','v','x','l')) {
@@ -73,8 +73,8 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 			uint32_t palMagic;
 			wrap(stream.readUInt32(palMagic))
 			if (palMagic == FourCC('S','P','a','l')) {
-				_palette.colorCount = voxel::PaletteMaxColors;
-				for (int i = 0; i < _palette.colorCount; ++i) {
+				palette.colorCount = voxel::PaletteMaxColors;
+				for (int i = 0; i < palette.colorCount; ++i) {
 					uint8_t r, g, b;
 					wrap(stream.readUInt8(b))
 					wrap(stream.readUInt8(g))
@@ -85,7 +85,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 					const uint8_t nb = glm::clamp((uint32_t)glm::round(((float)b * 255.0f) / 63.0f), 0u, 255u);
 
 					const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255u);
-					_palette.colors[i] = core::Color::getRGBA(color);
+					palette.colors[i] = core::Color::getRGBA(color);
 				}
 			}
 		}
@@ -99,7 +99,7 @@ bool KV6Format::loadGroups(const core::String &filename, io::SeekableReadStream&
 	} voxtype;
 
 	voxtype voxdata[MAXVOXS];
-	PaletteLookup palLookup(_palette);
+	PaletteLookup palLookup(palette);
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		uint8_t palr, palg, palb, pala;
 		wrap(stream.readUInt8(palb))

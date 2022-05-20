@@ -26,7 +26,7 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
 	char buf[64];
 
 	wrapBool(stream.readLine(sizeof(buf), buf))
@@ -80,7 +80,7 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		return false;
 	}
 
-	_palette.colorCount = paletteSize;
+	palette.colorCount = paletteSize;
 
 	for (int i = 0; i < paletteSize; ++i) {
 		float r, g, b;
@@ -90,13 +90,13 @@ bool QEFFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			return false;
 		}
 		const glm::vec4 color(r, g, b, 1.0f);
-		_palette.colors[i] = core::Color::getRGBA(color);
+		palette.colors[i] = core::Color::getRGBA(color);
 	}
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
-	node.setPalette(_palette);
+	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 
 	while (stream.remaining() > 0) {

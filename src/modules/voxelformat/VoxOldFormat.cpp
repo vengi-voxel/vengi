@@ -21,7 +21,7 @@
 
 namespace voxelformat {
 
-bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool VoxOldFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
 	uint32_t depth, height, width;
 	wrap(stream.readUInt32(depth))
 	wrap(stream.readUInt32(height))
@@ -41,14 +41,14 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 
 	const int64_t voxelPos = stream.pos();
 	stream.skip((int64_t)width * height * depth);
-	_palette.colorCount = voxel::PaletteMaxColors;
-	for (int i = 0; i < _palette.colorCount; ++i) {
+	palette.colorCount = voxel::PaletteMaxColors;
+	for (int i = 0; i < palette.colorCount; ++i) {
 		uint8_t r, g, b;
 		wrap(stream.readUInt8(r))
 		wrap(stream.readUInt8(g))
 		wrap(stream.readUInt8(b))
 
-		_palette.colors[i] = core::Color::getRGBA(r, g, b);
+		palette.colors[i] = core::Color::getRGBA(r, g, b);
 	}
 
 	stream.seek(voxelPos);
@@ -69,7 +69,7 @@ bool VoxOldFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
-	node.setPalette(_palette);
+	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 
 	return true;

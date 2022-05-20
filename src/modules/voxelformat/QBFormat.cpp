@@ -223,11 +223,6 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	}
 
 	voxel::RawVolume* v = new voxel::RawVolume(region);
-	SceneGraphNode node(SceneGraphNodeType::Model);
-	node.setVolume(v, true);
-	node.setName(name);
-	node.setPalette(palLookup.palette());
-	sceneGraph.emplace(core::move(node));
 	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
@@ -238,6 +233,11 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 				}
 			}
 		}
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(v, true);
+		node.setName(name);
+		node.setPalette(palLookup.palette());
+		sceneGraph.emplace(core::move(node));
 		return true;
 	}
 
@@ -275,6 +275,11 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 		}
 		++z;
 	}
+	SceneGraphNode node(SceneGraphNodeType::Model);
+	node.setVolume(v, true);
+	node.setName(name);
+	node.setPalette(palLookup.palette());
+	sceneGraph.emplace(core::move(node));
 	Log::debug("Matrix read");
 	return true;
 }

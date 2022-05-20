@@ -119,8 +119,7 @@ size_t Format::loadPalette(const core::String &filename, io::SeekableReadStream&
 
 size_t PaletteFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
 	SceneGraph sceneGraph;
-	loadGroups(filename, stream, sceneGraph);
-	palette = _palette;
+	loadGroupsPalette(filename, stream, sceneGraph, palette);
 	return palette.colorCount;
 }
 

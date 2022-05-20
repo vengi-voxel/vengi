@@ -197,7 +197,7 @@ bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return true;
 }
 
-bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx, SceneGraph& sceneGraph) const {
+bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx, SceneGraph& sceneGraph, voxel::Palette &palette) const {
 	const vxl_limb_tailer &footer = mdl.limb_tailers[limbIdx];
 	const vxl_limb_header &header = mdl.limb_headers[limbIdx];
 
@@ -209,7 +209,7 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(header.limb_name);
-	node.setPalette(_palette);
+	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 	++mdl.volumeIdx;
 
@@ -277,11 +277,11 @@ bool VXLFormat::readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t 
 	return true;
 }
 
-bool VXLFormat::readLimbs(io::SeekableReadStream& stream, vxl_mdl& mdl, SceneGraph& sceneGraph) const {
+bool VXLFormat::readLimbs(io::SeekableReadStream& stream, vxl_mdl& mdl, SceneGraph& sceneGraph, voxel::Palette &palette) const {
 	const vxl_header& hdr = mdl.header;
 	sceneGraph.reserve(hdr.n_limbs);
 	for (uint32_t i = 0; i < hdr.n_limbs; ++i) {
-		wrapBool(readLimb(stream, mdl, i, sceneGraph))
+		wrapBool(readLimb(stream, mdl, i, sceneGraph, palette))
 	}
 	return true;
 }
@@ -343,7 +343,7 @@ bool VXLFormat::readLimbFooters(io::SeekableReadStream& stream, vxl_mdl& mdl) co
 	return true;
 }
 
-bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
+bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl, voxel::Palette &palette) {
 	vxl_header& hdr = mdl.header;
 	wrapBool(stream.readString(sizeof(hdr.filetype), hdr.filetype))
 	if (SDL_strcmp(hdr.filetype, "Voxel Animation") != 0) {
@@ -358,9 +358,9 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 
 	Log::debug("Found %u limbs", hdr.n_limbs);
 
-	_palette.colorCount = voxel::PaletteMaxColors;
+	palette.colorCount = voxel::PaletteMaxColors;
 	bool valid = false;
-	for (int i = 0; i < _palette.colorCount; ++i) {
+	for (int i = 0; i < palette.colorCount; ++i) {
 		wrap(stream.readUInt8(hdr.palette[i][0]))
 		wrap(stream.readUInt8(hdr.palette[i][1]))
 		wrap(stream.readUInt8(hdr.palette[i][2]))
@@ -370,12 +370,12 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl) {
 	}
 
 	if (valid) {
-		for (int i = 0; i < _palette.colorCount; ++i) {
+		for (int i = 0; i < palette.colorCount; ++i) {
 			const uint8_t *p = hdr.palette[i];
-			_palette.colors[i] = core::Color::getRGBA(p[0], p[1], p[2]);
+			palette.colors[i] = core::Color::getRGBA(p[0], p[1], p[2]);
 		}
 	} else {
-		_palette.colorCount = 0;
+		palette.colorCount = 0;
 	}
 
 	return true;
@@ -390,15 +390,15 @@ bool VXLFormat::prepareModel(vxl_mdl& mdl) const {
 	return true;
 }
 
-bool VXLFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette) {
 	vxl_mdl mdl;
-	wrapBool(readHeader(stream, mdl))
+	wrapBool(readHeader(stream, mdl, palette))
 	wrapBool(prepareModel(mdl))
 
 	wrapBool(readLimbHeaders(stream, mdl))
 	wrapBool(readLimbFooters(stream, mdl))
 
-	wrapBool(readLimbs(stream, mdl, sceneGraph))
+	wrapBool(readLimbs(stream, mdl, sceneGraph, palette))
 
 	return true;
 }

@@ -112,7 +112,7 @@ static bool loadKeyFrames(voxelformat::SceneGraphNode& node, const ogt_vox_keyfr
 	return node.setKeyFrames(kf);
 }
 
-bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, bool groupHidden) {
+bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden) {
 	const ogt_vox_instance& ogtInstance = scene->instances[ogt_instanceIdx];
 	const ogt_vox_transform& ogtTransform = ogtInstance.transform;
 	const glm::vec4 ogtCol0(ogtTransform.m00, ogtTransform.m01, ogtTransform.m02, ogtTransform.m03);
@@ -159,11 +159,11 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	node.setName(name);
 	node.setVisible(!ogtInstance.hidden && !groupHidden);
 	node.setVolume(v, true);
-	node.setPalette(_palette);
+	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node), parent) != -1;
 }
 
-bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances) {
+bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances, const voxel::Palette &palette) {
 	const ogt_vox_group &ogt_group = scene->groups[ogt_parentGroupIdx];
 	bool hidden = ogt_group.hidden;
 	const char *name = "Group";
@@ -193,7 +193,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx
 		if (!addedInstances.insert(n)) {
 			continue;
 		}
-		if (!addInstance(scene, n, sceneGraph, groupId, zUpMat, hidden)) {
+		if (!addInstance(scene, n, sceneGraph, groupId, zUpMat, palette, hidden)) {
 			return false;
 		}
 	}
@@ -205,7 +205,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx
 			continue;
 		}
 		Log::debug("Found matching group (%u) with scene graph parent: %i", groupIdx, groupId);
-		if (!addGroup(scene, groupIdx, sceneGraph, groupId, zUpMat, addedInstances)) {
+		if (!addGroup(scene, groupIdx, sceneGraph, groupId, zUpMat, addedInstances, palette)) {
 			return false;
 		}
 	}
@@ -213,7 +213,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx
 	return groupId;
 }
 
-bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
 	const size_t size = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
 	if (stream.read(buffer, size) == -1) {
@@ -228,13 +228,13 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		return false;
 	}
 
-	_palette.colorCount = lengthof(scene->palette.color);
-	for (int i = 0; i < _palette.colorCount; ++i) {
+	palette.colorCount = lengthof(scene->palette.color);
+	for (int i = 0; i < palette.colorCount; ++i) {
 		const ogt_vox_rgba color = scene->palette.color[i];
-		_palette.colors[i] = core::Color::getRGBA(color.r, color.g, color.b, color.a);
+		palette.colors[i] = core::Color::getRGBA(color.r, color.g, color.b, color.a);
 		const ogt_vox_matl &matl = scene->materials.matl[i];
 		if (matl.type == ogt_matl_type_emit) {
-			_palette.glowColors[i] = _palette.colors[i];
+			palette.glowColors[i] = palette.colors[i];
 		}
 	}
 	// rotation matrix to convert into our coordinate system (z pointing upwards)
@@ -250,7 +250,7 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 				continue;
 			}
 			Log::debug("Add root group %u/%u", i, scene->num_groups);
-			if (!addGroup(scene, i, sceneGraph, sceneGraph.root().id(), zUpMat, addedInstances)) {
+			if (!addGroup(scene, i, sceneGraph, sceneGraph.root().id(), zUpMat, addedInstances, palette)) {
 				ogt_vox_destroy_scene(scene);
 				return false;
 			}
@@ -260,7 +260,7 @@ bool VoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		if (addedInstances.has(n)) {
 			continue;
 		}
-		if (!addInstance(scene, n, sceneGraph, sceneGraph.root().id(), zUpMat)) {
+		if (!addInstance(scene, n, sceneGraph, sceneGraph.root().id(), zUpMat, palette)) {
 			ogt_vox_destroy_scene(scene);
 			return false;
 		}

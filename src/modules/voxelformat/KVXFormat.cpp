@@ -21,7 +21,7 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
 	// Total # of bytes (not including numbytes) in each mip-map level
 	// but there is only 1 mip-map level
 	uint32_t numbytes;
@@ -90,15 +90,15 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 	// Read the color palette from the end of the file and convert to our palette
 	const size_t currentPos = stream.pos();
-	_palette.colorCount = voxel::PaletteMaxColors;
-	stream.seek(stream.size() - 3 * _palette.colorCount);
+	palette.colorCount = voxel::PaletteMaxColors;
+	stream.seek(stream.size() - 3 * palette.colorCount);
 
 	/**
 	 * The last 768 bytes of the KVX file is a standard 256-color VGA palette.
 	 * The palette is in (Red:0, Green:1, Blue:2) order and intensities range
 	 * from 0-63.
 	 */
-	for (int i = 0; i < _palette.colorCount; ++i) {
+	for (int i = 0; i < palette.colorCount; ++i) {
 		uint8_t r, g, b;
 		wrap(stream.readUInt8(r))
 		wrap(stream.readUInt8(g))
@@ -109,7 +109,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		const uint8_t nb = glm::clamp((uint32_t)glm::round(((float)b * 255.0f) / 63.0f), 0u, 255u);
 
 		const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255);
-		_palette.colors[i] = core::Color::getRGBA(color);
+		palette.colors[i] = core::Color::getRGBA(color);
 	}
 	stream.seek((int64_t)currentPos);
 
@@ -118,7 +118,7 @@ bool KVXFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	node.setVolume(volume, true);
 	node.setName(filename);
 	node.setTransform(0, transform, true);
-	node.setPalette(_palette);
+	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 
 	/**

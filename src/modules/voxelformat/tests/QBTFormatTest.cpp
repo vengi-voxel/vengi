@@ -13,7 +13,7 @@ class QBTFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(QBTFormatTest, testLoad) {
-	canLoad("qubicle.qbt");
+	canLoad("qubicle.qbt", 17);
 }
 
 TEST_F(QBTFormatTest, testSaveSingleVoxel) {

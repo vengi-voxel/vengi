@@ -80,14 +80,15 @@ private:
 	// reading
 	bool readLimbHeader(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;
 	bool readLimbFooter(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx) const;
-	bool readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx, SceneGraph& sceneGraph) const;
-	bool readLimbs(io::SeekableReadStream& stream, vxl_mdl& mdl, SceneGraph& sceneGraph) const;
+	bool readLimb(io::SeekableReadStream& stream, vxl_mdl& mdl, uint32_t limbIdx, SceneGraph& sceneGraph, voxel::Palette &palette) const;
+	bool readLimbs(io::SeekableReadStream& stream, vxl_mdl& mdl, SceneGraph& sceneGraph, voxel::Palette &palette) const;
 	bool readLimbFooters(io::SeekableReadStream& stream, vxl_mdl& mdl) const;
 	bool readLimbHeaders(io::SeekableReadStream& stream, vxl_mdl& mdl) const;
 	bool prepareModel(vxl_mdl& mdl) const;
-	bool readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl);
+	bool readHeader(io::SeekableReadStream& stream, vxl_mdl& mdl, voxel::Palette &palette);
+protected:
+	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
 public:
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 

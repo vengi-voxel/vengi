@@ -98,14 +98,15 @@ private:
 	// old version (< 2844)
 	voxel::RawVolume* parseLevelCompound(int dataVersion, const priv::NamedBinaryTag &root, int sector);
 
-	bool readCompressedNBT(SceneGraph& sceneGraph, io::SeekableReadStream &stream, int sector);
-	bool loadMinecraftRegion(SceneGraph& sceneGraph, io::SeekableReadStream &stream);
+	bool readCompressedNBT(SceneGraph& sceneGraph, io::SeekableReadStream &stream, int sector, const voxel::Palette &palette);
+	bool loadMinecraftRegion(SceneGraph& sceneGraph, io::SeekableReadStream &stream, const voxel::Palette &palette);
 
 	bool saveSections(const voxelformat::SceneGraph &sceneGraph, priv::NBTList &sections, int sector);
 	bool saveCompressedNBT(const voxelformat::SceneGraph &sceneGraph, io::SeekableWriteStream& stream, int sector);
 	bool saveMinecraftRegion(const voxelformat::SceneGraph &sceneGraph, io::SeekableWriteStream& stream);
+protected:
+	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
 public:
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 

@@ -12,7 +12,7 @@ class QBFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(QBFormatTest, testLoad) {
-	canLoad("qubicle.qb");
+	canLoad("qubicle.qb", 10);
 }
 
 TEST_F(QBFormatTest, testLoadRGB) {

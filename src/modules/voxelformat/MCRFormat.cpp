@@ -35,7 +35,7 @@ namespace voxelformat {
 		}                                                                                                              \
 	} while (0)
 
-bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
 	const int64_t length = stream.size();
 	if (length < SECTOR_BYTES) {
 		Log::error("File does not contain enough data");
@@ -54,7 +54,7 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		chunkZ = 0;
 	}
 
-	_palette.minecraft();
+	palette.minecraft();
 	switch (type) {
 	case 'r':
 	case 'a': {
@@ -79,7 +79,7 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			wrap(stream.readUInt32BE(lastModValue));
 		}
 
-		const bool success = loadMinecraftRegion(sceneGraph, stream);
+		const bool success = loadMinecraftRegion(sceneGraph, stream, palette);
 		return success;
 	}
 	}
@@ -87,7 +87,7 @@ bool MCRFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	return false;
 }
 
-bool MCRFormat::loadMinecraftRegion(SceneGraph &sceneGraph, io::SeekableReadStream &stream) {
+bool MCRFormat::loadMinecraftRegion(SceneGraph &sceneGraph, io::SeekableReadStream &stream, const voxel::Palette &palette) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		if (_offsets[i].sectorCount == 0u || _offsets[i].offset < sizeof(_offsets)) {
 			continue;
@@ -98,7 +98,7 @@ bool MCRFormat::loadMinecraftRegion(SceneGraph &sceneGraph, io::SeekableReadStre
 		if (stream.seek(_offsets[i].offset) == -1) {
 			continue;
 		}
-		if (!readCompressedNBT(sceneGraph, stream, i)) {
+		if (!readCompressedNBT(sceneGraph, stream, i, palette)) {
 			Log::error("Failed to load minecraft chunk section %i for offset %u", i, (int)_offsets[i].offset);
 			return false;
 		}
@@ -107,7 +107,7 @@ bool MCRFormat::loadMinecraftRegion(SceneGraph &sceneGraph, io::SeekableReadStre
 	return true;
 }
 
-bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream &stream, int sector) {
+bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream &stream, int sector, const voxel::Palette &palette) {
 	uint32_t nbtSize;
 	wrap(stream.readUInt32BE(nbtSize));
 	if (nbtSize == 0) {
@@ -155,7 +155,7 @@ bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream
 	}
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
-	node.setPalette(_palette);
+	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 	return true;
 }

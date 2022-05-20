@@ -11,7 +11,7 @@ class CSMFormatTest: public AbstractVoxFormatTest {
 };
 
 TEST_F(CSMFormatTest, testLoad) {
-	canLoad("chronovox-studio.csm");
+	canLoad("chronovox-studio.csm", 11);
 }
 
 }

@@ -69,18 +69,21 @@ inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palet
 					<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " in material - voxel1["
 					<< voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", " << (int)voxel1.getColor() << "], voxel2["
 					<< voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", " << (int)voxel2.getColor() << "]";
+				if (voxel::isAir(voxel1.getMaterial())) {
+					continue;
+				}
 				if (!includingColor) {
 					continue;
 				}
 				const core::RGBA& c1 = pal1.colors[voxel1.getColor()];
 				const core::RGBA& c2 = pal2.colors[voxel2.getColor()];
 				const float delta = core::Color::getDistance(c1, c2);
-				ASSERT_LT(delta, 1.0f) << "Voxel differs at " << x1 << ":" << y1 << ":" << z1
-									   << " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()]
-									   << ", " << (int)voxel1.getColor() << "], voxel2["
-									   << voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", "
-									   << (int)voxel2.getColor() << "], color1[" << core::Color::toHex(c1) << "], color2["
-									   << core::Color::toHex(c2) << "], delta[" << delta << "]";
+				ASSERT_LT(delta, 0.001f) << "Voxel differs at " << x1 << ":" << y1 << ":" << z1
+										 << " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()]
+										 << ", " << (int)voxel1.getColor() << "], voxel2["
+										 << voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", "
+										 << (int)voxel2.getColor() << "], color1[" << core::Color::toHex(c1)
+										 << "], color2[" << core::Color::toHex(c2) << "], delta[" << delta << "]";
 			}
 		}
 	}

@@ -30,8 +30,8 @@
 
 namespace voxelformat {
 
-bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
-	_palette.minecraft();
+bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
+	palette.minecraft();
 	io::ZipReadStream zipStream(stream);
 	priv::NamedBinaryTagContext ctx;
 	ctx.stream = &zipStream;
@@ -82,7 +82,7 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 		}
 	}
 
-	PaletteLookup palLookup(_palette);
+	PaletteLookup palLookup(palette);
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {
 			for (int z = 0; z < depth; ++z) {
@@ -108,7 +108,7 @@ bool SchematicFormat::loadGroups(const core::String &filename, io::SeekableReadS
 
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
-	node.setPalette(_palette);
+	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
 	return true;
 }
@@ -125,8 +125,6 @@ bool SchematicFormat::saveGroups(const SceneGraph& sceneGraph, const core::Strin
 	const glm::ivec3 &mins = region.getLowerCorner();
 
 	io::ZipWriteStream zipStream(stream);
-
-	_palette.minecraft();
 
 	priv::NBTCompound compound;
 	compound.put("Width", (int16_t)size.x);

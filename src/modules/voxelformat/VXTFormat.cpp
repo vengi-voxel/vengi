@@ -31,7 +31,7 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool VXTFormat::loadGroups(const core::String &filename, io::SeekableReadStream &in, SceneGraph &sceneGraph) {
+bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &in, SceneGraph &sceneGraph, voxel::Palette &) {
 	io::ZipReadStream stream(in, (int)in.size());
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))

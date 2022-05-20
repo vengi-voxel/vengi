@@ -17,9 +17,9 @@ namespace voxelformat {
 class VXMFormat : public PaletteFormat {
 private:
 	bool writeRLE(io::WriteStream &stream, int rleCount, voxel::Voxel &voxel, uint8_t emptyColorReplacement) const;
+	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 

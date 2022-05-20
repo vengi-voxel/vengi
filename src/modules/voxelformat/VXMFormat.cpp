@@ -197,7 +197,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return true;
 }
 
-bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))
@@ -412,12 +412,12 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		wrap(stream.readUInt8(alpha));
 		uint8_t emissive;
 		wrap(stream.readUInt8(emissive));
-		_palette.colors[i] = core::Color::getRGBA(red, green, blue, alpha);
+		palette.colors[i] = core::Color::getRGBA(red, green, blue, alpha);
 		if (emissive) {
-			_palette.glowColors[i] = _palette.colors[i];
+			palette.glowColors[i] = palette.colors[i];
 		}
 	}
-	_palette.colorCount = materialAmount;
+	palette.colorCount = materialAmount;
 
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 
@@ -471,7 +471,7 @@ bool VXMFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		node.setVolume(volume, true);
 		node.setName(layerName);
 		node.setVisible(visible);
-		node.setPalette(_palette);
+		node.setPalette(palette);
 		node.setProperty("version", core::string::toString(version));
 		node.setProperty("filename", filename);
 		node.setTransform(0, transform, true);

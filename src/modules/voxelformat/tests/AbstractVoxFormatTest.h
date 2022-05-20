@@ -6,6 +6,7 @@
 
 #include "core/StringUtil.h"
 #include "io/FileStream.h"
+#include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/tests/AbstractVoxelTest.h"
 #include "voxelformat/Format.h"
@@ -19,6 +20,8 @@ namespace voxelformat {
 class AbstractVoxFormatTest: public voxel::AbstractVoxelTest {
 protected:
 	static const voxel::Voxel Empty;
+
+	void checkColor(core::RGBA, const voxel::Palette &palette, uint8_t index);
 
 	void dump(const core::String& srcFilename, const SceneGraph &sceneGraph);
 	void dump(const core::String& structName, voxel::RawVolume* v, const core::String& filename);

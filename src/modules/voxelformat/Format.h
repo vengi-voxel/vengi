@@ -84,13 +84,14 @@ class NoColorFormat : public Format {
 
 class PaletteFormat : public Format {
 protected:
-	/**
-	 * This is the loaded palette from the input file. This is not the currently in-use palette. This might differ
-	 * and the colors will get matched to the in-use palette.
-	 */
-	voxel::Palette _palette;
+	virtual bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette) = 0;
+
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override {
+		voxel::Palette palette;
+		return loadGroupsPalette(filename, stream, sceneGraph, palette);
+	}
 };
 
 class RGBAFormat : public Format {
