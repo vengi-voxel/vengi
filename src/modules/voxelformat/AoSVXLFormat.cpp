@@ -21,7 +21,6 @@ namespace voxelformat {
 #define wrap(read) \
 	if ((read) != 0) { \
 		Log::error("Could not load AoE vxl file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		delete volume; \
 		return false; \
 	}
 
@@ -60,6 +59,8 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	const int flipHeight = height - 1;
 	core_assert(region.isValid());
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
+	SceneGraphNode node;
+	node.setVolume(volume, true);
 
 	PaletteLookup palLookup;
 	for (int z = 0; z < depths; ++z) {
@@ -75,12 +76,10 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 				int paletteIndex = 1;
 				if ((int)header.colorStartIdx >= height) {
 					Log::error("depth (top start %i exceeds the max allowed value of %i", header.colorStartIdx, height);
-					delete volume;
 					return false;
 				}
 				if (header.colorEndIdx >= height) {
 					Log::error("depth (top end %i) exceeds the max allowed value of %i", header.colorEndIdx, height);
-					delete volume;
 					return false;
 				}
 				for (y = header.colorStartIdx; y <= header.colorEndIdx; ++y) {
@@ -102,7 +101,6 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 				if (header.len == 0) {
 					if (stream.seek(cpos + (int64_t)(sizeof(uint32_t) * (lenBottom + 1))) == -1) {
 						Log::error("failed to skip");
-						delete volume;
 						return false;
 					}
 					break;
@@ -114,7 +112,6 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 
 				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
 					Log::error("failed to seek");
-					delete volume;
 					return false;
 				}
 				uint8_t bottomColorEnd = 0;
@@ -125,7 +122,6 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 				wrap(stream.readUInt8(bottomColorEnd))
 				if (stream.seek(-4, SEEK_CUR) == -1) {
 					Log::error("failed to seek");
-					delete volume;
 					return false;
 				}
 
@@ -133,18 +129,15 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 				const int bottomColorStart = bottomColorEnd - len_top;
 				if (bottomColorStart < 0 || bottomColorStart >= height) {
 					Log::error("depth (bottom start %i) exceeds the max allowed value of %i", bottomColorStart, height);
-					delete volume;
 					return false;
 				}
 				if (bottomColorEnd >= height) {
 					Log::error("depth (bottom end %i) exceeds the max allowed value of %i", bottomColorEnd, height);
-					delete volume;
 					return false;
 				}
 
 				if (stream.seek(rgbaPos) == -1) {
 					Log::error("failed to seek");
-					delete volume;
 					return false;
 				}
 				for (y = bottomColorStart; y < bottomColorEnd; ++y) {
@@ -159,14 +152,12 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 				}
 				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
 					Log::error("failed to seek");
-					delete volume;
 					return false;
 				}
 			}
 		}
 	}
-	SceneGraphNode node;
-	node.setVolume(volume, true);
+
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));

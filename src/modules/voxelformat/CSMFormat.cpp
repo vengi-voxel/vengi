@@ -99,9 +99,6 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
 		SceneGraphNode node;
 		node.setVolume(volume, true);
-		node.setName(name);
-		node.setPalette(palLookup.palette());
-		sceneGraph.emplace(core::move(node));
 
 		while (matrixIndex < voxels) {
 			uint8_t count;
@@ -131,6 +128,9 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 			matrixIndex += count;
 		}
+		node.setName(name);
+		node.setPalette(palLookup.palette());
+		sceneGraph.emplace(core::move(node));
 	}
 	return true;
 }
