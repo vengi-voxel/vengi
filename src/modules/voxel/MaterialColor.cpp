@@ -216,7 +216,7 @@ bool initDefaultPalette() {
 	Palette palette;
 	const core::String &defaultPalette = core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName())->strVal();
 	if (!palette.load(defaultPalette.c_str())) {
-		if (!palette.magicaVoxel()) {
+		if (!palette.nippon()) {
 			return false;
 		}
 	}

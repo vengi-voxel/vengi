@@ -18,11 +18,11 @@ private:
 public:
 	PaletteLookup(const voxel::Palette &palette, int maxSize = 32768) : _palette(palette), _paletteMap(maxSize) {
 		if (_palette.colorCount <= 0) {
-			_palette.magicaVoxel();
+			_palette.nippon();
 		}
 	}
 	PaletteLookup(int maxSize = 32768) : _paletteMap(maxSize) {
-		_palette.magicaVoxel();
+		_palette.nippon();
 	}
 
 	inline const voxel::Palette &palette() const {
