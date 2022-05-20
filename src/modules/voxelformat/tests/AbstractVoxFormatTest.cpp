@@ -1,4 +1,5 @@
 #include "AbstractVoxFormatTest.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
@@ -56,7 +57,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &fil
 	stream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette merged = load(filename, stream, *format);
 	ASSERT_NE(nullptr, merged.first);
-	std::unique_ptr<voxel::RawVolume> loaded(merged.first);
+	core::ScopedPtr<voxel::RawVolume> loaded(merged.first);
 	volumeComparator(volume, voxel::getPalette(), *loaded, merged.second, false, includingRegion);
 }
 
@@ -70,17 +71,17 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 	srcFormatStream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette merged = load(destFilename, srcFormatStream, srcFormat);
 	ASSERT_NE(nullptr, merged.first);
-	std::unique_ptr<voxel::RawVolume> origReloaded(merged.first);
+	core::ScopedPtr<voxel::RawVolume> origReloaded(merged.first);
 	if (includingRegion) {
 		ASSERT_EQ(original.region(), origReloaded->region());
 	}
 	volumeComparator(original, voxel::getPalette(), *origReloaded, merged.second, includingColor, includingRegion);
 
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
-	EXPECT_TRUE(destFormat.save(origReloaded.get(), destFilename, stream)) << "Could not save " << destFilename;
+	EXPECT_TRUE(destFormat.save(origReloaded, destFilename, stream)) << "Could not save " << destFilename;
 	stream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette merged2 = load(destFilename, stream, destFormat);
-	std::unique_ptr<voxel::RawVolume> loaded(merged2.first);
+	core::ScopedPtr<voxel::RawVolume> loaded(merged2.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load " << destFilename;
 	if (includingRegion) {
 		ASSERT_EQ(original.region(), loaded->region());
@@ -145,10 +146,10 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename,
 	EXPECT_TRUE(destFormat.saveGroups(sceneGraph, destFilename, stream)) << "Could not save " << destFilename;
 	stream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(destFilename, stream, destFormat);
-	std::unique_ptr<voxel::RawVolume> loaded(mergedLoad.first);
+	core::ScopedPtr<voxel::RawVolume> loaded(mergedLoad.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load " << destFilename;
 	voxelformat::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
-	std::unique_ptr<voxel::RawVolume> src(merged.first);
+	core::ScopedPtr<voxel::RawVolume> src(merged.first);
 	if (includingRegion) {
 		ASSERT_EQ(src->region(), loaded->region());
 	}
@@ -163,7 +164,7 @@ void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Fo
 	ASSERT_TRUE(format->save(&original, filename, bufferedStream));
 	bufferedStream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
-	std::unique_ptr<voxel::RawVolume> loaded(mergedLoad.first);
+	core::ScopedPtr<voxel::RawVolume> loaded(mergedLoad.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load single voxel file " << filename;
 	volumeComparator(original, voxel::getPalette(), *loaded, mergedLoad.second, true, true);
 }
@@ -179,7 +180,7 @@ void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Fo
 	ASSERT_TRUE(format->save(&original, filename, bufferedStream));
 	bufferedStream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
-	std::unique_ptr<voxel::RawVolume> loaded(mergedLoad.first);
+	core::ScopedPtr<voxel::RawVolume> loaded(mergedLoad.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load single voxel file " << filename;
 	volumeComparator(original, voxel::getPalette(), *loaded, mergedLoad.second, true, true);
 }
@@ -292,7 +293,7 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	readStream->seek(0);
 
 	voxelformat::SceneGraph::MergedVolumePalette merged = load(filename, *readStream, *format);
-	std::unique_ptr<voxel::RawVolume> loaded(merged.first);
+	core::ScopedPtr<voxel::RawVolume> loaded(merged.first);
 	ASSERT_NE(nullptr, loaded);
 	volumeComparator(original, voxel::getPalette(), *loaded, merged.second, true, true);
 }
