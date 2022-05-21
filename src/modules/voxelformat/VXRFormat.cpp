@@ -50,10 +50,11 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		const core::String baseName = core::string::stripExtension(core::string::extractFilename(filename));
 		const core::String finalName = baseName + name + ".vxm";
 		wrapBool(stream.writeString(finalName, true))
+		const core::String fullPath = core::string::stripExtension(filename) + name + ".vxm";
 		VXMFormat f;
-		io::FilePtr outputFile = io::filesystem()->open(finalName, io::FileMode::SysWrite);
+		io::FilePtr outputFile = io::filesystem()->open(fullPath, io::FileMode::SysWrite);
 		if (!outputFile) {
-			Log::error("Failed to open %s for writing", finalName.c_str());
+			Log::error("Failed to open %s for writing", fullPath.c_str());
 			return false;
 		}
 		io::FileStream wstream(outputFile);
@@ -61,7 +62,8 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		SceneGraphNode newNode;
 		copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
-		wrapBool(f.saveGroups(newSceneGraph, finalName, wstream))
+		wrapBool(f.saveGroups(newSceneGraph, fullPath, wstream))
+		Log::debug("Saved the model to %s", fullPath.c_str());
 	}
 
 	wrapBool(saveNodeProperties(&node, stream))
@@ -107,6 +109,7 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	const voxelformat::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();
 	if (childCount <= 0) {
+		Log::error("Empty scene graph - can't save vxr");
 		return false;
 	}
 	wrapBool(stream.writeUInt32(FourCC('V','X','R','9')))
