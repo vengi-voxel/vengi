@@ -8,6 +8,7 @@ set(SRCS
 	private/MinecraftPaletteMap.h private/MinecraftPaletteMap.cpp
 	private/NamedBinaryTag.h private/NamedBinaryTag.cpp
 	private/PaletteLookup.h
+	private/Tri.h private/Tri.cpp
 
 	Format.h Format.cpp
 	AoSVXLFormat.h AoSVXLFormat.cpp
@@ -58,6 +59,7 @@ set(TEST_SRCS
 	tests/GoxFormatTest.cpp
 	tests/KVXFormatTest.cpp
 	tests/KV6FormatTest.cpp
+	tests/MeshFormatTest.cpp
 	tests/MCRFormatTest.cpp
 	tests/OBJFormatTest.cpp
 	tests/QBTFormatTest.cpp
