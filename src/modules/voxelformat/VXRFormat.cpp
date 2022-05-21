@@ -152,7 +152,7 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return true;
 }
 
-bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraphNode &node, int version) {
+bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph &sceneGraph, SceneGraphNode &node, int version) {
 	const io::FilePtr& file = io::filesystem()->open(vxmPath);
 	if (!file->validHandle()) {
 		Log::error("Could not open file '%s'", vxmPath.c_str());
@@ -166,12 +166,11 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraphNode &node, 
 		return false;
 	}
 	const int modelCount = (int)childSceneGraph.size(SceneGraphNodeType::Model);
-	if (modelCount > 1) {
-		Log::warn("Unexpected scene graph found in vxm file - only use the first one");
-	} else if (modelCount != 1) {
+	if (modelCount < 1) {
 		Log::error("No models found in vxm file: %i", modelCount);
 		return false;
 	}
+	Log::debug("Found %i layers in vxm", modelCount);
 	SceneGraphNode* childModelNode = childSceneGraph[0];
 	core_assert_always(childModelNode != nullptr);
 	childModelNode->releaseOwnership();
@@ -184,6 +183,20 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraphNode &node, 
 	const voxelformat::SceneGraphTransform &childTransform = childModelNode->transform(0);
 	voxelformat::SceneGraphTransform &transform = node.transform(0);
 	transform.setPivot(childTransform.pivot());
+
+	// TODO: support loading all layers
+#if 0
+	for (int i = 1; i < modelCount; ++i) {
+		SceneGraphNode child;
+		SceneGraphNode &src = *childSceneGraph[i];
+		copyNode(src, child, false);
+		src.releaseOwnership();
+		child.setVolume(src.volume(), true);
+		// TODO: the node instance is not yet added to the scene graph - and thus doesn't have a parent yet
+		sceneGraph.emplace(core::move(child), node.parent());
+	}
+#endif
+
 	return true;
 }
 
@@ -286,7 +299,7 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 	wrapBool(stream.readString(sizeof(filename), filename, true))
 	if (filename[0] != '\0') {
 		const core::String modelPath = core::string::path(core::string::extractPath(vxmPath), filename);
-		if (!loadChildVXM(modelPath, node, version)) {
+		if (!loadChildVXM(modelPath, sceneGraph, node, version)) {
 			Log::warn("Failed to attach model for id '%s' with filename %s (%s)", id, filename, modelPath.c_str());
 		}
 	}
@@ -388,7 +401,7 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 		wrapBool(stream.readString(sizeof(vxmFilename), vxmFilename, true))
 		if (vxmFilename[0] != '\0') {
 			const core::String modelPath = core::string::path(core::string::extractPath(filename), vxmFilename);
-			if (!loadChildVXM(modelPath, *node, version)) {
+			if (!loadChildVXM(modelPath, sceneGraph, *node, version)) {
 				Log::warn("Failed to attach model for %s with filename %s", nodeId, modelPath.c_str());
 			}
 		}

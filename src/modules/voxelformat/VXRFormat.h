@@ -16,7 +16,7 @@ namespace voxelformat {
  */
 class VXRFormat : public PaletteFormat {
 private:
-	bool loadChildVXM(const core::String& vxmPath, SceneGraphNode &node, int version);
+	bool loadChildVXM(const core::String& vxmPath, SceneGraph &sceneGraph, SceneGraphNode &node, int version);
 
 	bool handleVersion8AndLater(io::SeekableReadStream& stream, SceneGraphNode &node);
 	bool importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, int parent);
