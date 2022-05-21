@@ -201,6 +201,21 @@ float Color::getDistance(const glm::vec4 &color, float hue, float saturation, fl
 	return val;
 }
 
+core::String Color::print(RGBA rgba) {
+	String buf = toHex(rgba);
+	buf.append(" ");
+	buf.append("\033[38;2;");
+	buf.append(rgba.r).append(";");
+	buf.append(rgba.g).append(";");
+	buf.append(rgba.b).append("m");
+	buf.append("\033[48;2;");
+	buf.append(rgba.r).append(";");
+	buf.append(rgba.g).append(";");
+	buf.append(rgba.b).append("m");
+	buf.append("\u2587").append("\033[0m");
+	return buf;
+}
+
 float Color::getDistance(RGBA rgba, RGBA rgba2) {
 	const glm::vec4 &color = core::Color::fromRGBA(rgba);
 	float hue;

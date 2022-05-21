@@ -82,6 +82,8 @@ public:
 		return minIndex;
 	}
 
+	static core::String print(RGBA rgba);
+
 	static int quantize(RGBA* targetBuf, size_t maxTargetBufColors, const RGBA* inputBuf, size_t inputBufColors);
 
 	static glm::vec4 fromRGBA(const RGBA rgba);
