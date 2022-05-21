@@ -70,7 +70,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		return false;
 	}
 	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
-	wrapBool(stream.writeUInt32(FourCC('V','X','M','8')));
+	wrapBool(stream.writeUInt32(FourCC('V','X','M','9')));
 	const glm::vec3 pivot(0.5f);
 
 	const voxel::Region& region = merged.first->region();
@@ -88,6 +88,14 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapBool(stream.writeFloat(pivot.x));
 	wrapBool(stream.writeFloat(pivot.y));
 	wrapBool(stream.writeFloat(pivot.z));
+
+	wrapBool(stream.writeBool(false));
+	// has surface - set to false otherwise
+	// the following data is needed:
+	// 3 int start
+	// 3 int end
+	// 1 int normal possible values: [0,1][2,3][4,5]
+	// followed by surface width * surface height bytes
 
 	wrapBool(stream.writeFloat(0.0f));
 	wrapBool(stream.writeFloat(0.0f));
