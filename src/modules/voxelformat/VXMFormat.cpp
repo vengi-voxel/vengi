@@ -453,12 +453,12 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	for (int i = 0; i < (int) materialAmount; ++i) {
-		uint8_t red;
-		wrap(stream.readUInt8(red));
-		uint8_t green;
-		wrap(stream.readUInt8(green));
 		uint8_t blue;
 		wrap(stream.readUInt8(blue));
+		uint8_t green;
+		wrap(stream.readUInt8(green));
+		uint8_t red;
+		wrap(stream.readUInt8(red));
 		uint8_t alpha;
 		wrap(stream.readUInt8(alpha));
 		uint8_t emissive;
