@@ -59,7 +59,7 @@ TEST_F(VoxFormatTest, testLoadGlasses) {
 	for (int i = 0; i < lengthof(volumes); ++i) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
 		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
-		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), true, true, 0.004f);
+		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), true, true, 0.011f);
 	}
 }
 

@@ -124,7 +124,7 @@ TEST_F(ConvertTest, testCubToQb) {
 TEST_F(ConvertTest, testKVXToQb) {
 	KVXFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("test.kvx", src, "test.qb", target, true, true, 0.0028f);
+	testLoadSaveAndLoad("test.kvx", src, "test.qb", target, true, true, 0.012f);
 }
 
 TEST_F(ConvertTest, testKV6ToQb) {
