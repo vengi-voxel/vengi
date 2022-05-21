@@ -307,7 +307,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	}
 
 	ogt_vox_group default_group;
-	memset(&default_group, 0, sizeof(default_group));
+	core_memset(&default_group, 0, sizeof(default_group));
 	default_group.hidden = false;
 	default_group.layer_index = 0;
 	default_group.parent_group_index = k_invalid_group_index;
@@ -359,7 +359,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		instance.transform_anim.keyframes = instance.transform_anim.num_keyframes ? &keyframeTransforms[transformKeyFrameIdx] : nullptr;
 		for (const SceneGraphKeyFrame& kf : node.keyFrames()) {
 			ogt_vox_keyframe_transform kft;
-			memset(&kft, 0, sizeof(kft));
+			core_memset(&kft, 0, sizeof(kft));
 			kft.frame_index = kf.frame;
 			kft.transform = ogt_identity_transform;
 			// y and z are flipped here
@@ -375,7 +375,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	}
 
 	ogt_vox_scene output_scene;
-	memset(&output_scene, 0, sizeof(output_scene));
+	core_memset(&output_scene, 0, sizeof(output_scene));
 	output_scene.groups = &default_group;
 	output_scene.num_groups = 1;
 	output_scene.instances = &instances[0];

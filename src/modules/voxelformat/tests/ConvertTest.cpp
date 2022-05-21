@@ -100,7 +100,7 @@ TEST_F(ConvertTest, testQbToVXM) {
 TEST_F(ConvertTest, testVXMToQb) {
 	VXMFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("test.vxm", src, "test.qb", target, true, true);
+	testLoadSaveAndLoad("test.vxm", src, "test.qb", target, true, true, 0.0018);
 }
 
 TEST_F(ConvertTest, testQbToCub) {
@@ -118,7 +118,7 @@ TEST_F(ConvertTest, testCubToQb) {
 TEST_F(ConvertTest, testKVXToQb) {
 	KVXFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("test.kvx", src, "test.qb", target, true, true);
+	testLoadSaveAndLoad("test.kvx", src, "test.qb", target, true, true, 0.0028f);
 }
 
 TEST_F(ConvertTest, testKV6ToQb) {

@@ -36,7 +36,7 @@ inline int countVoxels(const Volume& volume, const voxel::Voxel &voxel) {
 	return cnt;
 }
 
-inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal1, const voxel::RawVolume& volume2, const voxel::Palette &pal2, bool includingColor, bool includingRegion) {
+inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal1, const voxel::RawVolume& volume2, const voxel::Palette &pal2, bool includingColor, bool includingRegion, float maxDelta = 0.001f) {
 	const Region& r1 = volume1.region();
 	const Region& r2 = volume2.region();
 	if (includingRegion) {
@@ -68,7 +68,9 @@ inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palet
 				ASSERT_EQ(voxel1.getMaterial(), voxel2.getMaterial())
 					<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " in material - voxel1["
 					<< voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", " << (int)voxel1.getColor() << "], voxel2["
-					<< voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", " << (int)voxel2.getColor() << "]";
+					<< voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", " << (int)voxel2.getColor() << "], color1["
+					<< core::Color::print(voxel1.getColor()) << "], color2[" << core::Color::print(voxel2.getColor())
+					<< "]";
 				if (voxel::isAir(voxel1.getMaterial())) {
 					continue;
 				}
@@ -78,12 +80,12 @@ inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palet
 				const core::RGBA& c1 = pal1.colors[voxel1.getColor()];
 				const core::RGBA& c2 = pal2.colors[voxel2.getColor()];
 				const float delta = core::Color::getDistance(c1, c2);
-				ASSERT_LT(delta, 0.001f) << "Voxel differs at " << x1 << ":" << y1 << ":" << z1
+				ASSERT_LT(delta, maxDelta) << "Voxel differs at " << x1 << ":" << y1 << ":" << z1
 										 << " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()]
 										 << ", " << (int)voxel1.getColor() << "], voxel2["
 										 << voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", "
-										 << (int)voxel2.getColor() << "], color1[" << core::Color::toHex(c1)
-										 << "], color2[" << core::Color::toHex(c2) << "], delta[" << delta << "]";
+										 << (int)voxel2.getColor() << "], color1[" << core::Color::print(c1)
+										 << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]";
 			}
 		}
 	}

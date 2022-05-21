@@ -98,14 +98,14 @@ void AbstractVoxFormatTest::canLoad(const core::String &filename, size_t expecte
 	ASSERT_EQ(expectedVolumes, sceneGraph.size());
 }
 
-void AbstractVoxFormatTest::checkColor(core::RGBA c1, const voxel::Palette &palette, uint8_t index) {
+void AbstractVoxFormatTest::checkColor(core::RGBA c1, const voxel::Palette &palette, uint8_t index, float maxDelta) {
 	const core::RGBA c2 = palette.colors[index];
 	const float delta = core::Color::getDistance(c1, c2);
-	ASSERT_LT(delta, 0.001f) << "color1[" << core::Color::toHex(c1) << "], color2[" << core::Color::toHex(c2)
+	ASSERT_LT(delta, maxDelta) << "color1[" << core::Color::print(c1) << "], color2[" << core::Color::print(c2)
 							 << "], delta[" << delta << "]";
 }
 
-void AbstractVoxFormatTest::testRGB(const core::String &filename) {
+void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta) {
 	voxelformat::SceneGraph sceneGraph;
 	const io::FilePtr& file = open(filename);
 	ASSERT_TRUE(file->validHandle());
@@ -113,9 +113,12 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename) {
 	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph));
 	EXPECT_EQ(1u, sceneGraph.size());
 
-	const core::RGBA red = core::Color::getRGBA(core::Color::Red);
-	const core::RGBA green = core::Color::getRGBA(core::Color::Green);
-	const core::RGBA blue = core::Color::getRGBA(core::Color::Blue);
+	voxel::Palette palette;
+	palette.nippon();
+
+	const core::RGBA red = palette.colors[37];
+	const core::RGBA green = palette.colors[149];
+	const core::RGBA blue = palette.colors[197];
 
 	for (const voxelformat::SceneGraphNode &node : sceneGraph) {
 		const voxel::RawVolume *volume = node.volume();
@@ -133,13 +136,13 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename) {
 		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 12).getMaterial());
 		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 19).getMaterial());
 
-		checkColor(red, node.palette(), volume->voxel( 9,  0,  4).getColor());
-		checkColor(green, node.palette(), volume->voxel( 9,  0,  12).getColor());
-		checkColor(blue, node.palette(), volume->voxel( 9,  0,  19).getColor());
+		checkColor(red, node.palette(), volume->voxel( 9,  0,  4).getColor(), maxDelta);
+		checkColor(green, node.palette(), volume->voxel( 9,  0,  12).getColor(), maxDelta);
+		checkColor(blue, node.palette(), volume->voxel( 9,  0,  19).getColor(), maxDelta);
 	}
 }
 
-void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename, Format &srcFormat, const core::String& destFilename, Format &destFormat, bool includingColor, bool includingRegion) {
+void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename, Format &srcFormat, const core::String& destFilename, Format &destFormat, bool includingColor, bool includingRegion, float maxDelta) {
 	voxelformat::SceneGraph sceneGraph;
 	EXPECT_TRUE(loadGroups(srcFilename, srcFormat, sceneGraph));
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
@@ -153,7 +156,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename,
 	if (includingRegion) {
 		ASSERT_EQ(src->region(), loaded->region());
 	}
-	volumeComparator(*src, merged.second, *loaded, mergedLoad.second, includingColor, includingRegion);
+	volumeComparator(*src, merged.second, *loaded, mergedLoad.second, includingColor, includingRegion, maxDelta);
 }
 
 void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Format* format) {

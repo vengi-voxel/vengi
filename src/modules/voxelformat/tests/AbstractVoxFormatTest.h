@@ -21,7 +21,7 @@ class AbstractVoxFormatTest: public voxel::AbstractVoxelTest {
 protected:
 	static const voxel::Voxel Empty;
 
-	void checkColor(core::RGBA, const voxel::Palette &palette, uint8_t index);
+	void checkColor(core::RGBA, const voxel::Palette &palette, uint8_t index, float maxDelta);
 
 	void dump(const core::String& srcFilename, const SceneGraph &sceneGraph);
 	void dump(const core::String& structName, voxel::RawVolume* v, const core::String& filename);
@@ -32,7 +32,7 @@ protected:
 												Format &destFormat, bool includingColor, bool includingRegion);
 
 	void canLoad(const core::String &filename, size_t expectedVolumes = 1);
-	void testRGB(const core::String &filename);
+	void testRGB(const core::String &filename, float maxDelta = 0.001f);
 
 	void testSaveMultipleLayers(const core::String& filename, Format* format);
 	void testSaveSingleVoxel(const core::String& filename, Format* format);
@@ -44,7 +44,7 @@ protected:
 
 	void testLoadSaveAndLoad(const core::String &srcFilename, Format &srcFormat,
 							 const core::String &destFilename, Format &destFormat, bool includingColor,
-							 bool includingRegion);
+							 bool includingRegion, float maxDelta = 0.001f);
 
 	io::FilePtr open(const core::String& filename, io::FileMode mode = io::FileMode::Read) {
 		const io::FilePtr& file = io::filesystem()->open(core::String(filename), mode);

@@ -8,6 +8,7 @@
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/VolumeFormat.h"
@@ -40,7 +41,7 @@ TEST_F(VoxFormatTest, testLoadCharacter) {
 	for (int i = 0; i < lengthof(volumes); ++i) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
 		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
-		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), true, true);
+		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), true, true, 0.01f);
 	}
 }
 
