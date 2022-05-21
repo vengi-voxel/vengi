@@ -106,7 +106,7 @@ TEST_F(ConvertTest, testQbToVXM) {
 TEST_F(ConvertTest, testVXMToQb) {
 	VXMFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("test.vxm", src, "test.qb", target, true, true, 0.0018);
+	testLoadSaveAndLoad("test.vxm", src, "test.qb", target, false, true);
 }
 
 TEST_F(ConvertTest, testQbToCub) {
