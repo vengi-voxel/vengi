@@ -28,6 +28,9 @@ General:
    - Improved color sampling for voxelization
    - Started to support different palettes in one scene
    - Fixed vxc support
+   - Load the palette from the source file
+   - Fixed vxm file path when saving vxr
+   - Save vxmc (version 12) now
 
 VoxEdit:
 

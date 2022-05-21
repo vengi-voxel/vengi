@@ -107,6 +107,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			const auto palTexIter = paletteMaterialIndices.find(palette.hash());
 			if (palTexIter != paletteMaterialIndices.end()) {
 				materialId = palTexIter->second;
+				Log::debug("Re-use material id %i for hash %" PRIu64, materialId, palette.hash());
 			} else {
 				const int textureIndex = (int)m.textures.size();
 				const int imageIndex = (int)m.images.size();
@@ -116,33 +117,40 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 				palettename.append(hashId);
 				palettename.append(".png");
 
-				tinygltf::Image colorPaletteImg;
-				colorPaletteImg.uri = core::string::extractFilenameWithExtension(palettename).c_str();
-				m.images.emplace_back(core::move(colorPaletteImg));
+				{
+					tinygltf::Image colorPaletteImg;
+					colorPaletteImg.uri = core::string::extractFilenameWithExtension(palettename).c_str();
+					m.images.emplace_back(core::move(colorPaletteImg));
+				}
 
 				if (!palette.save(palettename.c_str())) {
 					Log::error("Failed to save palette data");
 				}
 
-				tinygltf::Texture paletteTexture;
-				paletteTexture.source = imageIndex;
-				m.textures.emplace_back(core::move(paletteTexture));
-
-				tinygltf::Material mat;
-				if (withTexCoords) {
-					mat.pbrMetallicRoughness.baseColorTexture.index = textureIndex;
-				} else if (withColor) {
-					mat.pbrMetallicRoughness.baseColorFactor = {1.0f, 1.0f, 1.0f, 1.0f};
+				{
+					tinygltf::Texture paletteTexture;
+					paletteTexture.source = imageIndex;
+					m.textures.emplace_back(core::move(paletteTexture));
 				}
 
-				mat.name = hashId.c_str();
-				mat.pbrMetallicRoughness.roughnessFactor = 1;
-				mat.pbrMetallicRoughness.metallicFactor = 0;
-				mat.doubleSided = false;
+				{
+					tinygltf::Material mat;
+					if (withTexCoords) {
+						mat.pbrMetallicRoughness.baseColorTexture.index = textureIndex;
+					} else if (withColor) {
+						mat.pbrMetallicRoughness.baseColorFactor = {1.0f, 1.0f, 1.0f, 1.0f};
+					}
 
-				materialId = (int)m.materials.size();
-				m.materials.emplace_back(core::move(mat));
+					mat.name = hashId.c_str();
+					mat.pbrMetallicRoughness.roughnessFactor = 1;
+					mat.pbrMetallicRoughness.metallicFactor = 0;
+					mat.doubleSided = false;
+
+					materialId = (int)m.materials.size();
+					m.materials.emplace_back(core::move(mat));
+				}
 				paletteMaterialIndices.put(palette.hash(), materialId);
+				Log::debug("New material id %i for hash %" PRIu64, materialId, palette.hash());
 			}
 		}
 
@@ -363,9 +371,11 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			expMesh.primitives.emplace_back(core::move(meshPrimitive));
 		}
 
-		tinygltf::Node node;
-		node.mesh = nthNodeIdx;
-		processGltfNode(m, node, scene, graphNode, stack);
+		{
+			tinygltf::Node node;
+			node.mesh = nthNodeIdx;
+			processGltfNode(m, node, scene, graphNode, stack);
+		}
 
 		m.meshes.emplace_back(core::move(expMesh));
 		m.buffers.emplace_back(core::move(buffer));
