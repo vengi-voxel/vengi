@@ -70,70 +70,8 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		return false;
 	}
 	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
-	wrapBool(stream.writeUInt32(FourCC('V','X','M','5')));
+	wrapBool(stream.writeUInt32(FourCC('V','X','M','7')));
 	const glm::vec3 pivot(0.5f);
-	wrapBool(stream.writeFloat(pivot.x));
-	wrapBool(stream.writeFloat(pivot.y));
-	wrapBool(stream.writeFloat(pivot.z));
-	wrapBool(stream.writeUInt32(0)); // texture dim x
-	wrapBool(stream.writeUInt32(0)); // texture dim y
-	static const char *texNames[] = {"Diffuse", "Emissive"};
-	const int texAmount = 0; // lengthof(texNames);
-	wrapBool(stream.writeUInt32(texAmount)); // texamount
-
-	for (int i = 0; i < texAmount; ++i) {
-		stream.writeString(texNames[i], true);
-		int rleCount = 0;
-		core::RGBA currentColor = 0;
-		const int width = 0;
-		const int height = 0;
-		core::RGBA *rgb = nullptr; // TODO:
-		for (int y = 0; y < height; ++y) {
-			for (int x = 0; x < width; ++x) {
-				core::RGBA color = rgb[x + y * width];
-				if (rleCount == 0) {
-					currentColor = color;
-					++rleCount;
-				} else if (rleCount == 255 || currentColor != color) {
-					stream.writeUInt8(rleCount);
-					stream.writeUInt8(color.r);
-					stream.writeUInt8(color.g);
-					stream.writeUInt8(color.b);
-					rleCount = 1;
-					currentColor = color;
-				} else {
-					++rleCount;
-				}
-			}
-		}
-		if (rleCount > 0) {
-			stream.writeUInt8(rleCount);
-			stream.writeUInt8(currentColor.r);
-			stream.writeUInt8(currentColor.g);
-			stream.writeUInt8(currentColor.b);
-		}
-		stream.writeUInt8(0);
-	}
-
-	for (int i = 0; i < 6; ++i) {
-		const int quadAmount = 0;
-		wrapBool(stream.writeUInt32(quadAmount));
-#if 0
-		for (int i = 0; i < quadAmount; ++i) {
-			for (int j = 0; j < 4; ++j) {
-				stream.writeFloat(vertices[j].x);
-				stream.writeFloat(vertices[j].y);
-				stream.writeFloat(vertices[j].z);
-				stream.writeInt32(u[j]);
-				stream.writeInt32(v[j]);
-			}
-		}
-#endif
-	}
-
-	const voxel::Palette &palette = sceneGraph.firstPalette();
-	core::DynamicArray<glm::vec4> materialColors;
-	palette.toVec4f(materialColors);
 
 	const voxel::Region& region = merged.first->region();
 	voxel::RawVolume::Sampler sampler(merged.first);
@@ -147,17 +85,58 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapBool(stream.writeUInt32(height))
 	wrapBool(stream.writeUInt32(depth))
 
+	wrapBool(stream.writeFloat(pivot.x));
+	wrapBool(stream.writeFloat(pivot.y));
+	wrapBool(stream.writeFloat(pivot.z));
+	int lodLevels = 1;
+	wrapBool(stream.writeInt32(lodLevels));
+	for (int lod = 0; lod < lodLevels; ++lod) {
+		wrapBool(stream.writeUInt32(0)); // texture dim x
+		wrapBool(stream.writeUInt32(0)); // texture dim y
+		static const char *texNames[] = {"Diffuse", "Emissive"};
+		const int texAmount = 0; // lengthof(texNames);
+		wrapBool(stream.writeUInt32(texAmount)); // texamount
+
+		for (int i = 0; i < texAmount; ++i) {
+			stream.writeUInt8(0); // zipped size for the rgba texture
+			// followed by the compressed data
+		}
+
+		for (int i = 0; i < 6; ++i) {
+			const int quadAmount = 0;
+			wrapBool(stream.writeUInt32(quadAmount));
+#if 0
+			for (int i = 0; i < quadAmount; ++i) {
+				for (int j = 0; j < 4; ++j) {
+					stream.writeFloat(vertices[j].x);
+					stream.writeFloat(vertices[j].y);
+					stream.writeFloat(vertices[j].z);
+					stream.writeInt32(u[j]);
+					stream.writeInt32(v[j]);
+				}
+			}
+#endif
+		}
+	}
+
+	const voxel::Palette &palette = sceneGraph.firstPalette();
+	core::DynamicArray<glm::vec4> materialColors;
+	palette.toVec4f(materialColors);
+
 	// we need to find a replacement for this color - the empty voxel is the last palette entry
 	// we are using the first palette entry (like magicavoxel does, too)
 	const glm::vec4 emptyColor = materialColors[EMPTY_PALETTE];
 	materialColors.pop();
 	const uint8_t emptyColorReplacement = core::Color::getClosestMatch(emptyColor, materialColors);
+	Log::debug("found replacement for %s: %s", core::Color::print(palette.colors[EMPTY_PALETTE]).c_str(),
+			   core::Color::print(palette.colors[emptyColorReplacement]).c_str());
 
 	int numColors = palette.colorCount;
 	if (numColors > 255) {
 		numColors = 255;
 	}
 	if (numColors <= 0) {
+		Log::error("No palette entries found - can't save");
 		return false;
 	}
 	wrapBool(stream.writeUInt8(materialColors.size()))
