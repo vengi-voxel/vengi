@@ -17,8 +17,10 @@
 #include "voxel/MaterialColor.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "voxel/Palette.h"
 #include "voxelformat/SceneGraphNode.h"
 #include <glm/common.hpp>
+#include <sys/types.h>
 
 namespace voxelformat {
 
@@ -70,7 +72,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		return false;
 	}
 	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
-	wrapBool(stream.writeUInt32(FourCC('V','X','M','A')));
+	wrapBool(stream.writeUInt32(FourCC('V','X','M','B')));
 	const glm::vec3 pivot(0.5f);
 
 	const voxel::Region& region = merged.first->region();
@@ -107,13 +109,8 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	for (int lod = 0; lod < lodLevels; ++lod) {
 		wrapBool(stream.writeUInt32(0)); // texture dim x
 		wrapBool(stream.writeUInt32(0)); // texture dim y
-		const int texAmount = 0; // lengthof(texNames);
-		wrapBool(stream.writeUInt32(texAmount));
-
-		for (int i = 0; i < texAmount; ++i) {
-			stream.writeUInt8(0); // zipped size for the rgba texture
-			// followed by the compressed data
-		}
+		wrapBool(stream.writeUInt32(0)); // zipped size for the rgba texture(s)
+		// followed by the compressed data
 
 		for (int i = 0; i < 6; ++i) {
 			const int quadAmount = 0;
@@ -145,13 +142,62 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 			   core::Color::print(palette.colors[emptyColorReplacement]).c_str());
 
 	int numColors = palette.colorCount;
-	if (numColors > 255) {
-		numColors = 255;
+	if (numColors > voxel::PaletteMaxColors) {
+		numColors = voxel::PaletteMaxColors;
 	}
 	if (numColors <= 0) {
 		Log::error("No palette entries found - can't save");
 		return false;
 	}
+
+	// albedo palette
+	for (int i = 0; i < numColors; ++i) {
+		const core::RGBA &matcolor = palette.colors[i];
+		wrapBool(stream.writeUInt8(matcolor.b))
+		wrapBool(stream.writeUInt8(matcolor.g))
+		wrapBool(stream.writeUInt8(matcolor.r))
+		wrapBool(stream.writeUInt8(matcolor.a))
+	}
+	for (int i = numColors; i < voxel::PaletteMaxColors; ++i) {
+		wrapBool(stream.writeUInt8(255))
+		wrapBool(stream.writeUInt8(0))
+		wrapBool(stream.writeUInt8(255))
+		wrapBool(stream.writeUInt8(255))
+	}
+	// emissive palette
+	for (int i = 0; i < numColors; ++i) {
+		const core::RGBA &glowcolor = palette.glowColors[i];
+		const bool emissive = glowcolor.a > 0;
+		if (emissive) {
+			wrapBool(stream.writeUInt8(glowcolor.b))
+			wrapBool(stream.writeUInt8(glowcolor.g))
+			wrapBool(stream.writeUInt8(glowcolor.r))
+			wrapBool(stream.writeUInt8(glowcolor.a))
+		} else {
+			wrapBool(stream.writeUInt8(0))
+			wrapBool(stream.writeUInt8(0))
+			wrapBool(stream.writeUInt8(0))
+			wrapBool(stream.writeUInt8(255))
+		}
+	}
+	for (int i = numColors; i < voxel::PaletteMaxColors; ++i) {
+		wrapBool(stream.writeUInt8(255))
+		wrapBool(stream.writeUInt8(0))
+		wrapBool(stream.writeUInt8(255))
+		wrapBool(stream.writeUInt8(255))
+	}
+
+	int chunkAmount = 0;
+	wrapBool(stream.writeUInt32(chunkAmount));
+	for (int c = 0; c < chunkAmount; ++c) {
+		core::String id = "";
+		stream.writeString(id);
+		uint8_t offset = 0;
+		wrapBool(stream.writeUInt8(offset));
+		uint8_t chunkLength = 0;
+		wrapBool(stream.writeUInt8(chunkLength));
+	}
+
 	wrapBool(stream.writeUInt8(materialColors.size()))
 	for (int i = 0; i < numColors; ++i) {
 		const core::RGBA &matcolor = palette.colors[i];
