@@ -66,17 +66,10 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 }
 
 bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-	if (merged.first == nullptr) {
-		Log::error("Failed to merge volumes");
-		return false;
-	}
-	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
-	wrapBool(stream.writeUInt32(FourCC('V','X','M','B')));
+	wrapBool(stream.writeUInt32(FourCC('V','X','M','C')));
 	const glm::vec3 pivot(0.5f);
 
-	const voxel::Region& region = merged.first->region();
-	voxel::RawVolume::Sampler sampler(merged.first);
+	const voxel::Region& region = sceneGraph.region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
@@ -142,8 +135,8 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 			   core::Color::print(palette.colors[emptyColorReplacement]).c_str());
 
 	int numColors = palette.colorCount;
-	if (numColors > voxel::PaletteMaxColors) {
-		numColors = voxel::PaletteMaxColors;
+	if (numColors >= voxel::PaletteMaxColors) {
+		numColors = voxel::PaletteMaxColors - 1;
 	}
 	if (numColors <= 0) {
 		Log::error("No palette entries found - can't save");
@@ -153,9 +146,9 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	// albedo palette
 	for (int i = 0; i < numColors; ++i) {
 		const core::RGBA &matcolor = palette.colors[i];
-		wrapBool(stream.writeUInt8(matcolor.b))
-		wrapBool(stream.writeUInt8(matcolor.g))
 		wrapBool(stream.writeUInt8(matcolor.r))
+		wrapBool(stream.writeUInt8(matcolor.g))
+		wrapBool(stream.writeUInt8(matcolor.b))
 		wrapBool(stream.writeUInt8(matcolor.a))
 	}
 	for (int i = numColors; i < voxel::PaletteMaxColors; ++i) {
@@ -169,9 +162,9 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		const core::RGBA &glowcolor = palette.glowColors[i];
 		const bool emissive = glowcolor.a > 0;
 		if (emissive) {
-			wrapBool(stream.writeUInt8(glowcolor.b))
-			wrapBool(stream.writeUInt8(glowcolor.g))
 			wrapBool(stream.writeUInt8(glowcolor.r))
+			wrapBool(stream.writeUInt8(glowcolor.g))
+			wrapBool(stream.writeUInt8(glowcolor.b))
 			wrapBool(stream.writeUInt8(glowcolor.a))
 		} else {
 			wrapBool(stream.writeUInt8(0))
@@ -188,7 +181,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	}
 
 	int chunkAmount = 0;
-	wrapBool(stream.writeUInt32(chunkAmount));
+	wrapBool(stream.writeUInt8(chunkAmount));
 	for (int c = 0; c < chunkAmount; ++c) {
 		core::String id = "";
 		stream.writeString(id);
@@ -198,39 +191,53 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		wrapBool(stream.writeUInt8(chunkLength));
 	}
 
-	wrapBool(stream.writeUInt8(materialColors.size()))
+	wrapBool(stream.writeUInt8(numColors))
 	for (int i = 0; i < numColors; ++i) {
 		const core::RGBA &matcolor = palette.colors[i];
-		wrapBool(stream.writeUInt8(matcolor.b))
-		wrapBool(stream.writeUInt8(matcolor.g))
-		wrapBool(stream.writeUInt8(matcolor.r))
-		wrapBool(stream.writeUInt8(matcolor.a))
+		wrapBool(stream.writeUInt32(matcolor.rgba))
 		const core::RGBA &glowcolor = palette.glowColors[i];
 		const bool emissive = glowcolor.a > 0;
 		wrapBool(stream.writeBool(emissive))
 	}
-	uint32_t rleCount = 0u;
-	voxel::Voxel prevVoxel;
 
-	for (uint32_t x = 0u; x < width; ++x) {
-		for (uint32_t y = 0u; y < height; ++y) {
-			for (uint32_t z = 0u; z < depth; ++z) {
-				core_assert_always(sampler.setPosition(mins.x + x, mins.y + y, mins.z + z));
-				const voxel::Voxel &voxel = sampler.voxel();
-				if (prevVoxel.getColor() != voxel.getColor() || rleCount >= 255) {
-					wrapBool(writeRLE(stream, rleCount, prevVoxel, emptyColorReplacement))
-					prevVoxel = voxel;
-					rleCount = 0;
+	int layers = (int)sceneGraph.size();
+	if (layers > 0xFF) {
+		Log::warn("Failed to save to vxm - max layer size exceeded");
+		return false;
+	}
+	wrapBool(stream.writeUInt8(layers))
+
+	for (const SceneGraphNode &node : sceneGraph) {
+		voxel::RawVolume::Sampler sampler(node.volume());
+		wrapBool(stream.writeString(node.name()))
+		wrapBool(stream.writeBool(node.visible()))
+
+		uint32_t rleCount = 0u;
+		voxel::Voxel prevVoxel;
+
+		for (uint32_t x = 0u; x < width; ++x) {
+			for (uint32_t y = 0u; y < height; ++y) {
+				for (uint32_t z = 0u; z < depth; ++z) {
+					// this might fail - vxm uses the same size for each layer - we don't
+					// in case the position is outside of the node volume, we are putting
+					// the border voxel of the volume into the file
+					sampler.setPosition(mins.x + x, mins.y + y, mins.z + z);
+					const voxel::Voxel &voxel = sampler.voxel();
+					if (prevVoxel.getColor() != voxel.getColor() || rleCount >= 255) {
+						wrapBool(writeRLE(stream, rleCount, prevVoxel, emptyColorReplacement))
+						prevVoxel = voxel;
+						rleCount = 0;
+					}
+					++rleCount;
 				}
-				++rleCount;
 			}
 		}
-	}
-	if (rleCount > 0) {
-		wrapBool(writeRLE(stream, rleCount, prevVoxel, emptyColorReplacement))
-	}
+		if (rleCount > 0) {
+			wrapBool(writeRLE(stream, rleCount, prevVoxel, emptyColorReplacement))
+		}
 
-	wrapBool(stream.writeUInt8(0));
+		wrapBool(stream.writeUInt8(0));
+	}
 	wrapBool(stream.writeBool(false));
 	// has surface - set to false otherwise
 	// the following data is needed:
@@ -440,18 +447,18 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	uint8_t materialAmount;
 	wrap(stream.readUInt8(materialAmount));
 	Log::debug("Palette of size %i", (int)materialAmount);
-	if (materialAmount > voxel::PaletteMaxColors) {
+	if ((int)materialAmount > voxel::PaletteMaxColors) {
 		Log::error("Invalid material size found: %u", materialAmount);
 		return false;
 	}
 
 	for (int i = 0; i < (int) materialAmount; ++i) {
-		uint8_t blue;
-		wrap(stream.readUInt8(blue));
-		uint8_t green;
-		wrap(stream.readUInt8(green));
 		uint8_t red;
 		wrap(stream.readUInt8(red));
+		uint8_t green;
+		wrap(stream.readUInt8(green));
+		uint8_t blue;
+		wrap(stream.readUInt8(blue));
 		uint8_t alpha;
 		wrap(stream.readUInt8(alpha));
 		uint8_t emissive;
