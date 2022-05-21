@@ -133,7 +133,7 @@ TEST_F(ConvertTest, testKV6ToQb) {
 	testLoadSaveAndLoad("test.kv6", src, "test.qb", target, true, true);
 }
 
-TEST_F(ConvertTest, testQbToVXR) {
+TEST_F(ConvertTest, DISABLED_testQbToVXR) {
 	QBFormat src;
 	VXRFormat target;
 	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.vxr", target, true, false);
