@@ -70,7 +70,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		return false;
 	}
 	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
-	wrapBool(stream.writeUInt32(FourCC('V','X','M','7')));
+	wrapBool(stream.writeUInt32(FourCC('V','X','M','8')));
 	const glm::vec3 pivot(0.5f);
 
 	const voxel::Region& region = merged.first->region();
@@ -88,14 +88,19 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapBool(stream.writeFloat(pivot.x));
 	wrapBool(stream.writeFloat(pivot.y));
 	wrapBool(stream.writeFloat(pivot.z));
+
+	wrapBool(stream.writeFloat(0.0f));
+	wrapBool(stream.writeFloat(0.0f));
+	wrapBool(stream.writeFloat(0.0f));
+	wrapBool(stream.writeFloat(0.0f));
+
 	int lodLevels = 1;
 	wrapBool(stream.writeInt32(lodLevels));
 	for (int lod = 0; lod < lodLevels; ++lod) {
 		wrapBool(stream.writeUInt32(0)); // texture dim x
 		wrapBool(stream.writeUInt32(0)); // texture dim y
-		static const char *texNames[] = {"Diffuse", "Emissive"};
 		const int texAmount = 0; // lengthof(texNames);
-		wrapBool(stream.writeUInt32(texAmount)); // texamount
+		wrapBool(stream.writeUInt32(texAmount));
 
 		for (int i = 0; i < texAmount; ++i) {
 			stream.writeUInt8(0); // zipped size for the rgba texture
