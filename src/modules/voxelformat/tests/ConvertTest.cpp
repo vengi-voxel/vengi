@@ -91,6 +91,12 @@ TEST_F(ConvertTest, testSproxelToQb) {
 	testLoadSaveAndLoad("rgb.csv", src, "test.qb", target, true, true);
 }
 
+TEST_F(ConvertTest, testQbToQb) {
+	QBFormat src;
+	QBFormat target;
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight2.qb", target, true, false);
+}
+
 TEST_F(ConvertTest, testQbToVXM) {
 	QBFormat src;
 	VXMFormat target;
