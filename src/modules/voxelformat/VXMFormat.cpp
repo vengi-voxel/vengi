@@ -194,7 +194,10 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapBool(stream.writeUInt8(numColors))
 	for (int i = 0; i < numColors; ++i) {
 		const core::RGBA &matcolor = palette.colors[i];
-		wrapBool(stream.writeUInt32(matcolor.rgba))
+		wrapBool(stream.writeUInt8(matcolor.b))
+		wrapBool(stream.writeUInt8(matcolor.g))
+		wrapBool(stream.writeUInt8(matcolor.r))
+		wrapBool(stream.writeUInt8(matcolor.a))
 		const core::RGBA &glowcolor = palette.glowColors[i];
 		const bool emissive = glowcolor.a > 0;
 		wrapBool(stream.writeBool(emissive))

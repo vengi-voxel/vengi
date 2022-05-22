@@ -10,26 +10,26 @@ namespace voxelformat {
 class VXMFormatTest: public AbstractVoxFormatTest {
 };
 
-TEST_F(VXMFormatTest, DISABLED_testLoadRGB) {
+TEST_F(VXMFormatTest, DISABLED_testRGB) {
 	testRGB("rgb.vxm");
 }
 
-TEST_F(VXMFormatTest, testLoad) {
+TEST_F(VXMFormatTest, testLoadVersion4) {
 	canLoad("test.vxm");
 }
 
-TEST_F(VXMFormatTest, testLoadFileCreatedBySandboxVoxeditVersion12) {
+TEST_F(VXMFormatTest, testLoadVersion12) {
 	canLoad("test2.vxm");
 }
 
-TEST_F(VXMFormatTest, testSaveVerySmallVoxel) {
+TEST_F(VXMFormatTest, testSaveSmallVolume) {
 	VXMFormat f;
-	testSaveSmallVolume("verysmallvolumesavetest.vxm", &f);
+	testSaveSmallVolume("testSaveSmallVolume.vxm", &f);
 }
 
-TEST_F(VXMFormatTest, testSaveSmallVoxel) {
+TEST_F(VXMFormatTest, testSaveLoadVoxel) {
 	VXMFormat f;
-	testSaveLoadVoxel("sandbox-smallvolumesavetest.vxm", &f);
+	testSaveLoadVoxel("testSaveLoadVoxel.vxm", &f);
 }
 
 }
