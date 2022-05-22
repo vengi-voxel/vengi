@@ -5,6 +5,8 @@
 #include "RawVolumeRenderer.h"
 #include "core/Common.h"
 #include "core/Trace.h"
+#include <glm/ext/scalar_constants.hpp>
+#include <glm/gtc/epsilon.hpp>
 #include "video/FrameBufferConfig.h"
 #include "video/ScopedFrameBuffer.h"
 #include "video/Texture.h"
@@ -290,12 +292,18 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, const voxel::VertexArray&
 }
 
 void RawVolumeRenderer::setAmbientColor(const glm::vec3& color) {
+	if (glm::all(glm::epsilonEqual(_ambientColor, color, 0.001f))) {
+		return;
+	}
 	_ambientColor = color;
 	// force updating the cached uniform values
 	_voxelShader.markDirty();
 }
 
 void RawVolumeRenderer::setDiffuseColor(const glm::vec3& color) {
+	if (glm::all(glm::epsilonEqual(_diffuseColor, color, 0.001f))) {
+		return;
+	}
 	_diffuseColor = color;
 	// force updating the cached uniform values
 	_voxelShader.markDirty();

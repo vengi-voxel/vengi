@@ -1792,7 +1792,7 @@ bool SceneManager::init() {
 	}
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
-	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "0.2 0.2 0.2");
+	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "1.0 1.0 1.0");
 	_diffuseColor = core::Var::get(cfg::VoxEditDiffuseColor, "1.0 1.0 1.0");
 	_cameraZoomSpeed = core::Var::get(cfg::VoxEditCameraZoomSpeed, "10.0");
 	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
@@ -1899,14 +1899,8 @@ bool SceneManager::update(double nowSeconds) {
 		});
 	}
 
-	if (_ambientColor->isDirty()) {
-		_volumeRenderer.setAmbientColor(_ambientColor->vec3Val());
-		_ambientColor->markClean();
-	}
-	if (_diffuseColor->isDirty()) {
-		_volumeRenderer.setDiffuseColor(_diffuseColor->vec3Val());
-		_diffuseColor->markClean();
-	}
+	_volumeRenderer.setAmbientColor(_ambientColor->vec3Val());
+	_volumeRenderer.setDiffuseColor(_diffuseColor->vec3Val());
 	animate(nowSeconds);
 	autosave();
 	return loadedNewScene;
