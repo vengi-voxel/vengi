@@ -298,13 +298,18 @@ SceneGraphNode *SceneGraph::operator[](int modelIdx) {
 
 SceneGraph::MergedVolumePalette SceneGraph::merge() const {
 	core::DynamicArray<const voxel::RawVolume *> rawVolumes;
-	rawVolumes.reserve(_nodes.size() - 1);
+	rawVolumes.reserve(_nodes.size());
 	const voxel::Palette *pal = nullptr;
 	for (const SceneGraphNode &node : *this) {
 		core_assert(node.type() == SceneGraphNodeType::Model);
 		core_assert(node.volume() != nullptr);
 		// TODO: this could get improved in trying to build the best possible palette
 		// but we'll just use it like this now...
+		if (pal) {
+			if (pal->hash() != node.palette().hash()) {
+				Log::warn("Merging nodes with different palettes results in invalid colors");
+			}
+		}
 		pal = &node.palette();
 		rawVolumes.push_back(node.volume());
 	}
