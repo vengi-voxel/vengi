@@ -16,7 +16,7 @@ TEST_F(MeshFormatTest, testSubdivide) {
 	tri.vertices[1] = glm::vec3(-8.77272701, 11.1000004, -0.154543981);
 	tri.vertices[2] = glm::vec3(8.77272701, 11.1000004, -0.154543981);
 	MeshFormat::subdivideTri(tri, tinyTris);
-	EXPECT_EQ(4u, tinyTris.size());
+	EXPECT_EQ(1024u, tinyTris.size());
 }
 
 } // namespace voxelformat
