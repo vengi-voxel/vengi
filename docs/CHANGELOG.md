@@ -31,6 +31,7 @@ General:
    - Load the palette from the source file
    - Fixed vxm file path when saving vxr
    - Save vxmc (version 12) now
+   - Changed default ambient color and gamma values
 
 VoxEdit:
 

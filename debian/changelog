@@ -20,6 +20,7 @@ vengi (0.0.20.0-1) UNRELEASED; urgency=low
   * Load the palette from the source file
   * Fixed vxm file path when saving vxr
   * Save vxmc (version 12) now
+  * Changed default ambient color and gamma values
 
   * VoxEdit:
   * Fixed start problems on some systems with multisampled framebuffers
