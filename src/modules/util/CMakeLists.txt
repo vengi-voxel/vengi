@@ -1,5 +1,6 @@
 set(SRCS
 	EMailValidator.h EMailValidator.cpp
+	Base64.cpp Base64.h
 	BufferUtil.cpp BufferUtil.h
 	Console.h Console.cpp
 	Easing.h
@@ -12,6 +13,7 @@ set(LIB util)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math command)
 
 set(TEST_SRCS
+	tests/Base64Test.cpp
 	tests/BufferUtilTest.cpp
 	tests/ConsoleTest.cpp
 	tests/EMailValidatorTest.cpp
