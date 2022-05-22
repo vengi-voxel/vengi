@@ -114,7 +114,7 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta
 	EXPECT_EQ(1u, sceneGraph.size());
 
 	voxel::Palette palette;
-	palette.nippon();
+	EXPECT_TRUE(palette.nippon());
 
 	const core::RGBA red = palette.colors[37];
 	const core::RGBA green = palette.colors[149];
