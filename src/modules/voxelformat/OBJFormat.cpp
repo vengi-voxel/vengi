@@ -33,24 +33,18 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool OBJFormat::writeMtlFile(const core::String &mtlName, const core::String &paletteName) const {
-	const io::FilePtr &file = io::filesystem()->open(mtlName, io::FileMode::SysWrite);
-	if (!file->validHandle()) {
-		Log::error("Failed to create mtl file at %s", file->name().c_str());
+bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId, const core::String &mapKd) const {
+	if (!stream.writeStringFormat(false, "\nnewmtl %s\n", mtlId.c_str())) {
+		Log::error("Failed to write obj newmtl");
 		return false;
 	}
-	io::FileStream stream(file);
-	wrapBool(stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/vengi\n"))
-	wrapBool(stream.writeStringFormat(false, "\n"))
-	wrapBool(stream.writeStringFormat(false, "newmtl palette\n"))
-	wrapBool(stream.writeStringFormat(false, "Ka 1.000000 1.000000 1.000000\n"))
-	wrapBool(stream.writeStringFormat(false, "Kd 1.000000 1.000000 1.000000\n"))
-	wrapBool(stream.writeStringFormat(false, "Ks 0.000000 0.000000 0.000000\n"))
-	wrapBool(stream.writeStringFormat(false, "Tr 1.000000\n"))
-	wrapBool(stream.writeStringFormat(false, "illum 1\n"))
-	wrapBool(stream.writeStringFormat(false, "Ns 0.000000\n"))
-	const core::String& paletteFilename = core::string::extractFilenameWithExtension(paletteName);
-	if (!stream.writeStringFormat(false, "map_Kd %s\n", paletteFilename.c_str())) {
+	wrapBool(stream.writeString("Ka 1.000000 1.000000 1.000000\n", false))
+	wrapBool(stream.writeString("Kd 1.000000 1.000000 1.000000\n", false))
+	wrapBool(stream.writeString("Ks 0.000000 0.000000 0.000000\n", false))
+	wrapBool(stream.writeString("Tr 1.000000\n", false))
+	wrapBool(stream.writeString("illum 1\n", false))
+	wrapBool(stream.writeString("Ns 0.000000\n", false))
+	if (!stream.writeStringFormat(false, "map_Kd %s\n", mapKd.c_str())) {
 		Log::error("Failed to write obj map_Kd");
 		return false;
 	}
@@ -66,6 +60,21 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 	Log::debug("Exporting %i layers", (int)meshes.size());
 
+	core::String mtlname = core::string::stripExtension(filename);
+	mtlname.append(".mtl");
+	Log::debug("Use mtl file: %s", mtlname.c_str());
+
+	const io::FilePtr &file = io::filesystem()->open(mtlname, io::FileMode::SysWrite);
+	if (!file->validHandle()) {
+		Log::error("Failed to create mtl file at %s", file->name().c_str());
+		return false;
+	}
+	io::FileStream matlstream(file);
+	wrapBool(matlstream.writeString("# version " PROJECT_VERSION " github.com/mgerhardy/vengi\n", false))
+	wrapBool(matlstream.writeString("\n", false))
+
+	core::Map<uint64_t, int> paletteMaterialIndices((int)sceneGraph.size());
+
 	int idxOffset = 0;
 	int texcoordOffset = 0;
 	for (const auto &meshExt : meshes) {
@@ -80,17 +89,10 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 		const voxel::Palette &palette = graphNode.palette();
 
-		core::String mtlname = core::string::stripExtension(filename);
-		mtlname.append(core::String::format("%" PRIu64, palette.hash()));
-		mtlname.append(".mtl");
-
 		const core::String hashId = core::String::format("%" PRIu64, palette.hash());
-		core::String palettename = core::string::stripExtension(filename);
-		palettename.append(hashId);
-		palettename.append(".png");
 
 		// 1 x 256 is the texture format that we are using for our palette
-		const float texcoord = 1.0f / (float)palette.colorCount;
+		const float texcoord = 1.0f / (float)voxel::PaletteMaxColors;
 		// it is only 1 pixel high - sample the middle
 		const float v1 = 0.5f;
 		const glm::vec3 offset(mesh->getOffset());
@@ -102,7 +104,10 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		}
 		stream.writeStringFormat(false, "o %s\n", objectName);
 		stream.writeStringFormat(false, "mtllib %s\n", core::string::extractFilenameWithExtension(mtlname).c_str());
-		wrapBool(stream.writeStringFormat(false, "usemtl palette\n"))
+		if (!stream.writeStringFormat(false, "usemtl %s\n", hashId.c_str())) {
+			Log::error("Failed to write obj usemtl %s\n", hashId.c_str());
+			return false;
+		}
 
 		for (int i = 0; i < nv; ++i) {
 			const voxel::VoxelVertex &v = vertices[i];
@@ -175,11 +180,18 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		}
 		idxOffset += nv;
 
-		if (!writeMtlFile(mtlname, palettename)) {
-			return false;
-		}
-		if (!palette.save(palettename.c_str())) {
-			return false;
+		if (paletteMaterialIndices.find(palette.hash()) == paletteMaterialIndices.end()) {
+			core::String palettename = core::string::stripExtension(filename);
+			palettename.append(hashId);
+			palettename.append(".png");
+			paletteMaterialIndices.put(palette.hash(), 1);
+			const core::String &mapKd = core::string::extractFilenameWithExtension(palettename);
+			if (!writeMtlFile(matlstream, hashId, mapKd)) {
+				return false;
+			}
+			if (!palette.save(palettename.c_str())) {
+				return false;
+			}
 		}
 	}
 	return true;

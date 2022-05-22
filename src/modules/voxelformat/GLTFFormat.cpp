@@ -160,7 +160,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			continue;
 		}
 		// 1 x 256 is the texture format that we are using for our palette
-		const float texcoord = 1.0f / (float)palette.colorCount;
+		const float texcoord = 1.0f / (float)voxel::PaletteMaxColors;
 
 		int meshExtIdx = 0;
 		meshIdxNodeMap.get(nodeId, meshExtIdx);

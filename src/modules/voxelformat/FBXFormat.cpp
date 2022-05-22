@@ -152,7 +152,7 @@ Objects: {
 
 		if (withTexCoords) {
 			// 1 x 256 is the texture format that we are using for our palette
-			const float texcoord = 1.0f / (float)palette.colorCount;
+			const float texcoord = 1.0f / (float)voxel::PaletteMaxColors;
 			// it is only 1 pixel high - sample the middle
 			const float v1 = 0.5f;
 			wrapBool(stream.writeString("\t\tLayerElementUV: 0 {\n", false))

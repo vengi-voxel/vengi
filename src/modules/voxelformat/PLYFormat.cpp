@@ -65,7 +65,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 		const voxel::Palette &palette = graphNode.palette();
 		// 1 x 256 is the texture format that we are using for our palette
-		const float texcoord = 1.0f / (float)palette.colorCount;
+		const float texcoord = 1.0f / (float)voxel::PaletteMaxColors;
 		// it is only 1 pixel high - sample the middle
 		const float v1 = 0.5f;
 

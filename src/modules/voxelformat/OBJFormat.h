@@ -5,6 +5,7 @@
 #pragma once
 
 #include "MeshFormat.h"
+#include "io/Stream.h"
 
 namespace tinyobj {
 struct mesh_t;
@@ -18,7 +19,7 @@ namespace voxelformat {
  */
 class OBJFormat : public MeshFormat {
 private:
-	bool writeMtlFile(const core::String& mtlName, const core::String &paletteName) const;
+	bool writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId, const core::String &mapKd) const;
 	static void calculateAABB(const tinyobj::mesh_t &mesh, const tinyobj::attrib_t &attrib, glm::vec3 &mins,
 							  glm::vec3 &maxs);
 	static void subdivideShape(const tinyobj::mesh_t &mesh, const core::StringMap<image::ImagePtr> &textures,
