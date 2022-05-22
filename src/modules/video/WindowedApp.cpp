@@ -403,7 +403,7 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER, "Activate shadow debug rendering", core::Var::boolValidator);
 	core::Var::get(cfg::ClientShadowMapSize, "1024");
 	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER, "Activate cascade shadow map debug rendering", core::Var::boolValidator);
-	core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER, "Gamma correction");
+	core::Var::get(cfg::ClientGamma, "1.0", core::CV_SHADER, "Gamma correction");
 	core::Var::get(cfg::ClientWindowDisplay, 0);
 	core::Var::get(cfg::ClientOpenGLVersion, "3.3", core::CV_READONLY);
 	core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");

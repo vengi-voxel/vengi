@@ -46,7 +46,7 @@ protected:
 		core::Var::get(cfg::ClientWater, "1", core::CV_SHADER)->setVal(val.clientWater);
 		core::Var::get(cfg::ClientDebugShadow, "1", core::CV_SHADER)->setVal(val.clientDebugShadow);
 		core::Var::get(cfg::ClientShadowMapSize, "128", core::CV_SHADER);
-		core::Var::get(cfg::ClientGamma, "2.2", core::CV_SHADER);
+		core::Var::get(cfg::ClientGamma, "1.0", core::CV_SHADER);
 		core::Var::get(cfg::ClientBloom, "false");
 		core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
 		core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);

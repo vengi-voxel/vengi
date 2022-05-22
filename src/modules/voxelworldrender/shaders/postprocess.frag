@@ -4,7 +4,7 @@ uniform vec4 u_color;
 layout(location = 0) $out vec4 o_color;
 
 #ifndef cl_gamma
-#define cl_gamma 2.2
+#define cl_gamma 1.0
 #endif
 
 void main(void) {
