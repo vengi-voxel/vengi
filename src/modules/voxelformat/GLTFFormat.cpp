@@ -103,20 +103,19 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		const voxel::Palette &palette = graphNode.palette();
 
 		int materialId = -1;
+		int texcoordIndex = 0;
 		if (graphNode.type() == SceneGraphNodeType::Model) {
 			const auto palTexIter = paletteMaterialIndices.find(palette.hash());
 			if (palTexIter != paletteMaterialIndices.end()) {
 				materialId = palTexIter->second;
 				Log::debug("Re-use material id %i for hash %" PRIu64, materialId, palette.hash());
 			} else {
-				const int textureIndex = (int)m.textures.size();
-				const int imageIndex = (int)m.images.size();
-
 				const core::String hashId = core::String::format("%" PRIu64, palette.hash());
 				core::String palettename = core::string::stripExtension(filename);
 				palettename.append(hashId);
 				palettename.append(".png");
 
+				const int imageIndex = (int)m.images.size();
 				{
 					tinygltf::Image colorPaletteImg;
 					colorPaletteImg.uri = core::string::extractFilenameWithExtension(palettename).c_str();
@@ -126,18 +125,19 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 				if (!palette.save(palettename.c_str())) {
 					Log::error("Failed to save palette data");
 				}
-
-				// TODO: save emissiveTexture
+				const int textureIndex = (int)m.textures.size();
 				{
 					tinygltf::Texture paletteTexture;
 					paletteTexture.source = imageIndex;
 					m.textures.emplace_back(core::move(paletteTexture));
 				}
+				// TODO: save emissiveTexture
 
 				{
 					tinygltf::Material mat;
 					if (withTexCoords) {
 						mat.pbrMetallicRoughness.baseColorTexture.index = textureIndex;
+						mat.pbrMetallicRoughness.baseColorTexture.texCoord = texcoordIndex;
 					} else if (withColor) {
 						mat.pbrMetallicRoughness.baseColorFactor = {1.0f, 1.0f, 1.0f, 1.0f};
 					}
@@ -363,7 +363,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			meshPrimitive.attributes["POSITION"] =
 				primIdxFactor * nthNodeIdx + 1; // The index of the accessor for positions
 			if (withTexCoords) {
-				meshPrimitive.attributes["TEXCOORD_0"] = primIdxFactor * nthNodeIdx + 2;
+				const core::String &texcoordsKey = core::String::format("TEXCOORD_%i", texcoordIndex);
+				meshPrimitive.attributes[texcoordsKey.c_str()] = primIdxFactor * nthNodeIdx + 2;
 			} else if (withColor) {
 				meshPrimitive.attributes["COLOR_0"] = primIdxFactor * nthNodeIdx + 2;
 			}
