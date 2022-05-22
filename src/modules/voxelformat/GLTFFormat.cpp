@@ -127,6 +127,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 					Log::error("Failed to save palette data");
 				}
 
+				// TODO: save emissiveTexture
 				{
 					tinygltf::Texture paletteTexture;
 					paletteTexture.source = imageIndex;
