@@ -123,6 +123,7 @@ bool Palette::save(const char *name) const {
 	}
 	image::Image img(name);
 	Log::info("Save palette to %s", name);
+	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
 	img.loadRGBA((const uint8_t *)colors, sizeof(colors), lengthof(colors), 1);
 	if (!img.writePng()) {
 		Log::warn("Failed to write the palette file '%s'", name);
