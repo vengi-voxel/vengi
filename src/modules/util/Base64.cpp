@@ -3,12 +3,12 @@
  */
 
 #include "Base64.h"
-#include "SDL_stdinc.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
+#include <ctype.h>
 
 namespace util {
 namespace Base64 {
@@ -48,7 +48,7 @@ static CORE_FORCE_INLINE bool decode0(uint8_t src[4], io::WriteStream &out, int 
 }
 
 static CORE_FORCE_INLINE bool validbyte(const uint8_t c) {
-	return c == '+' || c == '/' || SDL_isalnum(c);
+	return c == '+' || c == '/' || isalnum(c);
 }
 
 } // namespace _priv
