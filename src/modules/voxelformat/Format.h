@@ -23,6 +23,7 @@ namespace voxelformat {
 
 // the max amount of voxels - [0-255]
 static constexpr int MaxRegionSize = 256;
+#define VOXELFORMAT_PROPERTY_COLOR "color"
 
 /**
  * @brief Base class for all voxel formats.

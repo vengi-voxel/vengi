@@ -168,14 +168,20 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx
 	bool hidden = ogt_group.hidden;
 	const char *name = "Group";
 	const uint32_t layerIdx = ogt_group.layer_index;
+	SceneGraphNode node(SceneGraphNodeType::Group);
 	if (layerIdx < scene->num_layers) {
 		const ogt_vox_layer &layer = scene->layers[layerIdx];
 		hidden |= layer.hidden;
 		if (layer.name != nullptr) {
 			name = layer.name;
 		}
+		core::RGBA color;
+		color.r = layer.color.r;
+		color.g = layer.color.g;
+		color.b = layer.color.b;
+		color.a = layer.color.a;
+		node.setProperty(VOXELFORMAT_PROPERTY_COLOR, core::Color::toHex(color));
 	}
-	SceneGraphNode node(SceneGraphNodeType::Group);
 	loadKeyFrames(node, ogt_group.transform_anim.keyframes, ogt_group.transform_anim.num_keyframes);
 	node.setName(name);
 	node.setVisible(!hidden);
@@ -344,6 +350,15 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		ogt_vox_layer &layer = layers[mdlIdx];
 		layer.name = node.name().c_str();
 		layer.hidden = !node.visible();
+		const core::String& colorString = node.property(VOXELFORMAT_PROPERTY_COLOR);
+		if (!colorString.empty()) {
+			const glm::vec4 &layerColor = core::Color::fromHex(colorString.c_str());
+			const core::RGBA layerRGBA = core::Color::getRGBA(layerColor);
+			layer.color.r = layerRGBA.r;
+			layer.color.g = layerRGBA.g;
+			layer.color.b = layerRGBA.b;
+			layer.color.a = layerRGBA.a;
+		}
 
 		ogt_vox_instance &instance = instances[mdlIdx];
 		instance.group_index = 0;

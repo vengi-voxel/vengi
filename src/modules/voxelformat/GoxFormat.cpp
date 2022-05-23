@@ -288,10 +288,12 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 			// "base_id" int
 			// "material" int (index)
 			node.setProperty(dictKey, core::string::toString(*(const int32_t*)dictValue));
-		} else if (!strcmp(dictKey, "box") || !strcmp(dictKey, "shape") || !strcmp(dictKey, "color")) {
+		} else if (!strcmp(dictKey, "color")) {
+			const core::RGBA color = *(const uint32_t*)dictValue;
+			node.setProperty(VOXELFORMAT_PROPERTY_COLOR, core::Color::toHex(color));
+		} else if (!strcmp(dictKey, "box") || !strcmp(dictKey, "shape")) {
 			// "box" 4x4 bounding box float
 			// "shape" layer layer - currently unsupported TODO
-			// "color" 4xbyte
 		}
 	}
 	// TODO: fix this properly - without mirroring
@@ -533,6 +535,12 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const SceneGraph
 		glm::mat4 mat(1.0f);
 		wrapBool(saveChunk_DictEntry(stream, "mat", (const uint8_t*)glm::value_ptr(mat), sizeof(mat)))
 		wrapBool(saveChunk_DictEntry(stream, "id", layerId))
+		const core::String &layerColorStr = node.property(VOXELFORMAT_PROPERTY_COLOR);
+		if (!layerColorStr.empty()) {
+			const glm::vec4 &layerColor = core::Color::fromHex(layerColorStr.c_str());
+			const core::RGBA &layerRGBA = core::Color::getRGBA(layerColor);
+			wrapBool(saveChunk_DictEntry(stream, "color", layerRGBA.rgba))
+		}
 #if 0
 		wrapBool(saveChunk_DictEntry(stream, "base_id", &layer->base_id))
 		wrapBool(saveChunk_DictEntry(stream, "material", &material_idx))
