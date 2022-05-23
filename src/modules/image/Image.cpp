@@ -8,10 +8,12 @@
 #include "core/StringUtil.h"
 #include "core/concurrent/ThreadPool.h"
 #include "core/Assert.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/Filesystem.h"
 #include "core/StandardLib.h"
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
+#include "util/Base64.h"
 
 #define STBI_ASSERT core_assert
 #define STBI_MALLOC core_malloc
@@ -180,6 +182,15 @@ bool Image::writePng() const {
 		return false;
 	}
 	return stbi_write_png(_name.c_str(), _width, _height, _depth, (const void*)_data, _width * _depth) != 0;
+}
+
+core::String Image::pngBase64() const {
+	io::BufferedReadWriteStream s;
+	if (!writePng(s, _data, _width, _height, _depth)) {
+		return "";
+	}
+	s.seek(0);
+	return util::Base64::encode(s);
 }
 
 }

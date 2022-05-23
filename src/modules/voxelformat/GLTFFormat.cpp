@@ -12,10 +12,12 @@
 #include "core/StringUtil.h"
 #include "core/concurrent/Lock.h"
 #include "engine-config.h"
+#include "image/Image.h"
 #include "io/StdStreamBuf.h"
 #include "io/Filesystem.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
+#include "voxel/Palette.h"
 #include "voxel/VoxelVertex.h"
 #include "core/collection/DynamicArray.h"
 #include "voxelformat/SceneGraph.h"
@@ -111,20 +113,18 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 				Log::debug("Re-use material id %i for hash %" PRIu64, materialId, palette.hash());
 			} else {
 				const core::String hashId = core::String::format("%" PRIu64, palette.hash());
-				core::String palettename = core::string::stripExtension(filename);
-				palettename.append(hashId);
-				palettename.append(".png");
 
 				const int imageIndex = (int)m.images.size();
 				{
 					tinygltf::Image colorPaletteImg;
-					colorPaletteImg.uri = core::string::extractFilenameWithExtension(palettename).c_str();
+					image::Image image("pal");
+					image.loadRGBA((const unsigned char *)palette.colors, sizeof(palette.colors), voxel::PaletteMaxColors, 1);
+					const core::String &pal64 = image.pngBase64();
+					colorPaletteImg.uri = "data:image/png;base64,";
+					colorPaletteImg.uri += pal64.c_str();
 					m.images.emplace_back(core::move(colorPaletteImg));
 				}
 
-				if (!palette.save(palettename.c_str())) {
-					Log::error("Failed to save palette data");
-				}
 				const int textureIndex = (int)m.textures.size();
 				{
 					tinygltf::Texture paletteTexture;

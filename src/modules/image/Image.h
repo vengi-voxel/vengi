@@ -37,6 +37,7 @@ public:
 	static bool writePng(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth);
 	static bool writePng(const char *name, const uint8_t *buffer, int width, int height, int depth);
 	bool writePng() const;
+	core::String pngBase64() const;
 
 	const uint8_t* at(int x, int y) const;
 
