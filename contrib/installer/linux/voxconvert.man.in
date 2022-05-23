@@ -324,6 +324,8 @@ Config vars to control the meshing:
 \fBvoxformat_withcolor\fP: Export vertex colors
 .PP
 \fBvoxformat_withtexcoords\fP: Export texture coordinates
+.PP
+\fBvoxformat_transform_mesh\fP: Apply the keyframe transforms to the mesh
 
 .SH HOMEPAGE
 https://github.com/mgerhardy/vengi
