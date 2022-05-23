@@ -25,7 +25,7 @@ Dump the scene graph of the input file.
 
 .TP
 \fB\--export-palette\fR
-Export the used palette data into an image. Use in combination with --src-palette.
+Export the used palette data into an image.
 
 .TP
 \fB\--export-layers\fR
@@ -109,10 +109,6 @@ Apply the given lua script to the output volume.
 .TP
 \fB\--split <x:y:z>\fR
 Slices the volumes into pieces of the given size
-
-.TP
-\fB\--src-palette|-p\fR
-Keep the source palette and don't perform quantization.
 
 .TP
 \fB\--translate|-t <x:y:z>\fR
@@ -286,7 +282,7 @@ The scripting docs are available at https://mgerhardy.github.io/vengi/LUAScript/
 .SS Extract palette png
 Saves the png in the same dir as the vox file:
 
-\fB@NAME@ --src-palette --export-palette --input infile.vox --output outfile.vox\fP
+\fB@NAME@ --export-palette --input infile.vox --output outfile.vox\fP
 
 There will be an \fBinfile.png\fP now.
 

@@ -49,6 +49,7 @@ VoxEdit:
 VoxConvert:
 
    - Extended `--dump` to also show the key frames and the voxel count
+   - Removed `--src-palette` (src palette is always used)
 
 ## 0.0.19 (2022-03-27)
 

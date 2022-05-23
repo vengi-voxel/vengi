@@ -51,7 +51,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--crop").setDescription("Reduce the volumes to their real voxel sizes");
 	registerArg("--dump").setDescription("Dump the scene graph of the input file");
 	registerArg("--export-layers").setDescription("Export all the layers of a scene into single files");
-	registerArg("--export-palette").setDescription("Export the used palette data into an image. Use in combination with --src-palette");
+	registerArg("--export-palette").setDescription("Export the used palette data into an image");
 	registerArg("--filter").setDescription("Layer filter. For example '1-4,6'");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--image-as-plane").setDescription("Import given input images as planes");
@@ -69,7 +69,6 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
 	registerArg("--split").setDescription("Slices the volumes into pieces of the given size <x:y:z>");
-	registerArg("--src-palette").setShort("-p").setDescription("Keep the source palette and don't perform quantization");
 	registerArg("--translate").setShort("-t").setDescription("Translate the volumes by x (right), y (up), z (back)");
 
 	_mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, "Merge similar quads to optimize the mesh");
@@ -146,39 +145,38 @@ app::AppState VoxConvert::onInit() {
 		outfile = getArgVal("--output");
 	}
 
-	_mergeVolumes = hasArg("--merge");
-	_scaleVolumes = hasArg("--scale");
-	_mirrorVolumes = hasArg("--mirror");
-	_rotateVolumes = hasArg("--rotate");
+	_mergeVolumes     = hasArg("--merge");
+	_scaleVolumes     = hasArg("--scale");
+	_mirrorVolumes    = hasArg("--mirror");
+	_rotateVolumes    = hasArg("--rotate");
 	_translateVolumes = hasArg("--translate");
-	_srcPalette = hasArg("--src-palette");
-	_exportPalette = hasArg("--export-palette");
-	_exportLayers = hasArg("--export-layers");
-	_changePivot = hasArg("--pivot");
-	_cropVolumes = hasArg("--crop");
-	_splitVolumes = hasArg("--split");
-	_dumpSceneGraph = hasArg("--dump");
-	_resizeVolumes = hasArg("--resize");
+	_exportPalette    = hasArg("--export-palette");
+	_exportLayers     = hasArg("--export-layers");
+	_changePivot      = hasArg("--pivot");
+	_cropVolumes      = hasArg("--crop");
+	_splitVolumes     = hasArg("--split");
+	_dumpSceneGraph   = hasArg("--dump");
+	_resizeVolumes    = hasArg("--resize");
 
 	Log::info("Options");
 	if (voxelformat::isMeshFormat(outfile)) {
-		Log::info("* mergeQuads:                    - %s", _mergeQuads->strVal().c_str());
-		Log::info("* reuseVertices:                 - %s", _reuseVertices->strVal().c_str());
-		Log::info("* ambientOcclusion:              - %s", _ambientOcclusion->strVal().c_str());
-		Log::info("* scale:                         - %s", _scale->strVal().c_str());
-		Log::info("* scaleX:                        - %s", _scaleX->strVal().c_str());
-		Log::info("* scaleY:                        - %s", _scaleY->strVal().c_str());
-		Log::info("* scaleZ:                        - %s", _scaleZ->strVal().c_str());
-		Log::info("* quads:                         - %s", _quads->strVal().c_str());
-		Log::info("* withColor:                     - %s", _withColor->strVal().c_str());
-		Log::info("* withTexCoords:                 - %s", _withTexCoords->strVal().c_str());
+		Log::info("* mergeQuads:        - %s", _mergeQuads->strVal().c_str());
+		Log::info("* reuseVertices:     - %s", _reuseVertices->strVal().c_str());
+		Log::info("* ambientOcclusion:  - %s", _ambientOcclusion->strVal().c_str());
+		Log::info("* scale:             - %s", _scale->strVal().c_str());
+		Log::info("* scaleX:            - %s", _scaleX->strVal().c_str());
+		Log::info("* scaleY:            - %s", _scaleY->strVal().c_str());
+		Log::info("* scaleZ:            - %s", _scaleZ->strVal().c_str());
+		Log::info("* quads:             - %s", _quads->strVal().c_str());
+		Log::info("* withColor:         - %s", _withColor->strVal().c_str());
+		Log::info("* withTexCoords:     - %s", _withTexCoords->strVal().c_str());
 	}
-	if (!_srcPalette) {
-		Log::info("* palette:                       - %s", _palette->strVal().c_str());
+	if (!_palette->strVal().empty()) {
+		Log::info("* palette:           - %s", _palette->strVal().c_str());
 	}
-	Log::info("* input files:                   - %s", infilesstr.c_str());
+	Log::info("* input files:       - %s", infilesstr.c_str());
 	if (!outfile.empty()) {
-		Log::info("* output files:                  - %s", outfile.c_str());
+		Log::info("* output files:      - %s", outfile.c_str());
 	}
 
 	if (io::isImage(outfile) && infiles.size() == 1) {
@@ -198,27 +196,23 @@ app::AppState VoxConvert::onInit() {
 	core::String scriptParameters;
 	if (hasArg("--script")) {
 		scriptParameters = getArgVal("--script");
-		Log::info("* script:                        - %s", scriptParameters.c_str());
+		Log::info("* script:            - %s", scriptParameters.c_str());
 	}
-	Log::info("* dump scene graph:              - %s", (_dumpSceneGraph ? "true" : "false"));
-	Log::info("* merge volumes:                 - %s", (_mergeVolumes ? "true" : "false"));
-	Log::info("* scale volumes:                 - %s", (_scaleVolumes ? "true" : "false"));
-	Log::info("* crop volumes:                  - %s", (_cropVolumes ? "true" : "false"));
-	Log::info("* split volumes:                 - %s", (_splitVolumes ? "true" : "false"));
-	Log::info("* change pivot:                  - %s", (_changePivot ? "true" : "false"));
-	Log::info("* mirror volumes:                - %s", (_mirrorVolumes ? "true" : "false"));
-	Log::info("* translate volumes:             - %s", (_translateVolumes ? "true" : "false"));
-	Log::info("* rotate volumes:                - %s", (_rotateVolumes ? "true" : "false"));
-	Log::info("* use source file palette:       - %s", (_srcPalette ? "true" : "false"));
-	Log::info("* export used palette as image:  - %s", (_exportPalette ? "true" : "false"));
-	Log::info("* export layers:                 - %s", (_exportLayers ? "true" : "false"));
-	Log::info("* resize volumes:                - %s", (_resizeVolumes ? "true" : "false"));
+	Log::info("* dump scene graph:  - %s", (_dumpSceneGraph   ? "true" : "false"));
+	Log::info("* merge volumes:     - %s", (_mergeVolumes     ? "true" : "false"));
+	Log::info("* scale volumes:     - %s", (_scaleVolumes     ? "true" : "false"));
+	Log::info("* crop volumes:      - %s", (_cropVolumes      ? "true" : "false"));
+	Log::info("* split volumes:     - %s", (_splitVolumes     ? "true" : "false"));
+	Log::info("* change pivot:      - %s", (_changePivot      ? "true" : "false"));
+	Log::info("* mirror volumes:    - %s", (_mirrorVolumes    ? "true" : "false"));
+	Log::info("* translate volumes: - %s", (_translateVolumes ? "true" : "false"));
+	Log::info("* rotate volumes:    - %s", (_rotateVolumes    ? "true" : "false"));
+	Log::info("* export palette:    - %s", (_exportPalette    ? "true" : "false"));
+	Log::info("* export layers:     - %s", (_exportLayers     ? "true" : "false"));
+	Log::info("* resize volumes:    - %s", (_resizeVolumes    ? "true" : "false"));
 
-	if (!_srcPalette) {
-		voxel::Palette palette;
-		if (!palette.load(_palette->strVal().c_str())) {
-			Log::warn("Failed to init material colors");
-		}
+	voxel::Palette palette;
+	if (palette.load(_palette->strVal().c_str())) {
 		voxel::initPalette(palette);
 	}
 
@@ -367,21 +361,6 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 		return false;
 	}
 	const bool inputIsImage = inputFile->isAnyOf(io::format::images());
-	if (!inputIsImage && _srcPalette) {
-		voxel::Palette palette;
-		io::FileStream palStream(inputFile);
-		Log::info("Load palette from %s", infile.c_str());
-		const size_t numColors = voxelformat::loadPalette(inputFile->name(), palStream, palette);
-		if (numColors == 0) {
-			Log::error("Failed to load palette");
-			return false;
-		}
-		if (!voxel::initPalette(palette)) {
-			Log::error("Failed to initialize material colors from loaded palette");
-			return false;
-		}
-	}
-
 	if (inputIsImage) {
 		const image::ImagePtr& image = image::loadImage(inputFile, false);
 		if (!image || !image->isLoaded()) {
@@ -444,9 +423,6 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 	if (_exportPalette) {
 		const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
 		sceneGraph.firstPalette().save(paletteFile.c_str());
-		if (!_srcPalette) {
-			Log::info(" .. not using the input file palette");
-		}
 	}
 	return true;
 }

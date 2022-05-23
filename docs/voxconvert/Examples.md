@@ -76,7 +76,7 @@ See the [scripting](../LUAScript.md) documentation for further details.
 
 Saves the png in the same dir as the vox file:
 
-`./vengi-voxconvert --src-palette --export-palette --input infile.vox --output outfile.vox`
+`./vengi-voxconvert --export-palette --input infile.vox --output outfile.vox`
 
 There will be an `infile.png` now.
 

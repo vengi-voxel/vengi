@@ -4,7 +4,7 @@
 
 * `--crop`: reduces the volume sizes to their voxel boundaries.
 * `--export-layers`: export all the layers of a scene into single files. It is suggested to name the layers properly to get reasonable file names.
-* `--export-palette`: will save the included palette as png next to the source file. Use in combination with `--src-palette`.
+* `--export-palette`: will save the included palette as png next to the source file.
 * `--filter <filter>`: will filter out layers not mentioned in the expression. E.g. `1-2,4` will handle layer 1, 2 and 4. It is the same as `1,2,4`. The first layer is `0`. See the layers note below.
 * `--force`: overwrite existing files
 * `--image-as-heightmap`: import input images as heightmap (default)
@@ -22,7 +22,6 @@
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
 * `--script "<script> <args>"`: execute the given script - see [scripting support](../LUAScript.md) for more details
 * `--split <x:y:z>`: slices the volumes into pieces of the given size
-* `--src-palette`: will use the included [palette](../Palette.md) and doesn't perform any quantization to the default palette
 * `--translate <x:y:z>`: translates the volumes by x (right), y (up), z (back)
 
 Just type `vengi-voxconvert` to get a full list of commands and options.

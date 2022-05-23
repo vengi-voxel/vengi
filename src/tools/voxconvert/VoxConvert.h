@@ -33,7 +33,6 @@ private:
 	bool _mirrorVolumes = false;
 	bool _rotateVolumes = false;
 	bool _translateVolumes = false;
-	bool _srcPalette = false;
 	bool _exportPalette = false;
 	bool _exportLayers = false;
 	bool _changePivot = false;
