@@ -50,8 +50,8 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 				}
 				ImGui::EndNeoSequencer();
 			}
-			ImGui::End();
 		}
+		ImGui::End();
 	}
 }
 
