@@ -228,9 +228,9 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 		const unsigned int FLOAT_BUFFER_OFFSET = buffer.data.size();
 
-		glm::vec3 maxVertex(FLT_MIN);
+		glm::vec3 maxVertex(-FLT_MAX);
 		glm::vec3 minVertex(FLT_MAX);
-		glm::vec2 minMaxUVX(FLT_MAX, FLT_MIN);
+		glm::vec2 minMaxUVX(FLT_MAX, -FLT_MAX);
 
 		for (int j = 0; j < nv; j++) {
 			const voxel::VoxelVertex &v = vertices[j];
