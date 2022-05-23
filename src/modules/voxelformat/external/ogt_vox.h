@@ -356,8 +356,9 @@
     // describes a layer within the scene
     typedef struct ogt_vox_layer
     {
-        const char* name;               // name of this layer if there is one, will be NULL otherwise.
-        bool        hidden;             // whether this layer is hidden or not.
+        const char*  name;               // name of this layer if there is one, will be NULL otherwise.
+        ogt_vox_rgba color;              // color of the layer.
+        bool         hidden;             // whether this layer is hidden or not.
     } ogt_vox_layer;
 
     // describes a group within the scene
@@ -829,6 +830,22 @@
         return default_value;
     }
 
+    static bool _vox_dict_get_value_as_bool(const _vox_dictionary* dict, const char* key_to_find, bool default_value) {
+        const char* str = _vox_dict_get_value_as_string(dict, key_to_find, NULL);
+        if (!str)
+            return default_value;
+        return str[0] == '1' ? true : false;
+    }
+
+    static uint32_t _vox_dict_get_value_as_uint32(const _vox_dictionary* dict, const char* key_to_find, uint32_t default_value) {
+        const char* str = _vox_dict_get_value_as_string(dict, key_to_find, NULL);
+        if (!str)
+            return default_value;
+        uint32_t value;
+        _vox_str_scanf(str, "%i", &value);
+        return value;
+    }
+
     // lookup table for _vox_make_transform_from_dict_strings
     static const vec3 k_vectors[4] = {
     vec3_make(1.0f, 0.0f, 0.0f),
@@ -1297,24 +1314,12 @@
                     // Parse the node dictionary, which can contain:
                     //   _name:   string
                     //   _hidden: 0/1
+                    //   _loop:   0/1
+                    _vox_file_read_dict(&dict, fp);
                     char node_name[65];
-                    bool hidden = false;
-                    bool loop = false;
-                    node_name[0] = 0;
-                    {
-                        _vox_file_read_dict(&dict, fp);
-                        const char* name_string = _vox_dict_get_value_as_string(&dict, "_name");
-                        if (name_string)
-                            _vox_strcpy_static(node_name, name_string);
-                        // if we got a hidden attribute - assign it now.
-                        const char* hidden_string = _vox_dict_get_value_as_string(&dict, "_hidden", "0");
-                        if (hidden_string)
-                            hidden = (hidden_string[0] == '1' ? true : false);
-                        const char* loop_string = _vox_dict_get_value_as_string(&dict, "_loop", "0");
-                        if (loop_string)
-                            loop = (loop_string[0] == '1' ? true : false);
-                    }
-
+                    _vox_strcpy_static(node_name, _vox_dict_get_value_as_string(&dict, "_name", ""));
+                    bool hidden = _vox_dict_get_value_as_bool(&dict, "_hidden", false);
+                    bool loop = _vox_dict_get_value_as_bool(&dict, "_loop", false);
 
                     // get other properties.
                     uint32_t child_node_id = 0, reserved_id = 0, layer_id = 0, num_frames = 0;
@@ -1336,9 +1341,8 @@
                         _vox_file_read_dict(&dict, fp);
                         const char* rotation_value    = _vox_dict_get_value_as_string(&dict, "_r");
                         const char* translation_value = _vox_dict_get_value_as_string(&dict, "_t");
-                        const char* frame_value       = _vox_dict_get_value_as_string(&dict, "_f", "0");
-                        keyframes[ i ].transform     = _vox_make_transform_from_dict_strings(rotation_value, translation_value);
-                        _vox_str_scanf(frame_value, "%i", &keyframes[ i ].frame_index);
+                        keyframes[ i ].transform      = _vox_make_transform_from_dict_strings(rotation_value, translation_value);
+                        keyframes[i].frame_index      = _vox_dict_get_value_as_uint32(&dict, "_f", 0);
                     }
                     // setup the transform node.
                     {
@@ -1392,13 +1396,8 @@
                     _vox_file_read(fp, &node_id, sizeof(node_id));
 
                     // parse the node dictionary
-                    bool loop = false;
-                    {
-                        _vox_file_read_dict(&dict, fp);
-                        const char* loop_string = _vox_dict_get_value_as_string(&dict, "_loop", "0");
-                        if (loop_string)
-                            loop = (loop_string[0] == '1' ? true : false);
-                    }
+                    _vox_file_read_dict(&dict, fp);
+                    bool loop = _vox_dict_get_value_as_bool(&dict, "_loop", false);
 
                     uint32_t num_models = 0;
                     _vox_file_read(fp, &num_models, sizeof(num_models));
@@ -1413,8 +1412,7 @@
                         ogt_assert(keyframes[i].model_index < model_ptrs.size(), "nSHP chunk references model_id that we have not loaded yet");
                         // read frame id
                         _vox_file_read_dict(&dict, fp);
-                        const char* frame_value = _vox_dict_get_value_as_string(&dict, "_f", "0");
-                        _vox_str_scanf(frame_value, "%i", &keyframes[i].frame_index);
+                        keyframes[i].frame_index = _vox_dict_get_value_as_uint32(&dict, "_f", 0);
                     }
 
                     // setup the shape node
@@ -1444,7 +1442,8 @@
                     ogt_assert(reserved_id == -1, "unexpected value for reserved_id in LAYR chunk");
 
                     layers.grow_to_fit_index(layer_id);
-                    layers[layer_id].name = NULL;
+                    layers[layer_id].name   = NULL;
+                    layers[layer_id].color = {255, 255, 255, 255};
                     layers[layer_id].hidden = false;
 
                     // if we got a layer name from the LAYR dictionary, allocate space in misc_data for it and keep track of the index
@@ -1455,10 +1454,17 @@
                         size_t name_size = _vox_strlen(name_string) + 1;       // +1 for terminator
                         misc_data.push_back_many(name_string, name_size);
                     }
-                    // if we got a hidden attribute - assign it now.
-                    const char* hidden_string = _vox_dict_get_value_as_string(&dict, "_hidden", "0");
-                    if (hidden_string)
-                        layers[layer_id].hidden = (hidden_string[0] == '1' ? true : false);
+                    layers[layer_id].hidden = _vox_dict_get_value_as_bool(&dict, "_hidden", false);
+
+                    const char* color_string = _vox_dict_get_value_as_string(&dict, "_color", NULL);
+                    if (color_string) {
+                        uint32_t r,g,b;
+                        _vox_str_scanf(color_string, "%u %u %u", &r, &g, &b);
+                        layers[layer_id].color.r = (uint8_t)r;
+                        layers[layer_id].color.g = (uint8_t)g;
+                        layers[layer_id].color.b = (uint8_t)b;
+                    }
+
                     break;
                 }
                 case CHUNK_ID_MATL:
@@ -1735,6 +1741,7 @@
                         flattened_transform = _vox_transform_multiply(flattened_transform, groups[group_index].transform);
                         group_index = groups[group_index].parent_group_index;
                     }
+                    instance->transform = flattened_transform;
                     instance->group_index = 0;
                 }
                 // add just a single parent group.
@@ -2462,9 +2469,11 @@
 
         // write all layer chunks out.
         for (uint32_t i = 0; i < scene->num_layers; i++) {
+            char color_string[64];
+            _vox_sprintf(color_string, sizeof(color_string), "%u %u %u", scene->layers[i].color.r, scene->layers[i].color.g, scene->layers[i].color.b);
             const char* layer_name_string = scene->layers[i].name;
             const char* hidden_string = scene->layers[i].hidden ? "1" : NULL;
-            uint32_t layer_dict_keyvalue_count = (layer_name_string ? 1 : 0) + (hidden_string ? 1 : 0);
+            uint32_t layer_dict_keyvalue_count = (layer_name_string ? 1 : 0) + (hidden_string ? 1 : 0) + (color_string ? 1 : 0);
 
             uint32_t offset_of_chunk_header = _vox_file_get_offset(fp);
 
@@ -2477,6 +2486,7 @@
             _vox_file_write_uint32(fp, layer_dict_keyvalue_count);  // num keyvalue pairs in layer dictionary
             _vox_file_write_dict_key_value(fp, "_name",   layer_name_string);
             _vox_file_write_dict_key_value(fp, "_hidden", hidden_string);
+            _vox_file_write_dict_key_value(fp, "_color",  color_string);
             _vox_file_write_uint32(fp, UINT32_MAX);                 // reserved id
 
             // compute and patch up the chunk size in the chunk header
@@ -2679,6 +2689,7 @@
 
         // add a single layer.
         layers[num_layers].hidden = false;
+        layers[num_layers].color  = {255, 255, 255, 255};
         layers[num_layers].name = "merged";
         num_layers++;
 
