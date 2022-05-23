@@ -41,6 +41,7 @@ public:
 	}
 	bool load(const char *name);
 	bool save(const char *name = nullptr) const;
+	bool saveGlow(const char *name = nullptr) const;
 	bool load(const uint8_t *rgbaBuf, size_t bufsize);
 
 	bool minecraft();

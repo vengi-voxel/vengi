@@ -132,6 +132,21 @@ bool Palette::save(const char *name) const {
 	return true;
 }
 
+bool Palette::saveGlow(const char *name) const {
+	if (name == nullptr || name[0] == '\0') {
+		return false;
+	}
+	image::Image img(name);
+	Log::info("Save glow palette colors to %s", name);
+	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
+	img.loadRGBA((const uint8_t *)glowColors, sizeof(glowColors), lengthof(glowColors), 1);
+	if (!img.writePng()) {
+		Log::warn("Failed to write the glow palette colors file '%s'", name);
+		return false;
+	}
+	return true;
+}
+
 bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize) {
 	if (bufsize % 4 != 0) {
 		Log::warn("Buf size doesn't match expectation: %i", (int)bufsize);
