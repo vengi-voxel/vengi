@@ -25,6 +25,19 @@
 
 namespace voxelformat {
 
+MeshFormat::MeshExt* MeshFormat::getParent(const voxelformat::SceneGraph &sceneGraph, MeshFormat::Meshes &meshes, int nodeId) {
+	if (!sceneGraph.hasNode(nodeId)) {
+		return nullptr;
+	}
+	const int parent = sceneGraph.node(nodeId).parent();
+	for (MeshExt &me : meshes) {
+		if (me.nodeId == parent) {
+			return &me;
+		}
+	}
+	return nullptr;
+}
+
 glm::vec3 MeshFormat::getScale() {
 	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
 

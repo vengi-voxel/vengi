@@ -31,6 +31,8 @@ protected:
 							const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
 							bool withTexCoords = true) = 0;
 
+	static MeshExt* getParent(const voxelformat::SceneGraph &sceneGraph, Meshes &meshes, int nodeId);
+
 	static glm::vec3 getScale();
 	// checks if the winding needs flipping if the scale values are negative
 	static bool flipWinding(const glm::vec3 &scale);
