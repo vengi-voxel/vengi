@@ -256,12 +256,15 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	const uint32_t keyFrame = node.keyFrameForFrame(sceneMgr().currentFrame());
 	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrame);
 	glm::mat4 transformMatrix = transform.matrix();
-	ImGuizmo::Manipulate(glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()), (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix), nullptr, _guizmoSnap->boolVal() ? snap: nullptr);
+	glm::mat4 deltaMatrix(0.0f);
+	ImGuizmo::Manipulate(glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()),
+						 (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix),
+						 glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr);
 	if (ImGuizmo::IsUsing()) {
 		_guizmoActivated = true;
-		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, keyFrame, false);
+		sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrame, false);
 	} else if (_guizmoActivated) {
-		sceneMgr().nodeUpdateTransform(activeNode, transformMatrix, keyFrame, true);
+		sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrame, true);
 		_guizmoActivated = false;
 	}
 
