@@ -2276,9 +2276,6 @@ bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
 }
 
 void SceneManager::path() {
-	const glm::ivec3 &start = referencePosition();
-	const glm::ivec3 &end = cursorPosition();
-	core::List<glm::ivec3> listResult;
 	const int nodeId = activeNode();
 	if (nodeId == -1) {
 		return;
@@ -2298,6 +2295,9 @@ void SceneManager::path() {
 		}
 		return voxel::isBlocked(vol->voxel(below).getMaterial());
 	};
+	core::List<glm::ivec3> listResult;
+	const glm::ivec3 &start = referencePosition();
+	const glm::ivec3 &end = cursorPosition();
 	voxelutil::AStarPathfinderParams<voxel::RawVolume> params(v, start, end, &listResult, isVoxelValidForPath, 4.0f, 10000);
 	voxelutil::AStarPathfinder pathfinder(params);
 	pathfinder.execute();
