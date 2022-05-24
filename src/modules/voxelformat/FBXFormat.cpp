@@ -97,7 +97,7 @@ Objects: {
 	// TODO: are connections and relations needed?
 	// https://github.com/libgdx/fbx-conv/blob/master/samples/blender/cube.fbx
 
-	for (const auto &meshExt : meshes) {
+	for (const MeshExt &meshExt : meshes) {
 		const voxel::Mesh *mesh = meshExt.mesh;
 		Log::debug("Exporting layer %s", meshExt.name.c_str());
 		const int nv = (int)mesh->getNoOfVertices();
