@@ -52,10 +52,6 @@ glm::vec3 MeshFormat::getScale() {
 	return {scaleX, scaleY, scaleZ};
 }
 
-bool MeshFormat::flipWinding(const glm::vec3 &scale) {
-	return (scale.x * scale.y * scale.z) < 0.0f ? true : false;
-}
-
 void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
 	const glm::vec3 &mins = tri.mins();
 	const glm::vec3 &maxs = tri.maxs();
