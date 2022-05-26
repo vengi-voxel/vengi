@@ -1,11 +1,14 @@
 //
 // Created by Matty on 2022-01-28.
 //
+
+#include "core/StandardLib.h"
+
 #define IMGUI_DEFINE_MATH_OPERATORS
 
-#include "imgui_neo_sequencer.h"
 #include "imgui_internal.h"
 #include "imgui_neo_internal.h"
+#include "imgui_neo_sequencer.h"
 
 #include <unordered_map>
 
@@ -61,6 +64,9 @@ static ImVector<ImGuiColorMod> sequencerColorStack;
 // Data of all sequencers, this is main c++ part and I should create C alternative or use imgui ImVector or something
 static Map sequencerData;
 
+static uint32_t idCounter = 0;
+static char idBuffer[16];
+
 ///////////// STATIC HELPERS ///////////////////////
 
 static float getPerFrameWidth(ImGuiNeoSequencerInternalData &context) {
@@ -103,8 +109,9 @@ static void processCurrentFrame(uint32_t *frame, ImGuiNeoSequencerInternalData &
 	const ImVec2 timelineXRange = {timelineXmin, // min
 								   timelineXmin + context.Size.x - context.ValuesWidth};
 
-	if (!ItemAdd(pointerRect, 0))
+	if (!ItemAdd(pointerRect, 0)) {
 		return;
+	}
 
 	context.CurrentFrameColor = GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_FramePointer);
 
@@ -176,14 +183,11 @@ static bool createKeyframe(uint32_t *frame) {
 	return true;
 }
 
-static uint32_t idCounter = 0;
-static char idBuffer[16];
-
 static const char *generateID() {
 	idBuffer[0] = '#';
 	idBuffer[1] = '#';
-	memset(idBuffer + 2, 0, 14);
-	snprintf(idBuffer + 2, 14, "%o", idCounter++);
+	core_memset(idBuffer + 2, 0, 14);
+	SDL_snprintf(idBuffer + 2, 14, "%o", idCounter++);
 
 	return &idBuffer[0];
 }
@@ -222,22 +226,8 @@ static void processAndRenderZoom(ImGuiNeoSequencerInternalData &context, bool al
 	const float size = allowEditingLength ? context.Size.x - 2 * inputWidthWithPadding : context.Size.x;
 
 	const ImRect bb{cursor, cursor + ImVec2{size, zoomHeight}};
-
 	const ImVec2 frameNumberBorderSize{inputWidth - imStyle.FramePadding.x, zoomHeight};
-
-	// const ImVec2 startFrameTextCursor{context.StartCursor + ImVec2{imStyle.FramePadding.x, 0}};
-
-	// Text number borders
-	// drawList->AddRect(startFrameTextCursor, startFrameTextCursor +
-	// frameNumberBorderSize,ColorConvertFloat4ToU32(GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_TimelineBorder)));
-
 	const ImVec2 zoomBarEndWithSpacing = ImVec2{bb.Max.x + imStyle.ItemSpacing.x, context.StartCursor.y};
-
-	/*
-	drawList->AddRect(zoomBarEndWithSpacing,
-					  zoomBarEndWithSpacing +
-	frameNumberBorderSize,ColorConvertFloat4ToU32(GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_TimelineBorder)));
-	*/
 
 	int32_t startFrameVal = (int32_t)*start;
 	int32_t endFrameVal = (int32_t)*end;
@@ -258,14 +248,17 @@ static void processAndRenderZoom(ImGuiNeoSequencerInternalData &context, bool al
 		window->DC.CursorPos = prevWindowCursor;
 	}
 
-	if (startFrameVal < 0)
+	if (startFrameVal < 0) {
 		startFrameVal = (int32_t)*start;
+	}
 
-	if (endFrameVal < 0)
+	if (endFrameVal < 0) {
 		endFrameVal = (int32_t)*end;
+	}
 
-	if (endFrameVal <= startFrameVal)
+	if (endFrameVal <= startFrameVal) {
 		endFrameVal = (int32_t)*end;
+	}
 
 	*start = startFrameVal;
 	*end = endFrameVal;
@@ -360,7 +353,7 @@ static void processAndRenderZoom(ImGuiNeoSequencerInternalData &context, bool al
 
 		const ImVec2 sliderCenter = finalSliderBB.GetCenter();
 		char overlayTextBuffer[128];
-		snprintf(overlayTextBuffer, sizeof(overlayTextBuffer), "%d - %d", viewStart, viewEnd);
+		SDL_snprintf(overlayTextBuffer, sizeof(overlayTextBuffer), "%d - %d", viewStart, viewEnd);
 
 		const ImVec2 overlaySize = CalcTextSize(overlayTextBuffer);
 		drawList->AddText(sliderCenter - overlaySize / 2.0f, IM_COL32_WHITE, overlayTextBuffer);
@@ -383,11 +376,13 @@ bool BeginNeoSequencer(const char *idin, uint32_t *frame, uint32_t *startFrame, 
 	ImGuiWindow *window = GetCurrentWindow();
 	const ImGuiStyle &imStyle = GetStyle();
 
-	if (inSequencer)
+	if (inSequencer) {
 		return false;
+	}
 
-	if (window->SkipItems)
+	if (window->SkipItems) {
 		return false;
+	}
 
 	ImDrawList *drawList = GetWindowDrawList();
 
@@ -395,17 +390,19 @@ bool BeginNeoSequencer(const char *idin, uint32_t *frame, uint32_t *startFrame, 
 	const ImVec2 area = ImGui::GetContentRegionAvail();
 
 	PushID(idin);
-	const unsigned int id = window->IDStack[window->IDStack.size() - 1];
+	const ImGuiID id = window->IDStack[window->IDStack.size() - 1];
 
 	inSequencer = true;
 
 	Map::mapped_type &context = sequencerData[id];
 
 	ImVec2 realSize = ImFloor(size);
-	if (realSize.x <= 0.0f)
+	if (realSize.x <= 0.0f) {
 		realSize.x = ImMax(4.0f, area.x);
-	if (realSize.y <= 0.0f)
+	}
+	if (realSize.y <= 0.0f) {
 		realSize.y = ImMax(4.0f, context.FilledHeight);
+	}
 
 	const bool showZoom = !(flags & ImGuiNeoSequencerFlags_HideZoom);
 
@@ -417,7 +414,7 @@ bool BeginNeoSequencer(const char *idin, uint32_t *frame, uint32_t *startFrame, 
 	context.EndFrame = *endFrame;
 	context.Size = realSize;
 
-	currentSequencer = window->IDStack[window->IDStack.size() - 1];
+	currentSequencer = id;
 
 	RenderNeoSequencerBackground(GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_Bg), context.StartCursor,
 								 context.Size, drawList, style.SequencerRounding);
@@ -436,11 +433,13 @@ bool BeginNeoSequencer(const char *idin, uint32_t *frame, uint32_t *startFrame, 
 
 	context.TopBarSize = ImVec2(context.Size.x, style.TopBarHeight);
 
-	if (context.TopBarSize.y <= 0.0f)
+	if (context.TopBarSize.y <= 0.0f) {
 		context.TopBarSize.y = CalcTextSize("100").y + imStyle.FramePadding.y * 2.0f;
+	}
 
-	if (context.Size.y < context.FilledHeight)
+	if (context.Size.y < context.FilledHeight) {
 		context.Size.y = context.FilledHeight;
+	}
 
 	context.FilledHeight = context.TopBarSize.y + style.TopBarSpacing +
 						   (showZoom ? imStyle.FramePadding.y + style.ZoomHeightScale + GetFontSize() : 0.0f);
@@ -480,7 +479,7 @@ IMGUI_API void EndNeoGroup() {
 	return EndNeoTimeLine();
 }
 
-static bool groupBehaviour(const ImGuiID id, bool *open, const ImVec2 labelSize) {
+static bool groupBehaviour(const ImGuiID id, bool *open, const ImVec2 &labelSize) {
 	Map::mapped_type &context = sequencerData[currentSequencer];
 	ImGuiWindow *window = GetCurrentWindow();
 
@@ -495,8 +494,9 @@ static bool groupBehaviour(const ImGuiID id, bool *open, const ImVec2 labelSize)
 	const ImGuiID arrowID = window->GetID(generateID());
 	const bool addArrowRes = ItemAdd(arrowBB, arrowID);
 	if (addArrowRes) {
-		if (IsItemClicked() && closable)
+		if (IsItemClicked() && closable) {
 			(*open) = !(*open);
+		}
 	}
 
 	const bool addGroupRes = ItemAdd(groupBB, id);
@@ -510,11 +510,10 @@ static bool groupBehaviour(const ImGuiID id, bool *open, const ImVec2 labelSize)
 	return addGroupRes && addArrowRes;
 }
 
-static bool timelineBehaviour(const ImGuiID id, const ImVec2 labelSize) {
+static bool timelineBehaviour(const ImGuiID id, const ImVec2 &labelSize) {
 	Map::mapped_type &context = sequencerData[currentSequencer];
-	// ImGuiWindow *window = GetCurrentWindow();
 
-	const ImRect groupBB = {context.ValuesCursor, context.ValuesCursor + labelSize};
+	const ImRect groupBB{context.ValuesCursor, context.ValuesCursor + labelSize};
 
 	const bool addGroupRes = ItemAdd(groupBB, id);
 	if (addGroupRes) {
@@ -566,8 +565,9 @@ bool BeginNeoTimeline(const char *label, uint32_t **keyframes, uint32_t keyframe
 						  GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_SelectedTimeline));
 
 		ImVec4 color = GetStyleColorVec4(ImGuiCol_Text);
-		if (IsItemHovered())
+		if (IsItemHovered()) {
 			color.w *= 0.7f;
+		}
 
 		RenderNeoTimelineLabel(label,
 							   context.ValuesCursor + imStyle.FramePadding +

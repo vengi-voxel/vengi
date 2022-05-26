@@ -6,8 +6,8 @@
 #include "IconsForkAwesome.h"
 #include "core/ArrayLength.h"
 #include "core/collection/DynamicArray.h"
-#include "ui/imgui/dearimgui/imgui_neo_sequencer.h"
 #include "ui/imgui/dearimgui/imgui.h"
+#include "ui/imgui/dearimgui/imgui_neo_sequencer.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -22,15 +22,15 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 		ImGui::SetNextWindowDockID(dockIdMainDown, ImGuiCond_Appearing);
 		if (ImGui::Begin(sequencerTitle, nullptr, ImGuiWindowFlags_NoSavedSettings)) {
 			if (ImGui::Button(ICON_FA_PLUS_SQUARE " Add")) {
-				sceneMgr().nodeForeachGroup([&] (int nodeId) {
-					voxelformat::SceneGraphNode& node = sceneGraph.node(nodeId);
+				sceneMgr().nodeForeachGroup([&](int nodeId) {
+					voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
 					node.addKeyFrame(currentFrame);
 				});
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_MINUS_SQUARE " Remove")) {
-				sceneMgr().nodeForeachGroup([&] (int nodeId) {
-					voxelformat::SceneGraphNode& node = sceneGraph.node(nodeId);
+				sceneMgr().nodeForeachGroup([&](int nodeId) {
+					voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
 					node.removeKeyFrame(currentFrame);
 				});
 			}
@@ -43,7 +43,10 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 					for (voxelformat::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
 						keys.push_back(&kf.frame);
 					}
-					if (ImGui::BeginNeoTimeline(modelNode.name().c_str(), keys.data(), keys.size(), nullptr)) {
+					const char *label = modelNode.name().c_str();
+					uint32_t **keyframes = keys.data();
+					const uint32_t keyframeCount = keys.size();
+					if (ImGui::BeginNeoTimeline(label, keyframes, keyframeCount, nullptr, ImGuiNeoTimelineFlags_None)) {
 						sceneMgr().setCurrentFrame(currentFrame);
 						ImGui::EndNeoTimeLine();
 					}
