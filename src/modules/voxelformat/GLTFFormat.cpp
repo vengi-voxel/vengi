@@ -36,21 +36,27 @@
 namespace voxelformat {
 
 void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
-								 const SceneGraphNode &graphNode, Stack &stack, const SceneGraph &sceneGraph) {
+								 const SceneGraphNode &graphNode, Stack &stack, const SceneGraph &sceneGraph,
+								 const glm::vec3 &scale) {
 	node.name = graphNode.name().c_str();
 	Log::debug("process node %s", node.name.c_str());
 	const int idx = (int)m.nodes.size();
 
-	auto nodeWorldMatrix = graphNode.transform().matrix();
+	auto nodeLocalMatrix = graphNode.transform().matrix();
+	
 
 	if (sceneGraph.hasNode(graphNode.id())) {
 		const int graphNodeParentId = sceneGraph.node(graphNode.id()).parent();
 		const SceneGraphNode &parentGraphNode = sceneGraph.node(graphNodeParentId);
-		nodeWorldMatrix = glm::inverse(parentGraphNode.transform().matrix()) * nodeWorldMatrix;
+		nodeLocalMatrix = glm::inverse(parentGraphNode.transform().matrix()) * nodeLocalMatrix;
+	}
+
+	if (graphNode.id() == 0) {
+		nodeLocalMatrix = glm::scale(nodeLocalMatrix, scale);
 	}
 
 	std::vector<double> nodeMatrixArray = {};
-	const float *pSource = (const float *)glm::value_ptr(nodeWorldMatrix);
+	const float *pSource = (const float *)glm::value_ptr(nodeLocalMatrix);
 
 	for (int i = 0; i < 16; ++i) {
 		nodeMatrixArray.push_back(pSource[i]);
@@ -175,7 +181,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 		if (meshIdxNodeMap.find(nodeId) == meshIdxNodeMap.end()) {
 			tinygltf::Node node;
-			processGltfNode(m, node, scene, graphNode, stack, sceneGraph);
+			processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale);
 			continue;
 		}
 		// 1 x 256 is the texture format that we are using for our palette
@@ -216,14 +222,14 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		unsigned int maxIndex = 0;
 		unsigned int minIndex = UINT_MAX;
 
-		const bool flip = flipWinding(scale);
+		//const bool flip = flipWinding(scale);
 
 		for (int i = 0; i < ni; i++) {
 			int idx = i;
 
-			if (flip) {
+			/*if (flip) {
 				idx = ni - i - 1;
-			}
+			}*/
 			IndexUnion intCharUn;
 			intCharUn.i = indices[idx];
 
@@ -259,7 +265,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 				pos = pos - (meshExt.transform.pivot() * meshExt.size);
 			}
 
-			pos = (offset + pos) * scale;
+			pos = (offset + pos);
 
 			for (int coordIndex = 0; coordIndex < glm::vec3::length(); coordIndex++) {
 				FloatUnion floatCharUn;
@@ -393,7 +399,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		{
 			tinygltf::Node node;
 			node.mesh = nthNodeIdx;
-			processGltfNode(m, node, scene, graphNode, stack, sceneGraph);
+			processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale);
 		}
 
 		m.meshes.emplace_back(core::move(expMesh));
