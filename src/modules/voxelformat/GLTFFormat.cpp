@@ -55,7 +55,7 @@ void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinyg
 	}
 
 	std::vector<double> nodeMatrixArray;
-	nodeMatrixArray.resize(16);
+	nodeMatrixArray.reserve(16);
 	const float *pSource = (const float *)glm::value_ptr(nodeLocalMatrix);
 
 	for (int i = 0; i < 16; ++i) {
