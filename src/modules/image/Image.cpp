@@ -153,8 +153,8 @@ void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
 }
 
 const uint8_t* Image::at(int x, int y) const {
-	core_assert(x >= 0 && x < _width);
-	core_assert(y >= 0 && y < _height);
+	core_assert_msg(x >= 0 && x < _width, "x: %i, y: %i, w: %i, h: %i", x, y, _width, _height);
+	core_assert_msg(y >= 0 && y < _height, "x: %i, y: %i, w: %i, h: %i", x, y, _width, _height);
 	const int colSpan = _width * _depth;
 	const intptr_t offset = x * _depth + y * colSpan;
 	return _data + offset;
