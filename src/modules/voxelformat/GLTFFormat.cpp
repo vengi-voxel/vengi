@@ -805,7 +805,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 		Log::error("Failed to subdivide node %i", gltfNodeIdx);
 	} else {
 		voxelizeTris(node, subdivided);
-		newParent = sceneGraph.emplace(core::move(node));
+		newParent = sceneGraph.emplace(core::move(node), parentNodeId);
 	}
 	for (int childId : gltfNode.children) {
 		loadGltfNode_r(filename, sceneGraph, textures, model, childId, newParent);
