@@ -59,10 +59,11 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 	for (const auto& meshExt : meshes) {
 		const voxel::Mesh& mesh = *meshExt.mesh;
-		const glm::vec3 offset(mesh.getOffset());
 		const int nv = (int)mesh.getNoOfVertices();
 		const voxel::VoxelVertex* vertices = mesh.getRawVertexData();
 		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+		int frame = 0;
+		const SceneGraphTransform &transform = graphNode.transform(frame);
 		const voxel::Palette &palette = graphNode.palette();
 		// 1 x 256 is the texture format that we are using for our palette
 		const float texcoord = 1.0f / (float)voxel::PaletteMaxColors;
@@ -73,11 +74,11 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 			const voxel::VoxelVertex& v = vertices[i];
 			glm::vec3 pos;
 			if (meshExt.applyTransform) {
-				pos = meshExt.transform.apply(v.position, meshExt.size);
+				pos = transform.apply(v.position, meshExt.size);
 			} else {
 				pos = v.position;
 			}
-			pos = (offset + pos) * scale;
+			pos *= scale;
 			stream.writeStringFormat(false, "%f %f %f", pos.x, pos.y, pos.z);
 			if (withTexCoords) {
 				const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;

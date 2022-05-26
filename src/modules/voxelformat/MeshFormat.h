@@ -21,7 +21,6 @@ protected:
 		core::String name;
 		bool applyTransform = false;
 
-		SceneGraphTransform transform;
 		glm::vec3 size{0.0f};
 		int nodeId = -1;
 	};

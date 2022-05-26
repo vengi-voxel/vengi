@@ -178,7 +178,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			return false;
 		}
 
-		const glm::vec3 offset(mesh->getOffset());
+		int frame = 0;
+		const SceneGraphTransform &transform = graphNode.transform(frame);
 		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 		const voxel::IndexType *indices = mesh->getRawIndexData();
 		const char *objectName = meshExt.name.c_str();
@@ -237,12 +238,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 			glm::vec3 pos;
 			if (meshExt.applyTransform) {
-				pos = meshExt.transform.apply(v.position, meshExt.size);
+				pos = transform.apply(v.position, meshExt.size);
 			} else {
 				pos = v.position;
 			}
 
-			pos = (offset + pos) * scale;
+			pos *= scale;
 
 			for (int coordIndex = 0; coordIndex < glm::vec3::length(); coordIndex++) {
 				FloatUnion floatCharUn;

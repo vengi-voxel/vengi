@@ -37,7 +37,7 @@ private:
 	static void calculateAABB(const core::DynamicArray<Face> &faces, glm::vec3 &mins, glm::vec3 &maxs);
 	static void subdivideShape(const core::DynamicArray<Face> &faces, TriCollection &subdivided);
 
-	bool writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1, const glm::vec3 &offset, const glm::vec3 &scale);
+	bool writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1, const SceneGraphTransform &transform, const glm::vec3 &scale);
 
 	bool parseBinary(io::SeekableReadStream &stream, core::DynamicArray<Face> &faces);
 	bool parseAscii(io::SeekableReadStream &stream, core::DynamicArray<Face> &faces);

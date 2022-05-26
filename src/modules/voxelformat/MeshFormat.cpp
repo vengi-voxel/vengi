@@ -137,7 +137,6 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const TriCollec
 
 MeshFormat::MeshExt::MeshExt(voxel::Mesh *_mesh, const SceneGraphNode& node, bool _applyTransform) :
 		mesh(_mesh), name(node.name()), applyTransform(_applyTransform) {
-	transform = node.transform();
 	size = node.region().getDimensionsInVoxels();
 	nodeId = node.id();
 }

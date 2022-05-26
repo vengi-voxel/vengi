@@ -12,6 +12,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
+#include "voxelformat/SceneGraphNode.h"
 
 namespace voxelformat {
 
@@ -108,7 +109,8 @@ Objects: {
 		}
 		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 		const voxel::Palette &palette = graphNode.palette();
-		const glm::vec3 offset(mesh->getOffset());
+		int frame = 0;
+		const SceneGraphTransform &transform = graphNode.transform(frame);
 		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 		const voxel::IndexType *indices = mesh->getRawIndexData();
 		const char *objectName = meshExt.name.c_str();
@@ -124,11 +126,11 @@ Objects: {
 
 			glm::vec3 pos;
 			if (meshExt.applyTransform) {
-				pos = meshExt.transform.apply(v.position, meshExt.size);
+				pos = transform.apply(v.position, meshExt.size);
 			} else {
 				pos = v.position;
 			}
-			pos = (offset + pos) * scale;
+			pos *= scale;
 			if (i > 0) {
 				wrapBool(stream.writeString(",", false))
 			}

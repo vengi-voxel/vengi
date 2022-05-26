@@ -87,6 +87,8 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 			return false;
 		}
 		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+		int frame = 0;
+		const SceneGraphTransform &transform = graphNode.transform(frame);
 		const voxel::Palette &palette = graphNode.palette();
 
 		const core::String hashId = core::String::format("%" PRIu64, palette.hash());
@@ -95,7 +97,6 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		const float texcoord = 1.0f / (float)voxel::PaletteMaxColors;
 		// it is only 1 pixel high - sample the middle
 		const float v1 = 0.5f;
-		const glm::vec3 offset(mesh->getOffset());
 		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 		const voxel::IndexType *indices = mesh->getRawIndexData();
 		const char *objectName = meshExt.name.c_str();
@@ -114,11 +115,11 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 			glm::vec3 pos;
 			if (meshExt.applyTransform) {
-				pos = meshExt.transform.apply(v.position, meshExt.size);
+				pos = transform.apply(v.position, meshExt.size);
 			} else {
 				pos = v.position;
 			}
-			pos = (offset + pos) * scale;
+			pos *= scale;
 			stream.writeStringFormat(false, "v %.04f %.04f %.04f", pos.x, pos.y, pos.z);
 			if (withColor) {
 				const glm::vec4& color = core::Color::fromRGBA(palette.colors[v.colorIndex]);

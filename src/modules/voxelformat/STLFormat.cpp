@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "voxel/Mesh.h"
+#include "voxelformat/SceneGraphNode.h"
 #include <SDL_stdinc.h>
 
 namespace voxelformat {
@@ -184,14 +185,14 @@ bool STLFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 #undef wrap
 
-bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1, const glm::vec3 &offset, const glm::vec3 &scale) {
+bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1, const SceneGraphTransform &transform, const glm::vec3 &scale) {
 	glm::vec3 pos;
 	if (meshExt.applyTransform) {
-		pos = meshExt.transform.apply(v1.position, meshExt.size);
+		pos = transform.apply(v1.position, meshExt.size);
 	} else {
 		pos = v1.position;
 	}
-	pos = (offset + pos) * scale;
+	pos *= scale;
 	if (!stream.writeFloat(pos.x)) {
 		return false;
 	}
@@ -204,7 +205,7 @@ bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &mesh
 	return true;
 }
 
-bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &meshes,
+bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneGraph, const Meshes &meshes,
 						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
 	stream.writeStringFormat(false, "github.com/mgerhardy/vengi");
@@ -231,7 +232,9 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, cons
 		Log::debug("Exporting layer %s", meshExt.name.c_str());
 		const int nv = (int)mesh->getNoOfVertices();
 		const int ni = (int)mesh->getNoOfIndices();
-		const glm::vec3 offset(mesh->getOffset());
+		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+		int frame = 0;
+		const SceneGraphTransform &transform = graphNode.transform(frame);
 		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 		const voxel::IndexType *indices = mesh->getRawIndexData();
 
@@ -252,15 +255,15 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &, cons
 				}
 			}
 
-			if (!writeVertex(stream, meshExt, v1, offset, scale)) {
+			if (!writeVertex(stream, meshExt, v1, transform, scale)) {
 				return false;
 			}
 
-			if (!writeVertex(stream, meshExt, v2, offset, scale)) {
+			if (!writeVertex(stream, meshExt, v2, transform, scale)) {
 				return false;
 			}
 
-			if (!writeVertex(stream, meshExt, v3, offset, scale)) {
+			if (!writeVertex(stream, meshExt, v3, transform, scale)) {
 				return false;
 			}
 
