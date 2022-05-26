@@ -40,7 +40,7 @@ protected:
 
 	void testSave(const core::String& filename, Format* format);
 
-	void testSaveLoadVoxel(const core::String& filename, Format* format, int mins = 0, int maxs = 1);
+	void testSaveLoadVoxel(const core::String& filename, Format* format, int mins = 0, int maxs = 1, bool includingRegion = true);
 
 	void testLoadSaveAndLoad(const core::String &srcFilename, Format &srcFormat,
 							 const core::String &destFilename, Format &destFormat, bool includingColor,

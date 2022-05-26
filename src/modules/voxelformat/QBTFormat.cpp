@@ -119,17 +119,18 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	wrapSaveFree(stream.writeString(node.name(), false));
 	Log::debug("Save matrix with name %s", node.name().c_str());
 
-	wrapSaveFree(stream.writeUInt32(mins.x));
-	wrapSaveFree(stream.writeUInt32(mins.y));
-	wrapSaveFree(stream.writeUInt32(mins.z));
+	const uint32_t frame = 0;
+	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
+	const glm::ivec3 offset = glm::round(transform.translation());
+	wrapSaveFree(stream.writeInt32(offset.x));
+	wrapSaveFree(stream.writeInt32(offset.y));
+	wrapSaveFree(stream.writeInt32(offset.z));
 
 	glm::uvec3 localScale { 1 };
 	wrapSaveFree(stream.writeUInt32(localScale.x));
 	wrapSaveFree(stream.writeUInt32(localScale.y));
 	wrapSaveFree(stream.writeUInt32(localScale.z));
 
-	const uint32_t frame = 0;
-	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
 	const glm::vec3 &pivot = transform.pivot();
 	wrapSaveFree(stream.writeFloat(pivot.x));
 	wrapSaveFree(stream.writeFloat(pivot.y));
@@ -303,14 +304,14 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	wrapBool(stream.readString(nameLength, name));
 	name[nameLength] = '\0';
 	Log::debug("Matrix name: %s", name);
-	glm::ivec3 position;
+	glm::ivec3 translation;
+	SceneGraphTransform transform;
+	wrap(stream.readInt32(translation.x));
+	wrap(stream.readInt32(translation.y));
+	wrap(stream.readInt32(translation.z));
+	transform.setTranslation(translation);
+
 	glm::uvec3 localScale;
-	glm::uvec3 size;
-	// TODO: move into transform
-	wrap(stream.readInt32(position.x));
-	wrap(stream.readInt32(position.y));
-	wrap(stream.readInt32(position.z));
-	// TODO: move into transform
 	wrap(stream.readUInt32(localScale.x));
 	wrap(stream.readUInt32(localScale.y));
 	wrap(stream.readUInt32(localScale.z));
@@ -319,9 +320,12 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	wrap(stream.readFloat(pivot.x));
 	wrap(stream.readFloat(pivot.y));
 	wrap(stream.readFloat(pivot.z));
+
+	glm::uvec3 size;
 	wrap(stream.readUInt32(size.x));
 	wrap(stream.readUInt32(size.y));
 	wrap(stream.readUInt32(size.z));
+	transform.setPivot(pivot / glm::vec3(size));
 
 	uint32_t voxelDataSize;
 	wrap(stream.readUInt32(voxelDataSize));
@@ -345,7 +349,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	const uint32_t voxelDataSizeDecompressed = size.x * size.y * size.z * sizeof(uint32_t);
 	io::BufferedZipReadStream zipStream(stream, voxelDataSize, voxelDataSizeDecompressed * 2);
 
-	const voxel::Region region(position, position + glm::ivec3(size) - 1);
+	const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region");
 		return false;
@@ -368,18 +372,16 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 				}
 				if (palette.colorCount > 0) {
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, red);
-					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
+					volume->setVoxel(x, y, z, voxel);
 				} else {
 					const core::RGBA color = core::Color::getRGBA(red, green, blue);
 					const uint8_t index = palLookup.findClosestIndex(color);
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-					volume->setVoxel(position.x + x, position.y + y, position.z + z, voxel);
+					volume->setVoxel(x, y, z, voxel);
 				}
 			}
 		}
 	}
-	SceneGraphTransform transform;
-	transform.setPivot(pivot / glm::vec3(size));
 	SceneGraphNode node;
 	node.setVolume(volume.release(), true);
 	node.setName(name);

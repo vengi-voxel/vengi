@@ -16,7 +16,7 @@ TEST_F(GoxFormatTest, testLoad) {
 
 TEST_F(GoxFormatTest, testSaveSmallVoxel) {
 	GoxFormat f;
-	testSaveLoadVoxel("goxel-smallvolumesavetest.gox", &f, -16, 15);
+	testSaveLoadVoxel("goxel-smallvolumesavetest.gox", &f, -16, 15, false);
 }
 
 TEST_F(GoxFormatTest, testLoadRGB) {

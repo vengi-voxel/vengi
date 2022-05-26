@@ -232,7 +232,7 @@ void AbstractVoxFormatTest::testSave(const core::String &filename, Format *forma
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
 
-void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Format *format, int mins, int maxs) {
+void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Format *format, int mins, int maxs, bool includingRegion) {
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume original(region);
 
@@ -295,7 +295,7 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	voxelformat::SceneGraph::MergedVolumePalette merged = load(filename, *readStream, *format);
 	core::ScopedPtr<voxel::RawVolume> loaded(merged.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load the merged volumes";
-	volumeComparator(original, voxel::getPalette(), *loaded, merged.second, true, true);
+	volumeComparator(original, voxel::getPalette(), *loaded, merged.second, true, includingRegion);
 }
 
 } // namespace voxel

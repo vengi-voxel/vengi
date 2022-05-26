@@ -13,6 +13,7 @@
 #include "math/Axis.h"
 #include "math/Math.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -278,7 +279,6 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 				stream.readFloat(mat[i / 4][i % 4]);
 			}
 			transform.setMatrix(mat);
-			transform.update();
 			node.setTransform(0, transform, true);
 		} else if (!strcmp(dictKey, "img-path") || !strcmp(dictKey, "id")) {
 			// "img-path" layer texture path
@@ -297,7 +297,11 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 		}
 	}
 	// TODO: fix this properly - without mirroring
-	node.setVolume(voxelutil::mirrorAxis(layerVolume, math::Axis::Z), true);
+	voxel::RawVolume *mirrored = voxelutil::mirrorAxis(layerVolume, math::Axis::Z);
+	const glm::ivec3 mins = mirrored->region().getLowerCorner();
+	mirrored->translate(-mins);
+	node.transform(0).setTranslation(mins);
+	node.setVolume(mirrored, true);
 	node.setName(name);
 	node.setVisible(visible);
 	node.setPalette(palLookup.palette());
