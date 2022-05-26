@@ -33,7 +33,7 @@ private:
 	};
 	typedef core::DynamicArray<Pair> Stack;
 	void processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
-						 const SceneGraphNode &graphNode, Stack &stack);
+						 const SceneGraphNode &graphNode, Stack &stack, const SceneGraph &sceneGraph);
 
 	// importing (voxelization)
 	struct GltfVertex {
