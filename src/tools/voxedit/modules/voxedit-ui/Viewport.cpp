@@ -214,9 +214,6 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 		return;
 	}
 	const EditMode editMode = sceneMgr().editMode();
-	if (editMode != EditMode::Scene) {
-		return;
-	}
 
 	ImGuiIO &io = ImGui::GetIO();
 
@@ -251,26 +248,36 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + headerSize, size.x, size.y);
 	ImGuizmo::SetOrthographic(camera.mode() == video::CameraMode::Orthogonal);
-	const float step = (float)core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
-	const float snap[]{step, step, step};
-	const uint32_t keyFrame = node.keyFrameForFrame(sceneMgr().currentFrame());
-	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrame);
-	glm::mat4 transformMatrix = transform.matrix();
-	glm::mat4 deltaMatrix(0.0f);
-	ImGuizmo::Manipulate(glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()),
-						 (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix),
-						 glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr);
-	if (ImGuizmo::IsUsing()) {
-		_guizmoActivated = true;
-		sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrame, false);
-	} else if (_guizmoActivated) {
-		sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrame, true);
-		_guizmoActivated = false;
+	if (editMode == EditMode::Scene) {
+		const float step = (float)core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
+		const float snap[]{step, step, step};
+		const uint32_t keyFrame = node.keyFrameForFrame(sceneMgr().currentFrame());
+		const voxelformat::SceneGraphTransform &transform = node.transform(keyFrame);
+		glm::mat4 transformMatrix = transform.matrix();
+		glm::mat4 deltaMatrix(0.0f);
+		ImGuizmo::Manipulate(glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()),
+							 (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix),
+							 glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr);
+		if (editMode == EditMode::Scene) {
+			if (ImGuizmo::IsUsing()) {
+				_guizmoActivated = true;
+				sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrame, false);
+			} else if (_guizmoActivated) {
+				sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrame, true);
+				_guizmoActivated = false;
+			}
+		}
 	}
-
 	glm::mat4 viewMatrix = camera.viewMatrix();
-	ImGuizmo::ViewManipulate(glm::value_ptr(viewMatrix), camera.targetDistance(), ImGui::GetWindowPos(),
-							 ImVec2(128, 128), 0);
+	if (editMode == EditMode::Scene) {
+		ImGuizmo::ViewManipulate(glm::value_ptr(viewMatrix), camera.targetDistance(), ImGui::GetWindowPos(),
+								ImVec2(128, 128), 0);
+	} else {
+		glm::mat4 transformMatrix = glm::mat4(1.0f); // not used
+		ImGuizmo::ViewManipulate(glm::value_ptr(viewMatrix), glm::value_ptr(camera.projectionMatrix()),
+							 (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix), camera.targetDistance(), ImGui::GetWindowPos(),
+								ImVec2(128, 128), 0);
+	}
 	if (viewMatrix != camera.viewMatrix()) {
 		glm::vec3 scale;
 		glm::vec3 translation;
