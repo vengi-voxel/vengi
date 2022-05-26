@@ -160,7 +160,7 @@ static void finishPreviousTimeline(ImGuiNeoSequencerInternalData &context) {
 
 static bool createKeyframe(uint32_t *frame) {
 	const ImGuiStyle &imStyle = GetStyle();
-	Map::mapped_type &context = sequencerData[currentSequencer];
+	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
 
 	const float timelineOffset = getKeyframePositionX(*frame, context);
 
@@ -394,7 +394,7 @@ bool BeginNeoSequencer(const char *idin, uint32_t *frame, uint32_t *startFrame, 
 
 	inSequencer = true;
 
-	Map::mapped_type &context = sequencerData[id];
+	ImGuiNeoSequencerInternalData &context = sequencerData[id];
 
 	ImVec2 realSize = ImFloor(size);
 	if (realSize.x <= 0.0f) {
@@ -456,7 +456,7 @@ void EndNeoSequencer() {
 	IM_ASSERT(inSequencer && "Called end sequencer when BeginSequencer didnt return true or wasn't called at all!");
 	IM_ASSERT(sequencerData.count(currentSequencer) != 0 && "Ended sequencer has no context!");
 
-	Map::mapped_type &context = sequencerData[currentSequencer];
+	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
 
 	renderCurrentFrame(context);
 
@@ -480,7 +480,7 @@ IMGUI_API void EndNeoGroup() {
 }
 
 static bool groupBehaviour(const ImGuiID id, bool *open, const ImVec2 &labelSize) {
-	Map::mapped_type &context = sequencerData[currentSequencer];
+	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
 	ImGuiWindow *window = GetCurrentWindow();
 
 	const bool closable = open != nullptr;
@@ -511,7 +511,7 @@ static bool groupBehaviour(const ImGuiID id, bool *open, const ImVec2 &labelSize
 }
 
 static bool timelineBehaviour(const ImGuiID id, const ImVec2 &labelSize) {
-	Map::mapped_type &context = sequencerData[currentSequencer];
+	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
 
 	const ImRect groupBB{context.ValuesCursor, context.ValuesCursor + labelSize};
 
@@ -533,7 +533,7 @@ bool BeginNeoTimeline(const char *label, uint32_t **keyframes, uint32_t keyframe
 
 	const bool closable = open != nullptr;
 
-	Map::mapped_type &context = sequencerData[currentSequencer];
+	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
 	const ImGuiStyle &imStyle = GetStyle();
 	ImGuiWindow *window = GetCurrentWindow();
 	const ImGuiID id = window->GetID(label);
@@ -593,7 +593,7 @@ bool BeginNeoTimeline(const char *label, uint32_t **keyframes, uint32_t keyframe
 }
 
 void EndNeoTimeLine() {
-	Map::mapped_type &context = sequencerData[currentSequencer];
+	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
 	finishPreviousTimeline(context);
 	currentTimelineDepth--;
 }
