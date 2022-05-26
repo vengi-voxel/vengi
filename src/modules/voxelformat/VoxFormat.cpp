@@ -129,8 +129,12 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	const glm::ivec3& transformedMaxs = transform(ogtMat, maxs, pivot);
 	const glm::ivec3& zUpMins = transform(zUpMat, transformedMins, glm::ivec4(0));
 	const glm::ivec3& zUpMaxs = transform(zUpMat, transformedMaxs, glm::ivec4(0));
-	const voxel::Region region(glm::min(zUpMins, zUpMaxs), glm::max(zUpMins, zUpMaxs));
+	voxel::Region region(glm::min(zUpMins, zUpMaxs), glm::max(zUpMins, zUpMaxs));
+	const glm::ivec3 shift = region.getLowerCorner();
+	region.shift(-shift);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
+	SceneGraphTransform trans;
+	trans.setTranslation(shift);
 
 	for (uint32_t k = 0; k < ogtModel->size_z; ++k) {
 		for (uint32_t j = 0; j < ogtModel->size_y; ++j) {
@@ -141,7 +145,8 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, ogtVoxel[0]);
 				const glm::ivec3 &pos = transform(ogtMat, glm::ivec3(i, j, k), pivot);
 				const glm::ivec3 &poszUp = transform(zUpMat, pos, glm::ivec4(0));
-				v->setVoxel(poszUp, voxel);
+				const glm::ivec3 &regionPos = poszUp - shift;
+				v->setVoxel(regionPos, voxel);
 			}
 		}
 	}
@@ -162,6 +167,8 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 		}
 	}
 	loadKeyFrames(node, ogtInstance.transform_anim.keyframes, ogtInstance.transform_anim.num_keyframes);
+	// TODO: we are overriding the keyframe data here
+	node.setTransform(0, trans, true);
 	node.setName(name);
 	node.setVisible(!ogtInstance.hidden && !groupHidden);
 	node.setVolume(v, true);

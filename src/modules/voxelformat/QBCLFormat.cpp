@@ -281,11 +281,11 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	wrap(stream.readUInt32(size.y));
 	wrap(stream.readUInt32(size.z));
 
-	glm::ivec3 position;
-	wrap(stream.readInt32(position.x));
-	wrap(stream.readInt32(position.y));
-	wrap(stream.readInt32(position.z));
-	//transform.position = position;
+	glm::ivec3 translation;
+	wrap(stream.readInt32(translation.x));
+	wrap(stream.readInt32(translation.y));
+	wrap(stream.readInt32(translation.z));
+	transform.setTranslation(translation);
 
 	glm::vec3 pivot;
 	wrap(stream.readFloat(pivot.x));
@@ -315,7 +315,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 		return false;
 	}
 
-	const voxel::Region region(position, position + glm::ivec3(size) - 1);
+	const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region");
 		return false;
@@ -359,7 +359,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 					for (int j = 0; j < rleLength; ++j) {
 						const uint32_t x = (index / size.z);
 						const uint32_t z = index % size.z;
-						volume->setVoxel(position.x + (int)x, position.y + y, position.z + (int)z, voxel);
+						volume->setVoxel((int)x, y, (int)z, voxel);
 						++y;
 					}
 				}
@@ -374,7 +374,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				const core::RGBA color = core::Color::getRGBA(red, green, blue);
 				const uint8_t palIndex = palLookup.findClosestIndex(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
-				volume->setVoxel(position.x + (int)x, position.y + y, position.z + (int)z, voxel);
+				volume->setVoxel((int)x, y, (int)z, voxel);
 				++y;
 			}
 		}
