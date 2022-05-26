@@ -26,6 +26,7 @@
 #include <limits.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #define TINYGLTF_IMPLEMENTATION
 // #define TINYGLTF_NO_FS // TODO: use our own file abstraction
@@ -35,10 +36,27 @@
 namespace voxelformat {
 
 void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
-								 const SceneGraphNode &graphNode, Stack &stack) {
+								 const SceneGraphNode &graphNode, Stack &stack, const SceneGraph &sceneGraph) {
 	node.name = graphNode.name().c_str();
 	Log::debug("process node %s", node.name.c_str());
 	const int idx = (int)m.nodes.size();
+
+	auto nodeWorldMatrix = graphNode.transform().matrix();
+
+	if (sceneGraph.hasNode(graphNode.id())) {
+		const int graphNodeParentId = sceneGraph.node(graphNode.id()).parent();
+		const SceneGraphNode &parentGraphNode = sceneGraph.node(graphNodeParentId);
+		nodeWorldMatrix = glm::inverse(parentGraphNode.transform().matrix()) * nodeWorldMatrix;
+	}
+
+	std::vector<double> nodeMatrixArray = {};
+	const float *pSource = (const float *)glm::value_ptr(nodeWorldMatrix);
+
+	for (int i = 0; i < 16; ++i) {
+		nodeMatrixArray.push_back(pSource[i]);
+	}
+
+	node.matrix = nodeMatrixArray;
 
 	m.nodes.push_back(node);
 
@@ -157,7 +175,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 		if (meshIdxNodeMap.find(nodeId) == meshIdxNodeMap.end()) {
 			tinygltf::Node node;
-			processGltfNode(m, node, scene, graphNode, stack);
+			processGltfNode(m, node, scene, graphNode, stack, sceneGraph);
 			continue;
 		}
 		// 1 x 256 is the texture format that we are using for our palette
@@ -236,11 +254,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		for (int j = 0; j < nv; j++) {
 			const voxel::VoxelVertex &v = vertices[j];
 
-			glm::vec3 pos;
+			glm::vec3 pos = v.position;
+
 			if (meshExt.applyTransform) {
-				pos = transform.apply(v.position, meshExt.size);
-			} else {
-				pos = v.position;
+				pos = pos - (transform.pivot() * meshExt.size);
 			}
 
 			pos *= scale;
@@ -377,7 +394,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		{
 			tinygltf::Node node;
 			node.mesh = nthNodeIdx;
-			processGltfNode(m, node, scene, graphNode, stack);
+			processGltfNode(m, node, scene, graphNode, stack, sceneGraph);
 		}
 
 		m.meshes.emplace_back(core::move(expMesh));
