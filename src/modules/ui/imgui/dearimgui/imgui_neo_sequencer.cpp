@@ -50,11 +50,11 @@ static ImGuiNeoSequencerStyle style; // NOLINT(cert-err58-cpp)
 // Global context stuff
 static bool inSequencer = false;
 
-// Height of timeline right now
-static float currentTimelineHeight = 0.0f;
-
 // Current active sequencer
 static ImGuiID currentSequencer;
+
+// Height of timeline right now
+static float currentTimelineHeight = 0.0f;
 
 // Current timeline depth, used for offset of label
 static uint32_t currentTimelineDepth = 0;
@@ -65,7 +65,6 @@ static ImVector<ImGuiColorMod> sequencerColorStack;
 static Map sequencerData;
 
 static uint32_t idCounter = 0;
-static char idBuffer[16];
 
 ///////////// STATIC HELPERS ///////////////////////
 
@@ -122,16 +121,11 @@ static void processCurrentFrame(uint32_t *frame, ImGuiNeoSequencerInternalData &
 	if (context.HoldingCurrentFrame) {
 		if (IsMouseDragging(ImGuiMouseButton_Left, 0.0f)) {
 			const float mousePosX = GetMousePos().x;
-			const float v = mousePosX - timelineXRange.x; // Subtract min
-
+			const float v = mousePosX - timelineXRange.x;				// Subtract min
 			const float normalized = v / getWorkTimelineWidth(context); // Divide by width to remap to 0 - 1 range
-
 			const float clamped = ImClamp(normalized, 0.0f, 1.0f);
-
 			const float viewSize = (float)(context.EndFrame - context.StartFrame) / context.Zoom;
-
 			const float frameViewVal = (float)context.StartFrame + (clamped * (float)viewSize);
-
 			const unsigned int finalFrame = (uint32_t)round(frameViewVal) + context.OffsetFrame;
 
 			context.CurrentFrameColor = GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_FramePointerPressed);
@@ -184,12 +178,13 @@ static bool createKeyframe(uint32_t *frame) {
 }
 
 static const char *generateID() {
+	static char idBuffer[16];
 	idBuffer[0] = '#';
 	idBuffer[1] = '#';
 	core_memset(idBuffer + 2, 0, 14);
 	SDL_snprintf(idBuffer + 2, 14, "%o", idCounter++);
 
-	return &idBuffer[0];
+	return idBuffer;
 }
 
 static void resetID() {
@@ -210,25 +205,16 @@ static void processAndRenderZoom(ImGuiNeoSequencerInternalData &context, bool al
 								 uint32_t *end) {
 	const ImGuiStyle &imStyle = GetStyle();
 	ImGuiWindow *window = GetCurrentWindow();
-
 	const float zoomHeight = GetFontSize() * style.ZoomHeightScale;
-
 	ImDrawList *drawList = GetWindowDrawList();
-
-	// Input width
 	const float inputWidth = CalcTextSize("123456").x;
-
 	const float inputWidthWithPadding = inputWidth + imStyle.ItemSpacing.x;
-
 	const ImVec2 cursor =
 		allowEditingLength ? context.StartCursor + ImVec2{inputWidthWithPadding, 0} : context.StartCursor;
-
 	const float size = allowEditingLength ? context.Size.x - 2 * inputWidthWithPadding : context.Size.x;
-
 	const ImRect bb{cursor, cursor + ImVec2{size, zoomHeight}};
 	const ImVec2 frameNumberBorderSize{inputWidth - imStyle.FramePadding.x, zoomHeight};
 	const ImVec2 zoomBarEndWithSpacing = ImVec2{bb.Max.x + imStyle.ItemSpacing.x, context.StartCursor.y};
-
 	int32_t startFrameVal = (int32_t)*start;
 	int32_t endFrameVal = (int32_t)*end;
 
@@ -337,7 +323,6 @@ static void processAndRenderZoom(ImGuiNeoSequencerInternalData &context, bool al
 	}
 
 	const bool res = ItemAdd(finalSliderInteractBB, 0);
-
 	const unsigned int viewStart = *start + (uint32_t)context.OffsetFrame;
 	const unsigned int viewEnd = viewStart + viewWidth;
 
@@ -532,7 +517,6 @@ bool BeginNeoTimeline(const char *label, uint32_t **keyframes, uint32_t keyframe
 	IM_ASSERT(inSequencer && "Not in active sequencer!");
 
 	const bool closable = open != nullptr;
-
 	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
 	const ImGuiStyle &imStyle = GetStyle();
 	ImGuiWindow *window = GetCurrentWindow();
@@ -543,7 +527,7 @@ bool BeginNeoTimeline(const char *label, uint32_t **keyframes, uint32_t keyframe
 	labelSize.x +=
 		imStyle.FramePadding.x * 2 + style.ItemSpacing.x * 2 + (float)currentTimelineDepth * style.DepthItemSpacing;
 
-	bool isGroup = flags & ImGuiNeoTimelineFlags_Group && closable;
+	const bool isGroup = flags & ImGuiNeoTimelineFlags_Group && closable;
 	bool addRes = false;
 	if (isGroup) {
 		labelSize.x += imStyle.ItemSpacing.x + GetFontSize();
@@ -583,7 +567,6 @@ bool BeginNeoTimeline(const char *label, uint32_t **keyframes, uint32_t keyframe
 	context.ValuesCursor.y += currentTimelineHeight;
 
 	const bool result = !closable || (*open);
-
 	if (result) {
 		currentTimelineDepth++;
 	} else {
