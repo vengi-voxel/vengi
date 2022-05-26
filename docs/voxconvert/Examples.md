@@ -90,7 +90,7 @@ This will export layers 1, 2 and 4.
 
 ## Convert to mesh
 
-You can export your volume model into a gltf, obj, stl or ply (see [Formats](Formats.md) for more options)
+You can export your volume model into a gltf, obj, stl or ply (see [Formats](../Formats.md) for more options)
 
 `./vengi-voxconvert --input infile.vox --output outfile.obj`
 
