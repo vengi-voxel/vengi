@@ -427,14 +427,17 @@ size_t GLTFFormat::getGltfAccessorSize(const tinygltf::Accessor &accessor) const
 
 const tinygltf::Accessor *GLTFFormat::getGltfAccessor(const tinygltf::Model &model, int id) const {
 	if ((size_t)id >= model.accessors.size()) {
+		Log::debug("Invalid accessor id: %i", id);
 		return nullptr;
 	}
 
 	const tinygltf::Accessor &accessor = model.accessors[id];
 	if (accessor.sparse.isSparse) {
+		Log::debug("Sparse accessor");
 		return nullptr;
 	}
 	if (accessor.bufferView < 0 || accessor.bufferView >= (int)model.bufferViews.size()) {
+		Log::debug("Invalid bufferview id: %i", id);
 		return nullptr;
 	}
 
@@ -565,7 +568,25 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 				Log::debug("Image components: %i, width: %i, height: %i, bits: %i", image.component, image.width,
 						   image.height, image.bits);
 				if (image.uri.empty()) {
-					Log::warn("Embedded textures are not yet supported");
+					if (image.bufferView >= 0 && image.bufferView < (int)model.bufferViews.size()) {
+						const tinygltf::BufferView &imgBufferView = model.bufferViews[image.bufferView];
+						if (imgBufferView.buffer >= 0 && imgBufferView.buffer < (int)model.buffers.size()) {
+							const tinygltf::Buffer &imgBuffer = model.buffers[imgBufferView.buffer];
+							const size_t offset = imgBufferView.byteOffset;
+							const uint8_t *buf = imgBuffer.data.data() + offset;
+							image::ImagePtr tex = image::createEmptyImage(image.name.c_str());
+							if (!tex->load(buf, (int)imgBufferView.byteLength)) {
+								Log::warn("Failed to load embedded image %s", image.name.c_str());
+							} else {
+								diffuseTexture = image.name.c_str();
+								textures.put(diffuseTexture, tex);
+							}
+						} else {
+							Log::warn("Invalid buffer index: %i", imgBufferView.buffer);
+						}
+					} else {
+						Log::warn("Invalid buffer view index: %i", image.bufferView);
+					}
 				} else {
 					core::String name = image.uri.c_str();
 					if (!textures.hasKey(name)) {
