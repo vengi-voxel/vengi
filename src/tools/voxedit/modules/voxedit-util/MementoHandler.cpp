@@ -32,9 +32,11 @@ MementoData::MementoData(const uint8_t* buf, size_t bufSize,
 }
 
 MementoData::MementoData(MementoData&& o) noexcept :
-		_compressedSize(std::exchange(o._compressedSize, 0)),
-		_buffer(std::exchange(o._buffer, nullptr)),
+		_compressedSize(o._compressedSize),
+		_buffer(o._buffer),
 		_region(o._region) {
+	o._compressedSize = 0;
+	o._buffer = nullptr;
 }
 
 MementoData::~MementoData() {
@@ -58,11 +60,13 @@ MementoData::MementoData(const MementoData& o) :
 
 MementoData& MementoData::operator=(MementoData &&o) noexcept {
 	if (this != &o) {
-		_compressedSize = std::exchange(o._compressedSize, 0);
+		_compressedSize = o._compressedSize;
+		o._compressedSize = 0;
 		if (_buffer) {
 			core_free(_buffer);
 		}
-		_buffer = std::exchange(o._buffer, nullptr);
+		_buffer = o._buffer;
+		o._buffer = nullptr;
 		_region = o._region;
 	}
 	return *this;
