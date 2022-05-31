@@ -40,6 +40,12 @@ apt-get install postgresql-10 postgresql-contrib
 CREATE EXTENSION pgcrypto;
 ```
 
+## Arch
+
+```bash
+pacman -Sy git make cmake ninja libuv sdl2 clang
+```
+
 ## MacPorts
 
 ```bash
