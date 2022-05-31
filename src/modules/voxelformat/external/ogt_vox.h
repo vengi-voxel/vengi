@@ -2612,7 +2612,7 @@
         return best_index;
     }
 
-    static void update_master_palette_from_scene(ogt_vox_rgba * master_palette, uint32_t & master_palette_count, const ogt_vox_scene * scene, uint32_t * scene_to_master_map) {
+    static void update_master_palette_and_materials_from_scene(ogt_vox_rgba * master_palette, uint32_t & master_palette_count, const ogt_vox_scene * scene, uint32_t * scene_to_master_map, ogt_vox_matl * master_matl) {
         // compute the mask of used colors in the scene.
         bool scene_used_mask[256];
         compute_scene_used_color_index_mask(scene_used_mask, scene);
@@ -2626,12 +2626,14 @@
         for (uint32_t color_index = 1; color_index < 256; color_index++) {
             if (scene_used_mask[color_index]) {
                 const ogt_vox_rgba color = scene->palette.color[color_index];
+                const ogt_vox_matl matl = scene->materials.matl[color_index];
                 // find the exact color in the master palette. Will be UINT32_MAX if the color doesn't already exist
                 uint32_t master_index = find_exact_color_in_palette(master_palette, master_palette_count, color);
                 if (master_index == UINT32_MAX) {
                     if (master_palette_count < 256) {
                         // master palette capacity hasn't been exceeded so far, allocate the color to it.
                         master_palette[master_palette_count] = color;
+                        master_matl[master_palette_count] = matl;
                         master_index = master_palette_count++;
                     }
                     else {
@@ -2660,8 +2662,10 @@
 
         // initialize the master palette. If required colors are specified, map them into the master palette now.
         ogt_vox_rgba  master_palette[256];
+        ogt_vox_matl materials[256];
         uint32_t master_palette_count = 1;          // color_index 0 is reserved for empty color!
         memset(&master_palette, 0, sizeof(master_palette));
+        memset(&materials, 0, sizeof(materials));
         for (uint32_t required_index = 0; required_index < required_color_count; required_index++)
             master_palette[master_palette_count++] = required_colors[required_index];
 
@@ -2721,7 +2725,7 @@
 
             // update the master palette, and get the map of this scene's color indices into the master palette.
             uint32_t scene_color_index_to_master_map[256];
-            update_master_palette_from_scene(master_palette, master_palette_count, scene, scene_color_index_to_master_map);
+            update_master_palette_and_materials_from_scene(master_palette, master_palette_count, scene, scene_color_index_to_master_map, materials);
 
             // cache away the base model index for this scene.
             uint32_t base_model_index = num_models;
@@ -2879,6 +2883,9 @@
         // copy color palette into the merged scene
         for (uint32_t color_index = 0; color_index < 256; color_index++)
             merged_scene->palette.color[color_index] = master_palette[color_index];
+        // copy materials into the merged scene
+        for (uint32_t color_index = 0; color_index < 256; color_index++)
+            merged_scene-> materials.matl[color_index] = materials[color_index];
 
         return merged_scene;
     }
