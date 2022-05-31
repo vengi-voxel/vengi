@@ -67,6 +67,7 @@ set(TEST_SRCS
 	tests/QBCLFormatTest.cpp
 	tests/QEFFormatTest.cpp
 	tests/SceneGraphTest.cpp
+	tests/SceneGraphUtilTest.cpp
 	tests/SchematicFormatTest.cpp
 	tests/SproxelFormatTest.cpp
 	tests/STLFormatTest.cpp

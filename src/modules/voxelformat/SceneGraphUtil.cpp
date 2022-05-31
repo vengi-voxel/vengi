@@ -61,30 +61,29 @@ int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent
 	return addToGraph(sceneGraph, core::move(newNode), parent);
 }
 
-static int addSceneGraphNode_r(SceneGraph& sceneGraph, SceneGraph &newSceneGraph, SceneGraphNode &node, int parent) {
-	const int newNodeId = addNodeToSceneGraph(sceneGraph, node, parent);
+static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, SceneGraphNode &sourceNode, int parent) {
+	const int newNodeId = addNodeToSceneGraph(target, sourceNode, parent);
 	if (newNodeId == -1) {
 		Log::error("Failed to add node to the scene graph");
 		return 0;
 	}
 
-	const SceneGraphNode &newNode = newSceneGraph.node(newNodeId);
-	int nodesAdded = newNode.type() == SceneGraphNodeType::Model ? 1 : 0;
-	for (int nodeIdx : newNode.children()) {
-		core_assert(newSceneGraph.hasNode(nodeIdx));
-		SceneGraphNode &childNode = newSceneGraph.node(nodeIdx);
-		nodesAdded += addSceneGraphNode_r(sceneGraph, newSceneGraph, childNode, newNodeId);
+	int nodesAdded = sourceNode.type() == SceneGraphNodeType::Model ? 1 : 0;
+	for (int sourceNodeIdx : sourceNode.children()) {
+		core_assert(source.hasNode(sourceNodeIdx));
+		SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
+		nodesAdded += addSceneGraphNode_r(target, source, sourceChildNode, newNodeId);
 	}
 
 	return nodesAdded;
 }
 
-int addSceneGraphNodes(SceneGraph& sceneGraph, SceneGraph& newSceneGraph, int parent) {
-	const SceneGraphNode &root = newSceneGraph.root();
+int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent) {
+	const SceneGraphNode &sourceRoot = source.root();
 	int nodesAdded = 0;
-	sceneGraph.node(parent).addProperties(root.properties());
-	for (int nodeId : root.children()) {
-		nodesAdded += addSceneGraphNode_r(sceneGraph, newSceneGraph, newSceneGraph.node(nodeId), parent);
+	target.node(parent).addProperties(sourceRoot.properties());
+	for (int sourceNodeId : sourceRoot.children()) {
+		nodesAdded += addSceneGraphNode_r(target, source, source.node(sourceNodeId), parent);
 	}
 	return nodesAdded;
 }

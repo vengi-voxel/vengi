@@ -16,6 +16,6 @@ int addNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int 
 // this doesn't copy but transfer the volume ownership
 int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent);
 
-int addSceneGraphNodes(SceneGraph &sceneGraph, SceneGraph &newSceneGraph, int parent);
+int addSceneGraphNodes(SceneGraph& target, SceneGraph& source, int parent);
 
 } // namespace voxel
