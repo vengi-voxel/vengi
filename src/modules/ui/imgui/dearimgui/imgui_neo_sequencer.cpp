@@ -610,6 +610,33 @@ void PopNeoSequencerStyleColor(int count) {
 	}
 }
 
+void SetSelectedTimeline(const char *timelineLabel) {
+	IM_ASSERT(inSequencer && "Not in active sequencer!");
+
+	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	ImGuiWindow *window = GetCurrentWindow();
+
+	ImGuiID timelineID = 0;
+	if (timelineLabel) {
+		timelineID = window->GetID(timelineLabel);
+	}
+
+	context.SelectedTimeline = timelineID;
+}
+
+bool IsNeoTimeLineSelected(const char *timelineLabel) {
+	IM_ASSERT(inSequencer && "Not in active sequencer!");
+
+	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
+	ImGuiWindow *window = GetCurrentWindow();
+
+	ImGuiID timelineID = 0;
+	if (timelineLabel) {
+		timelineID = window->GetID(timelineLabel);
+	}
+	return context.SelectedTimeline == timelineID;
+}
+
 } // namespace ImGui
 
 ImGuiNeoSequencerStyle::ImGuiNeoSequencerStyle() {

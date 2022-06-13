@@ -79,7 +79,8 @@ namespace ImGui {
             c.x += size.y + imStyle.ItemSpacing.x;
         }
 
-        drawList->AddText(c,ColorConvertFloat4ToU32(color),label);
+        const char* label_end = FindRenderedTextEnd(label);
+        drawList->AddText(c,ColorConvertFloat4ToU32(color),label, label_end);
     }
 
     void RenderNeoTimelinesBorder(const ImVec4 &color, const ImVec2 &cursor, const ImVec2 &size, ImDrawList *drawList,

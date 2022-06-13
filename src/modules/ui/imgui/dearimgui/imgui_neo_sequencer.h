@@ -89,6 +89,10 @@ IMGUI_API bool BeginNeoTimeline(const char *label, uint32_t **keyframes, uint32_
 // Call only when BeginNeoTimeline() returns true!!
 IMGUI_API void EndNeoTimeLine();
 
+// Sets currently selected timeline inside BeginNeoSequencer scope
+IMGUI_API void SetSelectedTimeline(const char *timelineLabel);
+IMGUI_API bool IsNeoTimeLineSelected(const char *timelineLabel);
+
 IMGUI_API bool NeoBeginCreateKeyframe(uint32_t *frame);
 
 } // namespace ImGui
