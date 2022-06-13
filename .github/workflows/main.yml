@@ -22,7 +22,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DHOT_RELOAD_ANIM=0 -GNinja
+            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release
             cmake --build .
             cmake --build . --target package
 
@@ -174,7 +174,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release -DHOT_RELOAD_ANIM=0
+            cmake .. -DCMAKE_BUILD_TYPE=Release
             cmake --build .
 
         - name: install
