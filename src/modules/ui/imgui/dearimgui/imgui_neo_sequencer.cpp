@@ -637,14 +637,12 @@ void SetSelectedTimeline(const char *timelineLabel) {
 
 bool IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags flags) {
 	IM_ASSERT(inSequencer && "Not in active sequencer!");
-	auto &context = sequencerData[currentSequencer];
 
+	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
 	IM_ASSERT(!context.TimelineStack.empty() && "No active timelines are present!");
 
 	const bool newly = flags & ImGuiNeoTimelineIsSelectedFlags_NewlySelected;
-
-	const auto openTimeline = context.TimelineStack[context.TimelineStack.size() - 1];
-
+	const ImGuiID openTimeline = context.TimelineStack[context.TimelineStack.size() - 1];
 	if (!newly) {
 		return context.SelectedTimeline == openTimeline;
 	}
