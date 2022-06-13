@@ -8,6 +8,10 @@
 #include "core/IComponent.h"
 #include "animation-config.h"
 
+#ifndef HOT_RELOAD_ANIM
+#define HOT_RELOAD_ANIM 0
+#endif
+
 #if HOT_RELOAD_ANIM == 1
 #if defined(_MSC_VER)
 #define ANIM_APICALL __declspec(dllexport)

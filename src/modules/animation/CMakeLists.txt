@@ -157,7 +157,7 @@ set(LUA_SRCS
 	animations/character.lua
 )
 
-configure_file(animation-config.h.in animation-config.h @ONLY)
+configure_file(animation-config.h.in animation-config.h)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} LUA_SRCS ${LUA_SRCS} DEPENDENCIES stock voxelformat render)
 generate_shaders(${LIB} skeleton skeletonshadowmap skeletondepthmap)
 target_include_directories(${LIB} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
