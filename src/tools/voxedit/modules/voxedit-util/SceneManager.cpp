@@ -2474,6 +2474,9 @@ bool SceneManager::nodeActivate(int nodeId) {
 		Log::warn("Given node id %i doesn't exist", nodeId);
 		return false;
 	}
+	if (_sceneGraph.activeNode() == nodeId) {
+		return true;
+	}
 	Log::debug("Activate node %i", nodeId);
 	voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	if (node.type() != voxelformat::SceneGraphNodeType::Model) {
