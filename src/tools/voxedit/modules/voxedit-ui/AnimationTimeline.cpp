@@ -43,10 +43,10 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 					for (voxelformat::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
 						keys.push_back(&kf.frame);
 					}
-					const char *label = modelNode.name().c_str();
+					const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
 					uint32_t **keyframes = keys.data();
 					const uint32_t keyframeCount = keys.size();
-					if (ImGui::BeginNeoTimeline(label, keyframes, keyframeCount, nullptr, ImGuiNeoTimelineFlags_None)) {
+					if (ImGui::BeginNeoTimeline(label.c_str(), keyframes, keyframeCount, nullptr, ImGuiNeoTimelineFlags_None)) {
 						sceneMgr().setCurrentFrame(currentFrame);
 						ImGui::EndNeoTimeLine();
 					}
