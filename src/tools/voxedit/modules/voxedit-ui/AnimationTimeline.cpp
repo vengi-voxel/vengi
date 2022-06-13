@@ -17,6 +17,7 @@ namespace voxedit {
 void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDown) {
 	const EditMode editMode = sceneMgr().editMode();
 	uint32_t currentFrame = sceneMgr().currentFrame();
+	const bool changedOutside = sceneMgr().sceneGraph().activeNode() != _lastActiveNode;
 	if (editMode == EditMode::Scene) {
 		const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 		ImGui::SetNextWindowDockID(dockIdMainDown, ImGuiCond_Appearing);
@@ -43,11 +44,22 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 					for (voxelformat::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
 						keys.push_back(&kf.frame);
 					}
-					const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
+					const core::String &label =
+						core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
 					uint32_t **keyframes = keys.data();
 					const uint32_t keyframeCount = keys.size();
-					if (ImGui::BeginNeoTimeline(label.c_str(), keyframes, keyframeCount, nullptr, ImGuiNeoTimelineFlags_None)) {
+					if (ImGui::BeginNeoTimeline(label.c_str(), keyframes, keyframeCount, nullptr,
+												ImGuiNeoTimelineFlags_None)) {
 						sceneMgr().setCurrentFrame(currentFrame);
+						if (changedOutside) {
+							if (sceneMgr().sceneGraph().activeNode() == modelNode.id()) {
+								ImGui::SetSelectedTimeline(label.c_str());
+							}
+						} else {
+							if (ImGui::IsNeoTimeLineSelected(label.c_str())) {
+								sceneMgr().nodeActivate(modelNode.id());
+							}
+						}
 						ImGui::EndNeoTimeLine();
 					}
 				}
@@ -56,6 +68,7 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 		}
 		ImGui::End();
 	}
+	_lastActiveNode = sceneMgr().sceneGraph().activeNode();
 }
 
 } // namespace voxedit
