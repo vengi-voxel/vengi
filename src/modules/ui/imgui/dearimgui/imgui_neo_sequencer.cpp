@@ -33,7 +33,10 @@ struct ImGuiNeoSequencerInternalData {
 
 	float Zoom = 1.0f;
 
+	ImGuiID LastSelectedTimeline = 0;
 	ImGuiID SelectedTimeline = 0;
+
+	ImVector<ImGuiID> TimelineStack;
 
 	uint32_t CurrentFrame = 0;
 	bool HoldingCurrentFrame = false; // Are we draging current frame?
@@ -443,6 +446,9 @@ void EndNeoSequencer() {
 
 	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
 
+	IM_ASSERT(context.TimelineStack.empty() && "Missmatch in timeline Begin / End");
+	context.LastSelectedTimeline = context.SelectedTimeline;
+
 	renderCurrentFrame(context);
 
 	inSequencer = false;
@@ -487,6 +493,7 @@ static bool groupBehaviour(const ImGuiID id, bool *open, const ImVec2 &labelSize
 	const bool addGroupRes = ItemAdd(groupBB, id);
 	if (addGroupRes) {
 		if (IsItemClicked()) {
+			context.LastSelectedTimeline = context.SelectedTimeline;
 			context.SelectedTimeline = context.SelectedTimeline == id ? 0 : id;
 		}
 	}
@@ -503,6 +510,7 @@ static bool timelineBehaviour(const ImGuiID id, const ImVec2 &labelSize) {
 	const bool addGroupRes = ItemAdd(groupBB, id);
 	if (addGroupRes) {
 		if (IsItemClicked()) {
+			context.LastSelectedTimeline = context.SelectedTimeline;
 			context.SelectedTimeline = context.SelectedTimeline == id ? 0 : id;
 		}
 	}
@@ -569,6 +577,7 @@ bool BeginNeoTimeline(const char *label, uint32_t **keyframes, uint32_t keyframe
 	const bool result = !closable || (*open);
 	if (result) {
 		currentTimelineDepth++;
+		context.TimelineStack.push_back(id);
 	} else {
 		finishPreviousTimeline(context);
 	}
@@ -579,6 +588,7 @@ void EndNeoTimeLine() {
 	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
 	finishPreviousTimeline(context);
 	currentTimelineDepth--;
+	context.TimelineStack.pop_back();
 }
 
 bool NeoBeginCreateKeyframe(uint32_t *frame) {
@@ -621,20 +631,25 @@ void SetSelectedTimeline(const char *timelineLabel) {
 		timelineID = window->GetID(timelineLabel);
 	}
 
+	context.LastSelectedTimeline = context.SelectedTimeline;
 	context.SelectedTimeline = timelineID;
 }
 
-bool IsNeoTimeLineSelected(const char *timelineLabel) {
+bool IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags flags) {
 	IM_ASSERT(inSequencer && "Not in active sequencer!");
+	auto &context = sequencerData[currentSequencer];
 
-	ImGuiNeoSequencerInternalData &context = sequencerData[currentSequencer];
-	ImGuiWindow *window = GetCurrentWindow();
+	IM_ASSERT(!context.TimelineStack.empty() && "No active timelines are present!");
 
-	ImGuiID timelineID = 0;
-	if (timelineLabel) {
-		timelineID = window->GetID(timelineLabel);
+	const bool newly = flags & ImGuiNeoTimelineIsSelectedFlags_NewlySelected;
+
+	const auto openTimeline = context.TimelineStack[context.TimelineStack.size() - 1];
+
+	if (!newly) {
+		return context.SelectedTimeline == openTimeline;
 	}
-	return context.SelectedTimeline == timelineID;
+
+	return (context.SelectedTimeline != context.LastSelectedTimeline) && context.SelectedTimeline == openTimeline;
 }
 
 } // namespace ImGui

@@ -9,6 +9,7 @@
 typedef int ImGuiNeoSequencerFlags;
 typedef int ImGuiNeoSequencerCol;
 typedef int ImGuiNeoTimelineFlags;
+typedef int ImGuiNeoTimelineIsSelectedFlags;
 
 // Flags for ImGui::BeginNeoSequencer()
 enum ImGuiNeoSequencerFlags_ {
@@ -24,6 +25,12 @@ enum ImGuiNeoTimelineFlags_ {
 	ImGuiNeoTimelineFlags_None = 0,
 	ImGuiNeoTimelineFlags_AllowFrameChanging = 1 << 0,
 	ImGuiNeoTimelineFlags_Group = 1 << 1,
+};
+
+// Flags for ImGui::IsNeoTimelineSelected()
+enum ImGuiNeoTimelineIsSelectedFlags_ {
+	ImGuiNeoTimelineIsSelectedFlags_None = 0,
+	ImGuiNeoTimelineIsSelectedFlags_NewlySelected = 1 << 0,
 };
 
 enum ImGuiNeoSequencerCol_ {
@@ -91,7 +98,7 @@ IMGUI_API void EndNeoTimeLine();
 
 // Sets currently selected timeline inside BeginNeoSequencer scope
 IMGUI_API void SetSelectedTimeline(const char *timelineLabel);
-IMGUI_API bool IsNeoTimeLineSelected(const char *timelineLabel);
+IMGUI_API bool IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags flags = ImGuiNeoTimelineIsSelectedFlags_None);
 
 IMGUI_API bool NeoBeginCreateKeyframe(uint32_t *frame);
 
