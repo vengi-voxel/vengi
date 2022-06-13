@@ -1025,6 +1025,7 @@
                 {
                     const _vox_scene_node_* last_transform = stack.peek_back(0);
                     const _vox_scene_node_* last_group     = stack.peek_back(1);
+                    (void)last_group;
                     ogt_assert(last_transform->node_type == k_nodetype_transform, "parent node type to a shape node must be a transform node");
                     ogt_assert(last_group->node_type == k_nodetype_group, "grandparent node type to a shape node must be a group node");
 
@@ -2473,7 +2474,10 @@
             _vox_sprintf(color_string, sizeof(color_string), "%u %u %u", scene->layers[i].color.r, scene->layers[i].color.g, scene->layers[i].color.b);
             const char* layer_name_string = scene->layers[i].name;
             const char* hidden_string = scene->layers[i].hidden ? "1" : NULL;
-            uint32_t layer_dict_keyvalue_count = (layer_name_string ? 1 : 0) + (hidden_string ? 1 : 0) + (color_string ? 1 : 0);
+            uint32_t layer_dict_keyvalue_count = 0;
+            layer_dict_keyvalue_count += (layer_name_string ? 1 : 0);
+            layer_dict_keyvalue_count += (hidden_string ? 1 : 0);
+            layer_dict_keyvalue_count += 1; // color_string
 
             uint32_t offset_of_chunk_header = _vox_file_get_offset(fp);
 
@@ -2895,6 +2899,7 @@
         // frame_index looping tests
         {
             const char* test_message = "failed compute_looped_frame_index test";
+            (void)test_message;
             // [0,0] = 1 keyframe animation starting at frame 0
             ogt_assert(compute_looped_frame_index( 0,  0, 0 ) == 0, test_message);
             ogt_assert(compute_looped_frame_index( 0,  0, 1 ) == 0, test_message);
