@@ -24,6 +24,7 @@ jobs:
             cd build
             cmake .. -DHOT_RELOAD_ANIM=0 -GNinja
             cmake --build .
+            cmake --build . --target package
 
         - name: Test
           run: |
@@ -54,6 +55,12 @@ jobs:
             ctest -V -R tests-voxelutil$
             ctest -V -R tests-voxelworld$
             ctest -V -R tests-voxelworldrender$
+
+        - name: Upload the build artifacts
+          uses: actions/upload-artifact@v2
+          with:
+            name: dmg
+            path: build/*.dmg
 
     packages:
         runs-on: ubuntu-20.04
