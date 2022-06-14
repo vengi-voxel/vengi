@@ -24,6 +24,8 @@ static char *getHome() {
 	return nullptr;
 }
 
+#if not defined __MACOSX__
+
 /**
  * @brief Replace the shell variable for the home dir
  */
@@ -71,6 +73,8 @@ static core::String load(const core::String &file) {
 	core_free(source);
 	return str;
 }
+
+#endif
 
 } // namespace priv
 
