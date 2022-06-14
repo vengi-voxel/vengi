@@ -32,6 +32,7 @@ General:
    - Fixed vxm file path when saving vxr
    - Save vxmc (version 12) now
    - Changed default ambient color and gamma values
+   - Improved osx dmg file and app bundles
 
 VoxEdit:
 

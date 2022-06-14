@@ -21,6 +21,7 @@ vengi (0.0.20.0-1) UNRELEASED; urgency=low
   * Fixed vxm file path when saving vxr
   * Save vxmc (version 12) now
   * Changed default ambient color and gamma values
+  * Improved osx dmg file and app bundles
 
   * VoxEdit:
   * Fixed start problems on some systems with multisampled framebuffers
