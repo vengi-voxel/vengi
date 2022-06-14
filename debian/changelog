@@ -1,4 +1,4 @@
-vengi (0.0.20.0-1) UNRELEASED; urgency=low
+vengi (0.0.20.0-1) unstable; urgency=low
 
   * General:
   * Added support for minecraft schematic
@@ -39,7 +39,7 @@ vengi (0.0.20.0-1) UNRELEASED; urgency=low
   * Extended --dump to also show the key frames and the voxel count
   * Removed --src-palette (src palette is always used)
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Sun, 27 Mar 2022 11:59:01 +0200
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Tue, 14 Jun 2022 00:00:00 +0000
 
 vengi (0.0.19.0-1) unstable; urgency=low
 
