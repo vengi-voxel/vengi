@@ -37,22 +37,34 @@ set(LIB lua54)
 engine_add_library(
 	LIB ${LIB}
 	SRCS ${SRCS}
-	DEFINES LUA_USE_LONGJMP LUA_COMPAT_MODULE
 )
-# TODO: compile lua and luac binaries to check if there is no system wide installation
-# see common.cmake
-if (NOT LUA54_FOUND)
-	target_link_libraries(${LIB} ${CMAKE_DL_LIBS})
+
+function(configure_lua TARGET)
+	target_link_libraries(${TARGET} ${CMAKE_DL_LIBS})
+	target_compile_definitions(${TARGET} PUBLIC LUA_USE_LONGJMP LUA_COMPAT_MODULE)
 	if (LINUX AND NOT ANDROID AND NOT EMSCRIPTEN)
-		target_compile_definitions(${LIB} PUBLIC -DLUA_USE_LINUX)
+		target_compile_definitions(${TARGET} PUBLIC -DLUA_USE_LINUX)
 	elseif(DARWIN)
-		target_compile_definitions(${LIB} PUBLIC -DLUA_USE_MACOSX)
+		target_compile_definitions(${TARGET} PUBLIC -DLUA_USE_MACOSX)
 	endif()
-	target_compile_definitions(${LIB} PRIVATE "-DLUA_USE_APICHECK")
+	target_compile_definitions(${TARGET} PRIVATE "-DLUA_USE_APICHECK")
 	if (ANDROID OR EMSCRIPTEN)
-		target_compile_definitions(${LIB} PUBLIC -D\"lua_getlocaledecpoint\(\)='.'\")
-		target_compile_definitions(${LIB} PUBLIC -DLUA_ANSI -DLUA_USE_C89)
+		target_compile_definitions(${TARGET} PUBLIC -D\"lua_getlocaledecpoint\(\)='.'\")
+		target_compile_definitions(${TARGET} PUBLIC -DLUA_ANSI -DLUA_USE_C89)
 	endif()
-	engine_add_executable(TARGET luac SRCS luac.c NOINSTALL)
-	target_link_libraries(luac ${LIB})
+endfunction()
+
+if (NOT LUA54_FOUND)
+	configure_lua(${LIB})
+endif()
+
+find_program(LUAC_EXECUTABLE NAMES luac luac5.2 luac5.3 luac5.4)
+if (NOT LUAC_EXECUTABLE)
+	message(STATUS "luac not found - use bundled version")
+	add_executable(luac luac.c ${SRCS})
+	configure_lua(luac)
+else()
+	message(STATUS "${LUAC_EXECUTABLE} found")
+	add_executable(luac IMPORTED GLOBAL)
+	set_property(TARGET luac PROPERTY IMPORTED_LOCATION ${LUAC_EXECUTABLE})
 endif()
