@@ -66,9 +66,11 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"BinVox", "binvox", [] (uint32_t magic) {return magic == FourCC('#','b','i','n');}, 0u},
 	{"Goxel", "gox", [] (uint32_t magic) {return magic == FourCC('G','O','X',' ');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 	{"CubeWorld", "cub", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Minecraft region", "mca", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+	{"Minecraft region anvil", "mca", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+	{"Minecraft region", "mcr", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Minecraft level dat", "dat", nullptr, 0u},
 	{"Minecraft schematic", "schematic", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+	{"Minecraft schem", "schem", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Sproxel csv", "csv", nullptr, 0u},
 	{"Wavefront Object", "obj", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"GL Transmission Format", "gltf", nullptr, VOX_FORMAT_FLAG_MESH},
@@ -169,7 +171,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 		format = core::make_shared<CubFormat>();
 	} else if (ext == "gox") {
 		format = core::make_shared<GoxFormat>();
-	} else if (ext == "mca") {
+	} else if (ext == "mca" || ext == "mcr") {
 		format = core::make_shared<MCRFormat>();
 	} else if (ext == "dat") {
 		format = core::make_shared<DatFormat>();
@@ -201,7 +203,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 		format = core::make_shared<PLYFormat>();
 	} else if (ext == "fbx") {
 		format = core::make_shared<FBXFormat>();
-	} else if (ext == "schematic") {
+	} else if (ext == "schematic" || ext == "schem") {
 		format = core::make_shared<SchematicFormat>();
 	} else if (ext == "gltf" || ext == "glb") {
 		format = core::make_shared<GLTFFormat>();

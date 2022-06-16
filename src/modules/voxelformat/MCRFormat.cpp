@@ -159,10 +159,6 @@ bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream
 
 int MCRFormat::getVoxel(int dataVersion, const priv::NamedBinaryTag &data, const glm::ivec3 &pos) {
 	const uint32_t i = pos.y * MAX_SIZE * MAX_SIZE + pos.z * MAX_SIZE + pos.x;
-	if (data.type() != priv::TagType::BYTE_ARRAY) {
-		Log::error("Unknown block data type: %i for version %i", (int)data.type(), dataVersion);
-		return -1;
-	}
 	if (i >= data.byteArray()->size()) {
 		Log::error("Byte array index out of bounds: %u/%i", i, (int)data.byteArray()->size());
 		return -1;
@@ -177,10 +173,6 @@ int MCRFormat::getVoxel(int dataVersion, const priv::NamedBinaryTag &data, const
 
 int MCRFormat::getVoxel(int dataVersion, const MinecraftSectionPalette &secPal, const priv::NamedBinaryTag &data,
 							const glm::ivec3 &pos) {
-	if (data.type() != priv::TagType::LONG_ARRAY) {
-		Log::error("Unknown block data type: %i for version %i", (int)data.type(), dataVersion);
-		return -1;
-	}
 	const uint32_t i = pos.y * MAX_SIZE * MAX_SIZE + pos.z * MAX_SIZE + pos.x;
 	const uint32_t bitsPerBlock = secPal.numBits;
 	const uint32_t blocksPerLong = 64 / secPal.numBits;
@@ -232,6 +224,10 @@ bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &da
 	voxel::RawVolumeWrapper wrapper(v);
 
 	if (secPal.pal.empty()) {
+		if (data.type() != priv::TagType::BYTE_ARRAY) {
+			Log::error("Unknown block data type: %i for version %i", (int)data.type(), dataVersion);
+			return -1;
+		}
 		glm::ivec3 sPos;
 		for (sPos.y = 0; sPos.y < MAX_SIZE; ++sPos.y) {
 			for (sPos.z = 0; sPos.z < MAX_SIZE; ++sPos.z) {
@@ -250,6 +246,10 @@ bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &da
 			}
 		}
 	} else if (hasData) {
+		if (data.type() != priv::TagType::LONG_ARRAY) {
+			Log::error("Unknown block data type: %i for version %i", (int)data.type(), dataVersion);
+			return -1;
+		}
 		glm::ivec3 sPos;
 		for (sPos.y = 0; sPos.y < MAX_SIZE; ++sPos.y) {
 			for (sPos.z = 0; sPos.z < MAX_SIZE; ++sPos.z) {
@@ -345,6 +345,22 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 	}
 	const int32_t xPos = levels.get("xPos").int32();
 	const int32_t zPos = levels.get("zPos").int32();
+
+	if (dataVersion >= 1976) {
+		const core::String *tagStatus = root.get("Status").string();
+		if (tagStatus == nullptr) {
+			Log::warn("Status for level node wasn't found (version: %i)", dataVersion);
+		} else if (*tagStatus != "full") {
+			Log::warn("Status for level node is not full but %s (version: %i)", tagStatus->c_str(), dataVersion);
+		}
+	} else if (dataVersion >= 1628) {
+		const core::String *tagStatus = levels.get("Status").string();
+		if (tagStatus == nullptr) {
+			Log::warn("Status for level node wasn't found (version: %i)", dataVersion);
+		} else if (*tagStatus != "postprocessed") {
+			Log::warn("Status for level node is not postprocessed but %s (version: %i)", tagStatus->c_str(), dataVersion);
+		}
+	}
 
 	const priv::NamedBinaryTag &sections = levels.get("Sections");
 	if (!sections.valid()) {
