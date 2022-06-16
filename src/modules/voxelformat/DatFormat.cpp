@@ -65,8 +65,21 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		voxelformat::SceneGraphNode groupNode(voxelformat::SceneGraphNodeType::Group);
 		groupNode.setName(name);
 		rootNode = sceneGraph.emplace(core::move(groupNode));
+		Log::debug("Level name: %s", name.c_str());
 	}
-
+	const priv::NamedBinaryTag &levelVersion = data.get("version");
+	if (levelVersion.valid() && levelVersion.type() == priv::TagType::INT) {
+		const int version = levelVersion.int32();
+		Log::debug("Level nbt version: %i", version);
+	}
+	const priv::NamedBinaryTag &dataVersion = data.get("Version");
+	if (dataVersion.valid() && dataVersion.type() == priv::TagType::COMPOUND) {
+		const int version = dataVersion.get("Id").int32();
+		const core::String *versionName = dataVersion.get("Name").string();
+		const core::String *versionSeries = dataVersion.get("Series").string();
+		Log::debug("Minecraft version: (data: %i, name: %s, series: %s)", version,
+				   versionName ? versionName->c_str() : "-", versionSeries ? versionSeries->c_str() : "-");
+	}
 	core::DynamicArray<io::Filesystem::DirEntry> entities;
 	const core::String baseName = core::string::extractPath(filename);
 	if (!io::filesystem()->list(core::string::path(baseName, "region"), entities, "*.mca")) {
