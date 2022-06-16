@@ -171,26 +171,6 @@ int MCRFormat::getVoxel(int dataVersion, const priv::NamedBinaryTag &data, const
 	return val;
 }
 
-int MCRFormat::getVoxel(int dataVersion, const MinecraftSectionPalette &secPal, const priv::NamedBinaryTag &data,
-							const glm::ivec3 &pos) {
-	const uint32_t i = pos.y * MAX_SIZE * MAX_SIZE + pos.z * MAX_SIZE + pos.x;
-	const uint32_t bitsPerBlock = secPal.numBits;
-	const uint32_t blocksPerLong = 64 / secPal.numBits;
-	const uint64_t mask = UINT64_MAX >> (64 - secPal.numBits);
-	const core::DynamicArray<int64_t> &blocks = *data.longArray();
-	const size_t idx = i / blocksPerLong;
-	if (idx >= blocks.size()) {
-		// TODO: 1.13 file triggers this sanity check
-		Log::error("Long array index out of bounds: %i/%i", (int)idx, (int)data.longArray()->size());
-		return -1;
-	}
-	const uint64_t blockIndex = (blocks[idx] >> (bitsPerBlock * (i % blocksPerLong))) & mask;
-	if (blockIndex < secPal.pal.size()) {
-		return (int)secPal.pal[blockIndex];
-	}
-	return 0;
-}
-
 voxel::RawVolume *MCRFormat::error(SectionVolumes &volumes) {
 	for (voxel::RawVolume *v : volumes) {
 		delete v;
@@ -226,6 +206,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &da
 	if (secPal.pal.empty()) {
 		if (data.type() != priv::TagType::BYTE_ARRAY) {
 			Log::error("Unknown block data type: %i for version %i", (int)data.type(), dataVersion);
+			delete v;
 			return -1;
 		}
 		glm::ivec3 sPos;
@@ -248,18 +229,71 @@ bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &da
 	} else if (hasData) {
 		if (data.type() != priv::TagType::LONG_ARRAY) {
 			Log::error("Unknown block data type: %i for version %i", (int)data.type(), dataVersion);
+			delete v;
 			return -1;
 		}
+
+		const core::DynamicArray<int64_t> &blockStates = *data.longArray();
+
+		uint8_t blocks[4096];
+		int bsCnt = 0;
+		size_t bitCnt = 0;
+		if (dataVersion < 2529) {
+			const size_t bitSize = (data.longArray()->size()) * 64 / 4096;
+			const uint32_t bitMask = (1 << bitSize) - 1;
+			for (int i = 0; i < 4096; i++) {
+				if (bitCnt + bitSize <= 64) {
+					const uint64_t blockState = blockStates[bsCnt];
+					const uint64_t blockIndex = (blockState >> bitCnt) & bitMask;
+					if (blockIndex < secPal.pal.size()) {
+						blocks[i] = secPal.pal[blockIndex];
+					} else {
+						blocks[i] = 0;
+					}
+					bitCnt += bitSize;
+					if (bitCnt == 64) {
+						bitCnt = 0;
+						bsCnt++;
+					}
+				} else {
+					const uint64_t blockState1 = blockStates[bsCnt++];
+					const uint64_t blockState2 = blockStates[bsCnt];
+					uint32_t blockIndex = (blockState1 >> bitCnt) & bitMask;
+					bitCnt += bitSize;
+					bitCnt -= 64;
+					blockIndex += (blockState2 << (bitSize - bitCnt)) & bitMask;
+					if (blockIndex < secPal.pal.size()) {
+						blocks[i] = secPal.pal[blockIndex];
+					} else {
+						blocks[i] = 0;
+					}
+				}
+			}
+		} else {
+			const size_t bitSize = secPal.numBits;
+			const uint32_t bitMask = (1 << bitSize) - 1;
+			for (int i = 0; i < 4096; i++) {
+				const uint64_t blockState = blockStates[bsCnt];
+				const uint64_t blockIndex = (blockState >> bitCnt) & bitMask;
+				if (blockIndex < secPal.pal.size()) {
+					blocks[i] = secPal.pal[blockIndex];
+				} else {
+					blocks[i] = 0;
+				}
+				bitCnt += bitSize;
+				if (bitCnt + bitSize > 64) {
+					bsCnt++;
+					bitCnt = 0;
+				}
+			}
+		}
+
 		glm::ivec3 sPos;
 		for (sPos.y = 0; sPos.y < MAX_SIZE; ++sPos.y) {
 			for (sPos.z = 0; sPos.z < MAX_SIZE; ++sPos.z) {
 				for (sPos.x = 0; sPos.x < MAX_SIZE; ++sPos.x) {
-					const int color = getVoxel(dataVersion, secPal, data, sPos);
-					if (color < 0) {
-						Log::error("Failed to load voxel at position %i:%i:%i", sPos.x, sPos.y, sPos.z);
-						delete v;
-						return false;
-					}
+					const uint16_t i = sPos.y * MAX_SIZE * MAX_SIZE + sPos.z * MAX_SIZE + sPos.x;
+					const uint8_t color = blocks[i];
 					if (color) {
 						const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
 						wrapper.setVoxel(sPos, voxel);
@@ -402,8 +436,6 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 }
 
 bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &palette, MinecraftSectionPalette &sectionPal) {
-	// prior to 1.16 (2556) the palette entries used multiple 64bit fields
-	// TODO const bool paletteMultiBits = dataVersion < 2556;
 	if (palette.type() != priv::TagType::LIST) {
 		Log::error("Invalid type for palette: %i", (int)palette.type());
 		return false;

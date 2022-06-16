@@ -20,8 +20,8 @@ TEST_F(MCRFormatTest, testLoad110) {
 	canLoad("minecraft_110.mca", 1024);
 }
 
-TEST_F(MCRFormatTest, DISABLED_testLoad113) {
-	canLoad("minecraft_113.mca");
+TEST_F(MCRFormatTest, testLoad113) {
+	canLoad("minecraft_113.mca", 1024);
 }
 
 }

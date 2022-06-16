@@ -86,7 +86,6 @@ private:
 	voxel::RawVolume* finalize(SectionVolumes& volumes, int xPos, int zPos);
 
 	static int getVoxel(int dataVersion, const priv::NamedBinaryTag &data, const glm::ivec3 &pos);
-	static int getVoxel(int dataVersion, const MinecraftSectionPalette& secPal, const priv::NamedBinaryTag& data, const glm::ivec3 &pos);
 
 	// shared across versions
 	bool parsePaletteList(int dataVersion, const priv::NamedBinaryTag& palette, MinecraftSectionPalette &sectionPal);
