@@ -138,6 +138,7 @@ bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream
 	voxel::RawVolume *volume;
 	// https://minecraft.fandom.com/wiki/Data_version
 	const int32_t dataVersion = root.get("DataVersion").int32();
+	Log::debug("Found data version %i", dataVersion);
 	if (dataVersion >= 2844) {
 		volume = parseSections(dataVersion, root, sector);
 		if (volume == nullptr) {
@@ -207,6 +208,7 @@ voxel::RawVolume *MCRFormat::error(SectionVolumes &volumes) {
 
 voxel::RawVolume* MCRFormat::finalize(SectionVolumes& volumes, int xPos, int zPos) {
 	if (volumes.empty()) {
+		Log::error("No volumes found at %i:%i", xPos, zPos);
 		return nullptr;
 	}
 	// TODO: only merge connected y chunks - don't fill empty chunks - just a waste of memory
@@ -302,6 +304,7 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 		Log::error("Could not find 'sections' entries");
 		return nullptr;
 	}
+	Log::debug("Found %i sections", (int)sectionsList->size());
 	SectionVolumes volumes;
 	for (const priv::NamedBinaryTag &section : *sectionsList) {
 		const priv::NamedBinaryTag &blockStates = section.get("block_states");
@@ -352,8 +355,9 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 		Log::error("Invalid type for 'Sections' tag: %i", (int)sections.type());
 		return nullptr;
 	}
-	SectionVolumes volumes;
 	const priv::NBTList &sectionsList = *sections.list();
+	Log::debug("Found %i sections", (int)sectionsList.size());
+	SectionVolumes volumes;
 	for (const priv::NamedBinaryTag &section : sectionsList) {
 		const int8_t sectionY = section.get("Y").int8();
 		MinecraftSectionPalette secPal;
