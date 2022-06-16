@@ -42,16 +42,12 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	core::String name = filename.toLower();
+	core::String name = core::string::extractFilenameWithExtension(filename.toLower());
 	int chunkX = 0;
 	int chunkZ = 0;
 	char type = 'a';
 	if (SDL_sscanf(name.c_str(), "r.%i.%i.mc%c", &chunkX, &chunkZ, &type) != 3) {
-		Log::warn("Failed to parse the region chunk boundaries from filename %s", name.c_str());
-		const core::String &extension = core::string::extractExtension(filename);
-		type = extension.last();
-		chunkX = 0;
-		chunkZ = 0;
+		Log::warn("Failed to parse the region chunk boundaries from filename %s (%i.%i.%c)", name.c_str(), chunkX, chunkZ, type);
 	}
 
 	palette.minecraft();
