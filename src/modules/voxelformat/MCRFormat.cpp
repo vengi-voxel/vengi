@@ -52,8 +52,8 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	palette.minecraft();
 	switch (type) {
-	case 'r':
-	case 'a': {
+	case 'r':	// Region file format
+	case 'a': { // Anvil file format
 		const int64_t fileSize = stream.remaining();
 		if (fileSize <= 2l * SECTOR_BYTES) {
 			Log::error("This region file has not enough data for the 8kb header");
