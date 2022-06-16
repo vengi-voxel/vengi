@@ -84,15 +84,15 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		if (e.type != io::Filesystem::DirEntry::Type::file) {
 			continue;
 		}
-		MCRFormat mcrFormat;
-		SceneGraph newSceneGraph;
-		const core::String filename = core::string::path(baseName, "region", e.name);
+		const core::String &filename = core::string::path(baseName, "region", e.name);
 		const io::FilePtr &file = io::filesystem()->open(filename);
 		if (!file->validHandle()) {
 			Log::warn("Could not open %s", filename.c_str());
 			continue;
 		}
 		io::FileStream stream(file);
+		MCRFormat mcrFormat;
+		SceneGraph newSceneGraph;
 		if (!mcrFormat.loadGroups(filename, stream, newSceneGraph)) {
 			Log::warn("Could not load %s", filename.c_str());
 			continue;
