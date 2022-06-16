@@ -24,6 +24,7 @@
 #include "voxelformat/QBFormat.h"
 #include "voxelformat/QBCLFormat.h"
 #include "voxelformat/QEFFormat.h"
+#include "voxelformat/DatFormat.h"
 #include "voxelformat/VXCFormat.h"
 #include "voxelformat/VXMFormat.h"
 #include "voxelformat/VXRFormat.h"
@@ -66,6 +67,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"Goxel", "gox", [] (uint32_t magic) {return magic == FourCC('G','O','X',' ');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 	{"CubeWorld", "cub", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Minecraft region", "mca", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+	{"Minecraft level dat", "dat", nullptr, 0u},
 	{"Minecraft schematic", "schematic", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Sproxel csv", "csv", nullptr, 0u},
 	{"Wavefront Object", "obj", nullptr, VOX_FORMAT_FLAG_MESH},
@@ -169,6 +171,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 		format = core::make_shared<GoxFormat>();
 	} else if (ext == "mca") {
 		format = core::make_shared<MCRFormat>();
+	} else if (ext == "dat") {
+		format = core::make_shared<DatFormat>();
 	} else if (ext == "vxm") {
 		format = core::make_shared<VXMFormat>();
 	} else if (ext == "vxr") {

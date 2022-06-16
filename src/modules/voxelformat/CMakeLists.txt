@@ -14,6 +14,7 @@ set(SRCS
 	AoSVXLFormat.h AoSVXLFormat.cpp
 	BinVoxFormat.h BinVoxFormat.cpp
 	CSMFormat.h CSMFormat.cpp
+	DatFormat.h DatFormat.cpp
 	FBXFormat.h FBXFormat.cpp
 	GoxFormat.h GoxFormat.cpp
 	KVXFormat.h KVXFormat.cpp
