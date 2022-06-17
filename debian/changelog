@@ -1,6 +1,8 @@
 vengi (0.0.21.0-1) UNRELEASED; urgency=low
 
   * General:
+  * Added support for minecraft 1.13 region files
+  * Added support for loading minecraft level.dat (only with supported region files)
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Tue, 14 Jun 2022 00:00:00 +0000
 

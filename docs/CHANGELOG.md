@@ -10,6 +10,11 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 ## 0.0.21 (2022-XX-XX)
 
+General:
+
+   - Added support for minecraft 1.13 region files
+   - Added support for loading minecraft level.dat (only with supported region files)
+
 ## 0.0.20 (2022-06-14)
 
 General:
