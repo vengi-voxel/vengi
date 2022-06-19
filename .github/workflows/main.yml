@@ -88,6 +88,14 @@ jobs:
             sudo apt-get update
             sudo apt-get install cmake debhelper devscripts build-essential lintian libsdl2-dev libuv1-dev libsdl2-mixer-dev postgresql-server-dev-all libpq-dev libenet-dev opencl-c-headers wayland-protocols pkg-config uuid-dev python3 flatbuffers-compiler libflatbuffers-dev
 
+        - name: ccache
+          uses: actions/cache@v2
+          with:
+            path: |
+              ~/.ccache
+            key: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+            restore-keys: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+
         - name: Ubuntu
           run: |
             debuild -b -ui -uc -us
