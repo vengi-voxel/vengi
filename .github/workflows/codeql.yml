@@ -30,20 +30,20 @@ jobs:
         languages: 'cpp'
 
     - name: Setup
-        run: |
+      run: |
         sudo apt-get update
         sudo apt-get install libsdl2-dev postgresql-server-dev-all libpq-dev libenet-dev opencl-c-headers wayland-protocols pkg-config uuid-dev ninja-build python3 flatbuffers-compiler libflatbuffers-dev ccache
 
     - name: ccache
-        uses: actions/cache@v2
-        with:
+      uses: actions/cache@v2
+      with:
         path: |
-            ~/.ccache
+          ~/.ccache
         key: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
         restore-keys: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
 
     - name: Linux
-        run: |
+      run: |
         mkdir build
         cd build
         cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release
