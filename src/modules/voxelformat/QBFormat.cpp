@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
 #include "voxel/MaterialColor.h"
@@ -49,8 +50,6 @@ const int NEXT_SLICE_FLAG = 6;
 		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return voxel::Voxel(); \
 	}
-
-#define setBit(val, index) val &= (1 << (index))
 
 bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const {
 	const int nameLength = (int)node.name().size();
@@ -222,7 +221,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 		return false;
 	}
 
-	voxel::RawVolume* v = new voxel::RawVolume(region);
+	core::ScopedPtr<voxel::RawVolume> v(new voxel::RawVolume(region));
 	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
@@ -234,7 +233,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 			}
 		}
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(v, true);
+		node.setVolume(v.release(), true);
 		node.setName(name);
 		node.setPalette(palLookup.palette());
 		sceneGraph.emplace(core::move(node));
@@ -276,7 +275,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 		++z;
 	}
 	SceneGraphNode node(SceneGraphNodeType::Model);
-	node.setVolume(v, true);
+	node.setVolume(v.release(), true);
 	node.setName(name);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
@@ -333,4 +332,3 @@ bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& 
 #undef wrapSave
 #undef wrapSaveColor
 #undef wrapColor
-#undef setBit
