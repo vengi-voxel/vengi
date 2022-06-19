@@ -18,7 +18,7 @@ struct LayerSettings;
 
 class LayerPanel {
 private:
-	void addLayerItem(const voxelformat::SceneGraph& sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	void addLayerItem(const voxelformat::SceneGraph& sceneGraph, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	core::VarPtr _animationSpeedVar;
 	bool _hasFocus = false;
 

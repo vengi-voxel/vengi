@@ -9,13 +9,14 @@
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "voxelformat/SceneGraphNode.h"
+#include <glm/gtc/type_ptr.hpp>
 
 #define LAYERPOPUP "##layerpopup"
 #define POPUP_TITLE_LAYER_SETTINGS "Layer settings##popuptitle"
 
 namespace voxedit {
 
-void LayerPanel::addLayerItem(const voxelformat::SceneGraph& sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+void LayerPanel::addLayerItem(const voxelformat::SceneGraph& sceneGraph, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	ImGui::TableNextColumn();
 
 	const int nodeId = node.id();
@@ -31,6 +32,13 @@ void LayerPanel::addLayerItem(const voxelformat::SceneGraph& sceneGraph, const v
 	bool locked = node.locked();
 	if (ImGui::Checkbox(lockedId.c_str(), &locked)) {
 		sceneMgr().nodeSetLocked(nodeId, locked);
+	}
+	ImGui::TableNextColumn();
+
+	core::RGBA color = node.color();
+	glm::vec4 colvec = core::Color::fromRGBA(color);
+	if (ImGui::ColorEdit4("Color", glm::value_ptr(colvec), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
+		node.setColor(core::Color::getRGBA(colvec));
 	}
 	ImGui::TableNextColumn();
 
@@ -88,9 +96,10 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		static const uint32_t TableFlags =
 			ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
 			ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoSavedSettings;
-		if (ImGui::BeginTable("##layerlist", 4, TableFlags)) {
+		if (ImGui::BeginTable("##layerlist", 5, TableFlags)) {
 			ImGui::TableSetupColumn(ICON_FA_EYE"##visiblelayer", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn(ICON_FA_LOCK"##lockedlayer", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("##layercolor", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn("Name##layer", ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn("##deletelayer", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableHeadersRow();
