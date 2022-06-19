@@ -1123,7 +1123,8 @@ static mz_bool tdefl_compress_lz_codes(tdefl_compressor *d)
         if (flags & 1)
         {
             mz_uint s0, s1, n0, n1, sym, num_extra_bits;
-            mz_uint match_len = pLZ_codes[0], match_dist = *(const mz_uint16 *)(pLZ_codes + 1);
+            mz_uint match_len = pLZ_codes[0];
+            match_dist = (pLZ_codes[1] | (pLZ_codes[2] << 8));
             pLZ_codes += 3;
 
             MZ_ASSERT(d->m_huff_code_sizes[0][s_tdefl_len_sym[match_len]]);
@@ -1168,7 +1169,7 @@ static mz_bool tdefl_compress_lz_codes(tdefl_compressor *d)
         if (pOutput_buf >= d->m_pOutput_buf_end)
             return MZ_FALSE;
 
-        *(mz_uint64 *)pOutput_buf = bit_buffer;
+        memcpy(pOutput_buf, &bit_buffer, sizeof(mz_uint64));
         pOutput_buf += (bits_in >> 3);
         bit_buffer >>= (bits_in & ~7);
         bits_in &= 7;
@@ -1250,6 +1251,8 @@ static mz_bool tdefl_compress_block(tdefl_compressor *d, mz_bool static_block)
     return tdefl_compress_lz_codes(d);
 }
 
+static const mz_uint s_tdefl_num_probes[11];
+
 static int tdefl_flush_block(tdefl_compressor *d, int flush)
 {
     mz_uint saved_bit_buf, saved_bits_in;
@@ -1270,8 +1273,27 @@ static int tdefl_flush_block(tdefl_compressor *d, int flush)
 
     if ((d->m_flags & TDEFL_WRITE_ZLIB_HEADER) && (!d->m_block_index))
     {
-        TDEFL_PUT_BITS(0x78, 8);
-        TDEFL_PUT_BITS(0x01, 8);
+        const mz_uint8 cmf = 0x78;
+        mz_uint8 flg, flevel = 3;
+        mz_uint header, i, n = sizeof(s_tdefl_num_probes) / sizeof(mz_uint);
+
+        /* Determine compression level by reversing the process in tdefl_create_comp_flags_from_zip_params() */
+        for (i = 0; i < n; i++)
+            if (s_tdefl_num_probes[i] == (d->m_flags & 0xFFF)) break;
+
+        if (i < 2)
+            flevel = 0;
+        else if (i < 6)
+            flevel = 1;
+        else if (i == 6)
+            flevel = 2;
+
+        header = cmf << 8 | (flevel << 6);
+        header += 31 - (header % 31);
+        flg = header & 0xFF;
+
+        TDEFL_PUT_BITS(cmf, 8);
+        TDEFL_PUT_BITS(flg, 8);
     }
 
     TDEFL_PUT_BITS(flush == TDEFL_FINISH, 1);
@@ -2402,6 +2424,16 @@ extern "C" {
     }                                                                                                                               \
     MZ_MACRO_END
 
+static void tinfl_clear_tree(tinfl_decompressor *r)
+{
+    if (r->m_type == 0)
+        MZ_CLEAR_ARR(r->m_tree_0);
+    else if (r->m_type == 1)
+        MZ_CLEAR_ARR(r->m_tree_1);
+    else
+        MZ_CLEAR_ARR(r->m_tree_2);
+}
+
 tinfl_status tinfl_decompress(tinfl_decompressor *r, const mz_uint8 *pIn_buf_next, size_t *pIn_buf_size, mz_uint8 *pOut_buf_start, mz_uint8 *pOut_buf_next, size_t *pOut_buf_size, const mz_uint32 decomp_flags)
 {
     static const mz_uint16 s_length_base[31] = { 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0 };
@@ -2554,7 +2586,7 @@ tinfl_status tinfl_decompress(tinfl_decompressor *r, const mz_uint8 *pIn_buf_nex
                 pCode_size = pCode_sizes[r->m_type];
                 MZ_CLEAR_ARR(total_syms);
                 TINFL_MEMSET(pLookUp, 0, sizeof(r->m_look_up[0]));
-                TINFL_MEMSET(pTree, 0, r->m_table_sizes[r->m_type] * sizeof(pTree[0]) * 2);
+                tinfl_clear_tree(r);
                 for (i = 0; i < r->m_table_sizes[r->m_type]; ++i)
                     total_syms[pCode_size[i]]++;
                 used_syms = 0, total = 0;
@@ -7689,6 +7721,8 @@ const char *mz_zip_get_error_string(mz_zip_error mz_err)
             return "validation failed";
         case MZ_ZIP_WRITE_CALLBACK_FAILED:
             return "write calledback failed";
+	case MZ_ZIP_TOTAL_ERRORS:
+            return "total errors";
         default:
             break;
     }
