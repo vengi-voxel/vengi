@@ -38,7 +38,7 @@
 #include "voxelformat/AoSVXLFormat.h"
 #include "voxelformat/CSMFormat.h"
 #include "voxelformat/OBJFormat.h"
-#include "voxelformat/VoxOldFormat.h"
+#include "voxelformat/SLAB6VoxFormat.h"
 #include "voxelformat/GLTFFormat.h"
 #include "voxelformat/SchematicFormat.h"
 
@@ -83,6 +83,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"Qubicle Exchange", "qef", [] (uint32_t magic) {return magic == FourCC('Q','u','b','i');}, 0u},
 	{"Chronovox", "csm", [] (uint32_t magic) {return magic == FourCC('.','C','S','M');}, 0u},
 	{"Nicks Voxel Model", "nvm", [] (uint32_t magic) {return magic == FourCC('.','N','V','M');}, 0u},
+	{"SLAB6 vox", "vox", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{nullptr, nullptr, nullptr, 0u}
 };
 // this is the list of internal formats that are supported engine-wide (the format we save our own models in)
@@ -155,10 +156,12 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 	const core::String &ext = desc->ext;
 	if (ext == "qb") {
 		format = core::make_shared<QBFormat>();
-	} else if (ext == "vox" && (magic != 0u && magic != FourCC('V','O','X',' '))) {
-		format = core::make_shared<VoxOldFormat>();
-	} else if (ext == "vox" || magic == FourCC('V','O','X',' ')) {
-		format = core::make_shared<VoxFormat>();
+	} else if (ext == "vox") {
+		if (magic == FourCC('V','O','X',' ')) {
+			format = core::make_shared<VoxFormat>();
+		} else {
+			format = core::make_shared<SLAB6VoxFormat>();
+		}
 	} else if (ext == "qbt" || magic == FourCC('Q','B',' ','2')) {
 		format = core::make_shared<QBTFormat>();
 	} else if (ext == "kvx") {

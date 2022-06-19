@@ -43,7 +43,7 @@ set(SRCS
 	STLFormat.h STLFormat.cpp
 	VolumeCache.h VolumeCache.cpp
 	VoxFormat.h VoxFormat.cpp
-	VoxOldFormat.h VoxOldFormat.cpp
+	SLAB6VoxFormat.h SLAB6VoxFormat.cpp
 	VolumeFormat.h VolumeFormat.cpp
 	GLTFFormat.h GLTFFormat.cpp
 )

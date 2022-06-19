@@ -9,9 +9,9 @@
 namespace voxelformat {
 
 /**
- * @brief Old magicavoxel vox file format
+ * @brief SLAB6 vox format
  */
-class VoxOldFormat : public PaletteFormat {
+class SLAB6VoxFormat : public PaletteFormat {
 protected:
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
 public:

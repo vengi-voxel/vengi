@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "VoxOldFormat.h"
+#include "SLAB6VoxFormat.h"
 #include "core/Color.h"
 #include "core/Log.h"
 #include "voxel/MaterialColor.h"
@@ -21,11 +21,11 @@
 
 namespace voxelformat {
 
-bool VoxOldFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
+bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
 	uint32_t depth, height, width;
+	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
 	wrap(stream.readUInt32(height))
-	wrap(stream.readUInt32(width))
 
 	if (width > 2048 || height > 2048 || depth > 2048) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", width, height, depth);
@@ -52,9 +52,9 @@ bool VoxOldFormat::loadGroupsPalette(const core::String &filename, io::SeekableR
 	}
 
 	stream.seek(voxelPos);
-	for (uint32_t h = 0u; h < height; ++h) {
+	for (uint32_t w = 0u; w < width; ++w) {
 		for (uint32_t d = 0u; d < depth; ++d) {
-			for (uint32_t w = 0u; w < width; ++w) {
+			for (uint32_t h = 0u; h < height; ++h) {
 				uint8_t palIdx;
 				wrap(stream.readUInt8(palIdx))
 				if (palIdx == 255) {
@@ -62,7 +62,7 @@ bool VoxOldFormat::loadGroupsPalette(const core::String &filename, io::SeekableR
 				}
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIdx);
 				// we have to flip depth with height for our own coordinate system
-				volume->setVoxel((int)w, (int)h, (int)d, voxel);
+				volume->setVoxel((int)width - (int)w - 1, (int)height - (int)h - 1, (int)d, voxel);
 			}
 		}
 	}
