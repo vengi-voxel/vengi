@@ -6,6 +6,7 @@
 #include "core/ArrayLength.h"
 #include "core/Enum.h"
 #include "core/FourCC.h"
+#include "core/ScopedPtr.h"
 #include "core/Zip.h"
 #include "core/Color.h"
 #include "core/Assert.h"
@@ -321,7 +322,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	}
 
 	io::ZipReadStream zipStream(stream, (int)compressedDataSize);
-	voxel::RawVolume* volume = new voxel::RawVolume(region);
+	core::ScopedPtr<voxel::RawVolume> volume(new voxel::RawVolume(region));
 	uint32_t index = 0;
 
 	PaletteLookup palLookup;
@@ -381,7 +382,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 		index++;
 	}
 	SceneGraphNode node;
-	node.setVolume(volume, true);
+	node.setVolume(volume.release(), true);
 	node.setPalette(palLookup.palette());
 	if (name.empty()) {
 		node.setName("Matrix");
