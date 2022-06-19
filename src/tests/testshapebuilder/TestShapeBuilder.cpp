@@ -66,7 +66,7 @@ void TestShapeBuilder::onRenderUI() {
 
 	ImGui::Text("General settings");
 	ImGui::Indent();
-	ImGui::ColorEdit4("color", glm::value_ptr(_color), false);
+	ImGui::ColorEdit4("color", glm::value_ptr(_color));
 	ImGui::InputInt3("pos", glm::value_ptr(pos));
 	ImGui::InputFloat3("scale", glm::value_ptr(scale));
 	ImGui::TooltipText("Applies rendering only scale");
