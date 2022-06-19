@@ -5,6 +5,7 @@
 #include "QBTFormat.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
+#include "core/ScopedPtr.h"
 #include "core/Zip.h"
 #include "core/Color.h"
 #include "core/GLM.h"
@@ -350,7 +351,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 		return false;
 	}
 	PaletteLookup palLookup(palette);
-	voxel::RawVolume* volume = new voxel::RawVolume(region);
+	core::ScopedPtr<voxel::RawVolume> volume(new voxel::RawVolume(region));
 	for (int32_t x = 0; x < (int)size.x; x++) {
 		for (int32_t z = 0; z < (int)size.z; z++) {
 			for (int32_t y = 0; y < (int)size.y; y++) {
@@ -380,7 +381,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	SceneGraphTransform transform;
 	transform.setPivot(pivot / glm::vec3(size));
 	SceneGraphNode node;
-	node.setVolume(volume, true);
+	node.setVolume(volume.release(), true);
 	node.setName(name);
 	node.setPalette(palLookup.palette());
 	node.setTransform(0, transform, true);
