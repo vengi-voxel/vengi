@@ -317,7 +317,7 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 		if (version >= 6) {
 			uint32_t color;
 			wrap(stream.readUInt32(color))
-			node.setProperty("color", core::Color::toHex(color));
+			node.setColor(core::RGBA(color));
 			node.setProperty("favorite", stream.readBool());
 			node.setProperty("visible", stream.readBool());
 		}

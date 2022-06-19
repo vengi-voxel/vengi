@@ -125,6 +125,7 @@ protected:
 	uint32_t _currentAnimKeyFrame = 0;
 	SceneGraphNodeType _type;
 	core::String _name;
+	core::RGBA _color;
 	voxel::RawVolume *_volume = nullptr;
 	SceneGraphKeyFrames _keyFrames;
 	/**
@@ -154,6 +155,9 @@ public:
 	 */
 	void releaseOwnership();
 	bool owns() const;
+
+	core::RGBA color() const;
+	void setColor(core::RGBA color);
 
 	bool addKeyFrame(uint32_t frame);
 	bool removeKeyFrame(uint32_t frame);
@@ -261,6 +265,14 @@ inline const SceneGraphTransform& SceneGraphNode::transform(uint32_t frameIdx) c
 
 inline bool SceneGraphNode::owns() const {
 	return _volume;
+}
+
+inline core::RGBA SceneGraphNode::color() const {
+	return _color;
+}
+
+inline void SceneGraphNode::setColor(core::RGBA color) {
+	_color = color;
 }
 
 inline void SceneGraphNode::setId(int id) {
