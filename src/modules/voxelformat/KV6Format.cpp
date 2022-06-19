@@ -92,8 +92,6 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 	stream.seek(32);
 
-	voxel::RawVolume *volume = new voxel::RawVolume(region);
-
 	typedef struct {
 		uint8_t z, col, vis, dir;
 	} voxtype;
@@ -122,6 +120,8 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			wrap(stream.readUInt16(xyoffset[x][y]))
 		}
 	}
+
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
 
 	int idx = 0;
 	for (uint32_t x = 0; x < xsiz; ++x) {
