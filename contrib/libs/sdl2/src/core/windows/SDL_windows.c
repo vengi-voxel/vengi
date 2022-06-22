@@ -145,10 +145,22 @@ WIN_RoInitialize(void)
 #ifdef __WINRT__
     return S_OK;
 #else
-    typedef HRESULT (*RoInitialize_t)(RO_INIT_TYPE initType);
+    typedef HRESULT (WINAPI *RoInitialize_t)(RO_INIT_TYPE initType);
     RoInitialize_t RoInitializeFunc = (RoInitialize_t)WIN_LoadComBaseFunction("RoInitialize");
     if (RoInitializeFunc) {
-        return RoInitializeFunc(RO_INIT_MULTITHREADED);
+        /* RO_INIT_SINGLETHREADED is equivalent to COINIT_APARTMENTTHREADED */
+        HRESULT hr = RoInitializeFunc(RO_INIT_SINGLETHREADED);
+        if (hr == RPC_E_CHANGED_MODE) {
+            hr = RoInitializeFunc(RO_INIT_MULTITHREADED);
+        }
+
+        /* S_FALSE means success, but someone else already initialized. */
+        /* You still need to call RoUninitialize in this case! */
+        if (hr == S_FALSE) {
+            return S_OK;
+        }
+
+        return hr;
     } else {
         return E_NOINTERFACE;
     }
@@ -159,7 +171,7 @@ void
 WIN_RoUninitialize(void)
 {
 #ifndef __WINRT__
-    typedef void (*RoUninitialize_t)(void);
+    typedef void (WINAPI *RoUninitialize_t)(void);
     RoUninitialize_t RoUninitializeFunc = (RoUninitialize_t)WIN_LoadComBaseFunction("RoUninitialize");
     if (RoUninitializeFunc) {
         RoUninitializeFunc();

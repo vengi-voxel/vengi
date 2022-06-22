@@ -150,13 +150,19 @@ SDL_PollSentinelChanged(void *userdata, const char *name, const char *oldValue, 
     SDL_EventState(SDL_POLLSENTINEL, SDL_GetStringBoolean(hint, SDL_TRUE) ? SDL_ENABLE : SDL_DISABLE);
 }
 
-/* 0 (default) means no logging, 1 means logging, 2 means logging with mouse and finger motion */
-static int SDL_DoEventLogging = 0;
+/**
+ * Verbosity of logged events as defined in SDL_HINT_EVENT_LOGGING:
+ *  - 0: (default) no logging
+ *  - 1: logging of most events
+ *  - 2: as above, plus mouse and finger motion
+ *  - 3: as above, plus SDL_SysWMEvents
+ */
+static int SDL_EventLoggingVerbosity = 0;
 
 static void SDLCALL
 SDL_EventLoggingChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_DoEventLogging = (hint && *hint) ? SDL_clamp(SDL_atoi(hint), 0, 2) : 0;
+    SDL_EventLoggingVerbosity = (hint && *hint) ? SDL_clamp(SDL_atoi(hint), 0, 3) : 0;
 }
 
 static void
@@ -166,12 +172,17 @@ SDL_LogEvent(const SDL_Event *event)
     char details[128];
 
     /* sensor/mouse/finger motion are spammy, ignore these if they aren't demanded. */
-    if ( (SDL_DoEventLogging < 2) &&
+    if ( (SDL_EventLoggingVerbosity < 2) &&
             ( (event->type == SDL_MOUSEMOTION) ||
               (event->type == SDL_FINGERMOTION) ||
               (event->type == SDL_CONTROLLERTOUCHPADMOTION) ||
               (event->type == SDL_CONTROLLERSENSORUPDATE) ||
               (event->type == SDL_SENSORUPDATE) ) ) {
+        return;
+    }
+
+    /* window manager events are even more spammy, and don't provide much useful info. */
+    if ((SDL_EventLoggingVerbosity < 3) && (event->type == SDL_SYSWMEVENT)) {
         return;
     }
 
@@ -590,7 +601,7 @@ SDL_AddEvent(SDL_Event * event)
         SDL_EventQ.free = entry->next;
     }
 
-    if (SDL_DoEventLogging) {
+    if (SDL_EventLoggingVerbosity > 0) {
         SDL_LogEvent(event);
     }
 
@@ -962,7 +973,10 @@ SDL_WaitEventTimeout_Device(_THIS, SDL_Window *wakeup_window, SDL_Event * event,
             status = _this->WaitEventTimeout(_this, loop_timeout);
             /* Set wakeup_window to NULL without holding the lock. */
             _this->wakeup_window = NULL;
-            if (status <= 0) {
+            if (status == 0 && need_periodic_poll && loop_timeout == PERIODIC_POLL_INTERVAL_MS) {
+                /* We may have woken up to poll. Try again */
+                continue;
+            } else if (status <= 0) {
                 /* There is either an error or the timeout is elapsed: return */
                 return status;
             }

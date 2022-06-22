@@ -27,6 +27,9 @@
 
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
+#if !defined(__WINRT__)
+#include "../../video/windows/SDL_windowswindow.h"
+#endif
 #include "SDL_hints.h"
 #include "SDL_loadso.h"
 #include "SDL_syswm.h"
@@ -910,7 +913,11 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     /* The width and height of the swap chain must be based on the display's
      * non-rotated size.
      */
+#if defined(__WINRT__)
     SDL_GetWindowSize(renderer->window, &w, &h);
+#else
+    WIN_GetDrawableSize(renderer->window, &w, &h);
+#endif
     data->rotation = D3D11_GetCurrentRotation();
     /* SDL_Log("%s: windowSize={%d,%d}, orientation=%d\n", __FUNCTION__, w, h, (int)data->rotation); */
     if (D3D11_IsDisplayRotated90Degrees(data->rotation)) {
@@ -1051,6 +1058,15 @@ D3D11_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
     }
 }
 
+#if !defined(__WINRT__)
+static int
+D3D11_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
+{
+    WIN_GetDrawableSize(renderer->window, w, h);
+    return 0;
+}
+#endif
+
 static SDL_bool
 D3D11_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
@@ -1177,6 +1193,7 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         }
     }
 #endif /* SDL_HAVE_YUV */
+    SDL_zero(resourceViewDesc);
     resourceViewDesc.Format = textureDesc.Format;
     resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     resourceViewDesc.Texture2D.MostDetailedMip = 0;
@@ -1227,9 +1244,11 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateShaderResourceView"), result);
         }
     }
+#endif /* SDL_HAVE_YUV */
 
     if (texture->access & SDL_TEXTUREACCESS_TARGET) {
         D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+        SDL_zero(renderTargetViewDesc);
         renderTargetViewDesc.Format = textureDesc.Format;
         renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
         renderTargetViewDesc.Texture2D.MipSlice = 0;
@@ -1243,7 +1262,7 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateRenderTargetView"), result);
         }
     }
-#endif /* SDL_HAVE_YUV */
+
     return 0;
 }
 
@@ -1963,7 +1982,7 @@ D3D11_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, ID3D11
     }
 
     if (updateSubresource == SDL_TRUE || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix)) != 0) {
-        SDL_memcpy(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix));
+        SDL_copyp(&rendererData->vertexShaderConstantsData.model, newmatrix);
         ID3D11DeviceContext_UpdateSubresource(rendererData->d3dContext,
             (ID3D11Resource *)rendererData->vertexShaderConstants,
             0,
@@ -2082,8 +2101,8 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
 
             case SDL_RENDERCMD_SETVIEWPORT: {
                 SDL_Rect *viewport = &rendererData->currentViewport;
-                if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_memcpy(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect));
+                if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof(cmd->data.viewport.rect)) != 0) {
+                    SDL_copyp(viewport, &cmd->data.viewport.rect);
                     rendererData->viewportDirty = SDL_TRUE;
                 }
                 break;
@@ -2095,8 +2114,8 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                     rendererData->currentCliprectEnabled = cmd->data.cliprect.enabled;
                     rendererData->cliprectDirty = SDL_TRUE;
                 }
-                if (SDL_memcmp(&rendererData->currentCliprect, rect, sizeof (SDL_Rect)) != 0) {
-                    SDL_memcpy(&rendererData->currentCliprect, rect, sizeof (SDL_Rect));
+                if (SDL_memcmp(&rendererData->currentCliprect, rect, sizeof(*rect)) != 0) {
+                    SDL_copyp(&rendererData->currentCliprect, rect);
                     rendererData->cliprectDirty = SDL_TRUE;
                 }
                 break;
@@ -2363,6 +2382,9 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     data->identity = MatrixIdentity();
 
     renderer->WindowEvent = D3D11_WindowEvent;
+#if !defined(__WINRT__)
+    renderer->GetOutputSize = D3D11_GetOutputSize;
+#endif
     renderer->SupportsBlendMode = D3D11_SupportsBlendMode;
     renderer->CreateTexture = D3D11_CreateTexture;
     renderer->UpdateTexture = D3D11_UpdateTexture;

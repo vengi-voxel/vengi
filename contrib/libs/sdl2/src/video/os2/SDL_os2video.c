@@ -1137,8 +1137,8 @@ static SDL_bool OS2_GetWindowWMInfo(_THIS, SDL_Window * window,
         return SDL_TRUE;
     }
 
-    SDL_SetError("Application not compiled with SDL %u.%u",
-                 SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+    SDL_SetError("Application not compiled with SDL %u",
+                 SDL_MAJOR_VERSION);
     return SDL_FALSE;
 }
 
@@ -1572,7 +1572,7 @@ static void OS2_GetDisplayModes(_THIS, SDL_VideoDisplay *display)
     SDL_DisplayMode mode;
 
     debug_os2("Enter");
-    SDL_memcpy(&mode, &display->current_mode, sizeof(SDL_DisplayMode));
+    SDL_copyp(&mode, &display->current_mode);
     mode.driverdata = (MODEDATA *) SDL_malloc(sizeof(MODEDATA));
     if (!mode.driverdata) return; /* yikes.. */
     SDL_memcpy(mode.driverdata, display->current_mode.driverdata, sizeof(MODEDATA));

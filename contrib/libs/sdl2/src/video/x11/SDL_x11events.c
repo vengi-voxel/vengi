@@ -733,7 +733,6 @@ static void
 X11_DispatchEvent(_THIS, XEvent *xevent)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
-    XkbEvent* xkbEvent = (XkbEvent*) xevent;
     Display *display;
     SDL_WindowData *data;
     int orig_event_type;
@@ -786,6 +785,12 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
     }
 #endif
 
+#if SDL_VIDEO_DRIVER_X11_XRANDR
+    if (videodata->xrandr_event_base && (xevent->type == (videodata->xrandr_event_base + RRNotify))) {
+        X11_HandleXRandREvent(_this, xevent);
+    }
+#endif
+
     /* Send a SDL_SYSWMEVENT if the application wants them */
     if (SDL_GetEventState(SDL_SYSWMEVENT) == SDL_ENABLE) {
         SDL_SysWMmsg wmmsg;
@@ -820,11 +825,13 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
     if (!data) {
         /* The window for KeymapNotify, etc events is 0 */
         if (xevent->type == KeymapNotify) {
+#ifdef DEBUG_XEVENTS
+            printf("window %p: KeymapNotify!\n", data);
+#endif
             if (SDL_GetKeyboardFocus() != NULL) {
                 X11_ReconcileKeyboardState(_this);
             }
-        } else if (xevent->type == MappingNotify ||
-                   (xevent->type == videodata->xkb_event && xkbEvent->any.xkb_type == XkbStateNotify)) {
+        } else if (xevent->type == MappingNotify) {
             /* Has the keyboard layout changed? */
             const int request = xevent->xmapping.request;
 
@@ -1021,7 +1028,7 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
             SDL_bool handled_by_ime = SDL_FALSE;
 
 #ifdef DEBUG_XEVENTS
-            printf("window %p: %s (X11 keycode = 0x%X)\n" data, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"),  xevent->xkey.keycode);
+            printf("window %p: %s (X11 keycode = 0x%X)\n", data, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"), xevent->xkey.keycode);
 #endif
 #if 1
             if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
@@ -1447,13 +1454,6 @@ X11_DispatchEvent(_THIS, XEvent *xevent)
                      } else {
                          X11_DispatchMapNotify(data);
                     }
-                }
-
-                if (changed & SDL_WINDOW_FULLSCREEN_DESKTOP) {
-                    /* FULLSCREEN_DESKTOP encompasses two bits: SDL_WINDOW_FULLSCREEN, plus a bit to note it's FULLSCREEN_DESKTOP */
-                    const Uint32 fsmasked = flags & SDL_WINDOW_FULLSCREEN_DESKTOP;
-                    data->window->flags &= ~SDL_WINDOW_FULLSCREEN_DESKTOP;
-                    data->window->flags |= fsmasked;
                 }
 
                 if (changed & SDL_WINDOW_MAXIMIZED) {
