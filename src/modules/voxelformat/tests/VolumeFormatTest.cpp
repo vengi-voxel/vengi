@@ -27,4 +27,12 @@ TEST_F(VolumeFormatTest, testLoadFormat) {
 	EXPECT_EQ(16u, newSceneGraph.size());
 }
 
+TEST_F(VolumeFormatTest, testIsMeshFormat) {
+	EXPECT_TRUE(isMeshFormat("foo.obj"));
+	EXPECT_TRUE(isMeshFormat("foo.glb"));
+	EXPECT_TRUE(isMeshFormat("foo.gltf"));
+	EXPECT_TRUE(isMeshFormat("foo.ply"));
+	EXPECT_TRUE(isMeshFormat("foo.stl"));
+}
+
 } // namespace voxelformat
