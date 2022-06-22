@@ -72,6 +72,7 @@ set(TEST_SRCS
 	tests/SchematicFormatTest.cpp
 	tests/SproxelFormatTest.cpp
 	tests/STLFormatTest.cpp
+	tests/VolumeFormatTest.cpp
 	tests/VoxFormatTest.cpp
 	tests/VXLFormatTest.cpp
 	tests/VXRFormatTest.cpp

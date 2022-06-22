@@ -214,10 +214,10 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 	return format;
 }
 
-image::ImagePtr loadScreenshot(const core::String &fileName, io::SeekableReadStream &stream) {
+image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream) {
 	core_trace_scoped(LoadVolumeScreenshot);
 	const uint32_t magic = loadMagic(stream);
-	const core::String &fileext = core::string::extractExtension(fileName);
+	const core::String &fileext = core::string::extractExtension(filename);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
 		Log::warn("Format %s isn't supported", fileext.c_str());
@@ -230,28 +230,28 @@ image::ImagePtr loadScreenshot(const core::String &fileName, io::SeekableReadStr
 	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
 	if (f) {
 		stream.seek(0);
-		return f->loadScreenshot(fileName, stream);
+		return f->loadScreenshot(filename, stream);
 	}
 	Log::error("Failed to load model screenshot from file %s - unsupported file format for extension '%s'",
-			   fileName.c_str(), fileext.c_str());
+			   filename.c_str(), fileext.c_str());
 	return image::ImagePtr();
 }
 
-bool importPalette(const core::String &file, voxel::Palette &palette) {
-	const core::String &ext = core::string::extractExtension(file);
-	core::String paletteName(core::string::extractFilename(file.c_str()));
+bool importPalette(const core::String &filename, voxel::Palette &palette) {
+	const core::String &ext = core::string::extractExtension(filename);
+	core::String paletteName(core::string::extractFilename(filename.c_str()));
 	core::string::replaceAllChars(paletteName, ' ', '_');
 	paletteName = paletteName.toLower();
 	bool paletteLoaded = false;
 	for (const io::FormatDescription *desc = io::format::images(); desc->name != nullptr; ++desc) {
 		if (ext == desc->ext) {
-			const image::ImagePtr &img = image::loadImage(file, false);
+			const image::ImagePtr &img = image::loadImage(filename, false);
 			if (!img->isLoaded()) {
-				Log::warn("Failed to load image %s", file.c_str());
+				Log::warn("Failed to load image %s", filename.c_str());
 				break;
 			}
 			if (!voxel::Palette::createPalette(img, palette)) {
-				Log::warn("Failed to create palette for image %s", file.c_str());
+				Log::warn("Failed to create palette for image %s", filename.c_str());
 				return false;
 			}
 			paletteLoaded = true;
@@ -260,14 +260,14 @@ bool importPalette(const core::String &file, voxel::Palette &palette) {
 	}
 	const io::FilesystemPtr &fs = io::filesystem();
 	if (!paletteLoaded) {
-		const io::FilePtr &palFile = fs->open(file);
+		const io::FilePtr &palFile = fs->open(filename);
 		if (!palFile->validHandle()) {
-			Log::warn("Failed to load palette from %s", file.c_str());
+			Log::warn("Failed to load palette from %s", filename.c_str());
 			return false;
 		}
 		io::FileStream stream(palFile);
-		if (voxelformat::loadPalette(file, stream, palette) <= 0) {
-			Log::warn("Failed to load palette from %s", file.c_str());
+		if (voxelformat::loadPalette(filename, stream, palette) <= 0) {
+			Log::warn("Failed to load palette from %s", filename.c_str());
 			return false;
 		}
 		paletteLoaded = true;
@@ -275,10 +275,10 @@ bool importPalette(const core::String &file, voxel::Palette &palette) {
 	return paletteLoaded;
 }
 
-size_t loadPalette(const core::String &fileName, io::SeekableReadStream &stream, voxel::Palette &palette) {
+size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) {
 	core_trace_scoped(LoadVolumePalette);
 	const uint32_t magic = loadMagic(stream);
-	const core::String &fileext = core::string::extractExtension(fileName);
+	const core::String &fileext = core::string::extractExtension(filename);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
 		Log::warn("Format %s isn't supported", fileext.c_str());
@@ -291,19 +291,19 @@ size_t loadPalette(const core::String &fileName, io::SeekableReadStream &stream,
 	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
 	if (f) {
 		stream.seek(0);
-		const size_t n = f->loadPalette(fileName, stream, palette);
+		const size_t n = f->loadPalette(filename, stream, palette);
 		palette.markDirty();
 		return n;
 	}
 	Log::error("Failed to load model palette from file %s - unsupported file format for extension '%s'",
-			   fileName.c_str(), fileext.c_str());
+			   filename.c_str(), fileext.c_str());
 	return 0;
 }
 
-bool loadFormat(const core::String &fileName, io::SeekableReadStream &stream, SceneGraph &newSceneGraph) {
+bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &newSceneGraph) {
 	core_trace_scoped(LoadVolumeFormat);
 	const uint32_t magic = loadMagic(stream);
-	const core::String &fileext = core::string::extractExtension(fileName);
+	const core::String &fileext = core::string::extractExtension(filename);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
 		return false;
@@ -311,20 +311,20 @@ bool loadFormat(const core::String &fileName, io::SeekableReadStream &stream, Sc
 	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
 	if (f) {
 		stream.seek(0);
-		if (!f->loadGroups(fileName, stream, newSceneGraph)) {
+		if (!f->loadGroups(filename, stream, newSceneGraph)) {
 			newSceneGraph.clear();
 		}
 	} else {
-		Log::warn("Failed to load model file %s - unsupported file format for extension '%s'", fileName.c_str(),
+		Log::warn("Failed to load model file %s - unsupported file format for extension '%s'", filename.c_str(),
 				  fileext.c_str());
 		return false;
 	}
 	if (newSceneGraph.empty()) {
-		Log::error("Failed to load model file %s. Scene graph doesn't contain models.", fileName.c_str());
+		Log::error("Failed to load model file %s. Scene graph doesn't contain models.", filename.c_str());
 		return false;
 	}
 	// newSceneGraph.node(newSceneGraph.root().id()).setProperty("Type", desc->name);
-	Log::info("Load model file %s with %i layers", fileName.c_str(), (int)newSceneGraph.size());
+	Log::info("Load model file %s with %i layers", filename.c_str(), (int)newSceneGraph.size());
 	return true;
 }
 

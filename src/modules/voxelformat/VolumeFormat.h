@@ -25,7 +25,7 @@ extern const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[];
 extern const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[];
 extern const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[];
 
-extern bool importPalette(const core::String &file, voxel::Palette &palette);
+extern bool importPalette(const core::String &filename, voxel::Palette &palette);
 extern size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette);
 extern image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream);
 extern bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph);
