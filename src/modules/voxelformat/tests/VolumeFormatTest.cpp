@@ -19,12 +19,16 @@ TEST_F(VolumeFormatTest, testImportPalette) {
 }
 
 TEST_F(VolumeFormatTest, testLoadFormat) {
-	io::FilePtr file = io::filesystem()->open("vox_character.vox");
-	ASSERT_TRUE(file->validHandle());
-	io::FileStream stream(file);
-	SceneGraph newSceneGraph;
-	EXPECT_TRUE(loadFormat(file->name(), stream, newSceneGraph));
-	EXPECT_EQ(16u, newSceneGraph.size());
+	const char *files[] = {"rgb.csv", "rgb.cub", "rgb.gox", "rgb.qb", "rgb.qbcl",
+						   "rgb.qef", "rgb.vox", "rgb.vxl", "rgb.vxm"};
+	for (int i = 0; i < lengthof(files); ++i) {
+		io::FilePtr file = io::filesystem()->open(files[i]);
+		ASSERT_TRUE(file->validHandle());
+		io::FileStream stream(file);
+		SceneGraph newSceneGraph;
+		EXPECT_TRUE(loadFormat(file->name(), stream, newSceneGraph));
+		EXPECT_GT(newSceneGraph.size(), 0u);
+	}
 }
 
 TEST_F(VolumeFormatTest, testIsMeshFormat) {
