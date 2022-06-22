@@ -365,10 +365,6 @@ bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph) {
 			}
 		}
 	}
-	if (isMeshFormat(filePtr->name())) {
-		Log::error("Failed to save model file %s - unknown extension '%s' given", filePtr->name().c_str(), ext.c_str());
-		return false;
-	}
 	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
 	QBFormat qbFormat;
 	return qbFormat.saveGroups(sceneGraph, filePtr->name(), stream);
