@@ -151,13 +151,13 @@ static const io::FormatDescription *getDescription(const core::String &ext, uint
 	return nullptr;
 }
 
-static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint32_t magic) {
+static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint32_t magic, bool load) {
 	core::SharedPtr<Format> format;
 	const core::String &ext = desc->ext;
 	if (ext == "qb") {
 		format = core::make_shared<QBFormat>();
 	} else if (ext == "vox") {
-		if (magic == FourCC('V','O','X',' ')) {
+		if (!load || magic == FourCC('V', 'O', 'X', ' ')) {
 			format = core::make_shared<VoxFormat>();
 		} else {
 			format = core::make_shared<SLAB6VoxFormat>();
@@ -288,7 +288,7 @@ size_t loadPalette(const core::String &fileName, io::SeekableReadStream &stream,
 		Log::warn("Format %s doesn't have a palette embedded", desc->name);
 		return 0;
 	}
-	const core::SharedPtr<Format> &f = getFormat(desc, magic);
+	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
 	if (f) {
 		stream.seek(0);
 		const size_t n = f->loadPalette(fileName, stream, palette);
@@ -308,7 +308,7 @@ bool loadFormat(const core::String &fileName, io::SeekableReadStream &stream, Sc
 	if (desc == nullptr) {
 		return false;
 	}
-	const core::SharedPtr<Format> &f = getFormat(desc, magic);
+	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
 	if (f) {
 		stream.seek(0);
 		if (!f->loadGroups(fileName, stream, newSceneGraph)) {
@@ -358,7 +358,7 @@ bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph) {
 	const core::String &ext = filePtr->extension();
 	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
 		if (ext == desc->ext /*&& (type.empty() || type == desc->name)*/) {
-			core::SharedPtr<Format> f = getFormat(desc, 0u);
+			core::SharedPtr<Format> f = getFormat(desc, 0u, false);
 			if (f && f->saveGroups(sceneGraph, filePtr->name(), stream)) {
 				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name, desc->ext);
 				return true;
