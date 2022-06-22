@@ -324,3 +324,7 @@ Format description: <https://bztsrc.gitlab.io/model3d>
 Reference implementation: <https://gitlab.com/bztsrc/model3d/blob/master/m3d.h>
 
 Example implementation for goxel: <https://github.com/guillaumechereau/goxel/pull/189/files>
+
+## Godot VXR
+
+https://github.com/Zylann/godot_voxel/blob/master/doc/source/specs/region_format_v3.md
