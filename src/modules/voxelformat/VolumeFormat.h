@@ -25,7 +25,14 @@ extern const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[];
 extern const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[];
 extern const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[];
 
+/**
+ * @brief Tries to load a palette from the given file. This can either be an image which is reduced to 256 colors or a
+ * volume format with an embedded palette
+ */
 extern bool importPalette(const core::String &filename, voxel::Palette &palette);
+/**
+ * @brief Tries to load the embedded palette from the given file. If the format doesn't have a palette embedded, this returns @c 0
+ */
 extern size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette);
 extern image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream);
 extern bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph);
