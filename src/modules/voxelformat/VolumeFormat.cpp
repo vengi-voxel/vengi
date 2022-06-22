@@ -14,33 +14,33 @@
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "video/Texture.h"
-#include "voxelformat/MCRFormat.h"
-#include "voxelformat/PLYFormat.h"
-#include "voxelformat/FBXFormat.h"
-#include "voxelformat/SproxelFormat.h"
-#include "voxelformat/VXTFormat.h"
-#include "voxelformat/VoxFormat.h"
-#include "voxelformat/QBTFormat.h"
-#include "voxelformat/QBFormat.h"
-#include "voxelformat/QBCLFormat.h"
-#include "voxelformat/QEFFormat.h"
+#include "voxelformat/AoSVXLFormat.h"
+#include "voxelformat/BinVoxFormat.h"
+#include "voxelformat/CSMFormat.h"
+#include "voxelformat/CubFormat.h"
 #include "voxelformat/DatFormat.h"
+#include "voxelformat/FBXFormat.h"
+#include "voxelformat/GLTFFormat.h"
+#include "voxelformat/GoxFormat.h"
+#include "voxelformat/KV6Format.h"
+#include "voxelformat/KVXFormat.h"
+#include "voxelformat/MCRFormat.h"
+#include "voxelformat/OBJFormat.h"
+#include "voxelformat/PLYFormat.h"
+#include "voxelformat/QBCLFormat.h"
+#include "voxelformat/QBFormat.h"
+#include "voxelformat/QBTFormat.h"
+#include "voxelformat/QEFFormat.h"
+#include "voxelformat/SLAB6VoxFormat.h"
+#include "voxelformat/STLFormat.h"
+#include "voxelformat/SchematicFormat.h"
+#include "voxelformat/SproxelFormat.h"
 #include "voxelformat/VXCFormat.h"
+#include "voxelformat/VXLFormat.h"
 #include "voxelformat/VXMFormat.h"
 #include "voxelformat/VXRFormat.h"
-#include "voxelformat/VXLFormat.h"
-#include "voxelformat/CubFormat.h"
-#include "voxelformat/GoxFormat.h"
-#include "voxelformat/STLFormat.h"
-#include "voxelformat/BinVoxFormat.h"
-#include "voxelformat/KVXFormat.h"
-#include "voxelformat/KV6Format.h"
-#include "voxelformat/AoSVXLFormat.h"
-#include "voxelformat/CSMFormat.h"
-#include "voxelformat/OBJFormat.h"
-#include "voxelformat/SLAB6VoxFormat.h"
-#include "voxelformat/GLTFFormat.h"
-#include "voxelformat/SchematicFormat.h"
+#include "voxelformat/VXTFormat.h"
+#include "voxelformat/VoxFormat.h"
 
 namespace voxelformat {
 
@@ -80,14 +80,14 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"Ace of Spades", "kv6", [] (uint32_t magic) {return magic == FourCC('K','v','x','l');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Tiberian Sun", "vxl", [] (uint32_t magic) {return magic == FourCC('V','o','x','e');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"AceOfSpades", "vxl", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Qubicle Exchange", "qef", [] (uint32_t magic) {return magic == FourCC('Q','u','b','i');}, 0u},
-	{"Chronovox", "csm", [] (uint32_t magic) {return magic == FourCC('.','C','S','M');}, 0u},
-	{"Nicks Voxel Model", "nvm", [] (uint32_t magic) {return magic == FourCC('.','N','V','M');}, 0u},
+	{"Qubicle Exchange", "qef", [](uint32_t magic) { return magic == FourCC('Q', 'u', 'b', 'i'); }, 0u},
+	{"Chronovox", "csm", [](uint32_t magic) { return magic == FourCC('.', 'C', 'S', 'M'); }, 0u},
+	{"Nicks Voxel Model", "nvm", [](uint32_t magic) { return magic == FourCC('.', 'N', 'V', 'M'); }, 0u},
 	{"SLAB6 vox", "vox", nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{nullptr, nullptr, nullptr, 0u}
 };
 // this is the list of internal formats that are supported engine-wide (the format we save our own models in)
-const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = { "qb", "vox", nullptr };
+const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = {"qb", "vox", nullptr};
 // this is the list of supported voxel or mesh formats that have exporters implemented
 const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"Qubicle Binary", "qb", nullptr, 0u},
@@ -114,7 +114,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{nullptr, nullptr, nullptr, 0u}
 };
 
-static uint32_t loadMagic(io::ReadStream& stream) {
+static uint32_t loadMagic(io::ReadStream &stream) {
 	uint32_t magicWord = 0u;
 	stream.readUInt32(magicWord);
 	return magicWord;
@@ -162,7 +162,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 		} else {
 			format = core::make_shared<SLAB6VoxFormat>();
 		}
-	} else if (ext == "qbt" || magic == FourCC('Q','B',' ','2')) {
+	} else if (ext == "qbt" || magic == FourCC('Q', 'B', ' ', '2')) {
 		format = core::make_shared<QBTFormat>();
 	} else if (ext == "kvx") {
 		format = core::make_shared<KVXFormat>();
@@ -214,10 +214,10 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 	return format;
 }
 
-image::ImagePtr loadScreenshot(const core::String &fileName, io::SeekableReadStream& stream) {
+image::ImagePtr loadScreenshot(const core::String &fileName, io::SeekableReadStream &stream) {
 	core_trace_scoped(LoadVolumeScreenshot);
 	const uint32_t magic = loadMagic(stream);
-	const core::String& fileext = core::string::extractExtension(fileName);
+	const core::String &fileext = core::string::extractExtension(fileName);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
 		Log::warn("Format %s isn't supported", fileext.c_str());
@@ -227,23 +227,23 @@ image::ImagePtr loadScreenshot(const core::String &fileName, io::SeekableReadStr
 		Log::warn("Format %s doesn't have a screenshot embedded", desc->name);
 		return image::ImagePtr();
 	}
-	const core::SharedPtr<Format> &f = getFormat(desc, magic);
+	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
 	if (f) {
 		stream.seek(0);
 		return f->loadScreenshot(fileName, stream);
 	}
 	Log::error("Failed to load model screenshot from file %s - unsupported file format for extension '%s'",
-			fileName.c_str(), fileext.c_str());
+			   fileName.c_str(), fileext.c_str());
 	return image::ImagePtr();
 }
 
-bool importPalette(const core::String& file, voxel::Palette &palette) {
-	const core::String& ext = core::string::extractExtension(file);
+bool importPalette(const core::String &file, voxel::Palette &palette) {
+	const core::String &ext = core::string::extractExtension(file);
 	core::String paletteName(core::string::extractFilename(file.c_str()));
 	core::string::replaceAllChars(paletteName, ' ', '_');
 	paletteName = paletteName.toLower();
 	bool paletteLoaded = false;
-	for (const io::FormatDescription* desc = io::format::images(); desc->name != nullptr; ++desc) {
+	for (const io::FormatDescription *desc = io::format::images(); desc->name != nullptr; ++desc) {
 		if (ext == desc->ext) {
 			const image::ImagePtr &img = image::loadImage(file, false);
 			if (!img->isLoaded()) {
@@ -258,9 +258,9 @@ bool importPalette(const core::String& file, voxel::Palette &palette) {
 			break;
 		}
 	}
-	const io::FilesystemPtr& fs = io::filesystem();
+	const io::FilesystemPtr &fs = io::filesystem();
 	if (!paletteLoaded) {
-		const io::FilePtr& palFile = fs->open(file);
+		const io::FilePtr &palFile = fs->open(file);
 		if (!palFile->validHandle()) {
 			Log::warn("Failed to load palette from %s", file.c_str());
 			return false;
@@ -275,10 +275,10 @@ bool importPalette(const core::String& file, voxel::Palette &palette) {
 	return paletteLoaded;
 }
 
-size_t loadPalette(const core::String &fileName, io::SeekableReadStream& stream, voxel::Palette &palette) {
+size_t loadPalette(const core::String &fileName, io::SeekableReadStream &stream, voxel::Palette &palette) {
 	core_trace_scoped(LoadVolumePalette);
 	const uint32_t magic = loadMagic(stream);
-	const core::String& fileext = core::string::extractExtension(fileName);
+	const core::String &fileext = core::string::extractExtension(fileName);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
 		Log::warn("Format %s isn't supported", fileext.c_str());
@@ -296,14 +296,14 @@ size_t loadPalette(const core::String &fileName, io::SeekableReadStream& stream,
 		return n;
 	}
 	Log::error("Failed to load model palette from file %s - unsupported file format for extension '%s'",
-			fileName.c_str(), fileext.c_str());
+			   fileName.c_str(), fileext.c_str());
 	return 0;
 }
 
-bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, SceneGraph& newSceneGraph) {
+bool loadFormat(const core::String &fileName, io::SeekableReadStream &stream, SceneGraph &newSceneGraph) {
 	core_trace_scoped(LoadVolumeFormat);
 	const uint32_t magic = loadMagic(stream);
-	const core::String& fileext = core::string::extractExtension(fileName);
+	const core::String &fileext = core::string::extractExtension(fileName);
 	const io::FormatDescription *desc = getDescription(fileext, magic);
 	if (desc == nullptr) {
 		return false;
@@ -315,21 +315,21 @@ bool loadFormat(const core::String &fileName, io::SeekableReadStream& stream, Sc
 			newSceneGraph.clear();
 		}
 	} else {
-		Log::warn("Failed to load model file %s - unsupported file format for extension '%s'",
-				fileName.c_str(), fileext.c_str());
+		Log::warn("Failed to load model file %s - unsupported file format for extension '%s'", fileName.c_str(),
+				  fileext.c_str());
 		return false;
 	}
 	if (newSceneGraph.empty()) {
 		Log::error("Failed to load model file %s. Scene graph doesn't contain models.", fileName.c_str());
 		return false;
 	}
-	//newSceneGraph.node(newSceneGraph.root().id()).setProperty("Type", desc->name);
+	// newSceneGraph.node(newSceneGraph.root().id()).setProperty("Type", desc->name);
 	Log::info("Load model file %s with %i layers", fileName.c_str(), (int)newSceneGraph.size());
 	return true;
 }
 
-bool isMeshFormat(const core::String& filename) {
-	const core::String& ext = core::string::extractExtension(filename);
+bool isMeshFormat(const core::String &filename) {
+	const core::String &ext = core::string::extractExtension(filename);
 	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
 		if (ext == desc->ext && (desc->flags & VOX_FORMAT_FLAG_MESH) != 0u) {
 			return true;
@@ -339,7 +339,7 @@ bool isMeshFormat(const core::String& filename) {
 	return false;
 }
 
-bool saveFormat(const io::FilePtr& filePtr, SceneGraph& sceneGraph) {
+bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph) {
 	if (sceneGraph.empty()) {
 		Log::error("Failed to save model file %s - no volumes given", filePtr->name().c_str());
 		return false;
@@ -350,12 +350,12 @@ bool saveFormat(const io::FilePtr& filePtr, SceneGraph& sceneGraph) {
 		return false;
 	}
 
-	const core::String& type = sceneGraph.root().property("Type");
+	const core::String &type = sceneGraph.root().property("Type");
 	if (!type.empty()) {
 		Log::debug("Save '%s' file to '%s'", type.c_str(), filePtr->name().c_str());
 	}
 	io::FileStream stream(filePtr);
-	const core::String& ext = filePtr->extension();
+	const core::String &ext = filePtr->extension();
 	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
 		if (ext == desc->ext /*&& (type.empty() || type == desc->name)*/) {
 			core::SharedPtr<Format> f = getFormat(desc, 0u);
