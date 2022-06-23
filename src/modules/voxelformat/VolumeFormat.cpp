@@ -92,6 +92,7 @@ const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = {"qb", "vox", nullptr};
 const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"Qubicle Binary", "qb", nullptr, 0u},
 	{"MagicaVoxel", "vox", nullptr, 0u},
+	{"SLAB6 vox", "vox", nullptr, 0u}, // TODO: handle duplicate extension
 	{"Qubicle Binary Tree", "qbt", nullptr, 0u},
 	{"Qubicle Project", "qbcl", nullptr, 0u},
 	{"Sandbox VoxEdit Model", "vxm", nullptr, 0u},
