@@ -22,6 +22,21 @@ public:
 
 	BufferView(const TYPE *buffer, size_t elements) : _buffer(buffer), _size(elements) {
 	}
+
+	BufferView(const TYPE *buffer, size_t begin, size_t end) : _buffer(buffer + begin), _size(end - begin) {
+		core_assert(end > begin);
+	}
+
+	inline BufferView<TYPE> sub(size_t from, size_t len) const {
+		core_assert(from + len <= _size);
+		return BufferView<TYPE>(_buffer + from, len);
+	}
+
+	inline BufferView<TYPE> sub(size_t from) const {
+		core_assert(from < _size);
+		return BufferView<TYPE>(_buffer + from, _size - from);
+	}
+
 	class iterator {
 	private:
 		const TYPE *_ptr;
