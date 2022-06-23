@@ -121,6 +121,8 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
+	const bool hasScript = hasArg("--script");
+
 	core::String infilesstr;
 	core::DynamicArray<core::String> infiles;
 	if (hasArg("--input")) {
@@ -136,7 +138,7 @@ app::AppState VoxConvert::onInit() {
 			}
 			infilesstr += val;
 		}
-	} else {
+	} else if (!hasScript) {
 		Log::error("No input file was specified");
 		return app::AppState::InitFailure;
 	}
@@ -194,8 +196,11 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	core::String scriptParameters;
-	if (hasArg("--script")) {
+	if (hasScript) {
 		scriptParameters = getArgVal("--script");
+		if (scriptParameters.empty()) {
+			Log::error("Missing script parameters");
+		}
 		Log::info("* script:            - %s", scriptParameters.c_str());
 	}
 	Log::info("* dump scene graph:  - %s", (_dumpSceneGraph   ? "true" : "false"));
@@ -261,6 +266,18 @@ app::AppState VoxConvert::onInit() {
 				return app::AppState::InitFailure;
 			}
 		}
+	}
+	if (!scriptParameters.empty() && sceneGraph.empty()) {
+		voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
+		const voxel::Region region(0, 63);
+		node.setVolume(new voxel::RawVolume(region), true);
+		node.setName("Script generated");
+		sceneGraph.emplace(core::move(node));
+	}
+
+	if (sceneGraph.empty()) {
+		Log::error("No valid input found in the scenegraph to operate on.");
+		return app::AppState::InitFailure;
 	}
 
 	const bool applyFilter = hasArg("--filter");
@@ -382,7 +399,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 			const voxel::Voxel dirtVoxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
 			const voxel::Voxel grassVoxel = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
 			voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
-			voxelformat::SceneGraphNode node;
+			voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
 			node.setVolume(volume, true);
 			node.setName(infile);
 			sceneGraph.emplace(core::move(node));
