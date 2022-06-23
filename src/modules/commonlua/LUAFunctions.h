@@ -428,6 +428,13 @@ struct clua_vecfunc {};
 
 #define LUA_GLM_VEC_FUNC1(type, func) \
 	static int func(lua_State* s) { \
+		if (lua_isnumber(s, 1)) { \
+			glm::vec<N, type> v1; \
+			for (int i = 0; i < N; ++i) { \
+				v1[i] = lua_tonumber(s, i + 1); \
+			} \
+			return clua_push(s, glm::func(v1)); \
+		} \
 		const glm::vec<N, type> v1 = clua_tovec<glm::vec<N, type> >(s, 1); \
 		return clua_push(s, glm::func(v1)); \
 	}
