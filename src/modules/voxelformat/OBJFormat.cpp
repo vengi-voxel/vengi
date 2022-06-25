@@ -341,8 +341,9 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	futures.reserve(shapes.size());
 
 	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
+	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
 	for (tinyobj::shape_t &shape : shapes) {
-		auto func = [&shape, attrib, materials, &textures]() {
+		auto func = [&shape, attrib, materials, &textures](bool fillHollow) {
 			glm::vec3 mins;
 			glm::vec3 maxs;
 			calculateAABB(shape.mesh, attrib, mins, maxs);
@@ -353,19 +354,22 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 						  "(%i:%i:%i)",
 						  vdim.x, vdim.y, vdim.z);
 			}
+
 			voxel::RawVolume *volume = new voxel::RawVolume(region);
 			SceneGraphNode node;
 			node.setVolume(volume, true);
 			node.setName(shape.name.c_str());
 			TriCollection subdivided;
 			subdivideShape(shape.mesh, textures, attrib, materials, subdivided);
-			voxelizeTris(node, subdivided);
+			PosMap posMap((int)subdivided.size() * 3);
+			transformTris(subdivided, posMap);
+			voxelizeTris(node, posMap, fillHollow);
 			return core::move(node);
 		};
 		if (shapes.size() > 1) {
-			futures.emplace_back(threadPool.enqueue(func));
+			futures.emplace_back(threadPool.enqueue(func, fillHollow));
 		} else {
-			sceneGraph.emplace(func());
+			sceneGraph.emplace(func(fillHollow));
 		}
 	}
 	for (auto & f : futures) {

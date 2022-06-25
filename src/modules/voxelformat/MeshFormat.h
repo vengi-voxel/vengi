@@ -37,11 +37,43 @@ protected:
 public:
 	using TriCollection = core::DynamicArray<Tri, 512>;
 
+	struct PosSamplingEntry {
+		inline PosSamplingEntry(float _area, const glm::vec4 &_color) : area(_area), color(_color) {
+		}
+		float area;
+		glm::vec4 color;
+	};
+
+	struct PosSampling {
+		core::DynamicArray<PosSamplingEntry> entries;
+		inline PosSampling(float area, const glm::vec4 &color) {
+			entries.emplace_back(area, color);
+		}
+		glm::vec4 avgColor() const {
+			if (entries.size() == 1) {
+				return entries[0].color;
+			}
+			float sumArea = 0.0f;
+			for (const PosSamplingEntry& pe : entries) {
+				sumArea += pe.area;
+			}
+			glm::vec4 color{0.0f};
+			for (const PosSamplingEntry& pe : entries) {
+				color += pe.color * pe.area / sumArea;
+			}
+			color[3] = 1.0f;
+			return color;
+		}
+	};
+
+	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
+
 	/**
 	 * Subdivide until we brought the triangles down to the size of 1 or smaller
 	 */
 	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
-	static void voxelizeTris(voxelformat::SceneGraphNode &node, const TriCollection &tinyTris);
+	static void voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool hillHollow);
+	static void transformTris(const TriCollection &subdivided, PosMap &posMap);
 
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, SceneGraph &sceneGraph) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,

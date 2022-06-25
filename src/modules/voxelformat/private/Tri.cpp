@@ -31,20 +31,13 @@ core::RGBA Tri::colorAt(const glm::vec2 &uv) const {
 	if (texture) {
 		const float w = (float)texture->width();
 		const float h = (float)texture->height();
-		float x = uv.x * w;
-		float y = uv.y * h;
-		while (x < 0.0f)
-			x += w;
-		while (x >= w)
-			x -= w;
-		while (y < 0.0f)
-			y += h;
-		while (y >= h)
-			y -= h;
+		const float x = glm::mod(glm::abs(uv.x), 1.0f) * w;
+		const float y = glm::mod(glm::abs(uv.y), 1.0f) * h;
 
-		const int xint = (int)glm::round(x - 0.5f);
-		const int yint = texture->height() - (int)glm::round(y - 0.5f) - 1;
+		const int xint = (int)x;
+		const int yint = texture->height() - (int)y - 1;
 		const uint8_t *ptr = texture->at(xint, yint);
+		core_assert(texture->depth() == 4);
 		return *(const core::RGBA *)ptr;
 	}
 	return color;

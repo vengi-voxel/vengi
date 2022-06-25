@@ -3,6 +3,7 @@
  */
 
 #include "FormatSettingsPanel.h"
+#include "core/GameConfig.h"
 #include "imgui.h"
 #include "ui/imgui/IMGUIEx.h"
 
@@ -19,6 +20,7 @@ void FormatSettingsPanel::update(const char *title) {
 			ImGui::CheckboxVar("Merge quads", cfg::VoxformatMergequads);
 			ImGui::CheckboxVar("Reuse vertices", cfg::VoxformatReusevertices);
 			ImGui::CheckboxVar("Apply transformations", cfg::VoxformatTransform);
+			ImGui::CheckboxVar("Fill hollow", cfg::VoxformatFillHollow);
 			ImGui::CheckboxVar("Exports quads", cfg::VoxformatQuads);
 			ImGui::CheckboxVar("Vertex colors", cfg::VoxformatWithcolor);
 			ImGui::CheckboxVar("Texture coordinates", cfg::VoxformatWithtexcoords);

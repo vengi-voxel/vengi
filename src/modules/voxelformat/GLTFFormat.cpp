@@ -6,11 +6,14 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/FourCC.h"
+#include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/RGBA.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/concurrent/Lock.h"
+#include "core/concurrent/ThreadPool.h"
 #include "engine-config.h"
 #include "image/Image.h"
 #include "io/StdStreamBuf.h"
@@ -22,7 +25,10 @@
 #include "core/collection/DynamicArray.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/private/PaletteLookup.h"
+#include "voxelutil/VoxelUtil.h"
 
+#include <future>
 #include <limits.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -686,26 +692,24 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 	return foundPosition;
 }
 
-bool GLTFFormat::subdivideShape(const tinygltf::Model &model, const core::DynamicArray<uint32_t> &indices,
+bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &model,
+								const core::DynamicArray<uint32_t> &indices,
 								const core::DynamicArray<GltfVertex> &vertices,
-								const core::StringMap<image::ImagePtr> &textures,
-								TriCollection &subdivided) const {
+								const core::StringMap<image::ImagePtr> &textures) const {
 	const glm::vec3 &scale = getScale();
 	if (indices.size() % 3 != 0) {
 		Log::error("Unexpected amount of indices %i", (int)indices.size());
 		return false;
 	}
-	for (size_t indexOffset = 0; indexOffset < indices.size(); indexOffset += 3) {
+	auto func = [&indices, &vertices, &textures, &scale](size_t indexOffset) {
 		Tri tri;
 		for (size_t i = 0; i < 3; ++i) {
 			const size_t idx = indices[i + indexOffset];
-			core_assert_msg(idx < vertices.size(), "Index out of bounds %i/%i", (int)idx, (int)vertices.size());
 			tri.vertices[i] = vertices[idx].pos * scale;
 			tri.uv[i] = vertices[idx].uv;
 		}
 		const size_t textureIdx = indices[indexOffset];
 		tri.color = core::Color::getRGBA(vertices[textureIdx].color);
-		core_assert_msg(textureIdx < vertices.size(), "Index out of bounds %i/%i for textures", (int)textureIdx, (int)vertices.size());
 		const core::String &texture = vertices[textureIdx].texture;
 		if (!texture.empty()) {
 			auto textureIter = textures.find(texture);
@@ -713,9 +717,43 @@ bool GLTFFormat::subdivideShape(const tinygltf::Model &model, const core::Dynami
 				tri.texture = textureIter->second;
 			}
 		}
+		TriCollection subdivided;
 		subdivideTri(tri, subdivided);
+		return core::move(subdivided);
+	};
+
+	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
+	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
+	const size_t maxN = indices.size();
+	core::DynamicArray<std::future<TriCollection>> futures;
+	futures.reserve(maxN / 3);
+	threadPool.reserve(futures.size());
+	for (size_t indexOffset = 0; indexOffset < maxN; indexOffset += 3) {
+		futures.emplace_back(threadPool.enqueue(func, indexOffset));
 	}
-	return !subdivided.empty();
+	PaletteLookup palLookup;
+	voxel::RawVolume *volume = node.volume();
+	int n = 0;
+	for (auto & f : futures) {
+		const TriCollection &tris = f.get();
+		PosMap posMap((int)tris.size() * 3);
+		transformTris(tris, posMap);
+		for (const auto &entry : posMap) {
+			const PosSampling &pos = entry->second;
+			const glm::vec4 &color = pos.avgColor();
+			const uint8_t index = palLookup.findClosestIndex(color);
+			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+			volume->setVoxel(entry->first, voxel);
+		}
+		++n;
+		Log::debug("%i/%i", n, (int)maxN / 3);
+	}
+	node.setPalette(palLookup.palette());
+	if (fillHollow) {
+		Log::debug("fill hollows");
+		voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
+	}
+	return true;
 }
 
 void GLTFFormat::calculateAABB(const core::DynamicArray<GltfVertex> &vertices, glm::vec3 &mins, glm::vec3 &maxs) const {
@@ -821,12 +859,10 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	node.setVolume(volume, true);
-	TriCollection subdivided;
 	int newParent = parentNodeId;
-	if (!subdivideShape(model, indices, vertices, textures, subdivided)) {
+	if (!subdivideShape(node, model, indices, vertices, textures)) {
 		Log::error("Failed to subdivide node %i", gltfNodeIdx);
 	} else {
-		voxelizeTris(node, subdivided);
 		newParent = sceneGraph.emplace(core::move(node), parentNodeId);
 	}
 	for (int childId : gltfNode.children) {

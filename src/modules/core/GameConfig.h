@@ -104,5 +104,6 @@ constexpr const char *VoxformatFrame = "voxformat_frame";
 constexpr const char *VoxformatWithcolor = "voxformat_withcolor";
 constexpr const char *VoxformatWithtexcoords = "voxformat_withtexcoords";
 constexpr const char *VoxformatTransform = "voxformat_transform_mesh";
+constexpr const char *VoxformatFillHollow = "voxformat_fillhollow";
 
 }

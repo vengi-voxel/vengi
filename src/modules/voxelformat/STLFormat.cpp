@@ -180,7 +180,10 @@ bool STLFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	node.setName(filename);
 	TriCollection subdivided;
 	subdivideShape(faces, subdivided);
-	voxelizeTris(node, subdivided);
+	PosMap posMap((int)subdivided.size() * 3);
+	transformTris(subdivided, posMap);
+	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
+	voxelizeTris(node, posMap, fillHollow);
 	sceneGraph.emplace(core::move(node));
 	return true;
 }

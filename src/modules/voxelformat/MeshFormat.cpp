@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/GLM.h"
+#include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
@@ -67,38 +68,7 @@ void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
 	tinyTris.push_back(tri);
 }
 
-void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const TriCollection &subdivided) {
-	struct PosSamplingEntry {
-		inline PosSamplingEntry(float _area, const glm::vec4 &_color) : area(_area), color(_color) {
-		}
-		float area;
-		glm::vec4 color;
-	};
-
-	struct PosSampling {
-		core::DynamicArray<PosSamplingEntry> entries;
-		inline PosSampling(float area, const glm::vec4 &color) {
-			entries.emplace_back(area, color);
-		}
-		glm::vec4 avgColor() const {
-			if (entries.size() == 1) {
-				return entries[0].color;
-			}
-			float sumArea = 0.0f;
-			for (const PosSamplingEntry& pe : entries) {
-				sumArea += pe.area;
-			}
-			glm::vec4 color{0.0f};
-			for (const PosSamplingEntry& pe : entries) {
-				color += pe.color * pe.area / sumArea;
-			}
-			color[3] = 1.0f;
-			return color;
-		}
-	};
-
-	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
-	PosMap posMap((int)subdivided.size() * 3);
+void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) {
 	Log::debug("subdivided into %i triangles", (int)subdivided.size());
 	for (const Tri &tri : subdivided) {
 		const glm::vec2 &uv = tri.centerUV();
@@ -116,6 +86,9 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const TriCollec
 			}
 		}
 	}
+}
+
+void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) {
 	Log::debug("create voxels");
 	voxel::RawVolume *volume = node.volume();
 	PaletteLookup palLookup;
@@ -127,8 +100,10 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const TriCollec
 		volume->setVoxel(entry->first, voxel);
 	}
 	node.setPalette(palLookup.palette());
-	Log::debug("fill hollows");
-	voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
+	if (fillHollow) {
+		Log::debug("fill hollows");
+		voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
+	}
 }
 
 MeshFormat::MeshExt::MeshExt(voxel::Mesh *_mesh, const SceneGraphNode& node, bool _applyTransform) :
