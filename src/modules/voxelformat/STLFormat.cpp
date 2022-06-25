@@ -169,8 +169,10 @@ bool STLFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		return false;
 	}
 
-	if (glm::any(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(512)))) {
-		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh!");
+	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
+	if (glm::any(glm::greaterThan(vdim, glm::ivec3(512)))) {
+		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
+				  vdim.x, vdim.y, vdim.z);
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	SceneGraphNode node;

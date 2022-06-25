@@ -806,9 +806,10 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 		Log::error("Invalid region found %s", region.toString().c_str());
 		return false;
 	}
-	if (glm::any(glm::greaterThan(region.getDimensionsInVoxels(), glm::ivec3(512)))) {
-		Log::warn(
-			"Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh!");
+	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
+	if (glm::any(glm::greaterThan(vdim, glm::ivec3(512)))) {
+		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
+				  vdim.x, vdim.y, vdim.z);
 	}
 	Log::debug("region mins(%i:%i:%i)/maxs(%i:%i:%i)", imins.x, imins.y, imins.z, imaxs.x, imaxs.y, imaxs.z);
 
