@@ -551,6 +551,18 @@ bool GLTFFormat::loadGltfIndices(const tinygltf::Model &model, const tinygltf::P
 	return true;
 }
 
+static TextureWrap convertTextureWrap(int wrap) {
+	if (wrap == TINYGLTF_TEXTURE_WRAP_REPEAT) {
+		return TextureWrap::Repeat;
+	} else if (wrap == TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE) {
+		return TextureWrap::ClampToEdge;
+	} else if (wrap == TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT) {
+		return TextureWrap::MirroredRepeat;
+	}
+	Log::warn("Unknown wrap mode found in sampler: %i", wrap);
+	return TextureWrap::Repeat;
+}
+
 bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 									const tinygltf::Model &model, const tinygltf::Primitive &primitive,
 									core::DynamicArray<GltfVertex> &vertices) const {
@@ -558,6 +570,8 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 	Log::debug("Primitive material: %i", primitive.material);
 	Log::debug("Primitive mode: %i", primitive.mode);
 	int texCoordIndex = 0;
+	TextureWrap wrapS = TextureWrap::Repeat;
+	TextureWrap wrapT = TextureWrap::Repeat;
 	if (primitive.material >= 0 && primitive.material < (int)model.materials.size()) {
 		const tinygltf::Material *gltfMaterial = &model.materials[primitive.material];
 		// TODO: load emissiveTexture
@@ -569,6 +583,8 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 				if (colorTexture.sampler >= 0 && colorTexture.sampler < (int)model.samplers.size()) {
 					const tinygltf::Sampler &sampler = model.samplers[colorTexture.sampler];
 					Log::debug("Sampler: %s, wrapS: %i, wrapT: %i", sampler.name.c_str(), sampler.wrapS, sampler.wrapT);
+					wrapS = convertTextureWrap(sampler.wrapS);
+					wrapT = convertTextureWrap(sampler.wrapT);
 				}
 				const tinygltf::Image &image = model.images[colorTexture.source];
 				Log::debug("Image components: %i, width: %i, height: %i, bits: %i", image.component, image.width,
@@ -664,6 +680,8 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 			for (size_t i = 0; i < attributeAccessor->count; i++) {
 				const float *uvData = (const float *)buf;
 				vertices[verticesOffset + i].uv = glm::vec2(uvData[0], uvData[1]);
+				vertices[verticesOffset + i].wrapS = wrapS;
+				vertices[verticesOffset + i].wrapT = wrapT;
 				buf += stride;
 			}
 		} else if (core::string::startsWith(attrType.c_str(), "COLOR")) {
@@ -708,6 +726,8 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &mod
 			tri.vertices[i] = vertices[idx].pos * scale;
 			tri.uv[i] = vertices[idx].uv;
 		}
+		tri.wrapS = vertices[indexOffset].wrapS;
+		tri.wrapT = vertices[indexOffset].wrapT;
 		const size_t textureIdx = indices[indexOffset];
 		tri.color = core::Color::getRGBA(vertices[textureIdx].color);
 		const core::String &texture = vertices[textureIdx].texture;

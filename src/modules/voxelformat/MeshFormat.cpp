@@ -19,6 +19,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/private/PaletteLookup.h"
+#include "voxelformat/private/Tri.h"
 #include "voxelutil/VoxelUtil.h"
 #include <SDL_timer.h>
 #include <glm/ext/scalar_constants.hpp>

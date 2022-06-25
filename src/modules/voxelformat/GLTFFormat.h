@@ -40,6 +40,8 @@ private:
 	struct GltfVertex {
 		glm::vec3 pos {0.0f};
 		glm::vec2 uv {0.0f};
+		TextureWrap wrapS = TextureWrap::Repeat;
+		TextureWrap wrapT = TextureWrap::Repeat;
 		glm::vec4 color {1.0f};
 		core::String texture;
 	};
