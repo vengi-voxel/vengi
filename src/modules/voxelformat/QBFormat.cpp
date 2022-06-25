@@ -260,11 +260,11 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 				Log::trace("%u voxels of the same type", count);
 			}
 
-			if (count > 32768) {
+			if (count > size.x * size.y * size.z) {
 				Log::error("Max RLE count exceeded: %i", (int)count);
 				return false;
 			}
-			const voxel::Voxel& voxel = getVoxel(state, stream, palLookup);
+			const voxel::Voxel &voxel = getVoxel(state, stream, palLookup);
 			for (uint32_t j = 0; j < count; ++j) {
 				const uint32_t x = (index + j) % size.x;
 				const uint32_t y = (index + j) / size.x;
