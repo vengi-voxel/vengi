@@ -35,11 +35,11 @@ core::RGBA Tri::colorAt(const glm::vec2 &uv) const {
 		float y = uv.y * h;
 		while (x < 0.0f)
 			x += w;
-		while (x > w)
+		while (x >= w)
 			x -= w;
 		while (y < 0.0f)
 			y += h;
-		while (y > h)
+		while (y >= h)
 			y -= h;
 
 		const int xint = (int)glm::round(x - 0.5f);
