@@ -62,6 +62,8 @@ public:
 	 */
 	void abort();
 	void shutdown(bool wait = false);
+
+	void reserve(size_t n);
 private:
 	const size_t _threads;
 	const char *_name;
@@ -76,6 +78,11 @@ private:
 	core::AtomicBool _stop { false };
 	core::AtomicBool _force { false };
 };
+
+inline void ThreadPool::reserve(size_t n) {
+	core::ScopedLock lock(_queueMutex);
+	_tasks.reserve(n);
+}
 
 // add new work item to the pool
 template<class F, class ... Args>
