@@ -110,7 +110,7 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const TriCollec
 			auto iter = posMap.find(p);
 			if (iter == posMap.end()) {
 				posMap.emplace(p, {area, color});
-			} else {
+			} else if (iter->value.entries.size() < 4) {
 				PosSampling &pos = iter->value;
 				pos.entries.emplace_back(area, color);
 			}
