@@ -626,6 +626,8 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 						} else {
 							Log::warn("Failed to load %s", name.c_str());
 						}
+					} else {
+						diffuseTexture = name;
 					}
 				}
 			} else {
@@ -726,16 +728,18 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &mod
 			tri.vertices[i] = vertices[idx].pos * scale;
 			tri.uv[i] = vertices[idx].uv;
 		}
-		tri.wrapS = vertices[indexOffset].wrapS;
-		tri.wrapT = vertices[indexOffset].wrapT;
 		const size_t textureIdx = indices[indexOffset];
-		tri.color = core::Color::getRGBA(vertices[textureIdx].color);
-		const core::String &texture = vertices[textureIdx].texture;
-		if (!texture.empty()) {
-			auto textureIter = textures.find(texture);
+		const GltfVertex &v = vertices[textureIdx];
+		tri.wrapS = v.wrapS;
+		tri.wrapT = v.wrapT;
+		tri.color = core::Color::getRGBA(v.color);
+		if (!v.texture.empty()) {
+			auto textureIter = textures.find(v.texture);
 			if (textureIter != textures.end()) {
 				tri.texture = textureIter->second;
 			}
+		} else {
+			Log::debug("No texture for vertex found");
 		}
 		TriCollection subdivided;
 		subdivideTri(tri, subdivided);
@@ -754,7 +758,7 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &mod
 	PaletteLookup palLookup;
 	voxel::RawVolume *volume = node.volume();
 	int n = 0;
-	for (auto & f : futures) {
+	for (auto &f : futures) {
 		const TriCollection &tris = f.get();
 		PosMap posMap((int)tris.size() * 3);
 		transformTris(tris, posMap);
