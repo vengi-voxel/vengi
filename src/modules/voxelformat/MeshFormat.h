@@ -58,6 +58,10 @@ public:
 				sumArea += pe.area;
 			}
 			glm::vec4 color{0.0f};
+			if (sumArea <= 0.0f) {
+				color[3] = 1.0f;
+				return color;
+			}
 			for (const PosSamplingEntry& pe : entries) {
 				color += pe.color * pe.area / sumArea;
 			}
