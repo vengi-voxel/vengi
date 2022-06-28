@@ -601,7 +601,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 								Log::warn("Failed to load embedded image %s", image.name.c_str());
 							} else {
 								diffuseTexture = image.name.c_str();
-								textures.put(diffuseTexture, tex);
+								textures.emplace(diffuseTexture, core::move(tex));
 							}
 						} else {
 							Log::warn("Invalid buffer index: %i", imgBufferView.buffer);
@@ -621,7 +621,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 						if (tex->isLoaded()) {
 							Log::debug("Use image %s", name.c_str());
 							diffuseTexture = image.uri.c_str();
-							textures.put(diffuseTexture, tex);
+							textures.emplace(diffuseTexture, core::move(tex));
 							texCoordIndex = textureInfo.texCoord;
 						} else {
 							Log::warn("Failed to load %s", name.c_str());
