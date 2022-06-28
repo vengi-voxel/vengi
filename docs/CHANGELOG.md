@@ -14,6 +14,15 @@ General:
 
    - Added support for minecraft 1.13 region files
    - Added support for loading minecraft level.dat (only with supported region files)
+   - Reduced memory footprint for voxelizing huge meshes
+   - Support wrap mode texture settings for gltf voxelization
+   - Improved sanity check for Qubicle Binary format support
+   - Fixed texture lookup error in gltf voxelization
+   - Extended lua vector bindings
+
+VoxEdit:
+
+   - Fixed resetting the camera in eye mode
 
 ## 0.0.20 (2022-06-14)
 
