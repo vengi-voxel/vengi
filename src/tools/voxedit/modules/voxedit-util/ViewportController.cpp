@@ -7,6 +7,7 @@
 namespace voxedit {
 
 void ViewportController::resetCamera(const glm::ivec3 &pos, const voxel::Region &region) {
+	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.setFarPlane(5000.0f);
 	_camera.setTarget(pos);
