@@ -93,7 +93,9 @@ public:
 	static core::String toHex(const RGBA rgba, bool hashPrefix = true);
 
 	static RGBA getRGBA(const glm::vec4&);
-	static RGBA getRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+	static constexpr RGBA getRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) {
+		return RGBA{r, g, b, a};
+	}
 	static void getHSB(const glm::vec4&, float& hue, float& saturation, float& brightness);
 
 	static glm::vec3 gray(const glm::vec3&);

@@ -231,21 +231,8 @@ float Color::getDistance(RGBA rgba, float hue, float saturation, float brightnes
 }
 
 RGBA Color::getRGBA(const glm::vec4 &color) {
-	RGBA rgba;
-	rgba.r = (uint8_t)(color.r * magnitude);
-	rgba.g = (uint8_t)(color.g * magnitude);
-	rgba.b = (uint8_t)(color.b * magnitude);
-	rgba.a = (uint8_t)(color.a * magnitude);
-	return rgba;
-}
-
-RGBA Color::getRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	RGBA rgba;
-	rgba.r = r;
-	rgba.g = g;
-	rgba.b = b;
-	rgba.a = a;
-	return rgba;
+	return RGBA{(uint8_t)(color.r * magnitude), (uint8_t)(color.g * magnitude), (uint8_t)(color.b * magnitude),
+				(uint8_t)(color.a * magnitude)};
 }
 
 void Color::getHSB(const glm::vec4 &color, float &chue, float &csaturation, float &cbrightness) {
