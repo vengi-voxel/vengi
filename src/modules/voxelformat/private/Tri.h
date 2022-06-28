@@ -28,7 +28,7 @@ struct Tri {
 	glm::vec3 vertices[3];
 	glm::vec2 uv[3];
 	image::ImagePtr texture;
-	uint32_t color = 0xFFFFFFFF;
+	core::RGBA color{0xFFFFFFFF};
 	TextureWrap wrapS = TextureWrap::Repeat;
 	TextureWrap wrapT = TextureWrap::Repeat;
 

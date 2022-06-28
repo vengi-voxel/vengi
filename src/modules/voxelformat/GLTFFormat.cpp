@@ -691,14 +691,14 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
 					const float *colorData = (const float *)(buf);
-					vertices[verticesOffset + i].color = glm::vec4(colorData[0], colorData[1], colorData[2], colorData[3]);
+					vertices[verticesOffset + i].color = core::Color::getRGBA(glm::vec4(colorData[0], colorData[1], colorData[2], colorData[3]));
 					buf += stride;
 				}
 			} else if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
 				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
 					const uint8_t *colorData = buf;
-					vertices[verticesOffset + i].color = core::Color::fromRGBA(colorData[0], colorData[1], colorData[2], colorData[3]);
+					vertices[verticesOffset + i].color = core::Color::getRGBA(colorData[0], colorData[1], colorData[2], colorData[3]);
 					buf += stride;
 				}
 			} else {
@@ -732,7 +732,7 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &mod
 		const GltfVertex &v = vertices[textureIdx];
 		tri.wrapS = v.wrapS;
 		tri.wrapT = v.wrapT;
-		tri.color = core::Color::getRGBA(v.color);
+		tri.color = v.color;
 		if (!v.texture.empty()) {
 			auto textureIter = textures.find(v.texture);
 			if (textureIter != textures.end()) {
