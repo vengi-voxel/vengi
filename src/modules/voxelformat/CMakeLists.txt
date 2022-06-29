@@ -79,6 +79,7 @@ set(TEST_SRCS
 	tests/VXMFormatTest.cpp
 
 	tests/NamedBinaryTagTest.cpp
+	tests/TriTest.cpp
 
 	tests/8ontop.h
 	tests/vox_character.h
