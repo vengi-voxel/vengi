@@ -220,6 +220,17 @@ void SceneManager::fillPlane() {
 	modified(nodeId, wrapper.dirtyRegion());
 }
 
+void SceneManager::fillPlane(const image::ImagePtr &image) {
+	const int nodeId = activeNode();
+	if (nodeId == -1) {
+		return;
+	}
+	voxel::RawVolume* v = volume(nodeId);
+	voxel::RawVolumeWrapper wrapper(v);
+	voxelutil::fillPlane(wrapper, image, _modifier.cursorVoxel(), _modifier.cursorPosition(), _modifier.cursorFace());
+	modified(nodeId, wrapper.dirtyRegion());
+}
+
 bool SceneManager::saveModels(const core::String& dir) {
 	bool state = false;
 	for (const voxelformat::SceneGraphNode & node : _sceneGraph) {

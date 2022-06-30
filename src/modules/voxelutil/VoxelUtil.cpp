@@ -168,7 +168,8 @@ static void fillPlane_r(voxel::RawVolumeWrapper &in, const voxel::Region &region
 	if (!region.containsPoint(position)) {
 		return;
 	}
-	if (in.voxel(position) != searchedVoxel) {
+	const voxel::Voxel &v = in.voxel(position);
+	if (v != searchedVoxel) {
 		return;
 	}
 	const glm::ivec3 &ground = position + offset;

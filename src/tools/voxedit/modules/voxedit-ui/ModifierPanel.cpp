@@ -5,11 +5,17 @@
 #include "ModifierPanel.h"
 #include "IMGUIApp.h"
 #include "Util.h"
+#include "image/Image.h"
 #include "imgui.h"
-#include "voxedit-util/SceneManager.h"
+#include "io/FormatDescription.h"
 #include "ui/imgui/IMGUIEx.h"
-#include "ui/imgui/IconsForkAwesome.h"
 #include "ui/imgui/IconsFontAwesome5.h"
+#include "ui/imgui/IconsForkAwesome.h"
+#include "video/Texture.h"
+#include "video/gl/GLTypes.h"
+#include "voxedit-util/SceneManager.h"
+#include "voxelutil/VoxelUtil.h"
+#include "DragAndDropPayload.h"
 
 namespace voxedit {
 
@@ -75,8 +81,27 @@ void ModifierPanel::update(const char *title, command::CommandExecutionListener 
 			ImGui::SameLine();
 			mirrorAxisRadioButton("Z##mirror", math::Axis::Z);
 		}
+
+		if (ImGui::CollapsingHeader("Plane", ImGuiTreeNodeFlags_DefaultOpen)) {
+			if (ImGui::Button(ICON_FK_FILE)) {
+				auto callback = [this](const core::String &file) {
+					_image = image::loadImage(file, false);
+					_texture = video::createTextureFromImage(_image);
+				};
+				imguiApp()->fileDialog(callback, video::WindowedApp::OpenFileMode::Open, io::format::images());
+			}
+			ImGui::TooltipText("Load image");
+			if (_texture && _texture->handle() != video::InvalidId) {
+				ImGui::ImageButton(_texture->handle(), ImVec2(50, 50));
+				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+					ImGui::ImageButton(_texture->handle(), ImVec2(50, 50));
+					ImGui::SetDragDropPayload(dragdrop::PlaneImagePayload, (const void*)&_image, sizeof(_image), ImGuiCond_Always);
+					ImGui::EndDragDropSource();
+				}
+			}
+		}
 	}
 	ImGui::End();
 }
 
-}
+} // namespace voxedit

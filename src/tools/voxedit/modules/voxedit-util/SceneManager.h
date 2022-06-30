@@ -319,6 +319,8 @@ public:
 	void lsystem(const core::String &axiom, const core::DynamicArray<voxelgenerator::lsystem::Rule> &rules, float angle,
 			float length, float width, float widthIncrement, int iterations, float leavesRadius);
 
+	void fillPlane(const image::ImagePtr &image);
+
 	/**
 	 * @brief Save the volume data to the given file
 	 * @param[in] file The file to store the volume data in. The file extension defines the volume format.

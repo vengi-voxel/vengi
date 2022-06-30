@@ -17,6 +17,7 @@
 #include "video/Camera.h"
 #include "video/ShapeBuilder.h"
 #include "video/WindowedApp.h"
+#include "DragAndDropPayload.h"
 
 #include "image/Image.h"
 #include "voxedit-util/Config.h"
@@ -107,6 +108,21 @@ void Viewport::update() {
 					sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
 					sceneMgr().setActiveCamera(&_controller.camera());
 					sceneMgr().trace();
+				}
+
+				if (ImGui::BeginDragDropTarget()) {
+					if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::PlaneImagePayload)) {
+						const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
+						const ImVec2 windowPos = ImGui::GetWindowPos();
+						const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
+						const int mouseY = (int)((ImGui::GetIO().MousePos.y - windowPos.y) - headerSize);
+						_controller.move(false, false, mouseX, mouseY);
+						sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
+						sceneMgr().setActiveCamera(&_controller.camera());
+						sceneMgr().trace();
+						sceneMgr().fillPlane(image);
+					}
+					ImGui::EndDragDropTarget();
 				}
 
 				const float height = (float)app->fontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
