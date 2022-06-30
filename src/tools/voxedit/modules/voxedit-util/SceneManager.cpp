@@ -215,7 +215,11 @@ void SceneManager::fillPlane() {
 		return;
 	}
 	voxel::RawVolume *v = volume(nodeId);
-	voxel::RawVolumeWrapper wrapper(v);
+	voxel::Region region = _modifier.selection();
+	if (!region.isValid()) {
+		region = v->region();
+	}
+	voxel::RawVolumeWrapper wrapper(v, region);
 	const voxel::Voxel &voxel = _modifier.cursorVoxel();
 	const glm::ivec3 &pos = _modifier.cursorPosition();
 	const voxel::FaceNames face = _modifier.cursorFace();
@@ -229,7 +233,11 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 		return;
 	}
 	voxel::RawVolume *v = volume(nodeId);
-	voxel::RawVolumeWrapper wrapper(v);
+	voxel::Region region = _modifier.selection();
+	if (!region.isValid()) {
+		region = v->region();
+	}
+	voxel::RawVolumeWrapper wrapper(v, region);
 	const glm::ivec3 &pos = _modifier.cursorPosition();
 	const voxel::FaceNames face = _modifier.cursorFace();
 	voxelutil::fillPlane(wrapper, image, voxel::Voxel(), pos, face);
