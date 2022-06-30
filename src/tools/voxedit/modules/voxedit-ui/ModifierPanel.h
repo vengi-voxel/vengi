@@ -4,21 +4,16 @@
 
 #pragma once
 
-#include "command/CommandHandler.h"
-#include "image/Image.h"
-#include "math/Axis.h"
-#include "video/Texture.h"
+#include "voxedit-util/modifier/ModifierType.h"
 
 namespace voxedit {
 
 class ModifierPanel {
 private:
-	bool mirrorAxisRadioButton(const char *title, math::Axis type);
-	image::ImagePtr _image;
-	video::TexturePtr _texture;
+	bool modifierRadioButton(const char *title, ModifierType type);
 
 public:
-	void update(const char *title, command::CommandExecutionListener &listener);
+	void update(const char *title);
 };
 
-} // namespace voxedit
+}

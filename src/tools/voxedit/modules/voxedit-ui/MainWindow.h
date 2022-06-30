@@ -14,12 +14,12 @@
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/LayerPanel.h"
 #include "voxedit-ui/MenuBar.h"
-#include "voxedit-ui/ModifierPanel.h"
+#include "voxedit-ui/ToolsPanel.h"
 #include "voxedit-ui/PalettePanel.h"
 #include "voxedit-ui/SceneGraphPanel.h"
 #include "voxedit-ui/ScriptPanel.h"
 #include "voxedit-ui/StatusBar.h"
-#include "voxedit-ui/ToolsPanel.h"
+#include "voxedit-ui/ModifierPanel.h"
 #include "voxedit-ui/FormatSettingsPanel.h"
 #include "voxedit-ui/TreePanel.h"
 #include "voxedit-util/layer/LayerSettings.h"
@@ -85,9 +85,9 @@ private:
 	TreePanel _treePanel;
 	LayerPanel _layerPanel;
 	AnimationPanel _animationPanel;
-	ModifierPanel _modifierPanel;
-	PositionsPanel _positionsPanel;
 	ToolsPanel _toolsPanel;
+	PositionsPanel _positionsPanel;
+	ModifierPanel _modifierPanel;
 	PalettePanel _palettePanel;
 	FormatSettingsPanel _formatSettingsPanel;
 	MenuBar _menuBar;

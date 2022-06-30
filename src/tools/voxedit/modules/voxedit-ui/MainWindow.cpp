@@ -26,10 +26,10 @@
 #define TITLE_PALETTE "Palette##title"
 #define TITLE_POSITIONS "Positions##title"
 #define TITLE_ANIMATION_TIMELINE "Animation##animationtimeline"
-#define TITLE_MODIFIERS "Modifiers##title"
+#define TITLE_TOOLS "Tools##title"
 #define TITLE_LAYERS "Layers##title"
 #define TITLE_FORMAT_SETTINGS "Formats##title"
-#define TITLE_TOOLS "Tools##title"
+#define TITLE_MODIFIERS "Modifiers##title"
 #define TITLE_TREES ICON_FA_TREE " Trees##title"
 #define TITLE_SCENEGRAPH "Scenegraph##title"
 #define TITLE_SCRIPTPANEL ICON_FA_CODE " Script##title"
@@ -204,7 +204,7 @@ bool MainWindow::isPaletteWidgetDropTarget() const {
 
 void MainWindow::leftWidget() {
 	_palettePanel.update(TITLE_PALETTE, _lastExecutedCommand);
-	_toolsPanel.update(TITLE_TOOLS);
+	_modifierPanel.update(TITLE_MODIFIERS);
 }
 
 void MainWindow::mainWidget() {
@@ -218,7 +218,7 @@ void MainWindow::mainWidget() {
 
 void MainWindow::rightWidget() {
 	_positionsPanel.update(TITLE_POSITIONS, _lastExecutedCommand);
-	_modifierPanel.update(TITLE_MODIFIERS, _lastExecutedCommand);
+	_toolsPanel.update(TITLE_TOOLS, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
 	_formatSettingsPanel.update(TITLE_FORMAT_SETTINGS);
 
@@ -434,7 +434,7 @@ void MainWindow::update() {
 		_dockIdMainDown = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Down, 0.20f, nullptr, &_dockIdMain);
 		ImGui::DockBuilderDockWindow(TITLE_PALETTE, _dockIdLeft);
 		ImGui::DockBuilderDockWindow(TITLE_POSITIONS, _dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_MODIFIERS, _dockIdRight);
+		ImGui::DockBuilderDockWindow(TITLE_TOOLS, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_FORMAT_SETTINGS, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_LAYERS, _dockIdRightDown);
@@ -442,7 +442,7 @@ void MainWindow::update() {
 		ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, _dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, _dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_SCRIPTPANEL, _dockIdRightDown);
-		ImGui::DockBuilderDockWindow(TITLE_TOOLS, _dockIdLeftDown);
+		ImGui::DockBuilderDockWindow(TITLE_MODIFIERS, _dockIdLeftDown);
 		ImGui::DockBuilderDockWindow(_scene->id().c_str(), _dockIdMain);
 		ImGui::DockBuilderDockWindow(_sceneLeft->id().c_str(), _dockIdMain);
 		ImGui::DockBuilderDockWindow(_sceneTop->id().c_str(), _dockIdMain);
