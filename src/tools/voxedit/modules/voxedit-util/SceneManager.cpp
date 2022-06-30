@@ -204,11 +204,12 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 }
 
 void SceneManager::fillHollow() {
-	for (const voxelformat::SceneGraphNode & node : _sceneGraph) {
-		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(node.volume());
+	_sceneGraph.foreachGroup([&] (int nodeId) {
+		voxel::RawVolume *v = volume(nodeId);
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 		voxelutil::fillHollow(wrapper, _modifier.cursorVoxel());
-		modified(node.id(), wrapper.dirtyRegion());
-	}
+		modified(nodeId, wrapper.dirtyRegion());
+	});
 }
 
 void SceneManager::fillPlane() {
