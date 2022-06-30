@@ -215,11 +215,7 @@ void SceneManager::fillPlane() {
 		return;
 	}
 	voxel::RawVolume *v = volume(nodeId);
-	voxel::Region region = _modifier.selection();
-	if (!region.isValid()) {
-		region = v->region();
-	}
-	voxel::RawVolumeWrapper wrapper(v, region);
+	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 	const voxel::Voxel &voxel = _modifier.cursorVoxel();
 	const glm::ivec3 &pos = _modifier.cursorPosition();
 	const voxel::FaceNames face = _modifier.cursorFace();
@@ -233,11 +229,7 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 		return;
 	}
 	voxel::RawVolume *v = volume(nodeId);
-	voxel::Region region = _modifier.selection();
-	if (!region.isValid()) {
-		region = v->region();
-	}
-	voxel::RawVolumeWrapper wrapper(v, region);
+	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 	const glm::ivec3 &pos = _modifier.cursorPosition();
 	const voxel::FaceNames face = _modifier.cursorFace();
 	voxelutil::fillPlane(wrapper, image, voxel::Voxel(), pos, face);
@@ -1838,11 +1830,7 @@ bool SceneManager::init() {
 bool SceneManager::runScript(const core::String& script, const core::DynamicArray<core::String>& args) {
 	const int nodeId = activeNode();
 	voxel::RawVolume* volume = this->volume(nodeId);
-	const Selection& selection = _modifier.selection();
-	voxel::Region region = volume->region();
-	if (selection.isValid()) {
-		region = selection;
-	}
+	const voxel::Region& region = _modifier.createRegion(volume);
 	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
 	const bool retVal = _luaGenerator.exec(script, _sceneGraph, nodeId, region, _modifier.cursorVoxel(), dirtyRegion, args);
 	modified(nodeId, dirtyRegion);

@@ -339,6 +339,20 @@ glm::ivec3 Modifier::aabbDim() const {
 	return glm::abs(maxs + size - mins);
 }
 
+voxel::RawVolumeWrapper Modifier::createRawVolumeWrapper(voxel::RawVolume* volume) const {
+	return voxel::RawVolumeWrapper(volume, createRegion(volume));
+}
+
+voxel::Region Modifier::createRegion(voxel::RawVolume* volume) const {
+	voxel::Region region = volume->region();
+	if (_selectionValid) {
+		voxel::Region srcRegion(_selection);
+		srcRegion.cropTo(region);
+		return srcRegion;
+	}
+	return region;
+}
+
 bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
 	if ((_modifierType & ModifierType::ColorPicker) == ModifierType::ColorPicker) {
 		// TODO:
@@ -350,11 +364,7 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(con
 		return false;
 	}
 	if ((_modifierType & ModifierType::FillPlane) == ModifierType::FillPlane) {
-		voxel::Region region = volume->region();
-		if (_selectionValid) {
-			region = _selection;
-		}
-		voxel::RawVolumeWrapper wrapper(volume, region);
+		voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
 		voxelutil::fillPlane(wrapper, cursorVoxel(), voxel::Voxel(), cursorPosition(), cursorFace());
 		const voxel::Region& modifiedRegion = wrapper.dirtyRegion();
 		if (modifiedRegion.isValid()) {

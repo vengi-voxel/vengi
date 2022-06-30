@@ -6,6 +6,7 @@
 
 #include "core/GLM.h"
 #include "core/IComponent.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "math/Axis.h"
 #include "voxel/Face.h"
@@ -72,6 +73,12 @@ protected:
 	bool executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type)>& callback);
 public:
 	Modifier();
+
+	/**
+	 * @brief Create a Raw Volume Wrapper object while taking the selection into account
+	 */
+	voxel::RawVolumeWrapper createRawVolumeWrapper(voxel::RawVolume* volume) const;
+	voxel::Region createRegion(voxel::RawVolume* volume) const;
 
 	void construct() override;
 	bool init() override;
