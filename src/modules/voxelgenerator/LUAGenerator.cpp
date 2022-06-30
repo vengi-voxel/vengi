@@ -5,6 +5,7 @@
 #include "LUAGenerator.h"
 #include "commonlua/LUAFunctions.h"
 #include "core/StringUtil.h"
+#include "image/Image.h"
 #include "lauxlib.h"
 #include "lua.h"
 #include "math/Axis.h"
@@ -20,6 +21,7 @@
 #include "noise/Simplex.h"
 #include "app/App.h"
 #include "voxelformat/SceneGraphUtil.h"
+#include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeResizer.h"
 #include "voxelformat/SceneGraph.h"
@@ -142,8 +144,8 @@ static int luaVoxel_volumewrapper_resize(lua_State *s) {
 	return 0;
 }
 
-static voxel::Voxel luaVoxel_getVoxel(lua_State *s, int index) {
-	const int color = (int)luaL_optinteger(s, index, 1);
+static voxel::Voxel luaVoxel_getVoxel(lua_State *s, int index, int defaultColor = 1) {
+	const int color = (int)luaL_optinteger(s, index, defaultColor);
 	if (color == -1) {
 		return voxel::createVoxel(voxel::VoxelType::Air, 0);
 	}
@@ -177,6 +179,21 @@ static int luaVoxel_volumewrapper_fillhollow(lua_State *s) {
 	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 2);
 	voxelutil::fillHollow(*volume, voxel);
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_importheightmap(lua_State *s) {
+	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const core::String imageName = lua_tostring(s, 2);
+	const image::ImagePtr &image = image::loadImage(imageName, false);
+	if (!image || !image->isLoaded()) {
+		return clua_error(s, "Image %s could not get loaded", imageName.c_str());
+	}
+	const voxel::Voxel grass = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
+	const voxel::Voxel dirt = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
+	const voxel::Voxel underground = luaVoxel_getVoxel(s, 3, dirt.getColor());
+	const voxel::Voxel surface = luaVoxel_getVoxel(s, 4, grass.getColor());
+	voxelutil::importHeightmap(*volume, image, underground, surface);
 	return 0;
 }
 
@@ -588,6 +605,7 @@ static void prepareState(lua_State* s) {
 		{"resize", luaVoxel_volumewrapper_resize},
 		{"crop", luaVoxel_volumewrapper_crop},
 		{"fillHollows", luaVoxel_volumewrapper_fillhollow},
+		{"importHeightmap", luaVoxel_volumewrapper_importheightmap},
 		{"mirrorAxis", luaVoxel_volumewrapper_mirroraxis},
 		{"rotateAxis", luaVoxel_volumewrapper_rotateaxis},
 		{"setVoxel", luaVoxel_volumewrapper_setvoxel},

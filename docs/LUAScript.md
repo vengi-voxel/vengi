@@ -191,6 +191,8 @@ local mins = region:mins()
 
 * `fillHollows([color])`: Tries to fill all hollows in the volume.
 
+* `importHeightmap(filename, [underground], [surface])`: Imports the given image as heightmap into the current volume. Use the `underground` and `surface` voxel colors for this (or pick some defaults if they were not specified).
+
 * `crop()`: Crop the volume and remove empty spaces.
 
 * `mirrorAxis([axis])`: Mirror along the given axis - `y` is default.

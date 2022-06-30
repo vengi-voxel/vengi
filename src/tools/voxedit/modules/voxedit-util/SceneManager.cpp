@@ -130,7 +130,6 @@ bool SceneManager::importAsPlane(const core::String& file) {
 	return addNodeToSceneGraph(node) != -1;
 }
 
-// TODO: should create a new model node - see importAsPlane
 bool SceneManager::importHeightmap(const core::String& file) {
 	const int nodeId = activeNode();
 	voxel::RawVolume* v = volume(nodeId);
