@@ -343,7 +343,7 @@ voxel::RawVolumeWrapper Modifier::createRawVolumeWrapper(voxel::RawVolume* volum
 	return voxel::RawVolumeWrapper(volume, createRegion(volume));
 }
 
-voxel::Region Modifier::createRegion(voxel::RawVolume* volume) const {
+voxel::Region Modifier::createRegion(const voxel::RawVolume* volume) const {
 	voxel::Region region = volume->region();
 	if (_selectionValid) {
 		voxel::Region srcRegion(_selection);

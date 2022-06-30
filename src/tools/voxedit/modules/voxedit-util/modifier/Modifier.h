@@ -78,7 +78,7 @@ public:
 	 * @brief Create a Raw Volume Wrapper object while taking the selection into account
 	 */
 	voxel::RawVolumeWrapper createRawVolumeWrapper(voxel::RawVolume* volume) const;
-	voxel::Region createRegion(voxel::RawVolume* volume) const;
+	voxel::Region createRegion(const voxel::RawVolume* volume) const;
 
 	void construct() override;
 	bool init() override;
