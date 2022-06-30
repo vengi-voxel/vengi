@@ -16,6 +16,7 @@
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/PaletteLookup.h"
 
 namespace voxelutil {
 
@@ -130,7 +131,7 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 	}
 	Log::info("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, volumeDepth);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, volumeDepth - 1);
-	const voxel::Palette &palette = voxel::getPalette();
+	voxelformat::PaletteLookup palLookup(voxel::getPalette());
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
@@ -139,7 +140,7 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 				continue;
 			}
 			const glm::vec4& color = core::Color::fromRGBA(data[0], data[1], data[2], data[3]);
-			const uint8_t index = palette.getClosestMatch(color);
+			const uint8_t index = palLookup.findClosestIndex(color);
 			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 			const uint8_t* heightdata = heightmap->at(x, y);
 			const float thickness = (float)*heightdata;
