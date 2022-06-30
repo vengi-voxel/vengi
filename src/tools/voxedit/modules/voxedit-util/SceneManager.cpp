@@ -214,9 +214,12 @@ void SceneManager::fillPlane() {
 	if (nodeId == -1) {
 		return;
 	}
-	voxel::RawVolume* v = volume(nodeId);
+	voxel::RawVolume *v = volume(nodeId);
 	voxel::RawVolumeWrapper wrapper(v);
-	voxelutil::fillPlane(wrapper, _modifier.cursorVoxel(), voxel::Voxel(), _modifier.cursorPosition(), _modifier.cursorFace());
+	const voxel::Voxel &voxel = _modifier.cursorVoxel();
+	const glm::ivec3 &pos = _modifier.cursorPosition();
+	const voxel::FaceNames face = _modifier.cursorFace();
+	voxelutil::fillPlane(wrapper, voxel, voxel::Voxel(), pos, face);
 	modified(nodeId, wrapper.dirtyRegion());
 }
 
@@ -225,9 +228,11 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 	if (nodeId == -1) {
 		return;
 	}
-	voxel::RawVolume* v = volume(nodeId);
+	voxel::RawVolume *v = volume(nodeId);
 	voxel::RawVolumeWrapper wrapper(v);
-	voxelutil::fillPlane(wrapper, image, _modifier.cursorVoxel(), _modifier.cursorPosition(), _modifier.cursorFace());
+	const glm::ivec3 &pos = _modifier.cursorPosition();
+	const voxel::FaceNames face = _modifier.cursorFace();
+	voxelutil::fillPlane(wrapper, image, voxel::Voxel(), pos, face);
 	modified(nodeId, wrapper.dirtyRegion());
 }
 
