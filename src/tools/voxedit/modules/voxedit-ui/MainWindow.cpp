@@ -44,7 +44,7 @@
 
 namespace voxedit {
 
-MainWindow::MainWindow(ui::imgui::IMGUIApp *app) : _app(app) {
+MainWindow::MainWindow(ui::imgui::IMGUIApp *app) : _app(app), _toolsPanel(app->filesystem()) {
 	_scene = new Viewport("free##viewport");
 	_sceneTop = new Viewport("top##viewport");
 	_sceneLeft = new Viewport("left##viewport");
@@ -472,4 +472,4 @@ bool MainWindow::saveScreenshot(const core::String& file) {
 	return true;
 }
 
-}
+} // namespace voxedit
