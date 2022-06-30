@@ -205,7 +205,9 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 
 void SceneManager::fillHollow() {
 	for (const voxelformat::SceneGraphNode & node : _sceneGraph) {
-		voxelutil::fillHollow(*node.volume(), _modifier.cursorVoxel());
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(node.volume());
+		voxelutil::fillHollow(wrapper, _modifier.cursorVoxel());
+		modified(node.id(), wrapper.dirtyRegion());
 	}
 }
 

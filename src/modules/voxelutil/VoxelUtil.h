@@ -37,6 +37,6 @@ void fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const 
 void fillPlane(voxel::RawVolumeWrapper &in, const voxel::Voxel &targetVoxel, const voxel::Voxel &searchedVoxel,
 			   const glm::ivec3 &position, voxel::FaceNames face);
 
-void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel);
+void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel);
 
 } // namespace voxelutil

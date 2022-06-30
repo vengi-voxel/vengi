@@ -21,6 +21,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/Palette.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxel/VoxelVertex.h"
 #include "core/collection/DynamicArray.h"
 #include "voxelformat/SceneGraph.h"
@@ -775,7 +776,8 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &mod
 	node.setPalette(palLookup.palette());
 	if (fillHollow) {
 		Log::debug("fill hollows");
-		voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
+		voxel::RawVolumeWrapper wrapper(volume);
+		voxelutil::fillHollow(wrapper, voxel::Voxel(voxel::VoxelType::Generic, 2));
 	}
 	return true;
 }

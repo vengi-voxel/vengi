@@ -55,7 +55,8 @@ bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const vox
 	return copy(in, in.region(), out, targetRegion);
 }
 
-static void fillRegion(voxel::RawVolume &in, const voxel::Voxel &voxel, const voxel::Region &region) {
+static void fillRegion(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
+	const voxel::Region &region = in.region();
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
@@ -158,8 +159,8 @@ static void fillRegion(voxel::RawVolume &in, const voxel::Voxel &voxel, const vo
 		VisitAll());
 }
 
-void fillHollow(voxel::RawVolume &in, const voxel::Voxel &voxel) {
-	fillRegion(in, voxel, in.region());
+void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
+	fillRegion(in, voxel);
 }
 
 static void fillPlane_r(voxel::RawVolumeWrapper &in, const voxel::Region &region, const FillPlaneCallback &targetVoxel,

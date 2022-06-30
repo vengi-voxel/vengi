@@ -17,6 +17,7 @@
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/private/PaletteLookup.h"
 #include "voxelformat/private/Tri.h"
@@ -103,7 +104,8 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 	node.setPalette(palLookup.palette());
 	if (fillHollow) {
 		Log::debug("fill hollows");
-		voxelutil::fillHollow(*volume, voxel::Voxel(voxel::VoxelType::Generic, 2));
+		voxel::RawVolumeWrapper wrapper(volume);
+		voxelutil::fillHollow(wrapper, voxel::Voxel(voxel::VoxelType::Generic, 2));
 	}
 }
 

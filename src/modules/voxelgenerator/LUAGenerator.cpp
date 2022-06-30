@@ -176,7 +176,7 @@ static int luaVoxel_volumewrapper_rotateaxis(lua_State *s) {
 static int luaVoxel_volumewrapper_fillhollow(lua_State *s) {
 	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 2);
-	voxelutil::fillHollow(*volume->volume(), voxel);
+	voxelutil::fillHollow(*volume, voxel);
 	return 0;
 }
 
