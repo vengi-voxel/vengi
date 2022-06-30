@@ -8,23 +8,32 @@
 
 namespace video {
 
-TexturePool::TexturePool(const io::FilesystemPtr& filesystem) :
-		_filesystem(filesystem) {
+TexturePool::TexturePool(const io::FilesystemPtr &filesystem) : _filesystem(filesystem) {
 }
 
-video::TexturePtr TexturePool::load(const core::String& name, bool emptyAsFallback) {
+video::TexturePtr TexturePool::load(const core::String &name, bool emptyAsFallback, bool async) {
 	auto i = _cache.find(name);
 	if (i != _cache.end()) {
 		return i->value;
 	}
 
-	const image::ImagePtr& image = image::loadImage(name, false);
+	const image::ImagePtr &image = loadImage(name, async);
 	TexturePtr texture = createTextureFromImage(image);
 	if (!texture && emptyAsFallback) {
 		texture = _empty;
 	}
 	_cache.put(name, texture);
 	return texture;
+}
+
+image::ImagePtr TexturePool::loadImage(const core::String &name, bool async) {
+	auto i = _images.find(name);
+	if (i != _images.end()) {
+		return i->value;
+	}
+	const image::ImagePtr &image = image::loadImage(name, async);
+	_images.put(name, image);
+	return image;
 }
 
 bool TexturePool::init() {
@@ -39,6 +48,7 @@ void TexturePool::shutdown() {
 
 void TexturePool::clear() {
 	_cache.clear();
+	_images.clear();
 }
 
-}
+} // namespace video

@@ -30,19 +30,24 @@ private:
 	int _layerCount = 1;
 	TextureConfig _config;
 	mutable TextureUnit _boundUnit = TextureUnit::Zero;
+	image::ImagePtr _image;
+	bool _dummy = false;
+
+	void validate();
 
 public:
+	Texture(const image::ImagePtr& image);
 	Texture(const TextureConfig& cfg, int width = 1, int height = 1, const core::String& name = "");
 	~Texture();
 	void shutdown();
 
-	operator Id () const;
+	operator Id ();
 	TextureType type() const;
 	TextureFormat format() const;
-	int width() const;
-	int height() const;
 	int layers() const;
-	Id handle() const;
+	int width();
+	int height();
+	Id handle();
 
 	// updates the texture with the new data
 	void upload(TextureFormat format, TextureFilter filter, int width, int height, const uint8_t* data = nullptr, int index = 1);
@@ -69,28 +74,12 @@ inline int Texture::layers() const {
 	return _layerCount;
 }
 
-inline Texture::operator Id() const {
-	return _handle;
-}
-
 inline TextureFormat Texture::format() const {
 	return _config.format();
 }
 
-inline int Texture::width() const {
-	return _width;
-}
-
-inline int Texture::height() const {
-	return _height;
-}
-
 inline TextureType Texture::type() const {
 	return _config.type();
-}
-
-inline Id Texture::handle() const {
-	return _handle;
 }
 
 typedef core::SharedPtr<Texture> TexturePtr;

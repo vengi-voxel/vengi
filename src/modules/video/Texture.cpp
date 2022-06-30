@@ -17,6 +17,19 @@ Texture::Texture(const TextureConfig& cfg, int width, int height, const core::St
 	_config = cfg;
 }
 
+Texture::Texture(const image::ImagePtr &image) : _name(image->name()) {
+	core_assert(image->isLoading());
+	_image = image;
+	_state = io::IOSTATE_LOADING;
+	_config.type(TextureType::Texture2D);
+	_config.format(TextureFormat::RGBA);
+	_width = 1;
+	_height = 1;
+	_dummy = true;
+	const uint32_t empty = 0x00000000;
+	upload((const uint8_t *)&empty);
+}
+
 Texture::~Texture() {
 	// in case of a texture we don't want this check, as it might be shared between multiple resources
 	// and it should only be destroyed once it's completely destroyed by the shared_ptr
@@ -54,6 +67,9 @@ uint8_t* Texture::data() {
 }
 
 void Texture::upload(int width, int height, const uint8_t* data, int index) {
+	if (width < 0 || height < 0) {
+		return;
+	}
 	if (_handle == InvalidId) {
 		_handle = video::genTexture(_config);
 	}
@@ -77,10 +93,60 @@ void Texture::unbind() const {
 	_boundUnit = TextureUnit::Zero;
 }
 
+void Texture::validate() {
+	if (!_dummy) {
+		return;
+	}
+	if (!_image) {
+		return;
+	}
+	if (_image->isLoading()) {
+		return;
+	}
+	if (_image->isFailed()) {
+		_image = image::ImagePtr();
+		_dummy = false;
+		_state = io::IOSTATE_FAILED;
+		return;
+	}
+	if (_image->depth() == 4) {
+		_config.format(TextureFormat::RGBA);
+	} else {
+		_config.format(TextureFormat::RGB);
+	}
+	upload(_image->width(), _image->height(), _image->data());
+	_image = image::ImagePtr();
+	_dummy = false;
+	_state = io::IOSTATE_LOADED;
+}
+
+Texture::operator Id() {
+	validate();
+	return _handle;
+}
+
+int Texture::width() {
+	validate();
+	return _width;
+}
+
+int Texture::height() {
+	validate();
+	return _height;
+}
+
+Id Texture::handle() {
+	validate();
+	return _handle;
+}
+
 TexturePtr createTextureFromImage(const image::ImagePtr& image) {
-	if (!image) {
+	if (!image || image->isFailed()) {
 		Log::warn("Could not load texture");
 		return TexturePtr();
+	}
+	if (image->isLoading()) {
+		return core::make_shared<Texture>(image);
 	}
 	if (image->width() <= 0) {
 		Log::warn("Could not load texture from image %s", image->name().c_str());
