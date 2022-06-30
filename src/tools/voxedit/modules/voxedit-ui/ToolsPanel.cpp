@@ -103,13 +103,12 @@ void ToolsPanel::update(const char *title, command::CommandExecutionListener &li
 		}
 
 		if (ImGui::CollapsingHeader("Plane", ImGuiTreeNodeFlags_DefaultOpen)) {
-			if (ImGui::Button(ICON_FK_FILE_IMAGE_O)) {
+			if (ImGui::Button(ICON_FK_FILE_IMAGE_O " Open image directory")) {
 				auto callback = [this](const core::String &dir) {
 					loadTextures(dir);
 				};
 				imguiApp()->fileDialog(callback, video::WindowedApp::OpenFileMode::Directory);
 			}
-			ImGui::TooltipText("Open image directory");
 			int n = 1;
 			ImGuiStyle& style = ImGui::GetStyle();
 			const int maxImages = core_max(1, ImGui::GetWindowSize().x / (50 + style.ItemSpacing.x) - 1);
