@@ -276,8 +276,8 @@ void fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const 
 
 	auto callback = [&](const glm::ivec3 &pos, const voxel::Region &region, voxel::FaceNames face) {
 		const glm::vec2 &uv = calcUV(pos, region, face);
-		const uint8_t *rgba = image->at((int)(uv.x * (float)image->width()), image->height() - (int)(uv.y * (float)image->height()) - 1);
-		const uint8_t index = palLookup.findClosestIndex(core::RGBA(rgba[0], rgba[1], rgba[2], rgba[3]));
+		const core::RGBA rgba = image->colorAt(uv);
+		const uint8_t index = palLookup.findClosestIndex(rgba);
 		return voxel::createVoxel(voxel::VoxelType::Generic, index);
 	};
 
