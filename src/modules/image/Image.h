@@ -4,12 +4,27 @@
 
 #pragma once
 
+#include "core/RGBA.h"
 #include "io/IOResource.h"
 #include "io/File.h"
 #include "core/SharedPtr.h"
 #include "io/Stream.h"
+#include <glm/fwd.hpp>
 
 namespace image {
+
+// https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
+enum TextureWrap {
+	Repeat, // causes the integer part of the s coordinate to be ignored; the GL uses only the fractional part, thereby
+			// creating a repeating pattern.
+	ClampToEdge, // causes s coordinates to be clamped to the range [1/2N,1−1/2N], where N is the size of the texture in
+				 // the direction of clamping.
+	MirroredRepeat, // causes the s coordinate to be set to the fractional part of the texture coordinate if the integer
+					// part of s is even; if the integer part of s is odd, then the s texture coordinate is set to
+					// 1−frac(s), where frac(s) represents the fractional part of s
+
+	Max
+};
 
 /**
  * @brief Wrapper for image loading
@@ -38,6 +53,8 @@ public:
 	static bool writePng(const char *name, const uint8_t *buffer, int width, int height, int depth);
 	bool writePng() const;
 	core::String pngBase64() const;
+	core::RGBA colorAt(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat,
+					   TextureWrap wrapT = TextureWrap::Repeat) const;
 
 	const uint8_t* at(int x, int y) const;
 

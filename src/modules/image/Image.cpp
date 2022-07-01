@@ -15,6 +15,9 @@
 #include "io/Stream.h"
 #include "util/Base64.h"
 
+#include <glm/common.hpp>
+#include <glm/ext/scalar_common.hpp>
+
 #define STBI_ASSERT core_assert
 #define STBI_MALLOC core_malloc
 #define STBI_REALLOC core_realloc
@@ -60,6 +63,55 @@ bool Image::load(const io::FilePtr& file) {
 	const bool status = load(buffer, length);
 	delete[] buffer;
 	return status;
+}
+
+core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT) const {
+	const float w = (float)width();
+	const float h = (float)height();
+	float x;
+	float y;
+	switch (wrapS) {
+	case TextureWrap::Repeat: {
+		x = glm::repeat(uv.x) * w;
+		break;
+	}
+	case TextureWrap::ClampToEdge: {
+		x = glm::clamp(uv.x, 1.0f / (2.0f * w), 1.0f - 1.0f / (2.0f * w)) * w;
+		break;
+	}
+	case TextureWrap::MirroredRepeat: {
+		x = glm::mirrorRepeat(uv.x) * w;
+		break;
+	}
+	case TextureWrap::Max:
+		return 0;
+	}
+	switch (wrapT) {
+	case TextureWrap::Repeat: {
+		y = glm::repeat(uv.y) * h;
+		break;
+	}
+	case TextureWrap::ClampToEdge: {
+		y = glm::clamp(uv.y, 1.0f / (2.0f * h), 1.0f - 1.0f / (2.0f * h)) * h;
+		break;
+	}
+	case TextureWrap::MirroredRepeat: {
+		y = glm::mirrorRepeat(uv.y) * h;
+		break;
+	}
+	case TextureWrap::Max:
+		return 0;
+	}
+
+	const int xint = (int)x;
+	const int yint = height() - (int)y - 1;
+	const uint8_t *ptr = at(xint, yint);
+	const int d = depth();
+	if (d == 4) {
+		return core::RGBA{ptr[0], ptr[1], ptr[2], ptr[3]};
+	}
+	core_assert(d == 3);
+	return core::RGBA{ptr[0], ptr[1], ptr[2], 255};
 }
 
 ImagePtr loadImage(const io::FilePtr& file, bool async) {

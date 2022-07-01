@@ -552,16 +552,16 @@ bool GLTFFormat::loadGltfIndices(const tinygltf::Model &model, const tinygltf::P
 	return true;
 }
 
-static TextureWrap convertTextureWrap(int wrap) {
+static image::TextureWrap convertTextureWrap(int wrap) {
 	if (wrap == TINYGLTF_TEXTURE_WRAP_REPEAT) {
-		return TextureWrap::Repeat;
+		return image::TextureWrap::Repeat;
 	} else if (wrap == TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE) {
-		return TextureWrap::ClampToEdge;
+		return image::TextureWrap::ClampToEdge;
 	} else if (wrap == TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT) {
-		return TextureWrap::MirroredRepeat;
+		return image::TextureWrap::MirroredRepeat;
 	}
 	Log::warn("Unknown wrap mode found in sampler: %i", wrap);
-	return TextureWrap::Repeat;
+	return image::TextureWrap::Repeat;
 }
 
 bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
@@ -571,8 +571,8 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 	Log::debug("Primitive material: %i", primitive.material);
 	Log::debug("Primitive mode: %i", primitive.mode);
 	int texCoordIndex = 0;
-	TextureWrap wrapS = TextureWrap::Repeat;
-	TextureWrap wrapT = TextureWrap::Repeat;
+	image::TextureWrap wrapS = image::TextureWrap::Repeat;
+	image::TextureWrap wrapT = image::TextureWrap::Repeat;
 	if (primitive.material >= 0 && primitive.material < (int)model.materials.size()) {
 		const tinygltf::Material *gltfMaterial = &model.materials[primitive.material];
 		// TODO: load emissiveTexture

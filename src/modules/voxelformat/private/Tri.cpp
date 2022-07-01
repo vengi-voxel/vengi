@@ -5,7 +5,6 @@
 #include "Tri.h"
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
-#include <glm/ext/scalar_common.hpp>
 
 namespace voxelformat {
 
@@ -31,48 +30,7 @@ glm::vec3 Tri::maxs() const {
 
 core::RGBA Tri::colorAt(const glm::vec2 &uv) const {
 	if (texture) {
-		const float w = (float)texture->width();
-		const float h = (float)texture->height();
-		float x;
-		float y;
-		switch (wrapS) {
-		case TextureWrap::Repeat: {
-			x = glm::repeat(uv.x) * w;
-			break;
-		}
-		case TextureWrap::ClampToEdge: {
-			x = glm::clamp(uv.x, 1.0f / (2.0f * w), 1.0f - 1.0f / (2.0f * w)) * w;
-			break;
-		}
-		case TextureWrap::MirroredRepeat: {
-			x = glm::mirrorRepeat(uv.x) * w;
-			break;
-		}
-		case TextureWrap::Max:
-			return 0;
-		}
-		switch (wrapT) {
-		case TextureWrap::Repeat: {
-			y = glm::repeat(uv.y) * h;
-			break;
-		}
-		case TextureWrap::ClampToEdge: {
-			y = glm::clamp(uv.y, 1.0f / (2.0f * h), 1.0f - 1.0f / (2.0f * h)) * h;
-			break;
-		}
-		case TextureWrap::MirroredRepeat: {
-			y = glm::mirrorRepeat(uv.y) * h;
-			break;
-		}
-		case TextureWrap::Max:
-			return 0;
-		}
-
-		const int xint = (int)x;
-		const int yint = texture->height() - (int)y - 1;
-		const uint8_t *ptr = texture->at(xint, yint);
-		core_assert(texture->depth() == 4);
-		return *(const core::RGBA *)ptr;
+		return texture->colorAt(uv, wrapS, wrapT);
 	}
 	return color;
 }
