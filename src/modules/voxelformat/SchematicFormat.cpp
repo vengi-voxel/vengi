@@ -41,19 +41,23 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::Seekab
 		return false;
 	}
 
+	const priv::NamedBinaryTag &blocks = schematic.get("Blocks");
+	if (blocks.valid() && blocks.type() == priv::TagType::BYTE_ARRAY) {
+		return parseBlocks(schematic, sceneGraph, palette, blocks);
+	}
+	const priv::NamedBinaryTag &blockData = schematic.get("BlockData");
+	if (blockData.valid() && blockData.type() == priv::TagType::BYTE_ARRAY) {
+		// TODO: not yet supported
+		return parseBlocks(schematic, sceneGraph, palette, blockData);
+	}
+	Log::error("Could not find valid 'Blocks' or 'BlockData' tags");
+	return false;
+}
+
+bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette, const priv::NamedBinaryTag &blocks) {
 	const int16_t width = schematic.get("Width").int16();
 	const int16_t height = schematic.get("Height").int16();
 	const int16_t depth = schematic.get("Length").int16();
-	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
-	const priv::NamedBinaryTag &blocks = schematic.get("Blocks");
-	if (!blocks.valid()) {
-		Log::error("Could not find 'Blocks' tag");
-		return false;
-	}
-	if (blocks.type() != priv::TagType::BYTE_ARRAY) {
-		Log::error("Tag 'Blocks' is no byte array (%i)", (int)blocks.type());
-		return false;
-	}
 
 	core::Buffer<int> mcpal;
 	mcpal.resize(voxel::PaletteMaxColors);
@@ -83,6 +87,7 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::Seekab
 	}
 
 	PaletteLookup palLookup(palette);
+	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {
 			for (int z = 0; z < depth; ++z) {
