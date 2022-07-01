@@ -11,6 +11,7 @@ vengi (0.0.21.0-1) UNRELEASED; urgency=low
 
   * VoxEdit:
   * Fixed resetting the camera in eye mode
+  * Place images on planes via drag and drop
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Tue, 14 Jun 2022 00:00:00 +0000
 
