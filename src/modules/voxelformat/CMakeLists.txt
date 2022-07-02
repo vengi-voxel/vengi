@@ -8,6 +8,7 @@ set(SRCS
 	private/MinecraftPaletteMap.h private/MinecraftPaletteMap.cpp
 	private/NamedBinaryTag.h private/NamedBinaryTag.cpp
 	private/PaletteLookup.h
+	private/SchematicIntReader.h
 	private/Tri.h private/Tri.cpp
 
 	Format.h Format.cpp

@@ -23,6 +23,7 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/private/PaletteLookup.h"
+#include "voxelformat/private/SchematicIntReader.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 
@@ -41,50 +42,110 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::Seekab
 		return false;
 	}
 
+	const int version = schematic.get("Version").int32(-1);
+	Log::error("Load version %i", version);
+	switch (version) {
+	case 1:
+	case 2:
+		// WorldEdit legacy
+		return loadSponge1And2(schematic, sceneGraph, palette);
+	case 3:
+	default:
+		return loadSponge3(schematic, sceneGraph, palette);
+	}
+}
+
+bool SchematicFormat::loadSponge1And2(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
+									  voxel::Palette &palette) {
+	const priv::NamedBinaryTag &blockData = schematic.get("BlockData");
+	if (blockData.valid() && blockData.type() == priv::TagType::BYTE_ARRAY) {
+		return parseBlockData(schematic, sceneGraph, palette, blockData);
+	}
+	Log::error("Could not find valid 'BlockData' tags");
+	return false;
+}
+
+bool SchematicFormat::loadSponge3(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
+								  voxel::Palette &palette) {
 	const priv::NamedBinaryTag &blocks = schematic.get("Blocks");
 	if (blocks.valid() && blocks.type() == priv::TagType::BYTE_ARRAY) {
 		return parseBlocks(schematic, sceneGraph, palette, blocks);
 	}
-	const priv::NamedBinaryTag &blockData = schematic.get("BlockData");
-	if (blockData.valid() && blockData.type() == priv::TagType::BYTE_ARRAY) {
-		// TODO: not yet supported
-		return parseBlocks(schematic, sceneGraph, palette, blockData);
-	}
-	Log::error("Could not find valid 'Blocks' or 'BlockData' tags");
+	Log::error("Could not find valid 'Blocks' tags");
 	return false;
 }
 
-bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette, const priv::NamedBinaryTag &blocks) {
+static glm::ivec3 voxelPosFromIndex(int width, int depth, int idx) {
+	const int planeSize = width * depth;
+	core_assert(planeSize != 0);
+	const int y = idx / planeSize;
+	const int offset = idx - (y * planeSize);
+	const int z = offset / width;
+	const int x = offset - z * width;
+	return glm::ivec3(x, y, z);
+}
+
+bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
+									 voxel::Palette &palette, const priv::NamedBinaryTag &blockData) {
+	const core::DynamicArray<int8_t> *blocks = blockData.byteArray();
+	if (blocks == nullptr) {
+		Log::error("Invalid BlockData - expected byte array");
+		return false;
+	}
+	// TODO: palette looks different here - we have PaletteMax (int) and Palette (compound)
+	core::Buffer<int> mcpal;
+	const int paletteEntry = parsePalette(schematic, mcpal);
+
 	const int16_t width = schematic.get("Width").int16();
 	const int16_t height = schematic.get("Height").int16();
 	const int16_t depth = schematic.get("Length").int16();
 
-	core::Buffer<int> mcpal;
-	mcpal.resize(voxel::PaletteMaxColors);
-	int paletteEntry = 0;
-	const priv::NamedBinaryTag &blockIds = schematic.get("BlockIDs"); // MCEdit2
-	if (blockIds.valid()) {
-		const int blockCnt = (int)blockIds.compound()->size();
-		const PaletteMap &map = getPaletteMap();
-		for (int i = 0; i < blockCnt; ++i) {
-			const priv::NamedBinaryTag &nbt = blockIds.get(core::String::format("%i", i));
-			const core::String *value = nbt.string();
-			if (value == nullptr) {
-				Log::warn("Empty string in BlockIDs for %i", i);
-				continue;
-			}
-			// skip minecraft:
-			const core::String key = value->contains("minecraft:") ? value->substr(10) : *value;
-			auto iter = map.find(key);
-			if (iter == map.end()) {
-				Log::warn("Could not find a color mapping for '%s'", key.c_str());
-				mcpal[i] = 1; // map to stone
-			} else {
-				mcpal[i] = iter->value.palIdx;
-			}
-			++paletteEntry;
-		}
+	if (width == 0 || depth == 0) {
+		Log::error("Invalid width or length found");
+		return false;
 	}
+
+	PaletteLookup palLookup(palette);
+	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
+	SchematicIntReader reader(blocks);
+	int index = 0;
+	int32_t palIdx = 0;
+	while (reader.readInt32(palIdx) != -1) {
+		if (palIdx != 0) {
+			uint8_t currentPalIdx;
+			if (paletteEntry == 0) {
+				currentPalIdx = palIdx;
+			} else {
+				currentPalIdx = mcpal[palIdx];
+			}
+			if (currentPalIdx != 0) {
+				const glm::ivec3 &pos = voxelPosFromIndex(width, depth, index);
+				volume->setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Generic, currentPalIdx));
+			}
+		}
+		++index;
+	}
+
+	const int32_t x = schematic.get("x").int32();
+	const int32_t y = schematic.get("y").int32();
+	const int32_t z = schematic.get("z").int32();
+	volume->translate(glm::ivec3(x, y, z));
+
+	SceneGraphNode node(SceneGraphNodeType::Model);
+	node.setVolume(volume, true);
+	node.setPalette(palLookup.palette());
+	sceneGraph.emplace(core::move(node));
+	return true;
+}
+
+bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
+								  voxel::Palette &palette, const priv::NamedBinaryTag &blocks) {
+	core::Buffer<int> mcpal;
+	const int paletteEntry = parsePalette(schematic, mcpal);
+
+	const int16_t width = schematic.get("Width").int16();
+	const int16_t height = schematic.get("Height").int16();
+	const int16_t depth = schematic.get("Length").int16();
 
 	PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
@@ -118,7 +179,75 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, SceneGr
 	return true;
 }
 
-bool SchematicFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::Buffer<int> &mcpal) const {
+	const priv::NamedBinaryTag &blockIds = schematic.get("BlockIDs"); // MCEdit2
+	if (blockIds.valid()) {
+		mcpal.resize(voxel::PaletteMaxColors);
+		int paletteEntry = 0;
+		const int blockCnt = (int)blockIds.compound()->size();
+		const PaletteMap &map = getPaletteMap();
+		for (int i = 0; i < blockCnt; ++i) {
+			const priv::NamedBinaryTag &nbt = blockIds.get(core::String::format("%i", i));
+			const core::String *value = nbt.string();
+			if (value == nullptr) {
+				Log::warn("Empty string in BlockIDs for %i", i);
+				continue;
+			}
+			// skip minecraft:
+			const core::String key = value->contains("minecraft:") ? value->substr(10) : *value;
+			auto iter = map.find(key);
+			if (iter == map.end()) {
+				Log::warn("Could not find a color mapping for '%s'", key.c_str());
+				mcpal[i] = 1; // map to stone
+			} else {
+				mcpal[i] = iter->value.palIdx;
+			}
+			++paletteEntry;
+		}
+		return paletteEntry;
+	}
+	const int paletteMax = schematic.get("PaletteMax").int32(-1); // WorldEdit
+	if (paletteMax != -1) {
+		const priv::NamedBinaryTag &palette = schematic.get("Palette");
+		if (palette.valid() && palette.type() == priv::TagType::COMPOUND) {
+			if ((int)palette.compound()->size() != paletteMax) {
+				return -1;
+			}
+			mcpal.resize(paletteMax);
+			int paletteEntry = 0;
+			const PaletteMap &map = getPaletteMap();
+			for (const auto &c : *palette.compound()) {
+				core::String key = c->key;
+				const int palIdx = c->second.int32(-1);
+				if (palIdx == -1) {
+					Log::warn("Failed to get int value for %s", key.c_str());
+					continue;
+				}
+				// minecraft:dark_oak_stairs[facing=east,half=bottom,shape=outer_left,waterlogged=false][INT] = 554
+				if (key.contains("minecraft:")) {
+					key = key.substr(10);
+				}
+				size_t n = key.find("[");
+				if (n != core::String::npos) {
+					key = key.substr(0, n);
+				}
+				auto iter = map.find(key);
+				if (iter == map.end()) {
+					Log::warn("Could not find a color mapping for '%s' at index: %i", key.c_str(), palIdx);
+					mcpal[palIdx] = 1; // map to stone
+				} else {
+					mcpal[palIdx] = iter->value.palIdx;
+				}
+				++paletteEntry;
+			}
+			return paletteEntry;
+		}
+	}
+	return -1;
+}
+
+bool SchematicFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
+								 io::SeekableWriteStream &stream) {
 	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
