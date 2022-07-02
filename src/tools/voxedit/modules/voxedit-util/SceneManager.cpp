@@ -87,23 +87,23 @@ bool SceneManager::loadPalette(const core::String& paletteName) {
 }
 
 bool SceneManager::importPalette(const core::String& file) {
-	core::String paletteName(core::string::extractFilename(file.c_str()));
-	const core::String& paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
 	voxel::Palette palette;
-	if (voxelformat::importPalette(file, palette)) {
-		if (!voxel::overridePalette(palette)) {
-			Log::warn("Failed to import palette for image %s", file.c_str());
-			return false;
-		}
-		const io::FilesystemPtr& fs = io::filesystem();
-		const io::FilePtr& pngFile = fs->open(paletteFilename, io::FileMode::Write);
-		if (palette.save(pngFile->name().c_str())) {
-			core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
-		} else {
-			Log::warn("Failed to write image");
-		}
+	if (!voxelformat::importPalette(file, palette)) {
+		Log::warn("Failed to import a palette from file '%s'", file.c_str());
+		return false;
 	}
-	return true;
+
+	core::String paletteName(core::string::extractFilename(file.c_str()));
+	const core::String &paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
+	const io::FilesystemPtr &fs = io::filesystem();
+	const io::FilePtr &pngFile = fs->open(paletteFilename, io::FileMode::Write);
+	if (palette.save(pngFile->name().c_str())) {
+		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
+	} else {
+		Log::warn("Failed to write palette image");
+	}
+
+	return setActivePalette(palette);
 }
 
 bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool bothSides) {
@@ -505,6 +505,16 @@ voxel::Palette &SceneManager::activePalette() const {
 		return _sceneGraph.firstPalette();
 	}
 	return _sceneGraph.node(nodeId).palette();
+}
+
+bool SceneManager::setActivePalette(const voxel::Palette &palette) {
+	const int nodeId = activeNode();
+	if (!_sceneGraph.hasNode(nodeId)) {
+		return false;
+	}
+	voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	node.setPalette(palette);
+	return true;
 }
 
 voxel::RawVolume* SceneManager::activeVolume() {

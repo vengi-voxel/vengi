@@ -283,6 +283,7 @@ public:
 	voxel::RawVolume* volume(int nodeId);
 	const voxel::RawVolume* volume(int nodeId) const;
 	voxel::Palette &activePalette() const;
+	bool setActivePalette(const voxel::Palette &palette);
 
 	/**
 	 * @brief Import a heightmap in the current layer of the scene
