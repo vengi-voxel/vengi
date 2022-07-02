@@ -38,6 +38,7 @@ void PalettePanel::reloadAvailablePalettes() {
 }
 
 void PalettePanel::update(const char *title, command::CommandExecutionListener &listener) {
+	core::String importPalette;
 	voxel::Palette &palette = sceneMgr().activePalette();
 	const int maxPaletteEntries = palette.colorCount;
 	const float height = ImGui::GetContentRegionMax().y;
@@ -92,6 +93,10 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 					const int dragPalIdx = *(int*)payload->Data;
 					core::exchange(palette.colors[palIdx], palette.colors[dragPalIdx]);
 					palette.markDirty();
+				}
+				if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::PlaneImagePayload)) {
+					const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
+					importPalette = image->name();
 				}
 				ImGui::EndDragDropTarget();
 			}
@@ -232,6 +237,10 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		}
 	}
 	ImGui::End();
+
+	if (!importPalette.empty()) {
+		sceneMgr().importPalette(importPalette);
+	}
 }
 
 bool PalettePanel::hasFocus() const {
