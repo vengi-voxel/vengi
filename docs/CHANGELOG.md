@@ -19,6 +19,7 @@ General:
    - Improved sanity check for Qubicle Binary format support
    - Fixed texture lookup error in gltf voxelization
    - Extended lua vector bindings
+   - Support WorldEdit schematics
 
 VoxEdit:
 
