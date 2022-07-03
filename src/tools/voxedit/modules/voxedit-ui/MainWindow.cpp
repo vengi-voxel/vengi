@@ -27,6 +27,7 @@
 #define TITLE_POSITIONS "Positions##title"
 #define TITLE_ANIMATION_TIMELINE "Animation##animationtimeline"
 #define TITLE_TOOLS "Tools##title"
+#define TITLE_ASSET "Assets##title"
 #define TITLE_LAYERS "Layers##title"
 #define TITLE_FORMAT_SETTINGS "Formats##title"
 #define TITLE_MODIFIERS "Modifiers##title"
@@ -44,7 +45,7 @@
 
 namespace voxedit {
 
-MainWindow::MainWindow(ui::imgui::IMGUIApp *app) : _app(app), _toolsPanel(app->filesystem()) {
+MainWindow::MainWindow(ui::imgui::IMGUIApp *app) : _app(app), _assetPanel(app->filesystem()) {
 	_scene = new Viewport("free##viewport");
 	_sceneTop = new Viewport("top##viewport");
 	_sceneLeft = new Viewport("left##viewport");
@@ -219,6 +220,7 @@ void MainWindow::mainWidget() {
 void MainWindow::rightWidget() {
 	_positionsPanel.update(TITLE_POSITIONS, _lastExecutedCommand);
 	_toolsPanel.update(TITLE_TOOLS, _lastExecutedCommand);
+	_assetPanel.update(TITLE_ASSET, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
 	_formatSettingsPanel.update(TITLE_FORMAT_SETTINGS);
 
@@ -434,6 +436,7 @@ void MainWindow::update() {
 		_dockIdMainDown = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Down, 0.20f, nullptr, &_dockIdMain);
 		ImGui::DockBuilderDockWindow(TITLE_PALETTE, _dockIdLeft);
 		ImGui::DockBuilderDockWindow(TITLE_POSITIONS, _dockIdRight);
+		ImGui::DockBuilderDockWindow(TITLE_ASSET, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_TOOLS, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_FORMAT_SETTINGS, _dockIdRight);

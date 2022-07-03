@@ -3,6 +3,7 @@ set(LIB voxedit-ui)
 set(SRCS
 	AnimationTimeline.h AnimationTimeline.cpp
 	AnimationPanel.h AnimationPanel.cpp
+	AssetPanel.h AssetPanel.cpp
 	DragAndDropPayload.h
 	PositionsPanel.h PositionsPanel.cpp
 	FormatSettingsPanel.h FormatSettingsPanel.cpp

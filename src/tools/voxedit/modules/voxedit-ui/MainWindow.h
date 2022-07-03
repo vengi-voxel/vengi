@@ -10,6 +10,7 @@
 #include "ui/imgui/TextEditor.h"
 #include "voxedit-ui/AnimationPanel.h"
 #include "voxedit-ui/AnimationTimeline.h"
+#include "voxedit-ui/AssetPanel.h"
 #include "voxedit-ui/PositionsPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/LayerPanel.h"
@@ -86,6 +87,7 @@ private:
 	LayerPanel _layerPanel;
 	AnimationPanel _animationPanel;
 	ToolsPanel _toolsPanel;
+	AssetPanel _assetPanel;
 	PositionsPanel _positionsPanel;
 	ModifierPanel _modifierPanel;
 	PalettePanel _palettePanel;
