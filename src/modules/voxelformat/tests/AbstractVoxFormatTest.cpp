@@ -283,7 +283,7 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	writeStream = &bufferedStream;
 #endif
 
-	ASSERT_TRUE(format->saveGroups(sceneGraph, filename, *writeStream));
+	ASSERT_TRUE(format->saveGroups(sceneGraph, filename, *writeStream)) << "Could not save the scene graph";
 
 #if WRITE_TO_FILE
 	io::FilePtr readfile = open(filename);
@@ -297,7 +297,7 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 
 	voxelformat::SceneGraph::MergedVolumePalette merged = load(filename, *readStream, *format);
 	core::ScopedPtr<voxel::RawVolume> loaded(merged.first);
-	ASSERT_NE(nullptr, loaded);
+	ASSERT_NE(nullptr, loaded) << "Could not load the merged volumes";
 	volumeComparator(original, voxel::getPalette(), *loaded, merged.second, true, true);
 }
 

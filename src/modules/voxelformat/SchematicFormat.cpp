@@ -43,7 +43,7 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::Seekab
 	}
 
 	const int version = schematic.get("Version").int32(-1);
-	Log::error("Load version %i", version);
+	Log::debug("Load schematic version %i", version);
 	switch (version) {
 	case 1:
 	case 2:
@@ -155,7 +155,7 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, SceneGr
 				const uint8_t palIdx = (*blocks.byteArray())[idx];
 				if (palIdx != 0u) {
 					uint8_t currentPalIdx;
-					if (paletteEntry == 0) {
+					if (paletteEntry == 0 || palIdx > paletteEntry) {
 						currentPalIdx = palIdx;
 					} else {
 						currentPalIdx = mcpal[palIdx];
@@ -245,6 +245,8 @@ bool SchematicFormat::saveGroups(const SceneGraph &sceneGraph, const core::Strin
 	compound.put("y", (int32_t)mins.y);
 	compound.put("z", (int32_t)mins.z);
 	compound.put("Materials", priv::NamedBinaryTag("Alpha"));
+	compound.put("Version", 3);
+	// TODO: palette
 	{
 		core::DynamicArray<int8_t> blocks;
 		blocks.resize((size_t)size.x * (size_t)size.y * (size_t)size.z);
