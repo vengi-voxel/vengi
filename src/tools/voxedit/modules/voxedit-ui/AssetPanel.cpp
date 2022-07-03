@@ -38,7 +38,7 @@ void AssetPanel::loadTextures(const core::String &dir) {
 
 void AssetPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
-		core_trace_scoped(ModifierPanel);
+		core_trace_scoped(AssetPanel);
 
 		if (ImGui::CollapsingHeader("Images", ImGuiTreeNodeFlags_DefaultOpen)) {
 			if (ImGui::Button(ICON_FK_FILE_IMAGE_O " Open image directory")) {

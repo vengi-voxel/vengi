@@ -25,7 +25,7 @@ bool ToolsPanel::mirrorAxisRadioButton(const char *title, math::Axis type) {
 
 void ToolsPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
-		core_trace_scoped(ModifierPanel);
+		core_trace_scoped(ToolsPanel);
 
 		if (ImGui::CollapsingHeader("Action", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::CommandButton(ICON_FA_CROP, "crop", nullptr, 0, &listener);
