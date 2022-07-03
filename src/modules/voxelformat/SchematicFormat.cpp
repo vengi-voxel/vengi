@@ -92,7 +92,6 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, Scen
 		Log::error("Invalid BlockData - expected byte array");
 		return false;
 	}
-	// TODO: palette looks different here - we have PaletteMax (int) and Palette (compound)
 	core::Buffer<int> mcpal;
 	const int paletteEntry = parsePalette(schematic, mcpal);
 
@@ -185,7 +184,6 @@ int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::B
 		mcpal.resize(voxel::PaletteMaxColors);
 		int paletteEntry = 0;
 		const int blockCnt = (int)blockIds.compound()->size();
-		const PaletteMap &map = getPaletteMap();
 		for (int i = 0; i < blockCnt; ++i) {
 			const priv::NamedBinaryTag &nbt = blockIds.get(core::String::format("%i", i));
 			const core::String *value = nbt.string();
@@ -193,15 +191,8 @@ int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::B
 				Log::warn("Empty string in BlockIDs for %i", i);
 				continue;
 			}
-			// skip minecraft:
-			const core::String key = value->contains("minecraft:") ? value->substr(10) : *value;
-			auto iter = map.find(key);
-			if (iter == map.end()) {
-				Log::warn("Could not find a color mapping for '%s'", key.c_str());
-				mcpal[i] = 1; // map to stone
-			} else {
-				mcpal[i] = iter->value.palIdx;
-			}
+			// map to stone on default
+			mcpal[i] = findPaletteIndex(*value, 1);
 			++paletteEntry;
 		}
 		return paletteEntry;
@@ -215,7 +206,6 @@ int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::B
 			}
 			mcpal.resize(paletteMax);
 			int paletteEntry = 0;
-			const PaletteMap &map = getPaletteMap();
 			for (const auto &c : *palette.compound()) {
 				core::String key = c->key;
 				const int palIdx = c->second.int32(-1);
@@ -223,21 +213,8 @@ int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::B
 					Log::warn("Failed to get int value for %s", key.c_str());
 					continue;
 				}
-				// minecraft:dark_oak_stairs[facing=east,half=bottom,shape=outer_left,waterlogged=false][INT] = 554
-				if (key.contains("minecraft:")) {
-					key = key.substr(10);
-				}
-				size_t n = key.find("[");
-				if (n != core::String::npos) {
-					key = key.substr(0, n);
-				}
-				auto iter = map.find(key);
-				if (iter == map.end()) {
-					Log::warn("Could not find a color mapping for '%s' at index: %i", key.c_str(), palIdx);
-					mcpal[palIdx] = 1; // map to stone
-				} else {
-					mcpal[palIdx] = iter->value.palIdx;
-				}
+				// map to stone on default
+				mcpal[palIdx] = findPaletteIndex(key, 1);
 				++paletteEntry;
 			}
 			return paletteEntry;
@@ -270,7 +247,7 @@ bool SchematicFormat::saveGroups(const SceneGraph &sceneGraph, const core::Strin
 	compound.put("Materials", priv::NamedBinaryTag("Alpha"));
 	{
 		core::DynamicArray<int8_t> blocks;
-		blocks.resize(size.x * size.y * size.z);
+		blocks.resize((size_t)size.x * (size_t)size.y * (size_t)size.z);
 
 		for (int x = 0; x < size.x; ++x) {
 			for (int y = 0; y < size.y; ++y) {

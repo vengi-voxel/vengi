@@ -3,6 +3,7 @@
  */
 
 #include "MinecraftPaletteMap.h"
+#include "core/Log.h"
 
 namespace voxelformat {
 
@@ -524,6 +525,26 @@ const PaletteArray &getPaletteArray() {
 	#undef MCENTRY
 	static const PaletteArray mcPalette(mccolors, lengthof(mccolors));
 	return mcPalette;
+}
+
+int findPaletteIndex(const core::String &name, int defaultValue) {
+	core::String key = name;
+	// minecraft:dark_oak_stairs[facing=east,half=bottom,shape=outer_left,waterlogged=false][INT] = 554
+	if (key.contains("minecraft:")) {
+		key = key.substr(10);
+	}
+	size_t n = key.find("[");
+	if (n != core::String::npos) {
+		key = key.substr(0, n);
+	}
+
+	const PaletteMap &map = getPaletteMap();
+	auto iter = map.find(key);
+	if (iter == map.end()) {
+		Log::debug("Could not find a color mapping for '%s'", key.c_str());
+		return defaultValue;
+	}
+	return iter->value.palIdx;
 }
 
 const PaletteMap &getPaletteMap() {

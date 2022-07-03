@@ -450,7 +450,6 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 	sectionPal.numBits = (uint32_t)glm::max(glm::ceil(glm::log2((float)paletteCount)), 4.0f);
 
 	int paletteEntry = 0;
-	const PaletteMap &map = getPaletteMap();
 	for (const priv::NamedBinaryTag &block : paletteList) {
 		if (block.type() != priv::TagType::COMPOUND) {
 			Log::error("Invalid block type %i", (int)block.type());
@@ -466,15 +465,7 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 			if (value == nullptr) {
 				continue;
 			}
-			// skip minecraft:
-			const core::String key = value->contains("minecraft:") ? value->substr(10) : *value;
-			auto iter = map.find(key);
-			if (iter == map.end()) {
-				Log::debug("Could not find a color mapping for '%s'", key.c_str());
-				sectionPal.pal[paletteEntry] = -1;
-			} else {
-				sectionPal.pal[paletteEntry] = iter->value.palIdx;
-			}
+			sectionPal.pal[paletteEntry] = findPaletteIndex(*value);
 		}
 		++paletteEntry;
 	}
