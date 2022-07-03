@@ -79,6 +79,7 @@ set(TEST_SRCS
 	tests/VXRFormatTest.cpp
 	tests/VXMFormatTest.cpp
 
+	tests/MinecraftPaletteMapTest.cpp
 	tests/NamedBinaryTagTest.cpp
 	tests/TriTest.cpp
 
