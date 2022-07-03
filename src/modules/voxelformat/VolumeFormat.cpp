@@ -340,6 +340,17 @@ bool isMeshFormat(const core::String &filename) {
 	return false;
 }
 
+bool isModelFormat(const core::String &filename) {
+	const core::String &ext = core::string::extractExtension(filename);
+	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD; desc->ext != nullptr; ++desc) {
+		if (ext == desc->ext) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph) {
 	if (sceneGraph.empty()) {
 		Log::error("Failed to save model file %s - no volumes given", filePtr->name().c_str());

@@ -43,5 +43,6 @@ extern bool loadFormat(const core::String &filename, io::SeekableReadStream &str
 extern bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph);
 
 extern bool isMeshFormat(const core::String &filename);
+extern bool isModelFormat(const core::String &filename);
 
 } // namespace voxelformat
