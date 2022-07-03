@@ -57,12 +57,12 @@ void AssetPanel::update(const char *title, command::CommandExecutionListener &li
 				const video::Id handle = e->second->handle();
 				const image::ImagePtr &image = _texturePool.loadImage(e->first, false);
 				ImGui::ImageButton(handle, ImVec2(50, 50));
+				ImGui::TooltipText("%s: %i:%i", image->name().c_str(), image->width(), image->height());
 				if (n % maxImages == 0) {
 					ImGui::NewLine();
 				} else {
 					ImGui::SameLine();
 				}
-				ImGui::TooltipText("%s: %i:%i", image->name().c_str(), image->width(), image->height());
 				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 					ImGui::ImageButton(handle, ImVec2(50, 50));
 					ImGui::SetDragDropPayload(dragdrop::PlaneImagePayload, (const void *)&image, sizeof(image),
@@ -71,7 +71,6 @@ void AssetPanel::update(const char *title, command::CommandExecutionListener &li
 				}
 				++n;
 			}
-			ImGui::NewLine();
 		}
 	}
 	ImGui::End();
