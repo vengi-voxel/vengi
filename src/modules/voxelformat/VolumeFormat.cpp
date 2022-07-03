@@ -105,7 +105,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
 	{"Tiberian Sun", "vxl", nullptr, 0u},
 	{"Qubicle Exchange", "qef", nullptr, 0u},
 	{"AceOfSpades", "vxl", nullptr, 0u}, // TODO: handle duplicate extension
-	{"Minecraft schematic", "schematic", nullptr, 0u},
+	//{"Minecraft schematic", "schematic", nullptr, 0u},
 	{"Wavefront Object", "obj", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"Polygon File Format", "ply", nullptr, VOX_FORMAT_FLAG_MESH},
 	{"FBX Ascii", "fbx", nullptr, VOX_FORMAT_FLAG_MESH},
