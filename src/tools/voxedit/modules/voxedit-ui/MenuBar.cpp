@@ -18,7 +18,8 @@ bool MenuBar::actionMenuItem(const char *title, const char *command, command::Co
 	return ImGui::CommandMenuItem(title, command, true, &listener);
 }
 
-void MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener &listener) {
+bool MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener &listener) {
+	bool resetDockLayout = false;
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);
 		if (ImGui::BeginMenu(ICON_FA_FILE " File")) {
@@ -80,6 +81,9 @@ void MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 				ImGui::SliderVarInt("Zoom speed", cfg::VoxEditCameraZoomSpeed, 10, 200);
 				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 				ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);
+				if (ImGui::Button("Reset layout")) {
+					resetDockLayout = true;
+				}
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu(ICON_FA_EYE " View")) {
@@ -122,6 +126,7 @@ void MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 		}
 		ImGui::EndMenuBar();
 	}
+	return resetDockLayout;
 }
 
 }

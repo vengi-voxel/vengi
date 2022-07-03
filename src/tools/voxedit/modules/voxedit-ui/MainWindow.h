@@ -63,6 +63,7 @@ private:
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;
+	bool _initializedDockSpace = false;
 
 	ui::imgui::IMGUIApp* _app;
 

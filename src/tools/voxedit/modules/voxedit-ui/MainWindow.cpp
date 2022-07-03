@@ -408,7 +408,9 @@ void MainWindow::update() {
 	}
 
 	_menuBar.setLastOpenedFiles(_lastOpenedFilesRingBuffer);
-	_menuBar.update(_app, _lastExecutedCommand);
+	if (_menuBar.update(_app, _lastExecutedCommand)) {
+		_initializedDockSpace = false;
+	}
 
 	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");
 	ImGui::DockSpace(dockspaceId);
@@ -423,8 +425,7 @@ void MainWindow::update() {
 
 	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, _lastExecutedCommand.command);
 
-	static bool init = false;
-	if (!init && viewport->WorkSize.x > 0.0f) {
+	if (!_initializedDockSpace && viewport->WorkSize.x > 0.0f) {
 		ImGui::DockBuilderRemoveNode(dockspaceId);
 		ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
 		ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->WorkSize);
@@ -454,7 +455,7 @@ void MainWindow::update() {
 		ImGui::DockBuilderDockWindow(WINDOW_TITLE_SCRIPT_EDITOR, _dockIdMainDown);
 		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_TIMELINE, _dockIdMainDown);
 		ImGui::DockBuilderFinish(dockspaceId);
-		init = true;
+		_initializedDockSpace = true;
 	}
 
 	updateSettings();

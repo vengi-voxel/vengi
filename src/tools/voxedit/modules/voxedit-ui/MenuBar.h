@@ -20,7 +20,10 @@ private:
 
 public:
 	void setLastOpenedFiles(const LastOpenedFiles &lastOpenedFiles);
-	void update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener &listener);
+	/**
+	 * @return true if the dock layout should get reset
+	 */
+	bool update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener &listener);
 	bool _popupSceneSettings = false;
 };
 
