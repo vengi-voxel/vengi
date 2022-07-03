@@ -5,6 +5,7 @@ set(SRCS
 	SceneGraphRenderer.cpp SceneGraphRenderer.h
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	ShaderAttribute.h
+	ImageGenerator.h ImageGenerator.cpp
 	VoxelFontRenderer.h VoxelFontRenderer.cpp
 )
 set(SHADERS voxel voxel_indirect voxel_instanced)

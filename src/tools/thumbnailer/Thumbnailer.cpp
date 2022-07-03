@@ -11,8 +11,9 @@
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
+#include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
-#include "ImageGenerator.h"
+#include "voxelrender/ImageGenerator.h"
 
 Thumbnailer::Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider) {
@@ -70,7 +71,11 @@ app::AppState Thumbnailer::onRunning() {
 	io::FileStream outStream(outfile);
 	io::FileStream stream(_infile);
 
-	const image::ImagePtr &image = thumbnailer::volumeThumbnail(_infile->name(), stream, outputSize);
+	if (!voxel::initDefaultPalette()) {
+		Log::warn("Failed to initialize the default materials");
+	}
+
+	const image::ImagePtr &image = voxelrender::volumeThumbnail(_infile->name(), stream, outputSize);
 	if (image) {
 		if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
 			Log::error("Failed to write image");

@@ -1,6 +1,5 @@
 project(thumbnailer)
 set(SRCS
-	ImageGenerator.h ImageGenerator.cpp
 	Thumbnailer.h Thumbnailer.cpp
 )
 

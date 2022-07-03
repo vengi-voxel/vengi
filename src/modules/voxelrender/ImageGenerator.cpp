@@ -3,36 +3,27 @@
  */
 
 #include "ImageGenerator.h"
+#include "core/Color.h"
 #include "image/Image.h"
+#include "io/FileStream.h"
 #include "io/Stream.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
 #include "video/Renderer.h"
 #include "video/Texture.h"
-#include "voxel/MaterialColor.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/SceneGraphRenderer.h"
-#include "core/Color.h"
-#include "io/FileStream.h"
 
-namespace thumbnailer {
+namespace voxelrender {
 
 image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, int outputSize) {
 	image::ImagePtr image = voxelformat::loadScreenshot(fileName, stream);
 	if (image && image->isLoaded()) {
 		return image;
 	}
-	if (!voxel::initDefaultPalette()) {
-		Log::warn("Failed to initialize the default materials");
-	}
 
 	stream.seek(0);
-	voxel::Palette palette;
-	const size_t paletteCount = voxelformat::loadPalette(fileName, stream, palette);
-	if (paletteCount > 0) {
-		voxel::overridePalette(palette);
-	}
 
 	voxelformat::SceneGraph sceneGraph;
 	stream.seek(0);
@@ -96,7 +87,8 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 						   fboTexture->width(), fboTexture->height(), &pixels)) {
 		image::Image::flipVerticalRGBA(pixels, fboTexture->width(), fboTexture->height());
 		image = image::createEmptyImage("thumbnail");
-		image->loadRGBA(pixels, fboTexture->width() * fboTexture->height() * 4, fboTexture->width(), fboTexture->height());
+		image->loadRGBA(pixels, fboTexture->width() * fboTexture->height() * 4, fboTexture->width(),
+						fboTexture->height());
 	} else {
 		Log::error("Failed to read framebuffer");
 	}
@@ -108,4 +100,4 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	return image;
 }
 
-} // namespace thumbnailer
+} // namespace voxelrender
