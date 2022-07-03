@@ -117,17 +117,27 @@ void Viewport::update() {
 				}
 
 				if (ImGui::BeginDragDropTarget()) {
-					if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::PlaneImagePayload)) {
+					if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
 						const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
-						const ImVec2 windowPos = ImGui::GetWindowPos();
-						const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
-						const int mouseY = (int)((ImGui::GetIO().MousePos.y - windowPos.y) - headerSize);
-						_controller.move(false, false, mouseX, mouseY);
-						sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
-						sceneMgr().setActiveCamera(&_controller.camera());
-						sceneMgr().trace();
+						updateViewportTrace(headerSize);
 						sceneMgr().fillPlane(image);
 					}
+					if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ColorPayload)) {
+						const int dragPalIdx = *(int *)payload->Data;
+						updateViewportTrace(headerSize);
+						ModifierFacade &modifier = sceneMgr().modifier();
+						const ModifierType modifierType = modifier.modifierType();
+						if ((modifierType & ModifierType::FillPlane) == ModifierType::FillPlane) {
+							sceneMgr().fillPlane(voxel::createVoxel(voxel::VoxelType::Generic, dragPalIdx),
+												 modifier.cursorPosition(), modifier.cursorFace());
+						// TODO: } else if ((modifierType & ModifierType::Update) == ModifierType::Update) {
+						}
+					}
+					if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
+						const core::String &filename = *(core::String*)payload->Data;
+						sceneMgr().prefab(filename);
+					}
+
 					ImGui::EndDragDropTarget();
 				}
 

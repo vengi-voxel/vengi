@@ -94,7 +94,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 					core::exchange(palette.colors[palIdx], palette.colors[dragPalIdx]);
 					palette.markDirty();
 				}
-				if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::PlaneImagePayload)) {
+				if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
 					const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
 					importPalette = image->name();
 				}

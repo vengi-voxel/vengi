@@ -9,7 +9,8 @@ namespace dragdrop {
 
 constexpr const char *SceneNodePayload = "scenegraphnode";
 constexpr const char *ColorPayload = "color";
-constexpr const char *PlaneImagePayload = "planeimage";
+constexpr const char *ImagePayload = "image";
+constexpr const char *ModelPayload = "model";
 
 }
 }
