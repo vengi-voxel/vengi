@@ -24,7 +24,8 @@ General:
 VoxEdit:
 
    - Fixed resetting the camera in eye mode
-   - Place images on planes via drag and drop
+   - New asset panel
+   - Place images, models and colors via drag and drop into the scene
 
 ## 0.0.20 (2022-06-14)
 
