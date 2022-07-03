@@ -22,6 +22,7 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/private/PaletteLookup.h"
 #include "voxelformat/private/SchematicIntReader.h"
 #include "voxelutil/VolumeCropper.h"
@@ -31,7 +32,8 @@
 
 namespace voxelformat {
 
-bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
+bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+										SceneGraph &sceneGraph, voxel::Palette &palette) {
 	palette.minecraft();
 	io::ZipReadStream zipStream(stream);
 	priv::NamedBinaryTagContext ctx;
@@ -51,7 +53,7 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::Seekab
 		return loadSponge1And2(schematic, sceneGraph, palette);
 	case 3:
 	default:
-		return loadSponge3(schematic, sceneGraph, palette);
+		return loadSponge3(schematic, sceneGraph, palette, version);
 	}
 }
 
@@ -66,10 +68,10 @@ bool SchematicFormat::loadSponge1And2(const priv::NamedBinaryTag &schematic, Sce
 }
 
 bool SchematicFormat::loadSponge3(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
-								  voxel::Palette &palette) {
+								  voxel::Palette &palette, int version) {
 	const priv::NamedBinaryTag &blocks = schematic.get("Blocks");
 	if (blocks.valid() && blocks.type() == priv::TagType::BYTE_ARRAY) {
-		return parseBlocks(schematic, sceneGraph, palette, blocks);
+		return parseBlocks(schematic, sceneGraph, palette, blocks, version);
 	}
 	Log::error("Could not find valid 'Blocks' tags");
 	return false;
@@ -133,18 +135,27 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, Scen
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setPalette(palLookup.palette());
-	sceneGraph.emplace(core::move(node));
+	int nodeId = sceneGraph.emplace(core::move(node));
+	if (nodeId == -1) {
+		return false;
+	}
+	parseMetadata(schematic, sceneGraph, sceneGraph.node(nodeId));
 	return true;
 }
 
 bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
-								  voxel::Palette &palette, const priv::NamedBinaryTag &blocks) {
+								  voxel::Palette &palette, const priv::NamedBinaryTag &blocks, int version) {
 	core::Buffer<int> mcpal;
 	const int paletteEntry = parsePalette(schematic, mcpal);
 
 	const int16_t width = schematic.get("Width").int16();
 	const int16_t height = schematic.get("Height").int16();
 	const int16_t depth = schematic.get("Length").int16();
+
+	// TODO: Support for WorldEdit's AddBlocks is missing
+	// * https://github.com/EngineHub/WorldEdit/blob/master/worldedit-core/src/main/java/com/sk89q/worldedit/extent/clipboard/io/MCEditSchematicReader.java#L171
+	// * https://github.com/mcedit/mcedit2/blob/master/src/mceditlib/schematic.py#L143
+	// * https://github.com/Lunatrius/Schematica/blob/master/src/main/java/com/github/lunatrius/schematica/world/schematic/SchematicAlpha.java
 
 	PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
@@ -174,7 +185,11 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, SceneGr
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setPalette(palLookup.palette());
-	sceneGraph.emplace(core::move(node));
+	int nodeId = sceneGraph.emplace(core::move(node));
+	if (nodeId == -1) {
+		return false;
+	}
+	parseMetadata(schematic, sceneGraph, sceneGraph.node(nodeId));
 	return true;
 }
 
@@ -221,6 +236,85 @@ int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::B
 		}
 	}
 	return -1;
+}
+
+void SchematicFormat::parseMetadata(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
+									voxelformat::SceneGraphNode &node) {
+	const priv::NamedBinaryTag &metadata = schematic.get("Metadata");
+	if (metadata.valid()) {
+		if (const core::String *str = metadata.get("Name").string()) {
+			node.setName(*str);
+		}
+		if (const core::String *str = metadata.get("Author").string()) {
+			node.setProperty("Author", *str);
+		}
+	}
+	const int version = schematic.get("Version").int32(-1);
+	if (version != -1) {
+		node.setProperty("Version", core::string::toString(version));
+	}
+	core_assert_msg(node.id() != -1, "The node should already be part of the scene graph");
+	for (const auto &e : *schematic.compound()) {
+		addMetadata_r(e->key, e->value, sceneGraph, node);
+	}
+}
+
+void SchematicFormat::addMetadata_r(const core::String &key, const priv::NamedBinaryTag &nbt, SceneGraph &sceneGraph,
+									voxelformat::SceneGraphNode &node) {
+	switch (nbt.type()) {
+	case priv::TagType::COMPOUND: {
+		SceneGraphNode compoundNode(SceneGraphNodeType::Group);
+		compoundNode.setName(key);
+		int nodeId = sceneGraph.emplace(core::move(compoundNode), node.id());
+		for (const auto &e : *nbt.compound()) {
+			addMetadata_r(e->key, e->value, sceneGraph, sceneGraph.node(nodeId));
+		}
+		break;
+	}
+	case priv::TagType::END:
+	case priv::TagType::BYTE:
+		node.setProperty(key, core::string::toString(nbt.int8()));
+		break;
+	case priv::TagType::SHORT:
+		node.setProperty(key, core::string::toString(nbt.int16()));
+		break;
+	case priv::TagType::INT:
+		node.setProperty(key, core::string::toString(nbt.int32()));
+		break;
+	case priv::TagType::LONG:
+		node.setProperty(key, core::string::toString(nbt.int64()));
+		break;
+	case priv::TagType::FLOAT:
+		node.setProperty(key, core::string::toString(nbt.float32()));
+		break;
+	case priv::TagType::DOUBLE:
+		node.setProperty(key, core::string::toString(nbt.float64()));
+		break;
+	case priv::TagType::STRING:
+		node.setProperty(key, nbt.string());
+		break;
+	case priv::TagType::LIST: {
+		const priv::NBTList &list = *nbt.list();
+		SceneGraphNode listNode(SceneGraphNodeType::Group);
+		listNode.setName(core::string::format("%s: %i", key.c_str(), (int)list.size()));
+		int nodeId = sceneGraph.emplace(core::move(listNode), node.id());
+		for (const priv::NamedBinaryTag &e : list) {
+			addMetadata_r(key, e, sceneGraph, sceneGraph.node(nodeId));
+		}
+		break;
+	}
+	case priv::TagType::BYTE_ARRAY:
+		node.setProperty(key, "Byte Array");
+		break;
+	case priv::TagType::INT_ARRAY:
+		node.setProperty(key, "Int Array");
+		break;
+	case priv::TagType::LONG_ARRAY:
+		node.setProperty(key, "Long Array");
+		break;
+	case priv::TagType::MAX:
+		break;
+	}
 }
 
 bool SchematicFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename,

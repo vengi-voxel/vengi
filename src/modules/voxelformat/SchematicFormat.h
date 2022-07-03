@@ -26,9 +26,11 @@ protected:
 	bool loadSponge1And2(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette);
 	bool parseBlockData(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette, const priv::NamedBinaryTag &blocks);
 
-	bool loadSponge3(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette);
-	bool parseBlocks(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette, const priv::NamedBinaryTag &blocks);
+	bool loadSponge3(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette, int version);
+	bool parseBlocks(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette, const priv::NamedBinaryTag &blocks, int version);
 
+	void addMetadata_r(const core::String &key, const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxelformat::SceneGraphNode &node);
+	void parseMetadata(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxelformat::SceneGraphNode &node);
 	int parsePalette(const priv::NamedBinaryTag &schematic, core::Buffer<int> &mcpal) const;
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
 public:
