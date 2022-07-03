@@ -212,15 +212,19 @@ void SceneManager::fillHollow() {
 }
 
 void SceneManager::fillPlane() {
+	const voxel::Voxel &voxel = _modifier.cursorVoxel();
+	const glm::ivec3 &pos = _modifier.cursorPosition();
+	const voxel::FaceNames face = _modifier.cursorFace();
+	fillPlane(voxel, pos, face);
+}
+
+void SceneManager::fillPlane(const voxel::Voxel &voxel, const glm::ivec3 &pos, const voxel::FaceNames face) {
 	const int nodeId = activeNode();
 	if (nodeId == -1) {
 		return;
 	}
 	voxel::RawVolume *v = volume(nodeId);
 	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
-	const voxel::Voxel &voxel = _modifier.cursorVoxel();
-	const glm::ivec3 &pos = _modifier.cursorPosition();
-	const voxel::FaceNames face = _modifier.cursorFace();
 	voxelutil::fillPlane(wrapper, voxel, voxel::Voxel(), pos, face);
 	modified(nodeId, wrapper.dirtyRegion());
 }
@@ -301,6 +305,7 @@ static void mergeIfNeeded(voxelformat::SceneGraph &newSceneGraph) {
 
 bool SceneManager::prefab(const core::String& file) {
 	if (file.empty()) {
+		Log::error("Can't import model: No file given");
 		return false;
 	}
 	const io::FilePtr& filePtr = io::filesystem()->open(file);
@@ -310,12 +315,20 @@ bool SceneManager::prefab(const core::String& file) {
 	}
 	voxelformat::SceneGraph newSceneGraph;
 	io::FileStream stream(filePtr);
-	voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph);
+	if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph)) {
+		Log::error("Failed to load %s", file.c_str());
+		return false;
+	}
 	mergeIfNeeded(newSceneGraph);
+
+	voxelformat::SceneGraphNode groupNode(voxelformat::SceneGraphNodeType::Group);
+	groupNode.setName(core::string::extractFilename(file));
+	int newNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
 	bool state = false;
 	for (voxelformat::SceneGraphNode& node : newSceneGraph) {
-		state |= addNodeToSceneGraph(node);
+		state |= addNodeToSceneGraph(node, newNodeId);
 	}
+
 	return state;
 }
 
@@ -904,7 +917,11 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	voxel::RawVolume* v = new voxel::RawVolume(region);
 	voxelformat::SceneGraphNode node;
 	node.setVolume(v, true);
-	node.setName(name);
+	if (name.empty()) {
+		node.setName("unnamed");
+	} else {
+		node.setName(name);
+	}
 	const glm::vec3 rp = v->region().getPivot();
 	const glm::vec3 size = v->region().getDimensionsInVoxels();
 	node.setPivot(0, rp, size);

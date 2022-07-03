@@ -321,6 +321,7 @@ public:
 			float length, float width, float widthIncrement, int iterations, float leavesRadius);
 
 	void fillPlane(const image::ImagePtr &image);
+	void fillPlane(const voxel::Voxel &voxel, const glm::ivec3 &pos, const voxel::FaceNames face);
 
 	/**
 	 * @brief Save the volume data to the given file

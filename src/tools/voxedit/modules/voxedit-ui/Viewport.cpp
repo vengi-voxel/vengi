@@ -3,13 +3,14 @@
  */
 
 #include "Viewport.h"
+#include "DragAndDropPayload.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Var.h"
 #include "imgui.h"
-#include "math/Ray.h"
 #include "io/Filesystem.h"
+#include "math/Ray.h"
 #include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/ScopedStyle.h"
@@ -17,13 +18,14 @@
 #include "video/Camera.h"
 #include "video/ShapeBuilder.h"
 #include "video/WindowedApp.h"
-#include "DragAndDropPayload.h"
 
 #include "image/Image.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/ViewportController.h"
+#include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
@@ -52,6 +54,18 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	_guizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGuizmoAllowAxisFlip);
 	_guizmoSnap = core::Var::getSafe(cfg::VoxEditGuizmoSnap);
 	return true;
+}
+
+void Viewport::updateViewportTrace(float headerSize) {
+	const ImVec2 windowPos = ImGui::GetWindowPos();
+	const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
+	const int mouseY = (int)((ImGui::GetIO().MousePos.y - windowPos.y) - headerSize);
+	const bool rotate = sceneMgr().cameraRotate();
+	const bool pan = sceneMgr().cameraPan();
+	_controller.move(pan, rotate, mouseX, mouseY);
+	sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
+	sceneMgr().setActiveCamera(&_controller.camera());
+	sceneMgr().trace();
 }
 
 void Viewport::update() {
@@ -98,16 +112,8 @@ void Viewport::update() {
 					if (sceneMgr().modifier().modifierType() == ModifierType::ColorPicker) {
 						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 					}
-					const ImVec2 windowPos = ImGui::GetWindowPos();
-					const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
-					const int mouseY = (int)((ImGui::GetIO().MousePos.y - windowPos.y) - headerSize);
-					const bool rotate = sceneMgr().cameraRotate();
-					const bool pan = sceneMgr().cameraPan();
-					_controller.move(pan, rotate, mouseX, mouseY);
 					_hovered = true;
-					sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
-					sceneMgr().setActiveCamera(&_controller.camera());
-					sceneMgr().trace();
+					updateViewportTrace(headerSize);
 				}
 
 				if (ImGui::BeginDragDropTarget()) {
@@ -214,7 +220,8 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	const glm::vec2 windowSize(video::WindowedApp::getInstance()->windowDimension());
 	const glm::vec2 windowFrameBufferSize(video::WindowedApp::getInstance()->frameBufferDimension());
 	const glm::vec2 scale = windowFrameBufferSize / windowSize;
-	_controller.onResize(frameBufferSize, glm::ivec2((float)frameBufferSize.x * scale.x, (float)frameBufferSize.y * scale.y));
+	_controller.onResize(frameBufferSize,
+						 glm::ivec2((float)frameBufferSize.x * scale.x, (float)frameBufferSize.y * scale.y));
 	_frameBuffer.shutdown();
 
 	video::FrameBufferConfig cfg;
@@ -287,12 +294,12 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	glm::mat4 viewMatrix = camera.viewMatrix();
 	if (editMode == EditMode::Scene) {
 		ImGuizmo::ViewManipulate(glm::value_ptr(viewMatrix), camera.targetDistance(), ImGui::GetWindowPos(),
-								ImVec2(128, 128), 0);
+								 ImVec2(128, 128), 0);
 	} else {
 		glm::mat4 transformMatrix = glm::mat4(1.0f); // not used
 		ImGuizmo::ViewManipulate(glm::value_ptr(viewMatrix), glm::value_ptr(camera.projectionMatrix()),
-							 (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix), camera.targetDistance(), ImGui::GetWindowPos(),
-								ImVec2(128, 128), 0);
+								 (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix),
+								 camera.targetDistance(), ImGui::GetWindowPos(), ImVec2(128, 128), 0);
 	}
 	if (viewMatrix != camera.viewMatrix()) {
 		glm::vec3 scale;
