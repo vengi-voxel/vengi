@@ -121,6 +121,11 @@ public:
 	/** Sets the position of the upper corner. */
 	void setUpperCorner(const glm::ivec3& maxs);
 
+	/**
+	 * @return true if the given point is exactly on the region border
+	 */
+	bool isOnBorder(const glm::ivec3& pos) const;
+
 	/** Tests whether the given point is contained in this Region. */
 	bool containsPoint(float fX, float fY, float fZ, float boundary = 0.0f) const;
 	/** Tests whether the given point is contained in this Region. */

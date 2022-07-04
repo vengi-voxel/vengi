@@ -6,6 +6,7 @@
 #include "core/Assert.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include <glm/vector_relational.hpp>
 #include "math/AABB.h"
 #include "math/Rect.h"
 #include "math/Random.h"
@@ -280,6 +281,10 @@ bool Region::containsPoint(const glm::ivec3& pos, uint8_t boundary) const {
 void Region::shift(const glm::ivec3& amount) {
 	shiftLowerCorner(amount);
 	shiftUpperCorner(amount);
+}
+
+bool Region::isOnBorder(const glm::ivec3 &pos) const {
+	return glm::any(glm::equal(pos, _maxs)) || glm::any(glm::equal(pos, _mins));
 }
 
 /**
