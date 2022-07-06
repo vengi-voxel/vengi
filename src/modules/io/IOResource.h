@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <atomic>
+#include "core/concurrent/Atomic.h"
 
 namespace io {
 
@@ -14,7 +14,7 @@ enum IOState {
 
 class IOResource {
 protected:
-	std::atomic<IOState> _state;
+	core::AtomicInt _state;
 
 	IOResource() :
 			_state(IOSTATE_LOADING) {
