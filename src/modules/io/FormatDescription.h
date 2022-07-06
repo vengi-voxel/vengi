@@ -24,7 +24,6 @@ struct FormatDescription {
 
 extern core::String convertToAllFilePattern(const FormatDescription *desc);
 extern core::String convertToFilePattern(const FormatDescription &desc);
-extern core::String getWildcardsFromPattern(const core::String &pattern);
 extern bool isImage(const core::String& file);
 
 namespace format {

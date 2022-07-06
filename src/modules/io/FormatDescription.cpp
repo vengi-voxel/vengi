@@ -3,6 +3,7 @@
  */
 
 #include "FormatDescription.h"
+#include "core/FourCC.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 
@@ -107,19 +108,6 @@ core::String convertToAllFilePattern(const FormatDescription *desc) {
 		++desc;
 	}
 	return pattern;
-}
-
-core::String getWildcardsFromPattern(const core::String &pattern) {
-	if (pattern.last() != ')') {
-		return "";
-	}
-	const size_t i = pattern.find("(");
-	if (i == core::String::npos) {
-		return pattern;
-	}
-	// skip the two chars for ()
-	const size_t len = pattern.size() - (i + 2);
-	return pattern.substr(i + 1, len);
 }
 
 }

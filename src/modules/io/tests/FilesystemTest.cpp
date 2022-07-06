@@ -55,9 +55,9 @@ TEST_F(FilesystemTest, testListDirectoryFilter) {
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.jpeg", "1"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.jpg", "1"));
 	core::DynamicArray<io::Filesystem::DirEntry> entities;
-	const FormatDescription desc = {"JPEG", {"jpeg", "jpg"}, nullptr, 0u};
+	const FormatDescription desc = {"", {"jpeg", "jpg"}, nullptr, 0u};
 	const core::String &jpegFilePattern = convertToFilePattern(desc);
-	fs.list("listdirtestfilter/", entities, getWildcardsFromPattern(jpegFilePattern));
+	fs.list("listdirtestfilter/", entities, jpegFilePattern);
 	EXPECT_FALSE(entities.empty());
 	EXPECT_EQ(2u, entities.size()) << entities;
 	entities.sort([](const io::Filesystem::DirEntry &first, const io::Filesystem::DirEntry &second) {
