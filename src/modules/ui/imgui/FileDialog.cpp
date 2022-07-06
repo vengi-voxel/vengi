@@ -500,10 +500,14 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 			}
 			if (!_filterEntries.empty()) {
 				ImGui::SameLine();
-				ImGui::SetCursorPosX(ImGui::GetWindowWidth() - _filterTextWidth - 25.0f);
-				if (ImGui::ComboStl("Filter", &_currentFilterEntry, _filterEntries)) {
+				const char *label = "Filter";
+				const ImVec2 &size = ImGui::CalcTextSize(label);
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - _filterTextWidth - (size.x + 2.0f));
+				ImGui::PushItemWidth(_filterTextWidth);
+				if (ImGui::ComboStl(label, &_currentFilterEntry, _filterEntries)) {
 					selectFilter(_currentFilterEntry);
 				}
+				ImGui::PopItemWidth();
 			}
 
 			const char *buttonText = "Choose";
