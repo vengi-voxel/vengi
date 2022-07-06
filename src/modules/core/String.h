@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/Assert.h"
-#include "core/ArrayLength.h"
 #include <stddef.h>
 #include "core/Common.h"
 
