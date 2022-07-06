@@ -54,8 +54,10 @@ core::String convertToFilePattern(const FormatDescription &desc) {
 	bool showName = false;
 	if (desc.name && desc.name[0] != '\0') {
 		pattern += desc.name;
-		pattern.append(" (");
-		showName = true;
+		if (desc.exts[0] != nullptr) {
+			pattern.append(" (");
+			showName = true;
+		}
 	}
 	for (int i = 0; i < lengthof(desc.exts); ++i) {
 		if (!desc.exts[i]) {
@@ -68,6 +70,25 @@ core::String convertToFilePattern(const FormatDescription &desc) {
 	}
 	if (showName) {
 		pattern.append(")");
+	}
+	return pattern;
+}
+
+core::String convertToAllFilePattern(const FormatDescription *f) {
+	core::String pattern;
+	int j = 0;
+	while (f->name != nullptr) {
+		for (int i = 0; i < lengthof(f->exts); ++i) {
+			if (!f->exts[i]) {
+				break;
+			}
+			if (j > 0) {
+				pattern.append(",");
+			}
+			pattern += core::string::format("*.%s", f->exts[i]);
+			++j;
+		}
+		++f;
 	}
 	return pattern;
 }

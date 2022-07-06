@@ -8,6 +8,7 @@
 
 #include "core/collection/DynamicArray.h"
 #include "io/Filesystem.h"
+#include "io/FormatDescription.h"
 #include "video/WindowedApp.h"
 
 namespace ui {
@@ -31,6 +32,7 @@ private:
 	FileDialogSortOrder _typeSortOrder = FileDialogSortOrder::None;
 	float _filterTextWidth = 0.0f;
 	int _currentFilterEntry = -1;
+	core::String _filterAll;
 	core::DynamicArray<io::FormatDescription> _filterEntries;
 	core::VarPtr _showHidden;
 	bool _disableDeleteButton = false;

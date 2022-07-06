@@ -35,7 +35,9 @@ void FileDialog::applyFilter() {
 			continue;
 		}
 		if (_currentFilterEntry != -1) {
-			const core::String& filter = _filterEntries[_currentFilterEntry].wildCard();
+			// this is "all-supported files"
+			const bool showAll = !_filterAll.empty() && _currentFilterEntry == 0;
+			const core::String& filter = showAll ? _filterAll : _filterEntries[_currentFilterEntry].wildCard();
 			if (!core::string::fileMatchesMultiple(_entities[i].name.c_str(), filter.c_str())) {
 				continue;
 			}
@@ -55,11 +57,11 @@ bool FileDialog::openDir(const io::FormatDescription* formats, const core::Strin
 	_filterEntries.clear();
 	if (formats == nullptr) {
 		_filterTextWidth = 0.0f;
+		_filterAll = "";
 		_currentFilterEntry = -1;
 	} else {
 		_filterTextWidth = 0.0f;
 		const io::FormatDescription* f = formats;
-		// TODO: add an all-supported-formats-entry - which is the default
 		// TODO: add a group by first name (e.g. all Minecraft, all Qubicle, ...)
 		while (f->name != nullptr) {
 			const core::String& str = io::convertToFilePattern(*f);
@@ -69,6 +71,11 @@ bool FileDialog::openDir(const io::FormatDescription* formats, const core::Strin
 			++f;
 		}
 		core::sort(_filterEntries.begin(), _filterEntries.end(), core::Less<io::FormatDescription>());
+		_filterAll = io::convertToAllFilePattern(formats);
+		if (!_filterAll.empty()) {
+			// must be the first entry - see applyFilter()
+			_filterEntries.insert(_filterEntries.begin(), io::FormatDescription{"All supported", {}, nullptr, 0});
+		}
 
 		const core::VarPtr &lastFilterVar = core::Var::getSafe(cfg::UILastFilter);
 		int lastFilter = lastFilterVar->intVal();
@@ -368,7 +375,6 @@ bool FileDialog::filesPanel() {
 	return doubleClicked;
 }
 
-// TODO: make filters selectable
 // TODO: allow to specify the starting directory
 bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSize,
 								video::WindowedApp::OpenFileMode type) {

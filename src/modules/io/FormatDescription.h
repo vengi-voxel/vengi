@@ -20,6 +20,7 @@ struct FormatDescription {
 	bool matchesExtension(const core::String &fileExt) const;
 };
 
+extern core::String convertToAllFilePattern(const FormatDescription *desc);
 extern core::String convertToFilePattern(const FormatDescription &desc);
 extern core::String getWildcardsFromPattern(const core::String &pattern);
 extern bool isImage(const core::String& file);

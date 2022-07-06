@@ -17,6 +17,17 @@ TEST_F(FormatDescriptionTest, testIsImage) {
 	ASSERT_FALSE(isImage("foobar.foo"));
 }
 
+TEST_F(FormatDescriptionTest, testConvertToAllFilePattern) {
+	const FormatDescription desc[] = {
+		{"Portable Network Graphics", {"png"}, nullptr, 0u},
+		{"JPEG", {"jpeg", "jpg"}, nullptr, 0u},
+		{"Portable Anymap", {"pnm"}, nullptr, 0u},
+		{nullptr, {}, nullptr, 0u}
+	};
+	const core::String &all = convertToAllFilePattern(desc);
+	ASSERT_EQ("*.png,*.jpeg,*.jpg,*.pnm", all);
+}
+
 TEST_F(FormatDescriptionTest, testConvertToFilePattern) {
 	const FormatDescription desc1 = {"Name", {"ext1"}, nullptr, 0u};
 	const FormatDescription desc2 = {"Name", {"ext1", "ext2"}, nullptr, 0u};
