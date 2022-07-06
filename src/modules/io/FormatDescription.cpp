@@ -82,12 +82,7 @@ core::String convertToFilePattern(const FormatDescription &desc) {
 			showName = true;
 		}
 	}
-	for (size_t i = 0; i < desc.exts.size(); ++i) {
-		if (i > 0) {
-			pattern.append(",");
-		}
-		pattern += core::string::format("*.%s", desc.exts[i].c_str());
-	}
+	pattern += desc.wildCard();
 	if (showName) {
 		pattern.append(")");
 	}
@@ -98,14 +93,12 @@ core::String convertToAllFilePattern(const FormatDescription *desc) {
 	core::String pattern;
 	int j = 0;
 	while (desc->valid()) {
-		for (const core::String& ext : desc->exts) {
-			if (j > 0) {
-				pattern.append(",");
-			}
-			pattern += core::string::format("*.%s", ext.c_str());
-			++j;
+		if (j > 0) {
+			pattern.append(",");
 		}
+		pattern += desc->wildCard();
 		++desc;
+		++j;
 	}
 	return pattern;
 }

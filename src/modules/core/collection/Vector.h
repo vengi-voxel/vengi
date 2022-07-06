@@ -28,7 +28,7 @@ public:
 
 	Vector(std::initializer_list<TYPE> other) {
 		for (auto i = other.begin(); i != other.end(); ++i) {
-			emplace_back(core::move(*i));
+			core_assert_always(emplace_back(core::move(*i)));
 		}
 	}
 

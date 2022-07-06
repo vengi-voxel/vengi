@@ -20,7 +20,15 @@ struct FormatDescription {
 		return !name.empty();
 	}
 	bool operator<(const FormatDescription &rhs) const;
+	/**
+	 * @brief Return the comma separated wildcard for the extensions of this format description
+	 */
 	core::String wildCard() const;
+	/**
+	 * @brief Checks whether any of the format description extensions matches the given one
+	 * @note we compare them as lower case extensions - so even if you give an upper case version here,
+	 * it might still match
+	 */
 	bool matchesExtension(const core::String &fileExt) const;
 };
 
