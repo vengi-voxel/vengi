@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include <string.h>
+#include <initializer_list>
 
 namespace core {
 
@@ -21,6 +22,15 @@ protected:
 	size_t _size = 0;
 public:
 	using value_type = TYPE;
+
+	constexpr Vector() {
+	}
+
+	Vector(std::initializer_list<TYPE> other) {
+		for (auto i = other.begin(); i != other.end(); ++i) {
+			emplace_back(core::move(*i));
+		}
+	}
 
 	inline size_t size() const {
 		return _size;
