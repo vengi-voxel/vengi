@@ -10,6 +10,7 @@
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
@@ -44,17 +45,32 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::Seekab
 		return false;
 	}
 
+	const core::String &extension = core::string::extractExtension(filename);
+	if (extension == "nbt") {
+		const int dataVersion = schematic.get("DataVersion").int32(-1);
+		if (loadNbt(schematic, sceneGraph, palette, dataVersion)) {
+			return true;
+		}
+	}
+
 	const int version = schematic.get("Version").int32(-1);
 	Log::debug("Load schematic version %i", version);
 	switch (version) {
 	case 1:
 	case 2:
 		// WorldEdit legacy
-		return loadSponge1And2(schematic, sceneGraph, palette);
+		if (loadSponge1And2(schematic, sceneGraph, palette)) {
+			return true;
+		}
+		// fall through
 	case 3:
 	default:
-		return loadSponge3(schematic, sceneGraph, palette, version);
+		if (loadSponge3(schematic, sceneGraph, palette, version)) {
+			return true;
+		}
 	}
+	schematic.print();
+	return false;
 }
 
 bool SchematicFormat::loadSponge1And2(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
@@ -74,6 +90,62 @@ bool SchematicFormat::loadSponge3(const priv::NamedBinaryTag &schematic, SceneGr
 		return parseBlocks(schematic, sceneGraph, palette, blocks, version);
 	}
 	Log::error("Could not find valid 'Blocks' tags");
+	return false;
+}
+
+bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette, int dataVersion) {
+	const priv::NamedBinaryTag &blocks = schematic.get("blocks");
+	if (blocks.valid() && blocks.type() == priv::TagType::LIST) {
+		const priv::NBTList &list = *blocks.list();
+		glm::ivec3 mins((std::numeric_limits<int32_t>::max)() / 2);
+		glm::ivec3 maxs((std::numeric_limits<int32_t>::min)() / 2);
+		for (const priv::NamedBinaryTag &compound : list) {
+			if (compound.type() != priv::TagType::COMPOUND) {
+				Log::error("Unexpected nbt type: %i", (int)compound.type());
+				return false;
+			}
+			const priv::NamedBinaryTag& pos = compound.get("pos");
+			if (pos.type() != priv::TagType::LIST) {
+				Log::error("Unexpected nbt type for pos: %i", (int)pos.type());
+				return false;
+			}
+			const priv::NBTList &positions = *pos.list();
+			if (positions.size() != 3) {
+				Log::error("Unexpected nbt pos list entry count: %i", (int)positions.size());
+				return false;
+			}
+			const int state = compound.get("state").int32(-1);
+			if (state == -1) {
+				Log::error("Unexpected state");
+				return false;
+			}
+			const int x = positions[0].int32(-1);
+			const int y = positions[1].int32(-1);
+			const int z = positions[2].int32(-1);
+			const glm::ivec3 v(x, y, z);
+			mins = (glm::min)(mins, v);
+			maxs = (glm::max)(maxs, v);
+		}
+		const voxel::Region region(mins, maxs);
+		voxel::RawVolume *volume = new voxel::RawVolume(region);
+		for (const priv::NamedBinaryTag &compound : list) {
+			const int state = compound.get("state").int32();
+			const priv::NBTList &positions = *compound.get("pos").list();
+			const int x = positions[0].int32(-1);
+			const int y = positions[1].int32(-1);
+			const int z = positions[2].int32(-1);
+			const glm::ivec3 v(x, y, z);
+			volume->setVoxel(v, voxel::createVoxel(voxel::VoxelType::Generic, state));
+		}
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(volume, true);
+		voxel::Palette palette;
+		palette.minecraft();
+		node.setPalette(palette);
+		int nodeId = sceneGraph.emplace(core::move(node));
+		return nodeId != -1;
+	}
+	Log::error("Could not find valid 'blocks' tags");
 	return false;
 }
 

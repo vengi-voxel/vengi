@@ -26,6 +26,8 @@ protected:
 	bool loadSponge1And2(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette);
 	bool parseBlockData(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette, const priv::NamedBinaryTag &blocks);
 
+	bool loadNbt(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette, int dataVersion);
+
 	bool loadSponge3(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette, int version);
 	bool parseBlocks(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette, const priv::NamedBinaryTag &blocks, int version);
 
