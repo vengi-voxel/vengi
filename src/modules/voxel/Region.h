@@ -125,6 +125,9 @@ public:
 	 * @return true if the given point is exactly on the region border
 	 */
 	bool isOnBorder(const glm::ivec3& pos) const;
+	bool isOnBorderX(const int x) const;
+	bool isOnBorderY(const int y) const;
+	bool isOnBorderZ(const int z) const;
 
 	/** Tests whether the given point is contained in this Region. */
 	bool containsPoint(float fX, float fY, float fZ, float boundary = 0.0f) const;
@@ -420,6 +423,18 @@ inline bool Region::operator==(const Region& rhs) const {
  */
 inline bool Region::operator!=(const Region& rhs) const {
 	return !(*this == rhs);
+}
+
+inline bool Region::isOnBorderX(const int x) const {
+	return x == _maxs.x || x == _mins.x;
+}
+
+inline bool Region::isOnBorderY(const int y) const {
+	return y == _maxs.y || y == _mins.y;
+}
+
+inline bool Region::isOnBorderZ(const int z) const {
+	return z == _maxs.z || z == _mins.z;
 }
 
 /**
