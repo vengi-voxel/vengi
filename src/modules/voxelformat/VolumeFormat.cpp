@@ -45,72 +45,80 @@
 
 namespace voxelformat {
 
-// this is the list of supported voxel volume formats that are have importers implemented
-const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
-	{"Qubicle Binary", {"qb"}, nullptr, 0u},
-	{"MagicaVoxel", {"vox"}, [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Qubicle Binary Tree", {"qbt"}, [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Qubicle Project", {"qbcl"}, [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
-	{"Sandbox VoxEdit Tilemap", {"vxt"}, [] (uint32_t magic) {return magic == FourCC('V','X','T','1');}, 0u},
-	{"Sandbox VoxEdit Collection", {"vxc"}, nullptr, 0u},
-	{"Sandbox VoxEdit Model", {"vxm"}, [] (uint32_t magic) {return magic == FourCC('V','X','M','A')
-			|| magic == FourCC('V','X','M','B') || magic == FourCC('V','X','M','C')
-			|| magic == FourCC('V','X','M','9') || magic == FourCC('V','X','M','8')
-			|| magic == FourCC('V','X','M','7') || magic == FourCC('V','X','M','6')
-			|| magic == FourCC('V','X','M','5') || magic == FourCC('V','X','M','4');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Sandbox VoxEdit Hierarchy", {"vxr"}, [] (uint32_t magic) {
-		return magic == FourCC('V','X','R','9') || magic == FourCC('V','X','R','8')
-			|| magic == FourCC('V','X','R','7') || magic == FourCC('V','X','R','6')
-			|| magic == FourCC('V','X','R','5') || magic == FourCC('V','X','R','4')
-			|| magic == FourCC('V','X','R','3') || magic == FourCC('V','X','R','2')
-			|| magic == FourCC('V','X','R','1');}, 0u},
-	{"BinVox", {"binvox"}, [] (uint32_t magic) {return magic == FourCC('#','b','i','n');}, 0u},
-	{"Goxel", {"gox"}, [] (uint32_t magic) {return magic == FourCC('G','O','X',' ');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
-	{"CubeWorld", {"cub"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Minecraft region", {"mca", "mcr"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Minecraft level dat", {"dat"}, nullptr, 0u},
-	{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Sproxel csv", {"csv"}, nullptr, 0u},
-	{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
-	{"GL Transmission Format", {"gltf", "glb"}, nullptr, VOX_FORMAT_FLAG_MESH},
-	{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
-	{"Build engine", {"kvx"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"AceOfSpades", {"kv6"}, [] (uint32_t magic) {return magic == FourCC('K','v','x','l');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Tiberian Sun", {"vxl"}, [] (uint32_t magic) {return magic == FourCC('V','o','x','e');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"AceOfSpades", {"vxl"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Qubicle Exchange", {"qef"}, [](uint32_t magic) { return magic == FourCC('Q', 'u', 'b', 'i'); }, 0u},
-	{"Chronovox", {"csm"}, [](uint32_t magic) { return magic == FourCC('.', 'C', 'S', 'M'); }, 0u},
-	{"Nicks Voxel Model", {"nvm"}, [](uint32_t magic) { return magic == FourCC('.', 'N', 'V', 'M'); }, 0u},
-	{"SLAB6 vox", {"vox"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{nullptr, {}, nullptr, 0u}
-};
 // this is the list of internal formats that are supported engine-wide (the format we save our own models in)
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = {"qb", "vox", nullptr};
-// this is the list of supported voxel or mesh formats that have exporters implemented
-const io::FormatDescription SUPPORTED_VOXEL_FORMATS_SAVE[] = {
-	{"Qubicle Binary", {"qb"}, nullptr, 0u},
-	{"MagicaVoxel", {"vox"}, nullptr, 0u},
-	{"SLAB6 vox", {"vox"}, nullptr, 0u}, // TODO: handle duplicate extension
-	{"Qubicle Binary Tree", {"qbt"}, nullptr, 0u},
-	{"Qubicle Project", {"qbcl"}, nullptr, 0u},
-	{"Sandbox VoxEdit Model", {"vxm"}, nullptr, 0u},
-	{"Sandbox VoxEdit Hierarchy", {"vxr"}, nullptr, 0u},
-	{"BinVox", {"binvox"}, nullptr, 0u},
-	{"Goxel", {"gox"}, nullptr, 0u},
-	{"Sproxel csv", {"csv"}, nullptr, 0u},
-	{"CubeWorld", {"cub"}, nullptr, 0u},
-	//{"Build engine", {"kvx"}, nullptr, 0u},
-	{"Tiberian Sun", {"vxl"}, nullptr, 0u},
-	{"Qubicle Exchange", {"qef"}, nullptr, 0u},
-	{"AceOfSpades", {"vxl"}, nullptr, 0u}, // TODO: handle duplicate extension
-	//{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, 0u},
-	{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
-	{"Polygon File Format", {"ply"}, nullptr, VOX_FORMAT_FLAG_MESH},
-	{"FBX Ascii", {"fbx"}, nullptr, VOX_FORMAT_FLAG_MESH},
-	{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
-	{"GL Transmission Format", {"gltf", "glb"}, nullptr, VOX_FORMAT_FLAG_MESH},
-	{nullptr, {}, nullptr, 0u}
-};
+
+const io::FormatDescription* voxelLoad() {
+	// this is the list of supported voxel volume formats that are have importers implemented
+	static const io::FormatDescription desc[] = {
+		{"Qubicle Binary", {"qb"}, nullptr, 0u},
+		{"MagicaVoxel", {"vox"}, [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Qubicle Binary Tree", {"qbt"}, [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Qubicle Project", {"qbcl"}, [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+		{"Sandbox VoxEdit Tilemap", {"vxt"}, [] (uint32_t magic) {return magic == FourCC('V','X','T','1');}, 0u},
+		{"Sandbox VoxEdit Collection", {"vxc"}, nullptr, 0u},
+		{"Sandbox VoxEdit Model", {"vxm"}, [] (uint32_t magic) {return magic == FourCC('V','X','M','A')
+				|| magic == FourCC('V','X','M','B') || magic == FourCC('V','X','M','C')
+				|| magic == FourCC('V','X','M','9') || magic == FourCC('V','X','M','8')
+				|| magic == FourCC('V','X','M','7') || magic == FourCC('V','X','M','6')
+				|| magic == FourCC('V','X','M','5') || magic == FourCC('V','X','M','4');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Sandbox VoxEdit Hierarchy", {"vxr"}, [] (uint32_t magic) {
+			return magic == FourCC('V','X','R','9') || magic == FourCC('V','X','R','8')
+				|| magic == FourCC('V','X','R','7') || magic == FourCC('V','X','R','6')
+				|| magic == FourCC('V','X','R','5') || magic == FourCC('V','X','R','4')
+				|| magic == FourCC('V','X','R','3') || magic == FourCC('V','X','R','2')
+				|| magic == FourCC('V','X','R','1');}, 0u},
+		{"BinVox", {"binvox"}, [] (uint32_t magic) {return magic == FourCC('#','b','i','n');}, 0u},
+		{"Goxel", {"gox"}, [] (uint32_t magic) {return magic == FourCC('G','O','X',' ');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+		{"CubeWorld", {"cub"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Minecraft region", {"mca", "mcr"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Minecraft level dat", {"dat"}, nullptr, 0u},
+		{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Sproxel csv", {"csv"}, nullptr, 0u},
+		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
+		{"GL Transmission Format", {"gltf", "glb"}, nullptr, VOX_FORMAT_FLAG_MESH},
+		{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
+		{"Build engine", {"kvx"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"AceOfSpades", {"kv6"}, [] (uint32_t magic) {return magic == FourCC('K','v','x','l');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Tiberian Sun", {"vxl"}, [] (uint32_t magic) {return magic == FourCC('V','o','x','e');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"AceOfSpades", {"vxl"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Qubicle Exchange", {"qef"}, [](uint32_t magic) { return magic == FourCC('Q', 'u', 'b', 'i'); }, 0u},
+		{"Chronovox", {"csm"}, [](uint32_t magic) { return magic == FourCC('.', 'C', 'S', 'M'); }, 0u},
+		{"Nicks Voxel Model", {"nvm"}, [](uint32_t magic) { return magic == FourCC('.', 'N', 'V', 'M'); }, 0u},
+		{"SLAB6 vox", {"vox"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"", {}, nullptr, 0u}
+	};
+	return desc;
+}
+
+const io::FormatDescription* voxelSave() {
+	// this is the list of supported voxel or mesh formats that have exporters implemented
+	static const io::FormatDescription desc[] = {
+		{"Qubicle Binary", {"qb"}, nullptr, 0u},
+		{"MagicaVoxel", {"vox"}, nullptr, 0u},
+		{"SLAB6 vox", {"vox"}, nullptr, 0u}, // TODO: handle duplicate extension
+		{"Qubicle Binary Tree", {"qbt"}, nullptr, 0u},
+		{"Qubicle Project", {"qbcl"}, nullptr, 0u},
+		{"Sandbox VoxEdit Model", {"vxm"}, nullptr, 0u},
+		{"Sandbox VoxEdit Hierarchy", {"vxr"}, nullptr, 0u},
+		{"BinVox", {"binvox"}, nullptr, 0u},
+		{"Goxel", {"gox"}, nullptr, 0u},
+		{"Sproxel csv", {"csv"}, nullptr, 0u},
+		{"CubeWorld", {"cub"}, nullptr, 0u},
+		//{"Build engine", {"kvx"}, nullptr, 0u},
+		{"Tiberian Sun", {"vxl"}, nullptr, 0u},
+		{"Qubicle Exchange", {"qef"}, nullptr, 0u},
+		{"AceOfSpades", {"vxl"}, nullptr, 0u}, // TODO: handle duplicate extension
+		//{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, 0u},
+		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
+		{"Polygon File Format", {"ply"}, nullptr, VOX_FORMAT_FLAG_MESH},
+		{"FBX Ascii", {"fbx"}, nullptr, VOX_FORMAT_FLAG_MESH},
+		{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
+		{"GL Transmission Format", {"gltf", "glb"}, nullptr, VOX_FORMAT_FLAG_MESH},
+		{"", {}, nullptr, 0u}
+	};
+	return desc;
+}
 
 static uint32_t loadMagic(io::ReadStream &stream) {
 	uint32_t magicWord = 0u;
@@ -119,7 +127,7 @@ static uint32_t loadMagic(io::ReadStream &stream) {
 }
 
 static const io::FormatDescription *getDescription(const core::String &ext, uint32_t magic) {
-	for (const io::FormatDescription *desc = SUPPORTED_VOXEL_FORMATS_LOAD; desc->name != nullptr; ++desc) {
+	for (const io::FormatDescription *desc = voxelLoad(); desc->valid(); ++desc) {
 		if (!desc->matchesExtension(ext)) {
 			continue;
 		}
@@ -131,7 +139,7 @@ static const io::FormatDescription *getDescription(const core::String &ext, uint
 	}
 	if (magic > 0) {
 		// search again - but this time only the magic bytes...
-		for (const io::FormatDescription *desc = SUPPORTED_VOXEL_FORMATS_LOAD; desc->name != nullptr; ++desc) {
+		for (const io::FormatDescription *desc = voxelLoad(); desc->valid(); ++desc) {
 			if (!desc->isA) {
 				continue;
 			}
@@ -151,12 +159,8 @@ static const io::FormatDescription *getDescription(const core::String &ext, uint
 
 static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint32_t magic, bool load) {
 	core::SharedPtr<Format> format;
-	for (int i = 0; i < lengthof(desc->exts); ++i) {
-		if (!desc->exts[i]) {
-			break;
-		}
+	for (const core::String& ext : desc->exts) {
 		// you only have to check one of the supported extensions here
-		const core::String &ext = desc->exts[i];
 		if (ext == "qb") {
 			format = core::make_shared<QBFormat>();
 		} else if (ext == "vox") {
@@ -189,7 +193,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 			format = core::make_shared<VXCFormat>();
 		} else if (ext == "vxt") {
 			format = core::make_shared<VXTFormat>();
-		} else if (ext == "vxl" && !strcmp(desc->name, "Tiberian Sun")) {
+		} else if (ext == "vxl" && desc->name == "Tiberian Sun") {
 			format = core::make_shared<VXLFormat>();
 		} else if (ext == "vxl") {
 			format = core::make_shared<AoSVXLFormat>();
@@ -228,7 +232,7 @@ image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStr
 		return image::ImagePtr();
 	}
 	if (!(desc->flags & VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED)) {
-		Log::warn("Format %s doesn't have a screenshot embedded", desc->name);
+		Log::warn("Format %s doesn't have a screenshot embedded", desc->name.c_str());
 		return image::ImagePtr();
 	}
 	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
@@ -247,7 +251,7 @@ bool importPalette(const core::String &filename, voxel::Palette &palette) {
 	core::string::replaceAllChars(paletteName, ' ', '_');
 	paletteName = paletteName.toLower();
 	bool paletteLoaded = false;
-	for (const io::FormatDescription *desc = io::format::images(); desc->name != nullptr; ++desc) {
+	for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext)) {
 			const image::ImagePtr &img = image::loadImage(filename, false);
 			if (!img->isLoaded()) {
@@ -289,7 +293,7 @@ size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream,
 		return 0;
 	}
 	if (!(desc->flags & VOX_FORMAT_FLAG_PALETTE_EMBEDDED)) {
-		Log::warn("Format %s doesn't have a palette embedded", desc->name);
+		Log::warn("Format %s doesn't have a palette embedded", desc->name.c_str());
 		return 0;
 	}
 	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
@@ -334,7 +338,7 @@ bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, Sc
 
 bool isMeshFormat(const core::String &filename) {
 	const core::String &ext = core::string::extractExtension(filename);
-	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->name != nullptr; ++desc) {
+	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext) && (desc->flags & VOX_FORMAT_FLAG_MESH) != 0u) {
 			return true;
 		}
@@ -345,7 +349,7 @@ bool isMeshFormat(const core::String &filename) {
 
 bool isModelFormat(const core::String &filename) {
 	const core::String &ext = core::string::extractExtension(filename);
-	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD; desc->name != nullptr; ++desc) {
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext)) {
 			return true;
 		}
@@ -371,11 +375,11 @@ bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph) {
 	}
 	io::FileStream stream(filePtr);
 	const core::String &ext = filePtr->extension();
-	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->name != nullptr; ++desc) {
+	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->name != nullptr; ++desc) {
 		if (desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
 			core::SharedPtr<Format> f = getFormat(desc, 0u, false);
 			if (f && f->saveGroups(sceneGraph, filePtr->name(), stream)) {
-				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name, ext.c_str());
+				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
 				return true;
 			}
 		}

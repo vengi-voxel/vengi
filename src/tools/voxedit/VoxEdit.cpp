@@ -105,14 +105,14 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST, "Fill the hollows when voxelizing a mesh format");
 	core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 
-	_paletteFormats[0] = {"Image", "png", nullptr, 0u};
+	_paletteFormats[0] = {"Image", {"png"}, nullptr, 0u};
 	int formatIndex = 1;
-	for (const io::FormatDescription* desc = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD; desc->name != nullptr; ++desc) {
+	for (const io::FormatDescription* desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 		if (desc->flags & VOX_FORMAT_FLAG_PALETTE_EMBEDDED) {
 			_paletteFormats[formatIndex++] = *desc;
 		}
 	}
-	_paletteFormats[formatIndex++] = {nullptr, nullptr, nullptr, 0u};
+	_paletteFormats[formatIndex++] = {"", {}, nullptr, 0u};
 
 	voxedit::sceneMgr().construct();
 
@@ -135,7 +135,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (args.empty()) {
 			const core::String filename = getSuggestedFilename();
 			if (filename.empty()) {
-				saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE);
+				saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, voxelformat::voxelSave());
 			} else {
 				_mainWindow->save(filename);
 			}
@@ -149,7 +149,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		const core::String filename = getSuggestedFilename();
-		saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE, filename);
+		saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, voxelformat::voxelSave(), filename);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current scene as a volume to the given file");
 
 	command::Command::registerCommand("load", [this](const command::CmdArgs &args) {
@@ -157,7 +157,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			openDialog([this] (const core::String &file) {_mainWindow->load(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
+			openDialog([this] (const core::String &file) {_mainWindow->load(file); }, voxelformat::voxelLoad());
 			return;
 		}
 		_mainWindow->load(args[0]);
@@ -165,7 +165,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("prefab", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([](const core::String &file) { voxedit::sceneMgr().prefab(file); }, voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD);
+			openDialog([](const core::String &file) { voxedit::sceneMgr().prefab(file); }, voxelformat::voxelLoad());
 			return;
 		}
 		voxedit::sceneMgr().prefab(args[0]);

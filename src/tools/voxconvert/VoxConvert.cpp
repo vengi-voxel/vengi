@@ -96,21 +96,15 @@ app::AppState VoxConvert::onConstruct() {
 void VoxConvert::usage() const {
 	Super::usage();
 	Log::info("Load support:");
-	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD; desc->name != nullptr; ++desc) {
-		for (int i = 0; i < lengthof(desc->exts); ++i) {
-			if (!desc->exts[i]) {
-				break;
-			}
-			Log::info(" * %s (*.%s)", desc->name, desc->exts[i]);
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		for (const core::String& ext : desc->exts) {
+			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
 		}
 	}
 	Log::info("Save support:");
-	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->name != nullptr; ++desc) {
-		for (int i = 0; i < lengthof(desc->exts); ++i) {
-			if (!desc->exts[i]) {
-				break;
-			}
-			Log::info(" * %s (*.%s)", desc->name, desc->exts[i]);
+	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
+		for (const core::String& ext : desc->exts) {
+			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
 		}
 	}
 	Log::info("Links:");

@@ -43,6 +43,11 @@ private:
 	void selectFilter(int index);
 	bool hide(const core::String &file) const;
 
+	/**
+	 * @brief Add additional filter groups like "All Minecraft", "All Qubicle" filters
+	 * @note @c _filterEntries must be sorted already!
+	 */
+	void addFilterGroups();
 	void applyFilter();
 	bool readDir();
 	void directoryPanel(video::WindowedApp::OpenFileMode type);

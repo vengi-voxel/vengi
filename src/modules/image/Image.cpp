@@ -131,12 +131,9 @@ ImagePtr loadImage(const core::String& filename, bool async) {
 	if (!core::string::extractExtension(filename).empty()) {
 		file = io::filesystem()->open(filename);
 	} else {
-		for (const io::FormatDescription *desc = io::format::images(); desc->name; ++desc) {
-			for (int i = 0; i < lengthof(desc->exts); ++i) {
-				if (!desc->exts[i]) {
-					break;
-				}
-				const core::String &f = core::string::format("%s.%s", filename.c_str(), desc->exts[i]);
+		for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
+			for (const core::String& ext : desc->exts) {
+				const core::String &f = core::string::format("%s.%s", filename.c_str(), ext.c_str());
 				if (io::filesystem()->exists(f)) {
 					file = io::filesystem()->open(f);
 					if (file) {

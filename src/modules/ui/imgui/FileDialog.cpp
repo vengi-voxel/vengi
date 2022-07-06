@@ -15,6 +15,7 @@
 #include "core/TimeProvider.h"
 #include "core/Trace.h"
 #include "core/Var.h"
+#include "core/collection/DynamicArray.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "ui/imgui/IMGUIApp.h"
@@ -25,6 +26,29 @@ namespace imgui {
 
 static core::String assemblePath(const core::String &dir, const core::String &ent) {
 	return core::string::path(dir, ent);
+}
+
+void FileDialog::addFilterGroups() {
+	core::String lastName;
+	core::DynamicArray<io::FormatDescription> temp;
+	temp.reserve(_filterEntries.size());
+	for (const io::FormatDescription &desc : _filterEntries) {
+		core::String firstWord = desc.name;
+		auto iter = firstWord.find_first_of(" ");
+		if (iter != core::String::npos) {
+			firstWord = firstWord.substr(0, iter);
+		}
+		if (lastName != firstWord) {
+			if (temp.size() > 1) {
+				io::FormatDescription val{firstWord, {}, nullptr, 0};
+				_filterEntries.push_back(val);
+				// TODO:
+				temp.clear();
+			}
+			lastName = firstWord;
+		}
+		temp.push_back(desc);
+	}
 }
 
 void FileDialog::applyFilter() {
@@ -63,7 +87,7 @@ bool FileDialog::openDir(const io::FormatDescription* formats, const core::Strin
 		_filterTextWidth = 0.0f;
 		const io::FormatDescription* f = formats;
 		// TODO: add a group by first name (e.g. all Minecraft, all Qubicle, ...)
-		while (f->name != nullptr) {
+		while (f->valid()) {
 			const core::String& str = io::convertToFilePattern(*f);
 			const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
 			_filterTextWidth = core_max(_filterTextWidth, filterTextSize.x);
@@ -71,6 +95,7 @@ bool FileDialog::openDir(const io::FormatDescription* formats, const core::Strin
 			++f;
 		}
 		core::sort(_filterEntries.begin(), _filterEntries.end(), core::Less<io::FormatDescription>());
+		addFilterGroups();
 		_filterAll = io::convertToAllFilePattern(formats);
 		if (!_filterAll.empty()) {
 			// must be the first entry - see applyFilter()

@@ -22,7 +22,7 @@ TEST_F(FormatDescriptionTest, testConvertToAllFilePattern) {
 		{"Portable Network Graphics", {"png"}, nullptr, 0u},
 		{"JPEG", {"jpeg", "jpg"}, nullptr, 0u},
 		{"Portable Anymap", {"pnm"}, nullptr, 0u},
-		{nullptr, {}, nullptr, 0u}
+		{"", {}, nullptr, 0u}
 	};
 	const core::String &all = convertToAllFilePattern(desc);
 	ASSERT_EQ("*.png,*.jpeg,*.jpg,*.pnm", all);
