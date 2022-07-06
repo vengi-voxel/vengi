@@ -170,6 +170,7 @@ public:
 	static bool write(const NamedBinaryTag &tag, const core::String &rootTagName, io::WriteStream &ctx);
 
 	void dump(io::WriteStream &stream) const;
+	void print() const;
 
 	inline bool valid() const {
 		return _tagType != TagType::MAX;

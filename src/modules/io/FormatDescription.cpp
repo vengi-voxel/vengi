@@ -7,22 +7,50 @@
 
 namespace io {
 
-bool isImage(const core::String& file) {
-	const core::String& ext = core::string::extractExtension(file);
-	for (const io::FormatDescription *desc = io::format::images(); desc->ext != nullptr; ++desc) {
-		if (ext == desc->ext) {
+bool FormatDescription::matchesExtension(const core::String &fileExt) const {
+	const core::String &lowerExt = fileExt.toLower();
+	for (int i = 0; i < lengthof(exts); ++i) {
+		if (!exts[i]) {
+			break;
+		}
+		if (lowerExt == exts[i]) {
 			return true;
 		}
 	}
 	return false;
 }
 
+bool isImage(const core::String& file) {
+	const core::String& ext = core::string::extractExtension(file).toLower();
+	for (const io::FormatDescription *desc = io::format::images(); desc->name != nullptr; ++desc) {
+		if (desc->matchesExtension(ext)) {
+			return true;
+		}
+	}
+	return false;
+}
 
 core::String convertToFilePattern(const FormatDescription &desc) {
-	if (!desc.name || desc.name[0] == '\0') {
-		return core::string::format("*.%s", desc.ext);
+	core::String pattern;
+	bool showName = false;
+	if (desc.name && desc.name[0] != '\0') {
+		pattern += desc.name;
+		pattern.append(" (");
+		showName = true;
 	}
-	return core::string::format("%s (*.%s)", desc.name, desc.ext);
+	for (int i = 0; i < lengthof(desc.exts); ++i) {
+		if (!desc.exts[i]) {
+			break;
+		}
+		if (i > 0) {
+			pattern.append(",");
+		}
+		pattern += core::string::format("*.%s", desc.exts[i]);
+	}
+	if (showName) {
+		pattern.append(")");
+	}
+	return pattern;
 }
 
 core::String getWildcardsFromPattern(const core::String &pattern) {

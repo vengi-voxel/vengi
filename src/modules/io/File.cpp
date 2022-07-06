@@ -30,10 +30,15 @@ bool File::validHandle() const {
 
 bool File::isAnyOf(const io::FormatDescription* desc) const {
 	const core::String& ext = extension();
-	while (desc->ext) {
-		if (ext == desc->ext) {
-			// TODO: isA check
-			return true;
+	while (desc->name) {
+		for (int i = 0; i < lengthof(desc->exts); ++i) {
+			if (!desc->exts[i]) {
+				break;
+			}
+			if (desc->matchesExtension(ext)) {
+				// TODO: isA check
+				return true;
+			}
 		}
 		++desc;
 	}

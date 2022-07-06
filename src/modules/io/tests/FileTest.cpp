@@ -1,10 +1,20 @@
 #include "core/StringUtil.h"
 #include "io/Filesystem.h"
+#include "io/FormatDescription.h"
 #include <gtest/gtest.h>
 
 namespace io {
 
 class FileTest : public testing::Test {};
+
+TEST_F(FileTest, testIsAnyOf) {
+	io::Filesystem fs;
+	fs.init("test", "test");
+
+	const io::FilePtr &img = fs.open("image.png");
+	EXPECT_TRUE(img->isAnyOf(io::format::images()));
+	EXPECT_FALSE(img->isAnyOf(io::format::lua()));
+}
 
 TEST_F(FileTest, testGetPath) {
 	io::Filesystem fs;

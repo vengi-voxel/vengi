@@ -2,19 +2,19 @@
  * @file
  */
 
-#include <gtest/gtest.h>
 #include "io/Filesystem.h"
-#include "core/Enum.h"
 #include "core/Algorithm.h"
+#include "core/Enum.h"
 #include "core/tests/TestHelper.h"
+#include "io/FormatDescription.h"
+#include <gtest/gtest.h>
 
 namespace io {
 
-class FilesystemTest: public testing::Test {
-};
+class FilesystemTest : public testing::Test {};
 
-::std::ostream& operator<<(::std::ostream& ostream, const core::DynamicArray<io::Filesystem::DirEntry>& val) {
-	for (const auto& e : val) {
+::std::ostream &operator<<(::std::ostream &ostream, const core::DynamicArray<io::Filesystem::DirEntry> &val) {
+	for (const auto &e : val) {
 		ostream << e.name.c_str() << " - " << core::enumVal(e.type) << ", ";
 	}
 	return ostream;
@@ -32,15 +32,43 @@ TEST_F(FilesystemTest, testListDirectory) {
 	fs.list("listdirtest/", entities, "");
 	EXPECT_FALSE(entities.empty());
 	EXPECT_EQ(3u, entities.size()) << entities;
-	entities.sort([] (const io::Filesystem::DirEntry& first, const io::Filesystem::DirEntry& second) {
-			return first.name > second.name;
-		});
-	EXPECT_EQ("dir1", entities[0].name);
-	EXPECT_EQ("file1", entities[1].name);
-	EXPECT_EQ("file2", entities[2].name);
-	EXPECT_EQ(io::Filesystem::DirEntry::Type::dir, entities[0].type);
-	EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[1].type);
-	EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[2].type);
+	entities.sort([](const io::Filesystem::DirEntry &first, const io::Filesystem::DirEntry &second) {
+		return first.name > second.name;
+	});
+	if (entities.size() >= 3) {
+		EXPECT_EQ("dir1", entities[0].name);
+		EXPECT_EQ("file1", entities[1].name);
+		EXPECT_EQ("file2", entities[2].name);
+		EXPECT_EQ(io::Filesystem::DirEntry::Type::dir, entities[0].type);
+		EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[1].type);
+		EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[2].type);
+	}
+	fs.shutdown();
+}
+
+TEST_F(FilesystemTest, testListDirectoryFilter) {
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.syswrite("listdirtestfilter/image.Png", "1"));
+	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.foo", "1"));
+	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.png", "1"));
+	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.jpeg", "1"));
+	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.jpg", "1"));
+	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	const FormatDescription desc = {"JPEG", {"jpeg", "jpg"}, nullptr, 0u};
+	const core::String &jpegFilePattern = convertToFilePattern(desc);
+	fs.list("listdirtestfilter/", entities, getWildcardsFromPattern(jpegFilePattern));
+	EXPECT_FALSE(entities.empty());
+	EXPECT_EQ(2u, entities.size()) << entities;
+	entities.sort([](const io::Filesystem::DirEntry &first, const io::Filesystem::DirEntry &second) {
+		return first.name > second.name;
+	});
+	if (entities.size() >= 2) {
+		EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[0].type);
+		EXPECT_EQ("foobar.jpeg", entities[0].name);
+		EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[1].type);
+		EXPECT_EQ("foobar.jpg", entities[1].name);
+	}
 	fs.shutdown();
 }
 
@@ -48,7 +76,7 @@ TEST_F(FilesystemTest, testAbsolutePath) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.createDir("absolutePathInCurDir"));
-	const core::String& absPath = fs.absolutePath("absolutePathInCurDir");
+	const core::String &absPath = fs.absolutePath("absolutePathInCurDir");
 	EXPECT_NE("", absPath);
 	fs.shutdown();
 }
@@ -105,7 +133,7 @@ TEST_F(FilesystemTest, testWriteExplicitCurDir) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.write("./testfile", "123")) << "Failed to write content to testfile in " << fs.homePath();
-	const core::String& content = fs.load("./testfile");
+	const core::String &content = fs.load("./testfile");
 	EXPECT_EQ("123", content) << "Written content doesn't match expected";
 	fs.shutdown();
 }
@@ -114,7 +142,7 @@ TEST_F(FilesystemTest, testWrite) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.write("testfile", "123")) << "Failed to write content to testfile in " << fs.homePath();
-	const core::String& content = fs.load("testfile");
+	const core::String &content = fs.load("testfile");
 	EXPECT_EQ("123", content) << "Written content doesn't match expected";
 	fs.shutdown();
 }
@@ -123,7 +151,7 @@ TEST_F(FilesystemTest, testWriteNewDir) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.write("dir123/testfile", "123")) << "Failed to write content to testfile in dir123";
-	const core::String& content = fs.load("dir123/testfile");
+	const core::String &content = fs.load("dir123/testfile");
 	EXPECT_EQ("123", content) << "Written content doesn't match expected";
 	fs.removeFile("dir123/testfile");
 	fs.removeDir("dir123");
@@ -148,4 +176,4 @@ TEST_F(FilesystemTest, testCreateDirNonRecursiveFail) {
 	fs.shutdown();
 }
 
-}
+} // namespace io

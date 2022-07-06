@@ -4,6 +4,7 @@
 
 #include "NamedBinaryTag.h"
 #include "core/Log.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 
 namespace voxelformat {
@@ -173,6 +174,19 @@ void NamedBinaryTag::dump_r(io::WriteStream &stream, const char *name, const Nam
 void NamedBinaryTag::dump(io::WriteStream &stream) const {
 	dump_r(stream, "", *this, 0);
 	stream.writeUInt8(0);
+}
+
+void NamedBinaryTag::print() const {
+	io::BufferedReadWriteStream stream;
+	dump(stream);
+	stream.seek(0);
+	char buf[16000];
+	bool ret = stream.readString(lengthof(buf), buf);
+	Log::error("%s", buf);
+	while (ret) {
+		ret = stream.readString(lengthof(buf), buf);
+		Log::error("%s", buf);
+	}
 }
 
 bool NamedBinaryTag::write(const NamedBinaryTag &tag, const core::String &rootTagName, io::WriteStream &stream) {

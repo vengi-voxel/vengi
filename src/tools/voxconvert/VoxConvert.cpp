@@ -96,12 +96,22 @@ app::AppState VoxConvert::onConstruct() {
 void VoxConvert::usage() const {
 	Super::usage();
 	Log::info("Load support:");
-	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD; desc->ext != nullptr; ++desc) {
-		Log::info(" * %s (*.%s)", desc->name, desc->ext);
+	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD; desc->name != nullptr; ++desc) {
+		for (int i = 0; i < lengthof(desc->exts); ++i) {
+			if (!desc->exts[i]) {
+				break;
+			}
+			Log::info(" * %s (*.%s)", desc->name, desc->exts[i]);
+		}
 	}
 	Log::info("Save support:");
-	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->ext != nullptr; ++desc) {
-		Log::info(" * %s (*.%s)", desc->name, desc->ext);
+	for (const io::FormatDescription *desc = voxelformat::SUPPORTED_VOXEL_FORMATS_SAVE; desc->name != nullptr; ++desc) {
+		for (int i = 0; i < lengthof(desc->exts); ++i) {
+			if (!desc->exts[i]) {
+				break;
+			}
+			Log::info(" * %s (*.%s)", desc->name, desc->exts[i]);
+		}
 	}
 	Log::info("Links:");
 	Log::info(" * Bug reports: https://github.com/mgerhardy/vengi");

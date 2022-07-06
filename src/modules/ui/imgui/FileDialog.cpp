@@ -60,6 +60,7 @@ bool FileDialog::openDir(const io::FormatDescription* formats, const core::Strin
 		_filterTextWidth = 0.0f;
 		const io::FormatDescription* f = formats;
 		// TODO: add an all-supported-formats-entry - which is the default
+		// TODO: add a group by first name (e.g. all Minecraft, all Qubicle, ...)
 		while (f->name != nullptr) {
 			const core::String& str = io::convertToFilePattern(*f);
 			const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
