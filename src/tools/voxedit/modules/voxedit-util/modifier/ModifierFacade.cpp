@@ -59,7 +59,7 @@ void ModifierFacade::render(const video::Camera& camera) {
 		_modifierRenderer.renderAABBMode(camera);
 	}
 	const glm::mat4& translate = glm::translate(glm::vec3(aabbPosition()));
-	const glm::mat4& scale = glm::scale(translate, glm::vec3(_gridResolution));
+	const glm::mat4& scale = glm::scale(translate, glm::vec3((float)_gridResolution));
 	_modifierRenderer.updateCursor(_cursorVoxel, _gridResolution == 1 ? _face : voxel::FaceNames::Max);
 	_modifierRenderer.render(camera, scale);
 	if (_selectionValid) {
