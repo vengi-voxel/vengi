@@ -3,6 +3,7 @@
  */
 
 #include "FormatDescription.h"
+#include "core/String.h"
 #include "core/StringUtil.h"
 
 namespace io {
@@ -18,6 +19,24 @@ bool FormatDescription::matchesExtension(const core::String &fileExt) const {
 		}
 	}
 	return false;
+}
+
+bool FormatDescription::operator<(const FormatDescription &rhs) const {
+	return SDL_strcmp(name, rhs.name) < 0;
+}
+
+core::String FormatDescription::wildCard() const {
+	core::String pattern;
+	for (int i = 0; i < lengthof(exts); ++i) {
+		if (!exts[i]) {
+			break;
+		}
+		if (i > 0) {
+			pattern.append(",");
+		}
+		pattern += core::string::format("*.%s", exts[i]);
+	}
+	return pattern;
 }
 
 bool isImage(const core::String& file) {

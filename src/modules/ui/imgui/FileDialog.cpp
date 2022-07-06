@@ -35,7 +35,7 @@ void FileDialog::applyFilter() {
 			continue;
 		}
 		if (_currentFilterEntry != -1) {
-			const core::String& filter = io::getWildcardsFromPattern(_filterEntries[_currentFilterEntry]);
+			const core::String& filter = _filterEntries[_currentFilterEntry].wildCard();
 			if (!core::string::fileMatchesMultiple(_entities[i].name.c_str(), filter.c_str())) {
 				continue;
 			}
@@ -65,10 +65,10 @@ bool FileDialog::openDir(const io::FormatDescription* formats, const core::Strin
 			const core::String& str = io::convertToFilePattern(*f);
 			const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
 			_filterTextWidth = core_max(_filterTextWidth, filterTextSize.x);
-			_filterEntries.push_back(str);
+			_filterEntries.push_back(*f);
 			++f;
 		}
-		core::sort(_filterEntries.begin(), _filterEntries.end(), core::Less<core::String>());
+		core::sort(_filterEntries.begin(), _filterEntries.end(), core::Less<io::FormatDescription>());
 
 		const core::VarPtr &lastFilterVar = core::Var::getSafe(cfg::UILastFilter);
 		int lastFilter = lastFilterVar->intVal();
@@ -504,8 +504,22 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 				const ImVec2 &size = ImGui::CalcTextSize(label);
 				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - _filterTextWidth - (size.x + 2.0f));
 				ImGui::PushItemWidth(_filterTextWidth);
-				if (ImGui::ComboStl(label, &_currentFilterEntry, _filterEntries)) {
-					selectFilter(_currentFilterEntry);
+				int currentlySelected = _currentFilterEntry == -1 ? 0 : _currentFilterEntry;
+				const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
+
+				if (ImGui::BeginCombo(label, selectedEntry.c_str())) {
+					for (int i = 0; i < (int)_filterEntries.size(); ++i) {
+						const bool selected = i == currentlySelected;
+						const io::FormatDescription &format = _filterEntries[i];
+						const core::String &text = io::convertToFilePattern(format);
+						if (ImGui::Selectable(text.c_str(), selected)) {
+							selectFilter(i);
+						}
+						if (selected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
 				}
 				ImGui::PopItemWidth();
 			}

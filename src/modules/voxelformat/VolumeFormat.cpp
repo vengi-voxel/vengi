@@ -67,8 +67,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"BinVox", {"binvox"}, [] (uint32_t magic) {return magic == FourCC('#','b','i','n');}, 0u},
 	{"Goxel", {"gox"}, [] (uint32_t magic) {return magic == FourCC('G','O','X',' ');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 	{"CubeWorld", {"cub"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Minecraft region anvil", {"mca"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{"Minecraft region", {"mcr"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+	{"Minecraft region", {"mca", "mcr"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Minecraft level dat", {"dat"}, nullptr, 0u},
 	{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 	{"Sproxel csv", {"csv"}, nullptr, 0u},
@@ -83,7 +82,7 @@ const io::FormatDescription SUPPORTED_VOXEL_FORMATS_LOAD[] = {
 	{"Chronovox", {"csm"}, [](uint32_t magic) { return magic == FourCC('.', 'C', 'S', 'M'); }, 0u},
 	{"Nicks Voxel Model", {"nvm"}, [](uint32_t magic) { return magic == FourCC('.', 'N', 'V', 'M'); }, 0u},
 	{"SLAB6 vox", {"vox"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-	{nullptr, nullptr, nullptr, 0u}
+	{nullptr, {}, nullptr, 0u}
 };
 // this is the list of internal formats that are supported engine-wide (the format we save our own models in)
 const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = {"qb", "vox", nullptr};

@@ -15,6 +15,8 @@ struct FormatDescription {
 	bool (*isA)(uint32_t magic) = nullptr;	/**< function to check whether a magic byte matches for the format description */
 	uint32_t flags = 0u;					/**< flags for user defines properties */
 
+	bool operator<(const FormatDescription &rhs) const;
+	core::String wildCard() const;
 	bool matchesExtension(const core::String &fileExt) const;
 };
 

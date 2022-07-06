@@ -31,7 +31,7 @@ private:
 	FileDialogSortOrder _typeSortOrder = FileDialogSortOrder::None;
 	float _filterTextWidth = 0.0f;
 	int _currentFilterEntry = -1;
-	core::DynamicArray<core::String> _filterEntries;
+	core::DynamicArray<io::FormatDescription> _filterEntries;
 	core::VarPtr _showHidden;
 	bool _disableDeleteButton = false;
 	char _newFolderName[500] = "";
