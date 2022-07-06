@@ -26,6 +26,7 @@ set(SRCS
 	ScopedFrameBuffer.h ScopedFrameBuffer.cpp
 	ScopedState.h ScopedState.cpp
 	ScopedBlendMode.h ScopedBlendMode.cpp
+	ScopedRenderState.h ScopedRenderState.cpp
 	ScopedScissor.h ScopedScissor.cpp
 	ScopedPolygonMode.h ScopedPolygonMode.cpp
 	ScopedRenderBuffer.h ScopedRenderBuffer.cpp
