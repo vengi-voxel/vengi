@@ -10,7 +10,7 @@ namespace video {
 ScopedBlendMode::ScopedBlendMode(video::BlendMode src, video::BlendMode dest, BlendEquation func) {
 	video::getBlendState(_oldEnabled, _oldSrc, _oldDest, _oldFunc);
 	video::enable(video::State::Blend);
-	if (src != BlendMode::Max || dest != BlendMode::Max) {
+	if (src != BlendMode::Max && dest != BlendMode::Max) {
 		video::blendFunc(src, dest);
 	}
 	if (func != BlendEquation::Max) {
