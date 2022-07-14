@@ -3,6 +3,8 @@
  */
 
 #include "VoxelUtil.h"
+#include "core/ArrayLength.h"
+#include "core/GLM.h"
 #include "core/collection/Array3DView.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
@@ -14,6 +16,48 @@
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
+
+bool isTouching(const voxel::RawVolume *volume, const glm::ivec3& pos) {
+	static const glm::ivec3 offsets[] = {
+		glm::ivec3(0, 0, -1),
+		glm::ivec3(0, 0, +1),
+		glm::ivec3(0, -1, 0),
+		glm::ivec3(0, +1, 0),
+		glm::ivec3(-1, 0, 0),
+		glm::ivec3(+1, 0, 0),
+		glm::ivec3(0, -1, -1),
+		glm::ivec3(0, -1, +1),
+		glm::ivec3(0, +1, -1),
+		glm::ivec3(0, +1, +1),
+		glm::ivec3(-1, 0, -1),
+		glm::ivec3(-1, 0, +1),
+		glm::ivec3(+1, 0, -1),
+		glm::ivec3(+1, 0, +1),
+		glm::ivec3(-1, -1, 0),
+		glm::ivec3(-1, +1, 0),
+		glm::ivec3(+1, -1, 0),
+		glm::ivec3(+1, +1, 0),
+		glm::ivec3(-1, -1, -1),
+		glm::ivec3(-1, -1, +1),
+		glm::ivec3(-1, +1, -1),
+		glm::ivec3(-1, +1, +1),
+		glm::ivec3(+1, -1, -1),
+		glm::ivec3(+1, -1, +1),
+		glm::ivec3(+1, +1, -1),
+		glm::ivec3(+1, +1, +1)
+	};
+	const voxel::Region &region = volume->region();
+	for (int i = 0; i < lengthof(offsets); ++i) {
+		const glm::ivec3 &volPos = pos + offsets[i];
+		if (!region.containsPoint(volPos)) {
+			continue;
+		}
+		if (voxel::isBlocked(volume->voxel(volPos).getMaterial())) {
+			return true;
+		}
+	}
+	return false;
+}
 
 bool isEmpty(const voxel::RawVolume &v, const voxel::Region &region) {
 	voxel::RawVolume::Sampler sampler(v);
