@@ -3,6 +3,7 @@
  */
 
 #include "FormatDescription.h"
+#include "core/Algorithm.h"
 #include "core/FourCC.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -70,6 +71,48 @@ bool isImage(const core::String& file) {
 		}
 	}
 	return false;
+}
+
+void createGroupPatterns(const FormatDescription *inputDesc, core::DynamicArray<io::FormatDescription> &groups) {
+	core::DynamicArray<io::FormatDescription> descs;
+	for (; inputDesc->valid(); ++inputDesc) {
+		descs.emplace_back(*inputDesc);
+	}
+	core::sort(descs.begin(), descs.end(), core::Less<io::FormatDescription>());
+	core::DynamicArray<io::FormatDescription> temp;
+	core::String lastName;
+	for (const io::FormatDescription &desc : descs) {
+		core::String firstWord = desc.name;
+		auto iter = firstWord.find_first_of(" ");
+		if (iter != core::String::npos) {
+			firstWord = firstWord.substr(0, iter);
+		}
+		if (lastName != firstWord) {
+			if (temp.size() >= 2) {
+				io::FormatDescriptionExtensions exts{};
+				for (const io::FormatDescription &tmpDesc : temp) {
+					for (const core::String &ext : tmpDesc.exts) {
+						exts.push_back(ext);
+					}
+				}
+				io::FormatDescription val{lastName, exts, nullptr, 0};
+				groups.push_back(val);
+			}
+			lastName = firstWord;
+			temp.clear();
+		}
+		temp.push_back(desc);
+	}
+	if (temp.size() >= 2) {
+		io::FormatDescriptionExtensions exts{};
+		for (const io::FormatDescription &tmpDesc : temp) {
+			for (const core::String &ext : tmpDesc.exts) {
+				exts.push_back(ext);
+			}
+		}
+		io::FormatDescription val{lastName, exts, nullptr, 0};
+		groups.push_back(val);
+	}
 }
 
 core::String convertToFilePattern(const FormatDescription &desc) {

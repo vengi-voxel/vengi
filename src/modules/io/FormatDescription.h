@@ -5,14 +5,18 @@
 #pragma once
 
 #include "core/String.h"
+#include "core/collection/DynamicArray.h"
 #include "core/collection/Vector.h"
 #include <stdint.h>
 
 namespace io {
 
+#define MAX_FORMATDESCRIPTION_EXTENSIONS 8
+using FormatDescriptionExtensions = core::Vector<core::String, MAX_FORMATDESCRIPTION_EXTENSIONS>;
+
 struct FormatDescription {
 	core::String name;						/**< the name of the format */
-	core::Vector<core::String, 8> exts;		/**< the file extension - nullptr terminated list */
+	FormatDescriptionExtensions exts;		/**< the file extension - nullptr terminated list */
 	bool (*isA)(uint32_t magic) = nullptr;	/**< function to check whether a magic byte matches for the format description */
 	uint32_t flags = 0u;					/**< flags for user defines properties */
 
@@ -42,6 +46,10 @@ extern core::String convertToAllFilePattern(const FormatDescription *desc);
  */
 extern core::String convertToFilePattern(const FormatDescription &desc);
 extern bool isImage(const core::String &file);
+/**
+ * @brief Add additional filter groups like "All Minecraft", "All Qubicle" filters
+ */
+extern void createGroupPatterns(const FormatDescription *desc, core::DynamicArray<io::FormatDescription> &groups);
 
 namespace format {
 
