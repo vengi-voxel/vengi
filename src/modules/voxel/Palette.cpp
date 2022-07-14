@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
+#include "core/ArrayLength.h"
 #include "core/collection/Buffer.h"
 #include "core/RGBA.h"
 #include "image/Image.h"

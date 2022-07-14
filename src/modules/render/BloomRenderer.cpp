@@ -7,6 +7,7 @@
 #include "ConvolutionShader.h"
 #include "TextureShader.h"
 #include "core/Log.h"
+#include "core/ArrayLength.h"
 #include "video/Camera.h"
 #include "video/FrameBufferConfig.h"
 #include "video/Renderer.h"

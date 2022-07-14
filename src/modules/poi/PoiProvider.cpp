@@ -5,6 +5,7 @@
 #include "PoiProvider.h"
 #include "core/TimeProvider.h"
 #include "math/Random.h"
+#include "core/ArrayLength.h"
 #include "core/Var.h"
 #include "core/GLM.h"
 #include <glm/gtc/constants.hpp>

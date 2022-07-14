@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include "core/Color.h"
 #include "core/RGBA.h"
+#include "core/ArrayLength.h"
 #include <SDL_endian.h>
 
 namespace core {

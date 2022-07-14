@@ -11,6 +11,7 @@
 #include "attrib/ContainerValues.h"
 #include "attrib/ShadowAttributes.h"
 #include "command/Command.h"
+#include "core/ArrayLength.h"
 #include "core/Color.h"
 #include "core/Enum.h"
 #include "core/EventBus.h"

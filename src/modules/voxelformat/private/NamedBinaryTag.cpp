@@ -4,6 +4,7 @@
 
 #include "NamedBinaryTag.h"
 #include "core/Log.h"
+#include "core/ArrayLength.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 

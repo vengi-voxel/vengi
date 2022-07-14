@@ -8,6 +8,7 @@
 #include "core/Optional.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
+#include "core/ArrayLength.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"

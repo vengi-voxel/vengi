@@ -5,6 +5,7 @@
 #include "app/App.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
+#include "core/ArrayLength.h"
 #include "io/Filesystem.h"
 #include "metric/Metric.h"
 #include <gtest/gtest.h>

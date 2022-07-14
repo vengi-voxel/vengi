@@ -8,6 +8,7 @@
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/ArrayLength.h"
 #include "core/GLM.h"
 #include "core/GameConfig.h"
 #include <SDL.h>

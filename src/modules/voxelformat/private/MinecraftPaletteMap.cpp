@@ -4,6 +4,7 @@
 
 #include "MinecraftPaletteMap.h"
 #include "core/Log.h"
+#include "core/ArrayLength.h"
 
 namespace voxelformat {
 

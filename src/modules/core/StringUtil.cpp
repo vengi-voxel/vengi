@@ -4,6 +4,7 @@
 
 #include "StringUtil.h"
 #include "core/Common.h"
+#include "core/ArrayLength.h"
 #include "core/StandardLib.h"
 #include <SDL_platform.h>
 #include <ctype.h>
