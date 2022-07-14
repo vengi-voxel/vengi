@@ -62,6 +62,7 @@ protected:
 	math::Axis _mirrorAxis = math::Axis::None;
 	glm::ivec3 _mirrorPos {0};
 	glm::ivec3 _cursorPosition {0};
+	glm::ivec3 _referencePos;
 	voxel::FaceNames _face = voxel::FaceNames::Max;
 	voxel::Voxel _cursorVoxel;
 	ModifierButton _actionExecuteButton;
@@ -156,6 +157,10 @@ public:
 	 */
 	void setCursorPosition(const glm::ivec3& pos, voxel::FaceNames face);
 	const glm::ivec3& cursorPosition() const;
+
+	const glm::ivec3& referencePosition() const;
+	void setReferencePosition(const glm::ivec3& pos);
+
 	voxel::FaceNames cursorFace() const;
 
 	void setGridResolution(int resolution);
@@ -165,6 +170,14 @@ public:
 
 inline void Modifier::setModifierType(ModifierType type) {
 	_modifierType = type;
+}
+
+inline void Modifier::setReferencePosition(const glm::ivec3 &pos) {
+	_referencePos = pos;
+}
+
+inline const glm::ivec3& Modifier::referencePosition() const {
+	return _referencePos;
 }
 
 inline ModifierType Modifier::modifierType() const {

@@ -997,7 +997,7 @@ void SceneManager::shift(int nodeId, const glm::ivec3& m) {
 	voxel::RawVolume* model = node->volume();
 	Log::debug("Shift region by %s on layer %i", glm::to_string(m).c_str(), nodeId);
 	voxel::Region oldRegion = model->region();
-	setReferencePosition(_referencePos + m);
+	setReferencePosition(referencePosition() + m);
 	_modifier.translate(m);
 	_volumeRenderer.translate(*node, m);
 	const voxel::Region& newRegion = model->region();
@@ -1415,7 +1415,7 @@ void SceneManager::construct() {
 		if (selection.isValid()) {
 			paste(selection.getLowerCorner());
 		} else {
-			paste(_referencePos);
+			paste(referencePosition());
 		}
 	}).setHelp("Paste clipboard to current selection or reference position");
 
@@ -2110,8 +2110,9 @@ void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
 }
 
 void SceneManager::setReferencePosition(const glm::ivec3& pos) {
-	_referencePos = pos;
-	const glm::vec3 posAligned((float)_referencePos.x + 0.5f, (float)_referencePos.y + 0.5f, (float)_referencePos.z + 0.5f);
+	_modifier.setReferencePosition(pos);
+	const glm::ivec3 &refPos = _modifier.referencePosition();
+	const glm::vec3 posAligned((float)refPos.x + 0.5f, (float)refPos.y + 0.5f, (float)refPos.z + 0.5f);
 	_referencePointModelMatrix = glm::translate(posAligned);
 }
 
