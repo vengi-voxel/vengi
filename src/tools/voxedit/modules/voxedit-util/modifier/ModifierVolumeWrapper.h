@@ -20,7 +20,7 @@ private:
 	voxel::Region _dirtyRegion = voxel::Region::InvalidRegion;
 	const ModifierType _modifierType;
 
-	bool _deleteVoxels;
+	bool _eraseVoxels;
 	bool _overwrite;
 	bool _update;
 	bool _force;
@@ -41,10 +41,10 @@ public:
 
 	ModifierVolumeWrapper(voxel::RawVolume* volume, ModifierType modifierType) :
 			_volume(volume), _region(volume->region()), _modifierType(modifierType) {
-		_deleteVoxels = (_modifierType & ModifierType::Delete) == ModifierType::Delete;
-		_overwrite = (_modifierType & ModifierType::Place) == ModifierType::Place && _deleteVoxels;
-		_update = (_modifierType & ModifierType::Update) == ModifierType::Update;
-		_force = _overwrite || _deleteVoxels;
+		_eraseVoxels = (_modifierType & ModifierType::Erase) == ModifierType::Erase;
+		_overwrite = (_modifierType & ModifierType::Place) == ModifierType::Place && _eraseVoxels;
+		_update = (_modifierType & ModifierType::Paint) == ModifierType::Paint;
+		_force = _overwrite || _eraseVoxels;
 	}
 
 	inline operator voxel::RawVolume& () const {
@@ -103,14 +103,14 @@ public:
 				return false;
 			}
 		}
-		const glm::ivec3 p(x, y, z);
-		if (!_region.containsPoint(p)) {
+		if (!_region.containsPoint(x, y, z)) {
 			return false;
 		}
 		voxel::Voxel placeVoxel = voxel;
-		if (!_overwrite && _deleteVoxels) {
+		if (!_overwrite && _eraseVoxels) {
 			placeVoxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
 		}
+		const glm::ivec3 p(x, y, z);
 		if (_volume->setVoxel(p, placeVoxel)) {
 			if (_dirtyRegion.isValid()) {
 				_dirtyRegion.accumulate(p);

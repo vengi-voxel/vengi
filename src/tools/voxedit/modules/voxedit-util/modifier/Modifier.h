@@ -65,6 +65,8 @@ protected:
 	glm::ivec3 _referencePos;
 	voxel::FaceNames _face = voxel::FaceNames::Max;
 	voxel::Voxel _cursorVoxel;
+	// existing voxel under the cursor
+	voxel::Voxel _hitCursorVoxel;
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
 	ShapeType _shapeType = ShapeType::AABB;
@@ -125,6 +127,12 @@ public:
 	ModifierType modifierType() const;
 	void setModifierType(ModifierType type);
 
+	void setPlaneMode(bool state);
+	bool planeMode() const;
+
+	void setSingleMode(bool state);
+	bool singleMode() const;
+
 	const voxel::Voxel& cursorVoxel() const;
 	virtual void setCursorVoxel(const voxel::Voxel& voxel);
 
@@ -161,6 +169,9 @@ public:
 	const glm::ivec3& referencePosition() const;
 	void setReferencePosition(const glm::ivec3& pos);
 
+	const voxel::Voxel& hitCursorVoxel() const;
+	void setHitCursorVoxel(const voxel::Voxel&);
+
 	voxel::FaceNames cursorFace() const;
 
 	void setGridResolution(int resolution);
@@ -168,8 +179,8 @@ public:
 	void reset();
 };
 
-inline void Modifier::setModifierType(ModifierType type) {
-	_modifierType = type;
+inline const voxel::Voxel& Modifier::hitCursorVoxel() const {
+	return _hitCursorVoxel;
 }
 
 inline void Modifier::setReferencePosition(const glm::ivec3 &pos) {
@@ -182,6 +193,14 @@ inline const glm::ivec3& Modifier::referencePosition() const {
 
 inline ModifierType Modifier::modifierType() const {
 	return _modifierType;
+}
+
+inline bool Modifier::planeMode() const {
+	return (_modifierType & ModifierType::Plane) == ModifierType::Plane;
+}
+
+inline bool Modifier::singleMode() const {
+	return (_modifierType & ModifierType::Single) == ModifierType::Single;
 }
 
 inline bool Modifier::aabbMode() const {

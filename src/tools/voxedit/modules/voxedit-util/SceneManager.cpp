@@ -31,6 +31,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeMoveWrapper.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "voxel/Voxel.h"
 #include "voxelformat/CubFormat.h"
 #include "voxelformat/QBFormat.h"
 #include "voxelformat/QBTFormat.h"
@@ -211,24 +212,6 @@ void SceneManager::fillHollow() {
 	});
 }
 
-void SceneManager::fillPlane() {
-	const voxel::Voxel &voxel = _modifier.cursorVoxel();
-	const glm::ivec3 &pos = _modifier.cursorPosition();
-	const voxel::FaceNames face = _modifier.cursorFace();
-	fillPlane(voxel, pos, face);
-}
-
-void SceneManager::fillPlane(const voxel::Voxel &voxel, const glm::ivec3 &pos, const voxel::FaceNames face) {
-	const int nodeId = activeNode();
-	if (nodeId == -1) {
-		return;
-	}
-	voxel::RawVolume *v = volume(nodeId);
-	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
-	voxelutil::fillPlane(wrapper, voxel, voxel::Voxel(), pos, face);
-	modified(nodeId, wrapper.dirtyRegion());
-}
-
 void SceneManager::fillPlane(const image::ImagePtr &image) {
 	const int nodeId = activeNode();
 	if (nodeId == -1) {
@@ -238,7 +221,8 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 	const glm::ivec3 &pos = _modifier.cursorPosition();
 	const voxel::FaceNames face = _modifier.cursorFace();
-	voxelutil::fillPlane(wrapper, image, voxel::Voxel(), pos, face);
+	const voxel::Voxel &hitVoxel = hitCursorVoxel();
+	voxelutil::fillPlane(wrapper, image, hitVoxel, pos, face);
 	modified(nodeId, wrapper.dirtyRegion());
 }
 
@@ -1266,10 +1250,6 @@ void SceneManager::construct() {
 		scale(nodeId);
 	}).setHelp("Scale the current layer or given layer down");
 
-	command::Command::registerCommand("path", [&] (const command::CmdArgs& args) {
-		path();
-	}).setHelp("Assemble a path from reference position to cursor position");
-
 	command::Command::registerCommand("colortolayer", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
 		if (argc < 1) {
@@ -1288,10 +1268,6 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("fillhollow", [&] (const command::CmdArgs& args) {
 		fillHollow();
-	}).setHelp("Fill the inner parts of closed models");
-
-	command::Command::registerCommand("fillplane", [&] (const command::CmdArgs& args) {
-		fillPlane();
 	}).setHelp("Fill the inner parts of closed models");
 
 	command::Command::registerCommand("setreferenceposition", [&] (const command::CmdArgs& args) {
@@ -1541,8 +1517,8 @@ void SceneManager::construct() {
 		// during mouse movement, the current cursor position might be at an air voxel (this
 		// depends on the mode you are editing in), thus we should use the cursor voxel in
 		// that case
-		if (_traceViaMouse && !voxel::isAir(_hitCursorVoxel.getMaterial())) {
-			_modifier.setCursorVoxel(_hitCursorVoxel);
+		if (_traceViaMouse && !voxel::isAir(hitCursorVoxel().getMaterial())) {
+			_modifier.setCursorVoxel(hitCursorVoxel());
 			return;
 		}
 		// resolve the voxel via cursor position. This allows to use also get the proper
@@ -2125,7 +2101,8 @@ void SceneManager::moveCursor(int x, int y, int z) {
 	setCursorPosition(p, true);
 	_traceViaMouse = false;
 	if (const voxel::RawVolume *v = activeVolume()) {
-		_hitCursorVoxel = v->voxel(cursorPosition());
+		const voxel::Voxel &voxel = v->voxel(cursorPosition());
+		_modifier.setHitCursorVoxel(voxel);
 	}
 }
 
@@ -2309,7 +2286,9 @@ bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
 	}
 
 	if (_result.didHit) {
-		_hitCursorVoxel = v->voxel(_result.hitVoxel);
+		_modifier.setHitCursorVoxel(v->voxel(_result.hitVoxel));
+	} else {
+		_modifier.setHitCursorVoxel(voxel::Voxel());
 	}
 
 	if (result) {
@@ -2317,39 +2296,6 @@ bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
 	}
 
 	return true;
-}
-
-void SceneManager::path() {
-	const int nodeId = activeNode();
-	if (nodeId == -1) {
-		return;
-	}
-	voxel::RawVolume *v = volume(nodeId);
-	if (v == nullptr) {
-		return;
-	}
-
-	const auto isVoxelValidForPath = [](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
-		if (voxel::isBlocked(vol->voxel(pos).getMaterial())) {
-			return false;
-		}
-		const glm::ivec3 below(pos.x, pos.y - 1, pos.z);
-		if (!vol->region().containsPoint(below)) {
-			return false;
-		}
-		return voxel::isBlocked(vol->voxel(below).getMaterial());
-	};
-	core::List<glm::ivec3> listResult;
-	const glm::ivec3 &start = referencePosition();
-	const glm::ivec3 &end = cursorPosition();
-	voxelutil::AStarPathfinderParams<voxel::RawVolume> params(v, start, end, &listResult, isVoxelValidForPath, 4.0f, 10000);
-	voxelutil::AStarPathfinder pathfinder(params);
-	pathfinder.execute();
-	voxel::RawVolumeWrapper w(v);
-	for (const glm::ivec3& p : listResult) {
-		w.setVoxel(p, modifier().cursorVoxel());
-	}
-	modified(nodeId, w.dirtyRegion());
 }
 
 void SceneManager::updateLockedPlane(math::Axis axis) {

@@ -166,8 +166,6 @@ private:
 	command::ActionButton _zoomOut;
 
 	voxelutil::PickResult _result;
-	// existing voxel under the cursor
-	voxel::Voxel _hitCursorVoxel;
 
 	voxelgenerator::LUAGenerator _luaGenerator;
 
@@ -202,7 +200,6 @@ protected:
 	 */
 	void moveCursor(int x, int y, int z);
 	void fillHollow();
-	void fillPlane();
 
 	void colorToNewLayer(const voxel::Voxel voxelColor);
 	void crop();
@@ -319,7 +316,6 @@ public:
 			float length, float width, float widthIncrement, int iterations, float leavesRadius);
 
 	void fillPlane(const image::ImagePtr &image);
-	void fillPlane(const voxel::Voxel &voxel, const glm::ivec3 &pos, const voxel::FaceNames face);
 
 	/**
 	 * @brief Save the volume data to the given file
@@ -394,7 +390,6 @@ public:
 	 * @sa resetLastTrace()
 	 */
 	bool trace(bool force = false, voxelutil::PickResult *result = nullptr);
-	void path();
 	void resetLastTrace();
 
 	math::Axis lockedAxis() const;
@@ -526,7 +521,7 @@ inline EditMode SceneManager::editMode() const {
 }
 
 inline const voxel::Voxel& SceneManager::hitCursorVoxel() const {
-	return _hitCursorVoxel;
+	return _modifier.hitCursorVoxel();
 }
 
 inline const glm::ivec3& SceneManager::cursorPosition() const {

@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "core/StringUtil.h"
 #include "command/Command.h"
+#include "ui/imgui/dearimgui/imgui_internal.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -15,11 +16,12 @@
 #include "../CustomBindingContext.h"
 #include "../SceneManager.h"
 #include "voxelutil/VoxelUtil.h"
+#include "voxelutil/AStarPathfinder.h"
 
 namespace voxedit {
 
 Modifier::Modifier() :
-		_deleteExecuteButton(ModifierType::Delete) {
+				_deleteExecuteButton(ModifierType::Erase) {
 }
 
 void Modifier::construct() {
@@ -34,24 +36,28 @@ void Modifier::construct() {
 		setModifierType(ModifierType::ColorPicker);
 	}).setHelp("Change the modifier type to 'color picker'");
 
-	command::Command::registerCommand("actiondelete", [&] (const command::CmdArgs& args) {
-		setModifierType(ModifierType::Delete);
-	}).setHelp("Change the modifier type to 'delete'");
+	command::Command::registerCommand("actionpath", [&] (const command::CmdArgs& args) {
+		setModifierType(ModifierType::Path);
+	}).setHelp("Change the modifier type to 'path'");
+
+	command::Command::registerCommand("actionline", [&] (const command::CmdArgs& args) {
+		setModifierType(ModifierType::Line);
+	}).setHelp("Change the modifier type to 'line'");
+
+	command::Command::registerCommand("actionerase", [&] (const command::CmdArgs& args) {
+		setModifierType(ModifierType::Erase);
+	}).setHelp("Change the modifier type to 'erase'");
 
 	command::Command::registerCommand("actionplace", [&] (const command::CmdArgs& args) {
 		setModifierType(ModifierType::Place);
 	}).setHelp("Change the modifier type to 'place'");
 
-	command::Command::registerCommand("actionfillplane", [&] (const command::CmdArgs& args) {
-		setModifierType(ModifierType::FillPlane);
-	}).setHelp("Change the modifier type to 'fillplane'");
-
-	command::Command::registerCommand("actioncolorize", [&] (const command::CmdArgs& args) {
-		setModifierType(ModifierType::Update);
-	}).setHelp("Change the modifier type to 'colorize'");
+	command::Command::registerCommand("actionpaint", [&] (const command::CmdArgs& args) {
+		setModifierType(ModifierType::Paint);
+	}).setHelp("Change the modifier type to 'paint'");
 
 	command::Command::registerCommand("actionoverride", [&] (const command::CmdArgs& args) {
-		setModifierType(ModifierType::Place | ModifierType::Delete);
+		setModifierType(ModifierType::Place | ModifierType::Erase);
 	}).setHelp("Change the modifier type to 'override'");
 
 	command::Command::registerCommand("shapeaabb", [&] (const command::CmdArgs& args) {
@@ -104,11 +110,12 @@ void Modifier::shutdown() {
 }
 
 void Modifier::update(double nowSeconds) {
-	if ((_modifierType & ModifierType::Single) == ModifierType::Single) {
-		if (_actionExecuteButton.pressed() && nowSeconds >= _nextSingleExecution) {
-			_actionExecuteButton.execute(true);
-			_nextSingleExecution = nowSeconds + 0.1;
-		}
+	if (!singleMode()) {
+		return;
+	}
+	if (_actionExecuteButton.pressed() && nowSeconds >= _nextSingleExecution) {
+		_actionExecuteButton.execute(true);
+		_nextSingleExecution = nowSeconds + 0.1;
 	}
 }
 
@@ -162,7 +169,7 @@ bool Modifier::aabbStart() {
 	_aabbFirstPos = aabbPosition();
 	_secondPosValid = false;
 	_aabbSecondActionDirection = math::Axis::None;
-	_aabbMode = (_modifierType & ModifierType::Single) != ModifierType::Single;
+	_aabbMode = !singleMode();
 	return true;
 }
 
@@ -194,8 +201,8 @@ void Modifier::unselect() {
 	_selectionValid = false;
 }
 
-bool Modifier::select(const glm::ivec3& mins, const glm::ivec3& maxs) {
-	const bool selectActive = (_modifierType & ModifierType::Delete) == ModifierType::None;
+bool Modifier::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+	const bool selectActive = (_modifierType & ModifierType::Erase) == ModifierType::None;
 	if (selectActive) {
 		_selection = voxel::Region{mins, maxs};
 		_selectionValid = _selection.isValid();
@@ -278,7 +285,7 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 }
 
 bool Modifier::needsSecondAction() {
-	if ((_modifierType & ModifierType::Single) == ModifierType::Single) {
+	if (singleMode()) {
 		return false;
 	}
 
@@ -322,9 +329,9 @@ glm::ivec3 Modifier::firstPos() const {
 
 math::AABB<int> Modifier::aabb() const {
 	const int size = _gridResolution;
-	const glm::ivec3& pos = aabbPosition();
-	const bool single = (_modifierType & ModifierType::Single) == ModifierType::Single;
-	const glm::ivec3& firstP = single ? pos : firstPos();
+	const glm::ivec3 &pos = aabbPosition();
+	const bool single = singleMode();
+	const glm::ivec3 &firstP = single ? pos : firstPos();
 	const glm::ivec3 mins = (glm::min)(firstP, pos);
 	const glm::ivec3 maxs = (glm::max)(firstP, pos) + (size - 1);
 	return math::AABB<int>(mins, maxs);
@@ -353,30 +360,20 @@ voxel::Region Modifier::createRegion(const voxel::RawVolume* volume) const {
 	return region;
 }
 
-bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
-	if ((_modifierType & ModifierType::ColorPicker) == ModifierType::ColorPicker) {
-		// TODO:
-		const glm::ivec3 &pos = cursorPosition();
-		if (volume->region().containsPoint(pos)) {
-			setCursorVoxel(volume->voxel(pos));
-			return true;
-		}
-		return false;
-	}
-	if ((_modifierType & ModifierType::FillPlane) == ModifierType::FillPlane) {
-		voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
-		voxelutil::fillPlane(wrapper, cursorVoxel(), voxel::Voxel(), cursorPosition(), cursorFace());
-		const voxel::Region& modifiedRegion = wrapper.dirtyRegion();
-		if (modifiedRegion.isValid()) {
-			voxel::logRegion("Dirty region", modifiedRegion);
-			callback(modifiedRegion, _modifierType);
-		}
+void Modifier::setHitCursorVoxel(const voxel::Voxel& voxel) {
+	_hitCursorVoxel = voxel;
+}
+
+bool Modifier::aabbAction(voxel::RawVolume *volume,
+						  const std::function<void(const voxel::Region &region, ModifierType type)> &callback) {
+	if (volume == nullptr) {
+		Log::debug("No volume given - can't perform action");
 		return true;
 	}
 
-	const math::AABB<int> a = aabb();
-
-	if ((_modifierType & ModifierType::Select) == ModifierType::Select) {
+	const bool selectFlag = (_modifierType & ModifierType::Select) == ModifierType::Select;
+	if (selectFlag) {
+		const math::AABB<int> a = aabb();
 		Log::debug("select mode");
 		select(a.mins(), a.maxs());
 		if (_selectionValid) {
@@ -385,12 +382,101 @@ bool Modifier::aabbAction(voxel::RawVolume* volume, const std::function<void(con
 		return true;
 	}
 
-	if (volume == nullptr) {
-		Log::debug("No volume given - can't perform action");
+	const bool colorPickerFlag = (_modifierType & ModifierType::ColorPicker) == ModifierType::ColorPicker;
+	if (colorPickerFlag) {
+		const glm::ivec3 &pos = cursorPosition();
+		if (volume->region().containsPoint(pos)) {
+			setCursorVoxel(volume->voxel(pos));
+			return true;
+		}
+		return false;
+	}
+
+	const bool placeFlag = (_modifierType & ModifierType::Place) == ModifierType::Place;
+	const bool eraseFlag = (_modifierType & ModifierType::Erase) == ModifierType::Erase;
+	const bool paintFlag = (_modifierType & ModifierType::Paint) == ModifierType::Paint;
+
+	const bool lineFlag = (_modifierType & ModifierType::Line) == ModifierType::Line;
+	if (lineFlag) {
+		voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
+		const glm::ivec3 &start = referencePosition();
+		const glm::ivec3 &end = cursorPosition();
+		voxel::Voxel voxel;
+		if (eraseFlag) {
+			voxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
+		}
+		if (placeFlag || paintFlag) {
+			voxel = cursorVoxel();
+		}
+		voxelutil::raycastWithEndpoints(&wrapper, start, end, [=](auto &sampler) {
+			const bool air = voxel::isAir(sampler.voxel().getMaterial());
+			if ((!eraseFlag && !paintFlag) && !air) {
+				return true;
+			}
+			sampler.setVoxel(voxel);
+			return true;
+		});
+		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
+		if (modifiedRegion.isValid()) {
+			callback(modifiedRegion, _modifierType);
+		}
+		return true;
+	}
+	const bool pathFlag = (_modifierType & ModifierType::Path) == ModifierType::Path;
+	if (pathFlag) {
+		const auto isVoxelValidForPath = [](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
+			if (voxel::isBlocked(vol->voxel(pos).getMaterial())) {
+				return false;
+			}
+			return voxelutil::isTouching(vol, pos);
+		};
+		const auto isVoxelValidForLine = [](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
+			return true;
+		};
+		core::List<glm::ivec3> listResult(4096);
+		const glm::ivec3 &start = referencePosition();
+		const glm::ivec3 &end = cursorPosition();
+		voxelutil::AStarPathfinderParams<voxel::RawVolume> params(volume, start, end, &listResult, lineFlag ? isVoxelValidForLine : isVoxelValidForPath,
+																  4.0f, 10000, voxelutil::Connectivity::EighteenConnected);
+		voxelutil::AStarPathfinder pathfinder(params);
+		if (!pathfinder.execute()) {
+			return false;
+		}
+		voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
+		for (const glm::ivec3& p : listResult) {
+			wrapper.setVoxel(p, cursorVoxel());
+		}
+		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
+		if (modifiedRegion.isValid()) {
+			callback(modifiedRegion, _modifierType);
+		}
+		return true;
+	}
+
+	if (planeMode()) {
+		voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
+		voxel::Voxel hitVoxel = hitCursorVoxel();
+		if (placeFlag) {
+			voxelutil::extrudePlane(wrapper, cursorPosition(), cursorFace(), hitVoxel, cursorVoxel());
+		} else if (eraseFlag) {
+			voxelutil::erasePlane(wrapper, cursorPosition(), cursorFace(), hitVoxel);
+		} else if (paintFlag) {
+			voxelutil::paintPlane(wrapper, cursorPosition(), cursorFace(), hitVoxel, cursorVoxel());
+		} else {
+			Log::error("Unsupported plane modifier");
+			return false;
+		}
+
+		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
+		if (modifiedRegion.isValid()) {
+			voxel::logRegion("Dirty region", modifiedRegion);
+			callback(modifiedRegion, _modifierType);
+		}
 		return true;
 	}
 
 	ModifierVolumeWrapper wrapper(volume, _modifierType);
+	const math::AABB<int> a = aabb();
 	glm::ivec3 minsMirror = a.mins();
 	glm::ivec3 maxsMirror = a.maxs();
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
@@ -416,8 +502,9 @@ void Modifier::aabbAbort() {
 }
 
 bool Modifier::modifierTypeRequiresExistingVoxel() const {
-	return (_modifierType & ModifierType::Delete) == ModifierType::Delete
-			|| (_modifierType & ModifierType::Update) == ModifierType::Update;
+	return (_modifierType & ModifierType::Erase) == ModifierType::Erase ||
+		   (_modifierType & ModifierType::Paint) == ModifierType::Paint ||
+		   (_modifierType & ModifierType::Select) == ModifierType::Select;
 }
 
 void Modifier::setGridResolution(int resolution) {
@@ -454,4 +541,30 @@ void Modifier::translate(const glm::ivec3& v) {
 	}
 }
 
+void Modifier::setModifierType(ModifierType type) {
+	if (planeMode()) {
+		type |= ModifierType::Plane;
+	}
+	if (singleMode()) {
+		type |= ModifierType::Single;
+	}
+	_modifierType = type;
 }
+
+void Modifier::setPlaneMode(bool state) {
+	if (state) {
+		_modifierType |= ModifierType::Plane;
+	} else {
+		_modifierType &= ~ModifierType::Plane;
+	}
+}
+
+void Modifier::setSingleMode(bool state) {
+	if (state) {
+		_modifierType |= ModifierType::Single;
+	} else {
+		_modifierType &= ~ModifierType::Single;
+	}
+}
+
+} // namespace voxedit

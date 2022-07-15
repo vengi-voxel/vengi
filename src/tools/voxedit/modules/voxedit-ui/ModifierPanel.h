@@ -10,7 +10,7 @@ namespace voxedit {
 
 class ModifierPanel {
 private:
-	bool modifierRadioButton(const char *title, ModifierType type);
+	bool modifierRadioButton(const char *title, ModifierType type, const char *tooltip = nullptr);
 
 public:
 	void update(const char *title);

@@ -7,6 +7,7 @@
 #include "image/Image.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 #include <functional>
 
 namespace voxel {
@@ -31,15 +32,24 @@ bool isTouching(const voxel::RawVolume *volume, const glm::ivec3& pos);
  */
 bool isEmpty(const voxel::RawVolume &in, const voxel::Region &region);
 
-using FillPlaneCallback = std::function<voxel::Voxel(const glm::ivec3 &, const voxel::Region &, voxel::FaceNames)>;
-void fillPlane(voxel::RawVolumeWrapper &in, const FillPlaneCallback &targetVoxel, const voxel::Voxel &searchedVoxel,
-			   const glm::ivec3 &position, voxel::FaceNames face);
+using WalkCheckCallback = std::function<bool(const voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
+using WalkExecCallback = std::function<bool(voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
 
-void fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const voxel::Voxel &searchedVoxel,
-			   const glm::ivec3 &position, voxel::FaceNames face);
+int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const voxel::Voxel &searchedVoxel,
+			  const glm::ivec3 &position, voxel::FaceNames face);
 
-void fillPlane(voxel::RawVolumeWrapper &in, const voxel::Voxel &targetVoxel, const voxel::Voxel &searchedVoxel,
-			   const glm::ivec3 &position, voxel::FaceNames face);
+/**
+ * @param pos The position where the first voxel should be placed
+ * @param face The face where the trace enters the ground voxel. This is about the direction of the plane that is
+ * extruded. If e.g. face x was detected, the plane is created on face y and z.
+ * @param groundVoxel The voxel we want to extrude on
+ * @param newPlaneVoxel The voxel to put at the given position
+ */
+int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel,
+			const voxel::Voxel &newPlaneVoxel);
+int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel);
+int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+			   const voxel::Voxel &searchVoxel, const voxel::Voxel &replaceVoxel);
 
 void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel);
 

@@ -43,7 +43,7 @@ protected:
 		const int nodeId = sceneGraph().activeNode();
 		voxel::RawVolume *v = volume(nodeId);
 		if (!voxel::isAir(v->voxel(pos).getMaterial())) {
-			modifier().setModifierType(ModifierType::Update);
+			modifier().setModifierType(ModifierType::Paint);
 		}
 		modifier().aabbAction(v, [&](const voxel::Region &region, ModifierType) { modified(nodeId, region); });
 		modifier().setModifierType(ModifierType::Place);

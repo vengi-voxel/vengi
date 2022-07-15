@@ -39,9 +39,11 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 		ImGui::TextUnformatted("LUA scripts for manipulating the voxel volumes");
 
 		if (ImGui::ComboStl("Script", &_currentScript, _scripts)) {
-			const core::String& scriptName = _scripts[_currentScript].filename;
-			_activeScript = sceneMgr().luaGenerator().load(scriptName);
-			reloadScriptParameters(_activeScript);
+			if (_currentScript >= 0 && _currentScript < (int)_scripts.size()) {
+				const core::String& scriptName = _scripts[_currentScript].filename;
+				_activeScript = sceneMgr().luaGenerator().load(scriptName);
+				reloadScriptParameters(_activeScript);
+			}
 		}
 
 		const int n = (int)_scriptParameterDescription.size();

@@ -109,7 +109,7 @@ void Viewport::update() {
 				if (sceneMgr().isLoading()) {
 					ImGui::LoadingIndicatorCircle("Loading", 150, core::Color::White, core::Color::Gray);
 				} else if (ImGui::IsItemHovered()) {
-					if (sceneMgr().modifier().modifierType() == ModifierType::ColorPicker) {
+					if ((sceneMgr().modifier().modifierType() & ModifierType::ColorPicker) == ModifierType::ColorPicker) {
 						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 					}
 					_hovered = true;
@@ -126,15 +126,19 @@ void Viewport::update() {
 						const int dragPalIdx = *(int *)payload->Data;
 						updateViewportTrace(headerSize);
 						ModifierFacade &modifier = sceneMgr().modifier();
-						const ModifierType modifierType = modifier.modifierType();
-						if ((modifierType & ModifierType::FillPlane) == ModifierType::FillPlane) {
-							sceneMgr().fillPlane(voxel::createVoxel(voxel::VoxelType::Generic, dragPalIdx),
-												 modifier.cursorPosition(), modifier.cursorFace());
-						// TODO: } else if ((modifierType & ModifierType::Update) == ModifierType::Update) {
-						}
+						modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, dragPalIdx));
+						const int nodeId = sceneMgr().sceneGraph().activeNode();
+						modifier.aabbStart();
+						modifier.aabbAction(sceneMgr().volume(nodeId),
+											[nodeId](const voxel::Region &region, ModifierType type) {
+												if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
+													sceneMgr().modified(nodeId, region);
+												}
+											});
+						modifier.aabbAbort();
 					}
 					if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
-						const core::String &filename = *(core::String*)payload->Data;
+						const core::String &filename = *(core::String *)payload->Data;
 						sceneMgr().prefab(filename);
 					}
 

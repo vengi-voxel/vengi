@@ -18,9 +18,13 @@ protected:
 		modifier.setGridResolution(1);
 		modifier.setCursorPosition(mins, voxel::FaceNames::PositiveX);
 		EXPECT_TRUE(modifier.aabbStart());
-		EXPECT_TRUE(modifier.aabbMode());
 		modifier.setCursorPosition(maxs, voxel::FaceNames::PositiveX);
-		modifier.aabbStep();
+		if (modifier.singleMode()) {
+			EXPECT_FALSE(modifier.aabbMode());
+		} else {
+			EXPECT_TRUE(modifier.aabbMode());
+			modifier.aabbStep();
+		}
 	}
 
 	void testMirror(math::Axis axis, const glm::ivec3& expectedMins, const glm::ivec3& expectedMaxs) {
