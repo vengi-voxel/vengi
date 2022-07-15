@@ -252,14 +252,6 @@ app::AppState VoxEdit::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	if (_argc >= 2) {
-		const char *file = _argv[_argc - 1];
-		const io::FilePtr& filePtr = filesystem()->open(file);
-		if (filePtr->exists()) {
-			core::Var::get(cfg::VoxEditLastFile)->setVal(filePtr->name());
-		}
-	}
-
 	_mainWindow = new voxedit::MainWindow(this);
 	if (!_mainWindow->init()) {
 		Log::error("Failed to initialize the main window");
@@ -283,6 +275,14 @@ app::AppState VoxEdit::onInit() {
 	setRelativeMouseMode(false);
 
 	core::setBindingContext(voxedit::BindingContext::UI);
+
+	if (_argc >= 2) {
+		const char *file = _argv[_argc - 1];
+		const io::FilePtr& filePtr = filesystem()->open(file);
+		if (filePtr->exists()) {
+			_mainWindow->load(file);
+		}
+	}
 
 	return state;
 }
