@@ -129,4 +129,24 @@ TEST_F(ModifierTest, testModifierSelection) {
 	modifier.shutdown();
 }
 
+TEST_F(ModifierTest, DISABLED_testPlace) {
+	// TODO: implement me
+}
+
+TEST_F(ModifierTest, DISABLED_testErase) {
+	// TODO: implement me
+}
+
+TEST_F(ModifierTest, DISABLED_testPaint) {
+	// TODO: implement me
+}
+
+TEST_F(ModifierTest, DISABLED_testPath) {
+	// TODO: implement me
+}
+
+TEST_F(ModifierTest, DISABLED_testLine) {
+	// TODO: implement me
+}
+
 }
