@@ -104,7 +104,7 @@ typedef RaycastResults::RaycastResult RaycastResult;
  * @return A RaycastResults designating whether the ray hit anything or not
  */
 template<typename Callback, class Volume>
-RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
+RaycastResult raycastWithEndpoints(Volume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
 	core_trace_scoped(raycastWithEndpoints);
 	typename Volume::Sampler sampler(volData);
 
@@ -194,12 +194,12 @@ RaycastResult raycastWithEndpoints(const Volume* volData, const glm::vec3& v3dSt
 }
 
 template<typename Callback>
-inline RaycastResult raycastWithEndpointsVolume(const voxel::PagedVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
+inline RaycastResult raycastWithEndpointsVolume(voxel::PagedVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
 	return raycastWithEndpoints(volData, v3dStart, v3dEnd, callback);
 }
 
 template<typename Callback>
-inline RaycastResult raycastWithEndpointsVolume(const voxel::RawVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
+inline RaycastResult raycastWithEndpointsVolume(voxel::RawVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
 	return raycastWithEndpoints(volData, v3dStart, v3dEnd, callback);
 }
 
@@ -228,7 +228,7 @@ inline RaycastResult raycastWithEndpointsVolume(const voxel::RawVolume* volData,
  * @return A RaycastResults designating whether the ray hit anything or not
  */
 template<typename Callback, class Volume>
-RaycastResult raycastWithDirection(const Volume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, Callback&& callback) {
+RaycastResult raycastWithDirection(Volume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dDirectionAndLength, Callback&& callback) {
 	const glm::vec3 v3dEnd = v3dStart + v3dDirectionAndLength;
 	return raycastWithEndpoints<Callback, Volume>(volData, v3dStart, v3dEnd, core::forward<Callback>(callback));
 }
