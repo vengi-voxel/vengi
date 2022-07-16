@@ -375,7 +375,7 @@ bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph) {
 	}
 	io::FileStream stream(filePtr);
 	const core::String &ext = filePtr->extension();
-	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->name != nullptr; ++desc) {
+	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
 			core::SharedPtr<Format> f = getFormat(desc, 0u, false);
 			if (f && f->saveGroups(sceneGraph, filePtr->name(), stream)) {
