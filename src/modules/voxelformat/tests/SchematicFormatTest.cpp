@@ -16,7 +16,7 @@ TEST_F(SchematicFormatTest, DISABLED_testLoadVikingIsland) {
 	canLoad("viking_island.schematic");
 }
 
-TEST_F(SchematicFormatTest, testLoadStructory) {
+TEST_F(SchematicFormatTest, DISABLED_testLoadStructory) {
 	// https://www.planetminecraft.com/data-pack/structory/
 	canLoad("brick_chimney_1.nbt");
 }
