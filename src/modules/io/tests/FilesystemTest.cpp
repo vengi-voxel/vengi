@@ -49,6 +49,7 @@ TEST_F(FilesystemTest, testListDirectory) {
 TEST_F(FilesystemTest, testListDirectoryFilter) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.createDir("listdirtestfilter"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/image.Png", "1"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.foo", "1"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.png", "1"));
