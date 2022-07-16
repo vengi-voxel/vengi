@@ -252,7 +252,7 @@ bool RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 	_posInVolume.y = yPos;
 	_posInVolume.z = zPos;
 
-	const voxel::Region& region = _volume->region();
+	const voxel::Region& region = this->region();
 	_currentPositionInvalid = 0u;
 	if (!region.containsPointInX(xPos)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDX;
@@ -284,7 +284,7 @@ void RawVolume::Sampler::movePositiveX() {
 
 	++_posInVolume.x;
 
-	if (!_volume->region().containsPointInX(_posInVolume.x)) {
+	if (!region().containsPointInX(_posInVolume.x)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDX;
 	} else {
 		_currentPositionInvalid &= ~SAMPLER_INVALIDX;
@@ -305,7 +305,7 @@ void RawVolume::Sampler::movePositiveY() {
 
 	++_posInVolume.y;
 
-	if (!_volume->region().containsPointInY(_posInVolume.y)) {
+	if (!region().containsPointInY(_posInVolume.y)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDY;
 	} else {
 		_currentPositionInvalid &= ~SAMPLER_INVALIDY;
@@ -326,7 +326,7 @@ void RawVolume::Sampler::movePositiveZ() {
 
 	_posInVolume.z++;
 
-	if (!_volume->region().containsPointInZ(_posInVolume.z)) {
+	if (!region().containsPointInZ(_posInVolume.z)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDZ;
 	} else {
 		_currentPositionInvalid &= ~SAMPLER_INVALIDZ;
@@ -347,7 +347,7 @@ void RawVolume::Sampler::moveNegativeX() {
 
 	--_posInVolume.x;
 
-	if (!_volume->region().containsPointInX(_posInVolume.x)) {
+	if (!region().containsPointInX(_posInVolume.x)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDX;
 	} else {
 		_currentPositionInvalid &= ~SAMPLER_INVALIDX;
@@ -368,7 +368,7 @@ void RawVolume::Sampler::moveNegativeY() {
 
 	--_posInVolume.y;
 
-	if (!_volume->region().containsPointInY(_posInVolume.y)) {
+	if (!region().containsPointInY(_posInVolume.y)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDY;
 	} else {
 		_currentPositionInvalid &= ~SAMPLER_INVALIDY;
@@ -389,7 +389,7 @@ void RawVolume::Sampler::moveNegativeZ() {
 
 	--_posInVolume.z;
 
-	if (!_volume->region().containsPointInZ(_posInVolume.z)) {
+	if (!region().containsPointInZ(_posInVolume.z)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDZ;
 	} else {
 		_currentPositionInvalid &= ~SAMPLER_INVALIDZ;
