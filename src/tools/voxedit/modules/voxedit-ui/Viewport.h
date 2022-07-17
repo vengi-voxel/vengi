@@ -20,6 +20,14 @@ private:
 	const core::String _id;
 	bool _hovered = false;
 	bool _guizmoActivated = false;
+	bool _boundsMode = false;
+	struct Bounds {
+		glm::vec3 mins;
+		glm::vec3 maxs;
+	};
+	Bounds _boundsNode;
+	Bounds _bounds;
+
 	video::FrameBuffer _frameBuffer;
 	video::TexturePtr _texture;
 	voxedit::ViewportController _controller;

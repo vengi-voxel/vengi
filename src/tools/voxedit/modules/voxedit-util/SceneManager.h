@@ -242,6 +242,7 @@ public:
 	bool update(double nowSeconds);
 	void shutdown() override;
 
+	void resize(int nodeId, const voxel::Region &region);
 	void resize(int nodeId, const glm::ivec3& size);
 
 	/**

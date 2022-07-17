@@ -452,19 +452,37 @@ void SceneManager::crop() {
 }
 
 void SceneManager::resize(int nodeId, const glm::ivec3& size) {
-	voxel::RawVolume* newVolume = voxelutil::resize(volume(nodeId), size);
+	voxel::RawVolume* v = volume(nodeId);
+	voxel::Region region = v->region();
+	region.shiftUpperCorner(size);
+	resize(nodeId, region);
+}
+
+void SceneManager::resize(int nodeId, const voxel::Region &region) {
+	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	voxel::RawVolume* v = node->volume();
+	const voxel::Region oldRegion = v->region();
+	Log::error("Resize volume from %s to %s", oldRegion.toString().c_str(), region.toString().c_str());
+	voxel::RawVolume* newVolume = voxelutil::resize(v, region);
 	if (newVolume == nullptr) {
 		return;
 	}
-	// TODO: _modifier.fixSelection
 	if (!setNewVolume(nodeId, newVolume, false)) {
 		delete newVolume;
 		return;
 	}
-	if (glm::all(glm::greaterThanEqual(size, glm::zero<glm::ivec3>()))) {
+	const glm::ivec3 oldMins = oldRegion.getLowerCorner();
+	const glm::ivec3 oldMaxs = oldRegion.getUpperCorner();
+	const glm::ivec3 mins = region.getLowerCorner();
+	const glm::ivec3 maxs = region.getUpperCorner();
+	if (glm::all(glm::greaterThanEqual(maxs, oldMaxs)) && glm::all(glm::lessThanEqual(mins, oldMins))) {
 		// we don't have to reextract a mesh if only new empty voxels were added.
 		modified(nodeId, voxel::Region::InvalidRegion);
 	} else {
+		// TODO: assemble the 6 surroundings to optimize this for big volumes
 		modified(nodeId, newVolume->region());
 	}
 }
@@ -2425,7 +2443,6 @@ bool SceneManager::nodeRemove(voxelformat::SceneGraphNode &node, bool recursive)
 	const int nodeId = node.id();
 	const core::String &name = node.name();
 	Log::debug("Delete node %i with name %s", nodeId, name.c_str());
-	// TODO: _modifier.fixSelection
 	_mementoHandler.markNodeRemoved(node);
 	if (!_sceneGraph.removeNode(nodeId, recursive)) {
 		Log::error("Failed to remove node with id %i", nodeId);

@@ -8,7 +8,7 @@
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Var.h"
-#include "imgui.h"
+#include <glm/vector_relational.hpp>
 #include "io/Filesystem.h"
 #include "math/Ray.h"
 #include "ui/imgui/IMGUIApp.h"
@@ -292,15 +292,50 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 		const voxelformat::SceneGraphTransform &transform = node.transform(keyFrame);
 		glm::mat4 transformMatrix = transform.matrix();
 		glm::mat4 deltaMatrix(0.0f);
+		const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
+		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))	 {
+			_boundsMode ^= true;
+			if (_boundsMode) {
+				const voxel::Region& region = node.region();
+				const glm::ivec3 &mins = region.getLowerCorner();
+				const glm::ivec3 &maxs = region.getUpperCorner();
+				_boundsNode.mins = mins;
+				_boundsNode.maxs = maxs;
+				_bounds = _boundsNode;
+			}
+		}
+
 		ImGuizmo::Manipulate(glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()),
 							 (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix),
-							 glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr);
+							 glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr, _boundsMode ? glm::value_ptr(_bounds.mins) : nullptr,
+							 _boundsMode ? boundsSnap : nullptr);
 		if (editMode == EditMode::Scene) {
 			if (ImGuizmo::IsUsing()) {
 				_guizmoActivated = true;
-				sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrame, false);
+				if (_boundsMode) {
+					glm::vec3 translate;
+					glm::vec3 rotation;
+					glm::vec3 scale;
+					ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transformMatrix), glm::value_ptr(translate),
+														glm::value_ptr(rotation), glm::value_ptr(scale));
+					if (glm::all(glm::greaterThan(scale, glm::vec3(0)))) {
+						_bounds.maxs = _boundsNode.maxs * scale;
+						for (int i = 0; i < 3; ++i) {
+							if (_bounds.mins[i] >= _bounds.maxs[i] + boundsSnap[i]) {
+								_bounds.maxs[i] = _bounds.mins[i] + boundsSnap[i];
+							}
+						}
+					}
+				} else {
+					sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrame, false);
+				}
 			} else if (_guizmoActivated) {
-				sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrame, true);
+				if (_boundsMode) {
+					voxel::Region newRegion(glm::ivec3(_bounds.mins), glm::ivec3(_bounds.maxs));
+					sceneMgr().resize(activeNode, newRegion);
+				} else {
+					sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrame, true);
+				}
 				_guizmoActivated = false;
 			}
 		}

@@ -77,8 +77,8 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 			sceneMgr().shift(nodeId, f);
 		}
 		if (xyzValues("size", maxs)) {
-			const glm::ivec3 &f = maxs - region.getDimensionsInVoxels();
-			sceneMgr().resize(nodeId, f);
+			voxel::Region newRegion(region.getLowerCorner(), maxs);
+			sceneMgr().resize(nodeId, newRegion);
 		}
 	}
 
