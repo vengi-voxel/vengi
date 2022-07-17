@@ -475,7 +475,7 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	}
 
 	const core::String& basePath = core::string::extractPath(filename);
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::FilesystemEntry> entities;
 	io::filesystem()->list(basePath, entities, "*.vxa");
 	core::String vxaPath;
 	const core::String& baseName = core::string::extractFilename(filename);
@@ -489,7 +489,7 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 		Log::warn("Could not find any vxa file for %s", filename.c_str());
 	}
 
-	for (const io::Filesystem::DirEntry& entry : entities) {
+	for (const io::FilesystemEntry& entry : entities) {
 		const core::String &animWithExt = entry.name.substr(baseName.size() + 1);
 		const core::String &anim = core::string::extractFilename(animWithExt);
 		sceneGraph.addAnimation(anim);

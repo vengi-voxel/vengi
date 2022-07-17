@@ -43,6 +43,18 @@ struct FilesystemState {
 	core::String _directories[FilesystemDirectories::FS_Dir_Max];
 };
 
+struct FilesystemEntry {
+	core::String name;
+	enum class Type : uint8_t {
+		file,
+		dir,
+		unknown
+	};
+	Type type;
+	uint64_t size;	/**< size in bytes */
+	uint64_t mtime;	/**< last modification time in millis */
+};
+
 // perform platform specific initialization
 extern bool initState(FilesystemState& state);
 
@@ -115,18 +127,6 @@ public:
 
 	bool exists(const core::String& filename) const;
 
-	struct DirEntry {
-		core::String name;
-		enum class Type : uint8_t {
-			file,
-			dir,
-			unknown
-		};
-		Type type;
-		uint64_t size;	/**< size in bytes */
-		uint64_t mtime;	/**< last modification time in millis */
-	};
-
 	/**
 	 * @brief List all entities in a directory that match the given optional filter
 	 * @param directory The directory to list
@@ -134,7 +134,7 @@ public:
 	 * @param filter Wildcard for filtering the returned entities
 	 * @return @c true if the directory could get opened
 	 */
-	bool list(const core::String& directory, core::DynamicArray<DirEntry>& entities, const core::String& filter = "") const;
+	bool list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "") const;
 
 	static bool isReadableDir(const core::String& name);
 	static bool isRelativePath(const core::String& name);
@@ -185,7 +185,7 @@ public:
 	bool removeDir(const core::String& dir, bool recursive = false) const;
 	bool removeFile(const core::String& file) const;
 private:
-	static bool _list(const core::String& directory, core::DynamicArray<DirEntry>& entities, const core::String& filter = "");
+	static bool _list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "");
 };
 
 inline const Paths& Filesystem::paths() const {

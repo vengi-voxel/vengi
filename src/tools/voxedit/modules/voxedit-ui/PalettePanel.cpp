@@ -22,14 +22,14 @@ PalettePanel::PalettePanel() {
 }
 
 void PalettePanel::reloadAvailablePalettes() {
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::FilesystemEntry> entities;
 	io::filesystem()->list("", entities, "palette-*.png");
 	if (entities.empty()) {
 		Log::error("Could not find any palettes");
 	}
 	_availablePalettes.clear();
-	for (const io::Filesystem::DirEntry& file : entities) {
-		if (file.type != io::Filesystem::DirEntry::Type::file) {
+	for (const io::FilesystemEntry& file : entities) {
+		if (file.type != io::FilesystemEntry::Type::file) {
 			continue;
 		}
 		const core::String& name = voxel::Palette::extractPaletteName(file.name);

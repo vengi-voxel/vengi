@@ -32,7 +32,7 @@ void FileDialog::applyFilter() {
 	_files.clear();
 	_files.reserve(_entities.size());
 	for (size_t i = 0; i < _entities.size(); ++i) {
-		if (_entities[i].type != io::Filesystem::DirEntry::Type::file) {
+		if (_entities[i].type != io::FilesystemEntry::Type::file) {
 			continue;
 		}
 		if (_currentFilterEntry != -1) {
@@ -224,7 +224,7 @@ void FileDialog::directoryPanel(video::WindowedApp::OpenFileMode type) {
 		}
 	}
 	for (size_t i = 0; i < _entities.size(); ++i) {
-		if (_entities[i].type != io::Filesystem::DirEntry::Type::dir) {
+		if (_entities[i].type != io::FilesystemEntry::Type::dir) {
 			continue;
 		}
 		if (hide(_entities[i].name)) {
@@ -305,21 +305,21 @@ bool FileDialog::filesPanel() {
 	ImGui::NextColumn();
 	ImGui::Separator();
 
-	static auto nameSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+	static auto nameSorter = [this](const io::FilesystemEntry *a, const io::FilesystemEntry *b) {
 		if (_fileNameSortOrder == FileDialogSortOrder::Down) {
 			return a->name < b->name;
 		}
 		return a->name > b->name;
 	};
 
-	static auto sizeSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+	static auto sizeSorter = [this](const io::FilesystemEntry *a, const io::FilesystemEntry *b) {
 		if (_sizeSortOrder == FileDialogSortOrder::Down) {
 			return a->size < b->size;
 		}
 		return a->size > b->size;
 	};
 
-	static auto extensionSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+	static auto extensionSorter = [this](const io::FilesystemEntry *a, const io::FilesystemEntry *b) {
 		const core::String &aext = core::string::extractExtension(a->name);
 		const core::String &bext = core::string::extractExtension(b->name);
 		if (_typeSortOrder == FileDialogSortOrder::Down) {
@@ -328,7 +328,7 @@ bool FileDialog::filesPanel() {
 		return aext > bext;
 	};
 
-	static auto mtimeSorter = [this](const io::Filesystem::DirEntry *a, const io::Filesystem::DirEntry *b) {
+	static auto mtimeSorter = [this](const io::FilesystemEntry *a, const io::FilesystemEntry *b) {
 		if (_dateSortOrder == FileDialogSortOrder::Down) {
 			return a->mtime < b->mtime;
 		}

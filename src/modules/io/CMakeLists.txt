@@ -9,6 +9,7 @@ set(SRCS
 	Stream.cpp Stream.h
 	MemoryReadStream.cpp MemoryReadStream.h
 	BufferedZipReadStream.cpp BufferedZipReadStream.h
+	ZipArchive.h ZipArchive.cpp
 	ZipWriteStream.h ZipWriteStream.cpp
 	ZipReadStream.h ZipReadStream.cpp
 	system/Null.cpp
@@ -22,6 +23,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core libuv)
 
 set(TEST_FILES
 	testio/iotest.txt
+	testio/iotest.zip
 )
 
 set(TEST_SRCS
@@ -32,6 +34,7 @@ set(TEST_SRCS
 	tests/FileTest.cpp
 	tests/MemoryReadStreamTest.cpp
 	tests/StdStreamBufTest.cpp
+	tests/ZipArchiveTest.cpp
 	tests/ZipStreamTest.cpp
 )
 

@@ -29,7 +29,7 @@ AssetPanel::AssetPanel(const io::FilesystemPtr &filesystem) : _texturePool(files
 }
 
 void AssetPanel::loadModels(const core::String &dir) {
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::FilesystemEntry> entities;
 	_filesystem->list(dir, entities);
 	_models.clear();
 	for (const auto &e : entities) {
@@ -41,7 +41,7 @@ void AssetPanel::loadModels(const core::String &dir) {
 }
 
 void AssetPanel::loadTextures(const core::String &dir) {
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::FilesystemEntry> entities;
 	_filesystem->list(dir, entities);
 	for (const auto &e : entities) {
 		const core::String &fullName = core::string::path(dir, e.name);

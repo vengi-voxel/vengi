@@ -151,7 +151,7 @@ bool Filesystem::createDir(const core::String &dir, bool recursive) const {
 	return lastResult;
 }
 
-bool Filesystem::_list(const core::String &directory, core::DynamicArray<DirEntry> &entities,
+bool Filesystem::_list(const core::String &directory, core::DynamicArray<FilesystemEntry> &entities,
 					   const core::String &filter) {
 	uv_fs_t req;
 	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
@@ -163,13 +163,13 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<DirEntr
 	uv_dirent_t ent;
 	core_memset(&ent, 0, sizeof(ent));
 	while (uv_fs_scandir_next(&req, &ent) != UV_EOF) {
-		DirEntry::Type type = DirEntry::Type::unknown;
+		FilesystemEntry::Type type = FilesystemEntry::Type::unknown;
 		if (ent.type == UV_DIRENT_DIR) {
-			type = DirEntry::Type::dir;
+			type = FilesystemEntry::Type::dir;
 		} else if (ent.type == UV_DIRENT_FILE) {
-			type = DirEntry::Type::file;
+			type = FilesystemEntry::Type::file;
 		} else if (ent.type == UV_DIRENT_UNKNOWN) {
-			type = DirEntry::Type::unknown;
+			type = FilesystemEntry::Type::unknown;
 		} else if (ent.type == UV_DIRENT_LINK) {
 			uv_fs_t linkReq;
 			const core::String pointer = core::string::path(directory, ent.name);
@@ -198,7 +198,7 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<DirEntr
 			const bool dir = (uv_fs_get_statbuf(&statsReq)->st_mode & S_IFDIR) != 0;
 			const uint64_t mtimeMillis =
 				(uint64_t)statsReq.statbuf.st_mtim.tv_sec * 1000 + statsReq.statbuf.st_mtim.tv_nsec / 1000000;
-			entities.push_back(DirEntry{ent.name, dir ? DirEntry::Type::dir : DirEntry::Type::file,
+			entities.push_back(FilesystemEntry{ent.name, dir ? FilesystemEntry::Type::dir : FilesystemEntry::Type::file,
 										statsReq.statbuf.st_size, mtimeMillis});
 			uv_fs_req_cleanup(&statsReq);
 		} else {
@@ -218,14 +218,14 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<DirEntr
 		}
 		const uint64_t mtimeMillis =
 			(uint64_t)statsReq.statbuf.st_mtim.tv_sec * 1000 + statsReq.statbuf.st_mtim.tv_nsec / 1000000;
-		entities.push_back(DirEntry{ent.name, type, statsReq.statbuf.st_size, mtimeMillis});
+		entities.push_back(FilesystemEntry{ent.name, type, statsReq.statbuf.st_size, mtimeMillis});
 		uv_fs_req_cleanup(&statsReq);
 	}
 	uv_fs_req_cleanup(&req);
 	return true;
 }
 
-bool Filesystem::list(const core::String &directory, core::DynamicArray<DirEntry> &entities,
+bool Filesystem::list(const core::String &directory, core::DynamicArray<FilesystemEntry> &entities,
 					  const core::String &filter) const {
 	if (isRelativePath(directory)) {
 		for (const core::String &p : _paths) {

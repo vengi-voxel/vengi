@@ -13,7 +13,7 @@ namespace io {
 
 class FilesystemTest : public testing::Test {};
 
-::std::ostream &operator<<(::std::ostream &ostream, const core::DynamicArray<io::Filesystem::DirEntry> &val) {
+::std::ostream &operator<<(::std::ostream &ostream, const core::DynamicArray<io::FilesystemEntry> &val) {
 	for (const auto &e : val) {
 		ostream << e.name.c_str() << " - " << core::enumVal(e.type) << ", ";
 	}
@@ -28,20 +28,20 @@ TEST_F(FilesystemTest, testListDirectory) {
 	EXPECT_TRUE(fs.syswrite("listdirtest/dir1/ignoredtoo", "ignore"));
 	EXPECT_TRUE(fs.syswrite("listdirtest/file1", "1"));
 	EXPECT_TRUE(fs.syswrite("listdirtest/file2", "2"));
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::FilesystemEntry> entities;
 	fs.list("listdirtest/", entities, "");
 	EXPECT_FALSE(entities.empty());
 	EXPECT_EQ(3u, entities.size()) << entities;
-	entities.sort([](const io::Filesystem::DirEntry &first, const io::Filesystem::DirEntry &second) {
+	entities.sort([](const io::FilesystemEntry &first, const io::FilesystemEntry &second) {
 		return first.name > second.name;
 	});
 	if (entities.size() >= 3) {
 		EXPECT_EQ("dir1", entities[0].name);
 		EXPECT_EQ("file1", entities[1].name);
 		EXPECT_EQ("file2", entities[2].name);
-		EXPECT_EQ(io::Filesystem::DirEntry::Type::dir, entities[0].type);
-		EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[1].type);
-		EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[2].type);
+		EXPECT_EQ(io::FilesystemEntry::Type::dir, entities[0].type);
+		EXPECT_EQ(io::FilesystemEntry::Type::file, entities[1].type);
+		EXPECT_EQ(io::FilesystemEntry::Type::file, entities[2].type);
 	}
 	fs.shutdown();
 }
@@ -55,19 +55,19 @@ TEST_F(FilesystemTest, testListDirectoryFilter) {
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.png", "1"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.jpeg", "1"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.jpg", "1"));
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::FilesystemEntry> entities;
 	const FormatDescription desc = {"", {"jpeg", "jpg"}, nullptr, 0u};
 	const core::String &jpegFilePattern = convertToFilePattern(desc);
 	fs.list("listdirtestfilter/", entities, jpegFilePattern);
 	EXPECT_FALSE(entities.empty());
 	EXPECT_EQ(2u, entities.size()) << entities;
-	entities.sort([](const io::Filesystem::DirEntry &first, const io::Filesystem::DirEntry &second) {
+	entities.sort([](const io::FilesystemEntry &first, const io::FilesystemEntry &second) {
 		return first.name > second.name;
 	});
 	if (entities.size() >= 2) {
-		EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[0].type);
+		EXPECT_EQ(io::FilesystemEntry::Type::file, entities[0].type);
 		EXPECT_EQ("foobar.jpeg", entities[0].name);
-		EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[1].type);
+		EXPECT_EQ(io::FilesystemEntry::Type::file, entities[1].type);
 		EXPECT_EQ("foobar.jpg", entities[1].name);
 	}
 	fs.shutdown();
@@ -110,12 +110,12 @@ TEST_F(FilesystemTest, testListFilter) {
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/filexyz", "1"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/fileother", "2"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/fileignore", "3"));
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::FilesystemEntry> entities;
 	fs.list("listdirtestfilter/", entities, "*xyz");
 	EXPECT_EQ(2u, entities.size()) << entities;
 	ASSERT_FALSE(entities.empty()) << "Could not find any match";
-	EXPECT_EQ(io::Filesystem::DirEntry::Type::dir, entities[0].type);
-	EXPECT_EQ(io::Filesystem::DirEntry::Type::file, entities[1].type);
+	EXPECT_EQ(io::FilesystemEntry::Type::dir, entities[0].type);
+	EXPECT_EQ(io::FilesystemEntry::Type::file, entities[1].type);
 	fs.shutdown();
 }
 

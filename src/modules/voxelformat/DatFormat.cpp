@@ -80,7 +80,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		Log::debug("Minecraft version: (data: %i, name: %s, series: %s)", version,
 				   versionName ? versionName->c_str() : "-", versionSeries ? versionSeries->c_str() : "-");
 	}
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::FilesystemEntry> entities;
 	const core::String baseName = core::string::extractPath(filename);
 	if (!io::filesystem()->list(core::string::path(baseName, "region"), entities, "*.mca")) {
 		Log::error("Failed to search minecraft region files");
@@ -93,8 +93,8 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	Log::info("Found %i region files", (int)entities.size());
-	for (const io::Filesystem::DirEntry &e : entities) {
-		if (e.type != io::Filesystem::DirEntry::Type::file) {
+	for (const io::FilesystemEntry &e : entities) {
+		if (e.type != io::FilesystemEntry::Type::file) {
 			continue;
 		}
 		const core::String &filename = core::string::path(baseName, "region", e.name);

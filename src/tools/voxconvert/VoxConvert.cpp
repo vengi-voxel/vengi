@@ -249,12 +249,12 @@ app::AppState VoxConvert::onInit() {
 	voxelformat::SceneGraph sceneGraph;
 	for (const core::String& infile : infiles) {
 		if (filesystem()->isReadableDir(infile)) {
-			core::DynamicArray<io::Filesystem::DirEntry> entities;
+			core::DynamicArray<io::FilesystemEntry> entities;
 			filesystem()->list(infile, entities);
 			Log::info("Found %i entries in dir %s", (int)entities.size(), infile.c_str());
 			int success = 0;
-			for (const io::Filesystem::DirEntry &entry : entities) {
-				if (entry.type != io::Filesystem::DirEntry::Type::file) {
+			for (const io::FilesystemEntry &entry : entities) {
+				if (entry.type != io::FilesystemEntry::Type::file) {
 					continue;
 				}
 				const core::String fullpath = core::string::path(infile, entry.name);

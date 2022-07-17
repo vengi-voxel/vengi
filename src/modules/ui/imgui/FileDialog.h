@@ -24,8 +24,8 @@ private:
 	core::String _currentPath;
 	core::String _currentFile;
 	core::String _currentFolder;
-	core::DynamicArray<io::Filesystem::DirEntry> _entities;
-	core::DynamicArray<const io::Filesystem::DirEntry*> _files;
+	core::DynamicArray<io::FilesystemEntry> _entities;
+	core::DynamicArray<const io::FilesystemEntry*> _files;
 	FileDialogSortOrder _fileNameSortOrder = FileDialogSortOrder::None;
 	FileDialogSortOrder _sizeSortOrder = FileDialogSortOrder::None;
 	FileDialogSortOrder _dateSortOrder = FileDialogSortOrder::None;

@@ -20,7 +20,7 @@ AssetVolumeCache::AssetVolumeCache(const voxelformat::VolumeCachePtr& volumeCach
 bool AssetVolumeCache::init() {
 	Log::debug("Initialize the asset volume cache");
 	for (const char **ext = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD_LIST; *ext; ++ext) {
-		core::DynamicArray<io::Filesystem::DirEntry> files;
+		core::DynamicArray<io::FilesystemEntry> files;
 		if (!io::filesystem()->list("models/plants/", files, core::string::format("*.%s", *ext))) {
 			Log::warn("Failed to list assets from models/plants/");
 			break;

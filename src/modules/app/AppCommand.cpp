@@ -76,7 +76,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 	}).setHelp("Print the given arguments to the console (info log level)");
 
 	auto fileCompleter = [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
-		core::DynamicArray<io::Filesystem::DirEntry> entries;
+		core::DynamicArray<io::FilesystemEntry> entries;
 		const io::FilesystemPtr& filesystem = io::filesystem();
 		const io::FilePtr& file = filesystem->open(str);
 		core::String filter;
@@ -89,8 +89,8 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}
 		filesystem->list(dir, entries, filter);
 		int i = 0;
-		for (const io::Filesystem::DirEntry& entry : entries) {
-			if (entry.type == io::Filesystem::DirEntry::Type::unknown) {
+		for (const io::FilesystemEntry& entry : entries) {
+			if (entry.type == io::FilesystemEntry::Type::unknown) {
 				continue;
 			}
 			if (dir.empty()) {

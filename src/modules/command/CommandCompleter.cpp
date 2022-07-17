@@ -18,14 +18,14 @@ int complete(const io::FilesystemPtr& filesystem, core::String dir, const core::
 		currentMatch = match.substr(additionalDir.size());
 	}
 
-	core::DynamicArray<io::Filesystem::DirEntry> entries;
+	core::DynamicArray<io::FilesystemEntry> entries;
 	const core::String filter = match + pattern;
 	const core::String& filterName = core::string::extractFilenameWithExtension(filter.c_str());
 	const core::String& filterPath = core::string::extractPath(filter.c_str());
 	filesystem->list(dir, entries, currentMatch + "*");
 	int i = 0;
-	for (const io::Filesystem::DirEntry& entry : entries) {
-		if (entry.type == io::Filesystem::DirEntry::Type::dir) {
+	for (const io::FilesystemEntry& entry : entries) {
+		if (entry.type == io::FilesystemEntry::Type::dir) {
 			core::String name = filterPath.empty() ? entry.name : filterPath + entry.name;
 			name.append("/");
 			matches.push_back(name);
@@ -34,8 +34,8 @@ int complete(const io::FilesystemPtr& filesystem, core::String dir, const core::
 	}
 	entries.clear();
 	filesystem->list(dir, entries, core::String(filterName));
-	for (const io::Filesystem::DirEntry& entry : entries) {
-		if (entry.type == io::Filesystem::DirEntry::Type::file) {
+	for (const io::FilesystemEntry& entry : entries) {
+		if (entry.type == io::FilesystemEntry::Type::file) {
 			matches.push_back(filterPath.empty() ? entry.name : filterPath + entry.name);
 			++i;
 		}

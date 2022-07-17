@@ -849,7 +849,7 @@ core::String LUAGenerator::load(const core::String& scriptName) const {
 core::DynamicArray<LUAScript> LUAGenerator::listScripts() const {
 	lua::LUA lua;
 	core::DynamicArray<LUAScript> scripts;
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::FilesystemEntry> entities;
 	io::filesystem()->list("scripts", entities, "*.lua");
 	scripts.reserve(entities.size());
 	for (const auto& e : entities) {

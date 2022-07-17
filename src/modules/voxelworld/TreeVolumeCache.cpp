@@ -22,20 +22,20 @@ bool TreeVolumeCache::init() {
 		return true;
 	}
 	Log::debug("Initialize the tree volume cache");
-	core::DynamicArray<io::Filesystem::DirEntry> entities;
+	core::DynamicArray<io::FilesystemEntry> entities;
 	if (!io::filesystem()->list("models/trees/", entities, "*")) {
 		Log::error("Failed to list tree models");
 		return false;
 	}
 	Log::debug("Found %i tree types", (int)entities.size());
 	for (const auto& e : entities) {
-		if (e.type != io::Filesystem::DirEntry::Type::dir) {
+		if (e.type != io::FilesystemEntry::Type::dir) {
 			continue;
 		}
 		int amount = 0;
 		const core::String& treeTypeDir = core::string::format("models/trees/%s/", e.name.c_str());
 		for (const char **ext = voxelformat::SUPPORTED_VOXEL_FORMATS_LOAD_LIST; *ext; ++ext) {
-			core::DynamicArray<io::Filesystem::DirEntry> treeFiles;
+			core::DynamicArray<io::FilesystemEntry> treeFiles;
 			if (!io::filesystem()->list(treeTypeDir, treeFiles, core::string::format("*.%s", *ext))) {
 				Log::warn("Failed to list tree models in %s", treeTypeDir.c_str());
 				break;
