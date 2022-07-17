@@ -295,13 +295,16 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 		const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
 		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))	 {
 			_boundsMode ^= true;
-			if (_boundsMode) {
-				const voxel::Region& region = node.region();
-				const glm::ivec3 &mins = region.getLowerCorner();
-				const glm::ivec3 &maxs = region.getUpperCorner();
-				_boundsNode.mins = mins;
-				_boundsNode.maxs = maxs;
-				_bounds = _boundsNode;
+		}
+		if (_boundsMode) {
+			const voxel::Region& region = node.region();
+			const glm::vec3 mins = region.getLowerCorner();
+			const glm::vec3 maxs = region.getUpperCorner();
+			if (_boundsNode.mins != mins) {
+				_bounds.mins = _boundsNode.mins = mins;
+			}
+			if (_boundsNode.maxs != maxs) {
+				_bounds.maxs = _boundsNode.maxs = maxs;
 			}
 		}
 
