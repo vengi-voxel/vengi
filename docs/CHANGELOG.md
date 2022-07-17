@@ -28,6 +28,7 @@ VoxEdit:
    - Fixed resetting the camera in eye mode
    - New asset panel
    - Place images, models and colors via drag and drop into the scene
+   - Extended scene mode modifiers to allow resizing the volumes (double click in scene mode)
 
 ## 0.0.20 (2022-06-14)
 
