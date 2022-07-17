@@ -337,7 +337,7 @@ int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
 			   const voxel::Voxel &searchVoxel, const voxel::Voxel &replaceVoxel) {
 	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
 		const voxel::Voxel &v = in.voxel(pos);
-		return v.getColor() == searchVoxel.getColor();
+		return v.isSame(searchVoxel);
 	};
 	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, replaceVoxel); };
 	return voxelutil::walkPlane(in, pos, face, 0, check, exec);
@@ -347,7 +347,7 @@ int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
 			   const voxel::Voxel &groundVoxel) {
 	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
 		const voxel::Voxel &v = in.voxel(pos);
-		return v.getColor() == groundVoxel.getColor();
+		return v.isSame(groundVoxel);
 	};
 	auto exec = [](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, voxel::Voxel()); };
 	return voxelutil::walkPlane(in, pos, face, 0, check, exec);
@@ -357,7 +357,7 @@ int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::Face
 				 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel) {
 	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
 		const voxel::Voxel &v = in.voxel(pos);
-		return v.getColor() == groundVoxel.getColor();
+		return v.isSame(groundVoxel);
 	};
 	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, newPlaneVoxel); };
 	return voxelutil::walkPlane(in, pos, face, -1, check, exec);
@@ -371,7 +371,7 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
 
 	auto check = [searchedVoxel](const voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
 		const voxel::Voxel &v = in.voxel(pos);
-		return v == searchedVoxel;
+		return v.isSame(searchedVoxel);
 	};
 
 	auto exec = [&](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
