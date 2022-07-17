@@ -306,12 +306,19 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 			if (_boundsNode.maxs != maxs) {
 				_bounds.maxs = _boundsNode.maxs = maxs;
 			}
+			operation = ImGuizmo::SCALEU;
 		}
 
 		ImGuizmo::Manipulate(glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()),
 							 (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix),
-							 glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr, _boundsMode ? glm::value_ptr(_bounds.mins) : nullptr,
-							 _boundsMode ? boundsSnap : nullptr);
+							 glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr,
+							 _boundsMode ? glm::value_ptr(_bounds.mins) : nullptr, _boundsMode ? boundsSnap : nullptr);
+
+		if (ImGuizmo::IsUsing()) {
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+				_guizmoRotation->setVal(_guizmoRotation->boolVal() ? "false" : "true");
+			}
+		}
 		if (editMode == EditMode::Scene) {
 			if (ImGuizmo::IsUsing()) {
 				_guizmoActivated = true;
