@@ -299,7 +299,7 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 		if (_boundsMode) {
 			const voxel::Region& region = node.region();
 			const glm::vec3 mins = region.getLowerCorner();
-			const glm::vec3 maxs = region.getUpperCorner();
+			const glm::vec3 maxs = (region.getUpperCorner() + glm::ivec3(1));
 			if (_boundsNode.mins != mins) {
 				_bounds.mins = _boundsNode.mins = mins;
 			}
