@@ -18,7 +18,7 @@ namespace voxelformat {
 
 namespace priv {
 constexpr int segments = 16;
-constexpr int volumeVoxelCount = segments * segments * segments;
+constexpr int maxSegments = segments * segments * segments;
 constexpr int segmentHeaderSize = 26;
 constexpr int blocks = 32;
 constexpr int maxSegmentDataCompressedSize = ((blocks * blocks * blocks) * 3 / 2) - segmentHeaderSize;
@@ -147,7 +147,7 @@ bool SMFormat::readSmd3(io::SeekableReadStream &stream, SceneGraph &sceneGraph, 
 
 	core::Map<uint16_t, uint16_t> segmentsMap;
 
-	for (int i = 0; i < priv::volumeVoxelCount; i++) {
+	for (int i = 0; i < priv::maxSegments; i++) {
 		uint16_t segmentId;
 		wrap(stream.readUInt16BE(segmentId))
 		uint16_t segmentSize;
