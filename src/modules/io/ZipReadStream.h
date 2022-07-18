@@ -25,6 +25,9 @@ private:
 	bool _eos = false;
 
 public:
+	/**
+	 * @param size The compressed size
+	 */
 	ZipReadStream(io::SeekableReadStream &readStream, int size = -1);
 	virtual ~ZipReadStream();
 
