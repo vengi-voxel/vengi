@@ -207,7 +207,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &da
 		if (data.type() != priv::TagType::BYTE_ARRAY) {
 			Log::error("Unknown block data type: %i for version %i", (int)data.type(), dataVersion);
 			delete v;
-			return -1;
+			return false;
 		}
 		glm::ivec3 sPos;
 		for (sPos.y = 0; sPos.y < MAX_SIZE; ++sPos.y) {
@@ -230,7 +230,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &da
 		if (data.type() != priv::TagType::LONG_ARRAY) {
 			Log::error("Unknown block data type: %i for version %i", (int)data.type(), dataVersion);
 			delete v;
-			return -1;
+			return false;
 		}
 
 		const core::DynamicArray<int64_t> &blockStates = *data.longArray();

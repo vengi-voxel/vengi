@@ -308,9 +308,9 @@ bool SceneManager::prefab(const core::String& file) {
 	voxelformat::SceneGraphNode groupNode(voxelformat::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(file));
 	int newNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
-	bool state = false;
+	bool state = true;
 	for (voxelformat::SceneGraphNode& node : newSceneGraph) {
-		state |= addNodeToSceneGraph(node, newNodeId);
+		state |= addNodeToSceneGraph(node, newNodeId) != -1;
 	}
 
 	return state;
