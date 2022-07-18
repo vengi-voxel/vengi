@@ -41,6 +41,7 @@ set(SRCS
 	SceneGraphUtil.h SceneGraphUtil.cpp
 	SproxelFormat.h SproxelFormat.cpp
 	SchematicFormat.h SchematicFormat.cpp
+	SMFormat.h SMFormat.cpp
 	STLFormat.h STLFormat.cpp
 	VolumeCache.h VolumeCache.cpp
 	VoxFormat.h VoxFormat.cpp
@@ -52,7 +53,6 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
 
 set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
-	tests/AoSVXLFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
 	tests/ConvertTest.cpp
 	tests/CSMFormatTest.cpp
@@ -72,6 +72,7 @@ set(TEST_SRCS
 	tests/SceneGraphUtilTest.cpp
 	tests/SchematicFormatTest.cpp
 	tests/SproxelFormatTest.cpp
+	tests/SMFormatTest.cpp
 	tests/STLFormatTest.cpp
 	tests/VolumeFormatTest.cpp
 	tests/VoxFormatTest.cpp

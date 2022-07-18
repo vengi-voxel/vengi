@@ -33,6 +33,7 @@
 #include "voxelformat/QBTFormat.h"
 #include "voxelformat/QEFFormat.h"
 #include "voxelformat/SLAB6VoxFormat.h"
+#include "voxelformat/SMFormat.h"
 #include "voxelformat/STLFormat.h"
 #include "voxelformat/SchematicFormat.h"
 #include "voxelformat/SproxelFormat.h"
@@ -75,6 +76,7 @@ const io::FormatDescription* voxelLoad() {
 		{"Minecraft level dat", {"dat"}, nullptr, 0u},
 		{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Sproxel csv", {"csv"}, nullptr, 0u},
+		{"StarMade", {"sment"}, nullptr, 0u},
 		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"GL Transmission Format", {"gltf", "glb"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
@@ -185,6 +187,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 			format = core::make_shared<MCRFormat>();
 		} else if (ext == "dat") {
 			format = core::make_shared<DatFormat>();
+		} else if (ext == "sment") {
+			format = core::make_shared<SMFormat>();
 		} else if (ext == "vxm") {
 			format = core::make_shared<VXMFormat>();
 		} else if (ext == "vxr") {
