@@ -3,6 +3,7 @@
  */
 
 #include "io/ZipArchive.h"
+#include "core/ArrayLength.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -28,7 +29,8 @@ TEST_F(ZipArchiveTest, testZipArchive) {
 	EXPECT_EQ(25u, files[0].size);
 	outstream.seek(0);
 	char buf[26];
-	outstream.readString(sizeof(buf), buf);
+	outstream.readString(sizeof(buf), buf, false);
+	buf[lengthof(buf) - 1] = '\0';
 	EXPECT_STREQ("yet another file in root\n", buf);
 	EXPECT_EQ("file.txt", files[1].name);
 	EXPECT_EQ("dir/file.txt", files[2].name);
