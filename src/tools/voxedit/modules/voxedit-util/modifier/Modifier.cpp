@@ -424,19 +424,20 @@ bool Modifier::aabbAction(voxel::RawVolume *volume,
 	}
 	const bool pathFlag = (_modifierType & ModifierType::Path) == ModifierType::Path;
 	if (pathFlag) {
-		const auto isVoxelValidForPath = [](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
+		auto isVoxelValidForPath = [](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
 			if (voxel::isBlocked(vol->voxel(pos).getMaterial())) {
 				return false;
 			}
 			return voxelutil::isTouching(vol, pos);
 		};
-		const auto isVoxelValidForLine = [](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
+		auto isVoxelValidForLine = [](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
 			return true;
 		};
+		auto func = lineFlag ? isVoxelValidForLine : isVoxelValidForPath;
 		core::List<glm::ivec3> listResult(4096);
 		const glm::ivec3 &start = referencePosition();
 		const glm::ivec3 &end = cursorPosition();
-		voxelutil::AStarPathfinderParams<voxel::RawVolume> params(volume, start, end, &listResult, lineFlag ? isVoxelValidForLine : isVoxelValidForPath,
+		voxelutil::AStarPathfinderParams<voxel::RawVolume> params(volume, start, end, &listResult, func,
 																  4.0f, 10000, voxelutil::Connectivity::EighteenConnected);
 		voxelutil::AStarPathfinder pathfinder(params);
 		if (!pathfinder.execute()) {
