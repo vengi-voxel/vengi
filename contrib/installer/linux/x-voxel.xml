@@ -25,6 +25,21 @@
   <mime-type type="application/x-minecraftregion">
     <comment>Minecraft region file</comment>
     <glob pattern="*.mca"/>
+    <glob pattern="*.mcr"/>
+  </mime-type>
+  <mime-type type="application/x-minecraftlevel">
+    <comment>Minecraft level file</comment>
+    <glob pattern="*.dat"/>
+  </mime-type>
+  <mime-type type="application/x-minecraftschematic">
+    <comment>Minecraft schematic file</comment>
+    <glob pattern="*.schem"/>
+    <glob pattern="*.schematic"/>
+    <glob pattern="*.nbt"/>
+  </mime-type>
+  <mime-type type="application/x-starmade">
+    <comment>StarMade model</comment>
+    <glob pattern="*.sment"/>
   </mime-type>
   <mime-type type="application/x-qubicle-binary">
     <comment>Voxel model Qubicle binary</comment>

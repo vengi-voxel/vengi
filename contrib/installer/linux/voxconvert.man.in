@@ -173,7 +173,13 @@ Sandbox VoxEdit Hierarchy (*.vxr)
 .TP
 Sandbox VoxEdit Tileset (*.vxt)
 .TP
-Minecraft Region (*.mca)
+StarMade (*.sment)
+.TP
+Minecraft Region (*.mca, *.mcr)
+.TP
+Minecraft Schematic (*.schem, *.schematic, *.nbt)
+.TP
+Minecraft Level (*.dat)
 .TP
 BinVox (*.binvox)
 .TP
