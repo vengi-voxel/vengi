@@ -33,6 +33,7 @@ set(SRCS
 	ArrayLength.h
 	Assert.cpp Assert.h
 	BindingContext.cpp BindingContext.h
+	Bits.h
 	Color.cpp Color.h
 	Common.cpp Common.h
 	Enum.h
@@ -101,6 +102,7 @@ set(TEST_SRCS
 	tests/TestHelper.h
 	tests/AlgorithmTest.cpp
 	tests/ArrayTest.cpp
+	tests/BitsTest.cpp
 	tests/BitSetTest.cpp
 	tests/BufferTest.cpp
 	tests/ColorTest.cpp
