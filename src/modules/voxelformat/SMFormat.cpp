@@ -228,7 +228,7 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, SceneGraph &sceneGrap
 		wrap(blockDataStream.readUInt8(buf[0]))
 		wrap(blockDataStream.readUInt8(buf[1]))
 		wrap(blockDataStream.readUInt8(buf[2]))
-		const uint32_t blockData = SDL_SwapBE32(buf[0] | (buf[1] << 8) | (buf[2] << 16));
+		const uint32_t blockData = buf[0] | (buf[1] << 8) | (buf[2] << 16);
 		if (blockData == 0) {
 			continue;
 		}
