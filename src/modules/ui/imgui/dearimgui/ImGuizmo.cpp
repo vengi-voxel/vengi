@@ -1656,7 +1656,7 @@ namespace IMGUIZMO_NAMESPACE
             }
             float boundDistance = sqrtf(ImLengthSqr(worldBound1 - worldBound2));
             int stepCount = (int)(boundDistance / 10.f);
-            stepCount = min(stepCount, 1000);
+            stepCount = Clamp(stepCount, 1, 1000);
             float stepLength = 1.f / (float)stepCount;
             for (int j = 0; j < stepCount; j++)
             {
@@ -2883,7 +2883,7 @@ namespace IMGUIZMO_NAMESPACE
                interpolationUp = referenceUp;
             }
             interpolationFrames = 40;
-            
+
          }
          isClicking = false;
          isDraging = false;
