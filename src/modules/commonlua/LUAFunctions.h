@@ -216,6 +216,18 @@ T clua_tovec(lua_State *s, int n) {
 	return v;
 }
 
+template<>
+inline glm::quat clua_tovec(lua_State *s, int n) {
+	luaL_checktype(s, n, LUA_TTABLE);
+	glm::quat v(0.0f, 0.0f, 0.0f, 0.0f);
+	for (int i = 0; i < glm::quat::length(); ++i) {
+		lua_getfield(s, n, VEC_MEMBERS[i]);
+		v[i] = LuaNumberFuncs<typename glm::quat::value_type>::check(s, -1);
+		lua_pop(s, 1);
+	}
+	return v;
+}
+
 template<int N, typename T>
 int clua_push(lua_State* s, const glm::vec<N, T>& v) {
 	using RAWTYPE = glm::vec<N, T>;
