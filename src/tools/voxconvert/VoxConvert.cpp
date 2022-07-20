@@ -130,6 +130,7 @@ app::AppState VoxConvert::onInit() {
 
 	core::String infilesstr;
 	core::DynamicArray<core::String> infiles;
+	bool inputIsMesh = false;
 	if (hasArg("--input")) {
 		int argn = 0;
 		for (;;) {
@@ -138,6 +139,9 @@ app::AppState VoxConvert::onInit() {
 				break;
 			}
 			infiles.push_back(val);
+			if (voxelformat::isMeshFormat(val)) {
+				inputIsMesh = true;
+			}
 			if (!infilesstr.empty()) {
 				infilesstr += ", ";
 			}
@@ -166,7 +170,7 @@ app::AppState VoxConvert::onInit() {
 	_resizeVolumes    = hasArg("--resize");
 
 	Log::info("Options");
-	if (voxelformat::isMeshFormat(outfile)) {
+	if (inputIsMesh || voxelformat::isMeshFormat(outfile)) {
 		Log::info("* mergeQuads:        - %s", _mergeQuads->strVal().c_str());
 		Log::info("* reuseVertices:     - %s", _reuseVertices->strVal().c_str());
 		Log::info("* ambientOcclusion:  - %s", _ambientOcclusion->strVal().c_str());
