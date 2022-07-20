@@ -207,7 +207,7 @@ extern glm::quat clua_toquat(lua_State *s, int n);
 template<class T>
 T clua_tovec(lua_State *s, int n) {
 	luaL_checktype(s, n, LUA_TTABLE);
-	T v;
+	T v{0};
 	for (int i = 0; i < T::length(); ++i) {
 		lua_getfield(s, n, VEC_MEMBERS[i]);
 		v[i] = LuaNumberFuncs<typename T::value_type>::check(s, -1);

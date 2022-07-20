@@ -83,6 +83,7 @@ core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wr
 		x = glm::mirrorRepeat(uv.x) * w;
 		break;
 	}
+	default:
 	case TextureWrap::Max:
 		return 0;
 	}
@@ -99,6 +100,7 @@ core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wr
 		y = glm::mirrorRepeat(uv.y) * h;
 		break;
 	}
+	default:
 	case TextureWrap::Max:
 		return 0;
 	}
