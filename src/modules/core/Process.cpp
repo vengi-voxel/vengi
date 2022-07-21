@@ -6,7 +6,6 @@
 #include <SDL_platform.h>
 #include <SDL_assert.h>
 #include "core/Log.h"
-#include "core/Tokenizer.h"
 
 #include <fcntl.h>
 #include <string.h>

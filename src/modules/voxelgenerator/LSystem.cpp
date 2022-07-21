@@ -3,6 +3,7 @@
  */
 
 #include "LSystem.h"
+#include "core/Tokenizer.h"
 
 namespace voxelgenerator {
 namespace lsystem {

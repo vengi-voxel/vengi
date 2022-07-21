@@ -7,6 +7,7 @@
 #include "core/StandardLib.h"
 #include "core/GLM.h"
 #include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Log.h"
 #include "math/Random.h"
 #include <glm/vec3.hpp>
@@ -14,7 +15,6 @@
 #include "core/collection/Stack.h"
 #include "voxel/Voxel.h"
 #include "voxel/MaterialColor.h"
-#include "core/Tokenizer.h"
 #include <glm/gtc/random.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/rotate_vector.hpp>

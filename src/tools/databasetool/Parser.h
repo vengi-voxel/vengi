@@ -4,8 +4,11 @@
 
 #pragma once
 
-#include "core/Tokenizer.h"
 #include "Table.h"
+
+namespace core {
+class Tokenizer;
+}
 
 namespace databasetool {
 

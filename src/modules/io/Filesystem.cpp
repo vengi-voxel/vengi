@@ -8,7 +8,6 @@
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "core/Tokenizer.h"
 #include "core/Var.h"
 #include "engine-config.h"
 #include <SDL.h>

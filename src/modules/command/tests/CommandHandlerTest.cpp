@@ -2,13 +2,14 @@
  * @file
  */
 
-#include <gtest/gtest.h>
 #include "command/CommandHandler.h"
+#include "command/Command.h"
 #include "core/Var.h"
+#include <gtest/gtest.h>
 
 namespace command {
 
-class CommandHandlerTest: public testing::Test {
+class CommandHandlerTest : public testing::Test {
 public:
 	void TearDown() override {
 		core::Var::shutdown();

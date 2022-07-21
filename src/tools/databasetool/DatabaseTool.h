@@ -6,7 +6,6 @@
 
 #include <map>
 #include "app/CommandlineApp.h"
-#include "core/Tokenizer.h"
 #include "Table.h"
 
 /**

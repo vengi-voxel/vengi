@@ -7,7 +7,6 @@
 #include "core/Enum.h"
 #include "core/GameConfig.h"
 #include "core/StringUtil.h"
-#include "core/Tokenizer.h"
 #include "core/Var.h"
 #include "command/Command.h"
 #include "core/collection/DynamicArray.h"

@@ -6,6 +6,7 @@
 #include "io/Filesystem.h"
 #include "core/StringUtil.h"
 #include "core/Common.h"
+#include "core/Tokenizer.h"
 #include "Util.h"
 #include "Parser.h"
 #include "Mapping.h"
