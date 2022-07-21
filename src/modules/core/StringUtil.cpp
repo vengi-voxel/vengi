@@ -159,6 +159,9 @@ core::String replaceAll(const core::String& str, const core::String& searchStr, 
 	if (str.empty()) {
 		return str;
 	}
+	if (searchStr.empty()) {
+		return str;
+	}
 
 	core::String s = str;
 	for (size_t pos = s.find(searchStr); pos != core::String::npos; pos = s.find(searchStr, pos + replaceStrSize)) {
