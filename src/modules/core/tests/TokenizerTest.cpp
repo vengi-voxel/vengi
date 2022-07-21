@@ -66,6 +66,7 @@ TEST_F(TokenizerTest, testTokenizerSecondMatchButOnlyOneChar) {
 
 TEST_F(TokenizerTest, testTokenizerEmpty) {
 	core::Tokenizer t("", ";");
+	EXPECT_FALSE(t.hasNext());
 	EXPECT_EQ(0u, t.size()) << toString(t.tokens());
 }
 

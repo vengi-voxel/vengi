@@ -333,11 +333,17 @@ AppState App::onInit() {
 	SDL_Init(SDL_INIT_TIMER|SDL_INIT_EVENTS);
 	_threadPool->init();
 
-	const core::String& content = _filesystem->load(_appname + ".vars");
+	const io::FilePtr& varsFile = _filesystem->open(_appname + ".vars");
+	const core::String &content = varsFile->load();
 	core::Tokenizer t(content);
 	while (t.hasNext()) {
 		const core::String& name = t.next();
+		if (name.empty()) {
+			Log::warn("%s contains invalid configuration name", varsFile->name().c_str());
+			break;
+		}
 		if (!t.hasNext()) {
+			Log::warn("%s contains invalid configuration value for %s", varsFile->name().c_str(), name.c_str());
 			break;
 		}
 		const core::String& value = t.next();

@@ -83,6 +83,7 @@ glm::vec3 Var::vec3Val() const {
 }
 
 VarPtr Var::get(const core::String& name, const char* value, int32_t flags, const char *help, ValidatorFunc validatorFunc) {
+	core_assert(!name.empty());
 	VarMap::iterator i;
 	bool missing;
 	{
