@@ -42,7 +42,7 @@ struct FormatDescription {
  */
 extern core::String convertToAllFilePattern(const FormatDescription *desc);
 /**
- * @return @code Name (*.ext1,*.ext2) @endcode
+ * @return The extension list of the given format description. @code Name (*.ext1,*.ext2) @endcode
  */
 extern core::String convertToFilePattern(const FormatDescription &desc);
 extern bool isImage(const core::String &file);
