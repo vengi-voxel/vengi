@@ -11,6 +11,10 @@
 
 namespace core {
 
+struct TokenizerConfig {
+	bool skipComments = true;
+};
+
 class Tokenizer {
 protected:
 	core::DynamicArray<core::String> _tokens;
@@ -30,13 +34,13 @@ public:
 	 * @param sep The separator chars - they are not included in the tokens.
 	 * @param split Splits chars, they are included in the tokens - but otherwise handled like usual separators.
 	 */
-	Tokenizer(bool skipComments, const char* s, size_t len, const char *sep = " (){};", const char *split = "");
-	Tokenizer(const char* s, size_t len, const char *sep = " (){};", const char *split = "") : Tokenizer(true, s, len, sep, split) {}
+	Tokenizer(const TokenizerConfig &cfg, const char* s, size_t len, const char *sep = " (){};", const char *split = "");
+	Tokenizer(const char* s, size_t len, const char *sep = " (){};", const char *split = "") : Tokenizer(TokenizerConfig(), s, len, sep, split) {}
 
-	Tokenizer(bool skipComments, const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(skipComments, string, SDL_strlen(string), sep, split) {}
-	Tokenizer(const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(true, string, SDL_strlen(string), sep, split) {}
-	Tokenizer(const core::String& string, const char *sep = " (){};", const char *split = "") : Tokenizer(true, string.c_str(), string.size(), sep, split) {}
-	Tokenizer(bool skipComments, const core::String& string, const char *sep = " (){};", const char *split = "") : Tokenizer(skipComments, string.c_str(), string.size(), sep, split) {}
+	Tokenizer(const TokenizerConfig &cfg, const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(cfg, string, SDL_strlen(string), sep, split) {}
+	Tokenizer(const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(TokenizerConfig(), string, SDL_strlen(string), sep, split) {}
+	Tokenizer(const core::String& string, const char *sep = " (){};", const char *split = "") : Tokenizer(TokenizerConfig(), string.c_str(), string.size(), sep, split) {}
+	Tokenizer(const TokenizerConfig &cfg, const core::String& string, const char *sep = " (){};", const char *split = "") : Tokenizer(cfg, string.c_str(), string.size(), sep, split) {}
 
 	inline bool hasNext() const {
 		return _posIndex < _tokens.size();

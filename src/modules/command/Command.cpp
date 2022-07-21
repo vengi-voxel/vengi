@@ -132,7 +132,9 @@ int Command::execute(const char* msg, ...) {
 
 int Command::execute(const core::String& command) {
 	int executed = 0;
-	core::Tokenizer commandLineTokenizer(false, command, ";\n");
+	core::TokenizerConfig cfg;
+	cfg.skipComments = false;
+	core::Tokenizer commandLineTokenizer(cfg, command, ";\n");
 	while (commandLineTokenizer.hasNext()) {
 		const core::String& fullCmd = commandLineTokenizer.next();
 		if (fullCmd.empty()) {
@@ -150,7 +152,7 @@ int Command::execute(const core::String& command) {
 			continue;
 		}
 		Log::debug("full command: '%s'", fullCmd.c_str());
-		core::Tokenizer commandTokenizer(false, fullCmd, " ");
+		core::Tokenizer commandTokenizer(cfg, fullCmd, " ");
 		if (!commandTokenizer.hasNext()) {
 			continue;
 		}

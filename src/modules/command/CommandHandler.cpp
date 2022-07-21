@@ -99,7 +99,9 @@ int executeCommands(const core::String& commandLine, CommandExecutionListener *l
 		return 0;
 	}
 	int n = 0;
-	const core::Tokenizer tok(false, commandLine, ";");
+	core::TokenizerConfig cfg;
+	cfg.skipComments = false;
+	const core::Tokenizer tok(cfg, commandLine, ";");
 	for (const core::String& command : tok.tokens()) {
 		if (command.empty()) {
 			continue;
@@ -110,7 +112,7 @@ int executeCommands(const core::String& commandLine, CommandExecutionListener *l
 		}
 		char buf[512];
 		replacePlaceholders(trimmed, buf, sizeof(buf));
-		const core::Tokenizer tokInner(false, buf, " ");
+		const core::Tokenizer tokInner(cfg, buf, " ");
 		if (tokInner.tokens().empty()) {
 			continue;
 		}

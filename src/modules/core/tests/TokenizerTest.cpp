@@ -14,14 +14,17 @@ class TokenizerTest: public testing::Test {
 
 TEST_F(TokenizerTest, testTokenizerNoSkipComment) {
 	const char *str = "http://foo.bar";
-	core::Tokenizer t(false, str, SDL_strlen(str), ";");
+	core::TokenizerConfig cfg;
+	cfg.skipComments = false;
+	core::Tokenizer t(cfg, str, SDL_strlen(str), ";");
 	ASSERT_EQ(1u, t.size()) << string::toString(t.tokens());
 	EXPECT_STREQ(str, t.tokens()[0].c_str()) << toString(t.tokens());
 }
 
 TEST_F(TokenizerTest, testTokenizerSkipComment) {
 	const char *str = "http://foo.bar";
-	core::Tokenizer t(true, str, SDL_strlen(str), ";");
+	core::TokenizerConfig cfg;
+	core::Tokenizer t(cfg, str, SDL_strlen(str), ";");
 	ASSERT_EQ(1u, t.size()) << toString(t.tokens());
 	EXPECT_STREQ("http:", t.tokens()[0].c_str()) << toString(t.tokens());
 }

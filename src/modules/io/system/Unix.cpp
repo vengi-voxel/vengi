@@ -108,7 +108,8 @@ bool initState(io::FilesystemState &state) {
 		Log::debug("Could not read %s", xdgDir.c_str());
 		return false;
 	}
-	core::Tokenizer tok(true, xdgDirsContent, "=");
+	core::TokenizerConfig cfg;
+	core::Tokenizer tok(cfg, xdgDirsContent, "=");
 	while (tok.hasNext()) {
 		const core::String var = tok.next();
 		if (!tok.hasNext()) {

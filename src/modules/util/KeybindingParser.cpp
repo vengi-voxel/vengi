@@ -15,7 +15,8 @@ namespace util {
 
 void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& command) {
 	int modifier = KMOD_NONE;
-	core::Tokenizer tok(true, key, COMMAND_PRESSED);
+	core::TokenizerConfig cfg;
+	core::Tokenizer tok(cfg, key, COMMAND_PRESSED);
 	const core::DynamicArray<core::String>& line = tok.tokens();
 	if (line.size() > 1) {
 		for (const core::String& token : line) {
