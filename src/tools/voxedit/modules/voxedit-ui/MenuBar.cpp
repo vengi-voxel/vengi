@@ -33,7 +33,7 @@ bool MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 					}
 					const core::String& item = core::string::format("%s##%i", f.c_str(), recentlyOpened);
 					if (ImGui::MenuItem(item.c_str())) {
-						command::executeCommands("load " + f, &listener);
+						command::executeCommands("load \"" + f + "\"", &listener);
 					}
 					++recentlyOpened;
 				}

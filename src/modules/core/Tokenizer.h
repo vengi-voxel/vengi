@@ -13,6 +13,7 @@ namespace core {
 
 struct TokenizerConfig {
 	bool skipComments = true;
+	bool removeQuotes = true;
 };
 
 class Tokenizer {

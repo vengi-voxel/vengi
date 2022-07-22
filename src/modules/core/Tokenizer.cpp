@@ -31,6 +31,9 @@ quote:
 			}
 			_len -= cl;
 			s += cl;
+			if (!cfg_.removeQuotes) {
+				token += c;
+			}
 			for (;;) {
 				// don't skip comments or whitespaces here, an inner string should be preserved
 				c = *s;
@@ -41,6 +44,9 @@ quote:
 				_len -= cl;
 				s += cl;
 				if (c == '"') {
+					if (!cfg_.removeQuotes) {
+						token += c;
+					}
 					lastCharWasQuoteEnd = true;
 					c = *s;
 					break;

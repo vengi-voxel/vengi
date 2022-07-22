@@ -38,4 +38,16 @@ TEST_F(CommandHandlerTest, testExecuteCommandline) {
 	EXPECT_EQ(0, command::executeCommands("; ; ; "));
 }
 
+TEST_F(CommandHandlerTest, testExecuteCommandsQuoteWhitespace) {
+	core::String parameter;
+	command::Command::registerCommand("testquitewhitespace", [&](const command::CmdArgs &args) {
+		if (args.size() == 1) {
+			parameter = args[0];
+		}
+	});
+
+	EXPECT_EQ(-1, command::executeCommands("testquitewhitespace \"foobar barfoo\";nocommand"));
+	EXPECT_STREQ("foobar barfoo", parameter.c_str());
 }
+
+} // namespace command
