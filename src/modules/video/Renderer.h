@@ -192,6 +192,7 @@ extern bool scissor(int x, int y, int w, int h);
  * @return The previous state value
  */
 extern bool enable(State state);
+extern bool currentState(State state);
 /**
  * @brief Disables a renderer state
  * @param state The State to change

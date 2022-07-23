@@ -425,6 +425,11 @@ bool disable(State state) {
 	return true;
 }
 
+bool currentState(State state) {
+	const int stateIndex = core::enumVal(state);
+	return _priv::s.states[stateIndex];
+}
+
 bool isClipOriginLowerLeft() {
 	return _priv::s.clipOriginLowerLeft;
 }
