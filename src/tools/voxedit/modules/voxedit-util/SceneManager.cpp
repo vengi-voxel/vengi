@@ -2308,6 +2308,7 @@ bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
 	} else {
 		_modifier.setHitCursorVoxel(voxel::Voxel());
 	}
+	_modifier.setVoxelAtCursor(v->voxel(_modifier.cursorPosition()));
 
 	if (result) {
 		*result = _result;

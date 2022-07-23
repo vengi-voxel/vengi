@@ -36,7 +36,7 @@ public:
 							  const glm::vec3 &maxsMirror);
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos);
 	void updateSelectionBuffers(const Selection &selection);
-	void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face);
+	void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face, bool flip);
 };
 
 }

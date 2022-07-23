@@ -10,7 +10,7 @@
 
 namespace voxedit {
 
-class ModifierFacade : public Modifier  {
+class ModifierFacade : public Modifier {
 private:
 	using Super = Modifier;
 	ModifierRenderer _modifierRenderer;

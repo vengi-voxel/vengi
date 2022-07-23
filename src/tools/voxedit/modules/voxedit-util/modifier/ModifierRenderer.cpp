@@ -34,30 +34,54 @@ void ModifierRenderer::shutdown() {
 	_shapeBuilder.shutdown();
 }
 
-void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames face) {
+void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames face, bool flip) {
 	_shapeBuilder.clear();
 	video::ShapeBuilderCube flags = video::ShapeBuilderCube::All;
 	switch (face) {
 	case voxel::FaceNames::PositiveX:
-		flags = video::ShapeBuilderCube::Left;
+		if (flip) {
+			flags = video::ShapeBuilderCube::Left;
+		} else {
+			flags = video::ShapeBuilderCube::Right;
+		}
 		break;
 	case voxel::FaceNames::PositiveY:
-		flags = video::ShapeBuilderCube::Bottom;
+		if (flip) {
+			flags = video::ShapeBuilderCube::Bottom;
+		} else {
+			flags = video::ShapeBuilderCube::Top;
+		}
 		break;
 	case voxel::FaceNames::PositiveZ:
-		flags = video::ShapeBuilderCube::Back;
+		if (flip) {
+			flags = video::ShapeBuilderCube::Back;
+		} else {
+			flags = video::ShapeBuilderCube::Front;
+		}
 		break;
 	case voxel::FaceNames::NegativeX:
-		flags = video::ShapeBuilderCube::Right;
+		if (flip) {
+			flags = video::ShapeBuilderCube::Right;
+		} else {
+			flags = video::ShapeBuilderCube::Left;
+		}
 		break;
 	case voxel::FaceNames::NegativeY:
-		flags = video::ShapeBuilderCube::Top;
+		if (flip) {
+			flags = video::ShapeBuilderCube::Top;
+		} else {
+			flags = video::ShapeBuilderCube::Bottom;
+		}
 		break;
 	case voxel::FaceNames::NegativeZ:
-		flags = video::ShapeBuilderCube::Front;
+		if (flip) {
+			flags = video::ShapeBuilderCube::Front;
+		} else {
+			flags = video::ShapeBuilderCube::Back;
+		}
 		break;
 	case voxel::FaceNames::Max:
-		break;
+		return;
 	}
 	_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.6f));
 	_shapeBuilder.cube(glm::vec3(0.0f), glm::vec3(1.0f), flags);

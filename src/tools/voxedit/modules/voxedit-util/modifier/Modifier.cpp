@@ -364,6 +364,10 @@ void Modifier::setHitCursorVoxel(const voxel::Voxel& voxel) {
 	_hitCursorVoxel = voxel;
 }
 
+void Modifier::setVoxelAtCursor(const voxel::Voxel& voxel) {
+	_voxelAtCursor = voxel;
+}
+
 bool Modifier::aabbAction(voxel::RawVolume *volume,
 						  const std::function<void(const voxel::Region &region, ModifierType type)> &callback) {
 	if (volume == nullptr) {

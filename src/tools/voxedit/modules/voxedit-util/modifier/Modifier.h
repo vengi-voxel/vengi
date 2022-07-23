@@ -64,9 +64,11 @@ protected:
 	glm::ivec3 _cursorPosition {0};
 	glm::ivec3 _referencePos;
 	voxel::FaceNames _face = voxel::FaceNames::Max;
+	// the voxel that should get placed
 	voxel::Voxel _cursorVoxel;
 	// existing voxel under the cursor
 	voxel::Voxel _hitCursorVoxel;
+	voxel::Voxel _voxelAtCursor;
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
 	ShapeType _shapeType = ShapeType::AABB;
@@ -171,6 +173,7 @@ public:
 
 	const voxel::Voxel& hitCursorVoxel() const;
 	void setHitCursorVoxel(const voxel::Voxel&);
+	void setVoxelAtCursor(const voxel::Voxel& voxel);
 
 	voxel::FaceNames cursorFace() const;
 
