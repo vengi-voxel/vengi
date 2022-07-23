@@ -7,7 +7,9 @@
 #include "math/Axis.h"
 #include "video/Camera.h"
 #include "video/ScopedPolygonMode.h"
+#include "video/ScopedState.h"
 #include "video/ShapeBuilder.h"
+#include "video/Types.h"
 #include "voxedit-util/SceneManager.h"
 #include "../AxisUtil.h"
 #include "voxedit-util/modifier/Selection.h"
@@ -92,6 +94,7 @@ void ModifierRenderer::renderAABBMode(const video::Camera& camera) {
 }
 
 void ModifierRenderer::render(const video::Camera& camera, const glm::mat4& model) {
+	const video::ScopedState depthTest(video::State::DepthTest, false);
 	_shapeRenderer.render(_voxelCursorMesh, camera, model);
 	_shapeRenderer.render(_mirrorMeshIndex, camera);
 }
