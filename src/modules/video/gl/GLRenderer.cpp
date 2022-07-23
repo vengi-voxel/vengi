@@ -1233,6 +1233,7 @@ void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height
 	video::bindFramebuffer(target, FrameBufferMode::Draw);
 	const GLbitfield glValue = getBitField(flag);
 	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, glValue, GL_NEAREST);
+	checkError();
 	video::bindFramebuffer(target, FrameBufferMode::Default);
 	video::bindFramebuffer(handle, FrameBufferMode::Default);
 }
