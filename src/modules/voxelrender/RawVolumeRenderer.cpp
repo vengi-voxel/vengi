@@ -64,13 +64,13 @@ bool RawVolumeRenderer::init() {
 	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
 	cfg.depthBuffer(true);
 	if (!_frameBuffer.init(cfg)) {
-		Log::error("Failed to initialize the volume renderer framebuffer");
+		Log::error("Failed to initialize the volume renderer bloom framebuffer");
 		return false;
 	}
 
 	// we have to do an y-flip here due to the framebuffer handling
 	if (!_bloomRenderer.init(true, windowSize.x, windowSize.y)) {
-		Log::error("Failed to initialize the blur renderer");
+		Log::error("Failed to initialize the bloom renderer");
 		return false;
 	}
 
