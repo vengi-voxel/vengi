@@ -24,6 +24,8 @@
 #include "video/ScopedBlendMode.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
+#include "video/ScopedState.h"
+#include "video/Types.h"
 #include "voxedit-ui/LayerPanel.h"
 #include "voxedit-util/MementoHandler.h"
 #include "voxel/Face.h"
@@ -1105,9 +1107,10 @@ void SceneManager::render(const video::Camera& camera, const glm::ivec2 &size, u
 
 			_modifier.render(camera);
 
-			// TODO: render error if rendered last - but be before grid renderer to get transparency.
 			if (_renderLockAxis) {
+				video::ScopedState blend(video::State::Blend, true);
 				for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
+					// TODO: fix z-fighting
 					_shapeRenderer.render(_planeMeshIndex[i], camera);
 				}
 			}
