@@ -48,7 +48,7 @@ public:
 	RenderMode renderMode() const;
 	void setRenderMode(RenderMode mode);
 
-	void onResize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
+	void resize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
 
 	void update(double deltaFrameSeconds);
 

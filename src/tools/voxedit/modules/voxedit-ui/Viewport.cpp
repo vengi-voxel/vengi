@@ -234,7 +234,7 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	const glm::vec2 windowSize(video::WindowedApp::getInstance()->windowDimension());
 	const glm::vec2 windowFrameBufferSize(video::WindowedApp::getInstance()->frameBufferDimension());
 	const glm::vec2 scale = windowFrameBufferSize / windowSize;
-	_controller.onResize(frameBufferSize,
+	_controller.resize(frameBufferSize,
 						 glm::ivec2((float)frameBufferSize.x * scale.x, (float)frameBufferSize.y * scale.y));
 	_frameBuffer.shutdown();
 
