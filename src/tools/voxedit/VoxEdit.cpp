@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/StringUtil.h"
+#include "core/concurrent/Concurrency.h"
 #include "voxedit-util/Config.h"
 #include "metric/Metric.h"
 #include "core/TimeProvider.h"
@@ -22,7 +23,7 @@
 #include "voxelformat/VolumeFormat.h"
 
 VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+		Super(metric, filesystem, eventBus, timeProvider, core::halfcpus()) {
 	init(ORGANISATION, "voxedit");
 	_allowRelativeMouseMode = false;
 }
