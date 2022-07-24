@@ -47,7 +47,27 @@ void RawVolumeRenderer::construct() {
 	core::Var::get(cfg::VoxelMeshSize, "64", core::CV_READONLY);
 }
 
-bool RawVolumeRenderer::init() {
+bool RawVolumeRenderer::resize(const glm::ivec2 &size) {
+	_frameBuffer.shutdown();
+	video::FrameBufferConfig cfg;
+	cfg.dimension(size);
+	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
+	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
+	cfg.depthBuffer(true);
+	if (!_frameBuffer.init(cfg)) {
+		Log::error("Failed to initialize the volume renderer bloom framebuffer");
+		return false;
+	}
+
+	// we have to do an y-flip here due to the framebuffer handling
+	if (!_bloomRenderer.resize(size.x, size.y)) {
+		Log::error("Failed to initialize the bloom renderer");
+		return false;
+	}
+	return true;
+}
+
+bool RawVolumeRenderer::init(const glm::ivec2 &size) {
 	if (!_voxelShader.setup()) {
 		Log::error("Failed to initialize the world shader");
 		return false;
@@ -58,8 +78,7 @@ bool RawVolumeRenderer::init() {
 	}
 
 	video::FrameBufferConfig cfg;
-	const glm::ivec2 &windowSize = video::getWindowSize();
-	cfg.dimension(windowSize);
+	cfg.dimension(size);
 	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
 	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
 	cfg.depthBuffer(true);
@@ -69,7 +88,7 @@ bool RawVolumeRenderer::init() {
 	}
 
 	// we have to do an y-flip here due to the framebuffer handling
-	if (!_bloomRenderer.init(true, windowSize.x, windowSize.y)) {
+	if (!_bloomRenderer.init(true, size.x, size.y)) {
 		Log::error("Failed to initialize the bloom renderer");
 		return false;
 	}
@@ -604,6 +623,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		const video::TexturePtr& color0 = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 		const video::TexturePtr& color1 = _frameBuffer.texture(video::FrameBufferAttachment::Color1);
 		_bloomRenderer.render(color0, color1);
+		video::blitFramebuffer(_frameBuffer.handle(), video::currentFramebuffer(), video::ClearFlag::Depth, _frameBuffer.dimension().x, _frameBuffer.dimension().y);
 	}
 }
 

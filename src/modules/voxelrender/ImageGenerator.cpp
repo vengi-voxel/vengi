@@ -35,7 +35,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	video::FrameBuffer frameBuffer;
 	voxelrender::SceneGraphRenderer volumeRenderer;
 	volumeRenderer.construct();
-	if (!volumeRenderer.init()) {
+	if (!volumeRenderer.init(glm::ivec2(outputSize))) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}

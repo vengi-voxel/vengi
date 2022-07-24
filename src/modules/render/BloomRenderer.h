@@ -46,7 +46,7 @@ public:
 	 */
 	bool init(bool yFlipped, int width, int height);
 
-	bool onResize(int width, int height);
+	bool resize(int width, int height);
 
 	static constexpr int passes() { return DOWNSAMPLE_PASSES; }
 

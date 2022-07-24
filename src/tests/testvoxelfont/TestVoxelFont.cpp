@@ -2,6 +2,7 @@
  * @file
  */
 #include "TestVoxelFont.h"
+#include "video/Renderer.h"
 #include "voxel/MaterialColor.h"
 #include "testcore/TestAppMain.h"
 #include <SDL.h>
@@ -26,7 +27,7 @@ app::AppState TestVoxelFont::onInit() {
 		Log::error("Failed to initialize the palette data");
 		return app::AppState::InitFailure;
 	}
-	if (!_rawVolumeRenderer.init()) {
+	if (!_rawVolumeRenderer.init(video::getWindowSize())) {
 		Log::error("Failed to initialize the raw volume renderer");
 		return app::AppState::InitFailure;
 	}

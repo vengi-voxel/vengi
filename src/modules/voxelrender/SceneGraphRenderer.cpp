@@ -39,8 +39,8 @@ void SceneGraphRenderer::construct() {
 	_renderer.construct();
 }
 
-bool SceneGraphRenderer::init() {
-	return _renderer.init();
+bool SceneGraphRenderer::init(const glm::ivec2 &size) {
+	return _renderer.init(size);
 }
 
 void SceneGraphRenderer::update() {

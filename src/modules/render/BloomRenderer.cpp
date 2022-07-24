@@ -40,7 +40,7 @@ bool BloomRenderer::init(bool yFlipped, int width, int height) {
 		return false;
 	}
 
-	onResize(width, height);
+	resize(width, height);
 
 	_black = video::createEmptyTexture("**black**");
 	_yFlipped = yFlipped;
@@ -56,7 +56,7 @@ bool BloomRenderer::init(bool yFlipped, int width, int height) {
 	return true;
 }
 
-bool BloomRenderer::onResize(int width, int height) {
+bool BloomRenderer::resize(int width, int height) {
 	video::TextureConfig tcfg = video::createDefaultTextureConfig();
 	tcfg.filterMin(video::TextureFilter::Nearest);
 	tcfg.filterMag(video::TextureFilter::Linear);

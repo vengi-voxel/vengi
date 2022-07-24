@@ -178,7 +178,8 @@ public:
 	/**
 	 * @sa shutdown()
 	 */
-	bool init();
+	bool init(const glm::ivec2 &size);
+	bool resize(const glm::ivec2 &size);
 
 	bool scheduleExtractions(size_t maxExtraction = 1);
 	void update();

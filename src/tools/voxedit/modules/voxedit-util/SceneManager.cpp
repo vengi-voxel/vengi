@@ -1084,26 +1084,24 @@ void SceneManager::updateAABBMesh() {
 
 void SceneManager::render(const video::Camera& camera, uint8_t renderMask) {
 	const bool depthTest = video::enable(video::State::DepthTest);
-	const bool renderUI = (renderMask & RenderUI) != 0u;
 	const bool renderScene = (renderMask & RenderScene) != 0u;
-	if (renderUI) {
-		if (_editMode == EditMode::Scene) {
-			if (_showAabbVar->boolVal()) {
-				_shapeRenderer.render(_aabbMeshIndex, camera);
-			}
-		} else if (const int nodeId = activeNode()) {
-			voxelformat::SceneGraphNode *n = sceneGraphNode(nodeId);
-			const voxel::Region& region = n->volume()->region();
-			_gridRenderer.render(camera, toAABB(region, n->transformForFrame(_currentFrame)));
-		}
-	}
 	if (renderScene) {
 		_volumeRenderer.prepare(_sceneGraph, _currentFrame, _hideInactive->boolVal(), _grayInactive->boolVal());
 		_volumeRenderer.render(camera, _renderShadow, false);
 		extractVolume();
 	}
+	const bool renderUI = (renderMask & RenderUI) != 0u;
 	if (renderUI) {
-		if (_editMode != EditMode::Scene) {
+		if (_editMode == EditMode::Scene) {
+			if (_showAabbVar->boolVal()) {
+				_shapeRenderer.render(_aabbMeshIndex, camera);
+			}
+		} else {
+			const int nodeId = activeNode();
+			voxelformat::SceneGraphNode *n = sceneGraphNode(nodeId);
+			const voxel::Region& region = n->volume()->region();
+			_gridRenderer.render(camera, toAABB(region, n->transformForFrame(_currentFrame)));
+
 			_modifier.render(camera);
 
 			// TODO: render error if rendered last - but be before grid renderer to get transparency.
@@ -1789,7 +1787,7 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the memento handler");
 		return false;
 	}
-	if (!_volumeRenderer.init()) {
+	if (!_volumeRenderer.init(video::getWindowSize())) {
 		Log::error("Failed to initialize the volume renderer");
 		return false;
 	}

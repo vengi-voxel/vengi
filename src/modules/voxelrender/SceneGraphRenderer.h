@@ -5,7 +5,6 @@
 #pragma once
 
 #include "RawVolumeRenderer.h"
-#include "core/IComponent.h"
 #include "voxelformat/SceneGraph.h"
 
 /**
@@ -16,18 +15,19 @@ namespace voxelrender {
 /**
  * @brief Rendering of a voxel::SceneGraph
  */
-class SceneGraphRenderer : public core::IComponent {
+class SceneGraphRenderer {
 protected:
 	RawVolumeRenderer _renderer;
 	voxelformat::SceneGraph _sceneGraph;
 	bool _sceneMode = true;
 
 public:
-	void construct() override;
-	bool init() override;
+	void construct();
+	bool init(const glm::ivec2 &size);
 	void update();
-	void shutdown() override;
+	void shutdown();
 
+	bool resize(const glm::ivec2 &size);
 	void setAmbientColor(const glm::vec3& color);
 	void setDiffuseColor(const glm::vec3& color);
 
@@ -47,6 +47,10 @@ public:
 
 inline void SceneGraphRenderer::setSceneMode(bool sceneMode) {
 	_sceneMode = sceneMode;
+}
+
+inline bool SceneGraphRenderer::resize(const glm::ivec2 &size) {
+	return _renderer.resize(size);
 }
 
 } // namespace voxelrender
