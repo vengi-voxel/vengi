@@ -127,7 +127,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			return core::move(newSceneGraph);
 		}));
 	}
-	Log::info("Scheduled %i regions", (int)futures.size());
+	Log::debug("Scheduled %i regions", (int)futures.size());
 	int count = 0;
 	for (auto & f : futures) {
 		SceneGraph newSceneGraph = core::move(f.get());
