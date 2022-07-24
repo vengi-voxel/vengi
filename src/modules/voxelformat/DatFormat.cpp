@@ -82,7 +82,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 	core::DynamicArray<io::FilesystemEntry> entities;
 	const core::String baseName = core::string::extractPath(filename);
-	if (!io::filesystem()->list(core::string::path(baseName, "region"), entities, "*.mca")) {
+	if (!io::filesystem()->list(core::string::path(baseName, "region"), entities, "*.mca,*.mcr")) {
 		Log::error("Failed to search minecraft region files");
 		return false;
 	}
@@ -93,6 +93,9 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	int nodesAdded = 0;
+	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
+
+	core::DynamicArray<std::future<SceneGraph> > futures;
 	Log::info("Found %i region files", (int)entities.size());
 	for (const io::FilesystemEntry &e : entities) {
 		if (e.type != io::FilesystemEntry::Type::file) {
@@ -104,18 +107,32 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			Log::warn("Could not open %s", filename.c_str());
 			continue;
 		}
-		io::FileStream stream(file);
-		if (stream.size() <= 2l * MCRFormat::SECTOR_BYTES) {
-			Log::debug("Skip empty region file %s", filename.c_str());
-			continue;
-		}
-		MCRFormat mcrFormat;
-		SceneGraph newSceneGraph;
-		if (!mcrFormat.loadGroups(filename, stream, newSceneGraph)) {
-			Log::warn("Could not load %s", filename.c_str());
-			continue;
-		}
+		futures.emplace_back(threadPool.enqueue([file]() {
+			io::FileStream stream(file);
+			SceneGraph newSceneGraph;
+			if (stream.size() <= 2l * MCRFormat::SECTOR_BYTES) {
+				Log::debug("Skip empty region file %s", file->name().c_str());
+				return core::move(newSceneGraph);
+			}
+			MCRFormat mcrFormat;
+			if (!mcrFormat.loadGroups(file->name(), stream, newSceneGraph)) {
+				Log::warn("Could not load %s", file->name().c_str());
+			}
+			const voxelformat::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();
+			newSceneGraph.clear();
+			voxelformat::SceneGraphNode node;
+			node.setVolume(merged.first, true);
+			node.setPalette(merged.second);
+			newSceneGraph.emplace(core::move(node));
+			return core::move(newSceneGraph);
+		}));
+	}
+	Log::info("Scheduled %i regions", (int)futures.size());
+	int count = 0;
+	for (auto & f : futures) {
+		SceneGraph newSceneGraph = core::move(f.get());
 		nodesAdded += voxelformat::addSceneGraphNodes(sceneGraph, newSceneGraph, rootNode);
+		Log::debug("... loaded %i", count++);
 	}
 
 	return nodesAdded > 0;
