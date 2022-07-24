@@ -378,7 +378,7 @@ public:
 	/**
 	 * @brief Performs the rendering for each @c Viewport instance
 	 */
-	void render(const video::Camera& camera, uint8_t renderMask = RenderAll);
+	void render(const video::Camera& camera, const glm::ivec2 &size, uint8_t renderMask = RenderAll);
 	void renderAnimation(const video::Camera& camera);
 
 	/**

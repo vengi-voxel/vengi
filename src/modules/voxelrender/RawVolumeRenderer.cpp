@@ -48,6 +48,9 @@ void RawVolumeRenderer::construct() {
 }
 
 bool RawVolumeRenderer::resize(const glm::ivec2 &size) {
+	if (_frameBuffer.dimension() == size) {
+		return true;
+	}
 	_frameBuffer.shutdown();
 	video::FrameBufferConfig cfg;
 	cfg.dimension(size);

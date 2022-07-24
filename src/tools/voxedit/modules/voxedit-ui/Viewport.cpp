@@ -197,7 +197,7 @@ bool Viewport::saveImage(const char *filename) {
 
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	_frameBuffer.bind(true);
-	sceneMgr().render(_controller.camera(), SceneManager::RenderScene);
+	sceneMgr().render(_controller.camera(), _frameBuffer.dimension(), SceneManager::RenderScene);
 	_frameBuffer.unbind();
 
 	uint8_t *pixels;
@@ -379,7 +379,7 @@ void Viewport::renderToFrameBuffer() {
 	if (_controller.renderMode() == ViewportController::RenderMode::Animation) {
 		sceneMgr().renderAnimation(camera);
 	} else {
-		sceneMgr().render(camera);
+		sceneMgr().render(camera, _frameBuffer.dimension());
 	}
 
 	_frameBuffer.unbind();
