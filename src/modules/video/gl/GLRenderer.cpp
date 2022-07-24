@@ -1229,13 +1229,17 @@ int getOcclusionQueryResult(Id id, bool wait) {
 }
 
 void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
-	video::bindFramebuffer(handle, FrameBufferMode::Read);
 	video::bindFramebuffer(target, FrameBufferMode::Draw);
+	video::bindFramebuffer(handle, FrameBufferMode::Read);
 	const GLbitfield glValue = getBitField(flag);
-	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, glValue, GL_NEAREST);
+	GLenum filter = GL_NEAREST;
+	if (flag == ClearFlag::Color) {
+		filter = GL_LINEAR;
+	}
+	glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, glValue, filter);
 	checkError();
-	video::bindFramebuffer(target, FrameBufferMode::Default);
 	video::bindFramebuffer(handle, FrameBufferMode::Default);
+	video::bindFramebuffer(target, FrameBufferMode::Default);
 }
 
 Id bindFramebuffer(Id handle, FrameBufferMode mode) {
