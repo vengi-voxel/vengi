@@ -55,7 +55,7 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	case 'r':	// Region file format
 	case 'a': { // Anvil file format
 		const int64_t fileSize = stream.remaining();
-		if (fileSize <= 2l * SECTOR_BYTES) {
+		if (fileSize < 2l * SECTOR_BYTES) {
 			Log::error("This region file has not enough data for the 8kb header");
 			return false;
 		}
@@ -73,6 +73,12 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		for (int i = 0; i < SECTOR_INTS; ++i) {
 			uint32_t lastModValue;
 			wrap(stream.readUInt32BE(lastModValue));
+		}
+
+		// might be an empty region file
+		if (stream.eos()) {
+			Log::warn("Empty region file");
+			return false;
 		}
 
 		const bool success = loadMinecraftRegion(sceneGraph, stream, palette);

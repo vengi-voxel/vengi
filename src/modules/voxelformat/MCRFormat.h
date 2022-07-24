@@ -63,11 +63,12 @@ using NBTList = core::DynamicArray<NamedBinaryTag>;
  * @note https://github.com/UnknownShadow200/ClassiCube/blob/master/src/Formats.c
  */
 class MCRFormat : public PaletteFormat {
+public:
+	static constexpr int SECTOR_BYTES = 4096;
+	static constexpr int SECTOR_INTS = SECTOR_BYTES / 4;
 private:
 	static constexpr int VERSION_GZIP = 1;
 	static constexpr int VERSION_DEFLATE = 2;
-	static constexpr int SECTOR_BYTES = 4096;
-	static constexpr int SECTOR_INTS = SECTOR_BYTES / 4;
 	static constexpr int MAX_SIZE = 16;
 
 	struct Offsets {

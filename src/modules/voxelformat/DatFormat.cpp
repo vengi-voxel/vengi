@@ -92,6 +92,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
+	int nodesAdded = 0;
 	Log::info("Found %i region files", (int)entities.size());
 	for (const io::FilesystemEntry &e : entities) {
 		if (e.type != io::FilesystemEntry::Type::file) {
@@ -104,16 +105,20 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			continue;
 		}
 		io::FileStream stream(file);
+		if (stream.size() <= 2l * MCRFormat::SECTOR_BYTES) {
+			Log::debug("Skip empty region file %s", filename.c_str());
+			continue;
+		}
 		MCRFormat mcrFormat;
 		SceneGraph newSceneGraph;
 		if (!mcrFormat.loadGroups(filename, stream, newSceneGraph)) {
 			Log::warn("Could not load %s", filename.c_str());
 			continue;
 		}
-		voxelformat::addSceneGraphNodes(sceneGraph, newSceneGraph, rootNode);
+		nodesAdded += voxelformat::addSceneGraphNodes(sceneGraph, newSceneGraph, rootNode);
 	}
 
-	return true;
+	return nodesAdded > 0;
 }
 
 } // namespace voxelformat
