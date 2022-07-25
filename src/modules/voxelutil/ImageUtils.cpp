@@ -35,8 +35,8 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 	for (int z = 0; z < volumeDepth; ++z, imageY += stepWidthY) {
 		float imageX = 0.0f;
 		for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
-			const uint8_t* heightmapPixel = image->at((int)imageX, (int)imageY);
-			const uint8_t pixelValue = (uint8_t)((float)(*heightmapPixel) * scaleHeight);
+			const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
+			const uint8_t pixelValue = (uint8_t)((float)(heightmapPixel.rgba) * scaleHeight);
 
 			for (int y = 0; y < volumeHeight; ++y) {
 				const glm::ivec3 pos(x, y, z);
@@ -81,11 +81,11 @@ voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness)
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
-			const uint8_t* data = image->at(x, y);
-			const glm::vec4& color = core::Color::fromRGBA(data[0], data[1], data[2], data[3]);
-			if (data[3] == 0) {
+			const core::RGBA data = image->colorAt(x, y);
+			if (data.a == 0) {
 				continue;
 			}
+			const glm::vec4& color = core::Color::fromRGBA(data);
 			const uint8_t index = palette.getClosestMatch(color);
 			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 			for (int z = 0; z < thickness; ++z) {
@@ -135,15 +135,15 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
-			const uint8_t* data = image->at(x, y);
-			if (data[3] == 0) {
+			const core::RGBA data = image->colorAt(x, y);
+			if (data.a == 0) {
 				continue;
 			}
-			const glm::vec4& color = core::Color::fromRGBA(data[0], data[1], data[2], data[3]);
+			const glm::vec4& color = core::Color::fromRGBA(data);
 			const uint8_t index = palLookup.findClosestIndex(color);
 			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-			const uint8_t* heightdata = heightmap->at(x, y);
-			const float thickness = (float)*heightdata;
+			const core::RGBA heightdata = heightmap->colorAt(x, y);
+			const float thickness = (float)heightdata.rgba;
 			const float maxthickness = maxDepth;
 			const float height = thickness * maxthickness / 255.0f;
 			if (bothSides) {

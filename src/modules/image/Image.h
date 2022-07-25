@@ -48,11 +48,14 @@ public:
 	 */
 	bool loadRGBA(const uint8_t* buffer, int length, int width, int height);
 
+	glm::vec2 uv(int x, int y) const;
+
 	static void flipVerticalRGBA(uint8_t *pixels, int w, int h);
 	static bool writePng(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth);
 	static bool writePng(const char *name, const uint8_t *buffer, int width, int height, int depth);
 	bool writePng() const;
 	core::String pngBase64() const;
+	core::RGBA colorAt(int x, int y) const;
 	core::RGBA colorAt(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat,
 					   TextureWrap wrapT = TextureWrap::Repeat) const;
 

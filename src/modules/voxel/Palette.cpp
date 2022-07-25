@@ -182,7 +182,7 @@ bool Palette::load(const image::ImagePtr &img) {
 	}
 	colorCount = ncolors;
 	for (int i = 0; i < colorCount; ++i) {
-		colors[i] = *(uint32_t *)img->at(i, 0);
+		colors[i] = img->colorAt(i, 0);
 	}
 	for (int i = colorCount; i < PaletteMaxColors; ++i) {
 		colors[i] = core::Color::getRGBA(0, 0, 0);
@@ -357,8 +357,8 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 	Log::debug("Create palette for image: %s", image->name().c_str());
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
-			const uint8_t *data = image->at(x, y);
-			colors.push_back(*(uint32_t*)data);
+			const core::RGBA data = image->colorAt(x, y);
+			colors.push_back(data);
 		}
 	}
 	palette.quantize(colors.data(), colors.size());

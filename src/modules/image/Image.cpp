@@ -65,6 +65,27 @@ bool Image::load(const io::FilePtr& file) {
 	return status;
 }
 
+const uint8_t* Image::at(int x, int y) const {
+	core_assert_msg(x >= 0 && x < _width, "x out of bounds: x: %i, y: %i, w: %i, h: %i", x, y, _width, _height);
+	core_assert_msg(y >= 0 && y < _height, "y out of bounds: x: %i, y: %i, w: %i, h: %i", x, y, _width, _height);
+	const int colSpan = _width * _depth;
+	const intptr_t offset = x * _depth + y * colSpan;
+	return _data + offset;
+}
+
+core::RGBA Image::colorAt(int x, int y) const {
+	const uint8_t *ptr = at(x, y);
+	const int d = depth();
+	if (d == 4) {
+		return core::RGBA{ptr[0], ptr[1], ptr[2], ptr[3]};
+	}
+	if (d == 3) {
+		return core::RGBA{ptr[0], ptr[1], ptr[2], 255};
+	}
+	core_assert(d == 1);
+	return core::RGBA{ptr[0], ptr[0], ptr[0], 255};
+}
+
 core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT) const {
 	const float w = (float)width();
 	const float h = (float)height();
@@ -106,14 +127,8 @@ core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wr
 	}
 
 	const int xint = (int)x;
-	const int yint = height() - (int)y - 1;
-	const uint8_t *ptr = at(xint, yint);
-	const int d = depth();
-	if (d == 4) {
-		return core::RGBA{ptr[0], ptr[1], ptr[2], ptr[3]};
-	}
-	core_assert(d == 3);
-	return core::RGBA{ptr[0], ptr[1], ptr[2], 255};
+	const int yint = (int)y;
+	return colorAt(xint, yint);
 }
 
 ImagePtr loadImage(const io::FilePtr& file, bool async) {
@@ -211,12 +226,8 @@ void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
 	}
 }
 
-const uint8_t* Image::at(int x, int y) const {
-	core_assert_msg(x >= 0 && x < _width, "x out of bounds: x: %i, y: %i, w: %i, h: %i", x, y, _width, _height);
-	core_assert_msg(y >= 0 && y < _height, "y out of bounds: x: %i, y: %i, w: %i, h: %i", x, y, _width, _height);
-	const int colSpan = _width * _depth;
-	const intptr_t offset = x * _depth + y * colSpan;
-	return _data + offset;
+glm::vec2 Image::uv(int x, int y) const {
+	return glm::vec2((float)x / (float)_width, (float)y / (float)_height);
 }
 
 bool Image::writePng(const char *name, const uint8_t* buffer, int width, int height, int depth) {
