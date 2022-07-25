@@ -320,13 +320,13 @@ static glm::vec2 calcUV(const glm::ivec3 &pos, const voxel::Region &region, voxe
 	switch (face) {
 	case voxel::FaceNames::PositiveX:
 	case voxel::FaceNames::NegativeX:
-		return glm::vec2(r.y, r.z);
+		return glm::vec2(1.0f - r.z, 1.0f - r.y);
 	case voxel::FaceNames::PositiveY:
 	case voxel::FaceNames::NegativeY:
-		return glm::vec2(r.x, r.z);
+		return glm::vec2(r.x, 1.0f - r.z);
 	case voxel::FaceNames::PositiveZ:
 	case voxel::FaceNames::NegativeZ:
-		return glm::vec2(r.x, r.y);
+		return glm::vec2(r.x, 1.0f - r.y);
 	default:
 	case voxel::FaceNames::Max:
 		return glm::vec2(0.0f);
