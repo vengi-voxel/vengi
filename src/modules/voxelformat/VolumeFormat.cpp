@@ -221,6 +221,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 			format = core::make_shared<SchematicFormat>();
 		} else if (ext == "gltf") {
 			format = core::make_shared<GLTFFormat>();
+		} else {
+			Log::warn("Unknown extension %s", ext.c_str());
 		}
 	}
 	return format;
