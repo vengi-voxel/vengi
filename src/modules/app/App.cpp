@@ -38,6 +38,16 @@ static void graceful_shutdown(int signo) {
 	App::getInstance()->requestQuit();
 }
 
+static void loop_debug_log(int signo) {
+	const core::VarPtr &log = core::Var::getSafe(cfg::CoreLogLevel);
+	int current = log->intVal();
+	current--;
+	if (current < SDL_LOG_PRIORITY_VERBOSE)
+		current = SDL_LOG_PRIORITY_CRITICAL;
+	log->setVal(current);
+	Log::init();
+}
+
 App* App::_staticInstance;
 thread_local std::stack<App::TraceData> App::_traceData;
 
@@ -59,6 +69,7 @@ App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, c
 	_timeProvider->updateTickTime();
 	_staticInstance = this;
 	signal(SIGINT, graceful_shutdown);
+	signal(42, loop_debug_log);
 }
 
 App::~App() {
