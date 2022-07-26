@@ -53,10 +53,9 @@ TEST_F(TriTest, colorAt4x4) {
 	for (int i = 0; i < w; ++i) {
 		for (int j = 0; j < h; ++j) {
 			const float epsilon = 0.0001f;
-			const float maxH = h - 1;
-			tri.uv[0] = glm::vec2((float)i / (float)w, maxH - (float)j / (float)h);
-			tri.uv[1] = glm::vec2((float)i / (float)w, maxH - (float)(j + 1) / (float)h - epsilon);
-			tri.uv[2] = glm::vec2((float)(i + 1) / (float)w - epsilon, maxH - (float)(j + 1) / (float)h - epsilon);
+			tri.uv[0] = glm::vec2((float)i / (float)w, (float)j / (float)h);
+			tri.uv[1] = glm::vec2((float)i / (float)w, (float)(j + 1) / (float)h - epsilon);
+			tri.uv[2] = glm::vec2((float)(i + 1) / (float)w - epsilon, (float)(j + 1) / (float)h - epsilon);
 			const core::RGBA color = tri.colorAt(tri.centerUV());
 			const int texIndex = j * w + i;
 			ASSERT_EQ(buffer[texIndex], color) << "i: " << i << "/" << j << " " << core::Color::print(buffer[texIndex])
