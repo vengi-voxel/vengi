@@ -9,11 +9,7 @@
 
 extern void core_stacktrace();
 
-#ifndef core_assert
-#if SDL_ASSERT_LEVEL <= 0
-#define core_assert(condition) SDL_disabled_assert(condition)
-#else
-#define core_assert(condition) \
+#define core_enabled_assert(condition) \
 	do { \
 		while ( !(condition) ) { \
 			static struct SDL_AssertData sdl_assert_data = { \
@@ -32,21 +28,13 @@ extern void core_stacktrace();
 			break; /* not retrying. */ \
 		} \
 	} while (SDL_NULL_WHILE_LOOP_CONDITION)
-#endif
-#endif
 
-#define core_assert_always SDL_assert_always
-
-#ifndef core_assert_msg
-#if SDL_ASSERT_LEVEL <= 0
-#define core_assert_msg(condition, ...) SDL_disabled_assert(condition)
-#else
 
 extern SDL_AssertState core_assert_impl_message(SDL_AssertData &sdl_assert_data, char *buf, int bufSize,
 										const char *function, const char *file, int line, CORE_FORMAT_STRING const char *format, ...)
 										CORE_PRINTF_VARARG_FUNC(7);
 
-#define core_assert_msg(conditionCheck, ...) \
+#define core_assert_enabled_msg(conditionCheck, ...) \
 	do { \
 		while (!(conditionCheck)) { \
 			static struct SDL_AssertData sdl_assert_data = { \
@@ -64,8 +52,27 @@ extern SDL_AssertState core_assert_impl_message(SDL_AssertData &sdl_assert_data,
 			break; /* not retrying. */ \
 		} \
 	} while (SDL_NULL_WHILE_LOOP_CONDITION)
+
+#ifndef core_assert
+#if SDL_ASSERT_LEVEL <= 0
+#define core_assert SDL_disabled_assert
+#else
+#define core_assert core_enabled_assert
 #endif
 #endif
+
+#define core_assert_always core_enabled_assert
+
+#ifndef core_assert_msg
+#if SDL_ASSERT_LEVEL <= 0
+#define core_assert_msg(condition, ...) SDL_disabled_assert(condition)
+#else
+#define core_assert_msg core_assert_enabled_msg
+#endif
+#endif
+
+#define core_assert_msg_always core_assert_enabled_msg
+
 
 #ifdef _MSC_VER
 #define core_assert_2byte_aligned(data)

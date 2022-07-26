@@ -113,7 +113,7 @@ voxel::RawVolume* rotateAxis(const voxel::RawVolume* source, math::Axis axis) {
 					pos.x = pos.y;
 					pos.y = tmp;
 				}
-				core_assert_always(destSampler.setPosition(pos));
+				core_assert_msg_always(destSampler.setPosition(pos), "pos %i:%i:%i", pos.x, pos.y, pos.z);
 				core_assert_always(destSampler.setVoxel(v));
 			}
 		}
