@@ -8,7 +8,7 @@
 #include "core/Log.h"
 #include "core/Color.h"
 #include "core/FourCC.h"
-#include "private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 #include "voxel/Palette.h"
 #include <glm/common.hpp>
 
@@ -97,7 +97,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	} voxtype;
 
 	voxtype voxdata[MAXVOXS];
-	PaletteLookup palLookup(palette);
+	voxel::PaletteLookup palLookup(palette);
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		uint8_t palr, palg, palb, pala;
 		wrap(stream.readUInt8(palb))

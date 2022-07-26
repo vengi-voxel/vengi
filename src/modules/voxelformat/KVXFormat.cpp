@@ -9,7 +9,7 @@
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "core/Color.h"
-#include "private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 #include "voxel/Palette.h"
 #include <glm/common.hpp>
 

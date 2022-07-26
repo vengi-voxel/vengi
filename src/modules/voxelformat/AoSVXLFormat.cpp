@@ -12,7 +12,7 @@
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
 #include "voxelutil/VolumeResizer.h"
-#include "private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 #include <SDL_stdinc.h>
 #include <string.h>
 
@@ -62,7 +62,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 
-	PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup;
 	for (int z = 0; z < depths; ++z) {
 		for (int x = 0; x < width; ++x) {
 			int y = 0;

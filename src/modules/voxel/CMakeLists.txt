@@ -8,6 +8,7 @@ set(SRCS
 	Mesh.h Mesh.cpp
 	Morton.h
 	Palette.h Palette.cpp
+	PaletteLookup.h
 	PagedVolume.h PagedVolume.cpp
 	PagedVolumeSampler.cpp PagedVolumeChunk.cpp
 	PagedVolumeWrapper.h PagedVolumeWrapper.cpp

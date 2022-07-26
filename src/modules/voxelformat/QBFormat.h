@@ -6,9 +6,11 @@
 
 #include "Format.h"
 
-namespace voxelformat {
-
+namespace voxel {
 class PaletteLookup;
+}
+
+namespace voxelformat {
 
 /**
  * @brief Qubicle Binary (qb) format.
@@ -59,8 +61,8 @@ private:
 		Back
 	};
 
-	voxel::Voxel getVoxel(State& state, io::SeekableReadStream& stream, PaletteLookup &palLookup);
-	bool loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, PaletteLookup &palLookup);
+	voxel::Voxel getVoxel(State& state, io::SeekableReadStream& stream, voxel::PaletteLookup &palLookup);
+	bool loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup);
 	bool loadFromStream(io::SeekableReadStream& stream, SceneGraph& sceneGraph);
 
 	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const;

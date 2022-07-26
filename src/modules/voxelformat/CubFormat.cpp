@@ -9,7 +9,7 @@
 #include "core/Color.h"
 #include "core/ScopedPtr.h"
 #include "voxel/MaterialColor.h"
-#include "private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 
 namespace voxelformat {
 
@@ -72,7 +72,7 @@ bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return false;
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup;
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {

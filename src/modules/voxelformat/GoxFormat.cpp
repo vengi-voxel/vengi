@@ -20,7 +20,7 @@
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
-#include "private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace voxelformat {
@@ -184,7 +184,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	voxel::RawVolume *layerVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 	uint32_t blockCount;
 
-	PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup;
 	wrap(stream.readUInt32(blockCount))
 	Log::debug("Found LAYR chunk with %i blocks", blockCount);
 	for (uint32_t i = 0; i < blockCount; ++i) {

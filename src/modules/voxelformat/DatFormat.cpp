@@ -28,7 +28,7 @@
 #include "voxelformat/MCRFormat.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/SceneGraphUtil.h"
-#include "voxelformat/private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 

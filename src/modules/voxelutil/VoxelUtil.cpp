@@ -13,7 +13,7 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
@@ -365,7 +365,7 @@ int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::Face
 
 int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const voxel::Voxel &searchedVoxel,
 			  const glm::ivec3 &position, voxel::FaceNames face) {
-	voxelformat::PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup;
 
 	const voxel::Region &region = in.region();
 

@@ -9,7 +9,7 @@
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
 #include "voxel/MaterialColor.h"
-#include "voxelformat/private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 
 namespace voxelformat {
 
@@ -52,7 +52,7 @@ bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 
-	PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup;
 	for (int y = size.y - 1; y >= 0; y--) {
 		for (int z = 0; z < size.z; z++) {
 			for (int x = 0; x < size.x; x++) {

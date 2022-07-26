@@ -8,7 +8,7 @@
 #include "core/Log.h"
 #include "glm/common.hpp"
 #include "voxel/Voxel.h"
-#include "private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 
 namespace voxelformat {
 
@@ -64,7 +64,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 	const bool readStringAsInt = isNVM || version >= 4;
 
-	PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup;
 	for (uint16_t i = 0u; (uint16_t)i < matrixCount; ++i) {
 		core::String name;
 		core::String parent;

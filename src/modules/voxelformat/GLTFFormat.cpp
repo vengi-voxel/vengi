@@ -26,7 +26,7 @@
 #include "core/collection/DynamicArray.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
-#include "voxelformat/private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 #include "voxelutil/VoxelUtil.h"
 
 #include <future>
@@ -756,7 +756,7 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &mod
 	for (size_t indexOffset = 0; indexOffset < maxN; indexOffset += 3) {
 		futures.emplace_back(threadPool.enqueue(func, indexOffset));
 	}
-	PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup;
 	voxel::RawVolume *volume = node.volume();
 	int n = 0;
 	for (auto &f : futures) {

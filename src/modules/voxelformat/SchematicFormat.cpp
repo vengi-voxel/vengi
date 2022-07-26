@@ -24,7 +24,7 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/SceneGraphNode.h"
-#include "voxelformat/private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 #include "voxelformat/private/SchematicIntReader.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
@@ -178,7 +178,7 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, Scen
 		return false;
 	}
 
-	PaletteLookup palLookup(palette);
+	voxel::PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
 	SchematicIntReader reader(blocks);
 	int index = 0;
@@ -229,7 +229,7 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, SceneGr
 	// * https://github.com/mcedit/mcedit2/blob/master/src/mceditlib/schematic.py#L143
 	// * https://github.com/Lunatrius/Schematica/blob/master/src/main/java/com/github/lunatrius/schematica/world/schematic/SchematicAlpha.java
 
-	PaletteLookup palLookup(palette);
+	voxel::PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {

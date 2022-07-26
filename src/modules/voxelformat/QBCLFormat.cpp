@@ -21,7 +21,7 @@
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 
 namespace voxelformat {
 
@@ -325,7 +325,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	core::ScopedPtr<voxel::RawVolume> volume(new voxel::RawVolume(region));
 	uint32_t index = 0;
 
-	PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup;
 
 	while (!zipStream.eos()) {
 		int y = 0;

@@ -16,7 +16,7 @@
 #include "core/Log.h"
 #include "voxel/Palette.h"
 #include "voxelformat/SceneGraphNode.h"
-#include "voxelformat/private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -350,7 +350,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 		Log::error("Invalid region");
 		return false;
 	}
-	PaletteLookup palLookup(palette);
+	voxel::PaletteLookup palLookup(palette);
 	core::ScopedPtr<voxel::RawVolume> volume(new voxel::RawVolume(region));
 	for (int32_t x = 0; x < (int)size.x; x++) {
 		for (int32_t z = 0; z < (int)size.z; z++) {

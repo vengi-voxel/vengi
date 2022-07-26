@@ -16,7 +16,7 @@
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "voxelformat/VolumeFormat.h"
-#include "voxelformat/private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 
 namespace voxelutil {
 
@@ -131,7 +131,7 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 	}
 	Log::info("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, volumeDepth);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, volumeDepth - 1);
-	voxelformat::PaletteLookup palLookup(voxel::getPalette());
+	voxel::PaletteLookup palLookup(voxel::getPalette());
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {

@@ -13,7 +13,7 @@
 #include "voxel/MaterialColor.h"
 #include "core/collection/Buffer.h"
 #include "voxelformat/SceneGraphNode.h"
-#include "voxelformat/private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 #include <SDL_assert.h>
 
 namespace voxelformat {

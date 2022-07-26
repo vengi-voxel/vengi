@@ -19,7 +19,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelformat/SceneGraphNode.h"
-#include "voxelformat/private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 #include "voxelformat/private/Tri.h"
 #include "voxelutil/VoxelUtil.h"
 #include <SDL_timer.h>
@@ -93,7 +93,7 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) {
 	Log::debug("create voxels");
 	voxel::RawVolume *volume = node.volume();
-	PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup;
 	for (const auto &entry : posMap) {
 		const PosSampling &pos = entry->second;
 		const glm::vec4 &color = pos.avgColor();

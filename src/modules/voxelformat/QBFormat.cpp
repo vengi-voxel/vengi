@@ -11,7 +11,7 @@
 #include "io/FileStream.h"
 #include "io/Stream.h"
 #include "voxel/MaterialColor.h"
-#include "voxelformat/private/PaletteLookup.h"
+#include "voxel/PaletteLookup.h"
 
 namespace voxelformat {
 
@@ -150,7 +150,7 @@ bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &file
 	return true;
 }
 
-voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream, PaletteLookup &palLookup) {
+voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream, voxel::PaletteLookup &palLookup) {
 	uint8_t red;
 	uint8_t green;
 	uint8_t blue;
@@ -174,7 +174,7 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream, Pa
 	return v;
 }
 
-bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, PaletteLookup &palLookup) {
+bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup) {
 	char name[260] = "";
 	uint8_t nameLength;
 	wrap(stream.readUInt8(nameLength));
@@ -314,7 +314,7 @@ bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& 
 	Log::debug("NumMatrices: %u", numMatrices);
 
 	sceneGraph.reserve(numMatrices);
-	PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup;
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix: %u", i);
 		if (!loadMatrix(state, stream, sceneGraph, palLookup)) {

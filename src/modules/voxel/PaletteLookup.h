@@ -9,7 +9,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 
-namespace voxelformat {
+namespace voxel {
 
 class PaletteLookup {
 private:
