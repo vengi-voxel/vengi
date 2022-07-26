@@ -224,6 +224,9 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 		} else {
 			Log::warn("Unknown extension %s", ext.c_str());
 		}
+		if (format) {
+			return format;
+		}
 	}
 	return format;
 }
