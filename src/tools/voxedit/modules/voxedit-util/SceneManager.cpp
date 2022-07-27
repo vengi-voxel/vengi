@@ -1195,7 +1195,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("togglescene", [this] (const command::CmdArgs& args) {
 		toggleEditMode();
-	}).setHelp("Toggle scene mode on/off");
+	}).setHelp("Toggle scene mode on/off").setBindingContext(voxedit::BindingContext::Editing);
 
 	command::Command::registerCommand("layerssave", [&] (const command::CmdArgs& args) {
 		core::String dir = ".";
@@ -1333,7 +1333,7 @@ void SceneManager::construct() {
 		} else {
 			resizeAll(glm::ivec3(1));
 		}
-	}).setHelp("Resize your volume about given x, y and z size");
+	}).setHelp("Resize your volume about given x, y and z size").setBindingContext(BindingContext::Editing);
 
 	command::Command::registerCommand("shift", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
