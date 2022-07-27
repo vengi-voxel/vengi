@@ -941,36 +941,20 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	return true;
 }
 
-void SceneManager::rotate(int nodeId, const glm::ivec3& angle, bool increaseSize, bool rotateAroundReferencePosition) {
-	const voxel::RawVolume* model = volume(nodeId);
-	if (model == nullptr) {
-		return;
-	}
-	voxel::RawVolume* newVolume;
-	const bool axisRotation = !rotateAroundReferencePosition && !increaseSize;
-	if (axisRotation && angle == glm::ivec3(90, 0, 0)) {
-		newVolume = voxelutil::rotateAxis(model, math::Axis::X);
-	} else if (axisRotation && angle == glm::ivec3(0, 90, 0)) {
-		newVolume = voxelutil::rotateAxis(model, math::Axis::Y);
-	} else if (axisRotation && angle == glm::ivec3(0, 0, 90)) {
-		newVolume = voxelutil::rotateAxis(model, math::Axis::Z);
-	} else {
-		const glm::vec3 pivot = rotateAroundReferencePosition ? glm::vec3(referencePosition()) : model->region().getPivot();
-		newVolume = voxelutil::rotateVolume(model, angle, pivot, increaseSize);
-	}
-	voxel::Region r = newVolume->region();
-	r.accumulate(model->region());
-	if (!setNewVolume(nodeId, newVolume)) {
-		delete newVolume;
-		return;
-	}
-	modified(nodeId, r);
-}
-
-void SceneManager::rotate(int angleX, int angleY, int angleZ, bool increaseSize, bool rotateAroundReferencePosition) {
-	const glm::ivec3 angle(angleX, angleY, angleZ);
-	_sceneGraph.foreachGroup([&] (int nodeId) {
-		rotate(nodeId, angle, increaseSize, rotateAroundReferencePosition);
+void SceneManager::rotate(int angleX, int angleY, int angleZ) {
+	const glm::vec3 angle(angleX, angleY, angleZ);
+	_sceneGraph.foreachGroup([&](int nodeId) {
+		voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId);
+		if (node == nullptr) {
+			return;
+		}
+		const voxel::RawVolume *model = node->volume();
+		const glm::vec3 pivot = node->transform(_currentFrame).pivot();
+		voxel::RawVolume *newVolume = voxelutil::rotateVolume(model, angle, pivot);
+		voxel::Region r = newVolume->region();
+		r.accumulate(model->region());
+		setSceneGraphNodeVolume(*node, newVolume);
+		modified(nodeId, r);
 	});
 }
 
@@ -1433,37 +1417,14 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("rotate", [&] (const command::CmdArgs& args) {
 		if (args.size() < 3) {
-			Log::info("Usage: rotate <x> <y> <z> [rotAroundPivot=false]");
-			Log::info("angles are given in degrees");
-			Log::info("rotAroundPivot: rotate around pivot (true)");
+			Log::info("Usage: rotate <x> <y> <z>");
 			return;
 		}
 		const int x = core::string::toInt(args[0]);
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
-		bool rotateAroundReferencePosition = false;
-		if (args.size() >= 4) {
-			rotateAroundReferencePosition = core::string::toBool(args[3]);
-		}
-		rotate(activeNode(), glm::ivec3(x, y, z), true, rotateAroundReferencePosition);
-	}).setHelp("Rotate active layer by the given angles (in degree)");
-
-	command::Command::registerCommand("rotateall", [&] (const command::CmdArgs& args) {
-		if (args.size() < 3) {
-			Log::info("Usage: rotateall <x> <y> <z> [rotAroundPivot=false]");
-			Log::info("angles are given in degrees");
-			Log::info("rotAroundPivot: rotate around pivot (true)");
-			return;
-		}
-		const int x = core::string::toInt(args[0]);
-		const int y = core::string::toInt(args[1]);
-		const int z = core::string::toInt(args[2]);
-		bool rotateAroundReferencePosition = false;
-		if (args.size() >= 4) {
-			rotateAroundReferencePosition = core::string::toBool(args[3]);
-		}
-		rotate(x, y, z, true, rotateAroundReferencePosition);
-	}).setHelp("Rotate scene by the given angles (in degree)");
+		rotate(x, y, z);
+	}).setHelp("Rotate active layers by the given angles (in degree)");
 
 	command::Command::registerCommand("layermerge", [&] (const command::CmdArgs& args) {
 		int nodeId1;

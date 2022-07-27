@@ -220,8 +220,7 @@ protected:
 	bool paste(const glm::ivec3& pos);
 	bool cut();
 
-	void rotate(int nodeId, const glm::ivec3& angle, bool increaseSize = false, bool rotateAroundReferencePosition = false);
-	void rotate(int angleX, int angleY, int angleZ, bool increaseSize = false, bool rotateAroundReferencePosition = false);
+	void rotate(int angleX, int angleY, int angleZ);
 
 	/**
 	 * @brief Move the voxels inside the volume regions
