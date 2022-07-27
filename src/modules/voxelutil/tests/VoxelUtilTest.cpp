@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "voxel/Face.h"
 #include "voxel/Palette.h"
+#include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
@@ -138,17 +139,15 @@ TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveZ) {
 }
 
 TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
-	voxel::Palette pal;
-	pal.nippon();
+	voxel::PaletteLookup palLookup;
 
-	const image::ImagePtr& img = image::loadImage("test-palette-in.png", false);
+	const image::ImagePtr& img = image::loadImage("test-fillplane.png", false);
 
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
-	EXPECT_EQ(42, img->width());
-	EXPECT_EQ(74, img->height());
-	const core::RGBA rgba = img->colorAt(33, 7);
+	EXPECT_EQ(10, img->width());
+	EXPECT_EQ(3, img->height());
 
-	voxel::Region region(0, 0, 0, img->width() - 1, img->height() - 1, 0);
+	voxel::Region region(0, 0, 0, img->width() - 1, img->height() - 1, 1);
 	EXPECT_EQ(region.getHeightInVoxels(), img->height());
 	EXPECT_EQ(region.getWidthInVoxels(), img->width());
 	voxel::RawVolume v(region);
@@ -156,9 +155,26 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 	const int plane1Voxels = voxelutil::fillPlane(wrapper, img, voxel::Voxel(), glm::ivec3(0, 0, 0), voxel::FaceNames::PositiveZ);
 	EXPECT_EQ(img->width() * img->height(), plane1Voxels);
 
-	const voxel::Voxel &voxel = wrapper.voxel(33, 74 - 7, 0);
-	const core::RGBA voxelColor = pal.colors[voxel.getColor()];
-	EXPECT_LT(core::Color::getDistance(rgba, voxelColor), 0.0f) << core::Color::print(rgba) << " vs " << core::Color::print(voxelColor) << " (" << (int)voxel.getColor() << ")";
+	for (int x = 0; x < img->width(); ++x) {
+		const core::RGBA rgba = img->colorAt(x, 0);
+		const voxel::Voxel &voxel = wrapper.voxel(x, 0, 0);
+		const core::RGBA voxelColor = palLookup.palette().colors[voxel.getColor()];
+		EXPECT_EQ(core::Color::getDistance(rgba, voxelColor), 0.0f)
+			<< core::Color::print(rgba) << " vs " << core::Color::print(voxelColor) << " (" << (int)voxel.getColor()
+			<< ") at " << x << std::endl << v;
+	}
+
+	const int plane2Voxels = voxelutil::fillPlane(wrapper, img, voxel::Voxel(), glm::ivec3(0, 0, 1), voxel::FaceNames::PositiveZ);
+	EXPECT_EQ(img->width() * img->height(), plane2Voxels);
+
+	for (int x = 0; x < img->width(); ++x) {
+		const core::RGBA rgba = img->colorAt(x, 0);
+		const voxel::Voxel &voxel = wrapper.voxel(x, 0, 1);
+		const core::RGBA voxelColor = palLookup.palette().colors[voxel.getColor()];
+		EXPECT_EQ(core::Color::getDistance(rgba, voxelColor), 0.0f)
+			<< core::Color::print(rgba) << " vs " << core::Color::print(voxelColor) << " (" << (int)voxel.getColor()
+			<< ") at " << x << std::endl << v;
+	}
 }
 
 } // namespace voxelutil

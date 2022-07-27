@@ -33,6 +33,7 @@ set(TEST_SRCS
 
 set(TEST_FILES
 	tests/test-palette-in.png
+	tests/test-fillplane.png
 )
 
 gtest_suite_sources(tests ${TEST_SRCS})

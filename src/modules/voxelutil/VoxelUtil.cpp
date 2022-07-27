@@ -377,8 +377,11 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
 	auto exec = [&](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
 		const glm::vec2 &uv = calcUV(pos, region, face);
 		const core::RGBA rgba = image->colorAt(uv);
+		if (rgba.a == 0) {
+			return true;
+		}
 		const uint8_t index = palLookup.findClosestIndex(rgba);
-		voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, index);
+		voxel::Voxel v = voxel::createVoxel(rgba.a < 255 ? voxel::VoxelType::Transparent : voxel::VoxelType::Generic, index);
 		return in.setVoxel(pos, v);
 	};
 
