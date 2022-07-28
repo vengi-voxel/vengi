@@ -173,18 +173,18 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 		const voxel::Region& finalRegion = _extractRegions[i].region;
 		bool onlyAir = true;
 		voxel::RawVolume copy(v, voxel::Region(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2), &onlyAir);
+		const glm::ivec3& mins = finalRegion.getLowerCorner();
 		if (!onlyAir) {
-			const glm::ivec3& mins = finalRegion.getLowerCorner();
 			_threadPool.enqueue([movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
 				++_runningExtractorTasks;
-				voxel::Region reg = finalRegion;
-				reg.shiftUpperCorner(1, 1, 1);
 				voxel::Mesh mesh(65536, 65536, true);
-				voxel::extractCubicMesh(&movedCopy, reg, &mesh, voxel::IsQuadNeeded(), reg.getLowerCorner());
+				voxel::extractCubicMesh(&movedCopy, finalRegion, &mesh, voxel::IsQuadNeeded(), mins);
 				_pendingQueue.emplace(mins, idx, core::move(mesh));
-				Log::debug("Enqueue mesh for idx: %i", idx);
+				Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
 				--_runningExtractorTasks;
 			});
+		} else {
+			_pendingQueue.emplace(mins, idx, core::move(voxel::Mesh()));
 		}
 		--maxExtraction;
 		if (maxExtraction == 0) {
@@ -407,14 +407,16 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 
 	const int s = _meshSize->intVal();
 	const glm::ivec3 meshSize(s);
-	const glm::ivec3 meshSizeMinusOne(s - 1);
 	const voxel::Region& completeRegion = v->region();
 
 	// convert to step coordinates that are needed to extract
 	// the given region mesh size ranges
-	const glm::ivec3& l = (region.getLowerCorner() - meshSizeMinusOne) / meshSize;
-	const glm::ivec3& u = region.getUpperCorner() / meshSize;
+	// the boundaries are special - that's why we take care of this with
+	// the offset of 1 - see the cubic surface extractor docs
+	const glm::ivec3& l = region.getLowerCorner() / meshSize;
+	const glm::ivec3& u = (region.getUpperCorner() + 1) / meshSize;
 
+	Log::debug("modified region: %s", region.toString().c_str());
 	for (int x = l.x; x <= u.x; ++x) {
 		for (int y = l.y; y <= u.y; ++y) {
 			for (int z = l.z; z <= u.z; ++z) {
@@ -431,6 +433,7 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 					continue;
 				}
 
+				Log::debug("extract region: %s", finalRegion.toString().c_str());
 				_extractRegions.emplace_back(finalRegion, idx);
 			}
 		}
