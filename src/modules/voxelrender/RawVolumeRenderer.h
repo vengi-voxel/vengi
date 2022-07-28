@@ -124,8 +124,16 @@ public:
 	void gray(int idx, bool gray);
 	bool grayed(int idx) const;
 
+	int pendingExtractions() const;
 	void clearPendingExtractions();
 	void waitForPendingExtractions();
+
+	template<class VISITOR>
+	void visitPendingExtractions(VISITOR && func) const {
+		for (const auto& e : _extractRegions) {
+			func(e.idx, e.region);
+		}
+	}
 
 	/**
 	 * @brief Updates the vertex buffers manually
@@ -192,6 +200,10 @@ public:
 	 */
 	core::DynamicArray<voxel::RawVolume*> shutdown();
 };
+
+inline int RawVolumeRenderer::pendingExtractions() const {
+	return (int)_extractRegions.size();
+}
 
 inline voxel::RawVolume* RawVolumeRenderer::volume(int idx) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {

@@ -71,6 +71,13 @@ bool RawVolumeRenderer::resize(const glm::ivec2 &size) {
 }
 
 bool RawVolumeRenderer::init(const glm::ivec2 &size) {
+	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
+	_bloom = core::Var::getSafe(cfg::ClientBloom);
+	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
+
+	_threadPool.init();
+	Log::debug("Threadpool size: %i", (int)_threadPool.size());
+
 	if (!_voxelShader.setup()) {
 		Log::error("Failed to initialize the world shader");
 		return false;
@@ -95,12 +102,6 @@ bool RawVolumeRenderer::init(const glm::ivec2 &size) {
 		Log::error("Failed to initialize the bloom renderer");
 		return false;
 	}
-
-	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
-	_bloom = core::Var::getSafe(cfg::ClientBloom);
-
-	_threadPool.init();
-	Log::debug("Threadpool size: %i", (int)_threadPool.size());
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		State& state = _state[idx];
@@ -150,8 +151,6 @@ bool RawVolumeRenderer::init(const glm::ivec2 &size) {
 	core_memset(materialBlock.materialcolor, 0, sizeof(materialBlock.materialcolor));
 	core_memset(materialBlock.glowcolor, 0, sizeof(materialBlock.glowcolor));
 	_materialBlock.create(materialBlock);
-
-	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
 
 	return true;
 }
