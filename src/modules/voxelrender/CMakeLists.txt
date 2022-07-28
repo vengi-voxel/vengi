@@ -23,6 +23,7 @@ generate_shaders(${LIB} ${SHADERS})
 
 set(TEST_SRCS
 	tests/RawVolumeRendererTest.cpp
+	tests/VoxelRenderShaderTest.cpp
 )
 
 gtest_suite_sources(tests ${TEST_SRCS})
