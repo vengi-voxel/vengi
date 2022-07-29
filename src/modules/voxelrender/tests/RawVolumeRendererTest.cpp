@@ -43,4 +43,25 @@ TEST_F(RawVolumeRendererTest, testExtractRegion) {
 	});
 }
 
+TEST_F(RawVolumeRendererTest, testExtractRegionBoundary) {
+	voxel::RawVolume v(voxel::Region(0, 31));
+	voxelformat::SceneGraphNode node;
+	node.setVolume(&v, false);
+
+	RawVolumeRenderer renderer;
+	renderer.construct();
+	renderer.init(glm::ivec2(0));
+	renderer.setVolume(0, node);
+
+	EXPECT_EQ(0, renderer.pendingExtractions());
+	// worst case scenario - touching all adjacent regions
+	const voxel::Region region(15, 15);
+	renderer.extractRegion(0, region);
+	EXPECT_EQ(8, renderer.pendingExtractions());
+
+	const voxel::Region region2(14, 14);
+	renderer.extractRegion(0, region2);
+	EXPECT_EQ(9, renderer.pendingExtractions());
+}
+
 } // namespace voxelrender
