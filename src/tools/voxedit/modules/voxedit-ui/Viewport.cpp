@@ -90,7 +90,7 @@ void Viewport::update() {
 			style.setFont(app->bigFont());
 			ImGui::TextCentered("No animation loaded");
 		} else {
-			ImVec2 contentSize = ImGui::GetContentRegionMax();
+			ImVec2 contentSize = ImGui::GetWindowContentRegionMax();
 			const float headerSize = ImGui::GetCursorPosY();
 
 			if (setupFrameBuffer(contentSize)) {
