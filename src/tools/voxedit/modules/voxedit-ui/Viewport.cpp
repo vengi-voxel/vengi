@@ -230,8 +230,9 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	if (_texture && _texture->width() == frameBufferSize.x && _texture->height() == frameBufferSize.y) {
 		return true;
 	}
-	const glm::vec2 windowSize(video::WindowedApp::getInstance()->windowDimension());
-	const glm::vec2 windowFrameBufferSize(video::WindowedApp::getInstance()->frameBufferDimension());
+	const video::WindowedApp *app = video::WindowedApp::getInstance();
+	const glm::vec2 windowSize(app->windowDimension());
+	const glm::vec2 windowFrameBufferSize(app->frameBufferDimension());
 	const glm::vec2 scale = windowFrameBufferSize / windowSize;
 	Log::debug("Resize %s to %i:%i (scale %f:%f)", _id.c_str(), frameBufferSize.x, frameBufferSize.y, scale.x, scale.y);
 	_controller.resize(frameBufferSize,
