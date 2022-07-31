@@ -206,6 +206,7 @@ bool Viewport::saveImage(const char *filename) {
 		Log::error("Failed to read texture");
 		return false;
 	}
+	// TODO: renderer implementation specific
 	image::Image::flipVerticalRGBA(pixels, _texture->width(), _texture->height());
 	const bool val = image::Image::writePng(filename, pixels, _texture->width(), _texture->height(), 4);
 	core_free(pixels);
@@ -230,7 +231,7 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	if (_texture && _texture->width() == frameBufferSize.x && _texture->height() == frameBufferSize.y) {
 		return true;
 	}
-	const video::WindowedApp *app = video::WindowedApp::getInstance();
+	const ui::imgui::IMGUIApp *app = imguiApp();
 	const glm::vec2 windowSize(app->windowDimension());
 	const glm::vec2 windowFrameBufferSize(app->frameBufferDimension());
 	const glm::vec2 scale = windowFrameBufferSize / windowSize;
