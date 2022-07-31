@@ -49,7 +49,7 @@ namespace voxelrender {
  * @sa MeshRenderer
  * @sa voxel::RawVolume
  */
-class RawVolumeRenderer {
+class RawVolumeRenderer : public core::NonCopyable {
 public:
 	static constexpr int MAX_VOLUMES = 2048;
 protected:

@@ -15,7 +15,7 @@ namespace voxelrender {
 /**
  * @brief Rendering of a voxel::SceneGraph
  */
-class SceneGraphRenderer {
+class SceneGraphRenderer : public core::NonCopyable {
 protected:
 	RawVolumeRenderer _renderer;
 	voxelformat::SceneGraph _sceneGraph;
