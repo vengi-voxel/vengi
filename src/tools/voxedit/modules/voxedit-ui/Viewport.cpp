@@ -84,12 +84,15 @@ void Viewport::update() {
 	if (ImGui::Begin(_id.c_str(), nullptr, sceneWindowFlags)) {
 		core_trace_scoped(Viewport);
 		ui::imgui::IMGUIApp *app = imguiApp();
+#ifdef VOXEDIT_ANIMATION
 		const EditMode editMode = sceneMgr().editMode();
 		if (_controller.renderMode() == ViewportController::RenderMode::Animation && editMode != EditMode::Animation) {
 			ui::imgui::ScopedStyle style;
 			style.setFont(app->bigFont());
 			ImGui::TextCentered("No animation loaded");
-		} else {
+		} else
+#endif
+		{
 			ImVec2 contentSize = ImGui::GetWindowContentRegionMax();
 			const float headerSize = ImGui::GetCursorPosY();
 
@@ -378,9 +381,12 @@ void Viewport::renderToFrameBuffer() {
 	video::clearColor(core::Color::Clear);
 	_frameBuffer.bind(true);
 	video::Camera &camera = _controller.camera();
+#ifdef VOXEDIT_ANIMATION
 	if (_controller.renderMode() == ViewportController::RenderMode::Animation) {
 		sceneMgr().renderAnimation(camera);
-	} else {
+	} else
+#endif
+	{
 		sceneMgr().render(camera, _frameBuffer.dimension());
 	}
 

@@ -5,6 +5,7 @@
 #include "LayerPanel.h"
 #include "voxedit-util/layer/LayerSettings.h"
 #include "core/collection/DynamicArray.h"
+#include "core/Color.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUIEx.h"

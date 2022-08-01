@@ -17,11 +17,14 @@ void ViewportController::resetCamera(const glm::ivec3 &pos, const voxel::Region 
 		center = region.getCenter();
 	}
 	_camera.setTargetDistance(distance);
+#ifdef VOXEDIT_ANIMATION
 	if (_renderMode == RenderMode::Animation) {
 		_camera.setTarget(pos);
 		const int height = region.getHeightInCells();
 		_camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
-	} else if (_camMode == SceneCameraMode::Free) {
+	} else
+#endif
+	if (_camMode == SceneCameraMode::Free) {
 		const int height = region.getHeightInCells();
 		_camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 	} else if (_camMode == SceneCameraMode::Top) {

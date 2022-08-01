@@ -4,6 +4,7 @@
 
 #include "PositionsPanel.h"
 #include "Util.h"
+#include "core/Color.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/dearimgui/ImGuizmo.h"
 #include "voxedit-util/Config.h"

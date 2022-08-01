@@ -8,7 +8,6 @@
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
-#include "imgui.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include "ui/imgui/IconsFontAwesome5.h"
 #include "ui/imgui/IMGUIApp.h"
@@ -16,7 +15,9 @@
 #include "ui/imgui/IMGUIEx.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#ifdef VOXEDIT_ANIMATION
 #include "voxedit-util/anim/AnimationLuaSaver.h"
+#endif
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxelformat/VolumeFormat.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -50,7 +51,9 @@ MainWindow::MainWindow(ui::imgui::IMGUIApp *app) : _app(app), _assetPanel(app->f
 	_sceneTop = new Viewport("top##viewport");
 	_sceneLeft = new Viewport("left##viewport");
 	_sceneFront = new Viewport("front##viewport");
+#ifdef VOXEDIT_ANIMATION
 	_sceneAnimation = new Viewport("animation##viewport");
+#endif
 }
 
 MainWindow::~MainWindow() {
@@ -58,7 +61,9 @@ MainWindow::~MainWindow() {
 	delete _sceneTop;
 	delete _sceneLeft;
 	delete _sceneFront;
+#ifdef VOXEDIT_ANIMATION
 	delete _sceneAnimation;
+#endif
 }
 
 void MainWindow::resetCamera() {
@@ -66,7 +71,9 @@ void MainWindow::resetCamera() {
 	_sceneTop->resetCamera();
 	_sceneLeft->resetCamera();
 	_sceneFront->resetCamera();
+#ifdef VOXEDIT_ANIMATION
 	_sceneAnimation->resetCamera();
+#endif
 }
 
 void MainWindow::loadLastOpenedFiles(const core::String &string) {
@@ -107,8 +114,10 @@ bool MainWindow::init() {
 	_sceneFront->init(voxedit::ViewportController::RenderMode::Editor);
 	_sceneFront->controller().setMode(voxedit::ViewportController::SceneCameraMode::Front);
 
+#ifdef VOXEDIT_ANIMATION
 	_sceneAnimation->init(voxedit::ViewportController::RenderMode::Animation);
 	_sceneAnimation->controller().setMode(voxedit::ViewportController::SceneCameraMode::Free);
+#endif
 
 	_showGridVar = core::Var::getSafe(cfg::VoxEditShowgrid);
 	_modelSpaceVar = core::Var::getSafe(cfg::VoxEditModelSpace);
@@ -139,7 +148,9 @@ void MainWindow::shutdown() {
 	_sceneTop->shutdown();
 	_sceneLeft->shutdown();
 	_sceneFront->shutdown();
+#ifdef VOXEDIT_ANIMATION
 	_sceneAnimation->shutdown();
+#endif
 }
 
 bool MainWindow::save(const core::String &file) {
@@ -172,6 +183,7 @@ bool MainWindow::load(const core::String &file) {
 	return false;
 }
 
+#ifdef VOXEDIT_ANIMATION
 bool MainWindow::loadAnimationEntity(const core::String &file) {
 	if (!sceneMgr().loadAnimationEntity(file)) {
 		return false;
@@ -179,6 +191,7 @@ bool MainWindow::loadAnimationEntity(const core::String &file) {
 	resetCamera();
 	return true;
 }
+#endif
 
 void MainWindow::afterLoad(const core::String &file) {
 	_lastOpenedFile->setVal(file);
@@ -213,7 +226,9 @@ void MainWindow::mainWidget() {
 	_sceneTop->update();
 	_sceneLeft->update();
 	_sceneFront->update();
+#ifdef VOXEDIT_ANIMATION
 	_sceneAnimation->update();
+#endif
 	_animationTimeline.update(TITLE_ANIMATION_TIMELINE, _dockIdMainDown);
 }
 
@@ -451,7 +466,9 @@ void MainWindow::update() {
 		ImGui::DockBuilderDockWindow(_sceneLeft->id().c_str(), _dockIdMain);
 		ImGui::DockBuilderDockWindow(_sceneTop->id().c_str(), _dockIdMain);
 		ImGui::DockBuilderDockWindow(_sceneFront->id().c_str(), _dockIdMain);
+#ifdef VOXEDIT_ANIMATION
 		ImGui::DockBuilderDockWindow(_sceneAnimation->id().c_str(), _dockIdMain);
+#endif
 		ImGui::DockBuilderDockWindow(WINDOW_TITLE_SCRIPT_EDITOR, _dockIdMainDown);
 		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_TIMELINE, _dockIdMainDown);
 		ImGui::DockBuilderFinish(dockspaceId);
@@ -463,8 +480,12 @@ void MainWindow::update() {
 
 bool MainWindow::isSceneHovered() const {
 	return _scene->isHovered() || _sceneTop->isHovered() ||
-		   _sceneLeft->isHovered() || _sceneFront->isHovered() ||
-		   _sceneAnimation->isHovered();
+		   _sceneLeft->isHovered() || _sceneFront->isHovered()
+#ifdef VOXEDIT_ANIMATION
+		    ||
+		   _sceneAnimation->isHovered()
+#endif
+	;
 }
 
 bool MainWindow::saveScreenshot(const core::String& file) {

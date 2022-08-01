@@ -4,7 +4,6 @@
 
 #include "SceneManager.h"
 
-#include "animation/Animation.h"
 #include "app/App.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
@@ -60,8 +59,11 @@
 #include "AxisUtil.h"
 #include "Config.h"
 #include "CustomBindingContext.h"
+#ifdef VOXEDIT_ANIMATION
+#include "animation/Animation.h"
 #include "anim/AnimationLuaSaver.h"
 #include "attrib/ShadowAttributes.h"
+#endif
 #include "core/TimeProvider.h"
 #include "tool/Clipboard.h"
 #include "voxelutil/ImageUtils.h"
@@ -350,6 +352,7 @@ void SceneManager::setMousePos(int x, int y) {
 	_traceViaMouse = true;
 }
 
+#ifdef VOXEDIT_ANIMATION
 void SceneManager::handleAnimationViewUpdate(int nodeId) {
 	if (!_animationUpdate && _animationNodeIdDirtyState == -1) {
 		// the first layer
@@ -360,6 +363,7 @@ void SceneManager::handleAnimationViewUpdate(int nodeId) {
 	}
 	_animationUpdate = true;
 }
+#endif
 
 void SceneManager::queueRegionExtraction(int nodeId, const voxel::Region& region) {
 	bool addNew = true;
@@ -389,7 +393,9 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 	}
 	_dirty = true;
 	_needAutoSave = true;
+#ifdef VOXEDIT_ANIMATION
 	handleAnimationViewUpdate(nodeId);
+#endif
 	resetLastTrace();
 }
 
@@ -784,8 +790,10 @@ bool SceneManager::merge(int nodeId1, int nodeId2) {
 }
 
 void SceneManager::resetSceneState() {
+#ifdef VOXEDIT_ANIMATION
 	_animationNodeIdDirtyState = -1;
 	_animationIdx = 0;
+#endif
 	voxelformat::SceneGraphNode &node = *_sceneGraph.begin();
 	nodeActivate(node.id());
 	if (_sceneGraph.size() > 1) {
@@ -825,7 +833,9 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 			_dirty = true;
 
 			nodeActivate(newNodeId);
+#ifdef VOXEDIT_ANIMATION
 			handleAnimationViewUpdate(newNodeId);
+#endif
 		}
 	}
 }
@@ -1015,6 +1025,7 @@ bool SceneManager::setGridResolution(int resolution) {
 	return true;
 }
 
+#ifdef VOXEDIT_ANIMATION
 void SceneManager::renderAnimation(const video::Camera& camera) {
 	attrib::ShadowAttributes attrib;
 	const double deltaFrameSeconds = app::App::getInstance()->deltaFrameSeconds();
@@ -1051,6 +1062,7 @@ void SceneManager::renderAnimation(const video::Camera& camera) {
 	animationEntity().update(deltaFrameSeconds, attrib);
 	_animationRenderer.render(animationEntity(), camera);
 }
+#endif
 
 void SceneManager::updateAABBMesh() {
 	Log::debug("Update aabb mesh");
@@ -1171,6 +1183,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Unselect all");
 
+#ifdef VOXEDIT_ANIMATION
 	command::Command::registerCommand("animation_cycle", [this] (const command::CmdArgs& argv) {
 		int offset = 1;
 		if (argv.size() > 0) {
@@ -1192,6 +1205,7 @@ void SceneManager::construct() {
 		}
 		saveAnimationEntity(name.c_str());
 	}).setHelp("Save the animation models and config values");
+#endif
 
 	command::Command::registerCommand("togglescene", [this] (const command::CmdArgs& args) {
 		toggleEditMode();
@@ -1712,15 +1726,18 @@ void SceneManager::toggleEditMode() {
 
 void SceneManager::setEditMode(EditMode mode) {
 	_editMode = mode;
+#ifdef VOXEDIT_ANIMATION
+	_animationUpdate = false;
+#endif
 	if (_editMode == EditMode::Scene) {
 		_modifier.aabbAbort();
 		_volumeRenderer.setSceneMode(true);
-		_animationUpdate = false;
 	} else if (_editMode == EditMode::Model) {
 		_volumeRenderer.setSceneMode(false);
-		_animationUpdate = false;
+#ifdef VOXEDIT_ANIMATION
 	} else if (_editMode == EditMode::Animation) {
 		_animationUpdate = true;
+#endif
 	}
 	updateAABBMesh();
 	// don't abort or toggle any other mode
@@ -1768,6 +1785,7 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the modifier");
 		return false;
 	}
+#ifdef VOXEDIT_ANIMATION
 	if (!_volumeCache.init()) {
 		Log::error("Failed to initialize the volume cache");
 		return false;
@@ -1787,6 +1805,7 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the character mesh cache");
 		return false;
 	}
+#endif
 
 	if (!_luaGenerator.init()) {
 		Log::error("Failed to initialize the lua generator bindings");
@@ -1921,13 +1940,14 @@ void SceneManager::shutdown() {
 	_sceneGraph.clear();
 
 	_luaGenerator.shutdown();
-	_volumeCache.shutdown();
 	_mementoHandler.shutdown();
 	_modifier.shutdown();
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_gridRenderer.shutdown();
 	_mementoHandler.clearStates();
+#ifdef VOXEDIT_ANIMATION
+	_volumeCache.shutdown();
 	_animationRenderer.shutdown();
 	if (_animationCache) {
 		_animationCache->shutdown();
@@ -1935,6 +1955,7 @@ void SceneManager::shutdown() {
 	_character.shutdown();
 	_bird.shutdown();
 	_animationSystem.shutdown();
+#endif
 
 	_referencePointMesh = -1;
 	_aabbMeshIndex = -1;
@@ -1945,6 +1966,7 @@ void SceneManager::shutdown() {
 	command::Command::unregisterActionButton("camera_pan");
 }
 
+#ifdef VOXEDIT_ANIMATION
 animation::AnimationEntity& SceneManager::animationEntity() {
 	if (_entityType == animation::AnimationSettings::Type::Character) {
 		return _character;
@@ -2027,6 +2049,7 @@ bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
 
 	return true;
 }
+#endif
 
 bool SceneManager::extractVolume() {
 	core_trace_scoped(SceneManagerExtract);

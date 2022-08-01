@@ -3,11 +3,11 @@
  */
 
 #include "PalettePanel.h"
-#include "IMGUIApp.h"
 #include "DragAndDropPayload.h"
 #include "core/StringUtil.h"
-#include "imgui.h"
 #include "voxedit-util/SceneManager.h"
+#include "core/Color.h"
+#include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include <glm/gtc/type_ptr.hpp>

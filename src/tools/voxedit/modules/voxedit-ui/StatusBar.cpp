@@ -38,9 +38,11 @@ void StatusBar::update(const char *title, float height, const core::String &last
 		ImGui::InputVarInt("Grid size", cfg::VoxEditGridsize);
 		ImGui::SameLine();
 		const EditMode editMode = sceneMgr.editMode();
+#ifdef VOXEDIT_ANIMATION
 		if (editMode == EditMode::Animation) {
 			ImGui::BeginDisabled();
 		}
+#endif
 		bool sceneView = editMode == EditMode::Scene;
 		if (ImGui::Checkbox("Scene Mode", &sceneView)) {
 			if (sceneView) {
@@ -49,9 +51,11 @@ void StatusBar::update(const char *title, float height, const core::String &last
 				sceneMgr.setEditMode(EditMode::Model);
 			}
 		}
+#ifdef VOXEDIT_ANIMATION
 		if (editMode == EditMode::Animation) {
 			ImGui::EndDisabled();
 		}
+#endif
 		ImGui::SameLine();
 		const float afterSizeX = ImGui::GetCursorPosX();
 		if (modifier.aabbMode()) {

@@ -7,9 +7,6 @@ set(SRCS
 
 	ViewportController.h ViewportController.cpp
 
-	anim/VolumeCache.h anim/VolumeCache.cpp
-	anim/AnimationLuaSaver.h anim/AnimationLuaSaver.cpp
-
 	modifier/Modifier.h modifier/Modifier.cpp
 	modifier/ModifierRenderer.h modifier/ModifierRenderer.cpp
 	modifier/ModifierFacade.h modifier/ModifierFacade.cpp
@@ -21,15 +18,34 @@ set(SRCS
 
 	tool/Clipboard.h tool/Clipboard.cpp
 )
+if (VOXEDIT_ANIMATION)
+	list(APPEND SRCS
+		anim/VolumeCache.h anim/VolumeCache.cpp
+		anim/AnimationLuaSaver.h anim/AnimationLuaSaver.cpp
+	)
+endif()
+
 set(LIB voxedit-util)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelrender voxelgenerator animation)
+set(DEPENDENCIES voxelrender voxelgenerator)
+if (VOXEDIT_ANIMATION)
+	list(APPEND DEPENDENCIES animation)
+endif()
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
+
+if (VOXEDIT_ANIMATION)
+	target_compile_definitions(${LIB} PUBLIC VOXEDIT_ANIMATION)
+endif()
 
 set(TEST_SRCS
-	tests/AnimationLuaSaverTest.cpp
 	tests/MementoHandlerTest.cpp
 	tests/ModifierTest.cpp
 	tests/SceneManagerTest.cpp
 )
+if (VOXEDIT_ANIMATION)
+	list(APPEND TEST_SRCS
+		tests/AnimationLuaSaverTest.cpp
+	)
+endif()
 
 gtest_suite_sources(tests
 	${TEST_SRCS}

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "animation/AnimationSystem.h"
 #include "core/Enum.h"
 #include "core/collection/DynamicArray.h"
 #include "voxelformat/SceneGraph.h"
@@ -16,10 +15,13 @@
 #include "voxelrender/SceneGraphRenderer.h"
 #include "voxelformat/Format.h"
 #include "video/ShapeBuilder.h"
+#ifdef VOXEDIT_ANIMATION
+#include "animation/AnimationSystem.h"
 #include "animation/chr/Character.h"
 #include "animation/animal/bird/Bird.h"
 #include "animation/AnimationRenderer.h"
 #include "anim/VolumeCache.h"
+#endif
 #include "render/ShapeRenderer.h"
 #include "render/GridRenderer.h"
 #include "core/Var.h"
@@ -54,8 +56,10 @@ static constexpr struct Direction {
 enum class EditMode {
 	// Edit a model volume (voxels)
 	Model,
+#ifdef VOXEDIT_ANIMATION
 	// Edit an animation (lua)
 	Animation,
+#endif
 	// Edit the scene (volume positions, rotations, ...)
 	Scene
 };
@@ -77,7 +81,6 @@ class SceneManager : public core::IComponent {
 private:
 	voxelformat::SceneGraph _sceneGraph;
 	voxelrender::SceneGraphRenderer _volumeRenderer;
-	anim::VolumeCache _volumeCache;
 	render::GridRenderer _gridRenderer;
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
@@ -87,10 +90,12 @@ private:
 	EditMode _editMode = EditMode::Scene;
 	std::future<voxelformat::SceneGraph> _loadingFuture;
 
+#ifdef VOXEDIT_ANIMATION
 	animation::AnimationSettings::Type _entityType = animation::AnimationSettings::Type::Max;
 	animation::Character _character;
 	animation::Bird _bird;
 
+	anim::VolumeCache _volumeCache;
 	animation::AnimationRenderer _animationRenderer;
 	animation::AnimationCachePtr _animationCache;
 	animation::AnimationSystem _animationSystem;
@@ -102,6 +107,7 @@ private:
 	int _animationNodeIdDirtyState = -1;
 	int _animationIdx = 0;
 	bool _animationUpdate = false;
+#endif
 
 	/**
 	 * The @c video::Camera instance of the currently active @c Viewport
@@ -176,7 +182,9 @@ private:
 	 * are left, scene is no longer dirty and so on.
 	 */
 	void resetSceneState();
+#ifdef VOXEDIT_ANIMATION
 	void handleAnimationViewUpdate(int nodeId);
+#endif
 	bool setNewVolume(int nodeId, voxel::RawVolume* volume, bool deleteMesh = true);
 	void autosave();
 	void setReferencePosition(const glm::ivec3& pos);
@@ -331,8 +339,10 @@ public:
 	bool load(const core::String& file);
 	bool isLoading() const;
 
+#ifdef VOXEDIT_ANIMATION
 	bool loadAnimationEntity(const core::String& luaFile);
 	bool saveAnimationEntity(const char *name);
+#endif
 
 	/**
 	 * @brief Shift the whole volume by the given voxel amount
@@ -378,7 +388,9 @@ public:
 	 * @brief Performs the rendering for each @c Viewport instance
 	 */
 	void render(const video::Camera& camera, const glm::ivec2 &size, uint8_t renderMask = RenderAll);
+#ifdef VOXEDIT_ANIMATION
 	void renderAnimation(const video::Camera& camera);
+#endif
 
 	/**
 	 * @return @c true if the trace was executed, @c false otherwise
@@ -406,8 +418,10 @@ public:
 	const voxelrender::SceneGraphRenderer& renderer() const;
 	voxelrender::SceneGraphRenderer& renderer();
 	render::GridRenderer& gridRenderer();
+#ifdef VOXEDIT_ANIMATION
 	animation::SkeletonAttribute* skeletonAttributes();
 	animation::AnimationEntity& animationEntity();
+#endif
 	voxelgenerator::LUAGenerator& luaGenerator();
 	video::ShapeBuilder& shapeBuilder();
 	render::ShapeRenderer& shapeRenderer();
@@ -504,9 +518,11 @@ inline render::GridRenderer& SceneManager::gridRenderer() {
 	return _gridRenderer;
 }
 
+#ifdef VOXEDIT_ANIMATION
 inline animation::SkeletonAttribute* SceneManager::skeletonAttributes() {
 	return &animationEntity().skeletonAttributes();
 }
+#endif
 
 inline bool SceneManager::dirty() const {
 	return _dirty;

@@ -25,8 +25,9 @@ public:
 
 	enum class RenderMode {
 		Editor,
+#ifdef VOXEDIT_ANIMATION
 		Animation,
-
+#endif
 		Max
 	};
 
