@@ -171,14 +171,17 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph &sceneGraph
 		return false;
 	}
 	Log::debug("Found %i layers in vxm", modelCount);
+
 	SceneGraphNode* childModelNode = childSceneGraph[0];
 	core_assert_always(childModelNode != nullptr);
 	childModelNode->releaseOwnership();
+
+	const core::String nodeName = node.name();
+	voxelformat::copyNode(*childModelNode, node, false);
 	node.setVolume(childModelNode->volume(), true);
-	node.setVisible(childModelNode->visible());
-	node.setLocked(childModelNode->locked());
-	node.addProperties(childModelNode->properties());
-	node.setPalette(childModelNode->palette());
+	// restore old name
+	node.setName(nodeName);
+
 	// TODO: this shouldn't be needed - should get set in vxa or vxr (or in vxm version <= 3)
 	const voxelformat::SceneGraphTransform &childTransform = childModelNode->transform(0);
 	voxelformat::SceneGraphTransform &transform = node.transform(0);
