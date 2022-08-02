@@ -13,6 +13,8 @@ namespace voxelformat {
  * Transforms - since version 4 or higher the animations are part of a vxa file
  * @sa VXMFormat
  * @sa VXAFormat
+ *
+ * @ingroup Formats
  */
 class VXRFormat : public PaletteFormat {
 private:

@@ -10,6 +10,8 @@ namespace voxelformat {
 
 /**
  * @brief VXC files are just a list of compressed files
+ *
+ * @ingroup Formats
  */
 class VXCFormat : public Format {
 public:

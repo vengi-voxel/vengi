@@ -1,5 +1,9 @@
 /**
  * @file
+ * @defgroup Formats
+ * @{
+ * File formats.
+ * @}
  */
 
 #pragma once
@@ -26,6 +30,8 @@ static constexpr int MaxRegionSize = 256;
 
 /**
  * @brief Base class for all voxel formats.
+ *
+ * @ingroup Formats
  */
 class Format {
 protected:
@@ -79,9 +85,19 @@ public:
 	virtual bool save(const voxel::RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream);
 };
 
+/**
+ * @brief A format with only voxels - but no color attached
+ *
+ * @ingroup Formats
+ */
 class NoColorFormat : public Format {
 };
 
+/**
+ * @brief A format with an embedded palette
+ *
+ * @ingroup Formats
+ */
 class PaletteFormat : public Format {
 protected:
 	virtual bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette) = 0;
@@ -94,6 +110,12 @@ public:
 	}
 };
 
+/**
+ * @brief A format that stores the voxels with rgba colors
+ * @note These color are converted to an palette.
+ *
+ * @ingroup Formats
+ */
 class RGBAFormat : public Format {
 };
 

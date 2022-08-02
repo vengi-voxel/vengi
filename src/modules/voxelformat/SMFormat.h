@@ -12,8 +12,10 @@ namespace voxelformat {
 /**
  * @brief StarMade (*.sment - zip archives)
  *
- * https://www.star-made.org
- * https://starmadepedia.net/wiki/Blueprint_File_Formats
+ * @li https://www.star-made.org
+ * @li https://starmadepedia.net/wiki/Blueprint_File_Formats
+ *
+ * @ingroup Formats
  */
 class SMFormat : public RGBAFormat {
 private:

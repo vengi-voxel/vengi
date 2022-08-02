@@ -12,6 +12,8 @@ namespace voxelformat {
  * @brief AceOfSpades VXL format
  *
  * https://silverspaceship.com/aosmap/
+ *
+ * @ingroup Formats
  */
 class AoSVXLFormat : public RGBAFormat {
 private:

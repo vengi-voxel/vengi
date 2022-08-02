@@ -16,6 +16,8 @@ namespace voxelformat {
  * @see QBTFormat
  * @see QBFormat
  * @see QEFFormat
+ *
+ * @ingroup Formats
  */
 class QBCLFormat : public Format {
 private:

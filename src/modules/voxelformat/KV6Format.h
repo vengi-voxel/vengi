@@ -9,6 +9,8 @@
 namespace voxelformat {
 /**
  * @brief Voxel sprite format used by the SLAB6 editor, voxlap and Ace of Spades
+ *
+ * @ingroup Formats
  */
 class KV6Format : public PaletteFormat {
 protected:

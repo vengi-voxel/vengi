@@ -64,6 +64,8 @@ namespace voxelformat {
  *          pitch: radian
  *          yaw: radian
  *          intensity: float
+ *
+ * @ingroup Formats
  */
 class GoxFormat : public RGBAFormat {
 private:

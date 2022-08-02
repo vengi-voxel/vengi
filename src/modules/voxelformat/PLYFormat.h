@@ -9,6 +9,8 @@
 namespace voxelformat {
 /**
  * @brief Polygon File Format or Stanford Triangle Format
+ *
+ * @ingroup Formats
  */
 class PLYFormat : public MeshFormat {
 public:

@@ -13,6 +13,8 @@ namespace voxelformat {
  * Animation file that together with vxr and vxm files form the full asset
  * @sa VXMFormat
  * @sa VXRFormat
+ *
+ * @ingroup Formats
  */
 class VXAFormat : public Format {
 private:

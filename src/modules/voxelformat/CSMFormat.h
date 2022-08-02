@@ -10,6 +10,8 @@ namespace voxelformat {
 
 /**
  * @brief Chronovox Studio Model and Nick's Voxel Model
+ *
+ * @ingroup Formats
  */
 class CSMFormat : public RGBAFormat {
 public:

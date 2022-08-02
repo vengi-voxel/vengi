@@ -11,7 +11,9 @@ namespace voxelformat {
 /**
  * @brief Sproxel importer (csv)
  *
- * https://github.com/emilk/sproxel/blob/master/ImportExport.cpp
+ * @li https://github.com/emilk/sproxel/blob/master/ImportExport.cpp
+ *
+ * @ingroup Formats
  */
 class SproxelFormat : public RGBAFormat {
 public:

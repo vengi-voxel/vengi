@@ -11,7 +11,9 @@ namespace voxelformat {
 /**
  * @brief Tiberian Sun Voxel Animation Format
  *
- * http://xhp.xwis.net/documents/VXL_Format.txt
+ * @li http://xhp.xwis.net/documents/VXL_Format.txt
+ *
+ * @ingroup Formats
  */
 class VXLFormat : public PaletteFormat {
 private:

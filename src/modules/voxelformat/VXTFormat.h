@@ -10,6 +10,8 @@ namespace voxelformat {
 
 /**
  * @brief VXT files are tilesets of (static) vxm models
+ *
+ * @ingroup Formats
  */
 class VXTFormat : public PaletteFormat {
 protected:

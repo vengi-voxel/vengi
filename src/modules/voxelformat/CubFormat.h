@@ -13,6 +13,8 @@ namespace voxelformat {
  *
  * The first 12 bytes of the file are the width, depth and height of the volume (uint32_t little endian).
  * The remaining parts are the RGB values (3 bytes)
+ *
+ * @ingroup Formats
  */
 class CubFormat : public RGBAFormat {
 public:

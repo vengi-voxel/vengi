@@ -12,6 +12,8 @@ namespace voxelformat {
  * @brief BinVox (binvox) format.
  *
  * https://www.patrickmin.com/binvox/binvox.html
+ *
+ * @ingroup Formats
  */
 class BinVoxFormat : public NoColorFormat {
 private:

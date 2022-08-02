@@ -44,6 +44,8 @@ namespace voxelformat {
  *  }
  *  read(fil,palette,768);
  * @endcode
+ *
+ * @ingroup Formats
  */
 class KVXFormat : public PaletteFormat {
 protected:

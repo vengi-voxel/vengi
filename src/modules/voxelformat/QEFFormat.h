@@ -18,6 +18,8 @@ namespace voxelformat {
  * @see QBFormat
  *
  * https://getqubicle.com/qubicle/documentation/docs/file/qef/
+ *
+ * @ingroup Formats
  */
 class QEFFormat : public PaletteFormat {
 protected:

@@ -12,6 +12,8 @@ namespace voxelformat {
  * @brief Minecraft level dat format
  *
  * https://minecraft.fandom.com/wiki/Level.dat
+ *
+ * @ingroup Formats
  */
 class DatFormat : public PaletteFormat {
 public:

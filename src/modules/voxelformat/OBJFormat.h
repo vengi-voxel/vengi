@@ -16,6 +16,8 @@ struct material_t;
 namespace voxelformat {
 /**
  * @brief Wavefront Object
+ *
+ * @ingroup Formats
  */
 class OBJFormat : public MeshFormat {
 private:

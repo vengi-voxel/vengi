@@ -20,6 +20,8 @@ namespace voxelformat {
  * @see QBTFormat
  * @see QBCLFormat
  * @see QEFFormat
+ *
+ * @ingroup Formats
  */
 class QBFormat : public RGBAFormat {
 private:

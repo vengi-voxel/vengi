@@ -10,6 +10,8 @@ namespace voxelformat {
 
 /**
  * @brief SLAB6 vox format
+ *
+ * @ingroup Formats
  */
 class SLAB6VoxFormat : public PaletteFormat {
 protected:

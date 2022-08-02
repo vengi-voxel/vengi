@@ -13,6 +13,8 @@ namespace voxelformat {
  * The voxel model
  * @sa VXAFormat
  * @sa VXRFormat
+ *
+ * @ingroup Formats
  */
 class VXMFormat : public PaletteFormat {
 private:

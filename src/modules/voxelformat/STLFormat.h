@@ -25,6 +25,8 @@ namespace voxelformat {
  * REAL32[3] – Vertex 3
  * UINT16 – Attribute byte count
  * end
+ *
+ * @ingroup Formats
  */
 class STLFormat : public MeshFormat {
 private:

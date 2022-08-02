@@ -16,9 +16,11 @@ namespace voxelformat {
  *
  * z is pointing upwards
  *
- * https://github.com/ephtracy/voxel-model.git
- * https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
- * https://ephtracy.github.io/
+ * @li https://github.com/ephtracy/voxel-model.git
+ * @li https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
+ * @li https://ephtracy.github.io/
+ *
+ * @ingroup Formats
  */
 class VoxFormat : public PaletteFormat {
 private:

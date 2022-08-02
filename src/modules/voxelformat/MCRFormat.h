@@ -61,6 +61,8 @@ using NBTList = core::DynamicArray<NamedBinaryTag>;
  * @note https://minecraft.fandom.com/wiki/Region_file_format
  * @note https://minecraft.fandom.com/wiki/Chunk_format
  * @note https://github.com/UnknownShadow200/ClassiCube/blob/master/src/Formats.c
+ *
+ * @ingroup Formats
  */
 class MCRFormat : public PaletteFormat {
 public:

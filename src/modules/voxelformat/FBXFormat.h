@@ -13,6 +13,8 @@ namespace voxelformat {
  * https://banexdevblog.wordpress.com/2014/06/23/a-quick-tutorial-about-the-fbx-ascii-format/
  * https://code.blender.org/2013/08/fbx-binary-file-format-specification/
  * https://github.com/libgdx/fbx-conv/
+ *
+ * @ingroup Formats
  */
 class FBXFormat : public MeshFormat {
 private:
