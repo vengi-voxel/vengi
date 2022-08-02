@@ -348,17 +348,17 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 				wrap(stream.readFloat(inverseKinematicsRadius))
 			}
 		} else {
-			node.setProperty("ik constraints visible", stream.readBool());
-			float rollmin;
-			wrap(stream.readFloat(rollmin))
-			node.setProperty("rollmin", core::string::format("%f", rollmin));
-			float rollmax;
-			wrap(stream.readFloat(rollmax))
-			node.setProperty("rollmax", core::string::format("%f", rollmax));
-			stream.readBool(); // ???
-			stream.readBool(); // ???
-			stream.readBool(); // ???
-			stream.readBool(); // ???
+			node.setProperty("pitch constraint", stream.readBool());
+			float pitchConstraintMin;
+			wrap(stream.readFloat(pitchConstraintMin))
+			node.setProperty("pitch constraint min", core::string::format("%f", pitchConstraintMin));
+			float pitchConstraintMax;
+			wrap(stream.readFloat(pitchConstraintMax))
+			node.setProperty("pitch constraint max", core::string::format("%f", pitchConstraintMax));
+			stream.readBool(); /* y counter clock wise allowed */
+			stream.readBool(); /* y clock wise allowed */
+			stream.readBool(); /* z counter clock wise allowed */
+			stream.readBool(); /* z clock wise allowed */
 		}
 	}
 	const int nodeId = sceneGraph.emplace(core::move(node), parent);
