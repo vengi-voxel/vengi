@@ -8,14 +8,10 @@
 
 #pragma once
 
-#include "core/collection/Array.h"
-#include "core/collection/DynamicArray.h"
 #include "io/Stream.h"
 #include "voxel/RawVolume.h"
-#include "io/File.h"
 #include "image/Image.h"
 #include "SceneGraph.h"
-#include "core/RGBA.h"
 #include "voxel/Palette.h"
 #include <glm/fwd.hpp>
 
