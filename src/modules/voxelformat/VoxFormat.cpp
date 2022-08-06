@@ -294,9 +294,20 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 		{
 			SceneGraphNode camNode(SceneGraphNodeType::Camera);
+			camNode.setName(core::String::format("Camera %u", c.camera_id));
 			SceneGraphTransform transform;
 			transform.setMatrix(viewMatrix);
 			camNode.setTransform(0, transform, true);
+			camNode.setProperty("fov", core::string::toString(c.fov));
+			camNode.setProperty("focus", core::String::format("%f:%f:%f", c.focus[0], c.focus[1], c.focus[2]));
+			camNode.setProperty("angle", core::String::format("%f:%f:%f", c.angle[0], c.angle[1], c.angle[2]));
+			camNode.setProperty("radius", core::String::format("%i", c.radius));
+			camNode.setProperty("frustum", core::String::format("%f", c.frustum));
+			if (c.mode == ogt_cam_mode_perspective) {
+				camNode.setProperty("mode", "perspective");
+			} else {
+				camNode.setProperty("mode", core::String::format("unknown %i", (int)c.mode));
+			}
 			sceneGraph.emplace(core::move(camNode), sceneGraph.root().id());
 		}
 	}
