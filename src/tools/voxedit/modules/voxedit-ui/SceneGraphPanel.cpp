@@ -4,6 +4,7 @@
 
 #include "SceneGraphPanel.h"
 #include "DragAndDropPayload.h"
+#include "ScopedStyle.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/SceneGraph.h"
@@ -29,6 +30,7 @@ static core::String toString(const voxelformat::SceneGraphTransform &transform) 
 }
 
 static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+	ui::imgui::ScopedStyleCompact scopedStyle;
 	core::String name;
 	switch (node.type()) {
 	case voxelformat::SceneGraphNodeType::Model:
@@ -50,7 +52,12 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 	name.append(core::string::format(" %s##%i", node.name().c_str(), node.id()));
 	ImGui::TableNextRow();
 	ImGui::TableNextColumn();
-	const bool open = ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_SpanFullWidth);
+	const bool selected = node.id() == sceneGraph.activeNode();
+	ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth;
+	if (selected) {
+		treeFlags |= ImGuiTreeNodeFlags_Selected;
+	}
+	const bool open = ImGui::TreeNodeEx(name.c_str(), treeFlags);
 	if (node.id() != sceneGraph.root().id()) {
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 			ImGui::Text("%s", name.c_str());
@@ -99,9 +106,10 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 
 	ImGui::TableNextColumn();
 	if (open) {
+		const float maxPropKeyLength = ImGui::CalcTextSize("maxpropertykey").x;
 		if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
 			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-				video::Camera nodeCamera;
+				video::Camera nodeCamera(camera);
 				const voxelformat::SceneGraphTransform& transform = node.transform();
 				nodeCamera.setOrientation(transform.orientation());
 				nodeCamera.setWorldPosition(transform.translation());
@@ -113,16 +121,20 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 			const voxel::Region &region = node.region();
 			const glm::ivec3 &pos = region.getLowerCorner();
 			const glm::ivec3 &size = region.getDimensionsInVoxels();
+			ImGui::PushItemWidth(maxPropKeyLength);
 			ImGui::LabelText(core::string::format("%i:%i:%i", pos.x, pos.y, pos.z).c_str(), "position");
 			ImGui::LabelText(core::string::format("%i:%i:%i", size.x, size.y, size.z).c_str(), "size");
 			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
 				sceneMgr().nodeActivate(node.id());
 			}
+			ImGui::PopItemWidth();
 		}
+		ImGui::PushItemWidth(maxPropKeyLength);
 		for (const auto& entry : node.properties()) {
 			// TODO: allow to edit them
 			ImGui::LabelText(entry->value.c_str(), "%s", entry->key.c_str());
 		}
+		ImGui::PopItemWidth();
 		if (node.keyFrames().size() > 1) {
 			for (const auto& entry : node.keyFrames()) {
 				const core::String &kftText = toString(entry.transform);
@@ -144,7 +156,8 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, command::
 		core_trace_scoped(SceneGraphPanel);
 		static ImGuiTableFlags flags = ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH |
 									   ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg |
-									   ImGuiTableFlags_NoBordersInBody;
+									   ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
+									   ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_SizingFixedFit;
 		if (ImGui::BeginTable("##scenegraphnodes", 2, flags)) {
 			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
 			ImGui::TableSetupColumn("##scenegraphnodeid", ImGuiTableColumnFlags_WidthStretch);
