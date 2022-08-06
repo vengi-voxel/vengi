@@ -385,13 +385,14 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 
 	const int s = _meshSize->intVal();
 	const glm::ivec3 meshSize(s);
+	const glm::ivec3 meshSizeMinusOne(s - 1);
 	const voxel::Region& completeRegion = v->region();
 
 	// convert to step coordinates that are needed to extract
 	// the given region mesh size ranges
 	// the boundaries are special - that's why we take care of this with
 	// the offset of 1 - see the cubic surface extractor docs
-	const glm::ivec3& l = region.getLowerCorner() / meshSize;
+	const glm::ivec3& l = (region.getLowerCorner() - meshSizeMinusOne) / meshSize;
 	const glm::ivec3& u = (region.getUpperCorner() + 1) / meshSize;
 
 	Log::debug("modified region: %s", region.toString().c_str());
