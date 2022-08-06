@@ -297,8 +297,13 @@ SceneGraphNode *SceneGraph::operator[](int modelIdx) {
 }
 
 SceneGraph::MergedVolumePalette SceneGraph::merge() const {
-	core::DynamicArray<const voxel::RawVolume *> rawVolumes;
-	rawVolumes.reserve(_nodes.size());
+	core::DynamicArray<const voxel::RawVolume *> volumes;
+	volumes.reserve(_nodes.size());
+	core::DynamicArray<glm::ivec3> translations;
+	translations.reserve(_nodes.size());
+
+	voxel::Region mergedRegion = voxel::Region::InvalidRegion;
+
 	const voxel::Palette *pal = nullptr;
 	for (const SceneGraphNode &node : *this) {
 		core_assert(node.type() == SceneGraphNodeType::Model);
@@ -311,15 +316,36 @@ SceneGraph::MergedVolumePalette SceneGraph::merge() const {
 			}
 		}
 		pal = &node.palette();
-		rawVolumes.push_back(node.volume());
+		volumes.push_back(node.volume());
+
+		const glm::vec3 &translation = node.transform(0).translation();
+		translations.push_back(translation);
+
+		voxel::Region region = node.region();
+		region.shift(translation);
+		if (mergedRegion.isValid()) {
+			mergedRegion.accumulate(region);
+		} else {
+			mergedRegion = region;
+		}
 	}
-	if (rawVolumes.empty()) {
+	if (volumes.empty()) {
 		return MergedVolumePalette{};
 	}
-	if (rawVolumes.size() == 1) {
-		return MergedVolumePalette{new voxel::RawVolume(rawVolumes[0]), *pal};
+	if (volumes.size() == 1) {
+		return MergedVolumePalette{new voxel::RawVolume(volumes[0]), *pal};
 	}
-	return MergedVolumePalette{voxelutil::merge(rawVolumes), *pal};
+
+	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
+	for (size_t i = 0; i < volumes.size(); ++i) {
+		const voxel::RawVolume* v = volumes[i];
+		const voxel::Region& sr = v->region();
+		voxel::Region dr = sr;
+		dr.shift(translations[i]);
+		voxelutil::mergeVolumes(merged, v, dr, sr);
+	}
+	merged->translate(-mergedRegion.getLowerCorner());
+	return MergedVolumePalette{merged, *pal};
 }
 
 } // namespace voxel
