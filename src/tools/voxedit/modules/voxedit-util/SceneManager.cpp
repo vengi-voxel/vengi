@@ -724,30 +724,29 @@ void SceneManager::resetLastTrace() {
 	_lastRaytraceX = _lastRaytraceY = -1;
 }
 
+static bool shouldGetMerged(const voxelformat::SceneGraphNode &node, LayerMergeFlags flags) {
+	bool add = false;
+	if ((flags & LayerMergeFlags::All) != LayerMergeFlags::None) {
+		add = true;
+	} else if ((flags & LayerMergeFlags::Visible) != LayerMergeFlags::None) {
+		add = node.visible();
+	} else if ((flags & LayerMergeFlags::Invisible) != LayerMergeFlags::None) {
+		add = !node.visible();
+	} else if ((flags & LayerMergeFlags::Locked) != LayerMergeFlags::None) {
+		add = node.locked();
+	}
+	return add;
+}
+
 bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 	core::DynamicArray<const voxel::RawVolume*> volumes;
 	core::DynamicArray<int> nodes;
 	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
-		const voxel::RawVolume* v = node.volume();
-		if ((flags & LayerMergeFlags::All) != LayerMergeFlags::None) {
-			volumes.push_back(v);
-			nodes.push_back(node.id());
-		} else if ((flags & LayerMergeFlags::Visible) != LayerMergeFlags::None) {
-			if (node.visible()) {
-				volumes.push_back(v);
-				nodes.push_back(node.id());
-			}
-		} else if ((flags & LayerMergeFlags::Invisible) != LayerMergeFlags::None) {
-			if (!node.visible()) {
-				volumes.push_back(v);
-				nodes.push_back(node.id());
-			}
-		} else if ((flags & LayerMergeFlags::Locked) != LayerMergeFlags::None) {
-			if (node.locked()) {
-				volumes.push_back(v);
-				nodes.push_back(node.id());
-			}
+		if (!shouldGetMerged(node, flags)) {
+			continue;
 		}
+		volumes.push_back(node.volume());
+		nodes.push_back(node.id());
 	}
 
 	if (volumes.size() <= 1) {
