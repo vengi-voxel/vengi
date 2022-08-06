@@ -6,6 +6,7 @@
 
 #include "core/Enum.h"
 #include "math/AABB.h"
+#include "math/OBB.h"
 #include "math/Plane.h"
 #include "ui/imgui/IconsFontAwesome5.h"
 #include "video/Types.h"
@@ -117,6 +118,7 @@ public:
 	void line(const glm::vec3& start, const glm::vec3& end, float thickness = 1.0f);
 
 	void aabb(const glm::vec3& mins, const glm::vec3& maxs);
+	void obb(const math::OBB<float>& obb);
 	void aabb(const math::AABB<float>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
 	void aabb(const math::AABB<int>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
 	/**

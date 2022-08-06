@@ -152,6 +152,63 @@ void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuild
 	}
 }
 
+void ShapeBuilder::obb(const math::OBB<float>& obb) {
+	setPrimitive(Primitive::Lines);
+	const uint32_t startIndex = (uint32_t)_vertices.size();
+	glm::vec3 vecs[8] = {
+		glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, -1.0f,  1.0f),
+		glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3( 1.0f, -1.0f,  1.0f),
+		glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(-1.0f, -1.0f, -1.0f),
+		glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3( 1.0f, -1.0f, -1.0f)
+	};
+	const glm::vec3& halfWidth = obb.extents();
+	const glm::vec3& center = obb.origin();
+	reserve(lengthof(vecs), 24);
+
+	for (size_t i = 0; i < lengthof(vecs); ++i) {
+		addVertex(glm::rotate(obb.rotation(), vecs[i] * halfWidth + center));
+	}
+
+	// front
+	addIndex(startIndex + 0);
+	addIndex(startIndex + 1);
+
+	addIndex(startIndex + 1);
+	addIndex(startIndex + 3);
+
+	addIndex(startIndex + 3);
+	addIndex(startIndex + 2);
+
+	addIndex(startIndex + 2);
+	addIndex(startIndex + 0);
+
+	// back
+	addIndex(startIndex + 4);
+	addIndex(startIndex + 5);
+
+	addIndex(startIndex + 5);
+	addIndex(startIndex + 7);
+
+	addIndex(startIndex + 7);
+	addIndex(startIndex + 6);
+
+	addIndex(startIndex + 6);
+	addIndex(startIndex + 4);
+
+	// connections
+	addIndex(startIndex + 0);
+	addIndex(startIndex + 4);
+
+	addIndex(startIndex + 2);
+	addIndex(startIndex + 6);
+
+	addIndex(startIndex + 1);
+	addIndex(startIndex + 5);
+
+	addIndex(startIndex + 3);
+	addIndex(startIndex + 7);
+}
+
 void ShapeBuilder::aabb(const math::AABB<float>& aabb, bool renderGrid, float stepWidth) {
 	setPrimitive(Primitive::Lines);
 	const uint32_t startIndex = (uint32_t)_vertices.size();
