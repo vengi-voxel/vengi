@@ -360,7 +360,6 @@ bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableRead
 				stream.readFloat(mat[i / 4][i % 4]);
 			}
 			transform.setMatrix(mat);
-			transform.update();
 			node.setTransform(0, transform, true);
 		}
 	}
