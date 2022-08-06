@@ -153,9 +153,6 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename,
 	ASSERT_NE(nullptr, loaded) << "Could not load " << destFilename;
 	voxelformat::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> src(merged.first);
-	if (includingRegion) {
-		ASSERT_EQ(src->region(), loaded->region());
-	}
 	volumeComparator(*src, merged.second, *loaded, mergedLoad.second, includingColor, includingRegion, maxDelta);
 }
 
