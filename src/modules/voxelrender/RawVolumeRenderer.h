@@ -147,7 +147,6 @@ public:
 
 	bool translate(int idx, const glm::ivec3& m);
 
-	bool toMesh(voxel::Mesh* mesh);
 	bool toMesh(int idx, voxel::Mesh* mesh);
 
 	/**

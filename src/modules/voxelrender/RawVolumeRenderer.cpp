@@ -343,28 +343,6 @@ bool RawVolumeRenderer::empty(int idx) const {
 	return true;
 }
 
-bool RawVolumeRenderer::toMesh(voxel::Mesh* mesh) {
-	core::DynamicArray<const voxel::RawVolume*> volumes;
-	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		const voxel::RawVolume* v = volume(idx);
-		if (v == nullptr) {
-			continue;
-		}
-		volumes.push_back(v);
-	}
-	if (volumes.empty()) {
-		return false;
-	}
-
-	voxel::RawVolume* mergedVolume = voxelutil::merge(volumes);
-	if (mergedVolume == nullptr) {
-		return false;
-	}
-	extractVolumeRegionToMesh(mergedVolume, mergedVolume->region(), mesh);
-	delete mergedVolume;
-	return true;
-}
-
 bool RawVolumeRenderer::toMesh(int idx, voxel::Mesh* mesh) {
 	voxel::RawVolume* v = volume(idx);
 	if (v == nullptr) {
