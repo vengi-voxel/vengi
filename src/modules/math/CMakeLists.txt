@@ -4,6 +4,7 @@ set(SRCS
 	Bezier.h
 	Frustum.cpp Frustum.h
 	Functions.cpp Functions.h
+	OBB.h
 	Octree.h Octree.cpp
 	OctreeCache.h
 	Plane.h Plane.cpp
