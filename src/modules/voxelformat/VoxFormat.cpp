@@ -277,22 +277,29 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			return false;
 		}
 	}
-#if 0 // TODO
+
 	for (uint32_t n = 0; n < scene->num_cameras; ++n) {
 		const ogt_vox_cam& c = scene->cameras[n];
-		cam.setTarget(glm::vec3(c.focus[0], c.focus[1], c.focus[2]));
-		cam.setAngles(c.angle[0], c.angle[1], c.angle[2]);
-		cam.setTargetDistance((float)c.radius);
-		cam.setFieldOfView((float)c.fov);
+		const glm::vec3 target(c.focus[0], c.focus[1], c.focus[2]);
+		const glm::quat quat(glm::vec3(c.angle[0], c.angle[1], c.angle[2]));
+		const float distance = (float)c.radius;
+		const glm::vec3& forward = glm::conjugate(quat) * glm::forward;
+		const glm::vec3& backward = -forward;
+		const glm::vec3& newPosition = target + backward * distance;
+		const glm::mat4& orientation = glm::mat4_cast(quat);
+		const glm::mat4& viewMatrix = glm::translate(orientation, -newPosition);
+		// if (c.mode == ogt_cam_mode_perspective) {
+		//  const float fieldOfView = glm::radians((float)c.fov);
+		// }
+
 		{
 			SceneGraphNode camNode(SceneGraphNodeType::Camera);
 			SceneGraphTransform transform;
-			transform.setMatrix();
+			transform.setMatrix(viewMatrix);
 			camNode.setTransform(0, transform, true);
 			sceneGraph.emplace(core::move(camNode), sceneGraph.root().id());
 		}
 	}
-#endif
 
 	ogt_vox_destroy_scene(scene);
 	return true;
