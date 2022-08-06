@@ -319,11 +319,6 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 							 glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr,
 							 _boundsMode ? glm::value_ptr(_bounds.mins) : nullptr, _boundsMode ? boundsSnap : nullptr);
 
-		if (ImGuizmo::IsUsing()) {
-			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-				_guizmoRotation->setVal(_guizmoRotation->boolVal() ? "false" : "true");
-			}
-		}
 		if (editMode == EditMode::Scene) {
 			if (ImGuizmo::IsUsing()) {
 				_guizmoActivated = true;
