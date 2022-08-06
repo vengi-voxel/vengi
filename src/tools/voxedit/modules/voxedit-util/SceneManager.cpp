@@ -754,6 +754,8 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 		return false;
 	}
 
+	core_assert(volumes.size() == nodes.size());
+
 	voxel::RawVolume* merged = voxelutil::merge(volumes);
 	voxelformat::SceneGraphNode node;
 	if (voxelformat::SceneGraphNode* firstNode = sceneGraphNode(nodes.front())) {
