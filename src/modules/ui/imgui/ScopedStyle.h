@@ -140,5 +140,14 @@ public:
 	}
 };
 
+class ScopedStyleCompact : public ScopedStyle {
+public:
+	ScopedStyleCompact() {
+	    ImGuiStyle& style = ImGui::GetStyle();
+		setFramePadding(ImVec2(style.FramePadding.x, (float)(int)(style.FramePadding.y * 0.60f)));
+		setItemSpacing(ImVec2(style.ItemSpacing.x, (float)(int)(style.ItemSpacing.y * 0.60f)));
+	}
+};
+
 } // namespace imgui
 } // namespace ui
