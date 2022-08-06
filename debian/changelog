@@ -10,7 +10,7 @@ vengi (0.0.21.0-1) UNRELEASED; urgency=low
   * Support wrap mode texture settings for gltf voxelization
   * Improved sanity check for Qubicle Binary format support
   * Fixed texture lookup error in gltf voxelization
-  * Extended lua vector bindings
+  * Extended lua vector bindings and allow to import heightmaps
   * Improved the file dialog filters
 
   * VoxEdit:
@@ -18,6 +18,15 @@ vengi (0.0.21.0-1) UNRELEASED; urgency=low
   * New asset panel
   * Place images, models and colors via drag and drop into the scene
   * Extended scene mode modifiers to allow resizing the volumes (double click in scene mode)
+  * Fixed updating the locked axis plane on change
+  * Fixed scene graph node panel width
+  * Fixed mesh extraction on chunk boundaries
+  * Fixed new volume dialog input handling
+  * Fixed cursor being invisible with bloom disabled
+  * Fixed cursor face being on the wrong side of the voxel at the volume edges
+  * Fixed last opened files with spaces in their names
+  * Fixed loading files from command line again
+  * Allow to select scene graph node from the animation timeline
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Tue, 14 Jun 2022 00:00:00 +0000
 
