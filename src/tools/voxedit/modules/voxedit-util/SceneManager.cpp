@@ -740,9 +740,40 @@ static bool shouldGetMerged(const voxelformat::SceneGraphNode &node, NodeMergeFl
 
 void SceneManager::mergeNodes(const MergeData& mergeData) {
 	core_assert(mergeData.volumes.size() == mergeData.nodes.size());
+	voxel::Region mergedRegion = voxel::Region::InvalidRegion;
+	core::DynamicArray<glm::ivec3> translations;
+
+	// calculate the new target region - use the scenegraph translation for this
+	for (int nodeId : mergeData.nodes) {
+		voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId);
+		core_assert(node != nullptr);
+		voxel::Region region = node->region();
+		const voxelformat::SceneGraphTransform &transform = node->transform(_currentFrame);
+		region.shift(transform.translation());
+		if (mergedRegion.isValid()) {
+			mergedRegion.accumulate(region);
+		} else {
+			mergedRegion = region;
+		}
+		translations.push_back(transform.translation());
+	}
+
+	if (!mergedRegion.isValid()) {
+		return;
+	}
+
+	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
+	for (size_t i = 0; i < mergeData.volumes.size(); ++i) {
+		const voxel::RawVolume* v = mergeData.volumes[i];
+		const voxel::Region& sr = v->region();
+		voxel::Region dr = sr;
+		dr.shift(translations[i]);
+		voxelutil::mergeVolumes(merged, v, dr, sr);
+	}
+	merged->translate(-mergedRegion.getLowerCorner());
 
 	voxelformat::SceneGraphNode node;
-	node.setVolume(voxelutil::merge(mergeData.volumes), true);
+	node.setVolume(merged, true);
 	int parent = 0;
 	if (voxelformat::SceneGraphNode* firstNode = sceneGraphNode(mergeData.nodes.front())) {
 		parent = firstNode->parent();
