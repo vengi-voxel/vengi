@@ -756,6 +756,12 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 
 	voxel::RawVolume* merged = voxelutil::merge(volumes);
 	voxelformat::SceneGraphNode node;
+	if (voxelformat::SceneGraphNode* firstNode = sceneGraphNode(nodes.front())) {
+		const size_t numKeyFrames = firstNode->keyFrames().size();
+		for (size_t i = 0; i < numKeyFrames; ++i) {
+			node.setTransform(i, firstNode->transform(i), false);
+		}
+	}
 	node.setVolume(merged, true);
 	addNodeToSceneGraph(node);
 	for (int nodeId : nodes) {
