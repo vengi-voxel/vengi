@@ -773,19 +773,21 @@ bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
 }
 
 bool SceneManager::merge(int nodeId1, int nodeId2) {
-	core::DynamicArray<const voxel::RawVolume*> volumes;
-	volumes.resize(2);
-	volumes[0] = volume(nodeId1);
-	if (volumes[0] == nullptr) {
+	voxel::RawVolume *v0 = volume(nodeId1);
+	if (v0 == nullptr) {
 		return false;
 	}
-	volumes[1] = volume(nodeId2);
-	if (volumes[1] == nullptr) {
+	voxel::RawVolume *v1 = volume(nodeId2);
+	if (v1 == nullptr) {
 		return false;
 	}
-	voxel::RawVolume* merged = voxelutil::merge(volumes);
+	voxel::Region mergedRegion = v0->region();
+	mergedRegion.accumulate(v1->region());
+
 	voxelformat::SceneGraphNode node;
-	node.setVolume(merged, true);
+	node.setVolume(new voxel::RawVolume(mergedRegion), true);
+	voxelutil::mergeVolumes(node.volume(), v0, v0->region(), v0->region());
+	voxelutil::mergeVolumes(node.volume(), v1, v1->region(), v1->region());
 	int parent = 0;
 	if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId1)) {
 		parent = node->parent();
