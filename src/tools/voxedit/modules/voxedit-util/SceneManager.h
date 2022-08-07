@@ -65,7 +65,7 @@ enum class EditMode {
 	Scene
 };
 
-enum class LayerMergeFlags {
+enum class NodeMergeFlags {
 	None      = 0,
 	Visible   = (1 << 0),
 	Locked    = (1 << 1),
@@ -73,7 +73,7 @@ enum class LayerMergeFlags {
 	Max,
 	All = Visible | Locked | Invisible
 };
-CORE_ENUM_BIT_OPERATIONS(LayerMergeFlags)
+CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
 
 /**
  * @note The data is shared across all viewports
@@ -178,6 +178,12 @@ private:
 
 	voxel::RawVolume* activeVolume();
 
+	struct MergeData {
+		core::DynamicArray<const voxel::RawVolume*> volumes;
+		core::DynamicArray<int> nodes;
+	};
+	void mergeNodes(const MergeData& mergeData);
+
 	/**
 	 * @brief Assumes that the current active scene is a fresh scene, no undo states
 	 * are left, scene is no longer dirty and so on.
@@ -220,8 +226,8 @@ protected:
 	/**
 	 * @brief Merge two nodes and extend the smaller one
 	 */
-	bool merge(int nodeId1, int nodeId2);
-	bool mergeMultiple(LayerMergeFlags flags);
+	bool mergeNodes(int nodeId1, int nodeId2);
+	bool mergeNodes(NodeMergeFlags flags);
 
 	bool undo();
 	bool redo();

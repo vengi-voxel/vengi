@@ -724,77 +724,73 @@ void SceneManager::resetLastTrace() {
 	_lastRaytraceX = _lastRaytraceY = -1;
 }
 
-static bool shouldGetMerged(const voxelformat::SceneGraphNode &node, LayerMergeFlags flags) {
+static bool shouldGetMerged(const voxelformat::SceneGraphNode &node, NodeMergeFlags flags) {
 	bool add = false;
-	if ((flags & LayerMergeFlags::All) != LayerMergeFlags::None) {
+	if ((flags & NodeMergeFlags::All) != NodeMergeFlags::None) {
 		add = true;
-	} else if ((flags & LayerMergeFlags::Visible) != LayerMergeFlags::None) {
+	} else if ((flags & NodeMergeFlags::Visible) != NodeMergeFlags::None) {
 		add = node.visible();
-	} else if ((flags & LayerMergeFlags::Invisible) != LayerMergeFlags::None) {
+	} else if ((flags & NodeMergeFlags::Invisible) != NodeMergeFlags::None) {
 		add = !node.visible();
-	} else if ((flags & LayerMergeFlags::Locked) != LayerMergeFlags::None) {
+	} else if ((flags & NodeMergeFlags::Locked) != NodeMergeFlags::None) {
 		add = node.locked();
 	}
 	return add;
 }
 
-bool SceneManager::mergeMultiple(LayerMergeFlags flags) {
-	core::DynamicArray<const voxel::RawVolume*> volumes;
-	core::DynamicArray<int> nodes;
-	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
-		if (!shouldGetMerged(node, flags)) {
-			continue;
-		}
-		volumes.push_back(node.volume());
-		nodes.push_back(node.id());
-	}
+void SceneManager::mergeNodes(const MergeData& mergeData) {
+	core_assert(mergeData.volumes.size() == mergeData.nodes.size());
 
-	if (volumes.size() <= 1) {
-		return false;
-	}
-
-	core_assert(volumes.size() == nodes.size());
-
-	voxel::RawVolume* merged = voxelutil::merge(volumes);
 	voxelformat::SceneGraphNode node;
-	if (voxelformat::SceneGraphNode* firstNode = sceneGraphNode(nodes.front())) {
+	node.setVolume(voxelutil::merge(mergeData.volumes), true);
+	int parent = 0;
+	if (voxelformat::SceneGraphNode* firstNode = sceneGraphNode(mergeData.nodes.front())) {
+		parent = firstNode->parent();
 		const size_t numKeyFrames = firstNode->keyFrames().size();
 		for (size_t i = 0; i < numKeyFrames; ++i) {
 			node.setTransform(i, firstNode->transform(i), false);
 		}
 	}
-	node.setVolume(merged, true);
-	addNodeToSceneGraph(node);
-	for (int nodeId : nodes) {
+	addNodeToSceneGraph(node, parent);
+	for (int nodeId : mergeData.nodes) {
 		nodeRemove(nodeId, false);
 	}
+}
+
+bool SceneManager::mergeNodes(NodeMergeFlags flags) {
+	MergeData mergeData;
+	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
+		if (!shouldGetMerged(node, flags)) {
+			continue;
+		}
+		mergeData.volumes.push_back(node.volume());
+		mergeData.nodes.push_back(node.id());
+	}
+
+	if (mergeData.volumes.size() <= 1) {
+		return false;
+	}
+
+	mergeNodes(mergeData);
+
 	return true;
 }
 
-bool SceneManager::merge(int nodeId1, int nodeId2) {
-	voxel::RawVolume *v0 = volume(nodeId1);
-	if (v0 == nullptr) {
+bool SceneManager::mergeNodes(int nodeId1, int nodeId2) {
+	voxel::RawVolume *volume1 = volume(nodeId1);
+	if (volume1 == nullptr) {
 		return false;
 	}
-	voxel::RawVolume *v1 = volume(nodeId2);
-	if (v1 == nullptr) {
+	voxel::RawVolume *volume2 = volume(nodeId2);
+	if (volume2 == nullptr) {
 		return false;
 	}
-	voxel::Region mergedRegion = v0->region();
-	mergedRegion.accumulate(v1->region());
-
-	voxelformat::SceneGraphNode node;
-	node.setVolume(new voxel::RawVolume(mergedRegion), true);
-	voxelutil::mergeVolumes(node.volume(), v0, v0->region(), v0->region());
-	voxelutil::mergeVolumes(node.volume(), v1, v1->region(), v1->region());
-	int parent = 0;
-	if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId1)) {
-		parent = node->parent();
-	}
-	if (addNodeToSceneGraph(node, parent) != -1) {
-		nodeRemove(nodeId1, false);
-		nodeRemove(nodeId2, false);
-	}
+	MergeData mergeData;
+	mergeData.volumes.push_back(volume1);
+	mergeData.nodes.push_back(nodeId1);
+	mergeData.volumes.push_back(volume2);
+	mergeData.nodes.push_back(nodeId2);
+	mergeNodes(mergeData);
 	return true;
 }
 
@@ -1465,19 +1461,19 @@ void SceneManager::construct() {
 			// FIXME: this layer id might be an empty slot
 			nodeId2 = nodeId1 + 1;
 		}
-		merge(nodeId1, nodeId2);
+		mergeNodes(nodeId1, nodeId2);
 	}).setHelp("Merge two given layers or active layer with the one below");
 
 	command::Command::registerCommand("layermergeall", [&] (const command::CmdArgs& args) {
-		mergeMultiple(LayerMergeFlags::All);
+		mergeNodes(NodeMergeFlags::All);
 	}).setHelp("Merge all layers");
 
 	command::Command::registerCommand("layermergevisible", [&] (const command::CmdArgs& args) {
-		mergeMultiple(LayerMergeFlags::Visible);
+		mergeNodes(NodeMergeFlags::Visible);
 	}).setHelp("Merge all visible layers");
 
 	command::Command::registerCommand("layermergelocked", [&] (const command::CmdArgs& args) {
-		mergeMultiple(LayerMergeFlags::Locked);
+		mergeNodes(NodeMergeFlags::Locked);
 	}).setHelp("Merge all locked layers");
 
 	command::Command::registerCommand("animate", [&] (const command::CmdArgs& args) {
