@@ -4,6 +4,7 @@
 
 #include "GLM.h"
 #include <glm/gtc/matrix_access.hpp>
+#include <glm/geometric.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
@@ -62,13 +63,10 @@ vec3 transform(const mat4& mat, const vec3& v) {
 }
 
 vec3 rotate(const mat4& mat, const vec3& v) {
-	const mat4::col_type& c1 = column(mat, 0);
-	const mat4::col_type& c2 = column(mat, 1);
-	const mat4::col_type& c3 = column(mat, 2);
-	const vec3 r(c1.x * v.x + c1.y * v.y + c1.z * v.z,
-		c2.x * v.x + c2.y * v.y + c2.z * v.z,
-		c3.x * v.x + c3.y * v.y + c3.z * v.z);
-	return r;
+	const vec3 c1 = column(mat, 0);
+	const vec3 c2 = column(mat, 1);
+	const vec3 c3 = column(mat, 2);
+	return vec3(dot(c1, v), dot(c2, v), dot(c3, v));
 }
 
 vec3 project(const mat4& m, const vec3& p) {
