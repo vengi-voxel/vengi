@@ -47,7 +47,7 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int 
 			} else if (axis == math::Axis::Y) {
 				pos = glm::ivec3(center.x + x, center.y, center.z + z);
 			} else {
-				pos = glm::ivec3(center.x, center.y, center.z + z);
+				pos = glm::ivec3(center.x + x, center.y + z, center.z);
 			}
 			volume.setVoxel(pos, voxel);
 		}
