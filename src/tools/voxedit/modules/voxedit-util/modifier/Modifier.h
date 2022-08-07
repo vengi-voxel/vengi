@@ -53,22 +53,42 @@ protected:
 	bool _secondPosValid = false;
 	bool _aabbMode = false;
 	bool _center = false;
+	/**
+	 * timer value which indicates the next execution time in case you keep the
+	 * modifier triggered
+	 */
 	double _nextSingleExecution = 0;
+
 	glm::ivec3 _aabbFirstPos {0};
 	glm::ivec3 _aabbSecondPos {0};
+
+	/**
+	 * if the current modifier type allows or needs a second action to span the
+	 * volume to operate in, this is the direction into which the second action
+	 * points
+	 */
 	math::Axis _aabbSecondActionDirection = math::Axis::None;
+
 	ModifierType _modifierType = ModifierType::Place;
+
 	int _gridResolution = 1;
+
 	math::Axis _mirrorAxis = math::Axis::None;
 	glm::ivec3 _mirrorPos {0};
+
 	glm::ivec3 _cursorPosition {0};
 	glm::ivec3 _referencePos;
+
+	/** the face where the trace hit */
 	voxel::FaceNames _face = voxel::FaceNames::Max;
-	// the voxel that should get placed
+
+	/** the voxel that should get placed */
 	voxel::Voxel _cursorVoxel;
-	// existing voxel under the cursor
+	/** existing voxel under the cursor */
 	voxel::Voxel _hitCursorVoxel;
+	/** the voxel where the cursor is - can be air */
 	voxel::Voxel _voxelAtCursor;
+
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
 	ShapeType _shapeType = ShapeType::AABB;
