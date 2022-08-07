@@ -871,18 +871,23 @@ bool SceneManager::loadSceneGraph(voxelformat::SceneGraph&& sceneGraph) {
 	return true;
 }
 
-math::AABB<float> SceneManager::toAABB(const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const {
-	core_assert(region.isValid());
-	if (_editMode == EditMode::Scene) {
-		const glm::vec3 mins(glm::floor(transform.apply(region.getLowerCornerf(), region.getDimensionsInVoxels())));
-		const glm::vec3 maxs(glm::floor(transform.apply(region.getUpperCornerf(), region.getDimensionsInVoxels())));
-		return math::AABB<float>(mins, maxs + 1.0f);
-	}
+math::AABB<float> SceneManager::toAABB(const voxel::Region& region) const {
 	return math::AABB<float>(glm::floor(region.getLowerCornerf()), glm::floor(glm::vec3(region.getUpperCornerf() + 1.0f)));
 }
 
+math::OBB<float> SceneManager::toOBB(const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const {
+	core_assert(region.isValid());
+	if (_editMode == EditMode::Scene) {
+		const glm::vec3 &extents = glm::vec3(region.getDimensionsInVoxels()) / 2.0f;
+		const glm::vec3 &center = transform.translation() + extents;
+		const glm::mat4 &matrix = transform.matrix();
+		return math::OBB<float>(center, extents, matrix);
+	}
+	return math::OBB<float>(glm::floor(region.getLowerCornerf()), glm::floor(glm::vec3(region.getUpperCornerf() + 1.0f)));
+}
+
 void SceneManager::updateGridRenderer(const voxel::Region& region) {
-	_gridRenderer.update(toAABB(region, voxelformat::SceneGraphTransform{}));
+	_gridRenderer.update(toAABB(region));
 }
 
 voxelformat::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {
@@ -1084,7 +1089,7 @@ void SceneManager::updateAABBMesh() {
 		} else {
 			_shapeBuilder.setColor(core::Color::Gray);
 		}
-		_shapeBuilder.aabb(toAABB(region, node.transformForFrame(_currentFrame)));
+		_shapeBuilder.obb(toOBB(region, node.transformForFrame(_currentFrame)));
 	}
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
@@ -1108,7 +1113,7 @@ void SceneManager::render(const video::Camera& camera, const glm::ivec2 &size, u
 			const int nodeId = activeNode();
 			voxelformat::SceneGraphNode *n = sceneGraphNode(nodeId);
 			const voxel::Region& region = n->volume()->region();
-			_gridRenderer.render(camera, toAABB(region, n->transformForFrame(_currentFrame)));
+			_gridRenderer.render(camera, toAABB(region));
 
 			_modifier.render(camera);
 
@@ -2189,8 +2194,8 @@ bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
 			}
 			const voxel::Region& region = node.region();
 			float distance = 0.0f;
-			const math::AABB<float>& aabb = toAABB(region, node.transform());
-			if (aabb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
+			const math::OBB<float>& obb = toOBB(region, node.transformForFrame(_currentFrame));
+			if (obb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
 				if (distance < intersectDist) {
 					intersectDist = distance;
 					_sceneModeNodeIdTrace = node.id();

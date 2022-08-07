@@ -28,6 +28,7 @@
 #include "core/Singleton.h"
 #include "command/ActionButton.h"
 #include "math/Axis.h"
+#include "math/OBB.h"
 #include "MementoHandler.h"
 #include "voxelgenerator/LUAGenerator.h"
 #include "modifier/ModifierType.h"
@@ -193,7 +194,8 @@ private:
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
 	void updateAABBMesh();
-	math::AABB<float> toAABB(const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const;
+	math::AABB<float> toAABB(const voxel::Region& region) const;
+	math::OBB<float> toOBB(const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const;
 protected:
 	voxelformat::SceneGraphNode *sceneGraphNode(int nodeId);
 	const voxelformat::SceneGraphNode *sceneGraphNode(int nodeId) const;
