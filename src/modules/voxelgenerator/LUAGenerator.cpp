@@ -103,6 +103,13 @@ static int luaVoxel_pushvolumewrapper(lua_State* s, voxel::RawVolumeWrapper* vol
 	return clua_pushudata(s, volume, luaVoxel_metavolumewrapper());
 }
 
+static int luaVoxel_pushpalette(lua_State* s, voxel::Palette* palette) {
+	if (palette == nullptr) {
+		return clua_error(s, "No palette given - can't push");
+	}
+	return clua_pushudata(s, palette, luaVoxel_metapalette());
+}
+
 static int luaVoxel_volumewrapper_voxel(lua_State* s) {
 	const voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	const int x = (int)luaL_checkinteger(s, 2);
@@ -578,6 +585,12 @@ static int luaVoxel_scenegraphnode_volume(lua_State* s) {
 	return luaVoxel_pushvolumewrapper(s, wrapper);
 }
 
+static int luaVoxel_scenegraphnode_palette(lua_State* s) {
+	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	voxel::Palette &palette = node->palette();
+	return luaVoxel_pushpalette(s, &palette);
+}
+
 static int luaVoxel_scenegraphnode_name(lua_State* s) {
 	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	lua_pushstring(s, node->name().c_str());
@@ -642,6 +655,7 @@ static void prepareState(lua_State* s) {
 	static const luaL_Reg sceneGraphNodeFuncs[] = {
 		{"name", luaVoxel_scenegraphnode_name},
 		{"volume", luaVoxel_scenegraphnode_volume},
+		{"palette", luaVoxel_scenegraphnode_palette},
 		{"setName", luaVoxel_scenegraphnode_setname},
 		{"__tostring", luaVoxel_scenegraphnode_tostring},
 		{nullptr, nullptr}
@@ -655,7 +669,7 @@ static void prepareState(lua_State* s) {
 		{"similar", luaVoxel_palette_similar},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, paletteFuncs, luaVoxel_metapalette(), "palette");
+	clua_registerfuncs(s, paletteFuncs, luaVoxel_metapalette());
 
 	static const luaL_Reg noiseFuncs[] = {
 		{"noise2", luaVoxel_noise_simplex2},

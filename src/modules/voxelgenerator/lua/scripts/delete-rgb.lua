@@ -14,7 +14,7 @@ end
 
 function main(node, region, color, r, g, b)
 	local volume = node:volume()
-	local newcolor = palette.match(r, g, b)
+	local newcolor = node:palette().match(r, g, b)
 
 	local visitor = function (volume, x, y, z)
 		volume:setVoxel(x, y, z, -1)

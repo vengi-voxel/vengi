@@ -69,7 +69,7 @@ Execute this via console `xs scriptfile 1` where `1` will be the value of `n`. O
 function main(node, region, color)
 	-- find match (palette index) for red in the current palette (RGB value)
 	-- this value can be used in e.g. volume:setVoxel(x, y, z, match)
-	local match = palette.match(255, 0, 0)
+	local match = node:palette().match(255, 0, 0)
 	[...]
 end
 ```
@@ -120,7 +120,7 @@ local name = scenegraphnode:name()
 
 ## Color
 
-`palette` has several methods to work with colors. E.g. to find a closest possible match for the given palette index.
+The node palette (`node:palette()`) has several methods to work with colors. E.g. to find a closest possible match for the given palette index.
 
 The functions are:
 
@@ -132,7 +132,7 @@ The functions are:
 
 * `similar(paletteindex, [coloramount])`: Return a table with similar colors given by their palette index.
 
-They are available as e.g. `palette.color([...])`, `palette.match([...])` and so on.
+They are available as e.g. `palette:color([...])`, `palette:match([...])` and so on.
 
 ## Noise
 

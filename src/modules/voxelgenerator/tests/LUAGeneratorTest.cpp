@@ -72,12 +72,12 @@ TEST_F(LUAGeneratorTest, testExecute) {
 			local maxs = region:maxs()
 			local dim = maxs - mins
 			node:volume():setVoxel(0, 0, 0, color)
-			local match = palette.match(255, 0, 0)
+			local match = node:palette().match(255, 0, 0)
 			-- red matches palette index 37
 			if match == 37 then
 				node:volume():setVoxel(1, 0, 0, match)
 			end
-			local colors = palette.colors()
+			local colors = node:palette().colors()
 		end
 	)";
 
