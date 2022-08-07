@@ -70,7 +70,7 @@ public:
 		const Vec min = _origin - _extents;
 		const Vec max = _origin + _extents;
 
-		const glm::vec3 &p = glm::rotate(_inv, point);
+		const glm::vec4 &p = _inv * glm::vec4(point, 1.0f);
 		const T x = (T)p.x;
 		const T y = (T)p.y;
 		const T z = (T)p.z;
@@ -81,8 +81,8 @@ public:
 		const Vec minsV = _origin - _extents;
 		const Vec maxsV = _origin + _extents;
 
-		const glm::vec3 &rayOrigin = glm::rotate(_inv, inRayOrigin);
-		const glm::vec3 &rayDirection = glm::rotate(_inv, inRayDirection);
+		const glm::vec3 &rayOrigin = _inv * glm::vec4(inRayOrigin, 1.0f);
+		const glm::vec3 &rayDirection = _inv* glm::vec4(inRayDirection, 1.0f);
 		glm::vec3 pos1;
 		glm::vec3 pos2;
 		double t_near = -rayLength;
