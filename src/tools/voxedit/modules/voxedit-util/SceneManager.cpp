@@ -879,7 +879,7 @@ math::OBB<float> SceneManager::toOBB(const voxel::Region& region, const voxelfor
 	core_assert(region.isValid());
 	if (_editMode == EditMode::Scene) {
 		const glm::vec3 &extents = glm::vec3(region.getDimensionsInVoxels()) / 2.0f;
-		const glm::vec3 &center = transform.translation() + extents;
+		const glm::vec3 &center = (region.getLowerCornerf() + transform.translation()) + extents;
 		const glm::mat4 &matrix = transform.matrix();
 		return math::OBB<float>(center, extents, matrix);
 	}
