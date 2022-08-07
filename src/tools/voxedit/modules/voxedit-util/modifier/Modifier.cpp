@@ -212,6 +212,29 @@ bool Modifier::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 	return true;
 }
 
+math::Axis Modifier::getSizeAndHeightFromAxisAndDim(math::Axis axis, const glm::ivec3& dimensions, double &size, double &height) const {
+	if (axis == math::Axis::None) {
+		axis = math::Axis::Y;
+	}
+	switch (axis) {
+	case math::Axis::X:
+		size = (glm::max)(dimensions.y, dimensions.z);
+		height = dimensions.x;
+		break;
+	case math::Axis::Y:
+		size = (glm::max)(dimensions.x, dimensions.z);
+		height = dimensions.y;
+		break;
+	case math::Axis::Z:
+		size = (glm::max)(dimensions.x, dimensions.y);
+		height = dimensions.z;
+		break;
+	default:
+		return math::Axis::None;
+	}
+	return axis;
+}
+
 bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
 	glm::ivec3 operateMins = mins;
 	glm::ivec3 operateMaxs = maxs;
@@ -226,40 +249,23 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 	glm::ivec3 centerBottom = center;
 	centerBottom.y = region.getLowerY();
 	const glm::ivec3& dimensions = region.getDimensionsInVoxels();
+
+	double size;
+	double height;
+	const math::Axis axis = getSizeAndHeightFromAxisAndDim(_aabbSecondActionDirection, dimensions, size, height);
+
 	switch (_shapeType) {
 	case ShapeType::AABB:
 		voxelgenerator::shape::createCubeNoCenter(wrapper, operateMins, dimensions, _cursorVoxel);
 		break;
 	case ShapeType::Torus: {
-		const double minorRadius = dimensions.x / 5.0;
-		const double majorRadius = dimensions.x / 2.0 - minorRadius;
+		const double minorRadius = size / 5.0;
+		const double majorRadius = size / 2.0 - minorRadius;
 		voxelgenerator::shape::createTorus(wrapper, center, minorRadius, majorRadius, _cursorVoxel);
 		break;
 	}
 	case ShapeType::Cylinder: {
-		math::Axis axis = _aabbSecondActionDirection;
-		if (axis == math::Axis::None) {
-			axis = math::Axis::Y;
-		}
-		double radius;
-		double height;
-		switch (axis) {
-		case math::Axis::X:
-			radius = (glm::max)(dimensions.y, dimensions.z) / 2.0;
-			height = dimensions.x;
-			break;
-		case math::Axis::Y:
-			radius = (glm::max)(dimensions.x, dimensions.z) / 2.0;
-			height = dimensions.y;
-			break;
-		case math::Axis::Z:
-			radius = (glm::max)(dimensions.x, dimensions.y) / 2.0;
-			height = dimensions.z;
-			break;
-		default:
-			return false;
-		}
-
+		const double radius = size / 2.0;
 		voxelgenerator::shape::createCylinder(wrapper, centerBottom, axis, (int)glm::round(radius), (int)glm::round(height), _cursorVoxel);
 		break;
 	}

@@ -95,6 +95,7 @@ protected:
 
 	glm::ivec3 firstPos() const;
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
+	math::Axis getSizeAndHeightFromAxisAndDim(math::Axis axis, const glm::ivec3& dimensions, double &size, double &height) const;
 	bool executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type)>& callback);
 public:
 	Modifier();

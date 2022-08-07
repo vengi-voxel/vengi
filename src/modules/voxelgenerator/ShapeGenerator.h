@@ -419,15 +419,14 @@ void createTorus(Volume& volume, const glm::ivec3& center, double minorRadius, d
 
 template<class Volume>
 void createCylinder(Volume& volume, const glm::vec3& centerBottom, const math::Axis axis, int radius, int height, const voxel::Voxel& voxel) {
+	if (axis == math::Axis::None) {
+		return;
+	}
+
 	for (int i = 0; i < height; ++i) {
-		glm::ivec3 centerH;
-		if (axis == math::Axis::Y) {
-			centerH = glm::ivec3(centerBottom.x, centerBottom.y + (float)i, centerBottom.z);
-		} else if (axis == math::Axis::X) {
-			centerH = glm::ivec3(centerBottom.x + (float)i, centerBottom.y, centerBottom.z);
-		} else {
-			centerH = glm::ivec3(centerBottom.x, centerBottom.y, centerBottom.z + (float)i);
-		}
+		glm::vec3 offset{0};
+		offset[math::getIndexForAxis(axis)] = (float)i;
+		glm::ivec3 centerH = centerBottom + offset;
 		createCirclePlane(volume, centerH, radius * 2, radius * 2, radius, voxel, axis);
 	}
 }
