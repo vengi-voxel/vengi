@@ -174,6 +174,7 @@ bool VoxelFont::renderGlyphs(const char* string) {
 		}
 		stbtt_FreeBitmap(bitmap, nullptr);
 		voxel::Mesh* mesh = new voxel::Mesh(8, 8, true);
+		region.shiftUpperCorner(1, 1, 1);
 		voxel::extractCubicMesh(&v, region, mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), mergeQuads, mergeQuads);
 		if (mesh->getNoOfIndices() > 0) {
 			_cache[c] = mesh;
