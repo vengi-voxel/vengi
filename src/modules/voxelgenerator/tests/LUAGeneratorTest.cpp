@@ -194,6 +194,11 @@ TEST_F(LUAGeneratorTest, testScriptSimilarColor) {
 	runFile(sceneGraph, "similarcolor.lua");
 }
 
+TEST_F(LUAGeneratorTest, testScriptSplitColor) {
+	voxelformat::SceneGraph sceneGraph;
+	runFile(sceneGraph, "splitcolor.lua");
+}
+
 TEST_F(LUAGeneratorTest, testScriptReplaceColor) {
 	voxelformat::SceneGraph sceneGraph;
 	runFile(sceneGraph, "replacecolor.lua");
