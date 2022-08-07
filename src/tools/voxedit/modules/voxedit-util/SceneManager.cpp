@@ -2453,6 +2453,7 @@ bool SceneManager::nodeRemove(voxelformat::SceneGraphNode &node, bool recursive)
 	if (_sceneGraph.empty()) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
 		newScene(true, name, region);
+		// TODO: allow to undo the removal of the last node
 	}
 	updateAABBMesh();
 	return true;
