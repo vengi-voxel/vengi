@@ -107,6 +107,10 @@ Save the target volume with a down-sampled version of the input volume.
 Apply the given lua script to the output volume.
 
 .TP
+\fB\--scriptcolor <palette-index>\fR
+Set the palette index that is given to the script parameters. This is the palette index from 0 to 255.
+
+.TP
 \fB\--split <x:y:z>\fR
 Slices the volumes into pieces of the given size
 

@@ -51,7 +51,7 @@ protected:
 	void rotate(const core::String& axisStr, voxelformat::SceneGraph& sceneGraph);
 	void scale(voxelformat::SceneGraph& sceneGraph);
 	void resize(const glm::ivec3 &size, voxelformat::SceneGraph& sceneGraph);
-	void script(const core::String &scriptParameters, voxelformat::SceneGraph& sceneGraph);
+	void script(const core::String &scriptParameters, voxelformat::SceneGraph& sceneGraph, uint8_t color);
 	void translate(const glm::ivec3& pos, voxelformat::SceneGraph& sceneGraph);
 	void pivot(const glm::ivec3& pivot, voxelformat::SceneGraph& sceneGraph);
 	void crop(voxelformat::SceneGraph& sceneGraph);

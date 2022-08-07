@@ -17,8 +17,10 @@ There is a console command (called `xs`) in [voxedit](voxedit/Index.md) and a co
 > **voxconvert**
 >
 > ```
-> ./vengi-voxconvert --script "<script> help" --input in.qb --output out.qb
+> ./vengi-voxconvert --script "<script> help" --scriptcolor 1 --input in.qb --output out.qb
 > ```
+>
+> `--scriptcolor` defines the color palette index that is given to the script as parameter.
 
 ---
 

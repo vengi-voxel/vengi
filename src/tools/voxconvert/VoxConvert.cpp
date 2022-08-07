@@ -67,6 +67,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--resize").setDescription("Resize the volume by the given x (right), y (up) and z (back) values");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
+	registerArg("--scriptcolor").setDefaultValue("1").setDescription("Set the palette index that is given to the script parameters");
 	registerArg("--split").setDescription("Slices the volumes into pieces of the given size <x:y:z>");
 	registerArg("--translate").setShort("-t").setDescription("Translate the volumes by x (right), y (up), z (back)");
 
@@ -340,7 +341,8 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	if (!scriptParameters.empty()) {
-		script(scriptParameters, sceneGraph);
+		const core::String &color = getArgVal("--scriptcolor");
+		script(scriptParameters, sceneGraph, color.toInt());
 	}
 
 	if (_changePivot) {
@@ -561,7 +563,7 @@ void VoxConvert::pivot(const glm::ivec3& pivot, voxelformat::SceneGraph& sceneGr
 	}
 }
 
-void VoxConvert::script(const core::String &scriptParameters, voxelformat::SceneGraph& sceneGraph) {
+void VoxConvert::script(const core::String &scriptParameters, voxelformat::SceneGraph& sceneGraph, uint8_t color) {
 	voxelgenerator::LUAGenerator script;
 	if (!script.init()) {
 		Log::warn("Failed to initialize the script bindings");
@@ -572,7 +574,7 @@ void VoxConvert::script(const core::String &scriptParameters, voxelformat::Scene
 		if (luaScript.empty()) {
 			Log::error("Failed to load %s", tokens[0].c_str());
 		} else {
-			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
 			core::DynamicArray<voxelgenerator::LUAParameterDescription> argsInfo;
 			if (!script.argumentInfo(luaScript, argsInfo)) {
 				Log::warn("Failed to get argument details");
