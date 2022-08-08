@@ -15,6 +15,7 @@ set(LUA_SRCS
 	scripts/replacecolor.lua
 	scripts/similarcolor.lua
 	scripts/splitcolor.lua
+	scripts/splitobjects.lua
 	scripts/thicken.lua
 )
 

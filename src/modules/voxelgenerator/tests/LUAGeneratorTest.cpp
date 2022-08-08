@@ -199,6 +199,11 @@ TEST_F(LUAGeneratorTest, testScriptSplitColor) {
 	runFile(sceneGraph, "splitcolor.lua");
 }
 
+TEST_F(LUAGeneratorTest, testScriptSplitObjects) {
+	voxelformat::SceneGraph sceneGraph;
+	runFile(sceneGraph, "splitobjects.lua");
+}
+
 TEST_F(LUAGeneratorTest, testScriptReplaceColor) {
 	voxelformat::SceneGraph sceneGraph;
 	runFile(sceneGraph, "replacecolor.lua");
