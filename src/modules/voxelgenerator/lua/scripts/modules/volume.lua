@@ -72,7 +72,7 @@ function module.visitXZ(volume, region, visitor)
 	module.conditionXZ(volume, region, visitor, condition)
 end
 
-local function visitConnectedInternal(volume, x, y, z, visitor, visited)
+local function visitConnected6Internal(volume, x, y, z, visitor, visited)
 	if volume:voxel(x, y, z) == -1 then
 		return
 	end
@@ -102,9 +102,9 @@ local function visitConnectedInternal(volume, x, y, z, visitor, visited)
 	end
 end
 
-function module.visitConnected(volume, x, y, z, visitor)
+function module.visitConnected6(volume, x, y, z, visitor)
 	local visited = {}
-	visitConnectedInternal(volume, x, y, z, visitor, visited)
+	visitConnected6Internal(volume, x, y, z, visitor, visited)
 end
 
 return module

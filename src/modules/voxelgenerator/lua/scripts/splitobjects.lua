@@ -22,7 +22,7 @@ function main(node, region, color)
 	vol.visitYXZ(node:volume(), region, function (loopVolume, x, y, z)
 		if loopVolume:voxel(x, y, z) ~= -1 then
 			needNewLayer = true
-			vol.visitConnected(loopVolume, x, y, z, connectedVisitor)
+			vol.visitConnected6(loopVolume, x, y, z, connectedVisitor)
 		end
 	end)
 end
