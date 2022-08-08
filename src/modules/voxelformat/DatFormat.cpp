@@ -120,6 +120,9 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			}
 			const voxelformat::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();
 			newSceneGraph.clear();
+			if (merged.first == nullptr) {
+				return core::move(newSceneGraph);
+			}
 			voxelformat::SceneGraphNode node;
 			node.setVolume(merged.first, true);
 			node.setPalette(merged.second);
