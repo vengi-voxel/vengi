@@ -1,3 +1,7 @@
+--
+-- distribute similar color values to the given input color
+--
+
 local vol = require "modules.volume"
 
 function arguments()

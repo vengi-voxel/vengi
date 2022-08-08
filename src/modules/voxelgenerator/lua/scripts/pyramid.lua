@@ -1,3 +1,7 @@
+--
+-- build a pyramid in the given range
+--
+
 function arguments()
 	return {
 		{ name = 'n', desc = 'height level delta', type = 'int', default = '1' }

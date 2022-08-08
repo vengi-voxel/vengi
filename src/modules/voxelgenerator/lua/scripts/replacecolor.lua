@@ -1,3 +1,7 @@
+--
+-- replace one palette color with another one
+--
+
 local vol = require "modules.volume"
 
 function arguments()

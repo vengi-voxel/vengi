@@ -1,3 +1,7 @@
+--
+-- build grass on surfaces (a surface is a voxel that doesn't have a voxel above it)
+--
+
 local vol = require "modules.volume"
 
 function arguments()

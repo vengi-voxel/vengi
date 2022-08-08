@@ -1,3 +1,7 @@
+--
+-- place n voxels on top of the surface - allows e.g. to put snow on everything.
+--
+
 function arguments()
 	return {
 		{ name = 'n', desc = 'height level', type = 'int', default = '1' }

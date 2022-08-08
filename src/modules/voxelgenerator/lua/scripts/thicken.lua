@@ -1,3 +1,7 @@
+--
+-- thickens existing voxels
+--
+
 local vol = require "modules.volume"
 
 function arguments()

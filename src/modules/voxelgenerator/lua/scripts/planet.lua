@@ -1,3 +1,7 @@
+--
+-- Build a small noise based planet in the center of the region
+--
+
 local perlin = require "modules.perlin"
 
 function arguments()

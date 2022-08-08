@@ -1,3 +1,7 @@
+--
+-- calculate erosion
+--
+
 local vol = require "modules.volume"
 
 function arguments()

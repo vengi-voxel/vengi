@@ -1,6 +1,8 @@
 --
 -- moves all connected voxels of the node's volume into new volumes
 --
+-- split all single identifiable objects into own layers/nodes
+--
 
 local vol = require "modules.volume"
 
