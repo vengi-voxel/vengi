@@ -13,9 +13,12 @@ A few of the features are:
 * Custom color palettes
 * Viewport screenshots
 * Layer animation support
+* Key-Frame animation support (WIP)
 * Custom key bindings
 * Show commands of actions (to configure your own key bindings)
 * Copy/Cut/Paste - paste to cursor or reference position
 * Exporting single layers or whole scenes into meshes and a lot of other formats
 * Generate level of details (LOD) volumes
 * Import meshes and voxelize them
+
+There are a lot more features to explore. If you feel like something is missing here but is supported, please let me know.
