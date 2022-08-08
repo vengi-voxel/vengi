@@ -74,7 +74,6 @@ end
 
 local function visitConnectedInternal(volume, x, y, z, visitor, visited)
 	if volume:voxel(x, y, z) == -1 then
-		print("danger")
 		return
 	end
 
