@@ -23,6 +23,7 @@ General:
    - Fixed texture lookup error in gltf voxelization
    - Extended lua vector bindings and allow to import heightmaps
    - Improved the file dialog filters
+   - Added new lua scripts and extended lua integration in voxconvert
 
 VoxEdit:
 
