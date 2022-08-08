@@ -24,6 +24,16 @@ Merge several models into one:
 
 `./vengi-voxconvert --input one.vox --input two.vox --output onetwo.vox`
 
+## Split objects into single volumes
+
+Split voxels with the palette index `66` into own nodes.
+
+`./vengi-voxconvert --script splitcolor --scriptcolor 66 --input infile.vox --output outfile.vox`
+
+Splitting single objects that are not connected to other objects can also be split into own nodes.
+
+`./vengi-voxconvert --script splitobject --input infile.vox --output outfile.vox`
+
 ## Voxelize an obj, gltf, ply or stl file
 
 Voxelize an obj and save as magicavoxel (including colors):
