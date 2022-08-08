@@ -3,6 +3,7 @@
  */
 
 #include "MenuBar.h"
+#include "core/Color.h"
 #include "core/GameConfig.h"
 #include "imgui.h"
 #include "ui/imgui/IMGUIEx.h"
@@ -117,7 +118,11 @@ bool MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 		if (ImGui::BeginMenu(ICON_FK_INFO " About")) {
 			ImGui::Text("VoxEdit " PROJECT_VERSION);
 			ImGui::Separator();
-
+			ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + 360.0f);
+			ImGui::PushStyleColor(ImGuiCol_Text, core::Color::Green);
+			ImGui::TextWrapped("This application is not yet ready for production use. We are always looking for help and feedback to improve things. If you are a developer (C++ and lua) or voxel artist, please consider contributing.");
+			ImGui::PopStyleColor(1);
+			ImGui::PopTextWrapPos();
 			ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/vengi");
 			ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy");
 			ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy");
