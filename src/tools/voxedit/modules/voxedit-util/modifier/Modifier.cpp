@@ -376,11 +376,6 @@ void Modifier::setVoxelAtCursor(const voxel::Voxel& voxel) {
 
 bool Modifier::aabbAction(voxel::RawVolume *volume,
 						  const std::function<void(const voxel::Region &region, ModifierType type)> &callback) {
-	if (volume == nullptr) {
-		Log::debug("No volume given - can't perform action");
-		return true;
-	}
-
 	const bool selectFlag = (_modifierType & ModifierType::Select) == ModifierType::Select;
 	if (selectFlag) {
 		const math::AABB<int> a = aabb();
@@ -389,6 +384,11 @@ bool Modifier::aabbAction(voxel::RawVolume *volume,
 		if (_selectionValid) {
 			callback(_selection, _modifierType);
 		}
+		return true;
+	}
+
+	if (volume == nullptr) {
+		Log::debug("No volume given - can't perform action");
 		return true;
 	}
 

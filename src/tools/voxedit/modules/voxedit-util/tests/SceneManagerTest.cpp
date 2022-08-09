@@ -50,9 +50,12 @@ protected:
 	}
 
 	void testSelect(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+		modifier().aabbAbort();
+		modifier().setSingleMode(false);
+		modifier().setPlaneMode(false);
 		modifier().setModifierType(ModifierType::Select);
 		modifier().setCursorPosition(mins, voxel::FaceNames::NegativeX);
-		modifier().aabbStart();
+		EXPECT_TRUE(modifier().aabbStart());
 		modifier().setCursorPosition(maxs, voxel::FaceNames::NegativeX);
 		modifier().aabbStep();
 		EXPECT_TRUE(modifier().aabbAction(nullptr, [&](const voxel::Region &, ModifierType) {}));
@@ -272,6 +275,7 @@ TEST_F(SceneManagerTest, testCopyPaste) {
 	}
 	testSetVoxel(testMins(), 1);
 	testSelect(testMins(), testMaxs());
+	EXPECT_TRUE(modifier().selection().isValid());
 	EXPECT_TRUE(copy());
 
 	EXPECT_NE(-1, addModelChild("paste target", 1, 1, 1));
