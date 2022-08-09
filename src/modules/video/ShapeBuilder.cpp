@@ -166,7 +166,7 @@ void ShapeBuilder::obb(const math::OBB<float>& obb) {
 	reserve(lengthof(vecs), 24);
 
 	for (size_t i = 0; i < lengthof(vecs); ++i) {
-		addVertex(obb.rotation() * glm::vec4(vecs[i] * halfWidth + center, 1.0f));
+		addVertex(glm::vec3(obb.rotation() * glm::vec4(vecs[i] * halfWidth, 1.0f)) + center);
 	}
 
 	// front
