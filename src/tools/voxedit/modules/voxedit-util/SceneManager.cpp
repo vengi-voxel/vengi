@@ -738,7 +738,7 @@ static bool shouldGetMerged(const voxelformat::SceneGraphNode &node, NodeMergeFl
 	return add;
 }
 
-void SceneManager::mergeNodes(const MergeData& mergeData) {
+int SceneManager::mergeNodes(const MergeData& mergeData) {
 	core_assert(mergeData.volumes.size() == mergeData.nodes.size());
 	voxel::Region mergedRegion = voxel::Region::InvalidRegion;
 	core::DynamicArray<glm::ivec3> translations;
@@ -759,7 +759,7 @@ void SceneManager::mergeNodes(const MergeData& mergeData) {
 	}
 
 	if (!mergedRegion.isValid()) {
-		return;
+		return -1;
 	}
 
 	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
@@ -782,13 +782,17 @@ void SceneManager::mergeNodes(const MergeData& mergeData) {
 			node.setTransform(i, firstNode->transform(i), false);
 		}
 	}
-	addNodeToSceneGraph(node, parent);
+	int newNodeId = addNodeToSceneGraph(node, parent);
+	if (newNodeId == -1) {
+		return -1;
+	}
 	for (int nodeId : mergeData.nodes) {
 		nodeRemove(nodeId, false);
 	}
+	return newNodeId;
 }
 
-bool SceneManager::mergeNodes(NodeMergeFlags flags) {
+int SceneManager::mergeNodes(NodeMergeFlags flags) {
 	MergeData mergeData;
 	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
 		if (!shouldGetMerged(node, flags)) {
@@ -799,30 +803,27 @@ bool SceneManager::mergeNodes(NodeMergeFlags flags) {
 	}
 
 	if (mergeData.volumes.size() <= 1) {
-		return false;
+		return -1;
 	}
 
-	mergeNodes(mergeData);
-
-	return true;
+	return mergeNodes(mergeData);
 }
 
-bool SceneManager::mergeNodes(int nodeId1, int nodeId2) {
+int SceneManager::mergeNodes(int nodeId1, int nodeId2) {
 	voxel::RawVolume *volume1 = volume(nodeId1);
 	if (volume1 == nullptr) {
-		return false;
+		return -1;
 	}
 	voxel::RawVolume *volume2 = volume(nodeId2);
 	if (volume2 == nullptr) {
-		return false;
+		return -1;
 	}
 	MergeData mergeData;
 	mergeData.volumes.push_back(volume1);
 	mergeData.nodes.push_back(nodeId1);
 	mergeData.volumes.push_back(volume2);
 	mergeData.nodes.push_back(nodeId2);
-	mergeNodes(mergeData);
-	return true;
+	return mergeNodes(mergeData);
 }
 
 void SceneManager::resetSceneState() {

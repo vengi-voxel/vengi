@@ -182,7 +182,8 @@ private:
 		core::DynamicArray<const voxel::RawVolume*> volumes;
 		core::DynamicArray<int> nodes;
 	};
-	void mergeNodes(const MergeData& mergeData);
+	/** @return the new node id that was created from the merged nodes */
+	int mergeNodes(const MergeData& mergeData);
 
 	/**
 	 * @brief Assumes that the current active scene is a fresh scene, no undo states
@@ -226,8 +227,8 @@ protected:
 	/**
 	 * @brief Merge two nodes and extend the smaller one
 	 */
-	bool mergeNodes(int nodeId1, int nodeId2);
-	bool mergeNodes(NodeMergeFlags flags);
+	int mergeNodes(int nodeId1, int nodeId2);
+	int mergeNodes(NodeMergeFlags flags);
 
 	bool undo();
 	bool redo();

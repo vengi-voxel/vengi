@@ -6,6 +6,7 @@
 #include "../Config.h"
 #include "video/tests/AbstractGLTest.h"
 #include "voxel/RawVolume.h"
+#include "voxel/tests/TestHelper.h"
 
 namespace voxedit {
 
@@ -31,6 +32,8 @@ protected:
 
 			modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 			modifier().setModifierType(ModifierType::Place);
+			modifier().setPlaneMode(false);
+			modifier().setSingleMode(true);
 			EXPECT_FALSE(mementoHandler().canUndo());
 			EXPECT_FALSE(mementoHandler().canRedo());
 		}
@@ -281,6 +284,45 @@ TEST_F(SceneManagerTest, testCopyPaste) {
 	EXPECT_NE(-1, addModelChild("paste target", 1, 1, 1));
 	EXPECT_TRUE(paste(testMins()));
 	EXPECT_EQ(1, testVolume()->voxel(0, 0, 0).getColor());
+}
+
+TEST_F(SceneManagerTest, testMergeSimple) {
+	if (!_supported) {
+		return;
+	}
+	int secondNodeId = addModelChild("second node", 10, 10, 10);
+	int thirdNodeId = addModelChild("third node", 10, 10, 10);
+	ASSERT_NE(-1, secondNodeId);
+	ASSERT_NE(-1, thirdNodeId);
+
+	// set voxel into second node
+	EXPECT_TRUE(nodeActivate(secondNodeId));
+	testSetVoxel(glm::ivec3(1, 1, 1));
+	EXPECT_EQ(1, voxel::countVoxels(*volume(secondNodeId), modifier().cursorVoxel()));
+
+	// set voxel into third node
+	EXPECT_TRUE(nodeActivate(thirdNodeId));
+	testSetVoxel(glm::ivec3(2, 2, 2));
+	EXPECT_EQ(1, voxel::countVoxels(*volume(thirdNodeId), modifier().cursorVoxel()));
+
+	// merge and validate
+	int newNodeId = mergeNodes(secondNodeId, thirdNodeId);
+	const voxel::RawVolume *v = volume(newNodeId);
+	ASSERT_NE(nullptr, v);
+	EXPECT_EQ(2, voxel::countVoxels(*v, modifier().cursorVoxel()));
+	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(1, 1, 1)).getMaterial()));
+	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(2, 2, 2)).getMaterial()));
+
+	// merged nodes are gone
+	EXPECT_EQ(nullptr, sceneGraphNode(secondNodeId));
+	EXPECT_EQ(nullptr, sceneGraphNode(thirdNodeId));
+}
+
+TEST_F(SceneManagerTest, DISABLED_testMergeTransform) {
+	if (!_supported) {
+		return;
+	}
+	// TODO:
 }
 
 } // namespace voxedit
