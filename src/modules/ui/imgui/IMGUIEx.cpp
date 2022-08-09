@@ -222,7 +222,16 @@ void Image(video::Id handle, const ImVec2 &size, const ImVec2 &uv0, const ImVec2
 }
 
 bool ImageButton(video::Id handle, const ImVec2 &size, const ImVec2 &uv0, const ImVec2 &uv1, int frame_padding, const ImVec4 &borderColor, const ImVec4 &tintColor) {
-	return ImGui::ImageButton((ImTextureID)(intptr_t)handle, size, uv0, uv1, frame_padding, borderColor, tintColor);
+	if (frame_padding >= 0)
+		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2((float)frame_padding, (float)frame_padding));
+	PushID((void *)(intptr_t)handle);
+	ImGuiWindow* window = GetCurrentWindow();
+	const ImGuiID id = window->GetID("#image");
+	PopID();
+	bool state = ImGui::ImageButtonEx(id, (ImTextureID)(intptr_t)handle, size, uv0, uv1, borderColor, tintColor);
+	if (frame_padding >= 0)
+		PopStyleVar();
+	return state;
 }
 
 bool MenuItemCmd(const char *label, const char *command) {
