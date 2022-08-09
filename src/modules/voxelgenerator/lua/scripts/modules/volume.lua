@@ -95,7 +95,7 @@ local function visitConnected6Internal(volume, x, y, z, visitor, visited)
 		if v ~= -1 then
 			if visited[key] == nil then
 				visited[key] = 1
-				visitConnectedInternal(volume, x2, y2, z2, visitor, visited)
+				visitConnected6Internal(volume, x2, y2, z2, visitor, visited)
 				visitor(volume, x2, y2, z2)
 			end
 		end
