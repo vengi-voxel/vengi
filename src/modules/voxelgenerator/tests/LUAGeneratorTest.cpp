@@ -36,6 +36,11 @@ protected:
 		{
 			voxel::RawVolume *volume = new voxel::RawVolume(region);
 			volume->setVoxel(0, 0, 0, voxel);
+			volume->setVoxel(0, 1, 0, voxel);
+			volume->setVoxel(0, 2, 0, voxel);
+			volume->setVoxel(2, 0, 0, voxel);
+			volume->setVoxel(2, 1, 0, voxel);
+			volume->setVoxel(2, 2, 0, voxel);
 			voxelformat::SceneGraphNode node;
 			node.setVolume(volume, true);
 			nodeId = sceneGraph.emplace(core::move(node));
