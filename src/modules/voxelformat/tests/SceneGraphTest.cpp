@@ -3,6 +3,9 @@
  */
 
 #include "app/tests/AbstractTest.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Region.h"
+#include "voxel/Voxel.h"
 #include "voxel/tests/TestHelper.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -119,6 +122,31 @@ TEST_F(SceneGraphTest, testRemove) {
 	EXPECT_TRUE(sceneGraph.removeNode(1, true));
 	EXPECT_EQ(0u, sceneGraph.size(SceneGraphNodeType::Model));
 	EXPECT_TRUE(sceneGraph.empty(SceneGraphNodeType::Model));
+}
+
+TEST_F(SceneGraphTest, testMerge) {
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("node1");
+		voxel::RawVolume* v = new voxel::RawVolume(voxel::Region(0, 1));
+		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		node.setVolume(v, true);
+		sceneGraph.emplace(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("node2");
+		voxel::RawVolume* v = new voxel::RawVolume(voxel::Region(1, 2));
+		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+		node.setVolume(v, true);
+		sceneGraph.emplace(core::move(node));
+	}
+	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::Model));
+	SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
+	EXPECT_EQ(3, merged.first->region().getWidthInVoxels());
+	delete merged.first;
 }
 
 }

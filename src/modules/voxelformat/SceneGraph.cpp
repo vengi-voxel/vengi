@@ -318,7 +318,12 @@ SceneGraph::MergedVolumePalette SceneGraph::merge() const {
 		pal = &node.palette();
 		volumes.push_back(node.volume());
 
+#if 0
+		// TODO: activate after https://github.com/mgerhardy/vengi/pull/154 is merged
 		const glm::vec3 &translation = node.transform(0).translation();
+#else
+		const glm::vec3 &translation = glm::vec3(0);
+#endif
 		translations.push_back(translation);
 
 		voxel::Region region = node.region();
@@ -344,7 +349,8 @@ SceneGraph::MergedVolumePalette SceneGraph::merge() const {
 		dr.shift(translations[i]);
 		voxelutil::mergeVolumes(merged, v, dr, sr);
 	}
-	merged->translate(-mergedRegion.getLowerCorner());
+	// TODO: activate after https://github.com/mgerhardy/vengi/pull/154 is merged
+	//merged->translate(-mergedRegion.getLowerCorner());
 	return MergedVolumePalette{merged, *pal};
 }
 
