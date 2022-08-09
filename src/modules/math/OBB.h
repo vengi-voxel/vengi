@@ -20,7 +20,14 @@ private:
 	glm::mat4 _inv;
 
 public:
-	OBB(const Vec &origin, const Vec &extents, const glm::mat4 &rotation)
+	/**
+	 * @brief Construct a new OBB object
+	 *
+	 * @param origin The position
+	 * @param extents The half size
+	 * @param rotation The rotation of the object (the translation is already part of the position)
+	 */
+	OBB(const Vec &origin, const Vec &extents, const glm::mat3x3 &rotation)
 		: _extents(extents), _origin(origin), _rotation(rotation) {
 		_inv = glm::inverse(_rotation);
 	}
