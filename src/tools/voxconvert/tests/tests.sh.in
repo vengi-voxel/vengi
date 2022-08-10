@@ -55,3 +55,14 @@ $BINARY -f --input @CMAKE_BINARY_DIR@/$FILE --export-palette
 echo "check if palette exists at @CMAKE_BINARY_DIR@/${FILE%.*}.png"
 test -f @CMAKE_BINARY_DIR@/${FILE%.*}.png
 echo
+
+SPLITFILE=@DATA_DIR@/tests/splitobjects.vox
+SPLITTARGETFILE=@CMAKE_BINARY_DIR@/splittedobjects.vox
+echo "split objects $SPLITFILE"
+cp $SPLITFILE @CMAKE_BINARY_DIR@
+$BINARY -f --input "$SPLITFILE" --script splitobjects --output "$SPLITTARGETFILE"
+echo "check if $SPLITTARGETFILE exists"
+test -f "$SPLITTARGETFILE"
+echo "check that $SPLITTARGETFILE has 4 layers"
+$BINARY  --input "$SPLITTARGETFILE" --dump 2>&1 | grep "4 layers"
+echo
