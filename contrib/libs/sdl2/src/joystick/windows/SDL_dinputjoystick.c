@@ -24,6 +24,8 @@
 
 #if SDL_JOYSTICK_DINPUT
 
+#include "SDL_hints.h"
+#include "SDL_timer.h"
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_dinputjoystick_c.h"
 #include "SDL_rawinputjoystick_c.h"
@@ -397,6 +399,12 @@ SDL_DINPUT_JoystickInit(void)
     HRESULT result;
     HINSTANCE instance;
 
+    if (!SDL_GetHintBoolean(SDL_HINT_DIRECTINPUT_ENABLED, SDL_TRUE)) {
+        /* In some environments, IDirectInput8_Initialize / _EnumDevices can take a minute even with no controllers. */
+        dinput = NULL;
+        return 0;
+    }
+
     result = WIN_CoInitialize();
     if (FAILED(result)) {
         return SetDIerror("CoInitialize", result);
@@ -539,6 +547,10 @@ err:
 void
 SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
+    if (dinput == NULL) {
+        return;
+    }
+
     IDirectInput8_EnumDevices(dinput, DI8DEVCLASS_GAMECTRL, EnumJoystickDetectCallback, pContext, DIEDFL_ATTACHEDONLY);
 }
 
@@ -844,6 +856,15 @@ SDL_DINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickde
     } else if (FAILED(result)) {
         return SetDIerror("IDirectInputDevice8::SetProperty", result);
     }
+
+    /* Poll and wait for initial device state to be populated */
+    result = IDirectInputDevice8_Poll(joystick->hwdata->InputDevice);
+    if (result == DIERR_INPUTLOST || result == DIERR_NOTACQUIRED) {
+        IDirectInputDevice8_Acquire(joystick->hwdata->InputDevice);
+        IDirectInputDevice8_Poll(joystick->hwdata->InputDevice);
+    }
+    SDL_Delay(50);
+
     return 0;
 }
 

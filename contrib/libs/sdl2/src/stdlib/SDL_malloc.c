@@ -487,7 +487,9 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 #endif /* WIN32 */
 
 #ifdef WIN32
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #define HAVE_MMAP 1
 #define HAVE_MORECORE 0
@@ -1247,7 +1249,7 @@ extern "C"
 #ifndef LACKS_UNISTD_H
 #include <unistd.h>             /* for sbrk */
 #else /* LACKS_UNISTD_H */
-#if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__)
+#if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__) && !defined(__DragonFly__)
 extern void *sbrk(ptrdiff_t);
 #endif /* FreeBSD etc */
 #endif /* LACKS_UNISTD_H */
@@ -5327,6 +5329,25 @@ static struct
 } s_mem = {
     real_malloc, real_calloc, real_realloc, real_free, { 0 }
 };
+
+void SDL_GetOriginalMemoryFunctions(SDL_malloc_func *malloc_func,
+                                    SDL_calloc_func *calloc_func,
+                                    SDL_realloc_func *realloc_func,
+                                    SDL_free_func *free_func)
+{
+    if (malloc_func) {
+        *malloc_func = real_malloc;
+    }
+    if (calloc_func) {
+        *calloc_func = real_calloc;
+    }
+    if (realloc_func) {
+        *realloc_func = real_realloc;
+    }
+    if (free_func) {
+        *free_func = real_free;
+    }
+}
 
 void SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
                             SDL_calloc_func *calloc_func,

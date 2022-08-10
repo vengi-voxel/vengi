@@ -653,15 +653,24 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_GAMECUBE_RUMBLE_BRAKE "SDL_JOYSTICK_GAMECUBE_RUMBLE_BRAKE"
 
 /**
-  *  \brief  A variable controlling whether Switch Joy-Cons should be treated the same as Switch Pro Controllers when using the HIDAPI driver.
+  *  \brief  A variable controlling whether the HIDAPI driver for Nintendo Switch Joy-Cons should be used.
   *
   *  This variable can be set to the following values:
-  *    "0"       - basic Joy-Con support with no analog input (the default)
-  *    "1"       - Joy-Cons treated as half full Pro Controllers with analog inputs and sensors
+  *    "0"       - HIDAPI driver is not used
+  *    "1"       - HIDAPI driver is used
   *
-  *  This does not combine Joy-Cons into a single controller. That's up to the user.
+  *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
   */
 #define SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS "SDL_JOYSTICK_HIDAPI_JOY_CONS"
+
+/**
+  *  \brief  A variable controlling whether Nintendo Switch Joy-Con controllers will be combined into a single Pro-like controller when using the HIDAPI driver
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - Left and right Joy-Con controllers will not be combined and each will be a mini-gamepad
+  *    "1"       - Left and right Joy-Con controllers will be combined into a single controller (the default)
+  */
+#define SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS "SDL_JOYSTICK_HIDAPI_COMBINE_JOY_CONS"
 
 /**
   *  \brief  A variable controlling whether the HIDAPI driver for Amazon Luna controllers connected via Bluetooth should be used.
@@ -673,6 +682,28 @@ extern "C" {
   *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
   */
 #define SDL_HINT_JOYSTICK_HIDAPI_LUNA "SDL_JOYSTICK_HIDAPI_LUNA"
+
+/**
+  *  \brief  A variable controlling whether the HIDAPI driver for Nintendo Online classic controllers should be used.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - HIDAPI driver is not used
+  *    "1"       - HIDAPI driver is used
+  *
+  *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+  */
+#define SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC "SDL_JOYSTICK_HIDAPI_NINTENDO_CLASSIC"
+
+/**
+  *  \brief  A variable controlling whether the HIDAPI driver for NVIDIA SHIELD controllers should be used.
+  *
+  *  This variable can be set to the following values:
+  *    "0"       - HIDAPI driver is not used
+  *    "1"       - HIDAPI driver is used
+  *
+  *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+  */
+#define SDL_HINT_JOYSTICK_HIDAPI_SHIELD "SDL_JOYSTICK_HIDAPI_SHIELD"
 
 /**
  *  \brief  A variable controlling whether the HIDAPI driver for PS4 controllers should be used.
@@ -779,15 +810,35 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH "SDL_JOYSTICK_HIDAPI_SWITCH"
 
 /**
- *  \brief  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch controller is opened
+ *  \brief  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch Pro controller is opened
  *
  *  This variable can be set to the following values:
  *    "0"       - home button LED is turned off
  *    "1"       - home button LED is turned on
  *
- *  By default the Home button LED state is not changed.
+ *  By default the Home button LED state is not changed. This hint can also be set to a floating point value between 0.0 and 1.0 which controls the brightness of the Home button LED.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED "SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED"
+
+/**
+ *  \brief  A variable controlling whether the Home button LED should be turned on when a Nintendo Switch Joy-Con controller is opened
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - home button LED is turned off
+ *    "1"       - home button LED is turned on
+ *
+ *  By default the Home button LED state is not changed. This hint can also be set to a floating point value between 0.0 and 1.0 which controls the brightness of the Home button LED.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_JOYCON_HOME_LED "SDL_JOYSTICK_HIDAPI_JOYCON_HOME_LED"
+
+/**
+ *  \brief  A variable controlling whether the player LEDs should be lit to indicate which player is associated with a Nintendo Switch controller.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - player LEDs are not enabled
+ *    "1"       - player LEDs are enabled (the default)
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED "SDL_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED"
 
 /**
  *  \brief  A variable controlling whether the HIDAPI driver for XBox controllers should be used.
@@ -925,6 +976,18 @@ extern "C" {
  *  event when on Mac.
  */
 #define SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK "SDL_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK"
+
+/**
+ *  \brief   A variable controlling whether dispatching OpenGL context updates should block the dispatching thread until the main thread finishes processing
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Dispatching OpenGL context updates will allow the dispatching thread to continue execution.
+ *    "1"       - Dispatching OpenGL context updates will block the dispatching thread until the main thread finishes processing.
+ *
+ *  This hint only applies to Mac OS X
+ *
+ */
+#define SDL_HINT_MAC_OPENGL_SYNC_DISPATCH "SDL_MAC_OPENGL_SYNC_DISPATCH"
 
 /**
  *  \brief  A variable setting the double click radius, in pixels.
@@ -2001,6 +2064,15 @@ extern "C" {
  */
 #define SDL_HINT_XINPUT_ENABLED "SDL_XINPUT_ENABLED"
 
+ /**
+  *  \brief  A variable that lets you disable the detection and use of DirectInput gamepad devices
+  *
+  *  The variable can be set to the following values:
+  *    "0"       - Disable DirectInput detection (only uses XInput)
+  *    "1"       - Enable DirectInput detection (the default)
+  */
+#define SDL_HINT_DIRECTINPUT_ENABLED "SDL_DIRECTINPUT_ENABLED"
+
 /**
  *  \brief  A variable that causes SDL to use the old axis and button mapping for XInput devices.
  *
@@ -2119,6 +2191,42 @@ extern "C" {
  *  the environment variable to get the same effect.
  */
 #define SDL_HINT_AUDIODRIVER "SDL_AUDIODRIVER"
+
+/**
+ *  \brief  A variable that decides what KMSDRM device to use.
+ *
+ *  Internally, SDL might open something like "/dev/dri/cardNN" to
+ *  access KMSDRM functionality, where "NN" is a device index number.
+ *
+ *  SDL makes a guess at the best index to use (usually zero), but the
+ *  app or user can set this hint to a number between 0 and 99 to
+ *  force selection.
+ *
+ *  This hint is available since SDL 2.24.0.
+ */
+#define SDL_HINT_KMSDRM_DEVICE_INDEX "SDL_KMSDRM_DEVICE_INDEX"
+
+
+/**
+ *  \brief  A variable that treats trackpads as touch devices.
+ *
+ *  On macOS (and possibly other platforms in the future), SDL will report
+ *  touches on a trackpad as mouse input, which is generally what users
+ *  expect from this device; however, these are often actually full
+ *  multitouch-capable touch devices, so it might be preferable to some apps
+ *  to treat them as such.
+ *
+ *  Setting this hint to true will make the trackpad input report as a
+ *  multitouch device instead of a mouse. The default is false.
+ *
+ *  Note that most platforms don't support this hint. As of 2.24.0, it
+ *  only supports MacBooks' trackpads on macOS. Others may follow later.
+ *
+ *  This hint is checked during SDL_Init and can not be changed after.
+ *
+ *  This hint is available since SDL 2.24.0.
+ */
+#define SDL_HINT_TRACKPAD_IS_TOUCH_ONLY "SDL_TRACKPAD_IS_TOUCH_ONLY"
 
 
 /**

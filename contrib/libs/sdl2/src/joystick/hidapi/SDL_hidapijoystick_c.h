@@ -39,6 +39,7 @@
 #define SDL_JOYSTICK_HIDAPI_SWITCH
 #define SDL_JOYSTICK_HIDAPI_XBOX360
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
+#define SDL_JOYSTICK_HIDAPI_SHIELD
 
 #if defined(__IPHONEOS__) || defined(__TVOS__) || defined(__ANDROID__)
 /* Very basic Steam Controller support on mobile devices */
@@ -81,6 +82,10 @@ typedef struct _SDL_HIDAPI_Device
     /* Used to flag that the device is being updated */
     SDL_bool updating;
 
+    struct _SDL_HIDAPI_Device *parent;
+    int num_children;
+    struct _SDL_HIDAPI_Device **children;
+
     struct _SDL_HIDAPI_Device *next;
 } SDL_HIDAPI_Device;
 
@@ -109,10 +114,14 @@ typedef struct _SDL_HIDAPI_DeviceDriver
 
 
 /* HIDAPI device support */
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverCombined;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverJoyCons;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverNintendoClassic;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverShield;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch;

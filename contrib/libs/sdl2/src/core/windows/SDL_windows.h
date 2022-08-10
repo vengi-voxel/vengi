@@ -40,6 +40,30 @@
 #define _WIN32_WINNT  0x501   /* Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input */
 #endif
 #define WINVER        _WIN32_WINNT
+#elif defined(__WINGDK__)
+#define WIN32_LEAN_AND_MEAN
+#define STRICT
+#ifndef UNICODE
+#define UNICODE 1
+#endif
+#undef WINVER
+#undef _WIN32_WINNT
+#define _WIN32_WINNT  0xA00
+#define WINVER        _WIN32_WINNT
+#elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef STRICT
+#define STRICT
+#endif
+#ifndef UNICODE
+#define UNICODE 1
+#endif
+#undef WINVER
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0xA00
+#define WINVER       _WIN32_WINNT
 #endif
 
 #include <windows.h>
@@ -63,6 +87,11 @@
 #define WIN_UTF8ToString WIN_UTF8ToStringA
 #define SDL_tcslen SDL_strlen
 #define SDL_tcsstr SDL_strstr
+#endif
+
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /* Sets an error message based on a given HRESULT */
@@ -103,6 +132,11 @@ extern BOOL WIN_IsEqualIID(REFIID a, REFIID b);
 /* Convert between SDL_rect and RECT */
 extern void WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect);
 extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _INCLUDED_WINDOWS_H */
 

@@ -91,6 +91,9 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_ANDROID
     &Android_bootstrap,
 #endif
+#if SDL_VIDEO_DRIVER_PS2
+    &PS2_bootstrap,
+#endif
 #if SDL_VIDEO_DRIVER_PSP
     &PSP_bootstrap,
 #endif
@@ -127,6 +130,9 @@ static VideoBootStrap *bootstrap[] = {
 #endif
 #if SDL_VIDEO_DRIVER_DUMMY
     &DUMMY_bootstrap,
+#if SDL_INPUT_LINUXEV
+    &DUMMY_evdev_bootstrap,
+#endif
 #endif
     NULL
 };
@@ -391,12 +397,11 @@ int
 SDL_VideoInit(const char *driver_name)
 {
     SDL_VideoDevice *video;
-    int index;
-    int i;
     SDL_bool init_events = SDL_FALSE;
     SDL_bool init_keyboard = SDL_FALSE;
     SDL_bool init_mouse = SDL_FALSE;
     SDL_bool init_touch = SDL_FALSE;
+    int i;
 
     /* Check to make sure we don't overwrite '_this' */
     if (_this != NULL) {
@@ -426,7 +431,6 @@ SDL_VideoInit(const char *driver_name)
     init_touch = SDL_TRUE;
 
     /* Select the proper video driver */
-    i = index = 0;
     video = NULL;
     if (driver_name == NULL) {
         driver_name = SDL_GetHint(SDL_HINT_VIDEODRIVER);
@@ -441,7 +445,7 @@ SDL_VideoInit(const char *driver_name)
             for (i = 0; bootstrap[i]; ++i) {
                 if ((driver_attempt_len == SDL_strlen(bootstrap[i]->name)) &&
                     (SDL_strncasecmp(bootstrap[i]->name, driver_attempt, driver_attempt_len) == 0)) {
-                    video = bootstrap[i]->create(index);
+                    video = bootstrap[i]->create();
                     break;
                 }
             }
@@ -450,7 +454,7 @@ SDL_VideoInit(const char *driver_name)
         }
     } else {
         for (i = 0; bootstrap[i]; ++i) {
-            video = bootstrap[i]->create(index);
+            video = bootstrap[i]->create();
             if (video != NULL) {
                 break;
             }
@@ -1068,21 +1072,100 @@ SDL_GetDisplay(int displayIndex)
     return &_this->displays[displayIndex];
 }
 
+/**
+ * If x, y are outside of rect, snaps them to the closest point inside rect
+ * (between rect->x, rect->y, inclusive, and rect->x + w, rect->y + h, exclusive)
+ */
+static void
+SDL_GetClosestPointOnRect(const SDL_Rect *rect, SDL_Point *point)
+{
+    const int right = rect->x + rect->w - 1;
+    const int bottom = rect->y + rect->h - 1;
+
+    if (point->x < rect->x) {
+        point->x = rect->x;
+    } else if (point->x > right) {
+        point->x = right;
+    }
+
+    if (point->y < rect->y) {
+        point->y = rect->y;
+    } else if (point->y > bottom) {
+        point->y = bottom;
+    }
+}
+
+static int
+GetRectDisplayIndex(int x, int y, int w, int h)
+{
+    int i, dist;
+    int closest = -1;
+    int closest_dist = 0x7FFFFFFF;
+    SDL_Point closest_point_on_display;
+    SDL_Point delta;
+    SDL_Point center;
+    center.x = x + w / 2;
+    center.y = y + h / 2;
+
+    for (i = 0; i < _this->num_displays; ++i) {
+        SDL_Rect display_rect;
+        SDL_GetDisplayBounds(i, &display_rect);
+
+        /* Check if the window is fully enclosed */
+        if (SDL_EnclosePoints(&center, 1, &display_rect, NULL)) {
+            return i;
+        }
+
+        /* Snap window center to the display rect */
+        closest_point_on_display = center;
+        SDL_GetClosestPointOnRect(&display_rect, &closest_point_on_display);
+
+        delta.x = center.x - closest_point_on_display.x;
+        delta.y = center.y - closest_point_on_display.y;
+        dist = (delta.x*delta.x + delta.y*delta.y);
+        if (dist < closest_dist) {
+            closest = i;
+            closest_dist = dist;
+        }
+    }
+
+    if (closest < 0) {
+        SDL_SetError("Couldn't find any displays");
+    }
+
+    return closest;
+}
+
+int
+SDL_GetPointDisplayIndex(const SDL_Point *point)
+{
+    return GetRectDisplayIndex(point->x, point->y, 1, 1);
+}
+
+int
+SDL_GetRectDisplayIndex(const SDL_Rect *rect)
+{
+    return GetRectDisplayIndex(rect->x, rect->y, rect->w, rect->h);
+}
+
 int
 SDL_GetWindowDisplayIndex(SDL_Window * window)
 {
+    int displayIndex = -1;
+
     CHECK_WINDOW_MAGIC(window, -1);
     if (_this->GetWindowDisplayIndex) {
-        return _this->GetWindowDisplayIndex(_this, window);
-    } else {
-        int displayIndex;
-        int i, dist;
-        int closest = -1;
-        int closest_dist = 0x7FFFFFFF;
-        SDL_Point center;
-        SDL_Point delta;
-        SDL_Rect rect;
+        displayIndex = _this->GetWindowDisplayIndex(_this, window);
+    }
 
+    /* A backend implementation may fail to get a display index for the window
+     * (for example if the window is off-screen), but other code may expect it
+     * to succeed in that situation, so we fall back to a generic position-
+     * based implementation in that case. */
+    if (displayIndex >= 0) {
+        return displayIndex;
+    } else {
+        int i;
         if (SDL_WINDOWPOS_ISUNDEFINED(window->x) ||
             SDL_WINDOWPOS_ISCENTERED(window->x)) {
             displayIndex = (window->x & 0xFFFF);
@@ -1100,7 +1183,7 @@ SDL_GetWindowDisplayIndex(SDL_Window * window)
             return displayIndex;
         }
 
-        /* Find the display containing the window */
+        /* Find the display containing the window if fullscreen */
         for (i = 0; i < _this->num_displays; ++i) {
             SDL_VideoDisplay *display = &_this->displays[i];
 
@@ -1108,26 +1191,8 @@ SDL_GetWindowDisplayIndex(SDL_Window * window)
                 return i;
             }
         }
-        center.x = window->x + window->w / 2;
-        center.y = window->y + window->h / 2;
-        for (i = 0; i < _this->num_displays; ++i) {
-            SDL_GetDisplayBounds(i, &rect);
-            if (SDL_EnclosePoints(&center, 1, &rect, NULL)) {
-                return i;
-            }
 
-            delta.x = center.x - (rect.x + rect.w / 2);
-            delta.y = center.y - (rect.y + rect.h / 2);
-            dist = (delta.x*delta.x + delta.y*delta.y);
-            if (dist < closest_dist) {
-                closest = i;
-                closest_dist = dist;
-            }
-        }
-        if (closest < 0) {
-            SDL_SetError("Couldn't find any displays");
-        }
-        return closest;
+        return GetRectDisplayIndex(window->x, window->y, window->w, window->h);
     }
 }
 
@@ -1667,7 +1732,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     /* Clear minimized if not on windows, only windows handles it at create rather than FinishWindowCreation,
      * but it's important or window focus will get broken on windows!
      */
-#if !defined(__WIN32__)
+#if !defined(__WIN32__) && !defined(__GDK__)
     if (window->flags & SDL_WINDOW_MINIMIZED) {
         window->flags &= ~SDL_WINDOW_MINIMIZED;
     }
@@ -2534,7 +2599,7 @@ SDL_CreateWindowFramebuffer(SDL_Window * window)
             attempt_texture_framebuffer = SDL_FALSE;
         }
 
-        #if defined(__WIN32__) /* GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?) */
+        #if defined(__WIN32__) || defined(__WINGDK__) /* GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?) */
         else if ((_this->CreateWindowFramebuffer != NULL) && (SDL_strcmp(_this->name, "windows") == 0)) {
             attempt_texture_framebuffer = SDL_FALSE;
         }
@@ -3509,6 +3574,7 @@ SDL_GL_ResetAttributes()
     _this->gl_config.stereo = 0;
     _this->gl_config.multisamplebuffers = 0;
     _this->gl_config.multisamplesamples = 0;
+    _this->gl_config.floatbuffers = 0;
     _this->gl_config.retained_backing = 1;
     _this->gl_config.accelerated = -1;  /* accelerated or not, both are fine */
 
@@ -3596,6 +3662,9 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
         break;
     case SDL_GL_MULTISAMPLESAMPLES:
         _this->gl_config.multisamplesamples = value;
+        break;
+    case SDL_GL_FLOATBUFFERS:
+        _this->gl_config.floatbuffers = value;
         break;
     case SDL_GL_ACCELERATED_VISUAL:
         _this->gl_config.accelerated = value;
@@ -4259,7 +4328,7 @@ SDL_StopTextInput(void)
 }
 
 void
-SDL_SetTextInputRect(SDL_Rect *rect)
+SDL_SetTextInputRect(const SDL_Rect *rect)
 {
     if (_this && _this->SetTextInputRect) {
         _this->SetTextInputRect(_this, rect);
@@ -4390,7 +4459,7 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         retval = 0;
     }
 #endif
-#if SDL_VIDEO_DRIVER_WINDOWS
+#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     if (retval == -1 &&
         SDL_MessageboxValidForDriver(messageboxdata, SDL_SYSWM_WINDOWS) &&
         WIN_ShowMessageBox(messageboxdata, buttonid) == 0) {

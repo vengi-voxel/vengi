@@ -28,6 +28,11 @@
 #include "SDL_gamecontroller.h"
 #include "SDL_joystick.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct _SDL_JoystickDriver;
 
 /* Initialization and shutdown functions */
@@ -85,6 +90,8 @@ extern SDL_bool SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint1
 extern SDL_bool SDL_IsJoystickNintendoSwitchJoyCon(Uint16 vendor_id, Uint16 product_id);
 extern SDL_bool SDL_IsJoystickNintendoSwitchJoyConLeft(Uint16 vendor_id, Uint16 product_id);
 extern SDL_bool SDL_IsJoystickNintendoSwitchJoyConRight(Uint16 vendor_id, Uint16 product_id);
+extern SDL_bool SDL_IsJoystickNintendoSwitchJoyConGrip(Uint16 vendor_id, Uint16 product_id);
+extern SDL_bool SDL_IsJoystickNintendoSwitchJoyConPair(Uint16 vendor_id, Uint16 product_id);
 
 /* Function to return whether a joystick is a Steam Controller */
 extern SDL_bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id);
@@ -186,6 +193,11 @@ typedef struct _SDL_GamepadMapping
 /* Function to get autodetected gamepad controller mapping from the driver */
 extern SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(int device_index,
                                                          SDL_GamepadMapping *out);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SDL_joystick_c_h_ */
 

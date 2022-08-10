@@ -178,18 +178,60 @@ IsControllerXbox(GCController *controller)
     return FALSE;
 }
 static BOOL
+IsControllerSwitchPro(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"Switch Pro Controller"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
+IsControllerSwitchJoyConL(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (L)"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
+IsControllerSwitchJoyConR(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (R)"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
+IsControllerSwitchJoyConPair(GCController *controller)
+{
+    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+        if ([controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (L/R)"]) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+static BOOL
 IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
-    if ((@available(macOS 11.3, *)) && !GCController.shouldMonitorBackgroundEvents) {
-        GCController.shouldMonitorBackgroundEvents = YES;
-    }
-
     Uint16 *guid16 = (Uint16 *)device->guid.data;
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint8 subtype = 0;
-
     const char *name = NULL;
+
+    if (@available(macOS 11.3, iOS 14.5, tvOS 14.5, *)) {
+        if (!GCController.shouldMonitorBackgroundEvents) {
+            GCController.shouldMonitorBackgroundEvents = YES;
+        }
+    }
+
     /* Explicitly retain the controller because SDL_JoystickDeviceItem is a
      * struct, and ARC doesn't work with structs. */
     device->controller = (__bridge GCController *) CFBridgingRetain(controller);
@@ -204,20 +246,37 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
 
     device->name = SDL_CreateJoystickName(0, 0, NULL, name);
 
+#ifdef DEBUG_CONTROLLER_PROFILE
+    if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
+        if (controller.physicalInputProfile) {
+            for (id key in controller.physicalInputProfile.buttons) {
+                NSLog(@"Button %@ available\n", key);
+            }
+            for (id key in controller.physicalInputProfile.axes) {
+                NSLog(@"Axis %@ available\n", key);
+            }
+        }
+    }
+#endif
+
     if (controller.extendedGamepad) {
         GCExtendedGamepad *gamepad = controller.extendedGamepad;
         BOOL is_xbox = IsControllerXbox(controller);
         BOOL is_ps4 = IsControllerPS4(controller);
         BOOL is_ps5 = IsControllerPS5(controller);
+        BOOL is_switch_pro = IsControllerSwitchPro(controller);
+        BOOL is_switch_joycon_pair = IsControllerSwitchJoyConPair(controller);
 #if TARGET_OS_TV
-        BOOL is_MFi = (!is_xbox && !is_ps4 && !is_ps5);
+        BOOL is_MFi = (!is_xbox && !is_ps4 && !is_ps5 && !is_switch_pro && !is_switch_joycon_pair);
 #endif
         int nbuttons = 0;
+        BOOL has_direct_menu;
 
 #ifdef SDL_JOYSTICK_HIDAPI
         if ((is_xbox && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_XBOXONE)) ||
             (is_ps4 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS4)) ||
-            (is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS5))) {
+            (is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_PS5)) ||
+            (is_switch_pro && HIDAPI_IsDeviceTypePresent(SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO))) {
             /* The HIDAPI driver is taking care of this device */
             return FALSE;
         }
@@ -247,11 +306,12 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_BACK);
             ++nbuttons;
         }
-        if ([gamepad respondsToSelector:@selector(buttonHome)] && gamepad.buttonHome) {
+        /* The Nintendo Switch JoyCon home button doesn't ever show as being held down */
+        if ([gamepad respondsToSelector:@selector(buttonHome)] && gamepad.buttonHome && !is_switch_joycon_pair) {
             device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_GUIDE);
             ++nbuttons;
         }
-        BOOL has_direct_menu = [gamepad respondsToSelector:@selector(buttonMenu)] && gamepad.buttonMenu;
+        has_direct_menu = [gamepad respondsToSelector:@selector(buttonMenu)] && gamepad.buttonMenu;
 #if TARGET_OS_TV
         /* On tvOS MFi controller menu button brings you to the home screen */
         if (is_MFi) {
@@ -328,6 +388,14 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
             vendor = USB_VENDOR_SONY;
             product = USB_PRODUCT_SONY_DS5;
             subtype = 0;
+        } else if (is_switch_pro) {
+            vendor = USB_VENDOR_NINTENDO;
+            product = USB_PRODUCT_NINTENDO_SWITCH_PRO;
+            subtype = 0;
+        } else if (is_switch_joycon_pair) {
+            vendor = USB_VENDOR_NINTENDO;
+            product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR;
+            subtype = 0;
         } else {
             vendor = USB_VENDOR_APPLE;
             product = 1;
@@ -348,7 +416,23 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         device->nbuttons = nbuttons;
 
     } else if (controller.gamepad) {
+        BOOL is_switch_joyconL = IsControllerSwitchJoyConL(controller);
+        BOOL is_switch_joyconR = IsControllerSwitchJoyConR(controller);
         int nbuttons = 0;
+
+        if (is_switch_joyconL) {
+            vendor = USB_VENDOR_NINTENDO;
+            product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT;
+            subtype = 0;
+        } else if (is_switch_joyconR) {
+            vendor = USB_VENDOR_NINTENDO;
+            product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT;
+            subtype = 0;
+        } else {
+            vendor = USB_VENDOR_APPLE;
+            product = 2;
+            subtype = 2;
+        }
 
         /* These buttons are part of the original MFi spec */
         device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_A);
@@ -361,9 +445,6 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         nbuttons += 7;
         device->uses_pause_handler = SDL_TRUE;
 
-        vendor = USB_VENDOR_APPLE;
-        product = 2;
-        subtype = 2;
         device->naxes = 0; /* no traditional analog inputs */
         device->nhats = 1; /* d-pad */
         device->nbuttons = nbuttons;
@@ -575,6 +656,9 @@ IOS_JoystickInit(void)
 #endif
 
     @autoreleasepool {
+#ifdef SDL_JOYSTICK_MFI
+        NSNotificationCenter *center;
+#endif
 #ifdef SDL_JOYSTICK_iOS_ACCELEROMETER
         if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE)) {
             /* Default behavior, accelerometer as joystick */
@@ -599,7 +683,7 @@ IOS_JoystickInit(void)
                             SDL_AppleTVRemoteRotationHintChanged, NULL);
 #endif /* TARGET_OS_TV */
 
-        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+        center = [NSNotificationCenter defaultCenter];
 
         connectObserver = [center addObserverForName:GCControllerDidConnectNotification
                                               object:nil
@@ -855,6 +939,23 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
         int i;
         int pause_button_index = 0;
 
+#ifdef DEBUG_CONTROLLER_STATE
+        if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
+            if (controller.physicalInputProfile) {
+                for (id key in controller.physicalInputProfile.buttons) {
+                    GCControllerButtonInput *button = controller.physicalInputProfile.buttons[key];
+                    if (button.isPressed)
+                        NSLog(@"Button %@ = %s\n", key, button.isPressed ? "pressed" : "released");
+                }
+                for (id key in controller.physicalInputProfile.axes) {
+                    GCControllerAxisInput *axis = controller.physicalInputProfile.axes[key];
+                    if (axis.value != 0.0f)
+                        NSLog(@"Axis %@ = %.2f\n", key, axis.value);
+                }
+            }
+        }
+#endif
+
         if (controller.extendedGamepad) {
             GCExtendedGamepad *gamepad = controller.extendedGamepad;
 
@@ -907,9 +1008,8 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
 #ifdef ENABLE_PHYSICAL_INPUT_PROFILE
             if (joystick->hwdata->has_dualshock_touchpad) {
-                buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputDualShockTouchpadButton].isPressed;
-
                 GCControllerDirectionPad *dpad;
+                buttons[button_count++] = controller.physicalInputProfile.buttons[GCInputDualShockTouchpadButton].isPressed;
 
                 dpad = controller.physicalInputProfile.dpads[GCInputDualShockTouchpadOne];
                 if (dpad.xAxis.value || dpad.yAxis.value) {
@@ -1129,6 +1229,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
     @autoreleasepool {
         if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
             NSError *error = nil;
+            CHHapticDynamicParameter *param;
 
             if (self.engine == nil) {
                 return SDL_SetError("Haptics engine was stopped");
@@ -1143,8 +1244,8 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             }
 
             if (self.player == nil) {
-                CHHapticEventParameter *param = [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:1.0f];
-                CHHapticEvent *event = [[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:[NSArray arrayWithObjects:param, nil] relativeTime:0 duration:GCHapticDurationInfinite];
+                CHHapticEventParameter *event_param = [[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:1.0f];
+                CHHapticEvent *event = [[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:[NSArray arrayWithObjects:event_param, nil] relativeTime:0 duration:GCHapticDurationInfinite];
                 CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithEvents:[NSArray arrayWithObject:event] parameters:[[NSArray alloc] init] error:&error];
                 if (error != nil) {
                     return SDL_SetError("Couldn't create haptic pattern: %s", [error.localizedDescription UTF8String]);
@@ -1157,7 +1258,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
                 self.active = false;
             }
 
-            CHHapticDynamicParameter *param = [[CHHapticDynamicParameter alloc] initWithParameterID:CHHapticDynamicParameterIDHapticIntensityControl value:intensity relativeTime:0];
+            param = [[CHHapticDynamicParameter alloc] initWithParameterID:CHHapticDynamicParameterIDHapticIntensityControl value:intensity relativeTime:0];
             [self.player sendParameters:[NSArray arrayWithObject:param] atTime:0 error:&error];
             if (error != nil) {
                 return SDL_SetError("Couldn't update haptic player: %s", [error.localizedDescription UTF8String]);
@@ -1176,8 +1277,10 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 -(id) initWithController:(GCController*)controller locality:(GCHapticsLocality)locality API_AVAILABLE(macos(10.16), ios(14.0), tvos(14.0))
 {
     @autoreleasepool {
-        self = [super init];
         NSError *error;
+        __weak __typeof(self) weakSelf;
+        self = [super init];
+        weakSelf = self;
 
         self.engine = [controller.haptics createEngineWithLocality:locality];
         if (self.engine == nil) {
@@ -1191,7 +1294,6 @@ IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             return nil;
         }
 
-        __weak __typeof(self) weakSelf = self;
         self.engine.stoppedHandler = ^(CHHapticEngineStoppedReason stoppedReason) {
             SDL_RumbleMotor *_this = weakSelf;
             if (_this == nil) {

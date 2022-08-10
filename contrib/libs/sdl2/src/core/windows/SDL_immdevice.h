@@ -18,19 +18,27 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
 
-#include "../video/SDL_sysvideo.h"
+#ifndef SDL_IMMDEVICE_H
+#define SDL_IMMDEVICE_H
 
-/* Useful functions and variables from SDL_sysevents.c */
+#include "SDL_atomic.h"
+#include "SDL_audio.h"
 
-#if defined(__HAIKU__)
-/* The Haiku event loops run in a separate thread */
-#define MUST_THREAD_EVENTS
-#endif
+#define COBJMACROS
+#include <mmdeviceapi.h>
+#include <mmreg.h>
 
-#ifdef __WIN32__              /* Windows doesn't allow a separate event thread */
-#define CANT_THREAD_EVENTS
-#endif
+int SDL_IMMDevice_Init(void);
+void SDL_IMMDevice_Quit(void);
+int SDL_IMMDevice_Get(LPCWSTR devid, IMMDevice **device, SDL_bool iscapture);
+void SDL_IMMDevice_EnumerateEndpoints(SDL_bool useguid);
+int SDL_IMMDevice_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture);
 
-/* vi: set ts=4 sw=4 expandtab: */
+SDL_AudioFormat WaveFormatToSDLFormat(WAVEFORMATEX *waveformat);
+
+/* these increment as default devices change. Opened default devices pick up changes in their threads. */
+extern SDL_atomic_t SDL_IMMDevice_DefaultPlaybackGeneration;
+extern SDL_atomic_t SDL_IMMDevice_DefaultCaptureGeneration;
+
+#endif /* SDL_IMMDEVICE_H */

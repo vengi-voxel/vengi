@@ -20,7 +20,7 @@
 */
 #include "./SDL_internal.h"
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__GDK__)
 #include "core/windows/SDL_windows.h"
 #endif
 
@@ -32,7 +32,7 @@
 #include "SDL_assert_c.h"
 #include "video/SDL_sysvideo.h"
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
 #ifndef WS_OVERLAPPEDWINDOW
 #define WS_OVERLAPPEDWINDOW 0
 #endif
@@ -90,7 +90,7 @@ static void SDL_AddAssertionToReport(SDL_assert_data *data)
     }
 }
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
     #define ENDLINE "\r\n"
 #else
     #define ENDLINE "\n"
@@ -411,6 +411,7 @@ SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
 
 void SDL_AssertionsQuit(void)
 {
+#if SDL_ASSERT_LEVEL > 0
     SDL_GenerateAssertionReport();
 #ifndef SDL_THREADS_DISABLED
     if (assertion_mutex != NULL) {
@@ -418,6 +419,7 @@ void SDL_AssertionsQuit(void)
         assertion_mutex = NULL;
     }
 #endif
+#endif /* SDL_ASSERT_LEVEL > 0 */
 }
 
 void SDL_SetAssertionHandler(SDL_AssertionHandler handler, void *userdata)

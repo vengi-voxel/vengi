@@ -28,6 +28,10 @@
 #include "SDL_mutex.h"
 #include "SDL_yuv_sw_c.h"
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * A rectangle, with the origin at the upper left (double precision).
@@ -289,6 +293,7 @@ extern SDL_RenderDriver GLES2_RenderDriver;
 extern SDL_RenderDriver GLES_RenderDriver;
 extern SDL_RenderDriver DirectFB_RenderDriver;
 extern SDL_RenderDriver METAL_RenderDriver;
+extern SDL_RenderDriver PS2_RenderDriver;
 extern SDL_RenderDriver PSP_RenderDriver;
 extern SDL_RenderDriver SW_RenderDriver;
 extern SDL_RenderDriver VITA_GXM_RenderDriver;
@@ -308,6 +313,11 @@ extern void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t num
 
 extern int SDL_PrivateLowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect, SDL_Surface * dst, SDL_Rect * dstrect, SDL_ScaleMode scaleMode);
 extern int SDL_PrivateUpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect, SDL_Surface * dst, SDL_Rect * dstrect, SDL_ScaleMode scaleMode);
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SDL_sysrender_h_ */
 

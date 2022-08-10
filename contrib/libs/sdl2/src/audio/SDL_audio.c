@@ -27,6 +27,7 @@
 #include "SDL_audio_c.h"
 #include "SDL_sysaudio.h"
 #include "../thread/SDL_systhread.h"
+#include "../SDL_utils_c.h"
 
 #define _THIS SDL_AudioDevice *_this
 
@@ -94,6 +95,9 @@ static const AudioBootStrap *const bootstrap[] = {
 #endif
 #if SDL_AUDIO_DRIVER_ANDROID
     &ANDROIDAUDIO_bootstrap,
+#endif
+#if SDL_AUDIO_DRIVER_PS2
+    &PS2AUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_PSP
     &PSPAUDIO_bootstrap,
@@ -523,6 +527,7 @@ SDL_RemoveAudioDevice(const SDL_bool iscapture, void *handle)
 {
     int device_index;
     SDL_AudioDevice *device = NULL;
+    SDL_bool device_was_opened = SDL_FALSE;
 
     SDL_LockMutex(current_audio.detectionLock);
     if (iscapture) {
@@ -535,10 +540,29 @@ SDL_RemoveAudioDevice(const SDL_bool iscapture, void *handle)
         device = open_devices[device_index];
         if (device != NULL && device->handle == handle)
         {
+            device_was_opened = SDL_TRUE;
             SDL_OpenedAudioDeviceDisconnected(device);
             break;
         }
     }
+
+    /* Devices that aren't opened, as of 2.24.0, will post an
+       SDL_AUDIODEVICEREMOVED event with the `which` field set to zero.
+       Apps can use this to decide if they need to refresh a list of
+       available devices instead of closing an opened one.
+       Note that opened devices will send the non-zero event in
+       SDL_OpenedAudioDeviceDisconnected(). */
+    if (!device_was_opened) {
+        if (SDL_GetEventState(SDL_AUDIODEVICEREMOVED) == SDL_ENABLE) {
+            SDL_Event event;
+            SDL_zero(event);
+            event.adevice.type = SDL_AUDIODEVICEREMOVED;
+            event.adevice.which = 0;
+            event.adevice.iscapture = iscapture ? 1 : 0;
+            SDL_PushEvent(&event);
+        }
+    }
+
     SDL_UnlockMutex(current_audio.detectionLock);
 
     current_audio.impl.FreeDeviceHandle(handle);
@@ -1151,6 +1175,24 @@ SDL_GetAudioDeviceSpec(int index, int iscapture, SDL_AudioSpec *spec)
 }
 
 
+int
+SDL_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+{
+    if (spec == NULL) {
+        return SDL_InvalidParamError("spec");
+    }
+
+    if (!SDL_GetCurrentAudioDriver()) {
+        return SDL_SetError("Audio subsystem is not initialized");
+    }
+
+    if (current_audio.impl.GetDefaultAudioInfo == NULL) {
+        return SDL_Unsupported();
+    }
+    return current_audio.impl.GetDefaultAudioInfo(name, spec, iscapture);
+}
+
+
 static void
 close_audio_device(SDL_AudioDevice * device)
 {
@@ -1218,22 +1260,12 @@ prepare_audiospec(const SDL_AudioSpec * orig, SDL_AudioSpec * prepared)
         }
     }
 
-    switch (orig->channels) {
-    case 0:{
-            const char *env = SDL_getenv("SDL_AUDIO_CHANNELS");
-            if ((!env) || ((prepared->channels = (Uint8) SDL_atoi(env)) == 0)) {
-                prepared->channels = 2; /* a reasonable default */
-                break;
-            }
+    if (orig->channels == 0) {
+        const char *env = SDL_getenv("SDL_AUDIO_CHANNELS");
+        if ((!env) || ((prepared->channels = (Uint8) SDL_atoi(env)) == 0)) {
+            prepared->channels = 2; /* a reasonable default */
         }
-    case 1:                    /* Mono */
-    case 2:                    /* Stereo */
-    case 4:                    /* Quadrophonic */
-    case 6:                    /* 5.1 surround */
-    case 7:                    /* 6.1 surround */
-    case 8:                    /* 7.1 surround */
-        break;
-    default:
+    } else if (orig->channels > 8) {
         SDL_SetError("Unsupported number of audio channels.");
         return 0;
     }
@@ -1390,6 +1422,13 @@ open_audio_device(const char *devname, int iscapture,
             SDL_SetError("Couldn't create mixer lock");
             return 0;
         }
+    }
+
+    /* For backends that require a power-of-two value for spec.samples, take the
+     * value we got from 'desired' and round up to the nearest value
+     */
+    if (!current_audio.impl.SupportsNonPow2Samples && device->spec.samples > 0) {
+        device->spec.samples = SDL_powerof2(device->spec.samples);
     }
 
     if (current_audio.impl.OpenDevice(device, devname) < 0) {

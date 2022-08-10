@@ -30,7 +30,7 @@
 
 #include "../SDL_internal.h"
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__GDK__)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -62,7 +62,7 @@
 #include "nacl_io/nacl_io.h"
 #endif
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__GDK__)
 
 /* Functions to read/write Win32 API file pointers */
 
@@ -75,7 +75,9 @@
 static int SDLCALL
 windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
 {
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     UINT old_error_mode;
+#endif
     HANDLE h;
     DWORD r_right, w_right;
     DWORD must_exist, truncate;
@@ -112,9 +114,11 @@ windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
     if (!context->hidden.windowsio.buffer.data) {
         return SDL_OutOfMemory();
     }
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* Do not open a dialog box if failure */
     old_error_mode =
         SetErrorMode(SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
+#endif
 
     {
         LPTSTR tstr = WIN_UTF8ToString(filename);
@@ -125,8 +129,10 @@ windows_file_open(SDL_RWops * context, const char *filename, const char *mode)
         SDL_free(tstr);
     }
 
+#if !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
     /* restore old behavior */
     SetErrorMode(old_error_mode);
+#endif
 
     if (h == INVALID_HANDLE_VALUE) {
         SDL_free(context->hidden.windowsio.buffer.data);
@@ -303,7 +309,7 @@ windows_file_close(SDL_RWops * context)
     }
     return 0;
 }
-#endif /* __WIN32__ */
+#endif /* defined(__WIN32__) || defined(__GDK__) */
 
 #ifdef HAVE_STDIO_H
 
@@ -574,7 +580,7 @@ SDL_RWFromFile(const char *file, const char *mode)
     rwops->close = Android_JNI_FileClose;
     rwops->type = SDL_RWOPS_JNIFILE;
 
-#elif defined(__WIN32__)
+#elif defined(__WIN32__) || defined(__GDK__)
     rwops = SDL_AllocRW();
     if (!rwops)
         return NULL;            /* SDL_SetError already setup by SDL_AllocRW() */

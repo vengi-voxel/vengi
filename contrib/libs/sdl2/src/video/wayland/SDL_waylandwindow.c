@@ -730,10 +730,15 @@ handle_configure_zxdg_decoration(void *data,
      * To do this we have to fully unmap, then map with libdecor loaded.
      */
     if (mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE) {
+        if (window->flags & SDL_WINDOW_BORDERLESS) {
+            /* borderless windows do request CSD, so we got what we wanted */
+            return;
+        }
         if (!Wayland_LoadLibdecor(driverdata->waylandData, SDL_TRUE)) {
             /* libdecor isn't available, so no borders for you... oh well */
             return;
         }
+        WAYLAND_wl_display_roundtrip(driverdata->waylandData->display);
         SDL_HideWindow(window);
         driverdata->shell_surface_type = WAYLAND_SURFACE_LIBDECOR;
         SDL_ShowWindow(window);
@@ -1223,15 +1228,20 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     /* Create the shell surface and map the toplevel/popup */
 #ifdef HAVE_LIBDECOR_H
     if (WINDOW_IS_LIBDECOR(c, window)) {
-        data->shell_surface.libdecor.frame = libdecor_decorate(c->shell.libdecor,
-                                                               data->surface,
-                                                               &libdecor_frame_interface,
-                                                               data);
-        if (data->shell_surface.libdecor.frame == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to create libdecor frame!");
+        if (data->shell_surface.libdecor.frame) {
+            /* If the frame already exists, just set the visibility. */
+            libdecor_frame_set_visibility(data->shell_surface.libdecor.frame, true);
         } else {
-            libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, c->classname);
-            libdecor_frame_map(data->shell_surface.libdecor.frame);
+            data->shell_surface.libdecor.frame = libdecor_decorate(c->shell.libdecor,
+                                                                   data->surface,
+                                                                   &libdecor_frame_interface,
+                                                                   data);
+            if (data->shell_surface.libdecor.frame == NULL) {
+                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to create libdecor frame!");
+            } else {
+                libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, c->classname);
+                libdecor_frame_map(data->shell_surface.libdecor.frame);
+            }
         }
     } else
 #endif
@@ -1359,6 +1369,12 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
             unsetenv("XDG_ACTIVATION_TOKEN");
         }
     }
+
+    /*
+     * Roundtrip required to avoid a possible protocol violation when
+     * HideWindow was called immediately before ShowWindow.
+     */
+    WAYLAND_wl_display_roundtrip(c->display);
 }
 
 static void
@@ -1407,11 +1423,14 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
        wind->server_decoration = NULL;
     }
 
+    /* Be sure to detach after this is done, otherwise ShowWindow crashes! */
+    wl_surface_attach(wind->surface, NULL, 0, 0);
+    wl_surface_commit(wind->surface);
+
 #ifdef HAVE_LIBDECOR_H
     if (WINDOW_IS_LIBDECOR(data, window)) {
         if (wind->shell_surface.libdecor.frame) {
-            libdecor_frame_unref(wind->shell_surface.libdecor.frame);
-            wind->shell_surface.libdecor.frame = NULL;
+            libdecor_frame_set_visibility(wind->shell_surface.libdecor.frame, false);
         }
     } else
 #endif
@@ -1428,9 +1447,11 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
         }
     }
 
-    /* Be sure to detach after this is done, otherwise ShowWindow crashes! */
-    wl_surface_attach(wind->surface, NULL, 0, 0);
-    wl_surface_commit(wind->surface);
+    /*
+     * Roundtrip required to avoid a possible protocol violation when
+     * ShowWindow is called immediately after HideWindow.
+     */
+    WAYLAND_wl_display_roundtrip(data->display);
 }
 
 static void
@@ -1964,8 +1985,16 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_VideoData *viddata = data->waylandData;
+    int old_w = window->w, old_h = window->h;
+    float old_scale = scale;
 
-    if (data->needs_resize_event || window->w != width || window->h != height || !FloatEqual(data->scale_factor, scale)) {
+    /* Update the window geometry. */
+    window->w = width;
+    window->h = height;
+    data->scale_factor = scale;
+    ConfigureWindowGeometry(window);
+
+    if (data->needs_resize_event || old_w != width || old_h != height || !FloatEqual(data->scale_factor, old_scale)) {
         /* We may have already updated window w/h (or only adjusted scale factor),
          * so we must override the deduplication logic in the video core */
         window->w = 0;
@@ -1973,12 +2002,8 @@ Wayland_HandleResize(SDL_Window *window, int width, int height, float scale)
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
         window->w = width;
         window->h = height;
-        data->scale_factor = scale;
         data->needs_resize_event = SDL_FALSE;
     }
-
-    /* Update the window geometry. */
-    ConfigureWindowGeometry(window);
 
     /* XXX: This workarounds issues with commiting buffers with old size after
      * already acknowledging the new size, which can cause protocol violations.

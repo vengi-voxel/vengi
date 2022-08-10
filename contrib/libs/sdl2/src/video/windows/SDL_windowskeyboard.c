@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
 
 #include "SDL_windowsvideo.h"
 #include "SDL_hints.h"
@@ -102,7 +102,7 @@ WIN_InitKeyboard(_THIS)
     data->ime_uielemsink = 0;
     data->ime_ippasink = 0;
 
-    WIN_UpdateKeymap();
+    WIN_UpdateKeymap(SDL_FALSE);
 
     SDL_SetScancodeName(SDL_SCANCODE_APPLICATION, "Menu");
     SDL_SetScancodeName(SDL_SCANCODE_LGUI, "Left Windows");
@@ -115,7 +115,7 @@ WIN_InitKeyboard(_THIS)
 }
 
 void
-WIN_UpdateKeymap()
+WIN_UpdateKeymap(SDL_bool send_event)
 {
     int i;
     SDL_Scancode scancode;
@@ -152,15 +152,22 @@ WIN_UpdateKeymap()
         }
     }
 
-    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES);
+    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
 }
 
 void
 WIN_QuitKeyboard(_THIS)
 {
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
 #ifndef SDL_DISABLE_WINDOWS_IME
-    IME_Quit((SDL_VideoData *)_this->driverdata);
+    IME_Quit(data);
 #endif
+
+    if (data->ime_composition) {
+        SDL_free(data->ime_composition);
+        data->ime_composition = NULL;
+    }
 }
 
 void
@@ -235,7 +242,7 @@ WIN_StopTextInput(_THIS)
 }
 
 void
-WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
+WIN_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
     HIMC himc = 0;
