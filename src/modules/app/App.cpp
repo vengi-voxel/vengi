@@ -650,15 +650,7 @@ App::Argument& App::registerArg(const core::String& arg) {
 	return *_arguments.back();
 }
 
-AppState App::onCleanup() {
-	if (_suspendRequested) {
-		addBlocker(AppState::Init);
-		return AppState::Init;
-	}
-
-	// execute all pending async events.
-	_eventBus->update();
-
+bool App::saveConfiguration() {
 	if (!_organisation.empty() && !_appname.empty()) {
 		Log::debug("save the config variables");
 		core::String ss;
@@ -688,9 +680,22 @@ AppState App::onCleanup() {
 			ss += "\"\n";
 		}, 0u);
 		_filesystem->write(_appname + ".vars", ss);
-	} else {
-		Log::warn("don't save the config variables");
+		return true;
 	}
+	Log::warn("don't save the config variables");
+	return false;
+}
+
+AppState App::onCleanup() {
+	if (_suspendRequested) {
+		addBlocker(AppState::Init);
+		return AppState::Init;
+	}
+
+	// execute all pending async events.
+	_eventBus->update();
+
+	saveConfiguration();
 
 	_threadPool->shutdown();
 

@@ -187,6 +187,8 @@ public:
 	 */
 	void remBlocker(AppState blockedState);
 
+	bool saveConfiguration();
+
 	const core::String& appname() const;
 
 	class Argument {
