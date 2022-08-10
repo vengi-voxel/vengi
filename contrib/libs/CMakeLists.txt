@@ -34,7 +34,7 @@ else()
 	set(SDL_FORCE_STATIC_VCRT ON CACHE BOOL "" FORCE)
 	add_subdirectory(sdl2)
 	add_library(sdl2 INTERFACE)
-	target_link_libraries(sdl2 INTERFACE SDL2)
+	target_link_libraries(sdl2 INTERFACE SDL2-static)
 endif()
 
 add_subdirectory(SDL2_mixer)
