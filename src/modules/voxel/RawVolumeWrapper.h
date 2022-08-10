@@ -83,7 +83,20 @@ public:
 	}
 
 	inline void setVolume(RawVolume* v) {
+		if (_volume == v) {
+			return;
+		}
 		_volume = v;
+		_dirtyRegion = Region::InvalidRegion;
+		if (_volume == nullptr) {
+			_region = Region::InvalidRegion;
+		} else {
+			if (_region.isValid()) {
+				_region.cropTo(_volume->region());
+			} else {
+				_region = _volume->region();
+			}
+		}
 	}
 
 	inline const Region& region() const {
