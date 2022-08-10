@@ -651,39 +651,38 @@ App::Argument& App::registerArg(const core::String& arg) {
 }
 
 bool App::saveConfiguration() {
-	if (!_organisation.empty() && !_appname.empty()) {
-		Log::debug("save the config variables");
-		core::String ss;
-		ss.reserve(16384);
-		util::visitVarSorted([&](const core::VarPtr& var) {
-			if ((var->getFlags() & core::CV_NOPERSIST) != 0u) {
-				return;
-			}
-			const uint32_t flags = var->getFlags();
-			core::String flagsStr;
-			const char *value = var->strVal().c_str();
-			if ((flags & core::CV_READONLY) == core::CV_READONLY) {
-				flagsStr.append("R");
-			}
-			if ((flags & core::CV_SHADER) == core::CV_SHADER) {
-				flagsStr.append("S");
-			}
-			if ((flags & core::CV_SECRET) == core::CV_SECRET) {
-				flagsStr.append("X");
-			}
-			ss += "\"";
-			ss += var->name();
-			ss += "\" \"";
-			ss += value;
-			ss += "\" \"";
-			ss += flagsStr;
-			ss += "\"\n";
-		}, 0u);
-		_filesystem->write(_appname + ".vars", ss);
-		return true;
+	if (_organisation.empty() || _appname.empty()) {
+		Log::warn("don't save the config variables");
+		return false;
 	}
-	Log::warn("don't save the config variables");
-	return false;
+	Log::debug("save the config variables");
+	core::String ss;
+	ss.reserve(16384);
+	util::visitVarSorted([&](const core::VarPtr& var) {
+		if ((var->getFlags() & core::CV_NOPERSIST) != 0u) {
+			return;
+		}
+		const uint32_t flags = var->getFlags();
+		core::String flagsStr;
+		const char *value = var->strVal().c_str();
+		if ((flags & core::CV_READONLY) == core::CV_READONLY) {
+			flagsStr.append("R");
+		}
+		if ((flags & core::CV_SHADER) == core::CV_SHADER) {
+			flagsStr.append("S");
+		}
+		if ((flags & core::CV_SECRET) == core::CV_SECRET) {
+			flagsStr.append("X");
+		}
+		ss += "\"";
+		ss += var->name();
+		ss += "\" \"";
+		ss += value;
+		ss += "\" \"";
+		ss += flagsStr;
+		ss += "\"\n";
+	}, 0u);
+	return _filesystem->write(_appname + ".vars", ss);
 }
 
 AppState App::onCleanup() {
