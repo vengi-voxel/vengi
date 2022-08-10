@@ -33,6 +33,30 @@
 
 namespace voxelgenerator {
 
+class LuaRawVolumeWrapper : public voxel::RawVolumeWrapper {
+private:
+	using Super = voxel::RawVolumeWrapper;
+	voxelformat::SceneGraphNode *_node;
+public:
+	LuaRawVolumeWrapper(voxelformat::SceneGraphNode *node) : Super(node->volume()), _node(node) {
+	}
+
+	~LuaRawVolumeWrapper() {
+		update();
+	}
+
+	voxelformat::SceneGraphNode *node() {
+		return _node;
+	}
+
+	void update() {
+		if (_node->volume() == volume()) {
+			return;
+		}
+		_node->setVolume(volume(), true);
+	}
+};
+
 static const char *luaVoxel_globalscenegraph() {
 	return "__global_scenegraph";
 }
@@ -96,15 +120,16 @@ static int luaVoxel_pushscenegraphnode(lua_State* s, voxelformat::SceneGraphNode
 	return clua_pushudata(s, &node, luaVoxel_metascenegraphnode());
 }
 
-static voxel::RawVolumeWrapper* luaVoxel_tovolumewrapper(lua_State* s, int n) {
-	return *(voxel::RawVolumeWrapper**)clua_getudata<voxel::RawVolumeWrapper*>(s, n, luaVoxel_metavolumewrapper());
+static LuaRawVolumeWrapper* luaVoxel_tovolumewrapper(lua_State* s, int n) {
+	return *(LuaRawVolumeWrapper**)clua_getudata<LuaRawVolumeWrapper*>(s, n, luaVoxel_metavolumewrapper());
 }
 
-static int luaVoxel_pushvolumewrapper(lua_State* s, voxel::RawVolumeWrapper* volume) {
-	if (volume == nullptr) {
-		return clua_error(s, "No volume given - can't push");
+static int luaVoxel_pushvolumewrapper(lua_State* s, voxelformat::SceneGraphNode* node) {
+	if (node == nullptr) {
+		return clua_error(s, "No node given - can't push");
 	}
-	return clua_pushudata(s, volume, luaVoxel_metavolumewrapper());
+	LuaRawVolumeWrapper *wrapper = new LuaRawVolumeWrapper(node);
+	return clua_pushudata(s, wrapper, luaVoxel_metavolumewrapper());
 }
 
 static int luaVoxel_pushpalette(lua_State* s, voxel::Palette* palette) {
@@ -115,7 +140,7 @@ static int luaVoxel_pushpalette(lua_State* s, voxel::Palette* palette) {
 }
 
 static int luaVoxel_volumewrapper_voxel(lua_State* s) {
-	const voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	const LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	const int x = (int)luaL_checkinteger(s, 2);
 	const int y = (int)luaL_checkinteger(s, 3);
 	const int z = (int)luaL_checkinteger(s, 4);
@@ -129,12 +154,12 @@ static int luaVoxel_volumewrapper_voxel(lua_State* s) {
 }
 
 static int luaVoxel_volumewrapper_region(lua_State* s) {
-	const voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	const LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	return luaVoxel_pushregion(s, &volume->region());
 }
 
 static int luaVoxel_volumewrapper_translate(lua_State* s) {
-	voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	const int x = (int)luaL_checkinteger(s, 2);
 	const int y = (int)luaL_optinteger(s, 3, 0);
 	const int z = (int)luaL_optinteger(s, 4, 0);
@@ -143,7 +168,7 @@ static int luaVoxel_volumewrapper_translate(lua_State* s) {
 }
 
 static int luaVoxel_volumewrapper_resize(lua_State *s) {
-	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const int w = (int)luaL_checkinteger(s, 2);
 	const int h = (int)luaL_optinteger(s, 3, 0);
 	const int d = (int)luaL_optinteger(s, 4, 0);
@@ -151,6 +176,7 @@ static int luaVoxel_volumewrapper_resize(lua_State *s) {
 	voxel::RawVolume *v = voxelutil::resize(volume->volume(), glm::ivec3(w, h, d), extendMins);
 	if (v != nullptr) {
 		volume->setVolume(v);
+		volume->update();
 	}
 	return 0;
 }
@@ -169,32 +195,34 @@ static math::Axis luaVoxel_getAxis(lua_State *s, int index) {
 }
 
 static int luaVoxel_volumewrapper_mirroraxis(lua_State *s) {
-	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	voxel::RawVolume* v = voxelutil::mirrorAxis(volume->volume(), luaVoxel_getAxis(s, 2));
 	if (v != nullptr) {
 		volume->setVolume(v);
+		volume->update();
 	}
 	return 0;
 }
 
 static int luaVoxel_volumewrapper_rotateaxis(lua_State *s) {
-	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	voxel::RawVolume* v = voxelutil::rotateAxis(volume->volume(), luaVoxel_getAxis(s, 2));
 	if (v != nullptr) {
 		volume->setVolume(v);
+		volume->update();
 	}
 	return 0;
 }
 
 static int luaVoxel_volumewrapper_fillhollow(lua_State *s) {
-	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 2);
 	voxelutil::fillHollow(*volume, voxel);
 	return 0;
 }
 
 static int luaVoxel_volumewrapper_importheightmap(lua_State *s) {
-	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const core::String imageName = lua_tostring(s, 2);
 	const image::ImagePtr &image = image::loadImage(imageName, false);
 	if (!image || !image->isLoaded()) {
@@ -209,16 +237,17 @@ static int luaVoxel_volumewrapper_importheightmap(lua_State *s) {
 }
 
 static int luaVoxel_volumewrapper_crop(lua_State *s) {
-	voxel::RawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	voxel::RawVolume* v = voxelutil::cropVolume(volume->volume());
 	if (v != nullptr) {
 		volume->setVolume(v);
+		volume->update();
 	}
 	return 0;
 }
 
 static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
-	voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	const int x = (int)luaL_checkinteger(s, 2);
 	const int y = (int)luaL_checkinteger(s, 3);
 	const int z = (int)luaL_checkinteger(s, 4);
@@ -229,7 +258,7 @@ static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
 }
 
 static int luaVoxel_volumewrapper_gc(lua_State *s) {
-	voxel::RawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	if (volume->dirtyRegion().isValid()) {
 		voxel::Region* dirtyRegion = lua::LUA::globalData<voxel::Region>(s, luaVoxel_globaldirtyregion());
 		if (dirtyRegion->isValid()) {
@@ -585,8 +614,7 @@ static int luaVoxel_scenegraph_get_node(lua_State* s) {
 
 static int luaVoxel_scenegraphnode_volume(lua_State* s) {
 	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	voxel::RawVolumeWrapper *wrapper = new voxel::RawVolumeWrapper(node->volume());
-	return luaVoxel_pushvolumewrapper(s, wrapper);
+	return luaVoxel_pushvolumewrapper(s, node);
 }
 
 static int luaVoxel_scenegraphnode_palette(lua_State* s) {
