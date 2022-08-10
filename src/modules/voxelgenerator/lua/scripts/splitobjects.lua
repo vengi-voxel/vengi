@@ -27,7 +27,11 @@ function main(node, region, color)
 	vol.visitYXZ(node:volume(), region, function (loopVolume, x, y, z)
 		if loopVolume:voxel(x, y, z) ~= -1 then
 			needNewLayer = true
+			splitVolume = nil
 			vol.visitConnected6(loopVolume, x, y, z, connectedVisitor)
+			if splitVolume ~= nil then
+				splitVolume:crop()
+			end
 		end
 	end)
 end
