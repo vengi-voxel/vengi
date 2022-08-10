@@ -72,29 +72,28 @@ function module.visitXZ(volume, region, visitor)
 	module.conditionXZ(volume, region, visitor, condition)
 end
 
+-- visit 6 directions
+local offset <const> = {
+	{ 0,  0, -1},
+	{ 0,  0,  1},
+	{ 0, -1,  0},
+	{ 0,  1,  0},
+	{-1,  0,  0},
+	{ 1,  0,  0}
+}
+
 local function visitConnected6Internal(volume, x, y, z, visitor, visited)
 	if volume:voxel(x, y, z) == -1 then
 		return
 	end
 
-	-- visit 6 directions
-	local offset = {
-		{ 0,  0, -1},
-		{ 0,  0,  1},
-		{ 0, -1,  0},
-		{ 0,  1,  0},
-		{-1,  0,  0},
-		{ 1,  0,  0}
-	}
 	for i=1,6 do
 		local x2 = x + offset[i][1]
 		local y2 = y + offset[i][2]
 		local z2 = z + offset[i][3]
-		local key = x2..':'..y2..':'..z2
-		local v = volume:voxel(x2, y2, z2)
-		if v ~= -1 then
-			if visited[key] == nil then
-				visited[key] = 1
+		if volume:voxel(x2, y2, z2) ~= -1 then
+			if visited[x2..':'..y2..':'..z2] == nil then
+				visited[x2..':'..y2..':'..z2] = 1
 				visitConnected6Internal(volume, x2, y2, z2, visitor, visited)
 				visitor(volume, x2, y2, z2)
 			end
