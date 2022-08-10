@@ -29,6 +29,8 @@ if (SDL2_FOUND)
 	add_library(SDL2::SDL2main ALIAS SDL2_main)
 else()
 	add_subdirectory(sdl2)
+	add_library(sdl2 INTERFACE)
+	target_link_libraries(sdl2 INTERFACE SDL2)
 endif()
 
 add_subdirectory(SDL2_mixer)
