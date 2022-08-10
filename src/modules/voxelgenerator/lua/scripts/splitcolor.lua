@@ -24,4 +24,5 @@ function main(node, region, color)
 		return false
 	end
 	vol.conditionYXZ(volume, region, visitor, condition)
+	newVolume:crop()
 end
