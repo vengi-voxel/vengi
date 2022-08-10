@@ -157,6 +157,7 @@ update-sdl2:
 	$(call UPDATE_GIT,sdl2,https://github.com/libsdl-org/SDL.git)
 	rm -rf contrib/libs/sdl2/src/* contrib/libs/sdl2/include/* contrib/libs/sdl2/cmake/*
 	cp -r $(UPDATEDIR)/sdl2.sync/CMakeLists.txt contrib/libs/sdl2
+	cp -r $(UPDATEDIR)/sdl2.sync/*.cmake.in contrib/libs/sdl2
 	cp -r $(UPDATEDIR)/sdl2.sync/src/* contrib/libs/sdl2/src
 	cp -r $(UPDATEDIR)/sdl2.sync/wayland-protocols/* contrib/libs/sdl2/wayland-protocols
 	cp -r $(UPDATEDIR)/sdl2.sync/include/* contrib/libs/sdl2/include
