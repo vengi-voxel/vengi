@@ -576,6 +576,13 @@ AppState App::onRunning() {
 	}
 	_filesystem->update();
 
+	if (!_failedToSaveConfiguration && core::Var::needsSaving()) {
+		if (!saveConfiguration()) {
+			_failedToSaveConfiguration = true;
+			Log::warn("Failed to save configuration");
+		}
+	}
+
 	return AppState::Cleanup;
 }
 
@@ -652,10 +659,11 @@ App::Argument& App::registerArg(const core::String& arg) {
 
 bool App::saveConfiguration() {
 	if (_organisation.empty() || _appname.empty()) {
-		Log::warn("don't save the config variables");
+		Log::debug("don't save the config variables because organisation or appname is missing");
 		return false;
 	}
-	Log::debug("save the config variables");
+	const core::String filename = _appname + ".vars";
+	Log::debug("save the config variables to '%s'", filename.c_str());
 	core::String ss;
 	ss.reserve(16384);
 	util::visitVarSorted([&](const core::VarPtr& var) {
@@ -682,7 +690,7 @@ bool App::saveConfiguration() {
 		ss += flagsStr;
 		ss += "\"\n";
 	}, 0u);
-	return _filesystem->write(_appname + ".vars", ss);
+	return _filesystem->write(filename, ss);
 }
 
 AppState App::onCleanup() {

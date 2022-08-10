@@ -83,6 +83,7 @@ protected:
 	AppState _nextState = AppState::InvalidAppState;
 	bool _blockers[(int)AppState::Max] { false, false, false, false, false, false, false, false, false };
 	bool _suspendRequested = false;
+	bool _failedToSaveConfiguration = false;
 
 	/**
 	 * @brief Should the application log to the syslog daemon

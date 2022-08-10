@@ -72,6 +72,7 @@ protected:
 	static constexpr int NEEDS_REPLICATE = 1 << 0;
 	static constexpr int NEEDS_BROADCAST = 1 << 1;
 	static constexpr int NEEDS_SHADERUPDATE = 1 << 2;
+	static constexpr int NEEDS_SAVING = 1 << 3;
 	uint8_t _updateFlags = 0u;
 
 	static uint8_t _visitFlags;
@@ -207,6 +208,12 @@ public:
 	static bool hasDirtyShaderVars() {
 		const bool dirty = _visitFlags & NEEDS_SHADERUPDATE;
 		_visitFlags &= ~NEEDS_SHADERUPDATE;
+		return dirty;
+	}
+
+	static bool needsSaving() {
+		const bool dirty = _visitFlags & NEEDS_SAVING;
+		_visitFlags &= ~NEEDS_SAVING;
 		return dirty;
 	}
 

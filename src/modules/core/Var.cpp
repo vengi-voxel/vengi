@@ -217,6 +217,9 @@ bool Var::setVal(const core::String& value) {
 		if ((_flags & CV_SHADER) != 0u) {
 			_visitFlags |= NEEDS_SHADERUPDATE;
 		}
+		if ((_flags & (CV_NOPERSIST | CV_READONLY)) == 0u) {
+			_visitFlags |= NEEDS_SAVING;
+		}
 		if (_history.size() > 16) {
 			_history.erase(0, 8);
 			_currentHistoryPos = (uint32_t)_history.size() - 1;
