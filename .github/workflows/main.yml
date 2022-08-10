@@ -244,6 +244,7 @@ jobs:
             ctest -V -C Release -R tests-voxelrender$
             ctest -V -C Release -R tests-voxelutil$
             ctest -V -C Release -R tests-voxelworld$
+            ctest -V -R shelltests
 
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v2
