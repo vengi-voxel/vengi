@@ -9,6 +9,7 @@ function main(node, region, color)
 
 	local newLayer = scenegraph.new('split', region)
 	local newVolume = newLayer:volume()
+	newLayer:setPalette(node:palette())
 
 	local visitor = function (volume, x, y, z)
 		newVolume:setVoxel(x, y, z, volume:voxel(x, y, z))

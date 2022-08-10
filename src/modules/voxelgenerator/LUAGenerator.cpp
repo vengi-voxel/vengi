@@ -77,6 +77,10 @@ static voxel::Region* luaVoxel_toRegion(lua_State* s, int n) {
 	return *(voxel::Region**)clua_getudata<voxel::Region*>(s, n, luaVoxel_metaregion());
 }
 
+static voxel::Palette* luaVoxel_toPalette(lua_State* s, int n) {
+	return *(voxel::Palette**)clua_getudata<voxel::Palette*>(s, n, luaVoxel_metapalette());
+}
+
 static int luaVoxel_pushregion(lua_State* s, const voxel::Region* region) {
 	if (region == nullptr) {
 		return clua_error(s, "No region given - can't push");
@@ -604,6 +608,13 @@ static int luaVoxel_scenegraphnode_setname(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
+	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	voxel::Palette *palette = luaVoxel_toPalette(s, 2);
+	node->setPalette(*palette);
+	return 0;
+}
+
 static int luaVoxel_scenegraphnode_tostring(lua_State *s) {
 	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	lua_pushfstring(s, "layer: [%d, %s]", node->id(), node->name().c_str());
@@ -657,6 +668,7 @@ static void prepareState(lua_State* s) {
 		{"volume", luaVoxel_scenegraphnode_volume},
 		{"palette", luaVoxel_scenegraphnode_palette},
 		{"setName", luaVoxel_scenegraphnode_setname},
+		{"setPalette", luaVoxel_scenegraphnode_setpalette},
 		{"__tostring", luaVoxel_scenegraphnode_tostring},
 		{nullptr, nullptr}
 	};

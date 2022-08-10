@@ -8,11 +8,13 @@ local vol = require "modules.volume"
 
 local splitVolume = {}
 local needNewLayer = false
+local palette = {}
 
 local function connectedVisitor(volume, x, y, z)
 	if needNewLayer then
 		local newLayer = scenegraph.new('splitobject', volume:region())
 		splitVolume = newLayer:volume()
+		newLayer:setPalette(palette)
 		needNewLayer = false
 	end
 	local color = volume:voxel(x, y, z)
@@ -21,6 +23,7 @@ local function connectedVisitor(volume, x, y, z)
 end
 
 function main(node, region, color)
+	palette = node:palette()
 	vol.visitYXZ(node:volume(), region, function (loopVolume, x, y, z)
 		if loopVolume:voxel(x, y, z) ~= -1 then
 			needNewLayer = true

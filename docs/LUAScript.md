@@ -111,6 +111,10 @@ The functions are:
 
 * `setName(string)`: Set the name of the node.
 
+* `palette()`: Returns the current palette of the node.
+
+* `setPalette(palette)`: Change the palette
+
 * `volume()`: Gives you access to the volume of the node.
 
 Access these functions like this:
