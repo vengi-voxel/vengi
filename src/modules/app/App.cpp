@@ -654,7 +654,7 @@ bool App::saveConfiguration() {
 	if (!_organisation.empty() && !_appname.empty()) {
 		Log::debug("save the config variables");
 		core::String ss;
-		ss.reserve(1024);
+		ss.reserve(16384);
 		util::visitVarSorted([&](const core::VarPtr& var) {
 			if ((var->getFlags() & core::CV_NOPERSIST) != 0u) {
 				return;
