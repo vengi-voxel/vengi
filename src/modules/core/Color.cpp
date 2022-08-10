@@ -212,7 +212,7 @@ core::String Color::print(RGBA rgba) {
 	buf.append(rgba.r).append(";");
 	buf.append(rgba.g).append(";");
 	buf.append(rgba.b).append("m");
-	buf.append("\u2587").append("\033[0m");
+	buf.append(u8"\u2587").append("\033[0m");
 	return buf;
 }
 
