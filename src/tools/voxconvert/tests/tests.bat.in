@@ -1,0 +1,26 @@
+@ECHO OFF
+
+set BINARY=%1
+set FILE=voxedit/chr_knight.qb
+for /F %%i in ("%FILE%") do set FILE_BASENAME=%%~nxi
+set SPLITFILE="@DATA_DIR@/tests/splitobjects.vox"
+set SPLITTARGETFILE="@CMAKE_BINARY_DIR@/splittedobjects.vox"
+
+echo "export layers of @DATA_DIR@/%FILE%"
+xcopy "@DATA_DIR@/%FILE%" "@CMAKE_BINARY_DIR@"
+"%BINARY%" -f --input @CMAKE_BINARY_DIR@/%FILE% --export-layers
+echo
+
+echo "export palette of @DATA_DIR@/%FILE%"
+xcopy "@DATA_DIR@/%FILE%" "@CMAKE_BINARY_DIR@"
+"%BINARY%" -f --input @CMAKE_BINARY_DIR@/%FILE% --export-palette
+echo "check if palette exists at @CMAKE_BINARY_DIR@/%FILE_BASENAME%.png"
+IF NOT EXIST "@CMAKE_BINARY_DIR@/%FILE_BASENAME%.png" EXIT /b
+echo
+
+echo "split objects %SPLITFILE%"
+xcopy "%SPLITFILE%" "@CMAKE_BINARY_DIR@"
+"%BINARY%" -f --input "%SPLITFILE%" --script splitobjects --output "%SPLITTARGETFILE%"
+echo "check if $SPLITTARGETFILE exists"
+IF NOT EXIST "$SPLITTARGETFILE" EXIT /b
+echo
