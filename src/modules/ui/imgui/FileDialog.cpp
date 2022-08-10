@@ -577,6 +577,13 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 					if (_currentFile == "") {
 						SDL_strlcpy(_error, "Error: You must select a file!", sizeof(_error));
 					} else {
+						if (_currentFilterEntry != -1 && core::string::extractExtension(_currentFile).empty()) {
+							const io::FormatDescription &desc = _filterEntries[_currentFilterEntry];
+							if (!desc.exts[0].empty()) {
+								_currentFile.append(".");
+								_currentFile.append(desc.exts[0]);
+							}
+						}
 						const core::String &fullPath = assemblePath(_currentPath, _currentFile);
 						SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
 						_fileSelectIndex = 0;
