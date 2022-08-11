@@ -2,7 +2,7 @@
 
 set BINARY=%1
 set FILE=voxedit/chr_knight.qb
-set FILE_PNGNAME=voxedit/chr_knight.png
+set FILE_PNGNAME=chr_knight.png
 set SPLITFILE="@DATA_DIR@/tests/splitobjects.vox"
 set SPLITTARGETFILE="@CMAKE_BINARY_DIR@/splittedobjects.vox"
 
