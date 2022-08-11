@@ -17,11 +17,13 @@
 ** Macro to check stack size and grow stack if needed.  Parameters
 ** 'pre'/'pos' allow the macro to preserve a pointer into the
 ** stack across reallocations, doing the work only when needed.
+** It also allows the running of one GC step when the stack is
+** reallocated.
 ** 'condmovestack' is used in heavy tests to force a stack reallocation
 ** at every check.
 */
 #define luaD_checkstackaux(L,n,pre,pos)  \
-	if (L->stack_last - L->top <= (n)) \
+	if (l_unlikely(L->stack_last - L->top <= (n))) \
 	  { pre; luaD_growstack(L, n, 1); pos; } \
         else { condmovestack(L,pre,pos); }
 
@@ -35,7 +37,7 @@
 
 
 /* macro to check stack size, preserving 'p' */
-#define checkstackp(L,n,p)  \
+#define checkstackGCp(L,n,p)  \
   luaD_checkstackaux(L, n, \
     ptrdiff_t t__ = savestack(L, p);  /* save 'p' */ \
     luaC_checkGC(L),  /* stack grow uses memory */ \
@@ -44,7 +46,7 @@
 
 /* macro to check stack size and GC */
 #define checkstackGC(L,fsize)  \
-	luaD_checkstackaux(L, (fsize), (void)0, luaC_checkGC(L))
+	luaD_checkstackaux(L, (fsize), luaC_checkGC(L), (void)0)
 
 
 /* type of protected functions, to be ran by 'runprotected' */
@@ -56,10 +58,12 @@ LUAI_FUNC int luaD_protectedparser (lua_State *L, ZIO *z, const char *name,
 LUAI_FUNC void luaD_hook (lua_State *L, int event, int line,
                                         int fTransfer, int nTransfer);
 LUAI_FUNC void luaD_hookcall (lua_State *L, CallInfo *ci);
-LUAI_FUNC void luaD_pretailcall (lua_State *L, CallInfo *ci, StkId func, int n);
+LUAI_FUNC int luaD_pretailcall (lua_State *L, CallInfo *ci, StkId func,                                                    int narg1, int delta);
+LUAI_FUNC CallInfo *luaD_precall (lua_State *L, StkId func, int nResults);
 LUAI_FUNC void luaD_call (lua_State *L, StkId func, int nResults);
 LUAI_FUNC void luaD_callnoyield (lua_State *L, StkId func, int nResults);
-LUAI_FUNC void luaD_tryfuncTM (lua_State *L, StkId func);
+LUAI_FUNC StkId luaD_tryfuncTM (lua_State *L, StkId func);
+LUAI_FUNC int luaD_closeprotected (lua_State *L, ptrdiff_t level, int status);
 LUAI_FUNC int luaD_pcall (lua_State *L, Pfunc func, void *u,
                                         ptrdiff_t oldtop, ptrdiff_t ef);
 LUAI_FUNC void luaD_poscall (lua_State *L, CallInfo *ci, int nres);
