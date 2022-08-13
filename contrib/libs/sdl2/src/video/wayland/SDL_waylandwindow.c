@@ -631,14 +631,12 @@ handle_configure_xdg_toplevel(void *data,
          * UPDATE: Nope, sure enough a compositor sends 0,0. This is a known bug:
          * https://bugs.kde.org/show_bug.cgi?id=444962
          */
-        if (!FullscreenModeEmulation(window)) {
-            if (width != 0 && height != 0 && (window->w != width || window->h != height)) {
-                window->w = width;
-                window->h = height;
-                wind->needs_resize_event = SDL_TRUE;
-            }
-        } else {
-            GetFullScreenDimensions(window, &window->w, &window->h, NULL, NULL);
+        if (FullscreenModeEmulation(window)) {
+            GetFullScreenDimensions(window, &width, &height, NULL, NULL);
+        }
+        if (width != 0 && height != 0 && (window->w != width || window->h != height)) {
+            window->w = width;
+            window->h = height;
             wind->needs_resize_event = SDL_TRUE;
         }
 
@@ -833,8 +831,6 @@ decoration_frame_configure(struct libdecor_frame *frame,
         } else {
             GetFullScreenDimensions(window, &width, &height, NULL, NULL);
         }
-
-        wind->needs_resize_event = SDL_TRUE;
 
         /* This part is good though. */
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
@@ -1374,7 +1370,10 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
      * Roundtrip required to avoid a possible protocol violation when
      * HideWindow was called immediately before ShowWindow.
      */
-    WAYLAND_wl_display_roundtrip(c->display);
+    if (data->needs_roundtrip) {
+        data->needs_roundtrip = SDL_FALSE;
+        WAYLAND_wl_display_roundtrip(c->display);
+    }
 }
 
 static void
@@ -1451,6 +1450,7 @@ void Wayland_HideWindow(_THIS, SDL_Window *window)
      * Roundtrip required to avoid a possible protocol violation when
      * ShowWindow is called immediately after HideWindow.
      */
+    wind->needs_roundtrip = SDL_TRUE;
     WAYLAND_wl_display_roundtrip(data->display);
 }
 
@@ -1647,7 +1647,8 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     SetFullscreen(window, fullscreen ? output : NULL, SDL_TRUE);
 
-    WAYLAND_wl_display_flush(viddata->display);
+    /* Roundtrip required to receive the updated window dimensions */
+    WAYLAND_wl_display_roundtrip(viddata->display);
 }
 
 void

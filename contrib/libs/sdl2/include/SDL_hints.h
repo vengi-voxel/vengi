@@ -981,13 +981,19 @@ extern "C" {
  *  \brief   A variable controlling whether dispatching OpenGL context updates should block the dispatching thread until the main thread finishes processing
  *
  *  This variable can be set to the following values:
- *    "0"       - Dispatching OpenGL context updates will allow the dispatching thread to continue execution.
- *    "1"       - Dispatching OpenGL context updates will block the dispatching thread until the main thread finishes processing.
+ *    "0"       - Dispatching OpenGL context updates will block the dispatching thread until the main thread finishes processing (default).
+ *    "1"       - Dispatching OpenGL context updates will allow the dispatching thread to continue execution.
  *
- *  This hint only applies to Mac OS X
+ *  Generally you want the default, but if you have OpenGL code in a background thread on a Mac, and the main thread
+ *  hangs because it's waiting for that background thread, but that background thread is also hanging because it's
+ *  waiting for the main thread to do an update, this might fix your issue.
+ *
+ *  This hint only applies to macOS.
+ *
+ *  This hint is available since SDL 2.24.0.
  *
  */
-#define SDL_HINT_MAC_OPENGL_SYNC_DISPATCH "SDL_MAC_OPENGL_SYNC_DISPATCH"
+#define SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH "SDL_MAC_OPENGL_ASYNC_DISPATCH"
 
 /**
  *  \brief  A variable setting the double click radius, in pixels.
@@ -1057,6 +1063,17 @@ extern "C" {
  *  \brief  A variable setting the scale for mouse motion, in floating point, when the mouse is in relative mode
  */
 #define SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE    "SDL_MOUSE_RELATIVE_SPEED_SCALE"
+
+/**
+ *  \brief  A variable controlling whether a motion event should be generated for mouse warping in relative mode.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Warping the mouse will not generate a motion event in relative mode
+ *    "1"       - Warping the mouse will generate a motion event in relative mode
+ *
+ *  By default warping the mouse will not generate motion events in relative mode. This avoids the application having to filter out large relative motion due to warping.
+ */
+#define SDL_HINT_MOUSE_RELATIVE_WARP_MOTION  "SDL_MOUSE_RELATIVE_WARP_MOTION"
 
 /**
  *  \brief  A variable controlling whether mouse events should generate synthetic touch events
@@ -2279,6 +2296,23 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHintWithPriority(const char *name,
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
                                              const char *value);
+
+/**
+ * Reset a hint to the default value.
+ *
+ * This will reset a hint to the value of the environment variable, or NULL if
+ * the environment isn't set. Callbacks will be called normally with this
+ * change.
+ *
+ * \param name the hint to set
+ * \returns SDL_TRUE if the hint was set, SDL_FALSE otherwise.
+ *
+ * \since This function is available since SDL 2.24.0.
+ *
+ * \sa SDL_GetHint
+ * \sa SDL_SetHint
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
 
 /**
  * Get the value of a hint.

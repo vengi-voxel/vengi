@@ -1615,6 +1615,7 @@ SDL_GameControllerMappingForIndex(int mapping_index)
         }
         --mapping_index;
     }
+    SDL_SetError("Mapping not available");
     return NULL;
 }
 
@@ -1627,6 +1628,8 @@ SDL_GameControllerMappingForGUID(SDL_JoystickGUID guid)
     ControllerMapping_t *mapping = SDL_PrivateGetControllerMappingForGUID(guid, SDL_FALSE);
     if (mapping) {
         return CreateMappingString(mapping, guid);
+    } else {
+        SDL_SetError("Mapping not available");
     }
     return NULL;
 }

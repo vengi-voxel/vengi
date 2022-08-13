@@ -161,6 +161,14 @@ SDL_MouseAutoCaptureChanged(void *userdata, const char *name, const char *oldVal
     }
 }
 
+static void SDLCALL
+SDL_MouseRelativeWarpMotionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    mouse->relative_mode_warp_motion = SDL_GetStringBoolean(hint, SDL_FALSE);
+}
+
 /* Public functions */
 int
 SDL_MouseInit(void)
@@ -195,6 +203,9 @@ SDL_MouseInit(void)
     SDL_AddHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
                         SDL_MouseAutoCaptureChanged, mouse);
 
+    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION,
+                        SDL_MouseRelativeWarpMotionChanged, mouse);
+
     mouse->was_touch_mouse_events = SDL_FALSE; /* no touch to mouse movement event pending */
 
     mouse->cursor_shown = SDL_TRUE;
@@ -219,13 +230,15 @@ SDL_GetMouse(void)
     return &SDL_mouse;
 }
 
-static Uint32 GetButtonState(SDL_Mouse *mouse)
+static Uint32 GetButtonState(SDL_Mouse *mouse, SDL_bool include_touch)
 {
     int i;
     Uint32 buttonstate = 0;
 
     for (i = 0; i < mouse->num_sources; ++i) {
-        buttonstate |= mouse->sources[i].buttonstate;
+        if (include_touch || mouse->sources[i].mouseID != SDL_TOUCH_MOUSEID) {
+            buttonstate |= mouse->sources[i].buttonstate;
+        }
     }
     return buttonstate;
 }
@@ -320,7 +333,7 @@ SDL_SendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int 
 {
     if (window && !relative) {
         SDL_Mouse *mouse = SDL_GetMouse();
-        if (!SDL_UpdateMouseFocus(window, x, y, GetButtonState(mouse), (mouseID == SDL_TOUCH_MOUSEID) ? SDL_FALSE : SDL_TRUE)) {
+        if (!SDL_UpdateMouseFocus(window, x, y, GetButtonState(mouse, SDL_TRUE), (mouseID == SDL_TOUCH_MOUSEID) ? SDL_FALSE : SDL_TRUE)) {
             return 0;
         }
     }
@@ -377,13 +390,16 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         if (x == center_x && y == center_y) {
             mouse->last_x = center_x;
             mouse->last_y = center_y;
-            return 0;
-        }
-        if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
-            if (mouse->WarpMouse) {
-                mouse->WarpMouse(window, center_x, center_y);
-            } else {
-                SDL_PrivateSendMouseMotion(window, mouseID, 0, center_x, center_y);
+            if (!mouse->relative_mode_warp_motion) {
+                return 0;
+            }
+        } else {
+            if (window && (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0) {
+                if (mouse->WarpMouse) {
+                    mouse->WarpMouse(window, center_x, center_y);
+                } else {
+                    SDL_PrivateSendMouseMotion(window, mouseID, 0, center_x, center_y);
+                }
             }
         }
     }
@@ -418,7 +434,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     }
 
     /* Ignore relative motion positioning the first touch */
-    if (mouseID == SDL_TOUCH_MOUSEID && !GetButtonState(mouse)) {
+    if (mouseID == SDL_TOUCH_MOUSEID && !GetButtonState(mouse, SDL_TRUE)) {
         xrel = 0;
         yrel = 0;
     }
@@ -492,7 +508,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         event.motion.which = mouseID;
         /* Set us pending (or clear during a normal mouse movement event) as having triggered */
         mouse->was_touch_mouse_events = (mouseID == SDL_TOUCH_MOUSEID)? SDL_TRUE : SDL_FALSE;
-        event.motion.state = GetButtonState(mouse);
+        event.motion.state = GetButtonState(mouse, SDL_TRUE);
         event.motion.x = mouse->x;
         event.motion.y = mouse->y;
         event.motion.xrel = xrel;
@@ -810,6 +826,9 @@ SDL_MouseQuit(void)
 
     SDL_DelHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
                         SDL_MouseAutoCaptureChanged, mouse);
+
+    SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION,
+                        SDL_MouseRelativeWarpMotionChanged, mouse);
 }
 
 Uint32
@@ -823,7 +842,7 @@ SDL_GetMouseState(int *x, int *y)
     if (y) {
         *y = mouse->y;
     }
-    return GetButtonState(mouse);
+    return GetButtonState(mouse, SDL_TRUE);
 }
 
 Uint32
@@ -839,7 +858,7 @@ SDL_GetRelativeMouseState(int *x, int *y)
     }
     mouse->xdelta = 0;
     mouse->ydelta = 0;
-    return GetButtonState(mouse);
+    return GetButtonState(mouse, SDL_TRUE);
 }
 
 Uint32
@@ -883,22 +902,26 @@ SDL_PerformWarpMouseInWindow(SDL_Window *window, int x, int y, SDL_bool ignore_r
         return;
     }
 
+    /* Ignore the previous position when we warp */
+    mouse->last_x = x;
+    mouse->last_y = y;
+    mouse->has_position = SDL_FALSE;
+
     if (mouse->relative_mode && !ignore_relative_mode) {
         /* 2.0.22 made warping in relative mode actually functional, which
          * surprised many applications that weren't expecting the additional
          * mouse motion.
          *
          * So for now, warping in relative mode adjusts the absolution position
-         * but doesn't generate motion events.
+         * but doesn't generate motion events, unless SDL_HINT_MOUSE_RELATIVE_WARP_MOTION is set.
          */
-        mouse->x = x;
-        mouse->y = y;
-        mouse->has_position = SDL_TRUE;
-        return;
+        if (!mouse->relative_mode_warp_motion) {
+            mouse->x = x;
+            mouse->y = y;
+            mouse->has_position = SDL_TRUE;
+            return;
+        }
     }
-
-    /* Ignore the previous position when we warp */
-    mouse->has_position = SDL_FALSE;
 
     if (mouse->WarpMouse &&
         (!mouse->relative_mode || mouse->relative_mode_warp)) {
@@ -1020,7 +1043,7 @@ SDL_UpdateMouseCapture(SDL_bool force_release)
 
     if (!force_release) {
         if (SDL_GetMessageBoxCount() == 0 &&
-            (mouse->capture_desired || (mouse->auto_capture && SDL_GetMouseState(NULL, NULL) != 0))) {
+            (mouse->capture_desired || (mouse->auto_capture && GetButtonState(mouse, SDL_FALSE) != 0))) {
             if (!mouse->relative_mode) {
                 capture_window = SDL_GetKeyboardFocus();
             }

@@ -935,8 +935,6 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
 - (void)windowDidEnterFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data.window;
-    SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-    NSWindow *nswindow = data.nswindow;
 
     inFullscreenTransition = NO;
 
@@ -2230,7 +2228,7 @@ Cocoa_GetWindowDisplayIndex(_THIS, SDL_Window * window)
 
     /* Not recognized via CHECK_WINDOW_MAGIC */
     if (data == nil) {
-        return 0;
+        return SDL_SetError("Window data not set");
     }
 
     /* NSWindow.screen may be nil when the window is off-screen. */
