@@ -31,23 +31,74 @@ public:
 	virtual bool eos() const = 0;
 
 	bool readBool();
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readInt8(int8_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readInt16(int16_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readInt32(int32_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readInt64(int64_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readUInt8(uint8_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readUInt16(uint16_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readUInt32(uint32_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readUInt64(uint64_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readFloat(float &val);
 
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readInt8BE(int8_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readInt16BE(int16_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readInt32BE(int32_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readInt64BE(int64_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readUInt16BE(uint16_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readUInt32BE(uint32_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readUInt64BE(uint64_t &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
 	int readFloatBE(float &val);
 	/**
 	 * @brief Read a fixed-width string from a file. It may be null-terminated, but
