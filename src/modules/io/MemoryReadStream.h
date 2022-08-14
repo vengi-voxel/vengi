@@ -15,15 +15,15 @@ namespace io {
  */
 class MemoryReadStream : public SeekableReadStream {
 protected:
-	const uint8_t *_buf;
+	const uint8_t *_buf = nullptr;
+	uint8_t *_ownBuf = nullptr;
 	int64_t _size;
 	int64_t _pos = 0;
 
 public:
-	MemoryReadStream(const void *buf, uint32_t size) : _buf((const uint8_t*)buf), _size(size) {
-	}
-	virtual ~MemoryReadStream() {
-	}
+	MemoryReadStream(const void *buf, uint32_t size);
+	MemoryReadStream(ReadStream &stream, uint32_t size);
+	virtual ~MemoryReadStream();
 
 	int64_t size() const override;
 	int64_t pos() const override;

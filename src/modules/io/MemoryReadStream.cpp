@@ -9,11 +9,25 @@
 
 namespace io {
 
+MemoryReadStream::MemoryReadStream(const void *buf, uint32_t size) : _buf((const uint8_t*)buf), _size(size) {
+}
+
+MemoryReadStream::MemoryReadStream(ReadStream &stream, uint32_t size) : _ownBuf((uint8_t*)core_malloc(size)), _size(size) {
+}
+
+MemoryReadStream::~MemoryReadStream() {
+	core_free(_ownBuf);
+}
+
 int MemoryReadStream::read(void *dataPtr, size_t dataSize) {
 	if (_pos + (int64_t)dataSize > _size) {
 		return -1;
 	}
-	core_memcpy(dataPtr, &_buf[_pos], dataSize);
+	if (_ownBuf) {
+		core_memcpy(dataPtr, &_ownBuf[_pos], dataSize);
+	} else {
+		core_memcpy(dataPtr, &_buf[_pos], dataSize);
+	}
 	_pos += (int64_t)dataSize;
 	return (int)dataSize;
 }
