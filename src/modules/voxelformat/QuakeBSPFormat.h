@@ -83,6 +83,10 @@ private:
 		image::ImagePtr image;
 	};
 
+	bool voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
+				  const core::DynamicArray<BspEdge> &edges, const core::DynamicArray<int32_t> &surfEdges,
+				  const core::DynamicArray<BspVertex> &vertices, SceneGraph &sceneGraph);
+
 	int32_t validateLump(const BspLump &lump, size_t elementSize) const;
 	bool loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, const BspHeader &header);
 	bool loadUFOAlienInvasionTextures(const core::String &filename, io::SeekableReadStream& stream, const BspHeader &header, core::DynamicArray<Texture> &textures, core::StringMap<image::ImagePtr> &textureMap);

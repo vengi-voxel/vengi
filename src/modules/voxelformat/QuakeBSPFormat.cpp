@@ -109,7 +109,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionFaces(io::SeekableReadStream &stream, c
 		return false;
 	}
 	if (stream.seek(header.lumps[_priv::ufoaiFacesLump].offset) == -1) {
-		Log::error("Invalid models lump offset - can't seek");
+		Log::error("Invalid faces lump offset - can't seek");
 		return false;
 	}
 	faces.resize(faceCount);
@@ -138,7 +138,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionEdges(io::SeekableReadStream &stream, c
 		return false;
 	}
 	if (stream.seek(header.lumps[_priv::ufoaiEdgesLump].offset) == -1) {
-		Log::error("Invalid models lump offset - can't seek");
+		Log::error("Invalid edges lump offset - can't seek");
 		return false;
 	}
 	edges.resize(edgeCount);
@@ -154,7 +154,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionEdges(io::SeekableReadStream &stream, c
 		return false;
 	}
 	if (stream.seek(header.lumps[_priv::ufoaiSurfedgesLump].offset) == -1) {
-		Log::error("Invalid models lump offset - can't seek");
+		Log::error("Invalid surfedges lump offset - can't seek");
 		return false;
 	}
 	surfEdges.resize(surfEdgesCount);
@@ -173,7 +173,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionVertices(io::SeekableReadStream &stream
 		return false;
 	}
 	if (stream.seek(header.lumps[_priv::ufoaiVerticesLump].offset) == -1) {
-		Log::error("Invalid models lump offset - can't seek");
+		Log::error("Invalid vertices lump offset - can't seek");
 		return false;
 	}
 	vertices.resize(vertexCount);
@@ -213,6 +213,12 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 		return false;
 	}
 
+	return voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph);
+}
+
+bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
+							  const core::DynamicArray<BspEdge> &edges, const core::DynamicArray<int32_t> &surfEdges,
+							  const core::DynamicArray<BspVertex> &vertices, SceneGraph &sceneGraph) {
 	int vertexCount = 0;
 	int indexCount = 0;
 	for (const Face &face : faces) {
@@ -221,6 +227,8 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 			indexCount += (face.edgeCount - 2) * 3;
 		}
 	}
+
+	Log::debug("Prepare voxeliziation bsp with %i vertices", vertexCount);
 
 	core::DynamicArray<glm::vec2> texcoords(vertexCount);
 	core::DynamicArray<glm::vec3> verts(vertexCount);
@@ -307,9 +315,14 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 				  vdim.x, vdim.y, vdim.z);
 	}
 
+	Log::debug("Voxelize bsp with %i vertices", vertexCount);
+
 	const int maxLevel = 1; // TODO: 8 - but we need to load the submodels (submodels 0-255 are visible) (CONTENTS_LEVEL_)
 	TriCollection subdivided[maxLevel];
 	for (int i = 0; i < numIndices; i += 3) {
+		if (stopExecution()) {
+			return false;
+		}
 		Tri tri;
 		for (int k = 0; k < 3; ++k) {
 			const int idx = indices[i + k];
@@ -328,6 +341,9 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 
 	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
 	for (int i = 0; i < maxLevel; ++i) {
+		if (stopExecution()) {
+			return false;
+		}
 		if (subdivided[i].empty()) {
 			continue;
 		}
