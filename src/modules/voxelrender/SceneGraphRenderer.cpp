@@ -118,7 +118,8 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, uint32_t f
 		if (_sceneMode) {
 			// TODO ik solver
 			const voxelformat::SceneGraphTransform &transform = node.transformForFrame(frame);
-			_renderer.setModelMatrix(id, transform.matrix(), glm::vec3(0.0f));
+			const glm::vec3 pivot = transform.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
+			_renderer.setModelMatrix(id, transform.matrix(), pivot);
 		} else {
 			_renderer.setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f));
 		}
