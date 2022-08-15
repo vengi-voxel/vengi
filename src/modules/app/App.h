@@ -264,6 +264,7 @@ public:
 	double nowSeconds() const;
 
 	AppState state() const;
+	bool shouldQuit() const;
 
 	/**
 	 * @brief Access to the FileSystem
@@ -322,6 +323,10 @@ inline const core::String& App::appname() const {
 
 inline AppState App::state() const {
 	return _curState;
+}
+
+inline bool App::shouldQuit() const {
+	return _nextState == AppState::Cleanup || _nextState == AppState::Destroy;
 }
 
 }
