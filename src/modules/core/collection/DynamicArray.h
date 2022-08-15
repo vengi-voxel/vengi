@@ -418,7 +418,7 @@ public:
 	}
 
 	inline const TYPE& operator[](size_t idx) const {
-		core_assert(idx < _size);
+		core_assert_msg(idx < _size, "idx is out of bounds: %i vs %i", (int)idx, (int)_size);
 		return _buffer[idx];
 	}
 
@@ -443,7 +443,7 @@ public:
 	}
 
 	inline TYPE& operator[](size_t idx) {
-		core_assert(idx < _size);
+		core_assert_msg(idx < _size, "idx is out of bounds: %i vs %i", (int)idx, (int)_size);
 		return _buffer[idx];
 	}
 
