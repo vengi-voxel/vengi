@@ -317,7 +317,8 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 			core::exchange(tri.vertices[k].y, tri.vertices[k].z);
 			tri.uv[k] = texcoords[idx];
 		}
-		const Texture &texture = textures[textureIndices[i]];
+		const int textureIdx = textureIndices[indices[i]];
+		const Texture &texture = textures[textureIdx];
 		// TODO: content flags to get the levels
 		int level = 0;
 		tri.texture = texture.image;
