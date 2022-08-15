@@ -88,11 +88,17 @@ private:
 				  const core::DynamicArray<BspVertex> &vertices, SceneGraph &sceneGraph);
 
 	int32_t validateLump(const BspLump &lump, size_t elementSize) const;
-	bool loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, const BspHeader &header);
-	bool loadUFOAlienInvasionTextures(const core::String &filename, io::SeekableReadStream& stream, const BspHeader &header, core::DynamicArray<Texture> &textures, core::StringMap<image::ImagePtr> &textureMap);
-	bool loadUFOAlienInvasionFaces(io::SeekableReadStream& stream, const BspHeader &header, core::DynamicArray<Face> &faces);
-	bool loadUFOAlienInvasionEdges(io::SeekableReadStream& stream, const BspHeader &header, core::DynamicArray<BspEdge> &edges, core::DynamicArray<int32_t> &surfEdges);
-	bool loadUFOAlienInvasionVertices(io::SeekableReadStream& stream, const BspHeader &header, core::DynamicArray<BspVertex> &vertices);
+	bool loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
+								 const BspHeader &header);
+	bool loadUFOAlienInvasionTextures(const core::String &filename, io::SeekableReadStream &stream,
+									  const BspHeader &header, core::DynamicArray<Texture> &textures,
+									  core::StringMap<image::ImagePtr> &textureMap);
+	bool loadUFOAlienInvasionFaces(io::SeekableReadStream &stream, const BspHeader &header,
+								   core::DynamicArray<Face> &faces);
+	bool loadUFOAlienInvasionEdges(io::SeekableReadStream &stream, const BspHeader &header,
+								   core::DynamicArray<BspEdge> &edges, core::DynamicArray<int32_t> &surfEdges);
+	bool loadUFOAlienInvasionVertices(io::SeekableReadStream &stream, const BspHeader &header,
+									  core::DynamicArray<BspVertex> &vertices);
 
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
