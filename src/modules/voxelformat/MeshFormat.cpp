@@ -116,7 +116,7 @@ MeshFormat::MeshExt::MeshExt(voxel::Mesh *_mesh, const SceneGraphNode& node, boo
 }
 
 bool MeshFormat::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) {
-	Log::debug("Meshes can't get voxelized yet");
+	Log::debug("Mesh %s can't get voxelized yet", filename.c_str());
 	return false;
 }
 

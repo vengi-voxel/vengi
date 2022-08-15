@@ -35,6 +35,7 @@ set(SRCS
 	CubFormat.h CubFormat.cpp
 	OBJFormat.h OBJFormat.cpp
 	PLYFormat.h PLYFormat.cpp
+	QuakeBSPFormat.h QuakeBSPFormat.cpp
 	SceneGraph.h SceneGraph.cpp
 	SceneGraphNode.h SceneGraphNode.cpp
 	SceneGraphUtil.h SceneGraphUtil.cpp
@@ -67,6 +68,7 @@ set(TEST_SRCS
 	tests/QBFormatTest.cpp
 	tests/QBCLFormatTest.cpp
 	tests/QEFFormatTest.cpp
+	tests/QuakeBSPFormatTest.cpp
 	tests/SceneGraphTest.cpp
 	tests/SceneGraphUtilTest.cpp
 	tests/SchematicFormatTest.cpp

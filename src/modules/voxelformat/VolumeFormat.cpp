@@ -32,6 +32,7 @@
 #include "voxelformat/QBFormat.h"
 #include "voxelformat/QBTFormat.h"
 #include "voxelformat/QEFFormat.h"
+#include "voxelformat/QuakeBSPFormat.h"
 #include "voxelformat/SLAB6VoxFormat.h"
 #include "voxelformat/SMFormat.h"
 #include "voxelformat/STLFormat.h"
@@ -75,6 +76,7 @@ const io::FormatDescription* voxelLoad() {
 		{"Minecraft region", {"mca", "mcr"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Minecraft level dat", {"dat"}, nullptr, 0u},
 		{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Quake BSP", {"bsp"}, [](uint32_t magic) { return magic == FourCC('I', 'B', 'S', 'P'); }, VOX_FORMAT_FLAG_MESH},
 		{"Sproxel csv", {"csv"}, nullptr, 0u},
 		{"StarMade", {"sment"}, nullptr, 0u},
 		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
@@ -213,6 +215,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 			format = core::make_shared<OBJFormat>();
 		} else if (ext == "stl") {
 			format = core::make_shared<STLFormat>();
+		} else if (ext == "bsp") {
+			format = core::make_shared<QuakeBSPFormat>();
 		} else if (ext == "ply") {
 			format = core::make_shared<PLYFormat>();
 		} else if (ext == "fbx") {

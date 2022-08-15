@@ -361,9 +361,11 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			node.setName(shape.name.c_str());
 			TriCollection subdivided;
 			subdivideShape(shape.mesh, textures, attrib, materials, subdivided);
-			PosMap posMap((int)subdivided.size() * 3);
-			transformTris(subdivided, posMap);
-			voxelizeTris(node, posMap, fillHollow);
+			if (!subdivided.empty()) {
+				PosMap posMap((int)subdivided.size() * 3);
+				transformTris(subdivided, posMap);
+				voxelizeTris(node, posMap, fillHollow);
+			}
 			return core::move(node);
 		};
 		if (shapes.size() > 1) {
