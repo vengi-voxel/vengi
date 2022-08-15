@@ -60,6 +60,8 @@ protected:
 	// TODO: unused atm
 	voxel::RawVolume* transformVolume(const SceneGraphTransform &t, const voxel::RawVolume *in) const;
 
+	static bool stopExecution();
+
 public:
 	virtual ~Format() = default;
 

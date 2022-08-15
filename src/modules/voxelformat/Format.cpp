@@ -3,6 +3,7 @@
  */
 
 #include "Format.h"
+#include "app/App.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "voxel/MaterialColor.h"
@@ -137,6 +138,10 @@ bool Format::save(const voxel::RawVolume* volume, const core::String &filename, 
 	node.setVolume(volume, false);
 	sceneGraph.emplace(core::move(node));
 	return saveGroups(sceneGraph, filename, stream);
+}
+
+bool Format::stopExecution() {
+	return app::App::getInstance()->shouldQuit();
 }
 
 }

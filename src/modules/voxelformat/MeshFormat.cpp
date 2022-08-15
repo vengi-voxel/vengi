@@ -56,6 +56,9 @@ glm::vec3 MeshFormat::getScale() {
 }
 
 void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
+	if (stopExecution()) {
+		return;
+	}
 	const glm::vec3 &mins = tri.mins();
 	const glm::vec3 &maxs = tri.maxs();
 	const glm::vec3 size = maxs - mins;
@@ -71,6 +74,9 @@ void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
 }
 
 void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) {
+	if (stopExecution()) {
+		return;
+	}
 	Log::debug("subdivided into %i triangles", (int)subdivided.size());
 	for (const Tri &tri : subdivided) {
 		const glm::vec2 &uv = tri.centerUV();
@@ -95,6 +101,9 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 	voxel::RawVolume *volume = node.volume();
 	voxel::PaletteLookup palLookup;
 	for (const auto &entry : posMap) {
+		if (stopExecution()) {
+			return;
+		}
 		const PosSampling &pos = entry->second;
 		const glm::vec4 &color = pos.avgColor();
 		const uint8_t index = palLookup.findClosestIndex(color);
