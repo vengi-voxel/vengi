@@ -141,7 +141,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	return *this;
 }
 
-SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type) {
+SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type), _properties(256) {
 	// ensure that there is at least one frame
 	SceneGraphKeyFrame frame;
 	_keyFrames.emplace_back(frame);
@@ -243,6 +243,30 @@ void SceneGraphNode::addProperties(const core::StringMap<core::String> &map) {
 	for (const auto &entry : map) {
 		setProperty(entry->key, entry->value);
 	}
+}
+
+bool SceneGraphNode::setProperty(const core::String& key, const char *value) {
+	if (_properties.size() >= _properties.capacity()) {
+		return false;
+	}
+	_properties.put(key, value);
+	return true;
+}
+
+bool SceneGraphNode::setProperty(const core::String& key, bool value) {
+	if (_properties.size() >= _properties.capacity()) {
+		return false;
+	}
+	_properties.put(key, core::string::toString(value));
+	return true;
+}
+
+bool SceneGraphNode::setProperty(const core::String& key, const core::String& value) {
+	if (_properties.size() >= _properties.capacity()) {
+		return false;
+	}
+	_properties.put(key, value);
+	return true;
 }
 
 void SceneGraphNode::setTransform(uint32_t frameIdx, const SceneGraphTransform &transform, bool updateMatrix) {

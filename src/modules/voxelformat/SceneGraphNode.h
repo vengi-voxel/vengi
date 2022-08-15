@@ -236,17 +236,9 @@ public:
 	core::String property(const core::String& key) const;
 	void addProperties(const core::StringMap<core::String>& map);
 
-	void setProperty(const core::String& key, const char *value) {
-		_properties.put(key, value);
-	}
-
-	void setProperty(const core::String& key, bool value) {
-		_properties.put(key, core::string::toString(value));
-	}
-
-	void setProperty(const core::String& key, const core::String& value) {
-		_properties.put(key, value);
-	}
+	bool setProperty(const core::String& key, const char *value);
+	bool setProperty(const core::String& key, bool value);
+	bool setProperty(const core::String& key, const core::String& value);
 };
 
 inline SceneGraphKeyFrame& SceneGraphNode::keyFrame(uint32_t frameIdx) {
