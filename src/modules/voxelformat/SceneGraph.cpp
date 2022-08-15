@@ -139,7 +139,7 @@ SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) {
 }
 
 int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
-	core_assert_msg((int)node.type() >= 0 && (int)node.type() < (int)SceneGraphNodeType::Max, "%i", (int)node.type());
+	core_assert_msg((int)node.type() < (int)SceneGraphNodeType::Max, "%i", (int)node.type());
 	if (node.type() == SceneGraphNodeType::Root && _nextNodeId != 0) {
 		Log::error("No second root node is allowed in the scene graph");
 		node.release();

@@ -157,7 +157,7 @@ private:
 	double _animationSpeed = 0.0;
 	int _currentAnimationLayer = 0;
 	double _nextFrameSwitch = 0.0;
-	uint32_t _currentFrame = 0;
+	voxelformat::FrameIndex _currentFrame = 0;
 
 	int _initialized = 0;
 	int _size = 128;
@@ -271,8 +271,8 @@ public:
 	bool cameraRotate() const;
 	bool cameraPan() const;
 
-	uint32_t currentFrame() const;
-	void setCurrentFrame(uint32_t frame);
+	voxelformat::FrameIndex currentFrame() const;
+	void setCurrentFrame(voxelformat::FrameIndex frame);
 
 	void setActiveCamera(video::Camera* camera);
 	video::Camera* activeCamera();
@@ -460,11 +460,11 @@ inline bool SceneManager::hasClipboardCopy() const {
 	return _copy != nullptr;
 }
 
-inline uint32_t SceneManager::currentFrame() const {
+inline voxelformat::FrameIndex SceneManager::currentFrame() const {
 	return _currentFrame;
 }
 
-inline void SceneManager::setCurrentFrame(uint32_t frame) {
+inline void SceneManager::setCurrentFrame(voxelformat::FrameIndex frame) {
 	_currentFrame = frame;
 }
 

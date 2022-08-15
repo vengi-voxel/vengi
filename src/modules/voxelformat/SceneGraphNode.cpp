@@ -113,17 +113,15 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_children = core::move(move._children);
 	_type = move._type;
 	move._type = SceneGraphNodeType::Max;
-	_visible = move._visible;
-	_locked = move._locked;
-	_volumeOwned = move._volumeOwned;
-	move._volumeOwned = false;
+	_flags = move._flags;
+	move._flags &= ~VolumeOwned;
 }
 
 SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	if (&move == this) {
 		return *this;
 	}
-	setVolume(move._volume, move._volumeOwned);
+	setVolume(move._volume, move._flags & VolumeOwned);
 	move._volume = nullptr;
 	_name = core::move(move._name);
 	_id = move._id;
@@ -135,13 +133,13 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
 	_type = move._type;
-	_visible = move._visible;
-	_locked = move._locked;
-	move._volumeOwned = false;
+	_flags = move._flags;
+	move._flags &= ~VolumeOwned;
 	return *this;
 }
 
-SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type), _properties(256) {
+SceneGraphNode::SceneGraphNode(SceneGraphNodeType type)
+	: _type(type), _flags(VolumeOwned | Visible), _properties(256) {
 	// ensure that there is at least one frame
 	SceneGraphKeyFrame frame;
 	_keyFrames.emplace_back(frame);
@@ -165,25 +163,33 @@ voxel::Palette &SceneGraphNode::palette() {
 }
 
 void SceneGraphNode::release() {
-	if (_volumeOwned) {
+	if (_flags & VolumeOwned) {
 		delete _volume;
 	}
 	_volume = nullptr;
 }
 
 void SceneGraphNode::releaseOwnership() {
-	_volumeOwned = false;
+	_flags &= ~VolumeOwned;
 }
 
 void SceneGraphNode::setVolume(voxel::RawVolume *volume, bool transferOwnership) {
 	release();
-	_volumeOwned = transferOwnership;
+	if (transferOwnership) {
+		_flags |= VolumeOwned;
+	} else {
+		_flags &= ~VolumeOwned;
+	}
 	_volume = volume;
 }
 
 void SceneGraphNode::setVolume(const voxel::RawVolume *volume, bool transferOwnership) {
 	release();
-	_volumeOwned = transferOwnership;
+	if (transferOwnership) {
+		_flags |= VolumeOwned;
+	} else {
+		_flags &= ~VolumeOwned;
+	}
 	_volume = (voxel::RawVolume *)volume;
 }
 
@@ -269,7 +275,7 @@ bool SceneGraphNode::setProperty(const core::String& key, const core::String& va
 	return true;
 }
 
-void SceneGraphNode::setTransform(uint32_t frameIdx, const SceneGraphTransform &transform, bool updateMatrix) {
+void SceneGraphNode::setTransform(FrameIndex frameIdx, const SceneGraphTransform &transform, bool updateMatrix) {
 	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
 	nodeFrame.transform = transform;
 	if (updateMatrix) {
@@ -277,7 +283,7 @@ void SceneGraphNode::setTransform(uint32_t frameIdx, const SceneGraphTransform &
 	}
 }
 
-void SceneGraphNode::setPivot(uint32_t frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
+void SceneGraphNode::setPivot(FrameIndex frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
 	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
 	nodeFrame.transform.setPivot(glm::vec3(pos) / glm::vec3(size));
 }
@@ -286,7 +292,7 @@ const SceneGraphKeyFrames &SceneGraphNode::keyFrames() const {
 	return _keyFrames;
 }
 
-bool SceneGraphNode::addKeyFrame(uint32_t frame) {
+bool SceneGraphNode::addKeyFrame(FrameIndex frame) {
 	for (size_t i = 0; i < _keyFrames.size(); ++i) {
 		const SceneGraphKeyFrame &kf = _keyFrames[i];
 		if (kf.frame == frame) {
@@ -299,7 +305,7 @@ bool SceneGraphNode::addKeyFrame(uint32_t frame) {
 	return true;
 }
 
-bool SceneGraphNode::removeKeyFrame(uint32_t frame) {
+bool SceneGraphNode::removeKeyFrame(FrameIndex frame) {
 	const uint32_t keyFrameId = keyFrameForFrame(frame);
 	if (keyFrameId == 0) {
 		return false;
@@ -316,7 +322,7 @@ bool SceneGraphNode::setKeyFrames(const SceneGraphKeyFrames &kf) {
 	return true;
 }
 
-uint32_t SceneGraphNode::keyFrameForFrame(uint32_t frame) const {
+uint32_t SceneGraphNode::keyFrameForFrame(FrameIndex frame) const {
 	for (size_t i = 0; i < _keyFrames.size(); ++i) {
 		const SceneGraphKeyFrame &kf = _keyFrames[i];
 		if (kf.frame > frame) {
@@ -329,11 +335,11 @@ uint32_t SceneGraphNode::keyFrameForFrame(uint32_t frame) const {
 	return 0;
 }
 
-SceneGraphTransform SceneGraphNode::transformForFrame(uint32_t current) {
+SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex current) {
 	const SceneGraphTransform *source = nullptr;
 	const SceneGraphTransform *target = nullptr;
-	uint32_t start = 0;
-	uint32_t end = 0;
+	FrameIndex start = 0;
+	FrameIndex end = 0;
 	InterpolationType interpolationType = InterpolationType::Linear;
 
 	for (const SceneGraphKeyFrame &kf : _keyFrames) {

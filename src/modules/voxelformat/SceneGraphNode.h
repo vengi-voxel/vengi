@@ -25,7 +25,9 @@ class RawVolume;
 
 namespace voxelformat {
 
-enum class SceneGraphNodeType {
+using FrameIndex = uint32_t;
+
+enum class SceneGraphNodeType : uint8_t {
 	Root,
 	Model,
 	Group,
@@ -75,7 +77,7 @@ public:
 	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &size) const;
 };
 
-enum class InterpolationType {
+enum class InterpolationType : uint8_t {
 	Instant = 0,
 	Linear = 1,
 	QuadEaseIn = 2,
@@ -100,7 +102,7 @@ static constexpr const char *InterpolationTypeStr[] {
 static_assert(core::enumVal(voxelformat::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
 
 struct SceneGraphKeyFrame {
-	uint32_t frame = 0;
+	FrameIndex frame = 0;
 	InterpolationType interpolation = InterpolationType::Linear;
 	bool longRotation = false;
 	SceneGraphTransform transform;
@@ -121,21 +123,24 @@ public:
 	SceneGraphNode &operator=(SceneGraphNode &&move) noexcept;
 
 protected:
-	int _id = -1;
-	int _parent = 0;
-	uint32_t _currentAnimKeyFrame = 0;
-	SceneGraphNodeType _type;
-	core::String _name;
-	core::RGBA _color;
-	voxel::RawVolume *_volume = nullptr;
-	SceneGraphKeyFrames _keyFrames;
 	/**
 	 * this will ensure that we are releasing the volume memory in this instance
 	 * @sa release()
 	 */
-	bool _volumeOwned = true;
-	bool _visible = true;
-	bool _locked = false;
+	static constexpr uint8_t VolumeOwned = 1 << 0;
+	static constexpr uint8_t Visible = 1 << 1;
+	static constexpr uint8_t Locked = 1 << 2;
+
+	int _id = -1;
+	int _parent = 0;
+	FrameIndex _currentAnimKeyFrame = 0;
+	SceneGraphNodeType _type;
+	uint8_t _flags = 0u;
+	core::RGBA _color;
+
+	core::String _name;
+	voxel::RawVolume *_volume = nullptr;
+	SceneGraphKeyFrames _keyFrames;
 	core::Buffer<int, 32> _children;
 	core::StringMap<core::String> _properties;
 	core::Optional<voxel::Palette> _palette;
@@ -160,14 +165,14 @@ public:
 	core::RGBA color() const;
 	void setColor(core::RGBA color);
 
-	bool addKeyFrame(uint32_t frame);
-	bool removeKeyFrame(uint32_t frame);
+	bool addKeyFrame(FrameIndex frame);
+	bool removeKeyFrame(FrameIndex frame);
 	const SceneGraphKeyFrames &keyFrames() const;
 	bool setKeyFrames(const SceneGraphKeyFrames&);
 	/**
 	 * @brief Get the index of the keyframe for the given frame
 	 */
-	uint32_t keyFrameForFrame(uint32_t frame) const;
+	uint32_t keyFrameForFrame(FrameIndex frame) const;
 
 	int id() const;
 	void setId(int id);
@@ -180,18 +185,18 @@ public:
 
 	bool addChild(int id);
 	bool removeChild(int id);
-	void setTransform(uint32_t frameIdx, const SceneGraphTransform &transform, bool updateMatrix);
-	SceneGraphTransform &transform(uint32_t frameIdx = 0);
-	const SceneGraphTransform &transform(uint32_t frameIdx = 0) const;
+	void setTransform(FrameIndex frameIdx, const SceneGraphTransform &transform, bool updateMatrix);
+	SceneGraphTransform &transform(FrameIndex frameIdx = 0);
+	const SceneGraphTransform &transform(FrameIndex frameIdx = 0) const;
 
 	/**
 	 * @brief Interpolates the transforms for the given frame. It searches the keyframe before and after
 	 * the given input frame and interpolates according to the given delta frames between the particular
 	 * keyframes.
 	 */
-	SceneGraphTransform transformForFrame(uint32_t frame);
+	SceneGraphTransform transformForFrame(FrameIndex frame);
 
-	SceneGraphKeyFrame &keyFrame(uint32_t frameIdx);
+	SceneGraphKeyFrame &keyFrame(FrameIndex frameIdx);
 
 	/**
 	 * @return voxel::RawVolume - might be @c nullptr
@@ -228,7 +233,7 @@ public:
 	void setVisible(bool visible);
 	bool locked() const;
 	void setLocked(bool locked);
-	void setPivot(uint32_t frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size);
+	void setPivot(FrameIndex frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size);
 
 	const SceneGraphNodeChildren &children() const;
 	const core::StringMap<core::String> &properties() const;
@@ -241,18 +246,18 @@ public:
 	bool setProperty(const core::String& key, const core::String& value);
 };
 
-inline SceneGraphKeyFrame& SceneGraphNode::keyFrame(uint32_t frameIdx) {
+inline SceneGraphKeyFrame& SceneGraphNode::keyFrame(FrameIndex frameIdx) {
 	if (_keyFrames.size() <= frameIdx) {
 		_keyFrames.resize((int)frameIdx + 1);
 	}
 	return _keyFrames[frameIdx];
 }
 
-inline SceneGraphTransform& SceneGraphNode::transform(uint32_t frameIdx) {
+inline SceneGraphTransform& SceneGraphNode::transform(FrameIndex frameIdx) {
 	return _keyFrames[frameIdx].transform;
 }
 
-inline const SceneGraphTransform& SceneGraphNode::transform(uint32_t frameIdx) const {
+inline const SceneGraphTransform& SceneGraphNode::transform(FrameIndex frameIdx) const {
 	return _keyFrames[frameIdx].transform;
 }
 
@@ -311,19 +316,28 @@ inline void SceneGraphNode::setName(const core::String &name) {
 }
 
 inline bool SceneGraphNode::visible() const {
-	return _visible;
+	return _flags & Visible;
 }
 
 inline void SceneGraphNode::setVisible(bool visible) {
-	_visible = visible;
+	if (visible) {
+		_flags |= Visible;
+	} else {
+		_flags &= ~Visible;
+	}
 }
 
 inline bool SceneGraphNode::locked() const {
-	return _locked;
+	return _flags & Locked;
 }
 
 inline void SceneGraphNode::setLocked(bool locked) {
-	_locked = locked;
+	if (locked) {
+		_flags |= Locked;
+	} else {
+		_flags &= ~Locked;
+	}
+
 }
 
 } // namespace voxel

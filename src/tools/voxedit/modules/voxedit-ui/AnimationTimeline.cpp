@@ -16,7 +16,7 @@ namespace voxedit {
 
 void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDown) {
 	const EditMode editMode = sceneMgr().editMode();
-	uint32_t currentFrame = sceneMgr().currentFrame();
+	voxelformat::FrameIndex currentFrame = sceneMgr().currentFrame();
 	if (editMode == EditMode::Scene) {
 		const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 		ImGui::SetNextWindowDockID(dockIdMainDown, ImGuiCond_Appearing);
@@ -38,7 +38,7 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 			uint32_t endFrame = 64; // TODO:
 			if (ImGui::BeginNeoSequencer("##neo-sequencer", &currentFrame, &startFrame, &endFrame)) {
 				for (voxelformat::SceneGraphNode &modelNode : sceneGraph) {
-					core::DynamicArray<uint32_t *> keys;
+					core::DynamicArray<voxelformat::FrameIndex *> keys;
 					keys.reserve(modelNode.keyFrames().size());
 					for (voxelformat::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
 						keys.push_back(&kf.frame);
