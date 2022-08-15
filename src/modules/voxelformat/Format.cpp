@@ -132,7 +132,7 @@ bool Format::save(const voxel::RawVolume* volume, const core::String &filename, 
 	if (volume == nullptr) {
 		return false;
 	}
-	SceneGraph sceneGraph;
+	SceneGraph sceneGraph(2);
 	SceneGraphNode node;
 	node.setVolume(volume, false);
 	sceneGraph.emplace(core::move(node));
