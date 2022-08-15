@@ -244,6 +244,7 @@ function(engine_add_executable)
 	engine_add_debuggger(${_EXE_TARGET})
 	engine_add_valgrind(${_EXE_TARGET})
 	engine_add_perf(${_EXE_TARGET})
+	engine_add_heaptrack(${_EXE_TARGET})
 	engine_add_apitrace(${_EXE_TARGET})
 endfunction()
 
