@@ -31,7 +31,7 @@ protected:
 	core::DynamicArray<core::String> _animations;
 
 public:
-	SceneGraph();
+	SceneGraph(int nodes = 262144);
 	~SceneGraph();
 
 	SceneGraph(SceneGraph&& other) noexcept;

@@ -13,7 +13,7 @@
 
 namespace voxelformat {
 
-SceneGraph::SceneGraph() : _nodes(262144) {
+SceneGraph::SceneGraph(int nodes) : _nodes(nodes) {
 	clear();
 }
 
