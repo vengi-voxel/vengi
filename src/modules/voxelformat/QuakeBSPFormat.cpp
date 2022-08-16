@@ -230,11 +230,11 @@ bool QuakeBSPFormat::loadQuake1Faces(io::SeekableReadStream &stream, const BspHe
 		wrap(stream.readInt16(face.edgeCount))
 		wrap(stream.readInt16(face.textureId))
 
-		stream.skip(4); // lightofsDay
-		stream.skip(4); // lightofsNight
+		stream.skip(4); // 4 byte styles
+		stream.skip(4); // lightofs
 	}
 	Log::debug("Loaded %i faces", faceCount);
-	return true;
+	return !faces.empty();
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionFaces(io::SeekableReadStream &stream, const BspHeader &header,
