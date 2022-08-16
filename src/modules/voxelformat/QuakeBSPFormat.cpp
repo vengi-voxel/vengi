@@ -4,6 +4,9 @@
 
 #include "QuakeBSPFormat.h"
 #include "app/App.h"
+#include "core/collection/Buffer.h"
+#include "image/Image.h"
+#include "io/Filesystem.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/GameConfig.h"
@@ -80,24 +83,27 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 		core::DynamicArray<int32_t> dataofs;
 	};
 
+	TextureLump m;
+	const uint32_t baseOffset = header.lumps[_priv::quake1TexturesLump].offset;
 	{
-		const uint32_t baseOffset = header.lumps[_priv::quake1TexturesLump].offset;
 		if (stream.seek(baseOffset) == -1) {
 			Log::error("Invalid texture lump offset - can't seek");
 			return false;
 		}
 
-		TextureLump texLump;
-		stream.readInt32(texLump.nummiptex);
-		texLump.dataofs.resize(texLump.nummiptex);
-		for (int i = 0; i < texLump.nummiptex; ++i) {
-			stream.readInt32(texLump.dataofs[i]);
+		stream.readInt32(m.nummiptex);
+		m.dataofs.resize(m.nummiptex);
+		for (int i = 0; i < m.nummiptex; ++i) {
+			stream.readInt32(m.dataofs[i]);
 		}
 
-		miptex.resize(texLump.nummiptex);
-		for (int i = 0; i < texLump.nummiptex; ++i) {
-			if (stream.seek(baseOffset + texLump.dataofs[i]) == -1) {
-				Log::error("Invalid texinfo offset - can't seek (%i)", texLump.dataofs[i]);
+		miptex.resize(m.nummiptex);
+		for (int i = 0; i < m.nummiptex; ++i) {
+			if (m.dataofs[i] == -1) {
+				continue;
+			}
+			if (stream.seek(baseOffset + m.dataofs[i]) == -1) {
+				Log::error("Invalid texinfo offset - can't seek (%i)", m.dataofs[i]);
 				return false;
 			}
 
@@ -133,25 +139,57 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 		wrap(stream.readUInt32(texture.surfaceFlags))
 		wrap(stream.readUInt32(texture.value))
 		SDL_strlcpy(texture.name, miptex[texture.value].name, sizeof(texture.name));
+	}
+
+	voxel::Palette pal;
+	pal.quake1();
+
+	for (int32_t i = 0; i < texInfoCount; i++) {
+		Texture &texture = textures[i];
 
 		auto iter = textureMap.find(texture.name);
 		if (iter != textureMap.end()) {
-			Log::debug("texture for material '%s' is already loaded", texture.name);
 			texture.image = iter->second;
 			continue;
 		}
 
-		core::String textureName = texture.name;
-		const core::String &path = extractBaseDir(filename);
-		textureName = core::string::path(path, "textures", textureName);
-		Log::debug("Search image %s in path %s", textureName.c_str(), path.c_str());
-		image::ImagePtr tex = image::loadImage(textureName, false);
-		if (tex->isLoaded()) {
-			Log::debug("Use image %s", textureName.c_str());
-			textureMap.put(textureName, tex);
+		Quake1Texinfo &texinfo = miptex[texture.value];
+
+		image::ImagePtr tex = image::createEmptyImage(texture.name);
+		const int width = (int)texinfo.width;
+		const int height = (int)texinfo.width;
+
+		if (stream.seek(baseOffset + m.dataofs[texture.value] + (int)sizeof(Quake1Texinfo)) == -1) {
+			Log::error("Failed to seek to pixel data %i", i);
+			continue;
+		}
+		const int pixelSize = width * height;
+		uint8_t *pixels = (uint8_t*)core_malloc(pixelSize);
+		if (stream.read(pixels, pixelSize) == -1) {
+			Log::error("Failed to read %i bytes to pixel data %i", pixelSize, i);
+			continue;
+		}
+
+		const int len = width * height * 4;
+		core::Buffer<uint8_t> buffer(len);
+		uint8_t *buf = buffer.data();
+		for (int i = 0; i < width * height; ++i) {
+			const uint8_t palIdx = pixels[i];
+			core::RGBA color = pal.colors[palIdx];
+			*(core::RGBA*)buf = color;
+			buf += sizeof(core::RGBA);
+		}
+		if (tex->loadRGBA(buf, width, height)) {
+			Log::debug("Use image %s", texture.name);
+			textureMap.put(texture.name, tex);
 			texture.image = tex;
+#if 0
+			core::String png = tex->name() + ".png";
+			tex->writePng(png.c_str(), buffer.data(), width, height, 4);
+			Log::error("write png file %s", png.c_str());
+#endif
 		} else {
-			Log::warn("Failed to load %s", textureName.c_str());
+			Log::warn("Failed to load %s", texture.name);
 		}
 	}
 	return true;
