@@ -227,7 +227,7 @@ void OBJFormat::subdivideShape(const tinyobj::mesh_t &mesh, const core::StringMa
 			if (!diffuseTexture.empty()) {
 				auto textureIter = textures.find(diffuseTexture);
 				if (textureIter != textures.end()) {
-					tri.texture = textureIter->second;
+					tri.texture = textureIter->second.get();
 				}
 			}
 			const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2], 1.0f);

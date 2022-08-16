@@ -22,7 +22,7 @@ TEST_F(TriTest, colorAt) {
 	pal.nippon();
 
 	Tri tri;
-	tri.texture = texture;
+	tri.texture = texture.get();
 	for (int i = 0; i < 256; ++i) {
 		tri.uv[0] = glm::vec2((float)i / 256.0f, 0.0f);
 		tri.uv[1] = glm::vec2((float)i / 256.0f, 1.0f);
@@ -49,7 +49,7 @@ TEST_F(TriTest, colorAt4x4) {
 	ASSERT_EQ(h, texture->height());
 
 	Tri tri;
-	tri.texture = texture;
+	tri.texture = texture.get();
 	for (int i = 0; i < w; ++i) {
 		for (int j = 0; j < h; ++j) {
 			const float epsilon = 0.0001f;

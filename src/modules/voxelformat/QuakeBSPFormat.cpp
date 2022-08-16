@@ -334,7 +334,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 		const Texture &texture = textures[textureIdx];
 		// TODO: content flags to get the levels
 		int level = 0;
-		tri.texture = texture.image;
+		tri.texture = texture.image.get();
 		Log::debug("idx %i - tri area: %f", i, tri.area());
 		subdivideTri(tri, subdivided[level]);
 	}

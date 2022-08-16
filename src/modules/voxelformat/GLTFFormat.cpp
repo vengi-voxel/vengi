@@ -737,7 +737,7 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &mod
 		if (!v.texture.empty()) {
 			auto textureIter = textures.find(v.texture);
 			if (textureIter != textures.end()) {
-				tri.texture = textureIter->second;
+				tri.texture = textureIter->second.get();
 			}
 		} else {
 			Log::debug("No texture for vertex found");
