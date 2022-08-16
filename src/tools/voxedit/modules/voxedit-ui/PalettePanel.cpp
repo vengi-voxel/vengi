@@ -166,7 +166,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			ImGui::OpenPopup(POPUP_TITLE_LOAD_PALETTE);
 		}
 
-		static const char *builtIn[] = {"built-in:minecraft", "built-in:magicavoxel", "built-in:nippon"};
+		static const char *builtIn[] = {"built-in:minecraft", "built-in:magicavoxel", "built-in:nippon", "built-in:quake1"};
 		if (ImGui::BeginPopupModal(POPUP_TITLE_LOAD_PALETTE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			ImGui::TextUnformatted("Select the palette");
 			ImGui::Separator();
@@ -190,6 +190,8 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 					palette.magicaVoxel();
 				} else if (_currentSelectedPalette == builtIn[2]) {
 					palette.nippon();
+				} else if (_currentSelectedPalette == builtIn[3]) {
+					palette.quake1();
 				} else {
 					sceneMgr().loadPalette(_currentSelectedPalette);
 				}

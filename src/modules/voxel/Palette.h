@@ -47,6 +47,7 @@ public:
 	bool minecraft();
 	bool magicaVoxel();
 	bool nippon();
+	bool quake1();
 
 	void markDirty();
 	inline bool isDirty() const {
