@@ -59,6 +59,11 @@ void AbstractTest::TestApp::run() {
 	}
 }
 
+AppState AbstractTest::TestApp::onRunning() {
+	Super::onRunning();
+	return AppState::Running;
+}
+
 AppState AbstractTest::TestApp::onCleanup() {
 	_test->onCleanupApp();
 	return Super::onCleanup();
@@ -78,6 +83,7 @@ AppState AbstractTest::TestApp::onInit() {
 }
 
 AbstractTest::TestApp::~TestApp() {
+	requestQuit();
 	while (AppState::InvalidAppState != _curState) {
 		core_trace_scoped(AppMainLoop);
 		onFrame();
