@@ -276,7 +276,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionFacesForLevel(io::SeekableReadStream &s
 	const uint32_t mask = 1u << level;
 	// a face that is in level 1, 2 and 3 is in model 7 - visible everywhere is 255
 	// not marked for any level is 0 (we are skipping this)
-	for (uint32_t i = 0; i < 255; ++i) {
+	for (uint32_t i = 0; i <= 255; ++i) {
 		if (i && !(i & mask)) {
 			continue;
 		}
@@ -459,6 +459,9 @@ bool QuakeBSPFormat::loadUFOAlienInvasionModels(io::SeekableReadStream& stream, 
 		Model &mdl = models[i];
 		wrap(stream.readInt32(mdl.faceId))
 		wrap(stream.readInt32(mdl.faceCount))
+		if (mdl.faceCount == 0) {
+			Log::debug("model %i (of %i) has no faces", i, modelCount);
+		}
 	}
 	Log::debug("Loaded %i models", modelCount);
 	return true;
@@ -532,9 +535,10 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 	const int maxLevel = parseMaxLevel(entities);
 
 	bool state = false;
+	core::DynamicArray<Face> facesLevel;
 	for (int i = 0; i < maxLevel; ++i) {
 		Log::debug("Load level %i/%i", i, maxLevel);
-		core::DynamicArray<Face> facesLevel;
+		facesLevel.clear();
 		if (!loadUFOAlienInvasionFacesForLevel(stream, header, faces, facesLevel, models, i)) {
 			Log::debug("No content at level %i - skipping", i);
 			continue;
