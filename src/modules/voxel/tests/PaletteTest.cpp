@@ -5,10 +5,18 @@
 #include "voxel/Palette.h"
 #include "app/tests/AbstractTest.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/PaletteLookup.h"
 
 namespace voxel {
 
 class PaletteTest : public app::AbstractTest {};
+
+TEST_F(PaletteTest, testPaletteLookup) {
+	PaletteLookup pal;
+	core::RGBA rgba{0xffffffff};
+	EXPECT_EQ(0, pal.findClosestIndex(rgba));
+	EXPECT_EQ(0, pal.findClosestIndex(rgba));
+}
 
 TEST_F(PaletteTest, testAddColorsNoDup) {
 	Palette pal;
