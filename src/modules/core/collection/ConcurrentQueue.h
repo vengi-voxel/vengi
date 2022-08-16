@@ -56,6 +56,17 @@ public:
 		_data.release();
 	}
 
+	template<typename ITER>
+	void push(ITER first, ITER last) {
+		{
+			core::ScopedLock lock(_mutex);
+			for (ITER i = first; i != last; ++i) {
+				_data.push_back(*i);
+			}
+		}
+		_conditionVariable.notify_one();
+	}
+
 	void push(Data const& data) {
 		{
 			core::ScopedLock lock(_mutex);
