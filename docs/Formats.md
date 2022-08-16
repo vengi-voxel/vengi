@@ -16,6 +16,7 @@
 | Minecraft Schematics       | schem     | X       |        | X          | X       | X      | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
 | Minecraft Schematics       | nbt       | X       |        | X          | X       | X      | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
 | Nick's Voxel Model         | nvm       | X       |        | X          |         | X      |                                                                          |
+| Quake 1/UFO:Alien Invasion | bsp       | X       |        |            |         |        |                                                                          |
 | Qubicle Exchange           | qef       | X       | X      | X          |         |        | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qef/)      |
 | Qubicle Binary Tree        | qbt       | X       | X      | X          |         | X      | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qbt/)      |
 | Qubicle Binary             | qb        | X       | X      | X          |         | X      | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qb/)       |
@@ -26,7 +27,7 @@
 | Sandbox VoxEdit Tile       | vxt       | X       |        |            |         | X      |                                                                          |
 | SLAB6                      | kv6       | X       |        | X          | X       | X      | [spec](https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt)     |
 | Sproxel                    | csv       | X       | X      | X          |         |        |                                                                          |
-| StarMade                   | sment     | X       |        |            |         | X      | [spec](https://starmadepedia.net/wiki/Blueprint_File_Formats)            |
+| StarMade                   | sment     | X       |        | X          |         | X      | [spec](https://starmadepedia.net/wiki/Blueprint_File_Formats)            |
 | Wavefront Object           | obj       | X       | X      |            |         |        |                                                                          |
 | Standard Triangle Language | stl       | X       | X      |            |         |        |                                                                          |
 | GL Transmission Format     | gltf      | X       | X      |            |         | X      | [spec](https://github.com/KhronosGroup/glTF/tree/main/specification/2.0) |
