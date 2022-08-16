@@ -761,14 +761,16 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &mod
 	int n = 0;
 	for (auto &f : futures) {
 		const TriCollection &tris = f.get();
-		PosMap posMap((int)tris.size() * 3);
-		transformTris(tris, posMap);
-		for (const auto &entry : posMap) {
-			const PosSampling &pos = entry->second;
-			const glm::vec4 &color = pos.avgColor();
-			const uint8_t index = palLookup.findClosestIndex(color);
-			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-			volume->setVoxel(entry->first, voxel);
+		if (!tris.empty()) {
+			PosMap posMap((int)tris.size() * 3);
+			transformTris(tris, posMap);
+			for (const auto &entry : posMap) {
+				const PosSampling &pos = entry->second;
+				const glm::vec4 &color = pos.avgColor();
+				const uint8_t index = palLookup.findClosestIndex(color);
+				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+				volume->setVoxel(entry->first, voxel);
+			}
 		}
 		++n;
 		Log::debug("%i/%i", n, (int)maxN / 3);

@@ -180,6 +180,10 @@ bool STLFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	node.setName(filename);
 	TriCollection subdivided;
 	subdivideShape(faces, subdivided);
+	if (subdivided.empty()) {
+		Log::warn("Empty volume");
+		return false;
+	}
 	PosMap posMap((int)subdivided.size() * 3);
 	transformTris(subdivided, posMap);
 	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
