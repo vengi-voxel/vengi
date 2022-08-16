@@ -8,10 +8,20 @@
 #include "core/FourCC.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
+#include "core/StandardLib.h"
 #include "core/Var.h"
+#include "core/collection/ConcurrentQueue.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Concurrency.h"
+#include "core/concurrent/Lock.h"
+#include "core/concurrent/ThreadPool.h"
+#include "voxel/PaletteLookup.h"
+#include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelutil/VoxelUtil.h"
+#include <SDL_timer.h>
+#include <future>
 
 namespace voxelformat {
 
@@ -22,6 +32,14 @@ static const uint32_t ufoaiTexinfoLump = 5;
 static const uint32_t ufoaiFacesLump = 6;
 static const uint32_t ufoaiEdgesLump = 11;
 static const uint32_t ufoaiSurfedgesLump = 12;
+
+static const uint32_t quake1VerticesLump = 3;
+static const uint32_t quake1TexturesLump = 2;
+static const uint32_t quake1TexinfoLump = 6;
+static const uint32_t quake1FacesLump = 7;
+static const uint32_t quake1EdgesLump = 12;
+static const uint32_t quake1SurfedgesLump = 13;
+
 
 } // namespace _priv
 
@@ -47,6 +65,93 @@ static core::String extractBaseDir(const core::String &filename) {
 		return "";
 	}
 	return filename.substr(0, pos);
+}
+
+bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::SeekableReadStream &stream,
+												  const BspHeader &header, core::DynamicArray<Texture> &textures,
+												  core::StringMap<image::ImagePtr> &textureMap) {
+	core::DynamicArray<Quake1Texinfo> miptex;
+
+	struct TextureLump {
+		int32_t nummiptex;
+		core::DynamicArray<int32_t> dataofs;
+	};
+
+	{
+		const uint32_t baseOffset = header.lumps[_priv::quake1TexturesLump].offset;
+		if (stream.seek(baseOffset) == -1) {
+			Log::error("Invalid texture lump offset - can't seek");
+			return false;
+		}
+
+		TextureLump texLump;
+		stream.readInt32(texLump.nummiptex);
+		texLump.dataofs.resize(texLump.nummiptex);
+		for (int i = 0; i < texLump.nummiptex; ++i) {
+			stream.readInt32(texLump.dataofs[i]);
+		}
+
+		miptex.resize(texLump.nummiptex);
+		for (int i = 0; i < texLump.nummiptex; ++i) {
+			if (stream.seek(baseOffset + texLump.dataofs[i]) == -1) {
+				Log::error("Invalid texinfo offset - can't seek (%i)", texLump.dataofs[i]);
+				return false;
+			}
+
+			Quake1Texinfo &mt = miptex[i];
+			stream.readString(sizeof(mt.name), mt.name, false);
+			stream.readUInt32(mt.width);
+			stream.readUInt32(mt.height);
+			for (int j = 0; j < lengthof(mt.offsets); j++) {
+				stream.readUInt32(mt.offsets[j]);
+			}
+		}
+	}
+
+	const int32_t texInfoCount = validateLump(header.lumps[_priv::quake1TexinfoLump], sizeof(BspTextureBase));
+	if (texInfoCount <= 0) {
+		Log::error("Invalid bsp file with no textures in lump");
+		return false;
+	}
+
+	if (stream.seek(header.lumps[_priv::quake1TexinfoLump].offset) == -1) {
+		Log::error("Invalid texture lump offset - can't seek");
+		return false;
+	}
+
+	textures.resize(texInfoCount);
+	for (int32_t i = 0; i < texInfoCount; i++) {
+		Texture &texture = textures[i];
+		for (int k = 0; k < 2; ++k) {
+			for (int j = 0; j < 4; ++j) {
+				wrap(stream.readFloat(texture.st[k][j]))
+			}
+		}
+		wrap(stream.readUInt32(texture.surfaceFlags))
+		wrap(stream.readUInt32(texture.value))
+		SDL_strlcpy(texture.name, miptex[texture.value].name, sizeof(texture.name));
+
+		auto iter = textureMap.find(texture.name);
+		if (iter != textureMap.end()) {
+			Log::debug("texture for material '%s' is already loaded", texture.name);
+			texture.image = iter->second;
+			continue;
+		}
+
+		core::String textureName = texture.name;
+		const core::String &path = extractBaseDir(filename);
+		textureName = core::string::path(path, "textures", textureName);
+		Log::debug("Search image %s in path %s", textureName.c_str(), path.c_str());
+		image::ImagePtr tex = image::loadImage(textureName, false);
+		if (tex->isLoaded()) {
+			Log::debug("Use image %s", textureName.c_str());
+			textureMap.put(textureName, tex);
+			texture.image = tex;
+		} else {
+			Log::warn("Failed to load %s", textureName.c_str());
+		}
+	}
+	return true;
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionTextures(const core::String &filename, io::SeekableReadStream &stream,
@@ -98,6 +203,34 @@ bool QuakeBSPFormat::loadUFOAlienInvasionTextures(const core::String &filename, 
 			Log::warn("Failed to load %s", textureName.c_str());
 		}
 	}
+	return true;
+}
+
+bool QuakeBSPFormat::loadQuake1Faces(io::SeekableReadStream &stream, const BspHeader &header,
+											   core::DynamicArray<Face> &faces) {
+	const int32_t faceCount = validateLump(header.lumps[_priv::quake1FacesLump], sizeof(BspFace));
+	if (faceCount <= 0) {
+		Log::error("Invalid bsp file with no faces in lump");
+		return false;
+	}
+	if (stream.seek(header.lumps[_priv::quake1FacesLump].offset) == -1) {
+		Log::error("Invalid faces lump offset - can't seek");
+		return false;
+	}
+	faces.resize(faceCount);
+	for (int32_t i = 0; i < faceCount; i++) {
+		stream.skip(2); // planeId
+		stream.skip(2); // side
+
+		Face &face = faces[i];
+		wrap(stream.readInt32(face.edgeId))
+		wrap(stream.readInt16(face.edgeCount))
+		wrap(stream.readInt16(face.textureId))
+
+		stream.skip(4); // lightofsDay
+		stream.skip(4); // lightofsNight
+	}
+	Log::debug("Loaded %i faces", faceCount);
 	return true;
 }
 
@@ -166,6 +299,42 @@ bool QuakeBSPFormat::loadUFOAlienInvasionEdges(io::SeekableReadStream &stream, c
 	return true;
 }
 
+bool QuakeBSPFormat::loadQuake1Edges(io::SeekableReadStream &stream, const BspHeader &header,
+									 core::DynamicArray<BspEdge> &edges, core::DynamicArray<int32_t> &surfEdges) {
+	const int32_t edgeCount = validateLump(header.lumps[_priv::quake1EdgesLump], sizeof(BspEdge));
+	if (edgeCount <= 0) {
+		Log::error("Invalid bsp file with no edges in lump");
+		return false;
+	}
+	if (stream.seek(header.lumps[_priv::quake1EdgesLump].offset) == -1) {
+		Log::error("Invalid edges lump offset - can't seek");
+		return false;
+	}
+	edges.resize(edgeCount);
+	for (int32_t i = 0; i < edgeCount; i++) {
+		wrap(stream.readInt16(edges[i].vertexIndices[0]))
+		wrap(stream.readInt16(edges[i].vertexIndices[1]))
+	}
+	Log::debug("Loaded %i edges", edgeCount);
+
+	const int32_t surfEdgesCount = validateLump(header.lumps[_priv::quake1SurfedgesLump], sizeof(BspEdge));
+	if (surfEdgesCount <= 0) {
+		Log::error("Invalid bsp file with no surfedges in lump");
+		return false;
+	}
+	if (stream.seek(header.lumps[_priv::quake1SurfedgesLump].offset) == -1) {
+		Log::error("Invalid surfedges lump offset - can't seek");
+		return false;
+	}
+	surfEdges.resize(surfEdgesCount);
+	for (int32_t i = 0; i < surfEdgesCount; i++) {
+		wrap(stream.readInt32(surfEdges[i]))
+	}
+	Log::debug("Loaded %i surfedges", surfEdgesCount);
+
+	return true;
+}
+
 bool QuakeBSPFormat::loadUFOAlienInvasionVertices(io::SeekableReadStream &stream, const BspHeader &header,
 												  core::DynamicArray<BspVertex> &vertices) {
 	const int32_t vertexCount = validateLump(header.lumps[_priv::ufoaiVerticesLump], sizeof(BspVertex));
@@ -183,6 +352,56 @@ bool QuakeBSPFormat::loadUFOAlienInvasionVertices(io::SeekableReadStream &stream
 		wrap(stream.readFloat(vertices[i].z))
 	}
 	return true;
+}
+
+bool QuakeBSPFormat::loadQuake1Vertices(io::SeekableReadStream &stream, const BspHeader &header,
+										core::DynamicArray<BspVertex> &vertices) {
+	const int32_t vertexCount = validateLump(header.lumps[_priv::quake1VerticesLump], sizeof(BspVertex));
+	if (vertexCount <= 0) {
+		return false;
+	}
+	if (stream.seek(header.lumps[_priv::quake1VerticesLump].offset) == -1) {
+		Log::error("Invalid vertices lump offset - can't seek");
+		return false;
+	}
+	vertices.resize(vertexCount);
+	for (int32_t i = 0; i < vertexCount; i++) {
+		wrap(stream.readFloat(vertices[i].x))
+		wrap(stream.readFloat(vertices[i].y))
+		wrap(stream.readFloat(vertices[i].z))
+	}
+	return true;
+}
+
+bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableReadStream &stream,
+											 SceneGraph &sceneGraph, const BspHeader &header) {
+	core::StringMap<image::ImagePtr> textureMap;
+	core::DynamicArray<Texture> textures;
+	if (!loadQuake1Textures(filename, stream, header, textures, textureMap)) {
+		Log::error("Failed to load textures");
+		return false;
+	}
+
+	core::DynamicArray<Face> faces;
+	if (!loadQuake1Faces(stream, header, faces)) {
+		Log::error("Failed to load faces");
+		return false;
+	}
+
+	core::DynamicArray<BspEdge> edges;
+	core::DynamicArray<int32_t> surfEdges;
+	if (!loadQuake1Edges(stream, header, edges, surfEdges)) {
+		Log::error("Failed to load edges");
+		return false;
+	}
+
+	core::DynamicArray<BspVertex> vertices;
+	if (!loadQuake1Vertices(stream, header, vertices)) {
+		Log::error("Failed to load vertices");
+		return false;
+	}
+
+	return voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph);
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream,
@@ -317,12 +536,16 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 
 	Log::debug("Voxelize bsp with %i vertices", vertexCount);
 
-	const int maxLevel = 1; // TODO: 8 - but we need to load the submodels (submodels 0-255 are visible) (CONTENTS_LEVEL_)
-	TriCollection subdivided[maxLevel];
+	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
+	SceneGraphNode node;
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
+	node.setVolume(volume, true);
+
+	core::ConcurrentQueue<Tri> producerTris(10000);
+	voxel::PaletteLookup palLookup;
+	core::Lock voxelLock;
+
 	for (int i = 0; i < numIndices; i += 3) {
-		if (stopExecution()) {
-			return false;
-		}
 		Tri tri;
 		for (int k = 0; k < 3; ++k) {
 			const int idx = indices[i + k];
@@ -332,46 +555,86 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 		}
 		const int textureIdx = textureIndices[indices[i]];
 		const Texture &texture = textures[textureIdx];
-		// TODO: content flags to get the levels
-		int level = 0;
 		tri.texture = texture.image.get();
-		Log::debug("idx %i - tri area: %f", i, tri.area());
-		subdivideTri(tri, subdivided[level]);
+		producerTris.push(tri);
 	}
 
-	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
-	for (int i = 0; i < maxLevel; ++i) {
-		if (stopExecution()) {
-			return false;
+	auto func = [&producerTris, &palLookup, volume, &voxelLock] () {
+		Tri tri;
+		while (producerTris.pop(tri)) {
+			TriCollection subdiv;
+			subdiv.reserve(1024);
+			subdivideTri(tri, subdiv);
+			if (subdiv.empty()) {
+				continue;
+			}
+			PosMap posMap((int)subdiv.size() * 3);
+			transformTris(subdiv, posMap);
+			Log::debug("assembling volume (%i)", (int)posMap.size());
+			core::ScopedLock<core::Lock> scoped(voxelLock);
+			for (const auto &entry : posMap) {
+				const PosSampling &pos = entry->second;
+				const glm::vec4 &color = pos.avgColor();
+				const uint8_t index = palLookup.findClosestIndex(color);
+				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+				volume->setVoxel(entry->first, voxel);
+			}
+			Log::debug("assembling volume done");
 		}
-		if (subdivided[i].empty()) {
-			continue;
-		}
-		voxel::RawVolume *volume = new voxel::RawVolume(region);
-		SceneGraphNode node;
-		node.setVolume(volume, true);
-		node.setName(core::string::format("Level %i", i));
-		PosMap posMap((int)subdivided[i].size() * 3);
-		transformTris(subdivided[i], posMap);
-		voxelizeTris(node, posMap, fillHollow);
-		sceneGraph.emplace(core::move(node));
+	};
+
+	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
+	core::DynamicArray<std::future<void>> futures;
+	for (uint32_t i = 0; i < core::cpus(); ++i) {
+		futures.emplace_back(threadPool.enqueue(func));
 	}
+
+	while (!producerTris.empty()) {
+		SDL_Delay(1000);
+		Log::debug("%i tris left", (int)producerTris.size());
+		if (stopExecution()) {
+			break;
+		}
+	}
+
+	for (auto &f : futures) {
+		f.get();
+	}
+	futures.clear();
+
+	node.setPalette(palLookup.palette());
+	if (fillHollow) {
+		Log::debug("fill hollows");
+		voxel::RawVolumeWrapper wrapper(volume);
+		voxelutil::fillHollow(wrapper, voxel::Voxel(voxel::VoxelType::Generic, 2));
+	}
+
+	sceneGraph.emplace(core::move(node));
 
 	return true;
 }
 
 bool QuakeBSPFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+	static const uint32_t q1Version = FourCC('\x1d', '\0', '\0', '\0');
+	static const uint32_t bspMagic = FourCC('I', 'B', 'S', 'P');
+
 	BspHeader header;
 	wrap(stream.readUInt32(header.magic))
-	wrap(stream.readUInt32(header.version))
+	if (header.magic == q1Version) {
+		header.version = 29;
+	} else {
+		wrap(stream.readUInt32(header.version))
+	}
 	for (int i = 0; i < lengthof(header.lumps); ++i) {
 		wrap(stream.readUInt32(header.lumps[i].offset))
 		wrap(stream.readUInt32(header.lumps[i].len))
 	}
-	const uint32_t bspMagic = FourCC('I', 'B', 'S', 'P');
 
 	if (header.version == 79 && header.magic == bspMagic) {
 		return loadUFOAlienInvasionBsp(filename, stream, sceneGraph, header);
+	}
+	if (header.magic == q1Version) {
+		return loadQuake1Bsp(filename, stream, sceneGraph, header);
 	}
 
 	uint8_t buf[4];

@@ -17,6 +17,7 @@ General:
    - Added support for WorldEdit schematics
    - Added support for Minecraft nbt files
    - Added support for StarMade voxel models
+   - Added support for Quake1 and UFO:Alien Invasion
    - Reduced memory footprint for voxelizing huge meshes
    - Support wrap mode texture settings for gltf voxelization
    - Improved sanity check for Qubicle Binary format support

@@ -30,10 +30,14 @@ private:
 		BspLump lumps[30];
 	};
 
-	struct BspTexture {
+	// q1
+	struct BspTextureBase {
 		glm::vec4 st[2] {}; // st - xyz+offset
 		uint32_t surfaceFlags = 0;
 		uint32_t value = 0;
+	};
+
+	struct BspTexture : public BspTextureBase {
 		char name[32] = "";
 	};
 	static_assert(sizeof(BspTexture) == 72, "Unexpected size of BspTexture");
@@ -69,6 +73,12 @@ private:
 	};
 	static_assert(sizeof(BspEdge) == 4, "Unexpected size of BspEdge");
 
+	struct Quake1Texinfo {
+		char name[16];
+		unsigned width, height;
+		unsigned offsets[4];
+	};
+
 	// ----------------------------------------------
 	// structures used for loading the relevant parts
 
@@ -88,6 +98,17 @@ private:
 				  const core::DynamicArray<BspVertex> &vertices, SceneGraph &sceneGraph);
 
 	int32_t validateLump(const BspLump &lump, size_t elementSize) const;
+
+	bool loadQuake1Bsp(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
+					   const BspHeader &header);
+	bool loadQuake1Textures(const core::String &filename, io::SeekableReadStream &stream, const BspHeader &header,
+							core::DynamicArray<Texture> &textures, core::StringMap<image::ImagePtr> &textureMap);
+	bool loadQuake1Faces(io::SeekableReadStream &stream, const BspHeader &header, core::DynamicArray<Face> &faces);
+	bool loadQuake1Edges(io::SeekableReadStream &stream, const BspHeader &header, core::DynamicArray<BspEdge> &edges,
+						 core::DynamicArray<int32_t> &surfEdges);
+	bool loadQuake1Vertices(io::SeekableReadStream &stream, const BspHeader &header,
+							core::DynamicArray<BspVertex> &vertices);
+
 	bool loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
 								 const BspHeader &header);
 	bool loadUFOAlienInvasionTextures(const core::String &filename, io::SeekableReadStream &stream,

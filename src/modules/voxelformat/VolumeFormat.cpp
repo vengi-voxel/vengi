@@ -76,7 +76,9 @@ const io::FormatDescription* voxelLoad() {
 		{"Minecraft region", {"mca", "mcr"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Minecraft level dat", {"dat"}, nullptr, 0u},
 		{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"Quake BSP", {"bsp"}, [](uint32_t magic) { return magic == FourCC('I', 'B', 'S', 'P'); }, VOX_FORMAT_FLAG_MESH},
+		{"Quake BSP", {"bsp"}, [](uint32_t magic) {
+				return magic == FourCC('I', 'B', 'S', 'P') || magic == FourCC('\x1d', '\0', '\0', '\0');
+		}, VOX_FORMAT_FLAG_MESH},
 		{"Sproxel csv", {"csv"}, nullptr, 0u},
 		{"StarMade", {"sment"}, nullptr, 0u},
 		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
