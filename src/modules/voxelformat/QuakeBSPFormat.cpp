@@ -32,6 +32,7 @@ static const uint32_t ufoaiTexinfoLump = 5;
 static const uint32_t ufoaiFacesLump = 6;
 static const uint32_t ufoaiEdgesLump = 11;
 static const uint32_t ufoaiSurfedgesLump = 12;
+static const uint32_t ufoaiModelsLump = 13;
 
 static const uint32_t quake1VerticesLump = 3;
 static const uint32_t quake1TexturesLump = 2;
@@ -262,6 +263,30 @@ bool QuakeBSPFormat::loadUFOAlienInvasionFaces(io::SeekableReadStream &stream, c
 	return true;
 }
 
+bool QuakeBSPFormat::loadUFOAlienInvasionFacesForLevel(io::SeekableReadStream &stream, const BspHeader &header,
+													   const core::DynamicArray<Face> &faces,
+													   core::DynamicArray<Face> &facesLevel,
+													   const core::DynamicArray<Model> &models, int level) {
+	uint32_t mask = 1u << level;
+	const uint32_t size = models.size();
+	if (size < 256) {
+		return false;
+	}
+	for (uint32_t i = 0; i < size; ++i) {
+		if (i && !(i & mask)) {
+			continue;
+		}
+		const int begin = models[i].faceId;
+		const int end = begin + models[i].faceCount;
+		for (int f = begin; f < end; ++f) {
+			core_assert_msg(f >= 0 && f < (int)faces.size(), "Face index is out of bounds: %i vs %i", f, (int)faces.size());
+			const Face &face = faces[f];
+			facesLevel.push_back(face);
+		}
+	}
+	return true;
+}
+
 bool QuakeBSPFormat::loadUFOAlienInvasionEdges(io::SeekableReadStream &stream, const BspHeader &header,
 											   core::DynamicArray<BspEdge> &edges,
 											   core::DynamicArray<int32_t> &surfEdges) {
@@ -404,8 +429,36 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 	return voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph);
 }
 
+bool QuakeBSPFormat::loadUFOAlienInvasionModels(io::SeekableReadStream& stream, const BspHeader &header, core::DynamicArray<Model> &models) {
+	const int32_t modelCount = validateLump(header.lumps[_priv::ufoaiModelsLump], sizeof(BspModel));
+	if (modelCount <= 0) {
+		Log::error("Invalid bsp file with no models in lump");
+		return false;
+	}
+	if (stream.seek(header.lumps[_priv::ufoaiModelsLump].offset) == -1) {
+		Log::error("Invalid models lump offset - can't seek");
+		return false;
+	}
+	models.resize(modelCount);
+
+	const int64_t modelSkipSize = 3 * sizeof(glm::vec3) + sizeof(int32_t);
+	static_assert(sizeof(BspModel) == modelSkipSize + 2 * sizeof(int32_t), "Unexpected BspModel structure size");
+	for (int32_t i = 0; i < modelCount; ++i) {
+		if (stream.skip(modelSkipSize) == -1) {
+			Log::error("Failed to read model %i", i);
+			return false;
+		}
+		Model &mdl = models[i];
+		wrap(stream.readInt32(mdl.faceId))
+		wrap(stream.readInt32(mdl.faceCount))
+	}
+	Log::debug("Loaded %i models", modelCount);
+	return true;
+}
+
 bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream,
 											 SceneGraph &sceneGraph, const BspHeader &header) {
+	Log::debug("Load textures");
 	core::StringMap<image::ImagePtr> textureMap;
 	core::DynamicArray<Texture> textures;
 	if (!loadUFOAlienInvasionTextures(filename, stream, header, textures, textureMap)) {
@@ -413,12 +466,14 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 		return false;
 	}
 
+	Log::debug("Load faces");
 	core::DynamicArray<Face> faces;
 	if (!loadUFOAlienInvasionFaces(stream, header, faces)) {
 		Log::error("Failed to load faces");
 		return false;
 	}
 
+	Log::debug("Load edges");
 	core::DynamicArray<BspEdge> edges;
 	core::DynamicArray<int32_t> surfEdges;
 	if (!loadUFOAlienInvasionEdges(stream, header, edges, surfEdges)) {
@@ -426,13 +481,34 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 		return false;
 	}
 
+	Log::debug("Load vertices");
 	core::DynamicArray<BspVertex> vertices;
 	if (!loadUFOAlienInvasionVertices(stream, header, vertices)) {
 		Log::error("Failed to load vertices");
 		return false;
 	}
 
-	return voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph);
+	Log::debug("Load models");
+	core::DynamicArray<Model> models;
+	if (!loadUFOAlienInvasionModels(stream, header, models)) {
+		Log::error("Failed to load models");
+		return false;
+	}
+
+	for (int i = 0; i < 8; ++i) {
+		Log::debug("Load level %i", i);
+		core::DynamicArray<Face> facesLevel;
+		if (!loadUFOAlienInvasionFacesForLevel(stream, header, faces, facesLevel, models, i)) {
+			Log::debug("No content at level %i - skipping", i);
+			continue;
+		}
+		Log::debug("Voxelize level %i", i);
+		if (!voxelize(textures, facesLevel, edges, surfEdges, vertices, sceneGraph)) {
+			Log::error("Failed to voxelize level %i", i);
+			return false;
+		}
+	}
+	return true;
 }
 
 bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,

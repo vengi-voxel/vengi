@@ -82,6 +82,11 @@ private:
 	// ----------------------------------------------
 	// structures used for loading the relevant parts
 
+	struct Model {
+		int32_t faceId = 0;
+		int32_t faceCount = 0;
+	};
+
 	struct Face {
 		int32_t edgeId = 0;
 		int16_t edgeCount = 0;
@@ -120,6 +125,11 @@ private:
 								   core::DynamicArray<BspEdge> &edges, core::DynamicArray<int32_t> &surfEdges);
 	bool loadUFOAlienInvasionVertices(io::SeekableReadStream &stream, const BspHeader &header,
 									  core::DynamicArray<BspVertex> &vertices);
+	bool loadUFOAlienInvasionFacesForLevel(io::SeekableReadStream &stream, const BspHeader &header,
+										   const core::DynamicArray<Face> &faces, core::DynamicArray<Face> &facesLevel,
+										   const core::DynamicArray<Model> &models, int level);
+	bool loadUFOAlienInvasionModels(io::SeekableReadStream &stream, const BspHeader &header,
+									core::DynamicArray<Model> &models);
 
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
