@@ -334,7 +334,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
-	if (glm::any(glm::greaterThan(size, glm::uvec3(MaxRegionSize)))) {
+	if (glm::any(glm::greaterThan(size, glm::uvec3(2048)))) {
 		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
