@@ -14,7 +14,7 @@
 namespace image {
 
 // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
-enum TextureWrap {
+enum TextureWrap : uint8_t {
 	Repeat, // causes the integer part of the s coordinate to be ignored; the GL uses only the fractional part, thereby
 			// creating a repeating pattern.
 	ClampToEdge, // causes s coordinates to be clamped to the range [1/2N,1−1/2N], where N is the size of the texture in
