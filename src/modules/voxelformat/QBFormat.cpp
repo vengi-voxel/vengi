@@ -76,7 +76,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 	const glm::ivec3& maxs = region.getUpperCorner();
 
 	core::RGBA currentColor;
-	int count = 0;
+	uint32_t count = 0;
 
 	const voxel::Palette& palette = node.palette();
 
@@ -261,7 +261,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 			}
 
 			if (count > size.x * size.y * size.z) {
-				Log::error("Max RLE count exceeded: %i", (int)count);
+				Log::error("Max RLE count exceeded: %u (%u:%u:%u)", count, size.x, size.y, size.z);
 				return false;
 			}
 			const voxel::Voxel &voxel = getVoxel(state, stream, palLookup);
