@@ -191,7 +191,8 @@ bool Image::load(const uint8_t* buffer, int length) {
 	return true;
 }
 
-bool Image::loadRGBA(const uint8_t* buffer, int length, int width, int height) {
+bool Image::loadRGBA(const uint8_t* buffer, int width, int height) {
+	const int length = width * height * 4;
 	if (!buffer || length <= 0) {
 		_state = io::IOSTATE_FAILED;
 		Log::debug("Failed to load image %s: buffer empty", _name.c_str());

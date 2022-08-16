@@ -125,7 +125,7 @@ bool Palette::save(const char *name) const {
 	image::Image img(name);
 	Log::info("Save palette to %s", name);
 	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
-	img.loadRGBA((const uint8_t *)colors, sizeof(colors), lengthof(colors), 1);
+	img.loadRGBA((const uint8_t *)colors, lengthof(colors), 1);
 	if (!img.writePng()) {
 		Log::warn("Failed to write the palette file '%s'", name);
 		return false;
@@ -140,7 +140,7 @@ bool Palette::saveGlow(const char *name) const {
 	image::Image img(name);
 	Log::info("Save glow palette colors to %s", name);
 	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
-	img.loadRGBA((const uint8_t *)glowColors, sizeof(glowColors), lengthof(glowColors), 1);
+	img.loadRGBA((const uint8_t *)glowColors, lengthof(glowColors), 1);
 	if (!img.writePng()) {
 		Log::warn("Failed to write the glow palette colors file '%s'", name);
 		return false;
@@ -162,7 +162,7 @@ bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize) {
 	}
 	ncolors = core_min(ncolors, PaletteMaxColors);
 	image::ImagePtr img = image::createEmptyImage("**palette**");
-	if (!img->loadRGBA(rgbaBuf, ncolors * 4, ncolors, 1)) {
+	if (!img->loadRGBA(rgbaBuf, ncolors, 1)) {
 		return false;
 	}
 	_paletteFilename = "";

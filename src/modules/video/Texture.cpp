@@ -206,10 +206,9 @@ bool saveTexture(const TexturePtr& texture, const core::String &name) {
 		return false;
 	}
 	uint8_t* data = texture->data();
-	const int length = 4 * texture->width() * texture->height();
 
 	image::Image img(name);
-	if (!img.loadRGBA(data, length, texture->width(), texture->height())) {
+	if (!img.loadRGBA(data, texture->width(), texture->height())) {
 		core_free(data);
 		Log::error("Failed to load texture RGBA data");
 		return false;

@@ -43,7 +43,7 @@ TEST_F(TriTest, colorAt4x4) {
 		{127, 127, 0, 255}, {255, 127, 127, 255}, {255, 0, 127, 255},	{0, 127, 80, 255}};
 	static_assert(sizeof(buffer) == (size_t)w * (size_t)h * sizeof(uint32_t), "Unexpected rgba buffer size");
 	const image::ImagePtr &texture = image::createEmptyImage("4x4");
-	texture->loadRGBA((const uint8_t *)buffer, (int)sizeof(buffer), w, h);
+	texture->loadRGBA((const uint8_t *)buffer, w, h);
 	ASSERT_TRUE(texture);
 	ASSERT_EQ(w, texture->width());
 	ASSERT_EQ(h, texture->height());

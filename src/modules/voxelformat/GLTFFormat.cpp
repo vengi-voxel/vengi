@@ -149,7 +149,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 				{
 					tinygltf::Image colorPaletteImg;
 					image::Image image("pal");
-					image.loadRGBA((const unsigned char *)palette.colors, sizeof(palette.colors), voxel::PaletteMaxColors, 1);
+					image.loadRGBA((const unsigned char *)palette.colors, voxel::PaletteMaxColors, 1);
 					const core::String &pal64 = image.pngBase64();
 					colorPaletteImg.uri = "data:image/png;base64,";
 					colorPaletteImg.uri += pal64.c_str();

@@ -555,7 +555,7 @@ image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::See
 		delete [] buf;
 		return image::ImagePtr();
 	}
-	if (!img->loadRGBA(buf, (int)thumbnailSize, (int)thumbWidth, (int)thumbHeight)) {
+	if (!img->loadRGBA(buf, (int)thumbWidth, (int)thumbHeight)) {
 		Log::error("Failed to load rgba image buffer of width %u and height %u", thumbWidth, thumbHeight);
 		delete [] buf;
 		return image::ImagePtr();

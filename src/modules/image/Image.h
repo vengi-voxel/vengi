@@ -46,7 +46,7 @@ public:
 	/**
 	 * Loads a raw RGBA buffer
 	 */
-	bool loadRGBA(const uint8_t* buffer, int length, int width, int height);
+	bool loadRGBA(const uint8_t* buffer, int width, int height);
 
 	glm::vec2 uv(int x, int y) const;
 

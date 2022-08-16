@@ -87,8 +87,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 						   fboTexture->width(), fboTexture->height(), &pixels)) {
 		image::Image::flipVerticalRGBA(pixels, fboTexture->width(), fboTexture->height());
 		image = image::createEmptyImage("thumbnail");
-		image->loadRGBA(pixels, fboTexture->width() * fboTexture->height() * 4, fboTexture->width(),
-						fboTexture->height());
+		image->loadRGBA(pixels, fboTexture->width(), fboTexture->height());
 	} else {
 		Log::error("Failed to read framebuffer");
 	}
