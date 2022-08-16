@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/StandardLib.h"
@@ -251,7 +252,7 @@ public:
 			return;
 		}
 
-		const int n = last - first;
+		const int n = core::distance(first, last);
 
 		if (pos == end()) {
 			// TODO: this can be optimized by only calling the move ctor once
