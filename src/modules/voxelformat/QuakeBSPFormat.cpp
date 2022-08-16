@@ -434,7 +434,13 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 		return false;
 	}
 
-	return voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph);
+	voxel::PaletteLookup palLookup;
+	palLookup.palette().quake1();
+	if (!voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph, palLookup)) {
+		Log::error("Failed to voxelize %s", filename.c_str());
+		return false;
+	}
+	return true;
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionModels(io::SeekableReadStream& stream, const BspHeader &header, core::DynamicArray<Model> &models) {
@@ -535,6 +541,10 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 	const int maxLevel = parseMaxLevel(entities);
 
 	bool state = false;
+
+	// make one palette for all 8 levels
+	voxel::PaletteLookup palLookup;
+
 	core::DynamicArray<Face> facesLevel;
 	for (int i = 0; i < maxLevel; ++i) {
 		Log::debug("Load level %i/%i", i, maxLevel);
@@ -544,7 +554,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 			continue;
 		}
 		Log::debug("Voxelize level %i", i);
-		if (voxelize(textures, facesLevel, edges, surfEdges, vertices, sceneGraph)) {
+		if (voxelize(textures, facesLevel, edges, surfEdges, vertices, sceneGraph, palLookup)) {
 			state = true;
 		}
 	}
@@ -553,7 +563,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 
 bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
 							  const core::DynamicArray<BspEdge> &edges, const core::DynamicArray<int32_t> &surfEdges,
-							  const core::DynamicArray<BspVertex> &vertices, SceneGraph &sceneGraph) {
+							  const core::DynamicArray<BspVertex> &vertices, SceneGraph &sceneGraph, voxel::PaletteLookup &palLookup) {
 	int vertexCount = 0;
 	int indexCount = 0;
 	for (const Face &face : faces) {
@@ -658,7 +668,6 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 	node.setVolume(volume, true);
 
 	core::ConcurrentQueue<Tri> producerTris(10000);
-	voxel::PaletteLookup palLookup;
 	core::Lock voxelLock;
 
 	for (int i = 0; i < numIndices; i += 3) {
