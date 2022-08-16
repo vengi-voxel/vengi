@@ -92,6 +92,7 @@ private:
 		int16_t edgeCount = 0;
 		int16_t textureId = 0;
 		int32_t index = -1;
+		bool used = false;
 	};
 
 	struct Texture : public BspTexture {
@@ -126,7 +127,7 @@ private:
 	bool loadUFOAlienInvasionVertices(io::SeekableReadStream &stream, const BspHeader &header,
 									  core::DynamicArray<BspVertex> &vertices);
 	bool loadUFOAlienInvasionFacesForLevel(io::SeekableReadStream &stream, const BspHeader &header,
-										   const core::DynamicArray<Face> &faces, core::DynamicArray<Face> &facesLevel,
+										   core::DynamicArray<Face> &faces, core::DynamicArray<Face> &facesLevel,
 										   const core::DynamicArray<Model> &models, int level);
 	bool loadUFOAlienInvasionModels(io::SeekableReadStream &stream, const BspHeader &header,
 									core::DynamicArray<Model> &models);

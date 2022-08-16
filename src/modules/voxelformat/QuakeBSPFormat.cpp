@@ -9,6 +9,7 @@
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
+#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "core/collection/DynamicArray.h"
@@ -27,6 +28,7 @@ namespace voxelformat {
 
 namespace _priv {
 
+static const uint32_t ufoaiEntitiesLump = 0;
 static const uint32_t ufoaiVerticesLump = 2;
 static const uint32_t ufoaiTexinfoLump = 5;
 static const uint32_t ufoaiFacesLump = 6;
@@ -264,24 +266,30 @@ bool QuakeBSPFormat::loadUFOAlienInvasionFaces(io::SeekableReadStream &stream, c
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionFacesForLevel(io::SeekableReadStream &stream, const BspHeader &header,
-													   const core::DynamicArray<Face> &faces,
+													   core::DynamicArray<Face> &faces,
 													   core::DynamicArray<Face> &facesLevel,
 													   const core::DynamicArray<Model> &models, int level) {
-	uint32_t mask = 1u << level;
 	const uint32_t size = models.size();
-	if (size < 256) {
+	if (size < 255) {
 		return false;
 	}
-	for (uint32_t i = 0; i < size; ++i) {
+	const uint32_t mask = 1u << level;
+	// a face that is in level 1, 2 and 3 is in model 7 - visible everywhere is 255
+	// not marked for any level is 0 (we are skipping this)
+	for (uint32_t i = 0; i < 255; ++i) {
 		if (i && !(i & mask)) {
 			continue;
 		}
-		const int begin = models[i].faceId;
-		const int end = begin + models[i].faceCount;
-		for (int f = begin; f < end; ++f) {
+		const int32_t begin = models[i].faceId;
+		const int32_t end = begin + models[i].faceCount;
+		for (int32_t f = begin; f < end; ++f) {
 			core_assert_msg(f >= 0 && f < (int)faces.size(), "Face index is out of bounds: %i vs %i", f, (int)faces.size());
-			const Face &face = faces[f];
+			Face &face = faces[f];
+			if (face.used) {
+				continue;
+			}
 			facesLevel.push_back(face);
+			face.used = true;
 		}
 	}
 	return true;
@@ -456,6 +464,28 @@ bool QuakeBSPFormat::loadUFOAlienInvasionModels(io::SeekableReadStream& stream, 
 	return true;
 }
 
+static int parseMaxLevel(const core::String &entities) {
+	int maxLevel = 8;
+	const size_t start = entities.find("\"maxlevel\"");
+	if (start == core::String::npos) {
+		Log::debug("No maxlevel found in worldspawn");
+		return maxLevel;
+	}
+	const size_t end = entities.find("\n", start);
+	if (end == core::String::npos) {
+		Log::warn("Invalid maxlevel found in worldspawn");
+		return maxLevel;
+	}
+	core::String line = entities.substr(start, end).trim();
+	line = line.substr(12);
+	maxLevel = core::string::toInt(line);
+	if (maxLevel == 0) {
+		maxLevel = 8;
+	}
+	Log::debug("Maxlevel: %i", maxLevel);
+	return maxLevel;
+}
+
 bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream,
 											 SceneGraph &sceneGraph, const BspHeader &header) {
 	Log::debug("Load textures");
@@ -495,20 +525,26 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 		return false;
 	}
 
-	for (int i = 0; i < 8; ++i) {
-		Log::debug("Load level %i", i);
+	Log::debug("Load entities");
+	stream.seek(header.lumps[_priv::ufoaiEntitiesLump].offset);
+	core::String entities(header.lumps[_priv::ufoaiEntitiesLump].len, ' ');
+	stream.readString((int)header.lumps[_priv::ufoaiEntitiesLump].len, entities.c_str());
+	const int maxLevel = parseMaxLevel(entities);
+
+	bool state = false;
+	for (int i = 0; i < maxLevel; ++i) {
+		Log::debug("Load level %i/%i", i, maxLevel);
 		core::DynamicArray<Face> facesLevel;
 		if (!loadUFOAlienInvasionFacesForLevel(stream, header, faces, facesLevel, models, i)) {
 			Log::debug("No content at level %i - skipping", i);
 			continue;
 		}
 		Log::debug("Voxelize level %i", i);
-		if (!voxelize(textures, facesLevel, edges, surfEdges, vertices, sceneGraph)) {
-			Log::error("Failed to voxelize level %i", i);
-			return false;
+		if (voxelize(textures, facesLevel, edges, surfEdges, vertices, sceneGraph)) {
+			state = true;
 		}
 	}
-	return true;
+	return state;
 }
 
 bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
@@ -599,7 +635,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 
 	voxel::Region region(glm::floor(mins), glm::ceil(maxs));
 	if (!region.isValid()) {
-		Log::error("Invalid region for model: %s", region.toString().c_str());
+		Log::debug("Invalid region for model: %s", region.toString().c_str());
 		return false;
 	}
 
@@ -626,7 +662,6 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 		for (int k = 0; k < 3; ++k) {
 			const int idx = indices[i + k];
 			tri.vertices[k] = verts[idx] * scale;
-			core::exchange(tri.vertices[k].y, tri.vertices[k].z);
 			tri.uv[k] = texcoords[idx];
 		}
 		const int textureIdx = textureIndices[indices[i]];
@@ -653,7 +688,8 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 				const glm::vec4 &color = pos.avgColor();
 				const uint8_t index = palLookup.findClosestIndex(color);
 				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-				volume->setVoxel(entry->first, voxel);
+				const glm::ivec3 &vpos = entry->first;
+				volume->setVoxel(vpos.x, vpos.z, vpos.y, voxel);
 			}
 			Log::debug("assembling volume done");
 		}
