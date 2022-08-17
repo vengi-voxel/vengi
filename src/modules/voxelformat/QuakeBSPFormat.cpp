@@ -474,7 +474,8 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 
 	voxel::PaletteLookup palLookup;
 	palLookup.palette().quake1();
-	if (!voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph, palLookup)) {
+	const core::String &name = core::string::extractFilename(filename);
+	if (!voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph, palLookup, name)) {
 		Log::error("Failed to voxelize %s", filename.c_str());
 		return false;
 	}
@@ -592,7 +593,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 			continue;
 		}
 		Log::debug("Voxelize level %i", i);
-		if (voxelize(textures, facesLevel, edges, surfEdges, vertices, sceneGraph, palLookup)) {
+		if (voxelize(textures, facesLevel, edges, surfEdges, vertices, sceneGraph, palLookup, core::string::format("Level %i", i + 1))) {
 			state = true;
 		}
 	}
@@ -601,7 +602,8 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 
 bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
 							  const core::DynamicArray<BspEdge> &edges, const core::DynamicArray<int32_t> &surfEdges,
-							  const core::DynamicArray<BspVertex> &vertices, SceneGraph &sceneGraph, voxel::PaletteLookup &palLookup) {
+							  const core::DynamicArray<BspVertex> &vertices, SceneGraph &sceneGraph, voxel::PaletteLookup &palLookup,
+							  const core::String &name) {
 	int vertexCount = 0;
 	int indexCount = 0;
 	for (const Face &face : faces) {
@@ -704,6 +706,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 	SceneGraphNode node;
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	node.setVolume(volume, true);
+	node.setName(name);
 
 	core::ConcurrentQueue<Tri> producerTris(10000);
 	core::Lock voxelLock;
