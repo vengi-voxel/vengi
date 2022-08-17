@@ -157,7 +157,7 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 
 		image::ImagePtr tex = image::createEmptyImage(texture.name);
 		const int width = (int)texinfo.width;
-		const int height = (int)texinfo.width;
+		const int height = (int)texinfo.height;
 
 		if (stream.seek(baseOffset + m.dataofs[texture.value] + (int)sizeof(Quake1Texinfo)) == -1) {
 			Log::error("Failed to seek to pixel data %i", i);
@@ -170,10 +170,10 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 			continue;
 		}
 
-		const int len = width * height * 4;
+		const int len = pixelSize * 4;
 		core::Buffer<uint8_t> buffer(len);
 		uint8_t *buf = buffer.data();
-		for (int i = 0; i < width * height; ++i) {
+		for (int i = 0; i < pixelSize; ++i) {
 			const uint8_t palIdx = pixels[i];
 			core::RGBA color = pal.colors[palIdx];
 			*(core::RGBA*)buf = color;
