@@ -34,7 +34,7 @@ private:
 	// q1
 	struct BspTextureBase {
 		glm::vec4 st[2] {}; // st - xyz+offset
-		uint32_t surfaceFlags = 0;
+		uint32_t surfaceFlags = 0; // miptex index in q1
 		uint32_t value = 0;
 	};
 
@@ -91,7 +91,7 @@ private:
 	struct Face {
 		int32_t edgeId = 0;
 		int16_t edgeCount = 0;
-		int16_t textureId = 0;
+		int16_t textureId = 0; // texture info idx
 		int32_t index = -1;
 		bool used = false;
 	};
