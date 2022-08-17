@@ -93,15 +93,15 @@ core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wr
 	float y;
 	switch (wrapS) {
 	case TextureWrap::Repeat: {
-		x = glm::repeat(uv.x) * (w - 1);
+		x = glm::repeat(uv.x) * w;
 		break;
 	}
 	case TextureWrap::ClampToEdge: {
-		x = glm::clamp(uv.x, 1.0f / (2.0f * w), 1.0f - 1.0f / (2.0f * w)) * (w - 1);
+		x = glm::clamp(uv.x, 1.0f / (2.0f * w), 1.0f - 1.0f / (2.0f * w)) * w;
 		break;
 	}
 	case TextureWrap::MirroredRepeat: {
-		x = glm::mirrorRepeat(uv.x) * (w - 1);
+		x = glm::mirrorRepeat(uv.x) * w;
 		break;
 	}
 	default:
@@ -110,15 +110,15 @@ core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wr
 	}
 	switch (wrapT) {
 	case TextureWrap::Repeat: {
-		y = glm::repeat(uv.y) * (h - 1);
+		y = glm::repeat(uv.y) * h;
 		break;
 	}
 	case TextureWrap::ClampToEdge: {
-		y = glm::clamp(uv.y, 1.0f / (2.0f * h), 1.0f - 1.0f / (2.0f * h)) * (h - 1);
+		y = glm::clamp(uv.y, 1.0f / (2.0f * h), 1.0f - 1.0f / (2.0f * h)) * h;
 		break;
 	}
 	case TextureWrap::MirroredRepeat: {
-		y = glm::mirrorRepeat(uv.y) * (h - 1);
+		y = glm::mirrorRepeat(uv.y) * h;
 		break;
 	}
 	default:
