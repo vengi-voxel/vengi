@@ -319,8 +319,6 @@ Config vars to control the meshing:
 .PP
 \fBvoxformat_ambientocclusion\fP: Don't export extra quads for ambient occlusion voxels
 .PP
-\fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects
-.PP
 \fBvoxformat_mergequads\fP: Merge similar quads to optimize the mesh
 .PP
 \fBvoxformat_reusevertices\fP: Reuse vertices or always create new ones
@@ -340,6 +338,19 @@ Config vars to control the meshing:
 \fBvoxformat_withtexcoords\fP: Export texture coordinates
 .PP
 \fBvoxformat_transform_mesh\fP: Apply the keyframe transforms to the mesh
+
+Basic voxelization is supported for ply, gltf, stl, bsp and obj files, too. The following [cvars](Configuration.md) can be modified here:
+
+.PP
+\fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects
+.PP
+\fBvoxformat_scale\fP: Scale the vertices on all axis by the given factor
+.PP
+\fBvoxformat_scale_x\fP: Scale the vertices on X axis by the given factor
+.PP
+\fBvoxformat_scale_y\fP: Scale the vertices on Y axis by the given factor
+.PP
+\fBvoxformat_scale_z\fP: Scale the vertices on Z axis by the given factor
 
 .SH HOMEPAGE
 https://github.com/mgerhardy/vengi

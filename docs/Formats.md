@@ -38,7 +38,6 @@
 Exporting to ply, gltf, stl and obj is also supported. A few [cvars](Configuration.md) exists to tweak the output of the meshing:
 
 * `voxformat_ambientocclusion`: Don't export extra quads for ambient occlusion voxels
-* `voxformat_fillhollow`: Fill the inner parts of completely close objects
 * `voxformat_mergequads`: Merge similar quads to optimize the mesh
 * `voxformat_reusevertices`: Reuse vertices or always create new ones
 * `voxformat_scale`: Scale the vertices on all axis by the given factor
@@ -50,8 +49,9 @@ Exporting to ply, gltf, stl and obj is also supported. A few [cvars](Configurati
 * `voxformat_withtexcoords`: Export texture coordinates
 * `voxformat_transform_mesh`: Apply the keyframe transform to the mesh
 
-Basic voxelization is supported for ply, gltf, stl and obj files, too. The following [cvars](Configuration.md) can be modified here:
+Basic voxelization is supported for ply, gltf, stl, bsp and obj files, too. The following [cvars](Configuration.md) can be modified here:
 
+* `voxformat_fillhollow`: Fill the inner parts of completely close objects
 * `voxformat_scale`: Scale the vertices on all axis by the given factor
 * `voxformat_scale_x`: Scale the vertices on X axis by the given factor
 * `voxformat_scale_y`: Scale the vertices on Y axis by the given factor
