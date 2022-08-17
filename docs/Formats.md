@@ -38,6 +38,7 @@
 Exporting to ply, gltf, stl and obj is also supported. A few [cvars](Configuration.md) exists to tweak the output of the meshing:
 
 * `voxformat_ambientocclusion`: Don't export extra quads for ambient occlusion voxels
+* `voxformat_fillhollow`: Fill the inner parts of completely close objects
 * `voxformat_mergequads`: Merge similar quads to optimize the mesh
 * `voxformat_reusevertices`: Reuse vertices or always create new ones
 * `voxformat_scale`: Scale the vertices on all axis by the given factor
