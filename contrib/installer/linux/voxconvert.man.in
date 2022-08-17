@@ -161,11 +161,39 @@ split
 
 .SH LOAD
 .TP
-Qubicle Binary (*.qb)
+AceOfSpades (*.vxl)
+.TP
+BinVox (*.binvox)
+.TP
+Build engine (*.kvx)
+.TP
+Chronovox (*.csm)
+.TP
+Command and Conquer (*.vxl)
+.TP
+CubeWorld (*.cub)
+.TP
+GL Transmission Format (*.gltf, *.glb)
+.TP
+Goxel (*.gox)
 .TP
 MagicaVoxel (*.vox)
 .TP
+Minecraft Level (*.dat)
+.TP
+Minecraft Region (*.mca, *.mcr)
+.TP
+Minecraft Schematic (*.schem, *.schematic, *.nbt)
+.TP
+Nicks Voxel Model (*.nvm)
+.TP
+Quake 1/UFO:Alien Invasion (*.bsp)
+.TP
 Qubicle Binary Tree (*.qbt)
+.TP
+Qubicle Binary (*.qb)
+.TP
+Qubicle Exchange (*.qef)
 .TP
 Qubicle Project (*.qbcl)
 .TP
@@ -177,71 +205,49 @@ Sandbox VoxEdit Hierarchy (*.vxr)
 .TP
 Sandbox VoxEdit Tileset (*.vxt)
 .TP
+SLAB6 (*.kv6)
+.TP
 StarMade (*.sment)
 .TP
-Minecraft Region (*.mca, *.mcr)
+Sproxel (*.csv)
 .TP
-Minecraft Schematic (*.schem, *.schematic, *.nbt)
-.TP
-Minecraft Level (*.dat)
-.TP
-BinVox (*.binvox)
-.TP
-Goxel (*.gox)
-.TP
-CubeWorld (*.cub)
-.TP
-Sproxel csv (*.csv)
-.TP
-Build engine (*.kvx)
-.TP
-Ace of Spades (*.kv6)
-.TP
-Tiberian Sun (*.vxl)
-.TP
-AceOfSpades (*.vxl)
-.TP
-Qubicle Exchange (*.qef)
-.TP
-Chronovox (*.csm)
-.TP
-Nicks Voxel Model (*.nvm)
-.TP
-Wavefront Object (*.obj)
+StarMade (*.sment)
 .TP
 Standard Triangle Language (*.stl)
+.TP
+Wavefront Object (*.obj)
 
 .SH SAVE
 .TP
-Qubicle Binary (*.qb)
+BinVox (*.binvox)
+.TP
+Command and Conquer (*.vxl)
+.TP
+CubeWorld (*.cub)
+.TP
+GL Transmission Format (*.gltf)
+.TP
+Goxel (*.gox)
 .TP
 MagicaVoxel (*.vox)
 .TP
+Polygon File Format (*.ply)
+.TP
 Qubicle Binary Tree (*.qbt)
+.TP
+Qubicle Binary (*.qb)
+.TP
+Qubicle Exchange (*.qef)
 .TP
 Sandbox VoxEdit Model (*.vxm)
 .TP
 Sandbox VoxEdit Hierarchy (*.vxr)
 .TP
-BinVox (*.binvox)
-.TP
-Goxel (*.gox)
-.TP
 Sproxel csv (*.csv)
-.TP
-CubeWorld (*.cub)
-.TP
-Tiberian Sun (*.vxl)
-.TP
-Qubicle Exchange (*.qef)
-.TP
-Wavefront Object (*.obj)
-.TP
-Polygon File Format (*.ply)
 .TP
 Standard Triangle Language (*.stl)
 .TP
-GL Transmission Format (*.gltf)
+Wavefront Object (*.obj)
 
 .SH LAYERS
 
@@ -312,6 +318,8 @@ Config vars to control the meshing:
 
 .PP
 \fBvoxformat_ambientocclusion\fP: Don't export extra quads for ambient occlusion voxels
+.PP
+\fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects
 .PP
 \fBvoxformat_mergequads\fP: Merge similar quads to optimize the mesh
 .PP

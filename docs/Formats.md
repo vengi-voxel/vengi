@@ -8,6 +8,7 @@
 | Chronovox-Studio           | csm       | X       |        | X          |         | X      |                                                                          |
 | Command and Conquer        | vxl       | X       | X      | X          | X       | X      |                                                                          |
 | CubeWorld                  | cub       | X       | X      | X          |         | X      |                                                                          |
+| GL Transmission Format     | gltf      | X       | X      |            |         | X      | [spec](https://github.com/KhronosGroup/glTF/tree/main/specification/2.0) |
 | Goxel                      | gox       | X       | X      | X          |         | X      |                                                                          |
 | MagicaVoxel                | vox       | X       | X      | X          | X       | X      | [spec](https://github.com/ephtracy/voxel-model)                          |
 | Minecraft Level            | dat       | X       |        | X          | X       | X      |                                                                          |
@@ -17,20 +18,19 @@
 | Minecraft Schematics       | nbt       | X       |        | X          | X       | X      | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
 | Nick's Voxel Model         | nvm       | X       |        | X          |         | X      |                                                                          |
 | Quake 1/UFO:Alien Invasion | bsp       | X       |        |            |         |        |                                                                          |
-| Qubicle Exchange           | qef       | X       | X      | X          |         |        | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qef/)      |
 | Qubicle Binary Tree        | qbt       | X       | X      | X          |         | X      | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qbt/)      |
 | Qubicle Binary             | qb        | X       | X      | X          |         | X      | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qb/)       |
+| Qubicle Exchange           | qef       | X       | X      | X          |         |        | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qef/)      |
 | Qubicle Project            | qbcl      | X       | X      | X          |         | X      |                                                                          |
 | Sandbox VoxEdit Collection | vxc       | X       |        |            |         | X      |                                                                          |
 | Sandbox VoxEdit Model      | vxm       | X       | X      | X          | X       | X      |                                                                          |
-| Sandbox VoxEdit            | vxr       | X       | X      | X          |         | X      |                                                                          |
-| Sandbox VoxEdit Tile       | vxt       | X       |        |            |         | X      |                                                                          |
+| Sandbox VoxEdit Hierarchy  | vxr       | X       | X      | X          |         | X      |                                                                          |
+| Sandbox VoxEdit Tileset    | vxt       | X       |        |            |         | X      |                                                                          |
 | SLAB6                      | kv6       | X       |        | X          | X       | X      | [spec](https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt)     |
 | Sproxel                    | csv       | X       | X      | X          |         |        |                                                                          |
 | StarMade                   | sment     | X       |        | X          |         | X      | [spec](https://starmadepedia.net/wiki/Blueprint_File_Formats)            |
-| Wavefront Object           | obj       | X       | X      |            |         |        |                                                                          |
 | Standard Triangle Language | stl       | X       | X      |            |         |        |                                                                          |
-| GL Transmission Format     | gltf      | X       | X      |            |         | X      | [spec](https://github.com/KhronosGroup/glTF/tree/main/specification/2.0) |
+| Wavefront Object           | obj       | X       | X      |            |         |        |                                                                          |
 
 
 ## Meshes
