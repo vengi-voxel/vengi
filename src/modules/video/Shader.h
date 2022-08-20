@@ -47,7 +47,7 @@ protected:
 	ShaderArray _shader { InvalidId, InvalidId, InvalidId, InvalidId };
 
 	typedef core::Map<int, uint32_t, 8> UniformStateMap;
-	mutable UniformStateMap _uniformStateMap;
+	mutable UniformStateMap _uniformStateMap{128};
 
 	Id _program = InvalidId;
 	bool _initialized = false;
@@ -55,10 +55,10 @@ protected:
 	bool _dirty = true;
 
 	typedef core::StringMap<core::String> ShaderDefines;
-	ShaderDefines _defines;
+	ShaderDefines _defines{128};
 
 	typedef core::StringMap<int> ShaderUniformArraySizes;
-	ShaderUniformArraySizes _uniformArraySizes;
+	ShaderUniformArraySizes _uniformArraySizes{128};
 
 	ShaderUniforms _uniforms;
 
@@ -66,14 +66,14 @@ protected:
 	core::List<core::String> _transformVaryings;
 
 	// can be used to validate that every uniform was set. The value type is the location index
-	mutable core::Map<int, bool, 4> _usedUniforms;
+	mutable core::Map<int, bool, 4> _usedUniforms{128};
 	bool _recordUsedUniforms = false;
 	void addUsedUniform(int location) const;
 
-	ShaderAttributes _attributes;
+	ShaderAttributes _attributes{128};
 
 	typedef core::Map<int, int> AttributeComponents;
-	AttributeComponents _attributeComponents;
+	AttributeComponents _attributeComponents{128};
 
 	mutable uint32_t _time = 0u;
 
