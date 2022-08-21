@@ -178,12 +178,8 @@ private:
 
 	voxel::RawVolume* activeVolume();
 
-	struct MergeData {
-		core::DynamicArray<const voxel::RawVolume*> volumes;
-		core::DynamicArray<int> nodes;
-	};
 	/** @return the new node id that was created from the merged nodes */
-	int mergeNodes(const MergeData& mergeData);
+	int mergeNodes(const core::DynamicArray<int>& nodeIds);
 
 	/**
 	 * @brief Assumes that the current active scene is a fresh scene, no undo states

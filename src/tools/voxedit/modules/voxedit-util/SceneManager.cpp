@@ -738,13 +738,14 @@ static bool shouldGetMerged(const voxelformat::SceneGraphNode &node, NodeMergeFl
 	return add;
 }
 
-int SceneManager::mergeNodes(const MergeData& mergeData) {
-	core_assert(mergeData.volumes.size() == mergeData.nodes.size());
+int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	voxel::Region mergedRegion = voxel::Region::InvalidRegion;
 	core::DynamicArray<glm::ivec3> translations;
+	core::DynamicArray<voxel::RawVolume*> volumes;
+	volumes.reserve(nodeIds.size());
 
 	// calculate the new target region - use the scenegraph translation for this
-	for (int nodeId : mergeData.nodes) {
+	for (int nodeId : nodeIds) {
 		voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId);
 		core_assert(node != nullptr);
 		voxel::Region region = node->region();
@@ -756,6 +757,7 @@ int SceneManager::mergeNodes(const MergeData& mergeData) {
 			mergedRegion = region;
 		}
 		translations.push_back(transform.translation());
+		volumes.push_back(node->volume());
 	}
 
 	if (!mergedRegion.isValid()) {
@@ -763,8 +765,8 @@ int SceneManager::mergeNodes(const MergeData& mergeData) {
 	}
 
 	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
-	for (size_t i = 0; i < mergeData.volumes.size(); ++i) {
-		const voxel::RawVolume* v = mergeData.volumes[i];
+	for (size_t i = 0; i < volumes.size(); ++i) {
+		const voxel::RawVolume* v = volumes[i];
 		const voxel::Region& sr = v->region();
 		voxel::Region dr = sr;
 		dr.shift(translations[i]);
@@ -775,7 +777,7 @@ int SceneManager::mergeNodes(const MergeData& mergeData) {
 	voxelformat::SceneGraphNode node;
 	node.setVolume(merged, true);
 	int parent = 0;
-	if (voxelformat::SceneGraphNode* firstNode = sceneGraphNode(mergeData.nodes.front())) {
+	if (voxelformat::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
 		parent = firstNode->parent();
 		const size_t numKeyFrames = firstNode->keyFrames().size();
 		for (size_t i = 0; i < numKeyFrames; ++i) {
@@ -786,27 +788,27 @@ int SceneManager::mergeNodes(const MergeData& mergeData) {
 	if (newNodeId == -1) {
 		return -1;
 	}
-	for (int nodeId : mergeData.nodes) {
+	for (int nodeId : nodeIds) {
 		nodeRemove(nodeId, false);
 	}
 	return newNodeId;
 }
 
 int SceneManager::mergeNodes(NodeMergeFlags flags) {
-	MergeData mergeData;
+	core::DynamicArray<int> nodeIds;
+	nodeIds.reserve(_sceneGraph.size());
 	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
 		if (!shouldGetMerged(node, flags)) {
 			continue;
 		}
-		mergeData.volumes.push_back(node.volume());
-		mergeData.nodes.push_back(node.id());
+		nodeIds.push_back(node.id());
 	}
 
-	if (mergeData.volumes.size() <= 1) {
+	if (nodeIds.size() <= 1) {
 		return -1;
 	}
 
-	return mergeNodes(mergeData);
+	return mergeNodes(nodeIds);
 }
 
 int SceneManager::mergeNodes(int nodeId1, int nodeId2) {
@@ -818,12 +820,10 @@ int SceneManager::mergeNodes(int nodeId1, int nodeId2) {
 	if (volume2 == nullptr) {
 		return -1;
 	}
-	MergeData mergeData;
-	mergeData.volumes.push_back(volume1);
-	mergeData.nodes.push_back(nodeId1);
-	mergeData.volumes.push_back(volume2);
-	mergeData.nodes.push_back(nodeId2);
-	return mergeNodes(mergeData);
+	core::DynamicArray<int> nodeIds(2);
+	nodeIds[0] = nodeId1;
+	nodeIds[1] = nodeId2;
+	return mergeNodes(nodeIds);
 }
 
 void SceneManager::resetSceneState() {
