@@ -353,6 +353,17 @@ bool RawVolumeRenderer::toMesh(int idx, voxel::Mesh* mesh) {
 	return true;
 }
 
+void RawVolumeRenderer::deleteMeshes(Meshes& meshes, int idx) {
+	if (meshes[idx] == nullptr) {
+		return;
+	}
+	delete meshes[idx];
+	meshes[idx] = nullptr;
+	State& state = _state[idx];
+	state._vertexBuffer.update(state._vertexBufferIndex, nullptr, 0);
+	state._vertexBuffer.update(state._indexBufferIndex, nullptr, 0);
+}
+
 bool RawVolumeRenderer::translate(int idx, const glm::ivec3& m) {
 	voxel::RawVolume* v = volume(idx);
 	if (v == nullptr) {
@@ -360,12 +371,7 @@ bool RawVolumeRenderer::translate(int idx, const glm::ivec3& m) {
 	}
 	v->translate(m);
 	for (auto& i : _meshes) {
-		Meshes& meshes = i.second;
-		if (meshes[idx] == nullptr) {
-			continue;
-		}
-		delete meshes[idx];
-		meshes[idx] = nullptr;
+		deleteMeshes(i.second, idx);
 	}
 	return true;
 }
@@ -405,9 +411,7 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 				if (!voxel::intersects(completeRegion, finalRegion)) {
 					auto i = _meshes.find(mins);
 					if (i != _meshes.end()) {
-						Meshes& meshes = i->second;
-						delete meshes[idx];
-						meshes[idx] = nullptr;
+						deleteMeshes(i->second, idx);
 					}
 					continue;
 				}
@@ -675,9 +679,7 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 	state._palette.setValue(palette);
 	if (deleteMesh) {
 		for (auto& i : _meshes) {
-			Meshes& meshes = i.second;
-			delete meshes[idx];
-			meshes[idx] = nullptr;
+			deleteMeshes(i.second, idx);
 		}
 	}
 	const size_t n = _extractRegions.size();

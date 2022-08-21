@@ -114,7 +114,7 @@ protected:
 	void extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const;
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
 	void updatePalette(int idx);
-
+	void deleteMeshes(Meshes& meshes, int idx);
 public:
 	RawVolumeRenderer();
 
