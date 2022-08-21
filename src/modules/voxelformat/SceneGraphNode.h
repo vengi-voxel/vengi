@@ -39,35 +39,63 @@ enum class SceneGraphNodeType : uint8_t {
 
 class SceneGraphTransform {
 private:
-	enum { DIRTY_PIVOT = 1, DIRTY_TRANSLATION = 2, DIRTY_ORIENTATION = 4, DIRTY_SCALE = 8, DIRTY_MATRIX = 16 };
+	enum {
+		DIRTY_PIVOT = 1 << 0,
+		DIRTY_TRANSLATION = 1 << 1,
+		DIRTY_ORIENTATION = 1 << 2,
+		DIRTY_SCALE = 1 << 3,
+		DIRTY_MATRIX = 1 << 4,
+		DIRTY_LOCALTRANSLATION = 1 << 5,
+		DIRTY_LOCALORIENTATION = 1 << 6,
+		DIRTY_LOCALSCALE = 1 << 7,
+		DIRTY_LOCALMATRIX = 1 << 8
+	};
 
 	uint8_t _dirty = 0u;
 	// should be the normalized value between 0 and 1
 	glm::vec3 _normalizedPivot{0.0f};
+
 	glm::vec3 _translation{0.0f};
+	glm::vec3 _localTranslation{0.0f};
 	glm::quat _orientation{glm::quat_identity<float, glm::defaultp>()};
+	glm::quat _localOrientation{glm::quat_identity<float, glm::defaultp>()};
 	/**
 	 * @brief Uniform scale value
 	 */
 	float _scale = 1.0f;
+	float _localScale = 1.0f;
 	/**
 	 * @brief The model matrix that is assembled by the translation, orientation and scale value
 	 */
 	glm::mat4x4 _mat{1.0f};
+	glm::mat4x4 _localMat{1.0f};
 public:
 	void setPivot(const glm::vec3 &normalizedPivot);
+
+	void setMatrix(const glm::mat4x4 &matrix);
 	void setTranslation(const glm::vec3 &translation);
 	void setOrientation(const glm::quat& orientation);
 	void setScale(float scale);
-	void setMatrix(const glm::mat4x4 &matrix);
+
+	void setLocalMatrix(const glm::mat4x4 &matrix);
+	void setLocalTranslation(const glm::vec3 &translation);
+	void setLocalOrientation(const glm::quat& orientation);
+	void setLocalScale(float scale);
 
 	void lerp(const SceneGraphTransform &dest, double deltaFrameSeconds);
 
-	const glm::mat4x4 &matrix() const;
 	const glm::vec3 &pivot() const;
+
+	const glm::mat4x4 &matrix() const;
 	const glm::vec3 &translation() const;
 	const glm::quat &orientation() const;
 	float scale() const;
+
+	const glm::mat4x4 &localMatrix() const;
+	const glm::vec3 &localTranslation() const;
+	const glm::quat &localOrientation() const;
+	float localScale() const;
+
 	void update();
 	/**
 	 * @brief Uses the matrix to perform the transformation

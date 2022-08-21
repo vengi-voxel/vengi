@@ -46,6 +46,26 @@ void SceneGraphTransform::setMatrix(const glm::mat4x4 &matrix) {
 	_mat = matrix;
 }
 
+void SceneGraphTransform::setLocalTranslation(const glm::vec3 &translation) {
+	_dirty |= DIRTY_LOCALTRANSLATION;
+	_localTranslation = translation;
+}
+
+void SceneGraphTransform::setLocalOrientation(const glm::quat &orientation) {
+	_dirty |= DIRTY_LOCALORIENTATION;
+	_localOrientation = orientation;
+}
+
+void SceneGraphTransform::setLocalScale(float scale) {
+	_dirty |= DIRTY_LOCALSCALE;
+	_localScale = scale;
+}
+
+void SceneGraphTransform::setLocalMatrix(const glm::mat4x4 &matrix) {
+	_dirty |= DIRTY_LOCALMATRIX;
+	_localMat = matrix;
+}
+
 void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFrameSeconds) {
 	const float factor = glm::clamp((float)(deltaFrameSeconds), 0.0f, 1.0f);
 	setTranslation(glm::mix(_translation, dest._translation, factor));
@@ -54,12 +74,28 @@ void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFram
 	update();
 }
 
-const glm::mat4x4 &SceneGraphTransform::matrix() const {
-	return _mat;
-}
-
 const glm::vec3 &SceneGraphTransform::pivot() const {
 	return _normalizedPivot;
+}
+
+const glm::mat4x4 &SceneGraphTransform::localMatrix() const {
+	return _localMat;
+}
+
+const glm::vec3 &SceneGraphTransform::localTranslation() const {
+	return _localTranslation;
+}
+
+const glm::quat &SceneGraphTransform::localOrientation() const {
+	return _localOrientation;
+}
+
+float SceneGraphTransform::localScale() const {
+	return _localScale;
+}
+
+const glm::mat4x4 &SceneGraphTransform::matrix() const {
+	return _mat;
 }
 
 const glm::vec3 &SceneGraphTransform::translation() const {
@@ -91,6 +127,7 @@ void SceneGraphTransform::update() {
 		core_assert((_dirty & DIRTY_MATRIX) == 0u);
 		_mat = glm::translate(_translation) * glm::mat4_cast(_orientation) * glm::scale(glm::vec3(_scale));
 	}
+	// TODO: local update
 	_dirty = 0u;
 }
 

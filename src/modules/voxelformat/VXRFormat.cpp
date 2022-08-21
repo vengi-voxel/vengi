@@ -240,9 +240,6 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			keyFrame.longRotation = stream.readBool();
 		}
 		keyFrame.transform.setPivot(glm::vec3(0.5f));
-		glm::vec3 localPosition{0.0f};
-		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
-		float localScale = 1.0f;
 		glm::vec3 translation;
 		wrap(stream.readFloat(translation.x))
 		//nodeFrame.transform.position.x *= -1.0f;
@@ -250,9 +247,11 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		wrap(stream.readFloat(translation.z))
 		keyFrame.transform.setTranslation(translation);
 		if (version >= 3) {
+			glm::vec3 localPosition{0.0f};
 			wrap(stream.readFloat(localPosition.x))
 			wrap(stream.readFloat(localPosition.y))
 			wrap(stream.readFloat(localPosition.z))
+			keyFrame.transform.setLocalTranslation(localPosition);
 		}
 		if (version == 1) {
 			float rotationx;
@@ -265,7 +264,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			localRot = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
+			keyFrame.transform.setLocalOrientation(glm::quat(glm::vec3(rotationx, rotationy, rotationz)));
 		} else {
 			glm::quat orientation;
 			wrap(stream.readFloat(orientation.x))
@@ -273,16 +272,20 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			wrap(stream.readFloat(orientation.z))
 			wrap(stream.readFloat(orientation.w))
 			keyFrame.transform.setOrientation(orientation);
+			glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
 			wrap(stream.readFloat(localRot.x))
 			wrap(stream.readFloat(localRot.y))
 			wrap(stream.readFloat(localRot.z))
 			wrap(stream.readFloat(localRot.w))
+			keyFrame.transform.setLocalOrientation(localRot);
 		}
 		float scale;
 		wrap(stream.readFloat(scale))
 		keyFrame.transform.setScale(scale);
 		if (version >= 3) {
+			float localScale = 1.0f;
 			wrap(stream.readFloat(localScale))
+			keyFrame.transform.setLocalScale(localScale);
 		}
 		keyFrame.transform.update();
 	}

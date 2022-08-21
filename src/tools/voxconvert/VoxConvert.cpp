@@ -526,16 +526,25 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 		Log::info("%*s    |- long rotation: %s", indent, " ", kf.longRotation ? "true" : "false");
 		Log::info("%*s    |- interpolation: %s", indent, " ", voxelformat::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
 		Log::info("%*s    |- transform", indent, " ");
-		const glm::vec3 &pivot = kf.transform.pivot();
+		const voxelformat::SceneGraphTransform &transform = kf.transform;
+		const glm::vec3 &pivot = transform.pivot();
 		Log::info("%*s      |- pivot %f:%f:%f", indent, " ", pivot.x, pivot.y, pivot.z);
-		const glm::vec3 &tr = kf.transform.translation();
+		const glm::vec3 &tr  = transform.translation();
 		Log::info("%*s      |- translation %f:%f:%f", indent, " ", tr.x, tr.y, tr.z);
-		const glm::quat &rt = kf.transform.orientation();
+		const glm::vec3 &ltr = transform.localTranslation();
+		Log::info("%*s      |- local translation %f:%f:%f", indent, " ", ltr.x, ltr.y, ltr.z);
+		const glm::quat &rt = transform.orientation();
 		const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
 		Log::info("%*s      |- orientation %f:%f:%f:%f", indent, " ", rt.x, rt.y, rt.z, rt.w);
 		Log::info("%*s        |- euler %f:%f:%f", indent, " ", rtEuler.x, rtEuler.y, rtEuler.z);
-		const float sc = kf.transform.scale();
+		const glm::quat &lrt = transform.localOrientation();
+		const glm::vec3 &lrtEuler = glm::degrees(glm::eulerAngles(lrt));
+		Log::info("%*s      |- local orientation %f:%f:%f:%f", indent, " ", lrt.x, lrt.y, lrt.z, lrt.w);
+		Log::info("%*s        |- euler %f:%f:%f", indent, " ", lrtEuler.x, lrtEuler.y, lrtEuler.z);
+		const float sc = transform.scale();
 		Log::info("%*s      |- scale %f", indent, " ", sc);
+		const float lsc = transform.localScale();
+		Log::info("%*s      |- local scale %f", indent, " ", lsc);
 	}
 	Log::info("%*s  |- children: %i", indent, " ", (int)node.children().size());
 	for (int children : node.children()) {

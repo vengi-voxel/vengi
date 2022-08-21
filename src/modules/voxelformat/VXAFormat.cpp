@@ -240,22 +240,23 @@ bool VXAFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		}
 		wrapBool(stream.writeInt32(interpolation))
 		wrapBool(stream.writeBool(kf.longRotation))
-		wrapBool(stream.writeFloat(kf.transform.translation().x))
-		wrapBool(stream.writeFloat(kf.transform.translation().y))
-		wrapBool(stream.writeFloat(kf.transform.translation().z))
-		wrapBool(stream.writeFloat(0.0f)) // localPosition.x
-		wrapBool(stream.writeFloat(0.0f)) // localPosition.y
-		wrapBool(stream.writeFloat(0.0f)) // localPosition.z
-		wrapBool(stream.writeFloat(kf.transform.orientation().x))
-		wrapBool(stream.writeFloat(kf.transform.orientation().y))
-		wrapBool(stream.writeFloat(kf.transform.orientation().z))
-		wrapBool(stream.writeFloat(kf.transform.orientation().w))
-		wrapBool(stream.writeFloat(0.0f)) // localRotation.x
-		wrapBool(stream.writeFloat(0.0f)) // localRotation.y
-		wrapBool(stream.writeFloat(0.0f)) // localRotation.z
-		wrapBool(stream.writeFloat(1.0f)) // localRotation.w
-		wrapBool(stream.writeFloat(kf.transform.scale()))
-		wrapBool(stream.writeFloat(1.0f))
+		const SceneGraphTransform &transform = kf.transform;
+		wrapBool(stream.writeFloat(transform.translation().x))
+		wrapBool(stream.writeFloat(transform.translation().y))
+		wrapBool(stream.writeFloat(transform.translation().z))
+		wrapBool(stream.writeFloat(transform.localTranslation().x))
+		wrapBool(stream.writeFloat(transform.localTranslation().y))
+		wrapBool(stream.writeFloat(transform.localTranslation().z))
+		wrapBool(stream.writeFloat(transform.orientation().x))
+		wrapBool(stream.writeFloat(transform.orientation().y))
+		wrapBool(stream.writeFloat(transform.orientation().z))
+		wrapBool(stream.writeFloat(transform.orientation().w))
+		wrapBool(stream.writeFloat(transform.localOrientation().x))
+		wrapBool(stream.writeFloat(transform.localOrientation().y))
+		wrapBool(stream.writeFloat(transform.localOrientation().z))
+		wrapBool(stream.writeFloat(transform.localOrientation().w))
+		wrapBool(stream.writeFloat(transform.scale()))
+		wrapBool(stream.writeFloat(transform.localScale()))
 	}
 	const int32_t childCount = (int32_t)node.children().size();
 	wrapBool(stream.writeInt32(childCount));
