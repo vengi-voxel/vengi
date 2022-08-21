@@ -38,6 +38,7 @@ set(SRCS
 	Common.cpp Common.h
 	Enum.h
 	EventBus.cpp EventBus.h
+	FixedString.h
 	FourCC.h
 	GameConfig.h
 	GLM.cpp GLM.h
