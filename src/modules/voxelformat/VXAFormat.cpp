@@ -122,7 +122,7 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		wrap(stream.readFloat(translation.x))
 		wrap(stream.readFloat(translation.y))
 		wrap(stream.readFloat(translation.z))
-		keyFrame.transform.setTranslation(translation);
+		keyFrame.transform().setTranslation(translation);
 		wrap(stream.readFloat(localPosition.x))
 		wrap(stream.readFloat(localPosition.y))
 		wrap(stream.readFloat(localPosition.z))
@@ -131,16 +131,16 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		wrap(stream.readFloat(orientation.y))
 		wrap(stream.readFloat(orientation.z))
 		wrap(stream.readFloat(orientation.w))
-		keyFrame.transform.setOrientation(orientation);
+		keyFrame.transform().setOrientation(orientation);
 		wrap(stream.readFloat(localRot.x))
 		wrap(stream.readFloat(localRot.y))
 		wrap(stream.readFloat(localRot.z))
 		wrap(stream.readFloat(localRot.w))
 		float scale;
 		wrap(stream.readFloat(scale))
-		keyFrame.transform.setScale(scale);
+		keyFrame.transform().setScale(scale);
 		wrap(stream.readFloat(localScale))
-		keyFrame.transform.update();
+		keyFrame.transform().update();
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))
@@ -240,7 +240,7 @@ bool VXAFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		}
 		wrapBool(stream.writeInt32(interpolation))
 		wrapBool(stream.writeBool(kf.longRotation))
-		const SceneGraphTransform &transform = kf.transform;
+		const SceneGraphTransform &transform = kf.transform();
 		wrapBool(stream.writeFloat(transform.translation().x))
 		wrapBool(stream.writeFloat(transform.translation().y))
 		wrapBool(stream.writeFloat(transform.translation().z))

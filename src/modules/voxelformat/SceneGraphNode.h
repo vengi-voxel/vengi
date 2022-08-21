@@ -129,11 +129,25 @@ static constexpr const char *InterpolationTypeStr[] {
 };
 static_assert(core::enumVal(voxelformat::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
 
-struct SceneGraphKeyFrame {
+class SceneGraphKeyFrame {
+private:
+	SceneGraphTransform _transform;
+public:
 	FrameIndex frame = 0;
 	InterpolationType interpolation = InterpolationType::Linear;
 	bool longRotation = false;
-	SceneGraphTransform transform;
+
+	inline void setTransform(const SceneGraphTransform &transform) {
+		_transform = transform;
+	}
+
+	inline SceneGraphTransform &transform() {
+		return _transform;
+	}
+
+	inline const SceneGraphTransform &transform() const {
+		return _transform;
+	}
 };
 
 using SceneGraphNodeChildren = const core::Buffer<int, 32>;
@@ -273,21 +287,6 @@ public:
 	bool setProperty(const core::String& key, bool value);
 	bool setProperty(const core::String& key, const core::String& value);
 };
-
-inline SceneGraphKeyFrame& SceneGraphNode::keyFrame(FrameIndex frameIdx) {
-	if (_keyFrames.size() <= frameIdx) {
-		_keyFrames.resize((int)frameIdx + 1);
-	}
-	return _keyFrames[frameIdx];
-}
-
-inline SceneGraphTransform& SceneGraphNode::transform(FrameIndex frameIdx) {
-	return _keyFrames[frameIdx].transform;
-}
-
-inline const SceneGraphTransform& SceneGraphNode::transform(FrameIndex frameIdx) const {
-	return _keyFrames[frameIdx].transform;
-}
 
 inline bool SceneGraphNode::owns() const {
 	return _volume;

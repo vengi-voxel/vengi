@@ -145,7 +145,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			const uint32_t frame = sceneMgr().currentFrame();
 			const uint32_t keyFrame = node.keyFrameForFrame(frame);
 			voxelformat::SceneGraphKeyFrame &sceneGraphKeyFrame = node.keyFrame(keyFrame);
-			voxelformat::SceneGraphTransform &transform = sceneGraphKeyFrame.transform;
+			voxelformat::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
 			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
 			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform.matrix()), matrixTranslation, matrixRotation,
 												  matrixScale);

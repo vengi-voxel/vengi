@@ -526,7 +526,7 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 		Log::info("%*s    |- long rotation: %s", indent, " ", kf.longRotation ? "true" : "false");
 		Log::info("%*s    |- interpolation: %s", indent, " ", voxelformat::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
 		Log::info("%*s    |- transform", indent, " ");
-		const voxelformat::SceneGraphTransform &transform = kf.transform;
+		const voxelformat::SceneGraphTransform &transform = kf.transform();
 		const glm::vec3 &pivot = transform.pivot();
 		Log::info("%*s      |- pivot %f:%f:%f", indent, " ", pivot.x, pivot.y, pivot.z);
 		const glm::vec3 &tr  = transform.translation();

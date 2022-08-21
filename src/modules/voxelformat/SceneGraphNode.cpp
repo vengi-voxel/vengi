@@ -312,17 +312,32 @@ bool SceneGraphNode::setProperty(const core::String& key, const core::String& va
 	return true;
 }
 
+SceneGraphKeyFrame& SceneGraphNode::keyFrame(FrameIndex frameIdx) {
+	if (_keyFrames.size() <= frameIdx) {
+		_keyFrames.resize((int)frameIdx + 1);
+	}
+	return _keyFrames[frameIdx];
+}
+
+SceneGraphTransform& SceneGraphNode::transform(FrameIndex frameIdx) {
+	return _keyFrames[frameIdx].transform();
+}
+
+const SceneGraphTransform& SceneGraphNode::transform(FrameIndex frameIdx) const {
+	return _keyFrames[frameIdx].transform();
+}
+
 void SceneGraphNode::setTransform(FrameIndex frameIdx, const SceneGraphTransform &transform, bool updateMatrix) {
 	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
-	nodeFrame.transform = transform;
+	nodeFrame.setTransform(transform);
 	if (updateMatrix) {
-		nodeFrame.transform.update();
+		nodeFrame.transform().update();
 	}
 }
 
 void SceneGraphNode::setPivot(FrameIndex frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
 	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
-	nodeFrame.transform.setPivot(glm::vec3(pos) / glm::vec3(size));
+	nodeFrame.transform().setPivot(glm::vec3(pos) / glm::vec3(size));
 }
 
 const SceneGraphKeyFrames &SceneGraphNode::keyFrames() const {
@@ -381,12 +396,12 @@ SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex current) {
 
 	for (const SceneGraphKeyFrame &kf : _keyFrames) {
 		if (kf.frame <= current) {
-			source = &kf.transform;
+			source = &kf.transform();
 			start = kf.frame;
 			interpolationType = kf.interpolation;
 		}
 		if (kf.frame > current && !target) {
-			target = &kf.transform;
+			target = &kf.transform();
 			end = kf.frame;
 		}
 		if (source && target) {

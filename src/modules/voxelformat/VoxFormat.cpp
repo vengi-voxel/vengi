@@ -105,8 +105,8 @@ static bool loadKeyFrames(voxelformat::SceneGraphNode& node, const ogt_vox_keyfr
 		sceneGraphKeyFrame.frame = transform_keyframe.frame_index;
 		sceneGraphKeyFrame.interpolation = InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
-		sceneGraphKeyFrame.transform.setMatrix(ogtKeyFrameMat);
-		sceneGraphKeyFrame.transform.update();
+		sceneGraphKeyFrame.transform().setMatrix(ogtKeyFrameMat);
+		sceneGraphKeyFrame.transform().update();
 		kf.push_back(sceneGraphKeyFrame);
 	}
 	return node.setKeyFrames(kf);
@@ -398,7 +398,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 			kft.frame_index = kf.frame;
 			kft.transform = ogt_identity_transform;
 			// y and z are flipped here
-			const glm::vec3 kftransform = mins + kf.transform.translation() + width / 2.0f;
+			const glm::vec3 kftransform = mins + kf.transform().translation() + width / 2.0f;
 			kft.transform.m30 = -glm::floor(kftransform.x + 0.5f);
 			kft.transform.m31 = kftransform.z;
 			kft.transform.m32 = kftransform.y;
