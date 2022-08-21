@@ -176,7 +176,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 }
 
 SceneGraphNode::SceneGraphNode(SceneGraphNodeType type)
-	: _type(type), _flags(VolumeOwned | Visible), _properties(256) {
+	: _type(type), _flags(VolumeOwned | Visible), _properties(128) {
 	// ensure that there is at least one frame
 	SceneGraphKeyFrame frame;
 	_keyFrames.emplace_back(frame);
