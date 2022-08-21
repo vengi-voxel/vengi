@@ -33,7 +33,6 @@ public:
 
 	void setSceneMode(bool sceneMode);
 	bool extractRegion(voxelformat::SceneGraphNode &node, const voxel::Region& region);
-	void translate(voxelformat::SceneGraphNode &node, const glm::ivec3 &v);
 	bool toMesh(voxelformat::SceneGraphNode &node, voxel::Mesh* mesh);
 	bool empty(voxelformat::SceneGraphNode &node);
 	void prepare(voxelformat::SceneGraph &sceneGraph, uint32_t frame = 0, bool hideInactive = false, bool grayInactive = false);

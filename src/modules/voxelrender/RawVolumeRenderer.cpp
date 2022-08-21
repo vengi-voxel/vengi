@@ -364,18 +364,6 @@ void RawVolumeRenderer::deleteMeshes(Meshes& meshes, int idx) {
 	state._vertexBuffer.update(state._indexBufferIndex, nullptr, 0);
 }
 
-bool RawVolumeRenderer::translate(int idx, const glm::ivec3& m) {
-	voxel::RawVolume* v = volume(idx);
-	if (v == nullptr) {
-		return false;
-	}
-	v->translate(m);
-	for (auto& i : _meshes) {
-		deleteMeshes(i.second, idx);
-	}
-	return true;
-}
-
 voxel::Region RawVolumeRenderer::calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const {
 	const glm::ivec3 mins(x * meshSize.x, y * meshSize.y, z * meshSize.z);
 	const glm::ivec3 maxs = mins + meshSize - 1;

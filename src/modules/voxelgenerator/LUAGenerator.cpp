@@ -163,7 +163,7 @@ static int luaVoxel_volumewrapper_translate(lua_State* s) {
 	const int x = (int)luaL_checkinteger(s, 2);
 	const int y = (int)luaL_optinteger(s, 3, 0);
 	const int z = (int)luaL_optinteger(s, 4, 0);
-	volume->translate(glm::ivec3(x, y, z));
+	volume->node()->translate(glm::ivec3(x, y, z));
 	return 0;
 }
 
