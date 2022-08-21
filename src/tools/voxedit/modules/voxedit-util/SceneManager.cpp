@@ -742,7 +742,9 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	voxel::Region mergedRegion = voxel::Region::InvalidRegion;
 	core::DynamicArray<glm::ivec3> translations;
 	core::DynamicArray<voxel::RawVolume*> volumes;
+
 	volumes.reserve(nodeIds.size());
+	translations.reserve(nodeIds.size());
 
 	// calculate the new target region - use the scenegraph translation for this
 	for (int nodeId : nodeIds) {
