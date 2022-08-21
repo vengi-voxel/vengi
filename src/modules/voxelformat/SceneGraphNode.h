@@ -175,7 +175,6 @@ protected:
 
 	int _id = -1;
 	int _parent = 0;
-	FrameIndex _currentAnimKeyFrame = 0;
 	SceneGraphNodeType _type;
 	uint8_t _flags = 0u;
 	core::RGBA _color;

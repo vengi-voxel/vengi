@@ -419,9 +419,6 @@ SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex current) {
 	if (source == nullptr || target == nullptr) {
 		return transform(0);
 	}
-	if (start != _currentAnimKeyFrame) {
-		_currentAnimKeyFrame = start;
-	}
 
 	double deltaFrameSeconds = 0.0f;
 	switch (interpolationType) {
