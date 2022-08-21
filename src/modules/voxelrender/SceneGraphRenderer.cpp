@@ -65,10 +65,6 @@ bool SceneGraphRenderer::extractRegion(voxelformat::SceneGraphNode &node, const 
 	return _renderer.extractRegion(getVolumeId(node), region);
 }
 
-void SceneGraphRenderer::translate(voxelformat::SceneGraphNode &node, const glm::ivec3 &v) {
-	_renderer.translate(getVolumeId(node), v);
-}
-
 bool SceneGraphRenderer::toMesh(voxelformat::SceneGraphNode &node, voxel::Mesh* mesh) {
 	return _renderer.toMesh(getVolumeId(node), mesh);
 }

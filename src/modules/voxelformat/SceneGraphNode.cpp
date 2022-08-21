@@ -237,9 +237,16 @@ const voxel::Region &SceneGraphNode::region() const {
 	return _volume->region();
 }
 
-void SceneGraphNode::translate(const glm::ivec3 &v) {
-	if (_volume != nullptr) {
-		_volume->translate(v);
+void SceneGraphNode::translate(const glm::ivec3 &v, int frame) {
+	if (frame != -1) {
+		const uint32_t kf = keyFrameForFrame(frame);
+		SceneGraphTransform &transform = keyFrame(kf).transform();
+		transform.setTranslation(transform.translation() + glm::vec3(v));
+	} else {
+		for (SceneGraphKeyFrame &kf : _keyFrames) {
+			SceneGraphTransform &transform = kf.transform();
+			transform.setTranslation(transform.translation() + glm::vec3(v));
+		}
 	}
 }
 

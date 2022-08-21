@@ -473,7 +473,7 @@ void SceneManager::resize(int nodeId, const voxel::Region &region) {
 	}
 	voxel::RawVolume* v = node->volume();
 	const voxel::Region oldRegion = v->region();
-	Log::error("Resize volume from %s to %s", oldRegion.toString().c_str(), region.toString().c_str());
+	Log::debug("Resize volume from %s to %s", oldRegion.toString().c_str(), region.toString().c_str());
 	voxel::RawVolume* newVolume = voxelutil::resize(v, region);
 	if (newVolume == nullptr) {
 		return;
@@ -1036,17 +1036,10 @@ void SceneManager::shift(int nodeId, const glm::ivec3& m) {
 	if (node == nullptr) {
 		return;
 	}
-	voxel::RawVolume* model = node->volume();
-	Log::debug("Shift region by %s on layer %i", glm::to_string(m).c_str(), nodeId);
-	voxel::Region oldRegion = model->region();
-	setReferencePosition(referencePosition() + m);
-	_modifier.translate(m);
-	_volumeRenderer.translate(*node, m);
-	const voxel::Region& newRegion = model->region();
-	updateGridRenderer(newRegion);
+	const uint32_t keyFrameId = node->keyFrameForFrame(_currentFrame);
+	node->translate(m, (int)keyFrameId);
 	updateAABBMesh();
-	oldRegion.accumulate(newRegion);
-	modified(nodeId, oldRegion);
+	_mementoHandler.markNodeTransform(*node, keyFrameId);
 }
 
 void SceneManager::shift(int x, int y, int z) {
