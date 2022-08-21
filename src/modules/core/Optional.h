@@ -17,7 +17,7 @@ private:
 	bool _hasValue = false;
 
 	void prepare() {
-		if (_value != nullptr) {
+		if (_owns && _value != nullptr) {
 			_value->~T();
 		} else {
 			_value = (T *)core_malloc(sizeof(T));
@@ -70,18 +70,24 @@ public:
 		if (&other == this) {
 			return *this;
 		}
-		if (other._value == nullptr) {
+		if (other.hasValue()) {
 			_hasValue = false;
 			return *this;
 		}
 		prepare();
 		_value = new (_value) T(*other._value);
+		_hasValue = _value != nullptr;
 		return *this;
 	}
 
 	Optional(const Optional& other) noexcept {
+		if (!other.hasValue()) {
+			_hasValue = false;
+			return;
+		}
 		prepare();
 		_value = new (_value) T(*other._value);
+		_hasValue = _value != nullptr;
 	}
 
 	inline T *value() {

@@ -36,4 +36,12 @@ TEST(OptionalTest, testAssignment) {
 	EXPECT_NE(optional.value(), optional2.value());
 }
 
+TEST(OptionalTest, testValues) {
+	Optional<int> optional;
+	int value = 0;
+	optional.setValue(&value);
+	optional.setValue(value);
+	optional.setValue(nullptr);
+}
+
 }
