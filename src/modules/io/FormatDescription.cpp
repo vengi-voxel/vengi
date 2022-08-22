@@ -79,14 +79,18 @@ core::String FormatDescription::wildCard() const {
 	return pattern;
 }
 
-bool isImage(const core::String& file) {
+bool isA(const core::String& file, const io::FormatDescription *desc) {
 	const core::String& ext = core::string::extractExtension(file).toLower();
-	for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
+	for (; desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext)) {
 			return true;
 		}
 	}
 	return false;
+}
+
+bool isImage(const core::String& file) {
+	return isA(file, io::format::images());
 }
 
 void createGroupPatterns(const FormatDescription *inputDesc, core::DynamicArray<io::FormatDescription> &groups) {

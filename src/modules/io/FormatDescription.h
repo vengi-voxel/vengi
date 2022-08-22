@@ -46,6 +46,8 @@ extern core::String convertToAllFilePattern(const FormatDescription *desc);
  */
 extern core::String convertToFilePattern(const FormatDescription &desc);
 extern bool isImage(const core::String &file);
+extern bool isA(const core::String& file, const FormatDescription *desc);
+
 /**
  * @brief Add additional filter groups like "All Minecraft", "All Qubicle" filters
  */
