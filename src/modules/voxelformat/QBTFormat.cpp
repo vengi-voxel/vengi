@@ -463,6 +463,10 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream, voxel::Palette &pal
 	uint32_t colorCount;
 	wrap(stream.readUInt32(colorCount));
 	Log::debug("Load color map with %u colors", colorCount);
+	if (colorCount == 0) {
+		Log::warn("No embedded palette found");
+		return false;
+	}
 	if (colorCount > voxel::PaletteMaxColors) {
 		Log::error("Sanity check for max colors failed (%u)", colorCount);
 		return false;

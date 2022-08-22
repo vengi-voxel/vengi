@@ -28,16 +28,9 @@ const FormatDescription* images() {
 	return desc;
 }
 
-const FormatDescription* gimpPalette() {
+const FormatDescription* palettes() {
 	static FormatDescription desc[] = {
 		{"Gimp Palette", {"gpl"}, nullptr, 0u},
-		{"", {}, nullptr, 0u}
-	};
-	return desc;
-}
-
-const FormatDescription* png() {
-	static FormatDescription desc[] = {
 		{"Portable Network Graphics", {"png"}, nullptr, 0u},
 		{"", {}, nullptr, 0u}
 	};
@@ -80,7 +73,7 @@ core::String FormatDescription::wildCard() const {
 }
 
 bool isA(const core::String& file, const io::FormatDescription *desc) {
-	const core::String& ext = core::string::extractExtension(file).toLower();
+	const core::String& ext = core::string::extractExtension(file);
 	for (; desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext)) {
 			return true;

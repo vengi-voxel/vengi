@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "core/StringUtil.h"
 #include "core/concurrent/Concurrency.h"
+#include "io/FormatDescription.h"
 #include "voxedit-util/Config.h"
 #include "metric/Metric.h"
 #include "core/TimeProvider.h"
@@ -106,8 +107,10 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST, "Fill the hollows when voxelizing a mesh format");
 	core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 
-	_paletteFormats[0] = {"Image", {"png"}, nullptr, 0u};
-	int formatIndex = 1;
+	int formatIndex = 0;
+	for (const io::FormatDescription* desc = io::format::palettes(); desc->valid(); ++desc) {
+		_paletteFormats[formatIndex++] = *desc;
+	}
 	for (const io::FormatDescription* desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 		if (desc->flags & VOX_FORMAT_FLAG_PALETTE_EMBEDDED) {
 			_paletteFormats[formatIndex++] = *desc;

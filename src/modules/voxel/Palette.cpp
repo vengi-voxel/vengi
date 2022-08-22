@@ -127,8 +127,16 @@ bool Palette::save(const char *name) const {
 		}
 		name = _paletteFilename.c_str();
 	}
-	image::Image img(name);
 	Log::info("Save palette to %s", name);
+	const core::String &extension = core::string::extractExtension(name);
+	if (extension == "gpl") {
+		if (!saveGimpPalette(name)) {
+			Log::warn("Failed to write the gimp palette file '%s'", name);
+			return false;
+		}
+		return true;
+	}
+	image::Image img(name);
 	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
 	img.loadRGBA((const uint8_t *)colors, lengthof(colors), 1);
 	if (!img.writePng()) {
@@ -180,6 +188,9 @@ bool Palette::load(const image::ImagePtr &img) {
 		return false;
 	}
 	core_memset(glowColors, 0, sizeof(glowColors));
+	if (img->width() * img->height() > PaletteMaxColors) {
+		return createPalette(img, *this);
+	}
 	int ncolors = img->width();
 	if (ncolors > PaletteMaxColors) {
 		ncolors = PaletteMaxColors;
@@ -207,6 +218,9 @@ bool Palette::load(const char *paletteName) {
 		Log::error("Failed to load palette file %s", paletteName);
 		return false;
 	}
+	if (paletteFile->extension() == "gpl") {
+		return loadGimpPalette(paletteName);
+	}
 	const image::ImagePtr &img = image::loadImage(paletteFile, false);
 	if (!img->isLoaded()) {
 		Log::error("Failed to load image %s", paletteFile->name().c_str());
@@ -233,6 +247,7 @@ bool Palette::loadGimpPalette(const char *filename) {
 	io::MemoryReadStream stream(gpl.c_str(), gpl.size());
 	char line[2048];
 	colorCount = 0;
+	_paletteFilename = paletteFile->name();
 	while (stream.readLine(sizeof(line), line)) {
 		if (line[0] == '#') {
 			continue;

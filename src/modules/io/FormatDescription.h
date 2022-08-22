@@ -16,7 +16,7 @@ using FormatDescriptionExtensions = core::Vector<core::String, MAX_FORMATDESCRIP
 
 struct FormatDescription {
 	core::String name;						/**< the name of the format */
-	FormatDescriptionExtensions exts;		/**< the file extension - nullptr terminated list */
+	FormatDescriptionExtensions exts;		/**< the file extension - nullptr terminated list - all lower case */
 	bool (*isA)(uint32_t magic) = nullptr;	/**< function to check whether a magic byte matches for the format description */
 	uint32_t flags = 0u;					/**< flags for user defines properties */
 
@@ -57,8 +57,7 @@ namespace format {
 
 const FormatDescription *images();
 const FormatDescription *lua();
-const FormatDescription* gimpPalette();
-const FormatDescription* png();
+const FormatDescription* palettes();
 
 } // namespace format
 

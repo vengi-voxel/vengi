@@ -190,7 +190,7 @@ app::AppState VoxConvert::onInit() {
 		Log::info("* output files:      - %s", outfile.c_str());
 	}
 
-	if (io::isImage(outfile) && infiles.size() == 1) {
+	if (io::isA(outfile, io::format::palettes()) && infiles.size() == 1) {
 		voxel::Palette palette;
 		if (!voxelformat::importPalette(infiles[0], palette)) {
 			Log::error("Failed to import the palette from %s", infiles[0].c_str());

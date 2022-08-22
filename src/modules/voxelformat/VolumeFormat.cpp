@@ -261,31 +261,14 @@ image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStr
 }
 
 bool importPalette(const core::String &filename, voxel::Palette &palette) {
-	const core::String &ext = core::string::extractExtension(filename);
-	core::String paletteName(core::string::extractFilename(filename.c_str()));
-	core::string::replaceAllChars(paletteName, ' ', '_');
-	paletteName = paletteName.toLower();
-	bool paletteLoaded = false;
-	for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
-		if (desc->matchesExtension(ext)) {
-			const image::ImagePtr &img = image::loadImage(filename, false);
-			if (!img->isLoaded()) {
-				Log::warn("Failed to load image %s", filename.c_str());
-				break;
-			}
-			if (!voxel::Palette::createPalette(img, palette)) {
-				Log::warn("Failed to create palette for image %s", filename.c_str());
-				return false;
-			}
-			paletteLoaded = true;
-			break;
-		}
+	if (io::isA(filename, io::format::palettes())) {
+		return palette.load(filename.c_str());
 	}
-	const io::FilesystemPtr &fs = io::filesystem();
-	if (!paletteLoaded) {
+	if (io::isA(filename, voxelformat::voxelLoad())) {
+		const io::FilesystemPtr &fs = io::filesystem();
 		const io::FilePtr &palFile = fs->open(filename);
 		if (!palFile->validHandle()) {
-			Log::warn("Failed to load palette from %s", filename.c_str());
+			Log::warn("Failed to open palette file at %s", filename.c_str());
 			return false;
 		}
 		io::FileStream stream(palFile);
@@ -293,9 +276,10 @@ bool importPalette(const core::String &filename, voxel::Palette &palette) {
 			Log::warn("Failed to load palette from %s", filename.c_str());
 			return false;
 		}
-		paletteLoaded = true;
+		return true;
 	}
-	return paletteLoaded;
+	Log::warn("Given file is not supported as palette source: %s", filename.c_str());
+	return false;
 }
 
 size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) {

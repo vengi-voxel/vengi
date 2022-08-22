@@ -211,15 +211,11 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		if (palette.needsSave()) {
 			if (ImGui::Button(ICON_FA_SAVE " Save##savepalette")) {
 				if (!palette.save()) {
-					imguiApp()->saveDialog([&](const core::String &file) { palette.save(file.c_str()); }, io::format::png(), "palette.png");
+					imguiApp()->saveDialog([&](const core::String &file) { palette.save(file.c_str()); }, io::format::palettes(), "palette.png");
 				}
 				palette.markSaved();
 			}
 			ImGui::TooltipText("Save the modified palette");
-			ImGui::SameLine();
-		}
-		if (ImGui::Button(ICON_FA_SAVE " Gimp Export##exportpalette")) {
-			imguiApp()->saveDialog([&](const core::String &file) { palette.saveGimpPalette(file.c_str()); }, io::format::gimpPalette(), "palette.gpl");
 		}
 
 		ImGui::Dummy(ImVec2(10, 10));
