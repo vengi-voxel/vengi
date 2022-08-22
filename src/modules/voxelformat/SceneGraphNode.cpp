@@ -5,6 +5,7 @@
 #include "SceneGraphNode.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "util/Easing.h"
@@ -289,6 +290,10 @@ core::String SceneGraphNode::property(const core::String &key) const {
 	return value;
 }
 
+float SceneGraphNode::propertyf(const core::String& key) const {
+	return property(key).toFloat();
+}
+
 void SceneGraphNode::addProperties(const core::StringMap<core::String> &map) {
 	for (const auto &entry : map) {
 		setProperty(entry->key, entry->value);
@@ -394,7 +399,7 @@ uint32_t SceneGraphNode::keyFrameForFrame(FrameIndex frame) const {
 	return 0;
 }
 
-SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex current) {
+SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex current) const {
 	const SceneGraphTransform *source = nullptr;
 	const SceneGraphTransform *target = nullptr;
 	FrameIndex start = 0;
@@ -453,6 +458,49 @@ SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex current) {
 	voxelformat::SceneGraphTransform transform = *source;
 	transform.lerp(*target, deltaFrameSeconds);
 	return transform;
+}
+
+SceneGraphNodeCamera::SceneGraphNodeCamera() : Super(SceneGraphNodeType::Camera) {
+}
+
+float SceneGraphNodeCamera::farPlane() const {
+	return propertyf("cam_farplane");
+}
+
+void SceneGraphNodeCamera::setFarPlane(float val) {
+	setProperty("cam_farplane", core::string::toString(val));
+}
+
+float SceneGraphNodeCamera::nearPlane() const {
+	return propertyf("cam_nearplane");
+}
+
+void SceneGraphNodeCamera::setNearPlane(float val) {
+	setProperty("cam_nearplane", core::string::toString(val));
+}
+
+bool SceneGraphNodeCamera::isOrthographic() const {
+	return property("cam_mode") == "orthographic";
+}
+
+void SceneGraphNodeCamera::setOrthographic() {
+	setProperty("cam_mode", "orthographic");
+}
+
+bool SceneGraphNodeCamera::isPerspective() const {
+	return property("cam_mode") == "perspective";
+}
+
+void SceneGraphNodeCamera::setPerspective() {
+	setProperty("cam_mode", "perspective");
+}
+
+int SceneGraphNodeCamera::fieldOfView() const{
+	return property("cam_fov").toInt();
+}
+
+void SceneGraphNodeCamera::setFieldOfView(int val){
+	setProperty("cam_fov", core::string::toString(val));
 }
 
 } // namespace voxelformat

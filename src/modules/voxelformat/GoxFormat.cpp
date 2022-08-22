@@ -181,7 +181,6 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::Seek
 
 bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	const int size = (int)sceneGraph.size();
-	core::String name = core::string::format("layer %i", size);
 	voxel::RawVolume *layerVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 	uint32_t blockCount;
 
@@ -262,14 +261,14 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	char dictKey[256];
 	char dictValue[256];
 	SceneGraphNode node;
+	node.setName(core::string::format("layer %i", size));
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
 		if (!strcmp(dictKey, "name")) {
 			// "name" 255 chars max
-			name = dictValue;
-			node.setProperty(dictKey, dictValue);
+			node.setName(dictValue);
 		} else if (!strcmp(dictKey, "visible")) {
 			// "visible" (bool)
-			visible = *dictValue;
+			visible = *(const bool*)dictValue;
 		} else if (!strcmp(dictKey, "mat")) {
 			// "mat" (4x4 matrix)
 			SceneGraphTransform transform;
@@ -302,7 +301,6 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	mirrored->translate(-mins);
 	node.transform(0).setTranslation(mins);
 	node.setVolume(mirrored, true);
-	node.setName(name);
 	node.setVisible(visible);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
@@ -341,20 +339,25 @@ bool GoxFormat::loadChunk_MATE(State& state, const GoxChunk &c, io::SeekableRead
 bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	char dictKey[256];
 	char dictValue[256];
-	SceneGraphNode node(SceneGraphNodeType::Camera);
+	SceneGraphNodeCamera node;
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
 		if (!strcmp(dictKey, "name")) {
 			// "name" 127 chars max
-			node.setProperty(dictKey, dictValue);
+			node.setName(dictValue);
 		} else if (!strcmp(dictKey, "active")) {
 			// "active" no value - active scene camera if this key is available
 			node.setProperty(dictKey, "true");
 		} else if (!strcmp(dictKey, "dist")) {
 			// "dist" float
-			node.setProperty(dictKey, core::string::toString(*(const float*)dictValue));
+			node.setFarPlane(*(const float*)dictValue);
 		} else if (!strcmp(dictKey, "ortho")) {
 			// "ortho" bool
-			node.setProperty(dictKey, *dictValue ? "true" : "false");
+			const bool ortho = *(const bool*)dictValue;
+			if (ortho) {
+				node.setOrthographic();
+			} else {
+				node.setPerspective();
+			}
 		} else if (!strcmp(dictKey, "mat")) {
 			// "mat" 4x4 float
 			SceneGraphTransform transform;
@@ -449,16 +452,16 @@ bool GoxFormat::saveChunk_DictEntry(io::SeekableWriteStream &stream, const char 
 }
 
 bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream& stream, const SceneGraph &sceneGraph) {
-	// TODO: fill with proper values
 	for (auto iter = sceneGraph.begin(SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
 		GoxScopedChunkWriter scoped(stream, FourCC('C', 'A', 'M', 'R'));
-		wrapBool(saveChunk_DictEntry(stream, "name", (*iter).name().c_str(), (*iter).name().size()))
+		const SceneGraphNodeCamera &cam = toCameraNode(*iter);
+		wrapBool(saveChunk_DictEntry(stream, "name", cam.name().c_str(), cam.name().size()))
 		wrapBool(saveChunk_DictEntry(stream, "active", "false", 5))
-		float distance = 10.0f;
-		wrapBool(saveChunk_DictEntry(stream, "active", &distance, sizeof(distance)))
-		char ortho = 0;
+		const float distance = cam.farPlane();
+		wrapBool(saveChunk_DictEntry(stream, "dist", &distance, sizeof(distance)))
+		const bool ortho = cam.isOrthographic();
 		wrapBool(saveChunk_DictEntry(stream, "ortho", &ortho, sizeof(ortho)))
-		const glm::mat4x4 &mat = (*iter).transformForFrame(0).matrix();
+		const glm::mat4x4 &mat = cam.transformForFrame(0).matrix();
 		wrapBool(saveChunk_DictEntry(stream, "mat", &mat, sizeof(mat)))
 	}
 	return true;

@@ -300,20 +300,18 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		// }
 
 		{
-			SceneGraphNode camNode(SceneGraphNodeType::Camera);
+			SceneGraphNodeCamera camNode;
 			camNode.setName(core::String::format("Camera %u", c.camera_id));
 			SceneGraphTransform transform;
 			transform.setMatrix(viewMatrix);
 			camNode.setTransform(0, transform, true);
-			camNode.setProperty("fov", core::string::toString(c.fov));
-			camNode.setProperty("focus", core::String::format("%f:%f:%f", c.focus[0], c.focus[1], c.focus[2]));
-			camNode.setProperty("angle", core::String::format("%f:%f:%f", c.angle[0], c.angle[1], c.angle[2]));
-			camNode.setProperty("radius", core::String::format("%i", c.radius));
-			camNode.setProperty("frustum", core::String::format("%f", c.frustum));
+			camNode.setFieldOfView(c.fov);
+			camNode.setFarPlane((float)c.radius);
+			camNode.setProperty("frustum", core::String::format("%f", c.frustum)); // TODO:
 			if (c.mode == ogt_cam_mode_perspective) {
-				camNode.setProperty("mode", "perspective");
-			} else {
-				camNode.setProperty("mode", core::String::format("unknown %i", (int)c.mode));
+				camNode.setPerspective();
+			} else if (c.mode == ogt_cam_mode_orthographic) {
+				camNode.setOrthographic();
 			}
 			sceneGraph.emplace(core::move(camNode), sceneGraph.root().id());
 		}
@@ -433,7 +431,8 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	core::Buffer<ogt_vox_cam> cameras(output_cameras);
 	int camIdx = 0;
 	for (auto iter = newSceneGraph.begin(SceneGraphNodeType::Camera); iter != newSceneGraph.end(); ++iter) {
-		const SceneGraphTransform &transform = (*iter).transform(0);
+		const SceneGraphNodeCamera &camera = toCameraNode(*iter);
+		const SceneGraphTransform &transform = camera.transform(0);
 		ogt_vox_cam &cam = cameras[camIdx];
 		cam.camera_id = camIdx;
 		const glm::vec3 &euler = glm::eulerAngles(transform.orientation());
@@ -444,10 +443,10 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		cam.focus[0] = pos[0];
 		cam.focus[1] = pos[1];
 		cam.focus[2] = pos[2];
-		cam.mode = ogt_cam_mode_perspective; // TODO:
-		cam.fov = 90;						 // TODO:
-		cam.radius = 10;					 // TODO:
-		cam.frustum = 0.0f;					 // TODO:
+		cam.mode = camera.isPerspective() ? ogt_cam_mode_perspective : ogt_cam_mode_orthographic;
+		cam.radius = (int)camera.farPlane();
+		cam.fov = camera.fieldOfView();
+		cam.frustum = camera.propertyf("frustum"); // TODO:
 	}
 	output_scene.num_cameras = output_cameras;
 	if (output_cameras > 0) {

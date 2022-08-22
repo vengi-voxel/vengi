@@ -245,9 +245,12 @@
 
     enum ogt_cam_mode
     {
-        ogt_cam_mode_perspective = 0,
-        // TODO: other camera types
-        ogt_cam_mode_unknown    = 1
+        ogt_cam_mode_perspective  = 0,
+        ogt_cam_mode_free         = 1,
+        ogt_cam_mode_pano         = 2,
+        ogt_cam_mode_orthographic = 3,
+        ogt_cam_mode_isometric    = 4,
+        ogt_cam_mode_unknown      = 5
     };
 
     // Content Flags for ogt_vox_matl values for a given material
@@ -297,11 +300,11 @@
     {
         uint32_t     camera_id;
         ogt_cam_mode mode;
-        float        focus[3];
-        float        angle[3];
-        int          radius;
+        float        focus[3];    // the target position
+        float        angle[3];    // rotation in degree
+        int          radius;      // to get the position of the camera, rotate (0, -radius * model size, 0) and add to focus position
         float        frustum;
-        int          fov;
+        int          fov;         // angle in degree
     } ogt_vox_cam;
 
     // a 3-dimensional model of voxels
@@ -1633,6 +1636,14 @@
                     if (mode_string) {
                         if (!_vox_strcmp(mode_string, "pers")) {
                             camera.mode = ogt_cam_mode_perspective;
+                        } else if (!_vox_strcmp(mode_string, "free")) {
+                            camera.mode = ogt_cam_mode_free;
+                        } else if (!_vox_strcmp(mode_string, "pano")) {
+                            camera.mode = ogt_cam_mode_pano;
+                        } else if (!_vox_strcmp(mode_string, "iso")) {
+                            camera.mode = ogt_cam_mode_isometric;
+                        } else if (!_vox_strcmp(mode_string, "orth")) {
+                            camera.mode = ogt_cam_mode_orthographic;
                         }
                     }
                     const char* focus_string = _vox_dict_get_value_as_string(&dict, "_focus", NULL);

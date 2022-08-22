@@ -88,6 +88,27 @@ void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinyg
 	}
 }
 
+static tinygltf::Camera processCamera(const SceneGraphNodeCamera &cam) {
+	tinygltf::Camera c;
+	c.name = cam.name().c_str();
+	if (cam.isPerspective()) {
+		c.type = "perspective";
+		c.perspective.aspectRatio = 1.0;
+		c.perspective.yfov = cam.fieldOfView();
+		c.perspective.zfar = cam.farPlane();
+		c.perspective.znear = cam.nearPlane();
+	}
+	// TODO:
+	/* else if (cam.isOrthographic()) {
+		c.type = "orthographic";
+		// c.orthographic.xmag = right * 2;
+		// c.orthographic.ymag = top * 2;
+		c.orthographic.zfar = cam.farPlane();
+		c.orthographic.znear = cam.nearPlane();
+	}*/
+	return c;
+}
+
 bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const SceneGraph &sceneGraph,
 							const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 							const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
@@ -417,6 +438,13 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 	}
 
 	m.scenes.emplace_back(core::move(scene));
+	for (auto iter = sceneGraph.begin(SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
+		tinygltf::Camera gltfCamera = processCamera(toCameraNode(*iter));
+		if (gltfCamera.type.empty()) {
+			continue;
+		}
+		m.cameras.push_back(gltfCamera);
+	}
 
 	io::StdStreamBuf buf(stream);
 	std::ostream gltfStream(&buf);

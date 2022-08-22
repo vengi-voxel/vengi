@@ -235,7 +235,7 @@ public:
 	 * the given input frame and interpolates according to the given delta frames between the particular
 	 * keyframes.
 	 */
-	SceneGraphTransform transformForFrame(FrameIndex frame);
+	SceneGraphTransform transformForFrame(FrameIndex frame) const;
 
 	SceneGraphKeyFrame &keyFrame(FrameIndex frameIdx);
 
@@ -280,12 +280,47 @@ public:
 	const core::StringMap<core::String> &properties() const;
 	core::StringMap<core::String> &properties();
 	core::String property(const core::String& key) const;
+	float propertyf(const core::String& key) const;
 	void addProperties(const core::StringMap<core::String>& map);
 
 	bool setProperty(const core::String& key, const char *value);
 	bool setProperty(const core::String& key, bool value);
 	bool setProperty(const core::String& key, const core::String& value);
 };
+
+class SceneGraphNodeCamera : public SceneGraphNode {
+private:
+	using Super = SceneGraphNode;
+	// no members - just convenience methods
+public:
+	SceneGraphNodeCamera();
+
+	int fieldOfView() const;
+	void setFieldOfView(int val);
+
+	float farPlane() const;
+	void setFarPlane(float val);
+
+	float nearPlane() const;
+	void setNearPlane(float val);
+
+	bool isOrthographic() const;
+	void setOrthographic();
+
+	bool isPerspective() const;
+	void setPerspective();
+};
+static_assert(sizeof(SceneGraphNodeCamera) == sizeof(SceneGraphNode), "Sizes must match - direct casting is performed");
+
+inline SceneGraphNodeCamera& toCameraNode(SceneGraphNode& node) {
+	core_assert(node.type() == SceneGraphNodeType::Camera);
+	return (SceneGraphNodeCamera&)node;
+}
+
+inline const SceneGraphNodeCamera& toCameraNode(const SceneGraphNode& node) {
+	core_assert(node.type() == SceneGraphNodeType::Camera);
+	return (const SceneGraphNodeCamera&)node;
+}
 
 inline bool SceneGraphNode::owns() const {
 	return _volume;
