@@ -212,7 +212,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (!voxedit::sceneMgr().importPalette(args[0])) {
 			Log::error("Failed to execute 'importpalette' for file '%s'", args[0].c_str());
 		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a palette");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory, &_paletteFormats[0])).setHelp("Import an image as a palette");
 
 #ifdef VOXEDIT_ANIMATION
 	command::Command::registerCommand("animation_load", [&] (const command::CmdArgs& args) {
