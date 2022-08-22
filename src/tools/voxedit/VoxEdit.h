@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
 #include "voxedit-util/SceneManager.h"
 #include "core/ArrayLength.h"
@@ -23,7 +24,7 @@ class VoxEdit: public ui::imgui::IMGUIApp {
 private:
 	using Super = ui::imgui::IMGUIApp;
 	voxedit::MainWindow* _mainWindow = nullptr;
-	core::Array<io::FormatDescription, 64> _paletteFormats;
+	core::DynamicArray<io::FormatDescription> _paletteFormats;
 
 	core::String getSuggestedFilename(const char *extension = nullptr) const;
 

@@ -107,16 +107,15 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST, "Fill the hollows when voxelizing a mesh format");
 	core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 
-	int formatIndex = 0;
 	for (const io::FormatDescription* desc = io::format::palettes(); desc->valid(); ++desc) {
-		_paletteFormats[formatIndex++] = *desc;
+		_paletteFormats.push_back(*desc);
 	}
 	for (const io::FormatDescription* desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 		if (desc->flags & VOX_FORMAT_FLAG_PALETTE_EMBEDDED) {
-			_paletteFormats[formatIndex++] = *desc;
+			_paletteFormats.push_back(*desc);
 		}
 	}
-	_paletteFormats[formatIndex++] = {"", {}, nullptr, 0u};
+	_paletteFormats.push_back(io::FormatDescription{"", {}, nullptr, 0u});
 
 	voxedit::sceneMgr().construct();
 
