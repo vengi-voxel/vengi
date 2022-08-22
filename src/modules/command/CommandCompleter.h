@@ -8,6 +8,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/Var.h"
 #include "io/Filesystem.h"
+#include "io/FormatDescription.h"
 
 namespace command {
 
@@ -22,6 +23,13 @@ inline auto fileCompleter(const io::FilesystemPtr& filesystem, const core::Strin
 inline auto fileCompleter(const io::FilesystemPtr& filesystem, const core::VarPtr& lastDirectory, const char* pattern = "*") {
 	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		return complete(filesystem, lastDirectory->strVal(), str, matches, pattern);
+	};
+}
+
+inline auto fileCompleter(const io::FilesystemPtr& filesystem, const core::VarPtr& lastDirectory, const io::FormatDescription* format) {
+	const core::String &pattern = io::convertToAllFilePattern(format);
+	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
+		return complete(filesystem, lastDirectory->strVal(), str, matches, pattern.c_str());
 	};
 }
 
