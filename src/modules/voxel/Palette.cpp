@@ -240,7 +240,7 @@ bool Palette::loadGimpPalette(const char *filename) {
 		if (strcmp("GIMP Palette", line) == 0) {
 			continue;
 		}
-		if (strncmp("Name ", line, 5) == 0) {
+		if (strncmp("Name", line, 4) == 0) {
 			continue;
 		}
 
