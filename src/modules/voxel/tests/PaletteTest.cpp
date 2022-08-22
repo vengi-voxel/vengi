@@ -18,6 +18,15 @@ TEST_F(PaletteTest, testPaletteLookup) {
 	EXPECT_EQ(0, pal.findClosestIndex(rgba));
 }
 
+TEST_F(PaletteTest, testGimpPalette) {
+	Palette pal;
+	pal.nippon();
+	const int cnt = pal.colorCount;
+	ASSERT_TRUE(pal.saveGimpPalette("test.gpl", "test"));
+	EXPECT_TRUE(pal.loadGimpPalette("test.gpl"));
+	EXPECT_EQ(pal.colorCount, cnt);
+}
+
 TEST_F(PaletteTest, testAddColorsNoDup) {
 	Palette pal;
 	const uint32_t colors[] = {

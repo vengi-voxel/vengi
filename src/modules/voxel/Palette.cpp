@@ -232,23 +232,21 @@ bool Palette::loadGimpPalette(const char *filename) {
 	const core::String &gpl = paletteFile->load();
 	io::MemoryReadStream stream(gpl.c_str(), gpl.size());
 	char line[2048];
-	stream.readLine(sizeof(line), line);
-	if (strcmp("GIMP Palette", line) != 0) {
-		Log::error("Could not find header 'GIMP Palette' in first line");
-		return false;
-	}
-	stream.readLine(sizeof(line), line);
-	if (strncmp("Name ", line, 5) != 0) {
-		Log::error("Could not find header 'Name xxx' in second line");
-		return false;
-	}
 	colorCount = 0;
 	while (stream.readLine(sizeof(line), line)) {
 		if (line[0] == '#') {
 			continue;
 		}
+		if (strcmp("GIMP Palette", line) == 0) {
+			continue;
+		}
+		if (strncmp("Name ", line, 5) == 0) {
+			continue;
+		}
+
 		int r, g, b;
 		if (SDL_sscanf(line, "%i %i %i", &r, &g, &b) != 3) {
+			Log::error("Failed to parse line '%s'", line);
 			continue;
 		}
 		colors[colorCount++] = core::RGBA(r, g, b);
