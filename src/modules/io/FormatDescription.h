@@ -55,6 +55,8 @@ namespace format {
 
 const FormatDescription *images();
 const FormatDescription *lua();
+const FormatDescription* gimpPalette();
+const FormatDescription* png();
 
 } // namespace format
 

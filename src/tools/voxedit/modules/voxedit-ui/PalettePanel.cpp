@@ -5,6 +5,7 @@
 #include "PalettePanel.h"
 #include "DragAndDropPayload.h"
 #include "core/StringUtil.h"
+#include "io/FormatDescription.h"
 #include "voxedit-util/SceneManager.h"
 #include "core/Color.h"
 #include "ui/imgui/IMGUIApp.h"
@@ -209,11 +210,15 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		if (palette.needsSave()) {
 			if (ImGui::Button(ICON_FA_SAVE " Save##savepalette")) {
 				if (!palette.save()) {
-					imguiApp()->saveDialog([&](const core::String &file) { palette.save(file.c_str()); });
+					imguiApp()->saveDialog([&](const core::String &file) { palette.save(file.c_str()); }, io::format::png(), "palette.png");
 				}
 				palette.markSaved();
 			}
 			ImGui::TooltipText("Save the modified palette");
+			ImGui::SameLine();
+		}
+		if (ImGui::Button(ICON_FA_SAVE " Gimp Export##exportpalette")) {
+			imguiApp()->saveDialog([&](const core::String &file) { palette.saveGimpPalette(file.c_str()); }, io::format::gimpPalette(), "palette.gpl");
 		}
 
 		ImGui::Dummy(ImVec2(10, 10));

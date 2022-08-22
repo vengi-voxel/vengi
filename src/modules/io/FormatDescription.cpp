@@ -28,6 +28,22 @@ const FormatDescription* images() {
 	return desc;
 }
 
+const FormatDescription* gimpPalette() {
+	static FormatDescription desc[] = {
+		{"Gimp Palette", {"gpl"}, nullptr, 0u},
+		{"", {}, nullptr, 0u}
+	};
+	return desc;
+}
+
+const FormatDescription* png() {
+	static FormatDescription desc[] = {
+		{"Portable Network Graphics", {"png"}, nullptr, 0u},
+		{"", {}, nullptr, 0u}
+	};
+	return desc;
+}
+
 const FormatDescription* lua() {
 	static FormatDescription desc[] = {
 		{"LUA script", {"lua"}, nullptr, 0},
@@ -143,7 +159,7 @@ core::String convertToAllFilePattern(const FormatDescription *desc) {
 		++desc;
 		++j;
 	}
-	return pattern;
+	return j > 1 ? pattern : "";
 }
 
 }
