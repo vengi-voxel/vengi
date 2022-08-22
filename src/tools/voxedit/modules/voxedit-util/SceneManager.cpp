@@ -84,11 +84,11 @@ bool SceneManager::loadPalette(const core::String& paletteName) {
 	if (!palette.load(paletteName.c_str())) {
 		return false;
 	}
-	if (voxel::overridePalette(palette)) {
-		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
-		return true;
+	if (!setActivePalette(palette)) {
+		return false;
 	}
-	return false;
+	core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
+	return true;
 }
 
 bool SceneManager::importPalette(const core::String& file) {
@@ -533,6 +533,7 @@ voxel::Palette &SceneManager::activePalette() const {
 bool SceneManager::setActivePalette(const voxel::Palette &palette) {
 	const int nodeId = activeNode();
 	if (!_sceneGraph.hasNode(nodeId)) {
+		Log::warn("Failed to set the active palette");
 		return false;
 	}
 	voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
