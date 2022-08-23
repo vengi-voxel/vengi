@@ -12,6 +12,7 @@
 #include "core/GLM.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/TimeProvider.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -20,13 +21,8 @@
 #include "math/Random.h"
 #include "math/Ray.h"
 #include "video/Renderer.h"
-#include "video/ScopedBlendMode.h"
-#include "video/ScopedLineWidth.h"
-#include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
 #include "video/Types.h"
-#include "voxedit-ui/LayerPanel.h"
-#include "voxedit-util/MementoHandler.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
@@ -37,7 +33,6 @@
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/SceneGraphUtil.h"
 #include "voxelformat/VolumeFormat.h"
-#include "voxelformat/VoxFormat.h"
 #include "voxelgenerator/TreeGenerator.h"
 #include "voxelutil/Picking.h"
 #include "voxelutil/Raycast.h"
@@ -49,20 +44,19 @@
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
-#include "voxelutil/AStarPathfinder.h"
-#include "voxelworld/BiomeManager.h"
+#include "voxelutil/ImageUtils.h"
 
 #include "AxisUtil.h"
 #include "Config.h"
 #include "CustomBindingContext.h"
+#include "MementoHandler.h"
+#include "tool/Clipboard.h"
+
 #ifdef VOXEDIT_ANIMATION
 #include "animation/Animation.h"
 #include "anim/AnimationLuaSaver.h"
 #include "attrib/ShadowAttributes.h"
 #endif
-#include "core/TimeProvider.h"
-#include "tool/Clipboard.h"
-#include "voxelutil/ImageUtils.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
