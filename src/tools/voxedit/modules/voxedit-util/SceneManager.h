@@ -240,8 +240,6 @@ protected:
 	 */
 	void move(int nodeId, const glm::ivec3& m);
 
-	void toggleEditMode();
-
 	bool saveModels(const core::String& dir);
 	bool saveNode(int nodeId, const core::String& file);
 
@@ -432,6 +430,7 @@ public:
 	render::ShapeRenderer& shapeRenderer();
 	const voxelformat::SceneGraph &sceneGraph();
 	void setEditMode(EditMode mode);
+	void toggleEditMode();
 
 	bool hasClipboardCopy() const;
 

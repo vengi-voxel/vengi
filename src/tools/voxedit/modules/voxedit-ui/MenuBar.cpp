@@ -89,7 +89,12 @@ bool MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 			}
 			if (ImGui::BeginMenu(ICON_FA_EYE " View")) {
 				actionMenuItem("Reset camera", "resetcamera", listener);
-				actionMenuItem("Scene view", "togglescene", listener);
+				if (ImGui::MenuItem("View toggle")) {
+					// don't use togglescene action menu item - as tab is used for the menu navigation
+					// that's the reason why this is bound to editor mode only
+					sceneMgr().toggleEditMode();
+					listener("togglescene", {});
+				}
 				actionMenuItem("Console", "toggleconsole", listener);
 				ImGui::EndMenu();
 			}
