@@ -1354,7 +1354,7 @@ void SceneManager::construct() {
 			return;
 		}
 		loadPalette(args[0]);
-	}).setHelp("Load an existing palette by name. E.g. 'nippon'");
+	}).setHelp("Load an existing palette by name. E.g. 'built-in:nippon'");
 
 	command::Command::registerCommand("cursor", [this] (const command::CmdArgs& args) {
 		if (args.size() < 3) {

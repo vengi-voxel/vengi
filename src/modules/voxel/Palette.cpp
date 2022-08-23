@@ -209,6 +209,16 @@ bool Palette::load(const image::ImagePtr &img) {
 }
 
 bool Palette::load(const char *paletteName) {
+	if (SDL_strcmp(paletteName, builtIn[0]) == 0) {
+		return nippon();
+	} else if (SDL_strcmp(paletteName, builtIn[1]) == 0) {
+		return minecraft();
+	} else if (SDL_strcmp(paletteName, builtIn[2]) == 0) {
+		return magicaVoxel();
+	} else if (SDL_strcmp(paletteName, builtIn[3]) == 0) {
+		return quake1();
+	}
+
 	const io::FilesystemPtr &filesystem = io::filesystem();
 	io::FilePtr paletteFile = filesystem->open(paletteName);
 	if (!paletteFile->validHandle()) {

@@ -168,7 +168,6 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			ImGui::OpenPopup(POPUP_TITLE_LOAD_PALETTE);
 		}
 
-		static const char *builtIn[] = {"built-in:minecraft", "built-in:magicavoxel", "built-in:nippon", "built-in:quake1"};
 		if (ImGui::BeginPopupModal(POPUP_TITLE_LOAD_PALETTE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			ImGui::TextUnformatted("Select the palette");
 			ImGui::Separator();
@@ -178,25 +177,15 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 						_currentSelectedPalette = palette;
 					}
 				}
-				for (int i = 0; i < lengthof(builtIn); ++i) {
-					if (ImGui::Selectable(builtIn[i], builtIn[i] == _currentSelectedPalette)) {
-						_currentSelectedPalette = builtIn[i];
+				for (int i = 0; i < lengthof(voxel::Palette::builtIn); ++i) {
+					if (ImGui::Selectable(voxel::Palette::builtIn[i], voxel::Palette::builtIn[i] == _currentSelectedPalette)) {
+						_currentSelectedPalette = voxel::Palette::builtIn[i];
 					}
 				}
 				ImGui::EndCombo();
 			}
 			if (ImGui::Button(ICON_FA_CHECK " OK##loadpalette")) {
-				if (_currentSelectedPalette == builtIn[0]) {
-					palette.minecraft();
-				} else if (_currentSelectedPalette == builtIn[1]) {
-					palette.magicaVoxel();
-				} else if (_currentSelectedPalette == builtIn[2]) {
-					palette.nippon();
-				} else if (_currentSelectedPalette == builtIn[3]) {
-					palette.quake1();
-				} else {
-					sceneMgr().loadPalette(_currentSelectedPalette);
-				}
+				sceneMgr().loadPalette(_currentSelectedPalette);
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SameLine();
