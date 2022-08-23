@@ -33,13 +33,9 @@
 #include "voxel/RawVolumeMoveWrapper.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/CubFormat.h"
-#include "voxelformat/QBFormat.h"
-#include "voxelformat/QBTFormat.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/SceneGraphUtil.h"
-#include "voxelformat/VXMFormat.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFormat.h"
 #include "voxelgenerator/TreeGenerator.h"
@@ -254,30 +250,18 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
 	}
-	core::String ext = filePtr->extension();
-	if (ext.empty()) {
-		Log::warn("No file extension given for saving, assuming qb");
-		ext = "qb";
-	}
 
-	bool saved = voxelformat::saveFormat(filePtr, _sceneGraph);
-	if (!saved) {
-		Log::warn("Failed to save %s file - retry as qb instead", ext.c_str());
-		voxelformat::QBFormat f;
-		io::FileStream stream(filePtr);
-		saved = f.saveGroups(_sceneGraph, filePtr->fileName(), stream);
-	}
-	if (saved) {
+	if (voxelformat::saveFormat(filePtr, _sceneGraph)) {
 		if (!autosave) {
 			_dirty = false;
 			_lastFilename = file;
 		}
 		core::Var::get(cfg::VoxEditLastFile)->setVal(file);
 		_needAutoSave = false;
-	} else {
-		Log::warn("Failed to save to desired format");
+		return true;
 	}
-	return saved;
+	Log::warn("Failed to save to desired format");
+	return false;
 }
 
 static void mergeIfNeeded(voxelformat::SceneGraph &newSceneGraph) {
