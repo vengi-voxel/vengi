@@ -274,6 +274,10 @@ bool Palette::loadGimpPalette(const char *filename) {
 			Log::error("Failed to parse line '%s'", line);
 			continue;
 		}
+		if (colorCount >= PaletteMaxColors) {
+			Log::warn("Not all colors were loaded");
+			break;
+		}
 		colors[colorCount++] = core::RGBA(r, g, b);
 	}
 	markDirty();
