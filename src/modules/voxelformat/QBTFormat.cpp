@@ -463,15 +463,10 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream, voxel::Palette &pal
 	uint32_t colorCount;
 	wrap(stream.readUInt32(colorCount));
 	Log::debug("Load color map with %u colors", colorCount);
-	if (colorCount == 0) {
-		Log::warn("No embedded palette found");
-		return false;
-	}
 	if (colorCount > voxel::PaletteMaxColors) {
-		Log::error("Sanity check for max colors failed (%u)", colorCount);
-		return false;
+		Log::warn("Can't load all palette colors (%u)", colorCount);
 	}
-	palette.colorCount = (int)colorCount;
+	palette.colorCount = core_min((int)colorCount, voxel::PaletteMaxColors);
 	for (uint32_t i = 0; i < colorCount; ++i) {
 		uint8_t colorByteR;
 		uint8_t colorByteG;
@@ -488,7 +483,9 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream, voxel::Palette &pal
 		const uint32_t alpha = ((uint32_t)255) << 0;
 
 		const glm::vec4& color = core::Color::fromRGBA(red | green | blue | alpha);
-		palette.colors[i] = core::Color::getRGBA(color);
+		if (i < voxel::PaletteMaxColors) {
+			palette.colors[i] = core::Color::getRGBA(color);
+		}
 	}
 	return true;
 }
