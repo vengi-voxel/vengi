@@ -17,6 +17,8 @@
 #include "voxel/Constants.h"
 #include "math/Random.h"
 #include "core/Common.h"
+#include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
@@ -91,6 +93,20 @@ inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palet
 	}
 }
 
+inline void sceneGraphComparator(const voxelformat::SceneGraph &graph1, const voxelformat::SceneGraph &graph2,
+								 bool includingColor, bool includingRegion, float maxDelta = 0.001f) {
+	ASSERT_EQ(graph1.size(), graph2.size());
+	const int n = (int)graph1.size();
+	for (int i = 0; i < n; ++i) {
+		const voxelformat::SceneGraphNode *node1 = graph1[i];
+		ASSERT_NE(nullptr, node1);
+		const voxelformat::SceneGraphNode *node2 = graph2[i];
+		ASSERT_NE(nullptr, node2);
+		volumeComparator(*node1->volume(), node1->palette(), *node2->volume(), node2->palette(), includingColor,
+						 false, maxDelta);
+		// TODO: check transform position if includingRegion is true
+	}
+}
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Region& region) {
 	return os << "region["
 			<< "mins(" << glm::to_string(region.getLowerCorner()) << "), "

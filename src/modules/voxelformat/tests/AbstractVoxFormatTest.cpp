@@ -58,7 +58,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &fil
 	voxelformat::SceneGraph::MergedVolumePalette merged = load(filename, stream, *format);
 	ASSERT_NE(nullptr, merged.first);
 	core::ScopedPtr<voxel::RawVolume> loaded(merged.first);
-	volumeComparator(volume, voxel::getPalette(), *loaded, merged.second, false, includingRegion);
+	voxel::volumeComparator(volume, voxel::getPalette(), *loaded, merged.second, false, includingRegion);
 }
 
 void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String& destFilename, Format &destFormat, bool includingColor, bool includingRegion) {
@@ -75,7 +75,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 	if (includingRegion) {
 		ASSERT_EQ(original.region(), origReloaded->region());
 	}
-	volumeComparator(original, voxel::getPalette(), *origReloaded, merged.second, includingColor, includingRegion);
+	voxel::volumeComparator(original, voxel::getPalette(), *origReloaded, merged.second, includingColor, includingRegion);
 
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 	EXPECT_TRUE(destFormat.save(origReloaded, destFilename, stream)) << "Could not save " << destFilename;
@@ -86,7 +86,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 	if (includingRegion) {
 		ASSERT_EQ(original.region(), loaded->region());
 	}
-	volumeComparator(original, voxel::getPalette(), *loaded, merged2.second, includingColor, includingRegion);
+	voxel::volumeComparator(original, voxel::getPalette(), *loaded, merged2.second, includingColor, includingRegion);
 }
 
 void AbstractVoxFormatTest::canLoad(const core::String &filename, size_t expectedVolumes) {
@@ -142,7 +142,9 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta
 	}
 }
 
-void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename, Format &srcFormat, const core::String& destFilename, Format &destFormat, bool includingColor, bool includingRegion, float maxDelta) {
+void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename, Format &srcFormat,
+												const core::String &destFilename, Format &destFormat,
+												bool includingColor, bool includingRegion, float maxDelta) {
 	voxelformat::SceneGraph sceneGraph;
 	EXPECT_TRUE(loadGroups(srcFilename, srcFormat, sceneGraph));
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
@@ -156,6 +158,19 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String& srcFilename,
 	volumeComparator(*src, merged.second, *loaded, mergedLoad.second, includingColor, includingRegion, maxDelta);
 }
 
+void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &srcFilename, Format &srcFormat,
+												const core::String &destFilename, Format &destFormat,
+												bool includingColor, bool includingRegion, float maxDelta) {
+	voxelformat::SceneGraph sceneGraph;
+	EXPECT_TRUE(loadGroups(srcFilename, srcFormat, sceneGraph));
+	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
+	EXPECT_TRUE(destFormat.saveGroups(sceneGraph, destFilename, stream)) << "Could not save " << destFilename;
+	stream.seek(0);
+	voxelformat::SceneGraph destSceneGraph;
+	ASSERT_TRUE(destFormat.loadGroups(destFilename, stream, destSceneGraph)) << "Failed to load the target format";
+	voxel::sceneGraphComparator(sceneGraph, destSceneGraph, includingColor, includingRegion, maxDelta);
+}
+
 void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Format* format) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
 	voxel::RawVolume original(region);
@@ -166,7 +181,7 @@ void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Fo
 	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
 	core::ScopedPtr<voxel::RawVolume> loaded(mergedLoad.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load single voxel file " << filename;
-	volumeComparator(original, voxel::getPalette(), *loaded, mergedLoad.second, true, true);
+	voxel::volumeComparator(original, voxel::getPalette(), *loaded, mergedLoad.second, true, true);
 }
 
 void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Format* format) {
@@ -182,7 +197,7 @@ void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Fo
 	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
 	core::ScopedPtr<voxel::RawVolume> loaded(mergedLoad.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load single voxel file " << filename;
-	volumeComparator(original, voxel::getPalette(), *loaded, mergedLoad.second, true, true);
+	voxel::volumeComparator(original, voxel::getPalette(), *loaded, mergedLoad.second, true, true);
 }
 
 void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename, Format *format) {
@@ -295,7 +310,7 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	voxelformat::SceneGraph::MergedVolumePalette merged = load(filename, *readStream, *format);
 	core::ScopedPtr<voxel::RawVolume> loaded(merged.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load the merged volumes";
-	volumeComparator(original, voxel::getPalette(), *loaded, merged.second, true, includingRegion);
+	voxel::volumeComparator(original, voxel::getPalette(), *loaded, merged.second, true, includingRegion);
 }
 
 } // namespace voxel

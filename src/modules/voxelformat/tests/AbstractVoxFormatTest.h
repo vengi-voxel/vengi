@@ -45,8 +45,11 @@ protected:
 	void testLoadSaveAndLoad(const core::String &srcFilename, Format &srcFormat,
 							 const core::String &destFilename, Format &destFormat, bool includingColor,
 							 bool includingRegion, float maxDelta = 0.001f);
+	void testLoadSaveAndLoadSceneGraph(const core::String &srcFilename, Format &srcFormat,
+									   const core::String &destFilename, Format &destFormat, bool includingColor,
+									   bool includingRegion, float maxDelta = 0.001f);
 
-	io::FilePtr open(const core::String& filename, io::FileMode mode = io::FileMode::Read) {
+		io::FilePtr open(const core::String &filename, io::FileMode mode = io::FileMode::Read) {
 		const io::FilePtr& file = io::filesystem()->open(core::String(filename), mode);
 		return file;
 	}

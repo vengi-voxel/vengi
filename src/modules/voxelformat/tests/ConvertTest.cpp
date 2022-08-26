@@ -97,10 +97,10 @@ TEST_F(ConvertTest, testQbToQb) {
 	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight2.qb", target, true, false);
 }
 
-TEST_F(ConvertTest, DISABLED_testQbToVXM) {
+TEST_F(ConvertTest, testQbToVXM) {
 	QBFormat src;
 	VXMFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.vxm", target, true, false);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.vxm", target, true, false);
 }
 
 TEST_F(ConvertTest, testVXMToQb) {
