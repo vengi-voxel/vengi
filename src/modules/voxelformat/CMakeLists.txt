@@ -136,6 +136,15 @@ set(TEST_FILES
 	tests/glTF/lantern/Lantern_roughnessMetallic.png
 	tests/glTF/lantern/Lantern.bin
 	tests/glTF/lantern/Lantern.gltf
+	tests/e2de1723/e2de1723.Idle.vxa
+	tests/e2de1723/e2de1723.vxr
+	tests/e2de1723/e2de1723.vxr.png
+	"tests/e2de1723/Content (1).png"
+	"tests/e2de1723/Content (1).vxm"
+	tests/e2de1723/Content.vxm
+	tests/e2de1723/Content.vxm.png
+	voxedit/robo.vox
+	voxedit/robo.qb
 	voxedit/chr_knight.qb
 )
 

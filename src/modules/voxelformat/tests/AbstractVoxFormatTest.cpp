@@ -160,7 +160,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename,
 
 void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &srcFilename, Format &srcFormat,
 												const core::String &destFilename, Format &destFormat,
-												bool includingColor, bool includingRegion, float maxDelta) {
+												bool includingColor, bool includingRegion, bool includingAnimations, float maxDelta) {
 	voxelformat::SceneGraph sceneGraph;
 	EXPECT_TRUE(loadGroups(srcFilename, srcFormat, sceneGraph));
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
@@ -168,7 +168,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &sr
 	stream.seek(0);
 	voxelformat::SceneGraph destSceneGraph;
 	ASSERT_TRUE(destFormat.loadGroups(destFilename, stream, destSceneGraph)) << "Failed to load the target format";
-	voxel::sceneGraphComparator(sceneGraph, destSceneGraph, includingColor, includingRegion, maxDelta);
+	voxel::sceneGraphComparator(sceneGraph, destSceneGraph, includingColor, includingRegion, includingAnimations, maxDelta);
 }
 
 void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Format* format) {

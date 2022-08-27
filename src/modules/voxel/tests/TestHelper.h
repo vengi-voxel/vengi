@@ -38,6 +38,38 @@ inline int countVoxels(const Volume& volume, const voxel::Voxel &voxel) {
 	return cnt;
 }
 
+inline void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta = 0.001f) {
+	ASSERT_EQ(pal1.colorCount, pal2.colorCount);
+	for (int i = 0; i < pal1.colorCount; ++i) {
+		const core::RGBA& c1 = pal1.colors[i];
+		const core::RGBA& c2 = pal2.colors[i];
+		const float delta = core::Color::getDistance(c1, c2);
+		ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i
+									<< ", color1[" << core::Color::print(c1)
+									<< "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]";
+	}
+}
+
+inline void keyFrameComparator(const voxelformat::SceneGraphKeyFrames &keyframes1, const voxelformat::SceneGraphKeyFrames &keyframes2, bool includingRegion, bool includingAnimations) {
+	if (includingAnimations) {
+		ASSERT_EQ(keyframes1.size(), keyframes2.size());
+		for (size_t i = 0; i < keyframes1.size(); ++i) {
+			const voxelformat::SceneGraphTransform &t1 = keyframes1[i].transform();
+			const voxelformat::SceneGraphTransform &t2 = keyframes2[i].transform();
+			EXPECT_EQ(t1.translation(), t2.translation()) << "Translation failed for frame " << i;
+			EXPECT_EQ(t1.matrix(), t2.matrix()) << "Matrix failed for frame " << i;
+			EXPECT_EQ(t1.pivot(), t2.pivot()) << "Pivot failed for frame " << i;
+			EXPECT_EQ(t1.scale(), t2.scale()) << "Scale failed for frame " << i;
+		}
+	} else if (includingRegion) {
+		ASSERT_GE(keyframes1.size(), 1u) << "keyframes 1 doesn't have any entry";
+		ASSERT_GE(keyframes2.size(), 1u) << "keyframes 2 doesn't have any entry";
+		const voxelformat::SceneGraphTransform &t1 = keyframes1[0].transform();
+		const voxelformat::SceneGraphTransform &t2 = keyframes2[0].transform();
+		EXPECT_EQ(t1.translation(), t2.translation()) << "Translation failed for frame 0";
+	}
+}
+
 inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal1, const voxel::RawVolume& volume2, const voxel::Palette &pal2, bool includingColor, bool includingRegion, float maxDelta = 0.001f) {
 	const Region& r1 = volume1.region();
 	const Region& r2 = volume2.region();
@@ -94,7 +126,7 @@ inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palet
 }
 
 inline void sceneGraphComparator(const voxelformat::SceneGraph &graph1, const voxelformat::SceneGraph &graph2,
-								 bool includingColor, bool includingRegion, float maxDelta = 0.001f) {
+								 bool includingColor, bool includingRegion, bool includingAnimations, float maxDelta = 0.001f) {
 	ASSERT_EQ(graph1.size(), graph2.size());
 	const int n = (int)graph1.size();
 	for (int i = 0; i < n; ++i) {
@@ -102,9 +134,13 @@ inline void sceneGraphComparator(const voxelformat::SceneGraph &graph1, const vo
 		ASSERT_NE(nullptr, node1);
 		const voxelformat::SceneGraphNode *node2 = graph2[i];
 		ASSERT_NE(nullptr, node2);
+		if (includingColor) {
+			paletteComparator(node1->palette(), node2->palette(), maxDelta);
+		}
+		// it's intended that includingRegion is false here!
 		volumeComparator(*node1->volume(), node1->palette(), *node2->volume(), node2->palette(), includingColor,
 						 false, maxDelta);
-		// TODO: check transform position if includingRegion is true
+		keyFrameComparator(node1->keyFrames(), node2->keyFrames(), includingRegion, includingAnimations);
 	}
 }
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Region& region) {
