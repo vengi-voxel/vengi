@@ -471,7 +471,8 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			palette.glowColors[i] = palette.colors[i];
 		}
 	}
-	palette.colorCount = materialAmount;
+	palette.colorCount = materialAmount + 1;
+	palette.colors[voxel::PaletteMaxColors - 1] = core::RGBA(0, 0, 0, 0);
 
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 
