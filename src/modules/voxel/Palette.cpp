@@ -32,7 +32,7 @@ void Palette::markDirty() {
 }
 
 void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCount) {
-	colorCount = core::Color::quantize(colors, PaletteMaxColors, inputColors, inputColorCount);
+	colorCount = core::Color::quantize(colors, lengthof(colors), inputColors, inputColorCount);
 }
 
 bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar) {
