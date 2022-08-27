@@ -4,6 +4,7 @@
 
 #include "QuakeBSPFormat.h"
 #include "app/App.h"
+#include "core/Trace.h"
 #include "core/collection/Buffer.h"
 #include "image/Image.h"
 #include "io/Filesystem.h"
@@ -709,7 +710,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 	node.setName(name);
 
 	core::ConcurrentQueue<Tri> producerTris(10000);
-	core::Lock voxelLock;
+	core_trace_mutex(core::Lock, voxelLock, "trilock");
 
 	for (int i = 0; i < numIndices; i += 3) {
 		Tri tri;
