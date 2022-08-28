@@ -9,6 +9,7 @@
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/tests/AbstractVoxelTest.h"
+#include "voxel/tests/TestHelper.h"
 #include "voxelformat/Format.h"
 #include "io/Filesystem.h"
 #include "core/Var.h"
@@ -23,31 +24,30 @@ protected:
 
 	void checkColor(core::RGBA, const voxel::Palette &palette, uint8_t index, float maxDelta);
 
-	void dump(const core::String& srcFilename, const SceneGraph &sceneGraph);
-	void dump(const core::String& structName, voxel::RawVolume* v, const core::String& filename);
+	void dump(const core::String &srcFilename, const SceneGraph &sceneGraph);
+	void dump(const core::String &structName, voxel::RawVolume *v, const core::String &filename);
 
-	void testFirstAndLastPaletteIndex(const core::String &filename, Format *format, bool includingColor,
-									  bool includingRegion);
-	void testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &destFilename,
-												Format &destFormat, bool includingColor, bool includingRegion);
+	void testFirstAndLastPaletteIndex(const core::String &filename, Format *format, voxel::ValidateFlags flags);
+	void testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &destFilename, Format &destFormat,
+												voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
 	void canLoad(const core::String &filename, size_t expectedVolumes = 1);
 	void testRGB(const core::String &filename, float maxDelta = 0.001f);
 
-	void testSaveMultipleLayers(const core::String& filename, Format* format);
-	void testSaveSingleVoxel(const core::String& filename, Format* format);
-	void testSaveSmallVolume(const core::String& filename, Format* format);
+	void testSaveMultipleLayers(const core::String &filename, Format *format);
+	void testSaveSingleVoxel(const core::String &filename, Format *format);
+	void testSaveSmallVolume(const core::String &filename, Format *format);
 
-	void testSave(const core::String& filename, Format* format);
+	void testSave(const core::String &filename, Format *format);
 
-	void testSaveLoadVoxel(const core::String& filename, Format* format, int mins = 0, int maxs = 1, bool includingRegion = true);
+	void testSaveLoadVoxel(const core::String &filename, Format *format, int mins = 0, int maxs = 1,
+						   voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
-	void testLoadSaveAndLoad(const core::String &srcFilename, Format &srcFormat,
-							 const core::String &destFilename, Format &destFormat, bool includingColor,
-							 bool includingRegion, float maxDelta = 0.001f);
+	void testLoadSaveAndLoad(const core::String &srcFilename, Format &srcFormat, const core::String &destFilename,
+							 Format &destFormat, voxel::ValidateFlags flags = voxel::ValidateFlags::All, float maxDelta = 0.001f);
 	void testLoadSaveAndLoadSceneGraph(const core::String &srcFilename, Format &srcFormat,
-									   const core::String &destFilename, Format &destFormat, bool includingColor,
-									   bool includingRegion, bool includingAnimations, float maxDelta = 0.001f);
+									   const core::String &destFilename, Format &destFormat, voxel::ValidateFlags flags = voxel::ValidateFlags::All,
+									   float maxDelta = 0.001f);
 
 	io::FilePtr open(const core::String &filename, io::FileMode mode = io::FileMode::Read) {
 		const io::FilePtr& file = io::filesystem()->open(core::String(filename), mode);

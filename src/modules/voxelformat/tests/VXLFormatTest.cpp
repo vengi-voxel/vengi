@@ -20,7 +20,7 @@ TEST_F(VXLFormatTest, testLoadRGB) {
 
 TEST_F(VXLFormatTest, testSave) {
 	VXLFormat f;
-	testLoadSaveAndLoad("cc.vxl", f, "cc-save.vxl", f, true, true);
+	testLoadSaveAndLoad("cc.vxl", f, "cc-save.vxl", f);
 }
 
 TEST_F(VXLFormatTest, testSaveSmallVoxel) {

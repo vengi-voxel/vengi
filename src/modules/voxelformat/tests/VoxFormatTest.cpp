@@ -41,7 +41,7 @@ TEST_F(VoxFormatTest, testLoadCharacter) {
 	for (int i = 0; i < lengthof(volumes); ++i) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
 		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
-		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), true, false, 0.01f);
+		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), voxel::ValidateFlags::All, 0.01f);
 		EXPECT_EQ(v1.region().getLowerCornerf(), sceneGraph[i]->transform(0).translation());
 	}
 }
@@ -60,7 +60,7 @@ TEST_F(VoxFormatTest, testLoadGlasses) {
 	for (int i = 0; i < lengthof(volumes); ++i) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
 		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
-		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), true, false, 0.011f);
+		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), voxel::ValidateFlags::All, 0.011f);
 		EXPECT_EQ(v1.region().getLowerCornerf(), sceneGraph[i]->transform(0).translation());
 	}
 }
@@ -98,7 +98,7 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 	for (int i = 0; i < lengthof(volumes); ++i) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
 		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
-		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), true, false, 0.02f);
+		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), voxel::ValidateFlags::All, 0.02f);
 		EXPECT_EQ(v1.region().getLowerCornerf(), sceneGraph[i]->transform(0).translation());
 	}
 }
@@ -146,7 +146,7 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 
 TEST_F(VoxFormatTest, testSave) {
 	VoxFormat f;
-	testLoadSaveAndLoad("magicavoxel.vox", f, "magicavoxel-save.vox", f, true, true);
+	testLoadSaveAndLoad("magicavoxel.vox", f, "magicavoxel-save.vox", f, voxel::ValidateFlags::All);
 }
 
 } // namespace voxel

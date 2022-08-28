@@ -36,7 +36,7 @@ TEST_F(QBFormatTest, testSaveMultipleLayers) {
 
 TEST_F(QBFormatTest, testLoadSave) {
 	QBFormat f;
-	testLoadSaveAndLoad("qubicle.qb", f, "qubicle-savetest.qb", f, true, true);
+	testLoadSaveAndLoad("qubicle.qb", f, "qubicle-savetest.qb", f, voxel::ValidateFlags::All);
 }
 
 }

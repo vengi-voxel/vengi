@@ -3,6 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
+#include "voxel/tests/TestHelper.h"
 #include "voxelformat/GoxFormat.h"
 
 namespace voxelformat {
@@ -16,7 +17,7 @@ TEST_F(GoxFormatTest, testLoad) {
 
 TEST_F(GoxFormatTest, testSaveSmallVoxel) {
 	GoxFormat f;
-	testSaveLoadVoxel("goxel-smallvolumesavetest.gox", &f, -16, 15, false);
+	testSaveLoadVoxel("goxel-smallvolumesavetest.gox", &f, -16, 15, voxel::ValidateFlags::None);
 }
 
 TEST_F(GoxFormatTest, testLoadRGB) {

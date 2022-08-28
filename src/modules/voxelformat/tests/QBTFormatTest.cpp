@@ -33,7 +33,7 @@ TEST_F(QBTFormatTest, testSaveMultipleLayers) {
 
 TEST_F(QBTFormatTest, testSave) {
 	QBTFormat f;
-	testLoadSaveAndLoad("qubicle.qbt", f, "qubicle-savetest.qbt", f, true, true);
+	testLoadSaveAndLoad("qubicle.qbt", f, "qubicle-savetest.qbt", f);
 }
 
 TEST_F(QBTFormatTest, testResaveMultipleLayers) {
