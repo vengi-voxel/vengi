@@ -77,17 +77,24 @@ TEST_F(ConvertTest, testBinvoxToQb) {
 	testLoadSaveAndLoadSceneGraph("test.binvox", src, "test.qb", target);
 }
 
-// TODO: transform broken
 TEST_F(ConvertTest, testQbToVXL) {
 	QBFormat src;
 	VXLFormat target;
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.vxl", target, voxel::ValidateFlags::Color);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.vxl", target);
 }
 
 TEST_F(ConvertTest, testVXLToQb) {
 	VXLFormat src;
 	QBFormat target;
 	testLoadSaveAndLoadSceneGraph("rgb.vxl", src, "test.qb", target);
+}
+
+// TODO: translation broken
+TEST_F(ConvertTest, testVXLToVXR) {
+	VXLFormat src;
+	QBFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Transform;
+	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "cc.vxr", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToQbt) {

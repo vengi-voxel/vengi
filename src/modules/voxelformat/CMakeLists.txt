@@ -98,6 +98,7 @@ set(TEST_FILES
 	tests/aceofspades.vxl
 	tests/chronovox-studio.csm
 	tests/cc.vxl
+	tests/cc.hva
 	tests/test.binvox
 	tests/test.kvx
 	tests/test.kv6

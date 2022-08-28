@@ -131,6 +131,7 @@ voxel::Region SceneGraph::region() const {
 
 SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) {
 	for (const auto& entry : _nodes) {
+		Log::trace("node name: %s", entry->value.name().c_str());
 		if (entry->value.name() == name) {
 			return &entry->value;
 		}
