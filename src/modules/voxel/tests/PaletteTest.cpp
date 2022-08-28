@@ -23,7 +23,16 @@ TEST_F(PaletteTest, testGimpPalette) {
 	pal.nippon();
 	const int cnt = pal.colorCount;
 	ASSERT_TRUE(pal.saveGimpPalette("test.gpl", "test"));
-	EXPECT_TRUE(pal.loadGimpPalette("test.gpl"));
+	EXPECT_TRUE(pal.load("test.gpl"));
+	EXPECT_EQ(pal.colorCount, cnt);
+}
+
+TEST_F(PaletteTest, testRGBPalette) {
+	Palette pal;
+	pal.nippon();
+	const int cnt = pal.colorCount;
+	ASSERT_TRUE(pal.save("test.pal"));
+	EXPECT_TRUE(pal.load("test.pal"));
 	EXPECT_EQ(pal.colorCount, cnt);
 }
 

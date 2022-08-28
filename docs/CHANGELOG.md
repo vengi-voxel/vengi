@@ -25,6 +25,8 @@ General:
    - Extended lua vector bindings and allow to import heightmaps
    - Improved the file dialog filters
    - Added new lua scripts and extended lua integration in voxconvert
+   - Added support for RGB (`pal`) and Gimp (`gpl`) palette loading
+   - Improved the Command & Conquer VXL format support
 
 VoxEdit:
 

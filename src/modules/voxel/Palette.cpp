@@ -135,6 +135,12 @@ bool Palette::save(const char *name) const {
 			return false;
 		}
 		return true;
+	} else if (extension == "pal") {
+		if (!saveRGBPalette(name)) {
+			Log::warn("Failed to write the rgb palette file '%s'", name);
+			return false;
+		}
+		return true;
 	}
 	image::Image img(name);
 	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
@@ -228,8 +234,11 @@ bool Palette::load(const char *paletteName) {
 		Log::error("Failed to load palette file %s", paletteName);
 		return false;
 	}
-	if (paletteFile->extension() == "gpl") {
+	const core::String &extension = paletteFile->extension();
+	if (extension == "gpl") {
 		return loadGimpPalette(paletteName);
+	} else if (extension == "pal") {
+		return loadRGBPalette(paletteName);
 	}
 	const image::ImagePtr &img = image::loadImage(paletteFile, false);
 	if (!img->isLoaded()) {
@@ -244,6 +253,51 @@ bool Palette::load(const char *paletteName) {
 	}
 	_paletteFilename = paletteFile->name();
 	return load(img);
+}
+
+bool Palette::loadRGBPalette(const char *filename) {
+	const io::FilesystemPtr &filesystem = io::filesystem();
+	io::FilePtr paletteFile = filesystem->open(filename);
+	if (!paletteFile->validHandle() || paletteFile->length() != 768) {
+		Log::error("Failed to load rgb palette file %s - file length: %i", filename, (int)paletteFile->length());
+		return false;
+	}
+	io::FileStream stream(paletteFile);
+	colorCount = PaletteMaxColors;
+	_paletteFilename = paletteFile->name();
+	for (int i = 0; i < colorCount; ++i) {
+		if (stream.readUInt8(colors[i].r) == -1) {
+			Log::error("Failed to read color %i", i);
+			return false;
+		}
+		if (stream.readUInt8(colors[i].g) == -1) {
+			Log::error("Failed to read color %i", i);
+			return false;
+		}
+		if (stream.readUInt8(colors[i].b) == -1) {
+			Log::error("Failed to read color %i", i);
+			return false;
+		}
+		colors[i].a = 255;
+	}
+	markDirty();
+	return true;
+}
+
+bool Palette::saveRGBPalette(const char *filename) const {
+	const io::FilesystemPtr &filesystem = io::filesystem();
+	io::FilePtr paletteFile = filesystem->open(filename, io::FileMode::SysWrite);
+	if (!paletteFile->validHandle()) {
+		Log::error("Failed to open file %s for saving the rgb palette", filename);
+		return false;
+	}
+	io::FileStream stream(paletteFile);
+	for (int i = 0; i < colorCount; ++i) {
+		stream.writeUInt8(colors[i].r);
+		stream.writeUInt8(colors[i].g);
+		stream.writeUInt8(colors[i].b);
+	}
+	return true;
 }
 
 bool Palette::loadGimpPalette(const char *filename) {

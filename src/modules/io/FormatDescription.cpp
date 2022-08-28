@@ -31,6 +31,7 @@ const FormatDescription* images() {
 const FormatDescription* palettes() {
 	static FormatDescription desc[] = {
 		{"Gimp Palette", {"gpl"}, nullptr, 0u},
+		{"RGB Palette", {"pal"}, nullptr, 0u},
 		{"Portable Network Graphics", {"png"}, nullptr, 0u},
 		{"", {}, nullptr, 0u}
 	};

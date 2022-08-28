@@ -42,7 +42,9 @@ public:
 	bool load(const char *name);
 	bool save(const char *name = nullptr) const;
 	bool loadGimpPalette(const char *filename);
+	bool loadRGBPalette(const char *filename);
 	bool saveGimpPalette(const char *filename, const char *name = "Noname") const;
+	bool saveRGBPalette(const char *filename) const;
 	bool saveGlow(const char *name = nullptr) const;
 	bool load(const uint8_t *rgbaBuf, size_t bufsize);
 
