@@ -78,22 +78,26 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 }
 
 bool VXRFormat::saveNodeProperties(const SceneGraphNode* node, io::SeekableWriteStream& stream) {
-	wrapBool(stream.writeBool(false)) // collideable
-	wrapBool(stream.writeBool(false)) // decorative
-	wrapBool(stream.writeUInt32(0)) // color
-	wrapBool(stream.writeBool(false)) // favorite
-	wrapBool(stream.writeBool(false)) // folded
-	wrapBool(stream.writeBool(false)) // mirror x axis
-	wrapBool(stream.writeBool(false)) // mirror y axis
-	wrapBool(stream.writeBool(false)) // mirror z axis
-	wrapBool(stream.writeBool(false)) // preview mirror x axis
-	wrapBool(stream.writeBool(false)) // preview mirror y axis
-	wrapBool(stream.writeBool(false)) // preview mirror z axis
-	wrapBool(stream.writeBool(false)) // ikAnchor
-	wrapBool(stream.writeString("", true)) // ikEffectorID (node id)
-	wrapBool(stream.writeBool(false)) // ikConstraintsVisible
-	wrapBool(stream.writeFloat(0.0f)) // ikRollMin
-	wrapBool(stream.writeFloat(glm::two_pi<float>())) // ikRollMax
+	wrapBool(stream.writeBool(boolProperty(node, "collidable", false)))
+	wrapBool(stream.writeBool(boolProperty(node, "decorative", false)))
+	if (node == nullptr) {
+		wrapBool(stream.writeUInt32(0))
+	} else {
+		wrapBool(stream.writeUInt32(node->color().rgba))
+	}
+	wrapBool(stream.writeBool(boolProperty(node, "favorite", false)))
+	wrapBool(stream.writeBool(boolProperty(node, "folded", false)))
+	wrapBool(stream.writeBool(boolProperty(node, "mirror x axis", false)))
+	wrapBool(stream.writeBool(boolProperty(node, "mirror y axis", false)))
+	wrapBool(stream.writeBool(boolProperty(node, "mirror z axis", false)))
+	wrapBool(stream.writeBool(boolProperty(node, "preview mirror x axis", false)))
+	wrapBool(stream.writeBool(boolProperty(node, "preview mirror y axis", false)))
+	wrapBool(stream.writeBool(boolProperty(node, "preview mirror z axis", false)))
+	wrapBool(stream.writeBool(boolProperty(node, "ikAnchor", false)))
+	wrapBool(stream.writeString(stringProperty(node, "ikEffectorId"), true))
+	wrapBool(stream.writeBool(boolProperty(node, "ikConstraintsVisible", false)))
+	wrapBool(stream.writeFloat(floatProperty(node, "ikRollMin", 0.0f)))
+	wrapBool(stream.writeFloat(floatProperty(node, "ikRollMax", glm::two_pi<float>())))
 	int ikConstraintAmount = 0;
 	wrapBool(stream.writeUInt32(ikConstraintAmount)) // (max 10)
 	for (int i = 0; i < ikConstraintAmount; ++i) {
@@ -120,8 +124,8 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	const core::String defaultAnim = animationIds[0];
 	wrapBool(stream.writeString(defaultAnim.c_str(), true))
 	wrapBool(stream.writeInt32(1))
-	wrapBool(stream.writeString("", true)) // baseTemplate
-	wrapBool(stream.writeBool(false)) // isStatic
+	wrapBool(stream.writeString(stringProperty(&root, "basetemplate")))
+	wrapBool(stream.writeBool(boolProperty(&root, "static", false)))
 	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
 		// add controller node (see VXAFormat)
 		wrapBool(stream.writeString("Controller", true))
@@ -339,14 +343,14 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 		if (version >= 9) {
 			char effectorId[1024];
 			wrapBool(stream.readString(sizeof(effectorId), effectorId, true))
-			node.setProperty("effectorId", effectorId);
-			node.setProperty("constraints visible", stream.readBool());
+			node.setProperty("ikEffectorId", effectorId);
+			node.setProperty("ikConstraintsVisible", stream.readBool());
 			float rollmin;
 			wrap(stream.readFloat(rollmin))
-			node.setProperty("rollmin", core::string::format("%f", rollmin));
+			node.setProperty("ikRollMin", core::string::format("%f", rollmin));
 			float rollmax;
 			wrap(stream.readFloat(rollmax))
-			node.setProperty("rollmax", core::string::format("%f", rollmax));
+			node.setProperty("ikRollMax", core::string::format("%f", rollmax));
 			int32_t inverseKinematicsConstraints;
 			wrap(stream.readInt32(inverseKinematicsConstraints))
 			for (int32_t i = 0; i < inverseKinematicsConstraints; ++i) {
