@@ -228,43 +228,34 @@ bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 }
 
 bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx, SceneGraph& sceneGraph, const voxel::Palette &palette) const {
+	const uint64_t nodeStart = stream.pos();
 	const VXLNodeFooter &footer = mdl.nodeFooters[nodeIdx];
 	const VXLNodeHeader &header = mdl.nodeHeaders[nodeIdx];
 
 	const uint32_t baseSize = footer.xsize * footer.ysize;
 	core::Buffer<int32_t> colStart(baseSize);
+	core::Buffer<int32_t> colEnd(baseSize);
 
-	// switch axis
-	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region{0, 0, 0, footer.xsize - 1, footer.zsize - 1, footer.ysize - 1});
-	SceneGraphNode node;
-	node.setVolume(volume, true);
-	node.setName(header.name);
-	if (palette.colorCount > 0) {
-		node.setPalette(palette);
+	if (stream.skip(footer.spanStartOffset) == -1) {
+		Log::error("Failed to skip %u node start offset bytes", footer.spanStartOffset);
+		return false;
 	}
-	SceneGraphTransform transform;
-	glm::mat4 transformMatrix = footer.transform;
-	transform.setMatrix(transformMatrix);
-	// transform.setScale(footer.scale); // TODO
-	node.setTransform(0, transform, true);
-	sceneGraph.emplace(core::move(node));
-
-	const size_t nodeOffset = HeaderSize + NodeHeaderSize * mdl.header.nodeCount + footer.spanStartOffset;
-	wrap(stream.seek(nodeOffset))
-	Log::debug("nodeOffset: %u", (uint32_t)nodeOffset);
 	for (uint32_t i = 0; i < baseSize; ++i) {
-		int32_t v;
-		wrap(stream.readInt32(v))
-		colStart[i] = v;
+		wrap(stream.readInt32(colStart[i]))
 	}
-	// skip spanPosEnd values
-	stream.skip((int64_t)sizeof(uint32_t) * baseSize);
+	for (uint32_t i = 0; i < baseSize; ++i) {
+		wrap(stream.readInt32(colEnd[i]))
+	}
 
 	const uint64_t dataStart = stream.pos();
+	if (dataStart - nodeStart != footer.spanDataOffset) {
+		Log::error("Invalid offset found for node %u: %u", nodeIdx, footer.spanStartOffset);
+		return false;
+	}
 
 	// Count the voxels in this node
 	for (uint32_t i = 0u; i < baseSize; ++i) {
-		if (colStart[i] == EmptyColumn) {
+		if (colStart[i] == EmptyColumn || colEnd[i] == EmptyColumn) {
 			continue;
 		}
 
@@ -280,8 +271,22 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 		} while (z < footer.zsize);
 	}
 
+	// switch axis
+	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region{0, 0, 0, footer.xsize - 1, footer.zsize - 1, footer.ysize - 1});
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(header.name);
+	if (palette.colorCount > 0) {
+		node.setPalette(palette);
+	}
+	SceneGraphTransform transform;
+	glm::mat4 transformMatrix = footer.transform;
+	transform.setMatrix(transformMatrix);
+	// transform.setScale(footer.scale); // TODO
+	node.setTransform(0, transform, true);
+
 	for (uint32_t i = 0u; i < baseSize; ++i) {
-		if (colStart[i] == EmptyColumn) {
+		if (colStart[i] == EmptyColumn || colEnd[i] == EmptyColumn) {
 			continue;
 		}
 
@@ -310,13 +315,19 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 			stream.skip(1);
 		} while (z < footer.zsize);
 	}
+	sceneGraph.emplace(core::move(node));
 	return true;
 }
 
 bool VXLFormat::readNodes(io::SeekableReadStream& stream, VXLModel& mdl, SceneGraph& sceneGraph, const voxel::Palette &palette) const {
 	const VXLHeader& hdr = mdl.header;
 	sceneGraph.reserve(hdr.nodeCount);
+	const int64_t bodyPos = stream.pos();
 	for (uint32_t i = 0; i < hdr.nodeCount; ++i) {
+		if (stream.seek(bodyPos) == -1) {
+			Log::error("Failed to seek for node %u", i);
+			return false;
+		}
 		wrapBool(readNode(stream, mdl, i, sceneGraph, palette))
 	}
 	return true;
@@ -333,7 +344,6 @@ bool VXLFormat::readNodeHeader(io::SeekableReadStream& stream, VXLModel& mdl, ui
 }
 
 bool VXLFormat::readNodeHeaders(io::SeekableReadStream& stream, VXLModel& mdl) const {
-	wrap(stream.seek(HeaderSize))
 	for (uint32_t i = 0; i < mdl.header.nodeCount; ++i) {
 		wrapBool(readNodeHeader(stream, mdl, i))
 	}
@@ -497,9 +507,9 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 			// The HVA transformation matrices must be scaled - the VXL ones not!
 			glm::vec4 &v = m[3];
 			Log::debug("node %i, frame %i before: %f:%f:%f", nodeIdx, frameIdx, v[0], v[1], v[2]);
-			v[0] *= footer.scale * nodeScale[0];
-			v[1] *= footer.scale * nodeScale[1];
-			v[2] *= footer.scale * nodeScale[2];
+			v[0] *= (footer.scale * nodeScale[0]);
+			v[1] *= (footer.scale * nodeScale[1]);
+			v[2] *= (footer.scale * nodeScale[2]);
 			Log::debug("node %i, frame %i after: %f:%f:%f", nodeIdx, frameIdx, v[0], v[1], v[2]);
 #endif
 		}
@@ -584,7 +594,16 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 	for (uint32_t i = 0; i < numFrames; ++i) {
 		for (const SceneGraphNode &node : sceneGraph) {
 			const SceneGraphTransform &transform = node.transform(i);
-			const glm::mat4 &matrix = transform.matrix();
+			glm::mat4 matrix = transform.matrix();
+#if 0
+			//const glm::vec3 size(node.region().getDimensionsInVoxels());
+			const glm::vec3 nodeScale(1.0f); // TODO (footer.maxs - footer.mins) / size;
+			// The HVA transformation matrices must be scaled - the VXL ones not!
+			glm::vec4 &v = matrix[3];
+			v[0] /= (transform.scale() * nodeScale[0]);
+			v[1] /= (transform.scale() * nodeScale[1]);
+			v[2] /= (transform.scale() * nodeScale[2]);
+#endif
 			for (int row = 0; row < 3; ++row) {
 				for (int col = 0; col < 4; ++col) {
 					wrapBool(stream.writeFloat(matrix[col][row]))
@@ -613,8 +632,17 @@ bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrapBool(prepareModel(mdl))
 
 	wrapBool(readNodeHeaders(stream, mdl))
+	const int64_t bodyPos = stream.pos();
+	if (stream.skip(mdl.header.bodysize) == -1) {
+		Log::error("Failed to skip %u bytes", mdl.header.bodysize);
+		return false;
+	}
 	wrapBool(readNodeFooters(stream, mdl))
 
+	if (stream.seek(bodyPos) == -1) {
+		Log::error("Failed to seek");
+		return false;
+	}
 	wrapBool(readNodes(stream, mdl, sceneGraph, palette))
 
 	const core::String &basename = core::string::stripExtension(filename);
