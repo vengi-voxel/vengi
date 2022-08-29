@@ -62,6 +62,10 @@ protected:
 
 	static bool stopExecution();
 
+	static core::String stringProperty(const SceneGraphNode* node, const core::String &name, const core::String &defaultVal = "");
+	static bool boolProperty(const SceneGraphNode* node, const core::String &name, bool defaultVal = false);
+	static float floatProperty(const SceneGraphNode* node, const core::String &name, float defaultVal = 0.0f);
+
 public:
 	virtual ~Format() = default;
 

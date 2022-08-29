@@ -63,6 +63,36 @@ voxel::RawVolume* Format::transformVolume(const SceneGraphTransform &t, const vo
 	return v;
 }
 
+core::String Format::stringProperty(const SceneGraphNode* node, const core::String &name, const core::String &defaultVal) {
+	if (node == nullptr) {
+		return defaultVal;
+	}
+	if (!node->properties().hasKey(name)) {
+		return defaultVal;
+	}
+	return node->property(name);
+}
+
+bool Format::boolProperty(const SceneGraphNode* node, const core::String &name, bool defaultVal) {
+	if (node == nullptr) {
+		return defaultVal;
+	}
+	if (!node->properties().hasKey(name)) {
+		return defaultVal;
+	}
+	return core::string::toBool(node->property(name));
+}
+
+float Format::floatProperty(const SceneGraphNode* node, const core::String &name, float defaultVal) {
+	if (node == nullptr) {
+		return defaultVal;
+	}
+	if (!node->properties().hasKey(name)) {
+		return defaultVal;
+	}
+	return core::string::toFloat(node->property(name));
+}
+
 void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop) {
 	destSceneGraph.reserve(srcSceneGraph.size());
 	for (SceneGraphNode &node : srcSceneGraph) {
