@@ -96,10 +96,13 @@ static int getInterpolationType(InterpolationType type) {
 }
 
 bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableReadStream &stream,
-									SceneGraph &sceneGraph, SceneGraphNode& node, const core::String &animId) {
+									SceneGraph &sceneGraph, SceneGraphNode& node, const core::String &animId, int version) {
 	int32_t keyFrameCount;
 	wrap(stream.readInt32(keyFrameCount))
 	Log::debug("Found %i keyframes", keyFrameCount);
+
+	const glm::vec3 pivot = node.transform().pivot(); // save the pivot before we override the transform
+
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
 		SceneGraphKeyFrame &keyFrame = node.keyFrame(i);
 		uint32_t frame;
@@ -148,6 +151,13 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		transform.setLocalOrientation(localOrientation);
 		transform.setLocalScale(localScale);
 		transform.update();
+		if (version == 1) {
+			// version 1 needs to correct its translation by the pivot translation
+			const glm::vec3 volumesize = node.region().getDimensionsInVoxels();
+			const glm::vec3 pivotTranslation = (pivot * 2.0f - 1.0f) * 0.5f * volumesize;
+			transform.setTranslation(transform.translation() - pivotTranslation);
+			transform.update();
+		}
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))
@@ -158,7 +168,7 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 	for (int32_t i = 0; i < children; ++i) {
 		const int nodeId = node.children()[i];
 		SceneGraphNode& cnode = sceneGraph.node(nodeId);
-		wrapBool(recursiveImportNode(filename, stream, sceneGraph, cnode, animId))
+		wrapBool(recursiveImportNode(filename, stream, sceneGraph, cnode, animId, version))
 	}
 
 	return true;
@@ -227,7 +237,7 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	for (int32_t i = 0; i < rootChildren; ++i) {
 		const int nodeId = sceneGraph.root().children()[i];
 		SceneGraphNode& node = sceneGraph.node(nodeId);
-		if (!recursiveImportNode(filename, stream, sceneGraph, node, animId)) {
+		if (!recursiveImportNode(filename, stream, sceneGraph, node, animId, version)) {
 			Log::error("VXA: failed to import children");
 			return false;
 		}
