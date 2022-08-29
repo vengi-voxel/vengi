@@ -78,7 +78,7 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 }
 
 bool VXRFormat::saveNodeProperties(const SceneGraphNode* node, io::SeekableWriteStream& stream) {
-	wrapBool(stream.writeBool(boolProperty(node, "collidable", false)))
+	wrapBool(stream.writeBool(boolProperty(node, "collidable", true)))
 	wrapBool(stream.writeBool(boolProperty(node, "decorative", false)))
 	if (node == nullptr) {
 		wrapBool(stream.writeUInt32(0))
@@ -95,7 +95,7 @@ bool VXRFormat::saveNodeProperties(const SceneGraphNode* node, io::SeekableWrite
 	wrapBool(stream.writeBool(boolProperty(node, "preview mirror z axis", false)))
 	wrapBool(stream.writeBool(boolProperty(node, "ikAnchor", false)))
 	wrapBool(stream.writeString(stringProperty(node, "ikEffectorId"), true))
-	wrapBool(stream.writeBool(boolProperty(node, "ikConstraintsVisible", false)))
+	wrapBool(stream.writeBool(boolProperty(node, "ikConstraintsVisible", true)))
 	wrapBool(stream.writeFloat(floatProperty(node, "ikRollMin", 0.0f)))
 	wrapBool(stream.writeFloat(floatProperty(node, "ikRollMax", glm::two_pi<float>())))
 	int ikConstraintAmount = 0;
@@ -243,19 +243,20 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		if (version > 1) {
 			keyFrame.longRotation = stream.readBool();
 		}
-		keyFrame.transform().setPivot(glm::vec3(0.5f));
+		SceneGraphTransform &transform = keyFrame.transform();
+		transform.setPivot(glm::vec3(0.5f));
 		glm::vec3 translation;
 		wrap(stream.readFloat(translation.x))
 		//nodeFrame.transform.position.x *= -1.0f;
 		wrap(stream.readFloat(translation.y))
 		wrap(stream.readFloat(translation.z))
-		keyFrame.transform().setTranslation(translation);
+		transform.setTranslation(translation);
 		if (version >= 3) {
-			glm::vec3 localPosition{0.0f};
-			wrap(stream.readFloat(localPosition.x))
-			wrap(stream.readFloat(localPosition.y))
-			wrap(stream.readFloat(localPosition.z))
-			keyFrame.transform().setLocalTranslation(localPosition);
+			glm::vec3 localTranslation{0.0f};
+			wrap(stream.readFloat(localTranslation.x))
+			wrap(stream.readFloat(localTranslation.y))
+			wrap(stream.readFloat(localTranslation.z))
+			transform.setLocalTranslation(localTranslation);
 		}
 		if (version == 1) {
 			float rotationx;
@@ -264,34 +265,34 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			keyFrame.transform().setOrientation(glm::quat(glm::vec3(rotationx, rotationy, rotationz)));
+			transform.setOrientation(glm::quat(glm::vec3(rotationx, rotationy, rotationz)));
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			keyFrame.transform().setLocalOrientation(glm::quat(glm::vec3(rotationx, rotationy, rotationz)));
+			transform.setLocalOrientation(glm::quat(glm::vec3(rotationx, rotationy, rotationz)));
 		} else {
 			glm::quat orientation;
 			wrap(stream.readFloat(orientation.x))
 			wrap(stream.readFloat(orientation.y))
 			wrap(stream.readFloat(orientation.z))
 			wrap(stream.readFloat(orientation.w))
-			keyFrame.transform().setOrientation(orientation);
-			glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
-			wrap(stream.readFloat(localRot.x))
-			wrap(stream.readFloat(localRot.y))
-			wrap(stream.readFloat(localRot.z))
-			wrap(stream.readFloat(localRot.w))
-			keyFrame.transform().setLocalOrientation(localRot);
+			transform.setOrientation(orientation);
+			glm::quat localOrientation;
+			wrap(stream.readFloat(localOrientation.x))
+			wrap(stream.readFloat(localOrientation.y))
+			wrap(stream.readFloat(localOrientation.z))
+			wrap(stream.readFloat(localOrientation.w))
+			transform.setLocalOrientation(localOrientation);
 		}
 		float scale;
 		wrap(stream.readFloat(scale))
-		keyFrame.transform().setScale(scale);
+		transform.setScale(scale);
 		if (version >= 3) {
-			float localScale = 1.0f;
+			float localScale;
 			wrap(stream.readFloat(localScale))
-			keyFrame.transform().setLocalScale(localScale);
+			transform.setLocalScale(localScale);
 		}
-		keyFrame.transform().update();
+		transform.update();
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))

@@ -44,12 +44,12 @@ static const InterpolationType interpolationTypes[]{
 	InterpolationType::CubicEaseOut, InterpolationType::CubicEaseInOut,
 };
 
-static void addNodeToHashStream_r(const SceneGraph& sceneGraph, int &n, const SceneGraphNode &node, io::WriteStream &stream) {
+static void addNodeToHashStream_r(const SceneGraph& sceneGraph, const SceneGraphNode &node, io::WriteStream &stream) {
 	stream.writeString(node.name(), false);
 	const core::String &childHex = core::string::toHex((int32_t)node.children().size()).toUpper();
 	stream.writeString(childHex, false);
 	for (int child : node.children()) {
-		addNodeToHashStream_r(sceneGraph, n, sceneGraph.node(child), stream);
+		addNodeToHashStream_r(sceneGraph, sceneGraph.node(child), stream);
 	}
 }
 
@@ -59,7 +59,6 @@ static void calculateHash(const SceneGraph& sceneGraph, uint64_t hash[2]) {
 	const voxelformat::SceneGraphNodeChildren &children = root.children();
 
 	const int childCount = (int)children.size();
-	int n = 0;
 	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
 		// add controller node (see VXRFormat)
 		stream.writeString("Controller", false);
@@ -67,10 +66,11 @@ static void calculateHash(const SceneGraph& sceneGraph, uint64_t hash[2]) {
 	}
 	for (int child : children) {
 		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
-		addNodeToHashStream_r(sceneGraph, n, node, stream);
+		addNodeToHashStream_r(sceneGraph, node, stream);
 	}
 	uint8_t digest[16];
 	core::md5sum(stream.getBuffer(), stream.size(), digest);
+	// TODO: use MemoryReadStream and two times the readUInt64
 	constexpr int half = lengthof(digest) / 2;
 	hash[0] = hash[1] = 0;
 	for (int i = 0; i < half; ++i) {
@@ -115,32 +115,39 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		}
 		keyFrame.longRotation = stream.readBool();
 
-		glm::vec3 localPosition{0.0f};
-		glm::quat localRot{0.0f, 0.0f, 0.0f, 0.0f};
-		float localScale = 1.0f;
+		SceneGraphTransform &transform = keyFrame.transform();
+
+		glm::vec3 localTranslation;
+		glm::quat localOrientation;
 		glm::vec3 translation;
+		glm::quat orientation;
+		float scale;
+		float localScale;
+
 		wrap(stream.readFloat(translation.x))
 		wrap(stream.readFloat(translation.y))
 		wrap(stream.readFloat(translation.z))
-		keyFrame.transform().setTranslation(translation);
-		wrap(stream.readFloat(localPosition.x))
-		wrap(stream.readFloat(localPosition.y))
-		wrap(stream.readFloat(localPosition.z))
-		glm::quat orientation;
+		wrap(stream.readFloat(localTranslation.x))
+		wrap(stream.readFloat(localTranslation.y))
+		wrap(stream.readFloat(localTranslation.z))
 		wrap(stream.readFloat(orientation.x))
 		wrap(stream.readFloat(orientation.y))
 		wrap(stream.readFloat(orientation.z))
 		wrap(stream.readFloat(orientation.w))
-		keyFrame.transform().setOrientation(orientation);
-		wrap(stream.readFloat(localRot.x))
-		wrap(stream.readFloat(localRot.y))
-		wrap(stream.readFloat(localRot.z))
-		wrap(stream.readFloat(localRot.w))
-		float scale;
+		wrap(stream.readFloat(localOrientation.x))
+		wrap(stream.readFloat(localOrientation.y))
+		wrap(stream.readFloat(localOrientation.z))
+		wrap(stream.readFloat(localOrientation.w))
 		wrap(stream.readFloat(scale))
-		keyFrame.transform().setScale(scale);
 		wrap(stream.readFloat(localScale))
-		keyFrame.transform().update();
+
+		transform.setTranslation(translation);
+		transform.setOrientation(orientation);
+		transform.setScale(scale);
+		transform.setLocalTranslation(localTranslation);
+		transform.setLocalOrientation(localOrientation);
+		transform.setLocalScale(localScale);
+		transform.update();
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))
@@ -196,28 +203,28 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	vxa_priv::calculateHash(sceneGraph, hash);
 
 	if (SDL_memcmp(md5, hash, sizeof(hash))) {
-		Log::error("hash checksums differ from vxa to current scene graph nodes");
+		Log::error("hash checksums differ from vxa to current scene graph nodes (version: %i)", version);
 		return false;
 	}
 
 	char animId[1024];
 	wrapBool(stream.readString(sizeof(animId), animId, true))
 	Log::debug("anim: '%s'", animId);
-	int32_t rootChilds = 0;
-	wrap(stream.readInt32(rootChilds))
-	Log::debug("rootChilds: %i", rootChilds);
-	if (rootChilds == 0) {
+	int32_t rootChildren = 0;
+	wrap(stream.readInt32(rootChildren))
+	Log::debug("rootChildren: %i", rootChildren);
+	if (rootChildren == 0) {
 		Log::debug("No children node found in vxa - positioning might be wrong");
 		return true;
 	}
 
-	const int32_t sceneGraphRootChilds = (int32_t)sceneGraph.root().children().size();
-	if (rootChilds != sceneGraphRootChilds) {
-		Log::error("VXA root child count doesn't match with current loaded scene graph %i vs %i", rootChilds, sceneGraphRootChilds);
+	const int32_t sceneGraphRootChildren = (int32_t)sceneGraph.root().children().size();
+	if (rootChildren != sceneGraphRootChildren) {
+		Log::error("VXA root child count doesn't match with current loaded scene graph %i vs %i", rootChildren, sceneGraphRootChildren);
 		return false;
 	}
 
-	for (int32_t i = 0; i < rootChilds; ++i) {
+	for (int32_t i = 0; i < rootChildren; ++i) {
 		const int nodeId = sceneGraph.root().children()[i];
 		SceneGraphNode& node = sceneGraph.node(nodeId);
 		if (!recursiveImportNode(filename, stream, sceneGraph, node, animId)) {
