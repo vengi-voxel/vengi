@@ -75,6 +75,7 @@ public:
 	int emplace(SceneGraphNode &&node, int parent = 0);
 
 	SceneGraphNode* findNodeByName(const core::String& name);
+	SceneGraphNode* first();
 
 	const SceneGraphNode& root() const;
 	/**

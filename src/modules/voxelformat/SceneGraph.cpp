@@ -139,6 +139,13 @@ SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) {
 	return nullptr;
 }
 
+SceneGraphNode* SceneGraph::first() {
+	for (const auto& entry : _nodes) {
+		return &entry->value;
+	}
+	return nullptr;
+}
+
 int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	core_assert_msg((int)node.type() < (int)SceneGraphNodeType::Max, "%i", (int)node.type());
 	if (node.type() == SceneGraphNodeType::Root && _nextNodeId != 0) {
