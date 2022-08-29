@@ -478,12 +478,11 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 	for (uint32_t i = 0; i < file.header.numNodes; ++i) {
 		file.header.nodeIds[i] = mdl.findNodeByName(file.header.nodeNames[i]);
 		if (file.header.nodeIds[i] == -1) {
-			Log::error("Failed to resolve node id for '%s' (node idx: %i/%i)",
+			Log::debug("Failed to resolve node id for '%s' (node idx: %i/%i)",
 				file.header.nodeNames[i].c_str(), i, file.header.numNodes);
 			for (uint32_t i = 0; i < mdl.header.nodeCount; ++i) {
 				Log::debug(" - found: %s", mdl.nodeHeaders[i].name);
 			}
-			return false;
 		}
 	}
 
@@ -500,7 +499,9 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 			}
 #if 0 // TODO: without this the models are placed wrong in the world
 			const int nodeId = file.header.nodeIds[nodeIdx];
-			core_assert(nodeId != -1);
+			if (nodeId == -1) {
+				continue;
+			}
 			const VXLNodeFooter& footer = mdl.nodeFooters[nodeId];
 			const glm::vec3 size(footer.xsize, footer.ysize, footer.zsize);
 			const glm::vec3 nodeScale = (footer.maxs - footer.mins) / size;
@@ -538,7 +539,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 			const core::String &name = file.header.nodeNames[section];
 			SceneGraphNode* node = sceneGraph.findNodeByName(name);
 			if (node == nullptr) {
-				Log::error("Can't find node with name %s", name.c_str());
+				Log::debug("Can't find node with name %s", name.c_str());
 				continue;
 			}
 			SceneGraphKeyFrame &kf = node->keyFrame(frame);
