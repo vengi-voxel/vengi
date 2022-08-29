@@ -336,6 +336,9 @@ SceneGraphTransform& SceneGraphNode::transform(FrameIndex frameIdx) {
 }
 
 const SceneGraphTransform& SceneGraphNode::transform(FrameIndex frameIdx) const {
+	while (frameIdx > 0 && frameIdx >= _keyFrames.size()) {
+		--frameIdx;
+	}
 	return _keyFrames[frameIdx].transform();
 }
 
