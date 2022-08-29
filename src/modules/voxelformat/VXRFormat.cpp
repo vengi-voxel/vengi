@@ -570,6 +570,8 @@ bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	Log::debug("Found vxr version: %i", version);
 
+	sceneGraph.node(0).setProperty("vxrversion", core::string::toString(version));
+
 	if (version < 1 || version > 9) {
 		Log::error("Could not load vxr file: Unsupported version found (%i)", version);
 		return false;

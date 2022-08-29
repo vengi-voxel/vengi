@@ -228,6 +228,8 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 		return true;
 	}
 
+	sceneGraph.node(0).setProperty("vxaversion", core::string::toString(version));
+
 	const int32_t sceneGraphRootChildren = (int32_t)sceneGraph.root().children().size();
 	if (rootChildren != sceneGraphRootChildren) {
 		Log::error("VXA root child count doesn't match with current loaded scene graph %i vs %i", rootChildren, sceneGraphRootChildren);
