@@ -9,6 +9,7 @@ set(SRCS
 	Stream.cpp Stream.h
 	MemoryReadStream.cpp MemoryReadStream.h
 	BufferedZipReadStream.cpp BufferedZipReadStream.h
+	StringStream.cpp StringStream.h
 	ZipArchive.h ZipArchive.cpp
 	ZipWriteStream.h ZipWriteStream.cpp
 	ZipReadStream.h ZipReadStream.cpp
