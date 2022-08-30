@@ -208,6 +208,7 @@ public:
 
 	bool addKeyFrame(FrameIndex frame);
 	bool removeKeyFrame(FrameIndex frame);
+	void sortKeyFrames();
 	const SceneGraphKeyFrames &keyFrames() const;
 	bool setKeyFrames(const SceneGraphKeyFrames&);
 	/**
@@ -226,9 +227,9 @@ public:
 
 	bool addChild(int id);
 	bool removeChild(int id);
-	void setTransform(FrameIndex frameIdx, const SceneGraphTransform &transform, bool updateMatrix);
-	SceneGraphTransform &transform(FrameIndex frameIdx = 0);
-	const SceneGraphTransform &transform(FrameIndex frameIdx = 0) const;
+	void setTransform(FrameIndex keyFrameIdx, const SceneGraphTransform &transform, bool updateMatrix);
+	SceneGraphTransform &transform(FrameIndex keyFrameIdx = 0);
+	const SceneGraphTransform &transform(FrameIndex keyFrameIdx = 0) const;
 
 	/**
 	 * @brief Interpolates the transforms for the given frame. It searches the keyframe before and after

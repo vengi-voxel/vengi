@@ -24,14 +24,23 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 			if (ImGui::Button(ICON_FA_PLUS_SQUARE " Add")) {
 				sceneMgr().nodeForeachGroup([&](int nodeId) {
 					voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
-					node.addKeyFrame(currentFrame);
+					if (!node.addKeyFrame(currentFrame)) {
+						Log::error("Failed to add keyframe for frame %i", (int)currentFrame);
+						return;
+					}
+					const uint32_t newKeyFrameIdx = node.keyFrameForFrame(currentFrame);
+					if (newKeyFrameIdx > 0) {
+						node.keyFrame(newKeyFrameIdx).setTransform(node.keyFrame(newKeyFrameIdx - 1).transform());
+					}
 				});
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_MINUS_SQUARE " Remove")) {
 				sceneMgr().nodeForeachGroup([&](int nodeId) {
 					voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
-					node.removeKeyFrame(currentFrame);
+					if (!node.removeKeyFrame(currentFrame)) {
+						Log::error("Failed to remove frame %i", (int)currentFrame);
+					}
 				});
 			}
 			uint32_t startFrame = 0;

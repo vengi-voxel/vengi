@@ -324,26 +324,26 @@ bool SceneGraphNode::setProperty(const core::String& key, const core::String& va
 	return true;
 }
 
-SceneGraphKeyFrame& SceneGraphNode::keyFrame(FrameIndex frameIdx) {
-	if (_keyFrames.size() <= frameIdx) {
-		_keyFrames.resize((int)frameIdx + 1);
+SceneGraphKeyFrame& SceneGraphNode::keyFrame(FrameIndex keyFrameIdx) {
+	if (_keyFrames.size() <= keyFrameIdx) {
+		_keyFrames.resize((int)keyFrameIdx + 1);
 	}
-	return _keyFrames[frameIdx];
+	return _keyFrames[keyFrameIdx];
 }
 
-SceneGraphTransform& SceneGraphNode::transform(FrameIndex frameIdx) {
-	return _keyFrames[frameIdx].transform();
+SceneGraphTransform& SceneGraphNode::transform(FrameIndex keyFrameIdx) {
+	return _keyFrames[keyFrameIdx].transform();
 }
 
-const SceneGraphTransform& SceneGraphNode::transform(FrameIndex frameIdx) const {
-	while (frameIdx > 0 && frameIdx >= _keyFrames.size()) {
-		--frameIdx;
+const SceneGraphTransform& SceneGraphNode::transform(FrameIndex keyFrameIdx) const {
+	while (keyFrameIdx > 0 && keyFrameIdx >= _keyFrames.size()) {
+		--keyFrameIdx;
 	}
-	return _keyFrames[frameIdx].transform();
+	return _keyFrames[keyFrameIdx].transform();
 }
 
-void SceneGraphNode::setTransform(FrameIndex frameIdx, const SceneGraphTransform &transform, bool updateMatrix) {
-	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
+void SceneGraphNode::setTransform(FrameIndex keyFrameIdx, const SceneGraphTransform &transform, bool updateMatrix) {
+	SceneGraphKeyFrame &nodeFrame = keyFrame(keyFrameIdx);
 	nodeFrame.setTransform(transform);
 	if (updateMatrix) {
 		nodeFrame.transform().update();
@@ -366,10 +366,19 @@ bool SceneGraphNode::addKeyFrame(FrameIndex frame) {
 			return false;
 		}
 	}
+
 	SceneGraphKeyFrame keyFrame;
 	keyFrame.frame = frame;
 	_keyFrames.push_back(keyFrame);
+	sortKeyFrames();
 	return true;
+}
+
+void SceneGraphNode::sortKeyFrames() {
+	static auto frameSorter = [](const SceneGraphKeyFrame &a, const SceneGraphKeyFrame &b) {
+		return a.frame > b.frame;
+	};
+	_keyFrames.sort(frameSorter);
 }
 
 bool SceneGraphNode::removeKeyFrame(FrameIndex frame) {
@@ -390,16 +399,21 @@ bool SceneGraphNode::setKeyFrames(const SceneGraphKeyFrames &kf) {
 }
 
 uint32_t SceneGraphNode::keyFrameForFrame(FrameIndex frame) const {
-	for (size_t i = 0; i < _keyFrames.size(); ++i) {
+	// this assumes that the key frames are sorted after their frame
+	const size_t n = _keyFrames.size();
+	core_assert(n > 0)	;
+	for (size_t i = 0; i < n; ++i) {
 		const SceneGraphKeyFrame &kf = _keyFrames[i];
-		if (kf.frame > frame) {
+		if (kf.frame == frame) {
+			return i;
+		} else if (kf.frame > frame) {
 			if (i == 0) {
 				break;
 			}
 			return i - 1;
 		}
 	}
-	return 0;
+	return n - 1;
 }
 
 SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex current) const {
