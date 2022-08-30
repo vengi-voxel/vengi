@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include "core/Common.h"
 
-
 namespace core {
 
 class String {
@@ -53,6 +52,8 @@ public:
 
 	String toLower() const;
 	String toUpper() const;
+
+	void updateSize();
 
 	const char *c_str() const;
 	char *c_str();

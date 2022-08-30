@@ -236,6 +236,10 @@ String String::toUpper() const {
 	return upper(_data._str);
 }
 
+void String::updateSize() {
+	_data._size = SDL_strlen(c_str());
+}
+
 String &String::operator=(const String &str) {
 	if (&str == this) {
 		return *this;
