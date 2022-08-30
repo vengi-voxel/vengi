@@ -293,7 +293,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	wrap(stream.readFloat(pivot.z));
 
 	// TODO: -position?
-	transform.setPivot(pivot / glm::vec3(size));
+	//transform.setPivot(pivot / glm::vec3(size));
 
 	uint32_t compressedDataSize;
 	wrap(stream.readUInt32(compressedDataSize));
