@@ -43,6 +43,8 @@ VoxEdit:
    - Fixed last opened files with spaces in their names
    - Fixed loading files from command line again
    - Allow to select scene graph node from the animation timeline
+   - Fixed deleting key frames
+   - Improved adding new key frames
 
 ## 0.0.20 (2022-06-14)
 

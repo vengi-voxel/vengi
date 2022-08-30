@@ -31,6 +31,8 @@ vengi (0.0.21.0-1) UNRELEASED; urgency=low
   * Fixed last opened files with spaces in their names
   * Fixed loading files from command line again
   * Allow to select scene graph node from the animation timeline
+  * Fixed deleting key frames
+  * Improved adding new key frames
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Tue, 14 Jun 2022 00:00:00 +0000
 
