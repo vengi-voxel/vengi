@@ -544,7 +544,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 			SceneGraphTransform transform;
 			transform.setMatrix(sectionMatrices[section]);
 			transform.update();
-			kf.frame = frame; // TODO: running at 6 fps?
+			kf.frame = frame * 6; // running at 6 fps
 			kf.setTransform(transform);
 		}
 	}
