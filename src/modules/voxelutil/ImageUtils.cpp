@@ -20,6 +20,82 @@
 
 namespace voxelutil {
 
+int importHeightMaxHeight(const image::ImagePtr &image, bool alpha) {
+	const int w = image->width();
+	const int h = image->height();
+	int maxHeight = 0;
+	int minHeight = 255;
+	if (alpha) {
+		for (int x = 0; x < w; ++x) {
+			for (int y = 0; y < h; ++y) {
+				const uint8_t h = image->colorAt(x, y).a;
+				maxHeight = core_max(maxHeight, h);
+				minHeight = core_min(minHeight, h);
+			}
+		}
+	} else {
+		for (int x = 0; x < w; ++x) {
+			for (int y = 0; y < h; ++y) {
+				const uint8_t h = image->colorAt(x, y).r;
+				maxHeight = core_max(maxHeight, h);
+				minHeight = core_min(minHeight, h);
+			}
+		}
+	}
+	if (maxHeight == minHeight) {
+		return 1;
+	}
+	return maxHeight;
+}
+
+void importColoredHeightmap(voxel::RawVolumeWrapper& volume, voxel::PaletteLookup &palLookup, const image::ImagePtr& image, const voxel::Voxel &underground) {
+	const int imageWidth = image->width();
+	const int imageHeight = image->height();
+	const voxel::Region& region = volume.region();
+	const int volumeHeight = region.getHeightInVoxels();
+	const int volumeWidth = region.getWidthInVoxels();
+	const int volumeDepth = region.getDepthInVoxels();
+	const glm::ivec3& mins = region.getLowerCorner();
+	const float stepWidthY = (float)imageHeight / (float)volumeDepth;
+	const float stepWidthX = (float)imageWidth / (float)volumeWidth;
+	const float scaleHeight = (float)volumeHeight / (float)255.0f;
+	float imageY = 0.0f;
+	for (int z = 0; z < volumeDepth; ++z, imageY += stepWidthY) {
+		float imageX = 0.0f;
+		for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
+			const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
+			const uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.a) * scaleHeight));
+
+			if (voxel::isAir(underground.getMaterial())) {
+				const glm::ivec3 pos(x, heightValue - 1, z);
+				const glm::ivec3 regionPos = mins + pos;
+				if (!region.containsPoint(regionPos)) {
+					continue;
+				}
+				const uint8_t palidx = palLookup.findClosestIndex(core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
+				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, palidx);
+				volume.setVoxel(regionPos, voxel);
+			} else {
+				for (int y = 0; y < heightValue; ++y) {
+					const glm::ivec3 pos(x, y, z);
+					const glm::ivec3 regionPos = mins + pos;
+					if (!region.containsPoint(regionPos)) {
+						continue;
+					}
+					voxel::Voxel voxel;
+					if (y < heightValue) {
+						voxel = underground;
+					} else if (y == heightValue) {
+						const uint8_t palidx = palLookup.findClosestIndex(core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
+						voxel = voxel::createVoxel(voxel::VoxelType::Generic, palidx);
+					}
+					volume.setVoxel(regionPos, voxel);
+				}
+			}
+		}
+	}
+}
+
 void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& image, const voxel::Voxel &underground, const voxel::Voxel &surface) {
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
@@ -30,27 +106,37 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 	const glm::ivec3& mins = region.getLowerCorner();
 	const float stepWidthY = (float)imageHeight / (float)volumeDepth;
 	const float stepWidthX = (float)imageWidth / (float)volumeWidth;
-	const float scaleHeight = (float)volumeHeight / 255.0f;
+	const int maxImageHeight = importHeightMaxHeight(image, true);
+	const float scaleHeight = (float)volumeHeight / (float)maxImageHeight;
 	float imageY = 0.0f;
 	for (int z = 0; z < volumeDepth; ++z, imageY += stepWidthY) {
 		float imageX = 0.0f;
 		for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
 			const core::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
-			const uint8_t pixelValue = (uint8_t)((float)(heightmapPixel.rgba) * scaleHeight);
+			const uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.r) * scaleHeight));
 
-			for (int y = 0; y < volumeHeight; ++y) {
-				const glm::ivec3 pos(x, y, z);
+			if (voxel::isAir(underground.getMaterial())) {
+				const glm::ivec3 pos(x, heightValue - 1, z);
 				const glm::ivec3 regionPos = mins + pos;
 				if (!region.containsPoint(regionPos)) {
 					continue;
 				}
-				voxel::Voxel voxel;
-				if (y < pixelValue) {
-					voxel = underground;
-				} else if (y == pixelValue) {
-					voxel = surface;
+				volume.setVoxel(regionPos, surface);
+			} else {
+				for (int y = 0; y < heightValue; ++y) {
+					const glm::ivec3 pos(x, y, z);
+					const glm::ivec3 regionPos = mins + pos;
+					if (!region.containsPoint(regionPos)) {
+						continue;
+					}
+					voxel::Voxel voxel;
+					if (y < heightValue) {
+						voxel = underground;
+					} else if (y == heightValue) {
+						voxel = surface;
+					}
+					volume.setVoxel(regionPos, voxel);
 				}
-				volume.setVoxel(regionPos, voxel);
 			}
 		}
 	}

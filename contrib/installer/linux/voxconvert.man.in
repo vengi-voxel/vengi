@@ -46,6 +46,10 @@ Overwrite existing files.
 Import input images as heightmaps (default).
 
 .TP
+\fB\--colored-heightmap\fR
+Use the alpha channel of the heightmap as height and the rgb data as surface color.
+
+.TP
 \fB\--image-as-plane\fR
 Import input images as planes.
 

@@ -10,6 +10,7 @@
 #include "lua.h"
 #include "math/Axis.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
@@ -228,11 +229,25 @@ static int luaVoxel_volumewrapper_importheightmap(lua_State *s) {
 	if (!image || !image->isLoaded()) {
 		return clua_error(s, "Image %s could not get loaded", imageName.c_str());
 	}
-	const voxel::Voxel grass = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
 	const voxel::Voxel dirt = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
 	const voxel::Voxel underground = luaVoxel_getVoxel(s, 3, dirt.getColor());
+	const voxel::Voxel grass = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
 	const voxel::Voxel surface = luaVoxel_getVoxel(s, 4, grass.getColor());
 	voxelutil::importHeightmap(*volume, image, underground, surface);
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_importcoloredheightmap(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const core::String imageName = lua_tostring(s, 2);
+	const image::ImagePtr &image = image::loadImage(imageName, false);
+	if (!image || !image->isLoaded()) {
+		return clua_error(s, "Image %s could not get loaded", imageName.c_str());
+	}
+	voxel::PaletteLookup palLookup(voxel::getPalette());
+	const voxel::Voxel dirt = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
+	const voxel::Voxel underground = luaVoxel_getVoxel(s, 3, dirt.getColor());
+	voxelutil::importColoredHeightmap(*volume, palLookup, image, underground);
 	return 0;
 }
 
@@ -658,6 +673,7 @@ static void prepareState(lua_State* s) {
 		{"crop", luaVoxel_volumewrapper_crop},
 		{"fillHollows", luaVoxel_volumewrapper_fillhollow},
 		{"importHeightmap", luaVoxel_volumewrapper_importheightmap},
+		{"importColoredHeightmap", luaVoxel_volumewrapper_importcoloredheightmap},
 		{"mirrorAxis", luaVoxel_volumewrapper_mirroraxis},
 		{"rotateAxis", luaVoxel_volumewrapper_rotateaxis},
 		{"setVoxel", luaVoxel_volumewrapper_setvoxel},

@@ -184,6 +184,16 @@ app::AppState VoxEdit::onConstruct() {
 		}
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import a 2d heightmap image into the current active volume layer");
 
+	command::Command::registerCommand("importcoloredheightmap", [this](const command::CmdArgs &args) {
+		if (args.empty()) {
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, io::format::images());
+			return;
+		}
+		if (!voxedit::sceneMgr().importColoredHeightmap(args[0])) {
+			Log::error("Failed to execute 'importcoloredheightmap' for file '%s'", args[0].c_str());
+		}
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import a 2d heightmap image into the current active volume layer");
+
 	command::Command::registerCommand("importplane", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
 			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsPlane(file); }, io::format::images());

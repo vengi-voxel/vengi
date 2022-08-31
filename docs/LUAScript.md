@@ -197,7 +197,9 @@ local mins = region:mins()
 
 * `fillHollows([color])`: Tries to fill all hollows in the volume.
 
-* `importHeightmap(filename, [underground], [surface])`: Imports the given image as heightmap into the current volume. Use the `underground` and `surface` voxel colors for this (or pick some defaults if they were not specified).
+* `importHeightmap(filename, [underground], [surface])`: Imports the given image as heightmap into the current volume. Use the `underground` and `surface` voxel colors for this (or pick some defaults if they were not specified). Also see `importColoredHeightmap` if you want to colorize your surface.
+
+* `importColoredHeightmap(filename, [underground])`: Imports the given image as heightmap into the current volume. Use the `underground` voxel colors for this and determine the surface colors from the RGB channel of the given image. Other than with `importHeightmap` the height is encoded in the alpha channel with this method.
 
 * `crop()`: Crop the volume and remove empty spaces.
 

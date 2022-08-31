@@ -297,6 +297,7 @@ public:
 	 * @note The first component is used as height value. In most cases the R channel.
 	 */
 	bool importHeightmap(const core::String& file);
+	bool importColoredHeightmap(const core::String& file);
 	/**
 	 * @brief Import an image as a plane in a new layer of the scene.
 	 * @note There is a total max dimension of the texture that is supported.

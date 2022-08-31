@@ -18,6 +18,7 @@
 #include "metric/Metric.h"
 #include "core/EventBus.h"
 #include "core/TimeProvider.h"
+#include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -37,8 +38,8 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/trigonometric.hpp>
 
-#define MaxHeightmapWidth 1024
-#define MaxHeightmapHeight 1024
+#define MaxHeightmapWidth 4096
+#define MaxHeightmapHeight 4096
 
 VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
 		Super(metric, filesystem, eventBus, timeProvider, core::cpus()) {
@@ -58,6 +59,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--image-as-volume-max-depth").setDefaultValue("8").setDescription("Importing image as volume max depth");
 	registerArg("--image-as-volume-both-sides").setDefaultValue("false").setDescription("Importing image as volume for both sides");
 	registerArg("--image-as-heightmap").setDescription("Import given input images as heightmaps");
+	registerArg("--colored-heightmap").setDescription("Use the alpha channel of the heightmap as height and the rgb data as surface color");
 	registerArg("--input").setShort("-i").setDescription("Allow to specify input files");
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
@@ -398,18 +400,33 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 		const bool importAsVolume = hasArg("--image-as-volume");
 		const bool importAsHeightmap = hasArg("--image-as-heightmap");
 		if (importAsHeightmap || (!importAsPlane && !importAsVolume)) {
-			Log::info("Generate from heightmap (%i:%i)", image->width(), image->height());
+			const bool coloredHeightmap = hasArg("--colored-heightmap");
 			if (image->width() > MaxHeightmapWidth || image->height() >= MaxHeightmapHeight) {
 				Log::warn("Skip creating heightmap - image dimensions exceeds the max allowed boundaries");
 				return false;
 			}
-			voxel::Region region(0, 0, 0, image->width(), 255, image->height());
+			const int maxHeight = voxelutil::importHeightMaxHeight(image, coloredHeightmap);
+			if (maxHeight == 0) {
+				Log::error("There is no height in either the red channel or the alpha channel");
+				return false;
+			}
+			if (maxHeight == 1) {
+				Log::warn("There is no height value in the image - it is imported as flat plane");
+			}
+			Log::info("Generate from heightmap (%i:%i) with max height of %i", image->width(), image->height(), maxHeight);
+			voxel::Region region(0, 0, 0, image->width(), maxHeight - 1, image->height());
 			voxel::RawVolume* volume = new voxel::RawVolume(region);
 			voxel::RawVolumeWrapper wrapper(volume);
-			const voxel::Voxel dirtVoxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
-			const voxel::Voxel grassVoxel = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
-			voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
 			voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
+			const voxel::Voxel dirtVoxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
+			if (coloredHeightmap) {
+				voxel::PaletteLookup palLookup;
+				voxelutil::importColoredHeightmap(wrapper, palLookup, image, dirtVoxel);
+				node.setPalette(palLookup.palette());
+			} else {
+				const voxel::Voxel grassVoxel = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
+				voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
+			}
 			node.setVolume(volume, true);
 			node.setName(infile);
 			sceneGraph.emplace(core::move(node));

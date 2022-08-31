@@ -8,6 +8,7 @@
 * `--filter <filter>`: will filter out layers not mentioned in the expression. E.g. `1-2,4` will handle layer 1, 2 and 4. It is the same as `1,2,4`. The first layer is `0`. See the layers note below.
 * `--force`: overwrite existing files
 * `--image-as-heightmap`: import input images as heightmap (default)
+* `--colored-heightmap`: Use the alpha channel of the heightmap as height and the rgb data as surface color.
 * `--image-as-volume`: import given input image as volume. Uses a depth map to make a volume out of the image.
 * `--image-as-volume-max-depth`: importing image as volume max depth
 * `--image-as-volume-both-sides`: importing image as volume and use the depth map for both sides

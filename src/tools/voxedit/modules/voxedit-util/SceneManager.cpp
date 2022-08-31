@@ -25,6 +25,7 @@
 #include "video/Types.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeMoveWrapper.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -139,6 +140,26 @@ bool SceneManager::importHeightmap(const core::String& file) {
 	const voxel::Voxel dirtVoxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
 	const voxel::Voxel grassVoxel = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
 	voxelutil::importHeightmap(wrapper, img, dirtVoxel, grassVoxel);
+	modified(nodeId, wrapper.dirtyRegion());
+	return true;
+}
+
+bool SceneManager::importColoredHeightmap(const core::String& file) {
+	const int nodeId = activeNode();
+	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
+	core_assert(node != nullptr);
+	voxel::RawVolume* v = node->volume();
+	if (v == nullptr) {
+		return false;
+	}
+	const image::ImagePtr& img = image::loadImage(file, false);
+	if (!img->isLoaded()) {
+		return false;
+	}
+	voxel::RawVolumeWrapper wrapper(v);
+	voxel::PaletteLookup palLookup(node->palette());
+	const voxel::Voxel dirtVoxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
+	voxelutil::importColoredHeightmap(wrapper, palLookup, img, dirtVoxel);
 	modified(nodeId, wrapper.dirtyRegion());
 	return true;
 }
