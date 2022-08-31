@@ -206,6 +206,8 @@ public:
 	core::RGBA color() const;
 	void setColor(core::RGBA color);
 
+	FrameIndex maxFrame() const;
+
 	bool addKeyFrame(FrameIndex frame);
 	bool removeKeyFrame(FrameIndex frame);
 	void sortKeyFrames();

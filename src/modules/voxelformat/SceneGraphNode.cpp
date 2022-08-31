@@ -477,6 +477,14 @@ SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex current) const 
 	return transform;
 }
 
+FrameIndex SceneGraphNode::maxFrame() const {
+	FrameIndex maxFrame = 0;
+	for (const auto &keyframe : _keyFrames) {
+		maxFrame = core_max(keyframe.frame, maxFrame);
+	}
+	return maxFrame;
+}
+
 SceneGraphNodeCamera::SceneGraphNodeCamera() : Super(SceneGraphNodeType::Camera) {
 }
 
