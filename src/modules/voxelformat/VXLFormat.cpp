@@ -497,9 +497,9 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 					wrap(stream.readFloat(m[col][row]))
 				}
 			}
-#if 0 // TODO: without this the models are placed wrong in the world
 			const int nodeId = file.header.nodeIds[nodeIdx];
 			if (nodeId == -1) {
+				m = glm::mat4(1.0f);
 				continue;
 			}
 			const VXLNodeFooter& footer = mdl.nodeFooters[nodeId];
@@ -507,12 +507,9 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 			const glm::vec3 nodeScale = (footer.maxs - footer.mins) / size;
 			// The HVA transformation matrices must be scaled - the VXL ones not!
 			glm::vec4 &v = m[3];
-			Log::debug("node %i, frame %i before: %f:%f:%f", nodeIdx, frameIdx, v[0], v[1], v[2]);
 			v[0] *= (footer.scale * nodeScale[0]);
 			v[1] *= (footer.scale * nodeScale[1]);
 			v[2] *= (footer.scale * nodeScale[2]);
-			Log::debug("node %i, frame %i after: %f:%f:%f", nodeIdx, frameIdx, v[0], v[1], v[2]);
-#endif
 		}
 	}
 
