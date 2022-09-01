@@ -81,7 +81,8 @@ extern char** environ;
 #endif
 
 #if defined(__MVS__)
-#include <sys/ioctl.h>
+# include <sys/ioctl.h>
+# include "zos-sys-info.h"
 #endif
 
 #if defined(__linux__)
@@ -866,11 +867,6 @@ void uv__io_init(uv__io_t* w, uv__io_cb cb, int fd) {
   w->fd = fd;
   w->events = 0;
   w->pevents = 0;
-
-#if defined(UV_HAVE_KQUEUE)
-  w->rcount = 0;
-  w->wcount = 0;
-#endif /* defined(UV_HAVE_KQUEUE) */
 }
 
 
@@ -988,6 +984,15 @@ int uv_getrusage(uv_rusage_t* rusage) {
   rusage->ru_nsignals = usage.ru_nsignals;
   rusage->ru_nvcsw = usage.ru_nvcsw;
   rusage->ru_nivcsw = usage.ru_nivcsw;
+#endif
+
+  /* Most platforms report ru_maxrss in kilobytes; macOS and Solaris are
+   * the outliers because of course they are.
+   */
+#if defined(__APPLE__) && !TARGET_OS_IPHONE
+  rusage->ru_maxrss /= 1024;                  /* macOS reports bytes. */
+#elif defined(__sun)
+  rusage->ru_maxrss /= getpagesize() / 1024;  /* Solaris reports pages. */
 #endif
 
   return 0;
@@ -1647,7 +1652,13 @@ unsigned int uv_available_parallelism(void) {
 
   return (unsigned) rc;
 #elif defined(__MVS__)
-  return 1;  /* TODO(bnoordhuis) Read from CSD_NUMBER_ONLINE_CPUS? */
+  int rc;
+
+  rc = __get_num_online_cpus();
+  if (rc < 1)
+    rc = 1;
+
+  return (unsigned) rc;
 #else  /* __linux__ */
   long rc;
 
