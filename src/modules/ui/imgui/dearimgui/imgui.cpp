@@ -1171,6 +1171,8 @@ ImGuiIO::ImGuiIO()
 #endif
     KeyRepeatDelay = 0.275f;
     KeyRepeatRate = 0.050f;
+    HoverDelayNormal = 0.30f;
+    HoverDelayShort = 0.10f;
     UserData = NULL;
 
     Fonts = NULL;
@@ -1200,6 +1202,8 @@ ImGuiIO::ImGuiIO()
 #endif
     ConfigInputTrickleEventQueue = true;
     ConfigInputTextCursorBlink = true;
+    ConfigInputTextEnterKeepActive = false;
+    ConfigDragClickToInputText = false;
     ConfigWindowsResizeFromEdges = true;
     ConfigWindowsMoveFromTitleBarOnly = false;
     ConfigMemoryCompactTimer = 60.0f;
@@ -2639,13 +2643,11 @@ ImGuiListClipper::~ImGuiListClipper()
     End();
 }
 
-// Use case A: Begin() called from constructor with items_height<0, then called again from Step() in StepNo 1
-// Use case B: Begin() called from constructor with items_height>0
-// FIXME-LEGACY: Ideally we should remove the Begin/End functions but they are part of the legacy API we still support. This is why some of the code in Step() calling Begin() and reassign some fields, spaghetti style.
 void ImGuiListClipper::Begin(int items_count, float items_height)
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
+    IMGUI_DEBUG_LOG_CLIPPER("Clipper: Begin(%d,%.2f) in '%s'\n", items_count, items_height, window->Name);
 
     if (ImGuiTable* table = g.CurrentTable)
         if (table->IsInsideRow)
@@ -2672,6 +2674,7 @@ void ImGuiListClipper::End()
     if (ImGuiListClipperData* data = (ImGuiListClipperData*)TempData)
     {
         // In theory here we should assert that we are already at the right position, but it seems saner to just seek at the end and not assert/crash the user.
+        IMGUI_DEBUG_LOG_CLIPPER("Clipper: End() in '%s'\n", g.CurrentWindow->Name);
         if (ItemsCount >= 0 && ItemsCount < INT_MAX && DisplayStart >= 0)
             ImGuiListClipper_SeekCursorForItem(this, ItemsCount);
 
@@ -2697,11 +2700,11 @@ void ImGuiListClipper::ForceDisplayRangeByIndices(int item_min, int item_max)
         data->Ranges.push_back(ImGuiListClipperRange::FromIndices(item_min, item_max));
 }
 
-bool ImGuiListClipper::Step()
+static bool ImGuiListClipper_StepInternal(ImGuiListClipper* clipper)
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
-    ImGuiListClipperData* data = (ImGuiListClipperData*)TempData;
+    ImGuiListClipperData* data = (ImGuiListClipperData*)clipper->TempData;
     IM_ASSERT(data != NULL && "Called ImGuiListClipper::Step() too many times, or before ImGuiListClipper::Begin() ?");
 
     ImGuiTable* table = g.CurrentTable;
@@ -2709,18 +2712,17 @@ bool ImGuiListClipper::Step()
         ImGui::TableEndRow(table);
 
     // No items
-    if (ItemsCount == 0 || GetSkipItemForListClipping())
-        return (void)End(), false;
+    if (clipper->ItemsCount == 0 || GetSkipItemForListClipping())
+        return false;
 
     // While we are in frozen row state, keep displaying items one by one, unclipped
     // FIXME: Could be stored as a table-agnostic state.
     if (data->StepNo == 0 && table != NULL && !table->IsUnfrozenRows)
     {
-        DisplayStart = data->ItemsFrozen;
-        DisplayEnd = data->ItemsFrozen + 1;
-        if (DisplayStart >= ItemsCount)
-            return (void)End(), false;
-        data->ItemsFrozen++;
+        clipper->DisplayStart = data->ItemsFrozen;
+        clipper->DisplayEnd = ImMin(data->ItemsFrozen + 1, clipper->ItemsCount);
+        if (clipper->DisplayStart < clipper->DisplayEnd)
+            data->ItemsFrozen++;
         return true;
     }
 
@@ -2728,15 +2730,13 @@ bool ImGuiListClipper::Step()
     bool calc_clipping = false;
     if (data->StepNo == 0)
     {
-        StartPosY = window->DC.CursorPos.y;
-        if (ItemsHeight <= 0.0f)
+        clipper->StartPosY = window->DC.CursorPos.y;
+        if (clipper->ItemsHeight <= 0.0f)
         {
             // Submit the first item (or range) so we can measure its height (generally the first range is 0..1)
             data->Ranges.push_front(ImGuiListClipperRange::FromIndices(data->ItemsFrozen, data->ItemsFrozen + 1));
-            DisplayStart = ImMax(data->Ranges[0].Min, data->ItemsFrozen);
-            DisplayEnd = ImMin(data->Ranges[0].Max, ItemsCount);
-            if (DisplayStart == DisplayEnd)
-                return (void)End(), false;
+            clipper->DisplayStart = ImMax(data->Ranges[0].Min, data->ItemsFrozen);
+            clipper->DisplayEnd = ImMin(data->Ranges[0].Max, clipper->ItemsCount);
             data->StepNo = 1;
             return true;
         }
@@ -2744,29 +2744,29 @@ bool ImGuiListClipper::Step()
     }
 
     // Step 1: Let the clipper infer height from first range
-    if (ItemsHeight <= 0.0f)
+    if (clipper->ItemsHeight <= 0.0f)
     {
         IM_ASSERT(data->StepNo == 1);
         if (table)
-            IM_ASSERT(table->RowPosY1 == StartPosY && table->RowPosY2 == window->DC.CursorPos.y);
+            IM_ASSERT(table->RowPosY1 == clipper->StartPosY && table->RowPosY2 == window->DC.CursorPos.y);
 
-        ItemsHeight = (window->DC.CursorPos.y - StartPosY) / (float)(DisplayEnd - DisplayStart);
-        bool affected_by_floating_point_precision = ImIsFloatAboveGuaranteedIntegerPrecision(StartPosY) || ImIsFloatAboveGuaranteedIntegerPrecision(window->DC.CursorPos.y);
+        clipper->ItemsHeight = (window->DC.CursorPos.y - clipper->StartPosY) / (float)(clipper->DisplayEnd - clipper->DisplayStart);
+        bool affected_by_floating_point_precision = ImIsFloatAboveGuaranteedIntegerPrecision(clipper->StartPosY) || ImIsFloatAboveGuaranteedIntegerPrecision(window->DC.CursorPos.y);
         if (affected_by_floating_point_precision)
-            ItemsHeight = window->DC.PrevLineSize.y + g.Style.ItemSpacing.y; // FIXME: Technically wouldn't allow multi-line entries.
+            clipper->ItemsHeight = window->DC.PrevLineSize.y + g.Style.ItemSpacing.y; // FIXME: Technically wouldn't allow multi-line entries.
 
-        IM_ASSERT(ItemsHeight > 0.0f && "Unable to calculate item height! First item hasn't moved the cursor vertically!");
+        IM_ASSERT(clipper->ItemsHeight > 0.0f && "Unable to calculate item height! First item hasn't moved the cursor vertically!");
         calc_clipping = true;   // If item height had to be calculated, calculate clipping afterwards.
     }
 
     // Step 0 or 1: Calculate the actual ranges of visible elements.
-    const int already_submitted = DisplayEnd;
+    const int already_submitted = clipper->DisplayEnd;
     if (calc_clipping)
     {
         if (g.LogEnabled)
         {
             // If logging is active, do not perform any clipping
-            data->Ranges.push_back(ImGuiListClipperRange::FromIndices(0, ItemsCount));
+            data->Ranges.push_back(ImGuiListClipperRange::FromIndices(0, clipper->ItemsCount));
         }
         else
         {
@@ -2775,7 +2775,7 @@ bool ImGuiListClipper::Step()
             if (is_nav_request)
                 data->Ranges.push_back(ImGuiListClipperRange::FromPositions(g.NavScoringNoClipRect.Min.y, g.NavScoringNoClipRect.Max.y, 0, 0));
             if (is_nav_request && (g.NavMoveFlags & ImGuiNavMoveFlags_Tabbing) && g.NavTabbingDir == -1)
-                data->Ranges.push_back(ImGuiListClipperRange::FromIndices(ItemsCount - 1, ItemsCount));
+                data->Ranges.push_back(ImGuiListClipperRange::FromIndices(clipper->ItemsCount - 1, clipper->ItemsCount));
 
             // Add focused/active item
             ImRect nav_rect_abs = ImGui::WindowRectRelToAbs(window, window->NavRectRel[0]);
@@ -2795,10 +2795,10 @@ bool ImGuiListClipper::Step()
         for (int i = 0; i < data->Ranges.Size; i++)
             if (data->Ranges[i].PosToIndexConvert)
             {
-                int m1 = (int)(((double)data->Ranges[i].Min - window->DC.CursorPos.y - data->LossynessOffset) / ItemsHeight);
-                int m2 = (int)((((double)data->Ranges[i].Max - window->DC.CursorPos.y - data->LossynessOffset) / ItemsHeight) + 0.999999f);
-                data->Ranges[i].Min = ImClamp(already_submitted + m1 + data->Ranges[i].PosToIndexOffsetMin, already_submitted, ItemsCount - 1);
-                data->Ranges[i].Max = ImClamp(already_submitted + m2 + data->Ranges[i].PosToIndexOffsetMax, data->Ranges[i].Min + 1, ItemsCount);
+                int m1 = (int)(((double)data->Ranges[i].Min - window->DC.CursorPos.y - data->LossynessOffset) / clipper->ItemsHeight);
+                int m2 = (int)((((double)data->Ranges[i].Max - window->DC.CursorPos.y - data->LossynessOffset) / clipper->ItemsHeight) + 0.999999f);
+                data->Ranges[i].Min = ImClamp(already_submitted + m1 + data->Ranges[i].PosToIndexOffsetMin, already_submitted, clipper->ItemsCount - 1);
+                data->Ranges[i].Max = ImClamp(already_submitted + m2 + data->Ranges[i].PosToIndexOffsetMax, data->Ranges[i].Min + 1, clipper->ItemsCount);
                 data->Ranges[i].PosToIndexConvert = false;
             }
         ImGuiListClipper_SortAndFuseRanges(data->Ranges, data->StepNo);
@@ -2807,21 +2807,40 @@ bool ImGuiListClipper::Step()
     // Step 0+ (if item height is given in advance) or 1+: Display the next range in line.
     if (data->StepNo < data->Ranges.Size)
     {
-        DisplayStart = ImMax(data->Ranges[data->StepNo].Min, already_submitted);
-        DisplayEnd = ImMin(data->Ranges[data->StepNo].Max, ItemsCount);
-        if (DisplayStart > already_submitted) //-V1051
-            ImGuiListClipper_SeekCursorForItem(this, DisplayStart);
+        clipper->DisplayStart = ImMax(data->Ranges[data->StepNo].Min, already_submitted);
+        clipper->DisplayEnd = ImMin(data->Ranges[data->StepNo].Max, clipper->ItemsCount);
+        if (clipper->DisplayStart > already_submitted) //-V1051
+            ImGuiListClipper_SeekCursorForItem(clipper, clipper->DisplayStart);
         data->StepNo++;
         return true;
     }
 
     // After the last step: Let the clipper validate that we have reached the expected Y position (corresponding to element DisplayEnd),
     // Advance the cursor to the end of the list and then returns 'false' to end the loop.
-    if (ItemsCount < INT_MAX)
-        ImGuiListClipper_SeekCursorForItem(this, ItemsCount);
+    if (clipper->ItemsCount < INT_MAX)
+        ImGuiListClipper_SeekCursorForItem(clipper, clipper->ItemsCount);
 
-    End();
     return false;
+}
+
+bool ImGuiListClipper::Step()
+{
+    ImGuiContext& g = *GImGui;
+    bool need_items_height = (ItemsHeight <= 0.0f);
+    bool ret = ImGuiListClipper_StepInternal(this);
+    if (ret && (DisplayStart == DisplayEnd))
+        ret = false;
+    if (g.CurrentTable && g.CurrentTable->IsUnfrozenRows == false)
+        IMGUI_DEBUG_LOG_CLIPPER("Clipper: Step(): inside frozen table row.\n");
+    if (need_items_height && ItemsHeight > 0.0f)
+        IMGUI_DEBUG_LOG_CLIPPER("Clipper: Step(): computed ItemsHeight: %.2f.\n", ItemsHeight);
+    if (ret)
+        IMGUI_DEBUG_LOG_CLIPPER("Clipper: Step(): display %d to %d.\n", DisplayStart, DisplayEnd);
+    else
+        IMGUI_DEBUG_LOG_CLIPPER("Clipper: Step(): End.\n");
+    if (!ret)
+        End();
+    return ret;
 }
 
 //-----------------------------------------------------------------------------
@@ -2890,6 +2909,11 @@ void ImGui::PushStyleColor(ImGuiCol idx, const ImVec4& col)
 void ImGui::PopStyleColor(int count)
 {
     ImGuiContext& g = *GImGui;
+    if (g.ColorStack.Size < count)
+    {
+        IM_ASSERT_USER_ERROR(g.ColorStack.Size > count, "Calling PopStyleColor() too many times: stack underflow.");
+        count = g.ColorStack.Size;
+    }
     while (count > 0)
     {
         ImGuiColorMod& backup = g.ColorStack.back();
@@ -2979,6 +3003,11 @@ void ImGui::PushStyleVar(ImGuiStyleVar idx, const ImVec2& val)
 void ImGui::PopStyleVar(int count)
 {
     ImGuiContext& g = *GImGui;
+    if (g.StyleVarStack.Size < count)
+    {
+        IM_ASSERT_USER_ERROR(g.StyleVarStack.Size > count, "Calling PopStyleVar() too many times: stack underflow.");
+        count = g.StyleVarStack.Size;
+    }
     while (count > 0)
     {
         // We avoid a generic memcpy(data, &backup.Backup.., GDataTypeSize[info->Type] * info->Count), the overhead in Debug is not worth it.
@@ -3624,6 +3653,24 @@ bool ImGui::IsItemHovered(ImGuiHoveredFlags flags)
         // will never be overwritten so we need to detect the case.
         if (g.LastItemData.ID == window->MoveId && window->WriteAccessed)
             return false;
+    }
+
+    // Handle hover delay
+    // (some ideas: https://www.nngroup.com/articles/timing-exposing-content)
+    float delay;
+    if (flags & ImGuiHoveredFlags_DelayNormal)
+        delay = g.IO.HoverDelayNormal;
+    else if (flags & ImGuiHoveredFlags_DelayShort)
+        delay = g.IO.HoverDelayShort;
+    else
+        delay = 0.0f;
+    if (delay > 0.0f)
+    {
+        ImGuiID hover_delay_id = (g.LastItemData.ID != 0) ? g.LastItemData.ID : window->GetIDFromRectangle(g.LastItemData.Rect);
+        if ((flags & ImGuiHoveredFlags_NoSharedDelay) && (g.HoverDelayIdPreviousFrame != hover_delay_id))
+            g.HoverDelayTimer = 0.0f;
+        g.HoverDelayId = hover_delay_id;
+        return g.HoverDelayTimer >= delay;
     }
 
     return true;
@@ -4613,6 +4660,23 @@ void ImGui::NewFrame()
             IM_ASSERT(0); // Other values unsupported
     }
 #endif
+
+    // Update hover delay for IsItemHovered() with delays and tooltips
+    g.HoverDelayIdPreviousFrame = g.HoverDelayId;
+    if (g.HoverDelayId != 0)
+    {
+        //if (g.IO.MouseDelta.x == 0.0f && g.IO.MouseDelta.y == 0.0f) // Need design/flags
+        g.HoverDelayTimer += g.IO.DeltaTime;
+        g.HoverDelayClearTimer = 0.0f;
+        g.HoverDelayId = 0;
+    }
+    else if (g.HoverDelayTimer > 0.0f)
+    {
+        // This gives a little bit of leeway before clearing the hover timer, allowing mouse to cross gaps
+        g.HoverDelayClearTimer += g.IO.DeltaTime;
+        if (g.HoverDelayClearTimer >= ImMax(0.20f, g.IO.DeltaTime * 2.0f)) // ~6 frames at 30 Hz + allow for low framerate
+            g.HoverDelayTimer = g.HoverDelayClearTimer = 0.0f; // May want a decaying timer, in which case need to clamp at max first, based on max of caller last requested timer.
+    }
 
     // Drag and drop
     g.DragDropAcceptIdPrev = g.DragDropAcceptIdCurr;
@@ -6900,7 +6964,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         if (g.TestEngineHookItems)
         {
             IM_ASSERT(window->IDStack.Size == 1);
-            window->IDStack.Size = 0;
+            window->IDStack.Size = 0; // As window->IDStack[0] == window->ID here, make sure TestEngine doesn't erroneously see window as parent of itself.
             IMGUI_TEST_ENGINE_ITEM_ADD(window->Rect(), window->ID);
             IMGUI_TEST_ENGINE_ITEM_INFO(window->ID, window->Name, (g.HoveredWindow == window) ? ImGuiItemStatusFlags_HoveredRect : 0);
             window->IDStack.Size = 1;
@@ -8361,6 +8425,8 @@ int ImGui::GetKeyPressedAmount(ImGuiKey key, float repeat_delay, float repeat_ra
 {
     ImGuiContext& g = *GImGui;
     const ImGuiKeyData* key_data = GetKeyData(key);
+    if (!key_data->Down) // In theory this should already be encoded as (DownDuration < 0.0f), but testing this facilitate eating mechanism (until we finish work on input ownership)
+        return 0;
     const float t = key_data->DownDuration;
     return CalcTypematicRepeatAmount(t - g.IO.DeltaTime, t, repeat_delay, repeat_rate);
 }
@@ -8393,6 +8459,8 @@ bool ImGui::IsKeyPressed(ImGuiKey key, bool repeat)
 bool ImGui::IsKeyPressedEx(ImGuiKey key, ImGuiInputFlags flags)
 {
     const ImGuiKeyData* key_data = GetKeyData(key);
+    if (!key_data->Down) // In theory this should already be encoded as (DownDuration < 0.0f), but testing this facilitate eating mechanism (until we finish work on input ownership)
+        return false;
     const float t = key_data->DownDuration;
     if (t < 0.0f)
         return false;
@@ -8429,6 +8497,8 @@ bool ImGui::IsMouseClicked(ImGuiMouseButton button, bool repeat)
 {
     ImGuiContext& g = *GImGui;
     IM_ASSERT(button >= 0 && button < IM_ARRAYSIZE(g.IO.MouseDown));
+    if (!g.IO.MouseDown[button]) // In theory this should already be encoded as (DownDuration < 0.0f), but testing this facilitate eating mechanism (until we finish work on input ownership)
+        return false;
     const float t = g.IO.MouseDownDuration[button];
     if (t == 0.0f)
         return true;
@@ -8569,17 +8639,17 @@ static const char* GetInputSourceName(ImGuiInputSource source)
     IM_ASSERT(IM_ARRAYSIZE(input_source_names) == ImGuiInputSource_COUNT && source >= 0 && source < ImGuiInputSource_COUNT);
     return input_source_names[source];
 }
-#endif
-
-/*static void DebugPrintInputEvent(const char* prefix, const ImGuiInputEvent* e)
+static void DebugPrintInputEvent(const char* prefix, const ImGuiInputEvent* e)
 {
-    if (e->Type == ImGuiInputEventType_MousePos)    { IMGUI_DEBUG_LOG_IO("%s: MousePos (%.1f %.1f)\n", prefix, e->MousePos.PosX, e->MousePos.PosY); return; }
+    ImGuiContext& g = *GImGui;
+    if (e->Type == ImGuiInputEventType_MousePos)    { IMGUI_DEBUG_LOG_IO("%s: MousePos (%.1f, %.1f)\n", prefix, e->MousePos.PosX, e->MousePos.PosY); return; }
     if (e->Type == ImGuiInputEventType_MouseButton) { IMGUI_DEBUG_LOG_IO("%s: MouseButton %d %s\n", prefix, e->MouseButton.Button, e->MouseButton.Down ? "Down" : "Up"); return; }
-    if (e->Type == ImGuiInputEventType_MouseWheel)  { IMGUI_DEBUG_LOG_IO("%s: MouseWheel (%.1f %.1f)\n", prefix, e->MouseWheel.WheelX, e->MouseWheel.WheelY); return; }
+    if (e->Type == ImGuiInputEventType_MouseWheel)  { IMGUI_DEBUG_LOG_IO("%s: MouseWheel (%.1f, %.1f)\n", prefix, e->MouseWheel.WheelX, e->MouseWheel.WheelY); return; }
     if (e->Type == ImGuiInputEventType_Key)         { IMGUI_DEBUG_LOG_IO("%s: Key \"%s\" %s\n", prefix, ImGui::GetKeyName(e->Key.Key), e->Key.Down ? "Down" : "Up"); return; }
     if (e->Type == ImGuiInputEventType_Text)        { IMGUI_DEBUG_LOG_IO("%s: Text: %c (U+%08X)\n", prefix, e->Text.Char, e->Text.Char); return; }
     if (e->Type == ImGuiInputEventType_Focus)       { IMGUI_DEBUG_LOG_IO("%s: AppFocused %d\n", prefix, e->AppFocused.Focused); return; }
-}*/
+}
+#endif
 
 // Process input queue
 // We always call this with the value of 'bool g.IO.ConfigInputTrickleEventQueue'.
@@ -8602,13 +8672,14 @@ void ImGui::UpdateInputEvents(bool trickle_fast_inputs)
     int event_n = 0;
     for (; event_n < g.InputEventsQueue.Size; event_n++)
     {
-        const ImGuiInputEvent* e = &g.InputEventsQueue[event_n];
+        ImGuiInputEvent* e = &g.InputEventsQueue[event_n];
         if (e->Type == ImGuiInputEventType_MousePos)
         {
             ImVec2 event_pos(e->MousePos.PosX, e->MousePos.PosY);
             if (IsMousePosValid(&event_pos))
                 event_pos = ImVec2(ImFloorSigned(event_pos.x), ImFloorSigned(event_pos.y)); // Apply same flooring as UpdateMouseInputs()
-            if (io.MousePos.x != event_pos.x || io.MousePos.y != event_pos.y)
+            e->IgnoredAsSame = (io.MousePos.x == event_pos.x && io.MousePos.y == event_pos.y);
+            if (!e->IgnoredAsSame)
             {
                 // Trickling Rule: Stop processing queued events if we already handled a mouse button change
                 if (trickle_fast_inputs && (mouse_button_changed != 0 || mouse_wheeled || key_changed || text_inputted))
@@ -8621,7 +8692,8 @@ void ImGui::UpdateInputEvents(bool trickle_fast_inputs)
         {
             const ImGuiMouseButton button = e->MouseButton.Button;
             IM_ASSERT(button >= 0 && button < ImGuiMouseButton_COUNT);
-            if (io.MouseDown[button] != e->MouseButton.Down)
+            e->IgnoredAsSame = (io.MouseDown[button] == e->MouseButton.Down);
+            if (!e->IgnoredAsSame)
             {
                 // Trickling Rule: Stop processing queued events if we got multiple action on the same button
                 if (trickle_fast_inputs && ((mouse_button_changed & (1 << button)) || mouse_wheeled))
@@ -8632,7 +8704,8 @@ void ImGui::UpdateInputEvents(bool trickle_fast_inputs)
         }
         else if (e->Type == ImGuiInputEventType_MouseWheel)
         {
-            if (e->MouseWheel.WheelX != 0.0f || e->MouseWheel.WheelY != 0.0f)
+            e->IgnoredAsSame = (e->MouseWheel.WheelX == 0.0f && e->MouseWheel.WheelY == 0.0f);
+            if (!e->IgnoredAsSame)
             {
                 // Trickling Rule: Stop processing queued events if we got multiple action on the event
                 if (trickle_fast_inputs && (mouse_moved || mouse_button_changed != 0))
@@ -8652,7 +8725,8 @@ void ImGui::UpdateInputEvents(bool trickle_fast_inputs)
             IM_ASSERT(key != ImGuiKey_None);
             const int keydata_index = (key - ImGuiKey_KeysData_OFFSET);
             ImGuiKeyData* keydata = &io.KeysData[keydata_index];
-            if (keydata->Down != e->Key.Down || keydata->AnalogValue != e->Key.AnalogValue)
+            e->IgnoredAsSame = (keydata->Down == e->Key.Down && keydata->AnalogValue == e->Key.AnalogValue);
+            if (!e->IgnoredAsSame)
             {
                 // Trickling Rule: Stop processing queued events if we got multiple action on the same button
                 if (trickle_fast_inputs && keydata->Down != e->Key.Down && (key_changed_mask.TestBit(keydata_index) || text_inputted || mouse_button_changed != 0))
@@ -8693,7 +8767,10 @@ void ImGui::UpdateInputEvents(bool trickle_fast_inputs)
         {
             // We intentionally overwrite this and process lower, in order to give a chance
             // to multi-viewports backends to queue AddFocusEvent(false) + AddFocusEvent(true) in same frame.
-            io.AppFocusLost = !e->AppFocused.Focused;
+            const bool focus_lost = !e->AppFocused.Focused;
+            e->IgnoredAsSame = (io.AppFocusLost == focus_lost);
+            if (!e->IgnoredAsSame)
+                io.AppFocusLost = focus_lost;
         }
         else
         {
@@ -8707,9 +8784,11 @@ void ImGui::UpdateInputEvents(bool trickle_fast_inputs)
         g.InputEventsTrail.push_back(g.InputEventsQueue[n]);
 
     // [DEBUG]
-    /*if (event_n != 0)
+#ifndef IMGUI_DISABLE_DEBUG_TOOLS
+    if (event_n != 0 && (g.DebugLogFlags & ImGuiDebugLogFlags_EventIO))
         for (int n = 0; n < g.InputEventsQueue.Size; n++)
-            DebugPrintInputEvent(n < event_n ? "Processed" : "Remaining", &g.InputEventsQueue[n]);*/
+            DebugPrintInputEvent(n < event_n ? (g.InputEventsQueue[n].IgnoredAsSame ? "Processed (Same)" : "Processed") : "Remaining", &g.InputEventsQueue[n]);
+#endif
 
     // Remaining events will be processed on the next frame
     if (event_n == g.InputEventsQueue.Size)
@@ -9175,6 +9254,9 @@ ImVec2 ImGui::GetCursorScreenPos()
     return window->DC.CursorPos;
 }
 
+// 2022/08/05: Setting cursor position also extend boundaries (via modifying CursorMaxPos) used to compute window size, group size etc.
+// I believe this was is a judicious choice but it's probably being relied upon (it has been the case since 1.31 and 1.50)
+// It would be sane if we requested user to use SetCursorPos() + Dummy(ImVec2(0,0)) to extend CursorMaxPos...
 void ImGui::SetCursorScreenPos(const ImVec2& pos)
 {
     ImGuiWindow* window = GetCurrentWindow();
@@ -9896,7 +9978,7 @@ void ImGui::OpenPopupEx(ImGuiID id, ImGuiPopupFlags popup_flags)
     ImGuiPopupData popup_ref; // Tagged as new ref as Window will be set back to NULL if we write this into OpenPopupStack.
     popup_ref.PopupId = id;
     popup_ref.Window = NULL;
-    popup_ref.SourceWindow = g.NavWindow;
+    popup_ref.BackupNavWindow = g.NavWindow;            // When popup closes focus may be restored to NavWindow (depend on window type).
     popup_ref.OpenFrameCount = g.FrameCount;
     popup_ref.OpenParentId = parent_window->IDStack.back();
     popup_ref.OpenPopupPos = NavCalcPreferredRefPos();
@@ -9999,12 +10081,13 @@ void ImGui::ClosePopupToLevel(int remaining, bool restore_focus_to_window_under_
     IM_ASSERT(remaining >= 0 && remaining < g.OpenPopupStack.Size);
 
     // Trim open popup stack
-    ImGuiWindow* focus_window = g.OpenPopupStack[remaining].SourceWindow;
     ImGuiWindow* popup_window = g.OpenPopupStack[remaining].Window;
+    ImGuiWindow* popup_backup_nav_window = g.OpenPopupStack[remaining].BackupNavWindow;
     g.OpenPopupStack.resize(remaining);
 
     if (restore_focus_to_window_under_popup)
     {
+        ImGuiWindow* focus_window = (popup_window && popup_window->Flags & ImGuiWindowFlags_ChildMenu) ? popup_window->ParentWindow : popup_backup_nav_window;
         if (focus_window && !focus_window->WasActive && popup_window)
         {
             // Fallback
@@ -10934,10 +11017,6 @@ static void ImGui::NavUpdate()
         for (ImGuiKey key : nav_keyboard_keys_to_change_source)
             if (IsKeyDown(key))
                 g.NavInputSource = ImGuiInputSource_Keyboard;
-    if (!nav_gamepad_active && g.NavInputSource == ImGuiInputSource_Gamepad)
-        g.NavInputSource = ImGuiInputSource_None;
-    if (!nav_keyboard_active && g.NavInputSource == ImGuiInputSource_Keyboard)
-        g.NavInputSource = ImGuiInputSource_None;
 
     // Process navigation init request (select first/default focus)
     if (g.NavInitResultId != 0)
@@ -11587,7 +11666,7 @@ static void ImGui::NavUpdateWindowing()
     const bool nav_gamepad_active = (io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) != 0 && (io.BackendFlags & ImGuiBackendFlags_HasGamepad) != 0;
     const bool nav_keyboard_active = (io.ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) != 0;
     const bool start_windowing_with_gamepad = allow_windowing && nav_gamepad_active && !g.NavWindowingTarget && IsKeyPressed(ImGuiKey_NavGamepadMenu, false);
-    const bool start_windowing_with_keyboard = allow_windowing && nav_keyboard_active && !g.NavWindowingTarget && io.KeyCtrl && IsKeyPressed(ImGuiKey_Tab, false);
+    const bool start_windowing_with_keyboard = allow_windowing && !g.NavWindowingTarget && io.KeyCtrl && IsKeyPressed(ImGuiKey_Tab, false); // Note: enabled even without NavEnableKeyboard!
     if (start_windowing_with_gamepad || start_windowing_with_keyboard)
         if (ImGuiWindow* window = g.NavWindow ? g.NavWindow : FindWindowNavFocusable(g.WindowsFocusOrder.Size - 1, -INT_MAX, -1))
         {
@@ -13998,13 +14077,13 @@ void ImGui::DockContextNewFrameUpdateDocking(ImGuiContext* ctx)
     // [DEBUG] Store hovered dock node.
     // We could in theory use DockNodeTreeFindVisibleNodeByPos() on the root host dock node, but using ->DockNode is a good shortcut.
     // Note this is mostly a debug thing and isn't actually used for docking target, because docking involve more detailed filtering.
-    g.HoveredDockNode = NULL;
+    g.DebugHoveredDockNode = NULL;
     if (ImGuiWindow* hovered_window = g.HoveredWindowUnderMovingWindow)
     {
         if (hovered_window->DockNodeAsHost)
-            g.HoveredDockNode = DockNodeTreeFindVisibleNodeByPos(hovered_window->DockNodeAsHost, g.IO.MousePos);
+            g.DebugHoveredDockNode = DockNodeTreeFindVisibleNodeByPos(hovered_window->DockNodeAsHost, g.IO.MousePos);
         else if (hovered_window->RootWindow->DockNode)
-            g.HoveredDockNode = hovered_window->RootWindow->DockNode;
+            g.DebugHoveredDockNode = hovered_window->RootWindow->DockNode;
     }
 
     // Process Docking requests
@@ -17668,8 +17747,7 @@ static void SetPlatformImeDataFn_DefaultImpl(ImGuiViewport* viewport, ImGuiPlatf
     if (hwnd == 0)
         return;
 
-    ::ImmAssociateContextEx(hwnd, NULL, data->WantVisible ? IACE_DEFAULT : 0);
-
+    //::ImmAssociateContextEx(hwnd, NULL, data->WantVisible ? IACE_DEFAULT : 0);
     if (HIMC himc = ::ImmGetContext(hwnd))
     {
         COMPOSITIONFORM composition_form = {};
@@ -17818,7 +17896,7 @@ void ImGui::DebugTextEncoding(const char* str)
 static void MetricsHelpMarker(const char* desc)
 {
     ImGui::TextDisabled("(?)");
-    if (ImGui::IsItemHovered())
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort))
     {
         ImGui::BeginTooltip();
         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
@@ -18109,8 +18187,12 @@ void ImGui::ShowMetricsWindow(bool* p_open)
     {
         for (int i = 0; i < g.OpenPopupStack.Size; i++)
         {
-            ImGuiWindow* window = g.OpenPopupStack[i].Window;
-            BulletText("PopupID: %08x, Window: '%s'%s%s", g.OpenPopupStack[i].PopupId, window ? window->Name : "NULL", window && (window->Flags & ImGuiWindowFlags_ChildWindow) ? " ChildWindow" : "", window && (window->Flags & ImGuiWindowFlags_ChildMenu) ? " ChildMenu" : "");
+            // As it's difficult to interact with tree nodes while popups are open, we display everything inline.
+            const ImGuiPopupData* popup_data = &g.OpenPopupStack[i];
+            ImGuiWindow* window = popup_data->Window;
+            BulletText("PopupID: %08x, Window: '%s' (%s%s), BackupNavWindow '%s', ParentWindow '%s'",
+                popup_data->PopupId, window ? window->Name : "NULL", window && (window->Flags & ImGuiWindowFlags_ChildWindow) ? "Child;" : "", window && (window->Flags & ImGuiWindowFlags_ChildMenu) ? "Menu;" : "",
+                popup_data->BackupNavWindow ? popup_data->BackupNavWindow->Name : "NULL", window && window->ParentWindow ? window->ParentWindow->Name : "NULL");
         }
         TreePop();
     }
@@ -18250,7 +18332,7 @@ void ImGui::ShowMetricsWindow(bool* p_open)
         Text("HoveredWindow: '%s'", g.HoveredWindow ? g.HoveredWindow->Name : "NULL");
         Text("HoveredWindow->Root: '%s'", g.HoveredWindow ? g.HoveredWindow->RootWindowDockTree->Name : "NULL");
         Text("HoveredWindowUnderMovingWindow: '%s'", g.HoveredWindowUnderMovingWindow ? g.HoveredWindowUnderMovingWindow->Name : "NULL");
-        Text("HoveredDockNode: 0x%08X", g.HoveredDockNode ? g.HoveredDockNode->ID : 0);
+        Text("HoveredDockNode: 0x%08X", g.DebugHoveredDockNode ? g.DebugHoveredDockNode->ID : 0);
         Text("MovingWindow: '%s'", g.MovingWindow ? g.MovingWindow->Name : "NULL");
         Text("MouseViewport: 0x%08X (UserHovered 0x%08X, LastHovered 0x%08X)", g.MouseViewport->ID, g.IO.MouseHoveredViewport, g.MouseLastHoveredViewport ? g.MouseLastHoveredViewport->ID : 0);
         Unindent();
@@ -18265,6 +18347,7 @@ void ImGui::ShowMetricsWindow(bool* p_open)
             active_id_using_key_input_count += g.ActiveIdUsingKeyInputMask[n] ? 1 : 0;
         Text("ActiveIdUsing: NavDirMask: %X, KeyInputMask: %d key(s)", g.ActiveIdUsingNavDirMask, active_id_using_key_input_count);
         Text("HoveredId: 0x%08X (%.2f sec), AllowOverlap: %d", g.HoveredIdPreviousFrame, g.HoveredIdTimer, g.HoveredIdAllowOverlap); // Not displaying g.HoveredId as it is update mid-frame
+        Text("HoverDelayId: 0x%08X, Timer: %.2f, ClearTimer: %.2f", g.HoverDelayId, g.HoverDelayTimer, g.HoverDelayClearTimer);
         Text("DragDrop: %d, SourceId = 0x%08X, Payload \"%s\" (%d bytes)", g.DragDropActive, g.DragDropPayload.SourceId, g.DragDropPayload.DataType, g.DragDropPayload.DataSize);
         Unindent();
 
@@ -18338,11 +18421,11 @@ void ImGui::ShowMetricsWindow(bool* p_open)
 
 #ifdef IMGUI_HAS_DOCK
     // Overlay: Display Docking info
-    if (cfg->ShowDockingNodes && g.IO.KeyCtrl && g.HoveredDockNode)
+    if (cfg->ShowDockingNodes && g.IO.KeyCtrl && g.DebugHoveredDockNode)
     {
         char buf[64] = "";
         char* p = buf;
-        ImGuiDockNode* node = g.HoveredDockNode;
+        ImGuiDockNode* node = g.DebugHoveredDockNode;
         ImDrawList* overlay_draw_list = node->HostWindow ? GetForegroundDrawList(node->HostWindow) : GetForegroundDrawList(GetMainViewport());
         p += ImFormatString(p, buf + IM_ARRAYSIZE(buf) - p, "DockId: %X%s\n", node->ID, node->IsCentralNode() ? " *CentralNode*" : "");
         p += ImFormatString(p, buf + IM_ARRAYSIZE(buf) - p, "WindowClass: %08X\n", node->WindowClass.ClassId);
@@ -18915,6 +18998,8 @@ void ImGui::ShowDebugLogWindow(bool* p_open)
     SameLine(); CheckboxFlags("Focus", &g.DebugLogFlags, ImGuiDebugLogFlags_EventFocus);
     SameLine(); CheckboxFlags("Popup", &g.DebugLogFlags, ImGuiDebugLogFlags_EventPopup);
     SameLine(); CheckboxFlags("Nav", &g.DebugLogFlags, ImGuiDebugLogFlags_EventNav);
+    SameLine(); CheckboxFlags("Clipper", &g.DebugLogFlags, ImGuiDebugLogFlags_EventClipper);
+    SameLine(); CheckboxFlags("IO", &g.DebugLogFlags, ImGuiDebugLogFlags_EventIO);
     SameLine(); CheckboxFlags("Docking", &g.DebugLogFlags, ImGuiDebugLogFlags_EventDocking);
     SameLine(); CheckboxFlags("Viewport", &g.DebugLogFlags, ImGuiDebugLogFlags_EventViewport);
 
