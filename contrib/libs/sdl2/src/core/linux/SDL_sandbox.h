@@ -1,6 +1,7 @@
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 2022 Collabora Ltd.
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,26 +20,20 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#ifndef SDL_SANDBOX_H
+#define SDL_SANDBOX_H
 
-#ifndef SDL_cocoashape_h_
-#define SDL_cocoashape_h_
+typedef enum
+{
+    SDL_SANDBOX_NONE = 0,
+    SDL_SANDBOX_UNKNOWN_CONTAINER,
+    SDL_SANDBOX_FLATPAK,
+    SDL_SANDBOX_SNAP,
+} SDL_Sandbox;
 
-#include "SDL_stdinc.h"
-#include "SDL_video.h"
-#include "SDL_shape.h"
-#include "../SDL_shape_internals.h"
+/* Return the sandbox type currently in use, if any */
+SDL_Sandbox SDL_DetectSandbox(void);
 
-@interface SDL_ShapeData : NSObject
-    @property (nonatomic) NSGraphicsContext* context;
-    @property (nonatomic) SDL_bool saved;
-    @property (nonatomic) SDL_ShapeTree* shape;
-@end
-
-extern SDL_WindowShaper* Cocoa_CreateShaper(SDL_Window* window);
-extern int Cocoa_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode);
-extern int Cocoa_ResizeWindowShape(SDL_Window *window);
-
-#endif /* SDL_cocoashape_h_ */
+#endif /* SDL_SANDBOX_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

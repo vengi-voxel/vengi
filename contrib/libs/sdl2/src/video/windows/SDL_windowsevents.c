@@ -1169,7 +1169,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
 
             /* When the window is minimized it's resized to the dock icon size, ignore this */
-            if ((data->window->flags & SDL_WINDOW_MINIMIZED) != 0) {
+            if (IsIconic(hwnd)) {
                 break;
             }
 
@@ -1628,6 +1628,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 0;
         }
         break;
+
+    case WM_SETTINGCHANGE:
+        if (wParam == SPI_SETMOUSE || wParam == SPI_SETMOUSESPEED) {
+            WIN_UpdateMouseSystemScale();
+        }
+        break;
+
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
     }
 

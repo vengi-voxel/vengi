@@ -28,6 +28,7 @@
 #define USB_VENDOR_AMAZON       0x1949
 #define USB_VENDOR_APPLE        0x05ac
 #define USB_VENDOR_GOOGLE       0x18d1
+#define USB_VENDOR_HORI         0x0f0d
 #define USB_VENDOR_HYPERKIN     0x2e24
 #define USB_VENDOR_MICROSOFT    0x045e
 #define USB_VENDOR_NINTENDO     0x057e
@@ -44,6 +45,8 @@
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                  0x0419
 #define USB_PRODUCT_GOOGLE_STADIA_CONTROLLER                0x9400
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER               0x1846
+#define USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS4           0x011c
+#define USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS5           0x0184
 #define USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER               0x0337
 #define USB_PRODUCT_NINTENDO_N64_CONTROLLER                 0x2019
 #define USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER        0x201e
@@ -57,6 +60,7 @@
 #define USB_PRODUCT_RAZER_PANTHERA                          0x0401
 #define USB_PRODUCT_RAZER_PANTHERA_EVO                      0x1008
 #define USB_PRODUCT_RAZER_ATROX                             0x0a00
+#define USB_PRODUCT_SONY_DS3                                0x0268
 #define USB_PRODUCT_SONY_DS4                                0x05c4
 #define USB_PRODUCT_SONY_DS4_DONGLE                         0x0ba0
 #define USB_PRODUCT_SONY_DS4_SLIM                           0x09cc

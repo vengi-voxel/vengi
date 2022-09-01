@@ -1,6 +1,7 @@
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 2022 Collabora Ltd.
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,26 +20,31 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+
 #include "../../SDL_internal.h"
+#include "SDL_sandbox.h"
 
-#ifndef SDL_cocoashape_h_
-#define SDL_cocoashape_h_
+#include <unistd.h>
 
-#include "SDL_stdinc.h"
-#include "SDL_video.h"
-#include "SDL_shape.h"
-#include "../SDL_shape_internals.h"
+SDL_Sandbox SDL_DetectSandbox(void)
+{
+    if (access("/.flatpak-info", F_OK) == 0) {
+        return SDL_SANDBOX_FLATPAK;
+    }
 
-@interface SDL_ShapeData : NSObject
-    @property (nonatomic) NSGraphicsContext* context;
-    @property (nonatomic) SDL_bool saved;
-    @property (nonatomic) SDL_ShapeTree* shape;
-@end
+    /* For Snap, we check multiple variables because they might be set for
+     * unrelated reasons. This is the same thing WebKitGTK does. */
+    if (SDL_getenv("SNAP") != NULL
+        && SDL_getenv("SNAP_NAME") != NULL
+        && SDL_getenv("SNAP_REVISION") != NULL) {
+        return SDL_SANDBOX_SNAP;
+    }
 
-extern SDL_WindowShaper* Cocoa_CreateShaper(SDL_Window* window);
-extern int Cocoa_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode);
-extern int Cocoa_ResizeWindowShape(SDL_Window *window);
+    if (access("/run/host/container-runtime", F_OK) == 0) {
+        return SDL_SANDBOX_UNKNOWN_CONTAINER;
+    }
 
-#endif /* SDL_cocoashape_h_ */
+    return SDL_SANDBOX_NONE;
+}
 
 /* vi: set ts=4 sw=4 expandtab: */

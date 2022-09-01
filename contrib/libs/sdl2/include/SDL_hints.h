@@ -706,6 +706,20 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_SHIELD "SDL_JOYSTICK_HIDAPI_SHIELD"
 
 /**
+ *  \brief  A variable controlling whether the HIDAPI driver for PS3 controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI on macOS, and "0" on other platforms.
+ *
+ *  It is not possible to use this driver on Windows, due to limitations in the default drivers
+ *  installed. See https://github.com/ViGEm/DsHidMini for an alternative driver on Windows.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_PS3 "SDL_JOYSTICK_HIDAPI_PS3"
+
+/**
  *  \brief  A variable controlling whether the HIDAPI driver for PS4 controllers should be used.
  *
  *  This variable can be set to the following values:
@@ -850,6 +864,48 @@ extern "C" {
  *  The default is "0" on Windows, otherwise the value of SDL_HINT_JOYSTICK_HIDAPI
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_XBOX   "SDL_JOYSTICK_HIDAPI_XBOX"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for XBox 360 controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI_XBOX
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360   "SDL_JOYSTICK_HIDAPI_XBOX_360"
+
+/**
+ *  \brief  A variable controlling whether the player LEDs should be lit to indicate which player is associated with an Xbox 360 controller.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - player LEDs are not enabled
+ *    "1"       - player LEDs are enabled (the default)
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED "SDL_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for XBox 360 wireless controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI_XBOX_360
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS   "SDL_JOYSTICK_HIDAPI_XBOX_360_WIRELESS"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for XBox One should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI_XBOX
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE   "SDL_JOYSTICK_HIDAPI_XBOX_ONE"
 
 /**
   *  \brief  A variable controlling whether the RAWINPUT joystick drivers should be used for better handling XInput-capable devices.
@@ -1063,6 +1119,17 @@ extern "C" {
  *  \brief  A variable setting the scale for mouse motion, in floating point, when the mouse is in relative mode
  */
 #define SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE    "SDL_MOUSE_RELATIVE_SPEED_SCALE"
+
+/**
+ *  \brief  A variable controlling whether the system mouse acceleration curve is used for relative mouse motion.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Relative mouse motion will be unscaled (the default)
+ *    "1"       - Relative mouse motion will be scaled using the system mouse acceleration curve.
+ *
+ *    If SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE is set, that will override the system speed scale.
+ */
+#define SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE    "SDL_MOUSE_RELATIVE_SYSTEM_SCALE"
 
 /**
  *  \brief  A variable controlling whether a motion event should be generated for mouse warping in relative mode.
@@ -1337,6 +1404,17 @@ extern "C" {
  *  By default SDL does not sync screen surface updates with vertical refresh.
  */
 #define SDL_HINT_RENDER_VSYNC               "SDL_RENDER_VSYNC"
+
+/**
+ *  \brief  A variable controlling if VSYNC is automatically disable if doesn't reach the enough FPS
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - It will be using VSYNC as defined in the main flag. Default
+ *    "1"       - If VSYNC was previously enabled, then it will disable VSYNC if doesn't reach enough speed
+ *
+ *  By default SDL does not enable the automatic VSYNC
+ */
+#define SDL_HINT_PS2_DYNAMIC_VSYNC    "SDL_PS2_DYNAMIC_VSYNC"
 
 /**
  * \brief A variable to control whether the return key on the soft keyboard
