@@ -3,6 +3,8 @@
  */
 
 #include "AnimationTimeline.h"
+#include "IMGUIEx.h"
+#include "IconsFontAwesome5.h"
 #include "IconsForkAwesome.h"
 #include "core/ArrayLength.h"
 #include "core/collection/DynamicArray.h"
@@ -19,9 +21,24 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 	voxelformat::FrameIndex currentFrame = sceneMgr().currentFrame();
 	if (editMode == EditMode::Scene) {
 		const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+		uint32_t startFrame = 0;
+		uint32_t endFrame = 0;
+		for (voxelformat::SceneGraphNode &modelNode : sceneGraph) {
+			endFrame = core_max(modelNode.maxFrame(), endFrame);
+		}
+
+		if (_play) {
+			if (endFrame <= 0) {
+				_play = false;
+			} else {
+				// TODO: anim fps
+				currentFrame = (currentFrame + 1) % endFrame;
+				sceneMgr().setCurrentFrame(currentFrame);
+			}
+		}
 		ImGui::SetNextWindowDockID(dockIdMainDown, ImGuiCond_Appearing);
 		if (ImGui::Begin(sequencerTitle, nullptr, ImGuiWindowFlags_NoSavedSettings)) {
-			if (ImGui::Button(ICON_FA_PLUS_SQUARE " Add")) {
+			if (ImGui::DisabledButton(ICON_FA_PLUS_SQUARE " Add", _play)) {
 				sceneMgr().nodeForeachGroup([&](int nodeId) {
 					voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
 					if (!node.addKeyFrame(currentFrame)) {
@@ -35,7 +52,7 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 				});
 			}
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_MINUS_SQUARE " Remove")) {
+			if (ImGui::DisabledButton(ICON_FA_MINUS_SQUARE " Remove", _play)) {
 				sceneMgr().nodeForeachGroup([&](int nodeId) {
 					voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
 					if (!node.removeKeyFrame(currentFrame)) {
@@ -43,8 +60,24 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 					}
 				});
 			}
-			uint32_t startFrame = 0;
-			uint32_t endFrame = 64; // TODO:
+			ImGui::SameLine();
+
+			if (_play) {
+				if (ImGui::Button(ICON_FA_STOP)) {
+					_play = false;
+				}
+			} else {
+				if (ImGui::DisabledButton(ICON_FA_PLAY, endFrame <= 0)) {
+					_play = true;
+				}
+			}
+
+			if (endFrame < 10) {
+				endFrame = 64;
+			} else {
+				endFrame += endFrame / 10;
+			}
+
 			if (ImGui::BeginNeoSequencer("##neo-sequencer", &currentFrame, &startFrame, &endFrame)) {
 				for (voxelformat::SceneGraphNode &modelNode : sceneGraph) {
 					core::DynamicArray<voxelformat::FrameIndex *> keys;

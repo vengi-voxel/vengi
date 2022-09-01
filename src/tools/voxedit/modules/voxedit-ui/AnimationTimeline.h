@@ -10,6 +10,8 @@
 namespace voxedit {
 
 class AnimationTimeline {
+private:
+	bool _play = false;
 public:
 	void update(const char *sequencerTitle, ImGuiID dockIdMainDown);
 };
