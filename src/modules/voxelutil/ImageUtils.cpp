@@ -85,7 +85,7 @@ void importColoredHeightmap(voxel::RawVolumeWrapper& volume, voxel::PaletteLooku
 					voxel::Voxel voxel;
 					if (y < heightValue - 1) {
 						voxel = underground;
-					} else if (y == heightValue - 1) {
+					} else {
 						const uint8_t palidx = palLookup.findClosestIndex(core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
 						voxel = voxel::createVoxel(voxel::VoxelType::Generic, palidx);
 					}
