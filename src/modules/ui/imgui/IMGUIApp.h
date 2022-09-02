@@ -43,6 +43,7 @@ protected:
 	bool _showTexturesDialog = false;
 	bool _showFileDialog = false;
 	bool _persistUISettings = true;
+	bool _imguiBackendInitialized = false;
 
 	OpenFileMode _fileDialogMode = OpenFileMode::Directory;
 	std::function<void(const core::String&)> _fileDialogCallback {};

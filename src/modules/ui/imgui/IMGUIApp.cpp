@@ -322,7 +322,7 @@ app::AppState IMGUIApp::onInit() {
 		break;
 	}
 
-	ImGui_ImplSDL2_InitForOpenGL(_window, _rendererContext);
+	_imguiBackendInitialized = ImGui_ImplSDL2_InitForOpenGL(_window, _rendererContext);
 
 	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
 
@@ -549,7 +549,10 @@ void IMGUIApp::executeDrawCommands(ImDrawData* drawData) {
 }
 
 app::AppState IMGUIApp::onCleanup() {
-	ImGui_ImplSDL2_Shutdown();
+	if (_imguiBackendInitialized) {
+		ImGui_ImplSDL2_Shutdown();
+		_imguiBackendInitialized = false;
+	}
 	if (ImGui::GetCurrentContext() != nullptr) {
 		ImGui::DestroyPlatformWindows();
 		ImGui::DestroyContext();
