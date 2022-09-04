@@ -103,11 +103,11 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 
 	const glm::vec3 pivot = node.transform().pivot(); // save the pivot before we override the transform
 
-	for (int32_t i = 0u; i < keyFrameCount; ++i) {
-		SceneGraphKeyFrame &keyFrame = node.keyFrame(i);
-		uint32_t frame;
-		wrap(stream.readUInt32(frame))
-		keyFrame.frameIdx = frame;
+	for (int32_t keyFrameIdx = 0u; keyFrameIdx < keyFrameCount; ++keyFrameIdx) {
+		SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+		uint32_t frameIdx;
+		wrap(stream.readUInt32(frameIdx))
+		keyFrame.frameIdx = frameIdx;
 		int32_t interpolation;
 		wrap(stream.readInt32(interpolation))
 		if (interpolation < 0 || interpolation >= lengthof(vxa_priv::interpolationTypes)) {
@@ -120,43 +120,43 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 
 		SceneGraphTransform &transform = keyFrame.transform();
 
+		glm::vec3 worldTranslation;
+		glm::quat worldOrientation;
+		float worldScale;
 		glm::vec3 localTranslation;
 		glm::quat localOrientation;
-		glm::vec3 translation;
-		glm::quat orientation;
-		float scale;
 		float localScale;
 
-		wrap(stream.readFloat(translation.x))
-		wrap(stream.readFloat(translation.y))
-		wrap(stream.readFloat(translation.z))
+		wrap(stream.readFloat(worldTranslation.x))
+		wrap(stream.readFloat(worldTranslation.y))
+		wrap(stream.readFloat(worldTranslation.z))
 		wrap(stream.readFloat(localTranslation.x))
 		wrap(stream.readFloat(localTranslation.y))
 		wrap(stream.readFloat(localTranslation.z))
-		wrap(stream.readFloat(orientation.x))
-		wrap(stream.readFloat(orientation.y))
-		wrap(stream.readFloat(orientation.z))
-		wrap(stream.readFloat(orientation.w))
+		wrap(stream.readFloat(worldOrientation.x))
+		wrap(stream.readFloat(worldOrientation.y))
+		wrap(stream.readFloat(worldOrientation.z))
+		wrap(stream.readFloat(worldOrientation.w))
 		wrap(stream.readFloat(localOrientation.x))
 		wrap(stream.readFloat(localOrientation.y))
 		wrap(stream.readFloat(localOrientation.z))
 		wrap(stream.readFloat(localOrientation.w))
-		wrap(stream.readFloat(scale))
+		wrap(stream.readFloat(worldScale))
 		wrap(stream.readFloat(localScale))
 
-		transform.setWorldTranslation(translation);
-		transform.setWorldOrientation(orientation);
-		transform.setWorldScale(scale);
+		transform.setWorldTranslation(worldTranslation);
+		transform.setWorldOrientation(worldOrientation);
+		transform.setWorldScale(worldScale);
 		transform.setLocalTranslation(localTranslation);
 		transform.setLocalOrientation(localOrientation);
 		transform.setLocalScale(localScale);
-		transform.update(sceneGraph, node, (FrameIndex)frame);
+		transform.update(sceneGraph, node, keyFrame.frameIdx);
 		if (version == 1) {
 			// version 1 needs to correct its translation by the pivot translation
 			const glm::vec3 volumesize = node.region().getDimensionsInVoxels();
 			const glm::vec3 pivotTranslation = (pivot * 2.0f - 1.0f) * 0.5f * volumesize;
 			transform.setWorldTranslation(transform.worldTranslation() - pivotTranslation);
-			transform.update(sceneGraph, node, (FrameIndex)frame);
+			transform.update(sceneGraph, node, keyFrame.frameIdx);
 		}
 	}
 	int32_t children;
