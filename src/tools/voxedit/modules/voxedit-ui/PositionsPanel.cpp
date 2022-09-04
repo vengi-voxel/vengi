@@ -147,7 +147,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			voxelformat::SceneGraphKeyFrame &sceneGraphKeyFrame = node.keyFrame(keyFrame);
 			voxelformat::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
 			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform.matrix()), matrixTranslation, matrixRotation,
+			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform.worldMatrix()), matrixTranslation, matrixRotation,
 												  matrixScale);
 			bool change = false;
 			glm::vec3 pivot = transform.pivot();
@@ -179,9 +179,9 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				glm::mat4 matrix;
 				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale,
 														glm::value_ptr(matrix));
-				transform.setMatrix(matrix);
+				transform.setWorldMatrix(matrix);
 				transform.setPivot(glm::clamp(pivot, 0.0f, 1.0f));
-				transform.update();
+				transform.update(sceneGraph, node, frame);
 			}
 		}
 	}

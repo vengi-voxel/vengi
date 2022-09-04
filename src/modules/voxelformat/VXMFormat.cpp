@@ -529,7 +529,8 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		node.setPalette(palette);
 		node.setProperty("vxmversion", core::string::toString(version));
 		node.setProperty("filename", filename);
-		node.setTransform(0, transform, true);
+		transform.update(sceneGraph, node, 0);
+		node.setTransform(0, transform);
 		sceneGraph.emplace(core::move(node));
 	}
 

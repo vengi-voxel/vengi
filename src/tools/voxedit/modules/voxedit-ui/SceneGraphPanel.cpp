@@ -18,13 +18,13 @@ static core::String toString(const voxelformat::SceneGraphTransform &transform) 
 	core::String str;
 	const glm::vec3 &pivot = transform.pivot();
 	str.append(core::String::format("piv %.2ff:%.2ff:%.2ff\n", pivot.x, pivot.y, pivot.z));
-	const glm::vec3 &tr = transform.translation();
+	const glm::vec3 &tr = transform.worldTranslation();
 	str.append(core::String::format("trn %.2ff:%.2ff:%.2ff\n", tr.x, tr.y, tr.z));
-	const glm::quat &rt = transform.orientation();
+	const glm::quat &rt = transform.worldOrientation();
 	const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
 	str.append(core::String::format("ori %.2ff:%.2ff:%.2ff:%.2ff\n", rt.x, rt.y, rt.z, rt.w));
 	str.append(core::String::format("ang %.2ff:%.2ff:%.2ff\n", rtEuler.x, rtEuler.y, rtEuler.z));
-	const float sc = transform.scale();
+	const float sc = transform.worldScale();
 	str.append(core::String::format("sca %.2ff\n", sc));
 	return str;
 }
@@ -111,8 +111,8 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
 				video::Camera nodeCamera(camera);
 				const voxelformat::SceneGraphTransform& transform = node.transform();
-				nodeCamera.setOrientation(transform.orientation());
-				nodeCamera.setWorldPosition(transform.translation());
+				nodeCamera.setOrientation(transform.worldOrientation());
+				nodeCamera.setWorldPosition(transform.worldTranslation());
 				nodeCamera.setMode(video::CameraMode::Perspective);
 				nodeCamera.update(0.0f);
 				camera.lerp(nodeCamera);

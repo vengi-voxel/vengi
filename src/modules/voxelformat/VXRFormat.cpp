@@ -250,7 +250,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		//nodeFrame.transform.position.x *= -1.0f;
 		wrap(stream.readFloat(translation.y))
 		wrap(stream.readFloat(translation.z))
-		transform.setTranslation(translation);
+		transform.setWorldTranslation(translation);
 		if (version >= 3) {
 			glm::vec3 localTranslation{0.0f};
 			wrap(stream.readFloat(localTranslation.x))
@@ -265,7 +265,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			transform.setOrientation(glm::quat(glm::vec3(rotationx, rotationy, rotationz)));
+			transform.setWorldOrientation(glm::quat(glm::vec3(rotationx, rotationy, rotationz)));
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
@@ -276,7 +276,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			wrap(stream.readFloat(orientation.y))
 			wrap(stream.readFloat(orientation.z))
 			wrap(stream.readFloat(orientation.w))
-			transform.setOrientation(orientation);
+			transform.setWorldOrientation(orientation);
 			glm::quat localOrientation;
 			wrap(stream.readFloat(localOrientation.x))
 			wrap(stream.readFloat(localOrientation.y))
@@ -286,13 +286,13 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		}
 		float scale;
 		wrap(stream.readFloat(scale))
-		transform.setScale(scale);
+		transform.setWorldScale(scale);
 		if (version >= 3) {
 			float localScale;
 			wrap(stream.readFloat(localScale))
 			transform.setLocalScale(localScale);
 		}
-		transform.update();
+		transform.update(sceneGraph, node, keyFrame.frame);
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))
@@ -420,7 +420,8 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 		}
 	}
 	const uint8_t frameIdx = core::Var::getSafe(cfg::VoxformatFrame)->intVal();
-	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transformForFrame(frameIdx), frameIdx);
+	const KeyFrameIndex keyFrameIdx = rootNode.keyFrameForFrame(frameIdx);
+	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transform(keyFrameIdx), keyFrameIdx);
 
 	return true;
 }
@@ -513,7 +514,8 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	}
 
 	const uint8_t frameIdx = core::Var::getSafe(cfg::VoxformatFrame)->intVal();
-	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transformForFrame(frameIdx), frameIdx);
+	const KeyFrameIndex keyFrameIdx = rootNode.keyFrameForFrame(frameIdx);
+	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transform(keyFrameIdx), keyFrameIdx);
 
 	// some files since version 6 still have stuff here
 	return true;
@@ -535,17 +537,18 @@ bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {
 	return format.loadGroups(vxaPath, stream, sceneGraph);
 }
 
-void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGraphNode &node, const SceneGraphTransform parentTransform, uint8_t frameIdx) {
-	SceneGraphTransform currentTransform = node.transformForFrame(frameIdx);
-	currentTransform.setMatrix(parentTransform.matrix() * node.transformForFrame(frameIdx).matrix());
-	currentTransform.update();
+void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGraphNode &node, const SceneGraphTransform &parentTransform, KeyFrameIndex keyFrameIdx) {
+	SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+	SceneGraphTransform currentTransform = keyFrame.transform();
+	currentTransform.setWorldMatrix(parentTransform.worldMatrix() * node.transform(keyFrameIdx).worldMatrix());
+	currentTransform.updateFromWorldMatrix();
 
 	if (node.type() == SceneGraphNodeType::Model) {
-		node.setTransform(frameIdx, currentTransform, true);
+		node.setTransform(keyFrameIdx, currentTransform);
 	}
 
 	for (int nodeIdx : node.children()) {
-		recursiveTransformVolume(sceneGraph, sceneGraph.node(nodeIdx), currentTransform, frameIdx);
+		recursiveTransformVolume(sceneGraph, sceneGraph.node(nodeIdx), currentTransform, keyFrameIdx);
 	}
 }
 

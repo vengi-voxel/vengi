@@ -42,7 +42,7 @@ TEST_F(VoxFormatTest, testLoadCharacter) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
 		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
 		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), voxel::ValidateFlags::All, 0.01f);
-		EXPECT_EQ(v1.region().getLowerCornerf(), sceneGraph[i]->transform(0).translation());
+		EXPECT_EQ(v1.region().getLowerCornerf(), sceneGraph[i]->transform(0).worldTranslation());
 	}
 }
 
@@ -61,7 +61,7 @@ TEST_F(VoxFormatTest, testLoadGlasses) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
 		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
 		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), voxel::ValidateFlags::All, 0.011f);
-		EXPECT_EQ(v1.region().getLowerCornerf(), sceneGraph[i]->transform(0).translation());
+		EXPECT_EQ(v1.region().getLowerCornerf(), sceneGraph[i]->transform(0).worldTranslation());
 	}
 }
 
@@ -99,7 +99,7 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
 		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
 		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), voxel::ValidateFlags::All, 0.02f);
-		EXPECT_EQ(v1.region().getLowerCornerf(), sceneGraph[i]->transform(0).translation());
+		EXPECT_EQ(v1.region().getLowerCornerf(), sceneGraph[i]->transform(0).worldTranslation());
 	}
 }
 

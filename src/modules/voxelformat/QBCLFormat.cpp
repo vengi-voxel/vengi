@@ -285,7 +285,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	wrap(stream.readInt32(translation.x));
 	wrap(stream.readInt32(translation.y));
 	wrap(stream.readInt32(translation.z));
-	transform.setTranslation(translation);
+	transform.setWorldTranslation(translation);
 
 	glm::vec3 pivot;
 	wrap(stream.readFloat(pivot.x));
@@ -389,7 +389,8 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	} else {
 		node.setName(name);
 	}
-	node.setTransform(0, transform, true);
+	transform.update(sceneGraph, node, 0);
+	node.setTransform(0, transform);
 	const int id = sceneGraph.emplace(core::move(node), parent);
 	return id != -1;
 }

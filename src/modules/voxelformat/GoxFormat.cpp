@@ -277,8 +277,9 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 			for (int i = 0; i < 16; ++i) {
 				stream.readFloat(mat[i / 4][i % 4]);
 			}
-			transform.setMatrix(mat);
-			node.setTransform(0, transform, true);
+			transform.setWorldMatrix(mat);
+			transform.updateFromWorldMatrix();
+			node.setTransform(0, transform);
 		} else if (!strcmp(dictKey, "img-path") || !strcmp(dictKey, "id")) {
 			// "img-path" layer texture path
 			// "id" unique id
@@ -299,7 +300,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	voxel::RawVolume *mirrored = voxelutil::mirrorAxis(layerVolume, math::Axis::Z);
 	const glm::ivec3 mins = mirrored->region().getLowerCorner();
 	mirrored->translate(-mins);
-	node.transform(0).setTranslation(mins);
+	node.transform(0).setWorldTranslation(mins);
 	node.setVolume(mirrored, true);
 	node.setVisible(visible);
 	node.setPalette(palLookup.palette());
@@ -366,8 +367,9 @@ bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableRead
 			for (int i = 0; i < 16; ++i) {
 				stream.readFloat(mat[i / 4][i % 4]);
 			}
-			transform.setMatrix(mat);
-			node.setTransform(0, transform, true);
+			transform.setWorldMatrix(mat);
+			transform.updateFromWorldMatrix();
+			node.setTransform(0, transform);
 		}
 	}
 	sceneGraph.emplace(core::move(node));
@@ -461,7 +463,7 @@ bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream& stream, const SceneGraph
 		wrapBool(saveChunk_DictEntry(stream, "dist", &distance, sizeof(distance)))
 		const bool ortho = cam.isOrthographic();
 		wrapBool(saveChunk_DictEntry(stream, "ortho", &ortho, sizeof(ortho)))
-		const glm::mat4x4 &mat = cam.transformForFrame(0).matrix();
+		const glm::mat4x4 &mat = cam.transformForFrame(0).worldMatrix();
 		wrapBool(saveChunk_DictEntry(stream, "mat", &mat, sizeof(mat)))
 	}
 	return true;

@@ -546,11 +546,11 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 		const voxelformat::SceneGraphTransform &transform = kf.transform();
 		const glm::vec3 &pivot = transform.pivot();
 		Log::info("%*s      |- pivot %f:%f:%f", indent, " ", pivot.x, pivot.y, pivot.z);
-		const glm::vec3 &tr  = transform.translation();
+		const glm::vec3 &tr  = transform.worldTranslation();
 		Log::info("%*s      |- translation %f:%f:%f", indent, " ", tr.x, tr.y, tr.z);
 		const glm::vec3 &ltr = transform.localTranslation();
 		Log::info("%*s      |- local translation %f:%f:%f", indent, " ", ltr.x, ltr.y, ltr.z);
-		const glm::quat &rt = transform.orientation();
+		const glm::quat &rt = transform.worldOrientation();
 		const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
 		Log::info("%*s      |- orientation %f:%f:%f:%f", indent, " ", rt.x, rt.y, rt.z, rt.w);
 		Log::info("%*s        |- euler %f:%f:%f", indent, " ", rtEuler.x, rtEuler.y, rtEuler.z);
@@ -558,7 +558,7 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 		const glm::vec3 &lrtEuler = glm::degrees(glm::eulerAngles(lrt));
 		Log::info("%*s      |- local orientation %f:%f:%f:%f", indent, " ", lrt.x, lrt.y, lrt.z, lrt.w);
 		Log::info("%*s        |- euler %f:%f:%f", indent, " ", lrtEuler.x, lrtEuler.y, lrtEuler.z);
-		const float sc = transform.scale();
+		const float sc = transform.worldScale();
 		Log::info("%*s      |- scale %f", indent, " ", sc);
 		const float lsc = transform.localScale();
 		Log::info("%*s      |- local scale %f", indent, " ", lsc);

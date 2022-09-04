@@ -752,13 +752,13 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 		core_assert(node != nullptr);
 		voxel::Region region = node->region();
 		const voxelformat::SceneGraphTransform &transform = node->transform(_currentFrame);
-		region.shift(transform.translation());
+		region.shift(transform.worldTranslation());
 		if (mergedRegion.isValid()) {
 			mergedRegion.accumulate(region);
 		} else {
 			mergedRegion = region;
 		}
-		translations.push_back(transform.translation());
+		translations.push_back(transform.worldTranslation());
 		volumes.push_back(node->volume());
 	}
 
@@ -783,7 +783,7 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 		parent = firstNode->parent();
 		const size_t numKeyFrames = firstNode->keyFrames().size();
 		for (size_t i = 0; i < numKeyFrames; ++i) {
-			node.setTransform(i, firstNode->transform(i), false);
+			node.setTransform(i, firstNode->transform(i));
 		}
 	}
 	int newNodeId = addNodeToSceneGraph(node, parent);
@@ -909,8 +909,8 @@ math::OBB<float> SceneManager::toOBB(const voxel::Region& region, const voxelfor
 	core_assert(region.isValid());
 	if (_editMode == EditMode::Scene) {
 		const glm::vec3 &extents = glm::vec3(region.getDimensionsInVoxels()) / 2.0f;
-		const glm::vec3 &center = (region.getLowerCornerf() + transform.translation()) + extents;
-		const glm::mat4 &matrix = transform.matrix();
+		const glm::vec3 &center = (region.getLowerCornerf() + transform.worldTranslation()) + extents;
+		const glm::mat4 &matrix = transform.worldMatrix();
 		return math::OBB<float>(center, extents, matrix);
 	}
 	return math::OBB<float>(glm::floor(region.getLowerCornerf()), glm::floor(glm::vec3(region.getUpperCornerf() + 1.0f)));
@@ -2376,7 +2376,7 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, uint32_t keyFrame, bool memento) {
+bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrame, bool memento) {
 	if (nodeId != -1) {
 		if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			return nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrame, memento);
@@ -2391,7 +2391,7 @@ bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, cons
 	return true;
 }
 
-bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, uint32_t keyFrame, bool memento) {
+bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrame, bool memento) {
 	glm::vec3 translation;
 	glm::quat orientation;
 	glm::vec3 scale;
@@ -2400,16 +2400,16 @@ bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const 
 	voxelformat::SceneGraphTransform &transform = node.transform(keyFrame);
 	if (deltaMatrix) {
 		glm::decompose(*deltaMatrix, scale, orientation, translation, skew, perspective);
-		transform.setTranslation(transform.translation() + translation);
-		transform.setOrientation(transform.orientation() * orientation);
+		transform.setWorldTranslation(transform.worldTranslation() + translation);
+		transform.setWorldOrientation(transform.worldOrientation() * orientation);
 		//transform.setScale(glm::length(scale));
 	} else {
 		glm::decompose(matrix, scale, orientation, translation, skew, perspective);
-		transform.setTranslation(translation);
-		transform.setOrientation(orientation);
+		transform.setWorldTranslation(translation);
+		transform.setWorldOrientation(orientation);
 		//transform.setScale(glm::length(scale));
 	}
-	transform.update();
+	transform.update(_sceneGraph, node, keyFrame);
 
 	if (memento) {
 		_mementoHandler.markNodeTransform(node, keyFrame);

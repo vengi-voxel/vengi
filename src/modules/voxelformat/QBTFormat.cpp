@@ -121,7 +121,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 
 	const uint32_t frame = 0;
 	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
-	const glm::ivec3 offset = glm::round(transform.translation());
+	const glm::ivec3 offset = glm::round(transform.worldTranslation());
 	wrapSaveFree(stream.writeInt32(offset.x));
 	wrapSaveFree(stream.writeInt32(offset.y));
 	wrapSaveFree(stream.writeInt32(offset.z));
@@ -309,7 +309,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	wrap(stream.readInt32(translation.x));
 	wrap(stream.readInt32(translation.y));
 	wrap(stream.readInt32(translation.z));
-	transform.setTranslation(translation);
+	transform.setWorldTranslation(translation);
 
 	glm::uvec3 localScale;
 	wrap(stream.readUInt32(localScale.x));
@@ -386,7 +386,8 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	node.setVolume(volume.release(), true);
 	node.setName(name);
 	node.setPalette(palLookup.palette());
-	node.setTransform(0, transform, true);
+	transform.update(sceneGraph, node, 0);
+	node.setTransform(0, transform);
 	const int id = sceneGraph.emplace(core::move(node), parent);
 	return id != -1;
 }

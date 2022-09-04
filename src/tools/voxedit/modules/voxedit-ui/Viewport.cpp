@@ -295,7 +295,7 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 		const float snap[]{step, step, step};
 		const uint32_t keyFrame = node.keyFrameForFrame(sceneMgr().currentFrame());
 		const voxelformat::SceneGraphTransform &transform = node.transform(keyFrame);
-		glm::mat4 transformMatrix = transform.matrix();
+		glm::mat4 transformMatrix = transform.worldMatrix();
 		glm::mat4 deltaMatrix(0.0f);
 		const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
 		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))	 {

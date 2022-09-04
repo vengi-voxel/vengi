@@ -326,7 +326,7 @@ SceneGraph::MergedVolumePalette SceneGraph::merge() const {
 		pal = &node.palette();
 		volumes.push_back(node.volume());
 
-		const glm::vec3 &translation = node.transform(0).translation();
+		const glm::vec3 &translation = node.transform(0).worldTranslation();
 		translations.push_back(translation);
 
 		voxel::Region region = node.region();

@@ -25,7 +25,10 @@ class RawVolume;
 
 namespace voxelformat {
 
+class SceneGraph;
+class SceneGraphNode;
 using FrameIndex = uint32_t;
+using KeyFrameIndex = uint32_t;
 
 enum class SceneGraphNodeType : uint8_t {
 	Root,
@@ -37,45 +40,58 @@ enum class SceneGraphNodeType : uint8_t {
 	Max
 };
 
-class SceneGraphTransform {
+class alignas(16) SceneGraphTransform {
 private:
 	enum {
 		DIRTY_PIVOT = 1 << 0,
-		DIRTY_TRANSLATION = 1 << 1,
-		DIRTY_ORIENTATION = 1 << 2,
-		DIRTY_SCALE = 1 << 3,
-		DIRTY_MATRIX = 1 << 4,
+		DIRTY_WORLDTRANSLATION = 1 << 1,
+		DIRTY_WORLDORIENTATION = 1 << 2,
+		DIRTY_WORLDSCALE = 1 << 3,
+		DIRTY_WORLDMATRIX = 1 << 4,
 		DIRTY_LOCALTRANSLATION = 1 << 5,
 		DIRTY_LOCALORIENTATION = 1 << 6,
 		DIRTY_LOCALSCALE = 1 << 7,
 		DIRTY_LOCALMATRIX = 1 << 8
 	};
-
-	uint8_t _dirty = 0u;
-	// should be the normalized value between 0 and 1
-	glm::vec3 _normalizedPivot{0.0f};
-
-	glm::vec3 _translation{0.0f};
-	glm::vec3 _localTranslation{0.0f};
-	glm::quat _orientation{glm::quat_identity<float, glm::defaultp>()};
-	glm::quat _localOrientation{glm::quat_identity<float, glm::defaultp>()};
-	/**
-	 * @brief Uniform scale value
-	 */
-	float _scale = 1.0f;
-	float _localScale = 1.0f;
 	/**
 	 * @brief The model matrix that is assembled by the translation, orientation and scale value
 	 */
-	glm::mat4x4 _mat{1.0f};
+	glm::mat4x4 _worldMat{1.0f};
 	glm::mat4x4 _localMat{1.0f};
+
+	glm::quat _worldOrientation{glm::quat_identity<float, glm::defaultp>()};
+	glm::quat _localOrientation{glm::quat_identity<float, glm::defaultp>()};
+
+	glm::vec3 _worldTranslation{0.0f};
+	/**
+	 * @brief Uniform scale value
+	 */
+	float _worldScale = 1.0f;
+
+	glm::vec3 _localTranslation{0.0f};
+	/**
+	 * @brief Uniform scale value
+	 */
+	float _localScale = 1.0f;
+
+	// should be the normalized value between 0 and 1
+	glm::vec3 _normalizedPivot{0.0f};
+
+	uint32_t _dirty = 0u;
+
+	void updateLocal(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx);
+	void updateWorld();
 public:
 	void setPivot(const glm::vec3 &normalizedPivot);
 
-	void setMatrix(const glm::mat4x4 &matrix);
-	void setTranslation(const glm::vec3 &translation);
-	void setOrientation(const glm::quat& orientation);
-	void setScale(float scale);
+	inline bool dirty() const {
+		return _dirty != 0u;
+	}
+
+	void setWorldMatrix(const glm::mat4x4 &matrix);
+	void setWorldTranslation(const glm::vec3 &translation);
+	void setWorldOrientation(const glm::quat& orientation);
+	void setWorldScale(float scale);
 
 	void setLocalMatrix(const glm::mat4x4 &matrix);
 	void setLocalTranslation(const glm::vec3 &translation);
@@ -86,17 +102,20 @@ public:
 
 	const glm::vec3 &pivot() const;
 
-	const glm::mat4x4 &matrix() const;
-	const glm::vec3 &translation() const;
-	const glm::quat &orientation() const;
-	float scale() const;
+	const glm::mat4x4 &worldMatrix() const;
+	const glm::vec3 &worldTranslation() const;
+	const glm::quat &worldOrientation() const;
+	float worldScale() const;
 
 	const glm::mat4x4 &localMatrix() const;
 	const glm::vec3 &localTranslation() const;
 	const glm::quat &localOrientation() const;
 	float localScale() const;
 
-	void update();
+	void update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx);
+
+	void updateFromWorldMatrix();
+
 	/**
 	 * @brief Uses the matrix to perform the transformation
 	 * @note The matrix must be up-to-date
@@ -229,9 +248,9 @@ public:
 
 	bool addChild(int id);
 	bool removeChild(int id);
-	void setTransform(FrameIndex keyFrameIdx, const SceneGraphTransform &transform, bool updateMatrix);
-	SceneGraphTransform &transform(FrameIndex keyFrameIdx = 0);
-	const SceneGraphTransform &transform(FrameIndex keyFrameIdx = 0) const;
+	void setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTransform &transform);
+	SceneGraphTransform &transform(KeyFrameIndex keyFrameIdx = 0);
+	const SceneGraphTransform &transform(KeyFrameIndex keyFrameIdx = 0) const;
 
 	/**
 	 * @brief Interpolates the transforms for the given frame. It searches the keyframe before and after
@@ -240,7 +259,7 @@ public:
 	 */
 	SceneGraphTransform transformForFrame(FrameIndex frame) const;
 
-	SceneGraphKeyFrame &keyFrame(FrameIndex frameIdx);
+	SceneGraphKeyFrame &keyFrame(KeyFrameIndex frameIdx);
 
 	/**
 	 * @return voxel::RawVolume - might be @c nullptr

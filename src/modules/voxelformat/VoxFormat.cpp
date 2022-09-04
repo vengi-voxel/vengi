@@ -89,7 +89,7 @@ static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos,
 	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
 }
 
-static bool loadKeyFrames(voxelformat::SceneGraphNode& node, const ogt_vox_keyframe_transform* transformKeyframes, uint32_t numKeyframes) {
+static bool loadKeyFrames(voxelformat::SceneGraph &sceneGraph, voxelformat::SceneGraphNode& node, const ogt_vox_keyframe_transform* transformKeyframes, uint32_t numKeyframes) {
 	SceneGraphKeyFrames kf;
 	Log::debug("Load %d keyframes", numKeyframes);
 	kf.reserve(numKeyframes);
@@ -105,8 +105,8 @@ static bool loadKeyFrames(voxelformat::SceneGraphNode& node, const ogt_vox_keyfr
 		sceneGraphKeyFrame.frame = transform_keyframe.frame_index;
 		sceneGraphKeyFrame.interpolation = InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
-		sceneGraphKeyFrame.transform().setMatrix(ogtKeyFrameMat);
-		sceneGraphKeyFrame.transform().update();
+		sceneGraphKeyFrame.transform().setWorldMatrix(ogtKeyFrameMat);
+		sceneGraphKeyFrame.transform().update(sceneGraph, node, (KeyFrameIndex)k);
 		kf.push_back(sceneGraphKeyFrame);
 	}
 	return node.setKeyFrames(kf);
@@ -134,7 +134,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	region.shift(-shift);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	SceneGraphTransform trans;
-	trans.setTranslation(shift);
+	trans.setWorldTranslation(shift);
 
 	for (uint32_t k = 0; k < ogtModel->size_z; ++k) {
 		for (uint32_t j = 0; j < ogtModel->size_y; ++j) {
@@ -166,9 +166,10 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 			name = "";
 		}
 	}
-	loadKeyFrames(node, ogtInstance.transform_anim.keyframes, ogtInstance.transform_anim.num_keyframes);
+	trans.update(sceneGraph, node, 0);
+	loadKeyFrames(sceneGraph, node, ogtInstance.transform_anim.keyframes, ogtInstance.transform_anim.num_keyframes);
 	// TODO: we are overriding the keyframe data here
-	node.setTransform(0, trans, true);
+	node.setTransform(0, trans);
 	node.setName(name);
 	node.setVisible(!ogtInstance.hidden && !groupHidden);
 	node.setVolume(v, true);
@@ -195,7 +196,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx
 		color.a = layer.color.a;
 		node.setColor(color);
 	}
-	loadKeyFrames(node, ogt_group.transform_anim.keyframes, ogt_group.transform_anim.num_keyframes);
+	loadKeyFrames(sceneGraph, node, ogt_group.transform_anim.keyframes, ogt_group.transform_anim.num_keyframes);
 	node.setName(name);
 	node.setVisible(!hidden);
 	const int groupId = sceneGraph.emplace(core::move(node), parent);
@@ -303,8 +304,9 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			SceneGraphNodeCamera camNode;
 			camNode.setName(core::String::format("Camera %u", c.camera_id));
 			SceneGraphTransform transform;
-			transform.setMatrix(viewMatrix);
-			camNode.setTransform(0, transform, true);
+			transform.setWorldMatrix(viewMatrix);
+			transform.updateFromWorldMatrix();
+			camNode.setTransform(0, transform);
 			camNode.setFieldOfView(c.fov);
 			camNode.setFarPlane((float)c.radius);
 			camNode.setProperty("frustum", core::String::format("%f", c.frustum)); // TODO:
@@ -403,7 +405,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 			kft.frame_index = kf.frame;
 			kft.transform = ogt_identity_transform;
 			// y and z are flipped here
-			const glm::vec3 kftransform = mins + kf.transform().translation() + width / 2.0f;
+			const glm::vec3 kftransform = mins + kf.transform().worldTranslation() + width / 2.0f;
 			kft.transform.m30 = -glm::floor(kftransform.x + 0.5f);
 			kft.transform.m31 = kftransform.z;
 			kft.transform.m32 = kftransform.y;
@@ -435,11 +437,11 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		const SceneGraphTransform &transform = camera.transform(0);
 		ogt_vox_cam &cam = cameras[camIdx];
 		cam.camera_id = camIdx;
-		const glm::vec3 &euler = glm::eulerAngles(transform.orientation());
+		const glm::vec3 &euler = glm::eulerAngles(transform.worldOrientation());
 		cam.angle[0] = euler[0];
 		cam.angle[1] = euler[1];
 		cam.angle[2] = euler[2];
-		const glm::vec3 &pos = transform.translation();
+		const glm::vec3 &pos = transform.worldTranslation();
 		cam.focus[0] = pos[0];
 		cam.focus[1] = pos[1];
 		cam.focus[2] = pos[2];

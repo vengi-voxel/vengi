@@ -69,7 +69,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 
 	const int frame = 0;
 	const SceneGraphTransform &transform = node.transform(frame);
-	const glm::ivec3 offset = glm::round(transform.translation());
+	const glm::ivec3 offset = glm::round(transform.worldTranslation());
 	wrapSave(stream.writeInt32(offset.x));
 	wrapSave(stream.writeInt32(offset.y));
 	wrapSave(stream.writeInt32(offset.z));
@@ -210,7 +210,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 		wrap(stream.readInt32(offset.y));
 		wrap(stream.readInt32(offset.z));
 		Log::debug("Matrix offset: %i:%i:%i", offset.x, offset.y, offset.z);
-		transform.setTranslation(offset);
+		transform.setWorldTranslation(offset);
 	}
 
 	const glm::ivec3 maxs = glm::ivec3(size) - 1;
@@ -243,7 +243,8 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(v.release(), true);
 		node.setName(name);
-		node.setTransform(0, transform, true);
+		transform.update(sceneGraph, node, 0);
+		node.setTransform(0, transform);
 		node.setPalette(palLookup.palette());
 		sceneGraph.emplace(core::move(node));
 		return true;
@@ -287,7 +288,8 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	node.setVolume(v.release(), true);
 	node.setName(name);
 	node.setPalette(palLookup.palette());
-	node.setTransform(0, transform, true);
+	transform.update(sceneGraph, node, 0);
+	node.setTransform(0, transform);
 	sceneGraph.emplace(core::move(node));
 	Log::debug("Matrix read");
 	return true;

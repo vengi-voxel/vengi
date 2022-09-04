@@ -144,16 +144,16 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 
 	const FrameIndex frameIdx = 0;
 	const SceneGraphTransform &transform = node->transform(frameIdx);
-	const glm::mat4 &matrix = transform.matrix();
+	const glm::mat4 &matrix = transform.worldMatrix();
 
-	wrapBool(stream.writeFloat(transform.scale()))
+	wrapBool(stream.writeFloat(transform.worldScale()))
 
 	for (int row = 0; row < 3; ++row) {
 		for (int col = 0; col < 4; ++col) {
 			wrapBool(stream.writeFloat(matrix[col][row]))
 		}
 	}
-	const glm::vec3 &mins = transform.translation();
+	const glm::vec3 &mins = transform.worldTranslation();
 	const glm::vec3 maxs = mins + glm::vec3(node->region().getDimensionsInVoxels());
 	for (int i = 0; i < 3; ++i) {
 		wrapBool(stream.writeFloat(mins[i]))
@@ -281,9 +281,10 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 	}
 	SceneGraphTransform transform;
 	glm::mat4 transformMatrix = footer.transform;
-	transform.setMatrix(transformMatrix);
+	transform.setWorldMatrix(transformMatrix);
 	// transform.setScale(footer.scale); // TODO
-	node.setTransform(0, transform, true);
+	transform.updateFromWorldMatrix();
+	node.setTransform(0, transform);
 
 	for (uint32_t i = 0u; i < baseSize; ++i) {
 		if (colStart[i] == EmptyColumn || colEnd[i] == EmptyColumn) {
@@ -540,11 +541,11 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 				continue;
 			}
 			SceneGraphKeyFrame &kf = node->keyFrame(frame);
+			kf.frame = frame * 6; // running at 6 fps
 			// hva transforms are overriding the vxl transform
 			SceneGraphTransform transform;
-			transform.setMatrix(sectionMatrices[section]);
-			transform.update();
-			kf.frame = frame * 6; // running at 6 fps
+			transform.setWorldMatrix(sectionMatrices[section]);
+			transform.update(sceneGraph, *node, kf.frame);
 			kf.setTransform(transform);
 		}
 	}
@@ -592,7 +593,7 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 	for (uint32_t i = 0; i < numFrames; ++i) {
 		for (const SceneGraphNode &node : sceneGraph) {
 			const SceneGraphTransform &transform = node.transform(i);
-			glm::mat4 matrix = transform.matrix();
+			glm::mat4 matrix = transform.worldMatrix();
 #if 0
 			//const glm::vec3 size(node.region().getDimensionsInVoxels());
 			const glm::vec3 nodeScale(1.0f); // TODO (footer.maxs - footer.mins) / size;

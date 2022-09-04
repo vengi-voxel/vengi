@@ -9,6 +9,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "util/Easing.h"
+#include "voxelformat/SceneGraph.h"
 
 #include <glm/ext/quaternion_common.hpp>
 #include <glm/ext/scalar_constants.hpp>
@@ -27,24 +28,24 @@ void SceneGraphTransform::setPivot(const glm::vec3 &normalizedPivot) {
 #endif
 }
 
-void SceneGraphTransform::setTranslation(const glm::vec3 &translation) {
-	_dirty |= DIRTY_TRANSLATION;
-	_translation = translation;
+void SceneGraphTransform::setWorldTranslation(const glm::vec3 &translation) {
+	_dirty |= DIRTY_WORLDTRANSLATION;
+	_worldTranslation = translation;
 }
 
-void SceneGraphTransform::setOrientation(const glm::quat &orientation) {
-	_dirty |= DIRTY_ORIENTATION;
-	_orientation = orientation;
+void SceneGraphTransform::setWorldOrientation(const glm::quat &orientation) {
+	_dirty |= DIRTY_WORLDORIENTATION;
+	_worldOrientation = orientation;
 }
 
-void SceneGraphTransform::setScale(float scale) {
-	_dirty |= DIRTY_SCALE;
-	_scale = scale;
+void SceneGraphTransform::setWorldScale(float scale) {
+	_dirty |= DIRTY_WORLDSCALE;
+	_worldScale = scale;
 }
 
-void SceneGraphTransform::setMatrix(const glm::mat4x4 &matrix) {
-	_dirty |= DIRTY_MATRIX;
-	_mat = matrix;
+void SceneGraphTransform::setWorldMatrix(const glm::mat4x4 &matrix) {
+	_dirty |= DIRTY_WORLDMATRIX;
+	_worldMat = matrix;
 }
 
 void SceneGraphTransform::setLocalTranslation(const glm::vec3 &translation) {
@@ -69,10 +70,17 @@ void SceneGraphTransform::setLocalMatrix(const glm::mat4x4 &matrix) {
 
 void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFrameSeconds) {
 	const float factor = glm::clamp((float)(deltaFrameSeconds), 0.0f, 1.0f);
-	setTranslation(glm::mix(_translation, dest._translation, factor));
-	setOrientation(glm::slerp(_orientation, dest._orientation, factor));
-	setScale(glm::mix(_scale, dest._scale, factor));
-	update();
+	setWorldTranslation(glm::mix(_worldTranslation, dest._worldTranslation, factor));
+	setWorldOrientation(glm::slerp(_worldOrientation, dest._worldOrientation, factor));
+	setWorldScale(glm::mix(_worldScale, dest._worldScale, factor));
+
+	setLocalTranslation(glm::mix(_localTranslation, dest._localTranslation, factor));
+	setLocalOrientation(glm::slerp(_localOrientation, dest._localOrientation, factor));
+	setLocalScale(glm::mix(_localScale, dest._localScale, factor));
+
+	_worldMat = glm::translate(_worldTranslation) * glm::mat4_cast(_worldOrientation) * glm::scale(glm::vec3(_worldScale));
+	_localMat = glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(glm::vec3(_localScale));
+	_dirty = 0u;
 }
 
 const glm::vec3 &SceneGraphTransform::pivot() const {
@@ -95,46 +103,94 @@ float SceneGraphTransform::localScale() const {
 	return _localScale;
 }
 
-const glm::mat4x4 &SceneGraphTransform::matrix() const {
-	return _mat;
+const glm::mat4x4 &SceneGraphTransform::worldMatrix() const {
+	return _worldMat;
 }
 
-const glm::vec3 &SceneGraphTransform::translation() const {
-	return _translation;
+const glm::vec3 &SceneGraphTransform::worldTranslation() const {
+	return _worldTranslation;
 }
 
-const glm::quat &SceneGraphTransform::orientation() const {
-	return _orientation;
+const glm::quat &SceneGraphTransform::worldOrientation() const {
+	return _worldOrientation;
 }
 
-float SceneGraphTransform::scale() const {
-	return _scale;
+float SceneGraphTransform::worldScale() const {
+	return _worldScale;
 }
 
-void SceneGraphTransform::update() {
+void SceneGraphTransform::updateLocal(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx) {
+	if (_dirty & DIRTY_LOCALMATRIX) {
+		_dirty &= ~(DIRTY_LOCALMATRIX);
+	} else if (_dirty & (DIRTY_LOCALORIENTATION | DIRTY_LOCALSCALE | DIRTY_LOCALTRANSLATION)) {
+		core_assert((_dirty & DIRTY_LOCALMATRIX) == 0u);
+		_dirty &= ~(DIRTY_LOCALORIENTATION | DIRTY_LOCALSCALE | DIRTY_LOCALTRANSLATION);
+	}
+	if (node.type() == SceneGraphNodeType::Model) {
+#if 0
+		const int parentId = node.parent();
+		SceneGraphNode& parent = sceneGraph.node(parentId);
+		if (parent.type() == SceneGraphNodeType::Model) {
+		}
+#endif
+	}
+	for (int childId : node.children()) {
+		SceneGraphNode& child = sceneGraph.node(childId);
+		KeyFrameIndex keyFrame = child.keyFrameForFrame(frameIdx);
+		SceneGraphTransform& transform = child.transform(keyFrame);
+		transform.updateLocal(sceneGraph, child, frameIdx);
+	}
+}
+
+void SceneGraphTransform::updateFromWorldMatrix() {
+	if (_dirty & DIRTY_PIVOT) {
+		_dirty &= ~(DIRTY_PIVOT);
+	}
 	if (_dirty == 0u) {
 		return;
 	}
-	if (_dirty & DIRTY_MATRIX) {
-		core_assert((_dirty & (DIRTY_TRANSLATION | DIRTY_ORIENTATION | DIRTY_SCALE)) == 0u);
-		_translation = _mat[3];
-		_scale = glm::length(glm::vec3(_mat[0]));
-		if (glm::abs(_scale) < glm::epsilon<float>()) {
-			_scale = 1.0f;
-		}
-		const glm::mat3 rotMtx(glm::vec3(_mat[0]) / _scale, glm::vec3(_mat[1]) / _scale, glm::vec3(_mat[2]) / _scale);
-		_orientation = glm::quat_cast(rotMtx);
-	} else if (_dirty & (DIRTY_TRANSLATION | DIRTY_ORIENTATION | DIRTY_SCALE)) {
-		core_assert((_dirty & DIRTY_MATRIX) == 0u);
-		_mat = glm::translate(_translation) * glm::mat4_cast(_orientation) * glm::scale(glm::vec3(_scale));
+
+	core_assert((_dirty & DIRTY_WORLDMATRIX) != 0);
+
+	_worldTranslation = _worldMat[3];
+	_worldScale = glm::length(glm::vec3(_worldMat[0]));
+	if (glm::abs(_worldScale) < glm::epsilon<float>()) {
+		_worldScale = 1.0f;
 	}
-	// TODO: local update
-	_dirty = 0u;
+	const glm::mat3 rotMtx(glm::vec3(_worldMat[0]) / _worldScale, glm::vec3(_worldMat[1]) / _worldScale, glm::vec3(_worldMat[2]) / _worldScale);
+	_worldOrientation = glm::quat_cast(rotMtx);
+	_dirty &= ~(DIRTY_WORLDMATRIX);
+	core_assert_msg(_dirty == 0u, "Still not clean: %u", _dirty);
+
+	_localMat = _worldMat;
+}
+
+void SceneGraphTransform::updateWorld() {
+	if (_dirty & DIRTY_WORLDMATRIX) {
+		updateFromWorldMatrix();
+		_dirty &= ~(DIRTY_WORLDMATRIX);
+	} else if (_dirty & (DIRTY_WORLDTRANSLATION | DIRTY_WORLDORIENTATION | DIRTY_WORLDSCALE)) {
+		core_assert((_dirty & DIRTY_WORLDMATRIX) == 0u);
+		_worldMat = glm::translate(_worldTranslation) * glm::mat4_cast(_worldOrientation) * glm::scale(glm::vec3(_worldScale));
+		_dirty &= ~(DIRTY_WORLDTRANSLATION | DIRTY_WORLDORIENTATION | DIRTY_WORLDSCALE);
+	}
+}
+
+void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx) {
+	if (_dirty & DIRTY_PIVOT) {
+		_dirty &= ~(DIRTY_PIVOT);
+	}
+	if (_dirty == 0u) {
+		return;
+	}
+	updateLocal(sceneGraph, node, frameIdx);
+	updateWorld();
+	core_assert_msg(_dirty == 0u, "Still not clean: %u", _dirty);
 }
 
 glm::vec3 SceneGraphTransform::apply(const glm::vec3 &pos, const glm::vec3 &size) const {
-	core_assert_msg((_dirty & (DIRTY_TRANSLATION | DIRTY_ORIENTATION | DIRTY_SCALE)) == 0u, "Missing update for transform matrix %i", (int)_dirty);
-	return glm::vec3(_mat * (glm::vec4(pos, 1.0f) - glm::vec4(_normalizedPivot * size, 0.0f)));
+	core_assert_msg((_dirty & (DIRTY_WORLDTRANSLATION | DIRTY_WORLDORIENTATION | DIRTY_WORLDSCALE)) == 0u, "Missing update for transform matrix %i", (int)_dirty);
+	return glm::vec3(_worldMat * (glm::vec4(pos, 1.0f) - glm::vec4(_normalizedPivot * size, 0.0f)));
 }
 
 SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
@@ -242,11 +298,11 @@ void SceneGraphNode::translate(const glm::ivec3 &v, int frame) {
 	if (frame != -1) {
 		const uint32_t kf = keyFrameForFrame(frame);
 		SceneGraphTransform &transform = keyFrame(kf).transform();
-		transform.setTranslation(transform.translation() + glm::vec3(v));
+		transform.setWorldTranslation(transform.worldTranslation() + glm::vec3(v));
 	} else {
 		for (SceneGraphKeyFrame &kf : _keyFrames) {
 			SceneGraphTransform &transform = kf.transform();
-			transform.setTranslation(transform.translation() + glm::vec3(v));
+			transform.setWorldTranslation(transform.worldTranslation() + glm::vec3(v));
 		}
 	}
 }
@@ -324,33 +380,31 @@ bool SceneGraphNode::setProperty(const core::String& key, const core::String& va
 	return true;
 }
 
-SceneGraphKeyFrame& SceneGraphNode::keyFrame(FrameIndex keyFrameIdx) {
+SceneGraphKeyFrame& SceneGraphNode::keyFrame(KeyFrameIndex keyFrameIdx) {
 	if (_keyFrames.size() <= keyFrameIdx) {
 		_keyFrames.resize((int)keyFrameIdx + 1);
 	}
 	return _keyFrames[keyFrameIdx];
 }
 
-SceneGraphTransform& SceneGraphNode::transform(FrameIndex keyFrameIdx) {
+SceneGraphTransform& SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) {
 	return _keyFrames[keyFrameIdx].transform();
 }
 
-const SceneGraphTransform& SceneGraphNode::transform(FrameIndex keyFrameIdx) const {
+const SceneGraphTransform& SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) const {
 	while (keyFrameIdx > 0 && keyFrameIdx >= _keyFrames.size()) {
 		--keyFrameIdx;
 	}
 	return _keyFrames[keyFrameIdx].transform();
 }
 
-void SceneGraphNode::setTransform(FrameIndex keyFrameIdx, const SceneGraphTransform &transform, bool updateMatrix) {
+void SceneGraphNode::setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTransform &transform) {
 	SceneGraphKeyFrame &nodeFrame = keyFrame(keyFrameIdx);
+	core_assert_msg(!transform.dirty(), "given transform is not yet ready");
 	nodeFrame.setTransform(transform);
-	if (updateMatrix) {
-		nodeFrame.transform().update();
-	}
 }
 
-void SceneGraphNode::setPivot(FrameIndex frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
+void SceneGraphNode::setPivot(KeyFrameIndex frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
 	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
 	nodeFrame.transform().setPivot(glm::vec3(pos) / glm::vec3(size));
 }

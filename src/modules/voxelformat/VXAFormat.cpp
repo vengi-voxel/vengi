@@ -144,19 +144,19 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		wrap(stream.readFloat(scale))
 		wrap(stream.readFloat(localScale))
 
-		transform.setTranslation(translation);
-		transform.setOrientation(orientation);
-		transform.setScale(scale);
+		transform.setWorldTranslation(translation);
+		transform.setWorldOrientation(orientation);
+		transform.setWorldScale(scale);
 		transform.setLocalTranslation(localTranslation);
 		transform.setLocalOrientation(localOrientation);
 		transform.setLocalScale(localScale);
-		transform.update();
+		transform.update(sceneGraph, node, (FrameIndex)frame);
 		if (version == 1) {
 			// version 1 needs to correct its translation by the pivot translation
 			const glm::vec3 volumesize = node.region().getDimensionsInVoxels();
 			const glm::vec3 pivotTranslation = (pivot * 2.0f - 1.0f) * 0.5f * volumesize;
-			transform.setTranslation(transform.translation() - pivotTranslation);
-			transform.update();
+			transform.setWorldTranslation(transform.worldTranslation() - pivotTranslation);
+			transform.update(sceneGraph, node, (FrameIndex)frame);
 		}
 	}
 	int32_t children;
@@ -260,21 +260,21 @@ bool VXAFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		wrapBool(stream.writeInt32(interpolation))
 		wrapBool(stream.writeBool(kf.longRotation))
 		const SceneGraphTransform &transform = kf.transform();
-		wrapBool(stream.writeFloat(transform.translation().x))
-		wrapBool(stream.writeFloat(transform.translation().y))
-		wrapBool(stream.writeFloat(transform.translation().z))
+		wrapBool(stream.writeFloat(transform.worldTranslation().x))
+		wrapBool(stream.writeFloat(transform.worldTranslation().y))
+		wrapBool(stream.writeFloat(transform.worldTranslation().z))
 		wrapBool(stream.writeFloat(transform.localTranslation().x))
 		wrapBool(stream.writeFloat(transform.localTranslation().y))
 		wrapBool(stream.writeFloat(transform.localTranslation().z))
-		wrapBool(stream.writeFloat(transform.orientation().x))
-		wrapBool(stream.writeFloat(transform.orientation().y))
-		wrapBool(stream.writeFloat(transform.orientation().z))
-		wrapBool(stream.writeFloat(transform.orientation().w))
+		wrapBool(stream.writeFloat(transform.worldOrientation().x))
+		wrapBool(stream.writeFloat(transform.worldOrientation().y))
+		wrapBool(stream.writeFloat(transform.worldOrientation().z))
+		wrapBool(stream.writeFloat(transform.worldOrientation().w))
 		wrapBool(stream.writeFloat(transform.localOrientation().x))
 		wrapBool(stream.writeFloat(transform.localOrientation().y))
 		wrapBool(stream.writeFloat(transform.localOrientation().z))
 		wrapBool(stream.writeFloat(transform.localOrientation().w))
-		wrapBool(stream.writeFloat(transform.scale()))
+		wrapBool(stream.writeFloat(transform.worldScale()))
 		wrapBool(stream.writeFloat(transform.localScale()))
 	}
 	const int32_t childCount = (int32_t)node.children().size();
