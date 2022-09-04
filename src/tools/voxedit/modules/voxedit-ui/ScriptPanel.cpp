@@ -188,7 +188,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 					}
 					if (ImGui::MenuItem(ICON_FA_SAVE " Save As##scripteditor")) {
 						core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
-						app->fileDialog(
+						app->saveDialog(
 							[&](const core::String &file) {
 								if (app->filesystem()->write(file, _textEditor.GetText())) {
 									_scripts.clear();
@@ -198,7 +198,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 									Log::warn("Failed to save script %s", file.c_str());
 								}
 							},
-							video::WindowedApp::OpenFileMode::Save, io::format::lua());
+							io::format::lua());
 					}
 					if (ImGui::MenuItem("Close##scripteditor")) {
 						_scriptEditor = false;

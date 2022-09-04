@@ -378,6 +378,7 @@ bool FileDialog::filesPanel() {
 }
 
 // TODO: allow to specify the starting directory
+// TODO: _fileDialogOptions
 bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSize,
 								video::WindowedApp::OpenFileMode type) {
 	if (open == nullptr || *open) {

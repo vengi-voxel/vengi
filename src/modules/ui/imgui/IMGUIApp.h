@@ -46,7 +46,8 @@ protected:
 	bool _imguiBackendInitialized = false;
 
 	OpenFileMode _fileDialogMode = OpenFileMode::Directory;
-	std::function<void(const core::String&)> _fileDialogCallback {};
+	FileDialogSelectionCallback _fileDialogCallback {};
+	FileDialogOptions _fileDialogOptions {};
 
 	ImFont* _defaultFont = nullptr;
 	ImFont* _bigFont = nullptr;
@@ -84,7 +85,7 @@ public:
 
 	void showBindingsDialog();
 	void showTexturesDialog();
-	void fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "") override;
+	void fileDialog(const FileDialogSelectionCallback& callback, const FileDialogOptions& options, OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "") override;
 };
 
 inline void IMGUIApp::showBindingsDialog() {

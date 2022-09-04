@@ -565,9 +565,10 @@ app::AppState IMGUIApp::onCleanup() {
 	return Super::onCleanup();
 }
 
-void IMGUIApp::fileDialog(const std::function<void(const core::String&)>& callback, OpenFileMode mode, const io::FormatDescription* formats, const core::String &filename) {
+void IMGUIApp::fileDialog(const FileDialogSelectionCallback& callback, const FileDialogOptions& options, OpenFileMode mode, const io::FormatDescription* formats, const core::String &filename) {
 	_showFileDialog = true;
 	_fileDialogCallback = callback;
+	_fileDialogOptions = options;
 	_fileDialogMode = mode;
 	_fileDialog.openDir(formats);
 }
