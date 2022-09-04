@@ -33,6 +33,8 @@ export VOXFORMAT_SCALE=2.0
 
 You can get a list of search paths by calling the particular application with the `--help` parameter on the command line. This will print a list of search paths. You can even add your own paths by setting the cvar `core_path`.
 
+> For packagers it might be interesting to set the `PKGDATADIR` cmake variable.
+
 ### Configuration file
 
 * Linux: `~/.local/share/vengi/voxconvert/voxconvert.vars`
