@@ -441,10 +441,12 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 			}
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
 
-			if (ImGui::Button("New folder")) {
-				ImGui::OpenPopup("NewFolderPopup");
+			if (type != video::WindowedApp::OpenFileMode::Open) {
+				if (ImGui::Button("New folder")) {
+					ImGui::OpenPopup("NewFolderPopup");
+				}
+				ImGui::SameLine();
 			}
-			ImGui::SameLine();
 
 			_disableDeleteButton = (_currentFolder == "");
 			if (_disableDeleteButton) {
