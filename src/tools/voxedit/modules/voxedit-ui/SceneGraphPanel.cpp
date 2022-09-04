@@ -138,7 +138,7 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 		if (node.keyFrames().size() > 1) {
 			for (const auto& entry : node.keyFrames()) {
 				const core::String &kftText = toString(entry.transform());
-				ImGui::TextWrapped("%i (%s, long rotation: %s)\n%s", entry.frame,
+				ImGui::TextWrapped("%i (%s, long rotation: %s)\n%s", entry.frameIdx,
 								   voxelformat::InterpolationTypeStr[core::enumVal(entry.interpolation)],
 								   entry.longRotation ? "true" : "false", kftText.c_str());
 			}

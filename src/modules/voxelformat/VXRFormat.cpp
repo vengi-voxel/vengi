@@ -231,7 +231,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		SceneGraphKeyFrame& keyFrame = node.keyFrame(i);
 		uint32_t frame;
 		wrap(stream.readUInt32(frame)) // frame index
-		keyFrame.frame = frame;
+		keyFrame.frameIdx = frame;
 		int32_t interpolation;
 		wrap(stream.readInt32(interpolation))
 		if (interpolation < 0 || interpolation >= lengthof(interpolationTypes)) {
@@ -292,7 +292,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			wrap(stream.readFloat(localScale))
 			transform.setLocalScale(localScale);
 		}
-		transform.update(sceneGraph, node, keyFrame.frame);
+		transform.update(sceneGraph, node, keyFrame.frameIdx);
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))

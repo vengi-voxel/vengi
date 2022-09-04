@@ -157,7 +157,7 @@ private:
 	double _animationSpeed = 0.0;
 	int _currentAnimationLayer = 0;
 	double _nextFrameSwitch = 0.0;
-	voxelformat::FrameIndex _currentFrame = 0;
+	voxelformat::FrameIndex _currentFrameIdx = 0;
 
 	int _initialized = 0;
 	int _size = 128;
@@ -266,7 +266,7 @@ public:
 	bool cameraPan() const;
 
 	voxelformat::FrameIndex currentFrame() const;
-	void setCurrentFrame(voxelformat::FrameIndex frame);
+	void setCurrentFrame(voxelformat::FrameIndex frameIdx);
 
 	void setActiveCamera(video::Camera* camera);
 	video::Camera* activeCamera();
@@ -439,10 +439,10 @@ private:
 	void onNewNodeAdded(int newNodeId);
 	bool nodeRename(voxelformat::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(voxelformat::SceneGraphNode &node, bool recursive);
-	bool nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrame, bool memento);
+	bool nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx, bool memento);
 	void nodeDuplicate(const voxelformat::SceneGraphNode &node);
 public:
-	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrame, bool memento);
+	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx, bool memento);
 	bool nodeMove(int sourceNodeId, int targetNodeId);
 	bool nodeRename(int nodeId, const core::String &name);
 	bool nodeRemove(int nodeId, bool recursive);
@@ -457,11 +457,11 @@ inline bool SceneManager::hasClipboardCopy() const {
 }
 
 inline voxelformat::FrameIndex SceneManager::currentFrame() const {
-	return _currentFrame;
+	return _currentFrameIdx;
 }
 
-inline void SceneManager::setCurrentFrame(voxelformat::FrameIndex frame) {
-	_currentFrame = frame;
+inline void SceneManager::setCurrentFrame(voxelformat::FrameIndex frameIdx) {
+	_currentFrameIdx = frameIdx;
 }
 
 inline const core::String& SceneManager::filename() const {

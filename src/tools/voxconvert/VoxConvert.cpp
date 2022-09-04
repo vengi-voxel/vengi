@@ -539,7 +539,7 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 		Log::info("%*s  |- %s: %s", indent, " ", entry->key.c_str(), entry->value.c_str());
 	}
 	for (const voxelformat::SceneGraphKeyFrame &kf : node.keyFrames()) {
-		Log::info("%*s  |- keyframe: %i", indent, " ", kf.frame);
+		Log::info("%*s  |- keyframe: %i", indent, " ", kf.frameIdx);
 		Log::info("%*s    |- long rotation: %s", indent, " ", kf.longRotation ? "true" : "false");
 		Log::info("%*s    |- interpolation: %s", indent, " ", voxelformat::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
 		Log::info("%*s    |- transform", indent, " ");

@@ -152,7 +152,7 @@ class SceneGraphKeyFrame {
 private:
 	SceneGraphTransform _transform;
 public:
-	FrameIndex frame = 0;
+	FrameIndex frameIdx = 0;
 	InterpolationType interpolation = InterpolationType::Linear;
 	bool longRotation = false;
 
@@ -227,15 +227,15 @@ public:
 
 	FrameIndex maxFrame() const;
 
-	bool addKeyFrame(FrameIndex frame);
-	bool removeKeyFrame(FrameIndex frame);
+	bool addKeyFrame(FrameIndex frameIdx);
+	bool removeKeyFrame(FrameIndex frameIdx);
 	void sortKeyFrames();
 	const SceneGraphKeyFrames &keyFrames() const;
 	bool setKeyFrames(const SceneGraphKeyFrames&);
 	/**
 	 * @brief Get the index of the keyframe for the given frame
 	 */
-	uint32_t keyFrameForFrame(FrameIndex frame) const;
+	KeyFrameIndex keyFrameForFrame(FrameIndex frameIdx) const;
 
 	int id() const;
 	void setId(int id);
@@ -257,9 +257,9 @@ public:
 	 * the given input frame and interpolates according to the given delta frames between the particular
 	 * keyframes.
 	 */
-	SceneGraphTransform transformForFrame(FrameIndex frame) const;
+	SceneGraphTransform transformForFrame(FrameIndex frameIdx) const;
 
-	SceneGraphKeyFrame &keyFrame(KeyFrameIndex frameIdx);
+	SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx);
 
 	/**
 	 * @return voxel::RawVolume - might be @c nullptr
@@ -286,7 +286,7 @@ public:
 	 */
 	void setVolume(const voxel::RawVolume *volume, bool transferOwnership);
 
-	void translate(const glm::ivec3 &v, int frame = -1);
+	void translate(const glm::ivec3 &v, FrameIndex frameIdx = -1);
 
 	// meta data
 

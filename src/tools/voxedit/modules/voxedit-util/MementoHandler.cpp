@@ -108,7 +108,6 @@ MementoHandler::MementoHandler() {
 }
 
 MementoHandler::~MementoHandler() {
-	shutdown();
 }
 
 bool MementoHandler::init() {
@@ -217,36 +216,36 @@ void MementoHandler::markNodeRemoved(const voxelformat::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const int parentId = node.parent();
 	const core::String &name = node.name();
-	int frameId = 0; // TODO: all key frames
+	voxelformat::KeyFrameIndex keyFrameIdx = 0; // TODO: all key frames
 	voxel::RawVolume *volume = node.volume();
-	const voxelformat::SceneGraphTransform &transform = node.transform(frameId);
+	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const glm::mat4 &transformMatrix = transform.worldMatrix();
 	Log::debug("Mark node %i as deleted (%s)", nodeId, name.c_str());
-	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeRemoved, voxel::Region::InvalidRegion, transformMatrix, frameId);
+	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeRemoved, voxel::Region::InvalidRegion, transformMatrix, keyFrameIdx);
 }
 
 void MementoHandler::markNodeAdded(const voxelformat::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const int parentId = node.parent();
 	const core::String &name = node.name();
-	int frameId = 0; // TODO: all key frames
+	voxelformat::KeyFrameIndex keyFrameIdx = 0; // TODO: all key frames
 	voxel::RawVolume *volume = node.volume();
-	const voxelformat::SceneGraphTransform &transform = node.transform(frameId);
+	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const glm::mat4 &transformMatrix = transform.worldMatrix();
 	Log::debug("Mark node %i as added (%s)", nodeId, name.c_str());
-	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, transformMatrix, frameId);
+	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, transformMatrix, keyFrameIdx);
 }
 
 void MementoHandler::markModification(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion) {
 	const int nodeId = node.id();
 	const int parentId = node.parent();
 	const core::String &name = node.name();
-	int frameId = 0;
+	voxelformat::KeyFrameIndex keyFrameIdx = 0;
 	voxel::RawVolume *volume = node.volume();
-	const voxelformat::SceneGraphTransform &transform = node.transform(frameId);
+	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const glm::mat4 &transformMatrix = transform.worldMatrix();
 	Log::debug("Mark node %i modification (%s)", nodeId, name.c_str());
-	markUndo(parentId, nodeId, name, volume, MementoType::Modification, modifiedRegion, transformMatrix, frameId);
+	markUndo(parentId, nodeId, name, volume, MementoType::Modification, modifiedRegion, transformMatrix, keyFrameIdx);
 }
 
 void MementoHandler::markNodeRenamed(const voxelformat::SceneGraphNode &node) {
@@ -265,14 +264,14 @@ void MementoHandler::markNodeMoved(int targetId, int sourceId) {
 	markUndo(targetId, sourceId, nullptr, nullptr, MementoType::SceneNodeMove, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 }
 
-void MementoHandler::markNodeTransform(const voxelformat::SceneGraphNode &node, uint32_t keyFrameId) {
+void MementoHandler::markNodeTransform(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
 	const int nodeId = node.id();
 	const int parentId = node.parent();
 	const core::String &name = node.name();
-	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameId);
+	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const glm::mat4 &transformMatrix = transform.worldMatrix();
 	Log::debug("Mark node %i as translated (%s)", nodeId, name.c_str());
-	markUndo(parentId, nodeId, name, nullptr, MementoType::SceneNodeTransform, voxel::Region::InvalidRegion, transformMatrix, keyFrameId);
+	markUndo(parentId, nodeId, name, nullptr, MementoType::SceneNodeTransform, voxel::Region::InvalidRegion, transformMatrix, keyFrameIdx);
 }
 
 bool MementoHandler::markUndoPreamble(int nodeId) {
@@ -293,14 +292,14 @@ bool MementoHandler::markUndoPreamble(int nodeId) {
 
 void MementoHandler::markUndo(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume,
 							  MementoType type, const voxel::Region &region, const glm::mat4 &transformMatrix,
-							  uint32_t frameId) {
+							  voxelformat::KeyFrameIndex keyFrameIdx) {
 	if (!markUndoPreamble(nodeId)) {
 		return;
 	}
 	Log::debug("New undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
 	voxel::logRegion("MarkUndo", region);
 	const MementoData& data = MementoData::fromVolume(volume);
-	_states.emplace_back(type, data, parentId, nodeId, name, region, transformMatrix, frameId);
+	_states.emplace_back(type, data, parentId, nodeId, name, region, transformMatrix, keyFrameIdx);
 	_statePosition = stateSize() - 1;
 }
 }

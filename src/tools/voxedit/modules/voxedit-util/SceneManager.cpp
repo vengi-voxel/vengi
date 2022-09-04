@@ -751,7 +751,7 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 		voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId);
 		core_assert(node != nullptr);
 		voxel::Region region = node->region();
-		const voxelformat::SceneGraphTransform &transform = node->transform(_currentFrame);
+		const voxelformat::SceneGraphTransform &transform = node->transform(_currentFrameIdx);
 		region.shift(transform.worldTranslation());
 		if (mergedRegion.isValid()) {
 			mergedRegion.accumulate(region);
@@ -1003,7 +1003,7 @@ void SceneManager::rotate(int angleX, int angleY, int angleZ) {
 			return;
 		}
 		const voxel::RawVolume *model = node->volume();
-		const glm::vec3 pivot = node->transform(_currentFrame).pivot();
+		const glm::vec3 pivot = node->transform(_currentFrameIdx).pivot();
 		voxel::RawVolume *newVolume = voxelutil::rotateVolume(model, angle, pivot);
 		voxel::Region r = newVolume->region();
 		r.accumulate(model->region());
@@ -1036,8 +1036,8 @@ void SceneManager::shift(int nodeId, const glm::ivec3& m) {
 	if (node == nullptr) {
 		return;
 	}
-	const uint32_t keyFrameId = node->keyFrameForFrame(_currentFrame);
-	node->translate(m, (int)keyFrameId);
+	const voxelformat::KeyFrameIndex keyFrameId = node->keyFrameForFrame(_currentFrameIdx);
+	node->translate(m, keyFrameId);
 	updateAABBMesh();
 	_mementoHandler.markNodeTransform(*node, keyFrameId);
 }
@@ -1112,7 +1112,7 @@ void SceneManager::updateAABBMesh() {
 		} else {
 			_shapeBuilder.setColor(core::Color::Gray);
 		}
-		_shapeBuilder.obb(toOBB(region, node.transformForFrame(_currentFrame)));
+		_shapeBuilder.obb(toOBB(region, node.transformForFrame(_currentFrameIdx)));
 	}
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
@@ -1122,7 +1122,7 @@ void SceneManager::render(const video::Camera& camera, const glm::ivec2 &size, u
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderScene) {
 		_volumeRenderer.resize(size);
-		_volumeRenderer.prepare(_sceneGraph, _currentFrame, _hideInactive->boolVal(), _grayInactive->boolVal());
+		_volumeRenderer.prepare(_sceneGraph, _currentFrameIdx, _hideInactive->boolVal(), _grayInactive->boolVal());
 		_volumeRenderer.render(camera, _renderShadow, false);
 		extractVolume();
 	}
@@ -2217,7 +2217,7 @@ bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
 			}
 			const voxel::Region& region = node.region();
 			float distance = 0.0f;
-			const math::OBB<float>& obb = toOBB(region, node.transformForFrame(_currentFrame));
+			const math::OBB<float>& obb = toOBB(region, node.transformForFrame(_currentFrameIdx));
 			if (obb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
 				if (distance < intersectDist) {
 					intersectDist = distance;
@@ -2376,28 +2376,29 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrame, bool memento) {
+bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx, bool memento) {
 	if (nodeId != -1) {
 		if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-			return nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrame, memento);
+			return nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrameIdx, memento);
 		}
 		return false;
 	}
 	nodeForeachGroup([&] (int nodeId) {
 		if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-			nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrame, memento);
+			nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrameIdx, memento);
 		}
 	});
 	return true;
 }
 
-bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrame, bool memento) {
+bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx, bool memento) {
 	glm::vec3 translation;
 	glm::quat orientation;
 	glm::vec3 scale;
 	glm::vec3 skew;
 	glm::vec4 perspective;
-	voxelformat::SceneGraphTransform &transform = node.transform(keyFrame);
+	voxelformat::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+	voxelformat::SceneGraphTransform &transform = keyFrame.transform();
 	if (deltaMatrix) {
 		glm::decompose(*deltaMatrix, scale, orientation, translation, skew, perspective);
 		transform.setWorldTranslation(transform.worldTranslation() + translation);
@@ -2409,10 +2410,10 @@ bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const 
 		transform.setWorldOrientation(orientation);
 		//transform.setScale(glm::length(scale));
 	}
-	transform.update(_sceneGraph, node, keyFrame);
+	transform.update(_sceneGraph, node, keyFrame.frameIdx);
 
 	if (memento) {
-		_mementoHandler.markNodeTransform(node, keyFrame);
+		_mementoHandler.markNodeTransform(node, keyFrameIdx);
 	}
 
 	updateAABBMesh();

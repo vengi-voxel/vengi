@@ -531,8 +531,8 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 		wrapBool(readHVAFrames(stream, mdl, file));
 	}
 	Log::debug("load %u frames", file.header.numFrames);
-	for (uint32_t frame = 0; frame < file.header.numFrames; ++frame) {
-		const HVAFrames &sectionMatrices = file.frames[frame];
+	for (uint32_t keyFrameIdx = 0; keyFrameIdx < file.header.numFrames; ++keyFrameIdx) {
+		const HVAFrames &sectionMatrices = file.frames[keyFrameIdx];
 		for (uint32_t section = 0; section < file.header.numNodes; ++section) {
 			const core::String &name = file.header.nodeNames[section];
 			SceneGraphNode* node = sceneGraph.findNodeByName(name);
@@ -540,12 +540,12 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 				Log::debug("Can't find node with name %s", name.c_str());
 				continue;
 			}
-			SceneGraphKeyFrame &kf = node->keyFrame(frame);
-			kf.frame = frame * 6; // running at 6 fps
+			SceneGraphKeyFrame &kf = node->keyFrame(keyFrameIdx);
+			kf.frameIdx = keyFrameIdx * 6; // running at 6 fps
 			// hva transforms are overriding the vxl transform
 			SceneGraphTransform transform;
 			transform.setWorldMatrix(sectionMatrices[section]);
-			transform.update(sceneGraph, *node, kf.frame);
+			transform.update(sceneGraph, *node, kf.frameIdx);
 			kf.setTransform(transform);
 		}
 	}

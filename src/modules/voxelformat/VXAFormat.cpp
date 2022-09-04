@@ -107,7 +107,7 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		SceneGraphKeyFrame &keyFrame = node.keyFrame(i);
 		uint32_t frame;
 		wrap(stream.readUInt32(frame))
-		keyFrame.frame = frame;
+		keyFrame.frameIdx = frame;
 		int32_t interpolation;
 		wrap(stream.readInt32(interpolation))
 		if (interpolation < 0 || interpolation >= lengthof(vxa_priv::interpolationTypes)) {
@@ -251,7 +251,7 @@ bool VXAFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 	const SceneGraphKeyFrames &kfs = node.keyFrames();
 	wrapBool(stream.writeUInt32(kfs.size()))
 	for (const SceneGraphKeyFrame &kf : kfs) {
-		wrapBool(stream.writeInt32(kf.frame))
+		wrapBool(stream.writeInt32(kf.frameIdx))
 		const int interpolation = vxa_priv::getInterpolationType(kf.interpolation);
 		if (interpolation == -1) {
 			Log::error("Could not find valid interpolation mapping for %i", (int)kf.interpolation);

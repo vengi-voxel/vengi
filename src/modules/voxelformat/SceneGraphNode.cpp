@@ -294,9 +294,9 @@ const voxel::Region &SceneGraphNode::region() const {
 	return _volume->region();
 }
 
-void SceneGraphNode::translate(const glm::ivec3 &v, int frame) {
-	if (frame != -1) {
-		const uint32_t kf = keyFrameForFrame(frame);
+void SceneGraphNode::translate(const glm::ivec3 &v, FrameIndex frameIdx) {
+	if (frameIdx != (FrameIndex)-1) {
+		const uint32_t kf = keyFrameForFrame(frameIdx);
 		SceneGraphTransform &transform = keyFrame(kf).transform();
 		transform.setWorldTranslation(transform.worldTranslation() + glm::vec3(v));
 	} else {
@@ -413,16 +413,16 @@ const SceneGraphKeyFrames &SceneGraphNode::keyFrames() const {
 	return _keyFrames;
 }
 
-bool SceneGraphNode::addKeyFrame(FrameIndex frame) {
+bool SceneGraphNode::addKeyFrame(FrameIndex frameIdx) {
 	for (size_t i = 0; i < _keyFrames.size(); ++i) {
 		const SceneGraphKeyFrame &kf = _keyFrames[i];
-		if (kf.frame == frame) {
+		if (kf.frameIdx == frameIdx) {
 			return false;
 		}
 	}
 
 	SceneGraphKeyFrame keyFrame;
-	keyFrame.frame = frame;
+	keyFrame.frameIdx = frameIdx;
 	_keyFrames.push_back(keyFrame);
 	sortKeyFrames();
 	return true;
@@ -430,17 +430,17 @@ bool SceneGraphNode::addKeyFrame(FrameIndex frame) {
 
 void SceneGraphNode::sortKeyFrames() {
 	static auto frameSorter = [](const SceneGraphKeyFrame &a, const SceneGraphKeyFrame &b) {
-		return a.frame > b.frame;
+		return a.frameIdx > b.frameIdx;
 	};
 	_keyFrames.sort(frameSorter);
 }
 
-bool SceneGraphNode::removeKeyFrame(FrameIndex frame) {
-	const uint32_t keyFrameId = keyFrameForFrame(frame);
-	if (keyFrameId == 0) {
+bool SceneGraphNode::removeKeyFrame(FrameIndex frameIdx) {
+	const uint32_t keyFrameIdx = keyFrameForFrame(frameIdx);
+	if (keyFrameIdx == 0) {
 		return false;
 	}
-	_keyFrames.erase(keyFrameId);
+	_keyFrames.erase(keyFrameIdx);
 	return true;
 }
 
@@ -452,15 +452,15 @@ bool SceneGraphNode::setKeyFrames(const SceneGraphKeyFrames &kf) {
 	return true;
 }
 
-uint32_t SceneGraphNode::keyFrameForFrame(FrameIndex frame) const {
+KeyFrameIndex SceneGraphNode::keyFrameForFrame(FrameIndex frameIdx) const {
 	// this assumes that the key frames are sorted after their frame
 	const size_t n = _keyFrames.size();
 	core_assert(n > 0)	;
 	for (size_t i = 0; i < n; ++i) {
 		const SceneGraphKeyFrame &kf = _keyFrames[i];
-		if (kf.frame == frame) {
+		if (kf.frameIdx == frameIdx) {
 			return i;
-		} else if (kf.frame > frame) {
+		} else if (kf.frameIdx > frameIdx) {
 			if (i == 0) {
 				break;
 			}
@@ -470,22 +470,22 @@ uint32_t SceneGraphNode::keyFrameForFrame(FrameIndex frame) const {
 	return n - 1;
 }
 
-SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex current) const {
+SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex frameIdx) const {
 	const SceneGraphTransform *source = nullptr;
 	const SceneGraphTransform *target = nullptr;
-	FrameIndex start = 0;
-	FrameIndex end = 0;
+	FrameIndex startFrameIdx = 0;
+	FrameIndex endFrameIdx = 0;
 	InterpolationType interpolationType = InterpolationType::Linear;
 
 	for (const SceneGraphKeyFrame &kf : _keyFrames) {
-		if (kf.frame <= current) {
+		if (kf.frameIdx <= frameIdx) {
 			source = &kf.transform();
-			start = kf.frame;
+			startFrameIdx = kf.frameIdx;
 			interpolationType = kf.interpolation;
 		}
-		if (kf.frame > current && !target) {
+		if (kf.frameIdx > frameIdx && !target) {
 			target = &kf.transform();
-			end = kf.frame;
+			endFrameIdx = kf.frameIdx;
 		}
 		if (source && target) {
 			break;
@@ -499,28 +499,28 @@ SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex current) const 
 	double deltaFrameSeconds = 0.0f;
 	switch (interpolationType) {
 	case InterpolationType::Instant:
-		deltaFrameSeconds = util::easing::full((float)current, (double)start, (double)end);
+		deltaFrameSeconds = util::easing::full((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
 		break;
 	case InterpolationType::Linear:
-		deltaFrameSeconds = util::easing::linear((float)current, (double)start, (double)end);
+		deltaFrameSeconds = util::easing::linear((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
 		break;
 	case InterpolationType::QuadEaseIn:
-		deltaFrameSeconds = util::easing::quadIn((float)current, (double)start, (double)end);
+		deltaFrameSeconds = util::easing::quadIn((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
 		break;
 	case InterpolationType::QuadEaseOut:
-		deltaFrameSeconds = util::easing::quadOut((float)current, (double)start, (double)end);
+		deltaFrameSeconds = util::easing::quadOut((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
 		break;
 	case InterpolationType::QuadEaseInOut:
-		deltaFrameSeconds = util::easing::quadInOut((float)current, (double)start, (double)end);
+		deltaFrameSeconds = util::easing::quadInOut((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
 		break;
 	case InterpolationType::CubicEaseIn:
-		deltaFrameSeconds = util::easing::cubicIn((float)current, (double)start, (double)end);
+		deltaFrameSeconds = util::easing::cubicIn((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
 		break;
 	case InterpolationType::CubicEaseOut:
-		deltaFrameSeconds = util::easing::cubicOut((float)current, (double)start, (double)end);
+		deltaFrameSeconds = util::easing::cubicOut((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
 		break;
 	case InterpolationType::CubicEaseInOut:
-		deltaFrameSeconds = util::easing::cubicInOut((float)current, (double)start, (double)end);
+		deltaFrameSeconds = util::easing::cubicInOut((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
 		break;
 	case InterpolationType::Max:
 		deltaFrameSeconds = 0.0;
@@ -532,11 +532,11 @@ SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex current) const 
 }
 
 FrameIndex SceneGraphNode::maxFrame() const {
-	FrameIndex maxFrame = 0;
+	FrameIndex maxFrameIdx = 0;
 	for (const auto &keyframe : _keyFrames) {
-		maxFrame = core_max(keyframe.frame, maxFrame);
+		maxFrameIdx = core_max(keyframe.frameIdx, maxFrameIdx);
 	}
-	return maxFrame;
+	return maxFrameIdx;
 }
 
 SceneGraphNodeCamera::SceneGraphNodeCamera() : Super(SceneGraphNodeType::Camera) {

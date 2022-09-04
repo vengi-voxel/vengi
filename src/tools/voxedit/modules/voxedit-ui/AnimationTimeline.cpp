@@ -83,7 +83,7 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 					core::DynamicArray<voxelformat::FrameIndex *> keys;
 					keys.reserve(modelNode.keyFrames().size());
 					for (voxelformat::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
-						keys.push_back(&kf.frame);
+						keys.push_back(&kf.frameIdx);
 					}
 					const core::String &label =
 						core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());

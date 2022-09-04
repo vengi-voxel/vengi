@@ -171,11 +171,11 @@ public:
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
 	void markUndo(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume, MementoType type,
-				  const voxel::Region &region, const glm::mat4 &transformMatrix, uint32_t frameId);
+				  const voxel::Region &region, const glm::mat4 &transformMatrix, voxelformat::KeyFrameIndex keyFrameIdx);
 
 	void markNodeRemoved(const voxelformat::SceneGraphNode &node);
 	void markNodeAdded(const voxelformat::SceneGraphNode &node);
-	void markNodeTransform(const voxelformat::SceneGraphNode &node, uint32_t frameId);
+	void markNodeTransform(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx);
 	void markModification(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion);
 	void markNodeRenamed(const voxelformat::SceneGraphNode &node);
 	void markNodeMoved(int targetId, int sourceId);
