@@ -295,16 +295,17 @@ const voxel::Region &SceneGraphNode::region() const {
 }
 
 void SceneGraphNode::translate(const glm::ivec3 &v, FrameIndex frameIdx) {
-	if (frameIdx != (FrameIndex)-1) {
-		const uint32_t kf = keyFrameForFrame(frameIdx);
-		SceneGraphTransform &transform = keyFrame(kf).transform();
-		transform.setWorldTranslation(transform.worldTranslation() + glm::vec3(v));
-	} else {
+	if (frameIdx == (FrameIndex)-1) {
 		for (SceneGraphKeyFrame &kf : _keyFrames) {
 			SceneGraphTransform &transform = kf.transform();
 			transform.setWorldTranslation(transform.worldTranslation() + glm::vec3(v));
 		}
+		return;
 	}
+
+	const KeyFrameIndex keyFrameIdx = keyFrameForFrame(frameIdx);
+	SceneGraphTransform &transform = keyFrame(keyFrameIdx).transform();
+	transform.setWorldTranslation(transform.worldTranslation() + glm::vec3(v));
 }
 
 bool SceneGraphNode::addChild(int id) {

@@ -1036,10 +1036,10 @@ void SceneManager::shift(int nodeId, const glm::ivec3& m) {
 	if (node == nullptr) {
 		return;
 	}
-	const voxelformat::KeyFrameIndex keyFrameId = node->keyFrameForFrame(_currentFrameIdx);
-	node->translate(m, keyFrameId);
+	node->translate(m, _currentFrameIdx);
 	updateAABBMesh();
-	_mementoHandler.markNodeTransform(*node, keyFrameId);
+	const voxelformat::KeyFrameIndex keyFrameIdx = node->keyFrameForFrame(_currentFrameIdx);
+	_mementoHandler.markNodeTransform(*node, keyFrameIdx);
 }
 
 void SceneManager::shift(int x, int y, int z) {
