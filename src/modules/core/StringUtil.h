@@ -138,6 +138,16 @@ extern bool isIntegerWithPostfix(const core::String& in);
 extern bool isAlpha(int c);
 extern bool isAbsolutePath(const core::String &in);
 
+inline char *strncpyz(const char *input, size_t inputSize, char *target, size_t targetSize) {
+	core_assert(targetSize > 0);
+	while (--targetSize > 0 && inputSize > 0 && *input != '\0') {
+		*target++ = *input++;
+		--inputSize;
+	}
+	*target = '\0';
+	return target;
+}
+
 /**
  * @brief Ensure that exactly one / is at the end of the given path
  */

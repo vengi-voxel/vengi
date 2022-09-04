@@ -12,6 +12,13 @@ namespace core {
 class StringUtilTest: public testing::Test {
 };
 
+TEST_F(StringUtilTest, testStrncpyz) {
+	char source[7] = "source";
+	char target[4] = "";
+	core::string::strncpyz(source, sizeof(source), target, sizeof(target));
+	EXPECT_STREQ(target, "sou");
+}
+
 TEST_F(StringUtilTest, testIsInteger) {
 	EXPECT_TRUE(core::string::isIntegerWithPostfix("2u"));
 	EXPECT_TRUE(core::string::isIntegerWithPostfix("2"));

@@ -106,7 +106,7 @@ bool IMGUIApp::onTextInput(const core::String& text) {
 	}
 	SDL_Event ev {};
 	ev.type = SDL_TEXTINPUT;
-	strncpy(ev.text.text, text.c_str(), sizeof(ev.text.text));
+	core::string::strncpyz(text.c_str(), sizeof(ev.text.text), ev.text.text, sizeof(ev.text.text));
 	ImGui_ImplSDL2_ProcessEvent(&ev);
 	return true;
 }
