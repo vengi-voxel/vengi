@@ -166,7 +166,7 @@ bool MainWindow::save(const core::String &file) {
 
 bool MainWindow::load(const core::String &file) {
 	if (file.empty()) {
-		_app->openDialog([this] (const core::String file) { load(file); }, voxelformat::voxelLoad());
+		_app->openDialog([this] (const core::String file) { load(file); }, {}, voxelformat::voxelLoad());
 		return true;
 	}
 

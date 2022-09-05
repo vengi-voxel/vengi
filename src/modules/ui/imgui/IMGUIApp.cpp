@@ -435,7 +435,7 @@ app::AppState IMGUIApp::onRunning() {
 		_console.renderNotifications();
 
 		char buf[512] = "";
-		if (_fileDialog.showFileDialog(&_showFileDialog, buf, sizeof(buf), _fileDialogMode)) {
+		if (_fileDialog.showFileDialog(&_showFileDialog, _fileDialogOptions, buf, sizeof(buf), _fileDialogMode)) {
 			if (buf[0] != '\0') {
 				_fileDialogCallback(buf);
 			}
@@ -565,7 +565,7 @@ app::AppState IMGUIApp::onCleanup() {
 	return Super::onCleanup();
 }
 
-void IMGUIApp::fileDialog(const FileDialogSelectionCallback& callback, const FileDialogOptions& options, OpenFileMode mode, const io::FormatDescription* formats, const core::String &filename) {
+void IMGUIApp::fileDialog(const video::FileDialogSelectionCallback& callback, const video::FileDialogOptions& options, OpenFileMode mode, const io::FormatDescription* formats, const core::String &filename) {
 	_showFileDialog = true;
 	_fileDialogCallback = callback;
 	_fileDialogOptions = options;

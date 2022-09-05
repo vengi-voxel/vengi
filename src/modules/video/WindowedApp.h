@@ -22,6 +22,9 @@ struct SDL_Window;
 
 namespace video {
 
+using FileDialogSelectionCallback = std::function<void(const core::String&)>;
+using FileDialogOptions = std::function<void(const io::FormatDescription *desc)>;
+
 /**
  * @brief An application with the usual lifecycle, but with a window attached to it.
  * @ingroup Video
@@ -110,9 +113,6 @@ public:
 		Save, Open, Directory
 	};
 
-	using FileDialogSelectionCallback = std::function<void(const core::String&)>;
-	using FileDialogOptions = std::function<void()>;
-
 	/**
 	 * @brief Opens a file dialog
 	 * @param[in] mode @c OpenFileMode
@@ -124,16 +124,16 @@ public:
 	 * @brief Wrapper method for @c fileDialog()
 	 * @param[in] formats nullptr terminated list of formats that are used to filter the entries
 	 */
-	void saveDialog(const FileDialogSelectionCallback& callback, const io::FormatDescription* formats = nullptr, const core::String &filename = "");
+	void saveDialog(const FileDialogSelectionCallback& callback, const FileDialogOptions& options, const io::FormatDescription* formats = nullptr, const core::String &filename = "");
 	/**
 	 * @brief Wrapper method for @c fileDialog()
 	 * @param[in] formats nullptr terminated list of formats that are used to filter the entries
 	 */
-	void openDialog(const FileDialogSelectionCallback& callback, const io::FormatDescription* formats = nullptr);
+	void openDialog(const FileDialogSelectionCallback& callback, const FileDialogOptions& options, const io::FormatDescription* formats = nullptr);
 	/**
 	 * @brief Wrapper method for @c fileDialog()
 	 */
-	void directoryDialog(const FileDialogSelectionCallback& callback);
+	void directoryDialog(const FileDialogSelectionCallback& callback, const FileDialogOptions& options);
 
 	virtual app::AppState onRunning() override;
 	virtual void onAfterRunning() override;
@@ -181,16 +181,16 @@ inline int WindowedApp::frameBufferHeight() const {
 	return _frameBufferDimension.y;
 }
 
-inline void WindowedApp::saveDialog(const FileDialogSelectionCallback& callback, const io::FormatDescription* formats, const core::String &filename) {
-	fileDialog(callback, {}, OpenFileMode::Save, formats, filename);
+inline void WindowedApp::saveDialog(const FileDialogSelectionCallback& callback, const FileDialogOptions& options, const io::FormatDescription* formats, const core::String &filename) {
+	fileDialog(callback, options, OpenFileMode::Save, formats, filename);
 }
 
-inline void WindowedApp::openDialog(const FileDialogSelectionCallback& callback, const io::FormatDescription* formats) {
-	fileDialog(callback, {}, OpenFileMode::Open, formats);
+inline void WindowedApp::openDialog(const FileDialogSelectionCallback& callback, const FileDialogOptions& options, const io::FormatDescription* formats) {
+	fileDialog(callback, options, OpenFileMode::Open, formats);
 }
 
-inline void WindowedApp::directoryDialog(const FileDialogSelectionCallback& callback) {
-	fileDialog(callback, {}, OpenFileMode::Directory);
+inline void WindowedApp::directoryDialog(const FileDialogSelectionCallback& callback, const FileDialogOptions& options) {
+	fileDialog(callback, options, OpenFileMode::Directory);
 }
 
 }

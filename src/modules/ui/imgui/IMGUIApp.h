@@ -46,8 +46,8 @@ protected:
 	bool _imguiBackendInitialized = false;
 
 	OpenFileMode _fileDialogMode = OpenFileMode::Directory;
-	FileDialogSelectionCallback _fileDialogCallback {};
-	FileDialogOptions _fileDialogOptions {};
+	video::FileDialogSelectionCallback _fileDialogCallback {};
+	video::FileDialogOptions _fileDialogOptions {};
 
 	ImFont* _defaultFont = nullptr;
 	ImFont* _bigFont = nullptr;
@@ -85,7 +85,7 @@ public:
 
 	void showBindingsDialog();
 	void showTexturesDialog();
-	void fileDialog(const FileDialogSelectionCallback& callback, const FileDialogOptions& options, OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "") override;
+	void fileDialog(const video::FileDialogSelectionCallback& callback, const video::FileDialogOptions& options, OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "") override;
 };
 
 inline void IMGUIApp::showBindingsDialog() {

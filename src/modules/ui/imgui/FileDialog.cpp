@@ -379,7 +379,7 @@ bool FileDialog::filesPanel() {
 
 // TODO: allow to specify the starting directory
 // TODO: _fileDialogOptions
-bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSize,
+bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize,
 								video::WindowedApp::OpenFileMode type) {
 	if (open == nullptr || *open) {
 		bool doubleClickedFile = false;
@@ -602,6 +602,14 @@ bool FileDialog::showFileDialog(bool *open, char *buffer, unsigned int bufferSiz
 				}
 			}
 			ImGui::SetItemDefaultFocus();
+
+			if (fileDialogOptions) {
+				const io::FormatDescription *desc = nullptr;
+				if (_currentFilterEntry != -1) {
+					desc = &_filterEntries[_currentFilterEntry];
+				}
+				fileDialogOptions(desc);
+			}
 
 			if (strlen(_error) > 0) {
 				ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _error);

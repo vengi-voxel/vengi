@@ -197,7 +197,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 								} else {
 									Log::warn("Failed to save script %s", file.c_str());
 								}
-							},
+							}, {},
 							io::format::lua());
 					}
 					if (ImGui::MenuItem("Close##scripteditor")) {
