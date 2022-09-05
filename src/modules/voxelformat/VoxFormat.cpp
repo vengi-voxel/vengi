@@ -93,8 +93,8 @@ static bool loadKeyFrames(voxelformat::SceneGraph &sceneGraph, voxelformat::Scen
 	SceneGraphKeyFrames kf;
 	Log::debug("Load %d keyframes", numKeyframes);
 	kf.reserve(numKeyframes);
-	for (uint32_t k = 0; k < numKeyframes; ++k) {
-		const ogt_vox_keyframe_transform& transform_keyframe = transformKeyframes[k];
+	for (uint32_t keyFrameIdx = 0; keyFrameIdx < numKeyframes; ++keyFrameIdx) {
+		const ogt_vox_keyframe_transform& transform_keyframe = transformKeyframes[keyFrameIdx];
 		const ogt_vox_transform& keyframeTransform = transform_keyframe.transform;
 		const glm::vec4 ogtKeyFrameCol0(keyframeTransform.m00, keyframeTransform.m01, keyframeTransform.m02, keyframeTransform.m03);
 		const glm::vec4 ogtKeyFrameCol1(keyframeTransform.m10, keyframeTransform.m11, keyframeTransform.m12, keyframeTransform.m13);
@@ -106,7 +106,7 @@ static bool loadKeyFrames(voxelformat::SceneGraph &sceneGraph, voxelformat::Scen
 		sceneGraphKeyFrame.interpolation = InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
 		sceneGraphKeyFrame.transform().setWorldMatrix(ogtKeyFrameMat);
-		sceneGraphKeyFrame.transform().update(sceneGraph, node, (KeyFrameIndex)k);
+		sceneGraphKeyFrame.transform().update(sceneGraph, node, (KeyFrameIndex)keyFrameIdx);
 		kf.push_back(sceneGraphKeyFrame);
 	}
 	return node.setKeyFrames(kf);
