@@ -416,6 +416,7 @@ bool Filesystem::pushDir(const core::String &directory) {
 
 io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const {
 	if (isReadableDir(filename)) {
+		Log::debug("%s is a directory - skip this", filename.c_str());
 		return core::make_shared<io::File>("", mode);
 	}
 	if (mode == FileMode::SysWrite) {

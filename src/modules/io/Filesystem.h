@@ -193,6 +193,9 @@ inline const Paths& Filesystem::paths() const {
 }
 
 inline bool Filesystem::exists(const core::String& filename) const {
+	if (isReadableDir(filename)) {
+		return io::File(filename, FileMode::Read).exists();
+	}
 	return open(filename)->exists();
 }
 

@@ -46,6 +46,19 @@ TEST_F(FilesystemTest, testListDirectory) {
 	fs.shutdown();
 }
 
+TEST_F(FilesystemTest, testDirectoryExists) {
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.createDir("testdirexists"));
+	EXPECT_TRUE(fs.exists("testdirexists"));
+}
+
+TEST_F(FilesystemTest, testFileExists) {
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.exists("iotest.txt"));
+}
+
 TEST_F(FilesystemTest, testListDirectoryFilter) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
