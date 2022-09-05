@@ -414,11 +414,11 @@ const SceneGraphKeyFrames &SceneGraphNode::keyFrames() const {
 	return _keyFrames;
 }
 
-bool SceneGraphNode::addKeyFrame(FrameIndex frameIdx) {
+KeyFrameIndex SceneGraphNode::addKeyFrame(FrameIndex frameIdx) {
 	for (size_t i = 0; i < _keyFrames.size(); ++i) {
 		const SceneGraphKeyFrame &kf = _keyFrames[i];
 		if (kf.frameIdx == frameIdx) {
-			return false;
+			return InvalidKeyFrame;
 		}
 	}
 
@@ -426,7 +426,7 @@ bool SceneGraphNode::addKeyFrame(FrameIndex frameIdx) {
 	keyFrame.frameIdx = frameIdx;
 	_keyFrames.push_back(keyFrame);
 	sortKeyFrames();
-	return true;
+	return (KeyFrameIndex)(_keyFrames.size() - 1);
 }
 
 void SceneGraphNode::sortKeyFrames() {

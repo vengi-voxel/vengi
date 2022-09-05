@@ -41,7 +41,7 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 			if (ImGui::DisabledButton(ICON_FA_PLUS_SQUARE " Add", _play)) {
 				sceneMgr().nodeForeachGroup([&](int nodeId) {
 					voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
-					if (!node.addKeyFrame(currentFrame)) {
+					if (node.addKeyFrame(currentFrame) == InvalidKeyFrame) {
 						Log::error("Failed to add keyframe for frame %i", (int)currentFrame);
 						return;
 					}
