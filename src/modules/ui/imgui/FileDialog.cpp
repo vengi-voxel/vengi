@@ -111,7 +111,7 @@ bool FileDialog::readDir() {
 	return true;
 }
 
-void FileDialog::bookMarkEntry(video::WindowedApp::OpenFileMode type, const core::String& path, float width, const char *title, const char *icon) {
+void FileDialog::bookMarkEntry(video::OpenFileMode type, const core::String& path, float width, const char *title, const char *icon) {
 	const ImVec2 size(width, 0);
 	if (icon != nullptr) {
 		const float x = ImGui::GetCursorPosX();
@@ -147,7 +147,7 @@ void FileDialog::removeBookmark(const core::String &bookmark) {
 	bookmarks->setVal(newBookmarks);
 }
 
-void FileDialog::bookmarkPanel(video::WindowedApp::OpenFileMode type, const core::String &bookmarks) {
+void FileDialog::bookmarkPanel(video::OpenFileMode type, const core::String &bookmarks) {
 	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(200, 300), true,
 					  ImGuiWindowFlags_HorizontalScrollbar);
 	bool specialDirs = false;
@@ -199,8 +199,8 @@ void FileDialog::bookmarkPanel(video::WindowedApp::OpenFileMode type, const core
 	ImGui::EndChild();
 }
 
-void FileDialog::setCurrentPath(video::WindowedApp::OpenFileMode type, const core::String& path) {
-	if (type != video::WindowedApp::OpenFileMode::Save) {
+void FileDialog::setCurrentPath(video::OpenFileMode type, const core::String& path) {
+	if (type != video::OpenFileMode::Save) {
 		_currentFile = "";
 	}
 	_folderSelectIndex = 0;
@@ -212,7 +212,7 @@ void FileDialog::setCurrentPath(video::WindowedApp::OpenFileMode type, const cor
 	readDir();
 }
 
-void FileDialog::directoryPanel(video::WindowedApp::OpenFileMode type) {
+void FileDialog::directoryPanel(video::OpenFileMode type) {
 	ImGui::BeginChild("Directories##filedialog", ImVec2(200, 300), true,
 					  ImGuiWindowFlags_HorizontalScrollbar);
 
@@ -376,20 +376,19 @@ bool FileDialog::filesPanel() {
 	return doubleClicked;
 }
 
-// TODO: _fileDialogOptions
 bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize,
-								video::WindowedApp::OpenFileMode type) {
+								video::OpenFileMode type) {
 	if (open == nullptr || *open) {
 		bool doubleClickedFile = false;
 		core_trace_scoped(FileDialog);
 		ImGui::SetNextWindowSize(ImVec2(740.0f, 494.0f), ImGuiCond_FirstUseEver);
 		const char *title;
 		switch (type) {
-		case video::WindowedApp::OpenFileMode::Directory:
+		case video::OpenFileMode::Directory:
 			title = "Select a directory";
 			break;
-		case video::WindowedApp::OpenFileMode::Save:
-		case video::WindowedApp::OpenFileMode::Open:
+		case video::OpenFileMode::Save:
+		case video::OpenFileMode::Open:
 		default:
 			title = "Select a file";
 			break;
@@ -434,12 +433,12 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 				assemblePath(_currentPath, !_currentFolder.empty() ? _currentFolder : _currentFile);
 			ImGui::PushItemWidth(724);
 			ImGui::InputText("##selectedpath", &selectedFilePath, ImGuiInputTextFlags_ReadOnly);
-			if (type == video::WindowedApp::OpenFileMode::Save) {
+			if (type == video::OpenFileMode::Save) {
 				ImGui::InputText("Filename", &_currentFile);
 			}
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
 
-			if (type != video::WindowedApp::OpenFileMode::Open) {
+			if (type != video::OpenFileMode::Open) {
 				if (ImGui::Button("New folder")) {
 					ImGui::OpenPopup("NewFolderPopup");
 				}
@@ -534,9 +533,9 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			}
 
 			const char *buttonText = "Choose";
-			if (type == video::WindowedApp::OpenFileMode::Open) {
+			if (type == video::OpenFileMode::Open) {
 				buttonText = "Open";
-			} else if (type == video::WindowedApp::OpenFileMode::Save) {
+			} else if (type == video::OpenFileMode::Save) {
 				buttonText = "Save";
 			}
 
@@ -557,7 +556,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGuiKey_Enter) || doubleClickedFile) {
-				if (type == video::WindowedApp::OpenFileMode::Directory) {
+				if (type == video::OpenFileMode::Directory) {
 					if (_currentFolder == "") {
 						SDL_strlcpy(_error, "Error: You must select a folder!", sizeof(_error));
 					} else {
@@ -573,8 +572,8 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 						ImGui::EndPopup();
 						return true;
 					}
-				} else if (type == video::WindowedApp::OpenFileMode::Open ||
-						   type == video::WindowedApp::OpenFileMode::Save) {
+				} else if (type == video::OpenFileMode::Open ||
+						   type == video::OpenFileMode::Save) {
 					if (_currentFile == "") {
 						SDL_strlcpy(_error, "Error: You must select a file!", sizeof(_error));
 					} else {
@@ -601,16 +600,18 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			}
 			ImGui::SetItemDefaultFocus();
 
+			if (strlen(_error) > 0) {
+				ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _error);
+			} else {
+				ImGui::Spacing();
+			}
+
 			if (fileDialogOptions) {
 				const io::FormatDescription *desc = nullptr;
 				if (_currentFilterEntry != -1) {
 					desc = &_filterEntries[_currentFilterEntry];
 				}
-				fileDialogOptions(desc);
-			}
-
-			if (strlen(_error) > 0) {
-				ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _error);
+				fileDialogOptions(type, desc);
 			}
 
 			ImGui::EndPopup();

@@ -22,8 +22,12 @@ struct SDL_Window;
 
 namespace video {
 
+enum class OpenFileMode {
+	Save, Open, Directory
+};
+
 using FileDialogSelectionCallback = std::function<void(const core::String&)>;
-using FileDialogOptions = std::function<void(const io::FormatDescription *desc)>;
+using FileDialogOptions = std::function<void(video::OpenFileMode mode, const io::FormatDescription *desc)>;
 
 /**
  * @brief An application with the usual lifecycle, but with a window attached to it.
@@ -108,10 +112,6 @@ public:
 	int frameBufferHeight() const;
 
 	core::String getKeyBindingsString(const char *cmd) const;
-
-	enum class OpenFileMode {
-		Save, Open, Directory
-	};
 
 	/**
 	 * @brief Opens a file dialog

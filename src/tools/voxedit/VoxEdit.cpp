@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include "core/concurrent/Concurrency.h"
 #include "io/FormatDescription.h"
+#include "video/WindowedApp.h"
 #include "voxedit-util/Config.h"
 #include "metric/Metric.h"
 #include "core/TimeProvider.h"
@@ -107,6 +108,8 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST, "Fill the hollows when voxelizing a mesh format");
 	core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 
+	static video::FileDialogOptions options {};
+
 	for (const io::FormatDescription* desc = io::format::palettes(); desc->valid(); ++desc) {
 		_paletteFormats.push_back(*desc);
 	}
@@ -125,7 +128,7 @@ app::AppState VoxEdit::onConstruct() {
 		}
 		if (args.empty()) {
 			const core::String filename = getSuggestedFilename("png");
-			saveDialog([this] (const core::String &file) {_mainWindow->saveScreenshot(file); }, {}, io::format::images(), filename);
+			saveDialog([this] (const core::String &file) {_mainWindow->saveScreenshot(file); }, options, io::format::images(), filename);
 			return;
 		}
 		_mainWindow->saveScreenshot(args[0]);
@@ -138,7 +141,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (args.empty()) {
 			const core::String filename = getSuggestedFilename();
 			if (filename.empty()) {
-				saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, {}, voxelformat::voxelSave());
+				saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, options, voxelformat::voxelSave());
 			} else {
 				_mainWindow->save(filename);
 			}
@@ -152,7 +155,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		const core::String filename = getSuggestedFilename();
-		saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, {}, voxelformat::voxelSave(), filename);
+		saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, options, voxelformat::voxelSave(), filename);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current scene as a volume to the given file");
 
 	command::Command::registerCommand("load", [this](const command::CmdArgs &args) {
@@ -160,7 +163,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			openDialog([this] (const core::String &file) {_mainWindow->load(file); }, {}, voxelformat::voxelLoad());
+			openDialog([this] (const core::String &file) {_mainWindow->load(file); }, options, voxelformat::voxelLoad());
 			return;
 		}
 		_mainWindow->load(args[0]);
@@ -168,7 +171,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("prefab", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([](const core::String &file) { voxedit::sceneMgr().prefab(file); }, {}, voxelformat::voxelLoad());
+			openDialog([](const core::String &file) { voxedit::sceneMgr().prefab(file); }, options, voxelformat::voxelLoad());
 			return;
 		}
 		voxedit::sceneMgr().prefab(args[0]);
@@ -176,7 +179,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importheightmap", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, {}, io::format::images());
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, options, io::format::images());
 			return;
 		}
 		if (!voxedit::sceneMgr().importHeightmap(args[0])) {
@@ -186,7 +189,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importcoloredheightmap", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, {}, io::format::images());
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, options, io::format::images());
 			return;
 		}
 		if (!voxedit::sceneMgr().importColoredHeightmap(args[0])) {
@@ -196,7 +199,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importplane", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsPlane(file); }, {}, io::format::images());
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsPlane(file); }, options, io::format::images());
 			return;
 		}
 		if (!voxedit::sceneMgr().importAsPlane(args[0])) {
@@ -206,7 +209,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importvolume", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsVolume(file, 8, true); }, {}, io::format::images());
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsVolume(file, 8, true); }, options, io::format::images());
 			return;
 		}
 		const int maxDepth = args.size() >= 2 ? core::string::toInt(args[1]) : 8;
@@ -218,7 +221,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importPalette(file); }, {}, &_paletteFormats[0]);
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importPalette(file); }, options, &_paletteFormats[0]);
 			return;
 		}
 		if (!voxedit::sceneMgr().importPalette(args[0])) {
@@ -232,7 +235,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			openDialog([this] (const core::String &file) { _mainWindow->loadAnimationEntity(file); }, {}, io::format::lua());
+			openDialog([this] (const core::String &file) { _mainWindow->loadAnimationEntity(file); }, options, io::format::lua());
 			return;
 		}
 		_mainWindow->loadAnimationEntity(args[0]);

@@ -565,12 +565,12 @@ app::AppState IMGUIApp::onCleanup() {
 	return Super::onCleanup();
 }
 
-void IMGUIApp::fileDialog(const video::FileDialogSelectionCallback& callback, const video::FileDialogOptions& options, OpenFileMode mode, const io::FormatDescription* formats, const core::String &filename) {
+void IMGUIApp::fileDialog(const video::FileDialogSelectionCallback& callback, const video::FileDialogOptions& options, video::OpenFileMode mode, const io::FormatDescription* formats, const core::String &filename) {
 	_showFileDialog = true;
 	_fileDialogCallback = callback;
 	_fileDialogOptions = options;
 	_fileDialogMode = mode;
-	_fileDialog.openDir(formats);
+	_fileDialog.openDir(formats, filename);
 }
 
 }

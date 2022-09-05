@@ -45,7 +45,7 @@ protected:
 	bool _persistUISettings = true;
 	bool _imguiBackendInitialized = false;
 
-	OpenFileMode _fileDialogMode = OpenFileMode::Directory;
+	video::OpenFileMode _fileDialogMode = video::OpenFileMode::Directory;
 	video::FileDialogSelectionCallback _fileDialogCallback {};
 	video::FileDialogOptions _fileDialogOptions {};
 
@@ -85,7 +85,7 @@ public:
 
 	void showBindingsDialog();
 	void showTexturesDialog();
-	void fileDialog(const video::FileDialogSelectionCallback& callback, const video::FileDialogOptions& options, OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "") override;
+	void fileDialog(const video::FileDialogSelectionCallback& callback, const video::FileDialogOptions& options, video::OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "") override;
 };
 
 inline void IMGUIApp::showBindingsDialog() {

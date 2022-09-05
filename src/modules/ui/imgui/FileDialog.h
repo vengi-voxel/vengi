@@ -39,16 +39,16 @@ private:
 	char _newFolderName[500] = "";
 	char _newFolderError[500] = "";
 
-	void setCurrentPath(video::WindowedApp::OpenFileMode type, const core::String& path);
+	void setCurrentPath(video::OpenFileMode type, const core::String& path);
 	void selectFilter(int index);
 	bool hide(const core::String &file) const;
 
 	void applyFilter();
 	bool readDir();
-	void directoryPanel(video::WindowedApp::OpenFileMode type);
+	void directoryPanel(video::OpenFileMode type);
 	void removeBookmark(const core::String &bookmark);
-	void bookMarkEntry(video::WindowedApp::OpenFileMode type, const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
-	void bookmarkPanel(video::WindowedApp::OpenFileMode type, const core::String &bookmarks);
+	void bookMarkEntry(video::OpenFileMode type, const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
+	void bookmarkPanel(video::OpenFileMode type, const core::String &bookmarks);
 	/**
 	 * @return @c true if a file was double clicked
 	 */
@@ -65,7 +65,7 @@ public:
 	* @return @c true if user input was made - either an entity was selected, or the selection was cancelled.
 	* @return @c false if no user input was made yet and the dialog should still run
 	*/
-	bool showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize, video::WindowedApp::OpenFileMode type);
+	bool showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize, video::OpenFileMode type);
 };
 
 }
