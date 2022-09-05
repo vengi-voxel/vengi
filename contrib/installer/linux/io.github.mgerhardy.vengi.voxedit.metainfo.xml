@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component type="desktop">
+  <!--Created with jdAppdataEdit 5.0-->
+  <id>io.github.mgerhardy.vengi.voxedit</id>
+  <name>vengi VoxEdit</name>
+  <summary>voxel editor</summary>
+  <developer_name>Martin Gerhardy</developer_name>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>A voxel editor with character animation support and loading/saving into a lot of voxel volume formats.</p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image type="source">https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-new-ui.png</image>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="v0.0.21" date="2022-09-05" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.21</url>
+    </release>
+    <release version="v0.0.20" date="2022-06-14" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.20</url>
+    </release>
+    <release version="v0.0.19" date="2022-03-27" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.19</url>
+    </release>
+    <release version="v0.0.18" date="2022-02-12" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.18</url>
+    </release>
+    <release version="v0.0.17" date="2022-01-23" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.17</url>
+    </release>
+    <release version="v0.0.16" date="2021-12-27" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.16</url>
+    </release>
+    <release version="v0.0.15" date="2021-12-18" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.15</url>
+    </release>
+    <release version="v0.0.14" date="2021-11-21" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.14</url>
+    </release>
+    <release version="v0.0.13" date="2021-10-29" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.13</url>
+    </release>
+    <release version="v0.0.12" date="2021-10-26" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.12</url>
+    </release>
+    <release version="v0.0.11" date="2021-10-25" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.11</url>
+    </release>
+    <release version="v0.0.10" date="2021-09-19" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.10</url>
+    </release>
+    <release version="v0.0.9.0" date="2020-10-03" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.9.0</url>
+    </release>
+    <release version="v0.0.8.0" date="2020-09-30" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.8.0</url>
+    </release>
+    <release version="v0.0.7.0" date="2020-09-15" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.7.0</url>
+    </release>
+    <release version="v0.0.6.0" date="2020-08-02" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.6.0</url>
+    </release>
+    <release version="v0.0.5.0" date="2020-07-26" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.5.0</url>
+    </release>
+    <release version="v0.0.4.0" date="2020-06-07" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.4.0</url>
+    </release>
+    <release version="v0.0.3.0" date="2020-05-17" type="development">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.3.0</url>
+    </release>
+    <release version="v0.0.2.0" date="2020-05-06" type="development">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.2.0</url>
+    </release>
+    <release version="v0.0.1.0" date="2020-02-08" type="development">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.1.0</url>
+    </release>
+  </releases>
+  <url type="homepage">https://mgerhardy.github.io/vengi/</url>
+  <url type="bugtracker">https://github.com/mgerhardy/vengi/issues</url>
+  <url type="donation">https://www.paypal.me/MartinGerhardy</url>
+  <content_rating type="oars-1.1"/>
+</component>
