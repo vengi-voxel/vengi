@@ -1,4 +1,10 @@
-vengi (0.0.21.0-1) UNRELEASED; urgency=low
+vengi (0.0.22.0-1) UNRELEASED; urgency=low
+
+  * General:
+
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 9 Sep 2022 00:00:00 +0000
+
+vengi (0.0.21.0-1) unstable; urgency=low
 
   * General:
   * Added support for minecraft 1.13 region files
@@ -34,7 +40,7 @@ vengi (0.0.21.0-1) UNRELEASED; urgency=low
   * Fixed deleting key frames
   * Improved adding new key frames
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Tue, 14 Jun 2022 00:00:00 +0000
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 9 Sep 2022 00:00:00 +0000
 
 vengi (0.0.20.0-1) unstable; urgency=low
 
