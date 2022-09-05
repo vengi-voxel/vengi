@@ -335,10 +335,14 @@ bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, Sc
 	return true;
 }
 
+bool isMeshFormat(const io::FormatDescription &desc) {
+	return desc.flags & VOX_FORMAT_FLAG_MESH;
+}
+
 bool isMeshFormat(const core::String &filename) {
 	const core::String &ext = core::string::extractExtension(filename);
 	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
-		if (desc->matchesExtension(ext) && (desc->flags & VOX_FORMAT_FLAG_MESH) != 0u) {
+		if (desc->matchesExtension(ext) && isMeshFormat(*desc)) {
 			return true;
 		}
 	}
