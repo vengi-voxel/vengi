@@ -1,6 +1,6 @@
 [Desktop Entry]
 Version=1.0
-Name=@NAME@ @CMAKE_PROJECT_VERSION@
+Name=@NAME@
 GenericName=Voxel Editor
 Comment=@DESCRIPTION@
 Exec=@COMMANDLINE@ %f
