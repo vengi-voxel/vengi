@@ -116,7 +116,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 
-		const bool forceApplyOptions = desc->name == io::ALL_SUPPORTED.name;
+		const bool forceApplyOptions = (desc->flags & FORMAT_FLAG_ALL) == FORMAT_FLAG_ALL;
 		if (forceApplyOptions || voxelformat::isMeshFormat(*desc)) {
 			ImGui::InputVarFloat("Uniform scale", cfg::VoxformatScale);
 			ImGui::InputVarFloat("X axis scale", cfg::VoxformatScaleX);

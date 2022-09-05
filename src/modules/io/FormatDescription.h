@@ -14,11 +14,18 @@ namespace io {
 #define MAX_FORMATDESCRIPTION_EXTENSIONS 8
 using FormatDescriptionExtensions = core::Vector<core::String, MAX_FORMATDESCRIPTION_EXTENSIONS>;
 
+#define FORMAT_FLAG_ALL (1 << 0)
+#define FORMAT_FLAG_GROUP (1 << 1)
+
+#define VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED (1 << 8)
+#define VOX_FORMAT_FLAG_PALETTE_EMBEDDED (1 << 9)
+#define VOX_FORMAT_FLAG_MESH (1 << 10)
+
 struct FormatDescription {
 	core::String name;						/**< the name of the format */
 	FormatDescriptionExtensions exts;		/**< the file extension - nullptr terminated list - all lower case */
 	bool (*isA)(uint32_t magic) = nullptr;	/**< function to check whether a magic byte matches for the format description */
-	uint32_t flags = 0u;					/**< flags for user defines properties */
+	uint32_t flags = 0u;					/**< flags for user defined properties */
 
 	inline bool valid() const {
 		return !name.empty();
@@ -36,7 +43,7 @@ struct FormatDescription {
 	bool matchesExtension(const core::String &fileExt) const;
 };
 
-static const io::FormatDescription ALL_SUPPORTED {"All supported", {}, nullptr, 0};
+static const io::FormatDescription ALL_SUPPORTED {"All supported", {}, nullptr, FORMAT_FLAG_ALL};
 
 /**
  * @param desc a terminated list of @c FormatDescription objects

@@ -104,12 +104,14 @@ void createGroupPatterns(const FormatDescription *inputDesc, core::DynamicArray<
 		if (lastName != firstWord) {
 			if (temp.size() >= 2) {
 				io::FormatDescriptionExtensions exts{};
+				uint32_t flags = FORMAT_FLAG_GROUP;
 				for (const io::FormatDescription &tmpDesc : temp) {
 					for (const core::String &ext : tmpDesc.exts) {
 						exts.push_back(ext);
 					}
+					flags |= tmpDesc.flags;
 				}
-				io::FormatDescription val{lastName, exts, nullptr, 0};
+				const io::FormatDescription val{lastName, exts, nullptr, flags};
 				groups.push_back(val);
 			}
 			lastName = firstWord;
@@ -119,12 +121,14 @@ void createGroupPatterns(const FormatDescription *inputDesc, core::DynamicArray<
 	}
 	if (temp.size() >= 2) {
 		io::FormatDescriptionExtensions exts{};
+		uint32_t flags = FORMAT_FLAG_GROUP;
 		for (const io::FormatDescription &tmpDesc : temp) {
 			for (const core::String &ext : tmpDesc.exts) {
 				exts.push_back(ext);
 			}
+			flags |= tmpDesc.flags;
 		}
-		io::FormatDescription val{lastName, exts, nullptr, 0};
+		const io::FormatDescription val{lastName, exts, nullptr, flags};
 		groups.push_back(val);
 	}
 }
