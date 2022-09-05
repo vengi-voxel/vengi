@@ -28,6 +28,20 @@ TEST_F(GLTFFormatTest, testExportMesh) {
 	EXPECT_TRUE(f.saveGroups(sceneGraph, outFilename, outStream));
 }
 
+TEST_F(GLTFFormatTest, testImportAnimation) {
+	GLTFFormat f;
+	const core::String filename = "glTF/BoxAnimated.glb";
+	const io::FilePtr &file = open(filename);
+	io::FileStream stream(file);
+	SceneGraph sceneGraph;
+	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph));
+	ASSERT_EQ(2u, sceneGraph.size());
+	SceneGraphNode* node = sceneGraph[1];
+	ASSERT_TRUE(node != nullptr);
+	ASSERT_FALSE(node->keyFrames().empty());
+	ASSERT_GE(node->keyFrames().size(), 2u);
+}
+
 TEST_F(GLTFFormatTest, testVoxelizeCube) {
 	GLTFFormat f;
 	const core::String filename = "glTF/cube/Cube.gltf";

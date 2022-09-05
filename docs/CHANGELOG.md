@@ -10,6 +10,10 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 ## 0.0.22 (2022-XX-XX)
 
+General:
+
+   - Added support for importing GLTF animations
+
 ## 0.0.21 (2022-09-05)
 
 General:

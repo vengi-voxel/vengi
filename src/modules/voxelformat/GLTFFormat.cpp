@@ -42,6 +42,10 @@
 
 namespace voxelformat {
 
+namespace _priv {
+const float FPS = 12.0f; // TODO: fps
+}
+
 void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
 								 const SceneGraphNode &graphNode, Stack &stack, const SceneGraph &sceneGraph,
 								 const glm::vec3 &scale) {
@@ -911,8 +915,99 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	SceneGraphNode node;
 	const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
 	node.setName(gltfNode.name.c_str());
-	// TODO: keyframes https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_007_Animations.md
-	node.setTransform(0, transform);
+	KeyFrameIndex keyFrameIdx = 0;
+	node.setTransform(keyFrameIdx++, transform);
+
+	// keyframes https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_007_Animations.md
+	const size_t animCnt = model.animations.size();
+	for (size_t animIdx = 0; animIdx < animCnt; ++animIdx) {
+		const tinygltf::Animation &animation = model.animations[animIdx];
+		const core::String animationName = animation.name.c_str();
+
+		const std::vector<tinygltf::AnimationChannel> &channels = animation.channels;
+		for (const tinygltf::AnimationChannel& channel : channels) {
+			const int nodeId = channel.target_node;
+			if (nodeId != gltfNodeIdx) {
+				continue;
+			}
+			const tinygltf::AnimationSampler &sampler = animation.samplers[channel.sampler];
+			const std::string& type = channel.target_path;
+			InterpolationType interpolation = InterpolationType::Linear;
+			if (sampler.interpolation == "LINEAR") {
+				interpolation = InterpolationType::Linear;
+			} else if (sampler.interpolation == "STEP") {
+				interpolation = InterpolationType::Instant;
+			// } else if (sampler.interpolation == "CUBICSPLINE") {
+				// TODO: implement easing for this type
+				// interpolation = InterpolationType::Linear;
+			}
+
+			// get the key frame seconds (float)
+			{
+				const tinygltf::Accessor *accessor = getGltfAccessor(model, sampler.input);
+				if (accessor == nullptr || accessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || accessor->type != TINYGLTF_TYPE_SCALAR) {
+					Log::warn("Could not get accessor for samplers");
+					return false;
+				}
+				const tinygltf::BufferView& bufferView = model.bufferViews[accessor->bufferView];
+				const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+				const size_t stride = bufferView.byteStride ? bufferView.byteStride : 4;
+
+				const size_t offset = accessor->byteOffset + bufferView.byteOffset;
+				const uint8_t *buf = buffer.data.data() + offset;
+				for (size_t i = 0; i < accessor->count; ++i) {
+					const float seconds = *(const float*)buf;
+					node.addKeyFrame((FrameIndex)(seconds * _priv::FPS));
+					buf += stride;
+				}
+			}
+
+			// get the key frame values (xyz for translation and scale and xyzw for the rotation)
+			{
+				const tinygltf::Accessor *accessor = getGltfAccessor(model, sampler.output);
+				if (accessor == nullptr) {
+					Log::warn("Could not get accessor for samplers");
+					return false;
+				}
+
+				const size_t size = getGltfAccessorSize(*accessor);
+				const tinygltf::BufferView& bufferView = model.bufferViews[accessor->bufferView];
+				const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
+				const size_t stride = bufferView.byteStride ? bufferView.byteStride : size;
+
+				const size_t offset = accessor->byteOffset + bufferView.byteOffset;
+				const uint8_t *transformBuf = buffer.data.data() + offset;
+
+				if (accessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
+					Log::warn("Skip non float type for sampler output");
+					continue;
+				}
+				for (size_t keyFrameIdx = 0; keyFrameIdx < accessor->count; ++keyFrameIdx) {
+					const float *buf = (const float *)transformBuf;
+					transformBuf += stride;
+					SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+					keyFrame.interpolation = interpolation;
+					SceneGraphTransform &transform = keyFrame.transform();
+					if (type == "translation") {
+						core_assert(accessor->type == TINYGLTF_TYPE_VEC3);
+						glm::vec3 v(buf[0], buf[1], buf[2]);
+						transform.setLocalTranslation(v);
+					} else if (type == "rotation") {
+						core_assert(accessor->type == TINYGLTF_TYPE_VEC4);
+						glm::quat orientation(buf[0], buf[1], buf[2], buf[3]);
+						transform.setLocalOrientation(orientation);
+					} else if (type == "scale") {
+						core_assert(accessor->type == TINYGLTF_TYPE_VEC3);
+						glm::vec3 v(buf[0], buf[1], buf[2]);
+						transform.setLocalScale(v[0]); // TODO:
+					} else if (type == "weights") {
+						// TODO: not supported yet
+						continue;
+					}
+				}
+			}
+		}
+	}
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	node.setVolume(volume, true);

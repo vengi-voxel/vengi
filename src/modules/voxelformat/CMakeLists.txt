@@ -131,6 +131,7 @@ set(TEST_FILES
 	tests/glTF/cube/Cube_MetallicRoughness.png
 	tests/glTF/cube/Cube.bin
 	tests/glTF/cube/Cube.gltf
+	tests/glTF/BoxAnimated.glb
 	tests/glTF/lantern/Lantern_baseColor.png
 	tests/glTF/lantern/Lantern_emissive.png
 	tests/glTF/lantern/Lantern_normal.png
