@@ -36,6 +36,8 @@ struct FormatDescription {
 	bool matchesExtension(const core::String &fileExt) const;
 };
 
+static const io::FormatDescription ALL_SUPPORTED {"All supported", {}, nullptr, 0};
+
 /**
  * @param desc a terminated list of @c FormatDescription objects
  * @return a comma separated list of the extension wildcards (e.g. @code *.ext,*.ext2 @endcode)

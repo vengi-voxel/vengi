@@ -63,7 +63,6 @@ bool FileDialog::openDir(const io::FormatDescription* formats, const core::Strin
 	} else {
 		_filterTextWidth = 0.0f;
 		const io::FormatDescription* f = formats;
-		// TODO: add a group by first name (e.g. all Minecraft, all Qubicle, ...)
 		while (f->valid()) {
 			const core::String& str = io::convertToFilePattern(*f);
 			const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
@@ -76,7 +75,7 @@ bool FileDialog::openDir(const io::FormatDescription* formats, const core::Strin
 		_filterAll = io::convertToAllFilePattern(formats);
 		if (!_filterAll.empty()) {
 			// must be the first entry - see applyFilter()
-			_filterEntries.insert(_filterEntries.begin(), io::FormatDescription{"All supported", {}, nullptr, 0});
+			_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED);
 		}
 
 		const core::VarPtr &lastFilterVar = core::Var::getSafe(cfg::UILastFilter);
