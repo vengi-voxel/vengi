@@ -293,8 +293,8 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	if (editMode == EditMode::Scene) {
 		const float step = (float)core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
 		const float snap[]{step, step, step};
-		const uint32_t keyFrame = node.keyFrameForFrame(sceneMgr().currentFrame());
-		const voxelformat::SceneGraphTransform &transform = node.transform(keyFrame);
+		const uint32_t keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
+		const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 		glm::mat4 transformMatrix = transform.worldMatrix();
 		glm::mat4 deltaMatrix(0.0f);
 		const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
@@ -337,14 +337,14 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 						}
 					}
 				} else {
-					sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrame, false);
+					sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrameIdx, false);
 				}
 			} else if (_guizmoActivated) {
 				if (_boundsMode) {
 					voxel::Region newRegion(glm::ivec3(_bounds.mins), glm::ivec3(_bounds.maxs));
 					sceneMgr().resize(activeNode, newRegion);
 				} else {
-					sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrame, true);
+					sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrameIdx, true);
 				}
 				_guizmoActivated = false;
 			}

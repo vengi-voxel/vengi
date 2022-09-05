@@ -282,9 +282,10 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 	SceneGraphTransform transform;
 	glm::mat4 transformMatrix = footer.transform;
 	transform.setWorldMatrix(transformMatrix);
-	// transform.setScale(footer.scale); // TODO
-	transform.updateFromWorldMatrix();
-	node.setTransform(0, transform);
+	// transform.setLocalScale(footer.scale); // TODO
+	const KeyFrameIndex keyFrameIdx = 0;
+	transform.update(sceneGraph, node, keyFrameIdx);
+	node.setTransform(keyFrameIdx, transform);
 
 	for (uint32_t i = 0u; i < baseSize; ++i) {
 		if (colStart[i] == EmptyColumn || colEnd[i] == EmptyColumn) {

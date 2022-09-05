@@ -260,6 +260,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	bool visible = true;
 	char dictKey[256];
 	char dictValue[256];
+	KeyFrameIndex keyFrameIdx = 0;
 	SceneGraphNode node;
 	node.setName(core::string::format("layer %i", size));
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
@@ -278,8 +279,8 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 				stream.readFloat(mat[i / 4][i % 4]);
 			}
 			transform.setWorldMatrix(mat);
-			transform.updateFromWorldMatrix();
-			node.setTransform(0, transform);
+			transform.update(sceneGraph, node, keyFrameIdx);
+			node.setTransform(keyFrameIdx, transform);
 		} else if (!strcmp(dictKey, "img-path") || !strcmp(dictKey, "id")) {
 			// "img-path" layer texture path
 			// "id" unique id
@@ -300,7 +301,11 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	voxel::RawVolume *mirrored = voxelutil::mirrorAxis(layerVolume, math::Axis::Z);
 	const glm::ivec3 mins = mirrored->region().getLowerCorner();
 	mirrored->translate(-mins);
-	node.transform(0).setWorldTranslation(mins);
+
+	SceneGraphTransform &transform = node.transform(keyFrameIdx);
+	transform.setWorldTranslation(mins);
+	transform.update(sceneGraph, node, keyFrameIdx);
+
 	node.setVolume(mirrored, true);
 	node.setVisible(visible);
 	node.setPalette(palLookup.palette());
@@ -368,8 +373,9 @@ bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableRead
 				stream.readFloat(mat[i / 4][i % 4]);
 			}
 			transform.setWorldMatrix(mat);
-			transform.updateFromWorldMatrix();
-			node.setTransform(0, transform);
+			const KeyFrameIndex keyFrameIdx = 0;
+			transform.update(sceneGraph, node, keyFrameIdx);
+			node.setTransform(keyFrameIdx, transform);
 		}
 	}
 	sceneGraph.emplace(core::move(node));
