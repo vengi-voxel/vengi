@@ -237,7 +237,6 @@ void MainWindow::rightWidget() {
 	_toolsPanel.update(TITLE_TOOLS, _lastExecutedCommand);
 	_assetPanel.update(TITLE_ASSET, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
-	_formatSettingsPanel.update(TITLE_FORMAT_SETTINGS);
 
 	_layerPanel.update(TITLE_LAYERS, &_layerSettings, _lastExecutedCommand);
 	_sceneGraphPanel.update(_scene->camera(), TITLE_SCENEGRAPH, _lastExecutedCommand);

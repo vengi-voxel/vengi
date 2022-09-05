@@ -6,7 +6,6 @@ set(SRCS
 	AssetPanel.h AssetPanel.cpp
 	DragAndDropPayload.h
 	PositionsPanel.h PositionsPanel.cpp
-	FormatSettingsPanel.h FormatSettingsPanel.cpp
 	LayerPanel.h LayerPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
 	MainWindow.h MainWindow.cpp

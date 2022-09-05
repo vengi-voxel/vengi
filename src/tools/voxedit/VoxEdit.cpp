@@ -108,7 +108,34 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST, "Fill the hollows when voxelizing a mesh format");
 	core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 
-	static video::FileDialogOptions options {};
+	static video::FileDialogOptions options = [] (video::OpenFileMode mode, const io::FormatDescription *desc) {
+		if (mode == video::OpenFileMode::Directory) {
+			return;
+		}
+		if (desc == nullptr) {
+			return;
+		}
+
+		const bool forceApplyOptions = desc->name == io::ALL_SUPPORTED.name;
+		if (forceApplyOptions || voxelformat::isMeshFormat(*desc)) {
+			ImGui::InputVarFloat("Uniform scale", cfg::VoxformatScale);
+			ImGui::InputVarFloat("X axis scale", cfg::VoxformatScaleX);
+			ImGui::InputVarFloat("Y axis scale", cfg::VoxformatScaleY);
+			ImGui::InputVarFloat("Z axis scale", cfg::VoxformatScaleZ);
+
+			if (mode == video::OpenFileMode::Save) {
+				ImGui::CheckboxVar("Merge quads", cfg::VoxformatMergequads);
+				ImGui::CheckboxVar("Reuse vertices", cfg::VoxformatReusevertices);
+				ImGui::CheckboxVar("Ambient occlusion", cfg::VoxformatAmbientocclusion);
+				ImGui::CheckboxVar("Apply transformations", cfg::VoxformatTransform);
+				ImGui::CheckboxVar("Exports quads", cfg::VoxformatQuads);
+				ImGui::CheckboxVar("Vertex colors", cfg::VoxformatWithcolor);
+				ImGui::CheckboxVar("Texture coordinates", cfg::VoxformatWithtexcoords);
+			} else if (mode == video::OpenFileMode::Open) {
+				ImGui::CheckboxVar("Fill hollow", cfg::VoxformatFillHollow);
+			}
+		}
+	};
 
 	for (const io::FormatDescription* desc = io::format::palettes(); desc->valid(); ++desc) {
 		_paletteFormats.push_back(*desc);
