@@ -278,7 +278,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 			for (int i = 0; i < 16; ++i) {
 				stream.readFloat(mat[i / 4][i % 4]);
 			}
-			transform.setWorldMatrix(mat);
+			transform.setLocalMatrix(mat);
 			transform.update(sceneGraph, node, keyFrameIdx);
 			node.setTransform(keyFrameIdx, transform);
 		} else if (!strcmp(dictKey, "img-path") || !strcmp(dictKey, "id")) {
@@ -303,7 +303,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	mirrored->translate(-mins);
 
 	SceneGraphTransform &transform = node.transform(keyFrameIdx);
-	transform.setWorldTranslation(mins);
+	transform.setLocalTranslation(mins);
 	transform.update(sceneGraph, node, keyFrameIdx);
 
 	node.setVolume(mirrored, true);
@@ -372,7 +372,7 @@ bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableRead
 			for (int i = 0; i < 16; ++i) {
 				stream.readFloat(mat[i / 4][i % 4]);
 			}
-			transform.setWorldMatrix(mat);
+			transform.setLocalMatrix(mat);
 			const KeyFrameIndex keyFrameIdx = 0;
 			transform.update(sceneGraph, node, keyFrameIdx);
 			node.setTransform(keyFrameIdx, transform);

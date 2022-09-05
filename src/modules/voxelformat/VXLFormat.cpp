@@ -281,7 +281,7 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 	}
 	SceneGraphTransform transform;
 	glm::mat4 transformMatrix = footer.transform;
-	transform.setWorldMatrix(transformMatrix);
+	transform.setLocalMatrix(transformMatrix);
 	// transform.setLocalScale(footer.scale); // TODO
 	const KeyFrameIndex keyFrameIdx = 0;
 	transform.update(sceneGraph, node, keyFrameIdx);
@@ -545,7 +545,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 			kf.frameIdx = keyFrameIdx * 6; // running at 6 fps
 			// hva transforms are overriding the vxl transform
 			SceneGraphTransform transform;
-			transform.setWorldMatrix(sectionMatrices[section]);
+			transform.setLocalMatrix(sectionMatrices[section]);
 			transform.update(sceneGraph, *node, kf.frameIdx);
 			kf.setTransform(transform);
 		}

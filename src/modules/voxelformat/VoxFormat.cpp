@@ -305,8 +305,9 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			camNode.setName(core::String::format("Camera %u", c.camera_id));
 			SceneGraphTransform transform;
 			transform.setWorldMatrix(viewMatrix);
-			transform.updateFromWorldMatrix();
-			camNode.setTransform(0, transform);
+			KeyFrameIndex keyFrameIdx = 0;
+			transform.update(sceneGraph, camNode, keyFrameIdx);
+			camNode.setTransform(keyFrameIdx, transform);
 			camNode.setFieldOfView(c.fov);
 			camNode.setFarPlane((float)c.radius);
 			camNode.setProperty("frustum", core::String::format("%f", c.frustum)); // TODO:

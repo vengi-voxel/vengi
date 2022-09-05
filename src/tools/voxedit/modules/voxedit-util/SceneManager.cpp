@@ -2401,13 +2401,13 @@ bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const 
 	voxelformat::SceneGraphTransform &transform = keyFrame.transform();
 	if (deltaMatrix) {
 		glm::decompose(*deltaMatrix, scale, orientation, translation, skew, perspective);
-		transform.setWorldTranslation(transform.worldTranslation() + translation);
-		transform.setWorldOrientation(transform.worldOrientation() * orientation);
+		transform.setLocalTranslation(transform.worldTranslation() + translation);
+		transform.setLocalOrientation(transform.worldOrientation() * orientation);
 		//transform.setLocalScale(glm::length(scale));
 	} else {
 		glm::decompose(matrix, scale, orientation, translation, skew, perspective);
-		transform.setWorldTranslation(translation);
-		transform.setWorldOrientation(orientation);
+		transform.setLocalTranslation(translation);
+		transform.setLocalOrientation(orientation);
 		//transform.setLocalScale(glm::length(scale));
 	}
 	transform.update(_sceneGraph, node, keyFrame.frameIdx);

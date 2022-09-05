@@ -120,26 +120,36 @@ float SceneGraphTransform::worldScale() const {
 }
 
 void SceneGraphTransform::updateLocal(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx) {
-	if (_dirty & DIRTY_LOCALMATRIX) {
-		_dirty &= ~(DIRTY_LOCALMATRIX);
-	} else if (_dirty & (DIRTY_LOCALORIENTATION | DIRTY_LOCALSCALE | DIRTY_LOCALTRANSLATION)) {
+	if (_dirty & (DIRTY_LOCALORIENTATION | DIRTY_LOCALSCALE | DIRTY_LOCALTRANSLATION)) {
 		core_assert((_dirty & DIRTY_LOCALMATRIX) == 0u);
+		setLocalMatrix(glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(glm::vec3(_localScale)));
 		_dirty &= ~(DIRTY_LOCALORIENTATION | DIRTY_LOCALSCALE | DIRTY_LOCALTRANSLATION);
 	}
-	if (node.type() == SceneGraphNodeType::Model) {
-#if 0
+
+	if ((_dirty & DIRTY_LOCALMATRIX) == 0) {
+		return;
+	}
+
+	{
 		const int parentId = node.parent();
 		SceneGraphNode& parent = sceneGraph.node(parentId);
-		if (parent.type() == SceneGraphNodeType::Model) {
+		const KeyFrameIndex parentKeyFrameIdx = parent.keyFrameForFrame(frameIdx);
+		if (parent.keyFrame(parentKeyFrameIdx).frameIdx == frameIdx) {
+			const SceneGraphTransform& parentTransform = parent.transform(parentKeyFrameIdx);
+			//core_assert(!parentTransform.dirty());
+			setWorldMatrix(parentTransform.worldMatrix() * _localMat);
 		}
-#endif
 	}
+
 	for (int childId : node.children()) {
 		SceneGraphNode& child = sceneGraph.node(childId);
-		KeyFrameIndex keyFrame = child.keyFrameForFrame(frameIdx);
-		SceneGraphTransform& transform = child.transform(keyFrame);
-		transform.updateLocal(sceneGraph, child, frameIdx);
+		KeyFrameIndex childKeyFrameIdx = child.keyFrameForFrame(frameIdx);
+		SceneGraphTransform& childTransform = child.transform(childKeyFrameIdx);
+		childTransform._dirty |= DIRTY_LOCALMATRIX;
+		childTransform.updateLocal(sceneGraph, child, frameIdx);
 	}
+
+	_dirty &= ~(DIRTY_LOCALMATRIX);
 }
 
 void SceneGraphTransform::updateFromWorldMatrix() {
