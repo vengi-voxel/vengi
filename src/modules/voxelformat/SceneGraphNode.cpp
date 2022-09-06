@@ -84,38 +84,47 @@ void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFram
 }
 
 const glm::vec3 &SceneGraphTransform::pivot() const {
+	core_assert_msg(_dirty == 0u, "dirty flag: %u", _dirty);
 	return _normalizedPivot;
 }
 
 const glm::mat4x4 &SceneGraphTransform::localMatrix() const {
+	core_assert_msg(_dirty == 0u, "dirty flag: %u", _dirty);
 	return _localMat;
 }
 
 const glm::vec3 &SceneGraphTransform::localTranslation() const {
+	core_assert_msg(_dirty == 0u, "dirty flag: %u", _dirty);
 	return _localTranslation;
 }
 
 const glm::quat &SceneGraphTransform::localOrientation() const {
+	core_assert_msg(_dirty == 0u, "dirty flag: %u", _dirty);
 	return _localOrientation;
 }
 
 float SceneGraphTransform::localScale() const {
+	core_assert_msg(_dirty == 0u, "dirty flag: %u", _dirty);
 	return _localScale;
 }
 
 const glm::mat4x4 &SceneGraphTransform::worldMatrix() const {
+	core_assert_msg(_dirty == 0u, "dirty flag: %u", _dirty);
 	return _worldMat;
 }
 
 const glm::vec3 &SceneGraphTransform::worldTranslation() const {
+	core_assert_msg(_dirty == 0u, "dirty flag: %u", _dirty);
 	return _worldTranslation;
 }
 
 const glm::quat &SceneGraphTransform::worldOrientation() const {
+	core_assert_msg(_dirty == 0u, "dirty flag: %u", _dirty);
 	return _worldOrientation;
 }
 
 float SceneGraphTransform::worldScale() const {
+	core_assert_msg(_dirty == 0u, "dirty flag: %u", _dirty);
 	return _worldScale;
 }
 
