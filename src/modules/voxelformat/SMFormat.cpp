@@ -232,10 +232,10 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, SceneGraph &sceneGrap
 		if (blockData == 0) {
 			continue;
 		}
-		const uint32_t blockId = core::bits(blockData, 0, 11);
-		// const uint32_t hitpoints = core::bits(blockData, 11, 9);
-		// const uint32_t active = core::bits(blockData, 20, 1);
-		// const uint32_t orientation = core::bits(blockData, 21, 3);
+		const uint32_t blockId = core::bits(blockData, 0, 10);
+		// const uint32_t hitpoints = core::bits(blockData, 11, 7);
+		// const uint32_t active = core::bits(blockData, 18, 1);
+		// const uint32_t orientation = core::bits(blockData, 19, 5);
 		auto palIter = blockPal.find((int)blockId);
 		uint8_t palIndex = 0;
 		if (palIter == blockPal.end()) {
