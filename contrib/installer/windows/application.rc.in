@@ -29,7 +29,7 @@ BEGIN
    VALUE "FileDescription", "@DESCRIPTION@\0"
    VALUE "FileVersion", "@CMAKE_PROJECT_VERSION@\0"
    VALUE "InternalName", "@NAME@\0"
-   VALUE "LegalCopyright", "Copyright \xA9 2015-2019\0"
+   VALUE "LegalCopyright", "Copyright \xA9 2015-2022\0"
    VALUE "OriginalFilename", "@COMMANDLINE@@CMAKE_EXECUTABLE_SUFFIX@\0"
    VALUE "ProductName", "@NAME@\0"
    VALUE "ProductVersion", "@CMAKE_PROJECT_VERSION@\0"
