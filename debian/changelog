@@ -1,7 +1,11 @@
 vengi (0.0.22.0-1) UNRELEASED; urgency=low
 
   * General:
-  * Added support for importing GLTF animations
+  * Improvements on GLTF format handling
+  * Fixed block id parsing for StarMade voxel models
+
+  * VoxEdit:
+  * Fixed layer color selection if you have multiple layers
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 9 Sep 2022 00:00:00 +0000
 

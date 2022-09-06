@@ -12,7 +12,12 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 General:
 
-   - Added support for importing GLTF animations
+   - Improvements on GLTF format handling
+   - Fixed block id parsing for StarMade voxel models
+
+VoxEdit:
+
+   - Fixed layer color selection if you have multiple layers
 
 ## 0.0.21 (2022-09-05)
 
