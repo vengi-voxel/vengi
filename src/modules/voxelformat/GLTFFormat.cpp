@@ -53,14 +53,7 @@ void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinyg
 	Log::debug("process node %s", node.name.c_str());
 	const int idx = (int)m.nodes.size();
 
-	glm::mat4x4 nodeLocalMatrix = graphNode.transform().worldMatrix();
-
-	if (sceneGraph.hasNode(graphNode.id())) {
-		const int graphNodeParentId = sceneGraph.node(graphNode.id()).parent();
-		const SceneGraphNode &parentGraphNode = sceneGraph.node(graphNodeParentId);
-		nodeLocalMatrix = glm::inverse(parentGraphNode.transform().worldMatrix()) * nodeLocalMatrix;
-	}
-
+	glm::mat4x4 nodeLocalMatrix = graphNode.transform().localMatrix();
 	if (graphNode.id() == 0) {
 		nodeLocalMatrix = glm::scale(nodeLocalMatrix, scale);
 	}
@@ -510,7 +503,7 @@ void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::Dyn
 voxelformat::SceneGraphTransform GLTFFormat::loadGltfTransform(const tinygltf::Node &gltfNode) const {
 	SceneGraphTransform transform;
 	if (gltfNode.matrix.size() == 16) {
-		transform.setWorldMatrix(glm::mat4((float)gltfNode.matrix[0], (float)gltfNode.matrix[1], (float)gltfNode.matrix[2],
+		transform.setLocalMatrix(glm::mat4((float)gltfNode.matrix[0], (float)gltfNode.matrix[1], (float)gltfNode.matrix[2],
 									  (float)gltfNode.matrix[3], (float)gltfNode.matrix[4], (float)gltfNode.matrix[5],
 									  (float)gltfNode.matrix[6], (float)gltfNode.matrix[7], (float)gltfNode.matrix[8],
 									  (float)gltfNode.matrix[9], (float)gltfNode.matrix[10], (float)gltfNode.matrix[11],
@@ -534,9 +527,8 @@ voxelformat::SceneGraphTransform GLTFFormat::loadGltfTransform(const tinygltf::N
 												(float)gltfNode.translation[2]));
 		}
 		const glm::mat4 modelMat = scaleMat * rotMat * transMat;
-		transform.setWorldMatrix(modelMat);
+		transform.setLocalMatrix(modelMat);
 	}
-	transform.updateFromWorldMatrix();
 	return transform;
 }
 
@@ -844,7 +836,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	Log::debug(" - children: %i", (int)gltfNode.children.size());
 
 	if (gltfNode.camera != -1) {
-		const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
+		SceneGraphTransform transform = loadGltfTransform(gltfNode);
 		if (gltfNode.camera < 0 || gltfNode.camera >= (int)model.cameras.size()) {
 			Log::debug("Skip invalid camera node %i", gltfNode.camera);
 			for (int childId : gltfNode.children) {
@@ -857,6 +849,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 		SceneGraphNode node(SceneGraphNodeType::Camera);
 		node.setName(gltfNode.name.c_str());
 		const KeyFrameIndex keyFrameIdx = 0;
+		transform.update(sceneGraph, node, keyFrameIdx);
 		node.setTransform(keyFrameIdx, transform);
 		node.setProperty("type", cam.type.c_str());
 		const int cameraId = sceneGraph.emplace(core::move(node), parentNodeId);
@@ -867,11 +860,13 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	}
 
 	if (gltfNode.mesh < 0 || gltfNode.mesh >= (int)model.meshes.size()) {
-		const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
+		SceneGraphTransform transform = loadGltfTransform(gltfNode);
 		Log::debug("No mesh node (%i) - add a group %i", gltfNode.mesh, gltfNodeIdx);
 		SceneGraphNode node(SceneGraphNodeType::Group);
 		node.setName(gltfNode.name.c_str());
-		node.setTransform(0, transform);
+		KeyFrameIndex keyFrameIdx = 0;
+		transform.update(sceneGraph, node, keyFrameIdx);
+		node.setTransform(keyFrameIdx, transform);
 		int groupId = sceneGraph.emplace(core::move(node), parentNodeId);
 		if (groupId == -1) {
 			groupId = parentNodeId;
@@ -939,9 +934,10 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	Log::debug("region mins(%i:%i:%i)/maxs(%i:%i:%i)", imins.x, imins.y, imins.z, imaxs.x, imaxs.y, imaxs.z);
 
 	SceneGraphNode node;
-	const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
+	SceneGraphTransform transform = loadGltfTransform(gltfNode);
 	node.setName(gltfNode.name.c_str());
 	KeyFrameIndex keyFrameIdx = 0;
+	transform.update(sceneGraph, node, keyFrameIdx);
 	node.setTransform(keyFrameIdx++, transform);
 
 	// keyframes https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_007_Animations.md
