@@ -8,6 +8,7 @@
 #include "voxel/tests/TestHelper.h"
 #include "voxelformat/BinVoxFormat.h"
 #include "voxelformat/CubFormat.h"
+#include "voxelformat/GLTFFormat.h"
 #include "voxelformat/GoxFormat.h"
 #include "voxelformat/KV6Format.h"
 #include "voxelformat/KVXFormat.h"
@@ -69,6 +70,12 @@ TEST_F(ConvertTest, testQbToBinvox) {
 	// binvox doesn't have colors and is a single volume format (no need to check transforms)
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::None;
 	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.binvox", target, flags);
+}
+
+TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
+	GLTFFormat src;
+	GLTFFormat target;
+	testLoadSaveAndLoadSceneGraph("glTF/BoxAnimated.glb", src, "BoxAnimated2.glb", target);
 }
 
 TEST_F(ConvertTest, testBinvoxToQb) {
