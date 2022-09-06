@@ -1033,6 +1033,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 						// TODO: not supported yet
 						break;
 					}
+					transform.update(sceneGraph, node, keyFrame.frameIdx);
 				}
 			}
 		}
