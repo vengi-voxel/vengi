@@ -38,7 +38,8 @@ void LayerPanel::addLayerItem(const voxelformat::SceneGraph& sceneGraph, voxelfo
 
 	core::RGBA color = node.color();
 	glm::vec4 colvec = core::Color::fromRGBA(color);
-	if (ImGui::ColorEdit4("Color", glm::value_ptr(colvec), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
+	const core::String &colorId = core::string::format("Color##layer-%i", nodeId);
+	if (ImGui::ColorEdit4(colorId.c_str(), glm::value_ptr(colvec), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
 		node.setColor(core::Color::getRGBA(colvec));
 	}
 	ImGui::TableNextColumn();
