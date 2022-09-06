@@ -20,7 +20,7 @@
 namespace voxelformat {
 
 void SceneGraphTransform::setPivot(const glm::vec3 &normalizedPivot) {
-	_dirty |= DIRTY_PIVOT;
+	//_dirty |= DIRTY_PIVOT;
 	_normalizedPivot = normalizedPivot;
 #if 0
 	core_assert(glm::all(glm::lessThanEqual(normalizedPivot, glm::vec3(1.0f))));
