@@ -65,6 +65,8 @@ namespace voxelformat {
  *          yaw: radian
  *          intensity: float
  *
+ * @note Goxel uses Z up - we use Y up
+ *
  * @ingroup Formats
  */
 class GoxFormat : public RGBAFormat {

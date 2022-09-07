@@ -218,6 +218,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 		}
 		wrap(stream.skip(4))
 		voxel::Region blockRegion(x, z, y, x + (BlockSize - 1), z + (BlockSize - 1), y + (BlockSize - 1));
+		core_assert(blockRegion.isValid());
 		voxel::RawVolume *blockVolume = new voxel::RawVolume(blockRegion);
 		const uint8_t *v = rgba;
 		bool empty = true;
@@ -322,6 +323,10 @@ bool GoxFormat::loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableRead
 	core_free(png);
 	if (!success) {
 		Log::error("Failed to load png chunk");
+		return false;
+	}
+	if (img->width() != 64 || img->height() != 64 || img->depth() != 4) {
+		Log::error("Invalid image dimensions: %i:%i", img->width(), img->height());
 		return false;
 	}
 	Log::debug("Found BL16 with index %i", (int)state.images.size());
