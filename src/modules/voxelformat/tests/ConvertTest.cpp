@@ -35,7 +35,9 @@ TEST_F(ConvertTest, testVoxToVXMPalette) {
 TEST_F(ConvertTest, testVoxToVXM) {
 	VoxFormat src;
 	VXMFormat target;
-	testLoadSaveAndLoadSceneGraph("robo.vox", src, "robo.vxm", target, voxel::ValidateFlags::Color);
+	// vxm can't store transforms - only the voxel data.
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::Color;
+	testLoadSaveAndLoadSceneGraph("robo.vox", src, "robo.vxm", target, flags);
 }
 
 // TODO: pivot broken
@@ -122,7 +124,9 @@ TEST_F(ConvertTest, testQbtToQb) {
 TEST_F(ConvertTest, testQbToSproxel) {
 	QBFormat src;
 	SproxelFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.csv", target, voxel::ValidateFlags::Color);
+	// sproxel csv can't store transforms - only the voxel data.
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::Color;
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.csv", target, flags);
 }
 
 TEST_F(ConvertTest, testSproxelToQb) {
