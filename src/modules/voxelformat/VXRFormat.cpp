@@ -541,7 +541,7 @@ void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGrap
 	SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	SceneGraphTransform currentTransform = keyFrame.transform();
 	currentTransform.setWorldMatrix(parentTransform.worldMatrix() * node.transform(keyFrameIdx).worldMatrix());
-	currentTransform.updateFromWorldMatrix();
+	currentTransform.update(sceneGraph, node, keyFrameIdx);
 
 	if (node.type() == SceneGraphNodeType::Model) {
 		node.setTransform(keyFrameIdx, currentTransform);
