@@ -102,6 +102,21 @@ const SceneGraphNode& SceneGraph::root() const {
 	return node(0);
 }
 
+void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
+	for (int childrenId : n.children()) {
+		SceneGraphNode &children = node(childrenId);
+		for (auto &keyframe : children.keyFrames()) {
+			keyframe.transform().update(*this, children, keyframe.frameIdx);
+		}
+		updateTransforms_r(children);
+	}
+}
+
+void SceneGraph::updateTransforms() {
+	SceneGraphNode &root = node(0);
+	updateTransforms_r(root);
+}
+
 voxel::Region SceneGraph::groupRegion() const {
 	int nodeId = activeNode();
 	voxel::Region region = node(nodeId).region();

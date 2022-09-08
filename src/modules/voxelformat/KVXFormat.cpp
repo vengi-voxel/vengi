@@ -117,7 +117,6 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
-	transform.update(sceneGraph, node, 0);
 	node.setTransform(0, transform);
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));

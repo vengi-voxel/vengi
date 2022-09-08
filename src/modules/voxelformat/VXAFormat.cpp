@@ -144,19 +144,13 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 		wrap(stream.readFloat(worldScale))
 		wrap(stream.readFloat(localScale))
 
-		transform.setWorldTranslation(worldTranslation);
-		transform.setWorldOrientation(worldOrientation);
-		transform.setWorldScale(worldScale);
-		transform.setLocalTranslation(localTranslation);
-		transform.setLocalOrientation(localOrientation);
-		transform.setLocalScale(localScale);
-		transform.update(sceneGraph, node, keyFrame.frameIdx);
 		if (version == 1) {
 			// version 1 needs to correct its translation by the pivot translation
 			const glm::vec3 volumesize = node.region().getDimensionsInVoxels();
 			const glm::vec3 pivotTranslation = (pivot * 2.0f - 1.0f) * 0.5f * volumesize;
-			transform.setWorldTranslation(transform.worldTranslation() - pivotTranslation);
-			transform.update(sceneGraph, node, keyFrame.frameIdx);
+			transform.setTransforms(worldTranslation - pivotTranslation, worldOrientation, worldScale, localTranslation, localOrientation, localScale);
+		} else {
+			transform.setTransforms(worldTranslation, worldOrientation, worldScale, localTranslation, localOrientation, localScale);
 		}
 	}
 	int32_t children;
@@ -244,6 +238,7 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 			return false;
 		}
 	}
+	sceneGraph.updateTransforms();
 	return true;
 }
 

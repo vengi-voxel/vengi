@@ -849,7 +849,6 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 		SceneGraphNode node(SceneGraphNodeType::Camera);
 		node.setName(gltfNode.name.c_str());
 		const KeyFrameIndex keyFrameIdx = 0;
-		transform.update(sceneGraph, node, keyFrameIdx);
 		node.setTransform(keyFrameIdx, transform);
 		node.setProperty("type", cam.type.c_str());
 		const int cameraId = sceneGraph.emplace(core::move(node), parentNodeId);
@@ -865,7 +864,6 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 		SceneGraphNode node(SceneGraphNodeType::Group);
 		node.setName(gltfNode.name.c_str());
 		KeyFrameIndex keyFrameIdx = 0;
-		transform.update(sceneGraph, node, keyFrameIdx);
 		node.setTransform(keyFrameIdx, transform);
 		int groupId = sceneGraph.emplace(core::move(node), parentNodeId);
 		if (groupId == -1) {
@@ -937,7 +935,6 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	SceneGraphTransform transform = loadGltfTransform(gltfNode);
 	node.setName(gltfNode.name.c_str());
 	KeyFrameIndex keyFrameIdx = 0;
-	transform.update(sceneGraph, node, keyFrameIdx);
 	node.setTransform(keyFrameIdx++, transform);
 
 	// keyframes https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_007_Animations.md
@@ -1029,7 +1026,6 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 						// TODO: not supported yet
 						break;
 					}
-					transform.update(sceneGraph, node, keyFrame.frameIdx);
 				}
 			}
 		}
@@ -1121,6 +1117,7 @@ bool GLTFFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 		}
 	}
 
+	sceneGraph.updateTransforms();
 	return true;
 }
 

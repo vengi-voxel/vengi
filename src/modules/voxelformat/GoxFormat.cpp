@@ -283,7 +283,6 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 				stream.readFloat(mat[i / 4][i % 4]);
 			}
 			transform.setWorldMatrix(mat);
-			transform.update(sceneGraph, node, keyFrameIdx);
 			node.setTransform(keyFrameIdx, transform);
 		} else if (!strcmp(dictKey, "img-path") || !strcmp(dictKey, "id")) {
 			// "img-path" layer texture path
@@ -309,7 +308,6 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 
 	SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	transform.setWorldTranslation(mins);
-	transform.update(sceneGraph, node, keyFrameIdx);
 
 	node.setVolume(cropped, true);
 	node.setVisible(visible);
@@ -384,7 +382,6 @@ bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableRead
 			}
 			transform.setWorldMatrix(mat);
 			const KeyFrameIndex keyFrameIdx = 0;
-			transform.update(sceneGraph, node, keyFrameIdx);
 			node.setTransform(keyFrameIdx, transform);
 		}
 	}
@@ -451,6 +448,7 @@ bool GoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		}
 		loadChunk_ValidateCRC(stream);
 	}
+	sceneGraph.updateTransforms();
 	return !sceneGraph.empty();
 }
 

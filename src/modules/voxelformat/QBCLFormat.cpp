@@ -389,7 +389,6 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	} else {
 		node.setName(name);
 	}
-	transform.update(sceneGraph, node, 0);
 	node.setTransform(0, transform);
 	const int id = sceneGraph.emplace(core::move(node), parent);
 	return id != -1;
@@ -528,6 +527,8 @@ bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 	rootNode.setProperty("Copyright", copyright);
 
 	wrapBool(readNodes(filename, stream, sceneGraph, rootNode.id()))
+
+	sceneGraph.updateTransforms();
 
 	return true;
 }

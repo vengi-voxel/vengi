@@ -72,6 +72,7 @@ bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 			f.loadGroups(vxr, fstream, sceneGraph);
 		}
 	}
+	sceneGraph.updateTransforms();
 	return !sceneGraph.empty();
 }
 

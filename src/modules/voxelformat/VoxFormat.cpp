@@ -106,7 +106,6 @@ static bool loadKeyFrames(voxelformat::SceneGraph &sceneGraph, voxelformat::Scen
 		sceneGraphKeyFrame.interpolation = InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
 		sceneGraphKeyFrame.transform().setWorldMatrix(ogtKeyFrameMat);
-		sceneGraphKeyFrame.transform().update(sceneGraph, node, (KeyFrameIndex)keyFrameIdx);
 		kf.push_back(sceneGraphKeyFrame);
 	}
 	return node.setKeyFrames(kf);
@@ -166,7 +165,6 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 			name = "";
 		}
 	}
-	transform.update(sceneGraph, node, 0);
 	loadKeyFrames(sceneGraph, node, ogtInstance.transform_anim.keyframes, ogtInstance.transform_anim.num_keyframes);
 	// TODO: we are overriding the keyframe data here
 	node.setTransform(0, transform);
@@ -306,8 +304,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			SceneGraphTransform transform;
 			transform.setWorldMatrix(viewMatrix);
 			const KeyFrameIndex keyFrameIdx = 0;
-			transform.update(sceneGraph, camNode, keyFrameIdx);
-			camNode.setTransform(0, transform);
+			camNode.setTransform(keyFrameIdx, transform);
 			camNode.setFieldOfView(c.fov);
 			camNode.setFarPlane((float)c.radius);
 			camNode.setProperty("frustum", core::String::format("%f", c.frustum)); // TODO:

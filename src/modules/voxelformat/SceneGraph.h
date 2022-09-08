@@ -30,6 +30,8 @@ protected:
 	int _activeNodeId = -1;
 	core::DynamicArray<core::String> _animations;
 
+	void updateTransforms_r(SceneGraphNode &node);
+
 public:
 	SceneGraph(int nodes = 262144);
 	~SceneGraph();
@@ -62,6 +64,8 @@ public:
 	 */
 	const SceneGraphAnimationIds animations() const;
 	void addAnimation(const core::String& animation);
+
+	void updateTransforms();
 
 	/**
 	 * @brief We move into the scene graph to make it clear who is owning the volume.

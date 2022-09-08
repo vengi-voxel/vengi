@@ -284,7 +284,6 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 	transform.setWorldMatrix(transformMatrix);
 	// transform.setLocalScale(footer.scale); // TODO
 	const KeyFrameIndex keyFrameIdx = 0;
-	transform.update(sceneGraph, node, keyFrameIdx);
 	node.setTransform(keyFrameIdx, transform);
 
 	for (uint32_t i = 0u; i < baseSize; ++i) {
@@ -546,7 +545,6 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 			// hva transforms are overriding the vxl transform
 			SceneGraphTransform transform;
 			transform.setWorldMatrix(sectionMatrices[section]);
-			transform.update(sceneGraph, *node, kf.frameIdx);
 			kf.setTransform(transform);
 		}
 	}

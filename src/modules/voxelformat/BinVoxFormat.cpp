@@ -113,6 +113,7 @@ bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 		Log::warn("Could not load the data from %s", filename.c_str());
 		return false;
 	}
+	sceneGraph.updateTransforms();
 	return true;
 }
 

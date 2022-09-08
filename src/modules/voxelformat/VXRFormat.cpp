@@ -245,54 +245,52 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		}
 		SceneGraphTransform &transform = keyFrame.transform();
 		transform.setPivot(glm::vec3(0.5f));
-		glm::vec3 translation;
-		wrap(stream.readFloat(translation.x))
+
+		glm::quat worldOrientation;
+		glm::vec3 worldTranslation{0.0f};
+		float worldScale = 1.0f;
+
+		glm::quat localOrientation;
+		glm::vec3 localTranslation{0.0f};
+		float localScale = 1.0f;
+
+		wrap(stream.readFloat(worldTranslation.x))
 		//nodeFrame.transform.position.x *= -1.0f;
-		wrap(stream.readFloat(translation.y))
-		wrap(stream.readFloat(translation.z))
-		transform.setWorldTranslation(translation);
+		wrap(stream.readFloat(worldTranslation.y))
+		wrap(stream.readFloat(worldTranslation.z))
+		transform.setWorldTranslation(worldTranslation);
 		if (version >= 3) {
-			glm::vec3 localTranslation{0.0f};
 			wrap(stream.readFloat(localTranslation.x))
 			wrap(stream.readFloat(localTranslation.y))
 			wrap(stream.readFloat(localTranslation.z))
-			transform.setLocalTranslation(localTranslation);
 		}
 		if (version == 1) {
-			float rotationx;
-			float rotationy;
-			float rotationz;
+			float rotationx = 0.0f;
+			float rotationy = 0.0f;
+			float rotationz = 0.0f;
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			transform.setWorldOrientation(glm::quat(glm::vec3(rotationx, rotationy, rotationz)));
+			worldOrientation = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			transform.setLocalOrientation(glm::quat(glm::vec3(rotationx, rotationy, rotationz)));
+			localOrientation = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
 		} else {
-			glm::quat orientation;
-			wrap(stream.readFloat(orientation.x))
-			wrap(stream.readFloat(orientation.y))
-			wrap(stream.readFloat(orientation.z))
-			wrap(stream.readFloat(orientation.w))
-			transform.setWorldOrientation(orientation);
-			glm::quat localOrientation;
+			wrap(stream.readFloat(worldOrientation.x))
+			wrap(stream.readFloat(worldOrientation.y))
+			wrap(stream.readFloat(worldOrientation.z))
+			wrap(stream.readFloat(worldOrientation.w))
 			wrap(stream.readFloat(localOrientation.x))
 			wrap(stream.readFloat(localOrientation.y))
 			wrap(stream.readFloat(localOrientation.z))
 			wrap(stream.readFloat(localOrientation.w))
-			transform.setLocalOrientation(localOrientation);
 		}
-		float scale;
-		wrap(stream.readFloat(scale))
-		transform.setWorldScale(scale);
+		wrap(stream.readFloat(worldScale))
 		if (version >= 3) {
-			float localScale;
 			wrap(stream.readFloat(localScale))
-			transform.setLocalScale(localScale);
 		}
-		transform.update(sceneGraph, node, keyFrame.frameIdx);
+		transform.setTransforms(worldTranslation, worldOrientation, worldScale, localTranslation, localOrientation, localScale);
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))
@@ -396,7 +394,6 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 	uint32_t children = 0;
 	wrap(stream.readUInt32(children))
 	const int rootNodeId = sceneGraph.root().id();
-	SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
 	for (uint32_t i = 0; i < children; ++i) {
 		wrapBool(importChildVersion3AndEarlier(filename, stream, sceneGraph, version, rootNodeId))
 	}
@@ -419,9 +416,6 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 			}
 		}
 	}
-	const uint8_t frameIdx = core::Var::getSafe(cfg::VoxformatFrame)->intVal();
-	const KeyFrameIndex keyFrameIdx = rootNode.keyFrameForFrame(frameIdx);
-	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transform(keyFrameIdx), keyFrameIdx);
 
 	return true;
 }
@@ -513,10 +507,6 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 		Log::warn("Failed to load %s", vxaPath.c_str());
 	}
 
-	const uint8_t frameIdx = core::Var::getSafe(cfg::VoxformatFrame)->intVal();
-	const KeyFrameIndex keyFrameIdx = rootNode.keyFrameForFrame(frameIdx);
-	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transform(keyFrameIdx), keyFrameIdx);
-
 	// some files since version 6 still have stuff here
 	return true;
 }
@@ -535,21 +525,6 @@ bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {
 	io::FileStream stream(file);
 	VXAFormat format;
 	return format.loadGroups(vxaPath, stream, sceneGraph);
-}
-
-void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGraphNode &node, const SceneGraphTransform &parentTransform, KeyFrameIndex keyFrameIdx) {
-	SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
-	SceneGraphTransform currentTransform = keyFrame.transform();
-	currentTransform.setWorldMatrix(parentTransform.worldMatrix() * node.transform(keyFrameIdx).worldMatrix());
-	currentTransform.update(sceneGraph, node, keyFrameIdx);
-
-	if (node.type() == SceneGraphNodeType::Model) {
-		node.setTransform(keyFrameIdx, currentTransform);
-	}
-
-	for (int nodeIdx : node.children()) {
-		recursiveTransformVolume(sceneGraph, sceneGraph.node(nodeIdx), currentTransform, keyFrameIdx);
-	}
 }
 
 bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &) {

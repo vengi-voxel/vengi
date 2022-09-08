@@ -108,7 +108,11 @@ public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override {
 		voxel::Palette palette;
-		return loadGroupsPalette(filename, stream, sceneGraph, palette);
+		if (!loadGroupsPalette(filename, stream, sceneGraph, palette)) {
+			return false;
+		}
+		sceneGraph.updateTransforms();
+		return true;
 	}
 };
 

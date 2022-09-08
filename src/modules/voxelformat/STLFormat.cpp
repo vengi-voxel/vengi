@@ -189,6 +189,7 @@ bool STLFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
 	voxelizeTris(node, posMap, fillHollow);
 	sceneGraph.emplace(core::move(node));
+	sceneGraph.updateTransforms();
 	return true;
 }
 
