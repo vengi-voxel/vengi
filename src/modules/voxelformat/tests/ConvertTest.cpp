@@ -45,7 +45,8 @@ TEST_F(ConvertTest, testVoxToVXM) {
 TEST_F(ConvertTest, testVoxToVXR) {
 	VoxFormat src;
 	VXMFormat target;
-	testLoadSaveAndLoadSceneGraph("robo.vox", src, "robo.vxr", target, voxel::ValidateFlags::Color);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::Color;
+	testLoadSaveAndLoadSceneGraph("robo.vox", src, "robo.vxr", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToVox) {

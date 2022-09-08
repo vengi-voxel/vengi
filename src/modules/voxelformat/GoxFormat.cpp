@@ -17,6 +17,7 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -216,15 +217,17 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 			y -= 8;
 			z -= 8;
 		}
+
 		wrap(stream.skip(4))
 		voxel::Region blockRegion(x, z, y, x + (BlockSize - 1), z + (BlockSize - 1), y + (BlockSize - 1));
 		core_assert(blockRegion.isValid());
 		voxel::RawVolume *blockVolume = new voxel::RawVolume(blockRegion);
 		const uint8_t *v = rgba;
 		bool empty = true;
-		for (int y1 = blockRegion.getLowerY(); y1 <= blockRegion.getUpperY(); ++y1) {
-			for (int z1 = blockRegion.getLowerZ(); z1 <= blockRegion.getUpperZ(); ++z1) {
-				for (int x1 = blockRegion.getLowerX(); x1 <= blockRegion.getUpperX(); ++x1) {
+		for (int z1 = 0; z1 < BlockSize; ++z1) {
+			for (int y1 = 0; y1 < BlockSize; ++y1) {
+				for (int x1 = 0; x1 < BlockSize; ++x1) {
+					// x running fastest
 					voxel::VoxelType voxelType = voxel::VoxelType::Generic;
 					uint8_t index;
 					if (v[3] == 0u) {
@@ -235,7 +238,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 						index = palLookup.findClosestIndex(color);
 					}
 					const voxel::Voxel voxel = voxel::createVoxel(voxelType, index);
-					blockVolume->setVoxel(x1, y1, z1, voxel);
+					blockVolume->setVoxel(x + x1, z + z1, y + y1, voxel);
 					if (!voxel::isAir(voxel.getMaterial())) {
 						empty = false;
 					}
@@ -298,20 +301,22 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 			// "shape" layer layer - currently unsupported TODO
 		}
 	}
-	// TODO: fix this properly - without mirroring
-	voxel::RawVolume *mirrored = voxelutil::mirrorAxis(layerVolume, math::Axis::Z);
-	const glm::ivec3 mins = mirrored->region().getLowerCorner();
-	mirrored->translate(-mins);
+
+	voxel::RawVolume *mirrored = voxelutil::mirrorAxis(layerVolume, math::Axis::X);
+	voxel::RawVolume *cropped = voxelutil::cropVolume(mirrored);
+	const glm::ivec3 mins = cropped->region().getLowerCorner();
+	cropped->translate(-mins);
 
 	SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	transform.setWorldTranslation(mins);
 	transform.update(sceneGraph, node, keyFrameIdx);
 
-	node.setVolume(mirrored, true);
+	node.setVolume(cropped, true);
 	node.setVisible(visible);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
 	delete layerVolume;
+	delete mirrored;
 	return true;
 }
 
@@ -578,8 +583,7 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const SceneGraph
 		glm::ivec3 mins, maxs;
 		calcMinsMaxs(region, glm::ivec3(BlockSize), mins, maxs);
 
-		// TODO: fix this properly - without mirroring
-		voxel::RawVolume *mirrored = voxelutil::mirrorAxis(node.volume(), math::Axis::Z);
+		voxel::RawVolume *mirrored = voxelutil::mirrorAxis(node.volume(), math::Axis::X);
 		for (int by = mins.y; by <= maxs.y; by += BlockSize) {
 			for (int bz = mins.z; bz <= maxs.z; bz += BlockSize) {
 				for (int bx = mins.x; bx <= maxs.x; bx += BlockSize) {

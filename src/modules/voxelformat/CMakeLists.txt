@@ -114,6 +114,7 @@ set(TEST_FILES
 	tests/test2.vxm
 	tests/8ontop.vox
 	tests/cw.cub
+	tests/chr_knight.gox
 	tests/r.0.-2.mca
 	tests/r.0.-2.qb
 	tests/rgb.vxl
