@@ -337,14 +337,16 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 						}
 					}
 				} else {
-					sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrameIdx, false);
+					const bool local = mode == ImGuizmo::MODE::LOCAL;
+					sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrameIdx, false, local);
 				}
 			} else if (_guizmoActivated) {
 				if (_boundsMode) {
 					voxel::Region newRegion(glm::ivec3(_bounds.mins), glm::ivec3(_bounds.maxs));
 					sceneMgr().resize(activeNode, newRegion);
 				} else {
-					sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrameIdx, true);
+					const bool local = mode == ImGuizmo::MODE::LOCAL;
+					sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrameIdx, true, local);
 				}
 				_guizmoActivated = false;
 			}

@@ -575,7 +575,7 @@ bool SceneManager::undo() {
 		return nodeMove(s.nodeId, s.parentId);
 	} else if (s.type == MementoType::SceneNodeTransform) {
 		Log::debug("Memento: Undo transform of node %i", s.nodeId);
-		return nodeUpdateTransform(s.nodeId, s.transformMatrix, nullptr, s.keyFrame, false);
+		return nodeUpdateTransform(s.nodeId, s.transformMatrix, nullptr, s.keyFrame, false, true);
 	} else if (s.type == MementoType::SceneNodeRemoved) {
 		voxel::RawVolume* v = MementoData::toVolume(s.data);
 		voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
@@ -630,7 +630,7 @@ bool SceneManager::redo() {
 		return nodeMove(s.nodeId, s.parentId);
 	} else if (s.type == MementoType::SceneNodeTransform) {
 		Log::debug("Memento: Undo transform of node %i", s.nodeId);
-		return nodeUpdateTransform(s.nodeId, s.transformMatrix, nullptr, s.keyFrame, false);
+		return nodeUpdateTransform(s.nodeId, s.transformMatrix, nullptr, s.keyFrame, false, true);
 	} else if (s.type == MementoType::SceneNodeRemoved) {
 		Log::debug("Memento: Redo remove of node %i (%s) from parent %i", s.nodeId, s.name.c_str(), s.parentId);
 		return nodeRemove(s.nodeId, true);
@@ -2376,22 +2376,22 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx, bool memento) {
+bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx, bool memento, bool local) {
 	if (nodeId != -1) {
 		if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-			return nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrameIdx, memento);
+			return nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrameIdx, memento, local);
 		}
 		return false;
 	}
 	nodeForeachGroup([&] (int nodeId) {
 		if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-			nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrameIdx, memento);
+			nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrameIdx, memento, local);
 		}
 	});
 	return true;
 }
 
-bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx, bool memento) {
+bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx, bool memento, bool local) {
 	glm::vec3 translation;
 	glm::quat orientation;
 	glm::vec3 scale;
