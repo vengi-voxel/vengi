@@ -177,7 +177,7 @@ void SceneGraphTransform::updateFromWorldMatrix() {
 	}
 	const glm::mat3 rotMtx(glm::vec3(_worldMat[0]) / _worldScale, glm::vec3(_worldMat[1]) / _worldScale, glm::vec3(_worldMat[2]) / _worldScale);
 	_worldOrientation = glm::quat_cast(rotMtx);
-	_dirty &= ~(DIRTY_WORLDMATRIX);
+	_dirty = 0;
 	core_assert_msg(_dirty == 0u, "Still not clean: %u", _dirty);
 
 	_localMat = _worldMat;
