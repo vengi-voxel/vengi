@@ -269,7 +269,7 @@ void MementoHandler::markNodeTransform(const voxelformat::SceneGraphNode &node, 
 	const int parentId = node.parent();
 	const core::String &name = node.name();
 	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-	const glm::mat4 &localMatrix = transform.worldMatrix(); // TODO: should be local
+	const glm::mat4 &localMatrix = transform.localMatrix();
 	Log::debug("Mark node %i as translated (%s)", nodeId, name.c_str());
 	markUndo(parentId, nodeId, name, nullptr, MementoType::SceneNodeTransform, voxel::Region::InvalidRegion, localMatrix, keyFrameIdx);
 }
