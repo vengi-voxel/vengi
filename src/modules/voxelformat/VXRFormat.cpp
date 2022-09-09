@@ -538,7 +538,7 @@ bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {
 void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGraphNode &node, const SceneGraphTransform &parentTransform, KeyFrameIndex keyFrameIdx) {
 	SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	SceneGraphTransform currentTransform = keyFrame.transform();
-	currentTransform.setWorldMatrix(parentTransform.worldMatrix() * node.transform(keyFrameIdx).worldMatrix());
+	currentTransform.setWorldMatrix(parentTransform.worldMatrix() * node.transform(keyFrameIdx).worldMatrix()); // TODO: this should be local
 	currentTransform.update(sceneGraph, node, keyFrameIdx);
 
 	if (node.type() == SceneGraphNodeType::Model) {

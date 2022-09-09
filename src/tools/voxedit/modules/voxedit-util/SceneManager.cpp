@@ -2399,16 +2399,15 @@ bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const 
 	glm::vec4 perspective;
 	voxelformat::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	voxelformat::SceneGraphTransform &transform = keyFrame.transform();
-	if (deltaMatrix) {
-		glm::decompose(*deltaMatrix, scale, orientation, translation, skew, perspective);
-		transform.setWorldTranslation(transform.worldTranslation() + translation);
-		transform.setWorldOrientation(transform.worldOrientation() * orientation);
-		//transform.setLocalScale(glm::length(scale));
+	glm::decompose(matrix, scale, orientation, translation, skew, perspective);
+	if (local) {
+		transform.setLocalTranslation(translation);
+		transform.setLocalOrientation(orientation);
+		// transform.setLocalScale(glm::length(scale)); // TODO: broken
 	} else {
-		glm::decompose(matrix, scale, orientation, translation, skew, perspective);
 		transform.setWorldTranslation(translation);
 		transform.setWorldOrientation(orientation);
-		//transform.setLocalScale(glm::length(scale));
+		// transform.setLocalScale(glm::length(scale)); // TODO: broken
 	}
 	transform.update(_sceneGraph, node, keyFrame.frameIdx);
 
