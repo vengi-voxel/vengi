@@ -75,15 +75,17 @@ inline void keyFrameComparator(const voxelformat::SceneGraphKeyFrames &keyframes
 		for (size_t i = 0; i < keyframes1.size(); ++i) {
 			const voxelformat::SceneGraphTransform &t1 = keyframes1[i].transform();
 			const voxelformat::SceneGraphTransform &t2 = keyframes2[i].transform();
+			ASSERT_FALSE(t1.dirty()) << "Key frame " << i << " is not yet updated";
+			ASSERT_FALSE(t2.dirty()) << "Key frame " << i << " is not yet updated";
 			if ((flags & ValidateFlags::Translation) == ValidateFlags::Translation) {
-				EXPECT_EQ(t1.worldTranslation(), t2.worldTranslation()) << "Translation failed for frame " << i;
+				ASSERT_EQ(t1.worldTranslation(), t2.worldTranslation()) << "Translation failed for frame " << i;
 			}
-			EXPECT_EQ(t1.worldMatrix(), t2.worldMatrix()) << "Matrix failed for frame " << i;
+			ASSERT_EQ(t1.worldMatrix(), t2.worldMatrix()) << "Matrix failed for frame " << i;
 			if ((flags & ValidateFlags::Pivot) == ValidateFlags::Pivot) {
-				EXPECT_EQ(t1.pivot(), t2.pivot()) << "Pivot failed for frame " << i;
+				ASSERT_EQ(t1.pivot(), t2.pivot()) << "Pivot failed for frame " << i;
 			}
 			if ((flags & ValidateFlags::Scale) == ValidateFlags::Scale) {
-				EXPECT_EQ(t1.worldScale(), t2.worldScale()) << "Scale failed for frame " << i;
+				ASSERT_EQ(t1.worldScale(), t2.worldScale()) << "Scale failed for frame " << i;
 			}
 		}
 	} else {
@@ -91,11 +93,13 @@ inline void keyFrameComparator(const voxelformat::SceneGraphKeyFrames &keyframes
 		ASSERT_GE(keyframes2.size(), 1u) << "keyframes 2 doesn't have any entry";
 		const voxelformat::SceneGraphTransform &t1 = keyframes1[0].transform();
 		const voxelformat::SceneGraphTransform &t2 = keyframes2[0].transform();
+		ASSERT_FALSE(t1.dirty()) << "Key frame 0 is not yet updated";
+		ASSERT_FALSE(t2.dirty()) << "Key frame 0 is not yet updated";
 		if ((flags & ValidateFlags::Translation) == ValidateFlags::Translation) {
-			EXPECT_EQ(t1.worldTranslation(), t2.worldTranslation()) << "Translation failed for frame 0";
+			ASSERT_EQ(t1.worldTranslation(), t2.worldTranslation()) << "Translation failed for frame 0";
 		}
 		if ((flags & ValidateFlags::Pivot) == ValidateFlags::Pivot) {
-			EXPECT_EQ(t1.pivot(), t2.pivot()) << "Pivot failed for frame 0";
+			ASSERT_EQ(t1.pivot(), t2.pivot()) << "Pivot failed for frame 0";
 		}
 	}
 }
