@@ -138,6 +138,7 @@ bool SMFormat::loadGroups(const core::String &filename, io::SeekableReadStream &
 			// TODO: read *.smd2
 		}
 	}
+	sceneGraph.updateTransforms();
 	return !sceneGraph.empty();
 }
 

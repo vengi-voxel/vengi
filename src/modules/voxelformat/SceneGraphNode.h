@@ -78,6 +78,7 @@ private:
 	// should be the normalized value between 0 and 1
 	glm::vec3 _normalizedPivot{0.0f};
 
+	// indicated which values were changed
 	uint32_t _dirty = 0u;
 
 	void updateLocal(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx);
@@ -88,6 +89,13 @@ public:
 	inline bool dirty() const {
 		return _dirty != 0u;
 	}
+
+	/**
+	 * @brief This method will set all values into the transform without the need to perform any
+	 * @c update() call. It's assumed, that all values for world and local transformations are valid
+	 */
+	void setTransforms(const glm::vec3 &worldTranslation, const glm::quat &worldOrientation, float worldScale,
+					   const glm::vec3 &localTranslation, const glm::quat &localOrientation, float localScale);
 
 	void setWorldMatrix(const glm::mat4x4 &matrix);
 	void setWorldTranslation(const glm::vec3 &translation);

@@ -161,6 +161,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
+	sceneGraph.updateTransforms();
 	return true;
 }
 

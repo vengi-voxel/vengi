@@ -243,7 +243,6 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(v.release(), true);
 		node.setName(name);
-		transform.update(sceneGraph, node, 0);
 		node.setTransform(0, transform);
 		node.setPalette(palLookup.palette());
 		sceneGraph.emplace(core::move(node));
@@ -288,7 +287,6 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	node.setVolume(v.release(), true);
 	node.setName(name);
 	node.setPalette(palLookup.palette());
-	transform.update(sceneGraph, node, 0);
 	node.setTransform(0, transform);
 	sceneGraph.emplace(core::move(node));
 	Log::debug("Matrix read");
@@ -334,6 +332,7 @@ bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& 
 			break;
 		}
 	}
+	sceneGraph.updateTransforms();
 	return true;
 }
 

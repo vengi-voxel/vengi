@@ -378,6 +378,7 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		sceneGraph.emplace(core::move(f.get()));
 	}
 
+	sceneGraph.updateTransforms();
 	return true;
 }
 

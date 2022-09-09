@@ -480,6 +480,7 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 		Log::error("Failed to voxelize %s", filename.c_str());
 		return false;
 	}
+	sceneGraph.updateTransforms();
 	return true;
 }
 
@@ -598,6 +599,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 			state = true;
 		}
 	}
+	sceneGraph.updateTransforms();
 	return state;
 }
 

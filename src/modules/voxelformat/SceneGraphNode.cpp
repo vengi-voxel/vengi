@@ -22,10 +22,19 @@ namespace voxelformat {
 void SceneGraphTransform::setPivot(const glm::vec3 &normalizedPivot) {
 	//_dirty |= DIRTY_PIVOT;
 	_normalizedPivot = normalizedPivot;
-#if 0
-	core_assert(glm::all(glm::lessThanEqual(normalizedPivot, glm::vec3(1.0f))));
-	core_assert(glm::all(glm::greaterThanEqual(normalizedPivot, glm::vec3(0.0f))));
-#endif
+}
+
+void SceneGraphTransform::setTransforms(const glm::vec3 &worldTranslation, const glm::quat &worldOrientation, float worldScale,
+					const glm::vec3 &localTranslation, const glm::quat &localOrientation, float localScale) {
+	_worldTranslation = worldTranslation;
+	_worldOrientation = worldOrientation;
+	_worldScale = worldScale;
+	_localTranslation = localTranslation;
+	_localOrientation = localOrientation;
+	_localScale = localScale;
+	_worldMat = glm::translate(_worldTranslation) * glm::mat4_cast(_worldOrientation) * glm::scale(glm::vec3(_worldScale));
+	_localMat = glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(glm::vec3(_localScale));
+	_dirty = 0u;
 }
 
 void SceneGraphTransform::setWorldTranslation(const glm::vec3 &translation) {
@@ -410,7 +419,6 @@ const SceneGraphTransform& SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) 
 
 void SceneGraphNode::setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTransform &transform) {
 	SceneGraphKeyFrame &nodeFrame = keyFrame(keyFrameIdx);
-	core_assert_msg(!transform.dirty(), "given transform is not yet ready");
 	nodeFrame.setTransform(transform);
 }
 

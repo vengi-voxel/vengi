@@ -85,6 +85,7 @@ bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
+	sceneGraph.updateTransforms();
 	return true;
 }
 

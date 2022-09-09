@@ -132,6 +132,7 @@ bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		node.setPalette(palLookup.palette());
 		sceneGraph.emplace(core::move(node));
 	}
+	sceneGraph.updateTransforms();
 	return true;
 }
 
