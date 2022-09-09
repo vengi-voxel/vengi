@@ -88,7 +88,7 @@ struct MementoState {
 	int nodeId;
 	uint32_t keyFrame;
 	core::String name;
-	glm::mat4x4 transformMatrix;
+	glm::mat4x4 localMatrix;
 	/**
 	 * @note This region might be different from the region given in the @c MementoData. In case of an @c MementoHandler::undo()
 	 * call, we have to make sure that the region of the previous state is re-extracted.
@@ -100,8 +100,8 @@ struct MementoState {
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, const core::String &_name,
-				 const voxel::Region &_region, const glm::mat4x4 &_transformMatrix, uint32_t _frameId = 0)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(_frameId), name(_name), transformMatrix(_transformMatrix),
+				 const voxel::Region &_region, const glm::mat4x4 &_localMatrix, uint32_t _frameId = 0)
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(_frameId), name(_name), localMatrix(_localMatrix),
 		  region(_region) {
 	}
 

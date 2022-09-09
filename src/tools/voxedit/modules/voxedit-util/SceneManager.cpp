@@ -575,7 +575,7 @@ bool SceneManager::undo() {
 		return nodeMove(s.nodeId, s.parentId);
 	} else if (s.type == MementoType::SceneNodeTransform) {
 		Log::debug("Memento: Undo transform of node %i", s.nodeId);
-		return nodeUpdateTransform(s.nodeId, s.transformMatrix, nullptr, s.keyFrame, false, true);
+		return nodeUpdateTransform(s.nodeId, s.localMatrix, nullptr, s.keyFrame, false, true);
 	} else if (s.type == MementoType::SceneNodeRemoved) {
 		voxel::RawVolume* v = MementoData::toVolume(s.data);
 		voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
@@ -630,7 +630,7 @@ bool SceneManager::redo() {
 		return nodeMove(s.nodeId, s.parentId);
 	} else if (s.type == MementoType::SceneNodeTransform) {
 		Log::debug("Memento: Undo transform of node %i", s.nodeId);
-		return nodeUpdateTransform(s.nodeId, s.transformMatrix, nullptr, s.keyFrame, false, true);
+		return nodeUpdateTransform(s.nodeId, s.localMatrix, nullptr, s.keyFrame, false, true);
 	} else if (s.type == MementoType::SceneNodeRemoved) {
 		Log::debug("Memento: Redo remove of node %i (%s) from parent %i", s.nodeId, s.name.c_str(), s.parentId);
 		return nodeRemove(s.nodeId, true);
