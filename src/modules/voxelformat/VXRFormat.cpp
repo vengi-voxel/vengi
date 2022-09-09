@@ -394,7 +394,6 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 	uint32_t children = 0;
 	wrap(stream.readUInt32(children))
 	const int rootNodeId = sceneGraph.root().id();
-	SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
 	for (uint32_t i = 0; i < children; ++i) {
 		wrapBool(importChildVersion3AndEarlier(filename, stream, sceneGraph, version, rootNodeId))
 	}
@@ -417,10 +416,6 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 			}
 		}
 	}
-	const uint8_t frameIdx = core::Var::getSafe(cfg::VoxformatFrame)->intVal();
-	const KeyFrameIndex keyFrameIdx = rootNode.keyFrameForFrame(frameIdx);
-	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transform(keyFrameIdx), keyFrameIdx);
-
 	return true;
 }
 
@@ -510,11 +505,6 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	if (!vxaPath.empty() && !loadVXA(sceneGraph, vxaPath)) {
 		Log::warn("Failed to load %s", vxaPath.c_str());
 	}
-
-	const uint8_t frameIdx = core::Var::getSafe(cfg::VoxformatFrame)->intVal();
-	const KeyFrameIndex keyFrameIdx = rootNode.keyFrameForFrame(frameIdx);
-	recursiveTransformVolume(sceneGraph, rootNode, rootNode.transform(keyFrameIdx), keyFrameIdx);
-
 	// some files since version 6 still have stuff here
 	return true;
 }
@@ -533,21 +523,6 @@ bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {
 	io::FileStream stream(file);
 	VXAFormat format;
 	return format.loadGroups(vxaPath, stream, sceneGraph);
-}
-
-void VXRFormat::recursiveTransformVolume(const SceneGraph &sceneGraph, SceneGraphNode &node, const SceneGraphTransform &parentTransform, KeyFrameIndex keyFrameIdx) {
-	SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
-	SceneGraphTransform currentTransform = keyFrame.transform();
-	currentTransform.setWorldMatrix(parentTransform.worldMatrix() * node.transform(keyFrameIdx).worldMatrix()); // TODO: this should be local
-	currentTransform.update(sceneGraph, node, keyFrameIdx);
-
-	if (node.type() == SceneGraphNodeType::Model) {
-		node.setTransform(keyFrameIdx, currentTransform);
-	}
-
-	for (int nodeIdx : node.children()) {
-		recursiveTransformVolume(sceneGraph, sceneGraph.node(nodeIdx), currentTransform, keyFrameIdx);
-	}
 }
 
 bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &) {
