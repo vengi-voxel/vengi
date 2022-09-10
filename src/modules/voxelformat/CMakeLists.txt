@@ -139,13 +139,41 @@ set(TEST_FILES
 	tests/glTF/lantern/Lantern_roughnessMetallic.png
 	tests/glTF/lantern/Lantern.bin
 	tests/glTF/lantern/Lantern.gltf
-	tests/e2de1723/e2de1723.Idle.vxa
-	tests/e2de1723/e2de1723.vxr
-	tests/e2de1723/e2de1723.vxr.png
-	"tests/e2de1723/Content (1).png"
+	"tests/e2de1723/e2de1723.Idle.vxa"
+	"tests/e2de1723/e2de1723.vxr"
 	"tests/e2de1723/Content (1).vxm"
-	tests/e2de1723/Content.vxm
-	tests/e2de1723/Content.vxm.png
+	"tests/e2de1723/Content.vxm"
+	"tests/giant_dinosaur/Head_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/Hip_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/L_Arm_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/L_Foot_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/L_ForeArm_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/L_Hand_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/L_Leg_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/L_Thigh_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/Mouth_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/Neck_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/R_Arm_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/Reptiles_Biped_Giant_Dinossaur_V2.Attack 01.vxa"
+	"tests/giant_dinosaur/Reptiles_Biped_Giant_Dinossaur_V2.Death 01.vxa"
+	"tests/giant_dinosaur/Reptiles_Biped_Giant_Dinossaur_V2.Death Pose 01.vxa"
+	"tests/giant_dinosaur/Reptiles_Biped_Giant_Dinossaur_V2.Eat 01.vxa"
+	"tests/giant_dinosaur/Reptiles_Biped_Giant_Dinossaur_V2.Eat 02.vxa"
+	"tests/giant_dinosaur/Reptiles_Biped_Giant_Dinossaur_V2.Get Hit 01.vxa"
+	"tests/giant_dinosaur/Reptiles_Biped_Giant_Dinossaur_V2.Idle 01.vxa"
+	"tests/giant_dinosaur/Reptiles_Biped_Giant_Dinossaur_V2.Run 01.vxa"
+	"tests/giant_dinosaur/Reptiles_Biped_Giant_Dinossaur_V2.vxr"
+	"tests/giant_dinosaur/Reptiles_Biped_Giant_Dinossaur_V2.Walk 01.vxa"
+	"tests/giant_dinosaur/R_Foot_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/R_ForeArm_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/R_Hand_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/R_Leg_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/Tail1_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/Tail2_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/Tail3_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/Tail4_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/Torax1_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/giant_dinosaur/Torax2_Reptiles_Biped_Medium_Dinosaur.vxm"
 	voxedit/robo.vox
 	voxedit/robo.qb
 	voxedit/chr_knight.qb
