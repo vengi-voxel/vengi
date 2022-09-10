@@ -5807,7 +5807,7 @@ bool TinyGLTF::LoadFromString(Model *model, std::string *err, std::string *warn,
         if (accessorsIndex < model->accessors.size()) {
           const auto bufferView = model->accessors[accessorsIndex].bufferView;
           // bufferView could be null(-1) for sparse morph target
-          if (bufferView >= 0 && bufferView < model->bufferViews.size()) {
+          if (bufferView >= 0 && bufferView < (int)model->bufferViews.size()) {
             model->bufferViews[size_t(bufferView)].target =
                 TINYGLTF_TARGET_ARRAY_BUFFER;
           }
@@ -5820,7 +5820,7 @@ bool TinyGLTF::LoadFromString(Model *model, std::string *err, std::string *warn,
           if (accessorsIndex < model->accessors.size()) {
             const auto bufferView = model->accessors[accessorsIndex].bufferView;
             // bufferView could be null(-1) for sparse morph target
-            if (bufferView >= 0 && bufferView < model->bufferViews.size()) {
+            if (bufferView >= 0 && bufferView < (int)model->bufferViews.size()) {
               model->bufferViews[size_t(bufferView)].target =
                   TINYGLTF_TARGET_ARRAY_BUFFER;
             }

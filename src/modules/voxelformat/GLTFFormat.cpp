@@ -856,7 +856,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	Log::debug(" - children: %i", (int)gltfNode.children.size());
 
 	if (gltfNode.camera != -1) {
-		SceneGraphTransform transform = loadGltfTransform(gltfNode);
+		const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
 		if (gltfNode.camera < 0 || gltfNode.camera >= (int)model.cameras.size()) {
 			Log::debug("Skip invalid camera node %i", gltfNode.camera);
 			for (int childId : gltfNode.children) {
@@ -879,7 +879,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	}
 
 	if (gltfNode.mesh < 0 || gltfNode.mesh >= (int)model.meshes.size()) {
-		SceneGraphTransform transform = loadGltfTransform(gltfNode);
+		const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
 		Log::debug("No mesh node (%i) - add a group %i", gltfNode.mesh, gltfNodeIdx);
 		SceneGraphNode node(SceneGraphNodeType::Group);
 		node.setName(gltfNode.name.c_str());
@@ -952,7 +952,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	Log::debug("region mins(%i:%i:%i)/maxs(%i:%i:%i)", imins.x, imins.y, imins.z, imaxs.x, imaxs.y, imaxs.z);
 
 	SceneGraphNode node;
-	SceneGraphTransform transform = loadGltfTransform(gltfNode);
+	const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
 	node.setName(gltfNode.name.c_str());
 	KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx++, transform);
