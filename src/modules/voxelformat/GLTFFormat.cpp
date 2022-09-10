@@ -170,6 +170,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 					image.loadRGBA((const unsigned char *)palette.colors, voxel::PaletteMaxColors, 1);
 					const core::String &pal64 = image.pngBase64();
 					colorPaletteImg.uri = "data:image/png;base64,";
+					colorPaletteImg.width = voxel::PaletteMaxColors;
+					colorPaletteImg.height = 1;
+					colorPaletteImg.component = 4;
+					colorPaletteImg.bits = 32;
 					colorPaletteImg.uri += pal64.c_str();
 					m.images.emplace_back(core::move(colorPaletteImg));
 				}
@@ -631,10 +635,26 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 								textures.emplace(diffuseTexture, core::move(tex));
 							}
 						} else {
-							Log::warn("Invalid buffer index: %i", imgBufferView.buffer);
+							Log::warn("Invalid buffer index for image: %i", imgBufferView.buffer);
+						}
+					} else if (!image.image.empty()) {
+						if (image.component == 4) {
+							core::String name = image.name.c_str();
+							if (name.empty()) {
+								name = core::string::format("image%i", colorTexture.source);
+							}
+							image::ImagePtr tex = image::createEmptyImage(name);
+							core_assert(image.image.size() == (size_t)(image.width * image.height * image.component));
+							tex->loadRGBA(image.image.data(), image.width, image.height);
+							Log::debug("Use image %s", name.c_str());
+							diffuseTexture = name.c_str();
+							textures.emplace(diffuseTexture, core::move(tex));
+							texCoordIndex = textureInfo.texCoord;
+						} else {
+							Log::warn("Failed to load image with %i components", image.component);
 						}
 					} else {
-						Log::warn("Invalid buffer view index: %i", image.bufferView);
+						Log::warn("Invalid buffer view index for image: %i", image.bufferView);
 					}
 				} else {
 					core::String name = image.uri.c_str();
