@@ -120,37 +120,39 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 
 		SceneGraphTransform &transform = keyFrame.transform();
 
-		glm::vec3 worldTranslation;
-		glm::quat worldOrientation;
-		float worldScale;
 		glm::vec3 localTranslation;
 		glm::quat localOrientation;
 		float localScale;
+		glm::vec3 ignoredTranslation;
+		glm::quat ignoredOrientation;
+		float ignoredScale;
 
-		wrap(stream.readFloat(worldTranslation.x))
-		wrap(stream.readFloat(worldTranslation.y))
-		wrap(stream.readFloat(worldTranslation.z))
 		wrap(stream.readFloat(localTranslation.x))
 		wrap(stream.readFloat(localTranslation.y))
 		wrap(stream.readFloat(localTranslation.z))
-		wrap(stream.readFloat(worldOrientation.x))
-		wrap(stream.readFloat(worldOrientation.y))
-		wrap(stream.readFloat(worldOrientation.z))
-		wrap(stream.readFloat(worldOrientation.w))
+		wrap(stream.readFloat(ignoredTranslation.x))
+		wrap(stream.readFloat(ignoredTranslation.y))
+		wrap(stream.readFloat(ignoredTranslation.z))
 		wrap(stream.readFloat(localOrientation.x))
 		wrap(stream.readFloat(localOrientation.y))
 		wrap(stream.readFloat(localOrientation.z))
 		wrap(stream.readFloat(localOrientation.w))
-		wrap(stream.readFloat(worldScale))
+		wrap(stream.readFloat(ignoredOrientation.x))
+		wrap(stream.readFloat(ignoredOrientation.y))
+		wrap(stream.readFloat(ignoredOrientation.z))
+		wrap(stream.readFloat(ignoredOrientation.w))
 		wrap(stream.readFloat(localScale))
+		wrap(stream.readFloat(ignoredScale))
 
+		transform.setLocalScale(localScale);
+		transform.setLocalOrientation(localOrientation);
 		if (version == 1) {
 			// version 1 needs to correct its translation by the pivot translation
 			const glm::vec3 volumesize = node.region().getDimensionsInVoxels();
 			const glm::vec3 pivotTranslation = (pivot * 2.0f - 1.0f) * 0.5f * volumesize;
-			transform.setTransforms(worldTranslation - pivotTranslation, worldOrientation, worldScale, localTranslation, localOrientation, localScale);
+			transform.setLocalTranslation(localTranslation - pivotTranslation);
 		} else {
-			transform.setTransforms(worldTranslation, worldOrientation, worldScale, localTranslation, localOrientation, localScale);
+			transform.setLocalTranslation(localTranslation);
 		}
 	}
 	int32_t children;

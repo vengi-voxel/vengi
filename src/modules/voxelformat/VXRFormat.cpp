@@ -246,23 +246,23 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		SceneGraphTransform &transform = keyFrame.transform();
 		transform.setPivot(glm::vec3(0.5f));
 
-		glm::quat worldOrientation;
-		glm::vec3 worldTranslation{0.0f};
-		float worldScale = 1.0f;
-
 		glm::quat localOrientation;
 		glm::vec3 localTranslation{0.0f};
 		float localScale = 1.0f;
 
-		wrap(stream.readFloat(worldTranslation.x))
+		glm::quat ignoredOrientation;
+		glm::vec3 ignoredTranslation{0.0f};
+		float ignoredScale = 1.0f;
+
+		wrap(stream.readFloat(localTranslation.x))
 		//nodeFrame.transform.position.x *= -1.0f;
-		wrap(stream.readFloat(worldTranslation.y))
-		wrap(stream.readFloat(worldTranslation.z))
-		transform.setWorldTranslation(worldTranslation);
+		wrap(stream.readFloat(localTranslation.y))
+		wrap(stream.readFloat(localTranslation.z))
+		transform.setWorldTranslation(localTranslation);
 		if (version >= 3) {
-			wrap(stream.readFloat(localTranslation.x))
-			wrap(stream.readFloat(localTranslation.y))
-			wrap(stream.readFloat(localTranslation.z))
+			wrap(stream.readFloat(ignoredTranslation.x))
+			wrap(stream.readFloat(ignoredTranslation.y))
+			wrap(stream.readFloat(ignoredTranslation.z))
 		}
 		if (version == 1) {
 			float rotationx = 0.0f;
@@ -271,26 +271,28 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			worldOrientation = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
+			localOrientation = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			localOrientation = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
+			ignoredOrientation = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
 		} else {
-			wrap(stream.readFloat(worldOrientation.x))
-			wrap(stream.readFloat(worldOrientation.y))
-			wrap(stream.readFloat(worldOrientation.z))
-			wrap(stream.readFloat(worldOrientation.w))
 			wrap(stream.readFloat(localOrientation.x))
 			wrap(stream.readFloat(localOrientation.y))
 			wrap(stream.readFloat(localOrientation.z))
 			wrap(stream.readFloat(localOrientation.w))
+			wrap(stream.readFloat(ignoredOrientation.x))
+			wrap(stream.readFloat(ignoredOrientation.y))
+			wrap(stream.readFloat(ignoredOrientation.z))
+			wrap(stream.readFloat(ignoredOrientation.w))
 		}
-		wrap(stream.readFloat(worldScale))
+		wrap(stream.readFloat(localScale))
 		if (version >= 3) {
-			wrap(stream.readFloat(localScale))
+			wrap(stream.readFloat(ignoredScale))
 		}
-		transform.setTransforms(worldTranslation, worldOrientation, worldScale, localTranslation, localOrientation, localScale);
+		transform.setLocalScale(localScale);
+		transform.setLocalTranslation(localTranslation);
+		transform.setLocalOrientation(localOrientation);
 	}
 	int32_t children;
 	wrap(stream.readInt32(children))
