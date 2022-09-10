@@ -6,6 +6,8 @@
 #include "voxelformat/VXMFormat.h"
 #include "voxelformat/VXRFormat.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 namespace voxelformat {
 
 class VXRFormatTest: public AbstractVoxFormatTest {
