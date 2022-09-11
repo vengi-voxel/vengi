@@ -280,14 +280,16 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		glm::vec3 minVertex(FLT_MAX);
 		glm::vec2 minMaxUVX(FLT_MAX, -FLT_MAX);
 
-		const glm::vec3 pivotOffset = transform.pivot() * meshExt.size;
+		const glm::vec3 &offset = mesh->getOffset();
+
+		const glm::vec3 pivotOffset = offset - transform.pivot() * meshExt.size;
 		for (int j = 0; j < nv; j++) {
 			const voxel::VoxelVertex &v = vertices[j];
 
 			glm::vec3 pos = v.position;
 
 			if (meshExt.applyTransform) {
-				pos = pos - pivotOffset;
+				pos = pos + pivotOffset;
 			}
 
 			for (int coordIndex = 0; coordIndex < glm::vec3::length(); coordIndex++) {
