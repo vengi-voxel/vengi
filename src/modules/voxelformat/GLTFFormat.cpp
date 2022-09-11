@@ -230,8 +230,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			return false;
 		}
 
-		int frame = 0;
-		const SceneGraphTransform &transform = graphNode.transform(frame);
+		KeyFrameIndex keyFrameIdx = 0;
+		const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 		const voxel::IndexType *indices = mesh->getRawIndexData();
 		const char *objectName = meshExt.name.c_str();
@@ -425,6 +425,35 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			node.mesh = nthNodeIdx;
 			processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale);
 		}
+
+#if 0
+		for (const core::String &animationName : sceneGraph.animations()) {
+			tinygltf::Animation animation;
+			animation.name = animationName.c_str();
+			tinygltf::AnimationSampler sampler;
+			SceneGraphKeyFrame keyFrame;
+			sampler.input = keyFrame.frameIdx * _priv::FPS;
+			sampler.output = -1; // TODO
+			if (keyFrame.interpolation == InterpolationType::Linear) {
+				sampler.interpolation = "LINEAR";
+			} else if (keyFrame.interpolation == InterpolationType::Instant) {
+				sampler.interpolation = "STEP";
+			// } else if (keyFrame.interpolation == InterpolationType::Instant) {
+				// TODO: implement easing for this type
+				// sampler.interpolation  = "CUBICSPLINE";
+			}
+			animation.samplers.push_back(sampler);
+
+			tinygltf::AnimationChannel channel;
+			channel.sampler = (int)animation.samplers.size() - 1;
+			channel.target_node = node.id();
+			channel.target_path = "translation";
+			// TODO: "rotation", "scale"
+
+			animation.channels.push_back(channel);
+			m.animations.push_back(animation);
+		}
+#endif
 
 		m.meshes.emplace_back(core::move(expMesh));
 		m.buffers.emplace_back(core::move(buffer));
