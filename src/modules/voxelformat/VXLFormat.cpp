@@ -11,6 +11,7 @@
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "core/collection/DynamicArray.h"
+#include <glm/gtx/transform.hpp>
 #include "io/File.h"
 #include "io/Filesystem.h"
 #include "io/FileStream.h"
@@ -144,16 +145,16 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 
 	const FrameIndex frameIdx = 0;
 	const SceneGraphTransform &transform = node->transform(frameIdx);
-	const glm::mat4 &matrix = transform.worldMatrix();
+	const glm::mat4 &matrix = transform.localMatrix();
 
-	wrapBool(stream.writeFloat(transform.worldScale()))
+	wrapBool(stream.writeFloat(transform.localScale()))
 
 	for (int row = 0; row < 3; ++row) {
 		for (int col = 0; col < 4; ++col) {
 			wrapBool(stream.writeFloat(matrix[col][row]))
 		}
 	}
-	const glm::vec3 &mins = transform.worldTranslation();
+	const glm::vec3 &mins = transform.localTranslation();
 	const glm::vec3 maxs = mins + glm::vec3(node->region().getDimensionsInVoxels());
 	for (int i = 0; i < 3; ++i) {
 		wrapBool(stream.writeFloat(mins[i]))
@@ -281,7 +282,7 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 	}
 	SceneGraphTransform transform;
 	glm::mat4 transformMatrix = footer.transform;
-	transform.setWorldMatrix(transformMatrix);
+	transform.setLocalMatrix(transformMatrix);
 	// transform.setLocalScale(footer.scale); // TODO
 	const KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
@@ -507,10 +508,12 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 			const glm::vec3 size(footer.xsize, footer.ysize, footer.zsize);
 			const glm::vec3 nodeScale = (footer.maxs - footer.mins) / size;
 			// The HVA transformation matrices must be scaled - the VXL ones not!
-			glm::vec4 &v = m[3];
-			v[0] *= (footer.scale * nodeScale[0]);
-			v[1] *= (footer.scale * nodeScale[1]);
-			v[2] *= (footer.scale * nodeScale[2]);
+			glm::vec4 &translationCol = m[3];
+			translationCol[0] *= (footer.scale * nodeScale[0]);
+			translationCol[1] *= (footer.scale * nodeScale[1]);
+			translationCol[2] *= (footer.scale * nodeScale[2]);
+
+			//m *= glm::translate(footer.mins);
 		}
 	}
 
@@ -544,7 +547,8 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 			kf.frameIdx = keyFrameIdx * 6; // running at 6 fps
 			// hva transforms are overriding the vxl transform
 			SceneGraphTransform transform;
-			transform.setWorldMatrix(sectionMatrices[section]);
+			// transform.setPivot(mdl.nodeFooters[section].mins / size);
+			transform.setLocalMatrix(sectionMatrices[section]);
 			kf.setTransform(transform);
 		}
 	}
@@ -592,7 +596,7 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 	for (uint32_t i = 0; i < numFrames; ++i) {
 		for (const SceneGraphNode &node : sceneGraph) {
 			const SceneGraphTransform &transform = node.transform(i);
-			glm::mat4 matrix = transform.worldMatrix();
+			glm::mat4 matrix = transform.localMatrix();
 #if 0
 			//const glm::vec3 size(node.region().getDimensionsInVoxels());
 			const glm::vec3 nodeScale(1.0f); // TODO (footer.maxs - footer.mins) / size;
