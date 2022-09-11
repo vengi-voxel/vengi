@@ -53,7 +53,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &fil
 	voxel::RawVolume volume(region);
 	EXPECT_TRUE(volume.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 0)));
 	EXPECT_TRUE(volume.setVoxel(0, 0, 1, createVoxel(voxel::VoxelType::Generic, 255)));
-	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
+	io::BufferedReadWriteStream stream((int64_t)(10 * 1024 * 1024));
 	ASSERT_TRUE(format->save(&volume, filename, stream));
 	stream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette merged = load(filename, stream, *format);
@@ -67,7 +67,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 	voxel::RawVolume original(region);
 	EXPECT_TRUE(original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 0)));
 	EXPECT_TRUE(original.setVoxel(0, 0, 1, createVoxel(voxel::VoxelType::Generic, 255)));
-	io::BufferedReadWriteStream srcFormatStream(10 * 1024 * 1024);
+	io::BufferedReadWriteStream srcFormatStream((int64_t)(10 * 1024 * 1024));
 	EXPECT_TRUE(srcFormat.save(&original, destFilename, srcFormatStream)) << "Could not save " << destFilename;
 	srcFormatStream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette merged = load(destFilename, srcFormatStream, srcFormat);
@@ -78,7 +78,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 	}
 	voxel::volumeComparator(original, voxel::getPalette(), *origReloaded, merged.second, flags);
 
-	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
+	io::BufferedReadWriteStream stream((int64_t)(10 * 1024 * 1024));
 	EXPECT_TRUE(destFormat.save(origReloaded, destFilename, stream)) << "Could not save " << destFilename;
 	stream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette merged2 = load(destFilename, stream, destFormat);
@@ -148,7 +148,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename,
 												voxel::ValidateFlags flags, float maxDelta) {
 	voxelformat::SceneGraph sceneGraph;
 	ASSERT_TRUE(loadGroups(srcFilename, srcFormat, sceneGraph)) << "Failed to load " << srcFilename;
-	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
+	io::BufferedReadWriteStream stream((int64_t)(10 * 1024 * 1024));
 	ASSERT_TRUE(destFormat.saveGroups(sceneGraph, destFilename, stream)) << "Could not save " << destFilename;
 	stream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(destFilename, stream, destFormat);
@@ -164,7 +164,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &sr
 												voxel::ValidateFlags flags, float maxDelta) {
 	voxelformat::SceneGraph srcSceneGraph;
 	ASSERT_TRUE(loadGroups(srcFilename, srcFormat, srcSceneGraph)) << "Failed to load " << srcFilename;
-	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
+	io::BufferedReadWriteStream stream((int64_t)(10 * 1024 * 1024));
 	ASSERT_TRUE(destFormat.saveGroups(srcSceneGraph, destFilename, stream)) << "Could not save " << destFilename;
 	stream.seek(0);
 	voxelformat::SceneGraph destSceneGraph;
@@ -176,7 +176,7 @@ void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Fo
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
 	voxel::RawVolume original(region);
 	original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1));
-	io::BufferedReadWriteStream bufferedStream(10 * 1024 * 1024);
+	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 	ASSERT_TRUE(format->save(&original, filename, bufferedStream));
 	bufferedStream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
@@ -192,7 +192,7 @@ void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Fo
 	ASSERT_TRUE(original.setVoxel(0, 0, 1, createVoxel(voxel::VoxelType::Generic, 200)));
 	ASSERT_TRUE(original.setVoxel(0, 1, 1, createVoxel(voxel::VoxelType::Generic, 201)));
 	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 202)));
-	io::BufferedReadWriteStream bufferedStream(10 * 1024 * 1024);
+	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 	ASSERT_TRUE(format->save(&original, filename, bufferedStream));
 	bufferedStream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
@@ -224,7 +224,7 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	sceneGraph.emplace(core::move(node2));
 	sceneGraph.emplace(core::move(node3));
 	sceneGraph.emplace(core::move(node4));
-	io::BufferedReadWriteStream bufferedStream(10 * 1024 * 1024);
+	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 	ASSERT_TRUE(format->saveGroups(sceneGraph, filename, bufferedStream));
 	bufferedStream.seek(0);
 	voxelformat::SceneGraph sceneGraphLoad;
@@ -240,7 +240,7 @@ void AbstractVoxFormatTest::testSave(const core::String &filename, Format *forma
 	voxelformat::SceneGraphNode node1;
 	node1.setVolume(&layer1, false);
 	sceneGraph.emplace(core::move(node1));
-	io::BufferedReadWriteStream bufferedStream(10 * 1024 * 1024);
+	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 	ASSERT_TRUE(format->saveGroups(sceneGraph, filename, bufferedStream));
 	voxelformat::SceneGraph sceneGraphLoad;
 	bufferedStream.seek(0);
@@ -292,7 +292,7 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	io::FileStream fileWriteStream(sfile);
 	writeStream = &fileWriteStream;
 #else
-	io::BufferedReadWriteStream bufferedStream(10 * 1024 * 1024);
+	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 	writeStream = &bufferedStream;
 #endif
 
