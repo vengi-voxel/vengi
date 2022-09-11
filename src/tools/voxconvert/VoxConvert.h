@@ -23,7 +23,6 @@ private:
 	core::VarPtr _scaleX;
 	core::VarPtr _scaleY;
 	core::VarPtr _scaleZ;
-	core::VarPtr _frame;
 	core::VarPtr _quads;
 	core::VarPtr _withColor;
 	core::VarPtr _withTexCoords;
@@ -35,7 +34,6 @@ private:
 	bool _translateVolumes = false;
 	bool _exportPalette = false;
 	bool _exportLayers = false;
-	bool _changePivot = false;
 	bool _cropVolumes = false;
 	bool _splitVolumes = false;
 	bool _dumpSceneGraph = false;
@@ -53,7 +51,6 @@ protected:
 	void resize(const glm::ivec3 &size, voxelformat::SceneGraph& sceneGraph);
 	void script(const core::String &scriptParameters, voxelformat::SceneGraph& sceneGraph, uint8_t color);
 	void translate(const glm::ivec3& pos, voxelformat::SceneGraph& sceneGraph);
-	void pivot(const glm::ivec3& pivot, voxelformat::SceneGraph& sceneGraph);
 	void crop(voxelformat::SceneGraph& sceneGraph);
 	int dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId, int indent);
 	void dump(const voxelformat::SceneGraph& sceneGraph);

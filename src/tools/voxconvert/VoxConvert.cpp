@@ -64,7 +64,6 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
 	registerArg("--output").setShort("-o").setDescription("Allow to specify the output file");
-	registerArg("--pivot").setDescription("Change the pivots of the volume layers");
 	registerArg("--rotate").setDescription("Rotate by 90 degree at the given axis (x, y or z)");
 	registerArg("--resize").setDescription("Resize the volume by the given x (right), y (up) and z (back) values");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
@@ -80,7 +79,6 @@ app::AppState VoxConvert::onConstruct() {
 	_scaleX = core::Var::get(cfg::VoxformatScaleX, "1.0", core::CV_NOPERSIST, "Scale the vertices on X axis by the given factor");
 	_scaleY = core::Var::get(cfg::VoxformatScaleY, "1.0", core::CV_NOPERSIST, "Scale the vertices on Y axis by the given factor");
 	_scaleZ = core::Var::get(cfg::VoxformatScaleZ, "1.0", core::CV_NOPERSIST, "Scale the vertices on Z axis by the given factor");
-	_frame = core::Var::get(cfg::VoxformatFrame, "0", core::CV_NOPERSIST, "Which frame to import for formats that support this - starting at 0");
 	_quads = core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST, "Export as quads. If this false, triangles will be used.");
 	_withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST, "Export with vertex colors");
 	_withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST, "Export with uv coordinates of the palette image");
@@ -165,7 +163,6 @@ app::AppState VoxConvert::onInit() {
 	_translateVolumes = hasArg("--translate");
 	_exportPalette    = hasArg("--export-palette");
 	_exportLayers     = hasArg("--export-layers");
-	_changePivot      = hasArg("--pivot");
 	_cropVolumes      = hasArg("--crop");
 	_splitVolumes     = hasArg("--split");
 	_dumpSceneGraph   = hasArg("--dump");
@@ -345,10 +342,6 @@ app::AppState VoxConvert::onInit() {
 	if (!scriptParameters.empty()) {
 		const core::String &color = getArgVal("--scriptcolor");
 		script(scriptParameters, sceneGraph, color.toInt());
-	}
-
-	if (_changePivot) {
-		pivot(getArgIvec3("--pivot"), sceneGraph);
 	}
 
 	if (_cropVolumes) {
@@ -579,13 +572,6 @@ void VoxConvert::crop(voxelformat::SceneGraph& sceneGraph) {
 	Log::info("Crop volumes");
 	for (voxelformat::SceneGraphNode& node : sceneGraph) {
 		node.setVolume(voxelutil::cropVolume(node.volume()), true);
-	}
-}
-
-void VoxConvert::pivot(const glm::ivec3& pivot, voxelformat::SceneGraph& sceneGraph) {
-	Log::info("Set pivot to %i:%i:%i", pivot.x, pivot.y, pivot.z);
-	for (voxelformat::SceneGraphNode& node : sceneGraph) {
-		node.setPivot(_frame->intVal(), pivot, node.region().getDimensionsInVoxels());
 	}
 }
 

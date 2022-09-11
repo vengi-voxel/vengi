@@ -17,7 +17,6 @@
 * `--merge`: will merge a multi layer volume (like `vox`, `qb` or `qbt`) into a single volume of the target file
 * `--mirror <x|y|z>`: allows you to mirror the volumes at x, y and z axis
 * `--output <file>`: allows you to specify the output filename
-* `--pivot <x:y:z>`: change the pivots of the volume layers. Not all voxel formats support this.
 * `--resize <x:y:z>`: resize the volume by the given x (right), y (up) and z (back) values
 * `--rotate <x|y|z>`: allows you to rotate the volumes by 90 degree at x, y and z axis
 * `--scale`: perform lod conversion of the input volume (50% scale per call)

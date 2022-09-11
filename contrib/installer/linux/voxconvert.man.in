@@ -89,12 +89,6 @@ Mirror by the given axis (x, y or z).
 Allow to specify the output file.
 
 .TP
-\fB\--pivot <x:y:z>\fR
-Change the pivot of the volume layers.
-
-Not all voxel formats support this.
-
-.TP
 \fB\--resize <x:y:z>\fR
 Resize the volume by the given x (right), y (up) and z (back) values.
 
