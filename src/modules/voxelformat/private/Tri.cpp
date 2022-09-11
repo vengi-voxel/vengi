@@ -8,8 +8,12 @@
 
 namespace voxelformat {
 
+glm::vec3 Tri::normal() const {
+	return glm::cross(vertices[1] - vertices[0], vertices[2] - vertices[0]);
+}
+
 float Tri::area() const {
-	return glm::length(glm::cross(vertices[1] - vertices[0], vertices[2] - vertices[0])) / 2;
+	return glm::length(normal()) / 2;
 }
 
 glm::vec3 Tri::mins() const {

@@ -27,6 +27,7 @@ struct Tri {
 		return (vertices[0] + vertices[1] + vertices[2]) / 3.0f;
 	}
 
+	glm::vec3 normal() const;
 	float area() const;
 	glm::vec3 mins() const;
 	glm::vec3 maxs() const;
