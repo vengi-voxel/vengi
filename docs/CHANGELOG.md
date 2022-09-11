@@ -14,10 +14,17 @@ General:
 
    - Improvements on GLTF format handling
    - Fixed block id parsing for StarMade voxel models
+   - Major improvements in scene graph transform handling
+
+Packaging:
+
+   - There is a snap package available now (`io.github.mgerhardy.vengi.voxedit`)
 
 VoxEdit:
 
    - Fixed layer color selection if you have multiple layers
+   - Fixed moving nodes in the scene graph panel
+   - Fixed transforms in scene graph mode (translation, rotation)
 
 ## 0.0.21 (2022-09-05)
 

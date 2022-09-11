@@ -3,9 +3,15 @@ vengi (0.0.22.0-1) UNRELEASED; urgency=low
   * General:
   * Improvements on GLTF format handling
   * Fixed block id parsing for StarMade voxel models
+  * Major improvements in scene graph transform handling
+
+  * Packaging:
+  * There is a snap package available now (io.github.mgerhardy.vengi.voxedit)
 
   * VoxEdit:
   * Fixed layer color selection if you have multiple layers
+  * Fixed moving nodes in the scene graph panel
+  * Fixed transforms in scene graph mode (translation, rotation)
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 9 Sep 2022 00:00:00 +0000
 
