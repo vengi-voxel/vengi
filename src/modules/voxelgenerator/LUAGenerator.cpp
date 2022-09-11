@@ -913,7 +913,12 @@ core::String LUAGenerator::load(const core::String& scriptName) const {
 		}
 		filename = core::string::path("scripts", filename);
 	}
+#if LUA_VERSION_NUM < 504
+	core::String lua = io::filesystem()->load(filename);
+	return core::string::replaceAll(lua, "<const>", "");
+#else
 	return io::filesystem()->load(filename);
+#endif
 }
 
 core::DynamicArray<LUAScript> LUAGenerator::listScripts() const {
