@@ -58,7 +58,7 @@ if (NOT LUA54_FOUND)
 	configure_lua(${LIB})
 endif()
 
-find_program(LUAC_EXECUTABLE NAMES luac luac5.2 luac5.3 luac5.4)
+find_program(LUAC_EXECUTABLE NAMES luac luac5.4)
 if (NOT LUAC_EXECUTABLE)
 	message(STATUS "luac not found - use bundled version")
 	add_executable(luac luac.c ${SRCS})
