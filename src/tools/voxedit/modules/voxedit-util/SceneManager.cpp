@@ -908,7 +908,7 @@ math::AABB<float> SceneManager::toAABB(const voxel::Region& region) const {
 math::OBB<float> SceneManager::toOBB(const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const {
 	core_assert(region.isValid());
 	if (_editMode == EditMode::Scene) {
-		const glm::vec3 &extents = glm::vec3(region.getDimensionsInVoxels()) / 2.0f;
+		const glm::vec3 &extents = transform.pivot() * glm::vec3(region.getDimensionsInVoxels());
 		const glm::vec3 &center = (region.getLowerCornerf() + transform.worldTranslation()) + extents;
 		const glm::mat4 &matrix = transform.worldMatrix();
 		return math::OBB<float>(center, extents, matrix);
