@@ -207,11 +207,10 @@ TEST_F(ConvertTest, DISABLED_testQbToGox) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.gox", target, voxel::ValidateFlags::None);
 }
 
-// TODO: transform broken
 TEST_F(ConvertTest, testGoxToQb) {
 	GoxFormat src;
 	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("test.gox", src, "test.qb", target, voxel::ValidateFlags::Color | voxel::ValidateFlags::Translation);
+	testLoadSaveAndLoadSceneGraph("test.gox", src, "test.qb", target);
 }
 
 }
