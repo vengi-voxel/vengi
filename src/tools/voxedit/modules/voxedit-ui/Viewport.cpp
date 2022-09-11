@@ -271,13 +271,11 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 
 	ImGuizmo::BeginFrame();
 
-	ImGuizmo::MODE mode;
+	ImGuizmo::MODE mode = ImGuizmo::MODE::LOCAL;
 	if (editMode == EditMode::Scene) {
 		ImGuizmo::Enable(true);
-		mode = ImGuizmo::MODE::LOCAL;
 	} else {
 		ImGuizmo::Enable(false);
-		mode = _modelSpaceVar->boolVal() ? ImGuizmo::MODE::LOCAL : ImGuizmo::MODE::WORLD;
 	}
 	int operation = ImGuizmo::TRANSLATE;
 	if (_guizmoRotation->boolVal()) {
@@ -295,7 +293,7 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 		const float snap[]{step, step, step};
 		const uint32_t keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
 		const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-		glm::mat4 transformMatrix = transform.worldMatrix();
+		glm::mat4 localMatrix = transform.localMatrix();
 		glm::mat4 deltaMatrix(0.0f);
 		const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
 		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))	 {
@@ -315,7 +313,7 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 		}
 
 		ImGuizmo::Manipulate(glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()),
-							 (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(transformMatrix),
+							 (ImGuizmo::OPERATION)operation, mode, glm::value_ptr(localMatrix),
 							 glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr,
 							 _boundsMode ? glm::value_ptr(_bounds.mins) : nullptr, _boundsMode ? boundsSnap : nullptr);
 
@@ -326,7 +324,7 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 					glm::vec3 translate;
 					glm::vec3 rotation;
 					glm::vec3 scale;
-					ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transformMatrix), glm::value_ptr(translate),
+					ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(localMatrix), glm::value_ptr(translate),
 														glm::value_ptr(rotation), glm::value_ptr(scale));
 					if (glm::all(glm::greaterThan(scale, glm::vec3(0)))) {
 						_bounds.maxs = _boundsNode.maxs * scale;
@@ -337,16 +335,14 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 						}
 					}
 				} else {
-					const bool local = mode == ImGuizmo::MODE::LOCAL;
-					sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrameIdx, false, local);
+					sceneMgr().nodeUpdateTransform(-1, localMatrix, &deltaMatrix, keyFrameIdx, false);
 				}
 			} else if (_guizmoActivated) {
 				if (_boundsMode) {
 					voxel::Region newRegion(glm::ivec3(_bounds.mins), glm::ivec3(_bounds.maxs));
 					sceneMgr().resize(activeNode, newRegion);
 				} else {
-					const bool local = mode == ImGuizmo::MODE::LOCAL;
-					sceneMgr().nodeUpdateTransform(-1, transformMatrix, &deltaMatrix, keyFrameIdx, true, local);
+					sceneMgr().nodeUpdateTransform(-1, localMatrix, &deltaMatrix, keyFrameIdx, true);
 				}
 				_guizmoActivated = false;
 			}
