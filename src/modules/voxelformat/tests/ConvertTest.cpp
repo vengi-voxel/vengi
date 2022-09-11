@@ -40,15 +40,6 @@ TEST_F(ConvertTest, testVoxToVXM) {
 	testLoadSaveAndLoadSceneGraph("robo.vox", src, "robo.vxm", target, flags);
 }
 
-// TODO: pivot broken
-// TODO: transform broken
-TEST_F(ConvertTest, testVoxToVXR) {
-	VoxFormat src;
-	VXMFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::Color;
-	testLoadSaveAndLoadSceneGraph("robo.vox", src, "robo.vxr", target, flags);
-}
-
 TEST_F(ConvertTest, testQbToVox) {
 	QBFormat src;
 	VoxFormat target;
@@ -87,39 +78,16 @@ TEST_F(ConvertTest, testBinvoxToQb) {
 	testLoadSaveAndLoadSceneGraph("test.binvox", src, "test.qb", target);
 }
 
-// TODO: translation broken
-TEST_F(ConvertTest, testQbToVXL) {
-	QBFormat src;
-	VXLFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Transform;
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.vxl", target, flags);
-}
-
 TEST_F(ConvertTest, testVXLToQb) {
 	VXLFormat src;
 	QBFormat target;
 	testLoadSaveAndLoadSceneGraph("rgb.vxl", src, "test.qb", target);
 }
 
-// TODO: translation broken
-TEST_F(ConvertTest, testVXLToVXR) {
-	VXLFormat src;
-	QBFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Transform;
-	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "cc.vxr", target, flags);
-}
-
 TEST_F(ConvertTest, testQbToQbt) {
 	QBFormat src;
 	QBTFormat target;
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.qbt", target);
-}
-
-// TODO: pivot broken
-TEST_F(ConvertTest, testQbtToQb) {
-	QBTFormat src;
-	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("qubicle.qbt", src, "test.qb", target, voxel::ValidateFlags::All & ~voxel::ValidateFlags::Pivot);
 }
 
 TEST_F(ConvertTest, testQbToSproxel) {
@@ -142,21 +110,6 @@ TEST_F(ConvertTest, testQbToQb) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight2.qb", target);
 }
 
-// TODO: transform broken
-TEST_F(ConvertTest, testQbToVXM) {
-	QBFormat src;
-	VXMFormat target;
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.vxm", target, voxel::ValidateFlags::All & ~voxel::ValidateFlags::Transform);
-}
-
-// TODO: pivot broken
-// TODO: colors broken
-TEST_F(ConvertTest, testVXMToQb) {
-	VXMFormat src;
-	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("test.vxm", src, "test.qb", target, voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color));
-}
-
 TEST_F(ConvertTest, testQbToCub) {
 	QBFormat src;
 	CubFormat target;
@@ -169,48 +122,101 @@ TEST_F(ConvertTest, testCubToQb) {
 	testLoadSaveAndLoadSceneGraph("rgb.cub", src, "test.qb", target);
 }
 
+TEST_F(ConvertTest, testGoxToQb) {
+	GoxFormat src;
+	QBFormat target;
+	testLoadSaveAndLoadSceneGraph("test.gox", src, "test.qb", target);
+}
+
+// TODO: pivot broken
+// TODO: transform broken
+TEST_F(ConvertTest, testVoxToVXR) {
+	VoxFormat src;
+	VXMFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform | voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("robo.vox", src, "robo.vxr", target, flags);
+}
+
+// TODO: translation broken
+TEST_F(ConvertTest, testQbToVXL) {
+	QBFormat src;
+	VXLFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.vxl", target, flags);
+}
+
+// TODO: translation broken
+TEST_F(ConvertTest, testVXLToVXR) {
+	VXLFormat src;
+	QBFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform);
+	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "cc.vxr", target, flags);
+}
+// TODO: pivot broken
+TEST_F(ConvertTest, testQbtToQb) {
+	QBTFormat src;
+	QBFormat target;
+	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("qubicle.qbt", src, "test.qb", target, flags);
+}
+
+// TODO: transform broken
+TEST_F(ConvertTest, testQbToVXM) {
+	QBFormat src;
+	VXMFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.vxm", target, flags);
+}
+
+// TODO: pivot broken
+// TODO: colors broken
+TEST_F(ConvertTest, testVXMToQb) {
+	VXMFormat src;
+	QBFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color);
+	testLoadSaveAndLoadSceneGraph("test.vxm", src, "test.qb", target, flags);
+}
+
 // TODO: pivot broken
 TEST_F(ConvertTest, testKVXToQb) {
 	KVXFormat src;
 	QBFormat target;
-	testLoadSaveAndLoad("test.kvx", src, "test.qb", target, voxel::ValidateFlags::All & ~voxel::ValidateFlags::Pivot, 0.012f);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	const float maxDelta = 0.012f;
+	testLoadSaveAndLoad("test.kvx", src, "test.qb", target, flags, maxDelta);
 }
 
 // TODO: pivot broken
 TEST_F(ConvertTest, testKV6ToQb) {
 	KV6Format src;
 	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("test.kv6", src, "test.qb", target, voxel::ValidateFlags::All & ~voxel::ValidateFlags::Pivot);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("test.kv6", src, "test.qb", target, flags);
 }
 
 // TODO: pivot broken
 TEST_F(ConvertTest, testQbToVXR) {
 	QBFormat src;
 	VXRFormat target;
-	testLoadSaveAndLoadSceneGraph("robo.qb", src, "robo.vxr", target, voxel::ValidateFlags::All & ~voxel::ValidateFlags::Pivot);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("robo.qb", src, "robo.vxr", target, flags);
 }
 
 // TODO: colors broken
-// TODO: transform broken
+// TODO: pivot broken
 TEST_F(ConvertTest, testVXRToQb) {
 	VXRFormat src;
 	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("e2de1723/e2de1723.vxr", src, "test.qb", target, voxel::ValidateFlags::None);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color);
+	testLoadSaveAndLoadSceneGraph("e2de1723/e2de1723.vxr", src, "test.qb", target, flags);
 }
 
-// TODO: colors broken
 // TODO: transform broken
-// TODO: voxels broken
-TEST_F(ConvertTest, DISABLED_testQbToGox) {
+TEST_F(ConvertTest, testQbToGox) {
 	QBFormat src;
 	GoxFormat target;
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.gox", target, voxel::ValidateFlags::None);
-}
-
-TEST_F(ConvertTest, testGoxToQb) {
-	GoxFormat src;
-	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("test.gox", src, "test.qb", target);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.gox", target, flags);
 }
 
 }
