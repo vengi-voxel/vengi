@@ -74,6 +74,10 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 				Log::error("Failed to move node");
 			}
 			ImGui::EndDragDropTarget();
+			ImGui::TableNextColumn();
+			if (open) {
+				ImGui::TreePop();
+			}
 			return;
 		}
 		ImGui::EndDragDropTarget();

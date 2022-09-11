@@ -50,7 +50,7 @@ private:
 		uint32_t spanEndOffset;		/* Offset into body section to span end list */
 		uint32_t spanDataOffset;	/* Offset into body section to span data */
 		float scale;				/* Scaling vector for the image */
-		glm::mat4 transform;
+		glm::mat4 transform;		/* 4x3 right handed matrix - x, y and z axis point right, up and behind */
 		glm::vec3 mins;
 		glm::vec3 maxs;
 

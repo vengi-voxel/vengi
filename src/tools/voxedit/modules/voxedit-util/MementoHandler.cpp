@@ -261,7 +261,7 @@ void MementoHandler::markNodeRenamed(const voxelformat::SceneGraphNode &node) {
 }
 
 void MementoHandler::markNodeMoved(int targetId, int sourceId) {
-	markUndo(targetId, sourceId, nullptr, nullptr, MementoType::SceneNodeMove, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
+	markUndo(targetId, sourceId, "", nullptr, MementoType::SceneNodeMove, voxel::Region::InvalidRegion, glm::mat4(1.0f), -1);
 }
 
 void MementoHandler::markNodeTransform(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
