@@ -113,7 +113,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 	const core::String &ext = core::string::extractExtension(filename);
 	const bool writeBinary = ext == "glb";
-	// const bool embedImages = false; // TODO research
 	// const bool embedBuffers = true; // TODO research
 	const bool prettyPrint = true;
 
