@@ -169,7 +169,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &sr
 	stream.seek(0);
 	voxelformat::SceneGraph destSceneGraph;
 	ASSERT_TRUE(destFormat.loadGroups(destFilename, stream, destSceneGraph)) << "Failed to load the target format";
-	voxel::sceneGraphComparator(destSceneGraph, srcSceneGraph, flags, maxDelta);
+	voxel::sceneGraphComparator(srcSceneGraph, destSceneGraph, flags, maxDelta);
 }
 
 void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Format* format) {

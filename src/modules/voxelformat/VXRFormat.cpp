@@ -186,11 +186,6 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph &sceneGraph
 	// restore old name
 	node.setName(nodeName);
 
-	// TODO: this shouldn't be needed - should get set in vxa or vxr (or in vxm version <= 3)
-	const voxelformat::SceneGraphTransform &childTransform = childModelNode->transform(0);
-	voxelformat::SceneGraphTransform &transform = node.transform(0);
-	transform.setPivot(childTransform.pivot());
-
 	// TODO: support loading all layers
 #if 0
 	for (int i = 1; i < modelCount; ++i) {
