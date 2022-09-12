@@ -55,7 +55,7 @@ ItemPtr Stock::add(const ItemPtr& item) {
 	return alreadyExisting;
 }
 
-int Stock::remove(const ItemPtr& item) {
+ItemAmount Stock::remove(const ItemPtr& item) {
 	auto i = find(item->id());
 	if (i == _items.end()) {
 		return 0;
@@ -69,9 +69,9 @@ int Stock::remove(const ItemPtr& item) {
 	return amount;
 }
 
-int Stock::count(const ItemType& itemType) const {
-	int n = 0;
-	for (const auto& entry : _items) {
+ItemAmount Stock::count(const ItemType& itemType) const {
+	ItemAmount n = 0;
+	for (const auto *entry : _items) {
 		const ItemPtr& i = entry->value;
 		if (i->type() == itemType) {
 			n += i->amount();
@@ -80,7 +80,7 @@ int Stock::count(const ItemType& itemType) const {
 	return n;
 }
 
-int Stock::count(ItemId itemId) const {
+ItemAmount Stock::count(ItemId itemId) const {
 	auto i = find(itemId);
 	if (i == _items.end()) {
 		return 0;

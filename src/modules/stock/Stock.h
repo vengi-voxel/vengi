@@ -62,17 +62,17 @@ public:
 	 * @brief Removes a particular amount of items
 	 * @return The remaining amount
 	 */
-	int remove(const ItemPtr& item);
+	ItemAmount remove(const ItemPtr& item);
 
 	/**
 	 * @brief Count how many items of the given @c ItemType are in the @c Stock
 	 */
-	int count(const ItemType& itemType) const;
+	ItemAmount count(const ItemType& itemType) const;
 
 	/**
 	 * @brief Count how many items of the given @c ItemId are in the @c Stock
 	 */
-	int count(ItemId itemId) const;
+	ItemAmount count(ItemId itemId) const;
 
 	const Inventory& inventory() const;
 	Inventory& inventory();
