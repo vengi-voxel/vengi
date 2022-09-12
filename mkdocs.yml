@@ -16,6 +16,11 @@ markdown_extensions:
   - toc:
       toc_depth: 2
 
+extra:
+  social:
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/MartinGerhardy
+
 nav:
   - README.md
   - CHANGELOG.md
