@@ -216,7 +216,6 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* scale volumes:     - %s", (_scaleVolumes     ? "true" : "false"));
 	Log::info("* crop volumes:      - %s", (_cropVolumes      ? "true" : "false"));
 	Log::info("* split volumes:     - %s", (_splitVolumes     ? "true" : "false"));
-	Log::info("* change pivot:      - %s", (_changePivot      ? "true" : "false"));
 	Log::info("* mirror volumes:    - %s", (_mirrorVolumes    ? "true" : "false"));
 	Log::info("* translate volumes: - %s", (_translateVolumes ? "true" : "false"));
 	Log::info("* rotate volumes:    - %s", (_rotateVolumes    ? "true" : "false"));
