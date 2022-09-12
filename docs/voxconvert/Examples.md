@@ -51,7 +51,7 @@ Voxelize an obj and save as magicavoxel (including colors):
 
 `./vengi-voxconvert -set voxformat_scale 2 -set palette /path/to/palette.png --input mesh.obj --output voxels.vox`
 
-> See the [supported formats](Formats.md) for a few more details.
+> See the [supported formats](../Formats.md) for a few more details.
 
 ## Generate from heightmap
 
