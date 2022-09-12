@@ -8,7 +8,7 @@ repo_name: GitHub
 
 theme:
   custom_dir: docs/theme
-  name: readthedocs
+  name: material
   highlightjs: true
   hljs_languages: [cpp]
 
