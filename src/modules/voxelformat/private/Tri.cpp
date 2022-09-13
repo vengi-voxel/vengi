@@ -3,10 +3,18 @@
  */
 
 #include "Tri.h"
+#include <glm/gtc/constants.hpp>
+#include <glm/gtc/epsilon.hpp>
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
 
 namespace voxelformat {
+
+bool Tri::flat() const {
+	const float eps = glm::epsilon<float>();
+	const glm::bvec3 &zerocheck = glm::epsilonEqual(normal(), glm::zero<glm::vec3>(), eps);
+	return zerocheck[0] + zerocheck[1] + zerocheck[2] == 1;
+}
 
 glm::vec3 Tri::normal() const {
 	return glm::cross(vertices[1] - vertices[0], vertices[2] - vertices[0]);

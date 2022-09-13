@@ -26,7 +26,10 @@ struct Tri {
 	constexpr glm::vec3 center() const {
 		return (vertices[0] + vertices[1] + vertices[2]) / 3.0f;
 	}
-
+	/**
+	 * @return @c true if the triangle is lying flat on one axis
+	 */
+	bool flat() const;
 	glm::vec3 normal() const;
 	float area() const;
 	glm::vec3 mins() const;
