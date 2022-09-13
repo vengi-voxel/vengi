@@ -349,6 +349,8 @@ Basic voxelization is supported for ply, gltf, stl, bsp and obj files, too. The 
 \fBvoxformat_scale_y\fP: Scale the vertices on Y axis by the given factor
 .PP
 \fBvoxformat_scale_z\fP: Scale the vertices on Z axis by the given factor
+.PP
+\fBvoxformat_voxel_mesh\fP: Optimize import precision assuming that the mesh is composed of uniform voxels
 
 .SH HOMEPAGE
 https://github.com/mgerhardy/vengi

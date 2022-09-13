@@ -48,6 +48,7 @@ Exporting to ply, gltf, stl and obj is also supported. A few [cvars](Configurati
 * `voxformat_withcolor`: Export vertex colors
 * `voxformat_withtexcoords`: Export texture coordinates
 * `voxformat_transform_mesh`: Apply the keyframe transform to the mesh
+* `voxformat_voxel_mesh`: Optimize import precision assuming that the mesh is composed of uniform voxels
 
 Basic voxelization is supported for ply, gltf, stl, bsp and obj files, too. The following [cvars](Configuration.md) can be modified here:
 
