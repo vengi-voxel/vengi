@@ -12,9 +12,11 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 General:
 
-   - Improvements on GLTF format handling
+   - Improved GLTF format support
+   - Improved VXL format support
    - Fixed block id parsing for StarMade voxel models
    - Major improvements in scene graph transform handling
+   - Improved voxelization of meshes with voxels
 
 Packaging:
 

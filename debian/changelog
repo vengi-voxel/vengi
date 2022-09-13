@@ -1,9 +1,11 @@
 vengi (0.0.22.0-1) UNRELEASED; urgency=low
 
   * General:
-  * Improvements on GLTF format handling
+  * Improved GLTF format support
+  * Improved VXL format support
   * Fixed block id parsing for StarMade voxel models
   * Major improvements in scene graph transform handling
+  * Improved voxelization of meshes with voxels
 
   * Packaging:
   * There is a snap package available now (io.github.mgerhardy.vengi.voxedit)
