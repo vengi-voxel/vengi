@@ -62,7 +62,7 @@ private:
 
 	bool subdivideShape(SceneGraphNode &node, const tinygltf::Model &model, const core::DynamicArray<uint32_t> &indices,
 						const core::DynamicArray<GltfVertex> &vertices,
-						const core::StringMap<image::ImagePtr> &textures, const glm::vec3 offset,
+						const core::StringMap<image::ImagePtr> &textures, const glm::vec3 &offset,
 						bool naiveImport) const;
 	void calculateAABB(const core::DynamicArray<GltfVertex> &vertices, glm::vec3 &mins, glm::vec3 &maxs) const;
 

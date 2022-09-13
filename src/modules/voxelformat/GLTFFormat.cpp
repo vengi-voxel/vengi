@@ -793,7 +793,7 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &mod
 								const core::DynamicArray<uint32_t> &indices,
 								const core::DynamicArray<GltfVertex> &vertices,
 								const core::StringMap<image::ImagePtr> &textures,
-								const glm::vec3 offset,
+								const glm::vec3 &offset,
 								bool naiveImport) const {
 	const glm::vec3 &scale = getScale();
 	if (indices.size() % 3 != 0) {
