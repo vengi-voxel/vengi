@@ -35,9 +35,12 @@ void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCou
 	colorCount = core::Color::quantize(colors, lengthof(colors), inputColors, inputColorCount);
 }
 
-bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar) {
+bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *index) {
 	for (int i = 0; i < colorCount; ++i) {
 		if (colors[i] == rgba) {
+			if (index) {
+				*index = i;
+			}
 			return false;
 		}
 	}
@@ -46,12 +49,18 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar) {
 		for (int i = 0; i < colorCount; ++i) {
 			const float dist = core::Color::getDistance(colors[i], rgba);
 			if (dist < MaxThreshold) {
+				if (index) {
+					*index = i;
+				}
 				return false;
 			}
 		}
 	}
 
 	if (colorCount < PaletteMaxColors) {
+		if (index) {
+			*index = colorCount;
+		}
 		colors[colorCount++] = rgba;
 		return true;
 	}
@@ -72,9 +81,15 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar) {
 	if (bestIndex != -1) {
 		const float dist = core::Color::getDistance(colors[bestIndex], rgba);
 		if (dist > MaxThreshold) {
+			if (index) {
+				*index = bestIndex;
+			}
 			colors[bestIndex] = rgba;
 			return true;
 		}
+	}
+	if (index) {
+		*index = 0;
 	}
 	return false;
 }

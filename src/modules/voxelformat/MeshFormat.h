@@ -78,6 +78,7 @@ public:
 	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
 	static void voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool hillHollow);
 	static void transformTris(const TriCollection &subdivided, PosMap &posMap);
+	static void transformTrisNaive(const TriCollection &subdivided, PosMap &posMap);
 
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, SceneGraph &sceneGraph) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,

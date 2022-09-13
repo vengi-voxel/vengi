@@ -96,6 +96,52 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 	}
 }
 
+void MeshFormat::transformTrisNaive(const TriCollection &subdivided, PosMap &posMap) {
+	if (stopExecution()) {
+		return;
+	}
+	Log::debug("subdivided into %i triangles", (int)subdivided.size());
+	for (const Tri &tri : subdivided) {
+		const glm::vec2 &uv = tri.centerUV();
+		const core::RGBA rgba = tri.colorAt(uv);
+		const float area = tri.area();
+		const glm::vec4 &color = core::Color::fromRGBA(rgba);
+
+		glm::ivec3 mins(+100000);
+		glm::ivec3 maxs(-100000);
+
+		const glm::ivec3 normal =
+			glm::normalize(glm::cross(tri.vertices[1] - tri.vertices[0], tri.vertices[2] - tri.vertices[0]));
+		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
+
+		for (int v = 0; v < 3; v++) {
+			const glm::ivec3 intVert = glm::round(tri.vertices[v]);
+			mins = glm::min(mins, intVert);
+			maxs = glm::max(maxs, intVert);
+		}
+
+		maxs += glm::abs(normal);
+
+		for (int x = mins.x; x < maxs.x; x++) {
+			for (int y = mins.y; y < maxs.y; y++) {
+				for (int z = mins.z; z < maxs.z; z++) {
+					glm::ivec3 p(x, y, z);
+
+					p += sideDelta;
+
+					auto iter = posMap.find(p);
+					if (iter == posMap.end()) {
+						posMap.emplace(p, {area, color});
+					} else if (iter->value.entries.size() < 4) {
+						PosSampling &pos = iter->value;
+						pos.entries.emplace_back(area, color);
+					}
+				}
+			}
+		}
+	}
+}
+
 void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) {
 	Log::debug("create voxels");
 	voxel::RawVolume *volume = node.volume();

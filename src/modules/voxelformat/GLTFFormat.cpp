@@ -792,17 +792,19 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &model,
 								const core::DynamicArray<uint32_t> &indices,
 								const core::DynamicArray<GltfVertex> &vertices,
-								const core::StringMap<image::ImagePtr> &textures) const {
+								const core::StringMap<image::ImagePtr> &textures,
+								const glm::vec3 offset,
+								bool naiveImport) const {
 	const glm::vec3 &scale = getScale();
 	if (indices.size() % 3 != 0) {
 		Log::error("Unexpected amount of indices %i", (int)indices.size());
 		return false;
 	}
-	auto func = [&indices, &vertices, &textures, &scale](size_t indexOffset) {
+	auto func = [&indices, &vertices, &textures, &scale, &offset, &naiveImport](size_t indexOffset) {
 		Tri tri;
 		for (size_t i = 0; i < 3; ++i) {
 			const size_t idx = indices[i + indexOffset];
-			tri.vertices[i] = vertices[idx].pos * scale;
+			tri.vertices[i] = (vertices[idx].pos - offset) * scale;
 			tri.uv[i] = vertices[idx].uv;
 		}
 		const size_t textureIdx = indices[indexOffset];
@@ -819,7 +821,13 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &mod
 			Log::debug("No texture for vertex found");
 		}
 		TriCollection subdivided;
-		subdivideTri(tri, subdivided);
+
+		if (naiveImport) {
+			subdivided.push_back(tri);
+		} else {
+			subdivideTri(tri, subdivided);
+		}
+
 		return core::move(subdivided);
 	};
 
@@ -832,26 +840,39 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node, const tinygltf::Model &mod
 	for (size_t indexOffset = 0; indexOffset < maxN; indexOffset += 3) {
 		futures.emplace_back(threadPool.enqueue(func, indexOffset));
 	}
-	voxel::PaletteLookup palLookup;
+
+	voxel::Palette palette;
 	voxel::RawVolume *volume = node.volume();
 	int n = 0;
 	for (auto &f : futures) {
 		const TriCollection &tris = f.get();
 		if (!tris.empty()) {
-			PosMap posMap((int)tris.size() * 3);
-			transformTris(tris, posMap);
+			PosMap posMap;
+
+			if (naiveImport) {
+				const glm::vec3 &triMins = glm::round(tris[0].mins());
+				const glm::vec3 &triMaxs = glm::round(tris[0].maxs());
+				const glm::ivec3 &triDimensions = glm::max(glm::abs(triMaxs - triMins), 1.0f);
+				posMap = PosMap(triDimensions.x * triDimensions.y * triDimensions.z);
+				transformTrisNaive(tris, posMap);
+			} else {
+				posMap = PosMap((int)tris.size() * 3);
+				transformTris(tris, posMap);
+			}
+
 			for (const auto &entry : posMap) {
 				const PosSampling &pos = entry->second;
 				const glm::vec4 &color = pos.avgColor();
-				const uint8_t index = palLookup.findClosestIndex(color);
-				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+				uint8_t addedPaletteIndex = 0;
+				palette.addColorToPalette(core::Color::getRGBA(color), false, &addedPaletteIndex);
+				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, addedPaletteIndex);
 				volume->setVoxel(entry->first, voxel);
 			}
 		}
 		++n;
 		Log::debug("%i/%i", n, (int)maxN / 3);
 	}
-	node.setPalette(palLookup.palette());
+	node.setPalette(palette);
 	if (fillHollow) {
 		Log::debug("fill hollows");
 		voxel::RawVolumeWrapper wrapper(volume);
@@ -884,6 +905,8 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	Log::debug(" - mesh: %i", gltfNode.mesh);
 	Log::debug(" - skin: %i", gltfNode.skin);
 	Log::debug(" - children: %i", (int)gltfNode.children.size());
+
+	const bool naiveImport = core::Var::getSafe(cfg::VoxformatVoxelMesh)->boolVal();
 
 	if (gltfNode.camera != -1) {
 		const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
@@ -964,8 +987,29 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	glm::vec3 mins;
 	glm::vec3 maxs;
 	calculateAABB(vertices, mins, maxs);
-	const glm::ivec3 imins = glm::floor(mins);
-	const glm::ivec3 imaxs = glm::ceil(maxs);
+
+	glm::vec3 regionOffset(0.0f);
+	glm::ivec3 imins;
+	glm::ivec3 imaxs;
+
+	if (naiveImport) {
+		const glm::vec3 aabbCenterDelta = (mins + maxs) / 2.0f;
+
+		mins -= aabbCenterDelta;
+		maxs -= aabbCenterDelta;
+
+		imins = glm::round(mins);
+		const glm::vec3 minsDelta = glm::vec3(imins) - mins;
+
+		imaxs = glm::round(maxs + minsDelta);
+		imaxs -= 1;
+
+		regionOffset = aabbCenterDelta - minsDelta;
+	} else {
+		imins = glm::floor(mins);
+		imaxs = glm::ceil(maxs);
+	}
+
 	const voxel::Region region(imins, imaxs);
 	if (!region.isValid()) {
 		Log::error("Invalid region found %s", region.toString().c_str());
@@ -982,7 +1026,8 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	Log::debug("region mins(%i:%i:%i)/maxs(%i:%i:%i)", imins.x, imins.y, imins.z, imaxs.x, imaxs.y, imaxs.z);
 
 	SceneGraphNode node;
-	const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
+	SceneGraphTransform transform = loadGltfTransform(gltfNode);
+	transform.setPivot(-regionOffset / glm::vec3(vdim));
 	node.setName(gltfNode.name.c_str());
 	KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx++, transform);
@@ -1084,7 +1129,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	node.setVolume(volume, true);
 	int newParent = parentNodeId;
-	if (!subdivideShape(node, model, indices, vertices, textures)) {
+	if (!subdivideShape(node, model, indices, vertices, textures, regionOffset, naiveImport)) {
 		Log::error("Failed to subdivide node %i", gltfNodeIdx);
 	} else {
 		newParent = sceneGraph.emplace(core::move(node), parentNodeId);

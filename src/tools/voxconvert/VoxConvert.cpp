@@ -85,6 +85,7 @@ app::AppState VoxConvert::onConstruct() {
 	core::Var::get(cfg::VoxformatTransform, "false", core::CV_NOPERSIST, "Apply the scene graph transform to mesh exports");
 	core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST, "Fill the hollows when voxelizing a mesh format");
 	_palette = core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
+	core::Var::get(cfg::VoxformatVoxelMesh, "false", core::CV_NOPERSIST, "Optimize import precision assuming that the mesh is composed of uniform voxels");
 
 	if (!filesystem()->registerPath("scripts/")) {
 		Log::warn("Failed to register lua generator script path");
