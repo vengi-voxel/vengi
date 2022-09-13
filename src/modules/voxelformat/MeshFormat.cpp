@@ -96,6 +96,49 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 	}
 }
 
+bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, const core::DynamicArray<Tri> &tris) {
+	glm::vec3 mins;
+	glm::vec3 maxs;
+	calculateAABB(tris, mins, maxs);
+	voxel::Region region(glm::floor(mins), glm::ceil(maxs));
+	if (!region.isValid()) {
+		Log::error("Invalid region: %s", region.toString().c_str());
+		return false;
+	}
+
+	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
+	if (glm::any(glm::greaterThan(vdim, glm::ivec3(512)))) {
+		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
+				  vdim.x, vdim.y, vdim.z);
+	}
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
+	SceneGraphNode node;
+	node.setVolume(volume, true);
+	node.setName(name);
+	TriCollection subdivided;
+	subdivideShape(tris, subdivided);
+	if (subdivided.empty()) {
+		Log::warn("Empty volume");
+		return false;
+	}
+	PosMap posMap((int)subdivided.size() * 3);
+	transformTris(subdivided, posMap);
+	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
+	voxelizeTris(node, posMap, fillHollow);
+	sceneGraph.emplace(core::move(node));
+	return true;
+}
+
+void MeshFormat::calculateAABB(const core::DynamicArray<Tri> &tris, glm::vec3 &mins, glm::vec3 &maxs) {
+	maxs = glm::vec3(-100000.0f);
+	mins = glm::vec3(+100000.0f);
+
+	for (const Tri &tri : tris) {
+		maxs = glm::max(maxs, tri.maxs());
+		mins = glm::min(mins, tri.mins());
+	}
+}
+
 void MeshFormat::transformTrisNaive(const TriCollection &subdivided, PosMap &posMap) {
 	if (stopExecution()) {
 		return;
@@ -171,6 +214,12 @@ MeshFormat::MeshExt::MeshExt(voxel::Mesh *_mesh, const SceneGraphNode& node, boo
 }
 
 bool MeshFormat::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) {
+	const bool retVal = voxelizeGroups(filename, file, sceneGraph);
+	sceneGraph.updateTransforms();
+	return retVal;
+}
+
+bool MeshFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) {
 	Log::debug("Mesh %s can't get voxelized yet", filename.c_str());
 	return false;
 }

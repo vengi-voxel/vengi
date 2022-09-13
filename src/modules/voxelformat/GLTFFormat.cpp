@@ -1144,7 +1144,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	return true;
 }
 
-bool GLTFFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool GLTFFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	uint32_t magic;
 	stream.peekUInt32(magic);
 	const int64_t size = stream.size();
@@ -1211,8 +1211,6 @@ bool GLTFFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 			loadGltfNode_r(filename, sceneGraph, textures, model, gltfNodeIdx, parentNodeId);
 		}
 	}
-
-	sceneGraph.updateTransforms();
 	return true;
 }
 

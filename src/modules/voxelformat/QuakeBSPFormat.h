@@ -134,8 +134,8 @@ private:
 	bool loadUFOAlienInvasionModels(io::SeekableReadStream &stream, const BspHeader &header,
 									core::DynamicArray<Model> &models);
 
+	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
 public:
-	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
 	bool saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &meshes, const core::String &filename,
 					io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
 					bool withTexCoords) override {

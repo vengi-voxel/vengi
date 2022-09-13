@@ -30,27 +30,15 @@ namespace voxelformat {
  */
 class STLFormat : public MeshFormat {
 private:
-	struct Face {
-		glm::vec3 normal {};
-		glm::vec3 tri[3] {};
-		uint16_t attribute = 0;
-	};
-
-	static void calculateAABB(const core::DynamicArray<Face> &faces, glm::vec3 &mins, glm::vec3 &maxs);
-	static void subdivideShape(const core::DynamicArray<Face> &faces, TriCollection &subdivided);
-
 	bool writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1, const SceneGraphTransform &transform, const glm::vec3 &scale);
 
-	bool parseBinary(io::SeekableReadStream &stream, core::DynamicArray<Face> &faces);
-	bool parseAscii(io::SeekableReadStream &stream, core::DynamicArray<Face> &faces);
+	bool parseBinary(io::SeekableReadStream &stream, core::DynamicArray<Tri> &tris);
+	bool parseAscii(io::SeekableReadStream &stream, core::DynamicArray<Tri> &tris);
 
+	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
 public:
 	bool saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &meshes, const core::String &filename,
 					io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
 					bool withTexCoords) override;
-	/**
-	 * @brief Voxelizes the input mesh
-	 */
-	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
 };
 } // namespace voxel

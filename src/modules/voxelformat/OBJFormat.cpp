@@ -21,6 +21,7 @@
 #include "voxel/Mesh.h"
 #include "voxelformat/SceneGraph.h"
 #include "engine-config.h"
+#include "voxelformat/SceneGraphNode.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "external/tiny_obj_loader.h"
@@ -87,8 +88,8 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 			return false;
 		}
 		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-		int frame = 0;
-		const SceneGraphTransform &transform = graphNode.transform(frame);
+		KeyFrameIndex keyFrameIdx = 0;
+		const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 		const voxel::Palette &palette = graphNode.palette();
 
 		const core::String hashId = core::String::format("%" PRIu64, palette.hash());
@@ -199,74 +200,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 #undef wrapBool
 
-void OBJFormat::subdivideShape(const tinyobj::mesh_t &mesh, const core::StringMap<image::ImagePtr> &textures,
-							  const tinyobj::attrib_t &attrib, const std::vector<tinyobj::material_t> &materials,
-							  TriCollection &subdivided) {
-	const glm::vec3 &scale = getScale();
-	int indexOffset = 0;
-	for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
-		const int faceVertices = mesh.num_face_vertices[faceNum];
-		core_assert_msg(faceVertices == 3, "Unexpected indices for triangulated mesh: %i", faceVertices);
-		Tri tri;
-		for (int i = 0; i < faceVertices; ++i) {
-			const tinyobj::index_t &idx = mesh.indices[indexOffset + i];
-			tri.vertices[i].x = attrib.vertices[3 * idx.vertex_index + 0] * scale.x;
-			tri.vertices[i].y = attrib.vertices[3 * idx.vertex_index + 1] * scale.y;
-			tri.vertices[i].z = attrib.vertices[3 * idx.vertex_index + 2] * scale.z;
-			if (idx.texcoord_index >= 0) {
-				tri.uv[i].x = attrib.texcoords[2 * idx.texcoord_index + 0];
-				tri.uv[i].y = attrib.texcoords[2 * idx.texcoord_index + 1];
-			} else {
-				tri.uv[i] = glm::vec2(0.0f);
-			}
-		}
-		const int materialIndex = mesh.material_ids[faceNum];
-		const tinyobj::material_t *material = materialIndex < 0 ? nullptr : &materials[materialIndex];
-		if (material != nullptr) {
-			const core::String diffuseTexture = material->diffuse_texname.c_str();
-			if (!diffuseTexture.empty()) {
-				auto textureIter = textures.find(diffuseTexture);
-				if (textureIter != textures.end()) {
-					tri.texture = textureIter->second.get();
-				}
-			}
-			const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2], 1.0f);
-			tri.color = core::Color::getRGBA(diffuseColor);
-		}
-
-		indexOffset += faceVertices;
-		subdivideTri(tri, subdivided);
-	}
-}
-
-void OBJFormat::calculateAABB(const tinyobj::mesh_t &mesh, const tinyobj::attrib_t &attrib, glm::vec3 &mins,
-							  glm::vec3 &maxs) {
-	maxs = glm::vec3(-100000.0f);
-	mins = glm::vec3(+100000.0f);
-
-	const glm::vec3 &scale = getScale();
-
-	int indexOffset = 0;
-	for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
-		const int faceVertices = mesh.num_face_vertices[faceNum];
-		core_assert_msg(faceVertices == 3, "Unexpected indices for triangulated mesh: %i", faceVertices);
-		for (int i = 0; i < faceVertices; ++i) {
-			const tinyobj::index_t &idx = mesh.indices[indexOffset + i];
-			const float x = attrib.vertices[3 * idx.vertex_index + 0] * scale.x;
-			const float y = attrib.vertices[3 * idx.vertex_index + 1] * scale.y;
-			const float z = attrib.vertices[3 * idx.vertex_index + 2] * scale.z;
-			maxs.x = core_max(maxs.x, x);
-			maxs.y = core_max(maxs.y, y);
-			maxs.z = core_max(maxs.z, z);
-			mins.x = core_min(mins.x, x);
-			mins.y = core_min(mins.y, y);
-			mins.z = core_min(mins.z, z);
-		}
-		indexOffset += faceVertices;
-	}
-}
-
-bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -337,48 +271,50 @@ bool OBJFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		}
 	}
 
-	core::DynamicArray<std::future<SceneGraphNode>> futures;
-	futures.reserve(shapes.size());
-
-	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
-	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
+	const glm::vec3 &scale = getScale();
 	for (tinyobj::shape_t &shape : shapes) {
-		auto func = [&shape, attrib, materials, &textures](bool fillHollow) {
-			glm::vec3 mins;
-			glm::vec3 maxs;
-			calculateAABB(shape.mesh, attrib, mins, maxs);
-			voxel::Region region(glm::floor(mins), glm::ceil(maxs));
-			const glm::ivec3 &vdim = region.getDimensionsInVoxels();
-			if (glm::any(glm::greaterThan(vdim, glm::ivec3(512)))) {
-				Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! "
-						  "(%i:%i:%i)",
-						  vdim.x, vdim.y, vdim.z);
+		int indexOffset = 0;
+		const tinyobj::mesh_t &mesh = shape.mesh;
+		core::DynamicArray<Tri> tris;
+		tris.reserve(mesh.num_face_vertices.size());
+		for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
+			const int faceVertices = mesh.num_face_vertices[faceNum];
+			core_assert_msg(faceVertices == 3, "Unexpected indices for triangulated mesh: %i", faceVertices);
+			Tri tri;
+			for (int i = 0; i < faceVertices; ++i) {
+				const tinyobj::index_t &idx = mesh.indices[indexOffset + i];
+				tri.vertices[i].x = attrib.vertices[3 * idx.vertex_index + 0] * scale.x;
+				tri.vertices[i].y = attrib.vertices[3 * idx.vertex_index + 1] * scale.y;
+				tri.vertices[i].z = attrib.vertices[3 * idx.vertex_index + 2] * scale.z;
+				if (idx.texcoord_index >= 0) {
+					tri.uv[i].x = attrib.texcoords[2 * idx.texcoord_index + 0];
+					tri.uv[i].y = attrib.texcoords[2 * idx.texcoord_index + 1];
+				} else {
+					tri.uv[i] = glm::vec2(0.0f);
+				}
 			}
+			const int materialIndex = mesh.material_ids[faceNum];
+			const tinyobj::material_t *material = materialIndex < 0 ? nullptr : &materials[materialIndex];
+			if (material != nullptr) {
+				const core::String diffuseTexture = material->diffuse_texname.c_str();
+				if (!diffuseTexture.empty()) {
+					auto textureIter = textures.find(diffuseTexture);
+					if (textureIter != textures.end()) {
+						tri.texture = textureIter->second.get();
+					}
+				}
+				const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2], 1.0f);
+				tri.color = core::Color::getRGBA(diffuseColor);
+			}
+			tris.push_back(tri);
 
-			voxel::RawVolume *volume = new voxel::RawVolume(region);
-			SceneGraphNode node;
-			node.setVolume(volume, true);
-			node.setName(shape.name.c_str());
-			TriCollection subdivided;
-			subdivideShape(shape.mesh, textures, attrib, materials, subdivided);
-			if (!subdivided.empty()) {
-				PosMap posMap((int)subdivided.size() * 3);
-				transformTris(subdivided, posMap);
-				voxelizeTris(node, posMap, fillHollow);
-			}
-			return core::move(node);
-		};
-		if (shapes.size() > 1) {
-			futures.emplace_back(threadPool.enqueue(func, fillHollow));
-		} else {
-			sceneGraph.emplace(func(fillHollow));
+			indexOffset += faceVertices;
+		}
+		if (!voxelizeNode(shape.name.c_str(), sceneGraph, tris)) {
+			Log::error("Failed to voxelize shape %s", shape.name.c_str());
+			return false;
 		}
 	}
-	for (auto & f : futures) {
-		sceneGraph.emplace(core::move(f.get()));
-	}
-
-	sceneGraph.updateTransforms();
 	return true;
 }
 

@@ -17,42 +17,9 @@ namespace priv {
 static constexpr const size_t BinaryHeaderSize = 80;
 }
 
-void STLFormat::subdivideShape(const core::DynamicArray<Face> &faces, TriCollection &subdivided) {
-	const glm::vec3 &scale = getScale();
-
-	for (const Face &face : faces) {
-		Tri tri;
-		for (int i = 0; i < 3; ++i) {
-			tri.vertices[i].x = face.tri[i].x * scale.x;
-			tri.vertices[i].y = face.tri[i].y * scale.y;
-			tri.vertices[i].z = face.tri[i].z * scale.z;
-			tri.uv[i] = glm::vec2(0.0f);
-		}
-
-		subdivideTri(tri, subdivided);
-	}
-}
-
-void STLFormat::calculateAABB(const core::DynamicArray<Face> &faces, glm::vec3 &mins, glm::vec3 &maxs) {
-	maxs = glm::vec3(-100000.0f);
-	mins = glm::vec3(+100000.0f);
-
-	const glm::vec3 &scale = getScale();
-
-	for (const Face &face : faces) {
-		for (int i = 0; i < 3; ++i) {
-			maxs.x = core_max(maxs.x, face.tri[i].x) * scale.x;
-			maxs.y = core_max(maxs.y, face.tri[i].y) * scale.y;
-			maxs.z = core_max(maxs.z, face.tri[i].z) * scale.z;
-			mins.x = core_min(mins.x, face.tri[i].x) * scale.x;
-			mins.y = core_min(mins.y, face.tri[i].y) * scale.y;
-			mins.z = core_min(mins.z, face.tri[i].z) * scale.z;
-		}
-	}
-}
-
-bool STLFormat::parseAscii(io::SeekableReadStream &stream, core::DynamicArray<Face> &faces) {
+bool STLFormat::parseAscii(io::SeekableReadStream &stream, core::DynamicArray<Tri> &tris) {
 	char line[512];
+	const glm::vec3 &scale = getScale();
 	stream.seek(0);
 	while (stream.readLine(sizeof(line), line)) {
 		if (!strncmp(line, "solid", 5)) {
@@ -65,8 +32,8 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, core::DynamicArray<Fa
 					break;
 				}
 				if (!strncmp(ptr, "facet", 5)) {
-					Face face;
-					glm::vec3 &norm = face.normal;
+					Tri tri;
+					glm::vec3 norm;
 					if (SDL_sscanf(ptr, "facet normal %f %f %f", &norm.x, &norm.y, &norm.z) != 3) {
 						Log::error("Failed to parse facet normal");
 						return false;
@@ -88,17 +55,21 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, core::DynamicArray<Fa
 							if (!strncmp(ptr, "endloop", 7)) {
 								break;
 							}
-							glm::vec3 &vert = face.tri[vi];
+							if (vi >= 3) {
+								return false;
+							}
+							glm::vec3 &vert = tri.vertices[vi];
 							if (SDL_sscanf(ptr, "vertex %f %f %f", &vert.x, &vert.y, &vert.z) != 3) {
 								Log::error("Failed to parse vertex");
 								return false;
 							}
+							vert *= scale;
 							++vi;
 						}
 						if (vi != 3) {
 							return false;
 						}
-						faces.push_back(face);
+						tris.push_back(tri);
 					}
 				}
 			}
@@ -113,7 +84,7 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, core::DynamicArray<Fa
 		return false; \
 	}
 
-bool STLFormat::parseBinary(io::SeekableReadStream &stream, core::DynamicArray<Face> &faces) {
+bool STLFormat::parseBinary(io::SeekableReadStream &stream, core::DynamicArray<Tri> &tris) {
 	stream.seek(priv::BinaryHeaderSize);
 	uint32_t numFaces = 0;
 	wrap(stream.readUInt32(numFaces))
@@ -122,75 +93,45 @@ bool STLFormat::parseBinary(io::SeekableReadStream &stream, core::DynamicArray<F
 		Log::error("No faces in stl file");
 		return false;
 	}
-	faces.reserve(numFaces);
+	tris.resize(numFaces);
 	for (uint32_t fn = 0; fn < numFaces; ++fn) {
-		Face face{};
-		wrap(stream.readFloat(face.normal.x))
-		wrap(stream.readFloat(face.normal.y))
-		wrap(stream.readFloat(face.normal.z))
+		Tri &tri = tris[fn];
+		glm::vec3 normal;
+		wrap(stream.readFloat(normal.x))
+		wrap(stream.readFloat(normal.y))
+		wrap(stream.readFloat(normal.z))
 		for (int i = 0; i < 3; ++i) {
-			wrap(stream.readFloat(face.tri[i].x))
-			wrap(stream.readFloat(face.tri[i].y))
-			wrap(stream.readFloat(face.tri[i].z))
+			wrap(stream.readFloat(tri.vertices[i].x))
+			wrap(stream.readFloat(tri.vertices[i].y))
+			wrap(stream.readFloat(tri.vertices[i].z))
 		}
 		stream.skip(2);
-		faces.push_back(face);
 	}
 
-	return !faces.empty();
+	return true;
 }
 
-bool STLFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool STLFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic));
 	const bool ascii = FourCC('s', 'o', 'l', 'i') == magic;
 
-	core::DynamicArray<Face> faces;
+	core::DynamicArray<Tri> tris;
 	if (ascii) {
 		Log::debug("found ascii format");
-		if (!parseAscii(stream, faces)) {
+		if (!parseAscii(stream, tris)) {
 			Log::error("Failed to parse ascii stl file %s", filename.c_str());
 			return false;
 		}
 	} else {
 		Log::debug("found binary format");
-		if (!parseBinary(stream, faces)) {
+		if (!parseBinary(stream, tris)) {
 			Log::error("Failed to parse binary stl file %s", filename.c_str());
 			return false;
 		}
 	}
 
-	glm::vec3 mins;
-	glm::vec3 maxs;
-	calculateAABB(faces, mins, maxs);
-	voxel::Region region(glm::floor(mins), glm::ceil(maxs));
-	if (!region.isValid()) {
-		Log::error("Invalid region: %s", region.toString().c_str());
-		return false;
-	}
-
-	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
-	if (glm::any(glm::greaterThan(vdim, glm::ivec3(512)))) {
-		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
-				  vdim.x, vdim.y, vdim.z);
-	}
-	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	SceneGraphNode node;
-	node.setVolume(volume, true);
-	node.setName(filename);
-	TriCollection subdivided;
-	subdivideShape(faces, subdivided);
-	if (subdivided.empty()) {
-		Log::warn("Empty volume");
-		return false;
-	}
-	PosMap posMap((int)subdivided.size() * 3);
-	transformTris(subdivided, posMap);
-	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
-	voxelizeTris(node, posMap, fillHollow);
-	sceneGraph.emplace(core::move(node));
-	sceneGraph.updateTransforms();
-	return true;
+	return voxelizeNode(filename, sceneGraph, tris);
 }
 
 #undef wrap

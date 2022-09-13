@@ -66,11 +66,11 @@ private:
 						bool naiveImport) const;
 	void calculateAABB(const core::DynamicArray<GltfVertex> &vertices, glm::vec3 &mins, glm::vec3 &maxs) const;
 
+	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const SceneGraph &sceneGraph, const Meshes &meshes,
 					const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad,
 					bool withColor, bool withTexCoords) override;
-	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
 };
 
 } // namespace voxelformat

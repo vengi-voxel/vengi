@@ -31,11 +31,29 @@ protected:
 							bool withTexCoords = true) = 0;
 
 	static MeshExt* getParent(const voxelformat::SceneGraph &sceneGraph, Meshes &meshes, int nodeId);
-
+	static void calculateAABB(const core::DynamicArray<Tri> &tris, glm::vec3 &mins, glm::vec3 &maxs);
 	static glm::vec3 getScale();
 
+	/**
+	 * @brief Voxelizes the input mesh
+	 *
+	 * Convert your input mesh into @c Tri instances and use the methods of this class to help voxelizing those.
+	 * @see voxelizeNode()
+	 */
+	virtual bool voxelizeGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph);
+
+	/**
+	 * @see voxelizeGroups()
+	 */
+	bool voxelizeNode(const core::String &name, SceneGraph &sceneGraph, const core::DynamicArray<Tri> &tris);
 public:
 	using TriCollection = core::DynamicArray<Tri, 512>;
+
+	void subdivideShape(const core::DynamicArray<Tri> &tris, TriCollection &subdivided) {
+		for (const Tri &tri : tris) {
+			subdivideTri(tri, subdivided);
+		}
+	}
 
 	struct PosSamplingEntry {
 		inline PosSamplingEntry(float _area, const glm::vec4 &_color) : area(_area), color(_color) {
