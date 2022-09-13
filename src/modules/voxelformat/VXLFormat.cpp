@@ -145,23 +145,26 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 
 	const FrameIndex frameIdx = 0;
 	const SceneGraphTransform &transform = node->transform(frameIdx);
-	const glm::mat4 &matrix = transform.localMatrix();
+	const glm::mat4 &matrix = transform.worldMatrix();
 
-	wrapBool(stream.writeFloat(transform.localScale()))
+	// TODO: always 0.0833333358f?
+	wrapBool(stream.writeFloat(transform.worldScale()))
 
 	for (int row = 0; row < 3; ++row) {
 		for (int col = 0; col < 4; ++col) {
 			wrapBool(stream.writeFloat(matrix[col][row]))
 		}
 	}
-	const glm::vec3 &mins = transform.localTranslation();
+	const glm::vec3 &mins = transform.worldTranslation();
 	const glm::vec3 maxs = mins + glm::vec3(node->region().getDimensionsInVoxels());
-	for (int i = 0; i < 3; ++i) {
-		wrapBool(stream.writeFloat(mins[i]))
-	}
-	for (int i = 0; i < 3; ++i) {
-		wrapBool(stream.writeFloat(maxs[i]))
-	}
+
+	wrapBool(stream.writeFloat(mins[0]))
+	wrapBool(stream.writeFloat(mins[2]))
+	wrapBool(stream.writeFloat(mins[1]))
+
+	wrapBool(stream.writeFloat(maxs[0]))
+	wrapBool(stream.writeFloat(maxs[2]))
+	wrapBool(stream.writeFloat(maxs[1]))
 
 	const voxel::Region& region = node->region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
@@ -281,9 +284,7 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 		node.setPalette(palette);
 	}
 	SceneGraphTransform transform;
-	glm::mat4 transformMatrix = footer.transform;
-	transform.setLocalMatrix(transformMatrix);
-	// transform.setLocalScale(footer.scale); // TODO
+	transform.setWorldMatrix(footer.transform);
 	const KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 
@@ -297,7 +298,7 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 		const uint8_t x = (uint8_t)(i % footer.xsize);
 		const uint8_t y = (uint8_t)(i / footer.xsize);
 		uint8_t z = 0;
-		do {
+		while (z < footer.zsize) {
 			uint8_t skipCount;
 			wrap(stream.readUInt8(skipCount))
 			z += skipCount;
@@ -315,7 +316,7 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 
 			// Skip duplicate count
 			stream.skip(1);
-		} while (z < footer.zsize);
+		}
 	}
 	sceneGraph.emplace(core::move(node));
 	return true;
@@ -339,8 +340,8 @@ bool VXLFormat::readNodeHeader(io::SeekableReadStream& stream, VXLModel& mdl, ui
 	VXLNodeHeader &header = mdl.nodeHeaders[nodeIdx];
 	wrapBool(stream.readString(lengthof(header.name), header.name, false))
 	Log::debug("Node %u name: %s", nodeIdx, header.name);
-	wrap(stream.readUInt32(header.unknown))
 	wrap(stream.readUInt32(header.id))
+	wrap(stream.readUInt32(header.unknown))
 	wrap(stream.readUInt32(header.unknown2))
 	return true;
 }
@@ -361,12 +362,13 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 
 	Log::debug("offsets: %u:%u:%u", footer.spanStartOffset, footer.spanEndOffset, footer.spanDataOffset);
 
-	footer.transform = glm::mat4(1.0f);
+	glm::mat4 transform(1.0f);
 	for (int row = 0; row < 3; ++row) {
 		for (int col = 0; col < 4; ++col) {
-			wrap(stream.readFloat(footer.transform[col][row]))
+			wrap(stream.readFloat(transform[col][row]))
 		}
 	}
+	footer.transform = switchYAndZ(transform);
 	for (int i = 0; i < 3; ++i) {
 		wrap(stream.readFloat(footer.mins[i]))
 	}
@@ -381,7 +383,6 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 	wrap(stream.readUInt8(footer.ysize))
 	wrap(stream.readUInt8(footer.zsize))
 
-	Log::debug("size: %u:%u:%u", footer.xsize, footer.ysize, footer.zsize);
 	wrap(stream.readUInt8(footer.normalType))
 
 	if (footer.xsize == 0 || footer.ysize == 0 || footer.zsize == 0) {
@@ -520,7 +521,10 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 			translationCol[0] *= (footer.scale * nodeScale[0]);
 			translationCol[1] *= (footer.scale * nodeScale[1]);
 			translationCol[2] *= (footer.scale * nodeScale[2]);
-			//m *= glm::translate(footer.mins);
+			translationCol[0] += footer.mins[0];
+			translationCol[1] += footer.mins[1];
+			translationCol[2] += footer.mins[2];
+			m = switchYAndZ(m);
 		}
 	}
 
@@ -554,8 +558,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 			kf.frameIdx = keyFrameIdx * 6; // running at 6 fps
 			// hva transforms are overriding the vxl transform
 			SceneGraphTransform transform;
-			// transform.setPivot(mdl.nodeFooters[section].mins / size);
-			transform.setLocalMatrix(sectionMatrices[section]);
+			transform.setWorldMatrix(sectionMatrices[section]);
 			kf.setTransform(transform);
 		}
 	}
@@ -603,7 +606,7 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 	for (uint32_t i = 0; i < numFrames; ++i) {
 		for (const SceneGraphNode &node : sceneGraph) {
 			const SceneGraphTransform &transform = node.transform(i);
-			glm::mat4 matrix = transform.localMatrix();
+			glm::mat4 matrix = transform.worldMatrix();
 #if 0
 			//const glm::vec3 size(node.region().getDimensionsInVoxels());
 			const glm::vec3 nodeScale(1.0f); // TODO (footer.maxs - footer.mins) / size;

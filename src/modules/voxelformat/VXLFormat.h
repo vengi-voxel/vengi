@@ -13,6 +13,7 @@ namespace voxelformat {
  *
  * @li http://xhp.xwis.net/documents/VXL_Format.txt
  *
+ * The format uses z-up as coordinate system
  * @ingroup Formats
  */
 class VXLFormat : public PaletteFormat {
@@ -55,8 +56,8 @@ private:
 		glm::vec3 maxs;
 
 		uint8_t xsize;				/* Width of the voxel node */
-		uint8_t ysize;				/* Breadth of the voxel node */
-		uint8_t zsize;				/* Height of the voxel node */
+		uint8_t ysize;				/* Breadth of the voxel node - this is our z */
+		uint8_t zsize;				/* Height of the voxel node - this is our y */
 		uint8_t normalType;			/* 2 (TS) or 4 (RedAlert2) - normal encoding - https://xhp.xwis.net/documents/normals_tables.html */
 	};
 
