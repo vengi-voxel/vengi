@@ -67,6 +67,17 @@ public:
 		_conditionVariable.notify_one();
 	}
 
+	template<typename ITER, typename FUNC>
+	void push(ITER first, ITER last, FUNC&& func) {
+		{
+			core::ScopedLock lock(_mutex);
+			for (ITER i = first; i != last; ++i) {
+				_data.push_back(func(*i));
+			}
+		}
+		_conditionVariable.notify_one();
+	}
+
 	void push(Data const& data) {
 		{
 			core::ScopedLock lock(_mutex);
