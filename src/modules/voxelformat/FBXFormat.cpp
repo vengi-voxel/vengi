@@ -109,8 +109,8 @@ Objects: {
 		}
 		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 		const voxel::Palette &palette = graphNode.palette();
-		int frame = 0;
-		const SceneGraphTransform &transform = graphNode.transform(frame);
+		const KeyFrameIndex keyFrameIdx = 0;
+		const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 		const voxel::IndexType *indices = mesh->getRawIndexData();
 		const char *objectName = meshExt.name.c_str();
