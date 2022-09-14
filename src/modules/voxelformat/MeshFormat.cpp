@@ -96,15 +96,49 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 	}
 }
 
+bool MeshFormat::isVoxelMesh(const core::DynamicArray<Tri> &tris) {
+	for (const Tri &tri : tris) {
+		if (!tri.flat()) {
+			return false;
+		}
+	}
+	return true;
+}
+
 bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, const core::DynamicArray<Tri> &tris) {
 	if (tris.empty()) {
 		Log::warn("Empty volume - no triangles given");
 		return false;
 	}
+
+	const bool voxelMeshImport = isVoxelMesh(tris);
+
 	glm::vec3 mins;
 	glm::vec3 maxs;
 	calculateAABB(tris, mins, maxs);
-	voxel::Region region(glm::floor(mins), glm::ceil(maxs));
+	glm::ivec3 imins;
+	glm::ivec3 imaxs;
+	glm::vec3 regionOffset(0.0f);
+
+	if (voxelMeshImport) {
+		const glm::vec3 aabbCenterDelta = (mins + maxs) / 2.0f;
+
+		mins -= aabbCenterDelta;
+		maxs -= aabbCenterDelta;
+
+		imins = glm::round(mins);
+		const glm::vec3 minsDelta = glm::vec3(imins) - mins;
+
+		imaxs = glm::round(maxs + minsDelta);
+		imaxs -= 1;
+
+		regionOffset = aabbCenterDelta - minsDelta;
+	} else {
+		imins = glm::floor(mins);
+		imaxs = glm::ceil(maxs);
+	}
+
+	const voxel::Region region(imins, imaxs);
 	if (!region.isValid()) {
 		Log::error("Invalid region: %s", region.toString().c_str());
 		return false;
@@ -120,17 +154,42 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 	node.setVolume(volume, true);
 	node.setName(name);
 	TriCollection subdivided;
-	for (const Tri &tri : tris) {
-		subdivideTri(tri, subdivided);
+	if (voxelMeshImport) {
+		subdivided.reserve(tris.size());
+		for (const Tri &tri : tris) {
+			subdivided.push_back(tri);
+		}
+	} else {
+		for (const Tri &tri : tris) {
+			subdivideTri(tri, subdivided);
+		}
 	}
 	if (subdivided.empty()) {
 		Log::warn("Empty volume - could not subdivide");
 		return false;
 	}
-	PosMap posMap((int)subdivided.size() * 3);
-	transformTris(subdivided, posMap);
+
+	if (voxelMeshImport) {
+		for (Tri &tri : subdivided) {
+			tri.vertices[0] += regionOffset;
+			tri.vertices[1] += regionOffset;
+			tri.vertices[2] += regionOffset;
+		}
+	}
+
 	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
-	voxelizeTris(node, posMap, fillHollow);
+	if (voxelMeshImport) {
+		const glm::vec3 &triMins = glm::round(tris[0].mins());
+		const glm::vec3 &triMaxs = glm::round(tris[0].maxs());
+		const glm::ivec3 &triDimensions = glm::max(glm::abs(triMaxs - triMins), 1.0f);
+		PosMap posMap(triDimensions.x * triDimensions.y * triDimensions.z);
+		transformTrisNaive(subdivided, posMap);
+		voxelizeTris(node, posMap, fillHollow);
+	} else {
+		PosMap posMap((int)subdivided.size() * 3);
+		transformTris(subdivided, posMap);
+		voxelizeTris(node, posMap, fillHollow);
+	}
 	sceneGraph.emplace(core::move(node));
 	return true;
 }
@@ -194,18 +253,19 @@ void MeshFormat::transformTrisNaive(const TriCollection &subdivided, PosMap &pos
 void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) {
 	Log::debug("create voxels");
 	voxel::RawVolume *volume = node.volume();
-	voxel::PaletteLookup palLookup;
+	voxel::Palette palette;
 	for (const auto &entry : posMap) {
 		if (stopExecution()) {
 			return;
 		}
 		const PosSampling &pos = entry->second;
 		const glm::vec4 &color = pos.avgColor();
-		const uint8_t index = palLookup.findClosestIndex(color);
-		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+		uint8_t addedPaletteIndex = 0;
+		palette.addColorToPalette(core::Color::getRGBA(color), false, &addedPaletteIndex);
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, addedPaletteIndex);
 		volume->setVoxel(entry->first, voxel);
 	}
-	node.setPalette(palLookup.palette());
+	node.setPalette(palette);
 	if (fillHollow) {
 		Log::debug("fill hollows");
 		voxel::RawVolumeWrapper wrapper(volume);

@@ -90,6 +90,7 @@ protected:
 
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
 
+	static bool isVoxelMesh(const core::DynamicArray<Tri> &tris);
 	static void voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool hillHollow);
 	static void transformTris(const TriCollection &subdivided, PosMap &posMap);
 	static void transformTrisNaive(const TriCollection &subdivided, PosMap &posMap);
