@@ -49,12 +49,6 @@ protected:
 public:
 	using TriCollection = core::DynamicArray<Tri, 512>;
 
-	void subdivideShape(const core::DynamicArray<Tri> &tris, TriCollection &subdivided) {
-		for (const Tri &tri : tris) {
-			subdivideTri(tri, subdivided);
-		}
-	}
-
 	struct PosSamplingEntry {
 		inline PosSamplingEntry(float _area, const glm::vec4 &_color) : area(_area), color(_color) {
 		}

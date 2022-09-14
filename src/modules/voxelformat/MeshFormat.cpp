@@ -97,6 +97,10 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 }
 
 bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, const core::DynamicArray<Tri> &tris) {
+	if (tris.empty()) {
+		Log::warn("Empty volume - no triangles given");
+		return false;
+	}
 	glm::vec3 mins;
 	glm::vec3 maxs;
 	calculateAABB(tris, mins, maxs);
@@ -116,9 +120,11 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 	node.setVolume(volume, true);
 	node.setName(name);
 	TriCollection subdivided;
-	subdivideShape(tris, subdivided);
+	for (const Tri &tri : tris) {
+		subdivideTri(tri, subdivided);
+	}
 	if (subdivided.empty()) {
-		Log::warn("Empty volume");
+		Log::warn("Empty volume - could not subdivide");
 		return false;
 	}
 	PosMap posMap((int)subdivided.size() * 3);
