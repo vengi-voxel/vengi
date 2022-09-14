@@ -49,6 +49,12 @@ protected:
 public:
 	using TriCollection = core::DynamicArray<Tri, 512>;
 
+	/**
+	 * Subdivide until we brought the triangles down to the size of 1 or smaller
+	 */
+	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
+
+protected:
 	struct PosSamplingEntry {
 		inline PosSamplingEntry(float _area, const glm::vec4 &_color) : area(_area), color(_color) {
 		}
@@ -84,14 +90,11 @@ public:
 
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
 
-	/**
-	 * Subdivide until we brought the triangles down to the size of 1 or smaller
-	 */
-	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
 	static void voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool hillHollow);
 	static void transformTris(const TriCollection &subdivided, PosMap &posMap);
 	static void transformTrisNaive(const TriCollection &subdivided, PosMap &posMap);
 
+public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, SceneGraph &sceneGraph) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream) override;
