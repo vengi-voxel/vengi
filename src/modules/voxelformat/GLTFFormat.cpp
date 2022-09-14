@@ -984,6 +984,8 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	}
 	Log::debug("Indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(), gltfNode.mesh);
 
+	// TODO: convert indices and vertices into Tri instances and use the MeshFormat methods
+
 	glm::vec3 mins;
 	glm::vec3 maxs;
 	calculateAABB(vertices, mins, maxs);
