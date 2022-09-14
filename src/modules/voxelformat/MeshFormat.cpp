@@ -75,11 +75,11 @@ void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
 }
 
 void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) {
-	if (stopExecution()) {
-		return;
-	}
 	Log::debug("subdivided into %i triangles", (int)subdivided.size());
 	for (const Tri &tri : subdivided) {
+		if (stopExecution()) {
+			return;
+		}
 		const glm::vec2 &uv = tri.centerUV();
 		const core::RGBA rgba = tri.colorAt(uv);
 		const float area = tri.area();
@@ -92,6 +92,51 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 			} else if (iter->value.entries.size() < 4) {
 				PosSampling &pos = iter->value;
 				pos.entries.emplace_back(area, color);
+			}
+		}
+	}
+}
+
+void MeshFormat::transformTrisNaive(const TriCollection &subdivided, PosMap &posMap) {
+	Log::debug("subdivided into %i triangles", (int)subdivided.size());
+	for (const Tri &tri : subdivided) {
+		if (stopExecution()) {
+			return;
+		}
+		const glm::vec2 &uv = tri.centerUV();
+		const core::RGBA rgba = tri.colorAt(uv);
+		const float area = tri.area();
+		const glm::vec4 &color = core::Color::fromRGBA(rgba);
+
+		glm::ivec3 mins(+100000);
+		glm::ivec3 maxs(-100000);
+
+		const glm::ivec3 normal = tri.normal();
+		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
+
+		for (int v = 0; v < 3; v++) {
+			const glm::ivec3 intVert = glm::round(tri.vertices[v]);
+			mins = glm::min(mins, intVert);
+			maxs = glm::max(maxs, intVert);
+		}
+
+		maxs += glm::abs(normal);
+
+		for (int x = mins.x; x < maxs.x; x++) {
+			for (int y = mins.y; y < maxs.y; y++) {
+				for (int z = mins.z; z < maxs.z; z++) {
+					glm::ivec3 p(x, y, z);
+
+					p += sideDelta;
+
+					auto iter = posMap.find(p);
+					if (iter == posMap.end()) {
+						posMap.emplace(p, {area, color});
+					} else if (iter->value.entries.size() < 4) {
+						PosSampling &pos = iter->value;
+						pos.entries.emplace_back(area, color);
+					}
+				}
 			}
 		}
 	}
@@ -208,51 +253,6 @@ void MeshFormat::calculateAABB(const core::DynamicArray<Tri> &tris, glm::vec3 &m
 	for (const Tri &tri : tris) {
 		maxs = glm::max(maxs, tri.maxs());
 		mins = glm::min(mins, tri.mins());
-	}
-}
-
-void MeshFormat::transformTrisNaive(const TriCollection &subdivided, PosMap &posMap) {
-	if (stopExecution()) {
-		return;
-	}
-	Log::debug("subdivided into %i triangles", (int)subdivided.size());
-	for (const Tri &tri : subdivided) {
-		const glm::vec2 &uv = tri.centerUV();
-		const core::RGBA rgba = tri.colorAt(uv);
-		const float area = tri.area();
-		const glm::vec4 &color = core::Color::fromRGBA(rgba);
-
-		glm::ivec3 mins(+100000);
-		glm::ivec3 maxs(-100000);
-
-		const glm::ivec3 normal = tri.normal();
-		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
-
-		for (int v = 0; v < 3; v++) {
-			const glm::ivec3 intVert = glm::round(tri.vertices[v]);
-			mins = glm::min(mins, intVert);
-			maxs = glm::max(maxs, intVert);
-		}
-
-		maxs += glm::abs(normal);
-
-		for (int x = mins.x; x < maxs.x; x++) {
-			for (int y = mins.y; y < maxs.y; y++) {
-				for (int z = mins.z; z < maxs.z; z++) {
-					glm::ivec3 p(x, y, z);
-
-					p += sideDelta;
-
-					auto iter = posMap.find(p);
-					if (iter == posMap.end()) {
-						posMap.emplace(p, {area, color});
-					} else if (iter->value.entries.size() < 4) {
-						PosSampling &pos = iter->value;
-						pos.entries.emplace_back(area, color);
-					}
-				}
-			}
-		}
 	}
 }
 
