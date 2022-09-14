@@ -225,8 +225,7 @@ void MeshFormat::transformTrisNaive(const TriCollection &subdivided, PosMap &pos
 		glm::ivec3 mins(+100000);
 		glm::ivec3 maxs(-100000);
 
-		const glm::ivec3 normal =
-			glm::normalize(glm::cross(tri.vertices[1] - tri.vertices[0], tri.vertices[2] - tri.vertices[0]));
+		const glm::ivec3 normal = tri.normal();
 		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
 
 		for (int v = 0; v < 3; v++) {
