@@ -623,10 +623,6 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 	core::DynamicArray<int32_t> textureIndices(vertexCount);
 	core::DynamicArray<int32_t> indices(indexCount);
 
-	glm::vec3 mins(100000);
-	glm::vec3 maxs(-100000);
-	const glm::vec3 &scale = getScale();
-
 	int offset = 0;
 	for (Face &face : faces) {
 		face.index = offset;
@@ -648,9 +644,6 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 				vert = &vertices[edge->vertexIndices[1]];
 			}
 
-			maxs = (glm::max)(maxs, *vert * scale);
-			mins = (glm::min)(mins, *vert * scale);
-
 			const Texture &texture = textures[face.textureId];
 			const glm::vec3 sdir(texture.st[0]);
 			const glm::vec3 tdir(texture.st[1]);
@@ -668,11 +661,12 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 			}
 			textureIndices[offset] = face.textureId;
 			verts[offset] = *vert;
+			core::exchange(verts[offset].y, verts[offset].z);
 			++offset;
 		}
 	}
 	int numIndices = 0;
-	for (Face &face : faces) {
+	for (const Face &face : faces) {
 		if (face.edgeCount <= 2) {
 			continue;
 		}
@@ -687,33 +681,11 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 
 	core_assert(numIndices == indexCount);
 
-	core::exchange(mins.y, mins.z);
-	core::exchange(maxs.y, maxs.z);
-
-	voxel::Region region(glm::floor(mins), glm::ceil(maxs));
-	if (!region.isValid()) {
-		Log::debug("Invalid region for model: %s", region.toString().c_str());
-		return false;
-	}
-
-	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
-	if (glm::any(glm::greaterThan(vdim, glm::ivec3(512)))) {
-		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! "
-				  "(%i:%i:%i)",
-				  vdim.x, vdim.y, vdim.z);
-	}
-
 	Log::debug("Voxelize bsp with %i vertices", vertexCount);
 
-	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
-	SceneGraphNode node;
-	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	node.setVolume(volume, true);
-	node.setName(name);
-
-	core::ConcurrentQueue<Tri> producerTris(10000);
-	core_trace_mutex(core::Lock, voxelLock, "trilock");
-
+	const glm::vec3 &scale = getScale();
+	core::DynamicArray<Tri> tris;
+	tris.reserve(numIndices / 3);
 	for (int i = 0; i < numIndices; i += 3) {
 		Tri tri;
 		for (int k = 0; k < 3; ++k) {
@@ -724,63 +696,10 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 		const int textureIdx = textureIndices[indices[i]];
 		const Texture &texture = textures[textureIdx];
 		tri.texture = texture.image.get();
-		producerTris.push(tri);
+		tris.push_back(tri);
 	}
 
-	auto func = [&producerTris, &palLookup, volume, &voxelLock] () {
-		Tri tri;
-		while (producerTris.pop(tri)) {
-			TriCollection subdiv;
-			subdiv.reserve(1024);
-			subdivideTri(tri, subdiv);
-			if (subdiv.empty()) {
-				continue;
-			}
-			PosMap posMap((int)subdiv.size() * 3);
-			transformTris(subdiv, posMap);
-			Log::debug("assembling volume (%i)", (int)posMap.size());
-			core::ScopedLock<core::Lock> scoped(voxelLock);
-			for (const auto &entry : posMap) {
-				const PosSampling &pos = entry->second;
-				const glm::vec4 &color = pos.avgColor();
-				const uint8_t index = palLookup.findClosestIndex(color);
-				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
-				const glm::ivec3 &vpos = entry->first;
-				volume->setVoxel(vpos.x, vpos.z, vpos.y, voxel);
-			}
-			Log::debug("assembling volume done");
-		}
-	};
-
-	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
-	core::DynamicArray<std::future<void>> futures;
-	for (uint32_t i = 0; i < core::cpus(); ++i) {
-		futures.emplace_back(threadPool.enqueue(func));
-	}
-
-	while (!producerTris.empty()) {
-		SDL_Delay(1000);
-		Log::debug("%i tris left", (int)producerTris.size());
-		if (stopExecution()) {
-			break;
-		}
-	}
-
-	for (auto &f : futures) {
-		f.get();
-	}
-	futures.clear();
-
-	node.setPalette(palLookup.palette());
-	if (fillHollow) {
-		Log::debug("fill hollows");
-		voxel::RawVolumeWrapper wrapper(volume);
-		voxelutil::fillHollow(wrapper, voxel::Voxel(voxel::VoxelType::Generic, 2));
-	}
-
-	sceneGraph.emplace(core::move(node));
-
-	return true;
+	return voxelizeNode(name, sceneGraph, tris);
 }
 
 bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
