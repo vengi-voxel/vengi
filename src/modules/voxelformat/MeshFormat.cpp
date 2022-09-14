@@ -13,6 +13,7 @@
 #include "core/collection/Map.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ThreadPool.h"
+#include <glm/gtx/string_cast.hpp>
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
@@ -99,9 +100,15 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 bool MeshFormat::isVoxelMesh(const core::DynamicArray<Tri> &tris) {
 	for (const Tri &tri : tris) {
 		if (!tri.flat()) {
+			Log::debug("No voxel mesh found");
+			for (int i = 0; i < 3; ++i) {
+				Log::debug("tri.vertices[%i]: %s", i, glm::to_string(tri.vertices[i]).c_str());
+			}
+			Log::debug("tri.normal: %s", glm::to_string(tri.normal()).c_str());
 			return false;
 		}
 	}
+	Log::debug("Found voxel mesh");
 	return true;
 }
 
