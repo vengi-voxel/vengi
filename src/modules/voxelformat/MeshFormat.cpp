@@ -142,7 +142,7 @@ void MeshFormat::transformTrisNaive(const TriCollection &subdivided, PosMap &pos
 	}
 }
 
-bool MeshFormat::isVoxelMesh(const core::DynamicArray<Tri> &tris) {
+bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
 	for (const Tri &tri : tris) {
 		if (!tri.flat()) {
 			Log::debug("No voxel mesh found");
@@ -157,7 +157,7 @@ bool MeshFormat::isVoxelMesh(const core::DynamicArray<Tri> &tris) {
 	return true;
 }
 
-bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, const core::DynamicArray<Tri> &tris) {
+bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, const TriCollection &tris) {
 	if (tris.empty()) {
 		Log::warn("Empty volume - no triangles given");
 		return false;
@@ -246,7 +246,7 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 	return true;
 }
 
-void MeshFormat::calculateAABB(const core::DynamicArray<Tri> &tris, glm::vec3 &mins, glm::vec3 &maxs) {
+void MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs) {
 	maxs = glm::vec3(-100000.0f);
 	mins = glm::vec3(+100000.0f);
 

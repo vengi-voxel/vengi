@@ -17,7 +17,7 @@ namespace priv {
 static constexpr const size_t BinaryHeaderSize = 80;
 }
 
-bool STLFormat::parseAscii(io::SeekableReadStream &stream, core::DynamicArray<Tri> &tris) {
+bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) {
 	char line[512];
 	const glm::vec3 &scale = getScale();
 	stream.seek(0);
@@ -84,7 +84,7 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, core::DynamicArray<Tr
 		return false; \
 	}
 
-bool STLFormat::parseBinary(io::SeekableReadStream &stream, core::DynamicArray<Tri> &tris) {
+bool STLFormat::parseBinary(io::SeekableReadStream &stream, TriCollection &tris) {
 	stream.seek(priv::BinaryHeaderSize);
 	uint32_t numFaces = 0;
 	wrap(stream.readUInt32(numFaces))
@@ -116,7 +116,7 @@ bool STLFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 	wrap(stream.readUInt32(magic));
 	const bool ascii = FourCC('s', 'o', 'l', 'i') == magic;
 
-	core::DynamicArray<Tri> tris;
+	TriCollection tris;
 	if (ascii) {
 		Log::debug("found ascii format");
 		if (!parseAscii(stream, tris)) {

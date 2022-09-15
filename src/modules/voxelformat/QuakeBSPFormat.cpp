@@ -684,7 +684,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 	Log::debug("Voxelize bsp with %i vertices", vertexCount);
 
 	const glm::vec3 &scale = getScale();
-	core::DynamicArray<Tri> tris;
+	TriCollection tris;
 	tris.reserve(numIndices / 3);
 	for (int i = 0; i < numIndices; i += 3) {
 		Tri tri;

@@ -275,7 +275,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 	for (tinyobj::shape_t &shape : shapes) {
 		int indexOffset = 0;
 		const tinyobj::mesh_t &mesh = shape.mesh;
-		core::DynamicArray<Tri> tris;
+		TriCollection tris;
 		tris.reserve(mesh.num_face_vertices.size());
 		for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
 			const int faceVertices = mesh.num_face_vertices[faceNum];

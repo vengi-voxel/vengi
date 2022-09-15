@@ -32,8 +32,8 @@ class STLFormat : public MeshFormat {
 private:
 	bool writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1, const SceneGraphTransform &transform, const glm::vec3 &scale);
 
-	bool parseBinary(io::SeekableReadStream &stream, core::DynamicArray<Tri> &tris);
-	bool parseAscii(io::SeekableReadStream &stream, core::DynamicArray<Tri> &tris);
+	bool parseBinary(io::SeekableReadStream &stream, TriCollection &tris);
+	bool parseAscii(io::SeekableReadStream &stream, TriCollection &tris);
 
 	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
 public:

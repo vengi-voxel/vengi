@@ -14,6 +14,13 @@ namespace voxelformat {
  * @brief Convert the volume data into a mesh
  */
 class MeshFormat : public Format {
+public:
+	using TriCollection = core::DynamicArray<Tri, 512>;
+
+	/**
+	 * Subdivide until we brought the triangles down to the size of 1 or smaller
+	 */
+	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
 protected:
 	struct MeshExt {
 		MeshExt(voxel::Mesh *mesh, const SceneGraphNode &node, bool applyTransform);
@@ -31,7 +38,7 @@ protected:
 							bool withTexCoords = true) = 0;
 
 	static MeshExt* getParent(const voxelformat::SceneGraph &sceneGraph, Meshes &meshes, int nodeId);
-	static void calculateAABB(const core::DynamicArray<Tri> &tris, glm::vec3 &mins, glm::vec3 &maxs);
+	static void calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
 	static glm::vec3 getScale();
 
 	/**
@@ -45,16 +52,8 @@ protected:
 	/**
 	 * @see voxelizeGroups()
 	 */
-	bool voxelizeNode(const core::String &name, SceneGraph &sceneGraph, const core::DynamicArray<Tri> &tris);
-public:
-	using TriCollection = core::DynamicArray<Tri, 512>;
+	bool voxelizeNode(const core::String &name, SceneGraph &sceneGraph, const TriCollection &tris);
 
-	/**
-	 * Subdivide until we brought the triangles down to the size of 1 or smaller
-	 */
-	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
-
-protected:
 	struct PosSamplingEntry {
 		inline PosSamplingEntry(float _area, const glm::vec4 &_color) : area(_area), color(_color) {
 		}
@@ -90,7 +89,7 @@ protected:
 
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
 
-	static bool isVoxelMesh(const core::DynamicArray<Tri> &tris);
+	static bool isVoxelMesh(const TriCollection &tris);
 	static void voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool hillHollow);
 	static void transformTris(const TriCollection &subdivided, PosMap &posMap);
 	static void transformTrisNaive(const TriCollection &subdivided, PosMap &posMap);
