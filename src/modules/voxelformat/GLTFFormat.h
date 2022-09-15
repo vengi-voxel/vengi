@@ -60,11 +60,8 @@ private:
 	size_t getGltfAccessorSize(const tinygltf::Accessor &accessor) const;
 	const tinygltf::Accessor *getGltfAccessor(const tinygltf::Model &model, int id) const;
 
-	bool subdivideShape(SceneGraphNode &node, const tinygltf::Model &model, const core::DynamicArray<uint32_t> &indices,
-						const core::DynamicArray<GltfVertex> &vertices,
-						const core::StringMap<image::ImagePtr> &textures, const glm::vec3 &offset,
+	bool subdivideShape(SceneGraphNode &node, const TriCollection &tris, const glm::vec3 &offset,
 						bool naiveImport) const;
-	void calculateAABB(const core::DynamicArray<GltfVertex> &vertices, glm::vec3 &mins, glm::vec3 &maxs) const;
 
 	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
 public:

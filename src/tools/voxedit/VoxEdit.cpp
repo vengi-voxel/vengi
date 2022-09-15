@@ -103,10 +103,9 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST, "Export as quads. If this false, triangles will be used.");
 	core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST, "Export with vertex colors");
 	core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST, "Export with uv coordinates of the palette image");
-	core::Var::get(cfg::VoxformatTransform, "false", core::CV_NOPERSIST, "Apply the scene graph transform to mesh exports");
+	core::Var::get(cfg::VoxformatTransform, "true", core::CV_NOPERSIST, "Apply the scene graph transform to mesh exports");
 	core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST, "Fill the hollows when voxelizing a mesh format");
 	core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
-	core::Var::get(cfg::VoxformatVoxelMesh, "false", core::CV_NOPERSIST, "Optimize import precision assuming that the mesh is composed of uniform voxels");
 
 	static video::FileDialogOptions options = [] (video::OpenFileMode mode, const io::FormatDescription *desc) {
 		if (mode == video::OpenFileMode::Directory) {
@@ -133,7 +132,6 @@ app::AppState VoxEdit::onConstruct() {
 				ImGui::CheckboxVar("Texture coordinates", cfg::VoxformatWithtexcoords);
 			} else if (mode == video::OpenFileMode::Open) {
 				ImGui::CheckboxVar("Fill hollow", cfg::VoxformatFillHollow);
-				ImGui::CheckboxVar("Assume voxel mesh", cfg::VoxformatVoxelMesh);
 			}
 		}
 	};

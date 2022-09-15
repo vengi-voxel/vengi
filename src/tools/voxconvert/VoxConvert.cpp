@@ -82,10 +82,9 @@ app::AppState VoxConvert::onConstruct() {
 	_quads = core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST, "Export as quads. If this false, triangles will be used.");
 	_withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST, "Export with vertex colors");
 	_withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST, "Export with uv coordinates of the palette image");
-	core::Var::get(cfg::VoxformatTransform, "false", core::CV_NOPERSIST, "Apply the scene graph transform to mesh exports");
+	core::Var::get(cfg::VoxformatTransform, "true", core::CV_NOPERSIST, "Apply the scene graph transform to mesh exports");
 	core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST, "Fill the hollows when voxelizing a mesh format");
 	_palette = core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
-	core::Var::get(cfg::VoxformatVoxelMesh, "false", core::CV_NOPERSIST, "Optimize import precision assuming that the mesh is composed of uniform voxels");
 
 	if (!filesystem()->registerPath("scripts/")) {
 		Log::warn("Failed to register lua generator script path");
