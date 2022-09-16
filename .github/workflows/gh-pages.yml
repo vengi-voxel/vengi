@@ -6,6 +6,7 @@ on:
 
 jobs:
   build:
+    if: github.repository == 'mgerhardy/vengi'
     name: Deploy docs
     runs-on: ubuntu-latest
     steps:

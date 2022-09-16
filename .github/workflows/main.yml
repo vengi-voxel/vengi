@@ -10,6 +10,9 @@ on:
     branches:
       - master
 jobs:
+    concurrency:
+        group: ${{ github.ref }}
+        cancel-in-progress: true
     mac:
         runs-on: macos-10.15
         steps:
@@ -71,6 +74,7 @@ jobs:
             path: build/*.dmg
 
     packages:
+        if: github.repository == 'mgerhardy/vengi'
         runs-on: ubuntu-20.04
         steps:
         - uses: actions/checkout@v1
