@@ -107,20 +107,11 @@ void MeshFormat::transformTrisNaive(const TriCollection &subdivided, PosMap &pos
 		const core::RGBA rgba = tri.colorAt(uv);
 		const float area = tri.area();
 		const glm::vec4 &color = core::Color::fromRGBA(rgba);
-
-		glm::ivec3 mins(+100000);
-		glm::ivec3 maxs(-100000);
-
-		const glm::ivec3 normal = tri.normal();
+		const glm::vec3 &normal = glm::normalize(tri.normal());
 		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
 
-		for (int v = 0; v < 3; v++) {
-			const glm::ivec3 intVert = glm::round(tri.vertices[v]);
-			mins = glm::min(mins, intVert);
-			maxs = glm::max(maxs, intVert);
-		}
-
-		maxs += glm::abs(normal);
+		const glm::ivec3 mins = glm::round(tri.mins());
+		const glm::ivec3 maxs = glm::round(tri.maxs()) + glm::abs(normal);
 
 		for (int x = mins.x; x < maxs.x; x++) {
 			for (int y = mins.y; y < maxs.y; y++) {
