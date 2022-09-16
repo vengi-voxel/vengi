@@ -212,20 +212,17 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 		return false;
 	}
 
+	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
 	if (voxelMeshImport) {
 		for (Tri &tri : subdivided) {
 			tri.vertices[0] += regionOffset;
 			tri.vertices[1] += regionOffset;
 			tri.vertices[2] += regionOffset;
 		}
-	}
-
-	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
-	if (voxelMeshImport) {
-		const glm::vec3 &triMins = glm::round(tris[0].mins());
-		const glm::vec3 &triMaxs = glm::round(tris[0].maxs());
-		const glm::ivec3 &triDimensions = glm::max(glm::abs(triMaxs - triMins), 1.0f);
-		PosMap posMap(triDimensions.x * triDimensions.y * triDimensions.z);
+		const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
+		const int maxVoxels = dimensions.x * dimensions.y * dimensions.z;
+		Log::debug("max voxels: %i (%i:%i:%i)", maxVoxels, dimensions.x, dimensions.y, dimensions.z);
+		PosMap posMap(maxVoxels);
 		transformTrisNaive(subdivided, posMap);
 		voxelizeTris(node, posMap, fillHollow);
 	} else {
