@@ -112,6 +112,9 @@ void MeshFormat::transformTrisNaive(const TriCollection &subdivided, PosMap &pos
 
 		const glm::ivec3 mins = glm::round(tri.mins());
 		const glm::ivec3 maxs = glm::round(tri.maxs()) + glm::abs(normal);
+		Log::debug("mins: %i:%i:%i", mins.x, mins.y, mins.z);
+		Log::debug("maxs: %i:%i:%i", maxs.x, maxs.y, maxs.z);
+		Log::debug("normal: %f:%f:%f", normal.x, normal.y, normal.z);
 
 		for (int x = mins.x; x < maxs.x; x++) {
 			for (int y = mins.y; y < maxs.y; y++) {
