@@ -234,14 +234,20 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 	return true;
 }
 
-void MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs) {
-	maxs = glm::vec3(-100000.0f);
-	mins = glm::vec3(+100000.0f);
+bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs) {
+	if (tris.empty()) {
+		mins = maxs = glm::vec3(0.0f);
+		return false;
+	}
+
+	maxs = tris[0].mins();
+	mins = tris[0].maxs();
 
 	for (const Tri &tri : tris) {
 		maxs = glm::max(maxs, tri.maxs());
 		mins = glm::min(mins, tri.mins());
 	}
+	return true;
 }
 
 void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) {

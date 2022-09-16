@@ -38,7 +38,7 @@ protected:
 							bool withTexCoords = true) = 0;
 
 	static MeshExt* getParent(const voxelformat::SceneGraph &sceneGraph, Meshes &meshes, int nodeId);
-	static void calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
+	static bool calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
 	static glm::vec3 getScale();
 
 	/**
