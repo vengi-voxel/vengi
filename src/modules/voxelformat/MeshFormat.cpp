@@ -136,7 +136,7 @@ void MeshFormat::transformTrisNaive(const TriCollection &subdivided, PosMap &pos
 	}
 }
 
-bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
+bool MeshFormat::isAxisAligned(const TriCollection &tris) {
 	for (const Tri &tri : tris) {
 		if (!tri.flat()) {
 			Log::debug("No voxel mesh found");
@@ -157,7 +157,7 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 		return false;
 	}
 
-	const bool voxelMeshImport = isVoxelMesh(tris);
+	const bool axisAligned = isAxisAligned(tris);
 
 	TriCollection subdivided;
 
@@ -172,7 +172,7 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 		return false;
 	}
 
-	if (voxelMeshImport) {
+	if (axisAligned) {
 		subdivided.reserve(tris.size());
 		for (const Tri &tri : tris) {
 			subdivided.push_back(tri);
@@ -198,7 +198,7 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 	node.setName(name);
 
 	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
-	if (voxelMeshImport) {
+	if (axisAligned) {
 		const int maxVoxels = vdim.x * vdim.y * vdim.z;
 		Log::debug("max voxels: %i (%i:%i:%i)", maxVoxels, vdim.x, vdim.y, vdim.z);
 		PosMap posMap(maxVoxels);

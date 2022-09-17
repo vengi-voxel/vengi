@@ -12,8 +12,8 @@
 namespace voxelformat {
 
 struct Tri {
-	glm::vec3 vertices[3];
-	glm::vec2 uv[3];
+	glm::vec3 vertices[3] {};
+	glm::vec2 uv[3] {};
 	const image::Image* texture = nullptr;
 	core::RGBA color{0xFFFFFFFF};
 	image::TextureWrap wrapS = image::TextureWrap::Repeat;

@@ -21,6 +21,8 @@ public:
 	 * Subdivide until we brought the triangles down to the size of 1 or smaller
 	 */
 	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
+	static bool calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
+	static bool isAxisAligned(const TriCollection &tris);
 protected:
 	struct MeshExt {
 		MeshExt(voxel::Mesh *mesh, const SceneGraphNode &node, bool applyTransform);
@@ -38,7 +40,6 @@ protected:
 							bool withTexCoords = true) = 0;
 
 	static MeshExt* getParent(const voxelformat::SceneGraph &sceneGraph, Meshes &meshes, int nodeId);
-	static bool calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
 	static glm::vec3 getScale();
 
 	/**
@@ -89,7 +90,6 @@ protected:
 
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
 
-	static bool isVoxelMesh(const TriCollection &tris);
 	static void voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool hillHollow);
 	static void transformTris(const TriCollection &subdivided, PosMap &posMap);
 	static void transformTrisNaive(const TriCollection &subdivided, PosMap &posMap);

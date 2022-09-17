@@ -983,8 +983,8 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	glm::ivec3 imins;
 	glm::ivec3 imaxs;
 
-	const bool naiveImport = isVoxelMesh(tris);
-	if (naiveImport) {
+	const bool axisAligned = isAxisAligned(tris);
+	if (axisAligned) {
 		const glm::vec3 aabbCenterDelta = (mins + maxs) / 2.0f;
 
 		mins -= aabbCenterDelta;
@@ -1119,7 +1119,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	node.setVolume(volume, true);
 	int newParent = parentNodeId;
 	// TODO: use voxelizeNode here and remove subdivideShape
-	if (!subdivideShape(node, tris, regionOffset * scale, naiveImport)) {
+	if (!subdivideShape(node, tris, regionOffset * scale, axisAligned)) {
 		Log::error("Failed to subdivide node %i", gltfNodeIdx);
 	} else {
 		newParent = sceneGraph.emplace(core::move(node), parentNodeId);
