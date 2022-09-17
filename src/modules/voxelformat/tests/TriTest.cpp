@@ -12,7 +12,34 @@ namespace voxelformat {
 
 class TriTest : public app::AbstractTest {};
 
-TEST_F(TriTest, colorAt) {
+TEST_F(TriTest, testMinsMaxs) {
+	Tri tri;
+	tri.vertices[0] = glm::vec3(-20, -10, -23);
+	tri.vertices[1] = glm::vec3(-10, -30, 23);
+	tri.vertices[2] = glm::vec3(20, 30, 40);
+	const glm::vec3 mins = tri.mins();
+	const glm::vec3 maxs = tri.maxs();
+	EXPECT_FLOAT_EQ(-20.0f, mins.x);
+	EXPECT_FLOAT_EQ(-30.0f, mins.y);
+	EXPECT_FLOAT_EQ(-23.0f, mins.z);
+	EXPECT_FLOAT_EQ(20.0f, maxs.x);
+	EXPECT_FLOAT_EQ(30.0f, maxs.y);
+	EXPECT_FLOAT_EQ(40.0f, maxs.z);
+}
+
+TEST_F(TriTest, testFlat) {
+	Tri tri;
+	tri.vertices[0] = glm::vec3(0, 0, 0);
+	tri.vertices[1] = glm::vec3(1, 0, 0);
+	tri.vertices[2] = glm::vec3(0, 0, 1);
+	EXPECT_TRUE(tri.flat()) << tri.normal();
+	tri.vertices[0] = glm::vec3(0, 0, 0);
+	tri.vertices[1] = glm::vec3(1, 1, 0);
+	tri.vertices[2] = glm::vec3(0, 0, 1);
+	EXPECT_FALSE(tri.flat()) << tri.normal();
+}
+
+TEST_F(TriTest, testColorAt) {
 	const image::ImagePtr &texture = image::loadImage("palette-nippon.png", false);
 	ASSERT_TRUE(texture);
 	ASSERT_EQ(256, texture->width());
@@ -33,7 +60,7 @@ TEST_F(TriTest, colorAt) {
 	}
 }
 
-TEST_F(TriTest, colorAt4x4) {
+TEST_F(TriTest, testColorAt4x4) {
 	constexpr int h = 4;
 	constexpr int w = 4;
 	constexpr core::RGBA buffer[w * h]{

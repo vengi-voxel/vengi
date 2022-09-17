@@ -3,6 +3,7 @@
  */
 
 #include "Tri.h"
+#include <glm/ext/scalar_common.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 #include <glm/common.hpp>
@@ -25,20 +26,26 @@ float Tri::area() const {
 	return glm::length(normal()) / 2;
 }
 
+glm::ivec3 Tri::roundedMins() const {
+	const glm::ivec3 intVert0 = glm::round(vertices[0]);
+	const glm::ivec3 intVert1 = glm::round(vertices[1]);
+	const glm::ivec3 intVert2 = glm::round(vertices[2]);
+	return glm::min(intVert0, glm::min(intVert1, intVert2));
+}
+
+glm::ivec3 Tri::roundedMaxs() const {
+	const glm::ivec3 intVert0 = glm::round(vertices[0]);
+	const glm::ivec3 intVert1 = glm::round(vertices[1]);
+	const glm::ivec3 intVert2 = glm::round(vertices[2]);
+	return glm::max(intVert0, glm::max(intVert1, intVert2));
+}
+
 glm::vec3 Tri::mins() const {
-	glm::vec3 v;
-	for (int i = 0; i < 3; ++i) {
-		v[i] = core_min(vertices[0][i], core_min(vertices[1][i], vertices[2][i]));
-	}
-	return v;
+	return glm::min(vertices[0], glm::min(vertices[1], vertices[2]));
 }
 
 glm::vec3 Tri::maxs() const {
-	glm::vec3 v;
-	for (int i = 0; i < 3; ++i) {
-		v[i] = core_max(vertices[0][i], core_max(vertices[1][i], vertices[2][i]));
-	}
-	return v;
+	return glm::max(vertices[0], glm::max(vertices[1], vertices[2]));
 }
 
 core::RGBA Tri::colorAt(const glm::vec2 &uv) const {

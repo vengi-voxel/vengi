@@ -110,8 +110,8 @@ void MeshFormat::transformTrisNaive(const TriCollection &subdivided, PosMap &pos
 		const glm::vec3 &normal = glm::normalize(tri.normal());
 		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
 
-		const glm::ivec3 mins = glm::round(tri.mins());
-		const glm::ivec3 maxs = glm::round(tri.maxs()) + glm::abs(normal);
+		const glm::ivec3 mins = tri.roundedMins();
+		const glm::ivec3 maxs = tri.roundedMaxs() + glm::ivec3(glm::round(glm::abs(normal)));
 		Log::debug("mins: %i:%i:%i", mins.x, mins.y, mins.z);
 		Log::debug("maxs: %i:%i:%i", maxs.x, maxs.y, maxs.z);
 		Log::debug("normal: %f:%f:%f", normal.x, normal.y, normal.z);
@@ -159,47 +159,19 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 
 	const bool voxelMeshImport = isVoxelMesh(tris);
 
-	glm::vec3 mins;
-	glm::vec3 maxs;
-	calculateAABB(tris, mins, maxs);
-	glm::ivec3 imins;
-	glm::ivec3 imaxs;
-	glm::vec3 regionOffset(0.0f);
+	TriCollection subdivided;
 
-	if (voxelMeshImport) {
-		const glm::vec3 aabbCenterDelta = (mins + maxs) / 2.0f;
+	glm::vec3 trisMins;
+	glm::vec3 trisMaxs;
+	core_assert_always(calculateAABB(tris, trisMins, trisMaxs));
+	Log::error("mins: %f:%f:%f, maxs: %f:%f:%f", trisMins.x, trisMins.y, trisMins.z, trisMaxs.x, trisMaxs.y, trisMaxs.z);
 
-		mins -= aabbCenterDelta;
-		maxs -= aabbCenterDelta;
-
-		imins = glm::round(mins);
-		const glm::vec3 minsDelta = glm::vec3(imins) - mins;
-
-		imaxs = glm::round(maxs + minsDelta);
-		imaxs -= 1;
-
-		regionOffset = aabbCenterDelta - minsDelta;
-	} else {
-		imins = glm::floor(mins);
-		imaxs = glm::ceil(maxs);
-	}
-
-	const voxel::Region region(imins, imaxs);
+	const voxel::Region region(glm::floor(trisMins), glm::ceil(trisMaxs));
 	if (!region.isValid()) {
 		Log::error("Invalid region: %s", region.toString().c_str());
 		return false;
 	}
 
-	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
-	if (glm::any(glm::greaterThan(vdim, glm::ivec3(512)))) {
-		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
-				  vdim.x, vdim.y, vdim.z);
-	}
-	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	SceneGraphNode node;
-	node.setVolume(volume, true);
-	node.setName(name);
-	TriCollection subdivided;
 	if (voxelMeshImport) {
 		subdivided.reserve(tris.size());
 		for (const Tri &tri : tris) {
@@ -210,21 +182,25 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 			subdivideTri(tri, subdivided);
 		}
 	}
+
 	if (subdivided.empty()) {
 		Log::warn("Empty volume - could not subdivide");
 		return false;
 	}
 
+	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
+	if (glm::any(glm::greaterThan(vdim, glm::ivec3(512)))) {
+		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
+				  vdim.x, vdim.y, vdim.z);
+	}
+	SceneGraphNode node;
+	node.setVolume(new voxel::RawVolume(region), true);
+	node.setName(name);
+
 	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
 	if (voxelMeshImport) {
-		for (Tri &tri : subdivided) {
-			tri.vertices[0] += regionOffset;
-			tri.vertices[1] += regionOffset;
-			tri.vertices[2] += regionOffset;
-		}
-		const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
-		const int maxVoxels = dimensions.x * dimensions.y * dimensions.z;
-		Log::debug("max voxels: %i (%i:%i:%i)", maxVoxels, dimensions.x, dimensions.y, dimensions.z);
+		const int maxVoxels = vdim.x * vdim.y * vdim.z;
+		Log::debug("max voxels: %i (%i:%i:%i)", maxVoxels, vdim.x, vdim.y, vdim.z);
 		PosMap posMap(maxVoxels);
 		transformTrisNaive(subdivided, posMap);
 		voxelizeTris(node, posMap, fillHollow);

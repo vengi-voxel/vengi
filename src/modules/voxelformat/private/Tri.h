@@ -34,6 +34,8 @@ struct Tri {
 	float area() const;
 	glm::vec3 mins() const;
 	glm::vec3 maxs() const;
+	glm::ivec3 roundedMins() const;
+	glm::ivec3 roundedMaxs() const;
 	core::RGBA colorAt(const glm::vec2 &uv) const;
 
 	// Sierpinski gasket with keeping the middle
