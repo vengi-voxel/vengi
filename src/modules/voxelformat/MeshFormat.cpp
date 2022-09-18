@@ -158,7 +158,7 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 		return false;
 	}
 
-	const bool axisAligned = false; //isAxisAligned(tris); // TODO: activate this code part
+	const bool axisAligned = isAxisAligned(tris);
 	TriCollection subdivided;
 
 	glm::vec3 trisMins;

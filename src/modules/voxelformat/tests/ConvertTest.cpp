@@ -76,10 +76,12 @@ TEST_F(ConvertTest, DISABLED_testQbToSTL) {
 	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.stl", target, flags);
 }
 
-TEST_F(ConvertTest, DISABLED_testQbToOBJ) {
+TEST_F(ConvertTest, testQbToOBJ) {
 	QBFormat src;
 	OBJFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.obj", target);
+	// the palette size is reduced here to the real amount of used colors
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.obj", target, flags);
 }
 
 TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
