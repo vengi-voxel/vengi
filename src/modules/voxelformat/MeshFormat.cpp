@@ -246,7 +246,7 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 	if (fillHollow) {
 		Log::debug("fill hollows");
 		voxel::RawVolumeWrapper wrapper(volume);
-		voxelutil::fillHollow(wrapper, voxel::Voxel(voxel::VoxelType::Generic, 2));
+		voxelutil::fillHollow(wrapper, voxel::Voxel(voxel::VoxelType::Generic, FillColorIndex));
 	}
 }
 

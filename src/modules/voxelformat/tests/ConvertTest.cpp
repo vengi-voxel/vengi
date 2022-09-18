@@ -80,7 +80,7 @@ TEST_F(ConvertTest, testQbToOBJ) {
 	QBFormat src;
 	OBJFormat target;
 	// the palette size is reduced here to the real amount of used colors
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	const voxel::ValidateFlags flags = (voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette) | voxel::ValidateFlags::IgnoreHollow;
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "chr_knight.obj", target, flags);
 }
 

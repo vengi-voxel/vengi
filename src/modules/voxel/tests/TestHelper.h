@@ -18,6 +18,7 @@
 #include "voxel/Constants.h"
 #include "math/Random.h"
 #include "core/Common.h"
+#include "voxelformat/MeshFormat.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -40,6 +41,8 @@ enum class ValidateFlags {
 	Animations = 32,
 
 	Palette = 64,
+
+	IgnoreHollow = 128, // used in combination with mesh formats that got their hollows filled with generic,2 voxel
 
 	Transform = Animations | Scale | Pivot | Translation,
 	All = Palette | Color | Transform, // no region here
@@ -147,6 +150,14 @@ inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palet
 				if ((flags & ValidateFlags::Color) != ValidateFlags::Color) {
 					continue;
 				}
+
+				// TODO: could get improved by checking if the current voxel is surrounded by others on all sides
+				if ((flags & ValidateFlags::IgnoreHollow) == ValidateFlags::IgnoreHollow &&
+					voxel2.getColor() == voxelformat::MeshFormat::FillColorIndex &&
+					voxel1.getColor() != voxelformat::MeshFormat::FillColorIndex) {
+					continue;
+				}
+
 				const core::RGBA& c1 = pal1.colors[voxel1.getColor()];
 				const core::RGBA& c2 = pal2.colors[voxel2.getColor()];
 				const float delta = core::Color::getDistance(c1, c2);

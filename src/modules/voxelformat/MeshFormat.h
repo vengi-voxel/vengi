@@ -15,6 +15,7 @@ namespace voxelformat {
  */
 class MeshFormat : public Format {
 public:
+	static constexpr const uint8_t FillColorIndex = 2;
 	using TriCollection = core::DynamicArray<Tri, 512>;
 
 	/**
