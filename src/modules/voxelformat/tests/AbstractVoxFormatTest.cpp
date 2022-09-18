@@ -13,6 +13,8 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelutil/VolumeVisitor.h"
 
+#define WRITE_TO_FILE 0
+
 namespace voxelformat {
 
 const voxel::Voxel AbstractVoxFormatTest::Empty;
@@ -164,11 +166,25 @@ void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &sr
 												voxel::ValidateFlags flags, float maxDelta) {
 	voxelformat::SceneGraph srcSceneGraph;
 	ASSERT_TRUE(loadGroups(srcFilename, srcFormat, srcSceneGraph)) << "Failed to load " << srcFilename;
+#if WRITE_TO_FILE
+	{
+		io::FileStream stream(open(destFilename, io::FileMode::SysWrite));
+		ASSERT_TRUE(destFormat.saveGroups(srcSceneGraph, destFilename, stream)) << "Could not save " << destFilename;
+	}
+#else
 	io::BufferedReadWriteStream stream((int64_t)(10 * 1024 * 1024));
 	ASSERT_TRUE(destFormat.saveGroups(srcSceneGraph, destFilename, stream)) << "Could not save " << destFilename;
 	stream.seek(0);
+#endif
 	voxelformat::SceneGraph destSceneGraph;
+#if WRITE_TO_FILE
+	{
+		io::FileStream stream(open(destFilename));
+		ASSERT_TRUE(destFormat.loadGroups(destFilename, stream, destSceneGraph)) << "Failed to load the target format";
+	}
+#else
 	ASSERT_TRUE(destFormat.loadGroups(destFilename, stream, destSceneGraph)) << "Failed to load the target format";
+#endif
 	voxel::sceneGraphComparator(srcSceneGraph, destSceneGraph, flags, maxDelta);
 }
 
@@ -285,7 +301,6 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 
 	io::SeekableReadStream *readStream;
 	io::SeekableWriteStream *writeStream;
-#define WRITE_TO_FILE 0
 
 #if WRITE_TO_FILE
 	io::FilePtr sfile = open(filename, io::FileMode::SysWrite);
@@ -313,5 +328,7 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	ASSERT_NE(nullptr, loaded) << "Could not load the merged volumes";
 	voxel::volumeComparator(original, voxel::getPalette(), *loaded, merged.second, flags);
 }
+
+#undef WRITE_TO_FILE
 
 } // namespace voxel
