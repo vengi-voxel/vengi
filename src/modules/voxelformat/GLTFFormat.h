@@ -61,7 +61,7 @@ private:
 	const tinygltf::Accessor *getGltfAccessor(const tinygltf::Model &model, int id) const;
 
 	bool subdivideShape(SceneGraphNode &node, const TriCollection &tris, const glm::vec3 &offset,
-						bool naiveImport) const;
+						bool axisAlignedMesh) const;
 
 	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
 public:

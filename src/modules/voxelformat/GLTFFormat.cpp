@@ -792,14 +792,14 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 bool GLTFFormat::subdivideShape(SceneGraphNode &node,
 								const TriCollection &tris,
 								const glm::vec3 &offset,
-								bool naiveImport) const {
-	auto func = [&offset, &naiveImport](Tri tri) {
+								bool axisAlignedMesh) const {
+	auto func = [&offset, &axisAlignedMesh](Tri tri) {
 		for (size_t i = 0; i < 3; ++i) {
 			tri.vertices[i] -= offset;
 		}
 		TriCollection subdivided;
 
-		if (naiveImport) {
+		if (axisAlignedMesh) {
 			subdivided.push_back(tri);
 		} else {
 			subdivideTri(tri, subdivided);
@@ -825,12 +825,12 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node,
 		if (!tris.empty()) {
 			PosMap posMap;
 
-			if (naiveImport) {
+			if (axisAlignedMesh) {
 				const glm::vec3 &triMins = glm::round(tris[0].mins());
 				const glm::vec3 &triMaxs = glm::round(tris[0].maxs());
 				const glm::ivec3 &triDimensions = glm::max(glm::abs(triMaxs - triMins), 1.0f);
 				posMap = PosMap(triDimensions.x * triDimensions.y * triDimensions.z);
-				transformTrisNaive(tris, posMap);
+				transformTrisAxisAligned(tris, posMap);
 			} else {
 				posMap = PosMap((int)tris.size() * 3);
 				transformTris(tris, posMap);

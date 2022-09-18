@@ -97,7 +97,7 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 	}
 }
 
-void MeshFormat::transformTrisNaive(const TriCollection &subdivided, PosMap &posMap) {
+void MeshFormat::transformTrisAxisAligned(const TriCollection &subdivided, PosMap &posMap) {
 	Log::debug("subdivided into %i triangles", (int)subdivided.size());
 	for (const Tri &tri : subdivided) {
 		if (stopExecution()) {
@@ -202,7 +202,7 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 		const int maxVoxels = vdim.x * vdim.y * vdim.z;
 		Log::debug("max voxels: %i (%i:%i:%i)", maxVoxels, vdim.x, vdim.y, vdim.z);
 		PosMap posMap(maxVoxels);
-		transformTrisNaive(subdivided, posMap);
+		transformTrisAxisAligned(subdivided, posMap);
 		voxelizeTris(node, posMap, fillHollow);
 	} else {
 		PosMap posMap((int)subdivided.size() * 3);
