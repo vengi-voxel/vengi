@@ -39,8 +39,10 @@ enum class ValidateFlags {
 
 	Animations = 32,
 
+	Palette = 64,
+
 	Transform = Animations | Scale | Pivot | Translation,
-	All = Color | Transform, // no region here
+	All = Palette | Color | Transform, // no region here
 
 	Max
 };
@@ -168,7 +170,7 @@ inline void sceneGraphComparator(const voxelformat::SceneGraph &graph1, const vo
 		ASSERT_NE(nullptr, node1);
 		const voxelformat::SceneGraphNode *node2 = graph2[i];
 		ASSERT_NE(nullptr, node2);
-		if ((flags & ValidateFlags::Color) == ValidateFlags::Color) {
+		if ((flags & ValidateFlags::Palette) == ValidateFlags::Palette) {
 			paletteComparator(node1->palette(), node2->palette(), maxDelta);
 		}
 		// it's intended that includingRegion is false here!
