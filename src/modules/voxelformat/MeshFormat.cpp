@@ -164,7 +164,7 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 	glm::vec3 trisMins;
 	glm::vec3 trisMaxs;
 	core_assert_always(calculateAABB(tris, trisMins, trisMaxs));
-	Log::error("mins: %f:%f:%f, maxs: %f:%f:%f", trisMins.x, trisMins.y, trisMins.z, trisMaxs.x, trisMaxs.y, trisMaxs.z);
+	Log::debug("mins: %f:%f:%f, maxs: %f:%f:%f", trisMins.x, trisMins.y, trisMins.z, trisMaxs.x, trisMaxs.y, trisMaxs.z);
 
 	const voxel::Region region(glm::floor(trisMins), glm::ceil(trisMaxs));
 	if (!region.isValid()) {
