@@ -109,8 +109,8 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, uint32_t f
 			continue;
 		}
 		voxel::RawVolume *v = _renderer.volume(id);
+		_renderer.setVolume(id, node, true);
 		if (v != node.volume()) {
-			_renderer.setVolume(id, node, true);
 			_renderer.extractRegion(id, node.region());
 		}
 		if (_sceneMode) {

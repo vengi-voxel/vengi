@@ -658,13 +658,14 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 		return nullptr;
 	}
 	State& state = _state[idx];
+	state._palette.setValue(palette);
+
 	voxel::RawVolume* old = state._rawVolume;
 	if (old == volume) {
 		return nullptr;
 	}
 	core_trace_scoped(RawVolumeRendererSetVolume);
 	state._rawVolume = volume;
-	state._palette.setValue(palette);
 	if (deleteMesh) {
 		for (auto& i : _meshes) {
 			deleteMeshes(i.second, idx);
