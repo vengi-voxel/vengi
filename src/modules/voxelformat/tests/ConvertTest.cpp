@@ -68,7 +68,7 @@ TEST_F(ConvertTest, testQbToBinvox) {
 	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.binvox", target, flags);
 }
 
-TEST_F(ConvertTest, DISABLED_testQbToSTL) {
+TEST_F(ConvertTest, testQbToSTL) {
 	QBFormat src;
 	STLFormat target;
 	// stl doesn't have colors and is a single volume format (no need to check transforms)

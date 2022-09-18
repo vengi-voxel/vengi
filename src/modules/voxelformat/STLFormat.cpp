@@ -166,6 +166,7 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 	for (size_t i = 0; i < delta; ++i) {
 		stream.writeUInt8(0);
 	}
+	core_assert(stream.pos() == priv::BinaryHeaderSize);
 
 	int faceCount = 0;
 	for (const auto &meshExt : meshes) {
@@ -179,11 +180,9 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 	}
 	stream.writeUInt32(faceCount);
 
-	int idxOffset = 0;
 	for (const auto &meshExt : meshes) {
 		const voxel::Mesh *mesh = meshExt.mesh;
 		Log::debug("Exporting layer %s", meshExt.name.c_str());
-		const int nv = (int)mesh->getNoOfVertices();
 		const int ni = (int)mesh->getNoOfIndices();
 		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 		KeyFrameIndex keyFrameIdx = 0;
@@ -192,9 +191,9 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		const voxel::IndexType *indices = mesh->getRawIndexData();
 
 		for (int i = 0; i < ni; i += 3) {
-			const uint32_t one = idxOffset + indices[i + 0];
-			const uint32_t two = idxOffset + indices[i + 1];
-			const uint32_t three = idxOffset + indices[i + 2];
+			const uint32_t one = indices[i + 0];
+			const uint32_t two = indices[i + 1];
+			const uint32_t three = indices[i + 2];
 
 			const voxel::VoxelVertex &v1 = vertices[one];
 			const voxel::VoxelVertex &v2 = vertices[two];
@@ -224,7 +223,6 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 			stream.writeUInt16(0);
 		}
-		idxOffset += nv;
 	}
 	return true;
 }
