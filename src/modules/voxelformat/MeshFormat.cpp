@@ -209,6 +209,14 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 		transformTris(subdivided, posMap);
 		voxelizeTris(node, posMap, fillHollow);
 	}
+
+	SceneGraphTransform transform;
+	transform.setLocalTranslation(region.getLowerCornerf());
+	KeyFrameIndex keyFrameIdx = 0;
+	node.setTransform(keyFrameIdx, transform);
+
+	node.volume()->translate(-region.getLowerCorner());
+
 	sceneGraph.emplace(core::move(node));
 	return true;
 }

@@ -315,7 +315,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 			return false;
 		}
 	}
-	return true;
+	return !sceneGraph.empty();
 }
 
 } // namespace voxel
