@@ -139,7 +139,7 @@ void MeshFormat::transformTrisAxisAligned(const TriCollection &subdivided, PosMa
 bool MeshFormat::isAxisAligned(const TriCollection &tris) {
 	for (const Tri &tri : tris) {
 		if (!tri.flat()) {
-			Log::debug("No voxel mesh found");
+			Log::debug("No axis aligned mesh found");
 			for (int i = 0; i < 3; ++i) {
 				Log::debug("tri.vertices[%i]: %s", i, glm::to_string(tri.vertices[i]).c_str());
 			}
@@ -147,7 +147,7 @@ bool MeshFormat::isAxisAligned(const TriCollection &tris) {
 			return false;
 		}
 	}
-	Log::debug("Found voxel mesh");
+	Log::debug("Found axis aligned mesh");
 	return true;
 }
 
@@ -158,7 +158,6 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 	}
 
 	const bool axisAligned = isAxisAligned(tris);
-
 	TriCollection subdivided;
 
 	glm::vec3 trisMins;

@@ -12,8 +12,10 @@
 #include "voxelformat/GoxFormat.h"
 #include "voxelformat/KV6Format.h"
 #include "voxelformat/KVXFormat.h"
+#include "voxelformat/OBJFormat.h"
 #include "voxelformat/QBFormat.h"
 #include "voxelformat/QBTFormat.h"
+#include "voxelformat/STLFormat.h"
 #include "voxelformat/SproxelFormat.h"
 #include "voxelformat/VXLFormat.h"
 #include "voxelformat/VXMFormat.h"
@@ -64,6 +66,20 @@ TEST_F(ConvertTest, testQbToBinvox) {
 	// binvox doesn't have colors and is a single volume format (no need to check transforms)
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::None;
 	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.binvox", target, flags);
+}
+
+TEST_F(ConvertTest, DISABLED_testQbToSTL) {
+	QBFormat src;
+	STLFormat target;
+	// stl doesn't have colors and is a single volume format (no need to check transforms)
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::None;
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.stl", target, flags);
+}
+
+TEST_F(ConvertTest, DISABLED_testQbToOBJ) {
+	QBFormat src;
+	OBJFormat target;
+	testLoadSaveAndLoad("chr_knight.qb", src, "chr_knight.obj", target);
 }
 
 TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
