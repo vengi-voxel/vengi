@@ -17,6 +17,8 @@ namespace voxelformat {
 /**
  * @brief Wavefront Object
  *
+ * https://en.wikipedia.org/wiki/Wavefront_.obj_file
+ *
  * @ingroup Formats
  */
 class OBJFormat : public MeshFormat {

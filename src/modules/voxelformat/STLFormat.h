@@ -15,6 +15,8 @@ namespace voxelformat {
 /**
  * @brief Standard Triangle Language
  *
+ * https://en.wikipedia.org/wiki/STL_(file_format)
+ *
  * @p Binary
  * UINT8[80] – Header
  * UINT32 – Number of triangles
