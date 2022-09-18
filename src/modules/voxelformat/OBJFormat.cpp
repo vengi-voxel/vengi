@@ -289,8 +289,6 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 				if (idx.texcoord_index >= 0) {
 					tri.uv[i].x = attrib.texcoords[2 * idx.texcoord_index + 0];
 					tri.uv[i].y = attrib.texcoords[2 * idx.texcoord_index + 1];
-				} else {
-					tri.uv[i] = glm::vec2(0.0f);
 				}
 			}
 			const int materialIndex = mesh.material_ids[faceNum];
