@@ -12,6 +12,10 @@ namespace voxelformat {
 
 /**
  * @brief Convert the volume data into a mesh
+ *
+ * http://research.michael-schwarz.com/publ/2010/vox/
+ * http://research.michael-schwarz.com/publ/files/vox-siga10.pdf
+ * https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.12.6294
  */
 class MeshFormat : public Format {
 public:
