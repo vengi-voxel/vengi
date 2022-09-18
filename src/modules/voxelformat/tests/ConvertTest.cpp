@@ -191,7 +191,7 @@ TEST_F(ConvertTest, testQbToVXM) {
 TEST_F(ConvertTest, testVXMToQb) {
 	VXMFormat src;
 	QBFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("test.vxm", src, "test.qb", target, flags);
 }
 
@@ -225,7 +225,7 @@ TEST_F(ConvertTest, testQbToVXR) {
 TEST_F(ConvertTest, testVXRToQb) {
 	VXRFormat src;
 	QBFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("e2de1723/e2de1723.vxr", src, "test.qb", target, flags);
 }
 
