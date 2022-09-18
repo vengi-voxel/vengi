@@ -13,6 +13,7 @@
 #include "voxel/Mesh.h"
 #include "voxelformat/SceneGraph.h"
 #include "engine-config.h"
+#include "voxelformat/SceneGraphNode.h"
 
 namespace voxelformat {
 
@@ -62,8 +63,8 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		const int nv = (int)mesh.getNoOfVertices();
 		const voxel::VoxelVertex* vertices = mesh.getRawVertexData();
 		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-		int frame = 0;
-		const SceneGraphTransform &transform = graphNode.transform(frame);
+		KeyFrameIndex keyFrameIdx = 0;
+		const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 		const voxel::Palette &palette = graphNode.palette();
 		// 1 x 256 is the texture format that we are using for our palette
 		const float texcoord = 1.0f / (float)voxel::PaletteMaxColors;
