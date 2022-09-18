@@ -186,8 +186,8 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		const int nv = (int)mesh->getNoOfVertices();
 		const int ni = (int)mesh->getNoOfIndices();
 		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-		int frame = 0;
-		const SceneGraphTransform &transform = graphNode.transform(frame);
+		KeyFrameIndex keyFrameIdx = 0;
+		const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 		const voxel::IndexType *indices = mesh->getRawIndexData();
 
