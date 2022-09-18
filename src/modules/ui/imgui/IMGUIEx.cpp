@@ -174,6 +174,7 @@ bool SliderVarInt(const char* label, const core::VarPtr& var, int v_min, int v_m
 	int val = var->intVal();
 	if (SliderInt(label, &val, v_min, v_max, format, flags)) {
 		var->setVal(val);
+		return true;
 	}
 	return false;
 }
