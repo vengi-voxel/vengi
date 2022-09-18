@@ -205,7 +205,7 @@ bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize) {
 
 bool Palette::load(const image::ImagePtr &img) {
 	if (img->depth() != 4) {
-		Log::warn("Palette image has invalid depth (exepected: 4bpp, got %i)", img->depth());
+		Log::warn("Palette image has invalid depth (expected: 4bpp, got %i)", img->depth());
 		return false;
 	}
 	core_memset(glowColors, 0, sizeof(glowColors));
