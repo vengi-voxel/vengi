@@ -123,6 +123,9 @@ public:
 	}
 
 	void setValue(T *value) {
+		if (_value == value) {
+			return;
+		}
 		release();
 		_value = value;
 		_owns = false;
