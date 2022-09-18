@@ -92,7 +92,7 @@ protected:
 
 	static void voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool hillHollow);
 	static void transformTris(const TriCollection &subdivided, PosMap &posMap);
-	static void transformTrisAxisAligned(const TriCollection &subdivided, PosMap &posMap);
+	static void transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap);
 
 public:
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, SceneGraph &sceneGraph) override;

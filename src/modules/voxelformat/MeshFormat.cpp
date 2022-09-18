@@ -88,7 +88,7 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 			auto iter = posMap.find(p);
 			if (iter == posMap.end()) {
 				posMap.emplace(p, {area, color});
-			} else if (iter->value.entries.size() < 4) {
+			} else if (iter->value.entries.size() < 4 && iter->value.entries[0].color != color) {
 				PosSampling &pos = iter->value;
 				pos.entries.emplace_back(area, color);
 			}
@@ -96,9 +96,9 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 	}
 }
 
-void MeshFormat::transformTrisAxisAligned(const TriCollection &subdivided, PosMap &posMap) {
-	Log::debug("subdivided into %i triangles", (int)subdivided.size());
-	for (const Tri &tri : subdivided) {
+void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap) {
+	Log::debug("%i triangles", (int)tris.size());
+	for (const Tri &tri : tris) {
 		if (stopExecution()) {
 			return;
 		}
@@ -108,24 +108,22 @@ void MeshFormat::transformTrisAxisAligned(const TriCollection &subdivided, PosMa
 		const glm::vec4 &color = core::Color::fromRGBA(rgba);
 		const glm::vec3 &normal = glm::normalize(tri.normal());
 		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
-
 		const glm::ivec3 mins = tri.roundedMins();
 		const glm::ivec3 maxs = tri.roundedMaxs() + glm::ivec3(glm::round(glm::abs(normal)));
 		Log::debug("mins: %i:%i:%i", mins.x, mins.y, mins.z);
 		Log::debug("maxs: %i:%i:%i", maxs.x, maxs.y, maxs.z);
 		Log::debug("normal: %f:%f:%f", normal.x, normal.y, normal.z);
+		Log::debug("sideDelta: %i:%i:%i", sideDelta.x, sideDelta.y, sideDelta.z);
+		Log::debug("uv: %f:%f", uv.x, uv.y);
 
 		for (int x = mins.x; x < maxs.x; x++) {
 			for (int y = mins.y; y < maxs.y; y++) {
 				for (int z = mins.z; z < maxs.z; z++) {
-					glm::ivec3 p(x, y, z);
-
-					p += sideDelta;
-
+					const glm::ivec3 p(x + sideDelta.x, y + sideDelta.y, z + sideDelta.z);
 					auto iter = posMap.find(p);
 					if (iter == posMap.end()) {
 						posMap.emplace(p, {area, color});
-					} else if (iter->value.entries.size() < 4) {
+					} else if (iter->value.entries.size() < 4 && iter->value.entries[0].color != color) {
 						PosSampling &pos = iter->value;
 						pos.entries.emplace_back(area, color);
 					}
@@ -159,7 +157,6 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 	}
 
 	const bool axisAligned = isAxisAligned(tris);
-	TriCollection subdivided;
 
 	glm::vec3 trisMins;
 	glm::vec3 trisMaxs;
@@ -169,22 +166,6 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 	const voxel::Region region(glm::floor(trisMins), glm::ceil(trisMaxs));
 	if (!region.isValid()) {
 		Log::error("Invalid region: %s", region.toString().c_str());
-		return false;
-	}
-
-	if (axisAligned) {
-		subdivided.reserve(tris.size());
-		for (const Tri &tri : tris) {
-			subdivided.push_back(tri);
-		}
-	} else {
-		for (const Tri &tri : tris) {
-			subdivideTri(tri, subdivided);
-		}
-	}
-
-	if (subdivided.empty()) {
-		Log::warn("Empty volume - could not subdivide");
 		return false;
 	}
 
@@ -202,9 +183,18 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 		const int maxVoxels = vdim.x * vdim.y * vdim.z;
 		Log::debug("max voxels: %i (%i:%i:%i)", maxVoxels, vdim.x, vdim.y, vdim.z);
 		PosMap posMap(maxVoxels);
-		transformTrisAxisAligned(subdivided, posMap);
+		transformTrisAxisAligned(tris, posMap);
 		voxelizeTris(node, posMap, fillHollow);
 	} else {
+		TriCollection subdivided;
+		for (const Tri &tri : tris) {
+			subdivideTri(tri, subdivided);
+		}
+		if (subdivided.empty()) {
+			Log::warn("Empty volume - could not subdivide");
+			return false;
+		}
+
 		PosMap posMap((int)subdivided.size() * 3);
 		transformTris(subdivided, posMap);
 		voxelizeTris(node, posMap, fillHollow);
