@@ -230,6 +230,7 @@ bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::
 void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) {
 	Log::debug("create voxels");
 	voxel::RawVolume *volume = node.volume();
+	voxel::RawVolumeWrapper wrapper(volume);
 	voxel::Palette palette;
 	for (const auto &entry : posMap) {
 		if (stopExecution()) {
@@ -240,12 +241,11 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 		uint8_t addedPaletteIndex = 0;
 		palette.addColorToPalette(core::Color::getRGBA(color), false, &addedPaletteIndex);
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, addedPaletteIndex);
-		volume->setVoxel(entry->first, voxel);
+		wrapper.setVoxel(entry->first, voxel);
 	}
 	node.setPalette(palette);
 	if (fillHollow) {
 		Log::debug("fill hollows");
-		voxel::RawVolumeWrapper wrapper(volume);
 		voxelutil::fillHollow(wrapper, voxel::Voxel(voxel::VoxelType::Generic, FillColorIndex));
 	}
 }
