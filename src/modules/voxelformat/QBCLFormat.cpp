@@ -244,13 +244,14 @@ bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	wrapBool(stream.writeUInt32(0)) // thumbnail w/h
 	wrapBool(stream.writeUInt32(0)) // thumbnail w/h
 
-	wrapBool(writeString(stream, "")) // no title
-	wrapBool(writeString(stream, "")) // no desc
-	wrapBool(writeString(stream, "")) // no metadata
-	wrapBool(writeString(stream, "")) // no author
-	wrapBool(writeString(stream, "")) // no company
-	wrapBool(writeString(stream, "")) // no website
-	wrapBool(writeString(stream, "")) // no copyright
+	const SceneGraphNode& rootNode = sceneGraph.root();
+	wrapBool(writeString(stream, rootNode.property("Title")))
+	wrapBool(writeString(stream, rootNode.property("Description")))
+	wrapBool(writeString(stream, rootNode.property("Metadata")))
+	wrapBool(writeString(stream, rootNode.property("Author")))
+	wrapBool(writeString(stream, rootNode.property("Company")))
+	wrapBool(writeString(stream, rootNode.property("Website")))
+	wrapBool(writeString(stream, rootNode.property("Copyright")))
 
 	uint8_t guid[16] {0};
 	if (stream.write(guid, lengthof(guid)) == -1) {
