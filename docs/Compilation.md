@@ -45,7 +45,7 @@ If you are using the cmake Makefile generator, you get the same targets as for L
 
 If you encounter any problems, it's also a good start to check out the build pipelines of the project.
 This is always the most up-to-date information about how-to-build-the-project that you will find. But
-also please don't hesitate to ask for help on our [discord server](https://discord.gg/AgjCPXy)..
+also please don't hesitate to ask for help on our [discord server](https://discord.gg/AgjCPXy).
 
 ## Enforce bundled libs
 

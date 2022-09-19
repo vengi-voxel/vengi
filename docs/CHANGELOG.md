@@ -2,7 +2,7 @@
 
 A more detailed changelog can be found on [github](https://github.com/mgerhardy/vengi/commits/).
 
-Join our [Discord server](https://discord.gg/AgjCPXy).
+Join our [discord server](https://discord.gg/AgjCPXy).
 
 See [the documentation](https://mgerhardy.github.io/vengi/) for further details.
 

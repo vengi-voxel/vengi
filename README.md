@@ -9,7 +9,7 @@ Please consider donating to help to continue the work on this project. See the s
 
 Find more information about how to compile and run the game or tools [here](https://mgerhardy.github.io/vengi/).
 
-Join our [discord Server](https://discord.gg/AgjCPXy) and help developing the game and/or tools.
+Join our [discord server](https://discord.gg/AgjCPXy) and help developing the game and/or tools.
 
 ## Download
 

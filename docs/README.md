@@ -9,7 +9,7 @@ Find out more about features and status updates on my [twitter profile](https://
 The project source code is located at [github/mgerhardy/vengi](https://github.com/mgerhardy/vengi). We also
 provide debian and windows binaries here.
 
-Join our [discord Server](https://discord.gg/AgjCPXy).
+Join our [discord server](https://discord.gg/AgjCPXy).
 
 If you just came here to use a voxel editor or to convert your voxel models into an obj or ply file,
 you should just go to the [download page](https://github.com/mgerhardy/vengi/releases) and check out
