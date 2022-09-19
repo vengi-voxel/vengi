@@ -8,11 +8,12 @@ on:
   schedule:
     - cron: '0 0 * * *'
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
   codeql:
-    concurrency:
-      group: ${{ github.ref }}
-      cancel-in-progress: true
     name: CodeQL
     runs-on: ubuntu-20.04
     permissions:

@@ -9,10 +9,12 @@ on:
   pull_request:
     branches:
       - master
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
-    concurrency:
-        group: ${{ github.ref }}
-        cancel-in-progress: true
     mac:
         runs-on: macos-10.15
         steps:
