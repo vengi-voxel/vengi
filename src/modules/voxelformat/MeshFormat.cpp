@@ -229,8 +229,7 @@ bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::
 
 void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) {
 	Log::debug("create voxels");
-	voxel::RawVolume *volume = node.volume();
-	voxel::RawVolumeWrapper wrapper(volume);
+	voxel::RawVolumeWrapper wrapper(node.volume());
 	voxel::Palette palette;
 	for (const auto &entry : posMap) {
 		if (stopExecution()) {
@@ -246,7 +245,8 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 	node.setPalette(palette);
 	if (fillHollow) {
 		Log::debug("fill hollows");
-		voxelutil::fillHollow(wrapper, voxel::Voxel(voxel::VoxelType::Generic, FillColorIndex));
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, FillColorIndex);
+		voxelutil::fillHollow(wrapper, voxel);
 	}
 }
 
@@ -271,14 +271,12 @@ bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
 	const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 	const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
-
-	const glm::vec3 &scale = getScale();
-
 	const bool quads = core::Var::getSafe(cfg::VoxformatQuads)->boolVal();
 	const bool withColor = core::Var::getSafe(cfg::VoxformatWithcolor)->boolVal();
 	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
 	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
 
+	const glm::vec3 &scale = getScale();
 	const size_t models = sceneGraph.size();
 	core::ThreadPool& threadPool = app::App::getInstance()->threadPool();
 	Meshes meshes;
