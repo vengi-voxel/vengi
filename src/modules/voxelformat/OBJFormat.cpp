@@ -16,6 +16,7 @@
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/StdStreamBuf.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/VoxelVertex.h"
 #include "voxel/Mesh.h"
@@ -207,7 +208,10 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 	std::string warn;
 	std::string err;
 	const core::String& mtlbasedir = core::string::extractPath(filename);
-	const bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename.c_str(), mtlbasedir.c_str(), true, true);
+	io::StdIStreamBuf stdStreamBuf(stream);
+	std::istream inputStream(&stdStreamBuf);
+	tinyobj::MaterialFileReader matFileReader(mtlbasedir.c_str());
+	const bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, &inputStream, &matFileReader, true, true);
 	if (!warn.empty()) {
 		core::DynamicArray<core::String> lines;
 		core::string::splitString(warn.c_str(), lines, "\n");
