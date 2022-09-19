@@ -150,6 +150,7 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 	// TODO: always 0.0833333358f?
 	wrapBool(stream.writeFloat(transform.worldScale()))
 
+	// transpose the matrix here
 	for (int row = 0; row < 3; ++row) {
 		for (int col = 0; col < 4; ++col) {
 			wrapBool(stream.writeFloat(matrix[col][row]))
@@ -363,6 +364,7 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 	Log::debug("offsets: %u:%u:%u", footer.spanStartOffset, footer.spanEndOffset, footer.spanDataOffset);
 
 	glm::mat4 transform(1.0f);
+	// transpose the matrix here
 	for (int row = 0; row < 3; ++row) {
 		for (int col = 0; col < 4; ++col) {
 			wrap(stream.readFloat(transform[col][row]))
