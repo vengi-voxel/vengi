@@ -286,14 +286,13 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	wrap(stream.readInt32(translation.x));
 	wrap(stream.readInt32(translation.y));
 	wrap(stream.readInt32(translation.z));
-	transform.setWorldTranslation(translation);
+	transform.setLocalTranslation(translation);
 
 	glm::vec3 pivot;
 	wrap(stream.readFloat(pivot.x));
 	wrap(stream.readFloat(pivot.y));
 	wrap(stream.readFloat(pivot.z));
 
-	// TODO: -position?
 	transform.setPivot(pivot / glm::vec3(size));
 
 	uint32_t compressedDataSize;
@@ -396,7 +395,8 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 }
 
 bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name) {
-	stream.skip(36); // rotation matrix?
+	const size_t skip = 3 * 3 * sizeof(float);
+	stream.skip((int64_t)skip); // TODO: rotation matrix?
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount))
 	SceneGraphNode node(SceneGraphNodeType::Group);
