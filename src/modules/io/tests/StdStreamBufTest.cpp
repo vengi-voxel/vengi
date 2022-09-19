@@ -11,9 +11,9 @@ namespace io {
 
 class StdStreamBufTest : public testing::Test {};
 
-TEST_F(StdStreamBufTest, testReadStream) {
+TEST_F(StdStreamBufTest, testOStream) {
 	io::BufferedReadWriteStream target;
-	StdStreamBuf buf(target);
+	StdOStreamBuf buf(target);
 	std::ostream ostream(&buf);
 	EXPECT_EQ(0, target.pos());
 	ostream << "test";
@@ -24,6 +24,18 @@ TEST_F(StdStreamBufTest, testReadStream) {
 	target.readString(sizeof(strbuf) - 1, strbuf);
 	strbuf[4] = '\0';
 	EXPECT_STREQ("test", strbuf);
+}
+
+TEST_F(StdStreamBufTest, testIStream) {
+	io::BufferedReadWriteStream target;
+	target.writeString("foobar", false);
+	StdIStreamBuf buf(target);
+	std::istream istream(&buf);
+	target.seek(0);
+	EXPECT_EQ(0, target.pos());
+	std::string str;
+	istream >> str;
+	EXPECT_EQ(str, "foobar");
 }
 
 } // namespace io

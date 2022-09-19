@@ -478,7 +478,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		m.cameras.push_back(gltfCamera);
 	}
 
-	io::StdStreamBuf buf(stream);
+	io::StdOStreamBuf buf(stream);
 	std::ostream gltfStream(&buf);
 	if (!gltf.WriteGltfSceneToStream(&m, gltfStream, prettyPrint, writeBinary)) {
 		Log::error("Could not save to file");
