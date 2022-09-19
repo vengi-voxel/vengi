@@ -223,7 +223,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 		}
 	}
 	if (!ret) {
-		Log::error("Failed to load: %s", filename.c_str());
+		Log::error("Failed to load obj '%s': %s", filename.c_str(), err.c_str());
 		return false;
 	}
 	if (shapes.size() == 0) {
@@ -267,7 +267,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 			const core::String texname(material.diffuse_texname.c_str());
 			textures.put(texname, tex);
 		} else {
-			Log::warn("Failed to load %s", name.c_str());
+			Log::warn("Failed to load image %s", name.c_str());
 		}
 	}
 
