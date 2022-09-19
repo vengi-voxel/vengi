@@ -93,9 +93,9 @@ public:
 				return traits_type::eof();
 			}
 
-			this->setg(&_char, &_char, &_char + 1);
+			setg(&_char, &_char, &_char + 1);
 		}
-		return this->gptr() == this->egptr() ? traits_type::eof() : traits_type::to_int_type(*this->gptr());
+		return gptr() == egptr() ? traits_type::eof() : traits_type::to_int_type(*gptr());
 	}
 };
 
