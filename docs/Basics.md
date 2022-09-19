@@ -63,41 +63,41 @@ detail message line 2
 | ai-shared        | Protocol for the [ai debugger](AIRemoteDebugger.md)                        |
 | animation        | [Skeletal animation](Animations.md) with lua configuration support         |
 | app              | Basic application classes                                                  |
-| attrib           | (GAME) Attributes for characters, items, ...                               |
+| attrib           | (GAME) [Attributes](Attributes.md) for characters, items, ...              |
 | audio            | Sound and music module                                                     |
 | backend          | (GAME) Game server backend module                                          |
 | command          | Bind c++ functionality to console commands                                 |
-| commonlua        | Basic lua bindings and helper functions                                    |
-| compute          | OpenCL compute shaders                                                     |
-| computevideo     | OpenCL compute shaders                                                     |
-| console          |                                                                            |
+| commonlua        | Basic [lua](LUAScript.md) bindings and helper                              |
+| compute          | [OpenCL](ComputeShaderTool.md) compute shaders                             |
+| computevideo     | [OpenCL](ComputeShaderTool.md) compute shaders                             |
+| console          | Base classes for different kind of consoles                                |
 | cooldown         | (GAME) Cooldown management module                                          |
-| core             |                                                                            |
-| eventmgr         |                                                                            |
+| core             | String, collections and other foundation classes                           |
+| eventmgr         | (GAME) Game events module                                                  |
 | frontend         | (GAME) Game frontend module                                                |
 | http             | HTTP server and client                                                     |
 | image            | Image loading and writing                                                  |
 | io               | Stream and file handling                                                   |
-| math             |                                                                            |
-| metric           |                                                                            |
-| network          |                                                                            |
-| noise            |                                                                            |
+| math             | Based on glm                                                               |
+| metric           | telegraf, influx and other metrics                                         |
+| network          | Network module based on enet and protocol based on flatbuffers             |
+| noise            | Different noise implementations                                            |
 | persistence      | [Persistency](Persistence.md)                                              |
 | poi              | Point of interests                                                         |
-| render           |                                                                            |
+| render           | General renderer implementations and helpers                               |
 | rma              | Random map assembly                                                        |
-| shared           |                                                                            |
+| shared           | (GAME) Protocol and shared code between `backend` and `frontend`           |
 | stock            | (GAME) Stock handling for entities                                         |
-| testcore         |                                                                            |
+| testcore         | Visual test helpers                                                        |
 | ui               | DearImgui based ui code                                                    |
 | util             |                                                                            |
 | uuidutil         |                                                                            |
-| video            |                                                                            |
+| video            | [Window and renderer](ShaderTool.md) module                                |
 | voxel            | The voxel engine code based on PolyVox                                     |
-| voxelfont        |                                                                            |
+| voxelfont        | TTF font to voxel                                                          |
 | voxelformat      | Several volume and mesh based file formats to load or generate voxels      |
-| voxelgenerator   |                                                                            |
-| voxelrender      |                                                                            |
-| voxelutil        |                                                                            |
-| voxelworld       |                                                                            |
-| voxelworldrender |                                                                            |
+| voxelgenerator   | LUA generator, space colonization, tree- and shape generators              |
+| voxelrender      | Voxel renderer                                                             |
+| voxelutil        | Pathfinding, raycasting, image and general util functions                  |
+| voxelworld       | Streaming voxel world module                                               |
+| voxelworldrender | Renderer for `voxelworld`                                                  |
