@@ -210,6 +210,7 @@ TEST_F(ConvertTest, testQbToVXM) {
 TEST_F(ConvertTest, testVXMToQb) {
 	VXMFormat src;
 	QBFormat target;
+	// the palette color amount differs, because qubicle is a rgba format and only stores used colors
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("test.vxm", src, "convert-test.qb", target, flags);
 }
