@@ -4,7 +4,12 @@
 
 #pragma once
 
-#include "voxel/RawVolume.h"
+#include <glm/fwd.hpp>
+
+namespace voxel {
+class RawVolume;
+class Region;
+} // namespace voxel
 
 namespace voxelutil {
 

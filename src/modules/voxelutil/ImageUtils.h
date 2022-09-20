@@ -5,10 +5,13 @@
 #pragma once
 
 #include "image/Image.h"
-#include "voxel/RawVolumeWrapper.h"
+#include "voxel/RawVolume.h"
 
 namespace voxel {
 class PaletteLookup;
+class RawVolumeWrapper;
+class RawVolume;
+class Voxel;
 }
 
 namespace voxelutil {

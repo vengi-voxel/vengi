@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "voxelutil/VoxelUtil.h"
+#include "voxel/RawVolume.h"
 
 namespace voxelutil {
 

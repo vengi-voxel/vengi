@@ -5,7 +5,11 @@
 #pragma once
 
 #include "core/collection/DynamicArray.h"
-#include "voxel/RawVolume.h"
+#include <glm/fwd.hpp>
+
+namespace voxel {
+class RawVolume;
+} // namespace voxel
 
 namespace voxelutil {
 

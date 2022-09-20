@@ -3,6 +3,7 @@
  */
 
 #include "RawVolumeRotateWrapper.h"
+#include "voxel/RawVolume.h"
 
 namespace voxelutil {
 

@@ -4,9 +4,8 @@
 
 #include "app/tests/AbstractTest.h"
 #include "voxelutil/ImageUtils.h"
-#include "voxel/MaterialColor.h"
+#include "voxel/RawVolume.h"
 #include "core/ScopedPtr.h"
-#include "voxel/Palette.h"
 
 namespace voxelutil {
 

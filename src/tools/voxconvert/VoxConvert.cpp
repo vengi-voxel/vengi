@@ -20,6 +20,7 @@
 #include "core/TimeProvider.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/SceneGraphUtil.h"

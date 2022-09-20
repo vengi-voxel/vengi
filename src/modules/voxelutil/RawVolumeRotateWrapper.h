@@ -2,9 +2,13 @@
  * @file
  */
 
-#include "voxel/Region.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "math/Axis.h"
+
+namespace voxel {
+class RawVolume;
+}
 
 namespace voxelutil {
 

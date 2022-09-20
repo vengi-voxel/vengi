@@ -6,11 +6,13 @@
 
 #include "image/Image.h"
 #include "voxel/Face.h"
-#include "voxel/RawVolume.h"
-#include "voxel/RawVolumeWrapper.h"
 #include <functional>
+#include <glm/fwd.hpp>
 
 namespace voxel {
+class RawVolume;
+class Region;
+class Voxel;
 class RawVolumeWrapper;
 }
 

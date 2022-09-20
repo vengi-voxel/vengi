@@ -17,6 +17,7 @@
 #include "core/GLM.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxel/PaletteLookup.h"
+#include "voxel/RawVolumeWrapper.h"
 
 namespace voxelutil {
 

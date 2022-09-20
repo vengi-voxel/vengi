@@ -6,7 +6,6 @@
 
 #include "math/Axis.h"
 #include <glm/fwd.hpp>
-#include <glm/vec3.hpp>
 
 namespace voxel {
 class RawVolume;
