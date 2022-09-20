@@ -147,6 +147,47 @@ TEST_F(ConvertTest, testGoxToQb) {
 	testLoadSaveAndLoadSceneGraph("test.gox", src, "convert-test.qb", target);
 }
 
+TEST_F(ConvertTest, testQBCLToQb) {
+	QBCLFormat src;
+	QBFormat target;
+	// qb doesn't store a pivot
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("qubicle.qbcl", src, "convert-qubicle.qb", target, flags);
+}
+
+TEST_F(ConvertTest, testQbtToQb) {
+	QBTFormat src;
+	QBFormat target;
+	// qb doesn't store a pivot
+	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("qubicle.qbt", src, "convert-qubicle.qb", target, flags);
+}
+
+TEST_F(ConvertTest, testKVXToQb) {
+	KVXFormat src;
+	QBFormat target;
+	// qb doesn't store a pivot
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	const float maxDelta = 0.012f;
+	testLoadSaveAndLoad("test.kvx", src, "convert-test.qb", target, flags, maxDelta);
+}
+
+TEST_F(ConvertTest, testKV6ToQb) {
+	KV6Format src;
+	QBFormat target;
+	// qb doesn't store a pivot
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("test.kv6", src, "convert-test.qb", target, flags);
+}
+
+TEST_F(ConvertTest, testQbToVXR) {
+	QBFormat src;
+	VXRFormat target;
+	// qb doesn't store a pivot
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("robo.qb", src, "convert-robo.vxr", target, flags);
+}
+
 // TODO: pivot broken
 // TODO: transform broken
 TEST_F(ConvertTest, testQbToQBCL) {
@@ -154,14 +195,6 @@ TEST_F(ConvertTest, testQbToQBCL) {
 	QBCLFormat target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform | voxel::ValidateFlags::Pivot);
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbcl", target, flags);
-}
-
-// TODO: pivot broken
-TEST_F(ConvertTest, testQBCLToQb) {
-	QBCLFormat src;
-	QBFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
-	testLoadSaveAndLoadSceneGraph("qubicle.qbcl", src, "convert-qubicle.qb", target, flags);
 }
 
 // TODO: pivot broken
@@ -189,14 +222,6 @@ TEST_F(ConvertTest, testVXLToVXR) {
 	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "convert-cc.vxr", target, flags);
 }
 
-// TODO: pivot broken
-TEST_F(ConvertTest, testQbtToQb) {
-	QBTFormat src;
-	QBFormat target;
-	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
-	testLoadSaveAndLoadSceneGraph("qubicle.qbt", src, "convert-qubicle.qb", target, flags);
-}
-
 // TODO: transform broken
 TEST_F(ConvertTest, testQbToVXM) {
 	QBFormat src;
@@ -205,46 +230,21 @@ TEST_F(ConvertTest, testQbToVXM) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxm", target, flags);
 }
 
-// TODO: pivot broken
 // TODO: colors broken
 TEST_F(ConvertTest, testVXMToQb) {
 	VXMFormat src;
 	QBFormat target;
 	// the palette color amount differs, because qubicle is a rgba format and only stores used colors
+	// qb doesn't store a pivot
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("test.vxm", src, "convert-test.qb", target, flags);
 }
 
-// TODO: pivot broken
-TEST_F(ConvertTest, testKVXToQb) {
-	KVXFormat src;
-	QBFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
-	const float maxDelta = 0.012f;
-	testLoadSaveAndLoad("test.kvx", src, "convert-test.qb", target, flags, maxDelta);
-}
-
-// TODO: pivot broken
-TEST_F(ConvertTest, testKV6ToQb) {
-	KV6Format src;
-	QBFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
-	testLoadSaveAndLoadSceneGraph("test.kv6", src, "convert-test.qb", target, flags);
-}
-
-// TODO: pivot broken
-TEST_F(ConvertTest, testQbToVXR) {
-	QBFormat src;
-	VXRFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
-	testLoadSaveAndLoadSceneGraph("robo.qb", src, "convert-robo.vxr", target, flags);
-}
-
 // TODO: colors broken
-// TODO: pivot broken
 TEST_F(ConvertTest, testVXRToQb) {
 	VXRFormat src;
 	QBFormat target;
+	// qb doesn't store a pivot
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("e2de1723/e2de1723.vxr", src, "convert-e2de1723.qb", target, flags);
 }
