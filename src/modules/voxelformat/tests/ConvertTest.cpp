@@ -147,16 +147,21 @@ TEST_F(ConvertTest, testGoxToQb) {
 	testLoadSaveAndLoadSceneGraph("test.gox", src, "convert-test.qb", target);
 }
 
-TEST_F(ConvertTest, DISABLED_testQbToQBCL) {
+// TODO: pivot broken
+// TODO: transform broken
+TEST_F(ConvertTest, testQbToQBCL) {
 	QBFormat src;
 	QBCLFormat target;
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbcl", target);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform | voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbcl", target, flags);
 }
 
-TEST_F(ConvertTest, DISABLED_testQBCLToQb) {
+// TODO: pivot broken
+TEST_F(ConvertTest, testQBCLToQb) {
 	QBCLFormat src;
 	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("qubicle.qbcl", src, "convert-qubicle.qb", target);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("qubicle.qbcl", src, "convert-qubicle.qb", target, flags);
 }
 
 // TODO: pivot broken
