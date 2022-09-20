@@ -58,13 +58,18 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrap(stream.readUInt32(pivy))
 	wrap(stream.readUInt32(pivz))
 
-#if 0
+	pivx >>= 8;
+	pivy >>= 8;
+	pivz >>= 8;
+
+	pivz = zsiz - 1 - pivz;
+
 	glm::vec3 normalizedPivot;
-	normalizedPivot.x = (float)pivx / 256.0f;
-	normalizedPivot.y = (float)pivy / 256.0f;
-	normalizedPivot.z = (float)pivz / 256.0f;
+	normalizedPivot.x = (float)pivx / (float)xsiz;
+	normalizedPivot.y = (float)pivy / (float)ysiz;
+	normalizedPivot.z = (float)pivz / (float)zsiz;
+	core::exchange(normalizedPivot.y, normalizedPivot.z);
 	transform.setPivot(normalizedPivot);
-#endif
 
 	/**
 	 * For compression purposes, I store the column pointers
@@ -91,7 +96,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	// Read the color palette from the end of the file and convert to our palette
 	const size_t currentPos = stream.pos();
 	palette.colorCount = voxel::PaletteMaxColors;
-	stream.seek(stream.size() - 3 * palette.colorCount);
+	stream.seek((int64_t)(stream.size() - 3l * palette.colorCount));
 
 	/**
 	 * The last 768 bytes of the KVX file is a standard 256-color VGA palette.

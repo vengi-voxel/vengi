@@ -3,6 +3,7 @@
  */
 
 #include "KV6Format.h"
+#include "core/Common.h"
 #include "io/Stream.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
@@ -10,6 +11,7 @@
 #include "core/FourCC.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/Palette.h"
+#include "voxelformat/SceneGraphNode.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -39,14 +41,16 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	/**
-	 * Centroid of voxel. For extra precision, this location has been shifted up by 8 bits.
-	 */
 	SceneGraphTransform transform;
-	glm::vec3 normalizedPivot;
-	wrap(stream.readFloat(normalizedPivot.x))
-	wrap(stream.readFloat(normalizedPivot.y))
-	wrap(stream.readFloat(normalizedPivot.z))
+	glm::vec3 pivot;
+	wrap(stream.readFloat(pivot.x))
+	wrap(stream.readFloat(pivot.y))
+	wrap(stream.readFloat(pivot.z))
+
+	pivot.z = (float)zsiz - 1.0f - pivot.z;
+
+	glm::vec3 normalizedPivot = pivot / glm::vec3(xsiz, ysiz, zsiz);
+	core::exchange(normalizedPivot.y, normalizedPivot.z);
 	transform.setPivot(normalizedPivot);
 
 	if (xsiz > MaxRegionSize || ysiz > MaxRegionSize || zsiz > MaxRegionSize) {
@@ -157,7 +161,8 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
-	node.setTransform(0, transform);
+	KeyFrameIndex keyFrameIdx = 0;
+	node.setTransform(keyFrameIdx, transform);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
 
