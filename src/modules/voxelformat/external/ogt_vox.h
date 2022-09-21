@@ -302,7 +302,7 @@
         ogt_cam_mode mode;
         float        focus[3];    // the target position
         float        angle[3];    // rotation in degree
-        int          radius;      // to get the position of the camera, rotate (0, -radius * model size, 0) and add to focus position
+        int          radius;
         float        frustum;
         int          fov;         // angle in degree
     } ogt_vox_cam;
@@ -2352,6 +2352,18 @@
             _vox_sprintf(cam_fov, sizeof(cam_fov), "%i", camera->fov);
 
             switch (camera->mode) {
+            case ogt_cam_mode_free;
+                cam_mode = "free";
+                break;
+            case ogt_cam_mode_pano;
+                cam_mode = "pano";
+                break;
+            case ogt_cam_mode_isometric;
+                cam_mode = "iso";
+                break;
+            case ogt_cam_mode_orthographic;
+                cam_mode = "orth";
+                break;
             default:
             case ogt_cam_mode_unknown:
             case ogt_cam_mode_perspective:
