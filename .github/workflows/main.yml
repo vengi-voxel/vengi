@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
     mac:
+        timeout-minutes: 45
         runs-on: macos-10.15
         steps:
         - uses: actions/checkout@v1
@@ -76,6 +77,7 @@ jobs:
             path: build/*.dmg
 
     packages:
+        timeout-minutes: 45
         if: github.repository == 'mgerhardy/vengi'
         runs-on: ubuntu-20.04
         steps:
@@ -114,6 +116,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     linux:
+        timeout-minutes: 45
         runs-on: ubuntu-20.04
 
         services:
@@ -187,6 +190,7 @@ jobs:
             ctest -V -R shelltests
 
     windows:
+        timeout-minutes: 45
         runs-on: windows-2022
 
         steps:
