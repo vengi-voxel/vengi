@@ -2352,16 +2352,16 @@
             _vox_sprintf(cam_fov, sizeof(cam_fov), "%i", camera->fov);
 
             switch (camera->mode) {
-            case ogt_cam_mode_free;
+            case ogt_cam_mode_free:
                 cam_mode = "free";
                 break;
-            case ogt_cam_mode_pano;
+            case ogt_cam_mode_pano:
                 cam_mode = "pano";
                 break;
-            case ogt_cam_mode_isometric;
+            case ogt_cam_mode_isometric:
                 cam_mode = "iso";
                 break;
-            case ogt_cam_mode_orthographic;
+            case ogt_cam_mode_orthographic:
                 cam_mode = "orth";
                 break;
             default:
