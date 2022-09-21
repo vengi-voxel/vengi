@@ -25,7 +25,7 @@ TEST_F(QEFFormatTest, testLoadRGB) {
 
 TEST_F(QEFFormatTest, testSaveSmallVoxel) {
 	QEFFormat f;
-	testSaveLoadVoxel("qubicle-smallvolumesavetest.qbt", &f);
+	testSaveLoadVoxel("qubicle-smallvolumesavetest.qef", &f);
 }
 
 }
