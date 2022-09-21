@@ -188,12 +188,11 @@ TEST_F(ConvertTest, testQbToVXR) {
 	testLoadSaveAndLoadSceneGraph("robo.qb", src, "convert-robo.vxr", target, flags);
 }
 
-// TODO: pivot broken
 // TODO: transform broken
 TEST_F(ConvertTest, testQbToQBCL) {
 	QBFormat src;
 	QBCLFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform | voxel::ValidateFlags::Pivot);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform);
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbcl", target, flags);
 }
 
