@@ -37,7 +37,6 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 		Log::error("Invalid region: %i:%i:%i", width, height, depth);
 		return false;
 	}
-	voxel::RawVolume *volume = new voxel::RawVolume(region);
 
 	const int64_t voxelPos = stream.pos();
 	stream.skip((int64_t)width * height * depth);
@@ -50,6 +49,10 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 
 		palette.colors[i] = core::Color::getRGBA(r, g, b);
 	}
+
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
+	SceneGraphNode node;
+	node.setVolume(volume, true);
 
 	stream.seek(voxelPos);
 	for (uint32_t w = 0u; w < width; ++w) {
@@ -66,8 +69,6 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 			}
 		}
 	}
-	SceneGraphNode node;
-	node.setVolume(volume, true);
 	node.setName(filename);
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
