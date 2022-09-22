@@ -3,7 +3,6 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxelformat/SMFormat.h"
 
 namespace voxelformat {
 
