@@ -13,6 +13,11 @@
 #include <pwd.h>
 #include <unistd.h>
 
+#ifdef __MACOSX__
+#include <sysdir.h>
+#include <libproc.h>
+#endif
+
 namespace io {
 namespace priv {
 
@@ -24,8 +29,6 @@ static char *getHome() {
 	return nullptr;
 }
 
-#if not defined __MACOSX__
-
 /**
  * @brief Replace the shell variable for the home dir
  */
@@ -35,8 +38,26 @@ static inline core::String replaceHome(const core::String &in) {
 		return in;
 	}
 	core::String out = core::string::replaceAll(in, "$HOME", envHome);
+	out = core::string::replaceAll(out, "~", envHome);
 	return core::string::replaceAll(out, "${HOME}", envHome);
 }
+
+#ifdef __MACOSX__
+
+// needs at least OSX 10.12
+static core::String appleDir(sysdir_search_path_directory_t dir) {
+	char path[PATH_MAX];
+	sysdir_search_path_enumeration_state state = sysdir_start_search_path_enumeration(dir, SYSDIR_DOMAIN_MASK_USER);
+	while ((state = sysdir_get_next_search_path_enumeration(state, path))) {
+		// indicates a user dir
+		if (path[0] == '~') {
+			return replaceHome(path);
+		}
+	}
+	return "";
+}
+
+#else // __MACOSX__
 
 static core::String load(const core::String &file) {
 	FILE *fp = fopen(file.c_str(), "r");
@@ -85,10 +106,11 @@ bool initState(io::FilesystemState &state) {
 		return false;
 	}
 #if defined __MACOSX__
-	state._directories[FilesystemDirectories::FS_Dir_Download] = core::string::path(envHome, "Downloads");
-	state._directories[FilesystemDirectories::FS_Dir_Documents] = core::string::path(envHome, "Documents");
-	state._directories[FilesystemDirectories::FS_Dir_Pictures] = core::string::path(envHome, "Pictures");
-	state._directories[FilesystemDirectories::FS_Dir_Public] = core::string::path(envHome, "Public");
+	state._directories[FilesystemDirectories::FS_Dir_Download] = priv::appleDir(SYSDIR_DIRECTORY_DOWNLOADS);
+	state._directories[FilesystemDirectories::FS_Dir_Documents] = priv::appleDir(SYSDIR_DIRECTORY_DOCUMENT);
+	state._directories[FilesystemDirectories::FS_Dir_Pictures] = priv::appleDir(SYSDIR_DIRECTORY_PICTURES);
+	state._directories[FilesystemDirectories::FS_Dir_Desktop] = priv::appleDir(SYSDIR_DIRECTORY_DESKTOP);
+	state._directories[FilesystemDirectories::FS_Dir_Public] = priv::appleDir(SYSDIR_DIRECTORY_SHARED_PUBLIC);
 #else
 	core::String xdgDir = core::string::path(envHome, ".config", "user-dirs.dirs");
 	if (access(xdgDir.c_str(), F_OK) != 0) {
@@ -121,6 +143,8 @@ bool initState(io::FilesystemState &state) {
 			state._directories[FilesystemDirectories::FS_Dir_Download] = priv::replaceHome(value);
 		} else if (var.contains("DOCUMENTS")) {
 			state._directories[FilesystemDirectories::FS_Dir_Documents] = priv::replaceHome(value);
+		} else if (var.contains("DESKTOP")) {
+			state._directories[FilesystemDirectories::FS_Dir_Desktop] = priv::replaceHome(value);
 		} else if (var.contains("PICTURES")) {
 			state._directories[FilesystemDirectories::FS_Dir_Pictures] = priv::replaceHome(value);
 		} else if (var.contains("PUBLICSHARE")) {

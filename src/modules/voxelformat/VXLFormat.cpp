@@ -641,7 +641,10 @@ bool VXLFormat::saveHVA(const core::String &filename, const SceneGraph& sceneGra
 }
 
 bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette) {
+	// TODO: check for tur (turrent) in filename and load it, too
+	// TODO: check for barl (barrel) in filename and load it, too
 	VXLModel mdl;
+
 	wrapBool(readHeader(stream, mdl, palette))
 	wrapBool(prepareModel(mdl))
 

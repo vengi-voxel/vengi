@@ -153,8 +153,8 @@ void FileDialog::bookmarkPanel(video::OpenFileMode type, const core::String &boo
 	bool specialDirs = false;
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
 
-	static const char *folderNames[] = {"Download", "Documents", "Pictures", "Public", "Recent", "Cloud"};
-	static const char *folderIcons[] = {ICON_FK_DOWNLOAD, ICON_FA_FILE, ICON_FA_IMAGE, ICON_FA_FOLDER, ICON_FA_FOLDER, ICON_FA_CLOUD};
+	static const char *folderNames[] = {"Download", "Desktop", "Documents", "Pictures", "Public", "Recent", "Cloud"};
+	static const char *folderIcons[] = {ICON_FK_DOWNLOAD, ICON_FK_DESKTOP, ICON_FA_FILE, ICON_FA_IMAGE, ICON_FA_FOLDER, ICON_FA_FOLDER, ICON_FA_CLOUD};
 	static_assert(lengthof(folderNames) == io::FilesystemDirectories::FS_Dir_Max, "Array size doesn't match enum value");
 	static_assert(lengthof(folderIcons) == io::FilesystemDirectories::FS_Dir_Max, "Array size doesn't match enum value");
 

@@ -30,6 +30,7 @@ using Paths = core::DynamicArray<core::String>;
 
 enum FilesystemDirectories {
 	FS_Dir_Download,
+	FS_Dir_Desktop,
 	FS_Dir_Documents,
 	FS_Dir_Pictures,
 	FS_Dir_Public,
