@@ -93,7 +93,11 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	stream.seek(32);
 
 	typedef struct {
-		uint8_t z, col, vis, dir;
+		uint8_t z_low;	// z coordinate of this surface voxel (height)
+		uint8_t z_high; // z coordinate of this surface voxel (height)
+		uint8_t col;	// palette index
+		uint8_t vis;	// Low 6 bits say if neighbor is solid or air
+		uint8_t dir;	// Uses 256-entry lookup table
 	} voxtype;
 
 	voxtype voxdata[MAXVOXS];
@@ -103,12 +107,11 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt8(palb))
 		wrap(stream.readUInt8(palg))
 		wrap(stream.readUInt8(palr))
-		wrap(stream.readUInt8(pala))
-		const glm::vec4& color = core::Color::fromRGBA(palr, palg, palb, pala);
+		wrap(stream.readUInt8(pala)) // always 128
+		const glm::vec4& color = core::Color::fromRGBA(palr, palg, palb, 255);
 		voxdata[c].col = palLookup.findClosestIndex(color);
-		uint16_t zpos;
-		wrap(stream.readUInt16(zpos))
-		voxdata[c].z = zpos;
+		wrap(stream.readUInt8(voxdata[c].z_low))
+		wrap(stream.readUInt8(voxdata[c].z_high))
 		wrap(stream.readUInt8(voxdata[c].vis))
 		wrap(stream.readUInt8(voxdata[c].dir))
 	}
@@ -129,7 +132,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			for (int end = idx + xyoffset[x][y]; idx < end; ++idx) {
 				const voxtype& vox = voxdata[idx];
 				const voxel::Voxel col = voxel::createVoxel(voxel::VoxelType::Generic, vox.col);
-				volume->setVoxel((int)x, (int)((zsiz - 1) - vox.z), (int)y, col);
+				volume->setVoxel((int)x, (int)((zsiz - 1) - vox.z_low), (int)y, col);
 			}
 		}
 	}
@@ -142,11 +145,11 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			for (int end = idx + xyoffset[x][y]; idx < end; ++idx) {
 				const voxtype& vox = voxdata[idx];
 				if (vox.vis & (1 << 4)) {
-					lastZ = vox.z;
+					lastZ = vox.z_low;
 					lastCol = voxel::createVoxel(voxel::VoxelType::Generic, vox.col);
 				}
 				if (vox.vis & (1 << 5)) {
-					for (; lastZ < vox.z; ++lastZ) {
+					for (; lastZ < vox.z_low; ++lastZ) {
 						volume->setVoxel((int)x, (int)((zsiz - 1) - lastZ), (int)y, lastCol);
 					}
 				}
