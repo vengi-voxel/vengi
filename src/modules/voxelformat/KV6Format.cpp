@@ -53,10 +53,6 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	core::exchange(normalizedPivot.y, normalizedPivot.z);
 	transform.setPivot(normalizedPivot);
 
-	if (xsiz > MaxRegionSize || ysiz > MaxRegionSize || zsiz > MaxRegionSize) {
-		Log::error("Volume exceeds the max allowed size: %i:%i:%i", xsiz, zsiz, ysiz);
-		return false;
-	}
 	const voxel::Region region(0, 0, 0, (int)xsiz - 1, (int)zsiz - 1, (int)ysiz - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region: %i:%i:%i", xsiz, zsiz, ysiz);
