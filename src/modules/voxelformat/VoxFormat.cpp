@@ -167,7 +167,8 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	}
 	loadKeyFrames(sceneGraph, node, ogtInstance.transform_anim.keyframes, ogtInstance.transform_anim.num_keyframes);
 	// TODO: we are overriding the keyframe data here
-	node.setTransform(0, transform);
+	const KeyFrameIndex keyFrameIdx = 0;
+	node.setTransform(keyFrameIdx, transform);
 	node.setName(name);
 	node.setVisible(!ogtInstance.hidden && !groupHidden);
 	node.setVolume(v, true);
