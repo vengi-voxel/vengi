@@ -73,6 +73,7 @@ set(TEST_SRCS
 	tests/SceneGraphUtilTest.cpp
 	tests/SchematicFormatTest.cpp
 	tests/SproxelFormatTest.cpp
+	tests/SLAB6VoxFormatTest.cpp
 	tests/SMFormatTest.cpp
 	tests/STLFormatTest.cpp
 	tests/VolumeFormatTest.cpp

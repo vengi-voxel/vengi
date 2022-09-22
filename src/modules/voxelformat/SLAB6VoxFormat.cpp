@@ -5,6 +5,7 @@
 #include "SLAB6VoxFormat.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "voxel/MaterialColor.h"
 
 #define wrap(read) \
@@ -72,6 +73,61 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 	node.setName(filename);
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
+
+	return true;
+}
+
+bool SLAB6VoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+	if (merged.first == nullptr) {
+		Log::error("Failed to merge volumes");
+		return false;
+	}
+
+	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
+	const voxel::Region &region = merged.first->region();
+	const voxel::Palette &palette = merged.second;
+
+	core::DynamicArray<glm::vec4> materialColors;
+	palette.toVec4f(materialColors);
+
+	// we need to find a replacement for this color - the empty voxel is the last palette entry
+	const glm::vec4 emptyColor = materialColors[255];
+	materialColors.pop();
+	const uint8_t emptyColorReplacement = core::Color::getClosestMatch(emptyColor, materialColors);
+
+	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	wrapBool(stream.writeUInt32(dim.x))
+	wrapBool(stream.writeUInt32(dim.z))
+	wrapBool(stream.writeUInt32(dim.y))
+
+	// we have to flip depth with height for our own coordinate system
+	for (int w = region.getUpperX(); w >= region.getLowerX(); --w) {
+		for (int d = region.getLowerZ(); d <= region.getUpperZ(); ++d) {
+			for (int h = region.getUpperY(); h >= region.getLowerY(); --h) {
+				const voxel::Voxel& voxel = merged.first->voxel(w, h, d);
+				if (voxel::isAir(voxel.getMaterial())) {
+					wrapBool(stream.writeUInt8(255))
+				} else if (voxel.getColor() == 255) {
+					wrapBool(stream.writeUInt8(emptyColorReplacement))
+				} else {
+					wrapBool(stream.writeUInt8(voxel.getColor()))
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < palette.colorCount; ++i) {
+		const core::RGBA &rgba = palette.colors[i];
+		wrapBool(stream.writeUInt8(rgba.r))
+		wrapBool(stream.writeUInt8(rgba.g))
+		wrapBool(stream.writeUInt8(rgba.b))
+	}
+	for (int i = palette.colorCount; i < voxel::PaletteMaxColors; ++i) {;
+		wrapBool(stream.writeUInt8(0))
+		wrapBool(stream.writeUInt8(0))
+		wrapBool(stream.writeUInt8(0))
+	}
 
 	return true;
 }

@@ -4,8 +4,6 @@
 
 #include "voxelformat/SchematicFormat.h"
 #include "AbstractVoxFormatTest.h"
-#include "io/FileStream.h"
-#include "voxelformat/VolumeFormat.h"
 
 namespace voxelformat {
 
