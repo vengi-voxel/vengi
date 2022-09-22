@@ -104,9 +104,13 @@ typedef struct {
     float pointer_scale_x;
     float pointer_scale_y;
     int drawable_width, drawable_height;
+    int fs_output_width, fs_output_height;
     SDL_Rect viewport_rect;
     SDL_bool needs_resize_event;
     SDL_bool floating_resize_pending;
+    SDL_bool is_fullscreen;
+    SDL_bool in_fullscreen_transition;
+    Uint32 fullscreen_flags;
 } SDL_WindowData;
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);

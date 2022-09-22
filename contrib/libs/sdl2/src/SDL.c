@@ -505,6 +505,8 @@ SDL_Quit(void)
      */
     SDL_memset( SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount) );
 
+    SDL_TLSCleanup();
+
     SDL_bInMainQuit = SDL_FALSE;
 }
 
@@ -584,7 +586,7 @@ SDL_GetPlatform(void)
 #elif __XBOXONE__
     return "Xbox One";
 #elif __XBOXSERIES__
-    return "Xbox Series";
+    return "Xbox Series X|S";
 #elif __TVOS__
     return "tvOS";
 #elif __IPHONEOS__

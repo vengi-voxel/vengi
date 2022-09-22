@@ -160,7 +160,7 @@ static VideoBootStrap *bootstrap[] = {
 
 #define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)
 
-#ifdef __MACOSX__
+#if defined(__MACOSX__) && defined(SDL_VIDEO_DRIVER_COCOA)
 /* Support for Mac OS X fullscreen spaces */
 extern SDL_bool Cocoa_IsWindowInFullscreenSpace(SDL_Window * window);
 extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state);
@@ -1030,6 +1030,11 @@ SDL_SetDisplayModeForDisplay(SDL_VideoDisplay * display, const SDL_DisplayMode *
     SDL_DisplayMode current_mode;
     int result;
 
+    /* Mode switching disabled via driver quirk flag, nothing to do and cannot fail. */
+    if (DisableDisplayModeSwitching(_this)) {
+        return 0;
+    }
+
     if (mode) {
         display_mode = *mode;
 
@@ -1335,7 +1340,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
         return 0;
     }
 
-#ifdef __MACOSX__
+#if defined(__MACOSX__) && defined(SDL_VIDEO_DRIVER_COCOA)
     /* if the window is going away and no resolution change is necessary,
        do nothing, or else we may trigger an ugly double-transition
      */
@@ -1430,17 +1435,14 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
                     resized = SDL_FALSE;
                 }
 
-                /* Don't try to change the display mode if the driver doesn't want it. */
-                if (DisableDisplayModeSwitching(_this) == SDL_FALSE) {
-                    /* only do the mode change if we want exclusive fullscreen */
-                    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
-                        if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
-                            return -1;
-                        }
-                    } else {
-                        if (SDL_SetDisplayModeForDisplay(display, NULL) < 0) {
-                            return -1;
-                        }
+                /* only do the mode change if we want exclusive fullscreen */
+                if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+                    if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
+                        return -1;
+                    }
+                } else {
+                    if (SDL_SetDisplayModeForDisplay(display, NULL) < 0) {
+                        return -1;
                     }
                 }
 
@@ -3170,7 +3172,7 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
         return SDL_FALSE;
     }
 
-#ifdef __MACOSX__
+#if defined(__MACOSX__) && defined(SDL_VIDEO_DRIVER_COCOA)
     if (SDL_strcmp(_this->name, "cocoa") == 0) {  /* don't do this for X11, etc */
         if (Cocoa_IsWindowInFullscreenSpace(window)) {
             return SDL_FALSE;
@@ -4150,22 +4152,26 @@ SDL_GL_GetSwapInterval(void)
     }
 }
 
-void
-SDL_GL_SwapWindow(SDL_Window * window)
+int
+SDL_GL_SwapWindowWithResult(SDL_Window * window)
 {
-    CHECK_WINDOW_MAGIC(window,);
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
-        SDL_SetError("The specified window isn't an OpenGL window");
-        return;
+        return SDL_SetError("The specified window isn't an OpenGL window");
     }
 
     if (SDL_GL_GetCurrentWindow() != window) {
-        SDL_SetError("The specified window has not been made current");
-        return;
+        return SDL_SetError("The specified window has not been made current");
     }
 
-    _this->GL_SwapWindow(_this, window);
+    return _this->GL_SwapWindow(_this, window);
+}
+
+void
+SDL_GL_SwapWindow(SDL_Window * window)
+{
+    SDL_GL_SwapWindowWithResult(window);
 }
 
 void

@@ -573,14 +573,14 @@ SDL_JoystickOpen(int device_index)
     joystick->next = SDL_joysticks;
     SDL_joysticks = joystick;
 
-    SDL_UnlockJoysticks();
-
     /* send initial battery event */
     initial_power_level = joystick->epowerlevel;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
     SDL_PrivateJoystickBatteryLevel(joystick, initial_power_level);
 
     driver->Update(joystick);
+
+    SDL_UnlockJoysticks();
 
     return joystick;
 }
@@ -604,7 +604,12 @@ int
 SDL_JoystickAttachVirtualEx(const SDL_VirtualJoystickDesc *desc)
 {
 #if SDL_JOYSTICK_VIRTUAL
-    return SDL_JoystickAttachVirtualInner(desc);
+    int result;
+
+    SDL_LockJoysticks();
+    result = SDL_JoystickAttachVirtualInner(desc);
+    SDL_UnlockJoysticks();
+    return result;
 #else
     return SDL_SetError("SDL not built with virtual-joystick support");
 #endif
@@ -1858,10 +1863,13 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         const char *prefix;
         const char *replacement;
     } replacements[] = {
+        { "ASTRO Gaming", "ASTRO" },
         { "NVIDIA Corporation ", "" },
         { "Performance Designed Products", "PDP" },
         { "HORI CO.,LTD.", "HORI" },
         { "HORI CO.,LTD", "HORI" },
+        { "Mad Catz Inc.", "Mad Catz" },
+        { "QANBA USA, LLC", "Qanba" },
         { "Unknown ", "" },
     };
     const char *custom_name;
@@ -1964,14 +1972,20 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         }
     }
 
-    /* Remove duplicate manufacturer or product in the name */
+    /* Remove duplicate manufacturer or product in the name
+     * e.g. Razer Razer Raiju Tournament Edition Wired
+     */
     for (i = 1; i < (len - 1); ++i) {
         int matchlen = PrefixMatch(name, &name[i]);
-        if (matchlen > 0 && name[matchlen-1] == ' ') {
-            SDL_memmove(name, name+matchlen, len-matchlen+1);
-            break;
-        } else if (matchlen > 0 && name[matchlen] == ' ') {
-            SDL_memmove(name, name+matchlen+1, len-matchlen);
+        while (matchlen > 0) {
+            if (name[matchlen] == ' ') {
+                SDL_memmove(name, name + matchlen + 1, len - matchlen);
+                break;
+            }
+            --matchlen;
+        }
+        if (matchlen > 0) {
+            /* We matched the manufacturer's name and removed it */
             break;
         }
     }
@@ -2162,6 +2176,11 @@ SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *nam
         if (SDL_IsJoystickVirtual(guid)) {
             return SDL_CONTROLLER_TYPE_VIRTUAL;
         }
+#ifdef SDL_JOYSTICK_HIDAPI
+        if (SDL_IsJoystickHIDAPI(guid)) {
+            return HIDAPI_GetGameControllerTypeFromGUID(guid);
+        }
+#endif /* SDL_JOYSTICK_HIDAPI */
     }
     return type;
 }
@@ -2206,6 +2225,11 @@ SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
         if ((product_id >= 0x2001 && product_id <= 0x201a) ||
             product_id == USB_PRODUCT_XBOX_SERIES_X_POWERA_FUSION_PRO2 ||
             product_id == USB_PRODUCT_XBOX_SERIES_X_POWERA_SPECTRA) {
+            return SDL_TRUE;
+        }
+    }
+    if (vendor_id == USB_VENDOR_HORI) {
+        if (product_id == USB_PRODUCT_HORI_FIGHTING_COMMANDER_OCTA_SERIES_X) {
             return SDL_TRUE;
         }
     }
@@ -2387,6 +2411,7 @@ static SDL_bool SDL_IsJoystickProductArcadeStick(Uint32 vidpid)
         MAKE_VIDPID(0x0f0d, 0x008a),    /* HORI Real Arcade Pro 4 */
         MAKE_VIDPID(0x0f0d, 0x008c),    /* Hori Real Arcade Pro 4 */
         MAKE_VIDPID(0x0f0d, 0x00aa),    /* HORI Real Arcade Pro V Hayabusa in Switch Mode */
+        MAKE_VIDPID(0x0f0d, 0x00ed),    /* Hori Fighting Stick mini 4 kai */
         MAKE_VIDPID(0x0f0d, 0x011c),    /* Hori Fighting Stick α in PS4 Mode */
         MAKE_VIDPID(0x0f0d, 0x011e),    /* Hori Fighting Stick α in PC Mode  */
         MAKE_VIDPID(0x0f0d, 0x0184),    /* Hori Fighting Stick α in PS5 Mode */
@@ -2422,6 +2447,7 @@ static SDL_bool SDL_IsJoystickProductFlightStick(Uint32 vidpid)
         MAKE_VIDPID(0x044f, 0x0402),    /* HOTAS Warthog Joystick */
         MAKE_VIDPID(0x0738, 0x2221),    /* Saitek Pro Flight X-56 Rhino Stick */
         MAKE_VIDPID(0x044f, 0xb10a),    /* ThrustMaster, Inc. T.16000M Joystick */
+        MAKE_VIDPID(0x046d, 0xc215),    /* Logitech Extreme 3D */
     };
     int i;
 
@@ -2508,44 +2534,17 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
         return SDL_JOYSTICK_TYPE_THROTTLE;
     }
 
+#ifdef SDL_JOYSTICK_HIDAPI
+    if (SDL_IsJoystickHIDAPI(guid)) {
+        return HIDAPI_GetJoystickTypeFromGUID(guid);
+    }
+#endif /* SDL_JOYSTICK_HIDAPI */
+
     if (GuessControllerType(vendor, product) != k_eControllerType_UnknownNonSteamController) {
         return SDL_JOYSTICK_TYPE_GAMECONTROLLER;
     }
 
     return SDL_JOYSTICK_TYPE_UNKNOWN;
-}
-
-static SDL_bool SDL_IsPS4RemapperRunning(void)
-{
-#if defined(__WIN32__) || defined(__WINGDK__)
-    const char *mapper_processes[] = {
-        "DS4Windows.exe",
-        "InputMapper.exe",
-    };
-    int i;
-    PROCESSENTRY32 pe32;
-    SDL_bool found = SDL_FALSE;
-
-    /* Take a snapshot of all processes in the system */
-    HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (hProcessSnap != INVALID_HANDLE_VALUE) {
-        pe32.dwSize = sizeof(PROCESSENTRY32);
-        if (Process32First(hProcessSnap, &pe32)) {
-            do
-            {
-                for (i = 0; i < SDL_arraysize(mapper_processes); ++i) {
-                    if (SDL_strcasecmp(pe32.szExeFile, mapper_processes[i]) == 0) {
-                        found = SDL_TRUE;
-                    }
-                }
-            } while (Process32Next(hProcessSnap, &pe32) && !found);
-        }
-        CloseHandle(hProcessSnap);
-    }
-    return found;
-#else
-    return SDL_FALSE;
-#endif
 }
 
 SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
@@ -2676,7 +2675,6 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
     Uint32 id;
     Uint16 vendor;
     Uint16 product;
-    SDL_GameControllerType type;
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
 
@@ -2693,11 +2691,6 @@ SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid)
                 return SDL_TRUE;
             }
         }
-    }
-
-    type = SDL_GetJoystickGameControllerTypeFromVIDPID(vendor, product, name, SDL_FALSE);
-    if ((type == SDL_CONTROLLER_TYPE_PS4 || type == SDL_CONTROLLER_TYPE_PS5) && SDL_IsPS4RemapperRunning()) {
-        return SDL_TRUE;
     }
 
     if (SDL_ShouldIgnoreGameController(name, guid)) {

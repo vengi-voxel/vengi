@@ -121,9 +121,8 @@ set(LT_VERSION "${LT_MAJOR}.${LT_AGE}.${LT_REVISION}")
 # which are normally 0-based.
 math(EXPR DYLIB_CURRENT_VERSION_MAJOR "${LT_MAJOR} + ${LT_AGE} + 1")
 math(EXPR DYLIB_CURRENT_VERSION_MINOR "${LT_REVISION}")
-math(EXPR DYLIB_COMPAT_VERSION_MAJOR "${LT_MAJOR} + 1")
 set(DYLIB_CURRENT_VERSION "${DYLIB_CURRENT_VERSION_MAJOR}.${DYLIB_CURRENT_VERSION_MINOR}.0")
-set(DYLIB_COMPATIBILITY_VERSION "${DYLIB_COMPAT_VERSION_MAJOR}.0.0")
+set(DYLIB_COMPATIBILITY_VERSION "${DYLIB_CURRENT_VERSION_MAJOR}.0.0")
 
 # This list holds all generated headers.
 # To avoid generating them twice, these are added to a dummy target on which all sdl targets depend.
@@ -498,7 +497,7 @@ dep_option(SDL_VULKAN              "Enable Vulkan support" ON "ANDROID OR APPLE 
 set_option(SDL_METAL               "Enable Metal support" ${APPLE})
 set_option(SDL_KMSDRM              "Use KMS DRM video driver" ${UNIX_SYS})
 dep_option(SDL_KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "SDL_KMSDRM" OFF)
-set_option(SDL_OFFSCREEN           "Use offscreen video driver" OFF)
+set_option(SDL_OFFSCREEN           "Use offscreen video driver" ON)
 option_string(SDL_BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" OFF)
 option_string(SDL_FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" OFF)
 set_option(SDL_HIDAPI              "Enable the HIDAPI subsystem" ON)
@@ -692,7 +691,7 @@ if(MSVC)
   target_compile_definitions(sdl-build-options INTERFACE "-D_CRT_SECURE_NO_WARNINGS")
 
   # CET support was added in VS 16.7
-  if(MSVC_VERSION GREATER 1926 AND NOT CMAKE_GENERATOR_PLATFORM MATCHES ARM)
+  if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
     list(APPEND EXTRA_LDFLAGS_BUILD "-CETCOMPAT")
   endif()
 endif()
@@ -930,6 +929,7 @@ endif()
 if(SDL_LIBC)
   if(WINDOWS AND NOT MINGW)
     set(HAVE_LIBC TRUE)
+    check_include_file(stdint.h HAVE_STDINT_H)
     foreach(_HEADER stdio.h string.h wchar.h ctype.h math.h limits.h)
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
       string(REPLACE "." "_" _HAVE_H ${_UPPER})
@@ -1043,6 +1043,7 @@ else()
   if(WINDOWS)
     set(HAVE_STDARG_H 1)
     set(HAVE_STDDEF_H 1)
+    check_include_file(stdint.h HAVE_STDINT_H)
   endif()
 endif()
 
@@ -1387,6 +1388,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       check_c_source_compiles("
           #include <linux/kd.h>
           #include <linux/keyboard.h>
+          #include <sys/ioctl.h>
           int main(int argc, char **argv) {
               struct kbentry kbe;
               kbe.kb_table = KG_CTRL;
@@ -2490,10 +2492,6 @@ elseif(VITA)
 #  set_property(SOURCE ${SDL2_SOURCE_DIR}/src/video/arm/pixman-arm-neon-asm.S PROPERTY LANGUAGE C)
 
   target_compile_definitions(sdl-build-options INTERFACE "-D__VITA__")
-  target_compile_definitions(sdl-build-options INTERFACE "-Dmemcpy=sceClibMemcpy")
-  target_compile_definitions(sdl-build-options INTERFACE "-Dmemset=sceClibMemset")
-  target_compile_definitions(sdl-build-options INTERFACE "-Dmemmove=sceClibMemmove")
-  target_compile_definitions(sdl-build-options INTERFACE "-Dmemcmp=sceClibMemcmp")
 
 #  CheckPTHREAD()
 
@@ -3051,9 +3049,9 @@ if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
   if(MINGW OR CYGWIN)
     cmake_minimum_required(VERSION 3.13)
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-      target_link_options(SDL2main PUBLIC "-Wl,--undefined=_WinMain@16")
+      target_link_options(SDL2main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=_WinMain@16>")
     else()
-      target_link_options(SDL2main PUBLIC "-Wl,--undefined=WinMain")
+      target_link_options(SDL2main PUBLIC "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:-Wl,--undefined=WinMain>")
     endif()
   endif()
   if (NOT ANDROID)
@@ -3080,8 +3078,10 @@ if(SDL_SHARED)
   add_library(SDL2::SDL2 ALIAS SDL2)
   set_target_properties(SDL2 PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
   if(APPLE)
+    # FIXME: Remove SOVERSION in SDL3
     set_target_properties(SDL2 PROPERTIES
       MACOSX_RPATH 1
+      SOVERSION 0
       OUTPUT_NAME "SDL2-${LT_RELEASE}")
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL2 PROPERTIES

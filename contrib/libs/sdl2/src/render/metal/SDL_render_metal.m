@@ -503,10 +503,6 @@ METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load, 
 static void
 METAL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 {
-    if (event->event == SDL_WINDOWEVENT_SHOWN ||
-        event->event == SDL_WINDOWEVENT_HIDDEN) {
-        // !!! FIXME: write me
-    }
 }
 
 static int
@@ -1227,7 +1223,13 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
 
         /* Set Scissor Rect Validation: w/h must be <= render pass */
         SDL_zero(output);
-        METAL_GetOutputSize(renderer, &output.w, &output.h);
+
+        if (renderer->target) {
+            output.w = renderer->target->w;
+            output.h = renderer->target->h;
+        } else {
+            METAL_GetOutputSize(renderer, &output.w, &output.h);
+        }
 
         if (SDL_IntersectRect(&output, &clip, &clip)) {
             MTLScissorRect mtlrect;
@@ -1491,7 +1493,7 @@ METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     return status;
 }}
 
-static void
+static int
 METAL_RenderPresent(SDL_Renderer * renderer)
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
@@ -1522,6 +1524,11 @@ METAL_RenderPresent(SDL_Renderer * renderer)
     data.mtlcmdencoder = nil;
     data.mtlcmdbuffer = nil;
     data.mtlbackbuffer = nil;
+
+    if (renderer->hidden || !ready) {
+        return -1;
+    }
+    return 0;
 }}
 
 static void

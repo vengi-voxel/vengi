@@ -39,6 +39,7 @@
 #define SDL_JOYSTICK_HIDAPI_PS5
 #define SDL_JOYSTICK_HIDAPI_STADIA
 #define SDL_JOYSTICK_HIDAPI_SWITCH
+#define SDL_JOYSTICK_HIDAPI_WII
 #define SDL_JOYSTICK_HIDAPI_XBOX360
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
 #define SDL_JOYSTICK_HIDAPI_SHIELD
@@ -72,6 +73,8 @@ typedef struct _SDL_HIDAPI_Device
     int interface_protocol;
     Uint16 usage_page;      /* Available on Windows and Mac OS X */
     Uint16 usage;           /* Available on Windows and Mac OS X */
+    SDL_JoystickType joystick_type;
+    SDL_GameControllerType type;
 
     struct _SDL_HIDAPI_DeviceDriver *driver;
     void *context;
@@ -102,7 +105,6 @@ typedef struct _SDL_HIDAPI_DeviceDriver
     void (*UnregisterHints)(SDL_HintCallback callback, void *userdata);
     SDL_bool (*IsEnabled)(void);
     SDL_bool (*IsSupportedDevice)(SDL_HIDAPI_Device *device, const char *name, SDL_GameControllerType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
-    const char *(*GetDeviceName)(const char *name, Uint16 vendor_id, Uint16 product_id);
     SDL_bool (*InitDevice)(SDL_HIDAPI_Device *device);
     int (*GetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id);
     void (*SetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index);
@@ -127,12 +129,14 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverJoyCons;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverNintendoClassic;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3ThirdParty;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverShield;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverWii;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
@@ -143,11 +147,20 @@ extern SDL_bool HIDAPI_IsDeviceTypePresent(SDL_GameControllerType type);
 /* Return true if a HID device is present and supported as a joystick */
 extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
+/* Return the type of a joystick if it's present and supported */
+extern SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_JoystickGUID guid);
+
+/* Return the type of a game controller if it's present and supported */
+extern SDL_GameControllerType HIDAPI_GetGameControllerTypeFromGUID(SDL_JoystickGUID guid);
+
 extern void HIDAPI_UpdateDevices(void);
+extern void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name);
+extern void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 product_id);
+extern void HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial);
 extern SDL_bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID);
 extern void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID);
 
-extern void HIDAPI_DumpPacket(const char *prefix, Uint8 *data, int size);
+extern void HIDAPI_DumpPacket(const char *prefix, const Uint8 *data, int size);
 
 extern float HIDAPI_RemapVal(float val, float val_min, float val_max, float output_min, float output_max);
 

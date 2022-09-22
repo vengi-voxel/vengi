@@ -30,6 +30,7 @@
 #include "SDL_gamecontrollerdb.h"
 #include "controller_type.h"
 #include "usb_ids.h"
+#include "hidapi/SDL_hidapi_nintendo.h"
 
 #if !SDL_EVENTS_DISABLED
 #include "../events/SDL_events_c.h"
@@ -567,27 +568,42 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
 
     if ((vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) ||
-        (vendor == USB_VENDOR_SHENZHEN && product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER)) {
+        (vendor == USB_VENDOR_DRAGONRISE && product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER)) {
         /* GameCube driver has 12 buttons and 6 axes */
         SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3,start:b8,x:b2,y:b3,", sizeof(mapping_string));
-    } else if (vendor == USB_VENDOR_NINTENDO && guid.data[15] != 0 && guid.data[15] != 3) {
+    } else if (vendor == USB_VENDOR_NINTENDO &&
+               guid.data[15] != k_eSwitchDeviceInfoControllerType_Unknown &&
+               guid.data[15] != k_eSwitchDeviceInfoControllerType_ProController &&
+               guid.data[15] != k_eWiiExtensionControllerType_Gamepad &&
+               guid.data[15] != k_eWiiExtensionControllerType_WiiUPro) {
         switch (guid.data[15]) {
-        case 9:
-        case 10:
-            /* NES Controller */
+        case k_eSwitchDeviceInfoControllerType_NESLeft:
+        case k_eSwitchDeviceInfoControllerType_NESRight:
             SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,rightshoulder:b10,start:b6,", sizeof(mapping_string));
             break;
-        case 11:
-            /* SNES Controller */
+        case k_eSwitchDeviceInfoControllerType_SNES:
             SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,lefttrigger:a4,rightshoulder:b10,righttrigger:a5,start:b6,x:b2,y:b3,", sizeof(mapping_string));
             break;
-        case 12:
-            /* N64 Controller */
+        case k_eSwitchDeviceInfoControllerType_N64:
             SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,righttrigger:a5,start:b6,x:b2,y:b3,misc1:b15,", sizeof(mapping_string));
             break;
-        case 13:
-            /* SEGA Genesis Controller */
+        case k_eSwitchDeviceInfoControllerType_SEGA_Genesis:
             SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,rightshoulder:b10,righttrigger:a5,start:b6,misc1:b15,", sizeof(mapping_string));
+            break;
+        case k_eWiiExtensionControllerType_None:
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+            break;
+        case k_eWiiExtensionControllerType_Nunchuk:
+            {
+                /* FIXME: Should we map this to the left or right side? */
+                const SDL_bool map_nunchuck_left_side = SDL_TRUE;
+
+                if (map_nunchuck_left_side) {
+                    SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,leftshoulder:b9,lefttrigger:a4,leftx:a0,lefty:a1,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+                } else {
+                    SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,guide:b5,rightshoulder:b9,righttrigger:a4,rightx:a0,righty:a1,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+                }
+            }
             break;
         default:
             /* Mini gamepad mode */
@@ -618,7 +634,7 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
                 break;
             case SDL_CONTROLLER_TYPE_PS5:
                 /* PS5 controllers have a microphone button and an additional touchpad button */
-                SDL_strlcat(mapping_string, "touchpad:b15,misc1:b16", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "touchpad:b15,misc1:b16,", sizeof(mapping_string));
                 break;
             case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
                 /* Nintendo Switch Pro controllers have a screenshot button */
@@ -1938,6 +1954,21 @@ SDL_IsGameController(int device_index)
     return SDL_FALSE;
 }
 
+#if defined(__LINUX__)
+static SDL_bool SDL_endswith(const char *string, const char *suffix)
+{
+    size_t string_length = string ? SDL_strlen(string) : 0;
+    size_t suffix_length = suffix ? SDL_strlen(suffix) : 0;
+
+    if (suffix_length > 0 && suffix_length <= string_length) {
+        if (SDL_memcmp(string + string_length - suffix_length, suffix, suffix_length) == 0) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+#endif
+
 /*
  * Return 1 if the game controller should be ignored by SDL
  */
@@ -1950,8 +1981,15 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     Uint32 vidpid;
 
 #if defined(__LINUX__)
-    if (name && SDL_strstr(name, "Motion Sensors")) {
+    if (SDL_endswith(name, " Motion Sensors")) {
         /* Don't treat the PS3 and PS4 motion controls as a separate game controller */
+        return SDL_TRUE;
+    }
+    if (SDL_endswith(name, " Accelerometer") ||
+        SDL_endswith(name, " IR") ||
+        SDL_endswith(name, " Motion Plus") ||
+        SDL_endswith(name, " Nunchuk")) {
+        /* Don't treat the Wii extension controls as a separate game controller */
         return SDL_TRUE;
     }
 #endif
