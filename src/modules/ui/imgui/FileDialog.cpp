@@ -148,7 +148,7 @@ void FileDialog::removeBookmark(const core::String &bookmark) {
 }
 
 void FileDialog::bookmarkPanel(video::OpenFileMode type, const core::String &bookmarks) {
-	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(200, 300), true,
+	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(400, 300), true,
 					  ImGuiWindowFlags_HorizontalScrollbar);
 	bool specialDirs = false;
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
@@ -381,7 +381,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 	if (open == nullptr || *open) {
 		bool doubleClickedFile = false;
 		core_trace_scoped(FileDialog);
-		ImGui::SetNextWindowSize(ImVec2(740.0f, 494.0f), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(1200.0f, 700.0f), ImGuiCond_FirstUseEver);
 		const char *title;
 		switch (type) {
 		case video::OpenFileMode::Directory:
