@@ -6,6 +6,7 @@
 
 #include "core/Common.h"
 #include "core/Trace.h"
+#include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 
 namespace voxelutil {
@@ -112,6 +113,19 @@ int visitVolume(const Volume &volume, Visitor &&visitor, Condition condition = C
 template <class Volume, class Visitor, typename Condition = SkipEmpty>
 int visitVolume(const Volume &volume, const voxel::Region &region, Visitor &&visitor, Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
 	return visitVolume(volume, region, 1, 1, 1, visitor, condition, order);
+}
+
+template <class Volume, class Visitor>
+int visitSurfaceVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order = VisitorOrder::ZYX) {
+	int cnt = 0;
+	const auto hullVisitor = [&cnt, &volume, visitor](int x, int y, int z, const voxel::Voxel &voxel) {
+		if (visibleFaces(volume, x, y, z) != voxel::FaceBits::None) {
+			visitor(x, y, z, voxel);
+			++cnt;
+		}
+	};
+	visitVolume(volume, hullVisitor, SkipEmpty(), order);
+	return cnt;
 }
 
 } // namespace voxelutil
