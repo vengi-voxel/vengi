@@ -278,6 +278,10 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	original.setVoxel(maxs, mins, mins, createVoxel(voxel::VoxelType::Generic, 127));
 	original.setVoxel(maxs, mins, maxs, createVoxel(voxel::VoxelType::Generic, 200));
 
+	testSaveLoadVolume(filename, original, format, flags);
+}
+
+void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, const voxel::RawVolume &original, Format *format, voxel::ValidateFlags flags) {
 	SceneGraph sceneGraph;
 	int nodeId = 0;
 	{

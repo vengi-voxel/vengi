@@ -42,6 +42,7 @@ protected:
 
 	void testSaveLoadVoxel(const core::String &filename, Format *format, int mins = 0, int maxs = 1,
 						   voxel::ValidateFlags flags = voxel::ValidateFlags::All);
+	void testSaveLoadVolume(const core::String &filename, const voxel::RawVolume &v, Format *format, voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
 	void testLoadSaveAndLoad(const core::String &srcFilename, Format &srcFormat, const core::String &destFilename,
 							 Format &destFormat, voxel::ValidateFlags flags = voxel::ValidateFlags::All, float maxDelta = 0.001f);
