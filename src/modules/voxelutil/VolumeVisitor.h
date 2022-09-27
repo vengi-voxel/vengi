@@ -11,7 +11,7 @@
 
 namespace voxelutil {
 
-enum class VisitorOrder { XYZ, ZYX, ZXY, XZY, YXZ, YZX, mYZX, YZmX };
+enum class VisitorOrder { XYZ, ZYX, ZXY, XmZY, mXZY, mXmZY, mXZmY, XmZmY, mXmZmY, XZY, XZmY, YXZ, YZX, mYZX, YZmX };
 
 /**
  * @brief Will skip air voxels on volume
@@ -67,6 +67,48 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
+					LOOP
+		break;
+	case VisitorOrder::XZmY:
+		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
+				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff)
+					LOOP
+		break;
+	case VisitorOrder::mXmZY:
+		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff)
+			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff)
+				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
+					LOOP
+		break;
+	case VisitorOrder::mXZY:
+		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff)
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
+				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
+					LOOP
+		break;
+	case VisitorOrder::XmZY:
+		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
+			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff)
+				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
+					LOOP
+		break;
+	case VisitorOrder::XmZmY:
+		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
+			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff)
+				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff)
+					LOOP
+		break;
+	case VisitorOrder::mXmZmY:
+		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff)
+			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff)
+				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff)
+					LOOP
+		break;
+	case VisitorOrder::mXZmY:
+		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff)
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
+				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff)
 					LOOP
 		break;
 	case VisitorOrder::YXZ:
