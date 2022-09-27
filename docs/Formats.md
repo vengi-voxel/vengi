@@ -2,7 +2,7 @@
 
 | Name                       | Extension | Loading | Saving | Thumbnails | Palette | Binary | Spec                                                                     |
 | :------------------------- | --------- | ------- | ------ | ---------- | ------- | ------ | ------------------------------------------------------------------------ |
-| Ace Of Spades              | vxl       | X       |        | X          |         | X      | [spec](https://silverspaceship.com/aosmap/aos_file_format.html)          |
+| Ace Of Spades              | vxl       | X       | X      | X          |         | X      | [spec](https://silverspaceship.com/aosmap/aos_file_format.html)          |
 | BinVox                     | binvox    | X       | X      | X          |         | X      | [spec](https://www.patrickmin.com/binvox/binvox.html)                    |
 | Build engine               | kvx       | X       |        | X          | X       | X      | [spec](https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt)     |
 | Chronovox-Studio           | csm       | X       |        | X          |         | X      |                                                                          |
@@ -12,9 +12,9 @@
 | Goxel                      | gox       | X       | X      | X          |         | X      |                                                                          |
 | MagicaVoxel                | vox       | X       | X      | X          | X       | X      | [spec](https://github.com/ephtracy/voxel-model)                          |
 | Minecraft Level            | dat       | X       |        | X          | X       | X      |                                                                          |
-| Minecraft Region           | mcr       | X       |        | X          | X       | X      | [spec](https://minecraft.gamepedia.com/Region_file_format)               |
+| Minecraft Region           | mcr       | X       | X      | X          | X       | X      | [spec](https://minecraft.gamepedia.com/Region_file_format)               |
 | Minecraft Schematics       | schematic | X       |        | X          | X       | X      | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
-| Minecraft Schematics       | schem     | X       |        | X          | X       | X      | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
+| Minecraft Schematics       | schem     | X       | X      | X          | X       | X      | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
 | Minecraft Schematics       | nbt       | X       |        | X          | X       | X      | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
 | Nick's Voxel Model         | nvm       | X       |        | X          |         | X      |                                                                          |
 | Quake 1/UFO:Alien Invasion | bsp       | X       |        |            |         |        |                                                                          |
