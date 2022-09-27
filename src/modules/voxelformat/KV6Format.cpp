@@ -68,7 +68,11 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	if (stream.seek(32 + numvoxs * 8 + (xsiz << 2) + ((xsiz * ysiz) << 1)) != -1) {
+	const int64_t headerSize = 32;
+	const int64_t xLenSize = (int64_t)(xsiz * sizeof(uint32_t));
+	const int64_t yLenSize = (int64_t)((size_t)(xsiz * ysiz) * sizeof(uint16_t));
+	const int64_t paletteOffset = headerSize + (int64_t)(numvoxs * 8) + xLenSize + yLenSize;
+	if (stream.seek(paletteOffset) != -1) {
 		if (stream.remaining() != 0) {
 			uint32_t palMagic;
 			wrap(stream.readUInt32(palMagic))
@@ -90,7 +94,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			}
 		}
 	}
-	stream.seek(32);
+	stream.seek(headerSize);
 
 	typedef struct {
 		uint8_t z_low;	// z coordinate of this surface voxel (height)
@@ -115,7 +119,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt8(voxdata[c].vis))
 		wrap(stream.readUInt8(voxdata[c].dir))
 	}
-	stream.skip((int64_t)(xsiz * sizeof(uint32_t)));
+	stream.skip(xLenSize);
 
 	uint16_t xyoffset[256][256];
 	for (uint32_t x = 0u; x < xsiz; ++x) {

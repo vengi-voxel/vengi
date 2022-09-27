@@ -391,6 +391,7 @@ void SchematicFormat::addMetadata_r(const core::String &key, const priv::NamedBi
 
 bool SchematicFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
 								 io::SeekableWriteStream &stream) {
+	// save as sponge-3
 	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
