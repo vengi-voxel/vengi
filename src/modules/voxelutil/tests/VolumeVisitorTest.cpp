@@ -10,7 +10,7 @@ namespace voxelutil {
 class VolumeVisitorTest : public app::AbstractTest {};
 
 TEST_F(VolumeVisitorTest, testVisitSurface) {
-	const voxel::Region region(0, 31);
+	const voxel::Region region(0, 2);
 	const voxel::Voxel voxel = createVoxel(voxel::VoxelType::Generic, 1);
 	voxel::RawVolume volume(region);
 	for (int x = 0; x < 3; ++x) {
@@ -24,6 +24,25 @@ TEST_F(VolumeVisitorTest, testVisitSurface) {
 	int cnt = visitSurfaceVolume(
 		volume, [&](int x, int y, int z, const voxel::Voxel &voxel) {}, VisitorOrder::XZY);
 	EXPECT_EQ(26, cnt);
+}
+
+TEST_F(VolumeVisitorTest, testVisitSurfaceCorners) {
+	const voxel::Region region(0, 2);
+	const voxel::Voxel voxel = createVoxel(voxel::VoxelType::Generic, 1);
+	voxel::RawVolume volume(region);
+	EXPECT_TRUE(volume.setVoxel(0, 0, 0, voxel));
+	EXPECT_TRUE(volume.setVoxel(0, 0, 2, voxel));
+	EXPECT_TRUE(volume.setVoxel(0, 2, 2, voxel));
+	EXPECT_TRUE(volume.setVoxel(2, 2, 2, voxel));
+
+	EXPECT_TRUE(volume.setVoxel(0, 2, 0, voxel));
+	EXPECT_TRUE(volume.setVoxel(2, 0, 0, voxel));
+	EXPECT_TRUE(volume.setVoxel(2, 0, 2, voxel));
+	EXPECT_TRUE(volume.setVoxel(2, 2, 0, voxel));
+
+	int cnt = visitSurfaceVolume(
+		volume, [&](int x, int y, int z, const voxel::Voxel &voxel) {}, VisitorOrder::XZY);
+	EXPECT_EQ(8, cnt);
 }
 
 } // namespace voxelutil
