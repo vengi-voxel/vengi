@@ -123,14 +123,9 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	}
 
 	const voxel::Palette &palette = sceneGraph.firstPalette();
-	core::DynamicArray<glm::vec4> materialColors;
-	palette.toVec4f(materialColors);
-
 	// we need to find a replacement for this color - the empty voxel is the last palette entry
 	// we are using the first palette entry (like magicavoxel does, too)
-	const glm::vec4 emptyColor = materialColors[EMPTY_PALETTE];
-	materialColors.pop();
-	const uint8_t emptyColorReplacement = core::Color::getClosestMatch(emptyColor, materialColors);
+	const uint8_t emptyColorReplacement = palette.findReplacement(EMPTY_PALETTE);
 	Log::debug("found replacement for %s: %s", core::Color::print(palette.colors[EMPTY_PALETTE]).c_str(),
 			   core::Color::print(palette.colors[emptyColorReplacement]).c_str());
 

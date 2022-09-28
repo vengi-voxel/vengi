@@ -87,14 +87,7 @@ bool SLAB6VoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String
 	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
 	const voxel::Region &region = merged.first->region();
 	const voxel::Palette &palette = merged.second;
-
-	core::DynamicArray<glm::vec4> materialColors;
-	palette.toVec4f(materialColors);
-
-	// we need to find a replacement for this color - the empty voxel is the last palette entry
-	const glm::vec4 emptyColor = materialColors[255];
-	materialColors.pop();
-	const uint8_t emptyColorReplacement = core::Color::getClosestMatch(emptyColor, materialColors);
+	const uint8_t emptyColorReplacement = palette.findReplacement(255);
 
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
 	wrapBool(stream.writeUInt32(dim.x))
