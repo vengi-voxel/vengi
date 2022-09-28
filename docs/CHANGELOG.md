@@ -17,6 +17,12 @@ General:
    - Fixed block id parsing for StarMade voxel models
    - Major improvements in scene graph transform handling
    - Improved voxelization of meshes with voxels
+   - Added kv6 write support
+   - Added slab6 vox write support
+   - Fixed saving black colors for cubeworld
+   - Fixed saving palette index 0 for binvox
+   - Fixed Sandbox VXM palette issue
+   - Improved the file dialog size and special dir handling
 
 Packaging:
 
@@ -27,6 +33,7 @@ VoxEdit:
    - Fixed layer color selection if you have multiple layers
    - Fixed moving nodes in the scene graph panel
    - Fixed transforms in scene graph mode (translation, rotation)
+   - Allow to add group and camera nodes
 
 ## 0.0.21 (2022-09-05)
 
