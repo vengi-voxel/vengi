@@ -112,6 +112,23 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 			groupNode.setName("new group");
 			sceneMgr().addNodeToSceneGraph(groupNode, node.id());
 		}
+		if (ImGui::MenuItem(ICON_FA_PLUS_SQUARE " Add new camera" SCENEGRAPHPOPUP)) {
+			voxelformat::SceneGraphNodeCamera cameraNode;
+			voxelformat::SceneGraphTransform transform;
+			transform.setWorldMatrix(camera.viewMatrix());
+			const voxelformat::KeyFrameIndex keyFrameIdx = 0;
+			cameraNode.setTransform(keyFrameIdx, transform);
+			cameraNode.setFarPlane(camera.farPlane());
+			cameraNode.setNearPlane(camera.nearPlane());
+			if (camera.mode() == video::CameraMode::Orthogonal) {
+				cameraNode.setOrthographic();
+			} else {
+				cameraNode.setPerspective();
+			}
+			cameraNode.setFieldOfView((int)camera.fieldOfView());
+			cameraNode.setName("new camera");
+			sceneMgr().addNodeToSceneGraph(cameraNode);
+		}
 		core::String layerName = node.name();
 		if (ImGui::InputText("Name" SCENEGRAPHPOPUP, &layerName)) {
 			sceneMgr().nodeRename(node.id(), layerName);
