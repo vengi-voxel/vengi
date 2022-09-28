@@ -342,22 +342,36 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		return false;
 	}
 
-	ogt_vox_group default_group;
-	core_memset(&default_group, 0, sizeof(default_group));
-	default_group.hidden = false;
-	default_group.layer_index = 0;
-	default_group.parent_group_index = k_invalid_group_index;
-	default_group.transform = ogt_identity_transform;
-
 	const voxel::Palette &palette = sceneGraph.firstPalette();
 	const int replacement = findClosestPaletteIndex(palette);
+	core::Buffer<ogt_vox_group> groups;
 	core::Buffer<ogt_vox_model> models(modelCount);
 	core::Buffer<ogt_vox_layer> layers(modelCount);
 	core::Buffer<ogt_vox_instance> instances(modelCount);
 	core::Buffer<const ogt_vox_model *> modelPtr(modelCount);
 	core::Array<ogt_vox_keyframe_transform, 4096> keyframeTransforms;
+
+	{
+		ogt_vox_group root_group;
+		core_memset(&root_group, 0, sizeof(root_group));
+		root_group.hidden = false;
+		root_group.layer_index = 0;
+		root_group.parent_group_index = k_invalid_group_index;
+		root_group.transform = ogt_identity_transform;
+		groups.push_back(root_group);
+	}
+
 	int mdlIdx = 0;
 	int transformKeyFrameIdx = 0;
+	for (auto i = newSceneGraph.begin(SceneGraphNodeType::Group); i != newSceneGraph.end(); ++i) {
+		const SceneGraphNode &node = *i;
+		ogt_vox_group group;
+		core_memset(&group, 0, sizeof(group));
+		group.hidden = !node.visible();
+		group.layer_index = 0; // TODO
+		group.parent_group_index = 0; // TODO traverse from root
+		group.transform = ogt_identity_transform;
+	}
 	for (const SceneGraphNode &node : newSceneGraph) {
 		const voxel::Region region = node.region();
 		ogt_vox_model &model = models[mdlIdx];
@@ -417,8 +431,8 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 
 	ogt_vox_scene output_scene;
 	core_memset(&output_scene, 0, sizeof(output_scene));
-	output_scene.groups = &default_group;
-	output_scene.num_groups = 1;
+	output_scene.groups = &groups[0];
+	output_scene.num_groups = groups.size();
 	output_scene.instances = &instances[0];
 	output_scene.num_instances = instances.size();
 	output_scene.layers = &layers[0];
