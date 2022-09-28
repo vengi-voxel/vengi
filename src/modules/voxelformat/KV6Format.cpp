@@ -69,8 +69,6 @@ static uint8_t calculateDir(const voxel::RawVolume *, int, int, int, const voxel
 }
 
 struct voxtype {
-	uint8_t x_low_w = 0;
-	uint8_t y_low_d = 0;
 	uint8_t z_low_h = 0;	//<! z coordinate of this surface voxel (height - our y)
 	uint8_t z_high = 0; //<! always 0
 	uint8_t col = 0;	//<! palette index
@@ -259,17 +257,17 @@ bool KV6Format::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	core::DynamicArray<priv::voxtype> voxdata;
 	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(*merged.first, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		priv::voxtype vd;
-		vd.x_low_w = x - region.getLowerX();
+		const int x_low_w = x - region.getLowerX();
 		// flip y and z here
-		vd.y_low_d = z - region.getLowerZ();
+		const int y_low_d = z - region.getLowerZ();
 		vd.z_low_h = region.getHeightInCells() - (y - region.getLowerY());
 		vd.z_high = 0;
 		vd.col = voxel.getColor();
 		vd.vis = priv::calculateVisibility(merged.first, x, y, z);
 		vd.dir = priv::calculateDir(merged.first, x, y, z, voxel);
 		voxdata.push_back(vd);
-		++xlen[vd.x_low_w];
-		++xyoffset[vd.x_low_w][vd.y_low_d];
+		++xlen[x_low_w];
+		++xyoffset[x_low_w][y_low_d];
 	}, voxelutil::VisitorOrder::XZY);
 
 	constexpr uint32_t MAXVOXS = 1048576;
