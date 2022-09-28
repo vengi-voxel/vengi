@@ -230,6 +230,8 @@ math::Axis Modifier::getSizeAndHeightFromAxisAndDim(math::Axis axis, const glm::
 		height = dimensions.z;
 		break;
 	default:
+		size = 0.0;
+		height = 0.0;
 		return math::Axis::None;
 	}
 	return axis;
@@ -250,8 +252,8 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 	centerBottom.y = region.getLowerY();
 	const glm::ivec3& dimensions = region.getDimensionsInVoxels();
 
-	double size;
-	double height;
+	double size = 0.0;
+	double height = 0.0;
 	const math::Axis axis = getSizeAndHeightFromAxisAndDim(_aabbSecondActionDirection, dimensions, size, height);
 
 	switch (_shapeType) {
