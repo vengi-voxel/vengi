@@ -1,6 +1,11 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "core/collection/DynamicArray.h"
+
 namespace voxelformat {
 
 class SchematicIntReader {
