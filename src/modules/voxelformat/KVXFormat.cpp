@@ -60,9 +60,9 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	pivz_h = zsiz_h - 1 - pivz_h;
 
 	glm::vec3 normalizedPivot;
-	normalizedPivot.x = (float)pivx_w / (float)xsiz_w;
-	normalizedPivot.y = (float)pivy_d / (float)ysiz_d;
-	normalizedPivot.z = (float)pivz_h / (float)zsiz_h;
+	normalizedPivot.x = (float)pivx_w / 256.0f;
+	normalizedPivot.y = (float)pivy_d / 256.0f;
+	normalizedPivot.z = (float)pivz_h / 256.0f;
 	core::exchange(normalizedPivot.y, normalizedPivot.z);
 	transform.setPivot(normalizedPivot);
 
