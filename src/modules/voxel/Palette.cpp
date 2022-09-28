@@ -135,6 +135,10 @@ int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) c
 	return getClosestMatch(core::Color::fromRGBA(rgba), distance, skip);
 }
 
+int Palette::findReplacement(uint8_t index) const {
+	return getClosestMatch(colors[index], nullptr, index);
+}
+
 bool Palette::save(const char *name) const {
 	if (name == nullptr || name[0] == '\0') {
 		if (_paletteFilename.empty()) {
