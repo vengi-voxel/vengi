@@ -268,10 +268,10 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume original(region);
 
-	original.setVoxel(mins, mins, mins, createVoxel(voxel::VoxelType::Generic, 1));
-	original.setVoxel(mins, mins, maxs, createVoxel(voxel::VoxelType::Generic, 245));
-	original.setVoxel(mins, maxs, maxs, createVoxel(voxel::VoxelType::Generic, 127));
-	original.setVoxel(mins, maxs, mins, createVoxel(voxel::VoxelType::Generic, 200));
+	original.setVoxel(mins, mins, mins, createVoxel(voxel::VoxelType::Generic, 0));
+	original.setVoxel(mins, mins, maxs, createVoxel(voxel::VoxelType::Generic, 244));
+	original.setVoxel(mins, maxs, maxs, createVoxel(voxel::VoxelType::Generic, 126));
+	original.setVoxel(mins, maxs, mins, createVoxel(voxel::VoxelType::Generic, 255));
 
 	original.setVoxel(maxs, maxs, maxs, createVoxel(voxel::VoxelType::Generic, 1));
 	original.setVoxel(maxs, maxs, mins, createVoxel(voxel::VoxelType::Generic, 245));
