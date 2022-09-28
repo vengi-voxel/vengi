@@ -94,23 +94,6 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		_hasFocus = ImGui::IsWindowHovered();
 		const voxelformat::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
 		core_trace_scoped(LayerPanel);
-		ImGui::BeginChild("##layertable", ImVec2(0.0f, 400.0f), true, ImGuiWindowFlags_HorizontalScrollbar);
-		static const uint32_t TableFlags =
-			ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
-			ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoSavedSettings;
-		if (ImGui::BeginTable("##layerlist", 5, TableFlags)) {
-			ImGui::TableSetupColumn(ICON_FA_EYE"##visiblelayer", ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn(ICON_FA_LOCK"##lockedlayer", ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn("##layercolor", ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn("Name##layer", ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupColumn("##deletelayer", ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableHeadersRow();
-			for (voxelformat::SceneGraphNode &node : sceneGraph) {
-				addLayerItem(sceneGraph, node, listener);
-			}
-			ImGui::EndTable();
-		}
-		ImGui::EndChild();
 		if (ImGui::Button(ICON_FA_PLUS_SQUARE"##newlayer")) {
 			const int nodeId = sceneGraph.activeNode();
 			voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
@@ -166,6 +149,22 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		ImGui::TooltipText("Move the layer one level down");
 		if (!onlyOneModel) {
 			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
+		}
+		static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
+										   ImGuiTableFlags_Hideable | ImGuiTableFlags_ScrollX |
+										   ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner |
+										   ImGuiTableFlags_RowBg | ImGuiTableFlags_NoSavedSettings;
+		if (ImGui::BeginTable("##layerlist", 5, tableFlags)) {
+			ImGui::TableSetupColumn(ICON_FA_EYE"##visiblelayer", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn(ICON_FA_LOCK"##lockedlayer", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("##layercolor", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("Name##layer", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("##deletelayer", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableHeadersRow();
+			for (voxelformat::SceneGraphNode &node : sceneGraph) {
+				addLayerItem(sceneGraph, node, listener);
+			}
+			ImGui::EndTable();
 		}
 	}
 	ImGui::End();
