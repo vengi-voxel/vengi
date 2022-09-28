@@ -26,7 +26,7 @@
 | Sandbox VoxEdit Model      | vxm       | X       | X      | X          | X       |            |                                                                          |
 | Sandbox VoxEdit Hierarchy  | vxr       | X       | X      | X          |         | X          |                                                                          |
 | Sandbox VoxEdit Tileset    | vxt       | X       |        |            |         |            |                                                                          |
-| SLAB6                      | kv6       | X       |        | X          | X       |            | [spec](https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt)     |
+| SLAB6                      | kv6       | X       | X      | X          | X       |            | [spec](https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt)     |
 | Sproxel                    | csv       | X       | X      | X          |         |            | [spec](https://github.com/emilk/sproxel/blob/master/ImportExport.cpp)    |
 | StarMade                   | sment     | X       |        | X          |         |            | [spec](https://starmadepedia.net/wiki/Blueprint_File_Formats)            |
 | Standard Triangle Language | stl       | X       | X      |            |         |            |                                                                          |

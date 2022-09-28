@@ -28,19 +28,19 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrap(stream.readUInt32(numbytes))
 
 	// Dimensions of voxel. (our depth is kvx height)
-	uint32_t xsiz, ysiz, zsiz;
-	wrap(stream.readUInt32(xsiz))
-	wrap(stream.readUInt32(ysiz))
-	wrap(stream.readUInt32(zsiz))
+	uint32_t xsiz_w, ysiz_d, zsiz_h;
+	wrap(stream.readUInt32(xsiz_w))
+	wrap(stream.readUInt32(ysiz_d))
+	wrap(stream.readUInt32(zsiz_h))
 
-	if (xsiz > 256 || ysiz > 256 || zsiz > 255) {
-		Log::error("Dimensions exceeded: w: %i, h: %i, d: %i", xsiz, zsiz, ysiz);
+	if (xsiz_w > 256 || ysiz_d > 256 || zsiz_h > 255) {
+		Log::error("Dimensions exceeded: w: %i, h: %i, d: %i", xsiz_w, zsiz_h, ysiz_d);
 		return false;
 	}
 
-	const voxel::Region region(0, 0, 0, (int)xsiz - 1, (int)zsiz - 1, (int)ysiz - 1);
+	const voxel::Region region(0, 0, 0, (int)xsiz_w - 1, (int)zsiz_h - 1, (int)ysiz_d - 1);
 	if (!region.isValid()) {
-		Log::error("Invalid region: %i:%i:%i", xsiz, zsiz, ysiz);
+		Log::error("Invalid region: %i:%i:%i", xsiz_w, zsiz_h, ysiz_d);
 		return false;
 	}
 
@@ -48,21 +48,21 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	 * Centroid of voxel. For extra precision, this location has been shifted up by 8 bits.
 	 */
 	SceneGraphTransform transform;
-	uint32_t pivx, pivy, pivz;
-	wrap(stream.readUInt32(pivx))
-	wrap(stream.readUInt32(pivy))
-	wrap(stream.readUInt32(pivz))
+	uint32_t pivx_w, pivy_d, pivz_h;
+	wrap(stream.readUInt32(pivx_w))
+	wrap(stream.readUInt32(pivy_d))
+	wrap(stream.readUInt32(pivz_h))
 
-	pivx >>= 8;
-	pivy >>= 8;
-	pivz >>= 8;
+	pivx_w >>= 8;
+	pivy_d >>= 8;
+	pivz_h >>= 8;
 
-	pivz = zsiz - 1 - pivz;
+	pivz_h = zsiz_h - 1 - pivz_h;
 
 	glm::vec3 normalizedPivot;
-	normalizedPivot.x = (float)pivx / (float)xsiz;
-	normalizedPivot.y = (float)pivy / (float)ysiz;
-	normalizedPivot.z = (float)pivz / (float)zsiz;
+	normalizedPivot.x = (float)pivx_w / (float)xsiz_w;
+	normalizedPivot.y = (float)pivy_d / (float)ysiz_d;
+	normalizedPivot.z = (float)pivz_h / (float)zsiz_h;
 	core::exchange(normalizedPivot.y, normalizedPivot.z);
 	transform.setPivot(normalizedPivot);
 
@@ -73,25 +73,26 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	 * NOTE: xoffset[0] = (xsiz+1)*4 + xsiz*(ysiz+1)*2 (ALWAYS)
 	 */
 	uint16_t xyoffset[256][257];
-	uint32_t xoffset;
-	wrap(stream.readUInt32(xoffset))
+	uint32_t xoffset[257];
+	for (uint32_t x = 0u; x <= xsiz_w; ++x) {
+		wrap(stream.readUInt32(xoffset[x]))
+	}
 
-	core_assert(((xsiz + 1) << 2) == sizeof(uint32_t) * (xsiz + 1));
-	stream.skip((int64_t)sizeof(uint32_t) * xsiz);
-	for (uint32_t x = 0u; x < xsiz; ++x) {
-		for (uint32_t y = 0u; y <= ysiz; ++y) {
+	for (uint32_t x = 0u; x < xsiz_w; ++x) {
+		for (uint32_t y = 0u; y <= ysiz_d; ++y) {
 			wrap(stream.readUInt16(xyoffset[x][y]))
 		}
 	}
 
-	if (xoffset != (xsiz + 1) * 4 + xsiz * (ysiz + 1) * 2) {
+	const uint32_t offset = (xsiz_w + 1) * 4 + xsiz_w * (ysiz_d + 1) * 2;
+	if (xoffset[0] != offset) {
 		Log::error("Invalid offset values found");
 		return false;
 	}
 	// Read the color palette from the end of the file and convert to our palette
 	const size_t currentPos = stream.pos();
 	palette.colorCount = voxel::PaletteMaxColors;
-	stream.seek((int64_t)(stream.size() - 3l * palette.colorCount));
+	stream.seek(-3l * palette.colorCount, SEEK_END);
 
 	/**
 	 * The last 768 bytes of the KVX file is a standard 256-color VGA palette.
@@ -157,8 +158,8 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	uint32_t lastZ = 0;
 	voxel::Voxel lastCol;
 
-	for (uint32_t x = 0; x < xsiz; ++x) {
-		for (uint32_t y = 0; y < ysiz; ++y) {
+	for (uint32_t x = 0; x < xsiz_w; ++x) {
+		for (uint32_t y = 0; y < ysiz_d; ++y) {
 			const uint16_t end = xyoffset[x][y + 1];
 			const uint16_t start = xyoffset[x][y];
 			int32_t n = end - start;
@@ -172,7 +173,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 					uint8_t col;
 					wrap(stream.readUInt8(col))
 					lastCol = voxel::createVoxel(voxel::VoxelType::Generic, col);
-					volume->setVoxel((int)x, (int)((zsiz - 1) - (header.slabztop + i)), (int)y, lastCol);
+					volume->setVoxel((int)x, (int)((zsiz_h - 1) - (header.slabztop + i)), (int)y, lastCol);
 				}
 
 				/**
@@ -181,7 +182,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				 */
 				if (!(header.slabbackfacecullinfo & (1 << 4))) {
 					for (uint32_t i = lastZ + 1; i < header.slabztop; ++i) {
-						volume->setVoxel((int)x, (int)((zsiz - 1) - i), (int)y, lastCol);
+						volume->setVoxel((int)x, (int)((zsiz_h - 1) - i), (int)y, lastCol);
 					}
 				}
 				if (!(header.slabbackfacecullinfo & (1 << 5))) {

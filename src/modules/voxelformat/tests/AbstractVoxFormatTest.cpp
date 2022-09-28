@@ -300,7 +300,7 @@ void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, con
 		SceneGraphNode node;
 		node.setName("second level #2");
 		node.setVolume(&original, false);
-		nodeId = sceneGraph.emplace(core::move(node), nodeId);
+		/*nodeId =*/ sceneGraph.emplace(core::move(node), nodeId);
 	}
 
 	io::SeekableReadStream *readStream;

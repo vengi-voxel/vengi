@@ -102,6 +102,7 @@ const io::FormatDescription* voxelSave() {
 	static const io::FormatDescription desc[] = {
 		{"Qubicle Binary", {"qb"}, nullptr, 0u},
 		{"MagicaVoxel", {"vox"}, nullptr, 0u},
+		{"AceOfSpades", {"kv6"}, nullptr, 0u},
 		{"SLAB6 vox", {"vox"}, nullptr, 0u}, // TODO: handle duplicate extension
 		{"Qubicle Binary Tree", {"qbt"}, nullptr, 0u},
 		{"Qubicle Project", {"qbcl"}, nullptr, 0u},

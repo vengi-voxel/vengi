@@ -10,6 +10,9 @@ namespace voxelformat {
 /**
  * @brief Voxel sprite format used by the SLAB6 editor, voxlap and Ace of Spades
  *
+ * https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt
+ * https://gist.github.com/falkreon/8b873ec6797ffad247375fc73614fd08
+ *
  * @ingroup Formats
  */
 class KV6Format : public PaletteFormat {
