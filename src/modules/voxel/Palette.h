@@ -84,7 +84,7 @@ public:
 	 */
 	int getClosestMatch(const glm::vec4& color, float *distance = nullptr, int skip = -1) const;
 	int getClosestMatch(const core::RGBA rgba, float *distance = nullptr, int skip = -1) const;
-	int findReplacement(uint8_t index) const;
+	uint8_t findReplacement(uint8_t index) const;
 	/**
 	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
 	 * to remove a color that is most similar to another already existing color in the palette.

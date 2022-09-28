@@ -137,7 +137,10 @@ bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 					continue;
 				}
 
-				const core::RGBA rgba = palette.colors[voxel.getColor()];
+				core::RGBA rgba = palette.colors[voxel.getColor()];
+				if (rgba.r == 0u && rgba.g == 0u && rgba.b == 0u) {
+					rgba = palette.colors[palette.findReplacement(voxel.getColor())];
+				}
 				wrapBool(stream.writeUInt8(rgba.r))
 				wrapBool(stream.writeUInt8(rgba.g))
 				wrapBool(stream.writeUInt8(rgba.b))
