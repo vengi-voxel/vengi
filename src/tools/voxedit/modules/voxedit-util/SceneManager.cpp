@@ -1973,6 +1973,8 @@ void SceneManager::shutdown() {
 		_copy = nullptr;
 	}
 
+	autosave();
+
 	_volumeRenderer.shutdown();
 	_sceneGraph.clear();
 
