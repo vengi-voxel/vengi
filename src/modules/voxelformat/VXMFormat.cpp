@@ -45,7 +45,7 @@ static const uint8_t EMPTY_PALETTE = 0xFFu;
 		return false; \
 	}
 
-bool VXMFormat::writeRLE(io::WriteStream &stream, int length, voxel::Voxel &voxel, uint8_t emptyColorReplacement) const {
+bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel &voxel, uint8_t emptyColorReplacement) const {
 	if (length == 0) {
 		return true;
 	}
@@ -126,6 +126,9 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	// we need to find a replacement for this color - the empty voxel is the last palette entry
 	// we are using the first palette entry (like magicavoxel does, too)
 	const uint8_t emptyColorReplacement = palette.findReplacement(EMPTY_PALETTE);
+	if (emptyColorReplacement == EMPTY_PALETTE) {
+		Log::warn("Could not find replacement for palette color: %u", EMPTY_PALETTE);
+	}
 	Log::debug("found replacement for %s: %s", core::Color::print(palette.colors[EMPTY_PALETTE]).c_str(),
 			   core::Color::print(palette.colors[emptyColorReplacement]).c_str());
 
@@ -212,6 +215,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 
 		uint32_t rleCount = 0u;
 		voxel::Voxel prevVoxel;
+		bool firstLoop = true;
 
 		for (uint32_t x = 0u; x < width; ++x) {
 			for (uint32_t y = 0u; y < height; ++y) {
@@ -225,6 +229,9 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 						wrapBool(writeRLE(stream, rleCount, prevVoxel, emptyColorReplacement))
 						prevVoxel = voxel;
 						rleCount = 0;
+					} else if (firstLoop) {
+						firstLoop = false;
+						prevVoxel = voxel;
 					}
 					++rleCount;
 				}
