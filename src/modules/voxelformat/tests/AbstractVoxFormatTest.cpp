@@ -204,10 +204,10 @@ void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Fo
 void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Format* format) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0, 1, 1));
 	voxel::RawVolume original(region);
-	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
+	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 0)));
 	ASSERT_TRUE(original.setVoxel(0, 0, 1, createVoxel(voxel::VoxelType::Generic, 200)));
 	ASSERT_TRUE(original.setVoxel(0, 1, 1, createVoxel(voxel::VoxelType::Generic, 201)));
-	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 202)));
+	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 255)));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 	ASSERT_TRUE(format->save(&original, filename, bufferedStream));
 	bufferedStream.seek(0);
