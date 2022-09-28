@@ -82,6 +82,7 @@ void LayerPanel::addLayerItem(const voxelformat::SceneGraph& sceneGraph, voxelfo
 	if (ImGui::Button(deleteId.c_str())) {
 		sceneMgr().nodeRemove(nodeId, false);
 	}
+	ImGui::TooltipText("Delete this model");
 }
 
 void LayerPanel::update(const char *title, LayerSettings* layerSettings, command::CommandExecutionListener &listener) {
@@ -138,28 +139,25 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 			}
 		}
 		ImGui::SameLine();
-		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_UP"##layers", onlyOneModel)) {
-			command::executeCommands("layermoveup", &listener);
-		}
-		ImGui::TooltipText("Move the layer one level up");
+		ImGui::CommandButton(ICON_FA_EYE "##layerpanel", "layershowall", nullptr, 0, &listener);
 		ImGui::SameLine();
-		if (ImGui::DisabledButton(ICON_FA_CARET_SQUARE_DOWN "##layers", onlyOneModel)) {
-			command::executeCommands("layermovedown", &listener);
-		}
-		ImGui::TooltipText("Move the layer one level down");
+		ImGui::CommandButton(ICON_FA_EYE_SLASH "##layerpanel", "layerhideall", nullptr, 0, &listener);
 		if (!onlyOneModel) {
 			ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
 		}
 		static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
-										   ImGuiTableFlags_Hideable | ImGuiTableFlags_ScrollX |
-										   ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner |
-										   ImGuiTableFlags_RowBg | ImGuiTableFlags_NoSavedSettings;
+										   ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
+										   ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg |
+										   ImGuiTableFlags_NoSavedSettings;
 		if (ImGui::BeginTable("##layerlist", 5, tableFlags)) {
-			ImGui::TableSetupColumn(ICON_FA_EYE"##visiblelayer", ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn(ICON_FA_LOCK"##lockedlayer", ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn("##layercolor", ImGuiTableColumnFlags_WidthFixed);
+			const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
+									  ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
+
+			ImGui::TableSetupColumn(ICON_FA_EYE "##visiblelayer", colFlags);
+			ImGui::TableSetupColumn(ICON_FA_LOCK "##lockedlayer", colFlags);
+			ImGui::TableSetupColumn("##layercolor", colFlags);
 			ImGui::TableSetupColumn("Name##layer", ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableSetupColumn("##deletelayer", ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn("##deletelayer", colFlags);
 			ImGui::TableHeadersRow();
 			for (voxelformat::SceneGraphNode &node : sceneGraph) {
 				addLayerItem(sceneGraph, node, listener);

@@ -106,6 +106,7 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 			if (ImGui::MenuItem(ICON_FA_TRASH_ALT " Delete" SCENEGRAPHPOPUP)) {
 				sceneMgr().nodeRemove(node.id(), true);
 			}
+			ImGui::TooltipText("Delete this node and all children");
 		}
 		if (ImGui::MenuItem(ICON_FA_PLUS_SQUARE " Add new group" SCENEGRAPHPOPUP)) {
 			voxelformat::SceneGraphNode groupNode(voxelformat::SceneGraphNodeType::Group);
@@ -192,10 +193,12 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, command::
 			node.setName("new group");
 			sceneMgr().addNodeToSceneGraph(node, sceneGraph.activeNode());
 		}
+		ImGui::TooltipText("Add a new group");
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_TRASH_ALT "##scenegraphremovegroup")) {
+		if (ImGui::Button(ICON_FA_TRASH_ALT "##scenegraphremovenode")) {
 			sceneMgr().nodeRemove(sceneGraph.activeNode(), true);
 		}
+		ImGui::TooltipText("Remove the active node with all its children");
 		static ImGuiTableFlags tableFlags = ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH |
 											ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg |
 											ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_SizingFixedFit;
