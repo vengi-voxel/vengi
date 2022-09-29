@@ -31,6 +31,16 @@
 
 namespace voxelformat {
 
+struct ogt_SceneContext {
+	core::Buffer<ogt_vox_group> groups;
+	core::Buffer<ogt_vox_model> models;
+	core::Buffer<ogt_vox_layer> layers;
+	core::Buffer<ogt_vox_instance> instances;
+	int transformKeyFrameIdx = 0;
+	core::Array<ogt_vox_keyframe_transform, 4096> keyframeTransforms;
+	core::Buffer<ogt_vox_cam> cameras;
+};
+
 static void *_ogt_alloc(size_t size) {
 	return core_malloc(size);
 }
@@ -269,6 +279,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				continue;
 			}
 			Log::debug("Add root group %u/%u", i, scene->num_groups);
+			// TODO: the parent is wrong
 			if (!addGroup(scene, i, sceneGraph, sceneGraph.root().id(), zUpMat, addedInstances, palette)) {
 				ogt_vox_destroy_scene(scene);
 				return false;
@@ -332,145 +343,166 @@ int VoxFormat::findClosestPaletteIndex(const voxel::Palette &palette) {
 	return core::Color::getClosestMatch(first, materialColors) + 1;
 }
 
+void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &node, ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx) {
+	Log::debug("Save node '%s' with parent group %u and layer %u", node.name().c_str(), parentGroupIdx, layerIdx);
+	if (node.type() == SceneGraphNodeType::Root || node.type() == SceneGraphNodeType::Group) {
+		if (node.type() == SceneGraphNodeType::Root) {
+			Log::debug("Add root node");
+		} else {
+			Log::debug("Add group node");
+		}
+		{
+			// TODO: only add the layer if there are models in this group?
+			ogt_vox_layer ogt_layer;
+			core_memset(&ogt_layer, 0, sizeof(ogt_layer));
+			ogt_layer.name = node.name().c_str();
+			ogt_layer.hidden = !node.visible();
+			const core::RGBA layerRGBA = node.color();
+			ogt_layer.color.r = layerRGBA.r;
+			ogt_layer.color.g = layerRGBA.g;
+			ogt_layer.color.b = layerRGBA.b;
+			ogt_layer.color.a = layerRGBA.a;
+			ctx.layers.push_back(ogt_layer);
+		}
+		const uint32_t ownLayerId = (int)ctx.layers.size() - 1;
+		{
+			ogt_vox_group ogt_group;
+			core_memset(&ogt_group, 0, sizeof(ogt_group));
+			ogt_group.hidden = !node.visible();
+			ogt_group.name = node.name().c_str();
+			ogt_group.layer_index = ownLayerId;
+			ogt_group.parent_group_index = parentGroupIdx;
+			ogt_group.transform = ogt_identity_transform;
+			ctx.groups.push_back(ogt_group);
+		}
+		const uint32_t ownGroupId = (int)ctx.groups.size() - 1;
+		for (int childId : node.children()) {
+			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, ownGroupId, ownLayerId);
+		}
+	} else if (node.type() == SceneGraphNodeType::Camera) {
+		Log::debug("Add camera node");
+		const SceneGraphNodeCamera &camera = toCameraNode(node);
+		const SceneGraphTransform &transform = camera.transform(0);
+		{
+			ogt_vox_cam ogt_cam;
+			core_memset(&ogt_cam, 0, sizeof(ogt_cam));
+			ogt_cam.camera_id = ctx.cameras.size();
+			const glm::vec3 &euler = glm::eulerAngles(transform.worldOrientation());
+			ogt_cam.angle[0] = euler[0];
+			ogt_cam.angle[1] = euler[1];
+			ogt_cam.angle[2] = euler[2];
+			const glm::vec3 &pos = transform.worldTranslation();
+			ogt_cam.focus[0] = pos[0];
+			ogt_cam.focus[1] = pos[1];
+			ogt_cam.focus[2] = pos[2];
+			ogt_cam.mode = camera.isPerspective() ? ogt_cam_mode_perspective : ogt_cam_mode_orthographic;
+			ogt_cam.radius = (int)camera.farPlane();
+			ogt_cam.fov = camera.fieldOfView();
+			ogt_cam.frustum = camera.propertyf("frustum"); // TODO:
+			ctx.cameras.push_back(ogt_cam);
+		}
+		for (int childId : node.children()) {
+			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
+		}
+	} else if (node.type() == SceneGraphNodeType::Model) {
+		Log::debug("Add model node");
+		const voxel::Region region = node.region();
+		const voxel::Palette &palette = sceneGraph.firstPalette();
+		const int replacement = findClosestPaletteIndex(palette);
+		{
+			ogt_vox_model ogt_model;
+			core_memset(&ogt_model, 0, sizeof(ogt_model));
+			// flip y and z here
+			ogt_model.size_x = region.getWidthInVoxels();
+			ogt_model.size_y = region.getDepthInVoxels();
+			ogt_model.size_z = region.getHeightInVoxels();
+			const int voxelSize = (int)(ogt_model.size_x * ogt_model.size_y * ogt_model.size_z);
+			uint8_t *dataptr = (uint8_t*)core_malloc(voxelSize);
+			ogt_model.voxel_data = dataptr;
+			voxelutil::visitVolume(*node.volume(), [&] (int, int, int, const voxel::Voxel& voxel) {
+				if (voxel.getColor() == 0 && !isAir(voxel.getMaterial())) {
+					*dataptr++ = replacement;
+				} else {
+					*dataptr++ = voxel.getColor();
+				}
+			}, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
+
+			ctx.models.push_back(ogt_model);
+		}
+		{
+			{
+				ogt_vox_instance ogt_instance;
+				core_memset(&ogt_instance, 0, sizeof(ogt_instance));
+				ogt_instance.group_index = parentGroupIdx;
+				ogt_instance.model_index = ctx.models.size() - 1;
+				ogt_instance.layer_index = layerIdx;
+				ogt_instance.name = node.name().c_str();
+				ogt_instance.hidden = !node.visible();
+				ogt_instance.transform_anim.num_keyframes = node.keyFrames().size();
+				ogt_instance.transform_anim.keyframes = ogt_instance.transform_anim.num_keyframes ? &ctx.keyframeTransforms[ctx.transformKeyFrameIdx] : nullptr;
+				ctx.instances.push_back(ogt_instance);
+			}
+
+			const glm::vec3 &mins = region.getLowerCornerf();
+			const glm::vec3 &maxs = region.getUpperCornerf();
+			const glm::vec3 width = maxs - mins + 1.0f;
+			for (const SceneGraphKeyFrame& kf : node.keyFrames()) {
+				ogt_vox_keyframe_transform ogt_keyframe;
+				core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
+				ogt_keyframe.frame_index = kf.frameIdx;
+				ogt_keyframe.transform = ogt_identity_transform;
+				// y and z are flipped here
+				const glm::vec3 kftransform = mins + kf.transform().worldTranslation() + width / 2.0f;
+				ogt_keyframe.transform.m30 = -glm::floor(kftransform.x + 0.5f);
+				ogt_keyframe.transform.m31 = kftransform.z;
+				ogt_keyframe.transform.m32 = kftransform.y;
+				// TODO: apply rotation - but rotations are not interpolated - they must be aligned here somehow...
+				ctx.keyframeTransforms[ctx.transformKeyFrameIdx++] = ogt_keyframe;
+			}
+		}
+		for (int childId : node.children()) {
+			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
+		}
+	} else {
+		Log::error("Unhandled node type %i", (int)node.type());
+	}
+}
+
 bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
 	SceneGraph newSceneGraph;
 	splitVolumes(sceneGraph, newSceneGraph, glm::ivec3(256));
 
-	const size_t modelCount = newSceneGraph.size();
-	if (modelCount == 0) {
-		Log::error("No model nodes found in scene graph");
-		return false;
+	ogt_SceneContext ctx;
+	const SceneGraphNode &root = newSceneGraph.root();
+	addNodeToScene(newSceneGraph, newSceneGraph.node(root.id()), ctx, k_invalid_group_index, 0);
+
+	core::Buffer<const ogt_vox_model *> modelPtr;
+	modelPtr.reserve(ctx.models.size());
+	for (const ogt_vox_model &mdl : ctx.models) {
+		modelPtr.push_back(&mdl);
 	}
-
-	const voxel::Palette &palette = sceneGraph.firstPalette();
-	const int replacement = findClosestPaletteIndex(palette);
-	core::Buffer<ogt_vox_group> groups;
-	core::Buffer<ogt_vox_model> models(modelCount);
-	core::Buffer<ogt_vox_layer> layers(modelCount);
-	core::Buffer<ogt_vox_instance> instances(modelCount);
-	core::Buffer<const ogt_vox_model *> modelPtr(modelCount);
-	core::Array<ogt_vox_keyframe_transform, 4096> keyframeTransforms;
-
-	{
-		ogt_vox_group root_group;
-		core_memset(&root_group, 0, sizeof(root_group));
-		root_group.hidden = false;
-		root_group.layer_index = 0;
-		root_group.parent_group_index = k_invalid_group_index;
-		root_group.transform = ogt_identity_transform;
-		groups.push_back(root_group);
-	}
-
-	int mdlIdx = 0;
-	int transformKeyFrameIdx = 0;
-	for (auto i = newSceneGraph.begin(SceneGraphNodeType::Group); i != newSceneGraph.end(); ++i) {
-		const SceneGraphNode &node = *i;
-		ogt_vox_group group;
-		core_memset(&group, 0, sizeof(group));
-		group.hidden = !node.visible();
-		group.layer_index = 0; // TODO
-		group.parent_group_index = 0; // TODO traverse from root
-		group.transform = ogt_identity_transform;
-	}
-	for (const SceneGraphNode &node : newSceneGraph) {
-		const voxel::Region region = node.region();
-		ogt_vox_model &model = models[mdlIdx];
-		modelPtr[mdlIdx] = &model;
-		// flip y and z here
-		model.size_x = region.getWidthInVoxels();
-		model.size_y = region.getDepthInVoxels();
-		model.size_z = region.getHeightInVoxels();
-		const int voxelSize = (int)(model.size_x * model.size_y * model.size_z);
-		uint8_t *dataptr = (uint8_t*)core_malloc(voxelSize);
-		model.voxel_data = dataptr;
-		voxelutil::visitVolume(*node.volume(), [&] (int, int, int, const voxel::Voxel& voxel) {
-			if (voxel.getColor() == 0 && !isAir(voxel.getMaterial())) {
-				*dataptr++ = replacement;
-			} else {
-				*dataptr++ = voxel.getColor();
-			}
-		}, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
-
-		ogt_vox_layer &layer = layers[mdlIdx];
-		layer.name = node.name().c_str();
-		layer.hidden = !node.visible();
-		const core::RGBA layerRGBA = node.color();
-		layer.color.r = layerRGBA.r;
-		layer.color.g = layerRGBA.g;
-		layer.color.b = layerRGBA.b;
-		layer.color.a = layerRGBA.a;
-
-		ogt_vox_instance &instance = instances[mdlIdx];
-		instance.group_index = 0;
-		instance.model_index = mdlIdx;
-		instance.layer_index = mdlIdx;
-		instance.name = node.name().c_str();
-		instance.hidden = !node.visible();
-		const glm::vec3 &mins = region.getLowerCornerf();
-		const glm::vec3 &maxs = region.getUpperCornerf();
-		const glm::vec3 width = maxs - mins + 1.0f;
-
-		instance.transform_anim.num_keyframes = node.keyFrames().size();
-		instance.transform_anim.keyframes = instance.transform_anim.num_keyframes ? &keyframeTransforms[transformKeyFrameIdx] : nullptr;
-		for (const SceneGraphKeyFrame& kf : node.keyFrames()) {
-			ogt_vox_keyframe_transform kft;
-			core_memset(&kft, 0, sizeof(kft));
-			kft.frame_index = kf.frameIdx;
-			kft.transform = ogt_identity_transform;
-			// y and z are flipped here
-			const glm::vec3 kftransform = mins + kf.transform().worldTranslation() + width / 2.0f;
-			kft.transform.m30 = -glm::floor(kftransform.x + 0.5f);
-			kft.transform.m31 = kftransform.z;
-			kft.transform.m32 = kftransform.y;
-			// TODO: apply rotation - but rotations are not interpolated - they must be aligned here somehow...
-			keyframeTransforms[transformKeyFrameIdx++] = kft;
-		}
-
-		++mdlIdx;
-	}
+	const ogt_vox_model **modelsPtr = modelPtr.data();
 
 	ogt_vox_scene output_scene;
 	core_memset(&output_scene, 0, sizeof(output_scene));
-	output_scene.groups = &groups[0];
-	output_scene.num_groups = groups.size();
-	output_scene.instances = &instances[0];
-	output_scene.num_instances = instances.size();
-	output_scene.layers = &layers[0];
-	output_scene.num_layers = layers.size();
-	const ogt_vox_model **modelsPtr = modelPtr.data();
+	output_scene.groups = &ctx.groups[0];
+	output_scene.num_groups = ctx.groups.size();
+	output_scene.instances = &ctx.instances[0];
+	output_scene.num_instances = ctx.instances.size();
+	output_scene.layers = &ctx.layers[0];
+	output_scene.num_layers = ctx.layers.size();
 	output_scene.models = modelsPtr;
 	output_scene.num_models = modelPtr.size();
 	core_memset(&output_scene.materials, 0, sizeof(output_scene.materials));
-
-	size_t output_cameras = newSceneGraph.size(SceneGraphNodeType::Camera);
-	core::Buffer<ogt_vox_cam> cameras(output_cameras);
-	int camIdx = 0;
-	for (auto iter = newSceneGraph.begin(SceneGraphNodeType::Camera); iter != newSceneGraph.end(); ++iter) {
-		const SceneGraphNodeCamera &camera = toCameraNode(*iter);
-		const SceneGraphTransform &transform = camera.transform(0);
-		ogt_vox_cam &cam = cameras[camIdx];
-		cam.camera_id = camIdx;
-		const glm::vec3 &euler = glm::eulerAngles(transform.worldOrientation());
-		cam.angle[0] = euler[0];
-		cam.angle[1] = euler[1];
-		cam.angle[2] = euler[2];
-		const glm::vec3 &pos = transform.worldTranslation();
-		cam.focus[0] = pos[0];
-		cam.focus[1] = pos[1];
-		cam.focus[2] = pos[2];
-		cam.mode = camera.isPerspective() ? ogt_cam_mode_perspective : ogt_cam_mode_orthographic;
-		cam.radius = (int)camera.farPlane();
-		cam.fov = camera.fieldOfView();
-		cam.frustum = camera.propertyf("frustum"); // TODO:
-	}
-	output_scene.num_cameras = output_cameras;
-	if (output_cameras > 0) {
-		output_scene.cameras = &cameras[0];
+	output_scene.num_cameras = ctx.cameras.size();
+	if (output_scene.num_cameras > 0) {
+		output_scene.cameras = &ctx.cameras[0];
 	}
 
 	ogt_vox_palette &pal = output_scene.palette;
 	ogt_vox_matl_array &mat = output_scene.materials;
 
+	const voxel::Palette &palette = newSceneGraph.firstPalette();
 	for (int i = 0; i < 256; ++i) {
 		const core::RGBA &rgba = palette.colors[i];
 		pal.color[i].r = rgba.r;
@@ -498,7 +530,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	}
 	ogt_vox_free(buffer);
 
-	for (ogt_vox_model &m : models) {
+	for (ogt_vox_model &m : ctx.models) {
 		core_free((void *)m.voxel_data);
 	}
 

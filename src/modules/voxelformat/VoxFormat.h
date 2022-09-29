@@ -11,6 +11,8 @@ struct ogt_vox_scene;
 
 namespace voxelformat {
 
+struct ogt_SceneContext;
+
 /**
  * @brief MagicaVoxel vox format load and save functions
  *
@@ -28,6 +30,8 @@ private:
 	bool addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden = false);
 	bool addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances, const voxel::Palette &palette);
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
+
+	void addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &node, ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx);
 public:
 	VoxFormat();
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
