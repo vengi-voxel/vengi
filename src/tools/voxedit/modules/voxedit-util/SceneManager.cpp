@@ -1485,8 +1485,7 @@ void SceneManager::construct() {
 			nodeId2 = core::string::toInt(args[1]);
 		} else {
 			nodeId1 = activeNode();
-			// FIXME: this layer id might be an empty slot
-			nodeId2 = nodeId1 + 1;
+			nodeId2 = _sceneGraph.nextModelNode(nodeId1);
 		}
 		mergeNodes(nodeId1, nodeId2);
 	}).setHelp("Merge two given layers or active layer with the one below");

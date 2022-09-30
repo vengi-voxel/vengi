@@ -102,6 +102,36 @@ const SceneGraphNode& SceneGraph::root() const {
 	return node(0);
 }
 
+int SceneGraph::nextModelNode(int nodeId) const {
+	auto iter = _nodes.find(nodeId);
+	if (iter ==  _nodes.end()) {
+		return -1;
+	}
+	const SceneGraphNode &ownNode = iter->second;
+	if (ownNode.parent() == -1) {
+		return -1;
+	}
+	for (int child : node(ownNode.parent()).children()) {
+		if (child == nodeId) {
+			continue;
+		}
+		if (node(child).type() == SceneGraphNodeType::Model) {
+			return child;
+		}
+	}
+	bool found = false;
+	for (iterator modelIter = begin(); modelIter != end(); ++modelIter) {
+		if ((*modelIter).id() == nodeId) {
+			found = true;
+			continue;
+		}
+		if (found) {
+			return (*modelIter).id();
+		}
+	}
+	return -1;
+}
+
 void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
 	for (int childrenId : n.children()) {
 		SceneGraphNode &children = node(childrenId);

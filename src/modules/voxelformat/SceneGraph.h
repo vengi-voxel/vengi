@@ -82,6 +82,12 @@ public:
 	SceneGraphNode* first();
 
 	const SceneGraphNode& root() const;
+
+	/**
+	 * @brief Return the next model node in the group first, then continue the search outside the own group
+	 */
+	int nextModelNode(int nodeId) const;
+
 	/**
 	 * @brief Get the current scene graph node
 	 * @note It's important to check whether the node exists before calling this method!
