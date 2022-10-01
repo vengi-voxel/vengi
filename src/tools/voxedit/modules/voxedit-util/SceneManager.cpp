@@ -746,10 +746,14 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	volumes.reserve(nodeIds.size());
 	translations.reserve(nodeIds.size());
 
+	voxelformat::SceneGraphNode newNnode;
 	// calculate the new target region - use the scenegraph translation for this
 	for (int nodeId : nodeIds) {
-		voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId);
-		core_assert(node != nullptr);
+		const voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId);
+		if (node == nullptr) {
+			continue;
+		}
+		newNnode.addProperties(node->properties());
 		voxel::Region region = node->region();
 		const voxelformat::SceneGraphTransform &transform = node->transform(_currentFrameIdx);
 		region.shift(transform.worldTranslation());
@@ -762,7 +766,7 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 		volumes.push_back(node->volume());
 	}
 
-	if (!mergedRegion.isValid()) {
+	if (!mergedRegion.isValid() || volumes.size() <= 1u) {
 		return -1;
 	}
 
@@ -776,17 +780,18 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	}
 	merged->translate(-mergedRegion.getLowerCorner());
 
-	voxelformat::SceneGraphNode node;
-	node.setVolume(merged, true);
+	newNnode.setVolume(merged, true);
 	int parent = 0;
 	if (voxelformat::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
+		newNnode.setName(firstNode->name());
 		parent = firstNode->parent();
 		const size_t numKeyFrames = firstNode->keyFrames().size();
 		for (size_t i = 0; i < numKeyFrames; ++i) {
-			node.setTransform(i, firstNode->transform(i));
+			newNnode.setTransform(i, firstNode->transform(i));
 		}
 	}
-	int newNodeId = addNodeToSceneGraph(node, parent);
+
+	int newNodeId = addNodeToSceneGraph(newNnode, parent);
 	if (newNodeId == -1) {
 		return -1;
 	}
