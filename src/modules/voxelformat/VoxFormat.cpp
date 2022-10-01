@@ -186,11 +186,12 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	return sceneGraph.emplace(core::move(node), parent) != -1;
 }
 
-bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances, const voxel::Palette &palette) {
-	const ogt_vox_group &ogt_group = scene->groups[ogt_parentGroupIdx];
+bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances, const voxel::Palette &palette) {
+	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
 	const char *name = "Group";
 	const uint32_t layerIdx = ogt_group.layer_index;
+	// TODO: group transforms are not handled correctly
 	SceneGraphNode node(SceneGraphNodeType::Group);
 	if (layerIdx < scene->num_layers) {
 		const ogt_vox_layer &layer = scene->layers[layerIdx];
@@ -216,7 +217,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx
 
 	for (uint32_t n = 0; n < scene->num_instances; ++n) {
 		const ogt_vox_instance &ogtInstance = scene->instances[n];
-		if (ogtInstance.group_index != ogt_parentGroupIdx) {
+		if (ogtInstance.group_index != ogt_groupIdx) {
 			continue;
 		}
 		if (!addedInstances.insert(n)) {
@@ -229,8 +230,8 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx
 
 	for (uint32_t groupIdx = 0; groupIdx < scene->num_groups; ++groupIdx) {
 		const ogt_vox_group &group = scene->groups[groupIdx];
-		Log::debug("group %u with parent: %u (searching for %u)", groupIdx, group.parent_group_index, ogt_parentGroupIdx);
-		if (group.parent_group_index != ogt_parentGroupIdx) {
+		Log::debug("group %u with parent: %u (searching for %u)", groupIdx, group.parent_group_index, ogt_groupIdx);
+		if (group.parent_group_index != ogt_groupIdx) {
 			continue;
 		}
 		Log::debug("Found matching group (%u) with scene graph parent: %i", groupIdx, groupId);
@@ -271,25 +272,24 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	core::Set<uint32_t> addedInstances;
 
-	if (scene->num_groups > 0) {
-		for (uint32_t i = 0; i < scene->num_groups; ++i) {
-			const ogt_vox_group &group = scene->groups[i];
-			// find the main group nodes
-			if (group.parent_group_index != k_invalid_group_index) {
-				continue;
-			}
-			Log::debug("Add root group %u/%u", i, scene->num_groups);
-			// TODO: the parent is wrong
-			if (!addGroup(scene, i, sceneGraph, sceneGraph.root().id(), zUpMat, addedInstances, palette)) {
-				ogt_vox_destroy_scene(scene);
-				return false;
-			}
+	for (uint32_t i = 0; i < scene->num_groups; ++i) {
+		const ogt_vox_group &group = scene->groups[i];
+		// find the main group nodes
+		if (group.parent_group_index != k_invalid_group_index) {
+			continue;
 		}
+		Log::debug("Add root group %u/%u", i, scene->num_groups);
+		if (!addGroup(scene, i, sceneGraph, sceneGraph.root().id(), zUpMat, addedInstances, palette)) {
+			ogt_vox_destroy_scene(scene);
+			return false;
+		}
+		break;
 	}
 	for (uint32_t n = 0; n < scene->num_instances; ++n) {
 		if (addedInstances.has(n)) {
 			continue;
 		}
+		// TODO: the parent is wrong
 		if (!addInstance(scene, n, sceneGraph, sceneGraph.root().id(), zUpMat, palette)) {
 			ogt_vox_destroy_scene(scene);
 			return false;
