@@ -358,14 +358,16 @@ HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device)
     }
 
     /* Make sure we can open the device and leave it open for the driver */
-    device->dev = SDL_hid_open_path(device->path, 0);
-    if (!device->dev) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                     "HIDAPI_SetupDeviceDriver() couldn't open %s: %s\n",
-                     device->path, SDL_GetError());
-        return;
+    if (device->num_children == 0) {
+        device->dev = SDL_hid_open_path(device->path, 0);
+        if (!device->dev) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "HIDAPI_SetupDeviceDriver() couldn't open %s: %s\n",
+                         device->path, SDL_GetError());
+            return;
+        }
+        SDL_hid_set_nonblocking(device->dev, 1);
     }
-    SDL_hid_set_nonblocking(device->dev, 1);
 
     device->driver = HIDAPI_GetDeviceDriver(device);
 
@@ -526,6 +528,57 @@ HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial)
     if (serial && *serial && (!device->serial || SDL_strcmp(serial, device->serial) != 0)) {
         SDL_free(device->serial);
         device->serial = SDL_strdup(serial);
+    }
+}
+
+SDL_bool
+HIDAPI_HasConnectedUSBDevice(const char *serial)
+{
+    SDL_HIDAPI_Device *device;
+
+    if (!serial) {
+        return SDL_FALSE;
+    }
+
+    for (device = SDL_HIDAPI_devices; device; device = device->next) {
+        if (!device->driver) {
+            continue;
+        }
+
+        if (device->is_bluetooth) {
+            continue;
+        }
+
+        if (device->serial && SDL_strcmp(serial, device->serial) == 0) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+void
+HIDAPI_DisconnectBluetoothDevice(const char *serial)
+{
+    SDL_HIDAPI_Device *device;
+
+    if (!serial) {
+        return;
+    }
+
+    for (device = SDL_HIDAPI_devices; device; device = device->next) {
+        if (!device->driver) {
+            continue;
+        }
+
+        if (!device->is_bluetooth) {
+            continue;
+        }
+
+        if (device->serial && SDL_strcmp(serial, device->serial) == 0) {
+            while (device->num_joysticks && device->joysticks) {
+                HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+            }
+        }
     }
 }
 
@@ -723,6 +776,7 @@ static void
 HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
 {
     SDL_HIDAPI_Device *curr, *last;
+    int i;
 
 #ifdef DEBUG_HIDAPI
     SDL_Log("Removing HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version, device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->name : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
@@ -741,6 +795,10 @@ HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
             /* Make sure the rumble thread is done with this device */
             while (SDL_AtomicGet(&device->rumble_pending) > 0) {
                 SDL_Delay(10);
+            }
+
+            for (i = 0; i < device->num_children; ++i) {
+                device->children[i]->parent = NULL;
             }
 
             SDL_DestroyMutex(device->dev_lock);
@@ -813,7 +871,9 @@ HIDAPI_CreateCombinedJoyCons()
             if (combined && combined->driver) {
                 return SDL_TRUE;
             } else {
-                if (!combined) {
+                if (combined) {
+                    HIDAPI_DelDevice(combined);
+                } else {
                     SDL_free(children);
                 }
                 return SDL_FALSE;

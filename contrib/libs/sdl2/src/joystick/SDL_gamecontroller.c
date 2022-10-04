@@ -606,8 +606,21 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
             }
             break;
         default:
-            /* Mini gamepad mode */
-            SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,", sizeof(mapping_string));
+            if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS, SDL_FALSE)) {
+                /* Vertical mode */
+                if (guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
+                    SDL_strlcat(mapping_string, "back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b15,paddle2:b17,paddle4:b19,", sizeof(mapping_string));
+                } else {
+                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,paddle1:b16,paddle3:b18,", sizeof(mapping_string));
+                }
+            } else {
+                /* Mini gamepad mode */
+                if (guid.data[15] == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
+                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,paddle2:b17,paddle4:b19,", sizeof(mapping_string));
+                } else {
+                    SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,paddle1:b16,paddle3:b18,", sizeof(mapping_string));
+                }
+            }
             break;
         }
     } else {
@@ -624,8 +637,8 @@ static ControllerMapping_t *SDL_CreateMappingForHIDAPIController(SDL_JoystickGUI
             /* Steam controllers have 2 back paddle buttons */
             SDL_strlcat(mapping_string, "paddle1:b16,paddle2:b15,", sizeof(mapping_string));
         } else if (SDL_IsJoystickNintendoSwitchJoyConPair(vendor, product)) {
-            /* The Nintendo Switch Joy-Con combined controller has a share button */
-            SDL_strlcat(mapping_string, "misc1:b15,", sizeof(mapping_string));
+            /* The Nintendo Switch Joy-Con combined controller has a share button and paddles */
+            SDL_strlcat(mapping_string, "misc1:b15,paddle1:b16,paddle2:b17,paddle3:b18,paddle4:b19,", sizeof(mapping_string));
         } else {
             switch (SDL_GetJoystickGameControllerTypeFromGUID(guid, NULL)) {
             case SDL_CONTROLLER_TYPE_PS4:
@@ -2441,6 +2454,15 @@ SDL_GameControllerGetSensorDataRate(SDL_GameController *gamecontroller, SDL_Sens
 int
 SDL_GameControllerGetSensorData(SDL_GameController *gamecontroller, SDL_SensorType type, float *data, int num_values)
 {
+    return SDL_GameControllerGetSensorDataWithTimestamp(gamecontroller, type, NULL, data, num_values);
+}
+
+/*
+ *  Get the current state of a game controller sensor.
+ */
+int
+SDL_GameControllerGetSensorDataWithTimestamp(SDL_GameController *gamecontroller, SDL_SensorType type, Uint64 *timestamp, float *data, int num_values)
+{
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(gamecontroller);
     int i;
 
@@ -2454,6 +2476,9 @@ SDL_GameControllerGetSensorData(SDL_GameController *gamecontroller, SDL_SensorTy
         if (sensor->type == type) {
             num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
             SDL_memcpy(data, sensor->data, num_values*sizeof(*data));
+            if (timestamp) {
+                *timestamp = sensor->timestamp_us;
+            }
             return 0;
         }
     }

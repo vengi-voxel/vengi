@@ -267,6 +267,8 @@ ScheduleContextUpdates(SDL_WindowData *data)
     }
 
     /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
+    #if SDL_VIDEO_OPENGL
+
     #ifdef __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -287,6 +289,8 @@ ScheduleContextUpdates(SDL_WindowData *data)
     #ifdef __clang__
     #pragma clang diagnostic pop
     #endif
+
+    #endif /* SDL_VIDEO_OPENGL */
 }
 
 /* !!! FIXME: this should use a hint callback. */
@@ -299,6 +303,9 @@ GetHintCtrlClickEmulateRightClick()
 static NSUInteger
 GetWindowWindowedStyle(SDL_Window * window)
 {
+    /* IF YOU CHANGE ANY FLAGS IN HERE, PLEASE READ
+       the NSWindowStyleMaskBorderless comments in SetupWindowData()! */
+
     /* always allow miniaturization, otherwise you can't programatically
        minimize the window, whether there's a title bar or not */
     NSUInteger style = NSWindowStyleMaskMiniaturizable;
@@ -1641,7 +1648,7 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSView *nsview, 
         /* NSWindowStyleMaskBorderless is zero, and it's possible to be
             Resizeable _and_ borderless, so we can't do a simple bitwise AND
             of NSWindowStyleMaskBorderless here. */
-        if ((style & ~NSWindowStyleMaskResizable) == NSWindowStyleMaskBorderless) {
+        if ((style & ~(NSWindowStyleMaskResizable|NSWindowStyleMaskMiniaturizable)) == NSWindowStyleMaskBorderless) {
             window->flags |= SDL_WINDOW_BORDERLESS;
         } else {
             window->flags &= ~SDL_WINDOW_BORDERLESS;
@@ -2347,11 +2354,15 @@ Cocoa_DestroyWindow(_THIS, SDL_Window * window)
             [data.nswindow close];
         }
 
+        #if SDL_VIDEO_OPENGL
+
         contexts = [data.nscontexts copy];
         for (SDLOpenGLContext *context in contexts) {
             /* Calling setWindow:NULL causes the context to remove itself from the context list. */            
             [context setWindow:NULL];
         }
+
+        #endif /* SDL_VIDEO_OPENGL */
     }
     window->driverdata = NULL;
 }}

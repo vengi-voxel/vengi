@@ -64,7 +64,7 @@ struct GLES2_FBOList
 
 typedef struct GLES2_TextureData
 {
-    GLenum texture;
+    GLuint texture;
     GLenum texture_type;
     GLenum pixel_format;
     GLenum pixel_type;
@@ -74,8 +74,8 @@ typedef struct GLES2_TextureData
     /* YUV texture support */
     SDL_bool yuv;
     SDL_bool nv12;
-    GLenum texture_v;
-    GLenum texture_u;
+    GLuint texture_v;
+    GLuint texture_u;
 #endif
     GLES2_FBOList *fbo;
 } GLES2_TextureData;
@@ -2023,6 +2023,23 @@ static int GLES2_BindTexture (SDL_Renderer * renderer, SDL_Texture *texture, flo
     GLES2_RenderData *data = (GLES2_RenderData *)renderer->driverdata;
     GLES2_TextureData *texturedata = (GLES2_TextureData *)texture->driverdata;
     GLES2_ActivateRenderer(renderer);
+
+#if SDL_HAVE_YUV
+    if (texturedata->yuv) {
+        data->glActiveTexture(GL_TEXTURE2);
+        data->glBindTexture(texturedata->texture_type, texturedata->texture_v);
+
+        data->glActiveTexture(GL_TEXTURE1);
+        data->glBindTexture(texturedata->texture_type, texturedata->texture_u);
+
+        data->glActiveTexture(GL_TEXTURE0);
+    } else if (texturedata->nv12) {
+        data->glActiveTexture(GL_TEXTURE1);
+        data->glBindTexture(texturedata->texture_type, texturedata->texture_u);
+
+        data->glActiveTexture(GL_TEXTURE0);
+    }
+#endif
 
     data->glBindTexture(texturedata->texture_type, texturedata->texture);
     data->drawstate.texture = texture;
