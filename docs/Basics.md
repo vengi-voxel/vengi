@@ -8,6 +8,8 @@ See [compilation](Compilation.md) and [dependencies](Dependencies.md).
 
 We are using the default opengl right handed coordinate system with x going right, y going upwards and z point towards you.
 
+We are using column major matrices.
+
 ![image](img/coordinate_system.png)
 
 ## Unittests
