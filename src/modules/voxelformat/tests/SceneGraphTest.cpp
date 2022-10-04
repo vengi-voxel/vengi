@@ -20,26 +20,26 @@ TEST_F(SceneGraphTest, testSize) {
 	EXPECT_EQ(1u, sceneGraph.size(SceneGraphNodeType::Root)) << "Each scene graph should contain a root node by default";
 	EXPECT_TRUE(sceneGraph.empty()) << "There are no model nodes yet - thus empty should return true";
 	{
-		SceneGraphNode node;
+		SceneGraphNode node(SceneGraphNodeType::Group);
 		node.setName("node1");
 		sceneGraph.emplace(core::move(node));
 	}
 	{
-		SceneGraphNode node;
+		SceneGraphNode node(SceneGraphNodeType::Group);
 		node.setName("node2");
 		sceneGraph.emplace(core::move(node));
 	}
-	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::Model)) << "The scene graph should have two models";
-	EXPECT_EQ(2u, sceneGraph.size()) << "The scene graph should have two models";
+	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::Group)) << "The scene graph should have two groups";
+	EXPECT_EQ(0u, sceneGraph.size()) << "The scene graph should have no models";
 
-	EXPECT_EQ(2u, sceneGraph.root().children().size()) << "The root node should have two (model) children attached";
+	EXPECT_EQ(2u, sceneGraph.root().children().size()) << "The root node should have two (group) children attached";
 }
 
 TEST_F(SceneGraphTest, testHasNode) {
 	SceneGraph sceneGraph;
 	EXPECT_TRUE(sceneGraph.hasNode(0));
 	EXPECT_FALSE(sceneGraph.hasNode(1));
-	SceneGraphNode node;
+	SceneGraphNode node(SceneGraphNodeType::Group);
 	node.setName("node");
 	EXPECT_EQ(1, sceneGraph.emplace(core::move(node)));
 	EXPECT_TRUE(sceneGraph.hasNode(0));
@@ -57,20 +57,21 @@ TEST_F(SceneGraphTest, testNodeRoot) {
 TEST_F(SceneGraphTest, testNode) {
 	SceneGraph sceneGraph;
 	{
-		SceneGraphNode node(SceneGraphNodeType::Model);
+		SceneGraphNode node(SceneGraphNodeType::Group);
 		node.setName("node");
 		sceneGraph.emplace(core::move(node));
 	}
-	const SceneGraphNode& modelNode = sceneGraph.node(1);
-	EXPECT_EQ(SceneGraphNodeType::Model, modelNode.type());
-	EXPECT_EQ(1, modelNode.id());
-	EXPECT_EQ("node", modelNode.name());
+	const SceneGraphNode& groupNode = sceneGraph.node(1);
+	EXPECT_EQ(SceneGraphNodeType::Group, groupNode.type());
+	EXPECT_EQ(1, groupNode.id());
+	EXPECT_EQ("node", groupNode.name());
 }
 
 TEST_F(SceneGraphTest, testChildren) {
 	SceneGraph sceneGraph;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
 		node.setName("model");
 		EXPECT_EQ(1, sceneGraph.emplace(core::move(node), 0)) << "Unexpected node id returned - root node is 0 - next should be 1";
 	}
@@ -81,11 +82,13 @@ TEST_F(SceneGraphTest, testChildren) {
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
 		node.setName("model2");
 		EXPECT_EQ(3, sceneGraph.emplace(core::move(node), 2));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
 		node.setName("model");
 		EXPECT_EQ(4, sceneGraph.emplace(core::move(node), 1));
 	}
@@ -110,11 +113,13 @@ TEST_F(SceneGraphTest, testRemove) {
 	SceneGraph sceneGraph;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
 		node.setName("node");
 		sceneGraph.emplace(core::move(node));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
 		node.setName("children");
 		sceneGraph.emplace(core::move(node), 1);
 	}
@@ -150,7 +155,7 @@ TEST_F(SceneGraphTest, testMerge) {
 }
 
 TEST_F(SceneGraphTest, testKeyframes) {
-	SceneGraphNode node;
+	SceneGraphNode node(SceneGraphNodeType::Group);
 	EXPECT_EQ(InvalidKeyFrame, node.addKeyFrame(0));
 	for (int i = 0; i < 10; ++i) {
 		EXPECT_EQ(0u, node.keyFrameForFrame(i)) << "Failed to get the correct key frame for frame " << i;

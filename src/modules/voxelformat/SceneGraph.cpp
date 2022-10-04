@@ -198,6 +198,10 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 		node.release();
 		return -1;
 	}
+	if (node.type() == SceneGraphNodeType::Model) {
+		core_assert(node.volume() != nullptr);
+		core_assert(node.region().isValid());
+	}
 	const int nodeId = _nextNodeId;
 	if (parent >= nodeId) {
 		Log::error("Invalid parent id given: %i", parent);
