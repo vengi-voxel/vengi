@@ -170,10 +170,14 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 
 	const FrameIndex frameIdx = 0;
 	const SceneGraphTransform &transform = node.transform(frameIdx);
-	const VXLMatrix &vxlMatrix = convertToWestwood(transform.localMatrix());
+	const glm::vec3 &mins = transform.localTranslation();
+	VXLMatrix vxlMatrix = convertToWestwood(transform.localMatrix());
+	vxlMatrix[0][3] -= mins.x;
+	vxlMatrix[1][3] -= mins.z;
+	vxlMatrix[2][3] -= mins.y;
 
 	// TODO: always 0.0833333358f?
-	wrapBool(stream.writeFloat(transform.localScale()))
+	wrapBool(stream.writeFloat(1.0f / 12.0f /*transform.localScale()*/))
 
 	for (int col = 0; col < VXLMatrix::length(); ++col) {
 		for (int row = 0; row < VXLMatrix::col_type::length(); ++row) {
@@ -182,26 +186,27 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 	}
 
 	const voxel::Region& region = node.region();
-	const glm::vec3 &mins = transform.localTranslation();
-	const glm::vec3 maxs = mins + glm::vec3(region.getDimensionsInVoxels());
-
-	wrapBool(stream.writeFloat(mins.x))
-	wrapBool(stream.writeFloat(mins.z))
-	wrapBool(stream.writeFloat(mins.y))
-
-	wrapBool(stream.writeFloat(maxs.x))
-	wrapBool(stream.writeFloat(maxs.z))
-	wrapBool(stream.writeFloat(maxs.y))
-
 	const glm::ivec3& size = region.getDimensionsInVoxels();
 	if (size.x > 0xFF || size.y > 0xFF || size.z > 0xFF) {
 		Log::error("Failed to write vxl node footer - max volume size exceeded");
 		return false;
 	}
+
+	wrapBool(stream.writeFloat(mins.x))
+	wrapBool(stream.writeFloat(mins.z))
+	wrapBool(stream.writeFloat(mins.y))
+
+	const glm::vec3 maxs = mins + glm::vec3(size);
+	wrapBool(stream.writeFloat(maxs.x))
+	wrapBool(stream.writeFloat(maxs.z))
+	wrapBool(stream.writeFloat(maxs.y))
+
 	wrapBool(stream.writeUInt8(size.x))
 	wrapBool(stream.writeUInt8(size.z))
 	wrapBool(stream.writeUInt8(size.y))
+
 	wrapBool(stream.writeUInt8(core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal()))
+
 	return true;
 }
 
@@ -349,7 +354,12 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 	}
 
 	// switch axis
-	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region{0, 0, 0, footer.xsize - 1, footer.zsize - 1, footer.ysize - 1});
+	const voxel::Region region{0, 0, 0, (int)footer.xsize - 1, (int)footer.zsize - 1, (int)footer.ysize - 1};
+	if (!region.isValid()) {
+		Log::error("Failed to load section with invalid size: %i:%i:%i", (int)footer.xsize, (int)footer.zsize, (int)footer.ysize);
+		return false;
+	}
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(header.name);
@@ -586,6 +596,7 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 					wrap(stream.readFloat(vxlMatrix[col][row]))
 				}
 			}
+			Log::debug("load frame %u for node %i with translation: %f:%f:%f", frameIdx, nodeIdx, vxlMatrix[0][3], vxlMatrix[1][3], vxlMatrix[2][3]);
 		}
 	}
 
@@ -625,17 +636,20 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 				const VXLNodeFooter& footer = mdl.nodeFooters[nodeId];
 				const glm::vec3 size(footer.xsize, footer.ysize, footer.zsize);
 				const glm::vec3 nodeScale = (footer.maxs - footer.mins) / size;
-				Log::debug("nodeScale: %f:%f:%f", nodeScale[0], nodeScale[1], nodeScale[2]);
+				Log::debug("nodeScale: %f:%f:%f (footer: %f)", nodeScale[0], nodeScale[1], nodeScale[2], footer.scale);
 				// The HVA transformation matrices must be scaled - the VXL ones not!
 				// Calculate the ratio between screen units and voxels in all dimensions
 				glm::vec4 &translation = glmMatrix[3];
+				Log::debug("raw hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
 				// swap y and z here
 				translation.x *= (footer.scale * nodeScale.x);
-				translation.z *= (footer.scale * nodeScale.y);
 				translation.y *= (footer.scale * nodeScale.z);
+				translation.z *= (footer.scale * nodeScale.y);
+				Log::debug("scaled hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
 				translation.x += footer.mins.x;
-				translation.z += footer.mins.y;
 				translation.y += footer.mins.z;
+				translation.z += footer.mins.y;
+				Log::debug("shifted hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
 			}
 
 			SceneGraphTransform transform;
@@ -688,20 +702,23 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 		for (const SceneGraphNode &node : sceneGraph) {
 			const SceneGraphTransform &transform = node.transform(i);
 			const voxel::Region &region = node.region();
-			const glm::vec3 size(region.getDimensionsInVoxels());
+			const glm::vec3 size(region.getDimensionsInCells());
+			Log::debug("write hva size (frame %u, node %i): %f:%f:%f", i, node.id(), size[0], size[1], size[2]);
 			const glm::vec3 nodeScale = (region.getUpperCornerf() - region.getLowerCornerf()) / size;
-			Log::debug("nodeScale: %f:%f:%f", nodeScale[0], nodeScale[1], nodeScale[2]);
+			Log::debug("write hva nodeScale (frame %u, node %i): %f:%f:%f", i, node.id(), nodeScale[0], nodeScale[1], nodeScale[2]);
 			// The HVA transformation matrices must be scaled - the VXL ones not!
 			VXLMatrix vxlMatrix = convertToWestwood(transform.localMatrix());
-			//const float f = 1.0f/12.0f;
-			const float scale = 0.0833333358f; //transform.scale(); // TODO:
+			const float scale = 1.0f / (1.0f / 12.0f); // transform.scale(); // TODO:
+			const glm::vec3 localMins = transform.localTranslation();
+			Log::debug("write hva localmins: %f:%f:%f", localMins.x, localMins.y, localMins.z);
 			// swap y and z
-			vxlMatrix[0][3] -= transform.localTranslation().x;
-			vxlMatrix[1][3] -= transform.localTranslation().z;
-			vxlMatrix[2][3] -= transform.localTranslation().y;
-			vxlMatrix[0][3] *= (scale * nodeScale.x);
-			vxlMatrix[1][3] *= (scale * nodeScale.z);
-			vxlMatrix[2][3] *= (scale * nodeScale.y);
+			vxlMatrix[0][3] -= localMins.x;
+			vxlMatrix[1][3] -= localMins.z;
+			vxlMatrix[2][3] -= localMins.y;
+			vxlMatrix[0][3] /= (scale * nodeScale.x);
+			vxlMatrix[1][3] /= (scale * nodeScale.z);
+			vxlMatrix[2][3] /= (scale * nodeScale.y);
+			Log::debug("write hva frame %u for node %i with translation: %f:%f:%f", i, node.id(), vxlMatrix[0][3], vxlMatrix[1][3], vxlMatrix[2][3]);
 
 			for (int col = 0; col < VXLMatrix::length(); ++col) {
 				for (int row = 0; row < VXLMatrix::col_type::length(); ++row) {
