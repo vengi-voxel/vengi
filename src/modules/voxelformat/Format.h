@@ -66,18 +66,6 @@ protected:
 	static bool boolProperty(const SceneGraphNode* node, const core::String &name, bool defaultVal = false);
 	static float floatProperty(const SceneGraphNode* node, const core::String &name, float defaultVal = 0.0f);
 
-	/**
-	 * conjugate with the permutation matrix to switch y with z
-	 */
-	static glm::mat4 switchYAndZ(const glm::mat4 &in) {
-		static const glm::mat4 mat{
-			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f};
-		return mat * in;
-	}
-
 public:
 	virtual ~Format() = default;
 

@@ -11,7 +11,6 @@
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "core/collection/DynamicArray.h"
-#include <glm/gtx/transform.hpp>
 #include "io/File.h"
 #include "io/Filesystem.h"
 #include "io/FileStream.h"
@@ -21,6 +20,11 @@
 #include "voxel/Palette.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxel/PaletteLookup.h"
+
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/matrix_access.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/matrix.hpp>
 
 namespace voxelformat {
 
@@ -36,7 +40,26 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool VXLFormat::writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint32_t& skipCount, uint32_t& voxelCount) const {
+// https://stackoverflow.com/a/71168853/774082
+// convert from left handed coordinate system (z up) to right handed glm coordinate system (y up)
+glm::mat4 VXLFormat::switchYAndZ(const glm::mat4 &in) {
+	static const glm::mat4 mat{
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f};
+	return mat * in * glm::inverse(mat);
+}
+
+glm::mat4 VXLFormat::convertToGLM(const VXLMatrix &in) {
+	return switchYAndZ(VXLFormat::VXLMatrix::transpose_type(glm::transpose(in)));
+}
+
+VXLFormat::VXLMatrix VXLFormat::convertToWestwood(const glm::mat4 &in) {
+	return glm::transpose(VXLFormat::VXLMatrix::transpose_type(switchYAndZ(in)));
+}
+
+bool VXLFormat::writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t& skipCount, uint8_t& voxelCount) const {
 	wrapBool(stream.writeUInt8(skipCount))
 	wrapBool(stream.writeUInt8(voxelCount))
 	for (uint8_t y1 = y - voxelCount; y1 < y; ++y1) {
@@ -49,10 +72,8 @@ bool VXLFormat::writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel:
 	return true;
 }
 
-bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t nodeIdx, VXLNodeOffset& offsets, uint64_t nodeSectionOffset) const {
-	const SceneGraphNode* node = sceneGraph[(int)nodeIdx];
-	core_assert_always(node != nullptr);
-	const voxel::Region& region = node->region();
+bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraphNode& node, VXLNodeOffset& offsets, uint64_t nodeSectionOffset) const {
+	const voxel::Region& region = node.region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
 
 	const uint32_t baseSize = size.x * size.z;
@@ -60,8 +81,6 @@ bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraph& sce
 	Log::debug("size.x: %i, size.z: %i, globalSpanStartPos: %u", size.x, size.z, (uint32_t)globalSpanStartPos);
 
 	offsets.start = stream.pos() - (int64_t)nodeSectionOffset;
-	const size_t nodeOffset = HeaderSize + NodeHeaderSize * sceneGraph.size() + offsets.start;
-	Log::debug("nodeOffset(%u): %u", nodeIdx, (uint32_t)nodeOffset);
 
 	for (uint32_t i = 0; i < baseSize; i++) {
 		wrapBool(stream.writeUInt32(-1))
@@ -79,27 +98,35 @@ bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraph& sce
 		const uint8_t x = (uint8_t)(i % size.x);
 		const uint8_t z = (uint8_t)(i / size.x);
 
-		uint32_t skipCount = 0u;
-		uint32_t voxelCount = 0u;
+		uint8_t skipCount = 0u;
+		uint8_t voxelCount = 0u;
 		bool voxelsInColumn = false;
 		for (uint8_t y = 0; y <= size.y; ++y) {
-			const voxel::Voxel& voxel = node->volume()->voxel(x, y, z);
+			const voxel::Voxel& voxel = node.volume()->voxel(x, y, z);
 			if (voxel::isAir(voxel.getMaterial())) {
 				if (voxelCount > 0) {
-					wrapBool(writeNodeBodyEntry(stream, node->volume(), x, y, z, skipCount, voxelCount))
+					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount))
+					voxelsInColumn = true;
+				}
+				if (skipCount == 0xFF) {
+					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount))
 					voxelsInColumn = true;
 				}
 				++skipCount;
 			} else {
 				if (skipCount > 0) {
-					wrapBool(writeNodeBodyEntry(stream, node->volume(), x, y, z, skipCount, voxelCount))
+					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount))
+					voxelsInColumn = true;
+				}
+				if (voxelCount == 0xFF) {
+					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount))
 					voxelsInColumn = true;
 				}
 				++voxelCount;
 			}
 		}
 		if (voxelCount > 0 || skipCount > 0) {
-			wrapBool(writeNodeBodyEntry(stream, node->volume(), x, size.y - 1, z, skipCount, voxelCount))
+			wrapBool(writeNodeBodyEntry(stream, node.volume(), x, size.y - 1, z, skipCount, voxelCount))
 			voxelsInColumn = true;
 		}
 		if (!voxelsInColumn) {
@@ -118,11 +145,9 @@ bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraph& sce
 	return true;
 }
 
-bool VXLFormat::writeNodeHeader(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t nodeIdx) const {
+bool VXLFormat::writeNodeHeader(io::SeekableWriteStream& stream, const SceneGraphNode& node, uint32_t nodeIdx) const {
 	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + nodeIdx * NodeHeaderSize));
-	const SceneGraphNode* node = sceneGraph[(int)nodeIdx];
-	core_assert_always(node != nullptr);
-	core::String name = node->name().substr(0, 15);
+	core::String name = node.name().substr(0, 15);
 	if (stream.write(name.c_str(), name.size()) == -1) {
 		Log::error("Failed to write node header into stream");
 		return false;
@@ -136,38 +161,36 @@ bool VXLFormat::writeNodeHeader(io::SeekableWriteStream& stream, const SceneGrap
 	return true;
 }
 
-bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t nodeIdx, const VXLNodeOffset& offsets) const {
-	const SceneGraphNode* node = sceneGraph[(int)nodeIdx];
-	core_assert_always(node != nullptr);
+bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGraphNode& node, const VXLNodeOffset& offsets) const {
 	wrapBool(stream.writeUInt32(offsets.start))
 	wrapBool(stream.writeUInt32(offsets.end))
 	wrapBool(stream.writeUInt32(offsets.data))
 
 	const FrameIndex frameIdx = 0;
-	const SceneGraphTransform &transform = node->transform(frameIdx);
-	const glm::mat4 &matrix = transform.worldMatrix();
+	const SceneGraphTransform &transform = node.transform(frameIdx);
+	const VXLMatrix &vxlMatrix = convertToWestwood(transform.localMatrix());
 
 	// TODO: always 0.0833333358f?
-	wrapBool(stream.writeFloat(transform.worldScale()))
+	wrapBool(stream.writeFloat(transform.localScale()))
 
-	// transpose the matrix here
-	for (int row = 0; row < 3; ++row) {
-		for (int col = 0; col < 4; ++col) {
-			wrapBool(stream.writeFloat(matrix[col][row]))
+	for (int col = 0; col < VXLMatrix::length(); ++col) {
+		for (int row = 0; row < VXLMatrix::col_type::length(); ++row) {
+			wrapBool(stream.writeFloat(vxlMatrix[col][row]))
 		}
 	}
-	const glm::vec3 &mins = transform.worldTranslation();
-	const glm::vec3 maxs = mins + glm::vec3(node->region().getDimensionsInVoxels());
 
-	wrapBool(stream.writeFloat(mins[0]))
-	wrapBool(stream.writeFloat(mins[2]))
-	wrapBool(stream.writeFloat(mins[1]))
+	const voxel::Region& region = node.region();
+	const glm::vec3 &mins = transform.localTranslation();
+	const glm::vec3 maxs = mins + glm::vec3(region.getDimensionsInVoxels());
 
-	wrapBool(stream.writeFloat(maxs[0]))
-	wrapBool(stream.writeFloat(maxs[2]))
-	wrapBool(stream.writeFloat(maxs[1]))
+	wrapBool(stream.writeFloat(mins.x))
+	wrapBool(stream.writeFloat(mins.z))
+	wrapBool(stream.writeFloat(mins.y))
 
-	const voxel::Region& region = node->region();
+	wrapBool(stream.writeFloat(maxs.x))
+	wrapBool(stream.writeFloat(maxs.z))
+	wrapBool(stream.writeFloat(maxs.y))
+
 	const glm::ivec3& size = region.getDimensionsInVoxels();
 	if (size.x > 0xFF || size.y > 0xFF || size.z > 0xFF) {
 		Log::error("Failed to write vxl node footer - max volume size exceeded");
@@ -180,16 +203,15 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 	return true;
 }
 
-bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph) {
+bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, uint32_t numNodes, const voxel::Palette &palette) {
 	wrapBool(stream.writeString("Voxel Animation", true))
 	wrapBool(stream.writeUInt32(1))
-	wrapBool(stream.writeUInt32(sceneGraph.size()))
-	wrapBool(stream.writeUInt32(sceneGraph.size()))
+	wrapBool(stream.writeUInt32(numNodes))
+	wrapBool(stream.writeUInt32(numNodes))
 	wrapBool(stream.writeUInt32(0)) // bodysize is filled later
 	wrapBool(stream.writeUInt8(0x1fU))
 	wrapBool(stream.writeUInt8(0x10U))
 
-	const voxel::Palette &palette = sceneGraph.firstPalette();
 	for (int i = 0; i < palette.colorCount; ++i) {
 		const core::RGBA& rgba = palette.colors[i];
 		wrapBool(stream.writeUInt8(rgba.r))
@@ -205,16 +227,22 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, const SceneGraph& s
 	return true;
 }
 
-bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
-	wrapBool(writeHeader(stream, sceneGraph))
-	for (uint32_t i = 0; i < sceneGraph.size(); ++i) {
-		wrapBool(writeNodeHeader(stream, sceneGraph, i))
+bool VXLFormat::saveVXL(core::DynamicArray<const SceneGraphNode*> &nodes, const core::String &filename, io::SeekableWriteStream& stream) {
+	if (nodes.empty()) {
+		return false;
+	}
+	const uint32_t numNodes = nodes.size();
+	wrapBool(writeHeader(stream, numNodes, nodes[0]->palette()))
+	for (uint32_t i = 0; i < numNodes; ++i) {
+		const SceneGraphNode* node = nodes[(int)i];
+		wrapBool(writeNodeHeader(stream, *node, i))
 	}
 
-	core::Buffer<VXLNodeOffset> nodeOffsets(sceneGraph.size());
+	core::Buffer<VXLNodeOffset> nodeOffsets(numNodes);
 	const uint64_t afterHeaderPos = stream.pos();
-	for (uint32_t i = 0; i < sceneGraph.size(); ++i) {
-		wrapBool(writeNode(stream, sceneGraph, i, nodeOffsets[i], afterHeaderPos))
+	for (uint32_t i = 0; i < numNodes; ++i) {
+		const SceneGraphNode* node = nodes[(int)i];
+		wrapBool(writeNode(stream, *node, nodeOffsets[i], afterHeaderPos))
 	}
 
 	const uint64_t afterBodyPos = stream.pos();
@@ -223,12 +251,54 @@ bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapBool(stream.writeUInt32(bodySize))
 	wrap(stream.seek(afterBodyPos));
 
-	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + NodeHeaderSize * sceneGraph.size() + bodySize));
+	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + NodeHeaderSize * numNodes + bodySize));
 
-	for (uint32_t i = 0; i < sceneGraph.size(); ++i) {
-		wrapBool(writeNodeFooter(stream, sceneGraph, i, nodeOffsets[i]))
+	for (uint32_t i = 0; i < numNodes; ++i) {
+		const SceneGraphNode* node = nodes[(int)i];
+		wrapBool(writeNodeFooter(stream, *node, nodeOffsets[i]))
 	}
+	return true;
+}
+
+bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	core::DynamicArray<const SceneGraphNode*> body;
+	core::DynamicArray<const SceneGraphNode*> barrel;
+	core::DynamicArray<const SceneGraphNode*> turret;
+
+	const uint32_t numNodes = sceneGraph.size();
+	body.reserve(numNodes);
+	barrel.reserve(numNodes);
+	turret.reserve(numNodes);
+
+	// TODO: split the nodes into the max allowed size
+	for (const SceneGraphNode &node : sceneGraph) {
+		const core::String &lowerName = node.name().toLower();
+		if (lowerName.contains("barrel")) {
+			barrel.push_back(&node);
+		} else if (lowerName.contains("turret")) {
+			turret.push_back(&node);
+		} else {
+			body.push_back(&node);
+		}
+	}
+
 	const core::String &basename = core::string::stripExtension(filename);
+
+	saveVXL(body, filename, stream);
+	if (!barrel.empty()) {
+		const core::String &extFilename = basename + "barl.vxl";
+		io::FileStream extStream(io::filesystem()->open(extFilename, io::FileMode::SysWrite));
+		if (extStream.valid() && !saveVXL(barrel, extFilename, extStream)) {
+			Log::warn("Failed to write %s", extFilename.c_str());
+		}
+	}
+	if (!turret.empty()) {
+		const core::String &extFilename = basename + "tur.vxl";
+		io::FileStream extStream(io::filesystem()->open(extFilename, io::FileMode::SysWrite));
+		if (extStream.valid() && !saveVXL(turret, extFilename, extStream)) {
+			Log::warn("Failed to write %s", extFilename.c_str());
+		}
+	}
 	return saveHVA(basename + ".hva", sceneGraph);
 }
 
@@ -284,8 +354,16 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 	if (palette.colorCount > 0) {
 		node.setPalette(palette);
 	}
+
+	glm::mat4 glmMatrix = convertToGLM(footer.transform);
+	glm::vec4 &translation = glmMatrix[3];
+	// swap y and z here
+	translation.x += footer.mins.x;
+	translation.z += footer.mins.y;
+	translation.y += footer.mins.z;
+
 	SceneGraphTransform transform;
-	transform.setWorldMatrix(footer.transform);
+	transform.setLocalMatrix(glmMatrix);
 	const KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 
@@ -363,14 +441,12 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 
 	Log::debug("offsets: %u:%u:%u", footer.spanStartOffset, footer.spanEndOffset, footer.spanDataOffset);
 
-	glm::mat4 transform(1.0f);
-	// transpose the matrix here
-	for (int row = 0; row < 3; ++row) {
-		for (int col = 0; col < 4; ++col) {
-			wrap(stream.readFloat(transform[col][row]))
+	footer.transform = VXLMatrix(1.0f);
+	for (int col = 0; col < VXLMatrix::length(); ++col) {
+		for (int row = 0; row < VXLMatrix::col_type::length(); ++row) {
+			wrap(stream.readFloat(footer.transform[col][row]))
 		}
 	}
-	footer.transform = switchYAndZ(transform);
 	for (int i = 0; i < 3; ++i) {
 		wrap(stream.readFloat(footer.mins[i]))
 	}
@@ -500,33 +576,14 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 	for (uint32_t frameIdx = 0; frameIdx < file.header.numFrames; ++frameIdx) {
 		HVAFrames &frame = file.frames[frameIdx];
 		frame.resize(file.header.numNodes);
+		frame.fill(VXLMatrix(1.0f));
 		for (uint32_t nodeIdx = 0; nodeIdx < file.header.numNodes; ++nodeIdx) {
-			glm::mat4 &m = frame[nodeIdx];
-			m = glm::mat4(1.0f);
-			for (int row = 0; row < 3; ++row) {
-				for (int col = 0; col < 4; ++col) {
-					wrap(stream.readFloat(m[col][row]))
+			VXLMatrix &vxlMatrix = frame[nodeIdx];
+			for (int col = 0; col < VXLMatrix::length(); ++col) {
+				for (int row = 0; row < VXLMatrix::col_type::length(); ++row) {
+					wrap(stream.readFloat(vxlMatrix[col][row]))
 				}
 			}
-			const int nodeId = file.header.nodeIds[nodeIdx];
-			if (nodeId == -1) {
-				m = glm::mat4(1.0f);
-				continue;
-			}
-			const VXLNodeFooter& footer = mdl.nodeFooters[nodeId];
-			const glm::vec3 size(footer.xsize, footer.ysize, footer.zsize);
-			const glm::vec3 nodeScale = (footer.maxs - footer.mins) / size;
-			Log::debug("nodeScale: %f:%f:%f", nodeScale[0], nodeScale[1], nodeScale[2]);
-			// The HVA transformation matrices must be scaled - the VXL ones not!
-			// Calculate the ratio between screen units and voxels in all dimensions
-			glm::vec4 &translationCol = m[3];
-			translationCol[0] *= (footer.scale * nodeScale[0]);
-			translationCol[1] *= (footer.scale * nodeScale[1]);
-			translationCol[2] *= (footer.scale * nodeScale[2]);
-			translationCol[0] += footer.mins[0];
-			translationCol[1] += footer.mins[1];
-			translationCol[2] += footer.mins[2];
-			m = switchYAndZ(m);
 		}
 	}
 
@@ -537,7 +594,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 	HVAModel file;
 	{
 		const io::FilesystemPtr &filesystem = io::filesystem();
-		io::FilePtr hvaFile = filesystem->open(filename);
+		const io::FilePtr &hvaFile = filesystem->open(filename);
 		if (!hvaFile->validHandle()) {
 			// if there is no hva file, we still don't show an error
 			return true;
@@ -549,18 +606,38 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 	Log::debug("load %u frames", file.header.numFrames);
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < file.header.numFrames; ++keyFrameIdx) {
 		const HVAFrames &sectionMatrices = file.frames[keyFrameIdx];
-		for (uint32_t section = 0; section < file.header.numNodes; ++section) {
-			const core::String &name = file.header.nodeNames[section];
+		for (uint32_t vxlNodeId = 0; vxlNodeId < file.header.numNodes; ++vxlNodeId) {
+			const core::String &name = file.header.nodeNames[vxlNodeId];
 			SceneGraphNode* node = sceneGraph.findNodeByName(name);
 			if (node == nullptr) {
 				Log::debug("Can't find node with name %s", name.c_str());
 				continue;
 			}
+			// hva transforms are overriding the vxl transform
 			SceneGraphKeyFrame &kf = node->keyFrame(keyFrameIdx);
 			kf.frameIdx = keyFrameIdx * 6; // running at 6 fps
-			// hva transforms are overriding the vxl transform
+
+			glm::mat4 glmMatrix = convertToGLM(sectionMatrices[vxlNodeId]);
+			const int nodeId = file.header.nodeIds[vxlNodeId];
+			if (nodeId != -1) {
+				const VXLNodeFooter& footer = mdl.nodeFooters[nodeId];
+				const glm::vec3 size(footer.xsize, footer.ysize, footer.zsize);
+				const glm::vec3 nodeScale = (footer.maxs - footer.mins) / size;
+				Log::debug("nodeScale: %f:%f:%f", nodeScale[0], nodeScale[1], nodeScale[2]);
+				// The HVA transformation matrices must be scaled - the VXL ones not!
+				// Calculate the ratio between screen units and voxels in all dimensions
+				glm::vec4 &translation = glmMatrix[3];
+				// swap y and z here
+				translation.x *= (footer.scale * nodeScale.x);
+				translation.z *= (footer.scale * nodeScale.y);
+				translation.y *= (footer.scale * nodeScale.z);
+				translation.x += footer.mins.x;
+				translation.z += footer.mins.y;
+				translation.y += footer.mins.z;
+			}
+
 			SceneGraphTransform transform;
-			transform.setWorldMatrix(sectionMatrices[section]);
+			transform.setLocalMatrix(glmMatrix);
 			kf.setTransform(transform);
 		}
 	}
@@ -608,19 +685,25 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 	for (uint32_t i = 0; i < numFrames; ++i) {
 		for (const SceneGraphNode &node : sceneGraph) {
 			const SceneGraphTransform &transform = node.transform(i);
-			glm::mat4 matrix = transform.worldMatrix();
-#if 0
-			//const glm::vec3 size(node.region().getDimensionsInVoxels());
-			const glm::vec3 nodeScale(1.0f); // TODO (footer.maxs - footer.mins) / size;
+			const voxel::Region &region = node.region();
+			const glm::vec3 size(region.getDimensionsInVoxels());
+			const glm::vec3 nodeScale = (region.getUpperCornerf() - region.getLowerCornerf()) / size;
+			Log::debug("nodeScale: %f:%f:%f", nodeScale[0], nodeScale[1], nodeScale[2]);
 			// The HVA transformation matrices must be scaled - the VXL ones not!
-			glm::vec4 &v = matrix[3];
-			v[0] /= (transform.scale() * nodeScale[0]);
-			v[1] /= (transform.scale() * nodeScale[1]);
-			v[2] /= (transform.scale() * nodeScale[2]);
-#endif
-			for (int row = 0; row < 3; ++row) {
-				for (int col = 0; col < 4; ++col) {
-					wrapBool(stream.writeFloat(matrix[col][row]))
+			VXLMatrix vxlMatrix = convertToWestwood(transform.localMatrix());
+			//const float f = 1.0f/12.0f;
+			const float scale = 0.0833333358f; //transform.scale(); // TODO:
+			// swap y and z
+			vxlMatrix[0][3] -= transform.localTranslation().x;
+			vxlMatrix[1][3] -= transform.localTranslation().z;
+			vxlMatrix[2][3] -= transform.localTranslation().y;
+			vxlMatrix[0][3] *= (scale * nodeScale.x);
+			vxlMatrix[1][3] *= (scale * nodeScale.z);
+			vxlMatrix[2][3] *= (scale * nodeScale.y);
+
+			for (int col = 0; col < VXLMatrix::length(); ++col) {
+				for (int row = 0; row < VXLMatrix::col_type::length(); ++row) {
+					wrapBool(stream.writeFloat(vxlMatrix[col][row]))
 				}
 			}
 		}
@@ -640,9 +723,16 @@ bool VXLFormat::saveHVA(const core::String &filename, const SceneGraph& sceneGra
 	return true;
 }
 
+bool VXLFormat::loadFromFile(const core::String &filename, SceneGraph& sceneGraph, voxel::Palette &palette) {
+	const io::FilePtr &file = io::filesystem()->open(filename);
+	if (file && file->validHandle()) {
+		io::FileStream stream(file);
+		return loadGroupsPalette(filename, stream, sceneGraph, palette);
+	}
+	return true;
+}
+
 bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette) {
-	// TODO: check for tur (turrent) in filename and load it, too
-	// TODO: check for barl (barrel) in filename and load it, too
 	VXLModel mdl;
 
 	wrapBool(readHeader(stream, mdl, palette))
@@ -664,6 +754,9 @@ bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	const core::String &basename = core::string::stripExtension(filename);
 	wrapBool(loadHVA(basename + ".hva", mdl, sceneGraph))
+
+	wrapBool(loadFromFile(basename + "barl.vxl", sceneGraph, palette));
+	wrapBool(loadFromFile(basename + "tur.vxl", sceneGraph, palette));
 
 	return true;
 }

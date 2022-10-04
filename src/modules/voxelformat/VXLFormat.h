@@ -18,6 +18,8 @@ namespace voxelformat {
  */
 class VXLFormat : public PaletteFormat {
 private:
+	// vxl stores row major matrices of 3 rows with 4 columns in each row
+	using VXLMatrix = glm::mat4x3::transpose_type;
 	static constexpr int NumNormalsRA2 = 244;
 	static constexpr int NumNormalsTS = 36;
 	static constexpr size_t MaxNodes = 512;
@@ -51,7 +53,7 @@ private:
 		uint32_t spanEndOffset;		/* Offset into body section to span end list */
 		uint32_t spanDataOffset;	/* Offset into body section to span data */
 		float scale;				/* Scaling vector for the image */
-		glm::mat4 transform;		/* 4x3 right handed matrix - x, y and z axis point right, up and behind */
+		VXLMatrix transform;		/* 4x3 right handed matrix - x, y and z axis point right, up and behind */
 		glm::vec3 mins;
 		glm::vec3 maxs;
 
@@ -87,8 +89,8 @@ private:
 		int nodeIds[MaxNodes];
 	};
 
-	// 3x4 row major transformation matrix for each section
-	using HVAFrames = core::DynamicArray<glm::mat4>;
+	// transformation matrix for each section
+	using HVAFrames = core::DynamicArray<VXLMatrix>;
 
 	// https://ppmforums.com/topic-29369/red-alert-2-file-format-descriptions/
 	struct HVAModel {
@@ -106,11 +108,11 @@ private:
 	static constexpr int EmptyColumn = -1;
 
 	// writing
-	bool writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint32_t& skipCount, uint32_t& voxelCount) const;
-	bool writeNode(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t nodeIdx, VXLNodeOffset& offsets, uint64_t nodeSectionOffset) const;
-	bool writeNodeHeader(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t nodeIdx) const;
-	bool writeNodeFooter(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, uint32_t nodeId, const VXLNodeOffset& offsets) const;
-	bool writeHeader(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph);
+	bool writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t& skipCount, uint8_t& voxelCount) const;
+	bool writeNode(io::SeekableWriteStream& stream, const SceneGraphNode& node, VXLNodeOffset& offsets, uint64_t nodeSectionOffset) const;
+	bool writeNodeHeader(io::SeekableWriteStream& stream, const SceneGraphNode& node, uint32_t nodeIdx) const;
+	bool writeNodeFooter(io::SeekableWriteStream& stream, const SceneGraphNode& node, const VXLNodeOffset& offsets) const;
+	bool writeHeader(io::SeekableWriteStream& stream, uint32_t numNodes, const voxel::Palette &palette);
 
 	// reading
 	bool readNodeHeader(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const;
@@ -131,10 +133,20 @@ private:
 	bool loadHVA(const core::String &filename, const VXLModel &mdl, SceneGraph& sceneGraph);
 	bool saveHVA(const core::String &filename, const SceneGraph& sceneGraph);
 
+	bool saveVXL(core::DynamicArray<const SceneGraphNode*> &nodes, const core::String &filename, io::SeekableWriteStream& stream);
+
 	bool prepareModel(VXLModel& mdl) const;
 	bool readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel::Palette &palette);
+
+	bool loadFromFile(const core::String &filename, SceneGraph& sceneGraph, voxel::Palette &palette);
+
+	static glm::mat4 switchYAndZ(const glm::mat4 &in);
 protected:
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
+
+	static glm::mat4 convertToGLM(const VXLMatrix &in);
+	static VXLMatrix convertToWestwood(const glm::mat4 &in);
+
 public:
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
