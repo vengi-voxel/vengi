@@ -7,9 +7,11 @@
 #include "core/Common.h"
 #include "core/Color.h"
 #include "core/Assert.h"
+#include "core/GameConfig.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
+#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "io/File.h"
 #include "io/Filesystem.h"
@@ -199,7 +201,7 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 	wrapBool(stream.writeUInt8(size.x))
 	wrapBool(stream.writeUInt8(size.z))
 	wrapBool(stream.writeUInt8(size.y))
-	wrapBool(stream.writeUInt8(2)) // normalType TS
+	wrapBool(stream.writeUInt8(core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal()))
 	return true;
 }
 

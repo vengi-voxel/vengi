@@ -5,6 +5,7 @@
 #include "VoxEdit.h"
 #include "app/App.h"
 #include "core/Color.h"
+#include "core/GameConfig.h"
 #include "core/StringUtil.h"
 #include "core/concurrent/Concurrency.h"
 #include "io/FormatDescription.h"
@@ -105,6 +106,10 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST, "Export with uv coordinates of the palette image");
 	core::Var::get(cfg::VoxformatTransform, "true", core::CV_NOPERSIST, "Apply the scene graph transform to mesh exports");
 	core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST, "Fill the hollows when voxelizing a mesh format");
+	core::Var::get(cfg::VoxformatVXLNormalType, "2", core::CV_NOPERSIST, "Normal type for VXL format - 2 (TS) or 4 (RedAlert2)", [] (const core::String &var){
+		const int type = var.toInt();
+		return type == 2 || type == 4;
+	});
 	core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 
 	static video::FileDialogOptions options = [] (video::OpenFileMode mode, const io::FormatDescription *desc) {
@@ -132,6 +137,29 @@ app::AppState VoxEdit::onConstruct() {
 				ImGui::CheckboxVar("Texture coordinates", cfg::VoxformatWithtexcoords);
 			} else if (mode == video::OpenFileMode::Open) {
 				ImGui::CheckboxVar("Fill hollow", cfg::VoxformatFillHollow);
+			}
+		} else if (forceApplyOptions || (desc->name == "Tiberian Sun" && desc->matchesExtension("vxl"))) {
+			if (mode == video::OpenFileMode::Save) {
+				const char *normalTypes[] = {nullptr, nullptr, "Tiberian Sun", nullptr, "Red Alert"};
+				const core::VarPtr &normalTypeVar = core::Var::getSafe(cfg::VoxformatVXLNormalType);
+				const int currentNormalType = normalTypeVar->intVal();
+
+				if (ImGui::BeginCombo("Normal type", normalTypes[currentNormalType])) {
+					for (int i = 0; i < lengthof(normalTypes); ++i) {
+						const char *normalType = normalTypes[i];
+						if (normalType == nullptr) {
+							continue;
+						}
+						const bool selected = i == currentNormalType;
+						if (ImGui::Selectable(normalType, selected)) {
+							normalTypeVar->setVal(core::string::toString(i));
+						}
+						if (selected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
 			}
 		}
 	};

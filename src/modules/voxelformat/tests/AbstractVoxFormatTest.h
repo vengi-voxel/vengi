@@ -108,6 +108,10 @@ protected:
 		core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST, "Export with uv coordinates of the palette image");
 		core::Var::get(cfg::VoxformatTransform, "true", core::CV_NOPERSIST, "Apply the scene graph transform to mesh exports");
 		core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST, "Fill the hollows when voxelizing a mesh format");
+		core::Var::get(cfg::VoxformatVXLNormalType, "2", core::CV_NOPERSIST, "Normal type for VXL format - 2 (TS) or 4 (RedAlert2)", [] (const core::String &var){
+			const int type = var.toInt();
+			return type == 2 || type == 4;
+		});
 		return true;
 	}
 };
