@@ -22,6 +22,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
+#include "voxelformat/FormatConfig.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/SceneGraphUtil.h"
 #include "voxelformat/VolumeFormat.h"
@@ -73,23 +74,19 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--split").setDescription("Slices the volumes into pieces of the given size <x:y:z>");
 	registerArg("--translate").setShort("-t").setDescription("Translate the volumes by x (right), y (up), z (back)");
 
-	_mergeQuads = core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, "Merge similar quads to optimize the mesh");
-	_reuseVertices = core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST, "Reuse vertices or always create new ones");
-	_ambientOcclusion = core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST, "Extra vertices for ambient occlusion");
-	_scale = core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST, "Scale the vertices on all axis by the given factor");
-	_scaleX = core::Var::get(cfg::VoxformatScaleX, "1.0", core::CV_NOPERSIST, "Scale the vertices on X axis by the given factor");
-	_scaleY = core::Var::get(cfg::VoxformatScaleY, "1.0", core::CV_NOPERSIST, "Scale the vertices on Y axis by the given factor");
-	_scaleZ = core::Var::get(cfg::VoxformatScaleZ, "1.0", core::CV_NOPERSIST, "Scale the vertices on Z axis by the given factor");
-	_quads = core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST, "Export as quads. If this false, triangles will be used.");
-	_withColor = core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST, "Export with vertex colors");
-	_withTexCoords = core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST, "Export with uv coordinates of the palette image");
-	core::Var::get(cfg::VoxformatTransform, "true", core::CV_NOPERSIST, "Apply the scene graph transform to mesh exports");
-	core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST, "Fill the hollows when voxelizing a mesh format");
-	core::Var::get(cfg::VoxformatVXLNormalType, "2", core::CV_NOPERSIST, "Normal type for VXL format - 2 (TS) or 4 (RedAlert2)", [] (const core::String &var){
-		const int type = var.toInt();
-		return type == 2 || type == 4;
-	});
-	_palette = core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName(), "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
+	voxelformat::FormatConfig::init();
+
+	_mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads);
+	_reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices);
+	_ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion);
+	_scale = core::Var::getSafe(cfg::VoxformatScale);
+	_scaleX = core::Var::getSafe(cfg::VoxformatScaleX);
+	_scaleY = core::Var::getSafe(cfg::VoxformatScaleY);
+	_scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ);
+	_quads = core::Var::getSafe(cfg::VoxformatQuads);
+	_withColor = core::Var::getSafe(cfg::VoxformatWithcolor);
+	_withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords);
+	_palette = core::Var::getSafe(cfg::VoxelPalette);
 
 	if (!filesystem()->registerPath("scripts/")) {
 		Log::warn("Failed to register lua generator script path");

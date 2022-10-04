@@ -11,6 +11,7 @@ set(SRCS
 	private/Tri.h private/Tri.cpp
 
 	Format.h Format.cpp
+	FormatConfig.h FormatConfig.cpp
 	AoSVXLFormat.h AoSVXLFormat.cpp
 	BinVoxFormat.h BinVoxFormat.cpp
 	CSMFormat.h CSMFormat.cpp
