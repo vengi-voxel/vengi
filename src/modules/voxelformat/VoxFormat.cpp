@@ -267,8 +267,14 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			palette.glowColors[i] = palette.colors[i];
 		}
 	}
+
 	// rotation matrix to convert into our coordinate system (mv has z pointing upwards)
-	const glm::mat4 zUpMat = glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	const glm::mat4 zUpMat{
+		-1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f};
+	// glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	core::Set<uint32_t> addedInstances;
 
