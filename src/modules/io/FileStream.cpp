@@ -30,6 +30,10 @@ FileStream::FileStream(const FilePtr &file) : _file(file) {
 FileStream::~FileStream() {
 }
 
+bool FileStream::valid() const {
+	return _file->validHandle();
+}
+
 bool FileStream::flush() {
 	if (_rwops == nullptr) {
 		return false;

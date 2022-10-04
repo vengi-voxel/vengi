@@ -38,6 +38,7 @@ public:
 	FileStream(const FilePtr &file);
 	virtual ~FileStream();
 
+	bool valid() const;
 	int64_t size() const override;
 	int64_t pos() const override;
 	int read(void *dataPtr, size_t dataSize) override;
