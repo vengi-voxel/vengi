@@ -131,7 +131,9 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 				envValue = SDL_getenv(upper.c_str());
 			}
 			if (envValue != nullptr && envValue[0] != '\0') {
-				value = envValue;
+				if (!validatorFunc || validatorFunc(envValue)) {
+					value = envValue;
+				}
 			}
 			v->setVal(value);
 		} else if ((flagsMask & CV_FROMCOMMANDLINE) == CV_FROMCOMMANDLINE) {
