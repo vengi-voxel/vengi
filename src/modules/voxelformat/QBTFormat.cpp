@@ -22,7 +22,7 @@
 namespace voxelformat {
 
 namespace qbt {
-static const bool MergeCompounds = true;
+static const bool MergeCompounds = true; // TODO: cvar on load
 const int NODE_TYPE_MATRIX = 0;
 const int NODE_TYPE_MODEL = 1;
 const int NODE_TYPE_COMPOUND = 2;
