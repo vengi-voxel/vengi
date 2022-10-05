@@ -156,7 +156,12 @@ app::AppState IMGUIApp::onConstruct() {
 	_console.construct();
 	_lastDirectory = core::Var::get(cfg::UILastDirectory, io::filesystem()->homePath().c_str());
 	core::Var::get(cfg::UILastFilter, "0", "The last selected file type filter in the file dialog");
-	core::Var::get(cfg::UIStyle, "0", "Change the ui colors - [0-3]");
+
+	const char *uiStyleDefaultValue = "0";
+	if (!isDarkMode()) {
+		uiStyleDefaultValue = "2";
+	}
+	core::Var::get(cfg::UIStyle, uiStyleDefaultValue, "Change the ui colors - [0-3]");
 	core::Var::get(cfg::UIFileDialogShowHidden, "false", "Show hidden file system entities");
 	core::Var::get(cfg::UINotifyDismissMillis, "3000", "Timeout for notifications in millis");
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
