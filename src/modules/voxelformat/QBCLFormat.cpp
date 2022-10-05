@@ -120,10 +120,11 @@ static int writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t 
 
 bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraphNode& node) const {
 	const voxel::Region& region = node.region();
+	const voxelformat::SceneGraphTransform &transform = node.transform(0);
+	const glm::ivec3& translation = transform.localTranslation();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
-	const voxelformat::SceneGraphTransform &transform = node.transform(0);
 
 	wrapSave(outStream.writeUInt32(qbcl::NODE_TYPE_MATRIX));
 	wrapSave(outStream.writeUInt32(1)) // unknown
@@ -136,9 +137,9 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 	wrapSave(outStream.writeUInt32(size.y))
 	wrapSave(outStream.writeUInt32(size.z))
 
-	wrapSave(outStream.writeInt32(mins.x))
-	wrapSave(outStream.writeInt32(mins.y))
-	wrapSave(outStream.writeInt32(mins.z))
+	wrapSave(outStream.writeInt32(translation.x))
+	wrapSave(outStream.writeInt32(translation.y))
+	wrapSave(outStream.writeInt32(translation.z))
 
 	const glm::vec3 &normalizedPivot = transform.pivot();
 	wrapSave(outStream.writeFloat(/* TODO mins.x +*/ normalizedPivot.x * size.x))
