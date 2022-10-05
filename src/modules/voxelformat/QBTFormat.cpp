@@ -23,6 +23,7 @@ namespace voxelformat {
 
 namespace qbt {
 static const bool MergeCompounds = true; // TODO: cvar on load
+static const bool ColorMap = false; // TODO: cvar on save
 const int NODE_TYPE_MATRIX = 0;
 const int NODE_TYPE_MODEL = 1;
 const int NODE_TYPE_COMPOUND = 2;
@@ -198,14 +199,21 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sce
 }
 
 bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	const voxelformat::SceneGraphNode &root = sceneGraph.root();
+	const voxelformat::SceneGraphNodeChildren &children = root.children();
+	const int childCount = (int)children.size();
+	if (childCount <= 0) {
+		Log::error("Empty scene graph - can't save qbt");
+		return false;
+	}
+
 	wrapSave(stream.writeUInt32(FourCC('Q','B',' ','2')))
 	wrapSave(stream.writeUInt8(1));
 	wrapSave(stream.writeUInt8(0));
 	wrapSave(stream.writeFloat(1.0f));
 	wrapSave(stream.writeFloat(1.0f));
 	wrapSave(stream.writeFloat(1.0f));
-	bool colorMap = false; // TODO: cvar
-	if (colorMap) {
+	if (qbt::ColorMap) {
 		const voxel::Palette& palette = sceneGraph.firstPalette();
 		if (!saveColorMap(stream, palette)) {
 			return false;
