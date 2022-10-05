@@ -247,12 +247,12 @@ bool QBTFormat::skipNode(io::SeekableReadStream& stream) {
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette) {
+bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette, bool paletteMode) {
 	SceneGraphNode node(SceneGraphNodeType::Group);
 	node.setName("Compound");
 	int nodeId = sceneGraph.emplace(core::move(node), parent);
 
-	if (!loadMatrix(stream, sceneGraph, nodeId, palette)) {
+	if (!loadMatrix(stream, sceneGraph, nodeId, palette, paletteMode)) {
 		return false;
 	}
 	uint32_t childCount;
@@ -265,7 +265,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGr
 				return false;
 			}
 		} else {
-			if (!loadNode(stream, sceneGraph, nodeId, palette)) {
+			if (!loadNode(stream, sceneGraph, nodeId, palette, paletteMode)) {
 				return false;
 			}
 		}
@@ -295,7 +295,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGr
  * The M byte is used to store visibility of the 6 faces of a voxel and whether as voxel is solid or air. If M is bigger than 0 then the voxel is solid. Even when a voxel
  * is solid is may not be needed to be rendered because it is a core voxel that is surrounded by 6 other voxels and thus invisible. If M = 1 then the voxel is a core voxel.
  */
-bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette) {
+bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette, bool paletteMode) {
 	char name[1024];
 	uint32_t nameLength;
 	wrap(stream.readUInt32(nameLength));
@@ -372,7 +372,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 				if (mask == 0u) {
 					continue;
 				}
-				if (palette.colorCount > 0) {
+				if (paletteMode) {
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, red);
 					volume->setVoxel(x, y, z, voxel);
 				} else {
@@ -401,7 +401,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette) {
+bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette, bool paletteMode) {
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount));
 	if (childCount > 2048u) {
@@ -413,14 +413,14 @@ bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& sceneGraph
 	node.setName("Model");
 	int nodeId = sceneGraph.emplace(core::move(node), parent);
 	for (uint32_t i = 0; i < childCount; i++) {
-		if (!loadNode(stream, sceneGraph, nodeId, palette)) {
+		if (!loadNode(stream, sceneGraph, nodeId, palette, paletteMode)) {
 			return false;
 		}
 	}
 	return true;
 }
 
-bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette) {
+bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette, bool paletteMode) {
 	uint32_t nodeTypeID;
 	wrap(stream.readUInt32(nodeTypeID));
 	uint32_t dataSize;
@@ -430,7 +430,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph,
 	switch (nodeTypeID) {
 	case qbt::NODE_TYPE_MATRIX: {
 		Log::debug("Found matrix");
-		if (!loadMatrix(stream, sceneGraph, parent, palette)) {
+		if (!loadMatrix(stream, sceneGraph, parent, palette, paletteMode)) {
 			Log::error("Failed to load matrix");
 			return false;
 		}
@@ -439,7 +439,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph,
 	}
 	case qbt::NODE_TYPE_MODEL:
 		Log::debug("Found model");
-		if (!loadModel(stream, sceneGraph, parent, palette)) {
+		if (!loadModel(stream, sceneGraph, parent, palette, paletteMode)) {
 			Log::error("Failed to load model");
 			return false;
 		}
@@ -447,7 +447,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph,
 		break;
 	case qbt::NODE_TYPE_COMPOUND:
 		Log::debug("Found compound");
-		if (!loadCompound(stream, sceneGraph, parent, palette)) {
+		if (!loadCompound(stream, sceneGraph, parent, palette, paletteMode)) {
 			Log::error("Failed to load compound");
 			return false;
 		}
@@ -522,6 +522,7 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrap(stream.readFloat(globalScale.y));
 	wrap(stream.readFloat(globalScale.z));
 
+	bool paletteMode = false;
 	while (stream.remaining() > 0) {
 		char buf[8];
 		wrapBool(stream.readString(sizeof(buf), buf));
@@ -540,6 +541,7 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				Log::debug("No color map found");
 			} else {
 				Log::debug("Color map loaded");
+				paletteMode = true;
 			}
 		} else if (0 == memcmp(buf, "DATATREE", 8)) {
 			/**
@@ -547,7 +549,7 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			 * SectionCaption 8 bytes = "DATATREE"
 			 * RootNode, can currently either be Model, Compound or Matrix
 			 */
-			if (!loadNode(stream, sceneGraph, sceneGraph.root().id(), palette)) {
+			if (!loadNode(stream, sceneGraph, sceneGraph.root().id(), palette, paletteMode)) {
 				Log::error("Failed to load node");
 				return false;
 			}
