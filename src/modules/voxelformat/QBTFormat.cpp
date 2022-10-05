@@ -487,16 +487,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream, voxel::Palette &pal
 		wrap(stream.readUInt8(colorByteG));
 		wrap(stream.readUInt8(colorByteB));
 		wrap(stream.readUInt8(colorByteVisMask));
-
-		const uint32_t red   = ((uint32_t)colorByteR) << 24;
-		const uint32_t green = ((uint32_t)colorByteG) << 16;
-		const uint32_t blue  = ((uint32_t)colorByteB) << 8;
-		const uint32_t alpha = ((uint32_t)255) << 0;
-
-		const glm::vec4& color = core::Color::fromRGBA(red | green | blue | alpha);
-		if (i < voxel::PaletteMaxColors) {
-			palette.colors[i] = core::Color::getRGBA(color);
-		}
+		palette.colors[i] = core::RGBA(colorByteR, colorByteG, colorByteB);
 	}
 	return true;
 }
