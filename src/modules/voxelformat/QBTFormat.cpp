@@ -91,6 +91,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 					*zlibBuf++ = voxelColor.b;
 				}
 				// mask != 0 means solid, 1 is core (surrounded by others and not visible)
+				// TODO: const voxel::FaceBits faceBits = voxel::visibleFaces(*node.volume(), x, y, z);
 				*zlibBuf++ = 0xff;
 			}
 		}
@@ -98,6 +99,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 
 	size_t realBufSize = 0;
 	if (!core::zip::compress(zlibBuffer, zlibBufSize, compressedBuf, compressedBufSize, &realBufSize)) {
+		Log::error("Could not save qbt file: failed to compress the voxel data buffer");
 		delete[] compressedBuf;
 		delete[] zlibBuffer;
 		return false;
@@ -119,14 +121,14 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	wrapSaveFree(stream.writeString(node.name(), false));
 	Log::debug("Save matrix with name %s", node.name().c_str());
 
-	const uint32_t frame = 0;
-	const voxelformat::SceneGraphTransform &transform = node.transform(frame);
-	const glm::ivec3 offset = glm::round(transform.worldTranslation());
+	const KeyFrameIndex keyFrameIdx = 0;
+	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+	const glm::ivec3 offset = glm::round(transform.localTranslation());
 	wrapSaveFree(stream.writeInt32(offset.x));
 	wrapSaveFree(stream.writeInt32(offset.y));
 	wrapSaveFree(stream.writeInt32(offset.z));
 
-	glm::uvec3 localScale { 1 };
+	const glm::uvec3 localScale { 1 };
 	wrapSaveFree(stream.writeUInt32(localScale.x));
 	wrapSaveFree(stream.writeUInt32(localScale.y));
 	wrapSaveFree(stream.writeUInt32(localScale.z));
@@ -202,7 +204,7 @@ bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapSave(stream.writeFloat(1.0f));
 	wrapSave(stream.writeFloat(1.0f));
 	wrapSave(stream.writeFloat(1.0f));
-	bool colorMap = false;
+	bool colorMap = false; // TODO: cvar
 	if (colorMap) {
 		const voxel::Palette& palette = sceneGraph.firstPalette();
 		if (!saveColorMap(stream, palette)) {
@@ -325,7 +327,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	wrap(stream.readUInt32(size.x));
 	wrap(stream.readUInt32(size.y));
 	wrap(stream.readUInt32(size.z));
-	transform.setPivot(pivot / glm::vec3(size));
+	transform.setPivot(pivot);
 
 	uint32_t voxelDataSize;
 	wrap(stream.readUInt32(voxelDataSize));
@@ -343,7 +345,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 		return false;
 	}
 	if (glm::any(glm::lessThan(size, glm::uvec3(1)))) {
-		Log::warn("Size of matrix results in empty space");
+		Log::warn("Size of matrix results in empty space - voxelDataSize: %u", voxelDataSize);
 		return false;
 	}
 	const uint32_t voxelDataSizeDecompressed = size.x * size.y * size.z * sizeof(uint32_t);
@@ -520,10 +522,7 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrap(stream.readFloat(globalScale.y));
 	wrap(stream.readFloat(globalScale.z));
 
-	for (int i = 0; i < 2; ++i) {
-		if (stream.remaining() <= 0) {
-			break;
-		}
+	while (stream.remaining() > 0) {
 		char buf[8];
 		wrapBool(stream.readString(sizeof(buf), buf));
 		if (0 == memcmp(buf, "COLORMAP", 7)) {
