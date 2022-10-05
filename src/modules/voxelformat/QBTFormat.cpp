@@ -118,8 +118,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	wrapSaveFree(stream.writeUInt32(datasize));
 
 	const size_t chunkStartPos = stream.pos();
-	wrapSaveFree(stream.writeUInt32(nameLength));
-	wrapSaveFree(stream.writeString(node.name(), false));
+	wrapSaveFree(stream.writePascalStringUInt32LE(node.name()));
 	Log::debug("Save matrix with name %s", node.name().c_str());
 
 	const KeyFrameIndex keyFrameIdx = 0;
