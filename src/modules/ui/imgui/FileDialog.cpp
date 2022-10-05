@@ -24,6 +24,10 @@
 namespace ui {
 namespace imgui {
 
+static const char *FILE_ALREADY_EXISTS_POPUP = "File already exists##FileOverwritePopup";
+static const char *DELETE_FOLDER_POPUP = "Delete Folder##DeleteFolderPopup";
+static const char *NEW_FOLDER_POPUP = "Create folder##NewFolderPopup";
+
 static core::String assemblePath(const core::String &dir, const core::String &ent) {
 	return core::string::path(dir, ent);
 }
@@ -440,7 +444,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 
 			if (type != video::OpenFileMode::Open) {
 				if (ImGui::Button("New folder")) {
-					ImGui::OpenPopup("NewFolderPopup");
+					ImGui::OpenPopup(NEW_FOLDER_POPUP);
 				}
 				ImGui::SameLine();
 			}
@@ -451,7 +455,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
 			}
 			if (ImGui::Button("Delete folder")) {
-				ImGui::OpenPopup("DeleteFolderPopup");
+				ImGui::OpenPopup(DELETE_FOLDER_POPUP);
 			}
 			if (_disableDeleteButton) {
 				ImGui::PopStyleVar();
@@ -463,7 +467,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			ImVec2 center(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x * 0.5f,
 						  ImGui::GetWindowPos().y + ImGui::GetWindowSize().y * 0.5f);
 			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-			if (ImGui::BeginPopupModal("NewFolderPopup")) {
+			if (ImGui::BeginPopupModal(NEW_FOLDER_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 				ImGui::Text("Enter a name for the new folder");
 				ImGui::InputText("##newfoldername", _newFolderName, sizeof(_newFolderName));
 				if (ImGui::Button("Create##1")) {
@@ -486,8 +490,42 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 				ImGui::EndPopup();
 			}
 
+			if (ImGui::BeginPopupModal(FILE_ALREADY_EXISTS_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+				ImGui::AlignTextToFramePadding();
+				ImGui::PushFont(imguiApp()->bigFont());
+				ImGui::TextUnformatted(ICON_FA_EXCLAMATION_TRIANGLE);
+				ImGui::PopFont();
+				ImGui::SameLine();
+				ImGui::Spacing();
+				ImGui::SameLine();
+				ImGui::TextUnformatted("Do you want to overwrite the file?");
+				ImGui::Spacing();
+				ImGui::Separator();
+
+				if (ImGui::Button("Yes##filedialog-override")) {
+					const core::String &fullPath = assemblePath(_currentPath, _currentFile);
+					SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
+					_fileSelectIndex = 0;
+					_folderSelectIndex = 0;
+					_currentFile = "";
+					if (open != nullptr) {
+						*open = false;
+					}
+					_error[0] = '\0';
+					ImGui::CloseCurrentPopup();
+					ImGui::EndPopup();
+					ImGui::EndPopup();
+					return true;
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("No##filedialog-override")) {
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+
 			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-			if (ImGui::BeginPopupModal("DeleteFolderPopup")) {
+			if (ImGui::BeginPopupModal(DELETE_FOLDER_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 				ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "Are you sure you want to delete this folder?");
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
 				ImGui::TextUnformatted(_currentFolder.c_str());
@@ -585,16 +623,20 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 							}
 						}
 						const core::String &fullPath = assemblePath(_currentPath, _currentFile);
-						SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
-						_fileSelectIndex = 0;
-						_folderSelectIndex = 0;
-						_currentFile = "";
-						if (open != nullptr) {
-							*open = false;
+						if (type == video::OpenFileMode::Save && io::filesystem()->exists(fullPath)) {
+							ImGui::OpenPopup(FILE_ALREADY_EXISTS_POPUP);
+						} else {
+							SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
+							_fileSelectIndex = 0;
+							_folderSelectIndex = 0;
+							_currentFile = "";
+							if (open != nullptr) {
+								*open = false;
+							}
+							_error[0] = '\0';
+							ImGui::EndPopup();
+							return true;
 						}
-						_error[0] = '\0';
-						ImGui::EndPopup();
-						return true;
 					}
 				}
 			}
