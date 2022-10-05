@@ -94,6 +94,8 @@ public:
 
 	void *windowHandle();
 
+	bool isDarkMode() const;
+
 	/**
 	 * @brief This may differ from windowDimension() if we're rendering to a high-DPI
 	 * drawable, i.e. the window was created with high-DPI support (Apple calls this

@@ -12,6 +12,7 @@
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/Process.h"
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
@@ -23,6 +24,12 @@
 #include "util/KeybindingParser.h"
 #include <glm/common.hpp>
 #include <SDL.h>
+
+#ifdef __WINDOWS__
+#include <windows.h>
+#elif __MACOSX__
+#include <Foundation/NSUserDefaults.h>
+#endif
 
 namespace video {
 
@@ -141,6 +148,39 @@ app::AppState WindowedApp::onRunning() {
 	video_trace_frame_end();
 
 	return app::AppState::Running;
+}
+
+// https://stackoverflow.com/questions/25207077/how-to-detect-if-os-x-is-in-dark-mode
+// https://wiki.archlinux.org/title/Dark_mode_switching#gsettings
+bool WindowedApp::isDarkMode() const {
+#ifdef __MACOSX__
+	NSString * appleInterfaceStyle = [[NSUserDefaults standardUserDefaults] stringForKey:@"AppleInterfaceStyle"];
+	if (appleInterfaceStyle && [appleInterfaceStyle length] > 0) {
+		return [[appleInterfaceStyle lowercaseString] containsString:@"dark"];
+	}
+#elif __LINUX__
+	core::Process process;
+	core::DynamicArray<core::String> arguments;
+	arguments.push_back("get");
+	arguments.push_back("org.gnome.desktop.interface");
+	arguments.push_back("gtk-theme");
+	char outputBuf[4096] = "";
+	const int exitCode = process.exec("/usr/bin/gsettings", arguments, nullptr, outputBuf, sizeof(outputBuf));
+	if (exitCode == 0) {
+		return core::string::icontains(outputBuf, "dark");
+	}
+#elif __WINDOWS__
+	HKEY hkey;
+	if (RegOpenKey(HKEY_CURRENT_USER, R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)", &hkey) == ERROR_SUCCESS) {
+		DWORD value = 0;
+		DWORD size = sizeof(DWORD);
+		auto error = RegQueryValueEx(hkey, "AppsUseLightTheme", nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &size);
+		if (error == ERROR_SUCCESS) {
+			return value != 0;
+		}
+	}
+#endif
+	return false;
 }
 
 bool WindowedApp::onKeyRelease(int32_t key, int16_t modifier) {
