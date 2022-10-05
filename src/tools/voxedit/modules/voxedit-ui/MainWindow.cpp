@@ -41,6 +41,7 @@
 #define POPUP_TITLE_UNSAVED "Unsaved Modifications##popuptitle"
 #define POPUP_TITLE_NEW_SCENE "New scene##popuptitle"
 #define POPUP_TITLE_FAILED_TO_SAVE "Failed to save##popuptitle"
+#define POPUP_TITLE_UNSAVED_SCENE "Unsaved scene##popuptitle"
 #define POPUP_TITLE_SCENE_SETTINGS "Scene settings##popuptitle"
 #define WINDOW_TITLE_SCRIPT_EDITOR ICON_FK_CODE "Script Editor##scripteditor"
 
@@ -286,6 +287,10 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_SCENE_SETTINGS);
 		_menuBar._popupSceneSettings = false;
 	}
+	if (_popupUnsavedChangesQuit) {
+		ImGui::OpenPopup(POPUP_TITLE_UNSAVED_SCENE);
+		_popupUnsavedChangesQuit = false;
+	}
 
 	if (ImGui::BeginPopup(POPUP_TITLE_SCENE_SETTINGS, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted("Scene settings");
@@ -344,6 +349,21 @@ void MainWindow::registerPopups() {
 		ImGui::EndPopup();
 	}
 
+	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		dialog(ICON_FA_QUESTION, "Unsaved changes - are you sure to quit?");
+		if (ImGui::Button(ICON_FA_CHECK " OK##unsavedscene")) {
+			_forceQuit = true;
+			_app->requestQuit();
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_TIMES " Cancel##unsavedscene")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
 		dialog(ICON_FA_EXCLAMATION_TRIANGLE, "Failed to save the model!");
 		if (ImGui::Button(ICON_FA_CHECK " OK##failedsave")) {
@@ -371,6 +391,17 @@ void MainWindow::registerPopups() {
 		}
 		ImGui::EndPopup();
 	}
+}
+
+bool MainWindow::allowToQuit() {
+	if (_forceQuit) {
+		return true;
+	}
+	if (voxedit::sceneMgr().dirty()) {
+		_popupUnsavedChangesQuit = true;
+		return false;
+	}
+	return true;
 }
 
 void MainWindow::update() {

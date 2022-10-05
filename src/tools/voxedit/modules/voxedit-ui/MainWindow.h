@@ -65,6 +65,8 @@ private:
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;
 	bool _initializedDockSpace = false;
+	bool _forceQuit = false;
+	bool _popupUnsavedChangesQuit = false;
 
 	ui::imgui::IMGUIApp* _app;
 
@@ -127,6 +129,7 @@ public:
 
 	void resetCamera();
 	void update();
+	bool allowToQuit();
 	bool isSceneHovered() const;
 
 	bool saveScreenshot(const core::String& file);

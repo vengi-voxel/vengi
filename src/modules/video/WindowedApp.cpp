@@ -126,7 +126,8 @@ app::AppState WindowedApp::onRunning() {
 
 	if (quit) {
 		Log::debug("Quitting the application");
-		return app::AppState::Cleanup;
+		requestQuit();
+		return app::AppState::Running;
 	}
 
 	core_trace_scoped(WindowedAppStartFrame);

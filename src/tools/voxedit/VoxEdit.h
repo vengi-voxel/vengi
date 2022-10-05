@@ -35,6 +35,8 @@ public:
 
 	void onDropFile(const core::String& file) override;
 
+	bool allowedToQuit() override;
+
 	app::AppState onConstruct() override;
 	app::AppState onInit() override;
 	app::AppState onCleanup() override;

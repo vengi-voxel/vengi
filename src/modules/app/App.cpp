@@ -743,9 +743,15 @@ void App::readyForInit() {
 	remBlocker(AppState::Init);
 }
 
+bool App::allowedToQuit() {
+	return true;
+}
+
 void App::requestQuit() {
 	if (AppState::Running == _curState) {
-		_nextState = AppState::Cleanup;
+		if (allowedToQuit()) {
+			_nextState = AppState::Cleanup;
+		}
 	} else {
 		_nextState = AppState::Destroy;
 	}

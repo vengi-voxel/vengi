@@ -344,6 +344,10 @@ app::AppState VoxEdit::onInit() {
 	return state;
 }
 
+bool VoxEdit::allowedToQuit() {
+	return _mainWindow->allowToQuit();
+}
+
 void VoxEdit::onRenderUI() {
 	if (voxedit::sceneMgr().update(_nowSeconds)) {
 		_mainWindow->resetCamera();

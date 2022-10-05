@@ -256,6 +256,10 @@ public:
 	// handle the app state changes here
 	virtual void onFrame();
 	virtual void onAfterFrame() {}
+	/**
+	 * If you have e.g. unsaved or any other reason to prevent the shutdown of the application, you can return @c false here
+	 */
+	virtual bool allowedToQuit();
 	void readyForInit();
 	void requestQuit();
 	void requestSuspend();
