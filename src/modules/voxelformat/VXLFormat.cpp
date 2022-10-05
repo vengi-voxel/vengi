@@ -61,13 +61,18 @@ VXLFormat::VXLMatrix VXLFormat::convertToWestwood(const glm::mat4 &in) {
 	return glm::transpose(VXLFormat::VXLMatrix::transpose_type(switchYAndZ(in)));
 }
 
-bool VXLFormat::writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t& skipCount, uint8_t& voxelCount) const {
+bool VXLFormat::writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t& skipCount, uint8_t& voxelCount, uint8_t normalType) const {
 	wrapBool(stream.writeUInt8(skipCount))
 	wrapBool(stream.writeUInt8(voxelCount))
 	for (uint8_t y1 = y - voxelCount; y1 < y; ++y1) {
 		const voxel::Voxel& voxel = volume->voxel(x, y1, z);
 		wrapBool(stream.writeUInt8(voxel.getColor()))
-		wrapBool(stream.writeUInt8(0)) // TODO: normal
+		uint8_t normalIndex = 0;
+		// TODO: normal
+		// if (normalType == 2) { // Tiberian Sun
+		// } else if (normalType == 4) { // Red Alert
+		// }
+		wrapBool(stream.writeUInt8(normalIndex))
 	}
 	wrapBool(stream.writeUInt8(voxelCount)) // duplicated count
 	skipCount = voxelCount = 0u;
@@ -93,6 +98,8 @@ bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraphNode&
 	}
 	offsets.data = stream.pos() - (int64_t)nodeSectionOffset;
 
+	const uint8_t normalType = core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal();
+
 	const int64_t beforePos = stream.pos();
 	for (uint32_t i = 0u; i < baseSize; ++i) {
 		const int64_t spanStartPos = stream.pos() - beforePos;
@@ -107,28 +114,28 @@ bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraphNode&
 			const voxel::Voxel& voxel = node.volume()->voxel(x, y, z);
 			if (voxel::isAir(voxel.getMaterial())) {
 				if (voxelCount > 0) {
-					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount))
+					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount, normalType))
 					voxelsInColumn = true;
 				}
 				if (skipCount == 0xFF) {
-					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount))
+					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount, normalType))
 					voxelsInColumn = true;
 				}
 				++skipCount;
 			} else {
 				if (skipCount > 0) {
-					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount))
+					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount, normalType))
 					voxelsInColumn = true;
 				}
 				if (voxelCount == 0xFF) {
-					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount))
+					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount, normalType))
 					voxelsInColumn = true;
 				}
 				++voxelCount;
 			}
 		}
 		if (voxelCount > 0 || skipCount > 0) {
-			wrapBool(writeNodeBodyEntry(stream, node.volume(), x, size.y - 1, z, skipCount, voxelCount))
+			wrapBool(writeNodeBodyEntry(stream, node.volume(), x, size.y - 1, z, skipCount, voxelCount, normalType))
 			voxelsInColumn = true;
 		}
 		if (!voxelsInColumn) {
