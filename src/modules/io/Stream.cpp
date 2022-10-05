@@ -121,6 +121,34 @@ bool WriteStream::writePascalStringUInt16BE(const core::String &str) {
 	return true;
 }
 
+bool WriteStream::writePascalStringUInt32LE(const core::String &str) {
+	uint16_t length = str.size();
+	if (!writeUInt32(length)) {
+		return false;
+	}
+	for (uint16_t i = 0u; i < length; ++i) {
+		uint8_t chr = str[i];
+		if (!writeUInt8(chr)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool WriteStream::writePascalStringUInt32BE(const core::String &str) {
+	uint16_t length = str.size();
+	if (!writeUInt32BE(length)) {
+		return false;
+	}
+	for (uint16_t i = 0u; i < length; ++i) {
+		uint8_t chr = str[i];
+		if (!writeUInt8(chr)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 bool WriteStream::writeInt16(int16_t word) {
 	const int16_t swappedWord = SDL_SwapLE16(word);
 	return write(&swappedWord, sizeof(int16_t)) != -1;
