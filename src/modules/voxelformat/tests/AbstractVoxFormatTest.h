@@ -59,14 +59,24 @@ protected:
 	SceneGraph::MergedVolumePalette load(const core::String& filename, io::SeekableReadStream& stream, Format& format) {
 		SceneGraph sceneGraph;
 		if (!format.loadGroups(filename, stream, sceneGraph)) {
+			Log::error("Failed to load %s", filename.c_str());
 			return SceneGraph::MergedVolumePalette{};
 		}
+		if (sceneGraph.empty()) {
+			Log::error("Success - but no nodes");
+			return SceneGraph::MergedVolumePalette{};
+		}
+		Log::debug("Loaded %s - merging", filename.c_str());
 		return sceneGraph.merge();
 	}
 
 	SceneGraph::MergedVolumePalette load(const core::String& filename, Format& format) {
 		SceneGraph sceneGraph;
 		if (!loadGroups(filename, format, sceneGraph)) {
+			return SceneGraph::MergedVolumePalette{};
+		}
+		if (sceneGraph.empty()) {
+			Log::error("Success - but no nodes");
 			return SceneGraph::MergedVolumePalette{};
 		}
 		return sceneGraph.merge();
