@@ -222,7 +222,7 @@ bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	if (!stream.writeString("DATATREE", false)) {
 		return false;
 	}
-	if (!saveModel(stream, sceneGraph, colorMap)) {
+	if (!saveModel(stream, sceneGraph, qbt::ColorMap)) {
 		return false;
 	}
 	Log::debug("Saved %i layers", layers);
