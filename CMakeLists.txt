@@ -55,6 +55,11 @@ elseif (MSVC)
 	set(USE_MSVC TRUE)
 endif()
 
+if (APPLE)
+	enable_language(OBJC)
+	enable_language(OBJCXX)
+endif()
+
 include(${SCRIPTS_CMAKE_DIR}/common.cmake)
 include(${SCRIPTS_CMAKE_DIR}/util.cmake)
 include(${SCRIPTS_CMAKE_DIR}/genshader.cmake)
