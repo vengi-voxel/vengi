@@ -303,7 +303,7 @@ bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& 
 	state._colorFormat = (ColorFormat)colorFormat;
 	uint32_t zAxisOrientation;
 	wrap(stream.readUInt32(zAxisOrientation))
-	state._zAxisOrientation = ZAxisOrientation::Right; //(ZAxisOrientation)zAxisOrientation;
+	state._zAxisOrientation = (ZAxisOrientation)zAxisOrientation;
 	uint32_t compressed;
 	wrap(stream.readUInt32(compressed))
 	state._compressed = (Compression)compressed;

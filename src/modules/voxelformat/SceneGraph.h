@@ -102,7 +102,7 @@ public:
 	bool changeParent(int nodeId, int newParentId);
 
 	/**
-	 * @brief Pre-allocated memory in the graph without added the nodes
+	 * @brief Pre-allocated memory in the graph without adding the nodes
 	 */
 	void reserve(size_t size);
 	/**
