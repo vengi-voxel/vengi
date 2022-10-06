@@ -45,6 +45,11 @@ set(SRCS
 	EventHandler.cpp EventHandler.h
 	IEventObserver.h
 )
+
+if (APPLE)
+	list(APPEND SRCS WindowedAppOSX.m)
+endif()
+
 set(SRCS_SHADERS
 	shaders/_fog.vert shaders/_fog.frag
 	shaders/_fullscreen.vert

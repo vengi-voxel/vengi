@@ -28,8 +28,7 @@
 #ifdef __WINDOWS__
 #include <windows.h>
 #elif __MACOSX__
-#include <Foundation/NSUserDefaults.h>
-#include <Foundation/Foundation.h>
+extern bool isOSXDarkMode();
 #endif
 
 namespace video {
@@ -155,10 +154,7 @@ app::AppState WindowedApp::onRunning() {
 // https://wiki.archlinux.org/title/Dark_mode_switching#gsettings
 bool WindowedApp::isDarkMode() const {
 #ifdef __MACOSX__
-	NSString * appleInterfaceStyle = [[NSUserDefaults standardUserDefaults] stringForKey:@"AppleInterfaceStyle"];
-	if (appleInterfaceStyle && [appleInterfaceStyle length] > 0) {
-		return [[appleInterfaceStyle lowercaseString] containsString:@"dark"];
-	}
+	return isOSXDarkMode();
 #elif __LINUX__
 	core::Process process;
 	core::DynamicArray<core::String> arguments;
