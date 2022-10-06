@@ -25,6 +25,13 @@
 
 namespace voxel {
 
+void Palette::fill() {
+	for (int i = colorCount; i < PaletteMaxColors; ++i) {
+		colors[i] = core::RGBA(64, 64, 64, 255);
+	}
+	colorCount = PaletteMaxColors;
+}
+
 void Palette::markDirty() {
 	_dirty = true;
 	_hash._hashColors[0] = core::hash(colors, sizeof(colors));

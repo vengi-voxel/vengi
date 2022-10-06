@@ -48,6 +48,11 @@ public:
 	bool saveGlow(const char *name = nullptr) const;
 	bool load(const uint8_t *rgbaBuf, size_t bufsize);
 
+	/**
+	 * @brief fill the remaining colors with black
+	 */
+	void fill();
+
 	static constexpr const char *builtIn[] = {"built-in:nippon", "built-in:minecraft", "built-in:magicavoxel", "built-in:quake1"};
 
 	bool minecraft();
