@@ -29,6 +29,7 @@
 #include <windows.h>
 #elif __MACOSX__
 #include <Foundation/NSUserDefaults.h>
+#include <Foundation/Foundation.h>
 #endif
 
 namespace video {
