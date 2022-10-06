@@ -185,13 +185,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt8(r))
 		wrap(stream.readUInt8(g))
 		wrap(stream.readUInt8(b))
-
-		const uint8_t nr = glm::clamp((uint32_t)glm::round(((float)r * 255.0f) / 63.0f), 0u, 255u);
-		const uint8_t ng = glm::clamp((uint32_t)glm::round(((float)g * 255.0f) / 63.0f), 0u, 255u);
-		const uint8_t nb = glm::clamp((uint32_t)glm::round(((float)b * 255.0f) / 63.0f), 0u, 255u);
-
-		const glm::vec4& color = core::Color::fromRGBA(nr, ng, nb, 255);
-		palette.colors[i] = core::Color::getRGBA(color);
+		palette.colors[i] = core::RGBA(r, g, b);
 	}
 	stream.seek((int64_t)currentPos);
 

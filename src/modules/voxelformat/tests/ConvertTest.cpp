@@ -168,8 +168,7 @@ TEST_F(ConvertTest, testKVXToQb) {
 	QBFormat target;
 	// qb doesn't store a pivot
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
-	const float maxDelta = 0.012f;
-	testLoadSaveAndLoad("test.kvx", src, "convert-test.qb", target, flags, maxDelta);
+	testLoadSaveAndLoad("test.kvx", src, "convert-test.qb", target, flags);
 }
 
 TEST_F(ConvertTest, testKV6ToQb) {
