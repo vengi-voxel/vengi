@@ -28,7 +28,7 @@
 #ifdef __WINDOWS__
 #include <windows.h>
 #elif __MACOSX__
-extern bool isOSXDarkMode();
+extern "C" bool isOSXDarkMode();
 #endif
 
 namespace video {
