@@ -27,7 +27,7 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool SproxelFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	char buf[512];
 	wrapBool(stream.readLine(sizeof(buf), buf))
 

@@ -117,7 +117,7 @@ private:
 	// Write all the layers.
 	bool saveChunk_LAYR(io::SeekableWriteStream &stream, const SceneGraph &sceneGraph, int numBlocks);
 public:
-	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
+	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream) override;
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream) override;

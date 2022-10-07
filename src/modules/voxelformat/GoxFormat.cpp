@@ -412,7 +412,7 @@ bool GoxFormat::loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-bool GoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 

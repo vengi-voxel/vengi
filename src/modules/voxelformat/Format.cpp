@@ -13,8 +13,10 @@
 #include "core/Color.h"
 #include "math/Math.h"
 #include "voxel/Mesh.h"
+#include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/SceneGraphUtil.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeSplitter.h"
@@ -172,6 +174,39 @@ bool Format::save(const voxel::RawVolume* volume, const core::String &filename, 
 
 bool Format::stopExecution() {
 	return app::App::getInstance()->shouldQuit();
+}
+
+size_t RGBAFormat::loadPalette(const core::String& filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+	const int64_t resetToPos = stream.pos();
+	SceneGraph sceneGraph;
+	if (!loadGroupsRGBA(filename, stream, sceneGraph)) {
+		stream.seek(resetToPos);
+		return 0;
+	}
+	for (const SceneGraphNode &node : sceneGraph) {
+		const voxel::Palette &nodePalette = node.palette();
+		for (int i = 0; i < nodePalette.colorCount; ++i) {
+			palette.addColorToPalette(nodePalette.colors[i], false);
+		}
+	}
+	stream.seek(resetToPos);
+	return palette.colorCount;
+}
+
+bool RGBAFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+	//voxel::Palette palette;
+	//if (loadPalette(filename, stream, palette) > 0) {
+	//	// by setting the global palette we search closest colors in rgba formats to
+	//	// better colors than in the default palette
+	//	if (!voxel::initPalette(palette)) {
+	//		voxel::initDefaultPalette();
+	//	}
+	//}
+	if (!loadGroupsRGBA(filename, stream, sceneGraph)) {
+		return false;
+	}
+	sceneGraph.updateTransforms();
+	return true;
 }
 
 }

@@ -55,7 +55,7 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.colorCount;
 }
 
-bool CubFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))

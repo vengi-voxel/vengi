@@ -47,7 +47,7 @@ static bool readString(io::SeekableReadStream& stream, core::String& str, bool r
 	return true;
 }
 
-bool CSMFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	uint32_t magic, version, blank, matrixCount;
 	wrap(stream.readUInt32(magic))
 	const bool isNVM = magic == FourCC('.','N','V','M');

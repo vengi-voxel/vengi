@@ -49,7 +49,7 @@ glm::ivec3 AoSVXLFormat::dimensions(io::SeekableReadStream &stream) const {
 	return size;
 }
 
-bool AoSVXLFormat::loadGroups(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	const glm::ivec3 size = dimensions(stream);
 	return loadMap(filename, stream, sceneGraph, size.x, size.y, size.z);
 }

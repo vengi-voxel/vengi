@@ -105,7 +105,7 @@ static const struct BlockPalIdx {
 	{907, 12}, {908, 12}, {909, 12}, {910, 12}, {911, 12}, {912, 12}, {913, 12}, {914, 12}, {915, 12}, {916, 12},
 	{917, 12}, {918, 12}, {919, 12}, {920, 12}, {921, 12}};
 
-bool SMFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
 	io::ZipArchive archive;
 	if (!archive.open(&stream)) {
 		Log::error("Failed to load zip archive from %s", filename.c_str());

@@ -307,7 +307,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	return true;
 }
 
-bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	State state;
 	wrap(stream.readUInt32(state._version))
 	uint32_t colorFormat;
@@ -346,7 +346,6 @@ bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& 
 			break;
 		}
 	}
-	sceneGraph.updateTransforms();
 	return true;
 }
 

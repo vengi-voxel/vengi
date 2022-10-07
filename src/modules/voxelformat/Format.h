@@ -123,6 +123,14 @@ public:
  * @ingroup Formats
  */
 class RGBAFormat : public Format {
+protected:
+	virtual bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) = 0;
+public:
+	/**
+	 * @brief Tries to assemble a good palette for the given rgba format
+	 */
+	size_t loadPalette(const core::String& filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override final;
 };
 
 }
