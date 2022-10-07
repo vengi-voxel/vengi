@@ -88,9 +88,17 @@ inline void keyFrameComparator(const voxelformat::SceneGraphKeyFrames &keyframes
 			if ((flags & ValidateFlags::Translation) == ValidateFlags::Translation) {
 				ASSERT_EQ(t1.worldTranslation(), t2.worldTranslation()) << "Translation failed for frame " << i;
 				ASSERT_EQ(t1.localTranslation(), t2.localTranslation()) << "Translation failed for frame " << i;
+				ASSERT_EQ(t1.worldMatrix(), t2.worldMatrix()) << "Matrix failed for frame " << i;
+				ASSERT_EQ(t1.localMatrix(), t2.localMatrix()) << "Matrix failed for frame " << i;
+			} else {
+				const glm::mat3 wrot1 = t1.worldMatrix();
+				const glm::mat3 wrot2 = t2.worldMatrix();
+				const glm::mat3 lrot1 = t1.localMatrix();
+				const glm::mat3 lrot2 = t2.localMatrix();
+				ASSERT_EQ(wrot1, wrot2) << "Matrix failed for frame " << i;
+				ASSERT_EQ(lrot1, lrot2) << "Matrix failed for frame " << i;
+
 			}
-			ASSERT_EQ(t1.worldMatrix(), t2.worldMatrix()) << "Matrix failed for frame " << i;
-			ASSERT_EQ(t1.localMatrix(), t2.localMatrix()) << "Matrix failed for frame " << i;
 			if ((flags & ValidateFlags::Pivot) == ValidateFlags::Pivot) {
 				ASSERT_EQ(t1.pivot(), t2.pivot()) << "Pivot failed for frame " << i;
 			}

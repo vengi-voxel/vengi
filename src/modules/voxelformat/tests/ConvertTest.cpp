@@ -163,14 +163,6 @@ TEST_F(ConvertTest, testQbtToQb) {
 	testLoadSaveAndLoadSceneGraph("qubicle.qbt", src, "convert-qubicle.qb", target, flags);
 }
 
-TEST_F(ConvertTest, testKVXToQb) {
-	KVXFormat src;
-	QBFormat target;
-	// qb doesn't store a pivot
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
-	testLoadSaveAndLoad("test.kvx", src, "convert-test.qb", target, flags);
-}
-
 TEST_F(ConvertTest, testKV6ToQb) {
 	KV6Format src;
 	QBFormat target;
@@ -187,12 +179,35 @@ TEST_F(ConvertTest, testQbToVXR) {
 	testLoadSaveAndLoadSceneGraph("robo.qb", src, "convert-robo.vxr", target, flags);
 }
 
-// TODO: transform broken
 TEST_F(ConvertTest, testQbToQBCL) {
 	QBFormat src;
 	QBCLFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform);
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbcl", target, flags);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbcl", target);
+}
+
+TEST_F(ConvertTest, testQbToVXM) {
+	QBFormat src;
+	VXMFormat target;
+	// vxm doesn't store the position - this is handled in vxr/vxa - so it's ok here to skip the translation check
+	// qb doesn't store the pivot
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxm", target, flags);
+}
+
+TEST_F(ConvertTest, testQbToVXL) {
+	QBFormat src;
+	VXLFormat target;
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxl", target);
+}
+
+// TODO: remove maxDelta for color once qb doesn't quantize the colors - but builds palettes
+TEST_F(ConvertTest, testKVXToQb) {
+	KVXFormat src;
+	QBFormat target;
+	// qb doesn't store a pivot
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	const float maxDelta = 0.0127f;
+	testLoadSaveAndLoad("test.kvx", src, "convert-test.qb", target, flags, maxDelta);
 }
 
 // TODO: pivot broken
@@ -205,27 +220,11 @@ TEST_F(ConvertTest, testVoxToVXR) {
 }
 
 // TODO: translation broken
-TEST_F(ConvertTest, testQbToVXL) {
-	QBFormat src;
-	VXLFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform);
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxl", target, flags);
-}
-
-// TODO: translation broken
 TEST_F(ConvertTest, testVXLToVXR) {
 	VXLFormat src;
 	QBFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation);
 	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "convert-cc.vxr", target, flags);
-}
-
-// TODO: transform broken
-TEST_F(ConvertTest, testQbToVXM) {
-	QBFormat src;
-	VXMFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform);
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxm", target, flags);
 }
 
 // TODO: colors broken
