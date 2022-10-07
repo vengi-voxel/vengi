@@ -142,7 +142,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	wrapSave(stream.writeUInt32(131331)) // version
 	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
-	wrapSave(stream.writeUInt32((uint32_t)ZAxisOrientation::Right))
+	wrapSave(stream.writeUInt32((uint32_t)ZAxisOrientation::LeftHanded))
 	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))
 	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
 	wrapSave(stream.writeUInt32((uint32_t)sceneGraph.size()))
@@ -210,14 +210,18 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 		wrap(stream.readInt32(offset.y));
 		wrap(stream.readInt32(offset.z));
 		Log::debug("Matrix offset: %i:%i:%i", offset.x, offset.y, offset.z);
+		if (state._zAxisOrientation == ZAxisOrientation::RightHanded) {
+			core::exchange(offset.x, offset.z);
+		}
 		transform.setWorldTranslation(offset);
 	}
 
-	const glm::ivec3 maxs = glm::ivec3(size) - 1;
-	const voxel::Region region(0, 0, 0, maxs.x, maxs.y, maxs.z);
-	core_assert_msg(region.getDimensionsInVoxels() == glm::ivec3(size),
-			"%i:%i:%i versus %i:%i:%i", region.getDimensionsInVoxels().x, region.getDimensionsInVoxels().y, region.getDimensionsInVoxels().z,
-			size.x, size.y, size.z);
+	voxel::Region region;
+	if (state._zAxisOrientation == ZAxisOrientation::RightHanded) {
+		region = voxel::Region(0, 0, 0, (int)size.z - 1, (int)size.y - 1, (int)size.x - 1);
+	} else {
+		region = voxel::Region(0, 0, 0, (int)size.x - 1, (int)size.y - 1, (int)size.z - 1);
+	}
 	if (!region.isValid()) {
 		Log::error("Invalid region");
 		return false;
@@ -236,7 +240,11 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
 					const voxel::Voxel& voxel = getVoxel(state, stream, palLookup);
-					v->setVoxel((int)x, (int)y, (int)z, voxel);
+					if (state._zAxisOrientation == ZAxisOrientation::RightHanded) {
+						v->setVoxel((int)z, (int)y, (int)x, voxel);
+					} else {
+						v->setVoxel((int)x, (int)y, (int)z, voxel);
+					}
 				}
 			}
 		}
@@ -278,7 +286,11 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 			for (uint32_t j = 0; j < count; ++j) {
 				const uint32_t x = (index + j) % size.x;
 				const uint32_t y = (index + j) / size.x;
-				v->setVoxel((int)x, (int)y, (int)z, voxel);
+				if (state._zAxisOrientation == ZAxisOrientation::RightHanded) {
+					v->setVoxel((int)z, (int)y, (int)x, voxel);
+				} else {
+					v->setVoxel((int)x, (int)y, (int)z, voxel);
+				}
 			}
 			index += count;
 		}

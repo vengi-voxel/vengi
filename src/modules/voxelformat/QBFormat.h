@@ -30,8 +30,8 @@ private:
 		BGRA = 1
 	};
 	enum class ZAxisOrientation : uint32_t {
-		Left = 0,
-		Right = 1
+		LeftHanded = 0,
+		RightHanded = 1
 	};
 	enum class Compression : uint32_t {
 		None = 0,
