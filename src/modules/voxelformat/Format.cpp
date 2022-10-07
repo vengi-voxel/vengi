@@ -179,6 +179,7 @@ bool Format::stopExecution() {
 size_t RGBAFormat::loadPalette(const core::String& filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
 	SceneGraph sceneGraph;
 	if (!loadGroupsRGBA(filename, stream, sceneGraph)) {
+		Log::warn("Failed to load rgba format palette %s", filename.c_str());
 		return 0;
 	}
 	for (const SceneGraphNode &node : sceneGraph) {
@@ -187,6 +188,10 @@ size_t RGBAFormat::loadPalette(const core::String& filename, io::SeekableReadStr
 			palette.addColorToPalette(nodePalette.colors[i], false);
 		}
 	}
+	if (palette.colorCount == 0) {
+		Log::warn("Failed to find colors in %s", filename.c_str());
+	}
+	Log::debug("Found %i colors in %s", palette.colorCount, filename.c_str());
 	return palette.colorCount;
 }
 
