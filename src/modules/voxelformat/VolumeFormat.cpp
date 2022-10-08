@@ -390,6 +390,7 @@ bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph) {
 	}
 	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
 	QBFormat qbFormat;
+	stream.seek(0);
 	return qbFormat.saveGroups(sceneGraph, filePtr->name(), stream);
 }
 
