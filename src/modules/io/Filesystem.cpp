@@ -434,7 +434,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 		return core::make_shared<io::File>(filename, mode);
 	}
 	for (const core::String &p : _paths) {
-		const core::String fullpath = p + filename;
+		const core::String fullpath = core::string::path(p, filename);
 		io::File fullFile(fullpath, FileMode::Read);
 		if (fullFile.exists()) {
 			fullFile.close();
@@ -446,7 +446,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 				if (s == p) {
 					continue;
 				}
-				const core::String fullrelpath = s + p + filename;
+				const core::String fullrelpath = core::string::path(s, p, filename);
 				io::File fullrelFile(fullrelpath, FileMode::Read);
 				if (fullrelFile.exists()) {
 					fullrelFile.close();
@@ -457,7 +457,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 		}
 	}
 	Log::debug("Use %s from %s", filename.c_str(), _basePath.c_str());
-	return core::make_shared<io::File>(_basePath + filename, mode);
+	return core::make_shared<io::File>(core::string::path(_basePath, filename), mode);
 }
 
 core::String Filesystem::load(const char *filename, ...) {
