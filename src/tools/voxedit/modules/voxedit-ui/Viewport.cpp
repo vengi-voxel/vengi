@@ -251,7 +251,14 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	return true;
 }
 
-void Viewport::renderSceneGuizmo(video::Camera &camera, voxelformat::SceneGraphNode &node) {
+void Viewport::renderSceneGuizmo(video::Camera &camera) {
+	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const int activeNode = sceneGraph.activeNode();
+	if (activeNode == -1) {
+		return;
+	}
+	voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
+
 	int operation = ImGuizmo::TRANSLATE;
 	if (_guizmoRotation->boolVal()) {
 		operation |= ImGuizmo::ROTATE;
@@ -357,12 +364,6 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 		return;
 	}
 
-	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
-	const int activeNode = sceneGraph.activeNode();
-	if (activeNode == -1) {
-		return;
-	}
-
 	ImGuizmo::BeginFrame();
 
 	if (editMode == EditMode::Scene) {
@@ -372,14 +373,11 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	}
 
 	ImGuizmo::AllowAxisFlip(_guizmoAllowAxisFlip->boolVal());
-
-	voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
-
 	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + headerSize, size.x, size.y);
 	ImGuizmo::SetOrthographic(camera.mode() == video::CameraMode::Orthogonal);
 	if (editMode == EditMode::Scene) {
-		renderSceneGuizmo(camera, node);
+		renderSceneGuizmo(camera);
 	}
 	renderCameraManipulator(camera);
 }

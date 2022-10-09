@@ -43,7 +43,7 @@ private:
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
-	void renderSceneGuizmo(video::Camera &camera, voxelformat::SceneGraphNode &node);
+	void renderSceneGuizmo(video::Camera &camera);
 	void renderCameraManipulator(video::Camera &camera);
 	void renderGizmo(video::Camera &camera, const float headerSize, const ImVec2 &size);
 	void updateViewportTrace(float headerSize);
