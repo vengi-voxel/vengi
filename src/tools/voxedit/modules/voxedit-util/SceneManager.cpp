@@ -466,6 +466,9 @@ void SceneManager::resize(int nodeId, const glm::ivec3& size) {
 }
 
 void SceneManager::resize(int nodeId, const voxel::Region &region) {
+	if (!region.isValid()) {
+		return;
+	}
 	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
 		return;
