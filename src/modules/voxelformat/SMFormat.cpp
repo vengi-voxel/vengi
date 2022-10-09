@@ -138,7 +138,6 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 			// TODO: read *.smd2
 		}
 	}
-	sceneGraph.updateTransforms();
 	return !sceneGraph.empty();
 }
 
@@ -174,6 +173,14 @@ static constexpr glm::ivec3 posByIndex(uint32_t blockIndex) {
 	const int y = divR / priv::blocks;
 	const int x = divR % priv::blocks;
 	return glm::ivec3(x, y, z);
+}
+
+size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+	for (int i = 0; i < lengthof(priv::paletteColors); ++i) {
+		palette.colors[i] = priv::paletteColors[i];
+	}
+	palette.colorCount = lengthof(priv::paletteColors);
+	return palette.colorCount;
 }
 
 bool SMFormat::readSegment(io::SeekableReadStream &stream, SceneGraph &sceneGraph, const core::Map<int, int>& blockPal) {
