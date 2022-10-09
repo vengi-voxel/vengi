@@ -1398,6 +1398,22 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Resize your volume about given x, y and z size").setBindingContext(BindingContext::Editing);
 
+	command::Command::registerCommand("layersize", [this] (const command::CmdArgs& args) {
+		const int argc = (int)args.size();
+		if (argc == 1) {
+			const int size = core::string::toInt(args[0]);
+			resize(activeNode(), glm::ivec3(size));
+		} else if (argc == 3) {
+			glm::ivec3 size;
+			for (int i = 0; i < argc; ++i) {
+				size[i] = core::string::toInt(args[i]);
+			}
+			resize(activeNode(), size);
+		} else {
+			resize(activeNode(), glm::ivec3(1));
+		}
+	}).setHelp("Resize your current layer about given x, y and z size").setBindingContext(BindingContext::UI);
+
 	command::Command::registerCommand("shift", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
 		if (argc != 3) {

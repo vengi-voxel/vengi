@@ -30,7 +30,7 @@ void ToolsPanel::update(const char *title, command::CommandExecutionListener &li
 		if (ImGui::CollapsingHeader("Action", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::CommandButton(ICON_FA_CROP, "crop", nullptr, 0, &listener);
 			ImGui::SameLine();
-			ImGui::CommandButton(ICON_FA_EXPAND_ARROWS_ALT, "resize", nullptr, 0, &listener);
+			ImGui::CommandButton(ICON_FA_EXPAND_ARROWS_ALT, "layersize", nullptr, 0, &listener);
 			ImGui::SameLine();
 			ImGui::CommandButton(ICON_FA_OBJECT_UNGROUP, "colortolayer", nullptr, 0, &listener);
 			ImGui::SameLine();
