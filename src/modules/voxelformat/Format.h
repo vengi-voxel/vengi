@@ -109,7 +109,7 @@ protected:
 
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override {
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override final {
 		voxel::Palette palette;
 		if (!loadGroupsPalette(filename, stream, sceneGraph, palette)) {
 			return false;
