@@ -80,7 +80,7 @@ const io::FormatDescription* voxelLoad() {
 				return magic == FourCC('I', 'B', 'S', 'P') || magic == FourCC('\x1d', '\0', '\0', '\0');
 		}, VOX_FORMAT_FLAG_MESH},
 		{"Sproxel csv", {"csv"}, nullptr, 0u},
-		{"StarMade", {"sment"}, nullptr, 0u},
+		{"StarMade", {"sment"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"GL Transmission Format", {"gltf", "glb"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},

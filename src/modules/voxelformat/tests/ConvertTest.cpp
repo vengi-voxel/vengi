@@ -138,7 +138,9 @@ TEST_F(ConvertTest, testQbToCub) {
 TEST_F(ConvertTest, testCubToQb) {
 	CubFormat src;
 	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("rgb.cub", src, "convert-rgb.qb", target);
+	// qb doesn't build a palette yet
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette);
+	testLoadSaveAndLoadSceneGraph("rgb.cub", src, "convert-rgb.qb", target, flags);
 }
 
 TEST_F(ConvertTest, testGoxToQb) {

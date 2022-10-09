@@ -49,12 +49,12 @@ glm::ivec3 AoSVXLFormat::dimensions(io::SeekableReadStream &stream) const {
 	return size;
 }
 
-bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
 	const glm::ivec3 size = dimensions(stream);
-	return loadMap(filename, stream, sceneGraph, size.x, size.y, size.z);
+	return loadMap(filename, stream, sceneGraph, size.x, size.y, size.z, palette);
 }
 
-bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, int width, int height, int depths) {
+bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, int width, int height, int depths, const voxel::Palette &palette) {
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depths - 1);
 	const int flipHeight = height - 1;
 	core_assert(region.isValid());
@@ -62,7 +62,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 
-	voxel::PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup(palette);
 	for (int z = 0; z < depths; ++z) {
 		for (int x = 0; x < width; ++x) {
 			int y = 0;
@@ -161,7 +161,6 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
-	sceneGraph.updateTransforms();
 	return true;
 }
 

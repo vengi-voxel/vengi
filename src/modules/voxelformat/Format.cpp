@@ -176,37 +176,14 @@ bool Format::stopExecution() {
 	return app::App::getInstance()->shouldQuit();
 }
 
-size_t RGBAFormat::loadPalette(const core::String& filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
-	SceneGraph sceneGraph;
-	if (!loadGroupsRGBA(filename, stream, sceneGraph)) {
-		Log::warn("Failed to load rgba format palette %s", filename.c_str());
-		return 0;
-	}
-	for (const SceneGraphNode &node : sceneGraph) {
-		const voxel::Palette &nodePalette = node.palette();
-		for (int i = 0; i < nodePalette.colorCount; ++i) {
-			palette.addColorToPalette(nodePalette.colors[i], false);
-		}
-	}
-	if (palette.colorCount == 0) {
-		Log::warn("Failed to find colors in %s", filename.c_str());
-	}
-	Log::debug("Found %i colors in %s", palette.colorCount, filename.c_str());
-	return palette.colorCount;
-}
-
 bool RGBAFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	voxel::Palette palette;
 	const int64_t resetToPos = stream.pos();
-	if (loadPalette(filename, stream, palette) > 0) {
-		// by setting the global palette we search closest colors in rgba formats to
-		// better colors than in the default palette
-		if (!voxel::initPalette(palette)) {
-			voxel::initDefaultPalette();
-		}
+	if (loadPalette(filename, stream, palette) <= 0) {
+		palette = voxel::getPalette();
 	}
 	stream.seek(resetToPos);
-	if (!loadGroupsRGBA(filename, stream, sceneGraph)) {
+	if (!loadGroupsRGBA(filename, stream, sceneGraph, palette)) {
 		return false;
 	}
 	sceneGraph.updateTransforms();

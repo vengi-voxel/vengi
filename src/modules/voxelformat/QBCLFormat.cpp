@@ -274,7 +274,7 @@ static bool readString(io::SeekableReadStream& stream, core::String& str) {
 	return true;
 }
 
-bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name) {
+bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, const voxel::Palette &palette) {
 	SceneGraphTransform transform;
 	Log::debug("Matrix name: %s", name.c_str());
 
@@ -326,7 +326,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	core::ScopedPtr<voxel::RawVolume> volume(new voxel::RawVolume(region));
 	uint32_t index = 0;
 
-	voxel::PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup(palette);
 
 	while (!zipStream.eos()) {
 		int y = 0;
@@ -396,7 +396,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	return id != -1;
 }
 
-bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name) {
+bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, const voxel::Palette &palette) {
 	const size_t skip = 3 * 3 * sizeof(float);
 	stream.skip((int64_t)skip); // TODO: rotation matrix?
 	uint32_t childCount;
@@ -410,12 +410,12 @@ bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream&
 	int nodeId = sceneGraph.emplace(core::move(node), parent);
 	Log::debug("Found %u children in model '%s'", childCount, name.c_str());
 	for (uint32_t i = 0; i < childCount; ++i) {
-		wrapBool(readNodes(filename, stream, sceneGraph, nodeId))
+		wrapBool(readNodes(filename, stream, sceneGraph, nodeId, palette))
 	}
 	return true;
 }
 
-bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name) {
+bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, const voxel::Palette &palette) {
 	SceneGraphNode node(SceneGraphNodeType::Group);
 	if (name.empty()) {
 		node.setName("Compound");
@@ -423,17 +423,17 @@ bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStre
 		node.setName(name);
 	}
 	int nodeId = sceneGraph.emplace(core::move(node), parent);
-	wrapBool(readMatrix(filename, stream, sceneGraph, nodeId, name))
+	wrapBool(readMatrix(filename, stream, sceneGraph, nodeId, name, palette))
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount))
 	Log::debug("Found %u children in compound '%s'", childCount, name.c_str());
 	for (uint32_t i = 0; i < childCount; ++i) {
-		wrapBool(readNodes(filename, stream, sceneGraph, nodeId))
+		wrapBool(readNodes(filename, stream, sceneGraph, nodeId, palette))
 	}
 	return true;
 }
 
-bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent) {
+bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const voxel::Palette &palette) {
 	uint32_t type;
 	wrap(stream.readUInt32(type))
 	uint32_t dataSize;
@@ -446,7 +446,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 	switch (type) {
 	case qbcl::NODE_TYPE_MATRIX:
 		Log::debug("Found matrix");
-		if (!readMatrix(filename, stream, sceneGraph, parent, name)) {
+		if (!readMatrix(filename, stream, sceneGraph, parent, name, palette)) {
 			Log::error("Failed to load matrix %s", name.c_str());
 			return false;
 		}
@@ -454,7 +454,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 		break;
 	case qbcl::NODE_TYPE_MODEL:
 		Log::debug("Found model");
-		if (!readModel(filename, stream, sceneGraph, parent, name)) {
+		if (!readModel(filename, stream, sceneGraph, parent, name, palette)) {
 			Log::error("Failed to load model %s", name.c_str());
 			return false;
 		}
@@ -462,7 +462,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 		break;
 	case qbcl::NODE_TYPE_COMPOUND:
 		Log::debug("Found compound");
-		if (!readCompound(filename, stream, sceneGraph, parent, name)) {
+		if (!readCompound(filename, stream, sceneGraph, parent, name, palette)) {
 			Log::error("Failed to load compound %s", name.c_str());
 			return false;
 		}
@@ -475,7 +475,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 	return true;
 }
 
-bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 	if (magic != FourCC('Q', 'B', 'C', 'L')) {
@@ -529,9 +529,7 @@ bool QBCLFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 	rootNode.setProperty("Website", website);
 	rootNode.setProperty("Copyright", copyright);
 
-	wrapBool(readNodes(filename, stream, sceneGraph, rootNode.id()))
-
-	sceneGraph.updateTransforms();
+	wrapBool(readNodes(filename, stream, sceneGraph, rootNode.id(), palette))
 
 	return true;
 }

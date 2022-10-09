@@ -27,7 +27,7 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
 	char buf[512];
 	wrapBool(stream.readLine(sizeof(buf), buf))
 
@@ -52,7 +52,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 
-	voxel::PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup(palette);
 	for (int y = size.y - 1; y >= 0; y--) {
 		for (int z = 0; z < size.z; z++) {
 			for (int x = 0; x < size.x; x++) {
@@ -85,7 +85,6 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
-	sceneGraph.updateTransforms();
 	return true;
 }
 

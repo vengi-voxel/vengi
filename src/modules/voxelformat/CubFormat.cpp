@@ -55,7 +55,7 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.colorCount;
 }
 
-bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
@@ -72,7 +72,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 		return false;
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	voxel::PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup(palette);
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {
@@ -97,7 +97,6 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
-	sceneGraph.updateTransforms();
 	return true;
 }
 

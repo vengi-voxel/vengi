@@ -47,7 +47,7 @@ static bool readString(io::SeekableReadStream& stream, core::String& str, bool r
 	return true;
 }
 
-bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
 	uint32_t magic, version, blank, matrixCount;
 	wrap(stream.readUInt32(magic))
 	const bool isNVM = magic == FourCC('.','N','V','M');
@@ -64,7 +64,7 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 
 	const bool readStringAsInt = isNVM || version >= 4;
 
-	voxel::PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup(palette);
 	for (uint16_t i = 0u; (uint16_t)i < matrixCount; ++i) {
 		core::String name;
 		core::String parent;
@@ -132,7 +132,6 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 		node.setPalette(palLookup.palette());
 		sceneGraph.emplace(core::move(node));
 	}
-	sceneGraph.updateTransforms();
 	return true;
 }
 

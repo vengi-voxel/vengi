@@ -307,7 +307,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	return true;
 }
 
-bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) {
 	State state;
 	wrap(stream.readUInt32(state._version))
 	uint32_t colorFormat;
@@ -338,7 +338,7 @@ bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStre
 	Log::debug("NumMatrices: %u", numMatrices);
 
 	sceneGraph.reserve(numMatrices);
-	voxel::PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup(palette);
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix: %u", i);
 		if (!loadMatrix(state, stream, sceneGraph, palLookup)) {

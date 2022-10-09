@@ -13,6 +13,7 @@
 #include "math/Axis.h"
 #include "math/Math.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/SceneGraph.h"
@@ -180,12 +181,12 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::Seek
 	return image::ImagePtr();
 }
 
-bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
 	const int size = (int)sceneGraph.size();
 	voxel::RawVolume *layerVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 	uint32_t blockCount;
 
-	voxel::PaletteLookup palLookup;
+	voxel::PaletteLookup palLookup(palette);
 	wrap(stream.readUInt32(blockCount))
 	Log::debug("Found LAYR chunk with %i blocks", blockCount);
 	for (uint32_t i = 0; i < blockCount; ++i) {
@@ -412,7 +413,7 @@ bool GoxFormat::loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 
@@ -434,7 +435,7 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 		if (c.type == FourCC('B', 'L', '1', '6')) {
 			wrapBool(loadChunk_BL16(state, c, stream, sceneGraph))
 		} else if (c.type == FourCC('L', 'A', 'Y', 'R')) {
-			wrapBool(loadChunk_LAYR(state, c, stream, sceneGraph))
+			wrapBool(loadChunk_LAYR(state, c, stream, sceneGraph, palette))
 		} else if (c.type == FourCC('C', 'A', 'M', 'R')) {
 			wrapBool(loadChunk_CAMR(state, c, stream, sceneGraph))
 		} else if (c.type == FourCC('M', 'A', 'T', 'E')) {
@@ -448,7 +449,6 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 		}
 		loadChunk_ValidateCRC(stream);
 	}
-	sceneGraph.updateTransforms();
 	return !sceneGraph.empty();
 }
 
