@@ -413,14 +413,11 @@ bool Modifier::aabbAction(voxel::RawVolume *volume,
 		voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
 		const glm::ivec3 &start = referencePosition();
 		const glm::ivec3 &end = cursorPosition();
-		voxel::Voxel voxel;
+		voxel::Voxel voxel = cursorVoxel();
 		if (eraseFlag) {
 			voxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
 		}
-		if (placeFlag || paintFlag) {
-			voxel = cursorVoxel();
-		}
-		voxelutil::raycastWithEndpoints(&wrapper, start, end, [=](auto &sampler) {
+		voxelutil::RaycastResult result = voxelutil::raycastWithEndpoints(&wrapper, start, end, [=](auto &sampler) {
 			const bool air = voxel::isAir(sampler.voxel().getMaterial());
 			if ((!eraseFlag && !paintFlag) && !air) {
 				return true;
@@ -428,6 +425,7 @@ bool Modifier::aabbAction(voxel::RawVolume *volume,
 			sampler.setVoxel(voxel);
 			return true;
 		});
+		Log::debug("result: %i", (int)result);
 		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 		if (modifiedRegion.isValid()) {
 			callback(modifiedRegion, _modifierType);
