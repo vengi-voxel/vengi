@@ -3,6 +3,7 @@
  */
 
 #include "CommandHandler.h"
+#include "core/BindingContext.h"
 #include "core/collection/DynamicArray.h"
 #include "command/Command.h"
 #include "core/Tokenizer.h"
@@ -84,6 +85,9 @@ static core::String findPotentialMatch(const core::String& arg) {
 	core::String match;
 	size_t leastCost = 1000000u;
 	command::Command::visit([&] (const command::Command& c) {
+		if (!c.isSuitableBindingContext((core::BindingContext)c.bindingContext())) {
+			return;
+		}
 		const size_t cost = levensteinDistance(arg, c.name());
 		if (cost < leastCost) {
 			leastCost = cost;
