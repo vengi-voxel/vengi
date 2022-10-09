@@ -13,17 +13,21 @@
 #include "video/FrameBuffer.h"
 #include "voxedit-util/ViewportController.h"
 
+namespace voxelformat {
+class SceneGraphNode;
+}
+
 namespace voxedit {
 
 class Viewport {
 private:
 	const core::String _id;
 	bool _hovered = false;
+	bool _hoveredGuizmoLastFrame = false;
 	bool _guizmoActivated = false;
 	bool _boundsMode = false;
 	struct Bounds {
-		glm::vec3 mins;
-		glm::vec3 maxs;
+		glm::vec3 size;
 	};
 	Bounds _boundsNode;
 	Bounds _bounds;
@@ -39,6 +43,8 @@ private:
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
+	void renderSceneGuizmo(video::Camera &camera, voxelformat::SceneGraphNode &node);
+	void renderCameraManipulator(video::Camera &camera);
 	void renderGizmo(video::Camera &camera, const float headerSize, const ImVec2 &size);
 	void updateViewportTrace(float headerSize);
 public:
