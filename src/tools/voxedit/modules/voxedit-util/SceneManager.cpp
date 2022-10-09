@@ -271,7 +271,7 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 			_dirty = false;
 			_lastFilename = file;
 		}
-		core::Var::get(cfg::VoxEditLastFile)->setVal(file);
+		core::Var::get(cfg::VoxEditLastFile)->setVal(filePtr->name());
 		_needAutoSave = false;
 		return true;
 	}
@@ -338,7 +338,7 @@ bool SceneManager::load(const core::String& file) {
 		// RawVolumeRenderer::scheduleExtractions should happen here
 		return core::move(newSceneGraph);
 	});
-	_lastFilename = filePtr->fileName() + "." + filePtr->extension();
+	_lastFilename = filePtr->name();
 	return true;
 }
 
@@ -1397,6 +1397,8 @@ void SceneManager::construct() {
 			resizeAll(glm::ivec3(1));
 		}
 	}).setHelp("Resize your volume about given x, y and z size").setBindingContext(BindingContext::Editing);
+
+	// TODO: space should copy the current layer
 
 	command::Command::registerCommand("layersize", [this] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
