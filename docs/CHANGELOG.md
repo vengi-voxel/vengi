@@ -14,6 +14,7 @@ General:
 
    - Improved GLTF format support
    - Improved VXL format support
+   - Improved Qubicle QB support
    - Fixed block id parsing for StarMade voxel models
    - Major improvements in scene graph transform handling
    - Improved voxelization of meshes with voxels
@@ -23,6 +24,8 @@ General:
    - Fixed saving palette index 0 for binvox
    - Fixed Sandbox VXM palette issue
    - Improved the file dialog size and special dir handling
+   - Improved dark mode support
+   - Improved palette support for some formats
 
 Packaging:
 
@@ -34,6 +37,7 @@ VoxEdit:
    - Fixed moving nodes in the scene graph panel
    - Fixed transforms in scene graph mode (translation, rotation)
    - Allow to add group and camera nodes
+   - Don't just quit the application if you have unsaved data in your scene
 
 ## 0.0.21 (2022-09-05)
 

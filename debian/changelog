@@ -3,6 +3,7 @@ vengi (0.0.22.0-1) UNRELEASED; urgency=low
   * General:
   * Improved GLTF format support
   * Improved VXL format support
+  * Improved Qubicle QB support
   * Fixed block id parsing for StarMade voxel models
   * Major improvements in scene graph transform handling
   * Improved voxelization of meshes with voxels
@@ -12,6 +13,8 @@ vengi (0.0.22.0-1) UNRELEASED; urgency=low
   * Fixed saving palette index 0 for binvox
   * Fixed Sandbox VXM palette issue
   * Improved the file dialog size and special dir handling
+  * Improved dark mode support
+  * Improved palette support for some formats
 
   * Packaging:
   * There is a snap package available now (io.github.mgerhardy.vengi.voxedit)
@@ -21,6 +24,7 @@ vengi (0.0.22.0-1) UNRELEASED; urgency=low
   * Fixed moving nodes in the scene graph panel
   * Fixed transforms in scene graph mode (translation, rotation)
   * Allow to add group and camera nodes
+  * Don't just quit the application if you have unsaved data in your scene
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 9 Sep 2022 00:00:00 +0000
 
