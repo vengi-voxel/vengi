@@ -81,6 +81,57 @@ struct voxtype {
 #define wrap(read) \
 	if ((read) != 0) { \
 		Log::error("Could not load kv6 file: Not enough data in stream " CORE_STRINGIFY(read)); \
+		return 0; \
+	}
+
+size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+	uint32_t magic;
+	wrap(stream.readUInt32(magic))
+	if (magic != FourCC('K','v','x','l')) {
+		Log::error("Invalid magic");
+		return 0;
+	}
+
+	uint32_t xsiz_w, ysiz_d, zsiz_h;
+	wrap(stream.readUInt32(xsiz_w))
+	wrap(stream.readUInt32(ysiz_d))
+	wrap(stream.readUInt32(zsiz_h))
+	glm::vec3 pivot;
+	wrap(stream.readFloat(pivot.x))
+	wrap(stream.readFloat(pivot.y))
+	wrap(stream.readFloat(pivot.z))
+
+	uint32_t numvoxs;
+	wrap(stream.readUInt32(numvoxs))
+
+	const int64_t headerSize = 32;
+	const int64_t xLenSize = (int64_t)(xsiz_w * sizeof(uint32_t));
+	const int64_t yLenSize = (int64_t)((size_t)(xsiz_w * ysiz_d) * sizeof(uint16_t));
+	const int64_t paletteOffset = headerSize + (int64_t)(numvoxs * 8) + xLenSize + yLenSize;
+	if (stream.seek(paletteOffset) != -1) {
+		if (stream.remaining() != 0) {
+			uint32_t palMagic;
+			wrap(stream.readUInt32(palMagic))
+			if (palMagic == FourCC('S','P','a','l')) {
+				palette.colorCount = voxel::PaletteMaxColors;
+				for (int i = 0; i < palette.colorCount; ++i) {
+					uint8_t r, g, b;
+					wrap(stream.readUInt8(b))
+					wrap(stream.readUInt8(g))
+					wrap(stream.readUInt8(r))
+					palette.colors[i] = core::RGBA(r, g, b, 255u);
+				}
+			}
+			return palette.colorCount;
+		}
+	}
+	return 0;
+}
+
+#undef wrap
+#define wrap(read) \
+	if ((read) != 0) { \
+		Log::error("Could not load kv6 file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return false; \
 	}
 
