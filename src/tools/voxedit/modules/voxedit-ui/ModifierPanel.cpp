@@ -46,12 +46,17 @@ void ModifierPanel::update(const char *title) {
 		if (ImGui::Checkbox("Plane", &plane)) {
 			modifier.setPlaneMode(plane);
 		}
-
 		ImGui::SameLine();
 
 		bool single = modifier.singleMode();
 		if (ImGui::Checkbox("Single", &single)) {
 			modifier.setSingleMode(single);
+		}
+		ImGui::SameLine();
+
+		bool center = modifier.centerMode();
+		if (ImGui::Checkbox("Center", &center)) {
+			modifier.setCenterMode(center);
 		}
 
 		// shapes are disabled in plane mode
