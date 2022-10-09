@@ -73,7 +73,10 @@ public:
 
 	/**
 	 * @brief Only load the palette that is included in the format
-	 * @note Not all voxel formats have a palette included
+	 * @note Not all voxel formats have a palette included - if they do and don't have this method implemented, they
+	 * will go the expensive route. They will load all the nodes, all the voxels and just use the palette data. This
+	 * means a lot of computation time is wasted and we should consider implementing this for as many as possible
+	 * formats.
 	 *
 	 * @return the amount of colors found in the palette
 	 */
