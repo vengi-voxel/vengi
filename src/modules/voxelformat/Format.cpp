@@ -176,6 +176,15 @@ bool Format::stopExecution() {
 	return app::App::getInstance()->shouldQuit();
 }
 
+bool PaletteFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+	voxel::Palette palette;
+	if (!loadGroupsPalette(filename, stream, sceneGraph, palette)) {
+		return false;
+	}
+	sceneGraph.updateTransforms();
+	return true;
+}
+
 bool RGBAFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	voxel::Palette palette;
 	const int64_t resetToPos = stream.pos();
