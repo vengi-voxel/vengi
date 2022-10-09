@@ -495,16 +495,19 @@ void SceneManager::resize(int nodeId, const voxel::Region &region) {
 		// TODO: assemble the 6 surroundings to optimize this for big volumes
 		modified(nodeId, newVolume->region());
 	}
+
+	if (activeNode() == nodeId) {
+		const glm::ivec3 &refPos = referencePosition();
+		if (!region.containsPoint(refPos)) {
+			setReferencePosition(region.getCenter());
+		}
+	}
 }
 
 void SceneManager::resizeAll(const glm::ivec3& size) {
-	const glm::ivec3 refPos = referencePosition();
 	_sceneGraph.foreachGroup([&] (int nodeId) {
 		resize(nodeId, size);
 	});
-	if (_sceneGraph.region().containsPoint(refPos)) {
-		setReferencePosition(refPos);
-	}
 }
 
 voxel::RawVolume* SceneManager::volume(int nodeId) {
