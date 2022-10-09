@@ -132,7 +132,7 @@ int executeCommands(const core::String& commandLine, CommandExecutionListener *l
 		}
 		const core::VarPtr& c = core::Var::get(cmd);
 		if (!c) {
-			Log::info("unknown command: %s", cmd.c_str());
+			Log::info("unknown command: %s in binding context %i", cmd.c_str(), (int)core::bindingContext());
 			const core::String& potentialMatch = findPotentialMatch(cmd);
 			if (!potentialMatch.empty()) {
 				Log::info("did you mean: %s", potentialMatch.c_str());
