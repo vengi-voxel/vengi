@@ -356,27 +356,24 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	if (!_showAxisVar->boolVal()) {
 		return;
 	}
-	const EditMode editMode = sceneMgr().editMode();
 
 	ImGuiIO &io = ImGui::GetIO();
-
 	if (io.MousePos.x == -FLT_MAX || io.MousePos.y == -FLT_MAX) {
 		return;
 	}
 
+	const EditMode editMode = sceneMgr().editMode();
+	const bool sceneMode = editMode == EditMode::Scene;
+	const bool orthographic = camera.mode() == video::CameraMode::Orthogonal;
+
 	ImGuizmo::BeginFrame();
-
-	if (editMode == EditMode::Scene) {
-		ImGuizmo::Enable(true);
-	} else {
-		ImGuizmo::Enable(false);
-	}
-
+	const ImVec2 &windowPos = ImGui::GetWindowPos();
+	ImGuizmo::Enable(sceneMode);
 	ImGuizmo::AllowAxisFlip(_guizmoAllowAxisFlip->boolVal());
 	ImGuizmo::SetDrawlist();
-	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y + headerSize, size.x, size.y);
-	ImGuizmo::SetOrthographic(camera.mode() == video::CameraMode::Orthogonal);
-	if (editMode == EditMode::Scene) {
+	ImGuizmo::SetRect(windowPos.x, windowPos.y + headerSize, size.x, size.y);
+	ImGuizmo::SetOrthographic(orthographic);
+	if (sceneMode) {
 		renderSceneGuizmo(camera);
 	}
 	renderCameraManipulator(camera);
