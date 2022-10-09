@@ -1698,7 +1698,8 @@ namespace IMGUIZMO_NAMESPACE
             float boundDistance = sqrtf(ImLengthSqr(worldBound1 - worldBound2));
             int stepCount = (int)(boundDistance / 10.f);
             stepCount = min(stepCount, 1000);
-            float stepLength = 1.f / (float)stepCount;
+            // mgerhardy - added max() to prevent div0
+            float stepLength = 1.f / max(1.0f, (float)stepCount);
             for (int j = 0; j < stepCount; j++)
             {
                float t1 = (float)j * stepLength;
