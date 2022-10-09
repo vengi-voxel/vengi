@@ -9,7 +9,8 @@
 namespace voxelformat {
 
 /**
- * @brief Qubicle Binary Tree (qbt) is the successor of the widespread voxel exchange format Qubicle Binary.
+ * @brief Qubicle Binary Tree (qbt) is the successor of the widespread voxel exchange format Qubicle Binary. It supports palette
+ * and RGBA mode
  *
  * @see QBCLFormat
  * @see QBFormat

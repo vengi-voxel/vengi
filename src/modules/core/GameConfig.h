@@ -105,5 +105,6 @@ constexpr const char *VoxformatWithtexcoords = "voxformat_withtexcoords";
 constexpr const char *VoxformatTransform = "voxformat_transform_mesh";
 constexpr const char *VoxformatFillHollow = "voxformat_fillhollow";
 constexpr const char *VoxformatVXLNormalType = "voxformat_vxlnormaltype";
+constexpr const char *VoxformatQBTPaletteMode = "voxformat_qbtpalettemode";
 
 }

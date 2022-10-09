@@ -5,7 +5,9 @@
 #include "QBTFormat.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
+#include "core/GameConfig.h"
 #include "core/ScopedPtr.h"
+#include "core/Var.h"
 #include "core/Zip.h"
 #include "core/Color.h"
 #include "core/GLM.h"
@@ -23,7 +25,6 @@ namespace voxelformat {
 
 namespace qbt {
 static const bool MergeCompounds = true; // TODO: cvar on load
-static const bool ColorMap = false; // TODO: cvar on save
 const int NODE_TYPE_MATRIX = 0;
 const int NODE_TYPE_MODEL = 1;
 const int NODE_TYPE_COMPOUND = 2;
@@ -212,7 +213,8 @@ bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapSave(stream.writeFloat(1.0f));
 	wrapSave(stream.writeFloat(1.0f));
 	wrapSave(stream.writeFloat(1.0f));
-	if (qbt::ColorMap) {
+	const bool colorMap = core::Var::getSafe(cfg::VoxformatQBTPaletteMode)->boolVal();
+	if (colorMap) {
 		const voxel::Palette& palette = sceneGraph.firstPalette();
 		if (!saveColorMap(stream, palette)) {
 			return false;
@@ -222,7 +224,7 @@ bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	if (!stream.writeString("DATATREE", false)) {
 		return false;
 	}
-	if (!saveModel(stream, sceneGraph, qbt::ColorMap)) {
+	if (!saveModel(stream, sceneGraph, colorMap)) {
 		return false;
 	}
 	Log::debug("Saved %i layers", layers);
