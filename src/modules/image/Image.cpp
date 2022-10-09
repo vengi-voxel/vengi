@@ -9,6 +9,7 @@
 #include "core/concurrent/ThreadPool.h"
 #include "core/Assert.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "core/StandardLib.h"
 #include "io/FormatDescription.h"
@@ -232,7 +233,13 @@ glm::vec2 Image::uv(int x, int y) const {
 }
 
 bool Image::writePng(const char *name, const uint8_t* buffer, int width, int height, int depth) {
-	return stbi_write_png(name, width, height, depth, (const void*)buffer, width * depth) != 0;
+	const io::FilePtr &file = io::filesystem()->open(name, io::FileMode::SysWrite);
+	if (!file->validHandle()) {
+		Log::error("Failed to open %s for writing", name);
+		return false;
+	}
+	io::FileStream stream(file);
+	return writePng(stream, buffer, width, height, depth);
 }
 
 uint8_t* createPng(const void *pixels, int width, int height, int depth, int *pngSize) {
