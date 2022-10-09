@@ -452,6 +452,7 @@ bool Modifier::aabbAction(voxel::RawVolume *volume,
 			4.0f, 10000, voxelutil::Connectivity::EighteenConnected);
 		voxelutil::AStarPathfinder pathfinder(params);
 		if (!pathfinder.execute()) {
+			Log::warn("Failed to execute pathfinder - is the reference position correctly placed on another voxel?");
 			return false;
 		}
 		voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
