@@ -44,9 +44,11 @@ bool MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 			actionMenuItem(ICON_FA_SAVE " Save", "save", listener);
 			actionMenuItem(ICON_FA_SAVE " Save as", "saveas", listener);
 			actionMenuItem(ICON_FA_CAMERA " Screenshot", "screenshot", listener);
+#ifdef VOXEDIT_ANIMATION
 			ImGui::Separator();
 			actionMenuItem("Load Animation", "animation_load", listener);
 			actionMenuItem(ICON_FA_SAVE " Save Animation", "animation_save", listener);
+#endif
 			ImGui::Separator();
 			actionMenuItem("Prefab", "prefab", listener);
 			ImGui::Separator();
