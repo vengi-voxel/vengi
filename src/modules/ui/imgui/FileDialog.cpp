@@ -90,10 +90,15 @@ bool FileDialog::openDir(const io::FormatDescription* formats, const core::Strin
 		selectFilter(lastFilter);
 	}
 
-	const core::VarPtr &lastDirVar = core::Var::getSafe(cfg::UILastDirectory);
-	const core::String &lastDir = lastDirVar->strVal();
-	_currentPath = lastDir;
-	_currentFile = filename;
+	const core::String &filePath = core::string::extractPath(filename);
+	if (filePath.empty() || !io::filesystem()->exists(filePath)) {
+		const core::VarPtr &lastDirVar = core::Var::getSafe(cfg::UILastDirectory);
+		const core::String &lastDir = lastDirVar->strVal();
+		_currentPath = lastDir;
+	} else {
+		_currentPath = filePath;
+	}
+	_currentFile = core::string::extractFilenameWithExtension(filename);
 	_currentFolder = "";
 
 	if (!io::filesystem()->exists(_currentPath)) {
