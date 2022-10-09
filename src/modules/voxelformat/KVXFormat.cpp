@@ -171,10 +171,17 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 	// Read the color palette from the end of the file and convert to our palette
-	const size_t currentPos = stream.pos();
-	palette.colorCount = voxel::PaletteMaxColors;
-	stream.seek(-3l * palette.colorCount, SEEK_END);
+	const int64_t currentPos = stream.pos();
+	if (stream.seek(-3l * voxel::PaletteMaxColors, SEEK_END) == -1) {
+		Log::error("Can't seek to palette data");
+		return false;
+	}
+	if (stream.pos() < currentPos) {
+		Log::error("Seek to palette data yields invalid stream position");
+		return false;
+	}
 
+	palette.colorCount = voxel::PaletteMaxColors;
 	/**
 	 * The last 768 bytes of the KVX file is a standard 256-color VGA palette.
 	 * The palette is in (Red:0, Green:1, Blue:2) order and intensities range
@@ -187,7 +194,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt8(b))
 		palette.colors[i] = core::RGBA(r, g, b);
 	}
-	stream.seek((int64_t)currentPos);
+	stream.seek(currentPos);
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
