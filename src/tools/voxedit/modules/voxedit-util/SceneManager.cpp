@@ -204,7 +204,12 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	}
 	const voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
+		Log::warn("Node with id %i wasn't found", nodeId);
 		return true;
+	}
+	if (node->type() != voxelformat::SceneGraphNodeType::Model) {
+		Log::warn("Given node is no model node");
+		return false;
 	}
 	voxelformat::SceneGraph newSceneGraph;
 	voxelformat::SceneGraphNode newNode;
