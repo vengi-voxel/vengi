@@ -1059,7 +1059,7 @@ extern DECLSPEC int SDLCALL SDL_GetWindowBordersSize(SDL_Window * window,
  * \param h a pointer to variable for storing the height in pixels, may be
  *          NULL
  *
- * \since This function is available since SDL 2.26.0.
+ * \since This function is available since SDL 2.26.1.
  *
  * \sa SDL_CreateWindow
  * \sa SDL_GetWindowSize
@@ -1810,6 +1810,9 @@ extern DECLSPEC void SDLCALL SDL_EnableScreenSaver(void);
  *
  * If you disable the screensaver, it is automatically re-enabled when SDL
  * quits.
+ *
+ * The screensaver is disabled by default since SDL 2.0.2. Before SDL 2.0.2
+ * the screensaver was enabled by default.
  *
  * \since This function is available since SDL 2.0.0.
  *

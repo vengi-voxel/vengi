@@ -849,7 +849,7 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
     /*printf("WAYLAND INTERFACE: %s\n", interface);*/
 
     if (SDL_strcmp(interface, "wl_compositor") == 0) {
-        d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, SDL_min(3, version));
+        d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, SDL_min(4, version));
     } else if (SDL_strcmp(interface, "wl_output") == 0) {
         Wayland_add_display(d, id);
     } else if (SDL_strcmp(interface, "wl_seat") == 0) {
@@ -992,6 +992,7 @@ Wayland_VideoInit(_THIS)
     WAYLAND_wl_display_flush(data->display);
 
     Wayland_InitKeyboard(_this);
+    Wayland_InitWin(data);
 
     data->initializing = SDL_FALSE;
 
@@ -1033,6 +1034,7 @@ Wayland_VideoQuit(_THIS)
     SDL_VideoData *data = _this->driverdata;
     int i, j;
 
+    Wayland_QuitWin(data);
     Wayland_FiniMouse(data);
 
     for (i = 0; i < _this->num_displays; ++i) {

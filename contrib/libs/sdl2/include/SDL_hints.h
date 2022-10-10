@@ -872,7 +872,7 @@ extern "C" {
  *    "0"       - HIDAPI driver is not used
  *    "1"       - HIDAPI driver is used
  *
- *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ *  This driver doesn't work with the dolphinbar, so the default is SDL_FALSE for now.
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_WII "SDL_JOYSTICK_HIDAPI_WII"
 
@@ -2447,7 +2447,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
  * variable, or NULL if the environment isn't set. Callbacks will be called
  * normally with this change.
  *
- * \since This function is available since SDL 2.26.0.
+ * \since This function is available since SDL 2.26.1.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint
