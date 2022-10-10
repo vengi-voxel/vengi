@@ -53,6 +53,9 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	_guizmoRotation = core::Var::getSafe(cfg::VoxEditGuizmoRotation);
 	_guizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGuizmoAllowAxisFlip);
 	_guizmoSnap = core::Var::getSafe(cfg::VoxEditGuizmoSnap);
+
+	ImGuizmo::GetStyle().RenderBoundsOnUsing = true;
+
 	return true;
 }
 
@@ -252,6 +255,10 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 }
 
 void Viewport::renderSceneGuizmo(video::Camera &camera) {
+	const EditMode editMode = sceneMgr().editMode();
+	if (editMode != EditMode::Scene) {
+		return;
+	}
 	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 	if (activeNode == -1) {
@@ -259,7 +266,7 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 	}
 	voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
 
-	int operation = ImGuizmo::TRANSLATE;
+	int operation = ImGuizmo::TRANSLATE | ImGuizmo::BOUNDS;
 	if (_guizmoRotation->boolVal()) {
 		operation |= ImGuizmo::ROTATE;
 	}
@@ -270,54 +277,46 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 	glm::mat4 localMatrix = transform.localMatrix();
 	glm::mat4 deltaMatrix(0.0f);
 	const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
-	if (_hoveredGuizmoLastFrame && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-		_boundsMode ^= true;
-	}
 
-	if (_boundsMode) {
-		const voxel::Region &region = node.region();
-		const glm::vec3 size = region.getDimensionsInVoxels();
-		if (_boundsNode.size != size) {
-			_bounds.size = _boundsNode.size = size;
-		}
-		operation = ImGuizmo::BOUNDS;
+	const voxel::Region &region = node.region();
+	const glm::vec3 size = region.getDimensionsInVoxels();
+	if (_boundsNode.size != size) {
+		_bounds.size = _boundsNode.size = size;
 	}
 
 	const bool manipulated = ImGuizmo::Manipulate(
 		glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()), (ImGuizmo::OPERATION)operation,
 		ImGuizmo::MODE::LOCAL, glm::value_ptr(localMatrix), glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr,
-		operation == ImGuizmo::BOUNDS ? glm::value_ptr(_bounds.size) : nullptr,
-		operation == ImGuizmo::BOUNDS ? boundsSnap : nullptr);
+		glm::value_ptr(_bounds.size), boundsSnap);
+
+	if (editMode == EditMode::Model) {
+		return;
+	}
 
 	const bool guizmoActive = ImGuizmo::IsUsing();
 	_hoveredGuizmoLastFrame = ImGuizmo::IsOver() || guizmoActive;
 
 	if (guizmoActive) {
 		_guizmoActivated = true;
-		if (operation == ImGuizmo::BOUNDS) {
-			glm::vec3 translate;
-			glm::vec3 rotation;
-			glm::vec3 scale;
-			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(localMatrix), glm::value_ptr(translate),
-												  glm::value_ptr(rotation), glm::value_ptr(scale));
-			if (glm::all(glm::greaterThan(scale, glm::vec3(0)))) {
-				_bounds.size = _boundsNode.size * scale;
-			}
-		} else if (manipulated) {
-			sceneMgr().nodeUpdateTransform(-1, localMatrix, &deltaMatrix, keyFrameIdx, false);
+		glm::vec3 translate;
+		glm::vec3 rotation;
+		glm::vec3 scale;
+		ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(localMatrix), glm::value_ptr(translate),
+											  glm::value_ptr(rotation), glm::value_ptr(scale));
+		if (glm::all(glm::greaterThan(scale, glm::vec3(0)))) {
+			_bounds.size = _boundsNode.size * scale;
 		}
 	} else if (_guizmoActivated) {
-		if (operation == ImGuizmo::BOUNDS) {
-			const voxel::Region &region = node.region();
-			const voxel::Region newRegion(region.getLowerCorner(),
-										  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.size)));
-			if (newRegion.isValid() && region != newRegion) {
-				sceneMgr().resize(node.id(), newRegion);
-			}
-		} else if (manipulated) {
-			sceneMgr().nodeUpdateTransform(-1, localMatrix, &deltaMatrix, keyFrameIdx, true);
+		const voxel::Region &region = node.region();
+		const voxel::Region newRegion(region.getLowerCorner(),
+									  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.size)));
+		if (newRegion.isValid() && region != newRegion) {
+			sceneMgr().resize(node.id(), newRegion);
 		}
 		_guizmoActivated = false;
+	}
+	if (manipulated) {
+		sceneMgr().nodeUpdateTransform(-1, localMatrix, &deltaMatrix, keyFrameIdx, true);
 	}
 }
 
@@ -373,9 +372,7 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetRect(windowPos.x, windowPos.y + headerSize, size.x, size.y);
 	ImGuizmo::SetOrthographic(orthographic);
-	if (sceneMode) {
-		renderSceneGuizmo(camera);
-	}
+	renderSceneGuizmo(camera);
 	renderCameraManipulator(camera);
 }
 
