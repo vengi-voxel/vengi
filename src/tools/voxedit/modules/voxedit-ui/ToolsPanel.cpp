@@ -12,17 +12,6 @@
 
 namespace voxedit {
 
-bool ToolsPanel::mirrorAxisRadioButton(const char *title, math::Axis type) {
-	voxedit::ModifierFacade &modifier = sceneMgr().modifier();
-	ui::imgui::ScopedStyle style;
-	veui::AxisStyleText(style, type, false);
-	if (ImGui::RadioButton(title, modifier.mirrorAxis() == type)) {
-		modifier.setMirrorAxis(type, sceneMgr().referencePosition());
-		return true;
-	}
-	return false;
-}
-
 void ToolsPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		core_trace_scoped(ToolsPanel);
@@ -64,18 +53,6 @@ void ToolsPanel::update(const char *title, command::CommandExecutionListener &li
 			veui::AxisButton(math::Axis::Y, "Y##flip", "flip y", nullptr, nullptr, buttonWidth, &listener);
 			ImGui::SameLine();
 			veui::AxisButton(math::Axis::Z, "Z##flip", "flip z", nullptr, nullptr, buttonWidth, &listener);
-		}
-
-		ImGui::NewLine();
-
-		if (ImGui::CollapsingHeader("Mirror on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			mirrorAxisRadioButton("None##mirror", math::Axis::None);
-			ImGui::SameLine();
-			mirrorAxisRadioButton("X##mirror", math::Axis::X);
-			ImGui::SameLine();
-			mirrorAxisRadioButton("Y##mirror", math::Axis::Y);
-			ImGui::SameLine();
-			mirrorAxisRadioButton("Z##mirror", math::Axis::Z);
 		}
 	}
 	ImGui::End();

@@ -8,6 +8,7 @@
 #include "ui/imgui/dearimgui/imgui_internal.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
+#include "voxedit-ui/Util.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 
@@ -27,6 +28,63 @@ bool ModifierPanel::modifierRadioButton(const char *title, ModifierType type, co
 	return false;
 }
 
+bool ModifierPanel::mirrorAxisRadioButton(const char *title, math::Axis type) {
+	voxedit::ModifierFacade &modifier = sceneMgr().modifier();
+	ui::imgui::ScopedStyle style;
+	veui::AxisStyleText(style, type, false);
+	if (ImGui::RadioButton(title, modifier.mirrorAxis() == type)) {
+		modifier.setMirrorAxis(type, sceneMgr().referencePosition());
+		return true;
+	}
+	return false;
+}
+
+void ModifierPanel::addShapes() {
+	Modifier &modifier = sceneMgr().modifier();
+	const bool plane = modifier.planeMode();
+
+	ui::imgui::ScopedStyle style;
+	// shapes are disabled in plane mode
+	if (plane) {
+		style.disableItem();
+	}
+	const ShapeType currentSelectedShapeType = modifier.shapeType();
+	if (ImGui::BeginCombo("Shape", ShapeTypeStr[(int)currentSelectedShapeType], ImGuiComboFlags_None)) {
+		for (int i = 0; i < (int)ShapeType::Max; ++i) {
+			const ShapeType type = (ShapeType)i;
+			const bool selected = type == currentSelectedShapeType;
+			if (ImGui::Selectable(ShapeTypeStr[i], selected)) {
+				modifier.setShapeType(type);
+			}
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+}
+
+void ModifierPanel::addMirrorPlanes() {
+	if (ImGui::CollapsingHeader("Mirror on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
+		Modifier &modifier = sceneMgr().modifier();
+		const bool plane = modifier.planeMode();
+
+		ui::imgui::ScopedStyle style;
+		// mirror planes are disabled in plane mode
+		if (plane) {
+			style.disableItem();
+			modifier.setMirrorAxis(math::Axis::None, glm::ivec3(0));
+		}
+		mirrorAxisRadioButton("None##mirror", math::Axis::None);
+		ImGui::SameLine();
+		mirrorAxisRadioButton("X##mirror", math::Axis::X);
+		ImGui::SameLine();
+		mirrorAxisRadioButton("Y##mirror", math::Axis::Y);
+		ImGui::SameLine();
+		mirrorAxisRadioButton("Z##mirror", math::Axis::Z);
+	}
+}
+
 void ModifierPanel::update(const char *title) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		core_trace_scoped(ToolsPanel);
@@ -42,46 +100,32 @@ void ModifierPanel::update(const char *title) {
 		ImGui::Separator();
 
 		Modifier &modifier = sceneMgr().modifier();
-		bool plane = modifier.planeMode();
-		if (ImGui::Checkbox("Plane", &plane)) {
-			modifier.setPlaneMode(plane);
-		}
-		ImGui::SameLine();
-
-		bool single = modifier.singleMode();
-		if (ImGui::Checkbox("Single", &single)) {
-			modifier.setSingleMode(single);
-		}
-		ImGui::SameLine();
-
-		bool center = modifier.centerMode();
-		if (ImGui::Checkbox("Center", &center)) {
-			modifier.setCenterMode(center);
-		}
-
-		// shapes are disabled in plane mode
-		if (plane) {
-			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-		}
-		const ShapeType currentSelectedShapeType = modifier.shapeType();
-		if (ImGui::BeginCombo("Shape", ShapeTypeStr[(int)currentSelectedShapeType], ImGuiComboFlags_None)) {
-			for (int i = 0; i < (int)ShapeType::Max; ++i) {
-				const ShapeType type = (ShapeType)i;
-				const bool selected = type == currentSelectedShapeType;
-				if (ImGui::Selectable(ShapeTypeStr[i], selected)) {
-					modifier.setShapeType(type);
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
+		{
+			bool plane = modifier.planeMode();
+			if (ImGui::Checkbox("Plane##modifiertype", &plane)) {
+				modifier.setPlaneMode(plane);
 			}
-			ImGui::EndCombo();
 		}
-		if (plane) {
-			ImGui::PopItemFlag();
-			ImGui::PopStyleVar();
+
+		ImGui::SameLine();
+
+		{
+			bool single = modifier.singleMode();
+			if (ImGui::Checkbox("Single##modifiertype", &single)) {
+				modifier.setSingleMode(single);
+			}
 		}
+
+		ImGui::SameLine();
+
+		{
+			bool center = modifier.centerMode();
+			if (ImGui::Checkbox("Center##modifiertype", &center)) {
+				modifier.setCenterMode(center);
+			}
+		}
+		addShapes();
+		addMirrorPlanes();
 	}
 	ImGui::End();
 }
