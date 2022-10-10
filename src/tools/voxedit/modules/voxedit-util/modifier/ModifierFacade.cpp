@@ -37,9 +37,9 @@ void ModifierFacade::render(const video::Camera& camera) {
 		if (needsUpdate) {
 			lastMirrorAxis = _mirrorAxis;
 			lastCursor = cursor;
-			const glm::ivec3& first = firstPos();
-			const glm::ivec3& mins = (glm::min)(first, cursor);
-			const glm::ivec3& maxs = (glm::max)(first, cursor);
+			const math::AABB<int>& bbox = aabb();
+			const glm::ivec3& mins = bbox.mins();
+			const glm::ivec3& maxs = bbox.maxs();
 			glm::ivec3 minsMirror = mins;
 			glm::ivec3 maxsMirror = maxs;
 			const int size = _gridResolution;

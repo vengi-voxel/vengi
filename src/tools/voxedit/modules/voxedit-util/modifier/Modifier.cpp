@@ -311,46 +311,37 @@ bool Modifier::needsSecondAction() {
 }
 
 glm::ivec3 Modifier::firstPos() const {
-	if (!_center || _secondPosValid) {
-		return _aabbFirstPos;
-	}
-	const int size = _gridResolution;
-	const glm::ivec3& first = _aabbFirstPos;
-	const glm::ivec3& pos = aabbPosition();
-	const glm::ivec3& mins = (glm::min)(first, pos);
-	const glm::ivec3& maxs = (glm::max)(first, pos);
-	const glm::ivec3& delta = maxs + size - mins;
-	const glm::ivec3& deltaa = glm::abs(delta);
-	glm::ivec3 f = _aabbFirstPos;
-	if (deltaa.x > 1 && deltaa.z > 1 && deltaa.y == 1) {
-		f.x += delta.x;
-		f.z += delta.z;
-	} else if (deltaa.y > 1 && deltaa.z > 1 && deltaa.x == 1) {
-		f.y += delta.y;
-		f.z += delta.z;
-	} else if (deltaa.x > 1 && deltaa.y > 1 && deltaa.z == 1) {
-		f.x += delta.x;
-		f.y += delta.y;
-	}
-	return f;
+	return _aabbFirstPos;
 }
 
 math::AABB<int> Modifier::aabb() const {
-	const int size = _gridResolution;
 	const glm::ivec3 &pos = aabbPosition();
+	if (_center) {
+		const glm::ivec3 &first = firstPos();
+		const glm::ivec3 &delta = glm::abs(pos - first);
+		return math::AABB<int>(first - delta, first + delta);
+	}
+
+	const int size = _gridResolution;
 	const bool single = singleMode();
-	const glm::ivec3 &firstP = single ? pos : firstPos();
-	const glm::ivec3 mins = (glm::min)(firstP, pos);
-	const glm::ivec3 maxs = (glm::max)(firstP, pos) + (size - 1);
+	const glm::ivec3 &first = single ? pos : firstPos();
+	const glm::ivec3 &mins = (glm::min)(first, pos);
+	const glm::ivec3 &maxs = (glm::max)(first, pos) + (size - 1);
 	return math::AABB<int>(mins, maxs);
 }
 
 glm::ivec3 Modifier::aabbDim() const {
 	const int size = _gridResolution;
-	glm::ivec3 pos = aabbPosition();
-	const glm::ivec3& first = firstPos();
-	const glm::ivec3& mins = (glm::min)(first, pos);
-	const glm::ivec3& maxs = (glm::max)(first, pos);
+	const glm::ivec3 &pos = aabbPosition();
+	if (_center) {
+		const glm::ivec3 &first = firstPos();
+		const glm::ivec3 &delta = glm::abs(pos - first);
+		return delta * 2 + size;
+	}
+	const bool single = singleMode();
+	const glm::ivec3 &first = single ? pos : firstPos();
+	const glm::ivec3 &mins = (glm::min)(first, pos);
+	const glm::ivec3 &maxs = (glm::max)(first, pos);
 	return glm::abs(maxs + size - mins);
 }
 

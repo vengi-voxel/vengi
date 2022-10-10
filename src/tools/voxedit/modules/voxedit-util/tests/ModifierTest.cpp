@@ -129,6 +129,26 @@ TEST_F(ModifierTest, testModifierSelection) {
 	modifier.shutdown();
 }
 
+TEST_F(ModifierTest, testCenterPositive) {
+	Modifier modifier;
+	ASSERT_TRUE(modifier.init());
+	modifier.setCenterMode(true);
+	prepare(modifier, glm::ivec3(0), glm::ivec3(1), ModifierType::Place);
+	const glm::ivec3& dim = modifier.aabbDim();
+	EXPECT_EQ(glm::ivec3(3), dim);
+	modifier.shutdown();
+}
+
+TEST_F(ModifierTest, testCenterNegative) {
+	Modifier modifier;
+	ASSERT_TRUE(modifier.init());
+	modifier.setCenterMode(true);
+	prepare(modifier, glm::ivec3(0), glm::ivec3(-1), ModifierType::Place);
+	const glm::ivec3& dim = modifier.aabbDim();
+	EXPECT_EQ(glm::ivec3(3), dim);
+	modifier.shutdown();
+}
+
 TEST_F(ModifierTest, DISABLED_testPlace) {
 	// TODO: implement me
 }

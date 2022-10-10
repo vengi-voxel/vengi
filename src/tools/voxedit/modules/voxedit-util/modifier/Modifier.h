@@ -97,6 +97,8 @@ protected:
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 	math::Axis getSizeAndHeightFromAxisAndDim(math::Axis axis, const glm::ivec3& dimensions, double &size, double &height) const;
 	bool executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type)>& callback);
+
+	math::AABB<int> aabb() const;
 public:
 	Modifier();
 
@@ -165,7 +167,6 @@ public:
 	bool aabbMode() const;
 	glm::ivec3 aabbDim() const;
 	glm::ivec3 aabbPosition() const;
-	math::AABB<int> aabb() const;
 
 	/**
 	 * @brief Pick the start position of the modifier execution bounding box
