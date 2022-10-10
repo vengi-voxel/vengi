@@ -5,6 +5,7 @@
 #pragma once
 
 #include "dearimgui/imgui.h"
+#include "dearimgui/imgui_internal.h"
 
 namespace ui {
 namespace imgui {
@@ -14,15 +15,14 @@ private:
 	int _n = 0;
 	int _font = 0;
 	int _color = 0;
+	int _itemFlags = 0;
 
 public:
 	~ScopedStyle() {
 		ImGui::PopStyleVar(_n);
 		ImGui::PopStyleColor(_color);
-		while (_font > 0) {
-			ImGui::PopFont();
-			--_font;
-		}
+		resetFont();
+		resetItem();
 	}
 	inline void setColor(ImGuiCol idx, const ImVec4 &col) {
 		ImGui::PushStyleColor(idx, col);
@@ -37,6 +37,17 @@ public:
 			ImGui::PopFont();
 			--_font;
 		}
+	}
+	inline void resetItem() {
+		while (_itemFlags > 0) {
+			ImGui::PopItemFlag();
+			--_itemFlags;
+		}
+	}
+	inline void disableItem() {
+		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+		++_itemFlags;
+		setAlpha(ImGui::GetStyle().Alpha * 0.5f);
 	}
 	inline void setAlpha(float alpha) {
 		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
