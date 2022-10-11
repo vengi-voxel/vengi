@@ -109,6 +109,7 @@ public:
 	 * @param[in] terminated If this is true, the read will stop on a 0 byte
 	 */
 	bool readString(int length, char *strbuff, bool terminated = false);
+	bool readString(int length, core::String &strbuff, bool terminated = false);
 	/**
 	 * @brief Allows you to read values by specifying a format string and pointers
 	 * to the values to store them in.
@@ -123,8 +124,11 @@ public:
 	 */
 	bool readFormat(const char *fmt, ...);
 
+	bool readPascalStringUInt8(core::String &str);
 	bool readPascalStringUInt16LE(core::String &str);
 	bool readPascalStringUInt16BE(core::String &str);
+	bool readPascalStringUInt32LE(core::String &str);
+	bool readPascalStringUInt32BE(core::String &str);
 };
 
 /**

@@ -296,20 +296,35 @@ bool ReadStream::readString(int length, char *strbuff, bool terminated) {
 	return true;
 }
 
-bool ReadStream::readPascalStringUInt16LE(core::String &str) {
-	uint16_t length;
-	if (readUInt16(length) != 0) {
-		return false;
-	}
+bool ReadStream::readString(int length, core::String &str, bool terminated) {
 	str.clear();
-	for (uint16_t i = 0u; i < length; ++i) {
+	for (int i = 0; i < length; ++i) {
 		uint8_t chr;
 		if (readUInt8(chr) != 0) {
 			return false;
 		}
 		str += (char)chr;
+		if (terminated && chr == '\0') {
+			break;
+		}
 	}
 	return true;
+}
+
+bool ReadStream::readPascalStringUInt8(core::String &str) {
+	uint8_t length;
+	if (readUInt8(length) != 0) {
+		return false;
+	}
+	return readString(length, str, false);
+}
+
+bool ReadStream::readPascalStringUInt16LE(core::String &str) {
+	uint16_t length;
+	if (readUInt16(length) != 0) {
+		return false;
+	}
+	return readString(length, str, false);
 }
 
 bool ReadStream::readPascalStringUInt16BE(core::String &str) {
@@ -317,15 +332,23 @@ bool ReadStream::readPascalStringUInt16BE(core::String &str) {
 	if (readUInt16BE(length) != 0) {
 		return false;
 	}
-	str.clear();
-	for (uint16_t i = 0u; i < length; ++i) {
-		uint8_t chr;
-		if (readUInt8(chr) != 0) {
-			return false;
-		}
-		str += (char)chr;
+	return readString(length, str, false);
+}
+
+bool ReadStream::readPascalStringUInt32LE(core::String &str) {
+	uint32_t length;
+	if (readUInt32(length) != 0) {
+		return false;
 	}
-	return true;
+	return readString((int)length, str, false);
+}
+
+bool ReadStream::readPascalStringUInt32BE(core::String &str) {
+	uint32_t length;
+	if (readUInt32BE(length) != 0) {
+		return false;
+	}
+	return readString((int)length, str, false);
 }
 
 int ReadStream::readUInt8(uint8_t &val) {
