@@ -475,12 +475,26 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 }
 
 bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
+	const glm::ivec3 maxSize = glm::ivec3(256);
+	const SceneGraph *sg = &sceneGraph;
+	bool needsSplit = false;
+	for (SceneGraphNode &node : sceneGraph) {
+		const voxel::Region& region = node.region();
+		if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxSize))) {
+			continue;
+		}
+		needsSplit = true;
+	}
 	SceneGraph newSceneGraph;
-	splitVolumes(sceneGraph, newSceneGraph, glm::ivec3(256));
+	if (needsSplit) {
+		// TODO: split is destroying groups
+		splitVolumes(sceneGraph, newSceneGraph, maxSize);
+		sg = &newSceneGraph;
+	}
 
 	ogt_SceneContext ctx;
-	const SceneGraphNode &root = newSceneGraph.root();
-	addNodeToScene(newSceneGraph, newSceneGraph.node(root.id()), ctx, k_invalid_group_index, 0);
+	const SceneGraphNode &root = sg->root();
+	addNodeToScene(*sg, sg->node(root.id()), ctx, k_invalid_group_index, 0);
 
 	core::Buffer<const ogt_vox_model *> modelPtr;
 	modelPtr.reserve(ctx.models.size());
@@ -508,7 +522,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	ogt_vox_palette &pal = output_scene.palette;
 	ogt_vox_matl_array &mat = output_scene.materials;
 
-	const voxel::Palette &palette = newSceneGraph.firstPalette();
+	const voxel::Palette &palette = sg->firstPalette();
 	for (int i = 0; i < 256; ++i) {
 		const core::RGBA &rgba = palette.colors[i];
 		pal.color[i].r = rgba.r;
