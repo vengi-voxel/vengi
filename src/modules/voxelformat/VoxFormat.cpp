@@ -187,6 +187,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 }
 
 bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances, const voxel::Palette &palette) {
+	// TODO: with each save/load there is one root group more in some situations
 	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
 	const char *name = "Group";
@@ -240,7 +241,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, Scen
 		}
 	}
 
-	return groupId;
+	return true;
 }
 
 bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
@@ -359,6 +360,7 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 		}
 		{
 			// TODO: only add the layer if there are models in this group?
+			// https://github.com/mgerhardy/vengi/issues/186
 			ogt_vox_layer ogt_layer;
 			core_memset(&ogt_layer, 0, sizeof(ogt_layer));
 			ogt_layer.name = node.name().c_str();
