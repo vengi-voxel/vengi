@@ -274,6 +274,8 @@ bool Palette::load(const char *paletteName) {
 	const core::String &extension = paletteFile->extension();
 	if (extension == "gpl") {
 		return loadGimpPalette(paletteName);
+	} else if (extension == "qsm") {
+		return loadQubiclePalette(paletteName);
 	} else if (extension == "pal") {
 		return loadRGBPalette(paletteName);
 	}
@@ -334,6 +336,46 @@ bool Palette::saveRGBPalette(const char *filename) const {
 		stream.writeUInt8(colors[i].g);
 		stream.writeUInt8(colors[i].b);
 	}
+	return true;
+}
+
+bool Palette::loadQubiclePalette(const char *filename) {
+	io::FileStream stream(io::filesystem()->open(filename));
+	if (!stream.valid()) {
+		Log::error("Failed to load qubicle palette file %s", filename);
+		return false;
+	}
+
+	uint8_t len;
+	// name (Qubicle)
+	stream.readUInt8(len);
+	stream.skip(len);
+	// version
+	stream.readUInt8(len);
+	stream.skip(len);
+	stream.skip(7);
+	struct entry {
+		core::RGBA palColor{0};
+		uint8_t colorformat{0}; // rgba (0) or bgra (1)
+		core::RGBA color1{0};
+		core::RGBA color2{0};
+	};
+	for (int i = 0; i < PaletteMaxColors; ++i) {
+		entry e;
+		stream.readUInt8(e.palColor.a);
+		stream.readUInt8(e.palColor.r);
+		stream.readUInt8(e.palColor.g);
+		stream.readUInt8(e.palColor.b);
+
+		stream.readUInt8(e.colorformat);
+		stream.readUInt32(e.color1.rgba);
+		stream.readUInt32(e.color2.rgba);
+
+		// ignore alpha here
+		colors[i] = core::RGBA(e.palColor.r, e.palColor.g, e.palColor.b);
+	}
+	colorCount = PaletteMaxColors;
+
 	return true;
 }
 
