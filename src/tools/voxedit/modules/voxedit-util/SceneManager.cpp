@@ -589,12 +589,19 @@ bool SceneManager::undo() {
 		return nodeUpdateTransform(s.nodeId, s.localMatrix, nullptr, s.keyFrame, false);
 	} else if (s.type == MementoType::SceneNodeRemoved) {
 		voxel::RawVolume* v = MementoData::toVolume(s.data);
-		voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
+		voxelformat::SceneGraphNodeType type = voxelformat::SceneGraphNodeType::Model;
+		if (v == nullptr) {
+			// TODO: record the node
+			type = voxelformat::SceneGraphNodeType::Group;
+		}
+		voxelformat::SceneGraphNode node(type);
 		node.setName(s.name);
 		node.setVolume(v, true);
-		const glm::vec3 rp = referencePosition();
-		const glm::vec3 size = v->region().getDimensionsInVoxels();
-		node.setPivot(0, rp, size);
+		if (v != nullptr) {
+			const glm::vec3 rp = referencePosition();
+			const glm::vec3 size = v->region().getDimensionsInVoxels();
+			node.setPivot(0, rp, size);
+		}
 		Log::debug("Memento: Undo remove of node (%s) from parent %i", s.name.c_str(), s.parentId);
 		const int newNodeId = addNodeToSceneGraph(node, s.parentId);
 		_mementoHandler.updateNodeId(s.nodeId, newNodeId);
