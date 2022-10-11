@@ -245,6 +245,13 @@ bool Palette::load(const image::ImagePtr &img) {
 }
 
 bool Palette::load(const char *paletteName) {
+	if (SDL_strncmp(paletteName, "node:", 5) == 0) {
+		if (colorCount == 0) {
+			nippon();
+		}
+		return false;
+	}
+
 	if (SDL_strcmp(paletteName, builtIn[0]) == 0) {
 		return nippon();
 	} else if (SDL_strcmp(paletteName, builtIn[1]) == 0) {
