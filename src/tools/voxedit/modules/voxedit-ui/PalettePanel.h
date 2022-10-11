@@ -15,6 +15,7 @@ private:
 	core::String _currentSelectedPalette;
 	core::DynamicArray<core::String> _availablePalettes;
 	bool _hasFocus = false;
+	bool _searchFittingColors = false;
 
 	void reloadAvailablePalettes();
 public:

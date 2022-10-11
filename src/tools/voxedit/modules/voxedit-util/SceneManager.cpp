@@ -71,7 +71,7 @@ SceneManager::~SceneManager() {
 	core_assert_msg(_initialized == 0, "SceneManager was not properly shut down");
 }
 
-bool SceneManager::loadPalette(const core::String& paletteName) {
+bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestColors) {
 	voxel::Palette palette;
 
 	if (core::string::startsWith(paletteName, "node:")) {
@@ -89,7 +89,7 @@ bool SceneManager::loadPalette(const core::String& paletteName) {
 	if (palette.colorCount == 0 && !palette.load(paletteName.c_str())) {
 		return false;
 	}
-	if (!setActivePalette(palette)) {
+	if (!setActivePalette(palette, searchBestColors)) {
 		return false;
 	}
 	core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
@@ -554,13 +554,32 @@ voxel::Palette &SceneManager::activePalette() const {
 	return _sceneGraph.node(nodeId).palette();
 }
 
-bool SceneManager::setActivePalette(const voxel::Palette &palette) {
+bool SceneManager::setActivePalette(const voxel::Palette &palette, bool searchBestColors) {
 	const int nodeId = activeNode();
 	if (!_sceneGraph.hasNode(nodeId)) {
 		Log::warn("Failed to set the active palette");
 		return false;
 	}
 	voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	if (node.type() != voxelformat::SceneGraphNodeType::Model) {
+		return false;
+	}
+	if (searchBestColors) {
+		voxel::RawVolume *v = node.volume();
+		voxel::RawVolumeWrapper wrapper(v);
+		core_assert(v != nullptr);
+		const voxel::Palette &oldPalette = node.palette();
+		voxelutil::visitVolume(wrapper, [&wrapper, &palette, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
+			const core::RGBA rgba = oldPalette.colors[voxel.getColor()];
+			const int newColor = palette.getClosestMatch(rgba);
+			if (newColor != -1) {
+				voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor);
+				wrapper.setVoxel(x, y, z, newVoxel);
+			}
+		});
+		modified(nodeId, wrapper.dirtyRegion());
+	}
+	// TODO: undo step for palette change
 	node.setPalette(palette);
 	return true;
 }

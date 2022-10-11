@@ -197,8 +197,11 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 				}
 				ImGui::EndCombo();
 			}
+
+			ImGui::Checkbox("Color match", &_searchFittingColors);
+
 			if (ImGui::Button(ICON_FA_CHECK " OK##loadpalette")) {
-				sceneMgr().loadPalette(_currentSelectedPalette);
+				sceneMgr().loadPalette(_currentSelectedPalette, _searchFittingColors);
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SameLine();

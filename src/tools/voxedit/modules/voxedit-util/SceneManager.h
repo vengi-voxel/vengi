@@ -289,7 +289,7 @@ public:
 	voxel::RawVolume* volume(int nodeId);
 	const voxel::RawVolume* volume(int nodeId) const;
 	voxel::Palette &activePalette() const;
-	bool setActivePalette(const voxel::Palette &palette);
+	bool setActivePalette(const voxel::Palette &palette, bool searchBestColors = false);
 
 	/**
 	 * @brief Import a heightmap in the current layer of the scene
@@ -318,7 +318,7 @@ public:
 	 * @param[in] paletteName The name of the palette
 	 * @note The name is extended to a filename like this @c palette-<paletteName>.[lua.png]
 	 */
-	bool loadPalette(const core::String& paletteName);
+	bool loadPalette(const core::String& paletteName, bool searchBestColors = false);
 	/**
 	 * @brief Create a new procgen tree
 	 */
