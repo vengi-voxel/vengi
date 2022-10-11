@@ -33,6 +33,7 @@ const FormatDescription* palettes() {
 		{"Gimp Palette", {"gpl"}, nullptr, 0u},
 		{"Qubicle Palette", {"qsm"}, nullptr, 0u},
 		{"RGB Palette", {"pal"}, nullptr, 0u},
+		{"CSV Palette", {"csv"}, nullptr, 0u},
 		{"Portable Network Graphics", {"png"}, nullptr, 0u},
 		{"", {}, nullptr, 0u}
 	};

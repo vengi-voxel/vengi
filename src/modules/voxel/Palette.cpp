@@ -171,6 +171,12 @@ bool Palette::save(const char *name) const {
 			return false;
 		}
 		return true;
+	} else if (extension == "csv") {
+		if (!saveCSVPalette(name)) {
+			Log::warn("Failed to write the csv palette file '%s'", name);
+			return false;
+		}
+		return true;
 	}
 	image::Image img(name);
 	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
@@ -276,6 +282,8 @@ bool Palette::load(const char *paletteName) {
 		return loadGimpPalette(paletteName);
 	} else if (extension == "qsm") {
 		return loadQubiclePalette(paletteName);
+	} else if (extension == "csv") {
+		return loadCSVPalette(paletteName);
 	} else if (extension == "pal") {
 		return loadRGBPalette(paletteName);
 	}
@@ -323,6 +331,22 @@ bool Palette::loadRGBPalette(const char *filename) {
 	return true;
 }
 
+bool Palette::saveCSVPalette(const char *filename) const {
+	const io::FilesystemPtr &filesystem = io::filesystem();
+	io::FilePtr paletteFile = filesystem->open(filename, io::FileMode::SysWrite);
+	io::FileStream stream(paletteFile);
+	if (!stream.valid()) {
+		Log::error("Failed to open file %s for saving the rgb csv palette", filename);
+		return false;
+	}
+	for (int i = 0; i < colorCount; ++i) {
+		if (!stream.writeStringFormat(false, "%i, %i, %i,", colors[i].r, colors[i].g, colors[i].b)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 bool Palette::saveRGBPalette(const char *filename) const {
 	const io::FilesystemPtr &filesystem = io::filesystem();
 	io::FilePtr paletteFile = filesystem->open(filename, io::FileMode::SysWrite);
@@ -339,27 +363,69 @@ bool Palette::saveRGBPalette(const char *filename) const {
 	return true;
 }
 
+bool Palette::loadCSVPalette(const char *filename) {
+	const core::String &content = io::filesystem()->load("%s", filename);
+	if (content.empty()) {
+		return false;
+	}
+
+	io::MemoryReadStream stream(content.c_str(), content.size());
+	char line[2048];
+	colorCount = 0;
+	_paletteFilename = filename;
+
+	while (stream.readLine(sizeof(line), line)) {
+		int r, g, b;
+		if (SDL_sscanf(line, "%i %i %i", &r, &g, &b) != 3) {
+			Log::error("Failed to parse line '%s'", line);
+			continue;
+		}
+		if (colorCount >= PaletteMaxColors) {
+			Log::warn("Not all colors were loaded");
+			break;
+		}
+		colors[colorCount++] = core::RGBA(r, g, b);
+	}
+	markDirty();
+	return colorCount > 0;
+}
+
 bool Palette::loadQubiclePalette(const char *filename) {
 	io::FileStream stream(io::filesystem()->open(filename));
 	if (!stream.valid()) {
 		Log::error("Failed to load qubicle palette file %s", filename);
 		return false;
 	}
+	_paletteFilename = filename;
 
-	uint8_t len;
-	// name (Qubicle)
-	stream.readUInt8(len);
-	stream.skip(len);
-	// version
-	stream.readUInt8(len);
-	stream.skip(len);
-	stream.skip(7);
+	core::String name;
+	stream.readPascalStringUInt8(name);
+	core::String version;
+	stream.readPascalStringUInt8(version);
+
+	uint8_t unknown1;
+	stream.readUInt8(unknown1);
+	uint8_t unknown2;
+	stream.readUInt8(unknown2);
+	uint8_t unknown3;
+	stream.readUInt8(unknown3);
+	uint8_t unknown4;
+	stream.readUInt8(unknown4);
+	uint8_t colorformat;
+	stream.readUInt8(colorformat);
+	uint8_t unknown6;
+	stream.readUInt8(unknown6);
+	uint8_t unknown7;
+	stream.readUInt8(unknown7);
+
 	struct entry {
-		core::RGBA palColor{0};
-		uint8_t colorformat{0}; // rgba (0) or bgra (1)
-		core::RGBA color1{0};
-		core::RGBA color2{0};
+		core::RGBA palColor = 0;
+		bool valid = false;
+		core::RGBA color1 = 0;
+		core::RGBA color2 = 0;
 	};
+
+	colorCount = 0;
 	for (int i = 0; i < PaletteMaxColors; ++i) {
 		entry e;
 		stream.readUInt8(e.palColor.a);
@@ -367,16 +433,18 @@ bool Palette::loadQubiclePalette(const char *filename) {
 		stream.readUInt8(e.palColor.g);
 		stream.readUInt8(e.palColor.b);
 
-		stream.readUInt8(e.colorformat);
+		e.valid = stream.readBool();
 		stream.readUInt32(e.color1.rgba);
 		stream.readUInt32(e.color2.rgba);
+		if (!e.valid) {
+			continue;
+		}
 
 		// ignore alpha here
-		colors[i] = core::RGBA(e.palColor.r, e.palColor.g, e.palColor.b);
+		colors[colorCount++] = core::RGBA(e.palColor.r, e.palColor.g, e.palColor.b);
 	}
-	colorCount = PaletteMaxColors;
-
-	return true;
+	markDirty();
+	return colorCount > 0;
 }
 
 bool Palette::loadGimpPalette(const char *filename) {
