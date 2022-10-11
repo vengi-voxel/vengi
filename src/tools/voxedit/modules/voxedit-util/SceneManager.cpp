@@ -11,6 +11,7 @@
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/Log.h"
+#include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
 #include "core/collection/DynamicArray.h"
@@ -72,7 +73,20 @@ SceneManager::~SceneManager() {
 
 bool SceneManager::loadPalette(const core::String& paletteName) {
 	voxel::Palette palette;
-	if (!palette.load(paletteName.c_str())) {
+
+	if (core::string::startsWith(paletteName, "node:")) {
+		const size_t nodeDetails = paletteName.rfind("##");
+		if (nodeDetails != core::String::npos) {
+			const int nodeId = core::string::toInt(paletteName.substr(nodeDetails + 2, paletteName.size()));
+			if (_sceneGraph.hasNode(nodeId)) {
+				palette = _sceneGraph.node(nodeId).palette();
+			} else {
+				Log::warn("Couldn't find palette for node %i", nodeId);
+			}
+		}
+	}
+
+	if (palette.colorCount == 0 && !palette.load(paletteName.c_str())) {
 		return false;
 	}
 	if (!setActivePalette(palette)) {

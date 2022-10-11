@@ -11,6 +11,7 @@
 #include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
+#include "voxelformat/SceneGraphNode.h"
 #include <glm/gtc/type_ptr.hpp>
 
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
@@ -172,6 +173,18 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			ImGui::TextUnformatted("Select the palette");
 			ImGui::Separator();
 			if (ImGui::BeginCombo(ICON_FA_TREE " Type", _currentSelectedPalette.c_str(), 0)) {
+				for (const voxelformat::SceneGraphNode &node : sceneMgr().sceneGraph()) {
+					core::String id;
+					if (node.name().empty()) {
+						id = core::string::format("node:%i##%i", node.id(), node.id());
+					} else {
+						id = core::string::format("node:%s##%i", node.name().c_str(), node.id());
+					}
+					const core::String name = id.substr(id.rfind(':'), id.size());
+					if (ImGui::Selectable(name.c_str(), id == _currentSelectedPalette)) {
+						_currentSelectedPalette = id;
+					}
+				}
 				for (const core::String& palette : _availablePalettes) {
 					if (ImGui::Selectable(palette.c_str(), palette == _currentSelectedPalette)) {
 						_currentSelectedPalette = palette;
