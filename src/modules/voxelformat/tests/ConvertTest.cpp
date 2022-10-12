@@ -46,13 +46,17 @@ TEST_F(ConvertTest, testVoxToVXM) {
 TEST_F(ConvertTest, testQbToVox) {
 	QBFormat src;
 	VoxFormat target;
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vox", target);
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vox", target, flags);
 }
 
 TEST_F(ConvertTest, testVoxToQb) {
 	VoxFormat src;
 	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.qb", target);
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.qb", target, flags);
 }
 
 TEST_F(ConvertTest, testVoxToVox) {
@@ -94,19 +98,25 @@ TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
 TEST_F(ConvertTest, testBinvoxToQb) {
 	BinVoxFormat src;
 	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("test.binvox", src, "convert-test.qb", target);
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testLoadSaveAndLoadSceneGraph("test.binvox", src, "convert-test.qb", target, flags);
 }
 
 TEST_F(ConvertTest, testVXLToQb) {
 	VXLFormat src;
 	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("rgb.vxl", src, "convert-rgb.qb", target);
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testLoadSaveAndLoadSceneGraph("rgb.vxl", src, "convert-rgb.qb", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToQbt) {
 	QBFormat src;
 	QBTFormat target;
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbt", target);
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbt", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToSproxel) {
@@ -120,7 +130,9 @@ TEST_F(ConvertTest, testQbToSproxel) {
 TEST_F(ConvertTest, testSproxelToQb) {
 	SproxelFormat src;
 	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("rgb.csv", src, "convert-rgb.qb", target);
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testLoadSaveAndLoadSceneGraph("rgb.csv", src, "convert-rgb.qb", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToQb) {
@@ -146,60 +158,71 @@ TEST_F(ConvertTest, testCubToQb) {
 TEST_F(ConvertTest, testGoxToQb) {
 	GoxFormat src;
 	QBFormat target;
-	testLoadSaveAndLoadSceneGraph("test.gox", src, "convert-test.qb", target);
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testLoadSaveAndLoadSceneGraph("test.gox", src, "convert-test.qb", target, flags);
 }
 
 TEST_F(ConvertTest, testQBCLToQb) {
 	QBCLFormat src;
 	QBFormat target;
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	// qb doesn't store a pivot
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("qubicle.qbcl", src, "convert-qubicle.qb", target, flags);
 }
 
 TEST_F(ConvertTest, testQbtToQb) {
 	QBTFormat src;
 	QBFormat target;
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	// qb doesn't store a pivot
-	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("qubicle.qbt", src, "convert-qubicle.qb", target, flags);
 }
 
 TEST_F(ConvertTest, testKV6ToQb) {
 	KV6Format src;
 	QBFormat target;
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	// qb doesn't store a pivot
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("test.kv6", src, "convert-test.qb", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToVXR) {
 	QBFormat src;
 	VXRFormat target;
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	// qb doesn't store a pivot
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("robo.qb", src, "convert-robo.vxr", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToQBCL) {
 	QBFormat src;
 	QBCLFormat target;
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbcl", target);
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbcl", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToVXM) {
 	QBFormat src;
 	VXMFormat target;
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	// vxm doesn't store the position - this is handled in vxr/vxa - so it's ok here to skip the translation check
 	// qb doesn't store the pivot
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Pivot);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxm", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToVXL) {
 	QBFormat src;
 	VXLFormat target;
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxl", target);
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxl", target, flags);
 }
 
 // TODO: remove maxDelta for color once qb doesn't quantize the colors - but builds palettes
@@ -225,7 +248,7 @@ TEST_F(ConvertTest, testVoxToVXR) {
 TEST_F(ConvertTest, testVXLToVXR) {
 	VXLFormat src;
 	VXRFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Pivot);
 	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "convert-cc.vxr", target, flags);
 }
 
@@ -243,6 +266,7 @@ TEST_F(ConvertTest, testVXMToQb) {
 TEST_F(ConvertTest, testVXRToQb) {
 	VXRFormat src;
 	QBFormat target;
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	// qb doesn't store a pivot
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("e2de1723/e2de1723.vxr", src, "convert-e2de1723.qb", target, flags);
@@ -252,7 +276,8 @@ TEST_F(ConvertTest, testVXRToQb) {
 TEST_F(ConvertTest, testQbToGox) {
 	QBFormat src;
 	GoxFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform);
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Transform | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.gox", target, flags);
 }
 
