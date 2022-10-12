@@ -323,8 +323,6 @@ size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 	SceneGraph sceneGraph;
 	wrapBool(readNodes(filename, stream, sceneGraph, sceneGraph.root().id(), palette, true))
 
-	Log::error("palette:\n%s", voxel::Palette::print(palette).c_str());
-
 	return palette.colorCount;
 }
 
