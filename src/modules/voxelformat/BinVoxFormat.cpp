@@ -3,6 +3,7 @@
  */
 
 #include "BinVoxFormat.h"
+#include "core/Color.h"
 #include "core/ScopedPtr.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
@@ -148,6 +149,8 @@ bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &
 	const int maxIndex = width * height * depth;
 	glm::ivec3 pos = mins;
 	const uint8_t emptyColorReplacement = merged.second.findReplacement(0);
+	Log::debug("found replacement for %s at index %u: %s at index %u", core::Color::print(merged.second.colors[0]).c_str(), 0,
+			   core::Color::print(merged.second.colors[emptyColorReplacement]).c_str(), emptyColorReplacement);
 	for (int idx = 0; idx < maxIndex; ++idx) {
 		if (!sampler.setPosition(pos)) {
 			Log::error("Failed to set position for index %i (%i:%i:%i) (w:%i,h:%i,d:%i)",
@@ -167,7 +170,10 @@ bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &
 			++count;
 			value = 0u;
 		} else {
-			const uint8_t v = voxel.getColor();
+			uint8_t v = voxel.getColor();
+			if (v == 0) {
+				v = emptyColorReplacement;
+			}
 			if (value != v || count == 255u) {
 				if (count > 0u) {
 					wrapBool(stream.writeUInt8(value))
@@ -177,11 +183,7 @@ bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &
 				count = 0u;
 			}
 			++count;
-			if (v == 0) {
-				value = emptyColorReplacement;
-			} else {
-				value = v;
-			}
+			value = v;
 		}
 		++pos.y;
 		if (pos.y > maxs.y) {
