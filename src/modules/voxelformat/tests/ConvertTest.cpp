@@ -225,6 +225,13 @@ TEST_F(ConvertTest, testQbToVXL) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxl", target, flags);
 }
 
+// TODO: broken
+TEST_F(ConvertTest, DISABLED_testQBCLToQBCL) {
+	QBCLFormat src;
+	QBCLFormat target;
+	testLoadSaveAndLoadSceneGraph("qubicle.qbcl", src, "convert-qubicle.qbcl", target);
+}
+
 // TODO: remove maxDelta for color once qb doesn't quantize the colors - but builds palettes
 TEST_F(ConvertTest, testKVXToQb) {
 	KVXFormat src;
