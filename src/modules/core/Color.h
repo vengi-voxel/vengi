@@ -82,7 +82,7 @@ public:
 		return minIndex;
 	}
 
-	static core::String print(RGBA rgba);
+	static core::String print(RGBA rgba, bool colorAsHex = true);
 
 	static int quantize(RGBA* targetBuf, size_t maxTargetBufColors, const RGBA* inputBuf, size_t inputBufColors);
 

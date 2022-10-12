@@ -101,6 +101,26 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 	return false;
 }
 
+core::String Palette::print(const Palette &palette, bool colorAsHex) {
+	if (palette.colorCount == 0) {
+		return "no colors";
+	}
+	core::String palStr;
+	core::String line;
+	for (int i = 0; i < palette.colorCount; ++i) {
+		if (i % 16 == 0 && !line.empty()) {
+			palStr.append(core::string::format("%03i %s\n", i - 16, line.c_str()));
+			line = "";
+		}
+		const core::String c = core::Color::print(palette.colors[i], colorAsHex);
+		line += c;
+	}
+	if (!line.empty()) {
+		palStr.append(core::string::format("%03i %s\n", palette.colorCount / 16 * 16, line.c_str()));
+	}
+	return palStr;
+}
+
 int Palette::getClosestMatch(const glm::vec4& color, float *distance, int skip) const {
 	if (size() == 0) {
 		return -1;

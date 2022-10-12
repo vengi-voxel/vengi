@@ -201,9 +201,12 @@ float Color::getDistance(const glm::vec4 &color, float hue, float saturation, fl
 	return val;
 }
 
-core::String Color::print(RGBA rgba) {
-	String buf = toHex(rgba);
-	buf.append(" ");
+core::String Color::print(RGBA rgba, bool colorAsHex) {
+	String buf = "\033[0m";
+	if (colorAsHex) {
+		buf = toHex(rgba);
+		buf.append(" ");
+	}
 	buf.append("\033[38;2;");
 	buf.append(rgba.r).append(";");
 	buf.append(rgba.g).append(";");
