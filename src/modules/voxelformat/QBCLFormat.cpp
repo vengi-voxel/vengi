@@ -77,7 +77,7 @@ static int writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t 
 	if (count == 0) {
 		return 0;
 	}
-	core::RGBA color;
+	core::RGBA color(0, 0, 0, 0);
 	if (!voxel::isAir(voxel.getMaterial())) {
 		color = palette.colors[voxel.getColor()];
 	}
