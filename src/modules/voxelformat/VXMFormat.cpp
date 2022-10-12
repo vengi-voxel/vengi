@@ -129,8 +129,8 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	if (emptyColorReplacement == EMPTY_PALETTE) {
 		Log::warn("Could not find replacement for palette color: %u", EMPTY_PALETTE);
 	}
-	Log::debug("found replacement for %s: %s", core::Color::print(palette.colors[EMPTY_PALETTE]).c_str(),
-			   core::Color::print(palette.colors[emptyColorReplacement]).c_str());
+	Log::debug("found replacement for %s at index %u: %s at index %u", core::Color::print(palette.colors[EMPTY_PALETTE]).c_str(), EMPTY_PALETTE,
+			   core::Color::print(palette.colors[emptyColorReplacement]).c_str(), emptyColorReplacement);
 
 	int numColors = palette.colorCount;
 	if (numColors >= voxel::PaletteMaxColors) {
@@ -225,7 +225,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 					// the border voxel of the volume into the file
 					sampler.setPosition(mins.x + x, mins.y + y, mins.z + z);
 					const voxel::Voxel &voxel = sampler.voxel();
-					if (prevVoxel.getColor() != voxel.getColor() || rleCount >= 255) {
+					if (prevVoxel.getColor() != voxel.getColor() || voxel.getMaterial() != prevVoxel.getMaterial() || rleCount >= 255) {
 						wrapBool(writeRLE(stream, rleCount, prevVoxel, emptyColorReplacement))
 						prevVoxel = voxel;
 						rleCount = 0;
