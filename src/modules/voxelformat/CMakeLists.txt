@@ -56,6 +56,7 @@ set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
 	tests/ConvertTest.cpp
+	tests/PaletteTest.cpp
 	tests/CSMFormatTest.cpp
 	tests/CubFormatTest.cpp
 	tests/GLTFFormatTest.cpp
