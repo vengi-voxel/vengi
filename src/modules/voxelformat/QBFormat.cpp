@@ -176,18 +176,14 @@ bool QBFormat::readColor(State& state, io::SeekableReadStream& stream, core::RGB
 }
 
 bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup) {
-	char name[260] = "";
-	uint8_t nameLength;
-	wrap(stream.readUInt8(nameLength));
-	Log::debug("Matrix name length: %u", (uint32_t)nameLength);
-	wrapBool(stream.readString(nameLength, name));
-	name[nameLength] = '\0';
-	Log::debug("Matrix name: %s", name);
+	core::String name;
+	wrap(stream.readPascalStringUInt8(name))
+	Log::debug("Matrix name: %s", name.c_str());
 
 	glm::uvec3 size(0);
-	wrap(stream.readUInt32(size.x));
-	wrap(stream.readUInt32(size.y));
-	wrap(stream.readUInt32(size.z));
+	wrap(stream.readUInt32(size.x))
+	wrap(stream.readUInt32(size.y))
+	wrap(stream.readUInt32(size.z))
 	Log::debug("Matrix size: %i:%i:%i", size.x, size.y, size.z);
 
 	if (size.x == 0 || size.y == 0 || size.z == 0) {
@@ -203,9 +199,9 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	SceneGraphTransform transform;
 	{
 		glm::ivec3 offset(0);
-		wrap(stream.readInt32(offset.x));
-		wrap(stream.readInt32(offset.y));
-		wrap(stream.readInt32(offset.z));
+		wrap(stream.readInt32(offset.x))
+		wrap(stream.readInt32(offset.y))
+		wrap(stream.readInt32(offset.z))
 		Log::debug("Matrix offset: %i:%i:%i", offset.x, offset.y, offset.z);
 		if (state._zAxisOrientation == ZAxisOrientation::RightHanded) {
 			core::exchange(offset.x, offset.z);

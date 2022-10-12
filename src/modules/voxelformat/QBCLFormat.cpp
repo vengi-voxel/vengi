@@ -73,12 +73,6 @@ const int NODE_TYPE_COMPOUND = 2;
 		return false; \
 	}
 
-static bool writeString(io::SeekableWriteStream& stream, const core::String& str) {
-	wrapSave(stream.writeUInt32(str.size()))
-	wrapSave(stream.writeString(str, false))
-	return true;
-}
-
 static int writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t count, const voxel::Palette &palette) {
 	if (count == 0) {
 		return 0;
@@ -129,7 +123,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 
 	wrapSave(outStream.writeUInt32(qbcl::NODE_TYPE_MATRIX));
 	wrapSave(outStream.writeUInt32(1)) // unknown
-	wrapSave(writeString(outStream, node.name()))
+	wrapSave(outStream.writePascalStringUInt32LE(node.name()))
 	wrapSave(outStream.writeUInt8(1)) // unknown
 	wrapSave(outStream.writeUInt8(1)) // unknown
 	wrapSave(outStream.writeUInt8(0)) // unknown
@@ -206,7 +200,7 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sc
 	int children = (int)sceneGraph.size();
 	wrapSave(stream.writeUInt32(qbcl::NODE_TYPE_MODEL))
 	wrapSave(stream.writeUInt32(1)) // unknown
-	wrapSave(writeString(stream, sceneGraph.root().name()))
+	wrapSave(stream.writePascalStringUInt32LE(sceneGraph.root().name()))
 	wrapSave(stream.writeUInt8(1)) // unknown
 	wrapSave(stream.writeUInt8(1)) // unknown
 	wrapSave(stream.writeUInt8(0)) // unknown
@@ -247,13 +241,13 @@ bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	wrapBool(stream.writeUInt32(0)) // thumbnail w/h
 
 	const SceneGraphNode& rootNode = sceneGraph.root();
-	wrapBool(writeString(stream, rootNode.property("Title")))
-	wrapBool(writeString(stream, rootNode.property("Description")))
-	wrapBool(writeString(stream, rootNode.property("Metadata")))
-	wrapBool(writeString(stream, rootNode.property("Author")))
-	wrapBool(writeString(stream, rootNode.property("Company")))
-	wrapBool(writeString(stream, rootNode.property("Website")))
-	wrapBool(writeString(stream, rootNode.property("Copyright")))
+	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Title")))
+	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Description")))
+	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Metadata")))
+	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Author")))
+	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Company")))
+	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Website")))
+	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Copyright")))
 
 	uint8_t guid[16] {0};
 	if (stream.write(guid, lengthof(guid)) == -1) {
@@ -262,17 +256,6 @@ bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	}
 
 	return saveModel(stream, sceneGraph);
-}
-
-static bool readString(io::SeekableReadStream& stream, core::String& str) {
-	uint32_t length;
-	wrap(stream.readUInt32(length))
-	char *name = (char *)core_malloc(length + 1);
-	wrapBool(stream.readString(length, name))
-	name[length] = '\0';
-	str = name;
-	core_free(name);
-	return true;
 }
 
 size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
@@ -300,19 +283,19 @@ size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 	}
 
 	core::String title;
-	wrapBool(readString(stream, title))
+	wrapBool(stream.readPascalStringUInt32LE(title))
 	core::String desc;
-	wrapBool(readString(stream, desc))
+	wrapBool(stream.readPascalStringUInt32LE(desc))
 	core::String metadata;
-	wrapBool(readString(stream, metadata))
+	wrapBool(stream.readPascalStringUInt32LE(metadata))
 	core::String author;
-	wrapBool(readString(stream, author))
+	wrapBool(stream.readPascalStringUInt32LE(author))
 	core::String company;
-	wrapBool(readString(stream, company))
+	wrapBool(stream.readPascalStringUInt32LE(company))
 	core::String website;
-	wrapBool(readString(stream, website))
+	wrapBool(stream.readPascalStringUInt32LE(website))
 	core::String copyright;
-	wrapBool(readString(stream, copyright))
+	wrapBool(stream.readPascalStringUInt32LE(copyright))
 
 	uint8_t guid[16];
 	if (stream.read(guid, lengthof(guid)) == -1) {
@@ -507,7 +490,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 	Log::debug("Data size: %u", dataSize);
 
 	core::String name;
-	wrapBool(readString(stream, name))
+	wrapBool(stream.readPascalStringUInt32LE(name))
 	stream.skip(3); // ColorFormat, ZAxisOrientation, Compression? (see QBFormat)
 	switch (type) {
 	case qbcl::NODE_TYPE_MATRIX:
@@ -566,19 +549,19 @@ bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 	}
 
 	core::String title;
-	wrapBool(readString(stream, title))
+	wrapBool(stream.readPascalStringUInt32LE(title))
 	core::String desc;
-	wrapBool(readString(stream, desc))
+	wrapBool(stream.readPascalStringUInt32LE(desc))
 	core::String metadata;
-	wrapBool(readString(stream, metadata))
+	wrapBool(stream.readPascalStringUInt32LE(metadata))
 	core::String author;
-	wrapBool(readString(stream, author))
+	wrapBool(stream.readPascalStringUInt32LE(author))
 	core::String company;
-	wrapBool(readString(stream, company))
+	wrapBool(stream.readPascalStringUInt32LE(company))
 	core::String website;
-	wrapBool(readString(stream, website))
+	wrapBool(stream.readPascalStringUInt32LE(website))
 	core::String copyright;
-	wrapBool(readString(stream, copyright))
+	wrapBool(stream.readPascalStringUInt32LE(copyright))
 
 	uint8_t guid[16];
 	if (stream.read(guid, lengthof(guid)) == -1) {

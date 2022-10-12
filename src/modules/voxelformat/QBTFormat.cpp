@@ -308,41 +308,34 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGr
  * is solid is may not be needed to be rendered because it is a core voxel that is surrounded by 6 other voxels and thus invisible. If M = 1 then the voxel is a core voxel.
  */
 bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette, bool paletteMode) {
-	char name[1024];
-	uint32_t nameLength;
-	wrap(stream.readUInt32(nameLength));
-	if ((size_t)nameLength >= sizeof(name)) {
-		Log::error("Name buffer not big enough");
-		return false;
-	}
-	wrapBool(stream.readString(nameLength, name));
-	name[nameLength] = '\0';
-	Log::debug("Matrix name: %s", name);
+	core::String name;
+	wrapBool(stream.readPascalStringUInt32LE(name))
+	Log::debug("Matrix name: %s", name.c_str());
 	glm::ivec3 translation;
 	SceneGraphTransform transform;
-	wrap(stream.readInt32(translation.x));
-	wrap(stream.readInt32(translation.y));
-	wrap(stream.readInt32(translation.z));
+	wrap(stream.readInt32(translation.x))
+	wrap(stream.readInt32(translation.y))
+	wrap(stream.readInt32(translation.z))
 	transform.setWorldTranslation(translation);
 
 	glm::uvec3 localScale;
-	wrap(stream.readUInt32(localScale.x));
-	wrap(stream.readUInt32(localScale.y));
-	wrap(stream.readUInt32(localScale.z));
+	wrap(stream.readUInt32(localScale.x))
+	wrap(stream.readUInt32(localScale.y))
+	wrap(stream.readUInt32(localScale.z))
 
 	glm::vec3 pivot;
-	wrap(stream.readFloat(pivot.x));
-	wrap(stream.readFloat(pivot.y));
-	wrap(stream.readFloat(pivot.z));
+	wrap(stream.readFloat(pivot.x))
+	wrap(stream.readFloat(pivot.y))
+	wrap(stream.readFloat(pivot.z))
 
 	glm::uvec3 size;
-	wrap(stream.readUInt32(size.x));
-	wrap(stream.readUInt32(size.y));
-	wrap(stream.readUInt32(size.z));
+	wrap(stream.readUInt32(size.x))
+	wrap(stream.readUInt32(size.y))
+	wrap(stream.readUInt32(size.z))
 	transform.setPivot(pivot);
 
 	uint32_t voxelDataSize;
-	wrap(stream.readUInt32(voxelDataSize));
+	wrap(stream.readUInt32(voxelDataSize))
 	Log::debug("Matrix size: %u:%u:%u with %u bytes", size.x, size.y, size.z, voxelDataSize);
 	if (voxelDataSize == 0) {
 		Log::warn("Empty voxel chunk found");
