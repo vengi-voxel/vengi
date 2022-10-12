@@ -46,12 +46,6 @@ const int NEXT_SLICE_FLAG = 6;
 		return false; \
 	}
 
-#define wrapColor(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return voxel::Voxel(); \
-	}
-
 bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const {
 	const int nameLength = (int)node.name().size();
 	wrapSave(stream.writeUInt8(nameLength));
@@ -155,27 +149,30 @@ bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &file
 }
 
 voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream, voxel::PaletteLookup &palLookup) {
-	uint8_t red;
-	uint8_t green;
-	uint8_t blue;
-	uint8_t alpha;
-	if (state._colorFormat == ColorFormat::RGBA) {
-		wrapColor(stream.readUInt8(red))
-		wrapColor(stream.readUInt8(green))
-		wrapColor(stream.readUInt8(blue))
-	} else {
-		wrapColor(stream.readUInt8(blue))
-		wrapColor(stream.readUInt8(green))
-		wrapColor(stream.readUInt8(red))
-	}
-	wrapColor(stream.readUInt8(alpha))
-	if (alpha == 0) {
+	core::RGBA color(0);
+	if (!readColor(state, stream, color)) {
 		return voxel::Voxel();
 	}
-	const core::RGBA color = core::Color::getRGBA(red, green, blue, alpha);
+	if (color.a == 0) {
+		return voxel::Voxel();
+	}
 	const uint8_t index = palLookup.findClosestIndex(color);
 	voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, index);
 	return v;
+}
+
+bool QBFormat::readColor(State& state, io::SeekableReadStream& stream, core::RGBA &color) {
+	if (state._colorFormat == ColorFormat::RGBA) {
+		wrap(stream.readUInt8(color.r))
+		wrap(stream.readUInt8(color.g))
+		wrap(stream.readUInt8(color.b))
+	} else {
+		wrap(stream.readUInt8(color.b))
+		wrap(stream.readUInt8(color.g))
+		wrap(stream.readUInt8(color.r))
+	}
+	wrap(stream.readUInt8(color.a))
+	return true;
 }
 
 bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup) {
@@ -307,6 +304,111 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	return true;
 }
 
+bool QBFormat::loadColors(State& state, io::SeekableReadStream& stream, voxel::Palette &palette) {
+	uint8_t nameLength;
+	wrap(stream.readUInt8(nameLength));
+	if (stream.skip(nameLength) == -1) {
+		Log::error("Failed to skip name bytes");
+		return false;
+	}
+
+	glm::uvec3 size(0);
+	wrap(stream.readUInt32(size.x));
+	wrap(stream.readUInt32(size.y));
+	wrap(stream.readUInt32(size.z));
+	Log::debug("Matrix size: %i:%i:%i", size.x, size.y, size.z);
+
+	if (size.x == 0 || size.y == 0 || size.z == 0) {
+		Log::error("Invalid size (%i:%i:%i)", size.x, size.y, size.z);
+		return false;
+	}
+
+	if (size.x > 2048 || size.y > 2048 || size.z > 2048) {
+		Log::error("Volume exceeds the max allowed size: %i:%i:%i", size.x, size.y, size.z);
+		return false;
+	}
+
+	int32_t tmp;
+	wrap(stream.readInt32(tmp));
+	wrap(stream.readInt32(tmp));
+	wrap(stream.readInt32(tmp));
+
+	if (state._compressed == Compression::None) {
+		Log::debug("qb matrix uncompressed");
+		for (uint32_t z = 0; z < size.z; ++z) {
+			for (uint32_t y = 0; y < size.y; ++y) {
+				for (uint32_t x = 0; x < size.x; ++x) {
+					core::RGBA color(0);
+					wrapBool(readColor(state, stream, color))
+					if (color.a == 0) {
+						continue;
+					}
+					palette.addColorToPalette(color, false);
+				}
+			}
+		}
+		Log::debug("%i colors loaded", palette.colorCount);
+		return true;
+	}
+
+	Log::debug("Matrix rle compressed");
+
+	uint32_t z = 0u;
+	while (z < size.z) {
+		for (;;) {
+			uint32_t data;
+			wrap(stream.peekUInt32(data))
+			if (data == qb::NEXT_SLICE_FLAG) {
+				stream.skip(sizeof(data));
+				break;
+			}
+			if (data == qb::RLE_FLAG) {
+				stream.skip(sizeof(data));
+				uint32_t count;
+				wrap(stream.readUInt32(count))
+			}
+			core::RGBA color(0);
+			wrapBool(readColor(state, stream, color))
+			palette.addColorToPalette(color, false);
+		}
+		++z;
+	}
+	Log::debug("%i colors loaded", palette.colorCount);
+	return true;
+}
+
+size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+	State state;
+	wrap(stream.readUInt32(state._version))
+	uint32_t colorFormat;
+	wrap(stream.readUInt32(colorFormat))
+	state._colorFormat = (ColorFormat)colorFormat;
+	uint32_t zAxisOrientation;
+	wrap(stream.readUInt32(zAxisOrientation))
+	state._zAxisOrientation = (ZAxisOrientation)zAxisOrientation;
+	uint32_t compressed;
+	wrap(stream.readUInt32(compressed))
+	state._compressed = (Compression)compressed;
+	uint32_t visibilityMaskEncoded;
+	wrap(stream.readUInt32(visibilityMaskEncoded))
+	state._visibilityMaskEncoded = (VisibilityMask)visibilityMaskEncoded;
+
+	uint32_t numMatrices;
+	wrap(stream.readUInt32(numMatrices))
+	if (numMatrices > 16384) {
+		Log::error("Max allowed matrices exceeded: %u", numMatrices);
+		return false;
+	}
+	for (uint32_t i = 0; i < numMatrices; i++) {
+		Log::debug("Loading matrix colors: %u", i);
+		if (!loadColors(state, stream, palette)) {
+			Log::error("Failed to load the matrix colors %u", i);
+			break;
+		}
+	}
+	return palette.colorCount;
+}
+
 bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) {
 	State state;
 	wrap(stream.readUInt32(state._version))
@@ -355,4 +457,3 @@ bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStre
 #undef wrapBool
 #undef wrapSave
 #undef wrapSaveColor
-#undef wrapColor
