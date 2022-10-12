@@ -416,7 +416,10 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 		Log::debug("Add model node");
 		const voxel::Region region = node.region();
 		const voxel::Palette &palette = sceneGraph.firstPalette();
+		const voxel::Palette &nodePalette = node.palette();
+		const bool needsRemapping = palette.hash() != nodePalette.hash();
 		const int replacement = findClosestPaletteIndex(palette);
+		// TODO: also look for an unused color
 		{
 			ogt_vox_model ogt_model;
 			core_memset(&ogt_model, 0, sizeof(ogt_model));
@@ -430,6 +433,8 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 			voxelutil::visitVolume(*node.volume(), [&] (int, int, int, const voxel::Voxel& voxel) {
 				if (voxel.getColor() == 0 && !isAir(voxel.getMaterial())) {
 					*dataptr++ = replacement;
+				} else if (needsRemapping) {
+					*dataptr++ = palette.getClosestMatch(nodePalette.colors[voxel.getColor()]);
 				} else {
 					*dataptr++ = voxel.getColor();
 				}
