@@ -156,7 +156,7 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream, vo
 	if (color.a == 0) {
 		return voxel::Voxel();
 	}
-	const uint8_t index = palLookup.findClosestIndex(color);
+	const uint8_t index = palLookup.findClosestIndex(core::RGBA(color.r, color.g, color.b));
 	voxel::Voxel v = voxel::createVoxel(voxel::VoxelType::Generic, index);
 	return v;
 }
@@ -171,6 +171,14 @@ bool QBFormat::readColor(State& state, io::SeekableReadStream& stream, core::RGB
 		wrap(stream.readUInt8(color.g))
 		wrap(stream.readUInt8(color.r))
 	}
+	// the returned alpha value might also be the vis mask
+	// if (mask == 0) // voxel invisble
+	// if (mask && 2 == 2) // left side visible
+	// if (mask && 4 == 4) // right side visible
+	// if (mask && 8 == 8) // top side visible
+	// if (mask && 16 == 16) // bottom side visible
+	// if (mask && 32 == 32) // front side visible
+	// if (mask && 64 == 64) // back side visible
 	wrap(stream.readUInt8(color.a))
 	return true;
 }
@@ -339,7 +347,7 @@ bool QBFormat::loadColors(State& state, io::SeekableReadStream& stream, voxel::P
 					if (color.a == 0) {
 						continue;
 					}
-					palette.addColorToPalette(color, false);
+					palette.addColorToPalette(core::RGBA(color.r, color.g, color.b), false);
 				}
 			}
 		}
@@ -365,7 +373,10 @@ bool QBFormat::loadColors(State& state, io::SeekableReadStream& stream, voxel::P
 			}
 			core::RGBA color(0);
 			wrapBool(readColor(state, stream, color))
-			palette.addColorToPalette(color, false);
+			if (color.a == 0) {
+				continue;
+			}
+			palette.addColorToPalette(core::RGBA(color.r, color.g, color.b), false);
 		}
 		++z;
 	}
