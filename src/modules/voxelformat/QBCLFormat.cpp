@@ -22,6 +22,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/PaletteLookup.h"
+#include "voxelformat/SceneGraph.h"
 
 namespace voxelformat {
 
@@ -274,7 +275,60 @@ static bool readString(io::SeekableReadStream& stream, core::String& str) {
 	return true;
 }
 
-bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, const voxel::Palette &palette) {
+size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+	uint32_t magic;
+	wrap(stream.readUInt32(magic))
+	if (magic != FourCC('Q', 'B', 'C', 'L')) {
+		Log::error("Invalid magic found - no qbcl file");
+		return false;
+	}
+	uint32_t version; // (major, minor, release, build)
+	wrapImg(stream.readUInt32(version))
+	uint32_t fileVersion;
+	wrap(stream.readUInt32(fileVersion))
+	if (fileVersion != qbcl::VERSION) {
+		Log::error("Unknown version found: %i", fileVersion);
+		return false;
+	}
+	uint32_t thumbWidth;
+	wrap(stream.readUInt32(thumbWidth))
+	uint32_t thumbHeight;
+	wrap(stream.readUInt32(thumbHeight))
+	if (stream.skip(((int64_t)thumbWidth * (int64_t)thumbHeight * 4)) == -1) {
+		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read));
+		return false;
+	}
+
+	core::String title;
+	wrapBool(readString(stream, title))
+	core::String desc;
+	wrapBool(readString(stream, desc))
+	core::String metadata;
+	wrapBool(readString(stream, metadata))
+	core::String author;
+	wrapBool(readString(stream, author))
+	core::String company;
+	wrapBool(readString(stream, company))
+	core::String website;
+	wrapBool(readString(stream, website))
+	core::String copyright;
+	wrapBool(readString(stream, copyright))
+
+	uint8_t guid[16];
+	if (stream.read(guid, lengthof(guid)) == -1) {
+		Log::error("Failed to read the guid");
+		return false;
+	}
+
+	SceneGraph sceneGraph;
+	wrapBool(readNodes(filename, stream, sceneGraph, sceneGraph.root().id(), palette, true))
+
+	Log::error("palette:\n%s", voxel::Palette::print(palette).c_str());
+
+	return palette.colorCount;
+}
+
+bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, bool paletteMode) {
 	SceneGraphTransform transform;
 	Log::debug("Matrix name: %s", name.c_str());
 
@@ -355,13 +409,17 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 					y += rleLength;
 				} else {
 					const core::RGBA color = core::Color::getRGBA(red, green, blue, alpha);
-					const uint8_t palIndex = palLookup.findClosestIndex(color);
-					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
-					for (int j = 0; j < rleLength; ++j) {
-						const uint32_t x = (index / size.z);
-						const uint32_t z = index % size.z;
-						volume->setVoxel((int)x, y, (int)z, voxel);
-						++y;
+					if (paletteMode) {
+						palette.addColorToPalette(color);
+					} else {
+						const uint8_t palIndex = palLookup.findClosestIndex(color);
+						const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
+						for (int j = 0; j < rleLength; ++j) {
+							const uint32_t x = (index / size.z);
+							const uint32_t z = index % size.z;
+							volume->setVoxel((int)x, y, (int)z, voxel);
+							++y;
+						}
 					}
 				}
 				// we've read another color value for the rle values
@@ -373,17 +431,27 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				const uint32_t x = (index / size.z);
 				const uint32_t z = index % size.z;
 				const core::RGBA color = core::Color::getRGBA(red, green, blue);
-				const uint8_t palIndex = palLookup.findClosestIndex(color);
-				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
-				volume->setVoxel((int)x, y, (int)z, voxel);
+				if (paletteMode) {
+					palette.addColorToPalette(color);
+				} else {
+					const uint8_t palIndex = palLookup.findClosestIndex(color);
+					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
+					volume->setVoxel((int)x, y, (int)z, voxel);
+				}
 				++y;
 			}
 		}
 
 		index++;
 	}
+
+	if (paletteMode) {
+		return true;
+	}
+
 	SceneGraphNode node;
 	node.setVolume(volume.release(), true);
+
 	node.setPalette(palLookup.palette());
 	if (name.empty()) {
 		node.setName("Matrix");
@@ -396,7 +464,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	return id != -1;
 }
 
-bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, const voxel::Palette &palette) {
+bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, bool paletteMode) {
 	const size_t skip = 3 * 3 * sizeof(float);
 	stream.skip((int64_t)skip); // TODO: rotation matrix?
 	uint32_t childCount;
@@ -410,12 +478,12 @@ bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream&
 	int nodeId = sceneGraph.emplace(core::move(node), parent);
 	Log::debug("Found %u children in model '%s'", childCount, name.c_str());
 	for (uint32_t i = 0; i < childCount; ++i) {
-		wrapBool(readNodes(filename, stream, sceneGraph, nodeId, palette))
+		wrapBool(readNodes(filename, stream, sceneGraph, nodeId, palette, paletteMode))
 	}
 	return true;
 }
 
-bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, const voxel::Palette &palette) {
+bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, bool paletteMode) {
 	SceneGraphNode node(SceneGraphNodeType::Group);
 	if (name.empty()) {
 		node.setName("Compound");
@@ -423,17 +491,17 @@ bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStre
 		node.setName(name);
 	}
 	int nodeId = sceneGraph.emplace(core::move(node), parent);
-	wrapBool(readMatrix(filename, stream, sceneGraph, nodeId, name, palette))
+	wrapBool(readMatrix(filename, stream, sceneGraph, nodeId, name, palette, paletteMode))
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount))
 	Log::debug("Found %u children in compound '%s'", childCount, name.c_str());
 	for (uint32_t i = 0; i < childCount; ++i) {
-		wrapBool(readNodes(filename, stream, sceneGraph, nodeId, palette))
+		wrapBool(readNodes(filename, stream, sceneGraph, nodeId, palette, paletteMode))
 	}
 	return true;
 }
 
-bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const voxel::Palette &palette) {
+bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette, bool paletteMode) {
 	uint32_t type;
 	wrap(stream.readUInt32(type))
 	uint32_t dataSize;
@@ -446,7 +514,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 	switch (type) {
 	case qbcl::NODE_TYPE_MATRIX:
 		Log::debug("Found matrix");
-		if (!readMatrix(filename, stream, sceneGraph, parent, name, palette)) {
+		if (!readMatrix(filename, stream, sceneGraph, parent, name, palette, paletteMode)) {
 			Log::error("Failed to load matrix %s", name.c_str());
 			return false;
 		}
@@ -454,7 +522,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 		break;
 	case qbcl::NODE_TYPE_MODEL:
 		Log::debug("Found model");
-		if (!readModel(filename, stream, sceneGraph, parent, name, palette)) {
+		if (!readModel(filename, stream, sceneGraph, parent, name, palette, paletteMode)) {
 			Log::error("Failed to load model %s", name.c_str());
 			return false;
 		}
@@ -462,7 +530,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 		break;
 	case qbcl::NODE_TYPE_COMPOUND:
 		Log::debug("Found compound");
-		if (!readCompound(filename, stream, sceneGraph, parent, name, palette)) {
+		if (!readCompound(filename, stream, sceneGraph, parent, name, palette, paletteMode)) {
 			Log::error("Failed to load compound %s", name.c_str());
 			return false;
 		}
@@ -529,7 +597,8 @@ bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 	rootNode.setProperty("Website", website);
 	rootNode.setProperty("Copyright", copyright);
 
-	wrapBool(readNodes(filename, stream, sceneGraph, rootNode.id(), palette))
+	voxel::Palette palCopy = palette;
+	wrapBool(readNodes(filename, stream, sceneGraph, rootNode.id(), palCopy, false))
 
 	return true;
 }
