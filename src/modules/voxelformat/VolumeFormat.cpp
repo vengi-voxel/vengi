@@ -53,10 +53,10 @@ const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = {"qb", "vox", nullptr};
 const io::FormatDescription* voxelLoad() {
 	// this is the list of supported voxel volume formats that are have importers implemented
 	static const io::FormatDescription desc[] = {
-		{"Qubicle Binary", {"qb"}, nullptr, 0u},
+		{"Qubicle Binary", {"qb"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"MagicaVoxel", {"vox"}, [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Qubicle Binary Tree", {"qbt"}, [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"Qubicle Project", {"qbcl"}, [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+		{"Qubicle Project", {"qbcl"}, [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Sandbox VoxEdit Tilemap", {"vxt"}, [] (uint32_t magic) {return magic == FourCC('V','X','T','1');}, 0u},
 		{"Sandbox VoxEdit Collection", {"vxc"}, nullptr, 0u},
 		{"Sandbox VoxEdit Model", {"vxm"}, [] (uint32_t magic) {return magic == FourCC('V','X','M','A')
@@ -71,7 +71,7 @@ const io::FormatDescription* voxelLoad() {
 				|| magic == FourCC('V','X','R','3') || magic == FourCC('V','X','R','2')
 				|| magic == FourCC('V','X','R','1');}, 0u},
 		{"BinVox", {"binvox"}, [] (uint32_t magic) {return magic == FourCC('#','b','i','n');}, 0u},
-		{"Goxel", {"gox"}, [] (uint32_t magic) {return magic == FourCC('G','O','X',' ');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+		{"Goxel", {"gox"}, [] (uint32_t magic) {return magic == FourCC('G','O','X',' ');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"CubeWorld", {"cub"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Minecraft region", {"mca", "mcr"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Minecraft level dat", {"dat"}, nullptr, 0u},
@@ -79,7 +79,7 @@ const io::FormatDescription* voxelLoad() {
 		{"Quake BSP", {"bsp"}, [](uint32_t magic) {
 				return magic == FourCC('I', 'B', 'S', 'P') || magic == FourCC('\x1d', '\0', '\0', '\0');
 		}, VOX_FORMAT_FLAG_MESH},
-		{"Sproxel csv", {"csv"}, nullptr, 0u},
+		{"Sproxel csv", {"csv"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"StarMade", {"sment"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"GL Transmission Format", {"gltf", "glb"}, nullptr, VOX_FORMAT_FLAG_MESH},
