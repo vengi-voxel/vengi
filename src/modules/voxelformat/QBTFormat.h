@@ -22,11 +22,21 @@ namespace voxelformat {
  */
 class QBTFormat : public PaletteFormat {
 private:
+	enum class ColorFormat {
+		RGBA,
+		Palette
+	};
+	struct State {
+		uint8_t versionMajor;
+		uint8_t versionMinor;
+		ColorFormat colorFormat;
+		glm::vec3 globalScale;
+	};
 	bool skipNode(io::SeekableReadStream& stream);
-	bool loadMatrix(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, bool paletteMode);
-	bool loadCompound(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, bool paletteMode);
-	bool loadModel(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, bool paletteMode);
-	bool loadNode(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, bool paletteMode);
+	bool loadMatrix(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, State &state);
+	bool loadCompound(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, State &state);
+	bool loadModel(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, State &state);
+	bool loadNode(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, State &state);
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
 
 	bool loadColorMap(io::SeekableReadStream& stream, voxel::Palette &palette);
