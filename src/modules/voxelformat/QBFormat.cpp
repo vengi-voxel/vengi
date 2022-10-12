@@ -406,7 +406,7 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 	wrap(stream.readUInt32(numMatrices))
 	if (numMatrices > 16384) {
 		Log::error("Max allowed matrices exceeded: %u", numMatrices);
-		return false;
+		return 0;
 	}
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix colors: %u", i);

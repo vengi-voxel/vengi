@@ -77,7 +77,7 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	for (int i = 0; i < palette.colorCount; ++i) {
 		const ogt_vox_rgba &c = scene->palette.color[i];
 		const ogt_vox_matl &matl = scene->materials.matl[i];
-		palette.colors[i] = core::Color::getRGBA(c.r, c.g, c.b, c.a);
+		palette.colors[i] = core::RGBA(c.r, c.g, c.b);
 		if (matl.type == ogt_matl_type::ogt_matl_type_emit) {
 			palette.glowColors[i] = palette.colors[i];
 		}
@@ -262,7 +262,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	palette.colorCount = lengthof(scene->palette.color);
 	for (int i = 0; i < palette.colorCount; ++i) {
 		const ogt_vox_rgba color = scene->palette.color[i];
-		palette.colors[i] = core::Color::getRGBA(color.r, color.g, color.b, color.a);
+		palette.colors[i] = core::RGBA(color.r, color.g, color.b);
 		const ogt_vox_matl &matl = scene->materials.matl[i];
 		if (matl.type == ogt_matl_type_emit) {
 			palette.glowColors[i] = palette.colors[i];
@@ -525,7 +525,8 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	ogt_vox_matl_array &mat = output_scene.materials;
 
 	const voxel::Palette &palette = sg->firstPalette();
-	for (int i = 0; i < 256; ++i) {
+	core_assert(palette.colorCount > 0);
+	for (int i = 0; i < palette.colorCount; ++i) {
 		const core::RGBA &rgba = palette.colors[i];
 		pal.color[i].r = rgba.r;
 		pal.color[i].g = rgba.g;
@@ -538,6 +539,12 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 			mat.matl[i].type = ogt_matl_type::ogt_matl_type_emit;
 			mat.matl[i].emit = 1.0f;
 		}
+	}
+	for (int i = palette.colorCount; i < 256; ++i) {
+		pal.color[i].r = 0;
+		pal.color[i].g = 0;
+		pal.color[i].b = 0;
+		pal.color[i].a = 255;
 	}
 
 	uint32_t buffersize = 0;
