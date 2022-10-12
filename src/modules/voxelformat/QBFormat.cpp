@@ -96,18 +96,18 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 
 				if (newColor != currentColor) {
 					if (count == 1) {
-						saveColor(stream, currentColor);
+						wrapSave(saveColor(stream, currentColor))
 					} else if (count == 2) {
-						saveColor(stream, currentColor);
-						saveColor(stream, currentColor);
+						wrapSave(saveColor(stream, currentColor))
+						wrapSave(saveColor(stream, currentColor))
 					} else if (count == 3) {
-						saveColor(stream, currentColor);
-						saveColor(stream, currentColor);
-						saveColor(stream, currentColor);
+						wrapSave(saveColor(stream, currentColor))
+						wrapSave(saveColor(stream, currentColor))
+						wrapSave(saveColor(stream, currentColor))
 					} else if (count > 3) {
 						wrapSave(stream.writeUInt32(qb::RLE_FLAG))
 						wrapSave(stream.writeUInt32(count))
-						saveColor(stream, currentColor);
+						wrapSave(saveColor(stream, currentColor))
 					}
 					count = 0;
 					currentColor = newColor;
@@ -116,18 +116,18 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 			}
 		}
 		if (count == 1) {
-			saveColor(stream, currentColor);
+			wrapSave(saveColor(stream, currentColor))
 		} else if (count == 2) {
-			saveColor(stream, currentColor);
-			saveColor(stream, currentColor);
+			wrapSave(saveColor(stream, currentColor))
+			wrapSave(saveColor(stream, currentColor))
 		} else if (count == 3) {
-			saveColor(stream, currentColor);
-			saveColor(stream, currentColor);
-			saveColor(stream, currentColor);
+			wrapSave(saveColor(stream, currentColor))
+			wrapSave(saveColor(stream, currentColor))
+			wrapSave(saveColor(stream, currentColor))
 		} else if (count > 3) {
 			wrapSave(stream.writeUInt32(qb::RLE_FLAG))
 			wrapSave(stream.writeUInt32(count))
-			saveColor(stream, currentColor);
+			wrapSave(saveColor(stream, currentColor))
 		}
 		count = 0;
 		wrapSave(stream.writeUInt32(qb::NEXT_SLICE_FLAG));
