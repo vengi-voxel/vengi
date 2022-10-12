@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Format.h"
+#include "voxelformat/BinVoxFormat.h"
 
 namespace voxelformat {
 
@@ -22,21 +23,24 @@ namespace voxelformat {
  */
 class QBTFormat : public PaletteFormat {
 private:
-	enum class ColorFormat {
+	enum class ColorFormat : uint8_t {
 		RGBA,
 		Palette
 	};
-	struct State {
-		uint8_t versionMajor;
-		uint8_t versionMinor;
-		ColorFormat colorFormat;
-		glm::vec3 globalScale;
+	struct Header {
+		uint8_t versionMajor = 0;
+		uint8_t versionMinor = 0;
+		ColorFormat colorFormat = ColorFormat::RGBA;
+		glm::vec3 globalScale {0};
 	};
+
+	bool loadHeader(io::SeekableReadStream& stream, Header &state);
+
 	bool skipNode(io::SeekableReadStream& stream);
-	bool loadMatrix(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, State &state);
-	bool loadCompound(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, State &state);
-	bool loadModel(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, State &state);
-	bool loadNode(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, State &state);
+	bool loadMatrix(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, Header &state);
+	bool loadCompound(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, Header &state);
+	bool loadModel(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, Header &state);
+	bool loadNode(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, Header &state);
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
 
 	bool loadColorMap(io::SeekableReadStream& stream, voxel::Palette &palette);
