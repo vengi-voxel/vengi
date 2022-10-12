@@ -79,9 +79,35 @@ TEST_F(SceneGraphTest, testPaletteMerge) {
 		node.setPalette(pal);
 		EXPECT_EQ(1, sceneGraph.emplace(core::move(node), 0)) << "Unexpected node id returned - root node is 0 - next should be 1";
 	}
-	const voxel::Palette &palette = sceneGraph.mergedPalette();
+	const voxel::Palette &palette = sceneGraph.mergePalettes(true);
 	ASSERT_EQ(palette.colorCount, pal.colorCount);
 	ASSERT_EQ(palette.hash(), pal.hash());
+}
+
+TEST_F(SceneGraphTest, testPaletteMergeTooManyColors) {
+	SceneGraph sceneGraph;
+	{
+		voxel::Palette pal;
+		pal.nippon();
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		node.setName("model");
+		node.setPalette(pal);
+		EXPECT_EQ(1, sceneGraph.emplace(core::move(node), 0)) << "Unexpected node id returned - root node is 0 - next should be 1";
+	}
+	{
+		voxel::Palette pal;
+		pal.magicaVoxel();
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+		node.setName("model2");
+		node.setPalette(pal);
+		sceneGraph.emplace(core::move(node), 0);
+	}
+	const voxel::Palette &palette = sceneGraph.mergePalettes(true);
+	ASSERT_EQ(palette.colorCount, 2);
 }
 
 TEST_F(SceneGraphTest, testChildren) {
