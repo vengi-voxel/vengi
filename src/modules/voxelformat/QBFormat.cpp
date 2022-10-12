@@ -177,7 +177,7 @@ bool QBFormat::readColor(State& state, io::SeekableReadStream& stream, core::RGB
 
 bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup) {
 	core::String name;
-	wrap(stream.readPascalStringUInt8(name))
+	wrapBool(stream.readPascalStringUInt8(name))
 	Log::debug("Matrix name: %s", name.c_str());
 
 	glm::uvec3 size(0);
