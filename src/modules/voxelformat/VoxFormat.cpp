@@ -350,7 +350,7 @@ int VoxFormat::findClosestPaletteIndex(const voxel::Palette &palette) {
 	return core::Color::getClosestMatch(first, materialColors) + 1;
 }
 
-void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &node, ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx) {
+void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &node, ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx, const voxel::Palette &palette, uint8_t replacement) {
 	Log::debug("Save node '%s' with parent group %u and layer %u", node.name().c_str(), parentGroupIdx, layerIdx);
 	if (node.type() == SceneGraphNodeType::Root || node.type() == SceneGraphNodeType::Group) {
 		if (node.type() == SceneGraphNodeType::Root) {
@@ -385,7 +385,7 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 		}
 		const uint32_t ownGroupId = (int)ctx.groups.size() - 1;
 		for (int childId : node.children()) {
-			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, ownGroupId, ownLayerId);
+			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, ownGroupId, ownLayerId, palette, replacement);
 		}
 	} else if (node.type() == SceneGraphNodeType::Camera) {
 		Log::debug("Add camera node");
@@ -410,16 +410,13 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 			ctx.cameras.push_back(ogt_cam);
 		}
 		for (int childId : node.children()) {
-			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
+			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx, palette, replacement);
 		}
 	} else if (node.type() == SceneGraphNodeType::Model) {
 		Log::debug("Add model node");
 		const voxel::Region region = node.region();
-		const voxel::Palette &palette = sceneGraph.firstPalette();
 		const voxel::Palette &nodePalette = node.palette();
 		const bool needsRemapping = palette.hash() != nodePalette.hash();
-		const int replacement = findClosestPaletteIndex(palette);
-		// TODO: also look for an unused color
 		{
 			ogt_vox_model ogt_model;
 			core_memset(&ogt_model, 0, sizeof(ogt_model));
@@ -474,7 +471,7 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 			}
 		}
 		for (int childId : node.children()) {
-			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
+			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx, palette, replacement);
 		}
 	} else {
 		Log::error("Unhandled node type %i", (int)node.type());
@@ -499,9 +496,13 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 		sg = &newSceneGraph;
 	}
 
+	const voxel::Palette &palette = sceneGraph.mergePalettes(true);
+	int palReplacement = findClosestPaletteIndex(palette);
+	Log::debug("Found closest palette slot %i as replacement", palReplacement);
+
 	ogt_SceneContext ctx;
 	const SceneGraphNode &root = sg->root();
-	addNodeToScene(*sg, sg->node(root.id()), ctx, k_invalid_group_index, 0);
+	addNodeToScene(*sg, sg->node(root.id()), ctx, k_invalid_group_index, 0, palette, palReplacement);
 
 	core::Buffer<const ogt_vox_model *> modelPtr;
 	modelPtr.reserve(ctx.models.size());
@@ -529,7 +530,6 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	ogt_vox_palette &pal = output_scene.palette;
 	ogt_vox_matl_array &mat = output_scene.materials;
 
-	const voxel::Palette &palette = sg->firstPalette();
 	core_assert(palette.colorCount > 0);
 	for (int i = 0; i < palette.colorCount; ++i) {
 		const core::RGBA &rgba = palette.colors[i];

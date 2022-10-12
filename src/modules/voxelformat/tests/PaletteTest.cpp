@@ -38,15 +38,6 @@ protected:
 		return true;
 	}
 
-	bool findColor(const voxel::Palette &palette, core::RGBA rgba) {
-		for (int i = 0; i < palette.colorCount; ++i) {
-			if (palette.colors[i] == rgba) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	// the palettes have to match, as all the colors from the rgb format are saved to the palette of the target format
 	void testRGBToPaletteFormat(voxelformat::Format &rgbFormat, const core::String &rgbFile, size_t rgbExpectedColors, voxelformat::Format &paletteFormat, const core::String &palFile, size_t palExpectedColors) {
 		io::FileStream rgbStream(open(rgbFile));
@@ -97,7 +88,7 @@ protected:
 		ASSERT_TRUE(checkNoAlpha(rgbPalette));
 
 		for (size_t i = 0; i < rgbExpectedColors; ++i) {
-			ASSERT_TRUE(findColor(palPalette, rgbPalette.colors[i]))
+			ASSERT_TRUE(palPalette.hasColor(rgbPalette.colors[i]))
 				<< i << ": Could not find color " << core::Color::print(rgbPalette.colors[i]) << " in pal palette\n"
 				<< voxel::Palette::print(palPalette);
 		}
@@ -124,7 +115,7 @@ protected:
 
 		// the colors might have a different ordering here it depends on the order we read the volume for the rgb format
 		for (size_t i = 0; i < expectedColors; ++i) {
-			ASSERT_TRUE(findColor(rgbPalette1, rgbPalette2.colors[i]))
+			ASSERT_TRUE(rgbPalette1.hasColor(rgbPalette2.colors[i]))
 				<< i << ": Could not find color " << core::Color::print(rgbPalette2.colors[i]) << " in rgb palette\n"
 				<< voxel::Palette::print(rgbPalette1);
 		}
