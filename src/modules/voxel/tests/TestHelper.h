@@ -68,9 +68,12 @@ inline void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &
 		const core::RGBA& c1 = pal1.colors[i];
 		const core::RGBA& c2 = pal2.colors[i];
 		const float delta = core::Color::getDistance(c1, c2);
-		ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i
-									<< ", color1[" << core::Color::print(c1)
-									<< "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]";
+		ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
+								   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
+								   << "\nPalette 1:\n"
+								   << voxel::Palette::print(pal1)
+								   << "\nPalette 2:\n"
+								   << voxel::Palette::print(pal2);
 	}
 }
 
