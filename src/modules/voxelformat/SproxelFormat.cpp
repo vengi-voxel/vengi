@@ -27,6 +27,51 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
+size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+	char buf[512];
+	wrapBool(stream.readLine(sizeof(buf), buf))
+
+	core::Tokenizer tok(buf, ",");
+	if (tok.size() != 3u) {
+		Log::error("Invalid size components found - expected x,y,z");
+		return false;
+	}
+
+	const int32_t x = core::string::toInt(tok.tokens()[0]);
+	const int32_t y = core::string::toInt(tok.tokens()[1]);
+	const int32_t z = core::string::toInt(tok.tokens()[2]);
+	glm::ivec3 size(x, y, z);
+
+	for (int y = size.y - 1; y >= 0; y--) {
+		for (int z = 0; z < size.z; z++) {
+			for (int x = 0; x < size.x; x++) {
+				int r, g, b, a;
+				char hex[10];
+				if ((stream.read(hex, 9)) == -1) {
+					Log::error("Could not load sproxel csv color line");
+					return false;
+				}
+				hex[sizeof(hex) - 1] = '\0';
+				const int n = SDL_sscanf(hex, "#%02X%02X%02X%02X", &r, &g, &b, &a);
+				if (n != 4) {
+					Log::error("Failed to parse color %i (%s)", n, hex);
+					return false;
+				}
+				if (a != 0) {
+					const core::RGBA color = core::Color::getRGBA(r, g, b, a);
+					palette.addColorToPalette(color, false);
+				}
+				if (x != size.x - 1) {
+					stream.skip(1);
+				}
+			}
+			stream.skip(1);
+		}
+		stream.skip(1);
+	}
+	return palette.colorCount;
+}
+
 bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
 	char buf[512];
 	wrapBool(stream.readLine(sizeof(buf), buf))
