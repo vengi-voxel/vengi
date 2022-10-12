@@ -27,13 +27,6 @@ const int NEXT_SLICE_FLAG = 6;
 		return false; \
 	}
 
-#define wrapSaveColor(color) \
-	wrapSave(stream.writeUInt8((color).r)) \
-	wrapSave(stream.writeUInt8((color).g)) \
-	wrapSave(stream.writeUInt8((color).b)) \
-	wrapSave(stream.writeUInt8((color).a))
-
-
 #define wrap(read) \
 	if ((read) != 0) { \
 		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read)); \
@@ -45,6 +38,15 @@ const int NEXT_SLICE_FLAG = 6;
 		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read)); \
 		return false; \
 	}
+
+static bool saveColor(io::WriteStream &stream, core::RGBA color) {
+	// VisibilityMask::AlphaChannelVisibleByValue
+	wrapSave(stream.writeUInt8(color.r))
+	wrapSave(stream.writeUInt8(color.g))
+	wrapSave(stream.writeUInt8(color.b))
+	wrapSave(stream.writeUInt8(color.a > 0 ? 255 : 0))
+	return true;
+}
 
 bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const {
 	const int nameLength = (int)node.name().size();
@@ -94,18 +96,18 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 
 				if (newColor != currentColor) {
 					if (count == 1) {
-						wrapSaveColor(currentColor)
+						saveColor(stream, currentColor);
 					} else if (count == 2) {
-						wrapSaveColor(currentColor)
-						wrapSaveColor(currentColor)
+						saveColor(stream, currentColor);
+						saveColor(stream, currentColor);
 					} else if (count == 3) {
-						wrapSaveColor(currentColor)
-						wrapSaveColor(currentColor)
-						wrapSaveColor(currentColor)
+						saveColor(stream, currentColor);
+						saveColor(stream, currentColor);
+						saveColor(stream, currentColor);
 					} else if (count > 3) {
 						wrapSave(stream.writeUInt32(qb::RLE_FLAG))
 						wrapSave(stream.writeUInt32(count))
-						wrapSaveColor(currentColor)
+						saveColor(stream, currentColor);
 					}
 					count = 0;
 					currentColor = newColor;
@@ -114,18 +116,18 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 			}
 		}
 		if (count == 1) {
-			wrapSaveColor(currentColor)
+			saveColor(stream, currentColor);
 		} else if (count == 2) {
-			wrapSaveColor(currentColor)
-			wrapSaveColor(currentColor)
+			saveColor(stream, currentColor);
+			saveColor(stream, currentColor);
 		} else if (count == 3) {
-			wrapSaveColor(currentColor)
-			wrapSaveColor(currentColor)
-			wrapSaveColor(currentColor)
+			saveColor(stream, currentColor);
+			saveColor(stream, currentColor);
+			saveColor(stream, currentColor);
 		} else if (count > 3) {
 			wrapSave(stream.writeUInt32(qb::RLE_FLAG))
 			wrapSave(stream.writeUInt32(count))
-			wrapSaveColor(currentColor)
+			saveColor(stream, currentColor);
 		}
 		count = 0;
 		wrapSave(stream.writeUInt32(qb::NEXT_SLICE_FLAG));
@@ -463,4 +465,3 @@ bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStre
 #undef wrap
 #undef wrapBool
 #undef wrapSave
-#undef wrapSaveColor
