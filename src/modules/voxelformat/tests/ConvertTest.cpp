@@ -224,7 +224,7 @@ TEST_F(ConvertTest, testVoxToVXR) {
 // TODO: translation broken
 TEST_F(ConvertTest, testVXLToVXR) {
 	VXLFormat src;
-	QBFormat target;
+	VXRFormat target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation);
 	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "convert-cc.vxr", target, flags);
 }
