@@ -165,7 +165,10 @@ bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream, const voxel::Palet
 	wrapSave(stream.writeString("COLORMAP", false));
 	wrapSave(stream.writeUInt32(palette.colorCount));
 	for (int i = 0; i < palette.colorCount; ++i) {
-		wrapSave(stream.writeUInt32(palette.colors[i]));
+		wrapBool(stream.writeUInt8(palette.colors[i].r));
+		wrapBool(stream.writeUInt8(palette.colors[i].g));
+		wrapBool(stream.writeUInt8(palette.colors[i].b));
+		wrapBool(stream.writeUInt8(palette.colors[i].a));
 	}
 
 	return true;
@@ -219,6 +222,11 @@ bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	const bool colorMap = core::Var::getSafe(cfg::VoxformatQBTPaletteMode)->boolVal();
 	if (colorMap) {
 		const voxel::Palette& palette = sceneGraph.firstPalette();
+		if (!saveColorMap(stream, palette)) {
+			return false;
+		}
+	} else {
+		voxel::Palette palette;
 		if (!saveColorMap(stream, palette)) {
 			return false;
 		}
@@ -495,7 +503,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream, voxel::Palette &pal
 		wrap(stream.readUInt8(colorByteG));
 		wrap(stream.readUInt8(colorByteB));
 		wrap(stream.readUInt8(colorByteVisMask));
-		palette.colors[i] = core::RGBA(colorByteR, colorByteG, colorByteB);
+		palette.colors[i] = core::RGBA(colorByteR, colorByteG, colorByteB, colorByteVisMask);
 	}
 	return true;
 }
@@ -541,7 +549,9 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 				return 0;
 			}
 			Log::debug("Load qbt palette with %i entries", palette.colorCount);
-			return palette.colorCount;
+			if (palette.colorCount > 0) {
+				return palette.colorCount;
+			}
 		} else if (0 == memcmp(buf, "DATATREE", 8)) {
 			uint32_t nodeTypeID;
 			wrap(stream.readUInt32(nodeTypeID));
