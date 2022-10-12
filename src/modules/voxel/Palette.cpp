@@ -42,6 +42,15 @@ void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCou
 	colorCount = core::Color::quantize(colors, lengthof(colors), inputColors, inputColorCount);
 }
 
+bool Palette::hasColor(core::RGBA rgba) {
+	for (int i = 0; i < colorCount; ++i) {
+		if (colors[i] == rgba) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *index) {
 	for (int i = 0; i < colorCount; ++i) {
 		if (colors[i] == rgba) {

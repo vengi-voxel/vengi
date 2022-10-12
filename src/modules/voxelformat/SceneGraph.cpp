@@ -7,9 +7,11 @@
 #include "core/Log.h"
 #include "core/Pair.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeMerger.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 
@@ -351,6 +353,50 @@ SceneGraphNode *SceneGraph::operator[](int modelIdx) {
 	}
 	Log::error("Could not find scene graph node for model id %i", modelIdx);
 	return nullptr;
+}
+
+voxel::Palette SceneGraph::mergePalettes(bool removeUnused) const {
+	voxel::Palette palette;
+	bool tooManyColors = false;
+	for (const SceneGraphNode &node : *this) {
+		const voxel::Palette &nodePalette = node.palette();
+		for (int i = 0; i < nodePalette.colorCount; ++i) {
+			const core::RGBA rgba = nodePalette.colors[i];
+			if (palette.hasColor(rgba)) {
+				continue;
+			}
+			if (!palette.addColorToPalette(rgba, false)) {
+				tooManyColors = true;
+				break;
+			}
+		}
+	}
+	if (tooManyColors) {
+		Log::error("too many colors - restart, but skip similar");
+		palette.colorCount = 0;
+		for (const SceneGraphNode &node : *this) {
+			core::Array<bool, voxel::PaletteMaxColors> used;
+			if (removeUnused) {
+				used.fill(false);
+				voxelutil::visitVolume(*node.volume(), [&used] (int, int, int, const voxel::Voxel &voxel) {
+					used[voxel.getColor()] = true;
+				});
+			} else {
+				used.fill(true);
+			}
+			const voxel::Palette &nodePalette = node.palette();
+			for (int i = 0; i < nodePalette.colorCount; ++i) {
+				if (!used[i]) {
+					Log::trace("color %i not used, skip it for this node", i);
+					continue;
+				}
+				const core::RGBA rgba = nodePalette.colors[i];
+				palette.addColorToPalette(rgba, true);
+			}
+		}
+	}
+	palette.markDirty();
+	return palette;
 }
 
 SceneGraph::MergedVolumePalette SceneGraph::merge() const {

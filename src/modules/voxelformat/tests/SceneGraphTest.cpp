@@ -3,6 +3,7 @@
  */
 
 #include "app/tests/AbstractTest.h"
+#include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -65,6 +66,22 @@ TEST_F(SceneGraphTest, testNode) {
 	EXPECT_EQ(SceneGraphNodeType::Group, groupNode.type());
 	EXPECT_EQ(1, groupNode.id());
 	EXPECT_EQ("node", groupNode.name());
+}
+
+TEST_F(SceneGraphTest, testPaletteMerge) {
+	SceneGraph sceneGraph;
+	voxel::Palette pal;
+	pal.nippon();
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setName("model");
+		node.setPalette(pal);
+		EXPECT_EQ(1, sceneGraph.emplace(core::move(node), 0)) << "Unexpected node id returned - root node is 0 - next should be 1";
+	}
+	const voxel::Palette &palette = sceneGraph.mergedPalette();
+	ASSERT_EQ(palette.colorCount, pal.colorCount);
+	ASSERT_EQ(palette.hash(), pal.hash());
 }
 
 TEST_F(SceneGraphTest, testChildren) {

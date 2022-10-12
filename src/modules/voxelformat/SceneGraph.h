@@ -45,6 +45,15 @@ public:
 	 * @brief Returns the first valid palette from any of the nodes
 	 */
 	voxel::Palette &firstPalette() const;
+
+	/**
+	 * @brief Merge the palettes of all scene graph model nodes
+	 * @param[in] removeUnused If the colors exceed the max palette colors, this will remove the unused colors
+	 * besides merging similar colors.
+	 * @note The resulting palette can be used to find similar colors in all nodes when e.g. a format only supports
+	 * one palette for all nodes
+	 */
+	voxel::Palette mergePalettes(bool removeUnused) const;
 	/**
 	 * @brief Loops over the locked/groups (model) nodes with the given function that receives the node id
 	 */
