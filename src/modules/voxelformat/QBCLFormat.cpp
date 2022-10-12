@@ -249,7 +249,7 @@ bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Website")))
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Copyright")))
 
-	uint8_t guid[16] {0};
+	uint8_t guid[16] {0}; // TODO: not yet sure about this - looks like a digest
 	if (stream.write(guid, lengthof(guid)) == -1) {
 		Log::error("Failed to write guid into stream");
 		return false;
