@@ -89,7 +89,7 @@ private:
 	void loadChunk_ValidateCRC(io::SeekableReadStream &stream);
 	bool loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value);
 	bool loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette);
-	bool loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph);
+	bool loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableReadStream &stream);
 	bool loadChunk_MATE(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph);
 	bool loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph);
 	bool loadChunk_IMG(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph);
@@ -117,6 +117,7 @@ private:
 	// Write all the layers.
 	bool saveChunk_LAYR(io::SeekableWriteStream &stream, const SceneGraph &sceneGraph, int numBlocks);
 public:
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
 	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream) override;

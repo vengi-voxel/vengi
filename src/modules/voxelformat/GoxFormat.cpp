@@ -319,7 +319,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-bool GoxFormat::loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool GoxFormat::loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableReadStream &stream) {
 	uint8_t* png = (uint8_t*)core_malloc(c.length);
 	wrapBool(loadChunk_ReadData(stream, (char *)png, c.length))
 	image::ImagePtr img = image::createEmptyImage("gox-voxeldata");
@@ -413,6 +413,46 @@ bool GoxFormat::loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
+size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+	uint32_t magic;
+	wrap(stream.readUInt32(magic))
+
+	if (magic != FourCC('G', 'O', 'X', ' ')) {
+		Log::error("Invalid magic");
+		return false;
+	}
+
+	State state;
+	wrap(stream.readInt32(state.version))
+
+	if (state.version > 2) {
+		Log::error("Unknown gox format version found: %u", state.version);
+		return false;
+	}
+
+	GoxChunk c;
+	while (loadChunk_Header(c, stream)) {
+		if (c.type == FourCC('B', 'L', '1', '6')) {
+			wrapBool(loadChunk_BL16(state, c, stream))
+		} else {
+			stream.seek(c.length, SEEK_CUR);
+		}
+		loadChunk_ValidateCRC(stream);
+	}
+
+	for (image::ImagePtr &img : state.images) {
+		for (int x = 0; x < img->width(); ++x) {
+			for (int y = 0; y < img->height(); ++y) {
+				const core::RGBA rgba = img->colorAt(x, y);
+				palette.addColorToPalette(rgba, false);
+			}
+		}
+	}
+
+	return palette.colorCount;
+}
+
+
 bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
@@ -433,7 +473,7 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	GoxChunk c;
 	while (loadChunk_Header(c, stream)) {
 		if (c.type == FourCC('B', 'L', '1', '6')) {
-			wrapBool(loadChunk_BL16(state, c, stream, sceneGraph))
+			wrapBool(loadChunk_BL16(state, c, stream))
 		} else if (c.type == FourCC('L', 'A', 'Y', 'R')) {
 			wrapBool(loadChunk_LAYR(state, c, stream, sceneGraph, palette))
 		} else if (c.type == FourCC('C', 'A', 'M', 'R')) {
