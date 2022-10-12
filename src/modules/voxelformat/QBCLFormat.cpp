@@ -490,7 +490,7 @@ bool QBCLFormat::readHeader(io::SeekableReadStream& stream, Header &header) {
 		Log::error("Invalid magic found - no qbcl file");
 		return false;
 	}
-	wrapImg(stream.readUInt32(header.version))
+	wrap(stream.readUInt32(header.version))
 	wrap(stream.readUInt32(header.fileVersion))
 	if (header.fileVersion != qbcl::VERSION) {
 		Log::error("Unknown version found: %i", header.fileVersion);
