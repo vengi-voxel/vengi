@@ -27,6 +27,16 @@ TEST_F(PaletteTest, testGimpPalette) {
 	EXPECT_EQ(pal.colorCount, cnt);
 }
 
+TEST_F(PaletteTest, testCopyPalette) {
+	Palette copy;
+	Palette pal;
+	pal.nippon();
+	for (int i = 0; i < pal.colorCount; ++i) {
+		ASSERT_TRUE(copy.addColorToPalette(pal.colors[i], false));
+	}
+	ASSERT_EQ(pal.colorCount, copy.colorCount);
+}
+
 TEST_F(PaletteTest, testRGBPalette) {
 	Palette pal;
 	pal.nippon();
