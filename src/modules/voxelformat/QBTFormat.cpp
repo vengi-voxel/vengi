@@ -17,8 +17,10 @@
 #include "voxel/MaterialColor.h"
 #include "core/Log.h"
 #include "voxel/Palette.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxel/PaletteLookup.h"
+#include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -165,6 +167,7 @@ bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream, const voxel::Palet
 	for (int i = 0; i < palette.colorCount; ++i) {
 		wrapSave(stream.writeUInt32(palette.colors[i]));
 	}
+
 	return true;
 }
 
@@ -365,7 +368,6 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 		Log::error("Invalid region");
 		return false;
 	}
-	voxel::PaletteLookup palLookup(palette);
 	core::ScopedPtr<voxel::RawVolume> volume(new voxel::RawVolume(region));
 	for (int32_t x = 0; x < (int)size.x; x++) {
 		for (int32_t z = 0; z < (int)size.z; z++) {
@@ -386,7 +388,12 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 					volume->setVoxel(x, y, z, voxel);
 				} else {
 					const core::RGBA color = core::Color::getRGBA(red, green, blue);
-					const uint8_t index = palLookup.findClosestIndex(color);
+					uint8_t index;
+					if (!palette.addColorToPalette(color, false, &index)) {
+						if (!palette.addColorToPalette(color, true, &index)) {
+							index = 0;
+						}
+					}
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 					volume->setVoxel(x, y, z, voxel);
 				}
@@ -396,7 +403,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 	SceneGraphNode node;
 	node.setVolume(volume.release(), true);
 	node.setName(name);
-	node.setPalette(palLookup.palette());
+	node.setPalette(palette);
 	const KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	const int id = sceneGraph.emplace(core::move(node), parent);
@@ -491,6 +498,73 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream, voxel::Palette &pal
 		palette.colors[i] = core::RGBA(colorByteR, colorByteG, colorByteB);
 	}
 	return true;
+}
+
+size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+	uint32_t header;
+	wrap(stream.readUInt32(header))
+	constexpr uint32_t headerMagic = FourCC('Q','B',' ','2');
+	if (header != headerMagic) {
+		Log::error("Could not load qbt file: Invalid magic found (%u vs %u)", header, headerMagic);
+		return false;
+	}
+
+	uint8_t versionMajor;
+	wrap(stream.readUInt8(versionMajor))
+
+	uint8_t versionMinor;
+	wrap(stream.readUInt8(versionMinor))
+
+	glm::vec3 globalScale;
+	wrap(stream.readFloat(globalScale.x));
+	wrap(stream.readFloat(globalScale.y));
+	wrap(stream.readFloat(globalScale.z));
+
+	const int64_t pos = stream.pos();
+
+	while (stream.remaining() > 0) {
+		char buf[8];
+		wrapBool(stream.readString(sizeof(buf), buf));
+		if (0 == memcmp(buf, "COLORMAP", 7)) {
+			if (!loadColorMap(stream, palette)) {
+				Log::error("Failed to load color map");
+				return 0;
+			}
+			Log::debug("Load qbt palette with %i entries", palette.colorCount);
+			return palette.colorCount;
+		} else if (0 == memcmp(buf, "DATATREE", 8)) {
+			uint32_t nodeTypeID;
+			wrap(stream.readUInt32(nodeTypeID));
+			uint32_t dataSize;
+			wrap(stream.readUInt32(dataSize));
+			stream.skip(dataSize);
+		} else {
+			Log::error("Unknown section found: %c%c%c%c%c%c%c%c",
+					buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
+			break;
+		}
+	}
+
+	stream.seek(pos);
+
+	while (stream.remaining() > 0) {
+		char buf[8];
+		wrapBool(stream.readString(sizeof(buf), buf));
+		if (0 == memcmp(buf, "DATATREE", 8)) {
+			SceneGraph sceneGraph;
+			if (!loadNode(stream, sceneGraph, sceneGraph.root().id(), palette, false)) {
+				Log::error("Failed to load node");
+				return false;
+			}
+		} else {
+			Log::error("Unknown section found: %c%c%c%c%c%c%c%c",
+					buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
+			break;
+		}
+	}
+
+	Log::debug("Failed to load qbt palette");
+	return 0;
 }
 
 bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) {

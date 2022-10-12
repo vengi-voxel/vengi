@@ -34,6 +34,7 @@ private:
 	bool saveColorMap(io::SeekableWriteStream& stream, const voxel::Palette& palette) const;
 	bool saveModel(io::SeekableWriteStream& stream, const SceneGraph &sceneGraph, bool colorMap) const;
 public:
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
