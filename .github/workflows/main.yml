@@ -117,7 +117,7 @@ jobs:
 
     linux:
         timeout-minutes: 45
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-22.04
 
         services:
           postgres:
