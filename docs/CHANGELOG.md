@@ -23,6 +23,8 @@ General:
    - Fixed saving black colors for cubeworld
    - Fixed saving palette index 0 for binvox
    - Fixed Sandbox VXM palette issue
+   - Fixed QBCL saving
+   - Improved vox saving with multiple palettes
    - Improved the file dialog size and special dir handling
    - Improved dark mode support
    - Improved palette support for some formats
