@@ -400,30 +400,25 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused) const {
 }
 
 SceneGraph::MergedVolumePalette SceneGraph::merge() const {
-	core::DynamicArray<const voxel::RawVolume *> volumes;
-	volumes.reserve(_nodes.size());
-	core::DynamicArray<glm::ivec3> translations;
-	translations.reserve(_nodes.size());
+	const size_t n = size();
+	if (n == 0) {
+		return MergedVolumePalette{};
+	} else if (n == 1) {
+		for (SceneGraphNode& node : *this) {
+			return MergedVolumePalette{new voxel::RawVolume(node.volume()), node.palette()};
+		}
+	}
+
+	core::DynamicArray<const SceneGraphNode *> nodes;
+	nodes.reserve(n);
 
 	voxel::Region mergedRegion = voxel::Region::InvalidRegion;
+	const voxel::Palette &palette = mergePalettes(true);
 
-	const voxel::Palette *pal = nullptr;
 	for (const SceneGraphNode &node : *this) {
-		core_assert(node.type() == SceneGraphNodeType::Model);
-		core_assert(node.volume() != nullptr);
-		// TODO: this could get improved in trying to build the best possible palette
-		// but we'll just use it like this now...
-		if (pal) {
-			if (pal->hash() != node.palette().hash()) {
-				Log::warn("Merging nodes with different palettes results in invalid colors");
-			}
-		}
-		pal = &node.palette();
-		volumes.push_back(node.volume());
+		nodes.push_back(&node);
 
 		const glm::vec3 &translation = node.transform(0).worldTranslation();
-		translations.push_back(translation);
-
 		voxel::Region region = node.region();
 		region.shift(translation);
 		if (mergedRegion.isValid()) {
@@ -432,23 +427,30 @@ SceneGraph::MergedVolumePalette SceneGraph::merge() const {
 			mergedRegion = region;
 		}
 	}
-	if (volumes.empty()) {
-		return MergedVolumePalette{};
-	}
-	if (volumes.size() == 1) {
-		return MergedVolumePalette{new voxel::RawVolume(volumes[0]), *pal};
-	}
 
 	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
-	for (size_t i = 0; i < volumes.size(); ++i) {
-		const voxel::RawVolume* v = volumes[i];
-		const voxel::Region& sr = v->region();
+	for (size_t i = 0; i < nodes.size(); ++i) {
+		const SceneGraphNode* node = nodes[i];
+		const voxel::Region& sr = node->region();
+		const KeyFrameIndex keyFrameIdx = 0;
+		const SceneGraphTransform &transform = node->transform(keyFrameIdx);
+		const glm::vec3 &translation = transform.worldTranslation();
 		voxel::Region dr = sr;
-		dr.shift(translations[i]);
-		voxelutil::mergeVolumes(merged, v, dr, sr);
+		dr.shift(translation);
+		// TODO: rotation
+
+		voxelutil::mergeVolumes(merged, node->volume(), dr, sr, [node, &palette] (voxel::Voxel& voxel) {
+			if (isAir(voxel.getMaterial())) {
+				return false;
+			}
+			const core::RGBA color = node->palette().colors[voxel.getColor()];
+			const uint8_t index = palette.getClosestMatch(color);
+			voxel.setColor(index);
+			return true;
+		});
 	}
 	merged->translate(-mergedRegion.getLowerCorner());
-	return MergedVolumePalette{merged, *pal};
+	return MergedVolumePalette{merged, palette};
 }
 
 } // namespace voxel

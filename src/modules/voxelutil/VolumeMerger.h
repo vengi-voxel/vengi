@@ -15,7 +15,7 @@ namespace voxelutil {
  * @brief Will skip air voxels on volume merges
  */
 struct MergeSkipEmpty {
-	inline bool operator() (const voxel::Voxel& voxel) const {
+	inline bool operator() (voxel::Voxel& voxel) const {
 		return !isAir(voxel.getMaterial());
 	}
 };
@@ -34,7 +34,7 @@ int mergeVolumes(Volume1* destination, const Volume2* source, const voxel::Regio
 		for (int32_t y = sourceReg.getLowerY(); y <= sourceReg.getUpperY(); ++y) {
 			const int destY = destReg.getLowerY() + y - sourceReg.getLowerY();
 			for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
-				const voxel::Voxel& voxel = source->voxel(x, y, z);
+				voxel::Voxel voxel = source->voxel(x, y, z);
 				if (!mergeCondition(voxel)) {
 					continue;
 				}
