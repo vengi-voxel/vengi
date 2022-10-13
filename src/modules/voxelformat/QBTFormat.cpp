@@ -564,7 +564,7 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 			break;
 		}
 	}
-	Log::error("no palette found");
+	Log::debug("no palette found");
 
 	// no COLORMAP data was found
 	stream.seek(pos);
