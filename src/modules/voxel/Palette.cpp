@@ -51,7 +51,7 @@ bool Palette::hasColor(core::RGBA rgba) {
 	return false;
 }
 
-bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *index) {
+bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar) {
 	for (int i = 0; i < colorCount; ++i) {
 		if (colors[i] == rgba) {
 			if (index) {
@@ -81,31 +81,33 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 		return true;
 	}
 
-	// now we are looking for the color in the existing palette entries that is most similar
-	// to other entries in the palette. If this entry is than above a certain threshold, we
-	// will replace that color with the new rgba value
-	int bestIndex = -1;
-	float bestColorDistance = FLT_MAX;
-	for (int i = 0; i < colorCount; ++i) {
-		float colorDistance = 0.0f;
-		const int closestColorIdx = getClosestMatch(colors[i], &colorDistance, i);
-		if (colorDistance < bestColorDistance) {
-			bestColorDistance = colorDistance;
-			bestIndex = closestColorIdx;
-		}
-	}
-	if (bestIndex != -1) {
-		const float dist = core::Color::getDistance(colors[bestIndex], rgba);
-		if (dist > MaxThreshold) {
-			if (index) {
-				*index = bestIndex;
+	if (replaceSimilar) {
+		// now we are looking for the color in the existing palette entries that is most similar
+		// to other entries in the palette. If this entry is than above a certain threshold, we
+		// will replace that color with the new rgba value
+		int bestIndex = -1;
+		float bestColorDistance = FLT_MAX;
+		for (int i = 0; i < colorCount; ++i) {
+			float colorDistance = 0.0f;
+			const int closestColorIdx = getClosestMatch(colors[i], &colorDistance, i);
+			if (colorDistance < bestColorDistance) {
+				bestColorDistance = colorDistance;
+				bestIndex = closestColorIdx;
 			}
-			colors[bestIndex] = rgba;
-			return true;
 		}
-	}
-	if (index) {
-		*index = 0;
+		if (bestIndex != -1) {
+			const float dist = core::Color::getDistance(colors[bestIndex], rgba);
+			if (dist > MaxThreshold) {
+				if (index) {
+					*index = bestIndex;
+				}
+				colors[bestIndex] = rgba;
+				return true;
+			}
+		}
+		if (index) {
+			*index = 0;
+		}
 	}
 	return false;
 }

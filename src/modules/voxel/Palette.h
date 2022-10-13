@@ -102,7 +102,7 @@ public:
 	 * to match the color to another already existing color in the palette.
 	 * @note Only use this for single colors - not for a lot of them. This method is quite slow
 	 */
-	bool addColorToPalette(core::RGBA rgba, bool skipSimilar = true, uint8_t *index = nullptr);
+	bool addColorToPalette(core::RGBA rgba, bool skipSimilar = true, uint8_t *index = nullptr, bool replaceSimilar = true);
 	bool hasColor(core::RGBA rgba);
 	void quantize(const core::RGBA *inputColors, const size_t inputColorCount);
 	/**

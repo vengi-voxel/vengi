@@ -372,7 +372,7 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused) const {
 		}
 	}
 	if (tooManyColors) {
-		Log::error("too many colors - restart, but skip similar");
+		Log::debug("too many colors - restart, but skip similar");
 		palette.colorCount = 0;
 		for (const SceneGraphNode &node : *this) {
 			core::Array<bool, voxel::PaletteMaxColors> used;
