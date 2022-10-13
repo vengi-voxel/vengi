@@ -192,7 +192,7 @@ TEST_F(SceneGraphTest, testMerge) {
 		sceneGraph.emplace(core::move(node));
 	}
 	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::Model));
-	SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
+	SceneGraph::MergedVolumePalette merged = sceneGraph.merge(true);
 	EXPECT_EQ(3, merged.first->region().getWidthInVoxels());
 	delete merged.first;
 }

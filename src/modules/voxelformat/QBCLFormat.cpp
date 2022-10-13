@@ -181,7 +181,6 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 		}
 	}
 
-
 	io::ZipWriteStream zipStream(outStream);
 	if (zipStream.write(rleDataStream.getBuffer(), rleDataStream.size()) == -1) {
 		Log::error("Could not write compressed data");

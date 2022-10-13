@@ -300,7 +300,7 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 
 static void mergeIfNeeded(voxelformat::SceneGraph &newSceneGraph) {
 	if (newSceneGraph.size() > voxelrender::RawVolumeRenderer::MAX_VOLUMES) {
-		const voxelformat::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();
+		const voxelformat::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge(true);
 		newSceneGraph.clear();
 		voxelformat::SceneGraphNode node;
 		node.setVolume(merged.first, true);
@@ -790,59 +790,30 @@ static bool shouldGetMerged(const voxelformat::SceneGraphNode &node, NodeMergeFl
 }
 
 int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
-	voxel::Region mergedRegion = voxel::Region::InvalidRegion;
-	core::DynamicArray<glm::ivec3> translations;
-	core::DynamicArray<voxel::RawVolume*> volumes;
-
-	volumes.reserve(nodeIds.size());
-	translations.reserve(nodeIds.size());
-
-	voxelformat::SceneGraphNode newNnode;
-	// calculate the new target region - use the scenegraph translation for this
+	voxelformat::SceneGraph newSceneGraph;
 	for (int nodeId : nodeIds) {
+		voxelformat::SceneGraphNode copiedNode;
 		const voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId);
-		if (node == nullptr) {
+		if (node == nullptr || node->type() != voxelformat::SceneGraphNodeType::Model) {
 			continue;
 		}
-		newNnode.addProperties(node->properties());
-		voxel::Region region = node->region();
-		const voxelformat::SceneGraphTransform &transform = node->transform(_currentFrameIdx);
-		region.shift(transform.worldTranslation());
-		if (mergedRegion.isValid()) {
-			mergedRegion.accumulate(region);
-		} else {
-			mergedRegion = region;
-		}
-		translations.push_back(transform.worldTranslation());
-		volumes.push_back(node->volume());
+		voxelformat::copyNode(*node, copiedNode, true);
+		newSceneGraph.emplace(core::move(copiedNode));
 	}
-
-	if (!mergedRegion.isValid() || volumes.size() <= 1u) {
+	voxelformat::SceneGraph::MergedVolumePalette merged = newSceneGraph.merge();
+	if (merged.first == nullptr) {
 		return -1;
 	}
 
-	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
-	for (size_t i = 0; i < volumes.size(); ++i) {
-		const voxel::RawVolume* v = volumes[i];
-		const voxel::Region& sr = v->region();
-		voxel::Region dr = sr;
-		dr.shift(translations[i]);
-		voxelutil::mergeVolumes(merged, v, dr, sr);
-	}
-	merged->translate(-mergedRegion.getLowerCorner());
-
-	newNnode.setVolume(merged, true);
+	voxelformat::SceneGraphNode newNode(voxelformat::SceneGraphNodeType::Model);
 	int parent = 0;
 	if (voxelformat::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
-		newNnode.setName(firstNode->name());
-		parent = firstNode->parent();
-		const size_t numKeyFrames = firstNode->keyFrames().size();
-		for (size_t i = 0; i < numKeyFrames; ++i) {
-			newNnode.setTransform(i, firstNode->transform(i));
-		}
+		voxelformat::copyNode(*firstNode, newNode, false);
 	}
+	newNode.setVolume(merged.first, true);
+	newNode.setPalette(merged.second);
 
-	int newNodeId = addNodeToSceneGraph(newNnode, parent);
+	int newNodeId = addNodeToSceneGraph(newNode, parent);
 	if (newNodeId == -1) {
 		return -1;
 	}
