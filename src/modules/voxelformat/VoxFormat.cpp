@@ -428,10 +428,19 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 			uint8_t *dataptr = (uint8_t*)core_malloc(voxelSize);
 			ogt_model.voxel_data = dataptr;
 			voxelutil::visitVolume(*node.volume(), [&] (int, int, int, const voxel::Voxel& voxel) {
-				if (voxel.getColor() == 0 && !isAir(voxel.getMaterial())) {
-					*dataptr++ = replacement;
+				if (voxel.getColor() == 0) {
+					if (isAir(voxel.getMaterial())) {
+						*dataptr++ = 0;
+					} else {
+						*dataptr++ = replacement;
+					}
 				} else if (needsRemapping) {
-					*dataptr++ = palette.getClosestMatch(nodePalette.colors[voxel.getColor()]);
+					const uint8_t palIndex = palette.getClosestMatch(nodePalette.colors[voxel.getColor()]);
+					if (palIndex == 0) {
+						*dataptr++ = replacement;
+					} else {
+						*dataptr++ = palIndex;
+					}
 				} else {
 					*dataptr++ = voxel.getColor();
 				}
@@ -498,6 +507,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 
 	const voxel::Palette &palette = sceneGraph.mergePalettes(true);
 	int palReplacement = findClosestPaletteIndex(palette);
+	core_assert(palReplacement != 0u);
 	Log::debug("Found closest palette slot %i as replacement", palReplacement);
 
 	ogt_SceneContext ctx;
