@@ -235,7 +235,7 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sc
 
 bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
 	wrapBool(stream.writeUInt32(FourCC('Q','B','C','L')))
-	wrapBool(stream.writeUInt32(257))
+	wrapBool(stream.writeUInt32(131331))
 	wrapBool(stream.writeUInt32(qbcl::VERSION))
 	wrapBool(stream.writeUInt32(0)) // thumbnail w/h
 	wrapBool(stream.writeUInt32(0)) // thumbnail w/h
@@ -369,12 +369,12 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				++y;
 			} else {
 				// Uncompressed
-				const uint32_t x = (index / size.z);
-				const uint32_t z = index % size.z;
 				const core::RGBA color = core::Color::getRGBA(red, green, blue);
 				if (header.loadPalette) {
 					palette.addColorToPalette(color);
 				} else {
+					const uint32_t x = (index / size.z);
+					const uint32_t z = index % size.z;
 					const uint8_t palIndex = palLookup.findClosestIndex(color);
 					const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
 					volume->setVoxel((int)x, y, (int)z, voxel);
