@@ -365,7 +365,7 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused) const {
 			if (palette.hasColor(rgba)) {
 				continue;
 			}
-			if (!palette.addColorToPalette(rgba, false)) {
+			if (!palette.addColorToPalette(rgba, false, nullptr, false)) {
 				tooManyColors = true;
 				break;
 			}
@@ -391,7 +391,7 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused) const {
 					continue;
 				}
 				const core::RGBA rgba = nodePalette.colors[i];
-				palette.addColorToPalette(rgba, true);
+				palette.addColorToPalette(rgba, true, nullptr, true);
 			}
 		}
 	}
