@@ -86,7 +86,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 				const voxel::Voxel& voxel = node.volume()->voxel(x, y, z);
 				core::RGBA newColor;
 				if (voxel == Empty) {
-					newColor = 0;
+					newColor = 0u;
 					Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
 				} else {
 					newColor = palette.colors[voxel.getColor()];
@@ -95,19 +95,14 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 				}
 
 				if (newColor != currentColor) {
-					if (count == 1) {
-						wrapSave(saveColor(stream, currentColor))
-					} else if (count == 2) {
-						wrapSave(saveColor(stream, currentColor))
-						wrapSave(saveColor(stream, currentColor))
-					} else if (count == 3) {
-						wrapSave(saveColor(stream, currentColor))
-						wrapSave(saveColor(stream, currentColor))
-						wrapSave(saveColor(stream, currentColor))
-					} else if (count > 3) {
+					if (count > 3) {
 						wrapSave(stream.writeUInt32(qb::RLE_FLAG))
 						wrapSave(stream.writeUInt32(count))
 						wrapSave(saveColor(stream, currentColor))
+					} else {
+						for (uint32_t i = 0; i < count; ++i) {
+							wrapSave(saveColor(stream, currentColor))
+						}
 					}
 					count = 0;
 					currentColor = newColor;
@@ -115,19 +110,14 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 				count++;
 			}
 		}
-		if (count == 1) {
-			wrapSave(saveColor(stream, currentColor))
-		} else if (count == 2) {
-			wrapSave(saveColor(stream, currentColor))
-			wrapSave(saveColor(stream, currentColor))
-		} else if (count == 3) {
-			wrapSave(saveColor(stream, currentColor))
-			wrapSave(saveColor(stream, currentColor))
-			wrapSave(saveColor(stream, currentColor))
-		} else if (count > 3) {
+		if (count > 3) {
 			wrapSave(stream.writeUInt32(qb::RLE_FLAG))
 			wrapSave(stream.writeUInt32(count))
 			wrapSave(saveColor(stream, currentColor))
+		} else {
+			for (uint32_t i = 0; i < count; ++i) {
+				wrapSave(saveColor(stream, currentColor))
+			}
 		}
 		count = 0;
 		wrapSave(stream.writeUInt32(qb::NEXT_SLICE_FLAG));
