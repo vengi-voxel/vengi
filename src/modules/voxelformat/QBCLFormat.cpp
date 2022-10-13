@@ -288,6 +288,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	wrap(stream.readFloat(pivot.y));
 	wrap(stream.readFloat(pivot.z));
 
+	// the pivot is given in voxel coordinates
 	//transform.setPivot(pivot / glm::vec3(size));
 
 	uint32_t compressedDataSize;
