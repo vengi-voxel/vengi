@@ -399,7 +399,7 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused) const {
 	return palette;
 }
 
-SceneGraph::MergedVolumePalette SceneGraph::merge() const {
+SceneGraph::MergedVolumePalette SceneGraph::merge(bool transform) const {
 	const size_t n = size();
 	if (n == 0) {
 		return MergedVolumePalette{};
@@ -431,15 +431,17 @@ SceneGraph::MergedVolumePalette SceneGraph::merge() const {
 	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
 	for (size_t i = 0; i < nodes.size(); ++i) {
 		const SceneGraphNode* node = nodes[i];
-		const voxel::Region& sr = node->region();
-		const KeyFrameIndex keyFrameIdx = 0;
-		const SceneGraphTransform &transform = node->transform(keyFrameIdx);
-		const glm::vec3 &translation = transform.worldTranslation();
-		voxel::Region dr = sr;
-		dr.shift(translation);
-		// TODO: rotation
+		const voxel::Region& sourceRegion = node->region();
+		voxel::Region destRegion = sourceRegion;
+		if (transform) {
+			const KeyFrameIndex keyFrameIdx = 0;
+			const SceneGraphTransform &transform = node->transform(keyFrameIdx);
+			const glm::vec3 &translation = transform.worldTranslation();
+			destRegion.shift(translation);
+			// TODO: rotation
+		}
 
-		voxelutil::mergeVolumes(merged, node->volume(), dr, sr, [node, &palette] (voxel::Voxel& voxel) {
+		voxelutil::mergeVolumes(merged, node->volume(), destRegion, sourceRegion, [node, &palette] (voxel::Voxel& voxel) {
 			if (isAir(voxel.getMaterial())) {
 				return false;
 			}

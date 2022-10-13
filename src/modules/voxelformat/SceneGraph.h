@@ -130,7 +130,7 @@ public:
 	 * @note The caller is responsible for deleting the returned volume
 	 * @note The palette indices are just taken as they come in. There is no quantization here.
 	 */
-	MergedVolumePalette merge() const;
+	MergedVolumePalette merge(bool transform = true) const;
 
 	/**
 	 * @brief Delete the owned volumes
