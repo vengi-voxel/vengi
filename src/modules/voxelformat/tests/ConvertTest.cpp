@@ -202,9 +202,7 @@ TEST_F(ConvertTest, testQbToVXR) {
 TEST_F(ConvertTest, testQbToQBCL) {
 	QBFormat src;
 	QBCLFormat target;
-	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette);
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.qbcl", target, flags);
+	testLoadSaveAndLoadSceneGraph("rgb.qb", src, "convert-rgb.qbcl", target);
 }
 
 TEST_F(ConvertTest, testQbToVXM) {
