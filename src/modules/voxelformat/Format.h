@@ -64,8 +64,6 @@ protected:
 	 * Some formats only support small volumes sizes per object - but multiple objects.
 	 */
 	void splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop = false);
-	// TODO: unused atm
-	voxel::RawVolume* transformVolume(const SceneGraphTransform &t, const voxel::RawVolume *in) const;
 
 	static bool stopExecution();
 
