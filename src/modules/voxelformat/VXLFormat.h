@@ -146,8 +146,6 @@ protected:
 
 	static glm::mat4 convertToGLM(const VXLMatrix &in);
 	static VXLMatrix convertToWestwood(const glm::mat4 &in);
-
-public:
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 

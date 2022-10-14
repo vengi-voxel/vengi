@@ -70,7 +70,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		io::FileStream childStream(file);
 		VXMFormat f;
 		SceneGraph subGraph;
-		if (!f.loadGroups(path, childStream, subGraph)) {
+		if (!f.load(path, childStream, subGraph)) {
 			Log::warn("Failed to load vxm tile %s", path);
 			continue;
 		}

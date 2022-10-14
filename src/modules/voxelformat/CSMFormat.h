@@ -14,7 +14,7 @@ namespace voxelformat {
  * @ingroup Formats
  */
 class CSMFormat : public RGBAFormat {
-public:
+protected:
 	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };

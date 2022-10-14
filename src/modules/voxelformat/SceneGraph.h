@@ -122,6 +122,9 @@ public:
 	 * @return Amount of nodes in the graph
 	 */
 	size_t size(SceneGraphNodeType type = SceneGraphNodeType::Model) const;
+	size_t nodeSize() const {
+		return _nodes.size();
+	}
 
 	using MergedVolumePalette = core::Pair<voxel::RawVolume*, voxel::Palette>;
 	/**

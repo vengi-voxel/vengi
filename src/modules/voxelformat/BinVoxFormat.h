@@ -30,7 +30,7 @@ private:
 	};
 
 	bool readData(State& state, const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph);
-public:
+protected:
 	bool loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };

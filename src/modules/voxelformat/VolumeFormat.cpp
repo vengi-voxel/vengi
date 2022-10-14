@@ -319,7 +319,7 @@ bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, Sc
 	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
 	if (f) {
 		stream.seek(0);
-		if (!f->loadGroups(filename, stream, newSceneGraph)) {
+		if (!f->load(filename, stream, newSceneGraph)) {
 			newSceneGraph.clear();
 		}
 	} else {
@@ -382,7 +382,7 @@ bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph) {
 	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
 			core::SharedPtr<Format> f = getFormat(desc, 0u, false);
-			if (f && f->saveGroups(sceneGraph, filePtr->name(), stream)) {
+			if (f && f->save(sceneGraph, filePtr->name(), stream)) {
 				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
 				return true;
 			}
@@ -391,7 +391,7 @@ bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph) {
 	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
 	QBFormat qbFormat;
 	stream.seek(0);
-	return qbFormat.saveGroups(sceneGraph, filePtr->name(), stream);
+	return qbFormat.save(sceneGraph, filePtr->name(), stream);
 }
 
 }

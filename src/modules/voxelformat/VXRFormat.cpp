@@ -62,7 +62,7 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		SceneGraphNode newNode;
 		copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
-		wrapBool(f.saveGroups(newSceneGraph, fullPath, wstream))
+		wrapBool(f.save(newSceneGraph, fullPath, wstream))
 		Log::debug("Saved the model to %s", fullPath.c_str());
 	}
 
@@ -165,7 +165,7 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph &sceneGraph
 	io::FileStream stream(file);
 	VXMFormat f;
 	SceneGraph childSceneGraph;
-	if (!f.loadGroups(vxmPath, stream, childSceneGraph)) {
+	if (!f.load(vxmPath, stream, childSceneGraph)) {
 		Log::error("Failed to load '%s'", vxmPath.c_str());
 		return false;
 	}
@@ -508,7 +508,7 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 
 bool VXRFormat::saveVXA(const SceneGraph& sceneGraph, const core::String &vxaPath, io::SeekableWriteStream& vxaStream, const core::String &animation) {
 	VXAFormat f;
-	return f.saveGroups(sceneGraph, vxaPath, vxaStream);
+	return f.save(sceneGraph, vxaPath, vxaStream);
 }
 
 bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {
@@ -519,7 +519,7 @@ bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {
 	}
 	io::FileStream stream(file);
 	VXAFormat format;
-	return format.loadGroups(vxaPath, stream, sceneGraph);
+	return format.load(vxaPath, stream, sceneGraph);
 }
 
 bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &) {

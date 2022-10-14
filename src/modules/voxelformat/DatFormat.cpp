@@ -115,7 +115,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				return core::move(newSceneGraph);
 			}
 			MCRFormat mcrFormat;
-			if (!mcrFormat.loadGroups(file->name(), stream, newSceneGraph)) {
+			if (!mcrFormat.load(file->name(), stream, newSceneGraph)) {
 				Log::warn("Could not load %s", file->name().c_str());
 			}
 			const voxelformat::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();

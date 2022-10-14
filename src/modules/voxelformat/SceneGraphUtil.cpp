@@ -88,4 +88,37 @@ int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent) {
 	return nodesAdded;
 }
 
+static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, const SceneGraphNode &sourceNode, int parent) {
+	SceneGraphNode newNode(sourceNode.type());
+	copy(sourceNode, newNode);
+	if (newNode.type() == SceneGraphNodeType::Model) {
+		newNode.setVolume(new voxel::RawVolume(sourceNode.volume()), true);
+	}
+	const int newNodeId = addToGraph(target, core::move(newNode), parent);
+	if (newNodeId == -1) {
+		Log::error("Failed to add node to the scene graph");
+		return 0;
+	}
+
+	int nodesAdded = sourceNode.type() == SceneGraphNodeType::Model ? 1 : 0;
+	for (int sourceNodeIdx : sourceNode.children()) {
+		core_assert(source.hasNode(sourceNodeIdx));
+		SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
+		nodesAdded += addSceneGraphNode_r(target, source, sourceChildNode, newNodeId);
+	}
+
+	return nodesAdded;
+}
+
+int copySceneGraph(SceneGraph &target, const SceneGraph &source) {
+	const SceneGraphNode &sourceRoot = source.root();
+	int nodesAdded = 0;
+	const int parent = target.root().id();
+	target.node(parent).addProperties(sourceRoot.properties());
+	for (int sourceNodeId : sourceRoot.children()) {
+		nodesAdded += copySceneGraphNode_r(target, source, source.node(sourceNodeId), parent);
+	}
+	return nodesAdded;
+}
+
 } // namespace voxel

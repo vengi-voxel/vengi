@@ -18,6 +18,7 @@ namespace voxelformat {
  */
 class VXRFormat : public PaletteFormat {
 private:
+	bool onlyOnePalette() override { return false; }
 	bool loadChildVXM(const core::String& vxmPath, SceneGraph &sceneGraph, SceneGraphNode &node, int version);
 
 	bool handleVersion8AndLater(io::SeekableReadStream& stream, SceneGraphNode &node);
@@ -32,9 +33,9 @@ private:
 	bool saveVXA(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const core::String &animation);
 	bool loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath);
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
+	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;
-	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

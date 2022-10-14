@@ -58,7 +58,7 @@ protected:
 
 	SceneGraph::MergedVolumePalette load(const core::String& filename, io::SeekableReadStream& stream, Format& format) {
 		SceneGraph sceneGraph;
-		if (!format.loadGroups(filename, stream, sceneGraph)) {
+		if (!format.load(filename, stream, sceneGraph)) {
 			Log::error("Failed to load %s", filename.c_str());
 			return SceneGraph::MergedVolumePalette{};
 		}
@@ -88,7 +88,7 @@ protected:
 			return false;
 		}
 		io::FileStream stream(file);
-		return format.loadGroups(filename, stream, sceneGraph);
+		return format.load(filename, stream, sceneGraph);
 	}
 
 	int loadPalette(const core::String& filename, Format& format, voxel::Palette &palette) {

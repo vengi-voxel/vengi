@@ -487,32 +487,21 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 	}
 }
 
-bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
+glm::ivec3 VoxFormat::maxSize() const {
 	const glm::ivec3 maxSize = glm::ivec3(256);
-	const SceneGraph *sg = &sceneGraph;
-	bool needsSplit = false;
-	for (SceneGraphNode &node : sceneGraph) {
-		const voxel::Region& region = node.region();
-		if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxSize))) {
-			continue;
-		}
-		needsSplit = true;
-	}
-	SceneGraph newSceneGraph;
-	if (needsSplit) {
-		// TODO: split is destroying groups
-		splitVolumes(sceneGraph, newSceneGraph, maxSize);
-		sg = &newSceneGraph;
-	}
+	return maxSize;
+}
 
-	const voxel::Palette &palette = sceneGraph.mergePalettes(true);
+bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
+	voxel::Palette palette = sceneGraph.mergePalettes(true);
 	int palReplacement = findClosestPaletteIndex(palette);
+
 	core_assert(palReplacement != 0u);
 	Log::debug("Found closest palette slot %i as replacement", palReplacement);
 
 	ogt_SceneContext ctx;
-	const SceneGraphNode &root = sg->root();
-	addNodeToScene(*sg, sg->node(root.id()), ctx, k_invalid_group_index, 0, palette, palReplacement);
+	const SceneGraphNode &root = sceneGraph.root();
+	addNodeToScene(sceneGraph, sceneGraph.node(root.id()), ctx, k_invalid_group_index, 0, palette, palReplacement);
 
 	core::Buffer<const ogt_vox_model *> modelPtr;
 	modelPtr.reserve(ctx.models.size());

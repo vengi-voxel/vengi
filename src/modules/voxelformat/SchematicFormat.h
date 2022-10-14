@@ -37,7 +37,6 @@ protected:
 	void parseMetadata(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxelformat::SceneGraphNode &node);
 	int parsePalette(const priv::NamedBinaryTag &schematic, core::Buffer<int> &mcpal) const;
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
-public:
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 

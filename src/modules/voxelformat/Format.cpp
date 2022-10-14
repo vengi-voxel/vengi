@@ -161,15 +161,30 @@ image::ImagePtr Format::loadScreenshot(const core::String &filename, io::Seekabl
 	return image::ImagePtr();
 }
 
-bool Format::save(const voxel::RawVolume* volume, const core::String &filename, io::SeekableWriteStream& stream) {
-	if (volume == nullptr) {
-		return false;
+bool Format::save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	const glm::ivec3 maxsize = maxSize();
+	if (maxsize.x > 0 && maxsize.y > 0 && maxsize.z > 0) {
+		bool needsSplit = false;
+		for (SceneGraphNode &node : sceneGraph) {
+			const voxel::Region& region = node.region();
+			if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxsize))) {
+				continue;
+			}
+			needsSplit = true;
+		}
+		if (needsSplit) {
+			SceneGraph newSceneGraph;
+			// TODO: split is destroying groups
+			splitVolumes(sceneGraph, newSceneGraph, maxsize);
+			return saveGroups(newSceneGraph, filename, stream);
+		}
 	}
-	SceneGraph sceneGraph(2);
-	SceneGraphNode node;
-	node.setVolume(volume, false);
-	sceneGraph.emplace(core::move(node));
+	// TODO: handle sceneGraph.merge() here if format can only store one volume
 	return saveGroups(sceneGraph, filename, stream);
+}
+
+bool Format::load(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+	return loadGroups(filename, stream, sceneGraph);
 }
 
 bool Format::stopExecution() {
@@ -183,6 +198,11 @@ bool PaletteFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 	}
 	sceneGraph.updateTransforms();
 	return true;
+}
+
+bool PaletteFormat::save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	// TODO: onlyOnePalette()
+	return Format::save(sceneGraph, filename, stream);
 }
 
 bool RGBAFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {

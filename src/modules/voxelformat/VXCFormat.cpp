@@ -69,7 +69,7 @@ bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		io::FilePtr vxrFile = io::filesystem()->open(vxr);
 		if (vxrFile->validHandle()) {
 			io::FileStream fstream(vxrFile);
-			f.loadGroups(vxr, fstream, sceneGraph);
+			f.load(vxr, fstream, sceneGraph);
 		}
 	}
 	sceneGraph.updateTransforms();

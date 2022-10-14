@@ -16,7 +16,7 @@ namespace voxelformat {
  * @ingroup Formats
  */
 class DatFormat : public PaletteFormat {
-public:
+protected:
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
 						   voxel::Palette &palette) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,

@@ -20,9 +20,9 @@ class VXMFormat : public PaletteFormat {
 private:
 	bool writeRLE(io::WriteStream &stream, int rleCount, const voxel::Voxel &voxel, uint8_t emptyColorReplacement) const;
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
+	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 public:
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;
-	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 };
 
 }

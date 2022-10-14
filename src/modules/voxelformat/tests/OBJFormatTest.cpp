@@ -28,7 +28,7 @@ TEST_F(OBJFormatTest, testExportMesh) {
 		const core::String filename = "rgb.qb";
 		const io::FilePtr &file = open(filename);
 		io::FileStream stream(file);
-		EXPECT_TRUE(sourceFormat.loadGroups(filename, stream, sceneGraph));
+		EXPECT_TRUE(sourceFormat.load(filename, stream, sceneGraph));
 	}
 	ASSERT_TRUE(sceneGraph.size() > 0);
 	OBJFormat f;
