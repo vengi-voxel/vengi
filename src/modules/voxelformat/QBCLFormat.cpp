@@ -355,9 +355,9 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 					} else {
 						const uint8_t palIndex = palLookup.findClosestIndex(color);
 						const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
+						const uint32_t x = (index / size.z);
+						const uint32_t z = index % size.z;
 						for (int j = 0; j < rleLength; ++j) {
-							const uint32_t x = (index / size.z);
-							const uint32_t z = index % size.z;
 							volume->setVoxel((int)x, y, (int)z, voxel);
 							++y;
 						}

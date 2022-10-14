@@ -43,12 +43,13 @@ TEST_F(ConvertTest, testVoxToVXM) {
 	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxm", target, flags);
 }
 
+// TODO: there is still a problem with vox models and the first palette index
 TEST_F(ConvertTest, testQbToVox) {
 	QBFormat src;
 	VoxFormat target;
 	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vox", target, flags);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vox", target, flags, 0.004f);
 }
 
 TEST_F(ConvertTest, testVoxToQb) {
@@ -86,7 +87,7 @@ TEST_F(ConvertTest, testQbToOBJ) {
 	OBJFormat target;
 	// the palette size is reduced here to the real amount of used colors
 	const voxel::ValidateFlags flags = (voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette) | voxel::ValidateFlags::IgnoreHollow;
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.obj", target, flags);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.obj", target, flags, 0.014f);
 }
 
 TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
