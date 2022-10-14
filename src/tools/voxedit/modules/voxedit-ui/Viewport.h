@@ -26,7 +26,8 @@ private:
 	bool _hoveredGuizmoLastFrame = false;
 	bool _guizmoActivated = false;
 	struct Bounds {
-		glm::vec3 size;
+		glm::vec3 mins{0};
+		glm::vec3 maxs{0};
 	};
 	Bounds _boundsNode;
 	Bounds _bounds;

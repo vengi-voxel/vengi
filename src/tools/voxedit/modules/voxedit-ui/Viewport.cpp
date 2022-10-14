@@ -280,14 +280,14 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 
 	const voxel::Region &region = node.region();
 	const glm::vec3 size = region.getDimensionsInVoxels();
-	if (_boundsNode.size != size) {
-		_bounds.size = _boundsNode.size = size;
+	if (_boundsNode.maxs != size) {
+		_bounds.maxs = _boundsNode.maxs = size;
 	}
 
 	const bool manipulated = ImGuizmo::Manipulate(
 		glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()), (ImGuizmo::OPERATION)operation,
 		ImGuizmo::MODE::LOCAL, glm::value_ptr(localMatrix), glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr,
-		glm::value_ptr(_bounds.size), boundsSnap);
+		glm::value_ptr(_bounds.mins), boundsSnap);
 
 	if (editMode == EditMode::Model) {
 		return;
@@ -304,12 +304,12 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 		ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(localMatrix), glm::value_ptr(translate),
 											  glm::value_ptr(rotation), glm::value_ptr(scale));
 		if (glm::all(glm::greaterThan(scale, glm::vec3(0)))) {
-			_bounds.size = _boundsNode.size * scale;
+			_bounds.maxs = _boundsNode.maxs * scale;
 		}
 	} else if (_guizmoActivated) {
 		const voxel::Region &region = node.region();
 		const voxel::Region newRegion(region.getLowerCorner(),
-									  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.size)));
+									  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.maxs)));
 		if (newRegion.isValid() && region != newRegion) {
 			sceneMgr().resize(node.id(), newRegion);
 		}
