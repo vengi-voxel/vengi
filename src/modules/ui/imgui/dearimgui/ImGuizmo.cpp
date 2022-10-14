@@ -1699,10 +1699,10 @@ namespace IMGUIZMO_NAMESPACE
             float boundDistance = sqrtf(ImLengthSqr(worldBound1 - worldBound2));
             int stepCount = (int)(boundDistance / 10.f);
             stepCount = min(stepCount, 1000);
-            // mgerhardy - added max() to prevent div0
-            float stepLength = 1.f / max(1.0f, (float)stepCount);
             for (int j = 0; j < stepCount; j++)
             {
+               // mgerhardy - added max() to prevent div0
+               float stepLength = 1.f / (float)stepCount;
                float t1 = (float)j * stepLength;
                float t2 = (float)j * stepLength + stepLength * 0.5f;
                ImVec2 worldBoundSS1 = ImLerp(worldBound1, worldBound2, ImVec2(t1, t1));
