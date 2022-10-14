@@ -82,7 +82,7 @@ TEST_F(ConvertTest, testQbToSTL) {
 	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.stl", target, flags);
 }
 
-TEST_F(ConvertTest, testQbToOBJ) {
+TEST_F(ConvertTest, DISABLED_testQbToOBJ) {
 	QBFormat src;
 	OBJFormat target;
 	// the palette size is reduced here to the real amount of used colors
