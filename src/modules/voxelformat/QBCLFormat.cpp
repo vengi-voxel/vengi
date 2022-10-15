@@ -76,14 +76,11 @@ static bool saveColor(io::WriteStream &stream, core::RGBA color) {
 	return true;
 }
 
-static bool writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t count, const voxel::Palette &palette) {
+static bool writeRLE(io::WriteStream& stream, core::RGBA color, uint8_t count) {
 	if (count == 0) {
 		return true;
 	}
-	core::RGBA color(0, 0, 0, 0);
-	if (!voxel::isAir(voxel.getMaterial())) {
-		color = palette.colors[voxel.getColor()];
-	}
+
 	if (count == 1) {
 		wrapSave(saveColor(stream, color))
 	} else if (count == 2) {
@@ -133,6 +130,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 	io::BufferedReadWriteStream rleDataStream(size.x * size.y * size.z);
 
 	const voxel::RawVolume *v = node.volume();
+	const voxel::Palette &palette = node.palette();
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
 			int previousColor = -1;
@@ -152,7 +150,11 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 					previousVoxel = voxel;
 					rleCount = 1;
 				} else if (previousColor != paletteIdx || rleCount == 255) {
-					wrapSave(writeRLE(rleDataStream, previousVoxel, rleCount, node.palette()))
+					core::RGBA color(0, 0, 0, 0);
+					if (!voxel::isAir(previousVoxel.getMaterial())) {
+						color = palette.colors[previousVoxel.getColor()];
+					}
+					wrapSave(writeRLE(rleDataStream, color, rleCount))
 					rleEntries += core_min(rleCount, 2);
 					rleCount = 1;
 					previousColor = paletteIdx;
@@ -161,7 +163,13 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 					++rleCount;
 				}
 			}
-			wrapSave(writeRLE(rleDataStream, previousVoxel, rleCount, node.palette()))
+			{
+				core::RGBA color(0, 0, 0, 0);
+				if (!voxel::isAir(previousVoxel.getMaterial())) {
+					color = palette.colors[previousVoxel.getColor()];
+				}
+				wrapSave(writeRLE(rleDataStream, color, rleCount))
+			}
 			rleEntries += core_min(rleCount, 2);
 			wrapSaveNegative(rleDataStream.seek(dataSizePos))
 			wrapSave(rleDataStream.writeUInt16(rleEntries))
