@@ -444,6 +444,9 @@ size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 		for (int x = 0; x < img->width(); ++x) {
 			for (int y = 0; y < img->height(); ++y) {
 				const core::RGBA rgba = img->colorAt(x, y);
+				if (rgba.a == 0) {
+					continue;
+				}
 				palette.addColorToPalette(rgba, false);
 			}
 		}
