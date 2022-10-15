@@ -124,19 +124,20 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 	wrapSave(outStream.writeFloat(/* TODO mins.y +*/ normalizedPivot.y * size.y))
 	wrapSave(outStream.writeFloat(/* TODO mins.z +*/ normalizedPivot.z * size.z))
 
+	constexpr voxel::Voxel Empty;
+
 	uint32_t voxelDataSizePos = outStream.pos();
 	wrapSave(outStream.writeUInt32(0));
 
-	io::BufferedReadWriteStream rleDataStream(size.x * size.y * size.z);
+	io::BufferedReadWriteStream rleDataStream(size.x * size.y * size.z * 32);
 
 	const voxel::RawVolume *v = node.volume();
 	const voxel::Palette &palette = node.palette();
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
-			int previousColor = -1;
+			core::RGBA currentColor;
 			uint16_t rleEntries = 0;
-			uint8_t rleCount = 0;
-			voxel::Voxel previousVoxel;
+			uint8_t count = 0;
 
 			// remember the position in the stream because we have
 			// to write the real value after the z loop
@@ -144,33 +145,26 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 			wrapSave(rleDataStream.writeUInt16(rleEntries))
 			for (int y = mins.y; y <= maxs.y; ++y) {
 				const voxel::Voxel& voxel = v->voxel(x, y, z);
-				const int paletteIdx = voxel.getColor();
-				if (previousColor == -1) {
-					previousColor = paletteIdx;
-					previousVoxel = voxel;
-					rleCount = 1;
-				} else if (previousColor != paletteIdx || rleCount == 255) {
-					core::RGBA color(0, 0, 0, 0);
-					if (!voxel::isAir(previousVoxel.getMaterial())) {
-						color = palette.colors[previousVoxel.getColor()];
-					}
-					wrapSave(writeRLE(rleDataStream, color, rleCount))
-					rleEntries += core_min(rleCount, 2);
-					rleCount = 1;
-					previousColor = paletteIdx;
-					previousVoxel = voxel;
+				core::RGBA newColor;
+				if (voxel == Empty) {
+					newColor = 0;
+					Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
 				} else {
-					++rleCount;
+					newColor = palette.colors[voxel.getColor()];
+					Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
+							x, y, z, (int)voxel.getColor(), (int)newColor.r, (int)newColor.g, (int)newColor.b, (int)newColor.a);
 				}
-			}
-			{
-				core::RGBA color(0, 0, 0, 0);
-				if (!voxel::isAir(previousVoxel.getMaterial())) {
-					color = palette.colors[previousVoxel.getColor()];
+				if (newColor != currentColor || count == 255) {
+					wrapSave(writeRLE(rleDataStream, currentColor, count))
+					rleEntries += core_min(count, 2);
+					count = 0;
+					currentColor = newColor;
 				}
-				wrapSave(writeRLE(rleDataStream, color, rleCount))
+				++count;
 			}
-			rleEntries += core_min(rleCount, 2);
+			wrapSave(writeRLE(rleDataStream, currentColor, count))
+			rleEntries += core_min(count, 2);
+
 			wrapSaveNegative(rleDataStream.seek(dataSizePos))
 			wrapSave(rleDataStream.writeUInt16(rleEntries))
 			wrapSaveNegative(rleDataStream.seek(0, SEEK_END))
