@@ -143,6 +143,7 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta
 
 	for (const voxelformat::SceneGraphNode &node : sceneGraph) {
 		const voxel::RawVolume *volume = node.volume();
+		EXPECT_EQ(99, voxelutil::visitVolume(*volume, [] (int, int, int, const voxel::Voxel&) {}));
 		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0,  0).getMaterial());
 		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0,  0).getMaterial());
 		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0, 31).getMaterial());
