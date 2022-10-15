@@ -264,11 +264,10 @@ TEST_F(ConvertTest, testVoxToVXR) {
 	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxr", target, flags);
 }
 
-// TODO: translation broken
 TEST_F(ConvertTest, testVXLToVXR) {
 	VXLFormat src;
 	VXRFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Pivot);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
 	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "convert-cc.vxr", target, flags);
 }
 
