@@ -78,12 +78,12 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 	core::RGBA currentColor;
 	uint32_t count = 0;
 
+	const voxel::RawVolume *v = node.volume();
 	const voxel::Palette& palette = node.palette();
-
 	for (int z = mins.z; z <= maxs.z; ++z) {
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			for (int x = mins.x; x <= maxs.x; ++x) {
-				const voxel::Voxel& voxel = node.volume()->voxel(x, y, z);
+				const voxel::Voxel& voxel = v->voxel(x, y, z);
 				core::RGBA newColor;
 				if (voxel == Empty) {
 					newColor = 0u;
