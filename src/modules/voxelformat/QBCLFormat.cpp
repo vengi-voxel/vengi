@@ -73,6 +73,15 @@ const int NODE_TYPE_COMPOUND = 2;
 		return false; \
 	}
 
+static bool saveColor(io::WriteStream &stream, core::RGBA color) {
+	// VisibilityMask::AlphaChannelVisibleByValue
+	wrapSave(stream.writeUInt8(color.r))
+	wrapSave(stream.writeUInt8(color.g))
+	wrapSave(stream.writeUInt8(color.b))
+	wrapSave(stream.writeUInt8(color.a > 0 ? 255 : 0))
+	return true;
+}
+
 static int writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t count, const voxel::Palette &palette) {
 	if (count == 0) {
 		return 0;
@@ -82,33 +91,19 @@ static int writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t 
 		color = palette.colors[voxel.getColor()];
 	}
 	if (count == 1) {
-		wrapSaveColor(stream.writeUInt8(color.r))
-		wrapSaveColor(stream.writeUInt8(color.g))
-		wrapSaveColor(stream.writeUInt8(color.b))
-		wrapSaveColor(stream.writeUInt8(color.a))
+		wrapSaveColor(saveColor(stream, color))
 		return 1;
 	}
 
 	if (count == 2) {
-		wrapSaveColor(stream.writeUInt8(color.r))
-		wrapSaveColor(stream.writeUInt8(color.g))
-		wrapSaveColor(stream.writeUInt8(color.b))
-		wrapSaveColor(stream.writeUInt8(color.a))
-
-		wrapSaveColor(stream.writeUInt8(color.r))
-		wrapSaveColor(stream.writeUInt8(color.g))
-		wrapSaveColor(stream.writeUInt8(color.b))
-		wrapSaveColor(stream.writeUInt8(color.a))
+		wrapSaveColor(saveColor(stream, color))
+		wrapSaveColor(saveColor(stream, color))
 	} else if (count > 2) {
 		wrapSaveColor(stream.writeUInt8(count))			 // r
 		wrapSaveColor(stream.writeUInt8(0))				 // g
 		wrapSaveColor(stream.writeUInt8(0))				 // b
 		wrapSaveColor(stream.writeUInt8(qbcl::RLE_FLAG)) // mask
-
-		wrapSaveColor(stream.writeUInt8(color.r))
-		wrapSaveColor(stream.writeUInt8(color.g))
-		wrapSaveColor(stream.writeUInt8(color.b))
-		wrapSaveColor(stream.writeUInt8(color.a))
+		wrapSaveColor(saveColor(stream, color))
 	}
 	return 2;
 }
