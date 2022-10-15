@@ -61,12 +61,6 @@ const int NODE_TYPE_COMPOUND = 2;
 		return false; \
 	}
 
-#define wrapSaveColor(write) \
-	if ((write) == false) { \
-		Log::error("Could not save qbcl file: " CORE_STRINGIFY(write) " failed"); \
-		return -1; \
-	}
-
 #define wrapSaveNegative(write) \
 	if ((write) == -1) { \
 		Log::error("Could not save qbcl file: " CORE_STRINGIFY(write) " failed"); \
@@ -82,30 +76,27 @@ static bool saveColor(io::WriteStream &stream, core::RGBA color) {
 	return true;
 }
 
-static int writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t count, const voxel::Palette &palette) {
+static bool writeRLE(io::WriteStream& stream, const voxel::Voxel& voxel, uint8_t count, const voxel::Palette &palette) {
 	if (count == 0) {
-		return 0;
+		return true;
 	}
 	core::RGBA color(0, 0, 0, 0);
 	if (!voxel::isAir(voxel.getMaterial())) {
 		color = palette.colors[voxel.getColor()];
 	}
 	if (count == 1) {
-		wrapSaveColor(saveColor(stream, color))
-		return 1;
-	}
-
-	if (count == 2) {
-		wrapSaveColor(saveColor(stream, color))
-		wrapSaveColor(saveColor(stream, color))
+		wrapSave(saveColor(stream, color))
+	} else if (count == 2) {
+		wrapSave(saveColor(stream, color))
+		wrapSave(saveColor(stream, color))
 	} else if (count > 2) {
-		wrapSaveColor(stream.writeUInt8(count))			 // r
-		wrapSaveColor(stream.writeUInt8(0))				 // g
-		wrapSaveColor(stream.writeUInt8(0))				 // b
-		wrapSaveColor(stream.writeUInt8(qbcl::RLE_FLAG)) // mask
-		wrapSaveColor(saveColor(stream, color))
+		wrapSave(stream.writeUInt8(count))			 // r
+		wrapSave(stream.writeUInt8(0))				 // g
+		wrapSave(stream.writeUInt8(0))				 // b
+		wrapSave(stream.writeUInt8(qbcl::RLE_FLAG)) // mask
+		wrapSave(saveColor(stream, color))
 	}
-	return 2;
+	return true;
 }
 
 bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraphNode& node) const {
@@ -161,7 +152,8 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 					previousVoxel = voxel;
 					rleCount = 1;
 				} else if (previousColor != paletteIdx || rleCount == 255) {
-					rleEntries += writeRLE(rleDataStream, previousVoxel, rleCount, node.palette());
+					wrapSave(writeRLE(rleDataStream, previousVoxel, rleCount, node.palette()))
+					rleEntries += core_min(rleCount, 2);
 					rleCount = 1;
 					previousColor = paletteIdx;
 					previousVoxel = voxel;
@@ -169,7 +161,8 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 					++rleCount;
 				}
 			}
-			rleEntries += writeRLE(rleDataStream, previousVoxel, rleCount, node.palette());
+			wrapSave(writeRLE(rleDataStream, previousVoxel, rleCount, node.palette()))
+			rleEntries += core_min(rleCount, 2);
 			wrapSaveNegative(rleDataStream.seek(dataSizePos))
 			wrapSave(rleDataStream.writeUInt16(rleEntries))
 			wrapSaveNegative(rleDataStream.seek(0, SEEK_END))
@@ -570,6 +563,5 @@ image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::See
 #undef wrapImg
 #undef wrap
 #undef wrapBool
-#undef wrapSaveColor
 #undef wrapSaveNegative
 #undef wrapSave
