@@ -200,7 +200,7 @@ TEST_F(ConvertTest, testQbToVXR) {
 	testLoadSaveAndLoadSceneGraph("robo.qb", src, "convert-robo.vxr", target, flags);
 }
 
-TEST_F(ConvertTest, testQbToQBCL) {
+TEST_F(ConvertTest, DISABLED_testQbToQBCL) {
 	QBFormat src;
 	QBCLFormat target;
 	testLoadSaveAndLoadSceneGraph("rgb.qb", src, "convert-rgb.qbcl", target);
