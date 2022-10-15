@@ -43,7 +43,6 @@ TEST_F(ConvertTest, testVoxToVXM) {
 	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxm", target, flags);
 }
 
-// TODO: there is still a problem with vox models and the first palette index
 TEST_F(ConvertTest, testQbToVox) {
 	QBFormat src;
 	VoxFormat target;
@@ -200,7 +199,7 @@ TEST_F(ConvertTest, testQbToVXR) {
 	testLoadSaveAndLoadSceneGraph("robo.qb", src, "convert-robo.vxr", target, flags);
 }
 
-TEST_F(ConvertTest, DISABLED_testQbToQBCL) {
+TEST_F(ConvertTest, testQbToQBCL) {
 	QBFormat src;
 	QBCLFormat target;
 	testLoadSaveAndLoadSceneGraph("rgb.qb", src, "convert-rgb.qbcl", target);
@@ -224,21 +223,36 @@ TEST_F(ConvertTest, testQbToVXL) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxl", target, flags);
 }
 
-// TODO: broken
-TEST_F(ConvertTest, DISABLED_testQBCLToQBCL) {
+TEST_F(ConvertTest, testQBCLToQBCL) {
 	QBCLFormat src;
 	QBCLFormat target;
 	testLoadSaveAndLoadSceneGraph("qubicle.qbcl", src, "convert-qubicle.qbcl", target);
 }
 
-// TODO: remove maxDelta for color once qb doesn't quantize the colors - but builds palettes
+TEST_F(ConvertTest, testVXMToQb) {
+	VXMFormat src;
+	QBFormat target;
+	// the palette color amount differs, because qubicle is a rgba format and only stores used colors
+	// qb doesn't store a pivot
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
+	testLoadSaveAndLoadSceneGraph("test.vxm", src, "convert-test.qb", target, flags);
+}
+
+TEST_F(ConvertTest, testVXRToQb) {
+	VXRFormat src;
+	QBFormat target;
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
+	// qb doesn't store a pivot
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
+	testLoadSaveAndLoadSceneGraph("e2de1723/e2de1723.vxr", src, "convert-e2de1723.qb", target, flags);
+}
+
 TEST_F(ConvertTest, testKVXToQb) {
 	KVXFormat src;
 	QBFormat target;
 	// qb doesn't store a pivot
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
-	const float maxDelta = 0.0127f;
-	testLoadSaveAndLoad("test.kvx", src, "convert-test.qb", target, flags, maxDelta);
+	testLoadSaveAndLoad("test.kvx", src, "convert-test.qb", target, flags);
 }
 
 // TODO: pivot broken
@@ -256,26 +270,6 @@ TEST_F(ConvertTest, testVXLToVXR) {
 	VXRFormat target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Pivot);
 	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "convert-cc.vxr", target, flags);
-}
-
-// TODO: colors broken
-TEST_F(ConvertTest, testVXMToQb) {
-	VXMFormat src;
-	QBFormat target;
-	// the palette color amount differs, because qubicle is a rgba format and only stores used colors
-	// qb doesn't store a pivot
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color | voxel::ValidateFlags::Palette);
-	testLoadSaveAndLoadSceneGraph("test.vxm", src, "convert-test.qb", target, flags);
-}
-
-// TODO: colors broken
-TEST_F(ConvertTest, testVXRToQb) {
-	VXRFormat src;
-	QBFormat target;
-	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
-	// qb doesn't store a pivot
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Color | voxel::ValidateFlags::Palette);
-	testLoadSaveAndLoadSceneGraph("e2de1723/e2de1723.vxr", src, "convert-e2de1723.qb", target, flags);
 }
 
 // TODO: transform broken
