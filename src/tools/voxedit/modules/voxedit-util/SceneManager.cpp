@@ -577,10 +577,15 @@ bool SceneManager::setActivePalette(const voxel::Palette &palette, bool searchBe
 				wrapper.setVoxel(x, y, z, newVoxel);
 			}
 		});
-		modified(nodeId, wrapper.dirtyRegion());
+		if (wrapper.dirtyRegion().isValid()) {
+			Log::error("remapped palette indices");
+		}
+		_mementoHandler.markPaletteChange(node, wrapper.dirtyRegion());
+		node.setPalette(palette);
+	} else {
+		_mementoHandler.markPaletteChange(node, voxel::Region::InvalidRegion);
+		node.setPalette(palette);
 	}
-	// TODO: undo step for palette change
-	node.setPalette(palette);
 	return true;
 }
 
@@ -597,6 +602,42 @@ voxel::RawVolume* SceneManager::activeVolume() {
 	return v;
 }
 
+bool SceneManager::mementoRename(const MementoState& s) {
+	Log::debug("Memento: rename of node %i (%s)", s.nodeId, s.name.c_str());
+	if (voxelformat::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
+		node->setName(s.name);
+		return true;
+	}
+	return false;
+}
+
+bool SceneManager::mementoPaletteChange(const MementoState& s) {
+	Log::debug("Memento: palette change of node %i to %s", s.nodeId, s.name.c_str());
+	if (voxelformat::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
+		node->setPalette(*s.palette.value());
+		if (s.hasVolumeData()) {
+			mementoModification(s);
+		}
+		return true;
+	}
+	return false;
+}
+
+bool SceneManager::mementoModification(const MementoState& s) {
+	Log::debug("Memento: modification in volume of node %i (%s)", s.nodeId, s.name.c_str());
+	voxel::RawVolume* v = MementoData::toVolume(s.data);
+	if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+		node->setVolume(v, true);
+		node->setName(s.name);
+		modified(node->id(), s.region, false);
+		_volumeRenderer.prepare(_sceneGraph);
+		return true;
+	}
+	Log::warn("Failed to handle memento state - node id %i not found (%s)", s.nodeId, s.name.c_str());
+	delete v;
+	return false;
+}
+
 // TODO: this should also update _dirty
 bool SceneManager::undo() {
 	if (!mementoHandler().canUndo()) {
@@ -608,12 +649,9 @@ bool SceneManager::undo() {
 	core_assert(s.valid());
 	ScopedMementoHandlerLock lock(_mementoHandler);
 	if (s.type == MementoType::SceneNodeRenamed) {
-		Log::debug("Memento: Undo rename of node %i (%s)", s.nodeId, s.name.c_str());
-		if (voxelformat::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
-			node->setName(s.name);
-			return true;
-		}
-		return false;
+		return mementoRename(s);
+	} else if (s.type == MementoType::SceneNodePaletteChanged) {
+		return mementoPaletteChange(s);
 	} else if (s.type == MementoType::SceneNodeMove) {
 		Log::debug("Memento: Undo move of node %i (%s) (move back to parent %i)", s.nodeId, s.name.c_str(), s.parentId);
 		return nodeMove(s.nodeId, s.parentId);
@@ -643,19 +681,7 @@ bool SceneManager::undo() {
 		Log::debug("Memento: Remove node %i", s.nodeId);
 		return nodeRemove(s.nodeId, true);
 	} else if (s.type == MementoType::Modification) {
-		Log::debug("Memento: Undo modification in volume of node %i (%s)", s.nodeId, s.name.c_str());
-		voxel::RawVolume* v = MementoData::toVolume(s.data);
-		if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
-			node->setVolume(v, true);
-			node->setName(s.name);
-			modified(node->id(), s.region, false);
-			_volumeRenderer.prepare(_sceneGraph);
-			return true;
-		} else {
-			Log::warn("Failed to undo - node id %i not found (%s)", s.nodeId, s.name.c_str());
-			delete v;
-			return false;
-		}
+		return mementoModification(s);
 	}
 	return true;
 }
@@ -670,12 +696,9 @@ bool SceneManager::redo() {
 	core_assert(s.valid());
 	ScopedMementoHandlerLock lock(_mementoHandler);
 	if (s.type == MementoType::SceneNodeRenamed) {
-		Log::debug("Memento: Redo rename of node %i to %s", s.nodeId, s.name.c_str());
-		if (voxelformat::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
-			node->setName(s.name);
-			return true;
-		}
-		return false;
+		return mementoRename(s);
+	} else if (s.type == MementoType::SceneNodePaletteChanged) {
+		return mementoPaletteChange(s);
 	} else if (s.type == MementoType::SceneNodeMove) {
 		Log::debug("Memento: Redo move of node %i (%s) (new parent %i)", s.nodeId, s.name.c_str(), s.parentId);
 		return nodeMove(s.nodeId, s.parentId);
@@ -698,19 +721,7 @@ bool SceneManager::redo() {
 		_mementoHandler.updateNodeId(s.nodeId, newNodeId);
 		return newNodeId != -1;
 	} else if (s.type == MementoType::Modification) {
-		Log::debug("Memento: Redo modification in volume of node %i (%s)", s.nodeId, s.name.c_str());
-		voxel::RawVolume* v = MementoData::toVolume(s.data);
-		if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
-			node->setVolume(v, true);
-			node->setName(s.name);
-			modified(node->id(), s.region, false);
-			_volumeRenderer.prepare(_sceneGraph);
-			return true;
-		} else {
-			Log::warn("Failed to redo - node id %i not found (%s)", s.nodeId, s.name.c_str());
-			delete v;
-			return false;
-		}
+		return mementoModification(s);
 	}
 	return true;
 }

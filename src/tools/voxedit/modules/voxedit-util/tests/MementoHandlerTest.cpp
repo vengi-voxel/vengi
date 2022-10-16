@@ -549,6 +549,9 @@ TEST_F(MementoHandlerTest, testAddNewNodeEdit) {
 TEST_F(MementoHandlerTest, testSceneNodeRenamed) {
 }
 
+TEST_F(MementoHandlerTest, testSceneNodePaletteChange) {
+}
+
 TEST_F(MementoHandlerTest, testSceneNodeMove) {
 }
 #endif

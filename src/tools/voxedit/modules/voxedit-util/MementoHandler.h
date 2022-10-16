@@ -30,6 +30,7 @@ enum class MementoType {
 	SceneNodeRemoved,
 	SceneNodeRenamed,
 	SceneNodeTransform,
+	SceneNodePaletteChanged,
 
 	Max
 };
@@ -88,26 +89,27 @@ struct MementoState {
 	int nodeId;
 	uint32_t keyFrame;
 	core::String name;
-	glm::mat4x4 localMatrix;
+	glm::mat4x4 localMatrix{1.0f};
 	/**
 	 * @note This region might be different from the region given in the @c MementoData. In case of an @c MementoHandler::undo()
 	 * call, we have to make sure that the region of the previous state is re-extracted.
 	 */
 	voxel::Region region;
+	core::Optional<voxel::Palette> palette;
 
 	MementoState() :
 			type(MementoType::Max), parentId(0), nodeId(0), keyFrame(0) {
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, const core::String &_name,
-				 const voxel::Region &_region, const glm::mat4x4 &_localMatrix, uint32_t _frameId = 0)
+				 const voxel::Region &_region, const glm::mat4x4 &_localMatrix, uint32_t _frameId = 0, const core::Optional<voxel::Palette> &_palette = {})
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(_frameId), name(_name), localMatrix(_localMatrix),
-		  region(_region) {
+		  region(_region), palette(_palette) {
 	}
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, core::String &&_name,
-				 voxel::Region &&_region)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(0), name(_name), region(_region) {
+				 voxel::Region &&_region, core::Optional<voxel::Palette> &&_palette)
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(0), name(_name), region(_region), palette(_palette) {
 	}
 
 	inline bool valid() const {
@@ -171,7 +173,8 @@ public:
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
 	void markUndo(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume, MementoType type,
-				  const voxel::Region &region, const glm::mat4 &transformMatrix, voxelformat::KeyFrameIndex keyFrameIdx);
+				  const voxel::Region &region, const glm::mat4 &transformMatrix, voxelformat::KeyFrameIndex keyFrameIdx,
+				  const core::Optional<voxel::Palette> &palette = {});
 
 	void markNodeRemoved(const voxelformat::SceneGraphNode &node);
 	void markNodeAdded(const voxelformat::SceneGraphNode &node);
@@ -179,6 +182,7 @@ public:
 	void markModification(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion);
 	void markNodeRenamed(const voxelformat::SceneGraphNode &node);
 	void markNodeMoved(int targetId, int sourceId);
+	void markPaletteChange(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion);
 
 	/**
 	 * @brief The scene graph is giving new nodes for each insert - thus while undo redo we get new node ids for each new node.

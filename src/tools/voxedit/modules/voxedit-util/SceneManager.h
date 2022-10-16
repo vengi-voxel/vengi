@@ -244,6 +244,11 @@ protected:
 	bool saveNode(int nodeId, const core::String& file);
 
 	void flip(math::Axis axis);
+
+	bool mementoRename(const MementoState& s);
+	bool mementoPaletteChange(const MementoState& s);
+	bool mementoModification(const MementoState& s);
+
 public:
 	~SceneManager();
 
