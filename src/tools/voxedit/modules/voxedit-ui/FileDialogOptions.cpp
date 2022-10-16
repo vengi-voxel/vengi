@@ -3,6 +3,7 @@
  */
 
 #include "FileDialogOptions.h"
+#include "core/GameConfig.h"
 #include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "voxelformat/VolumeFormat.h"
@@ -16,7 +17,8 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 	}
 
 	const bool forceApplyOptions = (desc->flags & FORMAT_FLAG_ALL) == FORMAT_FLAG_ALL;
-	if (forceApplyOptions || voxelformat::isMeshFormat(*desc)) {
+	const bool meshFormat = voxelformat::isMeshFormat(*desc);
+	if (forceApplyOptions || meshFormat) {
 		ImGui::InputVarFloat("Uniform scale", cfg::VoxformatScale);
 		ImGui::InputVarFloat("X axis scale", cfg::VoxformatScaleX);
 		ImGui::InputVarFloat("Y axis scale", cfg::VoxformatScaleY);
@@ -33,7 +35,15 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		} else if (mode == video::OpenFileMode::Open) {
 			ImGui::CheckboxVar("Fill hollow", cfg::VoxformatFillHollow);
 		}
-	} else if (forceApplyOptions || (desc->name == "Tiberian Sun" && desc->matchesExtension("vxl"))) {
+	}
+
+	if (forceApplyOptions || !meshFormat) {
+		if (mode == video::OpenFileMode::Save) {
+			ImGui::InputVarFloat("Single object", cfg::VoxformatMerge);
+		}
+	}
+
+	if (forceApplyOptions || (desc->name == "Tiberian Sun" && desc->matchesExtension("vxl"))) {
 		if (mode == video::OpenFileMode::Save) {
 			const char *normalTypes[] = {nullptr, nullptr, "Tiberian Sun", nullptr, "Red Alert"};
 			const core::VarPtr &normalTypeVar = core::Var::getSafe(cfg::VoxformatVXLNormalType);

@@ -33,11 +33,22 @@ class Format {
 protected:
 	/**
 	 * @brief If you have to split the volumes in the scene graph because the format only supports a certain size, you
-	 * can return the max size here.
+	 * can return the max size here. If the returned value is not a valid volume size (<= 0) the value is ignored.
+	 * @sa singleVolume()
+	 * @note @c singleVolume() and @c maxSize() don't work well together as the first would merge everything, and the latter
+	 * would split it again if the max size was exceeded.
 	 */
-	virtual glm::ivec3 maxSize() const {
-		return glm::ivec3(-1);
-	}
+	virtual glm::ivec3 maxSize() const;
+
+	/**
+	 * @brief If a format only supports a single volume. If this returns true, the @¢ save() method gets a scene graph with
+	 * only one model
+	 * @sa maxSize()
+	 * @note @c singleVolume() and @c maxSize() don't work well together as the first would merge everything, and the latter
+	 * would split it again if the max size was exceeded.
+	 */
+	virtual bool singleVolume() const;
+
 	/**
 	 * @brief Checks whether the given chunk is empty (only contains air).
 	 *
@@ -65,6 +76,10 @@ protected:
 	 */
 	void splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop = false);
 
+	/**
+	 * Some formats are running loop that the user might want to interrupt with CTRL+c or the like. Long lasting loops should query
+	 * this boolean and respect the users wish to quit the application.
+	 */
 	static bool stopExecution();
 
 	static core::String stringProperty(const SceneGraphNode* node, const core::String &name, const core::String &defaultVal = "");

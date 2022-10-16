@@ -36,6 +36,7 @@ bool FormatConfig::init() {
 
 	core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName(),
 				   "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
+	core::Var::get(cfg::VoxformatMerge, "false", core::CV_NOPERSIST, "Merge all objects into one");
 
 	return true;
 }

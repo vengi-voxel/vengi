@@ -55,6 +55,7 @@ float Format::floatProperty(const SceneGraphNode* node, const core::String &name
 	return core::string::toFloat(node->property(name));
 }
 
+// TODO: split is destroying groups
 void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop) {
 	destSceneGraph.reserve(srcSceneGraph.size());
 	for (SceneGraphNode &node : srcSceneGraph) {
@@ -121,25 +122,48 @@ image::ImagePtr Format::loadScreenshot(const core::String &filename, io::Seekabl
 	return image::ImagePtr();
 }
 
+glm::ivec3 Format::maxSize() const {
+	return glm::ivec3(-1);
+}
+
+bool Format::singleVolume() const {
+	return core::Var::getSafe(cfg::VoxformatMerge)->boolVal();
+}
+
 bool Format::save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	bool needsSplit = false;
 	const glm::ivec3 maxsize = maxSize();
 	if (maxsize.x > 0 && maxsize.y > 0 && maxsize.z > 0) {
-		bool needsSplit = false;
 		for (SceneGraphNode &node : sceneGraph) {
 			const voxel::Region& region = node.region();
 			if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxsize))) {
 				continue;
 			}
 			needsSplit = true;
-		}
-		if (needsSplit) {
-			SceneGraph newSceneGraph;
-			// TODO: split is destroying groups
-			splitVolumes(sceneGraph, newSceneGraph, maxsize);
-			return saveGroups(newSceneGraph, filename, stream);
+			break;
 		}
 	}
-	// TODO: handle sceneGraph.merge() here if format can only store one volume
+
+	if (needsSplit && singleVolume()) {
+		Log::error("Failed to save. This format can't be used to save the scene graph");
+		return false;
+	}
+
+	if (singleVolume()) {
+		SceneGraph::MergedVolumePalette merged = sceneGraph.merge(true);
+		SceneGraph mergedSceneGraph(2);
+		SceneGraphNode mergedNode(SceneGraphNodeType::Model);
+		mergedNode.setVolume(merged.first, true);
+		mergedNode.setPalette(merged.second);
+		mergedSceneGraph.emplace(core::move(mergedNode));
+		return saveGroups(mergedSceneGraph, filename, stream);
+	}
+
+	if (needsSplit) {
+		SceneGraph newSceneGraph;
+		splitVolumes(sceneGraph, newSceneGraph, maxsize);
+		return saveGroups(newSceneGraph, filename, stream);
+	}
 	return saveGroups(sceneGraph, filename, stream);
 }
 

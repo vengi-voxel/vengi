@@ -96,6 +96,7 @@ constexpr const char *VoxformatMergequads = "voxformat_mergequads";
 constexpr const char *VoxformatReusevertices = "voxformat_reusevertices";
 constexpr const char *VoxformatAmbientocclusion = "voxformat_ambientocclusion";
 constexpr const char *VoxformatScale = "voxformat_scale";
+constexpr const char *VoxformatMerge = "voxformat_merge";
 constexpr const char *VoxformatScaleX = "voxformat_scale_x";
 constexpr const char *VoxformatScaleY = "voxformat_scale_y";
 constexpr const char *VoxformatScaleZ = "voxformat_scale_z";

@@ -279,8 +279,17 @@ bool AoSVXLFormat::isSurface(const voxel::RawVolume *v, int x, int y, int z) {
 	return false;
 }
 
+bool AoSVXLFormat::singleVolume() const {
+	return true;
+}
+
+glm::ivec3 AoSVXLFormat::maxSize() const {
+	return glm::ivec3(512, 256, 512);
+}
+
 // code taken from https://silverspaceship.com/aosmap/aos_file_format.html
 bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+	// TODO: no merge needed anymore... there will always only be one model node in this scenegraph
 	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
