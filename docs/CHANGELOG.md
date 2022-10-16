@@ -24,6 +24,7 @@ General:
    - Fixed saving palette index 0 for binvox
    - Fixed Sandbox VXM palette issue
    - Fixed QBCL saving
+   - Improved qbt scene graph support
    - Improved vox saving with multiple palettes
    - Improved the file dialog size and special dir handling
    - Improved dark mode support
