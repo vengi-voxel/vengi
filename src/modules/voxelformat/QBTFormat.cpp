@@ -267,6 +267,13 @@ bool QBTFormat::saveNode(io::SeekableWriteStream& stream, const SceneGraph& scen
 }
 
 bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node, bool colorMap) const {
+	if (node.children().size() == 1) {
+		for (int nodeId : node.children()) {
+			const SceneGraphNode &cnode = sceneGraph.node(nodeId);
+			wrapSave(saveNode(stream, sceneGraph, cnode, colorMap))
+		}
+		return true;
+	}
 	qbt::ScopedQBTHeader scoped(stream, node.type());
 	const int children = (int)node.children().size();
 	wrapSave(stream.writeUInt32(children));
