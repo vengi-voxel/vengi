@@ -3,6 +3,7 @@
  */
 
 #include "LayerPanel.h"
+#include "Util.h"
 #include "voxedit-util/layer/LayerSettings.h"
 #include "core/collection/DynamicArray.h"
 #include "core/Color.h"
@@ -109,9 +110,25 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		}
 		ImGui::TooltipText("Add a new layer");
 		if (ImGui::BeginPopupModal(POPUP_TITLE_LAYER_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			ImGui::InputText("Name", &layerSettings->name);
-			ImGui::InputVec3("Position", layerSettings->position);
-			ImGui::InputVec3("Size", layerSettings->size);
+			ImGui::Text("Name");
+			ImGui::Separator();
+			ImGui::InputText("##layersettingsname", &layerSettings->name);
+			ImGui::NewLine();
+
+			ImGui::Text("Position");
+			ImGui::Separator();
+			veui::InputAxisInt(math::Axis::X, "##posx", &layerSettings->position.x);
+			veui::InputAxisInt(math::Axis::Y, "##posy", &layerSettings->position.y);
+			veui::InputAxisInt(math::Axis::Z, "##posz", &layerSettings->position.z);
+			ImGui::NewLine();
+
+			ImGui::Text("Size");
+			ImGui::Separator();
+			veui::InputAxisInt(math::Axis::X, "Width##sizex", &layerSettings->size.x);
+			veui::InputAxisInt(math::Axis::Y, "Height##sizey", &layerSettings->size.y);
+			veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &layerSettings->size.z);
+			ImGui::NewLine();
+
 			if (ImGui::Button(ICON_FA_CHECK " OK##layersettings")) {
 				ImGui::CloseCurrentPopup();
 				voxelformat::SceneGraphNode node;
@@ -120,11 +137,12 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 				node.setName(layerSettings->name.c_str());
 				sceneMgr.addNodeToSceneGraph(node);
 			}
+			ImGui::SetItemDefaultFocus();
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_TIMES " Cancel##layersettings")) {
 				ImGui::CloseCurrentPopup();
 			}
-			ImGui::SetItemDefaultFocus();
+
 			ImGui::EndPopup();
 		}
 

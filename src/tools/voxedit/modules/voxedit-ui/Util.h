@@ -15,7 +15,7 @@ void AxisStyleButton(ui::imgui::ScopedStyle &style, math::Axis axis);
 void AxisStyleText(ui::imgui::ScopedStyle &style, math::Axis axis, bool dark = true);
 const char *AxisButton(math::Axis axis, const char *name, const char *command, const char *icon, const char *tooltip,
 					   float width, command::CommandExecutionListener *listener);
-bool InputAxisInt(math::Axis axis, const char *name, int* value, int step);
+bool InputAxisInt(math::Axis axis, const char *name, int* value, int step = 1);
 bool CheckboxAxisFlags(math::Axis axis, const char *name, math::Axis* value);
 
 } // namespace veui

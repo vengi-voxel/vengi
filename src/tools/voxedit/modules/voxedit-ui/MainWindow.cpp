@@ -5,6 +5,7 @@
 #include "MainWindow.h"
 #include "ScopedStyle.h"
 #include "Viewport.h"
+#include "Util.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
@@ -21,7 +22,6 @@
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxelformat/VolumeFormat.h"
 #include <glm/gtc/type_ptr.hpp>
-#include "ui/imgui/dearimgui/imgui_internal.h"
 
 #define TITLE_STATUSBAR "##statusbar"
 #define TITLE_PALETTE "Palette##title"
@@ -374,9 +374,25 @@ void MainWindow::registerPopups() {
 	}
 
 	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::InputText("Name", &_layerSettings.name);
-		ImGui::InputVec3("Position", _layerSettings.position);
-		ImGui::InputVec3("Size", _layerSettings.size);
+		ImGui::Text("Name");
+		ImGui::Separator();
+		ImGui::InputText("##newscenename", &_layerSettings.name);
+		ImGui::NewLine();
+
+		ImGui::Text("Position");
+		ImGui::Separator();
+		veui::InputAxisInt(math::Axis::X, "##posx", &_layerSettings.position.x);
+		veui::InputAxisInt(math::Axis::Y, "##posy", &_layerSettings.position.y);
+		veui::InputAxisInt(math::Axis::Z, "##posz", &_layerSettings.position.z);
+		ImGui::NewLine();
+
+		ImGui::Text("Size");
+		ImGui::Separator();
+		veui::InputAxisInt(math::Axis::X, "Width##sizex", &_layerSettings.size.x);
+		veui::InputAxisInt(math::Axis::Y, "Height##sizey", &_layerSettings.size.y);
+		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_layerSettings.size.z);
+		ImGui::NewLine();
+
 		if (ImGui::Button(ICON_FA_CHECK " OK##newscene")) {
 			ImGui::CloseCurrentPopup();
 			const voxel::Region &region = _layerSettings.region();
