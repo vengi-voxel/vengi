@@ -30,6 +30,86 @@ static const bool MergeCompounds = true; // TODO: cvar on load
 const int NODE_TYPE_MATRIX = 0;
 const int NODE_TYPE_MODEL = 1;
 const int NODE_TYPE_COMPOUND = 2;
+
+
+class ScopedQBTHeader {
+private:
+	io::SeekableWriteStream &_stream;
+	uint32_t _sizePos = 0;
+	bool _success = true;
+
+public:
+	ScopedQBTHeader(io::SeekableWriteStream &stream, uint32_t nodeType) : _stream(stream) {
+		Log::debug("Write node type %u", nodeType);
+		if (!_stream.writeUInt32(nodeType)) {
+			Log::error("Failed to write the node type %u", nodeType);
+			_success = false;
+		}
+		_sizePos = _stream.pos();
+		if (!_stream.writeUInt32(0)) {
+			Log::error("Failed to write the node size");
+			_success = false;
+		}
+	}
+
+	ScopedQBTHeader(io::SeekableWriteStream &stream, SceneGraphNodeType type) : _stream(stream) {
+		uint32_t nodeType = 0;
+		switch (type) {
+		case SceneGraphNodeType::Group:
+		case SceneGraphNodeType::Root:
+			nodeType = qbt::NODE_TYPE_MODEL;
+			Log::debug("Write model node");
+			break;
+		case SceneGraphNodeType::Model:
+			nodeType = qbt::NODE_TYPE_MATRIX;
+			Log::debug("Write matrix node");
+			break;
+		default:
+			Log::error("Failed to determine the node type for %u", (uint32_t)type);
+			_success = false;
+			break;
+		}
+
+		if (!_stream.writeUInt32(nodeType)) {
+			Log::error("Failed to write the node type %u", nodeType);
+			_success = false;
+		}
+		_sizePos = _stream.pos();
+		if (!_stream.writeUInt32(0)) {
+			Log::error("Failed to write the node size");
+			_success = false;
+		}
+	}
+
+	~ScopedQBTHeader() {
+		const uint32_t dataEnd = _stream.pos();
+		const uint32_t delta = dataEnd - _sizePos - sizeof(uint32_t);
+		if (_stream.seek(_sizePos) == -1) {
+			Log::error("Failed to seek to size pos %u", _sizePos);
+			_success = false;
+			return;
+		}
+		Log::debug("Write node size %u", delta);
+		if (!_stream.writeUInt32(delta)) {
+			_success = false;
+			Log::error("Failed to write node size %u", delta);
+			return;
+		}
+		if (_stream.seek(dataEnd) == -1) {
+			Log::error("Failed to seek to eos %u", dataEnd);
+			_success = false;
+			return;
+		}
+		if (!_success) {
+			Log::error("Failed to finish the node header");
+		}
+	}
+
+	inline bool success() const {
+		return _success;
+	}
+};
+
 }
 
 #define wrapSave(write) \
@@ -109,18 +189,6 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 		return false;
 	}
 
-	wrapSaveFree(stream.writeUInt32(qbt::NODE_TYPE_MATRIX));
-	const size_t nameLength = node.name().size();
-	const size_t nameSize = sizeof(uint32_t) + nameLength;
-	const size_t positionSize = 3 * sizeof(uint32_t);
-	const size_t localScaleSize = 3 * sizeof(uint32_t);
-	const size_t pivotSize = 3 * sizeof(float);
-	const size_t sizeSize = 3 * sizeof(uint32_t);
-	const size_t compressedDataSize = sizeof(uint32_t) + realBufSize;
-	const uint32_t datasize = (uint32_t)(nameSize + positionSize + localScaleSize + pivotSize + sizeSize + compressedDataSize);
-	wrapSaveFree(stream.writeUInt32(datasize));
-
-	const size_t chunkStartPos = stream.pos();
 	wrapSaveFree(stream.writePascalStringUInt32LE(node.name()));
 	Log::debug("Save matrix with name %s", node.name().c_str());
 
@@ -153,55 +221,60 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 		delete[] zlibBuffer;
 		return false;
 	}
-	const size_t chunkEndPos = stream.pos();
-
 	delete[] compressedBuf;
 	delete[] zlibBuffer;
 
-	return (size_t)datasize == chunkEndPos - chunkStartPos;
+	return true;
 }
 
 bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream, const voxel::Palette& palette) const {
 	wrapSave(stream.writeString("COLORMAP", false));
 	wrapSave(stream.writeUInt32(palette.colorCount));
 	for (int i = 0; i < palette.colorCount; ++i) {
-		wrapBool(stream.writeUInt8(palette.colors[i].r));
-		wrapBool(stream.writeUInt8(palette.colors[i].g));
-		wrapBool(stream.writeUInt8(palette.colors[i].b));
-		wrapBool(stream.writeUInt8(palette.colors[i].a));
+		wrapSave(stream.writeUInt8(palette.colors[i].r));
+		wrapSave(stream.writeUInt8(palette.colors[i].g));
+		wrapSave(stream.writeUInt8(palette.colors[i].b));
+		wrapSave(stream.writeUInt8(palette.colors[i].a));
 	}
 
 	return true;
 }
 
-bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, bool colorMap) const {
-	int children = (int)sceneGraph.size();
-	wrapSave(stream.writeUInt32(qbt::NODE_TYPE_MODEL));
-	if (children == 0) {
-		wrapSave(stream.writeUInt32(sizeof(uint32_t)));
-		wrapSave(stream.writeUInt32(0));
-		return false;
+bool QBTFormat::saveCompound(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node, bool colorMap) const {
+	wrapSave(saveMatrix(stream, node, colorMap))
+	wrapSave(stream.writeUInt32((int)node.children().size()));
+	for (int nodeId : node.children()) {
+		const SceneGraphNode &node = sceneGraph.node(nodeId);
+		wrapSave(saveNode(stream, sceneGraph, node, colorMap))
 	}
-	const uint32_t sizePos = stream.pos();
-	wrapSave(stream.writeUInt32(0));
+	return true;
+}
 
-	const uint32_t dataStart = stream.pos();
-	wrapSave(stream.writeUInt32(children));
-
-	bool success = true;
-	for (const SceneGraphNode& node : sceneGraph) {
-		if (!saveMatrix(stream, node, colorMap)) {
-			success = false;
+bool QBTFormat::saveNode(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node, bool colorMap) const {
+	const SceneGraphNodeType type = node.type();
+	if (type == SceneGraphNodeType::Model) {
+		if (node.children().empty()) {
+			qbt::ScopedQBTHeader header(stream, node.type());
+			wrapSave(saveMatrix(stream, node, colorMap) && header.success())
+		} else {
+			qbt::ScopedQBTHeader scoped(stream, qbt::NODE_TYPE_COMPOUND);
+			wrapSave(saveCompound(stream, sceneGraph, node, colorMap) && scoped.success())
 		}
+	} else if (type == SceneGraphNodeType::Group || type == SceneGraphNodeType::Root) {
+		wrapSave(saveModel(stream, sceneGraph, node, colorMap))
 	}
+	return true;
+}
 
-	const uint32_t dataEnd = stream.pos();
-	const uint32_t delta = dataEnd - dataStart;
-
-	stream.seek(sizePos);
-	wrapSave(stream.writeUInt32(delta));
-
-	return success;
+bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node, bool colorMap) const {
+	qbt::ScopedQBTHeader scoped(stream, node.type());
+	const int children = (int)node.children().size();
+	wrapSave(stream.writeUInt32(children));
+	for (int nodeId : node.children()) {
+		const SceneGraphNode &cnode = sceneGraph.node(nodeId);
+		wrapSave(saveNode(stream, sceneGraph, cnode, colorMap))
+	}
+	return scoped.success();
 }
 
 bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
@@ -231,15 +304,10 @@ bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 			return false;
 		}
 	}
-	int layers = 0;
 	if (!stream.writeString("DATATREE", false)) {
 		return false;
 	}
-	if (!saveModel(stream, sceneGraph, colorMap)) {
-		return false;
-	}
-	Log::debug("Saved %i layers", layers);
-	return true;
+	return saveNode(stream, sceneGraph, sceneGraph.root(), colorMap);
 }
 
 bool QBTFormat::skipNode(io::SeekableReadStream& stream) {
