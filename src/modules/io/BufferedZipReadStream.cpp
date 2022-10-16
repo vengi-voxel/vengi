@@ -3,6 +3,7 @@
  */
 
 #include "BufferedZipReadStream.h"
+#include "core/Assert.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/Zip.h"

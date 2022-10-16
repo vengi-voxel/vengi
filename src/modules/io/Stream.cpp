@@ -3,6 +3,7 @@
  */
 
 #include "Stream.h"
+#include "core/Assert.h"
 #include <SDL_endian.h>
 #include <SDL_stdinc.h>
 #include <fcntl.h>

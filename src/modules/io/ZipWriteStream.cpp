@@ -5,6 +5,7 @@
 #include "ZipWriteStream.h"
 #include "core/StandardLib.h"
 #include "core/miniz.h"
+#include "core/Assert.h"
 
 namespace io {
 
