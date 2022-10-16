@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 
