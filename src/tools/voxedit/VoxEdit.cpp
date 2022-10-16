@@ -23,6 +23,7 @@
 #include "voxedit-util/CustomBindingContext.h"
 
 #include "voxedit-ui/MainWindow.h"
+#include "voxedit-ui/FileDialogOptions.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 
@@ -97,60 +98,6 @@ app::AppState VoxEdit::onConstruct() {
 
 	voxelformat::FormatConfig::init();
 
-	static video::FileDialogOptions options = [] (video::OpenFileMode mode, const io::FormatDescription *desc) {
-		if (mode == video::OpenFileMode::Directory) {
-			return;
-		}
-		if (desc == nullptr) {
-			return;
-		}
-
-		const bool forceApplyOptions = (desc->flags & FORMAT_FLAG_ALL) == FORMAT_FLAG_ALL;
-		if (forceApplyOptions || voxelformat::isMeshFormat(*desc)) {
-			ImGui::InputVarFloat("Uniform scale", cfg::VoxformatScale);
-			ImGui::InputVarFloat("X axis scale", cfg::VoxformatScaleX);
-			ImGui::InputVarFloat("Y axis scale", cfg::VoxformatScaleY);
-			ImGui::InputVarFloat("Z axis scale", cfg::VoxformatScaleZ);
-
-			if (mode == video::OpenFileMode::Save) {
-				ImGui::CheckboxVar("Merge quads", cfg::VoxformatMergequads);
-				ImGui::CheckboxVar("Reuse vertices", cfg::VoxformatReusevertices);
-				ImGui::CheckboxVar("Ambient occlusion", cfg::VoxformatAmbientocclusion);
-				ImGui::CheckboxVar("Apply transformations", cfg::VoxformatTransform);
-				ImGui::CheckboxVar("Exports quads", cfg::VoxformatQuads);
-				ImGui::CheckboxVar("Vertex colors", cfg::VoxformatWithcolor);
-				ImGui::CheckboxVar("Texture coordinates", cfg::VoxformatWithtexcoords);
-			} else if (mode == video::OpenFileMode::Open) {
-				ImGui::CheckboxVar("Fill hollow", cfg::VoxformatFillHollow);
-			}
-		} else if (forceApplyOptions || (desc->name == "Tiberian Sun" && desc->matchesExtension("vxl"))) {
-			if (mode == video::OpenFileMode::Save) {
-				const char *normalTypes[] = {nullptr, nullptr, "Tiberian Sun", nullptr, "Red Alert"};
-				const core::VarPtr &normalTypeVar = core::Var::getSafe(cfg::VoxformatVXLNormalType);
-				const int currentNormalType = normalTypeVar->intVal();
-
-				if (ImGui::BeginCombo("Normal type", normalTypes[currentNormalType])) {
-					for (int i = 0; i < lengthof(normalTypes); ++i) {
-						const char *normalType = normalTypes[i];
-						if (normalType == nullptr) {
-							continue;
-						}
-						const bool selected = i == currentNormalType;
-						if (ImGui::Selectable(normalType, selected)) {
-							normalTypeVar->setVal(core::string::toString(i));
-						}
-						if (selected) {
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					ImGui::EndCombo();
-				}
-			}
-		} else if (mode == video::OpenFileMode::Save && desc->matchesExtension("qbt")) {
-			ImGui::CheckboxVar("Palette mode", cfg::VoxformatQBTPaletteMode);
-		}
-	};
-
 	for (const io::FormatDescription* desc = io::format::palettes(); desc->valid(); ++desc) {
 		_paletteFormats.push_back(*desc);
 	}
@@ -169,7 +116,7 @@ app::AppState VoxEdit::onConstruct() {
 		}
 		if (args.empty()) {
 			const core::String filename = getSuggestedFilename("png");
-			saveDialog([this] (const core::String &file) {_mainWindow->saveScreenshot(file); }, options, io::format::images(), filename);
+			saveDialog([this] (const core::String &file) {_mainWindow->saveScreenshot(file); }, fileDialogOptions, io::format::images(), filename);
 			return;
 		}
 		_mainWindow->saveScreenshot(args[0]);
@@ -182,7 +129,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (args.empty()) {
 			const core::String filename = getSuggestedFilename();
 			if (filename.empty()) {
-				saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, options, voxelformat::voxelSave());
+				saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, fileDialogOptions, voxelformat::voxelSave());
 			} else {
 				_mainWindow->save(filename);
 			}
@@ -196,7 +143,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		const core::String filename = getSuggestedFilename();
-		saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, options, voxelformat::voxelSave(), filename);
+		saveDialog([this] (const core::String &file) {_mainWindow->save(file); }, fileDialogOptions, voxelformat::voxelSave(), filename);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current scene as a volume to the given file");
 
 	command::Command::registerCommand("load", [this](const command::CmdArgs &args) {
@@ -204,7 +151,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			openDialog([this] (const core::String &file) {_mainWindow->load(file); }, options, voxelformat::voxelLoad());
+			openDialog([this] (const core::String &file) {_mainWindow->load(file); }, fileDialogOptions, voxelformat::voxelLoad());
 			return;
 		}
 		_mainWindow->load(args[0]);
@@ -212,7 +159,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("prefab", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([](const core::String &file) { voxedit::sceneMgr().prefab(file); }, options, voxelformat::voxelLoad());
+			openDialog([](const core::String &file) { voxedit::sceneMgr().prefab(file); }, fileDialogOptions, voxelformat::voxelLoad());
 			return;
 		}
 		voxedit::sceneMgr().prefab(args[0]);
@@ -220,7 +167,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importheightmap", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, options, io::format::images());
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, fileDialogOptions, io::format::images());
 			return;
 		}
 		if (!voxedit::sceneMgr().importHeightmap(args[0])) {
@@ -230,7 +177,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importcoloredheightmap", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, options, io::format::images());
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importHeightmap(file); }, fileDialogOptions, io::format::images());
 			return;
 		}
 		if (!voxedit::sceneMgr().importColoredHeightmap(args[0])) {
@@ -240,7 +187,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importplane", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsPlane(file); }, options, io::format::images());
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsPlane(file); }, fileDialogOptions, io::format::images());
 			return;
 		}
 		if (!voxedit::sceneMgr().importAsPlane(args[0])) {
@@ -250,7 +197,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importvolume", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsVolume(file, 8, true); }, options, io::format::images());
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importAsVolume(file, 8, true); }, fileDialogOptions, io::format::images());
 			return;
 		}
 		const int maxDepth = args.size() >= 2 ? core::string::toInt(args[1]) : 8;
@@ -262,7 +209,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([] (const core::String &file) { voxedit::sceneMgr().importPalette(file); }, options, &_paletteFormats[0]);
+			openDialog([] (const core::String &file) { voxedit::sceneMgr().importPalette(file); }, fileDialogOptions, &_paletteFormats[0]);
 			return;
 		}
 		if (!voxedit::sceneMgr().importPalette(args[0])) {
@@ -276,7 +223,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			openDialog([this] (const core::String &file) { _mainWindow->loadAnimationEntity(file); }, options, io::format::lua());
+			openDialog([this] (const core::String &file) { _mainWindow->loadAnimationEntity(file); }, fileDialogOptions, io::format::lua());
 			return;
 		}
 		_mainWindow->loadAnimationEntity(args[0]);

@@ -5,6 +5,7 @@ set(SRCS
 	AnimationPanel.h AnimationPanel.cpp
 	AssetPanel.h AssetPanel.cpp
 	DragAndDropPayload.h
+	FileDialogOptions.h FileDialogOptions.cpp
 	PositionsPanel.h PositionsPanel.cpp
 	LayerPanel.h LayerPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
