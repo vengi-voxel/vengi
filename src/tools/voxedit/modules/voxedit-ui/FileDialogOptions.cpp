@@ -39,7 +39,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 
 	if (forceApplyOptions || !meshFormat) {
 		if (mode == video::OpenFileMode::Save) {
-			ImGui::InputVarFloat("Single object", cfg::VoxformatMerge);
+			ImGui::CheckboxVar("Single object", cfg::VoxformatMerge);
 		}
 	}
 
