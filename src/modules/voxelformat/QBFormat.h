@@ -66,10 +66,10 @@ private:
 	bool readColor(State& state, io::SeekableReadStream& stream, core::RGBA &color);
 	voxel::Voxel getVoxel(State& state, io::SeekableReadStream& stream, voxel::PaletteLookup &palLookup);
 	bool loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup);
-
-	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const;
 	bool loadColors(State& state, io::SeekableReadStream& stream, voxel::Palette &palette);
 	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) override;
+
+	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override;
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
