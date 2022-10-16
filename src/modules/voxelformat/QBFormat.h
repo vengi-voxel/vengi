@@ -66,7 +66,6 @@ private:
 	bool readColor(State& state, io::SeekableReadStream& stream, core::RGBA &color);
 	voxel::Voxel getVoxel(State& state, io::SeekableReadStream& stream, voxel::PaletteLookup &palLookup);
 	bool loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup);
-	bool loadFromStream(io::SeekableReadStream& stream, SceneGraph& sceneGraph);
 
 	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const;
 	bool loadColors(State& state, io::SeekableReadStream& stream, voxel::Palette &palette);
