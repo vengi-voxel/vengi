@@ -48,7 +48,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 		wrap(stream.readUInt8(g))
 		wrap(stream.readUInt8(b))
 
-		palette.colors[i] = core::Color::getRGBA(r, g, b);
+		palette.colors[i] = core::RGBA(r, g, b);
 	}
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);

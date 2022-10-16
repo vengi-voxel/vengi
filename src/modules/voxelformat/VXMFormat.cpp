@@ -468,7 +468,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt8(alpha));
 		uint8_t emissive;
 		wrap(stream.readUInt8(emissive));
-		palette.colors[i] = core::Color::getRGBA(red, green, blue, alpha);
+		palette.colors[i] = core::RGBA(red, green, blue, alpha);
 		if (emissive) {
 			palette.glowColors[i] = palette.colors[i];
 		}

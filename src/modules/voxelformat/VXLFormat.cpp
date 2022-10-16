@@ -532,7 +532,7 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel:
 	if (valid) {
 		for (int i = 0; i < palette.colorCount; ++i) {
 			const uint8_t *p = hdr.palette[i];
-			palette.colors[i] = core::Color::getRGBA(p[0], p[1], p[2]);
+			palette.colors[i] = core::RGBA(p[0], p[1], p[2]);
 		}
 	} else {
 		palette.colorCount = 0;

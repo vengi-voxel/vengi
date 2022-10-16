@@ -268,7 +268,7 @@ glm::vec4 Color::alpha(const glm::vec4 &c, float alpha) {
 }
 
 RGBA Color::alpha(const RGBA rgba, uint8_t alpha) {
-	return getRGBA(rgba.r, rgba.g, rgba.b, alpha);
+	return RGBA(rgba.r, rgba.g, rgba.b, alpha);
 }
 
 float Color::brightness(const glm::vec4 &color) {

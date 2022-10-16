@@ -339,7 +339,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				if (alpha == 0) {
 					y += rleLength;
 				} else {
-					const core::RGBA color = core::Color::getRGBA(red, green, blue, alpha);
+					const core::RGBA color(red, green, blue, alpha);
 					if (header.loadPalette) {
 						palette.addColorToPalette(color, false);
 					} else {
@@ -359,7 +359,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				++y;
 			} else {
 				// Uncompressed
-				const core::RGBA color = core::Color::getRGBA(red, green, blue);
+				const core::RGBA color(red, green, blue);
 				if (header.loadPalette) {
 					palette.addColorToPalette(color, false);
 				} else {

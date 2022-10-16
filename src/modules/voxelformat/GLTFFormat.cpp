@@ -775,7 +775,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
 					const uint8_t *colorData = buf;
-					vertices[verticesOffset + i].color = core::Color::getRGBA(colorData[0], colorData[1], colorData[2], colorData[3]);
+					vertices[verticesOffset + i].color = core::RGBA(colorData[0], colorData[1], colorData[2], colorData[3]);
 					buf += stride;
 				}
 			} else {

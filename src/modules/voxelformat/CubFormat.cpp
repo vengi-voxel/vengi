@@ -47,7 +47,7 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 					// empty voxel
 					continue;
 				}
-				const core::RGBA color = core::Color::getRGBA(r, g, b);
+				const core::RGBA color(r, g, b);
 				palette.addColorToPalette(color, false);
 			}
 		}
@@ -84,7 +84,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 					// empty voxel
 					continue;
 				}
-				const core::RGBA color = core::Color::getRGBA(r, g, b);
+				const core::RGBA color(r, g, b);
 				const int index = palLookup.findClosestIndex(color);
 				const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 				// we have to flip depth with height for our own coordinate system

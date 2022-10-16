@@ -58,7 +58,7 @@ size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableRead
 					return false;
 				}
 				if (a != 0) {
-					const core::RGBA color = core::Color::getRGBA(r, g, b, a);
+					const core::RGBA color(r, g, b, a);
 					palette.addColorToPalette(color, false);
 				}
 				if (x != size.x - 1) {
@@ -114,7 +114,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 					return false;
 				}
 				if (a != 0) {
-					const core::RGBA color = core::Color::getRGBA(r, g, b, a);
+					const core::RGBA color(r, g, b, a);
 					const uint8_t index = palLookup.findClosestIndex(color);
 					const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 					volume->setVoxel(x, y, z, voxel);
