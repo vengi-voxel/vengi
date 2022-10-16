@@ -52,7 +52,7 @@ TEST_F(GLTFFormatTest, testVoxelizeCube) {
 	EXPECT_TRUE(sceneGraph.size() > 0);
 }
 
-TEST_F(GLTFFormatTest, testVoxelizeLantern) {
+TEST_F(GLTFFormatTest, DISABLED_testVoxelizeLantern) {
 	GLTFFormat f;
 	const core::String filename = "glTF/lantern/Lantern.gltf";
 	const io::FilePtr &file = open(filename);
