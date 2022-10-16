@@ -341,7 +341,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				} else {
 					const core::RGBA color = core::Color::getRGBA(red, green, blue, alpha);
 					if (header.loadPalette) {
-						palette.addColorToPalette(color);
+						palette.addColorToPalette(color, false);
 					} else {
 						const uint8_t palIndex = palLookup.findClosestIndex(color);
 						const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
@@ -361,7 +361,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				// Uncompressed
 				const core::RGBA color = core::Color::getRGBA(red, green, blue);
 				if (header.loadPalette) {
-					palette.addColorToPalette(color);
+					palette.addColorToPalette(color, false);
 				} else {
 					const uint32_t x = (index / size.z);
 					const uint32_t z = index % size.z;
