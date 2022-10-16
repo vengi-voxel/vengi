@@ -93,6 +93,10 @@ protected:
 public:
 	virtual ~Format() = default;
 
+	/**
+	 * Some formats have embedded screenshots of the model. This method doesn't load anything else than that image.
+	 * @note Not supported by many formats.
+	 */
 	virtual image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream);
 
 	/**
