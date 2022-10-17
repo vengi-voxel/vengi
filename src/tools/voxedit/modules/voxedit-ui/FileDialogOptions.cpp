@@ -68,5 +68,6 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		}
 	} else if (mode == video::OpenFileMode::Save && desc->matchesExtension("qbt")) {
 		ImGui::CheckboxVar("Palette mode", cfg::VoxformatQBTPaletteMode);
+		ImGui::CheckboxVar("Merge compounds", cfg::VoxformatQBTMergeCompounds);
 	}
 }

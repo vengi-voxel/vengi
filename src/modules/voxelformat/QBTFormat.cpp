@@ -26,7 +26,6 @@
 namespace voxelformat {
 
 namespace qbt {
-static const bool MergeCompounds = true; // TODO: cvar on load
 const int NODE_TYPE_MATRIX = 0;
 const int NODE_TYPE_MODEL = 1;
 const int NODE_TYPE_COMPOUND = 2;
@@ -350,11 +349,12 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGr
 	if (!loadMatrix(stream, sceneGraph, nodeId, palette, state)) {
 		return false;
 	}
+	const bool mergeCompounds = core::Var::getSafe(cfg::VoxformatQBTMergeCompounds)->boolVal();
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount));
 	Log::debug("Load %u children", childCount);
 	for (uint32_t i = 0; i < childCount; ++i) {
-		if (qbt::MergeCompounds) {
+		if (mergeCompounds) {
 			// if you don't need the datatree you can skip child nodes
 			if (!skipNode(stream)) {
 				return false;
