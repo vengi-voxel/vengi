@@ -628,11 +628,7 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 				return palette.colorCount;
 			}
 		} else if (0 == memcmp(buf, "DATATREE", 8)) {
-			uint32_t nodeTypeID;
-			wrap(stream.readUInt32(nodeTypeID));
-			uint32_t dataSize;
-			wrap(stream.readUInt32(dataSize));
-			stream.skip(dataSize);
+			wrapBool(skipNode(stream))
 		} else {
 			Log::error("Unknown section found: %c%c%c%c%c%c%c%c",
 					buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
