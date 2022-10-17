@@ -6,7 +6,8 @@
 
 #include "Format.h"
 #include "private/Tri.h"
-#include <glm/geometric.hpp>
+#include "core/collection/DynamicArray.h"
+#include "core/collection/Map.h"
 
 namespace voxelformat {
 

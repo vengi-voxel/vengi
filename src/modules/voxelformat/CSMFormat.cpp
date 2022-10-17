@@ -6,9 +6,10 @@
 #include "core/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
-#include "glm/common.hpp"
-#include "voxel/Voxel.h"
 #include "voxel/PaletteLookup.h"
+#include "voxel/Voxel.h"
+#include "voxelformat/SceneGraph.h"
+#include <glm/common.hpp>
 
 namespace voxelformat {
 

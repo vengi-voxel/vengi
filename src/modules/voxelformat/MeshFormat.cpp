@@ -18,13 +18,14 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxel/PaletteLookup.h"
 #include "voxelformat/private/Tri.h"
 #include "voxelutil/VoxelUtil.h"
 #include <SDL_timer.h>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/epsilon.hpp>
+#include <glm/geometric.hpp>
 
 namespace voxelformat {
 

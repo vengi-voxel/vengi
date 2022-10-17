@@ -4,16 +4,20 @@
 
 #include "AoSVXLFormat.h"
 #include "core/Assert.h"
+#include "core/Color.h"
+#include "core/Log.h"
 #include "core/Pair.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/Map.h"
-#include "core/Log.h"
-#include "core/Color.h"
 #include "voxel/MaterialColor.h"
-#include "voxelutil/VolumeResizer.h"
 #include "voxel/PaletteLookup.h"
+#include "voxelformat/SceneGraph.h"
+#include "voxelutil/VolumeResizer.h"
+
 #include <SDL_stdinc.h>
+#include <glm/common.hpp>
+#include <glm/exponential.hpp>
 #include <string.h>
 
 namespace voxelformat {

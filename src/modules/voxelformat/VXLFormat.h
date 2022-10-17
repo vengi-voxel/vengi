@@ -5,6 +5,8 @@
 #pragma once
 
 #include "Format.h"
+#include "core/collection/DynamicArray.h"
+#include <glm/matrix.hpp>
 
 namespace voxelformat {
 

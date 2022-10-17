@@ -12,6 +12,8 @@ struct VoxelVertex;
 
 namespace voxelformat {
 
+class SceneGraphTransform;
+
 /**
  * @brief Standard Triangle Language
  *

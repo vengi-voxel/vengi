@@ -10,8 +10,7 @@
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "voxel/RawVolumeWrapper.h"
-#include <SDL_stdinc.h>
-#include <string.h>
+#include "voxelformat/SceneGraph.h"
 
 namespace voxelformat {
 

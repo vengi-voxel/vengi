@@ -12,6 +12,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 
 namespace voxelformat {

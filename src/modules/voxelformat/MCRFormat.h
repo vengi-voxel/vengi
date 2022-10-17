@@ -5,7 +5,9 @@
 #pragma once
 
 #include "Format.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/StringMap.h"
 
 namespace io {
 class ZipReadStream;

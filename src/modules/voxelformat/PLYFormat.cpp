@@ -3,16 +3,16 @@
  */
 
 #include "PLYFormat.h"
+#include "core/Color.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include "core/Color.h"
+#include "engine-config.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/VoxelVertex.h"
 #include "voxel/Mesh.h"
+#include "voxel/VoxelVertex.h"
 #include "voxelformat/SceneGraph.h"
-#include "engine-config.h"
 #include "voxelformat/SceneGraphNode.h"
 
 namespace voxelformat {

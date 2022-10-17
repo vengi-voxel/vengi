@@ -5,6 +5,8 @@
 #pragma once
 
 #include "MeshFormat.h"
+#include "core/collection/DynamicArray.h"
+#include "core/collection/StringMap.h"
 #include "image/Image.h"
 #include "voxel/PaletteLookup.h"
 

@@ -18,7 +18,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "voxel/Palette.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/SceneGraph.h"
 #include <glm/common.hpp>
 #include <sys/types.h>
 

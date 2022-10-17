@@ -3,13 +3,14 @@
  */
 
 #include "CubFormat.h"
-#include "io/FileStream.h"
-#include "core/StringUtil.h"
-#include "core/Log.h"
 #include "core/Color.h"
+#include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
+#include "io/FileStream.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/PaletteLookup.h"
+#include "voxelformat/SceneGraph.h"
 
 namespace voxelformat {
 

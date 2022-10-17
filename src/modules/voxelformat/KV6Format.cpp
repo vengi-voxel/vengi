@@ -3,20 +3,20 @@
  */
 
 #include "KV6Format.h"
+#include "core/Color.h"
 #include "core/Common.h"
+#include "core/FourCC.h"
+#include "core/Log.h"
 #include "core/RGBA.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Stream.h"
-#include "core/StringUtil.h"
-#include "core/Log.h"
-#include "core/Color.h"
-#include "core/FourCC.h"
 #include "voxel/Face.h"
-#include "voxel/PaletteLookup.h"
 #include "voxel/Palette.h"
+#include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 

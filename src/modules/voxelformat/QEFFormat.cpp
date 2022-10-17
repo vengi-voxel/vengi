@@ -3,14 +3,15 @@
  */
 
 #include "QEFFormat.h"
-#include "core/ScopedPtr.h"
-#include "voxel/MaterialColor.h"
-#include "core/Log.h"
 #include "core/Color.h"
 #include "core/GLM.h"
+#include "core/Log.h"
+#include "core/ScopedPtr.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/Voxel.h"
-#include <glm/common.hpp>
+#include "voxelformat/SceneGraph.h"
 #include <SDL_stdinc.h>
+#include <glm/common.hpp>
 
 namespace voxelformat {
 

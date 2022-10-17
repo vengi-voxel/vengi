@@ -5,6 +5,7 @@
 #pragma once
 
 #include "MeshFormat.h"
+#include "core/collection/StringMap.h"
 
 namespace tinygltf {
 class Model;
@@ -17,6 +18,8 @@ struct Accessor;
 } // namespace tinygltf
 
 namespace voxelformat {
+
+class SceneGraphTransform;
 
 /**
  * @brief GL Transmission Format

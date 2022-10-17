@@ -6,9 +6,8 @@
 #include "core/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
-#include "core/Var.h"
 #include "voxel/Mesh.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "voxelformat/SceneGraph.h"
 #include <SDL_stdinc.h>
 
 namespace voxelformat {

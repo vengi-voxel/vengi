@@ -11,6 +11,7 @@
 #include "io/Filesystem.h"
 #include "app/App.h"
 #include "io/ZipReadStream.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelformat/VXMFormat.h"
 #include "voxelformat/VXRFormat.h"
 

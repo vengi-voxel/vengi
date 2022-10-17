@@ -11,15 +11,17 @@
 #include "io/Stream.h"
 #include "voxel/RawVolume.h"
 #include "image/Image.h"
-#include "SceneGraph.h"
-#include "voxel/Palette.h"
 #include <glm/fwd.hpp>
 
 namespace voxel {
-	class Mesh;
+class Mesh;
+class Palette;
 }
 
 namespace voxelformat {
+
+class SceneGraph;
+class SceneGraphNode;
 
 // the max amount of voxels - [0-255]
 static constexpr int MaxRegionSize = 256;

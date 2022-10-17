@@ -3,15 +3,16 @@
  */
 
 #include "QBFormat.h"
-#include "core/Enum.h"
-#include "core/Color.h"
 #include "core/Assert.h"
+#include "core/Color.h"
+#include "core/Enum.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/PaletteLookup.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 
 namespace voxelformat {
