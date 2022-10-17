@@ -9,6 +9,8 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 
+#include <glm/geometric.hpp>
+
 namespace voxel {
 
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::FaceBits& facebits) {

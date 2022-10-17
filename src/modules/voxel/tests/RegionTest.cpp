@@ -28,7 +28,7 @@ TEST_F(RegionTest, testMoveIntoRegionSize1WithOverlap) {
 	const glm::ivec3 maxs(0, 0, 0);
 	voxel::Region region(mins, maxs);
 	const glm::ivec3& pos = region.moveInto(2, 2, 2);
-	ASSERT_EQ(pos, glm::zero<glm::ivec3>());
+	ASSERT_EQ(pos, glm::ivec3(0));
 }
 
 TEST_F(RegionTest, testMoveIntoRegionSize1NoOverlap) {
@@ -36,7 +36,7 @@ TEST_F(RegionTest, testMoveIntoRegionSize1NoOverlap) {
 	const glm::ivec3 maxs(0, 0, 0);
 	voxel::Region region(mins, maxs);
 	const glm::ivec3& pos = region.moveInto(0, 0, 0);
-	ASSERT_EQ(pos, glm::zero<glm::ivec3>());
+	ASSERT_EQ(pos, glm::ivec3(0));
 }
 
 TEST_F(RegionTest, testMoveIntoRegionSize1XOverlap) {
@@ -44,7 +44,7 @@ TEST_F(RegionTest, testMoveIntoRegionSize1XOverlap) {
 	const glm::ivec3 maxs(0, 0, 0);
 	voxel::Region region(mins, maxs);
 	const glm::ivec3& pos = region.moveInto(10, 0, 0);
-	ASSERT_EQ(pos, glm::zero<glm::ivec3>());
+	ASSERT_EQ(pos, glm::ivec3(0));
 }
 
 TEST_F(RegionTest, testMoveIntoNoOverlap) {

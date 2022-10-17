@@ -5,7 +5,6 @@
 #include "io/Filesystem.h"
 #include "core/Algorithm.h"
 #include "core/Enum.h"
-#include "core/tests/TestHelper.h"
 #include "io/FormatDescription.h"
 #include <gtest/gtest.h>
 
@@ -111,7 +110,7 @@ TEST_F(FilesystemTest, testIsRelativePath) {
 TEST_F(FilesystemTest, testIsReadableDir) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
-	EXPECT_TRUE(fs.isReadableDir(fs.homePath())) << fs.homePath() << " is not readable";
+	EXPECT_TRUE(fs.isReadableDir(fs.homePath())) << fs.homePath().c_str() << " is not readable";
 	fs.shutdown();
 }
 
@@ -146,7 +145,7 @@ TEST_F(FilesystemTest, testMkdir) {
 TEST_F(FilesystemTest, testWriteExplicitCurDir) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
-	EXPECT_TRUE(fs.write("./testfile", "123")) << "Failed to write content to testfile in " << fs.homePath();
+	EXPECT_TRUE(fs.write("./testfile", "123")) << "Failed to write content to testfile in " << fs.homePath().c_str();
 	const core::String &content = fs.load("./testfile");
 	EXPECT_EQ("123", content) << "Written content doesn't match expected";
 	fs.shutdown();
@@ -155,7 +154,7 @@ TEST_F(FilesystemTest, testWriteExplicitCurDir) {
 TEST_F(FilesystemTest, testWrite) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
-	EXPECT_TRUE(fs.write("testfile", "123")) << "Failed to write content to testfile in " << fs.homePath();
+	EXPECT_TRUE(fs.write("testfile", "123")) << "Failed to write content to testfile in " << fs.homePath().c_str();
 	const core::String &content = fs.load("testfile");
 	EXPECT_EQ("123", content) << "Written content doesn't match expected";
 	fs.shutdown();

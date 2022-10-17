@@ -10,12 +10,6 @@
 #include "video/Camera.h"
 #include "math/Ray.h"
 
-namespace math {
-::std::ostream& operator<<(::std::ostream& ostream, const Ray& val) {
-	return ostream << "origin: " << glm::to_string(val.origin) << " - direction: " << glm::to_string(val.direction);
-}
-}
-
 namespace video {
 
 class CameraTest : public app::AbstractTest {
@@ -66,8 +60,8 @@ TEST_F(CameraTest, testScreenRayStraightDown) {
 	Camera camera = setup();
 	// get the world position from the center of the screen
 	const math::Ray& ray = camera.screenRay(glm::vec2(0.5f));
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(glm::down, ray.direction, 0.0001f))) << ray << " - " << ray.direction.x << ", " << ray.direction.y << ", " << ray.direction.z;
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.worldPosition(), ray.origin, 0.0001f))) << ray << " - " << ray.origin.x << ", " << ray.origin.y << ", " << ray.origin.z;
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(glm::down, ray.direction, 0.0001f))) << ray.direction.x << ", " << ray.direction.y << ", " << ray.direction.z;
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.worldPosition(), ray.origin, 0.0001f))) << ray.origin.x << ", " << ray.origin.y << ", " << ray.origin.z;
 }
 
 TEST_F(CameraTest, testMotion) {
@@ -120,11 +114,6 @@ TEST_F(CameraTest, DISABLED_testCameraFrustumCullingOrthogonal) {
 	camera.lookAt(glm::vec3(0.0), glm::forward);
 	camera.update(0.0);
 	const math::Frustum& frustum = camera.frustum();
-	SCOPED_TRACE(core::string::format("mins(%s), maxs(%s), frustummins(%s), frustummaxs(%s)",
-			glm::to_string(camera.aabb().getLowerCorner()).c_str(),
-			glm::to_string(camera.aabb().getUpperCorner()).c_str(),
-			glm::to_string(frustum.aabb().getLowerCorner()).c_str(),
-			glm::to_string(frustum.aabb().getUpperCorner()).c_str()));
 	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
 	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
 	EXPECT_EQ(math::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));

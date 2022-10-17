@@ -28,7 +28,7 @@ TEST_F(PlaneTest, testWithNormalUpwards) {
 TEST_F(PlaneTest, testWithNormalLeft) {
 	const float x = 10.0;
 	const Plane p(glm::left, glm::vec3(x, 0.0f, 0.0f));
-	EXPECT_TRUE(p.isFrontSide(glm::zero<glm::vec3>()));
+	EXPECT_TRUE(p.isFrontSide(glm::vec3(0)));
 	EXPECT_TRUE(p.isBackSide(glm::vec3(x + 0.1f, 0.0f, 0.0f)));
 	EXPECT_TRUE(p.isFrontSide(glm::vec3(x - 0.1f, 0.0f, 0.0f)));
 }

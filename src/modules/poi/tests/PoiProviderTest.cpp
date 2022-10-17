@@ -50,7 +50,7 @@ TEST_F(PoiProviderTest, testExpireWithProperPos) {
 	EXPECT_EQ(1u, poiProvider.count()) << "We should have at least one poi left - but every other should be expired";
 	const poi::PoiResult& result = poiProvider.query();
 	EXPECT_TRUE(result.valid);
-	EXPECT_EQ(glm::vec3(static_cast<float>(max - 1)),  result.pos) << max - 1 << " versus " << glm::to_string(result.pos);
+	EXPECT_EQ(glm::vec3(static_cast<float>(max - 1)),  result.pos) << max - 1 << " versus " << result.pos.x << ":" << result.pos.y << ":" << result.pos.z;
 }
 
 TEST_F(PoiProviderTest, testQueryType) {

@@ -8,6 +8,7 @@
 #include "app/tests/AbstractTest.h"
 #include "TestEntity.h"
 #include <glm/gtc/epsilon.hpp>
+#include <glm/fwd.hpp>
 #include <sstream>
 #include <iostream>
 

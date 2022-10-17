@@ -5,7 +5,6 @@
 #include "app/tests/AbstractTest.h"
 #include "command/CommandCompleter.h"
 #include "io/Filesystem.h"
-#include "core/tests/TestHelper.h"
 
 namespace app {
 

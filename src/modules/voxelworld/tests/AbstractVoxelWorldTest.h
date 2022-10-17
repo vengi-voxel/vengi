@@ -14,6 +14,8 @@
 #include "math/Random.h"
 #include "core/Common.h"
 
+#include <glm/geometric.hpp>
+
 namespace voxelworld {
 
 class AbstractVoxelWorldTest: public app::AbstractTest {

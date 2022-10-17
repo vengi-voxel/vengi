@@ -24,6 +24,12 @@ public:
 			_aabb(glm::vec3(0.0f), glm::vec3(1.0f)) {
 	}
 
+	const char *toString(const glm::vec3 &v) {
+		static char buf[128];
+		core::string::formatBuf(buf, sizeof(buf), "%f:%f:%f", v.x, v.y, v.z);
+		return buf;
+	}
+
 	void SetUp() override {
 		app::AbstractTest::SetUp();
 		/* Looking from origin to 1,0,0 (right) */
@@ -50,9 +56,9 @@ public:
 
 TEST_F(FrustumTest, testAABBOrtho) {
 	updateVP(glm::mat4(1.0f), glm::ortho(0.0f, 50.0f, 0.0f, 100.0f, _nearPlane, -_farPlane));
-	EXPECT_FLOAT_EQ(_aabb.getWidthX(), 50.0f) << glm::to_string(_aabb.getLowerCorner()) << glm::to_string(_aabb.getUpperCorner());
-	EXPECT_FLOAT_EQ(_aabb.getWidthY(), 100.0f) << glm::to_string(_aabb.getLowerCorner()) << glm::to_string(_aabb.getUpperCorner());
-	EXPECT_NEAR(_aabb.getWidthZ(), _farPlane, _nearPlane) << glm::to_string(_aabb.getLowerCorner()) << glm::to_string(_aabb.getUpperCorner());
+	EXPECT_FLOAT_EQ(_aabb.getWidthX(), 50.0f) << toString(_aabb.getLowerCorner()) << toString(_aabb.getUpperCorner());
+	EXPECT_FLOAT_EQ(_aabb.getWidthY(), 100.0f) << toString(_aabb.getLowerCorner()) << toString(_aabb.getUpperCorner());
+	EXPECT_NEAR(_aabb.getWidthZ(), _farPlane, _nearPlane) << toString(_aabb.getLowerCorner()) << toString(_aabb.getUpperCorner());
 	EXPECT_TRUE(_frustum.isVisible(glm::vec3(1.0f), 1.0f));
 	EXPECT_EQ(FrustumResult::Inside, _frustum.test(glm::vec3(1.0f), glm::vec3(2.0f)));
 	EXPECT_TRUE(_frustum.isVisible(glm::vec3(1.0f), glm::vec3(2.0f)));
@@ -63,7 +69,7 @@ TEST_F(FrustumTest, testAABBOrtho) {
 
 TEST_F(FrustumTest, testAABBPerspective) {
 	updateV(glm::mat4(1.0f));
-	EXPECT_NEAR(_aabb.getWidthZ(), _farPlane, _nearPlane) << glm::to_string(_aabb.getLowerCorner()) << glm::to_string(_aabb.getUpperCorner());
+	EXPECT_NEAR(_aabb.getWidthZ(), _farPlane, _nearPlane) << toString(_aabb.getLowerCorner()) << toString(_aabb.getUpperCorner());
 }
 
 TEST_F(FrustumTest, testCullingSphere) {
@@ -73,21 +79,11 @@ TEST_F(FrustumTest, testCullingSphere) {
 
 TEST_F(FrustumTest, testCullingAABBPositive) {
 	const math::AABB<float> aabb(glm::vec3(0.0f), glm::vec3(100.0f));
-	SCOPED_TRACE(core::string::format("mins(%s), maxs(%s), frustummins(%s), frustummaxs(%s)",
-			glm::to_string(aabb.getLowerCorner()).c_str(),
-			glm::to_string(aabb.getUpperCorner()).c_str(),
-			glm::to_string(_aabb.getLowerCorner()).c_str(),
-			glm::to_string(_aabb.getUpperCorner()).c_str()));
 	EXPECT_TRUE(_frustum.isVisible(aabb.getLowerCorner(), aabb.getUpperCorner())) << "AABB is not visible but should be";
 }
 
 TEST_F(FrustumTest, testCullingAABBNegative) {
 	const math::AABB<float> aabb(glm::vec3(-200.0f), glm::vec3(-100.0f));
-	SCOPED_TRACE(core::string::format("mins(%s), maxs(%s), frustummins(%s), frustummaxs(%s)",
-			glm::to_string(aabb.getLowerCorner()).c_str(),
-			glm::to_string(aabb.getUpperCorner()).c_str(),
-			glm::to_string(_aabb.getLowerCorner()).c_str(),
-			glm::to_string(_aabb.getUpperCorner()).c_str()));
 	EXPECT_FALSE(_frustum.isVisible(aabb.getLowerCorner(), aabb.getUpperCorner())) << "AABB is not visible but should be";
 }
 
@@ -103,10 +99,6 @@ TEST_F(FrustumTest, testIntersectionInsideOutsideAABB) {
 }
 
 TEST_F(FrustumTest, testCullingPoint) {
-	SCOPED_TRACE(core::string::format(
-			"mins(%s), maxs(%s)",
-			glm::to_string(_aabb.getLowerCorner()).c_str(),
-			glm::to_string(_aabb.getUpperCorner()).c_str()));
 	if (_nearPlane > 0.0f) {
 		EXPECT_FALSE(_aabb.containsPoint(glm::vec3(0.0f)));
 		EXPECT_FALSE(_frustum.isVisible(glm::vec3(0.0f))) << "Point behind the near plane is still visible";
@@ -115,8 +107,8 @@ TEST_F(FrustumTest, testCullingPoint) {
 	}
 	EXPECT_TRUE(_aabb.containsPoint(glm::right));
 	EXPECT_TRUE(_frustum.isVisible(glm::right));
-	EXPECT_TRUE(_aabb.containsPoint(glm::right * _nearPlane)) << glm::to_string(glm::right) << " is not visible but should be";
-	EXPECT_TRUE(_frustum.isVisible(glm::right * _nearPlane)) << glm::to_string(glm::right * _nearPlane) << " is not visible but should be";
+	EXPECT_TRUE(_aabb.containsPoint(glm::right * _nearPlane)) << toString(glm::right) << " is not visible but should be";
+	EXPECT_TRUE(_frustum.isVisible(glm::right * _nearPlane)) << toString(glm::right * _nearPlane) << " is not visible but should be";
 	EXPECT_FALSE(_aabb.containsPoint(glm::up));
 	EXPECT_FALSE(_frustum.isVisible(glm::up));
 	EXPECT_FALSE(_aabb.containsPoint(glm::down));
@@ -128,7 +120,7 @@ TEST_F(FrustumTest, testCullingPoint) {
 	EXPECT_FALSE(_aabb.containsPoint(glm::left));
 	EXPECT_FALSE(_frustum.isVisible(glm::left));
 	EXPECT_FALSE(_aabb.containsPoint(glm::right * _farPlane + 1.0f));
-	EXPECT_FALSE(_frustum.isVisible(glm::right * _farPlane + 1.0f)) << glm::to_string(glm::right * _farPlane + 1.0f) << " should be culled because it's outside the frustum";
+	EXPECT_FALSE(_frustum.isVisible(glm::right * _farPlane + 1.0f)) << toString(glm::right * _farPlane + 1.0f) << " should be culled because it's outside the frustum";
 }
 
 TEST_F(FrustumTest, testStaticFrustumCheck) {
