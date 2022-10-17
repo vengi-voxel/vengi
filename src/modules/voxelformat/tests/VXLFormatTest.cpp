@@ -5,6 +5,8 @@
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/VXLFormat.h"
 #include <glm/gtx/transform.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 namespace voxelformat {
 

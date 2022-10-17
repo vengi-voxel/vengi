@@ -1,13 +1,18 @@
 #include "AbstractVoxFormatTest.h"
+#include "core/GameConfig.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
 #include "io/FileStream.h"
+#include "io/Filesystem.h"
 #include "io/Stream.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/tests/TestHelper.h"
+#include "voxelformat/Format.h"
+#include "voxelformat/FormatConfig.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/VolumeFormat.h"
@@ -365,5 +370,65 @@ void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, con
 }
 
 #undef WRITE_TO_FILE
+
+io::FilePtr AbstractVoxFormatTest::open(const core::String &filename, io::FileMode mode) {
+	const io::FilePtr& file = io::filesystem()->open(core::String(filename), mode);
+	return file;
+}
+
+SceneGraph::MergedVolumePalette AbstractVoxFormatTest::load(const core::String& filename, io::SeekableReadStream& stream, Format& format) {
+	SceneGraph sceneGraph;
+	if (!format.load(filename, stream, sceneGraph)) {
+		Log::error("Failed to load %s", filename.c_str());
+		return SceneGraph::MergedVolumePalette{};
+	}
+	if (sceneGraph.empty()) {
+		Log::error("Success - but no nodes");
+		return SceneGraph::MergedVolumePalette{};
+	}
+	Log::debug("Loaded %s - merging", filename.c_str());
+	return sceneGraph.merge();
+}
+
+SceneGraph::MergedVolumePalette AbstractVoxFormatTest::load(const core::String& filename, Format& format) {
+	SceneGraph sceneGraph;
+	if (!loadGroups(filename, format, sceneGraph)) {
+		return SceneGraph::MergedVolumePalette{};
+	}
+	if (sceneGraph.empty()) {
+		Log::error("Success - but no nodes");
+		return SceneGraph::MergedVolumePalette{};
+	}
+	return sceneGraph.merge();
+}
+
+bool AbstractVoxFormatTest::loadGroups(const core::String& filename, Format& format, voxelformat::SceneGraph &sceneGraph) {
+	const io::FilePtr& file = open(filename);
+	if (!file->validHandle()) {
+		return false;
+	}
+	io::FileStream stream(file);
+	return format.load(filename, stream, sceneGraph);
+}
+
+int AbstractVoxFormatTest::loadPalette(const core::String& filename, Format& format, voxel::Palette &palette) {
+	const io::FilePtr& file = open(filename);
+	if (!file->validHandle()) {
+		return 0;
+	}
+	io::FileStream stream(file);
+	const int size = (int)format.loadPalette(filename, stream, palette);
+	const core::String paletteFilename = core::string::extractFilename(filename) + ".png";
+	palette.save(paletteFilename.c_str());
+	return size;
+}
+
+bool AbstractVoxFormatTest::onInitApp() {
+	if (!AbstractVoxelTest::onInitApp()) {
+		return false;
+	}
+	FormatConfig::init();
+	return true;
+}
 
 } // namespace voxel

@@ -4,8 +4,8 @@
 
 #include "voxelformat/VolumeFormat.h"
 #include "AbstractVoxFormatTest.h"
-#include "app/App.h"
 #include "io/File.h"
+#include "io/FileStream.h"
 
 namespace voxelformat {
 
@@ -22,7 +22,7 @@ TEST_F(VolumeFormatTest, testLoadFormat) {
 	const char *files[] = {"rgb.csv", "rgb.cub", "rgb.gox", "rgb.qb", "rgb.qbcl",
 						   "rgb.qef", "rgb.vox", "rgb.vxl", "rgb.vxm"};
 	for (int i = 0; i < lengthof(files); ++i) {
-		io::FilePtr file = io::filesystem()->open(files[i]);
+		io::FilePtr file = open(files[i]);
 		ASSERT_TRUE(file->validHandle());
 		io::FileStream stream(file);
 		SceneGraph newSceneGraph;

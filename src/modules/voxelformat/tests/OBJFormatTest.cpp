@@ -6,6 +6,7 @@
 #include "AbstractVoxFormatTest.h"
 #include "io/File.h"
 #include "voxelformat/QBFormat.h"
+#include "io/FileStream.h"
 
 namespace voxelformat {
 

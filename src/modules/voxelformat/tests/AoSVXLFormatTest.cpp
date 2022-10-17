@@ -4,6 +4,7 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/AoSVXLFormat.h"
+#include "io/FileStream.h"
 
 namespace voxelformat {
 

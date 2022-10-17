@@ -4,18 +4,7 @@
 
 #pragma once
 
-#include "core/StringUtil.h"
-#include "io/FileStream.h"
-#include "voxel/Palette.h"
-#include "voxel/RawVolume.h"
 #include "voxel/tests/AbstractVoxelTest.h"
-#include "voxel/tests/TestHelper.h"
-#include "voxelformat/Format.h"
-#include "io/Filesystem.h"
-#include "core/Var.h"
-#include "core/GameConfig.h"
-#include "voxelformat/FormatConfig.h"
-#include "voxelformat/SceneGraph.h"
 
 namespace voxelformat {
 
@@ -51,65 +40,17 @@ protected:
 									   const core::String &destFilename, Format &destFormat, voxel::ValidateFlags flags = voxel::ValidateFlags::All,
 									   float maxDelta = 0.001f);
 
-	io::FilePtr open(const core::String &filename, io::FileMode mode = io::FileMode::Read) {
-		const io::FilePtr& file = io::filesystem()->open(core::String(filename), mode);
-		return file;
-	}
+	io::FilePtr open(const core::String &filename, io::FileMode mode = io::FileMode::Read);
 
-	SceneGraph::MergedVolumePalette load(const core::String& filename, io::SeekableReadStream& stream, Format& format) {
-		SceneGraph sceneGraph;
-		if (!format.load(filename, stream, sceneGraph)) {
-			Log::error("Failed to load %s", filename.c_str());
-			return SceneGraph::MergedVolumePalette{};
-		}
-		if (sceneGraph.empty()) {
-			Log::error("Success - but no nodes");
-			return SceneGraph::MergedVolumePalette{};
-		}
-		Log::debug("Loaded %s - merging", filename.c_str());
-		return sceneGraph.merge();
-	}
+	SceneGraph::MergedVolumePalette load(const core::String& filename, io::SeekableReadStream& stream, Format& format);
 
-	SceneGraph::MergedVolumePalette load(const core::String& filename, Format& format) {
-		SceneGraph sceneGraph;
-		if (!loadGroups(filename, format, sceneGraph)) {
-			return SceneGraph::MergedVolumePalette{};
-		}
-		if (sceneGraph.empty()) {
-			Log::error("Success - but no nodes");
-			return SceneGraph::MergedVolumePalette{};
-		}
-		return sceneGraph.merge();
-	}
+	SceneGraph::MergedVolumePalette load(const core::String& filename, Format& format);
 
-	bool loadGroups(const core::String& filename, Format& format, voxelformat::SceneGraph &sceneGraph) {
-		const io::FilePtr& file = open(filename);
-		if (!file->validHandle()) {
-			return false;
-		}
-		io::FileStream stream(file);
-		return format.load(filename, stream, sceneGraph);
-	}
+	bool loadGroups(const core::String& filename, Format& format, voxelformat::SceneGraph &sceneGraph);
 
-	int loadPalette(const core::String& filename, Format& format, voxel::Palette &palette) {
-		const io::FilePtr& file = open(filename);
-		if (!file->validHandle()) {
-			return 0;
-		}
-		io::FileStream stream(file);
-		const int size = (int)format.loadPalette(filename, stream, palette);
-		const core::String paletteFilename = core::string::extractFilename(filename) + ".png";
-		palette.save(paletteFilename.c_str());
-		return size;
-	}
+	int loadPalette(const core::String& filename, Format& format, voxel::Palette &palette);
 
-	virtual bool onInitApp() {
-		if (!AbstractVoxelTest::onInitApp()) {
-			return false;
-		}
-		FormatConfig::init();
-		return true;
-	}
+	bool onInitApp() override;
 };
 
 }

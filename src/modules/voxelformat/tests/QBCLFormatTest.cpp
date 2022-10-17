@@ -8,6 +8,7 @@
 #include "voxelformat/QBCLFormat.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/VolumeFormat.h"
+#include "io/FileStream.h"
 
 namespace voxelformat {
 

@@ -7,6 +7,8 @@
 #include "app/tests/AbstractTest.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/tests/TestHelper.h"
+#include "voxel/PagedVolume.h"
+#include "voxel/PagedVolumeWrapper.h"
 
 namespace voxel {
 

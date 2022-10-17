@@ -6,11 +6,9 @@
 
 #include "core/Common.h"
 #include "core/SharedPtr.h"
-#include "core/String.h"
 #include "io/Stream.h"
 #include <SDL_rwops.h>
 #include <fcntl.h>
-#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 

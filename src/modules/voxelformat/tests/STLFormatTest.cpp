@@ -5,6 +5,7 @@
 #include "voxelformat/STLFormat.h"
 #include "AbstractVoxFormatTest.h"
 #include "io/File.h"
+#include "io/FileStream.h"
 
 namespace voxelformat {
 

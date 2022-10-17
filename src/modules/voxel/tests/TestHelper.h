@@ -5,12 +5,7 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include "core/Color.h"
-#include "core/Enum.h"
-#include "voxel/PagedVolumeWrapper.h"
-#include "core/Log.h"
-#include "voxel/PagedVolume.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/MaterialColor.h"
@@ -22,8 +17,6 @@
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
 
 namespace voxel {
 
@@ -211,8 +204,8 @@ inline void sceneGraphComparator(const voxelformat::SceneGraph &graph1, const vo
 }
 inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Region& region) {
 	return os << "region["
-			<< "mins(" << glm::to_string(region.getLowerCorner()) << "), "
-			<< "maxs(" << glm::to_string(region.getUpperCorner()) << ")"
+			<< "mins(" << region.getLowerCorner().x << ":" << region.getLowerCorner().y << ":" << region.getLowerCorner().z << "), "
+			<< "maxs(" << region.getUpperCorner().x << ":" << region.getUpperCorner().y << ":" << region.getUpperCorner().z << ")"
 			<< "]";
 }
 
