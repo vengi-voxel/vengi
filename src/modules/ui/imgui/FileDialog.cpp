@@ -393,10 +393,12 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 		ImGui::SetNextWindowSize(ImVec2(1200.0f, 700.0f), ImGuiCond_FirstUseEver);
 		const char *title;
 		switch (type) {
+		case video::OpenFileMode::Save:
+			title = "Save file";
+			break;
 		case video::OpenFileMode::Directory:
 			title = "Select a directory";
 			break;
-		case video::OpenFileMode::Save:
 		case video::OpenFileMode::Open:
 		default:
 			title = "Select a file";
