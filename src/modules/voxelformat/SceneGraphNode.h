@@ -4,23 +4,21 @@
 
 #pragma once
 
-#include "core/Enum.h"
 #include "core/Optional.h"
+#include "core/RGBA.h"
 #include "core/String.h"
-#include "core/StringUtil.h"
 #include "core/ArrayLength.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
 #include "voxel/Palette.h"
-#include "voxel/Region.h"
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
+
 #include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 namespace voxel {
 class RawVolume;
+class Region;
+class Palette;
 }
 
 namespace voxelformat {
@@ -54,8 +52,8 @@ private:
 	glm::mat4x4 _worldMat{1.0f};
 	glm::mat4x4 _localMat{1.0f};
 
-	glm::quat _worldOrientation{glm::quat_identity<float, glm::defaultp>()};
-	glm::quat _localOrientation{glm::quat_identity<float, glm::defaultp>()};
+	glm::quat _worldOrientation;
+	glm::quat _localOrientation;
 
 	glm::vec3 _worldTranslation{0.0f};
 	/**
@@ -76,6 +74,7 @@ private:
 	uint32_t _dirty = 0u;
 
 public:
+	SceneGraphTransform();
 	void setPivot(const glm::vec3 &normalizedPivot);
 
 	inline bool dirty() const {
@@ -145,7 +144,7 @@ static constexpr const char *InterpolationTypeStr[] {
 	"CubicEaseOut",
 	"CubicEaseInOut"
 };
-static_assert(core::enumVal(voxelformat::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
+static_assert(int(voxelformat::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
 
 class SceneGraphKeyFrame {
 private:

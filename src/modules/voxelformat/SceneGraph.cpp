@@ -74,19 +74,6 @@ voxel::Palette &SceneGraph::firstPalette() const {
 	return voxel::getPalette();
 }
 
-void SceneGraph::foreachGroup(const std::function<void(int)>& f) {
-	int nodeId = activeNode();
-	if (node(nodeId).locked()) {
-		for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
-			if ((*iter).locked()) {
-				f((*iter).id());
-			}
-		}
-	} else {
-		f(nodeId);
-	}
-}
-
 SceneGraphNode& SceneGraph::node(int nodeId) const {
 	auto iter = _nodes.find(nodeId);
 	if (iter == _nodes.end()) {

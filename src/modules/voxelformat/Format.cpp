@@ -11,6 +11,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Color.h"
+#include "core/StringUtil.h"
 #include "math/Math.h"
 #include "voxel/Mesh.h"
 #include "voxel/Palette.h"

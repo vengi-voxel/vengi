@@ -6,19 +6,27 @@
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include <glm/gtc/epsilon.hpp>
-#include "voxel/MaterialColor.h"
-#include "voxel/RawVolume.h"
 #include "util/Easing.h"
+#include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "voxelformat/SceneGraph.h"
 
+#include <glm/gtc/epsilon.hpp>
 #include <glm/ext/quaternion_common.hpp>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace voxelformat {
+
+SceneGraphTransform::SceneGraphTransform() :
+	_worldOrientation{glm::quat_identity<float, glm::defaultp>()},
+	_localOrientation{glm::quat_identity<float, glm::defaultp>()} {
+}
 
 void SceneGraphTransform::setPivot(const glm::vec3 &normalizedPivot) {
 	_normalizedPivot = normalizedPivot;

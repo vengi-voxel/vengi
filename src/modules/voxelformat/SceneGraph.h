@@ -7,7 +7,6 @@
 #include "SceneGraphNode.h"
 #include "core/Pair.h"
 #include "core/collection/DynamicArray.h"
-#include <functional>
 
 namespace voxel {
 class RawVolume;
@@ -54,10 +53,6 @@ public:
 	 * one palette for all nodes
 	 */
 	voxel::Palette mergePalettes(bool removeUnused) const;
-	/**
-	 * @brief Loops over the locked/groups (model) nodes with the given function that receives the node id
-	 */
-	void foreachGroup(const std::function<void(int)>& f);
 
 	/**
 	 * @return The full region of the whole scene
@@ -217,6 +212,23 @@ public:
 
 	inline auto end() const {
 		return iterator(0, _nextNodeId, SceneGraphNodeType::Max, this);
+	}
+
+	/**
+	 * @brief Loops over the locked/groups (model) nodes with the given function that receives the node id
+	 */
+	template<class FUNC>
+	void foreachGroup(FUNC&& f) {
+		int nodeId = activeNode();
+		if (node(nodeId).locked()) {
+			for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
+				if ((*iter).locked()) {
+					f((*iter).id());
+				}
+			}
+		} else {
+			f(nodeId);
+		}
 	}
 };
 
