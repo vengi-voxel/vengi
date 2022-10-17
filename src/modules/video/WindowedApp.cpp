@@ -15,13 +15,16 @@
 #include "core/Process.h"
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
+#include "video/Trace.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "gl/GLVersion.h"
+#include "io/FormatDescription.h"
 #include "io/Filesystem.h"
 #include "util/CustomButtonNames.h"
 #include "util/KeybindingHandler.h"
 #include "util/KeybindingParser.h"
+#include "video/EventHandler.h"
 #include <glm/common.hpp>
 #include <SDL.h>
 

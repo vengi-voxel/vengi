@@ -10,10 +10,12 @@ set(SRCS
 	Camera.cpp Camera.h
 	Cubemap.cpp Cubemap.h
 	DriverHints.cpp
+	FileDialogOptions.h
 	FrameBuffer.cpp FrameBuffer.h
 	FrameBufferConfig.cpp FrameBufferConfig.h
 	GBuffer.cpp GBuffer.h
 	IndirectDrawBuffer.cpp IndirectDrawBuffer.h
+	OpenFileMode.h
 	PersistentMappingBuffer.cpp PersistentMappingBuffer.h
 	Renderer.cpp Renderer.h
 	RenderBuffer.cpp RenderBuffer.h

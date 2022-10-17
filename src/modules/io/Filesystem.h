@@ -5,6 +5,7 @@
 #pragma once
 
 #include "File.h"
+#include "FilesystemEntry.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Stack.h"
@@ -44,17 +45,6 @@ struct FilesystemState {
 	core::String _directories[FilesystemDirectories::FS_Dir_Max];
 };
 
-struct FilesystemEntry {
-	core::String name;
-	enum class Type : uint8_t {
-		file,
-		dir,
-		unknown
-	};
-	Type type;
-	uint64_t size;	/**< size in bytes */
-	uint64_t mtime;	/**< last modification time in millis */
-};
 
 // perform platform specific initialization
 extern bool initState(FilesystemState& state);

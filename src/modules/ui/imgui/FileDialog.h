@@ -7,9 +7,13 @@
 #pragma once
 
 #include "core/collection/DynamicArray.h"
-#include "io/Filesystem.h"
-#include "io/FormatDescription.h"
-#include "video/WindowedApp.h"
+#include "io/FilesystemEntry.h"
+#include "core/Var.h"
+#include "video/FileDialogOptions.h"
+
+namespace io {
+struct FormatDescription;
+}
 
 namespace ui {
 namespace imgui {

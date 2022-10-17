@@ -6,28 +6,21 @@
 
 #include "app/App.h"
 #include "video/IEventObserver.h"
-#include "video/EventHandler.h"
-#include "core/GLM.h"
-#include "io/FormatDescription.h"
-#include "util/KeybindingParser.h"
 #include "util/KeybindingHandler.h"
 #include "video/Types.h"
-#include "video/Trace.h"
 #include "video/Version.h"
+#include "video/FileDialogOptions.h"
 #include <SDL_main.h>
-#include <functional>
 #include <glm/vec2.hpp>
 
 struct SDL_Window;
+union SDL_Event;
+
+namespace io {
+struct FormatDescription;
+}
 
 namespace video {
-
-enum class OpenFileMode {
-	Save, Open, Directory
-};
-
-using FileDialogSelectionCallback = std::function<void(const core::String&)>;
-using FileDialogOptions = std::function<void(video::OpenFileMode mode, const io::FormatDescription *desc)>;
 
 /**
  * @brief An application with the usual lifecycle, but with a window attached to it.

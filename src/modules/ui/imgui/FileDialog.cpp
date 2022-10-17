@@ -16,10 +16,10 @@
 #include "core/Trace.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
+#include "dearimgui/imgui_internal.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "ui/imgui/IMGUIApp.h"
-#include "dearimgui/imgui_internal.h"
 
 namespace ui {
 namespace imgui {
