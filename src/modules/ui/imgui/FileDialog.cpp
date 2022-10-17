@@ -162,10 +162,9 @@ void FileDialog::removeBookmark(const core::String &bookmark) {
 }
 
 void FileDialog::bookmarkPanel(video::OpenFileMode type, const core::String &bookmarks) {
-	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(400, 300), true,
-					  ImGuiWindowFlags_HorizontalScrollbar);
+	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(200, 300), true);
 	bool specialDirs = false;
-	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x;
+	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x;
 
 	static const char *folderNames[] = {"Download", "Desktop", "Documents", "Pictures", "Public", "Recent", "Cloud"};
 	static const char *folderIcons[] = {ICON_FK_DOWNLOAD, ICON_FK_DESKTOP, ICON_FA_FILE, ICON_FA_IMAGE, ICON_FA_FOLDER, ICON_FA_FOLDER, ICON_FA_CLOUD};
@@ -560,12 +559,12 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 				ImGui::SameLine();
 				const char *label = "Filter";
 				const ImVec2 &size = ImGui::CalcTextSize(label);
-				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - _filterTextWidth - (size.x + 2.0f));
+				ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - _filterTextWidth - ImGui::GetScrollX() - size.x - 2 * ImGui::GetStyle().ItemSpacing.x);
 				ImGui::PushItemWidth(_filterTextWidth);
 				int currentlySelected = _currentFilterEntry == -1 ? 0 : _currentFilterEntry;
 				const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
 
-				if (ImGui::BeginCombo(label, selectedEntry.c_str())) {
+				if (ImGui::BeginCombo(label, selectedEntry.c_str(), ImGuiComboFlags_HeightLargest)) {
 					for (int i = 0; i < (int)_filterEntries.size(); ++i) {
 						const bool selected = i == currentlySelected;
 						const io::FormatDescription &format = _filterEntries[i];
@@ -591,7 +590,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 
 			const ImVec2 cancelTextSize = ImGui::CalcTextSize("Cancel");
 			const ImVec2 chooseTextSize = ImGui::CalcTextSize(buttonText);
-			ImGui::SetCursorPosX(ImGui::GetWindowWidth() - cancelTextSize.x - chooseTextSize.x - 40.0f);
+			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - cancelTextSize.x - chooseTextSize.x - 40.0f);
 			if (ImGui::Button("Cancel") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 				_fileSelectIndex = 0;
 				_folderSelectIndex = 0;
