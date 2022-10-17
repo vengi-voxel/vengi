@@ -144,6 +144,7 @@ function(gtest_suite_end name)
 		endforeach()
 
 		engine_target_link_libraries(TARGET ${name} DEPENDENCIES ${deps})
+		target_precompile_headers(${name} PRIVATE [["gtest/gtest.h"]])
 		set_target_properties(${name} PROPERTIES FOLDER ${name})
 		add_test(NAME ${name} COMMAND $<TARGET_FILE:${name}> --gtest_output=xml:${CMAKE_BINARY_DIR}/${name}.xml WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${name}")
 		add_custom_target(${name}-run COMMAND $<TARGET_FILE:${name}> --gtest_output=xml:${CMAKE_BINARY_DIR}/${name}.xml DEPENDS ${name} USES_TERMINAL WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${name}")
