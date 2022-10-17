@@ -3,6 +3,7 @@
  */
 
 #include "LayerPanel.h"
+#include "IconsFontAwesome6.h"
 #include "Util.h"
 #include "voxedit-util/layer/LayerSettings.h"
 #include "core/collection/DynamicArray.h"
@@ -56,7 +57,7 @@ void LayerPanel::addLayerItem(const voxelformat::SceneGraph& sceneGraph, voxelfo
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 		sceneMgr().nodeActivate(nodeId);
 		const int validLayers = (int)sceneGraph.size();
-		ImGui::CommandMenuItem(ICON_FA_TRASH_ALT " Delete" LAYERPOPUP, "layerdelete", validLayers > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_TRASH " Delete" LAYERPOPUP, "layerdelete", validLayers > 1, &listener);
 		ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide others" LAYERPOPUP, "layerhideothers", validLayers > 1, &listener);
 		ImGui::CommandMenuItem(ICON_FA_COPY " Duplicate" LAYERPOPUP, "layerduplicate", true, &listener);
 		ImGui::CommandMenuItem(ICON_FA_EYE " Show all" LAYERPOPUP, "layershowall", true, &listener);
@@ -67,9 +68,9 @@ void LayerPanel::addLayerItem(const voxelformat::SceneGraph& sceneGraph, voxelfo
 		ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge locked" LAYERPOPUP, "layermergelocked", validLayers > 1, &listener);
 		ImGui::CommandMenuItem(ICON_FA_LOCK " Lock all" LAYERPOPUP, "layerlockall", true, &listener);
 		ImGui::CommandMenuItem(ICON_FA_UNLOCK " Unlock all" LAYERPOPUP, "layerunlockall", true, &listener);
-		ImGui::CommandMenuItem(ICON_FA_COMPRESS_ARROWS_ALT " Center origin" LAYERPOPUP, "center_origin", true, &listener);
-		ImGui::CommandMenuItem(ICON_FA_COMPRESS_ARROWS_ALT " Center reference" LAYERPOPUP, "center_referenceposition", true, &listener);
-		ImGui::CommandMenuItem(ICON_FA_SAVE " Save" LAYERPOPUP, "layerssave", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_DOWN_LEFT_AND_UP_RIGHT_TO_CENTER " Center origin" LAYERPOPUP, "center_origin", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_ARROWS_TO_CIRCLE " Center reference" LAYERPOPUP, "center_referenceposition", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_FLOPPY_DISK " Save" LAYERPOPUP, "layerssave", true, &listener);
 		core::String layerName = node.name();
 		if (ImGui::InputText("Name" LAYERPOPUP, &layerName)) {
 			sceneMgr().nodeRename(node.id(), layerName);
@@ -79,7 +80,7 @@ void LayerPanel::addLayerItem(const voxelformat::SceneGraph& sceneGraph, voxelfo
 
 	ImGui::TableNextColumn();
 
-	const core::String &deleteId = core::string::format(ICON_FA_TRASH_ALT"##delete-layer-%i", nodeId);
+	const core::String &deleteId = core::string::format(ICON_FA_TRASH"##delete-layer-%i", nodeId);
 	if (ImGui::Button(deleteId.c_str())) {
 		sceneMgr().nodeRemove(nodeId, false);
 	}
@@ -96,7 +97,7 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 		_hasFocus = ImGui::IsWindowHovered();
 		const voxelformat::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
 		core_trace_scoped(LayerPanel);
-		if (ImGui::Button(ICON_FA_PLUS_SQUARE"##newlayer")) {
+		if (ImGui::Button(ICON_FA_SQUARE_PLUS"##newlayer")) {
 			const int nodeId = sceneGraph.activeNode();
 			voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
 			const voxel::RawVolume* v = node.volume();
@@ -139,7 +140,7 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 			}
 			ImGui::SetItemDefaultFocus();
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_TIMES " Cancel##layersettings")) {
+			if (ImGui::Button(ICON_FA_XMARK " Cancel##layersettings")) {
 				ImGui::CloseCurrentPopup();
 			}
 

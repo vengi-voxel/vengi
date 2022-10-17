@@ -4,9 +4,10 @@
 
 #include "ToolsPanel.h"
 #include "IMGUIApp.h"
+#include "IconsFontAwesome6.h"
 #include "Util.h"
 #include "ui/imgui/IMGUIEx.h"
-#include "ui/imgui/IconsFontAwesome5.h"
+#include "ui/imgui/IconsFontAwesome6.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -19,11 +20,11 @@ void ToolsPanel::update(const char *title, command::CommandExecutionListener &li
 		if (ImGui::CollapsingHeader("Action", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::CommandButton(ICON_FA_CROP, "crop", nullptr, 0, &listener);
 			ImGui::SameLine();
-			ImGui::CommandButton(ICON_FA_EXPAND_ARROWS_ALT, "layersize", nullptr, 0, &listener);
+			ImGui::CommandButton(ICON_FA_EXPAND, "layersize", nullptr, 0, &listener);
 			ImGui::SameLine();
 			ImGui::CommandButton(ICON_FA_OBJECT_UNGROUP, "colortolayer", nullptr, 0, &listener);
 			ImGui::SameLine();
-			ImGui::CommandButton(ICON_FA_COMPRESS_ALT, "scale", nullptr, 0, &listener);
+			ImGui::CommandButton(ICON_FA_COMPRESS, "scale", nullptr, 0, &listener);
 			ImGui::SameLine();
 			ImGui::CommandButton(ICON_FA_FILL_DRIP, "fillhollow", nullptr, 0, &listener);
 		}

@@ -10,7 +10,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
-#include "ui/imgui/IconsFontAwesome5.h"
+#include "ui/imgui/IconsFontAwesome6.h"
 
 namespace voxedit {
 
@@ -178,7 +178,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 						reloadScriptParameters(_activeScript);
 					}
 					if (!_activeScriptFilename.empty()) {
-						if (ImGui::MenuItem(ICON_FA_SAVE " Save##scripteditor")) {
+						if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " Save##scripteditor")) {
 							if (app->filesystem()->write(core::string::path("scripts", _activeScriptFilename), _textEditor.GetText())) {
 								_activeScript = _textEditor.GetText();
 								reloadScriptParameters(_activeScript);
@@ -186,7 +186,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 						}
 						ImGui::TooltipText("Overwrite scripts/%s", _activeScriptFilename.c_str());
 					}
-					if (ImGui::MenuItem(ICON_FA_SAVE " Save As##scripteditor")) {
+					if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " Save As##scripteditor")) {
 						core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
 						app->saveDialog(
 							[&](const core::String &file) {
@@ -206,16 +206,16 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::i
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu(ICON_FK_PENCIL " Edit##scripteditor")) {
-					if (ImGui::MenuItem(ICON_FA_UNDO " Undo##scripteditor", nullptr, nullptr, _textEditor.CanUndo()))
+					if (ImGui::MenuItem(ICON_FA_ROTATE_LEFT " Undo##scripteditor", nullptr, nullptr, _textEditor.CanUndo()))
 						_textEditor.Undo();
-					if (ImGui::MenuItem(ICON_FA_REDO " Redo##scripteditor", nullptr, nullptr, _textEditor.CanRedo()))
+					if (ImGui::MenuItem(ICON_FA_ROTATE_RIGHT " Redo##scripteditor", nullptr, nullptr, _textEditor.CanRedo()))
 						_textEditor.Redo();
 
 					ImGui::Separator();
 
 					if (ImGui::MenuItem(ICON_FA_COPY " Copy##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
 						_textEditor.Copy();
-					if (ImGui::MenuItem(ICON_FA_CUT " Cut##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
+					if (ImGui::MenuItem(ICON_FA_SCISSORS " Cut##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
 						_textEditor.Cut();
 					if (ImGui::MenuItem("Delete##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
 						_textEditor.Delete();

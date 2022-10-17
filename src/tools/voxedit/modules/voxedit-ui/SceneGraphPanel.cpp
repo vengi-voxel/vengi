@@ -4,6 +4,7 @@
 
 #include "SceneGraphPanel.h"
 #include "DragAndDropPayload.h"
+#include "IconsFontAwesome6.h"
 #include "ScopedStyle.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "voxedit-util/SceneManager.h"
@@ -44,7 +45,7 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 		name = ICON_FA_CAMERA;
 		break;
 	case voxelformat::SceneGraphNodeType::Unknown:
-		name = ICON_FA_QUESTION_CIRCLE;
+		name = ICON_FA_CIRCLE_QUESTION;
 		break;
 	case voxelformat::SceneGraphNodeType::Max:
 		break;
@@ -88,7 +89,7 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 		const int validLayers = (int)sceneGraph.size();
 		if (node.type() == voxelformat::SceneGraphNodeType::Model) {
 			sceneMgr().nodeActivate(node.id());
-			ImGui::CommandMenuItem(ICON_FA_TRASH_ALT " Delete" SCENEGRAPHPOPUP, "layerdelete", validLayers > 1, &listener);
+			ImGui::CommandMenuItem(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "layerdelete", validLayers > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", validLayers > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "layerduplicate", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_EYE " Show all" SCENEGRAPHPOPUP, "layershowall", true, &listener);
@@ -99,21 +100,21 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge locked" SCENEGRAPHPOPUP, "layermergelocked", validLayers > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_LOCK " Lock all" SCENEGRAPHPOPUP, "layerlockall", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_UNLOCK " Unlock all" SCENEGRAPHPOPUP, "layerunlockall", true, &listener);
-			ImGui::CommandMenuItem(ICON_FA_COMPRESS_ARROWS_ALT " Center origin" SCENEGRAPHPOPUP, "center_origin", true, &listener);
-			ImGui::CommandMenuItem(ICON_FA_COMPRESS_ARROWS_ALT " Center reference" SCENEGRAPHPOPUP, "center_referenceposition", true, &listener);
-			ImGui::CommandMenuItem(ICON_FA_SAVE " Save" SCENEGRAPHPOPUP, "layerssave", true, &listener);
+			ImGui::CommandMenuItem(ICON_FA_DOWN_LEFT_AND_UP_RIGHT_TO_CENTER " Center origin" SCENEGRAPHPOPUP, "center_origin", true, &listener);
+			ImGui::CommandMenuItem(ICON_FA_ARROWS_TO_CIRCLE " Center reference" SCENEGRAPHPOPUP, "center_referenceposition", true, &listener);
+			ImGui::CommandMenuItem(ICON_FA_FLOPPY_DISK " Save" SCENEGRAPHPOPUP, "layerssave", true, &listener);
 		} else {
-			if (ImGui::MenuItem(ICON_FA_TRASH_ALT " Delete" SCENEGRAPHPOPUP)) {
+			if (ImGui::MenuItem(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP)) {
 				sceneMgr().nodeRemove(node.id(), true);
 			}
 			ImGui::TooltipText("Delete this node and all children");
 		}
-		if (ImGui::MenuItem(ICON_FA_PLUS_SQUARE " Add new group" SCENEGRAPHPOPUP)) {
+		if (ImGui::MenuItem(ICON_FA_SQUARE_PLUS " Add new group" SCENEGRAPHPOPUP)) {
 			voxelformat::SceneGraphNode groupNode(voxelformat::SceneGraphNodeType::Group);
 			groupNode.setName("new group");
 			sceneMgr().addNodeToSceneGraph(groupNode, node.id());
 		}
-		if (ImGui::MenuItem(ICON_FA_PLUS_SQUARE " Add new camera" SCENEGRAPHPOPUP)) {
+		if (ImGui::MenuItem(ICON_FA_SQUARE_PLUS " Add new camera" SCENEGRAPHPOPUP)) {
 			voxelformat::SceneGraphNodeCamera cameraNode;
 			voxelformat::SceneGraphTransform transform;
 			transform.setWorldMatrix(camera.viewMatrix());
@@ -188,14 +189,14 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, command::
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		core_trace_scoped(SceneGraphPanel);
 
-		if (ImGui::Button(ICON_FA_PLUS_SQUARE "##scenegraphnewgroup")) {
+		if (ImGui::Button(ICON_FA_SQUARE_PLUS "##scenegraphnewgroup")) {
 			voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Group);
 			node.setName("new group");
 			sceneMgr().addNodeToSceneGraph(node, sceneGraph.activeNode());
 		}
 		ImGui::TooltipText("Add a new group");
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_TRASH_ALT "##scenegraphremovenode")) {
+		if (ImGui::Button(ICON_FA_TRASH "##scenegraphremovenode")) {
 			sceneMgr().nodeRemove(sceneGraph.activeNode(), true);
 		}
 		ImGui::TooltipText("Remove the active node with all its children");

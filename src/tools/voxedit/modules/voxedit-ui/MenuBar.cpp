@@ -8,7 +8,7 @@
 #include "imgui.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
-#include "ui/imgui/IconsFontAwesome5.h"
+#include "ui/imgui/IconsFontAwesome6.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "engine-config.h"
@@ -41,13 +41,13 @@ bool MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 				ImGui::EndMenu();
 			}
 
-			actionMenuItem(ICON_FA_SAVE " Save", "save", listener);
-			actionMenuItem(ICON_FA_SAVE " Save as", "saveas", listener);
+			actionMenuItem(ICON_FA_FLOPPY_DISK " Save", "save", listener);
+			actionMenuItem(ICON_FA_FLOPPY_DISK " Save as", "saveas", listener);
 			actionMenuItem(ICON_FA_CAMERA " Screenshot", "screenshot", listener);
 #ifdef VOXEDIT_ANIMATION
 			ImGui::Separator();
 			actionMenuItem("Load Animation", "animation_load", listener);
-			actionMenuItem(ICON_FA_SAVE " Save Animation", "animation_save", listener);
+			actionMenuItem(ICON_FA_FLOPPY_DISK " Save Animation", "animation_save", listener);
 #endif
 			ImGui::Separator();
 			actionMenuItem("Prefab", "prefab", listener);
@@ -62,19 +62,19 @@ bool MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu(ICON_FA_COG " Edit")) {
+		if (ImGui::BeginMenu(ICON_FA_GEAR " Edit")) {
 			const SceneManager &sceneManager = sceneMgr();
 			const MementoHandler &mementoHandler = sceneManager.mementoHandler();
-			ImGui::CommandMenuItem(ICON_FA_UNDO " Undo", "undo", mementoHandler.canUndo(), &listener);
-			ImGui::CommandMenuItem(ICON_FA_REDO " Redo", "redo", mementoHandler.canRedo(), &listener);
+			ImGui::CommandMenuItem(ICON_FA_ROTATE_LEFT " Undo", "undo", mementoHandler.canUndo(), &listener);
+			ImGui::CommandMenuItem(ICON_FA_ROTATE_RIGHT " Redo", "redo", mementoHandler.canRedo(), &listener);
 			ImGui::Separator();
 			const Modifier &modifier = sceneManager.modifier();
 			const Selection &selection = modifier.selection();
-			ImGui::CommandMenuItem(ICON_FA_CUT " Cut", "cut", selection.isValid(), &listener);
+			ImGui::CommandMenuItem(ICON_FA_SCISSORS " Cut", "cut", selection.isValid(), &listener);
 			ImGui::CommandMenuItem(ICON_FA_COPY " Copy", "copy", selection.isValid(), &listener);
 			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste", "paste", sceneManager.hasClipboardCopy(), &listener);
 			ImGui::Separator();
-			if (ImGui::BeginMenu(ICON_FA_COG " Options")) {
+			if (ImGui::BeginMenu(ICON_FA_GEAR " Options")) {
 				ImGui::CheckboxVar(ICON_FA_BORDER_ALL " Grid", cfg::VoxEditShowgrid);
 				ImGui::CheckboxVar("Show axis", cfg::VoxEditShowaxis);
 				ImGui::CheckboxVar("Model space", cfg::VoxEditModelSpace);

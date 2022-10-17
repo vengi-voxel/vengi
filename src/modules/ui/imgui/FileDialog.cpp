@@ -3,7 +3,7 @@
  */
 
 #include "FileDialog.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "IconsForkAwesome.h"
 #include "app/App.h"
 #include "core/Algorithm.h"
@@ -504,7 +504,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			if (ImGui::BeginPopupModal(FILE_ALREADY_EXISTS_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 				ImGui::AlignTextToFramePadding();
 				ImGui::PushFont(imguiApp()->bigFont());
-				ImGui::TextUnformatted(ICON_FA_EXCLAMATION_TRIANGLE);
+				ImGui::TextUnformatted(ICON_FA_TRIANGLE_EXCLAMATION);
 				ImGui::PopFont();
 				ImGui::SameLine();
 				ImGui::Spacing();

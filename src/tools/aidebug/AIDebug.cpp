@@ -21,7 +21,7 @@
 #include "metric/Metric.h"
 #include "network/IMsgProtocolHandler.h"
 #include "network/ProtocolHandlerRegistry.h"
-#include "ui/imgui/IconsFontAwesome5.h"
+#include "ui/imgui/IconsFontAwesome6.h"
 
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/trigonometric.hpp>
@@ -450,7 +450,7 @@ void AIDebug::dbgEntities() {
 			}
 		}
 		if (_stateWorldMsg != nullptr) {
-			ImGui::InputText(ICON_FA_SEARCH_LOCATION " Filter", _entityListFilter, sizeof(_entityListFilter));
+			ImGui::InputText(ICON_FA_FILTER " Filter", _entityListFilter, sizeof(_entityListFilter));
 			if (ImGui::BeginTable("##entitylist", 2, priv::TableFlags)) {
 				ImGui::TableSetupColumn("Id", ImGuiTableColumnFlags_WidthStretch);
 				ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
@@ -509,7 +509,7 @@ void AIDebug::dbgTreeNode_r(const ai::StateNode *node, int level) {
 
 	if (ImGui::BeginPopupContextItem("Edit")) {
 		ImGui::Text("%s", nodeName);
-		if (ImGui::Selectable(ICON_FA_EDIT " Edit")) {
+		if (ImGui::Selectable(ICON_FA_GEAR " Edit")) {
 			_dbgTreeIdEdit = node->node_id();
 			Log::info("Edit node %i", _dbgTreeIdEdit);
 		}
@@ -724,7 +724,7 @@ void AIDebug::dbgBar() {
 		togglePause();
 	}
 	ImGui::SameLine();
-	if (ImGui::DisabledButton(ICON_FA_STEP_FORWARD " Step", !_pause)) {
+	if (ImGui::DisabledButton(ICON_FA_FORWARD_STEP " Step", !_pause)) {
 		step();
 	}
 	ImGui::SameLine();

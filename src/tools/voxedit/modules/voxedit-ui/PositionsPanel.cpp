@@ -3,6 +3,7 @@
  */
 
 #include "PositionsPanel.h"
+#include "IconsFontAwesome6.h"
 #include "Util.h"
 #include "core/Color.h"
 #include "ui/imgui/IMGUIEx.h"
@@ -67,7 +68,7 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 }
 
 void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
-	if (ImGui::CollapsingHeader(ICON_FA_ARROWS_ALT " Region", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Region", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const int nodeId = sceneMgr().sceneGraph().activeNode();
 		const voxel::RawVolume *v = sceneMgr().volume(nodeId);
 		const voxel::Region &region = v->region();
@@ -85,12 +86,12 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 
 	ImGui::NewLine();
 
-	if (ImGui::CollapsingHeader(ICON_FA_ARROWS_ALT " Translate", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_FA_ARROW_UP " Translate", ImGuiTreeNodeFlags_DefaultOpen)) {
 		static glm::ivec3 translate{0};
 		veui::InputAxisInt(math::Axis::X, "X##translate", &translate.x, 1);
 		veui::InputAxisInt(math::Axis::X, "Y##translate", &translate.y, 1);
 		veui::InputAxisInt(math::Axis::X, "Z##translate", &translate.z, 1);
-		if (ImGui::Button(ICON_FA_BORDER_STYLE " Volumes")) {
+		if (ImGui::Button(ICON_FA_BORDER_ALL " Volumes")) {
 			sceneMgr().shift(translate.x, translate.y, translate.z);
 		}
 		ImGui::TooltipText("Translate layers by the given coordinates");
@@ -137,7 +138,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 }
 
 void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
-	if (ImGui::CollapsingHeader(ICON_FA_ARROWS_ALT " Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_FA_ARROW_UP " Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 		const int activeNode = sceneGraph.activeNode();
 		if (activeNode != -1) {

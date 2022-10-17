@@ -1,7 +1,12 @@
+/**
+ * @file
+ */
+
 #include "Notify.h"
-#include "SDL_stdinc.h"
+#include "IconsFontAwesome6.h"
 #include "core/Trace.h"
 #include "core/Var.h"
+#include <SDL.h>
 
 #define NOTIFY_PADDING_X 20.0f		  // Bottom-left X padding
 #define NOTIFY_PADDING_Y 20.0f		  // Bottom-left Y padding
@@ -12,10 +17,10 @@
 
 #define NOTIFY_OPACITY 1.0f
 #define NOTIFY_TOAST_FLAGS                                                                                             \
-	ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |                    \
-		ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoSavedSettings
+	(ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |                    \
+		ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoSavedSettings)
 
-#define NOTIFY_NULL_OR_EMPTY(str) (!str || !strlen(str))
+#define NOTIFY_NULL_OR_EMPTY(str) (!(str) || !strlen(str))
 
 enum ImGuiToastPhase_ {
 	ImGuiToastPhase_FadeIn,
@@ -72,14 +77,14 @@ const char *ImGuiToast::icon() const {
 	case ImGuiToastType_None:
 		return nullptr;
 	case ImGuiToastType_Debug:
-		return ICON_FA_CHECK_CIRCLE;
+		return ICON_FA_CIRCLE_CHECK;
 	case ImGuiToastType_Warning:
-		return ICON_FA_EXCLAMATION_TRIANGLE;
+		return ICON_FA_TRIANGLE_EXCLAMATION;
 	case ImGuiToastType_Error:
-		return ICON_FA_TIMES_CIRCLE;
+		return ICON_FA_CIRCLE_XMARK;
 	case ImGuiToastType_Info:
 	default:
-		return ICON_FA_INFO_CIRCLE;
+		return ICON_FA_CIRCLE_INFO;
 	}
 }
 

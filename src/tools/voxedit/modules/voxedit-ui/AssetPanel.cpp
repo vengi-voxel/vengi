@@ -13,7 +13,7 @@
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "ui/imgui/IMGUIEx.h"
-#include "ui/imgui/IconsFontAwesome5.h"
+#include "ui/imgui/IconsFontAwesome6.h"
 #include "ui/imgui/IconsForkAwesome.h"
 #include "video/Texture.h"
 #include "video/gl/GLTypes.h"

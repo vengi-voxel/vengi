@@ -4,7 +4,7 @@
 
 #include "AnimationTimeline.h"
 #include "IMGUIEx.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "IconsForkAwesome.h"
 #include "core/ArrayLength.h"
 #include "core/collection/DynamicArray.h"
@@ -38,7 +38,7 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 		}
 		ImGui::SetNextWindowDockID(dockIdMainDown, ImGuiCond_Appearing);
 		if (ImGui::Begin(sequencerTitle, nullptr, ImGuiWindowFlags_NoSavedSettings)) {
-			if (ImGui::DisabledButton(ICON_FA_PLUS_SQUARE " Add", _play)) {
+			if (ImGui::DisabledButton(ICON_FA_SQUARE_PLUS " Add", _play)) {
 				sceneMgr().nodeForeachGroup([&](int nodeId) {
 					voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
 					if (node.addKeyFrame(currentFrame) == InvalidKeyFrame) {
@@ -52,7 +52,7 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 				});
 			}
 			ImGui::SameLine();
-			if (ImGui::DisabledButton(ICON_FA_MINUS_SQUARE " Remove", _play)) {
+			if (ImGui::DisabledButton(ICON_FA_SQUARE_MINUS " Remove", _play)) {
 				sceneMgr().nodeForeachGroup([&](int nodeId) {
 					voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
 					if (!node.removeKeyFrame(currentFrame)) {

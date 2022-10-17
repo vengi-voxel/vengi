@@ -1,15 +1,13 @@
+/**
+ * @file
+ */
+
 // imgui-notify by patrickcjk
 //
 
 #pragma once
 
 #include "dearimgui/imgui.h"
-#include <stdarg.h>
-#include <stdint.h>
-#include <string.h>
-#include <SDL.h>
-
-#include "IconsFontAwesome5.h"
 #include "core/collection/RingBuffer.h"
 #include "core/String.h"
 

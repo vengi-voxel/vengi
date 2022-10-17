@@ -3,7 +3,7 @@ set(LIB imgui)
 set(SRCS
 	Console.cpp Console.h
 	FileDialog.cpp FileDialog.h
-	IconsFontAwesome5.h
+	IconsFontAwesome6.h
 	IconsForkAwesome.h
 	IMGUIEx.cpp IMGUIEx.h
 	IMGUIApp.cpp IMGUIApp.h

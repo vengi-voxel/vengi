@@ -26,7 +26,7 @@
 #include "FontAwesomeSolid.h"
 #include "ForkAwesomeWebFont.h"
 #include "ArimoRegular.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "IconsForkAwesome.h"
 #include "IMGUIStyle.h"
 #include "FileDialog.h"

@@ -4,6 +4,7 @@
 
 #include "PalettePanel.h"
 #include "DragAndDropPayload.h"
+#include "IconsFontAwesome6.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "voxedit-util/SceneManager.h"
@@ -202,7 +203,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_TIMES " Cancel##loadpalette")) {
+			if (ImGui::Button(ICON_FA_XMARK " Cancel##loadpalette")) {
 				ImGui::CloseCurrentPopup();
 			}
 			// TODO: link to docu on how to add new palettes
@@ -211,7 +212,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		}
 
 		if (palette.needsSave()) {
-			if (ImGui::Button(ICON_FA_SAVE " Save##savepalette")) {
+			if (ImGui::Button(ICON_FA_FLOPPY_DISK " Save##savepalette")) {
 				if (!palette.save()) {
 					imguiApp()->saveDialog([&](const core::String &file) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
 				}

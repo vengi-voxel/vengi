@@ -10,7 +10,7 @@
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "ui/imgui/IconsForkAwesome.h"
-#include "ui/imgui/IconsFontAwesome5.h"
+#include "ui/imgui/IconsFontAwesome6.h"
 #include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/FileDialog.h"
 #include "ui/imgui/IMGUIEx.h"
@@ -341,7 +341,7 @@ void MainWindow::registerPopups() {
 			}
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_TIMES " No##unsaved")) {
+		if (ImGui::Button(ICON_FA_XMARK " No##unsaved")) {
 			ImGui::CloseCurrentPopup();
 			_loadFile.clear();
 		}
@@ -358,14 +358,14 @@ void MainWindow::registerPopups() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_TIMES " Cancel##unsavedscene")) {
+		if (ImGui::Button(ICON_FA_XMARK " Cancel##unsavedscene")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
 	}
 
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
-		dialog(ICON_FA_EXCLAMATION_TRIANGLE, "Failed to save the model!");
+		dialog(ICON_FA_TRIANGLE_EXCLAMATION, "Failed to save the model!");
 		if (ImGui::Button(ICON_FA_CHECK " OK##failedsave")) {
 			ImGui::CloseCurrentPopup();
 		}
@@ -402,7 +402,7 @@ void MainWindow::registerPopups() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_TIMES " Close##newscene")) {
+		if (ImGui::Button(ICON_FA_XMARK " Close##newscene")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();

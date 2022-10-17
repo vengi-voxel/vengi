@@ -3,7 +3,7 @@
  */
 
 #include "ModifierPanel.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "ScopedStyle.h"
 #include "ui/imgui/dearimgui/imgui_internal.h"
 #include "ui/imgui/IMGUIEx.h"
@@ -91,10 +91,10 @@ void ModifierPanel::update(const char *title) {
 		modifierRadioButton(ICON_FA_PAINT_ROLLER " Place", ModifierType::Place, "Place voxels in the volume");
 		modifierRadioButton(ICON_FA_ERASER " Erase", ModifierType::Erase, "Erase existing voxels in the volume");
 		modifierRadioButton(ICON_FA_FILTER " Override", ModifierType::Place | ModifierType::Erase, "Place voxels and override existing ones");
-		modifierRadioButton(ICON_FA_PAINT_BRUSH " Paint", ModifierType::Paint, "Update the color of existing voxels");
+		modifierRadioButton(ICON_FA_PAINTBRUSH " Paint", ModifierType::Paint, "Update the color of existing voxels");
 		modifierRadioButton(ICON_FA_EXPAND " Select", ModifierType::Select, "Select voxels");
-		modifierRadioButton(ICON_FA_ELLIPSIS_H " Path", ModifierType::Path, "Walk from reference to cursor position on solid voxels");
-		modifierRadioButton(ICON_FA_ELLIPSIS_H " Line", ModifierType::Line, "Walk from reference to cursor position as a straight line");
+		modifierRadioButton(ICON_FA_ELLIPSIS " Path", ModifierType::Path, "Walk from reference to cursor position on solid voxels");
+		modifierRadioButton(ICON_FA_ELLIPSIS " Line", ModifierType::Line, "Walk from reference to cursor position as a straight line");
 		modifierRadioButton(ICON_FA_EYE_DROPPER " Pick color", ModifierType::ColorPicker, "Pick the color from the selected voxel");
 
 		ImGui::Separator();
