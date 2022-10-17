@@ -32,11 +32,11 @@ TEST_F(TriTest, testFlat) {
 	tri.vertices[0] = glm::vec3(0, 0, 0);
 	tri.vertices[1] = glm::vec3(1, 0, 0);
 	tri.vertices[2] = glm::vec3(0, 0, 1);
-	EXPECT_TRUE(tri.flat()) << tri.normal();
+	EXPECT_TRUE(tri.flat()) << tri.normal().x << ":" << tri.normal().y << ":" << tri.normal().z;
 	tri.vertices[0] = glm::vec3(0, 0, 0);
 	tri.vertices[1] = glm::vec3(1, 1, 0);
 	tri.vertices[2] = glm::vec3(0, 0, 1);
-	EXPECT_FALSE(tri.flat()) << tri.normal();
+	EXPECT_FALSE(tri.flat()) << tri.normal().x << ":" << tri.normal().y << ":" << tri.normal().z;
 }
 
 TEST_F(TriTest, testColorAt) {

@@ -7,7 +7,6 @@
 #include "core/Common.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
-#include <SDL_stdinc.h>
 #include <inttypes.h>
 
 namespace core {
@@ -18,9 +17,7 @@ extern core::String format(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_
 extern bool formatBuf(char *buf, size_t bufSize, CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(3);
 extern core::String humanSize(uint64_t bytes);
 
-inline int toInt(const char* str) {
-	return SDL_atoi(str);
-}
+int toInt(const char* str);
 
 inline int toInt(const core::String& str) {
 	return toInt(str.c_str());
@@ -42,17 +39,11 @@ inline char toHex(char code) {
 
 core::String toHex(int32_t number);
 
-inline float toFloat(const core::String& str) {
-	return (float)SDL_atof(str.c_str());
-}
+float toFloat(const core::String& str);
 
-inline double toDouble(const core::String& str) {
-	return (double)SDL_atof(str.c_str());
-}
+double toDouble(const core::String& str);
 
-inline double toDouble(const char* str) {
-	return (double)SDL_atof(str);
-}
+double toDouble(const char* str);
 
 /**
  * @brief Modifies the string input buffer by looking for the given token, replace the start of the token with @c \0
@@ -60,7 +51,7 @@ inline double toDouble(const char* str) {
  *
  * @code
  * char *buf = "a b";
- * char *a = getBeforeToken(buf, " ", SDL_strlen(buf)); // "a"
+ * char *a = getBeforeToken(buf, " ", strlen(buf)); // "a"
  * char *b = buf;                                   // "b"
  * @endcode
  *
@@ -70,8 +61,8 @@ extern char* getBeforeToken(char **buffer, const char *token, size_t bufferSize)
 
 extern void splitString(const core::String& string, core::DynamicArray<core::String>& tokens, const char* delimiters = " \t\r\n\f\v");
 
-inline char toUpper(char in) { return (char)SDL_toupper((int)in); }
-inline char toLower(char in) { return (char)SDL_tolower((int)in); }
+char toUpper(char in);
+char toLower(char in);
 
 inline bool startsWith(const core::String& string, const core::String& token) {
 	if (string.size() < token.size()) {
@@ -80,30 +71,16 @@ inline bool startsWith(const core::String& string, const core::String& token) {
 	return !string.compare(0, token.size(), token);
 }
 
-inline bool startsWith(const core::String& string, const char* token) {
-	const size_t tokensize = SDL_strlen(token);
-	if (string.size() < tokensize) {
-		return false;
-	}
-	return !string.compare(0, tokensize, token);
-}
+bool startsWith(const core::String& string, const char* token);
 
-inline bool startsWith(const char* string, const char* token) {
-	return !SDL_strncmp(string, token, SDL_strlen(token));
-}
+bool startsWith(const char* string, const char* token);
 
 /**
  * @brief Locate the string after the last occurrence of the given character in the input string
  * @return nullptr if the character is not part of the input string. Otherwise the pointer to the character
  * followed by the last found match.
  */
-inline const char* after(const char* input, int character) {
-	const char *s = SDL_strrchr(input, character);
-	if (s != nullptr) {
-		++s;
-	}
-	return s;
-}
+const char* after(const char* input, int character);
 
 inline bool endsWith(const core::String& string, const core::String& end) {
 	const size_t strLength = string.size();
@@ -117,9 +94,7 @@ inline bool endsWith(const core::String& string, const core::String& end) {
 
 extern core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr, size_t replaceStrSize);
 
-inline core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr) {
-	return replaceAll(str, searchStr, replaceStr, SDL_strlen(replaceStr));
-}
+core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr);
 
 extern void replaceAllChars(core::String& str, char in, char out);
 
@@ -226,10 +201,7 @@ inline core::String extractFilenameWithExtension(const core::String& str) {
 	return str.substr(pathPos + 1);
 }
 
-inline bool contains(const char *haystack, const char *needle) {
-	const char *pos = (const char*)SDL_strstr(haystack, needle);
-	return pos != nullptr;
-}
+bool contains(const char *haystack, const char *needle);
 
 inline bool contains(const core::String& str, const core::String& search) {
 	return contains(str.c_str(), search.c_str());
@@ -318,18 +290,7 @@ inline core::String trim(const core::String& str) {
 	return str.trim();
 }
 
-inline bool iequals(const core::String& a, const core::String& b) {
-	const size_t sz = a.size();
-	if (b.size() != sz) {
-		return false;
-	}
-	for (size_t i = 0u; i < sz; ++i) {
-		if (SDL_tolower(a[i]) != SDL_tolower(b[i])) {
-			return false;
-		}
-	}
-	return true;
-}
+bool iequals(const core::String& a, const core::String& b);
 
 template<typename ITER>
 core::String join(const ITER& begin, const ITER& end, const char *delimiter) {

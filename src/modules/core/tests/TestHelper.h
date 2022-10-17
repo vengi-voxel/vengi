@@ -11,46 +11,6 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 
-template<typename T, glm::qualifier P = glm::defaultp>
-inline ::core::String& operator+= (::core::String& in, const glm::tvec1<T, P>& vec) {
-	const std::string& tmp = glm::to_string(vec);
-	in.append(tmp.c_str());
-	return in;
-}
-
-template<typename T, glm::qualifier P = glm::defaultp>
-inline ::core::String& operator+= (::core::String& in, const glm::tvec2<T, P>& vec) {
-	const std::string& tmp = glm::to_string(vec);
-	in.append(tmp.c_str());
-	return in;
-}
-
-template<typename T, glm::qualifier P = glm::defaultp>
-inline ::core::String& operator+= (::core::String& in, const glm::tvec3<T, P>& vec) {
-	const std::string& tmp = glm::to_string(vec);
-	in.append(tmp.c_str());
-	return in;
-}
-
-template<typename T, glm::qualifier P = glm::defaultp>
-inline ::core::String& operator+= (::core::String& in, const glm::tvec4<T, P>& vec) {
-	const std::string& tmp = glm::to_string(vec);
-	in.append(tmp.c_str());
-	return in;
-}
-
-inline ::core::String& operator+= (::core::String& in, const glm::mat4& mat) {
-	const std::string& tmp = glm::to_string(mat);
-	in.append(tmp.c_str());
-	return in;
-}
-
-inline ::core::String& operator+= (::core::String& in, const glm::mat3& mat) {
-	const std::string& tmp = glm::to_string(mat);
-	in.append(tmp.c_str());
-	return in;
-}
-
 namespace core {
 
 inline std::ostream &operator<<(::std::ostream &os, const String &dt) {

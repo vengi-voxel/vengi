@@ -18,6 +18,68 @@ int64_t toLong(const char* str) {
 	return ::atol(str);
 }
 
+int toInt(const char* str) {
+	return SDL_atoi(str);
+}
+
+float toFloat(const core::String& str) {
+	return (float)SDL_atof(str.c_str());
+}
+
+double toDouble(const core::String& str) {
+	return (double)SDL_atof(str.c_str());
+}
+
+double toDouble(const char* str) {
+	return (double)SDL_atof(str);
+}
+
+bool startsWith(const char* string, const char* token) {
+	return !SDL_strncmp(string, token, SDL_strlen(token));
+}
+
+bool startsWith(const core::String& string, const char* token) {
+	const size_t tokensize = SDL_strlen(token);
+	if (string.size() < tokensize) {
+		return false;
+	}
+	return !string.compare(0, tokensize, token);
+}
+
+bool contains(const char *haystack, const char *needle) {
+	const char *pos = (const char*)SDL_strstr(haystack, needle);
+	return pos != nullptr;
+}
+
+char toUpper(char in) { return (char)SDL_toupper((int)in); }
+char toLower(char in) { return (char)SDL_tolower((int)in); }
+
+bool iequals(const core::String& a, const core::String& b) {
+	const size_t sz = a.size();
+	if (b.size() != sz) {
+		return false;
+	}
+	for (size_t i = 0u; i < sz; ++i) {
+		if (toLower(a[i]) != toLower(b[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/**
+ * @brief Locate the string after the last occurrence of the given character in the input string
+ * @return nullptr if the character is not part of the input string. Otherwise the pointer to the character
+ * followed by the last found match.
+ */
+const char* after(const char* input, int character) {
+	const char *s = SDL_strrchr(input, character);
+	if (s != nullptr) {
+		++s;
+	}
+	return s;
+}
+
 core::String toHex(int32_t number) {
 	constexpr size_t hexChars = sizeof(int32_t) << 1;
 	static const char *digits = "0123456789abcdef";
@@ -153,6 +215,10 @@ void replaceAllChars(core::String& str, char in, char out) {
 		}
 		++p;
 	}
+}
+
+core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr) {
+	return replaceAll(str, searchStr, replaceStr, SDL_strlen(replaceStr));
 }
 
 core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr, size_t replaceStrSize) {

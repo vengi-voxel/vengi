@@ -4,7 +4,7 @@
 
 #include "app/tests/AbstractTest.h"
 #include "commonlua/LUAFunctions.h"
-#include "glm/vector_relational.hpp"
+#include <glm/vector_relational.hpp>
 
 namespace lua {
 
@@ -17,7 +17,7 @@ public:
 		ASSERT_TRUE(lua.load(script)) << lua.error();
 		ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
 		const T& v = clua_tovec<T>(lua, -1);
-		EXPECT_TRUE(glm::all(glm::equal(expected, v))) << expected << " doesn't match " << v;
+		EXPECT_TRUE(glm::all(glm::equal(expected, v)));
 	}
 };
 
