@@ -129,7 +129,12 @@ void FileDialog::bookMarkEntry(video::OpenFileMode type, const core::String& pat
 		ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
 	}
 	if (title == nullptr) {
-		title = path.c_str();
+		title = SDL_strrchr(path.c_str(), '/');
+		if (title) {
+			++title;
+		} else {
+			title = path.c_str();
+		}
 	}
 	if (ImGui::Selectable(title, false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
 		setCurrentPath(type, path);
