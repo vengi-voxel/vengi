@@ -171,9 +171,21 @@ public:
 	 */
 	bool syswrite(const core::String& filename, const core::String& string) const;
 
+	/**
+	 * @brief This will create the directory without taking the write path into account. BEWARE!
+	 * @param file The full path to the directory or relative to the current working dir of your app.
+	 */
 	bool createDir(const core::String& dir, bool recursive = true) const;
 
+	/**
+	 * @brief This will remove the directory without taking the write path into account. BEWARE!
+	 * @param file The full path to the directory or relative to the current working dir of your app.
+	 */
 	bool removeDir(const core::String& dir, bool recursive = false) const;
+	/**
+	 * @brief This will remove the file without taking the write path into account. BEWARE!
+	 * @param file The full path to the file or relative to the current working dir of your app.
+	 */
 	bool removeFile(const core::String& file) const;
 private:
 	static bool _list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "");
