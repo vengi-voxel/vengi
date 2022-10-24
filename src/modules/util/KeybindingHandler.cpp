@@ -145,6 +145,33 @@ void KeyBindingHandler::construct() {
 			}
 		}
 	}).setHelp("Bind a command to a key");
+
+	command::Command::registerCommand("unbind", [this](const command::CmdArgs &args) {
+		if (args.size() != 1) {
+			Log::error("Expected parameters: key+modifier - got %i parameters", (int)args.size());
+			return;
+		}
+
+		KeybindingParser p(args[0], "unbind");
+		const BindMap &bindings = p.getBindings();
+		for (BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
+			const uint32_t key = i->first;
+			const CommandModifierPair &pair = i->second;
+			auto range = _bindings.equal_range(key);
+			bool found = false;
+			for (auto it = range.first; it != range.second; ++it) {
+				if (it->second.modifier == pair.modifier) {
+					_bindings.erase(it);
+					found = true;
+					Log::info("Removed binding for key %s", args[0].c_str());
+					break;
+				}
+			}
+			if (!found) {
+				Log::info("Failed to delete binding for key %s", args[0].c_str());
+			}
+		}
+	}).setHelp("Unbind a key");
 }
 
 void KeyBindingHandler::shutdown() {
