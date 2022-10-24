@@ -7,9 +7,9 @@ UPDATEDIR      := /tmp
 BUILDTYPE      ?= Debug
 BUILDDIR       ?= ./build/$(BUILDTYPE)
 INSTALL_DIR    ?= $(BUILDDIR)
-GENERATOR      := Ninja
+GENERATOR      ?= -GNinja
 CMAKE          ?= cmake
-CMAKE_OPTIONS  ?= -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -G$(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot
+CMAKE_OPTIONS  ?= -DCMAKE_BUILD_TYPE=$(BUILDTYPE) $(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot
 
 all:
 	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then $(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS); fi
