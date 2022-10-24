@@ -1,7 +1,3 @@
-# Allow to override settings
-CONFIG         ?= Makefile.local
--include $(CONFIG)
-
 Q              ?= @
 UPDATEDIR      := /tmp
 BUILDTYPE      ?= Debug
@@ -45,7 +41,6 @@ release-%:
 
 # this empty target prevents using 'Makefile' as default target
 Makefile:
-Makefile.local:
 
 %: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
