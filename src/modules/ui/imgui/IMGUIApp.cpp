@@ -391,43 +391,57 @@ app::AppState IMGUIApp::onRunning() {
 		}
 
 		if (_showBindingsDialog) {
-			if (ImGui::Begin("Bindings", &_showBindingsDialog, ImGuiWindowFlags_NoScrollbar)) {
-				const util::BindMap& bindings = _keybindingHandler.bindings();
-				static const uint32_t TableFlags =
-					ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
-					ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-				const ImVec2 &outerSize = ImGui::GetContentRegionAvail();
-				if (ImGui::BeginTable("##bindingslist", 3, TableFlags, outerSize)) {
-					ImGui::TableSetupColumn("Keys##bindingslist", ImGuiTableColumnFlags_WidthFixed);
-					ImGui::TableSetupColumn("Command##bindingslist", ImGuiTableColumnFlags_WidthFixed);
-					ImGui::TableSetupColumn("Description##bindingslist", ImGuiTableColumnFlags_WidthStretch);
-					ImGui::TableHeadersRow();
+			ImGui::OpenPopup("Bindings");
+			_showBindingsDialog = false;
+		}
+		bool showBindings_unused = true;
+		if (ImGui::BeginPopupModal("Bindings", &showBindings_unused, ImGuiWindowFlags_AlwaysAutoResize)) {
+			const util::BindMap& bindings = _keybindingHandler.bindings();
+			static const uint32_t TableFlags =
+				ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
+				ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+			const ImVec2 outerSize(0.0f, 400.0f);
+			if (ImGui::BeginTable("##bindingslist", 3, TableFlags, outerSize)) {
+				ImGui::TableSetupColumn("Keys##bindingslist", ImGuiTableColumnFlags_WidthFixed);
+				ImGui::TableSetupColumn("Command##bindingslist", ImGuiTableColumnFlags_WidthFixed);
+				ImGui::TableSetupColumn("Description##bindingslist", ImGuiTableColumnFlags_WidthStretch);
+				ImGui::TableHeadersRow();
 
-					for (util::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
-						const util::CommandModifierPair& pair = i->second;
-						const core::String& command = pair.command;
-						const core::String& keyBinding = _keybindingHandler.getKeyBindingsString(command.c_str(), pair.count);
-						ImGui::TableNextColumn();
-						ImGui::TextUnformatted(keyBinding.c_str());
-						ImGui::TableNextColumn();
-						ImGui::TextUnformatted(command.c_str());
-						const command::Command* cmd = nullptr;
-						if (command.contains(" ")) {
-							cmd = command::Command::getCommand(command.substr(0, command.find(" ")));
-						} else {
-							cmd = command::Command::getCommand(command);
-						}
-						ImGui::TableNextColumn();
-						if (!cmd) {
-							ImGui::TextColored(core::Color::Red, "Failed to get command for %s", command.c_str());
-						} else {
-							ImGui::TextUnformatted(cmd->help() ? cmd->help() : "");
-						}
+				int n = 0;
+				for (util::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
+					const util::CommandModifierPair& pair = i->second;
+					const core::String& command = pair.command;
+					const core::String& keyBinding = _keybindingHandler.getKeyBindingsString(command.c_str(), pair.count);
+					ImGui::TableNextColumn();
+					// TODO: change binding
+					const core::String &deleteButton = core::string::format(ICON_FA_TRASH "##del-key-%i", n++);
+					if (ImGui::Button(deleteButton.c_str())) {
+						command::executeCommands(core::string::format("unbind \"%s\"", keyBinding.c_str()));
 					}
-					ImGui::EndTable();
+					ImGui::SameLine();
+					ImGui::TextUnformatted(keyBinding.c_str());
+					ImGui::TableNextColumn();
+					ImGui::TextUnformatted(command.c_str());
+					const command::Command* cmd = nullptr;
+					if (command.contains(" ")) {
+						cmd = command::Command::getCommand(command.substr(0, command.find(" ")));
+					} else {
+						cmd = command::Command::getCommand(command);
+					}
+					ImGui::TableNextColumn();
+					if (!cmd) {
+						ImGui::TextColored(core::Color::Red, "Failed to get command for %s", command.c_str());
+					} else {
+						ImGui::TextUnformatted(cmd->help() ? cmd->help() : "");
+					}
 				}
+				ImGui::EndTable();
 			}
-			ImGui::End();
+			if (ImGui::Button("Reset to default")) {
+				resetKeybindings();
+			}
+			// TODO: add binding
+			ImGui::EndPopup();
 		}
 
 		bool showMetrics = _showMetrics->boolVal();
