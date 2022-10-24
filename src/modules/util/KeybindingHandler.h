@@ -43,6 +43,7 @@ public:
 	void construct() override;
 	void shutdown() override;
 	bool init() override;
+	void reset();
 
 	/**
 	 * @brief Print the binding line for a key/modifier combination

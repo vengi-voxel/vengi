@@ -190,6 +190,12 @@ void KeyBindingHandler::shutdown() {
 	io::filesystem()->write("keybindings.cfg", keybindings);
 }
 
+void KeyBindingHandler::reset() {
+	const core::String path = io::filesystem()->writePath("keybindings.cfg");
+	io::filesystem()->removeFile(path);
+	_bindings.clear();
+}
+
 bool KeyBindingHandler::init() {
 	return true;
 }

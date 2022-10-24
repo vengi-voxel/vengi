@@ -81,6 +81,8 @@ protected:
 	 */
 	bool setRelativeMouseMode(bool mode);
 
+	void resetKeybindings();
+
 public:
 	bool isRelativeMouseMode() const;
 	bool isSingleWindowMode() const;

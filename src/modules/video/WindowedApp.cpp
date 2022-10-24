@@ -485,6 +485,12 @@ app::AppState WindowedApp::onCleanup() {
 	return Super::onCleanup();
 }
 
+void WindowedApp::resetKeybindings() {
+	_keybindingHandler.reset();
+	_keybindingHandler.load("keybindings.cfg");
+	_keybindingHandler.load(_appname + "-keybindings.cfg");
+}
+
 void WindowedApp::showCursor(bool show) {
 	SDL_ShowCursor(show ? SDL_TRUE : SDL_FALSE);
 }
