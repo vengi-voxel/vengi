@@ -20,7 +20,7 @@ release:
 	$(Q)$(MAKE) BUILDTYPE=Release
 
 clean:
-	$(Q)rm -rf $(BUILDDIR)
+	$(Q)git clean -fdx $(BUILDDIR)
 
 distclean:
 	$(Q)git clean -fdx
