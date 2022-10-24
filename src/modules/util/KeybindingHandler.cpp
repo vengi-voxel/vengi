@@ -154,6 +154,9 @@ void KeyBindingHandler::construct() {
 
 		KeybindingParser p(args[0], "unbind");
 		const BindMap &bindings = p.getBindings();
+		if (bindings.empty()) {
+			Log::info("Failed to delete binding for key %s", args[0].c_str());
+		}
 		for (BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
 			const uint32_t key = i->first;
 			const CommandModifierPair &pair = i->second;
