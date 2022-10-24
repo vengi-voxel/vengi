@@ -15,6 +15,8 @@ typing `make voxedit-perf`. There are also other targets for valgrind - just use
 
 The project should be buildable with every ide that supports cmake. QTCreator, Eclipse CDT, vscode or Visual Studio. Just install cmake, generate the project files, and open them in your ide.
 
+> Set up ninja to speed up the whole build-link-run cycle a lot!
+
 ### Visual Studio Code
 
 * Install ninja [ninja-build.org](https://ninja-build.org/)
@@ -27,6 +29,12 @@ Inside vscode you have to install the c++ plugins. The easiest might be to insta
 If you have problems with the intellisense plugin from microsoft, you can also use the clangd plugin.
 
 Open your git clone directory in vscode and let it configure via cmake. It will pick ninja and the visual studio compiler automatically.
+
+### Make
+
+In order to use the `Makefile`, you should install ninja (see above), gnu make, start **Native Tools Command Prompt** from your start menu, and just run `make` in that shell in your git clone directory. Keep in mind that ninja, make and cmake must be available via PATH environment variable.
+
+Check out the Linux section about more details regarding the `Makefile` targets.
 
 ## Mac
 
