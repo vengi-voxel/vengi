@@ -40,13 +40,6 @@ cmake:
 ccmake:
 	$(Q)ccmake -B$(BUILDDIR) -S.
 
-crosscompile:
-	$(Q)dockcross $(CMAKE) -H. -B$(BUILDDIR) $(CMAKE_OPTIONS)
-	$(Q)dockcross $(CMAKE) --build $(BUILDDIR) --target all
-
-windows:
-	$(Q)$(MAKE) crosscompile TARGET_OS=$@ BUILDDIR=$(BUILDDIR)/$@
-
 release-%:
 	$(Q)$(MAKE) BUILDTYPE=Release $(subst release-,,$@)
 
