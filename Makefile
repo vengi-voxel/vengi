@@ -43,6 +43,10 @@ ccmake:
 release-%:
 	$(Q)$(MAKE) BUILDTYPE=Release $(subst release-,,$@)
 
+# this empty target prevents using 'Makefile' as default target
+Makefile:
+Makefile.local:
+
 %: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 	$(Q)$(CMAKE) --install $(BUILDDIR) --component $@ --prefix $(INSTALL_DIR)/install-$@
