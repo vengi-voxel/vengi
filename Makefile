@@ -11,10 +11,14 @@ GENERATOR      ?= -GNinja
 CMAKE          ?= cmake
 CMAKE_OPTIONS  ?= -DCMAKE_BUILD_TYPE=$(BUILDTYPE) $(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot
 
-all:
-	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then $(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS); fi
+all: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
+ifneq ($(OS),Windows_NT)
 	$(Q)$(CMAKE) -E create_symlink $(BUILDDIR)/compile_commands.json compile_commands.json
+endif
+
+$(BUILDDIR)/CMakeCache.txt:
+	$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS)
 
 release:
 	$(Q)$(MAKE) BUILDTYPE=Release
@@ -46,8 +50,7 @@ windows:
 release-%:
 	$(Q)$(MAKE) BUILDTYPE=Release $(subst release-,,$@)
 
-%:
-	$(Q)if [ ! -f $(BUILDDIR)/CMakeCache.txt ]; then $(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS); fi
+%: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 	$(Q)$(CMAKE) --install $(BUILDDIR) --component $@ --prefix $(INSTALL_DIR)/install-$@
 	$(Q)$(CMAKE) -E create_symlink $(BUILDDIR)/compile_commands.json compile_commands.json
