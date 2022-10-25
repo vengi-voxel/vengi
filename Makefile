@@ -39,9 +39,6 @@ ccmake:
 release-%:
 	$(Q)$(MAKE) BUILDTYPE=Release $(subst release-,,$@)
 
-# this empty target prevents using 'Makefile' as default target
-Makefile: all
-
 shelltests: all
 	$(Q)cd $(BUILDDIR) && ctest -V -C $(BUILDTYPE) -R shelltests-
 
