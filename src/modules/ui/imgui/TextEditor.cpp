@@ -461,10 +461,10 @@ void TextEditor::RemoveLine(int aStart, int aEnd) {
 
 	Breakpoints btmp;
 	for (auto i : _breakpoints) {
-		if (i->second >= aStart && i->second <= aEnd) {
+		if (i->first >= aStart && i->first <= aEnd) {
 			continue;
 		}
-		btmp.insert(i->second >= aStart ? i->second - 1 : i->second);
+		btmp.insert(i->first >= aStart ? i->first - 1 : i->first);
 	}
 	_breakpoints = core::move(btmp);
 
@@ -490,10 +490,10 @@ void TextEditor::RemoveLine(int aIndex) {
 
 	Breakpoints btmp;
 	for (auto i : _breakpoints) {
-		if (i->second == aIndex) {
+		if (i->first == aIndex) {
 			continue;
 		}
-		btmp.insert(i->second >= aIndex ? i->second - 1 : i->second);
+		btmp.insert(i->first >= aIndex ? i->first - 1 : i->first);
 	}
 	_breakpoints = core::move(btmp);
 
@@ -517,7 +517,7 @@ TextEditor::Line &TextEditor::InsertLine(int aIndex) {
 
 	Breakpoints btmp;
 	for (auto i : _breakpoints) {
-		btmp.insert(i->second >= aIndex ? i->second + 1 : i->second);
+		btmp.insert(i->first >= aIndex ? i->first + 1 : i->first);
 	}
 	_breakpoints = core::move(btmp);
 
