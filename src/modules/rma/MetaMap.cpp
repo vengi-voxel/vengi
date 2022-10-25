@@ -15,7 +15,7 @@ uint64_t Tile::convertTileIdToMask(int idx) const {
 		} else if (chr == '0') {
 			mask |= RMA_EVERYTHING_FITS;
 		} else if (chr >= 'a' && chr <= 'z') {
-			mask |= 1UL << ((chr - 'a') + 1);
+			mask |= (uint64_t)1 << ((chr - 'a') + 1);
 		}
 	}
 	return mask;
