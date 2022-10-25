@@ -190,11 +190,13 @@ void KeyBindingHandler::shutdown() {
 		keybindings += "\"\n";
 	}
 	Log::trace("%s", keybindings.c_str());
-	io::filesystem()->write(app::App::getInstance()->appname() + "-keybindings.cfg", keybindings);
+	const core::String &kbFilename = app::App::getInstance()->appname() + "-keybindings.cfg";
+	io::filesystem()->write(kbFilename, keybindings);
 }
 
 void KeyBindingHandler::reset() {
-	const core::String path = io::filesystem()->writePath(app::App::getInstance()->appname() + "-keybindings.cfg");
+	const core::String &kbFilename = app::App::getInstance()->appname() + "-keybindings.cfg";
+	const core::String &path = io::filesystem()->writePath(kbFilename.c_str());
 	io::filesystem()->removeFile(path);
 	_bindings.clear();
 }
