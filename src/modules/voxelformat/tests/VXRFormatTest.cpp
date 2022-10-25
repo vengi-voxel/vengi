@@ -32,7 +32,7 @@ TEST_F(VXRFormatTest, testGiantDinosaur) {
 		const SceneGraphTransform &transform = node->transform(0);
 
 		const float expected[]{
-			1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 64.5, 0.0, 1.0};
+			1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 64.5f, 0.0f, 1.0f};
 		const float *actual = glm::value_ptr(transform.worldMatrix());
 		for (int i = 0; i < 16; ++i) {
 			ASSERT_FLOAT_EQ(expected[i], actual[i]) << i << ": " << glm::to_string(transform.worldMatrix());
@@ -44,7 +44,7 @@ TEST_F(VXRFormatTest, testGiantDinosaur) {
 		const SceneGraphTransform &transform = node->transform(0);
 
 		const float expected[]{
-			0.941261, 0.11818516, -0.31632274, 0.0, -0.084998831, 0.989514, 0.1167788, 0.0, 0.32680732, -0.083032265, 0.94143647, 0.0, -18.847145, 51.539429, -107.957901, 1.0};
+			0.941261f, 0.11818516f, -0.31632274f, 0.0f, -0.084998831f, 0.989514f, 0.1167788f, 0.0f, 0.32680732f, -0.083032265f, 0.94143647f, 0.0f, -18.847145f, 51.539429f, -107.957901f, 1.0f};
 		const float *actual = glm::value_ptr(transform.worldMatrix());
 		for (int i = 0; i < 16; ++i) {
 			ASSERT_FLOAT_EQ(expected[i], actual[i]) << i << ": " << glm::to_string(transform.worldMatrix());
@@ -56,7 +56,7 @@ TEST_F(VXRFormatTest, testGiantDinosaur) {
 		const SceneGraphTransform &transform = node->transform(0);
 
 		const float expected[]{
-			1.0, 0.0, 0.0, 0.0, 0.0, 0.99974263, 0.022687117, 0.0, 0.0, -0.022687117, 0.99974263, 0.0, -19.000000, 52.389652, 27.726467, 1.0};
+			1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.99974263f, 0.022687117f, 0.0f, 0.0f, -0.022687117f, 0.99974263f, 0.0f, -19.000000f, 52.389652f, 27.726467f, 1.0f};
 		const float *actual = glm::value_ptr(transform.worldMatrix());
 		for (int i = 0; i < 16; ++i) {
 			ASSERT_FLOAT_EQ(expected[i], actual[i]) << i << ": " << glm::to_string(transform.worldMatrix());
