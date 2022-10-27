@@ -6,20 +6,20 @@ set FILE_PNGNAME=voxedit\chr_knight.png
 set SPLITFILE="@DATA_DIR@\tests\splitobjects.vox"
 set SPLITTARGETFILE="@CMAKE_BINARY_DIR@\splittedobjects.vox"
 
-xcopy /F "@DATA_DIR@\%FILE%" "@CMAKE_BINARY_DIR@"
+xcopy /Y "@DATA_DIR@\%FILE%" "@CMAKE_BINARY_DIR@"
 echo "export layers of @DATA_DIR@\%FILE%"
 "%BINARY%" -f --input @CMAKE_BINARY_DIR@\%FILE% --export-layers
 echo
 
 echo "export palette of @DATA_DIR@\%FILE%"
-xcopy "@DATA_DIR@\%FILE%" "@CMAKE_BINARY_DIR@"
+xcopy /Y "@DATA_DIR@\%FILE%" "@CMAKE_BINARY_DIR@"
 "%BINARY%" -f --input @CMAKE_BINARY_DIR@\%FILE% --export-palette
 echo "check if palette exists at @CMAKE_BINARY_DIR@\%FILE_PNGNAME%"
 IF NOT EXIST "@CMAKE_BINARY_DIR@\%FILE_PNGNAME%" EXIT 127
 echo
 
 echo "split objects %SPLITFILE%"
-xcopy "%SPLITFILE%" "@CMAKE_BINARY_DIR@"
+xcopy /Y "%SPLITFILE%" "@CMAKE_BINARY_DIR@"
 "%BINARY%" -f --input "%SPLITFILE%" --script splitobjects --output "%SPLITTARGETFILE%"
 "%BINARY%" -f --input "%SPLITTARGETFILE%" --dump
 echo "check if %SPLITTARGETFILE% exists"
