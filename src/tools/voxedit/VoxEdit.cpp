@@ -286,7 +286,8 @@ app::AppState VoxEdit::onInit() {
 		const char *file = _argv[_argc - 1];
 		const io::FilePtr& filePtr = filesystem()->open(file);
 		if (filePtr->exists()) {
-			_mainWindow->load(file);
+			const core::String &filePath = filesystem()->absolutePath(filePtr->name());
+			_mainWindow->load(filePath);
 		}
 	}
 
