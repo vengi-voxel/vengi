@@ -136,10 +136,11 @@ app::AppState VoxConvert::onInit() {
 	if (hasArg("--input")) {
 		int argn = 0;
 		for (;;) {
-			const core::String &val = getArgVal("--input", "", &argn);
+			core::String val = getArgVal("--input", "", &argn);
 			if (val.empty()) {
 				break;
 			}
+			io::normalizePath(val);
 			infiles.push_back(val);
 			if (voxelformat::isMeshFormat(val)) {
 				inputIsMesh = true;
@@ -156,6 +157,7 @@ app::AppState VoxConvert::onInit() {
 	core::String outfile;
 	if (hasArg("--output")) {
 		outfile = getArgVal("--output");
+		io::normalizePath(outfile);
 	}
 
 	_mergeVolumes     = hasArg("--merge");
