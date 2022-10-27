@@ -152,6 +152,7 @@ public:
 	ModifierType modifierType() const;
 	void setModifierType(ModifierType type);
 
+	bool isMode(ModifierType modifierType) const;
 	void setPlaneMode(bool state);
 	bool planeMode() const;
 
@@ -220,12 +221,16 @@ inline ModifierType Modifier::modifierType() const {
 	return _modifierType;
 }
 
+inline bool Modifier::isMode(ModifierType modifierType) const {
+	return (_modifierType & modifierType) == modifierType;
+}
+
 inline bool Modifier::planeMode() const {
-	return (_modifierType & ModifierType::Plane) == ModifierType::Plane;
+	return isMode(ModifierType::Plane);
 }
 
 inline bool Modifier::singleMode() const {
-	return (_modifierType & ModifierType::Single) == ModifierType::Single;
+	return isMode(ModifierType::Single);
 }
 
 inline bool Modifier::aabbMode() const {

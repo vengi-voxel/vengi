@@ -293,10 +293,9 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 }
 
 bool Modifier::needsSecondAction() {
-	if (singleMode()) {
+	if (singleMode() || isMode(ModifierType::Line)) {
 		return false;
 	}
-
 	const glm::ivec3 delta = aabbDim();
 	if (delta.x > _gridResolution && delta.z > _gridResolution && delta.y == _gridResolution) {
 		_aabbSecondActionDirection = math::Axis::Y;
@@ -316,14 +315,14 @@ glm::ivec3 Modifier::firstPos() const {
 
 math::AABB<int> Modifier::aabb() const {
 	const glm::ivec3 &pos = aabbPosition();
-	if (_center) {
+	const bool single = singleMode() || isMode(ModifierType::Line);
+	if (!single && _center) {
 		const glm::ivec3 &first = firstPos();
 		const glm::ivec3 &delta = glm::abs(pos - first);
 		return math::AABB<int>(first - delta, first + delta);
 	}
 
 	const int size = _gridResolution;
-	const bool single = singleMode();
 	const glm::ivec3 &first = single ? pos : firstPos();
 	const glm::ivec3 &mins = (glm::min)(first, pos);
 	const glm::ivec3 &maxs = (glm::max)(first, pos) + (size - 1);
@@ -333,12 +332,12 @@ math::AABB<int> Modifier::aabb() const {
 glm::ivec3 Modifier::aabbDim() const {
 	const int size = _gridResolution;
 	const glm::ivec3 &pos = aabbPosition();
-	if (_center) {
+	const bool single = singleMode() || isMode(ModifierType::Line);
+	if (!single && _center) {
 		const glm::ivec3 &first = firstPos();
 		const glm::ivec3 &delta = glm::abs(pos - first);
 		return delta * 2 + size;
 	}
-	const bool single = singleMode();
 	const glm::ivec3 &first = single ? pos : firstPos();
 	const glm::ivec3 &mins = (glm::min)(first, pos);
 	const glm::ivec3 &maxs = (glm::max)(first, pos);
