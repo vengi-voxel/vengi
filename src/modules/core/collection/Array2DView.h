@@ -56,7 +56,7 @@ public:
 	}
 
 	constexpr size_t size() const {
-		return (size_t)(_width * _height);
+		return (size_t)_width * (size_t)_height;
 	}
 
 	constexpr bool empty() const {
