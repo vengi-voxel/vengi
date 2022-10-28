@@ -80,6 +80,9 @@ public:
 	}
 
 	void operator=(const AtomicPtr& value) {
+		if (&value == this) {
+			return;
+		}
 		SDL_AtomicSetPtr(&_ptr, value._ptr);
 	}
 
