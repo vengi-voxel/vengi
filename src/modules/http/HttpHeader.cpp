@@ -7,12 +7,12 @@
 
 namespace http {
 
-bool buildHeaderBuffer(char *headers, size_t len, const HeaderMap& _headers) {
-	char *headersP = headers;
+bool buildHeaderBuffer(char *buf, size_t len, const HeaderMap& headers) {
+	char *headersP = buf;
 	size_t headersSize = len;
 	const char *charset = nullptr;
 	const char *contentType = nullptr;
-	if (_headers.get(header::CHARSET, charset) && _headers.get(header::CONTENT_TYPE, contentType)) {
+	if (headers.get(header::CHARSET, charset) && headers.get(header::CONTENT_TYPE, contentType)) {
 		const size_t written = SDL_snprintf(headersP, headersSize, "%s: %s;%s=%s\r\n",
 				header::CONTENT_TYPE, contentType, header::CHARSET, charset);
 		if (written >= headersSize) {
@@ -22,7 +22,7 @@ bool buildHeaderBuffer(char *headers, size_t len, const HeaderMap& _headers) {
 		headersP += written;
 
 	}
-	for (const auto& h : _headers) {
+	for (const auto& h : headers) {
 		if (charset && contentType) {
 			if (!SDL_strcmp(header::CHARSET, h->key) || !SDL_strcmp(header::CONTENT_TYPE, h->key)) {
 				// already added above
