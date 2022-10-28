@@ -295,6 +295,22 @@ function(engine_add_module)
 		target_link_libraries(${_LIB_TARGET} PRIVATE ${_LIB_PRIVATE_DEPENDENCIES})
 	endif()
 
+	if (USE_CPPCHECK)
+		find_program(CPPCHECK cppcheck)
+		if (CPPCHECK)
+			set(cppcheck_cmd
+				${CPPCHECK}
+				"--enable=warning,performance,portability"
+				"--inconclusive"
+				"--force"
+				"--quiet"
+				"--inline-suppr"
+				"--std=c++11"
+				"--suppressions-list=${SCRIPTS_CMAKE_DIR}/CppCheckSuppressions.txt"
+			)
+			set_target_properties(${_LIB_TARGET} PROPERTIES CXX_CPPCHECK "${cppcheck_cmd}")
+		endif()
+	endif()
 	set_property(GLOBAL PROPERTY ${_LIB_TARGET}_FILES ${_LIB_FILES})
 	set_property(GLOBAL PROPERTY ${_LIB_TARGET}_LUA_SRCS ${_LIB_LUA_SRCS})
 	set_property(GLOBAL PROPERTY ${_LIB_TARGET}_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
