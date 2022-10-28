@@ -7,14 +7,14 @@
 namespace video {
 
 struct alignas(16) DrawArraysIndirectCommand {
-	uint32_t count;				// to the number of used vertices
+	uint32_t count = 0;			// to the number of used vertices
 	uint32_t instanceCount = 1; // instances to draw of the current object
 	uint32_t firstIndex = 0;	// the location of the first vertex relative the current object
 	uint32_t baseInstance = 0;	// the first instance to be rendered
 };
 
 struct alignas(16) DrawElementsIndirectCommand {
-	uint32_t count;				// to the number of used vertices
+	uint32_t count = 0;			// to the number of used vertices
 	uint32_t instanceCount = 1; // instances to draw of the current object
 	uint32_t firstIndex = 0;	// the location of the first vertex relative the current object
 	uint32_t baseVertex = 0;	// location of first vertex of the current object
