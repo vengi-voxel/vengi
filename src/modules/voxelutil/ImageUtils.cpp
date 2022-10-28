@@ -29,17 +29,17 @@ int importHeightMaxHeight(const image::ImagePtr &image, bool alpha) {
 	if (alpha) {
 		for (int x = 0; x < w; ++x) {
 			for (int y = 0; y < h; ++y) {
-				const uint8_t h = image->colorAt(x, y).a;
-				maxHeight = core_max(maxHeight, h);
-				minHeight = core_min(minHeight, h);
+				const uint8_t alphaVal = image->colorAt(x, y).a;
+				maxHeight = core_max(maxHeight, alphaVal);
+				minHeight = core_min(minHeight, alphaVal);
 			}
 		}
 	} else {
 		for (int x = 0; x < w; ++x) {
 			for (int y = 0; y < h; ++y) {
-				const uint8_t h = image->colorAt(x, y).r;
-				maxHeight = core_max(maxHeight, h);
-				minHeight = core_min(minHeight, h);
+				const uint8_t redVal = image->colorAt(x, y).r;
+				maxHeight = core_max(maxHeight, redVal);
+				minHeight = core_min(minHeight, redVal);
 			}
 		}
 	}
