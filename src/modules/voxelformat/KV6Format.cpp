@@ -106,7 +106,7 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 
 	const int64_t headerSize = 32;
 	const int64_t xLenSize = (int64_t)(xsiz_w * sizeof(uint32_t));
-	const int64_t yLenSize = (int64_t)((size_t)(xsiz_w * ysiz_d) * sizeof(uint16_t));
+	const int64_t yLenSize = (int64_t)((size_t)xsiz_w * (size_t)ysiz_d * sizeof(uint16_t));
 	const int64_t paletteOffset = headerSize + (int64_t)(numvoxs * 8) + xLenSize + yLenSize;
 	if (stream.seek(paletteOffset) != -1) {
 		if (stream.remaining() != 0) {
@@ -183,8 +183,8 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	const int64_t headerSize = 32;
 	const int64_t xLenSize = (int64_t)(xsiz_w * sizeof(uint32_t));
-	const int64_t yLenSize = (int64_t)((size_t)(xsiz_w * ysiz_d) * sizeof(uint16_t));
-	const int64_t paletteOffset = headerSize + (int64_t)(numvoxs * 8) + xLenSize + yLenSize;
+	const int64_t yLenSize = (int64_t)((size_t)xsiz_w * (size_t)ysiz_d * sizeof(uint16_t));
+	const int64_t paletteOffset = headerSize + (int64_t)numvoxs * (int64_t)8 + xLenSize + yLenSize;
 	if (stream.seek(paletteOffset) != -1) {
 		if (stream.remaining() != 0) {
 			uint32_t palMagic;
