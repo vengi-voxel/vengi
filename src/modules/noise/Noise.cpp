@@ -26,7 +26,7 @@ Noise::Noise() :
 }
 
 Noise::~Noise() {
-	shutdown();
+	Noise::shutdown();
 }
 
 bool Noise::init() {
