@@ -15,7 +15,7 @@
 namespace compute {
 
 Shader::~Shader() {
-	shutdown();
+	Shader::shutdown();
 }
 
 bool Shader::init() {
