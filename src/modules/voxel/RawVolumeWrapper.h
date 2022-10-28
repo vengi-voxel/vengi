@@ -21,16 +21,16 @@ public:
 	class Sampler : public RawVolume::Sampler {
 	private:
 		using Super = RawVolume::Sampler;
-		RawVolumeWrapper* _volume = nullptr;
+		RawVolumeWrapper* _rawVolumeWrapper = nullptr;
 		voxel::Region _region;
 	public:
 		Sampler(const RawVolumeWrapper* volume) : Super(volume->volume()), _region(volume->region()) {}
 
 		Sampler(const RawVolumeWrapper& volume) : Super(volume.volume()), _region(volume.region()) {}
 
-		Sampler(RawVolumeWrapper* volume) : Super(volume->volume()), _volume(volume), _region(volume->region()) {}
+		Sampler(RawVolumeWrapper* volume) : Super(volume->volume()), _rawVolumeWrapper(volume), _region(volume->region()) {}
 
-		Sampler(RawVolumeWrapper& volume) : Super(volume.volume()), _volume(&volume), _region(volume.region()) {}
+		Sampler(RawVolumeWrapper& volume) : Super(volume.volume()), _rawVolumeWrapper(&volume), _region(volume.region()) {}
 
 		const Region region() const override {
 			return _region;
@@ -38,14 +38,14 @@ public:
 
 		bool setVoxel(const Voxel& voxel) override {
 			if (Super::setVoxel(voxel)) {
-				core_assert(_volume);
-				if (!_volume) {
+				core_assert(_rawVolumeWrapper);
+				if (!_rawVolumeWrapper) {
 					return true;
 				}
-				if (_volume->_dirtyRegion.isValid()) {
-					_volume->_dirtyRegion.accumulate(position());
+				if (_rawVolumeWrapper->_dirtyRegion.isValid()) {
+					_rawVolumeWrapper->_dirtyRegion.accumulate(position());
 				} else {
-					_volume->_dirtyRegion = Region(position(), position());
+					_rawVolumeWrapper->_dirtyRegion = Region(position(), position());
 				}
 				return true;
 			}
