@@ -18,7 +18,7 @@ ZipWriteStream::ZipWriteStream(io::WriteStream &outStream, int level) : _outStre
 }
 
 ZipWriteStream::~ZipWriteStream() {
-	flush();
+	ZipWriteStream::flush();
 	const int retVal = mz_deflateEnd(_stream);
 	core_free(_stream);
 	core_assert(retVal == MZ_OK);

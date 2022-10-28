@@ -61,24 +61,27 @@ static core::String appleDir(sysdir_search_path_directory_t dir) {
 
 static core::String load(const core::String &file) {
 	FILE *fp = fopen(file.c_str(), "r");
-	if (fp == NULL) {
+	if (fp == nullptr) {
 		Log::debug("Could not open file %s", file.c_str());
 		return "";
 	}
 
 	if (fseek(fp, 0L, SEEK_END) != 0) {
 		Log::debug("Error: fseek failed");
+		fclose(fp);
 		return "";
 	}
 
 	long int bufsize = ftell(fp);
 	if (bufsize == -1) {
 		Log::debug("Error: ftell failed");
+		fclose(fp);
 		return "";
 	}
 
 	if (fseek(fp, 0L, SEEK_SET) != 0) {
 		Log::debug("Error: fseek failed");
+		fclose(fp);
 		return "";
 	}
 
@@ -86,8 +89,10 @@ static core::String load(const core::String &file) {
 	size_t newLen = fread(source, 1, bufsize, fp);
 	if (ferror(fp) != 0) {
 		perror("Error: failed to read shader file. ");
+		fclose(fp);
 		return "";
 	}
+	fclose(fp);
 
 	source[newLen++] = '\0';
 	core::String str(source);

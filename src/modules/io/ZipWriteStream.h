@@ -20,7 +20,7 @@ class ZipWriteStream : public io::WriteStream {
 private:
 	struct mz_stream_s *_stream;
 	io::WriteStream &_outStream;
-	uint8_t _out[256 * 1024];
+	uint8_t _out[256 * 1024] {};
 	int64_t _pos = 0;
 
 public:
