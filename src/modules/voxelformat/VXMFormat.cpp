@@ -452,10 +452,6 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	uint8_t materialAmount;
 	wrap(stream.readUInt8(materialAmount));
 	Log::debug("Palette of size %i", (int)materialAmount);
-	if ((int)materialAmount > voxel::PaletteMaxColors) {
-		Log::error("Invalid material size found: %u", materialAmount);
-		return false;
-	}
 
 	for (int i = 0; i < (int) materialAmount; ++i) {
 		uint8_t blue;
