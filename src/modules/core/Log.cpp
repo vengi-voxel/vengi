@@ -131,7 +131,7 @@ void Log::init(const char *logfile) {
 		}
 #else
 		Log::warn("Syslog support is not compiled into the binary");
-		_syslog = false;
+		priv::_syslog = false;
 #endif
 	} else {
 #ifdef HAVE_SYSLOG_H
