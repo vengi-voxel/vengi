@@ -42,13 +42,11 @@ release-%:
 shelltests: all
 	$(Q)cd $(BUILDDIR) && ctest -V -C $(BUILDTYPE) -R shelltests-
 
-%: $(BUILDDIR)/CMakeCache.txt
-ifneq ($@,Makefile)
+tests-% %-run voxedit%: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 	$(Q)$(CMAKE) --install $(BUILDDIR) --component $@ --prefix $(INSTALL_DIR)/install-$@
 ifneq ($(OS),Windows_NT)
 	$(Q)$(CMAKE) -E create_symlink $(BUILDDIR)/compile_commands.json compile_commands.json
-endif
 endif
 
 dependency-%:
