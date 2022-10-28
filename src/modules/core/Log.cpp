@@ -34,6 +34,8 @@
 #define ANSI_COLOR_CYAN ""
 #endif
 
+namespace priv {
+
 static bool _syslog = false;
 static FILE* _logfile = nullptr;
 static constexpr int bufSize = 4096;
@@ -62,9 +64,10 @@ static void sysLogOutputFunction(void *userdata, int category, SDL_LogPriority p
 	}
 }
 #endif
+}
 
 void Log::setLogLevel(Level level) {
-	_logLevel = (SDL_LogPriority)core::enumVal(level);
+	priv::_logLevel = (SDL_LogPriority)core::enumVal(level);
 }
 
 Log::Level Log::toLogLevel(const char* level) {
@@ -107,24 +110,24 @@ const char* Log::toLogLevel(Log::Level level) {
 }
 
 void Log::init(const char *logfile) {
-	_logLevel = (SDL_LogPriority)core::Var::getSafe(cfg::CoreLogLevel)->intVal();
+	priv::_logLevel = (SDL_LogPriority)core::Var::getSafe(cfg::CoreLogLevel)->intVal();
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_VERBOSE);
 
-	if (_logfile == nullptr && logfile != nullptr) {
-		_logfile = fopen(logfile, "w");
+	if (priv::_logfile == nullptr && logfile != nullptr) {
+		priv::_logfile = fopen(logfile, "w");
 	}
 
 	const bool syslog = core::Var::getSafe(cfg::CoreSysLog)->boolVal();
 	if (syslog) {
 #ifdef HAVE_SYSLOG_H
-		if (!_syslog) {
-			if (_syslogLogCallback == nullptr) {
-				SDL_LogGetOutputFunction(&_syslogLogCallback, &_syslogLogCallbackUserData);
+		if (!priv::_syslog) {
+			if (priv::_syslogLogCallback == nullptr) {
+				SDL_LogGetOutputFunction(&priv::_syslogLogCallback, &priv::_syslogLogCallbackUserData);
 			}
-			core_assert(_syslogLogCallback != sysLogOutputFunction);
+			core_assert(priv::_syslogLogCallback != priv::sysLogOutputFunction);
 			openlog(nullptr, LOG_PID, LOG_USER);
-			SDL_LogSetOutputFunction(sysLogOutputFunction, nullptr);
-			_syslog = true;
+			SDL_LogSetOutputFunction(priv::sysLogOutputFunction, nullptr);
+			priv::_syslog = true;
 		}
 #else
 		Log::warn("Syslog support is not compiled into the binary");
@@ -132,14 +135,14 @@ void Log::init(const char *logfile) {
 #endif
 	} else {
 #ifdef HAVE_SYSLOG_H
-		if (_syslog) {
-			SDL_LogSetOutputFunction(_syslogLogCallback, _syslogLogCallbackUserData);
-			_syslogLogCallback = nullptr;
-			_syslogLogCallbackUserData = nullptr;
+		if (priv::_syslog) {
+			SDL_LogSetOutputFunction(priv::_syslogLogCallback, priv::_syslogLogCallbackUserData);
+			priv::_syslogLogCallback = nullptr;
+			priv::_syslogLogCallbackUserData = nullptr;
 			closelog();
 		}
 #endif
-		_syslog = false;
+		priv::_syslog = false;
 	}
 }
 
@@ -147,147 +150,147 @@ void Log::shutdown() {
 	// this is one of the last methods that is executed - so don't rely on anything
 	// still being available here - it won't
 #ifdef HAVE_SYSLOG_H
-	if (_syslog) {
-		SDL_LogSetOutputFunction(_syslogLogCallback, _syslogLogCallbackUserData);
+	if (priv::_syslog) {
+		SDL_LogSetOutputFunction(priv::_syslogLogCallback, priv::_syslogLogCallbackUserData);
 		closelog();
-		_syslogLogCallback = nullptr;
-		_syslogLogCallbackUserData = nullptr;
+		priv::_syslogLogCallback = nullptr;
+		priv::_syslogLogCallbackUserData = nullptr;
 	}
 #endif
-	if (_logfile) {
-		fflush(_logfile);
-		fclose(_logfile);
-		_logfile = nullptr;
+	if (priv::_logfile) {
+		fflush(priv::_logfile);
+		fclose(priv::_logfile);
+		priv::_logfile = nullptr;
 	}
-	_logActive.clear();
-	_logLevel = SDL_LOG_PRIORITY_INFO;
-	_syslog = false;
+	priv::_logActive.clear();
+	priv::_logLevel = SDL_LOG_PRIORITY_INFO;
+	priv::_syslog = false;
 }
 
 static void traceVA(uint32_t id, const char *msg, va_list args) {
-	char buf[bufSize];
+	char buf[priv::bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
-	if (_logfile) {
-		fprintf(_logfile, "[TRACE] (%u) %s\n", id, buf);
+	if (priv::_logfile) {
+		fprintf(priv::_logfile, "[TRACE] (%u) %s\n", id, buf);
 	}
-	if (_syslog) {
+	if (priv::_syslog) {
 		SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
 		SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "(%u) " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET "\n", id, buf);
 	}
-	va_end(args);
 }
 
 static void debugVA(uint32_t id, const char *msg, va_list args) {
-	char buf[bufSize];
+	char buf[priv::bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
-	if (_logfile) {
-		fprintf(_logfile, "[DEBUG] (%u) %s\n", id, buf);
+	if (priv::_logfile) {
+		fprintf(priv::_logfile, "[DEBUG] (%u) %s\n", id, buf);
 	}
-	if (_syslog) {
+	if (priv::_syslog) {
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "(%u) " ANSI_COLOR_BLUE "%s" ANSI_COLOR_RESET "\n", id, buf);
 	}
-	va_end(args);
 }
 
 static void infoVA(uint32_t id, const char *msg, va_list args) {
-	char buf[bufSize];
+	char buf[priv::bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
-	if (_logfile) {
-		fprintf(_logfile, "[INFO] (%u) %s\n", id, buf);
+	if (priv::_logfile) {
+		fprintf(priv::_logfile, "[INFO] (%u) %s\n", id, buf);
 	}
-	if (_syslog) {
+	if (priv::_syslog) {
 		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
 		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "(%u) " ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET "\n", id, buf);
 	}
-	va_end(args);
 }
 
 static void warnVA(uint32_t id, const char *msg, va_list args) {
-	char buf[bufSize];
+	char buf[priv::bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
-	if (_logfile) {
-		fprintf(_logfile, "[WARN] (%u) %s\n", id, buf);
+	if (priv::_logfile) {
+		fprintf(priv::_logfile, "[WARN] (%u) %s\n", id, buf);
 	}
-	if (_syslog) {
+	if (priv::_syslog) {
 		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
 		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "(%u) " ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET "\n", id, buf);
 	}
-	va_end(args);
 }
 
 static void errorVA(uint32_t id, const char *msg, va_list args) {
-	char buf[bufSize];
+	char buf[priv::bufSize];
 	SDL_vsnprintf(buf, sizeof(buf), msg, args);
 	buf[sizeof(buf) - 1] = '\0';
-	if (_logfile) {
-		fprintf(_logfile, "[ERROR] (%u) %s\n", id, buf);
+	if (priv::_logfile) {
+		fprintf(priv::_logfile, "[ERROR] (%u) %s\n", id, buf);
 	}
-	if (_syslog) {
+	if (priv::_syslog) {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "(%u) %s\n", id, buf);
 	} else {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "(%u) " ANSI_COLOR_RED "%s" ANSI_COLOR_RESET "\n", id, buf);
 	}
-	va_end(args);
 }
 
 void Log::trace(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
 		return;
 	}
 	va_list args;
 	va_start(args, msg);
 	traceVA(0u, msg, args);
+	va_end(args);
 }
 
 void Log::debug(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_DEBUG) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_DEBUG) {
 		return;
 	}
 	va_list args;
 	va_start(args, msg);
 	debugVA(0u, msg, args);
+	va_end(args);
 }
 
 void Log::info(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_INFO) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_INFO) {
 		return;
 	}
 	va_list args;
 	va_start(args, msg);
 	infoVA(0u, msg, args);
+	va_end(args);
 }
 
 void Log::warn(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_WARN) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_WARN) {
 		return;
 	}
 	va_list args;
 	va_start(args, msg);
 	warnVA(0u, msg, args);
+	va_end(args);
 }
 
 void Log::error(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_ERROR) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_ERROR) {
 		return;
 	}
 	va_list args;
 	va_start(args, msg);
 	errorVA(0u, msg, args);
+	va_end(args);
 }
 
 void Log::trace(uint32_t id, const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
-		auto i = _logActive.find(id);
-		if (i == _logActive.end()) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
+		auto i = priv::_logActive.find(id);
+		if (i == priv::_logActive.end()) {
 			return;
 		}
 		if (i->second > SDL_LOG_PRIORITY_VERBOSE) {
@@ -297,12 +300,13 @@ void Log::trace(uint32_t id, const char* msg, ...) {
 	va_list args;
 	va_start(args, msg);
 	traceVA(id, msg, args);
+	va_end(args);
 }
 
 void Log::debug(uint32_t id, const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_DEBUG) {
-		auto i = _logActive.find(id);
-		if (i == _logActive.end()) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_DEBUG) {
+		auto i = priv::_logActive.find(id);
+		if (i == priv::_logActive.end()) {
 			return;
 		}
 		if (i->second > SDL_LOG_PRIORITY_DEBUG) {
@@ -312,12 +316,13 @@ void Log::debug(uint32_t id, const char* msg, ...) {
 	va_list args;
 	va_start(args, msg);
 	debugVA(id, msg, args);
+	va_end(args);
 }
 
 void Log::info(uint32_t id, const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_INFO) {
-		auto i = _logActive.find(id);
-		if (i == _logActive.end()) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_INFO) {
+		auto i = priv::_logActive.find(id);
+		if (i == priv::_logActive.end()) {
 			return;
 		}
 		if (i->second > SDL_LOG_PRIORITY_INFO) {
@@ -327,12 +332,13 @@ void Log::info(uint32_t id, const char* msg, ...) {
 	va_list args;
 	va_start(args, msg);
 	infoVA(id, msg, args);
+	va_end(args);
 }
 
 void Log::warn(uint32_t id, const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_WARN) {
-		auto i = _logActive.find(id);
-		if (i == _logActive.end()) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_WARN) {
+		auto i = priv::_logActive.find(id);
+		if (i == priv::_logActive.end()) {
 			return;
 		}
 		if (i->second > SDL_LOG_PRIORITY_WARN) {
@@ -342,12 +348,13 @@ void Log::warn(uint32_t id, const char* msg, ...) {
 	va_list args;
 	va_start(args, msg);
 	warnVA(id, msg, args);
+	va_end(args);
 }
 
 void Log::error(uint32_t id, const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_ERROR) {
-		auto i = _logActive.find(id);
-		if (i == _logActive.end()) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_ERROR) {
+		auto i = priv::_logActive.find(id);
+		if (i == priv::_logActive.end()) {
 			return;
 		}
 		if (i->second > SDL_LOG_PRIORITY_ERROR) {
@@ -357,64 +364,70 @@ void Log::error(uint32_t id, const char* msg, ...) {
 	va_list args;
 	va_start(args, msg);
 	errorVA(id, msg, args);
+	va_end(args);
 }
 
 bool Log::enable(uint32_t id, Log::Level level) {
-	return _logActive.insert(std::make_pair(id, core::enumVal(level))).second;
+	return priv::_logActive.insert(std::make_pair(id, core::enumVal(level))).second;
 }
 
 bool Log::disable(uint32_t id) {
-	return _logActive.erase(id) == 1;
+	return priv::_logActive.erase(id) == 1;
 }
 
 void c_logtrace(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
 		return;
 	}
 	va_list args;
 	va_start(args, msg);
 	traceVA(0u, msg, args);
+	va_end(args);
 }
 
 void c_logdebug(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_DEBUG) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_DEBUG) {
 		return;
 	}
 	va_list args;
 	va_start(args, msg);
 	debugVA(0u, msg, args);
+	va_end(args);
 }
 
 void c_loginfo(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_INFO) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_INFO) {
 		return;
 	}
 	va_list args;
 	va_start(args, msg);
 	infoVA(0u, msg, args);
+	va_end(args);
 }
 
 void c_logwarn(const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_WARN) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_WARN) {
 		return;
 	}
 	va_list args;
 	va_start(args, msg);
 	warnVA(0u, msg, args);
+	va_end(args);
 }
 
 void c_logerror(CORE_FORMAT_STRING const char* msg, ...) {
-	if (_logLevel > SDL_LOG_PRIORITY_ERROR) {
+	if (priv::_logLevel > SDL_LOG_PRIORITY_ERROR) {
 		return;
 	}
 	va_list args;
 	va_start(args, msg);
 	errorVA(0u, msg, args);
+	va_end(args);
 }
 
 extern "C" void c_logwrite(const char* msg, size_t length) {
-	char buf[bufSize];
-	SDL_memcpy(buf, msg, core_max(bufSize - 1, length));
+	char buf[priv::bufSize];
+	SDL_memcpy(buf, msg, core_max(priv::bufSize - 1, length));
 	buf[sizeof(buf) - 1] = '\0';
 	SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s", buf);
 }
