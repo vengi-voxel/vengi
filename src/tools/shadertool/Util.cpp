@@ -195,6 +195,7 @@ core::String uniformSetterPostfix(const Variable::Type type, int amount) {
 	case Variable::DVEC2:
 	case Variable::BVEC2:
 	case Variable::UVEC2:
+	case Variable::IVEC2:
 	case Variable::VEC2:
 		if (amount > 1) {
 			return "Vec2v";
@@ -203,6 +204,7 @@ core::String uniformSetterPostfix(const Variable::Type type, int amount) {
 	case Variable::DVEC3:
 	case Variable::BVEC3:
 	case Variable::UVEC3:
+	case Variable::IVEC3:
 	case Variable::VEC3:
 		if (amount > 1) {
 			return "Vec3v";
@@ -211,22 +213,8 @@ core::String uniformSetterPostfix(const Variable::Type type, int amount) {
 	case Variable::DVEC4:
 	case Variable::BVEC4:
 	case Variable::UVEC4:
-	case Variable::VEC4:
-		if (amount > 1) {
-			return "Vec4v";
-		}
-		return "Vec4";
-	case Variable::IVEC2:
-		if (amount > 1) {
-			return "Vec2v";
-		}
-		return "Vec2";
-	case Variable::IVEC3:
-		if (amount > 1) {
-			return "Vec3v";
-		}
-		return "Vec3";
 	case Variable::IVEC4:
+	case Variable::VEC4:
 		if (amount > 1) {
 			return "Vec4v";
 		}
