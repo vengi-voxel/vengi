@@ -84,6 +84,9 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			static glm::vec4 color;
 			color = core::Color::fromRGBA(palette.colors[palIdx]);
 			const core::String &id = core::string::format("##palitem-%i", palIdx);
+			if (palette.colors[palIdx].a == 0) {
+				ImGui::BeginDisabled();
+			}
 			if (ImGui::InvisibleButton(id.c_str(), colorButtonSize)) {
 				voxel::VoxelType type;
 				if (color.a < 1.0f) {
@@ -92,6 +95,9 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 					type = voxel::VoxelType::Generic;
 				}
 				sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(type, palIdx));
+			}
+			if (palette.colors[palIdx].a == 0) {
+				ImGui::EndDisabled();
 			}
 
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
