@@ -26,7 +26,10 @@ protected:
 	void testRGB(const core::String &filename, float maxDelta = 0.001f);
 	void testRGBSmall(const core::String &filename, io::SeekableReadStream &stream, voxelformat::SceneGraph &sceneGraph);
 	void testRGBSmall(const core::String &filename);
+	// save as the same format
 	void testRGBSmallSaveLoad(const core::String &filename);
+	// save as any other format
+	void testRGBSmallSaveLoad(const core::String &filename, const core::String &saveFilename);
 
 	void testSaveMultipleLayers(const core::String &filename, Format *format);
 	void testSaveSingleVoxel(const core::String &filename, Format *format);

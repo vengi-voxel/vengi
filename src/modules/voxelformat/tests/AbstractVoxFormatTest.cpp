@@ -160,6 +160,12 @@ void AbstractVoxFormatTest::testRGBSmall(const core::String &filename) {
 }
 
 void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename) {
+	const core::String formatExt = core::string::extractExtension(filename);
+	const core::String saveFilename = "test." + formatExt;
+	testRGBSmallSaveLoad(filename, saveFilename);
+}
+
+void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename, const core::String &saveFilename) {
 	voxelformat::SceneGraph sceneGraph;
 	{
 		// load and check that the file contains the expected colors
@@ -169,8 +175,6 @@ void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename) {
 	}
 
 	io::BufferedReadWriteStream saveStream((int64_t)(10 * 1024 * 1024));
-	const core::String formatExt = core::string::extractExtension(filename);
-	const core::String saveFilename = "test." + formatExt;
 	ASSERT_TRUE(voxelformat::saveFormat(sceneGraph, saveFilename, saveStream));
 	saveStream.seek(0);
 

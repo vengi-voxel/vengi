@@ -255,6 +255,22 @@ TEST_F(ConvertTest, testKVXToQb) {
 	testLoadSaveAndLoad("test.kvx", src, "convert-test.qb", target, flags);
 }
 
+TEST_F(ConvertTest, testLoadRGBSmallVoxToQb) {
+	testRGBSmallSaveLoad("rgb_small.vox", "test.qb");
+}
+
+TEST_F(ConvertTest, DISABLED_testLoadRGBSmallQbToVox) {
+	testRGBSmallSaveLoad("rgb_small.qb", "test.vox");
+}
+
+TEST_F(ConvertTest, testLoadRGBSmallVoxToQbcl) {
+	testRGBSmallSaveLoad("rgb_small.vox", "test.qbcl");
+}
+
+TEST_F(ConvertTest, DISABLED_testLoadRGBSmallQbclToVox) {
+	testRGBSmallSaveLoad("rgb_small.qbcl", "test.vox");
+}
+
 // TODO: pivot broken
 // TODO: transform broken
 TEST_F(ConvertTest, testVoxToVXR) {
