@@ -60,6 +60,15 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 			return false;
 		}
 	}
+	for (int i = 0; i < colorCount; ++i) {
+		if (colors[i].a == 0) {
+			if (index) {
+				*index = i;
+			}
+			colors[i] = rgba;
+			return true;
+		}
+	}
 	static constexpr float MaxThreshold = 0.00014f;
 	if (skipSimilar) {
 		for (int i = 0; i < colorCount; ++i) {
@@ -154,6 +163,9 @@ int Palette::getClosestMatch(const glm::vec4& color, float *distance, int skip) 
 
 	for (int i = 0; i < colorCount; ++i) {
 		if (i == skip) {
+			continue;
+		}
+		if (colors[i].a == 0) {
 			continue;
 		}
 		const float val = core::Color::getDistance(colors[i], hue, saturation, brightness);
