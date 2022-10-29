@@ -101,8 +101,9 @@ public:
 	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
 	 * to match the color to another already existing color in the palette.
 	 * @note Only use this for single colors - not for a lot of them. This method is quite slow
+	 * @param[in] skipSlotIndex This slot is not filled with any color value - if it's @c -1 every slot is filled
 	 */
-	bool addColorToPalette(core::RGBA rgba, bool skipSimilar = true, uint8_t *index = nullptr, bool replaceSimilar = true);
+	bool addColorToPalette(core::RGBA rgba, bool skipSimilar = true, uint8_t *index = nullptr, bool replaceSimilar = true, int skipSlotIndex = -1);
 	bool hasColor(core::RGBA rgba);
 	void quantize(const core::RGBA *inputColors, const size_t inputColorCount);
 	/**

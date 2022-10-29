@@ -51,7 +51,7 @@ bool Palette::hasColor(core::RGBA rgba) {
 	return false;
 }
 
-bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar) {
+bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar, int skipSlotIndex) {
 	for (int i = 0; i < colorCount; ++i) {
 		if (colors[i] == rgba) {
 			if (index) {
@@ -73,6 +73,10 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 		}
 	}
 
+	if (colorCount == skipSlotIndex && colorCount < PaletteMaxColors) {
+		++colorCount;
+	}
+
 	if (colorCount < PaletteMaxColors) {
 		if (index) {
 			*index = colorCount;
@@ -88,6 +92,9 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 		int bestIndex = -1;
 		float bestColorDistance = FLT_MAX;
 		for (int i = 0; i < colorCount; ++i) {
+			if (i == skipSlotIndex) {
+				continue;
+			}
 			float colorDistance = 0.0f;
 			const int closestColorIdx = getClosestMatch(colors[i], &colorDistance, i);
 			if (colorDistance < bestColorDistance) {
