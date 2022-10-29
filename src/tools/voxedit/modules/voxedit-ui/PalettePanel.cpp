@@ -81,15 +81,13 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 
 			drawList->AddRectFilled(v1, v2, palette.colors[palIdx]);
 
-			static glm::vec4 color;
-			color = core::Color::fromRGBA(palette.colors[palIdx]);
 			const core::String &id = core::string::format("##palitem-%i", palIdx);
 			if (palette.colors[palIdx].a == 0) {
 				ImGui::BeginDisabled();
 			}
 			if (ImGui::InvisibleButton(id.c_str(), colorButtonSize)) {
 				voxel::VoxelType type;
-				if (color.a < 1.0f) {
+				if (palette.colors[palIdx] < 255) {
 					type = voxel::VoxelType::Transparent;
 				} else {
 					type = voxel::VoxelType::Generic;
@@ -133,6 +131,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 				} else {
 					flags |= ImGuiColorEditFlags_PickerHueBar;
 				}
+				glm::vec4 color = core::Color::fromRGBA(palette.colors[palIdx]);
 				if (ImGui::ColorPicker4("Color", glm::value_ptr(color), flags)) {
 					palette.colors[palIdx] = core::Color::getRGBA(color);
 					palette.markDirty();
