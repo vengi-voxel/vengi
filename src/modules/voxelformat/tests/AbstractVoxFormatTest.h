@@ -5,6 +5,7 @@
 #pragma once
 
 #include "voxel/tests/AbstractVoxelTest.h"
+#include "voxelformat/SceneGraph.h"
 
 namespace voxelformat {
 
@@ -23,7 +24,9 @@ protected:
 
 	void canLoad(const core::String &filename, size_t expectedVolumes = 1);
 	void testRGB(const core::String &filename, float maxDelta = 0.001f);
+	void testRGBSmall(const core::String &filename, io::SeekableReadStream &stream, voxelformat::SceneGraph &sceneGraph);
 	void testRGBSmall(const core::String &filename);
+	void testRGBSmallSaveLoad(const core::String &filename);
 
 	void testSaveMultipleLayers(const core::String &filename, Format *format);
 	void testSaveSingleVoxel(const core::String &filename, Format *format);

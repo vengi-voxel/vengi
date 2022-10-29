@@ -131,11 +131,7 @@ void AbstractVoxFormatTest::checkColor(core::RGBA c1, const voxel::Palette &pale
 							 << "], delta[" << delta << "]";
 }
 
-void AbstractVoxFormatTest::testRGBSmall(const core::String &filename) {
-	voxelformat::SceneGraph sceneGraph;
-	const io::FilePtr& file = open(filename);
-	ASSERT_TRUE(file->validHandle());
-	io::FileStream stream(file);
+void AbstractVoxFormatTest::testRGBSmall(const core::String &filename, io::SeekableReadStream &stream, voxelformat::SceneGraph &sceneGraph) {
 	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph));
 	EXPECT_EQ(1u, sceneGraph.size());
 
@@ -153,6 +149,33 @@ void AbstractVoxFormatTest::testRGBSmall(const core::String &filename) {
 		checkColor(green, node.palette(), volume->voxel( 1,  0,  0).getColor(), 0.0f);
 		checkColor(red, node.palette(), volume->voxel( 2,  0, 0).getColor(), 0.0f);
 	}
+}
+
+void AbstractVoxFormatTest::testRGBSmall(const core::String &filename) {
+	voxelformat::SceneGraph sceneGraph;
+	const io::FilePtr& file = open(filename);
+	ASSERT_TRUE(file->validHandle());
+	io::FileStream stream(file);
+	testRGBSmall(filename, stream, sceneGraph);
+}
+
+void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename) {
+	voxelformat::SceneGraph sceneGraph;
+	{
+		// load and check that the file contains the expected colors
+		io::FileStream loadStream(open(filename));
+		ASSERT_TRUE(loadStream.valid());
+		testRGBSmall(filename, loadStream, sceneGraph);
+	}
+
+	io::BufferedReadWriteStream saveStream((int64_t)(10 * 1024 * 1024));
+	const core::String formatExt = core::string::extractExtension(filename);
+	const core::String saveFilename = "test." + formatExt;
+	ASSERT_TRUE(voxelformat::saveFormat(sceneGraph, saveFilename, saveStream));
+	saveStream.seek(0);
+
+	SceneGraph loadSceneGraph;
+	testRGBSmall(saveFilename, saveStream, loadSceneGraph);
 }
 
 void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta) {

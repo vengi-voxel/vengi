@@ -23,6 +23,10 @@ TEST_F(QBFormatTest, testLoadRGBSmall) {
 	testRGBSmall("rgb_small.qb");
 }
 
+TEST_F(QBFormatTest, testLoadRGBSmallSaveLoad) {
+	testRGBSmallSaveLoad("rgb_small.qb");
+}
+
 TEST_F(QBFormatTest, testSaveSingleVoxel) {
 	QBFormat f;
 	testSaveSingleVoxel("qubicle-singlevoxelsavetest.qb", &f);

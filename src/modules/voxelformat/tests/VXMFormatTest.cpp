@@ -18,6 +18,10 @@ TEST_F(VXMFormatTest, testLoadRGBSmall) {
 	testRGBSmall("rgb_small.vxm");
 }
 
+TEST_F(VXMFormatTest, testLoadRGBSmallSaveLoad) {
+	testRGBSmallSaveLoad("rgb_small.vxm");
+}
+
 TEST_F(VXMFormatTest, testLoadVersion4) {
 	canLoad("test.vxm");
 }

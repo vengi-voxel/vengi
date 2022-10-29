@@ -113,6 +113,10 @@ TEST_F(VoxFormatTest, testLoadRGBSmall) {
 	testRGBSmall("rgb_small.vox");
 }
 
+TEST_F(VoxFormatTest, testLoadRGBSmallSaveLoad) {
+	testRGBSmallSaveLoad("rgb_small.vox");
+}
+
 TEST_F(VoxFormatTest, testSaveSmallVoxel) {
 	VoxFormat f;
 	testSaveLoadVoxel("mv-smallvolumesavetest.vox", &f);
