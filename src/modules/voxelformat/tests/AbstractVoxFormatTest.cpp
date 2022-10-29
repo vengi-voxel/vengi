@@ -127,8 +127,32 @@ void AbstractVoxFormatTest::canLoad(const core::String &filename, size_t expecte
 void AbstractVoxFormatTest::checkColor(core::RGBA c1, const voxel::Palette &palette, uint8_t index, float maxDelta) {
 	const core::RGBA c2 = palette.colors[index];
 	const float delta = core::Color::getDistance(c1, c2);
-	ASSERT_LT(delta, maxDelta) << "color1[" << core::Color::print(c1) << "], color2[" << core::Color::print(c2)
+	ASSERT_LE(delta, maxDelta) << "color1[" << core::Color::print(c1) << "], color2[" << core::Color::print(c2)
 							 << "], delta[" << delta << "]";
+}
+
+void AbstractVoxFormatTest::testRGBSmall(const core::String &filename) {
+	voxelformat::SceneGraph sceneGraph;
+	const io::FilePtr& file = open(filename);
+	ASSERT_TRUE(file->validHandle());
+	io::FileStream stream(file);
+	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph));
+	EXPECT_EQ(1u, sceneGraph.size());
+
+	voxel::Palette palette;
+	EXPECT_TRUE(palette.nippon());
+
+	const core::RGBA red(255, 0, 0);
+	const core::RGBA green(0, 255, 0);
+	const core::RGBA blue(0, 0, 255);
+
+	for (const voxelformat::SceneGraphNode &node : sceneGraph) {
+		const voxel::RawVolume *volume = node.volume();
+		EXPECT_EQ(3, voxelutil::visitVolume(*volume, [] (int, int, int, const voxel::Voxel&) {}));
+		checkColor(blue, node.palette(), volume->voxel( 0,  0,  0).getColor(), 0.0f);
+		checkColor(green, node.palette(), volume->voxel( 1,  0,  0).getColor(), 0.0f);
+		checkColor(red, node.palette(), volume->voxel( 2,  0, 0).getColor(), 0.0f);
+	}
 }
 
 void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta) {

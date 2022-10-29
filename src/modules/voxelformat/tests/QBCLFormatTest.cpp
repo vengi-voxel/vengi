@@ -28,6 +28,10 @@ TEST_F(QBCLFormatTest, testLoadRGB) {
 	testRGB("rgb.qbcl");
 }
 
+TEST_F(QBCLFormatTest, testLoadRGBSmall) {
+	testRGBSmall("rgb_small.qbcl");
+}
+
 // TODO: still fails - most likely related to the mv palette index 0
 TEST_F(QBCLFormatTest, DISABLED_testLoadCrabby) {
 	voxelformat::SceneGraph qbclsceneGraph;

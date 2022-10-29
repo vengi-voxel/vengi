@@ -25,6 +25,10 @@ TEST_F(CubFormatTest, testLoadRGB) {
 	testRGB("rgb.cub");
 }
 
+TEST_F(CubFormatTest, testLoadRGBSmall) {
+	testRGBSmall("rgb_small.cub");
+}
+
 TEST_F(CubFormatTest, testSaveSmallVoxel) {
 	CubFormat f;
 	testSaveLoadVoxel("cw-smallvolumesavetest.cub", &f);

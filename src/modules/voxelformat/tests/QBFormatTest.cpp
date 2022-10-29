@@ -19,6 +19,10 @@ TEST_F(QBFormatTest, testLoadRGB) {
 	testRGB("rgb.qb");
 }
 
+TEST_F(QBFormatTest, testLoadRGBSmall) {
+	testRGBSmall("rgb_small.qb");
+}
+
 TEST_F(QBFormatTest, testSaveSingleVoxel) {
 	QBFormat f;
 	testSaveSingleVoxel("qubicle-singlevoxelsavetest.qb", &f);

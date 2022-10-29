@@ -131,6 +131,12 @@ set(TEST_FILES
 	tests/rgb.vxm
 	tests/rgb.cub
 	tests/rgb.qbcl
+	tests/rgb_small.cub
+	tests/rgb_small.qb
+	tests/rgb_small.qbcl
+	tests/rgb_small.qbt
+	tests/rgb_small.vox
+	tests/rgb_small.vxm
 	tests/vox_character.vox
 	tests/vox_glasses.vox
 	tests/glTF/cube/Cube_BaseColor.png
