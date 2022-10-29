@@ -342,7 +342,7 @@ SceneGraphNode *SceneGraph::operator[](int modelIdx) {
 	return nullptr;
 }
 
-voxel::Palette SceneGraph::mergePalettes(bool removeUnused) const {
+voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) const {
 	voxel::Palette palette;
 	bool tooManyColors = false;
 	for (const SceneGraphNode &node : *this) {
@@ -352,15 +352,22 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused) const {
 			if (palette.hasColor(rgba)) {
 				continue;
 			}
-			if (!palette.addColorToPalette(rgba, false, nullptr, false)) {
+			uint8_t index = 0;
+			if (!palette.addColorToPalette(rgba, false, &index, false, emptyIndex)) {
 				tooManyColors = true;
 				break;
+			}
+			if (nodePalette.hasGlow(i)) {
+				palette.setGlow(index, 1.0f);
 			}
 		}
 	}
 	if (tooManyColors) {
 		Log::debug("too many colors - restart, but skip similar");
 		palette.colorCount = 0;
+		for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
+			palette.removeGlow(i);
+		}
 		for (const SceneGraphNode &node : *this) {
 			core::Array<bool, voxel::PaletteMaxColors> used;
 			if (removeUnused) {
@@ -377,8 +384,13 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused) const {
 					Log::trace("color %i not used, skip it for this node", i);
 					continue;
 				}
+				uint8_t index = 0;
 				const core::RGBA rgba = nodePalette.colors[i];
-				palette.addColorToPalette(rgba, true, nullptr, true);
+				if (palette.addColorToPalette(rgba, true, &index, true, emptyIndex)) {
+					if (nodePalette.hasGlow(i)) {
+						palette.setGlow(index, true);
+					}
+				}
 			}
 		}
 	}

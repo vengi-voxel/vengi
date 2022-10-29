@@ -51,8 +51,10 @@ public:
 	 * besides merging similar colors.
 	 * @note The resulting palette can be used to find similar colors in all nodes when e.g. a format only supports
 	 * one palette for all nodes
+	 * @param[in] emptyIndex Some formats can't e.g. use the first palette index because 0 indicates an empty voxel.
+	 * Inform the merge process about skipping that voxel slot
 	 */
-	voxel::Palette mergePalettes(bool removeUnused) const;
+	voxel::Palette mergePalettes(bool removeUnused, int emptyIndex = -1) const;
 
 	/**
 	 * @return The full region of the whole scene
