@@ -871,6 +871,9 @@ void SceneManager::resetSceneState() {
 	_animationNodeIdDirtyState = -1;
 	_animationIdx = 0;
 #endif
+	// this also resets the cursor voxel - but nodeActive() will set it to the first usable index
+	// that's why this call must happen before the nodeActive() call.
+	_modifier.reset();
 	voxelformat::SceneGraphNode &node = *_sceneGraph.begin();
 	nodeActivate(node.id());
 	if (_sceneGraph.size() > 1) {
@@ -882,7 +885,6 @@ void SceneManager::resetSceneState() {
 	Log::debug("New volume for node %i", node.id());
 	_mementoHandler.markModification(node, voxel::Region::InvalidRegion);
 	_dirty = false;
-	_modifier.reset();
 	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), true);
 	setReferencePosition(node.region().getCenter());
@@ -2571,7 +2573,14 @@ bool SceneManager::nodeActivate(int nodeId) {
 		return false;
 	}
 	_sceneGraph.setActiveNode(nodeId);
-	voxel::overridePalette(node.palette());
+	const voxel::Palette &palette = node.palette();
+	voxel::overridePalette(palette);
+	for (int i = 0; i < palette.colorCount; ++i) {
+		if (palette.colors[i].a > 0) {
+			_modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, i));
+			break;
+		}
+	}
 	const voxel::Region& region = node.region();
 	updateGridRenderer(region);
 	updateAABBMesh();
