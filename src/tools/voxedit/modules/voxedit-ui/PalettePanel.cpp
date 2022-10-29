@@ -100,10 +100,12 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 				ImGui::EndDisabled();
 			}
 
-			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-				ImGui::Text("Color %i", palIdx);
-				ImGui::SetDragDropPayload(dragdrop::ColorPayload, (const void*)&palIdx, sizeof(int), ImGuiCond_Always);
-				ImGui::EndDragDropSource();
+			if (palette.colors[palIdx].a > 0) {
+				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+					ImGui::Text("Color %i", palIdx);
+					ImGui::SetDragDropPayload(dragdrop::ColorPayload, (const void*)&palIdx, sizeof(int), ImGuiCond_Always);
+					ImGui::EndDragDropSource();
+				}
 			}
 
 			if (ImGui::BeginDragDropTarget()) {
