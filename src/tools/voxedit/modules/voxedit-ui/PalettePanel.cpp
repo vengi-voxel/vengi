@@ -159,7 +159,9 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 				colorHovered = true;
 				drawList->AddRect(v1, v2, redColor);
 			} else if (palIdx == currentSceneHoveredPalIdx) {
-				drawList->AddRect(v1, v2, yellowColor);
+				if (palette.colors[currentSceneHoveredPalIdx].a > 0) {
+					drawList->AddRect(v1, v2, yellowColor);
+				}
 			} else if (palIdx == currentSelectedPalIdx) {
 				drawList->AddRect(v1, v2, darkRedColor);
 			}
