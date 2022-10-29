@@ -37,6 +37,7 @@ extern bool loadFormat(const core::String &filename, io::SeekableReadStream &str
  * @brief Save both to volume or to mesh - depends on the given file extension
  */
 extern bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph);
+extern bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream);
 
 extern bool isMeshFormat(const core::String &filename);
 extern bool isMeshFormat(const io::FormatDescription &desc);

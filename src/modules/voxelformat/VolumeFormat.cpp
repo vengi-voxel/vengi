@@ -362,27 +362,20 @@ bool isModelFormat(const core::String &filename) {
 	return false;
 }
 
-bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph) {
+bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
 	if (sceneGraph.empty()) {
-		Log::error("Failed to save model file %s - no volumes given", filePtr->name().c_str());
+		Log::error("Failed to save model file %s - no volumes given", filename.c_str());
 		return false;
 	}
-
-	if (!filePtr->validHandle()) {
-		Log::error("Failed to save model - no valid file given");
-		return false;
-	}
-
 	const core::String &type = sceneGraph.root().property("Type");
 	if (!type.empty()) {
-		Log::debug("Save '%s' file to '%s'", type.c_str(), filePtr->name().c_str());
+		Log::debug("Save '%s' file to '%s'", type.c_str(), filename.c_str());
 	}
-	io::FileStream stream(filePtr);
-	const core::String &ext = filePtr->extension();
+	const core::String &ext = core::string::extractExtension(filename);
 	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
 			core::SharedPtr<Format> f = getFormat(desc, 0u, false);
-			if (f && f->save(sceneGraph, filePtr->name(), stream)) {
+			if (f && f->save(sceneGraph, filename, stream)) {
 				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
 				return true;
 			}
@@ -391,7 +384,17 @@ bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph) {
 	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
 	QBFormat qbFormat;
 	stream.seek(0);
-	return qbFormat.save(sceneGraph, filePtr->name(), stream);
+	return qbFormat.save(sceneGraph, filename, stream);
+}
+
+bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph) {
+	if (!filePtr->validHandle()) {
+		Log::error("Failed to save model - no valid file given");
+		return false;
+	}
+
+	io::FileStream stream(filePtr);
+	return saveFormat(sceneGraph, filePtr->name(), stream);
 }
 
 }
