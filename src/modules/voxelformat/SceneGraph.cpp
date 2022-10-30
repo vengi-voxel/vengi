@@ -355,12 +355,17 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) cons
 			uint8_t index = 0;
 			int skipIndex = rgba.a == 0 ? -1 : emptyIndex;
 			if (!palette.addColorToPalette(rgba, false, &index, false, skipIndex)) {
-				tooManyColors = true;
-				break;
+				if (index < palette.colorCount - 1) {
+					tooManyColors = true;
+					break;
+				}
 			}
 			if (nodePalette.hasGlow(i)) {
 				palette.setGlow(index, 1.0f);
 			}
+		}
+		if (tooManyColors) {
+			break;
 		}
 	}
 	if (tooManyColors) {
