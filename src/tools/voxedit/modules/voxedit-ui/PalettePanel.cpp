@@ -235,7 +235,8 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		static int closestMatch = -1;
 		static glm::vec4 closestColor{0.0f};
 		if (ImGui::ColorEdit4("Color closest match", glm::value_ptr(closestColor), ImGuiColorEditFlags_NoInputs)) {
-			closestMatch = palette.getClosestMatch(closestColor);
+			const core::RGBA rgba = core::Color::getRGBA(closestColor);
+			closestMatch = palette.getClosestMatch(rgba);
 		}
 		ImGui::TooltipText("Select a color to find the closest match in the current loaded palette");
 		ImGui::SameLine();

@@ -90,11 +90,10 @@ public:
 	void setGlow(uint8_t idx, float factor = 1.0f);
 
 	/**
-	 * @param color Normalized color value [0.0-1.0]
+	 * @param rgba Normalized color value [0.0-1.0]
 	 * @param distance Optional parameter to get the calculated distance for the selected color entry
 	 * @return int The index to the palette color
 	 */
-	int getClosestMatch(const glm::vec4& color, float *distance = nullptr, int skip = -1) const;
 	int getClosestMatch(const core::RGBA rgba, float *distance = nullptr, int skip = -1) const;
 	uint8_t findReplacement(uint8_t index) const;
 	/**

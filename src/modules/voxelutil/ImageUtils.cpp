@@ -172,8 +172,7 @@ voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness)
 			if (data.a == 0) {
 				continue;
 			}
-			const glm::vec4& color = core::Color::fromRGBA(data);
-			const uint8_t index = palette.getClosestMatch(color);
+			const uint8_t index = palette.getClosestMatch(data);
 			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
 			for (int z = 0; z < thickness; ++z) {
 				volume->setVoxel(x, (imageHeight - 1) - y, z, voxel);

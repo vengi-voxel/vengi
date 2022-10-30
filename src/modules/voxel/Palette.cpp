@@ -148,9 +148,25 @@ core::String Palette::print(const Palette &palette, bool colorAsHex) {
 	return palStr;
 }
 
-int Palette::getClosestMatch(const glm::vec4& color, float *distance, int skip) const {
+int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) const {
 	if (size() == 0) {
 		return -1;
+	}
+	for (int i = 0; i < colorCount; ++i) {
+		if (i == skip) {
+			continue;
+		}
+		if (colors[i] == rgba) {
+			return i;
+		}
+	}
+
+	if (rgba.a == 0) {
+		for (int i = 0; i < colorCount; ++i) {
+			if (colors[i].a == 0) {
+				return i;
+			}
+		}
 	}
 
 	float minDistance = FLT_MAX;
@@ -159,6 +175,7 @@ int Palette::getClosestMatch(const glm::vec4& color, float *distance, int skip) 
 	float hue;
 	float saturation;
 	float brightness;
+	const glm::vec4 color = core::Color::fromRGBA(rgba);
 	core::Color::getHSB(color, hue, saturation, brightness);
 
 	for (int i = 0; i < colorCount; ++i) {
@@ -178,18 +195,6 @@ int Palette::getClosestMatch(const glm::vec4& color, float *distance, int skip) 
 		*distance = minDistance;
 	}
 	return minIndex;
-}
-
-int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) const {
-	for (int i = 0; i < colorCount; ++i) {
-		if (i == skip) {
-			continue;
-		}
-		if (colors[i] == rgba) {
-			return (int)i;
-		}
-	}
-	return getClosestMatch(core::Color::fromRGBA(rgba), distance, skip);
 }
 
 uint8_t Palette::findReplacement(uint8_t index) const {
