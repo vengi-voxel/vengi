@@ -207,15 +207,18 @@ core::String Color::print(RGBA rgba, bool colorAsHex) {
 		buf = toHex(rgba);
 		buf.append(" ");
 	}
-	buf.append("\033[38;2;");
-	buf.append(rgba.r).append(";");
-	buf.append(rgba.g).append(";");
-	buf.append(rgba.b).append("m");
+	if (rgba.a != 0) {
+		buf.append("\033[38;2;");
+		buf.append(rgba.r).append(";");
+		buf.append(rgba.g).append(";");
+		buf.append(rgba.b).append("m");
+	}
 	buf.append("\033[48;2;");
 	buf.append(rgba.r).append(";");
 	buf.append(rgba.g).append(";");
 	buf.append(rgba.b).append("m");
-	buf.append(u8"\u2587").append("\033[0m");
+	buf.append(u8"\u2587");
+	buf.append("\033[0m");
 	return buf;
 }
 
