@@ -60,15 +60,6 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 			return false;
 		}
 	}
-	for (int i = 0; i < colorCount; ++i) {
-		if (colors[i].a == 0) {
-			if (index) {
-				*index = i;
-			}
-			colors[i] = rgba;
-			return true;
-		}
-	}
 	static constexpr float MaxThreshold = 0.00014f;
 	if (skipSimilar) {
 		for (int i = 0; i < colorCount; ++i) {
@@ -92,6 +83,16 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 		}
 		colors[colorCount++] = rgba;
 		return true;
+	}
+
+	for (int i = 0; i < colorCount; ++i) {
+		if (colors[i].a == 0) {
+			if (index) {
+				*index = i;
+			}
+			colors[i] = rgba;
+			return true;
+		}
 	}
 
 	if (replaceSimilar) {
