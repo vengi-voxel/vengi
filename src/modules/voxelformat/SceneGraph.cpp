@@ -353,7 +353,8 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) cons
 				continue;
 			}
 			uint8_t index = 0;
-			if (!palette.addColorToPalette(rgba, false, &index, false, emptyIndex)) {
+			int skipIndex = rgba.a == 0 ? -1 : emptyIndex;
+			if (!palette.addColorToPalette(rgba, false, &index, false, skipIndex)) {
 				tooManyColors = true;
 				break;
 			}
@@ -386,7 +387,8 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) cons
 				}
 				uint8_t index = 0;
 				const core::RGBA rgba = nodePalette.colors[i];
-				if (palette.addColorToPalette(rgba, true, &index, true, emptyIndex)) {
+				int skipIndex = rgba.a == 0 ? -1 : emptyIndex;
+				if (palette.addColorToPalette(rgba, true, &index, true, skipIndex)) {
 					if (nodePalette.hasGlow(i)) {
 						palette.setGlow(index, true);
 					}
