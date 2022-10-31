@@ -37,6 +37,25 @@ TEST_F(PaletteTest, testCopyPalette) {
 	ASSERT_EQ(pal.colorCount, copy.colorCount);
 }
 
+TEST_F(PaletteTest, testAddColor1) {
+	int emptySlot = 0;
+	Palette pal;
+	EXPECT_TRUE(pal.addColorToPalette(core::RGBA(0), true, nullptr, false, emptySlot));
+	ASSERT_EQ(1, pal.colorCount);
+	EXPECT_TRUE(pal.addColorToPalette(core::RGBA(0, 0, 0, 255), true, nullptr, false, emptySlot));
+	ASSERT_EQ(2, pal.colorCount);
+}
+
+TEST_F(PaletteTest, testAddColor2) {
+	int emptySlot = 0;
+	Palette pal;
+	EXPECT_TRUE(pal.addColorToPalette(core::RGBA(0, 0, 0, 255), true, nullptr, false, emptySlot));
+	ASSERT_EQ(2, pal.colorCount) << "Empty slot was not taken into account";
+	uint8_t index = -1;
+	EXPECT_FALSE(pal.addColorToPalette(core::RGBA(0), true, &index, false, emptySlot));
+	ASSERT_EQ(0, index);
+}
+
 TEST_F(PaletteTest, testRGBPalette) {
 	Palette pal;
 	pal.nippon();
