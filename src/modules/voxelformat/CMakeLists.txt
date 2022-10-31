@@ -54,6 +54,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
 
 set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
+	tests/AoSVXLFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
 	tests/ConvertTest.cpp
 	tests/PaletteTest.cpp
