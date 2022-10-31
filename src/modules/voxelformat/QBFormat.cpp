@@ -406,6 +406,7 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 			break;
 		}
 	}
+	Log::debug("%i qb colors loaded", palette.colorCount);
 	return palette.colorCount;
 }
 
