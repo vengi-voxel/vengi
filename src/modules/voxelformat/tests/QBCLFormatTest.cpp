@@ -36,8 +36,7 @@ TEST_F(QBCLFormatTest, testLoadRGBSmallSaveLoad) {
 	testRGBSmallSaveLoad("rgb_small.qbcl");
 }
 
-// TODO: still fails - most likely related to the mv palette index 0
-TEST_F(QBCLFormatTest, DISABLED_testLoadCrabby) {
+TEST_F(QBCLFormatTest, testLoadCrabby) {
 	voxelformat::SceneGraph qbclsceneGraph;
 	{
 		const core::String filename = "crabby.qbcl";
@@ -45,9 +44,6 @@ TEST_F(QBCLFormatTest, DISABLED_testLoadCrabby) {
 		ASSERT_TRUE(file->validHandle());
 		io::FileStream stream(file);
 		ASSERT_TRUE(voxelformat::loadFormat(filename, stream, qbclsceneGraph));
-		const SceneGraphNode* node = qbclsceneGraph.findNodeByName("Matrix");
-		ASSERT_NE(nullptr, node);
-		qbclsceneGraph.removeNode(node->id(), false);
 	}
 	voxelformat::SceneGraph voxsceneGraph;
 	{
