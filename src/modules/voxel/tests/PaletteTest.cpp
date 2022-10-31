@@ -56,6 +56,16 @@ TEST_F(PaletteTest, testAddColor2) {
 	ASSERT_EQ(0, index);
 }
 
+TEST_F(PaletteTest, testGetClosestMatch) {
+	Palette pal;
+	pal.magicaVoxel();
+	EXPECT_EQ(255, pal.colorCount);
+	for (int i = 0; i < pal.colorCount; ++i) {
+		const int match = pal.getClosestMatch(pal.colors[i]);
+		EXPECT_EQ(i, match);
+	}
+}
+
 TEST_F(PaletteTest, testRGBPalette) {
 	Palette pal;
 	pal.nippon();
