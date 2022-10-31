@@ -45,17 +45,21 @@ static const uint8_t EMPTY_PALETTE = 0xFFu;
 		return false; \
 	}
 
-bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel &voxel, uint8_t emptyColorReplacement) const {
+bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel &voxel, const voxel::Palette &nodePalette, const voxel::Palette &palette) const {
 	if (length == 0) {
 		return true;
 	}
 	wrapBool(stream.writeUInt8(length))
 	if (voxel::isAir(voxel.getMaterial())) {
 		wrapBool(stream.writeUInt8(EMPTY_PALETTE))
-	} else if (voxel.getColor() == EMPTY_PALETTE) {
-		wrapBool(stream.writeUInt8(emptyColorReplacement))
 	} else {
-		wrapBool(stream.writeUInt8(voxel.getColor()))
+		const core::RGBA color = nodePalette.colors[voxel.getColor()];
+		const int palIndex = palette.getClosestMatch(color, nullptr, EMPTY_PALETTE);
+		if (palIndex < 0) {
+			Log::error("Got palette index %i for %s", palIndex, core::Color::print(color, true).c_str());
+		}
+		core_assert(palIndex != EMPTY_PALETTE);
+		wrapBool(stream.writeUInt8(palIndex))
 	}
 	return true;
 }
@@ -122,16 +126,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		}
 	}
 
-	const voxel::Palette &palette = sceneGraph.firstPalette();
-	// we need to find a replacement for this color - the empty voxel is the last palette entry
-	// we are using the first palette entry (like magicavoxel does, too)
-	const uint8_t emptyColorReplacement = palette.findReplacement(EMPTY_PALETTE);
-	if (emptyColorReplacement == EMPTY_PALETTE) {
-		Log::warn("Could not find replacement for palette color: %u", EMPTY_PALETTE);
-	}
-	Log::debug("found replacement for %s at index %u: %s at index %u", core::Color::print(palette.colors[EMPTY_PALETTE]).c_str(), EMPTY_PALETTE,
-			   core::Color::print(palette.colors[emptyColorReplacement]).c_str(), emptyColorReplacement);
-
+	voxel::Palette palette = sceneGraph.mergePalettes(true, EMPTY_PALETTE);
 	int numColors = palette.colorCount;
 	if (numColors >= voxel::PaletteMaxColors) {
 		numColors = voxel::PaletteMaxColors - 1;
@@ -226,7 +221,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 					sampler.setPosition(mins.x + x, mins.y + y, mins.z + z);
 					const voxel::Voxel &voxel = sampler.voxel();
 					if (prevVoxel.getColor() != voxel.getColor() || voxel.getMaterial() != prevVoxel.getMaterial() || rleCount >= 255) {
-						wrapBool(writeRLE(stream, rleCount, prevVoxel, emptyColorReplacement))
+						wrapBool(writeRLE(stream, rleCount, prevVoxel, node.palette(), palette))
 						prevVoxel = voxel;
 						rleCount = 0;
 					} else if (firstLoop) {
@@ -238,7 +233,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 			}
 		}
 		if (rleCount > 0) {
-			wrapBool(writeRLE(stream, rleCount, prevVoxel, emptyColorReplacement))
+			wrapBool(writeRLE(stream, rleCount, prevVoxel, node.palette(), palette))
 		}
 
 		wrapBool(stream.writeUInt8(0));
@@ -469,8 +464,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			palette.glowColors[i] = palette.colors[i];
 		}
 	}
-	palette.colorCount = materialAmount + 1;
-	palette.colors[voxel::PaletteMaxColors - 1] = core::RGBA(0, 0, 0, 0);
+	palette.colorCount = materialAmount;
 
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 
