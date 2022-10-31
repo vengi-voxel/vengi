@@ -255,6 +255,7 @@ size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 	SceneGraph sceneGraph;
 	wrapBool(readNodes(filename, stream, sceneGraph, sceneGraph.root().id(), palette, header))
 
+	Log::debug("qbcl: loaded %i colors", palette.colorCount);
 	return palette.colorCount;
 }
 
@@ -339,9 +340,9 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				if (alpha == 0) {
 					y += rleLength;
 				} else {
-					const core::RGBA color(red, green, blue, alpha);
+					const core::RGBA color(red, green, blue, 255 /* TODO: alpha? */);
 					if (header.loadPalette) {
-						palette.addColorToPalette(color);
+						palette.addColorToPalette(color, false);
 					} else {
 						const uint8_t palIndex = palLookup.findClosestIndex(color);
 						const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, palIndex);
@@ -361,7 +362,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				// Uncompressed
 				const core::RGBA color(red, green, blue);
 				if (header.loadPalette) {
-					palette.addColorToPalette(color);
+					palette.addColorToPalette(color, false);
 				} else {
 					const uint32_t x = (index / size.z);
 					const uint32_t z = index % size.z;
