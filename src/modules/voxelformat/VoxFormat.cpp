@@ -72,15 +72,19 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 		Log::error("Could not load scene %s", filename.c_str());
 		return 0;
 	}
-	palette.colorCount = lengthof(scene->palette.color);
-	for (int i = 0; i < palette.colorCount; ++i) {
-		const ogt_vox_rgba &c = scene->palette.color[i];
-		const ogt_vox_matl &matl = scene->materials.matl[i];
-		palette.colors[i] = core::RGBA(c.r, c.g, c.b);
-		if (matl.type == ogt_matl_type::ogt_matl_type_emit) {
-			palette.glowColors[i] = palette.colors[i];
+	palette.colorCount = 0;
+	int palIdx = 0;
+	for (int i = 0; i < lengthof(scene->palette.color); ++i) {
+		const ogt_vox_rgba color = scene->palette.color[(i + 1) & 255];
+		palette.colors[palIdx] = core::RGBA(color.r, color.g, color.b, color.a);
+		const ogt_vox_matl &matl = scene->materials.matl[(i + 1) & 255];
+		if (matl.type == ogt_matl_type_emit) {
+			palette.glowColors[palIdx] = palette.colors[palIdx];
 		}
+		++palIdx;
 	}
+	palette.colorCount = palIdx;
+	Log::debug("vox load color count: %i", palette.colorCount);
 	ogt_vox_destroy_scene(scene);
 	return palette.size();
 }
@@ -150,7 +154,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 				if (ogtVoxel[0] == 0) {
 					continue;
 				}
-				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, ogtVoxel[0]);
+				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, ogtVoxel[0] - 1);
 				const glm::ivec3 &pos = calcTransform(ogtMat, glm::ivec3(i, j, k), pivot);
 				const glm::ivec3 &poszUp = calcTransform(zUpMat, pos, glm::ivec4(0));
 				const glm::ivec3 &regionPos = poszUp - shift;
@@ -258,15 +262,19 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	palette.colorCount = lengthof(scene->palette.color);
-	for (int i = 0; i < palette.colorCount; ++i) {
-		const ogt_vox_rgba color = scene->palette.color[i];
-		palette.colors[i] = core::RGBA(color.r, color.g, color.b);
-		const ogt_vox_matl &matl = scene->materials.matl[i];
+	palette.colorCount = 0;
+	int palIdx = 0;
+	for (int i = 0; i < lengthof(scene->palette.color); ++i) {
+		const ogt_vox_rgba color = scene->palette.color[(i + 1) & 255];
+		palette.colors[palIdx] = core::RGBA(color.r, color.g, color.b, color.a);
+		const ogt_vox_matl &matl = scene->materials.matl[(i + 1) & 255];
 		if (matl.type == ogt_matl_type_emit) {
-			palette.glowColors[i] = palette.colors[i];
+			palette.glowColors[palIdx] = palette.colors[palIdx];
 		}
+		++palIdx;
 	}
+	palette.colorCount = palIdx;
+	Log::debug("vox load color count: %i", palette.colorCount);
 
 	// rotation matrix to convert into our coordinate system (mv has z pointing upwards)
 	const glm::mat4 zUpMat{
