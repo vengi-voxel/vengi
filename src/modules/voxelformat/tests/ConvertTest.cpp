@@ -81,18 +81,12 @@ TEST_F(ConvertTest, testQbToSTL) {
 	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.stl", target, flags);
 }
 
-TEST_F(ConvertTest, DISABLED_testQbToOBJ) {
+TEST_F(ConvertTest, testQbToOBJ) {
 	QBFormat src;
 	OBJFormat target;
 	// the palette size is reduced here to the real amount of used colors
 	const voxel::ValidateFlags flags = (voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette) | voxel::ValidateFlags::IgnoreHollow;
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.obj", target, flags, 0.014f);
-}
-
-TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
-	GLTFFormat src;
-	GLTFFormat target;
-	testLoadSaveAndLoadSceneGraph("glTF/BoxAnimated.glb", src, "convert-BoxAnimated2.glb", target);
 }
 
 TEST_F(ConvertTest, testBinvoxToQb) {
@@ -280,6 +274,16 @@ TEST_F(ConvertTest, testVXLToVXR) {
 }
 
 // TODO: pivot broken
+// TODO: broken keyframes
+// TODO: broken voxels
+TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
+	GLTFFormat src;
+	GLTFFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("glTF/BoxAnimated.glb", src, "convert-BoxAnimated2.glb", target, flags);
+}
+
+// TODO: pivot broken
 // TODO: translation broken
 TEST_F(ConvertTest, testVoxToVXR) {
 	VoxFormat src;
@@ -288,7 +292,7 @@ TEST_F(ConvertTest, testVoxToVXR) {
 	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxr", target, flags);
 }
 
-// TODO: transform broken
+// TODO: translation broken
 TEST_F(ConvertTest, testQbToGox) {
 	QBFormat src;
 	GoxFormat target;
