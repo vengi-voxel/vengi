@@ -543,12 +543,6 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 			mat.matl[i].emit = 1.0f;
 		}
 	}
-	for (int i = palette.colorCount; i < 256; ++i) {
-		pal.color[i].r = 0;
-		pal.color[i].g = 0;
-		pal.color[i].b = 0;
-		pal.color[i].a = 255;
-	}
 
 	uint32_t buffersize = 0;
 	uint8_t *buffer = ogt_vox_write_scene(&output_scene, &buffersize);
