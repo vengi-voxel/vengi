@@ -153,7 +153,7 @@ protected:
 TEST_F(PaletteTest, testQbToVox) {
 	QBFormat rgb;
 	VoxFormat pal;
-	testRGBToPaletteFormat(rgb, "chr_knight.qb", 17, pal, "chr_knight-qbtovox.vox", 256);
+	testRGBToPaletteFormat(rgb, "chr_knight.qb", 17, pal, "chr_knight-qbtovox.vox", 17);
 }
 
 TEST_F(PaletteTest, testQbToQb) {
@@ -171,13 +171,13 @@ TEST_F(PaletteTest, testQbToQBCL) {
 TEST_F(PaletteTest, testVoxToVox) {
 	VoxFormat pal1;
 	VoxFormat pal2;
-	testPaletteToPaletteFormat(pal1, "magicavoxel.vox", pal2, "magicavoxel-testvoxtovox.qb", 256);
+	testPaletteToPaletteFormat(pal1, "magicavoxel.vox", pal2, "magicavoxel-testvoxtovox.qb", 255);
 }
 
 TEST_F(PaletteTest, testVoxToQb) {
 	QBFormat rgb;
 	VoxFormat pal;
-	testPaletteToRGBFormat(pal, "magicavoxel.vox", 256, rgb, "magicavoxel-testvoxtoqb.qb", 21);
+	testPaletteToRGBFormat(pal, "magicavoxel.vox", 255, rgb, "magicavoxel-testvoxtoqb.qb", 21);
 }
 
 } // namespace voxelformat

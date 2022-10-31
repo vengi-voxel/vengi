@@ -361,7 +361,7 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	original.setVoxel(mins, mins, mins, createVoxel(voxel::VoxelType::Generic, 0));
 	original.setVoxel(mins, mins, maxs, createVoxel(voxel::VoxelType::Generic, 244));
 	original.setVoxel(mins, maxs, maxs, createVoxel(voxel::VoxelType::Generic, 126));
-	original.setVoxel(mins, maxs, mins, createVoxel(voxel::VoxelType::Generic, 255));
+	original.setVoxel(mins, maxs, mins, createVoxel(voxel::VoxelType::Generic, 254));
 
 	original.setVoxel(maxs, maxs, maxs, createVoxel(voxel::VoxelType::Generic, 1));
 	original.setVoxel(maxs, maxs, mins, createVoxel(voxel::VoxelType::Generic, 245));
@@ -372,24 +372,30 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 }
 
 void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, const voxel::RawVolume &original, Format *format, voxel::ValidateFlags flags) {
+	voxel::Palette pal;
+	pal.magicaVoxel();
+
 	SceneGraph sceneGraph;
 	int nodeId = 0;
 	{
 		SceneGraphNode node;
 		node.setName("first level #1");
 		node.setVolume(&original, false);
+		node.setPalette(pal);
 		nodeId = sceneGraph.emplace(core::move(node), nodeId);
 	}
 	{
 		SceneGraphNode node;
 		node.setName("second level #1");
 		node.setVolume(&original, false);
+		node.setPalette(pal);
 		sceneGraph.emplace(core::move(node), nodeId);
 	}
 	{
 		SceneGraphNode node;
 		node.setName("second level #2");
 		node.setVolume(&original, false);
+		node.setPalette(pal);
 		/*nodeId =*/ sceneGraph.emplace(core::move(node), nodeId);
 	}
 
@@ -420,7 +426,7 @@ void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, con
 	voxelformat::SceneGraph::MergedVolumePalette merged = load(filename, *readStream, *format);
 	core::ScopedPtr<voxel::RawVolume> loaded(merged.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load the merged volumes";
-	voxel::volumeComparator(original, voxel::getPalette(), *loaded, merged.second, flags);
+	voxel::volumeComparator(original, pal, *loaded, merged.second, flags);
 }
 
 #undef WRITE_TO_FILE

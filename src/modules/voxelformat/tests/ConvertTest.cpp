@@ -259,7 +259,7 @@ TEST_F(ConvertTest, testLoadRGBSmallVoxToQb) {
 	testRGBSmallSaveLoad("rgb_small.vox", "test.qb");
 }
 
-TEST_F(ConvertTest, DISABLED_testLoadRGBSmallQbToVox) {
+TEST_F(ConvertTest, testLoadRGBSmallQbToVox) {
 	testRGBSmallSaveLoad("rgb_small.qb", "test.vox");
 }
 
@@ -267,7 +267,7 @@ TEST_F(ConvertTest, testLoadRGBSmallVoxToQbcl) {
 	testRGBSmallSaveLoad("rgb_small.vox", "test.qbcl");
 }
 
-TEST_F(ConvertTest, DISABLED_testLoadRGBSmallQbclToVox) {
+TEST_F(ConvertTest, testLoadRGBSmallQbclToVox) {
 	testRGBSmallSaveLoad("rgb_small.qbcl", "test.vox");
 }
 

@@ -82,8 +82,10 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 			palette.glowColors[palIdx] = palette.colors[palIdx];
 		}
 		++palIdx;
+		if (color.a != 0) {
+			palette.colorCount = palIdx;
+		}
 	}
-	palette.colorCount = palIdx;
 	Log::debug("vox load color count: %i", palette.colorCount);
 	ogt_vox_destroy_scene(scene);
 	return palette.size();
@@ -155,6 +157,9 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 					continue;
 				}
 				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, ogtVoxel[0] - 1);
+				if (palette.colors[voxel.getColor()].a != 255) {
+					Log::error("got transparent voxel color for palette index %u", voxel.getColor());
+				}
 				const glm::ivec3 &pos = calcTransform(ogtMat, glm::ivec3(i, j, k), pivot);
 				const glm::ivec3 &poszUp = calcTransform(zUpMat, pos, glm::ivec4(0));
 				const glm::ivec3 &regionPos = poszUp - shift;
@@ -264,7 +269,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	palette.colorCount = 0;
 	int palIdx = 0;
-	for (int i = 0; i < lengthof(scene->palette.color); ++i) {
+	for (int i = 0; i < lengthof(scene->palette.color) - 1; ++i) {
 		const ogt_vox_rgba color = scene->palette.color[(i + 1) & 255];
 		palette.colors[palIdx] = core::RGBA(color.r, color.g, color.b, color.a);
 		const ogt_vox_matl &matl = scene->materials.matl[(i + 1) & 255];
@@ -272,8 +277,10 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			palette.glowColors[palIdx] = palette.colors[palIdx];
 		}
 		++palIdx;
+		if (color.a != 0) {
+			palette.colorCount = palIdx;
+		}
 	}
-	palette.colorCount = palIdx;
 	Log::debug("vox load color count: %i", palette.colorCount);
 
 	// rotation matrix to convert into our coordinate system (mv has z pointing upwards)
@@ -423,7 +430,6 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 		Log::debug("Add model node");
 		const voxel::Region region = node.region();
 		const voxel::Palette &nodePalette = node.palette();
-		const bool needsRemapping = palette.hash() != nodePalette.hash();
 		{
 			ogt_vox_model ogt_model;
 			core_memset(&ogt_model, 0, sizeof(ogt_model));
@@ -435,21 +441,14 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 			uint8_t *dataptr = (uint8_t*)core_malloc(voxelSize);
 			ogt_model.voxel_data = dataptr;
 			voxelutil::visitVolume(*node.volume(), [&] (int, int, int, const voxel::Voxel& voxel) {
-				if (voxel.getColor() == 0) {
-					if (isAir(voxel.getMaterial())) {
-						*dataptr++ = 0;
-					} else {
-						*dataptr++ = replacement;
-					}
-				} else if (needsRemapping) {
-					const uint8_t palIndex = palette.getClosestMatch(nodePalette.colors[voxel.getColor()]);
-					if (palIndex == 0) {
-						*dataptr++ = replacement;
-					} else {
-						*dataptr++ = palIndex;
-					}
+				if (isAir(voxel.getMaterial())) {
+					*dataptr++ = 0;
 				} else {
-					*dataptr++ = voxel.getColor();
+					const uint8_t palIndex = palette.getClosestMatch(nodePalette.colors[voxel.getColor()], nullptr, 0);
+					if (palIndex == 0u) {
+						Log::error("palette index %u: %s mapped to %s", voxel.getColor(), core::Color::print(nodePalette.colors[voxel.getColor()]).c_str(), core::Color::print(palette.colors[0]).c_str());
+					}
+					*dataptr++ = palIndex;
 				}
 			}, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
 
@@ -500,7 +499,7 @@ glm::ivec3 VoxFormat::maxSize() const {
 }
 
 bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
-	voxel::Palette palette = sceneGraph.mergePalettes(true);
+	voxel::Palette palette = sceneGraph.mergePalettes(true, 0);
 	int palReplacement = findClosestPaletteIndex(palette);
 
 	core_assert(palReplacement != 0u);
@@ -537,6 +536,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	ogt_vox_matl_array &mat = output_scene.materials;
 
 	core_assert(palette.colorCount > 0);
+	Log::debug("vox save color count: %i (including first transparent slot)", palette.colorCount);
 	for (int i = 0; i < palette.colorCount; ++i) {
 		const core::RGBA &rgba = palette.colors[i];
 		pal.color[i].r = rgba.r;
