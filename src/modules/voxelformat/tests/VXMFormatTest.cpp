@@ -10,7 +10,7 @@ namespace voxelformat {
 class VXMFormatTest: public AbstractVoxFormatTest {
 };
 
-TEST_F(VXMFormatTest, DISABLED_testRGB) {
+TEST_F(VXMFormatTest, testRGB) {
 	testRGB("rgb.vxm");
 }
 
