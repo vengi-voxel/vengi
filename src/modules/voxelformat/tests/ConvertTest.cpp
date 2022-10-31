@@ -271,22 +271,21 @@ TEST_F(ConvertTest, testLoadRGBSmallQbclToVox) {
 	testRGBSmallSaveLoad("rgb_small.qbcl", "test.vox");
 }
 
-// TODO: pivot broken
-// TODO: transform broken
-// TODO: palette of vox broken - the first color is transparency and should not be added
-TEST_F(ConvertTest, testVoxToVXR) {
-	VoxFormat src;
-	VXMFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
-	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxr", target, flags);
-}
-
 TEST_F(ConvertTest, testVXLToVXR) {
 	VXLFormat src;
 	VXRFormat target;
 	// the palette of vxm contains one transparent entry that is used to indicate empty voxels - thus the palette has one entry less
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "convert-cc.vxr", target, flags);
+}
+
+// TODO: pivot broken
+// TODO: translation broken
+TEST_F(ConvertTest, testVoxToVXR) {
+	VoxFormat src;
+	VXMFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxr", target, flags);
 }
 
 // TODO: transform broken
