@@ -168,6 +168,7 @@ int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) c
 				return i;
 			}
 		}
+		return -1;
 	}
 
 	float minDistance = FLT_MAX;
