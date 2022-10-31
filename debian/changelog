@@ -1,4 +1,10 @@
-vengi (0.0.22.0-1) UNRELEASED; urgency=low
+vengi (0.0.23.0-1) UNRELEASED; urgency=low
+
+  * General:
+
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 31 Oct 2022 00:00:00 +0000
+
+vengi (0.0.22.0-1) unstable; urgency=low
 
   * General:
   * Improved GLTF format support
@@ -29,7 +35,7 @@ vengi (0.0.22.0-1) UNRELEASED; urgency=low
   * Allow to add group and camera nodes
   * Don't just quit the application if you have unsaved data in your scene
 
- -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 9 Sep 2022 00:00:00 +0000
+ -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 31 Oct 2022 00:00:00 +0000
 
 vengi (0.0.21.0-1) unstable; urgency=low
 
