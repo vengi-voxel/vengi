@@ -63,6 +63,9 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 	static constexpr float MaxThreshold = 0.00014f;
 	if (skipSimilar) {
 		for (int i = 0; i < colorCount; ++i) {
+			if (abs(colors[i].a - rgba.a) > 10) {
+				continue;
+			}
 			const float dist = core::Color::getDistance(colors[i], rgba);
 			if (dist < MaxThreshold) {
 				if (index) {
@@ -74,7 +77,9 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 	}
 
 	if (colorCount == skipSlotIndex && colorCount < PaletteMaxColors) {
-		++colorCount;
+		if (rgba.a != 0) {
+			++colorCount;
+		}
 	}
 
 	if (colorCount < PaletteMaxColors) {
