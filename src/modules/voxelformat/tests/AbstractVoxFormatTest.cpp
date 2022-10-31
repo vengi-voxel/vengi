@@ -283,17 +283,20 @@ void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Fo
 }
 
 void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Format* format) {
+	voxel::Palette pal;
+	pal.magicaVoxel();
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0, 1, 1));
 	voxel::RawVolume original(region);
 	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 0)));
 	ASSERT_TRUE(original.setVoxel(0, 0, 1, createVoxel(voxel::VoxelType::Generic, 200)));
 	ASSERT_TRUE(original.setVoxel(0, 1, 1, createVoxel(voxel::VoxelType::Generic, 201)));
-	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 255)));
+	ASSERT_TRUE(original.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, pal.colorCount - 1)));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 	SceneGraph sceneGraphsave(2);
 	{
-		SceneGraphNode node;
+		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(&original, false);
+		node.setPalette(pal);
 		sceneGraphsave.emplace(core::move(node));
 	}
 	ASSERT_TRUE(format->save(sceneGraphsave, filename, bufferedStream));
@@ -301,7 +304,7 @@ void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Fo
 	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
 	core::ScopedPtr<voxel::RawVolume> loaded(mergedLoad.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load single voxel file " << filename;
-	voxel::volumeComparator(original, voxel::getPalette(), *loaded, mergedLoad.second, voxel::ValidateFlags::Color | voxel::ValidateFlags::Region);
+	voxel::volumeComparator(original, pal, *loaded, mergedLoad.second, voxel::ValidateFlags::Color | voxel::ValidateFlags::Region);
 }
 
 void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename, Format *format) {
