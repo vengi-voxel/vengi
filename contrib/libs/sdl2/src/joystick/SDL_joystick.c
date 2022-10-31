@@ -168,10 +168,16 @@ SDL_UnlockJoysticks(void)
     }
 }
 
+SDL_bool
+SDL_JoysticksLocked(void)
+{
+    return (SDL_joysticks_locked > 0) ? SDL_TRUE : SDL_FALSE;
+}
+
 void
 SDL_AssertJoysticksLocked(void)
 {
-    SDL_assert(SDL_joysticks_locked > 0);
+    SDL_assert(SDL_JoysticksLocked());
 }
 
 /*
@@ -1524,7 +1530,8 @@ SDL_PrivateJoystickAxis(SDL_Joystick *joystick, Uint8 axis, Sint16 value)
     if (!info->sent_initial_value) {
         /* Make sure we don't send motion until there's real activity on this axis */
         const int MAX_ALLOWED_JITTER = SDL_JOYSTICK_AXIS_MAX / 80;  /* ShanWan PS3 controller needed 96 */
-        if (SDL_abs(value - info->value) <= MAX_ALLOWED_JITTER) {
+        if (SDL_abs(value - info->value) <= MAX_ALLOWED_JITTER &&
+            !SDL_IsJoystickVirtual(joystick->guid)) {
             return 0;
         }
         info->sent_initial_value = SDL_TRUE;
@@ -1873,6 +1880,7 @@ SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_name, c
         { "HORI CO.,LTD", "HORI" },
         { "Mad Catz Inc.", "Mad Catz" },
         { "QANBA USA, LLC", "Qanba" },
+        { "QANBA USA,LLC", "Qanba" },
         { "Unknown ", "" },
     };
     const char *custom_name;
@@ -2118,7 +2126,9 @@ SDL_GetJoystickGameControllerTypeFromVIDPID(Uint16 vendor, Uint16 product, const
     } else if (vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR) {
         type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
 
-    } else if (vendor == USB_VENDOR_NVIDIA && product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER) {
+    } else if (vendor == USB_VENDOR_NVIDIA &&
+               (product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103 ||
+                product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104)) {
         type = SDL_CONTROLLER_TYPE_NVIDIA_SHIELD;
 
     } else {

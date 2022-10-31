@@ -278,10 +278,7 @@ extern "C" {
  *  If this hint isn't specified to a valid setting, or libsamplerate isn't
  *  available, SDL will use the default, internal resampling algorithm.
  *
- *  Note that this is currently only applicable to resampling audio that is
- *  being written to a device for playback or audio being read from a device
- *  for capture. SDL_AudioCVT always uses the default resampler (although this
- *  might change for SDL 2.1).
+ *  As of SDL 2.26, SDL_AudioCVT now respects this hint.
  *
  *  This hint is currently only checked at audio subsystem initialization.
  *
@@ -1260,7 +1257,7 @@ extern "C" {
  *  When polling for events, SDL_PumpEvents is used to gather new events from devices.
  *  If a device keeps producing new events between calls to SDL_PumpEvents, a poll loop will
  *  become stuck until the new events stop.
- *  This is most noticable when moving a high frequency mouse.
+ *  This is most noticeable when moving a high frequency mouse.
  *
  *  By default, poll sentinels are enabled.
  */
@@ -2447,7 +2444,7 @@ extern DECLSPEC SDL_bool SDLCALL SDL_ResetHint(const char *name);
  * variable, or NULL if the environment isn't set. Callbacks will be called
  * normally with this change.
  *
- * \since This function is available since SDL 2.26.1.
+ * \since This function is available since SDL 2.26.0.
  *
  * \sa SDL_GetHint
  * \sa SDL_SetHint

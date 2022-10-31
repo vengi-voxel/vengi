@@ -368,15 +368,30 @@ HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, SDL_bool *removed)
              *
              * See https://github.com/libsdl-org/SDL/issues/6347 for details
              */
+            const int MAX_ATTEMPTS = 3;
+            int attempt;
+            int lock_count = 0;
             SDL_HIDAPI_Device *curr;
             SDL_hid_device *dev;
-            char *path;
+            char *path = SDL_strdup(device->path);
 
             SDL_AssertJoysticksLocked();
-            path = SDL_strdup(device->path);
-            SDL_UnlockJoysticks();
-            dev = SDL_hid_open_path(path, 0);
-            SDL_LockJoysticks();
+            while (SDL_JoysticksLocked()) {
+                ++lock_count;
+                SDL_UnlockJoysticks();
+            }
+            for (attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
+                dev = SDL_hid_open_path(path, 0);
+                if (dev != NULL) {
+                    break;
+                }
+                /* Wait a bit and try again */
+                SDL_Delay(30);
+            }
+            while (lock_count > 0) {
+                --lock_count;
+                SDL_LockJoysticks();
+            }
             SDL_free(path);
 
             /* Make sure the device didn't get removed while opening the HID path */
@@ -1030,6 +1045,14 @@ HIDAPI_IsEquivalentToDevice(Uint16 vendor_id, Uint16 product_id, SDL_HIDAPI_Devi
             if (device->type == SDL_CONTROLLER_TYPE_XBOX360 || device->type == SDL_CONTROLLER_TYPE_XBOXONE) {
                 return SDL_TRUE;
             }
+        }
+    }
+
+    if (vendor_id == USB_VENDOR_NVIDIA) {
+        /* If we're looking for the NVIDIA SHIELD controller Xbox interface, match it against any NVIDIA SHIELD controller */
+        if (product_id == 0xb400 &&
+            device->type == SDL_CONTROLLER_TYPE_NVIDIA_SHIELD) {
+            return SDL_TRUE;
         }
     }
     return SDL_FALSE;

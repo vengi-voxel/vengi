@@ -18,17 +18,20 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../SDL_internal.h"
 
-#include "../../SDL_internal.h"
-#include "SDL_mouse.h"
-#include "SDL_waylandvideo.h"
+#include "../../include/SDL_scancode.h"
 
-#if SDL_VIDEO_DRIVER_WAYLAND
+typedef enum
+{
+    SDL_SCANCODE_TABLE_DARWIN,
+    SDL_SCANCODE_TABLE_LINUX,
+    SDL_SCANCODE_TABLE_XFREE86_1,
+    SDL_SCANCODE_TABLE_XFREE86_2,
+    SDL_SCANCODE_TABLE_XVNC,
+} SDL_ScancodeTable;
 
-extern void Wayland_InitMouse(void);
-extern void Wayland_FiniMouse(SDL_VideoData *data);
-#if 0 /* TODO RECONNECT: See waylandvideo.c for more information! */
-extern void Wayland_RecreateCursors(void);
-#endif /* 0 */
+extern const SDL_Scancode *SDL_GetScancodeTable(SDL_ScancodeTable table, int *num_entries);
+extern SDL_Scancode SDL_GetScancodeFromTable(SDL_ScancodeTable table, int keycode);
 
-#endif
+/* vi: set ts=4 sw=4 expandtab: */

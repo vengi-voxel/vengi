@@ -551,7 +551,8 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                 const int num_vertices = 4 * count;
                 const int num_indices = 6 * count;
                 const int size_indices = 4;
-                int cur_indice = 0;
+                int cur_index = 0;
+                const int *rect_index_order = renderer->rect_index_order;
 
                 for (i = 0; i < count; ++i) {
                     float minx, miny, maxx, maxy;
@@ -570,13 +571,13 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
                     *ptr_xy++ = minx;
                     *ptr_xy++ = maxy;
 
-                    *ptr_indices++ = cur_indice + 0;
-                    *ptr_indices++ = cur_indice + 1;
-                    *ptr_indices++ = cur_indice + 2;
-                    *ptr_indices++ = cur_indice + 0;
-                    *ptr_indices++ = cur_indice + 2;
-                    *ptr_indices++ = cur_indice + 3;
-                    cur_indice += 4;
+                    *ptr_indices++ = cur_index + rect_index_order[0];
+                    *ptr_indices++ = cur_index + rect_index_order[1];
+                    *ptr_indices++ = cur_index + rect_index_order[2];
+                    *ptr_indices++ = cur_index + rect_index_order[3];
+                    *ptr_indices++ = cur_index + rect_index_order[4];
+                    *ptr_indices++ = cur_index + rect_index_order[5];
+                    cur_index += 4;
                 }
 
                 retval = renderer->QueueGeometry(renderer, cmd, NULL,
@@ -899,6 +900,7 @@ SDL_CreateWindowAndRenderer(int width, int height, Uint32 window_flags,
     return 0;
 }
 
+#if !SDL_RENDER_DISABLED
 static SDL_INLINE
 void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
 {
@@ -952,6 +954,7 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
     }
     renderer->simulate_vsync_interval = (1000 / refresh_rate);
 }
+#endif /* !SDL_RENDER_DISABLED */
 
 SDL_Renderer *
 SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
@@ -1061,6 +1064,16 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
     renderer->scale.y = 1.0f;
     renderer->dpi_scale.x = 1.0f;
     renderer->dpi_scale.y = 1.0f;
+
+    /* Default value, if not specified by the renderer back-end */
+    if (renderer->rect_index_order[0] == 0 && renderer->rect_index_order[1] == 0) {
+        renderer->rect_index_order[0] = 0;
+        renderer->rect_index_order[1] = 1;
+        renderer->rect_index_order[2] = 2;
+        renderer->rect_index_order[3] = 0;
+        renderer->rect_index_order[4] = 2;
+        renderer->rect_index_order[5] = 3;
+    }
 
     /* new textures start at zero, so we start at 1 so first render doesn't flush by accident. */
     renderer->render_command_generation = 1;
@@ -3114,7 +3127,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
             int num_vertices = 4 * count;
             int num_indices = 0;
             const int size_indices = 4;
-            int cur_indice = -4;
+            int cur_index = -4;
             const int is_looping = (points[0].x == points[count - 1].x && points[0].y == points[count - 1].y);
             SDL_FPoint p; /* previous point */
             p.x = p.y = 0.0f;
@@ -3141,9 +3154,9 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
                 *ptr_xy++ = q.y + scale_y;
 
 #define ADD_TRIANGLE(i1, i2, i3)                    \
-                *ptr_indices++ = cur_indice + i1;   \
-                *ptr_indices++ = cur_indice + i2;   \
-                *ptr_indices++ = cur_indice + i3;   \
+                *ptr_indices++ = cur_index + i1;    \
+                *ptr_indices++ = cur_index + i2;    \
+                *ptr_indices++ = cur_index + i3;    \
                 num_indices += 3;                   \
 
                 /* closed polyline, don´t draw twice the point */
@@ -3155,7 +3168,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
                 /* first point only, no segment */
                 if (i == 0) {
                     p = q;
-                    cur_indice += 4;
+                    cur_index += 4;
                     continue;
                 }
 
@@ -3205,7 +3218,7 @@ SDL_RenderDrawLinesF(SDL_Renderer * renderer,
                 }
 
                 p = q;
-                cur_indice += 4;
+                cur_index += 4;
             }
 
             retval = QueueCmdGeometry(renderer, NULL,
@@ -3523,7 +3536,7 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         float uv[8];
         const int uv_stride = 2 * sizeof (float);
         const int num_vertices = 4;
-        const int indices[6] = {0, 1, 2, 0, 2, 3};
+        const int *indices = renderer->rect_index_order;
         const int num_indices = 6;
         const int size_indices = 4;
         float minu, minv, maxu, maxv;
@@ -3671,7 +3684,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         float uv[8];
         const int uv_stride = 2 * sizeof (float);
         const int num_vertices = 4;
-        const int indices[6] = {0, 1, 2, 0, 2, 3};
+        const int *indices = renderer->rect_index_order;
         const int num_indices = 6;
         const int size_indices = 4;
         float minu, minv, maxu, maxv;

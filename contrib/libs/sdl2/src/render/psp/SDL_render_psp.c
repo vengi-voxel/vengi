@@ -96,12 +96,12 @@ typedef struct
     unsigned int       psm;                                 /**< format of the display buffers */
     unsigned int       bpp;                                 /**< bits per pixel of the main display */
 
-    SDL_bool           vsync;                               /**< wether we do vsync */
+    SDL_bool           vsync;                               /**< whether we do vsync */
     PSP_BlendState     blendState;                          /**< current blend mode */
     PSP_TextureData*   most_recent_target;                  /**< start of render target LRU double linked list */
     PSP_TextureData*   least_recent_target;                 /**< end of the LRU list */
 
-    SDL_bool           vblank_not_reached;                  /**< wether vblank wasn't reached */
+    SDL_bool           vblank_not_reached;                  /**< whether vblank wasn't reached */
 } PSP_RenderData;
 
 
@@ -422,7 +422,7 @@ static int
 TexturePromoteToVram(PSP_RenderData* data, PSP_TextureData* psp_texture, SDL_bool target)
 {
     // Assumes texture in sram and a large enough continuous block in vram
-    void* tdata = valloc(psp_texture->size);
+    void* tdata = vramalloc(psp_texture->size);
     if(psp_texture->swizzled && target) {
         return TextureUnswizzle(psp_texture, tdata);
     } else {
@@ -525,6 +525,7 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             break;
 
         default:
+            SDL_free(psp_texture);
             return -1;
     }
 
@@ -532,9 +533,10 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     psp_texture->size = psp_texture->textureHeight*psp_texture->pitch;
     if(texture->access & SDL_TEXTUREACCESS_TARGET) {
         if(TextureSpillTargetsForSpace(renderer->driverdata, psp_texture->size) < 0){
+            SDL_free(psp_texture);
             return -1;
         }
-        psp_texture->data = valloc(psp_texture->size);
+        psp_texture->data = vramalloc(psp_texture->size);
         if(psp_texture->data) {
             LRUTargetPushFront(data, psp_texture);
         }
@@ -1372,10 +1374,7 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->driverdata = data;
     renderer->window = window;
 
-    if (data->initialized != SDL_FALSE)
-        return 0;
     data->initialized = SDL_TRUE;
-
     data->most_recent_target = NULL;
     data->least_recent_target = NULL;
 
@@ -1400,7 +1399,7 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
             break;
     }
 
-    doublebuffer = valloc(PSP_FRAME_BUFFER_SIZE*data->bpp*2);
+    doublebuffer = vramalloc(PSP_FRAME_BUFFER_SIZE*data->bpp*2);
     data->backbuffer = doublebuffer;
     data->frontbuffer = ((uint8_t*)doublebuffer)+PSP_FRAME_BUFFER_SIZE*data->bpp;
 

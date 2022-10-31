@@ -790,6 +790,11 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
         return;
     }
 
+    if (focusClickPending) {
+        focusClickPending = 0;
+        [self onMovingOrFocusClickPendingStateCleared];
+    }
+
     window = _data.window;
     nswindow = _data.nswindow;
     rect = [nswindow contentRectForFrameRect:[nswindow frame]];
@@ -1738,6 +1743,8 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
         return SDL_SetError("%s", [[e reason] UTF8String]);
     }
 
+    [nswindow setColorSpace:[NSColorSpace sRGBColorSpace]];
+
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200 /* Added in the 10.12.0 SDK. */
     /* By default, don't allow users to make our window tabbed in 10.12 or later */
     if ([nswindow respondsToSelector:@selector(setTabbingMode:)]) {
@@ -2363,6 +2370,12 @@ Cocoa_DestroyWindow(_THIS, SDL_Window * window)
         }
 
         #endif /* SDL_VIDEO_OPENGL */
+
+        if (window->shaper) {
+            CFBridgingRelease(window->shaper->driverdata);
+            SDL_free(window->shaper);
+            window->shaper = NULL;
+        }
     }
     window->driverdata = NULL;
 }}

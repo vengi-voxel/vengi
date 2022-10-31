@@ -821,13 +821,13 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
     /* IMU scale gives us multipliers for converting raw values to real world values */
     pIMUScale = reply->spiReadData.rgucReadData;
 
-    sAccelRawX = ((pIMUScale[1] << 8) & 0xF00) | pIMUScale[0];
-    sAccelRawY = ((pIMUScale[3] << 8) & 0xF00) | pIMUScale[2];
-    sAccelRawZ = ((pIMUScale[5] << 8) & 0xF00) | pIMUScale[4];
+    sAccelRawX = (pIMUScale[1] << 8) | pIMUScale[0];
+    sAccelRawY = (pIMUScale[3] << 8) | pIMUScale[2];
+    sAccelRawZ = (pIMUScale[5] << 8) | pIMUScale[4];
 
-    sGyroRawX = ((pIMUScale[13] << 8) & 0xF00) | pIMUScale[12];
-    sGyroRawY = ((pIMUScale[15] << 8) & 0xF00) | pIMUScale[14];
-    sGyroRawZ = ((pIMUScale[17] << 8) & 0xF00) | pIMUScale[16];
+    sGyroRawX = (pIMUScale[13] << 8) | pIMUScale[12];
+    sGyroRawY = (pIMUScale[15] << 8) | pIMUScale[14];
+    sGyroRawZ = (pIMUScale[17] << 8) | pIMUScale[16];
 
     /* Check for user calibration data. If it's present and set, it'll override the factory settings */
     readParams.unAddress = k_unSPIIMUUserScaleStartOffset;
@@ -835,13 +835,13 @@ static SDL_bool LoadIMUCalibration(SDL_DriverSwitch_Context* ctx)
     if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t*)&readParams, sizeof(readParams), &reply) && (pIMUScale[0] | pIMUScale[1] << 8) == 0xA1B2) {
         pIMUScale = reply->spiReadData.rgucReadData;
         
-        sAccelRawX = ((pIMUScale[3] << 8) & 0xF00) | pIMUScale[2];
-        sAccelRawY = ((pIMUScale[5] << 8) & 0xF00) | pIMUScale[4];
-        sAccelRawZ = ((pIMUScale[7] << 8) & 0xF00) | pIMUScale[6];
+        sAccelRawX = (pIMUScale[3] << 8) | pIMUScale[2];
+        sAccelRawY = (pIMUScale[5] << 8) | pIMUScale[4];
+        sAccelRawZ = (pIMUScale[7] << 8) | pIMUScale[6];
 
-        sGyroRawX = ((pIMUScale[15] << 8) & 0xF00) | pIMUScale[14];
-        sGyroRawY = ((pIMUScale[17] << 8) & 0xF00) | pIMUScale[16];
-        sGyroRawZ = ((pIMUScale[19] << 8) & 0xF00) | pIMUScale[18];
+        sGyroRawX = (pIMUScale[15] << 8) | pIMUScale[14];
+        sGyroRawY = (pIMUScale[17] << 8) | pIMUScale[16];
+        sGyroRawZ = (pIMUScale[19] << 8) | pIMUScale[18];
     }
 
     /* Accelerometer scale */
@@ -2062,32 +2062,35 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
             if (!ctx->device->parent ||
                 ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, timestamp[0], &packet->imuState[2].sGyroX);
-                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, timestamp[1], &packet->imuState[1].sGyroX);
-                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, timestamp[2], &packet->imuState[0].sGyroX);
-
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, timestamp[0], &packet->imuState[2].sAccelX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, timestamp[1], &packet->imuState[1].sGyroX);
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, timestamp[1], &packet->imuState[1].sAccelX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO, timestamp[2], &packet->imuState[0].sGyroX);
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL, timestamp[2], &packet->imuState[0].sAccelX);
             }
 
             if (ctx->device->parent &&
                 ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, timestamp[0], &packet->imuState[2].sGyroX);
-                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, timestamp[1], &packet->imuState[1].sGyroX);
-                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, timestamp[2], &packet->imuState[0].sGyroX);
-
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_L, timestamp[0], &packet->imuState[2].sAccelX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, timestamp[1], &packet->imuState[1].sGyroX);
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_L, timestamp[1], &packet->imuState[1].sAccelX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_L, timestamp[2], &packet->imuState[0].sGyroX);
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_L, timestamp[2], &packet->imuState[0].sAccelX);
             }
             if (ctx->device->parent &&
                 ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, timestamp[0], &packet->imuState[2].sGyroX);
-                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, timestamp[1], &packet->imuState[1].sGyroX);
-                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, timestamp[2], &packet->imuState[0].sGyroX);
-
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_R, timestamp[0], &packet->imuState[2].sAccelX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, timestamp[1], &packet->imuState[1].sGyroX);
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_R, timestamp[1], &packet->imuState[1].sAccelX);
+
+                SendSensorUpdate(joystick, ctx, SDL_SENSOR_GYRO_R, timestamp[2], &packet->imuState[0].sGyroX);
                 SendSensorUpdate(joystick, ctx, SDL_SENSOR_ACCEL_R, timestamp[2], &packet->imuState[0].sAccelX);
             }
 

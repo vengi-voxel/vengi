@@ -72,6 +72,7 @@ include(GNUInstallDirs)
 list(APPEND CMAKE_MODULE_PATH "${SDL2_SOURCE_DIR}/cmake")
 include(${SDL2_SOURCE_DIR}/cmake/macros.cmake)
 include(${SDL2_SOURCE_DIR}/cmake/sdlchecks.cmake)
+include(${SDL2_SOURCE_DIR}/cmake/CheckCPUArchitecture.cmake)
 
 # Enable large file support on 32-bit glibc, so that we can access files
 # with large inode numbers
@@ -510,6 +511,7 @@ dep_option(SDL_HIDAPI_LIBUSB       "Use libusb for low level joystick drivers" O
 dep_option(SDL_HIDAPI_JOYSTICK     "Use HIDAPI for low level joystick drivers" ON SDL_HIDAPI OFF)
 dep_option(SDL_VIRTUAL_JOYSTICK    "Enable the virtual-joystick driver" ON SDL_HIDAPI OFF)
 set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors" OFF)
+option_string(SDL_VENDOR_INFO      "Vendor name and/or version to add to SDL_REVISION" "")
 
 option(SDL_WERROR "Enable -Werror" OFF)
 
@@ -2600,16 +2602,16 @@ elseif(PSP)
   endif()
 
   list(APPEND EXTRA_LIBS
-      psppower
-      pspctrl
-      psphprm
-      pspge
-      pspgu
-      pspdisplay
-      pspvfpu
-      pspaudio
-      pspvram
       GL
+      pspvram
+      pspaudio
+      pspvfpu
+      pspdisplay
+      pspgu
+      pspge
+      psphprm
+      pspctrl
+      psppower
   )
   if(NOT SDL2_DISABLE_SDL2MAIN)
     list(INSERT SDL_LIBS 0 "-lSDL2main")
@@ -2930,29 +2932,36 @@ listtostr(EXTRA_CFLAGS _EXTRA_CFLAGS)
 set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 
 # Compat helpers for the configuration files
+
+if(EXISTS "${PROJECT_SOURCE_DIR}/VERSION")
+  file(READ "${PROJECT_SOURCE_DIR}/VERSION" SDL_SOURCE_VERSION)
+endif()
+
 find_package(Git)
 if(Git_FOUND)
   execute_process(COMMAND
-    "${GIT_EXECUTABLE}" remote get-url origin
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    RESULT_VARIABLE GIT_URL_STATUS
-    OUTPUT_VARIABLE GIT_URL
-    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  execute_process(COMMAND
-    "${GIT_EXECUTABLE}" rev-list --max-count=1 HEAD~..
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    "${GIT_EXECUTABLE}" describe --always --tags --long
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     RESULT_VARIABLE GIT_REVISION_STATUS
     OUTPUT_VARIABLE GIT_REVISION
     ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+else()
+  set(GIT_REVISION_STATUS 1)
+  set(GIT_REVISION "")
+endif()
 
-  if(GIT_URL_STATUS EQUAL 0 OR GIT_REVISION_STATUS EQUAL 0)
-    set(SDL_REVISION "${GIT_URL}@${GIT_REVISION}")
+if(SDL_SOURCE_VERSION)
+  set(SDL_REVISION "SDL-${SDL_SOURCE_VERSION}")
+elseif(GIT_REVISION_STATUS EQUAL 0)
+  if(GIT_REVISION MATCHES "^[0-9a-f]+$")
+    # Just a truncated sha1, so prefix it with the version number
+    set(SDL_REVISION "SDL-${SDL_VERSION}-g${GIT_REVISION}")
   else()
-    set(SDL_REVISION "")
+    # e.g. release-2.24.0-542-g96361fc47
+    set(SDL_REVISION "SDL-${GIT_REVISION}")
   endif()
 else()
-  set(SDL_REVISION "")
+  set(SDL_REVISION "SDL-${SDL_VERSION}-no-vcs")
 endif()
 
 configure_file("${SDL2_SOURCE_DIR}/include/SDL_revision.h.cmake"
@@ -2976,56 +2985,66 @@ foreach(_hdr IN LISTS SDL2_INCLUDE_FILES)
 endforeach()
 list(APPEND SDL_GENERATED_HEADERS ${SDL2_COPIED_INCLUDE_FILES})
 
-if(NOT WINDOWS OR CYGWIN OR MINGW)
-
-  set(prefix ${CMAKE_INSTALL_PREFIX})
-  file(RELATIVE_PATH bin_prefix_relpath "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_PREFIX}")
-
-  set(exec_prefix "\${prefix}")
-  set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
-  set(bindir "\${exec_prefix}/${CMAKE_INSTALL_BINDIR}")
-  set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
-  if(SDL_STATIC)
-    set(ENABLE_STATIC_TRUE "")
-    set(ENABLE_STATIC_FALSE "#")
-  else()
-    set(ENABLE_STATIC_TRUE "#")
-    set(ENABLE_STATIC_FALSE "")
-  endif()
-  if(SDL_SHARED)
-    set(PKGCONFIG_LIBS_PRIV "
-Libs.private:")
-    set(ENABLE_SHARED_TRUE "")
-    set(ENABLE_SHARED_FALSE "#")
-  else()
-    set(PKGCONFIG_LIBS_PRIV "")
-    set(ENABLE_SHARED_TRUE "#")
-    set(ENABLE_SHARED_FALSE "")
-  endif()
-
-  # Clean up the different lists
-  listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
-  set(SDL_STATIC_LIBS ${SDL_LIBS} ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
-  list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
-  listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
-  set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
-  listtostr(SDL_LIBS _SDL_LIBS)
-  set(SDL_LIBS ${_SDL_LIBS})
-  listtostr(SDL_CFLAGS _SDL_CFLAGS "")
-  set(SDL_CFLAGS ${_SDL_CFLAGS})
-
-  # MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
-  # MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
-
-  configure_file("${SDL2_SOURCE_DIR}/sdl2.pc.in"
-    "${SDL2_BINARY_DIR}/sdl2.pc" @ONLY)
-  configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
-    "${SDL2_BINARY_DIR}/sdl2-config")
-  configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
-    "${SDL2_BINARY_DIR}/sdl2-config" @ONLY)
-  configure_file("${SDL2_SOURCE_DIR}/SDL2.spec.in"
-    "${SDL2_BINARY_DIR}/SDL2.spec" @ONLY)
+if(MSVC OR (WATCOM AND (WIN32 OR OS2)))
+  # Avoid conflict between the dll import library and the static library
+  set(sdl_static_libname "SDL2-static")
+else()
+  set(sdl_static_libname "SDL2")
 endif()
+
+set(prefix ${CMAKE_INSTALL_PREFIX})
+file(RELATIVE_PATH bin_prefix_relpath "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_PREFIX}")
+
+set(exec_prefix "\${prefix}")
+set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
+set(bindir "\${exec_prefix}/${CMAKE_INSTALL_BINDIR}")
+set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
+if(SDL_STATIC)
+  set(ENABLE_STATIC_TRUE "")
+  set(ENABLE_STATIC_FALSE "#")
+else()
+  set(ENABLE_STATIC_TRUE "#")
+  set(ENABLE_STATIC_FALSE "")
+endif()
+if(SDL_SHARED)
+  set(PKGCONFIG_LIBS_PRIV "
+Libs.private:")
+  set(ENABLE_SHARED_TRUE "")
+  set(ENABLE_SHARED_FALSE "#")
+else()
+  set(PKGCONFIG_LIBS_PRIV "")
+  set(ENABLE_SHARED_TRUE "#")
+  set(ENABLE_SHARED_FALSE "")
+endif()
+
+# Clean up the different lists
+listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
+set(SDL_STATIC_LIBS ${SDL_LIBS} ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
+list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
+listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
+set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
+listtostr(SDL_LIBS _SDL_LIBS)
+set(SDL_LIBS ${_SDL_LIBS})
+listtostr(SDL_CFLAGS _SDL_CFLAGS "")
+set(SDL_CFLAGS ${_SDL_CFLAGS})
+string(REGEX REPLACE "-lSDL2( |$)" "-l${sdl_static_libname} " SDL_STATIC_LIBS "${SDL_STATIC_LIBS}")
+if(NOT SDL_SHARED)
+  string(REGEX REPLACE "-lSDL2( |$)" "-l${sdl_static_libname} " SDL_LIBS "${SDL_LIBS}")
+endif()
+
+if(SDL_STATIC AND SDL_SHARED AND NOT sdl_static_libname STREQUAL "SDL2")
+  message(STATUS "\"pkg-config --static --libs sdl2\" will return invalid information")
+endif()
+
+# MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
+# MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
+
+configure_file("${SDL2_SOURCE_DIR}/sdl2.pc.in"
+  "${SDL2_BINARY_DIR}/sdl2.pc" @ONLY)
+configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
+  "${SDL2_BINARY_DIR}/sdl2-config" @ONLY)
+configure_file("${SDL2_SOURCE_DIR}/SDL2.spec.in"
+  "${SDL2_BINARY_DIR}/SDL2.spec" @ONLY)
 
 macro(check_add_debug_flag FLAG SUFFIX)
     check_c_compiler_flag(${FLAG} HAS_C_FLAG_${SUFFIX})
@@ -3090,6 +3109,10 @@ if (SDL_ASAN)
   if((NOT USE_CLANG) OR ("${CMAKE_BUILD_TYPE}" STREQUAL ""))
     asan_check_add_debug_flag("object-size")
   endif()
+endif()
+
+if(SDL_TESTS)
+  set(HAVE_TESTS ON)
 endif()
 
 # Create target that collects all all generated include files.
@@ -3207,6 +3230,13 @@ if(SDL_SHARED)
   # alias target for in-tree builds
   add_library(SDL2::SDL2 ALIAS SDL2)
   set_target_properties(SDL2 PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+  if(NOT SDL_LIBC)
+    check_cpu_architecture(x86 HAS_X86)
+    if(HAS_X86)
+      # FIXME: should be added for all architectures (missing symbols for ARM)
+      target_link_libraries(SDL2 PRIVATE "-nodefaultlib:MSVCRT")
+    endif()
+  endif()
   if(APPLE)
     # FIXME: Remove SOVERSION in SDL3
     set_target_properties(SDL2 PROPERTIES
@@ -3267,13 +3297,9 @@ if(SDL_STATIC)
   add_dependencies(SDL2-static sdl_headers_copy)
   # alias target for in-tree builds
   add_library(SDL2::SDL2-static ALIAS SDL2-static)
-  if(MSVC OR (WATCOM AND (WIN32 OR OS2)))
-    # Avoid conflict between the dll import library and the static library
-    set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2-static")
-  else()
-    set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
-  endif()
-  set_target_properties(SDL2-static PROPERTIES POSITION_INDEPENDENT_CODE "${SDL_STATIC_PIC}")
+  set_target_properties(SDL2-static PROPERTIES
+    OUTPUT_NAME "${sdl_static_libname}"
+    POSITION_INDEPENDENT_CODE "${SDL_STATIC_PIC}")
   target_compile_definitions(SDL2-static PRIVATE SDL_STATIC_LIB)
   # TODO: Win32 platforms keep the same suffix .lib for import and static
   # libraries - do we need to consider this?
@@ -3346,15 +3372,18 @@ if(NOT SDL2_DISABLE_INSTALL)
 
   ##### Export files #####
   if (WINDOWS AND NOT MINGW)
-    set(PKG_PREFIX "cmake")
+    set(SDL_INSTALL_CMAKEDIR_DEFAULT "cmake")
+    set(LICENSES_PREFIX "licenses/SDL2")
   else ()
-    set(PKG_PREFIX "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2")
+    set(SDL_INSTALL_CMAKEDIR_DEFAULT "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2")
+    set(LICENSES_PREFIX "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
   endif ()
+  set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_DEFAULT}" CACHE STRING "Location where to install SDL2Config.cmake")
 
   include(CMakePackageConfigHelpers)
   configure_package_config_file(SDL2Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/SDL2Config.cmake"
     PATH_VARS CMAKE_INSTALL_PREFIX CMAKE_INSTALL_FULL_BINDIR CMAKE_INSTALL_FULL_INCLUDEDIR CMAKE_INSTALL_FULL_LIBDIR
-    INSTALL_DESTINATION ${PKG_PREFIX}
+    INSTALL_DESTINATION "${SDL_INSTALL_CMAKEDIR}"
   )
   write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/SDL2ConfigVersion.cmake"
     VERSION ${SDL_VERSION}
@@ -3365,7 +3394,7 @@ if(NOT SDL2_DISABLE_INSTALL)
     install(EXPORT SDL2Targets
       FILE SDL2Targets.cmake
       NAMESPACE SDL2::
-      DESTINATION ${PKG_PREFIX}
+      DESTINATION "${SDL_INSTALL_CMAKEDIR}"
     )
     if(ANDROID AND NOT CMAKE_VERSION VERSION_LESS 3.7)
       install(EXPORT_ANDROID_MK SDL2Targets
@@ -3377,7 +3406,7 @@ if(NOT SDL2_DISABLE_INSTALL)
     install(EXPORT SDL2mainTargets
       FILE SDL2mainTargets.cmake
       NAMESPACE SDL2::
-      DESTINATION ${PKG_PREFIX}
+      DESTINATION "${SDL_INSTALL_CMAKEDIR}"
     )
     if(ANDROID AND NOT CMAKE_VERSION VERSION_LESS 3.7)
       install(EXPORT_ANDROID_MK SDL2mainTargets
@@ -3389,7 +3418,7 @@ if(NOT SDL2_DISABLE_INSTALL)
     install(EXPORT SDL2staticTargets
       FILE SDL2staticTargets.cmake
       NAMESPACE SDL2::
-      DESTINATION ${PKG_PREFIX}
+      DESTINATION "${SDL_INSTALL_CMAKEDIR}"
     )
     if(ANDROID AND NOT CMAKE_VERSION VERSION_LESS 3.7)
       install(EXPORT_ANDROID_MK SDL2staticTargets
@@ -3401,7 +3430,7 @@ if(NOT SDL2_DISABLE_INSTALL)
     install(EXPORT SDL2testTargets
       FILE SDL2testTargets.cmake
       NAMESPACE SDL2::
-      DESTINATION ${PKG_PREFIX}
+      DESTINATION "${SDL_INSTALL_CMAKEDIR}"
     )
     if(ANDROID AND NOT CMAKE_VERSION VERSION_LESS 3.7)
       install(EXPORT_ANDROID_MK SDL2testTargets
@@ -3413,7 +3442,7 @@ if(NOT SDL2_DISABLE_INSTALL)
     FILES
       ${CMAKE_CURRENT_BINARY_DIR}/SDL2Config.cmake
       ${CMAKE_CURRENT_BINARY_DIR}/SDL2ConfigVersion.cmake
-    DESTINATION ${PKG_PREFIX}
+    DESTINATION "${SDL_INSTALL_CMAKEDIR}"
     COMPONENT Devel
   )
 
@@ -3431,6 +3460,14 @@ if(NOT SDL2_DISABLE_INSTALL)
     set(SOPOSTFIX "")
   endif()
 
+  install(FILES "LICENSE.txt" DESTINATION "${LICENSES_PREFIX}")
+  if(FREEBSD)
+    # FreeBSD uses ${PREFIX}/libdata/pkgconfig
+    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
+  else()
+    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+  endif()
   if(NOT (WINDOWS OR CYGWIN) OR MINGW)
     if(SDL_SHARED)
       set(SOEXT ${CMAKE_SHARED_LIBRARY_SUFFIX}) # ".so", ".dylib", etc.
@@ -3443,17 +3480,9 @@ if(NOT SDL2_DISABLE_INSTALL)
           install(FILES ${SDL2_BINARY_DIR}/libSDL2${SOPOSTFIX}${SOEXT} DESTINATION "${CMAKE_INSTALL_LIBDIR}")
       endif()
     endif()
-    if(FREEBSD)
-      # FreeBSD uses ${PREFIX}/libdata/pkgconfig
-      install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
-    else()
-      install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-    endif()
     install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
     # TODO: what about the .spec file? Is it only needed for RPM creation?
     install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/aclocal")
-    install(FILES "LICENSE.txt" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/licenses/${PROJECT_NAME}")
   endif()
 endif()
 
@@ -3474,6 +3503,7 @@ endif()
 ##### Tests subproject (must appear after the install/uninstall targets) #####
 
 if(SDL_TESTS)
+  set(HAVE_TESTS ON)
   enable_testing()
   add_subdirectory(test)
 endif()
