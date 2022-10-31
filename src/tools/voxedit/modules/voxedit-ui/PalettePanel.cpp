@@ -74,42 +74,49 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 
 		const float windowWidth = ImGui::GetWindowContentRegionMax().x;
 		ImVec2 globalCursorPos = ImGui::GetCursorScreenPos();
-		for (int palIdx = 0; palIdx < maxPaletteEntries; ++palIdx) {
+		for (int palIdx = 0; palIdx < voxel::PaletteMaxColors; ++palIdx) {
 			const float borderWidth = 1.0f;
 			const ImVec2 v1(globalCursorPos.x + borderWidth, globalCursorPos.y + borderWidth);
 			const ImVec2 v2(globalCursorPos.x + colorButtonSize.x, globalCursorPos.y + colorButtonSize.y);
-
-			drawList->AddRectFilled(v1, v2, palette.colors[palIdx]);
+			const bool usableColor = palette.colors[palIdx].a > 0;
+			const core::String &contextMenuId = core::string::format("Actions##context-palitem-%i", palIdx);
+			const bool existingColor = palIdx < maxPaletteEntries;
+			if (existingColor) {
+				drawList->AddRectFilled(v1, v2, palette.colors[palIdx]);
+			} else {
+				drawList->AddRect(v1, v2, core::RGBA(0, 0, 0, 255));
+			}
 
 			const core::String &id = core::string::format("##palitem-%i", palIdx);
-			if (palette.colors[palIdx].a == 0) {
-				ImGui::BeginDisabled();
-			}
 			if (ImGui::InvisibleButton(id.c_str(), colorButtonSize)) {
-				voxel::VoxelType type;
-				if (palette.colors[palIdx] < 255) {
-					type = voxel::VoxelType::Transparent;
-				} else {
-					type = voxel::VoxelType::Generic;
+				if (usableColor) {
+					voxel::VoxelType type;
+					if (palette.colors[palIdx] < 255) {
+						type = voxel::VoxelType::Transparent;
+					} else {
+						type = voxel::VoxelType::Generic;
+					}
+					sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(type, palIdx));
 				}
-				sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(type, palIdx));
-			}
-			if (palette.colors[palIdx].a == 0) {
-				ImGui::EndDisabled();
 			}
 
-			if (palette.colors[palIdx].a > 0) {
+			if (usableColor) {
 				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 					ImGui::Text("Color %i", palIdx);
 					ImGui::SetDragDropPayload(dragdrop::ColorPayload, (const void*)&palIdx, sizeof(int), ImGuiCond_Always);
 					ImGui::EndDragDropSource();
 				}
+			} else {
+				ImGui::TooltipText("Empty color slot");
 			}
 
 			if (ImGui::BeginDragDropTarget()) {
 				if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::ColorPayload)) {
 					const int dragPalIdx = *(int*)payload->Data;
 					core::exchange(palette.colors[palIdx], palette.colors[dragPalIdx]);
+					if (!existingColor) {
+						palette.colorCount = palIdx + 1;
+					}
 					palette.markDirty();
 					palette.markSave();
 				}
@@ -120,7 +127,6 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 				ImGui::EndDragDropTarget();
 			}
 
-			const core::String &contextMenuId = core::string::format("Actions##context-palitem-%i", palIdx);
 			if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 				static bool pickerWheel = false;
 				ImGui::Checkbox("Wheel", &pickerWheel);
@@ -134,22 +140,29 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 				glm::vec4 color = core::Color::fromRGBA(palette.colors[palIdx]);
 				if (ImGui::ColorPicker4("Color", glm::value_ptr(color), flags)) {
 					palette.colors[palIdx] = core::Color::getRGBA(color);
+					palette.colors[palIdx].a = 255;
+					if (!existingColor) {
+						palette.colorCount = palIdx + 1;
+					}
 					palette.markDirty();
 					palette.markSave();
 				}
-				if (ImGui::CollapsingHeader("Commands", ImGuiTreeNodeFlags_DefaultOpen)) {
-					const core::String &layerFromColorCmd = core::string::format("colortolayer %i", palIdx);
-					ImGui::CommandMenuItem(ICON_FA_OBJECT_UNGROUP " Layer from color" PALETTEACTIONPOPUP, layerFromColorCmd.c_str(), true, &listener);
-				}
 
-				if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-					if (palette.hasGlow(palIdx)) {
-						if (ImGui::MenuItem(ICON_FK_SUN_O " Remove Glow")) {
-							palette.removeGlow(palIdx);
-						}
-					} else {
-						if (ImGui::MenuItem(ICON_FK_SUN " Glow")) {
-							palette.setGlow(palIdx);
+				if (usableColor) {
+					if (ImGui::CollapsingHeader("Commands", ImGuiTreeNodeFlags_DefaultOpen)) {
+						const core::String &layerFromColorCmd = core::string::format("colortolayer %i", palIdx);
+						ImGui::CommandMenuItem(ICON_FA_OBJECT_UNGROUP " Layer from color" PALETTEACTIONPOPUP, layerFromColorCmd.c_str(), true, &listener);
+					}
+
+					if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+						if (palette.hasGlow(palIdx)) {
+							if (ImGui::MenuItem(ICON_FK_SUN_O " Remove Glow")) {
+								palette.removeGlow(palIdx);
+							}
+						} else {
+							if (ImGui::MenuItem(ICON_FK_SUN " Glow")) {
+								palette.setGlow(palIdx);
+							}
 						}
 					}
 				}
@@ -158,13 +171,13 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			}
 			if (!colorHovered && ImGui::IsItemHovered()) {
 				colorHovered = true;
-				drawList->AddRect(v1, v2, redColor);
+				drawList->AddRect(v1, v2, redColor, 0.0f, 0, 2.0f);
 			} else if (palIdx == currentSceneHoveredPalIdx) {
 				if (palette.colors[currentSceneHoveredPalIdx].a > 0) {
-					drawList->AddRect(v1, v2, yellowColor);
+					drawList->AddRect(v1, v2, yellowColor, 0.0f, 0, 2.0f);
 				}
 			} else if (palIdx == currentSelectedPalIdx) {
-				drawList->AddRect(v1, v2, darkRedColor);
+				drawList->AddRect(v1, v2, darkRedColor, 0.0f, 0, 2.0f);
 			}
 			globalCursorPos.x += colorButtonSize.x;
 			if (globalCursorPos.x > windowWidth - colorButtonSize.x) {
@@ -243,9 +256,8 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		char buf[256];
 		core::string::formatBuf(buf, sizeof(buf), "%i##closestmatchpalpanel", closestMatch);
 		if (ImGui::Selectable(buf) && closestMatch != -1) {
-			glm::vec4 color = core::Color::fromRGBA(palette.colors[closestMatch]);
 			voxel::VoxelType type;
-			if (color.a < 1.0f) {
+			if (palette.colors[closestMatch].a < 255) {
 				type = voxel::VoxelType::Transparent;
 			} else {
 				type = voxel::VoxelType::Generic;
