@@ -40,13 +40,23 @@ public:
 	SDL_mutex *handle();
 };
 
+#ifdef TRACY_ENABLE
 template<class LOCK>
+#endif
 class core_thread_scoped_capability ScopedLock {
 private:
+#ifdef TRACY_ENABLE
 	LOCK &_lock;
+#else
+	Lock &_lock;
+#endif
 
 public:
+#ifdef TRACY_ENABLE
 	inline ScopedLock(const LOCK &lock) core_thread_acquire(lock) : _lock(const_cast<LOCK &>(lock)) {
+#else
+	inline ScopedLock(const Lock &lock) core_thread_acquire(lock) : _lock(const_cast<Lock &>(lock)) {
+#endif
 		_lock.lock();
 	}
 	inline ~ScopedLock() core_thread_release() {
