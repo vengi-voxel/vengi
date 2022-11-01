@@ -535,8 +535,6 @@ bool SeekableReadStream::readLine(int length, char *strbuff) {
 int SeekableReadStream::peekUInt32(uint32_t &val) {
 	const int retVal = readUInt32(val);
 	if (retVal == 0) {
-		const uint32_t swapped = SDL_SwapLE32(val);
-		val = swapped;
 		seek(-4, SEEK_CUR);
 	}
 	return retVal;
@@ -545,8 +543,6 @@ int SeekableReadStream::peekUInt32(uint32_t &val) {
 int SeekableReadStream::peekUInt16(uint16_t &val) {
 	const int retVal = readUInt16(val);
 	if (retVal == 0) {
-		const uint16_t swapped = SDL_SwapLE16(val);
-		val = swapped;
 		seek(-2, SEEK_CUR);
 	}
 	return retVal;
