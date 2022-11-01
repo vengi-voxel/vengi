@@ -198,7 +198,7 @@
 #elif defined(_MSC_VER)
     // general VS*
     #include <inttypes.h>
-#elif __APPLE__
+#elif defined(__APPLE__)
     // general Apple compiler
     #include <libkern/OSByteOrder.h>
     #define htobe32(x) OSSwapHostToBigInt32(x)
