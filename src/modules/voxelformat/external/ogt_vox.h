@@ -200,10 +200,51 @@
     #include <inttypes.h>
 #elif __APPLE__
     // general Apple compiler
+    #include <libkern/OSByteOrder.h>
+    #define htobe32(x) OSSwapHostToBigInt32(x)
+    #define htole32(x) OSSwapHostToLittleInt32(x)
+    #define be32toh(x) OSSwapBigToHostInt32(x)
+    #define le32toh(x) OSSwapLittleToHostInt32(x)
+    #define __BYTE_ORDER    BYTE_ORDER
+    #define __BIG_ENDIAN    BIG_ENDIAN
+    #define __LITTLE_ENDIAN LITTLE_ENDIAN
+    #define __PDP_ENDIAN    PDP_ENDIAN
 #elif defined(__GNUC__)
     // any GCC*
     #include <inttypes.h>
     #include <stdlib.h> // for size_t
+#else
+    #error some fixup needed for this platform?
+#endif
+
+#if defined(__linux__) || defined(__CYGWIN__)
+    #include <endian.h>
+#elif defined(__OpenBSD__)
+    #include <sys/endian.h>
+#elif defined(__NetBSD__) || defined(__FreeBSD__) || defined(__DragonFly__)
+    #include <sys/endian.h>
+    #define be32toh(x) betoh32(x)
+    #define le32toh(x) letoh32(x)
+#elif defined(_WIN32) || defined(_WIN64)
+    #include <winsock2.h>
+    #include <sys/param.h>
+    #if BYTE_ORDER == LITTLE_ENDIAN
+        #define htobe32(x) htonl(x)
+        #define htole32(x) (x)
+        #define be32toh(x) ntohl(x)
+        #define le32toh(x) (x)
+    #elif BYTE_ORDER == BIG_ENDIAN
+        #define htobe32(x) (x)
+        #define htole32(x) __builtin_bswap32(x)
+        #define be32toh(x) (x)
+        #define le32toh(x) __builtin_bswap32(x)
+    #else
+        #error byte order not supported
+    #endif
+    #define __BYTE_ORDER    BYTE_ORDER
+    #define __BIG_ENDIAN    BIG_ENDIAN
+    #define __LITTLE_ENDIAN LITTLE_ENDIAN
+    #define __PDP_ENDIAN    PDP_ENDIAN
 #else
     #error some fixup needed for this platform?
 #endif
@@ -563,6 +604,36 @@
         return data_to_read == data_size;
     }
 
+    static bool _vox_file_read_uint32(_vox_file* fp, uint32_t* data) {
+        bool ret = _vox_file_read(fp, data, sizeof(*data));
+        if (ret) {
+            *data = le32toh(*data);
+        }
+        return ret;
+    }
+
+    static bool _vox_file_read_int32(_vox_file* fp, int32_t* data) {
+        bool ret = _vox_file_read(fp, data, sizeof(*data));
+        if (ret) {
+            *data = le32toh(*data);
+        }
+        return ret;
+    }
+
+    static bool _vox_file_read_float(_vox_file* fp, float* data) {
+        bool ret = _vox_file_read(fp, data, sizeof(*data));
+        if (ret) {
+            union {
+                uint32_t u;
+                float f;
+            } bs;
+            bs.f = *data;
+            bs.u = le32toh(bs.u);
+            *data = bs.f;
+        }
+        return ret;
+    }
+
     static void _vox_file_seek_forwards(_vox_file* fp, uint32_t offset) {
         fp->offset += _vox_min(offset, _vox_file_bytes_remaining(fp));
     }
@@ -783,7 +854,7 @@
 
     static bool _vox_file_read_dict(_vox_dictionary * dict, _vox_file * fp) {
         uint32_t num_pairs_to_read = 0;
-        _vox_file_read(fp, &num_pairs_to_read, sizeof(uint32_t));
+        _vox_file_read_uint32(fp, &num_pairs_to_read);
         ogt_assert(num_pairs_to_read <= k_vox_max_dict_key_value_pairs, "max key/value pairs exceeded in dictionary");
 
         dict->buffer_mem_used = 0;
@@ -791,7 +862,7 @@
         for (uint32_t i = 0; i < num_pairs_to_read; i++) {
             // get the size of the key string
             uint32_t key_string_size = 0;
-            if (!_vox_file_read(fp, &key_string_size, sizeof(uint32_t)))
+            if (!_vox_file_read_uint32(fp, &key_string_size))
                 return false;
             // allocate space for the key, and read it in.
             if (dict->buffer_mem_used + key_string_size > k_vox_max_dict_buffer_size)
@@ -805,7 +876,7 @@
 
             // get the size of the value string
             uint32_t value_string_size = 0;
-            if (!_vox_file_read(fp, &value_string_size, sizeof(uint32_t)))
+            if (!_vox_file_read_uint32(fp, &value_string_size))
                 return false;
             // allocate space for the value, and read it in.
             if (dict->buffer_mem_used + value_string_size > k_vox_max_dict_buffer_size)
@@ -1226,8 +1297,8 @@
         // load and validate fileheader and file version.
         uint32_t file_header = 0;
         uint32_t file_version = 0;
-        _vox_file_read(fp, &file_header, sizeof(uint32_t));
-        _vox_file_read(fp, &file_version, sizeof(uint32_t));
+        _vox_file_read_uint32(fp, &file_header);
+        _vox_file_read_uint32(fp, &file_version);
         if (file_header != CHUNK_ID_VOX_ || (file_version != 150 && file_version != 200))
             return NULL;
 
@@ -1238,9 +1309,9 @@
             uint32_t chunk_id         = 0;
             uint32_t chunk_size       = 0;
             uint32_t chunk_child_size = 0;
-            _vox_file_read(fp, &chunk_id, sizeof(uint32_t));
-            _vox_file_read(fp, &chunk_size, sizeof(uint32_t));
-            _vox_file_read(fp, &chunk_child_size, sizeof(uint32_t));
+            _vox_file_read_uint32(fp, &chunk_id);
+            _vox_file_read_uint32(fp, &chunk_size);
+            _vox_file_read_uint32(fp, &chunk_child_size);
 
             // process the chunk.
             switch (chunk_id)
@@ -1252,9 +1323,9 @@
                 case CHUNK_ID_SIZE:
                 {
                     ogt_assert(chunk_size == 12 && chunk_child_size == 0, "unexpected chunk size for SIZE chunk");
-                    _vox_file_read(fp, &size_x, sizeof(uint32_t));
-                    _vox_file_read(fp, &size_y, sizeof(uint32_t));
-                    _vox_file_read(fp, &size_z, sizeof(uint32_t));
+                    _vox_file_read_uint32(fp, &size_x);
+                    _vox_file_read_uint32(fp, &size_y);
+                    _vox_file_read_uint32(fp, &size_z);
                     break;
                 }
                 case CHUNK_ID_XYZI:
@@ -1262,7 +1333,7 @@
                     ogt_assert(size_x && size_y && size_z, "expected a SIZE chunk before XYZI chunk");
                     // read the number of voxels to process for this moodel
                     uint32_t num_voxels_in_chunk = 0;
-                    _vox_file_read(fp, &num_voxels_in_chunk, sizeof(uint32_t));
+                    _vox_file_read_uint32(fp, &num_voxels_in_chunk);
                     if (num_voxels_in_chunk != 0 || (read_flags & k_read_scene_flags_keep_empty_models_instances)) {
                         uint32_t voxel_count = size_x * size_y * size_z;
                         ogt_vox_model * model = (ogt_vox_model*)_vox_calloc(sizeof(ogt_vox_model) + voxel_count);        // 1 byte for each voxel
@@ -1313,7 +1384,7 @@
                 case CHUNK_ID_nTRN:
                 {
                     uint32_t node_id = 0;
-                    _vox_file_read(fp, &node_id, sizeof(node_id));
+                    _vox_file_read_uint32(fp, &node_id);
 
                     // Parse the node dictionary, which can contain:
                     //   _name:   string
@@ -1327,10 +1398,10 @@
 
                     // get other properties.
                     uint32_t child_node_id = 0, reserved_id = 0, layer_id = 0, num_frames = 0;
-                    _vox_file_read(fp, &child_node_id, sizeof(child_node_id));
-                    _vox_file_read(fp, &reserved_id,   sizeof(reserved_id));
-                    _vox_file_read(fp, &layer_id,      sizeof(layer_id));
-                    _vox_file_read(fp, &num_frames,    sizeof(num_frames));
+                    _vox_file_read_uint32(fp, &child_node_id);
+                    _vox_file_read_uint32(fp, &reserved_id);
+                    _vox_file_read_uint32(fp, &layer_id);
+                    _vox_file_read_uint32(fp, &num_frames);
                     ogt_assert(reserved_id == UINT32_MAX, "unexpected values for reserved_id in nTRN chunk");
                     ogt_assert(num_frames > 0, "must have at least 1 frame in nTRN chunk");
 
@@ -1367,7 +1438,7 @@
                 case CHUNK_ID_nGRP:
                 {
                     uint32_t node_id = 0;
-                    _vox_file_read(fp, &node_id, sizeof(node_id));
+                    _vox_file_read_uint32(fp, &node_id);
 
                     // parse the node dictionary - data is unused.
                     _vox_file_read_dict(&dict, fp);
@@ -1381,14 +1452,16 @@
 
                     // setup all child scene nodes to point back to this node.
                     uint32_t num_child_nodes = 0;
-                    _vox_file_read(fp, &num_child_nodes, sizeof(num_child_nodes));
+                    _vox_file_read_uint32(fp, &num_child_nodes);
 
                     // allocate space for all the child node IDs
                     if (num_child_nodes) {
                         size_t prior_size = child_ids.size();
                         ogt_assert(prior_size > 0, "prior_size sanity test failed"); // should be guaranteed by the sentinel we reserved at the very beginning.
                         child_ids.resize(prior_size + num_child_nodes);
-                        _vox_file_read(fp, &child_ids[prior_size], sizeof(uint32_t) * num_child_nodes);
+                        for (uint32_t i = 0; i < num_child_nodes; ++i) {
+                            _vox_file_read_uint32(fp, &child_ids[prior_size + i]);
+                        }
                         group_node->u.group.first_child_node_id_index = (uint32_t)prior_size;
                         group_node->u.group.num_child_nodes = num_child_nodes;
                     }
@@ -1397,14 +1470,14 @@
                 case CHUNK_ID_nSHP:
                 {
                     uint32_t node_id = 0;
-                    _vox_file_read(fp, &node_id, sizeof(node_id));
+                    _vox_file_read_uint32(fp, &node_id);
 
                     // parse the node dictionary
                     _vox_file_read_dict(&dict, fp);
                     bool loop = _vox_dict_get_value_as_bool(&dict, "_loop", false);
 
                     uint32_t num_models = 0;
-                    _vox_file_read(fp, &num_models, sizeof(num_models));
+                    _vox_file_read_uint32(fp, &num_models);
                     ogt_assert(num_models > 0, "must have at least 1 frame in nSHP chunk"); // must be 1 according to the spec.
 
                     uint32_t keyframe_offset = (uint32_t)misc_data.size();
@@ -1412,7 +1485,7 @@
 
                     for (uint32_t i = 0; i < num_models; i++) {
                         // read model id
-                        _vox_file_read(fp, &keyframes[i].model_index, sizeof(uint32_t));
+                        _vox_file_read_uint32(fp, &keyframes[i].model_index);
                         ogt_assert(keyframes[i].model_index < model_ptrs.size(), "nSHP chunk references model_id that we have not loaded yet");
                         // read frame id
                         _vox_file_read_dict(&dict, fp);
@@ -1440,9 +1513,9 @@
                 {
                     int32_t layer_id = 0;
                     int32_t reserved_id = 0;
-                    _vox_file_read(fp, &layer_id, sizeof(layer_id));
+                    _vox_file_read_int32(fp, &layer_id);
                     _vox_file_read_dict(&dict, fp);
-                    _vox_file_read(fp, &reserved_id, sizeof(reserved_id));
+                    _vox_file_read_int32(fp, &reserved_id);
                     ogt_assert(reserved_id == -1, "unexpected value for reserved_id in LAYR chunk");
 
                     layers.grow_to_fit_index(layer_id);
@@ -1474,7 +1547,7 @@
                 case CHUNK_ID_MATL:
                 {
                     int32_t material_id = 0;
-                    _vox_file_read(fp, &material_id, sizeof(material_id));
+                    _vox_file_read_int32(fp, &material_id);
                     material_id = material_id & 0xFF; // incoming material 256 is material 0
                     _vox_file_read_dict(&dict, fp);
                     const char* type_string = _vox_dict_get_value_as_string(&dict, "_type", NULL);
@@ -1573,7 +1646,7 @@
                 case CHUNK_ID_MATT:
                 {
                     int32_t material_id = 0;
-                    _vox_file_read(fp, &material_id, sizeof(material_id));
+                    _vox_file_read_int32(fp, &material_id);
                     material_id = material_id & 0xFF; // incoming material 256 is material 0
 
                     // 0 : diffuse
@@ -1581,14 +1654,14 @@
                     // 2 : glass
                     // 3 : emissive
                     int32_t material_type = 0;
-                    _vox_file_read(fp, &material_type, sizeof(material_type));
+                    _vox_file_read_int32(fp, &material_type);
 
                     // diffuse  : 1.0
                     // metal    : (0.0 - 1.0] : blend between metal and diffuse material
                     // glass    : (0.0 - 1.0] : blend between glass and diffuse material
                     // emissive : (0.0 - 1.0] : self-illuminated material
                     float material_weight = 0.0f;
-                    _vox_file_read(fp, &material_weight, sizeof(material_weight));
+                    _vox_file_read_float(fp, &material_weight);
 
                     // bit(0) : Plastic
                     // bit(1) : Roughness
@@ -1599,7 +1672,7 @@
                     // bit(6) : Glow
                     // bit(7) : isTotalPower (*no value)
                     uint32_t property_bits = 0u;
-                    _vox_file_read(fp, &property_bits, sizeof(property_bits));
+                    _vox_file_read_uint32(fp, &property_bits);
 
                     materials.matl[material_id].type = (ogt_matl_type)material_type;
                     switch (material_type) {
@@ -1628,7 +1701,7 @@
                 {
                     ogt_vox_cam camera;
                     memset(&camera, 0, sizeof(camera));
-                    _vox_file_read(fp, &camera.camera_id, sizeof(camera.camera_id));
+                    _vox_file_read_uint32(fp, &camera.camera_id);
                     _vox_file_read_dict(&dict, fp);
 
                     camera.mode = ogt_cam_mode_unknown;
@@ -2082,14 +2155,16 @@
         fp->data.push_back_many((const uint8_t*)data, data_size);
     }
     static void _vox_file_write_uint32(_vox_file_writeable* fp, uint32_t data) {
-        fp->data.push_back_many((const uint8_t*)&data, sizeof(uint32_t));
+        data = htole32(data);
+        _vox_file_write(fp, &data, sizeof(data));
     }
     static void _vox_file_write_uint8(_vox_file_writeable* fp, uint8_t data) {
-        fp->data.push_back_many((const uint8_t*)&data, sizeof(uint8_t));
+        _vox_file_write(fp, &data, sizeof(data));
     }
-    static void _vox_file_write_at_offset(_vox_file_writeable* fp, uint32_t offset, const void* data, uint32_t data_size) {
-        ogt_assert((offset + data_size) <= fp->data.count, "write at offset must not be an append write");
-        memcpy(&fp->data[offset], data, data_size);
+    static void _vox_file_write_uint32_at_offset(_vox_file_writeable* fp, uint32_t offset, const uint32_t* data) {
+        ogt_assert((offset + sizeof(*data)) <= fp->data.count, "write at offset must not be an append write");
+        const uint32_t val = htole32(*data);
+        memcpy(&fp->data[offset], &val, sizeof(*data));
     }
     static uint32_t _vox_file_get_offset(const _vox_file_writeable* fp) {
         return (uint32_t)fp->data.count;
@@ -2173,7 +2248,7 @@
 
         // patch up the chunk size in the header
         uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
-        _vox_file_write_at_offset(fp, offset_of_chunk_header + 4, &chunk_size, sizeof(chunk_size));
+        _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
     }
 
     // saves the scene out to a buffer that when saved as a .vox file can be loaded with magicavoxel.
@@ -2289,7 +2364,7 @@
                     _vox_file_write_uint32(fp, first_instance_transform_node_id + child_instance_index);
 
             uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
-            _vox_file_write_at_offset(fp, offset_of_chunk_header + 4, &chunk_size, sizeof(chunk_size));
+            _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
         }
 
         // write out an nSHP chunk for each of the instances
@@ -2325,7 +2400,7 @@
             }
             // compute and patch up the chunk size in the chunk header
             uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
-            _vox_file_write_at_offset(fp, offset_of_chunk_header + 4, &chunk_size, sizeof(chunk_size));
+            _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
         }
 
         // write out a nTRN chunk for all instances - and make them point to the relevant nSHP chunk
@@ -2389,7 +2464,7 @@
 
             // compute and patch up the chunk size in the chunk header
             uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
-            _vox_file_write_at_offset(fp, offset_of_chunk_header + 4, &chunk_size, sizeof(chunk_size));
+            _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
         }
 
         // write out RGBA chunk for the palette
@@ -2487,7 +2562,7 @@
                 }
                 // compute and patch up the chunk size in the chunk header
                 uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
-                _vox_file_write_at_offset(fp, offset_of_chunk_header + 4, &chunk_size, sizeof(chunk_size));
+                _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
             }
         }
 
@@ -2518,7 +2593,7 @@
 
             // compute and patch up the chunk size in the chunk header
             uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
-            _vox_file_write_at_offset(fp, offset_of_chunk_header + 4, &chunk_size, sizeof(chunk_size));
+            _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
         }
 
         // we deliberately don't free the fp->data field, just pass the buffer pointer and size out to the caller
