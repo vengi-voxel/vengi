@@ -152,7 +152,8 @@ static void generateKernelHeader(const Kernel& k, core::String& kernels, BodyTyp
 }
 
 static void generateKernelParameterTransfer(const Kernel& k, core::String& kernels, BodyType type) {
-	for (size_t i = 0; i < k.parameters.size(); ++i) {
+	const int nParameters = (int)k.parameters.size();
+	for (int i = 0; i < nParameters; ++i) {
 		const Parameter& p = k.parameters[i];
 		if (p.datatype == DataType::Sampler) {
 			continue;
@@ -221,7 +222,7 @@ static void generateKernelParameterTransfer(const Kernel& k, core::String& kerne
 				kernels += core::string::toString(i);
 				kernels += ", ";
 				kernels += p.name;
-				if (i < k.parameters.size() - 1 && (p.datatype == DataType::Image2D || p.datatype == DataType::Image3D)) {
+				if (i < nParameters - 1 && (p.datatype == DataType::Image2D || p.datatype == DataType::Image3D)) {
 					if (k.parameters[i + 1].datatype == DataType::Sampler) {
 						kernels += ", ";
 						kernels += core::string::toString(i + 1);
