@@ -89,9 +89,9 @@ TEST_F(StringTest, testCompare) {
 	String second(first);
 	String third("dontent");
 	String fourth("bontent");
-	EXPECT_EQ(0, first.compare(second));
-	EXPECT_EQ(-1, first.compare(third));
-	EXPECT_EQ(1, first.compare(fourth));
+	EXPECT_EQ(first.compare(second), 0);
+	EXPECT_LT(first.compare(third), 0);
+	EXPECT_GT(first.compare(fourth), 0);
 
 	const String str("string");
 	const String str2("str");

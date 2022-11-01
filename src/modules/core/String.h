@@ -59,8 +59,23 @@ public:
 	char *c_str();
 	size_t capacity() const;
 	size_t size() const;
+	/**
+	 * 0, if the this string and str are equal;
+	 * a negative value if this string is less than str;
+	 * a positive value if this string  is greater than s2.
+	 */
 	int compare(const String& str) const;
+	/**
+	 * 0, if the this string and str are equal;
+	 * a negative value if this string is less than str;
+	 * a positive value if this string  is greater than s2.
+	 */
 	int compare(const char *str, size_t len) const;
+	/**
+	 * 0, if the this string and str are equal;
+	 * a negative value if this string is less than str;
+	 * a positive value if this string  is greater than s2.
+	 */
 	int compare(const char *str) const;
 	int compare(size_t index, size_t len, const String& str) const;
 	bool equals(const char *str) const;
