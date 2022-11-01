@@ -505,7 +505,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 				ub += "]";
 			}
 			ub += "; // ";
-			ub += core::string::toString(memberSize);
+			ub += core::string::toString((uint32_t)memberSize);
 			ub += " bytes\n";
 			ub += ubuf.layout.typePadding(v, paddingCnt);
 		}
@@ -514,7 +514,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		ub += "\tstatic_assert(sizeof(";
 		ub += uniformBufferStructName;
 		ub += "Data) == ";
-		ub += core::string::toString(structSize);
+		ub += core::string::toString((uint32_t)structSize);
 		ub += ", \"Unexpected structure size for ";
 		ub += uniformBufferStructName;
 		ub += "Data\");\n";
