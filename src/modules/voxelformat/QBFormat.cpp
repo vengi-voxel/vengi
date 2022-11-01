@@ -316,12 +316,12 @@ bool QBFormat::loadColors(State& state, io::SeekableReadStream& stream, voxel::P
 	Log::debug("Matrix size: %i:%i:%i", size.x, size.y, size.z);
 
 	if (size.x == 0 || size.y == 0 || size.z == 0) {
-		Log::error("Invalid size (%i:%i:%i)", size.x, size.y, size.z);
+		Log::error("Invalid size (%u:%u:%u)", size.x, size.y, size.z);
 		return false;
 	}
 
 	if (size.x > 2048 || size.y > 2048 || size.z > 2048) {
-		Log::error("Volume exceeds the max allowed size: %i:%i:%i", size.x, size.y, size.z);
+		Log::error("Volume exceeds the max allowed size: %u:%u:%u", size.x, size.y, size.z);
 		return false;
 	}
 
