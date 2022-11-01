@@ -14,7 +14,8 @@ TEST_F(NamedBinaryTagTest, testWriteRead) {
 	io::BufferedReadWriteStream stream;
 	{
 		priv::NBTCompound compound;
-		const priv::NamedBinaryTag floatTag{1.0f};
+		// this is a workaround for a gcc 5.5 compiler bug
+		const priv::NamedBinaryTag floatTag = priv::NamedBinaryTag(1.0f);
 		compound.put("Root", floatTag);
 		priv::NamedBinaryTag root(core::move(compound));
 		ASSERT_TRUE(priv::NamedBinaryTag::write(root, "rootTagName", stream));

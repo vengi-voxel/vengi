@@ -15,8 +15,8 @@ namespace core {
 class Color {
 public:
 	static const uint32_t magnitude = 255;
-	static constexpr float magnitudef = 255.0f;
-	static constexpr float scaleFactor = 0.7f;
+	static const float magnitudef;
+	static const float scaleFactor;
 	static const glm::vec4
 		Clear,
 		White,
