@@ -3,6 +3,7 @@
  */
 
 #include <gtest/gtest.h>
+#include "core/FourCC.h"
 #include "core/Vector.h"
 #include <glm/fwd.hpp>
 #include <glm/vec4.hpp>
@@ -33,6 +34,16 @@ TEST(CoreTest, testIsVector) {
 	std::vector<uint8_t> &output2 = output;
 	EXPECT_TRUE(core::isVector<decltype(output)>::value);
 	EXPECT_TRUE(core::isVector<decltype(output2)>::value);
+}
+
+TEST(CoreTest, testFourCC) {
+	const uint32_t fcc = FourCC('a', 'b', 'c', 'd');
+	uint8_t buf[4];
+	FourCCRev(buf, fcc);
+	EXPECT_EQ(buf[0], 'a');
+	EXPECT_EQ(buf[1], 'b');
+	EXPECT_EQ(buf[2], 'c');
+	EXPECT_EQ(buf[3], 'd');
 }
 
 }

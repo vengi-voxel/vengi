@@ -3,6 +3,7 @@
  */
 
 #include <gtest/gtest.h>
+#include "core/FourCC.h"
 #include "io/BufferedReadWriteStream.h"
 #include <limits.h>
 
@@ -227,7 +228,7 @@ TEST(BufferedReadWriteStreamTest, testFormatStringTerminated) {
 
 TEST(BufferedReadWriteStreamTest, testFormat) {
 	BufferedReadWriteStream stream;
-	stream.writeFormat("bsil", 1, 2, 3, 4);
+	EXPECT_TRUE(stream.writeFormat("bsil", 1, 2, 3, 4));
 	EXPECT_EQ(15, stream.pos());
 	stream.seek(0);
 	int8_t valB;
@@ -240,6 +241,32 @@ TEST(BufferedReadWriteStreamTest, testFormat) {
 	EXPECT_EQ(3, valI);
 	EXPECT_EQ(4, valL);
 	EXPECT_TRUE(stream.eos());
+}
+
+TEST(BufferedReadWriteStreamTest, testFourCCLE) {
+	BufferedReadWriteStream stream;
+	EXPECT_TRUE(stream.writeUInt8('a'));
+	EXPECT_TRUE(stream.writeUInt8('b'));
+	EXPECT_TRUE(stream.writeUInt8('c'));
+	EXPECT_TRUE(stream.writeUInt8('d'));
+	EXPECT_NE(stream.seek(0), -1);
+	const uint32_t fcc = FourCC('a', 'b', 'c', 'd');
+	uint32_t fccs = 0;
+	EXPECT_EQ(stream.readUInt32(fccs), 0);
+	EXPECT_EQ(fcc, fccs);
+}
+
+TEST(BufferedReadWriteStreamTest, testFourCCBE) {
+	BufferedReadWriteStream stream;
+	EXPECT_TRUE(stream.writeUInt8('d'));
+	EXPECT_TRUE(stream.writeUInt8('c'));
+	EXPECT_TRUE(stream.writeUInt8('b'));
+	EXPECT_TRUE(stream.writeUInt8('a'));
+	EXPECT_NE(stream.seek(0), -1);
+	const uint32_t fcc = FourCC('a', 'b', 'c', 'd');
+	uint32_t fccs = 0;
+	EXPECT_EQ(stream.readUInt32BE(fccs), 0);
+	EXPECT_EQ(fcc, fccs);
 }
 
 }
