@@ -245,6 +245,7 @@
     #define __BIG_ENDIAN    BIG_ENDIAN
     #define __LITTLE_ENDIAN LITTLE_ENDIAN
     #define __PDP_ENDIAN    PDP_ENDIAN
+#elif defined(__APPLE__)
 #else
     #error some fixup needed for this platform?
 #endif
