@@ -18,7 +18,7 @@ void core_stacktrace() {
 	backward::Printer printer;
 	printer.print(st, os);
 	std::string stacktrace = os.str();
-	char *c = stacktrace.data();
+	char *c = (char*)stacktrace.data();
 	while (char *l = SDL_strchr(c, '\n')) {
 		*l = '\0';
 		Log::error("%s", c);
