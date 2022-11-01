@@ -223,22 +223,22 @@ inline core::String toString(const T& v) {
 }
 
 template<>
-inline core::String toString(const unsigned short& v) {
+inline core::String toString(const uint16_t& v) {
 	return core::String::format("%u", v);
 }
 
 template<>
-inline core::String toString(const short& v) {
+inline core::String toString(const int16_t& v) {
 	return core::String::format("%i", v);
 }
 
 template<>
-inline core::String toString(const unsigned int& v) {
+inline core::String toString(const uint32_t& v) {
 	return core::String::format("%u", v);
 }
 
 template<>
-inline core::String toString(const int& v) {
+inline core::String toString(const int32_t& v) {
 	return core::String::format("%i", v);
 }
 
@@ -271,20 +271,14 @@ inline core::String toString(const int64_t& v) {
 #endif
 }
 
-// win32 doesn't like to combine this with the unsigned int override
-#if defined(_WIN64) || !defined(_WIN32)
-template <> inline core::String toString(const size_t &v) {
+template<>
+inline core::String toString(const uint64_t& v) {
 #ifdef _MSC_VER
-#if defined(_WIN64)
-	return core::String::format("%lld", (long long)v);
+	return core::String::format("%llu", (long long)v);
 #else
-	return core::String::format("%u", v);
-#endif
-#else
-	return core::String::format("%" PRIu64, (uint64_t)v);
+	return core::String::format("%" PRIu64, v);
 #endif
 }
-#endif
 
 inline core::String trim(const core::String& str) {
 	return str.trim();
