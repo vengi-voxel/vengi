@@ -34,6 +34,9 @@ int Shader::glslVersion = GLSLVersion::V430;
 #endif
 
 Shader::Shader() {
+	for (int i = 0; i < (int)ShaderType::Max; ++i) {
+		_shader[i] = InvalidId;
+	}
 }
 
 Shader::~Shader() {

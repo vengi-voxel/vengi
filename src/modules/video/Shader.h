@@ -44,7 +44,7 @@ class UniformBuffer;
 class Shader : public core::NonCopyable {
 protected:
 	typedef core::Array<Id, (int)ShaderType::Max> ShaderArray;
-	ShaderArray _shader { InvalidId, InvalidId, InvalidId, InvalidId };
+	ShaderArray _shader;
 
 	typedef core::Map<int, uint32_t, 8> UniformStateMap;
 	mutable UniformStateMap _uniformStateMap{128};
