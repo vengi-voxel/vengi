@@ -85,7 +85,10 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) 
 
 bool STLFormat::parseBinary(io::SeekableReadStream &stream, TriCollection &tris) {
 	const glm::vec3 &scale = getScale();
-	stream.seek(priv::BinaryHeaderSize);
+	if (stream.seek(priv::BinaryHeaderSize) == -1) {
+		Log::error("Failed to seek after the binary stl header");
+		return false;
+	}
 	uint32_t numFaces = 0;
 	wrap(stream.readUInt32(numFaces))
 	Log::debug("faces: %u", numFaces);
@@ -106,7 +109,10 @@ bool STLFormat::parseBinary(io::SeekableReadStream &stream, TriCollection &tris)
 			wrap(stream.readFloat(tri.vertices[i].z))
 			tri.vertices[i] *= scale;
 		}
-		stream.skip(2);
+		if (stream.skip(2) == -1) {
+			Log::error("Failed to seek while parsing the frames");
+			return false;
+		}
 	}
 
 	return true;
