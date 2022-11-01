@@ -84,11 +84,14 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 		ImGui::EndDragDropTarget();
 	}
 
+	if (ImGui::IsItemActivated()) {
+		sceneMgr().nodeActivate(node.id());
+	}
+
 	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", node.id());
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 		const int validLayers = (int)sceneGraph.size();
 		if (node.type() == voxelformat::SceneGraphNodeType::Model) {
-			sceneMgr().nodeActivate(node.id());
 			ImGui::CommandMenuItem(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "layerdelete", validLayers > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", validLayers > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "layerduplicate", true, &listener);
