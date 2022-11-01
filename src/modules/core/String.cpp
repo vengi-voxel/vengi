@@ -12,6 +12,8 @@
 
 namespace core {
 
+const size_t String::npos = ~0u;
+
 size_t StringHash::operator()(const core::String &p) const {
 	size_t result = 0;
 	const size_t prime = 31;
