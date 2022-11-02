@@ -53,6 +53,8 @@ public:
 	bool saveGlow(const char *name = nullptr) const;
 	bool load(const uint8_t *rgbaBuf, size_t bufsize);
 
+	void changeIntensity(float scale);
+
 	static core::String print(const Palette &palette, bool colorAsHex = false);
 
 	/**

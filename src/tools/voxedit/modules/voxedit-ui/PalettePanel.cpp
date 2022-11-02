@@ -192,6 +192,14 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		// restore the draw list flags from above
 		drawList->Flags = backupFlags;
 
+		static float intensityChange = 0.0f;
+		ImGui::SliderFloat(ICON_FA_SLIDERS, &intensityChange, -1.0f, 1.0f);
+		ImGui::SameLine();
+		const core::String &paletteChangeCmd = core::string::format("palette_changeintensity %f", intensityChange);
+		if (ImGui::CommandButton("Apply", paletteChangeCmd.c_str(), nullptr, 0.0f, &listener)) {
+			intensityChange = 0.0f;
+		}
+
 		ImGui::Text("Color: %i (voxel %i)", currentSelectedPalIdx, currentSceneHoveredPalIdx);
 		ImGui::TooltipText("Palette color index for current voxel under cursor");
 		ImGui::CommandButton(ICON_FA_PALETTE " Import palette", "importpalette", nullptr, 0.0f, &listener);

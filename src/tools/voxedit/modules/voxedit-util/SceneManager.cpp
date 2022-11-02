@@ -1232,6 +1232,15 @@ void SceneManager::construct() {
 				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
 				_move[i]).setBindingContext(BindingContext::Model);
 	}
+	command::Command::registerCommand("palette_changeintensity", [&] (const command::CmdArgs& args) {
+		if (args.empty()) {
+			Log::info("Usage: palette_changeintensity [value]");
+			return;
+		}
+		const float scale = core::string::toFloat(args[0]);
+		voxel::Palette &pal = activePalette();
+		pal.changeIntensity(scale);
+	}).setHelp("Change intensity by scaling the rgb values of the palette");
 
 	command::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Editing);
 	command::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Editing);

@@ -212,6 +212,17 @@ uint8_t Palette::findReplacement(uint8_t index) const {
 	return replacement;
 }
 
+void Palette::changeIntensity(float scale) {
+	const float f = glm::abs(scale) + 1.0f;
+	for (int i = 0; i < colorCount; ++i) {
+		const glm::vec4 &color = core::Color::fromRGBA(colors[i]);
+		const glm::vec4 &newColor = scale < 0.0f ? core::Color::darker(color, f) : core::Color::brighter(color, f);
+		colors[i] = core::Color::getRGBA(newColor);
+	}
+	markDirty();
+	markSave();
+}
+
 bool Palette::save(const char *name) const {
 	if (name == nullptr || name[0] == '\0') {
 		if (_paletteFilename.empty()) {
