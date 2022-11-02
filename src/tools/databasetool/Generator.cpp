@@ -127,7 +127,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 	src += core::string::toString(table.autoIncrementStart);
 	src += ";\n";
 	src += "\t\t\t_fields.reserve(";
-	src += core::string::toString(table.fields.size());
+	src += core::string::toString((uint32_t)table.fields.size());
 	src += ");\n";
 	for (const auto& entry : table.fields) {
 		const persistence::Field& f = entry.second;
@@ -165,7 +165,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 	}
 	if (!table.constraints.empty()) {
 		src += "\t\t\t_constraints.reserve(";
-		src += core::string::toString(table.constraints.size());
+		src += core::string::toString((uint32_t)table.constraints.size());
 		src += ");\n";
 	}
 	for (auto i = table.constraints.begin(); i != table.constraints.end(); ++i) {
@@ -205,7 +205,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 	}
 	if (!table.uniqueKeys.empty()) {
 		src += "\t\t\t_uniqueKeys.reserve(";
-		src += core::string::toString(table.uniqueKeys.size());
+		src += core::string::toString((uint32_t)table.uniqueKeys.size());
 		src += ");\n";
 	}
 	for (const auto& uniqueKey : table.uniqueKeys) {
@@ -215,7 +215,7 @@ static void createMetaStruct(const Table& table, core::String& src) {
 	}
 	if (!table.foreignKeys.empty()) {
 		src += "\t\t\t_foreignKeys.reserve(";
-		src += core::string::toString(table.foreignKeys.size());
+		src += core::string::toString((uint32_t)table.foreignKeys.size());
 		src += ");\n";
 	}
 	for (const auto& foreignKeyEntry : table.foreignKeys) {
