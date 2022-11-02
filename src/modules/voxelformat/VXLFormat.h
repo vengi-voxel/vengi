@@ -39,15 +39,19 @@ private:
 		uint8_t *spanData;			/* Byte data for each span length */
 	};
 
+	struct VXLPalette {
+		uint8_t startPaletteRemap;	/* Always 0x1f - player colors palette remapping? */
+		uint8_t endPaletteRemap;	/* Always 0x10 */
+		uint8_t palette[256][3]; 	/* 256 colour palette for the voxel in RGB format */
+	};
+
 	struct VXLHeader {
 		char filetype[16];			/* ASCIIZ string - "Voxel Animation" */
-		uint32_t unknown;			/* Always 1 - number of animation frames? */
+		uint32_t paletteCount;
 		uint32_t nodeCount;			/* Number of nodes */
-		uint32_t nodeCount2;		/* Always the same as nodeCount */
+		uint32_t tailerCount;
 		uint32_t bodysize;			/* Total size in bytes of all node bodies */
-		uint8_t startPaletteRemap;	/* Always 0x1f10 - player colors palette remapping? */
-		uint8_t endPaletteRemap;
-		uint8_t palette[256][3]; 	/* 256 colour palette for the voxel in RGB format */
+		VXLPalette palette;
 	};
 
 	struct VXLNodeFooter {
@@ -144,6 +148,8 @@ private:
 
 	static glm::mat4 switchYAndZ(const glm::mat4 &in);
 protected:
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
+
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
 
 	static glm::mat4 convertToGLM(const VXLMatrix &in);

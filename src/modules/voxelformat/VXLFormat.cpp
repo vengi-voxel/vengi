@@ -494,7 +494,7 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 bool VXLFormat::readNodeFooters(io::SeekableReadStream& stream, VXLModel& mdl) const {
 	const VXLHeader& hdr = mdl.header;
 	wrap(stream.seek(HeaderSize + NodeHeaderSize * hdr.nodeCount + hdr.bodysize))
-	for (uint32_t i = 0; i < hdr.nodeCount; ++i) {
+	for (uint32_t i = 0; i < hdr.tailerCount; ++i) {
 		wrapBool(readNodeFooter(stream, mdl, i))
 	}
 	return true;
@@ -507,23 +507,29 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel:
 		Log::error("Invalid vxl header");
 		return false;
 	}
-	wrap(stream.readUInt32(hdr.unknown))
+	wrap(stream.readUInt32(hdr.paletteCount))
 	wrap(stream.readUInt32(hdr.nodeCount))
-	wrap(stream.readUInt32(hdr.nodeCount2))
+	wrap(stream.readUInt32(hdr.tailerCount))
 	wrap(stream.readUInt32(hdr.bodysize))
-	wrap(stream.readUInt8(hdr.startPaletteRemap))
-	wrap(stream.readUInt8(hdr.endPaletteRemap))
 
 	Log::debug("Found %u nodes", hdr.nodeCount);
 
 	palette.colorCount = voxel::PaletteMaxColors;
 	bool valid = false;
-	for (int i = 0; i < palette.colorCount; ++i) {
-		wrap(stream.readUInt8(hdr.palette[i][0]))
-		wrap(stream.readUInt8(hdr.palette[i][1]))
-		wrap(stream.readUInt8(hdr.palette[i][2]))
-		if (hdr.palette[i][0] != 0 || hdr.palette[i][1] != 0 || hdr.palette[i][2] != 0) {
-			valid = true;
+	for (uint32_t n = 0; n < hdr.paletteCount; ++n) {
+		wrap(stream.readUInt8(hdr.palette.startPaletteRemap)) // 0x1f
+		wrap(stream.readUInt8(hdr.palette.endPaletteRemap)) // 0x10
+		Log::debug("%u: %u start, %u end palette offset", n, hdr.palette.startPaletteRemap, hdr.palette.endPaletteRemap);
+		for (int i = 0; i < palette.colorCount; ++i) {
+			wrap(stream.readUInt8(hdr.palette.palette[i][0]))
+			wrap(stream.readUInt8(hdr.palette.palette[i][1]))
+			wrap(stream.readUInt8(hdr.palette.palette[i][2]))
+			if (hdr.palette.palette[i][0] != 0 || hdr.palette.palette[i][1] != 0 || hdr.palette.palette[i][2] != 0) {
+				valid = true;
+			}
+		}
+		if (valid) {
+			break;
 		}
 	}
 
@@ -531,11 +537,12 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel:
 
 	if (valid) {
 		for (int i = 0; i < palette.colorCount; ++i) {
-			const uint8_t *p = hdr.palette[i];
+			const uint8_t *p = hdr.palette.palette[i];
 			palette.colors[i] = core::RGBA(p[0], p[1], p[2]);
 		}
 	} else {
 		palette.colorCount = 0;
+		Log::warn("No palette found in vxl");
 	}
 
 	return true;
@@ -756,6 +763,14 @@ bool VXLFormat::loadFromFile(const core::String &filename, SceneGraph& sceneGrap
 		return loadGroupsPalette(filename, stream, sceneGraph, palette);
 	}
 	return true;
+}
+
+size_t VXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+	VXLModel mdl;
+	if (!readHeader(stream, mdl, palette)) {
+		return false;
+	}
+	return palette.colorCount;
 }
 
 bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette) {
