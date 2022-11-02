@@ -219,9 +219,9 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 
 bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, uint32_t numNodes, const voxel::Palette &palette) {
 	wrapBool(stream.writeString("Voxel Animation", true))
-	wrapBool(stream.writeUInt32(1))
-	wrapBool(stream.writeUInt32(numNodes))
-	wrapBool(stream.writeUInt32(numNodes))
+	wrapBool(stream.writeUInt32(1)) // palette count
+	wrapBool(stream.writeUInt32(numNodes)) // header count
+	wrapBool(stream.writeUInt32(numNodes)) // footer count
 	wrapBool(stream.writeUInt32(0)) // bodysize is filled later
 	wrapBool(stream.writeUInt8(0x1fU))
 	wrapBool(stream.writeUInt8(0x10U))
@@ -298,7 +298,9 @@ bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 
 	const core::String &basename = core::string::stripExtension(filename);
 
-	saveVXL(body, filename, stream);
+	if (!saveVXL(body, filename, stream)) {
+		return false;
+	}
 	if (!barrel.empty()) {
 		const core::String &extFilename = basename + "barl.vxl";
 		io::FileStream extStream(io::filesystem()->open(extFilename, io::FileMode::SysWrite));
