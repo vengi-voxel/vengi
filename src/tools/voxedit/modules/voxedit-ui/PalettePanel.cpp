@@ -249,6 +249,11 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 				palette.markSaved();
 			}
 			ImGui::TooltipText("Save the modified palette");
+		} else {
+			if (ImGui::Button(ICON_FA_FLOPPY_DISK " Save##savepalette")) {
+				imguiApp()->saveDialog([&](const core::String &file) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
+			}
+			ImGui::TooltipText("Export the palette");
 		}
 
 		ImGui::Dummy(ImVec2(10, 10));
