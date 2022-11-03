@@ -62,12 +62,14 @@ public:
 	 */
 	void fill();
 
-	static constexpr const char *builtIn[] = {"built-in:nippon", "built-in:minecraft", "built-in:magicavoxel", "built-in:quake1"};
+	static constexpr const char *builtIn[] = {"built-in:nippon", "built-in:minecraft", "built-in:magicavoxel",
+											  "built-in:quake1", "built-in:commandandconquer"};
 
 	bool minecraft();
 	bool magicaVoxel();
 	bool nippon();
 	bool quake1();
+	bool commandAndConquer();
 
 	void markDirty();
 	inline bool isDirty() const {

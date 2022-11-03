@@ -541,7 +541,7 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel:
 			palette.colors[i] = core::RGBA(p[0], p[1], p[2]);
 		}
 	} else {
-		palette.colorCount = 0;
+		palette.commandAndConquer();
 		Log::warn("No palette found in vxl");
 	}
 
