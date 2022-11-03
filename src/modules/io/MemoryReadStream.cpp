@@ -20,6 +20,13 @@ MemoryReadStream::~MemoryReadStream() {
 }
 
 int MemoryReadStream::read(void *dataPtr, size_t dataSize) {
+	const int64_t rem = remaining();
+	if (rem == 0) {
+		return 0;
+	}
+	if (dataSize > (size_t)rem) {
+		dataSize = rem;
+	}
 	if (_pos + (int64_t)dataSize > _size) {
 		return -1;
 	}
