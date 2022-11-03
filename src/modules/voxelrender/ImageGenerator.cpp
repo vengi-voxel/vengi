@@ -23,8 +23,6 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 		return image;
 	}
 
-	stream.seek(0);
-
 	voxelformat::SceneGraph sceneGraph;
 	stream.seek(0);
 	if (!voxelformat::loadFormat(fileName, stream, sceneGraph)) {
@@ -32,6 +30,10 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 		return image::ImagePtr();
 	}
 
+	return volumeThumbnail(sceneGraph, outputSize);
+}
+
+image::ImagePtr volumeThumbnail(voxelformat::SceneGraph &sceneGraph, const glm::ivec2 &outputSize) {
 	video::FrameBuffer frameBuffer;
 	voxelrender::SceneGraphRenderer volumeRenderer;
 	volumeRenderer.construct();
@@ -83,6 +85,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 
 	const video::TexturePtr &fboTexture = frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	uint8_t *pixels = nullptr;
+	image::ImagePtr image;
 	if (video::readTexture(video::TextureUnit::Upload, textureCfg.type(), textureCfg.format(), fboTexture->handle(),
 						   fboTexture->width(), fboTexture->height(), &pixels)) {
 		image::Image::flipVerticalRGBA(pixels, fboTexture->width(), fboTexture->height());
