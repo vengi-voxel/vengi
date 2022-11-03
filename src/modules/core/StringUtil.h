@@ -207,6 +207,10 @@ inline bool contains(const core::String& str, const core::String& search) {
 	return contains(str.c_str(), search.c_str());
 }
 
+/**
+ * @return the base name of a file path
+ * example: given input is @c /foo/bar/file.txt - the result is @c file
+ */
 inline core::String extractFilename(const core::String& str) {
 	return stripExtension(extractFilenameWithExtension(str));
 }
