@@ -43,10 +43,12 @@ public:
 
 	bool load(const io::FilePtr& file);
 	bool load(const uint8_t* buffer, int length);
+	bool load(io::SeekableReadStream &stream, int length);
 	/**
 	 * Loads a raw RGBA buffer
 	 */
 	bool loadRGBA(const uint8_t* buffer, int width, int height);
+	bool loadRGBA(io::ReadStream& stream, int w, int h);
 
 	glm::vec2 uv(int x, int y) const;
 

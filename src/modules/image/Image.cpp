@@ -13,6 +13,7 @@
 #include "io/Filesystem.h"
 #include "core/StandardLib.h"
 #include "io/FormatDescription.h"
+#include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include "util/Base64.h"
 
@@ -171,7 +172,28 @@ ImagePtr loadImage(const core::String& filename, bool async) {
 }
 
 bool Image::load(const uint8_t* buffer, int length) {
-	if (!buffer || length <= 0) {
+	io::MemoryReadStream stream(buffer, length);
+	return load(stream, length);
+}
+
+static int stream_read(void *user, char *data, int size) {
+	io::SeekableReadStream *stream = (io::SeekableReadStream*)user;
+	const int readSize = stream->read(data, size);
+	return readSize;
+}
+
+static void stream_skip(void *user, int n) {
+	io::SeekableReadStream *stream = (io::SeekableReadStream*)user;
+	stream->skip(n);
+}
+
+static int stream_eos(void *user) {
+	io::SeekableReadStream *stream = (io::SeekableReadStream*)user;
+	return stream->eos() ? 1 : 0;
+}
+
+bool Image::load(io::SeekableReadStream &stream, int length) {
+	if (length <= 0) {
 		_state = io::IOSTATE_FAILED;
 		Log::debug("Failed to load image %s: buffer empty", _name.c_str());
 		return false;
@@ -179,7 +201,11 @@ bool Image::load(const uint8_t* buffer, int length) {
 	if (_data) {
 		stbi_image_free(_data);
 	}
-	_data = stbi_load_from_memory(buffer, length, &_width, &_height, &_depth, STBI_rgb_alpha);
+	stbi_io_callbacks clbk;
+	clbk.read = stream_read;
+	clbk.skip = stream_skip;
+	clbk.eof = stream_eos;
+	_data = stbi_load_from_callbacks(&clbk, &stream, &_width, &_height, &_depth, STBI_rgb_alpha);
 	// we are always using rgba
 	_depth = 4;
 	if (_data == nullptr) {
@@ -194,18 +220,28 @@ bool Image::load(const uint8_t* buffer, int length) {
 
 bool Image::loadRGBA(const uint8_t* buffer, int width, int height) {
 	const int length = width * height * 4;
-	if (!buffer || length <= 0) {
+	io::MemoryReadStream stream(buffer, length);
+	return loadRGBA(stream, width, height);
+}
+
+bool Image::loadRGBA(io::ReadStream& stream, int w, int h) {
+	const int length = w * h * 4;
+	if (length <= 0) {
 		_state = io::IOSTATE_FAILED;
-		Log::debug("Failed to load image %s: buffer empty", _name.c_str());
+		Log::debug("Failed to load image %s: invalid size", _name.c_str());
 		return false;
 	}
 	if (_data) {
 		stbi_image_free(_data);
 	}
 	_data = (uint8_t*)STBI_MALLOC(length);
-	_width = width;
-	_height = height;
-	core_memcpy(_data, buffer, length);
+	_width = w;
+	_height = h;
+	if (stream.read(_data, length) != length) {
+		_state = io::IOSTATE_FAILED;
+		Log::debug("Failed to load image %s: failed to read from stream", _name.c_str());
+		return false;
+	}
 	// we are always using rgba
 	_depth = 4;
 	Log::debug("Loaded image %s", _name.c_str());
