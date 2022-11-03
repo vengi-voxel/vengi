@@ -3,6 +3,7 @@
  */
 
 #include "Image.h"
+#include "core/Color.h"
 #include "core/Log.h"
 #include "app/App.h"
 #include "core/StringUtil.h"
@@ -309,6 +310,22 @@ core::String Image::pngBase64() const {
 	}
 	s.seek(0);
 	return util::Base64::encode(s);
+}
+
+core::String print(const image::ImagePtr &image) {
+	core::String str = core::string::format("w: %i, h: %i, d: %i\n", image->width(), image->height(), image->depth());
+	str.reserve(40 * image->width() * image->height());
+	for (int y = 0; y < image->height(); ++y) {
+		for (int x = 0; x < image->width(); ++x) {
+			if (x > 20) {
+				break;
+			}
+			const core::RGBA color = image->colorAt(x, y);
+			str += core::Color::print(color, false);
+		}
+		str += "\n";
+	}
+	return str;
 }
 
 }

@@ -96,4 +96,6 @@ extern uint8_t* createPng(const void *pixels, int width, int height, int depth, 
 extern ImagePtr loadImage(const io::FilePtr& file, bool async = true);
 extern ImagePtr loadImage(const core::String& filename, bool async = true);
 
+extern core::String print(const image::ImagePtr &image);
+
 }
