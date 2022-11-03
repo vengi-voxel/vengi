@@ -33,7 +33,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	return volumeThumbnail(sceneGraph, outputSize);
 }
 
-image::ImagePtr volumeThumbnail(voxelformat::SceneGraph &sceneGraph, const glm::ivec2 &outputSize) {
+image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const glm::ivec2 &outputSize) {
 	video::FrameBuffer frameBuffer;
 	voxelrender::SceneGraphRenderer volumeRenderer;
 	volumeRenderer.construct();
@@ -79,7 +79,7 @@ image::ImagePtr volumeThumbnail(voxelformat::SceneGraph &sceneGraph, const glm::
 
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	frameBuffer.bind(true);
-	volumeRenderer.prepare(sceneGraph);
+	volumeRenderer.prepare(const_cast<voxelformat::SceneGraph&>(sceneGraph));
 	volumeRenderer.render(camera, true, true);
 	frameBuffer.unbind();
 
