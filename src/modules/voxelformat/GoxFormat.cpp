@@ -164,14 +164,9 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::Seek
 
 	GoxChunk c;
 	while (loadChunk_Header(c, stream)) {
-		if (c.type == FourCC('B', 'L', '1', '6') || c.type == FourCC('L', 'A', 'Y', 'R')) {
-			break;
-		} else if (c.type == FourCC('P', 'R', 'E', 'V')) {
-			uint8_t *png = (uint8_t *)core_malloc(c.length);
-			wrapImg(loadChunk_ReadData(stream, (char *)png, c.length))
-			image::ImagePtr img = image::createEmptyImage("gox-preview");
-			img->load(png, c.length);
-			core_free(png);
+		if (c.type == FourCC('P', 'R', 'E', 'V')) {
+			image::ImagePtr img = image::createEmptyImage("gox-preview.png");
+			img->load(stream, c.length);
 			return img;
 		} else {
 			stream.seek(c.length, SEEK_CUR);
