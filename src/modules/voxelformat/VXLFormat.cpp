@@ -796,6 +796,7 @@ bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	const core::String &basename = core::string::stripExtension(filename);
 	wrapBool(loadHVA(basename + ".hva", mdl, sceneGraph))
 
+	// TODO: case insensitive barrel and turret search
 	wrapBool(loadFromFile(basename + "barl.vxl", sceneGraph, palette));
 	wrapBool(loadFromFile(basename + "tur.vxl", sceneGraph, palette));
 
