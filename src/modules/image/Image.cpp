@@ -317,9 +317,6 @@ core::String print(const image::ImagePtr &image) {
 	str.reserve(40 * image->width() * image->height());
 	for (int y = 0; y < image->height(); ++y) {
 		for (int x = 0; x < image->width(); ++x) {
-			if (x > 20) {
-				break;
-			}
 			const core::RGBA color = image->colorAt(x, y);
 			str += core::Color::print(color, false);
 		}
