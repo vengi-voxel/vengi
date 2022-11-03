@@ -171,13 +171,18 @@ void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename) {
 	testRGBSmallSaveLoad(filename, saveFilename);
 }
 
-void AbstractVoxFormatTest::testLoadScreenshot(const core::String &filename, int width, int height) {
+void AbstractVoxFormatTest::testLoadScreenshot(const core::String &filename, int width, int height,
+											   const core::RGBA expectedColor, int expectedX, int expectedY) {
 	io::FileStream loadStream(open(filename));
 	ASSERT_TRUE(loadStream.valid());
 	const image::ImagePtr &image = voxelformat::loadScreenshot(filename, loadStream);
 	ASSERT_TRUE(image);
 	EXPECT_EQ(image->width(), width) << image::print(image);
 	EXPECT_EQ(image->height(), height) << image::print(image);
+	const core::RGBA color = image->colorAt(expectedX, expectedY);
+	EXPECT_EQ(color, expectedColor) << "expected " << core::Color::print(expectedColor) << " but got "
+									<< core::Color::print(color) << "\n"
+									<< image::print(image);
 }
 
 void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename, const core::String &saveFilename) {

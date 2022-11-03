@@ -30,7 +30,7 @@ protected:
 	void testRGBSmall(const core::String &filename);
 	// save as the same format
 	void testRGBSmallSaveLoad(const core::String &filename);
-	void testLoadScreenshot(const core::String &filename, int width, int height);
+	void testLoadScreenshot(const core::String &filename, int width, int height, const core::RGBA expectedColor, int expectedX, int expectedY);
 	// save as any other format
 	void testRGBSmallSaveLoad(const core::String &filename, const core::String &saveFilename);
 
