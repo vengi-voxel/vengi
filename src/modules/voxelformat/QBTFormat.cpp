@@ -283,7 +283,7 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sce
 	return scoped.success();
 }
 
-bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	const voxelformat::SceneGraphNode &root = sceneGraph.root();
 	const voxelformat::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();

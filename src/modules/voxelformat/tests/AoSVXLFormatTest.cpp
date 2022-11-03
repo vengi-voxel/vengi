@@ -38,7 +38,7 @@ TEST_F(AoSVXLFormatTest, DISABLED_testSave) {
 	sceneGraph.emplace(core::move(node1));
 	const io::FilePtr &sfile = open(filename, io::FileMode::SysWrite);
 	io::FileStream sstream(sfile);
-	ASSERT_TRUE(f.save(sceneGraph, sfile->name(), sstream));
+	ASSERT_TRUE(f.save(sceneGraph, sfile->name(), sstream, testThumbnailCreator));
 	SceneGraph sceneGraphLoad;
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file);

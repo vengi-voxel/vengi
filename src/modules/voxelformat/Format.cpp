@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
+#include "image/Image.h"
 #include "voxel/MaterialColor.h"
 #include "VolumeFormat.h"
 #include "core/Common.h"
@@ -54,6 +55,13 @@ float Format::floatProperty(const SceneGraphNode* node, const core::String &name
 		return defaultVal;
 	}
 	return core::string::toFloat(node->property(name));
+}
+
+image::ImagePtr Format::createThumbnail(const SceneGraph& sceneGraph, const glm::ivec2 &size, ThumbnailCreator thumbnailCreator) {
+	if (thumbnailCreator == nullptr) {
+		return image::ImagePtr();
+	}
+	return thumbnailCreator(sceneGraph, size);
 }
 
 // TODO: split is destroying groups
@@ -131,7 +139,7 @@ bool Format::singleVolume() const {
 	return core::Var::getSafe(cfg::VoxformatMerge)->boolVal();
 }
 
-bool Format::save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+bool Format::save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	bool needsSplit = false;
 	const glm::ivec3 maxsize = maxSize();
 	if (maxsize.x > 0 && maxsize.y > 0 && maxsize.z > 0) {
@@ -157,15 +165,15 @@ bool Format::save(const SceneGraph& sceneGraph, const core::String &filename, io
 		mergedNode.setVolume(merged.first, true);
 		mergedNode.setPalette(merged.second);
 		mergedSceneGraph.emplace(core::move(mergedNode));
-		return saveGroups(mergedSceneGraph, filename, stream);
+		return saveGroups(mergedSceneGraph, filename, stream, thumbnailCreator);
 	}
 
 	if (needsSplit) {
 		SceneGraph newSceneGraph;
 		splitVolumes(sceneGraph, newSceneGraph, maxsize);
-		return saveGroups(newSceneGraph, filename, stream);
+		return saveGroups(newSceneGraph, filename, stream, thumbnailCreator);
 	}
-	return saveGroups(sceneGraph, filename, stream);
+	return saveGroups(sceneGraph, filename, stream, thumbnailCreator);
 }
 
 bool Format::load(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
@@ -185,9 +193,9 @@ bool PaletteFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 	return true;
 }
 
-bool PaletteFormat::save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+bool PaletteFormat::save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	// TODO: onlyOnePalette()
-	return Format::save(sceneGraph, filename, stream);
+	return Format::save(sceneGraph, filename, stream, thumbnailCreator);
 }
 
 bool RGBAFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {

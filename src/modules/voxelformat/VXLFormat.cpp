@@ -274,7 +274,7 @@ bool VXLFormat::saveVXL(core::DynamicArray<const SceneGraphNode*> &nodes, const 
 	return true;
 }
 
-bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	core::DynamicArray<const SceneGraphNode*> body;
 	core::DynamicArray<const SceneGraphNode*> barrel;
 	core::DynamicArray<const SceneGraphNode*> turret;

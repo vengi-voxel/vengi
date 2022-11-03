@@ -69,7 +69,7 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 	return image::loadImage(imageName, false);
 }
 
-bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	wrapBool(stream.writeUInt32(FourCC('V','X','M','C')));
 	const glm::vec3 pivot(0.5f);
 

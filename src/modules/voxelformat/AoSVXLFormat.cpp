@@ -292,7 +292,7 @@ glm::ivec3 AoSVXLFormat::maxSize() const {
 }
 
 // code taken from https://silverspaceship.com/aosmap/aos_file_format.html
-bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	// TODO: no merge needed anymore... there will always only be one model node in this scenegraph
 	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {

@@ -103,7 +103,7 @@ private:
 	}
 
 	// Write image info and preview pic - not used.
-	bool saveChunk_IMG(io::SeekableWriteStream &stream);
+	bool saveChunk_IMG(const SceneGraph &sceneGraph, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator);
 	bool saveChunk_PREV(io::SeekableWriteStream &stream);
 	// Write all the cameras - not used.
 	bool saveChunk_CAMR(io::SeekableWriteStream &stream, const SceneGraph &sceneGraph);
@@ -118,7 +118,7 @@ private:
 	bool saveChunk_LAYR(io::SeekableWriteStream &stream, const SceneGraph &sceneGraph, int numBlocks);
 	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream) override;
+					io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) override;
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream) override;

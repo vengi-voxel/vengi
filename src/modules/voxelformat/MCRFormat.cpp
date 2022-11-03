@@ -486,7 +486,7 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 		return false; \
 	}
 
-bool MCRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+bool MCRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		uint8_t raw[3] = {0, 0, 0}; // TODO
 		_offsets[i].sectorCount = 0; // TODO

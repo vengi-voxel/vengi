@@ -222,12 +222,32 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sc
 	return success;
 }
 
-bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	wrapBool(stream.writeUInt32(FourCC('Q','B','C','L')))
 	wrapBool(stream.writeUInt32(131331))
 	wrapBool(stream.writeUInt32(qbcl::VERSION))
-	wrapBool(stream.writeUInt32(0)) // thumbnail w/h
-	wrapBool(stream.writeUInt32(0)) // thumbnail w/h
+	bool imageAdded = false;
+	const image::ImagePtr &image = createThumbnail(sceneGraph, glm::ivec2(128), thumbnailCreator);
+	if (image) {
+		const int size = image->width() * image->height() * image->depth();
+		if (size > 0) {
+			const int64_t pos = stream.pos();
+			wrapBool(stream.writeUInt32(image->width()))
+			wrapBool(stream.writeUInt32(image->height()))
+			imageAdded = stream.write(image->data(), (size_t)size) == size;
+			if (!imageAdded) {
+				Log::warn("failed to write image of size %i", size);
+				stream.seek(pos);
+			}
+		} else {
+			Log::debug("Loaded image has zero size");
+		}
+	}
+
+	if (!imageAdded) {
+		wrapBool(stream.writeUInt32(0)) // thumbnail w/h
+		wrapBool(stream.writeUInt32(0)) // thumbnail w/h
+	}
 
 	const SceneGraphNode& rootNode = sceneGraph.root();
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Title")))

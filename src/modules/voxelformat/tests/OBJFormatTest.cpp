@@ -36,7 +36,7 @@ TEST_F(OBJFormatTest, testExportMesh) {
 	const core::String outFilename = "exportrgb.obj";
 	const io::FilePtr &outFile = open(outFilename, io::FileMode::SysWrite);
 	io::FileStream outStream(outFile);
-	EXPECT_TRUE(f.saveGroups(sceneGraph, outFilename, outStream));
+	EXPECT_TRUE(f.saveGroups(sceneGraph, outFilename, outStream, testThumbnailCreator));
 }
 
 } // namespace voxel

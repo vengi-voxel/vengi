@@ -26,7 +26,7 @@ TEST_F(GLTFFormatTest, testExportMesh) {
 	const core::String outFilename = "exportrgb.gltf";
 	const io::FilePtr &outFile = open(outFilename, io::FileMode::SysWrite);
 	io::FileStream outStream(outFile);
-	EXPECT_TRUE(f.saveGroups(sceneGraph, outFilename, outStream));
+	EXPECT_TRUE(f.saveGroups(sceneGraph, outFilename, outStream, testThumbnailCreator));
 }
 
 TEST_F(GLTFFormatTest, testImportAnimation) {

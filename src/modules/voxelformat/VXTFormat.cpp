@@ -128,7 +128,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	return true;
 }
 
-bool VXTFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
+bool VXTFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
 	return false;
 }
 

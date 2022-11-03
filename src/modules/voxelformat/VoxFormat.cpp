@@ -499,7 +499,7 @@ glm::ivec3 VoxFormat::maxSize() const {
 	return maxSize;
 }
 
-bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
+bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
 	voxel::Palette palette = sceneGraph.mergePalettes(true, 0);
 	int palReplacement = findClosestPaletteIndex(palette);
 

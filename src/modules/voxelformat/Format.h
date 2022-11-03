@@ -23,6 +23,14 @@ namespace voxelformat {
 class SceneGraph;
 class SceneGraphNode;
 
+/**
+ * @brief Callback to create a thumbnail for saving the current scene graph.
+ * Some formats supports storing embedded screenshots of the voxel model. This callback
+ * must return a RGBA image in the given size
+ * @note duplicated in VolumeFormat.h
+ */
+typedef image::ImagePtr (*ThumbnailCreator)(const SceneGraph&, const glm::ivec2&);
+
 // the max amount of voxels - [0-255]
 static constexpr int MaxRegionSize = 256;
 
@@ -87,7 +95,15 @@ protected:
 	static core::String stringProperty(const SceneGraphNode* node, const core::String &name, const core::String &defaultVal = "");
 	static bool boolProperty(const SceneGraphNode* node, const core::String &name, bool defaultVal = false);
 	static float floatProperty(const SceneGraphNode* node, const core::String &name, float defaultVal = 0.0f);
-	virtual bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) = 0;
+	static image::ImagePtr createThumbnail(const SceneGraph& sceneGraph, const glm::ivec2 &size, ThumbnailCreator thumbnailCreator);
+	/**
+	 * @param[in] sceneGraph The @c SceneGraph instance to save
+	 * @param[in] filename The target file name. Some formats needs this next to the stream to identify or load additional files.
+	 * @param[out] stream The target stream to write into
+	 * @param[in] thumbnailCreator A callback that is either null or returns an instance of @c image::ImagePtr for the thumbnail of the
+	 * given scene graph. Some formats have embedded screenshots.
+	 */
+	virtual bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) = 0;
 	/**
 	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes
 	 */
@@ -112,7 +128,7 @@ public:
 	 */
 	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette);
 	virtual bool load(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph);
-	virtual bool save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream);
+	virtual bool save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator);
 };
 
 /**
@@ -140,7 +156,7 @@ protected:
 
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
-	bool save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) override final;
+	bool save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) override final;
 };
 
 /**

@@ -357,7 +357,7 @@ app::AppState VoxConvert::onInit() {
 
 	if (outputFile) {
 		Log::debug("Save %i volumes", (int)sceneGraph.size());
-		if (!voxelformat::saveFormat(outputFile, sceneGraph)) {
+		if (!voxelformat::saveFormat(outputFile, sceneGraph, nullptr)) {
 			Log::error("Failed to write to output file '%s'", outfile.c_str());
 			return app::AppState::InitFailure;
 		}
@@ -476,7 +476,7 @@ void VoxConvert::exportLayersIntoSingleObjects(voxelformat::SceneGraph& sceneGra
 		voxelformat::copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
 		const core::String& filename = getFilenameForLayerName(inputfile, node.name(), n);
-		if (voxelformat::saveFormat(filesystem()->open(filename, io::FileMode::SysWrite), newSceneGraph)) {
+		if (voxelformat::saveFormat(filesystem()->open(filename, io::FileMode::SysWrite), newSceneGraph, nullptr)) {
 			Log::info(" .. %s", filename.c_str());
 		} else {
 			Log::error(" .. %s", filename.c_str());

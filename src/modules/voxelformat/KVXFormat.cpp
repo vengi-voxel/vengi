@@ -255,7 +255,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false; \
 	}
 
-bool KVXFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+bool KVXFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 #if 0
 	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {

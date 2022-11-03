@@ -17,6 +17,7 @@
 #include "io/Filesystem.h"
 #include "io/Stream.h"
 #include "voxel/RawVolume.h"
+#include "voxelformat/Format.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/SceneGraphUtil.h"
@@ -38,7 +39,7 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	core::String name = node.name();
 	if (name.empty()) {
 		name = core::string::format("%i", node.id());
@@ -62,7 +63,7 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		SceneGraphNode newNode;
 		copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
-		wrapBool(f.save(newSceneGraph, fullPath, wstream))
+		wrapBool(f.save(newSceneGraph, fullPath, wstream, thumbnailCreator))
 		Log::debug("Saved the model to %s", fullPath.c_str());
 	}
 
@@ -72,7 +73,7 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 	wrapBool(stream.writeInt32(childCount));
 	for (int child : node.children()) {
 		const voxelformat::SceneGraphNode &cnode = sceneGraph.node(child);
-		wrapBool(saveRecursiveNode(sceneGraph, cnode, filename, stream))
+		wrapBool(saveRecursiveNode(sceneGraph, cnode, filename, stream, thumbnailCreator))
 	}
 	return true;
 }
@@ -108,7 +109,7 @@ bool VXRFormat::saveNodeProperties(const SceneGraphNode* node, io::SeekableWrite
 	return true;
 }
 
-bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	const voxelformat::SceneGraphNode &root = sceneGraph.root();
 	const voxelformat::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();
@@ -137,7 +138,7 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	}
 	for (int child : children) {
 		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
-		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream))
+		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream, thumbnailCreator))
 	}
 	const core::String &basePath = core::string::extractPath(filename);
 	const core::String &baseName = core::string::extractFilename(filename);
@@ -508,7 +509,7 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 
 bool VXRFormat::saveVXA(const SceneGraph& sceneGraph, const core::String &vxaPath, io::SeekableWriteStream& vxaStream, const core::String &animation) {
 	VXAFormat f;
-	return f.save(sceneGraph, vxaPath, vxaStream);
+	return f.save(sceneGraph, vxaPath, vxaStream, nullptr);
 }
 
 bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath) {

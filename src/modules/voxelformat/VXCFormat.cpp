@@ -77,7 +77,7 @@ bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	return !sceneGraph.empty();
 }
 
-bool VXCFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
+bool VXCFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
 	return false;
 }
 

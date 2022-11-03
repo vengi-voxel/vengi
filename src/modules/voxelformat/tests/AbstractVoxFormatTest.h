@@ -13,6 +13,8 @@ class AbstractVoxFormatTest: public voxel::AbstractVoxelTest {
 protected:
 	static const voxel::Voxel Empty;
 
+	static image::ImagePtr testThumbnailCreator(const SceneGraph &sceneGraph, const glm::ivec2 &outputSize);
+
 	void checkColor(core::RGBA, const voxel::Palette &palette, uint8_t index, float maxDelta);
 
 	void dump(const core::String &srcFilename, const SceneGraph &sceneGraph);

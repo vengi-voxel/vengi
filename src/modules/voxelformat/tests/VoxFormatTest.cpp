@@ -154,7 +154,7 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 #else
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 
-	ASSERT_TRUE(f.save(sceneGraphsave, name, stream));
+	ASSERT_TRUE(f.save(sceneGraphsave, name, stream, testThumbnailCreator));
 	stream.seek(0);
 	f.load(name, stream, sceneGraph);
 #endif

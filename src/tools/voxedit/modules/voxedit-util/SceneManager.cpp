@@ -36,6 +36,7 @@
 #include "voxelformat/SceneGraphUtil.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/TreeGenerator.h"
+#include "voxelrender/ImageGenerator.h"
 #include "voxelutil/Picking.h"
 #include "voxelutil/Raycast.h"
 #include "voxelutil/VolumeCropper.h"
@@ -229,7 +230,7 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	voxelformat::SceneGraphNode newNode;
 	voxelformat::copyNode(*node, newNode, false);
 	newSceneGraph.emplace(core::move(newNode));
-	if (voxelformat::saveFormat(filePtr, newSceneGraph)) {
+	if (voxelformat::saveFormat(filePtr, newSceneGraph, voxelrender::volumeThumbnail)) {
 		Log::info("Saved layer %i to %s", nodeId, filePtr->name().c_str());
 		return true;
 	}
@@ -285,7 +286,7 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 		return false;
 	}
 
-	if (voxelformat::saveFormat(filePtr, _sceneGraph)) {
+	if (voxelformat::saveFormat(filePtr, _sceneGraph, voxelrender::volumeThumbnail)) {
 		if (!autosave) {
 			_dirty = false;
 			_lastFilename = file;

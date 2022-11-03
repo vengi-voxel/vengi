@@ -5,6 +5,7 @@ vengi (0.0.23.0-1) UNRELEASED; urgency=low
   * Improved VXL format default palette support
 
   * VoxEdit:
+  * Added support for embedding screenshots in formats that support it
   * Allow to export palettes
   * Allow to change color intensity of the whole palette
 

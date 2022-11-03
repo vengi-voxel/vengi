@@ -51,7 +51,7 @@ protected:
 		ASSERT_TRUE(rgbFormat.load(rgbFile, rgbStream, rgbSceneGraph)) << "Failed to load rgb model " << rgbFile;
 
 		io::BufferedReadWriteStream palWriteStream;
-		ASSERT_TRUE(paletteFormat.save(rgbSceneGraph, palFile, palWriteStream)) << "Failed to write pal model " << palFile;
+		ASSERT_TRUE(paletteFormat.save(rgbSceneGraph, palFile, palWriteStream, testThumbnailCreator)) << "Failed to write pal model " << palFile;
 		palWriteStream.seek(0);
 
 		voxel::Palette palPalette;
@@ -80,7 +80,7 @@ protected:
 		ASSERT_TRUE(palFormat.load(palFile, palStream, palSceneGraph)) << "Failed to load pal model " << palFile;
 
 		io::BufferedReadWriteStream rgbWriteStream;
-		ASSERT_TRUE(rgbFormat.save(palSceneGraph, rgbFile, rgbWriteStream)) << "Failed to write rgb model " << rgbFile;
+		ASSERT_TRUE(rgbFormat.save(palSceneGraph, rgbFile, rgbWriteStream, testThumbnailCreator)) << "Failed to write rgb model " << rgbFile;
 		rgbWriteStream.seek(0);
 
 		voxel::Palette rgbPalette;
@@ -106,7 +106,7 @@ protected:
 		ASSERT_TRUE(rgbFormat1.load(rgbFile1, palStream, palSceneGraph)) << "Failed to load rgb model " << rgbFile1;
 
 		io::BufferedReadWriteStream rgbWriteStream;
-		ASSERT_TRUE(rgbFormat2.save(palSceneGraph, rgbFile2, rgbWriteStream)) << "Failed to write rgb model " << rgbFile2;
+		ASSERT_TRUE(rgbFormat2.save(palSceneGraph, rgbFile2, rgbWriteStream, testThumbnailCreator)) << "Failed to write rgb model " << rgbFile2;
 		rgbWriteStream.seek(0);
 
 		voxel::Palette rgbPalette2;
@@ -133,7 +133,7 @@ protected:
 		ASSERT_TRUE(palFormat1.load(palFile1, palStream, palSceneGraph)) << "Failed to load pal model " << palFile1;
 
 		io::BufferedReadWriteStream rgbWriteStream;
-		ASSERT_TRUE(palFormat2.save(palSceneGraph, palFile2, rgbWriteStream)) << "Failed to write pal model " << palFile2;
+		ASSERT_TRUE(palFormat2.save(palSceneGraph, palFile2, rgbWriteStream, testThumbnailCreator)) << "Failed to write pal model " << palFile2;
 		rgbWriteStream.seek(0);
 
 		voxel::Palette palPalette2;

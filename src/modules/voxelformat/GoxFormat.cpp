@@ -526,8 +526,18 @@ bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream& stream, const SceneGraph
 	return true;
 }
 
-bool GoxFormat::saveChunk_IMG(io::SeekableWriteStream& stream) {
-	return true; // not used
+bool GoxFormat::saveChunk_IMG(const SceneGraph &sceneGraph, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+	const image::ImagePtr &image = createThumbnail(sceneGraph, glm::ivec2(128), thumbnailCreator);
+	if (!image) {
+		return true;
+	}
+	const int64_t pos = stream.pos();
+	GoxScopedChunkWriter scoped(stream, FourCC('P', 'R', 'E', 'V'));
+	if (!image->writePng(stream)) {
+		Log::warn("Failed to write preview image");
+		return stream.seek(pos) == pos;
+	}
+	return true;
 }
 
 bool GoxFormat::saveChunk_PREV(io::SeekableWriteStream& stream) {
@@ -666,11 +676,11 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const SceneGraph
 	return true;
 }
 
-bool GoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream) {
+bool GoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
 	wrapSave(stream.writeUInt32(FourCC('G', 'O', 'X', ' ')))
 	wrapSave(stream.writeUInt32(2))
 
-	wrapBool(saveChunk_IMG(stream))
+	wrapBool(saveChunk_IMG(sceneGraph, stream, thumbnailCreator))
 	wrapBool(saveChunk_PREV(stream))
 	int blocks = 0;
 	wrapBool(saveChunk_BL16(stream, sceneGraph, blocks))

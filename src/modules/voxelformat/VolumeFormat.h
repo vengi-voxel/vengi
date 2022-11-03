@@ -17,6 +17,9 @@ class Palette;
 
 namespace voxelformat {
 
+// duplicated in Format.h
+typedef image::ImagePtr (*ThumbnailCreator)(const SceneGraph&, const glm::ivec2&);
+
 extern const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[];
 extern const io::FormatDescription* voxelLoad();
 extern const io::FormatDescription* voxelSave();
@@ -36,8 +39,8 @@ extern bool loadFormat(const core::String &filename, io::SeekableReadStream &str
 /**
  * @brief Save both to volume or to mesh - depends on the given file extension
  */
-extern bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph);
-extern bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream);
+extern bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph, ThumbnailCreator thumbnailCreator);
+extern bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator);
 
 extern bool isMeshFormat(const core::String &filename);
 extern bool isMeshFormat(const io::FormatDescription &desc);

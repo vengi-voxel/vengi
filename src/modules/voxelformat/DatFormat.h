@@ -20,7 +20,7 @@ protected:
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
 						   voxel::Palette &palette) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream) override {
+					io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) override {
 		return false;
 	}
 };

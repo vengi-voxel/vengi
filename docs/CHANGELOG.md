@@ -17,6 +17,7 @@ General:
 
 VoxEdit:
 
+   - Added support for embedding screenshots in formats that support it
    - Allow to export palettes
    - Allow to change color intensity of the whole palette
 
