@@ -36,6 +36,10 @@ TEST_F(QBCLFormatTest, testLoadRGBSmallSaveLoad) {
 	testRGBSmallSaveLoad("rgb_small.qbcl");
 }
 
+TEST_F(QBCLFormatTest, testLoadScreenshot) {
+	testLoadScreenshot("chr_knight.qbcl", 100, 100, core::RGBA(147, 53, 53), 59, 1);
+}
+
 TEST_F(QBCLFormatTest, testLoadCrabby) {
 	voxelformat::SceneGraph qbclsceneGraph;
 	{

@@ -7,6 +7,7 @@
 #include "core/Enum.h"
 #include "core/FourCC.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
 #include "core/Zip.h"
 #include "core/Color.h"
 #include "core/Assert.h"
@@ -231,14 +232,19 @@ bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	if (image) {
 		const int size = image->width() * image->height() * image->depth();
 		if (size > 0) {
-			const int64_t pos = stream.pos();
 			wrapBool(stream.writeUInt32(image->width()))
 			wrapBool(stream.writeUInt32(image->height()))
-			imageAdded = stream.write(image->data(), (size_t)size) == size;
-			if (!imageAdded) {
-				Log::warn("failed to write image of size %i", size);
-				stream.seek(pos);
+			const core::RGBA* rgba = (const core::RGBA*)image->data();
+			for (int x = 0; x < image->width(); ++x) {
+				for (int y = 0; y < image->height(); ++y) {
+					const core::RGBA color = *rgba++;
+					stream.writeUInt8(color.b);
+					stream.writeUInt8(color.g);
+					stream.writeUInt8(color.r);
+					stream.writeUInt8(color.a);
+				}
 			}
+			imageAdded = true;
 		} else {
 			Log::debug("Loaded image has zero size");
 		}
@@ -563,21 +569,15 @@ image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::See
 	wrapImg(stream.readUInt32(thumbWidth))
 	uint32_t thumbHeight;
 	wrapImg(stream.readUInt32(thumbHeight))
-	image::ImagePtr img = image::createEmptyImage(filename);
-	const uint32_t thumbnailSize = thumbWidth * thumbHeight * 4;
-
-	uint8_t* buf = new uint8_t[thumbnailSize];
-	if (stream.read(buf, thumbnailSize) != (int)thumbnailSize) {
+	if (thumbWidth <= 0 || thumbHeight <= 0) {
+		Log::debug("No embedded screenshot found in %s", filename.c_str());
+		return image::ImagePtr();
+	}
+	image::ImagePtr img = image::createEmptyImage(core::string::extractFilename(filename));
+	if (!img->loadBGRA(stream, thumbWidth, thumbHeight)) {
 		Log::error("Failed to read the qbcl thumbnail buffer of width %u and height %u", thumbWidth, thumbHeight);
-		delete [] buf;
 		return image::ImagePtr();
 	}
-	if (!img->loadRGBA(buf, (int)thumbWidth, (int)thumbHeight)) {
-		Log::error("Failed to load rgba image buffer of width %u and height %u", thumbWidth, thumbHeight);
-		delete [] buf;
-		return image::ImagePtr();
-	}
-	delete [] buf;
 	return img;
 }
 
