@@ -14,6 +14,7 @@ General:
 
    - Improved big endian support for voxel formats
    - Improved VXL format default palette support
+   - Fixed QBCL and GOX thumbnail handling
 
 VoxEdit:
 
