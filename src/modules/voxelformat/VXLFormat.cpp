@@ -535,8 +535,6 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel:
 		}
 	}
 
-	// TODO: glow colors 240-255 ?
-
 	if (valid) {
 		for (int i = 0; i < palette.colorCount; ++i) {
 			const uint8_t *p = hdr.palette.palette[i];
