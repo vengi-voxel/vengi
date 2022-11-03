@@ -76,6 +76,18 @@ const uint8_t* Image::at(int x, int y) const {
 	return _data + offset;
 }
 
+void Image::setColor(core::RGBA rgba, int x, int y) {
+	if (x < 0 || x >= _width) {
+		return;
+	}
+	if (y < 0 || y >= _height) {
+		return;
+	}
+	const int colSpan = _width * _depth;
+	const intptr_t offset = x * _depth + y * colSpan;
+	*(core::RGBA*)(_data + offset) = rgba;
+}
+
 core::RGBA Image::colorAt(int x, int y) const {
 	const uint8_t *ptr = at(x, y);
 	const int d = depth();
@@ -223,6 +235,19 @@ bool Image::loadRGBA(const uint8_t* buffer, int width, int height) {
 	const int length = width * height * 4;
 	io::MemoryReadStream stream(buffer, length);
 	return loadRGBA(stream, width, height);
+}
+
+bool Image::loadBGRA(io::ReadStream& stream, int w, int h) {
+	if (!loadRGBA(stream, w, h)) {
+		return false;
+	}
+	for (int x = 0; x < w; ++x) {
+		for (int y = 0; y < h; ++y) {
+			core::RGBA rgba = colorAt(x, y);
+			setColor(core::RGBA(rgba.b, rgba.g, rgba.r, rgba.a), x, y);
+		}
+	}
+	return true;
 }
 
 bool Image::loadRGBA(io::ReadStream& stream, int w, int h) {

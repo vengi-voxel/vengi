@@ -49,6 +49,7 @@ public:
 	 */
 	bool loadRGBA(const uint8_t* buffer, int width, int height);
 	bool loadRGBA(io::ReadStream& stream, int w, int h);
+	bool loadBGRA(io::ReadStream& stream, int w, int h);
 
 	glm::vec2 uv(int x, int y) const;
 
@@ -61,6 +62,8 @@ public:
 	core::RGBA colorAt(int x, int y) const;
 	core::RGBA colorAt(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat,
 					   TextureWrap wrapT = TextureWrap::Repeat) const;
+
+	void setColor(core::RGBA rgba, int x, int y);
 
 	const uint8_t* at(int x, int y) const;
 
