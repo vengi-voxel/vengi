@@ -10,6 +10,6 @@
 
 namespace voxelrender {
 
-image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, int outputSize);
+image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, const glm::ivec2 &outputSize);
 
 } // namespace voxelrender

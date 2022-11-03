@@ -75,7 +75,7 @@ app::AppState Thumbnailer::onRunning() {
 		Log::warn("Failed to initialize the default materials");
 	}
 
-	const image::ImagePtr &image = voxelrender::volumeThumbnail(_infile->name(), stream, outputSize);
+	const image::ImagePtr &image = voxelrender::volumeThumbnail(_infile->name(), stream, glm::ivec2(outputSize));
 	if (image) {
 		if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
 			Log::error("Failed to write image");

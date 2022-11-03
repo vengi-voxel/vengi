@@ -17,7 +17,7 @@
 
 namespace voxelrender {
 
-image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, int outputSize) {
+image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, const glm::ivec2 &outputSize) {
 	image::ImagePtr image = voxelformat::loadScreenshot(fileName, stream);
 	if (image && image->isLoaded()) {
 		return image;
@@ -35,7 +35,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	video::FrameBuffer frameBuffer;
 	voxelrender::SceneGraphRenderer volumeRenderer;
 	volumeRenderer.construct();
-	if (!volumeRenderer.init(glm::ivec2(outputSize))) {
+	if (!volumeRenderer.init(outputSize)) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
@@ -51,7 +51,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
 	video::Camera camera;
-	camera.setSize(glm::ivec2(outputSize));
+	camera.setSize(outputSize);
 	camera.setRotationType(video::CameraRotationType::Target);
 	camera.setMode(video::CameraMode::Perspective);
 	camera.setAngles(0.0f, 0.0f, 0.0f);
