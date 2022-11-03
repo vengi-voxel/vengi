@@ -177,6 +177,12 @@
         #define OGT_VOX_IMPLEMENTATION
         #include "path/to/ogt_vox.h"
 
+    ogt_vox is little-endian by default, but it does support big-endian if OGT_VOX_BIGENDIAN_SWAP32(x) is #defined
+    to a function that can swap byte order within a uint32_t word before the implementation. eg.
+
+        #define OGT_VOX_BIGENDIAN_SWAP32(x)  __builtin_swap32(x)  // linux/gcc
+        #define OGT_VOX_IMPLEMENTATION
+        #include "path/to/ogt_vox.h"
 */
 #ifndef OGT_VOX_H__
 #define OGT_VOX_H__
@@ -198,17 +204,8 @@
 #elif defined(_MSC_VER)
     // general VS*
     #include <inttypes.h>
-#elif defined(__APPLE__)
+#elif __APPLE__
     // general Apple compiler
-    #include <libkern/OSByteOrder.h>
-    #define htobe32(x) OSSwapHostToBigInt32(x)
-    #define htole32(x) OSSwapHostToLittleInt32(x)
-    #define be32toh(x) OSSwapBigToHostInt32(x)
-    #define le32toh(x) OSSwapLittleToHostInt32(x)
-    #define __BYTE_ORDER    BYTE_ORDER
-    #define __BIG_ENDIAN    BIG_ENDIAN
-    #define __LITTLE_ENDIAN LITTLE_ENDIAN
-    #define __PDP_ENDIAN    PDP_ENDIAN
 #elif defined(__GNUC__)
     // any GCC*
     #include <inttypes.h>
@@ -217,37 +214,14 @@
     #error some fixup needed for this platform?
 #endif
 
-#if defined(__linux__) || defined(__CYGWIN__)
-    #include <endian.h>
-#elif defined(__OpenBSD__)
-    #include <sys/endian.h>
-#elif defined(__NetBSD__) || defined(__FreeBSD__) || defined(__DragonFly__)
-    #include <sys/endian.h>
-    #define be32toh(x) betoh32(x)
-    #define le32toh(x) letoh32(x)
-#elif defined(_WIN32) || defined(_WIN64)
-    #include <winsock2.h>
-    #include <sys/param.h>
-    #if BYTE_ORDER == LITTLE_ENDIAN
-        #define htobe32(x) htonl(x)
-        #define htole32(x) (x)
-        #define be32toh(x) ntohl(x)
-        #define le32toh(x) (x)
-    #elif BYTE_ORDER == BIG_ENDIAN
-        #define htobe32(x) (x)
-        #define htole32(x) __builtin_bswap32(x)
-        #define be32toh(x) (x)
-        #define le32toh(x) __builtin_bswap32(x)
-    #else
-        #error byte order not supported
-    #endif
-    #define __BYTE_ORDER    BYTE_ORDER
-    #define __BIG_ENDIAN    BIG_ENDIAN
-    #define __LITTLE_ENDIAN LITTLE_ENDIAN
-    #define __PDP_ENDIAN    PDP_ENDIAN
-#elif defined(__APPLE__)
+#ifdef OGT_VOX_BIGENDIAN_SWAP32
+    // host is big-endian, so we byte-swap
+    #define _vox_htole32(x)  OGT_VOX_BIGENDIAN_SWAP32((x))
+    #define _vox_le32toh(x)  OGT_VOX_BIGENDIAN_SWAP32((x))
 #else
-    #error some fixup needed for this platform?
+    // host is little-endian (default)
+    #define _vox_htole32(x)  (x)
+    #define _vox_le32toh(x)  (x)
 #endif
 
     // denotes an invalid group index. Usually this is only applicable to the scene's root group's parent.
@@ -608,7 +582,7 @@
     static bool _vox_file_read_uint32(_vox_file* fp, uint32_t* data) {
         bool ret = _vox_file_read(fp, data, sizeof(*data));
         if (ret) {
-            *data = le32toh(*data);
+            *data = _vox_htole32(*data);
         }
         return ret;
     }
@@ -616,7 +590,7 @@
     static bool _vox_file_read_int32(_vox_file* fp, int32_t* data) {
         bool ret = _vox_file_read(fp, data, sizeof(*data));
         if (ret) {
-            *data = le32toh(*data);
+            *data = _vox_htole32(*data);
         }
         return ret;
     }
@@ -629,7 +603,7 @@
                 float f;
             } bs;
             bs.f = *data;
-            bs.u = le32toh(bs.u);
+            bs.u = _vox_htole32(bs.u);
             *data = bs.f;
         }
         return ret;
@@ -2156,7 +2130,7 @@
         fp->data.push_back_many((const uint8_t*)data, data_size);
     }
     static void _vox_file_write_uint32(_vox_file_writeable* fp, uint32_t data) {
-        data = htole32(data);
+        data = _vox_htole32(data);
         _vox_file_write(fp, &data, sizeof(data));
     }
     static void _vox_file_write_uint8(_vox_file_writeable* fp, uint8_t data) {
@@ -2164,7 +2138,7 @@
     }
     static void _vox_file_write_uint32_at_offset(_vox_file_writeable* fp, uint32_t offset, const uint32_t* data) {
         ogt_assert((offset + sizeof(*data)) <= fp->data.count, "write at offset must not be an append write");
-        const uint32_t val = htole32(*data);
+        const uint32_t val = _vox_htole32(*data);
         memcpy(&fp->data[offset], &val, sizeof(*data));
     }
     static uint32_t _vox_file_get_offset(const _vox_file_writeable* fp) {

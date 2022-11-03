@@ -19,7 +19,8 @@
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
-
+#include <SDL_endian.h>
+#define OGT_VOX_BIGENDIAN_SWAP32  SDL_SwapLE32
 #define OGT_VOX_IMPLEMENTATION
 #include "external/ogt_vox.h"
 #include <glm/ext/matrix_transform.hpp>
