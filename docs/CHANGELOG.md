@@ -10,6 +10,16 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 ## 0.0.23 (2022-XX-XX)
 
+General:
+
+   - Improved big endian support for voxel formats
+   - Improved VXL format default palette support
+
+VoxEdit:
+
+   - Allow to export palettes
+   - Allow to change color intensity of the whole palette
+
 ## 0.0.22 (2022-10-31)
 
 General:

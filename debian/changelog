@@ -1,6 +1,12 @@
 vengi (0.0.23.0-1) UNRELEASED; urgency=low
 
   * General:
+  * Improved big endian support for voxel formats
+  * Improved VXL format default palette support
+
+  * VoxEdit:
+  * Allow to export palettes
+  * Allow to change color intensity of the whole palette
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 31 Oct 2022 00:00:00 +0000
 

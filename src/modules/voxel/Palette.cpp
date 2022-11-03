@@ -339,6 +339,8 @@ bool Palette::load(const char *paletteName) {
 		return magicaVoxel();
 	} else if (SDL_strcmp(paletteName, builtIn[3]) == 0) {
 		return quake1();
+	} else if (SDL_strcmp(paletteName, builtIn[4]) == 0) {
+		return commandAndConquer();
 	}
 
 	const io::FilesystemPtr &filesystem = io::filesystem();
