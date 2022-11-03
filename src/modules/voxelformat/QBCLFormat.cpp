@@ -567,7 +567,7 @@ image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::See
 	const uint32_t thumbnailSize = thumbWidth * thumbHeight * 4;
 
 	uint8_t* buf = new uint8_t[thumbnailSize];
-	if (stream.read(buf, thumbnailSize) != 0) {
+	if (stream.read(buf, thumbnailSize) != (int)thumbnailSize) {
 		Log::error("Failed to read the qbcl thumbnail buffer of width %u and height %u", thumbWidth, thumbHeight);
 		delete [] buf;
 		return image::ImagePtr();

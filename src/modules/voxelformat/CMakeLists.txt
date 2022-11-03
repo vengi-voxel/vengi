@@ -189,6 +189,7 @@ set(TEST_FILES
 	voxedit/robo.vox
 	voxedit/robo.qb
 	voxedit/chr_knight.qb
+	voxedit/chr_knight.qbcl
 )
 
 gtest_suite_files(tests ${TEST_FILES})

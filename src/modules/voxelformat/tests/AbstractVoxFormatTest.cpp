@@ -2,6 +2,7 @@
 #include "core/GameConfig.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
 #include "io/FileStream.h"
@@ -168,6 +169,15 @@ void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename) {
 	const core::String formatExt = core::string::extractExtension(filename);
 	const core::String saveFilename = "test." + formatExt;
 	testRGBSmallSaveLoad(filename, saveFilename);
+}
+
+void AbstractVoxFormatTest::testLoadScreenshot(const core::String &filename, int width, int height) {
+	io::FileStream loadStream(open(filename));
+	ASSERT_TRUE(loadStream.valid());
+	const image::ImagePtr &image = voxelformat::loadScreenshot(filename, loadStream);
+	ASSERT_TRUE(image);
+	EXPECT_EQ(image->width(), width) << image::print(image);
+	EXPECT_EQ(image->height(), height) << image::print(image);
 }
 
 void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename, const core::String &saveFilename) {
