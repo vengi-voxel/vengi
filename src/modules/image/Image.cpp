@@ -251,6 +251,10 @@ static void stream_write_func(void *context, void *data, int size) {
 	stream->write(data, size);
 }
 
+bool Image::writePng(io::SeekableWriteStream &stream) const {
+	return writePng(stream, _data, _width, _height, _depth);
+}
+
 bool Image::writePng(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth) {
 	return stbi_write_png_to_func(stream_write_func, &stream, width, height, depth, (const void*)buffer, width * depth) != 0;
 }

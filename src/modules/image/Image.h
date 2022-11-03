@@ -51,6 +51,7 @@ public:
 	glm::vec2 uv(int x, int y) const;
 
 	static void flipVerticalRGBA(uint8_t *pixels, int w, int h);
+	bool writePng(io::SeekableWriteStream &stream) const;
 	static bool writePng(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth);
 	static bool writePng(const char *name, const uint8_t *buffer, int width, int height, int depth);
 	bool writePng() const;
