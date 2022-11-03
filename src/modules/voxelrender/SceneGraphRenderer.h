@@ -18,7 +18,6 @@ namespace voxelrender {
 class SceneGraphRenderer : public core::NonCopyable {
 protected:
 	RawVolumeRenderer _renderer;
-	voxelformat::SceneGraph _sceneGraph;
 	bool _sceneMode = true;
 
 public:
