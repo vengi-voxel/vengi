@@ -14,6 +14,8 @@ General:
 
    - Improved big endian support for voxel formats
    - Improved VXL format default palette support
+   - Improved QBCL scene graph support
+   - Fixed VOX root node handling
    - Fixed QBCL and GOX thumbnail handling
 
 VoxEdit:
