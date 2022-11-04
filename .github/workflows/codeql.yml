@@ -23,7 +23,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v3
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
@@ -36,7 +36,7 @@ jobs:
         sudo apt-get install libsdl2-dev postgresql-server-dev-all libpq-dev libenet-dev opencl-c-headers wayland-protocols pkg-config uuid-dev ninja-build python3 flatbuffers-compiler libflatbuffers-dev ccache
 
     - name: ccache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: |
           ~/.ccache

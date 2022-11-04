@@ -19,7 +19,7 @@ jobs:
         timeout-minutes: 60
         runs-on: macos-latest
         steps:
-        - uses: actions/checkout@v1
+        - uses: actions/checkout@v3
 
         - name: Setup
           run: brew install libuv sdl2 libpq sdl2_mixer python glslang ninja ccache
@@ -81,7 +81,7 @@ jobs:
         if: github.repository == 'mgerhardy/vengi'
         runs-on: ubuntu-20.04
         steps:
-        - uses: actions/checkout@v1
+        - uses: actions/checkout@v3
 
         - name: Setup
           run: |
@@ -136,7 +136,7 @@ jobs:
               --health-retries 5
 
         steps:
-        - uses: actions/checkout@v1
+        - uses: actions/checkout@v3
 
         - name: Setup
           run: |
@@ -194,7 +194,7 @@ jobs:
         runs-on: windows-2022
 
         steps:
-        - uses: actions/checkout@v1
+        - uses: actions/checkout@v3
 
         - name: Setup
           uses: lukka/run-vcpkg@v6
