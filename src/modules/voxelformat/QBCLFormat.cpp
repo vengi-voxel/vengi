@@ -151,9 +151,9 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 
 	wrapSave(outStream.writeUInt32(1)) // unknown
 	wrapSave(outStream.writePascalStringUInt32LE(node.name()))
-	wrapSave(outStream.writeUInt8(1)) // unknown
-	wrapSave(outStream.writeUInt8(1)) // unknown
-	wrapSave(outStream.writeUInt8(0)) // unknown
+	wrapSave(outStream.writeBool(node.visible()))
+	wrapSave(outStream.writeBool(true)) // unknown
+	wrapSave(outStream.writeBool(node.locked()))
 
 	wrapSave(outStream.writeUInt32(size.x))
 	wrapSave(outStream.writeUInt32(size.y))
@@ -260,9 +260,9 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sc
 	qbcl::ScopedQBCLHeader header(stream, node.type());
 	wrapSave(stream.writeUInt32(1)) // unknown
 	wrapSave(stream.writePascalStringUInt32LE(sceneGraph.root().name()))
-	wrapSave(stream.writeUInt8(1)) // unknown
-	wrapSave(stream.writeUInt8(1)) // unknown
-	wrapSave(stream.writeUInt8(0)) // unknown
+	wrapSave(stream.writeBool(node.visible()))
+	wrapSave(stream.writeBool(true)) // unknown
+	wrapSave(stream.writeBool(node.locked()))
 	const uint8_t array[36] = {
 		0x01, 0x00, 0x00,
 		0x00, 0x01, 0x00,
@@ -352,7 +352,7 @@ size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 	return palette.colorCount;
 }
 
-bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header) {
+bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
 	SceneGraphTransform transform;
 	Log::debug("Matrix name: %s", name.c_str());
 
@@ -476,7 +476,8 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 
 	SceneGraphNode node;
 	node.setVolume(volume.release(), true);
-
+	node.setVisible(nodeHeader.visible);
+	node.setLocked(nodeHeader.locked);
 	node.setPalette(palLookup.palette());
 	if (name.empty()) {
 		node.setName("Matrix");
@@ -489,7 +490,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	return id != -1;
 }
 
-bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header) {
+bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
 	const size_t skip = 3 * 3 * sizeof(float);
 	stream.skip((int64_t)skip); // TODO: rotation matrix?
 	uint32_t childCount;
@@ -500,6 +501,8 @@ bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream&
 	} else {
 		node.setName(name);
 	}
+	node.setVisible(nodeHeader.visible);
+	node.setLocked(nodeHeader.locked);
 	int nodeId = parent == -1 ? sceneGraph.root().id() : sceneGraph.emplace(core::move(node), parent);
 	Log::debug("Found %u children in model '%s'", childCount, name.c_str());
 	for (uint32_t i = 0; i < childCount; ++i) {
@@ -508,15 +511,17 @@ bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream&
 	return true;
 }
 
-bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header) {
+bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
 	SceneGraphNode node(SceneGraphNodeType::Group);
 	if (name.empty()) {
 		node.setName("Compound");
 	} else {
 		node.setName(name);
 	}
+	node.setVisible(nodeHeader.visible);
+	node.setLocked(nodeHeader.locked);
 	int nodeId = sceneGraph.emplace(core::move(node), parent);
-	wrapBool(readMatrix(filename, stream, sceneGraph, nodeId, name, palette, header))
+	wrapBool(readMatrix(filename, stream, sceneGraph, nodeId, name, palette, header, nodeHeader))
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount))
 	Log::debug("Found %u children in compound '%s'", childCount, name.c_str());
@@ -535,17 +540,15 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 
 	core::String name;
 	wrapBool(stream.readPascalStringUInt32LE(name))
-	for (int i = 0; i < 3; ++i) {
-		uint8_t val;
-		wrap(stream.readUInt8(val))
-		// ColorFormat, ZAxisOrientation, Compression? (see QBFormat)
-		Log::debug("unknown byte %i: %u", i, val);
-	}
+	NodeHeader nodeHeader;
+	nodeHeader.visible = stream.readBool();
+	nodeHeader.unknown = stream.readBool();
+	nodeHeader.locked = stream.readBool();
 	switch (type) {
 	case qbcl::NODE_TYPE_MATRIX:
 		core_assert(parent != -1);
 		Log::debug("Found matrix");
-		if (!readMatrix(filename, stream, sceneGraph, parent, name, palette, header)) {
+		if (!readMatrix(filename, stream, sceneGraph, parent, name, palette, header, nodeHeader)) {
 			Log::error("Failed to load matrix %s", name.c_str());
 			return false;
 		}
@@ -553,7 +556,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 		break;
 	case qbcl::NODE_TYPE_MODEL:
 		Log::debug("Found model");
-		if (!readModel(filename, stream, sceneGraph, parent, name, palette, header)) {
+		if (!readModel(filename, stream, sceneGraph, parent, name, palette, header, nodeHeader)) {
 			Log::error("Failed to load model %s", name.c_str());
 			return false;
 		}
@@ -562,7 +565,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 	case qbcl::NODE_TYPE_COMPOUND:
 		core_assert(parent != -1);
 		Log::debug("Found compound");
-		if (!readCompound(filename, stream, sceneGraph, parent, name, palette, header)) {
+		if (!readCompound(filename, stream, sceneGraph, parent, name, palette, header, nodeHeader)) {
 			Log::error("Failed to load compound %s", name.c_str());
 			return false;
 		}
