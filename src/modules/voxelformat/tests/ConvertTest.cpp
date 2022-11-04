@@ -220,7 +220,7 @@ TEST_F(ConvertTest, testQbToVXL) {
 TEST_F(ConvertTest, testQBCLToQBCL) {
 	QBCLFormat src;
 	QBCLFormat target;
-	testLoadSaveAndLoadSceneGraph("qubicle.qbcl", src, "convert-qubicle.qbcl", target);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qbcl", src, "convert-chr_knight.qbcl", target);
 }
 
 TEST_F(ConvertTest, testVXMToQb) {
