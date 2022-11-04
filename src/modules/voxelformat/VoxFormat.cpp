@@ -8,9 +8,11 @@
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
+#include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "math/Math.h"
 #include "voxel/MaterialColor.h"
@@ -372,7 +374,8 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 		} else {
 			Log::debug("Add group node");
 		}
-		{
+		const bool addLayers = core::Var::getSafe(cfg::VoxformatVOXCreateLayers)->boolVal();
+		if (node.type() == SceneGraphNodeType::Root || addLayers) {
 			// TODO: only add the layer if there are models in this group?
 			// https://github.com/mgerhardy/vengi/issues/186
 			ogt_vox_layer ogt_layer;
@@ -387,7 +390,8 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 			ctx.layers.push_back(ogt_layer);
 		}
 		const uint32_t ownLayerId = (int)ctx.layers.size() - 1;
-		{
+		const bool addGroups = core::Var::getSafe(cfg::VoxformatVOXCreateGroups)->boolVal();
+		if (node.type() == SceneGraphNodeType::Root || addGroups) {
 			ogt_vox_group ogt_group;
 			core_memset(&ogt_group, 0, sizeof(ogt_group));
 			ogt_group.hidden = !node.visible();

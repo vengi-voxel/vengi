@@ -66,8 +66,13 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 				ImGui::EndCombo();
 			}
 		}
-	} else if (mode == video::OpenFileMode::Save && desc->matchesExtension("qbt")) {
-		ImGui::CheckboxVar("Palette mode", cfg::VoxformatQBTPaletteMode);
-		ImGui::CheckboxVar("Merge compounds", cfg::VoxformatQBTMergeCompounds);
+	} else if (mode == video::OpenFileMode::Save) {
+		if (desc->matchesExtension("qbt")) {
+			ImGui::CheckboxVar("Palette mode", cfg::VoxformatQBTPaletteMode);
+			ImGui::CheckboxVar("Merge compounds", cfg::VoxformatQBTMergeCompounds);
+		} else if (desc->matchesExtension("vox")) {
+			ImGui::CheckboxVar("Create groups", cfg::VoxformatVOXCreateGroups);
+			ImGui::CheckboxVar("Create layers", cfg::VoxformatVOXCreateLayers);
+		}
 	}
 }

@@ -108,5 +108,7 @@ constexpr const char *VoxformatFillHollow = "voxformat_fillhollow";
 constexpr const char *VoxformatVXLNormalType = "voxformat_vxlnormaltype";
 constexpr const char *VoxformatQBTPaletteMode = "voxformat_qbtpalettemode";
 constexpr const char *VoxformatQBTMergeCompounds = "voxformat_qbtmergecompounds";
+constexpr const char *VoxformatVOXCreateLayers = "voxformat_voxcreatelayers";
+constexpr const char *VoxformatVOXCreateGroups = "voxformat_voxcreategroups";
 
 }

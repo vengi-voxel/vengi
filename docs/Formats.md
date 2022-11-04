@@ -57,3 +57,13 @@ Basic voxelization is supported for ply, gltf, stl, bsp and obj files, too. The 
 * `voxformat_scale_y`: Scale the vertices on Y axis by the given factor
 * `voxformat_scale_z`: Scale the vertices on Z axis by the given factor
 * `voxformat_voxel_mesh`: Optimize import precision assuming that the mesh is composed of uniform voxels
+
+## Format configuration
+
+Next to the mesh related configuration cvars there are a few format specific ones, too:
+
+* `voxformat_vxlnormaltype`: Normal type for VXL format - 2 (TS) or 4 (RedAlert2)
+* `voxformat_qbtpalettemode`: Use palette mode in qubicle qbt export
+* `voxformat_qbtmergecompounds`: Merge compounds in qbt export
+* `voxformat_voxcreatelayers`: Magicavoxel vox layers
+* `voxformat_voxcreategroups`: Magicavoxel vox groups
