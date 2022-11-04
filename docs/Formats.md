@@ -67,3 +67,4 @@ Next to the mesh related configuration cvars there are a few format specific one
 * `voxformat_qbtmergecompounds`: Merge compounds in qbt export
 * `voxformat_voxcreatelayers`: Magicavoxel vox layers
 * `voxformat_voxcreategroups`: Magicavoxel vox groups
+* `voxformat_merge`: Merge all models into one object
