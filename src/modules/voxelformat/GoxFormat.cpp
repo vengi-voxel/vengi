@@ -165,7 +165,7 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::Seek
 	GoxChunk c;
 	while (loadChunk_Header(c, stream)) {
 		if (c.type == FourCC('P', 'R', 'E', 'V')) {
-			image::ImagePtr img = image::createEmptyImage("gox-preview.png");
+			image::ImagePtr img = image::createEmptyImage(core::string::extractFilename(filename) + ".png");
 			img->load(stream, c.length);
 			return img;
 		} else {
