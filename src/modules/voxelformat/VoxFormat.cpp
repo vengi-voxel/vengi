@@ -196,7 +196,6 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 }
 
 bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances, const voxel::Palette &palette) {
-	// TODO: with each save/load there is one root group more in some situations
 	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
 	const char *name = "Group";
@@ -219,7 +218,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, Scen
 	loadKeyFrames(sceneGraph, node, ogt_group.transform_anim.keyframes, ogt_group.transform_anim.num_keyframes);
 	node.setName(name);
 	node.setVisible(!hidden);
-	const int groupId = sceneGraph.emplace(core::move(node), parent);
+	const int groupId = parent == -1 ? sceneGraph.root().id() : sceneGraph.emplace(core::move(node), parent);
 	if (groupId == -1) {
 		Log::error("Failed to add group node to the scene graph");
 		return false;
@@ -301,7 +300,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			continue;
 		}
 		Log::debug("Add root group %u/%u", i, scene->num_groups);
-		if (!addGroup(scene, i, sceneGraph, sceneGraph.root().id(), zUpMat, addedInstances, palette)) {
+		if (!addGroup(scene, i, sceneGraph, -1, zUpMat, addedInstances, palette)) {
 			ogt_vox_destroy_scene(scene);
 			return false;
 		}
