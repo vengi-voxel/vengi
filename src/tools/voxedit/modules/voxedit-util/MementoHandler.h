@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/IComponent.h"
+#include "voxel/Palette.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -31,6 +32,7 @@ enum class MementoType {
 	SceneNodeRenamed,
 	SceneNodeTransform,
 	SceneNodePaletteChanged,
+	PaletteChanged,
 
 	Max
 };
@@ -85,9 +87,9 @@ public:
 struct MementoState {
 	MementoType type;
 	MementoData data;
-	int parentId;
-	int nodeId;
-	uint32_t keyFrame;
+	int parentId = -1;
+	int nodeId = -1;
+	uint32_t keyFrame = 0;
 	core::String name;
 	glm::mat4x4 localMatrix{1.0f};
 	/**
@@ -137,6 +139,7 @@ private:
 	uint8_t _statePosition = 0u;
 	int _locked = 0;
 
+	void addState(MementoState &&state);
 	bool markUndoPreamble(int nodeId);
 public:
 	MementoHandler();
@@ -182,7 +185,7 @@ public:
 	void markModification(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion);
 	void markNodeRenamed(const voxelformat::SceneGraphNode &node);
 	void markNodeMoved(int targetId, int sourceId);
-	void markPaletteChange(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion);
+	void markPaletteChange(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion = voxel::Region::InvalidRegion);
 
 	/**
 	 * @brief The scene graph is giving new nodes for each insert - thus while undo redo we get new node ids for each new node.

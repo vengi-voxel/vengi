@@ -584,7 +584,7 @@ bool SceneManager::setActivePalette(const voxel::Palette &palette, bool searchBe
 		_mementoHandler.markPaletteChange(node, wrapper.dirtyRegion());
 		node.setPalette(palette);
 	} else {
-		_mementoHandler.markPaletteChange(node, voxel::Region::InvalidRegion);
+		_mementoHandler.markPaletteChange(node);
 		node.setPalette(palette);
 	}
 	return true;
@@ -630,6 +630,9 @@ bool SceneManager::mementoModification(const MementoState& s) {
 	if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
 		node->setVolume(v, true);
 		node->setName(s.name);
+		if (s.palette.hasValue()) {
+			node->setPalette(*s.palette.value());
+		}
 		modified(node->id(), s.region, false);
 		_volumeRenderer.prepare(_sceneGraph);
 		return true;
@@ -717,6 +720,9 @@ bool SceneManager::redo() {
 		const glm::vec3 rp = referencePosition();
 		const glm::vec3 size = v->region().getDimensionsInVoxels();
 		node.setPivot(0, rp, size);
+		if (s.palette.hasValue()) {
+			node.setPalette(*s.palette.value());
+		}
 		Log::debug("Memento: Redo add node (%s) to parent %i", s.name.c_str(), s.parentId);
 		const int newNodeId = addNodeToSceneGraph(node, s.parentId);
 		_mementoHandler.updateNodeId(s.nodeId, newNodeId);
@@ -1239,8 +1245,11 @@ void SceneManager::construct() {
 			return;
 		}
 		const float scale = core::string::toFloat(args[0]);
-		voxel::Palette &pal = activePalette();
+		const int nodeId = activeNode();
+		voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		voxel::Palette &pal = node.palette();
 		pal.changeIntensity(scale);
+		_mementoHandler.markPaletteChange(node);
 	}).setHelp("Change intensity by scaling the rgb values of the palette");
 
 	command::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Editing);

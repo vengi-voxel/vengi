@@ -12,6 +12,7 @@
 #include "ui/imgui/IMGUIApp.h"
 #include "ui/imgui/IMGUIEx.h"
 #include "ui/imgui/IconsForkAwesome.h"
+#include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include <glm/gtc/type_ptr.hpp>
 
@@ -51,7 +52,10 @@ void PalettePanel::reloadAvailablePalettes() {
 
 void PalettePanel::update(const char *title, command::CommandExecutionListener &listener) {
 	core::String importPalette;
-	voxel::Palette &palette = sceneMgr().activePalette();
+	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const int nodeId = sceneGraph.activeNode();
+	voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
+	voxel::Palette &palette = node.palette();
 	const int maxPaletteEntries = palette.colorCount;
 	const float height = ImGui::GetContentRegionMax().y;
 	const ImVec2 windowSize(120.0f, height);
@@ -119,6 +123,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 					}
 					palette.markDirty();
 					palette.markSave();
+					sceneMgr().mementoHandler().markPaletteChange(node);
 				}
 				if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
 					const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
@@ -146,6 +151,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 					}
 					palette.markDirty();
 					palette.markSave();
+					sceneMgr().mementoHandler().markPaletteChange(node);
 				}
 
 				if (usableColor) {
@@ -158,10 +164,14 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 						if (palette.hasGlow(palIdx)) {
 							if (ImGui::MenuItem(ICON_FK_SUN_O " Remove Glow")) {
 								palette.removeGlow(palIdx);
+								palette.markSave();
+								sceneMgr().mementoHandler().markPaletteChange(node);
 							}
 						} else {
 							if (ImGui::MenuItem(ICON_FK_SUN " Glow")) {
 								palette.setGlow(palIdx);
+								palette.markSave();
+								sceneMgr().mementoHandler().markPaletteChange(node);
 							}
 						}
 					}

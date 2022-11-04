@@ -6,6 +6,7 @@
 
 #include "core/ArrayLength.h"
 #include "core/Optional.h"
+#include "voxel/Palette.h"
 #include "voxel/Voxel.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -138,16 +139,21 @@ void MementoHandler::print() const {
 		"SceneNodeRemoved",
 		"SceneNodeRenamed",
 		"SceneNodeTransform",
-		"SceneNodePaletteChanged"
+		"SceneNodePaletteChanged",
+		"PaletteChanged"
 	};
 	static_assert((int)MementoType::Max == lengthof(states), "Array sizes don't match");
 
 	for (const MementoState& state : _states) {
 		const glm::ivec3& mins = state.region.getLowerCorner();
 		const glm::ivec3& maxs = state.region.getUpperCorner();
-		Log::info("%4i: (%s) node id: %i (parent: %i) (frame %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)] (size: %ib)",
+		core::String palHash;
+		if (state.palette.hasValue()) {
+			palHash = core::string::toString(state.palette.value()->hash());
+		}
+		Log::info("%4i: (%s) node id: %i (parent: %i) (frame %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)] (size: %ib) (palette: %s [hash: %s])",
 				i++, states[(int)state.type], state.nodeId, state.parentId, state.keyFrame, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
-						mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, (int)state.data.size());
+						mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, (int)state.data.size(), state.palette.hasValue() ? "true" : "false", palHash.c_str());
 	}
 }
 
@@ -235,7 +241,10 @@ void MementoHandler::markNodeAdded(const voxelformat::SceneGraphNode &node) {
 	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const glm::mat4 &transformMatrix = transform.worldMatrix();
 	Log::debug("Mark node %i as added (%s)", nodeId, name.c_str());
-	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, transformMatrix, keyFrameIdx);
+	core::Optional<voxel::Palette> palette;
+	palette.setValue(node.palette());
+	Log::debug("palette node added hash: %lu", node.palette().hash());
+	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, transformMatrix, keyFrameIdx, palette);
 }
 
 void MementoHandler::markModification(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion) {
@@ -247,7 +256,12 @@ void MementoHandler::markModification(const voxelformat::SceneGraphNode &node, c
 	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const glm::mat4 &transformMatrix = transform.worldMatrix();
 	Log::debug("Mark node %i modification (%s)", nodeId, name.c_str());
-	markUndo(parentId, nodeId, name, volume, MementoType::Modification, modifiedRegion, transformMatrix, keyFrameIdx);
+	core::Optional<voxel::Palette> palette;
+	if (_states.empty()) {
+		palette.setValue(node.palette());
+		Log::debug("palette modification hash: %lu", node.palette().hash());
+	}
+	markUndo(parentId, nodeId, name, volume, MementoType::Modification, modifiedRegion, transformMatrix, keyFrameIdx, palette);
 }
 
 void MementoHandler::markPaletteChange(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion) {
@@ -264,6 +278,7 @@ void MementoHandler::markPaletteChange(const voxelformat::SceneGraphNode &node, 
 	Log::debug("Mark node %i palette change (%s)", nodeId, name.c_str());
 	core::Optional<voxel::Palette> palette;
 	palette.setValue(node.palette());
+	Log::debug("palette change hash: %lu", node.palette().hash());
 	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodePaletteChanged, modifiedRegion, transformMatrix, keyFrameIdx, palette);
 }
 
@@ -318,7 +333,13 @@ void MementoHandler::markUndo(int parentId, int nodeId, const core::String &name
 	Log::debug("New undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
 	voxel::logRegion("MarkUndo", region);
 	const MementoData& data = MementoData::fromVolume(volume);
-	_states.emplace_back(type, data, parentId, nodeId, name, region, localMatrix, keyFrameIdx, palette);
+	MementoState state(type, data, parentId, nodeId, name, region, localMatrix, keyFrameIdx, palette);
+	addState(core::move(state));
+}
+
+void MementoHandler::addState(MementoState &&state) {
+	_states.emplace_back(state);
 	_statePosition = stateSize() - 1;
 }
+
 }
