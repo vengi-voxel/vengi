@@ -38,7 +38,9 @@ private:
 		bool loadPalette = false;
 	};
 	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const;
-	bool saveModel(io::SeekableWriteStream& stream, const SceneGraph &sceneGraph) const;
+	bool saveModel(io::SeekableWriteStream& stream, const SceneGraph &sceneGraph, const SceneGraphNode& node) const;
+	bool saveNode(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node) const;
+	bool saveCompound(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node) const;
 
 	bool readHeader(io::SeekableReadStream& stream, Header &header);
 	bool readMatrix(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header);
