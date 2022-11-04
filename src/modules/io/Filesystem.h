@@ -173,13 +173,13 @@ public:
 
 	/**
 	 * @brief This will create the directory without taking the write path into account. BEWARE!
-	 * @param file The full path to the directory or relative to the current working dir of your app.
+	 * @param dir The full path to the directory or relative to the current working dir of your app.
 	 */
 	bool createDir(const core::String& dir, bool recursive = true) const;
 
 	/**
 	 * @brief This will remove the directory without taking the write path into account. BEWARE!
-	 * @param file The full path to the directory or relative to the current working dir of your app.
+	 * @param dir The full path to the directory or relative to the current working dir of your app.
 	 */
 	bool removeDir(const core::String& dir, bool recursive = false) const;
 	/**
