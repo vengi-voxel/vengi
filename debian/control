@@ -7,6 +7,7 @@ Build-Depends:
  debhelper,
  libsdl2-dev,
  libuv1-dev,
+ liblua5.4-dev,
  opencl-c-headers,
  wayland-protocols,
  pkg-config
