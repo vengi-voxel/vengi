@@ -160,14 +160,6 @@ jobs:
         steps:
         - uses: actions/checkout@v3
 
-        - name: Setup
-          uses: lukka/run-vcpkg@v10
-          id: runvcpkg
-          with:
-            vcpkgGitCommitId: 1b1ae50e1a69f7c659bd7d731e80b358d21c86ad
-            vcpkgTriplet: 'x64-windows'
-            vcpkgArguments: 'glslang'
-
         - name: Build
           run: |
             mkdir build
