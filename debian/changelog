@@ -7,6 +7,7 @@ vengi (0.0.23.0-1) UNRELEASED; urgency=low
   * Fixed VOX root node handling
   * Fixed QBCL and GOX thumbnail handling
   * Removed unused code
+  * Added support for VXA version 3
 
   * VoxEdit:
   * Added support for embedding screenshots in formats that support it

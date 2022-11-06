@@ -95,7 +95,78 @@ static int getInterpolationType(InterpolationType type) {
 
 }
 
-bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableReadStream &stream,
+bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, SceneGraphNode& node, const core::String &animId, int version) {
+	// channel 0-2 position (float)
+	// channel 3-5 rotation (euler angles in radians)
+	// channel 6 local scale (float)
+	for (int channel = 0; channel < 7; ++channel) {
+		int32_t keyFrameCount;
+		wrap(stream.readInt32(keyFrameCount))
+		Log::debug("Found %i keyframes", keyFrameCount);
+
+		for (int kf = 0; kf < keyFrameCount; ++kf) {
+			uint32_t frameIdx;
+			wrap(stream.readUInt32(frameIdx))
+
+			KeyFrameIndex keyFrameIdx;
+			keyFrameIdx = node.addKeyFrame(frameIdx);
+			if (keyFrameIdx == InvalidKeyFrame) {
+				keyFrameIdx = node.keyFrameForFrame(frameIdx);
+			}
+			SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+			keyFrame.frameIdx = frameIdx;
+			int32_t interpolation;
+			wrap(stream.readInt32(interpolation))
+			if (interpolation < 0 || interpolation >= lengthof(vxa_priv::interpolationTypes)) {
+				keyFrame.interpolation = InterpolationType::Linear;
+				Log::warn("Could not find a supported easing type for %i", interpolation);
+			} else {
+				keyFrame.interpolation = vxa_priv::interpolationTypes[interpolation];
+			}
+			if (channel == 3) {
+				/* bool slerp =*/ stream.readBool(); // TODO:
+			}
+
+			float val;
+			wrap(stream.readFloat(val))
+
+			SceneGraphTransform &transform = keyFrame.transform();
+			if (channel == 6) {
+				transform.setLocalScale(val);
+			} else if (channel <= 2) {
+				glm::vec3 translation = transform.localTranslation();
+				translation[channel] = val;
+				transform.setLocalTranslation(translation);
+			} else if (channel > 2) {
+				glm::quat orientation = transform.localOrientation();
+				orientation[channel - 3] = val;
+				transform.setLocalOrientation(orientation);
+			}
+		}
+	}
+
+	for (SceneGraphKeyFrame &keyFrame : node.keyFrames()) {
+		const glm::quat &tempAngles = keyFrame.transform().localOrientation();
+		const glm::vec3 eulerAngles(tempAngles[0], tempAngles[1], tempAngles[2]);
+		const glm::quat localOrientation(eulerAngles);
+		keyFrame.transform().setLocalOrientation(localOrientation);
+	}
+
+	int32_t children;
+	wrap(stream.readInt32(children))
+	if (children != (int32_t)node.children().size()) {
+		Log::error("Child count mismatch between loaded node %i and the vxa (%i)", node.id(), children);
+		return false;
+	}
+	for (int32_t i = 0; i < children; ++i) {
+		const int nodeId = node.children()[i];
+		SceneGraphNode& cnode = sceneGraph.node(nodeId);
+		wrapBool(recursiveImportNodeBefore3(filename, stream, sceneGraph, cnode, animId, version))
+	}
+	return true;
+}
+
+bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::SeekableReadStream &stream,
 									SceneGraph &sceneGraph, SceneGraphNode& node, const core::String &animId, int version) {
 	int32_t keyFrameCount;
 	wrap(stream.readInt32(keyFrameCount))
@@ -164,7 +235,7 @@ bool VXAFormat::recursiveImportNode(const core::String &filename, io::SeekableRe
 	for (int32_t i = 0; i < children; ++i) {
 		const int nodeId = node.children()[i];
 		SceneGraphNode& cnode = sceneGraph.node(nodeId);
-		wrapBool(recursiveImportNode(filename, stream, sceneGraph, cnode, animId, version))
+		wrapBool(recursiveImportNodeBefore3(filename, stream, sceneGraph, cnode, animId, version))
 	}
 
 	return true;
@@ -191,7 +262,7 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 	Log::debug("Found vxa version: %i", version);
 
-	if (version > 2) {
+	if (version > 3) {
 		Log::error("Could not load vxa file: Unsupported version found (%i)", version);
 		return false;
 	}
@@ -235,9 +306,16 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	for (int32_t i = 0; i < rootChildren; ++i) {
 		const int nodeId = sceneGraph.root().children()[i];
 		SceneGraphNode& node = sceneGraph.node(nodeId);
-		if (!recursiveImportNode(filename, stream, sceneGraph, node, animId, version)) {
-			Log::error("VXA: failed to import children");
-			return false;
+		if (version <= 2) {
+			if (!recursiveImportNodeBefore3(filename, stream, sceneGraph, node, animId, version)) {
+				Log::error("VXA: failed to import children for version %i", version);
+				return false;
+			}
+		} else {
+			if (!recursiveImportNodeSince3(filename, stream, sceneGraph, node, animId, version)) {
+				Log::error("VXA: failed to import children for version %i", version);
+				return false;
+			}
 		}
 	}
 	sceneGraph.updateTransforms();
