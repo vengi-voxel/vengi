@@ -16,12 +16,6 @@ make __directoryname__-run
 
 or by directly executing the generated binary after compiling them.
 
-## testanimation
-
-Test the voxel animation module with a default character and items of the stock module.
-
-See [this](TestAnimation.md) for more details.
-
 ## testimgui
 
 Test the dearimgui integration
@@ -38,17 +32,9 @@ Test the OpenCL 3d texture integration of a 3d voxel volume (rendered as 2d side
 
 OpenCL mesh extraction - not finished yet.
 
-## testdepthbuffer
-
-Test the depth buffer integration with shadow maps and debug renderings
-
 ## testtexture
 
 Renders a test 2d image.
-
-## testmesh
-
-Render a mesh with shadows and bones and normals.
 
 ## testcamera
 
@@ -87,10 +73,6 @@ Just an empty template for new test applications.
 ## testhttpserver
 
 A test application around the http module server for e.g. fuzzy testing purposes.
-
-## testblur
-
-A test application that blures an image
 
 ## testbloom
 
