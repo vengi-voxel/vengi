@@ -8,7 +8,6 @@ set(SRCS
 	Octree.h Octree.cpp
 	Plane.h Plane.cpp
 	QuadTree.h
-	QuadTreeCache.h
 	Random.cpp Random.h
 	Ray.h
 	Rect.h

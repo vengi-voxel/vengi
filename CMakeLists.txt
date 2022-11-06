@@ -179,7 +179,6 @@ endif()
 
 find_host_program(GDB_EXECUTABLE NAMES ${GDB_BINARY} gdb)
 find_host_program(LLDB_EXECUTABLE NAMES ${LLDB_BINARY} lldb)
-check_include_files("uuid/uuid.h" HAVE_UUID_H)
 
 set(CURSES_NEED_NCURSES True)
 find_package(Curses)

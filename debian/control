@@ -9,8 +9,7 @@ Build-Depends:
  libuv1-dev,
  opencl-c-headers,
  wayland-protocols,
- pkg-config,
- uuid-dev
+ pkg-config
 Standards-Version: 4.1.4
 Homepage: https://github.com/mgerhardy/vengi
 Vcs-Git: https://github.com/mgerhardy/vengi

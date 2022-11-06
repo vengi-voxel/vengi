@@ -79,7 +79,6 @@ detail message line 2
 | testcore         | Visual test helpers                                                        |
 | ui               | DearImgui based ui code                                                    |
 | util             |                                                                            |
-| uuidutil         |                                                                            |
 | video            | [Window and renderer](ShaderTool.md) module                                |
 | voxel            | The voxel engine code based on PolyVox                                     |
 | voxelfont        | TTF font to voxel                                                          |

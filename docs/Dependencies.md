@@ -13,7 +13,6 @@
   * libuv
   * gtest (and gmock)
   * opencl (optional)
-  * libuuid
 
 Some of these dependencies might not be available as packages in your toolchain - most
 of them are also bundled with the application. But local installed headers always have
@@ -23,7 +22,7 @@ the higher priority. Usually you don't have to install anything of these.
 
 ```bash
 apt-get install libglm-dev lua5.4 liblua5.4-dev libsdl2-dev opencl-c-headers \
-    wayland-protocols pkg-config uuid-dev libuv1-dev
+    wayland-protocols pkg-config libuv1-dev
 ```
 
 ## Arch
