@@ -562,6 +562,7 @@ KeyFrameIndex SceneGraphNode::keyFrameForFrame(FrameIndex frameIdx) const {
 }
 
 SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex frameIdx) const {
+	// TODO ik solver https://github.com/mgerhardy/vengi/issues/182
 	const SceneGraphTransform *source = nullptr;
 	const SceneGraphTransform *target = nullptr;
 	FrameIndex startFrameIdx = 0;
