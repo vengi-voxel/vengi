@@ -35,7 +35,7 @@ endif()
 # Build in parallel under Visual Studio. Not enabled by default.
 if(MSVC)
   target_compile_options(sdl-build-options INTERFACE "/MP")
-endif(MSVC)
+endif()
 
 # CMake 3.0 expands the "if(${A})" in "set(OFF 1);set(A OFF);if(${A})" to "if(1)"
 # CMake 3.24+ emits a warning when not set.
@@ -58,6 +58,7 @@ endif()
 include(CheckLibraryExists)
 include(CheckIncludeFiles)
 include(CheckIncludeFile)
+include(CheckLanguage)
 include(CheckSymbolExists)
 include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
@@ -2985,7 +2986,7 @@ foreach(_hdr IN LISTS SDL2_INCLUDE_FILES)
 endforeach()
 list(APPEND SDL_GENERATED_HEADERS ${SDL2_COPIED_INCLUDE_FILES})
 
-if(MSVC OR (WATCOM AND (WIN32 OR OS2)))
+if(CMAKE_STATIC_LIBRARY_PREFIX STREQUAL "" AND CMAKE_STATIC_LIBRARY_SUFFIX STREQUAL ".lib")
   # Avoid conflict between the dll import library and the static library
   set(sdl_static_libname "SDL2-static")
 else()
@@ -3222,6 +3223,15 @@ endif()
 
 if(PS2)
   target_compile_options(sdl-build-options INTERFACE "-Wno-error=declaration-after-statement")
+endif()
+
+if(APPLE)
+  foreach(SOURCE_FILE ${SOURCE_FILES})
+    get_filename_component(FILE_EXTENSION ${SOURCE_FILE} EXT)
+    if(FILE_EXTENSION STREQUAL "m")
+      set_property(SOURCE ${SOURCE_FILE} APPEND_STRING PROPERTY COMPILE_FLAGS " -x objective-c")
+    endif()
+  endforeach()
 endif()
 
 if(SDL_SHARED)
