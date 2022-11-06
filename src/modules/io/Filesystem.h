@@ -70,7 +70,6 @@ private:
 	Paths _paths;
 
 	core::Stack<core::String, 32> _dirStack;
-	core::StringMap<uv_fs_event_t*> _watches;
 	uv_loop_t *_loop = nullptr;
 
 public:
@@ -90,11 +89,6 @@ public:
 	bool registerPath(const core::String& path);
 
 	core::String specialDir(FilesystemDirectories dir) const;
-
-	bool unwatch(const core::String& path);
-	bool unwatch(const io::FilePtr& file);
-	bool watch(const core::String& path, FileWatcher *watcher);
-	bool watch(const io::FilePtr& file, FileWatcher *watcher);
 
 	/**
 	 * @brief Get the path where the application resides.

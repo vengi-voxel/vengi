@@ -9,6 +9,7 @@
 #include "command/CommandHandler.h"
 #include <SDL_stdinc.h>
 #include <SDL_assert.h>
+#include <uv.h>
 
 #include "engine-config.h"
 

@@ -247,9 +247,6 @@ bool Filesystem::chdir(const core::String &directory) {
 }
 
 void Filesystem::shutdown() {
-	for (const auto &e : _watches) {
-		uv_fs_event_stop(e->value);
-	}
 	if (_loop != nullptr) {
 		uv_run(_loop, UV_RUN_NOWAIT);
 		if (uv_loop_close(_loop) != 0) {
@@ -258,10 +255,6 @@ void Filesystem::shutdown() {
 		delete _loop;
 		_loop = nullptr;
 	}
-	for (const auto &e : _watches) {
-		delete e->value;
-	}
-	_watches.clear();
 }
 
 core::String Filesystem::absolutePath(const core::String &path) {
@@ -321,76 +314,6 @@ bool Filesystem::registerPath(const core::String &path) {
 	_paths.push_back(path);
 	Log::debug("Registered data path: '%s'", path.c_str());
 	return true;
-}
-
-static bool closeFileWatchHandle(uv_fs_event_t *fshandle) {
-	uv_fs_event_stop(fshandle);
-	uv_handle_t *handle = (uv_handle_t *)fshandle;
-	if (uv_handle_get_type(handle) == UV_UNKNOWN_HANDLE) {
-		return false;
-	}
-	if (uv_is_closing(handle)) {
-		return true;
-	}
-	uv_close(handle, [](uv_handle_t *handle) { delete (uv_fs_event_t *)handle; });
-	return true;
-}
-
-bool Filesystem::unwatch(const core::String &path) {
-	auto i = _watches.find(path);
-	if (i == _watches.end()) {
-		return false;
-	}
-	closeFileWatchHandle(i->value);
-	_watches.erase(i);
-	return true;
-}
-
-bool Filesystem::unwatch(const io::FilePtr &file) {
-	return unwatch(file->name());
-}
-
-static void changeCallback(uv_fs_event_t *handle, const char *filename, int events, int status) {
-	if ((events & UV_CHANGE) == 0) {
-		return;
-	}
-	if (filename == nullptr) {
-		return;
-	}
-	char path[1024];
-	size_t size = sizeof(path) - 1;
-	uv_fs_event_getpath(handle, path, &size);
-	path[size] = '\0';
-
-	FileWatcher *watcherCallback = (FileWatcher *)handle->data;
-	watcherCallback->callback(watcherCallback->userdata, filename);
-
-	// restart watching
-	uv_fs_event_stop(handle);
-	uv_fs_event_start(handle, changeCallback, path, 0U);
-}
-
-bool Filesystem::watch(const core::String &path, FileWatcher *watcher) {
-	unwatch(path);
-	uv_fs_event_t *fsEvent = new uv_fs_event_t;
-	if (uv_fs_event_init(_loop, fsEvent) != 0) {
-		delete fsEvent;
-		return false;
-	}
-	fsEvent->data = (void *)watcher;
-	const int ret = uv_fs_event_start(fsEvent, changeCallback, path.c_str(), 0U);
-	if (ret != 0) {
-		if (!closeFileWatchHandle(fsEvent)) {
-			delete fsEvent;
-		}
-		return false;
-	}
-	_watches.put(path, fsEvent);
-	return true;
-}
-
-bool Filesystem::watch(const io::FilePtr &file, FileWatcher *watcher) {
-	return watch(file->name(), watcher);
 }
 
 bool Filesystem::popDir() {

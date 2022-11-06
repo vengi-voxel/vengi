@@ -7,7 +7,6 @@
 #include "util/Console.h"
 #include "console/TTY.h"
 #include "core/Var.h"
-#include <uv.h>
 
 namespace console {
 
