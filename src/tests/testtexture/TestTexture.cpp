@@ -6,9 +6,10 @@
 #include "video/Camera.h"
 #include "video/ScopedViewPort.h"
 #include "core/Color.h"
+#include "core/Log.h"
 
-TestTexture::TestTexture(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+TestTexture::TestTexture(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, timeProvider) {
 	init(ORGANISATION, "testtexture");
 }
 

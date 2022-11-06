@@ -3,7 +3,6 @@
  */
 
 #include "app/App.h"
-#include "core/EventBus.h"
 #include "core/TimeProvider.h"
 #include "core/ArrayLength.h"
 #include "io/Filesystem.h"
@@ -16,7 +15,7 @@ class TestApp : public App {
 public:
 	TestApp(int argc = 0, const char *args[] = nullptr)
 		: App(std::make_shared<metric::Metric>(), std::make_shared<io::Filesystem>(),
-			  std::make_shared<core::EventBus>(), std::make_shared<core::TimeProvider>()) {
+			  std::make_shared<core::TimeProvider>()) {
 		setArgs(argc, (char **)args);
 	}
 };

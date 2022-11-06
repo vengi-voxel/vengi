@@ -6,6 +6,7 @@
 #include "core/Color.h"
 #include "core/Enum.h"
 #include "core/GameConfig.h"
+#include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "command/Command.h"
@@ -16,7 +17,6 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "metric/Metric.h"
-#include "core/EventBus.h"
 #include "core/TimeProvider.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
@@ -43,8 +43,8 @@
 #define MaxHeightmapWidth 4096
 #define MaxHeightmapHeight 4096
 
-VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider, core::cpus()) {
+VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, timeProvider, core::cpus()) {
 	init(ORGANISATION, "voxconvert");
 }
 
@@ -693,10 +693,9 @@ void VoxConvert::translate(const glm::ivec3& pos, voxelformat::SceneGraph& scene
 }
 
 int main(int argc, char *argv[]) {
-	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	VoxConvert app(metric, filesystem, eventBus, timeProvider);
+	VoxConvert app(metric, filesystem, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

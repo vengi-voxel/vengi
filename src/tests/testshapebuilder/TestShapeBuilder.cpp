@@ -8,11 +8,12 @@
 #include "core/GLM.h"
 #include "video/ScopedState.h"
 #include "testcore/TestAppMain.h"
+#include "core/Log.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-TestShapeBuilder::TestShapeBuilder(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider), _color(core::Color::DarkGreen) {
+TestShapeBuilder::TestShapeBuilder(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, timeProvider), _color(core::Color::DarkGreen) {
 	init(ORGANISATION, "testshapebuilder");
 	setCameraMotion(false);
 	setRenderPlane(true, glm::vec4(1.0f, 1.0f, 1.0f, 0.8f));

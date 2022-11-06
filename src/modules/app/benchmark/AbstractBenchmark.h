@@ -7,7 +7,6 @@
 #include <benchmark/benchmark.h>
 #include "app/CommandlineApp.h"
 #include "io/Filesystem.h"
-#include "core/EventBus.h"
 #include "core/TimeProvider.h"
 
 namespace app {
@@ -20,7 +19,7 @@ private:
 		using Super = app::CommandlineApp;
 		AbstractBenchmark* _benchmark = nullptr;
 	public:
-		BenchmarkApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark);
+		BenchmarkApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark);
 		virtual ~BenchmarkApp();
 
 		virtual app::AppState onInit() override;

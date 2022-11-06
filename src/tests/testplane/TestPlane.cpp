@@ -4,8 +4,8 @@
 #include "TestPlane.h"
 #include "testcore/TestAppMain.h"
 
-TestPlane::TestPlane(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+TestPlane::TestPlane(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, timeProvider) {
 	setCameraMotion(true);
 	setRenderAxis(true);
 }

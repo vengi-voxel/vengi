@@ -48,7 +48,7 @@ private:
 	void doRender() override;
 	void onRenderUI() override;
 public:
-	TestOctreeVisit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	TestOctreeVisit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	virtual app::AppState onInit() override;
 	virtual app::AppState onRunning() override;

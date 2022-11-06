@@ -7,8 +7,8 @@
 #include "testcore/TestAppMain.h"
 #include <SDL.h>
 
-TestVoxelFont::TestVoxelFont(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+TestVoxelFont::TestVoxelFont(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, timeProvider) {
 	init(ORGANISATION, "testvoxelfont");
 }
 

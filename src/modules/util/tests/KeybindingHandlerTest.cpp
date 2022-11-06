@@ -7,6 +7,7 @@
 #include "util/CustomButtonNames.h"
 #include "util/KeybindingHandler.h"
 #include "command/Command.h"
+#include "core/Log.h"
 #include <SDL.h>
 
 namespace util {

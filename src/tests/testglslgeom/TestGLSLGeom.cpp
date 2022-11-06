@@ -5,9 +5,10 @@
 #include "testcore/TestAppMain.h"
 #include "core/Color.h"
 #include "video/Camera.h"
+#include "core/Log.h"
 
-TestGLSLGeom::TestGLSLGeom(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+TestGLSLGeom::TestGLSLGeom(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, timeProvider) {
 	init(ORGANISATION, "testglslgeom");
 }
 

@@ -45,7 +45,7 @@ protected:
 	std::pair<core::String, bool> getSource(const core::String& file) const;
 	bool parse(const core::String& src);
 public:
-	ComputeShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	ComputeShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 	~ComputeShaderTool();
 
 	app::AppState onConstruct() override;

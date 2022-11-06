@@ -38,9 +38,6 @@ typedef std::shared_ptr<ThreadPool> ThreadPoolPtr;
 class Var;
 typedef core::SharedPtr<Var> VarPtr;
 
-class EventBus;
-typedef std::shared_ptr<EventBus> EventBusPtr;
-
 class TimeProvider;
 typedef std::shared_ptr<TimeProvider> TimeProviderPtr;
 }
@@ -119,7 +116,6 @@ protected:
 	static App* _staticInstance;
 
 	io::FilesystemPtr _filesystem;
-	core::EventBusPtr _eventBus;
 	core::ThreadPoolPtr _threadPool;
 	core::TimeProviderPtr _timeProvider;
 	core::VarPtr _logLevelVar;
@@ -146,7 +142,7 @@ protected:
 	void setArgs(int argc, char *argv[]);
 
 public:
-	App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
+	App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~App();
 
 	void init(const core::String& organisation, const core::String& appname);
@@ -284,11 +280,6 @@ public:
 
 	metric::MetricPtr metric() const;
 
-	/**
-	 * @brief Access to the global EventBus
-	 */
-	core::EventBusPtr eventBus() const;
-
 	const core::String& currentWorkingDir() const;
 
 	static App* getInstance();
@@ -315,10 +306,6 @@ inline core::TimeProviderPtr App::timeProvider() const {
 
 inline metric::MetricPtr App::metric() const {
 	return _metric;
-}
-
-inline core::EventBusPtr App::eventBus() const {
-	return _eventBus;
 }
 
 inline const core::String& App::appname() const {

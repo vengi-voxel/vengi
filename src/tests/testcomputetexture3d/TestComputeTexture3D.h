@@ -30,7 +30,7 @@ private:
 	void doRender() override;
 	void initVolume();
 public:
-	TestComputeTexture3D(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	TestComputeTexture3D(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	virtual app::AppState onInit() override;
 	virtual app::AppState onCleanup() override;

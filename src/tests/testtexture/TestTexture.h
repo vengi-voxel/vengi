@@ -16,7 +16,7 @@ private:
 
 	void doRender() override;
 public:
-	TestTexture(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	TestTexture(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	app::AppState onInit() override;
 	app::AppState onCleanup() override;

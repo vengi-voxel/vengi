@@ -7,8 +7,8 @@
 #include "core/Log.h"
 #include <SDL.h>
 
-TestCamera::TestCamera(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+TestCamera::TestCamera(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, timeProvider) {
 	init(ORGANISATION, "testcamera");
 	setCameraMotion(false);
 	//setRenderPlane(true);

@@ -29,7 +29,7 @@ private:
 	core::String getSuggestedFilename(const char *extension = nullptr) const;
 
 public:
-	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	void onRenderUI() override;
 

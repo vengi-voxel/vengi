@@ -9,10 +9,11 @@
 #include "core/Vector.h"
 #include "core/collection/Array.h"
 #include "testcore/TestAppMain.h"
+#include "core/Log.h"
 #include <glm/gtc/type_ptr.hpp>
 
-TestOctreeVisit::TestOctreeVisit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+TestOctreeVisit::TestOctreeVisit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, timeProvider) {
 	init(ORGANISATION, "testoctreevisit");
 	setCameraMotion(true);
 	//setRenderPlane(true);

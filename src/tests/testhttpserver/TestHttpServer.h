@@ -22,7 +22,7 @@ private:
 	core::VarPtr _exitAfterRequest;
 	int _remainingFrames = 0;
 public:
-	TestHttpServer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	TestHttpServer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	virtual app::AppState onConstruct() override;
 	virtual app::AppState onInit() override;

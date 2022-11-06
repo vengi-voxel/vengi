@@ -8,15 +8,15 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "metric/Metric.h"
-#include "core/EventBus.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "voxel/MaterialColor.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"
+#include "core/Log.h"
 
-Thumbnailer::Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+Thumbnailer::Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, timeProvider) {
 	init(ORGANISATION, "thumbnailer");
 	_showWindow = false;
 	_initialLogLevel = SDL_LOG_PRIORITY_ERROR;
@@ -95,10 +95,9 @@ app::AppState Thumbnailer::onCleanup() {
 }
 
 int main(int argc, char *argv[]) {
-	const core::EventBusPtr& eventBus = std::make_shared<core::EventBus>();
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	Thumbnailer app(metric, filesystem, eventBus, timeProvider);
+	Thumbnailer app(metric, filesystem, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

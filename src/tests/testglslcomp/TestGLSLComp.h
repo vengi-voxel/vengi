@@ -25,7 +25,7 @@ private:
 
 	void doRender() override;
 public:
-	TestGLSLComp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	TestGLSLComp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	virtual app::AppState onInit() override;
 	virtual app::AppState onCleanup() override;

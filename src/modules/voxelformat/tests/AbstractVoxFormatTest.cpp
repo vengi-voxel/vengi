@@ -19,6 +19,7 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "core/Log.h"
 
 #define WRITE_TO_FILE 0
 

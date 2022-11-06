@@ -37,7 +37,7 @@ protected:
 	std::pair<core::String, bool> getSource(const core::String& file) const;
 	bool printInfo();
 public:
-	ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	app::AppState onConstruct() override;
 	app::AppState onRunning() override;

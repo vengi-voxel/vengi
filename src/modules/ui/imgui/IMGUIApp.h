@@ -65,7 +65,7 @@ protected:
 	virtual bool handleSDLEvent(SDL_Event& event) override;
 public:
 	IMGUIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem,
-			const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
+			const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~IMGUIApp();
 
 	virtual void beforeUI();

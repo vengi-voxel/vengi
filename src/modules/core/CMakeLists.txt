@@ -37,7 +37,6 @@ set(SRCS
 	Color.cpp Color.h
 	Common.cpp Common.h
 	Enum.h
-	EventBus.cpp EventBus.h
 	FixedString.h
 	FourCC.h
 	GameConfig.h
@@ -112,7 +111,6 @@ set(TEST_SRCS
 	tests/ConcurrentQueueTest.cpp
 	tests/CoreTest.cpp
 	tests/DynamicArrayTest.cpp
-	tests/EventBusTest.cpp
 	tests/ListTest.cpp
 	tests/LogTest.cpp
 	tests/MapTest.cpp

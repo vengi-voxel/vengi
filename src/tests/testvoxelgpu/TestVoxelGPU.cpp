@@ -9,8 +9,8 @@
 #include "testcore/TestAppMain.h"
 #include <memory>
 
-TestVoxelGPU::TestVoxelGPU(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider), _mesher(compute::MesherShader::getInstance()) {
+TestVoxelGPU::TestVoxelGPU(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, timeProvider), _mesher(compute::MesherShader::getInstance()) {
 	init(ORGANISATION, "testvoxelgpu");
 }
 

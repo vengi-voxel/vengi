@@ -10,7 +10,6 @@
 #include "command/CommandHandler.h"
 #include "io/Filesystem.h"
 #include "core/Common.h"
-#include "core/EventBus.h"
 #include "metric/Metric.h"
 #include "metric/UDPMetricSender.h"
 #include "core/Log.h"
@@ -56,8 +55,8 @@ App* App::getInstance() {
 	return _staticInstance;
 }
 
-App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
-		_filesystem(filesystem), _eventBus(eventBus), _threadPool(std::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
+App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
+		_filesystem(filesystem), _threadPool(std::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
 		_timeProvider(timeProvider), _metric(metric) {
 #if defined(__GLIBC__) && (__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 2) && defined(DEBUG)
 	feenableexcept(FE_DIVBYZERO | FE_INVALID);
@@ -570,10 +569,6 @@ AppState App::onRunning() {
 
 	command::Command::update(_deltaFrameSeconds);
 
-	const int remaining = _eventBus->update(200);
-	if (remaining) {
-		Log::debug("Remaining events in queue: %i", remaining);
-	}
 	_filesystem->update();
 
 	if (!_failedToSaveConfiguration && core::Var::needsSaving()) {
@@ -698,9 +693,6 @@ AppState App::onCleanup() {
 		addBlocker(AppState::Init);
 		return AppState::Init;
 	}
-
-	// execute all pending async events.
-	_eventBus->update();
 
 	saveConfiguration();
 

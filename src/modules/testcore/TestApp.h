@@ -49,7 +49,7 @@ protected:
 	}
 
 public:
-	TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 	virtual ~TestApp();
 
 	video::Camera& camera();

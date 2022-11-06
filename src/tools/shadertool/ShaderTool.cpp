@@ -15,8 +15,8 @@
 #include "Generator.h"
 #include "Parser.h"
 
-ShaderTool::ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+ShaderTool::ShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, timeProvider) {
 	init(ORGANISATION, "shadertool");
 	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 }

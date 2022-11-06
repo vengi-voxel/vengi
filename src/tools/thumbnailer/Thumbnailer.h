@@ -20,7 +20,7 @@ private:
 	core::String _outfile;
 
 public:
-	Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider);
+	Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	app::AppState onConstruct() override;
 	app::AppState onInit() override;

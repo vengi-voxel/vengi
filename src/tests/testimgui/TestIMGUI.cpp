@@ -4,9 +4,10 @@
 #include "TestIMGUI.h"
 #include "testcore/TestAppMain.h"
 #include "core/Color.h"
+#include "core/Log.h"
 
-TestIMGUI::TestIMGUI(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::EventBusPtr& eventBus, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, eventBus, timeProvider) {
+TestIMGUI::TestIMGUI(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(metric, filesystem, timeProvider) {
 	init(ORGANISATION, "testimgui");
 }
 

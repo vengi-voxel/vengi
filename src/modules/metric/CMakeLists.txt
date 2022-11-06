@@ -2,7 +2,6 @@ set(SRCS
 	Metric.h Metric.cpp
 	UDPMetricSender.h UDPMetricSender.cpp
 	IMetricSender.h
-	MetricEvent.h
 )
 
 set(LIB metric)

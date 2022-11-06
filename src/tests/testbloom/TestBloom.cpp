@@ -7,10 +7,11 @@
 #include "imgui.h"
 #include "testcore/TestAppMain.h"
 #include "video/Texture.h"
+#include "core/Log.h"
 
 TestBloom::TestBloom(const metric::MetricPtr &metric, const io::FilesystemPtr &filesystem,
-					 const core::EventBusPtr &eventBus, const core::TimeProviderPtr &timeProvider)
-	: Super(metric, filesystem, eventBus, timeProvider) {
+					 const core::TimeProviderPtr &timeProvider)
+	: Super(metric, filesystem, timeProvider) {
 	init(ORGANISATION, "TestBloom");
 	setCameraMotion(false);
 	_allowRelativeMouseMode = false;
