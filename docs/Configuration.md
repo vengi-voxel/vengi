@@ -6,7 +6,7 @@ The engine can get configured by so called cvars (configuration variables). Thes
 the game via key bindings, in-game console, the ui or scripts.
 
 To get a list of supported cvars (they might differ from application to application), type the command `cvarlist` to the
-in-game console (`CTRL+Tab` in the default binding).
+in-game console (`CTRL+Tab` in the default binding) - or execute the application with `--help` (Example: `vengi-voxedit.exe --help`).
 
 The variables can get their initial value from various sources. The highest order is the command line. If you specify it on
 the command line, every other method will not be used. If the engine finds the cvar name in your environment variables, this
