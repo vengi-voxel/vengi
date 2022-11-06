@@ -21,11 +21,6 @@ Or "nightly"-builds here at [github action artifacts](https://github.com/mgerhar
 
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-new-ui.png)
 
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/gliding-2020-02-23.png)
-
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/reflective_water_surface.png)
-
-
 ## SAST Tools
 
 [PVS-Studio](https://pvs-studio.com/en/pvs-studio/?utm_source=github&utm_medium=organic&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.
