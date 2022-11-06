@@ -8,7 +8,6 @@
 #include "math/Frustum.h"
 #include "core/Log.h"
 #include "core/GLM.h"
-#include "math/OctreeCache.h"
 #include <glm/gtc/epsilon.hpp>
 #include <glm/vector_relational.hpp>
 #include <glm/gtc/round.hpp>
@@ -138,36 +137,6 @@ TEST_F(OctreeTest, testQuery) {
 		octree.query({50, 50, 50, 52, 52, 52}, contents);
 		EXPECT_TRUE(intersects(item1.aabb(), {50, 50, 50, 52, 52, 52}));
 		EXPECT_EQ(1u, contents.size())<<"Expected to find one entry for the overlapping aabb";
-	}
-}
-
-TEST_F(OctreeTest, testOctreeCache) {
-	Octree<oc::Item, int> octree({0, 0, 0, 100, 100, 100});
-	OctreeCache<oc::Item, int> cache(octree);
-	{
-		Octree<oc::Item, int>::Contents contents;
-		octree.query({50, 50, 50, 60, 60, 60}, contents);
-		EXPECT_EQ(0u, contents.size())<<"Expected to find nothing in an empty tree";
-		contents.clear();
-		EXPECT_FALSE(cache.query({50, 50, 50, 60, 60, 60}, contents));
-		contents.clear();
-		EXPECT_TRUE(cache.query({50, 50, 50, 60, 60, 60}, contents));
-	}
-	oc::Item item({51, 51, 51, 53, 53, 53}, 1);
-	EXPECT_TRUE(octree.insert(item));
-	{
-		Octree<oc::Item, int>::Contents contents;
-		EXPECT_FALSE(cache.query({50, 50, 50, 60, 60, 60}, contents)) << "Expected to have the cache cleared, the octree was in a dirty state";
-		EXPECT_EQ(1u, contents.size())<<"Expected to find one entry for the enclosing aabb";
-	}
-	{
-		Octree<oc::Item, int>::Contents contents;
-		octree.query({50, 50, 50, 52, 52, 52}, contents);
-		EXPECT_EQ(1u, contents.size())<<"Expected to find one entry for the overlapping aabb";
-		contents.clear();
-		EXPECT_FALSE(cache.query({50, 50, 50, 52, 52, 52}, contents));
-		contents.clear();
-		EXPECT_TRUE(cache.query({50, 50, 50, 52, 52, 52}, contents));
 	}
 }
 

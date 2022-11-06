@@ -6,7 +6,6 @@ set(SRCS
 	Functions.cpp Functions.h
 	OBB.h
 	Octree.h Octree.cpp
-	OctreeCache.h
 	Plane.h Plane.cpp
 	QuadTree.h
 	QuadTreeCache.h
