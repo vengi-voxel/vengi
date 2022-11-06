@@ -17,6 +17,7 @@ General:
    - Improved QBCL scene graph support
    - Fixed VOX root node handling
    - Fixed QBCL and GOX thumbnail handling
+   - Removed unused code
 
 VoxEdit:
 
