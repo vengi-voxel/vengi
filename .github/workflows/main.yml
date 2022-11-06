@@ -62,7 +62,7 @@ jobs:
             ctest -V -R tests-voxelutil$
 
         - name: Upload the build artifacts
-          uses: actions/upload-artifact@v2
+          uses: actions/upload-artifact@v3
           with:
             name: dmg
             path: build/*.dmg
@@ -93,7 +93,7 @@ jobs:
             mv ../*.deb .
 
         - name: Upload the ubuntu artifacts
-          uses: actions/upload-artifact@v2
+          uses: actions/upload-artifact@v3
           with:
             name: debian
             path: vengi*.deb
@@ -206,13 +206,13 @@ jobs:
             ctest -V -C Release -R shelltests
 
         - name: Upload the voxedit artifacts
-          uses: actions/upload-artifact@v2
+          uses: actions/upload-artifact@v3
           with:
             name: voxedit
             path: build/voxedit-install/
 
         - name: Upload the voxconvert artifacts
-          uses: actions/upload-artifact@v2
+          uses: actions/upload-artifact@v3
           with:
             name: voxconvert
             path: build/voxconvert-install/
