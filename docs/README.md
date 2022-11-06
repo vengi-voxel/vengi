@@ -23,7 +23,3 @@ the [compilation](Compilation.md) guide.
 ## Images
 
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-new-ui.png)
-
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/gliding-2020-02-23.png)
-
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/reflective_water_surface.png)
