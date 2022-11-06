@@ -582,7 +582,7 @@
     static bool _vox_file_read_uint32(_vox_file* fp, uint32_t* data) {
         bool ret = _vox_file_read(fp, data, sizeof(*data));
         if (ret) {
-            *data = _vox_htole32(*data);
+            *data = _vox_le32toh(*data);
         }
         return ret;
     }
@@ -590,7 +590,7 @@
     static bool _vox_file_read_int32(_vox_file* fp, int32_t* data) {
         bool ret = _vox_file_read(fp, data, sizeof(*data));
         if (ret) {
-            *data = _vox_htole32(*data);
+            *data = _vox_le32toh(*data);
         }
         return ret;
     }
@@ -603,7 +603,7 @@
                 float f;
             } bs;
             bs.f = *data;
-            bs.u = _vox_htole32(bs.u);
+            bs.u = _vox_le32toh(bs.u);
             *data = bs.f;
         }
         return ret;
