@@ -49,7 +49,6 @@ set(SRCS
 	NonCopyable.h
 	Optional.h
 	Pair.h
-	Password.h
 	PoolAllocator.h
 	Process.cpp Process.h
 	RGBA.h
