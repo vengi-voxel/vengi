@@ -34,16 +34,6 @@ debian:
   <<: *build
 
 .test:
-  variables:
-    POSTGRES_DB: enginetest
-    POSTGRES_USER: engine
-    POSTGRES_PASSWORD: engine
-    DB_HOST: postgres
-    DB_USER: engine
-    DB_PASSWORD: engine
-    DB_NAME: enginetest
-  services:
-    - postgres:latest
   stage: test
   dependencies:
     - build

@@ -4,16 +4,9 @@ include(CMakeLists.local OPTIONAL)
 option(UNITTESTS "Builds with unittests" ON)
 option(VISUALTESTS "Builds with visual tests (src/tests)" ON)
 
-option(GAMES "Builds with games (openworld)" ON)
-option(OPENWORLD_SERVER "Builds with server (needs GAMES to be active)" ON)
-option(OPENWORLD_CLIENT "Builds with client (needs GAMES to be active)" ON)
-
-option(TOOLS "Builds with tools (voxedit, thumbnailer, voxconvert, mapview, aidebug)" ON)
 option(VOXEDIT "Builds voxedit (needs TOOLS to be active)" ON)
 option(THUMBNAILER "Builds thumbnailer (needs TOOLS to be active)" ON)
 option(VOXCONVERT "Builds voxconvert (needs TOOLS to be active)" ON)
-option(MAPVIEW "Builds mapview (needs TOOLS to be active)" ON)
-option(AIDEBUG "Builds aidebug (needs TOOLS to be active)" ON)
 
 option(USE_CCACHE "Use ccache" ON)
 option(USE_GPROF "Use gprof - will become slow" OFF)
@@ -24,10 +17,6 @@ option(USE_CLANG_TIDY "Enable Clang Tidy" OFF)
 option(USE_STACKTRACES "Enable stacktraces" ON)
 
 set(PKGDATADIR "" CACHE STRING "System directory to search for data files (must end on /)")
-set(DB_PW "engine" CACHE STRING "The database password (openworld server)")
-set(SERVER_PORT "11337" CACHE STRING "Port where the server is listening on (openworld server)")
-set(HTTP_SERVER_PORT "8080" CACHE STRING "Port where the http server is listening on (openworld server)")
-set(DOCKER_REGISTRY "" CACHE STRING "Docker registry")
 
 set(ROOT_PROJECT_MAJOR_VERSION 0)
 set(ROOT_PROJECT_MINOR_VERSION 0)
@@ -88,8 +77,6 @@ include(${SCRIPTS_CMAKE_DIR}/heaptrack.cmake)
 include(${SCRIPTS_CMAKE_DIR}/apitrace.cmake)
 include(${SCRIPTS_CMAKE_DIR}/debug.cmake)
 include(${SCRIPTS_CMAKE_DIR}/googletest.cmake)
-include(${SCRIPTS_CMAKE_DIR}/manifests.cmake)
-include(${SCRIPTS_CMAKE_DIR}/docker.cmake)
 include(${SCRIPTS_CMAKE_DIR}/lua.cmake)
 include(${SCRIPTS_CMAKE_DIR}/macros.cmake)
 include(${SCRIPTS_CMAKE_DIR}/pack.cmake)
@@ -198,8 +185,6 @@ set(CURSES_NEED_NCURSES True)
 find_package(Curses)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
-set(HOT_RELOAD_ANIM 0)
 
 # These includes are needed to let the include for IMPLICIT_DEPENDS for shaders work
 include_directories(src/modules/video/shaders)

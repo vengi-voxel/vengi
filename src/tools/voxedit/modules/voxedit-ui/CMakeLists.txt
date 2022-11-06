@@ -23,7 +23,3 @@ set(SRCS
 )
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES imgui voxedit-util)
-
-if (VOXEDIT_ANIMATION)
-	target_compile_definitions(${LIB} PUBLIC VOXEDIT_ANIMATION)
-endif()

@@ -14,6 +14,6 @@ void operator delete(void *ptr) noexcept {
 	core_free(ptr);
 }
 
-void operator delete(void* ptr, std::size_t) {
+void operator delete(void* ptr, std::size_t) noexcept {
 	core_free(ptr);
 }

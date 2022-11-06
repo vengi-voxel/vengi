@@ -9,7 +9,6 @@ endif()
 endif()
 
 add_subdirectory(modules)
-add_subdirectory(games)
 add_subdirectory(tools)
 if (VISUALTESTS)
 	add_subdirectory(tests)

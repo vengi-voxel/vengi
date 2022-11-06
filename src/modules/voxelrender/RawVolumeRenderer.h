@@ -26,7 +26,6 @@
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
-#include "frontend/Colors.h"
 #include <unordered_map>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
@@ -83,8 +82,8 @@ protected:
 	core::VarPtr _shadowMap;
 	core::VarPtr _bloom;
 
-	glm::vec3 _diffuseColor = frontend::diffuseColor;
-	glm::vec3 _ambientColor = frontend::ambientColor;
+	glm::vec3 _diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	glm::vec3 _ambientColor = glm::vec3(0.2f, 0.2f, 0.2f);
 
 	struct ExtractRegion {
 		ExtractRegion(const voxel::Region &_region, int _idx) : region(_region), idx(_idx) {

@@ -19,17 +19,13 @@ namespace video {
 // and use GetParam() to get the values
 // don't forget to do INSTANTIATE_TEST_CASE_P
 struct ShaderVarState {
-	bool clientFog = true;
 	bool clientShadowMap = true;
-	bool clientWater = true;
 	bool clientDebugShadow = false;
 };
 
 inline ::std::ostream& operator<<(::std::ostream& os, const ShaderVarState& state) {
 	return os << "state["
-			<< "clientFog(" << state.clientFog << "), "
 			<< "clientShadowMap(" << state.clientShadowMap << "), "
-			<< "clientWater(" << state.clientWater << "), "
 			<< "clientDebugShadow(" << state.clientDebugShadow << ")"
 			<< "]";
 }
@@ -41,9 +37,7 @@ protected:
 	bool _supported = true;
 
 	void setShaderVars(const ShaderVarState& val) {
-		core::Var::get(cfg::ClientFog, "1", core::CV_SHADER)->setVal(val.clientFog);
 		core::Var::get(cfg::ClientShadowMap, "1", core::CV_SHADER)->setVal(val.clientShadowMap);
-		core::Var::get(cfg::ClientWater, "1", core::CV_SHADER)->setVal(val.clientWater);
 		core::Var::get(cfg::ClientDebugShadow, "1", core::CV_SHADER)->setVal(val.clientDebugShadow);
 		core::Var::get(cfg::ClientShadowMapSize, "128", core::CV_SHADER);
 		core::Var::get(cfg::ClientGamma, "1.0", core::CV_SHADER);
@@ -104,18 +98,9 @@ public:
 		ShaderVars,												\
 		testname,												\
 		::testing::Values(										\
-			video::ShaderVarState{true, true, true, true},		\
-			video::ShaderVarState{true, true, false, false},	\
-			video::ShaderVarState{true, true, true, false},		\
-			video::ShaderVarState{true, false, false, false},	\
-			video::ShaderVarState{true, false, false, true},	\
-			video::ShaderVarState{true, false, true, true},		\
-			video::ShaderVarState{false, false, false, false},	\
-			video::ShaderVarState{false, true, false, false},	\
-			video::ShaderVarState{false, true, true, false},	\
-			video::ShaderVarState{false, true, true, true},		\
-			video::ShaderVarState{false, false, true, false},	\
-			video::ShaderVarState{false, false, true, true},	\
-			video::ShaderVarState{false, false, false, true}	\
+			video::ShaderVarState{true, true},					\
+			video::ShaderVarState{true, false},					\
+			video::ShaderVarState{false, false},				\
+			video::ShaderVarState{false, true}					\
 		)														\
 	);

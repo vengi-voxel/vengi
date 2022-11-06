@@ -26,7 +26,6 @@ endif()
 generate_compute_shaders(${LIB} noise)
 
 set(TEST_SRCS
-	tests/IslandNoiseTest.cpp
 	tests/NoiseTest.cpp
 	tests/PoissonDiskDistributionTest.cpp
 )

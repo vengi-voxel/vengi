@@ -6,17 +6,11 @@ Build-Depends:
  cmake,
  debhelper,
  libsdl2-dev,
- postgresql-server-dev-all,
- libpq-dev,
- libenet-dev,
  libuv1-dev,
  opencl-c-headers,
  wayland-protocols,
  pkg-config,
- uuid-dev,
- flatbuffers-compiler,
- libflatbuffers-dev,
- libsdl2-mixer-dev
+ uuid-dev
 Standards-Version: 4.1.4
 Homepage: https://github.com/mgerhardy/vengi
 Vcs-Git: https://github.com/mgerhardy/vengi

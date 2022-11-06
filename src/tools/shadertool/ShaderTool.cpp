@@ -38,9 +38,7 @@ app::AppState ShaderTool::onConstruct() {
 	registerArg("--printincludes").setDescription("Print the includes for the given shader");
 	Log::trace("Set some shader config vars to let the validation work");
 	core::Var::get(cfg::ClientGamma, "1.0", core::CV_SHADER);
-	core::Var::get(cfg::ClientFog, "true", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
-	core::Var::get(cfg::ClientWater, "true", core::CV_SHADER);
 	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);

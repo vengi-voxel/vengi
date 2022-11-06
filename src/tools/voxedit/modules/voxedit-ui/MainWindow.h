@@ -50,9 +50,6 @@ private:
 	Viewport* _sceneTop = nullptr;
 	Viewport* _sceneLeft = nullptr;
 	Viewport* _sceneFront = nullptr;
-#ifdef VOXEDIT_ANIMATION
-	Viewport* _sceneAnimation = nullptr;
-#endif
 
 	ImGuiID _dockIdMain = 0;
 	ImGuiID _dockIdLeft = 0;
@@ -119,9 +116,6 @@ public:
 	// commands
 	bool save(const core::String &file);
 	bool load(const core::String &file);
-#ifdef VOXEDIT_ANIMATION
-	bool loadAnimationEntity(const core::String &file);
-#endif
 	bool createNew(bool force);
 
 	bool isLayerWidgetDropTarget() const;

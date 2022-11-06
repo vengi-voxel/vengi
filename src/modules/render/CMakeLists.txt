@@ -4,7 +4,6 @@ set(SRCS
 	CameraFrustum.cpp CameraFrustum.h
 	GridRenderer.cpp GridRenderer.h
 	Plane.h Plane.cpp
-	RandomColorTexture.h RandomColorTexture.cpp
 	Shadow.h Shadow.cpp
 	ShapeRenderer.cpp ShapeRenderer.h
 	Skybox.h Skybox.cpp

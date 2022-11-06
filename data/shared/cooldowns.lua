@@ -1,5 +1,0 @@
-return {
-	INCREASE = 15000,
-	HUNT = 10000,
-	LOGOUT = 10000,
-}

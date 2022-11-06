@@ -10,9 +10,6 @@
   * glm
   * lua >= 5.4
   * sdl2 > 2.0.16
-  * postgresql-server-dev >= 12
-  * libpq
-  * enet
   * libuv
   * gtest (and gmock)
   * opencl (optional)
@@ -25,19 +22,8 @@ the higher priority. Usually you don't have to install anything of these.
 ## Debian
 
 ```bash
-apt-get install libglm-dev lua5.4 liblua5.4-dev libsdl2-dev postgresql-server-dev-all \
-    libpq-dev libenet-dev opencl-c-headers \
-    wayland-protocols pkg-config uuid-dev libsdl2-mixer-dev libuv1-dev
-```
-
-If you want to run the database server locally, you have to install the postgres server package:
-
-```bash
-apt-get install postgresql-10 postgresql-contrib
-```
-
-```sql
-CREATE EXTENSION pgcrypto;
+apt-get install libglm-dev lua5.4 liblua5.4-dev libsdl2-dev opencl-c-headers \
+    wayland-protocols pkg-config uuid-dev libuv1-dev
 ```
 
 ## Arch
@@ -46,20 +32,14 @@ CREATE EXTENSION pgcrypto;
 pacman -Sy git make cmake ninja libuv sdl2 clang
 ```
 
-## MacPorts
-
-```bash
-port install postgresql95-server
-```
-
 ## Brew
 
 ```bash
-brew install libuv sdl2 libpq sdl2_mixer
+brew install libuv sdl2
 ```
 
 ## Windows
 
 ```bash
-vcpkg install sdl2 libuv libpq lua glm glslang gtest
+vcpkg install sdl2 libuv lua glm glslang gtest
 ```

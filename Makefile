@@ -56,7 +56,7 @@ dependency-%:
 
 define UPDATE_GIT
 	$(Q)if [ ! -d $(UPDATEDIR)/$(1).sync ]; then \
-		git clone --depth=1 $(2) $(UPDATEDIR)/$(1).sync; \
+		git clone --recursive --depth=1 $(2) $(UPDATEDIR)/$(1).sync; \
 	else \
 		cd $(UPDATEDIR)/$(1).sync && git pull --depth=1 --rebase; \
 	fi;
@@ -130,20 +130,6 @@ update-dearimgui:
 	cp $(UPDATEDIR)/imgui.sync/misc/fonts/binary_to_compressed_c.cpp tools/binary_to_compressed_c
 	mv src/modules/ui/imgui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
 
-update-flatbuffers:
-	$(call UPDATE_GIT,flatbuffers,https://github.com/google/flatbuffers.git)
-	rm -rf contrib/libs/flatbuffers/flatbuffers/* contrib/libs/flatbuffers/compiler/*
-	mkdir -p contrib/libs/flatbuffers/compiler/src
-	cp -r $(UPDATEDIR)/flatbuffers.sync/include/flatbuffers/* contrib/libs/flatbuffers/flatbuffers
-	cp -r $(UPDATEDIR)/flatbuffers.sync/src/* contrib/libs/flatbuffers/compiler
-	cp -r $(UPDATEDIR)/flatbuffers.sync/grpc/src/* contrib/libs/flatbuffers/compiler/src
-	rm contrib/libs/flatbuffers/compiler/flathash.cpp
-
-update-enet:
-	$(call UPDATE_GIT,libenet,https://github.com/lsalzman/enet.git)
-	cp -r $(UPDATEDIR)/libenet.sync/*.[ch] contrib/libs/libenet
-	cp -r $(UPDATEDIR)/libenet.sync/include/* contrib/libs/libenet/include
-
 update-glm:
 	$(call UPDATE_GIT,glm,https://github.com/g-truc/glm.git)
 	rm -rf contrib/libs/glm/glm/*
@@ -159,15 +145,6 @@ update-sdl2:
 	cp -r $(UPDATEDIR)/sdl2.sync/wayland-protocols/* contrib/libs/sdl2/wayland-protocols
 	cp -r $(UPDATEDIR)/sdl2.sync/include/* contrib/libs/sdl2/include
 	cp -r $(UPDATEDIR)/sdl2.sync/cmake/* contrib/libs/sdl2/cmake
-
-update-sdl2mixer:
-	$(call UPDATE_GIT,sdl2_mixer,https://github.com/libsdl-org/SDL_mixer)
-	rm -rf contrib/libs/SDL2_mixer/*
-	cp -r $(UPDATEDIR)/sdl2_mixer.sync/src/* contrib/libs/SDL2_mixer
-	cp -r $(UPDATEDIR)/sdl2_mixer.sync/include/* contrib/libs/SDL2_mixer
-	cp -r $(UPDATEDIR)/sdl2_mixer.sync/external/libogg* contrib/libs/SDL2_mixer
-	cp -r $(UPDATEDIR)/sdl2_mixer.sync/external/libvorbis* contrib/libs/SDL2_mixer
-	git checkout -f contrib/libs/SDL2_mixer/CMakeLists.txt
 
 update-glslang:
 	$(call UPDATE_GIT,glslang,https://github.com/KhronosGroup/glslang.git)
@@ -196,11 +173,6 @@ update-miniz:
 	$(call UPDATE_GIT,miniz,https://github.com/richgel999/miniz.git)
 	cd $(UPDATEDIR)/miniz.sync; ./amalgamate.sh
 	cp $(UPDATEDIR)/miniz.sync/amalgamation/miniz.[ch] src/modules/core
-
-update-nuklear:
-	$(call UPDATE_GIT,nuklear,https://github.com/Immediate-Mode-UI/Nuklear)
-	cp $(UPDATEDIR)/nuklear.sync/nuklear.h src/modules/ui/nuklear/private
-	cp $(UPDATEDIR)/nuklear.sync/demo/overview.c src/tests/testnuklear
 
 # currently not part of updatelibs - intentional - we adopted the original code.
 update-simplexnoise:
@@ -232,7 +204,7 @@ update-tinyobjloader:
 
 # TODO simpleai support
 # TODO lua support
-updatelibs: update-nuklear update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-flatbuffers update-enet update-glm update-sdl2 update-glslang update-simplecpp
+updatelibs: update-nuklear update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-glm update-sdl2 update-glslang update-simplecpp
 	$(MAKE) -C $(BUILDDIR) update-libs
 
 update-icons:

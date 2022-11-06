@@ -217,19 +217,6 @@ app::AppState VoxEdit::onConstruct() {
 		}
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory, &_paletteFormats[0])).setHelp("Import an image as a palette");
 
-#ifdef VOXEDIT_ANIMATION
-	command::Command::registerCommand("animation_load", [&] (const command::CmdArgs& args) {
-		if (_mainWindow == nullptr) {
-			return;
-		}
-		if (args.empty()) {
-			openDialog([this] (const core::String &file) { _mainWindow->loadAnimationEntity(file); }, fileDialogOptions, io::format::lua());
-			return;
-		}
-		_mainWindow->loadAnimationEntity(args[0]);
-	}).setHelp("Load the animation volumes and settings").setArgumentCompleter(command::fileCompleter(io::filesystem(), "", "*.lua"));
-#endif
-
 	command::Command::registerCommand("new", [this] (const command::CmdArgs& args) {
 		if (_mainWindow == nullptr) {
 			return false;

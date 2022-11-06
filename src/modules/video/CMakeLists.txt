@@ -37,7 +37,6 @@ set(SRCS
 	Texture.cpp Texture.h
 	TextureConfig.cpp TextureConfig.h
 	TexturePool.cpp TexturePool.h
-	TextureAtlasRenderer.cpp TextureAtlasRenderer.h
 	Trace.cpp Trace.h
 	Types.h
 	UniformBuffer.cpp UniformBuffer.h

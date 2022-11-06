@@ -55,12 +55,6 @@
 #include "MementoHandler.h"
 #include "tool/Clipboard.h"
 
-#ifdef VOXEDIT_ANIMATION
-#include "animation/Animation.h"
-#include "anim/AnimationLuaSaver.h"
-#include "attrib/ShadowAttributes.h"
-#endif
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/transform.hpp>
@@ -371,19 +365,6 @@ void SceneManager::setMousePos(int x, int y) {
 	_traceViaMouse = true;
 }
 
-#ifdef VOXEDIT_ANIMATION
-void SceneManager::handleAnimationViewUpdate(int nodeId) {
-	if (!_animationUpdate && _animationNodeIdDirtyState == -1) {
-		// the first layer
-		_animationNodeIdDirtyState = nodeId;
-	} else if (_animationUpdate) {
-		// a second layer was modified (maybe a group action)
-		_animationNodeIdDirtyState = -1;
-	}
-	_animationUpdate = true;
-}
-#endif
-
 void SceneManager::queueRegionExtraction(int nodeId, const voxel::Region& region) {
 	bool addNew = true;
 	for (const auto& r : _extractRegions) {
@@ -412,9 +393,6 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 	}
 	_dirty = true;
 	_needAutoSave = true;
-#ifdef VOXEDIT_ANIMATION
-	handleAnimationViewUpdate(nodeId);
-#endif
 	resetLastTrace();
 }
 
@@ -874,10 +852,6 @@ int SceneManager::mergeNodes(int nodeId1, int nodeId2) {
 }
 
 void SceneManager::resetSceneState() {
-#ifdef VOXEDIT_ANIMATION
-	_animationNodeIdDirtyState = -1;
-	_animationIdx = 0;
-#endif
 	// this also resets the cursor voxel - but nodeActive() will set it to the first usable index
 	// that's why this call must happen before the nodeActive() call.
 	_modifier.reset();
@@ -919,9 +893,6 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 			_dirty = true;
 
 			nodeActivate(newNodeId);
-#ifdef VOXEDIT_ANIMATION
-			handleAnimationViewUpdate(newNodeId);
-#endif
 		}
 	}
 }
@@ -1109,45 +1080,6 @@ bool SceneManager::setGridResolution(int resolution) {
 	return true;
 }
 
-#ifdef VOXEDIT_ANIMATION
-void SceneManager::renderAnimation(const video::Camera& camera) {
-	attrib::ShadowAttributes attrib;
-	const double deltaFrameSeconds = app::App::getInstance()->deltaFrameSeconds();
-	if (_animationUpdate) {
-		for (voxelformat::SceneGraphNode& node : _sceneGraph) {
-			if (_animationNodeIdDirtyState >= 0 && _animationNodeIdDirtyState != node.id()) {
-				Log::debug("Don't update layer %i", node.id());
-				continue;
-			}
-			const core::String& value = node.property("type");
-			if (value.empty()) {
-				Log::debug("No type metadata found on layer %i", node.id());
-				continue;
-			}
-			const int characterMeshTypeId = core::string::toInt(value);
-			const animation::AnimationSettings& animSettings = animationEntity().animationSettings();
-			const core::String& path = animSettings.paths[characterMeshTypeId];
-			if (path.empty()) {
-				Log::debug("No path found for layer %i", node.id());
-				continue;
-			}
-			voxel::Mesh mesh;
-			_volumeRenderer.toMesh(node, &mesh);
-			const core::String& fullPath = animSettings.fullPath(characterMeshTypeId);
-			_animationCache->putMesh(fullPath.c_str(), mesh);
-			Log::debug("Updated mesh on layer %i for path %s", node.id(), fullPath.c_str());
-		}
-		if (!animationEntity().initMesh(_animationCache)) {
-			Log::warn("Failed to update the mesh");
-		}
-		_animationUpdate = false;
-		_animationNodeIdDirtyState = -1;
-	}
-	animationEntity().update(deltaFrameSeconds, attrib);
-	_animationRenderer.render(animationEntity(), camera);
-}
-#endif
-
 void SceneManager::updateAABBMesh() {
 	Log::debug("Update aabb mesh");
 	_shapeBuilder.clear();
@@ -1279,30 +1211,6 @@ void SceneManager::construct() {
 			_modifier.select(region.getLowerCorner(), region.getUpperCorner());
 		}
 	}).setHelp("Unselect all");
-
-#ifdef VOXEDIT_ANIMATION
-	command::Command::registerCommand("animation_cycle", [this] (const command::CmdArgs& argv) {
-		int offset = 1;
-		if (argv.size() > 0) {
-			offset = core::string::toInt(argv[0]);
-		}
-		_animationIdx += offset;
-		while (_animationIdx < 0) {
-			_animationIdx += (core::enumVal(animation::Animation::MAX) + 1);
-		}
-		_animationIdx %= (core::enumVal(animation::Animation::MAX) + 1);
-		Log::info("current animation idx: %i", _animationIdx);
-		animationEntity().setAnimation((animation::Animation)_animationIdx, true);
-	}).setHelp("Cycle between all possible animations");
-
-	command::Command::registerCommand("animation_save", [&] (const command::CmdArgs& args) {
-		core::String name = "entity";
-		if (!args.empty()) {
-			name = args[0];
-		}
-		saveAnimationEntity(name.c_str());
-	}).setHelp("Save the animation models and config values");
-#endif
 
 	command::Command::registerCommand("togglescene", [this] (const command::CmdArgs& args) {
 		toggleEditMode();
@@ -1840,18 +1748,11 @@ void SceneManager::toggleEditMode() {
 
 void SceneManager::setEditMode(EditMode mode) {
 	_editMode = mode;
-#ifdef VOXEDIT_ANIMATION
-	_animationUpdate = false;
-#endif
 	if (_editMode == EditMode::Scene) {
 		_modifier.aabbAbort();
 		_volumeRenderer.setSceneMode(true);
 	} else if (_editMode == EditMode::Model) {
 		_volumeRenderer.setSceneMode(false);
-#ifdef VOXEDIT_ANIMATION
-	} else if (_editMode == EditMode::Animation) {
-		_animationUpdate = true;
-#endif
 	}
 	updateAABBMesh();
 	// don't abort or toggle any other mode
@@ -1899,27 +1800,6 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the modifier");
 		return false;
 	}
-#ifdef VOXEDIT_ANIMATION
-	if (!_volumeCache.init()) {
-		Log::error("Failed to initialize the volume cache");
-		return false;
-	}
-	if (!_animationSystem.init()) {
-		Log::error("Failed to initialize the animation system");
-		return false;
-	}
-	if (!_animationRenderer.init()) {
-		Log::error("Failed to initialize the character renderer");
-		return false;
-	}
-	_animationRenderer.setClearColor(core::Color::Clear);
-	const auto& meshCache = core::make_shared<voxelformat::MeshCache>();
-	_animationCache = core::make_shared<animation::AnimationCache>(meshCache);
-	if (!_animationCache->init()) {
-		Log::error("Failed to initialize the character mesh cache");
-		return false;
-	}
-#endif
 
 	if (!_luaGenerator.init()) {
 		Log::error("Failed to initialize the lua generator bindings");
@@ -2062,16 +1942,6 @@ void SceneManager::shutdown() {
 	_shapeBuilder.shutdown();
 	_gridRenderer.shutdown();
 	_mementoHandler.clearStates();
-#ifdef VOXEDIT_ANIMATION
-	_volumeCache.shutdown();
-	_animationRenderer.shutdown();
-	if (_animationCache) {
-		_animationCache->shutdown();
-	}
-	_character.shutdown();
-	_bird.shutdown();
-	_animationSystem.shutdown();
-#endif
 
 	_referencePointMesh = -1;
 	_aabbMeshIndex = -1;
@@ -2081,91 +1951,6 @@ void SceneManager::shutdown() {
 	command::Command::unregisterActionButton("camera_rotate");
 	command::Command::unregisterActionButton("camera_pan");
 }
-
-#ifdef VOXEDIT_ANIMATION
-animation::AnimationEntity& SceneManager::animationEntity() {
-	if (_entityType == animation::AnimationSettings::Type::Character) {
-		return _character;
-	}
-	return _bird;
-}
-
-bool SceneManager::saveAnimationEntity(const char *name) {
-	_dirty = false;
-	// TODO: race and gender
-	const core::String& chrName = core::string::format("chr/human-male-%s", name);
-	const core::String& luaFilePath = animation::luaFilename(chrName.c_str());
-	const core::String luaDir(core::string::extractPath(luaFilePath));
-	io::filesystem()->createDir(luaDir);
-	const io::FilePtr& luaFile = io::filesystem()->open(luaFilePath, io::FileMode::SysWrite);
-	const animation::AnimationSettings& animSettings = animationEntity().animationSettings();
-	if (saveAnimationEntityLua(animSettings, animationEntity().skeletonAttributes(), name, luaFile)) {
-		Log::info("Wrote lua script: %s", luaFile->name().c_str());
-	} else {
-		Log::error("Failed to write lua script: %s", luaFile->name().c_str());
-	}
-
-	const int mountCount = (int)_sceneGraph.size();
-	for (int i = 0; i < mountCount; ++i) {
-		voxelformat::SceneGraphNode *node = _sceneGraph[i];
-		core_assert_always(node != nullptr);
-		const voxel::RawVolume* v = node->volume();
-		if (v == nullptr) {
-			continue;
-		}
-		const core::String& value = node->property("type");
-		if (value.empty()) {
-			const core::String& unknown = core::string::format("%i-%s-%s.vox", (int)i, node->name().c_str(), name);
-			Log::warn("No type metadata found on layer %i. Saving to %s", (int)i, unknown.c_str());
-			if (!saveNode((int)i, unknown)) {
-				Log::warn("Failed to save unknown layer to %s", unknown.c_str());
-				_dirty = true;
-			}
-			continue;
-		}
-		const int characterMeshTypeId = core::string::toInt(value);
-		const core::String& fullPath = animSettings.fullPath(characterMeshTypeId, name);
-		if (!saveNode((int)i, fullPath)) {
-			Log::warn("Failed to save type %i to %s", characterMeshTypeId, fullPath.c_str());
-			_dirty = true;
-		}
-	}
-
-	return true;
-}
-
-bool SceneManager::loadAnimationEntity(const core::String& luaFile) {
-	const core::String& lua = io::filesystem()->load(luaFile);
-	animation::AnimationSettings settings;
-	if (!animation::loadAnimationSettings(lua, settings, nullptr)) {
-		Log::warn("Failed to initialize the animation settings for %s", luaFile.c_str());
-		return false;
-	}
-	_entityType = settings.type();
-	if (_entityType == animation::AnimationSettings::Type::Max) {
-		Log::warn("Failed to detect the entity type for %s", luaFile.c_str());
-		return false;
-	}
-
-	if (!animationEntity().initSettings(lua)) {
-		Log::warn("Failed to initialize the animation settings and attributes for %s", luaFile.c_str());
-	}
-
-	voxelformat::SceneGraph newSceneGraph;
-	if (!_volumeCache.getVolumes(animationEntity().animationSettings(), newSceneGraph)) {
-		Log::warn("Failed to load scene graph for animation settings");
-		return false;
-	}
-
-	if (!loadSceneGraph(core::move(newSceneGraph))) {
-		Log::warn("Failed to load scene graph");
-	}
-	setEditMode(EditMode::Animation);
-	animationEntity().setAnimation(animation::Animation::IDLE, true);
-
-	return true;
-}
-#endif
 
 bool SceneManager::extractVolume() {
 	core_trace_scoped(SceneManagerExtract);
