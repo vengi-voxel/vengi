@@ -18,7 +18,7 @@
 * `--mirror <x|y|z>`: allows you to mirror the volumes at x, y and z axis
 * `--output <file>`: allows you to specify the output filename
 * `--resize <x:y:z>`: resize the volume by the given x (right), y (up) and z (back) values
-* `--rotate <x|y|z>`: allows you to rotate the volumes by 90 degree at x, y and z axis
+* `--rotate <x|y|z>`: allows you to rotate the volumes by 90 degree at x, y and z axis. Specify e.g. `x:180` to rotate around x by 180 degree.
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
 * `--script "<script> <args>"`: execute the given script - see [scripting support](../LUAScript.md) for more details
 * `--split <x:y:z>`: slices the volumes into pieces of the given size

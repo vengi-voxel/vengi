@@ -66,7 +66,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
 	registerArg("--output").setShort("-o").setDescription("Allow to specify the output file");
-	registerArg("--rotate").setDescription("Rotate by 90 degree at the given axis (x, y or z)");
+	registerArg("--rotate").setDescription("Rotate by 90 degree at the given axis (x, y or z), specify e.g. x:180 to rotate around x by 180 degree.");
 	registerArg("--resize").setDescription("Resize the volume by the given x (right), y (up) and z (back) values");
 	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
@@ -679,9 +679,20 @@ void VoxConvert::rotate(const core::String& axisStr, voxelformat::SceneGraph& sc
 	if (axis == math::Axis::None) {
 		return;
 	}
-	Log::info("Rotate on axis %c", axisStr[0]);
+	float degree = 90.0f;
+	if (axisStr.contains(":")) {
+		degree = glm::mod(axisStr.substr(2).toFloat(), 360.0f);
+	}
+	if (degree <= 1.0f) {
+		Log::warn("Don't rotate onaxis %c by %f degree", axisStr[0], degree);
+		return;
+	}
+	Log::info("Rotate on axis %c by %f degree", axisStr[0], degree);
 	for (voxelformat::SceneGraphNode &node : sceneGraph) {
-		node.setVolume(voxelutil::rotateAxis(node.volume(), axis), true);
+		const voxel::Region& region = node.volume()->region();
+		glm::vec3 rotVec{0.0f};
+		rotVec[math::getIndexForAxis(axis)] = degree;
+		node.setVolume(voxelutil::rotateVolume(node.volume(), rotVec, region.getPivot()), true);
 	}
 }
 

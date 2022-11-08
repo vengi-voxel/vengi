@@ -64,6 +64,14 @@ It's assumed that the given image is a gray scale image - but only the red chann
 If you want to colorize the surface of your heightmap import, you can specify `--colored-heightmap` - this will use the
 alpha channel of the image as height and the rgb channels of the image to determine the surface color.
 
+## Rotate the voxels
+
+You can rotate the voxels around the x axis by 180 degree like this:
+
+`./vengi-voxconvert --rotate x:180 --input infile.vox --output outfile.vox`
+
+This of course also works for `y` and `z`, too.
+
 ## Translate the voxels
 
 You can translate the voxels in the world like this:
