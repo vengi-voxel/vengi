@@ -133,7 +133,7 @@ void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFram
 	setWorldScale(glm::mix(_worldScale, dest._worldScale, factor));
 	_dirty = 0u;
 
-	core_assert_msg((dest._dirty & DIRTY_LOCALVALUES) == 0u, "dirty world values: %u", dest._dirty);
+	core_assert_msg((dest._dirty & DIRTY_LOCALVALUES) == 0u, "dirty local values: %u", dest._dirty);
 	setLocalTranslation(glm::mix(_localTranslation, dest._localTranslation, factor));
 	setLocalOrientation(glm::slerp(_localOrientation, dest._localOrientation, factor));
 	setLocalScale(glm::mix(_localScale, dest._localScale, factor));
