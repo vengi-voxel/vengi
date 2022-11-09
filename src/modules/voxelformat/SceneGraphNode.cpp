@@ -584,8 +584,11 @@ SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex frameIdx) const
 		}
 	}
 
-	if (source == nullptr || target == nullptr) {
+	if (source == nullptr) {
 		return transform(0);
+	}
+	if (target == nullptr) {
+		return *source;
 	}
 
 	double deltaFrameSeconds = 0.0f;
