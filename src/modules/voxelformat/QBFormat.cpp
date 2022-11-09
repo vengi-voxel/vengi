@@ -180,7 +180,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	wrapSave(stream.writeUInt32(131331)) // version
 	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
-	const bool leftHanded = core::Var::getSafe(cfg::VoxformatQbSaveLeftHanded)->boolVal();
+	const bool leftHanded = core::Var::getSafe(cfg::VoxformatQBSaveLeftHanded)->boolVal();
 	const ZAxisOrientation orientation = leftHanded ? ZAxisOrientation::LeftHanded : ZAxisOrientation::RightHanded;
 	wrapSave(stream.writeUInt32((uint32_t)orientation))
 	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))

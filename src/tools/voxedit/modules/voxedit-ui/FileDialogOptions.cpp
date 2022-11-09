@@ -37,14 +37,22 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		}
 	}
 
-	if (forceApplyOptions || !meshFormat) {
-		if (mode == video::OpenFileMode::Save) {
+	if (mode == video::OpenFileMode::Save) {
+		if (forceApplyOptions || !meshFormat) {
 			ImGui::CheckboxVar("Single object", cfg::VoxformatMerge);
 		}
-	}
-
-	if (forceApplyOptions || (desc->name == "Tiberian Sun" && desc->matchesExtension("vxl"))) {
-		if (mode == video::OpenFileMode::Save) {
+		if (forceApplyOptions || desc->matchesExtension("qbt")) {
+			ImGui::CheckboxVar("Palette mode", cfg::VoxformatQBTPaletteMode);
+			ImGui::CheckboxVar("Merge compounds", cfg::VoxformatQBTMergeCompounds);
+		}
+		if (forceApplyOptions || desc->matchesExtension("vox")) {
+			ImGui::CheckboxVar("Create groups", cfg::VoxformatVOXCreateGroups);
+			ImGui::CheckboxVar("Create layers", cfg::VoxformatVOXCreateLayers);
+		}
+		if (forceApplyOptions || desc->matchesExtension("qb")) {
+			ImGui::CheckboxVar("Left handed", cfg::VoxformatQBSaveLeftHanded);
+		}
+		if (forceApplyOptions || (desc->name == "Tiberian Sun" && desc->matchesExtension("vxl"))) {
 			const char *normalTypes[] = {nullptr, nullptr, "Tiberian Sun", nullptr, "Red Alert"};
 			const core::VarPtr &normalTypeVar = core::Var::getSafe(cfg::VoxformatVXLNormalType);
 			const int currentNormalType = normalTypeVar->intVal();
@@ -65,16 +73,6 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 				}
 				ImGui::EndCombo();
 			}
-		}
-	} else if (mode == video::OpenFileMode::Save) {
-		if (forceApplyOptions || desc->matchesExtension("qbt")) {
-			ImGui::CheckboxVar("Palette mode", cfg::VoxformatQBTPaletteMode);
-			ImGui::CheckboxVar("Merge compounds", cfg::VoxformatQBTMergeCompounds);
-		} else if (forceApplyOptions || desc->matchesExtension("vox")) {
-			ImGui::CheckboxVar("Create groups", cfg::VoxformatVOXCreateGroups);
-			ImGui::CheckboxVar("Create layers", cfg::VoxformatVOXCreateLayers);
-		} else if (forceApplyOptions || desc->matchesExtension("qb")) {
-			ImGui::CheckboxVar("Left handed", cfg::VoxformatQbSaveLeftHanded);
 		}
 	}
 }

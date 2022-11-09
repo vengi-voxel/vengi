@@ -83,6 +83,6 @@ constexpr const char *VoxformatQBTPaletteMode = "voxformat_qbtpalettemode";
 constexpr const char *VoxformatQBTMergeCompounds = "voxformat_qbtmergecompounds";
 constexpr const char *VoxformatVOXCreateLayers = "voxformat_voxcreatelayers";
 constexpr const char *VoxformatVOXCreateGroups = "voxformat_voxcreategroups";
-constexpr const char *VoxformatQbSaveLeftHanded = "voxformat_qbsavelefthanded";
+constexpr const char *VoxformatQBSaveLeftHanded = "voxformat_qbsavelefthanded";
 
 }

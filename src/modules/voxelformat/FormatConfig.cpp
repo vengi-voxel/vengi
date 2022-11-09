@@ -43,7 +43,7 @@ bool FormatConfig::init() {
 				"Merge compounds on load", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatVOXCreateLayers, "true", core::CV_NOPERSIST,
 				"Merge compounds on load", core::Var::boolValidator);
-	core::Var::get(cfg::VoxformatQbSaveLeftHanded, "true", core::CV_NOPERSIST,
+	core::Var::get(cfg::VoxformatQBSaveLeftHanded, "true", core::CV_NOPERSIST,
 				"Toggle between left and right handed", core::Var::boolValidator);
 
 	return true;
