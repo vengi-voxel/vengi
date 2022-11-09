@@ -194,7 +194,9 @@ bool PaletteFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 }
 
 bool PaletteFormat::save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
-	// TODO: onlyOnePalette()
+	if (onlyOnePalette()) {
+		// TODO: reduce palettes to one - construct a new scene graph
+	}
 	return Format::save(sceneGraph, filename, stream, thumbnailCreator);
 }
 
