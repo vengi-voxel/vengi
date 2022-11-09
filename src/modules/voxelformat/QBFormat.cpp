@@ -53,9 +53,9 @@ private:
 	io::SeekableWriteStream& _stream;
 	const voxel::RawVolume *_volume;
 	const voxel::Palette& _palette;
-	const int _maxsY;
-	const int _maxsX;
+	const glm::ivec3 _maxs;
 
+	const bool _leftHanded;
 	bool _error = false;
 	core::RGBA _currentColor;
 	uint32_t _count = 0;
@@ -70,9 +70,9 @@ private:
 	}
 
 public:
-	MatrixWriter(io::SeekableWriteStream& stream, const voxelformat::SceneGraphNode &node)
-		: _stream(stream), _volume(node.volume()), _palette(node.palette()), _maxsY(node.region().getUpperY()),
-		  _maxsX(node.region().getUpperX()) {
+	MatrixWriter(io::SeekableWriteStream &stream, const voxelformat::SceneGraphNode &node, bool leftHanded)
+		: _stream(stream), _volume(node.volume()), _palette(node.palette()), _maxs(node.region().getUpperCorner()),
+		  _leftHanded(leftHanded) {
 	}
 
 	void addVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
@@ -104,18 +104,26 @@ public:
 			_currentColor = newColor;
 		}
 		_count++;
-		if (y == _maxsY && x == _maxsX) {
-			if (_count > 3) {
-				wrapSaveWriter(_stream.writeUInt32(qb::RLE_FLAG))
-				wrapSaveWriter(_stream.writeUInt32(_count))
-				wrapSaveWriter(saveColor(_stream, _currentColor))
+		if (y == _maxs.y) {
+			bool nextSlice;
+			if (_leftHanded) {
+				nextSlice = x == _maxs.x;
 			} else {
-				for (uint32_t i = 0; i < _count; ++i) {
-					wrapSaveWriter(saveColor(_stream, _currentColor))
-				}
+				nextSlice = z == _maxs.z;
 			}
-			_count = 0;
-			wrapSaveWriter(_stream.writeUInt32(qb::NEXT_SLICE_FLAG));
+			if (nextSlice) {
+				if (_count > 3) {
+					wrapSaveWriter(_stream.writeUInt32(qb::RLE_FLAG))
+					wrapSaveWriter(_stream.writeUInt32(_count))
+					wrapSaveWriter(saveColor(_stream, _currentColor))
+				} else {
+					for (uint32_t i = 0; i < _count; ++i) {
+						wrapSaveWriter(saveColor(_stream, _currentColor))
+					}
+				}
+				_count = 0;
+				wrapSaveWriter(_stream.writeUInt32(qb::NEXT_SLICE_FLAG));
+			}
 		}
 	}
 
@@ -146,7 +154,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 	wrapSave(stream.writeInt32(offset.y));
 	wrapSave(stream.writeInt32(offset.z));
 	voxelutil::VisitorOrder visitOrder = voxelutil::VisitorOrder::ZYX;
-	MatrixWriter writer(stream, node);
+	MatrixWriter writer(stream, node, true);
 	voxelutil::visitVolume(*node.volume(), [&writer] (int x, int y, int z, const voxel::Voxel &voxel) {
 		writer.addVoxel(x, y, z, voxel);
 	}, voxelutil::VisitAll(), visitOrder);
