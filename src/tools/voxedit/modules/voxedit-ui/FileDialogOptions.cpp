@@ -67,12 +67,14 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 			}
 		}
 	} else if (mode == video::OpenFileMode::Save) {
-		if (desc->matchesExtension("qbt")) {
+		if (forceApplyOptions || desc->matchesExtension("qbt")) {
 			ImGui::CheckboxVar("Palette mode", cfg::VoxformatQBTPaletteMode);
 			ImGui::CheckboxVar("Merge compounds", cfg::VoxformatQBTMergeCompounds);
-		} else if (desc->matchesExtension("vox")) {
+		} else if (forceApplyOptions || desc->matchesExtension("vox")) {
 			ImGui::CheckboxVar("Create groups", cfg::VoxformatVOXCreateGroups);
 			ImGui::CheckboxVar("Create layers", cfg::VoxformatVOXCreateLayers);
+		} else if (forceApplyOptions || desc->matchesExtension("qb")) {
+			ImGui::CheckboxVar("Left handed", cfg::VoxformatQbSaveLeftHanded);
 		}
 	}
 }

@@ -8,6 +8,7 @@
 #include "core/Enum.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/Var.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
 #include "voxel/MaterialColor.h"
@@ -132,7 +133,7 @@ public:
 	}
 };
 
-bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const {
+bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node, bool leftHanded) const {
 	const int nameLength = (int)node.name().size();
 	wrapSave(stream.writeUInt8(nameLength));
 	wrapSave(stream.writeString(node.name(), false));
@@ -142,19 +143,34 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 		Log::error("Invalid region");
 		return false;
 	}
-	const glm::ivec3 size = region.getDimensionsInVoxels();
-	wrapSave(stream.writeUInt32(size.x));
-	wrapSave(stream.writeUInt32(size.y));
-	wrapSave(stream.writeUInt32(size.z));
+	const glm::ivec3 &size = region.getDimensionsInVoxels();
+	if (leftHanded) {
+		wrapSave(stream.writeUInt32(size.x));
+		wrapSave(stream.writeUInt32(size.y));
+		wrapSave(stream.writeUInt32(size.z));
+	} else {
+		wrapSave(stream.writeUInt32(size.z));
+		wrapSave(stream.writeUInt32(size.y));
+		wrapSave(stream.writeUInt32(size.x));
+	}
 
-	const int frame = 0;
-	const SceneGraphTransform &transform = node.transform(frame);
-	const glm::ivec3 offset = glm::round(transform.worldTranslation());
-	wrapSave(stream.writeInt32(offset.x));
-	wrapSave(stream.writeInt32(offset.y));
-	wrapSave(stream.writeInt32(offset.z));
+	const KeyFrameIndex keyFrameIdx = 0;
+	const SceneGraphTransform &transform = node.transform(keyFrameIdx);
+	const glm::ivec3 &offset = glm::round(transform.worldTranslation());
+	if (leftHanded) {
+		wrapSave(stream.writeInt32(offset.x));
+		wrapSave(stream.writeInt32(offset.y));
+		wrapSave(stream.writeInt32(offset.z));
+	} else {
+		wrapSave(stream.writeInt32(offset.z));
+		wrapSave(stream.writeInt32(offset.y));
+		wrapSave(stream.writeInt32(offset.x));
+	}
 	voxelutil::VisitorOrder visitOrder = voxelutil::VisitorOrder::ZYX;
-	MatrixWriter writer(stream, node, true);
+	if (!leftHanded) {
+		visitOrder = voxelutil::VisitorOrder::XYZ;
+	}
+	MatrixWriter writer(stream, node, leftHanded);
 	voxelutil::visitVolume(*node.volume(), [&writer] (int x, int y, int z, const voxel::Voxel &voxel) {
 		writer.addVoxel(x, y, z, voxel);
 	}, voxelutil::VisitAll(), visitOrder);
@@ -164,12 +180,14 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	wrapSave(stream.writeUInt32(131331)) // version
 	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
-	wrapSave(stream.writeUInt32((uint32_t)ZAxisOrientation::LeftHanded))
+	const bool leftHanded = core::Var::getSafe(cfg::VoxformatQbSaveLeftHanded)->boolVal();
+	const ZAxisOrientation orientation = leftHanded ? ZAxisOrientation::LeftHanded : ZAxisOrientation::RightHanded;
+	wrapSave(stream.writeUInt32((uint32_t)orientation))
 	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))
 	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
 	wrapSave(stream.writeUInt32((uint32_t)sceneGraph.size()))
 	for (const SceneGraphNode& node : sceneGraph) {
-		if (!saveMatrix(stream, node)) {
+		if (!saveMatrix(stream, node, leftHanded)) {
 			return false;
 		}
 	}
@@ -235,13 +253,16 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	SceneGraphTransform transform;
 	{
 		glm::ivec3 offset(0);
-		wrap(stream.readInt32(offset.x))
-		wrap(stream.readInt32(offset.y))
-		wrap(stream.readInt32(offset.z))
-		Log::debug("Matrix offset: %i:%i:%i", offset.x, offset.y, offset.z);
-		if (state._zAxisOrientation == ZAxisOrientation::RightHanded) {
-			core::exchange(offset.x, offset.z);
+		if (state._zAxisOrientation == ZAxisOrientation::LeftHanded) {
+			wrap(stream.readInt32(offset.x))
+			wrap(stream.readInt32(offset.y))
+			wrap(stream.readInt32(offset.z))
+		} else {
+			wrap(stream.readInt32(offset.z))
+			wrap(stream.readInt32(offset.y))
+			wrap(stream.readInt32(offset.x))
 		}
+		Log::debug("Matrix offset: %i:%i:%i", offset.x, offset.y, offset.z);
 		transform.setWorldTranslation(offset);
 	}
 
@@ -269,10 +290,10 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
 					const voxel::Voxel& voxel = getVoxel(state, stream, palLookup);
-					if (state._zAxisOrientation == ZAxisOrientation::RightHanded) {
-						v->setVoxel((int)z, (int)y, (int)x, voxel);
-					} else {
+					if (state._zAxisOrientation == ZAxisOrientation::LeftHanded) {
 						v->setVoxel((int)x, (int)y, (int)z, voxel);
+					} else {
+						v->setVoxel((int)z, (int)y, (int)x, voxel);
 					}
 				}
 			}
