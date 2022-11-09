@@ -10,6 +10,7 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/SceneGraph.h"
+#include "voxelformat/SceneGraphNode.h"
 
 namespace voxelgenerator {
 
@@ -41,7 +42,7 @@ protected:
 			volume->setVoxel(2, 0, 0, voxel);
 			volume->setVoxel(2, 1, 0, voxel);
 			volume->setVoxel(2, 2, 0, voxel);
-			voxelformat::SceneGraphNode node;
+			voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
 			node.setVolume(volume, true);
 			nodeId = sceneGraph.emplace(core::move(node));
 		}
@@ -77,16 +78,14 @@ TEST_F(LUAGeneratorTest, testExecute) {
 			local maxs = region:maxs()
 			local dim = maxs - mins
 			node:volume():setVoxel(0, 0, 0, color)
-			local match = node:palette().match(255, 0, 0)
+			local match = node:palette():match(255, 0, 0)
 			-- red matches palette index 37
 			if match == 37 then
 				node:volume():setVoxel(1, 0, 0, match)
 			end
-			local colors = node:palette().colors()
+			local colors = node:palette():colors()
 		end
 	)";
-
-	ASSERT_TRUE(voxel::initDefaultPalette());
 
 	voxelformat::SceneGraph sceneGraph;
 	run(sceneGraph, script);

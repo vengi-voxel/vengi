@@ -22,22 +22,7 @@ enum class VoxelType : uint8_t {
 	// this must be 0
 	Air = 0,
 	Transparent,
-	Water,
 	Generic,
-	Grass,
-	Wood,
-	Leaf,
-	LeafFir,
-	LeafPine,
-	Flower,
-	Bloom,
-	Mushroom,
-	Rock,
-	Sand,
-	Cloud,
-	Dirt,
-	Roof,
-	Wall,
 
 	Max
 };
@@ -45,22 +30,7 @@ enum class VoxelType : uint8_t {
 static constexpr const char* VoxelTypeStr[] = {
 	"Air",
 	"Transparent",
-	"Water",
-	"Generic",
-	"Grass",
-	"Wood",
-	"Leaf",
-	"LeafFir",
-	"LeafPine",
-	"Flower",
-	"Bloom",
-	"Mushroom",
-	"Rock",
-	"Sand",
-	"Cloud",
-	"Dirt",
-	"Roof",
-	"Wall"
+	"Generic"
 };
 static_assert(lengthof(VoxelTypeStr) == (int)VoxelType::Max, "voxel type string array size doesn't match the available voxel types");
 
@@ -155,44 +125,12 @@ inline bool isBlocked(VoxelType material) {
 	return material != VoxelType::Air;
 }
 
-inline bool isEnterable(VoxelType material) {
-	return material == VoxelType::Air || material == VoxelType::Water;
-}
-
-inline bool isTransparent(VoxelType material) {
-	return material == VoxelType::Water || material == VoxelType::Transparent;
-}
-
-inline bool isLeaves(VoxelType material) {
-	return material == VoxelType::Leaf;
-}
-
 inline bool isAir(VoxelType material) {
 	return material == VoxelType::Air;
 }
 
-inline bool isWood(VoxelType material) {
-	return material == VoxelType::Wood;
-}
-
-inline bool isGrass(VoxelType material) {
-	return material == VoxelType::Grass;
-}
-
-inline bool isRock(VoxelType material) {
-	return material == VoxelType::Rock;
-}
-
-inline bool isSand(VoxelType material) {
-	return material == VoxelType::Sand;
-}
-
-inline bool isDirt(VoxelType material) {
-	return material == VoxelType::Dirt;
-}
-
-inline bool isFloor(VoxelType material) {
-	return isRock(material) || isDirt(material) || isSand(material) || isGrass(material);
+inline bool isTransparent(VoxelType material) {
+	return material == VoxelType::Transparent;
 }
 
 }

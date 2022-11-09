@@ -328,7 +328,6 @@ SceneGraphNode::SceneGraphNode(SceneGraphNodeType type)
 	// ensure that there is at least one frame
 	SceneGraphKeyFrame frame;
 	_keyFrames.emplace_back(frame);
-	_palette.setValue(&voxel::getPalette());
 }
 
 void SceneGraphNode::setPalette(const voxel::Palette &palette) {
@@ -340,10 +339,20 @@ void SceneGraphNode::setPalette(const voxel::Palette &palette) {
 }
 
 const voxel::Palette &SceneGraphNode::palette() const {
+	if (!_palette.hasValue()) {
+		voxel::Palette palette;
+		palette.nippon();
+		_palette.setValue(palette);
+	}
 	return *_palette.value();
 }
 
 voxel::Palette &SceneGraphNode::palette() {
+	if (!_palette.hasValue()) {
+		voxel::Palette palette;
+		palette.nippon();
+		_palette.setValue(palette);
+	}
 	return *_palette.value();
 }
 

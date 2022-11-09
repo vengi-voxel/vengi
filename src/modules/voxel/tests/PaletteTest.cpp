@@ -3,6 +3,7 @@
  */
 
 #include "voxel/Palette.h"
+#include "core/ArrayLength.h"
 #include "app/tests/AbstractTest.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/PaletteLookup.h"
@@ -163,7 +164,6 @@ TEST_F(PaletteTest, testCreateAndLoadPalette) {
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
 	voxel::Palette palette;
 	EXPECT_TRUE(voxel::Palette::createPalette(img, palette)) << "Failed to create palette image";
-	EXPECT_TRUE(voxel::overridePalette(palette));
 }
 
 } // namespace voxel

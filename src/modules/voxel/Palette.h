@@ -31,7 +31,6 @@ public:
 	PaletteColorArray colors {};
 	PaletteColorArray glowColors {};
 	int colorCount = 0;
-	core::String lua;
 
 	inline uint64_t hash() const {
 		return _hash._hash;

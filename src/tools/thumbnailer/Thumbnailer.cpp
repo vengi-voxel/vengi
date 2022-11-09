@@ -71,10 +71,6 @@ app::AppState Thumbnailer::onRunning() {
 	io::FileStream outStream(outfile);
 	io::FileStream stream(_infile);
 
-	if (!voxel::initDefaultPalette()) {
-		Log::warn("Failed to initialize the default materials");
-	}
-
 	const image::ImagePtr &image = voxelrender::volumeThumbnail(_infile->name(), stream, glm::ivec2(outputSize));
 	if (image) {
 		if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {

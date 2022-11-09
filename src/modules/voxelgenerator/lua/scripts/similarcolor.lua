@@ -15,7 +15,7 @@ function main(node, region, color, density, colors)
 	local volume = node:volume()
 	local cnt = 0
 
-	local newindices = node:palette().similar(color, colors)
+	local newindices = node:palette():similar(color, colors)
 	local visitor = function (volume, x, y, z)
 		local indidx = math.random(1, #newindices)
 		local c = newindices[indidx]

@@ -44,11 +44,10 @@ static bool isHidden(Sampler &srcSampler) {
  * be exactly half of the size of the sourceRegion.
  */
 template<typename SourceVolume, typename DestVolume>
-void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Region& sourceRegion, DestVolume& destVolume, const voxel::Region& destRegion) {
+void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Palette &palette, const voxel::Region& sourceRegion, DestVolume& destVolume, const voxel::Region& destRegion) {
 	core_trace_scoped(RescaleVolume);
 	typename SourceVolume::Sampler srcSampler(sourceVolume);
 
-	const voxel::Palette &palette = voxel::getPalette();
 	core::DynamicArray<glm::vec4> materialColors;
 	palette.toVec4f(materialColors);
 
@@ -207,8 +206,8 @@ void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Region& source
 }
 
 template<typename SourceVolume, typename DestVolume>
-void rescaleVolume(const SourceVolume& sourceVolume, DestVolume& destVolume) {
-	rescaleVolume(sourceVolume, sourceVolume.region(), destVolume, destVolume.region());
+void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Palette &palette, DestVolume& destVolume) {
+	rescaleVolume(sourceVolume, palette, sourceVolume.region(), destVolume, destVolume.region());
 }
 
 }

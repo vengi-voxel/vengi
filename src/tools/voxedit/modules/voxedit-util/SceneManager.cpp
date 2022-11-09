@@ -146,8 +146,8 @@ bool SceneManager::importHeightmap(const core::String& file) {
 		return false;
 	}
 	voxel::RawVolumeWrapper wrapper(v);
-	const voxel::Voxel dirtVoxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
-	const voxel::Voxel grassVoxel = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
+	const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel grassVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 	voxelutil::importHeightmap(wrapper, img, dirtVoxel, grassVoxel);
 	modified(nodeId, wrapper.dirtyRegion());
 	return true;
@@ -167,7 +167,7 @@ bool SceneManager::importColoredHeightmap(const core::String& file) {
 	}
 	voxel::RawVolumeWrapper wrapper(v);
 	voxel::PaletteLookup palLookup(node->palette());
-	const voxel::Voxel dirtVoxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
+	const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	voxelutil::importColoredHeightmap(wrapper, palLookup, img, dirtVoxel);
 	modified(nodeId, wrapper.dirtyRegion());
 	return true;
@@ -427,7 +427,7 @@ void SceneManager::scale(int nodeId) {
 	}
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 	voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
-	voxelutil::rescaleVolume(*srcVolume, *destVolume);
+	voxelutil::rescaleVolume(*srcVolume, _sceneGraph.node(nodeId).palette(), *destVolume);
 	if (!setNewVolume(nodeId, destVolume, true)) {
 		delete destVolume;
 		return;
@@ -1765,20 +1765,9 @@ bool SceneManager::init() {
 		return true;
 	}
 
-	core::String paletteName = core::Var::getSafe(cfg::VoxEditLastPalette)->strVal();
-	if (paletteName.empty()) {
-		paletteName = voxel::Palette::getDefaultPaletteName();
-	}
 	voxel::Palette palette;
-	if (!palette.load(paletteName.c_str())) {
-		Log::warn("Failed to load the palette data");
-	}
-	if (!voxel::initPalette(palette)) {
-		Log::warn("Failed to initialize the palette data for %s, falling back to default", paletteName.c_str());
-		if (!voxel::initDefaultPalette()) {
-			Log::error("Failed to initialize the palette data");
-			return false;
-		}
+	if (!palette.load(core::Var::getSafe(cfg::VoxEditLastPalette)->strVal().c_str())) {
+		palette = voxel::getPalette();
 	}
 	if (!_mementoHandler.init()) {
 		Log::error("Failed to initialize the memento handler");
@@ -2378,7 +2367,6 @@ bool SceneManager::nodeActivate(int nodeId) {
 	}
 	_sceneGraph.setActiveNode(nodeId);
 	const voxel::Palette &palette = node.palette();
-	voxel::overridePalette(palette);
 	for (int i = 0; i < palette.colorCount; ++i) {
 		if (palette.colors[i].a > 0) {
 			_modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, i));

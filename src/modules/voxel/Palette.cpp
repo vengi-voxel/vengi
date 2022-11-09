@@ -324,6 +324,9 @@ bool Palette::load(const image::ImagePtr &img) {
 }
 
 bool Palette::load(const char *paletteName) {
+	if (paletteName == nullptr || paletteName[0] == '\0') {
+		return false;
+	}
 	if (SDL_strncmp(paletteName, "node:", 5) == 0) {
 		if (colorCount == 0) {
 			nippon();
@@ -366,12 +369,6 @@ bool Palette::load(const char *paletteName) {
 	if (!img->isLoaded()) {
 		Log::error("Failed to load image %s", paletteFile->name().c_str());
 		return false;
-	}
-	const io::FilePtr &luaFile = filesystem->open(core::string::format("palette-%s.lua", paletteName));
-	if (luaFile->validHandle()) {
-		lua = luaFile->load();
-	} else {
-		lua = "";
 	}
 	_paletteFilename = paletteFile->name();
 	return load(img);

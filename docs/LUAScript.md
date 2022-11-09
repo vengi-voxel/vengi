@@ -71,7 +71,7 @@ Execute this via console `xs scriptfile 1` where `1` will be the value of `n`. O
 function main(node, region, color)
 	-- find match (palette index) for red in the current palette (RGB value)
 	-- this value can be used in e.g. volume:setVoxel(x, y, z, match)
-	local match = node:palette().match(255, 0, 0)
+	local match = node:palette():match(255, 0, 0)
 	[...]
 end
 ```

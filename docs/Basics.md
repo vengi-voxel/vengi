@@ -69,7 +69,6 @@ detail message line 2
 | computevideo     | [OpenCL](ComputeShaderTool.md) compute shaders                             |
 | console          | Base classes for different kind of consoles                                |
 | core             | String, collections and other foundation classes                           |
-| http             | HTTP server and client                                                     |
 | image            | Image loading and writing                                                  |
 | io               | Stream and file handling                                                   |
 | math             | Based on glm                                                               |

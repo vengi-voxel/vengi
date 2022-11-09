@@ -15,7 +15,6 @@
 class VoxConvert: public app::CommandlineApp {
 private:
 	using Super = app::CommandlineApp;
-	core::VarPtr _palette;
 	core::VarPtr _mergeQuads;
 	core::VarPtr _reuseVertices;
 	core::VarPtr _ambientOcclusion;

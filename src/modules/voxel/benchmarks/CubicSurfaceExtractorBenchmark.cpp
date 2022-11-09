@@ -40,13 +40,6 @@ public:
 		void pageOut(voxel::PagedVolume::Chunk* chunk) override {
 		}
 	};
-
-	bool onInitApp() override {
-		if (!voxel::initDefaultPalette()) {
-			return false;
-		}
-		return true;
-	}
 };
 
 BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractGreedy)(benchmark::State &state) {

@@ -57,7 +57,7 @@ set(TEST_SRCS
 	tests/AoSVXLFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
 	tests/ConvertTest.cpp
-	tests/PaletteTest.cpp
+	tests/FormatPaletteTest.cpp
 	tests/CSMFormatTest.cpp
 	tests/CubFormatTest.cpp
 	tests/GLTFFormatTest.cpp
@@ -94,6 +94,8 @@ set(TEST_SRCS
 	tests/vox_glasses.h
 )
 set(TEST_FILES
+	tests/palette-nippon.png
+
 	tests/qubicle.qb
 	tests/qubicle.qbt
 	tests/qubicle.qef

@@ -23,10 +23,6 @@ app::AppState TestVoxelFont::onInit() {
 		return state;
 	}
 
-	if (!voxel::initDefaultPalette()) {
-		Log::error("Failed to initialize the palette data");
-		return app::AppState::InitFailure;
-	}
 	if (!_rawVolumeRenderer.init(video::getWindowSize())) {
 		Log::error("Failed to initialize the raw volume renderer");
 		return app::AppState::InitFailure;

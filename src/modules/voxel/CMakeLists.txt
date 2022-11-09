@@ -1,7 +1,6 @@
 set(LIB voxel)
 set(SRCS
 	Constants.h
-	RandomVoxel.h RandomVoxel.cpp
 	CubicSurfaceExtractor.h CubicSurfaceExtractor.cpp
 	Face.h Face.cpp
 	MaterialColor.h MaterialColor.cpp
@@ -19,11 +18,7 @@ set(SRCS
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
 )
-set(FILES
-	shared/palette-nippon.lua
-	shared/palette-nippon.png
-)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES util image commonlua)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util image commonlua)
 set(MARCH native)
 #set(MARCH generic)
 # http://christian-seiler.de/projekte/fpmath/

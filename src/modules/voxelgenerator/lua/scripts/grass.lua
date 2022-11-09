@@ -16,9 +16,9 @@ end
 function main(node, region, color, grasscolor, height, density, similarcolors)
 	local volume = node:volume()
 	if grasscolor == -1 then
-		grasscolor = node:palette().match(0, 255, 0)
+		grasscolor = node:palette():match(0, 255, 0)
 	end
-	local newindices = node:palette().similar(grasscolor, similarcolors)
+	local newindices = node:palette():similar(grasscolor, similarcolors)
 
 	local visitor = function (volume, x, y, z)
 		local rndHeight = math.random(1, height)

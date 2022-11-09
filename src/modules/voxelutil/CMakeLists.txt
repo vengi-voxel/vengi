@@ -2,8 +2,6 @@ set(LIB voxelutil)
 set(SRCS
 	AStarPathfinder.h
 	AStarPathfinderImpl.h
-	FloorTrace.h FloorTrace.cpp
-	FloorTraceResult.h
 	ImageUtils.h ImageUtils.cpp
 	Raycast.h
 	Picking.h

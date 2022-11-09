@@ -5,6 +5,7 @@
 #include "LUAGenerator.h"
 #include "commonlua/LUAFunctions.h"
 #include "core/StringUtil.h"
+#include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "lauxlib.h"
 #include "lua.h"
@@ -229,9 +230,9 @@ static int luaVoxel_volumewrapper_importheightmap(lua_State *s) {
 	if (!image || !image->isLoaded()) {
 		return clua_error(s, "Image %s could not get loaded", imageName.c_str());
 	}
-	const voxel::Voxel dirt = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
+	const voxel::Voxel dirt = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	const voxel::Voxel underground = luaVoxel_getVoxel(s, 3, dirt.getColor());
-	const voxel::Voxel grass = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
+	const voxel::Voxel grass = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	const voxel::Voxel surface = luaVoxel_getVoxel(s, 4, grass.getColor());
 	voxelutil::importHeightmap(*volume, image, underground, surface);
 	return 0;
@@ -244,8 +245,8 @@ static int luaVoxel_volumewrapper_importcoloredheightmap(lua_State *s) {
 	if (!image || !image->isLoaded()) {
 		return clua_error(s, "Image %s could not get loaded", imageName.c_str());
 	}
-	voxel::PaletteLookup palLookup(voxel::getPalette());
-	const voxel::Voxel dirt = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
+	voxel::PaletteLookup palLookup(volume->node()->palette());
+	const voxel::Voxel dirt = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	const voxel::Voxel underground = luaVoxel_getVoxel(s, 3, dirt.getColor());
 	voxelutil::importColoredHeightmap(*volume, palLookup, image, underground);
 	return 0;
@@ -287,10 +288,10 @@ static int luaVoxel_volumewrapper_gc(lua_State *s) {
 }
 
 static int luaVoxel_palette_colors(lua_State* s) {
-	const voxel::Palette &palette = voxel::getPalette();
-	lua_createtable(s, palette.colorCount, 0);
-	for (int i = 0; i < palette.colorCount; ++i) {
-		const glm::vec4& c = core::Color::fromRGBA(palette.colors[i]);
+	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	lua_createtable(s, palette->colorCount, 0);
+	for (int i = 0; i < palette->colorCount; ++i) {
+		const glm::vec4& c = core::Color::fromRGBA(palette->colors[i]);
 		lua_pushinteger(s, i + 1);
 		clua_push(s, c);
 		lua_settable(s, -3);
@@ -299,21 +300,21 @@ static int luaVoxel_palette_colors(lua_State* s) {
 }
 
 static int luaVoxel_palette_color(lua_State* s) {
-	const uint8_t color = luaL_checkinteger(s, 1);
-	const voxel::Palette &palette = voxel::getPalette();
-	const glm::vec4& rgba = core::Color::fromRGBA(palette.colors[color]);
+	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t color = luaL_checkinteger(s, 2);
+	const glm::vec4& rgba = core::Color::fromRGBA(palette->colors[color]);
 	return clua_push(s, rgba);
 }
 
 static int luaVoxel_palette_closestmatch(lua_State* s) {
-	const voxel::Palette &palette = voxel::getPalette();
+	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
 	core::DynamicArray<glm::vec4> materialColors;
-	palette.toVec4f(materialColors);
-	const float r = (float)luaL_checkinteger(s, 1) / 255.0f;
-	const float g = (float)luaL_checkinteger(s, 2) / 255.0f;
-	const float b = (float)luaL_checkinteger(s, 3) / 255.0f;
+	palette->toVec4f(materialColors);
+	const float r = (float)luaL_checkinteger(s, 2) / 255.0f;
+	const float g = (float)luaL_checkinteger(s, 3) / 255.0f;
+	const float b = (float)luaL_checkinteger(s, 4) / 255.0f;
 	const int match = core::Color::getClosestMatch(glm::vec4(r, b, g, 1.0f), materialColors);
-	if (match < 0 || match > palette.colorCount) {
+	if (match < 0 || match > palette->colorCount) {
 		return clua_error(s, "Given color index is not valid or palette is not loaded");
 	}
 	lua_pushinteger(s, match);
@@ -321,17 +322,17 @@ static int luaVoxel_palette_closestmatch(lua_State* s) {
 }
 
 static int luaVoxel_palette_similar(lua_State* s) {
-	const int paletteIndex = lua_tointeger(s, 1);
-	const int colorCount = lua_tointeger(s, 2);
-	const voxel::Palette &palette = voxel::getPalette();
-	if (paletteIndex < 0 || paletteIndex >= palette.colorCount) {
+	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	const int paletteIndex = lua_tointeger(s, 2);
+	const int colorCount = lua_tointeger(s, 3);
+	if (paletteIndex < 0 || paletteIndex >= palette->colorCount) {
 		return clua_error(s, "Palette index out of bounds");
 	}
 	core::DynamicArray<glm::vec4> colors;
-	palette.toVec4f(colors);
+	palette->toVec4f(colors);
 	const core::DynamicArray<glm::vec4> materialColors = colors;
 	const glm::vec4 color = colors[paletteIndex];
-	voxel::MaterialColorIndices newColorIndices;
+	core::DynamicArray<uint8_t> newColorIndices;
 	newColorIndices.resize(colorCount);
 	int maxColorIndices = 0;
 	colors.erase(paletteIndex);

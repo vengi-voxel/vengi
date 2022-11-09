@@ -27,7 +27,7 @@
 
 namespace voxelformat {
 
-class PaletteTest : public AbstractVoxFormatTest {
+class FormatPaletteTest : public AbstractVoxFormatTest {
 protected:
 	bool checkNoAlpha(const voxel::Palette &palette) {
 		for (int i = 0; i < palette.colorCount; ++i) {
@@ -150,31 +150,31 @@ protected:
 	}
 };
 
-TEST_F(PaletteTest, testQbToVox) {
+TEST_F(FormatPaletteTest, testQbToVox) {
 	QBFormat rgb;
 	VoxFormat pal;
 	testRGBToPaletteFormat(rgb, "chr_knight.qb", 17, pal, "chr_knight-qbtovox.vox", 17);
 }
 
-TEST_F(PaletteTest, testQbToQb) {
+TEST_F(FormatPaletteTest, testQbToQb) {
 	QBFormat rgb1;
 	QBFormat rgb2;
 	testRGBToRGBFormat(rgb1, "chr_knight.qb", rgb2, "chr_knight-testqbtoqb.qb", 17);
 }
 
-TEST_F(PaletteTest, testQbToQBCL) {
+TEST_F(FormatPaletteTest, testQbToQBCL) {
 	QBFormat rgb1;
 	QBCLFormat rgb2;
 	testRGBToRGBFormat(rgb1, "chr_knight.qb", rgb2, "chr_knight-testqbtoqb.qbcl", 17);
 }
 
-TEST_F(PaletteTest, testVoxToVox) {
+TEST_F(FormatPaletteTest, testVoxToVox) {
 	VoxFormat pal1;
 	VoxFormat pal2;
 	testPaletteToPaletteFormat(pal1, "magicavoxel.vox", pal2, "magicavoxel-testvoxtovox.qb", 255);
 }
 
-TEST_F(PaletteTest, testVoxToQb) {
+TEST_F(FormatPaletteTest, testVoxToQb) {
 	QBFormat rgb;
 	VoxFormat pal;
 	testPaletteToRGBFormat(pal, "magicavoxel.vox", 255, rgb, "magicavoxel-testvoxtoqb.qb", 21);

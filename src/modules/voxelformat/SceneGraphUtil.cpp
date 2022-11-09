@@ -5,6 +5,7 @@
 #include "SceneGraphUtil.h"
 #include "core/Log.h"
 #include "voxel/RawVolume.h"
+#include "voxelformat/SceneGraphNode.h"
 
 namespace voxelformat {
 
@@ -23,8 +24,8 @@ static void copy(const SceneGraphNode &node, SceneGraphNode &target) {
 	target.setVisible(node.visible());
 	target.setLocked(node.locked());
 	target.addProperties(node.properties());
-	target.setPalette(node.palette());
 	if (node.type() == SceneGraphNodeType::Model) {
+		target.setPalette(node.palette());
 		core_assert(node.volume() != nullptr);
 	} else {
 		core_assert(node.volume() == nullptr);

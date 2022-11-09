@@ -38,7 +38,7 @@ protected:
 					const float distance = glm::distance(pos, center);
 					Voxel uVoxelValue;
 					if (distance <= 30.0f) {
-						uVoxelValue = createColorVoxel(VoxelType::Grass, 0);
+						uVoxelValue = createVoxel(VoxelType::Generic, 0);
 					}
 
 					chunk->setVoxel(x, y, z, uVoxelValue);
@@ -63,14 +63,12 @@ public:
 	void SetUp() override {
 		_volData.flushAll();
 		app::AbstractTest::SetUp();
-		ASSERT_TRUE(voxel::initDefaultPalette());
 		_random.setSeed(_seed);
 		_ctx = PagedVolumeWrapper(&_volData, _volData.chunk(_region.getCenter()), _region);
 		VolumePrintThreshold = 10;
 	}
 
 	void TearDown() override {
-		voxel::shutdownMaterialColors();
 		app::AbstractTest::TearDown();
 	}
 };

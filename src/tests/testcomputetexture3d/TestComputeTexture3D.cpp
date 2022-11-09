@@ -38,11 +38,6 @@ app::AppState TestComputeTexture3D::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	if (!voxel::initDefaultPalette()) {
-		Log::error("Failed to initialize the palette data");
-		return app::AppState::InitFailure;
-	}
-
 	initVolume();
 
 	video::clearColor(::core::Color::White);
@@ -58,15 +53,15 @@ void TestComputeTexture3D::initVolume() {
 
 	voxel::Region region(0, 0, 0, width - 1, height - 1, _depth - 1);
 	_volume = std::make_shared<voxel::RawVolume>(region);
-	_volume->setVoxel(0, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
-	_volume->setVoxel(1, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
-	_volume->setVoxel(2, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
-	_volume->setVoxel(0, 1, 1, createVoxel(voxel::VoxelType::Dirt, 0));
-	_volume->setVoxel(1, 1, 1, createVoxel(voxel::VoxelType::Leaf, 0));
-	_volume->setVoxel(2, 1, 1, createVoxel(voxel::VoxelType::Leaf, 0));
-	_volume->setVoxel(0, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
-	_volume->setVoxel(1, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
-	_volume->setVoxel(2, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(0, 1, 0, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(1, 1, 0, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(2, 1, 0, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(0, 1, 1, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(1, 1, 1, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(2, 1, 1, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(0, 1, 2, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(1, 1, 2, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(2, 1, 2, createVoxel(voxel::VoxelType::Generic, 0));
 	const int amount = voxelutil::visitVolume(*_volume.get(), [] (int x, int y, int z, const voxel::Voxel& voxel) {
 	});
 	Log::info("%i voxels", amount);

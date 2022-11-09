@@ -68,22 +68,17 @@ app::AppState TestGPUMC::onInit() {
 		Log::info("write to buffers");
 	}
 
-	if (!voxel::initDefaultPalette()) {
-		Log::error("Failed to initialize the palette data");
-		return app::AppState::InitFailure;
-	}
-
 	voxel::Region region(0, 0, 0, REGION_SIZE - 1, REGION_SIZE - 1, REGION_SIZE - 1);
 	_volume = std::make_shared<voxel::RawVolume>(region);
-	_volume->setVoxel(0, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
-	_volume->setVoxel(1, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
-	_volume->setVoxel(2, 1, 0, createVoxel(voxel::VoxelType::Dirt, 0));
-	_volume->setVoxel(0, 1, 1, createVoxel(voxel::VoxelType::Dirt, 0));
-	_volume->setVoxel(1, 1, 1, createVoxel(voxel::VoxelType::Leaf, 0));
-	_volume->setVoxel(2, 1, 1, createVoxel(voxel::VoxelType::Leaf, 0));
-	_volume->setVoxel(0, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
-	_volume->setVoxel(1, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
-	_volume->setVoxel(2, 1, 2, createVoxel(voxel::VoxelType::Leaf, 0));
+	_volume->setVoxel(0, 1, 0, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(1, 1, 0, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(2, 1, 0, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(0, 1, 1, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(1, 1, 1, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(2, 1, 1, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(0, 1, 2, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(1, 1, 2, createVoxel(voxel::VoxelType::Generic, 0));
+	_volume->setVoxel(2, 1, 2, createVoxel(voxel::VoxelType::Generic, 0));
 	const int amount = voxelutil::visitVolume(*_volume.get(), [] (int x, int y, int z, const voxel::Voxel& voxel) {
 	});
 	Log::info("%i voxels", amount);

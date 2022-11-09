@@ -201,7 +201,7 @@ protected:
 	SceneGraphKeyFrames _keyFrames;
 	core::Buffer<int, 32> _children;
 	core::StringMap<core::String> _properties;
-	core::Optional<voxel::Palette> _palette;
+	mutable core::Optional<voxel::Palette> _palette;
 
 	/**
 	 * @brief Called in emplace() if a parent id is given

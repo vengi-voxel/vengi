@@ -18,6 +18,7 @@
 #include "io/Filesystem.h"
 #include "metric/Metric.h"
 #include "core/TimeProvider.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -86,7 +87,6 @@ app::AppState VoxConvert::onConstruct() {
 	_quads = core::Var::getSafe(cfg::VoxformatQuads);
 	_withColor = core::Var::getSafe(cfg::VoxformatWithcolor);
 	_withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords);
-	_palette = core::Var::getSafe(cfg::VoxelPalette);
 
 	if (!filesystem()->registerPath("scripts/")) {
 		Log::warn("Failed to register lua generator script path");
@@ -185,8 +185,9 @@ app::AppState VoxConvert::onInit() {
 		Log::info("* withColor:         - %s", _withColor->strVal().c_str());
 		Log::info("* withTexCoords:     - %s", _withTexCoords->strVal().c_str());
 	}
-	if (!_palette->strVal().empty()) {
-		Log::info("* palette:           - %s", _palette->strVal().c_str());
+	const core::VarPtr &paletteVar = core::Var::getSafe(cfg::VoxelPalette);
+	if (!paletteVar->strVal().empty()) {
+		Log::info("* palette:           - %s", paletteVar->strVal().c_str());
 	}
 	Log::info("* input files:       - %s", infilesstr.c_str());
 	if (!outfile.empty()) {
@@ -227,10 +228,7 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* export layers:     - %s", (_exportLayers     ? "true" : "false"));
 	Log::info("* resize volumes:    - %s", (_resizeVolumes    ? "true" : "false"));
 
-	voxel::Palette palette;
-	if (palette.load(_palette->strVal().c_str())) {
-		voxel::initPalette(palette);
-	}
+	voxel::Palette palette = voxel::getPalette();
 
 	io::FilePtr outputFile;
 	if (!outfile.empty()) {
@@ -414,13 +412,13 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 			voxel::RawVolume* volume = new voxel::RawVolume(region);
 			voxel::RawVolumeWrapper wrapper(volume);
 			voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
-			const voxel::Voxel dirtVoxel = voxel::createColorVoxel(voxel::VoxelType::Dirt, 0);
+			const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 			if (coloredHeightmap) {
 				voxel::PaletteLookup palLookup;
 				voxelutil::importColoredHeightmap(wrapper, palLookup, image, dirtVoxel);
 				node.setPalette(palLookup.palette());
 			} else {
-				const voxel::Voxel grassVoxel = voxel::createColorVoxel(voxel::VoxelType::Grass, 0);
+				const voxel::Voxel grassVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 				voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
 			}
 			node.setVolume(volume, true);
@@ -617,7 +615,7 @@ void VoxConvert::scale(voxelformat::SceneGraph& sceneGraph) {
 		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 		if (destRegion.isValid()) {
 			voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
-			voxelutil::rescaleVolume(*node.volume(), *destVolume);
+			voxelutil::rescaleVolume(*node.volume(), node.palette(), *destVolume);
 			node.setVolume(destVolume, true);
 		}
 	}
