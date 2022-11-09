@@ -16,7 +16,6 @@
 #include "image/Image.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
-#include "metric/Metric.h"
 #include "core/TimeProvider.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/PaletteLookup.h"
@@ -44,8 +43,8 @@
 #define MaxHeightmapWidth 4096
 #define MaxHeightmapHeight 4096
 
-VoxConvert::VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, timeProvider, core::cpus()) {
+VoxConvert::VoxConvert(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, timeProvider, core::cpus()) {
 	init(ORGANISATION, "voxconvert");
 }
 
@@ -704,7 +703,6 @@ void VoxConvert::translate(const glm::ivec3& pos, voxelformat::SceneGraph& scene
 int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
-	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	VoxConvert app(metric, filesystem, timeProvider);
+	VoxConvert app(filesystem, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

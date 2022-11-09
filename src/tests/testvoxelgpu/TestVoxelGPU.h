@@ -22,7 +22,7 @@ private:
 	void onRenderUI() override;
 	void doRender() override;
 public:
-	TestVoxelGPU(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
+	TestVoxelGPU(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	virtual app::AppState onInit() override;
 	virtual app::AppState onCleanup() override;

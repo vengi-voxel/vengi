@@ -10,8 +10,6 @@
 #include "command/CommandHandler.h"
 #include "io/Filesystem.h"
 #include "core/Common.h"
-#include "metric/Metric.h"
-#include "metric/UDPMetricSender.h"
 #include "core/Log.h"
 #include "core/Tokenizer.h"
 #include "core/concurrent/Concurrency.h"
@@ -48,16 +46,15 @@ static void loop_debug_log(int signo) {
 }
 
 App* App::_staticInstance;
-thread_local std::stack<App::TraceData> App::_traceData;
 
 App* App::getInstance() {
 	core_assert(_staticInstance != nullptr);
 	return _staticInstance;
 }
 
-App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
+App::App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		_filesystem(filesystem), _threadPool(std::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
-		_timeProvider(timeProvider), _metric(metric) {
+		_timeProvider(timeProvider) {
 #if defined(__GLIBC__) && (__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 2) && defined(DEBUG)
 	feenableexcept(FE_DIVBYZERO | FE_INVALID);
 #endif
@@ -73,12 +70,6 @@ App::App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, c
 
 App::~App() {
 	core_trace_set(nullptr);
-	if (_metricSender) {
-		_metricSender->shutdown();
-	}
-	if (_metric) {
-		_metric->shutdown();
-	}
 	Log::shutdown();
 	_threadPool = core::ThreadPoolPtr();
 }
@@ -109,35 +100,16 @@ void App::remBlocker(AppState blockedState) {
 	_blockers[(int)blockedState] = false;
 }
 
-void App::traceBeginFrame(const char *threadName) {
+void App::traceBeginFrame(const char *) {
 }
 
-void App::traceBegin(const char *threadName, const char* name) {
-	_traceData.emplace(TraceData{threadName, name, core::TimeProvider::highResTime()});
+void App::traceBegin(const char *, const char*) {
 }
 
-void App::traceEnd(const char *threadName) {
-	if (_traceBlockUntilNextFrame) {
-		return;
-	}
-	if (_traceData.empty()) {
-		return;
-	}
-	TraceData traceData = _traceData.top();
-	_traceData.pop();
-	const uint64_t dt = core::TimeProvider::highResTime() - traceData.nanos;
-	const uint64_t dtMillis = dt / 1000000lu;
-	_metric->gauge(traceData.name, (uint32_t)dtMillis, {{"thread", traceData.threadName}});
+void App::traceEnd(const char *) {
 }
 
-void App::traceEndFrame(const char *threadName) {
-	if (!_traceBlockUntilNextFrame) {
-		return;
-	}
-	while (!_traceData.empty()) {
-		_traceData.pop();
-	}
-	_traceBlockUntilNextFrame = false;
+void App::traceEndFrame(const char *) {
 }
 
 void App::onFrame() {
@@ -284,19 +256,6 @@ AppState App::onConstruct() {
 		}
 	}
 
-	core::Var::get(cfg::MetricFlavor, "telegraf");
-	const core::String& host = core::Var::get(cfg::MetricHost, "127.0.0.1")->strVal();
-	const int port = core::Var::get(cfg::MetricPort, "8125")->intVal();
-	_metricSender = std::make_shared<metric::UDPMetricSender>(host, port);
-	if (!_metricSender->init()) {
-		Log::warn("Failed to init metric sender");
-		return AppState::Destroy;
-	}
-	if (!_metric->init(_appname.c_str(), _metricSender)) {
-		Log::warn("Failed to init metrics");
-		// no hard error...
-	}
-
 	Log::init();
 
 	Log::debug("%s: " PROJECT_VERSION, _appname.c_str());
@@ -328,7 +287,6 @@ AppState App::onConstruct() {
 }
 
 bool App::toggleTrace() {
-	_traceBlockUntilNextFrame = true;
 	if (core_trace_set(this) == this) {
 		core_trace_set(nullptr);
 		return false;
@@ -713,13 +671,6 @@ AppState App::onCleanup() {
 	_filesystem->shutdown();
 
 	core_trace_shutdown();
-
-	if (_metricSender) {
-		_metricSender->shutdown();
-	}
-	if (_metric) {
-		_metric->shutdown();
-	}
 
 	SDL_Quit();
 

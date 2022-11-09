@@ -7,7 +7,6 @@
 #include "command/Command.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
-#include "metric/Metric.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "voxel/MaterialColor.h"
@@ -15,8 +14,8 @@
 #include "voxelrender/ImageGenerator.h"
 #include "core/Log.h"
 
-Thumbnailer::Thumbnailer(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, timeProvider) {
+Thumbnailer::Thumbnailer(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, timeProvider) {
 	init(ORGANISATION, "thumbnailer");
 	_showWindow = false;
 	_initialLogLevel = SDL_LOG_PRIORITY_ERROR;
@@ -93,7 +92,6 @@ app::AppState Thumbnailer::onCleanup() {
 int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
-	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	Thumbnailer app(metric, filesystem, timeProvider);
+	Thumbnailer app(filesystem, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

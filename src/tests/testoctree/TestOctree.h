@@ -59,7 +59,7 @@ private:
 	void insert();
 	void doRender() override;
 public:
-	TestOctree(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
+	TestOctree(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
 

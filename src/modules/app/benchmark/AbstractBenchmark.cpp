@@ -7,7 +7,6 @@
 #include "core/Var.h"
 #include "command/Command.h"
 #include "io/Filesystem.h"
-#include "metric/Metric.h"
 
 #include <SDL.h>
 
@@ -21,8 +20,7 @@ void AbstractBenchmark::SetUp(benchmark::State& st) {
 	SDL_SetAssertionHandler(Test_AssertionHandler, nullptr);
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	_benchmarkApp = new BenchmarkApp(metric, filesystem, timeProvider, this);
+	_benchmarkApp = new BenchmarkApp(filesystem, timeProvider, this);
 }
 
 void AbstractBenchmark::TearDown(benchmark::State& st) {
@@ -32,8 +30,8 @@ void AbstractBenchmark::TearDown(benchmark::State& st) {
 	_benchmarkApp = nullptr;
 }
 
-AbstractBenchmark::BenchmarkApp::BenchmarkApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark) :
-		Super(metric, filesystem, timeProvider), _benchmark(benchmark) {
+AbstractBenchmark::BenchmarkApp::BenchmarkApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark) :
+		Super(filesystem, timeProvider), _benchmark(benchmark) {
 	init(ORGANISATION, "benchmark");
 	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 	while (_curState < AppState::Running) {

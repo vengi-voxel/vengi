@@ -9,9 +9,8 @@
 #include "video/Texture.h"
 #include "core/Log.h"
 
-TestBloom::TestBloom(const metric::MetricPtr &metric, const io::FilesystemPtr &filesystem,
-					 const core::TimeProviderPtr &timeProvider)
-	: Super(metric, filesystem, timeProvider) {
+TestBloom::TestBloom(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
+	: Super(filesystem, timeProvider) {
 	init(ORGANISATION, "TestBloom");
 	setCameraMotion(false);
 	_allowRelativeMouseMode = false;

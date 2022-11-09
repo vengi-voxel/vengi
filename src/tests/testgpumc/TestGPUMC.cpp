@@ -20,8 +20,8 @@ namespace {
 	const int isolevel = 51;
 }
 
-TestGPUMC::TestGPUMC(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, timeProvider),
+TestGPUMC::TestGPUMC(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, timeProvider),
 		_computeShader(compute::MarchingcubesShader::getInstance()),
 		_computeShaderBuffer(compute::MarchingcubesBufferShader::getInstance()),
 		_renderShader(shader::VertexShader::getInstance()) {

@@ -7,8 +7,8 @@
 #include "video/Camera.h"
 #include "core/Log.h"
 
-TestGLSLGeom::TestGLSLGeom(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, timeProvider) {
+TestGLSLGeom::TestGLSLGeom(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, timeProvider) {
 	init(ORGANISATION, "testglslgeom");
 }
 

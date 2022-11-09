@@ -12,8 +12,8 @@
 #include "core/Log.h"
 #include <glm/gtc/type_ptr.hpp>
 
-TestOctreeVisit::TestOctreeVisit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, timeProvider) {
+TestOctreeVisit::TestOctreeVisit(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, timeProvider) {
 	init(ORGANISATION, "testoctreevisit");
 	setCameraMotion(true);
 	//setRenderPlane(true);

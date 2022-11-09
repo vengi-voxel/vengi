@@ -6,7 +6,6 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "command/Command.h"
-#include "metric/Metric.h"
 #include "core/TimeProvider.h"
 #include "io/Filesystem.h"
 
@@ -28,8 +27,7 @@ core::String AbstractTest::fileToString(const core::String& filename) const {
 void AbstractTest::SetUp() {
 	const io::FilesystemPtr filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
-	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	_testApp = new TestApp(metric, filesystem, timeProvider, this);
+	_testApp = new TestApp(filesystem, timeProvider, this);
 	_testApp->run();
 	const bool isRunning = _testApp->_curState == AppState::Running;
 	ASSERT_TRUE(isRunning) << "Failed to setup the test app properly";
@@ -42,8 +40,8 @@ void AbstractTest::TearDown() {
 	_testApp = nullptr;
 }
 
-AbstractTest::TestApp::TestApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, AbstractTest* test) :
-		Super(metric, filesystem, timeProvider), _test(test) {
+AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, AbstractTest* test) :
+		Super(filesystem, timeProvider), _test(test) {
 	init(ORGANISATION, "test");
 	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 	_argc = ::_argc;

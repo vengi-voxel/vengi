@@ -36,7 +36,7 @@ private:
 	void doRender() override;
 	void onRenderUI() override;
 public:
-	TestShapeBuilder(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
+	TestShapeBuilder(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	virtual app::AppState onInit() override;
 	virtual app::AppState onCleanup() override;

@@ -23,7 +23,7 @@ private:
 
 	void doRender() override;
 public:
-	TestGLSLGeom(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
+	TestGLSLGeom(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	virtual void onRenderUI() override;
 	virtual app::AppState onInit() override;

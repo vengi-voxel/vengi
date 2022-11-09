@@ -71,7 +71,7 @@ private:
 	core::VarPtr _lastOpenedFiles;
 	LastOpenedFiles _lastOpenedFilesRingBuffer;
 	/**
-	* @brief Convert semicolon-separated string into the @c LastOpenedFiles array
+	* @brief Convert semicolon-separated string into the @c _lastOpenedFilesRingBuffer array
 	*/
 	void loadLastOpenedFiles(const core::String &string);
 	void addLastOpenedFile(const core::String &file);

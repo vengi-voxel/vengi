@@ -46,7 +46,7 @@ private:
 	void extractSurfaces();
 	void doRender() override;
 public:
-	TestGPUMC(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
+	TestGPUMC(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	virtual app::AppState onConstruct() override;
 	virtual app::AppState onInit() override;

@@ -21,13 +21,6 @@ class Filesystem;
 typedef std::shared_ptr<Filesystem> FilesystemPtr;
 }
 
-namespace metric {
-class Metric;
-using MetricPtr = std::shared_ptr<Metric>;
-class IMetricSender;
-using IMetricSenderPtr = std::shared_ptr<IMetricSender>;
-}
-
 /**
  * Foundation classes
  */
@@ -120,16 +113,6 @@ protected:
 	core::TimeProviderPtr _timeProvider;
 	core::VarPtr _logLevelVar;
 	core::VarPtr _syslogVar;
-	metric::IMetricSenderPtr _metricSender;
-	metric::MetricPtr _metric;
-	// if you modify the tracing during the frame, we throw away the current frame information
-	core::AtomicBool _traceBlockUntilNextFrame { false };
-	struct TraceData {
-		const char *threadName;
-		const char *name;
-		uint64_t nanos;
-	};
-	static thread_local std::stack<TraceData> _traceData;
 
 	bool toggleTrace();
 
@@ -142,7 +125,7 @@ protected:
 	void setArgs(int argc, char *argv[]);
 
 public:
-	App(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
+	App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~App();
 
 	void init(const core::String& organisation, const core::String& appname);
@@ -278,8 +261,6 @@ public:
 	 */
 	core::TimeProviderPtr timeProvider() const;
 
-	metric::MetricPtr metric() const;
-
 	const core::String& currentWorkingDir() const;
 
 	static App* getInstance();
@@ -302,10 +283,6 @@ inline io::FilesystemPtr App::filesystem() const {
 
 inline core::TimeProviderPtr App::timeProvider() const {
 	return _timeProvider;
-}
-
-inline metric::MetricPtr App::metric() const {
-	return _metric;
 }
 
 inline const core::String& App::appname() const {

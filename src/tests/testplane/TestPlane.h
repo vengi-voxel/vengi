@@ -22,7 +22,7 @@ private:
 
 	void doRender() override;
 public:
-	TestPlane(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
+	TestPlane(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	app::AppState onInit() override;
 	app::AppState onCleanup() override;

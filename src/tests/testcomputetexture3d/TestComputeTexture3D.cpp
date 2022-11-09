@@ -10,8 +10,8 @@
 #include "video/ScopedViewPort.h"
 #include <glm/gtc/type_ptr.hpp>
 
-TestComputeTexture3D::TestComputeTexture3D(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, timeProvider), _renderShader(compute::RenderShader::getInstance()) {
+TestComputeTexture3D::TestComputeTexture3D(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, timeProvider), _renderShader(compute::RenderShader::getInstance()) {
 	init(ORGANISATION, "testcomputetexture3d");
 }
 

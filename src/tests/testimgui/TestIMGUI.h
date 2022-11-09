@@ -16,7 +16,7 @@ private:
 	bool _showMetricsWindow = false;
 
 public:
-	TestIMGUI(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
+	TestIMGUI(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	app::AppState onInit() override;
 	void onRenderUI() override;

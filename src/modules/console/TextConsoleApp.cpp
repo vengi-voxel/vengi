@@ -6,8 +6,8 @@
 
 namespace console {
 
-TextConsoleApp::TextConsoleApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
-		Super(metric, filesystem, timeProvider, threadPoolSize) {
+TextConsoleApp::TextConsoleApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
+		Super(filesystem, timeProvider, threadPoolSize) {
 }
 
 TextConsoleApp::~TextConsoleApp() {

@@ -57,7 +57,7 @@ protected:
 	void exportLayersIntoSingleObjects(voxelformat::SceneGraph& sceneGraph, const core::String &inputfile);
 	void split(const glm::ivec3 &size, voxelformat::SceneGraph& sceneGraph);
 public:
-	VoxConvert(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
+	VoxConvert(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
 	app::AppState onConstruct() override;
 	app::AppState onInit() override;

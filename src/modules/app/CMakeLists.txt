@@ -6,7 +6,7 @@ set(SRCS
 
 set(LIB app)
 
-set(LIBS metric command)
+set(LIBS command)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 if (WINDOWS)
 	# All this windows.h insanities ... giving up on this module

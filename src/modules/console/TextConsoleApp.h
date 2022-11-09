@@ -18,7 +18,7 @@ private:
 
 	TextConsole _console;
 public:
-	TextConsoleApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
+	TextConsoleApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~TextConsoleApp();
 
 	app::AppState onConstruct() override;

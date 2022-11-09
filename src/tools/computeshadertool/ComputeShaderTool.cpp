@@ -15,8 +15,8 @@
 #include <stack>
 #include "core/String.h"
 
-ComputeShaderTool::ComputeShaderTool(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, timeProvider) {
+ComputeShaderTool::ComputeShaderTool(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, timeProvider) {
 	init(ORGANISATION, "computeshadertool");
 	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 }

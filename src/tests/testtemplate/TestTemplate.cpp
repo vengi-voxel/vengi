@@ -4,8 +4,8 @@
 #include "TestTemplate.h"
 #include "testcore/TestAppMain.h"
 
-TestTemplate::TestTemplate(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, timeProvider) {
+TestTemplate::TestTemplate(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, timeProvider) {
 	init(ORGANISATION, "testtemplate");
 }
 

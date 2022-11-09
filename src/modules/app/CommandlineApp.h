@@ -6,7 +6,6 @@
 
 #include "app/App.h"
 #include "core/TimeProvider.h"
-#include "metric/Metric.h"
 
 namespace app {
 
@@ -17,7 +16,7 @@ class CommandlineApp : public app::App {
 private:
 	using Super = app::App;
 public:
-	CommandlineApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
+	CommandlineApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~CommandlineApp();
 
 	virtual app::AppState onConstruct() override;
@@ -29,7 +28,6 @@ public:
 int main(int argc, char *argv[]) { \
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>(); \
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>(); \
-	const metric::MetricPtr& metric = std::make_shared<metric::Metric>(); \
-	consoleAppName app(metric, filesystem, timeProvider); \
+	consoleAppName app(filesystem, timeProvider); \
 	return app.startMainLoop(argc, argv); \
 }

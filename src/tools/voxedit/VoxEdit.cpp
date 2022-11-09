@@ -11,7 +11,6 @@
 #include "io/FormatDescription.h"
 #include "video/WindowedApp.h"
 #include "voxedit-util/Config.h"
-#include "metric/Metric.h"
 #include "core/TimeProvider.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
@@ -26,8 +25,8 @@
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 
-VoxEdit::VoxEdit(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, timeProvider, core::halfcpus()) {
+VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, timeProvider, core::halfcpus()) {
 	init(ORGANISATION, "voxedit");
 	_allowRelativeMouseMode = false;
 }
@@ -312,7 +311,6 @@ app::AppState VoxEdit::onRunning() {
 int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
-	const metric::MetricPtr& metric = std::make_shared<metric::Metric>();
-	VoxEdit app(metric, filesystem, timeProvider);
+	VoxEdit app(filesystem, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

@@ -6,8 +6,8 @@
 #include "core/Color.h"
 #include "core/Log.h"
 
-TestIMGUI::TestIMGUI(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, timeProvider) {
+TestIMGUI::TestIMGUI(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, timeProvider) {
 	init(ORGANISATION, "testimgui");
 }
 

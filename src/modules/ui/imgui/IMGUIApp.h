@@ -64,8 +64,7 @@ protected:
 	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) override;
 	virtual bool handleSDLEvent(SDL_Event& event) override;
 public:
-	IMGUIApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem,
-			const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
+	IMGUIApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~IMGUIApp();
 
 	virtual void beforeUI();

@@ -58,7 +58,7 @@ protected:
 	 */
 	glm::ivec2 _mouseRelativePos;
 
-	WindowedApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
+	WindowedApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 
 	virtual bool handleSDLEvent(SDL_Event& event);
 

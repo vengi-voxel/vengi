@@ -8,8 +8,8 @@
 #include "video/ScopedViewPort.h"
 #include "core/Log.h"
 
-TestGLSLComp::TestGLSLComp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(metric, filesystem, timeProvider) {
+TestGLSLComp::TestGLSLComp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
+		Super(filesystem, timeProvider) {
 	init(ORGANISATION, "testglslcomp");
 }
 

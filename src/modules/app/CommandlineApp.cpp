@@ -8,8 +8,8 @@
 
 namespace app {
 
-CommandlineApp::CommandlineApp(const metric::MetricPtr& metric, const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
-		Super(metric, filesystem, timeProvider, threadPoolSize) {
+CommandlineApp::CommandlineApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
+		Super(filesystem, timeProvider, threadPoolSize) {
 }
 
 CommandlineApp::~CommandlineApp() {

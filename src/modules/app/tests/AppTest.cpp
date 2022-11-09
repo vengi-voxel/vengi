@@ -6,7 +6,6 @@
 #include "core/TimeProvider.h"
 #include "core/ArrayLength.h"
 #include "io/Filesystem.h"
-#include "metric/Metric.h"
 #include <gtest/gtest.h>
 
 namespace app {
@@ -14,7 +13,7 @@ namespace app {
 class TestApp : public App {
 public:
 	TestApp(int argc = 0, const char *args[] = nullptr)
-		: App(std::make_shared<metric::Metric>(), std::make_shared<io::Filesystem>(),
+		: App(std::make_shared<io::Filesystem>(),
 			  std::make_shared<core::TimeProvider>()) {
 		setArgs(argc, (char **)args);
 	}
