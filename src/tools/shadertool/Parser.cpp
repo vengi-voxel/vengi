@@ -215,7 +215,6 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 	}
 
 	simplecpp::Location loc(files);
-	std::stringstream comment;
 
 	BufferBlock uniformBuffer;
 	bool uniformBufferActive = false;
