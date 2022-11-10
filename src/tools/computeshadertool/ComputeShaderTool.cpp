@@ -12,8 +12,8 @@
 #include "Parser.h"
 #include "Util.h"
 #include "util/IncludeUtil.h"
-#include <stack>
 #include "core/String.h"
+#include <simplecpp.h>
 
 ComputeShaderTool::ComputeShaderTool(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider) {
@@ -38,15 +38,15 @@ app::AppState ComputeShaderTool::onConstruct() {
 	return Super::onConstruct();
 }
 
-std::pair<core::String, bool> ComputeShaderTool::getSource(const core::String& file) const {
+core::Pair<core::String, bool> ComputeShaderTool::getSource(const core::String& file) const {
 	const io::FilesystemPtr& fs = filesystem();
 
-	const std::pair<core::String, bool>& retIncludes = util::handleIncludes(file, fs->load(file), _includeDirs);
+	const core::Pair<core::String, bool>& retIncludes = util::handleIncludes(file, fs->load(file), _includeDirs);
 	core::String src = retIncludes.first;
 	int level = 0;
 	bool success = retIncludes.second;
 	while (core::string::contains(src, "#include")) {
-		const std::pair<core::String, bool>& ret = util::handleIncludes(file, src, _includeDirs);
+		const core::Pair<core::String, bool>& ret = util::handleIncludes(file, src, _includeDirs);
 		src = ret.first;
 		success &= ret.second;
 		++level;
@@ -55,7 +55,7 @@ std::pair<core::String, bool> ComputeShaderTool::getSource(const core::String& f
 			break;
 		}
 	}
-	return std::make_pair(src, success);
+	return {src, success};
 }
 
 app::AppState ComputeShaderTool::onRunning() {
@@ -102,7 +102,7 @@ app::AppState ComputeShaderTool::onRunning() {
 	Log::debug("Preparing shader file %s", shaderfile.c_str());
 	_computeFilename = shaderfile + COMPUTE_POSTFIX;
 	const bool changedDir = filesystem()->pushDir(core::string::extractPath(shaderfile));
-	const std::pair<core::String, bool>& computeBuffer = getSource(_computeFilename);
+	const core::Pair<core::String, bool>& computeBuffer = getSource(_computeFilename);
 	if (computeBuffer.first.empty() || !computeBuffer.second) {
 		Log::error("Could not load %s", _computeFilename.c_str());
 		_exitCode = 127;

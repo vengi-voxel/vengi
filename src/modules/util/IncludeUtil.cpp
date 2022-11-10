@@ -10,7 +10,7 @@
 
 namespace util {
 
-std::pair<core::String, bool> handleIncludes(const core::String& filename, const core::String& buffer, const core::List<core::String>& includeDirs, core::List<core::String>* includedFiles) {
+core::Pair<core::String, bool> handleIncludes(const core::String& filename, const core::String& buffer, const core::List<core::String>& includeDirs, core::List<core::String>* includedFiles) {
 	core::String src;
 	const core::String include = "#include";
 	int index = 0;
@@ -83,7 +83,7 @@ std::pair<core::String, bool> handleIncludes(const core::String& filename, const
 			break;
 		}
 	}
-	return std::make_pair(src, success);
+	return {src, success};
 }
 
 }

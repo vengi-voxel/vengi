@@ -7,6 +7,7 @@
 #include "app/CommandlineApp.h"
 #include "Types.h"
 #include "core/collection/List.h"
+#include "core/Pair.h"
 
 /**
  * @brief This tool validates the GLSL shaders and generates c++ code for them.
@@ -34,7 +35,7 @@ protected:
 
 	bool parse(const core::String& filename, const core::String& src, bool vertex);
 	void validate(const core::String& name);
-	std::pair<core::String, bool> getSource(const core::String& file) const;
+	core::Pair<core::String, bool> getSource(const core::String& file) const;
 	bool printInfo();
 public:
 	ShaderTool(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);

@@ -7,8 +7,8 @@
 #include "app/CommandlineApp.h"
 #include "core/collection/StringMap.h"
 #include "core/collection/List.h"
+#include "core/Pair.h"
 #include "Types.h"
-#include <simplecpp.h>
 
 /**
  * @brief This tool validates the compute shaders and generates c++ code for them.
@@ -42,7 +42,7 @@ protected:
 	core::StringMap<core::String> _constants;
 	core::List<core::String> _includeDirs;
 
-	std::pair<core::String, bool> getSource(const core::String& file) const;
+	core::Pair<core::String, bool> getSource(const core::String& file) const;
 	bool parse(const core::String& src);
 public:
 	ComputeShaderTool(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);

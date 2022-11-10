@@ -90,15 +90,15 @@ bool ShaderTool::printInfo() {
 	return true;
 }
 
-std::pair<core::String, bool> ShaderTool::getSource(const core::String& file) const {
+core::Pair<core::String, bool> ShaderTool::getSource(const core::String& file) const {
 	const io::FilesystemPtr& fs = filesystem();
 
-	const std::pair<core::String, bool>& retIncludes = util::handleIncludes(file, fs->load(file), _includeDirs);
+	const core::Pair<core::String, bool>& retIncludes = util::handleIncludes(file, fs->load(file), _includeDirs);
 	core::String src = retIncludes.first;
 	int level = 0;
 	bool success = retIncludes.second;
 	while (core::string::contains(src, "#include")) {
-		const std::pair<core::String, bool>& ret = util::handleIncludes(file, src, _includeDirs);
+		const core::Pair<core::String, bool>& ret = util::handleIncludes(file, src, _includeDirs);
 		src = ret.first;
 		success &= ret.second;
 		++level;
@@ -107,7 +107,7 @@ std::pair<core::String, bool> ShaderTool::getSource(const core::String& file) co
 			break;
 		}
 	}
-	return std::make_pair(src, success);
+	return {src, success};
 }
 
 app::AppState ShaderTool::onRunning() {
@@ -166,7 +166,7 @@ app::AppState ShaderTool::onRunning() {
 	const core::String& templateConstantsBuffer = _constantsTemplateFile.empty() ? "" : fs->load(_constantsTemplateFile);
 
 	const core::String& computeFilename = _shaderfile + COMPUTE_POSTFIX;
-	std::pair<core::String, bool> computeBuffer = getSource(computeFilename);
+	core::Pair<core::String, bool> computeBuffer = getSource(computeFilename);
 	if (!computeBuffer.first.empty()) {
 		if (!computeBuffer.second) {
 			Log::error("Failed to parse compute shader %s", _shaderfile.c_str());
@@ -202,7 +202,7 @@ app::AppState ShaderTool::onRunning() {
 	}
 
 	const core::String& fragmentFilename = _shaderfile + FRAGMENT_POSTFIX;
-	const std::pair<core::String, bool>& fragmentBuffer = getSource(fragmentFilename);
+	const core::Pair<core::String, bool>& fragmentBuffer = getSource(fragmentFilename);
 	if (fragmentBuffer.first.empty() || !fragmentBuffer.second) {
 		Log::error("Could not load %s", fragmentFilename.c_str());
 		_exitCode = 127;
@@ -210,7 +210,7 @@ app::AppState ShaderTool::onRunning() {
 	}
 
 	const core::String& vertexFilename = _shaderfile + VERTEX_POSTFIX;
-	const std::pair<core::String, bool>& vertexBuffer = getSource(vertexFilename);
+	const core::Pair<core::String, bool>& vertexBuffer = getSource(vertexFilename);
 	if (vertexBuffer.first.empty() || !vertexBuffer.second) {
 		Log::error("Could not load %s", vertexFilename.c_str());
 		_exitCode = 127;
@@ -218,7 +218,7 @@ app::AppState ShaderTool::onRunning() {
 	}
 
 	const core::String& geometryFilename = _shaderfile + GEOMETRY_POSTFIX;
-	const std::pair<core::String, bool>& geometryBuffer = getSource(geometryFilename);
+	const core::Pair<core::String, bool>& geometryBuffer = getSource(geometryFilename);
 
 	const core::String& fragmentSrcSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, false, &_includes);
 	const core::String& vertexSrcSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, false, &_includes);
