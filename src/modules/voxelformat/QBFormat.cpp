@@ -14,6 +14,7 @@
 #include "voxel/PaletteLookup.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 
@@ -28,6 +29,13 @@ const int NEXT_SLICE_FLAG = 6;
 		return false; \
 	}
 
+#define wrapSaveWriter(write) \
+	if ((write) == false) { \
+		Log::error("Could not save qb file: " CORE_STRINGIFY(write) " failed"); \
+		_error = true; \
+		return; \
+	}
+
 #define wrap(read) \
 	if ((read) != 0) { \
 		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read)); \
@@ -40,14 +48,81 @@ const int NEXT_SLICE_FLAG = 6;
 		return false; \
 	}
 
-static bool saveColor(io::WriteStream &stream, core::RGBA color) {
-	// VisibilityMask::AlphaChannelVisibleByValue
-	wrapSave(stream.writeUInt8(color.r))
-	wrapSave(stream.writeUInt8(color.g))
-	wrapSave(stream.writeUInt8(color.b))
-	wrapSave(stream.writeUInt8(color.a > 0 ? 255 : 0))
-	return true;
-}
+class MatrixWriter {
+private:
+	io::SeekableWriteStream& _stream;
+	const voxel::RawVolume *_volume;
+	const voxel::Palette& _palette;
+	const int _maxsY;
+	const int _maxsX;
+
+	bool _error = false;
+	core::RGBA _currentColor;
+	uint32_t _count = 0;
+
+	bool saveColor(io::WriteStream &stream, core::RGBA color) {
+		// VisibilityMask::AlphaChannelVisibleByValue
+		wrapSave(stream.writeUInt8(color.r))
+		wrapSave(stream.writeUInt8(color.g))
+		wrapSave(stream.writeUInt8(color.b))
+		wrapSave(stream.writeUInt8(color.a > 0 ? 255 : 0))
+		return true;
+	}
+
+public:
+	MatrixWriter(io::SeekableWriteStream& stream, const voxelformat::SceneGraphNode &node)
+		: _stream(stream), _volume(node.volume()), _palette(node.palette()), _maxsY(node.region().getUpperY()),
+		  _maxsX(node.region().getUpperX()) {
+	}
+
+	void addVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
+		if (_error) {
+			return;
+		}
+		constexpr voxel::Voxel Empty;
+		core::RGBA newColor;
+		if (voxel == Empty) {
+			newColor = 0u;
+			Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
+		} else {
+			newColor = _palette.colors[voxel.getColor()];
+			Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
+					x, y, z, (int)voxel.getColor(), (int)newColor.r, (int)newColor.g, (int)newColor.b, (int)newColor.a);
+		}
+
+		if (newColor != _currentColor) {
+			if (_count > 3) {
+				wrapSaveWriter(_stream.writeUInt32(qb::RLE_FLAG))
+				wrapSaveWriter(_stream.writeUInt32(_count))
+				wrapSaveWriter(saveColor(_stream, _currentColor))
+			} else {
+				for (uint32_t i = 0; i < _count; ++i) {
+					wrapSaveWriter(saveColor(_stream, _currentColor))
+				}
+			}
+			_count = 0;
+			_currentColor = newColor;
+		}
+		_count++;
+		if (y == _maxsY && x == _maxsX) {
+			if (_count > 3) {
+				wrapSaveWriter(_stream.writeUInt32(qb::RLE_FLAG))
+				wrapSaveWriter(_stream.writeUInt32(_count))
+				wrapSaveWriter(saveColor(_stream, _currentColor))
+			} else {
+				for (uint32_t i = 0; i < _count; ++i) {
+					wrapSaveWriter(saveColor(_stream, _currentColor))
+				}
+			}
+			_count = 0;
+			wrapSaveWriter(_stream.writeUInt32(qb::NEXT_SLICE_FLAG));
+		}
+	}
+
+	bool success() const {
+		return !_error;
+	}
+};
 
 bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node) const {
 	const int nameLength = (int)node.name().size();
@@ -70,60 +145,12 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 	wrapSave(stream.writeInt32(offset.x));
 	wrapSave(stream.writeInt32(offset.y));
 	wrapSave(stream.writeInt32(offset.z));
-
-	constexpr voxel::Voxel Empty;
-
-	const glm::ivec3& mins = region.getLowerCorner();
-	const glm::ivec3& maxs = region.getUpperCorner();
-
-	core::RGBA currentColor;
-	uint32_t count = 0;
-
-	const voxel::RawVolume *v = node.volume();
-	const voxel::Palette& palette = node.palette();
-	for (int z = mins.z; z <= maxs.z; ++z) {
-		for (int y = mins.y; y <= maxs.y; ++y) {
-			for (int x = mins.x; x <= maxs.x; ++x) {
-				const voxel::Voxel& voxel = v->voxel(x, y, z);
-				core::RGBA newColor;
-				if (voxel == Empty) {
-					newColor = 0u;
-					Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
-				} else {
-					newColor = palette.colors[voxel.getColor()];
-					Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
-							x, y, z, (int)voxel.getColor(), (int)newColor.r, (int)newColor.g, (int)newColor.b, (int)newColor.a);
-				}
-
-				if (newColor != currentColor) {
-					if (count > 3) {
-						wrapSave(stream.writeUInt32(qb::RLE_FLAG))
-						wrapSave(stream.writeUInt32(count))
-						wrapSave(saveColor(stream, currentColor))
-					} else {
-						for (uint32_t i = 0; i < count; ++i) {
-							wrapSave(saveColor(stream, currentColor))
-						}
-					}
-					count = 0;
-					currentColor = newColor;
-				}
-				count++;
-			}
-		}
-		if (count > 3) {
-			wrapSave(stream.writeUInt32(qb::RLE_FLAG))
-			wrapSave(stream.writeUInt32(count))
-			wrapSave(saveColor(stream, currentColor))
-		} else {
-			for (uint32_t i = 0; i < count; ++i) {
-				wrapSave(saveColor(stream, currentColor))
-			}
-		}
-		count = 0;
-		wrapSave(stream.writeUInt32(qb::NEXT_SLICE_FLAG));
-	}
-	return true;
+	voxelutil::VisitorOrder visitOrder = voxelutil::VisitorOrder::ZYX;
+	MatrixWriter writer(stream, node);
+	voxelutil::visitVolume(*node.volume(), [&writer] (int x, int y, int z, const voxel::Voxel &voxel) {
+		writer.addVoxel(x, y, z, voxel);
+	}, voxelutil::VisitAll(), visitOrder);
+	return writer.success();
 }
 
 bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
