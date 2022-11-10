@@ -19,9 +19,9 @@ protected:
 TEST_F(VolumeRotatorTest, testRotateAxisZ) {
 	const voxel::Region region(-1, 1);
 	voxel::RawVolume smallVolume(region);
-	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
-	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, createVoxel(voxel::VoxelType::Generic, 1)));
-	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(1)));
+	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, voxel::createVoxel(1)));
 	voxel::RawVolume* rotated = voxelutil::rotateAxis(&smallVolume, math::Axis::Z);
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	EXPECT_EQ(voxel::VoxelType::Generic, rotated->voxel(0, 0, 0).getMaterial()) << *rotated;
@@ -33,9 +33,9 @@ TEST_F(VolumeRotatorTest, testRotateAxisZ) {
 TEST_F(VolumeRotatorTest, testRotateAxisY) {
 	const voxel::Region region(-1, 1);
 	voxel::RawVolume smallVolume(region);
-	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
-	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, createVoxel(voxel::VoxelType::Generic, 1)));
-	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(1)));
+	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, voxel::createVoxel(1)));
 	voxel::RawVolume* rotated = voxelutil::rotateAxis(&smallVolume, math::Axis::Y);
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	EXPECT_EQ(voxel::VoxelType::Generic, rotated->voxel(0, 0, 0).getMaterial()) << *rotated;
@@ -47,9 +47,9 @@ TEST_F(VolumeRotatorTest, testRotateAxisY) {
 TEST_F(VolumeRotatorTest, testRotateAxisX) {
 	const voxel::Region region(-1, 1);
 	voxel::RawVolume smallVolume(region);
-	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
-	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, createVoxel(voxel::VoxelType::Generic, 1)));
-	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(1)));
+	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, voxel::createVoxel(1)));
 	voxel::RawVolume* rotated = voxelutil::rotateAxis(&smallVolume, math::Axis::X);
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	EXPECT_EQ(voxel::VoxelType::Generic, rotated->voxel(0, 0, 0).getMaterial()) << *rotated;
@@ -62,9 +62,9 @@ TEST_F(VolumeRotatorTest, testRotate45Y) {
 	const voxel::Region region(0, 10);
 	voxel::RawVolume smallVolume(region);
 	glm::ivec3 pos = region.getCenter();
-	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y++, pos.z, createVoxel(voxel::VoxelType::Generic, 0)));
-	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y++, pos.z, createVoxel(voxel::VoxelType::Generic, 0)));
-	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y++, pos.z, createVoxel(voxel::VoxelType::Generic, 0)));
+	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y++, pos.z, voxel::createVoxel(0)));
+	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y++, pos.z, voxel::createVoxel(0)));
+	EXPECT_TRUE(smallVolume.setVoxel(pos.x, pos.y++, pos.z, voxel::createVoxel(0)));
 
 	voxel::RawVolume* rotated = voxelutil::rotateVolume(&smallVolume, glm::ivec3(0, 45, 0), region.getPivot());
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";

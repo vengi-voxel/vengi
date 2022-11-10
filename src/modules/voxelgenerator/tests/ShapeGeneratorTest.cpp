@@ -28,7 +28,7 @@ protected:
 	static constexpr int _width { 32 };
 	static constexpr int _height { 32 };
 	static constexpr int _depth { 32 };
-	static constexpr voxel::Voxel _voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	static constexpr voxel::Voxel _voxel = voxel::createVoxel(1);
 	voxel::RawVolume *_volume = nullptr;
 
 	void verify(const char* filename) {

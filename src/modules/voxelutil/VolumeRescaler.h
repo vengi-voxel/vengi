@@ -106,7 +106,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Palette &palet
 					}
 					const glm::vec4 avgColor(avgColorRed / colorContributors, avgColorGreen / colorContributors, avgColorBlue / colorContributors, 1.0f);
 					const int index = core::Color::getClosestMatch(avgColor, materialColors);
-					voxel::Voxel voxel = createVoxel(voxel::VoxelType::Generic, index);
+					voxel::Voxel voxel = voxel::createVoxel(index);
 					destVolume.setVoxel(dstPos, voxel);
 				} else {
 					const voxel::Voxel voxelAir;
@@ -198,7 +198,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Palette &palet
 
 				const glm::vec4 avgColor(totalRed / totalExposedFaces, totalGreen / totalExposedFaces, totalBlue / totalExposedFaces, 1.0f);
 				const int index = core::Color::getClosestMatch(avgColor, materialColors);
-				const voxel::Voxel voxel = createVoxel(voxel::VoxelType::Generic, index);
+				const voxel::Voxel voxel = voxel::createVoxel(index);
 				destVolume.setVoxel(dstPos, voxel);
 			}
 		}

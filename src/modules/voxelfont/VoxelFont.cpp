@@ -126,7 +126,7 @@ void VoxelFont::shutdown() {
 }
 
 bool VoxelFont::renderGlyphs(const char* string) {
-	static const voxel::Voxel& voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	static const voxel::Voxel& voxel = voxel::createVoxel(1);
 	const char **s = &string;
 	int spaceWidth = 0;
 	int chars = 0;

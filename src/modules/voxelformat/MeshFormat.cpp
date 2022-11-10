@@ -240,13 +240,13 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 		const glm::vec4 &color = pos.avgColor();
 		uint8_t addedPaletteIndex = 0;
 		palette.addColorToPalette(core::Color::getRGBA(color), false, &addedPaletteIndex);
-		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, addedPaletteIndex);
+		const voxel::Voxel voxel = voxel::createVoxel(addedPaletteIndex);
 		wrapper.setVoxel(entry->first, voxel);
 	}
 	node.setPalette(palette);
 	if (fillHollow) {
 		Log::debug("fill hollows");
-		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, FillColorIndex);
+		const voxel::Voxel voxel = voxel::createVoxel(FillColorIndex);
 		voxelutil::fillHollow(wrapper, voxel);
 	}
 }

@@ -188,7 +188,7 @@ static voxel::Voxel luaVoxel_getVoxel(lua_State *s, int index, int defaultColor 
 	if (color == -1) {
 		return voxel::createVoxel(voxel::VoxelType::Air, 0);
 	}
-	return voxel::createVoxel(voxel::VoxelType::Generic, color);
+	return voxel::createVoxel(color);
 }
 
 static math::Axis luaVoxel_getAxis(lua_State *s, int index) {
@@ -230,9 +230,9 @@ static int luaVoxel_volumewrapper_importheightmap(lua_State *s) {
 	if (!image || !image->isLoaded()) {
 		return clua_error(s, "Image %s could not get loaded", imageName.c_str());
 	}
-	const voxel::Voxel dirt = voxel::createVoxel(voxel::VoxelType::Generic, 0);
+	const voxel::Voxel dirt = voxel::createVoxel(0);
 	const voxel::Voxel underground = luaVoxel_getVoxel(s, 3, dirt.getColor());
-	const voxel::Voxel grass = voxel::createVoxel(voxel::VoxelType::Generic, 0);
+	const voxel::Voxel grass = voxel::createVoxel(0);
 	const voxel::Voxel surface = luaVoxel_getVoxel(s, 4, grass.getColor());
 	voxelutil::importHeightmap(*volume, image, underground, surface);
 	return 0;
@@ -246,7 +246,7 @@ static int luaVoxel_volumewrapper_importcoloredheightmap(lua_State *s) {
 		return clua_error(s, "Image %s could not get loaded", imageName.c_str());
 	}
 	voxel::PaletteLookup palLookup(volume->node()->palette());
-	const voxel::Voxel dirt = voxel::createVoxel(voxel::VoxelType::Generic, 0);
+	const voxel::Voxel dirt = voxel::createVoxel(0);
 	const voxel::Voxel underground = luaVoxel_getVoxel(s, 3, dirt.getColor());
 	voxelutil::importColoredHeightmap(*volume, palLookup, image, underground);
 	return 0;

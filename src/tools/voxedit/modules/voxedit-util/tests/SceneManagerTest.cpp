@@ -30,7 +30,7 @@ protected:
 			const voxel::Region region{0, 1};
 			ASSERT_TRUE(newScene(true, "newscene", region));
 
-			modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			modifier().setCursorVoxel(voxel::createVoxel(1));
 			modifier().setModifierType(ModifierType::Place);
 			modifier().setPlaneMode(false);
 			modifier().setSingleMode(true);
@@ -41,7 +41,7 @@ protected:
 
 	void testSetVoxel(const glm::ivec3 &pos, int paletteColorIndex = 1) {
 		modifier().setCursorPosition(pos, voxel::FaceNames::NegativeX);
-		modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, paletteColorIndex));
+		modifier().setCursorVoxel(voxel::createVoxel(paletteColorIndex));
 		modifier().aabbStart();
 		const int nodeId = sceneGraph().activeNode();
 		voxel::RawVolume *v = volume(nodeId);

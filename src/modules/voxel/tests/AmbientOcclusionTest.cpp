@@ -18,27 +18,27 @@ protected:
 TEST_F(AmbientOcclusionTest, testAmbientOcclusion) {
 	_volData.flushAll();
 
-	_volData.setVoxel(1, 2, 1, createVoxel(VoxelType::Generic, 0));
+	_volData.setVoxel(1, 2, 1, voxel::createVoxel(0));
 
-	_volData.setVoxel(0, 1, 0, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(1, 1, 0, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(2, 1, 0, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(0, 1, 1, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(2, 1, 1, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(0, 1, 2, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(1, 1, 2, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(2, 1, 2, createVoxel(VoxelType::Generic, 0));
+	_volData.setVoxel(0, 1, 0, voxel::createVoxel(0));
+	_volData.setVoxel(1, 1, 0, voxel::createVoxel(0));
+	_volData.setVoxel(2, 1, 0, voxel::createVoxel(0));
+	_volData.setVoxel(0, 1, 1, voxel::createVoxel(0));
+	_volData.setVoxel(1, 1, 1, voxel::createVoxel(0));
+	_volData.setVoxel(2, 1, 1, voxel::createVoxel(0));
+	_volData.setVoxel(0, 1, 2, voxel::createVoxel(0));
+	_volData.setVoxel(1, 1, 2, voxel::createVoxel(0));
+	_volData.setVoxel(2, 1, 2, voxel::createVoxel(0));
 
-	_volData.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(1, 0, 0, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(2, 0, 0, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(0, 0, 1, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(1, 0, 1, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(2, 0, 1, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(0, 0, 2, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(1, 0, 2, createVoxel(VoxelType::Generic, 0));
-	_volData.setVoxel(2, 0, 2, createVoxel(VoxelType::Generic, 0));
+	_volData.setVoxel(0, 0, 0, voxel::createVoxel(0));
+	_volData.setVoxel(1, 0, 0, voxel::createVoxel(0));
+	_volData.setVoxel(2, 0, 0, voxel::createVoxel(0));
+	_volData.setVoxel(0, 0, 1, voxel::createVoxel(0));
+	_volData.setVoxel(1, 0, 1, voxel::createVoxel(0));
+	_volData.setVoxel(2, 0, 1, voxel::createVoxel(0));
+	_volData.setVoxel(0, 0, 2, voxel::createVoxel(0));
+	_volData.setVoxel(1, 0, 2, voxel::createVoxel(0));
+	_volData.setVoxel(2, 0, 2, voxel::createVoxel(0));
 
 	Mesh mesh(1000, 1000);
 	extractCubicMesh(&_volData, _ctx.region(), &mesh, IsQuadNeeded(), _ctx.region().getLowerCorner());

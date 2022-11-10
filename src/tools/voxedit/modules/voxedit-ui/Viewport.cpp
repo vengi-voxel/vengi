@@ -124,7 +124,7 @@ void Viewport::update() {
 						const int dragPalIdx = *(int *)payload->Data;
 						updateViewportTrace(headerSize);
 						ModifierFacade &modifier = sceneMgr().modifier();
-						modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, dragPalIdx));
+						modifier.setCursorVoxel(voxel::createVoxel(dragPalIdx));
 						const int nodeId = sceneMgr().sceneGraph().activeNode();
 						modifier.aabbStart();
 						modifier.aabbAction(sceneMgr().volume(nodeId),

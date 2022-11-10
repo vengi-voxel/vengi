@@ -28,8 +28,8 @@ TEST_F(AoSVXLFormatTest, DISABLED_testSave) {
 	const char *filename = "tests-aos.vxl";
 	for (int x = 0; x < region.getWidthInVoxels(); ++x) {
 		for (int z = 0; z < region.getDepthInVoxels(); ++z) {
-			EXPECT_TRUE(layer1.setVoxel(x, 0, z, createVoxel(voxel::VoxelType::Generic, 1)));
-			EXPECT_TRUE(layer1.setVoxel(x, 1, z, createVoxel(voxel::VoxelType::Generic, 1)));
+			EXPECT_TRUE(layer1.setVoxel(x, 0, z, voxel::createVoxel(1)));
+			EXPECT_TRUE(layer1.setVoxel(x, 1, z, voxel::createVoxel(1)));
 		}
 	}
 	SceneGraph sceneGraph;

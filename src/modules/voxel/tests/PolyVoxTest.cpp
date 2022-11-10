@@ -9,27 +9,27 @@ namespace voxel {
 class PolyVoxTest: public AbstractVoxelTest {
 protected:
 	bool pageIn(const voxel::Region& region, const PagedVolume::ChunkPtr& chunk) override {
-		chunk->setVoxel(1, 2, 1, createVoxel(VoxelType::Generic, 0));
+		chunk->setVoxel(1, 2, 1, voxel::createVoxel(0));
 
-		chunk->setVoxel(0, 1, 0, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(1, 1, 0, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(2, 1, 0, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(0, 1, 1, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(2, 1, 1, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(0, 1, 2, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(1, 1, 2, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(2, 1, 2, createVoxel(VoxelType::Generic, 0));
+		chunk->setVoxel(0, 1, 0, voxel::createVoxel(0));
+		chunk->setVoxel(1, 1, 0, voxel::createVoxel(0));
+		chunk->setVoxel(2, 1, 0, voxel::createVoxel(0));
+		chunk->setVoxel(0, 1, 1, voxel::createVoxel(0));
+		chunk->setVoxel(1, 1, 1, voxel::createVoxel(0));
+		chunk->setVoxel(2, 1, 1, voxel::createVoxel(0));
+		chunk->setVoxel(0, 1, 2, voxel::createVoxel(0));
+		chunk->setVoxel(1, 1, 2, voxel::createVoxel(0));
+		chunk->setVoxel(2, 1, 2, voxel::createVoxel(0));
 
-		chunk->setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(1, 0, 0, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(2, 0, 0, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(0, 0, 1, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(1, 0, 1, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(2, 0, 1, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(0, 0, 2, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(1, 0, 2, createVoxel(VoxelType::Generic, 0));
-		chunk->setVoxel(2, 0, 2, createVoxel(VoxelType::Generic, 0));
+		chunk->setVoxel(0, 0, 0, voxel::createVoxel(0));
+		chunk->setVoxel(1, 0, 0, voxel::createVoxel(0));
+		chunk->setVoxel(2, 0, 0, voxel::createVoxel(0));
+		chunk->setVoxel(0, 0, 1, voxel::createVoxel(0));
+		chunk->setVoxel(1, 0, 1, voxel::createVoxel(0));
+		chunk->setVoxel(2, 0, 1, voxel::createVoxel(0));
+		chunk->setVoxel(0, 0, 2, voxel::createVoxel(0));
+		chunk->setVoxel(1, 0, 2, voxel::createVoxel(0));
+		chunk->setVoxel(2, 0, 2, voxel::createVoxel(0));
 		return true;
 	}
 };

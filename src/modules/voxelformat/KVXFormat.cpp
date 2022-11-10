@@ -223,7 +223,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				for (uint8_t i = 0u; i < header.slabzleng; ++i) {
 					uint8_t col;
 					wrap(stream.readUInt8(col))
-					lastCol = voxel::createVoxel(voxel::VoxelType::Generic, col);
+					lastCol = voxel::createVoxel(col);
 					volume->setVoxel((int)x, (int)((zsiz_h - 1) - (header.slabztop + i)), (int)y, lastCol);
 				}
 

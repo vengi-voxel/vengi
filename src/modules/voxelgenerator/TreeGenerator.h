@@ -314,8 +314,8 @@ void createSpaceColonizationTree(Volume& volume, const voxelgenerator::TreeSpace
  */
 template<class Volume>
 void createTree(Volume& volume, const voxelgenerator::TreeContext& ctx, math::Random& random) {
-	const voxel::Voxel trunkVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
-	const voxel::Voxel leavesVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel trunkVoxel = voxel::createVoxel(2);
+	const voxel::Voxel leavesVoxel = voxel::createVoxel(1);
 	if (ctx.cfg.type == TreeType::BranchesEllipsis) {
 		createTreeBranchEllipsis(volume, ctx.branchellipsis, random, trunkVoxel, leavesVoxel);
 	} else if (ctx.cfg.type == TreeType::Ellipsis) {

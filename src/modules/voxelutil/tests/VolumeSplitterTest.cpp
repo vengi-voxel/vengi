@@ -17,7 +17,7 @@ class VolumeSplitterTest: public app::AbstractTest {
 
 TEST_F(VolumeSplitterTest, testSplit) {
 	const voxel::Region region(0, 31);
-	const voxel::Voxel voxel = createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel voxel = voxel::createVoxel(1);
 	core::Vector<voxel::Voxel, 32> voxels;
 	voxels.assign(voxel, region.getHeightInVoxels());
 

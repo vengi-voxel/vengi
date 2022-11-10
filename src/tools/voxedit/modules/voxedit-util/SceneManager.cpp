@@ -146,8 +146,8 @@ bool SceneManager::importHeightmap(const core::String& file) {
 		return false;
 	}
 	voxel::RawVolumeWrapper wrapper(v);
-	const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-	const voxel::Voxel grassVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	const voxel::Voxel dirtVoxel = voxel::createVoxel(1);
+	const voxel::Voxel grassVoxel = voxel::createVoxel(2);
 	voxelutil::importHeightmap(wrapper, img, dirtVoxel, grassVoxel);
 	modified(nodeId, wrapper.dirtyRegion());
 	return true;
@@ -167,7 +167,7 @@ bool SceneManager::importColoredHeightmap(const core::String& file) {
 	}
 	voxel::RawVolumeWrapper wrapper(v);
 	voxel::PaletteLookup palLookup(node->palette());
-	const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
+	const voxel::Voxel dirtVoxel = voxel::createVoxel(0);
 	voxelutil::importColoredHeightmap(wrapper, palLookup, img, dirtVoxel);
 	modified(nodeId, wrapper.dirtyRegion());
 	return true;
@@ -1280,7 +1280,7 @@ void SceneManager::construct() {
 			colorToNewLayer(voxel);
 		} else {
 			const uint8_t index = core::string::toInt(args[0]);
-			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+			const voxel::Voxel voxel = voxel::createVoxel(index);
 			colorToNewLayer(voxel);
 		}
 	}).setHelp("Move the voxels of the current selected palette index or the given index into a new layer");
@@ -1509,7 +1509,7 @@ void SceneManager::construct() {
 			return;
 		}
 		const uint8_t index = core::string::toInt(args[0]);
-		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+		const voxel::Voxel voxel = voxel::createVoxel(index);
 		_modifier.setCursorVoxel(voxel);
 	}).setHelp("Use the given index to select the color from the current palette");
 
@@ -1526,7 +1526,7 @@ void SceneManager::construct() {
 		const voxel::Palette &palette = activePalette();
 		palette.toVec4f(materialColors);
 		const int index = core::Color::getClosestMatch(color, materialColors);
-		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, index);
+		const voxel::Voxel voxel = voxel::createVoxel(index);
 		_modifier.setCursorVoxel(voxel);
 	}).setHelp("Set the current selected color by finding the closest rgb match in the palette");
 
@@ -2369,7 +2369,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 	const voxel::Palette &palette = node.palette();
 	for (int i = 0; i < palette.colorCount; ++i) {
 		if (palette.colors[i].a > 0) {
-			_modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, i));
+			_modifier.setCursorVoxel(voxel::createVoxel(i));
 			break;
 		}
 	}

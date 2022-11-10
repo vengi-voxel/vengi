@@ -159,7 +159,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 				if (ogtVoxel[0] == 0) {
 					continue;
 				}
-				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, ogtVoxel[0] - 1);
+				const voxel::Voxel voxel = voxel::createVoxel(ogtVoxel[0] - 1);
 				if (palette.colors[voxel.getColor()].a != 255) {
 					Log::error("got transparent voxel color for palette index %u", voxel.getColor());
 				}

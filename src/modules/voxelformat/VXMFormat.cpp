@@ -503,7 +503,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				continue;
 			}
 
-			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, matIdx);
+			const voxel::Voxel voxel = voxel::createVoxel(matIdx);
 
 			// left to right, bottom to top, front to back
 			for (int i = idx; i < idx + length; i++) {

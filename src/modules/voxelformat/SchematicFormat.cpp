@@ -135,7 +135,7 @@ bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, SceneGraph 
 			const int y = positions[1].int32(-1);
 			const int z = positions[2].int32(-1);
 			const glm::ivec3 v(x, y, z);
-			volume->setVoxel(v, voxel::createVoxel(voxel::VoxelType::Generic, state));
+			volume->setVoxel(v, voxel::createVoxel(state));
 		}
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(volume, true);
@@ -193,7 +193,7 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, Scen
 			}
 			if (currentPalIdx != 0) {
 				const glm::ivec3 &pos = voxelPosFromIndex(width, depth, index);
-				volume->setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Generic, currentPalIdx));
+				volume->setVoxel(pos, voxel::createVoxel(currentPalIdx));
 			}
 		}
 		++index;
@@ -243,7 +243,7 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, SceneGr
 					} else {
 						currentPalIdx = mcpal[palIdx];
 					}
-					volume->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, currentPalIdx));
+					volume->setVoxel(x, y, z, voxel::createVoxel(currentPalIdx));
 				}
 			}
 		}

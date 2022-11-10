@@ -94,10 +94,10 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					stream.readUInt8(a); // not really alpha - some shading data
 					const core::RGBA rgba(r, g, b);
 					paletteIndex = palLookup.findClosestIndex(rgba);
-					volume->setVoxel(x, flipHeight - y, z, voxel::createVoxel(voxel::VoxelType::Generic, paletteIndex));
+					volume->setVoxel(x, flipHeight - y, z, voxel::createVoxel(paletteIndex));
 				}
 				for (int i = y; i < height; ++i) {
-					volume->setVoxel(x, flipHeight - i, z, voxel::createVoxel(voxel::VoxelType::Generic, paletteIndex));
+					volume->setVoxel(x, flipHeight - i, z, voxel::createVoxel(paletteIndex));
 				}
 				const int lenBottom = header.colorEndIdx - header.colorStartIdx + 1;
 
@@ -152,7 +152,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					stream.readUInt8(a); // not really alpha - some shading data
 					const core::RGBA rgba(r, g, b);
 					paletteIndex = palLookup.findClosestIndex(rgba);
-					volume->setVoxel(x, flipHeight - y, z, voxel::createVoxel(voxel::VoxelType::Generic, paletteIndex));
+					volume->setVoxel(x, flipHeight - y, z, voxel::createVoxel(paletteIndex));
 				}
 				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
 					Log::error("failed to seek");

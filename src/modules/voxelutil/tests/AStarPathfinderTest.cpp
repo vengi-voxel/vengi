@@ -14,7 +14,7 @@ TEST_F(AStarPathfinderTest, test) {
 	voxel::RawVolume volume(voxel::Region(0, 20));
 	for (int x = 0; x < 20; ++x) {
 		for (int z = 0; z < 20; ++z) {
-			volume.setVoxel(x, 0, z, createVoxel(voxel::VoxelType::Generic, 1));
+			volume.setVoxel(x, 0, z, voxel::createVoxel(1));
 		}
 	}
 	const glm::ivec3 start(0, 1, 0);

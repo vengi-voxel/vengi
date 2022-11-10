@@ -38,7 +38,7 @@ protected:
 					const float distance = glm::distance(pos, center);
 					Voxel uVoxelValue;
 					if (distance <= 30.0f) {
-						uVoxelValue = createVoxel(VoxelType::Generic, 0);
+						uVoxelValue = voxel::createVoxel(0);
 					}
 
 					chunk->setVoxel(x, y, z, uVoxelValue);

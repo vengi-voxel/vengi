@@ -226,7 +226,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &da
 						return false;
 					}
 					if (color) {
-						const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
+						const voxel::Voxel voxel = voxel::createVoxel(color);
 						wrapper.setVoxel(sPos, voxel);
 					}
 				}
@@ -301,7 +301,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &da
 					const uint16_t i = sPos.y * MAX_SIZE * MAX_SIZE + sPos.z * MAX_SIZE + sPos.x;
 					const uint8_t color = blocks[i];
 					if (color) {
-						const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
+						const voxel::Voxel voxel = voxel::createVoxel(color);
 						wrapper.setVoxel(sPos, voxel);
 					}
 				}

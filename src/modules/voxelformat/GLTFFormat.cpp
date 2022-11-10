@@ -841,7 +841,7 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node,
 				const glm::vec4 &color = pos.avgColor();
 				uint8_t addedPaletteIndex = 0;
 				palette.addColorToPalette(core::Color::getRGBA(color), false, &addedPaletteIndex);
-				const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, addedPaletteIndex);
+				const voxel::Voxel voxel = voxel::createVoxel(addedPaletteIndex);
 				volume->setVoxel(entry->first, voxel);
 			}
 		}

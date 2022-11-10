@@ -52,7 +52,7 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 			return false;
 		}
 		if (value != 0u) {
-			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, value);
+			const voxel::Voxel voxel = voxel::createVoxel(value);
 			for (uint32_t i = index; i < endIndex; ++i) {
 				const int32_t iy = (int32_t)(i % state._w);
 				const int32_t iz = (int32_t)((i / state._w) % state._h);
