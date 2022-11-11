@@ -3,7 +3,6 @@
  */
 
 #include "VoxelFontRenderer.h"
-#include "core/collection/DynamicArray.h"
 
 namespace voxelrender {
 

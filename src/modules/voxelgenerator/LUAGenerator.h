@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "app/App.h"
 #include "core/IComponent.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"

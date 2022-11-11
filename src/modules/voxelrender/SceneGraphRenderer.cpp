@@ -31,7 +31,6 @@
 #include "core/Algorithm.h"
 #include "core/StandardLib.h"
 #include "VoxelShaderConstants.h"
-#include <SDL.h>
 
 namespace voxelrender {
 

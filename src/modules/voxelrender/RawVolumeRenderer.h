@@ -21,8 +21,6 @@
 #include "ShadowmapInstancedShaderConstants.h"
 #include "voxel/Mesh.h"
 #include "render/Shadow.h"
-#include "video/UniformBuffer.h"
-#include "video/Texture.h"
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"

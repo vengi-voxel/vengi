@@ -4,6 +4,7 @@
 
 #include "LSystem.h"
 #include "core/Tokenizer.h"
+#include "core/Log.h"
 
 namespace voxelgenerator {
 namespace lsystem {
