@@ -178,7 +178,9 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 			_threadPool.enqueue([movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
 				++_runningExtractorTasks;
 				voxel::Mesh mesh(65536, 65536, true);
-				voxel::extractCubicMesh(&movedCopy, finalRegion, &mesh, voxel::IsQuadNeeded(), mins);
+				voxel::Region extractRegion = finalRegion;
+				extractRegion.shiftUpperCorner(1, 1, 1);
+				voxel::extractCubicMesh(&movedCopy, extractRegion, &mesh, voxel::IsQuadNeeded(), mins);
 				_pendingQueue.emplace(mins, idx, core::move(mesh));
 				Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
 				--_runningExtractorTasks;
