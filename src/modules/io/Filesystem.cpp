@@ -14,6 +14,7 @@
 #ifndef __WINDOWS__
 #include <unistd.h>
 #endif
+// TODO: get rid of libuv
 #include <uv.h>
 
 namespace io {
