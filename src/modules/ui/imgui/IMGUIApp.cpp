@@ -371,6 +371,11 @@ app::AppState IMGUIApp::onRunning() {
 	if (renderUI) {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
+		if (_console.isActive()) {
+			if (ImGui::IsPopupOpen(ImGuiID(0), ImGuiPopupFlags_AnyPopupId)) {
+				_console.toggle();
+			}
+		}
 
 		if (_showTexturesDialog) {
 			if (ImGui::Begin("Textures", &_showTexturesDialog)) {
