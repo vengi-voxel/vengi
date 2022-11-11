@@ -6,12 +6,12 @@
 
 #include "File.h"
 #include "FilesystemEntry.h"
+#include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Stack.h"
 #include "core/collection/StringMap.h"
 #include "core/Common.h"
-#include <memory>
 
 struct uv_fs_event_s;
 typedef struct uv_fs_event_s uv_fs_event_t;
@@ -202,6 +202,6 @@ inline const core::String& Filesystem::homePath() const {
 	return _homePath;
 }
 
-typedef std::shared_ptr<Filesystem> FilesystemPtr;
+typedef core::SharedPtr<Filesystem> FilesystemPtr;
 
 }

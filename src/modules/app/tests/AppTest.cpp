@@ -13,7 +13,7 @@ namespace app {
 class TestApp : public App {
 public:
 	TestApp(int argc = 0, const char *args[] = nullptr)
-		: App(std::make_shared<io::Filesystem>(),
+		: App(core::make_shared<io::Filesystem>(),
 			  std::make_shared<core::TimeProvider>()) {
 		setArgs(argc, (char **)args);
 	}

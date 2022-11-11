@@ -11,15 +11,11 @@
 #include "core/collection/List.h"
 #include "core/concurrent/Atomic.h"
 #include "core/SharedPtr.h"
+#include "io/Filesystem.h"
 #include <memory>
 #include <stack>
 
 #define ORGANISATION "vengi"
-
-namespace io {
-class Filesystem;
-typedef std::shared_ptr<Filesystem> FilesystemPtr;
-}
 
 /**
  * Foundation classes

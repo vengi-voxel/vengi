@@ -90,7 +90,7 @@ app::AppState Thumbnailer::onCleanup() {
 }
 
 int main(int argc, char *argv[]) {
-	const io::FilesystemPtr& filesystem = std::make_shared<io::Filesystem>();
+	const io::FilesystemPtr& filesystem = core::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	Thumbnailer app(filesystem, timeProvider);
 	return app.startMainLoop(argc, argv);
