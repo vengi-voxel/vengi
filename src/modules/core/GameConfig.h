@@ -40,14 +40,12 @@ constexpr const char *ClientDebugShadow = "cl_debug_shadow";
 
 constexpr const char *RenderOutline = "r_renderoutline";
 
-constexpr const char *ConsoleCurses = "con_curses";
-
 constexpr const char *CoreMaxFPS = "core_maxfps";
 constexpr const char *CoreLogLevel = "core_loglevel";
 constexpr const char *CoreSysLog = "core_syslog";
 constexpr const char *CorePath = "core_path";
 
-// The size of the chunk that is extracted with each step
+// The size of the mesh chunk
 constexpr const char *VoxelMeshSize = "voxel_meshsize";
 
 constexpr const char *AppHomePath = "app_homepath";

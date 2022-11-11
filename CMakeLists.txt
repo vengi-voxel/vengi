@@ -180,9 +180,6 @@ endif()
 find_host_program(GDB_EXECUTABLE NAMES ${GDB_BINARY} gdb)
 find_host_program(LLDB_EXECUTABLE NAMES ${LLDB_BINARY} lldb)
 
-set(CURSES_NEED_NCURSES True)
-find_package(Curses)
-
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # These includes are needed to let the include for IMPLICIT_DEPENDS for shaders work
