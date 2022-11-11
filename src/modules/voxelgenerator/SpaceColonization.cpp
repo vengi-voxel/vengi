@@ -6,8 +6,6 @@
 #include "core/Common.h"
 #include "core/Log.h"
 
-#include <functional>
-
 namespace voxelgenerator {
 namespace tree {
 
