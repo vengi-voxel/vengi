@@ -61,6 +61,9 @@ bool fs_mkdir(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
 	const int ret = _wmkdir(wpath);
 	SDL_free(wpath);
+	if (ret != 0 && GetLastError() == ERROR_ALREADY_EXISTS) {
+		return true;
+	}
 	return ret == 0;
 }
 
