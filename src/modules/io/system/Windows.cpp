@@ -93,7 +93,7 @@ core::String fs_realpath(const char *path) {
 		return "";
 	}
 	SDL_free(wpath);
-	const char *full = io_StringToUTF8W(wfull);
+	char *full = io_StringToUTF8W(wfull);
 	const core::String str(full);
 	free(full);
 	return str;
@@ -106,7 +106,7 @@ bool fs_stat(const char *path, FilesystemEntry &entry) {
 		if (entry.type == FilesystemEntry::Type::unknown) {
 			entry.type = (s.st_mode & _S_IFDIR) ? FilesystemEntry::Type::dir : FilesystemEntry::Type::file;
 		}
-		entry.mtime = (uint64_t)s.st_mtim.tv_sec * 1000 + s.st_mtim.tv_nsec / 1000000;
+		entry.mtime = (uint64_t)s.st_mtime * 1000;
 		entry.size = s.st_size;
 		return true;
 	}
@@ -117,9 +117,13 @@ core::String fs_readlink(const char *path) {
 	return "";
 }
 
+static int fs_scandir_filter(const struct dirent *dent) {
+	return strcmp(dent->d_name, ".") != 0 && strcmp(dent->d_name, "..") != 0;
+}
+
 core::DynamicArray<FilesystemEntry> fs_scandir(const char *path) {
 	struct dirent **files = nullptr;
-	const int n = scandir(path, &files, fs_scandir_filter, fs_scandir_sort);
+	const int n = scandir(path, &files, fs_scandir_filter, alphasort);
 	core::DynamicArray<FilesystemEntry> entries;
 	entries.reserve(n);
 	for (int i = 0; i < n; ++i) {
