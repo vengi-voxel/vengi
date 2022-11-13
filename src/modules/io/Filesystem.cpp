@@ -20,7 +20,8 @@
 namespace io {
 
 extern bool fs_mkdir(const char *path);
-extern bool fs_remove(const char *path);
+extern bool fs_rmdir(const char *path);
+extern bool fs_unlink(const char *path);
 extern bool fs_exists(const char *path);
 extern bool fs_chdir(const char *path);
 extern core::String fs_realpath(const char *path);
@@ -97,7 +98,7 @@ bool Filesystem::removeFile(const core::String &file) const {
 		Log::error("Can't delete file: No path given");
 		return false;
 	}
-	return fs_remove(file.c_str());
+	return fs_unlink(file.c_str());
 }
 
 bool Filesystem::removeDir(const core::String &dir, bool recursive) const {
@@ -107,7 +108,7 @@ bool Filesystem::removeDir(const core::String &dir, bool recursive) const {
 	}
 
 	if (!recursive) {
-		return fs_remove(dir.c_str());
+		return fs_rmdir(dir.c_str());
 	}
 	// TODO: implement me
 	return false;

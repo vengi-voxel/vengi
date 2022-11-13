@@ -192,10 +192,18 @@ bool fs_mkdir(const char *path) {
 	return false;
 }
 
-bool fs_remove(const char *path) {
-	const int ret = remove(path);
+bool fs_rmdir(const char *path) {
+	const int ret = rmdir(path);
 	if (ret != 0) {
-		Log::error("Failed to remove %s: %s", path, strerror(errno));
+		Log::error("Failed to rmdir %s: %s", path, strerror(errno));
+	}
+	return ret == 0;
+}
+
+bool fs_unlink(const char *path) {
+	const int ret = unlink(path);
+	if (ret != 0) {
+		Log::error("Failed to rmdir %s: %s", path, strerror(errno));
 	}
 	return ret == 0;
 }

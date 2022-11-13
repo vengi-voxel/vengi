@@ -73,12 +73,22 @@ bool fs_mkdir(const char *path) {
 	return false;
 }
 
-bool fs_remove(const char *path) {
+bool fs_unlink(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
-	const int ret = _wremove(wpath);
+	const int ret = _wunlink(wpath);
 	SDL_free(wpath);
 	if (ret != 0) {
-		Log::error("Failed to remove %s: %s", path, strerror(errno));
+		Log::error("Failed to unlink %s: %s", path, strerror(errno));
+	}
+	return ret == 0;
+}
+
+bool fs_rmdir(const char *path) {
+	WCHAR *wpath = io_UTF8ToStringW(path);
+	const int ret = _wrmdir(wpath);
+	SDL_free(wpath);
+	if (ret != 0) {
+		Log::error("Failed to rmdir %s: %s", path, strerror(errno));
 	}
 	return ret == 0;
 }
