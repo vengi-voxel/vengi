@@ -214,7 +214,7 @@ bool fs_stat(const char *path, FilesystemEntry &entry) {
 	if (entry.type == FilesystemEntry::Type::unknown) {
 		entry.type = (s.st_mode & S_IFDIR) ? FilesystemEntry::Type::dir : FilesystemEntry::Type::file;
 	}
-	entry.mtime = (uint64_t)s.st_mtim.tv_sec * 1000 + s.st_mtim.tv_nsec / 1000000;
+	entry.mtime = (uint64_t)s.st_mtime * 1000;
 	entry.size = s.st_size;
 
 	return true;
