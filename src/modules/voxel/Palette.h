@@ -120,7 +120,7 @@ public:
 	void glowToVec4f(core::DynamicArray<glm::vec4> &vec4f) const;
 
 	static const char* getDefaultPaletteName() {
-		return "nippon";
+		return builtIn[0];
 	}
 
 	static core::String extractPaletteName(const core::String& file);
