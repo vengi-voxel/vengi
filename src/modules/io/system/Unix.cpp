@@ -2,6 +2,8 @@
  * @file
  */
 
+#include "core/ArrayLength.h"
+#include "core/collection/DynamicArray.h"
 #include "io/FilesystemEntry.h"
 #include <SDL_platform.h>
 
@@ -16,6 +18,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <dirent.h>
 
 #ifdef __MACOSX__
 #include <sysdir.h>
@@ -208,14 +211,65 @@ bool fs_stat(const char *path, FilesystemEntry &entry) {
 		return false;
 	}
 
-	entry.name = path;
-	entry.type = (s.st_mode & S_IFDIR) ? FilesystemEntry::Type::dir : FilesystemEntry::Type::file;
+	if (entry.type == FilesystemEntry::Type::unknown) {
+		entry.type = (s.st_mode & S_IFDIR) ? FilesystemEntry::Type::dir : FilesystemEntry::Type::file;
+	}
 	entry.mtime = (uint64_t)s.st_mtim.tv_sec * 1000 + s.st_mtim.tv_nsec / 1000000;
 	entry.size = s.st_size;
 
 	return true;
 }
 
+core::String fs_readlink(const char *path) {
+	char buf[4096];
+	ssize_t len = readlink(path, buf, lengthof(buf));
+	if (len == -1) {
+		return "";
+	}
+
+	buf[len] = '\0';
+	return buf;
+}
+
+static int fs_scandir_filter(const struct dirent *dent) {
+	return strcmp(dent->d_name, ".") != 0 && strcmp(dent->d_name, "..") != 0;
+}
+
+static int fs_scandir_sort(const struct dirent **a, const struct dirent **b) {
+	return strcoll((*a)->d_name, (*b)->d_name);
+}
+
+core::DynamicArray<FilesystemEntry> fs_scandir(const char *path) {
+	struct dirent **files = nullptr;
+	const int n = scandir(path, &files, fs_scandir_filter, fs_scandir_sort);
+	core::DynamicArray<FilesystemEntry> entries;
+	entries.reserve(n);
+	for (int i = 0; i < n; ++i) {
+		const struct dirent *ent = files[i];
+		FilesystemEntry entry;
+		entry.name = ent->d_name;
+		switch (ent->d_type) {
+		case DT_DIR:
+			entry.type = FilesystemEntry::Type::dir;
+			break;
+		case DT_REG:
+			entry.type = FilesystemEntry::Type::file;
+			break;
+		case DT_LNK:
+			entry.type = FilesystemEntry::Type::link;
+			break;
+		default:
+			entry.type = FilesystemEntry::Type::unknown;
+			break;
+		}
+		entries.push_back(entry);
+	}
+	for (int i = 0; i < n; i++) {
+		free(files[i]);
+	}
+	free(files);
+	return entries;
+}
 
 } // namespace io
 

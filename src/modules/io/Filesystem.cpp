@@ -9,14 +9,13 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "io/FilesystemEntry.h"
 #include <SDL.h>
 #ifndef __WINDOWS__
 #include <unistd.h>
 #endif
-// TODO: get rid of libuv
-#include <uv.h>
 
 namespace io {
 
@@ -26,18 +25,16 @@ extern bool fs_exists(const char *path);
 extern bool fs_chdir(const char *path);
 extern core::String fs_realpath(const char *path);
 extern bool fs_stat(const char *path, FilesystemEntry &entry);
+extern core::DynamicArray<FilesystemEntry> fs_scandir(const char *path);
+extern core::String fs_readlink(const char *path);
 
 Filesystem::~Filesystem() {
 	shutdown();
 }
 
 bool Filesystem::init(const core::String &organisation, const core::String &appname) {
-	core_assert(_loop == nullptr);
 	_organisation = organisation;
 	_appname = appname;
-
-	_loop = new uv_loop_t;
-	uv_loop_init(_loop);
 
 	char *path = SDL_GetBasePath();
 	if (path == nullptr) {
@@ -150,33 +147,21 @@ bool Filesystem::createDir(const core::String &dir, bool recursive) const {
 
 bool Filesystem::_list(const core::String &directory, core::DynamicArray<FilesystemEntry> &entities,
 					   const core::String &filter) {
-	uv_fs_t req;
-	const int amount = uv_fs_scandir(nullptr, &req, directory.c_str(), 0, nullptr);
-	if (amount < 0) {
-		uv_fs_req_cleanup(&req);
+	const core::DynamicArray<FilesystemEntry> &entries = fs_scandir(directory.c_str());
+	if (entries.empty()) {
 		Log::debug("No files found in %s", directory.c_str());
 		return false;
 	}
-	uv_dirent_t ent;
-	core_memset(&ent, 0, sizeof(ent));
-	while (uv_fs_scandir_next(&req, &ent) != UV_EOF) {
-		FilesystemEntry::Type type = FilesystemEntry::Type::unknown;
-		if (ent.type == UV_DIRENT_DIR) {
-			type = FilesystemEntry::Type::dir;
-		} else if (ent.type == UV_DIRENT_FILE) {
-			type = FilesystemEntry::Type::file;
-		} else if (ent.type == UV_DIRENT_UNKNOWN) {
-			type = FilesystemEntry::Type::unknown;
-		} else if (ent.type == UV_DIRENT_LINK) {
-			uv_fs_t linkReq;
+	for (const FilesystemEntry &ent : entries) {
+		FilesystemEntry entry = ent;
+		core::String fullPath = core::string::path(directory, ent.name);
+		if (ent.type == FilesystemEntry::Type::link) {
 			const core::String pointer = core::string::path(directory, ent.name);
-			if (uv_fs_readlink(nullptr, &linkReq, pointer.c_str(), nullptr) != 0) {
+			const core::String symlink = fs_readlink(pointer.c_str());
+			if (symlink.empty()) {
 				Log::debug("Could not resolve symlink %s", pointer.c_str());
-				uv_fs_req_cleanup(&linkReq);
 				continue;
 			}
-			const core::String symlink((const char *)linkReq.ptr);
-			uv_fs_req_cleanup(&linkReq);
 			if (!filter.empty()) {
 				if (!core::string::fileMatchesMultiple(symlink.c_str(), filter.c_str())) {
 					Log::debug("File %s doesn't match filter %s", symlink.c_str(), filter.c_str());
@@ -184,36 +169,21 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 				}
 			}
 
-			const core::String &fullPath = isRelativePath(symlink) ? core::string::path(directory, symlink) : symlink;
-
-			FilesystemEntry entry;
-			if (!fs_stat(fullPath.c_str(), entry)) {
-				Log::debug("Could not stat file %s", fullPath.c_str());
-				continue;
-			}
-			entry.name = ent.name;
-			entities.push_back(entry);
-			continue;
+			fullPath = isRelativePath(symlink) ? core::string::path(directory, symlink) : symlink;
 		} else {
-			Log::debug("Unknown directory entry found: %s", ent.name);
-			continue;
-		}
-		if (!filter.empty()) {
-			if (!core::string::fileMatchesMultiple(ent.name, filter.c_str())) {
-				Log::debug("Entity %s doesn't match filter %s", ent.name, filter.c_str());
-				continue;
+			if (!filter.empty()) {
+				if (!core::string::fileMatchesMultiple(ent.name.c_str(), filter.c_str())) {
+					Log::debug("Entity %s doesn't match filter %s", ent.name.c_str(), filter.c_str());
+					continue;
+				}
 			}
+
 		}
-		FilesystemEntry entry;
-		const core::String fullPath = core::string::path(directory, ent.name);
-		entry.type = type;
 		if (!fs_stat(fullPath.c_str(), entry)) {
-			Log::warn("Could not stat file %s", fullPath.c_str());
+			Log::debug("Could not stat file %s", fullPath.c_str());
 		}
-		entry.name = ent.name;
 		entities.push_back(entry);
 	}
-	uv_fs_req_cleanup(&req);
 	return true;
 }
 
@@ -232,7 +202,6 @@ bool Filesystem::list(const core::String &directory, core::DynamicArray<Filesyst
 }
 
 void Filesystem::update() {
-	uv_run(_loop, UV_RUN_NOWAIT);
 }
 
 bool Filesystem::chdir(const core::String &directory) {
@@ -240,14 +209,6 @@ bool Filesystem::chdir(const core::String &directory) {
 }
 
 void Filesystem::shutdown() {
-	if (_loop != nullptr) {
-		uv_run(_loop, UV_RUN_NOWAIT);
-		if (uv_loop_close(_loop) != 0) {
-			Log::error("Failed to close the filesystem event loop");
-		}
-		delete _loop;
-		_loop = nullptr;
-	}
 }
 
 core::String Filesystem::absolutePath(const core::String &path) {

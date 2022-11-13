@@ -5,6 +5,8 @@
 #include <SDL_platform.h>
 
 #if defined(__WINDOWS__)
+#include "core/collection/DynamicArray.h"
+#include "io/FilesystemEntry.h"
 #include "core/ArrayLength.h"
 #include "core/String.h"
 #include "core/Log.h"
@@ -101,13 +103,50 @@ bool fs_stat(const char *path, FilesystemEntry &entry) {
 	struct _stat s;
 	const int result = _stat(path, &s);
 	if (result == 0) {
-		entry.name = path;
-		entry.type = (s.st_mode & _S_IFDIR) ? FilesystemEntry::Type::dir : FilesystemEntry::Type::file;
+		if (entry.type == FilesystemEntry::Type::unknown) {
+			entry.type = (s.st_mode & _S_IFDIR) ? FilesystemEntry::Type::dir : FilesystemEntry::Type::file;
+		}
 		entry.mtime = (uint64_t)s.st_mtim.tv_sec * 1000 + s.st_mtim.tv_nsec / 1000000;
 		entry.size = s.st_size;
 		return true;
 	}
 	return false;
+}
+
+core::String fs_readlink(const char *path) {
+	return "";
+}
+
+core::DynamicArray<FilesystemEntry> fs_scandir(const char *path) {
+	struct dirent **files = nullptr;
+	const int n = scandir(path, &files, fs_scandir_filter, fs_scandir_sort);
+	core::DynamicArray<FilesystemEntry> entries;
+	entries.reserve(n);
+	for (int i = 0; i < n; ++i) {
+		const struct dirent *ent = files[i];
+		FilesystemEntry entry;
+		entry.name = ent->d_name;
+		switch (ent->d_type) {
+		case DT_DIR:
+			entry.type = FilesystemEntry::Type::dir;
+			break;
+		case DT_REG:
+			entry.type = FilesystemEntry::Type::file;
+			break;
+		case DT_LNK:
+			entry.type = FilesystemEntry::Type::link;
+			break;
+		default:
+			entry.type = FilesystemEntry::Type::unknown;
+			break;
+		}
+		entries.push_back(entry);
+	}
+	for (int i = 0; i < n; i++) {
+		free(files[i]);
+	}
+	free(files);
+	return entries;
 }
 
 #undef io_StringToUTF8W

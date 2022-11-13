@@ -14,6 +14,7 @@ struct FilesystemEntry {
 	enum class Type : uint8_t {
 		file,
 		dir,
+		link,
 		unknown
 	};
 	Type type = Type::unknown;

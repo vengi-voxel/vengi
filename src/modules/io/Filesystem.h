@@ -13,15 +13,8 @@
 #include "core/collection/StringMap.h"
 #include "core/Common.h"
 
-struct uv_loop_s;
-typedef struct uv_loop_s uv_loop_t;
-
 namespace io {
 
-struct FileWatcher {
-	void *userdata;
-	void (*callback)(void* userdata, const char* file);
-};
 using Paths = core::DynamicArray<core::String>;
 
 enum FilesystemDirectories {
@@ -65,7 +58,6 @@ private:
 	Paths _paths;
 
 	core::Stack<core::String, 32> _dirStack;
-	uv_loop_t *_loop = nullptr;
 
 public:
 	~Filesystem();
