@@ -67,19 +67,6 @@ tracy:
 	$(Q)$(MAKE) -C src/modules/core/tracy/profiler/build/unix release
 	$(Q)src/modules/core/tracy/profiler/build/unix/Tracy-release
 
-update-libuv:
-	$(call UPDATE_GIT,libuv,https://github.com/libuv/libuv.git)
-	rm -rf contrib/libs/libuv/include/uv/*.[ch]
-	rm -rf contrib/libs/libuv/include/*.[ch]
-	rm -rf contrib/libs/libuv/src/unix/*.[ch]
-	rm -rf contrib/libs/libuv/src/win32/*.[ch]
-	rm -rf contrib/libs/libuv/src/*.[ch]
-	cp $(UPDATEDIR)/libuv.sync/include/*.h contrib/libs/libuv/include
-	cp $(UPDATEDIR)/libuv.sync/include/uv/*.h contrib/libs/libuv/include/uv
-	cp $(UPDATEDIR)/libuv.sync/src/unix/*.[ch] contrib/libs/libuv/src/unix
-	cp $(UPDATEDIR)/libuv.sync/src/win/*.[ch] contrib/libs/libuv/src/win
-	cp $(UPDATEDIR)/libuv.sync/src/*.[ch] contrib/libs/libuv/src
-
 update-stb:
 	$(call UPDATE_GIT,stb,https://github.com/nothings/stb.git)
 	cp $(UPDATEDIR)/stb.sync/stb_image.h src/modules/image/stb_image.h
@@ -204,7 +191,7 @@ update-tinyobjloader:
 
 # TODO simpleai support
 # TODO lua support
-updatelibs: update-nuklear update-libuv update-stb update-googletest update-benchmark update-backward update-dearimgui update-glm update-sdl2 update-glslang update-simplecpp
+updatelibs: update-stb update-googletest update-benchmark update-backward update-dearimgui update-glm update-sdl2 update-glslang update-simplecpp
 	$(MAKE) -C $(BUILDDIR) update-libs
 
 update-icons:

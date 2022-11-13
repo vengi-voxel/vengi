@@ -2,12 +2,8 @@
 *:backward/*
 *:benchmark/*
 *:CL/*
-*:flatbuffers/*
 *:glm/*
 *:gtest/*
-*:libenet/*
-*:libuv/*
 *:lua54/*
 *:sdl2/*
-*:SDL2_mixer/*
 *:/usr/include/*

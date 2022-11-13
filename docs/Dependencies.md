@@ -10,7 +10,6 @@
   * glm
   * lua >= 5.4
   * sdl2 > 2.0.16
-  * libuv
   * gtest (and gmock)
   * opencl (optional)
 
@@ -21,24 +20,23 @@ the higher priority. Usually you don't have to install anything of these.
 ## Debian
 
 ```bash
-apt-get install libglm-dev lua5.4 liblua5.4-dev libsdl2-dev opencl-c-headers \
-    wayland-protocols pkg-config libuv1-dev
+apt-get install libglm-dev lua5.4 liblua5.4-dev libsdl2-dev opencl-c-headers wayland-protocols pkg-config
 ```
 
 ## Arch
 
 ```bash
-pacman -Sy git make cmake ninja libuv sdl2 clang
+pacman -Sy git make cmake ninja sdl2 clang
 ```
 
 ## Brew
 
 ```bash
-brew install libuv sdl2
+brew install sdl2
 ```
 
 ## Windows
 
 ```bash
-vcpkg install sdl2 libuv lua glm glslang gtest
+vcpkg install sdl2 lua glm glslang gtest
 ```

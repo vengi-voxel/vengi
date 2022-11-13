@@ -34,4 +34,3 @@ else()
 endif()
 
 add_subdirectory(simplecpp)
-add_subdirectory(libuv)
