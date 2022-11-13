@@ -11,6 +11,7 @@
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
+#include "io/File.h"
 #include "io/FilesystemEntry.h"
 #include <SDL.h>
 #ifndef __WINDOWS__
@@ -156,12 +157,13 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 		Log::debug("No files found in %s", directory.c_str());
 		return false;
 	}
-	for (const FilesystemEntry &ent : entries) {
-		FilesystemEntry entry = ent;
-		core::String fullPath = core::string::path(directory, ent.name);
-		if (ent.type == FilesystemEntry::Type::link) {
-			const core::String pointer = core::string::path(directory, ent.name);
-			const core::String symlink = fs_readlink(pointer.c_str());
+	for (FilesystemEntry entry : entries) {
+		normalizePath(entry.name);
+		core::String fullPath = core::string::path(directory, entry.name);
+		if (entry.type == FilesystemEntry::Type::link) {
+			const core::String pointer = core::string::path(directory, entry.name);
+			core::String symlink = fs_readlink(pointer.c_str());
+			normalizePath(symlink);
 			if (symlink.empty()) {
 				Log::debug("Could not resolve symlink %s", pointer.c_str());
 				continue;
@@ -176,8 +178,8 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 			fullPath = isRelativePath(symlink) ? core::string::path(directory, symlink) : symlink;
 		} else {
 			if (!filter.empty()) {
-				if (!core::string::fileMatchesMultiple(ent.name.c_str(), filter.c_str())) {
-					Log::debug("Entity %s doesn't match filter %s", ent.name.c_str(), filter.c_str());
+				if (!core::string::fileMatchesMultiple(entry.name.c_str(), filter.c_str())) {
+					Log::debug("Entity %s doesn't match filter %s", entry.name.c_str(), filter.c_str());
 					continue;
 				}
 			}
@@ -281,7 +283,8 @@ bool Filesystem::popDir() {
 
 bool Filesystem::pushDir(const core::String &directory) {
 	if (_dirStack.empty()) {
-		const core::String cwd = fs_cwd();
+		core::String cwd = fs_cwd();
+		normalizePath(cwd);
 		_dirStack.push(cwd);
 	}
 	if (!chdir(directory)) {

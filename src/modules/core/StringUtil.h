@@ -97,6 +97,7 @@ extern core::String replaceAll(const core::String& str, const core::String& sear
 core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr);
 
 extern void replaceAllChars(core::String& str, char in, char out);
+extern void replaceAllChars(char* str, char in, char out);
 
 inline core::String replaceAll(const core::String& str, const core::String& searchStr, const core::String& replaceStr) {
 	if (searchStr.size() == 1 && replaceStr.size() == 1) {

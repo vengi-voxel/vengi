@@ -208,7 +208,11 @@ char *urlEncode(const char *inBuf) {
 }
 
 void replaceAllChars(core::String& str, char in, char out) {
-	char *p = (char*)str.c_str();
+	replaceAllChars(str.c_str(), in, out);
+}
+
+void replaceAllChars(char* str, char in, char out) {
+	char *p = str;
 	while (*p != '\0') {
 		if (*p == in) {
 			*p = out;
@@ -216,7 +220,6 @@ void replaceAllChars(core::String& str, char in, char out) {
 		++p;
 	}
 }
-
 core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr) {
 	return replaceAll(str, searchStr, replaceStr, SDL_strlen(replaceStr));
 }

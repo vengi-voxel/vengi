@@ -9,6 +9,7 @@
 #include "io/FilesystemEntry.h"
 #include "core/ArrayLength.h"
 #include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Log.h"
 #include "io/Filesystem.h"
 #include <SDL_stdinc.h>
@@ -43,6 +44,16 @@ static core::String knownFolderPath(REFKNOWNFOLDERID id) {
 	return strpath;
 }
 
+static void denormalizePath(WCHAR* str) {
+	WCHAR *p = str;
+	while (*p != 0) {
+		if (*p == L'/') {
+			*p = L'\\';
+		}
+		++p;
+	}
+}
+
 } // namespace priv
 
 bool initState(io::FilesystemState &state) {
@@ -59,6 +70,7 @@ bool initState(io::FilesystemState &state) {
 
 bool fs_mkdir(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
+	priv::denormalizePath(wpath);
 	const int ret = _wmkdir(wpath);
 	SDL_free(wpath);
 	if (ret == 0) {
@@ -75,6 +87,7 @@ bool fs_mkdir(const char *path) {
 
 bool fs_unlink(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
+	priv::denormalizePath(wpath);
 	const int ret = _wunlink(wpath);
 	SDL_free(wpath);
 	if (ret != 0) {
@@ -85,6 +98,7 @@ bool fs_unlink(const char *path) {
 
 bool fs_rmdir(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
+	priv::denormalizePath(wpath);
 	const int ret = _wrmdir(wpath);
 	SDL_free(wpath);
 	if (ret != 0) {
@@ -95,6 +109,7 @@ bool fs_rmdir(const char *path) {
 
 bool fs_exists(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
+	priv::denormalizePath(wpath);
 	const int ret = _waccess(wpath, 00);
 	SDL_free(wpath);
 	if (ret != 0) {
@@ -105,6 +120,7 @@ bool fs_exists(const char *path) {
 
 bool fs_chdir(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
+	priv::denormalizePath(wpath);
 	const bool ret = SetCurrentDirectoryW(wpath);
 	SDL_free(wpath);
 	if (ret != 0) {
@@ -134,6 +150,7 @@ core::String fs_realpath(const char *path) {
 		return "";
 	}
 	SDL_free(wpath);
+	priv::denormalizePath(wfull);
 	char *full = io_StringToUTF8W(wfull);
 	const core::String str(full);
 	SDL_free(full);
@@ -142,7 +159,10 @@ core::String fs_realpath(const char *path) {
 
 bool fs_stat(const char *path, FilesystemEntry &entry) {
 	struct _stat s;
-	const int ret = _stat(path, &s);
+	WCHAR *wpath = io_UTF8ToStringW(path);
+	priv::denormalizePath(wpath);
+	const int ret = _wstat(wpath, &s);
+	SDL_free(wpath);
 	if (ret == 0) {
 		if (entry.type == FilesystemEntry::Type::unknown) {
 			entry.type = (s.st_mode & _S_IFDIR) ? FilesystemEntry::Type::dir : FilesystemEntry::Type::file;
