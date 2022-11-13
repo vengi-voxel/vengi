@@ -12,6 +12,8 @@
 #include "io/Filesystem.h"
 #include <pwd.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 #ifdef __MACOSX__
 #include <sysdir.h>
@@ -169,6 +171,21 @@ bool initState(io::FilesystemState &state) {
 	}
 
 	return true;
+}
+
+bool fs_mkdir(const char *path) {
+	if (mkdir(path, 0740) != -1) {
+		return true;
+	}
+	return errno == EEXIST;
+}
+
+bool fs_remove(const char *path) {
+	return remove(path) == 0;
+}
+
+bool fs_exists(const char *path) {
+	return access(path, F_OK) == 0;
 }
 
 } // namespace io

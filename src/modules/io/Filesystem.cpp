@@ -19,6 +19,10 @@
 
 namespace io {
 
+extern bool fs_mkdir(const char *path);
+extern bool fs_remove(const char *path);
+extern bool fs_exists(const char *path);
+
 Filesystem::~Filesystem() {
 	shutdown();
 }
@@ -90,8 +94,7 @@ bool Filesystem::removeFile(const core::String &file) const {
 	if (file.empty()) {
 		return false;
 	}
-	uv_fs_t req;
-	return uv_fs_unlink(_loop, &req, file.c_str(), nullptr) == 0;
+	return fs_remove(file.c_str());
 }
 
 bool Filesystem::removeDir(const core::String &dir, bool recursive) const {
@@ -100,8 +103,7 @@ bool Filesystem::removeDir(const core::String &dir, bool recursive) const {
 	}
 
 	if (!recursive) {
-		uv_fs_t req;
-		return uv_fs_rmdir(_loop, &req, dir.c_str(), nullptr) == 0;
+		return fs_remove(dir.c_str());
 	}
 	// TODO: implement me
 	return false;
@@ -113,15 +115,10 @@ bool Filesystem::createDir(const core::String &dir, bool recursive) const {
 	}
 
 	if (!recursive) {
-		uv_fs_t req;
-		// rwx+o, r+g
-		const int retVal = uv_fs_mkdir(nullptr, &req, dir.c_str(), 0740, nullptr);
-		if (retVal != 0 && req.result != UV_EEXIST) {
-			Log::error("Failed to create dir '%s': %s", dir.c_str(), uv_strerror(retVal));
-			uv_fs_req_cleanup(&req);
+		if (!fs_mkdir(dir.c_str())) {
+			Log::error("Failed to create dir '%s'", dir.c_str());
 			return false;
 		}
-		uv_fs_req_cleanup(&req);
 		return true;
 	}
 
@@ -137,16 +134,12 @@ bool Filesystem::createDir(const core::String &dir, bool recursive) const {
 			continue; // if leading / first time is 0 length
 		}
 		const char *dirc = dirpart.c_str();
-		uv_fs_t req;
-		const int retVal = uv_fs_mkdir(nullptr, &req, dirc, 0740, nullptr);
-		if (retVal != 0 && req.result != UV_EEXIST) {
-			Log::debug("Failed to create dir '%s': %s", dirc, uv_strerror(retVal));
+		if (!fs_mkdir(dirc)) {
+			Log::debug("Failed to create dir '%s'", dirc);
 			lastResult = false;
-			uv_fs_req_cleanup(&req);
 			continue;
 		}
 		lastResult = true;
-		uv_fs_req_cleanup(&req);
 	}
 	return lastResult;
 }
@@ -277,11 +270,11 @@ core::String Filesystem::absolutePath(const core::String &path) {
 }
 
 bool Filesystem::isReadableDir(const core::String &name) {
-	uv_fs_t req;
-	if (uv_fs_access(nullptr, &req, name.c_str(), F_OK, nullptr) != 0) {
-		uv_fs_req_cleanup(&req);
+	if (!fs_exists(name.c_str())) {
 		return false;
 	}
+
+	uv_fs_t req;
 	uv_fs_stat(nullptr, &req, name.c_str(), nullptr);
 	const bool dir = (uv_fs_get_statbuf(&req)->st_mode & S_IFDIR) != 0;
 	uv_fs_req_cleanup(&req);
