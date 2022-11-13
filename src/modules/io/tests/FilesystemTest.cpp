@@ -35,12 +35,12 @@ TEST_F(FilesystemTest, testListDirectory) {
 		return first.name > second.name;
 	});
 	if (entities.size() >= 3) {
-		EXPECT_EQ("dir1", entities[0].name);
-		EXPECT_EQ("file1", entities[1].name);
-		EXPECT_EQ("file2", entities[2].name);
-		EXPECT_EQ(io::FilesystemEntry::Type::dir, entities[0].type);
-		EXPECT_EQ(io::FilesystemEntry::Type::file, entities[1].type);
-		EXPECT_EQ(io::FilesystemEntry::Type::file, entities[2].type);
+		EXPECT_EQ("dir1", entities[0].name) << entities[0].name.c_str();
+		EXPECT_EQ("file1", entities[1].name) << entities[1].name.c_str();
+		EXPECT_EQ("file2", entities[2].name) << entities[2].name.c_str();
+		EXPECT_EQ(io::FilesystemEntry::Type::dir, entities[0].type) << entities[0].name.c_str();
+		EXPECT_EQ(io::FilesystemEntry::Type::file, entities[1].type) << entities[1].name.c_str();
+		EXPECT_EQ(io::FilesystemEntry::Type::file, entities[2].type) << entities[2].name.c_str();
 	}
 	fs.shutdown();
 }
@@ -91,6 +91,7 @@ TEST_F(FilesystemTest, testAbsolutePath) {
 	EXPECT_TRUE(fs.createDir("absolutePathInCurDir"));
 	const core::String &absPath = fs.absolutePath("absolutePathInCurDir");
 	EXPECT_NE("", absPath);
+	EXPECT_NE("absolutePathInCurDir", absPath);
 	fs.shutdown();
 }
 

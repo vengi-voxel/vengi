@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "io/FilesystemEntry.h"
 #include <SDL_platform.h>
 
 #if defined(__LINUX__) || defined(__MACOSX__)
@@ -14,6 +15,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #ifdef __MACOSX__
 #include <sysdir.h>
@@ -187,6 +189,33 @@ bool fs_remove(const char *path) {
 bool fs_exists(const char *path) {
 	return access(path, F_OK) == 0;
 }
+
+bool fs_chdir(const char *path) {
+	return chdir(path) == 0;
+}
+
+core::String fs_realpath(const char *path) {
+	const char *rp = realpath(path, nullptr);
+	if (rp == nullptr) {
+		return "";
+	}
+	return rp;
+}
+
+bool fs_stat(const char *path, FilesystemEntry &entry) {
+	struct stat s;
+	if (stat(path, &s) != 0) {
+		return false;
+	}
+
+	entry.name = path;
+	entry.type = (s.st_mode & S_IFDIR) ? FilesystemEntry::Type::dir : FilesystemEntry::Type::file;
+	entry.mtime = (uint64_t)s.st_mtim.tv_sec * 1000 + s.st_mtim.tv_nsec / 1000000;
+	entry.size = s.st_size;
+
+	return true;
+}
+
 
 } // namespace io
 

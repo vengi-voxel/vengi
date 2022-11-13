@@ -16,9 +16,9 @@ struct FilesystemEntry {
 		dir,
 		unknown
 	};
-	Type type;
-	uint64_t size;	/**< size in bytes */
-	uint64_t mtime;	/**< last modification time in millis */
+	Type type = Type::unknown;
+	uint64_t size = 0u;		/**< size in bytes */
+	uint64_t mtime = 0u;	/**< last modification time in millis */
 };
 
 }

@@ -5,19 +5,18 @@
 #include <SDL_platform.h>
 
 #if defined(__WINDOWS__)
+#include "core/ArrayLength.h"
 #include "core/String.h"
 #include "core/Log.h"
 #include "io/Filesystem.h"
 #include <SDL_stdinc.h>
 
-#define WIN32_LEAN_AND_MEAN
-#define STRICT
-
+#include "dirent.h"
 #include <initguid.h>
 #include <knownfolders.h>
 #include <shlobj.h>
 #include <wchar.h>
-#include <windows.h>
+#include <sys/stat.h>
 
 namespace io {
 namespace priv {
@@ -75,6 +74,40 @@ bool fs_exists(const char *path) {
 	const int ret = _waccess(wpath, 00);
 	SDL_free(wpath);
 	return ret == 0;
+}
+
+bool fs_chdir(const char *path) {
+	WCHAR *wpath = io_UTF8ToStringW(path);
+	const bool ret = SetCurrentDirectoryW(wpath);
+	SDL_free(wpath);
+	return ret;
+}
+
+core::String fs_realpath(const char *path) {
+	WCHAR *wpath = io_UTF8ToStringW(path);
+	WCHAR wfull[_MAX_PATH];
+	if (_wfullpath(wfull, wpath, lengthof(wfull)) == nullptr) {
+		SDL_free(wpath);
+		return "";
+	}
+	SDL_free(wpath);
+	const char *full = io_StringToUTF8W(wfull);
+	const core::String str(full);
+	free(full);
+	return str;
+}
+
+bool fs_stat(const char *path, FilesystemEntry &entry) {
+	struct _stat s;
+	const int result = _stat(path, &s);
+	if (result == 0) {
+		entry.name = path;
+		entry.type = (s.st_mode & _S_IFDIR) ? FilesystemEntry::Type::dir : FilesystemEntry::Type::file;
+		entry.mtime = (uint64_t)s.st_mtim.tv_sec * 1000 + s.st_mtim.tv_nsec / 1000000;
+		entry.size = s.st_size;
+		return true;
+	}
+	return false;
 }
 
 #undef io_StringToUTF8W

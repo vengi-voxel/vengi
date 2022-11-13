@@ -10,6 +10,7 @@
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "engine-config.h"
+#include "io/FilesystemEntry.h"
 #include <SDL.h>
 #ifndef __WINDOWS__
 #include <unistd.h>
@@ -22,6 +23,9 @@ namespace io {
 extern bool fs_mkdir(const char *path);
 extern bool fs_remove(const char *path);
 extern bool fs_exists(const char *path);
+extern bool fs_chdir(const char *path);
+extern core::String fs_realpath(const char *path);
+extern bool fs_stat(const char *path, FilesystemEntry &entry);
 
 Filesystem::~Filesystem() {
 	shutdown();
@@ -182,18 +186,14 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 
 			const core::String &fullPath = isRelativePath(symlink) ? core::string::path(directory, symlink) : symlink;
 
-			uv_fs_t statsReq;
-			if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
+			FilesystemEntry entry;
+			if (!fs_stat(fullPath.c_str(), entry)) {
 				Log::debug("Could not stat file %s", fullPath.c_str());
-				uv_fs_req_cleanup(&statsReq);
 				continue;
 			}
-			const bool dir = (uv_fs_get_statbuf(&statsReq)->st_mode & S_IFDIR) != 0;
-			const uint64_t mtimeMillis =
-				(uint64_t)statsReq.statbuf.st_mtim.tv_sec * 1000 + statsReq.statbuf.st_mtim.tv_nsec / 1000000;
-			entities.push_back(FilesystemEntry{ent.name, dir ? FilesystemEntry::Type::dir : FilesystemEntry::Type::file,
-										statsReq.statbuf.st_size, mtimeMillis});
-			uv_fs_req_cleanup(&statsReq);
+			entry.name = ent.name;
+			entities.push_back(entry);
+			continue;
 		} else {
 			Log::debug("Unknown directory entry found: %s", ent.name);
 			continue;
@@ -204,15 +204,14 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 				continue;
 			}
 		}
-		uv_fs_t statsReq;
+		FilesystemEntry entry;
 		const core::String fullPath = core::string::path(directory, ent.name);
-		if (uv_fs_stat(nullptr, &statsReq, fullPath.c_str(), nullptr) != 0) {
+		entry.type = type;
+		if (!fs_stat(fullPath.c_str(), entry)) {
 			Log::warn("Could not stat file %s", fullPath.c_str());
 		}
-		const uint64_t mtimeMillis =
-			(uint64_t)statsReq.statbuf.st_mtim.tv_sec * 1000 + statsReq.statbuf.st_mtim.tv_nsec / 1000000;
-		entities.push_back(FilesystemEntry{ent.name, type, statsReq.statbuf.st_size, mtimeMillis});
-		uv_fs_req_cleanup(&statsReq);
+		entry.name = ent.name;
+		entities.push_back(entry);
 	}
 	uv_fs_req_cleanup(&req);
 	return true;
@@ -237,7 +236,7 @@ void Filesystem::update() {
 }
 
 bool Filesystem::chdir(const core::String &directory) {
-	return uv_chdir(directory.c_str()) == 0;
+	return fs_chdir(directory.c_str());
 }
 
 void Filesystem::shutdown() {
@@ -252,20 +251,12 @@ void Filesystem::shutdown() {
 }
 
 core::String Filesystem::absolutePath(const core::String &path) {
-	uv_fs_t req;
-	const int retVal = uv_fs_realpath(nullptr, &req, path.c_str(), nullptr);
-	if (retVal != 0) {
-		Log::error("Failed to get absolute path for '%s': %s", path.c_str(), uv_strerror(retVal));
+	core::String abspath = fs_realpath(path.c_str());
+	if (abspath.empty()) {
+		Log::error("Failed to get absolute path for '%s'", path.c_str());
 		return "";
 	}
-	const char *c = (const char *)uv_fs_get_ptr(&req);
-	if (c == nullptr) {
-		uv_fs_req_cleanup(&req);
-		return "";
-	}
-	core::String abspath = c;
 	normalizePath(abspath);
-	uv_fs_req_cleanup(&req);
 	return abspath;
 }
 
@@ -274,11 +265,11 @@ bool Filesystem::isReadableDir(const core::String &name) {
 		return false;
 	}
 
-	uv_fs_t req;
-	uv_fs_stat(nullptr, &req, name.c_str(), nullptr);
-	const bool dir = (uv_fs_get_statbuf(&req)->st_mode & S_IFDIR) != 0;
-	uv_fs_req_cleanup(&req);
-	return dir;
+	FilesystemEntry entry;
+	if (!fs_stat(name.c_str(), entry)) {
+		return false;
+	}
+	return entry.type == FilesystemEntry::Type::dir;
 }
 
 bool Filesystem::isRelativePath(const core::String &name) {
