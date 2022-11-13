@@ -372,7 +372,7 @@ app::AppState IMGUIApp::onRunning() {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
 		if (_console.isActive()) {
-			if (ImGui::IsPopupOpen(ImGuiID(0), ImGuiPopupFlags_AnyPopupId)) {
+			if (ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopupId)) {
 				_console.toggle();
 			}
 		}
