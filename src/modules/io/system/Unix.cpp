@@ -216,6 +216,15 @@ bool fs_chdir(const char *path) {
 	return ret == 0;
 }
 
+core::String fs_cwd() {
+	char buf[4096];
+	const char *p = getcwd(buf, lengthof(buf));
+	if (p == nullptr) {
+		Log::error("Failed to get current working dir: %s", strerror(errno));
+	}
+	return p;
+}
+
 core::String fs_realpath(const char *path) {
 	const char *rp = realpath(path, nullptr);
 	if (rp == nullptr) {

@@ -103,6 +103,19 @@ bool fs_chdir(const char *path) {
 	return ret;
 }
 
+core::String fs_cwd() {
+	WCHAR buf[4096];
+	const WCHAR *p = _wgetcwd(buf, lengthof(buf));
+	if (p == nullptr) {
+		Log::error("Failed to get current working dir: %s", strerror(errno));
+		return "";
+	}
+	char *utf8 = io_StringToUTF8W(p);
+	const core::String str(utf8);
+	SDL_free(utf8);
+	return str;
+}
+
 core::String fs_realpath(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
 	WCHAR wfull[_MAX_PATH];

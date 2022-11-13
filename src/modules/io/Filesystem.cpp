@@ -27,6 +27,7 @@ extern core::String fs_realpath(const char *path);
 extern bool fs_stat(const char *path, FilesystemEntry &entry);
 extern core::DynamicArray<FilesystemEntry> fs_scandir(const char *path);
 extern core::String fs_readlink(const char *path);
+extern core::String fs_cwd();
 
 Filesystem::~Filesystem() {
 	shutdown();
@@ -268,17 +269,24 @@ bool Filesystem::popDir() {
 	if (_dirStack.empty()) {
 		return false;
 	}
-	const core::String &directory = _dirStack.top();
-	chdir(directory);
-	Log::trace("change current dir to %s", directory.c_str());
 	_dirStack.pop();
+	if (_dirStack.empty()) {
+		return false;
+	}
+	const core::String &directory = _dirStack.top();
+	Log::trace("change current dir to %s", directory.c_str());
+	if (!chdir(directory)) {
+		return false;
+	}
 	return true;
 }
 
 bool Filesystem::pushDir(const core::String &directory) {
-	const bool changed = chdir(directory);
-	if (!changed) {
-		Log::error("Failed to change directory to %s", directory.c_str());
+	if (_dirStack.empty()) {
+		const core::String cwd = fs_cwd();
+		_dirStack.push(cwd);
+	}
+	if (!chdir(directory)) {
 		return false;
 	}
 	Log::trace("change current dir to %s", directory.c_str());

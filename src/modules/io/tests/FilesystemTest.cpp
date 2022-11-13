@@ -147,6 +147,15 @@ TEST_F(FilesystemTest, testMkdir) {
 	fs.shutdown();
 }
 
+TEST_F(FilesystemTest, testPushPopDir) {
+	io::Filesystem fs;
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.createDir("testdir"));
+	EXPECT_TRUE(fs.pushDir("testdir"));
+	EXPECT_TRUE(fs.popDir());
+	fs.shutdown();
+}
+
 TEST_F(FilesystemTest, testWriteExplicitCurDir) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
