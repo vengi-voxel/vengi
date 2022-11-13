@@ -225,10 +225,11 @@ void Palette::changeIntensity(float scale) {
 
 bool Palette::save(const char *name) const {
 	if (name == nullptr || name[0] == '\0') {
-		if (_paletteFilename.empty()) {
+		if (_name.empty()) {
+			Log::error("No name given to save the current palette");
 			return false;
 		}
-		name = _paletteFilename.c_str();
+		name = _name.c_str();
 	}
 	Log::info("Save palette to %s", name);
 	const core::String &extension = core::string::extractExtension(name);
@@ -251,11 +252,13 @@ bool Palette::save(const char *name) const {
 		}
 		return true;
 	}
-	image::Image img(name);
+	core::String pngName = core::string::stripExtension(name);
+	pngName += ".png";
+	image::Image img(pngName);
 	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
 	img.loadRGBA((const uint8_t *)colors, lengthof(colors), 1);
 	if (!img.writePng()) {
-		Log::warn("Failed to write the palette file '%s'", name);
+		Log::warn("Failed to write the palette file '%s'", pngName.c_str());
 		return false;
 	}
 	return true;
@@ -276,7 +279,7 @@ bool Palette::saveGlow(const char *name) const {
 	return true;
 }
 
-bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize) {
+bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize, const char *name) {
 	if (bufsize % 4 != 0) {
 		Log::warn("Buf size doesn't match expectation: %i", (int)bufsize);
 	}
@@ -289,11 +292,11 @@ bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize) {
 		Log::warn("Too many colors given for palette.");
 	}
 	ncolors = core_min(ncolors, PaletteMaxColors);
-	image::ImagePtr img = image::createEmptyImage("**palette**");
+	image::ImagePtr img = image::createEmptyImage(name);
 	if (!img->loadRGBA(rgbaBuf, ncolors, 1)) {
 		return false;
 	}
-	_paletteFilename = "";
+	_name = "";
 	return load(img);
 }
 
@@ -318,6 +321,7 @@ bool Palette::load(const image::ImagePtr &img) {
 	for (int i = colorCount; i < PaletteMaxColors; ++i) {
 		colors[i] = core::RGBA(0);
 	}
+	_name = img->name();
 	markDirty();
 	Log::debug("Set up %i material colors", colorCount);
 	return true;
@@ -331,6 +335,7 @@ bool Palette::load(const char *paletteName) {
 		if (colorCount == 0) {
 			nippon();
 		}
+		_name = paletteName + 5;
 		return false;
 	}
 
@@ -370,7 +375,6 @@ bool Palette::load(const char *paletteName) {
 		Log::error("Failed to load image %s", paletteFile->name().c_str());
 		return false;
 	}
-	_paletteFilename = paletteFile->name();
 	return load(img);
 }
 
@@ -383,7 +387,7 @@ bool Palette::loadRGBPalette(const char *filename) {
 	}
 	io::FileStream stream(paletteFile);
 	colorCount = PaletteMaxColors;
-	_paletteFilename = paletteFile->name();
+	_name = paletteFile->name();
 	for (int i = 0; i < colorCount; ++i) {
 		if (stream.readUInt8(colors[i].r) == -1) {
 			Log::error("Failed to read color %i", i);
@@ -444,7 +448,7 @@ bool Palette::loadCSVPalette(const char *filename) {
 	io::MemoryReadStream stream(content.c_str(), content.size());
 	char line[2048];
 	colorCount = 0;
-	_paletteFilename = filename;
+	_name = filename;
 
 	while (stream.readLine(sizeof(line), line)) {
 		int r, g, b;
@@ -468,7 +472,7 @@ bool Palette::loadQubiclePalette(const char *filename) {
 		Log::error("Failed to load qubicle palette file %s", filename);
 		return false;
 	}
-	_paletteFilename = filename;
+	_name = filename;
 
 	core::String name;
 	stream.readPascalStringUInt8(name);
@@ -530,7 +534,7 @@ bool Palette::loadGimpPalette(const char *filename) {
 	io::MemoryReadStream stream(gpl.c_str(), gpl.size());
 	char line[2048];
 	colorCount = 0;
-	_paletteFilename = paletteFile->name();
+	_name = paletteFile->name();
 	while (stream.readLine(sizeof(line), line)) {
 		if (line[0] == '#') {
 			continue;
@@ -610,8 +614,7 @@ bool Palette::minecraft() {
 	for (int i = 0; i < lengthof(palette); ++i) {
 		swapBuf[i] = SDL_SwapLE32(swapBuf[i]);
 	}
-
-	return load((const uint8_t *)palette, sizeof(palette));
+	return load((const uint8_t *)palette, sizeof(palette), "minecraft");
 }
 
 bool Palette::magicaVoxel() {
@@ -650,7 +653,7 @@ bool Palette::magicaVoxel() {
 	for (int i = 0; i < lengthof(palette); ++i) {
 		swapBuf[i] = SDL_SwapLE32(swapBuf[i]);
 	}
-	return load((const uint8_t *)palette, sizeof(palette));
+	return load((const uint8_t *)palette, sizeof(palette), "magicavoxel");
 }
 
 bool Palette::commandAndConquer() {
@@ -688,7 +691,7 @@ bool Palette::commandAndConquer() {
 	for (int i = 0; i < lengthof(palette); ++i) {
 		swapBuf[i] = SDL_SwapBE32(swapBuf[i]);
 	}
-	return load((const uint8_t *)palette, sizeof(palette));
+	return load((const uint8_t *)palette, sizeof(palette), "commandandconquer");
 }
 
 bool Palette::quake1() {
@@ -730,7 +733,7 @@ bool Palette::quake1() {
 	for (int i = 0; i < lengthof(palette); ++i) {
 		swapBuf[i] = SDL_SwapBE32(swapBuf[i]);
 	}
-	return load((const uint8_t *)palette, sizeof(palette));
+	return load((const uint8_t *)palette, sizeof(palette), "quake1");
 }
 
 bool Palette::nippon() {
@@ -769,7 +772,7 @@ bool Palette::nippon() {
 	for (int i = 0; i < lengthof(palette); ++i) {
 		swapBuf[i] = SDL_SwapLE32(swapBuf[i]);
 	}
-	return load((const uint8_t *)palette, sizeof(palette));
+	return load((const uint8_t *)palette, sizeof(palette), "nippon");
 }
 
 core::String Palette::extractPaletteName(const core::String &file) {
@@ -798,6 +801,7 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 			colors.push_back(data);
 		}
 	}
+	palette._name = image->name();
 	palette.quantize(colors.data(), colors.size());
 	palette.markDirty();
 	return true;

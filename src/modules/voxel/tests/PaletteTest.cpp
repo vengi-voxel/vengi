@@ -28,6 +28,26 @@ TEST_F(PaletteTest, testGimpPalette) {
 	EXPECT_EQ(pal.colorCount, cnt);
 }
 
+TEST_F(PaletteTest, testSavePngPalette) {
+	Palette pal;
+	pal.nippon();
+	ASSERT_TRUE(pal.save());
+	_testApp->filesystem()->exists("nippon.png");
+}
+
+TEST_F(PaletteTest, testSaveBuiltInPalette) {
+	Palette pal;
+	pal.load(pal.getDefaultPaletteName());
+	EXPECT_EQ("nippon", pal.name());
+}
+
+TEST_F(PaletteTest, testSaveGimpPalette) {
+	Palette pal;
+	pal.nippon();
+	ASSERT_TRUE(pal.save("nippon.gpl"));
+	_testApp->filesystem()->exists("nippon.gpl");
+}
+
 TEST_F(PaletteTest, testCopyPalette) {
 	Palette copy;
 	Palette pal;

@@ -22,15 +22,21 @@ private:
 	bool load(const image::ImagePtr &img);
 	bool _dirty = false;
 	bool _needsSave = false;
-	core::String _paletteFilename;
+	core::String _name;
 	union hash {
 		uint32_t _hashColors[2];
 		uint64_t _hash;
 	} _hash {};
+
+	bool load(const uint8_t *rgbaBuf, size_t bufsize, const char *name);
 public:
 	PaletteColorArray colors {};
 	PaletteColorArray glowColors {};
 	int colorCount = 0;
+
+	const core::String &name() const {
+		return _name;
+	}
 
 	inline uint64_t hash() const {
 		return _hash._hash;
@@ -50,7 +56,6 @@ public:
 	bool saveRGBPalette(const char *filename) const;
 	bool saveCSVPalette(const char *filename) const;
 	bool saveGlow(const char *name = nullptr) const;
-	bool load(const uint8_t *rgbaBuf, size_t bufsize);
 
 	void changeIntensity(float scale);
 

@@ -5,6 +5,7 @@
 #include "PLYFormat.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "engine-config.h"
 #include "io/File.h"
@@ -20,10 +21,10 @@ namespace voxelformat {
 bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneGraph, const Meshes &meshes,
 						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
-	const char *paletteName = voxel::Palette::getDefaultPaletteName();
+	const core::String paletteName = core::string::stripExtension(voxel::getPalette().name()) + ".png";
 	stream.writeStringFormat(false, "ply\nformat ascii 1.0\n");
 	stream.writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/mgerhardy/vengi\n");
-	stream.writeStringFormat(false, "comment TextureFile palette-%s.png\n", paletteName);
+	stream.writeStringFormat(false, "comment TextureFile %s\n", paletteName.c_str());
 
 	int elements = 0;
 	int indices = 0;
@@ -121,6 +122,6 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		}
 		idxOffset += nv;
 	}
-	return sceneGraph.firstPalette().save(paletteName);
+	return sceneGraph.firstPalette().save(paletteName.c_str());
 }
 }
