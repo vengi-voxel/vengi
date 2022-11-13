@@ -276,6 +276,7 @@ bool Filesystem::popDir() {
 bool Filesystem::pushDir(const core::String &directory) {
 	const bool changed = chdir(directory);
 	if (!changed) {
+		Log::error("Failed to change directory to %s", directory.c_str());
 		return false;
 	}
 	Log::trace("change current dir to %s", directory.c_str());

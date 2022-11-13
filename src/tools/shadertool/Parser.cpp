@@ -169,6 +169,8 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 }
 
 bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core::String& shaderFile, const core::String& buffer, bool vertex) {
+	shaderStruct.filename = shaderFile;
+	shaderStruct.name = shaderFile;
 	simplecpp::DUI dui;
 	simplecpp::OutputList outputList;
 	std::vector<std::string> files;

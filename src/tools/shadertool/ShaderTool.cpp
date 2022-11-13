@@ -154,9 +154,6 @@ app::AppState ShaderTool::onRunning() {
 
 	video::Shader shader;
 
-	_shaderStruct.filename = _shaderfile;
-	_shaderStruct.name = _shaderfile;
-
 	const core::String& writePath = fs->homePath();
 	Log::debug("Writing shader file %s to %s", _shaderfile.c_str(), writePath.c_str());
 
