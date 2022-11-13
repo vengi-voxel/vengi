@@ -303,16 +303,24 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 	if (mode == FileMode::SysWrite) {
 		Log::debug("Use absolute path to open file %s for writing", filename.c_str());
 		return core::make_shared<io::File>(filename, mode);
-	} else if (mode == FileMode::Write) {
-		return core::make_shared<io::File>(_homePath + filename, mode);
 	} else if (mode == FileMode::SysRead) {
 		return core::make_shared<io::File>(filename, mode);
+	} else if (mode == FileMode::Write) {
+		if (!isRelativePath(filename)) {
+			Log::error("%s can't get opened in write mode", filename.c_str());
+			return core::make_shared<io::File>("", mode);
+		}
+		return core::make_shared<io::File>(_homePath + filename, mode);
 	}
 	io::File f(filename, FileMode::Read);
 	if (f.exists()) {
 		f.close();
 		Log::debug("loading file %s from current working dir", filename.c_str());
 		return core::make_shared<io::File>(filename, mode);
+	}
+	if (!isRelativePath(filename)) {
+		Log::debug("%s not found", filename.c_str());
+		return core::make_shared<io::File>("", mode);
 	}
 	for (const core::String &p : _paths) {
 		const core::String fullpath = core::string::path(p, filename);
