@@ -386,7 +386,10 @@ bool Filesystem::write(const core::String &filename, const core::String &string)
 
 bool Filesystem::syswrite(const core::String &filename, const uint8_t *content, size_t length) const {
 	io::File f(filename, FileMode::SysWrite);
-	createDir(f.path());
+	if (!createDir(f.path())) {
+		Log::error("Failed to write to %s: Could not create the directory", filename.c_str());
+		return false;
+	}
 	return f.write(content, length) == static_cast<long>(length);
 }
 
