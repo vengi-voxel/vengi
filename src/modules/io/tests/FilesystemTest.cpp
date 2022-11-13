@@ -49,13 +49,17 @@ TEST_F(FilesystemTest, testDirectoryExists) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.createDir("testdirexists"));
+	EXPECT_TRUE(fs.isReadableDir("testdirexists"));
 	EXPECT_TRUE(fs.exists("testdirexists"));
+	EXPECT_FALSE(fs.isReadableDir("testdirdoesnotexist"));
+	EXPECT_FALSE(fs.exists("testdirdoesnotexist"));
 }
 
 TEST_F(FilesystemTest, testFileExists) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.exists("iotest.txt"));
+	EXPECT_FALSE(fs.exists("iotestdoesnotexist.txt"));
 }
 
 TEST_F(FilesystemTest, testListDirectoryFilter) {
