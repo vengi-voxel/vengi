@@ -61,16 +61,25 @@ bool fs_mkdir(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
 	const int ret = _wmkdir(wpath);
 	SDL_free(wpath);
-	if (ret != 0 && GetLastError() == ERROR_ALREADY_EXISTS) {
+	if (ret == 0) {
 		return true;
 	}
-	return ret == 0;
+	if (errno == EEXIST) {
+		return true;
+	}
+	if (ret != 0) {
+		Log::error("Failed to mkdir %s: %s", path, strerror(errno));
+	}
+	return false;
 }
 
 bool fs_remove(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
 	const int ret = _wremove(wpath);
 	SDL_free(wpath);
+	if (ret != 0) {
+		Log::error("Failed to remove %s: %s", path, strerror(errno));
+	}
 	return ret == 0;
 }
 
@@ -78,6 +87,9 @@ bool fs_exists(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
 	const int ret = _waccess(wpath, 00);
 	SDL_free(wpath);
+	if (ret != 0) {
+		Log::debug("Failed to access %s: %s", path, strerror(errno));
+	}
 	return ret == 0;
 }
 
@@ -85,6 +97,9 @@ bool fs_chdir(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
 	const bool ret = SetCurrentDirectoryW(wpath);
 	SDL_free(wpath);
+	if (ret != 0) {
+		Log::error("Failed to chdir to %s: %s", path, strerror(errno));
+	}
 	return ret;
 }
 
@@ -104,8 +119,8 @@ core::String fs_realpath(const char *path) {
 
 bool fs_stat(const char *path, FilesystemEntry &entry) {
 	struct _stat s;
-	const int result = _stat(path, &s);
-	if (result == 0) {
+	const int ret = _stat(path, &s);
+	if (ret == 0) {
 		if (entry.type == FilesystemEntry::Type::unknown) {
 			entry.type = (s.st_mode & _S_IFDIR) ? FilesystemEntry::Type::dir : FilesystemEntry::Type::file;
 		}
@@ -113,6 +128,7 @@ bool fs_stat(const char *path, FilesystemEntry &entry) {
 		entry.size = s.st_size;
 		return true;
 	}
+	Log::error("Failed to stat %s: %s", path, strerror(errno));
 	return false;
 }
 

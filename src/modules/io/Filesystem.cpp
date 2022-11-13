@@ -93,6 +93,7 @@ core::String Filesystem::specialDir(FilesystemDirectories dir) const {
 
 bool Filesystem::removeFile(const core::String &file) const {
 	if (file.empty()) {
+		Log::error("Can't delete file: No path given");
 		return false;
 	}
 	return fs_remove(file.c_str());
@@ -100,6 +101,7 @@ bool Filesystem::removeFile(const core::String &file) const {
 
 bool Filesystem::removeDir(const core::String &dir, bool recursive) const {
 	if (dir.empty()) {
+		Log::error("Can't delete dir: No path given");
 		return false;
 	}
 

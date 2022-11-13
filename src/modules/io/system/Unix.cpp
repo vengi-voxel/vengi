@@ -179,22 +179,41 @@ bool initState(io::FilesystemState &state) {
 }
 
 bool fs_mkdir(const char *path) {
-	if (mkdir(path, 0740) != -1) {
+	const int ret = mkdir(path, 0740);
+	if (ret == 0) {
 		return true;
 	}
-	return errno == EEXIST;
+	if (errno == EEXIST) {
+		return true;
+	}
+	if (ret != 0) {
+		Log::error("Failed to mkdir %s: %s", path, strerror(errno));
+	}
+	return false;
 }
 
 bool fs_remove(const char *path) {
-	return remove(path) == 0;
+	const int ret = remove(path);
+	if (ret != 0) {
+		Log::error("Failed to remove %s: %s", path, strerror(errno));
+	}
+	return ret == 0;
 }
 
 bool fs_exists(const char *path) {
-	return access(path, F_OK) == 0;
+	const int ret = access(path, F_OK);
+	if (ret != 0) {
+		Log::debug("Failed to access %s: %s", path, strerror(errno));
+	}
+	return ret == 0;
 }
 
 bool fs_chdir(const char *path) {
-	return chdir(path) == 0;
+	const int ret = chdir(path);
+	if (ret != 0) {
+		Log::error("Failed to chdir to %s: %s", path, strerror(errno));
+	}
+	return ret == 0;
 }
 
 core::String fs_realpath(const char *path) {
@@ -207,7 +226,9 @@ core::String fs_realpath(const char *path) {
 
 bool fs_stat(const char *path, FilesystemEntry &entry) {
 	struct stat s;
-	if (stat(path, &s) != 0) {
+	const int ret = stat(path, &s);
+	if (ret != 0) {
+		Log::error("Failed to stat %s: %s", path, strerror(errno));
 		return false;
 	}
 

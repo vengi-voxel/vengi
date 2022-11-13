@@ -169,10 +169,11 @@ TEST_F(FilesystemTest, testWriteNewDir) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.write("dir123/testfile", "123")) << "Failed to write content to testfile in dir123";
-	const core::String &content = fs.load("dir123/testfile");
+	const io::FilePtr& file = fs.open("dir123/testfile");
+	const core::String &content = file->load();
 	EXPECT_EQ("123", content) << "Written content doesn't match expected";
-	fs.removeFile("dir123/testfile");
-	fs.removeDir("dir123");
+	EXPECT_TRUE(fs.removeFile(file->name())) << "Failed to delete " << file->name().c_str();
+	EXPECT_TRUE(fs.removeDir(file->path())) << "Failed to delete " << file->path().c_str();
 	fs.shutdown();
 }
 
