@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/collection/DynamicArray.h"
-#include "core/miniz.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
 
@@ -11,7 +10,7 @@ using ZipArchiveFiles = core::DynamicArray<FilesystemEntry>;
 
 class ZipArchive {
 private:
-	mz_zip_archive *_zip = nullptr;
+	void *_zip = nullptr;
 	ZipArchiveFiles _files;
 
 public:

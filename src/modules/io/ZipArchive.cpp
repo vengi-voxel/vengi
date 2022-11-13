@@ -5,7 +5,7 @@
 #include "ZipArchive.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
-#include "core/miniz.h"
+#include "core/private/miniz.h"
 #include "io/Stream.h"
 
 namespace io {
@@ -21,7 +21,7 @@ void ZipArchive::close() {
 	if (_zip == nullptr) {
 		return;
 	}
-	mz_zip_reader_end(_zip);
+	mz_zip_reader_end((mz_zip_archive*)_zip);
 	core_free(_zip);
 	_zip = nullptr;
 }
@@ -66,30 +66,30 @@ bool ZipArchive::open(io::SeekableReadStream *stream) {
 		return false;
 	}
 	close();
-	_zip = (mz_zip_archive *)core_malloc(sizeof(*_zip));
-	memset(_zip, 0, sizeof(*_zip));
-	_zip->m_pRead = ziparchive_read;
-	_zip->m_pIO_opaque = stream;
+	_zip = core_malloc(sizeof(mz_zip_archive));
+	memset(_zip, 0, sizeof(mz_zip_archive));
+	((mz_zip_archive*)_zip)->m_pRead = ziparchive_read;
+	((mz_zip_archive*)_zip)->m_pIO_opaque = stream;
 	_files.clear();
 	int64_t size = stream->size();
-	if (!mz_zip_reader_init(_zip, size, 0)) {
-		const mz_zip_error error = mz_zip_get_last_error(_zip);
+	if (!mz_zip_reader_init((mz_zip_archive*)_zip, size, 0)) {
+		const mz_zip_error error = mz_zip_get_last_error((mz_zip_archive*)_zip);
 		const char *err = mz_zip_get_error_string(error);
 		Log::error("Failed to initialize the zip reader with stream of size '%i': %s", (int)size, err);
 		return false;
 	}
 
-	mz_uint numFiles = mz_zip_reader_get_num_files(_zip);
+	mz_uint numFiles = mz_zip_reader_get_num_files((mz_zip_archive*)_zip);
 
 	mz_zip_archive_file_stat zipStat;
 	for (mz_uint i = 0; i < numFiles; ++i) {
-		if (mz_zip_reader_is_file_a_directory(_zip, i)) {
+		if (mz_zip_reader_is_file_a_directory((mz_zip_archive*)_zip, i)) {
 			continue;
 		}
-		if (mz_zip_reader_is_file_encrypted(_zip, i)) {
+		if (mz_zip_reader_is_file_encrypted((mz_zip_archive*)_zip, i)) {
 			continue;
 		}
-		if (!mz_zip_reader_file_stat(_zip, i, &zipStat)) {
+		if (!mz_zip_reader_file_stat((mz_zip_archive*)_zip, i, &zipStat)) {
 			continue;
 		}
 		FilesystemEntry entry;
@@ -105,11 +105,11 @@ bool ZipArchive::open(io::SeekableReadStream *stream) {
 }
 
 bool ZipArchive::load(const core::String &file, io::SeekableWriteStream &out) {
-	if (_zip == nullptr) {
+	if ((mz_zip_archive*)_zip == nullptr) {
 		Log::error("No zip archive loaded");
 		return false;
 	}
-	return mz_zip_reader_extract_file_to_callback(_zip, file.c_str(), ziparchive_write, (void *)&out, 0);
+	return mz_zip_reader_extract_file_to_callback((mz_zip_archive*)_zip, file.c_str(), ziparchive_write, (void *)&out, 0);
 }
 
 } // namespace io

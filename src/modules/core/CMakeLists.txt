@@ -1,4 +1,6 @@
 set(SRCS
+	private/miniz.h private/miniz.c
+
 	collection/Array.h
 	collection/Array2DView.h
 	collection/Array3DView.h
@@ -63,7 +65,7 @@ set(SRCS
 	UTF8.cpp UTF8.h
 	Var.cpp Var.h
 	Vector.h
-	Zip.cpp Zip.h miniz.h miniz.c
+	Zip.cpp Zip.h
 )
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracy/TracyClient.cpp)
