@@ -123,10 +123,14 @@ TEST_F(StringUtilTest, testJoinSingleEntry) {
 }
 
 TEST_F(StringUtilTest, testExtractFilename) {
+	EXPECT_EQ("file", core::string::extractFilename("/path/to/file"));
 	EXPECT_EQ("file", core::string::extractFilename("/path/to/file.extension"));
 	EXPECT_EQ("file", core::string::extractFilename("file.extension"));
 	EXPECT_EQ("file", core::string::extractFilename("/file.extension"));
 	EXPECT_EQ("file", core::string::extractFilename("file"));
+
+	EXPECT_EQ("file", core::string::extractFilename("C:/path/to/file"));
+	EXPECT_EQ("file", core::string::extractFilename("C:/path/to/file.extension"));
 }
 
 TEST_F(StringUtilTest, testExtractFilenameWithExtension) {
