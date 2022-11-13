@@ -136,7 +136,7 @@ core::String fs_realpath(const char *path) {
 	SDL_free(wpath);
 	char *full = io_StringToUTF8W(wfull);
 	const core::String str(full);
-	free(full);
+	SDL_free(full);
 	return str;
 }
 
