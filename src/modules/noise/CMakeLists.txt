@@ -1,7 +1,6 @@
 set(SRCS
 	Simplex.h
 	Noise.h Noise.cpp
-	PoissonDiskDistribution.h PoissonDiskDistribution.cpp
 
 	shaders/noise.cl
 )
@@ -27,7 +26,6 @@ generate_compute_shaders(${LIB} noise)
 
 set(TEST_SRCS
 	tests/NoiseTest.cpp
-	tests/PoissonDiskDistributionTest.cpp
 )
 gtest_suite_sources(tests ${TEST_SRCS})
 gtest_suite_deps(tests ${LIB} test-app image)
