@@ -129,8 +129,8 @@ app::AppState ComputeShaderTool::onRunning() {
 		filesystem()->popDir();
 	}
 
-	Log::debug("Writing shader file %s to %s", shaderfile.c_str(), filesystem()->homePath().c_str());
-	core::String finalComputeFilename = _appname + "-" + _computeFilename;
+	const core::String finalComputeFilename = _appname + "-" + core::string::extractFilenameWithExtension(_computeFilename);
+	Log::debug("Writing shader file %s to %s", finalComputeFilename.c_str(), filesystem()->homePath().c_str());
 	filesystem()->write(finalComputeFilename, computeSource);
 
 	return app::AppState::Cleanup;
