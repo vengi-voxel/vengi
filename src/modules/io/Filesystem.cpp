@@ -204,9 +204,6 @@ bool Filesystem::list(const core::String &directory, core::DynamicArray<Filesyst
 	return true;
 }
 
-void Filesystem::update() {
-}
-
 bool Filesystem::chdir(const core::String &directory) {
 	return fs_chdir(directory.c_str());
 }

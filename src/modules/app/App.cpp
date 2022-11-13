@@ -527,8 +527,6 @@ AppState App::onRunning() {
 
 	command::Command::update(_deltaFrameSeconds);
 
-	_filesystem->update();
-
 	if (!_failedToSaveConfiguration && core::Var::needsSaving()) {
 		if (!saveConfiguration()) {
 			_failedToSaveConfiguration = true;

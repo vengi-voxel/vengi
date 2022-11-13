@@ -65,8 +65,6 @@ public:
 	bool init(const core::String& organisation, const core::String& appname);
 	void shutdown();
 
-	void update();
-
 	const Paths& paths() const;
 
 	/**
