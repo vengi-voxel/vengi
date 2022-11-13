@@ -123,7 +123,7 @@ bool fs_chdir(const char *path) {
 	priv::denormalizePath(wpath);
 	const bool ret = SetCurrentDirectoryW(wpath);
 	SDL_free(wpath);
-	if (ret != 0) {
+	if (!ret) {
 		Log::error("Failed to chdir to %s: %s", path, strerror(errno));
 	}
 	return ret;
