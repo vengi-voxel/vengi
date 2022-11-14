@@ -486,6 +486,7 @@ SceneGraph::MergedVolumePalette AbstractVoxFormatTest::load(const core::String& 
 bool AbstractVoxFormatTest::loadGroups(const core::String& filename, Format& format, voxelformat::SceneGraph &sceneGraph) {
 	const io::FilePtr& file = open(filename);
 	if (!file->validHandle()) {
+		Log::error("Could not open %s for reading", filename.c_str());
 		return false;
 	}
 	io::FileStream stream(file);
@@ -495,6 +496,7 @@ bool AbstractVoxFormatTest::loadGroups(const core::String& filename, Format& for
 int AbstractVoxFormatTest::loadPalette(const core::String& filename, Format& format, voxel::Palette &palette) {
 	const io::FilePtr& file = open(filename);
 	if (!file->validHandle()) {
+		Log::error("Could not open %s for reading the palette", filename.c_str());
 		return 0;
 	}
 	io::FileStream stream(file);
