@@ -19,15 +19,6 @@ TEST_P(VoxelRenderShaderTest, testVoxelShader) {
 	shader.shutdown();
 }
 
-TEST_P(VoxelRenderShaderTest, testVoxelIndirectShader) {
-	if (!_supported) {
-		return;
-	}
-	shader::VoxelIndirectShader shader;
-	EXPECT_TRUE(shader.setup());
-	shader.shutdown();
-}
-
 TEST_P(VoxelRenderShaderTest, testVoxelInstancedShader) {
 	if (!_supported) {
 		return;

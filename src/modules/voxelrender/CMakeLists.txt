@@ -6,7 +6,7 @@ set(SRCS
 	ImageGenerator.h ImageGenerator.cpp
 	VoxelFontRenderer.h VoxelFontRenderer.cpp
 )
-set(SHADERS voxel voxel_indirect voxel_instanced)
+set(SHADERS voxel voxel_instanced)
 set(SRCS_SHADERS
 	shaders/_material.vert
 	shaders/_voxelflags.glsl
