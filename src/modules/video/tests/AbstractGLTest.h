@@ -57,7 +57,10 @@ public:
 		core::Var::get(cfg::ClientVSync, "false");
 		core::Var::get(cfg::ClientDebugSeverity, "3");
 		app::AbstractTest::SetUp();
-		SDL_Init(SDL_INIT_VIDEO);
+		if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+			_supported = false;
+			return;
+		}
 		video::setup();
 		video::construct();
 		_window = SDL_CreateWindow("test", 0, 0, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
@@ -73,9 +76,11 @@ public:
 		app::AbstractTest::TearDown();
 		if (_ctx != nullptr) {
 			video::destroyContext(_ctx);
+			_ctx = nullptr;
 		}
 		if (_window != nullptr) {
 			SDL_DestroyWindow(_window);
+			_window = nullptr;
 		}
 		SDL_Quit();
 	}
