@@ -26,8 +26,8 @@ TEST_F(VolumeFormatTest, testLoadFormat) {
 		ASSERT_TRUE(file->validHandle());
 		io::FileStream stream(file);
 		SceneGraph newSceneGraph;
-		EXPECT_TRUE(loadFormat(file->name(), stream, newSceneGraph));
-		EXPECT_GT(newSceneGraph.size(), 0u);
+		EXPECT_TRUE(loadFormat(file->name(), stream, newSceneGraph)) << "Failed to load " << files[i];
+		EXPECT_GT(newSceneGraph.size(), 0u) << "Empty scene graph for " << files[i];
 	}
 }
 
