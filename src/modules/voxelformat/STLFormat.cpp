@@ -4,6 +4,7 @@
 
 #include "STLFormat.h"
 #include "core/Color.h"
+#include "core/StringUtil.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "voxel/Mesh.h"
@@ -30,13 +31,11 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) 
 				if (!strncmp(ptr, "endsolid", 8)) {
 					break;
 				}
-				if (!strncmp(ptr, "facet", 5)) {
+				if (!strncmp(ptr, "facet normal ", 13)) {
 					Tri tri;
 					glm::vec3 norm;
-					if (SDL_sscanf(ptr, "facet normal %f %f %f", &norm.x, &norm.y, &norm.z) != 3) {
-						Log::error("Failed to parse facet normal");
-						return false;
-					}
+					ptr += 13;
+					core::string::parseReal3(&norm.x, &norm.y, &norm.z, &ptr);
 					if (!stream.readLine(sizeof(line), line)) {
 						return false;
 					}
@@ -58,10 +57,8 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) 
 								return false;
 							}
 							glm::vec3 &vert = tri.vertices[vi];
-							if (SDL_sscanf(ptr, "vertex %f %f %f", &vert.x, &vert.y, &vert.z) != 3) {
-								Log::error("Failed to parse vertex");
-								return false;
-							}
+							ptr += 7; // "vertex "
+							core::string::parseReal3(&vert.x, &vert.y, &vert.z, &ptr);
 							vert *= scale;
 							++vi;
 						}
