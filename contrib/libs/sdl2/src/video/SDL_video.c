@@ -694,29 +694,33 @@ SDL_GetDisplayName(int displayIndex)
 int
 SDL_GetDisplayBounds(int displayIndex, SDL_Rect * rect)
 {
+    SDL_VideoDisplay *display;
+
     CHECK_DISPLAY_INDEX(displayIndex, -1);
 
-    if (rect) {
-        SDL_VideoDisplay *display = &_this->displays[displayIndex];
-
-        if (_this->GetDisplayBounds) {
-            if (_this->GetDisplayBounds(_this, display, rect) == 0) {
-                return 0;
-            }
-        }
-
-        /* Assume that the displays are left to right */
-        if (displayIndex == 0) {
-            rect->x = 0;
-            rect->y = 0;
-        } else {
-            SDL_GetDisplayBounds(displayIndex-1, rect);
-            rect->x += rect->w;
-        }
-        rect->w = display->current_mode.w;
-        rect->h = display->current_mode.h;
+    if (!rect) {
+        return SDL_InvalidParamError("rect");
     }
-    return 0;  /* !!! FIXME: should this be an error if (rect==NULL) ? */
+
+    display = &_this->displays[displayIndex];
+
+    if (_this->GetDisplayBounds) {
+        if (_this->GetDisplayBounds(_this, display, rect) == 0) {
+            return 0;
+        }
+    }
+
+    /* Assume that the displays are left to right */
+    if (displayIndex == 0) {
+        rect->x = 0;
+        rect->y = 0;
+    } else {
+        SDL_GetDisplayBounds(displayIndex-1, rect);
+        rect->x += rect->w;
+    }
+    rect->w = display->current_mode.w;
+    rect->h = display->current_mode.h;
+    return 0;
 }
 
 static int
@@ -729,25 +733,28 @@ ParseDisplayUsableBoundsHint(SDL_Rect *rect)
 int
 SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect * rect)
 {
+    SDL_VideoDisplay *display;
+
     CHECK_DISPLAY_INDEX(displayIndex, -1);
 
-    if (rect) {
-        SDL_VideoDisplay *display = &_this->displays[displayIndex];
+    if (!rect) {
+        return SDL_InvalidParamError("rect");
+    }
 
-        if ((displayIndex == 0) && ParseDisplayUsableBoundsHint(rect)) {
+    display = &_this->displays[displayIndex];
+
+    if ((displayIndex == 0) && ParseDisplayUsableBoundsHint(rect)) {
+        return 0;
+    }
+
+    if (_this->GetDisplayUsableBounds) {
+        if (_this->GetDisplayUsableBounds(_this, display, rect) == 0) {
             return 0;
         }
-
-        if (_this->GetDisplayUsableBounds) {
-            if (_this->GetDisplayUsableBounds(_this, display, rect) == 0) {
-                return 0;
-            }
-        }
-
-        /* Oh well, just give the entire display bounds. */
-        return SDL_GetDisplayBounds(displayIndex, rect);
     }
-    return 0;  /* !!! FIXME: should this be an error if (rect==NULL) ? */
+
+    /* Oh well, just give the entire display bounds. */
+    return SDL_GetDisplayBounds(displayIndex, rect);
 }
 
 int
@@ -1572,11 +1579,25 @@ SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
     }
 }
 
+static int
+SDL_ContextNotSupported(const char *name)
+{
+    return SDL_SetError("%s support is either not configured in SDL "
+                 "or not available in current SDL video driver "
+                 "(%s) or platform", name, _this->name);
+}
+
+static int
+SDL_DllNotSupported(const char *name)
+{
+    return SDL_SetError("No dynamic %s support in current SDL video driver (%s)", name, _this->name);
+}
+
 SDL_Window *
 SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
     SDL_Window *window;
-    Uint32 graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
+    Uint32 type_flags, graphics_flags;
 
     if (!_this) {
         /* Initialize the video system if needed */
@@ -1585,7 +1606,9 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
         }
     }
 
-    if ((((flags & SDL_WINDOW_UTILITY) != 0) + ((flags & SDL_WINDOW_TOOLTIP) != 0) + ((flags & SDL_WINDOW_POPUP_MENU) != 0)) > 1) {
+    /* ensure no more than one of these flags is set */
+    type_flags = flags & (SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_POPUP_MENU);
+    if ((type_flags & (type_flags - 1)) != 0) {
         SDL_SetError("Conflicting window flags specified");
         return NULL;
     }
@@ -1601,6 +1624,13 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     /* Some platforms blow up if the windows are too large. Raise it later? */
     if ((w > 16384) || (h > 16384)) {
         SDL_SetError("Window is too large.");
+        return NULL;
+    }
+
+    /* ensure no more than one of these flags is set */
+    graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
+    if ((graphics_flags & (graphics_flags - 1)) != 0) {
+        SDL_SetError("Conflicting window flags specified");
         return NULL;
     }
 
@@ -1620,9 +1650,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 
     if (flags & SDL_WINDOW_OPENGL) {
         if (!_this->GL_CreateContext) {
-            SDL_SetError("OpenGL support is either not configured in SDL "
-                         "or not available in current SDL video driver "
-                         "(%s) or platform", _this->name);
+            SDL_ContextNotSupported("OpenGL");
             return NULL;
         }
         if (SDL_GL_LoadLibrary(NULL) < 0) {
@@ -1632,13 +1660,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 
     if (flags & SDL_WINDOW_VULKAN) {
         if (!_this->Vulkan_CreateSurface) {
-            SDL_SetError("Vulkan support is either not configured in SDL "
-                         "or not available in current SDL video driver "
-                         "(%s) or platform", _this->name);
-            return NULL;
-        }
-        if (graphics_flags & SDL_WINDOW_OPENGL) {
-            SDL_SetError("Vulkan and OpenGL not supported on same window");
+            SDL_ContextNotSupported("Vulkan");
             return NULL;
         }
         if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
@@ -1648,19 +1670,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 
     if (flags & SDL_WINDOW_METAL) {
         if (!_this->Metal_CreateView) {
-            SDL_SetError("Metal support is either not configured in SDL "
-                         "or not available in current SDL video driver "
-                         "(%s) or platform", _this->name);
-            return NULL;
-        }
-        /* 'flags' may have default flags appended, don't check against that. */
-        if (graphics_flags & SDL_WINDOW_OPENGL) {
-            SDL_SetError("Metal and OpenGL not supported on same window");
-            return NULL;
-        }
-        if (graphics_flags & SDL_WINDOW_VULKAN) {
-            SDL_SetError("Metal and Vulkan not supported on same window. "
-                         "To use MoltenVK, set SDL_WINDOW_VULKAN only.");
+            SDL_ContextNotSupported("Metal");
             return NULL;
         }
     }
@@ -1802,9 +1812,7 @@ SDL_CreateWindowFrom(const void *data)
 
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, SDL_FALSE)) {
         if (!_this->GL_CreateContext) {
-            SDL_SetError("OpenGL support is either not configured in SDL "
-                         "or not available in current SDL video driver "
-                         "(%s) or platform", _this->name);
+            SDL_ContextNotSupported("OpenGL");
             return NULL;
         }
         if (SDL_GL_LoadLibrary(NULL) < 0) {
@@ -1815,9 +1823,7 @@ SDL_CreateWindowFrom(const void *data)
 
     if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN, SDL_FALSE)) {
         if (!_this->Vulkan_CreateSurface) {
-            SDL_SetError("Vulkan support is either not configured in SDL "
-                         "or not available in current SDL video driver "
-                         "(%s) or platform", _this->name);
+            SDL_ContextNotSupported("Vulkan");
             return NULL;
         }
         if (flags & SDL_WINDOW_OPENGL) {
@@ -1868,11 +1874,22 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
     SDL_bool loaded_vulkan = SDL_FALSE;
     SDL_bool need_vulkan_unload = SDL_FALSE;
     SDL_bool need_vulkan_load = SDL_FALSE;
+    Uint32 graphics_flags;
+
+    /* ensure no more than one of these flags is set */
+    graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
+    if ((graphics_flags & (graphics_flags - 1)) != 0) {
+        return SDL_SetError("Conflicting window flags specified");
+    }
 
     if ((flags & SDL_WINDOW_OPENGL) && !_this->GL_CreateContext) {
-        return SDL_SetError("OpenGL support is either not configured in SDL "
-                            "or not available in current SDL video driver "
-                            "(%s) or platform", _this->name);
+        return SDL_ContextNotSupported("OpenGL");
+    }
+    if ((flags & SDL_WINDOW_VULKAN) && !_this->Vulkan_CreateSurface) {
+        return SDL_ContextNotSupported("Vulkan");
+    }
+    if ((flags & SDL_WINDOW_METAL) && !_this->Metal_CreateView) {
+        return SDL_ContextNotSupported("Metal");
     }
 
     if (window->flags & SDL_WINDOW_FOREIGN) {
@@ -1925,18 +1942,6 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
     } else if (window->flags & SDL_WINDOW_VULKAN) {
         need_vulkan_unload = SDL_TRUE;
         need_vulkan_load  = SDL_TRUE;
-    }
-
-    if ((flags & SDL_WINDOW_VULKAN) && (flags & SDL_WINDOW_OPENGL)) {
-        return SDL_SetError("Vulkan and OpenGL not supported on same window");
-    }
-
-    if ((flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_OPENGL)) {
-        return SDL_SetError("Metal and OpenGL not supported on same window");
-    }
-
-    if ((flags & SDL_WINDOW_METAL) && (flags & SDL_WINDOW_VULKAN)) {
-        return SDL_SetError("Metal and Vulkan not supported on same window");
     }
 
     if (need_gl_unload) {
@@ -3435,7 +3440,7 @@ SDL_GL_LoadLibrary(const char *path)
         retval = 0;
     } else {
         if (!_this->GL_LoadLibrary) {
-            return SDL_SetError("No dynamic GL support in current SDL video driver (%s)", _this->name);
+            return SDL_DllNotSupported("OpenGL");
         }
         retval = _this->GL_LoadLibrary(_this, path);
     }
@@ -4052,6 +4057,8 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 #endif /* SDL_VIDEO_OPENGL */
 }
 
+#define NOT_AN_OPENGL_WINDOW "The specified window isn't an OpenGL window"
+
 SDL_GLContext
 SDL_GL_CreateContext(SDL_Window * window)
 {
@@ -4059,7 +4066,7 @@ SDL_GL_CreateContext(SDL_Window * window)
     CHECK_WINDOW_MAGIC(window, NULL);
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
-        SDL_SetError("The specified window isn't an OpenGL window");
+        SDL_SetError(NOT_AN_OPENGL_WINDOW);
         return NULL;
     }
 
@@ -4096,7 +4103,7 @@ SDL_GL_MakeCurrent(SDL_Window * window, SDL_GLContext ctx)
         CHECK_WINDOW_MAGIC(window, -1);
 
         if (!(window->flags & SDL_WINDOW_OPENGL)) {
-            return SDL_SetError("The specified window isn't an OpenGL window");
+            return SDL_SetError(NOT_AN_OPENGL_WINDOW);
         }
     } else if (!_this->gl_allow_no_surface) {
         return SDL_SetError("Use of OpenGL without a window is not supported on this platform");
@@ -4177,7 +4184,7 @@ SDL_GL_SwapWindowWithResult(SDL_Window * window)
     CHECK_WINDOW_MAGIC(window, -1);
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
-        return SDL_SetError("The specified window isn't an OpenGL window");
+        return SDL_SetError(NOT_AN_OPENGL_WINDOW);
     }
 
     if (SDL_GL_GetCurrentWindow() != window) {
@@ -4746,9 +4753,7 @@ int SDL_Vulkan_LoadLibrary(const char *path)
         retval = 0;
     } else {
         if (!_this->Vulkan_LoadLibrary) {
-            return SDL_SetError("Vulkan support is either not configured in SDL "
-                                "or not available in current SDL video driver "
-                                "(%s) or platform", _this->name);
+            return SDL_DllNotSupported("Vulkan");
         }
         retval = _this->Vulkan_LoadLibrary(_this, path);
     }
@@ -4852,12 +4857,7 @@ SDL_Metal_CreateView(SDL_Window * window)
         return NULL;
     }
 
-    if (_this->Metal_CreateView) {
-        return _this->Metal_CreateView(_this, window);
-    } else {
-        SDL_SetError("Metal is not supported.");
-        return NULL;
-    }
+    return _this->Metal_CreateView(_this, window);
 }
 
 void
