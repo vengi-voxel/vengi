@@ -128,9 +128,9 @@ const io::FormatDescription* voxelSave() {
 	return desc;
 }
 
-static uint32_t loadMagic(io::ReadStream &stream) {
+static uint32_t loadMagic(io::SeekableReadStream &stream) {
 	uint32_t magicWord = 0u;
-	stream.readUInt32(magicWord);
+	stream.peekUInt32(magicWord);
 	return magicWord;
 }
 
@@ -319,12 +319,12 @@ bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, Sc
 	}
 	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
 	if (f) {
-		stream.seek(0);
 		if (!f->load(filename, stream, newSceneGraph)) {
+			Log::error("Error while loading %s", filename.c_str());
 			newSceneGraph.clear();
 		}
 	} else {
-		Log::warn("Failed to load model file %s - unsupported file format for extension '%s'", filename.c_str(),
+		Log::error("Failed to load model file %s - unsupported file format for extension '%s'", filename.c_str(),
 				  fileext.c_str());
 		return false;
 	}

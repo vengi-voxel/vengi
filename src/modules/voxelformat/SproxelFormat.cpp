@@ -104,7 +104,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 			for (int x = 0; x < size.x; x++) {
 				int r, g, b, a;
 				char hex[10];
-				if ((stream.read(hex, 9)) == -1) {
+				if (stream.read(hex, 9) == -1) {
 					Log::error("Could not load sproxel csv color line");
 					return false;
 				}
@@ -121,17 +121,28 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 					volume->setVoxel(x, y, z, voxel);
 				}
 				if (x != size.x - 1) {
-					stream.skip(1);
+					// skip ,
+					if (stream.skip(1) == -1) {
+						Log::error("Failed to skip 1 byte");
+						return false;
+					}
 				}
 			}
-			stream.skip(1);
+			// skip newline
+			if (stream.skip(1) == -1) {
+				Log::error("Failed to skip 1 byte");
+				return false;
+			}
 		}
-		stream.skip(1);
+		// skip newline
+		if (stream.skip(1) == -1) {
+			Log::error("Failed to skip 1 byte");
+			return false;
+		}
 	}
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
-	sceneGraph.emplace(core::move(node));
-	return true;
+	return sceneGraph.emplace(core::move(node)) > 0;
 }
 
 bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
