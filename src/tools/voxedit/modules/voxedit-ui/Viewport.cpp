@@ -54,8 +54,6 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	_guizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGuizmoAllowAxisFlip);
 	_guizmoSnap = core::Var::getSafe(cfg::VoxEditGuizmoSnap);
 
-	ImGuizmo::GetStyle().RenderBoundsOnUsing = true;
-
 	return true;
 }
 
