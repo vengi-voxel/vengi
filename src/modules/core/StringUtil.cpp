@@ -10,6 +10,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 namespace core {
 namespace string {
@@ -615,10 +616,10 @@ static bool tryParseDouble(const char *s, const char *s_end, double *result) {
 			static const double pow_lut[] = {
 				1.0, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001,
 			};
-			const int lut_entries = sizeof pow_lut / sizeof pow_lut[0];
+			const int lut_entries = lengthof(pow_lut);
 
 			// NOTE: Don't use powf here, it will absolutely murder precision.
-			mantissa += static_cast<int>(*curr - 0x30) * (read < lut_entries ? pow_lut[read] : std::pow(10.0, -read));
+			mantissa += static_cast<int>(*curr - 0x30) * (read < lut_entries ? pow_lut[read] : powf(10.0, -read));
 			read++;
 			curr++;
 			end_not_reached = (curr != s_end);
@@ -666,7 +667,7 @@ static bool tryParseDouble(const char *s, const char *s_end, double *result) {
 	}
 
 assemble:
-	*result = (sign == '+' ? 1 : -1) * (exponent ? std::ldexp(mantissa * std::pow(5.0, exponent), exponent) : mantissa);
+	*result = (sign == '+' ? 1 : -1) * (exponent ? ldexp(mantissa * powf(5.0, exponent), exponent) : mantissa);
 	return true;
 fail:
 	return false;
