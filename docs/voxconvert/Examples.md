@@ -144,7 +144,17 @@ An example for the windows powershell to extract single layers into a new model
 ```ps
 $array = "1-2,5", "1-2,7"
 foreach ($i in $array){
-  ./vengi-voxconvert --filter $i --input "input.vox" --output "output_$i.vxm"
+  & .\vengi-voxconvert --filter $i --input "input.vox" --output "output_$i.vxm"
+}
+```
+
+> https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-childitem
+
+Convert all magicavoxel vox files in the current directory into gltf files
+
+```ps
+foreach ($file in Get-ChildItem -Filter "*.vox") {
+   & .\vengi-voxconvert.exe --input "$($file.FullName)" --output "$($file.BaseName).gltf"
 }
 ```
 
