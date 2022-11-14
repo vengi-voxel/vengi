@@ -41,6 +41,7 @@ TEST_F(RawVolumeRendererTest, testExtractRegion) {
 		EXPECT_EQ(glm::ivec3(0), extractRegion.getLowerCorner());
 		EXPECT_EQ(glm::ivec3(15), extractRegion.getUpperCorner()); // see cfg::VoxelMeshSize
 	});
+	renderer.shutdown();
 }
 
 TEST_F(RawVolumeRendererTest, testExtractRegionBoundary) {
@@ -62,6 +63,7 @@ TEST_F(RawVolumeRendererTest, testExtractRegionBoundary) {
 	const voxel::Region region2(14, 14);
 	renderer.extractRegion(0, region2);
 	EXPECT_EQ(9, renderer.pendingExtractions());
+	renderer.shutdown();
 }
 
 } // namespace voxelrender
