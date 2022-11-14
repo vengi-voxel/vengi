@@ -206,10 +206,10 @@ void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename, c
 void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta) {
 	voxelformat::SceneGraph sceneGraph;
 	const io::FilePtr& file = open(filename);
-	ASSERT_TRUE(file->validHandle());
+	ASSERT_TRUE(file->validHandle()) << "Could not open " << filename.c_str();
 	io::FileStream stream(file);
-	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph));
-	EXPECT_EQ(1u, sceneGraph.size());
+	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph)) << "Failed to load " << filename.c_str();
+	EXPECT_EQ(1u, sceneGraph.size()) << "Unexpected scene graph size for " << filename.c_str();
 
 	voxel::Palette palette;
 	EXPECT_TRUE(palette.nippon());
@@ -221,19 +221,19 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta
 	for (const voxelformat::SceneGraphNode &node : sceneGraph) {
 		const voxel::RawVolume *volume = node.volume();
 		EXPECT_EQ(99, voxelutil::visitVolume(*volume, [] (int, int, int, const voxel::Voxel&) {}));
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0,  0).getMaterial());
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0,  0).getMaterial());
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0, 31).getMaterial());
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0, 31).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0,  0).getMaterial()) << "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0,  0).getMaterial()) << "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0, 31).getMaterial()) << "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0, 31).getMaterial()) << "Failed rgb check for " << filename.c_str();
 
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0, 31,  0).getMaterial());
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31,  0).getMaterial());
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31, 31).getMaterial());
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0, 31, 31).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0, 31,  0).getMaterial()) << "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31,  0).getMaterial()) << "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31, 31).getMaterial()) << "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0, 31, 31).getMaterial()) << "Failed rgb check for " << filename.c_str();
 
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0,  4).getMaterial());
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 12).getMaterial());
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 19).getMaterial());
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0,  4).getMaterial()) << "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 12).getMaterial()) << "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 19).getMaterial()) << "Failed rgb check for " << filename.c_str();
 
 		checkColor(red, node.palette(), volume->voxel( 9,  0,  4).getColor(), maxDelta);
 		checkColor(green, node.palette(), volume->voxel( 9,  0,  12).getColor(), maxDelta);
