@@ -76,6 +76,14 @@ struct voxtype {
 	uint8_t dir = 0;	//<! Uses 256-entry lookup table - lighting bit - @sa priv::directions
 };
 
+constexpr uint32_t MAXVOXS = 1048576;
+
+struct State {
+	priv::voxtype voxdata[MAXVOXS];
+	int32_t xlen[256] {};
+	uint16_t xyoffset[256][256] {};
+};
+
 } // namespace priv
 
 #define wrap(read) \
@@ -175,9 +183,8 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	uint32_t numvoxs;
 	wrap(stream.readUInt32(numvoxs))
 	Log::debug("numvoxs: %u", numvoxs);
-	constexpr uint32_t MAXVOXS = 1048576;
-	if (numvoxs > MAXVOXS) {
-		Log::error("Max allowed voxels exceeded: %u (max is %u)", numvoxs, MAXVOXS);
+	if (numvoxs > priv::MAXVOXS) {
+		Log::error("Max allowed voxels exceeded: %u (max is %u)", numvoxs, priv::MAXVOXS);
 		return false;
 	}
 
@@ -203,7 +210,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 	stream.seek(headerSize);
 
-	priv::voxtype voxdata[MAXVOXS];
+	core::ScopedPtr<priv::State> state(new priv::State());
 	voxel::PaletteLookup palLookup(palette);
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		uint8_t palr, palg, palb, pala;
@@ -212,25 +219,23 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt8(palr))
 		wrap(stream.readUInt8(pala)) // always 128
 		const glm::vec4& color = core::Color::fromRGBA(palr, palg, palb, 255);
-		voxdata[c].col = palLookup.findClosestIndex(color);
-		wrap(stream.readUInt8(voxdata[c].z_low_h))
-		wrap(stream.readUInt8(voxdata[c].z_high))
-		wrap(stream.readUInt8(voxdata[c].vis))
-		wrap(stream.readUInt8(voxdata[c].dir))
+		state->voxdata[c].col = palLookup.findClosestIndex(color);
+		wrap(stream.readUInt8(state->voxdata[c].z_low_h))
+		wrap(stream.readUInt8(state->voxdata[c].z_high))
+		wrap(stream.readUInt8(state->voxdata[c].vis))
+		wrap(stream.readUInt8(state->voxdata[c].dir))
 		Log::debug("voxel %u/%u z-low: %u, z_high: %u, vis: %i. dir: %u, pal: %u",
-				c, numvoxs, voxdata[c].z_low_h, voxdata[c].z_high, voxdata[c].vis, voxdata[c].dir, voxdata[c].col);
+				c, numvoxs, state->voxdata[c].z_low_h, state->voxdata[c].z_high, state->voxdata[c].vis, state->voxdata[c].dir, state->voxdata[c].col);
 	}
-	int32_t xlen[256] {};
 	for (uint32_t x = 0u; x < xsiz_w; ++x) {
-		wrap(stream.readInt32(xlen[x]))
-		Log::debug("xlen[%u]: %i", x, xlen[x]);
+		wrap(stream.readInt32(state->xlen[x]))
+		Log::debug("xlen[%u]: %i", x, state->xlen[x]);
 	}
 
-	uint16_t xyoffset[256][256] {};
 	for (uint32_t x = 0u; x < xsiz_w; ++x) {
 		for (uint32_t y = 0u; y < ysiz_d; ++y) {
-			wrap(stream.readUInt16(xyoffset[x][y]))
-			Log::debug("xyoffset[%u][%u]: %u", x, y, xyoffset[x][y]);
+			wrap(stream.readUInt16(state->xyoffset[x][y]))
+			Log::debug("xyoffset[%u][%u]: %u", x, y, state->xyoffset[x][y]);
 		}
 	}
 
@@ -239,8 +244,8 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	int idx = 0;
 	for (uint32_t x = 0; x < xsiz_w; ++x) {
 		for (uint32_t y = 0; y < ysiz_d; ++y) {
-			for (int end = idx + xyoffset[x][y]; idx < end; ++idx) {
-				const priv::voxtype& vox = voxdata[idx];
+			for (int end = idx + state->xyoffset[x][y]; idx < end; ++idx) {
+				const priv::voxtype& vox = state->voxdata[idx];
 				const voxel::Voxel col = voxel::createVoxel(vox.col);
 				volume->setVoxel((int)x, (int)((zsiz_h - 1) - vox.z_low_h), (int)y, col);
 			}
@@ -252,8 +257,8 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		for (uint32_t y = 0; y < ysiz_d; ++y) {
 			voxel::Voxel lastCol;
 			uint32_t lastZ = 256;
-			for (int end = idx + xyoffset[x][y]; idx < end; ++idx) {
-				const priv::voxtype& vox = voxdata[idx];
+			for (int end = idx + state->xyoffset[x][y]; idx < end; ++idx) {
+				const priv::voxtype& vox = state->voxdata[idx];
 				if (vox.vis & priv::KV6Visibility::Up) {
 					lastZ = vox.z_low_h;
 					lastCol = voxel::createVoxel(vox.col);
