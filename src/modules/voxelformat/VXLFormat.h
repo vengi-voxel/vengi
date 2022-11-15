@@ -19,15 +19,15 @@ namespace voxelformat {
  * @ingroup Formats
  */
 class VXLFormat : public PaletteFormat {
-protected:
+public:
 	// vxl stores row major matrices of 3 rows with 4 columns in each row
 	// but we are using column major matrices
 	struct VXLMatrix {
-		using Type = glm::mat4x3::transpose_type;
+		using Type = glm::mat4x3;
 		VXLMatrix() : matrix(1.0f) {
 		}
 		void fromMat4(const glm::mat4 &in);
-		void toMat4(glm::mat4 &out) const;
+		glm::mat4 toMat4() const;
 		Type matrix;
 	};
 private:
@@ -161,8 +161,6 @@ protected:
 
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
 
-	static glm::mat4 convertToGLM(const VXLMatrix &in);
-	static void convertToWestwood(const glm::mat4 &in, VXLFormat::VXLMatrix &vxlMatrix);
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) override;
 };
 

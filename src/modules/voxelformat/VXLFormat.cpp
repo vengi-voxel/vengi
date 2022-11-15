@@ -54,21 +54,11 @@ glm::mat4 VXLFormat::switchYAndZ(const glm::mat4 &in) {
 }
 
 void VXLFormat::VXLMatrix::fromMat4(const glm::mat4 &in) {
-	matrix = glm::transpose(VXLFormat::VXLMatrix::Type::transpose_type(switchYAndZ(in)));
+	matrix = switchYAndZ(in);
 }
 
-void VXLFormat::VXLMatrix::toMat4(glm::mat4 &out) const {
-	out = switchYAndZ(VXLFormat::VXLMatrix::Type::transpose_type(glm::transpose(matrix)));
-}
-
-glm::mat4 VXLFormat::convertToGLM(const VXLMatrix &in) {
-	glm::mat4 out;
-	in.toMat4(out);
-	return out;
-}
-
-void VXLFormat::convertToWestwood(const glm::mat4 &in, VXLFormat::VXLMatrix &vxlMatrix) {
-	vxlMatrix.fromMat4(in);
+glm::mat4 VXLFormat::VXLMatrix::toMat4() const {
+	return switchYAndZ(matrix);
 }
 
 bool VXLFormat::writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t& skipCount, uint8_t& voxelCount, uint8_t normalType) const {
@@ -189,17 +179,17 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 	const SceneGraphTransform &transform = node.transform(frameIdx);
 	const glm::vec3 &mins = transform.localTranslation();
 	VXLMatrix vxlMatrix;
-	convertToWestwood(transform.localMatrix(), vxlMatrix);
-	vxlMatrix.matrix[0][3] -= mins.x;
-	vxlMatrix.matrix[1][3] -= mins.z;
-	vxlMatrix.matrix[2][3] -= mins.y;
+	vxlMatrix.fromMat4(transform.localMatrix());
+	vxlMatrix.matrix[3][0] -= mins.x;
+	vxlMatrix.matrix[3][1] -= mins.z;
+	vxlMatrix.matrix[3][2] -= mins.y;
 
 	// TODO: always 0.0833333358f?
 	wrapBool(stream.writeFloat(1.0f / 12.0f /*transform.localScale()*/))
 
 	for (int i = 0; i < 12; ++i) {
-		const int col = i / 4;
-		const int row = i % 4;
+		const int col = i % 4;
+		const int row = i / 4;
 		float val = vxlMatrix.matrix[col][row];
 		wrapBool(stream.writeFloat(val))
 	}
@@ -388,7 +378,7 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 		node.setPalette(palette);
 	}
 
-	glm::mat4 glmMatrix = convertToGLM(footer.transform);
+	glm::mat4 glmMatrix = footer.transform.toMat4();
 	glm::vec4 &translation = glmMatrix[3];
 	// swap y and z here
 	translation.x += footer.mins.x;
@@ -475,8 +465,8 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 	Log::debug("offsets: %u:%u:%u", footer.spanStartOffset, footer.spanEndOffset, footer.spanDataOffset);
 
 	for (int i = 0; i < 12; ++i) {
-		const int col = i / 4;
-		const int row = i % 4;
+		const int col = i % 4;
+		const int row = i / 4;
 		float &val = footer.transform.matrix[col][row];
 		wrap(stream.readFloat(val))
 	}
@@ -617,12 +607,13 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 		for (uint32_t nodeIdx = 0; nodeIdx < file.header.numNodes; ++nodeIdx) {
 			VXLMatrix &vxlMatrix = frame[nodeIdx];
 			for (int i = 0; i < 12; ++i) {
-				const int col = i / 4;
-				const int row = i % 4;
+				const int col = i % 4;
+				const int row = i / 4;
 				float &val = vxlMatrix.matrix[col][row];
 				wrap(stream.readFloat(val))
 			}
-			Log::debug("load frame %u for node %i with translation: %f:%f:%f", frameIdx, nodeIdx, vxlMatrix.matrix[0][3], vxlMatrix.matrix[1][3], vxlMatrix.matrix[2][3]);
+			// TODO: 1.0f / 12.0f
+			Log::debug("load frame %u for node %i with translation: %f:%f:%f", frameIdx, nodeIdx, vxlMatrix.matrix[3][0], vxlMatrix.matrix[3][1], vxlMatrix.matrix[3][2]);
 		}
 	}
 
@@ -658,7 +649,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 
 			const int nodeId = file.header.nodeIds[vxlNodeId];
 			if (nodeId != -1) {
-				glm::mat4 glmMatrix = convertToGLM(sectionMatrices[vxlNodeId]);
+				glm::mat4 glmMatrix = sectionMatrices[vxlNodeId].toMat4();
 				const VXLNodeFooter& footer = mdl.nodeFooters[nodeId];
 				const glm::vec3 size(footer.xsize, footer.ysize, footer.zsize);
 				const glm::vec3 nodeScale = (footer.maxs - footer.mins) / size;
@@ -672,6 +663,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 				translation.y *= (footer.scale * nodeScale.z);
 				translation.z *= (footer.scale * nodeScale.y);
 				Log::debug("scaled hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
+
 				translation.x += footer.mins.x;
 				translation.y += footer.mins.z;
 				translation.z += footer.mins.y;
@@ -735,20 +727,20 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 
 			// The HVA transformation matrices must be scaled - the VXL ones not!
 			VXLMatrix vxlMatrix;
-			convertToWestwood(transform.localMatrix(), vxlMatrix);
+			vxlMatrix.fromMat4(transform.localMatrix());
 
 			// swap y and z
 			// TODO: or the pivot?
-			vxlMatrix.matrix[0][3] -= localMins.x;
-			vxlMatrix.matrix[1][3] -= localMins.z;
-			vxlMatrix.matrix[2][3] -= localMins.y;
-			vxlMatrix.matrix[0][3] /= (scale * nodeScale.x);
-			vxlMatrix.matrix[1][3] /= (scale * nodeScale.z);
-			vxlMatrix.matrix[2][3] /= (scale * nodeScale.y);
+			vxlMatrix.matrix[3][0] -= localMins.x;
+			vxlMatrix.matrix[3][1] -= localMins.z;
+			vxlMatrix.matrix[3][2] -= localMins.y;
+			vxlMatrix.matrix[3][0] /= (scale * nodeScale.x);
+			vxlMatrix.matrix[3][1] /= (scale * nodeScale.z);
+			vxlMatrix.matrix[3][2] /= (scale * nodeScale.y);
 
 			for (int i = 0; i < 12; ++i) {
-				const int col = i / 4;
-				const int row = i % 4;
+				const int col = i % 4;
+				const int row = i / 4;
 				float val = vxlMatrix.matrix[col][row];
 				wrapBool(stream.writeFloat(val))
 			}
@@ -756,7 +748,7 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 			Log::debug("write hva size (frame %u, node %i): %f:%f:%f", i, node.id(), size[0], size[1], size[2]);
 			Log::debug("write hva nodeScale (frame %u, node %i): %f:%f:%f", i, node.id(), nodeScale[0], nodeScale[1], nodeScale[2]);
 			Log::debug("write hva localmins: %f:%f:%f", localMins.x, localMins.y, localMins.z);
-			Log::debug("write hva frame %u for node %i with translation: %f:%f:%f", i, node.id(), vxlMatrix.matrix[0][3], vxlMatrix.matrix[1][3], vxlMatrix.matrix[2][3]);
+			Log::debug("write hva frame %u for node %i with translation: %f:%f:%f", i, node.id(), vxlMatrix.matrix[3][0], vxlMatrix.matrix[3][1], vxlMatrix.matrix[3][2]);
 		}
 	}
 	return true;
