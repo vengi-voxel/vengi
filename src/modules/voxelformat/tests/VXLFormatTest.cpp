@@ -33,7 +33,9 @@ TEST_F(VXLFormatTest, testSwitchYAndZ) {
 	class TestClass : public VXLFormat {
 	public:
 		glm::mat4 switchAxis (const glm::mat4 &in) {
-			return convertToGLM(convertToWestwood(in));
+			VXLMatrix vxlMatrix;
+			convertToWestwood(in, vxlMatrix);
+			return convertToGLM(vxlMatrix);
 		}
 	} test;
 

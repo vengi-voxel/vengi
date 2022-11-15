@@ -19,14 +19,18 @@ namespace voxelformat {
  * @ingroup Formats
  */
 class VXLFormat : public PaletteFormat {
-private:
+protected:
 	// vxl stores row major matrices of 3 rows with 4 columns in each row
+	// but we are using column major matrices
 	struct VXLMatrix {
 		using Type = glm::mat4x3::transpose_type;
 		VXLMatrix() : matrix(1.0f) {
 		}
+		void fromMat4(const glm::mat4 &in);
+		void toMat4(glm::mat4 &out) const;
 		Type matrix;
 	};
+private:
 	static constexpr int NumNormalsRA2 = 244;
 	static constexpr int NumNormalsTS = 36;
 	static constexpr size_t MaxNodes = 512;
@@ -158,7 +162,7 @@ protected:
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
 
 	static glm::mat4 convertToGLM(const VXLMatrix &in);
-	static VXLMatrix convertToWestwood(const glm::mat4 &in);
+	static void convertToWestwood(const glm::mat4 &in, VXLFormat::VXLMatrix &vxlMatrix);
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) override;
 };
 
