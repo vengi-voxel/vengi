@@ -15,6 +15,11 @@
 #include "voxelformat/SceneGraphNode.h"
 #include <gtest/gtest.h>
 
+namespace glm {
+::std::ostream &operator<<(::std::ostream &os, const mat4x4 &matrix);
+::std::ostream &operator<<(::std::ostream &os, const mat3x3 &matrix);
+}
+
 namespace voxel {
 
 enum class ValidateFlags {

@@ -5,8 +5,6 @@
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/VXLFormat.h"
 #include <glm/gtx/transform.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
 
 namespace voxelformat {
 
@@ -43,7 +41,9 @@ TEST_F(VXLFormatTest, testSwitchYAndZ) {
 	const glm::mat4 m2 = test.switchAxis(m1);
 	for (int row = 0; row < glm::mat4::col_type::length(); ++row) {
 		for (int col = 0; col < glm::mat4::length(); ++col) {
-			EXPECT_FLOAT_EQ(m1[col][row], m2[col][row]) << "row " << row << ", col " << col << " differs: " << glm::to_string(m1) << glm::to_string(m2);
+			EXPECT_FLOAT_EQ(m1[col][row], m2[col][row]) << "row " << row << ", col " << col << " differs:\n"
+														<< m1 << "\n"
+														<< m2;
 		}
 	}
 }
