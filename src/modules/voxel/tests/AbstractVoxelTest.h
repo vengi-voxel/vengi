@@ -6,9 +6,10 @@
 
 #include "app/tests/AbstractTest.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/tests/TestHelper.h"
 #include "voxel/PagedVolume.h"
 #include "voxel/PagedVolumeWrapper.h"
+#include "math/Random.h"
+#include <glm/geometric.hpp>
 
 namespace voxel {
 
@@ -65,7 +66,6 @@ public:
 		app::AbstractTest::SetUp();
 		_random.setSeed(_seed);
 		_ctx = PagedVolumeWrapper(&_volData, _volData.chunk(_region.getCenter()), _region);
-		VolumePrintThreshold = 10;
 	}
 
 	void TearDown() override {

@@ -6,7 +6,6 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "voxel/Palette.h"
-#include "voxel/tests/TestHelper.h"
 #include "voxelformat/BinVoxFormat.h"
 #include "voxelformat/CubFormat.h"
 #include "voxelformat/GLTFFormat.h"

@@ -3,9 +3,8 @@
  */
 
 #include "app/tests/AbstractTest.h"
-#include "voxel/tests/TestHelper.h"
-
 #include "voxelutil/VolumeCropper.h"
+#include "voxel/tests/VoxelPrinter.h"
 
 namespace voxelutil {
 

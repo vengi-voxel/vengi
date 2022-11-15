@@ -4,23 +4,22 @@
 
 #pragma once
 
-#include <gtest/gtest.h>
 #include "core/Color.h"
-#include "voxel/RawVolume.h"
-#include "voxel/Voxel.h"
+#include "core/Common.h"
+#include "math/Random.h"
+#include "voxel/Constants.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
-#include "voxel/Constants.h"
-#include "math/Random.h"
-#include "core/Common.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
+#include "voxel/tests/VoxelPrinter.h"
 #include "voxelformat/MeshFormat.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
+#include <gtest/gtest.h>
 
 namespace voxel {
-
-static int VolumePrintThreshold = 10;
 
 enum class ValidateFlags {
 	None = 0,
@@ -202,43 +201,6 @@ inline void sceneGraphComparator(const voxelformat::SceneGraph &graph1, const vo
 		volumeComparator(*node1->volume(), node1->palette(), *node2->volume(), node2->palette(), flags, maxDelta);
 		keyFrameComparator(node1->keyFrames(), node2->keyFrames(), flags);
 	}
-}
-inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Region& region) {
-	return os << "region["
-			<< "mins(" << region.getLowerCorner().x << ":" << region.getLowerCorner().y << ":" << region.getLowerCorner().z << "), "
-			<< "maxs(" << region.getUpperCorner().x << ":" << region.getUpperCorner().y << ":" << region.getUpperCorner().z << ")"
-			<< "]";
-}
-
-inline ::std::ostream& operator<<(::std::ostream& os, const voxel::Voxel& voxel) {
-	return os << "voxel[" << voxel::VoxelTypeStr[(int)voxel.getMaterial()] << ", " << (int)voxel.getColor() << "]";
-}
-
-inline ::std::ostream& operator<<(::std::ostream& os, const voxel::RawVolume& volume) {
-	const voxel::Region& region = volume.region();
-	os << "volume[" << region;
-	const int32_t lowerX = region.getLowerX();
-	const int32_t lowerY = region.getLowerY();
-	const int32_t lowerZ = region.getLowerZ();
-	const int32_t upperX = core_min(lowerX + VolumePrintThreshold, region.getUpperX());
-	const int32_t upperY = core_min(lowerY + VolumePrintThreshold, region.getUpperY());
-	const int32_t upperZ = core_min(lowerZ + VolumePrintThreshold, region.getUpperZ());
-	os << std::endl;
-	for (int32_t z = lowerZ; z <= upperZ; ++z) {
-		os << "z: " << std::setw(3) << z << std::endl;
-		for (int32_t y = lowerY; y <= upperY; ++y) {
-			for (int32_t x = lowerX; x <= upperX; ++x) {
-				const glm::ivec3 pos(x, y, z);
-				const voxel::Voxel& voxel = volume.voxel(pos);
-				os << "[" << std::setw(8) << voxel::VoxelTypeStr[(int)voxel.getMaterial()] << ", " << std::setw(3)
-					<< (int)voxel.getColor() << "](x:" << std::setw(3) << x << ", y: " << std::setw(3) << y << ") ";
-			}
-			os << std::endl;
-		}
-		os << std::endl;
-	}
-	os << "]";
-	return os;
 }
 
 }

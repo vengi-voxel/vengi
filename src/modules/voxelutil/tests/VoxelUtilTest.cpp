@@ -11,8 +11,8 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxel/tests/TestHelper.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "voxel/tests/VoxelPrinter.h"
 
 namespace voxelutil {
 

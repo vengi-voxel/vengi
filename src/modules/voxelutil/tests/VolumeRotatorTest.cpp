@@ -4,8 +4,8 @@
 
 #include "app/tests/AbstractTest.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/tests/TestHelper.h"
 #include "voxelutil/VolumeRotator.h"
+#include "voxel/tests/VoxelPrinter.h"
 
 namespace voxelutil {
 

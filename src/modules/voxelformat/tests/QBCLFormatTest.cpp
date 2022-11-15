@@ -4,7 +4,6 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
-#include "voxel/tests/TestHelper.h"
 #include "voxelformat/QBCLFormat.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/VolumeFormat.h"

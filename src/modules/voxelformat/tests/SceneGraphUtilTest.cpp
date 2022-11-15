@@ -5,7 +5,6 @@
 #include "voxelformat/SceneGraphUtil.h"
 #include "app/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
-#include "voxel/tests/TestHelper.h"
 #include "voxelformat/SceneGraphNode.h"
 
 namespace voxelformat {

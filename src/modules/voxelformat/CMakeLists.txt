@@ -89,6 +89,7 @@ set(TEST_SRCS
 	tests/NamedBinaryTagTest.cpp
 	tests/TriTest.cpp
 
+	tests/TestHelper.h
 	tests/8ontop.h
 	tests/vox_character.h
 	tests/vox_glasses.h

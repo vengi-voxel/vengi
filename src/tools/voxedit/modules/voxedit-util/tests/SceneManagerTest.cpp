@@ -6,11 +6,23 @@
 #include "../Config.h"
 #include "video/tests/AbstractGLTest.h"
 #include "voxel/RawVolume.h"
-#include "voxel/tests/TestHelper.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
 
-class SceneManagerProtected : public voxedit::SceneManager {};
+class SceneManagerProtected : public voxedit::SceneManager {
+protected:
+	template<typename Volume>
+	inline int countVoxels(const Volume& volume, const voxel::Voxel &voxel) {
+		int cnt = 0;
+		voxelutil::visitVolume(volume, [&](int, int, int, const voxel::Voxel &v) {
+			if (v == voxel) {
+				++cnt;
+			}
+		}, voxelutil::VisitAll());
+		return cnt;
+	}
+};
 
 class SceneManagerTest : public video::AbstractGLTest, public SceneManagerProtected {
 protected:
@@ -298,18 +310,18 @@ TEST_F(SceneManagerTest, testMergeSimple) {
 	// set voxel into second node
 	EXPECT_TRUE(nodeActivate(secondNodeId));
 	testSetVoxel(glm::ivec3(1, 1, 1));
-	EXPECT_EQ(1, voxel::countVoxels(*volume(secondNodeId), modifier().cursorVoxel()));
+	EXPECT_EQ(1, countVoxels(*volume(secondNodeId), modifier().cursorVoxel()));
 
 	// set voxel into third node
 	EXPECT_TRUE(nodeActivate(thirdNodeId));
 	testSetVoxel(glm::ivec3(2, 2, 2));
-	EXPECT_EQ(1, voxel::countVoxels(*volume(thirdNodeId), modifier().cursorVoxel()));
+	EXPECT_EQ(1, countVoxels(*volume(thirdNodeId), modifier().cursorVoxel()));
 
 	// merge and validate
 	int newNodeId = mergeNodes(secondNodeId, thirdNodeId);
 	const voxel::RawVolume *v = volume(newNodeId);
 	ASSERT_NE(nullptr, v);
-	EXPECT_EQ(2, voxel::countVoxels(*v, modifier().cursorVoxel()));
+	EXPECT_EQ(2, countVoxels(*v, modifier().cursorVoxel()));
 	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(1, 1, 1)).getMaterial()));
 	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(2, 2, 2)).getMaterial()));
 

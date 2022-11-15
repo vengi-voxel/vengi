@@ -6,13 +6,24 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "app/tests/AbstractTest.h"
-#include "voxel/tests/TestHelper.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeSplitter.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
 
 class VolumeSplitterTest: public app::AbstractTest {
+protected:
+	template<typename Volume>
+	inline int countVoxels(const Volume& volume, const voxel::Voxel &voxel) {
+		int cnt = 0;
+		voxelutil::visitVolume(volume, [&](int, int, int, const voxel::Voxel &v) {
+			if (v == voxel) {
+				++cnt;
+			}
+		}, voxelutil::VisitAll());
+		return cnt;
+	}
 };
 
 TEST_F(VolumeSplitterTest, testSplit) {

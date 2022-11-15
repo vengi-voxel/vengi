@@ -3,10 +3,10 @@
  */
 
 #include "app/tests/AbstractTest.h"
-#include "voxel/tests/TestHelper.h"
 #include "../modifier/Modifier.h"
 #include "core/ArrayLength.h"
 #include "voxel/Voxel.h"
+#include "voxel/tests/VoxelPrinter.h"
 
 namespace voxedit {
 
