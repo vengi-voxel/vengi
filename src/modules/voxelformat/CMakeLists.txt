@@ -106,6 +106,8 @@ set(TEST_FILES
 	tests/chronovox-studio.csm
 	tests/cc.vxl
 	tests/cc.hva
+	tests/hmec.vxl
+	tests/hmec.hva
 	tests/test.binvox
 	tests/test.kvx
 	tests/test.kv6

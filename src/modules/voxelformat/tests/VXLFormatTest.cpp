@@ -24,6 +24,11 @@ TEST_F(VXLFormatTest, testSaveAndLoadSceneGraph) {
 	testLoadSaveAndLoadSceneGraph("cc.vxl", f, "cc-save.vxl", f);
 }
 
+TEST_F(VXLFormatTest, DISABLED_testSaveAndLoadSceneGraphWithAnimations) {
+	VXLFormat f;
+	testLoadSaveAndLoadSceneGraph("hmec.vxl", f, "hmec-save.vxl", f);
+}
+
 TEST_F(VXLFormatTest, testSaveSmallVoxel) {
 	VXLFormat f;
 	testSaveLoadVoxel("cc-smallvolumesavetest.vxl", &f);
