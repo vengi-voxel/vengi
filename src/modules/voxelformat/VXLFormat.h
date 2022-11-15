@@ -29,7 +29,7 @@ private:
 	struct VXLNodeHeader {
 		char name[16];				/* ASCIIZ string - name of section */
 		uint32_t id;				/* Node id */
-		uint32_t unknown;			/* Always 1 */
+		uint32_t unknown;			/* Always 1 - maybe which palette should be used? */
 		uint32_t unknown2;			/* Always 0 or 2 */
 	};
 
