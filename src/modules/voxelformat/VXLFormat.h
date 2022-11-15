@@ -21,7 +21,12 @@ namespace voxelformat {
 class VXLFormat : public PaletteFormat {
 private:
 	// vxl stores row major matrices of 3 rows with 4 columns in each row
-	using VXLMatrix = glm::mat4x3::transpose_type;
+	struct VXLMatrix {
+		using Type = glm::mat4x3::transpose_type;
+		VXLMatrix() : matrix(1.0f) {
+		}
+		Type matrix;
+	};
 	static constexpr int NumNormalsRA2 = 244;
 	static constexpr int NumNormalsTS = 36;
 	static constexpr size_t MaxNodes = 512;

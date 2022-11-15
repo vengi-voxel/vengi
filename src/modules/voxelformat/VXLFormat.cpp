@@ -54,11 +54,13 @@ glm::mat4 VXLFormat::switchYAndZ(const glm::mat4 &in) {
 }
 
 glm::mat4 VXLFormat::convertToGLM(const VXLMatrix &in) {
-	return switchYAndZ(VXLFormat::VXLMatrix::transpose_type(glm::transpose(in)));
+	return switchYAndZ(VXLFormat::VXLMatrix::Type::transpose_type(glm::transpose(in.matrix)));
 }
 
 VXLFormat::VXLMatrix VXLFormat::convertToWestwood(const glm::mat4 &in) {
-	return glm::transpose(VXLFormat::VXLMatrix::transpose_type(switchYAndZ(in)));
+	VXLMatrix m;
+	m.matrix = glm::transpose(VXLFormat::VXLMatrix::Type::transpose_type(switchYAndZ(in)));
+	return m;
 }
 
 bool VXLFormat::writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t& skipCount, uint8_t& voxelCount, uint8_t normalType) const {
@@ -179,17 +181,18 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 	const SceneGraphTransform &transform = node.transform(frameIdx);
 	const glm::vec3 &mins = transform.localTranslation();
 	VXLMatrix vxlMatrix = convertToWestwood(transform.localMatrix());
-	vxlMatrix[0][3] -= mins.x;
-	vxlMatrix[1][3] -= mins.z;
-	vxlMatrix[2][3] -= mins.y;
+	vxlMatrix.matrix[0][3] -= mins.x;
+	vxlMatrix.matrix[1][3] -= mins.z;
+	vxlMatrix.matrix[2][3] -= mins.y;
 
 	// TODO: always 0.0833333358f?
 	wrapBool(stream.writeFloat(1.0f / 12.0f /*transform.localScale()*/))
 
-	for (int col = 0; col < VXLMatrix::length(); ++col) {
-		for (int row = 0; row < VXLMatrix::col_type::length(); ++row) {
-			wrapBool(stream.writeFloat(vxlMatrix[col][row]))
-		}
+	for (int i = 0; i < 12; ++i) {
+		const int col = i / 4;
+		const int row = i % 4;
+		float val = vxlMatrix.matrix[col][row];
+		wrapBool(stream.writeFloat(val))
 	}
 
 	const voxel::Region& region = node.region();
@@ -462,11 +465,11 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 
 	Log::debug("offsets: %u:%u:%u", footer.spanStartOffset, footer.spanEndOffset, footer.spanDataOffset);
 
-	footer.transform = VXLMatrix(1.0f);
-	for (int col = 0; col < VXLMatrix::length(); ++col) {
-		for (int row = 0; row < VXLMatrix::col_type::length(); ++row) {
-			wrap(stream.readFloat(footer.transform[col][row]))
-		}
+	for (int i = 0; i < 12; ++i) {
+		const int col = i / 4;
+		const int row = i % 4;
+		float &val = footer.transform.matrix[col][row];
+		wrap(stream.readFloat(val))
 	}
 	for (int i = 0; i < 3; ++i) {
 		wrap(stream.readFloat(footer.mins[i]))
@@ -602,15 +605,15 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 	for (uint32_t frameIdx = 0; frameIdx < file.header.numFrames; ++frameIdx) {
 		HVAFrames &frame = file.frames[frameIdx];
 		frame.resize(file.header.numNodes);
-		frame.fill(VXLMatrix(1.0f));
 		for (uint32_t nodeIdx = 0; nodeIdx < file.header.numNodes; ++nodeIdx) {
 			VXLMatrix &vxlMatrix = frame[nodeIdx];
-			for (int col = 0; col < VXLMatrix::length(); ++col) {
-				for (int row = 0; row < VXLMatrix::col_type::length(); ++row) {
-					wrap(stream.readFloat(vxlMatrix[col][row]))
-				}
+			for (int i = 0; i < 12; ++i) {
+				const int col = i / 4;
+				const int row = i % 4;
+				float &val = vxlMatrix.matrix[col][row];
+				wrap(stream.readFloat(val))
 			}
-			Log::debug("load frame %u for node %i with translation: %f:%f:%f", frameIdx, nodeIdx, vxlMatrix[0][3], vxlMatrix[1][3], vxlMatrix[2][3]);
+			Log::debug("load frame %u for node %i with translation: %f:%f:%f", frameIdx, nodeIdx, vxlMatrix.matrix[0][3], vxlMatrix.matrix[1][3], vxlMatrix.matrix[2][3]);
 		}
 	}
 
@@ -726,18 +729,19 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 			const glm::vec3 localMins = transform.localTranslation();
 			Log::debug("write hva localmins: %f:%f:%f", localMins.x, localMins.y, localMins.z);
 			// swap y and z
-			vxlMatrix[0][3] -= localMins.x;
-			vxlMatrix[1][3] -= localMins.z;
-			vxlMatrix[2][3] -= localMins.y;
-			vxlMatrix[0][3] /= (scale * nodeScale.x);
-			vxlMatrix[1][3] /= (scale * nodeScale.z);
-			vxlMatrix[2][3] /= (scale * nodeScale.y);
-			Log::debug("write hva frame %u for node %i with translation: %f:%f:%f", i, node.id(), vxlMatrix[0][3], vxlMatrix[1][3], vxlMatrix[2][3]);
+			vxlMatrix.matrix[0][3] -= localMins.x;
+			vxlMatrix.matrix[1][3] -= localMins.z;
+			vxlMatrix.matrix[2][3] -= localMins.y;
+			vxlMatrix.matrix[0][3] /= (scale * nodeScale.x);
+			vxlMatrix.matrix[1][3] /= (scale * nodeScale.z);
+			vxlMatrix.matrix[2][3] /= (scale * nodeScale.y);
+			Log::debug("write hva frame %u for node %i with translation: %f:%f:%f", i, node.id(), vxlMatrix.matrix[0][3], vxlMatrix.matrix[1][3], vxlMatrix.matrix[2][3]);
 
-			for (int col = 0; col < VXLMatrix::length(); ++col) {
-				for (int row = 0; row < VXLMatrix::col_type::length(); ++row) {
-					wrapBool(stream.writeFloat(vxlMatrix[col][row]))
-				}
+			for (int i = 0; i < 12; ++i) {
+				const int col = i / 4;
+				const int row = i % 4;
+				float val = vxlMatrix.matrix[col][row];
+				wrapBool(stream.writeFloat(val))
 			}
 		}
 	}
