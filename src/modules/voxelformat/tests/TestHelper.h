@@ -18,6 +18,12 @@
 namespace glm {
 ::std::ostream &operator<<(::std::ostream &os, const mat4x4 &matrix);
 ::std::ostream &operator<<(::std::ostream &os, const mat3x3 &matrix);
+::std::ostream &operator<<(::std::ostream &os, const vec2 &v);
+::std::ostream &operator<<(::std::ostream &os, const vec3 &v);
+::std::ostream &operator<<(::std::ostream &os, const vec4 &v);
+::std::ostream &operator<<(::std::ostream &os, const ivec2 &v);
+::std::ostream &operator<<(::std::ostream &os, const ivec3 &v);
+::std::ostream &operator<<(::std::ostream &os, const ivec4 &v);
 }
 
 namespace voxel {

@@ -39,13 +39,7 @@ TEST_F(VXLFormatTest, testSwitchYAndZ) {
 
 	const glm::mat4 m1 = glm::translate(glm::rotate(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(10.0f, 20.0f, 30.0f));
 	const glm::mat4 m2 = test.switchAxis(m1);
-	for (int row = 0; row < glm::mat4::col_type::length(); ++row) {
-		for (int col = 0; col < glm::mat4::length(); ++col) {
-			EXPECT_FLOAT_EQ(m1[col][row], m2[col][row]) << "row " << row << ", col " << col << " differs:\n"
-														<< m1 << "\n"
-														<< m2;
-		}
-	}
+	EXPECT_EQ(m1, m2);
 }
 
 }

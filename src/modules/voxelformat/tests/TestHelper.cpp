@@ -19,17 +19,38 @@
 #include <glm/gtx/string_cast.hpp>
 
 namespace glm {
-
 ::std::ostream &operator<<(::std::ostream &os, const mat4x4 &matrix) {
 	os << to_string(matrix);
 	return os;
 }
-
 ::std::ostream &operator<<(::std::ostream &os, const mat3x3 &matrix) {
 	os << to_string(matrix);
 	return os;
 }
-
+::std::ostream &operator<<(::std::ostream &os, const vec2 &v) {
+	os << to_string(v);
+	return os;
+}
+::std::ostream &operator<<(::std::ostream &os, const vec3 &v) {
+	os << to_string(v);
+	return os;
+}
+::std::ostream &operator<<(::std::ostream &os, const vec4 &v) {
+	os << to_string(v);
+	return os;
+}
+::std::ostream &operator<<(::std::ostream &os, const ivec2 &v) {
+	os << to_string(v);
+	return os;
+}
+::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
+	os << to_string(v);
+	return os;
+}
+::std::ostream &operator<<(::std::ostream &os, const ivec4 &v) {
+	os << to_string(v);
+	return os;
+}
 }
 
 namespace voxel {
@@ -73,15 +94,15 @@ void keyFrameComparator(const voxelformat::SceneGraphKeyFrames &keyframes1, cons
 			if ((flags & ValidateFlags::Translation) == ValidateFlags::Translation) {
 				ASSERT_EQ(t1.worldTranslation(), t2.worldTranslation()) << "Translation failed for frame " << i;
 				ASSERT_EQ(t1.localTranslation(), t2.localTranslation()) << "Translation failed for frame " << i;
-				ASSERT_EQ(t1.worldMatrix(), t2.worldMatrix()) << "Matrix failed for frame " << i << "\n" << t1.worldMatrix() << "\n" << t2.worldMatrix();
-				ASSERT_EQ(t1.localMatrix(), t2.localMatrix()) << "Matrix failed for frame " << i << "\n" << t1.localMatrix() << "\n" << t2.localMatrix();
+				ASSERT_EQ(t1.worldMatrix(), t2.worldMatrix()) << "Matrix failed for frame " << i;
+				ASSERT_EQ(t1.localMatrix(), t2.localMatrix()) << "Matrix failed for frame " << i;
 			} else {
 				const glm::mat3x3 wrot1 = t1.worldMatrix();
 				const glm::mat3x3 wrot2 = t2.worldMatrix();
 				const glm::mat3x3 lrot1 = t1.localMatrix();
 				const glm::mat3x3 lrot2 = t2.localMatrix();
-				ASSERT_EQ(wrot1, wrot2) << "Matrix failed for frame " << i << "\n" << wrot1 << "\n" << wrot2;
-				ASSERT_EQ(lrot1, lrot2) << "Matrix failed for frame " << i << "\n" << lrot1 << "\n" << lrot2;
+				ASSERT_EQ(wrot1, wrot2) << "Matrix failed for frame " << i;
+				ASSERT_EQ(lrot1, lrot2) << "Matrix failed for frame " << i;
 
 			}
 			if ((flags & ValidateFlags::Pivot) == ValidateFlags::Pivot) {
