@@ -504,7 +504,6 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 	wrap(stream.readUInt32(footer.spanDataOffset))
 	wrap(stream.readFloat(footer.scale))
 
-	Log::debug("offsets: %u:%u:%u", footer.spanStartOffset, footer.spanEndOffset, footer.spanDataOffset);
 
 	for (int i = 0; i < 12; ++i) {
 		const int col = i % 4;
@@ -518,14 +517,10 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 	for (int i = 0; i < 3; ++i) {
 		wrap(stream.readFloat(footer.maxs[i]))
 	}
-	Log::debug("scale: %f", footer.scale);
-	Log::debug("mins: %f:%f:%f", footer.mins[0], footer.mins[1], footer.mins[2]);
-	Log::debug("maxs: %f:%f:%f", footer.maxs[0], footer.maxs[1], footer.maxs[2]);
 
 	wrap(stream.readUInt8(footer.xsize))
 	wrap(stream.readUInt8(footer.ysize))
 	wrap(stream.readUInt8(footer.zsize))
-
 	wrap(stream.readUInt8(footer.normalType))
 
 	if (footer.xsize == 0 || footer.ysize == 0 || footer.zsize == 0) {
@@ -533,6 +528,10 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 		return false;
 	}
 
+	Log::debug("scale: %f", footer.scale);
+	Log::debug("mins: %f:%f:%f", footer.mins[0], footer.mins[1], footer.mins[2]);
+	Log::debug("maxs: %f:%f:%f", footer.maxs[0], footer.maxs[1], footer.maxs[2]);
+	Log::debug("offsets: %u:%u:%u", footer.spanStartOffset, footer.spanEndOffset, footer.spanDataOffset);
 	Log::debug("size: %u:%u:%u, type: %u", footer.xsize, footer.ysize, footer.zsize, footer.normalType);
 	return true;
 }
