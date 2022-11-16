@@ -655,7 +655,8 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 				glm::mat4 glmMatrix = sectionMatrices[vxlNodeId].toMat4();
 				const VXLNodeFooter& footer = mdl.nodeFooters[nodeId];
 				const glm::vec3 size(footer.xsize, footer.ysize, footer.zsize);
-				const glm::vec3 nodeScale = (footer.maxs - footer.mins) / size;
+				const glm::vec3 nodeScale(1.0f); // we assume the mesh size bbox is the same as the volume bbox
+				//const glm::vec3 nodeScale = (footer.maxs - footer.mins) / size;
 				Log::debug("nodeScale: %f:%f:%f (footer: %f)", nodeScale[0], nodeScale[1], nodeScale[2], footer.scale);
 				// The HVA transformation matrices must be scaled - the VXL ones not!
 				// Calculate the ratio between screen units and voxels in all dimensions
@@ -724,7 +725,7 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 			const SceneGraphTransform &transform = node.transform(i);
 			const voxel::Region &region = node.region();
 			const glm::vec3 size(region.getDimensionsInCells());
-			const glm::vec3 nodeScale = (region.getUpperCornerf() - region.getLowerCornerf()) / size;
+			const glm::vec3 nodeScale(1.0f);
 			const glm::vec3 localMins = transform.localTranslation();
 			const float scale = 1.0f / priv::Scale; // transform.scale(); // TODO:
 
