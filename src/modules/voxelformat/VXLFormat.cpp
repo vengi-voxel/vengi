@@ -65,6 +65,51 @@ glm::mat4 VXLFormat::VXLMatrix::toMat4() const {
 	return switchYAndZ(matrix);
 }
 
+void VXLFormat::convertRead(glm::mat4 &glmMatrix, const VXLNodeFooter& footer, bool hva) {
+	glm::vec4 &translation = glmMatrix[3];
+	if (hva) {
+		const glm::vec3 size(footer.xsize, footer.ysize, footer.zsize);
+		// const glm::vec3 nodeScale = (footer.maxs - footer.mins) / size;
+		// we assume that the bounding box is always the same size as the volume - so a scale of one
+		const glm::vec3 nodeScale(1.0f);
+		Log::debug("nodeScale: %f:%f:%f", nodeScale[0], nodeScale[1], nodeScale[2]);
+		Log::debug("mins: %f:%f:%f, maxs: %f:%f:%f", footer.mins.x, footer.mins.y, footer.mins.z, footer.maxs.x, footer.maxs.y, footer.maxs.z);
+		// Calculate the ratio between screen units and voxels in all dimensions
+		Log::debug("raw hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
+		// swap y and z here
+		translation.x *= (footer.scale * nodeScale.x);
+		translation.y *= (footer.scale * nodeScale.z);
+		translation.z *= (footer.scale * nodeScale.y);
+		Log::debug("scaled hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
+	}
+
+	// TODO: or the pivot?
+	translation.x += footer.mins.x;
+	translation.y += footer.mins.z;
+	translation.z += footer.mins.y;
+	Log::debug("shifted hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
+}
+
+void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &mat, const glm::vec3& mins, const glm::vec3 &scale, bool hva) {
+	vxlMatrix.fromMat4(mat);
+
+	// swap y and z here
+	// TODO: or the pivot?
+	Log::debug("raw hva translation: %f:%f:%f", vxlMatrix.matrix[3][0], vxlMatrix.matrix[3][1], vxlMatrix.matrix[3][2]);
+	vxlMatrix.matrix[3][0] -= mins.x;
+	vxlMatrix.matrix[3][1] -= mins.z;
+	vxlMatrix.matrix[3][2] -= mins.y;
+	Log::debug("shifted hva translation: %f:%f:%f", vxlMatrix.matrix[3][0], vxlMatrix.matrix[3][1], vxlMatrix.matrix[3][2]);
+
+	if (hva) {
+		// Calculate the ratio between screen units and voxels in all dimensions
+		vxlMatrix.matrix[3][0] *= (12.0f * scale.x);
+		vxlMatrix.matrix[3][1] *= (12.0f * scale.z);
+		vxlMatrix.matrix[3][2] *= (12.0f * scale.y);
+		Log::debug("scaled hva translation: %f:%f:%f", vxlMatrix.matrix[3][0], vxlMatrix.matrix[3][1], vxlMatrix.matrix[3][2]);
+	}
+}
+
 bool VXLFormat::writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t& skipCount, uint8_t& voxelCount, uint8_t normalType) const {
 	wrapBool(stream.writeUInt8(skipCount))
 	wrapBool(stream.writeUInt8(voxelCount))
@@ -183,10 +228,7 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 	const SceneGraphTransform &transform = node.transform(frameIdx);
 	const glm::vec3 &mins = transform.localTranslation();
 	VXLMatrix vxlMatrix;
-	vxlMatrix.fromMat4(transform.localMatrix());
-	vxlMatrix.matrix[3][0] -= mins.x;
-	vxlMatrix.matrix[3][1] -= mins.z;
-	vxlMatrix.matrix[3][2] -= mins.y;
+	convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), glm::vec3(0), false);
 
 	// TODO: always 0.0833333358f?
 	wrapBool(stream.writeFloat(priv::Scale /*transform.localScale()*/))
@@ -383,11 +425,7 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 	}
 
 	glm::mat4 glmMatrix = footer.transform.toMat4();
-	glm::vec4 &translation = glmMatrix[3];
-	// swap y and z here
-	translation.x += footer.mins.x;
-	translation.z += footer.mins.y;
-	translation.y += footer.mins.z;
+	convertRead(glmMatrix, footer, false);
 
 	SceneGraphTransform transform;
 	transform.setLocalMatrix(glmMatrix);
@@ -653,25 +691,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 			const int nodeId = file.header.nodeIds[vxlNodeId];
 			if (nodeId != -1) {
 				glm::mat4 glmMatrix = sectionMatrices[vxlNodeId].toMat4();
-				const VXLNodeFooter& footer = mdl.nodeFooters[nodeId];
-				const glm::vec3 size(footer.xsize, footer.ysize, footer.zsize);
-				const glm::vec3 nodeScale(1.0f); // we assume the mesh size bbox is the same as the volume bbox
-				//const glm::vec3 nodeScale = (footer.maxs - footer.mins) / size;
-				Log::debug("nodeScale: %f:%f:%f (footer: %f)", nodeScale[0], nodeScale[1], nodeScale[2], footer.scale);
-				// The HVA transformation matrices must be scaled - the VXL ones not!
-				// Calculate the ratio between screen units and voxels in all dimensions
-				glm::vec4 &translation = glmMatrix[3];
-				Log::debug("raw hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
-				// swap y and z here
-				translation.x *= (footer.scale * nodeScale.x);
-				translation.y *= (footer.scale * nodeScale.z);
-				translation.z *= (footer.scale * nodeScale.y);
-				Log::debug("scaled hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
-
-				translation.x += footer.mins.x;
-				translation.y += footer.mins.z;
-				translation.z += footer.mins.y;
-				Log::debug("shifted hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
+				convertRead(glmMatrix, mdl.nodeFooters[nodeId], true);
 
 				SceneGraphTransform transform;
 				transform.setLocalMatrix(glmMatrix);
@@ -723,24 +743,15 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 	for (uint32_t i = 0; i < numFrames; ++i) {
 		for (const SceneGraphNode &node : sceneGraph) {
 			const SceneGraphTransform &transform = node.transform(i);
-			const voxel::Region &region = node.region();
-			const glm::vec3 size(region.getDimensionsInCells());
-			const glm::vec3 nodeScale(1.0f);
-			const glm::vec3 localMins = transform.localTranslation();
-			const float scale = 1.0f / priv::Scale; // transform.scale(); // TODO:
+			// const voxel::Region &region = node.region();
+			// const glm::vec3 size = region.getDimensionsInVoxels();
+			// const glm::vec3 maxs = size / 2.0f * priv::Scale;
+			// const glm::vec3 mins = -maxs;
+			// const glm::vec3 scaleV = (maxs - mins) / size;
+			const glm::vec3 scaleV(1.0f);
 
-			// The HVA transformation matrices must be scaled - the VXL ones not!
 			VXLMatrix vxlMatrix;
-			vxlMatrix.fromMat4(transform.localMatrix());
-
-			// swap y and z
-			// TODO: or the pivot?
-			vxlMatrix.matrix[3][0] -= localMins.x;
-			vxlMatrix.matrix[3][1] -= localMins.z;
-			vxlMatrix.matrix[3][2] -= localMins.y;
-			vxlMatrix.matrix[3][0] /= (scale * nodeScale.x);
-			vxlMatrix.matrix[3][1] /= (scale * nodeScale.z);
-			vxlMatrix.matrix[3][2] /= (scale * nodeScale.y);
+			convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), scaleV, true);
 
 			for (int i = 0; i < 12; ++i) {
 				const int col = i % 4;
@@ -748,11 +759,6 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 				float val = vxlMatrix.matrix[col][row];
 				wrapBool(stream.writeFloat(val))
 			}
-
-			Log::debug("write hva size (frame %u, node %i): %f:%f:%f", i, node.id(), size[0], size[1], size[2]);
-			Log::debug("write hva nodeScale (frame %u, node %i): %f:%f:%f", i, node.id(), nodeScale[0], nodeScale[1], nodeScale[2]);
-			Log::debug("write hva localmins: %f:%f:%f", localMins.x, localMins.y, localMins.z);
-			Log::debug("write hva frame %u for node %i with translation: %f:%f:%f", i, node.id(), vxlMatrix.matrix[3][0], vxlMatrix.matrix[3][1], vxlMatrix.matrix[3][2]);
 		}
 	}
 	return true;
