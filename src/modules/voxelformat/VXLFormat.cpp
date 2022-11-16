@@ -254,14 +254,21 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 }
 
 bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, uint32_t numNodes, const voxel::Palette &palette) {
-	wrapBool(stream.writeString("Voxel Animation", true))
-	wrapBool(stream.writeUInt32(1)) // palette count TODO:
-	wrapBool(stream.writeUInt32(numNodes)) // header count
-	wrapBool(stream.writeUInt32(numNodes)) // footer count
-	wrapBool(stream.writeUInt32(0)) // bodysize is filled later
-	wrapBool(stream.writeUInt8(0x1fU))
-	wrapBool(stream.writeUInt8(0x10U))
+	VXLHeader header;
+	SDL_strlcpy(header.filetype, "Voxel Animation", sizeof(header.filetype));
+	header.paletteCount = 1;
+	header.nodeCount = numNodes;
+	header.tailerCount = numNodes;
+	header.bodysize = 0; // bodysize is filled later
 
+	wrapBool(stream.writeString(header.filetype, true))
+	wrapBool(stream.writeUInt32(header.paletteCount))
+	wrapBool(stream.writeUInt32(header.nodeCount))
+	wrapBool(stream.writeUInt32(header.tailerCount))
+	wrapBool(stream.writeUInt32(header.bodysize))
+
+	wrapBool(stream.writeUInt8(0x1fU)) // startPaletteRemap
+	wrapBool(stream.writeUInt8(0x10U)) // endPaletteRemap
 	for (int i = 0; i < palette.colorCount; ++i) {
 		const core::RGBA& rgba = palette.colors[i];
 		wrapBool(stream.writeUInt8(rgba.r))
