@@ -65,15 +65,15 @@ static uint8_t calculateVisibility(const voxel::RawVolume *v, int x, int y, int 
 }
 
 static uint8_t calculateDir(const voxel::RawVolume *, int, int, int, const voxel::Voxel &) {
-	return 255; // TODO
+	return 255u; // TODO
 }
 
 struct voxtype {
-	uint8_t z_low_h = 0;	//<! z coordinate of this surface voxel (height - our y)
-	uint8_t z_high = 0; //<! always 0
-	uint8_t col = 0;	//<! palette index
-	uint8_t vis = 0;	//<! Low 6 bits say if neighbor is solid or air - @sa priv::KV6Visibility
-	uint8_t dir = 0;	//<! Uses 256-entry lookup table - lighting bit - @sa priv::directions
+	uint8_t z_low_h = 0;	///< z coordinate of this surface voxel (height - our y)
+	uint8_t z_high = 0;		///< always 0
+	uint8_t col = 0;		///< palette index
+	uint8_t vis = 0;		///< Low 6 bits say if neighbor is solid or air - @sa priv::KV6Visibility
+	uint8_t dir = 0;		///< Uses 256-entry lookup table - lighting bit - @sa priv::directions
 };
 
 constexpr uint32_t MAXVOXS = 1048576;
