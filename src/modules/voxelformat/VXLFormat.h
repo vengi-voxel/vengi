@@ -159,7 +159,7 @@ private:
 
 	static glm::mat4 switchYAndZ(const glm::mat4 &in);
 	static void convertRead(glm::mat4 &glmMatrix, const VXLNodeFooter& footer, bool hva);
-	static void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &glmMatrix, const glm::vec3& mins, const glm::vec3 &scale, bool hva);
+	static void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &glmMatrix, const glm::vec3& mins, bool hva);
 
 protected:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;

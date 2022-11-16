@@ -69,44 +69,32 @@ void VXLFormat::convertRead(glm::mat4 &glmMatrix, const VXLNodeFooter& footer, b
 	glm::vec4 &translation = glmMatrix[3];
 	if (hva) {
 		const glm::vec3 size(footer.xsize, footer.ysize, footer.zsize);
-		// const glm::vec3 nodeScale = (footer.maxs - footer.mins) / size;
-		// we assume that the bounding box is always the same size as the volume - so a scale of one
-		const glm::vec3 nodeScale(1.0f);
-		Log::debug("nodeScale: %f:%f:%f", nodeScale[0], nodeScale[1], nodeScale[2]);
-		Log::debug("mins: %f:%f:%f, maxs: %f:%f:%f", footer.mins.x, footer.mins.y, footer.mins.z, footer.maxs.x, footer.maxs.y, footer.maxs.z);
-		// Calculate the ratio between screen units and voxels in all dimensions
-		Log::debug("raw hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
 		// swap y and z here
-		translation.x *= (footer.scale * nodeScale.x);
-		translation.y *= (footer.scale * nodeScale.z);
-		translation.z *= (footer.scale * nodeScale.y);
-		Log::debug("scaled hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
+		translation.x *= footer.scale;
+		translation.y *= footer.scale;
+		translation.z *= footer.scale;
 	}
 
 	// TODO: or the pivot?
 	translation.x += footer.mins.x;
 	translation.y += footer.mins.z;
 	translation.z += footer.mins.y;
-	Log::debug("shifted hva translation: %f:%f:%f", translation.x, translation.y, translation.z);
 }
 
-void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &mat, const glm::vec3& mins, const glm::vec3 &scale, bool hva) {
+void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &mat, const glm::vec3& mins, bool hva) {
 	vxlMatrix.fromMat4(mat);
 
 	// swap y and z here
 	// TODO: or the pivot?
-	Log::debug("raw hva translation: %f:%f:%f", vxlMatrix.matrix[3][0], vxlMatrix.matrix[3][1], vxlMatrix.matrix[3][2]);
 	vxlMatrix.matrix[3][0] -= mins.x;
 	vxlMatrix.matrix[3][1] -= mins.z;
 	vxlMatrix.matrix[3][2] -= mins.y;
-	Log::debug("shifted hva translation: %f:%f:%f", vxlMatrix.matrix[3][0], vxlMatrix.matrix[3][1], vxlMatrix.matrix[3][2]);
 
 	if (hva) {
 		// Calculate the ratio between screen units and voxels in all dimensions
-		vxlMatrix.matrix[3][0] *= (12.0f * scale.x);
-		vxlMatrix.matrix[3][1] *= (12.0f * scale.z);
-		vxlMatrix.matrix[3][2] *= (12.0f * scale.y);
-		Log::debug("scaled hva translation: %f:%f:%f", vxlMatrix.matrix[3][0], vxlMatrix.matrix[3][1], vxlMatrix.matrix[3][2]);
+		vxlMatrix.matrix[3][0] /= priv::Scale;
+		vxlMatrix.matrix[3][1] /= priv::Scale;
+		vxlMatrix.matrix[3][2] /= priv::Scale;
 	}
 }
 
@@ -228,7 +216,7 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 	const SceneGraphTransform &transform = node.transform(frameIdx);
 	const glm::vec3 &mins = transform.localTranslation();
 	VXLMatrix vxlMatrix;
-	convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), glm::vec3(0), false);
+	convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), false);
 
 	// TODO: always 0.0833333358f?
 	wrapBool(stream.writeFloat(priv::Scale /*transform.localScale()*/))
@@ -504,7 +492,6 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 	wrap(stream.readUInt32(footer.spanDataOffset))
 	wrap(stream.readFloat(footer.scale))
 
-
 	for (int i = 0; i < 12; ++i) {
 		const int col = i % 4;
 		const int row = i / 4;
@@ -742,15 +729,8 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 	for (uint32_t i = 0; i < numFrames; ++i) {
 		for (const SceneGraphNode &node : sceneGraph) {
 			const SceneGraphTransform &transform = node.transform(i);
-			// const voxel::Region &region = node.region();
-			// const glm::vec3 size = region.getDimensionsInVoxels();
-			// const glm::vec3 maxs = size / 2.0f * priv::Scale;
-			// const glm::vec3 mins = -maxs;
-			// const glm::vec3 scaleV = (maxs - mins) / size;
-			const glm::vec3 scaleV(1.0f);
-
 			VXLMatrix vxlMatrix;
-			convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), scaleV, true);
+			convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), true);
 
 			for (int i = 0; i < 12; ++i) {
 				const int col = i % 4;
