@@ -42,6 +42,10 @@ namespace voxelformat {
 		return false; \
 	}
 
+namespace priv {
+static const float Scale = 1.0f / 12.0f;
+}
+
 // https://stackoverflow.com/a/71168853/774082
 // convert from left handed coordinate system (z up) to right handed glm coordinate system (y up)
 glm::mat4 VXLFormat::switchYAndZ(const glm::mat4 &in) {
@@ -185,7 +189,7 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 	vxlMatrix.matrix[3][2] -= mins.y;
 
 	// TODO: always 0.0833333358f?
-	wrapBool(stream.writeFloat(1.0f / 12.0f /*transform.localScale()*/))
+	wrapBool(stream.writeFloat(priv::Scale /*transform.localScale()*/))
 
 	for (int i = 0; i < 12; ++i) {
 		const int col = i % 4;
@@ -612,7 +616,6 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 				float &val = vxlMatrix.matrix[col][row];
 				wrap(stream.readFloat(val))
 			}
-			// TODO: 1.0f / 12.0f
 			Log::debug("load frame %u for node %i with translation: %f:%f:%f", frameIdx, nodeIdx, vxlMatrix.matrix[3][0], vxlMatrix.matrix[3][1], vxlMatrix.matrix[3][2]);
 		}
 	}
@@ -723,7 +726,7 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 			const glm::vec3 size(region.getDimensionsInCells());
 			const glm::vec3 nodeScale = (region.getUpperCornerf() - region.getLowerCornerf()) / size;
 			const glm::vec3 localMins = transform.localTranslation();
-			const float scale = 1.0f / (1.0f / 12.0f); // transform.scale(); // TODO:
+			const float scale = 1.0f / priv::Scale; // transform.scale(); // TODO:
 
 			// The HVA transformation matrices must be scaled - the VXL ones not!
 			VXLMatrix vxlMatrix;
