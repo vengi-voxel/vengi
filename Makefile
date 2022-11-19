@@ -106,6 +106,7 @@ update-im-neo-sequencer:
 	$(call UPDATE_GIT,im-neo-sequencer,https://gitlab.com/GroGy/im-neo-sequencer.git)
 	cp $(UPDATEDIR)/im-neo-sequencer.sync/imgui*.cpp $(UPDATEDIR)/im-neo-sequencer.sync/imgui*.h src/modules/ui/imgui/dearimgui
 	cp $(UPDATEDIR)/im-neo-sequencer.sync/LICENSE src/modules/ui/imgui/dearimgui/LICENSE-sequencer
+	clang-format -i src/modules/ui/imgui/dearimgui/imgui_neo*
 
 # the backend code is just copied to merge in potiential changes
 update-dearimgui:

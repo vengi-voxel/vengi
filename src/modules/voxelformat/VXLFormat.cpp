@@ -68,7 +68,6 @@ glm::mat4 VXLFormat::VXLMatrix::toMat4() const {
 void VXLFormat::convertRead(glm::mat4 &glmMatrix, const VXLNodeFooter& footer, bool hva) {
 	glm::vec4 &translation = glmMatrix[3];
 	if (hva) {
-		const glm::vec3 size(footer.xsize, footer.ysize, footer.zsize);
 		// swap y and z here
 		translation.x *= footer.scale;
 		translation.y *= footer.scale;
@@ -802,9 +801,12 @@ bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	const core::String &basename = core::string::stripExtension(filename);
 	wrapBool(loadHVA(basename + ".hva", mdl, sceneGraph))
 
-	// TODO: case insensitive barrel and turret search
-	wrapBool(loadFromFile(basename + "barl.vxl", sceneGraph, palette));
-	wrapBool(loadFromFile(basename + "tur.vxl", sceneGraph, palette));
+	if (!core::string::endsWith(filename, "barl.vxl")) {
+		wrapBool(loadFromFile(basename + "barl.vxl", sceneGraph, palette));
+	}
+	if (!core::string::endsWith(filename, "tur.vxl")) {
+		wrapBool(loadFromFile(basename + "tur.vxl", sceneGraph, palette));
+	}
 
 	return true;
 }
