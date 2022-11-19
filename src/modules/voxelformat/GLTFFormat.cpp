@@ -765,24 +765,24 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 			}
 		} else if (core::string::startsWith(attrType.c_str(), "COLOR")) {
 			if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
-				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
 					const float *colorData = (const float *)(buf);
-					vertices[verticesOffset + i].color = core::Color::getRGBA(glm::vec4(colorData[0], colorData[1], colorData[2], colorData[3]));
+					const float alpha = attributeAccessor->type == TINYGLTF_TYPE_VEC4 ? colorData[3] : 1.0f;
+					vertices[verticesOffset + i].color = core::Color::getRGBA(glm::vec4(colorData[0], colorData[1], colorData[2], alpha));
 					buf += stride;
 				}
 			} else if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
-				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
 					const uint8_t *colorData = buf;
-					vertices[verticesOffset + i].color = core::RGBA(colorData[0], colorData[1], colorData[2], colorData[3]);
+					const uint8_t alpha = attributeAccessor->type == TINYGLTF_TYPE_VEC4 ? colorData[3] : 255u;
+					vertices[verticesOffset + i].color = core::RGBA(colorData[0], colorData[1], colorData[2], alpha);
 					buf += stride;
 				}
 			} else if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
 				for (size_t i = 0; i < attributeAccessor->count; i++) {
 					const uint16_t *colorData = (const uint16_t *)buf;
-					vertices[verticesOffset + i].color = core::RGBA(colorData[0] / 256, colorData[1] / 256, colorData[2] / 256, colorData[3] / 256);
+					const uint8_t alpha = attributeAccessor->type == TINYGLTF_TYPE_VEC4 ? colorData[3] / 256u : 255u;
+					vertices[verticesOffset + i].color = core::RGBA(colorData[0] / 256, colorData[1] / 256, colorData[2] / 256, alpha);
 					buf += stride;
 				}
 			} else {
