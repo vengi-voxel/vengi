@@ -101,7 +101,7 @@
 // #define BACKWARD_HAS_UNWIND 1
 //  - unwind comes from libgcc, but I saw an equivalent inside clang itself.
 //  - with unwind, the stacktrace is as accurate as it can possibly be, since
-//  this is used by the C++ runtine in gcc/clang for stack unwinding on
+//  this is used by the C++ runtime in gcc/clang for stack unwinding on
 //  exception.
 //  - normally libgcc is already linked to your program by default.
 //
@@ -221,6 +221,13 @@
 #include <sys/stat.h>
 #include <syscall.h>
 #include <unistd.h>
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#include <dlfcn.h>
+#undef _GNU_SOURCE
+#else
+#include <dlfcn.h>
+#endif
 
 #if BACKWARD_HAS_BFD == 1
 //              NOTE: defining PACKAGE{,_VERSION} is required before including
@@ -233,13 +240,6 @@
 #define PACKAGE_VERSION
 #endif
 #include <bfd.h>
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#include <dlfcn.h>
-#undef _GNU_SOURCE
-#else
-#include <dlfcn.h>
-#endif
 #endif
 
 #if BACKWARD_HAS_DW == 1
@@ -254,13 +254,6 @@
 #include <libdwarf.h>
 #include <libelf.h>
 #include <map>
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#include <dlfcn.h>
-#undef _GNU_SOURCE
-#else
-#include <dlfcn.h>
-#endif
 #endif
 
 #if (BACKWARD_HAS_BACKTRACE == 1) || (BACKWARD_HAS_BACKTRACE_SYMBOL == 1)
@@ -277,7 +270,7 @@
 // #define BACKWARD_HAS_UNWIND 1
 //  - unwind comes from libgcc, but I saw an equivalent inside clang itself.
 //  - with unwind, the stacktrace is as accurate as it can possibly be, since
-//  this is used by the C++ runtine in gcc/clang for stack unwinding on
+//  this is used by the C++ runtime in gcc/clang for stack unwinding on
 //  exception.
 //  - normally libgcc is already linked to your program by default.
 //
@@ -344,7 +337,12 @@
 #include <thread>
 
 #include <basetsd.h>
+
+#ifdef _WIN64
 typedef SSIZE_T ssize_t;
+#else
+typedef int ssize_t;
+#endif
 
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -812,7 +810,12 @@ public:
     _index = -1;
     _depth = depth;
     _Unwind_Backtrace(&this->backtrace_trampoline, this);
-    return static_cast<size_t>(_index);
+    if (_index == -1) {
+      // _Unwind_Backtrace has failed to obtain any backtraces
+      return 0;
+    } else {
+      return static_cast<size_t>(_index);
+    }
   }
 
 private:
@@ -833,7 +836,7 @@ private:
     uintptr_t ip = _Unwind_GetIPInfo(ctx, &ip_before_instruction);
 
     if (!ip_before_instruction) {
-      // calculating 0-1 for unsigned, looks like a possible bug to sanitiziers,
+      // calculating 0-1 for unsigned, looks like a possible bug to sanitizers,
       // so let's do it explicitly:
       if (ip == 0) {
         ip = std::numeric_limits<uintptr_t>::max(); // set it to 0xffff... (as
@@ -1455,7 +1458,7 @@ public:
     // line of the function that was called. But if the code is optimized,
     // we might get something absolutely not related since the compiler
     // can reschedule the return address with inline functions and
-    // tail-call optimisation (among other things that I don't even know
+    // tail-call optimization (among other things that I don't even know
     // or cannot even dream about with my tiny limited brain).
     find_sym_result details_adjusted_call_site = find_symbol_details(
         fobj, (void *)(uintptr_t(trace.addr) - 1), symbol_info.dli_fbase);
@@ -1486,7 +1489,7 @@ public:
         // this time we get the name of the function where the code is
         // located, instead of the function were the address is
         // located. In short, if the code was inlined, we get the
-        // function correspoding to the code. Else we already got in
+        // function corresponding to the code. Else we already got in
         // trace.function.
         trace.source.function = demangle(details_selected->funcname);
 
@@ -1701,7 +1704,7 @@ private:
 
     // are we in the boundaries of the section?
     if (addr < sec_addr || addr >= sec_addr + size) {
-      addr -= base_addr; // oups, a relocated object, lets try again...
+      addr -= base_addr; // oops, a relocated object, lets try again...
       if (addr < sec_addr || addr >= sec_addr + size) {
         return;
       }
@@ -1780,7 +1783,7 @@ public:
   ResolvedTrace resolve(ResolvedTrace trace) override {
     using namespace details;
 
-    Dwarf_Addr trace_addr = (Dwarf_Addr)trace.addr;
+    Dwarf_Addr trace_addr = reinterpret_cast<Dwarf_Addr>(trace.addr);
 
     if (!_dwfl_handle_initialized) {
       // initialize dwfl...
@@ -1912,8 +1915,8 @@ public:
       int line = 0, col = 0;
       dwarf_lineno(srcloc, &line);
       dwarf_linecol(srcloc, &col);
-      trace.source.line = line;
-      trace.source.col = col;
+      trace.source.line = static_cast<unsigned>(line);
+      trace.source.col = static_cast<unsigned>(col);
     }
 
     deep_first_search_by_pc(cudie, trace_addr - mod_bias,
@@ -1960,8 +1963,8 @@ private:
         Dwarf_Word line = 0, col = 0;
         dwarf_formudata(dwarf_attr(die, DW_AT_call_line, &attr_mem), &line);
         dwarf_formudata(dwarf_attr(die, DW_AT_call_column, &attr_mem), &col);
-        sloc.line = (unsigned)line;
-        sloc.col = (unsigned)col;
+        sloc.line = static_cast<unsigned>(line);
+        sloc.col = static_cast<unsigned>(col);
 
         trace.inliners.push_back(sloc);
         break;
@@ -3616,10 +3619,12 @@ public:
     symOptions |= SYMOPT_LOAD_LINES | SYMOPT_UNDNAME;
     SymSetOptions(symOptions);
     EnumProcessModules(process, &module_handles[0],
-                       module_handles.size() * sizeof(HMODULE), &cbNeeded);
+                       static_cast<DWORD>(module_handles.size() * sizeof(HMODULE)),
+		       &cbNeeded);
     module_handles.resize(cbNeeded / sizeof(HMODULE));
     EnumProcessModules(process, &module_handles[0],
-                       module_handles.size() * sizeof(HMODULE), &cbNeeded);
+                       static_cast<DWORD>(module_handles.size() * sizeof(HMODULE)),
+		       &cbNeeded);
     std::transform(module_handles.begin(), module_handles.end(),
                    std::back_inserter(modules), get_mod_info(process));
     void *base = modules[0].base_address;
@@ -3986,10 +3991,12 @@ public:
   bool object;
   int inliner_context_size;
   int trace_context_size;
+  bool reverse;
 
   Printer()
       : snippet(true), color_mode(ColorMode::automatic), address(false),
-        object(false), inliner_context_size(5), trace_context_size(7) {}
+        object(false), inliner_context_size(5), trace_context_size(7),
+        reverse(true) {}
 
   template <typename ST> FILE *print(ST &st, FILE *fp = stderr) {
     cfile_streambuf obuf(fp);
@@ -4036,8 +4043,14 @@ private:
   void print_stacktrace(ST &st, std::ostream &os, Colorize &colorize) {
     print_header(os, st.thread_id());
     _resolver.load_stacktrace(st);
-    for (size_t trace_idx = st.size(); trace_idx > 0; --trace_idx) {
-      print_trace(os, _resolver.resolve(st[trace_idx - 1]), colorize);
+    if ( reverse ) {
+      for (size_t trace_idx = st.size(); trace_idx > 0; --trace_idx) {
+        print_trace(os, _resolver.resolve(st[trace_idx - 1]), colorize);
+      }
+    } else {
+      for (size_t trace_idx = 0; trace_idx < st.size(); ++trace_idx) {
+        print_trace(os, _resolver.resolve(st[trace_idx]), colorize);
+      }
     }
   }
 
@@ -4372,7 +4385,7 @@ private:
   static const constexpr int signal_skip_recs =
 #ifdef __clang__
       // With clang, RtlCaptureContext also captures the stack frame of the
-      // current function Below that, there ar 3 internal Windows functions
+      // current function Below that, there are 3 internal Windows functions
       4
 #else
       // With MSVC cl, RtlCaptureContext misses the stack frame of the current
