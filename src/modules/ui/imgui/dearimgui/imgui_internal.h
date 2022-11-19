@@ -1,4 +1,4 @@
-// dear imgui, v1.89 WIP
+// dear imgui, v1.89.1 WIP
 // (internal structures/api)
 
 // You may use this file to debug, understand or extend ImGui features but we don't provide any guarantee of forward compatibility!
@@ -1304,8 +1304,8 @@ typedef ImS16 ImGuiKeyRoutingIndex;
 struct ImGuiKeyRoutingData
 {
     ImGuiKeyRoutingIndex            NextEntryIndex;
-    ImU16                           Mods;
-    ImU8                            RoutingNextScore;               // Lower is better (0: perfect score)
+    ImU16                           Mods;               // Technically we'd only need 4 bits but for simplify we store ImGuiMod_ values which need 16 bits.
+    ImU8                            RoutingNextScore;   // Lower is better (0: perfect score)
     ImGuiID                         RoutingCurr;
     ImGuiID                         RoutingNext;
 
@@ -2962,7 +2962,6 @@ namespace ImGui
     IMGUI_API ImGuiSettingsHandler* FindSettingsHandler(const char* type_name);
 
     // Scrolling
-    IMGUI_API void          SetNextWindowScroll(const ImVec2& scroll); // Use -1.0f on one axis to leave as-is
     IMGUI_API void          SetScrollX(ImGuiWindow* window, float scroll_x);
     IMGUI_API void          SetScrollY(ImGuiWindow* window, float scroll_y);
     IMGUI_API void          SetScrollFromPosX(ImGuiWindow* window, float local_x, float center_x_ratio);

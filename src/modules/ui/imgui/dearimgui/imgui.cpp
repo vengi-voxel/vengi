@@ -1,4 +1,4 @@
-// dear imgui, v1.89 WIP
+// dear imgui, v1.90 WIP
 // (main code and documentation)
 
 // Help:
@@ -962,7 +962,7 @@ static const float NAV_WINDOWING_LIST_APPEAR_DELAY          = 0.15f;    // Time 
 // Window resizing from edges (when io.ConfigWindowsResizeFromEdges = true and ImGuiBackendFlags_HasMouseCursors is set in io.BackendFlags by backend)
 static const float WINDOWS_HOVER_PADDING                    = 4.0f;     // Extend outside window for hovering/resizing (maxxed with TouchPadding) and inside windows for borders. Affect FindHoveredWindow().
 static const float WINDOWS_RESIZE_FROM_EDGES_FEEDBACK_TIMER = 0.04f;    // Reduce visual noise by only highlighting the border after a certain time.
-static const float WINDOWS_MOUSE_WHEEL_SCROLL_LOCK_TIMER    = 0.80f;    // Lock scrolled window (so it doesn't pick child windows that are scrolling through) for a certain time, unless mouse moved.
+static const float WINDOWS_MOUSE_WHEEL_SCROLL_LOCK_TIMER    = 0.70f;    // Lock scrolled window (so it doesn't pick child windows that are scrolling through) for a certain time, unless mouse moved.
 
 // Docking
 static const float DOCKING_TRANSPARENT_PAYLOAD_ALPHA        = 0.50f;    // For use with io.ConfigDockingTransparentPayload. Apply to Viewport _or_ WindowBg in host viewport.
@@ -4506,10 +4506,13 @@ static void ImGui::UpdateMouseInputs()
     }
 }
 
-static void LockWheelingWindow(ImGuiWindow* window)
+static void LockWheelingWindow(ImGuiWindow* window, float wheel_amount)
 {
     ImGuiContext& g = *GImGui;
-    g.WheelingWindowReleaseTimer = window ? WINDOWS_MOUSE_WHEEL_SCROLL_LOCK_TIMER : 0.0f;
+    if (window)
+        g.WheelingWindowReleaseTimer = ImMin(g.WheelingWindowReleaseTimer + ImAbs(wheel_amount) * WINDOWS_MOUSE_WHEEL_SCROLL_LOCK_TIMER, WINDOWS_MOUSE_WHEEL_SCROLL_LOCK_TIMER);
+    else
+        g.WheelingWindowReleaseTimer = 0.0f;
     if (g.WheelingWindow == window)
         return;
     IMGUI_DEBUG_LOG_IO("LockWheelingWindow() \"%s\"\n", window ? window->Name : "NULL");
@@ -4528,7 +4531,7 @@ void ImGui::UpdateMouseWheel()
         if (IsMousePosValid() && ImLengthSqr(g.IO.MousePos - g.WheelingWindowRefMousePos) > g.IO.MouseDragThreshold * g.IO.MouseDragThreshold)
             g.WheelingWindowReleaseTimer = 0.0f;
         if (g.WheelingWindowReleaseTimer <= 0.0f)
-            LockWheelingWindow(NULL);
+            LockWheelingWindow(NULL, 0.0f);
     }
 
     ImVec2 wheel;
@@ -4546,7 +4549,7 @@ void ImGui::UpdateMouseWheel()
     // FIXME-OBSOLETE: This is an old feature, it still works but pretty much nobody is using it and may be best redesigned.
     if (wheel.y != 0.0f && g.IO.KeyCtrl && g.IO.FontAllowUserScaling)
     {
-        LockWheelingWindow(mouse_window);
+        LockWheelingWindow(mouse_window, wheel.y);
         ImGuiWindow* window = mouse_window;
         const float new_font_scale = ImClamp(window->FontWindowScale + g.IO.MouseWheel * 0.10f, 0.50f, 2.50f);
         const float scale = new_font_scale / window->FontWindowScale;
@@ -4585,7 +4588,7 @@ void ImGui::UpdateMouseWheel()
             window = window->ParentWindow;
         if (!(window->Flags & ImGuiWindowFlags_NoScrollWithMouse) && !(window->Flags & ImGuiWindowFlags_NoMouseInputs))
         {
-            LockWheelingWindow(mouse_window);
+            LockWheelingWindow(mouse_window, wheel.y);
             float max_step = window->InnerRect.GetHeight() * 0.67f;
             float scroll_step = ImFloor(ImMin(5 * window->CalcFontSize(), max_step));
             SetScrollY(window, window->Scroll.y - wheel.y * scroll_step);
@@ -4600,7 +4603,7 @@ void ImGui::UpdateMouseWheel()
             window = window->ParentWindow;
         if (!(window->Flags & ImGuiWindowFlags_NoScrollWithMouse) && !(window->Flags & ImGuiWindowFlags_NoMouseInputs))
         {
-            LockWheelingWindow(mouse_window);
+            LockWheelingWindow(mouse_window, wheel.x);
             float max_step = window->InnerRect.GetWidth() * 0.67f;
             float scroll_step = ImFloor(ImMin(2 * window->CalcFontSize(), max_step));
             SetScrollX(window, window->Scroll.x - wheel.x * scroll_step);
@@ -6385,9 +6388,11 @@ void ImGui::RenderWindowDecorations(ImGuiWindow* window, const ImRect& title_bar
     if (window->Collapsed)
     {
         // Title bar only
-        float backup_border_size = style.FrameBorderSize;
+        const float backup_border_size = style.FrameBorderSize;
         g.Style.FrameBorderSize = window->WindowBorderSize;
         ImU32 title_bar_col = GetColorU32((title_bar_is_highlight && !g.NavDisableHighlight) ? ImGuiCol_TitleBgActive : ImGuiCol_TitleBgCollapsed);
+        if (window->ViewportOwned)
+            title_bar_col |= IM_COL32_A_MASK; // No alpha (we don't support is_docking_transparent_payload here because simpler and less meaningful, but could with a bit of code shuffle/reuse)
         RenderFrame(title_bar_rect.Min, title_bar_rect.Max, title_bar_col, true, window_rounding);
         g.Style.FrameBorderSize = backup_border_size;
     }
@@ -6404,8 +6409,7 @@ void ImGui::RenderWindowDecorations(ImGuiWindow* window, const ImRect& title_bar
             ImU32 bg_col = GetColorU32(GetWindowBgColorIdx(window));
             if (window->ViewportOwned)
             {
-                // No alpha
-                bg_col = (bg_col | IM_COL32_A_MASK);
+                bg_col |= IM_COL32_A_MASK; // No alpha
                 if (is_docking_transparent_payload)
                     window->Viewport->Alpha *= DOCKING_TRANSPARENT_PAYLOAD_ALPHA;
             }
@@ -8640,14 +8644,61 @@ ImGuiKeyRoutingData* ImGui::GetShortcutRoutingData(ImGuiKeyChord key_chord)
             return routing_data;
     }
 
-    // Add
-    ImGuiKeyRoutingIndex idx = (ImGuiKeyRoutingIndex)rt->Entries.Size;
+    // Add to linked-list
+    ImGuiKeyRoutingIndex routing_data_idx = (ImGuiKeyRoutingIndex)rt->Entries.Size;
     rt->Entries.push_back(ImGuiKeyRoutingData());
-    routing_data = &rt->Entries[idx];
+    routing_data = &rt->Entries[routing_data_idx];
     routing_data->Mods = (ImU16)mods;
     routing_data->NextEntryIndex = rt->Index[key - ImGuiKey_NamedKey_BEGIN]; // Setup linked list
-    rt->Index[key - ImGuiKey_NamedKey_BEGIN] = idx;
+    rt->Index[key - ImGuiKey_NamedKey_BEGIN] = routing_data_idx;
     return routing_data;
+}
+
+// Current score encoding (lower is highest priority):
+//  -   0: ImGuiInputFlags_RouteGlobalHigh
+//  -   1: ImGuiInputFlags_RouteFocused (if item active)
+//  -   2: ImGuiInputFlags_RouteGlobal
+//  -  3+: ImGuiInputFlags_RouteFocused (if window in focus-stack)
+//  - 254: ImGuiInputFlags_RouteGlobalLow
+//  - 255: never route
+// 'flags' should include an explicit routing policy
+static int CalcRoutingScore(ImGuiWindow* location, ImGuiID owner_id, ImGuiInputFlags flags)
+{
+    if (flags & ImGuiInputFlags_RouteFocused)
+    {
+        ImGuiContext& g = *GImGui;
+        ImGuiWindow* focused = g.NavWindow;
+
+        // ActiveID gets top priority
+        // (we don't check g.ActiveIdUsingAllKeys here. Routing is applied but if input ownership is tested later it may discard it)
+        if (owner_id != 0 && g.ActiveId == owner_id)
+            return 1;
+
+        // Score based on distance to focused window (lower is better)
+        // Assuming both windows are submitting a routing request,
+        // - When Window....... is focused -> Window scores 3 (best), Window/ChildB scores 255 (no match)
+        // - When Window/ChildB is focused -> Window scores 4,        Window/ChildB scores 3 (best)
+        // Assuming only WindowA is submitting a routing request,
+        // - When Window/ChildB is focused -> Window scores 4 (best), Window/ChildB doesn't have a score.
+        if (focused != NULL && focused->RootWindow == location->RootWindow)
+            for (int next_score = 3; focused != NULL; next_score++)
+            {
+                if (focused == location)
+                {
+                    IM_ASSERT(next_score < 255);
+                    return next_score;
+                }
+                focused = (focused->RootWindow != focused) ? focused->ParentWindow : NULL; // FIXME: This could be later abstracted as a focus path
+            }
+        return 255;
+    }
+
+    // ImGuiInputFlags_RouteGlobalHigh is default, so calls without flags are not conditional
+    if (flags & ImGuiInputFlags_RouteGlobal)
+        return 2;
+    if (flags & ImGuiInputFlags_RouteGlobalLow)
+        return 254;
+    return 0;
 }
 
 // Request a desired route for an input chord (key + mods).
@@ -8671,54 +8722,7 @@ bool ImGui::SetShortcutRouting(ImGuiKeyChord key_chord, ImGuiID owner_id, ImGuiI
     if (flags & ImGuiInputFlags_RouteAlways)
         return true;
 
-    // Current score encoding (lower is highest priority):
-    //  -   0: ImGuiInputFlags_RouteGlobalHigh
-    //  -   1: ImGuiInputFlags_RouteFocused (if item active)
-    //  -   2: ImGuiInputFlags_RouteGlobal
-    //  -  3+: ImGuiInputFlags_RouteFocused (if window in focus-stack)
-    //  - 254: ImGuiInputFlags_RouteGlobalLow
-    //  - 255: none
-    int score = 255;
-    if (flags & ImGuiInputFlags_RouteFocused)
-    {
-        ImGuiWindow* location = g.CurrentWindow;
-        ImGuiWindow* focused = g.NavWindow;
-
-        if (g.ActiveId != 0 && g.ActiveId == owner_id)
-        {
-            // ActiveID gets top priority
-            // (we don't check g.ActiveIdUsingAllKeys here. Routing is applied but if input ownership is tested later it may discard it)
-            score = 1;
-        }
-        else if (focused != NULL && focused->RootWindow == location->RootWindow) // Early out
-        {
-            // Score based on distance to focused window (lower is better)
-            // Assuming both windows are submitting a routing request,
-            // - When Window....... is focused -> Window scores 3 (best), Window/ChildB scores 255 (no match)
-            // - When Window/ChildB is focused -> Window scores 4,        Window/ChildB scores 3 (best)
-            // Assuming only WindowA is submitting a routing request,
-            // - When Window/ChildB is focused -> Window scores 4 (best), Window/ChildB doesn't have a score.
-            for (int next_score = 3; focused != NULL; next_score++)
-            {
-                if (focused == location)
-                {
-                    IM_ASSERT(next_score < 255);
-                    score = (ImU8)next_score;
-                    break;
-                }
-                focused = (focused->RootWindow != focused) ? focused->ParentWindow : NULL; // FIXME: This could be later abstracted as a focus path
-            }
-        }
-    }
-    else
-    {
-        if (flags & ImGuiInputFlags_RouteGlobal)
-            score = 2;
-        else if (flags & ImGuiInputFlags_RouteGlobalLow)
-            score = 254;
-        else // ImGuiInputFlags_RouteGlobalHigh is default, so call to SetShorcutRouting() without no flags are not conditional
-            score = 0;
-    }
+    const int score = CalcRoutingScore(g.CurrentWindow, owner_id, flags);
     if (score == 255)
         return false;
 
@@ -8957,6 +8961,10 @@ void ImGui::ResetMouseDragDelta(ImGuiMouseButton button)
     g.IO.MouseClickedPos[button] = g.IO.MousePos;
 }
 
+// Get desired mouse cursor shape.
+// Important: this is meant to be used by a platform backend, it is reset in ImGui::NewFrame(),
+// updated during the frame, and locked in EndFrame()/Render().
+// If you use software rendering by setting io.MouseDrawCursor then Dear ImGui will render those for you
 ImGuiMouseCursor ImGui::GetMouseCursor()
 {
     ImGuiContext& g = *GImGui;
@@ -9143,8 +9151,8 @@ ImGuiID ImGui::GetKeyOwner(ImGuiKey key)
     ImGuiKeyOwnerData* owner_data = GetKeyOwnerData(key);
     ImGuiID owner_id = owner_data->OwnerCurr;
 
-    if (g.ActiveIdUsingAllKeyboardKeys && owner_id != g.ActiveId)
-        if ((key >= ImGuiKey_Keyboard_BEGIN && key < ImGuiKey_Keyboard_END) || key == ImGuiMod_Ctrl || key == ImGuiMod_Shift || key == ImGuiMod_Alt || key == ImGuiMod_Super)
+    if (g.ActiveIdUsingAllKeyboardKeys && owner_id != g.ActiveId && owner_id != ImGuiKeyOwner_Any)
+        if (key >= ImGuiKey_Keyboard_BEGIN && key < ImGuiKey_Keyboard_END)
             return ImGuiKeyOwner_None;
 
     return owner_id;
@@ -9160,8 +9168,8 @@ bool ImGui::TestKeyOwner(ImGuiKey key, ImGuiID owner_id)
         return true;
 
     ImGuiContext& g = *GImGui;
-    if (g.ActiveIdUsingAllKeyboardKeys && owner_id != g.ActiveId)
-        if ((key >= ImGuiKey_Keyboard_BEGIN && key < ImGuiKey_Keyboard_END) || key == ImGuiMod_Ctrl || key == ImGuiMod_Shift || key == ImGuiMod_Alt || key == ImGuiMod_Super)
+    if (g.ActiveIdUsingAllKeyboardKeys && owner_id != g.ActiveId && owner_id != ImGuiKeyOwner_Any)
+        if (key >= ImGuiKey_Keyboard_BEGIN && key < ImGuiKey_Keyboard_END)
             return false;
 
     ImGuiKeyOwnerData* owner_data = GetKeyOwnerData(key);
