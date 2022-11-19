@@ -28,27 +28,28 @@ class SceneManagerTest : public video::AbstractGLTest, public SceneManagerProtec
 protected:
 	void SetUp() override {
 		video::AbstractGLTest::SetUp();
-		if (_supported) {
-			video::ShaderVarState state;
-			setShaderVars(state);
-			core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-			core::Var::get(cfg::VoxEditShowaabb, "");
-			core::Var::get(cfg::VoxEditGrayInactive, "");
-			core::Var::get(cfg::VoxEditHideInactive, "");
-			core::Var::get(cfg::VoxEditLastPalette, "");
-			construct();
-			ASSERT_TRUE(init());
-
-			const voxel::Region region{0, 1};
-			ASSERT_TRUE(newScene(true, "newscene", region));
-
-			modifier().setCursorVoxel(voxel::createVoxel(1));
-			modifier().setModifierType(ModifierType::Place);
-			modifier().setPlaneMode(false);
-			modifier().setSingleMode(true);
-			EXPECT_FALSE(mementoHandler().canUndo());
-			EXPECT_FALSE(mementoHandler().canRedo());
+		if (IsSkipped()) {
+			return;
 		}
+		video::ShaderVarState state;
+		setShaderVars(state);
+		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
+		core::Var::get(cfg::VoxEditShowaabb, "");
+		core::Var::get(cfg::VoxEditGrayInactive, "");
+		core::Var::get(cfg::VoxEditHideInactive, "");
+		core::Var::get(cfg::VoxEditLastPalette, "");
+		construct();
+		ASSERT_TRUE(init());
+
+		const voxel::Region region{0, 1};
+		ASSERT_TRUE(newScene(true, "newscene", region));
+
+		modifier().setCursorVoxel(voxel::createVoxel(1));
+		modifier().setModifierType(ModifierType::Place);
+		modifier().setPlaneMode(false);
+		modifier().setSingleMode(true);
+		EXPECT_FALSE(mementoHandler().canUndo());
+		EXPECT_FALSE(mementoHandler().canRedo());
 	}
 
 	void testSetVoxel(const glm::ivec3 &pos, int paletteColorIndex = 1) {
@@ -92,7 +93,7 @@ protected:
 	}
 
 	void TearDown() override {
-		if (_supported) {
+		if (!IsSkipped()) {
 			shutdown();
 		}
 		video::AbstractGLTest::TearDown();

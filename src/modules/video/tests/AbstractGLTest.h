@@ -34,7 +34,6 @@ class AbstractGLTest : public app::AbstractTest {
 protected:
 	SDL_Window *_window = nullptr;
 	RendererContext _ctx = nullptr;
-	bool _supported = true;
 
 	void setShaderVars(const ShaderVarState& val) {
 		core::Var::get(cfg::ClientShadowMap, "1", core::CV_SHADER)->setVal(val.clientShadowMap);
@@ -59,11 +58,9 @@ public:
 		app::AbstractTest::SetUp();
 #ifdef __WINDOWS__
 		GTEST_SKIP() << "Skipping because there are problems in the pipeline when running this headless";
-		_supported = false;
 #else
 		if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 			GTEST_SKIP() << "Failed to initialize SDL video subsystem";
-			_supported = false;
 			return;
 		}
 		video::setup();
@@ -71,10 +68,13 @@ public:
 		_window = SDL_CreateWindow("test", 0, 0, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
 		if (_window != nullptr) {
 			_ctx = video::createContext(_window);
-			_ctx != nullptr && video::init(640, 480, 1.0f);
+			if (_ctx == nullptr) {
+				GTEST_SKIP() << "Failed to create context";
+			} else if (!video::init(640, 480, 1.0f)) {
+				GTEST_SKIP() << "Failed to init video context";
+			}
 		} else {
 			GTEST_SKIP() << "Failed to create window";
-			_supported = false;
 		}
 #endif
 	}
@@ -99,6 +99,9 @@ class AbstractShaderTest :
 public:
 	void SetUp() override {
 		AbstractGLTest::SetUp();
+		if (IsSkipped()) {
+			return;
+		}
 		setShaderVars(GetParam());
 	}
 };
