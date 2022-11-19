@@ -10,14 +10,12 @@ namespace compute {
 class ComputeShaderTest: public app::AbstractTest {
 private:
 	using Super = app::AbstractTest;
-protected:
-	bool _supported = false;
 public:
 	void SetUp() override {
 		Super::SetUp();
-		_supported = compute::init();
-		if (!_supported) {
+		if (!compute::init()) {
 			Log::warn("ComputeShaderTest is skipped");
+			GTEST_SKIP() << "Failed to initialize compute shader";
 		}
 	}
 
@@ -41,9 +39,6 @@ TEST_F(ComputeShaderTest, testCompileStruct) {
 }
 
 TEST_F(ComputeShaderTest, testExecuteExample) {
-	if (!_supported) {
-		return;
-	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
 	const std::vector<int8_t> foo { '1', '2', '3', '4', '5', '6' };
@@ -53,9 +48,6 @@ TEST_F(ComputeShaderTest, testExecuteExample) {
 }
 
 TEST_F(ComputeShaderTest, testExecuteExample2) {
-	if (!_supported) {
-		return;
-	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
 	const std::vector<int8_t> foo { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
@@ -65,9 +57,6 @@ TEST_F(ComputeShaderTest, testExecuteExample2) {
 }
 
 TEST_F(ComputeShaderTest, testExecuteExampleBig) {
-	if (!_supported) {
-		return;
-	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
 	constexpr int size = 10000;
@@ -78,9 +67,6 @@ TEST_F(ComputeShaderTest, testExecuteExampleBig) {
 }
 
 TEST_F(ComputeShaderTest, testExecuteExampleVectorAddFloat3NoPointer) {
-	if (!_supported) {
-		return;
-	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
 	const glm::vec3 A(0.0f, 1.0f, 2.0f);
@@ -96,9 +82,6 @@ TEST_F(ComputeShaderTest, testExecuteExampleVectorAddFloat3NoPointer) {
 }
 
 TEST_F(ComputeShaderTest, testExecuteExampleVectorAddFloat3) {
-	if (!_supported) {
-		return;
-	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
 	const std::vector<glm::vec3> A {glm::vec3{0.0f, 1.0f, 2.0f}, glm::vec3{0.0f, 1.0f, 2.0f}};
@@ -120,9 +103,6 @@ TEST_F(ComputeShaderTest, testExecuteExampleBigNonOpenCL) {
 }
 
 TEST_F(ComputeShaderTest, testExecuteVectorAdd) {
-	if (!_supported) {
-		return;
-	}
 	compute::TestShader shader;
 	ASSERT_TRUE(shader.setup());
 	constexpr int size = 1000;

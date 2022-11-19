@@ -100,17 +100,10 @@ protected:
 };
 
 TEST_F(SceneManagerTest, testNewScene) {
-	if (!_supported) {
-		return;
-	}
 	EXPECT_TRUE(newScene(true, "newscene", voxel::Region{0, 1}));
 }
 
 TEST_F(SceneManagerTest, testUndoRedoModification) {
-	if (!_supported) {
-		return;
-	}
-
 	EXPECT_FALSE(dirty());
 	testSetVoxel(testMins());
 	EXPECT_TRUE(dirty());
@@ -132,10 +125,6 @@ TEST_F(SceneManagerTest, testUndoRedoModification) {
 }
 
 TEST_F(SceneManagerTest, testNodeAddUndoRedo) {
-	if (!_supported) {
-		return;
-	}
-
 	EXPECT_NE(-1, addModelChild("second node", 1, 1, 1));
 	EXPECT_NE(-1, addModelChild("third node", 1, 1, 1));
 
@@ -172,10 +161,6 @@ TEST_F(SceneManagerTest, testNodeAddUndoRedo) {
 }
 
 TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
-	if (!_supported) {
-		return;
-	}
-
 	EXPECT_EQ(1u, mementoHandler().stateSize());
 	// modification
 	testSetVoxel(testMins(), 1);
@@ -264,10 +249,6 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 }
 
 TEST_F(SceneManagerTest, testRenameUndoRedo) {
-	if (!_supported) {
-		return;
-	}
-
 	EXPECT_EQ(1u, mementoHandler().stateSize());
 	EXPECT_TRUE(nodeRename(sceneGraph().activeNode(), "newname"));
 	EXPECT_EQ(2u, mementoHandler().stateSize());
@@ -285,9 +266,6 @@ TEST_F(SceneManagerTest, testRenameUndoRedo) {
 }
 
 TEST_F(SceneManagerTest, testCopyPaste) {
-	if (!_supported) {
-		return;
-	}
 	testSetVoxel(testMins(), 1);
 	testSelect(testMins(), testMaxs());
 	EXPECT_TRUE(modifier().selection().isValid());
@@ -299,9 +277,6 @@ TEST_F(SceneManagerTest, testCopyPaste) {
 }
 
 TEST_F(SceneManagerTest, testMergeSimple) {
-	if (!_supported) {
-		return;
-	}
 	int secondNodeId = addModelChild("second node", 10, 10, 10);
 	int thirdNodeId = addModelChild("third node", 10, 10, 10);
 	ASSERT_NE(-1, secondNodeId);
@@ -331,9 +306,6 @@ TEST_F(SceneManagerTest, testMergeSimple) {
 }
 
 TEST_F(SceneManagerTest, DISABLED_testMergeTransform) {
-	if (!_supported) {
-		return;
-	}
 	// TODO:
 }
 
