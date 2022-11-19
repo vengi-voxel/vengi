@@ -5,11 +5,28 @@
 #include "CommandlineApp.h"
 #include "core/Var.h"
 #include "core/Log.h"
+#include <SDL_platform.h>
+#ifdef __WINDOWS__
+#include <windows.h>
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
+#endif
+#endif
 
 namespace app {
 
 CommandlineApp::CommandlineApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		Super(filesystem, timeProvider, threadPoolSize) {
+#ifdef __WINDOWS__
+	// https://learn.microsoft.com/en-us/windows/console/setconsolemode
+	HANDLE stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (stdoutHandle != INVALID_HANDLE_VALUE) {
+		DWORD console_mode;
+		if (GetConsoleMode(stdoutHandle, &console_mode)) {
+			SetConsoleMode(stdoutHandle, ENABLE_VIRTUAL_TERMINAL_PROCESSING | console_mode);
+		}
+	}
+#endif
 }
 
 CommandlineApp::~CommandlineApp() {
