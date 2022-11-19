@@ -91,17 +91,17 @@ void MainWindow::addLastOpenedFile(const core::String &file) {
 }
 
 bool MainWindow::init() {
-	_scene->init(voxedit::ViewportController::RenderMode::Editor);
-	_scene->controller().setMode(voxedit::ViewportController::SceneCameraMode::Free);
+	_scene->init(voxedit::Viewport::RenderMode::Editor);
+	_scene->setMode(voxedit::Viewport::SceneCameraMode::Free);
 
-	_sceneTop->init(voxedit::ViewportController::RenderMode::Editor);
-	_sceneTop->controller().setMode(voxedit::ViewportController::SceneCameraMode::Top);
+	_sceneTop->init(voxedit::Viewport::RenderMode::Editor);
+	_sceneTop->setMode(voxedit::Viewport::SceneCameraMode::Top);
 
-	_sceneLeft->init(voxedit::ViewportController::RenderMode::Editor);
-	_sceneLeft->controller().setMode(voxedit::ViewportController::SceneCameraMode::Left);
+	_sceneLeft->init(voxedit::Viewport::RenderMode::Editor);
+	_sceneLeft->setMode(voxedit::Viewport::SceneCameraMode::Left);
 
-	_sceneFront->init(voxedit::ViewportController::RenderMode::Editor);
-	_sceneFront->controller().setMode(voxedit::ViewportController::SceneCameraMode::Front);
+	_sceneFront->init(voxedit::Viewport::RenderMode::Editor);
+	_sceneFront->setMode(voxedit::Viewport::SceneCameraMode::Front);
 
 	_showGridVar = core::Var::getSafe(cfg::VoxEditShowgrid);
 	_modelSpaceVar = core::Var::getSafe(cfg::VoxEditModelSpace);

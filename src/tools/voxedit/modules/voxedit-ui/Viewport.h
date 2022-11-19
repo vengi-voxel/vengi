@@ -11,7 +11,7 @@
 #include "video/gl/GLTypes.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
-#include "voxedit-util/ViewportController.h"
+#include "voxel/Region.h"
 
 namespace voxelformat {
 class SceneGraphNode;
@@ -20,6 +20,15 @@ class SceneGraphNode;
 namespace voxedit {
 
 class Viewport {
+public:
+	enum class SceneCameraMode : uint8_t {
+		Free, Top, Left, Front
+	};
+
+	enum class RenderMode {
+		Editor,
+		Max
+	};
 private:
 	const core::String _id;
 	bool _hovered = false;
@@ -34,12 +43,17 @@ private:
 
 	video::FrameBuffer _frameBuffer;
 	video::TexturePtr _texture;
-	voxedit::ViewportController _controller;
 	core::VarPtr _modelSpaceVar;
 	core::VarPtr _showAxisVar;
 	core::VarPtr _guizmoRotation;
 	core::VarPtr _guizmoAllowAxisFlip;
 	core::VarPtr _guizmoSnap;
+
+	float _angle = 0.0f;
+	SceneCameraMode _camMode = SceneCameraMode::Free;
+	core::VarPtr _rotationSpeed;
+	video::Camera _camera;
+	RenderMode _renderMode = RenderMode::Editor;
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
@@ -51,9 +65,29 @@ public:
 	Viewport(const core::String& id);
 	~Viewport();
 
+	bool _mouseDown = false;
+	int _mouseX = 0;
+	int _mouseY = 0;
+
+	void setMode(SceneCameraMode mode);
+	void resetCamera(const glm::ivec3 &pos, const voxel::Region &region);
+
+	RenderMode renderMode() const;
+	void setRenderMode(RenderMode mode);
+
+	void resize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
+
+	void update(double deltaFrameSeconds);
+
+	void move(bool pan, bool rotate, int x, int y);
+
+	video::Camera& camera();
+
+	float angle() const;
+	void setAngle(float angle);
 	bool isHovered() const;
 	void update();
-	bool init(ViewportController::RenderMode renderMode = ViewportController::RenderMode::Editor);
+	bool init(RenderMode renderMode = RenderMode::Editor);
 	void shutdown();
 
 	const core::String& id() const;
@@ -62,9 +96,28 @@ public:
 	bool saveImage(const char* filename);
 
 	video::FrameBuffer& frameBuffer();
-	video::Camera& camera();
-	ViewportController& controller();
 };
+
+
+inline Viewport::RenderMode Viewport::renderMode() const {
+	return _renderMode;
+}
+
+inline void Viewport::setRenderMode(RenderMode renderMode) {
+	_renderMode = renderMode;
+}
+
+inline video::Camera& Viewport::camera() {
+	return _camera;
+}
+
+inline float Viewport::angle() const {
+	return _angle;
+}
+
+inline void Viewport::setAngle(float angle) {
+	_angle = angle;
+}
 
 inline const core::String& Viewport::id() const {
 	return _id;
@@ -76,14 +129,6 @@ inline bool Viewport::isHovered() const {
 
 inline video::FrameBuffer& Viewport::frameBuffer() {
 	return _frameBuffer;
-}
-
-inline ViewportController& Viewport::controller() {
-	return _controller;
-}
-
-inline video::Camera& Viewport::camera() {
-	return _controller.camera();
 }
 
 }

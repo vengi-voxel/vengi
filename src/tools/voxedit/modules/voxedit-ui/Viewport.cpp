@@ -22,7 +22,6 @@
 #include "image/Image.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxedit-util/ViewportController.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -39,13 +38,14 @@ Viewport::~Viewport() {
 	shutdown();
 }
 
-bool Viewport::init(ViewportController::RenderMode renderMode) {
-	if (!_controller.init()) {
-		Log::error("Failed to initialize the viewport controller");
-		return false;
-	}
-	_controller.setRenderMode(renderMode);
-	_controller.setMode(ViewportController::SceneCameraMode::Free);
+bool Viewport::init(Viewport::RenderMode renderMode) {
+	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
+	_camera.setAngles(0.0f, 0.0f, 0.0f);
+	_camera.setFarPlane(5000.0f);
+	_camera.setRotationType(video::CameraRotationType::Target);
+
+	setRenderMode(renderMode);
+	setMode(Viewport::SceneCameraMode::Free);
 	resetCamera();
 
 	_modelSpaceVar = core::Var::getSafe(cfg::VoxEditModelSpace);
@@ -57,15 +57,73 @@ bool Viewport::init(ViewportController::RenderMode renderMode) {
 	return true;
 }
 
+void Viewport::resetCamera(const glm::ivec3 &pos, const voxel::Region &region) {
+	_camera.setRotationType(video::CameraRotationType::Target);
+	_camera.setAngles(0.0f, 0.0f, 0.0f);
+	_camera.setFarPlane(5000.0f);
+	_camera.setTarget(pos);
+	const float distance = 100.0f;
+	glm::ivec3 center = pos;
+	if (region.isValid()) {
+		center = region.getCenter();
+	}
+	_camera.setTargetDistance(distance);
+	if (_camMode == SceneCameraMode::Free) {
+		const int height = region.getHeightInCells();
+		_camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
+	} else if (_camMode == SceneCameraMode::Top) {
+		const int height = region.getHeightInCells();
+		_camera.setWorldPosition(glm::vec3(center.x, height + center.y, center.z));
+	} else if (_camMode == SceneCameraMode::Left) {
+		_camera.setWorldPosition(glm::vec3(-center.x, center.y, center.z));
+	} else if (_camMode == SceneCameraMode::Front) {
+		const int depth = region.getDepthInCells();
+		_camera.setWorldPosition(glm::vec3(center.x, center.y, -depth - center.z));
+	}
+}
+
+void Viewport::update(double deltaFrameSeconds) {
+	_camera.update(deltaFrameSeconds);
+}
+
+void Viewport::setMode(Viewport::SceneCameraMode mode) {
+	_camMode = mode;
+	if (mode == Viewport::SceneCameraMode::Free) {
+		_camera.setMode(video::CameraMode::Perspective);
+	} else {
+		_camera.setMode(video::CameraMode::Orthogonal);
+	}
+}
+
+void Viewport::resize(const glm::ivec2&, const glm::ivec2& windowSize) {
+	_camera.setSize(windowSize);
+}
+
+void Viewport::move(bool pan, bool rotate, int x, int y) {
+	if (rotate) {
+		const float yaw = (float)(x - _mouseX);
+		const float pitch = (float)(y - _mouseY);
+		const float s = _rotationSpeed->floatVal();
+		if (_camMode == SceneCameraMode::Free) {
+			_camera.turn(yaw * s);
+			_camera.setPitch(pitch * s);
+		}
+	} else if (pan) {
+		_camera.pan(x - _mouseX, y - _mouseY);
+	}
+	_mouseX = x;
+	_mouseY = y;
+}
+
 void Viewport::updateViewportTrace(float headerSize) {
 	const ImVec2 windowPos = ImGui::GetWindowPos();
 	const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
 	const int mouseY = (int)((ImGui::GetIO().MousePos.y - windowPos.y) - headerSize);
 	const bool rotate = sceneMgr().cameraRotate();
 	const bool pan = sceneMgr().cameraPan();
-	_controller.move(pan, rotate, mouseX, mouseY);
-	sceneMgr().setMousePos(_controller._mouseX, _controller._mouseY);
-	sceneMgr().setActiveCamera(&_controller.camera());
+	move(pan, rotate, mouseX, mouseY);
+	sceneMgr().setMousePos(_mouseX, _mouseY);
+	sceneMgr().setActiveCamera(&camera());
 	sceneMgr().trace();
 }
 
@@ -91,7 +149,7 @@ void Viewport::update() {
 
 			if (setupFrameBuffer(contentSize)) {
 				const double deltaFrameSeconds = app->deltaFrameSeconds();
-				_controller.update(deltaFrameSeconds);
+				update(deltaFrameSeconds);
 
 				renderToFrameBuffer();
 				// use the uv coords here to take a potential fb flip into account
@@ -100,7 +158,7 @@ void Viewport::update() {
 				const glm::vec2 uvc(uv.z, uv.w);
 				const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
 				ImGui::Image(texture->handle(), contentSize, uva, uvc);
-				renderGizmo(_controller.camera(), headerSize, contentSize);
+				renderGizmo(camera(), headerSize, contentSize);
 
 				if (sceneMgr().isLoading()) {
 					ImGui::LoadingIndicatorCircle("Loading", 150, core::Color::White, core::Color::Gray);
@@ -146,12 +204,12 @@ void Viewport::update() {
 				const ImVec2 windowSize = ImGui::GetWindowSize();
 				ImGui::SetCursorPos(ImVec2(0.0f, windowSize.y - height));
 				ImGui::SetNextItemWidth(maxWidth);
-				const int currentCamRotType = (int)_controller.camera().rotationType();
+				const int currentCamRotType = (int)camera().rotationType();
 				if (ImGui::BeginCombo("##referencepoint", camRotTypes[currentCamRotType])) {
 					for (int n = 0; n < lengthof(camRotTypes); n++) {
 						const bool isSelected = (currentCamRotType == n);
 						if (ImGui::Selectable(camRotTypes[n], isSelected)) {
-							_controller.camera().setRotationType((video::CameraRotationType)n);
+							camera().setRotationType((video::CameraRotationType)n);
 						}
 						if (isSelected) {
 							ImGui::SetItemDefaultFocus();
@@ -160,13 +218,13 @@ void Viewport::update() {
 					ImGui::EndCombo();
 				}
 				ImGui::SetCursorPos(ImVec2(windowSize.x - maxWidth, windowSize.y - height));
-				const int currentPolygonMode = (int)_controller.camera().polygonMode();
+				const int currentPolygonMode = (int)camera().polygonMode();
 				ImGui::SetNextItemWidth(maxWidth);
 				if (ImGui::BeginCombo("##polygonmode", polygonModes[currentPolygonMode])) {
 					for (int n = 0; n < lengthof(polygonModes); n++) {
 						const bool isSelected = (currentPolygonMode == n);
 						if (ImGui::Selectable(polygonModes[n], isSelected)) {
-							_controller.camera().setPolygonMode((video::PolygonMode)n);
+							camera().setPolygonMode((video::PolygonMode)n);
 						}
 						if (isSelected) {
 							ImGui::SetItemDefaultFocus();
@@ -193,7 +251,7 @@ bool Viewport::saveImage(const char *filename) {
 
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	_frameBuffer.bind(true);
-	sceneMgr().render(_controller.camera(), _frameBuffer.dimension(), SceneManager::RenderScene);
+	sceneMgr().render(camera(), _frameBuffer.dimension(), SceneManager::RenderScene);
 	_frameBuffer.unbind();
 
 	uint8_t *pixels;
@@ -217,7 +275,7 @@ void Viewport::resetCamera() {
 	if (v != nullptr) {
 		region = v->region();
 	}
-	_controller.resetCamera(pos, region);
+	resetCamera(pos, region);
 }
 
 bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
@@ -232,7 +290,7 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	const glm::vec2 windowFrameBufferSize(app->frameBufferDimension());
 	const glm::vec2 scale = windowFrameBufferSize / windowSize;
 	Log::debug("Resize %s to %i:%i (scale %f:%f)", _id.c_str(), frameBufferSize.x, frameBufferSize.y, scale.x, scale.y);
-	_controller.resize(frameBufferSize,
+	resize(frameBufferSize,
 						 glm::ivec2((float)frameBufferSize.x * scale.x, (float)frameBufferSize.y * scale.y));
 	_frameBuffer.shutdown();
 
@@ -370,8 +428,7 @@ void Viewport::renderToFrameBuffer() {
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	video::clearColor(core::Color::Clear);
 	_frameBuffer.bind(true);
-	video::Camera &camera = _controller.camera();
-	sceneMgr().render(camera, _frameBuffer.dimension());
+	sceneMgr().render(camera(), _frameBuffer.dimension());
 	_frameBuffer.unbind();
 }
 

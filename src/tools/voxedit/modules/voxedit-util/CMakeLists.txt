@@ -5,8 +5,6 @@ set(SRCS
 	AxisUtil.h AxisUtil.cpp
 	Config.h
 
-	ViewportController.h ViewportController.cpp
-
 	modifier/Modifier.h modifier/Modifier.cpp
 	modifier/ModifierRenderer.h modifier/ModifierRenderer.cpp
 	modifier/ModifierFacade.h modifier/ModifierFacade.cpp
