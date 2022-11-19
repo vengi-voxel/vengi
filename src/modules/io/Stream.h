@@ -169,9 +169,18 @@ public:
 
 	/**
 	 * @note doesn't advance the stream position
+	 * @return -1 on error - 0 on success
 	 */
 	int peekUInt32(uint32_t &val);
+	/**
+	 * @note doesn't advance the stream position
+	 * @return -1 on error - 0 on success
+	 */
 	int peekUInt16(uint16_t &val);
+	/**
+	 * @note doesn't advance the stream position
+	 * @return -1 on error - 0 on success
+	 */
 	int peekUInt8(uint8_t &val);
 	/**
 	 * @brief Reads from the buffer until newline characters were detected, a null byte was
