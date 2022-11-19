@@ -57,6 +57,9 @@ public:
 		core::Var::get(cfg::ClientVSync, "false");
 		core::Var::get(cfg::ClientDebugSeverity, "3");
 		app::AbstractTest::SetUp();
+#ifdef __WINDOWS__
+		_supported = false;
+#else
 		if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 			_supported = false;
 			return;
@@ -70,6 +73,7 @@ public:
 		} else {
 			_supported = false;
 		}
+#endif
 	}
 
 	void TearDown() override {
