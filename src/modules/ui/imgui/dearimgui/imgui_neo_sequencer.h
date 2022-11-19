@@ -15,9 +15,10 @@ typedef int ImGuiNeoTimelineIsSelectedFlags;
 enum ImGuiNeoSequencerFlags_ {
 	ImGuiNeoSequencerFlags_None = 0,
 	ImGuiNeoSequencerFlags_AllowLengthChanging = 1 << 0,
-	ImGuiNeoSequencerFlags_AllowSelection = 1 << 1,
+	// ImGuiNeoSequencerFlags_AllowSelection       = 1 << 1,
 	ImGuiNeoSequencerFlags_HideZoom = 1 << 2,
-	ImGuiNeoSequencerFlags_ZoomBottomOverlay = 1 << 3,
+	// ImGuiNeoSequencerFlags_ZoomBottomOverlay    = 1 << 3,
+	ImGuiNeoSequencerFlags_AlwaysShowHeader = 1 << 4,
 };
 
 // Flags for ImGui::BeginNeoTimeline()
@@ -74,7 +75,6 @@ struct ImGuiNeoSequencerStyle {
 };
 
 namespace ImGui {
-
 IMGUI_API const ImVec4 &GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol idx);
 IMGUI_API ImGuiNeoSequencerStyle &GetNeoSequencerStyle();
 
@@ -85,19 +85,18 @@ IMGUI_API void PopNeoSequencerStyleColor(int count = 1);
 IMGUI_API bool BeginNeoSequencer(const char *id, uint32_t *frame, uint32_t *startFrame, uint32_t *endFrame,
 								 const ImVec2 &size = ImVec2(0, 0),
 								 ImGuiNeoSequencerFlags flags = ImGuiNeoSequencerFlags_None);
-// Call only when BeginNeoSequencer() returns true!!
-IMGUI_API void EndNeoSequencer();
+IMGUI_API void EndNeoSequencer(); // Call only when BeginNeoSequencer() returns true!!
 
 IMGUI_API bool BeginNeoGroup(const char *label, bool *open = nullptr);
 IMGUI_API void EndNeoGroup();
 
 IMGUI_API bool BeginNeoTimeline(const char *label, uint32_t **keyframes, uint32_t keyframeCount, bool *open = nullptr,
 								ImGuiNeoTimelineFlags flags = ImGuiNeoTimelineFlags_None);
-// Call only when BeginNeoTimeline() returns true!!
-IMGUI_API void EndNeoTimeLine();
+IMGUI_API void EndNeoTimeLine(); // Call only when BeginNeoTimeline() returns true!!
 
 // Sets currently selected timeline inside BeginNeoSequencer scope
 IMGUI_API void SetSelectedTimeline(const char *timelineLabel);
+
 IMGUI_API bool IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags flags = ImGuiNeoTimelineIsSelectedFlags_None);
 
 IMGUI_API bool NeoBeginCreateKeyframe(uint32_t *frame);

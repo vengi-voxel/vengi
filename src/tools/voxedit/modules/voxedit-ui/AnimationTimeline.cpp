@@ -78,30 +78,35 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 				endFrame += endFrame / 10;
 			}
 
-			if (ImGui::BeginNeoSequencer("##neo-sequencer", &currentFrame, &startFrame, &endFrame)) {
-				for (voxelformat::SceneGraphNode &modelNode : sceneGraph) {
-					core::DynamicArray<voxelformat::FrameIndex *> keys;
-					keys.reserve(modelNode.keyFrames().size());
-					for (voxelformat::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
-						keys.push_back(&kf.frameIdx);
-					}
-					const core::String &label =
-						core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
-					uint32_t **keyframes = keys.data();
-					const uint32_t keyframeCount = keys.size();
-					if (ImGui::BeginNeoTimeline(label.c_str(), keyframes, keyframeCount, nullptr,
-												ImGuiNeoTimelineFlags_None)) {
-						sceneMgr().setCurrentFrame(currentFrame);
-						if (ImGui::IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags_NewlySelected)) {
-							sceneMgr().nodeActivate(modelNode.id());
-						} else if (sceneMgr().sceneGraph().activeNode() == modelNode.id()) {
-							ImGui::SetSelectedTimeline(label.c_str());
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f,0.0f});
+			if (ImGui::BeginChild("##neo-sequencer-child")) {
+				if (ImGui::BeginNeoSequencer("##neo-sequencer", &currentFrame, &startFrame, &endFrame, {0, 0}, ImGuiNeoSequencerFlags_AlwaysShowHeader)) {
+					for (voxelformat::SceneGraphNode &modelNode : sceneGraph) {
+						core::DynamicArray<voxelformat::FrameIndex *> keys;
+						keys.reserve(modelNode.keyFrames().size());
+						for (voxelformat::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
+							keys.push_back(&kf.frameIdx);
 						}
-						ImGui::EndNeoTimeLine();
+						const core::String &label =
+							core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
+						uint32_t **keyframes = keys.data();
+						const uint32_t keyframeCount = keys.size();
+						if (ImGui::BeginNeoTimeline(label.c_str(), keyframes, keyframeCount, nullptr,
+													ImGuiNeoTimelineFlags_None)) {
+							sceneMgr().setCurrentFrame(currentFrame);
+							if (ImGui::IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags_NewlySelected)) {
+								sceneMgr().nodeActivate(modelNode.id());
+							} else if (sceneMgr().sceneGraph().activeNode() == modelNode.id()) {
+								ImGui::SetSelectedTimeline(label.c_str());
+							}
+							ImGui::EndNeoTimeLine();
+						}
 					}
+					ImGui::EndNeoSequencer();
 				}
-				ImGui::EndNeoSequencer();
 			}
+			ImGui::EndChild();
+			ImGui::PopStyleVar();
 		}
 		ImGui::End();
 	}
