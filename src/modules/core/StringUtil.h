@@ -361,6 +361,8 @@ extern core::String eraseAllChars(const core::String& str, char chr);
  */
 extern char *urlEncode(const char *str);
 
+extern int parseHex(const char *hex, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a);
+
 // taken from tiny_obj_loader - sscanf is locale dependent
 extern void parseReal2(float *x, float *y, const char **token, float default_x = 0.0f,
 					   float default_y = 0.0f);

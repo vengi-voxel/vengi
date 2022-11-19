@@ -511,6 +511,61 @@ int count(const char *buf, char chr) {
 
 #define IS_DIGIT(x) \
   (static_cast<unsigned int>((x) - '0') < static_cast<unsigned int>(10))
+#define ISUPPERHEX(X)   (((X) >= 'A') && ((X) <= 'F'))
+#define ISLOWERHEX(X)   (((X) >= 'a') && ((X) <= 'f'))
+
+int parseHex(const char *hex, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) {
+	if (hex[0] == '#') {
+		++hex;
+	} else if (strlen(hex) >= 2 && hex[0] == '0' && (hex[1] == 'x' || hex[1] == 'X')) {
+		hex += 2;
+	}
+	int n = 0;
+	r = g = b = a = 0u;
+	const size_t l = strlen(hex);
+	if (l % 2 != 0) {
+		return -1;
+	}
+	if (l == 0) {
+		return 0;
+	}
+
+	while (hex[0] != '\0') {
+		uint8_t value = 0;
+		for (int i = 0; i < 2; ++i) {
+			uint8_t v;
+			if (IS_DIGIT((unsigned int)*hex)) {
+				v = *hex - '0';
+			} else if (ISUPPERHEX((int)*hex)) {
+				v = 10 + (*hex - 'A');
+			} else if (ISLOWERHEX((int)*hex)) {
+				v = 10 + (*hex - 'a');
+			} else {
+				break;
+			}
+			value *= 16;
+			value += v;
+			++hex;
+		}
+		switch (n) {
+		case 0:
+			r = value;
+			break;
+		case 1:
+			g = value;
+			break;
+		case 2:
+			b = value;
+			break;
+		case 3:
+			a = value;
+			break;
+		}
+		++n;
+	}
+
+	return n;
+}
 
 // Tries to parse a floating point number located at s.
 // this code is part of tiny_obj_loader

@@ -19,6 +19,24 @@ TEST_F(StringUtilTest, testStrncpyz) {
 	EXPECT_STREQ(target, "sou");
 }
 
+TEST_F(StringUtilTest, testParseHex) {
+	uint8_t r, g, b, a;
+	EXPECT_EQ(4, core::string::parseHex("#00112233", r, g, b, a));
+	EXPECT_EQ(0, r);
+	EXPECT_EQ(17, g);
+	EXPECT_EQ(34, b);
+	EXPECT_EQ(51, a);
+
+	EXPECT_EQ(1, core::string::parseHex("#FF", r, g, b, a));
+	EXPECT_EQ(255, r);
+
+	EXPECT_EQ(4, core::string::parseHex("0x01020304", r, g, b, a));
+	EXPECT_EQ(1, r);
+	EXPECT_EQ(2, g);
+	EXPECT_EQ(3, b);
+	EXPECT_EQ(4, a);
+}
+
 TEST_F(StringUtilTest, testIsInteger) {
 	EXPECT_TRUE(core::string::isIntegerWithPostfix("2u"));
 	EXPECT_TRUE(core::string::isIntegerWithPostfix("2"));

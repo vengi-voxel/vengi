@@ -46,14 +46,14 @@ size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableRead
 	for (int y = size.y - 1; y >= 0; y--) {
 		for (int z = 0; z < size.z; z++) {
 			for (int x = 0; x < size.x; x++) {
-				int r, g, b, a;
 				char hex[10];
 				if ((stream.read(hex, 9)) == -1) {
 					Log::error("Could not load sproxel csv color line");
 					return false;
 				}
 				hex[sizeof(hex) - 1] = '\0';
-				const int n = SDL_sscanf(hex, "#%02X%02X%02X%02X", &r, &g, &b, &a);
+				uint8_t r, g, b, a;
+				const int n = core::string::parseHex(hex, r, g, b, a);
 				if (n != 4) {
 					Log::error("Failed to parse color %i (%s)", n, hex);
 					return false;
@@ -102,14 +102,14 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 	for (int y = size.y - 1; y >= 0; y--) {
 		for (int z = 0; z < size.z; z++) {
 			for (int x = 0; x < size.x; x++) {
-				int r, g, b, a;
 				char hex[10];
 				if (stream.read(hex, 9) == -1) {
 					Log::error("Could not load sproxel csv color line");
 					return false;
 				}
 				hex[sizeof(hex) - 1] = '\0';
-				const int n = SDL_sscanf(hex, "#%02X%02X%02X%02X", &r, &g, &b, &a);
+				uint8_t r, g, b, a;
+				const int n = core::string::parseHex(hex, r, g, b, a);
 				if (n != 4) {
 					Log::error("Failed to parse color %i (%s)", n, hex);
 					return false;
