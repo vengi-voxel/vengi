@@ -160,7 +160,7 @@ update-simplecpp:
 update-miniz:
 	$(call UPDATE_GIT,miniz,https://github.com/richgel999/miniz.git)
 	cd $(UPDATEDIR)/miniz.sync; ./amalgamate.sh
-	cp $(UPDATEDIR)/miniz.sync/amalgamation/miniz.[ch] src/modules/core
+	cp $(UPDATEDIR)/miniz.sync/amalgamation/miniz.[ch] src/modules/core/private
 
 # currently not part of updatelibs - intentional - we adopted the original code.
 update-simplexnoise:

@@ -985,7 +985,7 @@ static void tdefl_optimize_huffman_table(tdefl_compressor *d, int table_num, int
         }                                                                                  \
     }
 
-static mz_uint8 s_tdefl_packed_code_size_syms_swizzle[] = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
+static const mz_uint8 s_tdefl_packed_code_size_syms_swizzle[] = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
 
 static void tdefl_start_dynamic_block(tdefl_compressor *d)
 {
@@ -1124,7 +1124,7 @@ static mz_bool tdefl_compress_lz_codes(tdefl_compressor *d)
         {
             mz_uint s0, s1, n0, n1, sym, num_extra_bits;
             mz_uint match_len = pLZ_codes[0];
-            match_dist = (pLZ_codes[1] | (pLZ_codes[2] << 8));
+            mz_uint match_dist = (pLZ_codes[1] | (pLZ_codes[2] << 8));
             pLZ_codes += 3;
 
             MZ_ASSERT(d->m_huff_code_sizes[0][s_tdefl_len_sym[match_len]]);
@@ -1275,10 +1275,10 @@ static int tdefl_flush_block(tdefl_compressor *d, int flush)
     {
         const mz_uint8 cmf = 0x78;
         mz_uint8 flg, flevel = 3;
-        mz_uint header, i, n = sizeof(s_tdefl_num_probes) / sizeof(mz_uint);
+        mz_uint header, i, mz_un = sizeof(s_tdefl_num_probes) / sizeof(mz_uint);
 
         /* Determine compression level by reversing the process in tdefl_create_comp_flags_from_zip_params() */
-        for (i = 0; i < n; i++)
+        for (i = 0; i < mz_un; i++)
             if (s_tdefl_num_probes[i] == (d->m_flags & 0xFFF)) break;
 
         if (i < 2)
@@ -2483,7 +2483,7 @@ tinfl_status tinfl_decompress(tinfl_decompressor *r, const mz_uint8 *pIn_buf_nex
         TINFL_GET_BYTE(2, r->m_zhdr1);
         counter = (((r->m_zhdr0 * 256 + r->m_zhdr1) % 31 != 0) || (r->m_zhdr1 & 32) || ((r->m_zhdr0 & 15) != 8));
         if (!(decomp_flags & TINFL_FLAG_USING_NON_WRAPPING_OUTPUT_BUF))
-            counter |= (((1U << (8U + (r->m_zhdr0 >> 4))) > 32768U) || ((out_buf_size_mask + 1) < (size_t)(1U << (8U + (r->m_zhdr0 >> 4)))));
+            counter |= (((1U << (8U + (r->m_zhdr0 >> 4))) > 32768U) || ((out_buf_size_mask + 1) < (size_t)((size_t)1 << (8U + (r->m_zhdr0 >> 4)))));
         if (counter)
         {
             TINFL_CR_RETURN_FOREVER(36, TINFL_STATUS_FAILED);
@@ -3116,6 +3116,7 @@ static int mz_stat64(const char *path, struct __stat64 *buffer)
 #define MZ_FFLUSH fflush
 #define MZ_FREOPEN mz_freopen
 #define MZ_DELETE_FILE remove
+
 #elif defined(__MINGW32__) || defined(__WATCOMC__)
 #ifndef MINIZ_NO_TIME
 #include <sys/utime.h>
@@ -3131,6 +3132,7 @@ static int mz_stat64(const char *path, struct __stat64 *buffer)
 #define MZ_FFLUSH fflush
 #define MZ_FREOPEN(f, m, s) freopen(f, m, s)
 #define MZ_DELETE_FILE remove
+
 #elif defined(__TINYC__)
 #ifndef MINIZ_NO_TIME
 #include <sys/utime.h>
@@ -3146,6 +3148,7 @@ static int mz_stat64(const char *path, struct __stat64 *buffer)
 #define MZ_FFLUSH fflush
 #define MZ_FREOPEN(f, m, s) freopen(f, m, s)
 #define MZ_DELETE_FILE remove
+
 #elif defined(__USE_LARGEFILE64) /* gcc, clang */
 #ifndef MINIZ_NO_TIME
 #include <utime.h>
@@ -3161,7 +3164,8 @@ static int mz_stat64(const char *path, struct __stat64 *buffer)
 #define MZ_FFLUSH fflush
 #define MZ_FREOPEN(p, m, s) freopen64(p, m, s)
 #define MZ_DELETE_FILE remove
-#elif defined(__APPLE__)
+
+#elif defined(__APPLE__) || defined(__FreeBSD__)
 #ifndef MINIZ_NO_TIME
 #include <utime.h>
 #endif
@@ -3743,7 +3747,7 @@ static mz_bool mz_zip_reader_read_central_dir(mz_zip_archive *pZip, mz_uint flag
     if (((num_this_disk | cdir_disk_index) != 0) && ((num_this_disk != 1) || (cdir_disk_index != 1)))
         return mz_zip_set_error(pZip, MZ_ZIP_UNSUPPORTED_MULTIDISK);
 
-    if (cdir_size < pZip->m_total_files * MZ_ZIP_CENTRAL_DIR_HEADER_SIZE)
+    if (cdir_size < (mz_uint64)pZip->m_total_files * MZ_ZIP_CENTRAL_DIR_HEADER_SIZE)
         return mz_zip_set_error(pZip, MZ_ZIP_INVALID_HEADER_OR_CORRUPTED);
 
     if ((cdir_ofs + (mz_uint64)cdir_size) > pZip->m_archive_size)
@@ -7720,7 +7724,7 @@ const char *mz_zip_get_error_string(mz_zip_error mz_err)
         case MZ_ZIP_VALIDATION_FAILED:
             return "validation failed";
         case MZ_ZIP_WRITE_CALLBACK_FAILED:
-            return "write calledback failed";
+            return "write callback failed";
 	case MZ_ZIP_TOTAL_ERRORS:
             return "total errors";
         default:
