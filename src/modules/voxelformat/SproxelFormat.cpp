@@ -73,6 +73,38 @@ size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableRead
 	return palette.colorCount;
 }
 
+static bool skipNewline(io::SeekableReadStream &stream) {
+	uint8_t chr;
+	if (stream.readUInt8(chr) == -1) {
+		Log::error("Failed to read newline character from stream");
+		return false;
+	}
+	if (chr == '\r') {
+		if (stream.peekUInt8(chr) != -1) {
+			if (chr == '\n') {
+				if (stream.skip(1) == -1) {
+					Log::error("Failed to skip newline character from stream");
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
+static bool skipComma(io::SeekableReadStream &stream) {
+	uint8_t chr;
+	if (stream.readUInt8(chr) == -1) {
+		Log::error("Failed to read comma character from stream");
+		return false;
+	}
+	if (chr != ',') {
+		Log::error("Got unexpected character, expected , - got %c", chr);
+		return false;
+	}
+	return true;
+}
+
 bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
 	char buf[512];
 	wrapBool(stream.readLine(sizeof(buf), buf))
@@ -83,14 +115,13 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 		return false;
 	}
 
-	const int32_t x = core::string::toInt(tok.tokens()[0]);
-	const int32_t y = core::string::toInt(tok.tokens()[1]);
-	const int32_t z = core::string::toInt(tok.tokens()[2]);
-	glm::ivec3 size(x, y, z);
+	const int32_t sizex = core::string::toInt(tok.tokens()[0]);
+	const int32_t sizey = core::string::toInt(tok.tokens()[1]);
+	const int32_t sizez = core::string::toInt(tok.tokens()[2]);
 
-	const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
+	const voxel::Region region(0, 0, 0, sizex - 1, sizey - 1, sizez - 1);
 	if (!region.isValid()) {
-		Log::error("Invalid region");
+		Log::error("Invalid region %i:%i:%i", sizex, sizey, sizez);
 		return false;
 	}
 
@@ -99,9 +130,9 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 	node.setVolume(volume, true);
 
 	voxel::PaletteLookup palLookup(palette);
-	for (int y = size.y - 1; y >= 0; y--) {
-		for (int z = 0; z < size.z; z++) {
-			for (int x = 0; x < size.x; x++) {
+	for (int y = sizey - 1; y >= 0; y--) {
+		for (int z = 0; z < sizez; z++) {
+			for (int x = 0; x < sizex; x++) {
 				char hex[10];
 				if (stream.read(hex, 9) == -1) {
 					Log::error("Could not load sproxel csv color line");
@@ -120,23 +151,18 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 					const voxel::Voxel voxel = voxel::createVoxel(index);
 					volume->setVoxel(x, y, z, voxel);
 				}
-				if (x != size.x - 1) {
-					// skip ,
-					if (stream.skip(1) == -1) {
+				if (x != sizex - 1) {
+					if (!skipComma(stream)) {
 						Log::error("Failed to skip 1 byte");
 						return false;
 					}
 				}
 			}
-			// skip newline
-			if (stream.skip(1) == -1) {
-				Log::error("Failed to skip 1 byte");
+			if (!skipNewline(stream)) {
 				return false;
 			}
 		}
-		// skip newline
-		if (stream.skip(1) == -1) {
-			Log::error("Failed to skip 1 byte");
+		if (!skipNewline(stream)) {
 			return false;
 		}
 	}
