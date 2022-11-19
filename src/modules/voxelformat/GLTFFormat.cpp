@@ -778,8 +778,15 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 					vertices[verticesOffset + i].color = core::RGBA(colorData[0], colorData[1], colorData[2], colorData[3]);
 					buf += stride;
 				}
+			} else if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+				core_assert(attributeAccessor->type == TINYGLTF_TYPE_VEC4);
+				for (size_t i = 0; i < attributeAccessor->count; i++) {
+					const uint16_t *colorData = (const uint16_t *)buf;
+					vertices[verticesOffset + i].color = core::RGBA(colorData[0], colorData[1], colorData[2], colorData[3]);
+					buf += stride;
+				}
 			} else {
-				Log::debug("Skip unknown type (%i) for %s", attributeAccessor->componentType, attrType.c_str());
+				Log::warn("Skip unknown type for vertex colors (%i) for %s", attributeAccessor->componentType, attrType.c_str());
 				continue;
 			}
 		} else {
@@ -846,8 +853,10 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node,
 			}
 		}
 		++n;
-		Log::debug("%i/%i", n, (int)tris.size());
+		Log::debug("step: %i, tris: %i", n, (int)tris.size());
 	}
+
+	Log::debug("colors: %i", palette.colorCount);
 	node.setPalette(palette);
 	if (fillHollow) {
 		Log::debug("fill hollows");
