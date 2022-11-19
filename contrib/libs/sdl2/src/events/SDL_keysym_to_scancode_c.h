@@ -19,14 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* Things named "Master" were renamed to "Main" in macOS 12.0's SDK. */
-#include <AvailabilityMacros.h>
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
-#define kIOMainPortDefault kIOMasterPortDefault
-#endif
+#ifndef SDL_keysym_to_scancode_c_h_
+#define SDL_keysym_to_scancode_c_h_
 
-extern int MacHaptic_MaybeAddDevice( io_object_t device );
-extern int MacHaptic_MaybeRemoveDevice( io_object_t device );
+#include "SDL_scancode.h"
+
+/* This function only correctly maps letters and numbers for keyboards in US QWERTY layout */
+extern SDL_Scancode SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode);
+
+#endif /* SDL_keysym_to_scancode_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
-

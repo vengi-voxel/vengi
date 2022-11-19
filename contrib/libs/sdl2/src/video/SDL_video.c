@@ -202,6 +202,22 @@ typedef struct {
 } SDL_WindowTextureData;
 
 
+static Uint32
+SDL_DefaultGraphicsBackends(SDL_VideoDevice *_this)
+{
+#if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__ || __NACL__
+    if (_this->GL_CreateContext != NULL) {
+        return SDL_WINDOW_OPENGL;
+    }
+#endif
+#if SDL_VIDEO_METAL && (TARGET_OS_MACCATALYST || __MACOSX__ || __IPHONEOS__)
+    if (_this->Metal_CreateView != NULL) {
+        return SDL_WINDOW_METAL;
+    }
+#endif
+    return 0;
+}
+
 static int
 SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
 {
@@ -1302,9 +1318,8 @@ SDL_GetWindowDisplayMode(SDL_Window * window, SDL_DisplayMode * mode)
         return SDL_SetError("Couldn't find display mode match");
     }
 
-    if (mode) {
-        *mode = fullscreen_mode;
-    }
+    *mode = fullscreen_mode;
+
     return 0;
 }
 
@@ -1636,16 +1651,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 
     /* Some platforms have certain graphics backends enabled by default */
     if (!graphics_flags && !SDL_IsVideoContextExternal()) {
-#if (SDL_VIDEO_OPENGL && __MACOSX__) || (__IPHONEOS__ && !TARGET_OS_MACCATALYST) || __ANDROID__ || __NACL__
-        if (_this->GL_CreateContext != NULL) {
-            flags |= SDL_WINDOW_OPENGL;
-        }
-#endif
-#if SDL_VIDEO_METAL && (TARGET_OS_MACCATALYST || __MACOSX__ || __IPHONEOS__)
-        if (_this->Metal_CreateView != NULL) {
-            flags |= SDL_WINDOW_METAL;
-        }
-#endif
+        flags |= SDL_DefaultGraphicsBackends(_this);
     }
 
     if (flags & SDL_WINDOW_OPENGL) {
@@ -3748,7 +3754,7 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
         } else {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
-        };
+        }
         break;
     case SDL_GL_CONTEXT_FLAGS:
         if (value & ~(SDL_GL_CONTEXT_DEBUG_FLAG |
@@ -4337,8 +4343,8 @@ SDL_StartTextInput(void)
     SDL_Window *window;
 
     /* First, enable text events */
-    SDL_EventState(SDL_TEXTINPUT, SDL_ENABLE);
-    SDL_EventState(SDL_TEXTEDITING, SDL_ENABLE);
+    (void)SDL_EventState(SDL_TEXTINPUT, SDL_ENABLE);
+    (void)SDL_EventState(SDL_TEXTEDITING, SDL_ENABLE);
 
     /* Then show the on-screen keyboard, if any */
     window = SDL_GetFocusWindow();
@@ -4393,8 +4399,8 @@ SDL_StopTextInput(void)
     }
 
     /* Finally disable text events */
-    SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
-    SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
+    (void)SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
+    (void)SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
 }
 
 void
@@ -4853,8 +4859,16 @@ SDL_Metal_CreateView(SDL_Window * window)
     CHECK_WINDOW_MAGIC(window, NULL);
 
     if (!(window->flags & SDL_WINDOW_METAL)) {
-        SDL_SetError("The specified window isn't a Metal window");
-        return NULL;
+        /* No problem, we can convert to Metal */
+        if (window->flags & SDL_WINDOW_OPENGL) {
+            window->flags &= ~SDL_WINDOW_OPENGL;
+            SDL_GL_UnloadLibrary();
+        }
+        if (window->flags & SDL_WINDOW_VULKAN) {
+            window->flags &= ~SDL_WINDOW_VULKAN;
+            SDL_Vulkan_UnloadLibrary();
+        }
+        window->flags |= SDL_WINDOW_METAL;
     }
 
     return _this->Metal_CreateView(_this, window);

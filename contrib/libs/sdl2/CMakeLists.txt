@@ -67,8 +67,9 @@ include(CheckCXXCompilerFlag)
 include(CheckStructHasMember)
 include(CMakeDependentOption)
 include(CMakePushCheckState)
-include(FindPkgConfig)
 include(GNUInstallDirs)
+
+find_package(PkgConfig)
 
 list(APPEND CMAKE_MODULE_PATH "${SDL2_SOURCE_DIR}/cmake")
 include(${SDL2_SOURCE_DIR}/cmake/macros.cmake)
@@ -85,7 +86,7 @@ endif()
 # See docs/release_checklist.md
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 25)
-set(SDL_MICRO_VERSION 0)
+set(SDL_MICRO_VERSION 1)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 
 # Set defaults preventing destination file conflicts
@@ -382,7 +383,6 @@ if(EMSCRIPTEN)
   set(SDL_ATOMIC_ENABLED_BY_DEFAULT OFF)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
   set(SDL_CPUINFO_ENABLED_BY_DEFAULT OFF)
-  set(SDL_TEST_ENABLED_BY_DEFAULT OFF)
 endif()
 
 if(VITA OR PSP OR PS2 OR N3DS)
@@ -513,6 +513,7 @@ dep_option(SDL_HIDAPI_JOYSTICK     "Use HIDAPI for low level joystick drivers" O
 dep_option(SDL_VIRTUAL_JOYSTICK    "Enable the virtual-joystick driver" ON SDL_HIDAPI OFF)
 set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors" OFF)
 option_string(SDL_VENDOR_INFO      "Vendor name and/or version to add to SDL_REVISION" "")
+set_option(SDL_CCACHE              "Use Ccache to speed up build" ON)
 
 option(SDL_WERROR "Enable -Werror" OFF)
 
@@ -1002,12 +1003,32 @@ if(SDL_LIBC)
     set(STDC_HEADERS 1)
   else()
     set(HAVE_LIBC TRUE)
-    check_include_file(sys/types.h HAVE_SYS_TYPES_H)
-    foreach(_HEADER
-            stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h limits.h float.h
-            strings.h wchar.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h libunwind.h)
+    set(headers_to_check
+        ctype.h
+        float.h
+        iconv.h
+        inttypes.h
+        limits.h
+        malloc.h
+        math.h
+        memory.h
+        signal.h
+        stdarg.h
+        stddef.h
+        stdint.h
+        stdio.h
+        stdlib.h
+        string.h
+        strings.h
+        sys/types.h
+        wchar.h
+    )
+    if(NOT EMSCRIPTEN)
+      list(APPEND headers_to_check libunwind.h)
+    endif()
+    foreach(_HEADER ${headers_to_check})
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
-      string(REPLACE "." "_" _HAVE_H ${_UPPER})
+      string(REGEX REPLACE "[./]" "_" _HAVE_H ${_UPPER})
       check_include_file("${_HEADER}" ${_HAVE_H})
     endforeach()
     check_include_file(linux/input.h HAVE_LINUX_INPUT_H)
@@ -1024,7 +1045,7 @@ if(SDL_LIBC)
             bsearch qsort abs bcopy memset memcpy memmove memcmp strlen strlcpy strlcat
             _strrev _strupr _strlwr index rindex strchr strrchr strstr strtok_r
             itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
-            atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp
+            atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp strcasestr
             wcscmp _wcsdup wcsdup wcslcat wcslcpy wcslen wcsncmp wcsstr
             wcscasecmp _wcsicmp wcsncasecmp _wcsnicmp
             sscanf vsscanf vsnprintf fopen64 fseeko fseeko64 _Exit
@@ -1378,6 +1399,10 @@ elseif(EMSCRIPTEN)
   endif()
 
   CheckPTHREAD()
+
+  if(HAVE_LIBUNWIND_H)
+    list(APPEND EXTRA_TEST_LIBS unwind)
+  endif()
 
 elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
   if(SDL_AUDIO)
@@ -2937,6 +2962,7 @@ set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 
 if(EXISTS "${PROJECT_SOURCE_DIR}/VERSION")
   file(READ "${PROJECT_SOURCE_DIR}/VERSION" SDL_SOURCE_VERSION)
+  string(STRIP "${SDL_SOURCE_VERSION}" SDL_SOURCE_VERSION)
 endif()
 
 find_package(Git)
@@ -3110,6 +3136,19 @@ if (SDL_ASAN)
   # but causes warnings.
   if((NOT USE_CLANG) OR ("${CMAKE_BUILD_TYPE}" STREQUAL ""))
     asan_check_add_debug_flag("object-size")
+  endif()
+endif()
+
+if(SDL_CCACHE)
+  cmake_minimum_required(VERSION 3.4)
+  find_program(CCACHE_BINARY ccache)
+  if(CCACHE_BINARY)
+    set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_BINARY})
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_BINARY})
+    set(CMAKE_OBJC_COMPILER_LAUNCHER ${CCACHE_BINARY})
+    set(HAVE_CCACHE ON)
+  else()
+    set(HAVE_CCACHE OFF)
   endif()
 endif()
 
