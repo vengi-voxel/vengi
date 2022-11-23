@@ -123,7 +123,6 @@ function(gtest_suite_end name)
 			string(REPLACE ":" ";" inout ${entry})
 			list(GET inout 0 in)
 			list(GET inout 1 out)
-			generate_db_models(${name} ${in} ${out})
 		endforeach()
 
 		get_property(files GLOBAL PROPERTY ${name}_Files)
