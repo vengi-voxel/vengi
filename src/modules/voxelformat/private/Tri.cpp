@@ -61,6 +61,8 @@ void Tri::subdivide(Tri out[4]) const {
 						   glm::mix(vertices[2], vertices[0], 0.5f)};
 	const glm::vec2 miduv[]{glm::mix(uv[0], uv[1], 0.5f), glm::mix(uv[1], uv[2], 0.5f), glm::mix(uv[2], uv[0], 0.5f)};
 
+	// TODO: blend the vertex color
+
 	// the subdivided new three triangles
 	out[0] = Tri{{vertices[0], midv[0], midv[2]}, {uv[0], miduv[0], miduv[2]}, texture, color};
 	out[1] = Tri{{vertices[1], midv[1], midv[0]}, {uv[1], miduv[1], miduv[0]}, texture, color};

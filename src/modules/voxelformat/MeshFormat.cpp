@@ -80,8 +80,13 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 		if (stopExecution()) {
 			return;
 		}
-		const glm::vec2 &uv = tri.centerUV();
-		const core::RGBA rgba = tri.colorAt(uv);
+		core::RGBA rgba;
+		if (tri.texture) {
+			const glm::vec2 &uv = tri.centerUV();
+			rgba = tri.colorAt(uv);
+		} else {
+			rgba = tri.color;
+		}
 		const float area = tri.area();
 		const glm::vec4 &color = core::Color::fromRGBA(rgba);
 		for (int v = 0; v < 3; v++) {
