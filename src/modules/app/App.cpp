@@ -275,6 +275,9 @@ AppState App::onConstruct() {
 #endif
 	}
 
+#ifdef __APPLE__
+	_filesystem->chdir("../Resources");
+#endif
 	if (!_filesystem->init(_organisation, _appname)) {
 		Log::warn("Failed to initialize the filesystem");
 	}
