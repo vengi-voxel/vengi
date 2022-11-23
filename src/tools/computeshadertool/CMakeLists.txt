@@ -23,6 +23,3 @@ gtest_suite_begin(tests-${PROJECT_NAME} TEMPLATE ${ROOT_DIR}/src/modules/core/te
 gtest_suite_sources(tests-${PROJECT_NAME} ${TEST_SRCS})
 gtest_suite_deps(tests-${PROJECT_NAME} test-app compute simplecpp)
 gtest_suite_end(tests-${PROJECT_NAME})
-
-gtest_suite_sources(tests ${TEST_SRCS})
-gtest_suite_deps(tests test-app compute simplecpp)

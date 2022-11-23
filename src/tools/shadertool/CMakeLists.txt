@@ -29,7 +29,3 @@ gtest_suite_sources(tests-${PROJECT_NAME} ${TEST_SRCS})
 gtest_suite_files(tests-${PROJECT_NAME} ${TEST_FILES})
 gtest_suite_deps(tests-${PROJECT_NAME} test-app video simplecpp)
 gtest_suite_end(tests-${PROJECT_NAME})
-
-gtest_suite_sources(tests ${TEST_SRCS})
-gtest_suite_deps(tests test-app video simplecpp)
-gtest_suite_files(tests ${TEST_FILES})
