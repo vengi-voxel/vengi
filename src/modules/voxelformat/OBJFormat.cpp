@@ -290,6 +290,10 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 				tri.vertices[i].x = attrib.vertices[3 * idx.vertex_index + 0] * scale.x;
 				tri.vertices[i].y = attrib.vertices[3 * idx.vertex_index + 1] * scale.y;
 				tri.vertices[i].z = attrib.vertices[3 * idx.vertex_index + 2] * scale.z;
+				const float r = attrib.colors[3 * idx.vertex_index + 0];
+				const float g = attrib.colors[3 * idx.vertex_index + 1];
+				const float b = attrib.colors[3 * idx.vertex_index + 2];
+				tri.color[i] = core::Color::getRGBA(glm::vec4(r, g, b, 1.0f));
 				if (idx.texcoord_index >= 0) {
 					tri.uv[i].x = attrib.texcoords[2 * idx.texcoord_index + 0];
 					tri.uv[i].y = attrib.texcoords[2 * idx.texcoord_index + 1];
@@ -306,7 +310,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 					}
 				}
 				const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2], 1.0f);
-				tri.color = core::Color::getRGBA(diffuseColor);
+				tri.color[0] = tri.color[1] = tri.color[2] = core::Color::getRGBA(diffuseColor);
 			}
 			tris.push_back(tri);
 

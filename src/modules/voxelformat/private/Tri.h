@@ -15,7 +15,7 @@ struct Tri {
 	glm::vec3 vertices[3] {};
 	glm::vec2 uv[3] {};
 	const image::Image* texture = nullptr;
-	core::RGBA color{0xFFFFFFFF};
+	core::RGBA color[3]{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
 	image::TextureWrap wrapS = image::TextureWrap::Repeat;
 	image::TextureWrap wrapT = image::TextureWrap::Repeat;
 

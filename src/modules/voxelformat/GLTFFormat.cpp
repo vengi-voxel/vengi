@@ -965,12 +965,12 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 			const size_t idx = indices[i + indexOffset];
 			tri.vertices[i] = vertices[idx].pos * scale;
 			tri.uv[i] = vertices[idx].uv;
+			tri.color[i] = vertices[idx].color;
 		}
 		const size_t textureIdx = indices[indexOffset];
 		const GltfVertex &v = vertices[textureIdx];
 		tri.wrapS = v.wrapS;
 		tri.wrapT = v.wrapT;
-		tri.color = v.color;
 		if (!v.texture.empty()) {
 			auto textureIter = textures.find(v.texture);
 			if (textureIter != textures.end()) {
