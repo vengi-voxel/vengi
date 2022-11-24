@@ -26,6 +26,9 @@ namespace glm {
 ::std::ostream &operator<<(::std::ostream &os, const ivec3 &v);
 ::std::ostream &operator<<(::std::ostream &os, const ivec4 &v);
 }
+namespace core {
+::std::ostream &operator<<(::std::ostream &os, const core::RGBA &color);
+}
 
 namespace voxel {
 

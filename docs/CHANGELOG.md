@@ -15,6 +15,7 @@ General:
    - Improved big endian support for voxel formats
    - Improved VXL format default palette support
    - Improved QBCL scene graph support
+   - Improved voxelization vertex color support
    - Fixed VOX root node handling
    - Fixed QBCL and GOX thumbnail handling
    - Removed unused code

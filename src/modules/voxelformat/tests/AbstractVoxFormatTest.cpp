@@ -510,6 +510,7 @@ bool AbstractVoxFormatTest::onInitApp() {
 		return false;
 	}
 	FormatConfig::init();
+	voxel::getPalette().nippon();
 	return true;
 }
 

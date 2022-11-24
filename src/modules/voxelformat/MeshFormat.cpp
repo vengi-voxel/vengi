@@ -80,18 +80,19 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 		if (stopExecution()) {
 			return;
 		}
-		core::RGBA rgba;
+		glm::vec4 color;
 		if (tri.texture) {
 			const glm::vec2 &uv = tri.centerUV();
-			rgba = tri.colorAt(uv);
-		} else {
-			rgba = tri.color[0];
+			const core::RGBA rgba = tri.colorAt(uv);
+			color = core::Color::fromRGBA(rgba);
 		}
 		const float area = tri.area();
-		const glm::vec4 &color = core::Color::fromRGBA(rgba);
 		for (int v = 0; v < 3; v++) {
 			const glm::ivec3 p(glm::round(tri.vertices[v]));
 			auto iter = posMap.find(p);
+			if (!tri.texture) {
+				color = core::Color::fromRGBA(tri.color[v]);
+			}
 			if (iter == posMap.end()) {
 				posMap.emplace(p, {area, color});
 			} else if (iter->value.entries.size() < 4 && iter->value.entries[0].color != color) {
