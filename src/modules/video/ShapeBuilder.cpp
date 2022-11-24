@@ -428,7 +428,7 @@ void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 void ShapeBuilder::pyramid(const glm::vec3& size) {
 	setPrimitive(Primitive::Triangles);
 
-	reserve(5, 12);
+	reserve(5, 18);
 
 	const glm::vec3& tip = glm::vec3(_position.x, _position.y + size.y, _position.z);
 	const glm::vec3& vlfl = glm::vec3(_position.x - size.x, _position.y, _position.z + size.z);
@@ -443,21 +443,33 @@ void ShapeBuilder::pyramid(const glm::vec3& size) {
 	addVertex(vlbl);
 	addVertex(vlbr);
 
+	// back side
 	addIndex(startIndex + 0);
 	addIndex(startIndex + 1);
 	addIndex(startIndex + 2);
 
+	// front side
 	addIndex(startIndex + 0);
 	addIndex(startIndex + 3);
 	addIndex(startIndex + 4);
 
+	// left side
 	addIndex(startIndex + 0);
 	addIndex(startIndex + 3);
 	addIndex(startIndex + 1);
 
+	// right side
 	addIndex(startIndex + 0);
 	addIndex(startIndex + 4);
 	addIndex(startIndex + 2);
+
+	// bottom quad (two triangles)
+	addIndex(startIndex + 1);
+	addIndex(startIndex + 3);
+	addIndex(startIndex + 2);
+	addIndex(startIndex + 2);
+	addIndex(startIndex + 3);
+	addIndex(startIndex + 4);
 }
 
 uint32_t ShapeBuilder::addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal) {
