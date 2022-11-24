@@ -213,8 +213,7 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 
 	node.volume()->translate(-region.getLowerCorner());
 
-	sceneGraph.emplace(core::move(node));
-	return true;
+	return sceneGraph.emplace(core::move(node)) > 0;
 }
 
 bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs) {
