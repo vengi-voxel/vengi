@@ -4,13 +4,17 @@
 
 #pragma once
 
+#include "core/Color.h"
+#include "core/RGBA.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
+#include "voxel/Palette.h"
 #include "voxel/Voxel.h"
 
 namespace voxel {
 
-static const int VolumePrintThreshold = 10;
+static const int VolumePrintThreshold = 20;
 
 inline ::std::ostream &operator<<(::std::ostream &os, const voxel::Region &region) {
 	return os << "region["
@@ -36,13 +40,18 @@ inline ::std::ostream &operator<<(::std::ostream &os, const voxel::RawVolume &vo
 	const int32_t upperZ = core_min(lowerZ + VolumePrintThreshold, region.getUpperZ());
 	os << std::endl;
 	for (int32_t z = lowerZ; z <= upperZ; ++z) {
-		os << "z: " << std::setw(3) << z << std::endl;
-		for (int32_t y = lowerY; y <= upperY; ++y) {
+		os << "z " << std::setw(3) << z << std::endl;
+		for (int32_t y = upperY; y >= lowerY; --y) {
+			os << "y " << std::setw(3) << y << ": ";
 			for (int32_t x = lowerX; x <= upperX; ++x) {
 				const glm::ivec3 pos(x, y, z);
 				const voxel::Voxel &voxel = volume.voxel(pos);
-				os << "[" << std::setw(8) << voxel::VoxelTypeStr[(int)voxel.getMaterial()] << ", " << std::setw(3)
-				   << (int)voxel.getColor() << "](x:" << std::setw(3) << x << ", y: " << std::setw(3) << y << ") ";
+				if (voxel.getMaterial() == VoxelType::Air) {
+					os << ".";
+				} else {
+					const core::RGBA rgba = voxel::getPalette().colors[voxel.getColor()];
+					os << core::Color::print(rgba, false).c_str();
+				}
 			}
 			os << std::endl;
 		}
