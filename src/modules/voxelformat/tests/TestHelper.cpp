@@ -64,6 +64,10 @@ std::ostream &operator<<(::std::ostream &os, const core::RGBA &color) {
 
 namespace voxel {
 
+::std::ostream &operator<<(::std::ostream &os, const voxel::Palette &palette) {
+	return os << voxel::Palette::print(palette).c_str();
+}
+
 int countVoxels(const voxel::RawVolume& volume, const voxel::Voxel &voxel) {
 	int cnt = 0;
 	voxelutil::visitVolume(volume, [&](int, int, int, const voxel::Voxel &v) {

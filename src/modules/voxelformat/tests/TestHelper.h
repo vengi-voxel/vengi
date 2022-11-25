@@ -32,6 +32,8 @@ namespace core {
 
 namespace voxel {
 
+::std::ostream &operator<<(::std::ostream &os, const voxel::Palette &palette);
+
 enum class ValidateFlags {
 	None = 0,
 	Region = 1, // deprecated
