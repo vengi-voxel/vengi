@@ -67,16 +67,42 @@ TEST_F(SceneGraphTest, testNode) {
 	EXPECT_EQ("node", groupNode.name());
 }
 
-TEST_F(SceneGraphTest, testPaletteMerge) {
+TEST_F(SceneGraphTest, testPaletteMergeSingleNode) {
 	SceneGraph sceneGraph;
 	voxel::Palette pal;
 	pal.nippon();
+	voxel::RawVolume v(voxel::Region(0, 1));
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
-		node.setName("model");
+		node.setVolume(&v, false);
+		node.setName("model1");
 		node.setPalette(pal);
-		EXPECT_EQ(1, sceneGraph.emplace(core::move(node), 0)) << "Unexpected node id returned - root node is 0 - next should be 1";
+		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
+	}
+	const voxel::Palette &palette = sceneGraph.mergePalettes(true);
+	ASSERT_EQ(palette.colorCount, pal.colorCount);
+	ASSERT_EQ(palette.hash(), pal.hash());
+}
+
+
+TEST_F(SceneGraphTest, testPaletteMergeSamePalettes) {
+	SceneGraph sceneGraph;
+	voxel::Palette pal;
+	pal.nippon();
+	voxel::RawVolume v(voxel::Region(0, 1));
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		node.setName("model1");
+		node.setPalette(pal);
+		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		node.setName("model2");
+		node.setPalette(pal);
+		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
 	const voxel::Palette &palette = sceneGraph.mergePalettes(true);
 	ASSERT_EQ(palette.colorCount, pal.colorCount);
