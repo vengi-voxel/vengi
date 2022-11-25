@@ -6,6 +6,12 @@ INSTALL_DIR    ?= $(BUILDDIR)
 GENERATOR      ?= -GNinja
 CMAKE          ?= cmake
 CMAKE_OPTIONS  ?= -DCMAKE_BUILD_TYPE=$(BUILDTYPE) $(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot
+ifneq ($(Q),@)
+	CTEST_FLAGS ?= -V
+else
+	CTEST_FLAGS ?=
+endif
+
 
 all: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
@@ -27,6 +33,9 @@ distclean:
 
 deb:
 	$(Q)debuild -b -ui -uc -us
+
+tests:
+	$(Q)ctest --test-dir $(BUILDDIR) $(CTEST_FLAGS)
 
 .PHONY: cmake
 cmake:
