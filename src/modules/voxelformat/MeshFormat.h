@@ -73,25 +73,7 @@ protected:
 		inline PosSampling(float area, const glm::vec4 &color) {
 			entries.emplace_back(area, color);
 		}
-		glm::vec4 avgColor() const {
-			if (entries.size() == 1) {
-				return entries[0].color;
-			}
-			float sumArea = 0.0f;
-			for (const PosSamplingEntry& pe : entries) {
-				sumArea += pe.area;
-			}
-			glm::vec4 color{0.0f};
-			if (sumArea <= 0.0f) {
-				color[3] = 1.0f;
-				return color;
-			}
-			for (const PosSamplingEntry& pe : entries) {
-				color += pe.color * pe.area / sumArea;
-			}
-			color[3] = 1.0f;
-			return color;
-		}
+		glm::vec4 avgColor() const;
 	};
 
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;

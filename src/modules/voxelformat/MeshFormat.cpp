@@ -74,6 +74,26 @@ void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
 	tinyTris.push_back(tri);
 }
 
+glm::vec4 MeshFormat::PosSampling::avgColor() const {
+	if (entries.size() == 1) {
+		return entries[0].color;
+	}
+	float sumArea = 0.0f;
+	for (const PosSamplingEntry &pe : entries) {
+		sumArea += pe.area;
+	}
+	glm::vec4 color{0.0f};
+	if (sumArea <= 0.0f) {
+		color[3] = 1.0f;
+		return color;
+	}
+	for (const PosSamplingEntry &pe : entries) {
+		color += pe.color * pe.area / sumArea;
+	}
+	color[3] = 1.0f;
+	return color;
+}
+
 void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) {
 	Log::trace("subdivided into %i triangles", (int)subdivided.size());
 	for (const Tri &tri : subdivided) {
