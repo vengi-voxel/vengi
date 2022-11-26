@@ -53,7 +53,7 @@ set(SRCS
 	Pair.h
 	PoolAllocator.h
 	Process.cpp Process.h
-	RGBA.h
+	RGBA.h RGBA.cpp
 	SharedPtr.h
 	Singleton.h
 	StandardLib.h
