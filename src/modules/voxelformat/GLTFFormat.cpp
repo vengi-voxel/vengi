@@ -993,7 +993,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 				Log::warn("Texture %s not found", v.texture.c_str());
 			}
 		} else {
-			Log::debug("No texture for vertex found");
+			Log::trace("No texture for vertex found");
 		}
 		tris.push_back(tri);
 	}

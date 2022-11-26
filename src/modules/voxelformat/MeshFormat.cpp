@@ -75,7 +75,7 @@ void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
 }
 
 void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) {
-	Log::debug("subdivided into %i triangles", (int)subdivided.size());
+	Log::trace("subdivided into %i triangles", (int)subdivided.size());
 	for (const Tri &tri : subdivided) {
 		if (stopExecution()) {
 			return;
