@@ -315,6 +315,9 @@ private:
 public:
 	SceneGraphNodeCamera();
 
+	/**
+	 * @brief Field of view in degree
+	 */
 	int fieldOfView() const;
 	void setFieldOfView(int val);
 
