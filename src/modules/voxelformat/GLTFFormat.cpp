@@ -885,11 +885,25 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 		}
 		Log::debug("Camera node %i", gltfNodeIdx);
 		const tinygltf::Camera &cam = model.cameras[gltfNode.camera];
-		SceneGraphNode node(SceneGraphNodeType::Camera);
+		SceneGraphNodeCamera node;
 		node.setName(gltfNode.name.c_str());
 		const KeyFrameIndex keyFrameIdx = 0;
 		node.setTransform(keyFrameIdx, transform);
-		node.setProperty("type", cam.type.c_str());
+		if (cam.type == "orthographic") {
+			node.setOrthographic();
+			// TODO: These define the magnification of the camera in x- and y-direction, and basically describe the width and height of the viewing volume.
+			//node.set...(cam.orthographic.xmag);
+			//node.set...(cam.orthographic.ymag);
+			node.setFarPlane((float)cam.orthographic.zfar);
+			node.setNearPlane((float)cam.orthographic.znear);
+		} else if (cam.type == "perspective") {
+			node.setPerspective();
+			// TODO:
+			//node.setAspectRatio((int)cam.perspective.aspectRatio); // aspect ratio of the viewport
+			node.setFieldOfView((int)glm::degrees(cam.perspective.yfov)); // Field Of View in Y-direction in radians
+			node.setFarPlane((float)cam.perspective.zfar);
+			node.setNearPlane((float)cam.perspective.znear);
+		}
 		const int cameraId = sceneGraph.emplace(core::move(node), parentNodeId);
 		for (int childId : gltfNode.children) {
 			loadGltfNode_r(filename, sceneGraph, textures, model, childId, cameraId);
