@@ -42,7 +42,7 @@ jobs:
         - name: Test
           run: |
             cd build
-            ctest -V .
+            ctest -V -E shelltests .
 
         - name: Package
           run: |
