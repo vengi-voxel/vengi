@@ -329,10 +329,6 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		const glm::vec3& newPosition = target + backward * distance;
 		const glm::mat4& orientation = glm::mat4_cast(quat);
 		const glm::mat4& viewMatrix = glm::translate(orientation, -newPosition);
-		// if (c.mode == ogt_cam_mode_perspective) {
-		//  const float fieldOfView = glm::radians((float)c.fov);
-		// }
-
 		{
 			SceneGraphNodeCamera camNode;
 			camNode.setName(core::String::format("Camera %u", c.camera_id));
