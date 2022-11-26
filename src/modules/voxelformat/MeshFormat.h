@@ -62,18 +62,18 @@ protected:
 	bool voxelizeNode(const core::String &name, SceneGraph &sceneGraph, const TriCollection &tris);
 
 	struct PosSamplingEntry {
-		inline PosSamplingEntry(float _area, const glm::vec4 &_color) : area(_area), color(_color) {
+		inline PosSamplingEntry(float _area, core::RGBA _color) : area(_area), color(_color) {
 		}
 		float area;
-		glm::vec4 color;
+		core::RGBA color;
 	};
 
 	struct PosSampling {
 		core::DynamicArray<PosSamplingEntry> entries;
-		inline PosSampling(float area, const glm::vec4 &color) {
+		inline PosSampling(float area, core::RGBA color) {
 			entries.emplace_back(area, color);
 		}
-		glm::vec4 avgColor() const;
+		core::RGBA avgColor() const;
 	};
 
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;

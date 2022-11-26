@@ -8,6 +8,7 @@
 #include "core/GLM.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
+#include "core/RGBA.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
@@ -74,7 +75,7 @@ void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
 	tinyTris.push_back(tri);
 }
 
-glm::vec4 MeshFormat::PosSampling::avgColor() const {
+core::RGBA MeshFormat::PosSampling::avgColor() const {
 	if (entries.size() == 1) {
 		return entries[0].color;
 	}
@@ -82,15 +83,14 @@ glm::vec4 MeshFormat::PosSampling::avgColor() const {
 	for (const PosSamplingEntry &pe : entries) {
 		sumArea += pe.area;
 	}
-	glm::vec4 color{0.0f};
+	core::RGBA color(0, 0, 0);
 	if (sumArea <= 0.0f) {
-		color[3] = 1.0f;
 		return color;
 	}
 	for (const PosSamplingEntry &pe : entries) {
-		color += pe.color * pe.area / sumArea;
+		color = core::RGBA::mix(color, pe.color, pe.area / sumArea);
 	}
-	color[3] = 1.0f;
+	color.a = 255;
 	return color;
 }
 
@@ -100,26 +100,11 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 		if (stopExecution()) {
 			return;
 		}
-		glm::vec4 color;
-		if (tri.texture) {
-			const glm::vec2 &uv = tri.centerUV();
-			const core::RGBA rgba = tri.colorAt(uv);
-			color = core::Color::fromRGBA(rgba);
-		}
 		const float area = tri.area();
-		for (int v = 0; v < 3; v++) {
-			const glm::ivec3 p(glm::round(tri.vertices[v]));
-			auto iter = posMap.find(p);
-			if (!tri.texture) {
-				color = core::Color::fromRGBA(tri.color[v]);
-			}
-			if (iter == posMap.end()) {
-				posMap.emplace(p, {area, color});
-			} else if (iter->value.entries.size() < 4 && iter->value.entries[0].color != color) {
-				PosSampling &pos = iter->value;
-				pos.entries.emplace_back(area, color);
-			}
-		}
+		const glm::vec2 &uv = tri.centerUV();
+		const core::RGBA color = tri.colorAt(uv);
+		const glm::ivec3 p(glm::round(tri.center()));
+		posMap.emplace(p, {area, color});
 	}
 }
 
@@ -132,7 +117,6 @@ void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &pos
 		const glm::vec2 &uv = tri.centerUV();
 		const core::RGBA rgba = tri.colorAt(uv);
 		const float area = tri.area();
-		const glm::vec4 &color = core::Color::fromRGBA(rgba);
 		const glm::vec3 &normal = glm::normalize(tri.normal());
 		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
 		const glm::ivec3 mins = tri.roundedMins();
@@ -149,10 +133,10 @@ void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &pos
 					const glm::ivec3 p(x + sideDelta.x, y + sideDelta.y, z + sideDelta.z);
 					auto iter = posMap.find(p);
 					if (iter == posMap.end()) {
-						posMap.emplace(p, {area, color});
-					} else if (iter->value.entries.size() < 4 && iter->value.entries[0].color != color) {
+						posMap.emplace(p, {area, rgba});
+					} else if (iter->value.entries.size() < 4 && iter->value.entries[0].color != rgba) {
 						PosSampling &pos = iter->value;
-						pos.entries.emplace_back(area, color);
+						pos.entries.emplace_back(area, rgba);
 					}
 				}
 			}
@@ -262,10 +246,9 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 			return;
 		}
 		const PosSampling &pos = entry->second;
-		const glm::vec4 &color = pos.avgColor();
-		uint8_t addedPaletteIndex = 0;
-		palette.addColorToPalette(core::Color::getRGBA(color), false, &addedPaletteIndex);
-		const voxel::Voxel voxel = voxel::createVoxel(addedPaletteIndex);
+		const core::RGBA rgba = pos.avgColor();
+		palette.addColorToPalette(rgba, true);
+		const voxel::Voxel voxel = voxel::createVoxel(palette.getClosestMatch(rgba));
 		wrapper.setVoxel(entry->first, voxel);
 	}
 	node.setPalette(palette);

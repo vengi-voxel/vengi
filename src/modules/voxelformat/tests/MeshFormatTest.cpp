@@ -105,9 +105,11 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 
 	voxel::getPalette().nippon();
 	const core::RGBA nipponRed = voxel::getPalette().colors[37];
-	b.setPosition({10.0f, 0.0f, 10.0f});
+	const core::RGBA nipponBlue = voxel::getPalette().colors[202];
+	const float size = 10.0f;
+	b.setPosition({size, 0.0f, size});
 	b.setColor(core::Color::fromRGBA(nipponRed));
-	b.pyramid({10.0f, 10.0f, 10.0f});
+	b.pyramid({size, size, size});
 
 	const video::ShapeBuilder::Indices &indices = b.getIndices();
 	const video::ShapeBuilder::Vertices &vertices = b.getVertices();
@@ -116,6 +118,7 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	video::ShapeBuilder::Colors colors = b.getColors();
 	const core::RGBA nipponGreen = voxel::getPalette().colors[145];
 	colors[0] = core::Color::fromRGBA(nipponGreen);
+	colors[1] = core::Color::fromRGBA(nipponBlue);
 
 	const int n = (int)indices.size();
 	for (int i = 0; i < n; i += 3) {
@@ -132,10 +135,10 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	voxel::getPalette() = node->palette();
 	const voxel::RawVolume *v = node->volume();
 	EXPECT_LT(core::Color::getDistance(nipponRed, node->palette().colors[v->voxel(0, 0, 0).getColor()]), 0.00004f);
-	EXPECT_LT(core::Color::getDistance(nipponRed, node->palette().colors[v->voxel(20, 0, 20).getColor()]), 0.00004f);
-	EXPECT_LT(core::Color::getDistance(nipponRed, node->palette().colors[v->voxel(0, 0, 20).getColor()]), 0.00004f);
-	EXPECT_LT(core::Color::getDistance(nipponRed, node->palette().colors[v->voxel(20, 0, 0).getColor()]), 0.00004f);
-	EXPECT_LT(core::Color::getDistance(nipponGreen, node->palette().colors[v->voxel(10, 10, 10).getColor()]), 0.00018f);
+	EXPECT_LT(core::Color::getDistance(nipponRed, node->palette().colors[v->voxel(size * 2, 0, size * 2).getColor()]), 0.00004f);
+	EXPECT_LT(core::Color::getDistance(nipponBlue, node->palette().colors[v->voxel(0, 0, size * 2).getColor()]), 0.00044f);
+	EXPECT_LT(core::Color::getDistance(nipponRed, node->palette().colors[v->voxel(size * 2, 0, 0).getColor()]), 0.00004f);
+	EXPECT_LT(core::Color::getDistance(nipponGreen, node->palette().colors[v->voxel(size, size, size).getColor()]), 0.00065f);
 }
 
 } // namespace voxelformat
