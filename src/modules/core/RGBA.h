@@ -44,7 +44,7 @@ union RGBA {
 		return rgba != other;
 	}
 
-	static core::RGBA mix(const core::RGBA rgba1, const core::RGBA rgba2);
+	static core::RGBA mix(const core::RGBA rgba1, const core::RGBA rgba2, float t = 0.5f);
 };
 
 static_assert(sizeof(RGBA) == sizeof(uint32_t), "Expected RGBA union size");
