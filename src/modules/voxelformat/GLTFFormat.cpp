@@ -886,7 +886,11 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 		Log::debug("Camera node %i", gltfNodeIdx);
 		const tinygltf::Camera &cam = model.cameras[gltfNode.camera];
 		SceneGraphNodeCamera node;
-		node.setName(gltfNode.name.c_str());
+		if (!cam.name.empty()) {
+			node.setName(cam.name.c_str());
+		} else {
+			node.setName(gltfNode.name.c_str());
+		}
 		const KeyFrameIndex keyFrameIdx = 0;
 		node.setTransform(keyFrameIdx, transform);
 		if (cam.type == "orthographic") {
