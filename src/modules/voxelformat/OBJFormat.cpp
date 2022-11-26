@@ -278,7 +278,11 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 	const glm::vec3 &scale = getScale();
 	for (tinyobj::shape_t &shape : shapes) {
 		int indexOffset = 0;
+		// TODO: shape.lines, shape.points
 		const tinyobj::mesh_t &mesh = shape.mesh;
+		for (const tinyobj::tag_t &tag : mesh.tags) {
+			Log::debug("tag: %s", tag.name.c_str());
+		}
 		TriCollection tris;
 		tris.reserve(mesh.num_face_vertices.size());
 		for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
