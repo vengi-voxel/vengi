@@ -29,12 +29,15 @@ template<typename MergeCondition = MergeSkipEmpty, class Volume1, class Volume2>
 int mergeVolumes(Volume1* destination, const Volume2* source, const voxel::Region& destReg, const voxel::Region& sourceReg, MergeCondition mergeCondition = MergeCondition()) {
 	core_trace_scoped(MergeRawVolumes);
 	int cnt = 0;
+	typename Volume2::Sampler sampler2(source);
+	sampler2.setPosition(sourceReg.getLowerCorner());
 	for (int32_t z = sourceReg.getLowerZ(); z <= sourceReg.getUpperZ(); ++z) {
 		const int destZ = destReg.getLowerZ() + z - sourceReg.getLowerZ();
 		for (int32_t y = sourceReg.getLowerY(); y <= sourceReg.getUpperY(); ++y) {
 			const int destY = destReg.getLowerY() + y - sourceReg.getLowerY();
 			for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
-				voxel::Voxel voxel = source->voxel(x, y, z);
+				voxel::Voxel voxel = sampler2.voxel();
+				sampler2.movePositiveX();
 				if (!mergeCondition(voxel)) {
 					continue;
 				}
@@ -46,6 +49,7 @@ int mergeVolumes(Volume1* destination, const Volume2* source, const voxel::Regio
 					++cnt;
 				}
 			}
+			sampler2.setPosition(sourceReg.getLowerX(), y, z);
 		}
 	}
 	return cnt;
