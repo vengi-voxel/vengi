@@ -46,94 +46,139 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 
 	switch (order) {
 	case VisitorOrder::XYZ:
-		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
-			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
-				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
+		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
+			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
+				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::ZYX:
-		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
-			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
-				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
+		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
+			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
+				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::ZXY:
-		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
-			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
-				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
+		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
+			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
+				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::XZY:
-		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
-			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
-				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
+		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
+				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::XZmY:
-		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
-			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
-				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff)
+		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
+				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::mXmZY:
-		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff)
-			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff)
-				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
+		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
+			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
+				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::mXZY:
-		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff)
-			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
-				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
+		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
+				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::XmZY:
-		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
-			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff)
-				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
+		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
+			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
+				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::XmZmY:
-		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
-			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff)
-				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff)
+		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
+			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
+				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::mXmZmY:
-		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff)
-			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff)
-				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff)
+		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
+			for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
+				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::mXZmY:
-		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff)
-			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
-				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff)
+		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
+				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::YXZ:
-		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
-			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
-				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
+			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
+				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::YZX:
-		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
-			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
-				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff)
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
+				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::YZmX:
-		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff)
-			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
-				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff)
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
+				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	case VisitorOrder::mYZX:
-		for (int32_t y = region.getUpperY(); y <= region.getLowerY(); y += yOff)
-			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff)
-				for (int32_t x = region.getLowerX(); x >= region.getUpperX(); x -= xOff)
+		for (int32_t y = region.getUpperY(); y <= region.getLowerY(); y += yOff) {
+			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
+				for (int32_t x = region.getLowerX(); x >= region.getUpperX(); x -= xOff) {
 					LOOP
+				}
+			}
+		}
 		break;
 	}
 
