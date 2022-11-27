@@ -7,7 +7,7 @@
 #include "Format.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/StringMap.h"
+#include "core/collection/DynamicMap.h"
 
 namespace io {
 class ZipReadStream;
@@ -18,7 +18,7 @@ namespace voxelformat {
 
 namespace priv {
 class NamedBinaryTag;
-using NBTCompound = core::StringMap<NamedBinaryTag>;
+using NBTCompound = core::DynamicMap<core::String, NamedBinaryTag, 11, core::StringHash>;
 using NBTList = core::DynamicArray<NamedBinaryTag>;
 }
 

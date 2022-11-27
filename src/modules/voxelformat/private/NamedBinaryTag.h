@@ -7,7 +7,7 @@
 #include "core/StandardLib.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/StringMap.h"
+#include "core/collection/DynamicMap.h"
 #include "core/concurrent/ThreadPool.h"
 #include "io/Stream.h"
 #include <stdint.h>
@@ -37,7 +37,7 @@ enum class TagType : uint8_t {
 };
 
 using NBTList = core::DynamicArray<NamedBinaryTag>;
-using NBTCompound = core::StringMap<NamedBinaryTag>;
+using NBTCompound = core::DynamicMap<core::String, NamedBinaryTag, 11, core::StringHash>;
 
 union TagData {
 	NBTCompound *_compound;
