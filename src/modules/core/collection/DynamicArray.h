@@ -211,6 +211,14 @@ public:
 		}
 	}
 
+	template<class FUNC>
+	void append(size_t n, FUNC&& func) {
+		checkBufferSize(_size + n);
+		for (size_t i = 0u; i < n; ++i) {
+			new ((void *)&_buffer[_size++]) TYPE(func(i));
+		}
+	}
+
 	inline void insert(iterator pos, const TYPE& value) {
 		insert(pos, &value, 1);
 	}
