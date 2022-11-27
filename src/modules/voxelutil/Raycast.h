@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/Trace.h"
-#include "voxel/PagedVolume.h"
 #include "voxel/RawVolume.h"
 #include "core/Common.h"
 #include <glm/ext/scalar_constants.hpp>
@@ -191,11 +190,6 @@ RaycastResult raycastWithEndpoints(Volume* volData, const glm::vec3& v3dStart, c
 	}
 
 	return RaycastResults::Completed;
-}
-
-template<typename Callback>
-inline RaycastResult raycastWithEndpointsVolume(voxel::PagedVolume* volData, const glm::vec3& v3dStart, const glm::vec3& v3dEnd, Callback&& callback) {
-	return raycastWithEndpoints(volData, v3dStart, v3dEnd, callback);
 }
 
 template<typename Callback>

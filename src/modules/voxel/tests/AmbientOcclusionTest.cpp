@@ -5,43 +5,39 @@
 #include "AbstractVoxelTest.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
+#include "voxel/RawVolume.h"
 
 namespace voxel {
 
 class AmbientOcclusionTest: public AbstractVoxelTest {
-protected:
-	bool pageIn(const Region& region, const PagedVolume::ChunkPtr& chunk) override {
-		return true;
-	}
 };
 
 TEST_F(AmbientOcclusionTest, testAmbientOcclusion) {
-	_volData.flushAll();
+	voxel::RawVolume v(_region);
+	v.setVoxel(1, 2, 1, voxel::createVoxel(0));
 
-	_volData.setVoxel(1, 2, 1, voxel::createVoxel(0));
+	v.setVoxel(0, 1, 0, voxel::createVoxel(0));
+	v.setVoxel(1, 1, 0, voxel::createVoxel(0));
+	v.setVoxel(2, 1, 0, voxel::createVoxel(0));
+	v.setVoxel(0, 1, 1, voxel::createVoxel(0));
+	v.setVoxel(1, 1, 1, voxel::createVoxel(0));
+	v.setVoxel(2, 1, 1, voxel::createVoxel(0));
+	v.setVoxel(0, 1, 2, voxel::createVoxel(0));
+	v.setVoxel(1, 1, 2, voxel::createVoxel(0));
+	v.setVoxel(2, 1, 2, voxel::createVoxel(0));
 
-	_volData.setVoxel(0, 1, 0, voxel::createVoxel(0));
-	_volData.setVoxel(1, 1, 0, voxel::createVoxel(0));
-	_volData.setVoxel(2, 1, 0, voxel::createVoxel(0));
-	_volData.setVoxel(0, 1, 1, voxel::createVoxel(0));
-	_volData.setVoxel(1, 1, 1, voxel::createVoxel(0));
-	_volData.setVoxel(2, 1, 1, voxel::createVoxel(0));
-	_volData.setVoxel(0, 1, 2, voxel::createVoxel(0));
-	_volData.setVoxel(1, 1, 2, voxel::createVoxel(0));
-	_volData.setVoxel(2, 1, 2, voxel::createVoxel(0));
-
-	_volData.setVoxel(0, 0, 0, voxel::createVoxel(0));
-	_volData.setVoxel(1, 0, 0, voxel::createVoxel(0));
-	_volData.setVoxel(2, 0, 0, voxel::createVoxel(0));
-	_volData.setVoxel(0, 0, 1, voxel::createVoxel(0));
-	_volData.setVoxel(1, 0, 1, voxel::createVoxel(0));
-	_volData.setVoxel(2, 0, 1, voxel::createVoxel(0));
-	_volData.setVoxel(0, 0, 2, voxel::createVoxel(0));
-	_volData.setVoxel(1, 0, 2, voxel::createVoxel(0));
-	_volData.setVoxel(2, 0, 2, voxel::createVoxel(0));
+	v.setVoxel(0, 0, 0, voxel::createVoxel(0));
+	v.setVoxel(1, 0, 0, voxel::createVoxel(0));
+	v.setVoxel(2, 0, 0, voxel::createVoxel(0));
+	v.setVoxel(0, 0, 1, voxel::createVoxel(0));
+	v.setVoxel(1, 0, 1, voxel::createVoxel(0));
+	v.setVoxel(2, 0, 1, voxel::createVoxel(0));
+	v.setVoxel(0, 0, 2, voxel::createVoxel(0));
+	v.setVoxel(1, 0, 2, voxel::createVoxel(0));
+	v.setVoxel(2, 0, 2, voxel::createVoxel(0));
 
 	Mesh mesh(1000, 1000);
-	extractCubicMesh(&_volData, _ctx.region(), &mesh, IsQuadNeeded(), _ctx.region().getLowerCorner());
+	extractCubicMesh(&v, v.region(), &mesh, IsQuadNeeded(), v.region().getLowerCorner());
 	const VoxelVertex* vertices = mesh.getRawVertexData();
 	const int amount = (int)mesh.getNoOfVertices();
 	// TODO: this was the amount before ao

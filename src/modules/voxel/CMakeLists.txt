@@ -5,12 +5,8 @@ set(SRCS
 	Face.h Face.cpp
 	MaterialColor.h MaterialColor.cpp
 	Mesh.h Mesh.cpp
-	Morton.h
 	Palette.h Palette.cpp
 	PaletteLookup.h
-	PagedVolume.h PagedVolume.cpp
-	PagedVolumeSampler.cpp PagedVolumeChunk.cpp
-	PagedVolumeWrapper.h PagedVolumeWrapper.cpp
 	RawVolume.h RawVolume.cpp
 	RawVolumeWrapper.h
 	RawVolumeMoveWrapper.h

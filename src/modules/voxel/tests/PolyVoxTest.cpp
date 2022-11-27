@@ -3,68 +3,56 @@
  */
 
 #include "AbstractVoxelTest.h"
+#include "voxel/RawVolume.h"
 
 namespace voxel {
 
 class PolyVoxTest: public AbstractVoxelTest {
 protected:
-	bool pageIn(const voxel::Region& region, const PagedVolume::ChunkPtr& chunk) override {
-		chunk->setVoxel(1, 2, 1, voxel::createVoxel(0));
+	bool pageIn(const voxel::Region& region, RawVolume &v) {
+		v.setVoxel(1, 2, 1, voxel::createVoxel(0));
 
-		chunk->setVoxel(0, 1, 0, voxel::createVoxel(0));
-		chunk->setVoxel(1, 1, 0, voxel::createVoxel(0));
-		chunk->setVoxel(2, 1, 0, voxel::createVoxel(0));
-		chunk->setVoxel(0, 1, 1, voxel::createVoxel(0));
-		chunk->setVoxel(1, 1, 1, voxel::createVoxel(0));
-		chunk->setVoxel(2, 1, 1, voxel::createVoxel(0));
-		chunk->setVoxel(0, 1, 2, voxel::createVoxel(0));
-		chunk->setVoxel(1, 1, 2, voxel::createVoxel(0));
-		chunk->setVoxel(2, 1, 2, voxel::createVoxel(0));
+		v.setVoxel(0, 1, 0, voxel::createVoxel(0));
+		v.setVoxel(1, 1, 0, voxel::createVoxel(0));
+		v.setVoxel(2, 1, 0, voxel::createVoxel(0));
+		v.setVoxel(0, 1, 1, voxel::createVoxel(0));
+		v.setVoxel(1, 1, 1, voxel::createVoxel(0));
+		v.setVoxel(2, 1, 1, voxel::createVoxel(0));
+		v.setVoxel(0, 1, 2, voxel::createVoxel(0));
+		v.setVoxel(1, 1, 2, voxel::createVoxel(0));
+		v.setVoxel(2, 1, 2, voxel::createVoxel(0));
 
-		chunk->setVoxel(0, 0, 0, voxel::createVoxel(0));
-		chunk->setVoxel(1, 0, 0, voxel::createVoxel(0));
-		chunk->setVoxel(2, 0, 0, voxel::createVoxel(0));
-		chunk->setVoxel(0, 0, 1, voxel::createVoxel(0));
-		chunk->setVoxel(1, 0, 1, voxel::createVoxel(0));
-		chunk->setVoxel(2, 0, 1, voxel::createVoxel(0));
-		chunk->setVoxel(0, 0, 2, voxel::createVoxel(0));
-		chunk->setVoxel(1, 0, 2, voxel::createVoxel(0));
-		chunk->setVoxel(2, 0, 2, voxel::createVoxel(0));
+		v.setVoxel(0, 0, 0, voxel::createVoxel(0));
+		v.setVoxel(1, 0, 0, voxel::createVoxel(0));
+		v.setVoxel(2, 0, 0, voxel::createVoxel(0));
+		v.setVoxel(0, 0, 1, voxel::createVoxel(0));
+		v.setVoxel(1, 0, 1, voxel::createVoxel(0));
+		v.setVoxel(2, 0, 1, voxel::createVoxel(0));
+		v.setVoxel(0, 0, 2, voxel::createVoxel(0));
+		v.setVoxel(1, 0, 2, voxel::createVoxel(0));
+		v.setVoxel(2, 0, 2, voxel::createVoxel(0));
 		return true;
 	}
 };
 
 TEST_F(PolyVoxTest, testSamplerPeek) {
-	const PagedVolume::ChunkPtr& chunk = _volData.chunk(glm::ivec3(0, 0, 0));
-	ASSERT_EQ(VoxelType::Generic, chunk->voxel(1, 2, 1).getMaterial());
-	ASSERT_EQ(VoxelType::Generic, chunk->voxel(1, 1, 1).getMaterial());
-	ASSERT_EQ(VoxelType::Generic, chunk->voxel(1, 0, 1).getMaterial());
+	RawVolume v(_region);
+	pageIn(v.region(), v);
+	ASSERT_EQ(VoxelType::Generic, v.voxel(1, 2, 1).getMaterial());
+	ASSERT_EQ(VoxelType::Generic, v.voxel(1, 1, 1).getMaterial());
+	ASSERT_EQ(VoxelType::Generic, v.voxel(1, 0, 1).getMaterial());
 
-	PagedVolume::Sampler sampler(&_volData);
+	RawVolume::Sampler sampler(v);
 	sampler.setPosition(1, 1, 1);
 	ASSERT_EQ(VoxelType::Generic, sampler.peekVoxel0px1py0pz().getMaterial()) << "The voxel above the current position should have a different ";
 	ASSERT_EQ(VoxelType::Generic, sampler.voxel().getMaterial()) << "The current voxel should have a different material";
 	ASSERT_EQ(VoxelType::Generic, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
-TEST_F(PolyVoxTest, testChunkPos) {
-	const int length = _volData.chunkSideLength();
-	EXPECT_EQ(64, length);
-	const int half = length / 2;
-	EXPECT_EQ(_volData.chunkPos(half, half, half), glm::ivec3(0, 0, 0));
-	EXPECT_EQ(_volData.chunkPos(half - 1, half - 1, half - 1), glm::ivec3(0, 0, 0));
-	EXPECT_EQ(_volData.chunkPos(length - 1, length - 1, length - 1), glm::ivec3(0, 0, 0));
-	EXPECT_EQ(_volData.chunkPos(0, 0, 0), glm::ivec3(0, 0, 0));
-	EXPECT_EQ(_volData.chunkPos(1, 1, 1), glm::ivec3(0, 0, 0));
-	EXPECT_EQ(_volData.chunkPos(-1, -1, -1), glm::ivec3(-1, -1, -1));
-	EXPECT_EQ(_volData.chunkPos(-(length + 1), -(length + 1), -(length + 1)), glm::ivec3(-2, -2, -2));
-	EXPECT_EQ(_volData.chunkPos(-length, -length, -length), glm::ivec3(-1, -1, -1));
-	EXPECT_EQ(_volData.chunkPos(-(length - 1), -(length - 1), -(length - 1)), glm::ivec3(-1, -1, -1));
-	EXPECT_EQ(_volData.chunkPos(length, length, length), glm::ivec3(1, 1, 1));
-}
-
 TEST_F(PolyVoxTest, testSamplerPeekWithMovingX) {
-	PagedVolume::Sampler sampler(&_volData);
+	RawVolume v(_region);
+	pageIn(v.region(), v);
+	RawVolume::Sampler sampler(v);
 	sampler.setPosition(0, 1, 1);
 	sampler.movePositiveX();
 	ASSERT_EQ(VoxelType::Generic, sampler.peekVoxel0px1py0pz().getMaterial()) << "The voxel above the current position should have a different ";
@@ -73,7 +61,9 @@ TEST_F(PolyVoxTest, testSamplerPeekWithMovingX) {
 }
 
 TEST_F(PolyVoxTest, testSamplerPeekWithAir) {
-	PagedVolume::Sampler sampler(&_volData);
+	RawVolume v(_region);
+	pageIn(v.region(), v);
+	RawVolume::Sampler sampler(v);
 	sampler.setPosition(1, 3, 1);
 	ASSERT_EQ(VoxelType::Air, sampler.peekVoxel0px1py0pz().getMaterial()) << "The voxel above the current position should have a different material";
 	ASSERT_EQ(VoxelType::Air, sampler.voxel().getMaterial()) << "The current voxel should have a different material";
@@ -81,7 +71,9 @@ TEST_F(PolyVoxTest, testSamplerPeekWithAir) {
 }
 
 TEST_F(PolyVoxTest, testSamplerPeekWithTipOfTheGeom) {
-	PagedVolume::Sampler sampler(&_volData);
+	RawVolume v(_region);
+	pageIn(v.region(), v);
+	RawVolume::Sampler sampler(v);
 	sampler.setPosition(1, 2, 1);
 	ASSERT_EQ(VoxelType::Air, sampler.peekVoxel0px1py0pz().getMaterial()) << "The voxel above the current position should have a different material";
 	ASSERT_EQ(VoxelType::Generic, sampler.voxel().getMaterial()) << "The current voxel should have a different material";
@@ -89,9 +81,11 @@ TEST_F(PolyVoxTest, testSamplerPeekWithTipOfTheGeom) {
 }
 
 TEST_F(PolyVoxTest, testFullSamplerLoop) {
-	const voxel::Region& region = _ctx.region();
-	PagedVolume::Sampler volumeSampler(&_volData);
+	RawVolume v(_region);
+	pageIn(v.region(), v);
+	RawVolume::Sampler volumeSampler(v);
 
+	const voxel::Region &region = v.region();
 	ASSERT_EQ(0, region.getLowerX());
 	ASSERT_EQ(0, region.getLowerY());
 	ASSERT_EQ(0, region.getLowerZ());

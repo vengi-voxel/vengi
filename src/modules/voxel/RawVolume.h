@@ -12,9 +12,6 @@ namespace voxel {
 
 /**
  * Simple volume implementation which stores data in a single large 3D array.
- *
- * This class is less memory-efficient than the PagedVolume, but it is the simplest possible
- * volume implementation which makes it useful for debugging and getting started with PolyVox.
  */
 class RawVolume {
 public:

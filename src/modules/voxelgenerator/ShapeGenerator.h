@@ -22,7 +22,7 @@ namespace shape {
 
 /**
  * @brief Creates a filled circle
- * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] center The position to place the object at
  * @param[in] width The width (x-axis) of the object
  * @param[in] depth The height (z-axis) of the object
@@ -56,7 +56,7 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int 
 
 /**
  * @brief Creates a cube with the given position being the center of the cube
- * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] center The position to place the object at
  * @param[in] width The width (x-axis) of the object
  * @param[in] height The height (y-axis) of the object
@@ -83,7 +83,7 @@ void createCube(Volume& volume, const glm::ivec3& center, const glm::ivec3& dim,
 /**
  * @brief Creates a cube with the ground surface starting exactly on the given y coordinate, x and z are the lower left
  * corner here.
- * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] pos The position to place the object at (lower left corner)
  * @param[in] width The width (x-axis) of the object
  * @param[in] height The height (y-axis) of the object
@@ -105,7 +105,7 @@ void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, const glm::ivec3&
 
 /**
  * @brief Creates a plane
- * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] center The position to place the object at
  * @param[in] width The width (x-axis) of the object
  * @param[in] depth The height (z-axis) of the object
@@ -123,7 +123,7 @@ void createPlaneNoCenter(Volume& volume, const glm::ivec3& center, int width, in
 
 /**
  * @brief Creates a L form
- * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] pos The position to place the object at (lower left corner)
  * @param[in] width The width (x-axis) of the object
  * @param[in] height The height (y-axis) of the object
@@ -154,7 +154,7 @@ glm::ivec3 createL(Volume& volume, const glm::ivec3& pos, int width, int depth, 
 
 /**
  * @brief Creates an ellipsis
- * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] center The position to place the object at
  * @param[in] width The width (x-axis) of the object
  * @param[in] height The height (y-axis) of the object
@@ -189,7 +189,7 @@ void createEllipse(Volume& volume, const glm::ivec3& center, const glm::ivec3& d
 
 /**
  * @brief Creates a cone
- * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] center The position to place the object at
  * @param[in] width The width (x-axis) of the object
  * @param[in] height The height (y-axis) of the object
@@ -219,7 +219,7 @@ void createCone(Volume& volume, const glm::ivec3& center, const glm::ivec3& dim,
 
 /**
  * @brief Creates a dome
- * @param[in,out] volume The volume (RawVolume, PagedVolume) to place the voxels into
+ * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] center The position to place the object at
  * @param[in] width The width (x-axis) of the object
  * @param[in] height The height (y-axis) of the object
