@@ -11,6 +11,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "core/tests/TestHelper.h"
+#include "core/tests/TestColorHelper.h"
 #include "voxel/tests/VoxelPrinter.h"
 #include "voxelformat/SceneGraphNode.h"
 #include <gtest/gtest.h>
@@ -25,9 +26,6 @@ namespace glm {
 ::std::ostream &operator<<(::std::ostream &os, const ivec2 &v);
 ::std::ostream &operator<<(::std::ostream &os, const ivec3 &v);
 ::std::ostream &operator<<(::std::ostream &os, const ivec4 &v);
-}
-namespace core {
-::std::ostream &operator<<(::std::ostream &os, const core::RGBA &color);
 }
 
 namespace voxel {

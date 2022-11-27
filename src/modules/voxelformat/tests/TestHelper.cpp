@@ -56,11 +56,6 @@ namespace glm {
 	return os;
 }
 }
-namespace core {
-std::ostream &operator<<(::std::ostream &os, const core::RGBA &color) {
-	return os << core::Color::print(color).c_str();
-}
-}
 
 namespace voxel {
 
