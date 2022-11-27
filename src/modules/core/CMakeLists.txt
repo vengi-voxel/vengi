@@ -115,6 +115,7 @@ set(TEST_SRCS
 	tests/ListTest.cpp
 	tests/LogTest.cpp
 	tests/MapTest.cpp
+	tests/DynamicMapTest.cpp
 	tests/MD5Test.cpp
 	tests/OptionalTest.cpp
 	tests/PoolAllocatorTest.cpp
