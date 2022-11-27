@@ -31,13 +31,13 @@ public:
 		virtual bool setVoxel(const Voxel& voxel);
 		const glm::ivec3& position() const;
 
-		void movePositiveX();
-		void movePositiveY();
-		void movePositiveZ();
+		void movePositiveX(uint32_t offset = 1);
+		void movePositiveY(uint32_t offset = 1);
+		void movePositiveZ(uint32_t offset = 1);
 
-		void moveNegativeX();
-		void moveNegativeY();
-		void moveNegativeZ();
+		void moveNegativeX(uint32_t offset = 1);
+		void moveNegativeY(uint32_t offset = 1);
+		void moveNegativeZ(uint32_t offset = 1);
 
 		const Voxel& peekVoxel1nx1ny1nz() const;
 		const Voxel& peekVoxel1nx1ny0pz() const;

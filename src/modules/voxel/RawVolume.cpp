@@ -279,10 +279,10 @@ bool RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 	return false;
 }
 
-void RawVolume::Sampler::movePositiveX() {
+void RawVolume::Sampler::movePositiveX(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
-	++_posInVolume.x;
+	_posInVolume.x += (int)offset;
 
 	if (!region().containsPointInX(_posInVolume.x)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDX;
@@ -294,16 +294,16 @@ void RawVolume::Sampler::movePositiveX() {
 	if (!bIsOldPositionValid) {
 		setPosition(_posInVolume);
 	} else if (currentPositionValid()) {
-		++_currentVoxel;
+		_currentVoxel += (intptr_t)offset;
 	} else {
 		_currentVoxel = nullptr;
 	}
 }
 
-void RawVolume::Sampler::movePositiveY() {
+void RawVolume::Sampler::movePositiveY(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
-	++_posInVolume.y;
+	_posInVolume.y += (int)offset;
 
 	if (!region().containsPointInY(_posInVolume.y)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDY;
@@ -315,16 +315,16 @@ void RawVolume::Sampler::movePositiveY() {
 	if (!bIsOldPositionValid) {
 		setPosition(_posInVolume);
 	} else if (currentPositionValid()) {
-		_currentVoxel += _volume->width();
+		_currentVoxel += (intptr_t)(_volume->width() * offset);
 	} else {
 		_currentVoxel = nullptr;
 	}
 }
 
-void RawVolume::Sampler::movePositiveZ() {
+void RawVolume::Sampler::movePositiveZ(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
-	_posInVolume.z++;
+	_posInVolume.z += (int)offset;
 
 	if (!region().containsPointInZ(_posInVolume.z)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDZ;
@@ -336,16 +336,16 @@ void RawVolume::Sampler::movePositiveZ() {
 	if (!bIsOldPositionValid) {
 		setPosition(_posInVolume);
 	} else if (currentPositionValid()) {
-		_currentVoxel += _volume->width() * _volume->height();
+		_currentVoxel += (intptr_t)(_volume->width() * _volume->height() * offset);
 	} else {
 		_currentVoxel = nullptr;
 	}
 }
 
-void RawVolume::Sampler::moveNegativeX() {
+void RawVolume::Sampler::moveNegativeX(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
-	--_posInVolume.x;
+	_posInVolume.x -= (int)offset;
 
 	if (!region().containsPointInX(_posInVolume.x)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDX;
@@ -357,16 +357,16 @@ void RawVolume::Sampler::moveNegativeX() {
 	if (!bIsOldPositionValid) {
 		setPosition(_posInVolume);
 	} else if (currentPositionValid()) {
-		--_currentVoxel;
+		_currentVoxel -= (intptr_t)offset;
 	} else {
 		_currentVoxel = nullptr;
 	}
 }
 
-void RawVolume::Sampler::moveNegativeY() {
+void RawVolume::Sampler::moveNegativeY(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
-	--_posInVolume.y;
+	_posInVolume.y -= (int)offset;
 
 	if (!region().containsPointInY(_posInVolume.y)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDY;
@@ -378,16 +378,16 @@ void RawVolume::Sampler::moveNegativeY() {
 	if (!bIsOldPositionValid) {
 		setPosition(_posInVolume);
 	} else if (currentPositionValid()) {
-		_currentVoxel -= _volume->width();
+		_currentVoxel -= (intptr_t)(_volume->width() * offset);
 	} else {
 		_currentVoxel = nullptr;
 	}
 }
 
-void RawVolume::Sampler::moveNegativeZ() {
+void RawVolume::Sampler::moveNegativeZ(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
-	--_posInVolume.z;
+	_posInVolume.z -= (int)offset;
 
 	if (!region().containsPointInZ(_posInVolume.z)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDZ;
@@ -399,7 +399,7 @@ void RawVolume::Sampler::moveNegativeZ() {
 	if (!bIsOldPositionValid) {
 		setPosition(_posInVolume);
 	} else if (currentPositionValid()) {
-		_currentVoxel -= _volume->width() * _volume->height();
+		_currentVoxel -= (intptr_t)(_volume->width() * _volume->height() * offset);
 	} else {
 		_currentVoxel = nullptr;
 	}
