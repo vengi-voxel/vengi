@@ -383,12 +383,16 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 		}
 		core::DynamicArray<int8_t> array;
 		array.reserve(length);
-		for (size_t i = 0; i < length; i++) {
+		bool error = false;
+		array.append(length, [&ctx, &error] (int i) {
 			int8_t val;
 			if (ctx.stream->readInt8(val) != 0) {
-				return NamedBinaryTag{};
+				error = true;
 			}
-			array.push_back(val);
+			return val;
+		});
+		if (error) {
+			return NamedBinaryTag{};
 		}
 		return NamedBinaryTag{core::move(array)};
 	}
@@ -399,13 +403,14 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 		}
 		core::DynamicArray<int32_t> array;
 		array.reserve(length);
-		for (size_t i = 0; i < length; i++) {
+		bool error = false;
+		array.append(length, [&ctx, &error] (int i) {
 			int32_t val;
-			if (ctx.stream->readInt32BE(val) != 0) {
-				return NamedBinaryTag{};
+			if (ctx.stream->readInt32(val) != 0) {
+				error = true;
 			}
-			array.push_back(val);
-		}
+			return val;
+		});
 		return NamedBinaryTag{core::move(array)};
 	}
 	case TagType::LONG_ARRAY: {
@@ -415,13 +420,14 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 		}
 		core::DynamicArray<int64_t> array;
 		array.reserve(length);
-		for (size_t i = 0; i < length; i++) {
+		bool error = false;
+		array.append(length, [&ctx, &error] (int i) {
 			int64_t val;
-			if (ctx.stream->readInt64BE(val) != 0) {
-				return NamedBinaryTag{};
+			if (ctx.stream->readInt64(val) != 0) {
+				error = true;
 			}
-			array.push_back(val);
-		}
+			return val;
+		});
 		return NamedBinaryTag{core::move(array)};
 	}
 	case TagType::LIST: {
