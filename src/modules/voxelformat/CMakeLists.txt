@@ -31,7 +31,6 @@ set(SRCS
 	VXRFormat.h VXRFormat.cpp
 	VXTFormat.h VXTFormat.cpp
 	VXLFormat.h VXLFormat.cpp
-	MeshCache.h MeshCache.cpp
 	MeshFormat.h MeshFormat.cpp
 	CubFormat.h CubFormat.cpp
 	OBJFormat.h OBJFormat.cpp
@@ -44,7 +43,6 @@ set(SRCS
 	SchematicFormat.h SchematicFormat.cpp
 	SMFormat.h SMFormat.cpp
 	STLFormat.h STLFormat.cpp
-	VolumeCache.h VolumeCache.cpp
 	VoxFormat.h VoxFormat.cpp
 	SLAB6VoxFormat.h SLAB6VoxFormat.cpp
 	VolumeFormat.h VolumeFormat.cpp
