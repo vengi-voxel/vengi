@@ -29,27 +29,27 @@ template<typename MergeCondition = MergeSkipEmpty, class Volume1, class Volume2>
 int mergeVolumes(Volume1* destination, const Volume2* source, const voxel::Region& destReg, const voxel::Region& sourceReg, MergeCondition mergeCondition = MergeCondition()) {
 	core_trace_scoped(MergeRawVolumes);
 	int cnt = 0;
-	typename Volume2::Sampler sampler2(source);
-	sampler2.setPosition(sourceReg.getLowerCorner());
+	typename Volume2::Sampler sourceSampler(source);
+	typename Volume1::Sampler destSampler(destination);
+	const int relX = destReg.getLowerX();
 	for (int32_t z = sourceReg.getLowerZ(); z <= sourceReg.getUpperZ(); ++z) {
 		const int destZ = destReg.getLowerZ() + z - sourceReg.getLowerZ();
 		for (int32_t y = sourceReg.getLowerY(); y <= sourceReg.getUpperY(); ++y) {
 			const int destY = destReg.getLowerY() + y - sourceReg.getLowerY();
+			sourceSampler.setPosition(sourceReg.getLowerX(), y, z);
+			destSampler.setPosition(relX, destY, destZ);
 			for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
-				voxel::Voxel voxel = sampler2.voxel();
-				sampler2.movePositiveX();
+				voxel::Voxel voxel = sourceSampler.voxel();
+				sourceSampler.movePositiveX();
 				if (!mergeCondition(voxel)) {
+					destSampler.movePositiveX();
 					continue;
 				}
-				const int destX = destReg.getLowerX() + x - sourceReg.getLowerX();
-				if (!destReg.containsPoint(destX, destY, destZ)) {
-					continue;
-				}
-				if (destination->setVoxel(destX, destY, destZ, voxel)) {
+				if (destSampler.setVoxel(voxel)) {
 					++cnt;
 				}
+				destSampler.movePositiveX();
 			}
-			sampler2.setPosition(sourceReg.getLowerX(), y, z);
 		}
 	}
 	return cnt;

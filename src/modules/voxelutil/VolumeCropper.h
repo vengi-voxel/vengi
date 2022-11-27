@@ -47,9 +47,10 @@ voxel::RawVolume* cropVolume(const voxel::RawVolume* volume, CropSkipCondition c
 	voxel::RawVolume::Sampler volumeSampler(volume);
 	for (int32_t z = mins.z; z <= maxs.z; ++z) {
 		for (int32_t y = mins.y; y <= maxs.y; ++y) {
+			volumeSampler.setPosition(mins.x, y, z);
 			for (int32_t x = mins.x; x <= maxs.x; ++x) {
-				volumeSampler.setPosition(x, y, z);
 				const voxel::Voxel& voxel = volumeSampler.voxel();
+				volumeSampler.movePositiveX();
 				if (condition(voxel)) {
 					continue;
 				}
