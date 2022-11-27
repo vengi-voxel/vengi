@@ -135,11 +135,12 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	ASSERT_NE(nullptr, node);
 	voxel::getPalette() = node->palette();
 	const voxel::RawVolume *v = node->volume();
-	EXPECT_COLOR_NEAR(nipponRed, node->palette().colors[v->voxel(0, 0, 0).getColor()], 0.00004f);
-	EXPECT_COLOR_NEAR(nipponRed, node->palette().colors[v->voxel(size * 2, 0, size * 2).getColor()], 0.00004f);
-	EXPECT_COLOR_NEAR(nipponBlue, node->palette().colors[v->voxel(0, 0, size * 2).getColor()], 0.00044f);
-	EXPECT_COLOR_NEAR(nipponRed, node->palette().colors[v->voxel(size * 2, 0, 0).getColor()], 0.00004f);
-	EXPECT_COLOR_NEAR(nipponGreen, node->palette().colors[v->voxel(size, size, size).getColor()], 0.00065f);
+	const voxel::PaletteColorArray &paletteColors = node->palette().colors;
+	EXPECT_COLOR_NEAR(nipponRed, paletteColors[v->voxel(0, 0, 0).getColor()], 0.00004f);
+	EXPECT_COLOR_NEAR(nipponRed, paletteColors[v->voxel(size * 2, 0, size * 2).getColor()], 0.00004f);
+	EXPECT_COLOR_NEAR(nipponBlue, paletteColors[v->voxel(0, 0, size * 2).getColor()], 0.00044f);
+	EXPECT_COLOR_NEAR(nipponRed, paletteColors[v->voxel(size * 2, 0, 0).getColor()], 0.00004f);
+	EXPECT_COLOR_NEAR(nipponGreen, paletteColors[v->voxel(size, size, size).getColor()], 0.00065f);
 }
 
 } // namespace voxelformat
