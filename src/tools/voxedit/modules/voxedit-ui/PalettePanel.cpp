@@ -65,7 +65,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 	_hasFocus = false;
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
 		_hasFocus = ImGui::IsWindowHovered();
-		const ImVec2 colorButtonSize(20, 20);
+		const ImVec2 colorButtonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 		const ImVec2 &pos = ImGui::GetCursorScreenPos();
 		bool colorHovered = false;
 		ImDrawList* drawList = ImGui::GetWindowDrawList();

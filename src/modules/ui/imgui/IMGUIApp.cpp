@@ -286,6 +286,9 @@ app::AppState IMGUIApp::onInit() {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
 	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+	// test dpi related issues on linux with
+	// xrandr | grep connected | grep -v disconnected | awk '{print $1}'
+	// xrandr --output <screen-name> --scale 1.6x1.6
 
 	if (_persistUISettings) {
 		const core::String iniFile = _appname + "-imgui.ini";
