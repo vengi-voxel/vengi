@@ -61,7 +61,7 @@ protected:
 		if (!voxel::isAir(v->voxel(pos).getMaterial())) {
 			modifier().setModifierType(ModifierType::Paint);
 		}
-		modifier().aabbAction(v, [&](const voxel::Region &region, ModifierType) { modified(nodeId, region); });
+		modifier().aabbAction(v, [&](const voxel::Region &region, ModifierType, bool) { modified(nodeId, region); });
 		modifier().setModifierType(ModifierType::Place);
 	}
 
@@ -74,7 +74,7 @@ protected:
 		EXPECT_TRUE(modifier().aabbStart());
 		modifier().setCursorPosition(maxs, voxel::FaceNames::NegativeX);
 		modifier().aabbStep();
-		EXPECT_TRUE(modifier().aabbAction(nullptr, [&](const voxel::Region &, ModifierType) {}));
+		EXPECT_TRUE(modifier().aabbAction(nullptr, [&](const voxel::Region &, ModifierType, bool) {}));
 		modifier().setModifierType(ModifierType::Place);
 	}
 

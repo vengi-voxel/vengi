@@ -184,9 +184,9 @@ void Viewport::update() {
 						const int nodeId = sceneMgr().sceneGraph().activeNode();
 						modifier.aabbStart();
 						modifier.aabbAction(sceneMgr().volume(nodeId),
-											[nodeId](const voxel::Region &region, ModifierType type) {
+											[nodeId](const voxel::Region &region, ModifierType type, bool markUndo) {
 												if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
-													sceneMgr().modified(nodeId, region);
+													sceneMgr().modified(nodeId, region, markUndo);
 												}
 											});
 						modifier.aabbAbort();

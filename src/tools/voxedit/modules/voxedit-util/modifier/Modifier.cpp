@@ -237,7 +237,7 @@ math::Axis Modifier::getSizeAndHeightFromAxisAndDim(math::Axis axis, const glm::
 	return axis;
 }
 
-bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type)>& callback) {
+bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type, bool markUndo)>& callback, bool markUndo) {
 	glm::ivec3 operateMins = mins;
 	glm::ivec3 operateMaxs = maxs;
 	if (_selectionValid) {
@@ -287,7 +287,7 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 	const voxel::Region& modifiedRegion = wrapper.dirtyRegion();
 	if (modifiedRegion.isValid()) {
 		voxel::logRegion("Dirty region", modifiedRegion);
-		callback(modifiedRegion, _modifierType);
+		callback(modifiedRegion, _modifierType, markUndo);
 	}
 	return true;
 }
@@ -367,14 +367,14 @@ void Modifier::setVoxelAtCursor(const voxel::Voxel& voxel) {
 }
 
 bool Modifier::aabbAction(voxel::RawVolume *volume,
-						  const std::function<void(const voxel::Region &region, ModifierType type)> &callback) {
+						  const std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)> &callback) {
 	const bool selectFlag = (_modifierType & ModifierType::Select) == ModifierType::Select;
 	if (selectFlag) {
 		const math::AABB<int> a = aabb();
 		Log::debug("select mode");
 		select(a.mins(), a.maxs());
 		if (_selectionValid) {
-			callback(_selection, _modifierType);
+			callback(_selection, _modifierType, false);
 		}
 		return true;
 	}
@@ -418,7 +418,7 @@ bool Modifier::aabbAction(voxel::RawVolume *volume,
 		Log::debug("result: %i", (int)result);
 		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 		if (modifiedRegion.isValid()) {
-			callback(modifiedRegion, _modifierType);
+			callback(modifiedRegion, _modifierType, true);
 		}
 		return true;
 	}
@@ -451,7 +451,7 @@ bool Modifier::aabbAction(voxel::RawVolume *volume,
 		}
 		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 		if (modifiedRegion.isValid()) {
-			callback(modifiedRegion, _modifierType);
+			callback(modifiedRegion, _modifierType, true);
 		}
 		return true;
 	}
@@ -473,7 +473,7 @@ bool Modifier::aabbAction(voxel::RawVolume *volume,
 		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 		if (modifiedRegion.isValid()) {
 			voxel::logRegion("Dirty region", modifiedRegion);
-			callback(modifiedRegion, _modifierType);
+			callback(modifiedRegion, _modifierType, true);
 		}
 		return true;
 	}
@@ -483,16 +483,15 @@ bool Modifier::aabbAction(voxel::RawVolume *volume,
 	glm::ivec3 minsMirror = a.mins();
 	glm::ivec3 maxsMirror = a.maxs();
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
-		return executeShapeAction(wrapper, a.mins(), a.maxs(), callback);
+		return executeShapeAction(wrapper, a.mins(), a.maxs(), callback, true);
 	}
 	Log::debug("Execute mirror action");
 	const math::AABB<int> second(minsMirror, maxsMirror);
 	if (math::intersects(a, second)) {
-		executeShapeAction(wrapper, a.mins(), maxsMirror, callback);
+		executeShapeAction(wrapper, a.mins(), maxsMirror, callback, true);
 	} else {
-		// TODO: this produces two memento states
-		executeShapeAction(wrapper, a.mins(), a.maxs(), callback);
-		executeShapeAction(wrapper, minsMirror, maxsMirror, callback);
+		executeShapeAction(wrapper, a.mins(), a.maxs(), callback, false);
+		executeShapeAction(wrapper, minsMirror, maxsMirror, callback, true);
 	}
 	_secondPosValid = false;
 	_aabbSecondActionDirection = math::Axis::None;

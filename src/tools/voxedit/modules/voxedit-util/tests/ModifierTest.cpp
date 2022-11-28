@@ -38,7 +38,7 @@ protected:
 		voxel::RawVolume volume(region);
 		int modifierExecutionCount = 0;
 		voxel::Region regions[2];
-		modifier.aabbAction(&volume, [&] (const voxel::Region &region, ModifierType modifierType) {
+		modifier.aabbAction(&volume, [&] (const voxel::Region &region, ModifierType modifierType, bool markUndo) {
 			if (modifierExecutionCount < lengthof(regions)) {
 				regions[modifierExecutionCount] = region;
 			}
@@ -55,7 +55,7 @@ protected:
 	void select(voxel::RawVolume& volume, Modifier& modifier, const glm::ivec3& mins, const glm::ivec3& maxs) {
 		prepare(modifier, mins, maxs, ModifierType::Select);
 		int executed = 0;
-		modifier.aabbAction(&volume, [&] (const voxel::Region& region, ModifierType type) {
+		modifier.aabbAction(&volume, [&] (const voxel::Region& region, ModifierType type, bool markUndo) {
 			EXPECT_EQ(ModifierType::Select, type);
 			EXPECT_EQ(voxel::Region(mins, maxs), region);
 			++executed;
@@ -91,7 +91,7 @@ TEST_F(ModifierTest, testModifierAction) {
 	const voxel::Region region(-10, 10);
 	voxel::RawVolume volume(region);
 	bool modifierExecuted = false;
-	modifier.aabbAction(&volume, [&] (const voxel::Region &region, ModifierType modifierType) {
+	modifier.aabbAction(&volume, [&] (const voxel::Region &region, ModifierType modifierType, bool markUndo) {
 		modifierExecuted = true;
 		EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
 	});
@@ -121,7 +121,7 @@ TEST_F(ModifierTest, testModifierSelection) {
 
 	prepare(modifier, glm::ivec3(-3), glm::ivec3(3), ModifierType::Place);
 	int modifierExecuted = 0;
-	modifier.aabbAction(&volume, [&] (const voxel::Region &region, ModifierType modifierType) {
+	modifier.aabbAction(&volume, [&] (const voxel::Region &region, ModifierType modifierType, bool markUndo) {
 		++modifierExecuted;
 		EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
 	});
