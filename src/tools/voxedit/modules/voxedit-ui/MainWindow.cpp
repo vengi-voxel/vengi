@@ -390,7 +390,7 @@ bool MainWindow::allowToQuit() {
 void MainWindow::update() {
 	core_trace_scoped(MainWindow);
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
-	const float statusBarHeight = (float)_app->fontSize() + 16.0f;
+	const float statusBarHeight = ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.y * 2.0f;
 
 	if (_lastOpenedFile->isDirty()) {
 		_lastOpenedFile->markClean();
