@@ -6,7 +6,6 @@ set(SRCS
 	Plane.h Plane.cpp
 	Shadow.h Shadow.cpp
 	ShapeRenderer.cpp ShapeRenderer.h
-	Skybox.h Skybox.cpp
 	TextureRenderer.cpp TextureRenderer.h
 )
 set(SHADERS

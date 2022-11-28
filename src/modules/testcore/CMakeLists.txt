@@ -1,5 +1,4 @@
 set(SRCS
-	DepthBufferRenderer.cpp DepthBufferRenderer.h
 	TestApp.cpp TestApp.h
 	Movement.cpp Movement.h
 	TestAppMain.h
