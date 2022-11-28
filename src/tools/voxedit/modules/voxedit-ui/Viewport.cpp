@@ -199,12 +199,11 @@ void Viewport::update() {
 					ImGui::EndDragDropTarget();
 				}
 
-				const float height = (float)app->fontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
-				const float maxWidth = 200.0f;
+				const float height = ImGui::GetFrameHeight();
 				const ImVec2 windowSize = ImGui::GetWindowSize();
 				ImGui::SetCursorPos(ImVec2(0.0f, windowSize.y - height));
-				ImGui::SetNextItemWidth(maxWidth);
 				const int currentCamRotType = (int)camera().rotationType();
+				ImGui::SetNextItemWidth(ImGui::CalcComboBoxWidth(camRotTypes[currentCamRotType]));
 				if (ImGui::BeginCombo("##referencepoint", camRotTypes[currentCamRotType])) {
 					for (int n = 0; n < lengthof(camRotTypes); n++) {
 						const bool isSelected = (currentCamRotType == n);
@@ -217,9 +216,10 @@ void Viewport::update() {
 					}
 					ImGui::EndCombo();
 				}
-				ImGui::SetCursorPos(ImVec2(windowSize.x - maxWidth, windowSize.y - height));
 				const int currentPolygonMode = (int)camera().polygonMode();
-				ImGui::SetNextItemWidth(maxWidth);
+				const float polygonModeMaxWidth = ImGui::CalcComboBoxWidth(polygonModes[currentPolygonMode]);
+				ImGui::SetCursorPos(ImVec2(windowSize.x - polygonModeMaxWidth, windowSize.y - height));
+				ImGui::SetNextItemWidth(polygonModeMaxWidth);
 				if (ImGui::BeginCombo("##polygonmode", polygonModes[currentPolygonMode])) {
 					for (int n = 0; n < lengthof(polygonModes); n++) {
 						const bool isSelected = (currentPolygonMode == n);
