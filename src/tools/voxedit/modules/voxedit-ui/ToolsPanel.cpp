@@ -46,6 +46,19 @@ void ToolsPanel::update(const char *title, command::CommandExecutionListener &li
 			ImGui::TooltipText("Rotate by 90 degree on the z axis");
 		}
 
+		if (ImGui::CollapsingHeader("Text", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::InputText("Character", &_text.input);
+			ImGui::InputInt("Size", &_text.size);
+			_text.size = glm::clamp(_text.size, 6, 255);
+			ImGui::InputInt("Spacing", &_text.spacing);
+			ImGui::InputInt("Thickness", &_text.thickness);
+			_text.thickness = glm::clamp(_text.thickness, 1, 255);
+			ImGui::InputFile("Font", &_text.font, io::format::fonts());
+			if (ImGui::Button("Execute##text")) {
+				sceneMgr().renderText(_text.input.c_str(), _text.size, _text.thickness, _text.spacing, _text.font.c_str());
+			}
+		}
+
 		ImGui::NewLine();
 
 		if (ImGui::CollapsingHeader("Flip on axis", ImGuiTreeNodeFlags_DefaultOpen)) {

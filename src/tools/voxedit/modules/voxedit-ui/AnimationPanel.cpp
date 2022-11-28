@@ -17,6 +17,10 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 			// TODO: allow to select it
 			ImGui::TextDisabled("%s", animation.c_str());
 		}
+
+		if (animations.empty()) {
+			ImGui::TextDisabled("There are no animations");
+		}
 	}
 	ImGui::End();
 }

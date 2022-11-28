@@ -6,6 +6,7 @@
 
 #include "core/Enum.h"
 #include "core/collection/DynamicArray.h"
+#include "voxelfont/VoxelFont.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/Picking.h"
@@ -76,6 +77,7 @@ private:
 	render::ShapeRenderer _shapeRenderer;
 	MementoHandler _mementoHandler;
 	ModifierFacade _modifier;
+	voxelfont::VoxelFont _voxelFont;
 	voxel::RawVolume* _copy = nullptr;
 	EditMode _editMode = EditMode::Scene;
 	std::future<voxelformat::SceneGraph> _loadingFuture;
@@ -300,6 +302,7 @@ public:
 			float length, float width, float widthIncrement, int iterations, float leavesRadius);
 
 	void fillPlane(const image::ImagePtr &image);
+	void renderText(const char *text, int size = 16, int thickness = 1, int spacing = 0, const char *font = "font.ttf");
 
 	/**
 	 * @brief Save the volume data to the given file

@@ -14,6 +14,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
+#include "core/UTF8.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -31,6 +32,7 @@
 #include "voxel/RawVolumeMoveWrapper.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
+#include "voxelfont/VoxelFont.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/SceneGraphUtil.h"
@@ -382,6 +384,9 @@ void SceneManager::queueRegionExtraction(int nodeId, const voxel::Region& region
 }
 
 void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, bool markUndo) {
+	if (!modifiedRegion.isValid()) {
+		return;
+	}
 	Log::debug("Modified node %i, undo state: %s", nodeId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
@@ -1216,6 +1221,16 @@ void SceneManager::construct() {
 		toggleEditMode();
 	}).setHelp("Toggle scene mode on/off").setBindingContext(voxedit::BindingContext::Editing);
 
+	command::Command::registerCommand("text", [this] (const command::CmdArgs& args) {
+		if (args.size() != 2) {
+			Log::info("Usage: text <string> <size>");
+			return;
+		}
+		const core::String &str = args[0];
+		const int size = args[1].toInt();
+		renderText(str.c_str(), size);
+	}).setHelp("Render a character to the reference position");
+
 	command::Command::registerCommand("layerssave", [&] (const command::CmdArgs& args) {
 		core::String dir = ".";
 		if (!args.empty()) {
@@ -1707,6 +1722,23 @@ void SceneManager::construct() {
 	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
 }
 
+void SceneManager::renderText(const char *str, int size, int thickness, int spacing, const char *font) {
+	if (!_voxelFont.init(font)) {
+		Log::error("Failed to initialize voxel font with %s", font);
+		return;
+	}
+	voxel::RawVolumeWrapper wrapper(activeVolume());
+
+	const char **s = &str;
+	glm::ivec3 pos = referencePosition();
+	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
+		pos.x += _voxelFont.renderCharacter(c, size, thickness, pos, wrapper, _modifier.cursorVoxel());
+		pos.x += spacing;
+	}
+
+	modified(activeNode(), wrapper.dirtyRegion());
+}
+
 int SceneManager::addModelChild(const core::String& name, int width, int height, int depth) {
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	if (!region.isValid()) {
@@ -1931,6 +1963,7 @@ void SceneManager::shutdown() {
 	_shapeBuilder.shutdown();
 	_gridRenderer.shutdown();
 	_mementoHandler.clearStates();
+	_voxelFont.shutdown();
 
 	_referencePointMesh = -1;
 	_aabbMeshIndex = -1;

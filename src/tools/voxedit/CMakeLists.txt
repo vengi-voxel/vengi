@@ -14,6 +14,7 @@ set(FILES
 	voxedit/scripts/test-import-plane.cfg
 	voxedit/scripts/test-layers.cfg
 	voxedit/scripts/test-animate.cfg
+	shared/font.ttf
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED)
