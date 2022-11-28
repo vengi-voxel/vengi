@@ -1,6 +1,6 @@
 # Welcome to vengi
 
-This is a C++ voxel engine and its tools. It includes a [voxel editor](voxedit/Index.md) with character animation support
+This is a collection of voxel tools. It includes a [voxel editor](voxedit/Index.md) with animation support
 and loading/saving into a lot of [voxel volume formats](Formats.md). There are other tools like e.g. a [thumbnailer](thumbnailer/Index.md) for
 your filemanager and a command line tool to [convert or modify](voxconvert/Index.md) between several voxel formats.
 
