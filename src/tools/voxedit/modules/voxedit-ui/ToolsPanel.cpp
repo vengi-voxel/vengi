@@ -49,9 +49,10 @@ void ToolsPanel::update(const char *title, command::CommandExecutionListener &li
 		if (ImGui::CollapsingHeader("Text", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::InputText("Character", &_text.input);
 			ImGui::InputInt("Size", &_text.size);
-			_text.size = glm::clamp(_text.size, 6, 255);
-			ImGui::InputInt("Spacing", &_text.spacing);
+			ImGui::InputInt(ICON_FK_ARROWS_H, &_text.spacing);
+			ImGui::TooltipText("Horizontal spacing");
 			ImGui::InputInt("Thickness", &_text.thickness);
+			_text.size = glm::clamp(_text.size, 6, 255);
 			_text.thickness = glm::clamp(_text.thickness, 1, 255);
 			ImGui::InputFile("Font", &_text.font, io::format::fonts());
 			if (ImGui::Button("Execute##text")) {
