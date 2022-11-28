@@ -4,11 +4,14 @@
 
 #include "IMGUIEx.h"
 #include "IMGUIApp.h"
+#include "IconsForkAwesome.h"
 #include "ScopedStyle.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "command/Command.h"
 #include "imgui.h"
+#include "io/FormatDescription.h"
+#include "video/FileDialogOptions.h"
 #include "video/WindowedApp.h"
 #include <SDL_stdinc.h>
 #include <glm/vec2.hpp>
@@ -95,6 +98,18 @@ bool InputVarString(const char* label, const core::VarPtr& var, ImGuiInputTextFl
 		TooltipText("%s", var->help());
 	}
 	return false;
+}
+
+bool InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions) {
+	const bool v = InputText(label, file);
+	ImGui::SameLine();
+	if (ImGui::Button(ICON_FK_FONT)) {
+		video::FileDialogOptions options;
+		video::WindowedApp::getInstance()->openDialog([file] (const core::String &filename) {
+			*file = filename;
+		}, options, descriptions);
+	}
+	return v;
 }
 
 bool InputVarFloat(const char* label, const core::VarPtr& var, float step, float step_fast, ImGuiInputTextFlags extra_flags) {

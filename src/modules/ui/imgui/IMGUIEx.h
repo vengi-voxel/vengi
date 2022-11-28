@@ -13,6 +13,10 @@
 #include "video/Types.h"
 #include <glm/fwd.hpp>
 
+namespace io {
+struct FormatDescription;
+}
+
 namespace ImGui {
 
 IMGUI_API void Image(video::Id handle, const glm::ivec2 &size, const glm::vec2 &uv0 = glm::vec2(0),
@@ -49,6 +53,7 @@ IMGUI_API void LoadingIndicatorCircle(const char *label, const float indicator_r
 									  const ImVec4 &main_color = ImVec4(0.0f, 0.0f, 1.0f, 1.0f),
 									  const ImVec4 &backdrop_color = ImVec4(0.0f, 0.0f, 0.5f, 1.0f),
 									  const int circle_count = 13, const float speed = 1.0f);
+IMGUI_API bool InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions);
 
 template <class Collection>
 static bool ComboStl(const char *label, int *current_item, const Collection &items) {
