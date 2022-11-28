@@ -48,15 +48,28 @@ void ToolsPanel::update(const char *title, command::CommandExecutionListener &li
 
 		if (ImGui::CollapsingHeader("Text##text", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::InputText("Text##text", &_text.input);
-			ImGui::InputInt(ICON_FK_ARROWS_V"##text", &_text.size);
+
+			ImGui::SetNextItemWidth(100.0f);
+			if (ImGui::InputInt(ICON_FK_ARROWS_V "##text", &_text.size)) {
+				_text.size = glm::clamp(_text.size, 6, 255);
+			}
 			ImGui::TooltipText("Font size");
-			ImGui::InputInt(ICON_FK_ARROWS_H"##text", &_text.spacing);
+			ImGui::SameLine();
+
+			ImGui::SetNextItemWidth(100.0f);
+			ImGui::InputInt(ICON_FK_ARROWS_H "##text", &_text.spacing);
 			ImGui::TooltipText("Horizontal spacing");
-			ImGui::InputInt(ICON_FK_EXPAND"##text", &_text.thickness);
+
+			ImGui::SetNextItemWidth(100.0f);
+			if (ImGui::InputInt(ICON_FK_EXPAND "##text", &_text.thickness)) {
+				_text.thickness = glm::clamp(_text.thickness, 1, 255);
+			}
 			ImGui::TooltipText("Thickness");
-			_text.size = glm::clamp(_text.size, 6, 255);
-			_text.thickness = glm::clamp(_text.thickness, 1, 255);
-			ImGui::InputFile("Font##text", &_text.font, io::format::fonts());
+
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(100.0f);
+			ImGui::InputFile("Font##text", &_text.font, io::format::fonts(), ImGuiInputTextFlags_ReadOnly);
+
 			if (ImGui::Button("Execute##text")) {
 				sceneMgr().renderText(_text.input.c_str(), _text.size, _text.thickness, _text.spacing, _text.font.c_str());
 			}
