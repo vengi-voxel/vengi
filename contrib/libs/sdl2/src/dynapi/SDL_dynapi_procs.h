@@ -976,3 +976,6 @@ SDL_DYNAPI_PROC(int,SDL_GameControllerGetSensorDataWithTimestamp,(SDL_GameContro
 SDL_DYNAPI_PROC(int,SDL_SensorGetDataWithTimestamp,(SDL_Sensor *a, Uint64 *b, float *c, int d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(void,SDL_ResetHints,(void),(),)
 SDL_DYNAPI_PROC(char*,SDL_strcasestr,(const char *a, const char *b),(a,b),return)
+#if defined(__GDK__)
+SDL_DYNAPI_PROC(void,SDL_GDKSuspendComplete,(void),(),return)
+#endif

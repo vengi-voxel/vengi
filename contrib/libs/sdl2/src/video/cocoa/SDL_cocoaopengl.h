@@ -27,6 +27,7 @@
 
 #include "SDL_atomic.h"
 #import <Cocoa/Cocoa.h>
+#import <QuartzCore/CVDisplayLink.h>
 
 /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
 #ifdef __clang__
@@ -58,6 +59,9 @@ struct SDL_GLDriverData
 - (SDL_Window*)window;
 - (void)explicitUpdate;
 - (void)dealloc;
+
+@property (retain, nonatomic) NSOpenGLPixelFormat* openglPixelFormat;  // macOS 10.10 has -[NSOpenGLContext pixelFormat] but this handles older OS releases.
+
 @end
 
 /* OpenGL functions */
