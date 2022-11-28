@@ -490,6 +490,7 @@ bool Modifier::aabbAction(voxel::RawVolume *volume,
 	if (math::intersects(a, second)) {
 		executeShapeAction(wrapper, a.mins(), maxsMirror, callback);
 	} else {
+		// TODO: this produces two memento states
 		executeShapeAction(wrapper, a.mins(), a.maxs(), callback);
 		executeShapeAction(wrapper, minsMirror, maxsMirror, callback);
 	}
