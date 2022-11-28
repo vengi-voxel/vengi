@@ -4,7 +4,6 @@ set(SRCS
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	ShaderAttribute.h
 	ImageGenerator.h ImageGenerator.cpp
-	VoxelFontRenderer.h VoxelFontRenderer.cpp
 )
 set(SHADERS voxel voxel_instanced)
 set(SRCS_SHADERS
@@ -16,7 +15,7 @@ foreach (SHADER ${SHADERS})
 	list(APPEND SRCS_SHADERS "shaders/${SHADER}.frag")
 endforeach()
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES render voxelfont voxelformat)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES render voxelformat)
 generate_shaders(${LIB} ${SHADERS})
 
 set(TEST_SRCS

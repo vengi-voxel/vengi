@@ -36,10 +36,6 @@ Uses GLSL compute shader to render a circle.
 
 Test geometry shader integration
 
-## testgpumc
-
-Conversion of OpenCL marching cubes taken from: <https://github.com/smistad/GPU-Marching-Cubes.git>
-
 ## testimgui
 
 Test the dearimgui integration
@@ -65,11 +61,3 @@ Just an empty template for new test applications.
 ## testtexture
 
 Renders a test 2d image.
-
-## testvoxelfont
-
-Display a true type font as 3d voxel volume.
-
-## testvoxelgpu
-
-OpenCL mesh extraction - not finished yet.
