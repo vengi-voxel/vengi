@@ -28,6 +28,14 @@ const FormatDescription* images() {
 	return desc;
 }
 
+const FormatDescription* fonts() {
+	static FormatDescription desc[] = {
+		{"TrueType Font", {"ttf"}, nullptr, 0u},
+		{"", {}, nullptr, 0u}
+	};
+	return desc;
+}
+
 const FormatDescription* palettes() {
 	static FormatDescription desc[] = {
 		{"Gimp Palette", {"gpl"}, nullptr, 0u},

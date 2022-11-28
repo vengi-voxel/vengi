@@ -65,6 +65,7 @@ extern void createGroupPatterns(const FormatDescription *desc, core::DynamicArra
 namespace format {
 
 const FormatDescription *images();
+const FormatDescription* fonts();
 const FormatDescription *lua();
 const FormatDescription* palettes();
 
