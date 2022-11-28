@@ -163,7 +163,7 @@ void Viewport::update() {
 				if (sceneMgr().isLoading()) {
 					ImGui::LoadingIndicatorCircle("Loading", 150, core::Color::White, core::Color::Gray);
 				} else if (ImGui::IsItemHovered()) {
-					if ((sceneMgr().modifier().modifierType() & ModifierType::ColorPicker) == ModifierType::ColorPicker) {
+					if (sceneMgr().modifier().isMode(ModifierType::ColorPicker)) {
 						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 					}
 					_hovered = true;
