@@ -78,9 +78,9 @@ tracy:
 
 update-stb:
 	$(call UPDATE_GIT,stb,https://github.com/nothings/stb.git)
-	cp $(UPDATEDIR)/stb.sync/stb_image.h src/modules/image/stb_image.h
-	cp $(UPDATEDIR)/stb.sync/stb_image_write.h src/modules/image/stb_image_write.h
-	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxelfont/stb_truetype.h
+	cp $(UPDATEDIR)/stb.sync/stb_image.h src/modules/image/external/stb_image.h
+	cp $(UPDATEDIR)/stb.sync/stb_image_write.h src/modules/image/external/stb_image_write.h
+	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxelfont/external/stb_truetype.h
 
 update-googletest:
 	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)
@@ -169,7 +169,7 @@ update-simplecpp:
 update-miniz:
 	$(call UPDATE_GIT,miniz,https://github.com/richgel999/miniz.git)
 	cd $(UPDATEDIR)/miniz.sync; ./amalgamate.sh
-	cp $(UPDATEDIR)/miniz.sync/amalgamation/miniz.[ch] src/modules/core/private
+	cp $(UPDATEDIR)/miniz.sync/amalgamation/miniz.[ch] src/modules/core/external
 
 # currently not part of updatelibs - intentional - we adopted the original code.
 update-simplexnoise:

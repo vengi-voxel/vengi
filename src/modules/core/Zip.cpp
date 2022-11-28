@@ -7,7 +7,7 @@
 #include "Assert.h"
 extern "C" {
 #define MINIZ_NO_ZLIB_COMPATIBLE_NAMES 1
-#include "private/miniz.h"
+#include "external/miniz.h"
 }
 
 namespace core {

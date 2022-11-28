@@ -23,7 +23,7 @@
 #define STBTT_realloc(x, u) ((void)(u), core_realloc(x))
 #define STB_TRUETYPE_IMPLEMENTATION
 #define STBTT_STATIC
-#include "stb_truetype.h"
+#include "external/stb_truetype.h"
 
 namespace voxelfont {
 

@@ -4,7 +4,7 @@
 
 #include "ZipWriteStream.h"
 #include "core/StandardLib.h"
-#include "core/private/miniz.h"
+#include "core/external/miniz.h"
 #include "core/Assert.h"
 
 namespace io {

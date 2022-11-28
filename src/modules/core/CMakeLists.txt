@@ -1,5 +1,5 @@
 set(SRCS
-	private/miniz.h private/miniz.c
+	external/miniz.h external/miniz.c
 
 	collection/Array.h
 	collection/Array2DView.h
