@@ -129,6 +129,7 @@ bool MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 			ImGui::PopTextWrapPos();
 			ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/vengi");
 			ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy");
+			ImGui::URLItem(ICON_FK_MASTODON " Mastodon", "https://mastodon.social/@mgerhardy");
 			ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy");
 
 			ImGui::EndMenu();

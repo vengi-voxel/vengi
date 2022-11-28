@@ -111,6 +111,7 @@ void VoxConvert::usage() const {
 	Log::info("Links:");
 	Log::info(" * Bug reports: https://github.com/mgerhardy/vengi");
 	Log::info(" * Twitter: https://twitter.com/MartinGerhardy");
+	Log::info(" * Mastodon: https://mastodon.social/@mgerhardy");
 	Log::info(" * Discord: https://discord.gg/AgjCPXy");
 }
 
