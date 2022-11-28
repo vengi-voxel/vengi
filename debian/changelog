@@ -13,6 +13,7 @@ vengi (0.0.23.0-1) UNRELEASED; urgency=low
   * Added support for embedding screenshots in formats that support it
   * Allow to export palettes
   * Allow to change color intensity of the whole palette
+  * Allow to voxelize text
 
  -- Martin Gerhardy <martin.gerhardy@gmail.com>  Mon, 31 Oct 2022 00:00:00 +0000
 

@@ -26,6 +26,7 @@ VoxEdit:
    - Added support for embedding screenshots in formats that support it
    - Allow to export palettes
    - Allow to change color intensity of the whole palette
+   - Allow to voxelize text
 
 ## 0.0.22 (2022-10-31)
 
