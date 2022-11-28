@@ -100,12 +100,12 @@ bool InputVarString(const char* label, const core::VarPtr& var, ImGuiInputTextFl
 	return false;
 }
 
-bool InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions) {
-	const bool v = InputText(label, file);
+bool InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions, ImGuiInputTextFlags flags) {
+	const bool v = InputText(label, file, flags);
 	ImGui::SameLine();
 	if (ImGui::Button(ICON_FK_FONT)) {
 		video::FileDialogOptions options;
-		video::WindowedApp::getInstance()->openDialog([file] (const core::String &filename) {
+		imguiApp()->openDialog([file] (const core::String &filename) {
 			*file = filename;
 		}, options, descriptions);
 	}
