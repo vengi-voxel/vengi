@@ -199,6 +199,18 @@ bool SliderVarInt(const char* label, const char* varName, int v_min, int v_max, 
 	return SliderVarInt(label, var, v_min, v_max, format, flags);
 }
 
+float CalcTextWidth(const char *text, bool withPadding) {
+	const float w = ImGui::CalcTextSize(text).x;
+	if (!withPadding) {
+		return w;
+	}
+	return w + ImGui::GetStyle().FramePadding.x * 2.0f;
+}
+
+float CalcComboBoxWidth(const char *previewLabel, bool withPadding) {
+	return CalcTextWidth(previewLabel, withPadding) + ImGui::GetFrameHeightWithSpacing();
+}
+
 bool TooltipText(const char* msg, ...) {
 	if (ImGui::IsItemHovered()) {
 		ImGui::BeginTooltip();

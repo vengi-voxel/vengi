@@ -54,6 +54,8 @@ IMGUI_API void LoadingIndicatorCircle(const char *label, const float indicator_r
 									  const ImVec4 &backdrop_color = ImVec4(0.0f, 0.0f, 0.5f, 1.0f),
 									  const int circle_count = 13, const float speed = 1.0f);
 IMGUI_API bool InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions, ImGuiInputTextFlags flags = 0u);
+IMGUI_API float CalcTextWidth(const char *text, bool withPadding = true);
+IMGUI_API float CalcComboBoxWidth(const char *previewLabel, bool withPadding = true);
 
 template <class Collection>
 static bool ComboStl(const char *label, int *current_item, const Collection &items) {
