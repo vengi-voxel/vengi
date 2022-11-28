@@ -13,7 +13,7 @@ namespace voxedit {
 class ToolsPanel {
 	struct Text {
 		core::String font = "font.ttf";
-		core::String input;
+		core::String input = "example";
 		int size = 16;
 		int spacing = 0;
 		int thickness = 1;

@@ -46,15 +46,17 @@ void ToolsPanel::update(const char *title, command::CommandExecutionListener &li
 			ImGui::TooltipText("Rotate by 90 degree on the z axis");
 		}
 
-		if (ImGui::CollapsingHeader("Text", ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::InputText("Character", &_text.input);
-			ImGui::InputInt("Size", &_text.size);
-			ImGui::InputInt(ICON_FK_ARROWS_H, &_text.spacing);
+		if (ImGui::CollapsingHeader("Text##text", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::InputText("Text##text", &_text.input);
+			ImGui::InputInt(ICON_FK_ARROWS_V"##text", &_text.size);
+			ImGui::TooltipText("Font size");
+			ImGui::InputInt(ICON_FK_ARROWS_H"##text", &_text.spacing);
 			ImGui::TooltipText("Horizontal spacing");
-			ImGui::InputInt("Thickness", &_text.thickness);
+			ImGui::InputInt(ICON_FK_EXPAND"##text", &_text.thickness);
+			ImGui::TooltipText("Thickness");
 			_text.size = glm::clamp(_text.size, 6, 255);
 			_text.thickness = glm::clamp(_text.thickness, 1, 255);
-			ImGui::InputFile("Font", &_text.font, io::format::fonts());
+			ImGui::InputFile("Font##text", &_text.font, io::format::fonts());
 			if (ImGui::Button("Execute##text")) {
 				sceneMgr().renderText(_text.input.c_str(), _text.size, _text.thickness, _text.spacing, _text.font.c_str());
 			}
