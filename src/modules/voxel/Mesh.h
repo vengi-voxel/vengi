@@ -11,6 +11,7 @@ namespace voxel {
 
 using VertexArray = core::DynamicArray<voxel::VoxelVertex>;
 using IndexArray = core::DynamicArray<voxel::IndexType>;
+using NormalArray = core::DynamicArray<glm::vec3>;
 
 /**
  * @brief A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.
@@ -36,14 +37,17 @@ public:
 
 	const IndexArray& getIndexVector() const;
 	const VertexArray& getVertexVector() const;
+	const NormalArray& getNormalVector() const;
 	IndexArray& getIndexVector();
 	VertexArray& getVertexVector();
+	NormalArray& getNormalVector();
 
 	const glm::ivec3& getOffset() const;
 	void setOffset(const glm::ivec3& offset);
 
 	IndexType addVertex(const VoxelVertex& vertex);
 	void addTriangle(IndexType index0, IndexType index1, IndexType index2);
+	void setNormal(IndexType index, const glm::vec3 &normal);
 
 	void clear();
 	bool isEmpty() const;
@@ -57,6 +61,7 @@ public:
 private:
 	alignas(16) IndexArray _vecIndices;
 	alignas(16) VertexArray _vecVertices;
+	alignas(16) NormalArray _normals; // marching cubes only
 	uint8_t *_compressedIndices = nullptr;
 	size_t _compressedIndexSize = 0u;
 	glm::ivec3 _offset { 0 };

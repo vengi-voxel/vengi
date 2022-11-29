@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "core/Assert.h"
+#include "core/collection/DynamicArray.h"
 #include "util/BufferUtil.h"
 #include <glm/vector_relational.hpp>
 #include <glm/common.hpp>
@@ -83,6 +84,10 @@ Mesh::~Mesh() {
 	core_free(_compressedIndices);
 }
 
+const NormalArray& Mesh::getNormalVector() const {
+	return _normals;
+}
+
 const IndexArray& Mesh::getIndexVector() const {
 	return _vecIndices;
 }
@@ -97,6 +102,10 @@ IndexArray& Mesh::getIndexVector() {
 
 VertexArray& Mesh::getVertexVector() {
 	return _vecVertices;
+}
+
+NormalArray& Mesh::getNormalVector() {
+	return _normals;
 }
 
 size_t Mesh::getNoOfVertices() const {
@@ -166,25 +175,34 @@ IndexType Mesh::addVertex(const VoxelVertex& vertex) {
 	return (IndexType)_vecVertices.size() - 1;
 }
 
+void Mesh::setNormal(IndexType index, const glm::vec3 &normal) {
+	// We should not add more vertices than our chosen index type will let us index.
+	core_assert_msg(_normals.size() < (std::numeric_limits<IndexType>::max)(), "Mesh has more normals that the chosen index type allows.");
+	_normals.resize(_vecVertices.capacity());
+	_normals[index] = normal;
+}
+
 void Mesh::removeUnusedVertices() {
 	const size_t vertices = _vecVertices.size();
 	const size_t indices = _vecIndices.size();
-	std::vector<bool> isVertexUsed(vertices);
-	std::fill(isVertexUsed.begin(), isVertexUsed.end(), false);
+	core::DynamicArray<bool> isVertexUsed(vertices);
+	isVertexUsed.fill(false);
 
 	for (size_t triCt = 0u; triCt < indices; ++triCt) {
 		IndexType v = _vecIndices[triCt];
 		isVertexUsed[v] = true;
 	}
 
-	int noOfUsedVertices = 0;
+	size_t noOfUsedVertices = 0;
 	IndexArray newPos(vertices);
 	for (size_t vertCt = 0u; vertCt < vertices; ++vertCt) {
 		if (!isVertexUsed[vertCt]) {
 			continue;
 		}
-		const VoxelVertex& v = _vecVertices[vertCt];
-		_vecVertices[noOfUsedVertices] = v;
+		_vecVertices[noOfUsedVertices] = _vecVertices[vertCt];
+		if (_normals.size() >= noOfUsedVertices) {
+			_normals[noOfUsedVertices] = _normals[vertCt];
+		}
 		newPos[vertCt] = noOfUsedVertices;
 		++noOfUsedVertices;
 	}

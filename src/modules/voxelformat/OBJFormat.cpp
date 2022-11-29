@@ -101,6 +101,8 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		const float v1 = 0.5f;
 		const voxel::VertexArray &vertices = mesh->getVertexVector();
 		const voxel::IndexArray &indices = mesh->getIndexVector();
+		const voxel::NormalArray &normals = mesh->getNormalVector();
+		const bool withNormals = !normals.empty();
 		const char *objectName = meshExt.name.c_str();
 		if (objectName[0] == '\0') {
 			objectName = "Noname";
@@ -129,6 +131,12 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 			}
 			wrapBool(stream.writeStringFormat(false, "\n"))
 		}
+		if (withNormals) {
+			for (int i = 0; i < nv; ++i) {
+				const glm::vec3 &norm = normals[i];
+				stream.writeStringFormat(false, "vn %.04f %.04f %.04f\n", norm.x, norm.y, norm.z);
+			}
+		}
 
 		if (quad) {
 			if (withTexCoords) {
@@ -149,10 +157,19 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 				const uint32_t three = idxOffset + indices[i + 2] + 1;
 				const uint32_t four = idxOffset + indices[i + 5] + 1;
 				if (withTexCoords) {
-					stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n", (int)one, uvi + 1, (int)two, uvi + 2,
-											 (int)three, uvi + 3, (int)four, uvi + 4);
+					if (withNormals) {
+						stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one, uvi + 1,(int)one,  (int)two, uvi + 2,
+												(int)two, (int)three, uvi + 3, (int)three, (int)four, uvi + 4, (int)four);
+					} else {
+						stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n", (int)one, uvi + 1, (int)two, uvi + 2,
+												(int)three, uvi + 3, (int)four, uvi + 4);
+					}
 				} else {
-					stream.writeStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
+					if (withNormals) {
+						stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three, (int)four, (int)one, (int)two, (int)three, (int)four);
+					} else {
+						stream.writeStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
+					}
 				}
 			}
 			texcoordOffset += ni / 6 * 4;
@@ -172,10 +189,19 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 				const uint32_t two = idxOffset + indices[i + 1] + 1;
 				const uint32_t three = idxOffset + indices[i + 2] + 1;
 				if (withTexCoords) {
-					stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, texcoordOffset + i + 1, (int)two,
-											 texcoordOffset + i + 2, (int)three, texcoordOffset + i + 3);
+					if (withNormals) {
+						stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one, texcoordOffset + i + 1, (int)one, (int)two,
+												texcoordOffset + i + 2, (int)two, (int)three, texcoordOffset + i + 3, (int)three);
+					} else {
+						stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, texcoordOffset + i + 1, (int)two,
+												texcoordOffset + i + 2, (int)three, texcoordOffset + i + 3);
+					}
 				} else {
-					stream.writeStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
+					if (withNormals) {
+						stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three, (int)one, (int)two, (int)three);
+					} else {
+						stream.writeStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
+					}
 				}
 			}
 			texcoordOffset += ni;
