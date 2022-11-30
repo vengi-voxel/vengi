@@ -59,13 +59,13 @@ private:
 	/**
 	 * @brief Uniform scale value
 	 */
-	float _worldScale = 1.0f;
+	glm::vec3 _worldScale{1.0f};
 
 	glm::vec3 _localTranslation{0.0f};
 	/**
 	 * @brief Uniform scale value
 	 */
-	float _localScale = 1.0f;
+	glm::vec3 _localScale{1.0f};
 
 	// should be the normalized value between 0 and 1
 	glm::vec3 _normalizedPivot{0.0f};
@@ -85,18 +85,18 @@ public:
 	 * @brief This method will set all values into the transform without the need to perform any
 	 * @c update() call. It's assumed, that all values for world and local transformations are valid
 	 */
-	void setTransforms(const glm::vec3 &worldTranslation, const glm::quat &worldOrientation, float worldScale,
-					   const glm::vec3 &localTranslation, const glm::quat &localOrientation, float localScale);
+	void setTransforms(const glm::vec3 &worldTranslation, const glm::quat &worldOrientation, const glm::vec3 &worldScale,
+					   const glm::vec3 &localTranslation, const glm::quat &localOrientation, const glm::vec3 &localScale);
 
 	void setWorldMatrix(const glm::mat4x4 &matrix);
 	void setWorldTranslation(const glm::vec3 &translation);
 	void setWorldOrientation(const glm::quat& orientation);
-	void setWorldScale(float scale);
+	void setWorldScale(const glm::vec3 &scale);
 
 	void setLocalMatrix(const glm::mat4x4 &matrix);
 	void setLocalTranslation(const glm::vec3 &translation);
 	void setLocalOrientation(const glm::quat& orientation);
-	void setLocalScale(float scale);
+	void setLocalScale(const glm::vec3 &scale);
 
 	void lerp(const SceneGraphTransform &dest, double deltaFrameSeconds);
 
@@ -105,12 +105,12 @@ public:
 	const glm::mat4x4 &worldMatrix() const;
 	const glm::vec3 &worldTranslation() const;
 	const glm::quat &worldOrientation() const;
-	float worldScale() const;
+	const glm::vec3 &worldScale() const;
 
 	const glm::mat4x4 &localMatrix() const;
 	const glm::vec3 &localTranslation() const;
 	const glm::quat &localOrientation() const;
-	float localScale() const;
+	const glm::vec3 &localScale() const;
 
 	void update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx);
 

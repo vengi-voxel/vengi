@@ -132,7 +132,7 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 
 			SceneGraphTransform &transform = keyFrame.transform();
 			if (channel == 6) {
-				transform.setLocalScale(val);
+				transform.setLocalScale(glm::vec3(val));
 			} else if (channel <= 2) {
 				glm::vec3 translation = transform.localTranslation();
 				translation[channel] = val;
@@ -217,7 +217,7 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 		wrap(stream.readFloat(localScale))
 		wrap(stream.readFloat(ignoredScale))
 
-		transform.setLocalScale(localScale);
+		transform.setLocalScale(glm::vec3(localScale));
 		transform.setLocalOrientation(localOrientation);
 		if (version == 1) {
 			// version 1 needs to correct its translation by the pivot translation
@@ -351,8 +351,8 @@ bool VXAFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 		wrapBool(stream.writeFloat(transform.localOrientation().y))
 		wrapBool(stream.writeFloat(transform.localOrientation().z))
 		wrapBool(stream.writeFloat(transform.localOrientation().w))
-		wrapBool(stream.writeFloat(transform.worldScale()))
-		wrapBool(stream.writeFloat(transform.localScale()))
+		wrapBool(stream.writeFloat(transform.worldScale().x)) // TODO: vxa only support uniform scales
+		wrapBool(stream.writeFloat(transform.localScale().x)) // TODO: vxa only support uniform scales
 	}
 	const int32_t childCount = (int32_t)node.children().size();
 	wrapBool(stream.writeInt32(childCount));

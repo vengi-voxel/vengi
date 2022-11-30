@@ -2289,7 +2289,7 @@ bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const 
 	glm::decompose(localMatrix, scale, orientation, translation, skew, perspective);
 	transform.setLocalTranslation(translation);
 	transform.setLocalOrientation(orientation);
-	// transform.setLocalScale(glm::length(scale)); // TODO: broken
+	transform.setLocalScale(scale);
 	transform.update(_sceneGraph, node, keyFrame.frameIdx);
 
 	if (memento) {

@@ -8,7 +8,7 @@
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Var.h"
-#include <glm/vector_relational.hpp>
+#include "image/Image.h"
 #include "io/Filesystem.h"
 #include "math/Ray.h"
 #include "ui/imgui/IMGUIApp.h"
@@ -18,16 +18,14 @@
 #include "video/Camera.h"
 #include "video/ShapeBuilder.h"
 #include "video/WindowedApp.h"
-
-#include "image/Image.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/vector_relational.hpp>
 
 namespace voxedit {
 
@@ -323,6 +321,10 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 	const uint32_t keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
 	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	glm::mat4 localMatrix = transform.localMatrix();
+	// TODO: pivot handling
+	// glm::vec3 dim = node.region().getDimensionsInVoxels();
+	// dim *= transform.pivot();
+	// localMatrix = glm::translate(localMatrix, dim);
 	glm::mat4 deltaMatrix(0.0f);
 	const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
 

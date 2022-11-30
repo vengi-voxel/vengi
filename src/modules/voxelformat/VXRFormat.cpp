@@ -286,7 +286,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		if (version >= 3) {
 			wrap(stream.readFloat(ignoredScale))
 		}
-		transform.setLocalScale(localScale);
+		transform.setLocalScale(glm::vec3(localScale));
 		transform.setLocalTranslation(localTranslation);
 		transform.setLocalOrientation(localOrientation);
 	}

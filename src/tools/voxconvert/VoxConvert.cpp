@@ -552,10 +552,10 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 		const glm::vec3 &lrtEuler = glm::degrees(glm::eulerAngles(lrt));
 		Log::info("%*s      |- local orientation %f:%f:%f:%f", indent, " ", lrt.x, lrt.y, lrt.z, lrt.w);
 		Log::info("%*s        |- euler %f:%f:%f", indent, " ", lrtEuler.x, lrtEuler.y, lrtEuler.z);
-		const float sc = transform.worldScale();
-		Log::info("%*s      |- scale %f", indent, " ", sc);
-		const float lsc = transform.localScale();
-		Log::info("%*s      |- local scale %f", indent, " ", lsc);
+		const glm::vec3 &sc = transform.worldScale();
+		Log::info("%*s      |- scale %f:%f:%f", indent, " ", sc.x, sc.y, sc.z);
+		const glm::vec3 &lsc = transform.localScale();
+		Log::info("%*s      |- local scale %f:%f:%f", indent, " ", lsc.x, lsc.y, lsc.z);
 	}
 	Log::info("%*s  |- children: %i", indent, " ", (int)node.children().size());
 	for (int children : node.children()) {

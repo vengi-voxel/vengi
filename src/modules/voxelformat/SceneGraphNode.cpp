@@ -32,16 +32,16 @@ void SceneGraphTransform::setPivot(const glm::vec3 &normalizedPivot) {
 	_normalizedPivot = normalizedPivot;
 }
 
-void SceneGraphTransform::setTransforms(const glm::vec3 &worldTranslation, const glm::quat &worldOrientation, float worldScale,
-					const glm::vec3 &localTranslation, const glm::quat &localOrientation, float localScale) {
+void SceneGraphTransform::setTransforms(const glm::vec3 &worldTranslation, const glm::quat &worldOrientation, const glm::vec3 &worldScale,
+					const glm::vec3 &localTranslation, const glm::quat &localOrientation, const glm::vec3 &localScale) {
 	_worldTranslation = worldTranslation;
 	_worldOrientation = worldOrientation;
 	_worldScale = worldScale;
 	_localTranslation = localTranslation;
 	_localOrientation = localOrientation;
 	_localScale = localScale;
-	_worldMat = glm::translate(_worldTranslation) * glm::mat4_cast(_worldOrientation) * glm::scale(glm::vec3(_worldScale));
-	_localMat = glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(glm::vec3(_localScale));
+	_worldMat = glm::translate(_worldTranslation) * glm::mat4_cast(_worldOrientation) * glm::scale(_worldScale);
+	_localMat = glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(_localScale);
 	_dirty = 0u;
 }
 
@@ -64,8 +64,8 @@ void SceneGraphTransform::setWorldOrientation(const glm::quat &orientation) {
 	_worldOrientation = orientation;
 }
 
-void SceneGraphTransform::setWorldScale(float scale) {
-	if (glm::epsilonEqual(_worldScale, scale, glm::epsilon<float>())) {
+void SceneGraphTransform::setWorldScale(const glm::vec3 &scale) {
+	if (_worldScale == scale) {
 		return;
 	}
 	core_assert_msg((_dirty & DIRTY_LOCALVALUES) == 0u, "local was already modified");
@@ -77,10 +77,7 @@ void SceneGraphTransform::setWorldMatrix(const glm::mat4x4 &matrix) {
 	core_assert_msg((_dirty & DIRTY_LOCALVALUES) == 0u, "local was already modified");
 	_dirty |= DIRTY_WORLDVALUES;
 	_worldTranslation = matrix[3];
-	_worldScale = glm::length(glm::vec3(matrix[0]));
-	if (glm::abs(_worldScale) < glm::epsilon<float>()) {
-		_worldScale = 1.0f;
-	}
+	_worldScale = glm::vec3(matrix[0]);
 	const glm::mat3 rotMtx(glm::vec3(matrix[0]) / _worldScale, glm::vec3(matrix[1]) / _worldScale, glm::vec3(matrix[2]) / _worldScale);
 	_worldOrientation = glm::quat_cast(rotMtx);
 }
@@ -103,8 +100,8 @@ void SceneGraphTransform::setLocalOrientation(const glm::quat &orientation) {
 	_localOrientation = orientation;
 }
 
-void SceneGraphTransform::setLocalScale(float scale) {
-	if (glm::epsilonEqual(_localScale, scale, glm::epsilon<float>())) {
+void SceneGraphTransform::setLocalScale(const glm::vec3 &scale) {
+	if (_localScale == scale) {
 		return;
 	}
 	core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "world was already modified");
@@ -116,10 +113,7 @@ void SceneGraphTransform::setLocalMatrix(const glm::mat4x4 &matrix) {
 	core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "world was already modified");
 	_dirty |= DIRTY_LOCALVALUES;
 	_localTranslation = matrix[3];
-	_localScale = glm::length(glm::vec3(matrix[0]));
-	if (glm::abs(_localScale) < glm::epsilon<float>()) {
-		_localScale = 1.0f;
-	}
+	_localScale = glm::vec3(matrix[0]);
 	const glm::mat3 rotMtx(glm::vec3(matrix[0]) / _localScale, glm::vec3(matrix[1]) / _localScale, glm::vec3(matrix[2]) / _localScale);
 	_localOrientation = glm::quat_cast(rotMtx);
 }
@@ -139,8 +133,8 @@ void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFram
 	setLocalScale(glm::mix(_localScale, dest._localScale, factor));
 	_dirty = 0u;
 
-	_worldMat = glm::translate(_worldTranslation) * glm::mat4_cast(_worldOrientation) * glm::scale(glm::vec3(_worldScale));
-	_localMat = glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(glm::vec3(_localScale));
+	_worldMat = glm::translate(_worldTranslation) * glm::mat4_cast(_worldOrientation) * glm::scale(_worldScale);
+	_localMat = glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(_localScale);
 }
 
 const glm::vec3 &SceneGraphTransform::pivot() const {
@@ -160,7 +154,7 @@ const glm::quat &SceneGraphTransform::localOrientation() const {
 	return _localOrientation;
 }
 
-float SceneGraphTransform::localScale() const {
+const glm::vec3 &SceneGraphTransform::localScale() const {
 	return _localScale;
 }
 
@@ -177,7 +171,7 @@ const glm::quat &SceneGraphTransform::worldOrientation() const {
 	return _worldOrientation;
 }
 
-float SceneGraphTransform::worldScale() const {
+const glm::vec3 &SceneGraphTransform::worldScale() const {
 	return _worldScale;
 }
 
@@ -208,9 +202,10 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 			_localScale = parentTransform.worldScale() * _worldScale; // TODO:
 		}
 		Log::debug("node %3i (%i): World transform is dirty - new local values: t(%0.2f:%0.2f:%0.2f), "
-				   "r(%0.2f:%0.2f:%0.2f:%0.2f), s(%0.2f)",
+				   "r(%0.2f:%0.2f:%0.2f:%0.2f), s(%0.2f, %0.2f, %0.2f)",
 				   node.id(), (int)node.type(), _localTranslation.x, _localTranslation.y, _localTranslation.z,
-				   _localOrientation.x, _localOrientation.y, _localOrientation.z, _localOrientation.w, _localScale);
+				   _localOrientation.x, _localOrientation.y, _localOrientation.z, _localOrientation.w,
+				   _localScale.x, _localScale.y, _localScale.z);
 		// now ensure that we update the local matrix
 		_dirty |= DIRTY_LOCALVALUES;
 		_dirty &= ~(DIRTY_WORLDVALUES | DIRTY_PARENT);
@@ -235,9 +230,10 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 		setWorldMatrix(_worldMat);
 		_dirty &= ~(DIRTY_WORLDVALUES | DIRTY_PARENT);
 		Log::debug("node %3i (%i): Local transform is dirty - new world values: t(%0.2f:%0.2f:%0.2f), "
-				   "r(%0.2f:%0.2f:%0.2f:%0.2f), s(%0.2f)",
+				   "r(%0.2f:%0.2f:%0.2f:%0.2f), s(%0.2f, %0.2f, %0.2f)",
 				   node.id(), (int)node.type(), _worldTranslation.x, _worldTranslation.y, _worldTranslation.z,
-				   _worldOrientation.x, _worldOrientation.y, _worldOrientation.z, _worldOrientation.w, _worldScale);
+				   _worldOrientation.x, _worldOrientation.y, _worldOrientation.z, _worldOrientation.w,
+				   _worldScale.x, _worldScale.y, _worldScale.z);
 
 		// after world matrix update - inform the children
 		for (int childId : node.children()) {
@@ -262,9 +258,10 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 		setWorldMatrix(_worldMat);
 		_dirty &= ~(DIRTY_WORLDVALUES | DIRTY_PARENT);
 		Log::debug("node %3i (%i): Parent transform is dirty - new world values: t(%0.2f:%0.2f:%0.2f), "
-				   "r(%0.2f:%0.2f:%0.2f:%0.2f), s(%0.2f)",
+				   "r(%0.2f:%0.2f:%0.2f:%0.2f), s(%0.2f, %0.2f, %0.2f)",
 				   node.id(), (int)node.type(), _worldTranslation.x, _worldTranslation.y, _worldTranslation.z,
-				   _worldOrientation.x, _worldOrientation.y, _worldOrientation.z, _worldOrientation.w, _worldScale);
+				   _worldOrientation.x, _worldOrientation.y, _worldOrientation.z, _worldOrientation.w,
+				   _worldScale.x, _worldScale.y, _worldScale.z);
 
 		// after world matrix update - inform the children
 		for (int childId : node.children()) {

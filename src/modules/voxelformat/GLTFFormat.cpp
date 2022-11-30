@@ -1132,7 +1132,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 					} else if (type == "scale") {
 						core_assert(accessor->type == TINYGLTF_TYPE_VEC3);
 						glm::vec3 v(buf[0], buf[1], buf[2]);
-						transform.setLocalScale(v[0]); // TODO:
+						transform.setLocalScale(v);
 					} else if (type == "weights") {
 						// TODO: not supported yet
 						break;
