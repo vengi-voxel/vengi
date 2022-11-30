@@ -11,7 +11,24 @@
 
 namespace voxelutil {
 
-enum class VisitorOrder { XYZ, ZYX, ZXY, XmZY, mXZY, mXmZY, mXZmY, XmZmY, mXmZmY, XZY, XZmY, YXZ, YZX, mYZX, YZmX };
+enum class VisitorOrder {
+	XYZ,
+	ZYX,
+	ZXY,
+	XmZY,
+	mXZY,
+	mXmZY,
+	mXZmY,
+	XmZmY,
+	mXmZmY,
+	XZY,
+	XZmY,
+	YXZ,
+	YZX,
+	mYZX,
+	YZmX,
+	Max
+};
 
 /**
  * @brief Will skip air voxels on volume
@@ -276,6 +293,8 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				}
 			}
 		}
+		break;
+	case VisitorOrder::Max:
 		break;
 	}
 
