@@ -152,9 +152,9 @@ bool Mesh::isEmpty() const {
 
 void Mesh::addTriangle(IndexType index0, IndexType index1, IndexType index2) {
 	//Make sure the specified indices correspond to valid vertices.
-	core_assert_msg(index0 < _vecVertices.size(), "Index points at an invalid vertex.");
-	core_assert_msg(index1 < _vecVertices.size(), "Index points at an invalid vertex.");
-	core_assert_msg(index2 < _vecVertices.size(), "Index points at an invalid vertex.");
+	core_assert_msg(index0 < _vecVertices.size(), "Index points at an invalid vertex (%i/%i).", (int)index0, (int)_vecVertices.size());
+	core_assert_msg(index1 < _vecVertices.size(), "Index points at an invalid vertex (%i/%i).", (int)index1, (int)_vecVertices.size());
+	core_assert_msg(index2 < _vecVertices.size(), "Index points at an invalid vertex (%i/%i).", (int)index2, (int)_vecVertices.size());
 	if (!_mayGetResized) {
 		core_assert_msg(_vecIndices.size() + 3 < _vecIndices.capacity(), "addTriangle() call exceeds the capacity of the indices vector and will trigger a realloc (%i vs %i)", (int)_vecIndices.size(), (int)_vecIndices.capacity());
 	}
@@ -200,7 +200,9 @@ void Mesh::removeUnusedVertices() {
 			continue;
 		}
 		_vecVertices[noOfUsedVertices] = _vecVertices[vertCt];
-		if (_normals.size() >= noOfUsedVertices) {
+		// here the assumption that a normal is added for each vertex if
+		// at least one normal was added holds
+		if (!_normals.empty()) {
 			_normals[noOfUsedVertices] = _normals[vertCt];
 		}
 		newPos[vertCt] = noOfUsedVertices;
