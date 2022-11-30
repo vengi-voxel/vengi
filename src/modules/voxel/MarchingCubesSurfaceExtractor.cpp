@@ -135,8 +135,9 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 				// The last bit of our cube index is obtained by looking
 				// at the relevant voxel and comparing it to the threshold
 				const Voxel v111 = sampler.voxel();
-				if (convertToDensity(v111) < densityThreshold)
+				if (convertToDensity(v111) < densityThreshold) {
 					cellIndex |= 128;
+				}
 
 				// The current value becomes the previous value, ready for the next iteration.
 				previousCellIndex = cellIndex;
