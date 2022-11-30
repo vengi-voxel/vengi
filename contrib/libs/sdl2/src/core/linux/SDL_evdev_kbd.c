@@ -53,32 +53,30 @@
  * Handler Tables.
  */
 
-#define K_HANDLERS\
-    k_self,     k_fn,       k_spec,       k_pad,\
-    k_dead,     k_cons,     k_cur,        k_shift,\
-    k_meta,     k_ascii,    k_lock,       k_lowercase,\
-    k_slock,    k_dead2,    k_brl,        k_ignore
+#define K_HANDLERS                            \
+    k_self, k_fn, k_spec, k_pad,              \
+        k_dead, k_cons, k_cur, k_shift,       \
+        k_meta, k_ascii, k_lock, k_lowercase, \
+        k_slock, k_dead2, k_brl, k_ignore
 
-typedef void (k_handler_fn)(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_flag);
+typedef void(k_handler_fn)(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_flag);
 static k_handler_fn K_HANDLERS;
 static k_handler_fn *k_handler[16] = { K_HANDLERS };
 
-typedef void (fn_handler_fn)(SDL_EVDEV_keyboard_state *kbd);
+typedef void(fn_handler_fn)(SDL_EVDEV_keyboard_state *kbd);
 static void fn_enter(SDL_EVDEV_keyboard_state *kbd);
 static void fn_caps_toggle(SDL_EVDEV_keyboard_state *kbd);
 static void fn_caps_on(SDL_EVDEV_keyboard_state *kbd);
 static void fn_num(SDL_EVDEV_keyboard_state *kbd);
 static void fn_compose(SDL_EVDEV_keyboard_state *kbd);
 
-static fn_handler_fn *fn_handler[] =
-{
-    NULL,       fn_enter,   NULL,       NULL,
-    NULL,       NULL,       NULL,       fn_caps_toggle,
-    fn_num,     NULL,       NULL,       NULL,
-    NULL,       fn_caps_on, fn_compose, NULL,
-    NULL,       NULL,       NULL,       fn_num
+static fn_handler_fn *fn_handler[] = {
+    NULL, fn_enter, NULL, NULL,
+    NULL, NULL, NULL, fn_caps_toggle,
+    fn_num, NULL, NULL, NULL,
+    NULL, fn_caps_on, fn_compose, NULL,
+    NULL, NULL, NULL, fn_num
 };
-
 
 /*
  * Keyboard State
@@ -89,12 +87,12 @@ struct SDL_EVDEV_keyboard_state
     int console_fd;
     int old_kbd_mode;
     unsigned short **key_maps;
-    unsigned char shift_down[NR_SHIFT];        /* shift state counters.. */
+    unsigned char shift_down[NR_SHIFT]; /* shift state counters.. */
     SDL_bool dead_key_next;
-    int npadch;                    /* -1 or number assembled on pad */
+    int npadch; /* -1 or number assembled on pad */
     struct kbdiacrs *accents;
     unsigned int diacr;
-    SDL_bool rep;                    /* flag telling character repeat */
+    SDL_bool rep; /* flag telling character repeat */
     unsigned char lockstate;
     unsigned char slockstate;
     unsigned char ledflagstate;
@@ -114,7 +112,7 @@ static void SDL_EVDEV_dump_accents(SDL_EVDEV_keyboard_state *kbd)
     for (i = 0; i < kbd->accents->kb_cnt; ++i) {
         struct kbdiacr *diacr = &kbd->accents->kbdiacr[i];
         printf("        { 0x%.2x, 0x%.2x, 0x%.2x },\n",
-            diacr->diacr, diacr->base, diacr->result);
+               diacr->diacr, diacr->base, diacr->result);
     }
     while (i < 256) {
         printf("        { 0x00, 0x00, 0x00 },\n");
@@ -134,7 +132,7 @@ static void SDL_EVDEV_dump_keymap(SDL_EVDEV_keyboard_state *kbd)
         if (kbd->key_maps[i]) {
             printf("static unsigned short default_key_map_%d[NR_KEYS] = {", i);
             for (j = 0; j < NR_KEYS; ++j) {
-                if ((j%8) == 0) {
+                if ((j % 8) == 0) {
                     printf("\n    ");
                 }
                 printf("0x%.4x, ", kbd->key_maps[i][j]);
@@ -194,23 +192,22 @@ static int SDL_EVDEV_kbd_load_keymaps(SDL_EVDEV_keyboard_state *kbd)
     return 0;
 }
 
-static SDL_EVDEV_keyboard_state * kbd_cleanup_state = NULL;
+static SDL_EVDEV_keyboard_state *kbd_cleanup_state = NULL;
 static int kbd_cleanup_sigactions_installed = 0;
 static int kbd_cleanup_atexit_installed = 0;
 
 static struct sigaction old_sigaction[NSIG];
 
-static int fatal_signals[] =
-{
+static int fatal_signals[] = {
     /* Handlers for SIGTERM and SIGINT are installed in SDL_QuitInit. */
-    SIGHUP,  SIGQUIT, SIGILL,  SIGABRT,
-    SIGFPE,  SIGSEGV, SIGPIPE, SIGBUS,
+    SIGHUP, SIGQUIT, SIGILL, SIGABRT,
+    SIGFPE, SIGSEGV, SIGPIPE, SIGBUS,
     SIGSYS
 };
 
 static void kbd_cleanup(void)
 {
-    SDL_EVDEV_keyboard_state* kbd = kbd_cleanup_state;
+    SDL_EVDEV_keyboard_state *kbd = kbd_cleanup_state;
     if (kbd == NULL) {
         return;
     }
@@ -219,18 +216,17 @@ static void kbd_cleanup(void)
     ioctl(kbd->console_fd, KDSKBMODE, kbd->old_kbd_mode);
 }
 
-static void
-SDL_EVDEV_kbd_reraise_signal(int sig)
+static void SDL_EVDEV_kbd_reraise_signal(int sig)
 {
     raise(sig);
 }
 
-siginfo_t* SDL_EVDEV_kdb_cleanup_siginfo = NULL;
-void*      SDL_EVDEV_kdb_cleanup_ucontext = NULL;
+siginfo_t *SDL_EVDEV_kdb_cleanup_siginfo = NULL;
+void *SDL_EVDEV_kdb_cleanup_ucontext = NULL;
 
-static void kbd_cleanup_signal_action(int signum, siginfo_t* info, void* ucontext)
+static void kbd_cleanup_signal_action(int signum, siginfo_t *info, void *ucontext)
 {
-    struct sigaction* old_action_p = &(old_sigaction[signum]);
+    struct sigaction *old_action_p = &(old_sigaction[signum]);
     sigset_t sigset;
 
     /* Restore original signal handler before going any further. */
@@ -264,19 +260,20 @@ static void kbd_unregister_emerg_cleanup()
     kbd_cleanup_sigactions_installed = 0;
 
     for (tabidx = 0; tabidx < sizeof(fatal_signals) / sizeof(fatal_signals[0]); ++tabidx) {
-        struct sigaction* old_action_p;
+        struct sigaction *old_action_p;
         struct sigaction cur_action;
         signum = fatal_signals[tabidx];
         old_action_p = &(old_sigaction[signum]);
 
         /* Examine current signal action */
-        if (sigaction(signum, NULL, &cur_action))
+        if (sigaction(signum, NULL, &cur_action)) {
             continue;
+        }
 
         /* Check if action installed and not modifed */
-        if (!(cur_action.sa_flags & SA_SIGINFO)
-                || cur_action.sa_sigaction != &kbd_cleanup_signal_action)
+        if (!(cur_action.sa_flags & SA_SIGINFO) || cur_action.sa_sigaction != &kbd_cleanup_signal_action) {
             continue;
+        }
 
         /* Restore original action */
         sigaction(signum, old_action_p, NULL);
@@ -292,7 +289,7 @@ static void kbd_cleanup_atexit(void)
     kbd_unregister_emerg_cleanup();
 }
 
-static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state * kbd)
+static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
 {
     int tabidx, signum;
 
@@ -316,20 +313,20 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state * kbd)
     kbd_cleanup_sigactions_installed = 1;
 
     for (tabidx = 0; tabidx < sizeof(fatal_signals) / sizeof(fatal_signals[0]); ++tabidx) {
-        struct sigaction* old_action_p;
+        struct sigaction *old_action_p;
         struct sigaction new_action;
-        signum = fatal_signals[tabidx];   
+        signum = fatal_signals[tabidx];
         old_action_p = &(old_sigaction[signum]);
-        if (sigaction(signum, NULL, old_action_p))
+        if (sigaction(signum, NULL, old_action_p)) {
             continue;
+        }
 
         /* Skip SIGHUP and SIGPIPE if handler is already installed
          * - assume the handler will do the cleanup
          */
-        if ((signum == SIGHUP || signum == SIGPIPE)
-                && (old_action_p->sa_handler != SIG_DFL 
-                    || (void (*)(int))old_action_p->sa_sigaction != SIG_DFL))
+        if ((signum == SIGHUP || signum == SIGPIPE) && (old_action_p->sa_handler != SIG_DFL || (void (*)(int))old_action_p->sa_sigaction != SIG_DFL)) {
             continue;
+        }
 
         new_action = *old_action_p;
         new_action.sa_flags |= SA_SIGINFO;
@@ -344,10 +341,10 @@ SDL_EVDEV_kbd_init(void)
     SDL_EVDEV_keyboard_state *kbd;
     int i;
     char flag_state;
-    char shift_state[ sizeof (long) ] = {TIOCL_GETSHIFTSTATE, 0};
+    char shift_state[sizeof(long)] = { TIOCL_GETSHIFTSTATE, 0 };
 
     kbd = (SDL_EVDEV_keyboard_state *)SDL_calloc(1, sizeof(*kbd));
-    if (!kbd) {
+    if (kbd == NULL) {
         return NULL;
     }
 
@@ -410,10 +407,9 @@ SDL_EVDEV_kbd_init(void)
     return kbd;
 }
 
-void
-SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
+void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
 {
-    if (!kbd) {
+    if (kbd == NULL) {
         return;
     }
 
@@ -446,7 +442,7 @@ SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *kbd)
 static void put_queue(SDL_EVDEV_keyboard_state *kbd, uint c)
 {
     /* c is already part of a UTF-8 sequence and safe to add as a character */
-    if (kbd->text_len < (sizeof(kbd->text)-1)) {
+    if (kbd->text_len < (sizeof(kbd->text) - 1)) {
         kbd->text[kbd->text_len++] = (char)c;
     }
 }
@@ -461,10 +457,12 @@ static void put_utf8(SDL_EVDEV_keyboard_state *kbd, uint c)
         put_queue(kbd, 0xc0 | (c >> 6));
         put_queue(kbd, 0x80 | (c & 0x3f));
     } else if (c < 0x10000) {
-        if (c >= 0xD800 && c < 0xE000)
+        if (c >= 0xD800 && c < 0xE000) {
             return;
-        if (c == 0xFFFF)
+        }
+        if (c == 0xFFFF) {
             return;
+        }
         /* 1110**** 10****** 10****** */
         put_queue(kbd, 0xe0 | (c >> 12));
         put_queue(kbd, 0x80 | ((c >> 6) & 0x3f));
@@ -499,8 +497,9 @@ static unsigned int handle_diacr(SDL_EVDEV_keyboard_state *kbd, unsigned int ch)
         }
     }
 
-    if (ch == ' ' || ch == d)
+    if (ch == ' ' || ch == d) {
         return d;
+    }
 
     put_utf8(kbd, d);
 
@@ -554,24 +553,27 @@ static void fn_enter(SDL_EVDEV_keyboard_state *kbd)
 
 static void fn_caps_toggle(SDL_EVDEV_keyboard_state *kbd)
 {
-    if (kbd->rep)
+    if (kbd->rep) {
         return;
+    }
 
     chg_vc_kbd_led(kbd, K_CAPSLOCK);
 }
 
 static void fn_caps_on(SDL_EVDEV_keyboard_state *kbd)
 {
-    if (kbd->rep)
+    if (kbd->rep) {
         return;
+    }
 
     set_vc_kbd_led(kbd, K_CAPSLOCK);
 }
 
 static void fn_num(SDL_EVDEV_keyboard_state *kbd)
 {
-    if (!kbd->rep)
+    if (!kbd->rep) {
         chg_vc_kbd_led(kbd, K_NUMLOCK);
+    }
 }
 
 static void fn_compose(SDL_EVDEV_keyboard_state *kbd)
@@ -589,12 +591,15 @@ static void k_ignore(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up
 
 static void k_spec(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_flag)
 {
-    if (up_flag)
+    if (up_flag) {
         return;
-    if (value >= SDL_arraysize(fn_handler))
+    }
+    if (value >= SDL_arraysize(fn_handler)) {
         return;
-    if (fn_handler[value])
+    }
+    if (fn_handler[value]) {
         fn_handler[value](kbd);
+    }
 }
 
 static void k_lowercase(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_flag)
@@ -603,11 +608,13 @@ static void k_lowercase(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char
 
 static void k_self(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_flag)
 {
-    if (up_flag)
-        return;        /* no action, if this is a key release */
+    if (up_flag) {
+        return; /* no action, if this is a key release */
+    }
 
-    if (kbd->diacr)
+    if (kbd->diacr) {
         value = handle_diacr(kbd, value);
+    }
 
     if (kbd->dead_key_next) {
         kbd->dead_key_next = SDL_FALSE;
@@ -627,7 +634,7 @@ static void k_deadunicode(SDL_EVDEV_keyboard_state *kbd, unsigned int value, cha
 
 static void k_dead(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_flag)
 {
-    const unsigned char ret_diacr[NR_DEAD] = {'`', '\'', '^', '~', '"', ',' };
+    const unsigned char ret_diacr[NR_DEAD] = { '`', '\'', '^', '~', '"', ',' };
 
     k_deadunicode(kbd, ret_diacr[value], up_flag);
 }
@@ -654,7 +661,7 @@ static void k_pad(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_fl
     static const char pad_chars[] = "0123456789+-*/\015,.?()#";
 
     if (up_flag)
-        return;        /* no action, if this is a key release */
+        return; /* no action, if this is a key release */
 
     if (!vc_kbd_led(kbd, K_NUMLOCK)) {
         /* unprintable action */
@@ -676,8 +683,9 @@ static void k_shift(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
      */
     if (value == KVAL(K_CAPSSHIFT)) {
         value = KVAL(K_SHIFT);
-        if (!up_flag)
+        if (!up_flag) {
             clr_vc_kbd_led(kbd, K_CAPSLOCK);
+        }
     }
 
     if (up_flag) {
@@ -685,8 +693,9 @@ static void k_shift(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
          * handle the case that two shift or control
          * keys are depressed simultaneously
          */
-        if (kbd->shift_down[value])
+        if (kbd->shift_down[value]) {
             kbd->shift_down[value]--;
+        }
     } else
         kbd->shift_down[value]++;
 
@@ -754,15 +763,14 @@ static void k_brl(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_fl
 {
 }
 
-void
-SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int down)
+void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int down)
 {
     unsigned char shift_final;
     unsigned char type;
     unsigned short *key_map;
     unsigned short keysym;
 
-    if (!kbd) {
+    if (kbd == NULL) {
         return;
     }
 
@@ -770,7 +778,7 @@ SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int d
 
     shift_final = (kbd->shift_state | kbd->slockstate) ^ kbd->lockstate;
     key_map = kbd->key_maps[shift_final];
-    if (!key_map) {
+    if (key_map == NULL) {
         /* Unsupported shift state (e.g. ctrl = 4, alt = 8), just reset to the default state */
         kbd->shift_state = 0;
         kbd->slockstate = 0;
@@ -827,13 +835,11 @@ SDL_EVDEV_kbd_init(void)
     return NULL;
 }
 
-void
-SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode, int down)
+void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode, int down)
 {
 }
 
-void
-SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
+void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
 {
 }
 

@@ -27,8 +27,7 @@
 #include "SDL_waylandevents_c.h"
 #include "text-input-unstable-v3-client-protocol.h"
 
-int
-Wayland_InitKeyboard(_THIS)
+int Wayland_InitKeyboard(_THIS)
 {
 #ifdef SDL_USE_IME
     SDL_VideoData *driverdata = _this->driverdata;
@@ -40,8 +39,7 @@ Wayland_InitKeyboard(_THIS)
     return 0;
 }
 
-void
-Wayland_QuitKeyboard(_THIS)
+void Wayland_QuitKeyboard(_THIS)
 {
 #ifdef SDL_USE_IME
     SDL_VideoData *driverdata = _this->driverdata;
@@ -51,8 +49,7 @@ Wayland_QuitKeyboard(_THIS)
 #endif
 }
 
-void
-Wayland_StartTextInput(_THIS)
+void Wayland_StartTextInput(_THIS)
 {
     SDL_VideoData *driverdata = _this->driverdata;
 
@@ -62,8 +59,9 @@ Wayland_StartTextInput(_THIS)
             const SDL_Rect *rect = &input->text_input->cursor_rect;
 
             /* Don't re-enable if we're already enabled. */
-            if (input->text_input->is_enabled)
+            if (input->text_input->is_enabled) {
                 return;
+            }
 
             /* For some reason this has to be done twice, it appears to be a
              * bug in mutter? Maybe?
@@ -92,8 +90,7 @@ Wayland_StartTextInput(_THIS)
     }
 }
 
-void
-Wayland_StopTextInput(_THIS)
+void Wayland_StopTextInput(_THIS)
 {
     SDL_VideoData *driverdata = _this->driverdata;
 
@@ -113,12 +110,11 @@ Wayland_StopTextInput(_THIS)
 #endif
 }
 
-void
-Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
+void Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
 {
     SDL_VideoData *driverdata = _this->driverdata;
 
-    if (!rect) {
+    if (rect == NULL) {
         SDL_InvalidParamError("rect");
         return;
     }
@@ -126,8 +122,7 @@ Wayland_SetTextInputRect(_THIS, const SDL_Rect *rect)
     if (driverdata->text_input_manager) {
         struct SDL_WaylandInput *input = driverdata->input;
         if (input != NULL && input->text_input) {
-            if (!SDL_RectEquals(rect, &input->text_input->cursor_rect))
-            {
+            if (!SDL_RectEquals(rect, &input->text_input->cursor_rect)) {
                 SDL_copyp(&input->text_input->cursor_rect, rect);
                 zwp_text_input_v3_set_cursor_rectangle(input->text_input->text_input,
                                                        rect->x,
@@ -156,7 +151,7 @@ Wayland_HasScreenKeyboardSupport(_THIS)
     SDL_VideoData *driverdata = _this->driverdata;
     SDL_bool haskeyboard = (driverdata->input != NULL) && (driverdata->input->keyboard != NULL);
     SDL_bool hastextmanager = (driverdata->text_input_manager != NULL);
-    return (!haskeyboard && hastextmanager);
+    return !haskeyboard && hastextmanager;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */

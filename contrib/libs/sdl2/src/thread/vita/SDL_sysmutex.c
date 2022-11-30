@@ -41,16 +41,15 @@ SDL_CreateMutex(void)
     SceInt32 res = 0;
 
     /* Allocate mutex memory */
-    mutex = (SDL_mutex *) SDL_malloc(sizeof(*mutex));
-    if (mutex) {
+    mutex = (SDL_mutex *)SDL_malloc(sizeof(*mutex));
+    if (mutex != NULL) {
 
         res = sceKernelCreateLwMutex(
             &mutex->lock,
             "SDL mutex",
             SCE_KERNEL_MUTEX_ATTR_RECURSIVE,
             0,
-            NULL
-        );
+            NULL);
 
         if (res < 0) {
             SDL_SetError("Error trying to create mutex: %x", res);
@@ -62,18 +61,16 @@ SDL_CreateMutex(void)
 }
 
 /* Free the mutex */
-void
-SDL_DestroyMutex(SDL_mutex * mutex)
+void SDL_DestroyMutex(SDL_mutex *mutex)
 {
-    if (mutex) {
+    if (mutex != NULL) {
         sceKernelDeleteLwMutex(&mutex->lock);
         SDL_free(mutex);
     }
 }
 
 /* Try to lock the mutex */
-int
-SDL_TryLockMutex(SDL_mutex * mutex)
+int SDL_TryLockMutex(SDL_mutex *mutex)
 {
 #if SDL_THREADS_DISABLED
     return 0;
@@ -85,25 +82,23 @@ SDL_TryLockMutex(SDL_mutex * mutex)
 
     res = sceKernelTryLockLwMutex(&mutex->lock, 1);
     switch (res) {
-        case SCE_KERNEL_OK:
-            return 0;
-            break;
-        case SCE_KERNEL_ERROR_MUTEX_FAILED_TO_OWN:
-            return SDL_MUTEX_TIMEDOUT;
-            break;
-        default:
-            return SDL_SetError("Error trying to lock mutex: %x", res);
-            break;
+    case SCE_KERNEL_OK:
+        return 0;
+        break;
+    case SCE_KERNEL_ERROR_MUTEX_FAILED_TO_OWN:
+        return SDL_MUTEX_TIMEDOUT;
+        break;
+    default:
+        return SDL_SetError("Error trying to lock mutex: %x", res);
+        break;
     }
 
     return -1;
 #endif /* SDL_THREADS_DISABLED */
 }
 
-
 /* Lock the mutex */
-int
-SDL_mutexP(SDL_mutex * mutex)
+int SDL_mutexP(SDL_mutex *mutex)
 {
 #if SDL_THREADS_DISABLED
     return 0;
@@ -123,8 +118,7 @@ SDL_mutexP(SDL_mutex * mutex)
 }
 
 /* Unlock the mutex */
-int
-SDL_mutexV(SDL_mutex * mutex)
+int SDL_mutexV(SDL_mutex *mutex)
 {
 #if SDL_THREADS_DISABLED
     return 0;
