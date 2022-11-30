@@ -36,6 +36,8 @@ set(SRCS
 	src/sysinfo.h
 	src/timers.cc
 	src/timers.h
+	src/check.cc
+	src/perf_counters.cc
 )
 
 
