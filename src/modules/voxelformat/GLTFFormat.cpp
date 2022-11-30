@@ -403,6 +403,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 
 		uint8_t primIdxFactor = (withTexCoords || withColor) ? 3 : 2;
 
+		// TODO: normals
 		{
 			// Build the mesh meshPrimitive and add it to the mesh
 			tinygltf::Primitive meshPrimitive;
