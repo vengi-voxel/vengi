@@ -99,8 +99,8 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		const float texcoord = 1.0f / (float)voxel::PaletteMaxColors;
 		// it is only 1 pixel high - sample the middle
 		const float v1 = 0.5f;
-		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
-		const voxel::IndexType *indices = mesh->getRawIndexData();
+		const voxel::VertexArray &vertices = mesh->getVertexVector();
+		const voxel::IndexArray &indices = mesh->getIndexVector();
 		const char *objectName = meshExt.name.c_str();
 		if (objectName[0] == '\0') {
 			objectName = "Noname";
@@ -143,7 +143,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 			}
 
 			int uvi = texcoordOffset;
-			for (int i = 0; i < ni; i += 6, uvi += 4) {
+			for (int i = 0; i < ni - 5; i += 6, uvi += 4) {
 				const uint32_t one = idxOffset + indices[i + 0] + 1;
 				const uint32_t two = idxOffset + indices[i + 1] + 1;
 				const uint32_t three = idxOffset + indices[i + 2] + 1;
