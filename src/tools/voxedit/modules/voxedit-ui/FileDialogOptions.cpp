@@ -25,6 +25,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		ImGui::InputVarFloat("Z axis scale", cfg::VoxformatScaleZ);
 
 		if (mode == video::OpenFileMode::Save) {
+			ImGui::CheckboxVar("Marching cubes", cfg::VoxformatMarchingCubes);
 			ImGui::CheckboxVar("Merge quads", cfg::VoxformatMergequads);
 			ImGui::CheckboxVar("Reuse vertices", cfg::VoxformatReusevertices);
 			ImGui::CheckboxVar("Ambient occlusion", cfg::VoxformatAmbientocclusion);

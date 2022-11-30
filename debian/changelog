@@ -8,6 +8,7 @@ vengi (0.0.23.0-1) UNRELEASED; urgency=low
   * Fixed QBCL and GOX thumbnail handling
   * Removed unused code
   * Added support for VXA version 3
+  * (Re-)added support for marching cubes
 
   * VoxEdit:
   * Added support for embedding screenshots in formats that support it

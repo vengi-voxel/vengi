@@ -11,6 +11,7 @@ namespace voxelformat {
 
 bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, "Merge similar quads to optimize the mesh", core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatMarchingCubes, "false", core::CV_NOPERSIST, "Don't export cubes, but a mesh that is polygonized by the marching cubes algorithm", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST, "Reuse vertices or always create new ones", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST, "Extra vertices for ambient occlusion", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST,

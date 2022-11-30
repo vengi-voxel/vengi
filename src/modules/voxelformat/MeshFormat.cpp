@@ -16,6 +16,7 @@
 #include "core/concurrent/ThreadPool.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
+#include "voxel/MarchingCubesSurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -284,6 +285,7 @@ bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	const bool withColor = core::Var::getSafe(cfg::VoxformatWithcolor)->boolVal();
 	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
 	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
+	const bool marchingCubes = core::Var::getSafe(cfg::VoxformatMarchingCubes)->boolVal();
 
 	const glm::vec3 &scale = getScale();
 	const size_t models = sceneGraph.size();
@@ -294,9 +296,15 @@ bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	for (const SceneGraphNode& node : sceneGraph) {
 		auto lambda = [&] () {
 			voxel::Mesh *mesh = new voxel::Mesh();
-			voxel::Region region = node.region();
-			region.shiftUpperCorner(1, 1, 1);
-			voxel::extractCubicMesh(node.volume(), region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+			if (marchingCubes) {
+				voxel::Region region = node.region();
+				region.shrink(-1);
+				voxel::extractMarchingCubesMesh(node.volume(), node.palette(), region, mesh);
+			} else {
+				voxel::Region region = node.region();
+				region.shiftUpperCorner(1, 1, 1);
+				voxel::extractCubicMesh(node.volume(), region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+			}
 			core::ScopedLock scoped(lock);
 			meshes.emplace_back(mesh, node, applyTransform);
 			meshIdxNodeMap.put(node.id(), (int)meshes.size() - 1);
@@ -314,7 +322,7 @@ bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 		}
 	}
 	Log::debug("Save meshes");
-	const bool state = saveMeshes(meshIdxNodeMap, sceneGraph, meshes, filename, stream, scale, quads, withColor, withTexCoords);
+	const bool state = saveMeshes(meshIdxNodeMap, sceneGraph, meshes, filename, stream, scale, marchingCubes ? false : quads, withColor, withTexCoords);
 	for (MeshExt& meshext : meshes) {
 		delete meshext.mesh;
 	}

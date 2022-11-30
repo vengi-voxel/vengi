@@ -52,6 +52,7 @@ constexpr const char *AppHomePath = "app_homepath";
 
 constexpr const char *VoxelPalette = "palette";
 constexpr const char *VoxformatMergequads = "voxformat_mergequads";
+constexpr const char *VoxformatMarchingCubes = "voxformat_marchingcubes";
 constexpr const char *VoxformatReusevertices = "voxformat_reusevertices";
 constexpr const char *VoxformatAmbientocclusion = "voxformat_ambientocclusion";
 constexpr const char *VoxformatScale = "voxformat_scale";

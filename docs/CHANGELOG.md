@@ -20,6 +20,7 @@ General:
    - Fixed QBCL and GOX thumbnail handling
    - Removed unused code
    - Added support for VXA version 3
+   - (Re-)added support for marching cubes
 
 VoxEdit:
 

@@ -14,7 +14,7 @@ namespace voxel {
  * as well as color and material information.
  */
 struct VoxelVertex {
-	glm::vec<3, int16_t, glm::highp> position;
+	glm::vec<3, float, glm::highp> position;
 	/** 0 is the darkest, 3 is no occlusion at all */
 	union {
 		struct {
@@ -26,7 +26,7 @@ struct VoxelVertex {
 	};
 	uint8_t colorIndex;
 };
-static_assert(sizeof(VoxelVertex) == 8, "Unexpected size of the vertex struct");
+static_assert(sizeof(VoxelVertex) == 16, "Unexpected size of the vertex struct");
 
 // TODO: maybe reduce to uint16_t and use glDrawElementsBaseVertex
 typedef uint32_t IndexType;

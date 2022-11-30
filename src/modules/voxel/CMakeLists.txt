@@ -2,6 +2,8 @@ set(LIB voxel)
 set(SRCS
 	Constants.h
 	CubicSurfaceExtractor.h CubicSurfaceExtractor.cpp
+	MarchingCubesSurfaceExtractor.h MarchingCubesSurfaceExtractor.cpp
+	MarchingCubesTables.h
 	Face.h Face.cpp
 	MaterialColor.h MaterialColor.cpp
 	Mesh.h Mesh.cpp
