@@ -316,7 +316,7 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 	if (_guizmoRotation->boolVal()) {
 		operation |= ImGuizmo::ROTATE;
 	}
-	const float step = (float)core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
+	const float step = core::Var::getSafe(cfg::VoxEditGridsize)->floatVal();
 	const float snap[]{step, step, step};
 	const uint32_t keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
 	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
