@@ -312,7 +312,7 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 	}
 	voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
 
-	int operation = ImGuizmo::TRANSLATE | ImGuizmo::BOUNDS;
+	int operation = ImGuizmo::TRANSLATE | ImGuizmo::BOUNDS | ImGuizmo::SCALE;
 	if (_guizmoRotation->boolVal()) {
 		operation |= ImGuizmo::ROTATE;
 	}
