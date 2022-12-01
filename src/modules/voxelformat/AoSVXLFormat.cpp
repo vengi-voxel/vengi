@@ -10,8 +10,10 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/Map.h"
+#include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/PaletteLookup.h"
+#include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelutil/VolumeResizer.h"
 
@@ -266,20 +268,31 @@ bool AoSVXLFormat::isSurface(const voxel::RawVolume *v, int x, int y, int z) {
 	const int depth = v->depth();
 	const int height = v->height();
 
-	if (voxel::isAir(v->voxel(x, y, z).getMaterial()))
+	voxel::RawVolume::Sampler sampler(v);
+	if (!sampler.setPosition(x, y, z)) {
 		return false;
-	if (x > 0 && voxel::isAir(v->voxel(x - 1, y, z).getMaterial()))
+	}
+	if (voxel::isAir(sampler.voxel().getMaterial())) {
+		return false;
+	}
+	if (x > 0 && voxel::isAir(sampler.peekVoxel1nx0py0pz().getMaterial())) {
 		return true;
-	if (x + 1 < width && voxel::isAir(v->voxel(x + 1, y, z).getMaterial()))
+	}
+	if (x + 1 < width && voxel::isAir(sampler.peekVoxel1px0py0pz().getMaterial())) {
 		return true;
-	if (z > 0 && voxel::isAir(v->voxel(x, y, z - 1).getMaterial()))
+	}
+	if (z > 0 && voxel::isAir(sampler.peekVoxel0px0py1nz().getMaterial())) {
 		return true;
-	if (z + 1 < depth && voxel::isAir(v->voxel(x, y, z + 1).getMaterial()))
+	}
+	if (z + 1 < depth && voxel::isAir(sampler.peekVoxel0px0py1pz().getMaterial())) {
 		return true;
-	if (y > 0 && voxel::isAir(v->voxel(x, y - 1, z).getMaterial()))
+	}
+	if (y > 0 && voxel::isAir(sampler.peekVoxel0px1ny0pz().getMaterial())) {
 		return true;
-	if (y + 1 < height && voxel::isAir(v->voxel(x, y + 1, z).getMaterial()))
+	}
+	if (y + 1 < height && voxel::isAir(sampler.peekVoxel0px1py0pz().getMaterial())) {
 		return true;
+	}
 	return false;
 }
 
