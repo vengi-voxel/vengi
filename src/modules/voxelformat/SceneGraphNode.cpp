@@ -77,7 +77,9 @@ void SceneGraphTransform::setWorldMatrix(const glm::mat4x4 &matrix) {
 	core_assert_msg((_dirty & DIRTY_LOCALVALUES) == 0u, "local was already modified");
 	_dirty |= DIRTY_WORLDVALUES;
 	_worldTranslation = matrix[3];
-	_worldScale = glm::vec3(matrix[0]);
+	_worldScale.x = glm::length(glm::vec3(matrix[0]));
+	_worldScale.y = glm::length(glm::vec3(matrix[1]));
+	_worldScale.z = glm::length(glm::vec3(matrix[2]));
 	const glm::mat3 rotMtx(glm::vec3(matrix[0]) / _worldScale, glm::vec3(matrix[1]) / _worldScale, glm::vec3(matrix[2]) / _worldScale);
 	_worldOrientation = glm::quat_cast(rotMtx);
 }
@@ -113,7 +115,9 @@ void SceneGraphTransform::setLocalMatrix(const glm::mat4x4 &matrix) {
 	core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "world was already modified");
 	_dirty |= DIRTY_LOCALVALUES;
 	_localTranslation = matrix[3];
-	_localScale = glm::vec3(matrix[0]);
+	_localScale.x = glm::length(glm::vec3(matrix[0]));
+	_localScale.y = glm::length(glm::vec3(matrix[1]));
+	_localScale.z = glm::length(glm::vec3(matrix[2]));
 	const glm::mat3 rotMtx(glm::vec3(matrix[0]) / _localScale, glm::vec3(matrix[1]) / _localScale, glm::vec3(matrix[2]) / _localScale);
 	_localOrientation = glm::quat_cast(rotMtx);
 }
