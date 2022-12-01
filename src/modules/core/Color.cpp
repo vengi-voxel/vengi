@@ -81,18 +81,7 @@ int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inpu
 				if (k == 0) {
 					continue;
 				}
-				uint32_t sumR = 0, sumG = 0, sumB = 0;
-				for (const auto& con : contents) {
-					sumR += con.color.r;
-					sumG += con.color.g;
-					sumB += con.color.b;
-				}
-				core::RGBA rgba;
-				rgba.r = sumR / k;
-				rgba.g = sumG / k;
-				rgba.b = sumB / k;
-				rgba.a = 0xFF;
-				targetBuf[n++] = rgba;
+				targetBuf[n++] = contents.front().color;
 				if (n >= maxTargetBufColors) {
 					return (int)n;
 				}
