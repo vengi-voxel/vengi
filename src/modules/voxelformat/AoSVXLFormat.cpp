@@ -88,6 +88,9 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					Log::error("depth (top end %i) exceeds the max allowed value of %i", header.colorEndIdx, height);
 					return false;
 				}
+				voxel::RawVolume::Sampler sampler(volume);
+				sampler.setPosition(x, flipHeight - header.colorStartIdx, z);
+
 				for (y = header.colorStartIdx; y <= header.colorEndIdx; ++y) {
 					uint8_t b, g, r, a;
 					stream.readUInt8(b);
@@ -96,10 +99,15 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					stream.readUInt8(a); // not really alpha - some shading data
 					const core::RGBA rgba(r, g, b);
 					paletteIndex = palLookup.findClosestIndex(rgba);
-					volume->setVoxel(x, flipHeight - y, z, voxel::createVoxel(paletteIndex));
+					sampler.setVoxel(voxel::createVoxel(paletteIndex));
+					sampler.moveNegativeY();
 				}
+
+				sampler.setPosition(x, flipHeight - y, z);
+				const voxel::Voxel heightVoxel = voxel::createVoxel(paletteIndex);
 				for (int i = y; i < height; ++i) {
-					volume->setVoxel(x, flipHeight - i, z, voxel::createVoxel(paletteIndex));
+					sampler.setVoxel(heightVoxel);
+					sampler.moveNegativeY();
 				}
 				const int lenBottom = header.colorEndIdx - header.colorStartIdx + 1;
 
@@ -146,6 +154,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					Log::error("failed to seek");
 					return false;
 				}
+				sampler.setPosition(x, flipHeight - bottomColorStart, z);
 				for (y = bottomColorStart; y < bottomColorEnd; ++y) {
 					uint8_t b, g, r, a;
 					stream.readUInt8(b);
@@ -154,7 +163,8 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					stream.readUInt8(a); // not really alpha - some shading data
 					const core::RGBA rgba(r, g, b);
 					paletteIndex = palLookup.findClosestIndex(rgba);
-					volume->setVoxel(x, flipHeight - y, z, voxel::createVoxel(paletteIndex));
+					sampler.setVoxel(voxel::createVoxel(paletteIndex));
+					sampler.moveNegativeY();
 				}
 				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
 					Log::error("failed to seek");
@@ -386,7 +396,7 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 					++y;
 				}
 
-				if (y == height || 0) {
+				if (y == height) {
 					; // in this case, the bottom colors of this span are empty, because we'll emit as top colors
 				} else {
 					// otherwise, these are real bottom colors so we can write them
@@ -412,15 +422,17 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 				stream.writeUInt8(top_colors_end - 1);
 				stream.writeUInt8(air_start);
 
+				sampler.setPosition(x, flipHeight - top_colors_start, z);
 				for (y = 0; y < top_colors_len; ++y) {
-					sampler.setPosition(x, flipHeight - (top_colors_start + y), z);
 					const core::RGBA color = palette.colors[sampler.voxel().getColor()];
 					stream.writeUInt32(color);
+					sampler.moveNegativeY();
 				}
+				sampler.setPosition(x, flipHeight - bottom_colors_start, z);
 				for (y = 0; y < bottom_colors_len; ++y) {
-					sampler.setPosition(x, flipHeight - (bottom_colors_start + y), z);
 					const core::RGBA color = palette.colors[sampler.voxel().getColor()];
 					stream.writeUInt32(color);
+					sampler.moveNegativeY();
 				}
 			}
 		}
