@@ -25,8 +25,8 @@
 #include "internal_macros.h"
 
 #ifdef BENCHMARK_OS_WINDOWS
-#include <io.h>
 #include <windows.h>
+#include <io.h>
 #else
 #include <unistd.h>
 #endif  // BENCHMARK_OS_WINDOWS
@@ -94,7 +94,7 @@ std::string FormatString(const char* msg, va_list args) {
   va_end(args_cp);
 
   // currently there is no error handling for failure, so this is hack.
-  BM_CHECK(ret >= 0);
+  CHECK(ret >= 0);
 
   if (ret == 0)  // handle empty expansion
     return {};
@@ -102,10 +102,10 @@ std::string FormatString(const char* msg, va_list args) {
     return local_buff;
   else {
     // we did not provide a long enough buffer on our first attempt.
-    size = static_cast<size_t>(ret) + 1;  // + 1 for the null byte
+    size = (size_t)ret + 1;  // + 1 for the null byte
     std::unique_ptr<char[]> buff(new char[size]);
     ret = vsnprintf(buff.get(), size, msg, args);
-    BM_CHECK(ret > 0 && (static_cast<size_t>(ret)) < size);
+    CHECK(ret > 0 && ((size_t)ret) < size);
     return buff.get();
   }
 }
