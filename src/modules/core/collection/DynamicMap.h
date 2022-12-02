@@ -71,7 +71,7 @@ public:
 private:
 	core::Array<KeyValue *, BUCKETSIZE> _buckets;
 	HASHER _hasher;
-	size_t _size;
+	size_t _size = 0;
 public:
 	DynamicMap(std::initializer_list<KeyValue> other) {
 		_buckets.fill(nullptr);
