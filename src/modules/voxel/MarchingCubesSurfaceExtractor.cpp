@@ -191,6 +191,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 						VoxelVertex surfaceVertex;
 						surfaceVertex.position = v3dPosition;
 						surfaceVertex.colorIndex = blendedVoxel.getColor();
+						surfaceVertex.info = 0;
 						surfaceVertex.flags = blendedVoxel.getFlags();
 
 						const IndexType lastVertexIndex = result->addVertex(surfaceVertex);
@@ -225,6 +226,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 						VoxelVertex surfaceVertex;
 						surfaceVertex.position = v3dPosition;
 						surfaceVertex.colorIndex = blendedVoxel.getColor();
+						surfaceVertex.info = 0;
 						surfaceVertex.flags = blendedVoxel.getFlags();
 
 						const IndexType lastVertexIndex = result->addVertex(surfaceVertex);
@@ -259,6 +261,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 						VoxelVertex surfaceVertex;
 						surfaceVertex.position = v3dPosition;
 						surfaceVertex.colorIndex = blendedVoxel.getColor();
+						surfaceVertex.info = 0;
 						surfaceVertex.flags = blendedVoxel.getFlags();
 
 						const IndexType lastVertexIndex = result->addVertex(surfaceVertex);
