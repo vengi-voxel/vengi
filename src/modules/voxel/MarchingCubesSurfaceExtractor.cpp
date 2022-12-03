@@ -181,8 +181,9 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 
 						// The gradient for a voxel can be zero (e.g. solid voxel surrounded by empty ones) and so
 						// the interpolated normal can also be zero (e.g. a grid of alternating solid and empty voxels).
-						if (glm::length2(normal) > 0.000001f) {
-							normal = glm::normalize(normal);
+						const float normLen = glm::length2(normal);
+						if (normLen > 0.000001f) {
+							normal *= glm::inversesqrt(normLen);
 						}
 
 						const Voxel blendedVoxel = blendMaterials(palette, v011, v111, interpolate);
@@ -214,8 +215,9 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 
 						// The gradient for a voxel can be zero (e.g. solid voxel surrounded by empty ones) and so
 						// the interpolated normal can also be zero (e.g. a grid of alternating solid and empty voxels).
-						if (glm::length2(normal) > 0.000001f) {
-							normal = glm::normalize(normal);
+						const float normLen = glm::length2(normal);
+						if (normLen > 0.000001f) {
+							normal *= glm::inversesqrt(normLen);
 						}
 
 						const Voxel blendedVoxel = blendMaterials(palette, v101, v111, interpolate);
@@ -247,8 +249,9 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 
 						// The gradient for a voxel can be zero (e.g. solid voxel surrounded by empty ones) and so
 						// the interpolated normal can also be zero (e.g. a grid of alternating solid and empty voxels).
-						if (glm::length2(normal) > 0.000001f) {
-							normal = glm::normalize(normal);
+						const float normLen = glm::length2(normal);
+						if (normLen > 0.000001f) {
+							normal *= glm::inversesqrt(normLen);
 						}
 
 						const Voxel blendedVoxel = blendMaterials(palette, v110, v111, interpolate);
