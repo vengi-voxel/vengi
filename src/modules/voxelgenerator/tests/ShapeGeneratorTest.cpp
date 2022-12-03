@@ -13,6 +13,7 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/FormatConfig.h"
 #include "voxelformat/QBFormat.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelgenerator/ShapeGenerator.h"
@@ -86,6 +87,7 @@ protected:
 public:
 	void SetUp() override {
 		Super::SetUp();
+		voxelformat::FormatConfig::init();
 		_volume = new voxel::RawVolume(_region);
 	}
 
