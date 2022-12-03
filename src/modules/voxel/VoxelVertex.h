@@ -14,7 +14,7 @@ namespace voxel {
  * as well as color and material information.
  */
 struct VoxelVertex {
-	glm::vec<3, float, glm::highp> position;
+	glm::vec3 position;
 	/** 0 is the darkest, 3 is no occlusion at all */
 	union {
 		struct {
