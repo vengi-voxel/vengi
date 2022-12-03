@@ -5,6 +5,7 @@ set(SRCS
 	private/MarchingCubesTables.h
 	private/BinaryGreedyMesher.h private/BinaryGreedyMesher.cpp
 	private/TextureSurfaceExtractor.h private/TextureSurfaceExtractor.cpp
+	private/DualContouringSurfaceExtractor.h private/DualContouringSurfaceExtractor.cpp
 
 	external/stb_rect_pack.h
 
@@ -16,6 +17,7 @@ set(SRCS
 	CoordinateSystemVolume.h
 	DynamicVoxelArray.h DynamicVoxelArray.cpp
 	Face.h Face.cpp
+	QEF.h QEF.cpp
 	MaterialColor.h MaterialColor.cpp
 	Mesh.h Mesh.cpp
 	MeshState.h MeshState.cpp

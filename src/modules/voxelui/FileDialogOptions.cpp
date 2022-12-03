@@ -396,8 +396,8 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 void meshModeOption() {
 	static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Max> meshModes = {
-		_("Cubes"), _("Marching cubes"), _("Binary"), _("Greedy texture")};
-	static_assert(4 == (int)voxel::SurfaceExtractionType::Max, "Invalid amount of mesh modes");
+		_("Cubes"), _("Marching cubes"), _("Binary"), _("Greedy texture"),  _("Dual contouring")};
+	static_assert(5 == (int)voxel::SurfaceExtractionType::Max, "Invalid amount of mesh modes");
 	ImGui::ComboVar(cfg::VoxformatMeshMode, meshModes);
 }
 

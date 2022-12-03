@@ -16,7 +16,7 @@ class RawVolume;
 class Region;
 struct ChunkMesh;
 
-enum class SurfaceExtractionType { Cubic, MarchingCubes, Binary, GreedyTexture, Max };
+enum class SurfaceExtractionType { Cubic, MarchingCubes, Binary, GreedyTexture, DualContouring, Max };
 
 struct SurfaceExtractionContext {
 	SurfaceExtractionContext(const RawVolume *_volume, const palette::Palette &_palette, const Region &_region,
@@ -53,6 +53,8 @@ SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, cons
 												   const palette::Palette &palette, bool optimize = false);
 SurfaceExtractionContext buildGreedyTextureContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 												   const palette::Palette &palette, bool optimize = false);
+SurfaceExtractionContext buildDualContouringContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
+													const palette::Palette &palette);
 
 void extractSurface(SurfaceExtractionContext &ctx);
 

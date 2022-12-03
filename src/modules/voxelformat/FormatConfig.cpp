@@ -23,7 +23,7 @@ bool FormatConfig::init() {
 	const core::VarDef voxformatMeshMode(
 		cfg::VoxformatMeshMode, (int)voxel::SurfaceExtractionType::Binary, (int)voxel::SurfaceExtractionType::Cubic,
 		(int)voxel::SurfaceExtractionType::Max - 1, N_("Mesh mode"),
-		NC_("Voxel mesh mode description", "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"),
+		NC_("Voxel mesh mode description", "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture, 4 = dual contouring"),
 		core::CV_NOPERSIST);
 	core::registerVar(voxformatMeshMode);
 	const core::VarDef voxformatReusevertices(cfg::VoxformatReusevertices, true, N_("Reuse vertices"),
