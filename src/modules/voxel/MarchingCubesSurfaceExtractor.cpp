@@ -177,7 +177,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 
 						// Compute the normal
 						const glm::vec3 n011 = computeCentralDifferenceGradient(sampler);
-						glm::vec3 normal((n111 * interpolate) + (n011 * (1 - interpolate)));
+						glm::vec3 normal((n111 * interpolate) + (n011 * (1.0f - interpolate)));
 
 						// The gradient for a voxel can be zero (e.g. solid voxel surrounded by empty ones) and so
 						// the interpolated normal can also be zero (e.g. a grid of alternating solid and empty voxels).
@@ -212,7 +212,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 
 						// Compute the normal
 						const glm::vec3 n101 = computeCentralDifferenceGradient(sampler);
-						glm::vec3 normal = (n111 * interpolate) + (n101 * (1 - interpolate));
+						glm::vec3 normal = (n111 * interpolate) + (n101 * (1.0f - interpolate));
 
 						// The gradient for a voxel can be zero (e.g. solid voxel surrounded by empty ones) and so
 						// the interpolated normal can also be zero (e.g. a grid of alternating solid and empty voxels).
