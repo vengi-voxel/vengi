@@ -200,6 +200,18 @@ bool PaletteFormat::save(const SceneGraph& sceneGraph, const core::String &filen
 	return Format::save(sceneGraph, filename, stream, thumbnailCreator);
 }
 
+RGBAFormat::RGBAFormat() {
+	_flattenFactor = core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->intVal();
+}
+
+core::RGBA RGBAFormat::flattenRGB(core::RGBA rgba) const {
+	return core::Color::flattenRGB(rgba.r, rgba.g, rgba.b, rgba.a, _flattenFactor);
+}
+
+core::RGBA RGBAFormat::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const {
+	return core::Color::flattenRGB(r, g, b, a, _flattenFactor);
+}
+
 bool RGBAFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	voxel::Palette palette;
 	const int64_t resetToPos = stream.pos();

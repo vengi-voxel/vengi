@@ -48,6 +48,7 @@ Exporting to ply, gltf, stl and obj is also supported. A few [cvars](Configurati
 * `voxformat_withcolor`: Export vertex colors
 * `voxformat_withtexcoords`: Export texture coordinates
 * `voxformat_transform_mesh`: Apply the keyframe transform to the mesh
+* `voxformat_marchingcubes`: Use the marching cubes algorithm to produce the mesh
 
 Basic voxelization is supported for ply, gltf, stl, bsp and obj files, too. The following [cvars](Configuration.md) can be modified here:
 
@@ -68,3 +69,5 @@ Next to the mesh related configuration cvars there are a few format specific one
 * `voxformat_voxcreatelayers`: Magicavoxel vox layers
 * `voxformat_voxcreategroups`: Magicavoxel vox groups
 * `voxformat_merge`: Merge all models into one object
+* `voxformat_rgbflattenfactor`: To flatten the RGB colors when importing volumes (0-255)
+* `voxformat_qbsavelefthanded`: Save qubicle format as left handed

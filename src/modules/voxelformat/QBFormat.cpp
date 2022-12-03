@@ -202,7 +202,7 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream, vo
 	if (color.a == 0) {
 		return voxel::Voxel();
 	}
-	const uint8_t index = palLookup.findClosestIndex(core::RGBA(color.r, color.g, color.b));
+	const uint8_t index = palLookup.findClosestIndex(flattenRGB(color.r, color.g, color.b));
 	voxel::Voxel v = voxel::createVoxel(index);
 	return v;
 }

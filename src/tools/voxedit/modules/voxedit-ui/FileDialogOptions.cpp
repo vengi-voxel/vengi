@@ -75,5 +75,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 				ImGui::EndCombo();
 			}
 		}
+	} else {
+		ImGui::InputVarInt("RGB flatten factor", cfg::VoxformatRGBFlattenFactor);
 	}
 }

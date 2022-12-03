@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <stddef.h>
 #include <stdint.h>
 
 namespace core {
@@ -48,5 +49,11 @@ union RGBA {
 };
 
 static_assert(sizeof(RGBA) == sizeof(uint32_t), "Expected RGBA union size");
+
+struct RGBAHasher {
+	inline size_t operator() (const RGBA& o) const {
+		return (size_t)o.rgba;
+	}
+};
 
 } // namespace core

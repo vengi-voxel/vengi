@@ -5,10 +5,20 @@
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/AoSVXLFormat.h"
 #include "io/FileStream.h"
+#include "core/Var.h"
 
 namespace voxelformat {
 
 class AoSVXLFormatTest: public AbstractVoxFormatTest {
+protected:
+	bool onInitApp() override {
+		if (!AbstractVoxFormatTest::onInitApp()) {
+			return false;
+		}
+		// just to speed up the test runs...
+		core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->setVal("8");
+		return true;
+	}
 };
 
 TEST_F(AoSVXLFormatTest, testLoad) {

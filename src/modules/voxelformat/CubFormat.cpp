@@ -48,7 +48,7 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 					// empty voxel
 					continue;
 				}
-				const core::RGBA color(r, g, b);
+				const core::RGBA color = flattenRGB(r, g, b);
 				palette.addColorToPalette(color, false);
 			}
 		}

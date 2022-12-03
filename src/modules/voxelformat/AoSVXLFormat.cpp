@@ -9,7 +9,7 @@
 #include "core/Pair.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
-#include "core/collection/Map.h"
+#include "core/collection/DynamicMap.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/PaletteLookup.h"
@@ -161,7 +161,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					stream.readUInt8(g);
 					stream.readUInt8(r);
 					stream.readUInt8(a); // not really alpha - some shading data
-					const core::RGBA rgba(r, g, b);
+					const core::RGBA rgba = flattenRGB(r, g, b);
 					paletteIndex = palLookup.findClosestIndex(rgba);
 					sampler.setVoxel(voxel::createVoxel(paletteIndex));
 					sampler.moveNegativeY();
@@ -182,7 +182,7 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 
 size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
 	const glm::ivec3 size = dimensions(stream);
-	core::Buffer<core::RGBA> colors;
+	core::DynamicMap<core::RGBA, bool, 11, core::RGBAHasher> colors;
 	for (int z = 0; z < size.z; ++z) {
 		for (int x = 0; x < size.x; ++x) {
 			int y = 0;
@@ -207,7 +207,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 					stream.readUInt8(g);
 					stream.readUInt8(r);
 					stream.readUInt8(a); // not really alpha - some shading data
-					colors.push_back(core::RGBA(r, g, b));
+					colors.put(flattenRGB(r, g, b), true);
 				}
 				const int lenBottom = header.colorEndIdx - header.colorStartIdx + 1;
 
@@ -260,7 +260,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 					stream.readUInt8(g);
 					stream.readUInt8(r);
 					stream.readUInt8(a); // not really alpha - some shading data
-					colors.push_back(core::RGBA(r, g, b));
+					colors.put(flattenRGB(r, g, b), true);
 				}
 				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
 					Log::error("failed to seek");
@@ -269,7 +269,12 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 			}
 		}
 	}
-	palette.quantize(colors.data(), colors.size());
+	core::Buffer<core::RGBA> a;
+	a.reserve(colors.size());
+	for (auto c : colors) {
+		a.push_back(c->key);
+	}
+	palette.quantize(a.data(), a.size());
 	return palette.colorCount;
 }
 

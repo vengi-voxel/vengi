@@ -146,7 +146,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 					return false;
 				}
 				if (a != 0) {
-					const core::RGBA color(r, g, b, a);
+					const core::RGBA color = flattenRGB(r, g, b, a);
 					const uint8_t index = palLookup.findClosestIndex(color);
 					const voxel::Voxel voxel = voxel::createVoxel(index);
 					volume->setVoxel(x, y, z, voxel);
