@@ -48,6 +48,7 @@ private:
 	core::VarPtr _guizmoRotation;
 	core::VarPtr _guizmoAllowAxisFlip;
 	core::VarPtr _guizmoSnap;
+	core::VarPtr _viewDistance;
 
 	float _angle = 0.0f;
 	SceneCameraMode _camMode = SceneCameraMode::Free;

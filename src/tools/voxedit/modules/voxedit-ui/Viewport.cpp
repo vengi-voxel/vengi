@@ -38,19 +38,16 @@ Viewport::~Viewport() {
 
 bool Viewport::init(Viewport::RenderMode renderMode) {
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
-	_camera.setAngles(0.0f, 0.0f, 0.0f);
-	_camera.setFarPlane(5000.0f);
-	_camera.setRotationType(video::CameraRotationType::Target);
-
-	setRenderMode(renderMode);
-	setMode(Viewport::SceneCameraMode::Free);
-	resetCamera();
-
 	_modelSpaceVar = core::Var::getSafe(cfg::VoxEditModelSpace);
 	_showAxisVar = core::Var::getSafe(cfg::VoxEditShowaxis);
 	_guizmoRotation = core::Var::getSafe(cfg::VoxEditGuizmoRotation);
 	_guizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGuizmoAllowAxisFlip);
 	_guizmoSnap = core::Var::getSafe(cfg::VoxEditGuizmoSnap);
+	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
+
+	setRenderMode(renderMode);
+	setMode(Viewport::SceneCameraMode::Free);
+	resetCamera();
 
 	return true;
 }
@@ -58,7 +55,7 @@ bool Viewport::init(Viewport::RenderMode renderMode) {
 void Viewport::resetCamera(const glm::ivec3 &pos, const voxel::Region &region) {
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
-	_camera.setFarPlane(5000.0f);
+	_camera.setFarPlane(_viewDistance->floatVal());
 	_camera.setTarget(pos);
 	const float distance = 100.0f;
 	glm::ivec3 center = pos;
@@ -131,6 +128,8 @@ void Viewport::update() {
 
 	static const char *camRotTypes[] = {"Reference Point", "Eye"};
 	static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
+
+	_camera.setFarPlane(_viewDistance->floatVal());
 
 	_hovered = false;
 	ui::imgui::ScopedStyle style;

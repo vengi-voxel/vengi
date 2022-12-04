@@ -88,6 +88,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditGrayInactive, "false", "Render the inactive layers in gray scale mode");
 	core::Var::get(cfg::VoxEditHideInactive, "false", "Hide the inactive layers");
 	core::Var::get(cfg::VoxEditModelSpace, "1");
+	core::Var::get(cfg::VoxEditViewdistance, "5000");
 	core::Var::get(cfg::VoxEditShowaxis, "1", "Show the axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGuizmoRotation, "0", "Activate rotations for the guizmo in scene mode", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGuizmoAllowAxisFlip, "1", "Flip axis or stay along the positive world/local axis", core::Var::boolValidator);
