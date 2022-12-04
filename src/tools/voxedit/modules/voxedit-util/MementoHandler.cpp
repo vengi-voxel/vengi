@@ -82,6 +82,7 @@ MementoData MementoData::fromVolume(const voxel::RawVolume* volume) {
 	const uint32_t compressedBufferSize = core::zip::compressBound(uncompressedBufferSize);
 	uint8_t* compressedBuf = (uint8_t*)core_malloc(compressedBufferSize);
 	size_t finalBufSize = 0u;
+	// TODO: only the region - see issue 200
 	if (!core::zip::compress(volume->data(), uncompressedBufferSize, compressedBuf, compressedBufferSize, &finalBufSize)) {
 		core_free(compressedBuf);
 		return MementoData();
