@@ -80,6 +80,27 @@ bool MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 				ImGui::SliderVarInt("Zoom speed", cfg::VoxEditCameraZoomSpeed, 10, 200);
 				ImGui::SliderVarInt("View distance", cfg::VoxEditViewdistance, 10, 5000);
 				ImGui::InputVarInt("Font size", cfg::UIFontSize, 1, 5);
+
+				static constexpr const char* ColorThemeStr[] {
+					"CorporateGrey",
+					"Dark",
+					"Light",
+					"Classic"
+				};
+				const core::VarPtr &uistyle = core::Var::getSafe(cfg::UIStyle);
+				const int currentUIStyle = uistyle->intVal();
+				if (ImGui::BeginCombo("Color theme", ColorThemeStr[(int)currentUIStyle], ImGuiComboFlags_None)) {
+					for (int i = 0; i < lengthof(ColorThemeStr); ++i) {
+						const bool selected = i == currentUIStyle;
+						if (ImGui::Selectable(ColorThemeStr[i], selected)) {
+							uistyle->setVal(core::string::toString(i));
+						}
+						if (selected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
 				glm::vec3 omega = sceneMgr().activeCamera()->omega();
 				if (ImGui::InputFloat("Camera rotation", &omega.y)) {
 					sceneMgr().activeCamera()->setOmega(omega);

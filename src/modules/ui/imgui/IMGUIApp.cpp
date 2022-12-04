@@ -160,7 +160,10 @@ app::AppState IMGUIApp::onConstruct() {
 	if (!isDarkMode()) {
 		uiStyleDefaultValue = "2";
 	}
-	core::Var::get(cfg::UIStyle, uiStyleDefaultValue, "Change the ui colors - [0-3]");
+	_uistyle = core::Var::get(cfg::UIStyle, uiStyleDefaultValue, "Change the ui colors - [0-3]", [](const core::String &val) {
+		const int themeIdx = core::string::toInt(val);
+		return themeIdx >= 0 && themeIdx <= 3;
+	});
 	core::Var::get(cfg::UIFileDialogShowHidden, "false", "Show hidden file system entities");
 	core::Var::get(cfg::UINotifyDismissMillis, "3000", "Timeout for notifications in millis");
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
@@ -313,8 +316,20 @@ app::AppState IMGUIApp::onInit() {
 	}
 
 	loadFonts();
+	setColorTheme();
+	_imguiBackendInitialized = ImGui_ImplSDL2_InitForOpenGL(_window, _rendererContext);
 
-	switch (core::Var::get(cfg::UIStyle)->intVal()) {
+	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
+
+	_console.init();
+
+	Log::debug("Set up imgui");
+
+	return state;
+}
+
+void IMGUIApp::setColorTheme() {
+	switch (_uistyle->intVal()) {
 	case 0:
 		ImGui::StyleColorsCorporateGrey();
 		break;
@@ -327,17 +342,10 @@ app::AppState IMGUIApp::onInit() {
 	case 3:
 		ImGui::StyleColorsClassic();
 		break;
+	default:
+		_uistyle->setVal("0");
+		break;
 	}
-
-	_imguiBackendInitialized = ImGui_ImplSDL2_InitForOpenGL(_window, _rendererContext);
-
-	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
-
-	_console.init();
-
-	Log::debug("Set up imgui");
-
-	return state;
 }
 
 void IMGUIApp::beforeUI() {
@@ -357,6 +365,11 @@ app::AppState IMGUIApp::onRunning() {
 	if (_uiFontSize->isDirty()) {
 		loadFonts();
 		_uiFontSize->markClean();
+	}
+
+	if (_uistyle->isDirty()) {
+		setColorTheme();
+		_uistyle->markClean();
 	}
 
 	core_assert(_bufferIndex > -1);

@@ -38,6 +38,7 @@ protected:
 	core::String _writePathIni;
 	core::String _writePathLog;
 	core::VarPtr _lastDirectory;
+	core::VarPtr _uistyle;
 
 	bool _showBindingsDialog = false;
 	bool _showTexturesDialog = false;
@@ -54,6 +55,8 @@ protected:
 	ImFont* _smallFont = nullptr;
 
 	FileDialog _fileDialog;
+
+	void setColorTheme();
 
 	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
