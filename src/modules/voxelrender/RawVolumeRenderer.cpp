@@ -79,7 +79,7 @@ bool RawVolumeRenderer::init(const glm::ivec2 &size) {
 	Log::debug("Threadpool size: %i", (int)_threadPool.size());
 
 	if (!_voxelShader.setup()) {
-		Log::error("Failed to initialize the world shader");
+		Log::error("Failed to initialize the voxel shader");
 		return false;
 	}
 	if (!_shadowMapShader.setup()) {
