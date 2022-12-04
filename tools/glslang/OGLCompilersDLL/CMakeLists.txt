@@ -41,8 +41,19 @@ if(WIN32)
     source_group("Source" FILES ${SOURCES})
 endif(WIN32)
 
-if(ENABLE_GLSLANG_INSTALL)
-    install(TARGETS OGLCompiler EXPORT OGLCompilerTargets
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-	install(EXPORT OGLCompilerTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake)
-endif(ENABLE_GLSLANG_INSTALL)
+if(ENABLE_GLSLANG_INSTALL AND NOT BUILD_SHARED_LIBS)
+    install(TARGETS OGLCompiler EXPORT glslang-targets)
+
+    # Backward compatibility
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/OGLCompilerTargets.cmake" "
+        message(WARNING \"Using `OGLCompilerTargets.cmake` is deprecated: use `find_package(glslang)` to find glslang CMake targets.\")
+
+        if (NOT TARGET glslang::OGLCompiler)
+            include(\"\${CMAKE_CURRENT_LIST_DIR}/../../${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/glslang-targets.cmake\")
+        endif()
+
+        add_library(OGLCompiler ALIAS glslang::OGLCompiler)
+    ")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/OGLCompilerTargets.cmake" DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake)
+
+endif()

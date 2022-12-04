@@ -58,7 +58,7 @@ std::string GL_EXT_shader_realtime_clock_GLSL = R"(
 std::string getIntrinsic(const char* const* shaders, int n) {
 	std::string shaderString = "";
 	for (int i = 0; i < n; i++) {
-		if (strstr(shaders[i], "GL_EXT_shader_realtime_clock") != NULL) {
+		if (strstr(shaders[i], "GL_EXT_shader_realtime_clock") != nullptr) {
 		    shaderString.append(GL_EXT_shader_realtime_clock_GLSL);
 		}
 	}

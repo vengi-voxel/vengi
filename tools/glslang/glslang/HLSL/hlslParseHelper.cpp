@@ -1596,7 +1596,7 @@ void HlslParseContext::handleFunctionDeclarator(const TSourceLoc& loc, TFunction
     //
     bool builtIn;
     TSymbol* symbol = symbolTable.find(function.getMangledName(), &builtIn);
-    const TFunction* prevDec = symbol ? symbol->getAsFunction() : 0;
+    const TFunction* prevDec = symbol ? symbol->getAsFunction() : nullptr;
 
     if (prototype) {
         // All built-in functions are defined, even though they don't have a body.
@@ -1752,6 +1752,18 @@ void HlslParseContext::handleEntryPointAttributes(const TSourceLoc& loc, const T
             const TIntermSequence& sequence = it->args->getSequence();
             for (int lid = 0; lid < int(sequence.size()); ++lid)
                 intermediate.setLocalSize(lid, sequence[lid]->getAsConstantUnion()->getConstArray()[0].getIConst());
+            break;
+        }
+        case EatInstance: 
+        {
+            int invocations;
+
+            if (!it->getInt(invocations)) {
+                error(loc, "invalid instance", "", "");
+            } else {
+                if (!intermediate.setInvocations(invocations))
+                    error(loc, "cannot change previously set instance attribute", "", "");
+            }
             break;
         }
         case EatMaxVertexCount:
@@ -2430,6 +2442,11 @@ void HlslParseContext::remapNonEntryPointIO(TFunction& function)
             clearUniformInputOutput(function[i].type->getQualifier());
 }
 
+TIntermNode* HlslParseContext::handleDeclare(const TSourceLoc& loc, TIntermTyped* var)
+{
+    return intermediate.addUnaryNode(EOpDeclare, var, loc, TType(EbtVoid));
+}
+
 // Handle function returns, including type conversions to the function return type
 // if necessary.
 TIntermNode* HlslParseContext::handleReturnValue(const TSourceLoc& loc, TIntermTyped* value)
@@ -2455,7 +2472,7 @@ TIntermNode* HlslParseContext::handleReturnValue(const TSourceLoc& loc, TIntermT
 void HlslParseContext::handleFunctionArgument(TFunction* function,
                                               TIntermTyped*& arguments, TIntermTyped* newArg)
 {
-    TParameter param = { 0, new TType, nullptr };
+    TParameter param = { nullptr, new TType, nullptr };
     param.type->shallowCopy(newArg->getType());
 
     function->addParameter(param);
@@ -5430,7 +5447,7 @@ void HlslParseContext::decomposeIntrinsic(const TSourceLoc& loc, TIntermTyped*& 
         }
     case EOpWavePrefixCountBits:
         {
-            // Mapped to subgroupBallotInclusiveBitCount(subgroupBallot())
+            // Mapped to subgroupBallotExclusiveBitCount(subgroupBallot())
             // builtin
 
             // uvec4 type.
@@ -5444,7 +5461,7 @@ void HlslParseContext::decomposeIntrinsic(const TSourceLoc& loc, TIntermTyped*& 
             TType uintType(EbtUint, EvqTemporary);
 
             node = intermediate.addBuiltInFunctionCall(loc,
-                EOpSubgroupBallotInclusiveBitCount, true, res, uintType);
+                EOpSubgroupBallotExclusiveBitCount, true, res, uintType);
 
             break;
         }
@@ -7773,18 +7790,18 @@ const TFunction* HlslParseContext::findFunction(const TSourceLoc& loc, TFunction
             // Handle aggregates: put all args into the new function call
             for (int arg = 0; arg < int(args->getAsAggregate()->getSequence().size()); ++arg) {
                 // TODO: But for constness, we could avoid the new & shallowCopy, and use the pointer directly.
-                TParameter param = { 0, new TType, nullptr };
+                TParameter param = { nullptr, new TType, nullptr };
                 param.type->shallowCopy(args->getAsAggregate()->getSequence()[arg]->getAsTyped()->getType());
                 convertedCall.addParameter(param);
             }
         } else if (args->getAsUnaryNode()) {
             // Handle unaries: put all args into the new function call
-            TParameter param = { 0, new TType, nullptr };
+            TParameter param = { nullptr, new TType, nullptr };
             param.type->shallowCopy(args->getAsUnaryNode()->getOperand()->getAsTyped()->getType());
             convertedCall.addParameter(param);
         } else if (args->getAsTyped()) {
             // Handle bare e.g, floats, not in an aggregate.
-            TParameter param = { 0, new TType, nullptr };
+            TParameter param = { nullptr, new TType, nullptr };
             param.type->shallowCopy(args->getAsTyped()->getType());
             convertedCall.addParameter(param);
         } else {
@@ -8023,11 +8040,16 @@ TIntermNode* HlslParseContext::declareVariable(const TSourceLoc& loc, const TStr
     if (flattenVar)
         flatten(*symbol->getAsVariable(), symbolTable.atGlobalLevel());
 
-    if (initializer == nullptr)
-        return nullptr;
+    TVariable* variable = symbol->getAsVariable();
+
+    if (initializer == nullptr) {
+        if (intermediate.getDebugInfo())
+            return executeDeclaration(loc, variable);
+        else
+            return nullptr;
+    }
 
     // Deal with initializer
-    TVariable* variable = symbol->getAsVariable();
     if (variable == nullptr) {
         error(loc, "initializer requires a variable, not a member", identifier.c_str(), "");
         return nullptr;
@@ -8092,6 +8114,24 @@ TVariable* HlslParseContext::declareNonArray(const TSourceLoc& loc, const TStrin
 
     error(loc, "redefinition", variable->getName().c_str(), "");
     return nullptr;
+}
+
+// Return a declaration of a temporary variable
+//
+// This is used to force a variable to be declared in the correct scope
+// when debug information is being generated.
+
+TIntermNode* HlslParseContext::executeDeclaration(const TSourceLoc& loc, TVariable* variable)
+{
+  //
+  // Identifier must be of type temporary.
+  //
+  TStorageQualifier qualifier = variable->getType().getQualifier().storage;
+  if (qualifier != EvqTemporary)
+      return nullptr;
+
+  TIntermSymbol* intermSymbol = intermediate.addSymbol(*variable, loc);
+  return handleDeclare(loc, intermSymbol);
 }
 
 //

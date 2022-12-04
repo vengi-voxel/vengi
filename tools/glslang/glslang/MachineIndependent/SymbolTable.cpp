@@ -183,7 +183,7 @@ void TType::buildMangledName(TString& mangledName) const
     }
 }
 
-#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+#if !defined(GLSLANG_WEB)
 
 //
 // Dump functions.
@@ -383,7 +383,7 @@ TFunction::TFunction(const TFunction& copyOf) : TSymbol(copyOf)
     for (unsigned int i = 0; i < copyOf.parameters.size(); ++i) {
         TParameter param;
         parameters.push_back(param);
-        parameters.back().copyParam(copyOf.parameters[i]);
+        (void)parameters.back().copyParam(copyOf.parameters[i]);
     }
 
     extensions = nullptr;
@@ -416,7 +416,7 @@ TAnonMember* TAnonMember::clone() const
     // copy of the original container.
     assert(0);
 
-    return 0;
+    return nullptr;
 }
 
 TSymbolTableLevel* TSymbolTableLevel::clone() const
