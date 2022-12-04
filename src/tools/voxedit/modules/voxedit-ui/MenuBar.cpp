@@ -79,6 +79,10 @@ bool MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener
 				ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
 				ImGui::SliderVarInt("Zoom speed", cfg::VoxEditCameraZoomSpeed, 10, 200);
 				ImGui::InputVarInt("Font size", cfg::UIFontSize, 1, 5);
+				glm::vec3 omega = sceneMgr().activeCamera()->omega();
+				if (ImGui::InputFloat("Camera rotation", &omega.y)) {
+					sceneMgr().activeCamera()->setOmega(omega);
+				}
 				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 				ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);
 				if (ImGui::Button("Reset layout")) {
