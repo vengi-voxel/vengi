@@ -398,6 +398,10 @@ inline void Camera::setTargetDistance(float distance) {
 	_distance = distance;
 }
 
+inline glm::vec3 Camera::omega() const {
+	return _omega;
+}
+
 inline glm::vec3 Camera::target() const {
 	return _target;
 }
