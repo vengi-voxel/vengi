@@ -21,6 +21,7 @@ General:
    - Removed unused code
    - Added support for VXA version 3
    - (Re-)added support for marching cubes
+   - Fixed a bug in Ace of Spades VXL loading
 
 VoxEdit:
 

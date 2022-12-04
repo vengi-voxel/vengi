@@ -9,6 +9,7 @@ vengi (0.0.23.0-1) UNRELEASED; urgency=low
   * Removed unused code
   * Added support for VXA version 3
   * (Re-)added support for marching cubes
+  * Fixed a bug in Ace of Spades VXL loading
 
   * VoxEdit:
   * Added support for embedding screenshots in formats that support it

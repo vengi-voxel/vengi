@@ -102,13 +102,6 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 					sampler.setVoxel(voxel::createVoxel(paletteIndex));
 					sampler.moveNegativeY();
 				}
-
-				sampler.setPosition(x, flipHeight - y, z);
-				const voxel::Voxel heightVoxel = voxel::createVoxel(paletteIndex);
-				for (int i = y; i < height; ++i) {
-					sampler.setVoxel(heightVoxel);
-					sampler.moveNegativeY();
-				}
 				const int lenBottom = header.colorEndIdx - header.colorStartIdx + 1;
 
 				// check for end of data marker
