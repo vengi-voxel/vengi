@@ -68,6 +68,7 @@ int ZipReadStream::read(void *buf, size_t size) {
 			if (remainingSize > 0) {
 				const int bytes = _readStream.read(_buf, _stream->avail_in);
 				if (bytes == -1) {
+					Log::debug("Failed to read from parent stream");
 					return -1;
 				}
 				if (_size >= 0) {
@@ -85,6 +86,7 @@ int ZipReadStream::read(void *buf, size_t size) {
 		case MZ_NEED_DICT:
 		case MZ_DATA_ERROR:
 		case MZ_MEM_ERROR:
+			Log::debug("error while reading the stream: '%s'", mz_error(retval));
 			return -1;
 		}
 
@@ -96,7 +98,7 @@ int ZipReadStream::read(void *buf, size_t size) {
 		if (retval == MZ_STREAM_END) {
 			_eos = true;
 			if (size > 0) {
-				// attempting to read past the end of the stream
+				Log::debug("attempting to read past the end of the stream");
 				return -1;
 			}
 		}
