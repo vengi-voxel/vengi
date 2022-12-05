@@ -61,7 +61,7 @@ void AssetPanel::update(const char *title, command::CommandExecutionListener &li
 				imguiApp()->directoryDialog(callback, {});
 			}
 
-			if (ImGui::BeginListBox("##assetmodels")) {
+			if (ImGui::BeginListBox("##assetmodels", ImVec2(-FLT_MIN, 5 * ImGui::GetTextLineHeightWithSpacing()))) {
 				int n = 0;
 				for (const core::String &model : _models) {
 					const core::String &fileName = core::string::extractFilenameWithExtension(model);
