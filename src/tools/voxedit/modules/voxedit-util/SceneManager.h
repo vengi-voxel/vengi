@@ -195,8 +195,8 @@ protected:
 	int mergeNodes(int nodeId1, int nodeId2);
 	int mergeNodes(NodeMergeFlags flags);
 
-	bool undo();
-	bool redo();
+	bool doUndo();
+	bool doRedo();
 
 	bool copy();
 	bool paste(const glm::ivec3& pos);
@@ -317,6 +317,9 @@ public:
 	 */
 	bool load(const core::String& file);
 	bool isLoading() const;
+
+	bool undo(int n = 1);
+	bool redo(int n = 1);
 
 	/**
 	 * @brief Shift the whole volume by the given voxel amount

@@ -387,7 +387,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 	if (!modifiedRegion.isValid()) {
 		return;
 	}
-	Log::debug("Modified node %i, undo state: %s", nodeId, markUndo ? "true" : "false");
+	Log::debug("Modified node %i, record undo state: %s", nodeId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
 		voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
@@ -625,8 +625,28 @@ bool SceneManager::mementoModification(const MementoState& s) {
 	return false;
 }
 
+bool SceneManager::undo(int n) {
+	Log::debug("undo %i steps", n);
+	for (int i = 0; i < n; ++i) {
+		if (!doUndo()) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool SceneManager::redo(int n) {
+	Log::debug("redo %i steps", n);
+	for (int i = 0; i < n; ++i) {
+		if (!doRedo()) {
+			return false;
+		}
+	}
+	return true;
+}
+
 // TODO: this should also update _dirty
-bool SceneManager::undo() {
+bool SceneManager::doUndo() {
 	if (!mementoHandler().canUndo()) {
 		Log::debug("Nothing to undo");
 		return false;
@@ -649,7 +669,7 @@ bool SceneManager::undo() {
 		voxel::RawVolume* v = MementoData::toVolume(s.data);
 		voxelformat::SceneGraphNodeType type = voxelformat::SceneGraphNodeType::Model;
 		if (v == nullptr) {
-			// TODO: record the node
+			// TODO: record the node in the memento states
 			type = voxelformat::SceneGraphNodeType::Group;
 		}
 		voxelformat::SceneGraphNode node(type);
@@ -673,7 +693,7 @@ bool SceneManager::undo() {
 	return true;
 }
 
-bool SceneManager::redo() {
+bool SceneManager::doRedo() {
 	if (!mementoHandler().canRedo()) {
 		Log::debug("Nothing to redo");
 		return false;

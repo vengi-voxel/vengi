@@ -25,6 +25,7 @@
 #define TITLE_POSITIONS "Positions##title"
 #define TITLE_ANIMATION_TIMELINE "Animation##animationtimeline"
 #define TITLE_TOOLS "Tools##title"
+#define TITLE_MEMENTO "History##title"
 #define TITLE_ASSET "Assets##title"
 #define TITLE_LAYERS "Layers##title"
 #define TITLE_FORMAT_SETTINGS "Formats##title"
@@ -203,6 +204,7 @@ void MainWindow::mainWidget() {
 void MainWindow::rightWidget() {
 	_positionsPanel.update(TITLE_POSITIONS, _lastExecutedCommand);
 	_toolsPanel.update(TITLE_TOOLS, _lastExecutedCommand);
+	_mementoPanel.update(TITLE_MEMENTO, _lastExecutedCommand);
 	_assetPanel.update(TITLE_ASSET, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
 
@@ -468,6 +470,7 @@ void MainWindow::update() {
 		ImGui::DockBuilderDockWindow(TITLE_ASSET, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_TOOLS, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, _dockIdRight);
+		ImGui::DockBuilderDockWindow(TITLE_MEMENTO, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_FORMAT_SETTINGS, _dockIdRight);
 		ImGui::DockBuilderDockWindow(TITLE_LAYERS, _dockIdRightDown);
 		ImGui::DockBuilderDockWindow(TITLE_TREES, _dockIdRightDown);

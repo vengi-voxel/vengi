@@ -130,12 +130,13 @@ struct MementoState {
 	}
 };
 
+using MementoStates = core::RingBuffer<MementoState, 64u>;
 /**
  * @brief Class that manages the undo and redo steps for the scene
  */
 class MementoHandler : public core::IComponent {
 private:
-	core::RingBuffer<MementoState, 64u> _states;
+	MementoStates _states;
 	uint8_t _statePosition = 0u;
 	int _locked = 0;
 
@@ -161,8 +162,11 @@ public:
 	void unlock();
 
 	void print() const;
+	void printState(const MementoState &state) const;
 
 	void clearStates();
+
+	static const char *typeToString(MementoType type);
 
 	/**
 	 * @brief Add a new state entry to the memento handler that you can return to.
@@ -205,6 +209,7 @@ public:
 	bool canRedo() const;
 
 	const MementoState& state() const;
+	const MementoStates& states() const;
 
 	size_t stateSize() const;
 	uint8_t statePosition() const;
@@ -229,6 +234,10 @@ public:
 
 inline const MementoState& MementoHandler::state() const {
 	return _states[_statePosition];
+}
+
+inline const MementoStates& MementoHandler::states() const {
+	return _states;
 }
 
 inline uint8_t MementoHandler::statePosition() const {

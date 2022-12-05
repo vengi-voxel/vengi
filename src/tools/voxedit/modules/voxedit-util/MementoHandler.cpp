@@ -129,10 +129,7 @@ void MementoHandler::unlock() {
 	--_locked;
 }
 
-void MementoHandler::print() const {
-	Log::info("Current memento state index: %i", _statePosition);
-	int i = 0;
-
+const char *MementoHandler::typeToString(MementoType type) {
 	const char *states[] = {
 		"Modification",
 		"SceneNodeMove",
@@ -144,17 +141,27 @@ void MementoHandler::print() const {
 		"PaletteChanged"
 	};
 	static_assert((int)MementoType::Max == lengthof(states), "Array sizes don't match");
+	return states[(int)type];
+}
+
+void MementoHandler::printState(const MementoState &state) const {
+	const glm::ivec3& mins = state.region.getLowerCorner();
+	const glm::ivec3& maxs = state.region.getUpperCorner();
+	core::String palHash;
+	if (state.palette.hasValue()) {
+		palHash = core::string::toString(state.palette.value()->hash());
+	}
+	Log::info("%s: node id: %i (parent: %i) (frame %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)] (size: %ib) (palette: %s [hash: %s])",
+			typeToString(state.type), state.nodeId, state.parentId, state.keyFrame, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
+					mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, (int)state.data.size(), state.palette.hasValue() ? "true" : "false", palHash.c_str());
+
+}
+
+void MementoHandler::print() const {
+	Log::info("Current memento state index: %i", _statePosition);
 
 	for (const MementoState& state : _states) {
-		const glm::ivec3& mins = state.region.getLowerCorner();
-		const glm::ivec3& maxs = state.region.getUpperCorner();
-		core::String palHash;
-		if (state.palette.hasValue()) {
-			palHash = core::string::toString(state.palette.value()->hash());
-		}
-		Log::info("%4i: (%s) node id: %i (parent: %i) (frame %i) - %s (%s) [mins(%i:%i:%i)/maxs(%i:%i:%i)] (size: %ib) (palette: %s [hash: %s])",
-				i++, states[(int)state.type], state.nodeId, state.parentId, state.keyFrame, state.name.c_str(), state.data._buffer == nullptr ? "empty" : "volume",
-						mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z, (int)state.data.size(), state.palette.hasValue() ? "true" : "false", palHash.c_str());
+		printState(state);
 	}
 }
 

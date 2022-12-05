@@ -11,6 +11,7 @@
 #include "voxedit-ui/AnimationPanel.h"
 #include "voxedit-ui/AnimationTimeline.h"
 #include "voxedit-ui/AssetPanel.h"
+#include "voxedit-ui/MementoPanel.h"
 #include "voxedit-ui/PositionsPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/LayerPanel.h"
@@ -89,6 +90,7 @@ private:
 	AnimationPanel _animationPanel;
 	ToolsPanel _toolsPanel;
 	AssetPanel _assetPanel;
+	MementoPanel _mementoPanel;
 	PositionsPanel _positionsPanel;
 	ModifierPanel _modifierPanel;
 	PalettePanel _palettePanel;

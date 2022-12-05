@@ -11,6 +11,7 @@ set(SRCS
 	LSystemPanel.h LSystemPanel.cpp
 	MainWindow.h MainWindow.cpp
 	MenuBar.h MenuBar.cpp
+	MementoPanel.h MementoPanel.cpp
 	ModifierPanel.h ModifierPanel.cpp
 	PalettePanel.h PalettePanel.cpp
 	SceneGraphPanel.h SceneGraphPanel.cpp
