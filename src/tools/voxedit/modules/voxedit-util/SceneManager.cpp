@@ -616,8 +616,10 @@ bool SceneManager::mementoModification(const MementoState& s) {
 		if (s.palette.hasValue()) {
 			node->setPalette(*s.palette.value());
 		}
-		modified(node->id(), s.region, false);
+		// as the old volume was replaced, we have to unregister the pointer in
+		// the renderer, too
 		_volumeRenderer.prepare(_sceneGraph);
+		modified(node->id(), s.region, false);
 		return true;
 	}
 	Log::warn("Failed to handle memento state - node id %i not found (%s)", s.nodeId, s.name.c_str());
