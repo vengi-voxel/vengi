@@ -61,6 +61,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableRead
 }
 
 bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, int width, int height, int depths, const voxel::Palette &palette) {
+	SceneGraph newSceneGraph;
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depths - 1);
 	const int flipHeight = height - 1;
 	core_assert(region.isValid());
@@ -169,7 +170,9 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
-	sceneGraph.emplace(core::move(node));
+	// TODO: workaround for issue #200 (huge memento states)
+	newSceneGraph.emplace(core::move(node));
+	splitVolumes(newSceneGraph, sceneGraph, glm::ivec3(256));
 	return true;
 }
 
