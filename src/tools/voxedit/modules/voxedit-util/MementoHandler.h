@@ -70,6 +70,10 @@ public:
 
 	MementoData& operator=(MementoData &&o) noexcept;
 
+	inline const voxel::Region& region() const {
+		return _region;
+	}
+
 	/**
 	 * @brief Converts the given @c mementoData into a volume
 	 * @note Keep in mind that you own the returned memory

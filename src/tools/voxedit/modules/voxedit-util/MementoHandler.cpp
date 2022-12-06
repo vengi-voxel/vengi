@@ -188,6 +188,10 @@ MementoState MementoHandler::undo() {
 			MementoState& prevS = _states[i];
 			if ((prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) && prevS.nodeId == s.nodeId) {
 				core_assert(prevS.hasVolumeData());
+				voxel::logRegion("Undo current", s.region);
+				voxel::logRegion("Undo previous", prevS.region);
+				voxel::logRegion("Undo current data", s.data.region());
+				voxel::logRegion("Undo previous data", prevS.data.region());
 				// use the region from the current state - but the volume from the previous state of this node
 				return MementoState{s.type, prevS.data, s.parentId, s.nodeId, s.name, s.region, s.localMatrix, s.keyFrame};
 			}
