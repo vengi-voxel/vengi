@@ -345,6 +345,7 @@ public:
 	 * @return @c true if the scene was modified and not saved yet
 	 */
 	bool dirty() const;
+	void markDirty();
 
 	/**
 	 * @return @c true if the scene is completely empty
@@ -405,10 +406,10 @@ private:
 	void onNewNodeAdded(int newNodeId);
 	bool nodeRename(voxelformat::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(voxelformat::SceneGraphNode &node, bool recursive);
-	bool nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx, bool memento);
+	bool nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx);
 	void nodeDuplicate(const voxelformat::SceneGraphNode &node);
 public:
-	bool nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx, bool memento);
+	bool nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx);
 	bool nodeMove(int sourceNodeId, int targetNodeId);
 	bool nodeRename(int nodeId, const core::String &name);
 	bool nodeRemove(int nodeId, bool recursive);

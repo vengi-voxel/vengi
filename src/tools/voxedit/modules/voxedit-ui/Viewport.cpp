@@ -365,7 +365,7 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 		_guizmoActivated = false;
 	}
 	if (manipulated) {
-		sceneMgr().nodeUpdateTransform(-1, localMatrix, &deltaMatrix, keyFrameIdx, true);
+		sceneMgr().nodeUpdateTransform(-1, localMatrix, &deltaMatrix, keyFrameIdx);
 	}
 }
 
