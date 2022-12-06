@@ -6,6 +6,10 @@
 
 #include "core/ArrayLength.h"
 #include "core/Optional.h"
+#include "io/BufferedReadWriteStream.h"
+#include "io/MemoryReadStream.h"
+#include "io/ZipReadStream.h"
+#include "io/ZipWriteStream.h"
 #include "voxel/Palette.h"
 #include "voxel/Voxel.h"
 #include "voxel/RawVolume.h"
@@ -78,33 +82,29 @@ MementoData MementoData::fromVolume(const voxel::RawVolume* volume) {
 	if (volume == nullptr) {
 		return MementoData();
 	}
-	const size_t uncompressedBufferSize = volume->region().voxels() * sizeof(voxel::Voxel);
-	const uint32_t compressedBufferSize = core::zip::compressBound(uncompressedBufferSize);
-	uint8_t* compressedBuf = (uint8_t*)core_malloc(compressedBufferSize);
-	size_t finalBufSize = 0u;
+	const int allVoxels = volume->region().voxels();
+	const uint32_t compressedBufferSize = core::zip::compressBound(allVoxels * sizeof(voxel::Voxel));
+	io::BufferedReadWriteStream outStream(compressedBufferSize);
+	io::ZipWriteStream stream(outStream);
 	// TODO: only the region - see issue 200
-	if (!core::zip::compress(volume->data(), uncompressedBufferSize, compressedBuf, compressedBufferSize, &finalBufSize)) {
-		core_free(compressedBuf);
-		return MementoData();
-	}
-	MementoData data(compressedBuf, finalBufSize, volume->region());
-	core_free(compressedBuf);
-
-	Log::debug("Memento state. Volume: %i, compressed: %i",
-			(int)uncompressedBufferSize, (int)data._compressedSize);
-	return data;
+	stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel));
+	stream.flush();
+	return {outStream.getBuffer(), (size_t)outStream.pos(), volume->region()};
 }
 
 voxel::RawVolume* MementoData::toVolume(const MementoData& mementoData) {
 	if (mementoData._buffer == nullptr) {
 		return nullptr;
 	}
-	const size_t uncompressedBufferSize = mementoData._region.voxels() * sizeof(voxel::Voxel);
+	const size_t uncompressedBufferSize = mementoData.region().voxels() * sizeof(voxel::Voxel);
+	io::MemoryReadStream dataStream(mementoData._buffer, mementoData._compressedSize);
+	io::ZipReadStream stream(dataStream, (int)dataStream.size());
 	uint8_t *uncompressedBuf = (uint8_t*)core_malloc(uncompressedBufferSize);
-	if (!core::zip::uncompress(mementoData._buffer, mementoData._compressedSize, uncompressedBuf, uncompressedBufferSize)) {
+	if (stream.read(uncompressedBuf, uncompressedBufferSize) == -1) {
+		core_free(uncompressedBuf);
 		return nullptr;
 	}
-	return voxel::RawVolume::createRaw((voxel::Voxel*)uncompressedBuf, mementoData._region);
+	return voxel::RawVolume::createRaw((voxel::Voxel*)uncompressedBuf, mementoData.region());
 }
 
 MementoHandler::MementoHandler() {
