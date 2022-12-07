@@ -51,6 +51,7 @@ public:
 
 	video::Id handle() const;
 	TexturePtr texture(FrameBufferAttachment attachment = FrameBufferAttachment::Color0) const;
+	image::ImagePtr image(const core::String &name, FrameBufferAttachment attachment = FrameBufferAttachment::Color0) const;
 
 	/**
 	 * @return two uv coordinates lower left and upper right (a and c)

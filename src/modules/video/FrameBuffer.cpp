@@ -9,6 +9,7 @@
 #include "core/Assert.h"
 #include "core/ArrayLength.h"
 #include "Renderer.h"
+#include "image/Image.h"
 
 namespace video {
 
@@ -129,6 +130,22 @@ TexturePtr FrameBuffer::texture(FrameBufferAttachment attachment) const {
 		Log::warn("Could not find framebuffer texture for %i", (int)attachment);
 	}
 	return tex;
+}
+
+image::ImagePtr FrameBuffer::image(const core::String &name, FrameBufferAttachment attachment) const {
+	const video::TexturePtr &fboTexture = texture(attachment);
+	uint8_t *pixels = nullptr;
+	image::ImagePtr image;
+	if (video::readTexture(video::TextureUnit::Upload, fboTexture->type(), fboTexture->format(), fboTexture->handle(),
+						   fboTexture->width(), fboTexture->height(), &pixels)) {
+		image::Image::flipVerticalRGBA(pixels, fboTexture->width(), fboTexture->height());
+		image = image::createEmptyImage(name);
+		image->loadRGBA(pixels, fboTexture->width(), fboTexture->height());
+	} else {
+		Log::error("Failed to read framebuffer");
+	}
+	core_free(pixels);
+	return image;
 }
 
 void FrameBuffer::bind(bool clear) {
