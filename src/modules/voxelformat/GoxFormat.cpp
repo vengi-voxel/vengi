@@ -522,7 +522,9 @@ bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream& stream, const SceneGraph
 }
 
 bool GoxFormat::saveChunk_IMG(const SceneGraph &sceneGraph, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
-	const image::ImagePtr &image = createThumbnail(sceneGraph, glm::ivec2(128), thumbnailCreator);
+	ThumbnailContext ctx;
+	ctx.outputSize = glm::ivec2(128);
+	const image::ImagePtr &image = createThumbnail(sceneGraph, thumbnailCreator, ctx);
 	if (!image) {
 		return true;
 	}

@@ -12,6 +12,7 @@ set(SRCS
 
 	Format.h Format.cpp
 	FormatConfig.h FormatConfig.cpp
+	FormatThumbnail.h
 	AoSVXLFormat.h AoSVXLFormat.cpp
 	BinVoxFormat.h BinVoxFormat.cpp
 	CSMFormat.h CSMFormat.cpp

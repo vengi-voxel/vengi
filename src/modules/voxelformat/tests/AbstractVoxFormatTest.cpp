@@ -13,6 +13,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
+#include "voxelformat/FormatThumbnail.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/VolumeFormat.h"
@@ -26,7 +27,7 @@ namespace voxelformat {
 
 const voxel::Voxel AbstractVoxFormatTest::Empty;
 
-image::ImagePtr AbstractVoxFormatTest::testThumbnailCreator(const SceneGraph &sceneGraph, const glm::ivec2 &outputSize) {
+image::ImagePtr AbstractVoxFormatTest::testThumbnailCreator(const SceneGraph &sceneGraph, const ThumbnailContext &ctx) {
 	return image::ImagePtr();
 }
 

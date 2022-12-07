@@ -295,7 +295,9 @@ bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	wrapBool(stream.writeUInt32(131331))
 	wrapBool(stream.writeUInt32(qbcl::VERSION))
 	bool imageAdded = false;
-	const image::ImagePtr &image = createThumbnail(sceneGraph, glm::ivec2(128), thumbnailCreator);
+	ThumbnailContext ctx;
+	ctx.outputSize = glm::ivec2(128);
+	const image::ImagePtr &image = createThumbnail(sceneGraph, thumbnailCreator, ctx);
 	if (image) {
 		const int size = image->width() * image->height() * image->depth();
 		if (size > 0) {

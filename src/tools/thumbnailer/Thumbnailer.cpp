@@ -70,7 +70,9 @@ app::AppState Thumbnailer::onRunning() {
 	io::FileStream outStream(outfile);
 	io::FileStream stream(_infile);
 
-	const image::ImagePtr &image = voxelrender::volumeThumbnail(_infile->name(), stream, glm::ivec2(outputSize));
+	voxelformat::ThumbnailContext ctx;
+	ctx.outputSize = glm::ivec2(outputSize);
+	const image::ImagePtr &image = voxelrender::volumeThumbnail(_infile->name(), stream, ctx);
 	if (image) {
 		if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
 			Log::error("Failed to write image");

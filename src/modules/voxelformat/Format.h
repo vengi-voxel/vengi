@@ -11,6 +11,7 @@
 #include "io/Stream.h"
 #include "voxel/RawVolume.h"
 #include "image/Image.h"
+#include "voxelformat/FormatThumbnail.h"
 #include <glm/fwd.hpp>
 
 namespace voxel {
@@ -22,14 +23,6 @@ namespace voxelformat {
 
 class SceneGraph;
 class SceneGraphNode;
-
-/**
- * @brief Callback to create a thumbnail for saving the current scene graph.
- * Some formats supports storing embedded screenshots of the voxel model. This callback
- * must return a RGBA image in the given size
- * @note duplicated in VolumeFormat.h
- */
-typedef image::ImagePtr (*ThumbnailCreator)(const SceneGraph&, const glm::ivec2&);
 
 // the max amount of voxels - [0-255]
 static constexpr int MaxRegionSize = 256;
@@ -95,7 +88,7 @@ protected:
 	static core::String stringProperty(const SceneGraphNode* node, const core::String &name, const core::String &defaultVal = "");
 	static bool boolProperty(const SceneGraphNode* node, const core::String &name, bool defaultVal = false);
 	static float floatProperty(const SceneGraphNode* node, const core::String &name, float defaultVal = 0.0f);
-	static image::ImagePtr createThumbnail(const SceneGraph& sceneGraph, const glm::ivec2 &size, ThumbnailCreator thumbnailCreator);
+	static image::ImagePtr createThumbnail(const SceneGraph& sceneGraph, ThumbnailCreator thumbnailCreator, const ThumbnailContext &ctx);
 	/**
 	 * @param[in] sceneGraph The @c SceneGraph instance to save
 	 * @param[in] filename The target file name. Some formats needs this next to the stream to identify or load additional files.

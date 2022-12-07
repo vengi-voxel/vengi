@@ -10,15 +10,13 @@
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "video/Texture.h"
+#include "voxelformat/FormatThumbnail.h"
 
 namespace voxel {
 class Palette;
 }
 
 namespace voxelformat {
-
-// duplicated in Format.h
-typedef image::ImagePtr (*ThumbnailCreator)(const SceneGraph&, const glm::ivec2&);
 
 extern const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[];
 extern const io::FormatDescription* voxelLoad();

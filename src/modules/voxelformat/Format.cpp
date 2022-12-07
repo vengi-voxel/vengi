@@ -57,11 +57,12 @@ float Format::floatProperty(const SceneGraphNode* node, const core::String &name
 	return core::string::toFloat(node->property(name));
 }
 
-image::ImagePtr Format::createThumbnail(const SceneGraph& sceneGraph, const glm::ivec2 &size, ThumbnailCreator thumbnailCreator) {
+image::ImagePtr Format::createThumbnail(const SceneGraph& sceneGraph, ThumbnailCreator thumbnailCreator, const ThumbnailContext &ctx) {
 	if (thumbnailCreator == nullptr) {
 		return image::ImagePtr();
 	}
-	return thumbnailCreator(sceneGraph, size);
+
+	return thumbnailCreator(sceneGraph, ctx);
 }
 
 // TODO: split is destroying groups

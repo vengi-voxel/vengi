@@ -17,7 +17,7 @@
 
 namespace voxelrender {
 
-image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, const glm::ivec2 &outputSize) {
+image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, const voxelformat::ThumbnailContext &ctx) {
 	image::ImagePtr image = voxelformat::loadScreenshot(fileName, stream);
 	if (image && image->isLoaded()) {
 		return image;
@@ -30,14 +30,14 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 		return image::ImagePtr();
 	}
 
-	return volumeThumbnail(sceneGraph, outputSize);
+	return volumeThumbnail(sceneGraph, ctx);
 }
 
-image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const glm::ivec2 &outputSize) {
+image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
 	video::FrameBuffer frameBuffer;
 	voxelrender::SceneGraphRenderer volumeRenderer;
 	volumeRenderer.construct();
-	if (!volumeRenderer.init(outputSize)) {
+	if (!volumeRenderer.init(ctx.outputSize)) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
@@ -53,7 +53,7 @@ image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
 	video::Camera camera;
-	camera.setSize(outputSize);
+	camera.setSize(ctx.outputSize);
 	camera.setRotationType(video::CameraRotationType::Target);
 	camera.setMode(video::CameraMode::Perspective);
 	camera.setAngles(0.0f, 0.0f, 0.0f);
@@ -73,7 +73,7 @@ image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);
 	textureCfg.format(video::TextureFormat::RGBA);
 	video::FrameBufferConfig cfg;
-	cfg.dimension(glm::ivec2(outputSize)).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
+	cfg.dimension(glm::ivec2(ctx.outputSize)).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
 	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
 	frameBuffer.init(cfg);
 
