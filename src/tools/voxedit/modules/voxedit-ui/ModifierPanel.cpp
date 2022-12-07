@@ -3,11 +3,11 @@
  */
 
 #include "ModifierPanel.h"
-#include "IconsFontAwesome6.h"
-#include "ScopedStyle.h"
-#include "ui/imgui/dearimgui/imgui_internal.h"
-#include "ui/imgui/IMGUIEx.h"
-#include "ui/imgui/IconsForkAwesome.h"
+#include "ui/IconsFontAwesome6.h"
+#include "ui/ScopedStyle.h"
+#include "ui/dearimgui/imgui_internal.h"
+#include "ui/IMGUIEx.h"
+#include "ui/IconsForkAwesome.h"
 #include "voxedit-ui/Util.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -30,7 +30,7 @@ bool ModifierPanel::modifierRadioButton(const char *title, ModifierType type, co
 
 bool ModifierPanel::mirrorAxisRadioButton(const char *title, math::Axis type) {
 	voxedit::ModifierFacade &modifier = sceneMgr().modifier();
-	ui::imgui::ScopedStyle style;
+	ui::ScopedStyle style;
 	veui::AxisStyleText(style, type, false);
 	if (ImGui::RadioButton(title, modifier.mirrorAxis() == type)) {
 		modifier.setMirrorAxis(type, sceneMgr().referencePosition());
@@ -43,7 +43,7 @@ void ModifierPanel::addShapes() {
 	Modifier &modifier = sceneMgr().modifier();
 	const bool plane = modifier.planeMode();
 
-	ui::imgui::ScopedStyle style;
+	ui::ScopedStyle style;
 	// shapes are disabled in plane mode
 	if (plane) {
 		style.disableItem();
@@ -69,7 +69,7 @@ void ModifierPanel::addMirrorPlanes() {
 		Modifier &modifier = sceneMgr().modifier();
 		const bool plane = modifier.planeMode();
 
-		ui::imgui::ScopedStyle style;
+		ui::ScopedStyle style;
 		// mirror planes are disabled in plane mode
 		if (plane) {
 			style.disableItem();

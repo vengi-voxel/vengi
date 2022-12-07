@@ -9,7 +9,6 @@
 #include "Notify.h"
 
 namespace ui {
-namespace imgui {
 
 class IMGUIApp;
 
@@ -34,5 +33,4 @@ public:
 	void renderNotifications();
 };
 
-}
 }

@@ -108,24 +108,24 @@ update-backward:
 
 update-imguizmo:
 	$(call UPDATE_GIT,imguizmo,https://github.com/CedricGuillemet/ImGuizmo.git)
-	cp $(UPDATEDIR)/imguizmo.sync/ImGuizmo.* src/modules/ui/imgui/dearimgui
-	dos2unix src/modules/ui/imgui/dearimgui/ImGuizmo*
+	cp $(UPDATEDIR)/imguizmo.sync/ImGuizmo.* src/modules/ui/dearimgui
+	dos2unix src/modules/ui/dearimgui/ImGuizmo*
 
 update-im-neo-sequencer:
 	$(call UPDATE_GIT,im-neo-sequencer,https://gitlab.com/GroGy/im-neo-sequencer.git)
-	cp $(UPDATEDIR)/im-neo-sequencer.sync/imgui*.cpp $(UPDATEDIR)/im-neo-sequencer.sync/imgui*.h src/modules/ui/imgui/dearimgui
-	cp $(UPDATEDIR)/im-neo-sequencer.sync/LICENSE src/modules/ui/imgui/dearimgui/LICENSE-sequencer
-	clang-format -i src/modules/ui/imgui/dearimgui/imgui_neo*
+	cp $(UPDATEDIR)/im-neo-sequencer.sync/imgui*.cpp $(UPDATEDIR)/im-neo-sequencer.sync/imgui*.h src/modules/ui/dearimgui
+	cp $(UPDATEDIR)/im-neo-sequencer.sync/LICENSE src/modules/ui/dearimgui/LICENSE-sequencer
+	clang-format -i src/modules/ui/dearimgui/imgui_neo*
 
 # the backend code is just copied to merge in potiential changes
 update-dearimgui:
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git -b docking)
-	cp $(UPDATEDIR)/imgui.sync/im*.h $(UPDATEDIR)/imgui.sync/im*.cpp $(UPDATEDIR)/imgui.sync/misc/cpp/* src/modules/ui/imgui/dearimgui
-	cp $(UPDATEDIR)/imgui.sync/backends/imgui_impl_sdl.* src/modules/ui/imgui/dearimgui/backends
-	cp $(UPDATEDIR)/imgui.sync/backends/imgui_impl_opengl3.* src/modules/ui/imgui/dearimgui/backends
-	cp $(UPDATEDIR)/imgui.sync/examples/example_sdl_opengl3/main.cpp src/modules/ui/imgui/dearimgui/backends/example_sdl_opengl3.cpp
+	cp $(UPDATEDIR)/imgui.sync/im*.h $(UPDATEDIR)/imgui.sync/im*.cpp $(UPDATEDIR)/imgui.sync/misc/cpp/* src/modules/ui/dearimgui
+	cp $(UPDATEDIR)/imgui.sync/backends/imgui_impl_sdl.* src/modules/ui/dearimgui/backends
+	cp $(UPDATEDIR)/imgui.sync/backends/imgui_impl_opengl3.* src/modules/ui/dearimgui/backends
+	cp $(UPDATEDIR)/imgui.sync/examples/example_sdl_opengl3/main.cpp src/modules/ui/dearimgui/backends/example_sdl_opengl3.cpp
 	cp $(UPDATEDIR)/imgui.sync/misc/fonts/binary_to_compressed_c.cpp tools/binary_to_compressed_c
-	mv src/modules/ui/imgui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
+	mv src/modules/ui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
 
 update-glm:
 	$(call UPDATE_GIT,glm,https://github.com/g-truc/glm.git)
@@ -208,11 +208,11 @@ update-icons:
 	$(call UPDATE_GIT,font-awesome,https://github.com/FortAwesome/Font-Awesome)
 	$(call UPDATE_GIT,iconfontcppheaders,https://github.com/juliettef/IconFontCppHeaders)
 	$(call UPDATE_GIT,fork-awesome,https://github.com/ForkAwesome/Fork-Awesome)
-	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsFontAwesome6.h src/modules/ui/imgui/
-	cp $(UPDATEDIR)/font-awesome.sync/webfonts/fa-solid-900.ttf data/imgui
-	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsForkAwesome.h src/modules/ui/imgui/
-	cp $(UPDATEDIR)/fork-awesome.sync/fonts/forkawesome-webfont.ttf data/imgui
+	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsFontAwesome6.h src/modules/ui/
+	cp $(UPDATEDIR)/font-awesome.sync/webfonts/fa-solid-900.ttf data/ui
+	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsForkAwesome.h src/modules/ui/
+	cp $(UPDATEDIR)/fork-awesome.sync/fonts/forkawesome-webfont.ttf data/ui
 
 update-fonts:
 	curl -o $(UPDATEDIR)/arimo.zip https://fonts.google.com/download?family=Arimo
-	unzip -jo $(UPDATEDIR)/arimo.zip static/Arimo-Regular.ttf -d data/imgui
+	unzip -jo $(UPDATEDIR)/arimo.zip static/Arimo-Regular.ttf -d data/ui

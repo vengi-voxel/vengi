@@ -8,7 +8,6 @@
 #include "dearimgui/imgui_internal.h"
 
 namespace ui {
-namespace imgui {
 
 class ScopedStyle {
 private:
@@ -160,5 +159,4 @@ public:
 	}
 };
 
-} // namespace imgui
 } // namespace ui

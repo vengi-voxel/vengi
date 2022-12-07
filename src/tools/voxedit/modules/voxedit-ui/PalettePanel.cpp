@@ -4,14 +4,14 @@
 
 #include "PalettePanel.h"
 #include "DragAndDropPayload.h"
-#include "IconsFontAwesome6.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "voxedit-util/SceneManager.h"
 #include "core/Color.h"
-#include "ui/imgui/IMGUIApp.h"
-#include "ui/imgui/IMGUIEx.h"
-#include "ui/imgui/IconsForkAwesome.h"
+#include "ui/IconsFontAwesome6.h"
+#include "ui/IMGUIApp.h"
+#include "ui/IMGUIEx.h"
+#include "ui/IconsForkAwesome.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include <glm/gtc/type_ptr.hpp>

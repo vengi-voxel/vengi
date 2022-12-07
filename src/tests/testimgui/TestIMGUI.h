@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "ui/imgui/IMGUIApp.h"
+#include "ui/IMGUIApp.h"
 
 /**
  * @brief Renders the imgui demo
  */
-class TestIMGUI: public ui::imgui::IMGUIApp {
+class TestIMGUI: public ui::IMGUIApp {
 private:
-	using Super = ui::imgui::IMGUIApp;
+	using Super = ui::IMGUIApp;
 	bool _showTestWindow = false;
 	bool _showMetricsWindow = false;
 

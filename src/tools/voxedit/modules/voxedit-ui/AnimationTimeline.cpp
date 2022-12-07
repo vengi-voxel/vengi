@@ -3,13 +3,12 @@
  */
 
 #include "AnimationTimeline.h"
-#include "IMGUIEx.h"
-#include "IconsFontAwesome6.h"
-#include "IconsForkAwesome.h"
 #include "core/ArrayLength.h"
 #include "core/collection/DynamicArray.h"
-#include "ui/imgui/dearimgui/imgui.h"
-#include "ui/imgui/dearimgui/imgui_neo_sequencer.h"
+#include "ui/IMGUIEx.h"
+#include "ui/IconsFontAwesome6.h"
+#include "ui/IconsForkAwesome.h"
+#include "ui/dearimgui/imgui_neo_sequencer.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"

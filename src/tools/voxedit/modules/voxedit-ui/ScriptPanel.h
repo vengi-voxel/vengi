@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "ui/imgui/TextEditor.h"
-#include "ui/imgui/IMGUIApp.h"
+#include "ui/TextEditor.h"
+#include "ui/IMGUIApp.h"
 #include "voxelgenerator/LUAGenerator.h"
 
 namespace voxedit {
@@ -24,7 +24,7 @@ private:
 
 	void reloadScriptParameters(const core::String& script);
 public:
-	void update(const char *title, const char *scriptEditorTitle, ui::imgui::IMGUIApp* app, ImGuiID dockIdMainDown);
+	void update(const char *title, const char *scriptEditorTitle, ui::IMGUIApp* app, ImGuiID dockIdMainDown);
 };
 
 }

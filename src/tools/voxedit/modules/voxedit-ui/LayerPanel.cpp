@@ -3,14 +3,14 @@
  */
 
 #include "LayerPanel.h"
-#include "IconsFontAwesome6.h"
 #include "Util.h"
-#include "voxedit-util/layer/LayerSettings.h"
 #include "core/collection/DynamicArray.h"
 #include "core/Color.h"
+#include "voxedit-util/layer/LayerSettings.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "ui/imgui/IMGUIEx.h"
+#include "ui/IconsFontAwesome6.h"
+#include "ui/IMGUIEx.h"
 #include "voxelformat/SceneGraphNode.h"
 #include <glm/gtc/type_ptr.hpp>
 

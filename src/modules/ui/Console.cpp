@@ -8,7 +8,6 @@
 #include "core/Color.h"
 
 namespace ui {
-namespace imgui {
 
 Console::Console() :
 		Super() {
@@ -72,5 +71,4 @@ void Console::renderNotifications() {
 	ImGui::RenderNotifications(_notifications);
 }
 
-}
 }

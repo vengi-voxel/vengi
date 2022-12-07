@@ -5,10 +5,9 @@
 #include "MenuBar.h"
 #include "core/Color.h"
 #include "core/GameConfig.h"
-#include "imgui.h"
-#include "ui/imgui/IMGUIEx.h"
-#include "ui/imgui/IconsForkAwesome.h"
-#include "ui/imgui/IconsFontAwesome6.h"
+#include "ui/IMGUIEx.h"
+#include "ui/IconsForkAwesome.h"
+#include "ui/IconsFontAwesome6.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "engine-config.h"
@@ -19,7 +18,7 @@ bool MenuBar::actionMenuItem(const char *title, const char *command, command::Co
 	return ImGui::CommandMenuItem(title, command, true, &listener);
 }
 
-bool MenuBar::update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener &listener) {
+bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &listener) {
 	bool resetDockLayout = false;
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);

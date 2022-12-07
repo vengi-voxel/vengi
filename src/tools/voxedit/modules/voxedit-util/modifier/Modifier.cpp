@@ -7,7 +7,7 @@
 #include "core/Color.h"
 #include "core/StringUtil.h"
 #include "command/Command.h"
-#include "ui/imgui/dearimgui/imgui_internal.h"
+#include "ui/dearimgui/imgui_internal.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"

@@ -6,11 +6,12 @@
 #include "DragAndDropPayload.h"
 #include "core/Algorithm.h"
 #include "core/StringUtil.h"
-#include "glm/ext/scalar_constants.hpp"
 #include "voxedit-util/SceneManager.h"
-#include "ui/imgui/IMGUIEx.h"
-#include "ui/imgui/IconsForkAwesome.h"
-#include "ui/imgui/IconsFontAwesome6.h"
+#include "ui/IMGUIEx.h"
+#include "ui/IconsForkAwesome.h"
+#include "ui/IconsFontAwesome6.h"
+
+#include <glm/ext/scalar_constants.hpp>
 
 namespace voxedit {
 
@@ -29,7 +30,7 @@ void ScriptPanel::reloadScriptParameters(const core::String& script) {
 	}
 }
 
-void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::imgui::IMGUIApp* app, ImGuiID dockIdMainDown) {
+void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::IMGUIApp* app, ImGuiID dockIdMainDown) {
 	if (ImGui::Begin(title)) {
 		core_trace_scoped(ScriptPanel);
 		if (_scripts.empty()) {

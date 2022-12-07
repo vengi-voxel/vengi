@@ -9,11 +9,11 @@
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
-#include "ui/imgui/IconsForkAwesome.h"
-#include "ui/imgui/IconsFontAwesome6.h"
-#include "ui/imgui/IMGUIApp.h"
-#include "ui/imgui/FileDialog.h"
-#include "ui/imgui/IMGUIEx.h"
+#include "ui/IconsForkAwesome.h"
+#include "ui/IconsFontAwesome6.h"
+#include "ui/IMGUIApp.h"
+#include "ui/FileDialog.h"
+#include "ui/IMGUIEx.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
@@ -45,7 +45,7 @@
 
 namespace voxedit {
 
-MainWindow::MainWindow(ui::imgui::IMGUIApp *app) : _app(app), _assetPanel(app->filesystem()) {
+MainWindow::MainWindow(ui::IMGUIApp *app) : _app(app), _assetPanel(app->filesystem()) {
 	_scene = new Viewport("free##viewport");
 	_sceneTop = new Viewport("top##viewport");
 	_sceneLeft = new Viewport("left##viewport");
@@ -403,7 +403,7 @@ void MainWindow::update() {
 	ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - statusBarHeight));
 	ImGui::SetNextWindowViewport(viewport->ID);
 	{
-		ui::imgui::ScopedStyle style;
+		ui::ScopedStyle style;
 		style.setWindowRounding(0.0f);
 		style.setWindowBorderSize(0.0f);
 		style.setWindowPadding(ImVec2(0.0f, 0.0f));

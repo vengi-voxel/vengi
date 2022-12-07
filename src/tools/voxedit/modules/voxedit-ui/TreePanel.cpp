@@ -4,7 +4,7 @@
 
 #include "TreePanel.h"
 #include "voxedit-util/SceneManager.h"
-#include "ui/imgui/IMGUIEx.h"
+#include "ui/IMGUIEx.h"
 
 namespace voxedit {
 

@@ -3,12 +3,12 @@
  */
 
 #include "ToolsPanel.h"
-#include "IMGUIApp.h"
+#include "ui/IMGUIApp.h"
 #include "IconsFontAwesome6.h"
 #include "Util.h"
-#include "ui/imgui/IMGUIEx.h"
-#include "ui/imgui/IconsFontAwesome6.h"
-#include "ui/imgui/IconsForkAwesome.h"
+#include "ui/IMGUIEx.h"
+#include "ui/IconsFontAwesome6.h"
+#include "ui/IconsForkAwesome.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {

@@ -4,8 +4,7 @@
 
 #include "MementoPanel.h"
 #include "command/CommandHandler.h"
-#include "imgui.h"
-#include "ui/imgui/IMGUIEx.h"
+#include "ui/IMGUIEx.h"
 #include "voxedit-util/MementoHandler.h"
 #include "voxedit-util/SceneManager.h"
 

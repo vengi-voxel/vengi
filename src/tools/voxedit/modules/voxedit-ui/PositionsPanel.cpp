@@ -3,11 +3,11 @@
  */
 
 #include "PositionsPanel.h"
-#include "IconsFontAwesome6.h"
 #include "Util.h"
 #include "core/Color.h"
-#include "ui/imgui/IMGUIEx.h"
-#include "ui/imgui/dearimgui/ImGuizmo.h"
+#include "ui/IconsFontAwesome6.h"
+#include "ui/IMGUIEx.h"
+#include "ui/dearimgui/ImGuizmo.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/SceneGraph.h"
@@ -30,7 +30,7 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 	id.c_str()[id.size() - 1] = '0';
 	core::string::formatBuf(buf, sizeof(buf), "%i", v.x);
 	{
-		ui::imgui::ScopedStyle style;
+		ui::ScopedStyle style;
 		style.setColor(ImGuiCol_Text, core::Color::Red);
 		ImGui::PushItemWidth(width);
 		if (ImGui::InputText(id.c_str(), buf, sizeof(buf),

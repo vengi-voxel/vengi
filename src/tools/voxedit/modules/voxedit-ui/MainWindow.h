@@ -5,9 +5,9 @@
 #include "core/Common.h"
 #include "core/StringUtil.h"
 #include "math/Axis.h"
-#include "ui/imgui/IMGUIApp.h"
-#include "ui/imgui/IMGUIEx.h"
-#include "ui/imgui/TextEditor.h"
+#include "ui/IMGUIApp.h"
+#include "ui/IMGUIEx.h"
+#include "ui/TextEditor.h"
 #include "voxedit-ui/AnimationPanel.h"
 #include "voxedit-ui/AnimationTimeline.h"
 #include "voxedit-ui/AssetPanel.h"
@@ -66,7 +66,7 @@ private:
 	bool _forceQuit = false;
 	bool _popupUnsavedChangesQuit = false;
 
-	ui::imgui::IMGUIApp* _app;
+	ui::IMGUIApp* _app;
 
 	core::VarPtr _lastOpenedFile;
 	core::VarPtr _lastOpenedFiles;
@@ -110,7 +110,7 @@ private:
 	void registerPopups();
 
 public:
-	MainWindow(ui::imgui::IMGUIApp *app);
+	MainWindow(ui::IMGUIApp *app);
 	virtual ~MainWindow();
 	bool init();
 	void shutdown();

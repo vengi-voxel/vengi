@@ -6,7 +6,7 @@
 
 #include "core/String.h"
 #include "core/collection/RingBuffer.h"
-#include "ui/imgui/IMGUIApp.h"
+#include "ui/IMGUIApp.h"
 #include "command/CommandHandler.h"
 
 namespace voxedit {
@@ -23,7 +23,7 @@ public:
 	/**
 	 * @return true if the dock layout should get reset
 	 */
-	bool update(ui::imgui::IMGUIApp* app, command::CommandExecutionListener &listener);
+	bool update(ui::IMGUIApp* app, command::CommandExecutionListener &listener);
 	bool _popupSceneSettings = false;
 };
 

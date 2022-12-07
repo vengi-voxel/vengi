@@ -38,7 +38,6 @@
 #include <glm/mat4x4.hpp>
 
 namespace ui {
-namespace imgui {
 
 IMGUIApp::IMGUIApp(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider, size_t threadPoolSize)
 	: Super(filesystem, timeProvider, threadPoolSize), _shader(shader::DefaultShader::getInstance()) {
@@ -612,5 +611,4 @@ void IMGUIApp::fileDialog(const video::FileDialogSelectionCallback& callback, co
 	_fileDialog.openDir(formats, filename);
 }
 
-}
 }

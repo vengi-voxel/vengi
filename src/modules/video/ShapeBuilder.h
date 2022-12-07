@@ -8,7 +8,7 @@
 #include "math/AABB.h"
 #include "math/OBB.h"
 #include "math/Plane.h"
-#include "ui/imgui/IconsFontAwesome6.h"
+#include "ui/IconsFontAwesome6.h"
 #include "video/Types.h"
 #include "core/collection/DynamicArray.h"
 #include <glm/mat3x3.hpp>

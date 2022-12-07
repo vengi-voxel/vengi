@@ -14,7 +14,6 @@
 struct SDL_Cursor;
 
 namespace ui {
-namespace imgui {
 
 // https://github.com/aiekick/ImGuiFileDialog
 /**
@@ -115,8 +114,7 @@ inline int IMGUIApp::fontSize() const {
 }
 
 }
-}
 
-inline ui::imgui::IMGUIApp* imguiApp() {
-	return (ui::imgui::IMGUIApp*)video::WindowedApp::getInstance();
+inline ui::IMGUIApp* imguiApp() {
+	return (ui::IMGUIApp*)video::WindowedApp::getInstance();
 }

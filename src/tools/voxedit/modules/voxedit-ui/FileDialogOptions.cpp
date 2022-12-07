@@ -4,8 +4,8 @@
 
 #include "FileDialogOptions.h"
 #include "core/GameConfig.h"
-#include "ui/imgui/IMGUIApp.h"
-#include "ui/imgui/IMGUIEx.h"
+#include "ui/IMGUIApp.h"
+#include "ui/IMGUIEx.h"
 #include "voxelformat/VolumeFormat.h"
 
 void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *desc) {

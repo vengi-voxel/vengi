@@ -422,7 +422,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 				voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
 			}
 			node.setVolume(volume, true);
-			node.setName(infile);
+			node.setName(core::string::extractFilename(infile));
 			sceneGraph.emplace(core::move(node));
 		}
 		if (importAsVolume) {
@@ -430,13 +430,13 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 			const int maxDepth = glm::clamp(core::string::toInt(getArgVal("--image-as-volume-max-depth")), 1, 255);
 			const bool bothSides = core::string::toBool(getArgVal("--image-as-volume-both-sides"));
 			node.setVolume(voxelutil::importAsVolume(image, maxDepth, bothSides), true);
-			node.setName(infile);
+			node.setName(core::string::extractFilename(infile));
 			sceneGraph.emplace(core::move(node));
 		}
 		if (importAsPlane) {
 			voxelformat::SceneGraphNode node;
 			node.setVolume(voxelutil::importAsPlane(image), true);
-			node.setName(infile);
+			node.setName(core::string::extractFilename(infile));
 			sceneGraph.emplace(core::move(node));
 		}
 	} else {

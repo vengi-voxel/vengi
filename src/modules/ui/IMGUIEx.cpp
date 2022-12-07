@@ -242,7 +242,7 @@ void TextCentered(const char *text) {
 }
 
 void Headline(const char *text) {
-	ui::imgui::ScopedStyle font;
+	ui::ScopedStyle font;
 	font.setFont(imguiApp()->bigFont());
 	ImGui::Text("%s", text);
 }
@@ -354,18 +354,16 @@ const char *CommandButton(const char *title, const char *command, const char *to
 }
 
 bool URLButton(const char *title, const char *url) {
-	video::WindowedApp* app = video::WindowedApp::getInstance();
 	const core::String& cmd = core::String::format("url %s", url);
 	if (CommandButton(title, cmd.c_str())) {
-		app->minimize();
+		imguiApp()->minimize();
 		return true;
 	}
 	return false;
 }
 
 const char *CommandMenuItem(const char *title, const char *command, bool enabled, command::CommandExecutionListener* listener) {
-	video::WindowedApp* app = video::WindowedApp::getInstance();
-	const core::String& keybinding = app->getKeyBindingsString(command);
+	const core::String& keybinding = imguiApp()->getKeyBindingsString(command);
 	if (ImGui::MenuItem(title, keybinding.c_str(), false, enabled)) {
 		if (command::executeCommands(command, listener) > 0) {
 			return command;
@@ -376,16 +374,14 @@ const char *CommandMenuItem(const char *title, const char *command, bool enabled
 }
 
 void URLItem(const char *title, const char *url) {
-	video::WindowedApp* app = video::WindowedApp::getInstance();
 	const core::String& cmd = core::String::format("url %s", url);
 	if (CommandButton(title, cmd.c_str())) {
-		app->minimize();
+		imguiApp()->minimize();
 	}
 }
 
 bool Fullscreen(const char *title, ImGuiWindowFlags additionalFlags) {
-	ui::imgui::IMGUIApp* app = (ui::imgui::IMGUIApp*)video::WindowedApp::getInstance();
-	SetNextWindowSize(app->frameBufferDimension());
+	SetNextWindowSize(imguiApp()->frameBufferDimension());
 	SetNextWindowPos(ImVec2(0.0f, 0.0f));
 	return Begin(title, nullptr,
 				 additionalFlags | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDecoration |
@@ -410,9 +406,8 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 	const ImGuiID id = window->GetID(label);
 
 	{
-		ui::imgui::ScopedStyle style;
-		ui::imgui::IMGUIApp *app = imguiApp();
-		style.setFont(app->bigFont());
+		ui::ScopedStyle style;
+		style.setFont(imguiApp()->bigFont());
 		ImGui::TextCentered(label);
 	}
 

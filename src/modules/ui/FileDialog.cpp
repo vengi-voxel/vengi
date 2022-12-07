@@ -19,10 +19,9 @@
 #include "dearimgui/imgui_internal.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
-#include "ui/imgui/IMGUIApp.h"
+#include "ui/IMGUIApp.h"
 
 namespace ui {
-namespace imgui {
 
 static const char *FILE_ALREADY_EXISTS_POPUP = "File already exists##FileOverwritePopup";
 static const char *DELETE_FOLDER_POPUP = "Delete Folder##DeleteFolderPopup";
@@ -673,5 +672,4 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 	return false;
 }
 
-}
 }

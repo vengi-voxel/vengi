@@ -11,7 +11,7 @@
 namespace voxedit {
 namespace veui {
 
-void AxisStyleButton(ui::imgui::ScopedStyle &style, math::Axis axis) {
+void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
 	const float bright = 0.85f;
 	switch (axis) {
 	case math::Axis::X:
@@ -37,7 +37,7 @@ void AxisStyleButton(ui::imgui::ScopedStyle &style, math::Axis axis) {
 	}
 }
 
-void AxisStyleText(ui::imgui::ScopedStyle &style, math::Axis axis, bool dark) {
+void AxisStyleText(ui::ScopedStyle &style, math::Axis axis, bool dark) {
 	switch (axis) {
 	case math::Axis::X:
 		style.setColor(ImGuiCol_Text, dark ? core::Color::DarkRed : core::Color::Red);
@@ -55,7 +55,7 @@ void AxisStyleText(ui::imgui::ScopedStyle &style, math::Axis axis, bool dark) {
 
 const char *AxisButton(math::Axis axis, const char *name, const char *command, const char *icon, const char *tooltip, float width,
 					   command::CommandExecutionListener *listener) {
-	ui::imgui::ScopedStyle style;
+	ui::ScopedStyle style;
 	AxisStyleButton(style, axis);
 	char buf[16];
 	if (icon != nullptr) {
@@ -67,14 +67,14 @@ const char *AxisButton(math::Axis axis, const char *name, const char *command, c
 }
 
 bool InputAxisInt(math::Axis axis, const char *name, int* value, int step) {
-	ui::imgui::ScopedStyle style;
+	ui::ScopedStyle style;
 	//AxisStyleText(style, axis);
 	ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
 	return ImGui::InputInt(name, value, step);
 }
 
 bool CheckboxAxisFlags(math::Axis axis, const char *name, math::Axis* value) {
-	ui::imgui::ScopedStyle style;
+	ui::ScopedStyle style;
 	AxisStyleText(style, axis, false);
 	int intvalue = (int)core::enumVal(*value);
 	if (ImGui::CheckboxFlags(name, &intvalue, (int)axis)) {

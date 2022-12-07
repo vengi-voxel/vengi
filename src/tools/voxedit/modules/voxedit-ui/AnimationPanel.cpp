@@ -5,7 +5,7 @@
 #include "AnimationPanel.h"
 #include "core/Trace.h"
 #include "voxedit-util/SceneManager.h"
-#include "ui/imgui/IMGUIEx.h"
+#include "ui/IMGUIEx.h"
 
 namespace voxedit {
 

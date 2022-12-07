@@ -11,10 +11,10 @@
 #include "image/Image.h"
 #include "io/Filesystem.h"
 #include "math/Ray.h"
-#include "ui/imgui/IMGUIApp.h"
-#include "ui/imgui/IMGUIEx.h"
-#include "ui/imgui/ScopedStyle.h"
-#include "ui/imgui/dearimgui/ImGuizmo.h"
+#include "ui/IMGUIApp.h"
+#include "ui/IMGUIEx.h"
+#include "ui/ScopedStyle.h"
+#include "ui/dearimgui/ImGuizmo.h"
 #include "video/Camera.h"
 #include "video/ShapeBuilder.h"
 #include "video/WindowedApp.h"
@@ -132,14 +132,14 @@ void Viewport::update() {
 	_camera.setFarPlane(_viewDistance->floatVal());
 
 	_hovered = false;
-	ui::imgui::ScopedStyle style;
+	ui::ScopedStyle style;
 	style.setWindowRounding(0.0f);
 	style.setWindowBorderSize(0.0f);
 	style.setWindowPadding(ImVec2(0.0f, 0.0f));
 	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 	if (ImGui::Begin(_id.c_str(), nullptr, sceneWindowFlags)) {
 		core_trace_scoped(Viewport);
-		ui::imgui::IMGUIApp *app = imguiApp();
+		ui::IMGUIApp *app = imguiApp();
 		{
 			ImVec2 contentSize = ImGui::GetWindowContentRegionMax();
 			const float headerSize = ImGui::GetCursorPosY();
@@ -282,7 +282,7 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	if (_texture && _texture->width() == frameBufferSize.x && _texture->height() == frameBufferSize.y) {
 		return true;
 	}
-	const ui::imgui::IMGUIApp *app = imguiApp();
+	const ui::IMGUIApp *app = imguiApp();
 	const glm::vec2 windowSize(app->windowDimension());
 	const glm::vec2 windowFrameBufferSize(app->frameBufferDimension());
 	const glm::vec2 scale = windowFrameBufferSize / windowSize;

@@ -16,7 +16,6 @@ struct FormatDescription;
 }
 
 namespace ui {
-namespace imgui {
 
 enum class FileDialogSortOrder { Up, Down, None };
 
@@ -72,5 +71,4 @@ public:
 	bool showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize, video::OpenFileMode type);
 };
 
-}
 }

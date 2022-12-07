@@ -9,7 +9,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "core/ArrayLength.h"
 
-#include "ui/imgui/IMGUIApp.h"
+#include "ui/IMGUIApp.h"
 
 namespace voxedit {
 class MainWindow;
@@ -20,9 +20,9 @@ class MainWindow;
  *
  * @ingroup Tools
  */
-class VoxEdit: public ui::imgui::IMGUIApp {
+class VoxEdit: public ui::IMGUIApp {
 private:
-	using Super = ui::imgui::IMGUIApp;
+	using Super = ui::IMGUIApp;
 	voxedit::MainWindow* _mainWindow = nullptr;
 	core::DynamicArray<io::FormatDescription> _paletteFormats;
 

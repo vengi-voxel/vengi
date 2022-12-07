@@ -4,9 +4,9 @@
 
 #include "SceneGraphPanel.h"
 #include "DragAndDropPayload.h"
-#include "IconsFontAwesome6.h"
-#include "ScopedStyle.h"
-#include "ui/imgui/IMGUIEx.h"
+#include "ui/IconsFontAwesome6.h"
+#include "ui/ScopedStyle.h"
+#include "ui/IMGUIEx.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -31,7 +31,7 @@ static core::String toString(const voxelformat::SceneGraphTransform &transform) 
 }
 
 static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
-	ui::imgui::ScopedStyleCompact scopedStyle;
+	ui::ScopedStyleCompact scopedStyle;
 	core::String name;
 	switch (node.type()) {
 	case voxelformat::SceneGraphNodeType::Model:

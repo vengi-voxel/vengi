@@ -4,15 +4,15 @@
 
 #pragma once
 
-#include "ui/imgui/IMGUIApp.h"
+#include "ui/IMGUIApp.h"
 #include "video/Camera.h"
 #include "render/Axis.h"
 #include "render/Plane.h"
 #include "Movement.h"
 
-class TestApp: public ui::imgui::IMGUIApp {
+class TestApp: public ui::IMGUIApp {
 private:
-	using Super = ui::imgui::IMGUIApp;
+	using Super = ui::IMGUIApp;
 	video::Camera _testAppCamera;
 protected:
 	bool _cameraMotion = false;
