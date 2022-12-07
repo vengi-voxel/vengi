@@ -6,6 +6,7 @@
 
 #include "image/Image.h"
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
 namespace voxelformat {
@@ -16,6 +17,7 @@ struct ThumbnailContext {
 	float pitch = 0.0f;
 	float yaw = 0.0f;
 	float roll = 0.0f;
+	glm::vec3 omega{0.0f, 0.0f, 0.0f};
 	double deltaFrameSeconds = 0.001;
 };
 

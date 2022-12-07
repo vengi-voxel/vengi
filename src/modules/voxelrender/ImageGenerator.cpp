@@ -67,6 +67,7 @@ image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const
 	camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 	camera.lookAt(center);
 	camera.setFarPlane(5000.0f);
+	camera.setOmega(ctx.omega);
 	camera.update(ctx.deltaFrameSeconds);
 
 	video::TextureConfig textureCfg;

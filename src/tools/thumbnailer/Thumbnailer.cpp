@@ -5,6 +5,8 @@
 #include "Thumbnailer.h"
 #include "core/Color.h"
 #include "command/Command.h"
+#include "core/StringUtil.h"
+#include "glm/gtc/constants.hpp"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
@@ -26,6 +28,7 @@ app::AppState Thumbnailer::onConstruct() {
 	app::AppState state = Super::onConstruct();
 
 	registerArg("--size").setShort("-s").setDescription("Size of the thumbnail in pixels").setDefaultValue("128").setMandatory();
+	registerArg("--turntable").setShort("-t").setDescription("Render in different angles");
 
 	return state;
 }
@@ -66,21 +69,39 @@ app::AppState Thumbnailer::onRunning() {
 	}
 
 	const int outputSize = core::string::toInt(getArgVal("--size"));
-	const io::FilePtr& outfile = filesystem()->open(_outfile, io::FileMode::SysWrite);
-	io::FileStream outStream(outfile);
-	io::FileStream stream(_infile);
 
 	voxelformat::ThumbnailContext ctx;
 	ctx.outputSize = glm::ivec2(outputSize);
-	const image::ImagePtr &image = voxelrender::volumeThumbnail(_infile->name(), stream, ctx);
-	if (image) {
-		if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
-			Log::error("Failed to write image");
-		} else {
-			Log::info("Write image %s", _outfile.c_str());
+	int loops = 1;
+	const bool renderTurntable = hasArg("--turntable");
+	if (renderTurntable) {
+		loops = 16;
+	}
+	const core::String ext = core::string::extractExtension(_outfile);
+	const core::String baseFilePath = core::string::stripExtension(_outfile);
+
+	for (int i = 0; i < loops; ++i) {
+		core::String filepath = _outfile;
+		if (renderTurntable) {
+			filepath = core::string::format("%s_%i.%s", baseFilePath.c_str(), i, ext.c_str());
 		}
-	} else {
-		Log::error("Failed to create thumbnail for %s", _infile->name().c_str());
+		const io::FilePtr& outfile = filesystem()->open(filepath, io::FileMode::SysWrite);
+		io::FileStream outStream(outfile);
+		io::FileStream stream(_infile);
+		const image::ImagePtr &image = voxelrender::volumeThumbnail(_infile->name(), stream, ctx);
+		if (image) {
+			if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
+				Log::error("Failed to write image");
+				break;
+			} else {
+				Log::info("Write image %s", _outfile.c_str());
+			}
+		} else {
+			Log::error("Failed to create thumbnail for %s", _infile->name().c_str());
+			break;
+		}
+		ctx.omega = glm::vec3(0.0f, glm::two_pi<float>() / (float)loops, 0.0f);
+		ctx.deltaFrameSeconds += 1000.0 / (double)loops;
 	}
 
 	requestQuit();
