@@ -4,7 +4,7 @@
 
 #include "ToolsPanel.h"
 #include "ui/IMGUIApp.h"
-#include "IconsFontAwesome6.h"
+#include "ui/IconsFontAwesome6.h"
 #include "Util.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsFontAwesome6.h"
