@@ -52,21 +52,21 @@ image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const
 	video::enable(video::State::Blend);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
+	const voxel::Region &region = sceneGraph.region();
+	const glm::vec3 center(region.getCenter());
+	const glm::vec3 dim(region.getDimensionsInVoxels());
+	const int height = region.getHeightInCells();
+	const float distance = ctx.distance <= 0.01f ? glm::length(dim) : ctx.distance;
 	video::Camera camera;
 	camera.setSize(ctx.outputSize);
-	camera.setRotationType(video::CameraRotationType::Target);
 	camera.setMode(video::CameraMode::Perspective);
+	camera.setType(video::CameraType::Free);
+	camera.setRotationType(video::CameraRotationType::Target);
 	camera.setAngles(ctx.pitch, ctx.yaw, ctx.roll);
-	const voxel::Region &region = sceneGraph.region();
-	const glm::ivec3 &center = region.getCenter();
-	camera.setTarget(center);
-	const glm::vec3 dim(region.getDimensionsInVoxels());
-	const float distance = glm::length(dim);
-	camera.setTargetDistance(distance * 2.0f);
-	const int height = region.getHeightInCells();
-	camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
-	camera.lookAt(center);
 	camera.setFarPlane(5000.0f);
+	camera.setTarget(center);
+	camera.setTargetDistance(distance * 2.0f);
+	camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 	camera.setOmega(ctx.omega);
 	camera.update(ctx.deltaFrameSeconds);
 
@@ -95,7 +95,7 @@ image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const
 	} else {
 		Log::error("Failed to read framebuffer");
 	}
-	SDL_free(pixels);
+	core_free(pixels);
 
 	volumeRenderer.shutdown();
 	frameBuffer.shutdown();

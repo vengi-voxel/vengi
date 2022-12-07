@@ -17,6 +17,7 @@ struct ThumbnailContext {
 	float pitch = 0.0f;
 	float yaw = 0.0f;
 	float roll = 0.0f;
+	float distance = -1.0f;
 	glm::vec3 omega{0.0f, 0.0f, 0.0f};
 	double deltaFrameSeconds = 0.001;
 };

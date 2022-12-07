@@ -80,6 +80,7 @@ app::AppState Thumbnailer::onRunning() {
 	const core::String ext = core::string::extractExtension(_outfile);
 	const core::String baseFilePath = core::string::stripExtension(_outfile);
 
+	// TODO: move this into the thumbnailer code to prevent the reloading and remeshing for each step
 	for (int i = 0; i < loops; ++i) {
 		core::String filepath = _outfile;
 		if (renderTurntable) {
