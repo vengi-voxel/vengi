@@ -44,7 +44,7 @@ image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const
 
 	volumeRenderer.setSceneMode(true);
 
-	video::clearColor(::core::Color::Black);
+	video::clearColor(ctx.clearColor);
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);
@@ -56,7 +56,7 @@ image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const
 	camera.setSize(ctx.outputSize);
 	camera.setRotationType(video::CameraRotationType::Target);
 	camera.setMode(video::CameraMode::Perspective);
-	camera.setAngles(0.0f, 0.0f, 0.0f);
+	camera.setAngles(ctx.pitch, ctx.yaw, ctx.roll);
 	const voxel::Region &region = sceneGraph.region();
 	const glm::ivec3 &center = region.getCenter();
 	camera.setTarget(center);
@@ -67,7 +67,7 @@ image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const
 	camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 	camera.lookAt(center);
 	camera.setFarPlane(5000.0f);
-	camera.update(0.001);
+	camera.update(ctx.deltaFrameSeconds);
 
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);

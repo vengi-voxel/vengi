@@ -6,11 +6,17 @@
 
 #include "image/Image.h"
 #include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 
 namespace voxelformat {
 
 struct ThumbnailContext {
-	glm::ivec2 outputSize;
+	glm::ivec2 outputSize{128, 128};
+	glm::vec4 clearColor{0.0f, 0.0f, 0.0f, 1.0f};
+	float pitch = 0.0f;
+	float yaw = 0.0f;
+	float roll = 0.0f;
+	double deltaFrameSeconds = 0.001;
 };
 
 class SceneGraph;
