@@ -72,37 +72,23 @@ app::AppState Thumbnailer::onRunning() {
 
 	voxelformat::ThumbnailContext ctx;
 	ctx.outputSize = glm::ivec2(outputSize);
-	int loops = 1;
 	const bool renderTurntable = hasArg("--turntable");
 	if (renderTurntable) {
-		loops = 16;
-	}
-	const core::String ext = core::string::extractExtension(_outfile);
-	const core::String baseFilePath = core::string::stripExtension(_outfile);
-
-	// TODO: move this into the thumbnailer code to prevent the reloading and remeshing for each step
-	for (int i = 0; i < loops; ++i) {
-		core::String filepath = _outfile;
-		if (renderTurntable) {
-			filepath = core::string::format("%s_%i.%s", baseFilePath.c_str(), i, ext.c_str());
-		}
-		const io::FilePtr& outfile = filesystem()->open(filepath, io::FileMode::SysWrite);
+		voxelrender::volumeTurntable(_infile->name(), _outfile, ctx, 16);
+	} else {
+		const io::FilePtr& outfile = io::filesystem()->open(_outfile, io::FileMode::SysWrite);
 		io::FileStream outStream(outfile);
 		io::FileStream stream(_infile);
 		const image::ImagePtr &image = voxelrender::volumeThumbnail(_infile->name(), stream, ctx);
 		if (image) {
 			if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
-				Log::error("Failed to write image");
-				break;
+				Log::error("Failed to write image %s", _outfile.c_str());
 			} else {
 				Log::info("Write image %s", _outfile.c_str());
 			}
 		} else {
 			Log::error("Failed to create thumbnail for %s", _infile->name().c_str());
-			break;
 		}
-		ctx.omega = glm::vec3(0.0f, glm::two_pi<float>() / (float)loops, 0.0f);
-		ctx.deltaFrameSeconds += 1000.0 / (double)loops;
 	}
 
 	requestQuit();
