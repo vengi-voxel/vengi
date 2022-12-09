@@ -317,6 +317,9 @@ inline float Camera::farPlane() const {
 }
 
 inline float Camera::aspect() const {
+	if (_mode == CameraMode::Orthogonal) {
+		return (float)_windowSize.x / (float)_windowSize.y;
+	}
 	return (float)_windowSize.y / (float)_windowSize.x;
 }
 
