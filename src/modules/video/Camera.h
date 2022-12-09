@@ -70,7 +70,7 @@ protected:
 	CameraRotationType _rotationType = CameraRotationType::Eye;
 
 	glm::ivec2 _windowSize {0};
-	float _zoom = 10.0f;
+	float _orthoZoom = 1.0f;
 	glm::vec3 _panOffset {0.0f};
 	// the position of the camera in the world
 	glm::vec3 _worldPos {0.0f};
@@ -93,8 +93,6 @@ protected:
 
 	glm::vec3 _target {0.0f};
 	float _distance = 100.0f;
-	float _targetZoom = 0.0f;
-	bool _lerpZoom = false;
 
 	void updateFrustumPlanes();
 	void updateFrustumVertices();
@@ -102,8 +100,6 @@ protected:
 	void updateOrientation();
 	void updateProjectionMatrix();
 	void updateTarget();
-
-	void updateZoom(double deltaFrameSeconds);
 
 	math::Frustum _frustum;
 public:

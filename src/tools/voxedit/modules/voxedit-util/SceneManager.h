@@ -94,7 +94,6 @@ private:
 	core::VarPtr _autoSaveSecondsDelay;
 	core::VarPtr _ambientColor;
 	core::VarPtr _diffuseColor;
-	core::VarPtr _cameraZoomSpeed;
 	core::VarPtr _grayInactive;
 	core::VarPtr _hideInactive;
 	core::VarPtr _showAabbVar;

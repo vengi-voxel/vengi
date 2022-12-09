@@ -68,7 +68,7 @@ void Camera::rotate(float radians, const glm::vec3& axis) {
 void Camera::pan(int x, int y) {
 	float zoomFactor = 1.0f;
 	if (mode() == CameraMode::Orthogonal) {
-		zoomFactor = _zoom;
+		zoomFactor = _orthoZoom;
 	}
 	if (_rotationType == CameraRotationType::Target) {
 		const float dist = glm::distance(target(), eye());
@@ -291,42 +291,32 @@ void Camera::updateTarget() {
 	_dirty |= DIRTY_POSITION;
 }
 
-void Camera::updateZoom(double deltaFrameSeconds) {
-	if (!_lerpZoom) {
-		return;
-	}
-	float maxZoom = core::Var::getSafe(cfg::ClientCameraMaxZoom)->floatVal();
-	float minZoom = core::Var::getSafe(cfg::ClientCameraMinZoom)->floatVal();
-	if (minZoom >= maxZoom) {
-		maxZoom = 1000.0f;
-		minZoom = 1.0f;
-		core::Var::getSafe(cfg::ClientCameraMaxZoom)->setVal(maxZoom);
-		core::Var::getSafe(cfg::ClientCameraMinZoom)->setVal(minZoom);
-	}
+void Camera::zoom(float value) {
+	float *target;
 	if (_mode == CameraMode::Orthogonal) {
-		if (glm::abs(_zoom - _targetZoom) <= 0.001f) {
-			_lerpZoom = false;
-			return;
-		}
-		const float lerpedZoom = glm::lerp(_zoom, _targetZoom, (float)deltaFrameSeconds);
-		_zoom = glm::clamp(lerpedZoom, minZoom, maxZoom);
+		target = &_orthoZoom;
 		_dirty |= DIRTY_PERSPECTIVE;
-		return;
+	} else {
+		target = &_distance;
+		_dirty |= DIRTY_TARGET;
 	}
-	const float oldTargetDist = targetDistance();
-	if (glm::abs(_targetZoom - oldTargetDist) < 0.001f) {
-		_lerpZoom = false;
-		return;
+
+	const float speed = core::Var::getSafe(cfg::ClientCameraZoomSpeed)->floatVal();
+	const float quant = 1.0f + speed;
+	if (value > 0.1f) {
+		*target *= quant;
+	} else  if (value < -0.1f) {
+		*target /= quant;
 	}
-	const float lerpedZoom = glm::lerp(oldTargetDist, _targetZoom, (float)deltaFrameSeconds * 10.0f);
-	const float targetDist = glm::clamp(lerpedZoom, minZoom, maxZoom);
-	setTargetDistance(targetDist);
+
+	const float maxZoom = core::Var::getSafe(cfg::ClientCameraMaxZoom)->floatVal();
+	const float minZoom = core::Var::getSafe(cfg::ClientCameraMinZoom)->floatVal();
+	*target = glm::clamp(*target, minZoom, maxZoom);
 }
 
 void Camera::update(double deltaFrameSeconds) {
 	if (deltaFrameSeconds > 0.0) {
 		rotate(_omega * (float)deltaFrameSeconds);
-		updateZoom(deltaFrameSeconds);
 	}
 	updateTarget();
 	updateOrientation();
@@ -483,16 +473,8 @@ glm::vec4 Camera::sphereBoundingBox() const {
 	return glm::vec4(sphereCenter, sphereRadius);
 }
 
-void Camera::zoom(float value) {
-	if (_mode == CameraMode::Orthogonal) {
-		_targetZoom = _zoom + value;
-	} else {
-		_targetZoom = targetDistance() + value;
-	}
-	_lerpZoom = true;
-}
-
 glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
+	const float zoom = _orthoZoom / 25.0f;
 	if (_type == CameraType::UI) {
 		const float left = 0.0f;
 		const float top = 0.0f;
@@ -500,7 +482,7 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 		const float bottom = (float)_windowSize.y;
 		core_assert_msg(right > left, "Invalid dimension given: right must be greater than left but is %f", right);
 		core_assert_msg(top < bottom, "Invalid dimension given: top must be smaller than bottom but is %f", top);
-		return glm::ortho(left * _zoom, right * _zoom, bottom * _zoom, top * _zoom, nplane, fplane);
+		return glm::ortho(left * zoom, right * zoom, bottom * zoom, top * zoom, nplane, fplane);
 	}
 	const float halfWidth = (float)_windowSize.x / 2.0f;
 	const float halfHeight = (float)_windowSize.y / 2.0f;
@@ -508,7 +490,7 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 	const float right = halfWidth;
 	const float bottom = -halfHeight;
 	const float top = halfHeight;
-	return glm::orthoRH_NO(left * _zoom, right * _zoom, bottom * _zoom, top * _zoom, nplane, fplane);
+	return glm::orthoRH_NO(left * zoom, right * zoom, bottom * zoom, top * zoom, nplane, fplane);
 }
 
 glm::mat4 Camera::perspectiveMatrix(float nplane, float fplane) const {

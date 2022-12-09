@@ -1845,7 +1845,6 @@ bool SceneManager::init() {
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
 	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "1.0 1.0 1.0");
 	_diffuseColor = core::Var::get(cfg::VoxEditDiffuseColor, "1.0 1.0 1.0");
-	_cameraZoomSpeed = core::Var::get(cfg::VoxEditCameraZoomSpeed, "10.0");
 	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
 	_lastAutoSave = timeProvider->tickSeconds();
 
@@ -1898,9 +1897,7 @@ void SceneManager::animate(double nowSeconds) {
 }
 
 void SceneManager::zoom(video::Camera& camera, float level) const {
-	const float cameraSpeed = _cameraZoomSpeed->floatVal();
-	const float value = cameraSpeed * level;
-	camera.zoom(value);
+	camera.zoom(level);
 }
 
 bool SceneManager::isLoading() const {
