@@ -43,7 +43,6 @@ private:
 
 	video::FrameBuffer _frameBuffer;
 	video::TexturePtr _texture;
-	core::VarPtr _modelSpaceVar;
 	core::VarPtr _showAxisVar;
 	core::VarPtr _guizmoRotation;
 	core::VarPtr _guizmoAllowAxisFlip;

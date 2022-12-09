@@ -40,7 +40,6 @@ private:
 	};
 
 	core::VarPtr _showGridVar;
-	core::VarPtr _modelSpaceVar;
 	core::VarPtr _showLockedAxisVar;
 	core::VarPtr _showAabbVar;
 	core::VarPtr _renderShadowVar;

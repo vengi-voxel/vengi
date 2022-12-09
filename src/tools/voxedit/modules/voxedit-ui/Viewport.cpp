@@ -38,7 +38,6 @@ Viewport::~Viewport() {
 
 bool Viewport::init(Viewport::RenderMode renderMode) {
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
-	_modelSpaceVar = core::Var::getSafe(cfg::VoxEditModelSpace);
 	_showAxisVar = core::Var::getSafe(cfg::VoxEditShowaxis);
 	_guizmoRotation = core::Var::getSafe(cfg::VoxEditGuizmoRotation);
 	_guizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGuizmoAllowAxisFlip);

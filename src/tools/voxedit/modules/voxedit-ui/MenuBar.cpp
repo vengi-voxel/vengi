@@ -71,7 +71,6 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 			if (ImGui::BeginMenu(ICON_FA_GEAR " Options")) {
 				ImGui::CheckboxVar(ICON_FA_BORDER_ALL " Grid", cfg::VoxEditShowgrid);
 				ImGui::CheckboxVar("Show axis", cfg::VoxEditShowaxis);
-				ImGui::CheckboxVar("Model space", cfg::VoxEditModelSpace);
 				ImGui::CheckboxVar("Show locked axis", cfg::VoxEditShowlockedaxis);
 				ImGui::CheckboxVar(ICON_FA_DICE_SIX " Bounding box", cfg::VoxEditShowaabb);
 				ImGui::CheckboxVar("Shadow", cfg::VoxEditRendershadow);

@@ -105,7 +105,6 @@ bool MainWindow::init() {
 	_sceneFront->setMode(voxedit::Viewport::SceneCameraMode::Front);
 
 	_showGridVar = core::Var::getSafe(cfg::VoxEditShowgrid);
-	_modelSpaceVar = core::Var::getSafe(cfg::VoxEditModelSpace);
 	_showLockedAxisVar = core::Var::getSafe(cfg::VoxEditShowlockedaxis);
 	_showAabbVar = core::Var::getSafe(cfg::VoxEditShowaabb);
 	_renderShadowVar = core::Var::getSafe(cfg::VoxEditRendershadow);

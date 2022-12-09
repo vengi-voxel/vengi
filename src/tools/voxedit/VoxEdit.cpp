@@ -74,7 +74,6 @@ app::AppState VoxEdit::onConstruct() {
 	_framesPerSecondsCap->setVal(60.0f);
 
 	core::Var::get(cfg::VoxEditShowgrid, "1", "Show the grid", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditModelSpace, "1", "Model space", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowlockedaxis, "1", "Show the currently locked axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowaabb, "0", "Show the axis aligned bounding box", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditRendershadow, "1", "Render with shadows", core::Var::boolValidator);
@@ -87,7 +86,6 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditLastFiles, "");
 	core::Var::get(cfg::VoxEditGrayInactive, "false", "Render the inactive layers in gray scale mode");
 	core::Var::get(cfg::VoxEditHideInactive, "false", "Hide the inactive layers");
-	core::Var::get(cfg::VoxEditModelSpace, "1");
 	core::Var::get(cfg::VoxEditViewdistance, "5000");
 	core::Var::get(cfg::VoxEditShowaxis, "1", "Show the axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGuizmoRotation, "0", "Activate rotations for the guizmo in scene mode", core::Var::boolValidator);
