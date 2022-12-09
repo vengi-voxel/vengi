@@ -502,11 +502,13 @@ glm::mat4 Camera::orthogonalMatrix(float nplane, float fplane) const {
 		core_assert_msg(top < bottom, "Invalid dimension given: top must be smaller than bottom but is %f", top);
 		return glm::ortho(left * _zoom, right * _zoom, bottom * _zoom, top * _zoom, nplane, fplane);
 	}
-	const float left = -ORTHO_BOXSIZE * _zoom;
-	const float right = ORTHO_BOXSIZE * _zoom;
-	const float bottom = -ORTHO_BOXSIZE * _zoom * aspect();
-	const float top = ORTHO_BOXSIZE * _zoom * aspect();
-	return glm::orthoRH_NO(left, right, bottom, top, nplane, fplane);
+	const float halfWidth = (float)_windowSize.x / 2.0f;
+	const float halfHeight = (float)_windowSize.y / 2.0f;
+	const float left = -halfWidth;
+	const float right = halfWidth;
+	const float bottom = -halfHeight;
+	const float top = halfHeight;
+	return glm::orthoRH_NO(left * _zoom, right * _zoom, bottom * _zoom, top * _zoom, nplane, fplane);
 }
 
 glm::mat4 Camera::perspectiveMatrix(float nplane, float fplane) const {
