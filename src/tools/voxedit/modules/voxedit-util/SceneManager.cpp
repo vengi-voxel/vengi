@@ -2085,6 +2085,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	if (!region.containsPoint(pos)) {
 		pos = region.moveInto(pos.x, pos.y, pos.z);
 	}
+	// TODO: multiple different viewport....
 	_modifier.setCursorPosition(pos, _result.hitFace);
 	if (oldCursorPos == pos) {
 		return;
