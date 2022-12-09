@@ -234,25 +234,12 @@ public:
 	void slerp(const glm::vec3& radians, float factor);
 
 	/**
-	 * @brief Converts normalized mouse coordinates into a ray
-	 * project screen position [0.0-1.0] to [-1.0,1.0] and flip y axis
-	 * to bring them into homogeneous clip coordinates
-	 * @param[in] screenPos normalized screen position [0.0-1.0]
-	 * @return Ray instance with origin and direction
-	 */
-	math::Ray screenRay(const glm::vec2& screenPos) const;
-	/**
 	 * @param[in] pixelPos screen pixel position
 	 * @note Basically just a wrapper for @c screenRay() but for mouse coordinates
 	 * @return Ray instance with origin and direction
 	 */
 	math::Ray mouseRay(const glm::ivec2& pixelPos) const;
 
-	/**
-	 * @brief Converts normalized screen coordinates [0.0-1.0] into world coordinates.
-	 * @param[in] screenPos The normalized screen coordinates. The z component defines the length of the ray
-	 */
-	glm::vec3 screenToWorld(const glm::vec3& screenPos) const;
 	glm::ivec2 worldToScreen(const glm::vec3& worldPos) const;
 
 	void update(double deltaFrameSeconds);

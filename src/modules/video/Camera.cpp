@@ -373,37 +373,11 @@ void Camera::updateViewMatrix() {
 }
 
 math::Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
-	core_assert(glm::all(glm::lessThanEqual(pixelPos, _windowSize)));
-	core_assert(glm::all(glm::greaterThanEqual(pixelPos, glm::ivec2(0))));
-	const glm::vec2 screenPos((float)pixelPos.x / (float)_windowSize.x, (float)pixelPos.y / (float)_windowSize.y);
-	return screenRay(screenPos);
-}
-
-// https://antongerdelan.net/opengl/raycasting.html
-math::Ray Camera::screenRay(const glm::vec2& screenPos) const {
-	// project screen position [0.0-1.0] to [-1.0,1.0] and flip y axis
-	// to bring them into homogeneous clip coordinates
-	core_assert(glm::all(glm::lessThanEqual(screenPos, glm::vec2(1.0f))));
-	core_assert(glm::all(glm::greaterThanEqual(screenPos, glm::vec2(0.0f))));
-	const float x = (2.0f * screenPos.x) - 1.0f;
-	const float y = 1.0f - (2.0f * screenPos.y);
-	const glm::vec4 rayClipSpace(x, y, -1.0f, 1.0f);
-
-	glm::vec4 rayEyeSpace = inverseProjectionMatrix() * rayClipSpace;
-	// only x and y are needed here
-	// forwards, and not a point
-	rayEyeSpace.z = glm::forward.z;
-	rayEyeSpace.w = 0.0f;
-
-	const glm::vec3& rayDirection = glm::normalize(glm::vec3(inverseViewMatrix() * rayEyeSpace));
-	return math::Ray(eye(), rayDirection);
-}
-
-glm::vec3 Camera::screenToWorld(const glm::vec3& screenPos) const {
-	core_assert(glm::all(glm::lessThanEqual(glm::vec2(screenPos), glm::vec2(1.0f))));
-	core_assert(glm::all(glm::greaterThanEqual(glm::vec2(screenPos), glm::vec2(0.0f))));
-	const math::Ray& ray = screenRay(glm::vec2(screenPos));
-	return ray.origin + ray.direction * screenPos.z;
+	const glm::vec4 viewport(0.0f, 0.0f, _windowSize.x, _windowSize.y);
+	const glm::vec3 nearPlaneCoords = glm::unProject(glm::vec3(pixelPos.x, _windowSize.y - pixelPos.y, 0.0f), _viewMatrix, _projectionMatrix, viewport);
+	const glm::vec3 farPlaneCoords = glm::unProject(glm::vec3(pixelPos.x, _windowSize.y - pixelPos.y, 1.0f), _viewMatrix, _projectionMatrix, viewport);
+	const glm::vec3 rayDirection = glm::normalize(farPlaneCoords - nearPlaneCoords);
+	return math::Ray(nearPlaneCoords, rayDirection);
 }
 
 glm::ivec2 Camera::worldToScreen(const glm::vec3& worldPos) const {

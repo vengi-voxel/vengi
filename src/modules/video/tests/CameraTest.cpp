@@ -56,14 +56,6 @@ TEST_F(CameraTest, testLookAt) {
 	EXPECT_LT(outvecs[5].y, outvecs[0].y) << "left top - left bottom y is invalid - maybe a sign error";
 }
 
-TEST_F(CameraTest, testScreenRayStraightDown) {
-	Camera camera = setup();
-	// get the world position from the center of the screen
-	const math::Ray& ray = camera.screenRay(glm::vec2(0.5f));
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(glm::down, ray.direction, 0.0001f))) << ray.direction.x << ", " << ray.direction.y << ", " << ray.direction.z;
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.worldPosition(), ray.origin, 0.0001f))) << ray.origin.x << ", " << ray.origin.y << ", " << ray.origin.z;
-}
-
 TEST_F(CameraTest, testMotion) {
 	// TODO: finish this
 	Camera camera = setup(glm::vec2(1024, 768), glm::vec3(0.0, 1.0, 0.0));
