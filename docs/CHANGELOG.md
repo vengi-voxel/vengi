@@ -29,6 +29,11 @@ VoxEdit:
    - Allow to export palettes
    - Allow to change color intensity of the whole palette
    - Allow to voxelize text
+   - Fixed orthographic cameras
+
+Thumbnailer:
+
+   - Added support for turntable rendering
 
 ## 0.0.22 (2022-10-31)
 
