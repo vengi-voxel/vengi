@@ -199,6 +199,20 @@ bool SliderVarInt(const char* label, const char* varName, int v_min, int v_max, 
 	return SliderVarInt(label, var, v_min, v_max, format, flags);
 }
 
+bool SliderVarFloat(const char* label, const core::VarPtr& var, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
+	float val = var->floatVal();
+	if (SliderFloat(label, &val, v_min, v_max, format, flags)) {
+		var->setVal(val);
+		return true;
+	}
+	return false;
+}
+
+bool SliderVarFloat(const char* label, const char* varName, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
+	core::VarPtr var = core::Var::getSafe(varName);
+	return SliderVarFloat(label, var, v_min, v_max, format, flags);
+}
+
 float CalcTextWidth(const char *text, bool withPadding) {
 	const float w = ImGui::CalcTextSize(text).x;
 	if (!withPadding) {
