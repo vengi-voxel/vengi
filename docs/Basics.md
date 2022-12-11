@@ -30,8 +30,6 @@ gtest_suite_deps(tests-${LIB} ${LIB})
 gtest_suite_end(tests-${LIB})
 ```
 
-This adds your tests to the global `tests` binary but also to a dedicated `tests-XXX` binary.
-
 ## Coding style
 
 Rule of thumb - stick to the existing coding style - you can also use the `clang-format` settings to format your code. In general
