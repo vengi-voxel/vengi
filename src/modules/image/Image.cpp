@@ -102,48 +102,8 @@ core::RGBA Image::colorAt(int x, int y) const {
 }
 
 core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT) const {
-	const float w = (float)width();
-	const float h = (float)height();
-	float x;
-	float y;
-	switch (wrapS) {
-	case TextureWrap::Repeat: {
-		x = glm::repeat(uv.x) * w;
-		break;
-	}
-	case TextureWrap::ClampToEdge: {
-		x = glm::clamp(uv.x, 1.0f / (2.0f * w), 1.0f - 1.0f / (2.0f * w)) * w;
-		break;
-	}
-	case TextureWrap::MirroredRepeat: {
-		x = glm::mirrorRepeat(uv.x) * w;
-		break;
-	}
-	default:
-	case TextureWrap::Max:
-		return 0;
-	}
-	switch (wrapT) {
-	case TextureWrap::Repeat: {
-		y = glm::repeat(uv.y) * h;
-		break;
-	}
-	case TextureWrap::ClampToEdge: {
-		y = glm::clamp(uv.y, 1.0f / (2.0f * h), 1.0f - 1.0f / (2.0f * h)) * h;
-		break;
-	}
-	case TextureWrap::MirroredRepeat: {
-		y = glm::mirrorRepeat(uv.y) * h;
-		break;
-	}
-	default:
-	case TextureWrap::Max:
-		return 0;
-	}
-
-	const int xint = (int)x;
-	const int yint = height() - 1 - (int)y;
-	return colorAt(xint, yint);
+	const glm::ivec2 pc = pixels(uv, wrapS, wrapT);
+	return colorAt(pc.x, pc.y);
 }
 
 ImagePtr loadImage(const io::FilePtr& file, bool async) {
@@ -288,6 +248,51 @@ void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
 		srcPtr += w;
 		dstPtr -= w;
 	}
+}
+
+glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT) const {
+	const float w = (float)width();
+	const float h = (float)height();
+	float x;
+	float y;
+	switch (wrapS) {
+	case TextureWrap::Repeat: {
+		x = glm::repeat(uv.x) * w;
+		break;
+	}
+	case TextureWrap::ClampToEdge: {
+		x = glm::clamp(uv.x, 1.0f / (2.0f * w), 1.0f - 1.0f / (2.0f * w)) * w;
+		break;
+	}
+	case TextureWrap::MirroredRepeat: {
+		x = glm::mirrorRepeat(uv.x) * w;
+		break;
+	}
+	default:
+	case TextureWrap::Max:
+		return glm::ivec2(0);
+	}
+	switch (wrapT) {
+	case TextureWrap::Repeat: {
+		y = glm::repeat(uv.y) * h;
+		break;
+	}
+	case TextureWrap::ClampToEdge: {
+		y = glm::clamp(uv.y, 1.0f / (2.0f * h), 1.0f - 1.0f / (2.0f * h)) * h;
+		break;
+	}
+	case TextureWrap::MirroredRepeat: {
+		y = glm::mirrorRepeat(uv.y) * h;
+		break;
+	}
+	default:
+	case TextureWrap::Max:
+		return glm::ivec2(0);
+	}
+
+	const int xint = (int)x;
+	const int yint = height() - 1 - (int)y;
+	return glm::ivec2(xint, yint);
 }
 
 glm::vec2 Image::uv(int x, int y) const {

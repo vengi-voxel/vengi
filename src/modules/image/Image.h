@@ -51,6 +51,7 @@ public:
 	bool loadRGBA(io::ReadStream& stream, int w, int h);
 	bool loadBGRA(io::ReadStream& stream, int w, int h);
 
+	glm::ivec2 pixels(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat, TextureWrap wrapT = TextureWrap::Repeat) const;
 	glm::vec2 uv(int x, int y) const;
 
 	static void flipVerticalRGBA(uint8_t *pixels, int w, int h);
