@@ -157,7 +157,7 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 
 	for (int x = 0; x < img->width(); ++x) {
 		const core::RGBA rgba = img->colorAt(x, 0);
-		const voxel::Voxel &voxel = wrapper.voxel(x, 0, 0);
+		const voxel::Voxel &voxel = wrapper.voxel(x, region.getHeightInCells(), 0);
 		const core::RGBA voxelColor = palLookup.palette().colors[voxel.getColor()];
 		EXPECT_EQ(core::Color::getDistance(rgba, voxelColor), 0.0f)
 			<< core::Color::print(rgba) << " vs " << core::Color::print(voxelColor) << " (" << (int)voxel.getColor()
@@ -169,7 +169,7 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 
 	for (int x = 0; x < img->width(); ++x) {
 		const core::RGBA rgba = img->colorAt(x, 0);
-		const voxel::Voxel &voxel = wrapper.voxel(x, 0, 1);
+		const voxel::Voxel &voxel = wrapper.voxel(x, region.getHeightInCells(), 1);
 		const core::RGBA voxelColor = palLookup.palette().colors[voxel.getColor()];
 		EXPECT_EQ(core::Color::getDistance(rgba, voxelColor), 0.0f)
 			<< core::Color::print(rgba) << " vs " << core::Color::print(voxelColor) << " (" << (int)voxel.getColor()

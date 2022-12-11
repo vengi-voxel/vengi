@@ -142,7 +142,7 @@ core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wr
 	}
 
 	const int xint = (int)x;
-	const int yint = (int)y;
+	const int yint = height() - 1 - (int)y;
 	return colorAt(xint, yint);
 }
 
