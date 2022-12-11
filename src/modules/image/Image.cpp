@@ -291,7 +291,7 @@ void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
 }
 
 glm::vec2 Image::uv(int x, int y) const {
-	return glm::vec2((float)x / (float)_width, (float)y / (float)_height);
+	return glm::vec2((float)x / (float)_width, (float)_height - (float)y / (float)_height);
 }
 
 bool Image::writePng(const char *name, const uint8_t* buffer, int width, int height, int depth) {
