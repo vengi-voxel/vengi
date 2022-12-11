@@ -296,7 +296,7 @@ glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wra
 }
 
 glm::vec2 Image::uv(int x, int y) const {
-	return glm::vec2((float)x / (float)_width, (float)_height - (float)y / (float)_height);
+	return glm::vec2((float)x / (float)_width, ((float)_height - (float)y) / (float)_height);
 }
 
 bool Image::writePng(const char *name, const uint8_t* buffer, int width, int height, int depth) {

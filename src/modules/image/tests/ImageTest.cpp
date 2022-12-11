@@ -32,4 +32,26 @@ TEST_F(ImageTest, testGet) {
 	EXPECT_EQ(rgba, expected) << image::print(img);
 }
 
+TEST_F(ImageTest, testUVPixelBoundaries) {
+	const image::ImagePtr& img = image::loadImage("test-palette-in.png", false);
+	ASSERT_EQ(glm::vec2(0.0f, 0.0f), img->uv(0, img->height())) << "lower left corner of the image";
+	ASSERT_EQ(glm::vec2(1.0f, 0.0f), img->uv(img->width(), img->height())) << "lower right corner of the image";
+	ASSERT_EQ(glm::vec2(1.0f, 1.0f), img->uv(img->width(), 0)) << "upper right corner of the image";
+	ASSERT_EQ(glm::vec2(0.0f, 1.0f), img->uv(0, 0)) << "upper left corner of the image";
+}
+
+TEST_F(ImageTest, DISABLED_testUVPixelConversion) {
+	const image::ImagePtr& img = image::loadImage("test-palette-in.png", false);
+	for (int x = 0; x < img->width(); ++x) {
+		for (int y = 0; y < img->height(); ++y) {
+			const glm::vec2 &uv = img->uv(x, y);
+			const glm::ivec2 &pixels = img->pixels(uv);
+			ASSERT_EQ(x, pixels.x) << "Failed to convert " << x << ":" << y << " to uv and back to pixels " << uv
+								   << " image: " << img->width() << "," << img->height();
+			ASSERT_EQ(y, pixels.y) << "Failed to convert " << x << ":" << y << " to uv and back to pixels " << uv
+								   << " image: " << img->width() << "," << img->height();
+		}
+	}
+}
+
 }
