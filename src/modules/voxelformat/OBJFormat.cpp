@@ -242,14 +242,14 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 		core::DynamicArray<core::String> lines;
 		core::string::splitString(warn.c_str(), lines, "\n");
 		for (const core::String& str : lines) {
-			Log::debug("%s", str.c_str());
+			Log::warn("%s", str.c_str());
 		}
 	}
 	if (!err.empty()) {
 		core::DynamicArray<core::String> lines;
 		core::string::splitString(err.c_str(), lines, "\n");
 		for (const core::String& str : lines) {
-			Log::debug("%s", str.c_str());
+			Log::error("%s", str.c_str());
 		}
 	}
 	if (!ret) {
