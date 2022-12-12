@@ -123,16 +123,21 @@ void FileDialog::bookMarkEntry(video::OpenFileMode type, const core::String& pat
 	if (path.empty()) {
 		return;
 	}
+	core::String bookmarkTitle;
 	if (title == nullptr) {
-		title = SDL_strrchr(path.c_str(), '/');
+		bookmarkTitle = path;
+		if (path.last() == '/') {
+			bookmarkTitle.erase(bookmarkTitle.size() - 1);
+		}
+		title = SDL_strrchr(bookmarkTitle.c_str(), '/');
 		if (title) {
 			++title;
 		} else {
-			title = path.c_str();
+			title = bookmarkTitle.c_str();
 		}
-	}
-	if (title[0] == '\0') {
-		return;
+		bookmarkTitle = title;
+	} else {
+		bookmarkTitle = title;
 	}
 	if (icon != nullptr) {
 		const float x = ImGui::GetCursorPosX();
@@ -141,7 +146,7 @@ void FileDialog::bookMarkEntry(video::OpenFileMode type, const core::String& pat
 		ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
 	}
 	const ImVec2 size(width, 0);
-	if (ImGui::Selectable(title, false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
+	if (ImGui::Selectable(bookmarkTitle.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
 		setCurrentPath(type, path);
 	}
 	ImGui::TooltipText("%s", path.c_str());
