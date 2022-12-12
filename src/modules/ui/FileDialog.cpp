@@ -126,7 +126,7 @@ void FileDialog::bookMarkEntry(video::OpenFileMode type, const core::String& pat
 	core::String bookmarkTitle;
 	if (title == nullptr) {
 		bookmarkTitle = path;
-		if (path.last() == '/') {
+		if (bookmarkTitle.last() == '/') {
 			bookmarkTitle.erase(bookmarkTitle.size() - 1);
 		}
 		title = SDL_strrchr(bookmarkTitle.c_str(), '/');

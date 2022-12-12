@@ -169,6 +169,7 @@ bool initState(io::FilesystemState &state) {
 		if (state._directories[n].empty()) {
 			continue;
 		}
+		state._directories[n] = core::string::sanitizeDirPath(state._directories[n]);
 		if (core::string::isAbsolutePath(state._directories[n])) {
 			continue;
 		}
