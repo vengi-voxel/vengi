@@ -98,8 +98,6 @@ private:
 	core::VarPtr _hideInactive;
 	core::VarPtr _showAabbVar;
 
-	math::Axis _lockedAxis = math::Axis::None;
-
 	struct DirtyRegion {
 		voxel::Region region;
 		int nodeId;
@@ -108,6 +106,8 @@ private:
 	RegionQueue _extractRegions;
 	void queueRegionExtraction(int layerId, const voxel::Region& region);
 
+	math::Axis _lockedAxis = math::Axis::None;
+
 	bool _dirty = false;
 	// this is basically the same as the dirty state, but we stop
 	// auto-saving once we saved a dirty state
@@ -115,6 +115,9 @@ private:
 
 	bool _renderShadow = true;
 	bool _renderLockAxis = true;
+
+	bool _traceViaMouse = true;
+	int _sceneModeNodeIdTrace = -1;
 
 	core::String _lastFilename;
 	double _lastAutoSave = 0u;
@@ -125,17 +128,14 @@ private:
 	int _lastRaytraceY = -1;
 
 	// layer animation speed
-	double _animationSpeed = 0.0;
 	int _currentAnimationLayer = 0;
+	double _animationSpeed = 0.0;
 	double _nextFrameSwitch = 0.0;
 	voxelformat::FrameIndex _currentFrameIdx = 0;
 
 	int _initialized = 0;
 	int _size = 128;
 	glm::ivec2 _mouseCursor { 0 };
-
-	bool _traceViaMouse = true;
-	int _sceneModeNodeIdTrace = -1;
 
 	command::ActionButton _move[lengthof(DIRECTIONS)];
 	command::ActionButton _rotate;
@@ -364,7 +364,7 @@ public:
 	/**
 	 * @brief Performs the rendering for each @c Viewport instance
 	 */
-	void render(const video::Camera& camera, const glm::ivec2 &size, uint8_t renderMask = RenderAll);
+	void render(voxelrender::RenderContext &renderContext, const video::Camera& camera, const glm::ivec2 &size, uint8_t renderMask = RenderAll);
 
 	/**
 	 * @return @c true if the trace was executed, @c false otherwise

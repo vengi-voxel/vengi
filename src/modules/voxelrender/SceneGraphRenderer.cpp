@@ -38,11 +38,11 @@ void SceneGraphRenderer::construct() {
 	_renderer.construct();
 }
 
-bool SceneGraphRenderer::init(const glm::ivec2 &size) {
+bool SceneGraphRenderer::init() {
 	if (!_cameraRenderer.init(core::Color::White, 0)) {
 		Log::warn("Failed to initialize camera renderer");
 	}
-	return _renderer.init(size);
+	return _renderer.init();
 }
 
 void SceneGraphRenderer::update() {
@@ -177,14 +177,14 @@ void SceneGraphRenderer::extractAll() {
 	}
 }
 
-void SceneGraphRenderer::render(const video::Camera &camera, bool shadow, bool waitPending) {
+void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camera &camera, bool shadow, bool waitPending) {
 	if (waitPending) {
 		extractAll();
 		_renderer.waitForPendingExtractions();
 		_renderer.update();
 	}
 
-	_renderer.render(camera, shadow);
+	_renderer.render(renderContext, camera, shadow);
 	for (video::Camera &sceneCamera : _cameras) {
 		sceneCamera.setSize(camera.size());
 		sceneCamera.update(0.0);

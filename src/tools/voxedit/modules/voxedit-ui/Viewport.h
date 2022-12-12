@@ -12,6 +12,7 @@
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
 #include "voxel/Region.h"
+#include "voxelrender/RawVolumeRenderer.h"
 
 namespace voxelformat {
 class SceneGraphNode;
@@ -43,6 +44,7 @@ private:
 
 	video::FrameBuffer _frameBuffer;
 	video::TexturePtr _texture;
+	voxelrender::RenderContext _renderContext;
 	core::VarPtr _showAxisVar;
 	core::VarPtr _guizmoRotation;
 	core::VarPtr _guizmoAllowAxisFlip;
@@ -94,8 +96,6 @@ public:
 
 	void resetCamera();
 	bool saveImage(const char* filename);
-
-	video::FrameBuffer& frameBuffer();
 };
 
 
@@ -125,10 +125,6 @@ inline const core::String& Viewport::id() const {
 
 inline bool Viewport::isHovered() const {
 	return _hovered;
-}
-
-inline video::FrameBuffer& Viewport::frameBuffer() {
-	return _frameBuffer;
 }
 
 }

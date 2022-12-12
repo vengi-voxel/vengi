@@ -39,6 +39,7 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/TreeGenerator.h"
 #include "voxelrender/ImageGenerator.h"
+#include "voxelrender/RawVolumeRenderer.h"
 #include "voxelutil/Picking.h"
 #include "voxelutil/Raycast.h"
 #include "voxelutil/VolumeCropper.h"
@@ -1117,14 +1118,13 @@ void SceneManager::updateAABBMesh() {
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
 
-void SceneManager::render(const video::Camera& camera, const glm::ivec2 &size, uint8_t renderMask) {
+void SceneManager::render(voxelrender::RenderContext &renderContext, const video::Camera& camera, const glm::ivec2 &size, uint8_t renderMask) {
 	const bool depthTest = video::enable(video::State::DepthTest);
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderScene) {
-		// TODO: this resize leads to massive slowdown when doing multiviewport see issue #202
-		_volumeRenderer.resize(size);
+		_volumeRenderer.resize(renderContext, size);
 		_volumeRenderer.prepare(_sceneGraph, _currentFrameIdx, _hideInactive->boolVal(), _grayInactive->boolVal());
-		_volumeRenderer.render(camera, _renderShadow, false);
+		_volumeRenderer.render(renderContext, camera, _renderShadow, false);
 		extractVolume();
 	}
 	const bool renderUI = (renderMask & RenderUI) != 0u;
@@ -1821,7 +1821,7 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the memento handler");
 		return false;
 	}
-	if (!_volumeRenderer.init(video::getWindowSize())) {
+	if (!_volumeRenderer.init()) {
 		Log::error("Failed to initialize the volume renderer");
 		return false;
 	}

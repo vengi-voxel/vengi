@@ -6,6 +6,7 @@
 #include "../Config.h"
 #include "video/tests/AbstractGLTest.h"
 #include "voxel/RawVolume.h"
+#include "voxelrender/RawVolumeRenderer.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
@@ -26,6 +27,8 @@ protected:
 
 class SceneManagerTest : public video::AbstractGLTest, public SceneManagerProtected {
 protected:
+	voxelrender::RenderContext _renderContext;
+
 	void SetUp() override {
 		video::AbstractGLTest::SetUp();
 		if (IsSkipped()) {
@@ -39,6 +42,7 @@ protected:
 		core::Var::get(cfg::VoxEditHideInactive, "");
 		core::Var::get(cfg::VoxEditLastPalette, "");
 		construct();
+		_renderContext.init(video::getWindowSize());
 		ASSERT_TRUE(init());
 
 		const voxel::Region region{0, 1};
@@ -94,6 +98,7 @@ protected:
 
 	void TearDown() override {
 		if (!IsSkipped()) {
+			_renderContext.shutdown();
 			shutdown();
 		}
 		video::AbstractGLTest::TearDown();

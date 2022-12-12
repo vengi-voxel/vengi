@@ -20,7 +20,7 @@
 
 namespace voxelrender {
 
-static image::ImagePtr volumeThumbnail(voxelrender::SceneGraphRenderer &volumeRenderer, const voxelformat::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
+static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender::SceneGraphRenderer &volumeRenderer, const voxelformat::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
 	video::FrameBuffer frameBuffer;
 	video::clearColor(ctx.clearColor);
 	video::enable(video::State::DepthTest);
@@ -60,7 +60,7 @@ static image::ImagePtr volumeThumbnail(voxelrender::SceneGraphRenderer &volumeRe
 		camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 		camera.setOmega(ctx.omega);
 		camera.update(ctx.deltaFrameSeconds);
-		volumeRenderer.render(camera, true, true);
+		volumeRenderer.render(renderContext, camera, true, true);
 	}
 	frameBuffer.unbind();
 
@@ -84,28 +84,35 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	}
 
 	voxelrender::SceneGraphRenderer volumeRenderer;
+	RenderContext renderContext;
+	renderContext.init(ctx.outputSize);
 	volumeRenderer.construct();
-	if (!volumeRenderer.init(ctx.outputSize)) {
+	if (!volumeRenderer.init()) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
 
 	volumeRenderer.setSceneMode(true);
-	image = volumeThumbnail(volumeRenderer, sceneGraph, ctx);
+	image = volumeThumbnail(renderContext, volumeRenderer, sceneGraph, ctx);
 	volumeRenderer.shutdown();
-	return image;}
+	renderContext.shutdown();
+	return image;
+}
 
 image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
 	voxelrender::SceneGraphRenderer volumeRenderer;
 	volumeRenderer.construct();
-	if (!volumeRenderer.init(ctx.outputSize)) {
+	RenderContext renderContext;
+	renderContext.init(ctx.outputSize);
+	if (!volumeRenderer.init()) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
 
 	volumeRenderer.setSceneMode(true);
-	const image::ImagePtr &image = volumeThumbnail(volumeRenderer, sceneGraph, ctx);
+	const image::ImagePtr &image = volumeThumbnail(renderContext, volumeRenderer, sceneGraph, ctx);
 	volumeRenderer.shutdown();
+	renderContext.shutdown();
 	return image;
 }
 
@@ -122,8 +129,10 @@ bool volumeTurntable(const core::String &modelFile, const core::String &imageFil
 	}
 
 	voxelrender::SceneGraphRenderer volumeRenderer;
+	RenderContext renderContext;
+	renderContext.init(ctx.outputSize);
 	volumeRenderer.construct();
-	if (!volumeRenderer.init(ctx.outputSize)) {
+	if (!volumeRenderer.init()) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
@@ -134,11 +143,12 @@ bool volumeTurntable(const core::String &modelFile, const core::String &imageFil
 		const core::String &filepath = core::string::format("%s_%i.%s", baseFilePath.c_str(), i, ext.c_str());
 		const io::FilePtr &outfile = io::filesystem()->open(filepath, io::FileMode::SysWrite);
 		io::FileStream outStream(outfile);
-		const image::ImagePtr &image = volumeThumbnail(volumeRenderer, sceneGraph, ctx);
+		const image::ImagePtr &image = volumeThumbnail(renderContext, volumeRenderer, sceneGraph, ctx);
 		if (image) {
 			if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
 				Log::error("Failed to write image %s", filepath.c_str());
 				volumeRenderer.shutdown();
+				renderContext.shutdown();
 				return false;
 			} else {
 				Log::info("Write image %s", filepath.c_str());
@@ -146,12 +156,14 @@ bool volumeTurntable(const core::String &modelFile, const core::String &imageFil
 		} else {
 			Log::error("Failed to create thumbnail for %s", modelFile.c_str());
 			volumeRenderer.shutdown();
+			renderContext.shutdown();
 			return false;
 		}
 		ctx.omega = glm::vec3(0.0f, glm::two_pi<float>() / (float)loops, 0.0f);
 		ctx.deltaFrameSeconds += 1000.0 / (double)loops;
 	}
 	volumeRenderer.shutdown();
+	renderContext.shutdown();
 	return true;
 }
 

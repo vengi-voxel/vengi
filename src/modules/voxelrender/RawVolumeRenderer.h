@@ -41,6 +41,14 @@ class SceneGraphNode;
  */
 namespace voxelrender {
 
+struct RenderContext {
+	video::FrameBuffer frameBuffer;
+	render::BloomRenderer bloomRenderer;
+
+	bool init(const glm::ivec2 &size);
+	void shutdown();
+};
+
 /**
  * @brief Handles the shaders, vertex buffers and rendering of a voxel::RawVolume - including the mesh extraction part
  * @sa MeshRenderer
@@ -73,8 +81,6 @@ protected:
 	shader::VoxelInstancedShader& _voxelShader;
 	shader::ShadowmapInstancedShader& _shadowMapShader;
 	render::Shadow _shadow;
-	video::FrameBuffer _frameBuffer;
-	render::BloomRenderer _bloomRenderer;
 
 	core::VarPtr _meshSize;
 	core::VarPtr _shadowMap;
@@ -115,7 +121,7 @@ protected:
 public:
 	RawVolumeRenderer();
 
-	void render(const video::Camera& camera, bool shadow = true);
+	void render(RenderContext &renderContext, const video::Camera& camera, bool shadow = true);
 	void hide(int idx, bool hide);
 	bool hidden(int idx) const;
 	void gray(int idx, bool gray);
@@ -180,8 +186,8 @@ public:
 	/**
 	 * @sa shutdown()
 	 */
-	bool init(const glm::ivec2 &size);
-	bool resize(const glm::ivec2 &size);
+	bool init();
+	bool resize(RenderContext &renderContext, const glm::ivec2 &size);
 
 	bool scheduleExtractions(size_t maxExtraction = 1);
 	void update();

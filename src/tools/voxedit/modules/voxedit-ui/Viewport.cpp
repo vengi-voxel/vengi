@@ -16,6 +16,7 @@
 #include "ui/ScopedStyle.h"
 #include "ui/dearimgui/ImGuizmo.h"
 #include "video/Camera.h"
+#include "video/Renderer.h"
 #include "video/ShapeBuilder.h"
 #include "video/WindowedApp.h"
 #include "voxedit-util/Config.h"
@@ -47,6 +48,7 @@ bool Viewport::init(Viewport::RenderMode renderMode) {
 	setRenderMode(renderMode);
 	setMode(Viewport::SceneCameraMode::Free);
 	resetCamera();
+	_renderContext.init(video::getWindowSize());
 
 	return true;
 }
@@ -236,6 +238,7 @@ void Viewport::update() {
 
 void Viewport::shutdown() {
 	_frameBuffer.shutdown();
+	_renderContext.shutdown();
 }
 
 bool Viewport::saveImage(const char *filename) {
@@ -247,7 +250,7 @@ bool Viewport::saveImage(const char *filename) {
 
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	_frameBuffer.bind(true);
-	sceneMgr().render(camera(), _frameBuffer.dimension(), SceneManager::RenderScene);
+	sceneMgr().render(_renderContext, camera(), _frameBuffer.dimension(), SceneManager::RenderScene);
 	_frameBuffer.unbind();
 
 	uint8_t *pixels;
@@ -428,7 +431,7 @@ void Viewport::renderToFrameBuffer() {
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	video::clearColor(core::Color::Clear);
 	_frameBuffer.bind(true);
-	sceneMgr().render(camera(), _frameBuffer.dimension());
+	sceneMgr().render(_renderContext, camera(), _frameBuffer.dimension());
 	_frameBuffer.unbind();
 }
 

@@ -38,6 +38,30 @@
 
 namespace voxelrender {
 
+bool RenderContext::init(const glm::ivec2 &size) {
+	video::FrameBufferConfig cfg;
+	cfg.dimension(size);
+	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
+	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
+	cfg.depthBuffer(true);
+	if (!frameBuffer.init(cfg)) {
+		Log::error("Failed to initialize the volume renderer bloom framebuffer");
+		return false;
+	}
+
+	// we have to do an y-flip here due to the framebuffer handling
+	if (!bloomRenderer.init(true, size.x, size.y)) {
+		Log::error("Failed to initialize the bloom renderer");
+		return false;
+	}
+	return true;
+}
+
+void RenderContext::shutdown() {
+	frameBuffer.shutdown();
+	bloomRenderer.shutdown();
+}
+
 RawVolumeRenderer::RawVolumeRenderer() :
 		_voxelShader(shader::VoxelInstancedShader::getInstance()),
 		_shadowMapShader(shader::ShadowmapInstancedShader::getInstance()) {
@@ -47,30 +71,30 @@ void RawVolumeRenderer::construct() {
 	core::Var::get(cfg::VoxelMeshSize, "64", core::CV_READONLY);
 }
 
-bool RawVolumeRenderer::resize(const glm::ivec2 &size) {
-	if (_frameBuffer.dimension() == size) {
+bool RawVolumeRenderer::resize(RenderContext &renderContext, const glm::ivec2 &size) {
+	if (renderContext.frameBuffer.dimension() == size) {
 		return true;
 	}
-	_frameBuffer.shutdown();
+	renderContext.frameBuffer.shutdown();
 	video::FrameBufferConfig cfg;
 	cfg.dimension(size);
 	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
 	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
 	cfg.depthBuffer(true);
-	if (!_frameBuffer.init(cfg)) {
+	if (!renderContext.frameBuffer.init(cfg)) {
 		Log::error("Failed to initialize the volume renderer bloom framebuffer");
 		return false;
 	}
 
 	// we have to do an y-flip here due to the framebuffer handling
-	if (!_bloomRenderer.resize(size.x, size.y)) {
+	if (!renderContext.bloomRenderer.resize(size.x, size.y)) {
 		Log::error("Failed to initialize the bloom renderer");
 		return false;
 	}
 	return true;
 }
 
-bool RawVolumeRenderer::init(const glm::ivec2 &size) {
+bool RawVolumeRenderer::init() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	_bloom = core::Var::getSafe(cfg::ClientBloom);
 	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
@@ -84,22 +108,6 @@ bool RawVolumeRenderer::init(const glm::ivec2 &size) {
 	}
 	if (!_shadowMapShader.setup()) {
 		Log::error("Failed to init shadowmap shader");
-		return false;
-	}
-
-	video::FrameBufferConfig cfg;
-	cfg.dimension(size);
-	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
-	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
-	cfg.depthBuffer(true);
-	if (!_frameBuffer.init(cfg)) {
-		Log::error("Failed to initialize the volume renderer bloom framebuffer");
-		return false;
-	}
-
-	// we have to do an y-flip here due to the framebuffer handling
-	if (!_bloomRenderer.init(true, size.x, size.y)) {
-		Log::error("Failed to initialize the bloom renderer");
 		return false;
 	}
 
@@ -486,7 +494,7 @@ void RawVolumeRenderer::updatePalette(int idx) {
 	}
 }
 
-void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
+void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera& camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
 	uint32_t indices[MAX_VOLUMES];
 
@@ -507,7 +515,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	}
 	if (numIndices == 0u) {
 		if (_bloom->boolVal()) {
-			video::ScopedFrameBuffer scoped(_frameBuffer);
+			video::ScopedFrameBuffer scoped(renderContext.frameBuffer);
 			video::clear(video::ClearFlag::Color);
 		}
 		return;
@@ -566,7 +574,7 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 	}
 
 	if (_bloom->boolVal()) {
-		_frameBuffer.bind(true);
+		renderContext.frameBuffer.bind(true);
 	}
 	const video::PolygonMode mode = camera.polygonMode();
 	if (mode == video::PolygonMode::Points) {
@@ -597,11 +605,11 @@ void RawVolumeRenderer::render(const video::Camera& camera, bool shadow) {
 		video::disable(video::State::PolygonOffsetFill);
 	}
 	if (_bloom->boolVal()) {
-		_frameBuffer.unbind();
-		const video::TexturePtr& color0 = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
-		const video::TexturePtr& color1 = _frameBuffer.texture(video::FrameBufferAttachment::Color1);
-		_bloomRenderer.render(color0, color1);
-		video::blitFramebuffer(_frameBuffer.handle(), video::currentFramebuffer(), video::ClearFlag::Depth, _frameBuffer.dimension().x, _frameBuffer.dimension().y);
+		renderContext.frameBuffer.unbind();
+		const video::TexturePtr& color0 = renderContext.frameBuffer.texture(video::FrameBufferAttachment::Color0);
+		const video::TexturePtr& color1 = renderContext.frameBuffer.texture(video::FrameBufferAttachment::Color1);
+		renderContext.bloomRenderer.render(color0, color1);
+		video::blitFramebuffer(renderContext.frameBuffer.handle(), video::currentFramebuffer(), video::ClearFlag::Depth, renderContext.frameBuffer.dimension().x, renderContext.frameBuffer.dimension().y);
 	}
 }
 
@@ -692,8 +700,6 @@ core::DynamicArray<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_voxelShader.shutdown();
 	_shadowMapShader.shutdown();
 	_materialBlock.shutdown();
-	_frameBuffer.shutdown();
-	_bloomRenderer.shutdown();
 	for (auto& iter : _meshes) {
 		for (auto& mesh : iter.second) {
 			delete mesh;

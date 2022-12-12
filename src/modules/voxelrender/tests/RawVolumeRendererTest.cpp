@@ -28,9 +28,10 @@ TEST_F(RawVolumeRendererTest, testExtractRegion) {
 
 	RawVolumeRenderer renderer;
 	renderer.construct();
-	renderer.init(glm::ivec2(0));
+	renderer.init();
 	renderer.setVolume(0, node);
 
+	RenderContext rendererContext;
 	EXPECT_EQ(0, renderer.pendingExtractions());
 	const voxel::Region region(1, 0, 1, 1, 0, 1);
 	renderer.extractRegion(0, region);
@@ -51,9 +52,10 @@ TEST_F(RawVolumeRendererTest, testExtractRegionBoundary) {
 
 	RawVolumeRenderer renderer;
 	renderer.construct();
-	renderer.init(glm::ivec2(0));
+	renderer.init();
 	renderer.setVolume(0, node);
 
+	RenderContext rendererContext;
 	EXPECT_EQ(0, renderer.pendingExtractions());
 	// worst case scenario - touching all adjacent regions
 	const voxel::Region region(15, 15);

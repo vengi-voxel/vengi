@@ -26,11 +26,11 @@ protected:
 
 public:
 	void construct();
-	bool init(const glm::ivec2 &size);
+	bool init();
 	void update();
 	void shutdown();
 
-	bool resize(const glm::ivec2 &size);
+	bool resize(RenderContext &renderContext, const glm::ivec2 &size);
 	void setAmbientColor(const glm::vec3& color);
 	void setDiffuseColor(const glm::vec3& color);
 
@@ -43,7 +43,7 @@ public:
 	/**
 	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is false, you have to call @c update() manually!
 	 */
-	void render(const video::Camera& camera, bool shadow = true, bool waitPending = false);
+	void render(RenderContext &renderContext, const video::Camera& camera, bool shadow = true, bool waitPending = false);
 	void clear();
 };
 
@@ -51,8 +51,8 @@ inline void SceneGraphRenderer::setSceneMode(bool sceneMode) {
 	_sceneMode = sceneMode;
 }
 
-inline bool SceneGraphRenderer::resize(const glm::ivec2 &size) {
-	return _renderer.resize(size);
+inline bool SceneGraphRenderer::resize(RenderContext &renderContext, const glm::ivec2 &size) {
+	return _renderer.resize(renderContext, size);
 }
 
 } // namespace voxelrender
