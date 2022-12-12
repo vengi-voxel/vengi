@@ -30,6 +30,9 @@ VoxEdit:
    - Allow to change color intensity of the whole palette
    - Allow to voxelize text
    - Fixed orthographic cameras
+   - Massive performance increase when using multiple viewports
+   - More than 10 times gpu memory reduction
+   - Render the camera nodes in scene mode
 
 Thumbnailer:
 
