@@ -41,7 +41,7 @@ static core::String knownFolderPath(REFKNOWNFOLDERID id) {
 	CoTaskMemFree(path);
 	const core::String strpath(retval);
 	SDL_free(retval);
-	return strpath;
+	return core::string::sanitizeDirPath(strpath);
 }
 
 static void denormalizePath(WCHAR* str) {
