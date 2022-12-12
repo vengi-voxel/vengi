@@ -120,12 +120,8 @@ bool FileDialog::readDir() {
 }
 
 void FileDialog::bookMarkEntry(video::OpenFileMode type, const core::String& path, float width, const char *title, const char *icon) {
-	const ImVec2 size(width, 0);
-	if (icon != nullptr) {
-		const float x = ImGui::GetCursorPosX();
-		ImGui::TextUnformatted(icon);
-		ImGui::SameLine();
-		ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
+	if (path.empty()) {
+		return;
 	}
 	if (title == nullptr) {
 		title = SDL_strrchr(path.c_str(), '/');
@@ -135,6 +131,16 @@ void FileDialog::bookMarkEntry(video::OpenFileMode type, const core::String& pat
 			title = path.c_str();
 		}
 	}
+	if (title[0] == '\0') {
+		return;
+	}
+	if (icon != nullptr) {
+		const float x = ImGui::GetCursorPosX();
+		ImGui::TextUnformatted(icon);
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
+	}
+	const ImVec2 size(width, 0);
 	if (ImGui::Selectable(title, false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
 		setCurrentPath(type, path);
 	}
@@ -378,7 +384,11 @@ bool FileDialog::filesPanel() {
 		ImGui::TextUnformatted(humanSize.c_str());
 		ImGui::NextColumn();
 		const core::String &fileExt = core::string::extractExtension(_files[i]->name);
-		ImGui::TextUnformatted(fileExt.c_str());
+		if (fileExt.empty()) {
+			ImGui::TextUnformatted("-");
+		} else {
+			ImGui::TextUnformatted(fileExt.c_str());
+		}
 		ImGui::NextColumn();
 		const core::String &lastModified = core::TimeProvider::toString(_files[i]->mtime);
 		ImGui::TextUnformatted(lastModified.c_str());
@@ -429,9 +439,8 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			}
 			ImGui::TooltipText("Add a bookmark for the current active folder");
 			ImGui::SameLine();
-			ImGui::TextUnformatted(ICON_FK_FOLDER_OPEN_O " Current path: ");
-			ImGui::SameLine();
-			ImGui::TextUnformatted(_currentPath.c_str());
+			const core::String currentPath = core::string::format(ICON_FK_FOLDER_OPEN_O " Current path: %s", _currentPath.c_str());
+			ImGui::TextUnformatted(currentPath.c_str());
 
 			bookmarkPanel(type, bookmarks->strVal());
 
