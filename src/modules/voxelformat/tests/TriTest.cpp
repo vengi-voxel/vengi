@@ -79,10 +79,9 @@ TEST_F(TriTest, testColorAt4x4) {
 	tri.texture = texture.get();
 	for (int i = 0; i < w; ++i) {
 		for (int j = 0; j < h; ++j) {
-			const float epsilon = 0.0001f;
-			tri.uv[0] = glm::vec2((float)i / (float)w, h - 1 - (float)j / (float)h);
-			tri.uv[1] = glm::vec2((float)i / (float)w, h - 1 - (float)(j + 1) / (float)h - epsilon);
-			tri.uv[2] = glm::vec2((float)(i + 1) / (float)w - epsilon, h - 1 - (float)(j + 1) / (float)h - epsilon);
+			tri.uv[0] = image::Image::uv(i, j, w, h);
+			tri.uv[1] = image::Image::uv(i, j + 1, w, h);
+			tri.uv[2] = image::Image::uv(i + 1, j, w, h);
 			const core::RGBA color = tri.colorAt(tri.centerUV());
 			const int texIndex = j * w + i;
 			ASSERT_EQ(buffer[texIndex], color) << "i: " << i << "/" << j << " " << core::Color::print(buffer[texIndex])

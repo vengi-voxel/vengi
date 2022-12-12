@@ -250,22 +250,19 @@ void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
 	}
 }
 
+// OpenGL Spec 14.8.2 Coordinate Wrapping and Texel Selection
 glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT) const {
 	const float w = (float)width();
 	const float h = (float)height();
-	float x;
-	float y;
+	int xint = (int)glm::roundEven(uv.x * w);
+	int yint = height() - (int)glm::roundEven(uv.y * h);
 	switch (wrapS) {
 	case TextureWrap::Repeat: {
-		x = glm::repeat(uv.x) * w;
-		break;
-	}
-	case TextureWrap::ClampToEdge: {
-		x = glm::clamp(uv.x, 1.0f / (2.0f * w), 1.0f - 1.0f / (2.0f * w)) * w;
+		xint %= width();
 		break;
 	}
 	case TextureWrap::MirroredRepeat: {
-		x = glm::mirrorRepeat(uv.x) * w;
+		xint = glm::abs(xint) % width();
 		break;
 	}
 	default:
@@ -274,15 +271,11 @@ glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wra
 	}
 	switch (wrapT) {
 	case TextureWrap::Repeat: {
-		y = glm::repeat(uv.y) * h;
-		break;
-	}
-	case TextureWrap::ClampToEdge: {
-		y = glm::clamp(uv.y, 1.0f / (2.0f * h), 1.0f - 1.0f / (2.0f * h)) * h;
+		yint %= height();
 		break;
 	}
 	case TextureWrap::MirroredRepeat: {
-		y = glm::mirrorRepeat(uv.y) * h;
+		yint = glm::abs(yint) % height();
 		break;
 	}
 	default:
@@ -290,13 +283,15 @@ glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wra
 		return glm::ivec2(0);
 	}
 
-	const int xint = (int)x;
-	const int yint = height() - 1 - (int)y;
-	return glm::ivec2(xint, yint);
+	return glm::ivec2(glm::clamp(xint, 0, _width - 1), glm::clamp(yint, 0, _height - 1));
 }
 
 glm::vec2 Image::uv(int x, int y) const {
-	return glm::vec2((float)x / (float)_width, ((float)_height - (float)y) / (float)_height);
+	return uv(x, y, _width, _height);
+}
+
+glm::vec2 Image::uv(int x, int y, int w, int h) {
+	return glm::vec2((float)x / (float)w, ((float)h - (float)y) / (float)h);
 }
 
 bool Image::writePng(const char *name, const uint8_t* buffer, int width, int height, int depth) {

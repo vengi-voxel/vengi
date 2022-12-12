@@ -315,18 +315,17 @@ static int walkPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &position, vo
 }
 
 static glm::vec2 calcUV(const glm::ivec3 &pos, const voxel::Region &region, voxel::FaceNames face) {
-	const glm::vec3 dim = region.getDimensionsInVoxels();
-	const glm::vec3 r(glm::vec3(pos) / dim);
+	const glm::ivec3 &dim = region.getDimensionsInVoxels();
 	switch (face) {
 	case voxel::FaceNames::PositiveX:
 	case voxel::FaceNames::NegativeX:
-		return glm::vec2(r.z, r.y);
+		return image::Image::uv(pos.z, region.getHeightInCells() - pos.y, dim.z, dim.y);
 	case voxel::FaceNames::PositiveY:
 	case voxel::FaceNames::NegativeY:
-		return glm::vec2(r.x, r.z);
+		return image::Image::uv(pos.x, pos.z, dim.x, dim.z);
 	case voxel::FaceNames::PositiveZ:
 	case voxel::FaceNames::NegativeZ:
-		return glm::vec2(r.x, r.y);
+		return image::Image::uv(pos.x, region.getHeightInCells() - pos.y, dim.x, dim.y);
 	default:
 	case voxel::FaceNames::Max:
 		return glm::vec2(0.0f);

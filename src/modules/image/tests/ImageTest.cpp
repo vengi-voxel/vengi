@@ -40,7 +40,7 @@ TEST_F(ImageTest, testUVPixelBoundaries) {
 	ASSERT_EQ(glm::vec2(0.0f, 1.0f), img->uv(0, 0)) << "upper left corner of the image";
 }
 
-TEST_F(ImageTest, DISABLED_testUVPixelConversion) {
+TEST_F(ImageTest, testUVPixelConversion) {
 	const image::ImagePtr& img = image::loadImage("test-palette-in.png", false);
 	for (int x = 0; x < img->width(); ++x) {
 		for (int y = 0; y < img->height(); ++y) {

@@ -53,6 +53,7 @@ public:
 
 	glm::ivec2 pixels(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat, TextureWrap wrapT = TextureWrap::Repeat) const;
 	glm::vec2 uv(int x, int y) const;
+	static glm::vec2 uv(int x, int y, int w, int h);
 
 	static void flipVerticalRGBA(uint8_t *pixels, int w, int h);
 	bool writePng(io::SeekableWriteStream &stream) const;
