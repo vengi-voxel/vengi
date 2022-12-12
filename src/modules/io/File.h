@@ -22,6 +22,9 @@ enum class FileMode {
 	SysWrite	/**< writing into the given path */
 };
 
+/**
+ * @sa core::string::sanitizeDirPath()
+ */
 extern void normalizePath(core::String& str);
 
 /**

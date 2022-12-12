@@ -126,6 +126,7 @@ inline char *strncpyz(const char *input, size_t inputSize, char *target, size_t 
 
 /**
  * @brief Ensure that exactly one / is at the end of the given path
+ * @sa io::normalizePath()
  */
 inline core::String sanitizeDirPath(core::String str) {
 	str.replaceAllChars('\\', '/');
