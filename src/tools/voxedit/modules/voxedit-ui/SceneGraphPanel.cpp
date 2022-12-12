@@ -203,6 +203,9 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, command::
 			sceneMgr().nodeRemove(sceneGraph.activeNode(), true);
 		}
 		ImGui::TooltipText("Remove the active node with all its children");
+
+		// TODO: filter by name and type
+
 		static ImGuiTableFlags tableFlags = ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH |
 											ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg |
 											ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_SizingFixedFit;
