@@ -95,10 +95,6 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 		const core::String hashId = core::String::format("%" PRIu64, palette.hash());
 
-		// 1 x 256 is the texture format that we are using for our palette
-		const float texcoord = 1.0f / (float)voxel::PaletteMaxColors;
-		// it is only 1 pixel high - sample the middle
-		const float v1 = 0.5f;
 		const voxel::VertexArray &vertices = mesh->getVertexVector();
 		const voxel::IndexArray &indices = mesh->getIndexVector();
 		const voxel::NormalArray &normals = mesh->getNormalVector();
@@ -142,11 +138,11 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 			if (withTexCoords) {
 				for (int i = 0; i < ni; i += 6) {
 					const voxel::VoxelVertex &v = vertices[indices[i]];
-					const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
-					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
-					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
-					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
-					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
+					const glm::vec2 &uv = paletteUV(v.colorIndex);
+					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
 				}
 			}
 
@@ -177,10 +173,10 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 			if (withTexCoords) {
 				for (int i = 0; i < ni; i += 3) {
 					const voxel::VoxelVertex &v = vertices[indices[i]];
-					const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
-					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
-					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
-					stream.writeStringFormat(false, "vt %f %f\n", u, v1);
+					const glm::vec2 &uv = paletteUV(v.colorIndex);
+					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
 				}
 			}
 

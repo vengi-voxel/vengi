@@ -212,8 +212,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale);
 			continue;
 		}
-		// 1 x 256 is the texture format that we are using for our palette
-		const float texcoord = 1.0f / (float)voxel::PaletteMaxColors;
 
 		int meshExtIdx = 0;
 		meshIdxNodeMap.get(nodeId, meshExtIdx);
@@ -309,10 +307,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 			}
 
 			if (withTexCoords) {
-				const float uuvYVal = ((float)(v.colorIndex) + 0.5f) * texcoord;
+				const glm::vec2 &uv = paletteUV(v.colorIndex);
 
 				FloatUnion floatCharUn;
-				floatCharUn.f = uuvYVal;
+				floatCharUn.f = uv.x;
 
 				if (minMaxUVX[0] > floatCharUn.f) {
 					minMaxUVX[0] = floatCharUn.f;

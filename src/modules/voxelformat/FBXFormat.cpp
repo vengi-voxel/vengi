@@ -154,10 +154,6 @@ Objects: {
 		wrapBool(stream.writeString("\t\tGeometryVersion: 124\n", false))
 
 		if (withTexCoords) {
-			// 1 x 256 is the texture format that we are using for our palette
-			const float texcoord = 1.0f / (float)voxel::PaletteMaxColors;
-			// it is only 1 pixel high - sample the middle
-			const float v1 = 0.5f;
 			wrapBool(stream.writeString("\t\tLayerElementUV: 0 {\n", false))
 			wrapBool(stream.writeString("\t\t\tVersion: 101\n", false))
 			stream.writeStringFormat(false, "\t\t\tName: \"%sUV\"\n", objectName);
@@ -168,11 +164,11 @@ Objects: {
 			for (int i = 0; i < ni; i++) {
 				const uint32_t index = indices[i];
 				const voxel::VoxelVertex &v = vertices[index];
-				const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
+				const glm::vec2 &uv = paletteUV(v.colorIndex);
 				if (i > 0) {
 					wrapBool(stream.writeString(",", false))
 				}
-				stream.writeStringFormat(false, "%f,%f", u, v1);
+				stream.writeStringFormat(false, "%f,%f", uv.x, uv.y);
 			}
 			wrapBool(stream.writeString("\n\n", false))
 			// TODO: UVIndex needed or only for IndexToDirect?

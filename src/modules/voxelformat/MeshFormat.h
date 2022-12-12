@@ -56,6 +56,8 @@ protected:
 	 */
 	virtual bool voxelizeGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph);
 
+	static glm::vec2 paletteUV(int colorIndex);
+
 	/**
 	 * @see voxelizeGroups()
 	 */

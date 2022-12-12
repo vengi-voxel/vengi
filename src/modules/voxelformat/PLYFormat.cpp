@@ -67,10 +67,6 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 		KeyFrameIndex keyFrameIdx = 0;
 		const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 		const voxel::Palette &palette = graphNode.palette();
-		// 1 x 256 is the texture format that we are using for our palette
-		const float texcoord = 1.0f / (float)voxel::PaletteMaxColors;
-		// it is only 1 pixel high - sample the middle
-		const float v1 = 0.5f;
 
 		for (int i = 0; i < nv; ++i) {
 			const voxel::VoxelVertex& v = vertices[i];
@@ -83,8 +79,8 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 			pos *= scale;
 			stream.writeStringFormat(false, "%f %f %f", pos.x, pos.y, pos.z);
 			if (withTexCoords) {
-				const float u = ((float)(v.colorIndex) + 0.5f) * texcoord;
-				stream.writeStringFormat(false, " %f %f", u, v1);
+				const glm::vec2 &uv = paletteUV(v.colorIndex);
+				stream.writeStringFormat(false, " %f %f", uv.x, uv.y);
 			}
 			if (withColor) {
 				const core::RGBA color = palette.colors[v.colorIndex];

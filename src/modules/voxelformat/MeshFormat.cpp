@@ -95,6 +95,12 @@ core::RGBA MeshFormat::PosSampling::avgColor() const {
 	return color;
 }
 
+glm::vec2 MeshFormat::paletteUV(int colorIndex) {
+	// 1 x 256 is the texture format that we are using for our palette
+	const glm::vec2 &uv = image::Image::uv(colorIndex, 0, voxel::PaletteMaxColors, 1);
+	return uv;
+}
+
 void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) {
 	Log::trace("subdivided into %i triangles", (int)subdivided.size());
 	for (const Tri &tri : subdivided) {
