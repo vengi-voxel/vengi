@@ -1121,6 +1121,7 @@ void SceneManager::render(const video::Camera& camera, const glm::ivec2 &size, u
 	const bool depthTest = video::enable(video::State::DepthTest);
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderScene) {
+		// TODO: this resize leads to massive slowdown when doing multiviewport see issue #202
 		_volumeRenderer.resize(size);
 		_volumeRenderer.prepare(_sceneGraph, _currentFrameIdx, _hideInactive->boolVal(), _grayInactive->boolVal());
 		_volumeRenderer.render(camera, _renderShadow, false);
