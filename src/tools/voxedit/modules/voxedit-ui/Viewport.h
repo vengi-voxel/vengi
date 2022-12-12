@@ -42,7 +42,6 @@ private:
 	Bounds _boundsNode;
 	Bounds _bounds;
 
-	video::TexturePtr _texture;
 	voxelrender::RenderContext _renderContext;
 	core::VarPtr _showAxisVar;
 	core::VarPtr _guizmoRotation;

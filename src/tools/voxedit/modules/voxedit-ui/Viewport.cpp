@@ -247,28 +247,16 @@ void Viewport::shutdown() {
 }
 
 bool Viewport::saveImage(const char *filename) {
-	core_assert(_texture->format() == video::TextureFormat::RGBA);
-	if (_texture->format() != video::TextureFormat::RGBA) {
-		Log::error("Unsupported texture format");
-		return false;
-	}
-
-	core_trace_scoped(EditorSceneRenderFramebuffer);
 	_renderContext.frameBuffer.bind(true);
 	sceneMgr().render(_renderContext, camera(), SceneManager::RenderScene);
 	_renderContext.frameBuffer.unbind();
 
-	uint8_t *pixels;
-	if (!video::readTexture(video::TextureUnit::Upload, _texture->type(), _texture->format(), _texture->handle(),
-							_texture->width(), _texture->height(), &pixels)) {
+	const image::ImagePtr &image = _renderContext.frameBuffer.image(filename, video::FrameBufferAttachment::Color0);
+	if (!image) {
 		Log::error("Failed to read texture");
 		return false;
 	}
-	// TODO: renderer implementation specific
-	image::Image::flipVerticalRGBA(pixels, _texture->width(), _texture->height());
-	const bool val = image::Image::writePng(filename, pixels, _texture->width(), _texture->height(), 4);
-	core_free(pixels);
-	return val;
+	return image->writePng();
 }
 
 void Viewport::resetCamera() {
@@ -286,11 +274,10 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	if (frameBufferSize.x <= 0 || frameBufferSize.y <= 0) {
 		return false;
 	}
-	if (_texture && _texture->width() == frameBufferSize.x && _texture->height() == frameBufferSize.y) {
+	if ( _renderContext.frameBuffer.dimension() == frameBufferSize) {
 		return true;
 	}
 	resize(frameBufferSize);
-	_texture = _renderContext.frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	return true;
 }
 
