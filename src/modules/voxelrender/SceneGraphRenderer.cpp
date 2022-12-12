@@ -3,34 +3,34 @@
  */
 
 #include "SceneGraphRenderer.h"
+#include "ShaderAttribute.h"
+#include "VoxelShaderConstants.h"
+#include "core/Algorithm.h"
+#include "core/ArrayLength.h"
+#include "core/Color.h"
 #include "core/Common.h"
+#include "core/GLM.h"
+#include "core/GameConfig.h"
+#include "core/Log.h"
+#include "core/StandardLib.h"
 #include "core/Trace.h"
+#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
+#include "video/Camera.h"
+#include "video/Renderer.h"
+#include "video/ScopedLineWidth.h"
+#include "video/ScopedPolygonMode.h"
+#include "video/ScopedState.h"
+#include "video/Shader.h"
+#include "video/Types.h"
 #include "voxel/CubicSurfaceExtractor.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelutil/VolumeMerger.h"
-#include "voxel/MaterialColor.h"
-#include "video/ScopedLineWidth.h"
-#include "video/ScopedPolygonMode.h"
-#include "ShaderAttribute.h"
-#include "video/Camera.h"
-#include "video/Types.h"
-#include "video/Renderer.h"
-#include "video/ScopedState.h"
-#include "video/Shader.h"
-#include "core/Color.h"
-#include "core/ArrayLength.h"
-#include "core/GLM.h"
-#include "core/Var.h"
-#include "core/GameConfig.h"
-#include "core/Log.h"
-#include "core/Algorithm.h"
-#include "core/StandardLib.h"
-#include "VoxelShaderConstants.h"
 
 namespace voxelrender {
 
@@ -39,6 +39,9 @@ void SceneGraphRenderer::construct() {
 }
 
 bool SceneGraphRenderer::init(const glm::ivec2 &size) {
+	if (!_cameraRenderer.init(core::Color::White, 0)) {
+		Log::warn("Failed to initialize camera renderer");
+	}
 	return _renderer.init(size);
 }
 
@@ -60,24 +63,25 @@ bool SceneGraphRenderer::empty(voxelformat::SceneGraphNode &node) {
 	return _renderer.empty(getVolumeId(node));
 }
 
-bool SceneGraphRenderer::extractRegion(voxelformat::SceneGraphNode &node, const voxel::Region& region) {
+bool SceneGraphRenderer::extractRegion(voxelformat::SceneGraphNode &node, const voxel::Region &region) {
 	return _renderer.extractRegion(getVolumeId(node), region);
 }
 
-bool SceneGraphRenderer::toMesh(voxelformat::SceneGraphNode &node, voxel::Mesh* mesh) {
+bool SceneGraphRenderer::toMesh(voxelformat::SceneGraphNode &node, voxel::Mesh *mesh) {
 	return _renderer.toMesh(getVolumeId(node), mesh);
 }
 
-void SceneGraphRenderer::setAmbientColor(const glm::vec3& color) {
+void SceneGraphRenderer::setAmbientColor(const glm::vec3 &color) {
 	_renderer.setAmbientColor(color);
 }
 
-void SceneGraphRenderer::setDiffuseColor(const glm::vec3& color) {
+void SceneGraphRenderer::setDiffuseColor(const glm::vec3 &color) {
 	_renderer.setDiffuseColor(color);
 }
 
 void SceneGraphRenderer::shutdown() {
 	_renderer.shutdown();
+	_cameraRenderer.shutdown();
 }
 
 void SceneGraphRenderer::clear() {
@@ -90,7 +94,33 @@ void SceneGraphRenderer::clear() {
 	}
 }
 
-void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, voxelformat::FrameIndex frame, bool hideInactive, bool grayInactive) {
+static video::Camera toCamera(const voxelformat::SceneGraphNodeCamera &cameraNode) {
+	video::Camera camera;
+	if (cameraNode.isOrthographic()) {
+		camera.setMode(video::CameraMode::Orthogonal);
+	} else {
+		camera.setMode(video::CameraMode::Perspective);
+	}
+	float fplane = cameraNode.farPlane();
+	float nplane = cameraNode.nearPlane();
+	if (fplane > nplane) {
+		camera.setFarPlane(fplane);
+		camera.setNearPlane(nplane);
+	}
+	voxelformat::KeyFrameIndex keyFrameIdx = 0;
+	const voxelformat::SceneGraphTransform &transform = cameraNode.transform(keyFrameIdx);
+	camera.setWorldPosition(transform.worldTranslation());
+	camera.setOrientation(transform.worldOrientation());
+	camera.setRotationType(video::CameraRotationType::Eye);
+	const int fov = cameraNode.fieldOfView();
+	if (fov > 0) {
+		camera.setFieldOfView(glm::radians((float)fov));
+	}
+	return camera;
+}
+
+void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, voxelformat::FrameIndex frame, bool hideInactive,
+								 bool grayInactive) {
 	// remove those volumes that are no longer part of the scene graph
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
 		const int nodeId = getNodeId(i);
@@ -99,6 +129,16 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, voxelforma
 				Log::debug("%i is no longer part of the scene graph - remove from renderer", nodeId);
 			}
 		}
+	}
+	_cameras.clear();
+	for (voxelformat::SceneGraph::iterator iter = sceneGraph.begin(voxelformat::SceneGraphNodeType::Camera);
+		 iter != sceneGraph.end(); ++iter) {
+		voxelformat::SceneGraphNodeCamera &cameraNode = voxelformat::toCameraNode(*iter);
+		if (!cameraNode.visible()) {
+			continue;
+		}
+		video::Camera camera = toCamera(cameraNode);
+		_cameras.push_back(camera);
 	}
 
 	const int activeNode = sceneGraph.activeNode();
@@ -137,7 +177,7 @@ void SceneGraphRenderer::extractAll() {
 	}
 }
 
-void SceneGraphRenderer::render(const video::Camera& camera, bool shadow, bool waitPending) {
+void SceneGraphRenderer::render(const video::Camera &camera, bool shadow, bool waitPending) {
 	if (waitPending) {
 		extractAll();
 		_renderer.waitForPendingExtractions();
@@ -145,6 +185,11 @@ void SceneGraphRenderer::render(const video::Camera& camera, bool shadow, bool w
 	}
 
 	_renderer.render(camera, shadow);
+	for (video::Camera &sceneCamera : _cameras) {
+		sceneCamera.setSize(camera.size());
+		sceneCamera.update(0.0);
+		_cameraRenderer.render(camera, sceneCamera);
+	}
 }
 
-}
+} // namespace voxelrender

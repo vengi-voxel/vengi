@@ -61,7 +61,7 @@ app::AppState TestCamera::onInit() {
 		}
 		_renderCamera[i].update(0l);
 
-		if (!_frustums[i].init(_renderCamera[i], colors[i], renderSplitFrustum ? 4 : 0)) {
+		if (!_frustums[i].init(colors[i], renderSplitFrustum ? 4 : 0)) {
 			return app::AppState::InitFailure;
 		}
 		_frustums[i].setRenderAABB(renderAABB);

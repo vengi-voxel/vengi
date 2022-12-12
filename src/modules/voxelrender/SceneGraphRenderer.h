@@ -5,6 +5,8 @@
 #pragma once
 
 #include "RawVolumeRenderer.h"
+#include "core/collection/DynamicArray.h"
+#include "render/CameraFrustum.h"
 #include "voxelformat/SceneGraph.h"
 
 /**
@@ -18,6 +20,8 @@ namespace voxelrender {
 class SceneGraphRenderer : public core::NonCopyable {
 protected:
 	RawVolumeRenderer _renderer;
+	render::CameraFrustum _cameraRenderer;
+	core::DynamicArray<video::Camera> _cameras;
 	bool _sceneMode = true;
 
 public:
