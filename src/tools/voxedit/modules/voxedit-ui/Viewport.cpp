@@ -140,7 +140,7 @@ void Viewport::update() {
 		core_trace_scoped(Viewport);
 		ui::IMGUIApp *app = imguiApp();
 		{
-			ImVec2 contentSize = ImGui::GetWindowContentRegionMax();
+			glm::ivec2 contentSize = ImGui::GetWindowContentRegionMax();
 			const float headerSize = ImGui::GetCursorPosY();
 
 			if (setupFrameBuffer(contentSize)) {
