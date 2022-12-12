@@ -12,6 +12,7 @@
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "voxel/MaterialColor.h"
+#include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"
 #include "core/Log.h"
@@ -26,6 +27,8 @@ Thumbnailer::Thumbnailer(const io::FilesystemPtr& filesystem, const core::TimePr
 
 app::AppState Thumbnailer::onConstruct() {
 	app::AppState state = Super::onConstruct();
+
+	voxelformat::FormatConfig::init();
 
 	registerArg("--size").setShort("-s").setDescription("Size of the thumbnail in pixels").setDefaultValue("128").setMandatory();
 	registerArg("--turntable").setShort("-t").setDescription("Render in different angles");
