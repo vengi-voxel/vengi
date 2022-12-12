@@ -42,7 +42,6 @@ private:
 	Bounds _boundsNode;
 	Bounds _bounds;
 
-	video::FrameBuffer _frameBuffer;
 	video::TexturePtr _texture;
 	voxelrender::RenderContext _renderContext;
 	core::VarPtr _showAxisVar;
@@ -77,7 +76,7 @@ public:
 	RenderMode renderMode() const;
 	void setRenderMode(RenderMode mode);
 
-	void resize(const glm::ivec2& frameBufferSize, const glm::ivec2& windowSize);
+	void resize(const glm::ivec2& frameBufferSize);
 
 	void update(double deltaFrameSeconds);
 

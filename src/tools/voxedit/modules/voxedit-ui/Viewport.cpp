@@ -91,8 +91,14 @@ void Viewport::setMode(Viewport::SceneCameraMode mode) {
 	}
 }
 
-void Viewport::resize(const glm::ivec2&, const glm::ivec2& windowSize) {
-	_camera.setSize(windowSize);
+void Viewport::resize(const glm::ivec2 &frameBufferSize) {
+	const ui::IMGUIApp *app = imguiApp();
+	const glm::vec2 windowSize(app->windowDimension());
+	const glm::vec2 windowFrameBufferSize(app->frameBufferDimension());
+	const glm::vec2 scale = windowFrameBufferSize / windowSize;
+	const glm::ivec2 cameraSize((float)frameBufferSize.x * scale.x, (float)frameBufferSize.y * scale.y);
+	_camera.setSize(cameraSize);
+	_renderContext.resize(frameBufferSize);
 }
 
 void Viewport::move(bool pan, bool rotate, int x, int y) {
@@ -151,10 +157,10 @@ void Viewport::update() {
 
 				renderToFrameBuffer();
 				// use the uv coords here to take a potential fb flip into account
-				const glm::vec4 &uv = _frameBuffer.uv();
+				const glm::vec4 &uv = _renderContext.frameBuffer.uv();
 				const glm::vec2 uva(uv.x, uv.y);
 				const glm::vec2 uvc(uv.z, uv.w);
-				const video::TexturePtr &texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
+				const video::TexturePtr &texture = _renderContext.frameBuffer.texture(video::FrameBufferAttachment::Color0);
 				ImGui::Image(texture->handle(), contentSize, uva, uvc);
 				renderGizmo(camera(), headerSize, contentSize);
 
@@ -237,7 +243,6 @@ void Viewport::update() {
 }
 
 void Viewport::shutdown() {
-	_frameBuffer.shutdown();
 	_renderContext.shutdown();
 }
 
@@ -249,9 +254,9 @@ bool Viewport::saveImage(const char *filename) {
 	}
 
 	core_trace_scoped(EditorSceneRenderFramebuffer);
-	_frameBuffer.bind(true);
-	sceneMgr().render(_renderContext, camera(), _frameBuffer.dimension(), SceneManager::RenderScene);
-	_frameBuffer.unbind();
+	_renderContext.frameBuffer.bind(true);
+	sceneMgr().render(_renderContext, camera(), SceneManager::RenderScene);
+	_renderContext.frameBuffer.unbind();
 
 	uint8_t *pixels;
 	if (!video::readTexture(video::TextureUnit::Upload, _texture->type(), _texture->format(), _texture->handle(),
@@ -284,20 +289,8 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	if (_texture && _texture->width() == frameBufferSize.x && _texture->height() == frameBufferSize.y) {
 		return true;
 	}
-	const ui::IMGUIApp *app = imguiApp();
-	const glm::vec2 windowSize(app->windowDimension());
-	const glm::vec2 windowFrameBufferSize(app->frameBufferDimension());
-	const glm::vec2 scale = windowFrameBufferSize / windowSize;
-	Log::debug("Resize %s to %i:%i (scale %f:%f)", _id.c_str(), frameBufferSize.x, frameBufferSize.y, scale.x, scale.y);
-	resize(frameBufferSize,
-						 glm::ivec2((float)frameBufferSize.x * scale.x, (float)frameBufferSize.y * scale.y));
-	_frameBuffer.shutdown();
-
-	video::FrameBufferConfig cfg;
-	cfg.dimension(frameBufferSize).depthBuffer(true).colorTexture(true);
-	_frameBuffer.init(cfg);
-
-	_texture = _frameBuffer.texture(video::FrameBufferAttachment::Color0);
+	resize(frameBufferSize);
+	_texture = _renderContext.frameBuffer.texture(video::FrameBufferAttachment::Color0);
 	return true;
 }
 
@@ -430,9 +423,9 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 void Viewport::renderToFrameBuffer() {
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	video::clearColor(core::Color::Clear);
-	_frameBuffer.bind(true);
-	sceneMgr().render(_renderContext, camera(), _frameBuffer.dimension());
-	_frameBuffer.unbind();
+	_renderContext.frameBuffer.bind(true);
+	sceneMgr().render(_renderContext, camera());
+	_renderContext.frameBuffer.unbind();
 }
 
 } // namespace voxedit

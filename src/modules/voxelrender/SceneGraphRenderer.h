@@ -30,7 +30,6 @@ public:
 	void update();
 	void shutdown();
 
-	bool resize(RenderContext &renderContext, const glm::ivec2 &size);
 	void setAmbientColor(const glm::vec3& color);
 	void setDiffuseColor(const glm::vec3& color);
 
@@ -49,10 +48,6 @@ public:
 
 inline void SceneGraphRenderer::setSceneMode(bool sceneMode) {
 	_sceneMode = sceneMode;
-}
-
-inline bool SceneGraphRenderer::resize(RenderContext &renderContext, const glm::ivec2 &size) {
-	return _renderer.resize(renderContext, size);
 }
 
 } // namespace voxelrender

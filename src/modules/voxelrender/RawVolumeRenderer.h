@@ -47,6 +47,7 @@ struct RenderContext {
 
 	bool init(const glm::ivec2 &size);
 	void shutdown();
+	bool resize(const glm::ivec2 &size);
 };
 
 /**
@@ -187,7 +188,6 @@ public:
 	 * @sa shutdown()
 	 */
 	bool init();
-	bool resize(RenderContext &renderContext, const glm::ivec2 &size);
 
 	bool scheduleExtractions(size_t maxExtraction = 1);
 	void update();

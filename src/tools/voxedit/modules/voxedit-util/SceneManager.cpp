@@ -1118,11 +1118,10 @@ void SceneManager::updateAABBMesh() {
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
 
-void SceneManager::render(voxelrender::RenderContext &renderContext, const video::Camera& camera, const glm::ivec2 &size, uint8_t renderMask) {
+void SceneManager::render(voxelrender::RenderContext &renderContext, const video::Camera& camera, uint8_t renderMask) {
 	const bool depthTest = video::enable(video::State::DepthTest);
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderScene) {
-		_volumeRenderer.resize(renderContext, size);
 		_volumeRenderer.prepare(_sceneGraph, _currentFrameIdx, _hideInactive->boolVal(), _grayInactive->boolVal());
 		_volumeRenderer.render(renderContext, camera, _renderShadow, false);
 		extractVolume();

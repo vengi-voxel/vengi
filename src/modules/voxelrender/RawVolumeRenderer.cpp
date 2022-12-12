@@ -57,6 +57,29 @@ bool RenderContext::init(const glm::ivec2 &size) {
 	return true;
 }
 
+bool RenderContext::resize(const glm::ivec2 &size) {
+	if (frameBuffer.dimension() == size) {
+		return true;
+	}
+	frameBuffer.shutdown();
+	video::FrameBufferConfig cfg;
+	cfg.dimension(size);
+	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
+	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
+	cfg.depthBuffer(true);
+	if (!frameBuffer.init(cfg)) {
+		Log::error("Failed to initialize the volume renderer bloom framebuffer");
+		return false;
+	}
+
+	// we have to do an y-flip here due to the framebuffer handling
+	if (!bloomRenderer.resize(size.x, size.y)) {
+		Log::error("Failed to initialize the bloom renderer");
+		return false;
+	}
+	return true;
+}
+
 void RenderContext::shutdown() {
 	frameBuffer.shutdown();
 	bloomRenderer.shutdown();
@@ -69,29 +92,6 @@ RawVolumeRenderer::RawVolumeRenderer() :
 
 void RawVolumeRenderer::construct() {
 	core::Var::get(cfg::VoxelMeshSize, "64", core::CV_READONLY);
-}
-
-bool RawVolumeRenderer::resize(RenderContext &renderContext, const glm::ivec2 &size) {
-	if (renderContext.frameBuffer.dimension() == size) {
-		return true;
-	}
-	renderContext.frameBuffer.shutdown();
-	video::FrameBufferConfig cfg;
-	cfg.dimension(size);
-	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
-	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
-	cfg.depthBuffer(true);
-	if (!renderContext.frameBuffer.init(cfg)) {
-		Log::error("Failed to initialize the volume renderer bloom framebuffer");
-		return false;
-	}
-
-	// we have to do an y-flip here due to the framebuffer handling
-	if (!renderContext.bloomRenderer.resize(size.x, size.y)) {
-		Log::error("Failed to initialize the bloom renderer");
-		return false;
-	}
-	return true;
 }
 
 bool RawVolumeRenderer::init() {
