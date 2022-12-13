@@ -45,9 +45,11 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 	switch (event.type) {
 	case SDL_DROPFILE:
 		dropFile(event.drop.file);
+		SDL_free(event.drop.file);
 		break;
 	case SDL_DROPTEXT:
 		dropText(event.drop.file);
+		SDL_free(event.drop.file);
 		break;
 	case SDL_TEXTINPUT:
 		textInput(core::String(event.text.text));
