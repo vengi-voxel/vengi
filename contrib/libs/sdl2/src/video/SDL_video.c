@@ -640,6 +640,7 @@ void SDL_DelVideoDisplay(int index)
     SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_DISCONNECTED, 0);
 
     if (index < (_this->num_displays - 1)) {
+        SDL_free(_this->displays[index].driverdata);
         SDL_memmove(&_this->displays[index], &_this->displays[index + 1], (_this->num_displays - index - 1) * sizeof(_this->displays[index]));
     }
     --_this->num_displays;
@@ -1197,16 +1198,32 @@ int SDL_GetWindowDisplayIndex(SDL_Window *window)
             return displayIndex;
         }
 
+        displayIndex =  GetRectDisplayIndex(window->x, window->y, window->w, window->h);
+
         /* Find the display containing the window if fullscreen */
         for (i = 0; i < _this->num_displays; ++i) {
             SDL_VideoDisplay *display = &_this->displays[i];
 
             if (display->fullscreen_window == window) {
-                return i;
+                if (displayIndex != i) {
+                    if (displayIndex < 0) {
+                        displayIndex = i;
+                    } else {
+                        SDL_VideoDisplay *new_display = &_this->displays[displayIndex];
+
+                        /* The window was moved to a different display */
+                        if (new_display->fullscreen_window != NULL) {
+                            /* Uh oh, there's already a fullscreen window here */
+                        } else {
+                            new_display->fullscreen_window = window;
+                        }
+                        display->fullscreen_window = NULL;
+                    }
+                }
+                break;
             }
         }
-
-        return GetRectDisplayIndex(window->x, window->y, window->w, window->h);
+        return displayIndex;
     }
 }
 
@@ -1581,6 +1598,11 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
         if (_this == NULL) {
             return NULL;
         }
+    }
+
+    /* Make sure the display list is up to date for window placement */
+    if (_this->RefreshDisplays) {
+        _this->RefreshDisplays(_this);
     }
 
     /* ensure no more than one of these flags is set */
