@@ -41,6 +41,7 @@ namespace voxelrender {
 bool RenderContext::init(const glm::ivec2 &size) {
 	video::FrameBufferConfig cfg;
 	cfg.dimension(size);
+	// TODO: add multisampling support
 	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color0); // scene
 	cfg.addTextureAttachment(video::createDefaultTextureConfig(), video::FrameBufferAttachment::Color1); // bloom
 	cfg.depthBuffer(true);

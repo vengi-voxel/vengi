@@ -1489,12 +1489,12 @@ bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int
 void setupTexture(const TextureConfig& config) {
 	video_trace_scoped(SetupTexture);
 	const GLenum glType = _priv::TextureTypes[core::enumVal(config.type())];
-	if (config.filterMag() != TextureFilter::Max) {
+	if (config.type() != TextureType::Texture2DMultisample && config.filterMag() != TextureFilter::Max) {
 		const GLenum glFilterMag = _priv::TextureFilters[core::enumVal(config.filterMag())];
 		glTexParameteri(glType, GL_TEXTURE_MAG_FILTER, glFilterMag);
 		checkError();
 	}
-	if (config.filterMin() != TextureFilter::Max) {
+	if (config.type() != TextureType::Texture2DMultisample && config.filterMin() != TextureFilter::Max) {
 		const GLenum glFilterMin = _priv::TextureFilters[core::enumVal(config.filterMin())];
 		glTexParameteri(glType, GL_TEXTURE_MIN_FILTER, glFilterMin);
 		checkError();
@@ -1504,12 +1504,12 @@ void setupTexture(const TextureConfig& config) {
 		glTexParameteri(glType, GL_TEXTURE_WRAP_R, glWrapR);
 		checkError();
 	}
-	if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) &&  config.wrapS() != TextureWrap::Max) {
+	if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) && config.wrapS() != TextureWrap::Max) {
 		const GLenum glWrapS = _priv::TextureWraps[core::enumVal(config.wrapS())];
 		glTexParameteri(glType, GL_TEXTURE_WRAP_S, glWrapS);
 		checkError();
 	}
-	if (config.wrapT() != TextureWrap::Max) {
+	if ((config.type() == TextureType::Texture2D || config.type() == TextureType::Texture3D) && config.wrapT() != TextureWrap::Max) {
 		const GLenum glWrapT = _priv::TextureWraps[core::enumVal(config.wrapT())];
 		glTexParameteri(glType, GL_TEXTURE_WRAP_T, glWrapT);
 		checkError();
