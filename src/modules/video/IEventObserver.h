@@ -80,6 +80,9 @@ public:
 	virtual void onDropFile(const core::String& file) {
 	}
 
+	virtual void onDropText(const core::String& text) {
+	}
+
 	virtual bool onTextInput(const core::String& text) {
 		return false;
 	}

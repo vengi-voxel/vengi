@@ -16,6 +16,8 @@ EventHandler::EventHandler() :
 		_multiGesture(false) {
 	//SDL_JoystickEventState(SDL_DISABLE);
 	SDL_EventState(SDL_JOYAXISMOTION, SDL_ENABLE);
+	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+	SDL_EventState(SDL_DROPTEXT, SDL_ENABLE);
 }
 
 EventHandler::~EventHandler() {
@@ -43,6 +45,9 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 	switch (event.type) {
 	case SDL_DROPFILE:
 		dropFile(event.drop.file);
+		break;
+	case SDL_DROPTEXT:
+		dropText(event.drop.file);
 		break;
 	case SDL_TEXTINPUT:
 		textInput(core::String(event.text.text));
@@ -304,6 +309,12 @@ void EventHandler::mouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 void EventHandler::dropFile(const core::String& file) {
 	for (IEventObserver* observer : _observers) {
 		observer->onDropFile(file);
+	}
+}
+
+void EventHandler::dropText(const core::String& text) {
+	for (IEventObserver* observer : _observers) {
+		observer->onDropText(text);
 	}
 }
 
