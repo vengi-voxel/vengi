@@ -1,3 +1,12 @@
+include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
+
+check_c_compiler_flag("-Wno-sign-compare" C_NO_SIGN_COMPARE)
+if (C_NO_SIGN_COMPARE)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-sign-compare")
+endif()
+
+set(CMAKE_C_FLAGS "")
 add_subdirectory(backward)
 add_subdirectory(benchmark)
 add_subdirectory(glm)

@@ -1,7 +1,6 @@
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
-include(CheckCCompilerFlag)
 
 set(DATA_DIR ${ROOT_DIR}/data CACHE STRING "" FORCE)
 
