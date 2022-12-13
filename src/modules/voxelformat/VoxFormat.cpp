@@ -518,14 +518,20 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 
 	ogt_vox_scene output_scene;
 	core_memset(&output_scene, 0, sizeof(output_scene));
-	output_scene.groups = &ctx.groups[0];
 	output_scene.num_groups = ctx.groups.size();
-	output_scene.instances = &ctx.instances[0];
+	if (output_scene.num_groups > 0) {
+		output_scene.groups = &ctx.groups[0];
+	}
 	output_scene.num_instances = ctx.instances.size();
-	output_scene.layers = &ctx.layers[0];
+	if (output_scene.num_instances > 0) {
+		output_scene.instances = &ctx.instances[0];
+	}
 	output_scene.num_layers = ctx.layers.size();
-	output_scene.models = modelsPtr;
+	if (output_scene.num_layers > 0) {
+		output_scene.layers = &ctx.layers[0];
+	}
 	output_scene.num_models = modelPtr.size();
+	output_scene.models = modelsPtr;
 	core_memset(&output_scene.materials, 0, sizeof(output_scene.materials));
 	output_scene.num_cameras = ctx.cameras.size();
 	if (output_scene.num_cameras > 0) {
