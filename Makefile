@@ -31,7 +31,10 @@ clean:
 distclean:
 	$(Q)git clean -fdx
 
-deb:
+deb-changelog:
+	$(Q)contrib/installer/linux/changelog.py docs/CHANGELOG.md > debian/changelog
+
+deb: deb-changelog
 	$(Q)debuild -b -ui -uc -us
 
 tests:

@@ -580,7 +580,7 @@ Server/Client:
    - Built-in HTTP server to download the chunks
    - Replaced ui for the client
 
-Voxel rendering
+Voxel rendering:
 
    - Implemented reflection for water surfaces
    - Apply checkerboard pattern to voxel surfaces
