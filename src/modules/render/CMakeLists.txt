@@ -29,7 +29,7 @@ foreach (SHADER ${SHADERS})
 	list(APPEND SRCS_SHADERS "shaders/${SHADER}.frag")
 endforeach()
 set(LIB render)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES video noise)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES video)
 generate_shaders(${LIB} ${SHADERS})
 
 set(TEST_SRCS

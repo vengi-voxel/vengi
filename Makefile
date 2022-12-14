@@ -199,7 +199,6 @@ update-tinyobjloader:
 	$(call UPDATE_GIT,tinyobjloader,https://github.com/tinyobjloader/tinyobjloader.git)
 	cp $(UPDATEDIR)/tinyobjloader.sync/tiny_obj_loader.h src/modules/voxelformat/external
 
-# TODO simpleai support
 # TODO lua support
 updatelibs: update-stb update-googletest update-benchmark update-backward update-dearimgui update-glm update-sdl2 update-glslang update-simplecpp
 	$(MAKE) -C $(BUILDDIR) update-libs
