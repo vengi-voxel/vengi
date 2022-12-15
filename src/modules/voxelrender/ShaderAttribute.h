@@ -8,13 +8,11 @@
 #include "video/Types.h"
 #include "video/Renderer.h"
 #include "voxel/VoxelVertex.h"
-#include "voxel/Constants.h"
 #include "core/GLM.h"
 
 namespace voxelrender {
 
 inline video::Attribute getPositionVertexAttribute(uint32_t bufferIndex, uint32_t attributeLocation, int components = sizeof(voxel::VoxelVertex::position) / sizeof(decltype(voxel::VoxelVertex::position)::value_type)) {
-	static_assert(voxel::MAX_TERRAIN_HEIGHT < 256, "Max terrain height exceeds the valid voxel positions");
 	video::Attribute attrib;
 	attrib.bufferIndex = (int32_t)bufferIndex;
 	attrib.location = (int32_t)attributeLocation;

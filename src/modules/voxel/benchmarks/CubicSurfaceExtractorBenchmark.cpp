@@ -6,11 +6,10 @@
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/Constants.h"
 #include "voxel/RawVolume.h"
 
 static constexpr int MAX_BENCHMARK_VOLUME_SIZE = 64;
-static const int meshSize = voxel::MAX_MESH_CHUNK_HEIGHT;
+static const int meshSize = 128;
 class CubicSurfaceExtractorBenchmark : public app::AbstractBenchmark {
 public:
 	void onCleanupApp() override {

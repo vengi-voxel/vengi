@@ -11,7 +11,6 @@ namespace tinygltf {
 class Model;
 class Node;
 struct Scene;
-struct Mesh;
 struct Material;
 struct Primitive;
 struct Accessor;

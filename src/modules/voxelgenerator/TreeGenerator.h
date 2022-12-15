@@ -5,7 +5,6 @@
 #pragma once
 
 #include "math/Random.h"
-#include "voxel/Constants.h"
 #include "TreeContext.h"
 #include "Spiral.h"
 #include "ShapeGenerator.h"

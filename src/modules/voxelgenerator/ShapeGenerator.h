@@ -6,7 +6,6 @@
 
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Vector.h"
-#include "voxel/Constants.h"
 #include "voxel/Voxel.h"
 #include "core/Assert.h"
 #include "core/Common.h"
@@ -19,6 +18,8 @@
 
 namespace voxelgenerator {
 namespace shape {
+
+constexpr int MAX_HEIGHT = 255;
 
 /**
  * @brief Creates a filled circle
@@ -69,7 +70,7 @@ void createCube(Volume& volume, const glm::ivec3& center, int width, int height,
 	const int heightLow = height / 2;
 	const int widthLow = width / 2;
 	const int depthLow = depth / 2;
-	core::Vector<voxel::Voxel, voxel::MAX_HEIGHT> voxels;
+	core::Vector<voxel::Voxel, MAX_HEIGHT> voxels;
 	voxels.assign(voxel, height);
 	volume.setVoxels(center.x - widthLow, center.y - heightLow, center.z - depthLow,
 			width, depth, &voxels.front(), height);
@@ -93,7 +94,7 @@ void createCube(Volume& volume, const glm::ivec3& center, const glm::ivec3& dim,
  */
 template<class Volume>
 void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const voxel::Voxel& voxel) {
-	core::Vector<voxel::Voxel, voxel::MAX_HEIGHT> voxels;
+	core::Vector<voxel::Voxel, MAX_HEIGHT> voxels;
 	voxels.assign(voxel, height);
 	volume.setVoxels(pos.x, pos.y, pos.z, width, depth, &voxels.front(), height);
 }

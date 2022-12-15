@@ -5,7 +5,6 @@
 #include "TestHelper.h"
 #include "core/Common.h"
 #include "math/Random.h"
-#include "voxel/Constants.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
