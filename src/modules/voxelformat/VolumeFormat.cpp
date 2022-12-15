@@ -376,9 +376,13 @@ bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, io::Seekab
 	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
 			core::SharedPtr<Format> f = getFormat(desc, 0u, false);
-			if (f && f->save(sceneGraph, filename, stream, thumbnailCreator)) {
-				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
-				return true;
+			if (f) {
+				if (f->save(sceneGraph, filename, stream, thumbnailCreator)) {
+					Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
+					return true;
+				}
+				Log::error("Failed to save %s file", desc->name.c_str());
+				return false;
 			}
 		}
 	}
