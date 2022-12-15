@@ -69,6 +69,9 @@ image::ImagePtr Format::createThumbnail(const SceneGraph& sceneGraph, ThumbnailC
 void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop) {
 	destSceneGraph.reserve(srcSceneGraph.size());
 	for (SceneGraphNode &node : srcSceneGraph) {
+		if (stopExecution()) {
+			break;
+		}
 		const voxel::Region& region = node.region();
 		if (!region.isValid()) {
 			Log::debug("invalid region for node %i", node.id());
