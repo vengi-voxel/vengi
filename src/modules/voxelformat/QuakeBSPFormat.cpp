@@ -170,22 +170,17 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 			continue;
 		}
 
-		const int len = pixelSize * 4;
-		core::Buffer<uint8_t> buffer(len);
-		uint8_t *buf = buffer.data();
+		core::Buffer<core::RGBA> buffer(pixelSize);
 		for (int i = 0; i < pixelSize; ++i) {
-			const uint8_t palIdx = pixels[i];
-			core::RGBA color = pal.colors[palIdx];
-			*(core::RGBA*)buf = color;
-			buf += sizeof(core::RGBA);
+			buffer[i] = pal.colors[pixels[i]];
 		}
-		if (tex->loadRGBA(buf, width, height)) {
+		if (tex->loadRGBA((const uint8_t*)buffer.data(), width, height)) {
 			Log::debug("Use image %s", texture.name);
 			textureMap.put(texture.name, tex);
 			texture.image = tex;
 #if 0
 			core::String png = tex->name() + ".png";
-			tex->writePng(png.c_str(), buffer.data(), width, height, 4);
+			image::Image::writePng(png.c_str(), (const uint8_t*)buffer.data(), width, height, 4);
 			Log::error("write png file %s", png.c_str());
 #endif
 		} else {
