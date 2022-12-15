@@ -627,6 +627,9 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 		face.index = offset;
 
 		for (int j = 0; j < face.edgeCount; j++) {
+			if (stopExecution()) {
+				break;
+			}
 			const int surfEdgesIdx = face.edgeId + j;
 			if (surfEdgesIdx < 0 || surfEdgesIdx >= (int)surfEdges.size()) {
 				Log::error("Invalid surf edge index given: %i", surfEdgesIdx);
@@ -686,6 +689,9 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 	TriCollection tris;
 	tris.reserve(numIndices / 3);
 	for (int i = 0; i < numIndices; i += 3) {
+		if (stopExecution()) {
+			break;
+		}
 		Tri tri;
 		for (int k = 0; k < 3; ++k) {
 			const int idx = indices[i + k];
