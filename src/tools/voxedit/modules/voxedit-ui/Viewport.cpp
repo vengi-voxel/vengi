@@ -101,12 +101,16 @@ void Viewport::resize(const glm::ivec2 &frameBufferSize) {
 	_renderContext.resize(frameBufferSize);
 }
 
+bool Viewport::isFixedCamera() const {
+	return _camMode != SceneCameraMode::Free;
+}
+
 void Viewport::move(bool pan, bool rotate, int x, int y) {
 	if (rotate) {
 		const float yaw = (float)(x - _mouseX);
 		const float pitch = (float)(y - _mouseY);
 		const float s = _rotationSpeed->floatVal();
-		if (_camMode == SceneCameraMode::Free) {
+		if (!isFixedCamera()) {
 			_camera.turn(yaw * s);
 			_camera.setPitch(pitch * s);
 		}
@@ -130,12 +134,6 @@ void Viewport::updateViewportTrace(float headerSize) {
 }
 
 void Viewport::update() {
-	static const char *polygonModes[] = {"Points", "Lines", "Solid"};
-	static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
-
-	static const char *camRotTypes[] = {"Reference Point", "Eye"};
-	static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
-
 	_camera.setFarPlane(_viewDistance->floatVal());
 
 	_hovered = false;
@@ -205,21 +203,29 @@ void Viewport::update() {
 
 				const float height = ImGui::GetFrameHeight();
 				const ImVec2 windowSize = ImGui::GetWindowSize();
-				ImGui::SetCursorPos(ImVec2(0.0f, windowSize.y - height));
-				const int currentCamRotType = (int)camera().rotationType();
-				ImGui::SetNextItemWidth(ImGui::CalcComboBoxWidth(camRotTypes[currentCamRotType]));
-				if (ImGui::BeginCombo("##referencepoint", camRotTypes[currentCamRotType])) {
-					for (int n = 0; n < lengthof(camRotTypes); n++) {
-						const bool isSelected = (currentCamRotType == n);
-						if (ImGui::Selectable(camRotTypes[n], isSelected)) {
-							camera().setRotationType((video::CameraRotationType)n);
+
+				if (!isFixedCamera()) {
+					static const char *camRotTypes[] = {"Reference Point", "Eye"};
+					static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
+					ImGui::SetCursorPos(ImVec2(0.0f, windowSize.y - height));
+					const int currentCamRotType = (int)camera().rotationType();
+					ImGui::SetNextItemWidth(ImGui::CalcComboBoxWidth(camRotTypes[currentCamRotType]));
+					if (ImGui::BeginCombo("##referencepoint", camRotTypes[currentCamRotType])) {
+						for (int n = 0; n < lengthof(camRotTypes); n++) {
+							const bool isSelected = (currentCamRotType == n);
+							if (ImGui::Selectable(camRotTypes[n], isSelected)) {
+								camera().setRotationType((video::CameraRotationType)n);
+							}
+							if (isSelected) {
+								ImGui::SetItemDefaultFocus();
+							}
 						}
-						if (isSelected) {
-							ImGui::SetItemDefaultFocus();
-						}
+						ImGui::EndCombo();
 					}
-					ImGui::EndCombo();
 				}
+
+				static const char *polygonModes[] = {"Points", "Lines", "Solid"};
+				static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
 				const int currentPolygonMode = (int)camera().polygonMode();
 				const float polygonModeMaxWidth = ImGui::CalcComboBoxWidth(polygonModes[currentPolygonMode]);
 				ImGui::SetCursorPos(ImVec2(windowSize.x - polygonModeMaxWidth, windowSize.y - height));
@@ -320,10 +326,6 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 		ImGuizmo::MODE::LOCAL, glm::value_ptr(localMatrix), glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr,
 		glm::value_ptr(_bounds.mins), boundsSnap);
 
-	if (editMode == EditMode::Model) {
-		return;
-	}
-
 	const bool guizmoActive = ImGuizmo::IsUsing();
 	_hoveredGuizmoLastFrame = ImGuizmo::IsOver() || guizmoActive;
 
@@ -352,6 +354,9 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 }
 
 void Viewport::renderCameraManipulator(video::Camera &camera) {
+	if (isFixedCamera()) {
+		return;
+	}
 	const EditMode editMode = sceneMgr().editMode();
 	const ImVec2 position = ImGui::GetWindowPos();
 	const ImVec2 size = ImVec2(128, 128);
