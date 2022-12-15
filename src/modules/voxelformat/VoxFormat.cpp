@@ -500,6 +500,10 @@ glm::ivec3 VoxFormat::maxSize() const {
 
 bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
 	voxel::Palette palette = sceneGraph.mergePalettes(true, 0);
+	if (palette.colorCount <= 0) {
+		Log::error("Could not find any colors in the merged palette");
+		return false;
+	}
 	int palReplacement = findClosestPaletteIndex(palette);
 
 	core_assert(palReplacement != 0u);
