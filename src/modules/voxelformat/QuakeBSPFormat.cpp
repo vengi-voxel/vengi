@@ -248,7 +248,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionTextures(const core::String &filename, 
 }
 
 bool QuakeBSPFormat::loadQuake1Faces(io::SeekableReadStream &stream, const BspHeader &header,
-											   core::DynamicArray<Face> &faces) {
+									 core::DynamicArray<Face> &faces, const core::DynamicArray<Texture> &textures) {
 	const int32_t faceCount = validateLump(header.lumps[_priv::quake1FacesLump], sizeof(BspFace));
 	if (faceCount <= 0) {
 		Log::error("Invalid bsp file with no faces in lump");
@@ -258,15 +258,22 @@ bool QuakeBSPFormat::loadQuake1Faces(io::SeekableReadStream &stream, const BspHe
 		Log::error("Invalid faces lump offset - can't seek");
 		return false;
 	}
-	faces.resize(faceCount);
+	faces.reserve(faceCount);
 	for (int32_t i = 0; i < faceCount; i++) {
 		stream.skip(2); // planeId
 		stream.skip(2); // side
 
-		Face &face = faces[i];
+		Face face;
 		wrap(stream.readInt32(face.edgeId))
 		wrap(stream.readInt16(face.edgeCount))
 		wrap(stream.readInt16(face.textureId))
+
+		const char *texName = textures[face.textureId].name;
+		if (!core::string::startsWith(texName, "sky")/* && texName[0] != '*'*/) {
+			faces.push_back(face);
+		} else {
+			Log::debug("skip face with %s", texName);
+		}
 
 		stream.skip(4); // 4 byte styles
 		stream.skip(4); // lightofs
@@ -454,7 +461,7 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 	}
 
 	core::DynamicArray<Face> faces;
-	if (!loadQuake1Faces(stream, header, faces)) {
+	if (!loadQuake1Faces(stream, header, faces, textures)) {
 		Log::error("Failed to load faces");
 		return false;
 	}

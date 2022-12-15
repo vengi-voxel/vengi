@@ -113,7 +113,8 @@ private:
 					   const BspHeader &header);
 	bool loadQuake1Textures(const core::String &filename, io::SeekableReadStream &stream, const BspHeader &header,
 							core::DynamicArray<Texture> &textures, core::StringMap<image::ImagePtr> &textureMap);
-	bool loadQuake1Faces(io::SeekableReadStream &stream, const BspHeader &header, core::DynamicArray<Face> &faces);
+	bool loadQuake1Faces(io::SeekableReadStream &stream, const BspHeader &header, core::DynamicArray<Face> &faces,
+						 const core::DynamicArray<Texture> &textures);
 	bool loadQuake1Edges(io::SeekableReadStream &stream, const BspHeader &header, core::DynamicArray<BspEdge> &edges,
 						 core::DynamicArray<int32_t> &surfEdges);
 	bool loadQuake1Vertices(io::SeekableReadStream &stream, const BspHeader &header,
