@@ -260,6 +260,9 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 	}
 	node.setPalette(palette);
 	if (fillHollow) {
+		if (stopExecution()) {
+			return;
+		}
 		Log::debug("fill hollows");
 		const voxel::Voxel voxel = voxel::createVoxel(FillColorIndex);
 		voxelutil::fillHollow(wrapper, voxel);
