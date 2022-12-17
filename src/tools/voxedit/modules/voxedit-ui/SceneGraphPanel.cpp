@@ -186,6 +186,13 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, command::
 	const voxelformat::SceneGraph &sceneGraph = voxedit::sceneMgr().sceneGraph();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		core_trace_scoped(SceneGraphPanel);
+		ImVec2 size = ImGui::GetWindowSize();
+		const float textLineHeight = ImGui::GetTextLineHeight();
+		size.y -= textLineHeight * 10.0f;
+		if (size.y <= textLineHeight * 2.0f) {
+			size.y = textLineHeight * 2.0f;
+		}
+		ImGui::BeginChild("master##scenegraphpanel", size);
 
 		if (ImGui::Button(ICON_FA_SQUARE_PLUS "##scenegraphnewgroup")) {
 			voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Group);
@@ -200,11 +207,12 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, command::
 		ImGui::TooltipText("Remove the active node with all its children");
 
 		// TODO: filter by name and type
-		recursiveAddNodes(camera, sceneGraph, sceneGraph.node(0), listener);
+		recursiveAddNodes(camera, sceneGraph, sceneGraph.node(sceneGraph.root().id()), listener);
+		ImGui::EndChild();
 
-		const ImVec2 contentRegion = ImGui::GetWindowContentRegionMax();
-		ImGui::SetCursorPosY(contentRegion.y - ImGui::GetTextLineHeight() * 10);
-		ImGui::BeginChild("Detail##scenegraphpanel");
+		// TODO: allow to hide this detail view
+		ImGui::Separator();
+		ImGui::BeginChild("detail##scenegraphpanel");
 		detailView(sceneGraph.node(sceneGraph.activeNode()));
 		ImGui::EndChild();
 	}
