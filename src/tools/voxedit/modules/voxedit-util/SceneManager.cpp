@@ -904,6 +904,11 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 		const core::String &name = node->name();
 		const voxelformat::SceneGraphNodeType type = node->type();
 		Log::debug("Adding node %i with name %s", newNodeId, name.c_str());
+
+		for (voxelformat::SceneGraphKeyFrame &keyFrame : node->keyFrames()) {
+			keyFrame.transform().update(sceneGraph(), *node, keyFrame.frameIdx);
+		}
+
 		_mementoHandler.markNodeAdded(*node);
 		markDirty();
 
