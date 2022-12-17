@@ -94,8 +94,9 @@ void SceneGraphRenderer::clear() {
 	}
 }
 
-video::Camera toCamera(const voxelformat::SceneGraphNodeCamera &cameraNode) {
+video::Camera toCamera(const glm::ivec2 &size, const voxelformat::SceneGraphNodeCamera &cameraNode) {
 	video::Camera camera;
+	camera.setSize(size);
 	if (cameraNode.isOrthographic()) {
 		camera.setMode(video::CameraMode::Orthogonal);
 	} else {
@@ -137,7 +138,8 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, voxelforma
 		if (!cameraNode.visible()) {
 			continue;
 		}
-		video::Camera camera = toCamera(cameraNode);
+		// size is set later
+		video::Camera camera = toCamera(glm::ivec2(100), cameraNode);
 		_cameras.push_back(camera);
 	}
 

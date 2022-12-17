@@ -2419,7 +2419,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 	voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
 		const voxelformat::SceneGraphNodeCamera& cameraNode = voxelformat::toCameraNode(node);
-		video::Camera nodeCamera = voxelrender::toCamera(cameraNode);
+		video::Camera nodeCamera = voxelrender::toCamera(activeCamera()->size(), cameraNode);
 		nodeCamera.update(0.0f);
 		activeCamera()->lerp(nodeCamera);
 		return false;
