@@ -8,7 +8,11 @@ See [the documentation](https://mgerhardy.github.io/vengi/) for further details.
 
 Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
 
-## 0.0.23 (2022-XX-XX)
+## 0.0.24 (2022-XX-XX)
+
+General:
+
+## 0.0.23 (2022-12-17)
 
 General:
 
