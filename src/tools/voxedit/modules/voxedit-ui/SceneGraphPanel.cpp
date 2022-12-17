@@ -32,64 +32,37 @@ static core::String toString(const voxelformat::SceneGraphTransform &transform) 
 	return str;
 }
 
-static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
-	ui::ScopedStyleCompact scopedStyle;
-	core::String name;
-	switch (node.type()) {
-	case voxelformat::SceneGraphNodeType::Model:
-		name = ICON_FA_CUBES;
-		break;
-	case voxelformat::SceneGraphNodeType::Root:
-	case voxelformat::SceneGraphNodeType::Group:
-		name = ICON_FA_OBJECT_GROUP;
-		break;
-	case voxelformat::SceneGraphNodeType::Camera:
-		name = ICON_FA_CAMERA;
-		break;
-	case voxelformat::SceneGraphNodeType::Unknown:
-		name = ICON_FA_CIRCLE_QUESTION;
-		break;
-	case voxelformat::SceneGraphNodeType::Max:
-		break;
+static void detailView(const voxelformat::SceneGraphNode &node) {
+	const float maxPropKeyLength = ImGui::CalcTextSize("maxpropertykey").x;
+	if (node.type() == voxelformat::SceneGraphNodeType::Model) {
+		const voxel::Region &region = node.region();
+		const glm::ivec3 &pos = region.getLowerCorner();
+		const glm::ivec3 &size = region.getDimensionsInVoxels();
+		ImGui::PushItemWidth(maxPropKeyLength);
+		ImGui::LabelText(core::string::format("%i:%i:%i", pos.x, pos.y, pos.z).c_str(), "position");
+		ImGui::LabelText(core::string::format("%i:%i:%i", size.x, size.y, size.z).c_str(), "size");
+		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+			sceneMgr().nodeActivate(node.id());
+		}
+		ImGui::PopItemWidth();
 	}
-	name.append(core::string::format(" %s##%i", node.name().c_str(), node.id()));
-	ImGui::TableNextRow();
-	ImGui::TableNextColumn();
-	const bool selected = node.id() == sceneGraph.activeNode();
-	ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth;
-	if (selected) {
-		treeFlags |= ImGuiTreeNodeFlags_Selected;
+	ImGui::PushItemWidth(maxPropKeyLength);
+	for (const auto &entry : node.properties()) {
+		// TODO: allow to edit them
+		ImGui::LabelText(entry->value.c_str(), "%s", entry->key.c_str());
 	}
-	const bool open = ImGui::TreeNodeEx(name.c_str(), treeFlags);
-	if (node.id() != sceneGraph.root().id()) {
-		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-			ImGui::Text("%s", name.c_str());
-			const int sourceNodeId = node.id();
-			ImGui::SetDragDropPayload(dragdrop::SceneNodePayload, (const void*)&sourceNodeId, sizeof(int), ImGuiCond_Always);
-			ImGui::EndDragDropSource();
+	ImGui::PopItemWidth();
+	if (node.keyFrames().size() > 1) {
+		for (const auto &entry : node.keyFrames()) {
+			const core::String &kftText = toString(entry.transform());
+			ImGui::TextWrapped("%i (%s, long rotation: %s)\n%s", entry.frameIdx,
+							voxelformat::InterpolationTypeStr[core::enumVal(entry.interpolation)],
+							entry.longRotation ? "true" : "false", kftText.c_str());
 		}
 	}
-	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload)) {
-			const int sourceNodeId = *(int*)payload->Data;
-			const int targetNode = node.id();
-			if (!sceneMgr().nodeMove(sourceNodeId, targetNode)) {
-				Log::error("Failed to move node");
-			}
-			ImGui::EndDragDropTarget();
-			ImGui::TableNextColumn();
-			if (open) {
-				ImGui::TreePop();
-			}
-			return;
-		}
-		ImGui::EndDragDropTarget();
-	}
+}
 
-	if (ImGui::IsItemActivated()) {
-		sceneMgr().nodeActivate(node.id());
-	}
-
+static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", node.id());
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 		const int validLayers = (int)sceneGraph.size();
@@ -122,8 +95,8 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 		if (ImGui::MenuItem(ICON_FA_SQUARE_PLUS " Add new camera" SCENEGRAPHPOPUP)) {
 			voxelformat::SceneGraphNodeCamera cameraNode;
 			voxelformat::SceneGraphTransform transform;
-			transform.setWorldMatrix(camera.viewMatrix());
 			const voxelformat::KeyFrameIndex keyFrameIdx = 0;
+			transform.setWorldMatrix(camera.viewMatrix());
 			cameraNode.setTransform(keyFrameIdx, transform);
 			cameraNode.setFarPlane(camera.farPlane());
 			cameraNode.setNearPlane(camera.nearPlane());
@@ -142,36 +115,66 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 		}
 		ImGui::EndPopup();
 	}
+}
 
-	ImGui::TableNextColumn();
+static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+	ui::ScopedStyleCompact scopedStyle;
+	core::String name;
+	switch (node.type()) {
+	case voxelformat::SceneGraphNodeType::Model:
+		name = ICON_FA_CUBES;
+		break;
+	case voxelformat::SceneGraphNodeType::Root:
+	case voxelformat::SceneGraphNodeType::Group:
+		name = ICON_FA_OBJECT_GROUP;
+		break;
+	case voxelformat::SceneGraphNodeType::Camera:
+		name = ICON_FA_CAMERA;
+		break;
+	case voxelformat::SceneGraphNodeType::Unknown:
+		name = ICON_FA_CIRCLE_QUESTION;
+		break;
+	case voxelformat::SceneGraphNodeType::Max:
+		break;
+	}
+	name.append(core::string::format(" %s##%i", node.name().c_str(), node.id()));
+	const bool selected = node.id() == sceneGraph.activeNode();
+	ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen;
+	if (selected) {
+		treeFlags |= ImGuiTreeNodeFlags_Selected;
+	}
+	const bool open = ImGui::TreeNodeEx(name.c_str(), treeFlags);
+	if (node.id() != sceneGraph.root().id()) {
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+			ImGui::Text("%s", name.c_str());
+			const int sourceNodeId = node.id();
+			ImGui::SetDragDropPayload(dragdrop::SceneNodePayload, (const void*)&sourceNodeId, sizeof(int), ImGuiCond_Always);
+			ImGui::EndDragDropSource();
+		}
+	}
+	if (ImGui::BeginDragDropTarget()) {
+		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload)) {
+			const int sourceNodeId = *(int*)payload->Data;
+			const int targetNode = node.id();
+			if (!sceneMgr().nodeMove(sourceNodeId, targetNode)) {
+				Log::error("Failed to move node");
+			}
+			ImGui::EndDragDropTarget();
+			if (open) {
+				ImGui::TreePop();
+			}
+			return;
+		}
+		ImGui::EndDragDropTarget();
+	}
+
+	if (ImGui::IsItemActivated()) {
+		sceneMgr().nodeActivate(node.id());
+	}
+
+	contextMenu(camera, sceneGraph, node, listener);
+
 	if (open) {
-		const float maxPropKeyLength = ImGui::CalcTextSize("maxpropertykey").x;
-		if (node.type() == voxelformat::SceneGraphNodeType::Model) {
-			const voxel::Region &region = node.region();
-			const glm::ivec3 &pos = region.getLowerCorner();
-			const glm::ivec3 &size = region.getDimensionsInVoxels();
-			ImGui::PushItemWidth(maxPropKeyLength);
-			ImGui::LabelText(core::string::format("%i:%i:%i", pos.x, pos.y, pos.z).c_str(), "position");
-			ImGui::LabelText(core::string::format("%i:%i:%i", size.x, size.y, size.z).c_str(), "size");
-			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-				sceneMgr().nodeActivate(node.id());
-			}
-			ImGui::PopItemWidth();
-		}
-		ImGui::PushItemWidth(maxPropKeyLength);
-		for (const auto& entry : node.properties()) {
-			// TODO: allow to edit them
-			ImGui::LabelText(entry->value.c_str(), "%s", entry->key.c_str());
-		}
-		ImGui::PopItemWidth();
-		if (node.keyFrames().size() > 1) {
-			for (const auto& entry : node.keyFrames()) {
-				const core::String &kftText = toString(entry.transform());
-				ImGui::TextWrapped("%i (%s, long rotation: %s)\n%s", entry.frameIdx,
-								   voxelformat::InterpolationTypeStr[core::enumVal(entry.interpolation)],
-								   entry.longRotation ? "true" : "false", kftText.c_str());
-			}
-		}
 		for (int nodeIdx : node.children()) {
 			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(nodeIdx), listener);
 		}
@@ -197,18 +200,13 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, command::
 		ImGui::TooltipText("Remove the active node with all its children");
 
 		// TODO: filter by name and type
+		recursiveAddNodes(camera, sceneGraph, sceneGraph.node(0), listener);
 
-		static ImGuiTableFlags tableFlags = ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH |
-											ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg |
-											ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_SizingFixedFit;
-		if (ImGui::BeginTable("##scenegraphnodes", 2, tableFlags)) {
-			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_NoHide);
-			ImGui::TableSetupColumn("##scenegraphnodeid", ImGuiTableColumnFlags_WidthStretch);
-			ImGui::TableHeadersRow();
-
-			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(0), listener);
-			ImGui::EndTable();
-		}
+		const ImVec2 contentRegion = ImGui::GetWindowContentRegionMax();
+		ImGui::SetCursorPosY(contentRegion.y - ImGui::GetTextLineHeight() * 10);
+		ImGui::BeginChild("Detail##scenegraphpanel");
+		detailView(sceneGraph.node(sceneGraph.activeNode()));
+		ImGui::EndChild();
 	}
 	ImGui::End();
 }
