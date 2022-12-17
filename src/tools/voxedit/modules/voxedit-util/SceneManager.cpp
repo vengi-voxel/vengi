@@ -2412,7 +2412,13 @@ bool SceneManager::nodeActivate(int nodeId) {
 	}
 	Log::debug("Activate node %i", nodeId);
 	voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	if (node.type() != voxelformat::SceneGraphNodeType::Model) {
+	if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
+		const voxelformat::SceneGraphNodeCamera& cameraNode = voxelformat::toCameraNode(node);
+		video::Camera nodeCamera = voxelrender::toCamera(cameraNode);
+		nodeCamera.update(0.0f);
+		activeCamera()->lerp(nodeCamera);
+		return false;
+	} else if (node.type() != voxelformat::SceneGraphNodeType::Model) {
 		Log::warn("Given node id %i is no model node", nodeId);
 		return false;
 	}

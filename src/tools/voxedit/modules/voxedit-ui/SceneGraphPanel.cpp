@@ -146,14 +146,7 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 	ImGui::TableNextColumn();
 	if (open) {
 		const float maxPropKeyLength = ImGui::CalcTextSize("maxpropertykey").x;
-		if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
-			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-				const voxelformat::SceneGraphNodeCamera& cameraNode = voxelformat::toCameraNode(node);
-				video::Camera nodeCamera = voxelrender::toCamera(cameraNode);
-				nodeCamera.update(0.0f);
-				camera.lerp(nodeCamera);
-			}
-		} else if (node.type() == voxelformat::SceneGraphNodeType::Model) {
+		if (node.type() == voxelformat::SceneGraphNodeType::Model) {
 			const voxel::Region &region = node.region();
 			const glm::ivec3 &pos = region.getLowerCorner();
 			const glm::ivec3 &size = region.getDimensionsInVoxels();
