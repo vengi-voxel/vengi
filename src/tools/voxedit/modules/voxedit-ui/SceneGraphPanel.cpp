@@ -7,9 +7,11 @@
 #include "ui/IconsFontAwesome6.h"
 #include "ui/ScopedStyle.h"
 #include "ui/IMGUIEx.h"
+#include "video/Camera.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelrender/SceneGraphRenderer.h"
 
 #define SCENEGRAPHPOPUP "##scenegraphpopup"
 
@@ -146,11 +148,8 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 		const float maxPropKeyLength = ImGui::CalcTextSize("maxpropertykey").x;
 		if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
 			if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-				video::Camera nodeCamera(camera);
-				const voxelformat::SceneGraphTransform& transform = node.transform();
-				nodeCamera.setOrientation(transform.worldOrientation());
-				nodeCamera.setWorldPosition(transform.worldTranslation());
-				nodeCamera.setMode(video::CameraMode::Perspective);
+				const voxelformat::SceneGraphNodeCamera& cameraNode = voxelformat::toCameraNode(node);
+				video::Camera nodeCamera = voxelrender::toCamera(cameraNode);
 				nodeCamera.update(0.0f);
 				camera.lerp(nodeCamera);
 			}

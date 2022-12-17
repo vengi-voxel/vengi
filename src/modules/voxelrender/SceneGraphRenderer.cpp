@@ -94,7 +94,7 @@ void SceneGraphRenderer::clear() {
 	}
 }
 
-static video::Camera toCamera(const voxelformat::SceneGraphNodeCamera &cameraNode) {
+video::Camera toCamera(const voxelformat::SceneGraphNodeCamera &cameraNode) {
 	video::Camera camera;
 	if (cameraNode.isOrthographic()) {
 		camera.setMode(video::CameraMode::Orthogonal);

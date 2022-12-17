@@ -14,6 +14,8 @@
  */
 namespace voxelrender {
 
+video::Camera toCamera(const voxelformat::SceneGraphNodeCamera &cameraNode);
+
 /**
  * @brief Rendering of a voxel::SceneGraph
  */
