@@ -10,6 +10,9 @@
 namespace voxelformat {
 
 static int addToGraph(SceneGraph &sceneGraph, SceneGraphNode &&node, int parent) {
+	if (parent > 0 && !sceneGraph.hasNode(parent)) {
+		parent = sceneGraph.root().id();
+	}
 	int newNodeId = sceneGraph.emplace(core::move(node), parent);
 	if (newNodeId == -1) {
 		Log::error("Failed to add node to the scene");

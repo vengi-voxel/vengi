@@ -15,7 +15,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #define LAYERPOPUP "##layerpopup"
-#define POPUP_TITLE_LAYER_SETTINGS "Layer settings##popuptitle"
 
 namespace voxedit {
 
@@ -107,45 +106,9 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 			if (layerSettings->name.empty()) {
 				layerSettings->name = node.name();
 			}
-			ImGui::OpenPopup(POPUP_TITLE_LAYER_SETTINGS);
+			_popupNewLayer = true;
 		}
-		ImGui::TooltipText("Add a new layer");
-		if (ImGui::BeginPopupModal(POPUP_TITLE_LAYER_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			ImGui::Text("Name");
-			ImGui::Separator();
-			ImGui::InputText("##layersettingsname", &layerSettings->name);
-			ImGui::NewLine();
-
-			ImGui::Text("Position");
-			ImGui::Separator();
-			veui::InputAxisInt(math::Axis::X, "##posx", &layerSettings->position.x);
-			veui::InputAxisInt(math::Axis::Y, "##posy", &layerSettings->position.y);
-			veui::InputAxisInt(math::Axis::Z, "##posz", &layerSettings->position.z);
-			ImGui::NewLine();
-
-			ImGui::Text("Size");
-			ImGui::Separator();
-			veui::InputAxisInt(math::Axis::X, "Width##sizex", &layerSettings->size.x);
-			veui::InputAxisInt(math::Axis::Y, "Height##sizey", &layerSettings->size.y);
-			veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &layerSettings->size.z);
-			ImGui::NewLine();
-
-			if (ImGui::Button(ICON_FA_CHECK " OK##layersettings")) {
-				ImGui::CloseCurrentPopup();
-				voxelformat::SceneGraphNode node;
-				voxel::RawVolume* v = new voxel::RawVolume(layerSettings->region());
-				node.setVolume(v, true);
-				node.setName(layerSettings->name.c_str());
-				sceneMgr.addNodeToSceneGraph(node);
-			}
-			ImGui::SetItemDefaultFocus();
-			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_XMARK " Cancel##layersettings")) {
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::EndPopup();
-		}
+		ImGui::TooltipText("Add a new model node");
 
 		ImGui::SameLine();
 		const bool onlyOneModel = sceneGraph.size(voxelformat::SceneGraphNodeType::Model) <= 1;

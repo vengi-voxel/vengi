@@ -23,6 +23,7 @@ private:
 	bool _hasFocus = false;
 
 public:
+	bool _popupNewLayer = false;
 	void update(const char *title, LayerSettings* layerSettings, command::CommandExecutionListener &listener);
 	bool hasFocus() const;
 };

@@ -18,6 +18,7 @@ struct LayerSettings {
 	core::String name;
 	glm::ivec3 position;
 	glm::ivec3 size;
+	int parent = 0;
 
 	LayerSettings() {
 		reset();
@@ -26,6 +27,7 @@ struct LayerSettings {
 	inline void reset() {
 		position = glm::ivec3(0);
 		size = glm::ivec3(32);
+		parent = 0;
 	}
 
 	inline voxel::Region region() {

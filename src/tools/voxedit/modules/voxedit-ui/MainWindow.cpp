@@ -41,6 +41,7 @@
 #define POPUP_TITLE_FAILED_TO_SAVE "Failed to save##popuptitle"
 #define POPUP_TITLE_UNSAVED_SCENE "Unsaved scene##popuptitle"
 #define POPUP_TITLE_SCENE_SETTINGS "Scene settings##popuptitle"
+#define POPUP_TITLE_LAYER_SETTINGS "Layer settings##popuptitle"
 #define WINDOW_TITLE_SCRIPT_EDITOR ICON_FK_CODE "Script Editor##scripteditor"
 
 namespace voxedit {
@@ -208,7 +209,7 @@ void MainWindow::rightWidget() {
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
 
 	_layerPanel.update(TITLE_LAYERS, &_layerSettings, _lastExecutedCommand);
-	_sceneGraphPanel.update(_scene->camera(), TITLE_SCENEGRAPH, _lastExecutedCommand);
+	_sceneGraphPanel.update(_scene->camera(), TITLE_SCENEGRAPH, &_layerSettings, _lastExecutedCommand);
 	_scriptPanel.update(TITLE_SCRIPTPANEL, WINDOW_TITLE_SCRIPT_EDITOR, _app, _dockIdMainDown);
 	_treePanel.update(TITLE_TREES);
 	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
@@ -258,6 +259,47 @@ void MainWindow::registerPopups() {
 	if (_popupUnsavedChangesQuit) {
 		ImGui::OpenPopup(POPUP_TITLE_UNSAVED_SCENE);
 		_popupUnsavedChangesQuit = false;
+	}
+	if (_layerPanel._popupNewLayer || _sceneGraphPanel._popupNewLayer) {
+		ImGui::OpenPopup(POPUP_TITLE_LAYER_SETTINGS);
+		_layerPanel._popupNewLayer = _sceneGraphPanel._popupNewLayer = false;
+	}
+
+	if (ImGui::BeginPopupModal(POPUP_TITLE_LAYER_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::Text("Name");
+		ImGui::Separator();
+		ImGui::InputText("##layersettingsname", &_layerSettings.name);
+		ImGui::NewLine();
+
+		ImGui::Text("Position");
+		ImGui::Separator();
+		veui::InputAxisInt(math::Axis::X, "##posx", &_layerSettings.position.x);
+		veui::InputAxisInt(math::Axis::Y, "##posy", &_layerSettings.position.y);
+		veui::InputAxisInt(math::Axis::Z, "##posz", &_layerSettings.position.z);
+		ImGui::NewLine();
+
+		ImGui::Text("Size");
+		ImGui::Separator();
+		veui::InputAxisInt(math::Axis::X, "Width##sizex", &_layerSettings.size.x);
+		veui::InputAxisInt(math::Axis::Y, "Height##sizey", &_layerSettings.size.y);
+		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_layerSettings.size.z);
+		ImGui::NewLine();
+
+		if (ImGui::Button(ICON_FA_CHECK " OK##layersettings")) {
+			ImGui::CloseCurrentPopup();
+			voxelformat::SceneGraphNode node;
+			voxel::RawVolume* v = new voxel::RawVolume(_layerSettings.region());
+			node.setVolume(v, true);
+			node.setName(_layerSettings.name.c_str());
+			sceneMgr().addNodeToSceneGraph(node, _layerSettings.parent);
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_XMARK " Cancel##layersettings")) {
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
 	}
 
 	if (ImGui::BeginPopup(POPUP_TITLE_SCENE_SETTINGS, ImGuiWindowFlags_AlwaysAutoResize)) {

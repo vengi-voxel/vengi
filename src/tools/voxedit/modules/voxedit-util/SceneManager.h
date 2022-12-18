@@ -147,6 +147,9 @@ private:
 
 	voxelgenerator::LUAGenerator _luaGenerator;
 
+	/**
+	 * @note This might return @c nullptr in the case where the active node is no model node
+	 */
 	voxel::RawVolume* activeVolume();
 
 	/** @return the new node id that was created from the merged nodes */

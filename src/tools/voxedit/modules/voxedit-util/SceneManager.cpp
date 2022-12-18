@@ -1747,7 +1747,11 @@ void SceneManager::renderText(const char *str, int size, int thickness, int spac
 		Log::error("Failed to initialize voxel font with %s", font);
 		return;
 	}
-	voxel::RawVolumeWrapper wrapper(activeVolume());
+	voxel::RawVolume *v = activeVolume();
+	if (v == nullptr) {
+		return;
+	}
+	voxel::RawVolumeWrapper wrapper(v);
 
 	const char **s = &str;
 	glm::ivec3 pos = referencePosition();

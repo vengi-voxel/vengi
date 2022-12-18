@@ -4,11 +4,13 @@
 
 #include "SceneGraphPanel.h"
 #include "DragAndDropPayload.h"
+#include "imgui.h"
 #include "ui/IconsFontAwesome6.h"
 #include "ui/ScopedStyle.h"
 #include "ui/IMGUIEx.h"
 #include "video/Camera.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/layer/LayerSettings.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelrender/SceneGraphRenderer.h"
@@ -182,39 +184,84 @@ static void recursiveAddNodes(video::Camera& camera, const voxelformat::SceneGra
 	}
 }
 
-void SceneGraphPanel::update(video::Camera& camera, const char *title, command::CommandExecutionListener &listener) {
+void SceneGraphPanel::newLayerButton(const voxelformat::SceneGraph &sceneGraph, LayerSettings* layerSettings) {
+	if (ImGui::Button(ICON_FA_SQUARE_PLUS"##newlayer")) {
+		const int nodeId = sceneGraph.activeNode();
+		voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
+		const voxel::RawVolume* v = node.volume();
+		const voxel::Region& region = v->region();
+		layerSettings->position = region.getLowerCorner();
+		layerSettings->size = region.getDimensionsInVoxels();
+		if (layerSettings->name.empty()) {
+			layerSettings->name = node.name();
+		}
+		layerSettings->parent = nodeId;
+		_popupNewLayer = true;
+	}
+	ImGui::TooltipText("Add a new model node");
+}
+
+static void newGroupButton(const voxelformat::SceneGraph &sceneGraph) {
+	if (ImGui::Button(ICON_FA_SQUARE_PLUS "##scenegraphnewgroup")) {
+		voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Group);
+		node.setName("new group");
+		sceneMgr().addNodeToSceneGraph(node, sceneGraph.activeNode());
+	}
+	ImGui::TooltipText("Add a new group");
+}
+
+static void removeNodeButton(const voxelformat::SceneGraph &sceneGraph) {
+	if (ImGui::Button(ICON_FA_TRASH "##scenegraphremovenode")) {
+		sceneMgr().nodeRemove(sceneGraph.activeNode(), true);
+	}
+	ImGui::TooltipText("Remove the active node with all its children");
+}
+
+void SceneGraphPanel::update(video::Camera &camera, const char *title, LayerSettings* layerSettings, command::CommandExecutionListener &listener) {
 	const voxelformat::SceneGraph &sceneGraph = voxedit::sceneMgr().sceneGraph();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		core_trace_scoped(SceneGraphPanel);
 		ImVec2 size = ImGui::GetWindowSize();
 		const float textLineHeight = ImGui::GetTextLineHeight();
-		size.y -= textLineHeight * 10.0f;
+		if (_showNodeDetails) {
+			size.y -= textLineHeight * 10.0f;
+		} else {
+			size.y -= textLineHeight * 4.0f;
+		}
 		if (size.y <= textLineHeight * 2.0f) {
 			size.y = textLineHeight * 2.0f;
 		}
 		ImGui::BeginChild("master##scenegraphpanel", size);
 
-		if (ImGui::Button(ICON_FA_SQUARE_PLUS "##scenegraphnewgroup")) {
-			voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Group);
-			node.setName("new group");
-			sceneMgr().addNodeToSceneGraph(node, sceneGraph.activeNode());
-		}
-		ImGui::TooltipText("Add a new group");
+		newLayerButton(sceneGraph, layerSettings);
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_TRASH "##scenegraphremovenode")) {
-			sceneMgr().nodeRemove(sceneGraph.activeNode(), true);
-		}
-		ImGui::TooltipText("Remove the active node with all its children");
+		newGroupButton(sceneGraph);
+		ImGui::SameLine();
+		removeNodeButton(sceneGraph);
 
 		// TODO: filter by name and type
 		recursiveAddNodes(camera, sceneGraph, sceneGraph.node(sceneGraph.root().id()), listener);
 		ImGui::EndChild();
 
-		// TODO: allow to hide this detail view
 		ImGui::Separator();
-		ImGui::BeginChild("detail##scenegraphpanel");
-		detailView(sceneGraph.node(sceneGraph.activeNode()));
-		ImGui::EndChild();
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		const ImVec2 halfSize(ImGui::GetTextLineHeight() / 2.0f, ImGui::GetTextLineHeight() / 2.0f);
+		const ImVec2 pos = ImGui::GetCursorScreenPos();
+		const ImVec2 trianglePos(pos.x + halfSize.x, pos.y + halfSize.y);
+		const ImVec2 buttonSize(halfSize.x * 2.0f, halfSize.y * 2.0f);
+		const ImGuiDir buttonDir = _showNodeDetails ? ImGuiDir_Down : ImGuiDir_Up;
+		ImGui::RenderArrowPointingAt(drawList, trianglePos, halfSize, buttonDir, ImGui::GetColorU32(ImGuiCol_Text));
+		if (ImGui::InvisibleButton("##expandtriangle", buttonSize)) {
+			_showNodeDetails ^= true;
+			Log::error("toggle: %s", _showNodeDetails ? "true" : "false");
+		}
+		if (_showNodeDetails) {
+			ImGui::BeginChild("detail##scenegraphpanel");
+			detailView(sceneGraph.node(sceneGraph.activeNode()));
+			ImGui::EndChild();
+		} else {
+			ImGui::TooltipText("Show node details");
+		}
 	}
 	ImGui::End();
 }
