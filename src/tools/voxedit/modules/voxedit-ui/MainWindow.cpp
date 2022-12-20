@@ -194,11 +194,11 @@ void MainWindow::leftWidget() {
 }
 
 void MainWindow::mainWidget() {
-	_scene->update();
 	_sceneTop->update();
 	_sceneLeft->update();
 	_sceneFront->update();
 	_animationTimeline.update(TITLE_ANIMATION_TIMELINE, _dockIdMainDown);
+	_scene->update();
 }
 
 void MainWindow::rightWidget() {
