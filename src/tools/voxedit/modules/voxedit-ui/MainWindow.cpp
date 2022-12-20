@@ -478,8 +478,8 @@ void MainWindow::update() {
 		}
 	}
 
-	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");
-	if (ImGui::DockBuilderGetNode(dockspaceId)) {
+	_dockIdMain = ImGui::GetID("DockSpace");
+	if (ImGui::DockBuilderGetNode(_dockIdMain)) {
 		_initializedDockSpace = true;
 	}
 
@@ -488,7 +488,7 @@ void MainWindow::update() {
 		_initializedDockSpace = false;
 	}
 
-	ImGui::DockSpace(dockspaceId);
+	ImGui::DockSpace(_dockIdMain);
 
 	leftWidget();
 	mainWidget();
@@ -501,35 +501,34 @@ void MainWindow::update() {
 	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, _lastExecutedCommand.command);
 
 	if (!_initializedDockSpace && viewport->WorkSize.x > 0.0f) {
-		ImGui::DockBuilderRemoveNode(dockspaceId);
-		ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
-		ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->WorkSize);
-		_dockIdMain = dockspaceId;
-		_dockIdLeft = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Left, 0.13f, nullptr, &_dockIdMain);
-		_dockIdRight = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Right, 0.20f, nullptr, &_dockIdMain);
-		_dockIdLeftDown = ImGui::DockBuilderSplitNode(_dockIdLeft, ImGuiDir_Down, 0.35f, nullptr, &_dockIdLeft);
-		_dockIdRightDown = ImGui::DockBuilderSplitNode(_dockIdRight, ImGuiDir_Down, 0.50f, nullptr, &_dockIdRight);
+		ImGui::DockBuilderRemoveNode(_dockIdMain);
+		ImGui::DockBuilderAddNode(_dockIdMain, ImGuiDockNodeFlags_DockSpace);
+		ImGui::DockBuilderSetNodeSize(_dockIdMain, viewport->WorkSize);
+		ImGuiID dockIdLeft = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Left, 0.13f, nullptr, &_dockIdMain);
+		ImGuiID dockIdRight = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Right, 0.20f, nullptr, &_dockIdMain);
+		ImGuiID dockIdLeftDown = ImGui::DockBuilderSplitNode(dockIdLeft, ImGuiDir_Down, 0.35f, nullptr, &dockIdLeft);
+		ImGuiID dockIdRightDown = ImGui::DockBuilderSplitNode(dockIdRight, ImGuiDir_Down, 0.50f, nullptr, &dockIdRight);
 		_dockIdMainDown = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Down, 0.20f, nullptr, &_dockIdMain);
-		ImGui::DockBuilderDockWindow(TITLE_PALETTE, _dockIdLeft);
-		ImGui::DockBuilderDockWindow(TITLE_POSITIONS, _dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_ASSET, _dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_TOOLS, _dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, _dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_MEMENTO, _dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_FORMAT_SETTINGS, _dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_LAYERS, _dockIdRightDown);
-		ImGui::DockBuilderDockWindow(TITLE_TREES, _dockIdRightDown);
-		ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, _dockIdRightDown);
-		ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, _dockIdRightDown);
-		ImGui::DockBuilderDockWindow(TITLE_SCRIPTPANEL, _dockIdRightDown);
-		ImGui::DockBuilderDockWindow(TITLE_MODIFIERS, _dockIdLeftDown);
+		ImGui::DockBuilderDockWindow(TITLE_PALETTE, dockIdLeft);
+		ImGui::DockBuilderDockWindow(TITLE_POSITIONS, dockIdRight);
+		ImGui::DockBuilderDockWindow(TITLE_ASSET, dockIdRight);
+		ImGui::DockBuilderDockWindow(TITLE_TOOLS, dockIdRight);
+		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockIdRight);
+		ImGui::DockBuilderDockWindow(TITLE_MEMENTO, dockIdRight);
+		ImGui::DockBuilderDockWindow(TITLE_FORMAT_SETTINGS, dockIdRight);
+		ImGui::DockBuilderDockWindow(TITLE_LAYERS, dockIdRightDown);
+		ImGui::DockBuilderDockWindow(TITLE_TREES, dockIdRightDown);
+		ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, dockIdRightDown);
+		ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockIdRightDown);
+		ImGui::DockBuilderDockWindow(TITLE_SCRIPTPANEL, dockIdRightDown);
+		ImGui::DockBuilderDockWindow(TITLE_MODIFIERS, dockIdLeftDown);
 		ImGui::DockBuilderDockWindow(_scene->id().c_str(), _dockIdMain);
 		ImGui::DockBuilderDockWindow(_sceneLeft->id().c_str(), _dockIdMain);
 		ImGui::DockBuilderDockWindow(_sceneTop->id().c_str(), _dockIdMain);
 		ImGui::DockBuilderDockWindow(_sceneFront->id().c_str(), _dockIdMain);
 		ImGui::DockBuilderDockWindow(WINDOW_TITLE_SCRIPT_EDITOR, _dockIdMainDown);
 		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_TIMELINE, _dockIdMainDown);
-		ImGui::DockBuilderFinish(dockspaceId);
+		ImGui::DockBuilderFinish(_dockIdMain);
 		_initializedDockSpace = true;
 	}
 
