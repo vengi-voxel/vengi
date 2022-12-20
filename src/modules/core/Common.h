@@ -19,7 +19,7 @@
 #define CORE_FORCE_INLINE inline
 #endif
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && (_MSC_VER >= 1600) /* VS 2010 and above */
 #include <sal.h>
 #if _MSC_VER >= 1400
 #define CORE_FORMAT_STRING _Printf_format_string_
