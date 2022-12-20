@@ -478,12 +478,16 @@ void MainWindow::update() {
 		}
 	}
 
+	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");
+	if (ImGui::DockBuilderGetNode(dockspaceId)) {
+		_initializedDockSpace = true;
+	}
+
 	_menuBar.setLastOpenedFiles(_lastOpenedFilesRingBuffer);
 	if (_menuBar.update(_app, _lastExecutedCommand)) {
 		_initializedDockSpace = false;
 	}
 
-	const ImGuiID dockspaceId = ImGui::GetID("DockSpace");
 	ImGui::DockSpace(dockspaceId);
 
 	leftWidget();
