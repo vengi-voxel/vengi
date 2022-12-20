@@ -386,12 +386,8 @@ bool Modifier::aabbAction(voxel::RawVolume *volume,
 
 	const bool colorPickerFlag = (_modifierType & ModifierType::ColorPicker) == ModifierType::ColorPicker;
 	if (colorPickerFlag) {
-		const glm::ivec3 &pos = cursorPosition();
-		if (volume->region().containsPoint(pos)) {
-			setCursorVoxel(volume->voxel(pos));
-			return true;
-		}
-		return false;
+		setCursorVoxel(hitCursorVoxel());
+		return true;
 	}
 
 	const bool placeFlag = (_modifierType & ModifierType::Place) == ModifierType::Place;
