@@ -30,7 +30,7 @@ void ScriptPanel::reloadScriptParameters(const core::String& script) {
 	}
 }
 
-void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::IMGUIApp* app, ImGuiID dockIdMainDown) {
+void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::IMGUIApp* app, ImGuiID dockId) {
 	if (ImGui::Begin(title)) {
 		core_trace_scoped(ScriptPanel);
 		if (_scripts.empty()) {
@@ -170,7 +170,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::I
 	ImGui::End();
 
 	if (_scriptEditor) {
-		ImGui::SetNextWindowDockID(dockIdMainDown, ImGuiCond_Appearing);
+		ImGui::SetNextWindowDockID(dockId, ImGuiCond_Appearing);
 		if (ImGui::Begin(scriptEditorTitle, &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_HorizontalScrollbar)) {
 			if (ImGui::BeginMenuBar()) {
 				if (ImGui::BeginMenu(ICON_FA_FILE " File##scripteditor")) {

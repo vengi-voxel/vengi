@@ -24,7 +24,7 @@ private:
 
 	void reloadScriptParameters(const core::String& script);
 public:
-	void update(const char *title, const char *scriptEditorTitle, ui::IMGUIApp* app, ImGuiID dockIdMainDown);
+	void update(const char *title, const char *scriptEditorTitle, ui::IMGUIApp* app, ImGuiID dockId);
 };
 
 }

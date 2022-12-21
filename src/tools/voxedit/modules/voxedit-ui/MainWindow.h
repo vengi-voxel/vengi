@@ -52,12 +52,13 @@ private:
 	Viewport* _sceneFront = nullptr;
 
 	ImGuiID _dockIdMain = 0;
+	// TODO: get rid of this by finding a way to get this id
+	// somehow without destroying a user layout
 	ImGuiID _dockIdMainDown = 0;
 
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;
-	bool _initializedDockSpace = false;
 	bool _forceQuit = false;
 	bool _popupUnsavedChangesQuit = false;
 

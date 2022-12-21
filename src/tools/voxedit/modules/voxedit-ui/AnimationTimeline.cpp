@@ -15,7 +15,7 @@
 
 namespace voxedit {
 
-void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDown) {
+void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockId) {
 	const EditMode editMode = sceneMgr().editMode();
 	voxelformat::FrameIndex currentFrame = sceneMgr().currentFrame();
 	if (editMode == EditMode::Scene) {
@@ -35,7 +35,7 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockIdMainDow
 				sceneMgr().setCurrentFrame(currentFrame);
 			}
 		}
-		ImGui::SetNextWindowDockID(dockIdMainDown, ImGuiCond_Appearing);
+		ImGui::SetNextWindowDockID(dockId, ImGuiCond_Appearing);
 		if (ImGui::Begin(sequencerTitle, nullptr, ImGuiWindowFlags_NoSavedSettings)) {
 			if (ImGui::DisabledButton(ICON_FA_SQUARE_PLUS " Add", _play)) {
 				sceneMgr().nodeForeachGroup([&](int nodeId) {

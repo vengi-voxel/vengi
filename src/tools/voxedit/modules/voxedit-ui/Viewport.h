@@ -78,6 +78,9 @@ public:
 
 	void resize(const glm::ivec2& frameBufferSize);
 
+	/**
+	 * Update the components
+	 */
 	void update(double deltaFrameSeconds);
 
 	void move(bool pan, bool rotate, int x, int y);
@@ -87,7 +90,11 @@ public:
 	float angle() const;
 	void setAngle(float angle);
 	bool isHovered() const;
-	void update();
+	/**
+	 * Update the ui
+	 * @return The viewport dock id
+	 */
+	ImGuiID update();
 	bool init(RenderMode renderMode = RenderMode::Editor);
 	void shutdown();
 
