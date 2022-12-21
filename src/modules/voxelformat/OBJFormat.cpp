@@ -346,7 +346,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 
 			indexOffset += faceVertices;
 		}
-		if (!voxelizeNode(shape.name.c_str(), sceneGraph, tris)) {
+		if (voxelizeNode(shape.name.c_str(), sceneGraph, tris) < 0) {
 			Log::error("Failed to voxelize shape %s", shape.name.c_str());
 			return false;
 		}

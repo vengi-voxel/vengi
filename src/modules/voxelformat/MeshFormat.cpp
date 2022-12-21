@@ -168,10 +168,10 @@ bool MeshFormat::isAxisAligned(const TriCollection &tris) {
 	return true;
 }
 
-bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, const TriCollection &tris) {
+int MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, const TriCollection &tris, int parent) const {
 	if (tris.empty()) {
 		Log::warn("Empty volume - no triangles given");
-		return false;
+		return -1;
 	}
 
 	const bool axisAligned = isAxisAligned(tris);
@@ -184,7 +184,7 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 	const voxel::Region region(glm::floor(trisMins), glm::ceil(trisMaxs));
 	if (!region.isValid()) {
 		Log::error("Invalid region: %s", region.toString().c_str());
-		return false;
+		return -1;
 	}
 
 	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
@@ -210,7 +210,7 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 		}
 		if (subdivided.empty()) {
 			Log::warn("Empty volume - could not subdivide");
-			return false;
+			return -1;
 		}
 
 		PosMap posMap((int)subdivided.size() * 3);
@@ -225,7 +225,7 @@ bool MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, 
 
 	node.volume()->translate(-region.getLowerCorner());
 
-	return sceneGraph.emplace(core::move(node)) > 0;
+	return sceneGraph.emplace(core::move(node), parent);
 }
 
 bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs) {

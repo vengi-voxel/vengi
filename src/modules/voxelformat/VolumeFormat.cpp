@@ -80,6 +80,7 @@ const io::FormatDescription* voxelLoad() {
 		{"Quake BSP", {"bsp"}, [](uint32_t magic) {
 				return magic == FourCC('I', 'B', 'S', 'P') || magic == FourCC('\x1d', '\0', '\0', '\0');
 		}, VOX_FORMAT_FLAG_MESH},
+		{"FBX", {"fbx"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Sproxel csv", {"csv"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"StarMade", {"sment"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},

@@ -9,3 +9,7 @@ https://github.com/tinyobjloader/tinyobjloader
 # tiny_gltf (MIT license - Syoyo Fujita)
 
 https://github.com/syoyo/tinygltf
+
+# ufbx (MIT license - bqqbarbhg)
+
+https://github.com/bqqbarbhg/ufbx

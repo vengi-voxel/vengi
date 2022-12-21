@@ -706,7 +706,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 		tris.push_back(tri);
 	}
 
-	return voxelizeNode(name, sceneGraph, tris);
+	return voxelizeNode(name, sceneGraph, tris) > 0;
 }
 
 bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {

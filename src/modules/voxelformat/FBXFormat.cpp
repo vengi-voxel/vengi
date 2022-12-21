@@ -6,7 +6,10 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "core/StandardLib.h"
 #include "core/String.h"
+#include "core/StringUtil.h"
+#include "core/Var.h"
 #include "engine-config.h"
 #include "io/StdStreamBuf.h"
 #include "voxel/MaterialColor.h"
@@ -14,6 +17,9 @@
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
+
+#define ufbx_assert core_assert
+#include "external/ufbx.h"
 
 namespace voxelformat {
 
@@ -223,6 +229,268 @@ Objects: {
 		wrapBool(stream.writeString("\t}\n}\n\n", false))
 	}
 	return true;
+}
+
+namespace priv {
+
+static void *_ufbx_alloc(void *, size_t size) {
+	return core_malloc(size);
+}
+
+static void _ufbx_free(void *, void *mem, size_t) {
+	core_free(mem);
+}
+
+static void *_ufbx_realloc_fn(void *user, void *old_ptr, size_t old_size, size_t new_size) {
+	return core_realloc(old_ptr, new_size);
+}
+
+static size_t _ufbx_read_fn(void *user, void *data, size_t size) {
+	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
+	const int ret = stream->read(data, size);
+	if (ret < 0) {
+		return 0;
+	}
+	return (size_t)ret;
+}
+
+static bool _ufbx_skip_fn(void *user, size_t size) {
+	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
+	return stream->skip((int64_t)size) != -1;
+}
+
+static inline glm::vec2 _ufbx_to_vec2(const ufbx_vec2 &v) {
+	return glm::vec2((float)v.x, (float)v.y);
+}
+
+static inline glm::vec3 _ufbx_to_vec3(const ufbx_vec3 &v) {
+	return glm::vec3((float)v.x, (float)v.y, (float)v.z);
+}
+
+static inline glm::vec4 _ufbx_to_vec4(const ufbx_vec4 &v) {
+	return glm::vec4((float)v.x, (float)v.y, (float)v.z, (float)v.w);
+}
+
+static inline core::String _ufbx_to_string(const ufbx_string &s) {
+	return core::String(s.data, s.length);
+}
+
+static inline glm::mat4 _ufbx_to_um_mat(const ufbx_matrix &m) {
+	return glm::mat4{
+		(float)m.m00, (float)m.m01, (float)m.m02, (float)m.m03,
+		(float)m.m10, (float)m.m11, (float)m.m12, (float)m.m13,
+		(float)m.m20, (float)m.m21, (float)m.m22, (float)m.m23,
+		0.0f, 0.0f, 0.0f, 1.0f,
+	};
+}
+
+static inline void _ufbx_to_transform(SceneGraphTransform &transform, const ufbx_node *node) {
+	const glm::mat4 &mat = _ufbx_to_um_mat(node->node_to_parent);
+	const glm::vec3 lt = transform.localTranslation();
+	transform.setLocalMatrix(mat);
+	transform.setLocalTranslation(transform.localTranslation() + lt);
+}
+
+} // namespace priv
+
+int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const {
+	Log::debug("Add model node");
+	const glm::vec3 &scale = getScale();
+	ufbx_vec2 default_uv;
+	core_memset(&default_uv, 0, sizeof(default_uv));
+	const ufbx_mesh *mesh = node->mesh;
+	core_assert(mesh != nullptr);
+
+	const size_t num_tri_indices = mesh->max_face_triangles * 3;
+	core::Buffer<uint32_t> tri_indices(num_tri_indices);
+
+	TriCollection tris;
+	tris.reserve(num_tri_indices);
+
+	Log::debug("there are %i materials in the mesh", (int)mesh->materials.count);
+
+	for (size_t pi = 0; pi < mesh->materials.count; pi++) {
+		const ufbx_mesh_material *mesh_mat = &mesh->materials.data[pi];
+		if (mesh_mat->num_triangles == 0) {
+			continue;
+		}
+
+		for (size_t fi = 0; fi < mesh_mat->num_faces; fi++) {
+			const ufbx_face face = mesh->faces.data[mesh_mat->face_indices.data[fi]];
+			const size_t num_tris = ufbx_triangulate_face(tri_indices.data(), num_tri_indices, mesh, face);
+
+			for (size_t vi = 0; vi < num_tris; vi++) {
+				Tri tri;
+				for (int ti = 0; ti < 3; ++ti) {
+					const uint32_t ix = tri_indices[vi * 3 + ti];
+					const ufbx_vec3 &pos = ufbx_get_vertex_vec3(&mesh->vertex_position, ix);
+					if (mesh->vertex_color.exists) {
+						const ufbx_vec4 &color = ufbx_get_vertex_vec4(&mesh->vertex_color, ix);
+						tri.color[ti] = core::Color::getRGBA(priv::_ufbx_to_vec4(color));
+					}
+					const ufbx_vec2 &uv = mesh->vertex_uv.exists ? ufbx_get_vertex_vec2(&mesh->vertex_uv, ix) : default_uv;
+					tri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale;
+					tri.uv[ti] = priv::_ufbx_to_vec2(uv);
+				}
+				const ufbx_material *material = mesh_mat->material;
+				if (material != nullptr) {
+					auto textureIter = textures.find(priv::_ufbx_to_string(material->name));
+					if (textureIter != textures.end()) {
+						tri.texture = textureIter->second.get();
+					}
+				}
+				tris.push_back(tri);
+			}
+		}
+	}
+	// TODO: transform
+	const core::String &name = priv::_ufbx_to_string(node->name);
+	const int nodeId = voxelizeNode(name, sceneGraph, tris, parent);
+	if (nodeId < 0) {
+		Log::error("Failed to voxelize node %s", name.c_str());
+		return nodeId;
+	}
+
+	SceneGraphNode &sceneGraphNode = sceneGraph.node(nodeId);
+	KeyFrameIndex keyFrameIdx = 0;
+	SceneGraphTransform &transform = sceneGraphNode.keyFrame(0).transform();
+	priv::_ufbx_to_transform(transform, node);
+	sceneGraphNode.setTransform(keyFrameIdx, transform);
+	return nodeId;
+}
+
+int FBXFormat::addCameraNode(const ufbx_scene *scene, const ufbx_node *node, SceneGraph &sceneGraph, int parent) const {
+	Log::debug("Add model node");
+	const ufbx_camera *camera = node->camera;
+	core_assert(camera != nullptr);
+
+	SceneGraphNodeCamera camNode;
+	camNode.setName(priv::_ufbx_to_string(node->name));
+	camNode.setFieldOfView((int)camera->field_of_view_deg.x);
+	SceneGraphTransform transform;
+	priv::_ufbx_to_transform(transform, node);
+	KeyFrameIndex keyFrameIdx = 0;
+	camNode.setTransform(keyFrameIdx, transform);
+	return sceneGraph.emplace(core::move(camNode), parent);
+}
+
+int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const {
+	int nodeId = parent;
+	if (node->mesh != nullptr) {
+		nodeId = addMeshNode(scene, node, filename, sceneGraph, textures, parent);
+	} else if (node->camera != nullptr) {
+		nodeId = addCameraNode(scene, node, sceneGraph, parent);
+	} else if (node->light != nullptr) {
+		Log::debug("Skip light node");
+	} else if (node->bone != nullptr) {
+		Log::debug("Skip bone node");
+	} else {
+		Log::debug("Skip unknown node");
+	}
+	if (nodeId < 0) {
+		Log::error("Failed to add node with parent %i", parent);
+		return nodeId;
+	}
+	for (const ufbx_node *c : node->children) {
+		const int newNodeId = addNode_r(scene, c, filename, sceneGraph, textures, nodeId);
+		if (newNodeId < 0) {
+			const core::String name = priv::_ufbx_to_string(node->name);
+			Log::error("Failed to add child node '%s'", name.c_str());
+			return newNodeId;
+		}
+	}
+	return nodeId;
+}
+
+bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+	ufbx_stream ufbxstream;
+	core_memset(&ufbxstream, 0, sizeof(ufbxstream));
+	ufbxstream.user = &stream;
+	ufbxstream.read_fn = priv::_ufbx_read_fn;
+	ufbxstream.skip_fn = priv::_ufbx_skip_fn;
+
+	ufbx_load_opts ufbxopts;
+	core_memset(&ufbxopts, 0, sizeof(ufbxopts));
+
+	ufbxopts.temp_allocator.allocator.alloc_fn = priv::_ufbx_alloc;
+	ufbxopts.temp_allocator.allocator.free_fn = priv::_ufbx_free;
+	ufbxopts.temp_allocator.allocator.realloc_fn = priv::_ufbx_realloc_fn;
+
+	ufbxopts.result_allocator.allocator.alloc_fn = priv::_ufbx_alloc;
+	ufbxopts.result_allocator.allocator.free_fn = priv::_ufbx_free;
+	ufbxopts.result_allocator.allocator.realloc_fn = priv::_ufbx_realloc_fn;
+
+	ufbxopts.path_separator = '/';
+
+	ufbxopts.raw_filename.data = filename.c_str();
+	ufbxopts.raw_filename.size = filename.size();
+
+	ufbxopts.allow_null_material = true;
+	ufbxopts.target_axes = ufbx_axes_right_handed_y_up;
+	ufbxopts.target_unit_meters = 1.0f;
+
+	ufbx_error ufbxerror;
+
+	ufbx_scene *ufbxscene = ufbx_load_stream(&ufbxstream, &ufbxopts, &ufbxerror);
+	if (!ufbxscene) {
+		Log::error("Failed to load: %s", ufbxerror.description.data);
+		return false;
+	}
+
+	core::StringMap<image::ImagePtr> textures;
+	for (size_t i = 0; i < ufbxscene->meshes.count; ++i) {
+		const ufbx_mesh *mesh = ufbxscene->meshes.data[i];
+		for (size_t pi = 0; pi < mesh->materials.count; pi++) {
+			const ufbx_mesh_material *mesh_mat = &mesh->materials.data[pi];
+			if (mesh_mat->num_triangles == 0) {
+				continue;
+			}
+			const ufbx_material *material = mesh_mat->material;
+			if (material == nullptr) {
+				continue;
+			}
+			const ufbx_texture *texture = material->fbx.diffuse_color.texture;
+			if (texture == nullptr) {
+				texture = material->pbr.base_color.texture;
+			}
+			if (texture == nullptr) {
+				continue;
+			}
+
+			const core::String &texname = priv::_ufbx_to_string(material->name);
+			if (textures.hasKey(texname)) {
+				Log::debug("texture for material '%s' is already loaded", texname.c_str());
+				continue;
+			}
+
+			core::String name = priv::_ufbx_to_string(texture->absolute_filename);
+			if (!core::string::isAbsolutePath(name)) {
+				const core::String& path = core::string::extractPath(filename);
+				Log::debug("Search image %s in path %s", name.c_str(), path.c_str());
+				name = path + name;
+			}
+
+			image::ImagePtr tex = image::loadImage(name, false);
+			if (tex->isLoaded()) {
+				Log::debug("Use image %s", name.c_str());
+				textures.put(texname, tex);
+			} else {
+				Log::warn("Failed to load image %s", name.c_str());
+			}
+		}
+	}
+
+	const ufbx_node *root = ufbxscene->root_node;
+	for (const ufbx_node *c : root->children) {
+		if (addNode_r(ufbxscene, c, filename, sceneGraph, textures, sceneGraph.root().id()) < 0) {
+			const core::String name = priv::_ufbx_to_string(c->name);
+			Log::error("Failed to add root child node '%s'", name.c_str());
+			return false;
+		}
+	}
+
+	ufbx_free_scene(ufbxscene);
+	return !sceneGraph.empty();
 }
 
 #undef wrapBool

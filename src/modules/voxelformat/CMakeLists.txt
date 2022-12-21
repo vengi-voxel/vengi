@@ -4,6 +4,7 @@ set(SRCS
 	external/tiny_obj_loader.h
 	external/tiny_gltf.h
 	external/json.hpp
+	external/ufbx.h external/ufbx.c
 
 	private/MinecraftPaletteMap.h private/MinecraftPaletteMap.cpp
 	private/NamedBinaryTag.h private/NamedBinaryTag.cpp
