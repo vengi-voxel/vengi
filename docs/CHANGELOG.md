@@ -14,6 +14,10 @@ General:
 
    - Support using `palette` cvar as a destination palette again by setting `voxformat_createpalette` to `false`
 
+VoxEdit:
+
+   - Disable animation window if there are no animations to show
+
 ## 0.0.23 (2022-12-17)
 
 General:
