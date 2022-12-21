@@ -248,13 +248,19 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 	Log::debug("create voxels");
 	voxel::RawVolumeWrapper wrapper(node.volume());
 	voxel::Palette palette;
+	const bool createPalette = core::Var::get(cfg::VoxelCreatePalette);
+	if (!createPalette) {
+		palette = voxel::getPalette();
+	}
 	for (const auto &entry : posMap) {
 		if (stopExecution()) {
 			return;
 		}
 		const PosSampling &pos = entry->second;
 		const core::RGBA rgba = pos.avgColor();
-		palette.addColorToPalette(rgba, true);
+		if (createPalette) {
+			palette.addColorToPalette(rgba, true);
+		}
 		const voxel::Voxel voxel = voxel::createVoxel(palette.getClosestMatch(rgba));
 		wrapper.setVoxel(entry->first, voxel);
 	}

@@ -336,8 +336,12 @@ Config vars to control the meshing:
 \fBvoxformat_withtexcoords\fP: Export texture coordinates
 .PP
 \fBvoxformat_transform_mesh\fP: Apply the keyframe transforms to the mesh
+.PP
+\fBvoxformat_marchingcubes\fP: Use the marching cubes algorithm to produce the mesh
+.PP
+\fBvoxformat_createpalette\fP: Setting this to false will use use the palette configured by \fBpalette\fP cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats.
 
-Basic voxelization is supported for ply, gltf, stl, bsp and obj files, too. The following [cvars](Configuration.md) can be modified here:
+Basic voxelization is supported for ply, gltf, stl, bsp and obj files, too. The following cvars can be modified here:
 
 .PP
 \fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects

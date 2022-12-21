@@ -50,6 +50,8 @@ bool FormatConfig::init() {
 				"Merge compounds on load", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatQBSaveLeftHanded, "true", core::CV_NOPERSIST,
 				"Toggle between left and right handed", core::Var::boolValidator);
+	core::Var::get(cfg::VoxelCreatePalette, "true", core::CV_NOPERSIST,
+				"Create own palette from textures or colors - not used for palette formats", core::Var::boolValidator);
 
 	return true;
 }

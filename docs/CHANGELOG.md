@@ -12,6 +12,8 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 General:
 
+   - Support using `palette` cvar as a destination palette again by setting `voxformat_createpalette` to `false`
+
 ## 0.0.23 (2022-12-17)
 
 General:

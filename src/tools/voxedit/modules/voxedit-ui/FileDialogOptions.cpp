@@ -77,5 +77,6 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		}
 	} else {
 		ImGui::InputVarInt("RGB flatten factor", cfg::VoxformatRGBFlattenFactor);
+		ImGui::CheckboxVar("Create palette", cfg::VoxelCreatePalette);
 	}
 }

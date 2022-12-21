@@ -52,6 +52,7 @@ constexpr const char *VoxelMeshSize = "voxel_meshsize";
 constexpr const char *AppHomePath = "app_homepath";
 
 constexpr const char *VoxelPalette = "palette";
+constexpr const char *VoxelCreatePalette = "voxformat_createpalette";
 constexpr const char *VoxformatMergequads = "voxformat_mergequads";
 constexpr const char *VoxformatMarchingCubes = "voxformat_marchingcubes";
 constexpr const char *VoxformatReusevertices = "voxformat_reusevertices";

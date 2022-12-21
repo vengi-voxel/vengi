@@ -218,11 +218,16 @@ core::RGBA RGBAFormat::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) co
 
 bool RGBAFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	voxel::Palette palette;
-	const int64_t resetToPos = stream.pos();
-	if (loadPalette(filename, stream, palette) <= 0) {
+	const bool createPalette = core::Var::get(cfg::VoxelCreatePalette);
+	if (createPalette) {
+		const int64_t resetToPos = stream.pos();
+		if (loadPalette(filename, stream, palette) <= 0) {
+			palette = voxel::getPalette();
+		}
+		stream.seek(resetToPos);
+	} else {
 		palette = voxel::getPalette();
 	}
-	stream.seek(resetToPos);
 	if (!loadGroupsRGBA(filename, stream, sceneGraph, palette)) {
 		return false;
 	}
