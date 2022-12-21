@@ -10,5 +10,6 @@ class Palette;
 
 void initPalette(const voxel::Palette &palette);
 Palette& getPalette();
+bool hasPalette();
 
 }

@@ -17,8 +17,12 @@ void initPalette(const Palette &palette) {
 	_priv::globalPalette.setValue(palette);
 }
 
+bool hasPalette() {
+	return _priv::globalPalette.hasValue();
+}
+
 Palette &getPalette() {
-	if (!_priv::globalPalette.hasValue()) {
+	if (!hasPalette()) {
 		Palette palette;
 		const core::String &defaultPalette =
 			core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName())->strVal();
