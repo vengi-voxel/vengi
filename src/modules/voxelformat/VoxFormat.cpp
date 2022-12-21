@@ -41,6 +41,7 @@ struct ogt_SceneContext {
 	int transformKeyFrameIdx = 0;
 	core::Array<ogt_vox_keyframe_transform, 4096> keyframeTransforms;
 	core::Buffer<ogt_vox_cam> cameras;
+	bool paletteErrorPrinted = false;
 };
 
 static void *_ogt_alloc(size_t size) {
@@ -445,8 +446,10 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 					*dataptr++ = 0;
 				} else {
 					const uint8_t palIndex = palette.getClosestMatch(nodePalette.colors[voxel.getColor()], nullptr, 0);
-					if (palIndex == 0u) {
-						Log::error("palette index %u: %s mapped to %s", voxel.getColor(), core::Color::print(nodePalette.colors[voxel.getColor()]).c_str(), core::Color::print(palette.colors[0]).c_str());
+					if (palIndex == 0u && !ctx.paletteErrorPrinted) {
+						Log::debug("palette index %u: %s mapped to %s", voxel.getColor(), core::Color::print(nodePalette.colors[voxel.getColor()]).c_str(), core::Color::print(palette.colors[0]).c_str());
+						Log::error("Could not find a valid color for %u", voxel.getColor());
+						ctx.paletteErrorPrinted = true;
 					}
 					*dataptr++ = palIndex;
 				}
