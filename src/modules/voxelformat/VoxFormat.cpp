@@ -442,12 +442,13 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 			uint8_t *dataptr = (uint8_t*)core_malloc(voxelSize);
 			ogt_model.voxel_data = dataptr;
 			voxelutil::visitVolume(*node.volume(), [&] (int, int, int, const voxel::Voxel& voxel) {
-				if (isAir(voxel.getMaterial())) {
+				const core::RGBA rgba = nodePalette.colors[voxel.getColor()];
+				if (rgba.a == 0 || isAir(voxel.getMaterial())) {
 					*dataptr++ = 0;
 				} else {
-					const uint8_t palIndex = palette.getClosestMatch(nodePalette.colors[voxel.getColor()], nullptr, 0);
+					const uint8_t palIndex = palette.getClosestMatch(rgba, nullptr, 0);
 					if (palIndex == 0u && !ctx.paletteErrorPrinted) {
-						Log::debug("palette index %u: %s mapped to %s", voxel.getColor(), core::Color::print(nodePalette.colors[voxel.getColor()]).c_str(), core::Color::print(palette.colors[0]).c_str());
+						Log::debug("palette index %u: %s mapped to %s", voxel.getColor(), core::Color::print(rgba).c_str(), core::Color::print(palette.colors[0]).c_str());
 						Log::error("Could not find a valid color for %u", voxel.getColor());
 						ctx.paletteErrorPrinted = true;
 					}
