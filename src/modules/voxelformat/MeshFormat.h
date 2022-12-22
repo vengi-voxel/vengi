@@ -47,6 +47,7 @@ protected:
 
 	static MeshExt* getParent(const voxelformat::SceneGraph &sceneGraph, Meshes &meshes, int nodeId);
 	static glm::vec3 getScale();
+	core::String lookupTexture(const core::String &meshFilename, const core::String &in) const;
 
 	/**
 	 * @brief Voxelizes the input mesh

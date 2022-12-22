@@ -4,11 +4,13 @@
 
 #include "MeshFormat.h"
 #include "app/App.h"
+#include "core/Algorithm.h"
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/RGBA.h"
+#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
@@ -290,6 +292,40 @@ bool MeshFormat::loadGroups(const core::String &filename, io::SeekableReadStream
 bool MeshFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) {
 	Log::debug("Mesh %s can't get voxelized yet", filename.c_str());
 	return false;
+}
+
+core::String MeshFormat::lookupTexture(const core::String &meshFilename, const core::String &in) const {
+	const core::String &meshPath = core::string::extractPath(meshFilename);
+	if (!meshPath.empty()) {
+		io::filesystem()->pushDir(meshPath);
+	}
+	core::String name = in;
+	io::normalizePath(name);
+	if (!core::string::isAbsolutePath(name)) {
+		const core::String& path = core::string::extractPath(name);
+		Log::debug("Search image %s in path %s", name.c_str(), path.c_str());
+		name = path + name;
+	}
+	if (io::filesystem()->exists(in)) {
+		if (!meshPath.empty()) {
+			io::filesystem()->popDir();
+		}
+		return name;
+	}
+
+	const core::String& filename = core::string::extractFilenameWithExtension(name);
+	const core::String& path = core::string::extractPath(name);
+	core::String fullpath = io::searchPathFor(io::filesystem(), path, filename);
+	if (fullpath.empty()) {
+		fullpath = io::searchPathFor(io::filesystem(), meshPath, filename);
+	}
+	if (fullpath.empty()) {
+		Log::error("Failed to perform texture lookup for %s", name.c_str());
+	}
+	if (!meshPath.empty()) {
+		io::filesystem()->popDir();
+	}
+	return fullpath;
 }
 
 bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {

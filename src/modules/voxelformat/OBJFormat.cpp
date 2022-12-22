@@ -282,16 +282,11 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 			continue;
 		}
 
-		if (!core::string::isAbsolutePath(name)) {
-			const core::String& path = core::string::extractPath(filename);
-			Log::debug("Search image %s in path %s", name.c_str(), path.c_str());
-			name = path + name;
-		}
+		name = lookupTexture(filename, name);
 		image::ImagePtr tex = image::loadImage(name, false);
 		if (tex->isLoaded()) {
 			Log::debug("Use image %s", name.c_str());
-			const core::String texname(material.diffuse_texname.c_str());
-			textures.put(texname, tex);
+			textures.put(material.diffuse_texname.c_str(), tex);
 		} else {
 			Log::warn("Failed to load image %s", name.c_str());
 		}

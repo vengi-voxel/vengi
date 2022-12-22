@@ -688,11 +688,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 				} else {
 					core::String name = image.uri.c_str();
 					if (!textures.hasKey(name)) {
-						if (!core::string::isAbsolutePath(name)) {
-							const core::String& path = core::string::extractPath(filename);
-							Log::debug("Search image %s in path %s", name.c_str(), path.c_str());
-							name = path + name;
-						}
+						name = lookupTexture(filename, name);
 						image::ImagePtr tex = image::loadImage(name, false);
 						if (tex->isLoaded()) {
 							Log::debug("Use image %s", name.c_str());

@@ -463,13 +463,7 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 				continue;
 			}
 
-			core::String name = priv::_ufbx_to_string(texture->absolute_filename);
-			if (!core::string::isAbsolutePath(name)) {
-				const core::String& path = core::string::extractPath(filename);
-				Log::debug("Search image %s in path %s", name.c_str(), path.c_str());
-				name = path + name;
-			}
-
+			const core::String &name = lookupTexture(filename, priv::_ufbx_to_string(texture->relative_filename));
 			image::ImagePtr tex = image::loadImage(name, false);
 			if (tex->isLoaded()) {
 				Log::debug("Use image %s", name.c_str());
