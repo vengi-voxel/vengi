@@ -531,6 +531,21 @@ STBIDEF int   stbi_zlib_decode_buffer(char *obuffer, int olen, const char *ibuff
 STBIDEF char *stbi_zlib_decode_noheader_malloc(const char *buffer, int len, int *outlen);
 STBIDEF int   stbi_zlib_decode_noheader_buffer(char *obuffer, int olen, const char *ibuffer, int ilen);
 
+#ifndef STBI_NO_DDS
+#include "stbi_DDS.h"
+#endif
+
+#ifndef STBI_NO_PVR
+#include "stbi_pvr.h"
+#endif
+
+#ifndef STBI_NO_PKM
+#include "stbi_pkm.h"
+#endif
+
+#ifndef STBI_NO_EXT
+#include "stbi_ext.h"
+#endif
 
 #ifdef __cplusplus
 }
@@ -960,6 +975,24 @@ static int      stbi__pnm_info(stbi__context *s, int *x, int *y, int *comp);
 static int      stbi__pnm_is16(stbi__context *s);
 #endif
 
+#ifndef STBI_NO_DDS
+static int      stbi__dds_test(stbi__context *s);
+static void    *stbi__dds_load(stbi__context *s, int *x, int *y, int *comp, int req_comp);
+static int      stbi__dds_info(stbi__context *s, int *x, int *y, int *comp, int *iscompressed);
+#endif
+
+#ifndef STBI_NO_PVR
+static int      stbi__pvr_test(stbi__context *s);
+static void    *stbi__pvr_load(stbi__context *s, int *x, int *y, int *comp, int req_comp);
+static int      stbi__pvr_info(stbi__context *s, int *x, int *y, int *comp, int * iscompressed);
+#endif
+
+#ifndef STBI_NO_PKM
+static int      stbi__pkm_test(stbi__context *s);
+static void    *stbi__pkm_load(stbi__context *s, int *x, int *y, int *comp, int req_comp);
+static int      stbi__pkm_info(stbi__context *s, int *x, int *y, int *comp);
+#endif
+
 static
 #ifdef STBI_THREAD_LOCAL
 STBI_THREAD_LOCAL
@@ -1140,7 +1173,15 @@ static void *stbi__load_main(stbi__context *s, int *x, int *y, int *comp, int re
    #ifndef STBI_NO_PIC
    if (stbi__pic_test(s))  return stbi__pic_load(s,x,y,comp,req_comp, ri);
    #endif
-
+   #ifndef STBI_NO_DDS
+   if (stbi__dds_test(s))  return stbi__dds_load(s,x,y,comp,req_comp);
+   #endif
+   #ifndef STBI_NO_PVR
+   if (stbi__pvr_test(s))  return stbi__pvr_load(s,x,y,comp,req_comp);
+   #endif
+   #ifndef STBI_NO_PKM
+   if (stbi__pkm_test(s))  return stbi__pkm_load(s,x,y,comp,req_comp);
+   #endif
    // then the formats that can end up attempting to load with just 1 or 2
    // bytes matching expectations; these are prone to false positives, so
    // try them later
@@ -7572,6 +7613,18 @@ static int stbi__info_main(stbi__context *s, int *x, int *y, int *comp)
    if (stbi__hdr_info(s, x, y, comp))  return 1;
    #endif
 
+   #ifndef STBI_NO_DDS
+   if (stbi__dds_info(s, x, y, comp, NULL))  return 1;
+   #endif
+
+   #ifndef STBI_NO_PVR
+   if (stbi__pvr_info(s, x, y, comp, NULL))  return 1;
+   #endif
+
+   #ifndef STBI_NO_PKM
+   if (stbi__pkm_info(s, x, y, comp))  return 1;
+   #endif
+
    // test tga last because it's a crappy test!
    #ifndef STBI_NO_TGA
    if (stbi__tga_info(s, x, y, comp))
@@ -7667,6 +7720,25 @@ STBIDEF int stbi_is_16_bit_from_callbacks(stbi_io_callbacks const *c, void *user
    stbi__start_callbacks(&s, (stbi_io_callbacks *) c, user);
    return stbi__is_16_main(&s);
 }
+
+// add in my DDS loading support
+#ifndef STBI_NO_DDS
+#include "stbi_DDS_c.h"
+#endif
+
+// add in my pvr loading support
+#ifndef STBI_NO_PVR
+#include "stbi_pvr_c.h"
+#endif
+
+// add in my pkm ( ETC1 ) loading support
+#ifndef STBI_NO_PKM
+#include "stbi_pkm_c.h"
+#endif
+
+#ifndef STBI_NO_EXT
+#include "stbi_ext_c.h"
+#endif
 
 #endif // STB_IMAGE_IMPLEMENTATION
 

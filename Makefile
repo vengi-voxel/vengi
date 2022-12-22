@@ -80,9 +80,12 @@ tracy:
 	$(Q)src/modules/core/tracy/profiler/build/unix/Tracy-release
 
 update-stb:
+	$(call UPDATE_GIT,SOIL2,https://github.com/SpartanJ/SOIL2.git)
+	cp $(UPDATEDIR)/SOIL2.sync/src/SOIL2/* src/modules/image/external
+	rm src/modules/image/external/SOIL2.*
+	find src/modules/image/external -type f -exec dos2unix {} \;
+	find src/modules/image/external -type f -exec sed -i 's/[ \t]*$$//' {} \;
 	$(call UPDATE_GIT,stb,https://github.com/nothings/stb.git)
-	cp $(UPDATEDIR)/stb.sync/stb_image.h src/modules/image/external/stb_image.h
-	cp $(UPDATEDIR)/stb.sync/stb_image_write.h src/modules/image/external/stb_image_write.h
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxelfont/external/stb_truetype.h
 
 update-googletest:
