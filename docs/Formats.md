@@ -8,6 +8,7 @@
 | Chronovox-Studio           | csm       | X       |        | X          |         |            |                                                                          |
 | Command and Conquer        | vxl/hva   | X       | X      | X          | X       | X          | [spec](http://xhp.xwis.net/documents/VXL_Format.txt)                     |
 | CubeWorld                  | cub       | X       | X      | X          | X       |            |                                                                          |
+| Filmbox                    | fbx       | X       | X      |            | X       |            |                                                                          |
 | GL Transmission Format     | gltf      | X       | X      |            |         |            | [spec](https://github.com/KhronosGroup/glTF/tree/main/specification/2.0) |
 | Goxel                      | gox       | X       | X      | X          | X       |            |                                                                          |
 | MagicaVoxel                | vox       | X       | X      | X          | X       |            | [spec](https://github.com/ephtracy/voxel-model)                          |

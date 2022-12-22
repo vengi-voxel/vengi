@@ -13,6 +13,8 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 General:
 
    - Support using `palette` cvar as a destination palette again by setting `voxformat_createpalette` to `false`
+   - Added new image formats from SOIL2 (DDS, PKM, PVR)
+   - Added FBX read support
 
 VoxEdit:
 
