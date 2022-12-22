@@ -91,6 +91,7 @@ TEST_F(StringUtilTest, testStripExtension) {
 
 TEST_F(StringUtilTest, testExtractPath) {
 	EXPECT_EQ("/a/b/c/def/", core::string::extractPath("/a/b/c/def/foo.bar"));
+	EXPECT_EQ("E:/a/b/c/def/", core::string::extractPath("E:/a/b/c/def/foo.bar"));
 }
 
 TEST_F(StringUtilTest, testExtractExtension) {
@@ -118,6 +119,12 @@ TEST_F(StringUtilTest, testAppendSmall2) {
 	char buf1[4] = { 'a', 'a', 'a', '\0' };
 	EXPECT_EQ(nullptr, core::string::append(buf1, sizeof(buf1), "a"));
 	ASSERT_FALSE(strcmp("aaa", buf1));
+}
+
+TEST_F(StringUtilTest, testIsAbsolutePath) {
+	EXPECT_TRUE(string::isAbsolutePath("E:\\foo\\bar\\texture\\diffuse.dds"));
+	EXPECT_TRUE(string::isAbsolutePath("E:/foo/bar/texture/diffuse.dds"));
+	EXPECT_TRUE(string::isAbsolutePath("/foo/bar/texture/diffuse.dds"));
 }
 
 TEST_F(StringUtilTest, testJoinFunc) {

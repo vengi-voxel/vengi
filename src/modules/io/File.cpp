@@ -12,6 +12,11 @@ namespace io {
 
 void normalizePath(core::String& str) {
 	core::string::replaceAllChars(str, '\\', '/');
+#ifndef __WINDOWS__
+	if (str.size() >= 3 && str[0] != '\0' && core::string::isAlpha(str[0]) && str[1] == ':' && (str[2] == '\\' || str[2] == '/')) {
+		str.erase(0, 2);
+	}
+#endif
 }
 
 File::File(const core::String& rawPath, FileMode mode) :

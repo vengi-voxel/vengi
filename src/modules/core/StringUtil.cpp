@@ -264,7 +264,7 @@ bool isNumber(const core::String &in) {
 }
 
 bool isAlpha(int c) {
-	return ::isalpha(c);
+	return ::SDL_isalpha(c);
 }
 
 bool isInteger(const core::String& in) {
@@ -294,11 +294,9 @@ bool isIntegerWithPostfix(const core::String& in) {
 }
 
 bool isAbsolutePath(const core::String &in) {
-#ifdef __WINDOWS__
 	if (in.size() >= 3 && in[0] != '\0' && isAlpha(in[0]) && in[1] == ':' && (in[2] == '\\' || in[2] == '/')) {
 		return true;
 	}
-#endif
 	return in.size() > 1U && (in[0] == '/' || in[0] == '\\');
 }
 
