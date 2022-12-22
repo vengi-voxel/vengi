@@ -226,13 +226,16 @@ core::String Filesystem::absolutePath(const core::String &path) {
 
 bool Filesystem::isReadableDir(const core::String &name) {
 	if (!fs_exists(name.c_str())) {
+		Log::trace("%s doesn't exist", name.c_str());
 		return false;
 	}
 
 	FilesystemEntry entry;
 	if (!fs_stat(name.c_str(), entry)) {
+		Log::trace("Could not stat '%s'", name.c_str());
 		return false;
 	}
+	Log::trace("Found type %i for '%s'", (int)entry.type, name.c_str());
 	return entry.type == FilesystemEntry::Type::dir;
 }
 
@@ -397,6 +400,37 @@ bool Filesystem::syswrite(const core::String &filename, const uint8_t *content, 
 bool Filesystem::syswrite(const core::String &filename, const core::String &string) const {
 	const uint8_t *buf = reinterpret_cast<const uint8_t *>(string.c_str());
 	return syswrite(filename, buf, string.size());
+}
+
+core::String searchPathFor(const FilesystemPtr& filesystem, const core::String &path, const core::String &filename) {
+	core::DynamicArray<core::String> tokens;
+	core::string::splitString(path, tokens, "/");
+	while (!tokens.empty()) {
+		if (filesystem->isReadableDir(tokens[0])) {
+			break;
+		}
+		tokens.erase(0);
+	}
+	core::String relativePath;
+	for (const core::String &t : tokens) {
+		relativePath += t;
+		relativePath += "/";
+	}
+	Log::trace("List dir '%s'", relativePath.c_str());
+	core::DynamicArray<io::FilesystemEntry> entities;
+	const core::String abspath = filesystem->absolutePath(relativePath);
+	filesystem->list(abspath, entities);
+	Log::trace("Found %i entries", (int)entities.size());
+	auto predicate = [&] (const io::FilesystemEntry &e) {
+		return core::string::iequals(e.name, filename);
+	};
+	auto iter = core::find_if(entities.begin(), entities.end(), predicate);
+	if (iter == entities.end()) {
+		Log::debug("Could not find %s", filename.c_str());
+		return "";
+	}
+	Log::debug("Found %s", iter->name.c_str());
+	return core::string::path(abspath, iter->name);
 }
 
 } // namespace io

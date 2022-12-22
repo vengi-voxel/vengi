@@ -8,6 +8,15 @@
 #include "io/FormatDescription.h"
 #include <gtest/gtest.h>
 
+
+namespace core {
+
+inline std::ostream &operator<<(::std::ostream &os, const String &dt) {
+	return os << dt.c_str();
+}
+
+}
+
 namespace io {
 
 class FilesystemTest : public testing::Test {};
@@ -210,6 +219,12 @@ TEST_F(FilesystemTest, testCreateDirNonRecursiveFail) {
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_FALSE(fs.createDir("does/not/exist", false));
 	fs.shutdown();
+}
+
+TEST_F(FilesystemTest, testSearchPathFor) {
+	io::FilesystemPtr fs = core::make_shared<io::Filesystem>();
+	EXPECT_TRUE(fs->init("test", "test")) << "Failed to initialize the filesystem";
+	EXPECT_EQ("iotest.txt", searchPathFor(fs, "foobar/does/not/exist", "iotest.txt"));
 }
 
 } // namespace io

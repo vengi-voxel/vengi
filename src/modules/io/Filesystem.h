@@ -191,4 +191,12 @@ inline const core::String& Filesystem::homePath() const {
 
 typedef core::SharedPtr<Filesystem> FilesystemPtr;
 
+/**
+ * @brief Searches a filename in any a given path.
+ * @param[in] path The path could be given as absolute non existing path like e.g. @c /foo/bar/textures/
+ * where the given @c filename doesn't exists. But a directory relative to the current working dir named
+ * @c textures with the given file exists. This will resolve the case insensitive lookup for you.
+ */
+core::String searchPathFor(const FilesystemPtr& filesystem, const core::String &path, const core::String &filename);
+
 }
