@@ -343,7 +343,6 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 			}
 		}
 	}
-	// TODO: transform
 	const core::String &name = priv::_ufbx_to_string(node->name);
 	const int nodeId = voxelizeNode(name, sceneGraph, tris, parent);
 	if (nodeId < 0) {
@@ -356,6 +355,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 	SceneGraphTransform &transform = sceneGraphNode.keyFrame(0).transform();
 	priv::_ufbx_to_transform(transform, node);
 	sceneGraphNode.setTransform(keyFrameIdx, transform);
+	// TODO: animations - see ufbx_evaluate_transform
 	return nodeId;
 }
 
