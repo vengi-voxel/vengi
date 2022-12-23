@@ -235,7 +235,8 @@ core::String fs_cwd() {
 }
 
 core::String fs_realpath(const char *path) {
-	const char *rp = realpath(path, nullptr);
+	char buf[PATH_MAX];
+	const char *rp = realpath(path, buf);
 	if (rp == nullptr) {
 		return "";
 	}
