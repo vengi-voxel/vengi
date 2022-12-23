@@ -118,6 +118,8 @@ public:
 	 */
 	static bool chdir(const core::String& directory);
 
+	core::String currentDir() const;
+
 	/**
 	 * @brief changes the current working dir to the last pushed one
 	 */

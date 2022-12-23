@@ -268,6 +268,10 @@ bool Filesystem::registerPath(const core::String &path) {
 	return true;
 }
 
+core::String Filesystem::currentDir() const {
+	return fs_cwd();
+}
+
 bool Filesystem::popDir() {
 	if (_dirStack.empty()) {
 		return false;
@@ -286,7 +290,7 @@ bool Filesystem::popDir() {
 
 bool Filesystem::pushDir(const core::String &directory) {
 	if (_dirStack.empty()) {
-		core::String cwd = fs_cwd();
+		core::String cwd = currentDir();
 		normalizePath(cwd);
 		_dirStack.push(cwd);
 	}
