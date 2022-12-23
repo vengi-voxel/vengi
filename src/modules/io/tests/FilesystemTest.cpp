@@ -5,6 +5,7 @@
 #include "io/Filesystem.h"
 #include "core/Algorithm.h"
 #include "core/Enum.h"
+#include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include <gtest/gtest.h>
 
@@ -102,9 +103,11 @@ TEST_F(FilesystemTest, testAbsolutePath) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.createDir("absolutePathInCurDir"));
-	const core::String &absPath = fs.absolutePath("absolutePathInCurDir");
-	EXPECT_NE("", absPath);
-	EXPECT_NE("absolutePathInCurDir", absPath);
+	const core::String &absolutePathInCurDir = fs.absolutePath("absolutePathInCurDir");
+	EXPECT_EQ(core::string::path(fs.currentDir(), "absolutePathInCurDir"), absolutePathInCurDir);
+	EXPECT_TRUE(core::string::isAbsolutePath(absolutePathInCurDir));
+	const core::String &abspath = fs.absolutePath("");
+	EXPECT_EQ(fs.currentDir(), abspath);
 	fs.shutdown();
 }
 
@@ -224,7 +227,7 @@ TEST_F(FilesystemTest, testCreateDirNonRecursiveFail) {
 TEST_F(FilesystemTest, testSearchPathFor) {
 	io::FilesystemPtr fs = core::make_shared<io::Filesystem>();
 	EXPECT_TRUE(fs->init("test", "test")) << "Failed to initialize the filesystem";
-	EXPECT_EQ("iotest.txt", searchPathFor(fs, "foobar/does/not/exist", "iotest.txt"));
+	EXPECT_EQ(core::string::path(fs->currentDir(), "iotest.txt"), searchPathFor(fs, "foobar/does/not/exist", "iotest.txt"));
 	fs->shutdown();
 }
 
