@@ -16,6 +16,7 @@ class Color {
 private:
 	static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors);
 	static int quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors);
+	static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors);
 
 public:
 	static const uint32_t magnitude = 255;
@@ -93,7 +94,7 @@ public:
 	enum class ColorReductionType {
 		Octree,
 		Wu,
-		//TODO MedianCut,
+		MedianCut,
 
 		Max
 	};

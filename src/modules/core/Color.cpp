@@ -3,9 +3,11 @@
  */
 
 #include "Color.h"
+#include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/GLM.h"
 #include "core/Log.h"
+#include "core/Pair.h"
 #include "core/StringUtil.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
@@ -67,10 +69,144 @@ int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inpu
 		return quantizeWu(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
 	case ColorReductionType::Octree:
 		return quantizeOctree(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
+	case ColorReductionType::MedianCut:
+		return quantizeMedianCut(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
 	default:
 		break;
 	}
 	return -1;
+}
+
+struct ColorBox {
+	RGBA min, max;
+	core::Buffer<RGBA> pixels;
+};
+
+static int medianCutFindMedian(const core::Buffer<RGBA> &colors, int axis) {
+	core::Buffer<int> values;
+	for (const core::RGBA &color : colors) {
+		if (axis == 0) {
+			values.push_back(color.r);
+		} else if (axis == 1) {
+			values.push_back(color.g);
+		} else {
+			values.push_back(color.b);
+		}
+	}
+	core::sort(values.begin(), values.end(), core::Less<int>());
+	return values[values.size() / 2];
+}
+
+static core::Pair<ColorBox, ColorBox> medianCutSplitBox(const ColorBox &box) {
+	int longestAxis = 0;
+	if ((box.max.g - box.min.g) > (box.max.r - box.min.r)) {
+		longestAxis = 1;
+	}
+	if ((box.max.b - box.min.b) > (box.max.g - box.min.g)) {
+		longestAxis = 2;
+	}
+
+	int median = medianCutFindMedian(box.pixels, longestAxis);
+	ColorBox box1, box2;
+	for (const core::RGBA &color : box.pixels) {
+		if (longestAxis == 0) {
+			if (color.r < median) {
+				box1.pixels.push_back(color);
+			} else {
+				box2.pixels.push_back(color);
+			}
+		} else if (longestAxis == 1) {
+			if (color.g < median) {
+				box1.pixels.push_back(color);
+			} else {
+				box2.pixels.push_back(color);
+			}
+		} else {
+			if (color.b < median) {
+				box1.pixels.push_back(color);
+			} else {
+				box2.pixels.push_back(color);
+			}
+		}
+	}
+
+	box1.min.r = box.min.r;
+	box1.max.r = box.max.r;
+	box1.min.g = box.min.g;
+	box1.max.g = box.max.g;
+	box1.min.b = box.min.b;
+	box1.max.b = box.max.b;
+
+	box2.min.r = box.min.r;
+	box2.max.r = box.max.r;
+	box2.min.g = box.min.g;
+	box2.max.g = box.max.g;
+	box2.min.b = box.min.b;
+	box2.max.b = box.max.b;
+
+	if (longestAxis == 0) {
+		box1.max.r = median;
+		box2.min.r = median;
+	} else if (longestAxis == 1) {
+		box1.max.g = median;
+		box2.min.g = median;
+	} else {
+		box1.max.b = median;
+		box2.min.b = median;
+	}
+
+	return core::Pair{box1, box2};
+}
+
+int Color::quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
+	core::Buffer<RGBA> pixels;
+	pixels.append(inputBuf, inputBufColors);
+
+	core::DynamicArray<ColorBox> boxes;
+	boxes.emplace_back(ColorBox{{0, 0, 0, 255}, {255, 255, 255, 255}, pixels});
+
+	while (boxes.size() < maxTargetBufColors) {
+		size_t maxSize = 0;
+		size_t maxIndex = 0;
+		for (size_t i = 0; i < boxes.size(); ++i) {
+			if (boxes[i].pixels.size() > maxSize) {
+				maxSize = boxes[i].pixels.size();
+				maxIndex = i;
+			}
+		}
+
+		// Split the most populated box.
+		core::Pair<ColorBox, ColorBox> boxesPair = medianCutSplitBox(boxes[maxIndex]);
+		boxes.erase(maxIndex);
+		boxes.push_back(boxesPair.first);
+		boxes.push_back(boxesPair.second);
+	}
+
+	size_t n = 0;
+	for (const ColorBox &box : boxes) {
+		if (box.pixels.empty()) {
+			continue;
+		}
+		uint32_t r = 0, g = 0, b = 0, a = 0;
+		for (const core::RGBA &color : box.pixels) {
+			r += color.r;
+			g += color.g;
+			b += color.b;
+			a += color.a;
+		}
+		r /= box.pixels.size();
+		g /= box.pixels.size();
+		b /= box.pixels.size();
+		a /= box.pixels.size();
+		targetBuf[n++] = core::RGBA(r, g, b, a);
+		if (n >= maxTargetBufColors) {
+			return (int)n;
+		}
+	}
+	for (size_t i = n; i < maxTargetBufColors; ++i) {
+		targetBuf[i] = RGBA(0xFFFFFFFFU);
+	}
+	return (int)n;
 }
 
 int Color::quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
@@ -119,17 +255,12 @@ int Color::quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 }
 
 int Color::quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
-	struct Box {
-		RGBA min, max;
-		core::Buffer<RGBA> pixels;
-	};
-
 	core::Buffer<RGBA> pixels;
 	pixels.append(inputBuf, inputBufColors);
 
 	// Initialize the set of boxes with the full color range
-	core::DynamicArray<Box> boxes;
-	boxes.emplace_back(Box{{0, 0, 0, 255}, {255, 255, 255, 255}, pixels});
+	core::DynamicArray<ColorBox> boxes;
+	boxes.emplace_back(ColorBox{{0, 0, 0, 255}, {255, 255, 255, 255}, pixels});
 
 	// Iterate until we reach the desired number of boxes
 	while (boxes.size() < maxTargetBufColors) {
@@ -146,7 +277,7 @@ int Color::quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 		}
 
 		// Split the box with the largest volume into two boxes along its longest dimension
-		const Box &box = boxes[maxVolumeIndex];
+		const ColorBox &box = boxes[maxVolumeIndex];
 		const size_t pixelCount = box.pixels.size();
 		if (pixelCount <= 0) {
 			boxes.erase(maxVolumeIndex);
@@ -166,7 +297,7 @@ int Color::quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 			midpoint = (box.min.b + box.max.b) / 2;
 		}
 
-		Box box1, box2;
+		ColorBox box1, box2;
 		box1.pixels.reserve(pixelCount / 2);
 		box2.pixels.reserve(pixelCount / 2);
 		switch (component) {
@@ -218,7 +349,7 @@ int Color::quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 	}
 
 	size_t n = 0;
-	for (const Box& box : boxes) {
+	for (const ColorBox& box : boxes) {
 		if (box.pixels.empty()) {
 			continue;
 		}

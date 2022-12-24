@@ -93,8 +93,15 @@ TEST(ColorTest, testQuantize) {
 		core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0x24, 0x21, 0x32), core::RGBA(0x24, 0x21, 0x32), core::RGBA(0x24, 0x21, 0x32), core::RGBA(0x24, 0x21, 0x32), core::RGBA(0x24, 0x21, 0x32), core::RGBA(0x24, 0x21, 0x32)
 	};
 	core::RGBA targetBuf[256] {};
-	const int n = core::Color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), core::Color::ColorReductionType::Octree);
-	EXPECT_EQ(219, n) << core::BufferView<RGBA>(targetBuf, n) << "\n" << core::BufferView<RGBA>(buf, lengthof(buf));
+	int n;
+	n = core::Color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), core::Color::ColorReductionType::Octree);
+	EXPECT_EQ(219, n) << "Failed with octree.\n" << core::BufferView<RGBA>(targetBuf, n) << "\n" << core::BufferView<RGBA>(buf, lengthof(buf));
+
+	n = core::Color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), core::Color::ColorReductionType::Wu);
+	EXPECT_EQ(140, n) << "Failed with Wu.\n" << core::BufferView<RGBA>(targetBuf, n) << "\n" << core::BufferView<RGBA>(buf, lengthof(buf));
+
+	// n = core::Color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), core::Color::ColorReductionType::MedianCut);
+	// EXPECT_EQ(219, n) << "Failed with median cut.\n" << core::BufferView<RGBA>(targetBuf, n) << "\n" << core::BufferView<RGBA>(buf, lengthof(buf));
 }
 
 TEST(ColorTest, testClosestMatchExact) {

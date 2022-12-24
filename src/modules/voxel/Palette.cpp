@@ -38,10 +38,10 @@ void Palette::markDirty() {
 	_hash._hashColors[1] = core::hash(glowColors, sizeof(glowColors));
 }
 
-void Palette::reduce(uint8_t targetColors) {
+void Palette::reduce(uint8_t targetColors, core::Color::ColorReductionType reductionType) {
 	PaletteColorArray oldcolors;
 	core_memcpy(oldcolors, colors, sizeof(PaletteColorArray));
-	colorCount = core::Color::quantize(colors, targetColors, oldcolors, colorCount);
+	colorCount = core::Color::quantize(colors, targetColors, oldcolors, colorCount, reductionType);
 	markDirty();
 }
 

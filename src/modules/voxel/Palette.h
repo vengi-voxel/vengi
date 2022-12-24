@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Color.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
@@ -58,7 +59,7 @@ public:
 	bool saveGlow(const char *name = nullptr) const;
 
 	void changeIntensity(float scale);
-	void reduce(uint8_t targetColors);
+	void reduce(uint8_t targetColors, core::Color::ColorReductionType reductionType = core::Color::ColorReductionType::Wu);
 
 	static core::String print(const Palette &palette, bool colorAsHex = false);
 
