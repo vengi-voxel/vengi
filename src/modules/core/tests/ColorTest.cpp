@@ -6,9 +6,28 @@
 #include "core/Color.h"
 #include "core/RGBA.h"
 #include "core/ArrayLength.h"
+#include "core/StringUtil.h"
+#include "core/collection/BufferView.h"
 #include <SDL_endian.h>
 
 namespace core {
+
+inline std::ostream &operator<<(::std::ostream &os, const core::BufferView<RGBA> &dt) {
+	core::String palStr;
+	core::String line;
+	for (size_t i = 0; i < dt.size(); ++i) {
+		if (i % 16 == 0 && !line.empty()) {
+			palStr.append(core::string::format("%03i %s\n", (int)i - 16, line.c_str()));
+			line = "";
+		}
+		const core::String c = core::Color::print(dt[i], false);
+		line += c;
+	}
+	if (!line.empty()) {
+		palStr.append(core::string::format("%03i %s\n", (int)dt.size() / 16 * 16, line.c_str()));
+	}
+	return os << palStr.c_str();
+}
 
 TEST(ColorTest, testRGBA) {
 	core::RGBA color;
@@ -71,11 +90,11 @@ TEST(ColorTest, testQuantize) {
 		core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0),
 		core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0),
 		core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0),
-		core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0x24, 0x21, 0x32)
+		core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0xf0, 0xf0, 0xf0), core::RGBA(0x24, 0x21, 0x32), core::RGBA(0x24, 0x21, 0x32), core::RGBA(0x24, 0x21, 0x32), core::RGBA(0x24, 0x21, 0x32), core::RGBA(0x24, 0x21, 0x32), core::RGBA(0x24, 0x21, 0x32)
 	};
 	core::RGBA targetBuf[256] {};
-	const int n = core::Color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf));
-	EXPECT_EQ(219, n);
+	const int n = core::Color::quantize(targetBuf, lengthof(targetBuf), buf, lengthof(buf), core::Color::ColorReductionType::Octree);
+	EXPECT_EQ(219, n) << core::BufferView<RGBA>(targetBuf, n) << "\n" << core::BufferView<RGBA>(buf, lengthof(buf));
 }
 
 TEST(ColorTest, testClosestMatchExact) {

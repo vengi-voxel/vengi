@@ -7,6 +7,8 @@
 #include "core/GLM.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
 #include "math/Octree.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
@@ -49,7 +51,29 @@ const glm::vec4 Color::DarkBrown = glm::vec4(82.f, 43, 26, 255) / glm::vec4(Colo
 const float Color::magnitudef = 255.0f;
 const float Color::scaleFactor = 0.7f;
 
-int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
+int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors, ColorReductionType type) {
+	if (inputBufColors <= maxTargetBufColors) {
+		size_t n;
+		for (n = 0; n < inputBufColors; ++n) {
+			targetBuf[n] = inputBuf[n];
+		}
+		for (size_t i = n; i < maxTargetBufColors; ++i) {
+			targetBuf[i] = RGBA(255, 255, 255, 255);
+		}
+		return (int)n;
+	}
+	switch (type) {
+	case ColorReductionType::Wu:
+		return quantizeWu(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
+	case ColorReductionType::Octree:
+		return quantizeOctree(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
+	default:
+		break;
+	}
+	return -1;
+}
+
+int Color::quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
 	core_assert(glm::isPowerOfTwo(maxTargetBufColors));
 	core_assert(maxTargetBufColors == 256);
 	using BBox = math::AABB<uint8_t>;
@@ -88,6 +112,128 @@ int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inpu
 			}
 		}
 	}
+	for (size_t i = n; i < maxTargetBufColors; ++i) {
+		targetBuf[i] = RGBA(0xFFFFFFFFU);
+	}
+	return (int)n;
+}
+
+int Color::quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
+	struct Box {
+		RGBA min, max;
+		core::Buffer<RGBA> pixels;
+	};
+
+	core::Buffer<RGBA> pixels;
+	pixels.append(inputBuf, inputBufColors);
+
+	// Initialize the set of boxes with the full color range
+	core::DynamicArray<Box> boxes;
+	boxes.emplace_back(Box{{0, 0, 0, 255}, {255, 255, 255, 255}, pixels});
+
+	// Iterate until we reach the desired number of boxes
+	while (boxes.size() < maxTargetBufColors) {
+		// Find the box with the largest volume (i.e., the most pixels)
+		int maxVolume = std::numeric_limits<int>::min();
+		size_t maxVolumeIndex = 0;
+		for (size_t i = 0; i < boxes.size(); ++i) {
+			int volume = (boxes[i].max.r - boxes[i].min.r + 1) * (boxes[i].max.g - boxes[i].min.g + 1) *
+						 (boxes[i].max.b - boxes[i].min.b + 1);
+			if (volume > maxVolume) {
+				maxVolume = volume;
+				maxVolumeIndex = i;
+			}
+		}
+
+		// Split the box with the largest volume into two boxes along its longest dimension
+		const Box &box = boxes[maxVolumeIndex];
+		const size_t pixelCount = box.pixels.size();
+		if (pixelCount <= 0) {
+			boxes.erase(maxVolumeIndex);
+			continue;
+		}
+
+		int component = 0;
+		int midpoint = 0;
+		if (box.max.r - box.min.r > box.max.g - box.min.g && box.max.r - box.min.r > box.max.b - box.min.b) {
+			component = 0;
+			midpoint = (box.min.r + box.max.r) / 2;
+		} else if (box.max.g - box.min.g > box.max.b - box.min.b) {
+			component = 1;
+			midpoint = (box.min.g + box.max.g) / 2;
+		} else {
+			component = 2;
+			midpoint = (box.min.b + box.max.b) / 2;
+		}
+
+		Box box1, box2;
+		box1.pixels.reserve(pixelCount / 2);
+		box2.pixels.reserve(pixelCount / 2);
+		switch (component) {
+		case 0:
+			box1.min = box.min;
+			box1.max = RGBA(midpoint, box.max.g, box.max.b, 255);
+			box2.min = RGBA(midpoint + 1, box.min.g, box.min.b, 255);
+			box2.max = box.max;
+			for (const RGBA &pixel : box.pixels) {
+				if (pixel.r <= midpoint) {
+					box1.pixels.push_back(pixel);
+				} else {
+					box2.pixels.push_back(pixel);
+				}
+			}
+			break;
+		case 1:
+			box1.min = box.min;
+			box1.max = RGBA(box.max.r, midpoint, box.max.b, 255);
+			box2.min = RGBA(box.min.r, midpoint + 1, box.min.b, 255);
+			box2.max = box.max;
+			for (const RGBA &pixel : box.pixels) {
+				if (pixel.g <= midpoint) {
+					box1.pixels.push_back(pixel);
+				} else {
+					box2.pixels.push_back(pixel);
+				}
+			}
+			break;
+		case 2:
+			box1.min = box.min;
+			box1.max = RGBA(box.max.r, box.max.g, midpoint);
+			box2.min = RGBA(box.min.r, box.min.g, midpoint + 1);
+			box2.max = box.max;
+			for (const RGBA &pixel : box.pixels) {
+				if (pixel.b <= midpoint) {
+					box1.pixels.push_back(pixel);
+				} else {
+					box2.pixels.push_back(pixel);
+				}
+			}
+			break;
+		}
+
+		// Replace the original box with the two split boxes
+		boxes.erase(maxVolumeIndex);
+		boxes.emplace_back(core::move(box1));
+		boxes.emplace_back(core::move(box2));
+	}
+
+	size_t n = 0;
+	for (const Box& box : boxes) {
+		if (box.pixels.empty()) {
+			continue;
+		}
+		RGBA average(0, 0, 0, 255);
+		for (const RGBA& pixel : box.pixels) {
+			average.r += pixel.r;
+			average.g += pixel.g;
+			average.b += pixel.b;
+		}
+		average.r /= box.pixels.size();
+		average.g /= box.pixels.size();
+		average.b /= box.pixels.size();
+		targetBuf[n++] = average;
+	}
+
 	for (size_t i = n; i < maxTargetBufColors; ++i) {
 		targetBuf[i] = RGBA(0xFFFFFFFFU);
 	}

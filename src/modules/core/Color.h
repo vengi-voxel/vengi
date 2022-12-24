@@ -13,6 +13,10 @@
 namespace core {
 
 class Color {
+private:
+	static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors);
+	static int quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors);
+
 public:
 	static const uint32_t magnitude = 255;
 	static const float magnitudef;
@@ -86,7 +90,17 @@ public:
 
 	static core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t f);
 
-	static int quantize(RGBA* targetBuf, size_t maxTargetBufColors, const RGBA* inputBuf, size_t inputBufColors);
+	enum class ColorReductionType {
+		Octree,
+		Wu,
+		//TODO MedianCut,
+
+		Max
+	};
+	/**
+	 * @return @c -1 on error or the amount of @code colors <= maxTargetBufColors @endcode
+	 */
+	static int quantize(RGBA* targetBuf, size_t maxTargetBufColors, const RGBA* inputBuf, size_t inputBufColors, ColorReductionType type = ColorReductionType::Wu);
 
 	static glm::vec4 fromRGBA(const RGBA rgba);
 	static glm::vec4 fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);

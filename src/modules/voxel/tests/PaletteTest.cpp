@@ -28,6 +28,13 @@ TEST_F(PaletteTest, testGimpPalette) {
 	EXPECT_EQ(pal.colorCount, cnt);
 }
 
+TEST_F(PaletteTest, testReduce) {
+	Palette pal;
+	pal.nippon();
+	pal.reduce(16);
+	EXPECT_LE(pal.colorCount, 16);
+}
+
 TEST_F(PaletteTest, testSavePngPalette) {
 	Palette pal;
 	pal.nippon();

@@ -38,8 +38,16 @@ void Palette::markDirty() {
 	_hash._hashColors[1] = core::hash(glowColors, sizeof(glowColors));
 }
 
+void Palette::reduce(uint8_t targetColors) {
+	PaletteColorArray oldcolors;
+	core_memcpy(oldcolors, colors, sizeof(PaletteColorArray));
+	colorCount = core::Color::quantize(colors, targetColors, oldcolors, colorCount);
+	markDirty();
+}
+
 void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCount) {
 	colorCount = core::Color::quantize(colors, lengthof(colors), inputColors, inputColorCount);
+	markDirty();
 }
 
 bool Palette::hasColor(core::RGBA rgba) {

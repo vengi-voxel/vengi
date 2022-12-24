@@ -58,6 +58,7 @@ public:
 	bool saveGlow(const char *name = nullptr) const;
 
 	void changeIntensity(float scale);
+	void reduce(uint8_t targetColors);
 
 	static core::String print(const Palette &palette, bool colorAsHex = false);
 
