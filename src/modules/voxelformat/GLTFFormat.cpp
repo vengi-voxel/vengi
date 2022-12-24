@@ -840,7 +840,7 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node,
 
 			for (const auto &entry : posMap) {
 				const PosSampling &pos = entry->second;
-				const core::RGBA color = pos.avgColor();
+				const core::RGBA color = pos.avgColor(_flattenFactor);
 				palette.addColorToPalette(color, true);
 				const voxel::Voxel voxel = voxel::createVoxel(palette.getClosestMatch(color));
 				volume->setVoxel(entry->first, voxel);

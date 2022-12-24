@@ -14,7 +14,7 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatMarchingCubes, "false", core::CV_NOPERSIST, "Don't export cubes, but a mesh that is polygonized by the marching cubes algorithm", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST, "Reuse vertices or always create new ones", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST, "Extra vertices for ambient occlusion", core::Var::boolValidator);
-	core::Var::get(cfg::VoxformatRGBFlattenFactor, "0", core::CV_NOPERSIST, "To flatten factor for RGBA formats", [](const core::String &var) {
+	core::Var::get(cfg::VoxformatRGBFlattenFactor, "0", core::CV_NOPERSIST, "To flatten factor for RGBA and mesh formats", [](const core::String &var) {
 					   const int type = var.toInt();
 					   return type >= 0 && type <= 255;
 				   });

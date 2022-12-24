@@ -228,6 +228,13 @@ float Color::getDistance(RGBA rgba, float hue, float saturation, float brightnes
 	return getDistance(color, hue, saturation, brightness);
 }
 
+core::RGBA Color::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t f) {
+	if (f <= 1u) {
+		return core::RGBA(r, g, b, a);
+	}
+	return core::RGBA(r / f * f, g / f * f, b / f * f, a);
+}
+
 RGBA Color::getRGBA(const glm::vec4 &color) {
 	return RGBA{(uint8_t)(color.r * magnitude), (uint8_t)(color.g * magnitude), (uint8_t)(color.b * magnitude),
 				(uint8_t)(color.a * magnitude)};

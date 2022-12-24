@@ -84,12 +84,7 @@ public:
 
 	static core::String print(RGBA rgba, bool colorAsHex = true);
 
-	static inline core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t f) {
-		if (f == 0) {
-			return core::RGBA(r, g, b, a);
-		}
-		return core::RGBA(r / f * f, g / f * f, b / f * f, a);
-	}
+	static core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t f);
 
 	static int quantize(RGBA* targetBuf, size_t maxTargetBufColors, const RGBA* inputBuf, size_t inputBufColors);
 

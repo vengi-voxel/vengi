@@ -71,5 +71,5 @@ Next to the mesh related configuration cvars there are a few format specific one
 * `voxformat_voxcreatelayers`: Magicavoxel vox layers
 * `voxformat_voxcreategroups`: Magicavoxel vox groups
 * `voxformat_merge`: Merge all models into one object
-* `voxformat_rgbflattenfactor`: To flatten the RGB colors when importing volumes (0-255)
+* `voxformat_rgbflattenfactor`: To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats
 * `voxformat_qbsavelefthanded`: Save qubicle format as left handed

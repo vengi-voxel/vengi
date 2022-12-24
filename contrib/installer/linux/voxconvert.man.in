@@ -341,7 +341,7 @@ Config vars to control the meshing:
 .PP
 \fBvoxformat_createpalette\fP: Setting this to false will use use the palette configured by \fBpalette\fP cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats.
 .PP
-\fBvoxformat_rgbflattenfactor\fP: To flatten the RGB colors when importing volumes (0-255) for rgba formats
+\fBvoxformat_rgbflattenfactor\fP: To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats
 
 Basic voxelization is supported for ply, gltf, stl, bsp and obj files, too. The following cvars can be modified here:
 

@@ -30,6 +30,7 @@ public:
 	static bool calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
 	static bool isAxisAligned(const TriCollection &tris);
 protected:
+	uint8_t _flattenFactor;
 	struct MeshExt {
 		MeshExt(voxel::Mesh *mesh, const SceneGraphNode &node, bool applyTransform);
 		voxel::Mesh *mesh;
@@ -76,16 +77,17 @@ protected:
 		inline PosSampling(float area, core::RGBA color) {
 			entries.emplace_back(area, color);
 		}
-		core::RGBA avgColor() const;
+		core::RGBA avgColor(uint8_t flattenFactor) const;
 	};
 
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
 
-	static void voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool hillHollow);
-	static void transformTris(const TriCollection &subdivided, PosMap &posMap);
-	static void transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap);
+	void voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool hillHollow) const;
+	void transformTris(const TriCollection &subdivided, PosMap &posMap) const;
+	void transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap) const;
 
 public:
+	MeshFormat();
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, SceneGraph &sceneGraph) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) override;

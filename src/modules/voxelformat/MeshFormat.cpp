@@ -33,6 +33,10 @@
 
 namespace voxelformat {
 
+MeshFormat::MeshFormat() {
+	_flattenFactor = core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->intVal();
+}
+
 MeshFormat::MeshExt* MeshFormat::getParent(const voxelformat::SceneGraph &sceneGraph, MeshFormat::Meshes &meshes, int nodeId) {
 	if (!sceneGraph.hasNode(nodeId)) {
 		return nullptr;
@@ -78,7 +82,7 @@ void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
 	tinyTris.push_back(tri);
 }
 
-core::RGBA MeshFormat::PosSampling::avgColor() const {
+core::RGBA MeshFormat::PosSampling::avgColor(uint8_t flattenFactor) const {
 	if (entries.size() == 1) {
 		return entries[0].color;
 	}
@@ -94,7 +98,7 @@ core::RGBA MeshFormat::PosSampling::avgColor() const {
 		color = core::RGBA::mix(color, pe.color, pe.area / sumArea);
 	}
 	color.a = 255;
-	return color;
+	return core::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
 }
 
 glm::vec2 MeshFormat::paletteUV(int colorIndex) {
@@ -103,7 +107,7 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 	return uv;
 }
 
-void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) {
+void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) const {
 	Log::trace("subdivided into %i triangles", (int)subdivided.size());
 	for (const Tri &tri : subdivided) {
 		if (stopExecution()) {
@@ -117,7 +121,7 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 	}
 }
 
-void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap) {
+void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap) const {
 	Log::debug("%i triangles", (int)tris.size());
 	for (const Tri &tri : tris) {
 		if (stopExecution()) {
@@ -246,7 +250,7 @@ bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::
 	return true;
 }
 
-void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) {
+void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) const {
 	Log::debug("create voxels");
 	voxel::RawVolumeWrapper wrapper(node.volume());
 	voxel::Palette palette;
@@ -259,7 +263,7 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 			return;
 		}
 		const PosSampling &pos = entry->second;
-		const core::RGBA rgba = pos.avgColor();
+		const core::RGBA rgba = pos.avgColor(_flattenFactor);
 		if (createPalette) {
 			palette.addColorToPalette(rgba, true);
 		}
