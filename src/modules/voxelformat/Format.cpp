@@ -77,7 +77,7 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 			Log::debug("invalid region for node %i", node.id());
 			continue;
 		}
-		if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxSize))) {
+		if (glm::all(glm::lessThanEqual(region.getDimensionsInVoxels(), maxSize))) {
 			SceneGraphNode newNode;
 			copyNode(node, newNode, true);
 			destSceneGraph.emplace(core::move(newNode));
