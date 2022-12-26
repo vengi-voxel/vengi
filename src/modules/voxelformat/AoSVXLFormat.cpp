@@ -366,18 +366,19 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 			while (ypos < height) {
 				sampler.setPosition(x, flipHeight - ypos, z);
 				// find the air region
-				int air_start = ypos;
+				Header header;
+				header.airStartIdx = ypos;
 				while (ypos < height && voxel::isAir(sampler.voxel().getMaterial())) {
 					++ypos;
 					sampler.moveNegativeY();
 				}
 
 				// find the top region
-				int top_colors_start = ypos;
+				header.colorStartIdx = ypos;
 				while (ypos < height && isSurface(v, x, flipHeight - ypos, z)) {
 					++ypos;
 				}
-				int top_colors_end = ypos; // exclusive
+				header.colorEndIdx = ypos; // exclusive
 
 				sampler.setPosition(x, flipHeight - ypos, z);
 				// now skip past the solid voxels
@@ -407,34 +408,41 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 						++ypos;
 					}
 				}
+
 				int bottom_colors_end = ypos; // exclusive
 
 				// now we're ready to write a span
-				int top_colors_len = top_colors_end - top_colors_start;
+				int top_colors_len = header.colorEndIdx - header.colorStartIdx;
 				int bottom_colors_len = bottom_colors_end - bottom_colors_start;
 
-				int colors = top_colors_len + bottom_colors_len;
+				header.len = top_colors_len + bottom_colors_len;
 
 				if (ypos == height) {
 					stream.writeUInt8(0); // last span
 				} else {
-					stream.writeUInt8(colors + 1);
+					stream.writeUInt8(header.len + 1);
 				}
 
-				stream.writeUInt8(top_colors_start);
-				stream.writeUInt8(top_colors_end - 1);
-				stream.writeUInt8(air_start);
+				stream.writeUInt8(header.colorStartIdx);
+				stream.writeUInt8(header.colorEndIdx - 1);
+				stream.writeUInt8(header.airStartIdx);
 
-				sampler.setPosition(x, flipHeight - top_colors_start, z);
+				sampler.setPosition(x, flipHeight - header.colorStartIdx, z);
 				for (y = 0; y < top_colors_len; ++y) {
 					const core::RGBA color = palette.colors[sampler.voxel().getColor()];
-					stream.writeUInt32(color);
+					stream.writeUInt8(color.b);
+					stream.writeUInt8(color.g);
+					stream.writeUInt8(color.r);
+					stream.writeUInt8(color.a); // TODO: shading value - not really alpha
 					sampler.moveNegativeY();
 				}
 				sampler.setPosition(x, flipHeight - bottom_colors_start, z);
 				for (y = 0; y < bottom_colors_len; ++y) {
 					const core::RGBA color = palette.colors[sampler.voxel().getColor()];
-					stream.writeUInt32(color);
+					stream.writeUInt8(color.b);
+					stream.writeUInt8(color.g);
+					stream.writeUInt8(color.r);
+					stream.writeUInt8(color.a); // TODO: shading value - not really alpha
 					sampler.moveNegativeY();
 				}
 			}

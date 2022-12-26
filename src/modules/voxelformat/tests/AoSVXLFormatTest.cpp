@@ -31,7 +31,7 @@ TEST_F(AoSVXLFormatTest, testLoadPalette) {
 	EXPECT_GT(loadPalette("aceofspades.vxl", f, pal), 200);
 }
 
-TEST_F(AoSVXLFormatTest, DISABLED_testSave) {
+TEST_F(AoSVXLFormatTest, testSave) {
 	AoSVXLFormat f;
 	voxel::Region region(glm::ivec3(0), glm::ivec3(255, 63, 255));
 	voxel::RawVolume layer1(region);
