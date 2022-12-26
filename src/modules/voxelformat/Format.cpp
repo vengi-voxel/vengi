@@ -149,9 +149,11 @@ bool Format::save(const SceneGraph& sceneGraph, const core::String &filename, io
 	if (maxsize.x > 0 && maxsize.y > 0 && maxsize.z > 0) {
 		for (SceneGraphNode &node : sceneGraph) {
 			const voxel::Region& region = node.region();
-			if (glm::all(glm::lessThan(region.getDimensionsInVoxels(), maxsize))) {
+			const glm::ivec3 &maxs = region.getDimensionsInVoxels();
+			if (glm::all(glm::lessThanEqual(maxs, maxsize))) {
 				continue;
 			}
+			Log::debug("Need to split node %s because it exceeds the max size (%i:%i:%i)", node.name().c_str(), maxs.x, maxs.y, maxs.z);
 			needsSplit = true;
 			break;
 		}
