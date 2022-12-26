@@ -14,7 +14,7 @@
 namespace voxedit {
 
 void ToolsPanel::update(const char *title, command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
+	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(ToolsPanel);
 
 		if (ImGui::CollapsingHeader("Action", ImGuiTreeNodeFlags_DefaultOpen)) {

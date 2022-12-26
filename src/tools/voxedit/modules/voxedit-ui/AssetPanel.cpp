@@ -51,7 +51,7 @@ void AssetPanel::loadTextures(const core::String &dir) {
 }
 
 void AssetPanel::update(const char *title, command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
+	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(AssetPanel);
 
 		if (ImGui::CollapsingHeader("Models", ImGuiTreeNodeFlags_DefaultOpen)) {

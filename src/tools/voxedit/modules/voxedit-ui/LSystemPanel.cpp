@@ -9,7 +9,7 @@
 namespace voxedit {
 
 void LSystemPanel::update(const char *title) {
-	if (ImGui::Begin(title)) {
+	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(LSystemPanel);
 		ImGui::InputText("Axiom##noise", &_lsystemData.axiom);
 		ImGui::InputTextMultiline("Rules##noise", &_lsystemData.rulesStr);

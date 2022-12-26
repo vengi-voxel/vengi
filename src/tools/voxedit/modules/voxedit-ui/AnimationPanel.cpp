@@ -14,7 +14,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 	if (animations.empty()) {
 		return;
 	}
-	if (ImGui::Begin(title, nullptr, 0)) {
+	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(AnimationPanel);
 		for (const core::String& animation : animations) {
 			// TODO: allow to select it

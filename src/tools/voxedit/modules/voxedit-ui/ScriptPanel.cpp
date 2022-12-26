@@ -31,7 +31,7 @@ void ScriptPanel::reloadScriptParameters(const core::String& script) {
 }
 
 void ScriptPanel::update(const char *title) {
-	if (ImGui::Begin(title)) {
+	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(ScriptPanel);
 		if (_scripts.empty()) {
 			_scripts = sceneMgr().luaGenerator().listScripts();

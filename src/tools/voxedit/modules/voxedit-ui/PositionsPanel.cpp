@@ -197,7 +197,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 }
 
 void PositionsPanel::update(const char *title, command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
+	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (sceneMgr().editMode() == EditMode::Scene) {
 			sceneView(listener);
 		} else {

@@ -141,7 +141,7 @@ ImGuiDockNode *Viewport::update() {
 	style.setWindowRounding(0.0f);
 	style.setWindowBorderSize(0.0f);
 	style.setWindowPadding(ImVec2(0.0f, 0.0f));
-	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoFocusOnAppearing;
 	if (ImGui::Begin(_id.c_str(), nullptr, sceneWindowFlags)) {
 		core_trace_scoped(Viewport);
 		ui::IMGUIApp *app = imguiApp();

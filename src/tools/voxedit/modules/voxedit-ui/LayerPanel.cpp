@@ -92,7 +92,7 @@ void LayerPanel::update(const char *title, LayerSettings* layerSettings, command
 	}
 	voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
 	_hasFocus = false;
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
+	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		_hasFocus = ImGui::IsWindowHovered();
 		const voxelformat::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
 		core_trace_scoped(LayerPanel);

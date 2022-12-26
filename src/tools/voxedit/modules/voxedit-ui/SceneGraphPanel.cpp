@@ -219,7 +219,7 @@ static void removeNodeButton(const voxelformat::SceneGraph &sceneGraph) {
 
 void SceneGraphPanel::update(video::Camera &camera, const char *title, LayerSettings* layerSettings, command::CommandExecutionListener &listener) {
 	const voxelformat::SceneGraph &sceneGraph = voxedit::sceneMgr().sceneGraph();
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
+	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(SceneGraphPanel);
 		ImVec2 size = ImGui::GetWindowSize();
 		const float textLineHeight = ImGui::GetTextLineHeight();
