@@ -192,6 +192,10 @@ update-flextgl:
 	cp -r $(UPDATEDIR)/flextgl.sync/templates/sdl tools/flextGL/templates
 	cp -r $(UPDATEDIR)/flextgl.sync/templates/vulkan tools/flextGL/templates
 
+update-libvxl:
+	$(call UPDATE_GIT,libvxl,https://github.com/xtreme8000/libvxl.git)
+	cp $(UPDATEDIR)/libvxl.sync/libvxl.c $(UPDATEDIR)/libvxl.sync/libvxl.h src/modules/voxelformat/external
+
 update-ogt_vox:
 	$(call UPDATE_GIT,ogl_vox,https://github.com/jpaver/opengametools)
 	cp $(UPDATEDIR)/ogl_vox.sync/src/ogt_vox.h src/modules/voxelformat/external

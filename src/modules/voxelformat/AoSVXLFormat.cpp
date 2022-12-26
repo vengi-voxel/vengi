@@ -6,21 +6,19 @@
 #include "core/Assert.h"
 #include "core/Color.h"
 #include "core/Log.h"
-#include "core/Pair.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicMap.h"
-#include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/SceneGraph.h"
-#include "voxelutil/VolumeResizer.h"
-
-#include <SDL_stdinc.h>
-#include <glm/common.hpp>
-#include <glm/exponential.hpp>
-#include <string.h>
+#include "voxelformat/SceneGraphNode.h"
+#include "voxelutil/VolumeVisitor.h"
+extern "C" {
+#include "external/libvxl.h"
+}
 
 namespace voxelformat {
 
@@ -30,144 +28,67 @@ namespace voxelformat {
 		return false; \
 	}
 
-glm::ivec3 AoSVXLFormat::dimensions(io::SeekableReadStream &stream) const {
-	int64_t initial = stream.pos();
-
-	glm::ivec3 size(0);
-
-	while (stream.remaining() >= (int64_t)sizeof(Header)) {
-		Header header;
-		stream.readUInt8(header.len);
-		stream.readUInt8(header.colorStartIdx);
-		stream.readUInt8(header.colorEndIdx);
-		stream.readUInt8(header.airStartIdx);
-		if (header.colorEndIdx + 1 > size.y) {
-			size.y = header.colorEndIdx + 1;
-		}
-		const int64_t spanBytes = header.len > 0 ? header.len * (int)sizeof(uint32_t) : core_max(0, (header.colorEndIdx + 2 - header.colorStartIdx)) * (int)sizeof(uint32_t);
-		core_assert_msg(spanBytes >= 0, "spanbytes: %i, stream pos: %i", (int)spanBytes, (int)stream.pos());
-		stream.skip(spanBytes);
-	}
-	size.y = 1 << (int)glm::ceil(glm::log2((float)size.y));
-	size.x = size.z = 512;
-
-	stream.seek(initial);
-	return size;
+static inline uint32_t vxl_color(core::RGBA rgba) {
+	return (rgba.r << 16) | (rgba.g << 8) | rgba.b;
+}
+static inline uint8_t vxl_blue(uint32_t c) {
+	return c & 0xFF;
+}
+static inline uint8_t vxl_green(uint32_t c) {
+	return (c >> 8) & 0xFF;
+}
+static inline uint8_t vxl_red(uint32_t c) {
+	return (c >> 16) & 0xFF;
 }
 
 bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
-	const glm::ivec3 size = dimensions(stream);
-	return loadMap(filename, stream, sceneGraph, size.x, size.y, size.z, palette);
-}
+	const int64_t size = stream.size();
+	uint8_t* data = (uint8_t*)core_malloc(size);
+	if (stream.read(data, size) == -1) {
+		Log::error("Failed to read vxl stream");
+		core_free(data);
+		return false;
+	}
 
-bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, int width, int height, int depths, const voxel::Palette &palette) {
+	size_t mapSize, mapHeight;
+	if (!libvxl_size(&mapSize, &mapHeight, data, size)) {
+		Log::error("Failed to determine vxl size");
+		core_free(data);
+		return false;
+	}
+
+	struct libvxl_map map;
+
+	if (!libvxl_create(&map, mapSize, mapSize, mapHeight, data, size)) {
+		Log::error("Failed to create libvxl map");
+		core_free(data);
+		return false;
+	}
+
+	Log::debug("Read vxl of size %i:%i:%i", (int)mapSize, (int)mapHeight, (int)mapSize);
+
 	SceneGraph newSceneGraph;
-	const voxel::Region region(0, 0, 0, width - 1, height - 1, depths - 1);
-	const int flipHeight = height - 1;
-	core_assert(region.isValid());
+	const voxel::Region region(0, 0, 0, (int)mapSize - 1, (int)mapHeight - 1, (int)mapSize - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
 	node.setVolume(volume, true);
-
 	voxel::PaletteLookup palLookup(palette);
-	for (int z = 0; z < depths; ++z) {
-		for (int x = 0; x < width; ++x) {
-			int y = 0;
-			while (!stream.eos()) {
-				const int64_t cpos = stream.pos();
-				Header header;
-				wrap(stream.readUInt8(header.len))
-				wrap(stream.readUInt8(header.colorStartIdx))
-				wrap(stream.readUInt8(header.colorEndIdx))
-				wrap(stream.readUInt8(header.airStartIdx))
-				int paletteIndex = 1;
-				if ((int)header.colorStartIdx >= height) {
-					Log::error("depth (top start %i exceeds the max allowed value of %i", (int)header.colorStartIdx, height);
-					return false;
-				}
-				if (header.colorEndIdx >= height) {
-					Log::error("depth (top end %i) exceeds the max allowed value of %i", (int)header.colorEndIdx, height);
-					return false;
-				}
-				voxel::RawVolume::Sampler sampler(volume);
-				sampler.setPosition(x, flipHeight - header.colorStartIdx, z);
 
-				for (y = header.colorStartIdx; y <= header.colorEndIdx; ++y) {
-					uint8_t b, g, r, a;
-					stream.readUInt8(b);
-					stream.readUInt8(g);
-					stream.readUInt8(r);
-					stream.readUInt8(a); // not really alpha - some shading data
-					const core::RGBA rgba(r, g, b);
-					paletteIndex = palLookup.findClosestIndex(rgba);
-					sampler.setVoxel(voxel::createVoxel(paletteIndex));
-					sampler.moveNegativeY();
+	for (int x = 0; x < (int)mapSize; x++) {
+		for (int y = 0; y < (int)mapSize; y++) {
+			for (int z = 0; z < (int)mapHeight; z++) {
+				if (!libvxl_map_issolid(&map, x, y, z)) {
+					continue;
 				}
-				const int lenBottom = header.colorEndIdx - header.colorStartIdx + 1;
-
-				// check for end of data marker
-				if (header.len == 0) {
-					if (stream.seek(cpos + (int64_t)(sizeof(uint32_t) * (lenBottom + 1))) == -1) {
-						Log::error("failed to skip");
-						return false;
-					}
-					break;
-				}
-
-				int64_t rgbaPos = stream.pos();
-				// infer the number of bottom colors in next span from chunk length
-				const int len_top = (header.len - 1) - lenBottom;
-
-				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
-					Log::error("failed to seek");
-					return false;
-				}
-				uint8_t bottomColorEnd = 0;
-				if (stream.skip(3) == -1) {
-					Log::error("failed to skip");
-					return false;
-				}
-				wrap(stream.readUInt8(bottomColorEnd))
-				if (stream.seek(-4, SEEK_CUR) == -1) {
-					Log::error("failed to seek");
-					return false;
-				}
-
-				// aka air start - exclusive
-				const int bottomColorStart = (int)bottomColorEnd - len_top;
-				if (bottomColorStart < 0 || bottomColorStart >= height) {
-					Log::error("depth (bottom start %i, end: %i, len top: %i) exceeds the max allowed value of %i",
-							   bottomColorStart, bottomColorEnd, len_top, height);
-					return false;
-				}
-				if (bottomColorEnd >= height) {
-					Log::error("depth (bottom end %i) exceeds the max allowed value of %i", (int)bottomColorEnd, height);
-					return false;
-				}
-
-				if (stream.seek(rgbaPos) == -1) {
-					Log::error("failed to seek");
-					return false;
-				}
-				sampler.setPosition(x, flipHeight - bottomColorStart, z);
-				for (y = bottomColorStart; y < bottomColorEnd; ++y) {
-					uint8_t b, g, r, a;
-					stream.readUInt8(b);
-					stream.readUInt8(g);
-					stream.readUInt8(r);
-					stream.readUInt8(a); // not really alpha - some shading data
-					const core::RGBA rgba = flattenRGB(r, g, b);
-					paletteIndex = palLookup.findClosestIndex(rgba);
-					sampler.setVoxel(voxel::createVoxel(paletteIndex));
-					sampler.moveNegativeY();
-				}
-				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
-					Log::error("failed to seek");
-					return false;
-				}
+				const uint32_t color = libvxl_map_get(&map, x, y, z);
+				const core::RGBA rgba = core::RGBA(vxl_red(color), vxl_green(color), vxl_blue(color));
+				const uint8_t paletteIndex = palLookup.findClosestIndex(rgba);
+				volume->setVoxel(x, (int)mapHeight - 1 - z, y, voxel::createVoxel(paletteIndex));
 			}
 		}
 	}
+	libvxl_free(&map);
+	core_free(data);
 
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
@@ -178,154 +99,64 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 }
 
 size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
-	const glm::ivec3 size = dimensions(stream);
+	const int64_t size = stream.size();
+	uint8_t* data = (uint8_t*)core_malloc(size);
+	if (stream.read(data, size) == -1) {
+		Log::error("Failed to read gltf stream");
+		core_free(data);
+		return 0;
+	}
+
+	size_t mapSize, mapHeight;
+	if (!libvxl_size(&mapSize, &mapHeight, data, size)) {
+		Log::error("Failed to determine vxl size");
+		core_free(data);
+		return 0;
+	}
+
+	Log::debug("Read vxl of size %i:%i:%i", (int)mapSize, (int)mapHeight, (int)mapSize);
+
+	struct libvxl_map map;
+
+	if (!libvxl_create(&map, mapSize, mapSize, mapHeight, data, size)) {
+		Log::error("Failed to create libvxl map");
+		core_free(data);
+		return 0;
+	}
+
 	core::DynamicMap<core::RGBA, bool, 11, core::RGBAHasher> colors;
-	for (int z = 0; z < size.z; ++z) {
-		for (int x = 0; x < size.x; ++x) {
-			int y = 0;
-			while (!stream.eos()) {
-				const int64_t cpos = stream.pos();
-				Header header;
-				stream.readUInt8(header.len);
-				stream.readUInt8(header.colorStartIdx);
-				stream.readUInt8(header.colorEndIdx);
-				stream.readUInt8(header.airStartIdx);
-				if ((int)header.colorStartIdx >= size.x) {
-					Log::error("depth (top start %i exceeds the max allowed value of %i", (int)header.colorStartIdx, size.y);
-					return 0;
+	for (int x = 0; x < (int)mapSize; x++) {
+		for (int y = 0; y < (int)mapSize; y++) {
+			for (int z = 0; z < (int)mapHeight; z++) {
+				if (!libvxl_map_issolid(&map, x, y, z)) {
+					continue;
 				}
-				if (header.colorEndIdx >= size.y) {
-					Log::error("depth (top end %i) exceeds the max allowed value of %i", (int)header.colorEndIdx, size.y);
-					return 0;
-				}
-				for (y = header.colorStartIdx; y <= header.colorEndIdx; ++y) {
-					uint8_t b, g, r, a;
-					stream.readUInt8(b);
-					stream.readUInt8(g);
-					stream.readUInt8(r);
-					stream.readUInt8(a); // not really alpha - some shading data
-					colors.put(flattenRGB(r, g, b), true);
-				}
-				const int lenBottom = header.colorEndIdx - header.colorStartIdx + 1;
-
-				// check for end of data marker
-				if (header.len == 0) {
-					if (stream.seek(cpos + (int64_t)(sizeof(uint32_t) * (lenBottom + 1))) == -1) {
-						Log::error("failed to skip");
-						return 0;
-					}
-					break;
-				}
-
-				int64_t rgbaPos = stream.pos();
-				// infer the number of bottom colors in next span from chunk length
-				const int len_top = (header.len - 1) - lenBottom;
-
-				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
-					Log::error("failed to seek");
-					return 0;
-				}
-				uint8_t bottomColorEnd = 0;
-				if (stream.skip(3) == -1) {
-					Log::error("failed to skip");
-					return 0;
-				}
-				stream.readUInt8(bottomColorEnd);
-				if (stream.seek(-4, SEEK_CUR) == -1) {
-					Log::error("failed to seek");
-					return 0;
-				}
-
-				// aka air start - exclusive
-				const int bottomColorStart = (int)bottomColorEnd - len_top;
-				if (bottomColorStart < 0 || bottomColorStart >= size.y) {
-					Log::error("depth (bottom start %i, end: %i, len top: %i) exceeds the max allowed value of %i",
-							   bottomColorStart, bottomColorEnd, len_top, size.y);
-					return 0;
-				}
-				if (bottomColorEnd >= size.y) {
-					Log::error("depth (bottom end %i) exceeds the max allowed value of %i", (int)bottomColorEnd, size.y);
-					return 0;
-				}
-
-				if (stream.seek(rgbaPos) == -1) {
-					Log::error("failed to seek");
-					return 0;
-				}
-				for (y = bottomColorStart; y < (int)bottomColorEnd; ++y) {
-					uint8_t b, g, r, a;
-					stream.readUInt8(b);
-					stream.readUInt8(g);
-					stream.readUInt8(r);
-					stream.readUInt8(a); // not really alpha - some shading data
-					colors.put(flattenRGB(r, g, b), true);
-				}
-				if (stream.seek(cpos + (int64_t)(header.len * sizeof(uint32_t))) == -1) {
-					Log::error("failed to seek");
-					return 0;
-				}
+				const uint32_t color = libvxl_map_get(&map, x, y, z);
+				const core::RGBA rgba = flattenRGB(vxl_red(color), vxl_green(color), vxl_blue(color));
+				colors.put(rgba, true);
 			}
 		}
 	}
-	core::Buffer<core::RGBA> a;
-	a.reserve(colors.size());
-	for (auto c : colors) {
-		a.push_back(c->key);
+	libvxl_free(&map);
+	core_free(data);
+
+	const size_t colorCount = colors.size();
+	core::Buffer<core::RGBA> colorBuffer;
+	colorBuffer.reserve(colorCount);
+	for (const auto & e : colors) {
+		colorBuffer.push_back(e->first);
 	}
-	palette.quantize(a.data(), a.size());
+	palette.quantize(colorBuffer.data(), colorBuffer.size());
 	return palette.colorCount;
-}
-
-bool AoSVXLFormat::isSurface(const voxel::RawVolume *v, int x, int y, int z) {
-	const int width = v->width();
-	const int depth = v->depth();
-	const int height = v->height();
-
-	voxel::RawVolume::Sampler sampler(v);
-	if (!sampler.setPosition(x, y, z)) {
-		return false;
-	}
-	if (voxel::isAir(sampler.voxel().getMaterial())) {
-		return false;
-	}
-	if (x > 0 && voxel::isAir(sampler.peekVoxel1nx0py0pz().getMaterial())) {
-		return true;
-	}
-	if (x + 1 < width && voxel::isAir(sampler.peekVoxel1px0py0pz().getMaterial())) {
-		return true;
-	}
-	if (z > 0 && voxel::isAir(sampler.peekVoxel0px0py1nz().getMaterial())) {
-		return true;
-	}
-	if (z + 1 < depth && voxel::isAir(sampler.peekVoxel0px0py1pz().getMaterial())) {
-		return true;
-	}
-	if (y > 0 && voxel::isAir(sampler.peekVoxel0px1ny0pz().getMaterial())) {
-		return true;
-	}
-	if (y + 1 < height && voxel::isAir(sampler.peekVoxel0px1py0pz().getMaterial())) {
-		return true;
-	}
-	return false;
-}
-
-bool AoSVXLFormat::singleVolume() const {
-	return true;
 }
 
 glm::ivec3 AoSVXLFormat::maxSize() const {
 	return glm::ivec3(512, 256, 512);
 }
 
-// code taken from https://silverspaceship.com/aosmap/aos_file_format.html
 bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
-	// TODO: no merge needed anymore... there will always only be one model node in this scenegraph
-	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-	if (merged.first == nullptr) {
-		Log::error("Failed to merge volumes");
-		return false;
-	}
-	glm::ivec3 size = merged.first->region().getDimensionsInVoxels();
+	const voxel::Region& region = sceneGraph.region();
+	glm::ivec3 size = region.getDimensionsInVoxels();
 	glm::ivec3 targetSize(512, size.y, 512);
 	if (targetSize.y <= 64) {
 		targetSize.y = 64;
@@ -333,121 +164,41 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 		targetSize.y = 256;
 	} else {
 		Log::error("Volume height exceeds the max allowed height of 256 voxels: %i", targetSize.y);
-		delete merged.first;
 		return false;
 	}
-	const glm::ivec3 sizeDelta = targetSize - size;
-	voxel::RawVolume* v = merged.first;
-	if (glm::any(glm::notEqual(glm::ivec3(0), sizeDelta))) {
-		v = voxelutil::resize(merged.first, sizeDelta);
-		delete merged.first;
-	}
-	if (v == nullptr) {
+	const int mapSize = targetSize.x;
+	const int mapHeight = targetSize.y;
+
+	Log::debug("Save vxl of size %i:%i:%i", mapSize, mapHeight, mapSize);
+
+	struct libvxl_map map;
+	if (!libvxl_create(&map, mapSize, mapSize, mapHeight, nullptr, 0)) {
+		Log::error("Failed to create libvxl map");
 		return false;
 	}
-	core::ScopedPtr<voxel::RawVolume> scopedPtr(v);
 
-	const voxel::Region& region = v->region();
-	const int width = region.getWidthInVoxels();
-	const int depth = region.getDepthInVoxels();
-	const int height = region.getHeightInVoxels();
-	const int flipHeight = height - 1;
+	for (const SceneGraphNode &node : sceneGraph) {
+		voxelutil::visitVolume(*node.volume(), [&map, &node, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
+			const core::RGBA rgba = node.palette().colors[voxel.getColor()];
+			const uint32_t color = vxl_color(rgba);
+			libvxl_map_set(&map, x, z, mapHeight - 1 - y, color);
+		});
+	}
 
-	Log::debug("Save vxl of size %i:%i:%i", width, height, depth);
-
-	v->translate(region.getLowerCorner());
-	voxel::RawVolume::Sampler sampler(v);
-
-	const voxel::Palette& palette = merged.second;
-
-	for (int z = 0; z < depth; ++z) {
-		for (int x = 0; x < width; ++x) {
-			int ypos = 0;
-			while (ypos < height) {
-				sampler.setPosition(x, flipHeight - ypos, z);
-				// find the air region
-				Header header;
-				header.airStartIdx = ypos;
-				while (ypos < height && voxel::isAir(sampler.voxel().getMaterial())) {
-					++ypos;
-					sampler.moveNegativeY();
-				}
-
-				// find the top region
-				header.colorStartIdx = ypos;
-				while (ypos < height && isSurface(v, x, flipHeight - ypos, z)) {
-					++ypos;
-				}
-				header.colorEndIdx = ypos; // exclusive
-
-				sampler.setPosition(x, flipHeight - ypos, z);
-				// now skip past the solid voxels
-				while (ypos < height && voxel::isBlocked(sampler.voxel().getMaterial()) && !isSurface(v, x, flipHeight - ypos, z)) {
-					++ypos;
-					sampler.moveNegativeY();
-				}
-
-				// at the end of the solid voxels, we have colored voxels.
-				// in the "normal" case they're bottom colors; but it's
-				// possible to have air-color-solid-color-solid-color-air,
-				// which we encode as air-color-solid-0, 0-color-solid-air
-
-				// so figure out if we have any bottom colors at this point
-				int bottom_colors_start = ypos;
-
-				int y = ypos;
-				while (y < height && isSurface(v, x, flipHeight - y, z)) {
-					++y;
-				}
-
-				if (y == height) {
-					; // in this case, the bottom colors of this span are empty, because we'll emit as top colors
-				} else {
-					// otherwise, these are real bottom colors so we can write them
-					while (isSurface(v, x, flipHeight - ypos, z)) {
-						++ypos;
-					}
-				}
-
-				int bottom_colors_end = ypos; // exclusive
-
-				// now we're ready to write a span
-				int top_colors_len = header.colorEndIdx - header.colorStartIdx;
-				int bottom_colors_len = bottom_colors_end - bottom_colors_start;
-
-				header.len = top_colors_len + bottom_colors_len;
-
-				if (ypos == height) {
-					stream.writeUInt8(0); // last span
-				} else {
-					stream.writeUInt8(header.len + 1);
-				}
-
-				stream.writeUInt8(header.colorStartIdx);
-				stream.writeUInt8(header.colorEndIdx - 1);
-				stream.writeUInt8(header.airStartIdx);
-
-				sampler.setPosition(x, flipHeight - header.colorStartIdx, z);
-				for (y = 0; y < top_colors_len; ++y) {
-					const core::RGBA color = palette.colors[sampler.voxel().getColor()];
-					stream.writeUInt8(color.b);
-					stream.writeUInt8(color.g);
-					stream.writeUInt8(color.r);
-					stream.writeUInt8(color.a); // TODO: shading value - not really alpha
-					sampler.moveNegativeY();
-				}
-				sampler.setPosition(x, flipHeight - bottom_colors_start, z);
-				for (y = 0; y < bottom_colors_len; ++y) {
-					const core::RGBA color = palette.colors[sampler.voxel().getColor()];
-					stream.writeUInt8(color.b);
-					stream.writeUInt8(color.g);
-					stream.writeUInt8(color.r);
-					stream.writeUInt8(color.a); // TODO: shading value - not really alpha
-					sampler.moveNegativeY();
-				}
-			}
+	uint8_t buf[4096];
+	struct libvxl_stream s;
+	libvxl_stream(&s, &map, sizeof(buf));
+	size_t read = 0;
+	while ((read = libvxl_stream_read(&s, buf))) {
+		if (stream.write(buf, read) == -1) {
+			Log::error("Could not write AoE vxl file to stream");
+			libvxl_stream_free(&s);
+			libvxl_free(&map);
+			return false;
 		}
 	}
+	libvxl_stream_free(&s);
+	libvxl_free(&map);
 	return true;
 }
 

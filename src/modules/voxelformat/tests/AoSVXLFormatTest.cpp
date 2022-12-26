@@ -6,6 +6,7 @@
 #include "voxelformat/AoSVXLFormat.h"
 #include "io/FileStream.h"
 #include "core/Var.h"
+#include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
@@ -16,7 +17,7 @@ protected:
 			return false;
 		}
 		// just to speed up the test runs...
-		core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->setVal("8");
+		//core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->setVal("8");
 		return true;
 	}
 };
@@ -29,6 +30,13 @@ TEST_F(AoSVXLFormatTest, testLoadPalette) {
 	AoSVXLFormat f;
 	voxel::Palette pal;
 	EXPECT_GT(loadPalette("aceofspades.vxl", f, pal), 200);
+}
+
+TEST_F(AoSVXLFormatTest, testLoadSaveAndLoadSceneGraph) {
+	AoSVXLFormat src;
+	AoSVXLFormat target;
+	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Color);
+	testLoadSaveAndLoadSceneGraph("aceofspades.vxl", src, "aceofspades-test.vxl", target, flags);
 }
 
 TEST_F(AoSVXLFormatTest, testSave) {
@@ -53,7 +61,7 @@ TEST_F(AoSVXLFormatTest, testSave) {
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file);
 	EXPECT_TRUE(f.load(file->name(), stream, sceneGraphLoad));
-	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
+	EXPECT_EQ(sceneGraphLoad.size(), 4);
 }
 
 }

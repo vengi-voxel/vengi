@@ -13,3 +13,7 @@ https://github.com/syoyo/tinygltf
 # ufbx (MIT license - bqqbarbhg)
 
 https://github.com/bqqbarbhg/ufbx
+
+# libvxl (MIT license - xtreme8000)
+
+https://github.com/xtreme8000/libvxl
