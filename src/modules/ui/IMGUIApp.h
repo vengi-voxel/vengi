@@ -52,6 +52,7 @@ protected:
 	ImFont* _defaultFont = nullptr;
 	ImFont* _bigFont = nullptr;
 	ImFont* _smallFont = nullptr;
+	ImFont* _bigIconFont = nullptr;
 
 	FileDialog _fileDialog;
 
@@ -82,6 +83,7 @@ public:
 
 	ImFont *defaultFont();
 	ImFont *bigFont();
+	ImFont *bigIconFont();
 	ImFont *smallFont();
 
 	void showBindingsDialog();
@@ -103,6 +105,10 @@ inline ImFont *IMGUIApp::defaultFont() {
 
 inline ImFont *IMGUIApp::bigFont() {
 	return _bigFont;
+}
+
+inline ImFont *IMGUIApp::bigIconFont() {
+	return _bigIconFont;
 }
 
 inline ImFont *IMGUIApp::smallFont() {
