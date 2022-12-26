@@ -81,8 +81,10 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 			SceneGraphNode newNode;
 			copyNode(node, newNode, true);
 			destSceneGraph.emplace(core::move(newNode));
+			Log::debug("No split needed for node '%s'", node.name().c_str());
 			continue;
 		}
+		Log::debug("Split needed for node '%s'", node.name().c_str());
 		core::DynamicArray<voxel::RawVolume *> rawVolumes;
 		voxelutil::splitVolume(node.volume(), maxSize, rawVolumes);
 		for (voxel::RawVolume *v : rawVolumes) {
