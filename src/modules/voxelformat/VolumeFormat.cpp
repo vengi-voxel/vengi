@@ -105,7 +105,7 @@ const io::FormatDescription* voxelSave() {
 		{"Qubicle Binary", {"qb"}, nullptr, 0u},
 		{"MagicaVoxel", {"vox"}, nullptr, 0u},
 		{"AceOfSpades", {"kv6"}, nullptr, 0u},
-		{"SLAB6 vox", {"vox"}, nullptr, 0u}, // TODO: handle duplicate extension
+		{"SLAB6 vox", {"vox"}, nullptr, 0u},
 		{"Qubicle Binary Tree", {"qbt"}, nullptr, 0u},
 		{"Qubicle Project", {"qbcl"}, nullptr, 0u},
 		{"Sandbox VoxEdit Model", {"vxm"}, nullptr, 0u},
@@ -117,7 +117,7 @@ const io::FormatDescription* voxelSave() {
 		//{"Build engine", {"kvx"}, nullptr, 0u},
 		{"Tiberian Sun", {"vxl"}, nullptr, 0u},
 		{"Qubicle Exchange", {"qef"}, nullptr, 0u},
-		{"AceOfSpades", {"vxl"}, nullptr, 0u}, // TODO: handle duplicate extension
+		{"AceOfSpades", {"vxl"}, nullptr, 0u},
 		//{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, 0u},
 		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Polygon File Format", {"ply"}, nullptr, VOX_FORMAT_FLAG_MESH},
@@ -206,7 +206,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 			format = core::make_shared<VXTFormat>();
 		} else if (ext == "vxl" && desc->name == "Tiberian Sun") {
 			format = core::make_shared<VXLFormat>();
-		} else if (ext == "vxl") {
+		} else if (ext == "vxl" && desc->name == "AceOfSpades") {
 			format = core::make_shared<AoSVXLFormat>();
 		} else if (ext == "csm" || ext == "nvm") {
 			format = core::make_shared<CSMFormat>();

@@ -82,11 +82,11 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 				wrap(stream.readUInt8(header.airStartIdx))
 				int paletteIndex = 1;
 				if ((int)header.colorStartIdx >= height) {
-					Log::error("depth (top start %i exceeds the max allowed value of %i", header.colorStartIdx, height);
+					Log::error("depth (top start %i exceeds the max allowed value of %i", (int)header.colorStartIdx, height);
 					return false;
 				}
 				if (header.colorEndIdx >= height) {
-					Log::error("depth (top end %i) exceeds the max allowed value of %i", header.colorEndIdx, height);
+					Log::error("depth (top end %i) exceeds the max allowed value of %i", (int)header.colorEndIdx, height);
 					return false;
 				}
 				voxel::RawVolume::Sampler sampler(volume);
@@ -134,13 +134,14 @@ bool AoSVXLFormat::loadMap(const core::String& filename, io::SeekableReadStream 
 				}
 
 				// aka air start - exclusive
-				const int bottomColorStart = bottomColorEnd - len_top;
+				const int bottomColorStart = (int)bottomColorEnd - len_top;
 				if (bottomColorStart < 0 || bottomColorStart >= height) {
-					Log::error("depth (bottom start %i) exceeds the max allowed value of %i", bottomColorStart, height);
+					Log::error("depth (bottom start %i, end: %i, len top: %i) exceeds the max allowed value of %i",
+							   bottomColorStart, bottomColorEnd, len_top, height);
 					return false;
 				}
 				if (bottomColorEnd >= height) {
-					Log::error("depth (bottom end %i) exceeds the max allowed value of %i", bottomColorEnd, height);
+					Log::error("depth (bottom end %i) exceeds the max allowed value of %i", (int)bottomColorEnd, height);
 					return false;
 				}
 
@@ -190,11 +191,11 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 				stream.readUInt8(header.colorEndIdx);
 				stream.readUInt8(header.airStartIdx);
 				if ((int)header.colorStartIdx >= size.x) {
-					Log::error("depth (top start %i exceeds the max allowed value of %i", header.colorStartIdx, size.y);
+					Log::error("depth (top start %i exceeds the max allowed value of %i", (int)header.colorStartIdx, size.y);
 					return 0;
 				}
 				if (header.colorEndIdx >= size.y) {
-					Log::error("depth (top end %i) exceeds the max allowed value of %i", header.colorEndIdx, size.y);
+					Log::error("depth (top end %i) exceeds the max allowed value of %i", (int)header.colorEndIdx, size.y);
 					return 0;
 				}
 				for (y = header.colorStartIdx; y <= header.colorEndIdx; ++y) {
@@ -236,13 +237,14 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 				}
 
 				// aka air start - exclusive
-				const int bottomColorStart = bottomColorEnd - len_top;
+				const int bottomColorStart = (int)bottomColorEnd - len_top;
 				if (bottomColorStart < 0 || bottomColorStart >= size.y) {
-					Log::error("depth (bottom start %i) exceeds the max allowed value of %i", bottomColorStart, size.y);
+					Log::error("depth (bottom start %i, end: %i, len top: %i) exceeds the max allowed value of %i",
+							   bottomColorStart, bottomColorEnd, len_top, size.y);
 					return 0;
 				}
 				if (bottomColorEnd >= size.y) {
-					Log::error("depth (bottom end %i) exceeds the max allowed value of %i", bottomColorEnd, size.y);
+					Log::error("depth (bottom end %i) exceeds the max allowed value of %i", (int)bottomColorEnd, size.y);
 					return 0;
 				}
 
@@ -250,7 +252,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 					Log::error("failed to seek");
 					return 0;
 				}
-				for (y = bottomColorStart; y < bottomColorEnd; ++y) {
+				for (y = bottomColorStart; y < (int)bottomColorEnd; ++y) {
 					uint8_t b, g, r, a;
 					stream.readUInt8(b);
 					stream.readUInt8(g);
