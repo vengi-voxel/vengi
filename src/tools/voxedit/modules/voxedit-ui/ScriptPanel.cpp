@@ -190,7 +190,7 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::I
 					if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " Save As##scripteditor")) {
 						core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
 						app->saveDialog(
-							[&](const core::String &file) {
+							[&](const core::String &file, const io::FormatDescription *desc) {
 								if (app->filesystem()->write(file, _textEditor.GetText())) {
 									_scripts.clear();
 									_currentScript = -1;

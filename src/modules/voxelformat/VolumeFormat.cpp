@@ -364,7 +364,7 @@ bool isModelFormat(const core::String &filename) {
 	return false;
 }
 
-bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
+bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, const io::FormatDescription *desc, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
 	if (sceneGraph.empty()) {
 		Log::error("Failed to save model file %s - no volumes given", filename.c_str());
 		return false;
@@ -374,7 +374,23 @@ bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, io::Seekab
 		Log::debug("Save '%s' file to '%s'", type.c_str(), filename.c_str());
 	}
 	const core::String &ext = core::string::extractExtension(filename);
-	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
+	if (desc) {
+		if (!desc->matchesExtension(ext)) {
+			desc = nullptr;
+		}
+	}
+	if (desc != nullptr) {
+		core::SharedPtr<Format> f = getFormat(desc, 0u, false);
+		if (f) {
+			if (f->save(sceneGraph, filename, stream, thumbnailCreator)) {
+				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
+				return true;
+			}
+			Log::error("Failed to save %s file", desc->name.c_str());
+			return false;
+		}
+	}
+	for (desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
 			core::SharedPtr<Format> f = getFormat(desc, 0u, false);
 			if (f) {
@@ -393,14 +409,14 @@ bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, io::Seekab
 	return qbFormat.save(sceneGraph, filename, stream, thumbnailCreator);
 }
 
-bool saveFormat(const io::FilePtr &filePtr, SceneGraph &sceneGraph, ThumbnailCreator thumbnailCreator) {
+bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, SceneGraph &sceneGraph, ThumbnailCreator thumbnailCreator) {
 	if (!filePtr->validHandle()) {
 		Log::error("Failed to save model - no valid file given");
 		return false;
 	}
 
 	io::FileStream stream(filePtr);
-	return saveFormat(sceneGraph, filePtr->name(), stream, thumbnailCreator);
+	return saveFormat(sceneGraph, filePtr->name(), desc, stream, thumbnailCreator);
 }
 
 }

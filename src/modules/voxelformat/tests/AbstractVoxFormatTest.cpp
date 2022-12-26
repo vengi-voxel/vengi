@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "AbstractVoxFormatTest.h"
 #include "core/GameConfig.h"
 #include "core/ScopedPtr.h"
@@ -196,7 +200,7 @@ void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename, c
 	}
 
 	io::BufferedReadWriteStream saveStream((int64_t)(10 * 1024 * 1024));
-	ASSERT_TRUE(voxelformat::saveFormat(sceneGraph, saveFilename, saveStream, testThumbnailCreator));
+	ASSERT_TRUE(voxelformat::saveFormat(sceneGraph, saveFilename, nullptr, saveStream, testThumbnailCreator));
 	saveStream.seek(0);
 
 	SceneGraph loadSceneGraph;

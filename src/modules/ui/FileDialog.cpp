@@ -54,6 +54,11 @@ void FileDialog::selectFilter(int index) {
 	core_assert(index >= -1 && index <= (int)_filterEntries.size());
 	_currentFilterEntry = index;
 	core::Var::getSafe(cfg::UILastFilter)->setVal(_currentFilterEntry);
+	if (_currentFilterEntry != -1) {
+		_currentFilterFormat = &_filterEntries[_currentFilterEntry];
+	} else {
+		_currentFilterFormat = nullptr;
+	}
 	applyFilter();
 }
 
@@ -63,6 +68,7 @@ bool FileDialog::openDir(const io::FormatDescription* formats, const core::Strin
 		_filterTextWidth = 0.0f;
 		_filterAll = "";
 		_currentFilterEntry = -1;
+		_currentFilterFormat = nullptr;
 	} else {
 		_filterTextWidth = 0.0f;
 		const io::FormatDescription* f = formats;
@@ -404,7 +410,7 @@ bool FileDialog::filesPanel() {
 }
 
 bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize,
-								video::OpenFileMode type) {
+								video::OpenFileMode type, const io::FormatDescription **formatDesc) {
 	if (open == nullptr || *open) {
 		bool doubleClickedFile = false;
 		core_trace_scoped(FileDialog);
@@ -673,15 +679,14 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			}
 
 			if (fileDialogOptions) {
-				const io::FormatDescription *desc = nullptr;
-				if (_currentFilterEntry != -1) {
-					desc = &_filterEntries[_currentFilterEntry];
-				}
-				fileDialogOptions(type, desc);
+				fileDialogOptions(type, _currentFilterFormat);
 			}
 
 			ImGui::EndPopup();
 		}
+	}
+	if (formatDesc != nullptr) {
+		*formatDesc = _currentFilterFormat;
 	}
 	return false;
 }

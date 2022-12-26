@@ -43,6 +43,33 @@ struct FormatDescription {
 	bool matchesExtension(const core::String &fileExt) const;
 };
 
+struct FileDescription {
+	core::String name;
+	io::FormatDescription desc;
+
+	void set(const core::String &s, const io::FormatDescription *f = nullptr) {
+		if (f != nullptr) {
+			desc = *f;
+		} else {
+			desc = {};
+		}
+		name = s;
+	}
+
+	void clear() {
+		name = "";
+		desc = {};
+	}
+
+	inline bool empty() const {
+		return name.empty();
+	}
+
+	inline const char *c_str() const {
+		return name.c_str();
+	}
+};
+
 static const io::FormatDescription ALL_SUPPORTED {"All supported", {}, nullptr, FORMAT_FLAG_ALL};
 
 /**

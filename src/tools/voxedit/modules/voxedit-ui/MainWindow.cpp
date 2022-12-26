@@ -9,6 +9,7 @@
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "io/FormatDescription.h"
 #include "ui/IconsForkAwesome.h"
 #include "ui/IconsFontAwesome6.h"
 #include "ui/IMGUIApp.h"
@@ -135,8 +136,10 @@ void MainWindow::shutdown() {
 	_sceneFront->shutdown();
 }
 
-bool MainWindow::save(const core::String &file) {
-	if (!sceneMgr().save(file)) {
+bool MainWindow::save(const core::String &file, const io::FormatDescription *desc) {
+	io::FileDescription fd;
+	fd.set(file, desc);
+	if (!sceneMgr().save(fd)) {
 		Log::warn("Failed to save the model");
 		_popupFailedToSave = true;
 		return false;
@@ -146,21 +149,23 @@ bool MainWindow::save(const core::String &file) {
 	return true;
 }
 
-bool MainWindow::load(const core::String &file) {
+bool MainWindow::load(const core::String &file, const io::FormatDescription *desc) {
 	if (file.empty()) {
-		_app->openDialog([this] (const core::String file) { load(file); }, {}, voxelformat::voxelLoad());
+		_app->openDialog([this] (const core::String file, const io::FormatDescription *desc) { load(file, desc); }, {}, voxelformat::voxelLoad());
 		return true;
 	}
 
 	if (!sceneMgr().dirty()) {
-		if (sceneMgr().load(file)) {
+		io::FileDescription fd;
+		fd.set(file, desc);
+		if (sceneMgr().load(fd)) {
 			afterLoad(file);
 			return true;
 		}
 		return false;
 	}
 
-	_loadFile = file;
+	_loadFile.set(file, desc);
 	_popupUnsaved = true;
 	return false;
 }
@@ -346,7 +351,7 @@ void MainWindow::registerPopups() {
 			ImGui::CloseCurrentPopup();
 			if (!_loadFile.empty()) {
 				sceneMgr().load(_loadFile);
-				afterLoad(_loadFile);
+				afterLoad(_loadFile.name);
 			} else {
 				createNew(true);
 			}

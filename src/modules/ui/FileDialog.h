@@ -35,6 +35,7 @@ private:
 	FileDialogSortOrder _typeSortOrder = FileDialogSortOrder::None;
 	float _filterTextWidth = 0.0f;
 	int _currentFilterEntry = -1;
+	io::FormatDescription *_currentFilterFormat = nullptr;
 	core::String _filterAll;
 	core::DynamicArray<io::FormatDescription> _filterEntries;
 	core::VarPtr _showHidden;
@@ -68,7 +69,7 @@ public:
 	* @return @c true if user input was made - either an entity was selected, or the selection was cancelled.
 	* @return @c false if no user input was made yet and the dialog should still run
 	*/
-	bool showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize, video::OpenFileMode type);
+	bool showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize, video::OpenFileMode type, const io::FormatDescription **formatDesc = nullptr);
 };
 
 }

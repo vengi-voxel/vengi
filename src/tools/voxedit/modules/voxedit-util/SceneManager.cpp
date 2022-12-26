@@ -18,6 +18,7 @@
 #include "core/collection/DynamicArray.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/FormatDescription.h"
 #include "math/AABB.h"
 #include "math/Axis.h"
 #include "math/Random.h"
@@ -185,19 +186,19 @@ void SceneManager::autosave() {
 	if (_lastAutoSave + delay > timeProvider->tickSeconds()) {
 		return;
 	}
-	core::String autoSaveFilename;
+	io::FileDescription autoSaveFilename;
 	if (_lastFilename.empty()) {
-		autoSaveFilename = "autosave-noname.vox";
+		autoSaveFilename.set("autosave-noname.vox");
 	} else {
 		if (core::string::startsWith(_lastFilename.c_str(), "autosave-")) {
 			autoSaveFilename = _lastFilename;
 		} else {
-			const io::FilePtr file = io::filesystem()->open(_lastFilename);
+			const io::FilePtr file = io::filesystem()->open(_lastFilename.name);
 			const core::String& p = file->path();
 			const core::String& f = file->fileName();
 			const core::String& e = file->extension();
-			autoSaveFilename = core::string::format("%sautosave-%s.%s",
-					p.c_str(), f.c_str(), e.c_str());
+			autoSaveFilename.set(core::string::format("%sautosave-%s.%s",
+					p.c_str(), f.c_str(), e.c_str()), &_lastFilename.desc);
 		}
 	}
 	if (save(autoSaveFilename, true)) {
@@ -227,7 +228,7 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	voxelformat::SceneGraphNode newNode;
 	voxelformat::copyNode(*node, newNode, false);
 	newSceneGraph.emplace(core::move(newNode));
-	if (voxelformat::saveFormat(filePtr, newSceneGraph, voxelrender::volumeThumbnail)) {
+	if (voxelformat::saveFormat(filePtr, &_lastFilename.desc, newSceneGraph, voxelrender::volumeThumbnail)) {
 		Log::info("Saved layer %i to %s", nodeId, filePtr->name().c_str());
 		return true;
 	}
@@ -267,7 +268,7 @@ bool SceneManager::saveModels(const core::String& dir) {
 	return state;
 }
 
-bool SceneManager::save(const core::String& file, bool autosave) {
+bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 	if (_sceneGraph.empty()) {
 		Log::warn("No volumes for saving found");
 		return false;
@@ -277,13 +278,13 @@ bool SceneManager::save(const core::String& file, bool autosave) {
 		Log::warn("No filename given for saving");
 		return false;
 	}
-	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::SysWrite);
+	const io::FilePtr& filePtr = io::filesystem()->open(file.name, io::FileMode::SysWrite);
 	if (!filePtr->validHandle()) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
 	}
 
-	if (voxelformat::saveFormat(filePtr, _sceneGraph, voxelrender::volumeThumbnail)) {
+	if (voxelformat::saveFormat(filePtr, &_lastFilename.desc, _sceneGraph, voxelrender::volumeThumbnail)) {
 		if (!autosave) {
 			_dirty = false;
 			_lastFilename = file;
@@ -336,11 +337,11 @@ bool SceneManager::prefab(const core::String& file) {
 	return state;
 }
 
-bool SceneManager::load(const core::String& file) {
+bool SceneManager::load(const io::FileDescription& file) {
 	if (file.empty()) {
 		return false;
 	}
-	const io::FilePtr& filePtr = io::filesystem()->open(file);
+	const io::FilePtr& filePtr = io::filesystem()->open(file.name);
 	if (!filePtr->validHandle()) {
 		Log::error("Failed to open model file '%s'", file.c_str());
 		return false;
@@ -355,7 +356,7 @@ bool SceneManager::load(const core::String& file) {
 		// RawVolumeRenderer::scheduleExtractions should happen here
 		return core::move(newSceneGraph);
 	});
-	_lastFilename = filePtr->name();
+	_lastFilename.set(filePtr->name(), &file.desc);
 	return true;
 }
 

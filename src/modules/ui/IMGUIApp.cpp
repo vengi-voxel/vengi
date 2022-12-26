@@ -15,6 +15,7 @@
 #include "core/Common.h"
 #include "core/ArrayLength.h"
 #include "core/Log.h"
+#include "io/FormatDescription.h"
 #include "math/Rect.h"
 #include "video/Renderer.h"
 #include "video/Shader.h"
@@ -473,9 +474,10 @@ app::AppState IMGUIApp::onRunning() {
 		_console.renderNotifications();
 
 		char buf[512] = "";
-		if (_fileDialog.showFileDialog(&_showFileDialog, _fileDialogOptions, buf, sizeof(buf), _fileDialogMode)) {
+		const io::FormatDescription *formatDesc = nullptr;
+		if (_fileDialog.showFileDialog(&_showFileDialog, _fileDialogOptions, buf, sizeof(buf), _fileDialogMode, &formatDesc)) {
 			if (buf[0] != '\0') {
-				_fileDialogCallback(buf);
+				_fileDialogCallback(buf, formatDesc);
 			}
 			_showFileDialog = false;
 		}

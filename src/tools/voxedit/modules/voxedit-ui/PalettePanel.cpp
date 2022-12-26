@@ -254,14 +254,14 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		if (palette.needsSave()) {
 			if (ImGui::Button(ICON_FA_FLOPPY_DISK " Save##savepalette")) {
 				if (!palette.save()) {
-					imguiApp()->saveDialog([&](const core::String &file) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
+					imguiApp()->saveDialog([&](const core::String &file, const io::FormatDescription *desc) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
 				}
 				palette.markSaved();
 			}
 			ImGui::TooltipText("Save the modified palette");
 		} else {
 			if (ImGui::Button(ICON_FA_FLOPPY_DISK " Save##savepalette")) {
-				imguiApp()->saveDialog([&](const core::String &file) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
+				imguiApp()->saveDialog([&](const core::String &file, const io::FormatDescription *desc) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
 			}
 			ImGui::TooltipText("Export the palette");
 		}

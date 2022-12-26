@@ -6,6 +6,7 @@
 
 #include "core/Enum.h"
 #include "core/collection/DynamicArray.h"
+#include "io/FormatDescription.h"
 #include "voxelfont/VoxelFont.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -119,7 +120,7 @@ private:
 	bool _traceViaMouse = true;
 	int _sceneModeNodeIdTrace = -1;
 
-	core::String _lastFilename;
+	io::FileDescription _lastFilename;
 	double _lastAutoSave = 0u;
 
 	int32_t _planeMeshIndex[3] = {-1, -1, -1};
@@ -312,12 +313,12 @@ public:
 	 * @param[in] autosave @c true if this is an auto save action, @c false otherwise. This has e.g. an
 	 * influence on the dirty state handling of the scene.
 	 */
-	bool save(const core::String& file, bool autosave = false);
+	bool save(const io::FileDescription& file, bool autosave = false);
 	/**
 	 * @brief Loads a volume from the given file
 	 * @param[in] file The file to load. The volume format is determined by the file extension.
 	 */
-	bool load(const core::String& file);
+	bool load(const io::FileDescription& file);
 	bool isLoading() const;
 
 	bool undo(int n = 1);
@@ -434,7 +435,7 @@ inline void SceneManager::setCurrentFrame(voxelformat::FrameIndex frameIdx) {
 }
 
 inline const core::String& SceneManager::filename() const {
-	return _lastFilename;
+	return _lastFilename.name;
 }
 
 inline video::ShapeBuilder &SceneManager::shapeBuilder() {

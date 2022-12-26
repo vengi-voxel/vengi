@@ -105,7 +105,7 @@ bool InputFile(const char *label, core::String *file, const io::FormatDescriptio
 	SameLine();
 	if (Button(ICON_FK_FONT)) {
 		video::FileDialogOptions options;
-		imguiApp()->openDialog([file] (const core::String &filename) {
+		imguiApp()->openDialog([file] (const core::String &filename, const io::FormatDescription *desc) {
 			*file = filename;
 		}, options, descriptions);
 	}

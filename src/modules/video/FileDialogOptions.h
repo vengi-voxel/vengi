@@ -16,7 +16,7 @@ struct FormatDescription;
 
 namespace video {
 
-using FileDialogSelectionCallback = std::function<void(const core::String &)>;
+using FileDialogSelectionCallback = std::function<void(const core::String &, const io::FormatDescription *desc)>;
 using FileDialogOptions = std::function<void(video::OpenFileMode mode, const io::FormatDescription *desc)>;
 
 } // namespace video

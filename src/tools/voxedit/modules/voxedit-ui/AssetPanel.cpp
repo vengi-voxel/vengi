@@ -56,7 +56,7 @@ void AssetPanel::update(const char *title, command::CommandExecutionListener &li
 
 		if (ImGui::CollapsingHeader("Models", ImGuiTreeNodeFlags_DefaultOpen)) {
 			if (ImGui::Button(ICON_FK_FILE_ARCHIVE_O " Open model directory")) {
-				auto callback = [this](const core::String &dir) { loadModels(dir); };
+				auto callback = [this](const core::String &dir, const io::FormatDescription *desc) { loadModels(dir); };
 				imguiApp()->directoryDialog(callback, {});
 			}
 
@@ -84,7 +84,7 @@ void AssetPanel::update(const char *title, command::CommandExecutionListener &li
 		}
 		if (ImGui::CollapsingHeader("Images", ImGuiTreeNodeFlags_DefaultOpen)) {
 			if (ImGui::Button(ICON_FK_FILE_IMAGE_O " Open image directory")) {
-				auto callback = [this](const core::String &dir) { loadTextures(dir); };
+				auto callback = [this](const core::String &dir, const io::FormatDescription *desc) { loadTextures(dir); };
 				imguiApp()->directoryDialog(callback, {});
 			}
 			int n = 1;

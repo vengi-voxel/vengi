@@ -4,6 +4,7 @@
 
 #include "core/Common.h"
 #include "core/StringUtil.h"
+#include "io/FormatDescription.h"
 #include "math/Axis.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
@@ -75,7 +76,7 @@ private:
 
 	LayerSettings _layerSettings;
 
-	core::String _loadFile;
+	io::FileDescription _loadFile;
 
 	LastExecutedCommand _lastExecutedCommand;
 	LSystemPanel _lsystemPanel;
@@ -112,8 +113,8 @@ public:
 	void shutdown();
 
 	// commands
-	bool save(const core::String &file);
-	bool load(const core::String &file);
+	bool save(const core::String &file, const io::FormatDescription *desc);
+	bool load(const core::String &file, const io::FormatDescription *desc);
 	bool createNew(bool force);
 
 	bool isLayerWidgetDropTarget() const;
