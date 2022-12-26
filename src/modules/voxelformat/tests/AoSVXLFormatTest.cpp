@@ -33,7 +33,7 @@ TEST_F(AoSVXLFormatTest, testLoadPalette) {
 
 TEST_F(AoSVXLFormatTest, DISABLED_testSave) {
 	AoSVXLFormat f;
-	voxel::Region region(glm::ivec3(0), glm::ivec3(255, 64, 255));
+	voxel::Region region(glm::ivec3(0), glm::ivec3(255, 63, 255));
 	voxel::RawVolume layer1(region);
 	const char *filename = "tests-aos.vxl";
 	for (int x = 0; x < region.getWidthInVoxels(); ++x) {
