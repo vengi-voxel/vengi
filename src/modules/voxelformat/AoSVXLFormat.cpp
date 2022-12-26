@@ -327,7 +327,7 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 	}
 	glm::ivec3 size = merged.first->region().getDimensionsInVoxels();
 	glm::ivec3 targetSize(512, size.y, 512);
-	if (targetSize.y < 64) {
+	if (targetSize.y <= 64) {
 		targetSize.y = 64;
 	} else if (targetSize.y <= 256) {
 		targetSize.y = 256;
