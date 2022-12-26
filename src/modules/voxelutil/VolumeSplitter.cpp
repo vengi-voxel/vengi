@@ -22,7 +22,7 @@ void splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize,
 		for (int z = mins.z; z <= maxs.z; z += step.z) {
 			for (int x = mins.x; x <= maxs.x; x += step.x) {
 				const glm::ivec3 innerMins(x, y, z);
-				const glm::ivec3 innerMaxs = innerMins + maxSize - 1;
+				const glm::ivec3 innerMaxs = glm::min(maxs, innerMins + maxSize - 1);
 				const voxel::Region innerRegion(innerMins, innerMaxs);
 				voxel::RawVolume *copy = new voxel::RawVolume(innerRegion);
 				if (!voxelutil::copy(*volume, innerRegion, *copy, innerRegion)) {
