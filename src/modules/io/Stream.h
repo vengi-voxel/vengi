@@ -214,7 +214,7 @@ class WriteStream : public core::NonCopyable {
 public:
 	virtual ~WriteStream() {}
 	/**
-	 * @return -1 on error - writte bytes on success
+	 * @return -1 on error - written bytes on success
 	 */
 	virtual int write(const void *buf, size_t size) = 0;
 
