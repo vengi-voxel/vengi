@@ -15,8 +15,9 @@
 
 namespace voxelutil {
 
-static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec4 &pivot) {
-	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
+static inline glm::vec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec3 &pivot) {
+	const glm::vec4 t = mat * glm::vec4((float)pos.x + 0.5f - pivot.x, (float)pos.y + 0.5f - pivot.y, (float)pos.z + 0.5f - pivot.z, 1.0f);
+	return glm::floor(glm::vec3(t.x / t.w, t.y / t.w, t.z / t.w));
 }
 
 /**
@@ -25,16 +26,16 @@ static inline glm::vec4 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos,
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  */
-voxel::RawVolume* rotateVolume(const voxel::RawVolume* source, const glm::vec3& angles, const glm::vec3& pivot) {
+voxel::RawVolume* rotateVolume(const voxel::RawVolume* source, const glm::vec3& angles, const glm::vec3& normalizedPivot) {
 	const float pitch = glm::radians(angles.x);
 	const float yaw = glm::radians(angles.y);
 	const float roll = glm::radians(angles.z);
 	const glm::mat4& mat = glm::eulerAngleXYZ(pitch, yaw, roll);
-	const voxel::Region& srcRegion = source->region();
-	const glm::ivec3 maxs = srcRegion.getDimensionsInCells();
+	const voxel::Region srcRegion = source->region();
 
-	const glm::ivec3& transformedMins = transform(mat, glm::ivec3(0), glm::vec4(pivot, 0.0f));
-	const glm::ivec3& transformedMaxs = transform(mat, maxs, glm::vec4(pivot, 0.0f));
+	const glm::vec3 pivot = normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels());
+	const glm::ivec3& transformedMins = transform(mat, srcRegion.getLowerCorner(), pivot);
+	const glm::ivec3& transformedMaxs = transform(mat, srcRegion.getUpperCorner(), pivot);
 	const voxel::Region region(glm::min(transformedMins, transformedMaxs), glm::max(transformedMins, transformedMaxs));
 	voxel::RawVolume* destination = new voxel::RawVolume(region);
 	voxel::RawVolume::Sampler destSampler(destination);
@@ -46,8 +47,8 @@ voxel::RawVolume* rotateVolume(const voxel::RawVolume* source, const glm::vec3& 
 			for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
 				const voxel::Voxel &voxel = srcSampler.voxel();
 				if (!voxel::isAir(voxel.getMaterial())) {
-					glm::ivec3 destPos = glm::ivec3(x - srcRegion.getLowerX(), y - srcRegion.getLowerY(), z - srcRegion.getLowerZ());
-					const glm::ivec3 &volumePos = transform(mat, destPos, glm::vec4(pivot, 0.0f));
+					const glm::ivec3 destPos(x, y, z);
+					const glm::ivec3 &volumePos = transform(mat, destPos, pivot);
 					destSampler.setPosition(volumePos);
 					core_assert_msg(region.containsPoint(volumePos), "volumepos %i:%i:%i is not part of the rotated region %s", volumePos.x, volumePos.y, volumePos.z, region.toString().c_str());
 					destSampler.setVoxel(voxel);
@@ -56,16 +57,16 @@ voxel::RawVolume* rotateVolume(const voxel::RawVolume* source, const glm::vec3& 
 			}
 		}
 	}
+	// TODO: use the pivot luke
 	const glm::ivec3 &delta = srcRegion.getCenter() - destination->region().getCenter();
 	destination->translate(delta);
 	return destination;
 }
 
 voxel::RawVolume* rotateAxis(const voxel::RawVolume* source, math::Axis axis) {
-	const voxel::Region& region = source->region();
 	glm::vec3 rotVec{0.0f};
 	rotVec[math::getIndexForAxis(axis)] = 90.0f;
-	return rotateVolume(source, rotVec, region.getPivot());
+	return rotateVolume(source, rotVec, glm::vec3(0.5f));
 }
 
 voxel::RawVolume* mirrorAxis(const voxel::RawVolume* source, math::Axis axis) {

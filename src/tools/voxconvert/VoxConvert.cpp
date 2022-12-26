@@ -687,10 +687,9 @@ void VoxConvert::rotate(const core::String& axisStr, voxelformat::SceneGraph& sc
 	}
 	Log::info("Rotate on axis %c by %f degree", axisStr[0], degree);
 	for (voxelformat::SceneGraphNode &node : sceneGraph) {
-		const voxel::Region& region = node.volume()->region();
 		glm::vec3 rotVec{0.0f};
 		rotVec[math::getIndexForAxis(axis)] = degree;
-		node.setVolume(voxelutil::rotateVolume(node.volume(), rotVec, region.getPivot()), true);
+		node.setVolume(voxelutil::rotateVolume(node.volume(), rotVec, glm::vec3(0.5f)), true);
 	}
 }
 
