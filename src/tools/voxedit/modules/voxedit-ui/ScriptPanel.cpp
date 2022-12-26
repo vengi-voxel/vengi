@@ -30,7 +30,7 @@ void ScriptPanel::reloadScriptParameters(const core::String& script) {
 	}
 }
 
-void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::IMGUIApp* app, ImGuiID dockId) {
+void ScriptPanel::update(const char *title) {
 	if (ImGui::Begin(title)) {
 		core_trace_scoped(ScriptPanel);
 		if (_scripts.empty()) {
@@ -168,78 +168,82 @@ void ScriptPanel::update(const char *title, const char *scriptEditorTitle, ui::I
 		ImGui::URLButton(ICON_FA_BOOK " Scripting manual", "https://mgerhardy.github.io/vengi/voxedit/LUAScript/");
 	}
 	ImGui::End();
+}
 
-	if (_scriptEditor) {
-		ImGui::SetNextWindowDockID(dockId, ImGuiCond_Appearing);
-		if (ImGui::Begin(scriptEditorTitle, &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_HorizontalScrollbar)) {
-			if (ImGui::BeginMenuBar()) {
-				if (ImGui::BeginMenu(ICON_FA_FILE " File##scripteditor")) {
-					if (ImGui::MenuItem(ICON_FA_CHECK " Apply and execute##scripteditor")) {
-						_activeScript = _textEditor.GetText();
-						reloadScriptParameters(_activeScript);
-					}
-					if (!_activeScriptFilename.empty()) {
-						if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " Save##scripteditor")) {
-							if (app->filesystem()->write(core::string::path("scripts", _activeScriptFilename), _textEditor.GetText())) {
-								_activeScript = _textEditor.GetText();
-								reloadScriptParameters(_activeScript);
-							}
+bool ScriptPanel::updateEditor(const char *title, ui::IMGUIApp* app, ImGuiID dockId) {
+	if (!_scriptEditor) {
+		return false;
+	}
+	ImGui::SetNextWindowDockID(dockId, ImGuiCond_Appearing);
+	if (ImGui::Begin(title, &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_HorizontalScrollbar)) {
+		if (ImGui::BeginMenuBar()) {
+			if (ImGui::BeginMenu(ICON_FA_FILE " File##scripteditor")) {
+				if (ImGui::MenuItem(ICON_FA_CHECK " Apply and execute##scripteditor")) {
+					_activeScript = _textEditor.GetText();
+					reloadScriptParameters(_activeScript);
+				}
+				if (!_activeScriptFilename.empty()) {
+					if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " Save##scripteditor")) {
+						if (app->filesystem()->write(core::string::path("scripts", _activeScriptFilename), _textEditor.GetText())) {
+							_activeScript = _textEditor.GetText();
+							reloadScriptParameters(_activeScript);
 						}
-						ImGui::TooltipText("Overwrite scripts/%s", _activeScriptFilename.c_str());
 					}
-					if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " Save As##scripteditor")) {
-						core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
-						app->saveDialog(
-							[&](const core::String &file, const io::FormatDescription *desc) {
-								if (app->filesystem()->write(file, _textEditor.GetText())) {
-									_scripts.clear();
-									_currentScript = -1;
-									Log::info("Saved script to %s", file.c_str());
-								} else {
-									Log::warn("Failed to save script %s", file.c_str());
-								}
-							}, {},
-							io::format::lua());
-					}
-					if (ImGui::MenuItem("Close##scripteditor")) {
-						_scriptEditor = false;
-					}
-					ImGui::EndMenu();
+					ImGui::TooltipText("Overwrite scripts/%s", _activeScriptFilename.c_str());
 				}
-				if (ImGui::BeginMenu(ICON_FK_PENCIL " Edit##scripteditor")) {
-					if (ImGui::MenuItem(ICON_FA_ROTATE_LEFT " Undo##scripteditor", nullptr, nullptr, _textEditor.CanUndo()))
-						_textEditor.Undo();
-					if (ImGui::MenuItem(ICON_FA_ROTATE_RIGHT " Redo##scripteditor", nullptr, nullptr, _textEditor.CanRedo()))
-						_textEditor.Redo();
-
-					ImGui::Separator();
-
-					if (ImGui::MenuItem(ICON_FA_COPY " Copy##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
-						_textEditor.Copy();
-					if (ImGui::MenuItem(ICON_FA_SCISSORS " Cut##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
-						_textEditor.Cut();
-					if (ImGui::MenuItem("Delete##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
-						_textEditor.Delete();
-					if (ImGui::MenuItem(ICON_FA_PASTE " Paste##scripteditor", nullptr, nullptr,
-										ImGui::GetClipboardText() != nullptr))
-						_textEditor.Paste();
-
-					ImGui::Separator();
-
-					if (ImGui::MenuItem("Select all##scripteditor", nullptr, nullptr))
-						_textEditor.SetSelection(TextEditor::Coordinates(),
-												 TextEditor::Coordinates(_textEditor.GetTotalLines(), 0));
-
-					ImGui::EndMenu();
+				if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " Save As##scripteditor")) {
+					core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
+					app->saveDialog(
+						[&](const core::String &file, const io::FormatDescription *desc) {
+							if (app->filesystem()->write(file, _textEditor.GetText())) {
+								_scripts.clear();
+								_currentScript = -1;
+								Log::info("Saved script to %s", file.c_str());
+							} else {
+								Log::warn("Failed to save script %s", file.c_str());
+							}
+						}, {},
+						io::format::lua());
 				}
+				if (ImGui::MenuItem("Close##scripteditor")) {
+					_scriptEditor = false;
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu(ICON_FK_PENCIL " Edit##scripteditor")) {
+				if (ImGui::MenuItem(ICON_FA_ROTATE_LEFT " Undo##scripteditor", nullptr, nullptr, _textEditor.CanUndo()))
+					_textEditor.Undo();
+				if (ImGui::MenuItem(ICON_FA_ROTATE_RIGHT " Redo##scripteditor", nullptr, nullptr, _textEditor.CanRedo()))
+					_textEditor.Redo();
 
-				ImGui::EndMenuBar();
+				ImGui::Separator();
+
+				if (ImGui::MenuItem(ICON_FA_COPY " Copy##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
+					_textEditor.Copy();
+				if (ImGui::MenuItem(ICON_FA_SCISSORS " Cut##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
+					_textEditor.Cut();
+				if (ImGui::MenuItem("Delete##scripteditor", nullptr, nullptr, _textEditor.HasSelection()))
+					_textEditor.Delete();
+				if (ImGui::MenuItem(ICON_FA_PASTE " Paste##scripteditor", nullptr, nullptr,
+									ImGui::GetClipboardText() != nullptr))
+					_textEditor.Paste();
+
+				ImGui::Separator();
+
+				if (ImGui::MenuItem("Select all##scripteditor", nullptr, nullptr))
+					_textEditor.SetSelection(TextEditor::Coordinates(),
+												TextEditor::Coordinates(_textEditor.GetTotalLines(), 0));
+
+				ImGui::EndMenu();
 			}
 
-			_textEditor.Render(scriptEditorTitle);
+			ImGui::EndMenuBar();
 		}
-		ImGui::End();
+
+		_textEditor.Render(title);
 	}
+	ImGui::End();
+	return true;
 }
 
 }

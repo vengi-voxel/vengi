@@ -133,7 +133,7 @@ void Viewport::updateViewportTrace(float headerSize) {
 	sceneMgr().trace();
 }
 
-ImGuiID Viewport::update() {
+ImGuiDockNode *Viewport::update() {
 	_camera.setFarPlane(_viewDistance->floatVal());
 
 	_hovered = false;
@@ -245,9 +245,9 @@ ImGuiID Viewport::update() {
 			}
 		}
 	}
-	ImGuiID dockId = ImGui::GetWindowDockID();
+	ImGuiDockNode *node = ImGui::GetWindowDockNode();
 	ImGui::End();
-	return dockId;
+	return node;
 }
 
 void Viewport::shutdown() {

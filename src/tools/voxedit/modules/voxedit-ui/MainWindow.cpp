@@ -29,13 +29,13 @@
 #define TITLE_MEMENTO "History##title"
 #define TITLE_ASSET "Assets##title"
 #define TITLE_LAYERS "Layers##title"
-#define TITLE_FORMAT_SETTINGS "Formats##title"
 #define TITLE_MODIFIERS "Modifiers##title"
 #define TITLE_TREES ICON_FA_TREE " Trees##title"
 #define TITLE_SCENEGRAPH "Scenegraph##title"
 #define TITLE_SCRIPTPANEL ICON_FA_CODE " Script##title"
 #define TITLE_LSYSTEMPANEL ICON_FA_LEAF " L-System##title"
 #define TITLE_ANIMATION_SETTINGS "Animation##animationsettings"
+#define TITLE_SCRIPT_EDITOR ICON_FK_CODE "Script Editor##scripteditor"
 
 #define POPUP_TITLE_UNSAVED "Unsaved Modifications##popuptitle"
 #define POPUP_TITLE_NEW_SCENE "New scene##popuptitle"
@@ -43,7 +43,6 @@
 #define POPUP_TITLE_UNSAVED_SCENE "Unsaved scene##popuptitle"
 #define POPUP_TITLE_SCENE_SETTINGS "Scene settings##popuptitle"
 #define POPUP_TITLE_LAYER_SETTINGS "Layer settings##popuptitle"
-#define WINDOW_TITLE_SCRIPT_EDITOR ICON_FK_CODE "Script Editor##scripteditor"
 
 namespace voxedit {
 
@@ -193,33 +192,97 @@ bool MainWindow::isPaletteWidgetDropTarget() const {
 	return _palettePanel.hasFocus();
 }
 
+// left side
+
+void MainWindow::configureLeftTopWidgetDock(ImGuiID dockId) {
+	ImGui::DockBuilderDockWindow(TITLE_PALETTE, dockId);
+}
+
+void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
+	ImGui::DockBuilderDockWindow(TITLE_MODIFIERS, dockId);
+}
+
 void MainWindow::leftWidget() {
 	_palettePanel.update(TITLE_PALETTE, _lastExecutedCommand);
 	_modifierPanel.update(TITLE_MODIFIERS);
 }
 
+// end of left side
+
+// main space
+
+void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
+	ImGui::DockBuilderDockWindow(_scene->id().c_str(), dockId);
+	ImGui::DockBuilderDockWindow(_sceneTop->id().c_str(), dockId);
+	ImGui::DockBuilderDockWindow(_sceneLeft->id().c_str(), dockId);
+	ImGui::DockBuilderDockWindow(_sceneFront->id().c_str(), dockId);
+}
+
+void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
+	ImGui::DockBuilderDockWindow(TITLE_SCRIPT_EDITOR, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_TIMELINE, dockId);
+}
+
 void MainWindow::mainWidget() {
+	// main
+	const ImGuiDockNode* node = _scene->update();
 	_sceneTop->update();
 	_sceneLeft->update();
 	_sceneFront->update();
-	_scene->update();
-	const ImGuiID dockId = _dockIdMainDown;
+
+	// bottom
+	ImGuiID dockId = _dockIdMain;
+	if (node != nullptr) {
+		dockId = node->ID;
+		static_assert(lengthof(ImGuiDockNode::ChildNodes) == 2, "Unexpected size of ChildNodes array");
+		if (node->IsSplitNode()) {
+			// TODO: hack to get the correct id to place the windows
+			// 0 is left and top - 1 is right and bottom - the node in question was placed in direction ImGuiDir_Down
+			dockId = node->ChildNodes[1]->ID;
+		}
+	}
+
+	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR, _app, dockId);
 	_animationTimeline.update(TITLE_ANIMATION_TIMELINE, dockId);
-	_scriptPanel.update(TITLE_SCRIPTPANEL, WINDOW_TITLE_SCRIPT_EDITOR, _app, dockId);
+}
+
+// end of main space
+
+// right side
+
+void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
+	ImGui::DockBuilderDockWindow(TITLE_POSITIONS, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_TOOLS, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_ASSET, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_MEMENTO, dockId);
+}
+
+void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
+	ImGui::DockBuilderDockWindow(TITLE_LAYERS, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_TREES, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_SCRIPTPANEL, dockId);
 }
 
 void MainWindow::rightWidget() {
+	// top
 	_positionsPanel.update(TITLE_POSITIONS, _lastExecutedCommand);
 	_toolsPanel.update(TITLE_TOOLS, _lastExecutedCommand);
-	_mementoPanel.update(TITLE_MEMENTO, _lastExecutedCommand);
 	_assetPanel.update(TITLE_ASSET, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
+	_mementoPanel.update(TITLE_MEMENTO, _lastExecutedCommand);
 
+	// bottom
 	_layerPanel.update(TITLE_LAYERS, &_layerSettings, _lastExecutedCommand);
 	_sceneGraphPanel.update(_scene->camera(), TITLE_SCENEGRAPH, &_layerSettings, _lastExecutedCommand);
 	_treePanel.update(TITLE_TREES);
 	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
+	_scriptPanel.update(TITLE_SCRIPTPANEL);
 }
+
+// end of right side
 
 void MainWindow::updateSettings() {
 	SceneManager &mgr = sceneMgr();
@@ -512,27 +575,20 @@ void MainWindow::update() {
 		ImGuiID dockIdLeftDown = ImGui::DockBuilderSplitNode(dockIdLeft, ImGuiDir_Down, 0.35f, nullptr, &dockIdLeft);
 		ImGuiID dockIdRightDown = ImGui::DockBuilderSplitNode(dockIdRight, ImGuiDir_Down, 0.50f, nullptr, &dockIdRight);
 		ImGuiID dockIdMainDown = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Down, 0.20f, nullptr, &_dockIdMain);
-		ImGui::DockBuilderDockWindow(TITLE_PALETTE, dockIdLeft);
-		ImGui::DockBuilderDockWindow(TITLE_POSITIONS, dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_ASSET, dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_TOOLS, dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_MEMENTO, dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_FORMAT_SETTINGS, dockIdRight);
-		ImGui::DockBuilderDockWindow(TITLE_LAYERS, dockIdRightDown);
-		ImGui::DockBuilderDockWindow(TITLE_TREES, dockIdRightDown);
-		ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, dockIdRightDown);
-		ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockIdRightDown);
-		ImGui::DockBuilderDockWindow(TITLE_SCRIPTPANEL, dockIdRightDown);
-		ImGui::DockBuilderDockWindow(TITLE_MODIFIERS, dockIdLeftDown);
-		ImGui::DockBuilderDockWindow(_scene->id().c_str(), _dockIdMain);
-		ImGui::DockBuilderDockWindow(_sceneLeft->id().c_str(), _dockIdMain);
-		ImGui::DockBuilderDockWindow(_sceneTop->id().c_str(), _dockIdMain);
-		ImGui::DockBuilderDockWindow(_sceneFront->id().c_str(), _dockIdMain);
-		ImGui::DockBuilderDockWindow(WINDOW_TITLE_SCRIPT_EDITOR, dockIdMainDown);
-		ImGui::DockBuilderDockWindow(TITLE_ANIMATION_TIMELINE, dockIdMainDown);
+
+		// left side
+		configureLeftTopWidgetDock(dockIdLeft);
+		configureLeftBottomWidgetDock(dockIdLeftDown);
+
+		// right side
+		configureRightTopWidgetDock(dockIdRight);
+		configureRightBottomWidgetDock(dockIdRightDown);
+
+		// main
+		configureMainTopWidgetDock(_dockIdMain);
+		configureMainBottomWidgetDock(dockIdMainDown);
+
 		ImGui::DockBuilderFinish(_dockIdMain);
-		_dockIdMainDown = dockIdMainDown;
 	}
 
 	updateSettings();

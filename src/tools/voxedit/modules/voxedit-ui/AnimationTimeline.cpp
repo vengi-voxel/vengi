@@ -15,7 +15,7 @@
 
 namespace voxedit {
 
-void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockId) {
+bool AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockId) {
 	const EditMode editMode = sceneMgr().editMode();
 	voxelformat::FrameIndex currentFrame = sceneMgr().currentFrame();
 	if (editMode == EditMode::Scene) {
@@ -108,7 +108,9 @@ void AnimationTimeline::update(const char *sequencerTitle, ImGuiID dockId) {
 			ImGui::PopStyleVar();
 		}
 		ImGui::End();
+		return true;
 	}
+	return false;
 }
 
 } // namespace voxedit

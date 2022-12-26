@@ -18,6 +18,8 @@ namespace voxelformat {
 class SceneGraphNode;
 }
 
+struct ImGuiDockNode;
+
 namespace voxedit {
 
 class Viewport {
@@ -94,7 +96,7 @@ public:
 	 * Update the ui
 	 * @return The viewport dock id
 	 */
-	ImGuiID update();
+	ImGuiDockNode *update();
 	bool init(RenderMode renderMode = RenderMode::Editor);
 	void shutdown();
 

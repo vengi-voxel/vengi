@@ -53,9 +53,6 @@ private:
 	Viewport* _sceneFront = nullptr;
 
 	ImGuiID _dockIdMain = 0;
-	// TODO: get rid of this by finding a way to get this id
-	// somehow without destroying a user layout
-	ImGuiID _dockIdMainDown = 0;
 
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
@@ -98,6 +95,13 @@ private:
 	void leftWidget();
 	void mainWidget();
 	void rightWidget();
+
+	void configureMainBottomWidgetDock(ImGuiID dockId);
+	void configureMainTopWidgetDock(ImGuiID dockId);
+	void configureRightTopWidgetDock(ImGuiID dockId);
+	void configureRightBottomWidgetDock(ImGuiID dockId);
+	void configureLeftTopWidgetDock(ImGuiID dockId);
+	void configureLeftBottomWidgetDock(ImGuiID dockId);
 
 	void dialog(const char *icon, const char *text);
 
