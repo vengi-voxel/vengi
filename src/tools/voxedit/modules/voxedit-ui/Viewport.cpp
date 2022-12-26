@@ -9,6 +9,7 @@
 #include "core/Common.h"
 #include "core/Var.h"
 #include "image/Image.h"
+#include "imgui.h"
 #include "io/Filesystem.h"
 #include "math/Ray.h"
 #include "ui/IMGUIApp.h"
@@ -367,8 +368,10 @@ void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) 
 	}
 	const EditMode editMode = sceneMgr().editMode();
 	ImVec2 position = ImGui::GetWindowPos();
-	position.y += headerSize;
 	const ImVec2 size = ImVec2(128, 128);
+	const ImVec2 maxSize = ImGui::GetWindowContentRegionMax();
+	position.x += maxSize.x - size.x;
+	position.y += headerSize;
 	const ImU32 backgroundColor = 0;
 	const float length = camera.targetDistance();
 
