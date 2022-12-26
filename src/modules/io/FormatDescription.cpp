@@ -86,6 +86,21 @@ core::String FormatDescription::wildCard() const {
 	return pattern;
 }
 
+
+void FileDescription::set(const core::String &s, const io::FormatDescription *f) {
+	if (f != nullptr) {
+		desc = *f;
+	} else {
+		desc = {};
+	}
+	name = s;
+}
+
+void FileDescription::clear() {
+	name = "";
+	desc = {};
+}
+
 bool isA(const core::String& file, const io::FormatDescription *desc) {
 	const core::String& ext = core::string::extractExtension(file);
 	for (; desc->valid(); ++desc) {

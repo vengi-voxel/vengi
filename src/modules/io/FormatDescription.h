@@ -47,19 +47,9 @@ struct FileDescription {
 	core::String name;
 	io::FormatDescription desc;
 
-	void set(const core::String &s, const io::FormatDescription *f = nullptr) {
-		if (f != nullptr) {
-			desc = *f;
-		} else {
-			desc = {};
-		}
-		name = s;
-	}
+	void set(const core::String &s, const io::FormatDescription *f = nullptr);
 
-	void clear() {
-		name = "";
-		desc = {};
-	}
+	void clear();
 
 	inline bool empty() const {
 		return name.empty();

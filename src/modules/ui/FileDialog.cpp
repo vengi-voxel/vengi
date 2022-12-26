@@ -541,6 +541,9 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 					if (open != nullptr) {
 						*open = false;
 					}
+					if (formatDesc != nullptr) {
+						*formatDesc = _currentFilterFormat;
+					}
 					_error[0] = '\0';
 					ImGui::CloseCurrentPopup();
 					ImGui::EndPopup();
@@ -619,6 +622,9 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 				if (open != nullptr) {
 					*open = false;
 				}
+				if (formatDesc != nullptr) {
+					*formatDesc = _currentFilterFormat;
+				}
 				ImGui::EndPopup();
 				return true;
 			}
@@ -635,6 +641,9 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 						_currentFile = "";
 						if (open != nullptr) {
 							*open = false;
+						}
+						if (formatDesc != nullptr) {
+							*formatDesc = _currentFilterFormat;
 						}
 						_error[0] = '\0';
 						ImGui::EndPopup();
@@ -663,6 +672,9 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 							if (open != nullptr) {
 								*open = false;
 							}
+							if (formatDesc != nullptr) {
+								*formatDesc = _currentFilterFormat;
+							}
 							_error[0] = '\0';
 							ImGui::EndPopup();
 							return true;
@@ -684,9 +696,6 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 
 			ImGui::EndPopup();
 		}
-	}
-	if (formatDesc != nullptr) {
-		*formatDesc = _currentFilterFormat;
 	}
 	return false;
 }
