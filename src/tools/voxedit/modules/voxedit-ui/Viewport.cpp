@@ -133,7 +133,7 @@ void Viewport::updateViewportTrace(float headerSize) {
 	sceneMgr().trace();
 }
 
-ImGuiDockNode *Viewport::update() {
+ImGuiDockNode *Viewport::update(command::CommandExecutionListener *listener) {
 	_camera.setFarPlane(_viewDistance->floatVal());
 
 	_hovered = false;
@@ -141,12 +141,18 @@ ImGuiDockNode *Viewport::update() {
 	style.setWindowRounding(0.0f);
 	style.setWindowBorderSize(0.0f);
 	style.setWindowPadding(ImVec2(0.0f, 0.0f));
-	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoFocusOnAppearing;
+	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoFocusOnAppearing;
 	if (ImGui::Begin(_id.c_str(), nullptr, sceneWindowFlags)) {
+		if (ImGui::BeginMenuBar()) {
+			const MementoHandler &mementoHandler = sceneMgr().mementoHandler();
+			ImGui::CommandMenuItem(ICON_FA_ROTATE_LEFT " Undo", "undo", mementoHandler.canUndo(), listener);
+			ImGui::CommandMenuItem(ICON_FA_ROTATE_RIGHT " Redo", "redo", mementoHandler.canRedo(), listener);
+			ImGui::EndMenuBar();
+		}
 		core_trace_scoped(Viewport);
 		ui::IMGUIApp *app = imguiApp();
 		{
-			glm::ivec2 contentSize = ImGui::GetWindowContentRegionMax();
+			glm::ivec2 contentSize = ImGui::GetContentRegionAvail();
 			const float headerSize = ImGui::GetCursorPosY();
 
 			if (setupFrameBuffer(contentSize)) {
@@ -355,12 +361,13 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 	}
 }
 
-void Viewport::renderCameraManipulator(video::Camera &camera) {
+void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) {
 	if (isFixedCamera()) {
 		return;
 	}
 	const EditMode editMode = sceneMgr().editMode();
-	const ImVec2 position = ImGui::GetWindowPos();
+	ImVec2 position = ImGui::GetWindowPos();
+	position.y += headerSize;
 	const ImVec2 size = ImVec2(128, 128);
 	const ImU32 backgroundColor = 0;
 	const float length = camera.targetDistance();
@@ -389,7 +396,7 @@ void Viewport::renderCameraManipulator(video::Camera &camera) {
 	}
 }
 
-void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const ImVec2 &size) {
+void Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2 &size) {
 	if (!_showAxisVar->boolVal()) {
 		return;
 	}
@@ -411,7 +418,7 @@ void Viewport::renderGizmo(video::Camera &camera, const float headerSize, const 
 	ImGuizmo::SetRect(windowPos.x, windowPos.y + headerSize, size.x, size.y);
 	ImGuizmo::SetOrthographic(orthographic);
 	renderSceneGuizmo(camera);
-	renderCameraManipulator(camera);
+	renderCameraManipulator(camera, headerSize);
 }
 
 void Viewport::renderToFrameBuffer() {

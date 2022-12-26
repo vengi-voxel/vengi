@@ -225,10 +225,10 @@ void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
 
 void MainWindow::mainWidget() {
 	// main
-	const ImGuiDockNode* node = _scene->update();
-	_sceneTop->update();
-	_sceneLeft->update();
-	_sceneFront->update();
+	const ImGuiDockNode* node = _scene->update(&_lastExecutedCommand);
+	_sceneTop->update(&_lastExecutedCommand);
+	_sceneLeft->update(&_lastExecutedCommand);
+	_sceneFront->update(&_lastExecutedCommand);
 
 	// bottom
 	ImGuiID dockId = _dockIdMain;

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "command/CommandHandler.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
 #include "imgui.h"
@@ -60,8 +61,8 @@ private:
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
 	void renderSceneGuizmo(video::Camera &camera);
-	void renderCameraManipulator(video::Camera &camera);
-	void renderGizmo(video::Camera &camera, const float headerSize, const ImVec2 &size);
+	void renderCameraManipulator(video::Camera &camera, float headerSize);
+	void renderGizmo(video::Camera &camera, float headerSize, const ImVec2 &size);
 	void updateViewportTrace(float headerSize);
 	bool isFixedCamera() const;
 public:
@@ -96,7 +97,7 @@ public:
 	 * Update the ui
 	 * @return The viewport dock id
 	 */
-	ImGuiDockNode *update();
+	ImGuiDockNode *update(command::CommandExecutionListener *listener);
 	bool init(RenderMode renderMode = RenderMode::Editor);
 	void shutdown();
 
