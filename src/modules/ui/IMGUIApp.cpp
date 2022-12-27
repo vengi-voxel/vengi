@@ -212,9 +212,9 @@ void IMGUIApp::loadFonts() {
 											_uiFontSize->floatVal() * 2.0f, nullptr, rangesBasic);
 
 	_bigIconFont = io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											_uiFontSize->floatVal() * 2.0f, &bigFontIconCfg, rangesFAIcons);
+											_uiFontSize->floatVal() * 1.5f, &bigFontIconCfg, rangesFAIcons);
 	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
-											_uiFontSize->floatVal() * 2.0f, &bigFontIconCfg, rangesFKIcons);
+											_uiFontSize->floatVal() * 1.5f, &bigFontIconCfg, rangesFKIcons);
 
 	_smallFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
 											_uiFontSize->floatVal() * 0.8f, nullptr, rangesBasic	);
