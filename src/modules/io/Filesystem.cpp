@@ -399,6 +399,7 @@ bool Filesystem::syswrite(const core::String &filename, const uint8_t *content, 
 		Log::error("Failed to write to %s: Could not create the directory", filename.c_str());
 		return false;
 	}
+	f.open(FileMode::SysWrite);
 	return f.write(content, length) == static_cast<long>(length);
 }
 
@@ -411,15 +412,19 @@ core::String searchPathFor(const FilesystemPtr& filesystem, const core::String &
 	core::DynamicArray<core::String> tokens;
 	core::string::splitString(path, tokens, "/");
 	while (!tokens.empty()) {
+		if (tokens.empty()) {
+			continue;
+		}
 		if (filesystem->isReadableDir(tokens[0])) {
+			Log::debug("readable dir: %s", tokens[0].c_str());
 			break;
 		}
+		Log::trace("not a readable dir: %s", tokens[0].c_str());
 		tokens.erase(0);
 	}
 	core::String relativePath;
 	for (const core::String &t : tokens) {
-		relativePath += t;
-		relativePath += "/";
+		relativePath = core::string::path(relativePath, t);
 	}
 	core::DynamicArray<io::FilesystemEntry> entities;
 	const core::String abspath = filesystem->absolutePath(relativePath);

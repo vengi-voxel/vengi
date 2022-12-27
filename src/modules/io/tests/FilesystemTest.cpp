@@ -228,6 +228,8 @@ TEST_F(FilesystemTest, testSearchPathFor) {
 	io::FilesystemPtr fs = core::make_shared<io::Filesystem>();
 	EXPECT_TRUE(fs->init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_EQ(core::string::path(fs->currentDir(), "iotest.txt"), searchPathFor(fs, "foobar/does/not/exist", "iotest.txt"));
+	ASSERT_TRUE(fs->syswrite("dir123/testfile", "123")) << "Failed to write content to testfile in dir123";
+	EXPECT_EQ(core::string::path(fs->currentDir(), "dir123/testfile"), searchPathFor(fs, "/foobar/does/not/dir123", "TestFile"));
 	fs->shutdown();
 }
 
