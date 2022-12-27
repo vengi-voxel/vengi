@@ -10,6 +10,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/ArrayLength.h"
+#include "core/Var.h"
 #include "core/collection/Buffer.h"
 #include "core/RGBA.h"
 #include "image/Image.h"
@@ -38,14 +39,16 @@ void Palette::markDirty() {
 	_hash._hashColors[1] = core::hash(glowColors, sizeof(glowColors));
 }
 
-void Palette::reduce(uint8_t targetColors, core::Color::ColorReductionType reductionType) {
+void Palette::reduce(uint8_t targetColors) {
+	core::Color::ColorReductionType reductionType = core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
 	PaletteColorArray oldcolors;
 	core_memcpy(oldcolors, colors, sizeof(PaletteColorArray));
 	colorCount = core::Color::quantize(colors, targetColors, oldcolors, colorCount, reductionType);
 	markDirty();
 }
 
-void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCount, core::Color::ColorReductionType reductionType) {
+void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCount) {
+	core::Color::ColorReductionType reductionType = core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
 	colorCount = core::Color::quantize(colors, lengthof(colors), inputColors, inputColorCount, reductionType);
 	markDirty();
 }

@@ -98,6 +98,9 @@ public:
 
 		Max
 	};
+	static ColorReductionType toColorReductionType(const char *str);
+	static const char* toColorReductionTypeString(Color::ColorReductionType type);
+
 	/**
 	 * @return @c -1 on error or the amount of @code colors <= maxTargetBufColors @endcode
 	 */

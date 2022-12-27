@@ -101,6 +101,23 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 					}
 					ImGui::EndCombo();
 				}
+
+				const core::VarPtr &colorReduction = core::Var::getSafe(cfg::CoreColorReduction);
+				if (ImGui::BeginCombo("Color reduction", colorReduction->strVal().c_str(), ImGuiComboFlags_None)) {
+					core::Color::ColorReductionType type = core::Color::toColorReductionType(colorReduction->strVal().c_str());
+					for (int i = 0; i < (int)core::Color::ColorReductionType::Max; ++i) {
+						const bool selected = i == (int)type;
+						const char *str = core::Color::toColorReductionTypeString((core::Color::ColorReductionType)i);
+						if (ImGui::Selectable(str, selected)) {
+							colorReduction->setVal(str);
+						}
+						if (selected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+				ImGui::TooltipText("The color reduction algorithm that is used when importing RGBA colors from images or rgba formats");
 				glm::vec3 omega = sceneMgr().activeCamera()->omega();
 				if (ImGui::InputFloat("Camera rotation", &omega.y)) {
 					sceneMgr().activeCamera()->setOmega(omega);

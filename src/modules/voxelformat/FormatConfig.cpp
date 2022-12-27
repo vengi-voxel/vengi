@@ -3,13 +3,21 @@
  */
 
 #include "FormatConfig.h"
+#include "core/Color.h"
 #include "core/GameConfig.h"
 #include "core/Var.h"
 #include "voxel/Palette.h"
 
 namespace voxelformat {
 
+static bool colorReductionValidator(const core::String& value) {
+	return core::Color::toColorReductionType(value.c_str()) != core::Color::ColorReductionType::Max;
+}
+
 bool FormatConfig::init() {
+	core::Var::get(cfg::CoreColorReduction,
+				   core::Color::toColorReductionTypeString(core::Color::ColorReductionType::MedianCut),
+				   "Controls the algorithm that is used to perform the color reduction", colorReductionValidator);
 	core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, "Merge similar quads to optimize the mesh", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatMarchingCubes, "false", core::CV_NOPERSIST, "Don't export cubes, but a mesh that is polygonized by the marching cubes algorithm", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST, "Reuse vertices or always create new ones", core::Var::boolValidator);

@@ -3,7 +3,9 @@
  */
 
 #include "Color.h"
+#include <SDL_stdinc.h>
 #include "core/Algorithm.h"
+#include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/GLM.h"
 #include "core/Log.h"
@@ -52,6 +54,26 @@ const glm::vec4 Color::DarkBrown = glm::vec4(82.f, 43, 26, 255) / glm::vec4(Colo
 
 const float Color::magnitudef = 255.0f;
 const float Color::scaleFactor = 0.7f;
+
+static constexpr const char* ColorReductionAlgorithmStr[] {
+	"Octree",
+	"Wu",
+	"Median Cut"
+};
+static_assert((int)core::Color::ColorReductionType::Max == lengthof(ColorReductionAlgorithmStr), "Array size doesn't match with enum");
+
+const char* Color::toColorReductionTypeString(Color::ColorReductionType type) {
+	return ColorReductionAlgorithmStr[(int)type];
+}
+
+Color::ColorReductionType Color::toColorReductionType(const char *str) {
+	for (int i = 0; i < lengthof(ColorReductionAlgorithmStr); ++i) {
+		if (!SDL_strcmp(str, ColorReductionAlgorithmStr[i])) {
+			return (Color::ColorReductionType)i;
+		}
+	}
+	return ColorReductionType::Max;
+}
 
 int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors, ColorReductionType type) {
 	if (inputBufColors <= maxTargetBufColors) {
