@@ -212,6 +212,7 @@ void RawVolume::initialise(const Region& regValidRegion) {
 	//Create the data
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
 	_data = (Voxel*)core_malloc(size);
+	core_assert_msg_always(_data != nullptr, "Failed to allocate the memory for a volume with the dimensions %i:%i:%i", width(),  height(), depth());
 
 	// Clear to zeros
 	clear();
