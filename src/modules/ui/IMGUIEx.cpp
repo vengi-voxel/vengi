@@ -359,6 +359,8 @@ const char *CommandButton(const char *title, const char *command, const char *to
 			return command;
 		}
 	}
+	ui::ScopedStyle style;
+	style.setFont(imguiApp()->defaultFont());
 	if (tooltip != nullptr) {
 		ImGui::TooltipText("%s", tooltip);
 	} else {
