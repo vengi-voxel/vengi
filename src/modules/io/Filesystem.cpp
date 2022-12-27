@@ -421,20 +421,19 @@ core::String searchPathFor(const FilesystemPtr& filesystem, const core::String &
 		relativePath += t;
 		relativePath += "/";
 	}
-	Log::trace("List dir '%s'", relativePath.c_str());
 	core::DynamicArray<io::FilesystemEntry> entities;
 	const core::String abspath = filesystem->absolutePath(relativePath);
 	filesystem->list(abspath, entities);
-	Log::trace("Found %i entries", (int)entities.size());
+	Log::debug("Found %i entries in %s", (int)entities.size(), relativePath.c_str());
 	auto predicate = [&] (const io::FilesystemEntry &e) {
 		return core::string::iequals(e.name, filename);
 	};
 	auto iter = core::find_if(entities.begin(), entities.end(), predicate);
 	if (iter == entities.end()) {
-		Log::debug("Could not find %s", filename.c_str());
+		Log::debug("Could not find %s in %s", filename.c_str(), relativePath.c_str());
 		return "";
 	}
-	Log::debug("Found %s", iter->name.c_str());
+	Log::debug("Found %s in %s", iter->name.c_str(), relativePath.c_str());
 	return core::string::path(abspath, iter->name);
 }
 
