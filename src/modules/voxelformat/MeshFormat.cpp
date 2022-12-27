@@ -324,6 +324,12 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 		fullpath = io::searchPathFor(io::filesystem(), meshPath, filename);
 	}
 	if (fullpath.empty()) {
+		fullpath = io::searchPathFor(io::filesystem(), "texture", filename);
+	}
+	if (fullpath.empty()) {
+		fullpath = io::searchPathFor(io::filesystem(), "textures", filename);
+	}
+	if (fullpath.empty()) {
 		Log::error("Failed to perform texture lookup for %s", name.c_str());
 	}
 	if (!meshPath.empty()) {

@@ -463,13 +463,14 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 				continue;
 			}
 
-			const core::String &name = lookupTexture(filename, priv::_ufbx_to_string(texture->relative_filename));
+			const core::String &relativeFilename = priv::_ufbx_to_string(texture->relative_filename);
+			const core::String &name = lookupTexture(filename, relativeFilename);
 			image::ImagePtr tex = image::loadImage(name, false);
 			if (tex->isLoaded()) {
 				Log::debug("Use image %s", name.c_str());
 				textures.put(texname, tex);
 			} else {
-				Log::warn("Failed to load image %s", name.c_str());
+				Log::warn("Failed to load image %s", relativeFilename.c_str());
 			}
 		}
 	}
