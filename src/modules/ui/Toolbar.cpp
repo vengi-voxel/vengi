@@ -30,7 +30,9 @@ void Toolbar::next() {
 }
 
 void Toolbar::newline() {
-	if (_pos.x + _size.x > windowWidth()) {
+	const float w = windowWidth();
+	const float wmax = ImGui::GetWindowPos().x + w;
+	if (_pos.x > _startingPosX && _pos.x + _size.x > wmax) {
 		_pos.x = _startingPosX;
 		_pos.y += _size.y;
 		setCursor();
@@ -38,7 +40,9 @@ void Toolbar::newline() {
 }
 
 void Toolbar::last() {
-	if (_pos.x > _startingPosX && _pos.x <= windowWidth()) {
+	const float w = windowWidth();
+	const float wmax = ImGui::GetWindowPos().x + w;
+	if ((_pos.x > _startingPosX && _pos.x <= wmax) || w < _size.x) {
 		_pos.y += _size.y;
 		_pos.x = _startingPosX;
 		setCursor();
