@@ -7,6 +7,7 @@
 #include "core/StringUtil.h"
 #include "imgui.h"
 #include "io/FormatDescription.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "core/Color.h"
 #include "ui/IconsFontAwesome6.h"
@@ -276,10 +277,9 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 
 void PalettePanel::showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	voxel::Palette &palette = node.palette();
-	ImGui::Checkbox("Wheel", &_pickerWheel);
 	ImGuiColorEditFlags flags = ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB;
 	flags |= ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoLabel;
-	if (_pickerWheel)  {
+	if (core::Var::getSafe(cfg::VoxEditColorWheel)->boolVal()) {
 		flags |= ImGuiColorEditFlags_PickerHueWheel;
 	} else {
 		flags |= ImGuiColorEditFlags_PickerHueBar;

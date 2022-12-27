@@ -24,7 +24,6 @@ private:
 	float _intensityChange = 0.0f;
 	int _closestMatch = -1;
 	glm::vec4 _closestColor{0.0f, 0.0f, 0.0f, 1.0f};
-	bool _pickerWheel = false;
 	bool _colorHovered = false; // caching the hover state per frame
 	bool _hasFocus = false;
 	bool _searchFittingColors = false;

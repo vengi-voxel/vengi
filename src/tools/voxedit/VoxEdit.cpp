@@ -69,7 +69,8 @@ core::String VoxEdit::getSuggestedFilename(const char *extension) const {
 app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::ClientCameraMaxZoom, "1000.0");
 	core::Var::get(cfg::ClientCameraMinZoom, "0.1");
-	core::Var::get(cfg::ClientFullscreen, "false");
+	core::Var::get(cfg::ClientFullscreen, "false", "Fullscreen or window", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditColorWheel, "false", "Use the color wheel in the palette color editing", core::Var::boolValidator);
 	const app::AppState state = Super::onConstruct();
 	_framesPerSecondsCap->setVal(60.0f);
 
@@ -84,8 +85,8 @@ app::AppState VoxEdit::onConstruct() {
 	});
 	core::Var::get(cfg::VoxEditLastFile, "");
 	core::Var::get(cfg::VoxEditLastFiles, "");
-	core::Var::get(cfg::VoxEditGrayInactive, "false", "Render the inactive layers in gray scale mode");
-	core::Var::get(cfg::VoxEditHideInactive, "false", "Hide the inactive layers");
+	core::Var::get(cfg::VoxEditGrayInactive, "false", "Render the inactive layers in gray scale mode", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditHideInactive, "false", "Hide the inactive layers", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditViewdistance, "5000");
 	core::Var::get(cfg::VoxEditShowaxis, "1", "Show the axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGuizmoRotation, "0", "Activate rotations for the guizmo in scene mode", core::Var::boolValidator);
