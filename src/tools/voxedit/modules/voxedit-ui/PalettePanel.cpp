@@ -246,8 +246,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
 	voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
-	const float height = ImGui::GetContentRegionMax().y;
-	const ImVec2 windowSize(120.0f, height);
+	const ImVec2 windowSize(10.0f * ImGui::GetFrameHeight(), ImGui::GetContentRegionMax().y);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	const int currentSceneHoveredPalIdx = currentSceneColor();
 	const int currentSelectedPalIdx = currentPaletteIndex();
