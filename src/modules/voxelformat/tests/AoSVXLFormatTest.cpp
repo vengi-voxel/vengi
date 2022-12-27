@@ -3,6 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
+#include "io/BufferedReadWriteStream.h"
 #include "voxelformat/AoSVXLFormat.h"
 #include "io/FileStream.h"
 #include "core/Var.h"
@@ -54,13 +55,12 @@ TEST_F(AoSVXLFormatTest, testSave) {
 	SceneGraphNode node1;
 	node1.setVolume(&layer1, false);
 	sceneGraph.emplace(core::move(node1));
-	const io::FilePtr &sfile = open(filename, io::FileMode::SysWrite);
-	io::FileStream sstream(sfile);
-	ASSERT_TRUE(f.save(sceneGraph, sfile->name(), sstream, testThumbnailCreator));
+	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
+
+	ASSERT_TRUE(f.save(sceneGraph, filename, bufferedStream, testThumbnailCreator));
+	bufferedStream.seek(0);
 	SceneGraph sceneGraphLoad;
-	const io::FilePtr &file = open(filename);
-	io::FileStream stream(file);
-	EXPECT_TRUE(f.load(file->name(), stream, sceneGraphLoad));
+	EXPECT_TRUE(f.load(filename, bufferedStream, sceneGraphLoad));
 	EXPECT_EQ(sceneGraphLoad.size(), 4);
 }
 
