@@ -34,6 +34,10 @@
 #define key_gety(key)			(((key)>>20)&0xFFF)
 #define key_getz(key)			((key)&0xFF)
 
+#ifdef _MSC_VER
+#define __attribute(x)
+#endif
+
 struct __attribute((packed)) libvxl_span {
 	uint8_t length;
 	uint8_t color_start;
