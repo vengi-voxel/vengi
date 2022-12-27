@@ -75,10 +75,10 @@ app::AppState VoxEdit::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_framesPerSecondsCap->setVal(60.0f);
 
-	core::Var::get(cfg::VoxEditShowgrid, "1", "Show the grid", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditShowlockedaxis, "1", "Show the currently locked axis", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditShowaabb, "0", "Show the axis aligned bounding box", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditRendershadow, "1", "Render with shadows", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditShowgrid, "true", "Show the grid", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditShowlockedaxis, "true", "Show the currently locked axis", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditShowaabb, "true", "Show the axis aligned bounding box", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditRendershadow, "true", "Render with shadows", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditAnimationSpeed, "100", "Millisecond delay between frames");
 	core::Var::get(cfg::VoxEditGridsize, "1", "The size of the voxel grid", [](const core::String &val) {
 		const int intVal = core::string::toInt(val);
@@ -89,10 +89,10 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditGrayInactive, "false", "Render the inactive layers in gray scale mode", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditHideInactive, "false", "Hide the inactive layers", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditViewdistance, "5000");
-	core::Var::get(cfg::VoxEditShowaxis, "1", "Show the axis", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditGuizmoRotation, "0", "Activate rotations for the guizmo in scene mode", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditGuizmoAllowAxisFlip, "1", "Flip axis or stay along the positive world/local axis", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditGuizmoSnap, "1", "Use the grid size for snap", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditShowaxis, "true", "Show the axis", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditGuizmoRotation, "false", "Activate rotations for the guizmo in scene mode", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditGuizmoAllowAxisFlip, "true", "Flip axis or stay along the positive world/local axis", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditGuizmoSnap, "true", "Use the grid size for snap", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditLastPalette, voxel::Palette::builtIn[0]);
 
 	voxelformat::FormatConfig::init();
