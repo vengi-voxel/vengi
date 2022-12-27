@@ -1161,7 +1161,7 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, io::SeekableReadSt
 	const int64_t size = stream.size();
 	uint8_t* data = (uint8_t*)core_malloc(size);
 	if (stream.read(data, size) == -1) {
-		Log::error("Failed to read gltf stream");
+		Log::error("Failed to read gltf stream for %s of size %i", filename.c_str(), (int)size);
 		core_free(data);
 		return false;
 	}
