@@ -59,7 +59,7 @@ public:
 	bool saveGlow(const char *name = nullptr) const;
 
 	void changeIntensity(float scale);
-	void reduce(uint8_t targetColors, core::Color::ColorReductionType reductionType = core::Color::ColorReductionType::Wu);
+	void reduce(uint8_t targetColors, core::Color::ColorReductionType reductionType = core::Color::ColorReductionType::MedianCut);
 
 	static core::String print(const Palette &palette, bool colorAsHex = false);
 
@@ -114,7 +114,7 @@ public:
 	 */
 	bool addColorToPalette(core::RGBA rgba, bool skipSimilar = true, uint8_t *index = nullptr, bool replaceSimilar = true, int skipSlotIndex = -1);
 	bool hasColor(core::RGBA rgba);
-	void quantize(const core::RGBA *inputColors, const size_t inputColorCount, core::Color::ColorReductionType reductionType = core::Color::ColorReductionType::Octree);
+	void quantize(const core::RGBA *inputColors, const size_t inputColorCount, core::Color::ColorReductionType reductionType = core::Color::ColorReductionType::MedianCut);
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
 	 * @note The collection will have 256 entries - even if the palette has less entries
