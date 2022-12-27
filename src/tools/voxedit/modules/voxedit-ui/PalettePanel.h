@@ -13,6 +13,10 @@ namespace voxelformat {
 class SceneGraphNode;
 }
 
+namespace voxel {
+class Palette;
+}
+
 namespace voxedit {
 
 class PalettePanel {
@@ -21,14 +25,26 @@ private:
 	int _closestMatch = -1;
 	glm::vec4 _closestColor{0.0f, 0.0f, 0.0f, 1.0f};
 	bool _pickerWheel = false;
-
-	core::String _currentSelectedPalette;
-	core::DynamicArray<core::String> _availablePalettes;
+	bool _colorHovered = false; // caching the hover state per frame
 	bool _hasFocus = false;
 	bool _searchFittingColors = false;
+	const uint32_t _redColor;
+	const uint32_t _yellowColor;
+	const uint32_t _darkRedColor;
+	core::String _importPalette;
+	core::String _currentSelectedPalette;
+	core::DynamicArray<core::String> _availablePalettes;
 
+	void closestColor(voxel::Palette &palette);
+	void paletteActions(voxel::Palette &palette, command::CommandExecutionListener &listener);
+	void createPopups();
+
+	void addColor(float startingPosX, uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void reloadAvailablePalettes();
+
+	uint8_t currentSceneColor() const;
+	uint8_t currentPaletteIndex() const;
 public:
 	PalettePanel();
 	void update(const char *title, command::CommandExecutionListener &listener);
