@@ -34,9 +34,11 @@
 | Wavefront Object           | obj       | X       | X      |            |         |            |                                                                          |
 
 
-## Meshes
+## Configuration variables
 
-Exporting to ply, gltf, stl and obj is also supported. A few [cvars](Configuration.md) exists to tweak the output of the meshing:
+A few [cvars](Configuration.md) exists to tweak the export or import of several formats.
+
+Exporting and voxelization of mesh formats like ply, gltf, stl, fbx and obj is also supported.
 
 * `voxformat_ambientocclusion`: Don't export extra quads for ambient occlusion voxels
 * `voxformat_mergequads`: Merge similar quads to optimize the mesh
@@ -50,21 +52,13 @@ Exporting to ply, gltf, stl and obj is also supported. A few [cvars](Configurati
 * `voxformat_withtexcoords`: Export texture coordinates
 * `voxformat_transform_mesh`: Apply the keyframe transform to the mesh
 * `voxformat_marchingcubes`: Use the marching cubes algorithm to produce the mesh
-* `voxformat_createpalette`: Setting this to false will use use the palette configured by `palette` cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats.
-
-Basic voxelization is supported for ply, gltf, stl, bsp and obj files, too. The following [cvars](Configuration.md) can be modified here:
-
+* `voxformat_createpalette`: Setting this to false will use use the palette configured by `palette` cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats - but also for RGBA based formats.
 * `voxformat_fillhollow`: Fill the inner parts of completely close objects
 * `voxformat_scale`: Scale the vertices on all axis by the given factor
 * `voxformat_scale_x`: Scale the vertices on X axis by the given factor
 * `voxformat_scale_y`: Scale the vertices on Y axis by the given factor
 * `voxformat_scale_z`: Scale the vertices on Z axis by the given factor
 * `voxformat_voxel_mesh`: Optimize import precision assuming that the mesh is composed of uniform voxels
-
-## Format configuration
-
-Next to the mesh related configuration cvars there are a few format specific ones, too:
-
 * `voxformat_vxlnormaltype`: Normal type for VXL format - 2 (TS) or 4 (RedAlert2)
 * `voxformat_qbtpalettemode`: Use palette mode in qubicle qbt export
 * `voxformat_qbtmergecompounds`: Merge compounds in qbt export
@@ -73,3 +67,4 @@ Next to the mesh related configuration cvars there are a few format specific one
 * `voxformat_merge`: Merge all models into one object
 * `voxformat_rgbflattenfactor`: To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats
 * `voxformat_qbsavelefthanded`: Save qubicle format as left handed
+* `core_colorreduction`: This can be used to tweak the color reduction by switching to a different algorithm. Possible values are `Octree`, `Wu` and `Median Cut`. This is useful for mesh based formats or RGBA based formats like e.g. AceOfSpades vxl.
