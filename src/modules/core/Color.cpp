@@ -233,7 +233,6 @@ int Color::quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const R
 
 int Color::quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
 	core_assert(glm::isPowerOfTwo(maxTargetBufColors));
-	core_assert(maxTargetBufColors == 256);
 	using BBox = math::AABB<uint8_t>;
 	struct ColorNode {
 		inline ColorNode(core::RGBA c) : color(c){};

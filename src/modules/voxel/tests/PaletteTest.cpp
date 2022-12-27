@@ -5,12 +5,20 @@
 #include "voxel/Palette.h"
 #include "core/ArrayLength.h"
 #include "app/tests/AbstractTest.h"
+#include "core/GameConfig.h"
+#include "core/Var.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/PaletteLookup.h"
 
 namespace voxel {
 
-class PaletteTest : public app::AbstractTest {};
+class PaletteTest : public app::AbstractTest {
+protected:
+	bool onInitApp() override {
+		core::Var::get(cfg::CoreColorReduction, core::Color::toColorReductionTypeString(core::Color::ColorReductionType::Octree));
+		return true;
+	}
+};
 
 TEST_F(PaletteTest, testPaletteLookup) {
 	PaletteLookup pal;
