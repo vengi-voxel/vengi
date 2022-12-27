@@ -15,10 +15,18 @@ General:
    - Support using `palette` cvar as a destination palette again by setting `voxformat_createpalette` to `false`
    - Added new image formats from SOIL2 (DDS, PKM, PVR)
    - Added FBX read support
+   - Improved texture lookup for mesh formats
+   - Added multiple color reduction algorithms and expose them to the user by the cvar `core_colorreduction`
+   - Fixed several issues with AceOfSpades vxl format - switched to libvxl for loading and saving
+   - Fixed splitting volumes even if not needed (off-by-one error)
 
 VoxEdit:
 
    - Disable animation window if there are no animations to show
+   - Allow to show the color picker in the palette panel
+   - Reworked the modifiers panel
+   - Made undo/redo more visible
+   - Switched the camera modifier to the right side of the viewport
 
 ## 0.0.23 (2022-12-17)
 
