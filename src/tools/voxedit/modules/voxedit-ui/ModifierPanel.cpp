@@ -3,6 +3,7 @@
  */
 
 #include "ModifierPanel.h"
+#include "IMGUIApp.h"
 #include "ScopedStyle.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsFontAwesome6.h"
@@ -15,6 +16,8 @@
 namespace voxedit {
 
 void ModifierPanel::addModifiers(command::CommandExecutionListener &listener) {
+	ui::ScopedStyle style;
+	style.setFont(imguiApp()->bigIconFont());
 	const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 	ui::Toolbar toolbar(buttonSize);
 	toolbar.button(ICON_FA_CUBE, "actionplace");
@@ -64,24 +67,25 @@ void ModifierPanel::addShapes() {
 }
 
 void ModifierPanel::addMirrorPlanes() {
-	if (ImGui::CollapsingHeader("Mirror on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-		Modifier &modifier = sceneMgr().modifier();
-		const bool plane = modifier.planeMode();
+	Modifier &modifier = sceneMgr().modifier();
+	const bool plane = modifier.planeMode();
 
-		ui::ScopedStyle style;
-		// mirror planes are disabled in plane mode
-		if (plane) {
-			style.disableItem();
-			modifier.setMirrorAxis(math::Axis::None, glm::ivec3(0));
-		}
-		mirrorAxisRadioButton("None##mirror", math::Axis::None);
-		ImGui::SameLine();
-		mirrorAxisRadioButton("X##mirror", math::Axis::X);
-		ImGui::SameLine();
-		mirrorAxisRadioButton("Y##mirror", math::Axis::Y);
-		ImGui::SameLine();
-		mirrorAxisRadioButton("Z##mirror", math::Axis::Z);
+	ui::ScopedStyle style;
+	// mirror planes are disabled in plane mode
+	if (plane) {
+		style.disableItem();
+		modifier.setMirrorAxis(math::Axis::None, glm::ivec3(0));
 	}
+	mirrorAxisRadioButton("Disable mirror##mirror", math::Axis::None);
+	ImGui::SameLine();
+	mirrorAxisRadioButton("X##mirror", math::Axis::X);
+	ImGui::TooltipText("Mirror along the x axis at the reference position");
+	ImGui::SameLine();
+	mirrorAxisRadioButton("Y##mirror", math::Axis::Y);
+	ImGui::TooltipText("Mirror along the y axis at the reference position");
+	ImGui::SameLine();
+	mirrorAxisRadioButton("Z##mirror", math::Axis::Z);
+	ImGui::TooltipText("Mirror along the z axis at the reference position");
 }
 
 void ModifierPanel::addModifierModes() {
