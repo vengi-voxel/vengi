@@ -5,6 +5,11 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#ifndef libvxl_assert
+#include <assert.h>
+#define libvxl_assert(cond, msg) assert(cond)
+#endif
+
 //! @file libvxl.h
 //! Reads and writes vxl maps, using an likewise internal memory format
 
@@ -15,6 +20,12 @@
 //! @brief How many blocks the buffer will grow once it is full
 #define LIBVXL_CHUNK_GROWTH		2
 #define LIBVXL_CHUNK_SHRINK		4
+
+#ifndef libvxl_mem_malloc
+#define libvxl_mem_malloc(sz) malloc(sz)
+#define libvxl_mem_realloc(p, newsz) realloc(p, newsz)
+#define libvxl_mem_free(p) free(p)
+#endif
 
 //! @brief The default color to use when a block is solid, but has no color
 //!

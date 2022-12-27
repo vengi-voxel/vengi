@@ -16,6 +16,10 @@
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
+#define libvxl_assert core_assert_msg
+#define libvxl_mem_malloc core_malloc
+#define libvxl_mem_realloc core_realloc
+#define libvxl_mem_free core_free
 extern "C" {
 #include "external/libvxl.h"
 }
