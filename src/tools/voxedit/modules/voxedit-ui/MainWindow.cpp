@@ -204,7 +204,7 @@ void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
 
 void MainWindow::leftWidget() {
 	_palettePanel.update(TITLE_PALETTE, _lastExecutedCommand);
-	_modifierPanel.update(TITLE_MODIFIERS);
+	_modifierPanel.update(TITLE_MODIFIERS, _lastExecutedCommand);
 }
 
 // end of left side

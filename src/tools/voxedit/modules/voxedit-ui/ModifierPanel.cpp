@@ -3,29 +3,28 @@
  */
 
 #include "ModifierPanel.h"
-#include "ui/IconsFontAwesome6.h"
-#include "ui/ScopedStyle.h"
-#include "ui/dearimgui/imgui_internal.h"
+#include "ScopedStyle.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IconsFontAwesome6.h"
 #include "ui/IconsForkAwesome.h"
+#include "ui/Toolbar.h"
 #include "voxedit-ui/Util.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 
 namespace voxedit {
 
-bool ModifierPanel::modifierRadioButton(const char *title, ModifierType type, const char *tooltip) {
-	Modifier &modifier = sceneMgr().modifier();
-	ModifierType currentType = modifier.modifierType();
-	currentType &= ~(ModifierType::Plane | ModifierType::Single);
-	if (ImGui::RadioButton(title, currentType == type)) {
-		modifier.setModifierType(type);
-		return true;
-	}
-	if (tooltip != nullptr) {
-		ImGui::TooltipText("%s", tooltip);
-	}
-	return false;
+void ModifierPanel::addModifiers(command::CommandExecutionListener &listener) {
+	const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
+	ui::Toolbar toolbar(buttonSize);
+	toolbar.button(ICON_FA_CUBE, "actionplace");
+	toolbar.button(ICON_FA_ERASER, "actionerase");
+	toolbar.button(ICON_FA_DIAGRAM_NEXT, "actionoverride");
+	toolbar.button(ICON_FA_PAINTBRUSH, "actionpaint");
+	toolbar.button(ICON_FA_EXPAND, "actionselect");
+	toolbar.button(ICON_FA_ELLIPSIS, "actionpath");
+	toolbar.button(ICON_FA_ELLIPSIS, "actionline");
+	toolbar.button(ICON_FA_EYE_DROPPER, "actioncolorpicker");
 }
 
 bool ModifierPanel::mirrorAxisRadioButton(const char *title, math::Axis type) {
@@ -85,49 +84,35 @@ void ModifierPanel::addMirrorPlanes() {
 	}
 }
 
-void ModifierPanel::update(const char *title) {
+void ModifierPanel::addModifierModes() {
+	Modifier &modifier = sceneMgr().modifier();
+	bool plane = modifier.planeMode();
+	if (ImGui::Checkbox("Plane##modifiertype", &plane)) {
+		modifier.setPlaneMode(plane);
+	}
+	ImGui::TooltipText("Modifies the whole plane or connected voxels - can be seen as extrude feature");
+	bool single = modifier.singleMode();
+	if (ImGui::Checkbox("Single##modifiertype", &single)) {
+		modifier.setSingleMode(single);
+	}
+	ImGui::TooltipText("Only interact with single voxels - don't span an area - one click one modification");
+	bool center = modifier.centerMode();
+	if (ImGui::Checkbox("Center##modifiertype", &center)) {
+		modifier.setCenterMode(center);
+	}
+	ImGui::TooltipText("This is using the point of the click to span the area - not one of the edges");
+}
+
+void ModifierPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
 		core_trace_scoped(ToolsPanel);
-		modifierRadioButton(ICON_FA_CUBE " Place", ModifierType::Place, "Place voxels in the volume");
-		modifierRadioButton(ICON_FA_ERASER " Erase", ModifierType::Erase, "Erase existing voxels in the volume");
-		modifierRadioButton(ICON_FA_DIAGRAM_NEXT " Override", ModifierType::Place | ModifierType::Erase, "Place voxels and override existing ones");
-		modifierRadioButton(ICON_FA_PAINTBRUSH " Paint", ModifierType::Paint, "Update the color of existing voxels");
-		modifierRadioButton(ICON_FA_EXPAND " Select", ModifierType::Select, "Select voxels");
-		modifierRadioButton(ICON_FA_ELLIPSIS " Path", ModifierType::Path, "Walk from reference to cursor position on solid voxels");
-		modifierRadioButton(ICON_FA_ELLIPSIS " Line", ModifierType::Line, "Walk from reference to cursor position as a straight line");
-		modifierRadioButton(ICON_FA_EYE_DROPPER " Pick color", ModifierType::ColorPicker, "Pick the color from the selected voxel");
-
+		addModifiers(listener);
 		ImGui::Separator();
-
-		Modifier &modifier = sceneMgr().modifier();
-		{
-			bool plane = modifier.planeMode();
-			if (ImGui::Checkbox("Plane##modifiertype", &plane)) {
-				modifier.setPlaneMode(plane);
-			}
-		}
-
-		ImGui::SameLine();
-
-		{
-			bool single = modifier.singleMode();
-			if (ImGui::Checkbox("Single##modifiertype", &single)) {
-				modifier.setSingleMode(single);
-			}
-		}
-
-		ImGui::SameLine();
-
-		{
-			bool center = modifier.centerMode();
-			if (ImGui::Checkbox("Center##modifiertype", &center)) {
-				modifier.setCenterMode(center);
-			}
-		}
+		addModifierModes();
 		addShapes();
 		addMirrorPlanes();
 	}
 	ImGui::End();
 }
 
-}
+} // namespace voxedit
