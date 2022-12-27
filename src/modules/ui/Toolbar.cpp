@@ -42,7 +42,7 @@ void Toolbar::newline() {
 void Toolbar::last() {
 	const float w = windowWidth();
 	const float wmax = ImGui::GetWindowPos().x + w;
-	if ((_pos.x > _startingPosX && _pos.x <= wmax) || w < _size.x) {
+	if ((_pos.x > _startingPosX && _pos.x <= wmax) || w < _startingPosX + _size.x) {
 		_pos.y += _size.y;
 		_pos.x = _startingPosX;
 		setCursor();
