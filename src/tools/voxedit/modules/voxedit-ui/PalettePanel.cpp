@@ -268,6 +268,11 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		closestColor(node.palette());
 		createPopups();
 	}
+
+	if (core::Var::getSafe(cfg::VoxEditShowColorPicker)->boolVal()) {
+		showColorPicker(currentSelectedPalIdx, node, listener);
+	}
+
 	ImGui::End();
 
 	if (!_importPalette.empty()) {

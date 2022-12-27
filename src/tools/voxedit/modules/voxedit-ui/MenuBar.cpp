@@ -75,6 +75,7 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 				ImGui::CheckboxVar(ICON_FA_DICE_SIX " Bounding box", cfg::VoxEditShowaabb);
 				ImGui::CheckboxVar("Shadow", cfg::VoxEditRendershadow);
 				ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
+				ImGui::CheckboxVar("Color picker", cfg::VoxEditShowColorPicker);
 				ImGui::CheckboxVar("Color wheel", cfg::VoxEditColorWheel);
 				ImGui::SliderVarFloat("Zoom speed", cfg::ClientCameraZoomSpeed, 0.1f, 200.0f);
 				ImGui::SliderVarInt("View distance", cfg::VoxEditViewdistance, 10, 5000);
