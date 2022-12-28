@@ -294,6 +294,25 @@ public:
 	virtual int64_t pos() const = 0;
 };
 
+template<class SeekableStream>
+class ScopedStreamPos {
+private:
+	SeekableStream *_stream;
+	int64_t _pos;
+
+public:
+	ScopedStreamPos(SeekableStream *stream) : _stream(stream) {
+		_pos = _stream->pos();
+	}
+	ScopedStreamPos(SeekableStream &stream) : _stream(&stream) {
+		_pos = _stream->pos();
+	}
+
+	~ScopedStreamPos() {
+		_stream->seek(_pos);
+	}
+};
+
 } // namespace io
 
 
