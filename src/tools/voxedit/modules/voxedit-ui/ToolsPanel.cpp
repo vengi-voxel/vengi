@@ -3,6 +3,7 @@
  */
 
 #include "ToolsPanel.h"
+#include "Toolbar.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IconsFontAwesome6.h"
 #include "Util.h"
@@ -18,18 +19,16 @@ void ToolsPanel::update(const char *title, command::CommandExecutionListener &li
 		core_trace_scoped(ToolsPanel);
 
 		if (ImGui::CollapsingHeader("Action", ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::CommandButton(ICON_FA_CROP, "crop", nullptr, 0, &listener);
-			ImGui::SameLine();
-			ImGui::CommandButton(ICON_FA_EXPAND, "layersize", nullptr, 0, &listener);
-			ImGui::SameLine();
-			ImGui::CommandButton(ICON_FA_OBJECT_UNGROUP, "colortolayer", nullptr, 0, &listener);
-			ImGui::SameLine();
-			ImGui::CommandButton(ICON_FA_COMPRESS, "scale", nullptr, 0, &listener);
-			ImGui::SameLine();
-			ImGui::CommandButton(ICON_FA_FILL_DRIP, "fillhollow", nullptr, 0, &listener);
+			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
+			ui::ScopedStyle style;
+			style.setFramePadding(ImVec2(4));
+			ui::Toolbar toolbar(buttonSize);
+			toolbar.button(ICON_FA_CROP, "crop");
+			toolbar.button(ICON_FA_EXPAND, "layersize");
+			toolbar.button(ICON_FA_OBJECT_UNGROUP, "colortolayer");
+			toolbar.button(ICON_FA_COMPRESS, "scale");
+			toolbar.button(ICON_FA_FILL_DRIP, "fillhollow");
 		}
-
-		ImGui::NewLine();
 
 		const float buttonWidth = (float)imguiApp()->fontSize() * 4;
 		if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
