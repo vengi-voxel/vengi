@@ -67,4 +67,4 @@ Exporting and voxelization of mesh formats like ply, gltf, stl, fbx and obj is a
 * `voxformat_merge`: Merge all models into one object
 * `voxformat_rgbflattenfactor`: To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats
 * `voxformat_qbsavelefthanded`: Save qubicle format as left handed
-* `core_colorreduction`: This can be used to tweak the color reduction by switching to a different algorithm. Possible values are `Octree`, `Wu` and `Median Cut`. This is useful for mesh based formats or RGBA based formats like e.g. AceOfSpades vxl.
+* `core_colorreduction`: This can be used to tweak the color reduction by switching to a different algorithm. Possible values are `Octree`, `Wu`, `KMeans` and `MedianCut`. This is useful for mesh based formats or RGBA based formats like e.g. AceOfSpades vxl.

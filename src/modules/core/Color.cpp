@@ -20,6 +20,7 @@
 #include <glm/ext/scalar_integer.hpp>
 
 #include <SDL.h>
+#include <random>
 #include <stdio.h>
 
 namespace core {
@@ -58,7 +59,8 @@ const float Color::scaleFactor = 0.7f;
 static constexpr const char* ColorReductionAlgorithmStr[] {
 	"Octree",
 	"Wu",
-	"Median Cut"
+	"MedianCut",
+	"KMeans"
 };
 static_assert((int)core::Color::ColorReductionType::Max == lengthof(ColorReductionAlgorithmStr), "Array size doesn't match with enum");
 
@@ -73,30 +75,6 @@ Color::ColorReductionType Color::toColorReductionType(const char *str) {
 		}
 	}
 	return ColorReductionType::Max;
-}
-
-int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors, ColorReductionType type) {
-	if (inputBufColors <= maxTargetBufColors) {
-		size_t n;
-		for (n = 0; n < inputBufColors; ++n) {
-			targetBuf[n] = inputBuf[n];
-		}
-		for (size_t i = n; i < maxTargetBufColors; ++i) {
-			targetBuf[i] = RGBA(255, 255, 255, 255);
-		}
-		return (int)n;
-	}
-	switch (type) {
-	case ColorReductionType::Wu:
-		return quantizeWu(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
-	case ColorReductionType::Octree:
-		return quantizeOctree(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
-	case ColorReductionType::MedianCut:
-		return quantizeMedianCut(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
-	default:
-		break;
-	}
-	return -1;
 }
 
 struct ColorBox {
@@ -180,7 +158,7 @@ static core::Pair<ColorBox, ColorBox> medianCutSplitBox(const ColorBox &box) {
 	return core::Pair{box1, box2};
 }
 
-int Color::quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
+static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
 	core::Buffer<RGBA> pixels;
 	pixels.append(inputBuf, inputBufColors);
 
@@ -231,7 +209,7 @@ int Color::quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const R
 	return (int)n;
 }
 
-int Color::quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
+static int quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
 	core_assert(glm::isPowerOfTwo(maxTargetBufColors));
 	using BBox = math::AABB<uint8_t>;
 	struct ColorNode {
@@ -275,7 +253,64 @@ int Color::quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 	return (int)n;
 }
 
-int Color::quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
+static inline float getDistance(const glm::vec4 &p1, const glm::vec4 &p2) {
+	return glm::length(p1 - p2);
+}
+
+static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
+	core::DynamicArray<glm::vec4> centers;
+	centers.resize(maxTargetBufColors);
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> dis(0, (int)inputBufColors - 1);
+	for (int i = 0; i < (int)maxTargetBufColors; i++) {
+		centers[i] = core::Color::fromRGBA(inputBuf[dis(gen)]);
+	}
+
+	bool changed = true;
+	while (changed) {
+		changed = false;
+		core::DynamicArray<core::DynamicArray<glm::vec4>> clusters(maxTargetBufColors);
+		for (size_t i = 0; i < inputBufColors; ++i) {
+			const glm::vec4 point = core::Color::fromRGBA(inputBuf[i]);
+			int closest = 0;
+			float closestDistance = getDistance(point, centers[0]);
+			for (int i = 1; i < (int)maxTargetBufColors; i++) {
+				float d = getDistance(point, centers[i]);
+				if (d < closestDistance) {
+					closest = i;
+					closestDistance = d;
+				}
+			}
+			clusters[closest].push_back(point);
+		}
+		for (int i = 0; i < (int)maxTargetBufColors; i++) {
+			if (clusters[i].empty()) {
+				continue;
+			}
+			glm::vec4 newCenter(0.0f);
+			for (const glm::vec4 &point : clusters[i]) {
+				newCenter += point;
+			}
+			newCenter /= clusters[i].size();
+			if (getDistance(newCenter, centers[i]) > 0.0001f) {
+				centers[i] = newCenter;
+				changed = true;
+			}
+		}
+	}
+
+	size_t n = 0;
+	for (const glm::vec4 &c : centers) {
+		targetBuf[n++] = core::Color::getRGBA(c);
+	}
+	for (size_t i = n; i < maxTargetBufColors; ++i) {
+		targetBuf[i] = RGBA(0xFFFFFFFFU);
+	}
+	return (int)n;
+}
+
+static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
 	core::Buffer<RGBA> pixels;
 	pixels.append(inputBuf, inputBufColors);
 
@@ -390,6 +425,42 @@ int Color::quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 		targetBuf[i] = RGBA(0xFFFFFFFFU);
 	}
 	return (int)n;
+}
+
+void Color::quantizeColors(RGBA *buf, size_t bufSize, int bitsPerChannel) {
+	const int numColors = (int)glm::pow(2.0, (double)bitsPerChannel);
+	const float step = 1.0f / (float)(numColors - 1);
+
+	for (size_t i = 0; i < bufSize; ++i) {
+		buf[i].r = (uint8_t)(glm::round((float)buf[i].r / step) * step);
+		buf[i].g = (uint8_t)(glm::round((float)buf[i].g / step) * step);
+		buf[i].b = (uint8_t)(glm::round((float)buf[i].b / step) * step);
+	}
+}
+
+int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors, ColorReductionType type) {
+	if (inputBufColors <= maxTargetBufColors) {
+		size_t n;
+		for (n = 0; n < inputBufColors; ++n) {
+			targetBuf[n] = inputBuf[n];
+		}
+		for (size_t i = n; i < maxTargetBufColors; ++i) {
+			targetBuf[i] = RGBA(255, 255, 255, 255);
+		}
+		return (int)n;
+	}
+	switch (type) {
+	case ColorReductionType::Wu:
+		return quantizeWu(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
+	case ColorReductionType::KMeans:
+		return quantizeKMeans(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
+	case ColorReductionType::Octree:
+		return quantizeOctree(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
+	default:
+	case ColorReductionType::MedianCut:
+		return quantizeMedianCut(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
+	}
+	return -1;
 }
 
 glm::vec4 Color::fromRGBA(const RGBA rgba) {
