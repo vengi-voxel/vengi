@@ -308,8 +308,12 @@ static int walkPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &position, vo
 		return -1;
 	}
 	const voxel::Region walkRegion(mins, maxs);
+	if (!walkRegion.isValid()) {
+		return 0;
+	}
 	const glm::ivec3 &dim = walkRegion.getDimensionsInVoxels();
 	const int maxSize = dim.x * dim.y * dim.z;
+	core_assert_msg(maxSize > 0, "max size is 0 even though the region was valid");
 	IVec3Set visited(maxSize);
 	return walkPlane_r(visited, in, walkRegion, check, exec, position, checkOffsetV, face);
 }
