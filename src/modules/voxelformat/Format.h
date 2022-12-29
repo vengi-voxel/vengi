@@ -169,4 +169,10 @@ public:
 	RGBAFormat();
 };
 
+/**
+ * @ingroup Formats
+ */
+class RGBASinglePaletteFormat : public RGBAFormat {
+};
+
 }

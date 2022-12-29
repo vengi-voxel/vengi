@@ -15,7 +15,7 @@ namespace voxelformat {
  *
  * @ingroup Formats
  */
-class AoSVXLFormat : public RGBAFormat {
+class AoSVXLFormat : public RGBASinglePaletteFormat {
 protected:
 	bool loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) override;

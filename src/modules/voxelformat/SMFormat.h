@@ -17,7 +17,8 @@ namespace voxelformat {
  *
  * @ingroup Formats
  */
-class SMFormat : public RGBAFormat {
+// TODO: this is no single palette format - but currently implemented as one
+class SMFormat : public RGBASinglePaletteFormat {
 private:
 	bool readSmd3(io::SeekableReadStream &stream, SceneGraph &sceneGraph, const core::Map<int, int>& blockPal);
 	bool readSegment(io::SeekableReadStream &stream, SceneGraph &sceneGraph, const core::Map<int, int>& blockPal);
