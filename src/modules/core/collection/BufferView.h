@@ -10,6 +10,7 @@ namespace core {
 
 /**
  * @brief Access to a C style array for a particular type
+ * @ingroup Collections
  */
 template<typename TYPE>
 class BufferView {
