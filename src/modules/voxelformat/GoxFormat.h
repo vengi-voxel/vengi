@@ -69,8 +69,7 @@ namespace voxelformat {
  *
  * @ingroup Formats
  */
-// TODO: this is no single palette format - but currently implemented as one
-class GoxFormat : public RGBASinglePaletteFormat {
+class GoxFormat : public RGBAFormat {
 private:
 	static constexpr int BlockSize = 16;
 
