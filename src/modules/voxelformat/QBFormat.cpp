@@ -12,6 +12,7 @@
 #include "io/FileStream.h"
 #include "io/Stream.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -229,7 +230,7 @@ bool QBFormat::readColor(State& state, io::SeekableReadStream& stream, core::RGB
 	return true;
 }
 
-bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup) {
+bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt8(name))
 	Log::debug("Matrix name: %s", name.c_str());
@@ -283,6 +284,7 @@ bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 		return false;
 	}
 
+	voxel::PaletteLookup palLookup(palette);
 	core::ScopedPtr<voxel::RawVolume> v(new voxel::RawVolume(region));
 	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
@@ -349,7 +351,7 @@ bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.setVolume(v.release(), true);
 	node.setName(name);
-	node.setPalette(palLookup.palette());
+	node.setPalette(palette);
 	const KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	sceneGraph.emplace(core::move(node));
@@ -386,6 +388,8 @@ bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::
 	wrap(stream.readInt32(tmp));
 	wrap(stream.readInt32(tmp));
 
+	core::Buffer<core::RGBA, 256> colors;
+
 	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
@@ -396,7 +400,7 @@ bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::
 					if (color.a == 0) {
 						continue;
 					}
-					palette.addColorToPalette(core::RGBA(color.r, color.g, color.b), false);
+					colors.push_back(core::RGBA(color.r, color.g, color.b));
 				}
 			}
 		}
@@ -425,10 +429,11 @@ bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::
 			if (color.a == 0) {
 				continue;
 			}
-			palette.addColorToPalette(core::RGBA(color.r, color.g, color.b), false);
+			colors.push_back(core::RGBA(color.r, color.g, color.b));
 		}
 		++z;
 	}
+	palette.quantize(colors.data(), colors.size());
 	Log::debug("%i colors loaded", palette.colorCount);
 	return true;
 }
@@ -466,7 +471,7 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 	return palette.colorCount;
 }
 
-bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) {
+bool QBFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
 	State state;
 	wrap(stream.readUInt32(state._version))
 	uint32_t colorFormat;
@@ -497,14 +502,22 @@ bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStre
 	Log::debug("NumMatrices: %u", numMatrices);
 
 	sceneGraph.reserve(numMatrices);
-	voxel::PaletteLookup palLookup(palette);
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix: %u", i);
-		if (!readMatrix(state, stream, sceneGraph, palLookup)) {
+		voxel::Palette palette;
+		{
+			io::ScopedStreamPos streamPos(stream);
+			if (!readPalette(state, stream, palette)) {
+				Log::error("Failed to load the palette for matrix %u", i);
+				break;
+			}
+		}
+		if (!readMatrix(state, stream, sceneGraph, palette)) {
 			Log::error("Failed to load the matrix %u", i);
 			break;
 		}
 	}
+	sceneGraph.updateTransforms();
 	return true;
 }
 
