@@ -23,6 +23,15 @@ BufferedReadWriteStream::~BufferedReadWriteStream() {
 	core_free(_buffer);
 }
 
+uint8_t* BufferedReadWriteStream::release() {
+	uint8_t *b = _buffer;
+	_buffer = nullptr;
+	_size = 0u;
+	_capacity = 0;
+	_pos = 0u;
+	return b;
+}
+
 void BufferedReadWriteStream::resizeBuffer(int64_t size) {
 	if (size == 0u) {
 		return;

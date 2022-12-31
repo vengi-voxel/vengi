@@ -44,6 +44,8 @@ public:
 
 	// get the raw data pointer for the buffer
 	const uint8_t* getBuffer() const;
+	// return the allocated buffer - any other read or write operation on this stream is undefined
+	uint8_t* release();
 	int write(const void *buf, size_t size) override;
 	int read(void *buf, size_t size) override;
 	int64_t seek(int64_t position, int whence = SEEK_SET) override;
