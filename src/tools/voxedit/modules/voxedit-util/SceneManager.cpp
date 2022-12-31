@@ -607,21 +607,16 @@ bool SceneManager::mementoPaletteChange(const MementoState& s) {
 
 bool SceneManager::mementoModification(const MementoState& s) {
 	Log::debug("Memento: modification in volume of node %i (%s)", s.nodeId, s.name.c_str());
-	voxel::RawVolume* v = MementoData::toVolume(s.data);
 	if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
-		node->setVolume(v, true);
+		MementoData::toVolume(node->volume(), s.data);
 		node->setName(s.name);
 		if (s.palette.hasValue()) {
 			node->setPalette(*s.palette.value());
 		}
-		// as the old volume was replaced, we have to unregister the pointer in
-		// the renderer, too
-		_volumeRenderer.prepare(_sceneGraph);
-		modified(node->id(), s.region, false);
+		modified(node->id(), s.data.region(), false);
 		return true;
 	}
 	Log::warn("Failed to handle memento state - node id %i not found (%s)", s.nodeId, s.name.c_str());
-	delete v;
 	return false;
 }
 
@@ -665,20 +660,22 @@ bool SceneManager::doUndo() {
 		Log::debug("Memento: Undo transform of node %i", s.nodeId);
 		return nodeUpdateTransform(s.nodeId, s.localMatrix, nullptr, s.keyFrame);
 	} else if (s.type == MementoType::SceneNodeRemoved) {
-		voxel::RawVolume* v = MementoData::toVolume(s.data);
 		voxelformat::SceneGraphNodeType type = voxelformat::SceneGraphNodeType::Model;
-		if (v == nullptr) {
-			// TODO: record the node in the memento states
+		if (!s.hasVolumeData()) {
 			type = voxelformat::SceneGraphNodeType::Group;
 		}
 		voxelformat::SceneGraphNode node(type);
-		node.setName(s.name);
-		node.setVolume(v, true);
-		if (v != nullptr) {
+		if (type == voxelformat::SceneGraphNodeType::Model) {
+			node.setVolume(new voxel::RawVolume(s.region), true);
+			MementoData::toVolume(node.volume(), s.data);
 			const glm::vec3 rp = referencePosition();
-			const glm::vec3 size = v->region().getDimensionsInVoxels();
+			const glm::vec3 size = node.volume()->region().getDimensionsInVoxels();
 			node.setPivot(0, rp, size);
+			if (s.palette.hasValue()) {
+				node.setPalette(*s.palette.value());
+			}
 		}
+		node.setName(s.name);
 		Log::debug("Memento: Undo remove of node (%s) from parent %i", s.name.c_str(), s.parentId);
 		const int newNodeId = addNodeToSceneGraph(node, s.parentId);
 		_mementoHandler.updateNodeId(s.nodeId, newNodeId);
@@ -715,16 +712,22 @@ bool SceneManager::doRedo() {
 		Log::debug("Memento: Redo remove of node %i (%s) from parent %i", s.nodeId, s.name.c_str(), s.parentId);
 		return nodeRemove(s.nodeId, true);
 	} else if (s.type == MementoType::SceneNodeAdded) {
-		voxel::RawVolume* v = MementoData::toVolume(s.data);
-		voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
-		node.setName(s.name);
-		node.setVolume(v, true);
-		const glm::vec3 rp = referencePosition();
-		const glm::vec3 size = v->region().getDimensionsInVoxels();
-		node.setPivot(0, rp, size);
-		if (s.palette.hasValue()) {
-			node.setPalette(*s.palette.value());
+		voxelformat::SceneGraphNodeType type = voxelformat::SceneGraphNodeType::Model;
+		if (!s.hasVolumeData()) {
+			type = voxelformat::SceneGraphNodeType::Group;
 		}
+		voxelformat::SceneGraphNode node(type);
+		if (type == voxelformat::SceneGraphNodeType::Model) {
+			node.setVolume(new voxel::RawVolume(s.region), true);
+			MementoData::toVolume(node.volume(), s.data);
+			const glm::vec3 rp = referencePosition();
+			const glm::vec3 size = node.volume()->region().getDimensionsInVoxels();
+			node.setPivot(0, rp, size);
+			if (s.palette.hasValue()) {
+				node.setPalette(*s.palette.value());
+			}
+		}
+		node.setName(s.name);
 		Log::debug("Memento: Redo add node (%s) to parent %i", s.name.c_str(), s.parentId);
 		const int newNodeId = addNodeToSceneGraph(node, s.parentId);
 		_mementoHandler.updateNodeId(s.nodeId, newNodeId);

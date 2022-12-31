@@ -76,17 +76,17 @@ public:
 	}
 
 	/**
-	 * @brief Converts the given @c mementoData into a volume
-	 * @note Keep in mind that you own the returned memory
-	 * @return The volume from the given memento data or @c null if the memento data
-	 * did not contain a valid volume buffer
+	 * @brief Converts the given @c mementoData back into a voxels
+	 * @note Inserts the voxels from the memento data into the given volume at the given region.
 	 */
-	static voxel::RawVolume* toVolume(const MementoData& mementoData);
+	static bool toVolume(voxel::RawVolume* volume, const MementoData& mementoData);
 	/**
 	 * @brief Converts the given volume into a @c MementoData structure (and perform the compression)
 	 * @param[in] volume The volume to create the memento state for. This might be @c null.
+	 * @param[in] region The region of the volume to create the memento data for - if this is not a valid region,
+	 * the whole volume is going to added to the memento data.
 	 */
-	static MementoData fromVolume(const voxel::RawVolume* volume);
+	static MementoData fromVolume(const voxel::RawVolume* volume, const voxel::Region &region);
 };
 
 struct MementoState {

@@ -6,6 +6,7 @@
 
 #include "core/ArrayLength.h"
 #include "core/Optional.h"
+#include "core/ScopedPtr.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
@@ -89,24 +90,38 @@ MementoData& MementoData::operator=(MementoData &&o) noexcept {
 	return *this;
 }
 
-MementoData MementoData::fromVolume(const voxel::RawVolume* volume) {
+MementoData MementoData::fromVolume(const voxel::RawVolume* volume, const voxel::Region &region) {
 	if (volume == nullptr) {
 		return MementoData();
 	}
+	voxel::Region mementoRegion = region;
+	const bool partialMemento = false; // mementoRegion.isValid(); TODO: see issue #200
+	if (!partialMemento) {
+		mementoRegion = volume->region();
+	}
+
 	const int allVoxels = volume->region().voxels();
 	const uint32_t compressedBufferSize = core::zip::compressBound(allVoxels * sizeof(voxel::Voxel));
 	io::BufferedReadWriteStream outStream(compressedBufferSize);
 	io::ZipWriteStream stream(outStream);
-	// TODO: only the region - see issue 200
-	stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel));
+	if (partialMemento) {
+		voxel::RawVolume v(volume, region);
+		stream.write(v.data(), allVoxels * sizeof(voxel::Voxel));
+	} else {
+		stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel));
+	}
 	stream.flush();
-	const size_t pos = (size_t)outStream.pos();
-	return {outStream.release(), pos, volume->region()};
+	const size_t size = (size_t)outStream.size();
+	return {outStream.release(), size, mementoRegion};
 }
 
-voxel::RawVolume* MementoData::toVolume(const MementoData& mementoData) {
+bool MementoData::toVolume(voxel::RawVolume* volume, const MementoData& mementoData) {
 	if (mementoData._buffer == nullptr) {
-		return nullptr;
+		return false;
+	}
+	core_assert_always(volume != nullptr);
+	if (volume == nullptr) {
+		return false;
 	}
 	const size_t uncompressedBufferSize = mementoData.region().voxels() * sizeof(voxel::Voxel);
 	io::MemoryReadStream dataStream(mementoData._buffer, mementoData._compressedSize);
@@ -114,9 +129,11 @@ voxel::RawVolume* MementoData::toVolume(const MementoData& mementoData) {
 	uint8_t *uncompressedBuf = (uint8_t*)core_malloc(uncompressedBufferSize);
 	if (stream.read(uncompressedBuf, uncompressedBufferSize) == -1) {
 		core_free(uncompressedBuf);
-		return nullptr;
+		return false;
 	}
-	return voxel::RawVolume::createRaw((voxel::Voxel*)uncompressedBuf, mementoData.region());
+	core::ScopedPtr<voxel::RawVolume> v(voxel::RawVolume::createRaw((voxel::Voxel*)uncompressedBuf, mementoData.region()));
+	voxelutil::copyIntoRegion(*v, *volume, mementoData.region());
+	return true;
 }
 
 MementoHandler::MementoHandler() {
@@ -196,6 +213,7 @@ MementoState MementoHandler::undo() {
 	const MementoState& s = state();
 	--_statePosition;
 	if (s.type == MementoType::Modification) {
+		core_assert(s.hasVolumeData());
 		for (int i = _statePosition; i >= 0; --i) {
 			MementoState& prevS = _states[i];
 			if ((prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) && prevS.nodeId == s.nodeId) {
@@ -356,7 +374,7 @@ void MementoHandler::markUndo(int parentId, int nodeId, const core::String &name
 	}
 	Log::debug("New undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
 	voxel::logRegion("MarkUndo", region);
-	const MementoData& data = MementoData::fromVolume(volume);
+	const MementoData& data = MementoData::fromVolume(volume, region);
 	MementoState state(type, data, parentId, nodeId, name, region, localMatrix, keyFrameIdx, palette);
 	addState(core::move(state));
 }
