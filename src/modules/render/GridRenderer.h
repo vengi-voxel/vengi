@@ -19,6 +19,8 @@ namespace render {
  * @brief Renders a grid or bounding box for a given region
  *
  * @note Also hides sides of the grid that would occlude the view to the inside
+ *
+ * @todo Might be a good idea to implement this as a two sides plane view with backface culling
  */
 class GridRenderer {
 protected:
