@@ -65,6 +65,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 	const float windowWidth = ImGui::GetWindowContentRegionMax().x;
 	const ImVec2 colorButtonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 	ImVec2 globalCursorPos = ImGui::GetCursorScreenPos();
+	const ImVec2 &windowPos = ImGui::GetWindowPos();
 	const ImVec2 v1(globalCursorPos.x + borderWidth, globalCursorPos.y + borderWidth);
 	const ImVec2 v2(globalCursorPos.x + colorButtonSize.x, globalCursorPos.y + colorButtonSize.y);
 	const bool usableColor = palette.colors[palIdx].a > 0;
@@ -151,7 +152,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 		drawList->AddRect(v1, v2, _darkRedColor, 0.0f, 0, 2.0f);
 	}
 	globalCursorPos.x += colorButtonSize.x;
-	if (globalCursorPos.x > windowWidth - colorButtonSize.x) {
+	if (globalCursorPos.x > windowPos.x + windowWidth - colorButtonSize.x) {
 		globalCursorPos.x = startingPosX;
 		globalCursorPos.y += colorButtonSize.y;
 	}
@@ -253,7 +254,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 	const int currentSelectedPalIdx = currentPaletteIndex();
 	_hasFocus = false;
 	_importPalette.clear();
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+	if (ImGui::Begin(title)) {
 		_hasFocus = ImGui::IsWindowHovered();
 		_colorHovered = false;
 

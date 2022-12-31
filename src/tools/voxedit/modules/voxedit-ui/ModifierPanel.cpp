@@ -108,7 +108,7 @@ void ModifierPanel::addModifierModes() {
 }
 
 void ModifierPanel::update(const char *title, command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoDecoration)) {
+	if (ImGui::Begin(title)) {
 		core_trace_scoped(ToolsPanel);
 		addModifiers(listener);
 		ImGui::Separator();
