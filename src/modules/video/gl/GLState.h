@@ -5,10 +5,10 @@
 #pragma once
 
 #include "core/collection/Set.h"
+#include "core/collection/BitSet.h"
 #include "flextGL.h"
 #include "GLVersion.h"
 #include "video/Types.h"
-#include <bitset>
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
@@ -73,7 +73,7 @@ struct GLState {
 	int scissorY = 0;
 	int scissorW = 0;
 	int scissorH = 0;
-	std::bitset<core::enumVal(State::Max)> states;
+	core::BitSet states{core::enumVal(State::Max)};
 	Id bufferHandle[core::enumVal(BufferType::Max)] = {};
 	Id framebufferHandle = InvalidId;
 	FrameBufferMode framebufferMode = FrameBufferMode::Default;
@@ -81,7 +81,7 @@ struct GLState {
 	glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);
 	glm::vec2 aliasedLineWidth = glm::vec2(-1.0f);
 	float lineWidth = 1.0f;
-	std::bitset<core::enumVal(Vendor::Max)> vendor;
+	core::BitSet vendor{core::enumVal(Vendor::Max)};
 };
 
 }
