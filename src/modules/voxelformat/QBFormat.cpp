@@ -229,7 +229,7 @@ bool QBFormat::readColor(State& state, io::SeekableReadStream& stream, core::RGB
 	return true;
 }
 
-bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup) {
+bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt8(name))
 	Log::debug("Matrix name: %s", name.c_str());
@@ -357,7 +357,7 @@ bool QBFormat::loadMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 	return true;
 }
 
-bool QBFormat::loadColors(State& state, io::SeekableReadStream& stream, voxel::Palette &palette) {
+bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::Palette &palette) {
 	uint8_t nameLength;
 	wrap(stream.readUInt8(nameLength));
 	if (stream.skip(nameLength) == -1) {
@@ -457,7 +457,7 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 	}
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix colors: %u", i);
-		if (!loadColors(state, stream, palette)) {
+		if (!readPalette(state, stream, palette)) {
 			Log::error("Failed to load the matrix colors %u", i);
 			break;
 		}
@@ -500,7 +500,7 @@ bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStre
 	voxel::PaletteLookup palLookup(palette);
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix: %u", i);
-		if (!loadMatrix(state, stream, sceneGraph, palLookup)) {
+		if (!readMatrix(state, stream, sceneGraph, palLookup)) {
 			Log::error("Failed to load the matrix %u", i);
 			break;
 		}
