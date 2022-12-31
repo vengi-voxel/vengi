@@ -368,7 +368,6 @@ bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 			}
 			core::ScopedLock scoped(lock);
 			meshes.emplace_back(mesh, node, applyTransform);
-			meshIdxNodeMap.put(node.id(), (int)meshes.size() - 1);
 		};
 		threadPool.enqueue(lambda);
 	}
@@ -382,8 +381,25 @@ bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 			break;
 		}
 	}
-	Log::debug("Save meshes");
-	const bool state = saveMeshes(meshIdxNodeMap, sceneGraph, meshes, filename, stream, scale, marchingCubes ? false : quads, withColor, withTexCoords);
+	Meshes nonEmptyMeshes;
+	nonEmptyMeshes.reserve(meshes.size());
+
+	// filter out empty meshes
+	for (auto iter = meshes.begin(); iter != meshes.end(); ++iter) {
+		if (iter->mesh->isEmpty()) {
+			continue;
+		}
+		nonEmptyMeshes.emplace_back(*iter);
+		meshIdxNodeMap.put(iter->nodeId, (int)nonEmptyMeshes.size() - 1);
+	}
+	bool state;
+	if (nonEmptyMeshes.empty()) {
+		Log::warn("Empty scene can't get saved as mesh");
+		state = false;
+	} else {
+		Log::debug("Save meshes");
+		state = saveMeshes(meshIdxNodeMap, sceneGraph, nonEmptyMeshes, filename, stream, scale, marchingCubes ? false : quads, withColor, withTexCoords);
+	}
 	for (MeshExt& meshext : meshes) {
 		delete meshext.mesh;
 	}
