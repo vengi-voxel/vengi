@@ -100,7 +100,8 @@ MementoData MementoData::fromVolume(const voxel::RawVolume* volume) {
 	// TODO: only the region - see issue 200
 	stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel));
 	stream.flush();
-	return {outStream.getBuffer(), (size_t)outStream.pos(), volume->region()};
+	const size_t pos = (size_t)outStream.pos();
+	return {outStream.release(), pos, volume->region()};
 }
 
 voxel::RawVolume* MementoData::toVolume(const MementoData& mementoData) {
