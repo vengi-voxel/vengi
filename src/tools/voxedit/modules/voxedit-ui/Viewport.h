@@ -95,9 +95,8 @@ public:
 	bool isHovered() const;
 	/**
 	 * Update the ui
-	 * @return The viewport dock id
 	 */
-	ImGuiDockNode *update(command::CommandExecutionListener *listener);
+	void update(command::CommandExecutionListener *listener);
 	bool init(RenderMode renderMode = RenderMode::Editor);
 	void shutdown();
 

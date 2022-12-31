@@ -170,12 +170,11 @@ void ScriptPanel::update(const char *title) {
 	ImGui::End();
 }
 
-bool ScriptPanel::updateEditor(const char *title, ui::IMGUIApp* app, ImGuiID dockId) {
+bool ScriptPanel::updateEditor(const char *title, ui::IMGUIApp* app) {
 	if (!_scriptEditor) {
 		return false;
 	}
-	ImGui::SetNextWindowDockID(dockId, ImGuiCond_Appearing);
-	if (ImGui::Begin(title, &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_HorizontalScrollbar)) {
+	if (ImGui::Begin(title, &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar)) {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu(ICON_FA_FILE " File##scripteditor")) {
 				if (ImGui::MenuItem(ICON_FA_CHECK " Apply and execute##scripteditor")) {

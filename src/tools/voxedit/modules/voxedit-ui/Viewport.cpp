@@ -134,7 +134,7 @@ void Viewport::updateViewportTrace(float headerSize) {
 	sceneMgr().trace();
 }
 
-ImGuiDockNode *Viewport::update(command::CommandExecutionListener *listener) {
+void Viewport::update(command::CommandExecutionListener *listener) {
 	_camera.setFarPlane(_viewDistance->floatVal());
 
 	_hovered = false;
@@ -252,9 +252,7 @@ ImGuiDockNode *Viewport::update(command::CommandExecutionListener *listener) {
 			}
 		}
 	}
-	ImGuiDockNode *node = ImGui::GetWindowDockNode();
 	ImGui::End();
-	return node;
 }
 
 void Viewport::shutdown() {

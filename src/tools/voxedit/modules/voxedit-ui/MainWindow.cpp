@@ -225,25 +225,14 @@ void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
 
 void MainWindow::mainWidget() {
 	// main
-	const ImGuiDockNode* node = _scene->update(&_lastExecutedCommand);
+	_scene->update(&_lastExecutedCommand);
 	_sceneTop->update(&_lastExecutedCommand);
 	_sceneLeft->update(&_lastExecutedCommand);
 	_sceneFront->update(&_lastExecutedCommand);
 
 	// bottom
-	ImGuiID dockId = _dockIdMain;
-	if (node != nullptr) {
-		dockId = node->ID;
-		static_assert(lengthof(ImGuiDockNode::ChildNodes) == 2, "Unexpected size of ChildNodes array");
-		if (node->IsSplitNode()) {
-			// TODO: hack to get the correct id to place the windows
-			// 0 is left and top - 1 is right and bottom - the node in question was placed in direction ImGuiDir_Down
-			dockId = node->ChildNodes[1]->ID;
-		}
-	}
-
-	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR, _app, dockId);
-	_animationTimeline.update(TITLE_ANIMATION_TIMELINE, dockId);
+	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR, _app);
+	_animationTimeline.update(TITLE_ANIMATION_TIMELINE);
 }
 
 // end of main space
@@ -547,15 +536,15 @@ void MainWindow::update() {
 		}
 	}
 
-	_dockIdMain = ImGui::GetID("DockSpace");
+	ImGuiID dockIdMain = ImGui::GetID("DockSpace");
 
 	_menuBar.setLastOpenedFiles(_lastOpenedFilesRingBuffer);
 	if (_menuBar.update(_app, _lastExecutedCommand)) {
-		ImGui::DockBuilderRemoveNode(_dockIdMain);
+		ImGui::DockBuilderRemoveNode(dockIdMain);
 	}
 
-	const bool existingLayout = ImGui::DockBuilderGetNode(_dockIdMain);
-	ImGui::DockSpace(_dockIdMain);
+	const bool existingLayout = ImGui::DockBuilderGetNode(dockIdMain);
+	ImGui::DockSpace(dockIdMain);
 
 	leftWidget();
 	mainWidget();
@@ -568,13 +557,13 @@ void MainWindow::update() {
 	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, _lastExecutedCommand.command);
 
 	if (!existingLayout && viewport->WorkSize.x > 0.0f) {
-		ImGui::DockBuilderAddNode(_dockIdMain, ImGuiDockNodeFlags_DockSpace);
-		ImGui::DockBuilderSetNodeSize(_dockIdMain, viewport->WorkSize);
-		ImGuiID dockIdLeft = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Left, 0.13f, nullptr, &_dockIdMain);
-		ImGuiID dockIdRight = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Right, 0.20f, nullptr, &_dockIdMain);
+		ImGui::DockBuilderAddNode(dockIdMain, ImGuiDockNodeFlags_DockSpace);
+		ImGui::DockBuilderSetNodeSize(dockIdMain, viewport->WorkSize);
+		ImGuiID dockIdLeft = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Left, 0.13f, nullptr, &dockIdMain);
+		ImGuiID dockIdRight = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Right, 0.20f, nullptr, &dockIdMain);
 		ImGuiID dockIdLeftDown = ImGui::DockBuilderSplitNode(dockIdLeft, ImGuiDir_Down, 0.35f, nullptr, &dockIdLeft);
 		ImGuiID dockIdRightDown = ImGui::DockBuilderSplitNode(dockIdRight, ImGuiDir_Down, 0.50f, nullptr, &dockIdRight);
-		ImGuiID dockIdMainDown = ImGui::DockBuilderSplitNode(_dockIdMain, ImGuiDir_Down, 0.20f, nullptr, &_dockIdMain);
+		ImGuiID dockIdMainDown = ImGui::DockBuilderSplitNode(dockIdMain, ImGuiDir_Down, 0.20f, nullptr, &dockIdMain);
 
 		// left side
 		configureLeftTopWidgetDock(dockIdLeft);
@@ -585,10 +574,10 @@ void MainWindow::update() {
 		configureRightBottomWidgetDock(dockIdRightDown);
 
 		// main
-		configureMainTopWidgetDock(_dockIdMain);
+		configureMainTopWidgetDock(dockIdMain);
 		configureMainBottomWidgetDock(dockIdMainDown);
 
-		ImGui::DockBuilderFinish(_dockIdMain);
+		ImGui::DockBuilderFinish(dockIdMain);
 	}
 
 	updateSettings();

@@ -52,8 +52,6 @@ private:
 	Viewport* _sceneLeft = nullptr;
 	Viewport* _sceneFront = nullptr;
 
-	ImGuiID _dockIdMain = 0;
-
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;

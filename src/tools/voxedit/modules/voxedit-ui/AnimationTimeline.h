@@ -13,7 +13,7 @@ class AnimationTimeline {
 private:
 	bool _play = false;
 public:
-	bool update(const char *sequencerTitle, ImGuiID dockId);
+	bool update(const char *sequencerTitle);
 };
 
 } // namespace voxedit

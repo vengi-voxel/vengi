@@ -26,7 +26,7 @@ private:
 public:
 	void update(const char *title);
 
-	bool updateEditor(const char *title, ui::IMGUIApp* app, ImGuiID dockId);
+	bool updateEditor(const char *title, ui::IMGUIApp* app);
 };
 
 }
