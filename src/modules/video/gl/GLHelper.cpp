@@ -4,7 +4,6 @@
 
 #include "GLHelper.h"
 #include "video/Renderer.h"
-#include "GLState.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include <SDL.h>
