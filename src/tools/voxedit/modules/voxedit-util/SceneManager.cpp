@@ -1037,6 +1037,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	center.y = region.getLowerY();
 	setReferencePosition(center);
 	resetSceneState();
+	_lastFilename.clear();
 	return true;
 }
 
