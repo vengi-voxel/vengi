@@ -49,7 +49,7 @@ IMGUI_API bool SliderVarInt(const char *label, const char *varName, int v_min, i
 							ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderVarFloat(const char* label, const core::VarPtr& var, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderVarFloat(const char* label, const char* varName, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-
+IMGUI_API bool ColorEdit3Var(const char* label, const char* varName);
 IMGUI_API bool MenuItemCmd(const char *label, const char *command);
 IMGUI_API bool Fullscreen(const char *title = "##main", ImGuiWindowFlags additionalFlags = ImGuiWindowFlags_None);
 IMGUI_API void LoadingIndicatorCircle(const char *label, const float indicator_radius = 200,

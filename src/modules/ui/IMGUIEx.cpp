@@ -213,6 +213,16 @@ bool SliderVarFloat(const char* label, const char* varName, float v_min, float v
 	return SliderVarFloat(label, var, v_min, v_max, format, flags);
 }
 
+bool ColorEdit3Var(const char* label, const char* varName) {
+	glm::vec3 col = core::Var::getSafe(varName)->vec3Val();
+	if (ImGui::ColorEdit3(label, glm::value_ptr(col))) {
+		const core::String &c = core::string::format("%f %f %f", col.x, col.y, col.z);
+		core::Var::getSafe(varName)->setVal(c);
+		return true;
+	}
+	return false;
+}
+
 float CalcTextWidth(const char *text, bool withPadding) {
 	const float w = ImGui::CalcTextSize(text).x;
 	if (!withPadding) {
