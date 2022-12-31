@@ -629,9 +629,9 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 	if (type == voxelformat::SceneGraphNodeType::Model) {
 		node.setVolume(new voxel::RawVolume(s.dataRegion()), true);
 		MementoData::toVolume(node.volume(), s.data);
-		const glm::vec3 rp = referencePosition();
-		const glm::vec3 size = node.volume()->region().getDimensionsInVoxels();
-		node.setPivot(0, rp, size);
+		const glm::vec3 pivot = node.region().getPivot();
+		const glm::vec3 dimensions = node.region().getDimensionsInVoxels();
+		node.setPivot(0, pivot, dimensions);
 		if (s.palette.hasValue()) {
 			node.setPalette(*s.palette.value());
 		}
@@ -1014,9 +1014,9 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	} else {
 		node.setName(name);
 	}
-	const glm::vec3 rp = v->region().getPivot();
-	const glm::vec3 size = v->region().getDimensionsInVoxels();
-	node.setPivot(0, rp, size);
+	const glm::vec3 pivot = v->region().getPivot();
+	const glm::vec3 dimensions = v->region().getDimensionsInVoxels();
+	node.setPivot(0, pivot, dimensions);
 	const int nodeId = voxelformat::addNodeToSceneGraph(_sceneGraph, node, 0);
 	if (nodeId == -1) {
 		Log::error("Failed to add empty volume to new scene graph");
