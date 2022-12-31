@@ -24,6 +24,7 @@ set(SRCS
 	dearimgui/imstb_textedit.h
 	dearimgui/imstb_truetype.h
 
+	dearimgui/backends/imgui_impl_opengl3.cpp dearimgui/backends/imgui_impl_opengl3.h
 	dearimgui/backends/imgui_impl_sdl.cpp dearimgui/backends/imgui_impl_sdl.h
 
 	dearimgui/imgui_neo_sequencer.cpp dearimgui/imgui_neo_sequencer.h

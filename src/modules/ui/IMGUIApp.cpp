@@ -6,6 +6,7 @@
 
 #include "core/BindingContext.h"
 #include "dearimgui/backends/imgui_impl_sdl.h"
+#include "dearimgui/backends/imgui_impl_opengl3.h"
 #include "io/Filesystem.h"
 #include "command/Command.h"
 #include "core/Var.h"
@@ -41,7 +42,7 @@
 namespace ui {
 
 IMGUIApp::IMGUIApp(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider, size_t threadPoolSize)
-	: Super(filesystem, timeProvider, threadPoolSize), _shader(shader::DefaultShader::getInstance()) {
+	: Super(filesystem, timeProvider, threadPoolSize) {
 }
 
 IMGUIApp::~IMGUIApp() {
@@ -248,45 +249,12 @@ static void _imguiFree(void *mem, void*) {
 	core_free(mem);
 }
 
-static void _rendererRenderWindow(ImGuiViewport *viewport, void *renderArg) {
-	if (!(viewport->Flags & ImGuiViewportFlags_NoRendererClear)) {
-		const glm::vec4 clearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-		video::clearColor(clearColor);
-		video::clear(video::ClearFlag::Color);
-	}
-	ImGuiIO &io = ImGui::GetIO();
-	IMGUIApp *app = (IMGUIApp *)io.BackendRendererUserData;
-	app->executeDrawCommands(viewport->DrawData);
-}
-
 app::AppState IMGUIApp::onInit() {
 	const app::AppState state = Super::onInit();
 	video::checkError();
 	if (state != app::AppState::Running) {
 		return state;
 	}
-
-	if (!_shader.setup()) {
-		Log::error("Could not load the ui shader");
-		return app::AppState::InitFailure;
-	}
-
-	_bufferIndex = _vbo.create();
-	if (_bufferIndex < 0) {
-		Log::error("Failed to create ui vertex buffer");
-		return app::AppState::InitFailure;
-	}
-	_vbo.setMode(_bufferIndex, video::BufferMode::Stream);
-	_indexBufferIndex = _vbo.create(nullptr, 0, video::BufferType::IndexBuffer);
-	if (_indexBufferIndex < 0) {
-		Log::error("Failed to create ui index buffer");
-		return app::AppState::InitFailure;
-	}
-	_vbo.setMode(_indexBufferIndex, video::BufferMode::Stream);
-
-	_vbo.addAttribute(_shader.getColorAttribute(_bufferIndex, &ImDrawVert::r, true));
-	_vbo.addAttribute(_shader.getTexcoordAttribute(_bufferIndex, &ImDrawVert::u));
-	_vbo.addAttribute(_shader.getPosAttribute(_bufferIndex, &ImDrawVert::x));
 
 	IMGUI_CHECKVERSION();
 	ImGui::SetAllocatorFunctions(_imguiAlloc, _imguiFree);
@@ -295,7 +263,7 @@ app::AppState IMGUIApp::onInit() {
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	if (!isSingleWindowMode()) {
-		// io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		// io.ConfigViewportsNoAutoMerge = true;
 		// io.ConfigViewportsNoTaskBarIcon = true;
 	}
@@ -318,19 +286,10 @@ app::AppState IMGUIApp::onInit() {
 	io.LogFilename = _writePathLog.c_str();
 	io.DisplaySize = _windowDimension;
 
-	// Setup backend capabilities flags
-	io.BackendRendererUserData = (void *)this;
-	io.BackendRendererName = _appname.c_str();
-	io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset; // We can honor the ImDrawCmd::VtxOffset field, allowing for large meshes.
-	io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports; // We can create multi-viewports on the Renderer side (optional)
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-		ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
-		platform_io.Renderer_RenderWindow = _rendererRenderWindow;
-	}
-
 	loadFonts();
 	setColorTheme();
 	_imguiBackendInitialized = ImGui_ImplSDL2_InitForOpenGL(_window, _rendererContext);
+	ImGui_ImplOpenGL3_Init(nullptr);
 
 	ImGui::SetColorEditOptions(ImGuiColorEditFlags_Float);
 
@@ -385,14 +344,12 @@ app::AppState IMGUIApp::onRunning() {
 		_uistyle->markClean();
 	}
 
-	core_assert(_bufferIndex > -1);
-	core_assert(_indexBufferIndex > -1);
-
 	{
 		core_trace_scoped(IMGUIAppBeforeUI);
 		beforeUI();
 	}
 
+	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
 
@@ -509,7 +466,7 @@ app::AppState IMGUIApp::onRunning() {
 	ImGui::EndFrame();
 	ImGui::Render();
 
-	executeDrawCommands(ImGui::GetDrawData());
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	// Update and Render additional Platform Windows
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
@@ -522,87 +479,9 @@ app::AppState IMGUIApp::onRunning() {
 	return app::AppState::Running;
 }
 
-void IMGUIApp::executeDrawCommands(ImDrawData* drawData) {
-	core_trace_scoped(ExecuteDrawCommands);
-
-	const int fbWidth = (int)(drawData->DisplaySize.x * drawData->FramebufferScale.x);
-	const int fbHeight = (int)(drawData->DisplaySize.y * drawData->FramebufferScale.y);
-	if (fbWidth <= 0 || fbHeight <= 0) {
-		return;
-	}
-
-	video::ScopedViewPort scopedViewPort(0, 0, fbWidth, fbHeight);
-
-	video::enable(video::State::Blend);
-	video::blendEquation(video::BlendEquation::Add);
-	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
-	video::disable(video::State::CullFace);
-	video::disable(video::State::DepthTest);
-	video::disable(video::State::StencilTest);
-	video::disable(video::State::PrimitiveRestart);
-	video::enable(video::State::Scissor);
-	video::polygonMode(video::Face::FrontAndBack, video::PolygonMode::Solid);
-
-	const float L = drawData->DisplayPos.x;
-	const float R = drawData->DisplayPos.x + drawData->DisplaySize.x;
-	float T = drawData->DisplayPos.y;
-	float B = drawData->DisplayPos.y + drawData->DisplaySize.y;
-	if (!video::isClipOriginLowerLeft()) {
-		float tmp = T;
-		T = B;
-		B = tmp;
-	}
-	const glm::mat4 orthoMatrix = {
-		{2.0f / (R - L), 0.0f, 0.0f, 0.0f},
-		{0.0f, 2.0f / (T - B), 0.0f, 0.0f},
-		{0.0f, 0.0f, -1.0f, 0.0f},
-		{(R + L) / (L - R), (T + B) / (B - T), 0.0f, 1.0f},
-	};
-	video::ScopedShader scopedShader(_shader);
-	_shader.setViewprojection(orthoMatrix);
-	_shader.setModel(glm::mat4(1.0f));
-	_shader.setTexture(video::TextureUnit::Zero);
-
-	int64_t drawCommands = 0;
-
-	ImVec2 clipOff = drawData->DisplayPos;		   // (0,0) unless using multi-viewports
-	ImVec2 clipScale = drawData->FramebufferScale; // (1,1) unless using retina display which are often (2,2)
-
-	for (int n = 0; n < drawData->CmdListsCount; ++n) {
-		const ImDrawList* cmdList = drawData->CmdLists[n];
-
-		core_assert_always(_vbo.update(_bufferIndex, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.Size * sizeof(ImDrawVert), true));
-		core_assert_always(_vbo.update(_indexBufferIndex, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx), true));
-		video::ScopedBuffer scopedBuf(_vbo);
-
-		for (int i = 0; i < cmdList->CmdBuffer.Size; ++i) {
-			const ImDrawCmd* cmd = &cmdList->CmdBuffer[i];
-			if (cmd->UserCallback) {
-				cmd->UserCallback(cmdList, cmd);
-			} else {
-				// Project scissor/clipping rectangles into framebuffer space
-				ImVec2 clipMin((cmd->ClipRect.x - clipOff.x) * clipScale.x,
-								(cmd->ClipRect.y - clipOff.y) * clipScale.y);
-				ImVec2 clipMax((cmd->ClipRect.z - clipOff.x) * clipScale.x,
-								(cmd->ClipRect.w - clipOff.y) * clipScale.y);
-				if (clipMax.x <= clipMin.x || clipMax.y <= clipMin.y) {
-					continue;
-				}
-				video::scissor((int)clipMin.x, (int)clipMin.y, (int)clipMax.x - (int)clipMin.x, (int)clipMax.y - (int)clipMin.y);
-				video::bindTexture(video::TextureUnit::Zero, video::TextureType::Texture2D, (video::Id)(intptr_t)cmd->TextureId);
-				video::drawElementsBaseVertex<ImDrawIdx>(video::Primitive::Triangles, cmd->ElemCount, (int)cmd->IdxOffset, (int)cmd->VtxOffset);
-			}
-			++drawCommands;
-		}
-	}
-	// Recreate the VAO every time (this is to easily allow multiple GL contexts to be rendered to. VAO are not shared
-	// among GL contexts)
-	_vbo.destroyVertexArray();
-	core_trace_plot("UIDrawCommands", drawCommands);
-}
-
 app::AppState IMGUIApp::onCleanup() {
 	if (_imguiBackendInitialized) {
+		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplSDL2_Shutdown();
 		_imguiBackendInitialized = false;
 	}
@@ -611,10 +490,6 @@ app::AppState IMGUIApp::onCleanup() {
 		ImGui::DestroyContext();
 	}
 	_console.shutdown();
-	_shader.shutdown();
-	_vbo.shutdown();
-	_indexBufferIndex = -1;
-	_bufferIndex = -1;
 	return Super::onCleanup();
 }
 

@@ -29,11 +29,7 @@ protected:
 	core::VarPtr _showMetrics;
 	core::VarPtr _uiFontSize;
 	video::Id _texture = video::InvalidId;
-	shader::DefaultShader &_shader;
-	video::Buffer _vbo;
 	Console _console;
-	int32_t _bufferIndex = -1;
-	int32_t _indexBufferIndex = -1;
 	core::String _writePathIni;
 	core::String _writePathLog;
 	core::VarPtr _lastDirectory;
@@ -78,8 +74,6 @@ public:
 	virtual app::AppState onRunning() override;
 	virtual void onRenderUI() = 0;
 	virtual app::AppState onCleanup() override;
-
-	void executeDrawCommands(ImDrawData* drawData);
 
 	ImFont *defaultFont();
 	ImFont *bigFont();
