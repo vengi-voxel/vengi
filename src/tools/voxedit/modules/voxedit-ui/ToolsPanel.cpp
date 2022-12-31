@@ -77,11 +77,11 @@ void ToolsPanel::update(const char *title, command::CommandExecutionListener &li
 		ImGui::NewLine();
 
 		if (ImGui::CollapsingHeader("Flip on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-			veui::AxisButton(math::Axis::X, "X##flip", "flip x", nullptr, nullptr, buttonWidth, &listener);
+			veui::AxisButton(math::Axis::X, ICON_FK_ARROWS_H " X##flip", "flip x", nullptr, nullptr, buttonWidth, &listener);
 			ImGui::SameLine();
-			veui::AxisButton(math::Axis::Y, "Y##flip", "flip y", nullptr, nullptr, buttonWidth, &listener);
+			veui::AxisButton(math::Axis::Y, ICON_FK_ARROWS_V " Y##flip", "flip y", nullptr, nullptr, buttonWidth, &listener);
 			ImGui::SameLine();
-			veui::AxisButton(math::Axis::Z, "Z##flip", "flip z", nullptr, nullptr, buttonWidth, &listener);
+			veui::AxisButton(math::Axis::Z, ICON_FK_ARROWS_H " Z##flip", "flip z", nullptr, nullptr, buttonWidth, &listener);
 		}
 	}
 	ImGui::End();
