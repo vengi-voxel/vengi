@@ -363,32 +363,9 @@ void MainWindow::registerPopups() {
 	if (ImGui::BeginPopup(POPUP_TITLE_SCENE_SETTINGS, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted("Scene settings");
 		ImGui::Separator();
-		glm::vec3 col;
 
-		col = core::Var::getSafe(cfg::VoxEditAmbientColor)->vec3Val();
-		if (ImGui::ColorEdit3("Diffuse color", glm::value_ptr(col))) {
-			const core::String &c = core::string::format("%f %f %f", col.x, col.y, col.z);
-			core::Var::getSafe(cfg::VoxEditAmbientColor)->setVal(c);
-		}
-
-		col = core::Var::getSafe(cfg::VoxEditDiffuseColor)->vec3Val();
-		if (ImGui::ColorEdit3("Ambient color", glm::value_ptr(col))) {
-			const core::String &c = core::string::format("%f %f %f", col.x, col.y, col.z);
-			core::Var::getSafe(cfg::VoxEditDiffuseColor)->setVal(c);
-		}
-
-#if 0
-		glm::vec3 sunPosition = sceneMgr().renderer().shadow().sunPosition();
-		if (ImGui::InputVec3("Sun position", sunPosition)) {
-			sceneMgr().renderer().setSunPosition(sunPosition, glm::zero<glm::vec3>(), glm::up);
-		}
-#endif
-#if 0
-		glm::vec3 sunDirection = sceneMgr().renderer().shadow().sunDirection();
-		if (ImGui::InputVec3("Sun direction", sunDirection)) {
-			// TODO: sun direction
-		}
-#endif
+		ImGui::ColorEdit3Var("Diffuse color", cfg::VoxEditDiffuseColor);
+		ImGui::ColorEdit3Var("Ambient color", cfg::VoxEditAmbientColor);
 
 		if (ImGui::Button(ICON_FA_CHECK " Done##scenesettings")) {
 			ImGui::CloseCurrentPopup();
