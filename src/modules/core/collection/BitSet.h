@@ -15,7 +15,7 @@ namespace core {
 class BitSet {
 private:
 	using Type = uint32_t;
-	const int _bits;
+	int _bits;
 	size_t _bytes;
 	Type *_buffer = nullptr;
 	static constexpr size_t bitsPerValue = sizeof(Type) * CHAR_BIT;
