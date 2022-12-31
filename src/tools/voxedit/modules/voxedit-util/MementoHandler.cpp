@@ -20,10 +20,21 @@
 #include "core/Log.h"
 #include "core/Zip.h"
 #include "voxelformat/SceneGraphNode.h"
+#include "voxelutil/VoxelUtil.h"
 
 namespace voxedit {
 
 static const MementoState InvalidMementoState{MementoType::Max, MementoData(), -1, -1, "", voxel::Region::InvalidRegion, glm::mat4(1.0f), 0};
+
+MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &_region)
+	: _compressedSize(bufSize), _region(_region) {
+	if (buf != nullptr) {
+		core_assert(_compressedSize > 0);
+		_buffer = buf;
+	} else {
+		core_assert(_compressedSize == 0);
+	}
+}
 
 MementoData::MementoData(const uint8_t* buf, size_t bufSize,
 		const voxel::Region& _region) :
