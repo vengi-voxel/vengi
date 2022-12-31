@@ -84,8 +84,6 @@ struct GLState {
 	std::bitset<core::enumVal(Vendor::Max)> vendor;
 };
 
-static GLState s;
-
 }
 
 }

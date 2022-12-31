@@ -50,12 +50,17 @@ static RenderState s;
 
 #define SANITY_CHECKS_GL 0
 
+static inline _priv::GLState &glstate() {
+	static _priv::GLState s;
+	return s;
+}
+
 static void validate(Id handle) {
 #ifdef DEBUG
-	if (!_priv::s.needValidation) {
+	if (!glstate().needValidation) {
 		return;
 	}
-	_priv::s.needValidation = false;
+	glstate().needValidation = false;
 	const GLuint lid = (GLuint)handle;
 	glValidateProgram(lid);
 	video::checkError();
@@ -206,46 +211,46 @@ bool setupCubemap(Id &handle, const image::ImagePtr images[6]) {
 
 float lineWidth(float width) {
 	// line width > 1.0 is deprecated in core profile context
-	if (_priv::s.glVersion.isAtLeast(3, 2)) {
-		return _priv::s.lineWidth;
+	if (glstate().glVersion.isAtLeast(3, 2)) {
+		return glstate().lineWidth;
 	}
 	video_trace_scoped(LineWidth);
-	if (_priv::s.smoothedLineWidth.x < 0.0f) {
+	if (glstate().smoothedLineWidth.x < 0.0f) {
 		GLdouble buf[2];
 		glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
-		_priv::s.smoothedLineWidth.x = (float)buf[0];
-		_priv::s.smoothedLineWidth.y = (float)buf[1];
+		glstate().smoothedLineWidth.x = (float)buf[0];
+		glstate().smoothedLineWidth.y = (float)buf[1];
 		glGetDoublev(GL_ALIASED_LINE_WIDTH_RANGE, buf);
-		_priv::s.aliasedLineWidth.x = (float)buf[0];
-		_priv::s.aliasedLineWidth.y = (float)buf[1];
+		glstate().aliasedLineWidth.x = (float)buf[0];
+		glstate().aliasedLineWidth.y = (float)buf[1];
 		// TODO GL_SMOOTH_LINE_WIDTH_GRANULARITY
 	}
-	if (glm::abs(_priv::s.lineWidth - width) < glm::epsilon<float>()) {
-		return _priv::s.lineWidth;
+	if (glm::abs(glstate().lineWidth - width) < glm::epsilon<float>()) {
+		return glstate().lineWidth;
 	}
-	const float oldWidth = _priv::s.lineWidth;
-	if (_priv::s.states[core::enumVal(State::LineSmooth)]) {
-		const float lineWidth = glm::clamp(width, _priv::s.smoothedLineWidth.x, _priv::s.smoothedLineWidth.y);
+	const float oldWidth = glstate().lineWidth;
+	if (glstate().states[core::enumVal(State::LineSmooth)]) {
+		const float lineWidth = glm::clamp(width, glstate().smoothedLineWidth.x, glstate().smoothedLineWidth.y);
 		glLineWidth((GLfloat)lineWidth);
 		checkError(false);
 	} else {
-		const float lineWidth = glm::clamp(width, _priv::s.aliasedLineWidth.x, _priv::s.aliasedLineWidth.y);
+		const float lineWidth = glm::clamp(width, glstate().aliasedLineWidth.x, glstate().aliasedLineWidth.y);
 		glLineWidth((GLfloat)lineWidth);
 		checkError(false);
 	}
-	_priv::s.lineWidth = width;
+	glstate().lineWidth = width;
 	return oldWidth;
 }
 
 const glm::vec4& currentClearColor() {
-	return _priv::s.clearColor;
+	return glstate().clearColor;
 }
 
 bool clearColor(const glm::vec4& clearColor) {
-	if (_priv::s.clearColor == clearColor) {
+	if (glstate().clearColor == clearColor) {
 		return false;
 	}
-	_priv::s.clearColor = clearColor;
+	glstate().clearColor = clearColor;
 	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	checkError();
 	return true;
@@ -281,13 +286,13 @@ void clear(ClearFlag flag) {
 }
 
 bool viewport(int x, int y, int w, int h) {
-	if (_priv::s.viewportX == x && _priv::s.viewportY == y && _priv::s.viewportW == w && _priv::s.viewportH == h) {
+	if (glstate().viewportX == x && glstate().viewportY == y && glstate().viewportW == w && glstate().viewportH == h) {
 		return false;
 	}
-	_priv::s.viewportX = x;
-	_priv::s.viewportY = y;
-	_priv::s.viewportW = w;
-	_priv::s.viewportH = h;
+	glstate().viewportX = x;
+	glstate().viewportY = y;
+	glstate().viewportW = w;
+	glstate().viewportH = h;
 	/**
 	 * Parameters
 	 * x, y
@@ -313,17 +318,17 @@ bool viewport(int x, int y, int w, int h) {
 }
 
 void getViewport(int& x, int& y, int& w, int& h) {
-	x = _priv::s.viewportX;
-	y = _priv::s.viewportY;
-	w = _priv::s.viewportW;
-	h = _priv::s.viewportH;
+	x = glstate().viewportX;
+	y = glstate().viewportY;
+	w = glstate().viewportW;
+	h = glstate().viewportH;
 }
 
 void getScissor(int& x, int& y, int& w, int& h) {
-	x = _priv::s.scissorX;
-	y = _priv::s.scissorY;
-	w = _priv::s.scissorW;
-	h = _priv::s.scissorH;
+	x = glstate().scissorX;
+	y = glstate().scissorY;
+	w = glstate().scissorW;
+	h = glstate().scissorH;
 }
 
 bool scissor(int x, int y, int w, int h) {
@@ -334,13 +339,13 @@ bool scissor(int x, int y, int w, int h) {
 		h = 0;
 	}
 
-	if (_priv::s.scissorX == x && _priv::s.scissorY == y && _priv::s.scissorW == w && _priv::s.scissorH == h) {
+	if (glstate().scissorX == x && glstate().scissorY == y && glstate().scissorW == w && glstate().scissorH == h) {
 		return false;
 	}
-	_priv::s.scissorX = x;
-	_priv::s.scissorY = y;
-	_priv::s.scissorW = w;
-	_priv::s.scissorH = h;
+	glstate().scissorX = x;
+	glstate().scissorY = y;
+	glstate().scissorW = w;
+	glstate().scissorH = h;
 	/**
 	 * Parameters
 	 * x, y
@@ -375,15 +380,15 @@ bool scissor(int x, int y, int w, int h) {
 	 *  it is as though the scissor box includes the entire window.
 	 */
 	GLint bottom;
-	if (_priv::s.clipOriginLowerLeft) {
-		bottom = _priv::s.viewportH - (_priv::s.scissorY + _priv::s.scissorH);
+	if (glstate().clipOriginLowerLeft) {
+		bottom = glstate().viewportH - (glstate().scissorY + glstate().scissorH);
 	} else {
-		bottom = _priv::s.scissorY;
+		bottom = glstate().scissorY;
 	}
-	bottom = (GLint)glm::round(bottom * _priv::s.scaleFactor);
-	const GLint left = (GLint)glm::round(_priv::s.scissorX * _priv::s.scaleFactor);
-	const GLsizei width = (GLsizei)glm::round(_priv::s.scissorW * _priv::s.scaleFactor);
-	const GLsizei height = (GLsizei)glm::round(_priv::s.scissorH * _priv::s.scaleFactor);
+	bottom = (GLint)glm::round(bottom * glstate().scaleFactor);
+	const GLint left = (GLint)glm::round(glstate().scissorX * glstate().scaleFactor);
+	const GLsizei width = (GLsizei)glm::round(glstate().scissorW * glstate().scaleFactor);
+	const GLsizei height = (GLsizei)glm::round(glstate().scissorH * glstate().scaleFactor);
 	glScissor(left, bottom, width, height);
 	checkError();
 	return true;
@@ -397,10 +402,10 @@ void colorMask(bool red, bool green, bool blue, bool alpha) {
 
 bool enable(State state) {
 	const int stateIndex = core::enumVal(state);
-	if (_priv::s.states[stateIndex]) {
+	if (glstate().states[stateIndex]) {
 		return true;
 	}
-	_priv::s.states[stateIndex] = true;
+	glstate().states.set(stateIndex, true);
 	if (state == State::DepthMask) {
 		glDepthMask(GL_TRUE);
 	} else {
@@ -412,10 +417,10 @@ bool enable(State state) {
 
 bool disable(State state) {
 	const int stateIndex = core::enumVal(state);
-	if (!_priv::s.states[stateIndex]) {
+	if (!glstate().states[stateIndex]) {
 		return false;
 	}
-	_priv::s.states[stateIndex] = false;
+	glstate().states.set(stateIndex, false);
 	if (state == State::DepthMask) {
 		glDepthMask(GL_FALSE);
 	} else {
@@ -427,75 +432,75 @@ bool disable(State state) {
 
 bool currentState(State state) {
 	const int stateIndex = core::enumVal(state);
-	return _priv::s.states[stateIndex];
+	return glstate().states[stateIndex];
 }
 
 bool isClipOriginLowerLeft() {
-	return _priv::s.clipOriginLowerLeft;
+	return glstate().clipOriginLowerLeft;
 }
 
 bool cullFace(Face face) {
-	if (_priv::s.cullFace == face) {
+	if (glstate().cullFace == face) {
 		return false;
 	}
 	const GLenum glFace = _priv::Faces[core::enumVal(face)];
 	glCullFace(glFace);
 	checkError();
-	_priv::s.cullFace = face;
+	glstate().cullFace = face;
 	return true;
 }
 
 bool depthFunc(CompareFunc func) {
-	if (_priv::s.depthFunc == func) {
+	if (glstate().depthFunc == func) {
 		return false;
 	}
 	glDepthFunc(_priv::CompareFuncs[core::enumVal(func)]);
 	checkError();
-	_priv::s.depthFunc = func;
+	glstate().depthFunc = func;
 	return true;
 }
 
 CompareFunc getDepthFunc() {
-	return _priv::s.depthFunc;
+	return glstate().depthFunc;
 }
 
 bool setupStencil(const StencilConfig& config) {
 	video_trace_scoped(SetupStencil);
 	bool dirty = false;
 	CompareFunc func = config.func();
-	if (_priv::s.stencilFunc != func || _priv::s.stencilValue != config.value() || _priv::s.stencilMask != config.mask()) {
+	if (glstate().stencilFunc != func || glstate().stencilValue != config.value() || glstate().stencilMask != config.mask()) {
 		glStencilFunc(_priv::CompareFuncs[core::enumVal(func)], config.value(), config.mask());
 		checkError();
-		_priv::s.stencilFunc = func;
+		glstate().stencilFunc = func;
 		dirty = true;
 	}
 	// fail, zfail, zpass
-	if (_priv::s.stencilOpFail != config.failOp()
-			|| _priv::s.stencilOpZfail != config.zfailOp()
-			|| _priv::s.stencilOpZpass != config.zpassOp()) {
+	if (glstate().stencilOpFail != config.failOp()
+			|| glstate().stencilOpZfail != config.zfailOp()
+			|| glstate().stencilOpZpass != config.zpassOp()) {
 		const GLenum failop = _priv::StencilOps[core::enumVal(config.failOp())];
 		const GLenum zfailop = _priv::StencilOps[core::enumVal(config.zfailOp())];
 		const GLenum zpassop = _priv::StencilOps[core::enumVal(config.zpassOp())];
 		glStencilOp(failop, zfailop, zpassop);
 		checkError();
-		_priv::s.stencilOpFail = config.failOp();
-		_priv::s.stencilOpZfail = config.zfailOp();
-		_priv::s.stencilOpZpass = config.zpassOp();
+		glstate().stencilOpFail = config.failOp();
+		glstate().stencilOpZfail = config.zfailOp();
+		glstate().stencilOpZpass = config.zpassOp();
 		dirty = true;
 	}
-	if (_priv::s.stencilMask != config.mask()) {
+	if (glstate().stencilMask != config.mask()) {
 		glStencilMask(config.mask());
-		_priv::s.stencilMask = config.mask();
+		glstate().stencilMask = config.mask();
 		dirty = true;
 	}
 	return dirty;
 }
 
 bool blendEquation(BlendEquation func) {
-	if (_priv::s.blendEquation == func) {
+	if (glstate().blendEquation == func) {
 		return false;
 	}
-	_priv::s.blendEquation = func;
+	glstate().blendEquation = func;
 	const GLenum convertedFunc = _priv::BlendEquations[core::enumVal(func)];
 	glBlendEquation(convertedFunc);
 	checkError();
@@ -504,18 +509,18 @@ bool blendEquation(BlendEquation func) {
 
 void getBlendState(bool& enabled, BlendMode& src, BlendMode& dest, BlendEquation& func) {
 	const int stateIndex = core::enumVal(State::Blend);
-	enabled = _priv::s.states[stateIndex];
-	src = _priv::s.blendSrc;
-	dest = _priv::s.blendDest;
-	func = _priv::s.blendEquation;
+	enabled = glstate().states[stateIndex];
+	src = glstate().blendSrc;
+	dest = glstate().blendDest;
+	func = glstate().blendEquation;
 }
 
 bool blendFunc(BlendMode src, BlendMode dest) {
-	if (_priv::s.blendSrc == src && _priv::s.blendDest == dest) {
+	if (glstate().blendSrc == src && glstate().blendDest == dest) {
 		return false;
 	}
-	_priv::s.blendSrc = src;
-	_priv::s.blendDest = dest;
+	glstate().blendSrc = src;
+	glstate().blendDest = dest;
 	const GLenum glSrc = _priv::BlendModes[core::enumVal(src)];
 	const GLenum glDest = _priv::BlendModes[core::enumVal(dest)];
 	glBlendFunc(glSrc, glDest);
@@ -524,12 +529,12 @@ bool blendFunc(BlendMode src, BlendMode dest) {
 }
 
 PolygonMode polygonMode(Face face, PolygonMode mode) {
-	if (_priv::s.polygonModeFace == face && _priv::s.polygonMode == mode) {
-		return _priv::s.polygonMode;
+	if (glstate().polygonModeFace == face && glstate().polygonMode == mode) {
+		return glstate().polygonMode;
 	}
-	_priv::s.polygonModeFace = face;
-	const PolygonMode old = _priv::s.polygonMode;
-	_priv::s.polygonMode = mode;
+	glstate().polygonModeFace = face;
+	const PolygonMode old = glstate().polygonMode;
+	glstate().polygonMode = mode;
 	const GLenum glMode = _priv::PolygonModes[core::enumVal(mode)];
 	const GLenum glFace = _priv::Faces[core::enumVal(face)];
 	glPolygonMode(glFace, glMode);
@@ -538,24 +543,24 @@ PolygonMode polygonMode(Face face, PolygonMode mode) {
 }
 
 bool polygonOffset(const glm::vec2& offset) {
-	if (_priv::s.polygonOffset == offset) {
+	if (glstate().polygonOffset == offset) {
 		return false;
 	}
 	glPolygonOffset(offset.x, offset.y);
 	checkError();
-	_priv::s.polygonOffset = offset;
+	glstate().polygonOffset = offset;
 	return true;
 }
 
 bool activateTextureUnit(TextureUnit unit) {
-	if (_priv::s.textureUnit == unit) {
+	if (glstate().textureUnit == unit) {
 		return false;
 	}
 	core_assert(TextureUnit::Max != unit);
 	const GLenum glUnit = _priv::TextureUnits[core::enumVal(unit)];
 	glActiveTexture(glUnit);
 	checkError();
-	_priv::s.textureUnit = unit;
+	glstate().textureUnit = unit;
 	return true;
 }
 
@@ -563,23 +568,23 @@ Id currentTexture(TextureUnit unit) {
 	if (TextureUnit::Max == unit) {
 		return InvalidId;
 	}
-	return _priv::s.textureHandle[core::enumVal(unit)];
+	return glstate().textureHandle[core::enumVal(unit)];
 }
 
 bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	core_assert(TextureUnit::Max != unit);
 	core_assert(TextureType::Max != type);
 	if (useFeature(Feature::DirectStateAccess)) {
-		if (_priv::s.textureHandle[core::enumVal(unit)] != handle) {
-			_priv::s.textureHandle[core::enumVal(unit)] = handle;
+		if (glstate().textureHandle[core::enumVal(unit)] != handle) {
+			glstate().textureHandle[core::enumVal(unit)] = handle;
 			glBindTextureUnit(core::enumVal(unit), handle);
 			checkError();
 			return true;
 		}
 	} else {
 		const bool changeUnit = activateTextureUnit(unit);
-		if (changeUnit || _priv::s.textureHandle[core::enumVal(unit)] != handle) {
-			_priv::s.textureHandle[core::enumVal(unit)] = handle;
+		if (changeUnit || glstate().textureHandle[core::enumVal(unit)] != handle) {
+			glstate().textureHandle[core::enumVal(unit)] = handle;
 			glBindTexture(_priv::TextureTypes[core::enumVal(type)], handle);
 			checkError();
 			return true;
@@ -605,38 +610,38 @@ bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id ha
 }
 
 bool useProgram(Id handle) {
-	if (_priv::s.programHandle == handle) {
+	if (glstate().programHandle == handle) {
 		return false;
 	}
 	core_assert(handle == InvalidId || glIsProgram(handle));
 	glUseProgram(handle);
 	checkError();
-	_priv::s.programHandle = handle;
-	_priv::s.needValidation = true;
+	glstate().programHandle = handle;
+	glstate().needValidation = true;
 	return true;
 }
 
 Id getProgram() {
-	return _priv::s.programHandle;
+	return glstate().programHandle;
 }
 
 bool bindVertexArray(Id handle) {
-	if (_priv::s.vertexArrayHandle == handle) {
+	if (glstate().vertexArrayHandle == handle) {
 		return false;
 	}
 	glBindVertexArray(handle);
 	checkError();
-	_priv::s.vertexArrayHandle = handle;
+	glstate().vertexArrayHandle = handle;
 	return true;
 }
 
 Id boundVertexArray() {
-	return _priv::s.vertexArrayHandle;
+	return glstate().vertexArrayHandle;
 }
 
 Id boundBuffer(BufferType type) {
 	const int typeIndex = core::enumVal(type);
-	return _priv::s.bufferHandle[typeIndex];
+	return glstate().bufferHandle[typeIndex];
 }
 
 void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
@@ -691,11 +696,11 @@ void unmapBuffer(Id handle, BufferType type) {
 bool bindBuffer(BufferType type, Id handle) {
 	video_trace_scoped(BindBuffer);
 	const int typeIndex = core::enumVal(type);
-	if (_priv::s.bufferHandle[typeIndex] == handle) {
+	if (glstate().bufferHandle[typeIndex] == handle) {
 		return false;
 	}
 	const GLenum glType = _priv::BufferTypes[typeIndex];
-	_priv::s.bufferHandle[typeIndex] = handle;
+	glstate().bufferHandle[typeIndex] = handle;
 	core_assert(handle != InvalidId);
 	glBindBuffer(glType, handle);
 	checkError();
@@ -704,7 +709,7 @@ bool bindBuffer(BufferType type, Id handle) {
 
 uint8_t *bufferStorage(BufferType type, size_t size) {
 	const int typeIndex = core::enumVal(type);
-	if (_priv::s.bufferHandle[typeIndex] == InvalidId) {
+	if (glstate().bufferHandle[typeIndex] == InvalidId) {
 		return nullptr;
 	}
 	core_assert(useFeature(Feature::BufferStorage));
@@ -717,11 +722,11 @@ uint8_t *bufferStorage(BufferType type, size_t size) {
 
 bool unbindBuffer(BufferType type) {
 	const int typeIndex = core::enumVal(type);
-	if (_priv::s.bufferHandle[typeIndex] == InvalidId) {
+	if (glstate().bufferHandle[typeIndex] == InvalidId) {
 		return false;
 	}
 	const GLenum glType = _priv::BufferTypes[typeIndex];
-	_priv::s.bufferHandle[typeIndex] = InvalidId;
+	glstate().bufferHandle[typeIndex] = InvalidId;
 	glBindBuffer(glType, InvalidId);
 	checkError();
 	return true;
@@ -730,11 +735,11 @@ bool unbindBuffer(BufferType type) {
 bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 	video_trace_scoped(BindBufferBase);
 	const int typeIndex = core::enumVal(type);
-	if (_priv::s.bufferHandle[typeIndex] == handle) {
+	if (glstate().bufferHandle[typeIndex] == handle) {
 		return false;
 	}
 	const GLenum glType = _priv::BufferTypes[typeIndex];
-	_priv::s.bufferHandle[typeIndex] = handle;
+	glstate().bufferHandle[typeIndex] = handle;
 	glBindBufferBase(glType, (GLuint)index, handle);
 	checkError();
 	return true;
@@ -756,9 +761,9 @@ void deleteBuffers(uint8_t amount, Id* ids) {
 		return;
 	}
 	for (uint8_t i = 0u; i < amount; ++i) {
-		for (int j = 0; j < lengthof(_priv::s.bufferHandle); ++j) {
-			if (_priv::s.bufferHandle[j] == ids[i]) {
-				_priv::s.bufferHandle[j] = InvalidId;
+		for (int j = 0; j < lengthof(glstate().bufferHandle); ++j) {
+			if (glstate().bufferHandle[j] == ids[i]) {
+				glstate().bufferHandle[j] = InvalidId;
 			}
 		}
 	}
@@ -854,8 +859,8 @@ void deleteProgram(Id& id) {
 	core_assert_msg(glIsProgram((GLuint)id), "%u is no valid program object", (unsigned int)id);
 	glDeleteProgram((GLuint)id);
 	checkError();
-	if (_priv::s.programHandle == id) {
-		_priv::s.programHandle = InvalidId;
+	if (glstate().programHandle == id) {
+		glstate().programHandle = InvalidId;
 	}
 	id = InvalidId;
 }
@@ -872,7 +877,7 @@ void deleteVertexArrays(uint8_t amount, Id* ids) {
 		return;
 	}
 	for (int i = 0; i < amount; ++i) {
-		if (_priv::s.vertexArrayHandle == ids[i]) {
+		if (glstate().vertexArrayHandle == ids[i]) {
 			bindVertexArray(InvalidId);
 			break;
 		}
@@ -889,7 +894,7 @@ void deleteVertexArray(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
-	if (_priv::s.vertexArrayHandle == id) {
+	if (glstate().vertexArrayHandle == id) {
 		bindVertexArray(InvalidId);
 	}
 	deleteVertexArrays(1, &id);
@@ -907,7 +912,7 @@ void genTextures(const TextureConfig &cfg, uint8_t amount, Id* ids) {
 		checkError();
 	}
 	for (int i = 0; i < amount; ++i) {
-		_priv::s.textures.insert(ids[i]);
+		glstate().textures.insert(ids[i]);
 	}
 }
 
@@ -919,11 +924,11 @@ void deleteTextures(uint8_t amount, Id* ids) {
 	glDeleteTextures((GLsizei)amount, (GLuint*)ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
-		_priv::s.textures.remove(ids[i]);
-		for (int j = 0; j < lengthof(_priv::s.textureHandle); ++j) {
-			if (_priv::s.textureHandle[j] == ids[i]) {
+		glstate().textures.remove(ids[i]);
+		for (int j = 0; j < lengthof(glstate().textureHandle); ++j) {
+			if (glstate().textureHandle[j] == ids[i]) {
 				// the texture might still be bound...
-				_priv::s.textureHandle[j] = InvalidId;
+				glstate().textureHandle[j] = InvalidId;
 			}
 		}
 		ids[i] = InvalidId;
@@ -931,13 +936,13 @@ void deleteTextures(uint8_t amount, Id* ids) {
 }
 
 const core::Set<Id>& textures() {
-	return _priv::s.textures;
+	return glstate().textures;
 }
 
 bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t** pixels) {
 	video_trace_scoped(ReadFrameBuffer);
-	core_assert(_priv::s.framebufferHandle != InvalidId);
-	if (_priv::s.framebufferHandle == InvalidId) {
+	core_assert(glstate().framebufferHandle != InvalidId);
+	if (glstate().framebufferHandle == InvalidId) {
 		return false;
 	}
 	const _priv::Formats& f = _priv::textureFormats[core::enumVal(format)];
@@ -964,7 +969,7 @@ void genFramebuffers(uint8_t amount, Id* ids) {
 }
 
 Id currentFramebuffer() {
-	return _priv::s.framebufferHandle;
+	return glstate().framebufferHandle;
 }
 
 void deleteFramebuffers(uint8_t amount, Id* ids) {
@@ -972,7 +977,7 @@ void deleteFramebuffers(uint8_t amount, Id* ids) {
 		return;
 	}
 	for (int i = 0; i < amount; ++i) {
-		if (ids[i] == _priv::s.framebufferHandle) {
+		if (ids[i] == glstate().framebufferHandle) {
 			bindFramebuffer(InvalidId);
 		}
 		ids[i] = InvalidId;
@@ -1000,7 +1005,7 @@ void deleteRenderbuffers(uint8_t amount, Id* ids) {
 		return;
 	}
 	for (uint8_t i = 0u; i < amount; ++i) {
-		if (_priv::s.renderBufferHandle == ids[i]) {
+		if (glstate().renderBufferHandle == ids[i]) {
 			bindRenderbuffer(InvalidId);
 		}
 	}
@@ -1014,7 +1019,7 @@ void deleteRenderbuffers(uint8_t amount, Id* ids) {
 
 void configureAttribute(const Attribute& a) {
 	video_trace_scoped(ConfigureVertexAttribute);
-	core_assert(_priv::s.programHandle != InvalidId);
+	core_assert(glstate().programHandle != InvalidId);
 	glEnableVertexAttribArray(a.location);
 	checkError();
 	const GLenum glType = _priv::DataTypes[core::enumVal(a.type)];
@@ -1060,8 +1065,8 @@ void deleteTransformFeedback(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
-	if (_priv::s.transformFeedback == id) {
-		_priv::s.transformFeedback = InvalidId;
+	if (glstate().transformFeedback == id) {
+		glstate().transformFeedback = InvalidId;
 	}
 	const GLuint lid = (GLuint)id;
 	glDeleteTransformFeedbacks(1, &lid);
@@ -1073,10 +1078,10 @@ bool bindTransformFeedback(Id id) {
 	if (id == InvalidId) {
 		return false;
 	}
-	if (_priv::s.transformFeedback == id) {
+	if (glstate().transformFeedback == id) {
 		return true;
 	}
-	_priv::s.transformFeedback = id;
+	glstate().transformFeedback = id;
 	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, (GLuint)id);
 	return true;
 }
@@ -1130,8 +1135,8 @@ void deleteOcclusionQuery(Id& id) {
 	if (id == InvalidId) {
 		return;
 	}
-	if (_priv::s.occlusionQuery == id) {
-		_priv::s.occlusionQuery = InvalidId;
+	if (glstate().occlusionQuery == id) {
+		glstate().occlusionQuery = InvalidId;
 	}
 	const GLuint lid = (GLuint)id;
 #if SANITY_CHECKS_GL
@@ -1154,10 +1159,10 @@ bool isOcclusionQuery(Id id) {
 }
 
 bool beginOcclusionQuery(Id id) {
-	if (_priv::s.occlusionQuery == id || id == InvalidId) {
+	if (glstate().occlusionQuery == id || id == InvalidId) {
 		return false;
 	}
-	_priv::s.occlusionQuery = id;
+	glstate().occlusionQuery = id;
 	const GLuint lid = (GLuint)id;
 #if SANITY_CHECKS_GL
 	const GLboolean state = glIsQuery(lid);
@@ -1169,11 +1174,11 @@ bool beginOcclusionQuery(Id id) {
 }
 
 bool endOcclusionQuery(Id id) {
-	if (_priv::s.occlusionQuery != id || id == InvalidId) {
+	if (glstate().occlusionQuery != id || id == InvalidId) {
 		return false;
 	}
 	glEndQuery(GL_SAMPLES_PASSED);
-	_priv::s.occlusionQuery = video::InvalidId;
+	glstate().occlusionQuery = video::InvalidId;
 	checkError();
 	return true;
 }
@@ -1243,17 +1248,17 @@ void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height
 }
 
 Id bindFramebuffer(Id handle, FrameBufferMode mode) {
-	const Id old = _priv::s.framebufferHandle;
+	const Id old = glstate().framebufferHandle;
 #if SANITY_CHECKS_GL
 	GLint _oldFramebuffer;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFramebuffer);
 	core_assert_always(_oldFramebuffer == (GLint)old);
 #endif
-	if (old == handle && mode == _priv::s.framebufferMode) {
+	if (old == handle && mode == glstate().framebufferMode) {
 		return handle;
 	}
-	_priv::s.framebufferHandle = handle;
-	_priv::s.framebufferMode = mode;
+	glstate().framebufferHandle = handle;
+	glstate().framebufferMode = mode;
 	const int typeIndex = core::enumVal(mode);
 	const GLenum glType = _priv::FrameBufferModes[typeIndex];
 	glBindFramebuffer(glType, handle);
@@ -1265,10 +1270,10 @@ bool setupRenderBuffer(TextureFormat format, int w, int h, int samples) {
 	video_trace_scoped(SetupRenderBuffer);
 	if (useFeature(Feature::DirectStateAccess)) {
 		if (samples > 0) {
-			glNamedRenderbufferStorageMultisample(_priv::s.renderBufferHandle, (GLsizei)samples, _priv::TextureFormats[core::enumVal(format)], w, h);
+			glNamedRenderbufferStorageMultisample(glstate().renderBufferHandle, (GLsizei)samples, _priv::TextureFormats[core::enumVal(format)], w, h);
 			checkError();
 		} else {
-			glNamedRenderbufferStorage(_priv::s.renderBufferHandle, _priv::TextureFormats[core::enumVal(format)], w, h);
+			glNamedRenderbufferStorage(glstate().renderBufferHandle, _priv::TextureFormats[core::enumVal(format)], w, h);
 			checkError();
 		}
 	} else {
@@ -1284,12 +1289,12 @@ bool setupRenderBuffer(TextureFormat format, int w, int h, int samples) {
 }
 
 Id bindRenderbuffer(Id handle) {
-	if (_priv::s.renderBufferHandle == handle) {
+	if (glstate().renderBufferHandle == handle) {
 		return handle;
 	}
-	const Id prev = _priv::s.renderBufferHandle;
+	const Id prev = glstate().renderBufferHandle;
 	const GLuint lid = (GLuint)handle;
-	_priv::s.renderBufferHandle = handle;
+	glstate().renderBufferHandle = handle;
 	if (!useFeature(Feature::DirectStateAccess)) {
 		glBindRenderbuffer(GL_RENDERBUFFER, lid);
 	}
@@ -1323,7 +1328,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 			}
 		}
 	}
-	if (_priv::s.vendor[core::enumVal(Vendor::Nouveau)]) {
+	if (glstate().vendor[core::enumVal(Vendor::Nouveau)]) {
 		// nouveau needs this if doing the buffer update short before the draw call
 		glFlush(); // TODO: use glFenceSync here glClientWaitSync
 	}
@@ -1395,7 +1400,7 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 		}
 		const GLenum glAttachmentType = _priv::FrameBufferAttachments[i];
 		if (useFeature(Feature::DirectStateAccess)) {
-			glNamedFramebufferRenderbuffer(_priv::s.framebufferHandle, glAttachmentType, GL_RENDERBUFFER, bufferAttachments[i]->handle());
+			glNamedFramebufferRenderbuffer(glstate().framebufferHandle, glAttachmentType, GL_RENDERBUFFER, bufferAttachments[i]->handle());
 			checkError();
 		} else {
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, glAttachmentType, GL_RENDERBUFFER, bufferAttachments[i]->handle());
@@ -1417,7 +1422,7 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 			glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachmentType, GL_TEXTURE_CUBE_MAP_POSITIVE_X, textureId, 0);
 			checkError();
 		} else if (useFeature(Feature::DirectStateAccess)) {
-			glNamedFramebufferTexture(_priv::s.framebufferHandle, glAttachmentType, textureId, 0);
+			glNamedFramebufferTexture(glstate().framebufferHandle, glAttachmentType, textureId, 0);
 			checkError();
 		} else {
 			glFramebufferTexture(GL_FRAMEBUFFER, glAttachmentType, textureId, 0);
@@ -1430,7 +1435,7 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 	if (attachments.empty()) {
 		GLenum buffers[] = {GL_NONE};
 		if (useFeature(Feature::DirectStateAccess)) {
-			glNamedFramebufferDrawBuffers(_priv::s.framebufferHandle, lengthof(buffers), buffers);
+			glNamedFramebufferDrawBuffers(glstate().framebufferHandle, lengthof(buffers), buffers);
 		} else {
 			glDrawBuffers(lengthof(buffers), buffers);
 		}
@@ -1442,13 +1447,13 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 		}
 		attachments.sort([] (GLenum lhs, GLenum rhs) { return lhs > rhs; });
 		if (useFeature(Feature::DirectStateAccess)) {
-			glNamedFramebufferDrawBuffers(_priv::s.framebufferHandle, (GLsizei) attachments.size(), attachments.data());
+			glNamedFramebufferDrawBuffers(glstate().framebufferHandle, (GLsizei) attachments.size(), attachments.data());
 		} else {
 			glDrawBuffers((GLsizei) attachments.size(), attachments.data());
 		}
 		checkError();
 	}
-	return _priv::checkFramebufferStatus(_priv::s.framebufferHandle);
+	return _priv::checkFramebufferStatus(glstate().framebufferHandle);
 }
 
 bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool shouldClear) {
@@ -1459,7 +1464,7 @@ bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int
 	 || attachment == FrameBufferAttachment::Stencil
 	 || attachment == FrameBufferAttachment::DepthStencil) {
 		if (useFeature(Feature::DirectStateAccess)) {
-			glNamedFramebufferTextureLayer(_priv::s.framebufferHandle, glAttachment, (GLuint)texture, 0, layerIndex);
+			glNamedFramebufferTextureLayer(glstate().framebufferHandle, glAttachment, (GLuint)texture, 0, layerIndex);
 			checkError();
 		} else {
 			glFramebufferTextureLayer(GL_FRAMEBUFFER, glAttachment, (GLuint)texture, 0, layerIndex);
@@ -1480,7 +1485,7 @@ bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int
 			clear(ClearFlag::Color);
 		}
 	}
-	if (!_priv::checkFramebufferStatus(_priv::s.framebufferHandle)) {
+	if (!_priv::checkFramebufferStatus(glstate().framebufferHandle)) {
 		return false;
 	}
 	return true;
@@ -1565,10 +1570,10 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 
 void drawElementsIndirect(Primitive mode, DataType type, const void* offset) {
 	video_trace_scoped(DrawElementsIndirect);
-	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
-	video::validate(_priv::s.programHandle);
+	video::validate(glstate().programHandle);
 	glDrawElementsIndirect(glMode, glType, (const GLvoid*)offset);
 	checkError();
 }
@@ -1578,10 +1583,10 @@ void drawMultiElementsIndirect(Primitive mode, DataType type, const void* offset
 	if (commandSize <= 0u) {
 		return;
 	}
-	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
-	video::validate(_priv::s.programHandle);
+	video::validate(glstate().programHandle);
 	glMultiDrawElementsIndirect(glMode, glType, (const GLvoid*)offset, (GLsizei)commandSize, (GLsizei)stride);
 	checkError();
 }
@@ -1591,10 +1596,10 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset
 	if (numIndices <= 0) {
 		return;
 	}
-	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
-	video::validate(_priv::s.programHandle);
+	video::validate(glstate().programHandle);
 	glDrawElements(glMode, (GLsizei)numIndices, glType, (GLvoid*)offset);
 	checkError();
 }
@@ -1609,8 +1614,8 @@ void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, siz
 	}
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
-	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
-	video::validate(_priv::s.programHandle);
+	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	video::validate(glstate().programHandle);
 	glDrawElementsInstanced(glMode, (GLsizei)numIndices, glType, nullptr, (GLsizei)amount);
 	checkError();
 }
@@ -1622,8 +1627,8 @@ void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, si
 	}
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
-	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
-	video::validate(_priv::s.programHandle);
+	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	video::validate(glstate().programHandle);
 	glDrawElementsBaseVertex(glMode, (GLsizei)numIndices, glType, GL_OFFSET_CAST(indexSize * baseIndex), (GLint)baseVertex);
 	checkError();
 }
@@ -1631,16 +1636,16 @@ void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, si
 void drawArrays(Primitive mode, size_t count) {
 	video_trace_scoped(DrawArrays);
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
-	video::validate(_priv::s.programHandle);
+	video::validate(glstate().programHandle);
 	glDrawArrays(glMode, (GLint)0, (GLsizei)count);
 	checkError();
 }
 
 void drawArraysIndirect(Primitive mode, void* offset) {
 	video_trace_scoped(DrawArraysIndirect);
-	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
-	video::validate(_priv::s.programHandle);
+	video::validate(glstate().programHandle);
 	glDrawArraysIndirect(glMode, (const GLvoid*)&offset);
 	checkError();
 }
@@ -1650,9 +1655,9 @@ void drawMultiArraysIndirect(Primitive mode, void* offset, size_t commandSize, s
 	if (commandSize <= 0u) {
 		return;
 	}
-	core_assert_msg(_priv::s.vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
-	video::validate(_priv::s.programHandle);
+	video::validate(glstate().programHandle);
 	glMultiDrawArraysIndirect(glMode, (const GLvoid*)offset, (GLsizei)commandSize, (GLsizei)stride);
 	checkError();
 }
@@ -1660,7 +1665,7 @@ void drawMultiArraysIndirect(Primitive mode, void* offset, size_t commandSize, s
 void drawInstancedArrays(Primitive mode, size_t count, size_t amount) {
 	video_trace_scoped(DrawInstancedArrays);
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
-	video::validate(_priv::s.programHandle);
+	video::validate(glstate().programHandle);
 	glDrawArraysInstanced(glMode, (GLint)0, (GLsizei)count, (GLsizei)amount);
 	checkError();
 }
@@ -1818,7 +1823,7 @@ bool linkComputeShader(Id program, Id comp, const core::String& name) {
 }
 
 bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
-	if (_priv::s.imageHandle == textureHandle && _priv::s.imageFormat == format && _priv::s.imageAccessMode == mode) {
+	if (glstate().imageHandle == textureHandle && glstate().imageFormat == format && glstate().imageAccessMode == mode) {
 		return false;
 	}
 	core_assert(glBindImageTexture != nullptr);
@@ -2005,23 +2010,23 @@ void setup() {
 }
 
 void resize(int windowWidth, int windowHeight, float scaleFactor) {
-	_priv::s.windowWidth = windowWidth;
-	_priv::s.windowHeight = windowHeight;
-	_priv::s.scaleFactor = scaleFactor;
+	glstate().windowWidth = windowWidth;
+	glstate().windowHeight = windowHeight;
+	glstate().scaleFactor = scaleFactor;
 }
 
 glm::ivec2 getWindowSize() {
-	return glm::ivec2(_priv::s.windowWidth, _priv::s.windowHeight);
+	return glm::ivec2(glstate().windowWidth, glstate().windowHeight);
 }
 
 float getScaleFactor() {
-	return _priv::s.scaleFactor;
+	return glstate().scaleFactor;
 }
 
 bool init(int windowWidth, int windowHeight, float scaleFactor) {
-	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &_priv::s.glVersion.majorVersion);
-	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &_priv::s.glVersion.minorVersion);
-	Log::debug("got gl context: %i.%i", _priv::s.glVersion.majorVersion, _priv::s.glVersion.minorVersion);
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &glstate().glVersion.majorVersion);
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glstate().glVersion.minorVersion);
+	Log::debug("got gl context: %i.%i", glstate().glVersion.majorVersion, glstate().glVersion.minorVersion);
 
 	resize(windowWidth, windowHeight, scaleFactor);
 
@@ -2043,12 +2048,12 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		const core::String vendor(glvendor);
 		for (int i = 0; i < core::enumVal(Vendor::Max); ++i) {
 			const bool match = core::string::icontains(vendor, _priv::VendorStrings[i]);
-			_priv::s.vendor[i] = match;
+			glstate().vendor.set(i, match);
 		}
 	}
 
 	for (int i = 0; i < core::enumVal(Vendor::Max); ++i) {
-		if (_priv::s.vendor[i]) {
+		if (glstate().vendor[i]) {
 			Log::debug("Found vendor: %s", _priv::VendorStrings[i]);
 		} else {
 			Log::debug("Didn't find vendor: %s", _priv::VendorStrings[i]);
@@ -2117,7 +2122,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 
 	// default state
 	// https://www.glprogramming.com/red/appendixb.html
-	_priv::s.states[core::enumVal(video::State::DepthMask)] = true;
+	glstate().states.set(core::enumVal(video::State::DepthMask), true);
 
 	if (multisampling) {
 		video::enable(video::State::MultiSample);
