@@ -6,6 +6,8 @@
 #include "CustomButtonNames.h"
 #include "command/Command.h"
 #include "core/ArrayLength.h"
+#include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Tokenizer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/Log.h"
@@ -70,21 +72,22 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 }
 
 KeybindingParser::KeybindingParser(const core::String& key, const core::String& binding) :
-		core::Tokenizer(""), _invalidBindings(0) {
+		_invalidBindings(0) {
 	parseKeyAndCommand(key, binding);
 }
 
 KeybindingParser::KeybindingParser(const core::String& bindings) :
-		core::Tokenizer(bindings), _invalidBindings(0) {
-	for (;;) {
-		if (!hasNext()) {
-			break;
+		_invalidBindings(0) {
+	core::DynamicArray<core::String> tokens;
+	core::string::splitString(bindings, tokens, "\r\n");
+	for (const core::String &line : tokens) {
+		core::Tokenizer tok(line);
+		if (tok.size() != 2u) {
+			Log::warn("Found invalid keybindings line '%s'", line.c_str());
+			continue;
 		}
-		core::String key = next();
-		if (!hasNext()) {
-			break;
-		}
-		const core::String command = next();
+		const core::String key = tok.next();
+		const core::String command = tok.next();
 		parseKeyAndCommand(key, command);
 	}
 }

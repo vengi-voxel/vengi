@@ -22,7 +22,7 @@ typedef std::unordered_multimap<int32_t, CommandModifierPair> BindMap;
 /**
  * @brief Parses keys/command combinations
  */
-class KeybindingParser: public core::Tokenizer {
+class KeybindingParser {
 private:
 	BindMap _bindings;
 	int _invalidBindings;
