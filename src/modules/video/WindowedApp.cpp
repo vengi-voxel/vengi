@@ -176,6 +176,7 @@ bool WindowedApp::isDarkMode() const {
 	if (exitCode == 0) {
 		return core::string::icontains(outputBuf, "dark");
 	}
+	return true;
 #elif __WINDOWS__
 	HKEY hkey;
 	if (RegOpenKey(HKEY_CURRENT_USER, R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)", &hkey) == ERROR_SUCCESS) {
@@ -186,8 +187,8 @@ bool WindowedApp::isDarkMode() const {
 			return value != 0;
 		}
 	}
+	return true;
 #endif
-	return false;
 }
 
 bool WindowedApp::onKeyRelease(int32_t key, int16_t modifier) {

@@ -10,5 +10,5 @@ bool isOSXDarkMode() {
 	if (appleInterfaceStyle && [appleInterfaceStyle length] > 0) {
 		return [[appleInterfaceStyle lowercaseString] containsString:@"dark"];
 	}
-	return false;
+	return true;
 }
