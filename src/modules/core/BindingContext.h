@@ -34,4 +34,11 @@ extern BindingContext bindingContext();
  */
 extern BindingContext setBindingContext(int ctx);
 
+inline bool isSuitableBindingContext(core::BindingContext context) {
+	if (context == core::BindingContext::All) {
+		return true;
+	}
+	return (core::bindingContext() & context) != 0;
+}
+
 }

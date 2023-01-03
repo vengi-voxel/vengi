@@ -100,7 +100,6 @@ public:
 	static int execute(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 
 	static bool execute(const core::String& command, const CmdArgs& args);
-	static bool isSuitableBindingContext(core::BindingContext context);
 
 	static Command* getCommand(const core::String& name) {
 		core::ScopedReadLock lock(_lock);

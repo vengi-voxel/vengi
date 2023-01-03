@@ -170,13 +170,6 @@ int Command::execute(const core::String& command) {
 	return executed;
 }
 
-bool Command::isSuitableBindingContext(core::BindingContext context) {
-	if (context == core::BindingContext::All) {
-		return true;
-	}
-	return (core::bindingContext() & context) != 0;
-}
-
 bool Command::execute(const core::String& command, const CmdArgs& args) {
 	if (command == "wait") {
 		if (args.size() == 1) {
@@ -198,7 +191,7 @@ bool Command::execute(const core::String& command, const CmdArgs& args) {
 			Log::debug("could not find command callback for %s", command.c_str());
 			return false;
 		}
-		if (command[0] != COMMAND_RELEASED[0] && !isSuitableBindingContext(i->second._bindingContext)) {
+		if (command[0] != COMMAND_RELEASED[0] && !core::isSuitableBindingContext(i->second._bindingContext)) {
 			Log::trace("command '%s' has binding context  %i - but we are in %i", command.c_str(), (int) i->second._bindingContext,
 					(int) core::bindingContext());
 			return false;
