@@ -153,6 +153,13 @@ app::AppState WindowedApp::onRunning() {
 	return app::AppState::Running;
 }
 
+void WindowedApp::onWindowClose(void *windowHandle) {
+	// if the main window is going to get closed, quit the application
+	if (_window == windowHandle) {
+		requestQuit();
+	}
+}
+
 // https://stackoverflow.com/questions/25207077/how-to-detect-if-os-x-is-in-dark-mode
 // https://wiki.archlinux.org/title/Dark_mode_switching#gsettings
 bool WindowedApp::isDarkMode() const {

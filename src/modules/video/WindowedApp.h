@@ -142,6 +142,7 @@ public:
 	virtual app::AppState onConstruct() override;
 	virtual app::AppState onInit() override;
 	virtual app::AppState onCleanup() override;
+	void onWindowClose(void *windowHandle) override;
 
 	/**
 	 * Minimize the application window but continue running
