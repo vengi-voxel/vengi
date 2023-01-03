@@ -19,6 +19,7 @@ General:
    - Added multiple color reduction algorithms and expose them to the user by the cvar `core_colorreduction`
    - Fixed several issues with AceOfSpades vxl format - switched to libvxl for loading and saving
    - Fixed splitting volumes even if not needed (off-by-one error)
+   - Fixed multi-monitor support
 
 VoxEdit:
 
@@ -27,6 +28,7 @@ VoxEdit:
    - Reworked the modifiers panel
    - Made undo/redo more visible
    - Switched the camera modifier to the right side of the viewport
+   - Fixed diffuse and ambient color settings mix-up
 
 ## 0.0.23 (2022-12-17)
 
