@@ -17,12 +17,6 @@ double Command::_delaySeconds = 0.0;
 size_t  Command::_sortedCommandListSize = 0u;
 Command* Command::_sortedCommandList[4096] {};
 
-ActionButtonCommands& ActionButtonCommands::setBindingContext(int context) {
-	Command::getCommand(first)->setBindingContext(context);
-	Command::getCommand(second)->setBindingContext(context);
-	return *this;
-}
-
 ActionButtonCommands& ActionButtonCommands::setHelp(const char* help) {
 	Command::getCommand(first)->setHelp(help);
 	Command::getCommand(second)->setHelp(help);
@@ -189,11 +183,6 @@ bool Command::execute(const core::String& command, const CmdArgs& args) {
 		auto i = _cmds.find(command);
 		if (i == _cmds.end()) {
 			Log::debug("could not find command callback for %s", command.c_str());
-			return false;
-		}
-		if (command[0] != COMMAND_RELEASED[0] && !core::isSuitableBindingContext(i->second._bindingContext)) {
-			Log::trace("command '%s' has binding context  %i - but we are in %i", command.c_str(), (int) i->second._bindingContext,
-					(int) core::bindingContext());
 			return false;
 		}
 		if (_delaySeconds > 0.0) {

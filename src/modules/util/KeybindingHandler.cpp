@@ -7,6 +7,7 @@
 #include "CustomButtonNames.h"
 #include "app/App.h"
 #include "core/ArrayLength.h"
+#include "core/BindingContext.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
@@ -75,6 +76,9 @@ static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int1
 		if (!isValidForBinding(modifier, mod)) {
 			continue;
 		}
+		if (!core::isSuitableBindingContext(i->second.context)) {
+			continue;
+		}
 		Log::trace("Execute the command %s for key %i", command.c_str(), key);
 		if (command[0] == COMMAND_PRESSED[0]) {
 			if (command::Command::execute("%s %i %f", command.c_str(), key, nowSeconds) == 1) {
@@ -119,12 +123,12 @@ void KeyBindingHandler::construct() {
 	}).setHelp("Show all known key bindings");
 
 	command::Command::registerCommand("bind", [this] (const command::CmdArgs& args) {
-		if (args.size() != 2) {
-			Log::error("Expected parameters: key+modifier command - got %i parameters", (int)args.size());
+		if (args.size() != 3) {
+			Log::error("Expected parameters: key+modifier command context - got %i parameters", (int)args.size());
 			return;
 		}
 
-		KeybindingParser p(args[0], args[1]);
+		KeybindingParser p(args[0], args[1], args[2]);
 		const BindMap& bindings = p.getBindings();
 		for (BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
 			const uint32_t key = i->first;
@@ -147,15 +151,15 @@ void KeyBindingHandler::construct() {
 	}).setHelp("Bind a command to a key");
 
 	command::Command::registerCommand("unbind", [this](const command::CmdArgs &args) {
-		if (args.size() != 1) {
-			Log::error("Expected parameters: key+modifier - got %i parameters", (int)args.size());
+		if (args.size() != 2) {
+			Log::error("Expected parameters: key+modifier context - got %i parameters", (int)args.size());
 			return;
 		}
 
-		KeybindingParser p(args[0], "unbind");
+		KeybindingParser p(args[0], "unbind", args[1]);
 		const BindMap &bindings = p.getBindings();
 		if (bindings.empty()) {
-			Log::info("Failed to delete binding for key %s", args[0].c_str());
+			Log::info("Failed to delete binding for key '%s' in context '%s'", args[0].c_str(), args[1].c_str());
 		}
 		for (BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
 			const uint32_t key = i->first;
@@ -163,15 +167,15 @@ void KeyBindingHandler::construct() {
 			auto range = _bindings.equal_range(key);
 			bool found = false;
 			for (auto it = range.first; it != range.second; ++it) {
-				if (it->second.modifier == pair.modifier) {
+				if (it->second.modifier == pair.modifier && (it->second.context & pair.context) != 0u) {
 					_bindings.erase(it);
 					found = true;
-					Log::info("Removed binding for key %s", args[0].c_str());
+					Log::info("Removed binding for key '%s' in context '%s'", args[0].c_str(), args[1].c_str());
 					break;
 				}
 			}
 			if (!found) {
-				Log::info("Failed to delete binding for key %s", args[0].c_str());
+				Log::info("Failed to delete binding for key '%s' in context '%s'", args[0].c_str(), args[1].c_str());
 			}
 		}
 	}).setHelp("Unbind a key");
@@ -187,17 +191,27 @@ void KeyBindingHandler::shutdown() {
 		keybindings += toString(key, modifier);
 		keybindings += " \"";
 		keybindings += command;
-		keybindings += "\"\n";
+		keybindings += "\" ";
+		keybindings += core::bindingContextString(pair.context);
+		keybindings += "\n";
 	}
 	Log::trace("%s", keybindings.c_str());
-	const core::String &kbFilename = app::App::getInstance()->appname() + "-keybindings.cfg";
-	io::filesystem()->write(kbFilename, keybindings);
+	if (keybindings.empty()) {
+		removeApplicationKeyBindings();
+	} else {
+		const core::String &kbFilename = app::App::getInstance()->appname() + "-keybindings.cfg";
+		io::filesystem()->write(kbFilename, keybindings);
+	}
 }
 
-void KeyBindingHandler::reset() {
+void KeyBindingHandler::removeApplicationKeyBindings() {
 	const core::String &kbFilename = app::App::getInstance()->appname() + "-keybindings.cfg";
 	const core::String &path = io::filesystem()->writePath(kbFilename.c_str());
 	io::filesystem()->removeFile(path);
+}
+
+void KeyBindingHandler::reset() {
+	removeApplicationKeyBindings();
 	_bindings.clear();
 }
 
@@ -206,11 +220,16 @@ bool KeyBindingHandler::init() {
 }
 
 bool KeyBindingHandler::load(const core::String& filename) {
-	const core::String& bindings = io::filesystem()->load(filename);
+	const io::FilePtr &file = io::filesystem()->open(filename);
+	core::String bindings = file->load();
 	if (bindings.empty()) {
-		return false;
+		removeApplicationKeyBindings();
+		bindings = io::filesystem()->load(filename);
+		if (bindings.empty()) {
+			return false;
+		}
 	}
-	Log::debug("Load key bindings from %s", filename.c_str());
+	Log::debug("Load key bindings from '%s'", file->name().c_str());
 	const KeybindingParser p(bindings);
 	for (const auto& entry : p.getBindings()) {
 		auto i = _bindings.find(entry.first);
@@ -220,7 +239,7 @@ bool KeyBindingHandler::load(const core::String& filename) {
 		}
 		_bindings.insert(std::make_pair(entry.first, entry.second));
 	}
-	return true;
+	return !_bindings.empty();
 }
 
 void KeyBindingHandler::setBindings(const BindMap& bindings) {
@@ -339,6 +358,9 @@ bool KeyBindingHandler::execute(int32_t key, int16_t modifier, bool pressed, dou
 					continue;
 				}
 				if (!isValidForBinding(modifier, pair.modifier)) {
+					continue;
+				}
+				if (!core::isSuitableBindingContext(pair.context)) {
 					continue;
 				}
 				command::Command::execute("%s %i %f", pair.command.c_str(), commandKey, nowSeconds);

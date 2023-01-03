@@ -13,7 +13,6 @@
 #include "voxel/Voxel.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "../AxisUtil.h"
-#include "../CustomBindingContext.h"
 #include "../SceneManager.h"
 #include "voxelutil/VoxelUtil.h"
 #include "voxelutil/AStarPathfinder.h"
@@ -25,8 +24,8 @@ Modifier::Modifier() :
 }
 
 void Modifier::construct() {
-	command::Command::registerActionButton("actionexecute", _actionExecuteButton).setBindingContext(BindingContext::Model);
-	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton).setBindingContext(BindingContext::Model);
+	command::Command::registerActionButton("actionexecute", _actionExecuteButton);
+	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton);
 
 	command::Command::registerCommand("actionselect", [&] (const command::CmdArgs& args) {
 		setModifierType(ModifierType::Select);

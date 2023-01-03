@@ -391,9 +391,10 @@ app::AppState IMGUIApp::onRunning() {
 				ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
 				ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
 			const ImVec2 outerSize(0.0f, 400.0f);
-			if (ImGui::BeginTable("##bindingslist", 3, TableFlags, outerSize)) {
+			if (ImGui::BeginTable("##bindingslist", 4, TableFlags, outerSize)) {
 				ImGui::TableSetupColumn("Keys##bindingslist", ImGuiTableColumnFlags_WidthFixed);
 				ImGui::TableSetupColumn("Command##bindingslist", ImGuiTableColumnFlags_WidthFixed);
+				ImGui::TableSetupColumn("Context##bindingslist", ImGuiTableColumnFlags_WidthFixed);
 				ImGui::TableSetupColumn("Description##bindingslist", ImGuiTableColumnFlags_WidthStretch);
 				ImGui::TableHeadersRow();
 
@@ -412,6 +413,8 @@ app::AppState IMGUIApp::onRunning() {
 					ImGui::TextUnformatted(keyBinding.c_str());
 					ImGui::TableNextColumn();
 					ImGui::TextUnformatted(command.c_str());
+					ImGui::TableNextColumn();
+					ImGui::TextUnformatted(core::bindingContextString(pair.context).c_str());
 					const command::Command* cmd = nullptr;
 					if (command.contains(" ")) {
 						cmd = command::Command::getCommand(command.substr(0, command.find(" ")));
@@ -453,12 +456,12 @@ app::AppState IMGUIApp::onRunning() {
 		}
 
 		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) {
-			core::setBindingContext(core::BindingContext::UserInterface);
+			core::setBindingContext(core::BindingContext::UI);
 		} else {
-			core::setBindingContext(core::BindingContext::World);
+			core::setBindingContext(core::BindingContext::All);
 		}
 	} else {
-		core::setBindingContext(core::BindingContext::World);
+		core::setBindingContext(core::BindingContext::All);
 	}
 
 	const math::Rect<int> rect(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);

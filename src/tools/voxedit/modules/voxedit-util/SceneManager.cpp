@@ -55,7 +55,6 @@
 
 #include "AxisUtil.h"
 #include "Config.h"
-#include "CustomBindingContext.h"
 #include "MementoHandler.h"
 #include "tool/Clipboard.h"
 
@@ -1185,7 +1184,7 @@ void SceneManager::construct() {
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		command::Command::registerActionButton(
 				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
-				_move[i]).setBindingContext(BindingContext::Model);
+				_move[i]);
 	}
 	command::Command::registerCommand("palette_changeintensity", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -1200,16 +1199,16 @@ void SceneManager::construct() {
 		_mementoHandler.markPaletteChange(node);
 	}).setHelp("Change intensity by scaling the rgb values of the palette");
 
-	command::Command::registerActionButton("zoom_in", _zoomIn).setBindingContext(BindingContext::Editing);
-	command::Command::registerActionButton("zoom_out", _zoomOut).setBindingContext(BindingContext::Editing);
-	command::Command::registerActionButton("camera_rotate", _rotate).setBindingContext(BindingContext::Editing);
-	command::Command::registerActionButton("camera_pan", _pan).setBindingContext(BindingContext::Editing);
+	command::Command::registerActionButton("zoom_in", _zoomIn);
+	command::Command::registerActionButton("zoom_out", _zoomOut);
+	command::Command::registerActionButton("camera_rotate", _rotate);
+	command::Command::registerActionButton("camera_pan", _pan);
 	command::Command::registerCommand("mouse_layer_select", [&] (const command::CmdArgs&) {
 		if (_sceneModeNodeIdTrace != -1) {
 			Log::debug("switch active node to hovered from scene graph mode: %i", _sceneModeNodeIdTrace);
 			nodeActivate(_sceneModeNodeIdTrace);
 		}
-	}).setHelp("Switch active node to hovered from scene graph mode").setBindingContext(BindingContext::Scene);
+	}).setHelp("Switch active node to hovered from scene graph mode");
 
 	command::Command::registerCommand("select", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -1230,7 +1229,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("togglescene", [this] (const command::CmdArgs& args) {
 		toggleEditMode();
-	}).setHelp("Toggle scene mode on/off").setBindingContext(voxedit::BindingContext::Editing);
+	}).setHelp("Toggle scene mode on/off");
 
 	command::Command::registerCommand("text", [this] (const command::CmdArgs& args) {
 		if (args.size() != 2) {
@@ -1313,7 +1312,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("abortaction", [&] (const command::CmdArgs& args) {
 		_modifier.aabbAbort();
-	}).setHelp("Aborts the current modifier action").setBindingContext(BindingContext::Model);
+	}).setHelp("Aborts the current modifier action");
 
 	command::Command::registerCommand("fillhollow", [&] (const command::CmdArgs& args) {
 		fillHollow();
@@ -1362,7 +1361,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("setreferencepositiontocursor", [&] (const command::CmdArgs& args) {
 		setReferencePosition(cursorPosition());
-	}).setHelp("Set the reference position to the current cursor position").setBindingContext(BindingContext::Model);
+	}).setHelp("Set the reference position to the current cursor position");
 
 	command::Command::registerCommand("resize", [this] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1378,7 +1377,7 @@ void SceneManager::construct() {
 		} else {
 			resizeAll(glm::ivec3(1));
 		}
-	}).setHelp("Resize your volume about given x, y and z size").setBindingContext(BindingContext::Editing);
+	}).setHelp("Resize your volume about given x, y and z size");
 
 	command::Command::registerCommand("layersize", [this] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1394,7 +1393,7 @@ void SceneManager::construct() {
 		} else {
 			resize(activeNode(), glm::ivec3(1));
 		}
-	}).setHelp("Resize your current layer about given x, y and z size").setBindingContext(BindingContext::UI);
+	}).setHelp("Resize your current layer about given x, y and z size");
 
 	command::Command::registerCommand("shift", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();

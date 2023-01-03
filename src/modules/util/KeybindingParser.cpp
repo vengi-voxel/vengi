@@ -6,6 +6,7 @@
 #include "CustomButtonNames.h"
 #include "command/Command.h"
 #include "core/ArrayLength.h"
+#include "core/BindingContext.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
@@ -15,10 +16,11 @@
 
 namespace util {
 
-void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& command) {
+void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& command, const core::String &context) {
 	int modifier = KMOD_NONE;
 	core::TokenizerConfig cfg;
 	core::Tokenizer tok(cfg, key, COMMAND_PRESSED);
+	core::BindingContext bindingContext = core::parseBindingContext(context);
 	const core::DynamicArray<core::String>& line = tok.tokens();
 	if (line.size() > 1) {
 		for (const core::String& token : line) {
@@ -68,27 +70,41 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 		++_invalidBindings;
 		return;
 	}
-	_bindings.insert(std::make_pair(keyCode, CommandModifierPair(command, modifier, count)));
+	_bindings.insert(std::make_pair(keyCode, CommandModifierPair(command, modifier, count, bindingContext)));
 }
 
-KeybindingParser::KeybindingParser(const core::String& key, const core::String& binding) :
+KeybindingParser::KeybindingParser(const core::String& key, const core::String& binding, const core::String &context) :
 		_invalidBindings(0) {
-	parseKeyAndCommand(key, binding);
+	parseKeyAndCommand(key, binding, context);
 }
 
 KeybindingParser::KeybindingParser(const core::String& bindings) :
 		_invalidBindings(0) {
 	core::DynamicArray<core::String> tokens;
 	core::string::splitString(bindings, tokens, "\r\n");
+	bool printOldWarning = false;
 	for (const core::String &line : tokens) {
 		core::Tokenizer tok(line);
-		if (tok.size() != 2u) {
+		// handle old key binding format
+		if (tok.size() == 2u) {
+			if (!printOldWarning) {
+				Log::warn("Found old keybindings line - you should reset the bindings");
+				printOldWarning = true;
+			}
+			const core::String key = tok.next();
+			const core::String command = tok.next();
+			parseKeyAndCommand(key, command, "all");
+			continue;
+		}
+
+		if (tok.size() != 3u) {
 			Log::warn("Found invalid keybindings line '%s'", line.c_str());
 			continue;
 		}
 		const core::String key = tok.next();
 		const core::String command = tok.next();
-		parseKeyAndCommand(key, command);
+		const core::String context = tok.next();
+		parseKeyAndCommand(key, command, context);
 	}
 }
 

@@ -10,21 +10,21 @@ namespace util {
 
 namespace keybindingparser {
 static const core::String CFG = R"(
-w +foo
-alt+w "somecommand +"
-left_alt+l "someothercommand +"
-CTRL+a +bar
-CTRL+w +bar
-SHIFT+w +xyz
-SHIFT+ctrl+ALT+w allmodscommand
-ctrl+SHIFT+w ctrlshiftmodcommand
-left_alt altmodcommand
-ctrl++ "echo +"
-left_mouse void
-right_mouse void
-double_right_mouse void
-wheelup void
-wheeldown void
+w +foo all
+alt+w "somecommand +" all
+left_alt+l "someothercommand +" all
+CTRL+a +bar all
+CTRL+w +bar all
+SHIFT+w +xyz all
+SHIFT+ctrl+ALT+w allmodscommand all
+ctrl+SHIFT+w ctrlshiftmodcommand all
+left_alt altmodcommand all
+ctrl++ "echo +" all
+left_mouse void all
+right_mouse void all
+double_right_mouse void all
+wheelup void all
+wheeldown void all
 )";
 }
 

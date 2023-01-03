@@ -56,9 +56,12 @@ WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::TimePr
 #else
 	_singleWindowMode = false;
 #endif
+	core::registerBindingContext("ui", core::BindingContext::UI);
+	core::registerBindingContext("all", core::BindingContext::All);
 }
 
 WindowedApp::~WindowedApp() {
+	core::resetBindingContexts();
 }
 
 void WindowedApp::onAfterRunning() {
@@ -273,7 +276,10 @@ app::AppState WindowedApp::onInit() {
 	if (!_keybindingHandler.load("keybindings.cfg")) {
 		Log::warn("failed to init the global keybindings");
 	}
-	_keybindingHandler.load(_appname + "-keybindings.cfg");
+	if (!_keybindingHandler.load(_appname + "-keybindings.cfg")) {
+		Log::warn("failed to init the application keybindings");
+		_keybindingHandler.removeApplicationKeyBindings();
+	}
 
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
 

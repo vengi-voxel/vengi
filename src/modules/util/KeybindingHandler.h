@@ -44,6 +44,7 @@ public:
 	void shutdown() override;
 	bool init() override;
 	void reset();
+	void removeApplicationKeyBindings();
 
 	/**
 	 * @brief Print the binding line for a key/modifier combination

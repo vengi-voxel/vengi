@@ -4,6 +4,7 @@
 
 #include "SDL_events.h"
 #include "app/tests/AbstractTest.h"
+#include "core/BindingContext.h"
 #include "util/CustomButtonNames.h"
 #include "util/KeybindingHandler.h"
 #include "command/Command.h"
@@ -14,21 +15,21 @@ namespace util {
 
 namespace keybindingtest {
 static const core::String CFG = R"(
-w +foo
-left_alt+w "somecommand +"
-RIGHT_CTRL+a +bar
-CTRL+w +bar
-SHIFT+w +xyz
-SHIFT+ctrl+ALT+w allmodscommand
-ctrl+SHIFT+w ctrlshiftmodcommand
-left_alt altmodcommand
-double_left_mouse doubleleftclick
+w +foo foo
+left_alt+w "somecommand +" foo
+RIGHT_CTRL+a +bar foo
+RIGHT_CTRL+a +foo foo
+CTRL+w +bar foo
+SHIFT+w +xyz foo
+SHIFT+ctrl+ALT+w allmodscommand foo
+ctrl+SHIFT+w ctrlshiftmodcommand foo
+left_alt altmodcommand foo
+double_left_mouse doubleleftclick foo
 )";
 }
 
 class KeybindingHandlerTest : public app::AbstractTest {
 protected:
-	KeybindingParser _parser;
 	KeyBindingHandler _handler;
 	bool _allmodscommand = false;
 	bool _ctrlshiftmodcommand = false;
@@ -38,11 +39,11 @@ protected:
 	bool _xyz = false;
 	bool _doubleLeftClick = false;
 
-	KeybindingHandlerTest() :
-			_parser(keybindingtest::CFG) {
-	}
-
 	bool onInitApp() override {
+		core::registerBindingContext("all", core::BindingContext::All);
+		core::registerBindingContext("foo", core::BindingContext::Context1);
+		core::registerBindingContext("bar", core::BindingContext::Context2);
+		KeybindingParser _parser(keybindingtest::CFG);
 		if (!app::AbstractTest::onInitApp()) {
 			return false;
 		}
@@ -57,6 +58,7 @@ protected:
 		}
 		_handler.setBindings(_parser.getBindings());
 		_xyz = _ctrlshiftmodcommand = _somecommand = _altmodcommand = _allmodscommand = _foo = _doubleLeftClick = false;
+		core::setBindingContext(core::BindingContext::Context1);
 		command::Command::shutdown();
 		command::Command::registerCommand("+bar", [] (const command::CmdArgs& args) {});
 		command::Command::registerCommand("-bar", [] (const command::CmdArgs& args) {});
@@ -75,6 +77,7 @@ protected:
 	void onCleanupApp() override {
 		app::AbstractTest::onCleanupApp();
 		_handler.shutdown();
+		core::resetBindingContexts();
 	}
 
 	void execute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true, uint16_t count = 1u) {
@@ -154,6 +157,11 @@ TEST_F(KeybindingHandlerTest, testRightShiftModifier) {
 	EXPECT_TRUE(_xyz) << "expected command wasn't executed";
 }
 
+TEST_F(KeybindingHandlerTest, testRightShiftModifierWrongContext) {
+	core::setBindingContext(core::BindingContext::Context2);
+	notExecute(SDLK_w, KMOD_RSHIFT);
+	core::setBindingContext(core::BindingContext::Context1);
+}
 TEST_F(KeybindingHandlerTest, testShiftModifier) {
 	execute(SDLK_w, KMOD_LSHIFT);
 	EXPECT_TRUE(_xyz) << "expected command wasn't executed";

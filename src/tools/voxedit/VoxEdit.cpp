@@ -4,6 +4,7 @@
 
 #include "VoxEdit.h"
 #include "app/App.h"
+#include "core/BindingContext.h"
 #include "core/Color.h"
 #include "core/GameConfig.h"
 #include "core/StringUtil.h"
@@ -18,7 +19,6 @@
 #include "io/Filesystem.h"
 
 #include "voxedit-util/SceneManager.h"
-#include "voxedit-util/CustomBindingContext.h"
 
 #include "voxedit-ui/MainWindow.h"
 #include "voxedit-ui/FileDialogOptions.h"
@@ -28,6 +28,9 @@
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider, core::halfcpus()) {
 	init(ORGANISATION, "voxedit");
+	core::registerBindingContext("scene", core::BindingContext::Context1);
+	core::registerBindingContext("model", core::BindingContext::Context2);
+	core::registerBindingContext("editing", core::BindingContext::Context1 + core::BindingContext::Context2);
 	_allowRelativeMouseMode = false;
 }
 
@@ -266,7 +269,7 @@ app::AppState VoxEdit::onInit() {
 
 	setRelativeMouseMode(false);
 
-	core::setBindingContext(voxedit::BindingContext::UI);
+	core::setBindingContext(core::BindingContext::UI);
 
 	if (_argc >= 2) {
 		const char *file = _argv[_argc - 1];
@@ -299,12 +302,12 @@ app::AppState VoxEdit::onRunning() {
 	const bool isSceneHovered = _mainWindow->isSceneHovered();
 	if (isSceneHovered) {
 		if (voxedit::sceneMgr().editMode() == voxedit::EditMode::Scene) {
-			core::setBindingContext(voxedit::BindingContext::Scene);
+			core::setBindingContext(core::BindingContext::Context1);
 		} else {
-			core::setBindingContext(voxedit::BindingContext::Model);
+			core::setBindingContext(core::BindingContext::Context2);
 		}
 	} else {
-		core::setBindingContext(voxedit::BindingContext::UI);
+		core::setBindingContext(core::BindingContext::UI);
 	}
 	return state;
 }

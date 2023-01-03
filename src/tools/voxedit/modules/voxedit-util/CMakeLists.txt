@@ -1,7 +1,6 @@
 set(SRCS
 	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp
-	CustomBindingContext.h
 	AxisUtil.h AxisUtil.cpp
 	Config.h
 

@@ -204,7 +204,7 @@ bool fs_rmdir(const char *path) {
 bool fs_unlink(const char *path) {
 	const int ret = unlink(path);
 	if (ret != 0) {
-		Log::error("Failed to rmdir %s: %s", path, strerror(errno));
+		Log::error("Failed to unlink %s: %s", path, strerror(errno));
 	}
 	return ret == 0;
 }

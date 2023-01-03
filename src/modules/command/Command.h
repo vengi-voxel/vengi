@@ -28,10 +28,6 @@ struct ActionButtonCommands {
 			first(_first), second(_second) {
 	}
 
-	/**
-	 * @sa core::setBindingContext()
-	 */
-	ActionButtonCommands& setBindingContext(int context);
 	ActionButtonCommands& setHelp(const char* help);
 };
 
@@ -55,7 +51,6 @@ private:
 	core::String _name;
 	const char* _help;
 	FunctionType _func;
-	core::BindingContext _bindingContext = core::BindingContext::All;
 	typedef std::function<int(const core::String&, core::DynamicArray<core::String>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
@@ -144,23 +139,11 @@ public:
 	Command& setHelp(const char* help);
 	const char* help() const;
 
-	Command& setBindingContext(int bindingContext);
-	int bindingContext() const;
-
 	bool operator==(const Command& rhs) const;
 };
 
 inline bool Command::operator==(const Command& rhs) const {
 	return rhs._name == _name;
-}
-
-inline int Command::bindingContext() const {
-	return _bindingContext;
-}
-
-inline Command& Command::setBindingContext(int bindingContext) {
-	_bindingContext = (core::BindingContext)bindingContext;
-	return *this;
 }
 
 inline const char* Command::name() const {
