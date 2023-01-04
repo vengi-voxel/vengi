@@ -119,6 +119,7 @@ void ModifierRenderer::renderAABBMode(const video::Camera& camera) {
 
 void ModifierRenderer::render(const video::Camera& camera, const glm::mat4& model) {
 	const video::ScopedState depthTest(video::State::DepthTest, false);
+	const video::ScopedState cullFace(video::State::CullFace, false);
 	_shapeRenderer.render(_voxelCursorMesh, camera, model);
 	_shapeRenderer.render(_mirrorMeshIndex, camera);
 }
