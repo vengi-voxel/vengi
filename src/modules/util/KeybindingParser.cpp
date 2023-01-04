@@ -97,14 +97,16 @@ KeybindingParser::KeybindingParser(const core::String& bindings) :
 			continue;
 		}
 
-		if (tok.size() != 3u) {
-			Log::warn("Found invalid keybindings line '%s'", line.c_str());
+		if (tok.size() == 3u) {
+			const core::String key = tok.next();
+			const core::String command = tok.next();
+			const core::String context = tok.next();
+			parseKeyAndCommand(key, command, context);
 			continue;
 		}
-		const core::String key = tok.next();
-		const core::String command = tok.next();
-		const core::String context = tok.next();
-		parseKeyAndCommand(key, command, context);
+
+		Log::warn("Found invalid keybindings line '%s'", line.c_str());
+		++_invalidBindings;
 	}
 }
 

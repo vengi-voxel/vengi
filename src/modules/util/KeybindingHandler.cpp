@@ -221,13 +221,10 @@ bool KeyBindingHandler::init() {
 
 bool KeyBindingHandler::load(const core::String& filename) {
 	const io::FilePtr &file = io::filesystem()->open(filename);
-	core::String bindings = file->load();
+	const core::String &bindings = file->load();
 	if (bindings.empty()) {
-		removeApplicationKeyBindings();
-		bindings = io::filesystem()->load(filename);
-		if (bindings.empty()) {
-			return false;
-		}
+		Log::warn("Failed to load key bindings from '%s' - file is empty", file->name().c_str());
+		return false;
 	}
 	Log::debug("Load key bindings from '%s'", file->name().c_str());
 	const KeybindingParser p(bindings);

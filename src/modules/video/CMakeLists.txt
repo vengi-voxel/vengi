@@ -59,7 +59,6 @@ set(SRCS_SHADERS
 	shaders/_shadowmap.vert shaders/_shadowmap.frag
 )
 set(FILES
-	shared/keybindings.cfg
 )
 
 #set_source_files_properties(${SRCS_SHADERS} PROPERTIES LANGUAGE C)
