@@ -180,7 +180,7 @@ static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGra
 		if (node.isLeaf()) {
 			treeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 		} else {
-			treeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+			treeFlags |= ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 		}
 		if (selected) {
 			treeFlags |= ImGuiTreeNodeFlags_Selected;
@@ -274,6 +274,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, LayerSett
 			newGroupButton(sceneGraph);
 			ImGui::SameLine();
 			removeNodeButton(sceneGraph);
+			ImGui::SameLine();
 
 			const bool onlyOneModel = sceneGraph.size(voxelformat::SceneGraphNodeType::Model) <= 1;
 			if (ImGui::DisabledButton(ICON_FA_PLAY"##animatelayers", onlyOneModel)) {
