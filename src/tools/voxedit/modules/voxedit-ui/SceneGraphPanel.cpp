@@ -269,6 +269,9 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, LayerSett
 			size.y = textLineHeight * 2.0f;
 		}
 		if (ImGui::BeginChild("master##scenegraphpanel", size)) {
+			// TODO: Use Toolbar
+			// TODO: re-add drag and drop of nodes
+			// TODO: cleanup delete nodes/layers
 			newLayerButton(sceneGraph, layerSettings);
 			ImGui::SameLine();
 			newGroupButton(sceneGraph);
@@ -324,7 +327,6 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, LayerSett
 		ImGui::RenderArrowPointingAt(drawList, trianglePos, halfSize, buttonDir, ImGui::GetColorU32(ImGuiCol_Text));
 		if (ImGui::InvisibleButton("##expandtriangle", buttonSize)) {
 			_showNodeDetails ^= true;
-			Log::error("toggle: %s", _showNodeDetails ? "true" : "false");
 			if (_showNodeDetails) {
 				ImGui::BeginChild("detail##scenegraphpanel");
 				detailView(sceneGraph.node(sceneGraph.activeNode()));
