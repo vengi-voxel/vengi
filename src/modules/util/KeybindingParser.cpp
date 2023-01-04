@@ -82,24 +82,11 @@ KeybindingParser::KeybindingParser(const core::String& bindings) :
 		_invalidBindings(0) {
 	core::DynamicArray<core::String> tokens;
 	core::string::splitString(bindings, tokens, "\r\n");
-	bool printOldWarning = false;
 	for (const core::String &line : tokens) {
 		if (line[0] == '#' || line[0] == '/') {
 			continue;
 		}
 		core::Tokenizer tok(line);
-		// handle old key binding format
-		if (tok.size() == 2u) {
-			if (!printOldWarning) {
-				Log::warn("Found old keybindings line - you should reset the bindings");
-				printOldWarning = true;
-			}
-			const core::String key = tok.next();
-			const core::String command = tok.next();
-			parseKeyAndCommand(key, command, "all");
-			continue;
-		}
-
 		if (tok.size() == 3u) {
 			const core::String key = tok.next();
 			const core::String command = tok.next();
