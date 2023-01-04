@@ -19,7 +19,7 @@ Or "nightly"-builds here at [github action artifacts](https://github.com/mgerhar
 
 ## Images
 
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-new-ui.png)
+![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-2023-01.png)
 
 ## SAST Tools
 
