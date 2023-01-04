@@ -672,7 +672,7 @@ static void prepareState(lua_State* s) {
 		{"translate", luaVoxel_volumewrapper_translate},
 		{"resize", luaVoxel_volumewrapper_resize},
 		{"crop", luaVoxel_volumewrapper_crop},
-		{"fillHollows", luaVoxel_volumewrapper_fillhollow},
+		{"fillHollow", luaVoxel_volumewrapper_fillhollow},
 		{"importHeightmap", luaVoxel_volumewrapper_importheightmap},
 		{"importColoredHeightmap", luaVoxel_volumewrapper_importcoloredheightmap},
 		{"mirrorAxis", luaVoxel_volumewrapper_mirroraxis},

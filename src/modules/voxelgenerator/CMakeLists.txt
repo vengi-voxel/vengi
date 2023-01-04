@@ -6,6 +6,7 @@ set(LUA_SRCS
 	scripts/cover.lua
 	scripts/delete-rgb.lua
 	scripts/erode.lua
+	scripts/fillhollow.lua
 	scripts/grass.lua
 	scripts/grid.lua
 	scripts/noise.lua
