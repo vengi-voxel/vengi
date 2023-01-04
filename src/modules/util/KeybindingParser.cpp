@@ -84,6 +84,9 @@ KeybindingParser::KeybindingParser(const core::String& bindings) :
 	core::string::splitString(bindings, tokens, "\r\n");
 	bool printOldWarning = false;
 	for (const core::String &line : tokens) {
+		if (line[0] == '#' || line[0] == '/') {
+			continue;
+		}
 		core::Tokenizer tok(line);
 		// handle old key binding format
 		if (tok.size() == 2u) {

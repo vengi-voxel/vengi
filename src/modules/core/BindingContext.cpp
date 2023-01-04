@@ -20,7 +20,7 @@ BindingContext bindingContext() {
 }
 
 const core::String& bindingContextString(int ctx) {
-	if (ctx < 0 || ctx > (int)_priv::_registeredBindingContext.size()) {
+	if (ctx < 0 || ctx >= (int)_priv::_registeredBindingContext.size()) {
 		return _priv::_registeredBindingContext[0];
 	}
 	return _priv::_registeredBindingContext[ctx];
@@ -37,7 +37,7 @@ BindingContext parseBindingContext(const String &context) {
 }
 
 bool registerBindingContext(const String &context, int ctx) {
-	if (ctx < 0 || ctx > (int)_priv::_registeredBindingContext.size()) {
+	if (ctx < 0 || ctx >= (int)_priv::_registeredBindingContext.size()) {
 		Log::error("Failed to register binding context - %i out of bounds", ctx);
 		return false;
 	}

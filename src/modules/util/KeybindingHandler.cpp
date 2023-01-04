@@ -192,7 +192,8 @@ void KeyBindingHandler::shutdown() {
 		keybindings += " \"";
 		keybindings += command;
 		keybindings += "\" ";
-		keybindings += core::bindingContextString(pair.context);
+		const core::String &ctx = core::bindingContextString(pair.context);
+		keybindings += ctx;
 		keybindings += "\n";
 	}
 	Log::trace("%s", keybindings.c_str());
