@@ -303,7 +303,7 @@ bool Filesystem::pushDir(const core::String &directory) {
 	return true;
 }
 
-// TODO: case insensitive search should be possible
+// TODO: case insensitive search should be possible - see searchPathFor()
 io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const {
 	if (isReadableDir(filename)) {
 		Log::debug("%s is a directory - skip this", filename.c_str());
@@ -320,16 +320,6 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 			return core::make_shared<io::File>("", mode);
 		}
 		return core::make_shared<io::File>(_homePath + filename, mode);
-	}
-	io::File f(filename, FileMode::Read);
-	if (f.exists()) {
-		f.close();
-		Log::debug("loading file %s from current working dir", filename.c_str());
-		return core::make_shared<io::File>(filename, mode);
-	}
-	if (!isRelativePath(filename)) {
-		Log::debug("%s not found", filename.c_str());
-		return core::make_shared<io::File>("", mode);
 	}
 	for (const core::String &p : _paths) {
 		const core::String fullpath = core::string::path(p, filename);
@@ -353,6 +343,16 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 				}
 			}
 		}
+	}
+	io::File f(filename, FileMode::Read);
+	if (f.exists()) {
+		f.close();
+		Log::debug("loading file '%s'", filename.c_str());
+		return core::make_shared<io::File>(filename, mode);
+	}
+	if (!isRelativePath(filename)) {
+		Log::debug("'%s' not found", filename.c_str());
+		return core::make_shared<io::File>("", mode);
 	}
 	Log::debug("Use %s from %s", filename.c_str(), _basePath.c_str());
 	return core::make_shared<io::File>(core::string::path(_basePath, filename), mode);
