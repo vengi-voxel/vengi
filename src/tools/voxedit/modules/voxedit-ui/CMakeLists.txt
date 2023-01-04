@@ -7,7 +7,6 @@ set(SRCS
 	DragAndDropPayload.h
 	FileDialogOptions.h FileDialogOptions.cpp
 	PositionsPanel.h PositionsPanel.cpp
-	LayerPanel.h LayerPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
 	MainWindow.h MainWindow.cpp
 	MenuBar.h MenuBar.cpp

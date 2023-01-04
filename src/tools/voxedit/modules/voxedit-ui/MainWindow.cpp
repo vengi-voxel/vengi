@@ -28,10 +28,9 @@
 #define TITLE_TOOLS "Tools##title"
 #define TITLE_MEMENTO "History##title"
 #define TITLE_ASSET "Assets##title"
-#define TITLE_LAYERS "Layers##title"
+#define TITLE_SCENEGRAPH "Scene##title"
 #define TITLE_MODIFIERS "Modifiers##title"
 #define TITLE_TREES ICON_FA_TREE " Trees##title"
-#define TITLE_SCENEGRAPH "Scenegraph##title"
 #define TITLE_SCRIPTPANEL ICON_FA_CODE " Script##title"
 #define TITLE_LSYSTEMPANEL ICON_FA_LEAF " L-System##title"
 #define TITLE_ANIMATION_SETTINGS "Animation##animationsettings"
@@ -185,7 +184,7 @@ bool MainWindow::createNew(bool force) {
 }
 
 bool MainWindow::isLayerWidgetDropTarget() const {
-	return _layerPanel.hasFocus();
+	return _sceneGraphPanel.hasFocus();
 }
 
 bool MainWindow::isPaletteWidgetDropTarget() const {
@@ -248,7 +247,6 @@ void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 }
 
 void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
-	ImGui::DockBuilderDockWindow(TITLE_LAYERS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_TREES, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockId);
@@ -264,7 +262,6 @@ void MainWindow::rightWidget() {
 	_mementoPanel.update(TITLE_MEMENTO, _lastExecutedCommand);
 
 	// bottom
-	_layerPanel.update(TITLE_LAYERS, &_layerSettings, _lastExecutedCommand);
 	_sceneGraphPanel.update(_scene->camera(), TITLE_SCENEGRAPH, &_layerSettings, _lastExecutedCommand);
 	_treePanel.update(TITLE_TREES);
 	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
@@ -318,9 +315,9 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_UNSAVED_SCENE);
 		_popupUnsavedChangesQuit = false;
 	}
-	if (_layerPanel._popupNewLayer || _sceneGraphPanel._popupNewLayer) {
+	if (_sceneGraphPanel._popupNewLayer) {
 		ImGui::OpenPopup(POPUP_TITLE_LAYER_SETTINGS);
-		_layerPanel._popupNewLayer = _sceneGraphPanel._popupNewLayer = false;
+		_sceneGraphPanel._popupNewLayer = false;
 	}
 
 	if (ImGui::BeginPopupModal(POPUP_TITLE_LAYER_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {

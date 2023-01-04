@@ -5,12 +5,14 @@
 #pragma once
 
 #include "command/CommandHandler.h"
+#include "core/Var.h"
 
 namespace video {
 class Camera;
 }
 namespace voxelformat {
 class SceneGraph;
+class SceneGraphNode;
 }
 
 namespace voxedit {
@@ -19,12 +21,15 @@ struct LayerSettings;
 
 class SceneGraphPanel {
 private:
-	bool _showNodeDetails = true;
 	void newLayerButton(const voxelformat::SceneGraph &sceneGraph, LayerSettings* layerSettings);
+	bool _showNodeDetails = true;
+	bool _hasFocus = false;
+	core::VarPtr _animationSpeedVar;
 
 public:
 	bool _popupNewLayer = false;
-	void update(video::Camera &camera, const char *title, LayerSettings* layerSettings, command::CommandExecutionListener &listener);
+	void update(video::Camera& camera, const char *title, LayerSettings* layerSettings, command::CommandExecutionListener &listener);
+	bool hasFocus() const;
 };
 
 }

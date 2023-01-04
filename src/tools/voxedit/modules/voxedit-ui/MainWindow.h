@@ -15,11 +15,10 @@
 #include "voxedit-ui/MementoPanel.h"
 #include "voxedit-ui/PositionsPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
-#include "voxedit-ui/LayerPanel.h"
+#include "voxedit-ui/SceneGraphPanel.h"
 #include "voxedit-ui/MenuBar.h"
 #include "voxedit-ui/ToolsPanel.h"
 #include "voxedit-ui/PalettePanel.h"
-#include "voxedit-ui/SceneGraphPanel.h"
 #include "voxedit-ui/ScriptPanel.h"
 #include "voxedit-ui/StatusBar.h"
 #include "voxedit-ui/ModifierPanel.h"
@@ -76,9 +75,8 @@ private:
 	LastExecutedCommand _lastExecutedCommand;
 	LSystemPanel _lsystemPanel;
 	ScriptPanel _scriptPanel;
-	SceneGraphPanel _sceneGraphPanel;
 	TreePanel _treePanel;
-	LayerPanel _layerPanel;
+	SceneGraphPanel _sceneGraphPanel;
 	AnimationPanel _animationPanel;
 	ToolsPanel _toolsPanel;
 	AssetPanel _assetPanel;
