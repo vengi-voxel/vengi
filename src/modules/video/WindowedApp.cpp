@@ -273,9 +273,8 @@ app::AppState WindowedApp::onInit() {
 		Log::error("Failed to initialize the key binding handler");
 		return app::AppState::InitFailure;
 	}
-	if (!_keybindingHandler.load(_appname + "-keybindings.cfg")) {
-		Log::warn("failed to init the application keybindings");
-		_keybindingHandler.removeApplicationKeyBindings();
+	if (!_keybindingHandler.load("keybindings.cfg")) {
+		Log::warn("failed to load the keybindings");
 	}
 
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
@@ -498,7 +497,7 @@ app::AppState WindowedApp::onCleanup() {
 
 void WindowedApp::resetKeybindings() {
 	_keybindingHandler.reset();
-	_keybindingHandler.load(_appname + "-keybindings.cfg");
+	_keybindingHandler.load("keybindings.cfg");
 }
 
 void WindowedApp::showCursor(bool show) {

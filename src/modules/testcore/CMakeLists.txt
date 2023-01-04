@@ -4,6 +4,6 @@ set(SRCS
 	TestAppMain.h
 )
 set(FILES
-	testcore/test-keybindings.cfg
+	testcore/keybindings.cfg
 )
 engine_add_module(TARGET testcore FILES ${FILES} SRCS ${SRCS} DEPENDENCIES ui)

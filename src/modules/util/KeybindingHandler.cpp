@@ -200,14 +200,12 @@ void KeyBindingHandler::shutdown() {
 	if (keybindings.empty()) {
 		removeApplicationKeyBindings();
 	} else {
-		const core::String &kbFilename = app::App::getInstance()->appname() + "-keybindings.cfg";
-		io::filesystem()->write(kbFilename, keybindings);
+		io::filesystem()->write("keybindings.cfg", keybindings);
 	}
 }
 
 void KeyBindingHandler::removeApplicationKeyBindings() {
-	const core::String &kbFilename = app::App::getInstance()->appname() + "-keybindings.cfg";
-	const core::String &path = io::filesystem()->writePath(kbFilename.c_str());
+	const core::String &path = io::filesystem()->writePath("keybindings.cfg");
 	io::filesystem()->removeFile(path);
 }
 
