@@ -244,6 +244,7 @@ public:
 
 	SceneGraphNodeType type() const;
 
+	bool isLeaf() const;
 	bool addChild(int id);
 	bool removeChild(int id);
 	void setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTransform &transform);

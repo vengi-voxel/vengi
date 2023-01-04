@@ -409,6 +409,10 @@ void SceneGraphNode::translate(const glm::ivec3 &v, FrameIndex frameIdx) {
 	transform.setWorldTranslation(transform.worldTranslation() + glm::vec3(v));
 }
 
+bool SceneGraphNode::isLeaf() const {
+	return _children.empty();
+}
+
 bool SceneGraphNode::addChild(int id) {
 	for (const int childId : _children) {
 		if (childId == id) {
