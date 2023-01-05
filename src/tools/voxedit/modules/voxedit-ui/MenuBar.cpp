@@ -118,9 +118,12 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 					ImGui::EndCombo();
 				}
 				ImGui::TooltipText("The color reduction algorithm that is used when importing RGBA colors from images or rgba formats");
-				glm::vec3 omega = sceneMgr().activeCamera()->omega();
-				if (ImGui::InputFloat("Camera rotation", &omega.y)) {
-					sceneMgr().activeCamera()->setOmega(omega);
+				video::Camera *camera = sceneMgr().activeCamera();
+				if (camera) {
+					glm::vec3 omega = camera->omega();
+					if (ImGui::InputFloat("Camera rotation", &omega.y)) {
+						camera->setOmega(omega);
+					}
 				}
 				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 				ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);
