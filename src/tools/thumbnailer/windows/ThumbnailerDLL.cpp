@@ -5,16 +5,16 @@
 #include <ShlObj.h>
 #include <Windows.h>
 #include <tchar.h>
-
 #include <new>
 
+#include "core/StringUtil.h"
+#include "io/FormatDescription.h"
+#include "voxelformat/VolumeFormat.h"
 #include "ThumbnailerProvider.h"
 
 #define SHELLEX_THUMBNAIL_CLSID _T("ShellEx\\{E357FCCD-A995-4576-B01F-234630154E96}")
 #define THUMBNAIL_HANDLER_TITLE _T("Voxel thumbnailer handler")
 #define THUMBNAIL_HANDLER_CLSID _T("{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}")
-
-#define FILE_EXTENSION _T(".basis")
 
 static const CLSID CLSID_ThumbnailHandler = {
 	0xCD1F0EA0, 0x283C, 0x4D90, {0xA4, 0x1D, 0xDE, 0xBD, 0x92, 0x07, 0xD9, 0x1F}};
@@ -101,9 +101,12 @@ STDAPI DllRegisterServer() {
 		BAIL_ON_FAIL(setRegKey(HKEY_LOCAL_MACHINE,
 							   _T("Software\\Classes\\CLSID\\") THUMBNAIL_HANDLER_CLSID _T("\\InProcServer32"),
 							   _T("ThreadingModel"), _T("Apartment")));
-		BAIL_ON_FAIL(setRegKey(HKEY_LOCAL_MACHINE,
-							   _T("Software\\Classes\\") FILE_EXTENSION _T("\\") SHELLEX_THUMBNAIL_CLSID, NULL,
-							   THUMBNAIL_HANDLER_CLSID));
+		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+			for (const core::String &ext : desc->exts) {
+				core::String id = core::string::format("Software\\Classes\\%s\\" SHELLEX_THUMBNAIL_CLSID, ext.c_str());
+				BAIL_ON_FAIL(setRegKey(HKEY_LOCAL_MACHINE, id.c_str(), NULL, THUMBNAIL_HANDLER_CLSID));
+			}
+		}
 		SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
 	}
 #ifdef _DEBUG
@@ -119,8 +122,12 @@ STDAPI DllUnregisterServer() {
 	HRESULT hr =
 		HRESULT_FROM_WIN32(RegDeleteTree(HKEY_LOCAL_MACHINE, _T("Software\\Classes\\CLSID\\") THUMBNAIL_HANDLER_CLSID));
 	if (SUCCEEDED(hr)) {
-		hr = HRESULT_FROM_WIN32(RegDeleteTree(HKEY_LOCAL_MACHINE, _T("Software\\Classes\\") FILE_EXTENSION
-																  _T("\\") SHELLEX_THUMBNAIL_CLSID));
+		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+			for (const core::String &ext : desc->exts) {
+				core::String id = core::string::format("Software\\Classes\\%s\\" SHELLEX_THUMBNAIL_CLSID, ext.c_str());
+				hr = RegDeleteTree(HKEY_LOCAL_MACHINE, id.c_str());
+			}
+		}
 	}
 #ifdef _DEBUG
 	if (SUCCEEDED(hr)) {

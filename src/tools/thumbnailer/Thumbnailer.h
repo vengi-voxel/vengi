@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "image/Image.h"
 #include "video/WindowedApp.h"
 #include "io/File.h"
 
@@ -18,6 +19,9 @@ private:
 
 	io::FilePtr _infile;
 	core::String _outfile;
+
+protected:
+	virtual bool saveImage(const image::ImagePtr &image);
 
 public:
 	Thumbnailer(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
