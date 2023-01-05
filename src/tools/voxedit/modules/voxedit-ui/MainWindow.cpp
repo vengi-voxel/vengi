@@ -108,7 +108,6 @@ bool MainWindow::init() {
 	_showLockedAxisVar = core::Var::getSafe(cfg::VoxEditShowlockedaxis);
 	_showAabbVar = core::Var::getSafe(cfg::VoxEditShowaabb);
 	_renderShadowVar = core::Var::getSafe(cfg::VoxEditRendershadow);
-	_animationSpeedVar = core::Var::getSafe(cfg::VoxEditAnimationSpeed);
 	_gridSizeVar = core::Var::getSafe(cfg::VoxEditGridsize);
 	_lastOpenedFile = core::Var::getSafe(cfg::VoxEditLastFile);
 	_lastOpenedFiles = core::Var::getSafe(cfg::VoxEditLastFiles);

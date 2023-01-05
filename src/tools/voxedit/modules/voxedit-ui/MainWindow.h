@@ -43,7 +43,6 @@ private:
 	core::VarPtr _showLockedAxisVar;
 	core::VarPtr _showAabbVar;
 	core::VarPtr _renderShadowVar;
-	core::VarPtr _animationSpeedVar;
 	core::VarPtr _gridSizeVar;
 
 	Viewport* _scene = nullptr;
