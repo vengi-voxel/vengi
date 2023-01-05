@@ -89,7 +89,7 @@ IMGUI_API void Headline(const char *text);
 IMGUI_API bool ToggleButton(const char *text, bool state);
 IMGUI_API void TableKeyValue(const char *key, CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(2);
 IMGUI_API void TableKeyValue(const char *key, const core::String &value);
-IMGUI_API bool DisabledButton(const char *text, bool disabled);
+IMGUI_API bool DisabledButton(const char *text, bool disabled, const ImVec2& size = ImVec2(0, 0));
 
 IMGUI_API bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags = 0,
 						 ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);

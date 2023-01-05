@@ -331,7 +331,7 @@ bool ToggleButton(const char *text, bool state) {
 	return pressed;
 }
 
-bool DisabledButton(const char *text, bool disabled) {
+bool DisabledButton(const char *text, bool disabled, const ImVec2& size) {
 	if (disabled) {
 		const ImVec4& buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
 		const ImVec4& buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
@@ -339,7 +339,7 @@ bool DisabledButton(const char *text, bool disabled) {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, core::Color::gray(buttonHoveredColor));
 		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
 	}
-	const bool pressed = ImGui::Button(text);
+	const bool pressed = ImGui::Button(text, size);
 	if (disabled) {
 		ImGui::PopItemFlag();
 		ImGui::PopStyleColor(2);
