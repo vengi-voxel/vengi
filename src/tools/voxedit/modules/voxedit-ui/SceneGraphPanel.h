@@ -22,9 +22,9 @@ struct LayerSettings;
 class SceneGraphPanel {
 private:
 	void newLayerButton(const voxelformat::SceneGraph &sceneGraph, LayerSettings* layerSettings);
+	core::VarPtr _animationSpeedVar;
 	bool _showNodeDetails = true;
 	bool _hasFocus = false;
-	core::VarPtr _animationSpeedVar;
 
 public:
 	bool _popupNewLayer = false;

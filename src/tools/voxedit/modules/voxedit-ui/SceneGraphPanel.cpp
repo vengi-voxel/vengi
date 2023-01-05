@@ -4,6 +4,7 @@
 
 #include "SceneGraphPanel.h"
 #include "ScopedStyle.h"
+#include "Toolbar.h"
 #include "Util.h"
 #include "core/collection/DynamicArray.h"
 #include "core/Color.h"
@@ -239,39 +240,6 @@ static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGra
 	}
 }
 
-void SceneGraphPanel::newLayerButton(const voxelformat::SceneGraph &sceneGraph, LayerSettings* layerSettings) {
-	if (ImGui::Button(ICON_FA_SQUARE_PLUS"##newlayer")) {
-		const int nodeId = sceneGraph.activeNode();
-		voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
-		const voxel::RawVolume* v = node.volume();
-		const voxel::Region& region = v->region();
-		layerSettings->position = region.getLowerCorner();
-		layerSettings->size = region.getDimensionsInVoxels();
-		if (layerSettings->name.empty()) {
-			layerSettings->name = node.name();
-		}
-		layerSettings->parent = nodeId;
-		_popupNewLayer = true;
-	}
-	ImGui::TooltipText("Add a new model node");
-}
-
-static void newGroupButton(const voxelformat::SceneGraph &sceneGraph) {
-	if (ImGui::Button(ICON_FA_SQUARE_PLUS "##scenegraphnewgroup")) {
-		voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Group);
-		node.setName("new group");
-		sceneMgr().addNodeToSceneGraph(node, sceneGraph.activeNode());
-	}
-	ImGui::TooltipText("Add a new group");
-}
-
-static void removeNodeButton(const voxelformat::SceneGraph &sceneGraph) {
-	if (ImGui::Button(ICON_FA_TRASH "##scenegraphremovenode")) {
-		sceneMgr().nodeRemove(sceneGraph.activeNode(), true);
-	}
-	ImGui::TooltipText("Remove the active node with all its children");
-}
-
 void SceneGraphPanel::update(video::Camera& camera, const char *title, LayerSettings* layerSettings, command::CommandExecutionListener &listener) {
 	if (!_animationSpeedVar) {
 		_animationSpeedVar = core::Var::getSafe(cfg::VoxEditAnimationSpeed);
@@ -293,32 +261,48 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, LayerSett
 			size.y = textLineHeight * 2.0f;
 		}
 		if (ImGui::BeginChild("master##scenegraphpanel", size)) {
-			// TODO: Use Toolbar
-			// TODO: re-add drag and drop of nodes
-			// TODO: cleanup delete nodes/layers
-			newLayerButton(sceneGraph, layerSettings);
-			ImGui::SameLine();
-			newGroupButton(sceneGraph);
-			ImGui::SameLine();
-			removeNodeButton(sceneGraph);
-			ImGui::SameLine();
-
 			const bool onlyOneModel = sceneGraph.size(voxelformat::SceneGraphNodeType::Model) <= 1;
-			if (ImGui::DisabledButton(ICON_FA_PLAY"##animatelayers", onlyOneModel)) {
-				if (sceneMgr.animateActive()) {
-					command::executeCommands("animate 0", &listener);
-				} else {
-					const core::String& cmd = core::string::format("animate %f", _animationSpeedVar->floatVal());
-					command::executeCommands(cmd.c_str(), &listener);
+			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
+			ui::Toolbar toolbar(buttonSize);
+
+			toolbar.button(ICON_FA_SQUARE_PLUS, "Add a new model node", [&sceneGraph, this, layerSettings] () {
+				const int nodeId = sceneGraph.activeNode();
+				voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
+				const voxel::RawVolume* v = node.volume();
+				const voxel::Region& region = v->region();
+				layerSettings->position = region.getLowerCorner();
+				layerSettings->size = region.getDimensionsInVoxels();
+				if (layerSettings->name.empty()) {
+					layerSettings->name = node.name();
 				}
-			}
-			ImGui::SameLine();
-			ImGui::CommandButton(ICON_FA_EYE "##SceneGraphPanel", "layershowall", nullptr, 0, &listener);
-			ImGui::SameLine();
-			ImGui::CommandButton(ICON_FA_EYE_SLASH "##SceneGraphPanel", "layerhideall", nullptr, 0, &listener);
-			if (!onlyOneModel) {
-				ImGui::InputVarFloat("Animation speed", _animationSpeedVar);
-			}
+				layerSettings->parent = nodeId;
+				_popupNewLayer = true;
+			});
+
+			toolbar.button(ICON_FA_SQUARE_PLUS, "Add a new group", [&sceneGraph, &sceneMgr] () {
+				voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Group);
+				node.setName("new group");
+				sceneMgr.addNodeToSceneGraph(node, sceneGraph.activeNode());
+			});
+
+			// TODO: cleanup delete nodes/layers
+			toolbar.button(ICON_FA_TRASH, "Remove the active node with all its children", [&sceneGraph, &sceneMgr]() {
+				sceneMgr.nodeRemove(sceneGraph.activeNode(), true);
+			});
+
+			toolbar.custom([&sceneMgr, onlyOneModel, &listener, this, buttonSize] () {
+				if (ImGui::DisabledButton(ICON_FA_PLAY, onlyOneModel, buttonSize)) {
+					if (sceneMgr.animateActive()) {
+						command::executeCommands("animate 0", &listener);
+					} else {
+						const core::String& cmd = core::string::format("animate %f", _animationSpeedVar->floatVal());
+						command::executeCommands(cmd.c_str(), &listener);
+					}
+				}
+			});
+			toolbar.button(ICON_FA_EYE, "layershowall");
+			toolbar.button(ICON_FA_EYE_SLASH, "layerhideall");
+			toolbar.end();
 			static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 												ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
 												ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg |
