@@ -53,7 +53,7 @@ void Toolbar::button(const char *icon, const char *command) {
 	newline();
 	ui::ScopedStyle style;
 	style.setFramePadding(ImVec2(0.0f, 0.0f));
-	ImGui::CommandButton(icon, command, nullptr, _size.x, _listener);
+	ImGui::CommandButton(icon, command, nullptr, _size, _listener);
 	next();
 }
 

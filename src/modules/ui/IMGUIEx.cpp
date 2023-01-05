@@ -363,8 +363,8 @@ void TooltipCommand(const char *command) {
 	}
 }
 
-const char *CommandButton(const char *title, const char *command, const char *tooltip, float width, command::CommandExecutionListener* listener) {
-	if (ImGui::Button(title, ImVec2(width, 0))) {
+const char *CommandButton(const char *title, const char *command, const char *tooltip, const ImVec2 &size, command::CommandExecutionListener* listener) {
+	if (ImGui::Button(title, size)) {
 		if (command::executeCommands(command, listener) > 0) {
 			return command;
 		}

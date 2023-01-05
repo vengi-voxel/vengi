@@ -207,11 +207,11 @@ void PalettePanel::paletteActions(voxel::Palette &palette, command::CommandExecu
 	ImGui::SliderFloat(ICON_FA_SLIDERS, &_intensityChange, -1.0f, 1.0f);
 	ImGui::SameLine();
 	const core::String &paletteChangeCmd = core::string::format("palette_changeintensity %f", _intensityChange);
-	if (ImGui::CommandButton("Apply", paletteChangeCmd.c_str(), nullptr, 0.0f, &listener)) {
+	if (ImGui::CommandButton("Apply", paletteChangeCmd.c_str(), nullptr, ImVec2(0.0f, 0.0f), &listener)) {
 		_intensityChange = 0.0f;
 	}
 
-	ImGui::CommandButton(ICON_FA_PALETTE " Load##palette", "importpalette", nullptr, 0.0f, &listener);
+	ImGui::CommandButton(ICON_FA_PALETTE " Load##palette", "importpalette", nullptr, ImVec2(0.0f, 0.0f), &listener);
 	ImGui::SameLine();
 	if (ImGui::Button("Switch##palette")) {
 		reloadAvailablePalettes();

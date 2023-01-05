@@ -99,7 +99,7 @@ IMGUI_API bool InputTextMultiline(const char *label, core::String *str, const Im
 IMGUI_API bool InputTextWithHint(const char *label, const char *hint, core::String *str, ImGuiInputTextFlags flags = 0,
 								 ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);
 IMGUI_API const char *CommandButton(const char *title, const char *command, const char *tooltip = nullptr,
-									float width = 0.0f, command::CommandExecutionListener *listener = nullptr);
+									const ImVec2 &size = ImVec2(0.0f, 0.0f), command::CommandExecutionListener *listener = nullptr);
 IMGUI_API bool URLButton(const char *title, const char *url);
 IMGUI_API const char *CommandMenuItem(const char *title, const char *command, bool enabled = true,
 									  command::CommandExecutionListener *listener = nullptr);
