@@ -48,7 +48,7 @@ public:
 		if (tooltip != nullptr && tooltip[0] != '\0') {
 			ui::ScopedStyle style;
 			style.setFont(imguiApp()->defaultFont());
-			ImGui::TooltipText(tooltip);
+			ImGui::TooltipText("%s", tooltip);
 		}
 		next();
 		return pressed;
