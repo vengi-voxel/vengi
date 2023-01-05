@@ -79,32 +79,39 @@ app::AppState Thumbnailer::onRunning() {
 	if (renderTurntable) {
 		voxelrender::volumeTurntable(_infile->name(), _outfile, ctx, 16);
 	} else {
-		const io::FilePtr& outfile = io::filesystem()->open(_outfile, io::FileMode::SysWrite);
-		io::FileStream outStream(outfile);
 		io::FileStream stream(_infile);
 		const image::ImagePtr &image = voxelrender::volumeThumbnail(_infile->name(), stream, ctx);
-		if (image) {
-			if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
-				Log::error("Failed to write image %s", _outfile.c_str());
-			} else {
-				Log::info("Write image %s", _outfile.c_str());
-			}
-		} else {
-			Log::error("Failed to create thumbnail for %s", _infile->name().c_str());
-		}
+		saveImage(image);
 	}
 
 	requestQuit();
 	return state;
 }
 
+bool Thumbnailer::saveImage(const image::ImagePtr &image) {
+	if (image) {
+		const io::FilePtr& outfile = io::filesystem()->open(_outfile, io::FileMode::SysWrite);
+		io::FileStream outStream(outfile);
+		if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
+			Log::error("Failed to write image %s", _outfile.c_str());
+		} else {
+			Log::info("Write image %s", _outfile.c_str());
+		}
+		return true;
+	}
+	Log::error("Failed to create thumbnail for %s", _infile->name().c_str());
+	return false;
+}
+
 app::AppState Thumbnailer::onCleanup() {
 	return Super::onCleanup();
 }
 
+#ifndef WINDOWS_THUMBNAILER_DLL
 int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = core::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
 	Thumbnailer app(filesystem, timeProvider);
 	return app.startMainLoop(argc, argv);
 }
+#endif
