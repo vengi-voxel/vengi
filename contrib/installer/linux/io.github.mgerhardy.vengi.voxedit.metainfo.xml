@@ -12,10 +12,16 @@
   </description>
   <screenshots>
     <screenshot type="default">
-      <image type="source">https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-new-ui.png</image>
+      <image type="source">https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-2023-01.png</image>
     </screenshot>
   </screenshots>
   <releases>
+    <release version="v0.0.23" date="2022-12-17" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.23</url>
+    </release>
+    <release version="v0.0.22" date="2022-10-31" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.22</url>
+    </release>
     <release version="v0.0.21" date="2022-09-05" type="stable">
       <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.21</url>
     </release>
