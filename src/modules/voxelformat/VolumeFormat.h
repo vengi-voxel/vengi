@@ -18,7 +18,6 @@ class Palette;
 
 namespace voxelformat {
 
-extern const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[];
 extern const io::FormatDescription* voxelLoad();
 extern const io::FormatDescription* voxelSave();
 

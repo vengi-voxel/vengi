@@ -48,9 +48,6 @@
 
 namespace voxelformat {
 
-// this is the list of internal formats that are supported engine-wide (the format we save our own models in)
-const char *SUPPORTED_VOXEL_FORMATS_LOAD_LIST[] = {"qb", "vox", nullptr};
-
 const io::FormatDescription* voxelLoad() {
 	// this is the list of supported voxel volume formats that are have importers implemented
 	static const io::FormatDescription desc[] = {
