@@ -39,8 +39,8 @@
 //! 0xYYYXXXZZ
 //! @endcode
 //! This leaves 12 bits for X and Y and 8 bits for Z
-#define pos_key(x,y,z)			(((y)<<20) | ((x)<<8) | (z))
-#define key_discardz(key)		((key)&0xFFFFFF00)
+#define pos_key(x,y,z)			((uint32_t)(((y)<<20) | ((x)<<8) | (z)))
+#define key_discardz(key)		((uint32_t)((key)&0xFFFFFF00))
 #define key_getx(key)			(((key)>>8)&0xFFF)
 #define key_gety(key)			(((key)>>20)&0xFFF)
 #define key_getz(key)			((key)&0xFF)
