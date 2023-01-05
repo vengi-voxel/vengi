@@ -20,6 +20,8 @@ General:
    - Fixed several issues with AceOfSpades vxl format - switched to libvxl for loading and saving
    - Fixed splitting volumes even if not needed (off-by-one error)
    - Fixed multi-monitor support
+   - Fixed colors in the tree generator
+   - Improved the key binding handling and made it more flexible
 
 VoxEdit:
 
@@ -29,6 +31,7 @@ VoxEdit:
    - Made undo/redo more visible
    - Switched the camera modifier to the right side of the viewport
    - Fixed diffuse and ambient color settings mix-up
+   - Merged layer and scene graph panel into one
 
 ## 0.0.23 (2022-12-17)
 
