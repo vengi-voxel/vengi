@@ -299,6 +299,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, LayerSett
 						command::executeCommands(cmd.c_str(), &listener);
 					}
 				}
+				ImGui::TooltipCommand("animate");
 			});
 			toolbar.button(ICON_FA_EYE, "layershowall");
 			toolbar.button(ICON_FA_EYE_SLASH, "layerhideall");
