@@ -11,6 +11,8 @@
 #include "SpaceColonization.h"
 #include "math/AABB.h"
 #include "core/Log.h"
+#include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/Voxel.h"
 
 namespace voxelgenerator {
@@ -313,8 +315,11 @@ void createSpaceColonizationTree(Volume& volume, const voxelgenerator::TreeSpace
  */
 template<class Volume>
 void createTree(Volume& volume, const voxelgenerator::TreeContext& ctx, math::Random& random) {
-	const voxel::Voxel trunkVoxel = voxel::createVoxel(2);
-	const voxel::Voxel leavesVoxel = voxel::createVoxel(1);
+	const voxel::Palette &palette = voxel::getPalette();
+	const uint8_t green = palette.getClosestMatch(core::RGBA(123, 162, 63));
+	const uint8_t brown = palette.getClosestMatch(core::RGBA(143, 90, 60));
+	const voxel::Voxel trunkVoxel = voxel::createVoxel(brown);
+	const voxel::Voxel leavesVoxel = voxel::createVoxel(green);
 	if (ctx.cfg.type == TreeType::BranchesEllipsis) {
 		createTreeBranchEllipsis(volume, ctx.branchellipsis, random, trunkVoxel, leavesVoxel);
 	} else if (ctx.cfg.type == TreeType::Ellipsis) {
