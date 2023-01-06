@@ -241,8 +241,24 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		const MementoHandler &mementoHandler = sceneMgr().mementoHandler();
 		ImGui::CommandMenuItem(ICON_FA_ROTATE_LEFT " Undo", "undo", mementoHandler.canUndo(), listener);
 		ImGui::CommandMenuItem(ICON_FA_ROTATE_RIGHT " Redo", "redo", mementoHandler.canRedo(), listener);
+		static const char *modes[] = {"Perspective", "Orthogonal"};
+		static_assert(lengthof(modes) == (int)video::CameraMode::Max, "Array size doesn't match enum values");
+		const int currentMode = (int)camera().mode();
+		const float modeMaxWidth = ImGui::CalcComboBoxWidth(modes[currentMode]);
+		ImGui::SetNextItemWidth(modeMaxWidth);
+		if (ImGui::BeginCombo("##cameramode", modes[currentMode])) {
+			for (int n = 0; n < lengthof(modes); n++) {
+				const bool isSelected = (currentMode == n);
+				if (ImGui::Selectable(modes[n], isSelected)) {
+					camera().setMode((video::CameraMode)n);
+				}
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
 		ImGui::EndMenuBar();
-		// TODO: add camera type options
 	}
 }
 
