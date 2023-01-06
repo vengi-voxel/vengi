@@ -70,11 +70,6 @@ public:
 
 	void resize(const glm::ivec2& frameBufferSize);
 
-	/**
-	 * Update the components
-	 */
-	void update(double deltaFrameSeconds);
-
 	void move(bool pan, bool rotate, int x, int y);
 
 	video::Camera& camera();

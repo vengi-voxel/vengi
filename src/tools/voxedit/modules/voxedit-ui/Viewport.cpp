@@ -58,11 +58,11 @@ void Viewport::resetCamera(const glm::ivec3 &pos, const voxel::Region &region) {
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.setFarPlane(_viewDistance->floatVal());
 	_camera.setTarget(pos);
-	const float distance = 100.0f;
 	glm::ivec3 center = pos;
 	if (region.isValid()) {
 		center = region.getCenter();
 	}
+	const float distance = 100.0f;
 	_camera.setTargetDistance(distance);
 	if (_camMode == SceneCameraMode::Free) {
 		const int height = region.getHeightInCells();
@@ -76,10 +76,6 @@ void Viewport::resetCamera(const glm::ivec3 &pos, const voxel::Region &region) {
 		const int depth = region.getDepthInCells();
 		_camera.setWorldPosition(glm::vec3(center.x, center.y, -depth - center.z));
 	}
-}
-
-void Viewport::update(double deltaFrameSeconds) {
-	_camera.update(deltaFrameSeconds);
 }
 
 void Viewport::setMode(Viewport::SceneCameraMode mode) {
@@ -157,7 +153,7 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 
 			if (setupFrameBuffer(contentSize)) {
 				const double deltaFrameSeconds = app->deltaFrameSeconds();
-				update(deltaFrameSeconds);
+				_camera.update(deltaFrameSeconds);
 
 				renderToFrameBuffer();
 				// use the uv coords here to take a potential fb flip into account
