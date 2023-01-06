@@ -56,6 +56,8 @@ namespace voxelformat {
 	MCENTRY("sugar_cane", 1, 0xFF),                                   \
 	MCENTRY("wall_torch", 1, 0xFF),                                   \
 	MCENTRY("grass", 2, 0xFF),                                        \
+	MCENTRY("grass_1", 18, 0xFF),                                     \
+	MCENTRY("grass_2", 29, 0xFF),                                     \
 	MCENTRY("grass_block", 2, 0xFF),                                  \
 	MCENTRY("kelp", 2, 0xFF),                                         \
 	MCENTRY("seagrass", 2, 0xFF),                                     \
@@ -86,6 +88,9 @@ namespace voxelformat {
 	MCENTRY("still_lava", 11, 0xFF),                                  \
 	MCENTRY("red_sand", 12, 0xFF),                                    \
 	MCENTRY("sand", 12, 0xFF),                                        \
+	MCENTRY("sandstonebrick", 12, 0xFF),                              \
+	MCENTRY("stair_sandstonebrick", 12, 0xFF),                        \
+	MCENTRY("slab_sandstonebrick", 12, 0xFF),                         \
 	MCENTRY("gravel", 13, 0xFF),                                      \
 	MCENTRY("gold_ore", 14, 0xFF),                                    \
 	MCENTRY("iron_ore", 15, 0xFF),                                    \
@@ -102,6 +107,7 @@ namespace voxelformat {
 	MCENTRY("sponge", 19, 0xFF),                                      \
 	MCENTRY("wet_sponge", 19, 0xFF),                                  \
 	MCENTRY("glass", 20, 0x88),                                       \
+	MCENTRY("obsidian_glass", 20, 0x88),                              \
 	MCENTRY("lapis_lazuli_ore", 21, 0xFF),                            \
 	MCENTRY("lapis_ore", 21, 0xFF),                                   \
 	MCENTRY("lapis_block", 22, 0xFF),                                 \
@@ -113,6 +119,7 @@ namespace voxelformat {
 	MCENTRY("note_block", 25, 0xFF),                                  \
 	MCENTRY("bed", 26, 0xFF),                                         \
 	MCENTRY("red_bed", 26, 0xFF),                                     \
+	MCENTRY("bed_top", 26, 0xFF),                                     \
 	MCENTRY("powered_rail", 27, 0xFF),                                \
 	MCENTRY("detector_rail", 28, 0xFF),                               \
 	MCENTRY("sticky_piston", 29, 0xFF),                               \
@@ -137,6 +144,7 @@ namespace voxelformat {
 	MCENTRY("pink_wool", 35, 0xFF),                                   \
 	MCENTRY("purple_wool", 35, 0xFF),                                 \
 	MCENTRY("red_wool", 35, 0xFF),                                    \
+	MCENTRY("white", 35, 0xFF),                                       \
 	MCENTRY("white_concrete", 35, 0xFF),                              \
 	MCENTRY("white_wool", 35, 0xFF),                                  \
 	MCENTRY("yellow_wool", 35, 0xFF),                                 \
@@ -168,6 +176,7 @@ namespace voxelformat {
 	MCENTRY("sandstone_slab", 44, 0xFF),                              \
 	MCENTRY("stone_brick_slab", 44, 0xFF),                            \
 	MCENTRY("stone_slab", 44, 0xFF),                                  \
+	MCENTRY("slab_stone", 44, 0xFF),                                  \
 	MCENTRY("wooden_slab", 44, 0xFF),                                 \
 	MCENTRY("bricks", 45, 0xFF),                                      \
 	MCENTRY("brick_wall", 45, 0xFF),                                  \
@@ -195,6 +204,9 @@ namespace voxelformat {
 	MCENTRY("campfire", 62, 0xFF),                                    \
 	MCENTRY("oak_sign", 63, 0xFF),                                    \
 	MCENTRY("standing_sign_block", 63, 0xFF),                         \
+	MCENTRY("bed_bottom", 64, 0xFF),                                  \
+	MCENTRY("door_wood", 64, 0xFF),                                   \
+	MCENTRY("door_wood_b", 64, 0xFF),                                 \
 	MCENTRY("oak_door", 64, 0xFF),                                    \
 	MCENTRY("oak_door_block", 64, 0xFF),                              \
 	MCENTRY("ladder", 65, 0xFF),                                      \
@@ -465,6 +477,7 @@ namespace voxelformat {
 	MCENTRY("end_rod", 198, 0xFF),                                    \
 	MCENTRY("chorus_plant", 199, 0xFF),                               \
 	MCENTRY("chorus_flower", 200, 0xFF),                              \
+	MCENTRY("tulip", 201, 0xFF),                                      \
 	MCENTRY("purpur_block", 201, 0xFF),                               \
 	MCENTRY("purpur_pillar", 202, 0xFF),                              \
 	MCENTRY("purpur_stairs", 203, 0xFF),                              \
@@ -472,6 +485,7 @@ namespace voxelformat {
 	MCENTRY("purpur_slab", 205, 0xFF),                                \
 	MCENTRY("end_stone_bricks", 206, 0xFF),                           \
 	MCENTRY("beetroots", 207, 0xFF),                                  \
+	MCENTRY("dirt_with_grass", 208, 0xFF),                            \
 	MCENTRY("grass_path", 208, 0xFF),                                 \
 	MCENTRY("end_gateway", 209, 0xFF),                                \
 	MCENTRY("repeating_command_block", 210, 0xFF),                    \
