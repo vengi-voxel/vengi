@@ -20,7 +20,7 @@ if (WIN32)
 		windows/ThumbnailerProvider.cpp windows/ThumbnailerProvider.h
 		Thumbnailer.h Thumbnailer.cpp
 	)
-	add_library(voxelthumb SHARED ${WIN_SRCS})
+	engine_add_sharedlibrary(TARGET voxelthumb SRCS ${WIN_SRCS})
 	target_compile_definitions(voxelthumb PRIVATE -DWINDOWS_THUMBNAILER_DLL)
 	set_target_properties(voxelthumb PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS OFF)
 	target_link_libraries(voxelthumb app voxelrender shlwapi)
