@@ -228,10 +228,10 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	voxelformat::copyNode(*node, newNode, false);
 	newSceneGraph.emplace(core::move(newNode));
 	if (voxelformat::saveFormat(filePtr, &_lastFilename.desc, newSceneGraph, voxelrender::volumeThumbnail)) {
-		Log::info("Saved layer %i to %s", nodeId, filePtr->name().c_str());
+		Log::info("Saved node %i to %s", nodeId, filePtr->name().c_str());
 		return true;
 	}
-	Log::warn("Failed to save layer %i to %s", nodeId, filePtr->name().c_str());
+	Log::warn("Failed to save node %i to %s", nodeId, filePtr->name().c_str());
 	return false;
 }
 
@@ -1249,7 +1249,7 @@ void SceneManager::construct() {
 		if (!saveModels(dir)) {
 			Log::error("Failed to save models to dir: %s", dir.c_str());
 		}
-	}).setHelp("Save all models into filenames represented by their layer/node names");
+	}).setHelp("Save all nodes into filenames represented by their node names");
 
 	command::Command::registerCommand("layersave", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1258,14 +1258,14 @@ void SceneManager::construct() {
 			return;
 		}
 		const int nodeId = core::string::toInt(args[0]);
-		core::String file = core::string::format("layer%i.vox", nodeId);
+		core::String file = core::string::format("node%i.vox", nodeId);
 		if (args.size() == 2) {
 			file = args[1];
 		}
 		if (!saveNode(nodeId, file)) {
 			Log::error("Failed to save node %i to file: %s", nodeId, file.c_str());
 		}
-	}).setHelp("Save a single model to the given path with their layer/node names");
+	}).setHelp("Save a single node to the given path with their node names");
 
 	command::Command::registerCommand("newscene", [&] (const command::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
@@ -1287,7 +1287,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("crop", [&] (const command::CmdArgs& args) {
 		crop();
-	}).setHelp("Crop the current layer to the voxel boundaries");
+	}).setHelp("Crop the current active node to the voxel boundaries");
 
 	command::Command::registerCommand("scale", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1296,7 +1296,7 @@ void SceneManager::construct() {
 			nodeId = core::string::toInt(args[0]);
 		}
 		scale(nodeId);
-	}).setHelp("Scale the current layer or given layer down");
+	}).setHelp("Scale the current active node or the given node down");
 
 	command::Command::registerCommand("colortolayer", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1308,7 +1308,7 @@ void SceneManager::construct() {
 			const voxel::Voxel voxel = voxel::createVoxel(index);
 			colorToNewLayer(voxel);
 		}
-	}).setHelp("Move the voxels of the current selected palette index or the given index into a new layer");
+	}).setHelp("Move the voxels of the current selected palette index or the given index into a new node");
 
 	command::Command::registerCommand("abortaction", [&] (const command::CmdArgs& args) {
 		_modifier.aabbAbort();
@@ -1393,7 +1393,7 @@ void SceneManager::construct() {
 		} else {
 			resize(activeNode(), glm::ivec3(1));
 		}
-	}).setHelp("Resize your current layer about given x, y and z size");
+	}).setHelp("Resize your current node about given x, y and z size");
 
 	command::Command::registerCommand("shift", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1419,7 +1419,7 @@ void SceneManager::construct() {
 			const glm::ivec3& delta = refPos - center;
 			shift(nodeId, delta);
 		});
-	}).setHelp("Center the current active layers at the reference position");
+	}).setHelp("Center the current active nodes at the reference position");
 
 	command::Command::registerCommand("center_origin", [&] (const command::CmdArgs& args) {
 		_sceneGraph.foreachGroup([&] (int nodeId) {
@@ -1432,7 +1432,7 @@ void SceneManager::construct() {
 			shift(nodeId, delta);
 		});
 		setReferencePosition(glm::zero<glm::ivec3>());
-	}).setHelp("Center the current active layers at the origin");
+	}).setHelp("Center the current active nodes at the origin");
 
 	command::Command::registerCommand("move", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1484,7 +1484,7 @@ void SceneManager::construct() {
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
 		rotate(x, y, z);
-	}).setHelp("Rotate active layers by the given angles (in degree)");
+	}).setHelp("Rotate active nodes by the given angles (in degree)");
 
 	command::Command::registerCommand("layermerge", [&] (const command::CmdArgs& args) {
 		int nodeId1;
@@ -1497,24 +1497,24 @@ void SceneManager::construct() {
 			nodeId2 = _sceneGraph.nextModelNode(nodeId1);
 		}
 		mergeNodes(nodeId1, nodeId2);
-	}).setHelp("Merge two given layers or active layer with the one below");
+	}).setHelp("Merge two given nodes or active model node with the next one");
 
 	command::Command::registerCommand("layermergeall", [&] (const command::CmdArgs& args) {
 		mergeNodes(NodeMergeFlags::All);
-	}).setHelp("Merge all layers");
+	}).setHelp("Merge all nodes");
 
 	command::Command::registerCommand("layermergevisible", [&] (const command::CmdArgs& args) {
 		mergeNodes(NodeMergeFlags::Visible);
-	}).setHelp("Merge all visible layers");
+	}).setHelp("Merge all visible nodes");
 
 	command::Command::registerCommand("layermergelocked", [&] (const command::CmdArgs& args) {
 		mergeNodes(NodeMergeFlags::Locked);
-	}).setHelp("Merge all locked layers");
+	}).setHelp("Merge all locked nodes");
 
 	command::Command::registerCommand("animate", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
-			Log::info("Usage: animate <framedelaymillis> <0|1>");
-			Log::info("framedelay of 0 will stop the animation, too");
+			Log::info("Usage: animate <nodedelaymillis> <0|1>");
+			Log::info("nodedelay of 0 will stop the animation, too");
 			return;
 		}
 		if (args.size() == 2) {
@@ -1524,7 +1524,7 @@ void SceneManager::construct() {
 			}
 		}
 		_animationSpeed = core::string::toDouble(args[0]) / 1000.0;
-	}).setHelp("Animate all visible layers with the given delay in millis between the frames");
+	}).setHelp("Animate all nodes with the given delay in millis between the frames");
 
 	command::Command::registerCommand("setcolor", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
@@ -1577,7 +1577,7 @@ void SceneManager::construct() {
 		}
 		const math::Axis axis = math::toAxis(args[0]);
 		flip(axis);
-	}).setHelp("Flip the selected layers around the given axis");
+	}).setHelp("Flip the selected nodes around the given axis");
 
 	command::Command::registerCommand("lock", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
@@ -1620,7 +1620,7 @@ void SceneManager::construct() {
 		const int ih = core::string::toInt(height);
 		const int id = core::string::toInt(depth);
 		addModelChild(name, iw, ih, id);
-	}).setHelp("Add a new layer (with a given name and width, height, depth - all optional)");
+	}).setHelp("Add a new model node (with a given name and width, height, depth - all optional)");
 
 	command::Command::registerCommand("layerdelete", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
@@ -1636,21 +1636,21 @@ void SceneManager::construct() {
 		if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(true);
 		}
-	}).setHelp("Lock a particular layer by id - or the current active one");
+	}).setHelp("Lock a particular node by id - or the current active one");
 
 	command::Command::registerCommand("togglelayerlock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(!node->locked());
 		}
-	}).setHelp("Toggle the lock state of a particular layer by id - or the current active one");
+	}).setHelp("Toggle the lock state of a particular node by id - or the current active one");
 
 	command::Command::registerCommand("layerunlock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(false);
 		}
-	}).setHelp("Unlock a particular layer by id - or the current active one");
+	}).setHelp("Unlock a particular node by id - or the current active one");
 
 	command::Command::registerCommand("layeractive", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -1659,32 +1659,32 @@ void SceneManager::construct() {
 		}
 		const int nodeId = core::string::toInt(args[0]);
 		nodeActivate(nodeId);
-	}).setHelp("Set or print the current active layer");
+	}).setHelp("Set or print the current active node");
 
 	command::Command::registerCommand("togglelayerstate", [&](const command::CmdArgs &args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			node->setVisible(!node->visible());
 		}
-	}).setHelp("Toggle the visible state of a layer");
+	}).setHelp("Toggle the visible state of a node");
 
 	command::Command::registerCommand("layerhideall", [&](const command::CmdArgs &args) {
 		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
 			node.setVisible(false);
 		}
-	}).setHelp("Hide all layers");
+	}).setHelp("Hide all nodes");
 
 	command::Command::registerCommand("layerlockall", [&](const command::CmdArgs &args) {
 		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
 			node.setLocked(true);
 		}
-	}).setHelp("Lock all layers");
+	}).setHelp("Lock all nodes");
 
 	command::Command::registerCommand("layerunlockall", [&] (const command::CmdArgs& args) {
 		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
 			node.setLocked(false);
 		}
-	}).setHelp("Unlock all layers");
+	}).setHelp("Unlock all nodes");
 
 	command::Command::registerCommand("layerhideothers", [&] (const command::CmdArgs& args) {
 		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
@@ -1694,7 +1694,7 @@ void SceneManager::construct() {
 			}
 			node.setVisible(false);
 		}
-	}).setHelp("Hide all layers except the active one");
+	}).setHelp("Hide all model nodes except the active one");
 
 	command::Command::registerCommand("layerrename", [&] (const command::CmdArgs& args) {
 		if (args.size() == 1) {
@@ -1716,7 +1716,7 @@ void SceneManager::construct() {
 		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
 			node.setVisible(true);
 		}
-	}).setHelp("Show all layers");
+	}).setHelp("Show all nodes");
 
 	command::Command::registerCommand("layerduplicate", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();

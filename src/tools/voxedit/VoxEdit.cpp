@@ -89,8 +89,8 @@ app::AppState VoxEdit::onConstruct() {
 	});
 	core::Var::get(cfg::VoxEditLastFile, "");
 	core::Var::get(cfg::VoxEditLastFiles, "");
-	core::Var::get(cfg::VoxEditGrayInactive, "false", "Render the inactive layers in gray scale mode", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditHideInactive, "false", "Hide the inactive layers", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditGrayInactive, "false", "Render the inactive nodes in gray scale mode", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditHideInactive, "false", "Hide the inactive nodes", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditViewdistance, "5000");
 	core::Var::get(cfg::VoxEditShowaxis, "true", "Show the axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGuizmoRotation, "false", "Activate rotations for the guizmo in scene mode", core::Var::boolValidator);
@@ -175,7 +175,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (!voxedit::sceneMgr().importHeightmap(args[0])) {
 			Log::error("Failed to execute 'importheightmap' for file '%s'", args[0].c_str());
 		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import a 2d heightmap image into the current active volume layer");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import a 2d heightmap image into the current active node");
 
 	command::Command::registerCommand("importcoloredheightmap", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
@@ -185,7 +185,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (!voxedit::sceneMgr().importColoredHeightmap(args[0])) {
 			Log::error("Failed to execute 'importcoloredheightmap' for file '%s'", args[0].c_str());
 		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import a 2d heightmap image into the current active volume layer");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import a 2d heightmap image into the current active node");
 
 	command::Command::registerCommand("importplane", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
@@ -195,7 +195,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (!voxedit::sceneMgr().importAsPlane(args[0])) {
 			Log::error("Failed to execute 'importplane' for file '%s'", args[0].c_str());
 		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a plane into a new layer");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a plane into a new node");
 
 	command::Command::registerCommand("importvolume", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
@@ -207,7 +207,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (!voxedit::sceneMgr().importAsVolume(args[0], maxDepth, bothSides)) {
 			Log::error("Failed to execute 'importvolume' for file '%s'", args[0].c_str());
 		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a volume into a new layer");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a volume into a new node");
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
