@@ -63,7 +63,7 @@ const char *AxisButton(math::Axis axis, const char *name, const char *command, c
 	} else {
 		core::string::formatBuf(buf, sizeof(buf), "%s", name);
 	}
-	return ImGui::CommandButton(buf, command, tooltip, width, listener);
+	return ImGui::CommandButton(buf, command, tooltip, ImVec2(width, 0), listener);
 }
 
 bool InputAxisInt(math::Axis axis, const char *name, int* value, int step) {
