@@ -15,6 +15,38 @@ function(engine_install TARGET FILE DESTINATION INSTALL_DATA)
 	configure_file(${DATA_DIR}/${FILE} ${CMAKE_BINARY_DIR}/${TARGET}/${DESTINATION}/${filename} COPYONLY)
 endfunction()
 
+function(engine_add_sharedlibrary)
+	set(_OPTIONS_ARGS)
+	set(_ONE_VALUE_ARGS TARGET)
+	set(_MULTI_VALUE_ARGS SRCS)
+
+	cmake_parse_arguments(_LIB "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
+
+	add_library(${_LIB_TARGET} SHARED ${_LIB_SRCS})
+
+	set_target_properties(${_LIB_TARGET} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_NAME}-${_LIB_TARGET}")
+	set_target_properties(${_LIB_TARGET} PROPERTIES
+		ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${_LIB_TARGET}"
+		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${_LIB_TARGET}"
+		RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${_LIB_TARGET}"
+	)
+	foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+		string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+		set_target_properties(${_LIB_TARGET} PROPERTIES
+			ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "${CMAKE_BINARY_DIR}/${_LIB_TARGET}"
+			LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "${CMAKE_BINARY_DIR}/${_LIB_TARGET}"
+			RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} "${CMAKE_BINARY_DIR}/${_LIB_TARGET}"
+		)
+	endforeach()
+	if (WIN32)
+		set(INSTALL_LIB_DIR ".")
+	else()
+		set(INSTALL_LIB_DIR ".")
+	endif()
+	install(TARGETS ${_LIB_TARGET} DESTINATION ${INSTALL_LIB_DIR} COMPONENT ${_LIB_TARGET})
+	set(CPACK_NSIS_${_LIB_TARGET}_INSTALL_DIRECTORY ${_LIB_TARGET})
+endfunction()
+
 #
 # set up the binary for the application. This will also set up platform specific stuff for you
 #
@@ -53,6 +85,8 @@ function(engine_add_executable)
 	else()
 		set(HAS_ICON 0)
 	endif()
+	
+	set(CPACK_NSIS_${_EXE_TARGET}_INSTALL_DIRECTORY ${_EXE_TARGET})
 
 	set(${_EXE_TARGET}_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "${_EXE_TARGET} source directory")
 	if (_EXE_WINDOWED)
@@ -116,8 +150,10 @@ function(engine_add_executable)
 
 	if (_EXE_NOINSTALL)
 		set(INSTALL_DATA False)
+		set(CPACK_${_EXE_TARGET}_COMPONENT_INSTALL OFF)
 	else()
 		set(INSTALL_DATA True)
+		set(CPACK_${_EXE_TARGET}_COMPONENT_INSTALL ON)
 	endif()
 
 	if (APPLE)

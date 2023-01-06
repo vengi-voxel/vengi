@@ -40,6 +40,13 @@ deb: deb-changelog
 tests:
 	$(Q)ctest --test-dir $(BUILDDIR) $(CTEST_FLAGS)
 
+package: $(BUILDDIR)/CMakeCache.txt
+ifeq ($(OS),Windows_NT)
+	$(Q)cd $(BUILDDIR) & cpack
+else
+	$(Q)cd $(BUILDDIR); cpack
+endif
+
 .PHONY: cmake
 cmake:
 	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS)
