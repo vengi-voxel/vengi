@@ -545,8 +545,9 @@ const PaletteArray &getPaletteArray() {
 int findPaletteIndex(const core::String &name, int defaultValue) {
 	core::String key = name;
 	// minecraft:dark_oak_stairs[facing=east,half=bottom,shape=outer_left,waterlogged=false][INT] = 554
-	if (key.contains("minecraft:")) {
-		key = key.substr(10);
+	size_t pos = key.find(":");
+	if (pos != core::String::npos) {
+		key = key.substr(pos + 1, key.size() - pos - 1);
 	}
 	size_t n = key.find("[");
 	if (n != core::String::npos) {
