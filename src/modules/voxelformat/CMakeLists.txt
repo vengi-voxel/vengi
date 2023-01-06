@@ -28,6 +28,7 @@ set(SRCS
 	QBCLFormat.h QBCLFormat.cpp
 	QEFFormat.h QEFFormat.cpp
 	MCRFormat.h MCRFormat.cpp
+	MTSFormat.h MTSFormat.cpp
 	VXAFormat.h VXAFormat.cpp
 	VXCFormat.h VXCFormat.cpp
 	VXMFormat.h VXMFormat.cpp

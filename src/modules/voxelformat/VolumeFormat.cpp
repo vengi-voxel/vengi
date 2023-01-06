@@ -27,6 +27,7 @@
 #include "voxelformat/KV6Format.h"
 #include "voxelformat/KVXFormat.h"
 #include "voxelformat/MCRFormat.h"
+#include "voxelformat/MTSFormat.h"
 #include "voxelformat/OBJFormat.h"
 #include "voxelformat/PLYFormat.h"
 #include "voxelformat/QBCLFormat.h"
@@ -71,6 +72,7 @@ const io::FormatDescription* voxelLoad() {
 		{"BinVox", {"binvox"}, [] (uint32_t magic) {return magic == FourCC('#','b','i','n');}, 0u},
 		{"Goxel", {"gox"}, [] (uint32_t magic) {return magic == FourCC('G','O','X',' ');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"CubeWorld", {"cub"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Minetest", {"mts"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Minecraft region", {"mca", "mcr"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Minecraft level dat", {"dat"}, nullptr, 0u},
 		{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
@@ -189,6 +191,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 			format = core::make_shared<GoxFormat>();
 		} else if (ext == "mca") {
 			format = core::make_shared<MCRFormat>();
+		} else if (ext == "mts") {
+			format = core::make_shared<MTSFormat>();
 		} else if (ext == "dat") {
 			format = core::make_shared<DatFormat>();
 		} else if (ext == "sment") {
