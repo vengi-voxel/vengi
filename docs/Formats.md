@@ -17,6 +17,7 @@
 | Minecraft Schematics       | schematic | X       |        | X          | X       |            | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
 | Minecraft Schematics       | schem     | X       |        | X          | X       |            | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
 | Minecraft Schematics       | nbt       | X       |        | X          | X       |            | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
+| Minetest                   | mts       | X       |        | X          | X       |            | [spec](https://dev.minetest.net/Minetest_Schematic_File_Format)          |
 | Nick's Voxel Model         | nvm       | X       |        | X          |         |            |                                                                          |
 | Quake 1/UFO:Alien Invasion | bsp       | X       |        |            |         |            |                                                                          |
 | Qubicle Binary Tree        | qbt       | X       | X      | X          | X       |            | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qbt/)      |
