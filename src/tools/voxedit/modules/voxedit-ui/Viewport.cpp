@@ -241,7 +241,8 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 			renderGizmo(camera(), headerSize, contentSize);
 
 			if (sceneMgr().isLoading()) {
-				ImGui::LoadingIndicatorCircle("Loading", 150, core::Color::White, core::Color::Gray);
+				const float radius = ImGui::GetFontSize() * 12.0f;
+				ImGui::LoadingIndicatorCircle("Loading", radius, core::Color::White, core::Color::Gray);
 			} else if (ImGui::IsItemHovered()) {
 				if (sceneMgr().modifier().isMode(ModifierType::ColorPicker)) {
 					ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
