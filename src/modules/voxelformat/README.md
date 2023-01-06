@@ -31,7 +31,3 @@ Example implementation for goxel: <https://github.com/guillaumechereau/goxel/pul
 ## Godot VXR
 
 https://github.com/Zylann/godot_voxel/blob/master/doc/source/specs/region_format_v3.md
-
-## Minecraft MTS
-
-Format description: <https://dev.minetest.net/Minetest_Schematic_File_Format>
