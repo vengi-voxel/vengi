@@ -85,7 +85,7 @@ function(engine_add_executable)
 	else()
 		set(HAS_ICON 0)
 	endif()
-	
+
 	set(CPACK_NSIS_${_EXE_TARGET}_INSTALL_DIRECTORY ${_EXE_TARGET})
 
 	set(${_EXE_TARGET}_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "${_EXE_TARGET} source directory")
