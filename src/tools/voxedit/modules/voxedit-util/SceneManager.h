@@ -186,7 +186,7 @@ protected:
 	void moveCursor(int x, int y, int z);
 	void fillHollow();
 
-	void colorToNewLayer(const voxel::Voxel voxelColor);
+	void colorToNewNode(const voxel::Voxel voxelColor);
 	void crop();
 	void scale(int nodeId);
 	void resizeAll(const glm::ivec3& size);

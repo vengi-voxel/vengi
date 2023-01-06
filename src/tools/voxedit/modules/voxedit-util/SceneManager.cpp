@@ -398,7 +398,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 	resetLastTrace();
 }
 
-void SceneManager::colorToNewLayer(const voxel::Voxel voxelColor) {
+void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
 	voxel::RawVolume* newVolume = new voxel::RawVolume(_sceneGraph.groupRegion());
 	_sceneGraph.foreachGroup([&] (int nodeId) {
 		voxel::RawVolumeWrapper wrapper(volume(nodeId));
@@ -1302,11 +1302,11 @@ void SceneManager::construct() {
 		const int argc = (int)args.size();
 		if (argc < 1) {
 			const voxel::Voxel voxel = _modifier.cursorVoxel();
-			colorToNewLayer(voxel);
+			colorToNewNode(voxel);
 		} else {
 			const uint8_t index = core::string::toInt(args[0]);
 			const voxel::Voxel voxel = voxel::createVoxel(index);
-			colorToNewLayer(voxel);
+			colorToNewNode(voxel);
 		}
 	}).setHelp("Move the voxels of the current selected palette index or the given index into a new node");
 
