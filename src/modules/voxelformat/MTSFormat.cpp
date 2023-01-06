@@ -74,7 +74,7 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		Log::debug("Found material '%s'", name.c_str());
 		names.emplace_back(core::move(name));
 	}
-	Log::error("found %i materials", (int)names.size());
+	Log::debug("found %i materials", (int)names.size());
 
 	struct Node {
 		uint16_t param0; // material?
