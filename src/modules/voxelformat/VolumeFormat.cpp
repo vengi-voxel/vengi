@@ -49,6 +49,10 @@
 
 namespace voxelformat {
 
+io::FormatDescription tiberianSun() {
+	return {"Tiberian Sun", {"vxl"}, [] (uint32_t magic) {return magic == FourCC('V','o','x','e');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+}
+
 const io::FormatDescription* voxelLoad() {
 	// this is the list of supported voxel volume formats that are have importers implemented
 	static const io::FormatDescription desc[] = {
@@ -87,7 +91,7 @@ const io::FormatDescription* voxelLoad() {
 		{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Build engine", {"kvx"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"AceOfSpades", {"kv6"}, [] (uint32_t magic) {return magic == FourCC('K','v','x','l');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"Tiberian Sun", {"vxl"}, [] (uint32_t magic) {return magic == FourCC('V','o','x','e');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		tiberianSun(),
 		{"AceOfSpades", {"vxl"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Qubicle Exchange", {"qef"}, [](uint32_t magic) { return magic == FourCC('Q', 'u', 'b', 'i'); }, 0u},
 		{"Chronovox", {"csm"}, [](uint32_t magic) { return magic == FourCC('.', 'C', 'S', 'M'); }, 0u},
@@ -114,7 +118,7 @@ const io::FormatDescription* voxelSave() {
 		{"Sproxel csv", {"csv"}, nullptr, 0u},
 		{"CubeWorld", {"cub"}, nullptr, 0u},
 		//{"Build engine", {"kvx"}, nullptr, 0u},
-		{"Tiberian Sun", {"vxl"}, nullptr, 0u},
+		tiberianSun(),
 		{"Qubicle Exchange", {"qef"}, nullptr, 0u},
 		{"AceOfSpades", {"vxl"}, nullptr, 0u},
 		//{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, 0u},

@@ -4,6 +4,7 @@
 
 #include "FileDialogOptions.h"
 #include "core/GameConfig.h"
+#include "io/FormatDescription.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "voxelformat/VolumeFormat.h"
@@ -53,7 +54,8 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		if (forceApplyOptions || desc->matchesExtension("qb")) {
 			ImGui::CheckboxVar("Left handed", cfg::VoxformatQBSaveLeftHanded);
 		}
-		if (forceApplyOptions || (desc->name == "Tiberian Sun" && desc->matchesExtension("vxl"))) {
+		const io::FormatDescription &tiberianSun = voxelformat::tiberianSun();
+		if (forceApplyOptions || (desc->name == tiberianSun.name && desc->matchesExtension(tiberianSun.exts[0]))) {
 			const char *normalTypes[] = {nullptr, nullptr, "Tiberian Sun", nullptr, "Red Alert"};
 			const core::VarPtr &normalTypeVar = core::Var::getSafe(cfg::VoxformatVXLNormalType);
 			const int currentNormalType = normalTypeVar->intVal();
