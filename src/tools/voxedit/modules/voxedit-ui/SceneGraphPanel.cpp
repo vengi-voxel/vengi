@@ -78,6 +78,8 @@ static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sc
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 		const int validModels = (int)sceneGraph.size();
 		if (node.type() == voxelformat::SceneGraphNodeType::Model) {
+			// TODO; this should not be needed - the commands should all get the node id to operate on without modifying the current active node
+			sceneMgr().nodeActivate(node.id());
 			commandNodeMenu(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "layerdelete", node, validModels > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", validModels > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "layerduplicate", true, &listener);
@@ -228,6 +230,9 @@ static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGra
 			}
 		}
 		contextMenu(camera, sceneGraph, node, listener);
+		if (ImGui::IsItemActivated()) {
+			sceneMgr().nodeActivate(node.id());
+		}
 	}
 	{ // column 5
 		ImGui::TableNextColumn();
