@@ -403,7 +403,7 @@ int ReadStream::readInt16BE(int16_t &val) {
 
 int ReadStream::readUInt16BE(uint16_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const int16_t swapped = SDL_SwapBE16(val);
+		const uint16_t swapped = SDL_SwapBE16(val);
 		val = swapped;
 		return 0;
 	}
