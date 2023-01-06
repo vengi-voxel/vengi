@@ -27,7 +27,7 @@ private:
 	bool _hasFocus = false;
 
 public:
-	bool _popupNewLayer = false;
+	bool _popupNewModelNode = false;
 	void update(video::Camera& camera, const char *title, LayerSettings* layerSettings, command::CommandExecutionListener &listener);
 	bool hasFocus() const;
 };

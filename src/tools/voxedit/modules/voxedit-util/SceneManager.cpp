@@ -1879,13 +1879,13 @@ void SceneManager::animate(double nowSeconds) {
 	if (_nextFrameSwitch <= nowSeconds) {
 		_nextFrameSwitch = nowSeconds + _animationSpeed;
 		const int modelCount = (int)_sceneGraph.size(voxelformat::SceneGraphNodeType::Model);
-		const int roundTrip = modelCount + _currentAnimationLayer;
-		for (int modelIdx = _currentAnimationLayer + 1; modelIdx < roundTrip; ++modelIdx) {
-			voxelformat::SceneGraphNode *node = _sceneGraph[_currentAnimationLayer];
+		const int roundTrip = modelCount + _currentAnimationModelIdx;
+		for (int modelIdx = _currentAnimationModelIdx + 1; modelIdx < roundTrip; ++modelIdx) {
+			voxelformat::SceneGraphNode *node = _sceneGraph[_currentAnimationModelIdx];
 			core_assert_always(node != nullptr);
 			node->setVisible(false);
-			_currentAnimationLayer = modelIdx % modelCount;
-			node = _sceneGraph[_currentAnimationLayer];
+			_currentAnimationModelIdx = modelIdx % modelCount;
+			node = _sceneGraph[_currentAnimationModelIdx];
 			core_assert_always(node != nullptr);
 			node->setVisible(true);
 			return;

@@ -67,7 +67,7 @@ private:
 	void loadLastOpenedFiles(const core::String &string);
 	void addLastOpenedFile(const core::String &file);
 
-	LayerSettings _layerSettings;
+	LayerSettings _modelNodeSettings;
 
 	io::FileDescription _loadFile;
 

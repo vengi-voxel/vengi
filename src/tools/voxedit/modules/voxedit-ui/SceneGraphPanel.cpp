@@ -276,7 +276,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, LayerSett
 					layerSettings->name = node.name();
 				}
 				layerSettings->parent = nodeId;
-				_popupNewLayer = true;
+				_popupNewModelNode = true;
 			});
 
 			toolbar.button(ICON_FA_SQUARE_PLUS, "Add a new group", [&sceneGraph, &sceneMgr] () {

@@ -114,12 +114,12 @@ bool MainWindow::init() {
 	loadLastOpenedFiles(_lastOpenedFiles->strVal());
 
 	SceneManager &mgr = sceneMgr();
-	voxel::Region region = _layerSettings.region();
+	voxel::Region region = _modelNodeSettings.region();
 	if (!region.isValid()) {
-		_layerSettings.reset();
-		region = _layerSettings.region();
+		_modelNodeSettings.reset();
+		region = _modelNodeSettings.region();
 	}
-	if (!mgr.newScene(true, _layerSettings.name, region)) {
+	if (!mgr.newScene(true, _modelNodeSettings.name, region)) {
 		return false;
 	}
 	afterLoad("");
@@ -261,7 +261,7 @@ void MainWindow::rightWidget() {
 	_mementoPanel.update(TITLE_MEMENTO, _lastExecutedCommand);
 
 	// bottom
-	_sceneGraphPanel.update(_scene->camera(), TITLE_SCENEGRAPH, &_layerSettings, _lastExecutedCommand);
+	_sceneGraphPanel.update(_scene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, _lastExecutedCommand);
 	_treePanel.update(TITLE_TREES);
 	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 	_scriptPanel.update(TITLE_SCRIPTPANEL);
@@ -314,38 +314,38 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_UNSAVED_SCENE);
 		_popupUnsavedChangesQuit = false;
 	}
-	if (_sceneGraphPanel._popupNewLayer) {
+	if (_sceneGraphPanel._popupNewModelNode) {
 		ImGui::OpenPopup(POPUP_TITLE_LAYER_SETTINGS);
-		_sceneGraphPanel._popupNewLayer = false;
+		_sceneGraphPanel._popupNewModelNode = false;
 	}
 
 	if (ImGui::BeginPopupModal(POPUP_TITLE_LAYER_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Name");
 		ImGui::Separator();
-		ImGui::InputText("##layersettingsname", &_layerSettings.name);
+		ImGui::InputText("##layersettingsname", &_modelNodeSettings.name);
 		ImGui::NewLine();
 
 		ImGui::Text("Position");
 		ImGui::Separator();
-		veui::InputAxisInt(math::Axis::X, "##posx", &_layerSettings.position.x);
-		veui::InputAxisInt(math::Axis::Y, "##posy", &_layerSettings.position.y);
-		veui::InputAxisInt(math::Axis::Z, "##posz", &_layerSettings.position.z);
+		veui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
+		veui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
+		veui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
 		ImGui::NewLine();
 
 		ImGui::Text("Size");
 		ImGui::Separator();
-		veui::InputAxisInt(math::Axis::X, "Width##sizex", &_layerSettings.size.x);
-		veui::InputAxisInt(math::Axis::Y, "Height##sizey", &_layerSettings.size.y);
-		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_layerSettings.size.z);
+		veui::InputAxisInt(math::Axis::X, "Width##sizex", &_modelNodeSettings.size.x);
+		veui::InputAxisInt(math::Axis::Y, "Height##sizey", &_modelNodeSettings.size.y);
+		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_modelNodeSettings.size.z);
 		ImGui::NewLine();
 
 		if (ImGui::Button(ICON_FA_CHECK " OK##layersettings")) {
 			ImGui::CloseCurrentPopup();
 			voxelformat::SceneGraphNode node;
-			voxel::RawVolume* v = new voxel::RawVolume(_layerSettings.region());
+			voxel::RawVolume* v = new voxel::RawVolume(_modelNodeSettings.region());
 			node.setVolume(v, true);
-			node.setName(_layerSettings.name.c_str());
-			sceneMgr().addNodeToSceneGraph(node, _layerSettings.parent);
+			node.setName(_modelNodeSettings.name.c_str());
+			sceneMgr().addNodeToSceneGraph(node, _modelNodeSettings.parent);
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
@@ -417,27 +417,27 @@ void MainWindow::registerPopups() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Name");
 		ImGui::Separator();
-		ImGui::InputText("##newscenename", &_layerSettings.name);
+		ImGui::InputText("##newscenename", &_modelNodeSettings.name);
 		ImGui::NewLine();
 
 		ImGui::Text("Position");
 		ImGui::Separator();
-		veui::InputAxisInt(math::Axis::X, "##posx", &_layerSettings.position.x);
-		veui::InputAxisInt(math::Axis::Y, "##posy", &_layerSettings.position.y);
-		veui::InputAxisInt(math::Axis::Z, "##posz", &_layerSettings.position.z);
+		veui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
+		veui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
+		veui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
 		ImGui::NewLine();
 
 		ImGui::Text("Size");
 		ImGui::Separator();
-		veui::InputAxisInt(math::Axis::X, "Width##sizex", &_layerSettings.size.x);
-		veui::InputAxisInt(math::Axis::Y, "Height##sizey", &_layerSettings.size.y);
-		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_layerSettings.size.z);
+		veui::InputAxisInt(math::Axis::X, "Width##sizex", &_modelNodeSettings.size.x);
+		veui::InputAxisInt(math::Axis::Y, "Height##sizey", &_modelNodeSettings.size.y);
+		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_modelNodeSettings.size.z);
 		ImGui::NewLine();
 
 		if (ImGui::Button(ICON_FA_CHECK " OK##newscene")) {
 			ImGui::CloseCurrentPopup();
-			const voxel::Region &region = _layerSettings.region();
-			if (voxedit::sceneMgr().newScene(true, _layerSettings.name, region)) {
+			const voxel::Region &region = _modelNodeSettings.region();
+			if (voxedit::sceneMgr().newScene(true, _modelNodeSettings.name, region)) {
 				afterLoad("");
 			}
 		}

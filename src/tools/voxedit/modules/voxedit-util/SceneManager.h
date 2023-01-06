@@ -129,7 +129,7 @@ private:
 	int _lastRaytraceY = -1;
 
 	// layer animation speed
-	int _currentAnimationLayer = 0;
+	int _currentAnimationModelIdx = 0;
 	double _animationSpeed = 0.0;
 	double _nextFrameSwitch = 0.0;
 	voxelformat::FrameIndex _currentFrameIdx = 0;
