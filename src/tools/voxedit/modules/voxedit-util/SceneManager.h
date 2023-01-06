@@ -105,7 +105,7 @@ private:
 	};
 	using RegionQueue = core::DynamicArray<DirtyRegion>;
 	RegionQueue _extractRegions;
-	void queueRegionExtraction(int layerId, const voxel::Region& region);
+	void queueRegionExtraction(int nodeId, const voxel::Region& region);
 
 	math::Axis _lockedAxis = math::Axis::None;
 
@@ -128,7 +128,7 @@ private:
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
 
-	// layer animation speed
+	// model animation speed
 	int _currentAnimationModelIdx = 0;
 	double _animationSpeed = 0.0;
 	double _nextFrameSwitch = 0.0;
@@ -271,14 +271,14 @@ public:
 	bool setActivePalette(const voxel::Palette &palette, bool searchBestColors = false);
 
 	/**
-	 * @brief Import a heightmap in the current layer of the scene
+	 * @brief Import a heightmap in the current node of the scene
 	 * @param[in] file The image file to import as heightmap.
 	 * @note The first component is used as height value. In most cases the R channel.
 	 */
 	bool importHeightmap(const core::String& file);
 	bool importColoredHeightmap(const core::String& file);
 	/**
-	 * @brief Import an image as a plane in a new layer of the scene.
+	 * @brief Import an image as a plane in a new node of the scene.
 	 * @note There is a total max dimension of the texture that is supported.
 	 * @param[in] file The image file path to load
 	 */
@@ -359,7 +359,7 @@ public:
 	EditMode editMode() const;
 
 	/**
-	 * @note This is not about the animation scene mode, but the animation of the layers
+	 * @note This is not about the animation scene mode, but the animation of the nodes
 	 */
 	bool animateActive() const;
 

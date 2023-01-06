@@ -41,7 +41,7 @@
 #define POPUP_TITLE_FAILED_TO_SAVE "Failed to save##popuptitle"
 #define POPUP_TITLE_UNSAVED_SCENE "Unsaved scene##popuptitle"
 #define POPUP_TITLE_SCENE_SETTINGS "Scene settings##popuptitle"
-#define POPUP_TITLE_LAYER_SETTINGS "Layer settings##popuptitle"
+#define POPUP_TITLE_MODEL_NODE_SETTINGS "Model settings##popuptitle"
 
 namespace voxedit {
 
@@ -182,7 +182,7 @@ bool MainWindow::createNew(bool force) {
 	return false;
 }
 
-bool MainWindow::isLayerWidgetDropTarget() const {
+bool MainWindow::isSceneGraphDropTarget() const {
 	return _sceneGraphPanel.hasFocus();
 }
 
@@ -315,14 +315,14 @@ void MainWindow::registerPopups() {
 		_popupUnsavedChangesQuit = false;
 	}
 	if (_sceneGraphPanel._popupNewModelNode) {
-		ImGui::OpenPopup(POPUP_TITLE_LAYER_SETTINGS);
+		ImGui::OpenPopup(POPUP_TITLE_MODEL_NODE_SETTINGS);
 		_sceneGraphPanel._popupNewModelNode = false;
 	}
 
-	if (ImGui::BeginPopupModal(POPUP_TITLE_LAYER_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::BeginPopupModal(POPUP_TITLE_MODEL_NODE_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Name");
 		ImGui::Separator();
-		ImGui::InputText("##layersettingsname", &_modelNodeSettings.name);
+		ImGui::InputText("##modelsettingsname", &_modelNodeSettings.name);
 		ImGui::NewLine();
 
 		ImGui::Text("Position");
@@ -339,7 +339,7 @@ void MainWindow::registerPopups() {
 		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_modelNodeSettings.size.z);
 		ImGui::NewLine();
 
-		if (ImGui::Button(ICON_FA_CHECK " OK##layersettings")) {
+		if (ImGui::Button(ICON_FA_CHECK " OK##modelsettings")) {
 			ImGui::CloseCurrentPopup();
 			voxelformat::SceneGraphNode node;
 			voxel::RawVolume* v = new voxel::RawVolume(_modelNodeSettings.region());
@@ -349,7 +349,7 @@ void MainWindow::registerPopups() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_XMARK " Cancel##layersettings")) {
+		if (ImGui::Button(ICON_FA_XMARK " Cancel##modelsettings")) {
 			ImGui::CloseCurrentPopup();
 		}
 

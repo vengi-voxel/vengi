@@ -21,7 +21,6 @@ struct ModelNodeSettings;
 
 class SceneGraphPanel {
 private:
-	void newLayerButton(const voxelformat::SceneGraph &sceneGraph, ModelNodeSettings* layerSettings);
 	core::VarPtr _animationSpeedVar;
 	bool _showNodeDetails = true;
 	bool _hasFocus = false;

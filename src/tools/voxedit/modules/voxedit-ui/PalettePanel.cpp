@@ -122,8 +122,8 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 		showColorPicker(palIdx, node, listener);
 
 		if (usableColor) {
-			const core::String &layerFromColorCmd = core::string::format("colortolayer %i", palIdx);
-			ImGui::CommandMenuItem(ICON_FA_OBJECT_UNGROUP " Layer from color" PALETTEACTIONPOPUP, layerFromColorCmd.c_str(), true, &listener);
+			const core::String &modelFromColorCmd = core::string::format("colortolayer %i", palIdx);
+			ImGui::CommandMenuItem(ICON_FA_OBJECT_UNGROUP " Model from color" PALETTEACTIONPOPUP, modelFromColorCmd.c_str(), true, &listener);
 			if (palette.hasGlow(palIdx)) {
 				if (ImGui::MenuItem(ICON_FK_SUN_O " Remove Glow")) {
 					palette.removeGlow(palIdx);

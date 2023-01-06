@@ -94,7 +94,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 		if (ImGui::Button(ICON_FA_BORDER_ALL " Volumes")) {
 			sceneMgr().shift(translate.x, translate.y, translate.z);
 		}
-		ImGui::TooltipText("Translate layers by the given coordinates");
+		ImGui::TooltipText("Translate models by the given coordinates");
 		ImGui::SameLine();
 		if (ImGui::Button(ICON_FA_CUBES " Voxels")) {
 			sceneMgr().move(translate.x, translate.y, translate.z);

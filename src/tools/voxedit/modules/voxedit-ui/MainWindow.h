@@ -116,7 +116,7 @@ public:
 	bool load(const core::String &file, const io::FormatDescription *desc);
 	bool createNew(bool force);
 
-	bool isLayerWidgetDropTarget() const;
+	bool isSceneGraphDropTarget() const;
 	bool isPaletteWidgetDropTarget() const;
 
 	void resetCamera();

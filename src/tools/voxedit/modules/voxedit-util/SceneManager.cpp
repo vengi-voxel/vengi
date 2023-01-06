@@ -1203,7 +1203,7 @@ void SceneManager::construct() {
 	command::Command::registerActionButton("zoom_out", _zoomOut);
 	command::Command::registerActionButton("camera_rotate", _rotate);
 	command::Command::registerActionButton("camera_pan", _pan);
-	command::Command::registerCommand("mouse_layer_select", [&] (const command::CmdArgs&) {
+	command::Command::registerCommand("mouse_node_select", [&] (const command::CmdArgs&) {
 		if (_sceneModeNodeIdTrace != -1) {
 			Log::debug("switch active node to hovered from scene graph mode: %i", _sceneModeNodeIdTrace);
 			nodeActivate(_sceneModeNodeIdTrace);

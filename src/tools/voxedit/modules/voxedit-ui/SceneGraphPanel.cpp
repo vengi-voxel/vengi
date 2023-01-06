@@ -76,17 +76,17 @@ static void commandNodeMenu(const char *title, const char *command, const voxelf
 static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", node.id());
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
-		const int validLayers = (int)sceneGraph.size();
+		const int validModels = (int)sceneGraph.size();
 		if (node.type() == voxelformat::SceneGraphNodeType::Model) {
-			commandNodeMenu(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "layerdelete", node, validLayers > 1, &listener);
-			ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", validLayers > 1, &listener);
+			commandNodeMenu(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "layerdelete", node, validModels > 1, &listener);
+			ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", validModels > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "layerduplicate", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_EYE " Show all" SCENEGRAPHPOPUP, "layershowall", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide all" SCENEGRAPHPOPUP, "layerhideall", true, &listener);
-			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge" SCENEGRAPHPOPUP, "layermerge", validLayers > 1, &listener);
-			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge all" SCENEGRAPHPOPUP, "layermergeall", validLayers > 1, &listener);
-			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge visible" SCENEGRAPHPOPUP, "layermergevisible", validLayers > 1, &listener);
-			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge locked" SCENEGRAPHPOPUP, "layermergelocked", validLayers > 1, &listener);
+			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge" SCENEGRAPHPOPUP, "layermerge", validModels > 1, &listener);
+			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge all" SCENEGRAPHPOPUP, "layermergeall", validModels > 1, &listener);
+			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge visible" SCENEGRAPHPOPUP, "layermergevisible", validModels > 1, &listener);
+			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge locked" SCENEGRAPHPOPUP, "layermergelocked", validModels > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_LOCK " Lock all" SCENEGRAPHPOPUP, "layerlockall", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_UNLOCK " Unlock all" SCENEGRAPHPOPUP, "layerunlockall", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_DOWN_LEFT_AND_UP_RIGHT_TO_CENTER " Center origin" SCENEGRAPHPOPUP, "center_origin", true, &listener);
@@ -121,9 +121,9 @@ static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sc
 			cameraNode.setName("new camera");
 			sceneMgr().addNodeToSceneGraph(cameraNode);
 		}
-		core::String layerName = node.name();
-		if (ImGui::InputText("Name" SCENEGRAPHPOPUP, &layerName)) {
-			sceneMgr().nodeRename(node.id(), layerName);
+		core::String nodeName = node.name();
+		if (ImGui::InputText("Name" SCENEGRAPHPOPUP, &nodeName)) {
+			sceneMgr().nodeRename(node.id(), nodeName);
 		}
 		ImGui::EndPopup();
 	}
@@ -321,11 +321,11 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 				const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
 											ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
 
-				ImGui::TableSetupColumn(ICON_FA_EYE "##visiblelayer", colFlags);
-				ImGui::TableSetupColumn(ICON_FA_LOCK "##lockedlayer", colFlags);
+				ImGui::TableSetupColumn(ICON_FA_EYE "##visiblenode", colFlags);
+				ImGui::TableSetupColumn(ICON_FA_LOCK "##lockednode", colFlags);
 				ImGui::TableSetupColumn("##nodecolor", colFlags);
 				ImGui::TableSetupColumn("Name##node", ImGuiTableColumnFlags_WidthStretch);
-				ImGui::TableSetupColumn("##deletelayer", colFlags);
+				ImGui::TableSetupColumn("##nodedelete", colFlags);
 				ImGui::TableHeadersRow();
 				// TODO: filter by name and type
 				recursiveAddNodes(camera, sceneGraph, sceneGraph.node(sceneGraph.root().id()), listener, 0);
