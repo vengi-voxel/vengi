@@ -61,8 +61,11 @@ private:
 	void renderGizmo(video::Camera &camera, float headerSize, const ImVec2 &size);
 	void updateViewportTrace(float headerSize);
 	bool isFixedCamera() const;
+	void renderViewportImage(const glm::ivec2 &contentSize);
 	void dragAndDrop(float headerSize);
 	void bottomBar();
+	void renderViewport();
+	void renderMenuBar(command::CommandExecutionListener *listener);
 public:
 	Viewport(const core::String& id);
 	~Viewport();

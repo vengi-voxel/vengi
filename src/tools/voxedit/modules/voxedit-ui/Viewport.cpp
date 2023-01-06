@@ -204,6 +204,51 @@ void Viewport::bottomBar() {
 	}
 }
 
+void Viewport::renderViewportImage(const glm::ivec2 &contentSize) {
+	// use the uv coords here to take a potential fb flip into account
+	const glm::vec4 &uv = _renderContext.frameBuffer.uv();
+	const glm::vec2 uva(uv.x, uv.y);
+	const glm::vec2 uvc(uv.z, uv.w);
+	const video::TexturePtr &texture = _renderContext.frameBuffer.texture(video::FrameBufferAttachment::Color0);
+	ImGui::Image(texture->handle(), contentSize, uva, uvc);
+}
+
+void Viewport::renderViewport() {
+	core_trace_scoped(Viewport);
+	glm::ivec2 contentSize = ImGui::GetContentRegionAvail();
+	const float headerSize = ImGui::GetCursorPosY();
+	if (setupFrameBuffer(contentSize)) {
+		_camera.update(imguiApp()->deltaFrameSeconds());
+
+		renderToFrameBuffer();
+		renderViewportImage(contentSize);
+		renderGizmo(camera(), headerSize, contentSize);
+
+		if (sceneMgr().isLoading()) {
+			const float radius = ImGui::GetFontSize() * 12.0f;
+			ImGui::LoadingIndicatorCircle("Loading", radius, core::Color::White, core::Color::Gray);
+		} else if (ImGui::IsItemHovered()) {
+			if (sceneMgr().modifier().isMode(ModifierType::ColorPicker)) {
+				ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+			}
+			_hovered = true;
+			updateViewportTrace(headerSize);
+		}
+
+		dragAndDrop(headerSize);
+		bottomBar();
+	}
+}
+
+void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
+	if (ImGui::BeginMenuBar()) {
+		const MementoHandler &mementoHandler = sceneMgr().mementoHandler();
+		ImGui::CommandMenuItem(ICON_FA_ROTATE_LEFT " Undo", "undo", mementoHandler.canUndo(), listener);
+		ImGui::CommandMenuItem(ICON_FA_ROTATE_RIGHT " Redo", "redo", mementoHandler.canRedo(), listener);
+		ImGui::EndMenuBar();
+	}
+}
+
 void Viewport::update(command::CommandExecutionListener *listener) {
 	_camera.setFarPlane(_viewDistance->floatVal());
 
@@ -214,46 +259,8 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 	style.setWindowPadding(ImVec2(0.0f, 0.0f));
 	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoFocusOnAppearing;
 	if (ImGui::Begin(_id.c_str(), nullptr, sceneWindowFlags)) {
-		if (ImGui::BeginMenuBar()) {
-			const MementoHandler &mementoHandler = sceneMgr().mementoHandler();
-			ImGui::CommandMenuItem(ICON_FA_ROTATE_LEFT " Undo", "undo", mementoHandler.canUndo(), listener);
-			ImGui::CommandMenuItem(ICON_FA_ROTATE_RIGHT " Redo", "redo", mementoHandler.canRedo(), listener);
-			ImGui::EndMenuBar();
-		}
-		core_trace_scoped(Viewport);
-		ui::IMGUIApp *app = imguiApp();
-		glm::ivec2 contentSize = ImGui::GetContentRegionAvail();
-		const float headerSize = ImGui::GetCursorPosY();
-
-		if (setupFrameBuffer(contentSize)) {
-			const double deltaFrameSeconds = app->deltaFrameSeconds();
-			_camera.update(deltaFrameSeconds);
-
-			renderToFrameBuffer();
-
-			// use the uv coords here to take a potential fb flip into account
-			const glm::vec4 &uv = _renderContext.frameBuffer.uv();
-			const glm::vec2 uva(uv.x, uv.y);
-			const glm::vec2 uvc(uv.z, uv.w);
-			const video::TexturePtr &texture = _renderContext.frameBuffer.texture(video::FrameBufferAttachment::Color0);
-			ImGui::Image(texture->handle(), contentSize, uva, uvc);
-
-			renderGizmo(camera(), headerSize, contentSize);
-
-			if (sceneMgr().isLoading()) {
-				const float radius = ImGui::GetFontSize() * 12.0f;
-				ImGui::LoadingIndicatorCircle("Loading", radius, core::Color::White, core::Color::Gray);
-			} else if (ImGui::IsItemHovered()) {
-				if (sceneMgr().modifier().isMode(ModifierType::ColorPicker)) {
-					ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-				}
-				_hovered = true;
-				updateViewportTrace(headerSize);
-			}
-
-			dragAndDrop(headerSize);
-			bottomBar();
-		}
+		renderMenuBar(listener);
+		renderViewport();
 	}
 	ImGui::End();
 }
