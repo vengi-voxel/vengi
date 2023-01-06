@@ -38,7 +38,7 @@ Viewport::~Viewport() {
 	shutdown();
 }
 
-bool Viewport::init() {
+bool Viewport::init(Viewport::SceneCameraMode mode) {
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 	_showAxisVar = core::Var::getSafe(cfg::VoxEditShowaxis);
 	_guizmoRotation = core::Var::getSafe(cfg::VoxEditGuizmoRotation);
@@ -46,7 +46,12 @@ bool Viewport::init() {
 	_guizmoSnap = core::Var::getSafe(cfg::VoxEditGuizmoSnap);
 	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
 
-	setMode(Viewport::SceneCameraMode::Free);
+	_camMode = mode;
+	if (mode == Viewport::SceneCameraMode::Free) {
+		_camera.setMode(video::CameraMode::Perspective);
+	} else {
+		_camera.setMode(video::CameraMode::Orthogonal);
+	}
 	resetCamera();
 	_renderContext.init(video::getWindowSize());
 
@@ -75,15 +80,6 @@ void Viewport::resetCamera(const glm::ivec3 &pos, const voxel::Region &region) {
 	} else if (_camMode == SceneCameraMode::Front) {
 		const int depth = region.getDepthInCells();
 		_camera.setWorldPosition(glm::vec3(center.x, center.y, -depth - center.z));
-	}
-}
-
-void Viewport::setMode(Viewport::SceneCameraMode mode) {
-	_camMode = mode;
-	if (mode == Viewport::SceneCameraMode::Free) {
-		_camera.setMode(video::CameraMode::Perspective);
-	} else {
-		_camera.setMode(video::CameraMode::Orthogonal);
 	}
 }
 
@@ -246,6 +242,7 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		ImGui::CommandMenuItem(ICON_FA_ROTATE_LEFT " Undo", "undo", mementoHandler.canUndo(), listener);
 		ImGui::CommandMenuItem(ICON_FA_ROTATE_RIGHT " Redo", "redo", mementoHandler.canRedo(), listener);
 		ImGui::EndMenuBar();
+		// TODO: add camera type options
 	}
 }
 

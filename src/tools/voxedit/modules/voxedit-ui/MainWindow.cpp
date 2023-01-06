@@ -92,17 +92,10 @@ void MainWindow::addLastOpenedFile(const core::String &file) {
 }
 
 bool MainWindow::init() {
-	_scene->init();
-	_scene->setMode(voxedit::Viewport::SceneCameraMode::Free);
-
-	_sceneTop->init();
-	_sceneTop->setMode(voxedit::Viewport::SceneCameraMode::Top);
-
-	_sceneLeft->init();
-	_sceneLeft->setMode(voxedit::Viewport::SceneCameraMode::Left);
-
-	_sceneFront->init();
-	_sceneFront->setMode(voxedit::Viewport::SceneCameraMode::Front);
+	_scene->init(voxedit::Viewport::SceneCameraMode::Free);
+	_sceneTop->init(voxedit::Viewport::SceneCameraMode::Top);
+	_sceneLeft->init(voxedit::Viewport::SceneCameraMode::Left);
+	_sceneFront->init(voxedit::Viewport::SceneCameraMode::Front);
 
 	_lsystemPanel.init();
 	_treePanel.init();

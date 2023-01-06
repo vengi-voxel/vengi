@@ -70,7 +70,6 @@ public:
 	Viewport(const core::String& id);
 	~Viewport();
 
-	void setMode(SceneCameraMode mode);
 	void resetCamera(const glm::ivec3 &pos, const voxel::Region &region);
 
 	void resize(const glm::ivec2& frameBufferSize);
@@ -84,7 +83,7 @@ public:
 	 * Update the ui
 	 */
 	void update(command::CommandExecutionListener *listener);
-	bool init();
+	bool init(Viewport::SceneCameraMode mode);
 	void shutdown();
 
 	const core::String& id() const;
