@@ -193,6 +193,12 @@ public:
 		--_size;
 	}
 
+	void fill(const TYPE& value) {
+		for (size_t i = 0u; i < _size; ++i) {
+			_buffer[i] = value;
+		}
+	}
+
 	TYPE* data() {
 		return _buffer;
 	}
