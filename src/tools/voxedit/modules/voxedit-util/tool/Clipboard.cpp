@@ -17,31 +17,7 @@ voxel::RawVolume* copy(const voxel::RawVolume *volume, const Selection &selectio
 		Log::debug("Copy failed: Source region is invalid: %s", selection.toString().c_str());
 		return nullptr;
 	}
-
-	const voxel::Region& volumeRegion = volume->region();
-
-	voxel::Region srcRegion(selection);
-	srcRegion.cropTo(volumeRegion);
-
-	voxel::RawVolume* v = new voxel::RawVolume(srcRegion);
-	const glm::ivec3& mins = srcRegion.getLowerCorner();
-	const glm::ivec3& maxs = srcRegion.getUpperCorner();
-	voxel::RawVolume::Sampler sampler(volume);
-	for (int32_t x = mins.x; x <= maxs.x; ++x) {
-		for (int32_t y = mins.y; y <= maxs.y; ++y) {
-			if (!sampler.setPosition(x, y, mins.z)) {
-				continue;
-			}
-			for (int32_t z = mins.z; z <= maxs.z; ++z) {
-				v->setVoxel(x, y, z, sampler.voxel());
-				sampler.movePositiveZ();
-				if (!sampler.currentPositionValid()) {
-					break;
-				}
-			}
-		}
-	}
-	return v;
+	return new voxel::RawVolume(volume, selection);
 }
 
 voxel::RawVolume* cut(voxel::RawVolume *volume, const Selection &selection, voxel::Region& modifiedRegion) {
@@ -50,15 +26,11 @@ voxel::RawVolume* cut(voxel::RawVolume *volume, const Selection &selection, voxe
 		return nullptr;
 	}
 
-	voxel::RawVolume* v = copy(volume, selection);
-	if (v == nullptr) {
-		return nullptr;
-	}
-
-	const glm::ivec3& mins = selection.getLowerCorner();
-	const glm::ivec3& maxs = selection.getUpperCorner();
+	voxel::RawVolume* v = new voxel::RawVolume(volume, selection);
+	const glm::ivec3& mins = v->region().getLowerCorner();
+	const glm::ivec3& maxs = v->region().getUpperCorner();
 	static constexpr voxel::Voxel AIR;
-	voxel::RawVolumeWrapper wrapper(volume);
+	voxel::RawVolumeWrapper wrapper(volume, v->region());
 	for (int32_t x = mins.x; x <= maxs.x; ++x) {
 		for (int32_t y = mins.y; y <= maxs.y; ++y) {
 			for (int32_t z = mins.z; z <= maxs.z; ++z) {
@@ -67,7 +39,6 @@ voxel::RawVolume* cut(voxel::RawVolume *volume, const Selection &selection, voxe
 		}
 	}
 	modifiedRegion = wrapper.dirtyRegion();
-
 	return v;
 }
 
