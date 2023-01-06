@@ -129,6 +129,81 @@ void Viewport::updateViewportTrace(float headerSize) {
 	sceneMgr().trace();
 }
 
+void Viewport::dragAndDrop(float headerSize) {
+	if (ImGui::BeginDragDropTarget()) {
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
+			const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
+			updateViewportTrace(headerSize);
+			sceneMgr().fillPlane(image);
+		}
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ColorPayload)) {
+			const int dragPalIdx = *(int *)payload->Data;
+			updateViewportTrace(headerSize);
+			ModifierFacade &modifier = sceneMgr().modifier();
+			modifier.setCursorVoxel(voxel::createVoxel(dragPalIdx));
+			const int nodeId = sceneMgr().sceneGraph().activeNode();
+			modifier.aabbStart();
+			modifier.aabbAction(sceneMgr().volume(nodeId),
+								[nodeId](const voxel::Region &region, ModifierType type, bool markUndo) {
+									if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
+										sceneMgr().modified(nodeId, region, markUndo);
+									}
+								});
+			modifier.aabbAbort();
+		}
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
+			const core::String &filename = *(core::String *)payload->Data;
+			sceneMgr().prefab(filename);
+		}
+
+		ImGui::EndDragDropTarget();
+	}
+}
+
+void Viewport::bottomBar() {
+	const float height = ImGui::GetFrameHeight();
+	const ImVec2 windowSize = ImGui::GetWindowSize();
+
+	if (!isFixedCamera()) {
+		static const char *camRotTypes[] = {"Reference Point", "Eye"};
+		static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
+		ImGui::SetCursorPos(ImVec2(0.0f, windowSize.y - height));
+		const int currentCamRotType = (int)camera().rotationType();
+		ImGui::SetNextItemWidth(ImGui::CalcComboBoxWidth(camRotTypes[currentCamRotType]));
+		if (ImGui::BeginCombo("##referencepoint", camRotTypes[currentCamRotType])) {
+			for (int n = 0; n < lengthof(camRotTypes); n++) {
+				const bool isSelected = (currentCamRotType == n);
+				if (ImGui::Selectable(camRotTypes[n], isSelected)) {
+					camera().setRotationType((video::CameraRotationType)n);
+				}
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+	}
+
+	static const char *polygonModes[] = {"Points", "Lines", "Solid"};
+	static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
+	const int currentPolygonMode = (int)camera().polygonMode();
+	const float polygonModeMaxWidth = ImGui::CalcComboBoxWidth(polygonModes[currentPolygonMode]);
+	ImGui::SetCursorPos(ImVec2(windowSize.x - polygonModeMaxWidth, windowSize.y - height));
+	ImGui::SetNextItemWidth(polygonModeMaxWidth);
+	if (ImGui::BeginCombo("##polygonmode", polygonModes[currentPolygonMode])) {
+		for (int n = 0; n < lengthof(polygonModes); n++) {
+			const bool isSelected = (currentPolygonMode == n);
+			if (ImGui::Selectable(polygonModes[n], isSelected)) {
+				camera().setPolygonMode((video::PolygonMode)n);
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+}
+
 void Viewport::update(command::CommandExecutionListener *listener) {
 	_camera.setFarPlane(_viewDistance->floatVal());
 
@@ -147,104 +222,36 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 		}
 		core_trace_scoped(Viewport);
 		ui::IMGUIApp *app = imguiApp();
-		{
-			glm::ivec2 contentSize = ImGui::GetContentRegionAvail();
-			const float headerSize = ImGui::GetCursorPosY();
+		glm::ivec2 contentSize = ImGui::GetContentRegionAvail();
+		const float headerSize = ImGui::GetCursorPosY();
 
-			if (setupFrameBuffer(contentSize)) {
-				const double deltaFrameSeconds = app->deltaFrameSeconds();
-				_camera.update(deltaFrameSeconds);
+		if (setupFrameBuffer(contentSize)) {
+			const double deltaFrameSeconds = app->deltaFrameSeconds();
+			_camera.update(deltaFrameSeconds);
 
-				renderToFrameBuffer();
-				// use the uv coords here to take a potential fb flip into account
-				const glm::vec4 &uv = _renderContext.frameBuffer.uv();
-				const glm::vec2 uva(uv.x, uv.y);
-				const glm::vec2 uvc(uv.z, uv.w);
-				const video::TexturePtr &texture = _renderContext.frameBuffer.texture(video::FrameBufferAttachment::Color0);
-				ImGui::Image(texture->handle(), contentSize, uva, uvc);
-				renderGizmo(camera(), headerSize, contentSize);
+			renderToFrameBuffer();
 
-				if (sceneMgr().isLoading()) {
-					ImGui::LoadingIndicatorCircle("Loading", 150, core::Color::White, core::Color::Gray);
-				} else if (ImGui::IsItemHovered()) {
-					if (sceneMgr().modifier().isMode(ModifierType::ColorPicker)) {
-						ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-					}
-					_hovered = true;
-					updateViewportTrace(headerSize);
+			// use the uv coords here to take a potential fb flip into account
+			const glm::vec4 &uv = _renderContext.frameBuffer.uv();
+			const glm::vec2 uva(uv.x, uv.y);
+			const glm::vec2 uvc(uv.z, uv.w);
+			const video::TexturePtr &texture = _renderContext.frameBuffer.texture(video::FrameBufferAttachment::Color0);
+			ImGui::Image(texture->handle(), contentSize, uva, uvc);
+
+			renderGizmo(camera(), headerSize, contentSize);
+
+			if (sceneMgr().isLoading()) {
+				ImGui::LoadingIndicatorCircle("Loading", 150, core::Color::White, core::Color::Gray);
+			} else if (ImGui::IsItemHovered()) {
+				if (sceneMgr().modifier().isMode(ModifierType::ColorPicker)) {
+					ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 				}
-
-				if (ImGui::BeginDragDropTarget()) {
-					if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
-						const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
-						updateViewportTrace(headerSize);
-						sceneMgr().fillPlane(image);
-					}
-					if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ColorPayload)) {
-						const int dragPalIdx = *(int *)payload->Data;
-						updateViewportTrace(headerSize);
-						ModifierFacade &modifier = sceneMgr().modifier();
-						modifier.setCursorVoxel(voxel::createVoxel(dragPalIdx));
-						const int nodeId = sceneMgr().sceneGraph().activeNode();
-						modifier.aabbStart();
-						modifier.aabbAction(sceneMgr().volume(nodeId),
-											[nodeId](const voxel::Region &region, ModifierType type, bool markUndo) {
-												if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
-													sceneMgr().modified(nodeId, region, markUndo);
-												}
-											});
-						modifier.aabbAbort();
-					}
-					if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
-						const core::String &filename = *(core::String *)payload->Data;
-						sceneMgr().prefab(filename);
-					}
-
-					ImGui::EndDragDropTarget();
-				}
-
-				const float height = ImGui::GetFrameHeight();
-				const ImVec2 windowSize = ImGui::GetWindowSize();
-
-				if (!isFixedCamera()) {
-					static const char *camRotTypes[] = {"Reference Point", "Eye"};
-					static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
-					ImGui::SetCursorPos(ImVec2(0.0f, windowSize.y - height));
-					const int currentCamRotType = (int)camera().rotationType();
-					ImGui::SetNextItemWidth(ImGui::CalcComboBoxWidth(camRotTypes[currentCamRotType]));
-					if (ImGui::BeginCombo("##referencepoint", camRotTypes[currentCamRotType])) {
-						for (int n = 0; n < lengthof(camRotTypes); n++) {
-							const bool isSelected = (currentCamRotType == n);
-							if (ImGui::Selectable(camRotTypes[n], isSelected)) {
-								camera().setRotationType((video::CameraRotationType)n);
-							}
-							if (isSelected) {
-								ImGui::SetItemDefaultFocus();
-							}
-						}
-						ImGui::EndCombo();
-					}
-				}
-
-				static const char *polygonModes[] = {"Points", "Lines", "Solid"};
-				static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
-				const int currentPolygonMode = (int)camera().polygonMode();
-				const float polygonModeMaxWidth = ImGui::CalcComboBoxWidth(polygonModes[currentPolygonMode]);
-				ImGui::SetCursorPos(ImVec2(windowSize.x - polygonModeMaxWidth, windowSize.y - height));
-				ImGui::SetNextItemWidth(polygonModeMaxWidth);
-				if (ImGui::BeginCombo("##polygonmode", polygonModes[currentPolygonMode])) {
-					for (int n = 0; n < lengthof(polygonModes); n++) {
-						const bool isSelected = (currentPolygonMode == n);
-						if (ImGui::Selectable(polygonModes[n], isSelected)) {
-							camera().setPolygonMode((video::PolygonMode)n);
-						}
-						if (isSelected) {
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					ImGui::EndCombo();
-				}
+				_hovered = true;
+				updateViewportTrace(headerSize);
 			}
+
+			dragAndDrop(headerSize);
+			bottomBar();
 		}
 	}
 	ImGui::End();
