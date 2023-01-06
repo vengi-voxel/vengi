@@ -730,9 +730,6 @@ bool SceneManager::copy() {
 	}
 	const int nodeId = activeNode();
 	voxel::RawVolume* model = volume(nodeId);
-	if (_copy != nullptr) {
-		delete _copy;
-	}
 	_copy = voxedit::tool::copy(model, selection);
 	return true;
 }
@@ -762,9 +759,6 @@ bool SceneManager::cut() {
 	}
 	const int nodeId = activeNode();
 	voxel::RawVolume* model = volume(nodeId);
-	if (_copy != nullptr) {
-		delete _copy;
-	}
 	voxel::Region modifiedRegion;
 	_copy = voxedit::tool::cut(model, selection, modifiedRegion);
 	if (_copy == nullptr) {
@@ -1953,11 +1947,6 @@ void SceneManager::shutdown() {
 	}
 	if (_initialized != 0) {
 		return;
-	}
-
-	if (_copy) {
-		delete _copy;
-		_copy = nullptr;
 	}
 
 	autosave();

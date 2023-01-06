@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Enum.h"
+#include "core/ScopedPtr.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
 #include "voxelfont/VoxelFont.h"
@@ -79,7 +80,7 @@ private:
 	MementoHandler _mementoHandler;
 	ModifierFacade _modifier;
 	voxelfont::VoxelFont _voxelFont;
-	voxel::RawVolume* _copy = nullptr;
+	core::ScopedPtr<voxel::RawVolume> _copy;
 	EditMode _editMode = EditMode::Scene;
 	std::future<voxelformat::SceneGraph> _loadingFuture;
 
