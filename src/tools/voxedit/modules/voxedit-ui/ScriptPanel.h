@@ -10,6 +10,9 @@
 
 namespace voxedit {
 
+/**
+ * @brief LUA script integration panel
+ */
 class ScriptPanel {
 private:
 	TextEditor _textEditor;

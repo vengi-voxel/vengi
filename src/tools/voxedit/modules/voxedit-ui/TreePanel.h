@@ -8,6 +8,9 @@
 
 namespace voxedit {
 
+/**
+ * @brief Panel for the tree generator
+ */
 class TreePanel {
 private:
 	voxelgenerator::TreeContext _treeGeneratorContext;
