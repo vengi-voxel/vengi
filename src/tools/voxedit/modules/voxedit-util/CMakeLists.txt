@@ -11,7 +11,7 @@ set(SRCS
 	modifier/ModifierButton.h modifier/ModifierButton.cpp
 	modifier/ModifierType.h
 
-	layer/LayerSettings.h
+	ModelNodeSettings.h
 
 	tool/Clipboard.h tool/Clipboard.cpp
 )

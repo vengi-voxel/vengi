@@ -14,13 +14,13 @@ namespace _priv {
 static constexpr const int MaxVolumeSize = 256;
 }
 
-struct LayerSettings {
+struct ModelNodeSettings {
 	core::String name;
 	glm::ivec3 position;
 	glm::ivec3 size;
 	int parent = 0;
 
-	LayerSettings() {
+	ModelNodeSettings() {
 		reset();
 	}
 

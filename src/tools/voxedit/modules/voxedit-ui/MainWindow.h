@@ -23,7 +23,7 @@
 #include "voxedit-ui/StatusBar.h"
 #include "voxedit-ui/ModifierPanel.h"
 #include "voxedit-ui/TreePanel.h"
-#include "voxedit-util/layer/LayerSettings.h"
+#include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/modifier/ModifierType.h"
 
 namespace voxedit {
@@ -67,7 +67,7 @@ private:
 	void loadLastOpenedFiles(const core::String &string);
 	void addLastOpenedFile(const core::String &file);
 
-	LayerSettings _modelNodeSettings;
+	ModelNodeSettings _modelNodeSettings;
 
 	io::FileDescription _loadFile;
 

@@ -9,7 +9,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/Color.h"
 #include "imgui.h"
-#include "voxedit-util/layer/LayerSettings.h"
+#include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/IconsFontAwesome6.h"
@@ -138,7 +138,7 @@ static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGra
 	ImGui::TableNextRow();
 	{ // column 1
 		ImGui::TableNextColumn();
-		const core::String &visibleId = core::string::format("##visible-layer-%i", nodeId);
+		const core::String &visibleId = core::string::format("##visible-node-%i", nodeId);
 		bool visible = node.visible();
 		if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
 			sceneMgr().nodeSetVisible(nodeId, visible);
@@ -146,7 +146,7 @@ static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGra
 	}
 	{ // column 2
 		ImGui::TableNextColumn();
-		const core::String &lockedId = core::string::format("##locked-layer-%i", nodeId);
+		const core::String &lockedId = core::string::format("##locked-node-%i", nodeId);
 		bool locked = node.locked();
 		if (ImGui::Checkbox(lockedId.c_str(), &locked)) {
 			sceneMgr().nodeSetLocked(nodeId, locked);
@@ -156,7 +156,7 @@ static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGra
 		ImGui::TableNextColumn();
 		core::RGBA color = node.color();
 		glm::vec4 colvec = core::Color::fromRGBA(color);
-		const core::String &colorId = core::string::format("Color##layer-%i", nodeId);
+		const core::String &colorId = core::string::format("Color##node-%i", nodeId);
 		if (ImGui::ColorEdit4(colorId.c_str(), glm::value_ptr(colvec), ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
 			node.setColor(core::Color::getRGBA(colvec));
 		}
@@ -232,7 +232,7 @@ static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGra
 	{ // column 5
 		ImGui::TableNextColumn();
 
-		const core::String &deleteId = core::string::format(ICON_FA_TRASH"##delete-layer-%i", nodeId);
+		const core::String &deleteId = core::string::format(ICON_FA_TRASH"##delete-node-%i", nodeId);
 		if (ImGui::Button(deleteId.c_str())) {
 			sceneMgr().nodeRemove(nodeId, false);
 		}
@@ -247,7 +247,7 @@ static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGra
 	}
 }
 
-void SceneGraphPanel::update(video::Camera& camera, const char *title, LayerSettings* layerSettings, command::CommandExecutionListener &listener) {
+void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNodeSettings* modelNodeSettings, command::CommandExecutionListener &listener) {
 	if (!_animationSpeedVar) {
 		_animationSpeedVar = core::Var::getSafe(cfg::VoxEditAnimationSpeed);
 	}
@@ -272,17 +272,17 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, LayerSett
 			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 			ui::Toolbar toolbar(buttonSize);
 
-			toolbar.button(ICON_FA_SQUARE_PLUS, "Add a new model node", [&sceneGraph, this, layerSettings] () {
+			toolbar.button(ICON_FA_SQUARE_PLUS, "Add a new model node", [&sceneGraph, this, modelNodeSettings] () {
 				const int nodeId = sceneGraph.activeNode();
 				voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
 				const voxel::RawVolume* v = node.volume();
 				const voxel::Region& region = v->region();
-				layerSettings->position = region.getLowerCorner();
-				layerSettings->size = region.getDimensionsInVoxels();
-				if (layerSettings->name.empty()) {
-					layerSettings->name = node.name();
+				modelNodeSettings->position = region.getLowerCorner();
+				modelNodeSettings->size = region.getDimensionsInVoxels();
+				if (modelNodeSettings->name.empty()) {
+					modelNodeSettings->name = node.name();
 				}
-				layerSettings->parent = nodeId;
+				modelNodeSettings->parent = nodeId;
 				_popupNewModelNode = true;
 			});
 
@@ -317,14 +317,14 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, LayerSett
 												ImGuiTableFlags_NoSavedSettings;
 			ui::ScopedStyle style;
 			style.setIndentSpacing(0.0f);
-			if (ImGui::BeginTable("##layerlist", 5, tableFlags)) {
+			if (ImGui::BeginTable("##nodelist", 5, tableFlags)) {
 				const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
 											ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
 
 				ImGui::TableSetupColumn(ICON_FA_EYE "##visiblelayer", colFlags);
 				ImGui::TableSetupColumn(ICON_FA_LOCK "##lockedlayer", colFlags);
-				ImGui::TableSetupColumn("##layercolor", colFlags);
-				ImGui::TableSetupColumn("Name##layer", ImGuiTableColumnFlags_WidthStretch);
+				ImGui::TableSetupColumn("##nodecolor", colFlags);
+				ImGui::TableSetupColumn("Name##node", ImGuiTableColumnFlags_WidthStretch);
 				ImGui::TableSetupColumn("##deletelayer", colFlags);
 				ImGui::TableHeadersRow();
 				// TODO: filter by name and type
