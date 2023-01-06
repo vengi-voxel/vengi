@@ -22,6 +22,10 @@
     </magic>
     <glob pattern="*.vox"/>
   </mime-type>
+  <mime-type type="application/x-minetest">
+    <comment>Minetest Schematic File</comment>
+    <glob pattern="*.mts"/>
+  </mime-type>
   <mime-type type="application/x-minecraftregion">
     <comment>Minecraft region file</comment>
     <glob pattern="*.mca"/>
