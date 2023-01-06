@@ -67,12 +67,18 @@ static void detailView(const voxelformat::SceneGraphNode &node) {
 	}
 }
 
+static void commandNodeMenu(const char *title, const char *command, const voxelformat::SceneGraphNode &node,
+							bool enabled, command::CommandExecutionListener *listener) {
+	const core::String &cmd = core::string::format("%s %i", command, node.id());
+	ImGui::CommandMenuItem(title, cmd.c_str(), enabled, listener);
+}
+
 static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", node.id());
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 		const int validLayers = (int)sceneGraph.size();
 		if (node.type() == voxelformat::SceneGraphNodeType::Model) {
-			ImGui::CommandMenuItem(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "layerdelete", validLayers > 1, &listener);
+			commandNodeMenu(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "layerdelete", node, validLayers > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", validLayers > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "layerduplicate", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_EYE " Show all" SCENEGRAPHPOPUP, "layershowall", true, &listener);
@@ -85,7 +91,8 @@ static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sc
 			ImGui::CommandMenuItem(ICON_FA_UNLOCK " Unlock all" SCENEGRAPHPOPUP, "layerunlockall", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_DOWN_LEFT_AND_UP_RIGHT_TO_CENTER " Center origin" SCENEGRAPHPOPUP, "center_origin", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_ARROWS_TO_CIRCLE " Center reference" SCENEGRAPHPOPUP, "center_referenceposition", true, &listener);
-			ImGui::CommandMenuItem(ICON_FA_FLOPPY_DISK " Save" SCENEGRAPHPOPUP, "layerssave", true, &listener);
+			ImGui::CommandMenuItem(ICON_FA_FLOPPY_DISK " Save all" SCENEGRAPHPOPUP, "layerssave", true, &listener);
+			commandNodeMenu(ICON_FA_FLOPPY_DISK " Save" SCENEGRAPHPOPUP, "layersave", node, true, &listener);
 		} else {
 			if (ImGui::MenuItem(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP)) {
 				sceneMgr().nodeRemove(node.id(), true);
