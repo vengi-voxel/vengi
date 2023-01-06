@@ -28,16 +28,14 @@ public:
 	enum class SceneCameraMode : uint8_t {
 		Free, Top, Left, Front
 	};
-
-	enum class RenderMode {
-		Editor,
-		Max
-	};
 private:
 	const core::String _id;
 	bool _hovered = false;
-	bool _hoveredGuizmoLastFrame = false;
 	bool _guizmoActivated = false;
+
+	int _mouseX = 0;
+	int _mouseY = 0;
+
 	struct Bounds {
 		glm::vec3 mins{0};
 		glm::vec3 maxs{0};
@@ -52,11 +50,9 @@ private:
 	core::VarPtr _guizmoSnap;
 	core::VarPtr _viewDistance;
 
-	float _angle = 0.0f;
 	SceneCameraMode _camMode = SceneCameraMode::Free;
 	core::VarPtr _rotationSpeed;
 	video::Camera _camera;
-	RenderMode _renderMode = RenderMode::Editor;
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
@@ -69,15 +65,8 @@ public:
 	Viewport(const core::String& id);
 	~Viewport();
 
-	bool _mouseDown = false;
-	int _mouseX = 0;
-	int _mouseY = 0;
-
 	void setMode(SceneCameraMode mode);
 	void resetCamera(const glm::ivec3 &pos, const voxel::Region &region);
-
-	RenderMode renderMode() const;
-	void setRenderMode(RenderMode mode);
 
 	void resize(const glm::ivec2& frameBufferSize);
 
@@ -90,14 +79,12 @@ public:
 
 	video::Camera& camera();
 
-	float angle() const;
-	void setAngle(float angle);
 	bool isHovered() const;
 	/**
 	 * Update the ui
 	 */
 	void update(command::CommandExecutionListener *listener);
-	bool init(RenderMode renderMode = RenderMode::Editor);
+	bool init();
 	void shutdown();
 
 	const core::String& id() const;
@@ -106,25 +93,8 @@ public:
 	bool saveImage(const char* filename);
 };
 
-
-inline Viewport::RenderMode Viewport::renderMode() const {
-	return _renderMode;
-}
-
-inline void Viewport::setRenderMode(RenderMode renderMode) {
-	_renderMode = renderMode;
-}
-
 inline video::Camera& Viewport::camera() {
 	return _camera;
-}
-
-inline float Viewport::angle() const {
-	return _angle;
-}
-
-inline void Viewport::setAngle(float angle) {
-	_angle = angle;
 }
 
 inline const core::String& Viewport::id() const {

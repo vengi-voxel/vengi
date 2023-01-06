@@ -92,16 +92,16 @@ void MainWindow::addLastOpenedFile(const core::String &file) {
 }
 
 bool MainWindow::init() {
-	_scene->init(voxedit::Viewport::RenderMode::Editor);
+	_scene->init();
 	_scene->setMode(voxedit::Viewport::SceneCameraMode::Free);
 
-	_sceneTop->init(voxedit::Viewport::RenderMode::Editor);
+	_sceneTop->init();
 	_sceneTop->setMode(voxedit::Viewport::SceneCameraMode::Top);
 
-	_sceneLeft->init(voxedit::Viewport::RenderMode::Editor);
+	_sceneLeft->init();
 	_sceneLeft->setMode(voxedit::Viewport::SceneCameraMode::Left);
 
-	_sceneFront->init(voxedit::Viewport::RenderMode::Editor);
+	_sceneFront->init();
 	_sceneFront->setMode(voxedit::Viewport::SceneCameraMode::Front);
 
 	_showGridVar = core::Var::getSafe(cfg::VoxEditShowgrid);

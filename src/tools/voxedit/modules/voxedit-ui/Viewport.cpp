@@ -38,7 +38,7 @@ Viewport::~Viewport() {
 	shutdown();
 }
 
-bool Viewport::init(Viewport::RenderMode renderMode) {
+bool Viewport::init() {
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 	_showAxisVar = core::Var::getSafe(cfg::VoxEditShowaxis);
 	_guizmoRotation = core::Var::getSafe(cfg::VoxEditGuizmoRotation);
@@ -46,7 +46,6 @@ bool Viewport::init(Viewport::RenderMode renderMode) {
 	_guizmoSnap = core::Var::getSafe(cfg::VoxEditGuizmoSnap);
 	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
 
-	setRenderMode(renderMode);
 	setMode(Viewport::SceneCameraMode::Free);
 	resetCamera();
 	_renderContext.init(video::getWindowSize());
@@ -334,7 +333,6 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 		glm::value_ptr(_bounds.mins), boundsSnap);
 
 	const bool guizmoActive = ImGuizmo::IsUsing();
-	_hoveredGuizmoLastFrame = ImGuizmo::IsOver() || guizmoActive;
 
 	if (guizmoActive) {
 		_guizmoActivated = true;
