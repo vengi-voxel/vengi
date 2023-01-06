@@ -8,6 +8,11 @@
 
 namespace voxedit {
 
+bool LSystemPanel::init() {
+	// TODO: load lsystem settings
+	return true;
+}
+
 void LSystemPanel::update(const char *title) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(LSystemPanel);
@@ -29,7 +34,7 @@ void LSystemPanel::update(const char *title) {
 		}
 
 		const uint32_t tableFlags = ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-		const ImVec2 outerSize = ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 6);
+		const ImVec2 outerSize(0.0f, ImGui::GetTextLineHeightWithSpacing() * 6);
 		if (ImGui::BeginTable("##lsystemrules", 2, tableFlags, outerSize)) {
 			ImGui::TableSetupColumn("Command##lsystemrules", ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableSetupColumn("Description##lsystemrules", ImGuiTableColumnFlags_WidthStretch);
@@ -53,6 +58,10 @@ void LSystemPanel::update(const char *title) {
 		}
 	}
 	ImGui::End();
+}
+
+void LSystemPanel::shutdown() {
+	// TODO: persist the lsystem settings
 }
 
 }

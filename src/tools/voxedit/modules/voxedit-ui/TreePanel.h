@@ -17,8 +17,9 @@ private:
 
 	void switchTreeType(voxelgenerator::TreeType treeType);
 public:
-	TreePanel();
+	bool init();
 	void update(const char *title);
+	void shutdown();
 };
 
 }

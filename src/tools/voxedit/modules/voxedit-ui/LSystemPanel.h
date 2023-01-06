@@ -26,7 +26,9 @@ private:
 	LSystemData _lsystemData;
 
 public:
+	bool init();
 	void update(const char *title);
+	void shutdown();
 };
 
 }

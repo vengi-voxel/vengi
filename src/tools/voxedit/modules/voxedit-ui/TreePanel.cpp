@@ -8,8 +8,10 @@
 
 namespace voxedit {
 
-TreePanel::TreePanel() {
+bool TreePanel::init() {
 	switchTreeType(voxelgenerator::TreeType::Dome);
+	// TODO: load the tree settings
+	return true;
 }
 
 void TreePanel::switchTreeType(voxelgenerator::TreeType treeType) {
@@ -137,6 +139,10 @@ void TreePanel::update(const char *title) {
 		}
 	}
 	ImGui::End();
+}
+
+void TreePanel::shutdown() {
+	// TODO: persist the tree settings
 }
 
 }

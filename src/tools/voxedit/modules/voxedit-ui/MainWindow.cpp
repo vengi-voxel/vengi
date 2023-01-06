@@ -104,6 +104,9 @@ bool MainWindow::init() {
 	_sceneFront->init();
 	_sceneFront->setMode(voxedit::Viewport::SceneCameraMode::Front);
 
+	_lsystemPanel.init();
+	_treePanel.init();
+
 	_showGridVar = core::Var::getSafe(cfg::VoxEditShowgrid);
 	_showLockedAxisVar = core::Var::getSafe(cfg::VoxEditShowlockedaxis);
 	_showAabbVar = core::Var::getSafe(cfg::VoxEditShowaabb);
@@ -131,6 +134,8 @@ void MainWindow::shutdown() {
 	_sceneTop->shutdown();
 	_sceneLeft->shutdown();
 	_sceneFront->shutdown();
+	_lsystemPanel.shutdown();
+	_treePanel.shutdown();
 }
 
 bool MainWindow::save(const core::String &file, const io::FormatDescription *desc) {
