@@ -151,6 +151,7 @@ jobs:
             cd build
             cmake --install . --component voxedit --prefix voxedit-install
             cmake --install . --component voxconvert --prefix voxconvert-install
+            cpack
 
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v3
@@ -163,3 +164,9 @@ jobs:
           with:
             name: voxconvert
             path: build/voxconvert-install/
+
+        - name: Upload the nsis installer artifacts
+          uses: actions/upload-artifact@v3
+          with:
+            name: windows-installer
+            path: build/vengi-*-Windows.exe
