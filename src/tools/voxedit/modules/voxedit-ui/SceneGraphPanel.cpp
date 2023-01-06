@@ -226,8 +226,8 @@ static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGra
 					ImGui::TreePop();
 				}
 				return;
-				ImGui::EndDragDropTarget();
 			}
+			ImGui::EndDragDropTarget();
 		}
 		contextMenu(camera, sceneGraph, node, listener);
 		if (ImGui::IsItemActivated()) {
