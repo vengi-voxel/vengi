@@ -1,5 +1,7 @@
 # Formats
 
+## Voxel formats
+
 | Name                       | Extension | Loading | Saving | Thumbnails | Palette | Animations | Spec                                                                     |
 | :------------------------- | --------- | ------- | ------ | ---------- | ------- | ---------- | ------------------------------------------------------------------------ |
 | Ace Of Spades              | vxl       | X       | X      | X          | X       |            | [spec](https://silverspaceship.com/aosmap/aos_file_format.html)          |
@@ -8,8 +10,6 @@
 | Chronovox-Studio           | csm       | X       |        | X          |         |            |                                                                          |
 | Command and Conquer        | vxl/hva   | X       | X      | X          | X       | X          | [spec](http://xhp.xwis.net/documents/VXL_Format.txt)                     |
 | CubeWorld                  | cub       | X       | X      | X          | X       |            |                                                                          |
-| Filmbox                    | fbx       | X       | X      |            | X       |            |                                                                          |
-| GL Transmission Format     | gltf      | X       | X      |            |         |            | [spec](https://github.com/KhronosGroup/glTF/tree/main/specification/2.0) |
 | Goxel                      | gox       | X       | X      | X          | X       |            |                                                                          |
 | MagicaVoxel                | vox       | X       | X      | X          | X       |            | [spec](https://github.com/ephtracy/voxel-model)                          |
 | Minecraft Level            | dat       | X       |        | X          | X       |            |                                                                          |
@@ -19,7 +19,6 @@
 | Minecraft Schematics       | nbt       | X       |        | X          | X       |            | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
 | Minetest                   | mts       | X       |        | X          | X       |            | [spec](https://dev.minetest.net/Minetest_Schematic_File_Format)          |
 | Nick's Voxel Model         | nvm       | X       |        | X          |         |            |                                                                          |
-| Quake 1/UFO:Alien Invasion | bsp       | X       |        |            |         |            |                                                                          |
 | Qubicle Binary Tree        | qbt       | X       | X      | X          | X       |            | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qbt/)      |
 | Qubicle Binary             | qb        | X       | X      | X          | X       |            | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qb/)       |
 | Qubicle Exchange           | qef       | X       | X      | X          |         |            | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qef/)      |
@@ -31,43 +30,40 @@
 | SLAB6                      | kv6       | X       | X      | X          | X       |            | [spec](https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt)     |
 | Sproxel                    | csv       | X       | X      | X          | X       |            | [spec](https://github.com/emilk/sproxel/blob/master/ImportExport.cpp)    |
 | StarMade                   | sment     | X       |        | X          | X       |            | [spec](https://starmadepedia.net/wiki/Blueprint_File_Formats)            |
+
+## Mesh formats
+
+| Name                       | Extension | Loading | Saving | Thumbnails | Palette | Animations | Spec                                                                     |
+| :------------------------- | --------- | ------- | ------ | ---------- | ------- | ---------- | ------------------------------------------------------------------------ |
+| Filmbox                    | fbx       | X       | X      |            | X       |            |                                                                          |
+| GL Transmission Format     | gltf      | X       | X      |            |         |            | [spec](https://github.com/KhronosGroup/glTF/tree/main/specification/2.0) |
+| Quake 1/UFO:Alien Invasion | bsp       | X       |        |            |         |            |                                                                          |
 | Standard Triangle Language | stl       | X       | X      |            |         |            |                                                                          |
 | Wavefront Object           | obj       | X       | X      |            |         |            |                                                                          |
 
+## Palettes
 
-## Configuration variables
+| Name                        | Extension | Loading | Saving |
+| :-------------------------- | --------- | ------- | ------ |
+| Portable Network Graphics   | png       | X       | X      |
+| Gimp Palette                | gpl       | X       | X      |
+| Qubicle Palette             | qsm       | X       |        |
+| RGB Palette                 | pal       | X       | X      |
+| CSV Palette                 | csv       | X       | X      |
 
-A few [cvars](Configuration.md) exists to tweak the export or import of several formats.
+## Images/textures
 
-Some of these settings are only for voxel format, others are only for the mesh formats like ply, gltf, stl, fbx and obj.
-
-| Name                          | Description                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
-| `voxformat_ambientocclusion`  | Don't export extra quads for ambient occlusion voxels                                    |
-| `voxformat_mergequads`        | Merge similar quads to optimize the mesh                                                 |
-| `voxformat_reusevertices`     | Reuse vertices or always create new ones                                                 |
-| `voxformat_scale`             | Scale the vertices on all axis by the given factor                                       |
-| `voxformat_scale_x`           | Scale the vertices on X axis by the given factor                                         |
-| `voxformat_scale_y`           | Scale the vertices on Y axis by the given factor                                         |
-| `voxformat_scale_z`           | Scale the vertices on Z axis by the given factor                                         |
-| `voxformat_quads`             | Export to quads                                                                          |
-| `voxformat_withcolor`         | Export vertex colors                                                                     |
-| `voxformat_withtexcoords`     | Export texture coordinates                                                               |
-| `voxformat_transform_mesh`    | Apply the keyframe transform to the mesh                                                 |
-| `voxformat_marchingcubes`     | Use the marching cubes algorithm to produce the mesh                                     |
-| `voxformat_createpalette`     | Setting this to false will use use the palette configured by `palette` cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats - but also for RGBA based formats. |
-| `voxformat_fillhollow`        | Fill the inner parts of completely close objects                                         |
-| `voxformat_scale`             | Scale the vertices on all axis by the given factor                                       |
-| `voxformat_scale_x`           | Scale the vertices on X axis by the given factor                                         |
-| `voxformat_scale_y`           | Scale the vertices on Y axis by the given factor                                         |
-| `voxformat_scale_z`           | Scale the vertices on Z axis by the given factor                                         |
-| `voxformat_voxel_mesh`        | Optimize import precision assuming that the mesh is composed of uniform voxels           |
-| `voxformat_vxlnormaltype`     | Normal type for VXL format - 2 (TS) or 4 (RedAlert2)                                     |
-| `voxformat_qbtpalettemode`    | Use palette mode in qubicle qbt export                                                   |
-| `voxformat_qbtmergecompounds` | Merge compounds in qbt export                                                            |
-| `voxformat_voxcreatelayers`   | Magicavoxel vox layers                                                                   |
-| `voxformat_voxcreategroups`   | Magicavoxel vox groups                                                                   |
-| `voxformat_merge`             | Merge all models into one object                                                         |
-| `voxformat_rgbflattenfactor`  | To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats |
-| `voxformat_qbsavelefthanded`  | Save qubicle format as left handed                                                       |
-| `core_colorreduction`         | This can be used to tweak the color reduction by switching to a different algorithm. Possible values are `Octree`, `Wu`, `KMeans` and `MedianCut`. This is useful for mesh based formats or RGBA based formats like e.g. AceOfSpades vxl. |
+| Name                        | Extension |
+| :-------------------------- | --------- |
+| Portable Network Graphics   | png       |
+| JPEG                        | jpeg, jpg |
+| Targa image file            | tga       |
+| DDS                         | dds       |
+| PKM                         | pkm       |
+| PVR                         | pvr       |
+| Bitmap                      | bmp       |
+| Photoshop                   | psd       |
+| Graphics Interchange Format | gif       |
+| Radiance rgbE               | hdr       |
+| Softimage PIC               | pic       |
+| Portable Anymap             | pnm       |
