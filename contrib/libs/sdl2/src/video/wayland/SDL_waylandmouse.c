@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -271,6 +271,14 @@ static SDL_bool wayland_get_system_cursor(SDL_VideoData *vdata, Wayland_CursorDa
     default:
         SDL_assert(0);
         return SDL_FALSE;
+    }
+
+    /* Fallback to the default cursor if the chosen one wasn't found */
+    if (!cursor) {
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(theme, "left_ptr");
+        if (!cursor) {
+            return SDL_FALSE;
+        }
     }
 
     /* ... Set the cursor data, finally. */
