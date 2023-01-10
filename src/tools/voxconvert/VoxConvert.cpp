@@ -528,6 +528,12 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 			voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &) { ++voxels; });
 		}
 		Log::info("%*s  |- voxels: %i", indent, " ", voxels);
+	} else if (type == voxelformat::SceneGraphNodeType::Camera) {
+		const voxelformat::SceneGraphNodeCamera &cameraNode = voxelformat::toCameraNode(node);
+		Log::info("%*s  |- field of view: %i", indent, " ", cameraNode.fieldOfView());
+		Log::info("%*s  |- nearplane: %f", indent, " ", cameraNode.nearPlane());
+		Log::info("%*s  |- farplane: %f", indent, " ", cameraNode.farPlane());
+		Log::info("%*s  |- mode: %s", indent, " ", cameraNode.isOrthographic() ? "ortho" : "perspective");
 	}
 	for (const auto & entry : node.properties()) {
 		Log::info("%*s  |- %s: %s", indent, " ", entry->key.c_str(), entry->value.c_str());
