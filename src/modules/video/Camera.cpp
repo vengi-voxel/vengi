@@ -111,6 +111,12 @@ glm::vec3 Camera::direction() const {
 
 void Camera::lerp(const Camera& target) {
 	// TODO: implement me
+	setMode(target.mode());
+	setTarget(target.target());
+	setFieldOfView(target.fieldOfView());
+	setFarPlane(target.farPlane());
+	setNearPlane(target.nearPlane());
+	setTargetDistance(target.targetDistance());
 	setWorldPosition(target.worldPosition());
 	setOrientation(target.quaternion());
 }
