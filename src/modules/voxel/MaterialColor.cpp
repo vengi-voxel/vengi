@@ -24,10 +24,11 @@ bool hasPalette() {
 Palette &getPalette() {
 	if (!hasPalette()) {
 		Palette palette;
-		const core::String &defaultPalette =
-			core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName())->strVal();
+		const core::VarPtr &var = core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName());
+		const core::String &defaultPalette = var->strVal();
 		if (!palette.load(defaultPalette.c_str())) {
 			palette.nippon();
+			var->setVal(voxel::Palette::getDefaultPaletteName());
 		}
 		_priv::globalPalette.setValue(palette);
 	}
