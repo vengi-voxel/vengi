@@ -564,6 +564,7 @@ int findPaletteIndex(const core::String &name, int defaultValue) {
 }
 
 const PaletteMap &getPaletteMap() {
+	// https://gitlab.com/bztsrc/mtsedit/blob/master/etc/Mineclone2.gpl
 	// https://github.com/mcedit/mcedit2/tree/master/src/mceditlib/blocktypes
 	// https://minecraft.gamepedia.com/Java_Edition_data_values
 	// https://minecraft.gamepedia.com/Java_Edition_data_values/Pre-flattening#Block_IDs
