@@ -7,3 +7,13 @@ You can import palettes from a lot of different image or palette (`gimp`, `rgb`,
 The palette can usually be specified by the [cvar](Configuration.md) `palette` and can either be a full path to a png file or an identifier.
 If you decide to use the identifier - e.g. `nippon` the `palette` cvar is set to this value and the engine will automatically search
 all registered file system paths for a file named `palette-nippon.png`.
+
+# Formats
+
+| Name                        | Extension | Loading | Saving |
+| :-------------------------- | --------- | ------- | ------ |
+| Portable Network Graphics   | png       | X       | X      |
+| Gimp Palette                | gpl       | X       | X      |
+| Qubicle Palette             | qsm       | X       |        |
+| RGB Palette                 | pal       | X       | X      |
+| CSV Palette                 | csv       | X       | X      |
