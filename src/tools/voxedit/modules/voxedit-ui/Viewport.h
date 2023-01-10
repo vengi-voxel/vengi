@@ -66,6 +66,7 @@ private:
 	void bottomBar();
 	void renderViewport();
 	void renderMenuBar(command::CommandExecutionListener *listener);
+	void menuBarCameraMode();
 public:
 	Viewport(const core::String& id);
 	~Viewport();
