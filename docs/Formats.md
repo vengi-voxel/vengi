@@ -33,13 +33,13 @@
 
 ## Mesh formats
 
-| Name                       | Extension | Loading | Saving | Thumbnails | Palette | Animations | Spec                                                                     |
-| :------------------------- | --------- | ------- | ------ | ---------- | ------- | ---------- | ------------------------------------------------------------------------ |
-| Filmbox                    | fbx       | X       | X      |            | X       |            |                                                                          |
-| GL Transmission Format     | gltf      | X       | X      |            |         |            | [spec](https://github.com/KhronosGroup/glTF/tree/main/specification/2.0) |
-| Quake 1/UFO:Alien Invasion | bsp       | X       |        |            |         |            |                                                                          |
-| Standard Triangle Language | stl       | X       | X      |            |         |            |                                                                          |
-| Wavefront Object           | obj       | X       | X      |            |         |            |                                                                          |
+| Name                       | Extension | Loading | Saving    |
+| :------------------------- | --------- | ------- | --------- |
+| Filmbox                    | fbx       | X       | X (ascii) |
+| GL Transmission Format     | gltf      | X       | X         |
+| Quake 1/UFO:Alien Invasion | bsp       | X       |           |
+| Standard Triangle Language | stl       | X       | X         |
+| Wavefront Object           | obj       | X       | X         |
 
 ## Palettes
 
