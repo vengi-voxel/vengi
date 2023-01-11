@@ -28,7 +28,7 @@
 #define TITLE_TOOLS "Tools##title"
 #define TITLE_MEMENTO "History##title"
 #define TITLE_ASSET "Assets##title"
-#define TITLE_SCENEGRAPH "Scene##title"
+#define TITLE_SCENEGRAPH ICON_FA_SHARE_NODES " Scene##title"
 #define TITLE_MODIFIERS "Modifiers##title"
 #define TITLE_TREES ICON_FA_TREE " Trees##title"
 #define TITLE_SCRIPTPANEL ICON_FA_CODE " Script##title"
