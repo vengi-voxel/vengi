@@ -7,6 +7,7 @@
 #include "core/BindingContext.h"
 #include "dearimgui/backends/imgui_impl_sdl.h"
 #include "dearimgui/backends/imgui_impl_opengl3.h"
+#include "engine-config.h"
 #include "io/Filesystem.h"
 #include "command/Command.h"
 #include "core/Var.h"
@@ -275,7 +276,7 @@ app::AppState IMGUIApp::onInit() {
 	// xrandr --output <screen-name> --scale 1.6x1.6
 
 	if (_persistUISettings) {
-		const core::String iniFile = _appname + "-imgui.ini";
+		const core::String iniFile = _appname + "-" PROJECT_VERSION "-imgui.ini";
 		_writePathIni = _filesystem->writePath(iniFile.c_str());
 		io.IniFilename = _writePathIni.c_str();
 	} else {
