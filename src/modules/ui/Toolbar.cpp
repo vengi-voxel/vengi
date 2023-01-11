@@ -49,6 +49,7 @@ void Toolbar::last() {
 		_pos.x = _startingPosX;
 		setCursor();
 	}
+	ImGui::Dummy(ImVec2(0, 0));
 }
 
 core::String Toolbar::id(const char *icon) const {
