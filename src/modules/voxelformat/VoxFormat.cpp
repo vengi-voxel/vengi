@@ -323,7 +323,8 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	for (uint32_t n = 0; n < scene->num_cameras; ++n) {
 		const ogt_vox_cam& c = scene->cameras[n];
 		const glm::vec3 target(c.focus[0], c.focus[1], c.focus[2]);
-		const glm::quat quat(glm::vec3(c.angle[0], c.angle[1], c.angle[2]));
+		const glm::vec3 angles(c.angle[0], c.angle[1], c.angle[2]);
+		const glm::quat quat(glm::radians(angles));
 		const float distance = (float)c.radius;
 		const glm::vec3& forward = glm::conjugate(quat) * glm::forward;
 		const glm::vec3& backward = -forward;
