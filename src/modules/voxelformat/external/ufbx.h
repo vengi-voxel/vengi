@@ -1,5 +1,5 @@
-#ifndef UFBX_UFBX_H_INLCUDED
-#define UFBX_UFBX_H_INLCUDED
+#ifndef UFBX_UFBX_H_INCLUDED
+#define UFBX_UFBX_H_INCLUDED
 
 // -- User configuration
 
@@ -161,7 +161,7 @@ typedef double ufbx_real;
 #define ufbx_version_minor(version) ((uint32_t)(version)/1000u%1000u)
 #define ufbx_version_patch(version) ((uint32_t)(version)%1000u)
 
-#define UFBX_HEADER_VERSION ufbx_pack_version(0, 2, 2)
+#define UFBX_HEADER_VERSION ufbx_pack_version(0, 2, 3)
 #define UFBX_VERSION UFBX_HEADER_VERSION
 
 // -- Basic types
@@ -440,7 +440,7 @@ typedef struct ufbx_scene ufbx_scene;
 
 // Element is the lowest level representation of the FBX file in ufbx.
 // An element contains type, id, name, and properties (see `ufbx_props` above)
-// Elements may be connected to each other aribtrarily via `ufbx_connection`
+// Elements may be connected to each other arbitrarily via `ufbx_connection`
 
 typedef struct ufbx_element ufbx_element;
 
@@ -774,7 +774,7 @@ struct ufbx_node {
 	// See `adjust_pre_rotation`, `adjust_pre_scale`, `adjust_post_rotation`.
 	bool has_adjust_transform;
 
-	// True if this node is node is a syntehtic geometry transform helper.
+	// True if this node is node is a synthetic geometry transform helper.
 	// See `UFBX_GEOMETRY_TRANSFORM_HANDLING_HELPER_NODES`.
 	bool is_geometry_transform_helper;
 
@@ -1521,7 +1521,7 @@ struct ufbx_nurbs_curve {
 	ufbx_nurbs_basis basis;
 
 	// Linear array of control points
-	// NOTE: The control points are _not_ homogenous, meaning you have to multiply
+	// NOTE: The control points are _not_ homogeneous, meaning you have to multiply
 	// them by `w` before evaluating the surface.
 	ufbx_vec4_list control_points;
 };
@@ -1545,7 +1545,7 @@ struct ufbx_nurbs_surface {
 
 	// 2D array of control points.
 	// Memory layout: `V * num_control_points_u + U`
-	// NOTE: The control points are _not_ homogenous, meaning you have to multiply
+	// NOTE: The control points are _not_ homogeneous, meaning you have to multiply
 	// them by `w` before evaluating the surface.
 	ufbx_vec4_list control_points;
 
@@ -2891,7 +2891,7 @@ struct ufbx_selection_set {
 		uint32_t typed_id;
 	}; };
 
-	// Included nodes and geomtery features
+	// Included nodes and geometry features
 	ufbx_selection_node_list nodes;
 };
 
@@ -3594,7 +3594,7 @@ typedef struct ufbx_error_frame {
 // Error causes (and `UFBX_ERROR_NONE` for no error).
 typedef enum ufbx_error_type UFBX_ENUM_REPR {
 
-	// No error, operation has been performed succesfully.
+	// No error, operation has been performed successfully.
 	UFBX_ERROR_NONE,
 
 	// Unspecified error, most likely caused by an invalid FBX file or a file
