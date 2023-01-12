@@ -207,6 +207,9 @@ bool VXLFormat::writeNodeHeader(io::SeekableWriteStream& stream, const SceneGrap
 }
 
 bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGraphNode& node, const VXLNodeOffset& offsets) const {
+	Log::debug("SpanStartOffset: %i", (int32_t)offsets.start);
+	Log::debug("SpanEndOffset: %i", (int32_t)offsets.end);
+	Log::debug("SpanDataOffset: %i", (int32_t)offsets.data);
 	wrapBool(stream.writeUInt32(offsets.start))
 	wrapBool(stream.writeUInt32(offsets.end))
 	wrapBool(stream.writeUInt32(offsets.data))
@@ -266,8 +269,8 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, uint32_t numNodes, 
 	wrapBool(stream.writeUInt32(header.tailerCount))
 	wrapBool(stream.writeUInt32(header.bodysize))
 
-	wrapBool(stream.writeUInt8(0x1fU)) // startPaletteRemap
-	wrapBool(stream.writeUInt8(0x10U)) // endPaletteRemap
+	wrapBool(stream.writeUInt8(0x10U)) // startPaletteRemap
+	wrapBool(stream.writeUInt8(0x1fU)) // endPaletteRemap
 	for (int i = 0; i < palette.colorCount; ++i) {
 		const core::RGBA& rgba = palette.colors[i];
 		wrapBool(stream.writeUInt8(rgba.r))
@@ -303,6 +306,7 @@ bool VXLFormat::saveVXL(core::DynamicArray<const SceneGraphNode*> &nodes, const 
 
 	const uint64_t afterBodyPos = stream.pos();
 	const uint64_t bodySize = afterBodyPos - afterHeaderPos;
+	Log::debug("write %u bytes as body size", (uint32_t)bodySize);
 	wrap(stream.seek(HeaderBodySizeOffset));
 	wrapBool(stream.writeUInt32(bodySize))
 	wrap(stream.seek(afterBodyPos));
@@ -530,6 +534,9 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 	Log::debug("SpanDataOffset: %u", footer.spanDataOffset);
 	Log::debug("FooterSize: %u:%u:%u", footer.xsize, footer.ysize, footer.zsize);
 	Log::debug("Normaltype: %u", footer.normalType);
+
+	core::Var::getSafe(cfg::VoxformatVXLNormalType)->setVal(footer.normalType);
+
 	return true;
 }
 

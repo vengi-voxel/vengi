@@ -49,8 +49,8 @@ private:
 	};
 
 	struct VXLPalette {
-		uint8_t startPaletteRemap;	/* Always 0x1f - player colors palette remapping? */
-		uint8_t endPaletteRemap;	/* Always 0x10 */
+		uint8_t startPaletteRemap;	/* Always 0x10 - player colors palette remapping? */
+		uint8_t endPaletteRemap;	/* Always 0x1f */
 		uint8_t palette[256][3]; 	/* 256 colour palette for the voxel in RGB format */
 	};
 
