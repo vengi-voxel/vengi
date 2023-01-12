@@ -477,10 +477,11 @@ bool VXLFormat::readNodes(io::SeekableReadStream& stream, VXLModel& mdl, SceneGr
 bool VXLFormat::readNodeHeader(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const {
 	VXLNodeHeader &header = mdl.nodeHeaders[nodeIdx];
 	wrapBool(stream.readString(lengthof(header.name), header.name, false))
-	Log::debug("Node %u name: %s", nodeIdx, header.name);
 	wrap(stream.readUInt32(header.id))
 	wrap(stream.readUInt32(header.unknown))
 	wrap(stream.readUInt32(header.unknown2))
+	Log::debug("Node %u name: %s, id %u, unknown: %u, unknown2: %u",
+			nodeIdx, header.name, header.id, header.unknown, header.unknown2);
 	return true;
 }
 
@@ -521,11 +522,14 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 		return false;
 	}
 
-	Log::debug("scale: %f", footer.scale);
-	Log::debug("mins: %f:%f:%f", footer.mins[0], footer.mins[1], footer.mins[2]);
-	Log::debug("maxs: %f:%f:%f", footer.maxs[0], footer.maxs[1], footer.maxs[2]);
-	Log::debug("offsets: %u:%u:%u", footer.spanStartOffset, footer.spanEndOffset, footer.spanDataOffset);
-	Log::debug("size: %u:%u:%u, type: %u", footer.xsize, footer.ysize, footer.zsize, footer.normalType);
+	Log::debug("Scale: %f", footer.scale);
+	Log::debug("Mins: %f:%f:%f", footer.mins[0], footer.mins[1], footer.mins[2]);
+	Log::debug("Maxs: %f:%f:%f", footer.maxs[0], footer.maxs[1], footer.maxs[2]);
+	Log::debug("SpanStartOffset: %u", footer.spanStartOffset);
+	Log::debug("SpanEndOffset: %u", footer.spanEndOffset);
+	Log::debug("SpanDataOffset: %u", footer.spanDataOffset);
+	Log::debug("FooterSize: %u:%u:%u", footer.xsize, footer.ysize, footer.zsize);
+	Log::debug("Normaltype: %u", footer.normalType);
 	return true;
 }
 
@@ -550,14 +554,17 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel:
 	wrap(stream.readUInt32(hdr.tailerCount))
 	wrap(stream.readUInt32(hdr.bodysize))
 
-	Log::debug("Found %u nodes", hdr.nodeCount);
+	Log::debug("Palettes: %u", hdr.paletteCount);
+	Log::debug("Nodes: %u", hdr.nodeCount);
+	Log::debug("Tailers: %u", hdr.tailerCount);
+	Log::debug("BodySize: %u", hdr.bodysize);
 
 	palette.colorCount = voxel::PaletteMaxColors;
 	bool valid = false;
 	for (uint32_t n = 0; n < hdr.paletteCount; ++n) {
 		wrap(stream.readUInt8(hdr.palette.startPaletteRemap)) // 0x1f
 		wrap(stream.readUInt8(hdr.palette.endPaletteRemap)) // 0x10
-		Log::debug("%u: %u start, %u end palette offset", n, hdr.palette.startPaletteRemap, hdr.palette.endPaletteRemap);
+		Log::debug("palette %u: %u start, %u end palette offset", n, hdr.palette.startPaletteRemap, hdr.palette.endPaletteRemap);
 		for (int i = 0; i < palette.colorCount; ++i) {
 			wrap(stream.readUInt8(hdr.palette.palette[i][0]))
 			wrap(stream.readUInt8(hdr.palette.palette[i][1]))
