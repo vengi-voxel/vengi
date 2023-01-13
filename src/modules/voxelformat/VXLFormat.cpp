@@ -67,7 +67,7 @@ glm::mat4 VXLFormat::VXLMatrix::toMat4() const {
 	return switchYAndZ(matrix);
 }
 
-void VXLFormat::convertRead(glm::mat4 &glmMatrix, const VXLNodeFooter& footer, bool hva) {
+void VXLFormat::convertRead(glm::mat4 &glmMatrix, const VXLLayerInfo& footer, bool hva) {
 	glm::vec4 &translation = glmMatrix[3];
 	if (hva) {
 		// swap y and z here
@@ -99,7 +99,7 @@ void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &mat, const g
 	}
 }
 
-bool VXLFormat::writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount, uint8_t normalType) const {
+bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount, uint8_t normalType) const {
 	Log::trace("skipCount: %i voxelCount: %i", skipCount, voxelCount);
 	core_assert(skipCount <= 255);
 	core_assert(voxelCount <= 255);
@@ -143,7 +143,7 @@ static bool spanIsEmpty(const voxel::RawVolume *v, int x, int z) {
 	return true;
 }
 
-bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraphNode& node, VXLNodeOffset& offsets, uint64_t nodeSectionOffset) const {
+bool VXLFormat::writeLayer(io::SeekableWriteStream& stream, const SceneGraphNode& node, VXLLayerOffset& offsets, uint64_t nodeSectionOffset) const {
 	const voxel::Region& region = node.region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
 	if (size.x > 255 || size.y > 255 || size.z > 255) {
@@ -155,7 +155,7 @@ bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraphNode&
 	const uint32_t baseSize = size.x * size.z;
 	const int64_t globalSpanStartPos = stream.pos();
 	Log::debug("size.x: %i, size.y: %i, size.z: %i, globalSpanStartPos: %u", size.x, size.y, size.z, (uint32_t)globalSpanStartPos);
-	Log::debug("Write node body at %u", (int)globalSpanStartPos);
+	Log::debug("Write layer body at %u", (int)globalSpanStartPos);
 
 	offsets.start = stream.pos() - (int64_t)nodeSectionOffset;
 
@@ -185,7 +185,7 @@ bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraphNode&
 			for (int y = region.getLowerY(); y <= region.getUpperY();) {
 				int voxelCount = calculateSpanLength(node.volume(), x, y, z);
 				if (voxelCount > 0) {
-					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount, normalType))
+					wrapBool(writeLayerBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount, normalType))
 					y += voxelCount;
 					skipCount = 0;
 				} else {
@@ -194,7 +194,7 @@ bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraphNode&
 				}
 			}
 			if (skipCount > 0) {
-				wrapBool(writeNodeBodyEntry(stream, node.volume(), 0, 0, 0, skipCount, 0, normalType))
+				wrapBool(writeLayerBodyEntry(stream, node.volume(), 0, 0, 0, skipCount, 0, normalType))
 			}
 			spanEndPos = stream.pos();
 			const int64_t spanDelta = spanEndPos - spanStartPos;
@@ -225,12 +225,12 @@ bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraphNode&
 	return true;
 }
 
-bool VXLFormat::writeNodeHeader(io::SeekableWriteStream& stream, const SceneGraphNode& node, uint32_t nodeIdx) const {
-	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + nodeIdx * NodeHeaderSize));
-	Log::debug("Write node header at %u", (int)stream.pos());
+bool VXLFormat::writeLayerHeader(io::SeekableWriteStream& stream, const SceneGraphNode& node, uint32_t nodeIdx) const {
+	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + nodeIdx * LayerHeaderSize));
+	Log::debug("Write layer header at %u", (int)stream.pos());
 	core::String name = node.name().substr(0, 15);
 	if (stream.write(name.c_str(), name.size()) == -1) {
-		Log::error("Failed to write node header into stream");
+		Log::error("Failed to write layer header into stream");
 		return false;
 	}
 	for (size_t i = 0; i < 16 - name.size(); ++i) {
@@ -242,11 +242,11 @@ bool VXLFormat::writeNodeHeader(io::SeekableWriteStream& stream, const SceneGrap
 	return true;
 }
 
-bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGraphNode& node, const VXLNodeOffset& offsets) const {
+bool VXLFormat::writeLayerInfo(io::SeekableWriteStream& stream, const SceneGraphNode& node, const VXLLayerOffset& offsets) const {
 	Log::debug("SpanStartOffset: %i", (int32_t)offsets.start);
 	Log::debug("SpanEndOffset: %i", (int32_t)offsets.end);
 	Log::debug("SpanDataOffset: %i", (int32_t)offsets.data);
-	Log::debug("Write node footer at %u", (int)stream.pos());
+	Log::debug("Write layer footer at %u", (int)stream.pos());
 	wrapBool(stream.writeUInt32(offsets.start))
 	wrapBool(stream.writeUInt32(offsets.end))
 	wrapBool(stream.writeUInt32(offsets.data))
@@ -270,7 +270,7 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 	const voxel::Region& region = node.region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
 	if (size.x > 0xFF || size.y > 0xFF || size.z > 0xFF) {
-		Log::error("Failed to write vxl node footer - max volume size exceeded");
+		Log::error("Failed to write vxl layer footer - max volume size exceeded");
 		return false;
 	}
 
@@ -296,15 +296,15 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, uint32_t numNodes, 
 	VXLHeader header;
 	SDL_strlcpy(header.filetype, "Voxel Animation", sizeof(header.filetype));
 	header.paletteCount = 1;
-	header.nodeCount = numNodes;
-	header.tailerCount = numNodes;
-	header.bodysize = 0; // bodysize is filled later
+	header.layerCount = numNodes;
+	header.layerInfoCount = numNodes;
+	header.dataSize = 0; // bodysize is filled later
 
 	wrapBool(stream.writeString(header.filetype, true))
 	wrapBool(stream.writeUInt32(header.paletteCount))
-	wrapBool(stream.writeUInt32(header.nodeCount))
-	wrapBool(stream.writeUInt32(header.tailerCount))
-	wrapBool(stream.writeUInt32(header.bodysize))
+	wrapBool(stream.writeUInt32(header.layerCount))
+	wrapBool(stream.writeUInt32(header.layerInfoCount))
+	wrapBool(stream.writeUInt32(header.dataSize))
 
 	wrapBool(stream.writeUInt8(0x10U)) // startPaletteRemap
 	wrapBool(stream.writeUInt8(0x1fU)) // endPaletteRemap
@@ -327,18 +327,18 @@ bool VXLFormat::saveVXL(core::DynamicArray<const SceneGraphNode*> &nodes, const 
 	if (nodes.empty()) {
 		return false;
 	}
-	const uint32_t numNodes = nodes.size();
-	wrapBool(writeHeader(stream, numNodes, nodes[0]->palette()))
-	for (uint32_t i = 0; i < numNodes; ++i) {
+	const uint32_t numLayers = nodes.size();
+	wrapBool(writeHeader(stream, numLayers, nodes[0]->palette()))
+	for (uint32_t i = 0; i < numLayers; ++i) {
 		const SceneGraphNode* node = nodes[(int)i];
-		wrapBool(writeNodeHeader(stream, *node, i))
+		wrapBool(writeLayerHeader(stream, *node, i))
 	}
 
-	core::Buffer<VXLNodeOffset> nodeOffsets(numNodes);
+	core::Buffer<VXLLayerOffset> layerOffsets(numLayers);
 	const uint64_t bodyStart = stream.pos();
-	for (uint32_t i = 0; i < numNodes; ++i) {
+	for (uint32_t i = 0; i < numLayers; ++i) {
 		const SceneGraphNode* node = nodes[(int)i];
-		wrapBool(writeNode(stream, *node, nodeOffsets[i], bodyStart))
+		wrapBool(writeLayer(stream, *node, layerOffsets[i], bodyStart))
 	}
 
 	const uint64_t afterBodyPos = stream.pos();
@@ -348,11 +348,11 @@ bool VXLFormat::saveVXL(core::DynamicArray<const SceneGraphNode*> &nodes, const 
 	wrapBool(stream.writeUInt32(bodySize))
 	wrap(stream.seek(afterBodyPos));
 
-	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + NodeHeaderSize * numNodes + bodySize));
+	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + LayerHeaderSize * numLayers + bodySize));
 
-	for (uint32_t i = 0; i < numNodes; ++i) {
+	for (uint32_t i = 0; i < numLayers; ++i) {
 		const SceneGraphNode* node = nodes[(int)i];
-		wrapBool(writeNodeFooter(stream, *node, nodeOffsets[i]))
+		wrapBool(writeLayerInfo(stream, *node, layerOffsets[i]))
 	}
 	return true;
 }
@@ -401,19 +401,19 @@ bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return saveHVA(basename + ".hva", sceneGraph);
 }
 
-bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx, SceneGraph& sceneGraph, const voxel::Palette &palette) const {
+bool VXLFormat::readLayer(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx, SceneGraph& sceneGraph, const voxel::Palette &palette) const {
 	const uint64_t nodeStart = stream.pos();
-	const VXLNodeFooter &footer = mdl.nodeFooters[nodeIdx];
-	const VXLNodeHeader &header = mdl.nodeHeaders[nodeIdx];
+	const VXLLayerInfo &footer = mdl.layerInfos[nodeIdx];
+	const VXLLayerHeader &header = mdl.layerHeaders[nodeIdx];
 
 	const uint32_t baseSize = footer.xsize * footer.ysize;
 	core::Buffer<int32_t> colStart(baseSize);
 	core::Buffer<int32_t> colEnd(baseSize);
 
-	Log::debug("Read node body at %u", (int)nodeStart);
+	Log::debug("Read layer body at %u", (int)nodeStart);
 
 	if (stream.skip(footer.spanStartOffset) == -1) {
-		Log::error("Failed to skip %u node start offset bytes", footer.spanStartOffset);
+		Log::error("Failed to skip %u layer start offset bytes", footer.spanStartOffset);
 		return false;
 	}
 	for (uint32_t i = 0; i < baseSize; ++i) {
@@ -425,7 +425,7 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 
 	const uint64_t dataStart = stream.pos();
 	if (dataStart - nodeStart != footer.spanDataOffset) {
-		Log::error("Invalid offset found for node %u: %u", nodeIdx, footer.spanStartOffset);
+		Log::error("Invalid offset found for layer %u: %u", nodeIdx, footer.spanStartOffset);
 		return false;
 	}
 
@@ -492,42 +492,42 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 	return true;
 }
 
-bool VXLFormat::readNodes(io::SeekableReadStream& stream, VXLModel& mdl, SceneGraph& sceneGraph, const voxel::Palette &palette) const {
+bool VXLFormat::readLayers(io::SeekableReadStream& stream, VXLModel& mdl, SceneGraph& sceneGraph, const voxel::Palette &palette) const {
 	const VXLHeader& hdr = mdl.header;
-	sceneGraph.reserve(hdr.nodeCount);
+	sceneGraph.reserve(hdr.layerCount);
 	const int64_t bodyPos = stream.pos();
-	for (uint32_t i = 0; i < hdr.nodeCount; ++i) {
+	for (uint32_t i = 0; i < hdr.layerCount; ++i) {
 		if (stream.seek(bodyPos) == -1) {
-			Log::error("Failed to seek for node %u", i);
+			Log::error("Failed to seek for layer %u", i);
 			return false;
 		}
-		wrapBool(readNode(stream, mdl, i, sceneGraph, palette))
+		wrapBool(readLayer(stream, mdl, i, sceneGraph, palette))
 	}
 	return true;
 }
 
-bool VXLFormat::readNodeHeader(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const {
-	VXLNodeHeader &header = mdl.nodeHeaders[nodeIdx];
-	Log::debug("Read node header at %u", (int)stream.pos());
+bool VXLFormat::readLayerHeader(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t layerIdx) const {
+	VXLLayerHeader &header = mdl.layerHeaders[layerIdx];
+	Log::debug("Read layer header at %u", (int)stream.pos());
 	wrapBool(stream.readString(lengthof(header.name), header.name, false))
-	wrap(stream.readUInt32(header.id))
+	wrap(stream.readUInt32(header.infoIndex))
 	wrap(stream.readUInt32(header.unknown))
 	wrap(stream.readUInt32(header.unknown2))
 	Log::debug("Node %u name: %s, id %u, unknown: %u, unknown2: %u",
-			nodeIdx, header.name, header.id, header.unknown, header.unknown2);
+			layerIdx, header.name, header.infoIndex, header.unknown, header.unknown2);
 	return true;
 }
 
-bool VXLFormat::readNodeHeaders(io::SeekableReadStream& stream, VXLModel& mdl) const {
-	for (uint32_t i = 0; i < mdl.header.nodeCount; ++i) {
-		wrapBool(readNodeHeader(stream, mdl, i))
+bool VXLFormat::readLayerHeaders(io::SeekableReadStream& stream, VXLModel& mdl) const {
+	for (uint32_t i = 0; i < mdl.header.layerCount; ++i) {
+		wrapBool(readLayerHeader(stream, mdl, i))
 	}
 	return true;
 }
 
-bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const {
-	VXLNodeFooter &footer = mdl.nodeFooters[nodeIdx];
-	Log::debug("Read node footer at %u", (int)stream.pos());
+bool VXLFormat::readLayerInfo(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const {
+	VXLLayerInfo &footer = mdl.layerInfos[nodeIdx];
+	Log::debug("Read layer footer at %u", (int)stream.pos());
 	wrap(stream.readUInt32(footer.spanStartOffset))
 	wrap(stream.readUInt32(footer.spanEndOffset))
 	wrap(stream.readUInt32(footer.spanDataOffset))
@@ -552,7 +552,7 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 	wrap(stream.readUInt8(footer.normalType))
 
 	if (footer.xsize == 0 || footer.ysize == 0 || footer.zsize == 0) {
-		Log::error("Invalid node size found");
+		Log::error("Invalid layer size found");
 		return false;
 	}
 
@@ -570,11 +570,11 @@ bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, ui
 	return true;
 }
 
-bool VXLFormat::readNodeFooters(io::SeekableReadStream& stream, VXLModel& mdl) const {
+bool VXLFormat::readLayerInfos(io::SeekableReadStream& stream, VXLModel& mdl) const {
 	const VXLHeader& hdr = mdl.header;
-	wrap(stream.seek(HeaderSize + NodeHeaderSize * hdr.nodeCount + hdr.bodysize))
-	for (uint32_t i = 0; i < hdr.tailerCount; ++i) {
-		wrapBool(readNodeFooter(stream, mdl, i))
+	wrap(stream.seek(HeaderSize + LayerHeaderSize * hdr.layerCount + hdr.dataSize))
+	for (uint32_t i = 0; i < hdr.layerInfoCount; ++i) {
+		wrapBool(readLayerInfo(stream, mdl, i))
 	}
 	return true;
 }
@@ -587,14 +587,14 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel:
 		return false;
 	}
 	wrap(stream.readUInt32(hdr.paletteCount))
-	wrap(stream.readUInt32(hdr.nodeCount))
-	wrap(stream.readUInt32(hdr.tailerCount))
-	wrap(stream.readUInt32(hdr.bodysize))
+	wrap(stream.readUInt32(hdr.layerCount))
+	wrap(stream.readUInt32(hdr.layerInfoCount))
+	wrap(stream.readUInt32(hdr.dataSize))
 
 	Log::debug("Palettes: %u", hdr.paletteCount);
-	Log::debug("Nodes: %u", hdr.nodeCount);
-	Log::debug("Tailers: %u", hdr.tailerCount);
-	Log::debug("BodySize: %u", hdr.bodysize);
+	Log::debug("Nodes: %u", hdr.layerCount);
+	Log::debug("Tailers: %u", hdr.layerInfoCount);
+	Log::debug("BodySize: %u", hdr.dataSize);
 
 	palette.colorCount = voxel::PaletteMaxColors;
 	bool valid = false;
@@ -630,8 +630,8 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel:
 
 bool VXLFormat::prepareModel(VXLModel& mdl) const {
 	const VXLHeader& hdr = mdl.header;
-	if (hdr.nodeCount > MaxNodes) {
-		Log::error("Node size exceeded the max allowed value: %u", hdr.nodeCount);
+	if (hdr.layerCount > MaxLayers) {
+		Log::error("Node size exceeded the max allowed value: %u", hdr.layerCount);
 		return false;
 	}
 	return true;
@@ -644,9 +644,9 @@ bool VXLFormat::readHVAHeader(io::SeekableReadStream& stream, HVAHeader& header)
 	Log::debug("hva name: %s", header.filename.c_str());
 	wrap(stream.readUInt32(header.numFrames))
 	Log::debug("numframes: %i", header.numFrames);
-	wrap(stream.readUInt32(header.numNodes))
-	Log::debug("sections: %i", header.numNodes);
-	for (uint32_t i = 0; i < header.numNodes; ++i) {
+	wrap(stream.readUInt32(header.numLayers))
+	Log::debug("sections: %i", header.numLayers);
+	for (uint32_t i = 0; i < header.numLayers; ++i) {
 		wrapBool(stream.readString(lengthof(name), name, false))
 		header.nodeNames[i] = name;
 		Log::debug("hva section %u: %s", i, header.nodeNames[i].c_str());
@@ -654,9 +654,9 @@ bool VXLFormat::readHVAHeader(io::SeekableReadStream& stream, HVAHeader& header)
 	return true;
 }
 
-int VXLFormat::VXLModel::findNodeByName(const core::String& name) const {
-	for (uint32_t i = 0; i < header.nodeCount; ++i) {
-		if (name == nodeHeaders[i].name) {
+int VXLFormat::VXLModel::findLayerByName(const core::String& name) const {
+	for (uint32_t i = 0; i < header.layerCount; ++i) {
+		if (name == layerHeaders[i].name) {
 			return (int)i;
 		}
 	}
@@ -664,25 +664,25 @@ int VXLFormat::VXLModel::findNodeByName(const core::String& name) const {
 }
 
 bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &mdl, HVAModel& file) const {
-	if (file.header.numNodes >= lengthof(file.frames)) {
+	if (file.header.numLayers >= lengthof(file.frames)) {
 		Log::error("Max allowed frame count exceeded");
 		return false;
 	}
-	for (uint32_t i = 0; i < file.header.numNodes; ++i) {
-		file.header.nodeIds[i] = mdl.findNodeByName(file.header.nodeNames[i]);
-		if (file.header.nodeIds[i] == -1) {
-			Log::debug("Failed to resolve node id for '%s' (node idx: %i/%i)",
-				file.header.nodeNames[i].c_str(), i, file.header.numNodes);
-			for (uint32_t i = 0; i < mdl.header.nodeCount; ++i) {
-				Log::debug(" - found: %s", mdl.nodeHeaders[i].name);
+	for (uint32_t i = 0; i < file.header.numLayers; ++i) {
+		file.header.layerIds[i] = mdl.findLayerByName(file.header.nodeNames[i]);
+		if (file.header.layerIds[i] == -1) {
+			Log::debug("Failed to resolve layer id for '%s' (node idx: %i/%i)",
+				file.header.nodeNames[i].c_str(), i, file.header.numLayers);
+			for (uint32_t i = 0; i < mdl.header.layerCount; ++i) {
+				Log::debug(" - found: %s", mdl.layerHeaders[i].name);
 			}
 		}
 	}
 
 	for (uint32_t frameIdx = 0; frameIdx < file.header.numFrames; ++frameIdx) {
 		HVAFrames &frame = file.frames[frameIdx];
-		frame.resize(file.header.numNodes);
-		for (uint32_t nodeIdx = 0; nodeIdx < file.header.numNodes; ++nodeIdx) {
+		frame.resize(file.header.numLayers);
+		for (uint32_t nodeIdx = 0; nodeIdx < file.header.numLayers; ++nodeIdx) {
 			VXLMatrix &vxlMatrix = frame[nodeIdx];
 			for (int i = 0; i < 12; ++i) {
 				const int col = i % 4;
@@ -690,7 +690,7 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 				float &val = vxlMatrix.matrix[col][row];
 				wrap(stream.readFloat(val))
 			}
-			Log::debug("load frame %u for node %i with translation: %f:%f:%f", frameIdx, nodeIdx, vxlMatrix.matrix[3][0], vxlMatrix.matrix[3][1], vxlMatrix.matrix[3][2]);
+			Log::debug("load frame %u for layer %i with translation: %f:%f:%f", frameIdx, nodeIdx, vxlMatrix.matrix[3][0], vxlMatrix.matrix[3][1], vxlMatrix.matrix[3][2]);
 		}
 	}
 
@@ -713,7 +713,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 	Log::debug("load %u frames", file.header.numFrames);
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < file.header.numFrames; ++keyFrameIdx) {
 		const HVAFrames &sectionMatrices = file.frames[keyFrameIdx];
-		for (uint32_t vxlNodeId = 0; vxlNodeId < file.header.numNodes; ++vxlNodeId) {
+		for (uint32_t vxlNodeId = 0; vxlNodeId < file.header.numLayers; ++vxlNodeId) {
 			const core::String &name = file.header.nodeNames[vxlNodeId];
 			SceneGraphNode* node = sceneGraph.findNodeByName(name);
 			if (node == nullptr) {
@@ -724,10 +724,10 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 			SceneGraphKeyFrame &kf = node->keyFrame(keyFrameIdx);
 			kf.frameIdx = keyFrameIdx * 6; // running at 6 fps
 
-			const int nodeId = file.header.nodeIds[vxlNodeId];
+			const int nodeId = file.header.layerIds[vxlNodeId];
 			if (nodeId != -1) {
 				glm::mat4 glmMatrix = sectionMatrices[vxlNodeId].toMat4();
-				convertRead(glmMatrix, mdl.nodeFooters[nodeId], true);
+				convertRead(glmMatrix, mdl.layerInfos[nodeId], true);
 
 				SceneGraphTransform transform;
 				transform.setLocalMatrix(glmMatrix);
@@ -759,7 +759,7 @@ bool VXLFormat::writeHVAHeader(io::SeekableWriteStream& stream, const SceneGraph
 		for (const SceneGraphNode &node : sceneGraph) {
 			const core::String &name = node.name().substr(0, 15);
 			if (stream.write(name.c_str(), name.size()) == -1) {
-				Log::error("Failed to write node name");
+				Log::error("Failed to write layer name");
 				return false;
 			}
 			for (size_t i = 0; i < 16 - name.size(); ++i) {
@@ -828,19 +828,19 @@ bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrapBool(readHeader(stream, mdl, palette))
 	wrapBool(prepareModel(mdl))
 
-	wrapBool(readNodeHeaders(stream, mdl))
+	wrapBool(readLayerHeaders(stream, mdl))
 	const int64_t bodyPos = stream.pos();
-	if (stream.skip(mdl.header.bodysize) == -1) {
-		Log::error("Failed to skip %u bytes", mdl.header.bodysize);
+	if (stream.skip(mdl.header.dataSize) == -1) {
+		Log::error("Failed to skip %u bytes", mdl.header.dataSize);
 		return false;
 	}
-	wrapBool(readNodeFooters(stream, mdl))
+	wrapBool(readLayerInfos(stream, mdl))
 
 	if (stream.seek(bodyPos) == -1) {
 		Log::error("Failed to seek");
 		return false;
 	}
-	wrapBool(readNodes(stream, mdl, sceneGraph, palette))
+	wrapBool(readLayers(stream, mdl, sceneGraph, palette))
 
 	const core::String &basename = core::string::stripExtension(filename);
 	wrapBool(loadHVA(basename + ".hva", mdl, sceneGraph))

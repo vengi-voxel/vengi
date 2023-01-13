@@ -33,16 +33,16 @@ public:
 private:
 	static constexpr int NumNormalsRA2 = 244;
 	static constexpr int NumNormalsTS = 36;
-	static constexpr size_t MaxNodes = 512;
+	static constexpr size_t MaxLayers = 512;
 
-	struct VXLNodeHeader {
+	struct VXLLayerHeader {
 		char name[16];				/* ASCIIZ string - name of section */
-		uint32_t id;				/* Node id */
+		uint32_t infoIndex;			/* Node id */
 		uint32_t unknown;			/* Always 1 - maybe which palette should be used? */
 		uint32_t unknown2;			/* Always 0 or 2 */
 	};
 
-	struct VXLNodeBody {
+	struct VXLLayerBody {
 		uint32_t *spanStart;		/* List of span start addresses or -1 - number of node times */
 		uint32_t *spanEnd;			/* List of span end addresses  or -1 - number of node times */
 		uint8_t *spanData;			/* Byte data for each span length */
@@ -57,13 +57,13 @@ private:
 	struct VXLHeader {
 		char filetype[16];			/* ASCIIZ string - "Voxel Animation" */
 		uint32_t paletteCount;
-		uint32_t nodeCount;			/* Number of nodes */
-		uint32_t tailerCount;
-		uint32_t bodysize;			/* Total size in bytes of all node bodies */
+		uint32_t layerCount;		/* Number of nodes */
+		uint32_t layerInfoCount;
+		uint32_t dataSize;			/* Total size in bytes of all node bodies */
 		VXLPalette palette;
 	};
 
-	struct VXLNodeFooter {
+	struct VXLLayerInfo {
 		uint32_t spanStartOffset;	/* Offset into body section to span start list */
 		uint32_t spanEndOffset;		/* Offset into body section to span end list */
 		uint32_t spanDataOffset;	/* Offset into body section to span data */
@@ -82,14 +82,14 @@ private:
 
 	struct VXLModel {
 		VXLHeader header;
-		VXLNodeHeader nodeHeaders[MaxNodes];	/* number of node times */
-		VXLNodeBody nodeBodies[MaxNodes];		/* number of node times */
-		VXLNodeFooter nodeFooters[MaxNodes];	/* number of node times */
+		VXLLayerHeader layerHeaders[MaxLayers];	/* number of node times */
+		VXLLayerBody layerBodies[MaxLayers];		/* number of node times */
+		VXLLayerInfo layerInfos[MaxLayers];	/* number of node times */
 
-		int findNodeByName(const core::String& name) const;
+		int findLayerByName(const core::String& name) const;
 	};
 
-	struct VXLNodeOffset {
+	struct VXLLayerOffset {
 		int64_t start;
 		int64_t end;
 		int64_t data;
@@ -100,10 +100,10 @@ private:
 		core::String filename;
 		uint32_t numFrames;
 		// number of nodes that are animated
-		uint32_t numNodes;
+		uint32_t numLayers;
 		// names of all the nodes (null-terminated and 16 chars max per entry)
-		core::String nodeNames[MaxNodes];
-		int nodeIds[MaxNodes];
+		core::String nodeNames[MaxLayers];
+		int layerIds[MaxLayers];
 	};
 
 	// transformation matrix for each section
@@ -112,32 +112,32 @@ private:
 	// https://ppmforums.com/topic-29369/red-alert-2-file-format-descriptions/
 	struct HVAModel {
 		HVAHeader header;
-		HVAFrames frames[MaxNodes];
+		HVAFrames frames[MaxLayers];
 	};
 
-	// 802 is the unpadded size of vxl_header
+	// 802 is the unpadded size of VXLHeader
 	static constexpr size_t HeaderSize = 802;
-	// 28 is the unpadded size of vxl_node_header
-	static constexpr size_t NodeHeaderSize = 28;
-	// 92 is the unpadded size of vxl_node_tailer
-	static constexpr size_t NodeTailerSize = 92;
+	// 28 is the unpadded size of VXLLayerHeader
+	static constexpr size_t LayerHeaderSize = 28;
+	// 92 is the unpadded size of VXLLayerInfo
+	static constexpr size_t LayerInfoSize = 92;
 	static constexpr size_t HeaderBodySizeOffset = 28;
 	static constexpr int EmptyColumn = -1;
 
 	// writing
-	bool writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount, uint8_t normalType) const;
-	bool writeNode(io::SeekableWriteStream& stream, const SceneGraphNode& node, VXLNodeOffset& offsets, uint64_t nodeSectionOffset) const;
-	bool writeNodeHeader(io::SeekableWriteStream& stream, const SceneGraphNode& node, uint32_t nodeIdx) const;
-	bool writeNodeFooter(io::SeekableWriteStream& stream, const SceneGraphNode& node, const VXLNodeOffset& offsets) const;
+	bool writeLayerBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount, uint8_t normalType) const;
+	bool writeLayer(io::SeekableWriteStream& stream, const SceneGraphNode& node, VXLLayerOffset& offsets, uint64_t nodeSectionOffset) const;
+	bool writeLayerHeader(io::SeekableWriteStream& stream, const SceneGraphNode& node, uint32_t nodeIdx) const;
+	bool writeLayerInfo(io::SeekableWriteStream& stream, const SceneGraphNode& node, const VXLLayerOffset& offsets) const;
 	bool writeHeader(io::SeekableWriteStream& stream, uint32_t numNodes, const voxel::Palette &palette);
 
 	// reading
-	bool readNodeHeader(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const;
-	bool readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const;
-	bool readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx, SceneGraph& sceneGraph, const voxel::Palette &palette) const;
-	bool readNodes(io::SeekableReadStream& stream, VXLModel& mdl, SceneGraph& sceneGraph, const voxel::Palette &palette) const;
-	bool readNodeFooters(io::SeekableReadStream& stream, VXLModel& mdl) const;
-	bool readNodeHeaders(io::SeekableReadStream& stream, VXLModel& mdl) const;
+	bool readLayerHeader(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const;
+	bool readLayerInfo(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const;
+	bool readLayer(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx, SceneGraph& sceneGraph, const voxel::Palette &palette) const;
+	bool readLayers(io::SeekableReadStream& stream, VXLModel& mdl, SceneGraph& sceneGraph, const voxel::Palette &palette) const;
+	bool readLayerInfos(io::SeekableReadStream& stream, VXLModel& mdl) const;
+	bool readLayerHeaders(io::SeekableReadStream& stream, VXLModel& mdl) const;
 
 	bool writeHVAHeader(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph) const;
 	bool writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph) const;
@@ -158,7 +158,7 @@ private:
 	bool loadFromFile(const core::String &filename, SceneGraph& sceneGraph, voxel::Palette &palette);
 
 	static glm::mat4 switchYAndZ(const glm::mat4 &in);
-	static void convertRead(glm::mat4 &glmMatrix, const VXLNodeFooter& footer, bool hva);
+	static void convertRead(glm::mat4 &glmMatrix, const VXLLayerInfo& footer, bool hva);
 	static void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &glmMatrix, const glm::vec3& mins, bool hva);
 
 protected:
