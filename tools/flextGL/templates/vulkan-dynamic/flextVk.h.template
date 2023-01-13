@@ -59,15 +59,13 @@ extern "C" {
 
 @passthru
 
-/* I'll bite the bullet and expect that vkCreateInstance(),
-   vkEnumerateInstanceExtensionProperties() and vkEnumerateInstanceLayerProperties()
-   functions can be loaded statically to avoid the need for a global
-   flextVkInit() that needs to be called before everything else */
+/* The following function pointers are loaded globally by calling flextVkInit() */
 @for cat,funcs in functions:
 @for f in funcs:
 @if f.name in ['GetInstanceProcAddr', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
-VKAPI_ATTR @f.returntype VKAPI_CALL vk@f.name\
-(@f.param_type_list_string());
+extern @f.returntype\
+(VKAPI_PTR *flextvk@f.name)(@f.param_type_list_string());
+#define vk@f.name flextvk@f.name
 @end
 @end
 @end
@@ -88,8 +86,8 @@ extern @f.returntype\
 @end
 @end
 
-/* Global function pointer initialization */
-void flextVkInit();
+/* Global function pointer initialization. Returns false if vulkan could not be loaded, true otherwise. */
+bool flextVkInit();
 
 /* Instance-specific function pointer initialization */
 void flextVkInitInstance(VkInstance instance);

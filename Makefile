@@ -200,7 +200,7 @@ update-flextgl:
 	rm -rf tools/flextGL/templates/sdl
 	rm -rf tools/flextGL/templates/vulkan
 	cp -r $(UPDATEDIR)/flextgl.sync/templates/sdl tools/flextGL/templates
-	cp -r $(UPDATEDIR)/flextgl.sync/templates/vulkan tools/flextGL/templates
+	cp -r $(UPDATEDIR)/flextgl.sync/templates/vulkan-dynamic tools/flextGL/templates
 
 update-libvxl:
 	$(call UPDATE_GIT,libvxl,https://github.com/xtreme8000/libvxl.git)

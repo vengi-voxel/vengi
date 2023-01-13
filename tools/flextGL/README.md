@@ -1,7 +1,7 @@
 flextGL
 =======
 
-[![Build Status](https://travis-ci.org/mosra/flextgl.svg?branch=master)](https://travis-ci.org/mosra/flextgl)
+[![Build Status](https://circleci.com/gh/mosra/flextgl.svg?style=shield)](https://circleci.com/gh/mosra/flextgl)
 [![Coverage Status](https://codecov.io/gh/mosra/flextgl/branch/master/graph/badge.svg)](https://codecov.io/gh/mosra/flextgl)
 
 flextGL is an OpenGL and Vulkan header and loader generator.
@@ -90,6 +90,21 @@ like:
     version 3.0 es
     extension OES_standard_derivatives optional
     extension OES_vertex_array_object optional
+
+Because the world is far from ideal, *certain vendors* don't bother upstreaming
+their extensions. To handle that, one can supply additional spec URLs to get
+merged to the main one. Local files passed to `extraspec` also work, in case
+it's needed to manually add an entrypoint defined nowhere else. If the file
+path is relative, it's resolved relative to the profile file location.
+
+    version 2.0 es
+
+    extraspec https://raw.githubusercontent.com/google/angle/master/scripts/gl_angle_ext.xml
+
+    # This one is from the vanilla gl.xml
+    extension OES_vertex_array_object optional
+    # This one ... thanks for the unnecessary extra pain, Google
+    extension ANGLE_multi_draw optional
 
 A Vulkan profile, whitelisting only some particular functions, can look like:
 
@@ -193,6 +208,13 @@ At the moment, there are three template sets available:
 
     > A basic loader for Vulkan.
 
+*   `vulkan-dynamic`
+
+    > A variant of the `vulkan` template that loads the Vulkan library dynamically.
+    > No static linking to Vulkan is necessary and the signature of `flextVkInit` is changed to `bool flextVkInit()`.
+    > This lets you additionally check for the availability of Vulkan itself
+    > and display an error message or fallback to another API if not available.
+
 Installing Wheezy Template on Windows
 -------------------------------------
 
@@ -221,6 +243,10 @@ Credits
     fixes on the compatible template.
 -   [@eternalrain](https://github.com/eternalrain) added support for function
     white-lists and created the `lite` template.
+-   The Khronos Group Inc. ([https://www.khronos.org/vulkan/](https://www.khronos.org/vulkan/))
+    for Vulkan itself and the dynamic Vulkan library loader code.
+-   Tolga Mizrak ([@to-miz](https://github.com/to-miz)) added the dynamic
+    Vulkan loader template variant.
 
 License
 -------

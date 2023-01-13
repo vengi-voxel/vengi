@@ -31,7 +31,12 @@ default_template_root = os.path.join(script_dir, 'templates')
 # Name and location for spec file(s)
 ################################################################################
 
-gl_spec_url = 'http://www.opengl.org/registry/api/gl.xml'
+# As of 2022-04-28 or maybe earlier, attempting to fetch from
+# http://www.opengl.org/registry/api/gl.xml results in 403, changing that to
+# the redirected https://www.khronos.org/registry/OpenGL/xml/gl.xml doesn't
+# help either. Are they banning python urrlib?! Fetching from GitHub works, the
+# original URL still worked on 2022-02-05.
+gl_spec_url = 'https://raw.githubusercontent.com/KhronosGroup/OpenGL-Registry/main/xml/gl.xml'
 
 # This URL structure is valid from 1.1.72, older had it differently (and the
 # tags were also named differently). I hope this will not be changing much in
@@ -96,11 +101,13 @@ class Version():
 def parse_profile(filename):
     comment_pattern = re.compile('\s*#.*$|\s+$')
     version_pattern = re.compile('\s*version\s+(\d)\.(\d)(\.(\d+))?\s*(core|compatibility|es|vulkan|)\s*$')
+    extraspec_pattern = re.compile('\s*extraspec\s+([^\s]+)\s*$')
     extension_pattern = re.compile('\s*extension\s+(\w+)\s+(required|optional)\s*$')
     functions_pattern = re.compile('\s*(begin|end) functions\s+(blacklist)?$')
     function_pattern = re.compile('\s*[A-Z][A-Za-z0-9]+$')
 
     version = None
+    extraspec = []
     extensions = []
     extension_set = set()
     funcslist = []
@@ -156,6 +163,13 @@ def parse_profile(filename):
 
                 continue
 
+            # Extra spec URL command
+            match = extraspec_pattern.match(line)
+            if match:
+                extraspec.append(match.group(1))
+
+                continue
+
             # Extension command
             match = extension_pattern.match(line)
             if match:
@@ -182,7 +196,7 @@ def parse_profile(filename):
         else:
             funcslist += ['GetIntegerv', 'GetStringi']
 
-    return version, extensions, set(funcslist), set(funcsblacklist)
+    return version, extraspec, extensions, set(funcslist), set(funcsblacklist)
 
 
 ################################################################################
@@ -296,13 +310,20 @@ def extract_enums(feature, enum_extensions, *, extension_number=None, enum_exten
             if extends not in enum_extensions: enum_extensions[extends] = []
             enum_extensions[extends] += [(enum_name, value)]
 
+        # Vulkan enums can provide the value directly
+        elif 'value' in enum.attrib:
+            subsetEnums += [(enum_name, enum.attrib['value'])]
+
+        # As of Vulkan 1.2.192, enums can be also aliases to other enums. Treat
+        # them the same as enums with values -- the value is simply the aliased
+        # name here.
+        elif 'alias' in enum.attrib:
+            subsetEnums += [(enum_name, enum.attrib['alias'])]
+
+        # Otherwise the enum references some external enum value. This will be
+        # dereferenced in generate_enums() later.
         else:
-            # Vulkan enums can provide the value directly next to
-            # referencing some external enum value
-            if 'value' in enum.attrib:
-                subsetEnums += [(enum_name, enum.attrib['value'])]
-            else:
-                subsetEnums += [(enum_name, None)]
+            subsetEnums += [(enum_name, None)]
 
     return subsetEnums, enum_extensions
 
@@ -325,7 +346,10 @@ def parse_xml_enums(root, api):
     for enum in root.findall("./enums/enum"):
         if ('api' in enum.attrib and enum.attrib['api'] != api): continue
         name  = enum.attrib['name']
-        if 'type' in enum.attrib:
+        # GL type attribute is a literal suffix (which we need), while Vulkan
+        # type attribute (since 1.2.174) is an actual C type, which we don't
+        # need.
+        if 'type' in enum.attrib and api != 'vulkan':
             value = "%s%s" % (enum.attrib['value'], enum.attrib['type'])
         elif 'bitpos' in enum.attrib:
             value = "1 << {}".format(enum.attrib['bitpos'])
@@ -384,7 +408,9 @@ def parse_xml_types(root, enum_extensions, promoted_enum_extensions, api):
             values = []
             name = type.attrib['name']
             enumdef = root.find("./enums[@name='{}']".format(name))
-            if enumdef: # Some Vulkan enums are empty (bitsets)
+            # ISO C++ forbids empty unnamed enums, so add the full thing only
+            # if it's nonempty or if there are extensions to it
+            if enumdef or name in enum_extensions:
                 written_enum_values = set()
 
                 for enum in enumdef.findall('enum'):
@@ -420,17 +446,44 @@ def parse_xml_types(root, enum_extensions, promoted_enum_extensions, api):
                         elif value in extensions and not value in written_enum_values:
                             value_to_write = extensions[value]
                         # Otherwise, if it's an alias and the target wasn't
-                        # written yet, it's a problem
+                        # written yet, it's a problem. There's such a case with
+                        # VK_EXT_filter_cubic enums depending on
+                        # VK_IMG_filter_cubic and the dependency is not
+                        # specified since 1.2.148 anymore. For a lack of better
+                        # short-term solution, we just hardcode the two. See
+                        # test_generate.VkEnumAliasWithoutDependency for a test
+                        # case.
                         else:
-                            assert value in written_enum_values, "Alias target for %s not found: %s" % (extension, value)
-                            value_to_write = value
+                            # TODO: fix properly by having a central place for
+                            #   enum values instead of parsing 'bitpos' a
+                            #   billion times over in several different places
+                            if not value in written_enum_values:
+                                IMG_filter_cubic_values = {
+                                    'VK_FILTER_CUBIC_IMG': '1000015000',
+                                    'VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG': '1 << 13'
+                                }
+
+                                assert value in IMG_filter_cubic_values, "Alias target for %s not found: %s" % (extension, value)
+                                value_to_write = IMG_filter_cubic_values[value]
+
+                            else:
+                                value_to_write = value
+
+                        # Since 1.2.140, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES_KHR
+                        # is listed in all three
+                        # KHR_external_{memory,fence,semaphore}_capabilities
+                        # extensions (which is how it should be I guess), but
+                        # the enum should have it just once. Tested in
+                        # test.test_generate.VkDuplicateEnum.
+                        if extension in written_enum_values:
+                            continue
 
                         values += ['    {} = {}'.format(extension, value_to_write)]
                         written_enum_values.add(extension)
 
                 definition = '\ntypedef enum {{\n{}\n}} {};'.format(',\n'.join(values), name)
 
-            else: # ISO C++ forbids empty unnamed enum, work around that
+            else:
                 definition = '\ntypedef int {};'.format(name)
 
         # Classic type definition
@@ -619,7 +672,8 @@ def parse_xml_extensions(root, extensions, enum_extensions, version):
         # <require extension="VK_EXT_debug_report">. If VK_EXT_debug_report is
         # not requested, that causes an assert. To circumvent that, add all
         # type extensions which aren't requested to a blacklist to ignore
-        # later.
+        # later. See test_generate.VkDuplicateExtensionInteraction for a test
+        # case.
         enum_extends_blacklist = set()
         for require in extension.findall('./require[@extension]'):
             # The extended extension is requested, no blaclisting
@@ -749,18 +803,17 @@ def resolve_type_dependencies(subsets, requiredTypes, types):
 
     types_from_subsets = set()
     for subset in subsets:
+        if subset.name == 'VK_KHR_copy_commands2':
+            print(subset.types)
         types_from_subsets |= set(subset.types)
 
-    for type in types:
-        # If given type is a top-level one required by one of the subsets
-        # (i.e., not referenced (indirectly) by any command such as indirect
-        # draw structures), include it as well.
-        if type.name in types_from_subsets and not type.is_dependent:
-            requiredTypes.add(type.name)
 
-        # If given type is required by one of the subsets and is an alias to a
-        # type that's required, include it too.
-        if type.name in types_from_subsets and type.alias in requiredTypes:
+    # If given type is required by one of the subsets and is a top-level one
+    # (i.e., not referenced (indirectly) by any command such as indirect draw
+    # structures), include it as well. This has to be done before the loop
+    # below that resolves dependencies.
+    for type in types:
+        if type.name in types_from_subsets and not type.is_dependent:
             requiredTypes.add(type.name)
 
     # If given type is required, add also all its dependencies to required
@@ -769,6 +822,17 @@ def resolve_type_dependencies(subsets, requiredTypes, types):
         if type.name in requiredTypes:
             requiredTypes |= type.required_types
             requiredEnums |= type.required_enums
+
+    # If given type is required by one of the subsets and is an alias to a type
+    # that's required, include it too. This has to be done after the loop above
+    # that resolves dependencies, otherwise aliases to dependent types would
+    # not be resolved correctly (see test_generate.VkDependentTypeAlias for
+    # details). Furthermore, since it's just an alias, all its dependencies
+    # should be already present, and so we don't need to resolve its
+    # dependencies again.
+    for type in types:
+        if type.name in types_from_subsets and type.alias in requiredTypes:
+            requiredTypes.add(type.name)
 
     # If there are types that extend required types, add them as well. This is
     # done after everything else, so extensions that are not to top-level types
@@ -783,10 +847,7 @@ def resolve_type_dependencies(subsets, requiredTypes, types):
 
     return requiredTypes, requiredEnums
 
-def parse_xml(file, version, extensions, funcslist, funcsblacklist):
-    tree = etree.parse(os.path.join(spec_dir, file))
-    root = tree.getroot()
-
+def parse_xml(root, version, extensions, funcslist, funcsblacklist):
     subsets, enum_extensions, promoted_enum_extensions = parse_xml_features(root, version)
     subset_extensions, extension_enum_extensions = parse_xml_extensions(root, extensions, enum_extensions, version)
     subsets += subset_extensions
