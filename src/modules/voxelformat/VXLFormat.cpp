@@ -21,6 +21,8 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include "voxelformat/SceneGraph.h"
 
 #include <glm/gtx/transform.hpp>
@@ -97,11 +99,16 @@ void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &mat, const g
 	}
 }
 
-bool VXLFormat::writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t& skipCount, uint8_t& voxelCount, uint8_t normalType) const {
+bool VXLFormat::writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount, uint8_t normalType) const {
+	Log::trace("skipCount: %i voxelCount: %i", skipCount, voxelCount);
+	core_assert(skipCount <= 255);
+	core_assert(voxelCount <= 255);
+
 	wrapBool(stream.writeUInt8(skipCount))
 	wrapBool(stream.writeUInt8(voxelCount))
-	for (uint8_t y1 = y - voxelCount; y1 < y; ++y1) {
-		const voxel::Voxel& voxel = volume->voxel(x, y1, z);
+
+	for (uint8_t i = 0; i < voxelCount; ++i) {
+		const voxel::Voxel& voxel = volume->voxel(x, y + i, z);
 		wrapBool(stream.writeUInt8(voxel.getColor()))
 		uint8_t normalIndex = 0;
 		// TODO: normal
@@ -111,80 +118,108 @@ bool VXLFormat::writeNodeBodyEntry(io::SeekableWriteStream& stream, const voxel:
 		wrapBool(stream.writeUInt8(normalIndex))
 	}
 	wrapBool(stream.writeUInt8(voxelCount)) // duplicated count
-	skipCount = voxelCount = 0u;
+	return true;
+}
+
+static int calculateSpanLength(const voxel::RawVolume *v, int x, int y, int z) {
+	const voxel::Region& region = v->region();
+	int length = 0;
+	for (; y <= region.getUpperY(); ++y) {
+		if (voxel::isAir(v->voxel(x, y, z).getMaterial())) {
+			break;
+		}
+		++length;
+	}
+	return length;
+}
+
+static bool spanIsEmpty(const voxel::RawVolume *v, int x, int z) {
+	const voxel::Region& region = v->region();
+	for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+		if (!voxel::isAir(v->voxel(x, y, z).getMaterial())) {
+			return false;
+		}
+	}
 	return true;
 }
 
 bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraphNode& node, VXLNodeOffset& offsets, uint64_t nodeSectionOffset) const {
 	const voxel::Region& region = node.region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
+	if (size.x > 255 || size.y > 255 || size.z > 255) {
+		Log::error("Node %i exceeds max supported dimensions", node.id());
+		return false;
+	}
 
+	// swap y and z here
 	const uint32_t baseSize = size.x * size.z;
 	const int64_t globalSpanStartPos = stream.pos();
-	Log::debug("size.x: %i, size.z: %i, globalSpanStartPos: %u", size.x, size.z, (uint32_t)globalSpanStartPos);
+	Log::debug("size.x: %i, size.y: %i, size.z: %i, globalSpanStartPos: %u", size.x, size.y, size.z, (uint32_t)globalSpanStartPos);
+	Log::debug("Write node body at %u", (int)globalSpanStartPos);
 
 	offsets.start = stream.pos() - (int64_t)nodeSectionOffset;
 
 	for (uint32_t i = 0; i < baseSize; i++) {
-		wrapBool(stream.writeUInt32(-1))
+		wrapBool(stream.writeInt32(-1))
 	}
 	offsets.end = stream.pos() - (int64_t)nodeSectionOffset;
 	for (uint32_t i = 0; i < baseSize; i++) {
-		wrapBool(stream.writeUInt32(-1))
+		wrapBool(stream.writeInt32(-1))
 	}
 	offsets.data = stream.pos() - (int64_t)nodeSectionOffset;
 
 	const uint8_t normalType = core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal();
 
-	const int64_t beforePos = stream.pos();
+	const int64_t spanDataOffset = stream.pos();
 	for (uint32_t i = 0u; i < baseSize; ++i) {
-		const int64_t spanStartPos = stream.pos() - beforePos;
+		const int64_t spanStartPos = stream.pos();
 
 		const uint8_t x = (uint8_t)(i % size.x);
 		const uint8_t z = (uint8_t)(i / size.x);
 
-		uint8_t skipCount = 0u;
-		uint8_t voxelCount = 0u;
-		bool voxelsInColumn = false;
-		for (uint8_t y = 0; y <= size.y; ++y) {
-			const voxel::Voxel& voxel = node.volume()->voxel(x, y, z);
-			if (voxel::isAir(voxel.getMaterial())) {
+		int32_t spanStartOffset = EmptyColumn;
+		int32_t spanEndOffset = EmptyColumn;
+		int64_t spanEndPos = stream.pos();
+		if (!spanIsEmpty(node.volume(), x, z)) {
+			uint8_t skipCount = 0u;
+			for (int y = region.getLowerY(); y <= region.getUpperY();) {
+				int voxelCount = calculateSpanLength(node.volume(), x, y, z);
 				if (voxelCount > 0) {
 					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount, normalType))
-					voxelsInColumn = true;
+					y += voxelCount;
+					skipCount = 0;
+				} else {
+					++skipCount;
+					++y;
 				}
-				if (skipCount == 0xFF) {
-					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount, normalType))
-					voxelsInColumn = true;
-				}
-				++skipCount;
-			} else {
-				if (skipCount > 0) {
-					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount, normalType))
-					voxelsInColumn = true;
-				}
-				if (voxelCount == 0xFF) {
-					wrapBool(writeNodeBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount, normalType))
-					voxelsInColumn = true;
-				}
-				++voxelCount;
 			}
-		}
-		if (voxelCount > 0 || skipCount > 0) {
-			wrapBool(writeNodeBodyEntry(stream, node.volume(), x, size.y - 1, z, skipCount, voxelCount, normalType))
-			voxelsInColumn = true;
-		}
-		if (!voxelsInColumn) {
-			continue;
+			if (skipCount > 0) {
+				wrapBool(writeNodeBodyEntry(stream, node.volume(), 0, 0, 0, skipCount, 0, normalType))
+			}
+			spanEndPos = stream.pos();
+			const int64_t spanDelta = spanEndPos - spanStartPos;
+			spanStartOffset = (int32_t)(spanStartPos - spanDataOffset);
+			spanEndOffset = (int32_t)(spanStartOffset + spanDelta - 1);
 		}
 
-		const int64_t spanEndPos = stream.pos();
-		wrap(stream.seek(globalSpanStartPos + i * sizeof(uint32_t)))
-		wrapBool(stream.writeUInt32((uint32_t)spanStartPos))
+		if (stream.seek(globalSpanStartPos + i * sizeof(uint32_t)) == -1) {
+			Log::error("Failed to seek");
+			return false;
+		}
+		wrapBool(stream.writeInt32(spanStartOffset))
+		Log::trace("Write SpanStartPos: %i", spanStartOffset);
 
-		wrap(stream.seek(globalSpanStartPos + baseSize * sizeof(uint32_t) + i * sizeof(uint32_t)))
-		wrapBool(stream.writeUInt32(spanEndPos - globalSpanStartPos))
-		wrap(stream.seek(spanEndPos))
+		if (stream.seek(globalSpanStartPos + (i + baseSize) * sizeof(uint32_t)) == -1) {
+			Log::error("Failed to seek");
+			return false;
+		}
+		wrapBool(stream.writeInt32(spanEndOffset))
+		Log::trace("Write SpanEndPos: %i", spanEndOffset);
+
+		if (stream.seek(spanEndPos) == -1) {
+			Log::error("Failed to seek");
+			return false;
+		}
 	}
 
 	return true;
@@ -192,6 +227,7 @@ bool VXLFormat::writeNode(io::SeekableWriteStream& stream, const SceneGraphNode&
 
 bool VXLFormat::writeNodeHeader(io::SeekableWriteStream& stream, const SceneGraphNode& node, uint32_t nodeIdx) const {
 	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + nodeIdx * NodeHeaderSize));
+	Log::debug("Write node header at %u", (int)stream.pos());
 	core::String name = node.name().substr(0, 15);
 	if (stream.write(name.c_str(), name.size()) == -1) {
 		Log::error("Failed to write node header into stream");
@@ -210,6 +246,7 @@ bool VXLFormat::writeNodeFooter(io::SeekableWriteStream& stream, const SceneGrap
 	Log::debug("SpanStartOffset: %i", (int32_t)offsets.start);
 	Log::debug("SpanEndOffset: %i", (int32_t)offsets.end);
 	Log::debug("SpanDataOffset: %i", (int32_t)offsets.data);
+	Log::debug("Write node footer at %u", (int)stream.pos());
 	wrapBool(stream.writeUInt32(offsets.start))
 	wrapBool(stream.writeUInt32(offsets.end))
 	wrapBool(stream.writeUInt32(offsets.data))
@@ -298,14 +335,14 @@ bool VXLFormat::saveVXL(core::DynamicArray<const SceneGraphNode*> &nodes, const 
 	}
 
 	core::Buffer<VXLNodeOffset> nodeOffsets(numNodes);
-	const uint64_t afterHeaderPos = stream.pos();
+	const uint64_t bodyStart = stream.pos();
 	for (uint32_t i = 0; i < numNodes; ++i) {
 		const SceneGraphNode* node = nodes[(int)i];
-		wrapBool(writeNode(stream, *node, nodeOffsets[i], afterHeaderPos))
+		wrapBool(writeNode(stream, *node, nodeOffsets[i], bodyStart))
 	}
 
 	const uint64_t afterBodyPos = stream.pos();
-	const uint64_t bodySize = afterBodyPos - afterHeaderPos;
+	const uint64_t bodySize = afterBodyPos - bodyStart;
 	Log::debug("write %u bytes as body size", (uint32_t)bodySize);
 	wrap(stream.seek(HeaderBodySizeOffset));
 	wrapBool(stream.writeUInt32(bodySize))
@@ -373,6 +410,8 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 	core::Buffer<int32_t> colStart(baseSize);
 	core::Buffer<int32_t> colEnd(baseSize);
 
+	Log::debug("Read node body at %u", (int)nodeStart);
+
 	if (stream.skip(footer.spanStartOffset) == -1) {
 		Log::error("Failed to skip %u node start offset bytes", footer.spanStartOffset);
 		return false;
@@ -390,30 +429,14 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 		return false;
 	}
 
-	// Count the voxels in this node
-	for (uint32_t i = 0u; i < baseSize; ++i) {
-		if (colStart[i] == EmptyColumn || colEnd[i] == EmptyColumn) {
-			continue;
-		}
-
-		wrap(stream.seek(dataStart + colStart[i]))
-		uint32_t z = 0;
-		do {
-			uint8_t v;
-			wrap(stream.readUInt8(v))
-			z += v;
-			wrap(stream.readUInt8(v))
-			z += v;
-			stream.skip(2 * v + 1);
-		} while (z < footer.zsize);
-	}
-
 	// switch axis
 	const voxel::Region region{0, 0, 0, (int)footer.xsize - 1, (int)footer.zsize - 1, (int)footer.ysize - 1};
 	if (!region.isValid()) {
 		Log::error("Failed to load section with invalid size: %i:%i:%i", (int)footer.xsize, (int)footer.zsize, (int)footer.ysize);
 		return false;
 	}
+	// y and z are switched here
+	Log::debug("size.x: %i, size.y: %i, size.z: %i", footer.xsize, (int)footer.zsize, (int)footer.ysize);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
 	node.setVolume(volume, true);
@@ -431,6 +454,8 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 	node.setTransform(keyFrameIdx, transform);
 
 	for (uint32_t i = 0u; i < baseSize; ++i) {
+		Log::trace("Read SpanStartPos: %i", (int)colStart[i]);
+		Log::trace("Read SpanEndPos: %i", (int)colEnd[i]);
 		if (colStart[i] == EmptyColumn || colEnd[i] == EmptyColumn) {
 			continue;
 		}
@@ -446,6 +471,9 @@ bool VXLFormat::readNode(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t
 			z += skipCount;
 			uint8_t voxelCount;
 			wrap(stream.readUInt8(voxelCount))
+
+			Log::trace("skipCount: %i voxelCount: %i", (int)skipCount, (int)voxelCount);
+
 			for (uint8_t j = 0u; j < voxelCount; ++j) {
 				uint8_t color;
 				wrap(stream.readUInt8(color))
@@ -480,6 +508,7 @@ bool VXLFormat::readNodes(io::SeekableReadStream& stream, VXLModel& mdl, SceneGr
 
 bool VXLFormat::readNodeHeader(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const {
 	VXLNodeHeader &header = mdl.nodeHeaders[nodeIdx];
+	Log::debug("Read node header at %u", (int)stream.pos());
 	wrapBool(stream.readString(lengthof(header.name), header.name, false))
 	wrap(stream.readUInt32(header.id))
 	wrap(stream.readUInt32(header.unknown))
@@ -498,6 +527,7 @@ bool VXLFormat::readNodeHeaders(io::SeekableReadStream& stream, VXLModel& mdl) c
 
 bool VXLFormat::readNodeFooter(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const {
 	VXLNodeFooter &footer = mdl.nodeFooters[nodeIdx];
+	Log::debug("Read node footer at %u", (int)stream.pos());
 	wrap(stream.readUInt32(footer.spanStartOffset))
 	wrap(stream.readUInt32(footer.spanEndOffset))
 	wrap(stream.readUInt32(footer.spanDataOffset))
