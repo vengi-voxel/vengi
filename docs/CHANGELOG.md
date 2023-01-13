@@ -23,6 +23,7 @@ General:
    - Fixed colors in the tree generator
    - Improved the key binding handling and made it more flexible
    - Added support for loading minetest mts files
+   - Fixed Command&Conquer vxl format writing issue
 
 VoxEdit:
 
