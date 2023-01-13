@@ -2289,322 +2289,497 @@ typedef struct VkDeviceGroupSwapchainCreateInfoKHR {
 } VkDeviceGroupSwapchainCreateInfoKHR;
 
 /* The following function pointers are loaded globally by calling flextVkInit() */
-extern VkResult(VKAPI_PTR *flextvkCreateInstance)(const VkInstanceCreateInfo*, const VkAllocationCallbacks*, VkInstance*);
+
+
+
+
+
+
+
+
+
+typedef VkResult (VKAPI_PTR PFNVKCREATEINSTANCE_PROC (const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkInstance* pInstance));
+typedef VkResult (VKAPI_PTR PFNVKENUMERATEINSTANCEEXTENSIONPROPERTIES_PROC (const char* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties));
+typedef VkResult (VKAPI_PTR PFNVKENUMERATEINSTANCELAYERPROPERTIES_PROC (uint32_t* pPropertyCount, VkLayerProperties* pProperties));
+typedef PFN_vkVoidFunction (VKAPI_PTR PFNVKGETINSTANCEPROCADDR_PROC (VkInstance instance, const char* pName));
+
+VKAPI_PTR PFNVKCREATEINSTANCE_PROC* flextvkCreateInstance;
+VKAPI_PTR PFNVKENUMERATEINSTANCEEXTENSIONPROPERTIES_PROC* flextvkEnumerateInstanceExtensionProperties;
+VKAPI_PTR PFNVKENUMERATEINSTANCELAYERPROPERTIES_PROC* flextvkEnumerateInstanceLayerProperties;
+VKAPI_PTR PFNVKGETINSTANCEPROCADDR_PROC* flextvkGetInstanceProcAddr;
+
 #define vkCreateInstance flextvkCreateInstance
-extern VkResult(VKAPI_PTR *flextvkEnumerateInstanceExtensionProperties)(const char*, uint32_t*, VkExtensionProperties*);
 #define vkEnumerateInstanceExtensionProperties flextvkEnumerateInstanceExtensionProperties
-extern VkResult(VKAPI_PTR *flextvkEnumerateInstanceLayerProperties)(uint32_t*, VkLayerProperties*);
 #define vkEnumerateInstanceLayerProperties flextvkEnumerateInstanceLayerProperties
-extern PFN_vkVoidFunction(VKAPI_PTR *flextvkGetInstanceProcAddr)(VkInstance, const char*);
 #define vkGetInstanceProcAddr flextvkGetInstanceProcAddr
+
 
 /* Function pointers */
 
+
 /* VK_KHR_surface */
 
-extern void(VKAPI_PTR *flextvkDestroySurfaceKHR)(VkInstance, VkSurfaceKHR, const VkAllocationCallbacks*);
+typedef void (VKAPI_PTR PFNVKDESTROYSURFACEKHR_PROC (VkInstance instance, VkSurfaceKHR surface, const VkAllocationCallbacks* pAllocator));
+typedef VkResult (VKAPI_PTR PFNVKGETPHYSICALDEVICESURFACECAPABILITIESKHR_PROC (VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR* pSurfaceCapabilities));
+typedef VkResult (VKAPI_PTR PFNVKGETPHYSICALDEVICESURFACEFORMATSKHR_PROC (VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pSurfaceFormatCount, VkSurfaceFormatKHR* pSurfaceFormats));
+typedef VkResult (VKAPI_PTR PFNVKGETPHYSICALDEVICESURFACEPRESENTMODESKHR_PROC (VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pPresentModeCount, VkPresentModeKHR* pPresentModes));
+typedef VkResult (VKAPI_PTR PFNVKGETPHYSICALDEVICESURFACESUPPORTKHR_PROC (VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, VkSurfaceKHR surface, VkBool32* pSupported));
+
+VKAPI_PTR PFNVKDESTROYSURFACEKHR_PROC* flextvkDestroySurfaceKHR;
+VKAPI_PTR PFNVKGETPHYSICALDEVICESURFACECAPABILITIESKHR_PROC* flextvkGetPhysicalDeviceSurfaceCapabilitiesKHR;
+VKAPI_PTR PFNVKGETPHYSICALDEVICESURFACEFORMATSKHR_PROC* flextvkGetPhysicalDeviceSurfaceFormatsKHR;
+VKAPI_PTR PFNVKGETPHYSICALDEVICESURFACEPRESENTMODESKHR_PROC* flextvkGetPhysicalDeviceSurfacePresentModesKHR;
+VKAPI_PTR PFNVKGETPHYSICALDEVICESURFACESUPPORTKHR_PROC* flextvkGetPhysicalDeviceSurfaceSupportKHR;
+
 #define vkDestroySurfaceKHR flextvkDestroySurfaceKHR
-extern VkResult(VKAPI_PTR *flextvkGetPhysicalDeviceSurfaceCapabilitiesKHR)(VkPhysicalDevice, VkSurfaceKHR, VkSurfaceCapabilitiesKHR*);
 #define vkGetPhysicalDeviceSurfaceCapabilitiesKHR flextvkGetPhysicalDeviceSurfaceCapabilitiesKHR
-extern VkResult(VKAPI_PTR *flextvkGetPhysicalDeviceSurfaceFormatsKHR)(VkPhysicalDevice, VkSurfaceKHR, uint32_t*, VkSurfaceFormatKHR*);
 #define vkGetPhysicalDeviceSurfaceFormatsKHR flextvkGetPhysicalDeviceSurfaceFormatsKHR
-extern VkResult(VKAPI_PTR *flextvkGetPhysicalDeviceSurfacePresentModesKHR)(VkPhysicalDevice, VkSurfaceKHR, uint32_t*, VkPresentModeKHR*);
 #define vkGetPhysicalDeviceSurfacePresentModesKHR flextvkGetPhysicalDeviceSurfacePresentModesKHR
-extern VkResult(VKAPI_PTR *flextvkGetPhysicalDeviceSurfaceSupportKHR)(VkPhysicalDevice, uint32_t, VkSurfaceKHR, VkBool32*);
 #define vkGetPhysicalDeviceSurfaceSupportKHR flextvkGetPhysicalDeviceSurfaceSupportKHR
+
 
 /* VK_KHR_swapchain */
 
-extern VkResult(VKAPI_PTR *flextvkAcquireNextImage2KHR)(VkDevice, const VkAcquireNextImageInfoKHR*, uint32_t*);
+typedef VkResult (VKAPI_PTR PFNVKACQUIRENEXTIMAGE2KHR_PROC (VkDevice device, const VkAcquireNextImageInfoKHR* pAcquireInfo, uint32_t* pImageIndex));
+typedef VkResult (VKAPI_PTR PFNVKACQUIRENEXTIMAGEKHR_PROC (VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex));
+typedef VkResult (VKAPI_PTR PFNVKCREATESWAPCHAINKHR_PROC (VkDevice device, const VkSwapchainCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSwapchainKHR* pSwapchain));
+typedef void (VKAPI_PTR PFNVKDESTROYSWAPCHAINKHR_PROC (VkDevice device, VkSwapchainKHR swapchain, const VkAllocationCallbacks* pAllocator));
+typedef VkResult (VKAPI_PTR PFNVKGETDEVICEGROUPPRESENTCAPABILITIESKHR_PROC (VkDevice device, VkDeviceGroupPresentCapabilitiesKHR* pDeviceGroupPresentCapabilities));
+typedef VkResult (VKAPI_PTR PFNVKGETDEVICEGROUPSURFACEPRESENTMODESKHR_PROC (VkDevice device, VkSurfaceKHR surface, VkDeviceGroupPresentModeFlagsKHR* pModes));
+typedef VkResult (VKAPI_PTR PFNVKGETPHYSICALDEVICEPRESENTRECTANGLESKHR_PROC (VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, uint32_t* pRectCount, VkRect2D* pRects));
+typedef VkResult (VKAPI_PTR PFNVKGETSWAPCHAINIMAGESKHR_PROC (VkDevice device, VkSwapchainKHR swapchain, uint32_t* pSwapchainImageCount, VkImage* pSwapchainImages));
+typedef VkResult (VKAPI_PTR PFNVKQUEUEPRESENTKHR_PROC (VkQueue queue, const VkPresentInfoKHR* pPresentInfo));
+
+VKAPI_PTR PFNVKACQUIRENEXTIMAGE2KHR_PROC* flextvkAcquireNextImage2KHR;
+VKAPI_PTR PFNVKACQUIRENEXTIMAGEKHR_PROC* flextvkAcquireNextImageKHR;
+VKAPI_PTR PFNVKCREATESWAPCHAINKHR_PROC* flextvkCreateSwapchainKHR;
+VKAPI_PTR PFNVKDESTROYSWAPCHAINKHR_PROC* flextvkDestroySwapchainKHR;
+VKAPI_PTR PFNVKGETDEVICEGROUPPRESENTCAPABILITIESKHR_PROC* flextvkGetDeviceGroupPresentCapabilitiesKHR;
+VKAPI_PTR PFNVKGETDEVICEGROUPSURFACEPRESENTMODESKHR_PROC* flextvkGetDeviceGroupSurfacePresentModesKHR;
+VKAPI_PTR PFNVKGETPHYSICALDEVICEPRESENTRECTANGLESKHR_PROC* flextvkGetPhysicalDevicePresentRectanglesKHR;
+VKAPI_PTR PFNVKGETSWAPCHAINIMAGESKHR_PROC* flextvkGetSwapchainImagesKHR;
+VKAPI_PTR PFNVKQUEUEPRESENTKHR_PROC* flextvkQueuePresentKHR;
+
 #define vkAcquireNextImage2KHR flextvkAcquireNextImage2KHR
-extern VkResult(VKAPI_PTR *flextvkAcquireNextImageKHR)(VkDevice, VkSwapchainKHR, uint64_t, VkSemaphore, VkFence, uint32_t*);
 #define vkAcquireNextImageKHR flextvkAcquireNextImageKHR
-extern VkResult(VKAPI_PTR *flextvkCreateSwapchainKHR)(VkDevice, const VkSwapchainCreateInfoKHR*, const VkAllocationCallbacks*, VkSwapchainKHR*);
 #define vkCreateSwapchainKHR flextvkCreateSwapchainKHR
-extern void(VKAPI_PTR *flextvkDestroySwapchainKHR)(VkDevice, VkSwapchainKHR, const VkAllocationCallbacks*);
 #define vkDestroySwapchainKHR flextvkDestroySwapchainKHR
-extern VkResult(VKAPI_PTR *flextvkGetDeviceGroupPresentCapabilitiesKHR)(VkDevice, VkDeviceGroupPresentCapabilitiesKHR*);
 #define vkGetDeviceGroupPresentCapabilitiesKHR flextvkGetDeviceGroupPresentCapabilitiesKHR
-extern VkResult(VKAPI_PTR *flextvkGetDeviceGroupSurfacePresentModesKHR)(VkDevice, VkSurfaceKHR, VkDeviceGroupPresentModeFlagsKHR*);
 #define vkGetDeviceGroupSurfacePresentModesKHR flextvkGetDeviceGroupSurfacePresentModesKHR
-extern VkResult(VKAPI_PTR *flextvkGetPhysicalDevicePresentRectanglesKHR)(VkPhysicalDevice, VkSurfaceKHR, uint32_t*, VkRect2D*);
 #define vkGetPhysicalDevicePresentRectanglesKHR flextvkGetPhysicalDevicePresentRectanglesKHR
-extern VkResult(VKAPI_PTR *flextvkGetSwapchainImagesKHR)(VkDevice, VkSwapchainKHR, uint32_t*, VkImage*);
 #define vkGetSwapchainImagesKHR flextvkGetSwapchainImagesKHR
-extern VkResult(VKAPI_PTR *flextvkQueuePresentKHR)(VkQueue, const VkPresentInfoKHR*);
 #define vkQueuePresentKHR flextvkQueuePresentKHR
+
 
 /* VK_VERSION_1_0 */
 
-extern VkResult(VKAPI_PTR *flextvkAllocateCommandBuffers)(VkDevice, const VkCommandBufferAllocateInfo*, VkCommandBuffer*);
+typedef VkResult (VKAPI_PTR PFNVKALLOCATECOMMANDBUFFERS_PROC (VkDevice device, const VkCommandBufferAllocateInfo* pAllocateInfo, VkCommandBuffer* pCommandBuffers));
+typedef VkResult (VKAPI_PTR PFNVKALLOCATEDESCRIPTORSETS_PROC (VkDevice device, const VkDescriptorSetAllocateInfo* pAllocateInfo, VkDescriptorSet* pDescriptorSets));
+typedef VkResult (VKAPI_PTR PFNVKALLOCATEMEMORY_PROC (VkDevice device, const VkMemoryAllocateInfo* pAllocateInfo, const VkAllocationCallbacks* pAllocator, VkDeviceMemory* pMemory));
+typedef VkResult (VKAPI_PTR PFNVKBEGINCOMMANDBUFFER_PROC (VkCommandBuffer commandBuffer, const VkCommandBufferBeginInfo* pBeginInfo));
+typedef VkResult (VKAPI_PTR PFNVKBINDBUFFERMEMORY_PROC (VkDevice device, VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memoryOffset));
+typedef VkResult (VKAPI_PTR PFNVKBINDIMAGEMEMORY_PROC (VkDevice device, VkImage image, VkDeviceMemory memory, VkDeviceSize memoryOffset));
+typedef void (VKAPI_PTR PFNVKCMDBEGINQUERY_PROC (VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query, VkQueryControlFlags flags));
+typedef void (VKAPI_PTR PFNVKCMDBEGINRENDERPASS_PROC (VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo* pRenderPassBegin, VkSubpassContents contents));
+typedef void (VKAPI_PTR PFNVKCMDBINDDESCRIPTORSETS_PROC (VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout, uint32_t firstSet, uint32_t descriptorSetCount, const VkDescriptorSet* pDescriptorSets, uint32_t dynamicOffsetCount, const uint32_t* pDynamicOffsets));
+typedef void (VKAPI_PTR PFNVKCMDBINDINDEXBUFFER_PROC (VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, VkIndexType indexType));
+typedef void (VKAPI_PTR PFNVKCMDBINDPIPELINE_PROC (VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline));
+typedef void (VKAPI_PTR PFNVKCMDBINDVERTEXBUFFERS_PROC (VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets));
+typedef void (VKAPI_PTR PFNVKCMDBLITIMAGE_PROC (VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageBlit* pRegions, VkFilter filter));
+typedef void (VKAPI_PTR PFNVKCMDCLEARATTACHMENTS_PROC (VkCommandBuffer commandBuffer, uint32_t attachmentCount, const VkClearAttachment* pAttachments, uint32_t rectCount, const VkClearRect* pRects));
+typedef void (VKAPI_PTR PFNVKCMDCLEARCOLORIMAGE_PROC (VkCommandBuffer commandBuffer, VkImage image, VkImageLayout imageLayout, const VkClearColorValue* pColor, uint32_t rangeCount, const VkImageSubresourceRange* pRanges));
+typedef void (VKAPI_PTR PFNVKCMDCLEARDEPTHSTENCILIMAGE_PROC (VkCommandBuffer commandBuffer, VkImage image, VkImageLayout imageLayout, const VkClearDepthStencilValue* pDepthStencil, uint32_t rangeCount, const VkImageSubresourceRange* pRanges));
+typedef void (VKAPI_PTR PFNVKCMDCOPYBUFFER_PROC (VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy* pRegions));
+typedef void (VKAPI_PTR PFNVKCMDCOPYBUFFERTOIMAGE_PROC (VkCommandBuffer commandBuffer, VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkBufferImageCopy* pRegions));
+typedef void (VKAPI_PTR PFNVKCMDCOPYIMAGE_PROC (VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageCopy* pRegions));
+typedef void (VKAPI_PTR PFNVKCMDCOPYIMAGETOBUFFER_PROC (VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferImageCopy* pRegions));
+typedef void (VKAPI_PTR PFNVKCMDCOPYQUERYPOOLRESULTS_PROC (VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize stride, VkQueryResultFlags flags));
+typedef void (VKAPI_PTR PFNVKCMDDISPATCH_PROC (VkCommandBuffer commandBuffer, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ));
+typedef void (VKAPI_PTR PFNVKCMDDISPATCHINDIRECT_PROC (VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset));
+typedef void (VKAPI_PTR PFNVKCMDDRAW_PROC (VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance));
+typedef void (VKAPI_PTR PFNVKCMDDRAWINDEXED_PROC (VkCommandBuffer commandBuffer, uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance));
+typedef void (VKAPI_PTR PFNVKCMDDRAWINDEXEDINDIRECT_PROC (VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride));
+typedef void (VKAPI_PTR PFNVKCMDDRAWINDIRECT_PROC (VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride));
+typedef void (VKAPI_PTR PFNVKCMDENDQUERY_PROC (VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t query));
+typedef void (VKAPI_PTR PFNVKCMDENDRENDERPASS_PROC (VkCommandBuffer commandBuffer));
+typedef void (VKAPI_PTR PFNVKCMDEXECUTECOMMANDS_PROC (VkCommandBuffer commandBuffer, uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers));
+typedef void (VKAPI_PTR PFNVKCMDFILLBUFFER_PROC (VkCommandBuffer commandBuffer, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size, uint32_t data));
+typedef void (VKAPI_PTR PFNVKCMDNEXTSUBPASS_PROC (VkCommandBuffer commandBuffer, VkSubpassContents contents));
+typedef void (VKAPI_PTR PFNVKCMDPIPELINEBARRIER_PROC (VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, uint32_t memoryBarrierCount, const VkMemoryBarrier* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const VkBufferMemoryBarrier* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount, const VkImageMemoryBarrier* pImageMemoryBarriers));
+typedef void (VKAPI_PTR PFNVKCMDPUSHCONSTANTS_PROC (VkCommandBuffer commandBuffer, VkPipelineLayout layout, VkShaderStageFlags stageFlags, uint32_t offset, uint32_t size, const void* pValues));
+typedef void (VKAPI_PTR PFNVKCMDRESETEVENT_PROC (VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags stageMask));
+typedef void (VKAPI_PTR PFNVKCMDRESETQUERYPOOL_PROC (VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount));
+typedef void (VKAPI_PTR PFNVKCMDRESOLVEIMAGE_PROC (VkCommandBuffer commandBuffer, VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageResolve* pRegions));
+typedef void (VKAPI_PTR PFNVKCMDSETBLENDCONSTANTS_PROC (VkCommandBuffer commandBuffer, const float blendConstants[4]));
+typedef void (VKAPI_PTR PFNVKCMDSETDEPTHBIAS_PROC (VkCommandBuffer commandBuffer, float depthBiasConstantFactor, float depthBiasClamp, float depthBiasSlopeFactor));
+typedef void (VKAPI_PTR PFNVKCMDSETDEPTHBOUNDS_PROC (VkCommandBuffer commandBuffer, float minDepthBounds, float maxDepthBounds));
+typedef void (VKAPI_PTR PFNVKCMDSETEVENT_PROC (VkCommandBuffer commandBuffer, VkEvent event, VkPipelineStageFlags stageMask));
+typedef void (VKAPI_PTR PFNVKCMDSETLINEWIDTH_PROC (VkCommandBuffer commandBuffer, float lineWidth));
+typedef void (VKAPI_PTR PFNVKCMDSETSCISSOR_PROC (VkCommandBuffer commandBuffer, uint32_t firstScissor, uint32_t scissorCount, const VkRect2D* pScissors));
+typedef void (VKAPI_PTR PFNVKCMDSETSTENCILCOMPAREMASK_PROC (VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, uint32_t compareMask));
+typedef void (VKAPI_PTR PFNVKCMDSETSTENCILREFERENCE_PROC (VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, uint32_t reference));
+typedef void (VKAPI_PTR PFNVKCMDSETSTENCILWRITEMASK_PROC (VkCommandBuffer commandBuffer, VkStencilFaceFlags faceMask, uint32_t writeMask));
+typedef void (VKAPI_PTR PFNVKCMDSETVIEWPORT_PROC (VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkViewport* pViewports));
+typedef void (VKAPI_PTR PFNVKCMDUPDATEBUFFER_PROC (VkCommandBuffer commandBuffer, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize dataSize, const void* pData));
+typedef void (VKAPI_PTR PFNVKCMDWAITEVENTS_PROC (VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, uint32_t memoryBarrierCount, const VkMemoryBarrier* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const VkBufferMemoryBarrier* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount, const VkImageMemoryBarrier* pImageMemoryBarriers));
+typedef void (VKAPI_PTR PFNVKCMDWRITETIMESTAMP_PROC (VkCommandBuffer commandBuffer, VkPipelineStageFlagBits pipelineStage, VkQueryPool queryPool, uint32_t query));
+typedef VkResult (VKAPI_PTR PFNVKCREATEBUFFER_PROC (VkDevice device, const VkBufferCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkBuffer* pBuffer));
+typedef VkResult (VKAPI_PTR PFNVKCREATEBUFFERVIEW_PROC (VkDevice device, const VkBufferViewCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkBufferView* pView));
+typedef VkResult (VKAPI_PTR PFNVKCREATECOMMANDPOOL_PROC (VkDevice device, const VkCommandPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCommandPool* pCommandPool));
+typedef VkResult (VKAPI_PTR PFNVKCREATECOMPUTEPIPELINES_PROC (VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkComputePipelineCreateInfo* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines));
+typedef VkResult (VKAPI_PTR PFNVKCREATEDESCRIPTORPOOL_PROC (VkDevice device, const VkDescriptorPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDescriptorPool* pDescriptorPool));
+typedef VkResult (VKAPI_PTR PFNVKCREATEDESCRIPTORSETLAYOUT_PROC (VkDevice device, const VkDescriptorSetLayoutCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDescriptorSetLayout* pSetLayout));
+typedef VkResult (VKAPI_PTR PFNVKCREATEDEVICE_PROC (VkPhysicalDevice physicalDevice, const VkDeviceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDevice* pDevice));
+typedef VkResult (VKAPI_PTR PFNVKCREATEEVENT_PROC (VkDevice device, const VkEventCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkEvent* pEvent));
+typedef VkResult (VKAPI_PTR PFNVKCREATEFENCE_PROC (VkDevice device, const VkFenceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkFence* pFence));
+typedef VkResult (VKAPI_PTR PFNVKCREATEFRAMEBUFFER_PROC (VkDevice device, const VkFramebufferCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkFramebuffer* pFramebuffer));
+typedef VkResult (VKAPI_PTR PFNVKCREATEGRAPHICSPIPELINES_PROC (VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount, const VkGraphicsPipelineCreateInfo* pCreateInfos, const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines));
+typedef VkResult (VKAPI_PTR PFNVKCREATEIMAGE_PROC (VkDevice device, const VkImageCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkImage* pImage));
+typedef VkResult (VKAPI_PTR PFNVKCREATEIMAGEVIEW_PROC (VkDevice device, const VkImageViewCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkImageView* pView));
+typedef VkResult (VKAPI_PTR PFNVKCREATEPIPELINECACHE_PROC (VkDevice device, const VkPipelineCacheCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkPipelineCache* pPipelineCache));
+typedef VkResult (VKAPI_PTR PFNVKCREATEPIPELINELAYOUT_PROC (VkDevice device, const VkPipelineLayoutCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkPipelineLayout* pPipelineLayout));
+typedef VkResult (VKAPI_PTR PFNVKCREATEQUERYPOOL_PROC (VkDevice device, const VkQueryPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkQueryPool* pQueryPool));
+typedef VkResult (VKAPI_PTR PFNVKCREATERENDERPASS_PROC (VkDevice device, const VkRenderPassCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkRenderPass* pRenderPass));
+typedef VkResult (VKAPI_PTR PFNVKCREATESAMPLER_PROC (VkDevice device, const VkSamplerCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSampler* pSampler));
+typedef VkResult (VKAPI_PTR PFNVKCREATESEMAPHORE_PROC (VkDevice device, const VkSemaphoreCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSemaphore* pSemaphore));
+typedef VkResult (VKAPI_PTR PFNVKCREATESHADERMODULE_PROC (VkDevice device, const VkShaderModuleCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkShaderModule* pShaderModule));
+typedef void (VKAPI_PTR PFNVKDESTROYBUFFER_PROC (VkDevice device, VkBuffer buffer, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYBUFFERVIEW_PROC (VkDevice device, VkBufferView bufferView, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYCOMMANDPOOL_PROC (VkDevice device, VkCommandPool commandPool, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYDESCRIPTORPOOL_PROC (VkDevice device, VkDescriptorPool descriptorPool, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYDESCRIPTORSETLAYOUT_PROC (VkDevice device, VkDescriptorSetLayout descriptorSetLayout, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYDEVICE_PROC (VkDevice device, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYEVENT_PROC (VkDevice device, VkEvent event, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYFENCE_PROC (VkDevice device, VkFence fence, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYFRAMEBUFFER_PROC (VkDevice device, VkFramebuffer framebuffer, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYIMAGE_PROC (VkDevice device, VkImage image, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYIMAGEVIEW_PROC (VkDevice device, VkImageView imageView, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYINSTANCE_PROC (VkInstance instance, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYPIPELINE_PROC (VkDevice device, VkPipeline pipeline, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYPIPELINECACHE_PROC (VkDevice device, VkPipelineCache pipelineCache, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYPIPELINELAYOUT_PROC (VkDevice device, VkPipelineLayout pipelineLayout, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYQUERYPOOL_PROC (VkDevice device, VkQueryPool queryPool, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYRENDERPASS_PROC (VkDevice device, VkRenderPass renderPass, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYSAMPLER_PROC (VkDevice device, VkSampler sampler, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYSEMAPHORE_PROC (VkDevice device, VkSemaphore semaphore, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKDESTROYSHADERMODULE_PROC (VkDevice device, VkShaderModule shaderModule, const VkAllocationCallbacks* pAllocator));
+typedef VkResult (VKAPI_PTR PFNVKDEVICEWAITIDLE_PROC (VkDevice device));
+typedef VkResult (VKAPI_PTR PFNVKENDCOMMANDBUFFER_PROC (VkCommandBuffer commandBuffer));
+typedef VkResult (VKAPI_PTR PFNVKENUMERATEDEVICEEXTENSIONPROPERTIES_PROC (VkPhysicalDevice physicalDevice, const char* pLayerName, uint32_t* pPropertyCount, VkExtensionProperties* pProperties));
+typedef VkResult (VKAPI_PTR PFNVKENUMERATEDEVICELAYERPROPERTIES_PROC (VkPhysicalDevice physicalDevice, uint32_t* pPropertyCount, VkLayerProperties* pProperties));
+typedef VkResult (VKAPI_PTR PFNVKENUMERATEPHYSICALDEVICES_PROC (VkInstance instance, uint32_t* pPhysicalDeviceCount, VkPhysicalDevice* pPhysicalDevices));
+typedef VkResult (VKAPI_PTR PFNVKFLUSHMAPPEDMEMORYRANGES_PROC (VkDevice device, uint32_t memoryRangeCount, const VkMappedMemoryRange* pMemoryRanges));
+typedef void (VKAPI_PTR PFNVKFREECOMMANDBUFFERS_PROC (VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers));
+typedef VkResult (VKAPI_PTR PFNVKFREEDESCRIPTORSETS_PROC (VkDevice device, VkDescriptorPool descriptorPool, uint32_t descriptorSetCount, const VkDescriptorSet* pDescriptorSets));
+typedef void (VKAPI_PTR PFNVKFREEMEMORY_PROC (VkDevice device, VkDeviceMemory memory, const VkAllocationCallbacks* pAllocator));
+typedef void (VKAPI_PTR PFNVKGETBUFFERMEMORYREQUIREMENTS_PROC (VkDevice device, VkBuffer buffer, VkMemoryRequirements* pMemoryRequirements));
+typedef void (VKAPI_PTR PFNVKGETDEVICEMEMORYCOMMITMENT_PROC (VkDevice device, VkDeviceMemory memory, VkDeviceSize* pCommittedMemoryInBytes));
+typedef PFN_vkVoidFunction (VKAPI_PTR PFNVKGETDEVICEPROCADDR_PROC (VkDevice device, const char* pName));
+typedef void (VKAPI_PTR PFNVKGETDEVICEQUEUE_PROC (VkDevice device, uint32_t queueFamilyIndex, uint32_t queueIndex, VkQueue* pQueue));
+typedef VkResult (VKAPI_PTR PFNVKGETEVENTSTATUS_PROC (VkDevice device, VkEvent event));
+typedef VkResult (VKAPI_PTR PFNVKGETFENCESTATUS_PROC (VkDevice device, VkFence fence));
+typedef void (VKAPI_PTR PFNVKGETIMAGEMEMORYREQUIREMENTS_PROC (VkDevice device, VkImage image, VkMemoryRequirements* pMemoryRequirements));
+typedef void (VKAPI_PTR PFNVKGETIMAGESPARSEMEMORYREQUIREMENTS_PROC (VkDevice device, VkImage image, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements* pSparseMemoryRequirements));
+typedef void (VKAPI_PTR PFNVKGETIMAGESUBRESOURCELAYOUT_PROC (VkDevice device, VkImage image, const VkImageSubresource* pSubresource, VkSubresourceLayout* pLayout));
+typedef void (VKAPI_PTR PFNVKGETPHYSICALDEVICEFEATURES_PROC (VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures* pFeatures));
+typedef void (VKAPI_PTR PFNVKGETPHYSICALDEVICEFORMATPROPERTIES_PROC (VkPhysicalDevice physicalDevice, VkFormat format, VkFormatProperties* pFormatProperties));
+typedef VkResult (VKAPI_PTR PFNVKGETPHYSICALDEVICEIMAGEFORMATPROPERTIES_PROC (VkPhysicalDevice physicalDevice, VkFormat format, VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags, VkImageFormatProperties* pImageFormatProperties));
+typedef void (VKAPI_PTR PFNVKGETPHYSICALDEVICEMEMORYPROPERTIES_PROC (VkPhysicalDevice physicalDevice, VkPhysicalDeviceMemoryProperties* pMemoryProperties));
+typedef void (VKAPI_PTR PFNVKGETPHYSICALDEVICEPROPERTIES_PROC (VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties* pProperties));
+typedef void (VKAPI_PTR PFNVKGETPHYSICALDEVICEQUEUEFAMILYPROPERTIES_PROC (VkPhysicalDevice physicalDevice, uint32_t* pQueueFamilyPropertyCount, VkQueueFamilyProperties* pQueueFamilyProperties));
+typedef void (VKAPI_PTR PFNVKGETPHYSICALDEVICESPARSEIMAGEFORMATPROPERTIES_PROC (VkPhysicalDevice physicalDevice, VkFormat format, VkImageType type, VkSampleCountFlagBits samples, VkImageUsageFlags usage, VkImageTiling tiling, uint32_t* pPropertyCount, VkSparseImageFormatProperties* pProperties));
+typedef VkResult (VKAPI_PTR PFNVKGETPIPELINECACHEDATA_PROC (VkDevice device, VkPipelineCache pipelineCache, size_t* pDataSize, void* pData));
+typedef VkResult (VKAPI_PTR PFNVKGETQUERYPOOLRESULTS_PROC (VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, size_t dataSize, void* pData, VkDeviceSize stride, VkQueryResultFlags flags));
+typedef void (VKAPI_PTR PFNVKGETRENDERAREAGRANULARITY_PROC (VkDevice device, VkRenderPass renderPass, VkExtent2D* pGranularity));
+typedef VkResult (VKAPI_PTR PFNVKINVALIDATEMAPPEDMEMORYRANGES_PROC (VkDevice device, uint32_t memoryRangeCount, const VkMappedMemoryRange* pMemoryRanges));
+typedef VkResult (VKAPI_PTR PFNVKMAPMEMORY_PROC (VkDevice device, VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size, VkMemoryMapFlags flags, void** ppData));
+typedef VkResult (VKAPI_PTR PFNVKMERGEPIPELINECACHES_PROC (VkDevice device, VkPipelineCache dstCache, uint32_t srcCacheCount, const VkPipelineCache* pSrcCaches));
+typedef VkResult (VKAPI_PTR PFNVKQUEUEBINDSPARSE_PROC (VkQueue queue, uint32_t bindInfoCount, const VkBindSparseInfo* pBindInfo, VkFence fence));
+typedef VkResult (VKAPI_PTR PFNVKQUEUESUBMIT_PROC (VkQueue queue, uint32_t submitCount, const VkSubmitInfo* pSubmits, VkFence fence));
+typedef VkResult (VKAPI_PTR PFNVKQUEUEWAITIDLE_PROC (VkQueue queue));
+typedef VkResult (VKAPI_PTR PFNVKRESETCOMMANDBUFFER_PROC (VkCommandBuffer commandBuffer, VkCommandBufferResetFlags flags));
+typedef VkResult (VKAPI_PTR PFNVKRESETCOMMANDPOOL_PROC (VkDevice device, VkCommandPool commandPool, VkCommandPoolResetFlags flags));
+typedef VkResult (VKAPI_PTR PFNVKRESETDESCRIPTORPOOL_PROC (VkDevice device, VkDescriptorPool descriptorPool, VkDescriptorPoolResetFlags flags));
+typedef VkResult (VKAPI_PTR PFNVKRESETEVENT_PROC (VkDevice device, VkEvent event));
+typedef VkResult (VKAPI_PTR PFNVKRESETFENCES_PROC (VkDevice device, uint32_t fenceCount, const VkFence* pFences));
+typedef VkResult (VKAPI_PTR PFNVKSETEVENT_PROC (VkDevice device, VkEvent event));
+typedef void (VKAPI_PTR PFNVKUNMAPMEMORY_PROC (VkDevice device, VkDeviceMemory memory));
+typedef void (VKAPI_PTR PFNVKUPDATEDESCRIPTORSETS_PROC (VkDevice device, uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites, uint32_t descriptorCopyCount, const VkCopyDescriptorSet* pDescriptorCopies));
+typedef VkResult (VKAPI_PTR PFNVKWAITFORFENCES_PROC (VkDevice device, uint32_t fenceCount, const VkFence* pFences, VkBool32 waitAll, uint64_t timeout));
+
+VKAPI_PTR PFNVKALLOCATECOMMANDBUFFERS_PROC* flextvkAllocateCommandBuffers;
+VKAPI_PTR PFNVKALLOCATEDESCRIPTORSETS_PROC* flextvkAllocateDescriptorSets;
+VKAPI_PTR PFNVKALLOCATEMEMORY_PROC* flextvkAllocateMemory;
+VKAPI_PTR PFNVKBEGINCOMMANDBUFFER_PROC* flextvkBeginCommandBuffer;
+VKAPI_PTR PFNVKBINDBUFFERMEMORY_PROC* flextvkBindBufferMemory;
+VKAPI_PTR PFNVKBINDIMAGEMEMORY_PROC* flextvkBindImageMemory;
+VKAPI_PTR PFNVKCMDBEGINQUERY_PROC* flextvkCmdBeginQuery;
+VKAPI_PTR PFNVKCMDBEGINRENDERPASS_PROC* flextvkCmdBeginRenderPass;
+VKAPI_PTR PFNVKCMDBINDDESCRIPTORSETS_PROC* flextvkCmdBindDescriptorSets;
+VKAPI_PTR PFNVKCMDBINDINDEXBUFFER_PROC* flextvkCmdBindIndexBuffer;
+VKAPI_PTR PFNVKCMDBINDPIPELINE_PROC* flextvkCmdBindPipeline;
+VKAPI_PTR PFNVKCMDBINDVERTEXBUFFERS_PROC* flextvkCmdBindVertexBuffers;
+VKAPI_PTR PFNVKCMDBLITIMAGE_PROC* flextvkCmdBlitImage;
+VKAPI_PTR PFNVKCMDCLEARATTACHMENTS_PROC* flextvkCmdClearAttachments;
+VKAPI_PTR PFNVKCMDCLEARCOLORIMAGE_PROC* flextvkCmdClearColorImage;
+VKAPI_PTR PFNVKCMDCLEARDEPTHSTENCILIMAGE_PROC* flextvkCmdClearDepthStencilImage;
+VKAPI_PTR PFNVKCMDCOPYBUFFER_PROC* flextvkCmdCopyBuffer;
+VKAPI_PTR PFNVKCMDCOPYBUFFERTOIMAGE_PROC* flextvkCmdCopyBufferToImage;
+VKAPI_PTR PFNVKCMDCOPYIMAGE_PROC* flextvkCmdCopyImage;
+VKAPI_PTR PFNVKCMDCOPYIMAGETOBUFFER_PROC* flextvkCmdCopyImageToBuffer;
+VKAPI_PTR PFNVKCMDCOPYQUERYPOOLRESULTS_PROC* flextvkCmdCopyQueryPoolResults;
+VKAPI_PTR PFNVKCMDDISPATCH_PROC* flextvkCmdDispatch;
+VKAPI_PTR PFNVKCMDDISPATCHINDIRECT_PROC* flextvkCmdDispatchIndirect;
+VKAPI_PTR PFNVKCMDDRAW_PROC* flextvkCmdDraw;
+VKAPI_PTR PFNVKCMDDRAWINDEXED_PROC* flextvkCmdDrawIndexed;
+VKAPI_PTR PFNVKCMDDRAWINDEXEDINDIRECT_PROC* flextvkCmdDrawIndexedIndirect;
+VKAPI_PTR PFNVKCMDDRAWINDIRECT_PROC* flextvkCmdDrawIndirect;
+VKAPI_PTR PFNVKCMDENDQUERY_PROC* flextvkCmdEndQuery;
+VKAPI_PTR PFNVKCMDENDRENDERPASS_PROC* flextvkCmdEndRenderPass;
+VKAPI_PTR PFNVKCMDEXECUTECOMMANDS_PROC* flextvkCmdExecuteCommands;
+VKAPI_PTR PFNVKCMDFILLBUFFER_PROC* flextvkCmdFillBuffer;
+VKAPI_PTR PFNVKCMDNEXTSUBPASS_PROC* flextvkCmdNextSubpass;
+VKAPI_PTR PFNVKCMDPIPELINEBARRIER_PROC* flextvkCmdPipelineBarrier;
+VKAPI_PTR PFNVKCMDPUSHCONSTANTS_PROC* flextvkCmdPushConstants;
+VKAPI_PTR PFNVKCMDRESETEVENT_PROC* flextvkCmdResetEvent;
+VKAPI_PTR PFNVKCMDRESETQUERYPOOL_PROC* flextvkCmdResetQueryPool;
+VKAPI_PTR PFNVKCMDRESOLVEIMAGE_PROC* flextvkCmdResolveImage;
+VKAPI_PTR PFNVKCMDSETBLENDCONSTANTS_PROC* flextvkCmdSetBlendConstants;
+VKAPI_PTR PFNVKCMDSETDEPTHBIAS_PROC* flextvkCmdSetDepthBias;
+VKAPI_PTR PFNVKCMDSETDEPTHBOUNDS_PROC* flextvkCmdSetDepthBounds;
+VKAPI_PTR PFNVKCMDSETEVENT_PROC* flextvkCmdSetEvent;
+VKAPI_PTR PFNVKCMDSETLINEWIDTH_PROC* flextvkCmdSetLineWidth;
+VKAPI_PTR PFNVKCMDSETSCISSOR_PROC* flextvkCmdSetScissor;
+VKAPI_PTR PFNVKCMDSETSTENCILCOMPAREMASK_PROC* flextvkCmdSetStencilCompareMask;
+VKAPI_PTR PFNVKCMDSETSTENCILREFERENCE_PROC* flextvkCmdSetStencilReference;
+VKAPI_PTR PFNVKCMDSETSTENCILWRITEMASK_PROC* flextvkCmdSetStencilWriteMask;
+VKAPI_PTR PFNVKCMDSETVIEWPORT_PROC* flextvkCmdSetViewport;
+VKAPI_PTR PFNVKCMDUPDATEBUFFER_PROC* flextvkCmdUpdateBuffer;
+VKAPI_PTR PFNVKCMDWAITEVENTS_PROC* flextvkCmdWaitEvents;
+VKAPI_PTR PFNVKCMDWRITETIMESTAMP_PROC* flextvkCmdWriteTimestamp;
+VKAPI_PTR PFNVKCREATEBUFFER_PROC* flextvkCreateBuffer;
+VKAPI_PTR PFNVKCREATEBUFFERVIEW_PROC* flextvkCreateBufferView;
+VKAPI_PTR PFNVKCREATECOMMANDPOOL_PROC* flextvkCreateCommandPool;
+VKAPI_PTR PFNVKCREATECOMPUTEPIPELINES_PROC* flextvkCreateComputePipelines;
+VKAPI_PTR PFNVKCREATEDESCRIPTORPOOL_PROC* flextvkCreateDescriptorPool;
+VKAPI_PTR PFNVKCREATEDESCRIPTORSETLAYOUT_PROC* flextvkCreateDescriptorSetLayout;
+VKAPI_PTR PFNVKCREATEDEVICE_PROC* flextvkCreateDevice;
+VKAPI_PTR PFNVKCREATEEVENT_PROC* flextvkCreateEvent;
+VKAPI_PTR PFNVKCREATEFENCE_PROC* flextvkCreateFence;
+VKAPI_PTR PFNVKCREATEFRAMEBUFFER_PROC* flextvkCreateFramebuffer;
+VKAPI_PTR PFNVKCREATEGRAPHICSPIPELINES_PROC* flextvkCreateGraphicsPipelines;
+VKAPI_PTR PFNVKCREATEIMAGE_PROC* flextvkCreateImage;
+VKAPI_PTR PFNVKCREATEIMAGEVIEW_PROC* flextvkCreateImageView;
+VKAPI_PTR PFNVKCREATEPIPELINECACHE_PROC* flextvkCreatePipelineCache;
+VKAPI_PTR PFNVKCREATEPIPELINELAYOUT_PROC* flextvkCreatePipelineLayout;
+VKAPI_PTR PFNVKCREATEQUERYPOOL_PROC* flextvkCreateQueryPool;
+VKAPI_PTR PFNVKCREATERENDERPASS_PROC* flextvkCreateRenderPass;
+VKAPI_PTR PFNVKCREATESAMPLER_PROC* flextvkCreateSampler;
+VKAPI_PTR PFNVKCREATESEMAPHORE_PROC* flextvkCreateSemaphore;
+VKAPI_PTR PFNVKCREATESHADERMODULE_PROC* flextvkCreateShaderModule;
+VKAPI_PTR PFNVKDESTROYBUFFER_PROC* flextvkDestroyBuffer;
+VKAPI_PTR PFNVKDESTROYBUFFERVIEW_PROC* flextvkDestroyBufferView;
+VKAPI_PTR PFNVKDESTROYCOMMANDPOOL_PROC* flextvkDestroyCommandPool;
+VKAPI_PTR PFNVKDESTROYDESCRIPTORPOOL_PROC* flextvkDestroyDescriptorPool;
+VKAPI_PTR PFNVKDESTROYDESCRIPTORSETLAYOUT_PROC* flextvkDestroyDescriptorSetLayout;
+VKAPI_PTR PFNVKDESTROYDEVICE_PROC* flextvkDestroyDevice;
+VKAPI_PTR PFNVKDESTROYEVENT_PROC* flextvkDestroyEvent;
+VKAPI_PTR PFNVKDESTROYFENCE_PROC* flextvkDestroyFence;
+VKAPI_PTR PFNVKDESTROYFRAMEBUFFER_PROC* flextvkDestroyFramebuffer;
+VKAPI_PTR PFNVKDESTROYIMAGE_PROC* flextvkDestroyImage;
+VKAPI_PTR PFNVKDESTROYIMAGEVIEW_PROC* flextvkDestroyImageView;
+VKAPI_PTR PFNVKDESTROYINSTANCE_PROC* flextvkDestroyInstance;
+VKAPI_PTR PFNVKDESTROYPIPELINE_PROC* flextvkDestroyPipeline;
+VKAPI_PTR PFNVKDESTROYPIPELINECACHE_PROC* flextvkDestroyPipelineCache;
+VKAPI_PTR PFNVKDESTROYPIPELINELAYOUT_PROC* flextvkDestroyPipelineLayout;
+VKAPI_PTR PFNVKDESTROYQUERYPOOL_PROC* flextvkDestroyQueryPool;
+VKAPI_PTR PFNVKDESTROYRENDERPASS_PROC* flextvkDestroyRenderPass;
+VKAPI_PTR PFNVKDESTROYSAMPLER_PROC* flextvkDestroySampler;
+VKAPI_PTR PFNVKDESTROYSEMAPHORE_PROC* flextvkDestroySemaphore;
+VKAPI_PTR PFNVKDESTROYSHADERMODULE_PROC* flextvkDestroyShaderModule;
+VKAPI_PTR PFNVKDEVICEWAITIDLE_PROC* flextvkDeviceWaitIdle;
+VKAPI_PTR PFNVKENDCOMMANDBUFFER_PROC* flextvkEndCommandBuffer;
+VKAPI_PTR PFNVKENUMERATEDEVICEEXTENSIONPROPERTIES_PROC* flextvkEnumerateDeviceExtensionProperties;
+VKAPI_PTR PFNVKENUMERATEDEVICELAYERPROPERTIES_PROC* flextvkEnumerateDeviceLayerProperties;
+VKAPI_PTR PFNVKENUMERATEPHYSICALDEVICES_PROC* flextvkEnumeratePhysicalDevices;
+VKAPI_PTR PFNVKFLUSHMAPPEDMEMORYRANGES_PROC* flextvkFlushMappedMemoryRanges;
+VKAPI_PTR PFNVKFREECOMMANDBUFFERS_PROC* flextvkFreeCommandBuffers;
+VKAPI_PTR PFNVKFREEDESCRIPTORSETS_PROC* flextvkFreeDescriptorSets;
+VKAPI_PTR PFNVKFREEMEMORY_PROC* flextvkFreeMemory;
+VKAPI_PTR PFNVKGETBUFFERMEMORYREQUIREMENTS_PROC* flextvkGetBufferMemoryRequirements;
+VKAPI_PTR PFNVKGETDEVICEMEMORYCOMMITMENT_PROC* flextvkGetDeviceMemoryCommitment;
+VKAPI_PTR PFNVKGETDEVICEPROCADDR_PROC* flextvkGetDeviceProcAddr;
+VKAPI_PTR PFNVKGETDEVICEQUEUE_PROC* flextvkGetDeviceQueue;
+VKAPI_PTR PFNVKGETEVENTSTATUS_PROC* flextvkGetEventStatus;
+VKAPI_PTR PFNVKGETFENCESTATUS_PROC* flextvkGetFenceStatus;
+VKAPI_PTR PFNVKGETIMAGEMEMORYREQUIREMENTS_PROC* flextvkGetImageMemoryRequirements;
+VKAPI_PTR PFNVKGETIMAGESPARSEMEMORYREQUIREMENTS_PROC* flextvkGetImageSparseMemoryRequirements;
+VKAPI_PTR PFNVKGETIMAGESUBRESOURCELAYOUT_PROC* flextvkGetImageSubresourceLayout;
+VKAPI_PTR PFNVKGETPHYSICALDEVICEFEATURES_PROC* flextvkGetPhysicalDeviceFeatures;
+VKAPI_PTR PFNVKGETPHYSICALDEVICEFORMATPROPERTIES_PROC* flextvkGetPhysicalDeviceFormatProperties;
+VKAPI_PTR PFNVKGETPHYSICALDEVICEIMAGEFORMATPROPERTIES_PROC* flextvkGetPhysicalDeviceImageFormatProperties;
+VKAPI_PTR PFNVKGETPHYSICALDEVICEMEMORYPROPERTIES_PROC* flextvkGetPhysicalDeviceMemoryProperties;
+VKAPI_PTR PFNVKGETPHYSICALDEVICEPROPERTIES_PROC* flextvkGetPhysicalDeviceProperties;
+VKAPI_PTR PFNVKGETPHYSICALDEVICEQUEUEFAMILYPROPERTIES_PROC* flextvkGetPhysicalDeviceQueueFamilyProperties;
+VKAPI_PTR PFNVKGETPHYSICALDEVICESPARSEIMAGEFORMATPROPERTIES_PROC* flextvkGetPhysicalDeviceSparseImageFormatProperties;
+VKAPI_PTR PFNVKGETPIPELINECACHEDATA_PROC* flextvkGetPipelineCacheData;
+VKAPI_PTR PFNVKGETQUERYPOOLRESULTS_PROC* flextvkGetQueryPoolResults;
+VKAPI_PTR PFNVKGETRENDERAREAGRANULARITY_PROC* flextvkGetRenderAreaGranularity;
+VKAPI_PTR PFNVKINVALIDATEMAPPEDMEMORYRANGES_PROC* flextvkInvalidateMappedMemoryRanges;
+VKAPI_PTR PFNVKMAPMEMORY_PROC* flextvkMapMemory;
+VKAPI_PTR PFNVKMERGEPIPELINECACHES_PROC* flextvkMergePipelineCaches;
+VKAPI_PTR PFNVKQUEUEBINDSPARSE_PROC* flextvkQueueBindSparse;
+VKAPI_PTR PFNVKQUEUESUBMIT_PROC* flextvkQueueSubmit;
+VKAPI_PTR PFNVKQUEUEWAITIDLE_PROC* flextvkQueueWaitIdle;
+VKAPI_PTR PFNVKRESETCOMMANDBUFFER_PROC* flextvkResetCommandBuffer;
+VKAPI_PTR PFNVKRESETCOMMANDPOOL_PROC* flextvkResetCommandPool;
+VKAPI_PTR PFNVKRESETDESCRIPTORPOOL_PROC* flextvkResetDescriptorPool;
+VKAPI_PTR PFNVKRESETEVENT_PROC* flextvkResetEvent;
+VKAPI_PTR PFNVKRESETFENCES_PROC* flextvkResetFences;
+VKAPI_PTR PFNVKSETEVENT_PROC* flextvkSetEvent;
+VKAPI_PTR PFNVKUNMAPMEMORY_PROC* flextvkUnmapMemory;
+VKAPI_PTR PFNVKUPDATEDESCRIPTORSETS_PROC* flextvkUpdateDescriptorSets;
+VKAPI_PTR PFNVKWAITFORFENCES_PROC* flextvkWaitForFences;
+
 #define vkAllocateCommandBuffers flextvkAllocateCommandBuffers
-extern VkResult(VKAPI_PTR *flextvkAllocateDescriptorSets)(VkDevice, const VkDescriptorSetAllocateInfo*, VkDescriptorSet*);
 #define vkAllocateDescriptorSets flextvkAllocateDescriptorSets
-extern VkResult(VKAPI_PTR *flextvkAllocateMemory)(VkDevice, const VkMemoryAllocateInfo*, const VkAllocationCallbacks*, VkDeviceMemory*);
 #define vkAllocateMemory flextvkAllocateMemory
-extern VkResult(VKAPI_PTR *flextvkBeginCommandBuffer)(VkCommandBuffer, const VkCommandBufferBeginInfo*);
 #define vkBeginCommandBuffer flextvkBeginCommandBuffer
-extern VkResult(VKAPI_PTR *flextvkBindBufferMemory)(VkDevice, VkBuffer, VkDeviceMemory, VkDeviceSize);
 #define vkBindBufferMemory flextvkBindBufferMemory
-extern VkResult(VKAPI_PTR *flextvkBindImageMemory)(VkDevice, VkImage, VkDeviceMemory, VkDeviceSize);
 #define vkBindImageMemory flextvkBindImageMemory
-extern void(VKAPI_PTR *flextvkCmdBeginQuery)(VkCommandBuffer, VkQueryPool, uint32_t, VkQueryControlFlags);
 #define vkCmdBeginQuery flextvkCmdBeginQuery
-extern void(VKAPI_PTR *flextvkCmdBeginRenderPass)(VkCommandBuffer, const VkRenderPassBeginInfo*, VkSubpassContents);
 #define vkCmdBeginRenderPass flextvkCmdBeginRenderPass
-extern void(VKAPI_PTR *flextvkCmdBindDescriptorSets)(VkCommandBuffer, VkPipelineBindPoint, VkPipelineLayout, uint32_t, uint32_t, const VkDescriptorSet*, uint32_t, const uint32_t*);
 #define vkCmdBindDescriptorSets flextvkCmdBindDescriptorSets
-extern void(VKAPI_PTR *flextvkCmdBindIndexBuffer)(VkCommandBuffer, VkBuffer, VkDeviceSize, VkIndexType);
 #define vkCmdBindIndexBuffer flextvkCmdBindIndexBuffer
-extern void(VKAPI_PTR *flextvkCmdBindPipeline)(VkCommandBuffer, VkPipelineBindPoint, VkPipeline);
 #define vkCmdBindPipeline flextvkCmdBindPipeline
-extern void(VKAPI_PTR *flextvkCmdBindVertexBuffers)(VkCommandBuffer, uint32_t, uint32_t, const VkBuffer*, const VkDeviceSize*);
 #define vkCmdBindVertexBuffers flextvkCmdBindVertexBuffers
-extern void(VKAPI_PTR *flextvkCmdBlitImage)(VkCommandBuffer, VkImage, VkImageLayout, VkImage, VkImageLayout, uint32_t, const VkImageBlit*, VkFilter);
 #define vkCmdBlitImage flextvkCmdBlitImage
-extern void(VKAPI_PTR *flextvkCmdClearAttachments)(VkCommandBuffer, uint32_t, const VkClearAttachment*, uint32_t, const VkClearRect*);
 #define vkCmdClearAttachments flextvkCmdClearAttachments
-extern void(VKAPI_PTR *flextvkCmdClearColorImage)(VkCommandBuffer, VkImage, VkImageLayout, const VkClearColorValue*, uint32_t, const VkImageSubresourceRange*);
 #define vkCmdClearColorImage flextvkCmdClearColorImage
-extern void(VKAPI_PTR *flextvkCmdClearDepthStencilImage)(VkCommandBuffer, VkImage, VkImageLayout, const VkClearDepthStencilValue*, uint32_t, const VkImageSubresourceRange*);
 #define vkCmdClearDepthStencilImage flextvkCmdClearDepthStencilImage
-extern void(VKAPI_PTR *flextvkCmdCopyBuffer)(VkCommandBuffer, VkBuffer, VkBuffer, uint32_t, const VkBufferCopy*);
 #define vkCmdCopyBuffer flextvkCmdCopyBuffer
-extern void(VKAPI_PTR *flextvkCmdCopyBufferToImage)(VkCommandBuffer, VkBuffer, VkImage, VkImageLayout, uint32_t, const VkBufferImageCopy*);
 #define vkCmdCopyBufferToImage flextvkCmdCopyBufferToImage
-extern void(VKAPI_PTR *flextvkCmdCopyImage)(VkCommandBuffer, VkImage, VkImageLayout, VkImage, VkImageLayout, uint32_t, const VkImageCopy*);
 #define vkCmdCopyImage flextvkCmdCopyImage
-extern void(VKAPI_PTR *flextvkCmdCopyImageToBuffer)(VkCommandBuffer, VkImage, VkImageLayout, VkBuffer, uint32_t, const VkBufferImageCopy*);
 #define vkCmdCopyImageToBuffer flextvkCmdCopyImageToBuffer
-extern void(VKAPI_PTR *flextvkCmdCopyQueryPoolResults)(VkCommandBuffer, VkQueryPool, uint32_t, uint32_t, VkBuffer, VkDeviceSize, VkDeviceSize, VkQueryResultFlags);
 #define vkCmdCopyQueryPoolResults flextvkCmdCopyQueryPoolResults
-extern void(VKAPI_PTR *flextvkCmdDispatch)(VkCommandBuffer, uint32_t, uint32_t, uint32_t);
 #define vkCmdDispatch flextvkCmdDispatch
-extern void(VKAPI_PTR *flextvkCmdDispatchIndirect)(VkCommandBuffer, VkBuffer, VkDeviceSize);
 #define vkCmdDispatchIndirect flextvkCmdDispatchIndirect
-extern void(VKAPI_PTR *flextvkCmdDraw)(VkCommandBuffer, uint32_t, uint32_t, uint32_t, uint32_t);
 #define vkCmdDraw flextvkCmdDraw
-extern void(VKAPI_PTR *flextvkCmdDrawIndexed)(VkCommandBuffer, uint32_t, uint32_t, uint32_t, int32_t, uint32_t);
 #define vkCmdDrawIndexed flextvkCmdDrawIndexed
-extern void(VKAPI_PTR *flextvkCmdDrawIndexedIndirect)(VkCommandBuffer, VkBuffer, VkDeviceSize, uint32_t, uint32_t);
 #define vkCmdDrawIndexedIndirect flextvkCmdDrawIndexedIndirect
-extern void(VKAPI_PTR *flextvkCmdDrawIndirect)(VkCommandBuffer, VkBuffer, VkDeviceSize, uint32_t, uint32_t);
 #define vkCmdDrawIndirect flextvkCmdDrawIndirect
-extern void(VKAPI_PTR *flextvkCmdEndQuery)(VkCommandBuffer, VkQueryPool, uint32_t);
 #define vkCmdEndQuery flextvkCmdEndQuery
-extern void(VKAPI_PTR *flextvkCmdEndRenderPass)(VkCommandBuffer);
 #define vkCmdEndRenderPass flextvkCmdEndRenderPass
-extern void(VKAPI_PTR *flextvkCmdExecuteCommands)(VkCommandBuffer, uint32_t, const VkCommandBuffer*);
 #define vkCmdExecuteCommands flextvkCmdExecuteCommands
-extern void(VKAPI_PTR *flextvkCmdFillBuffer)(VkCommandBuffer, VkBuffer, VkDeviceSize, VkDeviceSize, uint32_t);
 #define vkCmdFillBuffer flextvkCmdFillBuffer
-extern void(VKAPI_PTR *flextvkCmdNextSubpass)(VkCommandBuffer, VkSubpassContents);
 #define vkCmdNextSubpass flextvkCmdNextSubpass
-extern void(VKAPI_PTR *flextvkCmdPipelineBarrier)(VkCommandBuffer, VkPipelineStageFlags, VkPipelineStageFlags, VkDependencyFlags, uint32_t, const VkMemoryBarrier*, uint32_t, const VkBufferMemoryBarrier*, uint32_t, const VkImageMemoryBarrier*);
 #define vkCmdPipelineBarrier flextvkCmdPipelineBarrier
-extern void(VKAPI_PTR *flextvkCmdPushConstants)(VkCommandBuffer, VkPipelineLayout, VkShaderStageFlags, uint32_t, uint32_t, const void*);
 #define vkCmdPushConstants flextvkCmdPushConstants
-extern void(VKAPI_PTR *flextvkCmdResetEvent)(VkCommandBuffer, VkEvent, VkPipelineStageFlags);
 #define vkCmdResetEvent flextvkCmdResetEvent
-extern void(VKAPI_PTR *flextvkCmdResetQueryPool)(VkCommandBuffer, VkQueryPool, uint32_t, uint32_t);
 #define vkCmdResetQueryPool flextvkCmdResetQueryPool
-extern void(VKAPI_PTR *flextvkCmdResolveImage)(VkCommandBuffer, VkImage, VkImageLayout, VkImage, VkImageLayout, uint32_t, const VkImageResolve*);
 #define vkCmdResolveImage flextvkCmdResolveImage
-extern void(VKAPI_PTR *flextvkCmdSetBlendConstants)(VkCommandBuffer, const float [4]);
 #define vkCmdSetBlendConstants flextvkCmdSetBlendConstants
-extern void(VKAPI_PTR *flextvkCmdSetDepthBias)(VkCommandBuffer, float, float, float);
 #define vkCmdSetDepthBias flextvkCmdSetDepthBias
-extern void(VKAPI_PTR *flextvkCmdSetDepthBounds)(VkCommandBuffer, float, float);
 #define vkCmdSetDepthBounds flextvkCmdSetDepthBounds
-extern void(VKAPI_PTR *flextvkCmdSetEvent)(VkCommandBuffer, VkEvent, VkPipelineStageFlags);
 #define vkCmdSetEvent flextvkCmdSetEvent
-extern void(VKAPI_PTR *flextvkCmdSetLineWidth)(VkCommandBuffer, float);
 #define vkCmdSetLineWidth flextvkCmdSetLineWidth
-extern void(VKAPI_PTR *flextvkCmdSetScissor)(VkCommandBuffer, uint32_t, uint32_t, const VkRect2D*);
 #define vkCmdSetScissor flextvkCmdSetScissor
-extern void(VKAPI_PTR *flextvkCmdSetStencilCompareMask)(VkCommandBuffer, VkStencilFaceFlags, uint32_t);
 #define vkCmdSetStencilCompareMask flextvkCmdSetStencilCompareMask
-extern void(VKAPI_PTR *flextvkCmdSetStencilReference)(VkCommandBuffer, VkStencilFaceFlags, uint32_t);
 #define vkCmdSetStencilReference flextvkCmdSetStencilReference
-extern void(VKAPI_PTR *flextvkCmdSetStencilWriteMask)(VkCommandBuffer, VkStencilFaceFlags, uint32_t);
 #define vkCmdSetStencilWriteMask flextvkCmdSetStencilWriteMask
-extern void(VKAPI_PTR *flextvkCmdSetViewport)(VkCommandBuffer, uint32_t, uint32_t, const VkViewport*);
 #define vkCmdSetViewport flextvkCmdSetViewport
-extern void(VKAPI_PTR *flextvkCmdUpdateBuffer)(VkCommandBuffer, VkBuffer, VkDeviceSize, VkDeviceSize, const void*);
 #define vkCmdUpdateBuffer flextvkCmdUpdateBuffer
-extern void(VKAPI_PTR *flextvkCmdWaitEvents)(VkCommandBuffer, uint32_t, const VkEvent*, VkPipelineStageFlags, VkPipelineStageFlags, uint32_t, const VkMemoryBarrier*, uint32_t, const VkBufferMemoryBarrier*, uint32_t, const VkImageMemoryBarrier*);
 #define vkCmdWaitEvents flextvkCmdWaitEvents
-extern void(VKAPI_PTR *flextvkCmdWriteTimestamp)(VkCommandBuffer, VkPipelineStageFlagBits, VkQueryPool, uint32_t);
 #define vkCmdWriteTimestamp flextvkCmdWriteTimestamp
-extern VkResult(VKAPI_PTR *flextvkCreateBuffer)(VkDevice, const VkBufferCreateInfo*, const VkAllocationCallbacks*, VkBuffer*);
 #define vkCreateBuffer flextvkCreateBuffer
-extern VkResult(VKAPI_PTR *flextvkCreateBufferView)(VkDevice, const VkBufferViewCreateInfo*, const VkAllocationCallbacks*, VkBufferView*);
 #define vkCreateBufferView flextvkCreateBufferView
-extern VkResult(VKAPI_PTR *flextvkCreateCommandPool)(VkDevice, const VkCommandPoolCreateInfo*, const VkAllocationCallbacks*, VkCommandPool*);
 #define vkCreateCommandPool flextvkCreateCommandPool
-extern VkResult(VKAPI_PTR *flextvkCreateComputePipelines)(VkDevice, VkPipelineCache, uint32_t, const VkComputePipelineCreateInfo*, const VkAllocationCallbacks*, VkPipeline*);
 #define vkCreateComputePipelines flextvkCreateComputePipelines
-extern VkResult(VKAPI_PTR *flextvkCreateDescriptorPool)(VkDevice, const VkDescriptorPoolCreateInfo*, const VkAllocationCallbacks*, VkDescriptorPool*);
 #define vkCreateDescriptorPool flextvkCreateDescriptorPool
-extern VkResult(VKAPI_PTR *flextvkCreateDescriptorSetLayout)(VkDevice, const VkDescriptorSetLayoutCreateInfo*, const VkAllocationCallbacks*, VkDescriptorSetLayout*);
 #define vkCreateDescriptorSetLayout flextvkCreateDescriptorSetLayout
-extern VkResult(VKAPI_PTR *flextvkCreateDevice)(VkPhysicalDevice, const VkDeviceCreateInfo*, const VkAllocationCallbacks*, VkDevice*);
 #define vkCreateDevice flextvkCreateDevice
-extern VkResult(VKAPI_PTR *flextvkCreateEvent)(VkDevice, const VkEventCreateInfo*, const VkAllocationCallbacks*, VkEvent*);
 #define vkCreateEvent flextvkCreateEvent
-extern VkResult(VKAPI_PTR *flextvkCreateFence)(VkDevice, const VkFenceCreateInfo*, const VkAllocationCallbacks*, VkFence*);
 #define vkCreateFence flextvkCreateFence
-extern VkResult(VKAPI_PTR *flextvkCreateFramebuffer)(VkDevice, const VkFramebufferCreateInfo*, const VkAllocationCallbacks*, VkFramebuffer*);
 #define vkCreateFramebuffer flextvkCreateFramebuffer
-extern VkResult(VKAPI_PTR *flextvkCreateGraphicsPipelines)(VkDevice, VkPipelineCache, uint32_t, const VkGraphicsPipelineCreateInfo*, const VkAllocationCallbacks*, VkPipeline*);
 #define vkCreateGraphicsPipelines flextvkCreateGraphicsPipelines
-extern VkResult(VKAPI_PTR *flextvkCreateImage)(VkDevice, const VkImageCreateInfo*, const VkAllocationCallbacks*, VkImage*);
 #define vkCreateImage flextvkCreateImage
-extern VkResult(VKAPI_PTR *flextvkCreateImageView)(VkDevice, const VkImageViewCreateInfo*, const VkAllocationCallbacks*, VkImageView*);
 #define vkCreateImageView flextvkCreateImageView
-extern VkResult(VKAPI_PTR *flextvkCreatePipelineCache)(VkDevice, const VkPipelineCacheCreateInfo*, const VkAllocationCallbacks*, VkPipelineCache*);
 #define vkCreatePipelineCache flextvkCreatePipelineCache
-extern VkResult(VKAPI_PTR *flextvkCreatePipelineLayout)(VkDevice, const VkPipelineLayoutCreateInfo*, const VkAllocationCallbacks*, VkPipelineLayout*);
 #define vkCreatePipelineLayout flextvkCreatePipelineLayout
-extern VkResult(VKAPI_PTR *flextvkCreateQueryPool)(VkDevice, const VkQueryPoolCreateInfo*, const VkAllocationCallbacks*, VkQueryPool*);
 #define vkCreateQueryPool flextvkCreateQueryPool
-extern VkResult(VKAPI_PTR *flextvkCreateRenderPass)(VkDevice, const VkRenderPassCreateInfo*, const VkAllocationCallbacks*, VkRenderPass*);
 #define vkCreateRenderPass flextvkCreateRenderPass
-extern VkResult(VKAPI_PTR *flextvkCreateSampler)(VkDevice, const VkSamplerCreateInfo*, const VkAllocationCallbacks*, VkSampler*);
 #define vkCreateSampler flextvkCreateSampler
-extern VkResult(VKAPI_PTR *flextvkCreateSemaphore)(VkDevice, const VkSemaphoreCreateInfo*, const VkAllocationCallbacks*, VkSemaphore*);
 #define vkCreateSemaphore flextvkCreateSemaphore
-extern VkResult(VKAPI_PTR *flextvkCreateShaderModule)(VkDevice, const VkShaderModuleCreateInfo*, const VkAllocationCallbacks*, VkShaderModule*);
 #define vkCreateShaderModule flextvkCreateShaderModule
-extern void(VKAPI_PTR *flextvkDestroyBuffer)(VkDevice, VkBuffer, const VkAllocationCallbacks*);
 #define vkDestroyBuffer flextvkDestroyBuffer
-extern void(VKAPI_PTR *flextvkDestroyBufferView)(VkDevice, VkBufferView, const VkAllocationCallbacks*);
 #define vkDestroyBufferView flextvkDestroyBufferView
-extern void(VKAPI_PTR *flextvkDestroyCommandPool)(VkDevice, VkCommandPool, const VkAllocationCallbacks*);
 #define vkDestroyCommandPool flextvkDestroyCommandPool
-extern void(VKAPI_PTR *flextvkDestroyDescriptorPool)(VkDevice, VkDescriptorPool, const VkAllocationCallbacks*);
 #define vkDestroyDescriptorPool flextvkDestroyDescriptorPool
-extern void(VKAPI_PTR *flextvkDestroyDescriptorSetLayout)(VkDevice, VkDescriptorSetLayout, const VkAllocationCallbacks*);
 #define vkDestroyDescriptorSetLayout flextvkDestroyDescriptorSetLayout
-extern void(VKAPI_PTR *flextvkDestroyDevice)(VkDevice, const VkAllocationCallbacks*);
 #define vkDestroyDevice flextvkDestroyDevice
-extern void(VKAPI_PTR *flextvkDestroyEvent)(VkDevice, VkEvent, const VkAllocationCallbacks*);
 #define vkDestroyEvent flextvkDestroyEvent
-extern void(VKAPI_PTR *flextvkDestroyFence)(VkDevice, VkFence, const VkAllocationCallbacks*);
 #define vkDestroyFence flextvkDestroyFence
-extern void(VKAPI_PTR *flextvkDestroyFramebuffer)(VkDevice, VkFramebuffer, const VkAllocationCallbacks*);
 #define vkDestroyFramebuffer flextvkDestroyFramebuffer
-extern void(VKAPI_PTR *flextvkDestroyImage)(VkDevice, VkImage, const VkAllocationCallbacks*);
 #define vkDestroyImage flextvkDestroyImage
-extern void(VKAPI_PTR *flextvkDestroyImageView)(VkDevice, VkImageView, const VkAllocationCallbacks*);
 #define vkDestroyImageView flextvkDestroyImageView
-extern void(VKAPI_PTR *flextvkDestroyInstance)(VkInstance, const VkAllocationCallbacks*);
 #define vkDestroyInstance flextvkDestroyInstance
-extern void(VKAPI_PTR *flextvkDestroyPipeline)(VkDevice, VkPipeline, const VkAllocationCallbacks*);
 #define vkDestroyPipeline flextvkDestroyPipeline
-extern void(VKAPI_PTR *flextvkDestroyPipelineCache)(VkDevice, VkPipelineCache, const VkAllocationCallbacks*);
 #define vkDestroyPipelineCache flextvkDestroyPipelineCache
-extern void(VKAPI_PTR *flextvkDestroyPipelineLayout)(VkDevice, VkPipelineLayout, const VkAllocationCallbacks*);
 #define vkDestroyPipelineLayout flextvkDestroyPipelineLayout
-extern void(VKAPI_PTR *flextvkDestroyQueryPool)(VkDevice, VkQueryPool, const VkAllocationCallbacks*);
 #define vkDestroyQueryPool flextvkDestroyQueryPool
-extern void(VKAPI_PTR *flextvkDestroyRenderPass)(VkDevice, VkRenderPass, const VkAllocationCallbacks*);
 #define vkDestroyRenderPass flextvkDestroyRenderPass
-extern void(VKAPI_PTR *flextvkDestroySampler)(VkDevice, VkSampler, const VkAllocationCallbacks*);
 #define vkDestroySampler flextvkDestroySampler
-extern void(VKAPI_PTR *flextvkDestroySemaphore)(VkDevice, VkSemaphore, const VkAllocationCallbacks*);
 #define vkDestroySemaphore flextvkDestroySemaphore
-extern void(VKAPI_PTR *flextvkDestroyShaderModule)(VkDevice, VkShaderModule, const VkAllocationCallbacks*);
 #define vkDestroyShaderModule flextvkDestroyShaderModule
-extern VkResult(VKAPI_PTR *flextvkDeviceWaitIdle)(VkDevice);
 #define vkDeviceWaitIdle flextvkDeviceWaitIdle
-extern VkResult(VKAPI_PTR *flextvkEndCommandBuffer)(VkCommandBuffer);
 #define vkEndCommandBuffer flextvkEndCommandBuffer
-extern VkResult(VKAPI_PTR *flextvkEnumerateDeviceExtensionProperties)(VkPhysicalDevice, const char*, uint32_t*, VkExtensionProperties*);
 #define vkEnumerateDeviceExtensionProperties flextvkEnumerateDeviceExtensionProperties
-extern VkResult(VKAPI_PTR *flextvkEnumerateDeviceLayerProperties)(VkPhysicalDevice, uint32_t*, VkLayerProperties*);
 #define vkEnumerateDeviceLayerProperties flextvkEnumerateDeviceLayerProperties
-extern VkResult(VKAPI_PTR *flextvkEnumeratePhysicalDevices)(VkInstance, uint32_t*, VkPhysicalDevice*);
 #define vkEnumeratePhysicalDevices flextvkEnumeratePhysicalDevices
-extern VkResult(VKAPI_PTR *flextvkFlushMappedMemoryRanges)(VkDevice, uint32_t, const VkMappedMemoryRange*);
 #define vkFlushMappedMemoryRanges flextvkFlushMappedMemoryRanges
-extern void(VKAPI_PTR *flextvkFreeCommandBuffers)(VkDevice, VkCommandPool, uint32_t, const VkCommandBuffer*);
 #define vkFreeCommandBuffers flextvkFreeCommandBuffers
-extern VkResult(VKAPI_PTR *flextvkFreeDescriptorSets)(VkDevice, VkDescriptorPool, uint32_t, const VkDescriptorSet*);
 #define vkFreeDescriptorSets flextvkFreeDescriptorSets
-extern void(VKAPI_PTR *flextvkFreeMemory)(VkDevice, VkDeviceMemory, const VkAllocationCallbacks*);
 #define vkFreeMemory flextvkFreeMemory
-extern void(VKAPI_PTR *flextvkGetBufferMemoryRequirements)(VkDevice, VkBuffer, VkMemoryRequirements*);
 #define vkGetBufferMemoryRequirements flextvkGetBufferMemoryRequirements
-extern void(VKAPI_PTR *flextvkGetDeviceMemoryCommitment)(VkDevice, VkDeviceMemory, VkDeviceSize*);
 #define vkGetDeviceMemoryCommitment flextvkGetDeviceMemoryCommitment
-extern PFN_vkVoidFunction(VKAPI_PTR *flextvkGetDeviceProcAddr)(VkDevice, const char*);
 #define vkGetDeviceProcAddr flextvkGetDeviceProcAddr
-extern void(VKAPI_PTR *flextvkGetDeviceQueue)(VkDevice, uint32_t, uint32_t, VkQueue*);
 #define vkGetDeviceQueue flextvkGetDeviceQueue
-extern VkResult(VKAPI_PTR *flextvkGetEventStatus)(VkDevice, VkEvent);
 #define vkGetEventStatus flextvkGetEventStatus
-extern VkResult(VKAPI_PTR *flextvkGetFenceStatus)(VkDevice, VkFence);
 #define vkGetFenceStatus flextvkGetFenceStatus
-extern void(VKAPI_PTR *flextvkGetImageMemoryRequirements)(VkDevice, VkImage, VkMemoryRequirements*);
 #define vkGetImageMemoryRequirements flextvkGetImageMemoryRequirements
-extern void(VKAPI_PTR *flextvkGetImageSparseMemoryRequirements)(VkDevice, VkImage, uint32_t*, VkSparseImageMemoryRequirements*);
 #define vkGetImageSparseMemoryRequirements flextvkGetImageSparseMemoryRequirements
-extern void(VKAPI_PTR *flextvkGetImageSubresourceLayout)(VkDevice, VkImage, const VkImageSubresource*, VkSubresourceLayout*);
 #define vkGetImageSubresourceLayout flextvkGetImageSubresourceLayout
-extern void(VKAPI_PTR *flextvkGetPhysicalDeviceFeatures)(VkPhysicalDevice, VkPhysicalDeviceFeatures*);
 #define vkGetPhysicalDeviceFeatures flextvkGetPhysicalDeviceFeatures
-extern void(VKAPI_PTR *flextvkGetPhysicalDeviceFormatProperties)(VkPhysicalDevice, VkFormat, VkFormatProperties*);
 #define vkGetPhysicalDeviceFormatProperties flextvkGetPhysicalDeviceFormatProperties
-extern VkResult(VKAPI_PTR *flextvkGetPhysicalDeviceImageFormatProperties)(VkPhysicalDevice, VkFormat, VkImageType, VkImageTiling, VkImageUsageFlags, VkImageCreateFlags, VkImageFormatProperties*);
 #define vkGetPhysicalDeviceImageFormatProperties flextvkGetPhysicalDeviceImageFormatProperties
-extern void(VKAPI_PTR *flextvkGetPhysicalDeviceMemoryProperties)(VkPhysicalDevice, VkPhysicalDeviceMemoryProperties*);
 #define vkGetPhysicalDeviceMemoryProperties flextvkGetPhysicalDeviceMemoryProperties
-extern void(VKAPI_PTR *flextvkGetPhysicalDeviceProperties)(VkPhysicalDevice, VkPhysicalDeviceProperties*);
 #define vkGetPhysicalDeviceProperties flextvkGetPhysicalDeviceProperties
-extern void(VKAPI_PTR *flextvkGetPhysicalDeviceQueueFamilyProperties)(VkPhysicalDevice, uint32_t*, VkQueueFamilyProperties*);
 #define vkGetPhysicalDeviceQueueFamilyProperties flextvkGetPhysicalDeviceQueueFamilyProperties
-extern void(VKAPI_PTR *flextvkGetPhysicalDeviceSparseImageFormatProperties)(VkPhysicalDevice, VkFormat, VkImageType, VkSampleCountFlagBits, VkImageUsageFlags, VkImageTiling, uint32_t*, VkSparseImageFormatProperties*);
 #define vkGetPhysicalDeviceSparseImageFormatProperties flextvkGetPhysicalDeviceSparseImageFormatProperties
-extern VkResult(VKAPI_PTR *flextvkGetPipelineCacheData)(VkDevice, VkPipelineCache, size_t*, void*);
 #define vkGetPipelineCacheData flextvkGetPipelineCacheData
-extern VkResult(VKAPI_PTR *flextvkGetQueryPoolResults)(VkDevice, VkQueryPool, uint32_t, uint32_t, size_t, void*, VkDeviceSize, VkQueryResultFlags);
 #define vkGetQueryPoolResults flextvkGetQueryPoolResults
-extern void(VKAPI_PTR *flextvkGetRenderAreaGranularity)(VkDevice, VkRenderPass, VkExtent2D*);
 #define vkGetRenderAreaGranularity flextvkGetRenderAreaGranularity
-extern VkResult(VKAPI_PTR *flextvkInvalidateMappedMemoryRanges)(VkDevice, uint32_t, const VkMappedMemoryRange*);
 #define vkInvalidateMappedMemoryRanges flextvkInvalidateMappedMemoryRanges
-extern VkResult(VKAPI_PTR *flextvkMapMemory)(VkDevice, VkDeviceMemory, VkDeviceSize, VkDeviceSize, VkMemoryMapFlags, void**);
 #define vkMapMemory flextvkMapMemory
-extern VkResult(VKAPI_PTR *flextvkMergePipelineCaches)(VkDevice, VkPipelineCache, uint32_t, const VkPipelineCache*);
 #define vkMergePipelineCaches flextvkMergePipelineCaches
-extern VkResult(VKAPI_PTR *flextvkQueueBindSparse)(VkQueue, uint32_t, const VkBindSparseInfo*, VkFence);
 #define vkQueueBindSparse flextvkQueueBindSparse
-extern VkResult(VKAPI_PTR *flextvkQueueSubmit)(VkQueue, uint32_t, const VkSubmitInfo*, VkFence);
 #define vkQueueSubmit flextvkQueueSubmit
-extern VkResult(VKAPI_PTR *flextvkQueueWaitIdle)(VkQueue);
 #define vkQueueWaitIdle flextvkQueueWaitIdle
-extern VkResult(VKAPI_PTR *flextvkResetCommandBuffer)(VkCommandBuffer, VkCommandBufferResetFlags);
 #define vkResetCommandBuffer flextvkResetCommandBuffer
-extern VkResult(VKAPI_PTR *flextvkResetCommandPool)(VkDevice, VkCommandPool, VkCommandPoolResetFlags);
 #define vkResetCommandPool flextvkResetCommandPool
-extern VkResult(VKAPI_PTR *flextvkResetDescriptorPool)(VkDevice, VkDescriptorPool, VkDescriptorPoolResetFlags);
 #define vkResetDescriptorPool flextvkResetDescriptorPool
-extern VkResult(VKAPI_PTR *flextvkResetEvent)(VkDevice, VkEvent);
 #define vkResetEvent flextvkResetEvent
-extern VkResult(VKAPI_PTR *flextvkResetFences)(VkDevice, uint32_t, const VkFence*);
 #define vkResetFences flextvkResetFences
-extern VkResult(VKAPI_PTR *flextvkSetEvent)(VkDevice, VkEvent);
 #define vkSetEvent flextvkSetEvent
-extern void(VKAPI_PTR *flextvkUnmapMemory)(VkDevice, VkDeviceMemory);
 #define vkUnmapMemory flextvkUnmapMemory
-extern void(VKAPI_PTR *flextvkUpdateDescriptorSets)(VkDevice, uint32_t, const VkWriteDescriptorSet*, uint32_t, const VkCopyDescriptorSet*);
 #define vkUpdateDescriptorSets flextvkUpdateDescriptorSets
-extern VkResult(VKAPI_PTR *flextvkWaitForFences)(VkDevice, uint32_t, const VkFence*, VkBool32, uint64_t);
 #define vkWaitForFences flextvkWaitForFences
 
-/* Global function pointer initialization. Returns false if vulkan could not be loaded, true otherwise. */
-bool flextVkInit();
+
+/* Global function pointer initialization. Returns 0 on success or anything else on error. Use SDL_GetError() to get more details */
+int flextVkInit(void);
+/* Unload the global library handle */
+void flextVkShutdown(void);
 
 /* Instance-specific function pointer initialization */
 void flextVkInitInstance(VkInstance instance);

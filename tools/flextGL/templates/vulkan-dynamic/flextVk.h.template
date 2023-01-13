@@ -61,16 +61,29 @@ extern "C" {
 
 /* The following function pointers are loaded globally by calling flextVkInit() */
 @for cat,funcs in functions:
+
 @for f in funcs:
 @if f.name in ['GetInstanceProcAddr', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
-extern @f.returntype\
-(VKAPI_PTR *flextvk@f.name)(@f.param_type_list_string());
-#define vk@f.name flextvk@f.name
-@end
+typedef @f.returntype (VKAPI_PTR PFNVK@f.name.upper()_PROC (@f.param_list_string()));
 @end
 @end
 
+@for f in funcs:
+@if f.name in ['GetInstanceProcAddr', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
+VKAPI_PTR PFNVK@f.name.upper()_PROC* flextvk@f.name;
+@end
+@end
+
+@for f in funcs:
+@if f.name in ['GetInstanceProcAddr', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
+#define vk@f.name flextvk@f.name
+@end
+@end
+
+@end
+
 /* Function pointers */
+
 @for cat,funcs in functions:
 @if funcs:
 
@@ -78,16 +91,29 @@ extern @f.returntype\
 
 @for f in funcs:
 @if f.name not in ['GetInstanceProcAddr', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
-extern @f.returntype\
-(VKAPI_PTR *flextvk@f.name)(@f.param_type_list_string());
-#define vk@f.name flextvk@f.name
-@end
-@end
+typedef @f.returntype (VKAPI_PTR PFNVK@f.name.upper()_PROC (@f.param_list_string()));
 @end
 @end
 
-/* Global function pointer initialization. Returns false if vulkan could not be loaded, true otherwise. */
-bool flextVkInit();
+@for f in funcs:
+@if f.name not in ['GetInstanceProcAddr', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
+VKAPI_PTR PFNVK@f.name.upper()_PROC* flextvk@f.name;
+@end
+@end
+
+@for f in funcs:
+@if f.name not in ['GetInstanceProcAddr', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
+#define vk@f.name flextvk@f.name
+@end
+@end
+
+@end
+@end
+
+/* Global function pointer initialization. Returns 0 on success or anything else on error. Use SDL_GetError() to get more details */
+int flextVkInit(void);
+/* Unload the global library handle */
+void flextVkShutdown(void);
 
 /* Instance-specific function pointer initialization */
 void flextVkInitInstance(VkInstance instance);

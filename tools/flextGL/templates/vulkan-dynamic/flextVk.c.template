@@ -1,0 +1,76 @@
+@require(passthru, functions, enums, options, version, extensions)
+/* WARNING: This file was automatically generated */
+/* Do not edit. */
+
+#include "flextVk.h"
+#include <SDL.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+@for category,funcs in functions:
+@if funcs:
+@for f in funcs:
+PFNVK@f.name.upper()_PROC* flextvk@f.name = NULL;
+@end
+@end
+@end
+
+static void *vulkanLibrary = NULL;
+
+void flextVkShutdown(void) {
+    SDL_UnloadObject(vulkanLibrary);
+    vulkanLibrary = NULL;
+}
+
+int flextVkInit(void) {
+#if defined(__linux__)
+    vulkanLibrary = SDL_LoadObject("libvulkan.so");
+    if (vulkanLibrary == NULL) {
+        vulkanLibrary = SDL_LoadObject("libvulkan.so.1");
+    }
+#elif defined(__APPLE__)
+    vulkanLibrary = SDL_LoadObject("libvulkan.dylib");
+#elif defined(_WIN32)
+    vulkanLibrary = SDL_LoadObject("vulkan-1.dll");
+#else
+#error unsupported platform
+#endif
+    if (vulkanLibrary == NULL) {
+        return SDL_SetError("Could not load the vulkan library");
+    }
+    @for category,funcs in functions:
+    @if funcs:
+    @for f in funcs:
+    @if f.name in ['GetInstanceProcAddr', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
+    flextvk@f.name = (PFNVK@f.name.upper()_PROC*)SDL_LoadFunction(vulkanLibrary, "vk@f.name");
+    @end
+    @if f.name in ['EnumerateInstanceVersion']:
+    if (flextvkGetInstanceProcAddr) {
+        flextvk@f.name = (PFNVK@f.name.upper()_PROC*)flextvkGetInstanceProcAddr(NULL, "vk@f.name");
+    } else {
+        return SDL_SetError("Could not load vkGetInstanceProcAddr from vulkan library");
+    }
+    @end
+    @end
+    @end
+    @end
+    return 0;
+}
+
+void flextVkInitInstance(VkInstance instance) {
+    @for category,funcs in functions:
+    @if funcs:
+    @for f in funcs:
+    @if f.name not in ['GetInstanceProcAddr', 'EnumerateInstanceVersion', 'EnumerateInstanceExtensionProperties', 'EnumerateInstanceLayerProperties', 'CreateInstance']:
+    flextvk@f.name = (PFNVK@f.name.upper()_PROC*)flextvkGetInstanceProcAddr(instance, "vk@f.name");
+    @end
+    @end
+    @end
+    @end
+}
+
+#ifdef __cplusplus
+}
+#endif

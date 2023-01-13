@@ -1,5 +1,5 @@
 set(SRCS
-	vk/flextVk.cpp vk/flextVk.h
+	vk/flextVk.c vk/flextVk.h
 
 	gl/flextGL.c gl/flextGL.h
 	gl/GLRenderer.cpp gl/GLRenderer.h

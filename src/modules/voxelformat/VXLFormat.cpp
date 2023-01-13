@@ -50,6 +50,9 @@ static const float Scale = 1.0f / 12.0f;
 
 // https://stackoverflow.com/a/71168853/774082
 // convert from left handed coordinate system (z up) to right handed glm coordinate system (y up)
+//
+// What this basically says is that the positive x-axis is to your right, the positive y-axis is up and the positive z-axis
+// is backwards. Think of your screen being the center of the 3 axes and the positive z-axis going through your screen towards you.
 glm::mat4 VXLFormat::switchYAndZ(const glm::mat4 &in) {
 	static const glm::mat4 mat{
 		1.0f, 0.0f, 0.0f, 0.0f,
