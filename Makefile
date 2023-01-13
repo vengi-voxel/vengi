@@ -55,6 +55,9 @@ cmake:
 ccmake:
 	$(Q)ccmake -B$(BUILDDIR) -S.
 
+update-videobindings:
+	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
+
 release-%:
 	$(Q)$(MAKE) BUILDTYPE=Release $(subst release-,,$@)
 
