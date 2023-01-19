@@ -1,13 +1,17 @@
-set(SRCS
+set(VK_SRCS
 	vk/flextVk.c vk/flextVk.h
-
+	vk/VkRenderer.cpp vk/VkRenderer.h
+	vk/VkShader.cpp
+)
+set(GL_SRCS
 	gl/flextGL.c gl/flextGL.h
 	gl/GLRenderer.cpp gl/GLRenderer.h
 	gl/GLState.h
 	gl/GLMapping.h
 	gl/GLShader.cpp
 	gl/GLHelper.cpp gl/GLHelper.h
-
+)
+set(SRCS
 	Buffer.cpp Buffer.h
 	BufferLockMgr.cpp BufferLockMgr.h
 	Camera.cpp Camera.h
@@ -50,6 +54,9 @@ set(SRCS
 	EventHandler.cpp EventHandler.h
 	IEventObserver.h
 )
+set(RENDERER GL)
+#set(RENDERER VK)
+list(APPEND SRCS ${${RENDERER}_SRCS})
 
 if (APPLE)
 	list(APPEND SRCS WindowedAppOSX.m)

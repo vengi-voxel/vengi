@@ -150,6 +150,16 @@ inline bool hasFeature(Feature feature) {
 }
 
 bool useFeature(Feature feature);
+void disableDebug();
+void deleteFramebuffer(Id &id);
+void deleteTexture(Id &id);
+void deleteRenderbuffer(Id &id);
+void deleteBuffer(Id &id);
+Id genBuffer();
+Id genTexture(const TextureConfig &cfg);
+Id genVertexArray();
+Id genRenderbuffer();
+Id genFramebuffer();
 
 inline int limit(Limit l) {
 	return renderState().limit(l);

@@ -120,11 +120,8 @@ bool bindBufferBase(BufferType type, Id handle, uint32_t index = 0u);
  */
 uint8_t *bufferStorage(BufferType type, size_t size);
 void genBuffers(uint8_t amount, Id *ids);
-Id genBuffer();
 void deleteBuffers(uint8_t amount, Id *ids);
-void deleteBuffer(Id &id);
 void genVertexArrays(uint8_t amount, Id *ids);
-Id genVertexArray();
 IdPtr genSync();
 /**
  * @param[in] timeout timeout in ns
@@ -143,23 +140,17 @@ Id genProgram();
 void deleteVertexArrays(uint8_t amount, Id *ids);
 void deleteVertexArray(Id &id);
 void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids);
-Id genTexture(const TextureConfig &cfg);
 const core::Set<Id> &textures();
 void deleteTextures(uint8_t amount, Id *ids);
-void deleteTexture(Id &id);
 Id currentFramebuffer();
 void genFramebuffers(uint8_t amount, Id *ids);
-Id genFramebuffer();
 void deleteFramebuffers(uint8_t amount, Id *ids);
-void deleteFramebuffer(Id &id);
 /**
  * @note The returned buffer should get freed with SDL_free
  */
 bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t **pixels);
 void genRenderbuffers(uint8_t amount, Id *ids);
-Id genRenderbuffer();
 void deleteRenderbuffers(uint8_t amount, Id *ids);
-void deleteRenderbuffer(Id &id);
 void configureAttribute(const Attribute &a);
 Id genOcclusionQuery();
 void deleteOcclusionQuery(Id &id);
@@ -215,16 +206,23 @@ void drawArraysIndirect(Primitive mode, void *offset);
 void drawMultiArraysIndirect(Primitive mode, void *offset, size_t commandSize, size_t stride = 0u);
 void drawArrays(Primitive mode, size_t count);
 void drawInstancedArrays(Primitive mode, size_t count, size_t amount);
-void disableDebug();
-bool hasFeature(Feature feature);
 void enableDebug(DebugSeverity severity);
-bool compileShader(Id id, ShaderType shaderType, const core::String &source, const core::String &name);
-bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name);
-bool linkComputeShader(Id program, Id comp, const core::String &name);
+bool compileShader(Id id, ShaderType shaderType, const core::String &source, const core::String &name = "unknown-shader");
+bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name = "unknown-shader");
+bool linkComputeShader(Id program, Id comp, const core::String &name = "unknown-shader");
 bool bindImage(Id handle, AccessMode mode, ImageFormat format);
+/**
+ * @brief Execute a compute shader
+ */
 bool runShader(Id program, const glm::uvec3 &workGroups, bool wait = false);
-int fetchUniforms(Id program, ShaderUniforms &uniforms, const core::String &name);
-int fetchAttributes(Id program, ShaderAttributes &attributes, const core::String &name);
+/**
+ * @brief Fetch all uniforms in a shader
+ */
+int fetchUniforms(Id program, ShaderUniforms &uniforms, const core::String &name = "unknown-shader");
+/**
+ * @brief Fetch all attributes in a shader
+ */
+int fetchAttributes(Id program, ShaderAttributes &attributes, const core::String &name = "unknown-shader");
 void flush();
 void finish();
 

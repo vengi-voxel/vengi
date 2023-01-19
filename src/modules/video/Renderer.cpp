@@ -26,6 +26,8 @@ static const char *featuresArray[] = {
 static_assert(core::enumVal(Feature::Max) == (int)SDL_arraysize(featuresArray), "Array sizes don't match with Feature enum");
 static core::VarPtr featureVars[core::enumVal(Feature::Max)];
 
+static RenderState s;
+
 void construct() {
 	for (int i = 0; i < core::enumVal(Feature::Max); ++i) {
 		featureVars[i] = core::Var::get(featuresArray[i], "false", "Renderer feature cvar", core::Var::boolValidator);
@@ -133,5 +135,8 @@ bool useFeature(Feature feature) {
 	return v->boolVal();
 }
 
+RenderState& renderState() {
+	return s;
+}
 
 }

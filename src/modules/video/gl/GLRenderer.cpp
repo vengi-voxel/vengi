@@ -42,8 +42,6 @@
 
 namespace video {
 
-static RenderState s;
-
 #ifndef MAX_SHADER_VAR_NAME
 #define MAX_SHADER_VAR_NAME 128
 #endif
@@ -2129,10 +2127,6 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	}
 
 	return true;
-}
-
-RenderState& renderState() {
-	return s;
 }
 
 }
