@@ -21,6 +21,7 @@ set(SRCS
 	OpenFileMode.h
 	PersistentMappingBuffer.cpp PersistentMappingBuffer.h
 	Renderer.cpp Renderer.h
+	RendererInterface.h
 	RenderBuffer.cpp RenderBuffer.h
 	Shader.cpp Shader.h
 	ShaderTypes.h
