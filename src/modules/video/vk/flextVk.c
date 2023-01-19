@@ -8,6 +8,9 @@
 extern "C" {
 #endif
 
+PFNVKCREATEDEBUGREPORTCALLBACKEXT_PROC* flextvkCreateDebugReportCallbackEXT = NULL;
+PFNVKDEBUGREPORTMESSAGEEXT_PROC* flextvkDebugReportMessageEXT = NULL;
+PFNVKDESTROYDEBUGREPORTCALLBACKEXT_PROC* flextvkDestroyDebugReportCallbackEXT = NULL;
 PFNVKDESTROYSURFACEKHR_PROC* flextvkDestroySurfaceKHR = NULL;
 PFNVKGETPHYSICALDEVICESURFACECAPABILITIESKHR_PROC* flextvkGetPhysicalDeviceSurfaceCapabilitiesKHR = NULL;
 PFNVKGETPHYSICALDEVICESURFACEFORMATSKHR_PROC* flextvkGetPhysicalDeviceSurfaceFormatsKHR = NULL;
@@ -191,6 +194,9 @@ int flextVkInit(void) {
 }
 
 void flextVkInitInstance(VkInstance instance) {
+    flextvkCreateDebugReportCallbackEXT = (PFNVKCREATEDEBUGREPORTCALLBACKEXT_PROC*)flextvkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
+    flextvkDebugReportMessageEXT = (PFNVKDEBUGREPORTMESSAGEEXT_PROC*)flextvkGetInstanceProcAddr(instance, "vkDebugReportMessageEXT");
+    flextvkDestroyDebugReportCallbackEXT = (PFNVKDESTROYDEBUGREPORTCALLBACKEXT_PROC*)flextvkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
     flextvkDestroySurfaceKHR = (PFNVKDESTROYSURFACEKHR_PROC*)flextvkGetInstanceProcAddr(instance, "vkDestroySurfaceKHR");
     flextvkGetPhysicalDeviceSurfaceCapabilitiesKHR = (PFNVKGETPHYSICALDEVICESURFACECAPABILITIESKHR_PROC*)flextvkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR");
     flextvkGetPhysicalDeviceSurfaceFormatsKHR = (PFNVKGETPHYSICALDEVICESURFACEFORMATSKHR_PROC*)flextvkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceSurfaceFormatsKHR");

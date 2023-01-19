@@ -1,3 +1,4 @@
 version 1.0 vulkan
 
 extension KHR_swapchain optional
+extension EXT_debug_report optional
