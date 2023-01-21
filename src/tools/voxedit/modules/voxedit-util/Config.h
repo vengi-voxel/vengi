@@ -6,6 +6,7 @@
 
 namespace cfg {
 
+constexpr const char *VoxEditRegionSizes = "ve_regionsizes";
 constexpr const char *VoxEditGrayInactive = "ve_grayinactive";
 constexpr const char *VoxEditHideInactive = "ve_hideinactive";
 constexpr const char *VoxEditLastFile = "ve_lastfile";

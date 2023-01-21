@@ -69,6 +69,23 @@ core::String VoxEdit::getSuggestedFilename(const char *extension) const {
 	return core::string::stripExtension(filename) + "." + extension;
 }
 
+static bool ivec3ListValidator(const core::String& value) {
+	if (value.empty()) {
+		return true;
+	}
+	core::DynamicArray<core::String> regionSizes;
+	core::string::splitString(value, regionSizes, ",");
+	for (const core::String &s : regionSizes) {
+		const glm::ivec3 maxs = core::string::parseIVec3(s);
+		for (int i = 0; i < 3; ++i) {
+			if (maxs[i] <= 0 || maxs[i] > 256) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::ClientCameraMaxZoom, "1000.0");
 	core::Var::get(cfg::ClientCameraMinZoom, "0.1");
@@ -78,6 +95,7 @@ app::AppState VoxEdit::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_framesPerSecondsCap->setVal(60.0f);
 
+	core::Var::get(cfg::VoxEditRegionSizes, "", "Show fixed region sizes in the positions panel", ivec3ListValidator);
 	core::Var::get(cfg::VoxEditShowgrid, "true", "Show the grid", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowlockedaxis, "true", "Show the currently locked axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowaabb, "true", "Show the axis aligned bounding box", core::Var::boolValidator);

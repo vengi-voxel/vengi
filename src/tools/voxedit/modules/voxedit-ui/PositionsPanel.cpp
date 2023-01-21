@@ -3,6 +3,7 @@
  */
 
 #include "PositionsPanel.h"
+#include "Toolbar.h"
 #include "Util.h"
 #include "core/Color.h"
 #include "ui/IconsFontAwesome6.h"
@@ -70,17 +71,42 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Region", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const int nodeId = sceneMgr().sceneGraph().activeNode();
-		const voxel::RawVolume *v = sceneMgr().volume(nodeId);
-		const voxel::Region &region = v->region();
-		glm::ivec3 mins = region.getLowerCorner();
-		glm::ivec3 maxs = region.getDimensionsInVoxels();
-		if (xyzValues("pos", mins)) {
-			const glm::ivec3 &f = mins - region.getLowerCorner();
-			sceneMgr().shift(nodeId, f);
-		}
-		if (xyzValues("size", maxs)) {
-			voxel::Region newRegion(region.getLowerCorner(), maxs);
-			sceneMgr().resize(nodeId, newRegion);
+		const core::String &sizes = core::Var::get(cfg::VoxEditRegionSizes, "")->strVal();
+		if (!sizes.empty()) {
+			static const char *max = "888x888x888";
+			const ImVec2 buttonSize(ImGui::CalcTextSize(max).x, ImGui::GetFrameHeight());
+			ui::Toolbar toolbar(buttonSize, &listener);
+
+			core::DynamicArray<core::String> regionSizes;
+			core::string::splitString(sizes, regionSizes, ",");
+			for (const core::String &s : regionSizes) {
+				const glm::ivec3 maxs = core::string::parseIVec3(s);
+				for (int i = 0; i < 3; ++i) {
+					if (maxs[i] <= 0 || maxs[i] > 256) {
+						return;
+					}
+				}
+				const core::String &title = core::string::format("%ix%ix%i##regionsize", maxs.x, maxs.y, maxs.z);
+				toolbar.customNoStyle([&]() {
+					if (ImGui::Button(title.c_str())) {
+						voxel::Region newRegion(glm::ivec3(0), maxs);
+						sceneMgr().resize(nodeId, newRegion);
+					}
+				});
+			}
+		} else {
+			const voxel::RawVolume *v = sceneMgr().volume(nodeId);
+			const voxel::Region &region = v->region();
+			glm::ivec3 mins = region.getLowerCorner();
+			glm::ivec3 maxs = region.getDimensionsInVoxels();
+			if (xyzValues("pos", mins)) {
+				const glm::ivec3 &f = mins - region.getLowerCorner();
+				sceneMgr().shift(nodeId, f);
+			}
+			if (xyzValues("size", maxs)) {
+				voxel::Region newRegion(region.getLowerCorner(), maxs);
+				sceneMgr().resize(nodeId, newRegion);
+			}
 		}
 	}
 
