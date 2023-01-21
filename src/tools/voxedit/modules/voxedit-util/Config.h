@@ -17,6 +17,7 @@ constexpr const char *VoxEditColorWheel = "ve_usercolorwheel";
 constexpr const char *VoxEditShowColorPicker = "ve_showcolorpicker";
 constexpr const char *VoxEditDiffuseColor = "ve_diffusecolor";
 constexpr const char *VoxEditLastPalette = "ve_lastpalette";
+constexpr const char *VoxEditSimplifiedView = "ve_simplifiedview";
 constexpr const char *VoxEditShowaabb = "ve_showaabb";
 constexpr const char *VoxEditShowgrid = "ve_showgrid";
 constexpr const char *VoxEditGridsize = "ve_gridsize";

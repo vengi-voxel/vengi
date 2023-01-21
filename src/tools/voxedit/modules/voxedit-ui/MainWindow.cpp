@@ -270,9 +270,11 @@ void MainWindow::rightWidget() {
 
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredScene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, _lastExecutedCommand);
-	_treePanel.update(TITLE_TREES);
-	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
-	_scriptPanel.update(TITLE_SCRIPTPANEL);
+	if (!core::Var::getSafe(cfg::VoxEditSimplifiedView)->boolVal()) {
+		_treePanel.update(TITLE_TREES);
+		_lsystemPanel.update(TITLE_LSYSTEMPANEL);
+		_scriptPanel.update(TITLE_SCRIPTPANEL);
+	}
 }
 
 // end of right side

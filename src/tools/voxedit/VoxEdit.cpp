@@ -123,6 +123,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditGuizmoAllowAxisFlip, "true", "Flip axis or stay along the positive world/local axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGuizmoSnap, "true", "Use the grid size for snap", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditLastPalette, voxel::Palette::builtIn[0]);
+	core::Var::get(cfg::VoxEditSimplifiedView, "false", "Hide some panels to simplify the ui", core::Var::boolValidator);
 
 	voxelformat::FormatConfig::init();
 
