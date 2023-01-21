@@ -273,7 +273,7 @@ app::AppState WindowedApp::onInit() {
 		Log::error("Failed to initialize the key binding handler");
 		return app::AppState::InitFailure;
 	}
-	if (!_keybindingHandler.load("keybindings.cfg")) {
+	if (!_keybindingHandler.load(_keybindingsVersion)) {
 		Log::warn("failed to load the keybindings");
 	}
 
@@ -490,14 +490,14 @@ app::AppState WindowedApp::onCleanup() {
 	SDL_Quit();
 	video_trace_shutdown();
 
-	_keybindingHandler.shutdown();
+	_keybindingHandler.shutdown(_keybindingsVersion);
 
 	return Super::onCleanup();
 }
 
 void WindowedApp::resetKeybindings() {
-	_keybindingHandler.reset();
-	_keybindingHandler.load("keybindings.cfg");
+	_keybindingHandler.reset(_keybindingsVersion);
+	_keybindingHandler.load(_keybindingsVersion);
 }
 
 void WindowedApp::showCursor(bool show) {

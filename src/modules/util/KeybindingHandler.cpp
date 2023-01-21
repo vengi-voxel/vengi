@@ -11,10 +11,15 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
+#include "io/File.h"
 #include "io/Filesystem.h"
 #include <SDL.h>
 
 namespace util {
+
+static core::String filename(int version) {
+	return core::string::format("keybindings-%i.cfg", version);
+}
 
 static inline bool checkModifierBitMask(int16_t mask, int16_t pressedModMask, int16_t commandModMask) {
 	// extract that stuff we are interested in
@@ -181,7 +186,7 @@ void KeyBindingHandler::construct() {
 	}).setHelp("Unbind a key");
 }
 
-void KeyBindingHandler::shutdown() {
+void KeyBindingHandler::shutdown(int version) {
 	core::String keybindings;
 	for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 		const int32_t key = i->first;
@@ -198,19 +203,20 @@ void KeyBindingHandler::shutdown() {
 	}
 	Log::trace("%s", keybindings.c_str());
 	if (keybindings.empty()) {
-		removeApplicationKeyBindings();
+		removeApplicationKeyBindings(version);
 	} else {
-		io::filesystem()->write("keybindings.cfg", keybindings);
+		io::filesystem()->write(filename(version), keybindings);
 	}
 }
 
-void KeyBindingHandler::removeApplicationKeyBindings() {
-	const core::String &path = io::filesystem()->writePath("keybindings.cfg");
+void KeyBindingHandler::removeApplicationKeyBindings(int version) {
+	const core::String &f = filename(version);
+	const core::String &path = io::filesystem()->writePath(f.c_str());
 	io::filesystem()->removeFile(path);
 }
 
-void KeyBindingHandler::reset() {
-	removeApplicationKeyBindings();
+void KeyBindingHandler::reset(int version) {
+	removeApplicationKeyBindings(version);
 	_bindings.clear();
 }
 
@@ -218,14 +224,25 @@ bool KeyBindingHandler::init() {
 	return true;
 }
 
-bool KeyBindingHandler::load(const core::String& filename) {
-	const io::FilePtr &file = io::filesystem()->open(filename);
-	const core::String &bindings = file->load();
+bool KeyBindingHandler::load(int version) {
+	io::FilePtr file = io::filesystem()->open(filename(version));
+	core::String bindings = file->load();
+	if (bindings.empty()) {
+		file->close();
+		// read the file that comes with the application - and skip the user settings
+		Log::debug("Use the default key bindings - %s wasn't found or was empty", file->name().c_str());
+		file = io::filesystem()->open("keybindings.cfg", io::FileMode::ReadNoHome);
+		bindings = file->load();
+	}
 	if (bindings.empty()) {
 		Log::warn("Failed to load key bindings from '%s' - file is empty", file->name().c_str());
 		return false;
 	}
 	Log::debug("Load key bindings from '%s'", file->name().c_str());
+	return loadBindings(bindings);
+}
+
+bool KeyBindingHandler::loadBindings(const core::String &bindings) {
 	const KeybindingParser p(bindings);
 	for (const auto& entry : p.getBindings()) {
 		auto i = _bindings.find(entry.first);

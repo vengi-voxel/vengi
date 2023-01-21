@@ -321,13 +321,21 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 		}
 		return core::make_shared<io::File>(_homePath + filename, mode);
 	}
+	FileMode openmode = mode;
+	if (openmode == FileMode::ReadNoHome) {
+		openmode = FileMode::Read;
+	}
 	for (const core::String &p : _paths) {
+		if (mode == FileMode::ReadNoHome && p == _homePath) {
+			Log::debug("Skip reading home path");
+			continue;
+		}
 		const core::String fullpath = core::string::path(p, filename);
 		io::File fullFile(fullpath, FileMode::Read);
 		if (fullFile.exists()) {
 			fullFile.close();
 			Log::debug("loading file %s from %s", filename.c_str(), p.c_str());
-			return core::make_shared<io::File>(fullpath, mode);
+			return core::make_shared<io::File>(fullpath, openmode);
 		}
 		if (isRelativePath(p)) {
 			for (const core::String &s : _paths) {
@@ -339,7 +347,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 				if (fullrelFile.exists()) {
 					fullrelFile.close();
 					Log::debug("loading file %s from %s%s", filename.c_str(), s.c_str(), p.c_str());
-					return core::make_shared<io::File>(fullrelpath, mode);
+					return core::make_shared<io::File>(fullrelpath, openmode);
 				}
 			}
 		}
@@ -348,14 +356,14 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 	if (f.exists()) {
 		f.close();
 		Log::debug("loading file '%s'", filename.c_str());
-		return core::make_shared<io::File>(filename, mode);
+		return core::make_shared<io::File>(filename, openmode);
 	}
 	if (!isRelativePath(filename)) {
 		Log::debug("'%s' not found", filename.c_str());
-		return core::make_shared<io::File>("", mode);
+		return core::make_shared<io::File>("", openmode);
 	}
 	Log::debug("Use %s from %s", filename.c_str(), _basePath.c_str());
-	return core::make_shared<io::File>(core::string::path(_basePath, filename), mode);
+	return core::make_shared<io::File>(core::string::path(_basePath, filename), openmode);
 }
 
 core::String Filesystem::load(const char *filename, ...) {

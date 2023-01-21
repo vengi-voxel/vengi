@@ -52,6 +52,11 @@ protected:
 	 */
 	bool _powerSaveMode = true;
 
+	/**
+	 * Bump this if commands have changed that would make old keybindings invalid
+	 */
+	int _keybindingsVersion = 0;
+
 	util::KeyBindingHandler _keybindingHandler;
 	/**
 	 * @brief Delta of the mouse movement since the last frame

@@ -76,7 +76,7 @@ protected:
 
 	void onCleanupApp() override {
 		app::AbstractTest::onCleanupApp();
-		_handler.shutdown();
+		_handler.shutdown(0);
 		core::resetBindingContexts();
 	}
 

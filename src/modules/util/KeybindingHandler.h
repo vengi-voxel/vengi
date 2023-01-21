@@ -16,7 +16,7 @@ extern bool isValidForBinding(int16_t pressedModMask, int16_t commandModMask);
 /**
  * @brief Component that executes commands for key/modifier combinations.
  */
-class KeyBindingHandler : public core::IComponent {
+class KeyBindingHandler {
 private:
 	uint32_t _pressedModifierMask = 0u;
 	core::Set<int32_t> _keys;
@@ -40,11 +40,11 @@ private:
 	static core::String getKeyName(int32_t key, uint16_t count = 1u);
 	static const char* getModifierName(int16_t modifier);
 public:
-	void construct() override;
-	void shutdown() override;
-	bool init() override;
-	void reset();
-	void removeApplicationKeyBindings();
+	void construct();
+	void shutdown(int version);
+	bool init();
+	void reset(int version);
+	void removeApplicationKeyBindings(int version);
 
 	/**
 	 * @brief Print the binding line for a key/modifier combination
@@ -60,7 +60,11 @@ public:
 	/**
 	 * @brief Loads a keybindings file
 	 */
-	bool load(const core::String& name);
+	bool load(int version);
+	/**
+	 * @brief Loads a keybindings string
+	 */
+	bool loadBindings(const core::String &bindings);
 	void setBindings(const BindMap& bindings);
 	const BindMap bindings() const;
 

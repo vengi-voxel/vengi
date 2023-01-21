@@ -19,7 +19,8 @@ enum class FileMode {
 	Read,		/**< reading from the virtual file system */
 	Write,		/**< writing into the virtual file system */
 	SysRead,	/**< reading from the given path */
-	SysWrite	/**< writing into the given path */
+	SysWrite,	/**< writing into the given path */
+	ReadNoHome	/**< reading from the virtual file system but skip user setting files in the home directories */
 };
 
 /**
