@@ -62,6 +62,13 @@ public:
 		func();
 		next();
 	}
+
+	template<class FUNC>
+	void customNoStyle(FUNC func) {
+		newline();
+		func();
+		next();
+	}
 };
 
 } // namespace ui
