@@ -72,7 +72,8 @@ public:
 	~Viewport();
 
 	void resetCamera(const glm::ivec3 &pos, const voxel::Region &region);
-
+	void toggleScene();
+	bool isSceneMode() const;
 	void resize(const glm::ivec2& frameBufferSize);
 
 	void move(bool pan, bool rotate, int x, int y);

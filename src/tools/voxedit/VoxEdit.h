@@ -41,4 +41,6 @@ public:
 	app::AppState onInit() override;
 	app::AppState onCleanup() override;
 	app::AppState onRunning() override;
+
+	void toggleScene();
 };

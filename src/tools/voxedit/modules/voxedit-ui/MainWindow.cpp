@@ -228,7 +228,13 @@ void MainWindow::mainWidget() {
 
 	// bottom
 	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR, _app);
-	_animationTimeline.update(TITLE_ANIMATION_TIMELINE);
+	if (isSceneMode()) {
+		_animationTimeline.update(TITLE_ANIMATION_TIMELINE);
+	}
+}
+
+bool MainWindow::isSceneMode() const {
+	return _scene->isSceneMode() || _sceneTop->isSceneMode() || _sceneLeft->isSceneMode() || _sceneFront->isSceneMode();
 }
 
 // end of main space
@@ -252,7 +258,11 @@ void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
 
 void MainWindow::rightWidget() {
 	// top
-	_positionsPanel.update(TITLE_POSITIONS, _lastExecutedCommand);
+	bool sceneMode = false;
+	if (const Viewport *viewport = hoveredScene()) {
+		sceneMode = viewport->isSceneMode();
+	}
+	_positionsPanel.update(TITLE_POSITIONS, sceneMode, _lastExecutedCommand);
 	_toolsPanel.update(TITLE_TOOLS, _lastExecutedCommand);
 	_assetPanel.update(TITLE_ASSET, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
@@ -554,9 +564,20 @@ void MainWindow::update() {
 	updateSettings();
 }
 
-bool MainWindow::isSceneHovered() const {
-	return _scene->isHovered() || _sceneTop->isHovered() ||
-		   _sceneLeft->isHovered() || _sceneFront->isHovered();
+Viewport* MainWindow::hoveredScene() {
+	if (_scene->isHovered()) {
+		return _scene;
+	}
+	if (_sceneTop->isHovered()) {
+		return _sceneTop;
+	}
+	if (_sceneLeft->isHovered()) {
+		return _sceneLeft;
+	}
+	if (_sceneFront->isHovered()) {
+		return _sceneFront;
+	}
+	return nullptr;
 }
 
 bool MainWindow::saveScreenshot(const core::String& file) {
@@ -566,6 +587,17 @@ bool MainWindow::saveScreenshot(const core::String& file) {
 	}
 	Log::info("Screenshot created at '%s'", file.c_str());
 	return true;
+}
+
+void MainWindow::toggleScene() {
+	if (Viewport *scene = hoveredScene()) {
+		scene->toggleScene();
+	} else {
+		_scene->toggleScene();
+		_sceneTop->toggleScene();
+		_sceneLeft->toggleScene();
+		_sceneFront->toggleScene();
+	}
 }
 
 } // namespace voxedit

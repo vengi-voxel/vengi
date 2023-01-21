@@ -11,6 +11,7 @@
 #include "core/concurrent/Concurrency.h"
 #include "io/FormatDescription.h"
 #include "video/WindowedApp.h"
+#include "voxedit-ui/Viewport.h"
 #include "voxedit-util/Config.h"
 #include "core/TimeProvider.h"
 #include "command/Command.h"
@@ -86,6 +87,13 @@ static bool ivec3ListValidator(const core::String& value) {
 	return true;
 }
 
+void VoxEdit::toggleScene() {
+	if (_mainWindow == nullptr) {
+		return;
+	}
+	_mainWindow->toggleScene();
+}
+
 app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::ClientCameraMaxZoom, "1000.0");
 	core::Var::get(cfg::ClientCameraMinZoom, "0.1");
@@ -141,6 +149,10 @@ app::AppState VoxEdit::onConstruct() {
 		}
 		_mainWindow->saveScreenshot(args[0]);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current viewport as screenshot");
+
+	command::Command::registerCommand("togglescene", [this](const command::CmdArgs &args) {
+		toggleScene();
+	}).setHelp("Toggle scene mode on/off");
 
 	command::Command::registerCommand("save", [this](const command::CmdArgs &args) {
 		if (_mainWindow == nullptr) {
@@ -317,9 +329,9 @@ app::AppState VoxEdit::onRunning() {
 	if (state != app::AppState::Running) {
 		return state;
 	}
-	const bool isSceneHovered = _mainWindow->isSceneHovered();
-	if (isSceneHovered) {
-		if (voxedit::sceneMgr().editMode() == voxedit::EditMode::Scene) {
+	const voxedit::Viewport *scene = _mainWindow->hoveredScene();
+	if (scene) {
+		if (scene->isSceneMode()) {
 			core::setBindingContext(core::BindingContext::Context1);
 		} else {
 			core::setBindingContext(core::BindingContext::Context2);

@@ -122,7 +122,7 @@ void Viewport::updateViewportTrace(float headerSize) {
 	move(pan, rotate, mouseX, mouseY);
 	sceneMgr().setMousePos(_mouseX, _mouseY);
 	sceneMgr().setActiveCamera(&camera());
-	sceneMgr().trace();
+	sceneMgr().trace(_renderContext.sceneMode);
 }
 
 void Viewport::dragAndDrop(float headerSize) {
@@ -256,6 +256,18 @@ void Viewport::menuBarCameraMode() {
 	}
 }
 
+bool Viewport::isSceneMode() const {
+	return _renderContext.sceneMode;
+}
+
+void Viewport::toggleScene() {
+	if (_renderContext.sceneMode) {
+		_renderContext.sceneMode = false;
+	} else {
+		_renderContext.sceneMode = true;
+	}
+}
+
 void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 	if (ImGui::BeginMenuBar()) {
 		const MementoHandler &mementoHandler = sceneMgr().mementoHandler();
@@ -263,17 +275,7 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		ImGui::CommandMenuItem(ICON_FA_ROTATE_RIGHT " Redo", "redo", mementoHandler.canRedo(), listener);
 		ImGui::Dummy(ImVec2(20, 0));
 		menuBarCameraMode();
-
-		const EditMode editMode = sceneMgr().editMode();
-		bool sceneView = editMode == EditMode::Scene;
-		if (ImGui::Checkbox("Scene Mode", &sceneView)) {
-			if (sceneView) {
-				sceneMgr().setEditMode(EditMode::Scene);
-			} else {
-				sceneMgr().setEditMode(EditMode::Model);
-			}
-		}
-
+		ImGui::Checkbox("Scene Mode", &_renderContext.sceneMode);
 		ImGui::EndMenuBar();
 	}
 }
@@ -334,8 +336,7 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 }
 
 void Viewport::renderSceneGuizmo(video::Camera &camera) {
-	const EditMode editMode = sceneMgr().editMode();
-	if (editMode != EditMode::Scene) {
+	if (!_renderContext.sceneMode) {
 		return;
 	}
 	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
@@ -402,7 +403,6 @@ void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) 
 	if (isFixedCamera()) {
 		return;
 	}
-	const EditMode editMode = sceneMgr().editMode();
 	ImVec2 position = ImGui::GetWindowPos();
 	const ImVec2 size = ImVec2(128, 128);
 	const ImVec2 maxSize = ImGui::GetWindowContentRegionMax();
@@ -414,7 +414,7 @@ void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) 
 	glm::mat4 viewMatrix = camera.viewMatrix();
 	float *viewPtr = glm::value_ptr(viewMatrix);
 
-	if (editMode == EditMode::Scene) {
+	if (_renderContext.sceneMode) {
 		ImGuizmo::ViewManipulate(viewPtr, length, position, size, backgroundColor);
 	} else {
 		const float *projPtr = glm::value_ptr(camera.projectionMatrix());
@@ -445,13 +445,11 @@ void Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 		return;
 	}
 
-	const EditMode editMode = sceneMgr().editMode();
-	const bool sceneMode = editMode == EditMode::Scene;
 	const bool orthographic = camera.mode() == video::CameraMode::Orthogonal;
 
 	ImGuizmo::BeginFrame();
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
-	ImGuizmo::Enable(sceneMode);
+	ImGuizmo::Enable(_renderContext.sceneMode);
 	ImGuizmo::AllowAxisFlip(_guizmoAllowAxisFlip->boolVal());
 	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetRect(windowPos.x, windowPos.y + headerSize, size.x, size.y);

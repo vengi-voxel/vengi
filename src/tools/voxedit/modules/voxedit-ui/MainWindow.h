@@ -66,6 +66,7 @@ private:
 	*/
 	void loadLastOpenedFiles(const core::String &string);
 	void addLastOpenedFile(const core::String &file);
+	bool isSceneMode() const;
 
 	ModelNodeSettings _modelNodeSettings;
 
@@ -119,10 +120,11 @@ public:
 	bool isSceneGraphDropTarget() const;
 	bool isPaletteWidgetDropTarget() const;
 
+	void toggleScene();
 	void resetCamera();
 	void update();
 	bool allowToQuit();
-	bool isSceneHovered() const;
+	Viewport* hoveredScene();
 
 	bool saveScreenshot(const core::String& file);
 };

@@ -863,11 +863,6 @@ void SceneManager::resetSceneState() {
 	_modifier.reset();
 	voxelformat::SceneGraphNode &node = *_sceneGraph.begin();
 	nodeActivate(node.id());
-	if (_sceneGraph.size() > 1) {
-		setEditMode(EditMode::Scene);
-	} else {
-		setEditMode(EditMode::Model);
-	}
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
 	_mementoHandler.markModification(node, voxel::Region::InvalidRegion);
@@ -932,9 +927,9 @@ math::AABB<float> SceneManager::toAABB(const voxel::Region& region) const {
 	return math::AABB<float>(glm::floor(region.getLowerCornerf()), glm::floor(glm::vec3(region.getUpperCornerf() + 1.0f)));
 }
 
-math::OBB<float> SceneManager::toOBB(const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const {
+math::OBB<float> SceneManager::toOBB(bool sceneMode, const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const {
 	core_assert(region.isValid());
-	if (_editMode == EditMode::Scene) {
+	if (sceneMode) {
 		const glm::vec3 &extents = transform.pivot() * glm::vec3(region.getDimensionsInVoxels());
 		const glm::vec3 &center = (region.getLowerCornerf() + transform.worldTranslation()) + extents;
 		const glm::mat4 &matrix = transform.worldMatrix();
@@ -980,7 +975,6 @@ bool SceneManager::setSceneGraphNodeVolume(voxelformat::SceneGraphNode &node, vo
 
 	const voxel::Region& region = volume->region();
 	updateGridRenderer(region);
-	updateAABBMesh();
 
 	_dirty = false;
 	_result = voxelutil::PickResult();
@@ -1065,7 +1059,6 @@ void SceneManager::shift(int nodeId, const glm::ivec3& m) {
 		return;
 	}
 	node->translate(m, _currentFrameIdx);
-	updateAABBMesh();
 	const voxelformat::KeyFrameIndex keyFrameIdx = node->keyFrameForFrame(_currentFrameIdx);
 	_mementoHandler.markNodeTransform(*node, keyFrameIdx);
 }
@@ -1090,7 +1083,7 @@ bool SceneManager::setGridResolution(int resolution) {
 	return true;
 }
 
-void SceneManager::updateAABBMesh() {
+void SceneManager::updateAABBMesh(bool sceneMode) {
 	Log::debug("Update aabb mesh");
 	_shapeBuilder.clear();
 	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
@@ -1102,7 +1095,7 @@ void SceneManager::updateAABBMesh() {
 		} else {
 			_shapeBuilder.setColor(core::Color::Gray);
 		}
-		_shapeBuilder.obb(toOBB(region, node.transformForFrame(_currentFrameIdx)));
+		_shapeBuilder.obb(toOBB(sceneMode, region, node.transformForFrame(_currentFrameIdx)));
 	}
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
@@ -1111,13 +1104,15 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 	const bool depthTest = video::enable(video::State::DepthTest);
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderScene) {
+		_volumeRenderer.setSceneMode(renderContext.sceneMode);
+		updateAABBMesh(renderContext.sceneMode);
 		_volumeRenderer.prepare(_sceneGraph, _currentFrameIdx, _hideInactive->boolVal(), _grayInactive->boolVal());
 		_volumeRenderer.render(renderContext, camera, _renderShadow, false);
 		extractVolume();
 	}
 	const bool renderUI = (renderMask & RenderUI) != 0u;
 	if (renderUI) {
-		if (_editMode == EditMode::Scene) {
+		if (renderContext.sceneMode) {
 			if (_showAabbVar->boolVal()) {
 				_shapeRenderer.render(_aabbMeshIndex, camera);
 			}
@@ -1220,10 +1215,6 @@ void SceneManager::construct() {
 			_modifier.select(region.getLowerCorner(), region.getUpperCorner());
 		}
 	}).setHelp("Unselect all");
-
-	command::Command::registerCommand("togglescene", [this] (const command::CmdArgs& args) {
-		toggleEditMode();
-	}).setHelp("Toggle scene mode on/off");
 
 	command::Command::registerCommand("text", [this] (const command::CmdArgs& args) {
 		if (args.size() != 2) {
@@ -1776,26 +1767,6 @@ void SceneManager::flip(math::Axis axis) {
 	});
 }
 
-void SceneManager::toggleEditMode() {
-	if (_editMode == EditMode::Model) {
-		setEditMode(EditMode::Scene);
-	} else if (_editMode == EditMode::Scene) {
-		setEditMode(EditMode::Model);
-	}
-}
-
-void SceneManager::setEditMode(EditMode mode) {
-	_editMode = mode;
-	if (_editMode == EditMode::Scene) {
-		_modifier.aabbAbort();
-		_volumeRenderer.setSceneMode(true);
-	} else if (_editMode == EditMode::Model) {
-		_volumeRenderer.setSceneMode(false);
-	}
-	updateAABBMesh();
-	// don't abort or toggle any other mode
-}
-
 bool SceneManager::init() {
 	++_initialized;
 	if (_initialized > 1) {
@@ -2078,11 +2049,11 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	updateLockedPlane(math::Axis::Z);
 }
 
-bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
+bool SceneManager::trace(bool sceneMode, bool force, voxelutil::PickResult *result) {
 	if (result) {
 		*result = _result;
 	}
-	if (_editMode == EditMode::Scene) {
+	if (sceneMode) {
 		if (_sceneModeNodeIdTrace != -1) {
 			// if the trace is not forced, and the mouse cursor position did not change, don't
 			// re-execute the trace.
@@ -2102,7 +2073,7 @@ bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
 			}
 			const voxel::Region& region = node.region();
 			float distance = 0.0f;
-			const math::OBB<float>& obb = toOBB(region, node.transformForFrame(_currentFrameIdx));
+			const math::OBB<float>& obb = toOBB(sceneMode, region, node.transformForFrame(_currentFrameIdx));
 			if (obb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
 				if (distance < intersectDist) {
 					intersectDist = distance;
@@ -2112,8 +2083,6 @@ bool SceneManager::trace(bool force, voxelutil::PickResult *result) {
 		}
 		Log::trace("Hovered node: %i", _sceneModeNodeIdTrace);
 		return true;
-	} else if (_editMode != EditMode::Model) {
-		return false;
 	}
 
 	// mouse tracing is disabled - e.g. because the voxel cursor was moved by keyboard
@@ -2294,7 +2263,6 @@ bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const 
 	_mementoHandler.markNodeTransform(node, keyFrameIdx);
 	markDirty();
 
-	updateAABBMesh();
 	return true;
 }
 
@@ -2367,7 +2335,6 @@ bool SceneManager::nodeRemove(voxelformat::SceneGraphNode &node, bool recursive)
 		newScene(true, name, region);
 		// TODO: allow to undo the removal of the last node
 	}
-	updateAABBMesh();
 	return true;
 }
 
@@ -2418,7 +2385,6 @@ bool SceneManager::nodeActivate(int nodeId) {
 	}
 	const voxel::Region& region = node.region();
 	updateGridRenderer(region);
-	updateAABBMesh();
 	if (!region.containsPoint(referencePosition())) {
 		const uint32_t frame = 0;
 		const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.transform(frame).pivot() * glm::vec3(region.getDimensionsInVoxels()));

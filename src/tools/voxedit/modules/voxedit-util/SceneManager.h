@@ -50,13 +50,6 @@ static constexpr struct Direction {
 	{"backward",  0,  0, -1}
 };
 
-enum class EditMode {
-	// Edit a model volume (voxels)
-	Model,
-	// Edit the scene (volume positions, rotations, ...)
-	Scene
-};
-
 enum class NodeMergeFlags {
 	None      = 0,
 	Visible   = (1 << 0),
@@ -81,7 +74,6 @@ private:
 	ModifierFacade _modifier;
 	voxelfont::VoxelFont _voxelFont;
 	core::ScopedPtr<voxel::RawVolume> _copy;
-	EditMode _editMode = EditMode::Scene;
 	std::future<voxelformat::SceneGraph> _loadingFuture;
 
 	/**
@@ -169,9 +161,9 @@ private:
 	void zoom(video::Camera& camera, float level) const;
 	bool extractVolume();
 	void updateLockedPlane(math::Axis axis);
-	void updateAABBMesh();
+	void updateAABBMesh(bool sceneMode);
 	math::AABB<float> toAABB(const voxel::Region& region) const;
-	math::OBB<float> toOBB(const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const;
+	math::OBB<float> toOBB(bool sceneMode, const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const;
 protected:
 	voxelformat::SceneGraphNode *sceneGraphNode(int nodeId);
 	const voxelformat::SceneGraphNode *sceneGraphNode(int nodeId) const;
@@ -357,7 +349,6 @@ public:
 	 * @return @c true if the scene is completely empty
 	 */
 	bool empty() const;
-	EditMode editMode() const;
 
 	/**
 	 * @note This is not about the animation scene mode, but the animation of the nodes
@@ -382,7 +373,7 @@ public:
 	 *
 	 * @sa resetLastTrace()
 	 */
-	bool trace(bool force = false, voxelutil::PickResult *result = nullptr);
+	bool trace(bool sceneMode, bool force = false, voxelutil::PickResult *result = nullptr);
 	void resetLastTrace();
 
 	math::Axis lockedAxis() const;
@@ -403,8 +394,6 @@ public:
 	video::ShapeBuilder& shapeBuilder();
 	render::ShapeRenderer& shapeRenderer();
 	const voxelformat::SceneGraph &sceneGraph();
-	void setEditMode(EditMode mode);
-	void toggleEditMode();
 
 	bool hasClipboardCopy() const;
 
@@ -502,10 +491,6 @@ inline bool SceneManager::dirty() const {
 
 inline int SceneManager::size() const {
 	return _size;
-}
-
-inline EditMode SceneManager::editMode() const {
-	return _editMode;
 }
 
 inline const voxel::Voxel& SceneManager::hitCursorVoxel() const {

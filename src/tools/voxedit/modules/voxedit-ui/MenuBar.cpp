@@ -3,6 +3,7 @@
  */
 
 #include "MenuBar.h"
+#include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "core/GameConfig.h"
 #include "ui/IMGUIEx.h"
@@ -135,12 +136,7 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 			}
 			if (ImGui::BeginMenu(ICON_FA_EYE " View")) {
 				actionMenuItem(ICON_FK_VIDEO_CAMERA " Reset camera", "resetcamera", listener);
-				if (ImGui::MenuItem(ICON_FK_TH " View toggle")) {
-					// don't use togglescene action menu item - as tab is used for the menu navigation
-					// that's the reason why this is bound to editor mode only
-					sceneMgr().toggleEditMode();
-					listener("togglescene", {});
-				}
+				actionMenuItem(ICON_FK_TH " View toggle", "togglescene", listener);
 				actionMenuItem(ICON_FK_TERMINAL " Console", "toggleconsole", listener);
 				ImGui::EndMenu();
 			}

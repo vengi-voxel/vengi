@@ -44,6 +44,7 @@ namespace voxelrender {
 struct RenderContext {
 	video::FrameBuffer frameBuffer;
 	render::BloomRenderer bloomRenderer;
+	bool sceneMode = false;
 
 	bool init(const glm::ivec2 &size);
 	void shutdown();
