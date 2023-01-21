@@ -1084,7 +1084,6 @@ bool SceneManager::setGridResolution(int resolution) {
 }
 
 void SceneManager::updateAABBMesh(bool sceneMode) {
-	Log::debug("Update aabb mesh");
 	_shapeBuilder.clear();
 	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
 		const voxel::RawVolume* v = node.volume();
