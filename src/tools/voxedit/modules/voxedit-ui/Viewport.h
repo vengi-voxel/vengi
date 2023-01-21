@@ -24,11 +24,10 @@ struct ImGuiDockNode;
 namespace voxedit {
 
 class Viewport {
-public:
-	enum class SceneCameraMode : uint8_t {
-		Free, Top, Left, Front
-	};
 private:
+	enum class SceneCameraMode : uint8_t {
+		Free, Top, Left, Front, Max
+	};
 	const core::String _id;
 	bool _hovered = false;
 	bool _guizmoActivated = false;
@@ -63,10 +62,11 @@ private:
 	bool isFixedCamera() const;
 	void renderViewportImage(const glm::ivec2 &contentSize);
 	void dragAndDrop(float headerSize);
-	void bottomBar();
+	void renderBottomBar();
 	void renderViewport();
 	void renderMenuBar(command::CommandExecutionListener *listener);
 	void menuBarCameraMode();
+	void menuBarCameraProjection();
 public:
 	Viewport(const core::String& id);
 	~Viewport();
@@ -85,7 +85,7 @@ public:
 	 * Update the ui
 	 */
 	void update(command::CommandExecutionListener *listener);
-	bool init(Viewport::SceneCameraMode mode);
+	bool init();
 	void shutdown();
 
 	const core::String& id() const;

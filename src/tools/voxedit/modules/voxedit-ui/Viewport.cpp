@@ -38,22 +38,16 @@ Viewport::~Viewport() {
 	shutdown();
 }
 
-bool Viewport::init(Viewport::SceneCameraMode mode) {
+bool Viewport::init() {
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 	_showAxisVar = core::Var::getSafe(cfg::VoxEditShowaxis);
 	_guizmoRotation = core::Var::getSafe(cfg::VoxEditGuizmoRotation);
 	_guizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGuizmoAllowAxisFlip);
 	_guizmoSnap = core::Var::getSafe(cfg::VoxEditGuizmoSnap);
 	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
-
-	_camMode = mode;
-	if (mode == Viewport::SceneCameraMode::Free) {
-		_camera.setMode(video::CameraMode::Perspective);
-	} else {
-		_camera.setMode(video::CameraMode::Orthogonal);
-	}
-	resetCamera();
 	_renderContext.init(video::getWindowSize());
+
+	resetCamera();
 
 	return true;
 }
@@ -156,7 +150,7 @@ void Viewport::dragAndDrop(float headerSize) {
 	}
 }
 
-void Viewport::bottomBar() {
+void Viewport::renderBottomBar() {
 	const float height = ImGui::GetFrameHeight();
 	const ImVec2 windowSize = ImGui::GetWindowSize();
 
@@ -232,21 +226,45 @@ void Viewport::renderViewport() {
 		}
 
 		dragAndDrop(headerSize);
-		bottomBar();
+		renderBottomBar();
+	}
+}
+
+void Viewport::menuBarCameraProjection() {
+	static const char *modes[] = {"Perspective", "Orthogonal"};
+	static_assert(lengthof(modes) == (int)video::CameraMode::Max, "Array size doesn't match enum values");
+	const int currentMode = (int)camera().mode();
+	const float modeMaxWidth = ImGui::CalcComboBoxWidth(modes[currentMode]);
+	ImGui::SetNextItemWidth(modeMaxWidth);
+	if (ImGui::BeginCombo("##cameraproj", modes[currentMode])) {
+		for (int n = 0; n < lengthof(modes); n++) {
+			const bool isSelected = (currentMode == n);
+			if (ImGui::Selectable(modes[n], isSelected)) {
+				camera().setMode((video::CameraMode)n);
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
 	}
 }
 
 void Viewport::menuBarCameraMode() {
-	static const char *modes[] = {"Perspective", "Orthogonal"};
-	static_assert(lengthof(modes) == (int)video::CameraMode::Max, "Array size doesn't match enum values");
-	const int currentMode = (int)camera().mode();
+	static const char *modes[] = {"Free", "Top", "Left", "Front"};
+	static_assert(lengthof(modes) == (int)SceneCameraMode::Max, "Array size doesn't match enum values");
+	const int currentMode = (int)_camMode;
 	const float modeMaxWidth = ImGui::CalcComboBoxWidth(modes[currentMode]);
 	ImGui::SetNextItemWidth(modeMaxWidth);
 	if (ImGui::BeginCombo("##cameramode", modes[currentMode])) {
 		for (int n = 0; n < lengthof(modes); n++) {
 			const bool isSelected = (currentMode == n);
 			if (ImGui::Selectable(modes[n], isSelected)) {
-				camera().setMode((video::CameraMode)n);
+				_camMode = (SceneCameraMode)n;
+				resetCamera();
+				if (_camMode != SceneCameraMode::Free) {
+					camera().setMode(video::CameraMode::Orthogonal);
+				}
 			}
 			if (isSelected) {
 				ImGui::SetItemDefaultFocus();
@@ -274,6 +292,7 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		ImGui::CommandMenuItem(ICON_FA_ROTATE_LEFT " Undo", "undo", mementoHandler.canUndo(), listener);
 		ImGui::CommandMenuItem(ICON_FA_ROTATE_RIGHT " Redo", "redo", mementoHandler.canRedo(), listener);
 		ImGui::Dummy(ImVec2(20, 0));
+		menuBarCameraProjection();
 		menuBarCameraMode();
 		ImGui::Checkbox("Scene Mode", &_renderContext.sceneMode);
 		ImGui::EndMenuBar();

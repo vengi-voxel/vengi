@@ -45,33 +45,23 @@ private:
 	core::VarPtr _renderShadowVar;
 	core::VarPtr _gridSizeVar;
 
-	Viewport* _scene = nullptr;
-	Viewport* _sceneTop = nullptr;
-	Viewport* _sceneLeft = nullptr;
-	Viewport* _sceneFront = nullptr;
+	Viewport* _scenes[4] { nullptr, nullptr, nullptr, nullptr };
+	Viewport* _lastHoveredScene = nullptr;
 
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;
 	bool _forceQuit = false;
 	bool _popupUnsavedChangesQuit = false;
+	bool _lastSceneMode = false;
 
 	ui::IMGUIApp* _app;
 
 	core::VarPtr _lastOpenedFile;
 	core::VarPtr _lastOpenedFiles;
 	LastOpenedFiles _lastOpenedFilesRingBuffer;
-	/**
-	* @brief Convert semicolon-separated string into the @c _lastOpenedFilesRingBuffer array
-	*/
-	void loadLastOpenedFiles(const core::String &string);
-	void addLastOpenedFile(const core::String &file);
-	bool isSceneMode() const;
-
 	ModelNodeSettings _modelNodeSettings;
-
 	io::FileDescription _loadFile;
-
 	LastExecutedCommand _lastExecutedCommand;
 	LSystemPanel _lsystemPanel;
 	ScriptPanel _scriptPanel;
@@ -87,6 +77,13 @@ private:
 	MenuBar _menuBar;
 	StatusBar _statusBar;
 	AnimationTimeline _animationTimeline;
+
+	/**
+	* @brief Convert semicolon-separated string into the @c _lastOpenedFilesRingBuffer array
+	*/
+	void loadLastOpenedFiles(const core::String &string);
+	void addLastOpenedFile(const core::String &file);
+	bool isSceneMode() const;
 
 	void leftWidget();
 	void mainWidget();

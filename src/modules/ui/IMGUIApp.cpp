@@ -276,7 +276,7 @@ app::AppState IMGUIApp::onInit() {
 	// xrandr --output <screen-name> --scale 1.6x1.6
 
 	if (_persistUISettings) {
-		const core::String iniFile = _appname + "-" PROJECT_VERSION "-imgui.ini";
+		const core::String iniFile = core::string::format("%s-%i-imgui.ini", _appname.c_str(), _iniVersion);
 		_writePathIni = _filesystem->writePath(iniFile.c_str());
 		io.IniFilename = _writePathIni.c_str();
 	} else {

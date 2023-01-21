@@ -8,6 +8,7 @@
 #include "Util.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
+#include "core/ArrayLength.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
 #include "ui/IconsForkAwesome.h"
@@ -46,24 +47,19 @@
 namespace voxedit {
 
 MainWindow::MainWindow(ui::IMGUIApp *app) : _app(app), _assetPanel(app->filesystem()) {
-	_scene = new Viewport("free##viewport");
-	_sceneTop = new Viewport("top##viewport");
-	_sceneLeft = new Viewport("left##viewport");
-	_sceneFront = new Viewport("front##viewport");
+	for (int i = 0; i < lengthof(_scenes); ++i) {
+		const core::String &name = core::string::format("viewport%i", i);
+		_scenes[i] = new Viewport(name.c_str());
+	}
+
+	_lastHoveredScene = _scenes[0];
 }
 
 MainWindow::~MainWindow() {
-	delete _scene;
-	delete _sceneTop;
-	delete _sceneLeft;
-	delete _sceneFront;
-}
-
-void MainWindow::resetCamera() {
-	_scene->resetCamera();
-	_sceneTop->resetCamera();
-	_sceneLeft->resetCamera();
-	_sceneFront->resetCamera();
+	for (int i = 0; i < lengthof(_scenes); ++i) {
+		delete _scenes[i];
+	}
+	_lastHoveredScene = nullptr;
 }
 
 void MainWindow::loadLastOpenedFiles(const core::String &string) {
@@ -92,10 +88,9 @@ void MainWindow::addLastOpenedFile(const core::String &file) {
 }
 
 bool MainWindow::init() {
-	_scene->init(voxedit::Viewport::SceneCameraMode::Free);
-	_sceneTop->init(voxedit::Viewport::SceneCameraMode::Top);
-	_sceneLeft->init(voxedit::Viewport::SceneCameraMode::Left);
-	_sceneFront->init(voxedit::Viewport::SceneCameraMode::Front);
+	for (int i = 0; i < lengthof(_scenes); ++i) {
+		_scenes[i]->init();
+	}
 
 	_lsystemPanel.init();
 	_treePanel.init();
@@ -123,10 +118,9 @@ bool MainWindow::init() {
 }
 
 void MainWindow::shutdown() {
-	_scene->shutdown();
-	_sceneTop->shutdown();
-	_sceneLeft->shutdown();
-	_sceneFront->shutdown();
+	for (int i = 0; i < lengthof(_scenes); ++i) {
+		_scenes[i]->shutdown();
+	}
 	_lsystemPanel.shutdown();
 	_treePanel.shutdown();
 }
@@ -208,10 +202,9 @@ void MainWindow::leftWidget() {
 // main space
 
 void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
-	ImGui::DockBuilderDockWindow(_scene->id().c_str(), dockId);
-	ImGui::DockBuilderDockWindow(_sceneTop->id().c_str(), dockId);
-	ImGui::DockBuilderDockWindow(_sceneLeft->id().c_str(), dockId);
-	ImGui::DockBuilderDockWindow(_sceneFront->id().c_str(), dockId);
+	for (int i = 0; i < lengthof(_scenes); ++i) {
+		ImGui::DockBuilderDockWindow(_scenes[i]->id().c_str(), dockId);
+	}
 }
 
 void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
@@ -221,10 +214,13 @@ void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
 
 void MainWindow::mainWidget() {
 	// main
-	_scene->update(&_lastExecutedCommand);
-	_sceneTop->update(&_lastExecutedCommand);
-	_sceneLeft->update(&_lastExecutedCommand);
-	_sceneFront->update(&_lastExecutedCommand);
+	Viewport *scene = hoveredScene();
+	if (scene != nullptr) {
+		_lastHoveredScene = scene;
+	}
+	for (int i = 0; i < lengthof(_scenes); ++i) {
+		_scenes[i]->update(&_lastExecutedCommand);
+	}
 
 	// bottom
 	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR, _app);
@@ -234,7 +230,12 @@ void MainWindow::mainWidget() {
 }
 
 bool MainWindow::isSceneMode() const {
-	return _scene->isSceneMode() || _sceneTop->isSceneMode() || _sceneLeft->isSceneMode() || _sceneFront->isSceneMode();
+	for (int i = 0; i < lengthof(_scenes); ++i) {
+		if (_scenes[i]->isSceneMode()) {
+			return true;
+		}
+	}
+	return false;
 }
 
 // end of main space
@@ -257,19 +258,18 @@ void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
 }
 
 void MainWindow::rightWidget() {
-	// top
-	bool sceneMode = false;
 	if (const Viewport *viewport = hoveredScene()) {
-		sceneMode = viewport->isSceneMode();
+		_lastSceneMode = viewport->isSceneMode();
 	}
-	_positionsPanel.update(TITLE_POSITIONS, sceneMode, _lastExecutedCommand);
+	// top
+	_positionsPanel.update(TITLE_POSITIONS, _lastSceneMode, _lastExecutedCommand);
 	_toolsPanel.update(TITLE_TOOLS, _lastExecutedCommand);
 	_assetPanel.update(TITLE_ASSET, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
 	_mementoPanel.update(TITLE_MEMENTO, _lastExecutedCommand);
 
 	// bottom
-	_sceneGraphPanel.update(_scene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, _lastExecutedCommand);
+	_sceneGraphPanel.update(_lastHoveredScene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, _lastExecutedCommand);
 	_treePanel.update(TITLE_TREES);
 	_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 	_scriptPanel.update(TITLE_SCRIPTPANEL);
@@ -565,23 +565,16 @@ void MainWindow::update() {
 }
 
 Viewport* MainWindow::hoveredScene() {
-	if (_scene->isHovered()) {
-		return _scene;
-	}
-	if (_sceneTop->isHovered()) {
-		return _sceneTop;
-	}
-	if (_sceneLeft->isHovered()) {
-		return _sceneLeft;
-	}
-	if (_sceneFront->isHovered()) {
-		return _sceneFront;
+	for (int i = 0; i < lengthof(_scenes); ++i) {
+		if (_scenes[i]->isHovered()) {
+			return _scenes[i];
+		}
 	}
 	return nullptr;
 }
 
 bool MainWindow::saveScreenshot(const core::String& file) {
-	if (!_scene->saveImage(file.c_str())) {
+	if (!_lastHoveredScene->saveImage(file.c_str())) {
 		Log::warn("Failed to save screenshot to file '%s'", file.c_str());
 		return false;
 	}
@@ -589,14 +582,23 @@ bool MainWindow::saveScreenshot(const core::String& file) {
 	return true;
 }
 
+void MainWindow::resetCamera() {
+	if (Viewport *scene = hoveredScene()) {
+		scene->resetCamera();
+	} else {
+		for (int i = 0; i < lengthof(_scenes); ++i) {
+			_scenes[i]->resetCamera();
+		}
+	}
+}
+
 void MainWindow::toggleScene() {
 	if (Viewport *scene = hoveredScene()) {
 		scene->toggleScene();
 	} else {
-		_scene->toggleScene();
-		_sceneTop->toggleScene();
-		_sceneLeft->toggleScene();
-		_sceneFront->toggleScene();
+		for (int i = 0; i < lengthof(_scenes); ++i) {
+			_scenes[i]->toggleScene();
+		}
 	}
 }
 
