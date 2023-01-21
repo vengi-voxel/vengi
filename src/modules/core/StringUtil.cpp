@@ -11,6 +11,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <glm/vec3.hpp>
 
 namespace core {
 namespace string {
@@ -761,5 +762,27 @@ void parseReal3(float *x, float *y, float *z, const char **token, float default_
 	*y = parseReal(token, default_y);
 	*z = parseReal(token, default_z);
 }
+
+glm::vec3 parseVec3(const core::String &in) {
+	const char *s = in.c_str();
+	glm::vec3 out;
+	parseReal3(&out.x, &out.y, &out.z, &s, 0.0f, 0.0f, 0.0f);
+	return out;
+}
+
+glm::ivec3 parseIVec3(const core::String &in) {
+	core::DynamicArray<core::String> tokens;
+	tokens.reserve(3);
+	splitString(in, tokens);
+	if (tokens.size() > 3) {
+		tokens.resize(3);
+	}
+	glm::ivec3 out(0);
+	for (size_t i = 0; i < tokens.size(); ++i) {
+		out[(int)i] = tokens[i].toInt();
+	}
+	return out;
+}
+
 }
 }

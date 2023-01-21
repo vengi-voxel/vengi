@@ -8,6 +8,7 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include <inttypes.h>
+#include <glm/fwd.hpp>
 
 namespace core {
 namespace string {
@@ -370,6 +371,8 @@ extern void parseReal2(float *x, float *y, const char **token, float default_x =
 extern void parseReal3(float *x, float *y, float *z, const char **token, float default_x = 0.0f,
 					   float default_y = 0.0f, float default_z = 0.0f);
 extern bool parseReal(const char **token, float *out);
+extern glm::vec3 parseVec3(const core::String &in);
+extern glm::ivec3 parseIVec3(const core::String &in);
 
 }
 }
