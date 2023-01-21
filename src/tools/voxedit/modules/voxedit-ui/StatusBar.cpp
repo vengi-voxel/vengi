@@ -37,16 +37,7 @@ void StatusBar::update(const char *title, float height, const core::String &last
 		ImGui::SetNextItemWidth(120.0f);
 		ImGui::InputVarInt("Grid size", cfg::VoxEditGridsize);
 		ImGui::SameLine();
-		const EditMode editMode = sceneMgr.editMode();
-		bool sceneView = editMode == EditMode::Scene;
-		if (ImGui::Checkbox("Scene Mode", &sceneView)) {
-			if (sceneView) {
-				sceneMgr.setEditMode(EditMode::Scene);
-			} else {
-				sceneMgr.setEditMode(EditMode::Model);
-			}
-		}
-		ImGui::SameLine();
+
 		const float afterSizeX = ImGui::GetCursorPosX();
 		if (modifier.aabbMode()) {
 			const glm::ivec3& dim = modifier.aabbDim();

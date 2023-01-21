@@ -263,6 +263,17 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		ImGui::CommandMenuItem(ICON_FA_ROTATE_RIGHT " Redo", "redo", mementoHandler.canRedo(), listener);
 		ImGui::Dummy(ImVec2(20, 0));
 		menuBarCameraMode();
+
+		const EditMode editMode = sceneMgr().editMode();
+		bool sceneView = editMode == EditMode::Scene;
+		if (ImGui::Checkbox("Scene Mode", &sceneView)) {
+			if (sceneView) {
+				sceneMgr().setEditMode(EditMode::Scene);
+			} else {
+				sceneMgr().setEditMode(EditMode::Model);
+			}
+		}
+
 		ImGui::EndMenuBar();
 	}
 }
