@@ -71,7 +71,7 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Region", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const int nodeId = sceneMgr().sceneGraph().activeNode();
-		const core::String &sizes = core::Var::get(cfg::VoxEditRegionSizes, "")->strVal();
+		const core::String &sizes = core::Var::getSafe(cfg::VoxEditRegionSizes)->strVal();
 		if (!sizes.empty()) {
 			static const char *max = "888x888x888";
 			const ImVec2 buttonSize(ImGui::CalcTextSize(max).x, ImGui::GetFrameHeight());
