@@ -48,7 +48,6 @@ protected:
 
 	static MeshExt* getParent(const voxelformat::SceneGraph &sceneGraph, Meshes &meshes, int nodeId);
 	static glm::vec3 getScale();
-	core::String lookupTexture(const core::String &meshFilename, const core::String &in) const;
 
 	/**
 	 * @brief Voxelizes the input mesh
@@ -87,6 +86,8 @@ protected:
 	void transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap) const;
 
 public:
+	static core::String lookupTexture(const core::String &meshFilename, const core::String &in);
+
 	MeshFormat();
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, SceneGraph &sceneGraph) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,

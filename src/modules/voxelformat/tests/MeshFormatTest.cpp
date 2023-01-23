@@ -28,6 +28,14 @@ TEST_F(MeshFormatTest, testSubdivide) {
 	EXPECT_EQ(1024u, tinyTris.size());
 }
 
+TEST_F(MeshFormatTest, testLookupTexture) {
+	EXPECT_NE(MeshFormat::lookupTexture("glTF/cube/chr_knight.gox", "glTF/cube/Cube_BaseColor.png"), "");
+	EXPECT_NE(MeshFormat::lookupTexture("glTF/cube/chr_knight.gox", "Cube_BaseColor.png"), "");
+	EXPECT_NE(MeshFormat::lookupTexture("glTF/chr_knight.gox", "./cube/Cube_BaseColor.png"), "");
+	EXPECT_NE(MeshFormat::lookupTexture("glTF/chr_knight.gox", "cube/Cube_BaseColor.png"), "");
+	// TODO: EXPECT_NE(MeshFormat::lookupTexture("glTF/foo/bar/chr_knight.gox", "../../cube/Cube_BaseColor.png"), "");
+}
+
 TEST_F(MeshFormatTest, testCalculateAABB) {
 	MeshFormat::TriCollection tris;
 	Tri tri;

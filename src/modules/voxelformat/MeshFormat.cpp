@@ -299,25 +299,21 @@ bool MeshFormat::voxelizeGroups(const core::String &filename, io::SeekableReadSt
 	return false;
 }
 
-core::String MeshFormat::lookupTexture(const core::String &meshFilename, const core::String &in) const {
+core::String MeshFormat::lookupTexture(const core::String &meshFilename, const core::String &in) {
 	const core::String &meshPath = core::string::extractPath(meshFilename);
-	if (!meshPath.empty()) {
-		io::filesystem()->pushDir(meshPath);
-	}
 	core::String name = in;
 	io::normalizePath(name);
 	if (!core::string::isAbsolutePath(name)) {
-		const core::String& path = core::string::extractPath(name);
-		Log::debug("Search image %s in path %s", name.c_str(), path.c_str());
-		name = path + name;
+		name = core::string::path(meshPath, name);
 	}
-	if (io::filesystem()->exists(in)) {
-		if (!meshPath.empty()) {
-			io::filesystem()->popDir();
-		}
+	if (io::filesystem()->exists(name)) {
+		Log::debug("Found image %s in path %s", in.c_str(), name.c_str());
 		return name;
 	}
 
+	if (!meshPath.empty()) {
+		io::filesystem()->pushDir(meshPath);
+	}
 	const core::String& filename = core::string::extractFilenameWithExtension(name);
 	const core::String& path = core::string::extractPath(name);
 	core::String fullpath = io::searchPathFor(io::filesystem(), path, filename);
