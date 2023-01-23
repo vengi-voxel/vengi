@@ -24,6 +24,7 @@
 #include "voxel/Voxel.h"
 #include "voxel/PaletteLookup.h"
 #include "voxelformat/SceneGraph.h"
+#include <glm/gtc/type_ptr.hpp>
 
 namespace voxelformat {
 
@@ -263,20 +264,9 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sc
 	wrapSave(stream.writeBool(node.visible()))
 	wrapSave(stream.writeBool(true)) // unknown
 	wrapSave(stream.writeBool(node.locked()))
-	const uint8_t array[36] = {
-		0x01, 0x00, 0x00,
-		0x00, 0x01, 0x00,
-		0x00, 0x00, 0x01,
-		0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00 };
-	if (stream.write(array, sizeof(array)) == -1) {
+	const glm::mat3x3 &mat = node.transformForFrame(0).worldMatrix();
+	static_assert(sizeof(mat) == (size_t)3 * (size_t)3 * sizeof(float), "Expected rotation matrix size");
+	if (stream.write(glm::value_ptr(mat), sizeof(mat)) == -1) {
 		Log::error("Failed to write array into stream");
 		return false;
 	}
