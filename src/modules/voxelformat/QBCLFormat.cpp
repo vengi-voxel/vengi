@@ -240,22 +240,6 @@ bool QBCLFormat::saveCompound(io::SeekableWriteStream& stream, const SceneGraph&
 	return true;
 }
 
-bool QBCLFormat::saveNode(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node) const {
-	const SceneGraphNodeType type = node.type();
-	if (type == SceneGraphNodeType::Model) {
-		if (node.children().empty()) {
-			qbcl::ScopedQBCLHeader header(stream, node.type());
-			wrapSave(saveMatrix(stream, node) && header.success())
-		} else {
-			qbcl::ScopedQBCLHeader scoped(stream, qbcl::NODE_TYPE_COMPOUND);
-			wrapSave(saveCompound(stream, sceneGraph, node) && scoped.success())
-		}
-	} else if (type == SceneGraphNodeType::Group || type == SceneGraphNodeType::Root) {
-		wrapSave(saveModel(stream, sceneGraph, node))
-	}
-	return true;
-}
-
 bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node) const {
 	const uint32_t children = (uint32_t)node.children().size();
 	qbcl::ScopedQBCLHeader header(stream, node.type());
@@ -277,6 +261,22 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sc
 		wrapSave(saveNode(stream, sceneGraph, node))
 	}
 
+	return true;
+}
+
+bool QBCLFormat::saveNode(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node) const {
+	const SceneGraphNodeType type = node.type();
+	if (type == SceneGraphNodeType::Model) {
+		if (node.children().empty()) {
+			qbcl::ScopedQBCLHeader header(stream, node.type());
+			wrapSave(saveMatrix(stream, node) && header.success())
+		} else {
+			qbcl::ScopedQBCLHeader scoped(stream, qbcl::NODE_TYPE_COMPOUND);
+			wrapSave(saveCompound(stream, sceneGraph, node) && scoped.success())
+		}
+	} else if (type == SceneGraphNodeType::Group || type == SceneGraphNodeType::Root) {
+		wrapSave(saveModel(stream, sceneGraph, node))
+	}
 	return true;
 }
 
@@ -322,13 +322,8 @@ bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Company")))
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Website")))
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Copyright")))
-
-	uint8_t createTimestamp[16] {0}; // TODO: creation timestamp
-	if (stream.write(createTimestamp, lengthof(createTimestamp)) == -1) {
-		Log::error("Failed to write timestamp into stream");
-		return false;
-	}
-
+	wrapBool(stream.writeUInt64(0)) // timestamp1
+	wrapBool(stream.writeUInt64(0)) // timestamp2
 	return saveNode(stream, sceneGraph, sceneGraph.root());
 }
 
@@ -596,11 +591,8 @@ bool QBCLFormat::readHeader(io::SeekableReadStream& stream, Header &header) {
 	wrapBool(stream.readPascalStringUInt32LE(header.company))
 	wrapBool(stream.readPascalStringUInt32LE(header.website))
 	wrapBool(stream.readPascalStringUInt32LE(header.copyright))
-
-	if (stream.read(header.guid, lengthof(header.guid)) == -1) {
-		Log::error("Failed to read the guid");
-		return false;
-	}
+	wrapBool(stream.readUInt64(header.timestamp1))
+	wrapBool(stream.readUInt64(header.timestamp2))
 	return true;
 }
 

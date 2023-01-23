@@ -34,7 +34,8 @@ private:
 		core::String company;
 		core::String website;
 		core::String copyright;
-		uint8_t guid[16] {};
+		uint64_t timestamp1;
+		uint64_t timestamp2;
 		bool loadPalette = false;
 	};
 	struct NodeHeader {
