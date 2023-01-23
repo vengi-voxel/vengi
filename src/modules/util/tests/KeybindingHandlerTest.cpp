@@ -169,6 +169,7 @@ TEST_F(KeybindingHandlerTest, testRightShiftModifierWrongContext) {
 	notExecute(SDLK_w, KMOD_RSHIFT);
 	core::setBindingContext(core::BindingContext::Context1);
 }
+
 TEST_F(KeybindingHandlerTest, testShiftModifier) {
 	execute(SDLK_w, KMOD_LSHIFT);
 	EXPECT_TRUE(_xyz) << "expected command wasn't executed";
