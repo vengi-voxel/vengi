@@ -91,7 +91,7 @@ static voxelformat::SceneGraphNodeCamera toCameraNode(const video::Camera& camer
 	return node;
 }
 
-static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", node.id());
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 		const int validModels = (int)sceneGraph.size();
@@ -128,9 +128,9 @@ static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sc
 			voxelformat::SceneGraphNodeCamera cameraNode = toCameraNode(camera);
 			sceneMgr().addNodeToSceneGraph(cameraNode);
 		}
-		core::String nodeName = node.name();
-		if (ImGui::InputText("Name" SCENEGRAPHPOPUP, &nodeName)) {
-			sceneMgr().nodeRename(node.id(), nodeName);
+		// only on pressing enter to prevent a memento state flood
+		if (ImGui::InputText("Name" SCENEGRAPHPOPUP, &node.name(), ImGuiInputTextFlags_EnterReturnsTrue)) {
+			sceneMgr().nodeRename(node.id(), node.name());
 		}
 		ImGui::EndPopup();
 	}
