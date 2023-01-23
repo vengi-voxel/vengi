@@ -288,7 +288,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 			Log::debug("Use image %s", name.c_str());
 			textures.put(material.diffuse_texname.c_str(), tex);
 		} else {
-			Log::warn("Failed to load image %s", name.c_str());
+			Log::warn("Failed to load image %s from %s", name.c_str(), material.name.c_str());
 		}
 	}
 

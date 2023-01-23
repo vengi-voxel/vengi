@@ -139,8 +139,10 @@ ImagePtr loadImage(const core::String& filename, bool async) {
 		}
 	}
 	if (!file || !file->validHandle()) {
+		Log::debug("Could not open image '%s'", filename.c_str());
 		return createEmptyImage(filename);
 	}
+	Log::debug("Load image '%s'", filename.c_str());
 	return loadImage(file, async);
 }
 
