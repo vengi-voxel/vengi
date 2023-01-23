@@ -39,6 +39,10 @@ protected:
 	bool _xyz = false;
 	bool _doubleLeftClick = false;
 
+	void reset() {
+		_xyz = _ctrlshiftmodcommand = _somecommand = _altmodcommand = _allmodscommand = _foo = _doubleLeftClick = false;
+	}
+
 	bool onInitApp() override {
 		core::registerBindingContext("all", core::BindingContext::All);
 		core::registerBindingContext("foo", core::BindingContext::Context1);
@@ -57,7 +61,7 @@ protected:
 			return false;
 		}
 		_handler.setBindings(_parser.getBindings());
-		_xyz = _ctrlshiftmodcommand = _somecommand = _altmodcommand = _allmodscommand = _foo = _doubleLeftClick = false;
+		reset();
 		core::setBindingContext(core::BindingContext::Context1);
 		command::Command::shutdown();
 		command::Command::registerCommand("+bar", [] (const command::CmdArgs& args) {});
@@ -81,11 +85,13 @@ protected:
 	}
 
 	void execute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true, uint16_t count = 1u) {
+		reset();
 		EXPECT_TRUE(_handler.execute(key, modifier, pressed, 0.0, count))
 				<< "Command for key '" << KeyBindingHandler::toString(key, modifier, count) << "' should be executed";
 	}
 
 	void notExecute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true, uint16_t count = 1u) {
+		reset();
 		EXPECT_FALSE(_handler.execute(key, modifier, pressed, 0.0, count))
 				<< "Command for key '" << KeyBindingHandler::toString(key, modifier, count) << "' should not be executed";
 	}
@@ -94,6 +100,7 @@ protected:
 	 * for +commandname bindings
 	 */
 	void executeActionButtonCommand(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true) {
+		reset();
 		execute(key, modifier, pressed);
 	}
 };
@@ -172,6 +179,8 @@ TEST_F(KeybindingHandlerTest, testDoubleLeftClick) {
 	EXPECT_FALSE(_doubleLeftClick) << "the command should not get executed on single click events";
 	execute(button::CUSTOM_SDLK_MOUSE_LEFT, 0, true, 2);
 	EXPECT_TRUE(_doubleLeftClick) << "the command should get executed on double click events";
+	notExecute(button::CUSTOM_SDLK_MOUSE_LEFT, 0, true, 1);
+	EXPECT_FALSE(_doubleLeftClick) << "the command should not get executed on single click events";
 }
 
 TEST_F(KeybindingHandlerTest, testCtrlModifierA) {
