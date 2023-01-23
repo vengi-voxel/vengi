@@ -4,6 +4,8 @@
 
 #include "core/Common.h"
 #include "core/StringUtil.h"
+#include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
 #include "math/Axis.h"
 #include "ui/IMGUIApp.h"
@@ -44,8 +46,12 @@ private:
 	core::VarPtr _showAabbVar;
 	core::VarPtr _renderShadowVar;
 	core::VarPtr _gridSizeVar;
+	core::VarPtr _lastOpenedFile;
+	core::VarPtr _lastOpenedFiles;
+	core::VarPtr _simplifiedView;
+	core::VarPtr _numViewports;
 
-	Viewport* _scenes[4] { nullptr, nullptr, nullptr, nullptr };
+	core::DynamicArray<Viewport*> _scenes;
 	Viewport* _lastHoveredScene = nullptr;
 
 	bool _popupUnsaved = false;
@@ -57,8 +63,6 @@ private:
 
 	ui::IMGUIApp* _app;
 
-	core::VarPtr _lastOpenedFile;
-	core::VarPtr _lastOpenedFiles;
 	LastOpenedFiles _lastOpenedFilesRingBuffer;
 	ModelNodeSettings _modelNodeSettings;
 	io::FileDescription _loadFile;
@@ -84,6 +88,9 @@ private:
 	void loadLastOpenedFiles(const core::String &string);
 	void addLastOpenedFile(const core::String &file);
 	bool isSceneMode() const;
+
+	void shutdownScenes();
+	void initScenes();
 
 	void leftWidget();
 	void mainWidget();

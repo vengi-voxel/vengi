@@ -47,19 +47,10 @@
 namespace voxedit {
 
 MainWindow::MainWindow(ui::IMGUIApp *app) : _app(app), _assetPanel(app->filesystem()) {
-	for (int i = 0; i < lengthof(_scenes); ++i) {
-		const core::String &name = core::string::format("viewport%i", i);
-		_scenes[i] = new Viewport(name.c_str());
-	}
-
-	_lastHoveredScene = _scenes[0];
 }
 
 MainWindow::~MainWindow() {
-	for (int i = 0; i < lengthof(_scenes); ++i) {
-		delete _scenes[i];
-	}
-	_lastHoveredScene = nullptr;
+	shutdownScenes();
 }
 
 void MainWindow::loadLastOpenedFiles(const core::String &string) {
@@ -87,10 +78,43 @@ void MainWindow::addLastOpenedFile(const core::String &file) {
 	_lastOpenedFiles->setVal(str);
 }
 
-bool MainWindow::init() {
-	for (int i = 0; i < lengthof(_scenes); ++i) {
+void MainWindow::shutdownScenes() {
+	for (size_t i = 0; i < _scenes.size(); ++i) {
+		delete _scenes[i];
+	}
+	_scenes.clear();
+	_lastHoveredScene = nullptr;
+}
+
+void MainWindow::initScenes() {
+	shutdownScenes();
+
+	if (_simplifiedView->boolVal()) {
+		_scenes.resize(2);
+		_scenes[0] = new Viewport(0, false, false);
+		_scenes[1] = new Viewport(1, true, false);
+	} else {
+		_scenes.resize(_numViewports->intVal());
+		bool sceneMode = true;
+		for (int i = 0; i < _numViewports->intVal(); ++i) {
+			_scenes[i] = new Viewport(i, sceneMode, true);
+			sceneMode = false;
+		}
+	}
+	for (size_t i = 0; i < _scenes.size(); ++i) {
 		_scenes[i]->init();
 	}
+	_lastHoveredScene = _scenes[0];
+
+	_simplifiedView->markClean();
+	_numViewports->markClean();
+}
+
+bool MainWindow::init() {
+	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
+	_numViewports = core::Var::getSafe(cfg::VoxEditViewports);
+
+	initScenes();
 
 	_lsystemPanel.init();
 	_treePanel.init();
@@ -118,7 +142,7 @@ bool MainWindow::init() {
 }
 
 void MainWindow::shutdown() {
-	for (int i = 0; i < lengthof(_scenes); ++i) {
+	for (size_t i = 0; i < _scenes.size(); ++i) {
 		_scenes[i]->shutdown();
 	}
 	_lsystemPanel.shutdown();
@@ -202,8 +226,8 @@ void MainWindow::leftWidget() {
 // main space
 
 void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
-	for (int i = 0; i < lengthof(_scenes); ++i) {
-		ImGui::DockBuilderDockWindow(_scenes[i]->id().c_str(), dockId);
+	for (int i = 0; i < cfg::MaxViewports; ++i) {
+		ImGui::DockBuilderDockWindow(Viewport::viewportId(i).c_str(), dockId);
 	}
 }
 
@@ -218,7 +242,7 @@ void MainWindow::mainWidget() {
 	if (scene != nullptr) {
 		_lastHoveredScene = scene;
 	}
-	for (int i = 0; i < lengthof(_scenes); ++i) {
+	for (size_t i = 0; i < _scenes.size(); ++i) {
 		_scenes[i]->update(&_lastExecutedCommand);
 	}
 
@@ -230,7 +254,7 @@ void MainWindow::mainWidget() {
 }
 
 bool MainWindow::isSceneMode() const {
-	for (int i = 0; i < lengthof(_scenes); ++i) {
+	for (size_t i = 0; i < _scenes.size(); ++i) {
 		if (_scenes[i]->isSceneMode()) {
 			return true;
 		}
@@ -270,7 +294,7 @@ void MainWindow::rightWidget() {
 
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredScene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, _lastExecutedCommand);
-	if (!core::Var::getSafe(cfg::VoxEditSimplifiedView)->boolVal()) {
+	if (!_simplifiedView->boolVal()) {
 		_treePanel.update(TITLE_TREES);
 		_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 		_scriptPanel.update(TITLE_SCRIPTPANEL);
@@ -473,6 +497,10 @@ bool MainWindow::allowToQuit() {
 
 void MainWindow::update() {
 	core_trace_scoped(MainWindow);
+	if (_simplifiedView->isDirty() || _numViewports->isDirty()) {
+		initScenes();
+	}
+
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const float statusBarHeight = ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.y * 2.0f;
 
@@ -567,7 +595,7 @@ void MainWindow::update() {
 }
 
 Viewport* MainWindow::hoveredScene() {
-	for (int i = 0; i < lengthof(_scenes); ++i) {
+	for (size_t i = 0; i < _scenes.size(); ++i) {
 		if (_scenes[i]->isHovered()) {
 			return _scenes[i];
 		}
@@ -588,7 +616,7 @@ void MainWindow::resetCamera() {
 	if (Viewport *scene = hoveredScene()) {
 		scene->resetCamera();
 	} else {
-		for (int i = 0; i < lengthof(_scenes); ++i) {
+		for (size_t i = 0; i < _scenes.size(); ++i) {
 			_scenes[i]->resetCamera();
 		}
 	}
@@ -598,7 +626,7 @@ void MainWindow::toggleScene() {
 	if (Viewport *scene = hoveredScene()) {
 		scene->toggleScene();
 	} else {
-		for (int i = 0; i < lengthof(_scenes); ++i) {
+		for (size_t i = 0; i < _scenes.size(); ++i) {
 			_scenes[i]->toggleScene();
 		}
 	}

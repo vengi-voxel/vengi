@@ -28,7 +28,11 @@ private:
 	enum class SceneCameraMode : uint8_t {
 		Free, Top, Left, Front, Max
 	};
-	const core::String _id;
+	static constexpr const char *SceneCameraModeStr[] = {"Free", "Top", "Left", "Front"};
+	static_assert(lengthof(SceneCameraModeStr) == (int)SceneCameraMode::Max, "Array size doesn't match enum values");
+	const int _id;
+	const core::String _uiId;
+	const bool _detailedTitle;
 	bool _hovered = false;
 	bool _guizmoActivated = false;
 
@@ -48,6 +52,7 @@ private:
 	core::VarPtr _guizmoAllowAxisFlip;
 	core::VarPtr _guizmoSnap;
 	core::VarPtr _viewDistance;
+	core::VarPtr _simplifiedView;
 
 	SceneCameraMode _camMode = SceneCameraMode::Free;
 	core::VarPtr _rotationSpeed;
@@ -68,8 +73,10 @@ private:
 	void menuBarCameraMode();
 	void menuBarCameraProjection();
 public:
-	Viewport(const core::String& id);
+	Viewport(int id, bool sceneMode, bool detailedTitle = true);
 	~Viewport();
+
+	static core::String viewportId(int id);
 
 	void resetCamera(const glm::ivec3 &pos, const voxel::Region &region);
 	void toggleScene();
@@ -99,7 +106,7 @@ inline video::Camera& Viewport::camera() {
 }
 
 inline const core::String& Viewport::id() const {
-	return _id;
+	return _uiId;
 }
 
 inline bool Viewport::isHovered() const {

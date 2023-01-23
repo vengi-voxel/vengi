@@ -6,6 +6,8 @@
 
 namespace cfg {
 
+const int MaxViewports = 4;
+
 constexpr const char *VoxEditRegionSizes = "ve_regionsizes";
 constexpr const char *VoxEditGrayInactive = "ve_grayinactive";
 constexpr const char *VoxEditHideInactive = "ve_hideinactive";
@@ -18,6 +20,7 @@ constexpr const char *VoxEditShowColorPicker = "ve_showcolorpicker";
 constexpr const char *VoxEditDiffuseColor = "ve_diffusecolor";
 constexpr const char *VoxEditLastPalette = "ve_lastpalette";
 constexpr const char *VoxEditSimplifiedView = "ve_simplifiedview";
+constexpr const char *VoxEditViewports = "ve_viewports";
 constexpr const char *VoxEditShowaabb = "ve_showaabb";
 constexpr const char *VoxEditShowgrid = "ve_showgrid";
 constexpr const char *VoxEditGridsize = "ve_gridsize";

@@ -31,7 +31,13 @@
 
 namespace voxedit {
 
-Viewport::Viewport(const core::String &id) : _id(id) {
+core::String Viewport::viewportId(int id) {
+	return core::string::format("###viewport%i", id);
+}
+
+Viewport::Viewport(int id, bool sceneMode, bool detailedTitle)
+	: _id(id), _uiId(viewportId(id)), _detailedTitle(detailedTitle) {
+	_renderContext.sceneMode = sceneMode;
 }
 
 Viewport::~Viewport() {
@@ -45,6 +51,7 @@ bool Viewport::init() {
 	_guizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGuizmoAllowAxisFlip);
 	_guizmoSnap = core::Var::getSafe(cfg::VoxEditGuizmoSnap);
 	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
+	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
 	_renderContext.init(video::getWindowSize());
 
 	resetCamera();
@@ -251,15 +258,13 @@ void Viewport::menuBarCameraProjection() {
 }
 
 void Viewport::menuBarCameraMode() {
-	static const char *modes[] = {"Free", "Top", "Left", "Front"};
-	static_assert(lengthof(modes) == (int)SceneCameraMode::Max, "Array size doesn't match enum values");
 	const int currentMode = (int)_camMode;
-	const float modeMaxWidth = ImGui::CalcComboBoxWidth(modes[currentMode]);
+	const float modeMaxWidth = ImGui::CalcComboBoxWidth(SceneCameraModeStr[currentMode]);
 	ImGui::SetNextItemWidth(modeMaxWidth);
-	if (ImGui::BeginCombo("##cameramode", modes[currentMode])) {
-		for (int n = 0; n < lengthof(modes); n++) {
+	if (ImGui::BeginCombo("##cameramode", SceneCameraModeStr[currentMode])) {
+		for (int n = 0; n < lengthof(SceneCameraModeStr); n++) {
 			const bool isSelected = (currentMode == n);
-			if (ImGui::Selectable(modes[n], isSelected)) {
+			if (ImGui::Selectable(SceneCameraModeStr[n], isSelected)) {
 				_camMode = (SceneCameraMode)n;
 				resetCamera();
 				if (_camMode != SceneCameraMode::Free) {
@@ -279,6 +284,9 @@ bool Viewport::isSceneMode() const {
 }
 
 void Viewport::toggleScene() {
+	if (_simplifiedView->boolVal()) {
+		return;
+	}
 	if (_renderContext.sceneMode) {
 		_renderContext.sceneMode = false;
 	} else {
@@ -294,7 +302,9 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		ImGui::Dummy(ImVec2(20, 0));
 		menuBarCameraProjection();
 		menuBarCameraMode();
-		ImGui::Checkbox("Scene Mode", &_renderContext.sceneMode);
+		if (!_simplifiedView->boolVal()) {
+			ImGui::Checkbox("Scene Mode", &_renderContext.sceneMode);
+		}
 		ImGui::EndMenuBar();
 	}
 }
@@ -308,7 +318,15 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 	style.setWindowBorderSize(0.0f);
 	style.setWindowPadding(ImVec2(0.0f, 0.0f));
 	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoFocusOnAppearing;
-	if (ImGui::Begin(_id.c_str(), nullptr, sceneWindowFlags)) {
+	const char *modeStr = isSceneMode() ? "SceneMode" : "EditMode";
+
+	core::String name;
+	if (_detailedTitle) {
+		name = core::string::format("%s %s###viewport%i", SceneCameraModeStr[(int)_camMode], modeStr, _id);
+	} else {
+		name = core::string::format("%s###viewport%i", modeStr, _id);
+	}
+	if (ImGui::Begin(name.c_str(), nullptr, sceneWindowFlags)) {
 		renderMenuBar(listener);
 		renderViewport();
 	}
