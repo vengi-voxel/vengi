@@ -25,6 +25,7 @@
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/SceneGraphNode.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/vector_relational.hpp>
@@ -372,13 +373,43 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	return true;
 }
 
+void Viewport::reset() {
+	_guizmoActivated = false;
+	if (_transformMementoLocked) {
+		Log::debug("Unlock memento state in reset()");
+		sceneMgr().mementoHandler().unlock();
+		_transformMementoLocked = false;
+	}
+}
+
+void Viewport::unlock(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
+	if (!_transformMementoLocked) {
+		return;
+	}
+	Log::debug("Unlock memento state");
+	sceneMgr().mementoHandler().unlock();
+	sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
+	_transformMementoLocked = false;
+}
+
+void Viewport::lock() {
+	if (_transformMementoLocked) {
+		return;
+	}
+	Log::debug("Lock memento state");
+	sceneMgr().mementoHandler().lock();
+	_transformMementoLocked = true;
+}
+
 void Viewport::renderSceneGuizmo(video::Camera &camera) {
 	if (!_renderContext.sceneMode) {
+		reset();
 		return;
 	}
 	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 	if (activeNode == -1) {
+		reset();
 		return;
 	}
 	voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
@@ -389,7 +420,7 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 	}
 	const float step = core::Var::getSafe(cfg::VoxEditGridsize)->floatVal();
 	const float snap[]{step, step, step};
-	const uint32_t keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
+	const voxelformat::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
 	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	glm::mat4 localMatrix = transform.localMatrix();
 	// TODO: pivot handling
@@ -413,6 +444,7 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 	const bool guizmoActive = ImGuizmo::IsUsing();
 
 	if (guizmoActive) {
+		lock();
 		_guizmoActivated = true;
 		glm::vec3 translate;
 		glm::vec3 rotation;
@@ -423,16 +455,19 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 			_bounds.maxs = _boundsNode.maxs * scale;
 		}
 	} else if (_guizmoActivated) {
+		unlock(node, keyFrameIdx);
 		const voxel::Region &region = node.region();
 		const voxel::Region newRegion(region.getLowerCorner(),
-									  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.maxs)));
+									  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.maxs)) - 1);
 		if (newRegion.isValid() && region != newRegion) {
 			sceneMgr().resize(node.id(), newRegion);
 		}
 		_guizmoActivated = false;
+	} else {
+		unlock(node, keyFrameIdx);
 	}
 	if (manipulated) {
-		sceneMgr().nodeUpdateTransform(-1, localMatrix, &deltaMatrix, keyFrameIdx);
+		sceneMgr().nodeUpdateTransform(activeNode, localMatrix, &deltaMatrix, keyFrameIdx);
 	}
 }
 

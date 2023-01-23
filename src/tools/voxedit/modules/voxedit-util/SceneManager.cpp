@@ -2245,7 +2245,8 @@ bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix,
 	return true;
 }
 
-bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx) {
+bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &localMatrix,
+									   const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx) {
 	glm::vec3 translation;
 	glm::quat orientation;
 	glm::vec3 scale;

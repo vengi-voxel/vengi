@@ -13,6 +13,7 @@
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
 #include "voxel/Region.h"
+#include "voxelformat/SceneGraphNode.h"
 #include "voxelrender/RawVolumeRenderer.h"
 
 namespace voxelformat {
@@ -35,6 +36,11 @@ private:
 	const bool _detailedTitle;
 	bool _hovered = false;
 	bool _guizmoActivated = false;
+	bool _transformMementoLocked = false;
+
+	void reset();
+	void unlock(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx);
+	void lock();
 
 	int _mouseX = 0;
 	int _mouseY = 0;
