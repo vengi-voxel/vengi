@@ -392,11 +392,12 @@ void Viewport::unlock(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIn
 	_transformMementoLocked = false;
 }
 
-void Viewport::lock() {
+void Viewport::lock(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
 	if (_transformMementoLocked) {
 		return;
 	}
 	Log::debug("Lock memento state");
+	sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
 	sceneMgr().mementoHandler().lock();
 	_transformMementoLocked = true;
 }
@@ -444,7 +445,7 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 	const bool guizmoActive = ImGuizmo::IsUsing();
 
 	if (guizmoActive) {
-		lock();
+		lock(node, keyFrameIdx);
 		_guizmoActivated = true;
 		glm::vec3 translate;
 		glm::vec3 rotation;

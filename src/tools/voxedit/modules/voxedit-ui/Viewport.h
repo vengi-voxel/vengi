@@ -40,7 +40,7 @@ private:
 
 	void reset();
 	void unlock(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx);
-	void lock();
+	void lock(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx);
 
 	int _mouseX = 0;
 	int _mouseY = 0;
