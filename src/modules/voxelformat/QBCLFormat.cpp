@@ -259,7 +259,7 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sc
 	const uint32_t children = (uint32_t)node.children().size();
 	qbcl::ScopedQBCLHeader header(stream, node.type());
 	wrapSave(stream.writeUInt32(1)) // unknown
-	wrapSave(stream.writePascalStringUInt32LE(sceneGraph.root().name()))
+	wrapSave(stream.writePascalStringUInt32LE(node.name()))
 	wrapSave(stream.writeBool(node.visible()))
 	wrapSave(stream.writeBool(true)) // unknown
 	wrapSave(stream.writeBool(node.locked()))
@@ -333,9 +333,9 @@ bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Website")))
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Copyright")))
 
-	uint8_t guid[16] {0}; // TODO: not yet sure about this - looks like a digest
-	if (stream.write(guid, lengthof(guid)) == -1) {
-		Log::error("Failed to write guid into stream");
+	uint8_t createTimestamp[16] {0}; // TODO: creation timestamp
+	if (stream.write(createTimestamp, lengthof(createTimestamp)) == -1) {
+		Log::error("Failed to write timestamp into stream");
 		return false;
 	}
 
