@@ -94,6 +94,24 @@ void SceneGraphRenderer::clear() {
 	}
 }
 
+voxelformat::SceneGraphNodeCamera toCameraNode(const video::Camera& camera) {
+	voxelformat::SceneGraphNodeCamera node;
+	voxelformat::SceneGraphTransform transform;
+	const voxelformat::KeyFrameIndex keyFrameIdx = 0;
+	transform.setWorldMatrix(camera.viewMatrix());
+	node.setTransform(keyFrameIdx, transform);
+	node.setFarPlane(camera.farPlane());
+	node.setNearPlane(camera.nearPlane());
+	if (camera.mode() == video::CameraMode::Orthogonal) {
+		node.setOrthographic();
+	} else {
+		node.setPerspective();
+	}
+	node.setFieldOfView((int)camera.fieldOfView());
+	node.setName("new camera");
+	return node;
+}
+
 video::Camera toCamera(const glm::ivec2 &size, const voxelformat::SceneGraphNodeCamera &cameraNode) {
 	video::Camera camera;
 	camera.setSize(size);

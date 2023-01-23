@@ -14,7 +14,12 @@
  */
 namespace voxelrender {
 
+/**
+ * @see voxelformat::toCameraNode()
+ */
 video::Camera toCamera(const glm::ivec2 &size, const voxelformat::SceneGraphNodeCamera &cameraNode);
+voxelformat::SceneGraphNodeCamera toCameraNode(const video::Camera& camera);
+
 
 /**
  * @brief Rendering of a voxel::SceneGraph
