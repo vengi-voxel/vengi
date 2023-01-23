@@ -591,8 +591,8 @@ bool QBCLFormat::readHeader(io::SeekableReadStream& stream, Header &header) {
 	wrapBool(stream.readPascalStringUInt32LE(header.company))
 	wrapBool(stream.readPascalStringUInt32LE(header.website))
 	wrapBool(stream.readPascalStringUInt32LE(header.copyright))
-	wrapBool(stream.readUInt64(header.timestamp1))
-	wrapBool(stream.readUInt64(header.timestamp2))
+	wrap(stream.readUInt64(header.timestamp1))
+	wrap(stream.readUInt64(header.timestamp2))
 	return true;
 }
 
