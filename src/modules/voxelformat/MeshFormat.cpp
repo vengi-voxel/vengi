@@ -84,7 +84,8 @@ void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
 
 core::RGBA MeshFormat::PosSampling::avgColor(uint8_t flattenFactor) const {
 	if (entries.size() == 1) {
-		return entries[0].color;
+		return core::Color::flattenRGB(entries[0].color.r, entries[0].color.g, entries[0].color.b, entries[0].color.a,
+									   flattenFactor);
 	}
 	float sumArea = 0.0f;
 	for (const PosSamplingEntry &pe : entries) {
