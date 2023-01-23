@@ -241,6 +241,17 @@ bool SceneGraph::changeParent(int nodeId, int newParentId) {
 		return false;
 	}
 	n.setParent(newParentId);
+	const SceneGraphNode &parentNode = node(newParentId);
+
+	for (SceneGraphKeyFrame &keyframe : n.keyFrames()) {
+		SceneGraphTransform &transform = keyframe.transform();
+		const SceneGraphTransform &parentFrameTransform = parentNode.transformForFrame(keyframe.frameIdx);
+		const glm::vec3 &tdelta = transform.worldTranslation() - parentFrameTransform.worldTranslation();
+		const glm::quat &tquat = transform.worldOrientation() - parentFrameTransform.worldOrientation();
+		transform.setLocalTranslation(tdelta);
+		transform.setLocalOrientation(tquat);
+	}
+	updateTransforms();
 	return true;
 }
 
