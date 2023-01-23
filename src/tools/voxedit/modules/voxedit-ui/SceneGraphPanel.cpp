@@ -73,6 +73,24 @@ static void commandNodeMenu(const char *title, const char *command, const voxelf
 	ImGui::CommandMenuItem(title, cmd.c_str(), enabled, listener);
 }
 
+static voxelformat::SceneGraphNodeCamera toCameraNode(const video::Camera& camera) {
+	voxelformat::SceneGraphNodeCamera node;
+	voxelformat::SceneGraphTransform transform;
+	const voxelformat::KeyFrameIndex keyFrameIdx = 0;
+	transform.setWorldMatrix(camera.viewMatrix());
+	node.setTransform(keyFrameIdx, transform);
+	node.setFarPlane(camera.farPlane());
+	node.setNearPlane(camera.nearPlane());
+	if (camera.mode() == video::CameraMode::Orthogonal) {
+		node.setOrthographic();
+	} else {
+		node.setPerspective();
+	}
+	node.setFieldOfView((int)camera.fieldOfView());
+	node.setName("new camera");
+	return node;
+}
+
 static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, const voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", node.id());
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
@@ -107,20 +125,7 @@ static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sc
 			sceneMgr().addNodeToSceneGraph(groupNode, node.id());
 		}
 		if (ImGui::MenuItem(ICON_FA_SQUARE_PLUS " Add new camera" SCENEGRAPHPOPUP)) {
-			voxelformat::SceneGraphNodeCamera cameraNode;
-			voxelformat::SceneGraphTransform transform;
-			const voxelformat::KeyFrameIndex keyFrameIdx = 0;
-			transform.setWorldMatrix(camera.viewMatrix());
-			cameraNode.setTransform(keyFrameIdx, transform);
-			cameraNode.setFarPlane(camera.farPlane());
-			cameraNode.setNearPlane(camera.nearPlane());
-			if (camera.mode() == video::CameraMode::Orthogonal) {
-				cameraNode.setOrthographic();
-			} else {
-				cameraNode.setPerspective();
-			}
-			cameraNode.setFieldOfView((int)camera.fieldOfView());
-			cameraNode.setName("new camera");
+			voxelformat::SceneGraphNodeCamera cameraNode = toCameraNode(camera);
 			sceneMgr().addNodeToSceneGraph(cameraNode);
 		}
 		core::String nodeName = node.name();
