@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Format.h"
+#include "core/collection/Buffer.h"
 
 namespace voxelformat {
 
@@ -35,7 +36,6 @@ private:
 		core::String website;
 		core::String copyright;
 		uint8_t guid[16] {};
-		bool loadPalette = false;
 	};
 	struct NodeHeader {
 		bool visible;
@@ -47,16 +47,19 @@ private:
 	bool saveNode(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node) const;
 	bool saveCompound(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node) const;
 
+	bool readColors(io::SeekableReadStream& stream, Header &header, core::Buffer<core::RGBA, 256> &colors);
+	bool readColorNodes(io::SeekableReadStream& stream, Header &header, core::Buffer<core::RGBA, 256> &colors);
 	bool readHeader(io::SeekableReadStream& stream, Header &header);
+	bool readPalette(io::SeekableReadStream& stream, voxel::Palette &palette, Header &header);
 	bool readMatrix(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader);
-	bool readModel(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader);
+	bool readModel(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, Header &header, const NodeHeader &nodeHeader);
 	bool readCompound(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader);
-	bool readNodes(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &header);
-	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) override;
+	bool readNodes(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, Header &header);
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) override;
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) override;
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
 };
 
 }
