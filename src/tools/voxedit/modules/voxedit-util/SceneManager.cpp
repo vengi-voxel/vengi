@@ -930,8 +930,8 @@ math::AABB<float> SceneManager::toAABB(const voxel::Region& region) const {
 math::OBB<float> SceneManager::toOBB(bool sceneMode, const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const {
 	core_assert(region.isValid());
 	if (sceneMode) {
-		const glm::vec3 &extents = transform.pivot() * glm::vec3(region.getDimensionsInVoxels());
-		const glm::vec3 &center = (region.getLowerCornerf() + transform.worldTranslation()) + extents;
+		const glm::vec3 &extents = glm::vec3(region.getDimensionsInVoxels()) / 2.0f;
+		const glm::vec3 &center = transform.worldTranslation() + extents;
 		const glm::mat4 &matrix = transform.worldMatrix();
 		return math::OBB<float>(center, extents, matrix);
 	}
@@ -1086,6 +1086,9 @@ bool SceneManager::setGridResolution(int resolution) {
 void SceneManager::updateAABBMesh(bool sceneMode) {
 	_shapeBuilder.clear();
 	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
+		if (!node.visible()) {
+			continue;
+		}
 		const voxel::RawVolume* v = node.volume();
 		core_assert(v != nullptr);
 		const voxel::Region& region = node.region();
