@@ -193,7 +193,7 @@ void KeyBindingHandler::shutdown(int version) {
 		const CommandModifierPair& pair = i->second;
 		const int16_t modifier = pair.modifier;
 		const core::String& command = pair.command;
-		keybindings += toString(key, modifier);
+		keybindings += toString(key, modifier, pair.count);
 		keybindings += " \"";
 		keybindings += command;
 		keybindings += "\" ";

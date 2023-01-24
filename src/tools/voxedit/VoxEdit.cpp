@@ -34,7 +34,7 @@ VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPt
 	core::registerBindingContext("editing", core::BindingContext::Context1 + core::BindingContext::Context2);
 	_allowRelativeMouseMode = false;
 	_iniVersion = 1;
-	_keybindingsVersion = 0;
+	_keybindingsVersion = 1;
 }
 
 app::AppState VoxEdit::onCleanup() {
