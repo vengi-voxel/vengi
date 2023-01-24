@@ -36,22 +36,12 @@ set(SRCS
 set(GEN_DIR ${GENERATE_DIR}/${LIB})
 file(MAKE_DIRECTORY ${GEN_DIR})
 
+# directly modifies SRCS var
 macro(imgui_build_font NAME TTF_FILE)
 	set(OUTPUT_FILE ${GEN_DIR}/${NAME}.h)
 	set(INPUT_FILE ${ROOT_DIR}/data/${LIB}/${TTF_FILE})
-	add_custom_command(
-		OUTPUT ${OUTPUT_FILE}
-		COMMAND
-			binary_to_compressed_c
-			${INPUT_FILE}
-			${NAME} > ${OUTPUT_FILE}
-		DEPENDS ${INPUT_FILE} binary_to_compressed_c
-		WORKING_DIRECTORY ${GEN_DIR}
-		COMMENT "Generate header for ${TTF_FILE} in ${GEN_DIR}"
-		VERBATIM
-	)
+	engine_file_to_header(${NAME} ${INPUT_FILE} ${OUTPUT_FILE})
 	list(APPEND SRCS ${OUTPUT_FILE})
-	engine_mark_as_generated(${OUTPUT_FILE})
 endmacro()
 
 imgui_build_font(FontAwesomeSolid fa-solid-900.ttf)
