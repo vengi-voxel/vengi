@@ -314,6 +314,7 @@ public:
 	 * @param[in] file The file to load. The volume format is determined by the file extension.
 	 */
 	bool load(const io::FileDescription& file);
+	bool load(const io::FileDescription& file, const uint8_t *data, size_t size);
 	bool isLoading() const;
 
 	bool undo(int n = 1);

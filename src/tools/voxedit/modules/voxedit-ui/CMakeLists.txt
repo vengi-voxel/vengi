@@ -1,6 +1,10 @@
 set(LIB voxedit-ui)
+engine_file_to_header("robo" ${ROOT_DIR}/data/voxedit/robo.qb ${GENERATE_DIR}/robo.h)
+engine_file_to_header("chr_knight" ${ROOT_DIR}/data/voxedit/chr_knight.qb ${GENERATE_DIR}/chr_knight.h)
 
 set(SRCS
+	${GENERATE_DIR}/robo.h
+	${GENERATE_DIR}/chr_knight.h
 	AnimationTimeline.h AnimationTimeline.cpp
 	AnimationPanel.h AnimationPanel.cpp
 	AssetPanel.h AssetPanel.cpp
@@ -23,3 +27,4 @@ set(SRCS
 )
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ui voxedit-util)
+target_include_directories(${LIB} PRIVATE ${GENERATE_DIR})

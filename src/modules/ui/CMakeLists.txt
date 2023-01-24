@@ -40,7 +40,7 @@ file(MAKE_DIRECTORY ${GEN_DIR})
 macro(imgui_build_font NAME TTF_FILE)
 	set(OUTPUT_FILE ${GEN_DIR}/${NAME}.h)
 	set(INPUT_FILE ${ROOT_DIR}/data/${LIB}/${TTF_FILE})
-	engine_file_to_header(${NAME} ${INPUT_FILE} ${OUTPUT_FILE})
+	engine_compressed_file_to_header(${NAME} ${INPUT_FILE} ${OUTPUT_FILE})
 	list(APPEND SRCS ${OUTPUT_FILE})
 endmacro()
 

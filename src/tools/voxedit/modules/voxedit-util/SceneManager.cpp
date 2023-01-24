@@ -19,6 +19,8 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
+#include "io/MemoryReadStream.h"
+#include "io/Stream.h"
 #include "math/AABB.h"
 #include "math/Axis.h"
 #include "math/Random.h"
@@ -356,6 +358,18 @@ bool SceneManager::load(const io::FileDescription& file) {
 		return core::move(newSceneGraph);
 	});
 	_lastFilename.set(filePtr->name(), &file.desc);
+	return true;
+}
+
+bool SceneManager::load(const io::FileDescription& file, const uint8_t *data, size_t size) {
+	voxelformat::SceneGraph newSceneGraph;
+	io::MemoryReadStream stream(data, size);
+	voxelformat::loadFormat(file.name, stream, newSceneGraph);
+	mergeIfNeeded(newSceneGraph);
+	if (loadSceneGraph(core::move(newSceneGraph))) {
+		_needAutoSave = false;
+		_dirty = false;
+	}
 	return true;
 }
 

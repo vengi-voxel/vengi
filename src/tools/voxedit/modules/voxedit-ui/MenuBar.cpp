@@ -12,6 +12,9 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "engine-config.h"
+#include "robo.h"
+#include "chr_knight.h"
+#include "voxelformat/VolumeFormat.h"
 
 namespace voxedit {
 
@@ -45,6 +48,24 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 			actionMenuItem(ICON_FA_FLOPPY_DISK " Save as", "saveas", listener);
 			actionMenuItem(ICON_FA_CAMERA " Screenshot", "screenshot", listener);
 			ImGui::Separator();
+
+			if (ImGui::BeginMenu("Templates")) {
+				const bool enabled = !sceneMgr().dirty();
+				if (ImGui::MenuItem("robo", nullptr, false, enabled)) {
+					io::FileDescription file;
+					file.name = "robo.qb";
+					file.desc = voxelformat::qubicleBinary();
+					loadTemplate(file, robo_data, robo_size);
+				}
+				if (ImGui::MenuItem("chr_knight", nullptr, false, enabled)) {
+					io::FileDescription file;
+					file.name = "chr_knight.qb";
+					file.desc = voxelformat::qubicleBinary();
+					loadTemplate(file, chr_knight_data, chr_knight_size);
+				}
+				ImGui::EndMenu();
+			}
+
 			actionMenuItem("Prefab", "prefab", listener);
 			ImGui::Separator();
 			actionMenuItem(ICON_FA_IMAGE " Heightmap", "importheightmap", listener);
@@ -182,6 +203,10 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 		ImGui::EndMenuBar();
 	}
 	return resetDockLayout;
+}
+
+void MenuBar::loadTemplate(const io::FileDescription& file, const unsigned int *data, size_t size) {
+	sceneMgr().load(file, (const uint8_t*)data, size);
 }
 
 }

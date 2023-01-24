@@ -7,9 +7,6 @@ set(SRCS
 )
 
 set(FILES
-	voxedit/chr_knight.qb
-	voxedit/robo.qb
-	voxedit/robo.vox
 	voxedit/keybindings.cfg
 	voxedit/scripts/test-import-plane.cfg
 	voxedit/scripts/test-layers.cfg

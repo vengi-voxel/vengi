@@ -15,11 +15,26 @@ function(engine_install TARGET FILE DESTINATION INSTALL_DATA)
 	configure_file(${DATA_DIR}/${FILE} ${CMAKE_BINARY_DIR}/${TARGET}/${DESTINATION}/${filename} COPYONLY)
 endfunction()
 
+function(engine_compressed_file_to_header NAME INPUT_FILE OUTPUT_FILE)
+	add_custom_command(
+		OUTPUT ${OUTPUT_FILE}
+		COMMAND
+			binary_to_compressed_c
+			${INPUT_FILE}
+			${NAME} > ${OUTPUT_FILE}
+		DEPENDS ${INPUT_FILE} binary_to_compressed_c
+		COMMENT "Generate c header for compressed ${INPUT_FILE} in ${OUTPUT_FILE}"
+		VERBATIM
+	)
+	engine_mark_as_generated(${OUTPUT_FILE})
+endfunction()
+
 function(engine_file_to_header NAME INPUT_FILE OUTPUT_FILE)
 	add_custom_command(
 		OUTPUT ${OUTPUT_FILE}
 		COMMAND
 			binary_to_compressed_c
+			-nocompress
 			${INPUT_FILE}
 			${NAME} > ${OUTPUT_FILE}
 		DEPENDS ${INPUT_FILE} binary_to_compressed_c
