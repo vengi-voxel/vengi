@@ -174,7 +174,7 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, voxelforma
 		}
 		if (_sceneMode) {
 			const voxelformat::SceneGraphTransform &transform = node.transformForFrame(frame);
-			const glm::vec3 pivot = transform.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
+			const glm::vec3 pivot = transform.worldScale() * transform.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
 			_renderer.setModelMatrix(id, transform.worldMatrix(), pivot);
 		} else {
 			_renderer.setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f));
