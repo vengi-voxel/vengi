@@ -208,7 +208,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale,
 														glm::value_ptr(matrix));
 				transform.setWorldMatrix(matrix);
-				transform.setPivot(glm::clamp(pivot, 0.0f, 1.0f));
+				transform.setPivot(pivot);
 				transform.update(sceneGraph, node, frame);
 			}
 			if (!change && _lastChanged) {
