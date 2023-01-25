@@ -51,6 +51,7 @@ bool Viewport::init() {
 	_guizmoRotation = core::Var::getSafe(cfg::VoxEditGuizmoRotation);
 	_guizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGuizmoAllowAxisFlip);
 	_guizmoSnap = core::Var::getSafe(cfg::VoxEditGuizmoSnap);
+	_guizmoBounds = core::Var::getSafe(cfg::VoxEditGuizmoBounds);
 	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
 	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
 	_renderContext.init(video::getWindowSize());
@@ -440,7 +441,7 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 	const bool manipulated = ImGuizmo::Manipulate(
 		glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()), (ImGuizmo::OPERATION)operation,
 		ImGuizmo::MODE::LOCAL, glm::value_ptr(localMatrix), glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr,
-		glm::value_ptr(_bounds.mins), boundsSnap);
+		_guizmoBounds->boolVal() ? glm::value_ptr(_bounds.mins) : nullptr, boundsSnap);
 
 	const bool guizmoActive = ImGuizmo::IsUsing();
 

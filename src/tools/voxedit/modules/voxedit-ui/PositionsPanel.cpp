@@ -204,11 +204,16 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 
 			if (change) {
 				glm::mat4 matrix;
+				_lastChanged = true;
 				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale,
 														glm::value_ptr(matrix));
 				transform.setWorldMatrix(matrix);
 				transform.setPivot(glm::clamp(pivot, 0.0f, 1.0f));
 				transform.update(sceneGraph, node, frame);
+			}
+			if (!change && _lastChanged) {
+				_lastChanged = false;
+				sceneMgr().mementoHandler().markNodeTransform(node, keyFrame);
 			}
 		}
 	}
@@ -218,6 +223,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader(ICON_FA_CUBE " Guizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGuizmoAllowAxisFlip);
 		ImGui::CheckboxVar("Activate rotate", cfg::VoxEditGuizmoRotation);
+		ImGui::CheckboxVar("Size", cfg::VoxEditGuizmoBounds);
 		ImGui::CheckboxVar("Snap", cfg::VoxEditGuizmoSnap);
 	}
 }

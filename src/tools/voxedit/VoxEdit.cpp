@@ -124,6 +124,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditGuizmoRotation, "false", "Activate rotations for the guizmo in scene mode", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGuizmoAllowAxisFlip, "true", "Flip axis or stay along the positive world/local axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGuizmoSnap, "true", "Use the grid size for snap", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditGuizmoBounds, "false", "Allow to change the volume bounds in scene mode", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditLastPalette, voxel::Palette::builtIn[0]);
 	core::Var::get(cfg::VoxEditViewports, "2", "The amount of viewports (not in simple ui mode)", [](const core::String &val) {
 		const int intVal = core::string::toInt(val);

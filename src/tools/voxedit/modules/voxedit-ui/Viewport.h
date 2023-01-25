@@ -57,6 +57,7 @@ private:
 	core::VarPtr _guizmoRotation;
 	core::VarPtr _guizmoAllowAxisFlip;
 	core::VarPtr _guizmoSnap;
+	core::VarPtr _guizmoBounds;
 	core::VarPtr _viewDistance;
 	core::VarPtr _simplifiedView;
 
