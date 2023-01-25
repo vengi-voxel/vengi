@@ -223,7 +223,7 @@ MementoState MementoHandler::undo() {
 				voxel::logRegion("Undo current data", s.data.region());
 				voxel::logRegion("Undo previous data", prevS.data.region());
 				// use the region from the current state - but the volume from the previous state of this node
-				return MementoState{s.type, prevS.data, s.parentId, s.nodeId, s.name, s.region, s.localMatrix, s.keyFrame};
+				return MementoState{s.type, prevS.data, s.parentId, s.nodeId, s.name, s.region, s.worldMatrix, s.keyFrame};
 			}
 		}
 		core_assert(_states[0].type == MementoType::Modification);
@@ -234,7 +234,7 @@ MementoState MementoHandler::undo() {
 			MementoState& prevS = _states[i];
 			if ((prevS.type == MementoType::SceneNodeTransform || prevS.type == MementoType::SceneNodeAdded || prevS.type == MementoType::Modification) &&
 				prevS.nodeId == s.nodeId && prevS.keyFrame == s.keyFrame) {
-				return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, prevS.localMatrix, s.keyFrame};
+				return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, prevS.worldMatrix, s.keyFrame};
 			}
 		}
 		return _states[0];
@@ -345,9 +345,9 @@ void MementoHandler::markNodeTransform(const voxelformat::SceneGraphNode &node, 
 	const int parentId = node.parent();
 	const core::String &name = node.name();
 	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-	const glm::mat4 &localMatrix = transform.localMatrix();
+	const glm::mat4 &worldMatrix = transform.worldMatrix();
 	Log::debug("Mark node %i as translated (%s)", nodeId, name.c_str());
-	markUndo(parentId, nodeId, name, nullptr, MementoType::SceneNodeTransform, voxel::Region::InvalidRegion, localMatrix, keyFrameIdx);
+	markUndo(parentId, nodeId, name, nullptr, MementoType::SceneNodeTransform, voxel::Region::InvalidRegion, worldMatrix, keyFrameIdx);
 }
 
 bool MementoHandler::markUndoPreamble(int nodeId) {
@@ -367,7 +367,7 @@ bool MementoHandler::markUndoPreamble(int nodeId) {
 }
 
 void MementoHandler::markUndo(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume,
-							  MementoType type, const voxel::Region &region, const glm::mat4 &localMatrix,
+							  MementoType type, const voxel::Region &region, const glm::mat4 &worldMatrix,
 							  voxelformat::KeyFrameIndex keyFrameIdx, const core::Optional<voxel::Palette> &palette) {
 	if (!markUndoPreamble(nodeId)) {
 		return;
@@ -375,7 +375,7 @@ void MementoHandler::markUndo(int parentId, int nodeId, const core::String &name
 	Log::debug("New undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
 	voxel::logRegion("MarkUndo", region);
 	const MementoData& data = MementoData::fromVolume(volume, region);
-	MementoState state(type, data, parentId, nodeId, name, region, localMatrix, keyFrameIdx, palette);
+	MementoState state(type, data, parentId, nodeId, name, region, worldMatrix, keyFrameIdx, palette);
 	addState(core::move(state));
 }
 

@@ -670,7 +670,13 @@ bool SceneManager::mementoStateExecute(const MementoState &s, bool isRedo) {
 	}
 	if (s.type == MementoType::SceneNodeTransform) {
 		Log::debug("Memento: transform of node %i", s.nodeId);
-		return nodeUpdateTransform(s.nodeId, s.localMatrix, nullptr, s.keyFrame);
+		if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+			voxelformat::SceneGraphTransform &transform = node->keyFrame(s.keyFrame).transform();
+			transform.setWorldMatrix(s.worldMatrix);
+			transform.update(_sceneGraph, *node, s.keyFrame);
+			return true;
+		}
+		return false;
 	}
 	if (s.type == MementoType::Modification) {
 		return mementoModification(s);

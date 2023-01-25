@@ -96,7 +96,7 @@ struct MementoState {
 	int nodeId = -1;
 	uint32_t keyFrame = 0;
 	core::String name;
-	glm::mat4x4 localMatrix{1.0f};
+	glm::mat4x4 worldMatrix{1.0f};
 	/**
 	 * @note This region might be different from the region given in the @c MementoData. In case of an @c MementoHandler::undo()
 	 * call, we have to make sure that the region of the previous state is re-extracted.
@@ -109,14 +109,14 @@ struct MementoState {
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, const core::String &_name,
-				 const voxel::Region &_region, const glm::mat4x4 &_localMatrix, uint32_t _frameId = 0, const core::Optional<voxel::Palette> &_palette = {})
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(_frameId), name(_name), localMatrix(_localMatrix),
+				 const voxel::Region &_region, const glm::mat4x4 &_worldMatrix, uint32_t _frameId = 0, const core::Optional<voxel::Palette> &_palette = {})
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(_frameId), name(_name), worldMatrix(_worldMatrix),
 		  region(_region), palette(_palette) {
 	}
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, core::String &&_name,
-				 voxel::Region &&_region, core::Optional<voxel::Palette> &&_palette)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(0), name(_name), region(_region), palette(_palette) {
+				 voxel::Region &&_region, glm::mat4x4 &&_worldMatrix, uint32_t _frameId, core::Optional<voxel::Palette> &&_palette)
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(_frameId), name(_name), worldMatrix(_worldMatrix), region(_region), palette(_palette) {
 	}
 
 	inline bool valid() const {
