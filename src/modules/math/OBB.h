@@ -32,6 +32,13 @@ public:
 		_inv = glm::inverse(_rotation);
 	}
 
+	OBB(const Vec &origin, const Vec &pivot, const Vec &extents, const glm::mat3x3 &rotation)
+		: _extents(extents), _origin(origin), _rotation(rotation) {
+		_inv = glm::inverse(_rotation);
+		const glm::vec3 &rotatedP = _rotation * glm::vec4(pivot, 1.0f);
+		_origin -= rotatedP;
+	}
+
 	OBB(const Vec &mins, const Vec &maxs) : _extents((maxs - mins) / (T)2), _origin(mins + _extents), _rotation(1.0f) {
 		_inv = glm::inverse(_rotation);
 	}
