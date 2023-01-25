@@ -425,17 +425,15 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 	const voxelformat::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
 	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	glm::mat4 localMatrix = transform.localMatrix();
-	// TODO: pivot handling
-	// glm::vec3 dim = node.region().getDimensionsInVoxels();
-	// dim *= transform.pivot();
-	// localMatrix = glm::translate(localMatrix, dim);
 	glm::mat4 deltaMatrix(0.0f);
 	const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
 
 	const voxel::Region &region = node.region();
 	const glm::vec3 size = region.getDimensionsInVoxels();
 	if (_boundsNode.maxs != size) {
-		_bounds.maxs = _boundsNode.maxs = size;
+		_bounds.mins = -transform.pivot() * size;
+		_bounds.maxs = _bounds.mins + size;
+		_boundsNode.maxs = size;
 	}
 
 	const bool manipulated = ImGuizmo::Manipulate(
