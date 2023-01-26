@@ -147,6 +147,11 @@ private:
 
 	void addState(MementoState &&state);
 	bool markUndoPreamble(int nodeId);
+
+	MementoState undoRename(const MementoState &s);
+	MementoState undoPaletteChange(const MementoState &s);
+	MementoState undoTransform(const MementoState &s);
+	MementoState undoModification(const MementoState &s);
 public:
 	MementoHandler();
 	~MementoHandler();

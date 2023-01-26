@@ -205,6 +205,60 @@ void MementoHandler::clearStates() {
 	_statePosition = 0u;
 }
 
+MementoState MementoHandler::undoModification(const MementoState &s) {
+	core_assert(s.hasVolumeData());
+	for (int i = _statePosition; i >= 0; --i) {
+		MementoState &prevS = _states[i];
+		if ((prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) &&
+			prevS.nodeId == s.nodeId) {
+			core_assert(prevS.hasVolumeData());
+			voxel::logRegion("Undo current", s.region);
+			voxel::logRegion("Undo previous", prevS.region);
+			voxel::logRegion("Undo current data", s.data.region());
+			voxel::logRegion("Undo previous data", prevS.data.region());
+			// use the region from the current state - but the volume from the previous state of this node
+			return MementoState{s.type, prevS.data, s.parentId, s.nodeId, s.name, s.region, s.worldMatrix, s.keyFrame};
+		}
+	}
+	core_assert(_states[0].type == MementoType::Modification);
+	return _states[0];
+}
+
+MementoState MementoHandler::undoTransform(const MementoState &s) {
+	for (int i = _statePosition; i >= 0; --i) {
+		MementoState &prevS = _states[i];
+		if ((prevS.type == MementoType::SceneNodeTransform || prevS.type == MementoType::SceneNodeAdded ||
+			 prevS.type == MementoType::Modification) &&
+			prevS.nodeId == s.nodeId && prevS.keyFrame == s.keyFrame) {
+			return MementoState{s.type,		s.data,	  s.parentId, s.nodeId, s.name, s.region, prevS.worldMatrix,
+								s.keyFrame, s.palette};
+		}
+	}
+	return _states[0];
+}
+
+MementoState MementoHandler::undoPaletteChange(const MementoState &s) {
+	for (int i = _statePosition; i >= 0; --i) {
+		MementoState &prevS = _states[i];
+		if (prevS.palette.hasValue()) {
+			return MementoState{s.type,	  s.data,		 s.parentId, s.nodeId,	   s.name,
+								s.region, s.worldMatrix, s.keyFrame, prevS.palette};
+		}
+	}
+	return _states[0];
+}
+
+MementoState MementoHandler::undoRename(const MementoState &s) {
+	for (int i = _statePosition; i >= 0; --i) {
+		MementoState &prevS = _states[i];
+		if (prevS.palette.hasValue()) {
+			return MementoState{s.type,	  s.data,		 s.parentId, s.nodeId, prevS.name,
+								s.region, s.worldMatrix, s.keyFrame, s.palette};
+		}
+	}
+	return _states[0];
+}
+
 MementoState MementoHandler::undo() {
 	if (!canUndo()) {
 		return InvalidMementoState;
@@ -213,40 +267,13 @@ MementoState MementoHandler::undo() {
 	const MementoState& s = state();
 	--_statePosition;
 	if (s.type == MementoType::Modification) {
-		core_assert(s.hasVolumeData());
-		for (int i = _statePosition; i >= 0; --i) {
-			MementoState& prevS = _states[i];
-			if ((prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) && prevS.nodeId == s.nodeId) {
-				core_assert(prevS.hasVolumeData());
-				voxel::logRegion("Undo current", s.region);
-				voxel::logRegion("Undo previous", prevS.region);
-				voxel::logRegion("Undo current data", s.data.region());
-				voxel::logRegion("Undo previous data", prevS.data.region());
-				// use the region from the current state - but the volume from the previous state of this node
-				return MementoState{s.type, prevS.data, s.parentId, s.nodeId, s.name, s.region, s.worldMatrix, s.keyFrame};
-			}
-		}
-		core_assert(_states[0].type == MementoType::Modification);
-		return _states[0];
-	}
-	if (s.type == MementoType::SceneNodeTransform) {
-		for (int i = _statePosition; i >= 0; --i) {
-			MementoState& prevS = _states[i];
-			if ((prevS.type == MementoType::SceneNodeTransform || prevS.type == MementoType::SceneNodeAdded || prevS.type == MementoType::Modification) &&
-				prevS.nodeId == s.nodeId && prevS.keyFrame == s.keyFrame) {
-				return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, prevS.worldMatrix, s.keyFrame, s.palette};
-			}
-		}
-		return _states[0];
-	}
-	if (s.type == MementoType::SceneNodePaletteChanged) {
-		for (int i = _statePosition; i >= 0; --i) {
-			MementoState& prevS = _states[i];
-			if (prevS.palette.hasValue()) {
-				return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, s.worldMatrix, s.keyFrame, prevS.palette};
-			}
-		}
-		return _states[0];
+		return undoModification(s);
+	} else if (s.type == MementoType::SceneNodeTransform) {
+		return undoTransform(s);
+	} else if (s.type == MementoType::SceneNodePaletteChanged) {
+		return undoPaletteChange(s);
+	} else if (s.type == MementoType::SceneNodeRenamed) {
+		return undoRename(s);
 	}
 	return s;
 }
