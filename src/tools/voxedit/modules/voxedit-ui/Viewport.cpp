@@ -61,7 +61,7 @@ bool Viewport::init() {
 	return true;
 }
 
-void Viewport::resetCamera(const glm::ivec3 &pos, const voxel::Region &region) {
+void Viewport::resetCamera(const glm::vec3 &pos, float distance, const voxel::Region &region) {
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.setFarPlane(_viewDistance->floatVal());
@@ -70,7 +70,6 @@ void Viewport::resetCamera(const glm::ivec3 &pos, const voxel::Region &region) {
 	if (region.isValid()) {
 		center = region.getCenter();
 	}
-	const float distance = 100.0f;
 	_camera.setTargetDistance(distance);
 	if (_camMode == SceneCameraMode::Free) {
 		const int height = region.getHeightInCells();
@@ -353,14 +352,17 @@ bool Viewport::saveImage(const char *filename) {
 }
 
 void Viewport::resetCamera() {
-	const glm::ivec3 &pos = sceneMgr().referencePosition();
-	const int activeNode = sceneMgr().sceneGraph().activeNode();
+	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const voxel::Region &sceneRegion = sceneGraph.region();
+	const glm::vec3 &pos = sceneRegion.getCenter();
+	const int activeNode = sceneGraph.activeNode();
 	const voxel::RawVolume *v = activeNode != -1 ? sceneMgr().volume(activeNode) : nullptr;
 	voxel::Region region;
 	if (v != nullptr) {
 		region = v->region();
 	}
-	resetCamera(pos, region);
+	const float distance = 100.0f; // TODO: let this depend on the size of the region
+	resetCamera(pos, distance, region);
 }
 
 bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {

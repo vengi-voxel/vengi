@@ -79,18 +79,17 @@ private:
 	void renderMenuBar(command::CommandExecutionListener *listener);
 	void menuBarCameraMode();
 	void menuBarCameraProjection();
+	void resetCamera(const glm::vec3 &pos, float distance, const voxel::Region &region);
+	void resize(const glm::ivec2& frameBufferSize);
+	void move(bool pan, bool rotate, int x, int y);
 public:
 	Viewport(int id, bool sceneMode, bool detailedTitle = true);
 	~Viewport();
 
 	static core::String viewportId(int id);
 
-	void resetCamera(const glm::ivec3 &pos, const voxel::Region &region);
 	void toggleScene();
 	bool isSceneMode() const;
-	void resize(const glm::ivec2& frameBufferSize);
-
-	void move(bool pan, bool rotate, int x, int y);
 
 	video::Camera& camera();
 
