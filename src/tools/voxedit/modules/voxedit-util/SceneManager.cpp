@@ -1079,8 +1079,10 @@ void SceneManager::shift(int nodeId, const glm::ivec3& m) {
 	if (node == nullptr) {
 		return;
 	}
-	node->translate(m, _currentFrameIdx);
 	const voxelformat::KeyFrameIndex keyFrameIdx = node->keyFrameForFrame(_currentFrameIdx);
+	voxelformat::SceneGraphTransform &transform = node->keyFrame(keyFrameIdx).transform();
+	transform.setWorldTranslation(transform.worldTranslation() + glm::vec3(m));
+	transform.update(_sceneGraph, *node, keyFrameIdx);
 	_mementoHandler.markNodeTransform(*node, keyFrameIdx);
 }
 
