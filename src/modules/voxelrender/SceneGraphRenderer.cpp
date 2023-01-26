@@ -205,10 +205,12 @@ void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camer
 	}
 
 	_renderer.render(renderContext, camera, shadow);
-	for (video::Camera &sceneCamera : _cameras) {
-		sceneCamera.setSize(camera.size());
-		sceneCamera.update(0.0);
-		_cameraRenderer.render(camera, sceneCamera);
+	if (renderContext.sceneMode) {
+		for (video::Camera &sceneCamera : _cameras) {
+			sceneCamera.setSize(camera.size());
+			sceneCamera.update(0.0);
+			_cameraRenderer.render(camera, sceneCamera);
+		}
 	}
 }
 
