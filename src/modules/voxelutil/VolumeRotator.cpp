@@ -15,9 +15,8 @@
 
 namespace voxelutil {
 
-static inline glm::vec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec3 &pivot) {
-	const glm::vec4 t = mat * glm::vec4((float)pos.x + 0.5f - pivot.x, (float)pos.y + 0.5f - pivot.y, (float)pos.z + 0.5f - pivot.z, 1.0f);
-	return glm::floor(glm::vec3(t.x / t.w, t.y / t.w, t.z / t.w));
+static inline glm::vec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec4 &pivot) {
+	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
 }
 
 /**
@@ -33,7 +32,7 @@ voxel::RawVolume* rotateVolume(const voxel::RawVolume* source, const glm::vec3& 
 	const glm::mat4& mat = glm::eulerAngleXYZ(pitch, yaw, roll);
 	const voxel::Region srcRegion = source->region();
 
-	const glm::vec3 pivot = normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels());
+	const glm::vec4 pivot = glm::vec4(glm::floor(normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels())), 0.0f);
 	const glm::ivec3& transformedMins = transform(mat, srcRegion.getLowerCorner(), pivot);
 	const glm::ivec3& transformedMaxs = transform(mat, srcRegion.getUpperCorner(), pivot);
 	const voxel::Region region(glm::min(transformedMins, transformedMaxs), glm::max(transformedMins, transformedMaxs));
