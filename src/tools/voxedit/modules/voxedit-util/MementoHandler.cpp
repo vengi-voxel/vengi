@@ -234,7 +234,16 @@ MementoState MementoHandler::undo() {
 			MementoState& prevS = _states[i];
 			if ((prevS.type == MementoType::SceneNodeTransform || prevS.type == MementoType::SceneNodeAdded || prevS.type == MementoType::Modification) &&
 				prevS.nodeId == s.nodeId && prevS.keyFrame == s.keyFrame) {
-				return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, prevS.worldMatrix, s.keyFrame};
+				return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, prevS.worldMatrix, s.keyFrame, s.palette};
+			}
+		}
+		return _states[0];
+	}
+	if (s.type == MementoType::SceneNodePaletteChanged) {
+		for (int i = _statePosition; i >= 0; --i) {
+			MementoState& prevS = _states[i];
+			if (prevS.palette.hasValue()) {
+				return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, s.worldMatrix, s.keyFrame, prevS.palette};
 			}
 		}
 		return _states[0];

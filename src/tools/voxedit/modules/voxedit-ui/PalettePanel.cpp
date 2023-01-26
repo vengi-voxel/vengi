@@ -169,7 +169,7 @@ uint8_t PalettePanel::currentSceneColor() const {
 	return sceneMgr().hitCursorVoxel().getColor();
 }
 
-void PalettePanel::createPopups() {
+void PalettePanel::createPopups(voxelformat::SceneGraphNode &node) {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_LOAD_PALETTE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted("Select the palette");
 		ImGui::Separator();
@@ -192,6 +192,7 @@ void PalettePanel::createPopups() {
 
 		if (ImGui::Button(ICON_FA_CHECK " OK##loadpalette")) {
 			sceneMgr().loadPalette(_currentSelectedPalette, _searchFittingColors);
+			sceneMgr().mementoHandler().markPaletteChange(node);
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
@@ -203,12 +204,14 @@ void PalettePanel::createPopups() {
 	}
 }
 
-void PalettePanel::paletteActions(voxel::Palette &palette, command::CommandExecutionListener &listener) {
+void PalettePanel::paletteActions(voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+	voxel::Palette &palette = node.palette();
 	ImGui::SliderFloat(ICON_FA_SLIDERS, &_intensityChange, -1.0f, 1.0f);
 	ImGui::SameLine();
 	const core::String &paletteChangeCmd = core::string::format("palette_changeintensity %f", _intensityChange);
 	if (ImGui::CommandButton("Apply", paletteChangeCmd.c_str(), nullptr, ImVec2(0.0f, 0.0f), &listener)) {
 		_intensityChange = 0.0f;
+		sceneMgr().mementoHandler().markPaletteChange(node);
 	}
 
 	ImGui::CommandButton(ICON_FA_PALETTE " Load##palette", "importpalette", nullptr, ImVec2(0.0f, 0.0f), &listener);
@@ -265,9 +268,9 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		ImGui::Dummy(ImVec2(0, ImGui::GetFrameHeight()));
 		ImGui::Text("palette index: %i (scene voxel index %i)", currentSelectedPalIdx, currentSceneHoveredPalIdx);
 
-		paletteActions(node.palette(), listener);
+		paletteActions(node, listener);
 		closestColor(node.palette());
-		createPopups();
+		createPopups(node);
 	}
 
 	if (core::Var::getSafe(cfg::VoxEditShowColorPicker)->boolVal()) {
