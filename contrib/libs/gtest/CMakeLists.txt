@@ -1,6 +1,5 @@
 set(SRCS
 	src/gtest-all.cc
-	src/gmock-all.cc
 )
 
 engine_add_library(
