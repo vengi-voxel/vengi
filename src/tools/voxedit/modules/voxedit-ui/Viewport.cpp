@@ -361,7 +361,7 @@ void Viewport::resetCamera() {
 	if (v != nullptr) {
 		region = v->region();
 	}
-	const float distance = 100.0f; // TODO: let this depend on the size of the region
+	const float distance = (float)sceneRegion.getHeightInVoxels() * 2.0f;
 	resetCamera(pos, distance, region);
 }
 
