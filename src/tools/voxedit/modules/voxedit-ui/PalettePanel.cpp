@@ -81,7 +81,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 	if (ImGui::InvisibleButton(id.c_str(), colorButtonSize)) {
 		if (usableColor) {
 			voxel::VoxelType type;
-			if (palette.colors[palIdx] < 255) {
+			if (palette.colors[palIdx].a < 255) {
 				type = voxel::VoxelType::Transparent;
 			} else {
 				type = voxel::VoxelType::Generic;
