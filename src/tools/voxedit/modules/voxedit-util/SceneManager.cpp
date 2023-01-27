@@ -552,11 +552,12 @@ voxel::Palette &SceneManager::activePalette() const {
 bool SceneManager::setActivePalette(const voxel::Palette &palette, bool searchBestColors) {
 	const int nodeId = activeNode();
 	if (!_sceneGraph.hasNode(nodeId)) {
-		Log::warn("Failed to set the active palette");
+		Log::warn("Failed to set the active palette - node with id %i not found", nodeId);
 		return false;
 	}
 	voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	if (node.type() != voxelformat::SceneGraphNodeType::Model) {
+		Log::warn("Failed to set the active palette - node with id %i is no model node", nodeId);
 		return false;
 	}
 	if (searchBestColors) {
@@ -564,7 +565,7 @@ bool SceneManager::setActivePalette(const voxel::Palette &palette, bool searchBe
 		voxel::RawVolumeWrapper wrapper(v);
 		core_assert(v != nullptr);
 		const voxel::Palette &oldPalette = node.palette();
-		voxelutil::visitVolume(wrapper, [&wrapper, &palette, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
+		const int voxels = voxelutil::visitVolume(wrapper, [&wrapper, &palette, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
 			const core::RGBA rgba = oldPalette.colors[voxel.getColor()];
 			const int newColor = palette.getClosestMatch(rgba);
 			if (newColor != -1) {
@@ -572,8 +573,15 @@ bool SceneManager::setActivePalette(const voxel::Palette &palette, bool searchBe
 				wrapper.setVoxel(x, y, z, newVoxel);
 			}
 		});
-		if (wrapper.dirtyRegion().isValid()) {
-			Log::error("remapped palette indices");
+		if (!voxels) {
+			_mementoHandler.markPaletteChange(node, wrapper.dirtyRegion());
+			node.setPalette(palette);
+			return true;
+		}
+		if (!wrapper.dirtyRegion().isValid()) {
+			Log::warn("remapping palette indices failed: %i entries in the old palette", oldPalette.colorCount);
+		} else {
+			modified(nodeId, wrapper.dirtyRegion());
 		}
 		_mementoHandler.markPaletteChange(node, wrapper.dirtyRegion());
 		node.setPalette(palette);
