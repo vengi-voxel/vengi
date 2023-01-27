@@ -119,7 +119,12 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 	}
 
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
-		showColorPicker(palIdx, node, listener);
+		if (showColorPicker(palIdx, node, listener)) {
+			_colorPickerChange = true;
+		} else if (_colorPickerChange) {
+			_colorPickerChange = false;
+			sceneMgr().mementoHandler().markPaletteChange(node);
+		}
 
 		if (usableColor) {
 			const core::String &modelFromColorCmd = core::string::format("colortolayer %i", palIdx);
@@ -274,7 +279,12 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 	}
 
 	if (core::Var::getSafe(cfg::VoxEditShowColorPicker)->boolVal()) {
-		showColorPicker(currentSelectedPalIdx, node, listener);
+		if (showColorPicker(currentSelectedPalIdx, node, listener)) {
+			_colorPickerChange = true;
+		} else if (_colorPickerChange) {
+			_colorPickerChange = false;
+			sceneMgr().mementoHandler().markPaletteChange(node);
+		}
 	}
 
 	ImGui::End();
@@ -284,7 +294,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 	}
 }
 
-void PalettePanel::showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+bool PalettePanel::showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	voxel::Palette &palette = node.palette();
 	ImGuiColorEditFlags flags = ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB;
 	flags |= ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoLabel;
@@ -305,8 +315,9 @@ void PalettePanel::showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &
 		}
 		palette.markDirty();
 		palette.markSave();
-		sceneMgr().mementoHandler().markPaletteChange(node);
+		return true;
 	}
+	return false;
 }
 
 bool PalettePanel::hasFocus() const {

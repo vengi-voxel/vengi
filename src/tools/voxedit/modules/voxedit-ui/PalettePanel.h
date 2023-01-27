@@ -27,6 +27,7 @@ private:
 	bool _colorHovered = false; // caching the hover state per frame
 	bool _hasFocus = false;
 	bool _searchFittingColors = false;
+	bool _colorPickerChange = false;
 	const uint32_t _redColor;
 	const uint32_t _yellowColor;
 	const uint32_t _darkRedColor;
@@ -39,7 +40,7 @@ private:
 	void createPopups(voxelformat::SceneGraphNode &node);
 
 	void addColor(float startingPosX, uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
-	void showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	bool showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void reloadAvailablePalettes();
 
 	uint8_t currentSceneColor() const;
