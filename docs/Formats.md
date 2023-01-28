@@ -2,6 +2,8 @@
 
 ## Voxel formats
 
+> The `vengi` format is the best supported format. Saving into any other format might lose several details from your scene. This depends on the capabilities of the format and the completness of the implementation for supporting that particular format.
+
 | Name                       | Extension | Loading | Saving | Thumbnails | Palette | Animations | Spec                                                                     |
 | :------------------------- | --------- | ------- | ------ | ---------- | ------- | ---------- | ------------------------------------------------------------------------ |
 | Ace Of Spades              | vxl       | X       | X      | X          | X       |            | [spec](https://silverspaceship.com/aosmap/aos_file_format.html)          |
@@ -30,6 +32,7 @@
 | SLAB6                      | kv6       | X       | X      | X          | X       |            | [spec](https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt)     |
 | Sproxel                    | csv       | X       | X      | X          | X       |            | [spec](https://github.com/emilk/sproxel/blob/master/ImportExport.cpp)    |
 | StarMade                   | sment     | X       |        | X          | X       |            | [spec](https://starmadepedia.net/wiki/Blueprint_File_Formats)            |
+| Vengi                      | vengi     | X       | X      | X          | X       | X          |                                                                          |
 
 ## Mesh formats
 
