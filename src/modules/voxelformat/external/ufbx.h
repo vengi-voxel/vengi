@@ -161,7 +161,7 @@ typedef double ufbx_real;
 #define ufbx_version_minor(version) ((uint32_t)(version)/1000u%1000u)
 #define ufbx_version_patch(version) ((uint32_t)(version)%1000u)
 
-#define UFBX_HEADER_VERSION ufbx_pack_version(0, 2, 3)
+#define UFBX_HEADER_VERSION ufbx_pack_version(0, 3, 1)
 #define UFBX_VERSION UFBX_HEADER_VERSION
 
 // -- Basic types
@@ -3120,6 +3120,13 @@ typedef enum ufbx_warning_type UFBX_ENUM_REPR {
 	// Duplicated object ID in the file, connections will be wrong.
 	UFBX_WARNING_DUPLICATE_OBJECT_ID,
 
+	// Empty face has been removed.
+	// Use `ufbx_load_opts.allow_empty_faces` if you want to allow them.
+	UFBX_WARNING_EMPTY_FACE_REMOVED,
+
+	// Unknown .obj file directive.
+	UFBX_WARNING_UNKNOWN_OBJ_DIRECTIVE,
+
 	// Warnings after this one are deduplicated.
 	// See `ufbx_warning.count` for how many times they happened.
 	UFBX_WARNING_TYPE_FIRST_DEDUPLICATED = UFBX_WARNING_INDEX_CLAMPED,
@@ -3127,7 +3134,7 @@ typedef enum ufbx_warning_type UFBX_ENUM_REPR {
 	UFBX_ENUM_FORCE_WIDTH(UFBX_WARNING_TYPE)
 } ufbx_warning_type;
 
-UFBX_ENUM_TYPE(ufbx_warning_type, UFBX_WARNING_TYPE, UFBX_WARNING_DUPLICATE_OBJECT_ID);
+UFBX_ENUM_TYPE(ufbx_warning_type, UFBX_WARNING_TYPE, UFBX_WARNING_UNKNOWN_OBJ_DIRECTIVE);
 
 // Warning about a non-fatal issue in the file.
 // Often contains information about issues that ufbx has corrected about the
@@ -3904,6 +3911,9 @@ typedef struct ufbx_load_opts {
 	// Allow meshes with no vertex position attribute.
 	// NOTE: If this is set `ufbx_mesh.vertex_position.exists` may be `false`.
 	bool allow_missing_vertex_position;
+
+	// Allow faces with zero indices.
+	bool allow_empty_faces;
 
 	// Generate vertex normals for a meshes that are missing normals.
 	// You can see if the normals have been generated from `ufbx_mesh.generated_normals`.

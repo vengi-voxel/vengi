@@ -662,7 +662,7 @@ ufbx_static_assert(sizeof_f64, sizeof(double) == 8);
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 2, 3)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 3, 1)
 const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
@@ -4021,7 +4021,7 @@ typedef struct {
 ufbxi_nodiscard static ufbxi_noinline int ufbxi_vwarnf_imp(ufbxi_warnings *ws, ufbx_warning_type type, const char *fmt, va_list args)
 {
 	if (!ws) return 1;
-	if (type >= UFBX_WARNING_INDEX_CLAMPED) {
+	if (type >= UFBX_WARNING_TYPE_FIRST_DEDUPLICATED) {
 		ufbx_warning *prev = ws->prev_warnings[type];
 		if (prev) {
 			prev->count++;
@@ -9894,6 +9894,7 @@ static const char *ufbxi_node_prop_names[] = {
 	"UpVectorProperty",
 	"Visibility Inheritance",
 	"Visibility",
+	"notes",
 };
 
 ufbxi_nodiscard static ufbxi_noinline int ufbxi_init_node_prop_names(ufbxi_context *uc)
@@ -14443,7 +14444,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_index(ufbxi_context *u
 	return 1;
 }
 
-ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_indices(ufbxi_context *uc)
+ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_indices(ufbxi_context *uc, size_t token_begin, size_t num_tokens)
 {
 	bool flush_mesh = false;
 	if (uc->obj.object_dirty) {
@@ -14490,6 +14491,11 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_indices(ufbxi_context 
 	// EARLY RETURN: Rest of the function should only be related to geometry!
 	if (uc->opts.ignore_geometry) return 1;
 
+	if (num_tokens == 0 && !uc->opts.allow_empty_faces) {
+		ufbxi_check(ufbxi_warnf(UFBX_WARNING_EMPTY_FACE_REMOVED, "Empty face has been removed"));
+		return 1;
+	}
+
 	if (uc->obj.face_group_dirty) {
 		ufbx_string name = ufbx_empty_string;
 		if (uc->obj.group.length > 0 && (uc->obj.object.length > 0 || uc->opts.obj_merge_groups) && !uc->opts.obj_split_groups) {
@@ -14528,7 +14534,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_indices(ufbxi_context 
 		uc->obj.face_group_dirty = false;
 	}
 
-	size_t num_indices = uc->obj.num_tokens - 1;
+	size_t num_indices = num_tokens;
 	ufbxi_check(UINT32_MAX - mesh->num_indices >= num_indices);
 
 	ufbx_face *face = ufbxi_push_fast(&uc->obj.tmp_faces, ufbx_face, 1);
@@ -14557,12 +14563,20 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_indices(ufbxi_context 
 	}
 
 	for (size_t ix = 0; ix < num_indices; ix++) {
-		ufbx_string tok = uc->obj.tokens[1 + ix];
+		ufbx_string tok = uc->obj.tokens[token_begin + ix];
 		for (uint32_t attrib = 0; attrib < UFBXI_OBJ_NUM_ATTRIBS; attrib++) {
 			ufbxi_check(ufbxi_obj_parse_index(uc, &tok, attrib));
 		}
 	}
 
+	return 1;
+}
+
+ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_multi_indices(ufbxi_context *uc, size_t window)
+{
+	for (size_t begin = 1; begin + window <= uc->obj.num_tokens; begin++) {
+		ufbxi_check(ufbxi_obj_parse_indices(uc, begin, window));
+	}
 	return 1;
 }
 
@@ -14951,7 +14965,11 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_file(ufbxi_context *uc
 		} else if (key == ufbxi_obj_cmd2('v','n')) {
 			ufbxi_check(ufbxi_obj_parse_vertex(uc, UFBXI_OBJ_ATTRIB_NORMAL, 1));
 		} else if (key == ufbxi_obj_cmd1('f')) {
-			ufbxi_check(ufbxi_obj_parse_indices(uc));
+			ufbxi_check(ufbxi_obj_parse_indices(uc, 1, uc->obj.num_tokens - 1));
+		} else if (key == ufbxi_obj_cmd1('p')) {
+			ufbxi_check(ufbxi_obj_parse_multi_indices(uc, 1));
+		} else if (key == ufbxi_obj_cmd1('l')) {
+			ufbxi_check(ufbxi_obj_parse_multi_indices(uc, 2));
 		} else if (key == ufbxi_obj_cmd1('s')) {
 			if (num_tokens >= 2) {
 				uc->obj.has_face_smoothing = true;
@@ -14988,6 +15006,8 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_file(ufbxi_context *uc
 			uc->obj.mtllib_relative_path.size = lib.length;
 		} else if (ufbxi_str_equal(cmd, ufbxi_str_c("usemtl"))) {
 			ufbxi_check(ufbxi_obj_parse_material(uc));
+		} else {
+			ufbxi_check(ufbxi_warnf(UFBX_WARNING_UNKNOWN_OBJ_DIRECTIVE, "Unknown .obj directive, skipped line"));
 		}
 	}
 
@@ -16173,8 +16193,12 @@ typedef enum {
 	UFBXI_SHADER_FEATURE_INVERTED = 0x1,
 	// Enable the feature if the given property exists
 	UFBXI_SHADER_FEATURE_IF_EXISTS = 0x2,
+	// Enable the feature if the given property has a texture
+	UFBXI_SHADER_FEATURE_IF_TEXTURE = 0x4,
 	// Enable if the feature is in [0.5, 1.5], (ie. 2 won't enable this feature)
-	UFBXI_SHADER_FEATURE_IF_AROUND_1 = 0x4,
+	UFBXI_SHADER_FEATURE_IF_AROUND_1 = 0x8,
+
+	UFBXI_SHADER_FEATURE_IF_EXISTS_OR_TEXTURE = UFBXI_SHADER_FEATURE_IF_EXISTS|UFBXI_SHADER_FEATURE_IF_TEXTURE,
 } ufbxi_shader_feature_flag;
 
 static const ufbxi_mat_transform_fn ufbxi_mat_transform_fns[] = {
@@ -16554,15 +16578,15 @@ static const ufbxi_shader_mapping ufbxi_obj_pbr_mapping[] = {
 };
 
 static const ufbxi_shader_mapping ufbxi_obj_features[] = {
-	{ UFBX_MATERIAL_FEATURE_PBR, UFBXI_SHADER_FEATURE_IF_EXISTS, 0, ufbxi_mat_string("Pr") },
-	{ UFBX_MATERIAL_FEATURE_PBR, UFBXI_SHADER_FEATURE_IF_EXISTS, 0, ufbxi_mat_string("Pm") },
-	{ UFBX_MATERIAL_FEATURE_SHEEN, UFBXI_SHADER_FEATURE_IF_EXISTS, 0, ufbxi_mat_string("Ps") },
-	{ UFBX_MATERIAL_FEATURE_COAT, UFBXI_SHADER_FEATURE_IF_EXISTS, 0, ufbxi_mat_string("Pc") },
-	{ UFBX_MATERIAL_FEATURE_METALNESS, UFBXI_SHADER_FEATURE_IF_EXISTS, 0, ufbxi_mat_string("Pm") },
-	{ UFBX_MATERIAL_FEATURE_IOR, UFBXI_SHADER_FEATURE_IF_EXISTS, 0, ufbxi_mat_string("Ni") },
-	{ UFBX_MATERIAL_FEATURE_OPACITY, UFBXI_SHADER_FEATURE_IF_EXISTS, 0, ufbxi_mat_string("d") },
-	{ UFBX_MATERIAL_FEATURE_TRANSMISSION, UFBXI_SHADER_FEATURE_IF_EXISTS, 0, ufbxi_mat_string("Tf") },
-	{ UFBX_MATERIAL_FEATURE_EMISSION, UFBXI_SHADER_FEATURE_IF_EXISTS, 0, ufbxi_mat_string("Ke") },
+	{ UFBX_MATERIAL_FEATURE_PBR, UFBXI_SHADER_FEATURE_IF_EXISTS_OR_TEXTURE, 0, ufbxi_mat_string("Pr") },
+	{ UFBX_MATERIAL_FEATURE_PBR, UFBXI_SHADER_FEATURE_IF_EXISTS_OR_TEXTURE, 0, ufbxi_mat_string("Pm") },
+	{ UFBX_MATERIAL_FEATURE_SHEEN, UFBXI_SHADER_FEATURE_IF_EXISTS_OR_TEXTURE, 0, ufbxi_mat_string("Ps") },
+	{ UFBX_MATERIAL_FEATURE_COAT, UFBXI_SHADER_FEATURE_IF_EXISTS_OR_TEXTURE, 0, ufbxi_mat_string("Pc") },
+	{ UFBX_MATERIAL_FEATURE_METALNESS, UFBXI_SHADER_FEATURE_IF_EXISTS_OR_TEXTURE, 0, ufbxi_mat_string("Pm") },
+	{ UFBX_MATERIAL_FEATURE_IOR, UFBXI_SHADER_FEATURE_IF_EXISTS_OR_TEXTURE, 0, ufbxi_mat_string("Ni") },
+	{ UFBX_MATERIAL_FEATURE_OPACITY, UFBXI_SHADER_FEATURE_IF_EXISTS_OR_TEXTURE, 0, ufbxi_mat_string("d") },
+	{ UFBX_MATERIAL_FEATURE_TRANSMISSION, UFBXI_SHADER_FEATURE_IF_EXISTS_OR_TEXTURE, 0, ufbxi_mat_string("Tf") },
+	{ UFBX_MATERIAL_FEATURE_EMISSION, UFBXI_SHADER_FEATURE_IF_EXISTS_OR_TEXTURE, 0, ufbxi_mat_string("Ke") },
 };
 
 enum {
@@ -16732,6 +16756,12 @@ ufbxi_noinline static void ufbxi_fetch_mapping_maps(ufbx_material *material, ufb
 						feature->enabled = !feature->enabled;
 					}
 					if (mapping_flags & UFBXI_SHADER_FEATURE_IF_EXISTS) {
+						feature->enabled = true;
+					}
+				}
+				if (mapping_flags & UFBXI_SHADER_FEATURE_IF_TEXTURE) {
+					ufbx_texture *texture = ufbx_find_prop_texture_len(material, name.data, name.length);
+					if (texture) {
 						feature->enabled = true;
 					}
 				}
@@ -25625,7 +25655,7 @@ ufbx_abi ufbx_real ufbx_evaluate_curve(const ufbx_anim_curve *curve, double time
 	const ufbx_keyframe *keys = curve->keyframes.data;
 	while (end - begin >= 8) {
 		size_t mid = (begin + end) >> 1;
-		if (keys[mid].time < time) {
+		if (keys[mid].time <= time) {
 			begin = mid + 1;
 		} else {
 			end = mid;
@@ -25635,12 +25665,15 @@ ufbx_abi ufbx_real ufbx_evaluate_curve(const ufbx_anim_curve *curve, double time
 	end = curve->keyframes.count;
 	for (; begin < end; begin++) {
 		const ufbx_keyframe *next = &keys[begin];
-		if (next->time < time) continue;
+		if (next->time <= time) continue;
 
 		// First keyframe
 		if (begin == 0) return next->value;
 
 		const ufbx_keyframe *prev = next - 1;
+
+		// Exact keyframe
+		if (prev->time == time) return prev->value;
 
 		double rcp_delta = 1.0 / (next->time - prev->time);
 		double t = (time - prev->time) * rcp_delta;
@@ -26972,7 +27005,7 @@ ufbx_abi uint32_t ufbx_catch_topo_prev_vertex_edge(ufbx_panic *panic, const ufbx
 
 ufbx_abi ufbxi_noinline ufbx_vec3 ufbx_catch_get_weighted_face_normal(ufbx_panic *panic, const ufbx_vertex_vec3 *positions, ufbx_face face)
 {
-	if (ufbxi_panicf(panic, face.index_begin < positions->indices.count, "Face index begin (%u) out of bounds (%zu)", face.index_begin, positions->indices.count)) return ufbx_zero_vec3;
+	if (ufbxi_panicf(panic, face.index_begin <= positions->indices.count, "Face index begin (%u) out of bounds (%zu)", face.index_begin, positions->indices.count)) return ufbx_zero_vec3;
 	if (ufbxi_panicf(panic, positions->indices.count - face.index_begin >= face.num_indices, "Face index end (%u + %u) out of bounds (%zu)", face.index_begin, face.num_indices, positions->indices.count)) return ufbx_zero_vec3;
 
 	if (face.num_indices < 3) {
