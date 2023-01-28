@@ -98,8 +98,9 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 
 	if (usableColor) {
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-			ImGui::Text("Color %i", palIdx);
-			ImGui::SetDragDropPayload(dragdrop::ColorPayload, (const void*)&palIdx, sizeof(int), ImGuiCond_Always);
+			ImGui::Text("Color %i", (int)palIdx);
+			ImGui::SetDragDropPayload(dragdrop::ColorPayload, (const void*)&palIdx, sizeof(uint8_t), ImGuiCond_Always);
+			static_assert(sizeof(palIdx) == sizeof(uint8_t), "Unexpected palette index size");
 			ImGui::EndDragDropSource();
 		}
 	} else {
@@ -108,7 +109,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 
 	if (ImGui::BeginDragDropTarget()) {
 		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::ColorPayload)) {
-			const int dragPalIdx = *(int*)payload->Data;
+			const uint8_t dragPalIdx = *(const uint8_t*)payload->Data;
 			core::exchange(palette.colors[palIdx], palette.colors[dragPalIdx]);
 			if (!existingColor) {
 				palette.colorCount = palIdx + 1;

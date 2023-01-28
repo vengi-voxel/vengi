@@ -135,7 +135,7 @@ void Viewport::dragAndDrop(float headerSize) {
 			sceneMgr().fillPlane(image);
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ColorPayload)) {
-			const int dragPalIdx = *(int *)payload->Data;
+			const int dragPalIdx = (int)(intptr_t)payload->Data;
 			updateViewportTrace(headerSize);
 			ModifierFacade &modifier = sceneMgr().modifier();
 			modifier.setCursorVoxel(voxel::createVoxel(dragPalIdx));
