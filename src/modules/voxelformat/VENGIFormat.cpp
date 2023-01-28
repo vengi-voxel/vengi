@@ -331,5 +331,6 @@ bool VENGIFormat::loadGroups(const core::String &filename, io::SeekableReadStrea
 }
 
 #undef wrap
+#undef wrapBool
 
 }
