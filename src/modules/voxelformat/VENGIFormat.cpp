@@ -299,7 +299,6 @@ bool VENGIFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &f
 	if (!saveNode(sceneGraph, zipStream, sceneGraph.root())) {
 		return false;
 	}
-	zipStream.flush();
 	return true;
 }
 
