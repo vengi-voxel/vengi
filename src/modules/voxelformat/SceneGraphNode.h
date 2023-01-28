@@ -39,6 +39,17 @@ enum class SceneGraphNodeType : uint8_t {
 	Max
 };
 
+// these identifiers are using in the vengi format for the different node types
+// if you change these, VENGIFormat might need a migration path
+static constexpr const char* SceneGraphNodeTypeStr[] {
+	"Root",
+	"Model",
+	"Group",
+	"Camera",
+	"Unknown"
+};
+static_assert((int)(voxelformat::SceneGraphNodeType::Max) == lengthof(SceneGraphNodeTypeStr), "Array sizes don't match Max");
+
 class alignas(16) SceneGraphTransform {
 private:
 	enum {

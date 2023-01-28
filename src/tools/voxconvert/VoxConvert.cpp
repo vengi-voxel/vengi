@@ -506,20 +506,12 @@ void VoxConvert::split(const glm::ivec3 &size, voxelformat::SceneGraph& sceneGra
 
 int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId, int indent) {
 	const voxelformat::SceneGraphNode& node = sceneGraph.node(nodeId);
-	static const char* NodeTypeStr[] {
-		"Root",
-		"Model",
-		"Group",
-		"Camera",
-		"Unknown"
-	};
-	static_assert(core::enumVal(voxelformat::SceneGraphNodeType::Max) == lengthof(NodeTypeStr), "Array sizes don't match Max");
 
 	const voxelformat::SceneGraphNodeType type = node.type();
 
 	Log::info("%*sNode: %i (parent %i)", indent, " ", nodeId, node.parent());
 	Log::info("%*s  |- name: %s", indent, " ", node.name().c_str());
-	Log::info("%*s  |- type: %s", indent, " ", NodeTypeStr[core::enumVal(type)]);
+	Log::info("%*s  |- type: %s", indent, " ", voxelformat::SceneGraphNodeTypeStr[core::enumVal(type)]);
 	int voxels = 0;
 	if (type == voxelformat::SceneGraphNodeType::Model) {
 		voxel::RawVolume *v = node.volume();

@@ -51,6 +51,7 @@ set(SRCS
 	SLAB6VoxFormat.h SLAB6VoxFormat.cpp
 	VolumeFormat.h VolumeFormat.cpp
 	GLTFFormat.h GLTFFormat.cpp
+	VENGIFormat.h VENGIFormat.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
 
@@ -86,6 +87,7 @@ set(TEST_SRCS
 	tests/VXLFormatTest.cpp
 	tests/VXRFormatTest.cpp
 	tests/VXMFormatTest.cpp
+	tests/VENGIFormatTest.cpp
 
 	tests/MinecraftPaletteMapTest.cpp
 	tests/NamedBinaryTagTest.cpp

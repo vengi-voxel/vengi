@@ -76,6 +76,8 @@ public:
 	bool quake1();
 	bool commandAndConquer();
 
+	bool isBuiltIn() const;
+
 	void markDirty();
 	inline bool isDirty() const {
 		return _dirty;

@@ -40,6 +40,7 @@
 #include "voxelformat/STLFormat.h"
 #include "voxelformat/SchematicFormat.h"
 #include "voxelformat/SproxelFormat.h"
+#include "voxelformat/VENGIFormat.h"
 #include "voxelformat/VXCFormat.h"
 #include "voxelformat/VXLFormat.h"
 #include "voxelformat/VXMFormat.h"
@@ -60,6 +61,7 @@ io::FormatDescription qubicleBinary() {
 const io::FormatDescription* voxelLoad() {
 	// this is the list of supported voxel volume formats that are have importers implemented
 	static const io::FormatDescription desc[] = {
+		{"Vengi", {"vengi"}, [] (uint32_t magic) {return magic == FourCC('V','E', 'N','G');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		qubicleBinary(),
 		{"MagicaVoxel", {"vox"}, [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Qubicle Binary Tree", {"qbt"}, [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
@@ -109,6 +111,7 @@ const io::FormatDescription* voxelLoad() {
 const io::FormatDescription* voxelSave() {
 	// this is the list of supported voxel or mesh formats that have exporters implemented
 	static const io::FormatDescription desc[] = {
+		{"Vengi", {"vengi"}, nullptr, 0u},
 		{"Qubicle Binary", {"qb"}, nullptr, 0u},
 		{"MagicaVoxel", {"vox"}, nullptr, 0u},
 		{"AceOfSpades", {"kv6"}, nullptr, 0u},
@@ -177,7 +180,9 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 	core::SharedPtr<Format> format;
 	for (const core::String& ext : desc->exts) {
 		// you only have to check one of the supported extensions here
-		if (ext == "qb") {
+		if (ext == "vengi") {
+			format = core::make_shared<VENGIFormat>();
+		} else if (ext == "qb") {
 			format = core::make_shared<QBFormat>();
 		} else if (ext == "vox") {
 			if (!load || magic == FourCC('V', 'O', 'X', ' ')) {
@@ -413,9 +418,9 @@ bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, const io::
 		}
 	}
 	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
-	QBFormat qbFormat;
+	VENGIFormat vengiFormat;
 	stream.seek(0);
-	return qbFormat.save(sceneGraph, filename, stream, thumbnailCreator);
+	return vengiFormat.save(sceneGraph, filename, stream, thumbnailCreator);
 }
 
 bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, SceneGraph &sceneGraph, ThumbnailCreator thumbnailCreator) {

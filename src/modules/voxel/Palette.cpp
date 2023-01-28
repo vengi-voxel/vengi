@@ -389,6 +389,15 @@ bool Palette::load(const char *paletteName) {
 	return load(img);
 }
 
+bool Palette::isBuiltIn() const {
+	for (int i = 0; i < lengthof(builtIn); ++i) {
+		if (_name.equals(builtIn[i])) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Palette::loadRGBPalette(const char *filename) {
 	const io::FilesystemPtr &filesystem = io::filesystem();
 	io::FilePtr paletteFile = filesystem->open(filename);

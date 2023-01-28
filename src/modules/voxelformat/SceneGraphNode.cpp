@@ -509,8 +509,8 @@ void SceneGraphNode::setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTra
 	nodeFrame.setTransform(transform);
 }
 
-void SceneGraphNode::setPivot(KeyFrameIndex frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
-	SceneGraphKeyFrame &nodeFrame = keyFrame(frameIdx);
+void SceneGraphNode::setPivot(KeyFrameIndex keyFrameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
+	SceneGraphKeyFrame &nodeFrame = keyFrame(keyFrameIdx);
 	nodeFrame.transform().setPivot(glm::vec3(pos) / glm::vec3(size));
 }
 
