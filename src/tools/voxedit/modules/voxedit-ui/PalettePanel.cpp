@@ -72,7 +72,13 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 	const core::String &contextMenuId = core::string::format("Actions##context-palitem-%i", palIdx);
 	const bool existingColor = palIdx < maxPaletteEntries;
 	if (existingColor) {
-		drawList->AddRectFilled(v1, v2, palette.colors[palIdx]);
+		if (palette.colors[palIdx].a != 255) {
+			core::RGBA other = palette.colors[palIdx];
+			other.a = 255;
+			drawList->AddRectFilledMultiColor(v1, v2, palette.colors[palIdx], palette.colors[palIdx], palette.colors[palIdx], other);
+		} else {
+			drawList->AddRectFilled(v1, v2, palette.colors[palIdx]);
+		}
 	} else {
 		drawList->AddRect(v1, v2, core::RGBA(0, 0, 0, 255));
 	}
