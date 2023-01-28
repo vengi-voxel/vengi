@@ -233,6 +233,7 @@ void PalettePanel::paletteActions(voxelformat::SceneGraphNode &node, command::Co
 }
 
 void PalettePanel::closestColor(voxel::Palette &palette) {
+	// TODO: alpha support - issue #213
 	if (ImGui::ColorEdit4("Color closest match", glm::value_ptr(_closestColor), ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoAlpha)) {
 		const core::RGBA rgba = core::Color::getRGBA(_closestColor);
 		_closestMatch = palette.getClosestMatch(rgba);
@@ -297,6 +298,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 bool PalettePanel::showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	voxel::Palette &palette = node.palette();
 	ImGuiColorEditFlags flags = ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB;
+	// TODO: alpha support - issue #213
 	flags |= ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoLabel;
 	if (core::Var::getSafe(cfg::VoxEditColorWheel)->boolVal()) {
 		flags |= ImGuiColorEditFlags_PickerHueWheel;

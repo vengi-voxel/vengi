@@ -216,7 +216,7 @@ int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) c
 }
 
 uint8_t Palette::findReplacement(uint8_t index) const {
-	const int replacement =  getClosestMatch(colors[index], nullptr, index);
+	const int replacement = getClosestMatch(colors[index], nullptr, index);
 	if (replacement == -1) {
 		return index;
 	}
