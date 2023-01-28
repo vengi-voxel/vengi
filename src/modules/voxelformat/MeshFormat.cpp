@@ -98,7 +98,6 @@ core::RGBA MeshFormat::PosSampling::avgColor(uint8_t flattenFactor) const {
 	for (const PosSamplingEntry &pe : entries) {
 		color = core::RGBA::mix(color, pe.color, pe.area / sumArea);
 	}
-	color.a = 255;
 	return core::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
 }
 
