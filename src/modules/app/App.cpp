@@ -20,9 +20,7 @@
 #include <sys/resource.h>
 #endif
 #include <signal.h>
-#if defined(__GLIBC__) && (__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 2) && defined(DEBUG)
-#include <fenv.h>
-#endif
+#include <cfenv>
 
 namespace app {
 
@@ -55,8 +53,8 @@ App* App::getInstance() {
 App::App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		_filesystem(filesystem), _threadPool(std::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
 		_timeProvider(timeProvider) {
-#if defined(__GLIBC__) && (__GLIBC__ >= 2 && __GLIBC_MINOR__ >= 2) && defined(DEBUG)
-	feenableexcept(FE_DIVBYZERO | FE_INVALID);
+#ifdef FE_TONEAREST
+	std::fesetround(FE_TONEAREST);
 #endif
 
 	signal(SIGSEGV, catch_function);
