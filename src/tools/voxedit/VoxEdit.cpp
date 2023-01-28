@@ -25,6 +25,7 @@
 #include "voxedit-ui/FileDialogOptions.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
+#include "core/StandardLib.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider, core::halfcpus()) {
@@ -64,6 +65,9 @@ void VoxEdit::onDropFile(const core::String& file) {
 core::String VoxEdit::getSuggestedFilename(const char *extension) const {
 	core::String filename = voxedit::sceneMgr().filename();
 	if (filename.empty()) {
+		if (extension != nullptr && !SDL_strcasecmp(extension, "vengi")) {
+			return "scene.vengi";
+		}
 		return filename;
 	}
 	if (extension == nullptr) {
@@ -169,7 +173,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (args.empty()) {
 			const core::String filename = getSuggestedFilename();
 			if (filename.empty()) {
-				saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, fileDialogOptions, voxelformat::voxelSave());
+				saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, fileDialogOptions, voxelformat::voxelSave(), "scene.vengi");
 			} else {
 				_mainWindow->save(filename, nullptr);
 			}
@@ -182,7 +186,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (_mainWindow == nullptr) {
 			return;
 		}
-		const core::String filename = getSuggestedFilename();
+		const core::String &filename = getSuggestedFilename("vengi");
 		saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, fileDialogOptions, voxelformat::voxelSave(), filename);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current scene as a volume to the given file");
 
