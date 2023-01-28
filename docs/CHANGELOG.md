@@ -24,6 +24,11 @@ General:
    - Improved the key binding handling and made it more flexible
    - Added support for loading minetest mts files
    - Fixed Command&Conquer vxl format writing issue
+   - Added own format with the extension `vengi`
+   - Added basic alpha support - but not yet in the renderer
+   - Fixed saving the keybindings with multi click
+   - Improved keybinding and ui setting saving (added a version)
+   - Fixed invalid transform on re-parenting a node
 
 VoxEdit:
 
@@ -34,6 +39,12 @@ VoxEdit:
    - Switched the camera modifier to the right side of the viewport
    - Fixed diffuse and ambient color settings mix-up
    - Merged layer and scene graph panel into one
+   - Several guizmo related fixes and improvements
+   - Added simple UI mode which removes some panels
+   - Fixed a few memento (undo/redo) related issues
+   - Added templates to the menu (`robo` and `chr_knight`)
+   - Allow to control the amount of viewports
+   - Allow to define pre-defined region sizes (see `ve_regionsizes` cvar)
 
 ## 0.0.23 (2022-12-17)
 
