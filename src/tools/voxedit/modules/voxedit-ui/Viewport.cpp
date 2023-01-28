@@ -26,8 +26,10 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/SceneGraphNode.h"
+#include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/transform.hpp>
 #include <glm/vector_relational.hpp>
 
 namespace voxedit {
@@ -369,7 +371,7 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 	if (frameBufferSize.x <= 0 || frameBufferSize.y <= 0) {
 		return false;
 	}
-	if ( _renderContext.frameBuffer.dimension() == frameBufferSize) {
+	if (_renderContext.frameBuffer.dimension() == frameBufferSize) {
 		return true;
 	}
 	resize(frameBufferSize);
@@ -432,16 +434,22 @@ void Viewport::renderSceneGuizmo(video::Camera &camera) {
 
 	const voxel::Region &region = node.region();
 	const glm::vec3 size = region.getDimensionsInVoxels();
-	if (_boundsNode.maxs != size) {
-		_bounds.mins = -transform.pivot() * size;
-		_bounds.maxs = _bounds.mins + size;
+	const glm::vec3 mins = -transform.pivot() * size;
+	if (glm::any(glm::epsilonNotEqual(mins, _bounds.mins, glm::epsilon<float>()))) {
+		_bounds.mins = mins;
+		_bounds.maxs = mins + size;
 		_boundsNode.maxs = size;
 	}
 
-	const bool manipulated = ImGuizmo::Manipulate(
-		glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()), (ImGuizmo::OPERATION)operation,
-		ImGuizmo::MODE::LOCAL, glm::value_ptr(localMatrix), glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr,
-		_guizmoBounds->boolVal() ? glm::value_ptr(_bounds.mins) : nullptr, boundsSnap);
+	const glm::vec3 &shift = region.getLowerCornerf();
+	localMatrix = glm::translate(localMatrix, shift);
+	const bool manipulated =
+		ImGuizmo::Manipulate(glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()),
+							 (ImGuizmo::OPERATION)operation, ImGuizmo::MODE::LOCAL, glm::value_ptr(localMatrix),
+							 glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr,
+							 _guizmoBounds->boolVal() ? glm::value_ptr(_bounds.mins) : nullptr, boundsSnap);
+
+	localMatrix = glm::translate(localMatrix, -shift);
 
 	const bool guizmoActive = ImGuizmo::IsUsing();
 

@@ -958,9 +958,9 @@ math::AABB<float> SceneManager::toAABB(const voxel::Region& region) const {
 math::OBB<float> SceneManager::toOBB(bool sceneMode, const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const {
 	core_assert(region.isValid());
 	if (sceneMode) {
-		const glm::vec3 pivot = (transform.pivot() - 0.5f) * glm::vec3(region.getDimensionsInVoxels());
+		const glm::vec3 pivot = (transform.pivot() - 0.5f) * glm::vec3(region.getDimensionsInVoxels()) - region.getLowerCornerf();
 		const glm::vec3 &extents = transform.worldScale() * glm::vec3(region.getDimensionsInVoxels()) / 2.0f;
-		const glm::vec3 &center = transform.worldTranslation() + region.getLowerCornerf();
+		const glm::vec3 &center = transform.worldTranslation();
 		const glm::mat4x4 &matrix = transform.worldMatrix();
 		return math::OBB<float>(center, pivot, extents, matrix);
 	}
@@ -1030,9 +1030,6 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	} else {
 		node.setName(name);
 	}
-	const glm::vec3 pivot = v->region().getPivot();
-	const glm::vec3 dimensions = v->region().getDimensionsInVoxels();
-	node.setPivot(0, pivot, dimensions);
 	const int nodeId = voxelformat::addNodeToSceneGraph(_sceneGraph, node, 0);
 	if (nodeId == -1) {
 		Log::error("Failed to add empty volume to new scene graph");
