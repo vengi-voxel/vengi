@@ -20,10 +20,10 @@ namespace voxel {
  */
 struct IsQuadNeeded {
 	inline bool operator()(const VoxelType& back, const VoxelType& front, FaceNames face) const {
-		if (isAir(back) || isTransparent(back)) {
+		if (isAir(back)) {
 			return false;
 		}
-		if (!isAir(front) && !isTransparent(front)) {
+		if (!isAir(front)) {
 			return false;
 		}
 		return true;
