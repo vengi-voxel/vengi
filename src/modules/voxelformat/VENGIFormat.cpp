@@ -50,8 +50,11 @@ static InterpolationType toInterpolationType(const core::String &type) {
 }
 
 bool VENGIFormat::saveNodeProperties(const SceneGraph &sceneGraph, const SceneGraphNode &node, io::WriteStream &stream) {
-	wrapBool(stream.writeUInt32(FourCC('P', 'R', 'O', 'P')))
 	const core::StringMap<core::String> &properties = node.properties();
+	if (properties.empty()) {
+		return true;
+	}
+	wrapBool(stream.writeUInt32(FourCC('P', 'R', 'O', 'P')))
 	wrapBool(stream.writeUInt32(properties.size()))
 	for (const auto & e : properties) {
 		wrapBool(stream.writePascalStringUInt16LE(e->key))
