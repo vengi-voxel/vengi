@@ -93,6 +93,7 @@ public:
 	 * @brief Return the next model node in the group first, then continue the search outside the own group
 	 */
 	int nextModelNode(int nodeId) const;
+	int prevModelNode(int nodeId) const;
 
 	/**
 	 * @brief Get the current scene graph node

@@ -97,6 +97,37 @@ const SceneGraphNode& SceneGraph::root() const {
 	return node(0);
 }
 
+int SceneGraph::prevModelNode(int nodeId) const {
+	auto iter = _nodes.find(nodeId);
+	if (iter ==  _nodes.end()) {
+		return -1;
+	}
+	const SceneGraphNode &ownNode = iter->second;
+	if (ownNode.parent() == -1) {
+		return -1;
+	}
+	int lastChild = -1;
+	const SceneGraphNode &parentNode = node(ownNode.parent());
+	const auto &children = parentNode.children();
+	for (int child : children) {
+		if (child == nodeId) {
+			if (lastChild == -1) {
+				break;
+			}
+			return lastChild;
+		}
+		if (node(child).type() == SceneGraphNodeType::Model) {
+			lastChild = child;
+			continue;
+		}
+	}
+	if (parentNode.type() == SceneGraphNodeType::Model) {
+		return parentNode.id();
+	}
+	core_assert_msg(false, "Node %i is not part of the parent node", nodeId);
+	return -1;
+}
+
 int SceneGraph::nextModelNode(int nodeId) const {
 	auto iter = _nodes.find(nodeId);
 	if (iter ==  _nodes.end()) {
@@ -106,7 +137,8 @@ int SceneGraph::nextModelNode(int nodeId) const {
 	if (ownNode.parent() == -1) {
 		return -1;
 	}
-	for (int child : node(ownNode.parent()).children()) {
+	const auto &children = node(ownNode.parent()).children();
+	for (int child : children) {
 		if (child == nodeId) {
 			continue;
 		}
