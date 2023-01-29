@@ -408,6 +408,7 @@ void Viewport::lock(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameInde
 }
 
 void Viewport::renderSceneGuizmo(video::Camera &camera) {
+	// TODO: even in edit mode we should be able to modify the region boundaries and shift the region
 	if (!_renderContext.sceneMode) {
 		reset();
 		return;
