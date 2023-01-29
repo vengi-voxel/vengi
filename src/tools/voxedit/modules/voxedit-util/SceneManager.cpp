@@ -1087,11 +1087,11 @@ void SceneManager::shift(int nodeId, const glm::ivec3& m) {
 	if (node == nullptr) {
 		return;
 	}
-	const voxelformat::KeyFrameIndex keyFrameIdx = node->keyFrameForFrame(_currentFrameIdx);
-	voxelformat::SceneGraphTransform &transform = node->keyFrame(keyFrameIdx).transform();
-	transform.setWorldTranslation(transform.worldTranslation() + glm::vec3(m));
-	transform.update(_sceneGraph, *node, keyFrameIdx);
-	_mementoHandler.markNodeTransform(*node, keyFrameIdx);
+	voxel::RawVolume *v = node->volume();
+	voxel::Region region = v->region();
+	v->translate(m);
+	region.accumulate(v->region());
+	modified(nodeId, region);
 }
 
 void SceneManager::shift(int x, int y, int z) {
