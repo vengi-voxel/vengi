@@ -1957,14 +1957,14 @@ void SceneManager::shutdown() {
 
 	_volumeRenderer.shutdown();
 	_sceneGraph.clear();
+	_mementoHandler.clearStates();
 
 	_luaGenerator.shutdown();
-	_mementoHandler.shutdown();
 	_modifier.shutdown();
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_gridRenderer.shutdown();
-	_mementoHandler.clearStates();
+	_mementoHandler.shutdown();
 	_voxelFont.shutdown();
 
 	_referencePointMesh = -1;
