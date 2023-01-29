@@ -24,6 +24,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/SceneGraphNode.h"
 #include <glm/ext/scalar_constants.hpp>
@@ -383,7 +384,6 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 }
 
 void Viewport::reset() {
-	_guizmoActivated = false;
 	if (_transformMementoLocked) {
 		Log::debug("Unlock memento state in reset()");
 		sceneMgr().mementoHandler().unlock();
@@ -399,6 +399,8 @@ void Viewport::unlock(const voxelformat::SceneGraphNode &node, voxelformat::KeyF
 	sceneMgr().mementoHandler().unlock();
 	if (keyFrameIdx != InvalidKeyFrame) {
 		sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
+	} else {
+		sceneMgr().mementoHandler().markModification(node, node.region());
 	}
 	_transformMementoLocked = false;
 }
@@ -413,6 +415,28 @@ void Viewport::lock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFra
 	}
 	sceneMgr().mementoHandler().lock();
 	_transformMementoLocked = true;
+}
+
+void Viewport::handleGuizmo(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix) {
+	if (ImGuizmo::IsUsing()) {
+		lock(node, keyFrameIdx);
+		glm::vec3 translate;
+		glm::vec3 rotation;
+		glm::vec3 scale;
+		ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(localMatrix), glm::value_ptr(translate),
+											  glm::value_ptr(rotation), glm::value_ptr(scale));
+		if (glm::all(glm::greaterThan(scale, glm::vec3(0)))) {
+			_bounds.maxs = _boundsNode.maxs * scale;
+		}
+	} else if (_transformMementoLocked) {
+		unlock(node, keyFrameIdx);
+		const voxel::Region &region = node.region();
+		const voxel::Region newRegion(region.getLowerCorner(),
+									  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.maxs)) - 1);
+		if (newRegion.isValid() && region != newRegion) {
+			sceneMgr().resize(node.id(), newRegion);
+		}
+	}
 }
 
 bool Viewport::renderSceneAndModelGuizmo(video::Camera &camera) {
@@ -450,11 +474,8 @@ bool Viewport::renderSceneAndModelGuizmo(video::Camera &camera) {
 			_boundsNode.maxs = size;
 		}
 		bounds = _guizmoBounds->boolVal();
-	} else {
-		reset();
-		if (!_modelGuizmo->boolVal()) {
-			return false;
-		}
+	} else if (!_modelGuizmo->boolVal()) {
+		return false;
 	}
 
 	const glm::vec3 &shift = region.getLowerCornerf();
@@ -464,41 +485,18 @@ bool Viewport::renderSceneAndModelGuizmo(video::Camera &camera) {
 							 (ImGuizmo::OPERATION)operation, ImGuizmo::MODE::LOCAL, glm::value_ptr(localMatrix),
 							 glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr,
 							 bounds ? glm::value_ptr(_bounds.mins) : nullptr, boundsSnap);
-
 	if (sceneMode) {
 		localMatrix = glm::translate(localMatrix, -shift);
-
-		const bool guizmoActive = ImGuizmo::IsUsing();
-
-		if (guizmoActive) {
-			lock(node, keyFrameIdx);
-			_guizmoActivated = true;
-			glm::vec3 translate;
-			glm::vec3 rotation;
-			glm::vec3 scale;
-			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(localMatrix), glm::value_ptr(translate),
-												glm::value_ptr(rotation), glm::value_ptr(scale));
-			if (glm::all(glm::greaterThan(scale, glm::vec3(0)))) {
-				_bounds.maxs = _boundsNode.maxs * scale;
-			}
-		} else if (_guizmoActivated) {
-			unlock(node, keyFrameIdx);
-			const voxel::Region &region = node.region();
-			const voxel::Region newRegion(region.getLowerCorner(),
-										region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.maxs)) - 1);
-			if (newRegion.isValid() && region != newRegion) {
-				sceneMgr().resize(node.id(), newRegion);
-			}
-			_guizmoActivated = false;
-		} else {
-			unlock(node, keyFrameIdx);
-		}
+		handleGuizmo(node, keyFrameIdx, localMatrix);
 		if (manipulated) {
 			sceneMgr().nodeUpdateTransform(activeNode, localMatrix, &deltaMatrix, keyFrameIdx);
 		}
-	} else if (manipulated) {
-		sceneMgr().shift(activeNode, deltaMatrix[3]);
-		return true;
+	} else {
+		handleGuizmo(node, InvalidKeyFrame, localMatrix);
+		if (manipulated) {
+			sceneMgr().shift(activeNode, deltaMatrix[3]);
+			return true;
+		}
 	}
 	return false;
 }

@@ -35,7 +35,6 @@ private:
 	const core::String _uiId;
 	const bool _detailedTitle;
 	bool _hovered = false;
-	bool _guizmoActivated = false;
 	bool _transformMementoLocked = false;
 
 	void reset();
@@ -68,6 +67,7 @@ private:
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
+	void handleGuizmo(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix);
 	bool renderSceneAndModelGuizmo(video::Camera &camera);
 	void renderCameraManipulator(video::Camera &camera, float headerSize);
 	bool renderGizmo(video::Camera &camera, float headerSize, const ImVec2 &size);
