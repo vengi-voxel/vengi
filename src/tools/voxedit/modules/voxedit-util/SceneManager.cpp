@@ -871,6 +871,9 @@ int SceneManager::mergeNodes(NodeMergeFlags flags) {
 }
 
 int SceneManager::mergeNodes(int nodeId1, int nodeId2) {
+	if (!_sceneGraph.hasNode(nodeId1) || !_sceneGraph.hasNode(nodeId2)) {
+		return -1;
+	}
 	voxel::RawVolume *volume1 = volume(nodeId1);
 	if (volume1 == nullptr) {
 		return -1;
