@@ -309,10 +309,6 @@ bool VENGIFormat::loadNode(SceneGraph &sceneGraph, int parent, uint32_t version,
 			if (!loadAnimation(sceneGraph, node, version, stream)) {
 				return false;
 			}
-		} else if (chunkMagic == FourCC('K','E','Y','F')) {
-			if (!loadNodeKeyFrame(sceneGraph, node, version, stream)) {
-				return false;
-			}
 		} else if (chunkMagic == FourCC('N','O','D','E')) {
 			if (!loadNode(sceneGraph, node.id(), version, stream)) {
 				return false;
