@@ -107,6 +107,12 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 				voxel::Region newRegion(region.getLowerCorner(), maxs);
 				sceneMgr().resize(nodeId, newRegion);
 			}
+
+			if (ImGui::CollapsingHeader(ICON_FA_CUBE " Guizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+				ImGui::CheckboxVar("Show guizmo", cfg::VoxEditModelGuizmo);
+				ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGuizmoAllowAxisFlip);
+				ImGui::CheckboxVar("Snap", cfg::VoxEditGuizmoSnap);
+			}
 		}
 	}
 

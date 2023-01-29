@@ -58,6 +58,7 @@ private:
 	core::VarPtr _guizmoAllowAxisFlip;
 	core::VarPtr _guizmoSnap;
 	core::VarPtr _guizmoBounds;
+	core::VarPtr _modelGuizmo;
 	core::VarPtr _viewDistance;
 	core::VarPtr _simplifiedView;
 
@@ -67,9 +68,9 @@ private:
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
-	void renderSceneGuizmo(video::Camera &camera);
+	bool renderSceneAndModelGuizmo(video::Camera &camera);
 	void renderCameraManipulator(video::Camera &camera, float headerSize);
-	void renderGizmo(video::Camera &camera, float headerSize, const ImVec2 &size);
+	bool renderGizmo(video::Camera &camera, float headerSize, const ImVec2 &size);
 	void updateViewportTrace(float headerSize);
 	bool isFixedCamera() const;
 	void renderViewportImage(const glm::ivec2 &contentSize);
