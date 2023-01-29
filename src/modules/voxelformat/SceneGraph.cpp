@@ -3,6 +3,7 @@
  */
 
 #include "SceneGraph.h"
+#include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Pair.h"
@@ -24,6 +25,7 @@ SceneGraph::~SceneGraph() {
 		entry->value.release();
 	}
 	_nodes.clear();
+	_animations.push_back("Default");
 }
 
 SceneGraph::SceneGraph(SceneGraph &&other) noexcept {
@@ -51,8 +53,12 @@ const core::DynamicArray<core::String> SceneGraph::animations() const {
 	return _animations;
 }
 
-void SceneGraph::addAnimation(const core::String& animation) {
+bool SceneGraph::addAnimation(const core::String &animation) {
+	if (core::find(_animations.begin(), _animations.end(), animation) != _animations.end()) {
+		return false;
+	}
 	_animations.push_back(animation);
+	return true;
 }
 
 int SceneGraph::activeNode() const {

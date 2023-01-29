@@ -69,7 +69,7 @@ public:
 	 * @brief The list of known animation ids
 	 */
 	const SceneGraphAnimationIds animations() const;
-	void addAnimation(const core::String& animation);
+	bool addAnimation(const core::String& animation);
 
 	void updateTransforms();
 
