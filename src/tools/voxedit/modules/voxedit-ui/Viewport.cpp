@@ -439,7 +439,7 @@ void Viewport::handleGuizmo(const voxelformat::SceneGraphNode &node, voxelformat
 	}
 }
 
-bool Viewport::renderSceneAndModelGuizmo(video::Camera &camera) {
+bool Viewport::renderSceneAndModelGuizmo(const video::Camera &camera) {
 	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 	if (activeNode == -1) {

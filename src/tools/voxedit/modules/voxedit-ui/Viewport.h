@@ -35,10 +35,34 @@ private:
 	const core::String _uiId;
 	const bool _detailedTitle;
 	bool _hovered = false;
-	bool _transformMementoLocked = false;
+	SceneCameraMode _camMode = SceneCameraMode::Free;
 
+	/**
+	 * while we are still modifying the transform or shifting the volume we don't want to
+	 * flood the memento states - thus we lock the memento handler and track this here.
+	 * @sa lock()
+	 * @sa unlock()
+	 * @sa reset()
+	 */
+	bool _transformMementoLocked = false;
+	/**
+	 * @sa lock()
+	 * @sa unlock()
+	 */
 	void reset();
+	/**
+	 * @param[in] keyFrameIdx Only given when we are modifying a transform in scene mode - in edit mode this
+	 * should be @c InvalidKeyFrame
+	 * @sa lock()
+	 * @sa reset()
+	 */
 	void unlock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx = InvalidKeyFrame);
+	/**
+	 * @param[in] keyFrameIdx Only given when we are modifying a transform in scene mode - in edit mode this
+	 * should be @c InvalidKeyFrame
+	 * @sa unlock()
+	 * @sa reset()
+	 */
 	void lock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx = InvalidKeyFrame);
 
 	int _mouseX = 0;
@@ -52,6 +76,8 @@ private:
 	Bounds _bounds;
 
 	voxelrender::RenderContext _renderContext;
+	video::Camera _camera;
+
 	core::VarPtr _showAxisVar;
 	core::VarPtr _guizmoRotation;
 	core::VarPtr _guizmoAllowAxisFlip;
@@ -60,16 +86,23 @@ private:
 	core::VarPtr _modelGuizmo;
 	core::VarPtr _viewDistance;
 	core::VarPtr _simplifiedView;
-
-	SceneCameraMode _camMode = SceneCameraMode::Free;
 	core::VarPtr _rotationSpeed;
-	video::Camera _camera;
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
 	void handleGuizmo(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix);
-	bool renderSceneAndModelGuizmo(video::Camera &camera);
+	/**
+	 * See the return value documentation of @c renderGizmo()
+	 * @sa renderGizmo()
+	 */
+	bool renderSceneAndModelGuizmo(const video::Camera &camera);
 	void renderCameraManipulator(video::Camera &camera, float headerSize);
+	/**
+	 * @return @c true if the the guizmo was used in edit mode.
+	 * @note This does not return @c true if the guizmo was used in scene mode. This is due to the fact that the edit
+	 * mode volume trace has to be reset when we activate the guizmo. Otherwise you would span an aabb for the modifier
+	 * to get executed in
+	 */
 	bool renderGizmo(video::Camera &camera, float headerSize, const ImVec2 &size);
 	void updateViewportTrace(float headerSize);
 	bool isFixedCamera() const;
