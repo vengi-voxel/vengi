@@ -136,7 +136,7 @@ void Viewport::dragAndDrop(float headerSize) {
 			updateViewportTrace(headerSize);
 			sceneMgr().fillPlane(image);
 		}
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ColorPayload)) {
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
 			const int dragPalIdx = (int)(intptr_t)payload->Data;
 			updateViewportTrace(headerSize);
 			ModifierFacade &modifier = sceneMgr().modifier();

@@ -70,7 +70,7 @@ void ScriptPanel::update(const char *title) {
 				}
 
 				if (ImGui::BeginDragDropTarget()) {
-					if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::ColorPayload)) {
+					if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
 						const int palIdx = *(const uint8_t*)payload->Data;
 						str = core::string::toString(palIdx);
 					}

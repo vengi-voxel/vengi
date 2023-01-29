@@ -99,7 +99,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 	if (usableColor) {
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 			ImGui::Text("Color %i", (int)palIdx);
-			ImGui::SetDragDropPayload(dragdrop::ColorPayload, (const void*)&palIdx, sizeof(uint8_t), ImGuiCond_Always);
+			ImGui::SetDragDropPayload(dragdrop::PaletteIndexPayload, (const void*)&palIdx, sizeof(uint8_t), ImGuiCond_Always);
 			static_assert(sizeof(palIdx) == sizeof(uint8_t), "Unexpected palette index size");
 			ImGui::EndDragDropSource();
 		}
@@ -108,7 +108,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 	}
 
 	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::ColorPayload)) {
+		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
 			const uint8_t dragPalIdx = *(const uint8_t*)payload->Data;
 			core::exchange(palette.colors[palIdx], palette.colors[dragPalIdx]);
 			if (!existingColor) {
@@ -118,6 +118,17 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 			palette.markSave();
 			sceneMgr().mementoHandler().markPaletteChange(node);
 		}
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::RGBAPayload)) {
+			const glm::vec4 color = *(const glm::vec4 *)payload->Data;
+			palette.colors[palIdx] = core::Color::getRGBA(color);
+			if (!existingColor) {
+				palette.colorCount = palIdx + 1;
+			}
+			palette.markDirty();
+			palette.markSave();
+			sceneMgr().mementoHandler().markPaletteChange(node);
+		}
+
 		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
 			const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
 			_importPalette = image->name();
