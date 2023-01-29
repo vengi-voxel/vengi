@@ -63,6 +63,16 @@ bool VENGIFormat::saveNodeProperties(const SceneGraph &sceneGraph, const SceneGr
 	return true;
 }
 
+bool VENGIFormat::saveAnimation(const SceneGraph &sceneGraph, const SceneGraphNode &node, const core::String &animation, io::WriteStream &stream) {
+	wrapBool(stream.writeUInt32(FourCC('A','N','I','M')))
+	wrapBool(stream.writePascalStringUInt16LE(animation))
+	for (const SceneGraphKeyFrame &keyframe : node.keyFrames()) {
+		wrapBool(saveNodeKeyFrame(sceneGraph, keyframe, stream))
+	}
+	wrapBool(stream.writeUInt32(FourCC('E','N','D','N')))
+	return true;
+}
+
 bool VENGIFormat::saveNodeData(const SceneGraph &sceneGraph, const SceneGraphNode &node, io::WriteStream &stream) {
 	if (node.type() != SceneGraphNodeType::Model) {
 		return true;
@@ -131,8 +141,8 @@ bool VENGIFormat::saveNode(const SceneGraph &sceneGraph, io::WriteStream& stream
 		wrapBool(saveNodePaletteColors(sceneGraph, node, stream))
 	}
 	wrapBool(saveNodeData(sceneGraph, node, stream))
-	for (const SceneGraphKeyFrame &keyframe : node.keyFrames()) {
-		wrapBool(saveNodeKeyFrame(sceneGraph, keyframe, stream))
+	for (const core::String &animation : sceneGraph.animations()) {
+		wrapBool(saveAnimation(sceneGraph, node, animation, stream))
 	}
 	for (int childId : node.children()) {
 		wrapBool(saveNode(sceneGraph, stream, sceneGraph.node(childId)))
@@ -205,6 +215,25 @@ bool VENGIFormat::loadNodePaletteIdentifier(SceneGraph &sceneGraph, SceneGraphNo
 	return true;
 }
 
+bool VENGIFormat::loadAnimation(SceneGraph &sceneGraph, SceneGraphNode &node, uint32_t version, io::ReadStream &stream) {
+	core::String animation;
+	wrapBool(stream.readPascalStringUInt16LE(animation))
+	sceneGraph.addAnimation(animation);
+	while (!stream.eos()) {
+		uint32_t chunkMagic;
+		wrap(stream.readUInt32(chunkMagic))
+		if (chunkMagic == FourCC('K','E','Y','F')) {
+			if (!loadNodeKeyFrame(sceneGraph, node, version, stream)) {
+				return false;
+			}
+		} else if (chunkMagic == FourCC('E','N','D','A')) {
+			return true;
+		}
+	}
+	Log::error("ENDA magic is missing");
+	return false;
+}
+
 bool VENGIFormat::loadNodeKeyFrame(SceneGraph &sceneGraph, SceneGraphNode &node, uint32_t version, io::ReadStream &stream) {
 	FrameIndex frameIdx = 0;
 	wrap(stream.readUInt32(frameIdx))
@@ -274,6 +303,10 @@ bool VENGIFormat::loadNode(SceneGraph &sceneGraph, int parent, uint32_t version,
 			}
 		} else if (chunkMagic == FourCC('P','A','L','I')) {
 			if (!loadNodePaletteIdentifier(sceneGraph, node, version, stream)) {
+				return false;
+			}
+		} else if (chunkMagic == FourCC('A','N','I','M')) {
+			if (!loadAnimation(sceneGraph, node, version, stream)) {
 				return false;
 			}
 		} else if (chunkMagic == FourCC('K','E','Y','F')) {
