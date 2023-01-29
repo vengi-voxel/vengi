@@ -1511,8 +1511,8 @@ void SceneManager::construct() {
 			nodeId1 = core::string::toInt(args[0]);
 			nodeId2 = core::string::toInt(args[1]);
 		} else {
-			nodeId1 = activeNode();
-			nodeId2 = _sceneGraph.nextModelNode(nodeId1);
+			nodeId2 = activeNode();
+			nodeId1 = _sceneGraph.prevModelNode(nodeId2);
 		}
 		mergeNodes(nodeId1, nodeId2);
 	}).setHelp("Merge two given nodes or active model node with the next one");
