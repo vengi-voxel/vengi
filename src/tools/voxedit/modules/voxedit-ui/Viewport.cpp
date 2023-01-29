@@ -391,22 +391,26 @@ void Viewport::reset() {
 	}
 }
 
-void Viewport::unlock(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
+void Viewport::unlock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
 	if (!_transformMementoLocked) {
 		return;
 	}
 	Log::debug("Unlock memento state");
 	sceneMgr().mementoHandler().unlock();
-	sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
+	if (keyFrameIdx != InvalidKeyFrame) {
+		sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
+	}
 	_transformMementoLocked = false;
 }
 
-void Viewport::lock(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
+void Viewport::lock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
 	if (_transformMementoLocked) {
 		return;
 	}
 	Log::debug("Lock memento state");
-	sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
+	if (keyFrameIdx != InvalidKeyFrame) {
+		sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
+	}
 	sceneMgr().mementoHandler().lock();
 	_transformMementoLocked = true;
 }

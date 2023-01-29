@@ -39,8 +39,8 @@ private:
 	bool _transformMementoLocked = false;
 
 	void reset();
-	void unlock(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx);
-	void lock(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx);
+	void unlock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx = InvalidKeyFrame);
+	void lock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx = InvalidKeyFrame);
 
 	int _mouseX = 0;
 	int _mouseY = 0;
