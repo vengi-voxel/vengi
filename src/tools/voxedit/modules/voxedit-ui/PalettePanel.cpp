@@ -315,7 +315,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 bool PalettePanel::showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	voxel::Palette &palette = node.palette();
 	ImGuiColorEditFlags flags = ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB;
-	flags |= ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoLabel;
+	flags |= ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar;
 	if (core::Var::getSafe(cfg::VoxEditColorWheel)->boolVal()) {
 		flags |= ImGuiColorEditFlags_PickerHueWheel;
 	} else {
