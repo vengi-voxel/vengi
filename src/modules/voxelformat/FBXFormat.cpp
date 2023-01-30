@@ -308,11 +308,25 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 	tris.reserve(num_tri_indices);
 
 	Log::debug("there are %i materials in the mesh", (int)mesh->materials.count);
+	Log::debug("vertex colors: %s", mesh->vertex_color.exists ? "true" : "false");
 
 	for (size_t pi = 0; pi < mesh->materials.count; pi++) {
 		const ufbx_mesh_material *mesh_mat = &mesh->materials.data[pi];
 		if (mesh_mat->num_triangles == 0) {
 			continue;
+		}
+		Log::debug("faces: %i - material: %s", (int)mesh_mat->num_faces, mesh_mat->material ? "yes" : "no");
+
+		const ufbx_material *material = mesh_mat->material;
+		const image::Image* texture = nullptr;
+		if (material != nullptr) {
+			const core::String &t = priv::_ufbx_to_string(material->name);
+			auto textureIter = textures.find(t);
+			if (textureIter != textures.end()) {
+				texture = textureIter->second.get();
+			} else {
+				Log::warn("Failed to find texture for %s", t.c_str());
+			}
 		}
 
 		for (size_t fi = 0; fi < mesh_mat->num_faces; fi++) {
@@ -332,13 +346,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					tri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale;
 					tri.uv[ti] = priv::_ufbx_to_vec2(uv);
 				}
-				const ufbx_material *material = mesh_mat->material;
-				if (material != nullptr) {
-					auto textureIter = textures.find(priv::_ufbx_to_string(material->name));
-					if (textureIter != textures.end()) {
-						tri.texture = textureIter->second.get();
-					}
-				}
+				tri.texture = texture;
 				tris.push_back(tri);
 			}
 		}
@@ -449,21 +457,26 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 			if (material == nullptr) {
 				continue;
 			}
+			const core::String &texname = priv::_ufbx_to_string(material->name);
+			if (texname.empty()) {
+				continue;
+			}
+
 			const ufbx_texture *texture = material->fbx.diffuse_color.texture;
 			if (texture == nullptr) {
 				texture = material->pbr.base_color.texture;
 			}
-			if (texture == nullptr) {
-				continue;
-			}
 
-			const core::String &texname = priv::_ufbx_to_string(material->name);
+			// TODO: rendering features for e.g. magicavoxel
+			/*if (material->features.ior.enabled) {
+			}*/
+
 			if (textures.hasKey(texname)) {
 				Log::debug("texture for material '%s' is already loaded", texname.c_str());
 				continue;
 			}
 
-			const core::String &relativeFilename = priv::_ufbx_to_string(texture->relative_filename);
+			const core::String &relativeFilename = priv::_ufbx_to_string(texture ? texture->relative_filename : material->name);
 			const core::String &name = lookupTexture(filename, relativeFilename);
 			image::ImagePtr tex = image::loadImage(name, false);
 			if (tex->isLoaded()) {
@@ -471,6 +484,7 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 				textures.put(texname, tex);
 			} else {
 				Log::warn("Failed to load image %s", relativeFilename.c_str());
+				textures.put(texname, image::ImagePtr());
 			}
 		}
 	}

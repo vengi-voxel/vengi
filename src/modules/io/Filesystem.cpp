@@ -417,6 +417,10 @@ bool Filesystem::syswrite(const core::String &filename, const core::String &stri
 }
 
 core::String searchPathFor(const FilesystemPtr& filesystem, const core::String &path, const core::String &filename) {
+	if (filename.empty()) {
+		Log::warn("No filename given to perform lookup in '%s'", path.c_str());
+		return "";
+	}
 	core::DynamicArray<core::String> tokens;
 	core::string::splitString(path, tokens, "/");
 	while (!tokens.empty()) {
@@ -424,7 +428,7 @@ core::String searchPathFor(const FilesystemPtr& filesystem, const core::String &
 			continue;
 		}
 		if (filesystem->isReadableDir(tokens[0])) {
-			Log::debug("readable dir: %s", tokens[0].c_str());
+			Log::trace("readable dir: %s", tokens[0].c_str());
 			break;
 		}
 		Log::trace("not a readable dir: %s", tokens[0].c_str());
@@ -437,13 +441,16 @@ core::String searchPathFor(const FilesystemPtr& filesystem, const core::String &
 	core::DynamicArray<io::FilesystemEntry> entities;
 	const core::String abspath = filesystem->absolutePath(relativePath);
 	filesystem->list(abspath, entities);
-	Log::debug("Found %i entries in %s", (int)entities.size(), relativePath.c_str());
+	Log::trace("Found %i entries in %s", (int)entities.size(), abspath.c_str());
 	auto predicate = [&] (const io::FilesystemEntry &e) {
 		return core::string::iequals(e.name, filename);
 	};
 	auto iter = core::find_if(entities.begin(), entities.end(), predicate);
 	if (iter == entities.end()) {
-		Log::debug("Could not find %s in %s", filename.c_str(), relativePath.c_str());
+		Log::debug("Could not find %s in '%s'", filename.c_str(), abspath.c_str());
+		for (const auto &e : entities) {
+			Log::trace("* %s", e.name.c_str());
+		}
 		return "";
 	}
 	Log::debug("Found %s in %s", iter->name.c_str(), relativePath.c_str());

@@ -212,7 +212,7 @@ bool fs_unlink(const char *path) {
 bool fs_exists(const char *path) {
 	const int ret = access(path, F_OK);
 	if (ret != 0) {
-		Log::debug("Failed to access %s: %s", path, strerror(errno));
+		Log::trace("Failed to access %s: %s", path, strerror(errno));
 	}
 	return ret == 0;
 }

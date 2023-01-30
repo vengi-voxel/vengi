@@ -16,6 +16,7 @@
 #include "core/collection/Map.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ThreadPool.h"
+#include "io/FormatDescription.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/IsQuadNeeded.h"
 #include "voxel/MarchingCubesSurfaceExtractor.h"
@@ -313,10 +314,10 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 	if (!meshPath.empty()) {
 		io::filesystem()->pushDir(meshPath);
 	}
-	const core::String& filename = core::string::extractFilenameWithExtension(name);
+	core::String filename = core::string::extractFilenameWithExtension(name);
 	const core::String& path = core::string::extractPath(name);
 	core::String fullpath = io::searchPathFor(io::filesystem(), path, filename);
-	if (fullpath.empty()) {
+	if (fullpath.empty() && path != meshPath) {
 		fullpath = io::searchPathFor(io::filesystem(), meshPath, filename);
 	}
 	if (fullpath.empty()) {
@@ -325,8 +326,40 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 	if (fullpath.empty()) {
 		fullpath = io::searchPathFor(io::filesystem(), "textures", filename);
 	}
+
+	// if not found, loop over all supported image formats and repeat the search
 	if (fullpath.empty()) {
-		Log::error("Failed to perform texture lookup for %s", name.c_str());
+		const core::String &baseFilename = core::string::extractFilename(name);
+		if (!baseFilename.empty()) {
+			for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
+				for (const core::String& ext : desc->exts) {
+					const core::String &f = core::string::format("%s.%s", baseFilename.c_str(), ext.c_str());
+					if (f == filename) {
+						continue;
+					}
+					fullpath = io::searchPathFor(io::filesystem(), path, f);
+					if (fullpath.empty() && path != meshPath) {
+						fullpath = io::searchPathFor(io::filesystem(), meshPath, f);
+					}
+					if (fullpath.empty()) {
+						fullpath = io::searchPathFor(io::filesystem(), "texture", f);
+					}
+					if (fullpath.empty()) {
+						fullpath = io::searchPathFor(io::filesystem(), "textures", f);
+					}
+					if (!fullpath.empty()) {
+						if (!meshPath.empty()) {
+							io::filesystem()->popDir();
+						}
+						return fullpath;
+					}
+				}
+			}
+		}
+	}
+
+	if (fullpath.empty()) {
+		Log::error("Failed to perform texture lookup for '%s' (filename: '%s')", name.c_str(), filename.c_str());
 	}
 	if (!meshPath.empty()) {
 		io::filesystem()->popDir();
