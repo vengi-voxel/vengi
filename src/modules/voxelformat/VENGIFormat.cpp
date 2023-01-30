@@ -134,6 +134,9 @@ bool VENGIFormat::saveNode(const SceneGraph &sceneGraph, io::WriteStream& stream
 	wrapBool(stream.writeUInt32(FourCC('N','O','D','E')))
 	wrapBool(stream.writePascalStringUInt16LE(node.name()))
 	wrapBool(stream.writePascalStringUInt16LE(SceneGraphNodeTypeStr[(int)node.type()]))
+	wrapBool(stream.writeBool(node.visible()))
+	wrapBool(stream.writeBool(node.locked()))
+	wrapBool(stream.writeUInt32(node.color().rgba))
 	wrapBool(saveNodeProperties(sceneGraph, node, stream))
 	if (node.palette().isBuiltIn()) {
 		wrapBool(saveNodePaletteIdentifier(sceneGraph, node, stream))
@@ -286,6 +289,15 @@ bool VENGIFormat::loadNode(SceneGraph &sceneGraph, int parent, uint32_t version,
 		}
 	}
 	SceneGraphNode &node = sceneGraph.node(nodeId);
+
+	if (version >= 2) {
+		node.setVisible(stream.readBool());
+		node.setLocked(stream.readBool());
+		core::RGBA color;
+		wrapBool(stream.readUInt32(color.rgba))
+		node.setColor(color);
+	}
+
 	while (!stream.eos()) {
 		uint32_t chunkMagic;
 		wrap(stream.readUInt32(chunkMagic))
@@ -324,7 +336,7 @@ bool VENGIFormat::loadNode(SceneGraph &sceneGraph, int parent, uint32_t version,
 bool VENGIFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
 	wrapBool(stream.writeUInt32(FourCC('V','E','N','G')))
 	io::ZipWriteStream zipStream(stream);
-	wrapBool(zipStream.writeUInt32(1))
+	wrapBool(zipStream.writeUInt32(2))
 	if (!saveNode(sceneGraph, zipStream, sceneGraph.root())) {
 		return false;
 	}
@@ -341,7 +353,7 @@ bool VENGIFormat::loadGroups(const core::String &filename, io::SeekableReadStrea
 	io::ZipReadStream zipStream(stream);
 	uint32_t version;
 	wrap(zipStream.readUInt32(version))
-	if (version != 1) {
+	if (version > 2) {
 		Log::error("Unsupported version %u", version);
 		return false;
 	}
