@@ -15,6 +15,7 @@
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "video/Texture.h"
+#include "voxelformat/AnimaToonFormat.h"
 #include "voxelformat/AoSVXLFormat.h"
 #include "voxelformat/BinVoxFormat.h"
 #include "voxelformat/CSMFormat.h"
@@ -92,6 +93,7 @@ const io::FormatDescription* voxelLoad() {
 		{"FBX", {"fbx"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Sproxel csv", {"csv"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"StarMade", {"sment"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"AnimaToon", {"scn"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"GL Transmission Format", {"gltf", "glb"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
@@ -202,6 +204,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 			format = core::make_shared<CubFormat>();
 		} else if (ext == "gox") {
 			format = core::make_shared<GoxFormat>();
+		} else if (ext == "scn") {
+			format = core::make_shared<AnimaToonFormat>();
 		} else if (ext == "mca") {
 			format = core::make_shared<MCRFormat>();
 		} else if (ext == "mts") {

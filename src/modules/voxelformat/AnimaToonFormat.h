@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Format.h"
+#include "core/Tokenizer.h"
 #include "core/collection/DynamicArray.h"
 
 namespace voxelformat {
@@ -13,10 +14,11 @@ namespace voxelformat {
  * @brief Animatoon format
  *
  * @ingroup Formats
+ *
+ * @todo Not yet working
  */
 class AnimaToonFormat : public RGBAFormat {
 protected:
-#if 0
 	struct AnimaToonPosition {
 		bool isModified;
 		bool isLeftHandClosed;
@@ -27,7 +29,6 @@ protected:
 		core::DynamicArray<glm::quat> ikRotations;
 		core::DynamicArray<bool> ikModified;
 	};
-#endif
 
 	enum AnimaToonVoxelState : uint8_t { inactive, active, hidden };
 
@@ -43,6 +44,24 @@ protected:
 		int zSize = 32;
 		core::DynamicArray<AnimaToonVoxel> voxels;
 	};
+
+	template<class FUNC>
+	bool parseJsonArray(core::Tokenizer &tokenizer, FUNC func) {
+		if (!tokenizer.hasNext()) {
+			return false;
+		}
+		if (tokenizer.next() != "[") {
+			return false;
+		}
+		while (tokenizer.hasNext()) {
+			const core::String &token = tokenizer.next();
+			if (token == "]") {
+				return true;
+			}
+			func(token);
+		}
+		return false;
+	}
 
 	bool loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) override;
 	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) override {
