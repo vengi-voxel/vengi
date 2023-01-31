@@ -69,7 +69,7 @@ bool VENGIFormat::saveAnimation(const SceneGraph &sceneGraph, const SceneGraphNo
 	for (const SceneGraphKeyFrame &keyframe : node.keyFrames()) {
 		wrapBool(saveNodeKeyFrame(sceneGraph, keyframe, stream))
 	}
-	wrapBool(stream.writeUInt32(FourCC('E','N','D','N')))
+	wrapBool(stream.writeUInt32(FourCC('E','N','D','A')))
 	return true;
 }
 
