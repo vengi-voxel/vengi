@@ -171,6 +171,9 @@ void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
 
 void SceneGraph::updateTransforms() {
 	SceneGraphNode &root = node(0);
+	for (auto &keyframe : root.keyFrames()) {
+		keyframe.transform().update(*this, root, keyframe.frameIdx);
+	}
 	updateTransforms_r(root);
 }
 
