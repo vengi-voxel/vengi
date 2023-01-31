@@ -5,6 +5,7 @@
 #include "AbstractVoxelTest.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Mesh.h"
 
 namespace voxel {
 

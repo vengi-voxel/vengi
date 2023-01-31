@@ -6,6 +6,7 @@
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Mesh.h"
 
 static constexpr int MAX_BENCHMARK_VOLUME_SIZE = 64;
 static const int meshSize = 128;
