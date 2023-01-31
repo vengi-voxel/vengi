@@ -18,6 +18,7 @@ namespace voxelformat {
 
 SceneGraph::SceneGraph(int nodes) : _nodes(nodes) {
 	clear();
+	_animations.push_back("Default");
 }
 
 SceneGraph::~SceneGraph() {
@@ -25,7 +26,6 @@ SceneGraph::~SceneGraph() {
 		entry->value.release();
 	}
 	_nodes.clear();
-	_animations.push_back("Default");
 }
 
 SceneGraph::SceneGraph(SceneGraph &&other) noexcept {
