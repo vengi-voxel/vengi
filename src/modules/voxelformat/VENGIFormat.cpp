@@ -157,6 +157,7 @@ bool VENGIFormat::saveNode(const SceneGraph &sceneGraph, io::WriteStream& stream
 bool VENGIFormat::loadNodeProperties(SceneGraph &sceneGraph, SceneGraphNode &node, uint32_t version, io::ReadStream &stream) {
 	uint32_t propertyCount;
 	wrap(stream.readUInt32(propertyCount))
+	Log::debug("Load %u properties", propertyCount);
 	for (uint32_t i = 0; i < propertyCount; ++i) {
 		core::String key, value;
 		wrapBool(stream.readPascalStringUInt16LE(key))
@@ -174,6 +175,7 @@ bool VENGIFormat::loadNodeData(SceneGraph &sceneGraph, SceneGraphNode &node, uin
 	wrap(stream.readInt32(maxs.x))
 	wrap(stream.readInt32(maxs.y))
 	wrap(stream.readInt32(maxs.z))
+	Log::debug("Load region of %i:%i:%i %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	node.setVolume(v, true);
@@ -197,6 +199,7 @@ bool VENGIFormat::loadNodePaletteColors(SceneGraph &sceneGraph, SceneGraphNode &
 	voxel::Palette palette;
 	uint32_t colorCount;
 	wrap(stream.readUInt32(colorCount))
+	Log::debug("Load node palette with %u color", colorCount);
 	palette.colorCount = (int)colorCount;
 	for (int i = 0; i < palette.colorCount; ++i) {
 		wrap(stream.readUInt32(palette.colors[i].rgba))
@@ -209,6 +212,7 @@ bool VENGIFormat::loadNodePaletteIdentifier(SceneGraph &sceneGraph, SceneGraphNo
 	core::String name;
 	wrapBool(stream.readPascalStringUInt16LE(name))
 	voxel::Palette palette;
+	Log::debug("Load node palette %s", name.c_str());
 	palette.load(name.c_str());
 	if (palette.colorCount == 0) {
 		Log::error("Failed to load built-in palette %s", name.c_str());
@@ -221,6 +225,7 @@ bool VENGIFormat::loadNodePaletteIdentifier(SceneGraph &sceneGraph, SceneGraphNo
 bool VENGIFormat::loadAnimation(SceneGraph &sceneGraph, SceneGraphNode &node, uint32_t version, io::ReadStream &stream) {
 	core::String animation;
 	wrapBool(stream.readPascalStringUInt16LE(animation))
+	Log::debug("Load node animation %s", animation.c_str());
 	sceneGraph.addAnimation(animation);
 	while (!stream.eos()) {
 		uint32_t chunkMagic;
@@ -249,6 +254,7 @@ bool VENGIFormat::loadNodeKeyFrame(SceneGraph &sceneGraph, SceneGraphNode &node,
 	core::String interpolationType;
 	wrapBool(stream.readPascalStringUInt16LE(interpolationType))
 	keyframe.interpolation = toInterpolationType(interpolationType);
+	Log::debug("Load animation keyframe %u: %s", frameIdx, interpolationType.c_str());
 	SceneGraphTransform &transform = keyframe.transform();
 	glm::mat4 localMatrix;
 	float *localMatrixPtr = glm::value_ptr(localMatrix);
@@ -274,6 +280,7 @@ bool VENGIFormat::loadNode(SceneGraph &sceneGraph, int parent, uint32_t version,
 		Log::error("Could not load node type %s", type.c_str());
 		return false;
 	}
+	Log::debug("Load node with name '%s' of type %s", name.c_str(), type.c_str());
 	int nodeId = nodeType == SceneGraphNodeType::Root ? sceneGraph.root().id() : -1;
 	if (nodeId == -1) {
 		SceneGraphNode node(nodeType);
