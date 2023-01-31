@@ -4,7 +4,6 @@
 
 #include "app/benchmark/AbstractBenchmark.h"
 #include "voxel/CubicSurfaceExtractor.h"
-#include "voxel/IsQuadNeeded.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 
@@ -37,7 +36,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractGreedy)(bench
 	fill(region, &volume);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
-		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), true, true);
+		voxel::extractCubicMesh(&volume, region, &mesh, region.getLowerCorner(), true, true);
 	}
 }
 
@@ -48,7 +47,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtract)(benchmark::
 	fill(region, &volume);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
-		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), false, false);
+		voxel::extractCubicMesh(&volume, region, &mesh, region.getLowerCorner(), false, false);
 	}
 }
 
@@ -58,7 +57,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractGreedyEmpty)(
 	voxel::RawVolume volume(volumeRegion);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
-		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), true, true);
+		voxel::extractCubicMesh(&volume, region, &mesh, region.getLowerCorner(), true, true);
 	}
 }
 
@@ -68,7 +67,7 @@ BENCHMARK_DEFINE_F(CubicSurfaceExtractorBenchmark, RawVolumeExtractEmpty)(benchm
 	voxel::RawVolume volume(volumeRegion);
 	voxel::Mesh mesh(1024 * 1024, 1024 * 1024, false);
 	for (auto _ : state) {
-		voxel::extractCubicMesh(&volume, region, &mesh, voxel::IsQuadNeeded(), region.getLowerCorner(), false, false);
+		voxel::extractCubicMesh(&volume, region, &mesh, region.getLowerCorner(), false, false);
 	}
 }
 

@@ -18,7 +18,6 @@
 #include "core/concurrent/ThreadPool.h"
 #include "io/FormatDescription.h"
 #include "voxel/CubicSurfaceExtractor.h"
-#include "voxel/IsQuadNeeded.h"
 #include "voxel/MarchingCubesSurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
@@ -393,7 +392,7 @@ bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 			} else {
 				voxel::Region region = node.region();
 				region.shiftUpperCorner(1, 1, 1);
-				voxel::extractCubicMesh(node.volume(), region, mesh, voxel::IsQuadNeeded(), glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+				voxel::extractCubicMesh(node.volume(), region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
 			}
 			core::ScopedLock scoped(lock);
 			meshes.emplace_back(mesh, node, applyTransform);

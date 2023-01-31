@@ -33,8 +33,7 @@
 #include "core/Algorithm.h"
 #include "core/StandardLib.h"
 #include "VoxelShaderConstants.h"
-#include "voxel/IsQuadNeeded.h"
-#include <SDL.h>
+#include <SDL_timer.h>
 
 namespace voxelrender {
 
@@ -189,7 +188,7 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 				voxel::Mesh mesh(65536, 65536, true);
 				voxel::Region extractRegion = finalRegion;
 				extractRegion.shiftUpperCorner(1, 1, 1);
-				voxel::extractCubicMesh(&movedCopy, extractRegion, &mesh, voxel::IsQuadNeeded(), mins);
+				voxel::extractCubicMesh(&movedCopy, extractRegion, &mesh, mins);
 				_pendingQueue.emplace(mins, idx, core::move(mesh));
 				Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
 				--_runningExtractorTasks;
@@ -441,7 +440,7 @@ void RawVolumeRenderer::clearPendingExtractions() {
 void RawVolumeRenderer::extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const {
 	voxel::Region reg = region;
 	reg.shiftUpperCorner(1, 1, 1);
-	voxel::extractCubicMesh(volume, reg, mesh, voxel::IsQuadNeeded(), reg.getLowerCorner());
+	voxel::extractCubicMesh(volume, reg, mesh, reg.getLowerCorner());
 }
 
 bool RawVolumeRenderer::hidden(int idx) const {

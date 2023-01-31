@@ -101,6 +101,25 @@ extern IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t 
 extern void meshify(Mesh* result, bool mergeQuads, bool ambientOcclusion, QuadListVector& vecListQuads);
 
 /**
+ * @brief implementation of a function object for deciding when
+ * the cubic surface extractor should insert a face between two voxels.
+ *
+ * The criteria used here are that the voxel in front of the potential
+ * quad should have a value of zero (which would typically indicate empty
+ * space) while the voxel behind the potential quad would have a value
+ * greater than zero (typically indicating it is solid).
+ */
+inline bool isQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
+	if (isAir(back)) {
+		return false;
+	}
+	if (!isAir(front)) {
+		return false;
+	}
+	return true;
+}
+
+/**
  * The CubicSurfaceExtractor creates a mesh in which each voxel appears to be rendered as a cube
  *
  * @par Introduction
@@ -186,8 +205,8 @@ extern void meshify(Mesh* result, bool mergeQuads, bool ambientOcclusion, QuadLi
  * @li The user-provided mesh could have a different index type (e.g. 16-bit indices) to reduce memory usage.
  * @li The user could provide a custom mesh class, e.g a thin wrapper around an openGL VBO to allow direct writing into this structure.
  */
-template<typename VolumeType, typename IsQuadNeeded>
-void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, IsQuadNeeded isQuadNeeded, const glm::ivec3& translate, bool mergeQuads = true, bool reuseVertices = true, bool ambientOcclusion = true) {
+template<typename VolumeType>
+void extractCubicMesh(VolumeType* volData, const Region& region, Mesh* result, const glm::ivec3& translate, bool mergeQuads = true, bool reuseVertices = true, bool ambientOcclusion = true) {
 	core_trace_scoped(ExtractCubicMesh);
 
 	result->clear();

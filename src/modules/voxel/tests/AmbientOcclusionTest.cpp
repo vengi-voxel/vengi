@@ -4,7 +4,6 @@
 
 #include "AbstractVoxelTest.h"
 #include "voxel/CubicSurfaceExtractor.h"
-#include "voxel/IsQuadNeeded.h"
 #include "voxel/RawVolume.h"
 
 namespace voxel {
@@ -37,7 +36,7 @@ TEST_F(AmbientOcclusionTest, testAmbientOcclusion) {
 	v.setVoxel(2, 0, 2, voxel::createVoxel(0));
 
 	Mesh mesh(1000, 1000);
-	extractCubicMesh(&v, v.region(), &mesh, IsQuadNeeded(), v.region().getLowerCorner());
+	extractCubicMesh(&v, v.region(), &mesh, v.region().getLowerCorner());
 	const VoxelVertex* vertices = mesh.getRawVertexData();
 	const int amount = (int)mesh.getNoOfVertices();
 	// TODO: this was the amount before ao
