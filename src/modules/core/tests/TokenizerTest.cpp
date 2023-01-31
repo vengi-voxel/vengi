@@ -44,6 +44,21 @@ TEST_F(TokenizerTest, testTokenizerOnlyFirstMatch) {
 	EXPECT_EQ(1u, t.size()) << toString(t.tokens());
 }
 
+TEST_F(TokenizerTest, testBase64JsonArray) {
+	core::Tokenizer t("{\n\t[\t\"Zm9vYmFy\",\n \"Zm9vYmFy\"]\n}\n", " \t\n,:", "{}[]");
+	EXPECT_EQ(6u, t.size()) << toString(t.tokens());
+}
+
+TEST_F(TokenizerTest, testInnerQuoteSplit) {
+	core::Tokenizer t("[\"=y\"]", " ", "[]");
+	EXPECT_EQ(3u, t.size()) << toString(t.tokens());
+}
+
+TEST_F(TokenizerTest, testSingleSplitToken) {
+	core::Tokenizer t("{\n", " ", "{");
+	EXPECT_EQ(1u, t.size()) << toString(t.tokens());
+}
+
 TEST_F(TokenizerTest, testTokenizerInvalidFile) {
 	const char *buf = "\x22\x50\xe2\xf6\xe2\x20\xac\x55\x22";
 	core::Tokenizer t(buf, 9, "\n");

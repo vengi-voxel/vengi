@@ -92,8 +92,12 @@ quote:
 			s += cl;
 			continue;
 		}
-		token += c;
 		if (isSeparator(c, split)) {
+			if (!token.empty()) {
+				_tokens.push_back(token);
+				token = "";
+			}
+			token += c;
 			_tokens.push_back(token);
 			const size_t cl = core::utf8::lengthChar(c);
 			if (cl == 0u) {
@@ -103,6 +107,7 @@ quote:
 			s += cl;
 			continue;
 		}
+		token += c;
 		for (;;) {
 			size_t cl = core::utf8::lengthChar(c);
 			if (cl == 0u) {
