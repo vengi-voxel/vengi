@@ -83,10 +83,10 @@ int ZipReadStream::read(void *buf, size_t size) {
 
 		const int retval = mz_inflate(_stream, MZ_NO_FLUSH);
 		switch (retval) {
-		case MZ_STREAM_ERROR:
-		case MZ_NEED_DICT:
-		case MZ_DATA_ERROR:
-		case MZ_MEM_ERROR:
+		case MZ_OK:
+		case MZ_STREAM_END:
+			break;
+		default:
 			Log::debug("error while reading the stream: '%s'", mz_error(retval));
 			return -1;
 		}
