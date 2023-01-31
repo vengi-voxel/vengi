@@ -67,10 +67,6 @@ bool SceneGraphRenderer::extractRegion(voxelformat::SceneGraphNode &node, const 
 	return _renderer.extractRegion(getVolumeId(node), region);
 }
 
-bool SceneGraphRenderer::toMesh(voxelformat::SceneGraphNode &node, voxel::Mesh *mesh) {
-	return _renderer.toMesh(getVolumeId(node), mesh);
-}
-
 void SceneGraphRenderer::setAmbientColor(const glm::vec3 &color) {
 	_renderer.setAmbientColor(color);
 }

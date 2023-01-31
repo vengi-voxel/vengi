@@ -103,7 +103,7 @@ typedef std::vector<QuadList> QuadListVector;
  * space) while the voxel behind the potential quad would have a value
  * greater than zero (typically indicating it is solid).
  */
-static inline bool isQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
+SDL_FORCE_INLINE bool isQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
 	if (isAir(back)) {
 		return false;
 	}
@@ -113,11 +113,11 @@ static inline bool isQuadNeeded(VoxelType back, VoxelType front, FaceNames face)
 	return true;
 }
 
-static inline bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
+SDL_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
 	return v1.colorIndex == v2.colorIndex && v1.info == v2.info;
 }
 
-static inline bool isSameColor(const VoxelVertex& v1, const VoxelVertex& v2) {
+SDL_FORCE_INLINE bool isSameColor(const VoxelVertex& v1, const VoxelVertex& v2) {
 	return v1.colorIndex == v2.colorIndex;
 }
 

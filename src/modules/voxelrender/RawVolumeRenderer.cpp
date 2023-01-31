@@ -194,7 +194,7 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 				--_runningExtractorTasks;
 			});
 		} else {
-			_pendingQueue.emplace(mins, idx, core::move(voxel::Mesh()));
+			_pendingQueue.emplace(mins, idx, core::move(voxel::Mesh(0, 0)));
 		}
 		--maxExtraction;
 		if (maxExtraction == 0) {
@@ -353,16 +353,6 @@ bool RawVolumeRenderer::empty(int idx) const {
 	return true;
 }
 
-bool RawVolumeRenderer::toMesh(int idx, voxel::Mesh* mesh) {
-	voxel::RawVolume* v = volume(idx);
-	if (v == nullptr) {
-		return false;
-	}
-
-	extractVolumeRegionToMesh(v, v->region(), mesh);
-	return true;
-}
-
 void RawVolumeRenderer::deleteMeshes(Meshes& meshes, int idx) {
 	if (meshes[idx] == nullptr) {
 		return;
@@ -435,12 +425,6 @@ void RawVolumeRenderer::clearPendingExtractions() {
 		SDL_Delay(1);
 	}
 	_pendingQueue.clear();
-}
-
-void RawVolumeRenderer::extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const {
-	voxel::Region reg = region;
-	reg.shiftUpperCorner(1, 1, 1);
-	voxel::extractCubicMesh(volume, reg, mesh, reg.getLowerCorner());
 }
 
 bool RawVolumeRenderer::hidden(int idx) const {

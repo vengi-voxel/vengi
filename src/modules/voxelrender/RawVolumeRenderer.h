@@ -116,7 +116,6 @@ protected:
 	core::ThreadPool _threadPool { core::halfcpus(), "VolumeRndr" };
 	core::AtomicInt _runningExtractorTasks { 0 };
 	core::ConcurrentPriorityQueue<ExtractionCtx> _pendingQueue;
-	void extractVolumeRegionToMesh(voxel::RawVolume* volume, const voxel::Region& region, voxel::Mesh* mesh) const;
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
 	void updatePalette(int idx);
 	void deleteMeshes(Meshes& meshes, int idx);
@@ -149,8 +148,6 @@ public:
 	bool updateBufferForVolume(int idx, const voxel::VertexArray& vertices, const voxel::IndexArray& indices);
 
 	bool extractRegion(int idx, const voxel::Region& region);
-
-	bool toMesh(int idx, voxel::Mesh* mesh);
 
 	/**
 	 * @param[in,out] volume The RawVolume pointer
