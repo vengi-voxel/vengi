@@ -67,6 +67,10 @@ bool IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
 	if (!Super::onMouseWheel(x, y)) {
 		SDL_Event ev {};
 		ev.type = SDL_MOUSEWHEEL;
+#if SDL_VERSION_ATLEAST(2,0,18)
+		ev.wheel.preciseX = (float)x;
+		ev.wheel.preciseY = (float)y;
+#endif
 		ev.wheel.x = x;
 		ev.wheel.y = y;
 		ImGui_ImplSDL2_ProcessEvent(&ev);
