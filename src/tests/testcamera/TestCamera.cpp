@@ -151,9 +151,9 @@ bool TestCamera::onMouseWheel(int32_t x, int32_t y) {
 	if (mods & KMOD_SHIFT) {
 		video::Camera& c = _renderCamera[_targetCamera];
 		if (mods & KMOD_CTRL) {
-			c.setNearPlane(c.nearPlane() + y);
+			c.setNearPlane(c.nearPlane() + (float)y);
 		} else {
-			c.setFarPlane(c.farPlane() + y);
+			c.setFarPlane(c.farPlane() + (float)y);
 		}
 		return true;
 	}
@@ -187,9 +187,9 @@ bool TestCamera::onKeyPress(int32_t key, int16_t modifier) {
 		}
 
 		if (modifier & KMOD_CTRL) {
-			c.setNearPlane(c.nearPlane() + delta);
+			c.setNearPlane(c.nearPlane() + (float)delta);
 		} else {
-			c.setFarPlane(c.farPlane() + delta);
+			c.setFarPlane(c.farPlane() + (float)delta);
 		}
 		if (delta != 0) {
 			return true;
