@@ -24,10 +24,6 @@ A test application that applies bloom to an image
 
 Test camera options and collisions.
 
-## testcomputetexture3d
-
-Test the OpenCL 3d texture integration of a 3d voxel volume (rendered as 2d side view)
-
 ## testglslcomp
 
 Uses GLSL compute shader to render a circle.

@@ -60,8 +60,6 @@ detail message line 2
 | app              | Basic application classes                                                  |
 | command          | Bind c++ functionality to console commands                                 |
 | commonlua        | Basic [lua](LUAScript.md) bindings and helper                              |
-| compute          | [OpenCL](ComputeShaderTool.md) compute shaders                             |
-| computevideo     | [OpenCL](ComputeShaderTool.md) compute shaders                             |
 | console          | Base classes for different kind of consoles                                |
 | core             | String, collections and other foundation classes                           |
 | image            | Image loading and writing                                                  |

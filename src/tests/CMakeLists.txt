@@ -2,7 +2,6 @@ set(CMAKE_LINK_WHAT_YOU_USE OFF)
 
 add_subdirectory(testbloom)
 add_subdirectory(testcamera)
-add_subdirectory(testcomputetexture3d)
 add_subdirectory(testglslcomp)
 add_subdirectory(testglslgeom)
 add_subdirectory(testimgui)

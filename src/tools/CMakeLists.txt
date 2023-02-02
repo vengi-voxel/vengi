@@ -1,5 +1,4 @@
 add_subdirectory(shadertool)
-add_subdirectory(computeshadertool)
 
 if (VOXEDIT)
 	add_subdirectory(voxedit)

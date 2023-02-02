@@ -3,7 +3,6 @@
  */
 
 #include "Noise.h"
-#include "NoiseComputeShaders.h"
 #include "core/Trace.h"
 #include "core/Log.h"
 #include "core/Common.h"
@@ -21,36 +20,11 @@
 
 namespace noise {
 
-Noise::Noise() :
-		_shader(compute::NoiseShader::getInstance()) {
-}
-
-Noise::~Noise() {
-	Noise::shutdown();
-}
-
 bool Noise::init() {
-	_useShader = _shader.setup();
-	if (_useShader) {
-		Log::debug("Noise shaders can be used");
-	} else {
-		Log::debug("Noise shaders can't be used");
-	}
 	return true;
 }
 
 void Noise::shutdown() {
-	_useShader = false;
-	_shader.shutdown();
-}
-
-bool Noise::useShader(bool enableShader) {
-	if (!_useShader && _enableShader) {
-		Log::warn("Can't enable use of shaders, not supported or not initialized");
-		return false;
-	}
-	_enableShader = enableShader;
-	return true;
 }
 
 int32_t Noise::intValueNoise(const glm::ivec3& pos, int32_t seed) const {
@@ -163,11 +137,6 @@ float Noise::sphereNoise(float longitude, float latitude) {
 void Noise::seamlessNoise(uint8_t* buffer, int size, int octaves, float persistence, float frequency, float amplitude) const {
 	core_trace_scoped(seamlessNoise);
 	const int components = 3;
-	if (canUseShader()) {
-		const glm::ivec2 workSize(size);
-		_shader.seamlessNoise(buffer, size * size * components, size, components, octaves, persistence, amplitude, workSize);
-		return;
-	}
 	core::Buffer<uint8_t> bufferChannel(size * size);
 	const float pi2 = glm::two_pi<float>();
 	const float d = 1.0f / (float)size;
@@ -183,7 +152,7 @@ void Noise::seamlessNoise(uint8_t* buffer, int size, int octaves, float persiste
 				const float t_pi2 = t * pi2;
 				const float ny = glm::cos(t_pi2);
 				const float nw = glm::sin(t_pi2);
-				float noise = fBm(glm::vec4(nx, ny, nz, nw) + glm::vec4(channel), octaves, persistence, amplitude);
+				float noise = fBm(glm::vec4(nx, ny, nz, nw) + glm::vec4((float)channel), octaves, persistence, amplitude);
 				noise = norm(noise);
 				const unsigned char color = (unsigned char) (noise * 255.0f);
 				const int channelIndex = y * size + x;

@@ -8,10 +8,6 @@
 #include <glm/glm.hpp>
 #include <stdint.h>
 
-namespace compute {
-class NoiseShader;
-}
-
 namespace noise {
 
 /**
@@ -35,21 +31,7 @@ inline float norm(float noise) {
  * The amplitude is the maximum absolute value that the noise function can output.
  */
 class Noise : public core::IComponent {
-private:
-	compute::NoiseShader& _shader;
-	bool _useShader = false;
-	bool _enableShader = true;
 public:
-	Noise();
-	~Noise();
-
-	bool canUseShader() const;
-	/**
-	 * @return Return whether the request to use the noise shaders could get fulfilled. It might fail if you e.g. try
-	 * to activate noise shaders, but your system doesn't support them.
-	 */
-	bool useShader(bool enableShader);
-
 	bool init() override;
 	void shutdown() override;
 
@@ -100,9 +82,5 @@ public:
 	 */
 	float sphereNoise(float longitude, float latitude);
 };
-
-inline bool Noise::canUseShader() const {
-	return _useShader && _enableShader;
-}
 
 }
