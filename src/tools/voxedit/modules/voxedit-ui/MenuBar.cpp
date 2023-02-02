@@ -88,7 +88,8 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 			const Selection &selection = modifier.selection();
 			ImGui::CommandMenuItem(ICON_FA_SCISSORS " Cut", "cut", selection.isValid(), &listener);
 			ImGui::CommandMenuItem(ICON_FA_COPY " Copy", "copy", selection.isValid(), &listener);
-			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste", "paste", sceneManager.hasClipboardCopy(), &listener);
+			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste##referencepos", "paste", sceneManager.hasClipboardCopy(), &listener);
+			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste##cursor", "pastecursor", sceneManager.hasClipboardCopy(), &listener);
 			ImGui::Separator();
 			if (ImGui::BeginMenu(ICON_FA_GEAR " Options")) {
 				ImGui::CheckboxVar(ICON_FA_BORDER_ALL " Grid", cfg::VoxEditShowgrid);
