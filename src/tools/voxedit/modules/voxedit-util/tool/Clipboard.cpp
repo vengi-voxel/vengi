@@ -43,46 +43,11 @@ voxel::RawVolume* cut(voxel::RawVolume *volume, const Selection &selection, voxe
 }
 
 void paste(voxel::RawVolume* out, const voxel::RawVolume* in, const glm::ivec3& referencePosition, voxel::Region& modifiedRegion) {
-	voxel::Region destReg = out->region();
-	destReg.shift(referencePosition);
-	voxel::Region sourceReg = in->region();
-
-	if (!destReg.isValid()) {
-		Log::debug("Paste failed: Destination region is invalid: %s", destReg.toString().c_str());
-		return;
-	}
-
-	voxel::RawVolume::Sampler srcSampler(in);
-	voxel::RawVolume::Sampler destSampler(out);
-	const glm::ivec3& srcMins = sourceReg.getLowerCorner();
-	const glm::ivec3& srcMaxs = sourceReg.getUpperCorner();
-	const glm::ivec3& destMins = destReg.getLowerCorner();
-
-	glm::ivec3 modifiedMins((std::numeric_limits<int>::max)() / 2);
-	glm::ivec3 modifiedMaxs((std::numeric_limits<int>::min)() / 2);
-
-	for (int32_t x = srcMins.x, destX = destMins.x; x <= srcMaxs.x; ++x, ++destX) {
-		for (int32_t y = sourceReg.getLowerY(), destY = destMins.y; y <= sourceReg.getUpperY(); ++y, ++destY) {
-			srcSampler.setPosition(x, y, srcMins.z);
-			if (!destSampler.setPosition(destX, destY, destMins.z)) {
-				continue;
-			}
-			for (int32_t z = srcMins.z; z <= srcMaxs.z; ++z) {
-				const voxel::Voxel& voxel = srcSampler.voxel();
-				if (destSampler.setVoxel(voxel)) {
-					modifiedMins = (glm::min)(modifiedMins, destSampler.position());
-					modifiedMaxs = (glm::max)(modifiedMaxs, destSampler.position());
-				}
-				srcSampler.movePositiveZ();
-				destSampler.movePositiveZ();
-				if (!destSampler.currentPositionValid()) {
-					break;
-				}
-			}
-		}
-	}
-
-	modifiedRegion = voxel::Region(modifiedMins, modifiedMaxs);
+	voxel::Region region = in->region();
+	region.shift(-region.getLowerCorner());
+	region.shift(referencePosition);
+	modifiedRegion = region;
+	voxelutil::mergeVolumes(out, in, region, in->region(), voxelutil::MergeSkipEmpty());
 	Log::debug("Pasted %s", modifiedRegion.toString().c_str());
 }
 
