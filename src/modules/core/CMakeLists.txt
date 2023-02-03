@@ -60,6 +60,7 @@ set(SRCS
 	String.cpp String.h
 	StringUtil.cpp StringUtil.h
 	TimeProvider.h TimeProvider.cpp
+	TimedValue.h
 	Tokenizer.h Tokenizer.cpp
 	Trace.cpp Trace.h
 	UTF8.cpp UTF8.h
