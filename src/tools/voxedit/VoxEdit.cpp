@@ -109,6 +109,7 @@ app::AppState VoxEdit::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_framesPerSecondsCap->setVal(60.0f);
 
+	core::Var::get(cfg::VoxEditModificationDismissMillis, "1500", "Milliseconds that a region should get highlighted in a few situations");
 	core::Var::get(cfg::VoxEditRegionSizes, "", "Show fixed region sizes in the positions panel", ivec3ListValidator);
 	core::Var::get(cfg::VoxEditShowgrid, "true", "Show the grid", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowlockedaxis, "true", "Show the currently locked axis", core::Var::boolValidator);

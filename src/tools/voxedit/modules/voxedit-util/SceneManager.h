@@ -6,6 +6,7 @@
 
 #include "core/Enum.h"
 #include "core/ScopedPtr.h"
+#include "core/TimedValue.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
 #include "voxelfont/VoxelFont.h"
@@ -81,6 +82,7 @@ private:
 	 */
 	video::Camera* _camera = nullptr;
 
+	int32_t _highlightMeshIndex = -1;
 	int32_t _aabbMeshIndex = -1;
 	int32_t _referencePointMesh = -1;
 	glm::mat4 _referencePointModelMatrix { 1.0f };
@@ -126,6 +128,9 @@ private:
 	double _animationSpeed = 0.0;
 	double _nextFrameSwitch = 0.0;
 	voxelformat::FrameIndex _currentFrameIdx = 0;
+
+	using TimedRegion = core::TimedValue<voxel::Region>;
+	TimedRegion _highlightRegion;
 
 	int _initialized = 0;
 	int _size = 128;
@@ -257,7 +262,7 @@ public:
 
 	const glm::ivec3& referencePosition() const;
 
-	void modified(int nodeId, const voxel::Region& modifiedRegion, bool markUndo = true);
+	void modified(int nodeId, const voxel::Region& modifiedRegion, bool markUndo = true, uint64_t renderRegionMillis = 0);
 	voxel::RawVolume* volume(int nodeId);
 	const voxel::RawVolume* volume(int nodeId) const;
 	voxel::Palette &activePalette() const;

@@ -22,6 +22,7 @@ constexpr const char *VoxEditLastPalette = "ve_lastpalette";
 constexpr const char *VoxEditSimplifiedView = "ve_simplifiedview";
 constexpr const char *VoxEditViewports = "ve_viewports";
 constexpr const char *VoxEditShowaabb = "ve_showaabb";
+constexpr const char *VoxEditModificationDismissMillis = "ve_modicationdismiss";
 constexpr const char *VoxEditShowgrid = "ve_showgrid";
 constexpr const char *VoxEditGridsize = "ve_gridsize";
 constexpr const char *VoxEditShowaxis = "ve_showaxis";

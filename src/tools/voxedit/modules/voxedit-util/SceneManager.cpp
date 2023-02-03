@@ -26,6 +26,7 @@
 #include "math/Random.h"
 #include "math/Ray.h"
 #include "video/Renderer.h"
+#include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
 #include "video/Types.h"
 #include "voxel/Face.h"
@@ -398,7 +399,7 @@ void SceneManager::queueRegionExtraction(int nodeId, const voxel::Region& region
 	}
 }
 
-void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, bool markUndo) {
+void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, bool markUndo, uint64_t renderRegionMillis) {
 	Log::debug("Modified node %i, record undo state: %s", nodeId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
@@ -407,6 +408,8 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 	}
 	if (modifiedRegion.isValid()) {
 		queueRegionExtraction(nodeId, modifiedRegion);
+		const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
+		_highlightRegion = TimedRegion(modifiedRegion, timeProvider->tickNow(), renderRegionMillis);
 	}
 	markDirty();
 	resetLastTrace();
@@ -775,7 +778,8 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 		Log::debug("Failed to paste");
 		return false;
 	}
-	modified(nodeId, modifiedRegion);
+	const int64_t dismissMillis = core::Var::getSafe(cfg::VoxEditModificationDismissMillis)->intVal();
+	modified(nodeId, modifiedRegion, true, dismissMillis);
 	return true;
 }
 
@@ -1134,7 +1138,7 @@ void SceneManager::updateAABBMesh(bool sceneMode) {
 }
 
 void SceneManager::render(voxelrender::RenderContext &renderContext, const video::Camera& camera, uint8_t renderMask) {
-	const bool depthTest = video::enable(video::State::DepthTest);
+	video::ScopedState depthTest(video::State::DepthTest, true);
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderScene) {
 		_volumeRenderer.setSceneMode(renderContext.sceneMode);
@@ -1145,6 +1149,7 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 	}
 	const bool renderUI = (renderMask & RenderUI) != 0u;
 	if (renderUI) {
+		video::ScopedState blend(video::State::Blend, true);
 		if (renderContext.sceneMode) {
 			if (_showAabbVar->boolVal()) {
 				_shapeRenderer.render(_aabbMeshIndex, camera);
@@ -1158,19 +1163,27 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 			_modifier.render(camera);
 
 			if (_renderLockAxis) {
-				video::ScopedState blend(video::State::Blend, true);
 				for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
 					// TODO: fix z-fighting
 					_shapeRenderer.render(_planeMeshIndex[i], camera);
 				}
 			}
 		}
-		if (!depthTest) {
-			video::disable(video::State::DepthTest);
+
+		const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
+		const uint64_t highlightMillis = _highlightRegion.remaining(timeProvider->tickNow());
+		if (highlightMillis > 0) {
+			video::ScopedPolygonMode o(video::PolygonMode::Solid, glm::vec2(1.0f, 1.0f));
+			_shapeBuilder.clear();
+			_shapeBuilder.setColor(core::Color::alpha(core::Color::Green, 0.2f));
+			_shapeBuilder.cube(_highlightRegion.value().getLowerCornerf(), _highlightRegion.value().getUpperCornerf() + 1.0f);
+			_shapeRenderer.createOrUpdate(_highlightMeshIndex, _shapeBuilder);
+			_shapeRenderer.render(_highlightMeshIndex, camera);
+			video::polygonOffset(glm::vec2(0.0f));
 		}
-		_shapeRenderer.render(_referencePointMesh, camera, _referencePointModelMatrix);
-	} else if (!depthTest) {
+
 		video::disable(video::State::DepthTest);
+		_shapeRenderer.render(_referencePointMesh, camera, _referencePointModelMatrix);
 	}
 }
 
@@ -1969,6 +1982,7 @@ void SceneManager::shutdown() {
 
 	_referencePointMesh = -1;
 	_aabbMeshIndex = -1;
+	_highlightMeshIndex = -1;
 
 	command::Command::unregisterActionButton("zoom_in");
 	command::Command::unregisterActionButton("zoom_out");
