@@ -24,6 +24,7 @@
 #include <SDL_endian.h>
 #define OGT_VOX_BIGENDIAN_SWAP32  SDL_SwapLE32
 #define OGT_VOX_IMPLEMENTATION
+#define ogt_assert core_assert_msg
 #include "external/ogt_vox.h"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_access.hpp>
