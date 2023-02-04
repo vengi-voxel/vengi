@@ -27,6 +27,9 @@ bool ModifierFacade::setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos)
 }
 
 void ModifierFacade::render(const video::Camera& camera) {
+	if (_locked) {
+		return;
+	}
 	if (_aabbMode) {
 		static glm::ivec3 lastCursor = aabbPosition();
 		static math::Axis lastMirrorAxis = _mirrorAxis;
@@ -78,6 +81,9 @@ bool ModifierFacade::select(const glm::ivec3& mins, const glm::ivec3& maxs) {
 }
 
 void ModifierFacade::unselect() {
+	if (_locked) {
+		return;
+	}
 	if (_selectionValid) {
 		Super::unselect();
 		_modifierRenderer.updateSelectionBuffers(_selection);

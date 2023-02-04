@@ -239,9 +239,6 @@ void Viewport::renderViewport() {
 			}
 			_hovered = true;
 			updateViewportTrace(headerSize);
-		} else if (modifiedRegion) {
-			sceneMgr().resetLastTrace();
-			sceneMgr().modifier().aabbAbort();
 		}
 
 		dragAndDrop(headerSize);
@@ -391,6 +388,7 @@ void Viewport::reset() {
 	if (_transformMementoLocked) {
 		Log::debug("Unlock memento state in reset()");
 		sceneMgr().mementoHandler().unlock();
+		sceneMgr().modifier().unlock();
 		_transformMementoLocked = false;
 	}
 }
@@ -401,6 +399,7 @@ void Viewport::unlock(const voxelformat::SceneGraphNode &node, voxelformat::KeyF
 	}
 	Log::debug("Unlock memento state");
 	sceneMgr().mementoHandler().unlock();
+	sceneMgr().modifier().unlock();
 	if (keyFrameIdx != InvalidKeyFrame) {
 		sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
 	} else {
@@ -418,6 +417,7 @@ void Viewport::lock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFra
 		sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
 	}
 	sceneMgr().mementoHandler().lock();
+	sceneMgr().modifier().lock();
 	_transformMementoLocked = true;
 }
 

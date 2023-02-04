@@ -118,6 +118,7 @@ public:
 	 */
 	void lock();
 	void unlock();
+	inline bool isLocked() const { return _locked; }
 
 	void shutdown() override;
 

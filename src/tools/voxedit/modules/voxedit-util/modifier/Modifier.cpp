@@ -201,6 +201,9 @@ void Modifier::unselect() {
 }
 
 bool Modifier::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+	if (_locked) {
+		return false;
+	}
 	const bool selectActive = (_modifierType & ModifierType::Erase) == ModifierType::None;
 	if (selectActive) {
 		_selection = voxel::Region{mins, maxs};

@@ -2097,6 +2097,10 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 }
 
 bool SceneManager::trace(bool sceneMode, bool force, voxelutil::PickResult *result) {
+	if (_modifier.isLocked()) {
+		return false;
+	}
+
 	if (result) {
 		*result = _result;
 	}
