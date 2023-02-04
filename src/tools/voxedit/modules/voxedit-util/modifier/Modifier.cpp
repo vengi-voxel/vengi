@@ -365,8 +365,19 @@ void Modifier::setVoxelAtCursor(const voxel::Voxel& voxel) {
 	_voxelAtCursor = voxel;
 }
 
+void Modifier::lock() {
+	_locked = true;
+}
+
+void Modifier::unlock() {
+	_locked = false;
+}
+
 bool Modifier::aabbAction(voxel::RawVolume *volume,
 						  const std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)> &callback) {
+	if (_locked) {
+		return false;
+	}
 	const bool selectFlag = (_modifierType & ModifierType::Select) == ModifierType::Select;
 	if (selectFlag) {
 		const math::AABB<int> a = aabb();
@@ -500,9 +511,7 @@ void Modifier::aabbAbort() {
 }
 
 bool Modifier::modifierTypeRequiresExistingVoxel() const {
-	return (_modifierType & ModifierType::Erase) == ModifierType::Erase ||
-		   (_modifierType & ModifierType::Paint) == ModifierType::Paint ||
-		   (_modifierType & ModifierType::Select) == ModifierType::Select;
+	return isMode(ModifierType::Erase) || isMode(ModifierType::Paint) || isMode(ModifierType::Select);
 }
 
 void Modifier::setGridResolution(int resolution) {

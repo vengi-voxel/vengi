@@ -53,6 +53,7 @@ protected:
 	bool _secondPosValid = false;
 	bool _aabbMode = false; /** true if the current action spans an aabb */
 	bool _center = false;
+	bool _locked = false;
 	/**
 	 * timer value which indicates the next execution time in case you keep the
 	 * modifier triggered
@@ -111,6 +112,12 @@ public:
 	void construct() override;
 	bool init() override;
 	void update(double nowSeconds);
+
+	/**
+	 * Allow to lock the modifier to not perform any modification
+	 */
+	void lock();
+	void unlock();
 
 	void shutdown() override;
 
