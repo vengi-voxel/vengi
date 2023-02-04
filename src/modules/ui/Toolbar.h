@@ -29,7 +29,7 @@ public:
 	Toolbar(const ImVec2 &size, command::CommandExecutionListener *listener = nullptr);
 	~Toolbar();
 
-	bool button(const char *icon, const char *command);
+	bool button(const char *icon, const char *command, bool darken = false);
 
 	void end() {
 		last();

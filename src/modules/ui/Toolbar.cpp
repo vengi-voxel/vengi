@@ -56,10 +56,13 @@ core::String Toolbar::id(const char *icon) const {
 	return core::string::format("%s##%s-%i", icon, icon, _nextId);
 }
 
-bool Toolbar::button(const char *icon, const char *command) {
+bool Toolbar::button(const char *icon, const char *command, bool darken) {
 	newline();
 	ui::ScopedStyle style;
 	style.setFramePadding(ImVec2(0.0f, 0.0f));
+	if (darken) {
+		style.darker(ImGuiCol_Text);
+	}
 	const core::String &iconId = id(icon);
 	bool pressed = ImGui::CommandButton(iconId.c_str(), command, nullptr, _size, _listener);
 	next();

@@ -20,14 +20,19 @@ void ModifierPanel::addModifiers(command::CommandExecutionListener &listener) {
 	style.setFont(imguiApp()->bigIconFont());
 	const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 	ui::Toolbar toolbar(buttonSize);
-	toolbar.button(ICON_FA_CUBE, "actionplace");
-	toolbar.button(ICON_FA_ERASER, "actionerase");
-	toolbar.button(ICON_FA_DIAGRAM_NEXT, "actionoverride");
-	toolbar.button(ICON_FA_PAINTBRUSH, "actionpaint");
-	toolbar.button(ICON_FA_EXPAND, "actionselect");
-	toolbar.button(ICON_FA_ELLIPSIS, "actionpath");
-	toolbar.button(ICON_FA_ELLIPSIS, "actionline");
-	toolbar.button(ICON_FA_EYE_DROPPER, "actioncolorpicker");
+	const voxedit::ModifierFacade &modifier = sceneMgr().modifier();
+	const bool moverride = modifier.isMode(ModifierType::Place | ModifierType::Erase);
+	const bool mplace = !moverride && modifier.isMode(ModifierType::Place);
+	const bool merase = !moverride && modifier.isMode(ModifierType::Erase);
+
+	toolbar.button(ICON_FA_CUBE, "actionplace", !mplace);
+	toolbar.button(ICON_FA_ERASER, "actionerase", !merase);
+	toolbar.button(ICON_FA_DIAGRAM_NEXT, "actionoverride", !moverride);
+	toolbar.button(ICON_FA_PAINTBRUSH, "actionpaint", !modifier.isMode(ModifierType::Paint));
+	toolbar.button(ICON_FA_EXPAND, "actionselect", !modifier.isMode(ModifierType::Select));
+	toolbar.button(ICON_FA_ELLIPSIS, "actionpath", !modifier.isMode(ModifierType::Path));
+	toolbar.button(ICON_FA_ELLIPSIS, "actionline", !modifier.isMode(ModifierType::Line));
+	toolbar.button(ICON_FA_EYE_DROPPER, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));
 }
 
 bool ModifierPanel::mirrorAxisRadioButton(const char *title, math::Axis type) {
