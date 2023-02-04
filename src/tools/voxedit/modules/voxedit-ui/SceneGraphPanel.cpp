@@ -239,10 +239,12 @@ static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGra
 	}
 }
 
+bool SceneGraphPanel::init() {
+	_animationSpeedVar = core::Var::getSafe(cfg::VoxEditAnimationSpeed);
+	return true;
+}
+
 void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNodeSettings* modelNodeSettings, command::CommandExecutionListener &listener) {
-	if (!_animationSpeedVar) {
-		_animationSpeedVar = core::Var::getSafe(cfg::VoxEditAnimationSpeed);
-	}
 	voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
 	_hasFocus = false;
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {

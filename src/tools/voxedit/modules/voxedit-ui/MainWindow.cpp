@@ -116,6 +116,7 @@ bool MainWindow::init() {
 
 	initScenes();
 
+	_sceneGraphPanel.init();
 	_lsystemPanel.init();
 	_treePanel.init();
 
