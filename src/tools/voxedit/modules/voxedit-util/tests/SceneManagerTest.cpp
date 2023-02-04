@@ -41,6 +41,7 @@ protected:
 		core::Var::get(cfg::VoxEditGrayInactive, "");
 		core::Var::get(cfg::VoxEditHideInactive, "");
 		core::Var::get(cfg::VoxEditLastPalette, "");
+		core::Var::get(cfg::VoxEditModificationDismissMillis, "0");
 		construct();
 		_renderContext.init(video::getWindowSize());
 		ASSERT_TRUE(init());
