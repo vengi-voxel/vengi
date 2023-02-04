@@ -23,3 +23,9 @@ the [compilation](Compilation.md) guide.
 ## Images
 
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-new-ui.png)
+
+## OSX
+
+The osx builds are not signed and thus will produce a warning when you try to run the applications.
+
+![osx-warning](img/osx_popup.png)

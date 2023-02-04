@@ -14,6 +14,12 @@ Just check out the examples and the usage links below.
 
 If you dislike the tool, found a bug or need a feature, please let us know.
 
+# OSX
+
+Open the dmg and go e.g. to `vengi-voxconvert.app` - use **Show Package Contents** to see the binaries in the app. Go to `Contents/MacOS` and copy the contained files into a new folder.
+
+Use Shift+Open for running the cli - otherwise it will exit immediately.
+
 # Further reading
 
 * [Usage](Usage.md)
