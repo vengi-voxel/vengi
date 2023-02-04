@@ -104,11 +104,12 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::ClientCameraMaxZoom, "1000.0");
 	core::Var::get(cfg::ClientCameraMinZoom, "0.1");
 	core::Var::get(cfg::ClientFullscreen, "false", "Fullscreen or window", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditColorWheel, "false", "Use the color wheel in the palette color editing", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditShowColorPicker, "false", "Always show the color picker below the palette", core::Var::boolValidator);
 	const app::AppState state = Super::onConstruct();
 	_framesPerSecondsCap->setVal(60.0f);
 
+	core::Var::get(cfg::VoxEditColorWheel, "false", "Use the color wheel in the palette color editing", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditShowColorPicker, "false", "Always show the color picker below the palette", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditModificationDismissMillis, "1500", "Milliseconds that a region should get highlighted in a few situations");
 	core::Var::get(cfg::VoxEditModificationDismissMillis, "1500", "Milliseconds that a region should get highlighted in a few situations");
 	core::Var::get(cfg::VoxEditRegionSizes, "", "Show fixed region sizes in the positions panel", ivec3ListValidator);
 	core::Var::get(cfg::VoxEditShowgrid, "true", "Show the grid", core::Var::boolValidator);
@@ -275,7 +276,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		_mainWindow->resetCamera();
-	}).setHelp("Reset cameras in all viewports");
+	}).setHelp("Reset cameras in viewports");
 
 	return state;
 }
