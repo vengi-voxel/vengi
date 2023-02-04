@@ -37,7 +37,7 @@ TEST(DynamicMapTest, testCollision) {
 	for (int64_t i = 0; i < 128; ++i) {
 		map.put(i, i);
 	}
-	int64_t value;
+	int64_t value = 0;
 	for (int64_t i = 0; i < 128; ++i) {
 		EXPECT_TRUE(map.get(i, value));
 		EXPECT_EQ(i, value);
