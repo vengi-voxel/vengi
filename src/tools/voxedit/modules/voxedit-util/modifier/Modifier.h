@@ -51,7 +51,7 @@ protected:
 	Selection _selection = voxel::Region::InvalidRegion;
 	bool _selectionValid = false;
 	bool _secondPosValid = false;
-	bool _aabbMode = false;
+	bool _aabbMode = false; /** true if the current action spans an aabb */
 	bool _center = false;
 	/**
 	 * timer value which indicates the next execution time in case you keep the

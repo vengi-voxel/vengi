@@ -23,14 +23,14 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 		execute(false);
 		return initialDown;
 	}
-	Modifier& mgr = sceneMgr().modifier();
+	Modifier& modifier = sceneMgr().modifier();
 	if (initialDown) {
 		if (_newType != ModifierType::None) {
-			_oldType = mgr.modifierType();
-			mgr.setModifierType(_newType);
-			sceneMgr().trace(true);
+			_oldType = modifier.modifierType();
+			modifier.setModifierType(_newType);
+			sceneMgr().trace(false);
 		}
-		mgr.aabbStart();
+		modifier.aabbStart();
 	}
 	return initialDown;
 }
@@ -42,10 +42,10 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 		return allUp;
 	}
 	if (allUp) {
-		Modifier& mgr = sceneMgr().modifier();
-		_secondAction = mgr.needsSecondAction();
+		Modifier& modifier = sceneMgr().modifier();
+		_secondAction = modifier.needsSecondAction();
 		if (_secondAction) {
-			mgr.aabbStep();
+			modifier.aabbStep();
 			return allUp;
 		}
 		execute(false);

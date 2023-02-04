@@ -367,9 +367,6 @@ void Modifier::setVoxelAtCursor(const voxel::Voxel& voxel) {
 
 bool Modifier::aabbAction(voxel::RawVolume *volume,
 						  const std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)> &callback) {
-	if (!_aabbMode) {
-		return false;
-	}
 	const bool selectFlag = (_modifierType & ModifierType::Select) == ModifierType::Select;
 	if (selectFlag) {
 		const math::AABB<int> a = aabb();
