@@ -140,18 +140,22 @@ void Viewport::dragAndDrop(float headerSize) {
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
 			const int dragPalIdx = (int)(intptr_t)payload->Data;
-			updateViewportTrace(headerSize);
-			ModifierFacade &modifier = sceneMgr().modifier();
-			modifier.setCursorVoxel(voxel::createVoxel(dragPalIdx));
 			const int nodeId = sceneMgr().sceneGraph().activeNode();
-			modifier.aabbStart();
-			modifier.aabbAction(sceneMgr().volume(nodeId),
-								[nodeId](const voxel::Region &region, ModifierType type, bool markUndo) {
-									if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
-										sceneMgr().modified(nodeId, region, markUndo);
-									}
-								});
-			modifier.aabbAbort();
+			if (voxelformat::SceneGraphNode *node = sceneMgr().sceneGraphNode(nodeId)) {
+				if (node->visible() && node->type() == voxelformat::SceneGraphNodeType::Model) {
+					updateViewportTrace(headerSize);
+					ModifierFacade &modifier = sceneMgr().modifier();
+					modifier.setCursorVoxel(voxel::createVoxel(dragPalIdx));
+					modifier.aabbStart();
+					auto callback = [nodeId](const voxel::Region &region, ModifierType type, bool markUndo) {
+						if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
+							sceneMgr().modified(nodeId, region, markUndo);
+						}
+					};
+					modifier.aabbAction(node->volume(), callback);
+					modifier.aabbAbort();
+				}
+			}
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
 			const core::String &filename = *(core::String *)payload->Data;

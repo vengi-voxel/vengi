@@ -170,8 +170,6 @@ private:
 	math::AABB<float> toAABB(const voxel::Region& region) const;
 	math::OBB<float> toOBB(bool sceneMode, const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const;
 protected:
-	voxelformat::SceneGraphNode *sceneGraphNode(int nodeId);
-	const voxelformat::SceneGraphNode *sceneGraphNode(int nodeId) const;
 	bool setSceneGraphNodeVolume(voxelformat::SceneGraphNode &node, voxel::RawVolume* volume);
 	bool loadSceneGraph(voxelformat::SceneGraph&& sceneGraph);
 	int activeNode() const;
@@ -388,6 +386,11 @@ public:
 	void setRenderShadow(bool shadow);
 	bool setGridResolution(int resolution);
 
+	voxelformat::SceneGraphNode *sceneGraphNode(int nodeId);
+	const voxelformat::SceneGraphNode *sceneGraphNode(int nodeId) const;
+
+	bool hasClipboardCopy() const;
+
 	// component access
 	const ModifierFacade& modifier() const;
 	ModifierFacade& modifier();
@@ -400,8 +403,6 @@ public:
 	video::ShapeBuilder& shapeBuilder();
 	render::ShapeRenderer& shapeRenderer();
 	const voxelformat::SceneGraph &sceneGraph();
-
-	bool hasClipboardCopy() const;
 
 private:
 	void onNewNodeAdded(int newNodeId);

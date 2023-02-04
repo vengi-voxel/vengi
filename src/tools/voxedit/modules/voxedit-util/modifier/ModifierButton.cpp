@@ -5,6 +5,7 @@
 #include "ModifierButton.h"
 #include "core/BindingContext.h"
 #include "../SceneManager.h"
+#include "voxelformat/SceneGraphNode.h"
 
 namespace voxedit {
 
@@ -55,23 +56,28 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 }
 
 void ModifierButton::execute(bool single) {
-	Modifier& mgr = sceneMgr().modifier();
+	Modifier& modifier = sceneMgr().modifier();
 	sceneMgr().nodeForeachGroup([&] (int nodeId) {
 		Log::debug("Execute modifier action for node %i", nodeId);
-		voxel::RawVolume* volume = sceneMgr().volume(nodeId);
-		mgr.aabbAction(volume, [&] (const voxel::Region& region, ModifierType type, bool markUndo) {
-			if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
-				sceneMgr().modified(nodeId, region, markUndo);
+		if (voxelformat::SceneGraphNode *node = sceneMgr().sceneGraphNode(nodeId)) {
+			if (!node->visible()) {
+				return;
 			}
-		});
+			voxel::RawVolume* volume = sceneMgr().volume(nodeId);
+			modifier.aabbAction(volume, [&] (const voxel::Region& region, ModifierType type, bool markUndo) {
+				if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
+					sceneMgr().modified(nodeId, region, markUndo);
+				}
+			});
+		}
 	});
 	if (_oldType != ModifierType::None) {
-		mgr.setModifierType(_oldType);
+		modifier.setModifierType(_oldType);
 		sceneMgr().trace(true);
 		_oldType = ModifierType::None;
 	}
 	if (!single) {
-		mgr.aabbAbort();
+		modifier.aabbAbort();
 	}
 }
 
