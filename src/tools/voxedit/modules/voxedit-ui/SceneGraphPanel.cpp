@@ -118,9 +118,9 @@ static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sc
 	}
 }
 
-static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGraph &sceneGraph,
+void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGraph &sceneGraph,
 							  voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener,
-							  int depth) {
+							  int depth) const {
 	const int nodeId = node.id();
 	bool open = false;
 
@@ -129,6 +129,10 @@ static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGra
 		ImGui::TableNextColumn();
 		const core::String &visibleId = core::string::format("##visible-node-%i", nodeId);
 		bool visible = node.visible();
+		ui::ScopedStyle style;
+		if (_hideInactive->boolVal()) {
+			style.disableItem();
+		}
 		if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
 			sceneMgr().nodeSetVisible(nodeId, visible);
 		}
@@ -241,6 +245,7 @@ static void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGra
 
 bool SceneGraphPanel::init() {
 	_animationSpeedVar = core::Var::getSafe(cfg::VoxEditAnimationSpeed);
+	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
 	return true;
 }
 
