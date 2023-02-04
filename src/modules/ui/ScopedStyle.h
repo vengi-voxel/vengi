@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Color.h"
 #include "dearimgui/imgui.h"
 #include "dearimgui/imgui_internal.h"
 
@@ -26,6 +27,12 @@ public:
 	inline void setColor(ImGuiCol idx, const ImVec4 &col) {
 		ImGui::PushStyleColor(idx, col);
 		++_color;
+	}
+	inline void darker(ImGuiCol idx, float f = 1.0f) {
+		setColor(idx, core::Color::darker(ImGui::GetStyle().Colors[idx], f));
+	}
+	inline void brighter(ImGuiCol idx, float f = 1.0f) {
+		setColor(idx, core::Color::brighter(ImGui::GetStyle().Colors[idx], f));
 	}
 	inline void setFont(ImFont *font) {
 		ImGui::PushFont(font);
