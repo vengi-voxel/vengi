@@ -57,20 +57,23 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 
 void ModifierButton::execute(bool single) {
 	Modifier& modifier = sceneMgr().modifier();
-	sceneMgr().nodeForeachGroup([&] (int nodeId) {
-		Log::debug("Execute modifier action for node %i", nodeId);
+	int nodes = 0;
+	auto func = [&] (int nodeId) {
 		if (voxelformat::SceneGraphNode *node = sceneMgr().sceneGraphNode(nodeId)) {
 			if (!node->visible()) {
 				return;
 			}
+			Log::debug("Execute modifier action for node %i", nodeId);
 			voxel::RawVolume* volume = sceneMgr().volume(nodeId);
 			modifier.aabbAction(volume, [&] (const voxel::Region& region, ModifierType type, bool markUndo) {
 				if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
 					sceneMgr().modified(nodeId, region, markUndo);
 				}
 			});
+			++nodes;
 		}
-	});
+	};
+	sceneMgr().nodeForeachGroup(func);
 	if (_oldType != ModifierType::None) {
 		modifier.setModifierType(_oldType);
 		sceneMgr().trace(true);
@@ -78,6 +81,9 @@ void ModifierButton::execute(bool single) {
 	}
 	if (!single) {
 		modifier.aabbAbort();
+	}
+	if (nodes == 0) {
+		Log::warn("Could not execute the desired action on any visible node");
 	}
 }
 
