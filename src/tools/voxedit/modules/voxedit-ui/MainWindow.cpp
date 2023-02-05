@@ -288,8 +288,8 @@ void MainWindow::rightWidget() {
 	}
 	// top
 	_positionsPanel.update(TITLE_POSITIONS, _lastSceneMode, _lastExecutedCommand);
-	_toolsPanel.update(TITLE_TOOLS, _lastExecutedCommand);
-	_assetPanel.update(TITLE_ASSET, _lastExecutedCommand);
+	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, _lastExecutedCommand);
+	_assetPanel.update(TITLE_ASSET, _lastSceneMode, _lastExecutedCommand);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
 	_mementoPanel.update(TITLE_MEMENTO, _lastExecutedCommand);
 

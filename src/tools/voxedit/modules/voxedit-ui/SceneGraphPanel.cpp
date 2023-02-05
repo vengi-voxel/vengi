@@ -252,6 +252,9 @@ bool SceneGraphPanel::init() {
 void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNodeSettings* modelNodeSettings, command::CommandExecutionListener &listener) {
 	voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
 	_hasFocus = false;
+
+	// TODO handle dragdrop::ModelPayload with the correct parent node
+
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		_hasFocus = ImGui::IsWindowHovered();
 		const voxelformat::SceneGraph& sceneGraph = sceneMgr.sceneGraph();

@@ -24,7 +24,7 @@ private:
 	int _currentSelectedModel = 0;
 public:
 	AssetPanel(const io::FilesystemPtr &filesystem);
-	void update(const char *title, command::CommandExecutionListener &listener);
+	void update(const char *title, bool sceneMode, command::CommandExecutionListener &listener);
 };
 
 } // namespace voxedit

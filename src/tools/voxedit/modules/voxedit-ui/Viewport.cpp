@@ -133,6 +133,7 @@ void Viewport::updateViewportTrace(float headerSize) {
 
 void Viewport::dragAndDrop(float headerSize) {
 	if (ImGui::BeginDragDropTarget()) {
+		// TODO: only in edit mode
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
 			const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
 			updateViewportTrace(headerSize);

@@ -18,8 +18,10 @@ class ToolsPanel {
 		int spacing = 0;
 		int thickness = 1;
 	} _text;
+	void updateSceneMode(command::CommandExecutionListener &listener);
+	void updateEditMode(command::CommandExecutionListener &listener);
 public:
-	void update(const char *title, command::CommandExecutionListener &listener);
+	void update(const char *title, bool sceneMode, command::CommandExecutionListener &listener);
 };
 
 } // namespace voxedit
