@@ -49,7 +49,7 @@ private:
 	void setCurrentPath(video::OpenFileMode type, const core::String& path);
 	void selectFilter(video::OpenFileMode type, int index);
 	bool hide(const core::String &file) const;
-
+	void resetState();
 	void applyFilter(video::OpenFileMode type);
 	bool readDir(video::OpenFileMode type);
 	void removeBookmark(const core::String &bookmark);

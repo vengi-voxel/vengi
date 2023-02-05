@@ -278,9 +278,7 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 }
 
 void FileDialog::setCurrentPath(video::OpenFileMode type, const core::String& path) {
-	_fileSelectIndex = 0;
-	_currentFile = io::FilesystemEntry();
-	_error[0] = '\0';
+	resetState();
 	_currentPath = path;
 	core::Var::getSafe(cfg::UILastDirectory)->setVal(_currentPath);
 	readDir(type);
@@ -412,6 +410,12 @@ void FileDialog::construct() {
 	_lastFilter = core::Var::get(cfg::UILastFilter, "0", "The last selected file type filter in the file dialog");
 }
 
+void FileDialog::resetState() {
+	_fileSelectIndex = 0;
+	_currentFile = io::FilesystemEntry();
+	_error[0] = '\0';
+}
+
 bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize,
 								video::OpenFileMode type, const io::FormatDescription **formatDesc) {
 	if (open != nullptr && !*open) {
@@ -504,15 +508,13 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			if (ImGui::Button("Yes##filedialog-override")) {
 				const core::String &fullPath = assemblePath(_currentPath, _currentFile);
 				SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
-				_fileSelectIndex = 0;
-				_currentFile = io::FilesystemEntry();
+				resetState();
 				if (open != nullptr) {
 					*open = false;
 				}
 				if (formatDesc != nullptr) {
 					*formatDesc = _currentFilterFormat;
 				}
-				_error[0] = '\0';
 				ImGui::CloseCurrentPopup();
 				ImGui::EndPopup();
 				ImGui::EndPopup();
@@ -562,8 +564,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 		const ImVec2 chooseTextSize = ImGui::CalcTextSize(buttonText);
 		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - cancelTextSize.x - chooseTextSize.x - 40.0f);
 		if (ImGui::Button("Cancel##filedialog") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
-			_fileSelectIndex = 0;
-			_currentFile = io::FilesystemEntry();
+			resetState();
 			core_assert(bufferSize >= 1);
 			buffer[0] = '\0';
 			if (open != nullptr) {
@@ -583,15 +584,13 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 				} else {
 					const core::String &fullPath = assemblePath(_currentPath, _currentFile);
 					SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
-					_fileSelectIndex = 0;
-					_currentFile = io::FilesystemEntry();
+					resetState();
 					if (open != nullptr) {
 						*open = false;
 					}
 					if (formatDesc != nullptr) {
 						*formatDesc = _currentFilterFormat;
 					}
-					_error[0] = '\0';
 					ImGui::EndPopup();
 					return true;
 				}
@@ -612,15 +611,13 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 						ImGui::OpenPopup(FILE_ALREADY_EXISTS_POPUP);
 					} else {
 						SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
-						_fileSelectIndex = 0;
-						_currentFile = io::FilesystemEntry();
+						resetState();
 						if (open != nullptr) {
 							*open = false;
 						}
 						if (formatDesc != nullptr) {
 							*formatDesc = _currentFilterFormat;
 						}
-						_error[0] = '\0';
 						ImGui::EndPopup();
 						return true;
 					}
@@ -632,7 +629,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 		if (strlen(_error) > 0) {
 			ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _error);
 		} else {
-			ImGui::Spacing();
+			ImGui::TextUnformatted("");
 		}
 
 		if (fileDialogOptions && ImGui::CollapsingHeader("Options##filedialogoptions")) {
