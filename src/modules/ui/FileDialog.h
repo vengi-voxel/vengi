@@ -40,6 +40,8 @@ private:
 
 	core::VarPtr _showHidden;
 	core::VarPtr _bookmarks;
+	core::VarPtr _lastDirVar;
+	core::VarPtr _lastFilter;
 
 	io::FilesystemEntry _newFolderName;
 	char _newFolderError[500] = "";
@@ -51,16 +53,17 @@ private:
 	void applyFilter(video::OpenFileMode type);
 	bool readDir(video::OpenFileMode type);
 	void removeBookmark(const core::String &bookmark);
-	void bookMarkEntry(video::OpenFileMode type, const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
-	void bookmarkPanel(video::OpenFileMode type, const core::String &bookmarks);
+	void quickAccessEntry(video::OpenFileMode type, const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
+	void quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks);
 	void currentPathPanel();
-	void createBookmarkPanel();
 	/**
 	 * @return @c true if a file was double clicked
 	 */
 	bool filesPanel(video::OpenFileMode type);
 
 public:
+	void construct();
+
 	bool openDir(video::OpenFileMode type, const io::FormatDescription* formats, const core::String& filename = "");
 	/**
 	* @param open The visibility state of the dialog. This is set to false if the dialog should get closed.

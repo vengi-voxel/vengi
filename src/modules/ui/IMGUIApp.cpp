@@ -159,8 +159,8 @@ bool IMGUIApp::handleSDLEvent(SDL_Event& event) {
 app::AppState IMGUIApp::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	_console.construct();
-	_lastDirectory = core::Var::get(cfg::UILastDirectory, io::filesystem()->homePath().c_str());
-	core::Var::get(cfg::UILastFilter, "0", "The last selected file type filter in the file dialog");
+	_fileDialog.construct();
+	_lastDirectory = core::Var::getSafe(cfg::UILastDirectory);
 
 	const char *uiStyleDefaultValue = "0";
 	if (!isDarkMode()) {
@@ -170,7 +170,6 @@ app::AppState IMGUIApp::onConstruct() {
 		const int themeIdx = core::string::toInt(val);
 		return themeIdx >= 0 && themeIdx <= 3;
 	});
-	core::Var::get(cfg::UIFileDialogShowHidden, "false", "Show hidden file system entities");
 	core::Var::get(cfg::UINotifyDismissMillis, "3000", "Timeout for notifications in millis");
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
 	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST);
@@ -179,7 +178,6 @@ app::AppState IMGUIApp::onConstruct() {
 									const float size = core::string::toFloat(val);
 									return size >= 2.0f;
 								});
-	core::Var::get(cfg::UIBookmarks, "");
 	command::Command::registerCommand("ui_showtextures", [&] (const command::CmdArgs& args) {
 		_showTexturesDialog = true;
 	});
