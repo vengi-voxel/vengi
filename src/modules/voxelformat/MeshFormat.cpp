@@ -256,7 +256,7 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 	Log::debug("create voxels");
 	voxel::RawVolumeWrapper wrapper(node.volume());
 	voxel::Palette palette;
-	const bool createPalette = core::Var::get(cfg::VoxelCreatePalette)->boolVal();
+	const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 	if (!createPalette) {
 		palette = voxel::getPalette();
 	}

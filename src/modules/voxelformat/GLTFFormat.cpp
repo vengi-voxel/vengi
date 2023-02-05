@@ -217,255 +217,260 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		meshIdxNodeMap.get(nodeId, meshExtIdx);
 		const MeshExt &meshExt = meshes[meshExtIdx];
 
-		const voxel::Mesh *mesh = &meshExt.mesh->mesh; // TODO: alpha support
-		Log::debug("Exporting layer %s", meshExt.name.c_str());
+		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
+			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
+			if (mesh->isEmpty()) {
+				continue;
+			}
+			Log::debug("Exporting layer %s", meshExt.name.c_str());
 
-		const int nv = (int)mesh->getNoOfVertices();
-		const int ni = (int)mesh->getNoOfIndices();
+			const int nv = (int)mesh->getNoOfVertices();
+			const int ni = (int)mesh->getNoOfIndices();
 
-		if (ni % 3 != 0) {
-			Log::error("Unexpected indices amount");
-			return false;
-		}
-
-		KeyFrameIndex keyFrameIdx = 0;
-		const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
-		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
-		const voxel::IndexType *indices = mesh->getRawIndexData();
-		const char *objectName = meshExt.name.c_str();
-
-		if (objectName[0] == '\0') {
-			objectName = "Noname";
-		}
-
-		tinygltf::Mesh expMesh;
-		tinygltf::Buffer buffer;
-
-		expMesh.name = std::string(objectName);
-
-		const unsigned int remainder = (sizeof(IndexUnion) * ni) % sizeof(FloatUnion);
-		const unsigned int paddingBytes = remainder != 0 ? sizeof(FloatUnion) - remainder : 0;
-
-		unsigned int maxIndex = 0;
-		unsigned int minIndex = UINT_MAX;
-
-		for (int i = 0; i < ni; i++) {
-			const int idx = i;
-			IndexUnion intCharUn;
-			intCharUn.i = indices[idx];
-
-			if (maxIndex < intCharUn.i) {
-				maxIndex = intCharUn.i;
+			if (ni % 3 != 0) {
+				Log::error("Unexpected indices amount");
+				return false;
 			}
 
-			if (intCharUn.i < minIndex) {
-				minIndex = intCharUn.i;
+			KeyFrameIndex keyFrameIdx = 0;
+			const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
+			const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
+			const voxel::IndexType *indices = mesh->getRawIndexData();
+			const char *objectName = meshExt.name.c_str();
+
+			if (objectName[0] == '\0') {
+				objectName = "Noname";
 			}
 
-			for (size_t u = 0; u < sizeof(intCharUn); u++) {
-				buffer.data.push_back(intCharUn.b[u]);
-			}
-		}
+			tinygltf::Mesh expMesh;
+			tinygltf::Buffer buffer;
 
-		for (unsigned int i = 0; i < paddingBytes; i++) {
-			buffer.data.push_back(0x00);
-		}
+			expMesh.name = std::string(objectName);
 
-		const unsigned int FLOAT_BUFFER_OFFSET = buffer.data.size();
+			const unsigned int remainder = (sizeof(IndexUnion) * ni) % sizeof(FloatUnion);
+			const unsigned int paddingBytes = remainder != 0 ? sizeof(FloatUnion) - remainder : 0;
 
-		glm::vec3 maxVertex(-FLT_MAX);
-		glm::vec3 minVertex(FLT_MAX);
-		glm::vec2 minMaxUVX(FLT_MAX, -FLT_MAX);
+			unsigned int maxIndex = 0;
+			unsigned int minIndex = UINT_MAX;
 
-		const glm::vec3 &offset = mesh->getOffset();
+			for (int i = 0; i < ni; i++) {
+				const int idx = i;
+				IndexUnion intCharUn;
+				intCharUn.i = indices[idx];
 
-		const glm::vec3 pivotOffset = offset - transform.pivot() * meshExt.size;
-		for (int j = 0; j < nv; j++) {
-			const voxel::VoxelVertex &v = vertices[j];
-
-			glm::vec3 pos = v.position;
-
-			if (meshExt.applyTransform) {
-				pos = pos + pivotOffset;
-			}
-
-			for (int coordIndex = 0; coordIndex < glm::vec3::length(); coordIndex++) {
-				FloatUnion floatCharUn;
-				floatCharUn.f = pos[coordIndex];
-
-				if (maxVertex[coordIndex] < floatCharUn.f) {
-					maxVertex[coordIndex] = floatCharUn.f;
+				if (maxIndex < intCharUn.i) {
+					maxIndex = intCharUn.i;
 				}
 
-				if (minVertex[coordIndex] > floatCharUn.f) {
-					minVertex[coordIndex] = floatCharUn.f;
+				if (intCharUn.i < minIndex) {
+					minIndex = intCharUn.i;
 				}
 
-				for (size_t u = 0; u < sizeof(floatCharUn); u++) {
-					buffer.data.push_back(floatCharUn.b[u]);
+				for (size_t u = 0; u < sizeof(intCharUn); u++) {
+					buffer.data.push_back(intCharUn.b[u]);
 				}
 			}
 
-			if (withTexCoords) {
-				const glm::vec2 &uv = paletteUV(v.colorIndex);
+			for (unsigned int i = 0; i < paddingBytes; i++) {
+				buffer.data.push_back(0x00);
+			}
 
-				FloatUnion floatCharUn;
-				floatCharUn.f = uv.x;
+			const unsigned int FLOAT_BUFFER_OFFSET = buffer.data.size();
 
-				if (minMaxUVX[0] > floatCharUn.f) {
-					minMaxUVX[0] = floatCharUn.f;
+			glm::vec3 maxVertex(-FLT_MAX);
+			glm::vec3 minVertex(FLT_MAX);
+			glm::vec2 minMaxUVX(FLT_MAX, -FLT_MAX);
+
+			const glm::vec3 &offset = mesh->getOffset();
+
+			const glm::vec3 pivotOffset = offset - transform.pivot() * meshExt.size;
+			for (int j = 0; j < nv; j++) {
+				const voxel::VoxelVertex &v = vertices[j];
+
+				glm::vec3 pos = v.position;
+
+				if (meshExt.applyTransform) {
+					pos = pos + pivotOffset;
 				}
 
-				if (minMaxUVX[1] < floatCharUn.f) {
-					minMaxUVX[1] = floatCharUn.f;
-				}
-
-				for (size_t u = 0; u < sizeof(floatCharUn); u++) {
-					buffer.data.push_back(floatCharUn.b[u]);
-				}
-
-				for (size_t u = 0; u < sizeof(floatCharUn); u++) {
-					buffer.data.push_back(uvYVal[u]);
-				}
-
-			} else if (withColor) {
-				const glm::vec4 &color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
-
-				for (int colorIdx = 0; colorIdx < glm::vec4::length(); colorIdx++) {
+				for (int coordIndex = 0; coordIndex < glm::vec3::length(); coordIndex++) {
 					FloatUnion floatCharUn;
-					floatCharUn.f = color[colorIdx];
+					floatCharUn.f = pos[coordIndex];
+
+					if (maxVertex[coordIndex] < floatCharUn.f) {
+						maxVertex[coordIndex] = floatCharUn.f;
+					}
+
+					if (minVertex[coordIndex] > floatCharUn.f) {
+						minVertex[coordIndex] = floatCharUn.f;
+					}
 
 					for (size_t u = 0; u < sizeof(floatCharUn); u++) {
 						buffer.data.push_back(floatCharUn.b[u]);
 					}
 				}
+
+				if (withTexCoords) {
+					const glm::vec2 &uv = paletteUV(v.colorIndex);
+
+					FloatUnion floatCharUn;
+					floatCharUn.f = uv.x;
+
+					if (minMaxUVX[0] > floatCharUn.f) {
+						minMaxUVX[0] = floatCharUn.f;
+					}
+
+					if (minMaxUVX[1] < floatCharUn.f) {
+						minMaxUVX[1] = floatCharUn.f;
+					}
+
+					for (size_t u = 0; u < sizeof(floatCharUn); u++) {
+						buffer.data.push_back(floatCharUn.b[u]);
+					}
+
+					for (size_t u = 0; u < sizeof(floatCharUn); u++) {
+						buffer.data.push_back(uvYVal[u]);
+					}
+
+				} else if (withColor) {
+					const glm::vec4 &color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
+
+					for (int colorIdx = 0; colorIdx < glm::vec4::length(); colorIdx++) {
+						FloatUnion floatCharUn;
+						floatCharUn.f = color[colorIdx];
+
+						for (size_t u = 0; u < sizeof(floatCharUn); u++) {
+							buffer.data.push_back(floatCharUn.b[u]);
+						}
+					}
+				}
 			}
-		}
 
-		tinygltf::BufferView indicesBufferView;
-		indicesBufferView.buffer = nthNodeIdx;
-		indicesBufferView.byteOffset = 0;
-		indicesBufferView.byteLength = FLOAT_BUFFER_OFFSET - paddingBytes;
-		indicesBufferView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
+			tinygltf::BufferView indicesBufferView;
+			indicesBufferView.buffer = nthNodeIdx;
+			indicesBufferView.byteOffset = 0;
+			indicesBufferView.byteLength = FLOAT_BUFFER_OFFSET - paddingBytes;
+			indicesBufferView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
 
-		tinygltf::BufferView verticesUvBufferView;
-		verticesUvBufferView.buffer = nthNodeIdx;
-		verticesUvBufferView.byteOffset = FLOAT_BUFFER_OFFSET;
-		verticesUvBufferView.byteLength = buffer.data.size() - FLOAT_BUFFER_OFFSET;
-		if (withTexCoords) {
-			verticesUvBufferView.byteStride = 20;
-		} else if (withColor) {
-			verticesUvBufferView.byteStride = 28;
-		}
-		verticesUvBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
-
-		// Describe the layout of indicesBufferView, the indices of the vertices
-		tinygltf::Accessor indicesAccessor;
-		indicesAccessor.bufferView = 2 * nthNodeIdx;
-		indicesAccessor.byteOffset = 0;
-		indicesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
-		static_assert(sizeof(IndexUnion) == 4, "");
-		indicesAccessor.count = ni;
-		indicesAccessor.type = TINYGLTF_TYPE_SCALAR;
-		indicesAccessor.maxValues.push_back(maxIndex);
-		indicesAccessor.minValues.push_back(minIndex);
-
-		// Describe the layout of verticesUvBufferView, the vertices themself
-		tinygltf::Accessor verticesAccessor;
-		verticesAccessor.bufferView = 2 * nthNodeIdx + 1;
-		verticesAccessor.byteOffset = 0;
-		verticesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-		verticesAccessor.count = nv;
-		verticesAccessor.type = TINYGLTF_TYPE_VEC3;
-		verticesAccessor.maxValues = {maxVertex[0], maxVertex[1], maxVertex[2]};
-		verticesAccessor.minValues = {minVertex[0], minVertex[1], minVertex[2]};
-
-		tinygltf::Accessor colorTexAccessor;
-		if (withTexCoords) {
-			// Uvs
-			colorTexAccessor.bufferView = 2 * nthNodeIdx + 1;
-			colorTexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-			colorTexAccessor.count = nv;
-			colorTexAccessor.byteOffset = 12;
-			colorTexAccessor.type = TINYGLTF_TYPE_VEC2;
-			colorTexAccessor.maxValues = {minMaxUVX[1], 0.5};
-			colorTexAccessor.minValues = {minMaxUVX[0], 0.5};
-		} else if (withColor) {
-			// Uvs
-			colorTexAccessor.bufferView = 2 * nthNodeIdx + 1;
-			colorTexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-			colorTexAccessor.count = nv;
-			colorTexAccessor.byteOffset = 12;
-			colorTexAccessor.type = TINYGLTF_TYPE_VEC4;
-		}
-
-		uint8_t primIdxFactor = (withTexCoords || withColor) ? 3 : 2;
-
-		// TODO: normals
-		{
-			// Build the mesh meshPrimitive and add it to the mesh
-			tinygltf::Primitive meshPrimitive;
-			meshPrimitive.indices = primIdxFactor * nthNodeIdx; // The index of the accessor for the vertex indices
-			meshPrimitive.attributes["POSITION"] =
-				primIdxFactor * nthNodeIdx + 1; // The index of the accessor for positions
+			tinygltf::BufferView verticesUvBufferView;
+			verticesUvBufferView.buffer = nthNodeIdx;
+			verticesUvBufferView.byteOffset = FLOAT_BUFFER_OFFSET;
+			verticesUvBufferView.byteLength = buffer.data.size() - FLOAT_BUFFER_OFFSET;
 			if (withTexCoords) {
-				const core::String &texcoordsKey = core::String::format("TEXCOORD_%i", texcoordIndex);
-				meshPrimitive.attributes[texcoordsKey.c_str()] = primIdxFactor * nthNodeIdx + 2;
+				verticesUvBufferView.byteStride = 20;
 			} else if (withColor) {
-				meshPrimitive.attributes["COLOR_0"] = primIdxFactor * nthNodeIdx + 2;
+				verticesUvBufferView.byteStride = 28;
 			}
-			meshPrimitive.material = materialId;
-			meshPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
-			expMesh.primitives.emplace_back(core::move(meshPrimitive));
-		}
+			verticesUvBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
-		{
-			tinygltf::Node node;
-			node.mesh = nthNodeIdx;
-			processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale);
-		}
+			// Describe the layout of indicesBufferView, the indices of the vertices
+			tinygltf::Accessor indicesAccessor;
+			indicesAccessor.bufferView = 2 * nthNodeIdx;
+			indicesAccessor.byteOffset = 0;
+			indicesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
+			static_assert(sizeof(IndexUnion) == 4, "");
+			indicesAccessor.count = ni;
+			indicesAccessor.type = TINYGLTF_TYPE_SCALAR;
+			indicesAccessor.maxValues.push_back(maxIndex);
+			indicesAccessor.minValues.push_back(minIndex);
+
+			// Describe the layout of verticesUvBufferView, the vertices themself
+			tinygltf::Accessor verticesAccessor;
+			verticesAccessor.bufferView = 2 * nthNodeIdx + 1;
+			verticesAccessor.byteOffset = 0;
+			verticesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+			verticesAccessor.count = nv;
+			verticesAccessor.type = TINYGLTF_TYPE_VEC3;
+			verticesAccessor.maxValues = {maxVertex[0], maxVertex[1], maxVertex[2]};
+			verticesAccessor.minValues = {minVertex[0], minVertex[1], minVertex[2]};
+
+			tinygltf::Accessor colorTexAccessor;
+			if (withTexCoords) {
+				// Uvs
+				colorTexAccessor.bufferView = 2 * nthNodeIdx + 1;
+				colorTexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+				colorTexAccessor.count = nv;
+				colorTexAccessor.byteOffset = 12;
+				colorTexAccessor.type = TINYGLTF_TYPE_VEC2;
+				colorTexAccessor.maxValues = {minMaxUVX[1], 0.5};
+				colorTexAccessor.minValues = {minMaxUVX[0], 0.5};
+			} else if (withColor) {
+				// Uvs
+				colorTexAccessor.bufferView = 2 * nthNodeIdx + 1;
+				colorTexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+				colorTexAccessor.count = nv;
+				colorTexAccessor.byteOffset = 12;
+				colorTexAccessor.type = TINYGLTF_TYPE_VEC4;
+			}
+
+			uint8_t primIdxFactor = (withTexCoords || withColor) ? 3 : 2;
+
+			// TODO: normals
+			{
+				// Build the mesh meshPrimitive and add it to the mesh
+				tinygltf::Primitive meshPrimitive;
+				meshPrimitive.indices = primIdxFactor * nthNodeIdx; // The index of the accessor for the vertex indices
+				meshPrimitive.attributes["POSITION"] =
+					primIdxFactor * nthNodeIdx + 1; // The index of the accessor for positions
+				if (withTexCoords) {
+					const core::String &texcoordsKey = core::String::format("TEXCOORD_%i", texcoordIndex);
+					meshPrimitive.attributes[texcoordsKey.c_str()] = primIdxFactor * nthNodeIdx + 2;
+				} else if (withColor) {
+					meshPrimitive.attributes["COLOR_0"] = primIdxFactor * nthNodeIdx + 2;
+				}
+				meshPrimitive.material = materialId;
+				meshPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
+				expMesh.primitives.emplace_back(core::move(meshPrimitive));
+			}
+
+			{
+				tinygltf::Node node;
+				node.mesh = nthNodeIdx;
+				processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale);
+			}
 
 #if 0
-		for (const core::String &animationName : sceneGraph.animations()) {
-			tinygltf::Animation animation;
-			animation.name = animationName.c_str();
-			tinygltf::AnimationSampler sampler;
-			SceneGraphKeyFrame keyFrame;
-			sampler.input = keyFrame.frameIdx * _priv::FPS;
-			sampler.output = -1; // TODO
-			if (keyFrame.interpolation == InterpolationType::Linear) {
-				sampler.interpolation = "LINEAR";
-			} else if (keyFrame.interpolation == InterpolationType::Instant) {
-				sampler.interpolation = "STEP";
-			// } else if (keyFrame.interpolation == InterpolationType::Instant) {
-				// TODO: implement easing for this type
-				// sampler.interpolation  = "CUBICSPLINE";
+			for (const core::String &animationName : sceneGraph.animations()) {
+				tinygltf::Animation animation;
+				animation.name = animationName.c_str();
+				tinygltf::AnimationSampler sampler;
+				SceneGraphKeyFrame keyFrame;
+				sampler.input = keyFrame.frameIdx * _priv::FPS;
+				sampler.output = -1; // TODO
+				if (keyFrame.interpolation == InterpolationType::Linear) {
+					sampler.interpolation = "LINEAR";
+				} else if (keyFrame.interpolation == InterpolationType::Instant) {
+					sampler.interpolation = "STEP";
+				// } else if (keyFrame.interpolation == InterpolationType::Instant) {
+					// TODO: implement easing for this type
+					// sampler.interpolation  = "CUBICSPLINE";
+				}
+				animation.samplers.push_back(sampler);
+
+				tinygltf::AnimationChannel channel;
+				channel.sampler = (int)animation.samplers.size() - 1;
+				channel.target_node = node.id();
+				channel.target_path = "translation";
+				// TODO: "rotation", "scale"
+
+				animation.channels.push_back(channel);
+				m.animations.push_back(animation);
 			}
-			animation.samplers.push_back(sampler);
-
-			tinygltf::AnimationChannel channel;
-			channel.sampler = (int)animation.samplers.size() - 1;
-			channel.target_node = node.id();
-			channel.target_path = "translation";
-			// TODO: "rotation", "scale"
-
-			animation.channels.push_back(channel);
-			m.animations.push_back(animation);
-		}
 #endif
 
-		m.meshes.emplace_back(core::move(expMesh));
-		m.buffers.emplace_back(core::move(buffer));
-		m.bufferViews.emplace_back(core::move(indicesBufferView));
-		m.bufferViews.emplace_back(core::move(verticesUvBufferView));
-		m.accessors.emplace_back(core::move(indicesAccessor));
-		m.accessors.emplace_back(core::move(verticesAccessor));
+			m.meshes.emplace_back(core::move(expMesh));
+			m.buffers.emplace_back(core::move(buffer));
+			m.bufferViews.emplace_back(core::move(indicesBufferView));
+			m.bufferViews.emplace_back(core::move(verticesUvBufferView));
+			m.accessors.emplace_back(core::move(indicesAccessor));
+			m.accessors.emplace_back(core::move(verticesAccessor));
 
-		if (withTexCoords || withColor) {
-			m.accessors.emplace_back(core::move(colorTexAccessor));
+			if (withTexCoords || withColor) {
+				m.accessors.emplace_back(core::move(colorTexAccessor));
+			}
+
+			nthNodeIdx++;
 		}
-
-		nthNodeIdx++;
 	}
 
 	m.scenes.emplace_back(core::move(scene));

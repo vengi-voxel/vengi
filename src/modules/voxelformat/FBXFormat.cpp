@@ -71,6 +71,16 @@ bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filen
 // https://github.com/blender/blender/blob/00e219d8e97afcf3767a6d2b28a6d05bcc984279/release/io/export_fbx.py
 bool FBXFormat::saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad,
 					bool withColor, bool withTexCoords, const SceneGraph &sceneGraph) {
+	int meshCount = 0;
+	for (const MeshExt &meshExt : meshes) {
+		for (int i = 0; i < 2; ++i) {
+			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
+			if (mesh->isEmpty()) {
+				continue;
+			}
+			++meshCount;
+		}
+	}
 	// TODO: support keyframes (takes)
 	stream.writeStringFormat(false, R"(FBXHeaderExtension:  {
 	FBXHeaderVersion: 1003
@@ -97,136 +107,141 @@ Definitions: {
 Objects: {
 
 )",
-							PROJECT_VERSION, app::App::getInstance()->appname().c_str(), PROJECT_VERSION, (int)meshes.size());
+							PROJECT_VERSION, app::App::getInstance()->appname().c_str(), PROJECT_VERSION, meshCount);
 
-	Log::debug("Exporting %i layers", (int)meshes.size());
+	Log::debug("Exporting %i layers", meshCount);
 
 	// TODO: maybe also export Model: "Model::Camera", "Camera"
 	// TODO: are connections and relations needed?
 	// https://github.com/libgdx/fbx-conv/blob/master/samples/blender/cube.fbx
 
 	for (const MeshExt &meshExt : meshes) {
-		const voxel::Mesh *mesh = &meshExt.mesh->mesh; // TODO: alpha support
-		Log::debug("Exporting layer %s", meshExt.name.c_str());
-		const int nv = (int)mesh->getNoOfVertices();
-		const int ni = (int)mesh->getNoOfIndices();
-		if (ni % 3 != 0) {
-			Log::error("Unexpected indices amount");
-			return false;
-		}
-		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-		const voxel::Palette &palette = graphNode.palette();
-		const KeyFrameIndex keyFrameIdx = 0;
-		const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
-		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
-		const voxel::IndexType *indices = mesh->getRawIndexData();
-		const char *objectName = meshExt.name.c_str();
-		if (objectName[0] == '\0') {
-			objectName = "Noname";
-		}
-
-		stream.writeStringFormat(false, "\tModel: \"%s\", \"Mesh\" {\n", objectName);
-		wrapBool(stream.writeString("\t\tVersion: 232\n", false))
-		wrapBool(stream.writeString("\t\tVertices: ", false))
-		for (int i = 0; i < nv; ++i) {
-			const voxel::VoxelVertex &v = vertices[i];
-
-			glm::vec3 pos;
-			if (meshExt.applyTransform) {
-				pos = transform.apply(v.position, meshExt.size);
-			} else {
-				pos = v.position;
+		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
+			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
+			if (mesh->isEmpty()) {
+				continue;
 			}
-			pos *= scale;
-			if (i > 0) {
-				wrapBool(stream.writeString(",", false))
+			Log::debug("Exporting layer %s", meshExt.name.c_str());
+			const int nv = (int)mesh->getNoOfVertices();
+			const int ni = (int)mesh->getNoOfIndices();
+			if (ni % 3 != 0) {
+				Log::error("Unexpected indices amount");
+				return false;
 			}
-			stream.writeStringFormat(false, "%.04f,%.04f,%.04f", pos.x, pos.y, pos.z);
-		}
-		wrapBool(stream.writeString("\n", false))
-
-		wrapBool(stream.writeString("\t\tPolygonVertexIndex: ", false))
-
-		for (int i = 0; i < ni; i += 3) {
-			const uint32_t one = indices[i + 0] + 1;
-			const uint32_t two = indices[i + 1] + 1;
-			const uint32_t three = indices[i + 2] + 1;
-			if (i > 0) {
-				wrapBool(stream.writeString(",", false))
+			const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+			const voxel::Palette &palette = graphNode.palette();
+			const KeyFrameIndex keyFrameIdx = 0;
+			const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
+			const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
+			const voxel::IndexType *indices = mesh->getRawIndexData();
+			const char *objectName = meshExt.name.c_str();
+			if (objectName[0] == '\0') {
+				objectName = "Noname";
 			}
-			stream.writeStringFormat(false, "%i,%i,%i", (int)one, (int)two, (int)three);
-		}
-		wrapBool(stream.writeString("\n", false))
-		wrapBool(stream.writeString("\t\tGeometryVersion: 124\n", false))
 
-		if (withTexCoords) {
-			wrapBool(stream.writeString("\t\tLayerElementUV: 0 {\n", false))
-			wrapBool(stream.writeString("\t\t\tVersion: 101\n", false))
-			stream.writeStringFormat(false, "\t\t\tName: \"%sUV\"\n", objectName);
-			wrapBool(stream.writeString("\t\t\tMappingInformationType: \"ByPolygonVertex\"\n", false))
-			wrapBool(stream.writeString("\t\t\tReferenceInformationType: \"Direct\"\n", false))
-			wrapBool(stream.writeString("\t\t\tUV: ", false))
+			stream.writeStringFormat(false, "\tModel: \"%s\", \"Mesh\" {\n", objectName);
+			wrapBool(stream.writeString("\t\tVersion: 232\n", false))
+			wrapBool(stream.writeString("\t\tVertices: ", false))
+			for (int i = 0; i < nv; ++i) {
+				const voxel::VoxelVertex &v = vertices[i];
 
-			for (int i = 0; i < ni; i++) {
-				const uint32_t index = indices[i];
-				const voxel::VoxelVertex &v = vertices[index];
-				const glm::vec2 &uv = paletteUV(v.colorIndex);
+				glm::vec3 pos;
+				if (meshExt.applyTransform) {
+					pos = transform.apply(v.position, meshExt.size);
+				} else {
+					pos = v.position;
+				}
+				pos *= scale;
 				if (i > 0) {
 					wrapBool(stream.writeString(",", false))
 				}
-				stream.writeStringFormat(false, "%f,%f", uv.x, uv.y);
+				stream.writeStringFormat(false, "%.04f,%.04f,%.04f", pos.x, pos.y, pos.z);
 			}
-			wrapBool(stream.writeString("\n\n", false))
-			// TODO: UVIndex needed or only for IndexToDirect?
+			wrapBool(stream.writeString("\n", false))
 
-			wrapBool(stream.writeString(
-				"\t\tLayerElementTexture: 0 {\n"
-				"\t\t\tVersion: 101\n"
-				"\t\t\tName: \"\"\n" // TODO
-				"\t\t\tMappingInformationType: \"AllSame\"\n"
-				"\t\t\tReferenceInformationType: \"Direct\"\n"
-				"\t\t\tBlendMode: \"Translucent\"\n"
-				"\t\t\tTextureAlpha: 1\n"
-				"\t\t\tTextureId: 0\n"
-				"\t\t}\n"))
-		}
+			wrapBool(stream.writeString("\t\tPolygonVertexIndex: ", false))
 
-		if (withColor) {
-			stream.writeStringFormat(false,
-									 "\t\tLayerElementColor: 0 {\n"
-									 "\t\t\tVersion: 101\n"
-									 "\t\t\tName: \"%sColors\"\n"
-									 "\t\t\tMappingInformationType: \"ByPolygonVertex\"\n"
-									 "\t\t\tReferenceInformationType: \"Direct\"\n"
-									 "\t\t\tColors: ",
-									 objectName);
-			for (int i = 0; i < ni; i++) {
-				const uint32_t index = indices[i];
-				const voxel::VoxelVertex &v = vertices[index];
-				const glm::vec4 &color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
+			for (int i = 0; i < ni; i += 3) {
+				const uint32_t one = indices[i + 0] + 1;
+				const uint32_t two = indices[i + 1] + 1;
+				const uint32_t three = indices[i + 2] + 1;
 				if (i > 0) {
 					wrapBool(stream.writeString(",", false))
 				}
-				stream.writeStringFormat(false, "%f,%f,%f,%f", color.r, color.g, color.b, color.a);
+				stream.writeStringFormat(false, "%i,%i,%i", (int)one, (int)two, (int)three);
 			}
-			wrapBool(stream.writeString("\n\n", false))
-			// TODO: ColorIndex needed or only for IndexToDirect?
+			wrapBool(stream.writeString("\n", false))
+			wrapBool(stream.writeString("\t\tGeometryVersion: 124\n", false))
 
-			// close LayerElementColor
-			wrapBool(stream.writeString("\t\t}\n", false))
+			if (withTexCoords) {
+				wrapBool(stream.writeString("\t\tLayerElementUV: 0 {\n", false))
+				wrapBool(stream.writeString("\t\t\tVersion: 101\n", false))
+				stream.writeStringFormat(false, "\t\t\tName: \"%sUV\"\n", objectName);
+				wrapBool(stream.writeString("\t\t\tMappingInformationType: \"ByPolygonVertex\"\n", false))
+				wrapBool(stream.writeString("\t\t\tReferenceInformationType: \"Direct\"\n", false))
+				wrapBool(stream.writeString("\t\t\tUV: ", false))
 
-			wrapBool(stream.writeString("\t\tLayer: 0 {\n"
-							   "\t\t\tVersion: 100\n"
-							   "\t\t\tLayerElement: {\n"
-							   "\t\t\t\tTypedIndex: 0\n"
-							   "\t\t\t\tType: \"LayerElementColor\"\n"
-							   "\t\t\t}\n"
-							   "\t\t}\n",
-							   false))
+				for (int i = 0; i < ni; i++) {
+					const uint32_t index = indices[i];
+					const voxel::VoxelVertex &v = vertices[index];
+					const glm::vec2 &uv = paletteUV(v.colorIndex);
+					if (i > 0) {
+						wrapBool(stream.writeString(",", false))
+					}
+					stream.writeStringFormat(false, "%f,%f", uv.x, uv.y);
+				}
+				wrapBool(stream.writeString("\n\n", false))
+				// TODO: UVIndex needed or only for IndexToDirect?
+
+				wrapBool(stream.writeString(
+					"\t\tLayerElementTexture: 0 {\n"
+					"\t\t\tVersion: 101\n"
+					"\t\t\tName: \"\"\n" // TODO
+					"\t\t\tMappingInformationType: \"AllSame\"\n"
+					"\t\t\tReferenceInformationType: \"Direct\"\n"
+					"\t\t\tBlendMode: \"Translucent\"\n"
+					"\t\t\tTextureAlpha: 1\n"
+					"\t\t\tTextureId: 0\n"
+					"\t\t}\n"))
+			}
+
+			if (withColor) {
+				stream.writeStringFormat(false,
+										"\t\tLayerElementColor: 0 {\n"
+										"\t\t\tVersion: 101\n"
+										"\t\t\tName: \"%sColors\"\n"
+										"\t\t\tMappingInformationType: \"ByPolygonVertex\"\n"
+										"\t\t\tReferenceInformationType: \"Direct\"\n"
+										"\t\t\tColors: ",
+										objectName);
+				for (int i = 0; i < ni; i++) {
+					const uint32_t index = indices[i];
+					const voxel::VoxelVertex &v = vertices[index];
+					const glm::vec4 &color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
+					if (i > 0) {
+						wrapBool(stream.writeString(",", false))
+					}
+					stream.writeStringFormat(false, "%f,%f,%f,%f", color.r, color.g, color.b, color.a);
+				}
+				wrapBool(stream.writeString("\n\n", false))
+				// TODO: ColorIndex needed or only for IndexToDirect?
+
+				// close LayerElementColor
+				wrapBool(stream.writeString("\t\t}\n", false))
+
+				wrapBool(stream.writeString("\t\tLayer: 0 {\n"
+								"\t\t\tVersion: 100\n"
+								"\t\t\tLayerElement: {\n"
+								"\t\t\t\tTypedIndex: 0\n"
+								"\t\t\t\tType: \"LayerElementColor\"\n"
+								"\t\t\t}\n"
+								"\t\t}\n",
+								false))
+			}
+
+			// close the model
+			wrapBool(stream.writeString("\t}\n}\n\n", false))
 		}
-
-		// close the model
-		wrapBool(stream.writeString("\t}\n}\n\n", false))
 	}
 	return true;
 }

@@ -18,6 +18,7 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/StdStreamBuf.h"
+#include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
@@ -80,141 +81,146 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 	int idxOffset = 0;
 	int texcoordOffset = 0;
 	for (const auto &meshExt : meshes) {
-		const voxel::Mesh *mesh = &meshExt.mesh->mesh; // TODO: alpha support
-		Log::debug("Exporting layer %s", meshExt.name.c_str());
-		const int nv = (int)mesh->getNoOfVertices();
-		const int ni = (int)mesh->getNoOfIndices();
-		if (ni % 3 != 0) {
-			Log::error("Unexpected indices amount");
-			return false;
-		}
-		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-		KeyFrameIndex keyFrameIdx = 0;
-		const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
-		const voxel::Palette &palette = graphNode.palette();
-
-		const core::String hashId = core::String::format("%" PRIu64, palette.hash());
-
-		const voxel::VertexArray &vertices = mesh->getVertexVector();
-		const voxel::IndexArray &indices = mesh->getIndexVector();
-		const voxel::NormalArray &normals = mesh->getNormalVector();
-		const bool withNormals = !normals.empty();
-		const char *objectName = meshExt.name.c_str();
-		if (objectName[0] == '\0') {
-			objectName = "Noname";
-		}
-		stream.writeStringFormat(false, "o %s\n", objectName);
-		stream.writeStringFormat(false, "mtllib %s\n", core::string::extractFilenameWithExtension(mtlname).c_str());
-		if (!stream.writeStringFormat(false, "usemtl %s\n", hashId.c_str())) {
-			Log::error("Failed to write obj usemtl %s\n", hashId.c_str());
-			return false;
-		}
-
-		for (int i = 0; i < nv; ++i) {
-			const voxel::VoxelVertex &v = vertices[i];
-
-			glm::vec3 pos;
-			if (meshExt.applyTransform) {
-				pos = transform.apply(v.position, meshExt.size);
-			} else {
-				pos = v.position;
+		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
+			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
+			if (mesh->isEmpty()) {
+				continue;
 			}
-			pos *= scale;
-			stream.writeStringFormat(false, "v %.04f %.04f %.04f", pos.x, pos.y, pos.z);
-			if (withColor) {
-				const glm::vec4& color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
-				stream.writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
+			Log::debug("Exporting layer %s", meshExt.name.c_str());
+			const int nv = (int)mesh->getNoOfVertices();
+			const int ni = (int)mesh->getNoOfIndices();
+			if (ni % 3 != 0) {
+				Log::error("Unexpected indices amount");
+				return false;
 			}
-			wrapBool(stream.writeStringFormat(false, "\n"))
-		}
-		if (withNormals) {
+			const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+			KeyFrameIndex keyFrameIdx = 0;
+			const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
+			const voxel::Palette &palette = graphNode.palette();
+
+			const core::String hashId = core::String::format("%" PRIu64, palette.hash());
+
+			const voxel::VertexArray &vertices = mesh->getVertexVector();
+			const voxel::IndexArray &indices = mesh->getIndexVector();
+			const voxel::NormalArray &normals = mesh->getNormalVector();
+			const bool withNormals = !normals.empty();
+			const char *objectName = meshExt.name.c_str();
+			if (objectName[0] == '\0') {
+				objectName = "Noname";
+			}
+			stream.writeStringFormat(false, "o %s\n", objectName);
+			stream.writeStringFormat(false, "mtllib %s\n", core::string::extractFilenameWithExtension(mtlname).c_str());
+			if (!stream.writeStringFormat(false, "usemtl %s\n", hashId.c_str())) {
+				Log::error("Failed to write obj usemtl %s\n", hashId.c_str());
+				return false;
+			}
+
 			for (int i = 0; i < nv; ++i) {
-				const glm::vec3 &norm = normals[i];
-				stream.writeStringFormat(false, "vn %.04f %.04f %.04f\n", norm.x, norm.y, norm.z);
-			}
-		}
+				const voxel::VoxelVertex &v = vertices[i];
 
-		if (quad) {
-			if (withTexCoords) {
-				for (int i = 0; i < ni; i += 6) {
-					const voxel::VoxelVertex &v = vertices[indices[i]];
-					const glm::vec2 &uv = paletteUV(v.colorIndex);
-					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-				}
-			}
-
-			int uvi = texcoordOffset;
-			for (int i = 0; i < ni - 5; i += 6, uvi += 4) {
-				const uint32_t one = idxOffset + indices[i + 0] + 1;
-				const uint32_t two = idxOffset + indices[i + 1] + 1;
-				const uint32_t three = idxOffset + indices[i + 2] + 1;
-				const uint32_t four = idxOffset + indices[i + 5] + 1;
-				if (withTexCoords) {
-					if (withNormals) {
-						stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one, uvi + 1,(int)one,  (int)two, uvi + 2,
-												(int)two, (int)three, uvi + 3, (int)three, (int)four, uvi + 4, (int)four);
-					} else {
-						stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n", (int)one, uvi + 1, (int)two, uvi + 2,
-												(int)three, uvi + 3, (int)four, uvi + 4);
-					}
+				glm::vec3 pos;
+				if (meshExt.applyTransform) {
+					pos = transform.apply(v.position, meshExt.size);
 				} else {
-					if (withNormals) {
-						stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three, (int)four, (int)one, (int)two, (int)three, (int)four);
-					} else {
-						stream.writeStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
-					}
+					pos = v.position;
+				}
+				pos *= scale;
+				stream.writeStringFormat(false, "v %.04f %.04f %.04f", pos.x, pos.y, pos.z);
+				if (withColor) {
+					const glm::vec4& color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
+					stream.writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
+				}
+				wrapBool(stream.writeStringFormat(false, "\n"))
+			}
+			if (withNormals) {
+				for (int i = 0; i < nv; ++i) {
+					const glm::vec3 &norm = normals[i];
+					stream.writeStringFormat(false, "vn %.04f %.04f %.04f\n", norm.x, norm.y, norm.z);
 				}
 			}
-			texcoordOffset += ni / 6 * 4;
-		} else {
-			if (withTexCoords) {
+
+			if (quad) {
+				if (withTexCoords) {
+					for (int i = 0; i < ni; i += 6) {
+						const voxel::VoxelVertex &v = vertices[indices[i]];
+						const glm::vec2 &uv = paletteUV(v.colorIndex);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+					}
+				}
+
+				int uvi = texcoordOffset;
+				for (int i = 0; i < ni - 5; i += 6, uvi += 4) {
+					const uint32_t one = idxOffset + indices[i + 0] + 1;
+					const uint32_t two = idxOffset + indices[i + 1] + 1;
+					const uint32_t three = idxOffset + indices[i + 2] + 1;
+					const uint32_t four = idxOffset + indices[i + 5] + 1;
+					if (withTexCoords) {
+						if (withNormals) {
+							stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one, uvi + 1,(int)one,  (int)two, uvi + 2,
+													(int)two, (int)three, uvi + 3, (int)three, (int)four, uvi + 4, (int)four);
+						} else {
+							stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n", (int)one, uvi + 1, (int)two, uvi + 2,
+													(int)three, uvi + 3, (int)four, uvi + 4);
+						}
+					} else {
+						if (withNormals) {
+							stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three, (int)four, (int)one, (int)two, (int)three, (int)four);
+						} else {
+							stream.writeStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
+						}
+					}
+				}
+				texcoordOffset += ni / 6 * 4;
+			} else {
+				if (withTexCoords) {
+					for (int i = 0; i < ni; i += 3) {
+						const voxel::VoxelVertex &v = vertices[indices[i]];
+						const glm::vec2 &uv = paletteUV(v.colorIndex);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+					}
+				}
+
 				for (int i = 0; i < ni; i += 3) {
-					const voxel::VoxelVertex &v = vertices[indices[i]];
-					const glm::vec2 &uv = paletteUV(v.colorIndex);
-					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-					stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-				}
-			}
-
-			for (int i = 0; i < ni; i += 3) {
-				const uint32_t one = idxOffset + indices[i + 0] + 1;
-				const uint32_t two = idxOffset + indices[i + 1] + 1;
-				const uint32_t three = idxOffset + indices[i + 2] + 1;
-				if (withTexCoords) {
-					if (withNormals) {
-						stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one, texcoordOffset + i + 1, (int)one, (int)two,
-												texcoordOffset + i + 2, (int)two, (int)three, texcoordOffset + i + 3, (int)three);
+					const uint32_t one = idxOffset + indices[i + 0] + 1;
+					const uint32_t two = idxOffset + indices[i + 1] + 1;
+					const uint32_t three = idxOffset + indices[i + 2] + 1;
+					if (withTexCoords) {
+						if (withNormals) {
+							stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one, texcoordOffset + i + 1, (int)one, (int)two,
+													texcoordOffset + i + 2, (int)two, (int)three, texcoordOffset + i + 3, (int)three);
+						} else {
+							stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, texcoordOffset + i + 1, (int)two,
+													texcoordOffset + i + 2, (int)three, texcoordOffset + i + 3);
+						}
 					} else {
-						stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, texcoordOffset + i + 1, (int)two,
-												texcoordOffset + i + 2, (int)three, texcoordOffset + i + 3);
-					}
-				} else {
-					if (withNormals) {
-						stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three, (int)one, (int)two, (int)three);
-					} else {
-						stream.writeStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
+						if (withNormals) {
+							stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three, (int)one, (int)two, (int)three);
+						} else {
+							stream.writeStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
+						}
 					}
 				}
+				texcoordOffset += ni;
 			}
-			texcoordOffset += ni;
-		}
-		idxOffset += nv;
+			idxOffset += nv;
 
-		if (paletteMaterialIndices.find(palette.hash()) == paletteMaterialIndices.end()) {
-			core::String palettename = core::string::stripExtension(filename);
-			palettename.append(hashId);
-			palettename.append(".png");
-			paletteMaterialIndices.put(palette.hash(), 1);
-			const core::String &mapKd = core::string::extractFilenameWithExtension(palettename);
-			if (!writeMtlFile(matlstream, hashId, mapKd)) {
-				return false;
-			}
-			if (!palette.save(palettename.c_str())) {
-				return false;
+			if (paletteMaterialIndices.find(palette.hash()) == paletteMaterialIndices.end()) {
+				core::String palettename = core::string::stripExtension(filename);
+				palettename.append(hashId);
+				palettename.append(".png");
+				paletteMaterialIndices.put(palette.hash(), 1);
+				const core::String &mapKd = core::string::extractFilenameWithExtension(palettename);
+				if (!writeMtlFile(matlstream, hashId, mapKd)) {
+					return false;
+				}
+				if (!palette.save(palettename.c_str())) {
+					return false;
+				}
 			}
 		}
 	}

@@ -172,58 +172,68 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 	int faceCount = 0;
 	for (const auto &meshExt : meshes) {
-		const voxel::Mesh *mesh = &meshExt.mesh->mesh; // TODO: alpha support
-		const int ni = (int)mesh->getNoOfIndices();
-		if (ni % 3 != 0) {
-			Log::error("Unexpected indices amount");
-			return false;
+		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
+			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
+			if (mesh->isEmpty()) {
+				continue;
+			}
+			const int ni = (int)mesh->getNoOfIndices();
+			if (ni % 3 != 0) {
+				Log::error("Unexpected indices amount");
+				return false;
+			}
+			faceCount += ni / 3;
 		}
-		faceCount += ni / 3;
 	}
 	stream.writeUInt32(faceCount);
 
 	for (const auto &meshExt : meshes) {
-		const voxel::Mesh *mesh = &meshExt.mesh->mesh; // TODO: alpha support
-		Log::debug("Exporting layer %s", meshExt.name.c_str());
-		const int ni = (int)mesh->getNoOfIndices();
-		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-		KeyFrameIndex keyFrameIdx = 0;
-		const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
-		const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
-		const voxel::IndexType *indices = mesh->getRawIndexData();
+		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
+			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
+			if (mesh->isEmpty()) {
+				continue;
+			}
+			Log::debug("Exporting layer %s", meshExt.name.c_str());
+			const int ni = (int)mesh->getNoOfIndices();
+			const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+			KeyFrameIndex keyFrameIdx = 0;
+			const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
+			const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
+			const voxel::IndexType *indices = mesh->getRawIndexData();
 
-		for (int i = 0; i < ni; i += 3) {
-			const uint32_t one = indices[i + 0];
-			const uint32_t two = indices[i + 1];
-			const uint32_t three = indices[i + 2];
+			for (int i = 0; i < ni; i += 3) {
+				const uint32_t one = indices[i + 0];
+				const uint32_t two = indices[i + 1];
+				const uint32_t three = indices[i + 2];
 
-			const voxel::VoxelVertex &v1 = vertices[one];
-			const voxel::VoxelVertex &v2 = vertices[two];
-			const voxel::VoxelVertex &v3 = vertices[three];
+				const voxel::VoxelVertex &v1 = vertices[one];
+				const voxel::VoxelVertex &v2 = vertices[two];
+				const voxel::VoxelVertex &v3 = vertices[three];
 
-			// normal
-			const glm::vec3 edge1 = glm::vec3(v2.position - v1.position);
-			const glm::vec3 edge2 = glm::vec3(v3.position - v1.position);
-			const glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
-			for (int j = 0; j < 3; ++j) {
-				if (!stream.writeFloat(normal[j])) {
+				// normal
+				const glm::vec3 edge1 = glm::vec3(v2.position - v1.position);
+				const glm::vec3 edge2 = glm::vec3(v3.position - v1.position);
+				const glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+				for (int j = 0; j < 3; ++j) {
+					if (!stream.writeFloat(normal[j])) {
+						return false;
+					}
+				}
+
+				if (!writeVertex(stream, meshExt, v1, transform, scale)) {
 					return false;
 				}
-			}
 
-			if (!writeVertex(stream, meshExt, v1, transform, scale)) {
-				return false;
-			}
+				if (!writeVertex(stream, meshExt, v2, transform, scale)) {
+					return false;
+				}
 
-			if (!writeVertex(stream, meshExt, v2, transform, scale)) {
-				return false;
-			}
+				if (!writeVertex(stream, meshExt, v3, transform, scale)) {
+					return false;
+				}
 
-			if (!writeVertex(stream, meshExt, v3, transform, scale)) {
-				return false;
+				stream.writeUInt16(0);
 			}
-
-			stream.writeUInt16(0);
 		}
 	}
 	return true;

@@ -195,8 +195,8 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 						surfaceVertex.info = 0;
 						surfaceVertex.flags = blendedVoxel.getFlags();
 
-						const IndexType lastVertexIndex = result->mesh.addVertex(surfaceVertex);
-						result->mesh.setNormal(lastVertexIndex, normal);
+						const IndexType lastVertexIndex = result->mesh[0].addVertex(surfaceVertex);
+						result->mesh[0].setNormal(lastVertexIndex, normal);
 						indicesView.get(x, y).x = (int)lastVertexIndex;
 
 						sampler.movePositiveX();
@@ -230,8 +230,8 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 						surfaceVertex.info = 0;
 						surfaceVertex.flags = blendedVoxel.getFlags();
 
-						const IndexType lastVertexIndex = result->mesh.addVertex(surfaceVertex);
-						result->mesh.setNormal(lastVertexIndex, normal);
+						const IndexType lastVertexIndex = result->mesh[0].addVertex(surfaceVertex);
+						result->mesh[0].setNormal(lastVertexIndex, normal);
 						indicesView.get(x, y).y = (int)lastVertexIndex;
 
 						sampler.movePositiveY();
@@ -265,8 +265,8 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 						surfaceVertex.info = 0;
 						surfaceVertex.flags = blendedVoxel.getFlags();
 
-						const IndexType lastVertexIndex = result->mesh.addVertex(surfaceVertex);
-						result->mesh.setNormal(lastVertexIndex, normal);
+						const IndexType lastVertexIndex = result->mesh[0].addVertex(surfaceVertex);
+						result->mesh[0].setNormal(lastVertexIndex, normal);
 						indicesView.get(x, y).z = (int)lastVertexIndex;
 
 						sampler.movePositiveZ();
@@ -321,7 +321,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 							const int32_t ind2 = indlist[triTable[cellIndex][i + 2]];
 
 							if (ind0 != -1 && ind1 != -1 && ind2 != -1) {
-								result->mesh.addTriangle(ind0, ind1, ind2);
+								result->mesh[0].addTriangle(ind0, ind1, ind2);
 							}
 						}
 					}

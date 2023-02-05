@@ -9,31 +9,40 @@
 namespace voxel {
 
 struct ChunkMesh {
+	static constexpr int Meshes = 2;
 	ChunkMesh(int vertices, int indices, bool mayGetResized = false)
-		: mesh(vertices, indices, mayGetResized), meshT(vertices, indices, mayGetResized) {
+		: mesh{{vertices, indices, mayGetResized}, {vertices, indices, mayGetResized}} {
 	}
 	ChunkMesh() : ChunkMesh(128, 128, true) {}
-	voxel::Mesh mesh;
-	voxel::Mesh meshT;
+	voxel::Mesh mesh[Meshes];
 
 	void setOffset(const glm::ivec3& offset) {
-		mesh.setOffset(offset);
-		meshT.setOffset(offset);
+		for (int i = 0; i < Meshes; ++i) {
+			mesh[i].setOffset(offset);
+		}
 	}
 	void clear() {
-		mesh.clear();
-		meshT.clear();
+		for (int i = 0; i < Meshes; ++i) {
+			mesh[i].clear();
+		}
 	}
 	bool isEmpty() const {
-		return mesh.isEmpty() && meshT.isEmpty();
+		for (int i = 0; i < Meshes; ++i) {
+			if (!mesh[i].isEmpty()) {
+				return false;
+			}
+		}
+		return true;
 	}
 	void removeUnusedVertices() {
-		mesh.removeUnusedVertices();
-		meshT.removeUnusedVertices();
+		for (int i = 0; i < Meshes; ++i) {
+			mesh[i].removeUnusedVertices();
+		}
 	}
 	void compressIndices() {
-		mesh.compressedIndices();
-		meshT.compressedIndices();
+		for (int i = 0; i < Meshes; ++i) {
+			mesh[i].compressedIndices();
+		}
 	}
 };
 
