@@ -267,7 +267,9 @@ glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wra
 		xint = glm::abs(xint) % width();
 		break;
 	}
-	default:
+	case TextureWrap::ClampToEdge:
+		xint = glm::clamp(xint, 0, width() - 1);
+		break;
 	case TextureWrap::Max:
 		return glm::ivec2(0);
 	}
@@ -280,7 +282,9 @@ glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wra
 		yint = glm::abs(yint) % height();
 		break;
 	}
-	default:
+	case TextureWrap::ClampToEdge:
+		yint = glm::clamp(yint, 0, height() - 1);
+		break;
 	case TextureWrap::Max:
 		return glm::ivec2(0);
 	}
