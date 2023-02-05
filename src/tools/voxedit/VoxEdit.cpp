@@ -329,7 +329,11 @@ app::AppState VoxEdit::onInit() {
 }
 
 bool VoxEdit::allowedToQuit() {
-	return _mainWindow->allowToQuit();
+	if (!_mainWindow->allowToQuit()) {
+		_showFileDialog = false;
+		return false;
+	}
+	return true;
 }
 
 void VoxEdit::onRenderUI() {
