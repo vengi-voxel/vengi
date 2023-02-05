@@ -39,6 +39,7 @@ private:
 	core::String _filterAll;
 	core::DynamicArray<io::FormatDescription> _filterEntries;
 	core::VarPtr _showHidden;
+	core::VarPtr _bookmarks;
 	char _newFolderName[500] = "";
 	char _newFolderError[500] = "";
 
@@ -52,6 +53,8 @@ private:
 	void removeBookmark(const core::String &bookmark);
 	void bookMarkEntry(video::OpenFileMode type, const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
 	void bookmarkPanel(video::OpenFileMode type, const core::String &bookmarks);
+	void currentPathPanel();
+	void createBookmarkPanel();
 	/**
 	 * @return @c true if a file was double clicked
 	 */

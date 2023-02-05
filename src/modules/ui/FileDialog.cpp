@@ -414,6 +414,26 @@ bool FileDialog::filesPanel() {
 	return doubleClicked;
 }
 
+void FileDialog::currentPathPanel() {
+	// TODO: make every path component a single clickable button to allow to change to that directory immediately
+	const core::String currentPath = core::string::format(ICON_FK_FOLDER_OPEN_O " Current path: %s", _currentPath.c_str());
+	ImGui::TextUnformatted(currentPath.c_str());
+}
+
+void FileDialog::createBookmarkPanel() {
+	if (ImGui::Button(ICON_FK_BOOKMARK)) {
+		removeBookmark(_currentPath);
+		core::String bm = _bookmarks->strVal();
+		if (bm.empty()) {
+			bm.append(_currentPath);
+		} else {
+			bm.append(";" + _currentPath);
+		}
+		_bookmarks->setVal(bm);
+	}
+	ImGui::TooltipText("Add a bookmark for the current active folder");
+}
+
 bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize,
 								video::OpenFileMode type, const io::FormatDescription **formatDesc) {
 	if (open == nullptr || *open) {
@@ -438,28 +458,20 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			ImGui::OpenPopup(title);
 		}
 		_showHidden = core::Var::getSafe(cfg::UIFileDialogShowHidden);
+		_bookmarks = core::Var::getSafe(cfg::UIBookmarks);
+
 		if (ImGui::BeginPopupModal(title, open)) {
 			if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 				ImGui::CloseCurrentPopup();
 			}
 
-			core::VarPtr bookmarks = core::Var::getSafe(cfg::UIBookmarks);
-			if (ImGui::Button(ICON_FK_BOOKMARK)) {
-				removeBookmark(_currentPath);
-				core::String bm = bookmarks->strVal();
-				if (bm.empty()) {
-					bm.append(_currentPath);
-				} else {
-					bm.append(";" + _currentPath);
-				}
-				bookmarks->setVal(bm);
-			}
-			ImGui::TooltipText("Add a bookmark for the current active folder");
-			ImGui::SameLine();
-			const core::String currentPath = core::string::format(ICON_FK_FOLDER_OPEN_O " Current path: %s", _currentPath.c_str());
-			ImGui::TextUnformatted(currentPath.c_str());
+			createBookmarkPanel();
 
-			bookmarkPanel(type, bookmarks->strVal());
+			ImGui::SameLine();
+
+			currentPathPanel();
+
+			bookmarkPanel(type, _bookmarks->strVal());
 
 			ImGui::SameLine();
 
