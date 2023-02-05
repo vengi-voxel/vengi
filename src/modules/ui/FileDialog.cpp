@@ -301,10 +301,10 @@ bool FileDialog::filesPanel(video::OpenFileMode type) {
 		ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Sortable;
 	const ImVec2 outerSize = ImGui::GetContentRegionAvail();
 	if (ImGui::BeginTable("Files##1", 4, TableFlags, outerSize)) {
-		ImGui::TableSetupColumn("File##files", ImGuiTableColumnFlags_WidthStretch, 0.64f, UserId_File);
+		ImGui::TableSetupColumn("File##files", ImGuiTableColumnFlags_WidthStretch, 0.7f, UserId_File);
 		ImGui::TableSetupColumn("Size##files", ImGuiTableColumnFlags_WidthStretch, 0.09f, UserId_Size);
 		ImGui::TableSetupColumn("Type##files", ImGuiTableColumnFlags_WidthStretch, 0.07f, UserId_Type);
-		ImGui::TableSetupColumn("Date##files", ImGuiTableColumnFlags_WidthStretch, 0.2f, UserId_Date);
+		ImGui::TableSetupColumn("Date##files", ImGuiTableColumnFlags_WidthStretch, 0.14f, UserId_Date);
 		ImGui::TableSetupScrollFreeze(0, 1);
 		ImGui::TableHeadersRow();
 
