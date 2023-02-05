@@ -146,7 +146,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 	} else {
 		_currentPath = filePath;
 	}
-	_currentFile = io::FilesystemEntry{core::string::extractFilenameWithExtension(filename), io::FilesystemEntry::Type::file, 0, 0};
+	_selectedEntry = io::FilesystemEntry{core::string::extractFilenameWithExtension(filename), io::FilesystemEntry::Type::file, 0, 0};
 
 	if (!io::filesystem()->exists(_currentPath)) {
 		_currentPath = io::filesystem()->homePath();
@@ -346,11 +346,11 @@ bool FileDialog::filesPanel(video::OpenFileMode type) {
 				continue;
 			}
 			ImGui::TableNextColumn();
-			const bool selected = i == _fileSelectIndex;
+			const bool selected = i == _entryIndex;
 			if (ImGui::Selectable(entry.name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {
 				resetState();
-				_fileSelectIndex = i;
-				_currentFile = *_files[i];
+				_entryIndex = i;
+				_selectedEntry = *_files[i];
 				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 					if (entry.isDirectory()) {
 						setCurrentPath(type, assemblePath(_currentPath, *_files[i]));
@@ -411,9 +411,96 @@ void FileDialog::construct() {
 }
 
 void FileDialog::resetState() {
-	_fileSelectIndex = 0;
-	_currentFile = io::FilesystemEntry();
+	_entryIndex = 0;
+	_selectedEntry = io::FilesystemEntry();
 	_error = TimedError();
+}
+
+bool FileDialog::popups() {
+	const ImVec2 &windowPos = ImGui::GetWindowPos();
+	const ImVec2 &windowSize = ImGui::GetWindowSize();
+	const ImVec2 center(windowPos.x + windowSize.x * 0.5f, windowPos.y + windowSize.y * 0.5f);
+	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
+	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+	if (ImGui::BeginPopupModal(NEW_FOLDER_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::Text("Enter a name for the new folder");
+		ImGui::InputText("##newfoldername", &_newFolderName.name);
+		if (ImGui::Button("Create##1")) {
+			if (_newFolderName.name.empty()) {
+				_newFolderError = TimedError("Folder name can't be empty", timeProvider->tickNow(), 1500UL);
+			} else {
+				const core::String &newFilePath = assemblePath(_currentPath, _newFolderName);
+				io::filesystem()->createDir(newFilePath);
+				ImGui::CloseCurrentPopup();
+			}
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel##1") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
+			_newFolderName = io::FilesystemEntry();
+			_newFolderError = TimedError();
+			ImGui::CloseCurrentPopup();
+		}
+		if (_newFolderError.isValid(timeProvider->tickNow())) {
+			ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _newFolderError.value().c_str());
+		} else {
+			ImGui::TextUnformatted("");
+		}
+		ImGui::EndPopup();
+	}
+
+	if (ImGui::BeginPopupModal(FILE_ALREADY_EXISTS_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::AlignTextToFramePadding();
+		ImGui::PushFont(imguiApp()->bigFont());
+		ImGui::TextUnformatted(ICON_FA_TRIANGLE_EXCLAMATION);
+		ImGui::PopFont();
+		ImGui::SameLine();
+		ImGui::Spacing();
+		ImGui::SameLine();
+		ImGui::TextUnformatted("Do you want to overwrite the file?");
+		ImGui::Spacing();
+		ImGui::Separator();
+
+		if (ImGui::Button("Yes##filedialog-override")) {
+			ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+			return true;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("No##filedialog-override")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+	return false;
+}
+
+void FileDialog::filter(video::OpenFileMode type) {
+	if (!_filterEntries.empty()) {
+		ImGui::SameLine();
+		const char *label = "Filter";
+		const ImVec2 &size = ImGui::CalcTextSize(label);
+		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - _filterTextWidth - ImGui::GetScrollX() - size.x - 2 * ImGui::GetStyle().ItemSpacing.x);
+		ImGui::PushItemWidth(_filterTextWidth);
+		int currentlySelected = _currentFilterEntry == -1 ? 0 : _currentFilterEntry;
+		const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
+
+		if (ImGui::BeginCombo(label, selectedEntry.c_str(), ImGuiComboFlags_HeightLargest)) {
+			for (int i = 0; i < (int)_filterEntries.size(); ++i) {
+				const bool selected = i == currentlySelected;
+				const io::FormatDescription &format = _filterEntries[i];
+				const core::String &text = io::convertToFilePattern(format);
+				if (ImGui::Selectable(text.c_str(), selected)) {
+					selectFilter(type, i);
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopItemWidth();
+	}
 }
 
 bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, core::String &buffer,
@@ -455,7 +542,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 		bool doubleClickedFile = filesPanel(type);
 
 		if (type == video::OpenFileMode::Save) {
-			ImGui::InputText("Filename##filedialog", &_currentFile.name);
+			ImGui::InputText("Filename##filedialog", &_selectedEntry.name);
 		}
 
 		if (type != video::OpenFileMode::Open) {
@@ -467,91 +554,20 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 
 		ImGui::CheckboxVar("Show hidden##filedialog", _showHidden);
 
-		ImVec2 center(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x * 0.5f,
-						ImGui::GetWindowPos().y + ImGui::GetWindowSize().y * 0.5f);
-		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-		if (ImGui::BeginPopupModal(NEW_FOLDER_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			ImGui::Text("Enter a name for the new folder");
-			ImGui::InputText("##newfoldername", &_newFolderName.name);
-			if (ImGui::Button("Create##1")) {
-				if (_newFolderName.name.empty()) {
-					SDL_strlcpy(_newFolderError, "Folder name can't be empty", sizeof(_newFolderError));
-				} else {
-					const core::String &newFilePath = assemblePath(_currentPath, _newFolderName);
-					io::filesystem()->createDir(newFilePath);
-					ImGui::CloseCurrentPopup();
-				}
+		if (popups()) {
+			buffer = assemblePath(_currentPath, _selectedEntry);
+			resetState();
+			if (open != nullptr) {
+				*open = false;
 			}
-			ImGui::SetItemDefaultFocus();
-			ImGui::SameLine();
-			if (ImGui::Button("Cancel##1") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
-				_newFolderName = io::FilesystemEntry();
-				_newFolderError[0] = '\0';
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _newFolderError);
-			ImGui::EndPopup();
-		}
-
-		if (ImGui::BeginPopupModal(FILE_ALREADY_EXISTS_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			ImGui::AlignTextToFramePadding();
-			ImGui::PushFont(imguiApp()->bigFont());
-			ImGui::TextUnformatted(ICON_FA_TRIANGLE_EXCLAMATION);
-			ImGui::PopFont();
-			ImGui::SameLine();
-			ImGui::Spacing();
-			ImGui::SameLine();
-			ImGui::TextUnformatted("Do you want to overwrite the file?");
-			ImGui::Spacing();
-			ImGui::Separator();
-
-			if (ImGui::Button("Yes##filedialog-override")) {
-				const core::String &fullPath = assemblePath(_currentPath, _currentFile);
-				buffer = fullPath;
-				resetState();
-				if (open != nullptr) {
-					*open = false;
-				}
-				if (formatDesc != nullptr) {
-					*formatDesc = _currentFilterFormat;
-				}
-				ImGui::CloseCurrentPopup();
-				ImGui::EndPopup();
-				ImGui::EndPopup();
-				return true;
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("No##filedialog-override")) {
-				ImGui::CloseCurrentPopup();
+			if (formatDesc != nullptr) {
+				*formatDesc = _currentFilterFormat;
 			}
 			ImGui::EndPopup();
+			return true;
 		}
 
-		if (!_filterEntries.empty()) {
-			ImGui::SameLine();
-			const char *label = "Filter";
-			const ImVec2 &size = ImGui::CalcTextSize(label);
-			ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - _filterTextWidth - ImGui::GetScrollX() - size.x - 2 * ImGui::GetStyle().ItemSpacing.x);
-			ImGui::PushItemWidth(_filterTextWidth);
-			int currentlySelected = _currentFilterEntry == -1 ? 0 : _currentFilterEntry;
-			const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
-
-			if (ImGui::BeginCombo(label, selectedEntry.c_str(), ImGuiComboFlags_HeightLargest)) {
-				for (int i = 0; i < (int)_filterEntries.size(); ++i) {
-					const bool selected = i == currentlySelected;
-					const io::FormatDescription &format = _filterEntries[i];
-					const core::String &text = io::convertToFilePattern(format);
-					if (ImGui::Selectable(text.c_str(), selected)) {
-						selectFilter(type, i);
-					}
-					if (selected) {
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-				ImGui::EndCombo();
-			}
-			ImGui::PopItemWidth();
-		}
+		filter(type);
 
 		if (buttons(buffer, type, doubleClickedFile)) {
 			if (open != nullptr) {
@@ -593,33 +609,32 @@ bool FileDialog::buttons(core::String &buffer, video::OpenFileMode type, bool do
 	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - cancelTextSize.x - chooseTextSize.x - 40.0f);
 	if (ImGui::Button("Cancel##filedialog") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 		resetState();
-		buffer = "";
 		return true;
 	}
 	ImGui::SameLine();
 	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
 	if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGuiKey_Enter) || doubleClickedFile) {
 		if (type == video::OpenFileMode::Directory) {
-			if (_currentFile.name.empty()) {
+			if (_selectedEntry.name.empty()) {
 				_error = TimedError("Error: You must select a folder!", timeProvider->tickNow(), 1500UL);
 			} else {
-				buffer = assemblePath(_currentPath, _currentFile);
+				buffer = assemblePath(_currentPath, _selectedEntry);
 				resetState();
 				return true;
 			}
 		} else if (type == video::OpenFileMode::Open || type == video::OpenFileMode::Save) {
-			if (_currentFile.name.empty() || !_currentFile.isFile()) {
+			if (_selectedEntry.name.empty() || !_selectedEntry.isFile()) {
 				_error = TimedError("Error: You must select a file!", timeProvider->tickNow(), 1500UL);
 			} else {
 				if (_currentFilterEntry != -1 && type == video::OpenFileMode::Save) {
 					const io::FormatDescription &desc = _filterEntries[_currentFilterEntry];
 					if (!desc.exts[0].empty()) {
-						_currentFile.name = core::string::stripExtension(_currentFile.name);
-						_currentFile.name.append(".");
-						_currentFile.name.append(desc.exts[0]);
+						_selectedEntry.name = core::string::stripExtension(_selectedEntry.name);
+						_selectedEntry.name.append(".");
+						_selectedEntry.name.append(desc.exts[0]);
 					}
 				}
-				const core::String &fullPath = assemblePath(_currentPath, _currentFile);
+				const core::String &fullPath = assemblePath(_currentPath, _selectedEntry);
 				if (type == video::OpenFileMode::Save && io::filesystem()->exists(fullPath)) {
 					ImGui::OpenPopup(FILE_ALREADY_EXISTS_POPUP);
 				} else {

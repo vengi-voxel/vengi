@@ -29,8 +29,8 @@ private:
 
 	using TimedError = core::TimedValue<core::String>;
 	TimedError _error;
-	size_t _fileSelectIndex = 0;
-	io::FilesystemEntry _currentFile;
+	size_t _entryIndex = 0;
+	io::FilesystemEntry _selectedEntry;
 
 	float _filterTextWidth = 0.0f;
 	int _currentFilterEntry = -1;
@@ -44,7 +44,7 @@ private:
 	core::VarPtr _lastFilter;
 
 	io::FilesystemEntry _newFolderName;
-	char _newFolderError[500] = "";
+	TimedError _newFolderError;
 
 	void setCurrentPath(video::OpenFileMode type, const core::String& path);
 	void selectFilter(video::OpenFileMode type, int index);
@@ -57,6 +57,8 @@ private:
 	void quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks);
 	void currentPathPanel();
 	bool buttons(core::String &buffer, video::OpenFileMode type, bool doubleClickedFile);
+	bool popups();
+	void filter(video::OpenFileMode type);
 	/**
 	 * @return @c true if a file was double clicked
 	 */
