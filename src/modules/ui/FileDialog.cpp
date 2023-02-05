@@ -690,6 +690,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 				ImGui::Spacing();
 			}
 
+			// TODO: allow to hide them
 			if (fileDialogOptions) {
 				fileDialogOptions(type, _currentFilterFormat);
 			}
