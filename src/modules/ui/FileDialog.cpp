@@ -30,6 +30,45 @@ namespace ui {
 static const char *FILE_ALREADY_EXISTS_POPUP = "File already exists##FileOverwritePopup";
 static const char *NEW_FOLDER_POPUP = "Create folder##NewFolderPopup";
 
+enum class FileDialogColumnId {
+	File,
+	Size,
+	Type,
+	Date,
+
+	Max
+};
+
+static const struct FileDialogSorter {
+	bool (*asc)(const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs);
+	bool (*desc)(const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs);
+} fileDialogSorter[(int)FileDialogColumnId::Max] = {
+	{
+		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) { return lhs->name < rhs->name; },
+		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) { return lhs->name > rhs->name; }
+	},
+	{
+		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) { return lhs->size < rhs->size; },
+		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) { return lhs->size > rhs->size; }
+	},
+	{
+		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
+			const core::String &aext = core::string::extractExtension(lhs->name);
+			const core::String &bext = core::string::extractExtension(rhs->name);
+			return aext < bext;
+		},
+		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
+			const core::String &aext = core::string::extractExtension(lhs->name);
+			const core::String &bext = core::string::extractExtension(rhs->name);
+			return aext > bext;
+		}
+	},
+	{
+		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) { return lhs->mtime < rhs->mtime; },
+		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) { return lhs->mtime > rhs->mtime; }
+	}
+};
+
 static core::String assemblePath(const core::String &dir, const io::FilesystemEntry &ent) {
 	return core::string::path(dir, ent.name);
 }
@@ -182,8 +221,10 @@ void FileDialog::removeBookmark(const core::String &bookmark) {
 
 void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks) {
 	ScopedStyle style;
-	style.setItemSpacing(ImVec2(10, 10));
-	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(200, 300), true);
+	style.setItemSpacing(ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize()));
+	const float height = 25.0f * ImGui::GetFontSize();
+	const float width = 17.0f * ImGui::GetFontSize();
+	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(width, height), true);
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x;
 
 	static const char *folderNames[] = {"Download", "Desktop", "Documents", "Pictures", "Public", "Recent", "Cloud"};
@@ -253,56 +294,20 @@ bool FileDialog::hide(const core::String &file) const {
 }
 
 bool FileDialog::filesPanel(video::OpenFileMode type) {
-	ImGui::BeginChild("Files##1", ImVec2(ImGui::GetContentRegionAvail().x, 300), true,
-					  ImGuiWindowFlags_HorizontalScrollbar);
-
-	static auto nameSorterDown = [](const io::FilesystemEntry *a, const io::FilesystemEntry *b) {
-		return a->name < b->name;
-	};
-	static auto nameSorterUp = [](const io::FilesystemEntry *a, const io::FilesystemEntry *b) {
-		return a->name > b->name;
-	};
-	static auto sizeSorterDown = [](const io::FilesystemEntry *a, const io::FilesystemEntry *b) {
-		return a->size < b->size;
-	};
-	static auto sizeSorterUp = [](const io::FilesystemEntry *a, const io::FilesystemEntry *b) {
-		return a->size > b->size;
-	};
-	static auto extensionSorterDown = [](const io::FilesystemEntry *a, const io::FilesystemEntry *b) {
-		const core::String &aext = core::string::extractExtension(a->name);
-		const core::String &bext = core::string::extractExtension(b->name);
-		return aext < bext;
-	};
-	static auto extensionSorterUp = [](const io::FilesystemEntry *a, const io::FilesystemEntry *b) {
-		const core::String &aext = core::string::extractExtension(a->name);
-		const core::String &bext = core::string::extractExtension(b->name);
-		return aext > bext;
-	};
-	static auto mtimeSorterDown = [](const io::FilesystemEntry *a, const io::FilesystemEntry *b) {
-		return a->mtime < b->mtime;
-	};
-	static auto mtimeSorterUp = [](const io::FilesystemEntry *a, const io::FilesystemEntry *b) {
-		return a->mtime > b->mtime;
-	};
+	const float height = 25 * ImGui::GetFontSize();
+	ImVec2 childSize(ImGui::GetContentRegionAvail().x, height);
+	ImGui::BeginChild("Files##1", childSize, true, ImGuiWindowFlags_HorizontalScrollbar);
 
 	bool doubleClicked = false;
-
-	enum {
-		UserId_File,
-		UserId_Size,
-		UserId_Type,
-		UserId_Date
-	};
-
 	static const uint32_t TableFlags =
 		ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
 		ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Sortable;
 	const ImVec2 outerSize = ImGui::GetContentRegionAvail();
 	if (ImGui::BeginTable("Files##1", 4, TableFlags, outerSize)) {
-		ImGui::TableSetupColumn("File##files", ImGuiTableColumnFlags_WidthStretch, 0.7f, UserId_File);
-		ImGui::TableSetupColumn("Size##files", ImGuiTableColumnFlags_WidthStretch, 0.09f, UserId_Size);
-		ImGui::TableSetupColumn("Type##files", ImGuiTableColumnFlags_WidthStretch, 0.07f, UserId_Type);
-		ImGui::TableSetupColumn("Date##files", ImGuiTableColumnFlags_WidthStretch, 0.14f, UserId_Date);
+		ImGui::TableSetupColumn("File##files", ImGuiTableColumnFlags_WidthStretch, 0.7f, (int)FileDialogColumnId::File);
+		ImGui::TableSetupColumn("Size##files", ImGuiTableColumnFlags_WidthStretch, 0.09f, (int)FileDialogColumnId::Size);
+		ImGui::TableSetupColumn("Type##files", ImGuiTableColumnFlags_WidthStretch, 0.07f, (int)FileDialogColumnId::Type);
+		ImGui::TableSetupColumn("Date##files", ImGuiTableColumnFlags_WidthStretch, 0.14f, (int)FileDialogColumnId::Date);
 		ImGui::TableSetupScrollFreeze(0, 1);
 		ImGui::TableHeadersRow();
 
@@ -311,14 +316,10 @@ bool FileDialog::filesPanel(video::OpenFileMode type) {
 			if (specs->SpecsDirty && _files.size() > 1U) {
 				for (int n = 0; n < specs->SpecsCount; n++) {
 					const ImGuiTableColumnSortSpecs &spec = specs->Specs[n];
-					if (spec.ColumnUserID == UserId_File) {
-						_files.sort(spec.SortDirection == ImGuiSortDirection_Ascending ? nameSorterUp : nameSorterDown);
-					} else if (spec.ColumnUserID == UserId_Size) {
-						_files.sort(spec.SortDirection == ImGuiSortDirection_Ascending ? sizeSorterUp : sizeSorterDown);
-					} else if (spec.ColumnUserID == UserId_Type) {
-						_files.sort(spec.SortDirection == ImGuiSortDirection_Ascending ? extensionSorterUp : extensionSorterDown);
-					} else if (spec.ColumnUserID == UserId_Date) {
-						_files.sort(spec.SortDirection == ImGuiSortDirection_Ascending ? mtimeSorterUp : mtimeSorterDown);
+					if (spec.SortDirection == ImGuiSortDirection_Ascending) {
+						_files.sort(fileDialogSorter[spec.ColumnUserID].asc);
+					} else {
+						_files.sort(fileDialogSorter[spec.ColumnUserID].desc);
 					}
 				}
 				specs->SpecsDirty = false;
