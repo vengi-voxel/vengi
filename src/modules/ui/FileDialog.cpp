@@ -437,7 +437,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 				ImGui::CloseCurrentPopup();
 			}
 
-			core::VarPtr bookmarks = core::Var::get(cfg::UIBookmarks, "");
+			core::VarPtr bookmarks = core::Var::getSafe(cfg::UIBookmarks);
 			if (ImGui::Button(ICON_FK_BOOKMARK)) {
 				removeBookmark(_currentPath);
 				core::String bm = bookmarks->strVal();
