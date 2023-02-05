@@ -336,6 +336,9 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 					auto textureIter = textures.find(diffuseTexture);
 					if (textureIter != textures.end()) {
 						tri.texture = textureIter->second.get();
+					} else {
+						Log::warn("Failed to look up texture %s", diffuseTexture.c_str());
+						textures.put(diffuseTexture, image::ImagePtr());
 					}
 				}
 				if (attrib.colors.empty()) {
