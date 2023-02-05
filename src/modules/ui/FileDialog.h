@@ -63,7 +63,7 @@ private:
 	/**
 	 * @return @c true if a file was double clicked
 	 */
-	bool filesPanel(video::OpenFileMode type);
+	bool entitiesPanel(video::OpenFileMode type);
 	void showError(const TimedError &error) const;
 
 public:

@@ -309,12 +309,12 @@ static const char *iconForType(io::FilesystemEntry::Type type) {
 	return "";
 }
 
-bool FileDialog::filesPanel(video::OpenFileMode type) {
+bool FileDialog::entitiesPanel(video::OpenFileMode type) {
 	const float height = 25 * ImGui::GetFontSize();
 	ImVec2 childSize(ImGui::GetContentRegionAvail().x, height);
 	ImGui::BeginChild("Files##1", childSize, true, ImGuiWindowFlags_HorizontalScrollbar);
 
-	bool doubleClicked = false;
+	bool doubleClickedFile = false;
 	static const uint32_t TableFlags =
 		ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
 		ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Sortable;
@@ -382,7 +382,7 @@ bool FileDialog::filesPanel(video::OpenFileMode type) {
 					if (entry.isDirectory()) {
 						setCurrentPath(type, assemblePath(_currentPath, *_files[i]));
 					} else {
-						doubleClicked = true;
+						doubleClickedFile = true;
 					}
 				}
 			}
@@ -407,7 +407,7 @@ bool FileDialog::filesPanel(video::OpenFileMode type) {
 		ImGui::EndTable();
 	}
 	ImGui::EndChild();
-	return doubleClicked;
+	return doubleClickedFile;
 }
 
 void FileDialog::currentPathPanel(video::OpenFileMode type) {
@@ -571,7 +571,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 		currentPathPanel(type);
 		quickAccessPanel(type, _bookmarks->strVal());
 		ImGui::SameLine();
-		bool doubleClickedFile = filesPanel(type);
+		bool doubleClickedFile = entitiesPanel(type);
 		if (type != video::OpenFileMode::Open) {
 			if (ImGui::Button("New folder##filedialog")) {
 				ImGui::OpenPopup(NEW_FOLDER_POPUP);
