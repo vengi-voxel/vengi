@@ -295,6 +295,20 @@ bool FileDialog::hide(const core::String &file) const {
 	return file[0] == '.';
 }
 
+static const char *iconForType(io::FilesystemEntry::Type type) {
+	switch (type) {
+	case io::FilesystemEntry::Type::dir:
+		return ICON_FA_FOLDER;
+	case io::FilesystemEntry::Type::file:
+		return ICON_FA_FILE_IMPORT;
+	case io::FilesystemEntry::Type::link:
+		return ICON_FA_LINK;
+	default:
+		break;
+	}
+	return "";
+}
+
 bool FileDialog::filesPanel(video::OpenFileMode type) {
 	const float height = 25 * ImGui::GetFontSize();
 	ImVec2 childSize(ImGui::GetContentRegionAvail().x, height);
@@ -351,6 +365,15 @@ bool FileDialog::filesPanel(video::OpenFileMode type) {
 			}
 			ImGui::TableNextColumn();
 			const bool selected = i == _entryIndex;
+			const char *icon = iconForType(entry.type);
+			const float x = ImGui::GetCursorPosX();
+			if (icon != nullptr) {
+				ImGui::TextUnformatted(icon);
+			} else {
+				ImGui::TextUnformatted("");
+			}
+			ImGui::SameLine();
+			ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
 			if (ImGui::Selectable(entry.name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {
 				resetState();
 				_entryIndex = i;
