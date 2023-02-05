@@ -416,7 +416,7 @@ void FileDialog::resetState() {
 	_error = TimedError();
 }
 
-bool FileDialog::popups() {
+bool FileDialog::selectEntityPopup() {
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
 	const ImVec2 &windowSize = ImGui::GetWindowSize();
 	const ImVec2 center(windowPos.x + windowSize.x * 0.5f, windowPos.y + windowSize.y * 0.5f);
@@ -441,11 +441,7 @@ bool FileDialog::popups() {
 			_newFolderError = TimedError();
 			ImGui::CloseCurrentPopup();
 		}
-		if (_newFolderError.isValid(timeProvider->tickNow())) {
-			ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _newFolderError.value().c_str());
-		} else {
-			ImGui::TextUnformatted("");
-		}
+		showError(_newFolderError);
 		ImGui::EndPopup();
 	}
 
@@ -503,13 +499,17 @@ void FileDialog::filter(video::OpenFileMode type) {
 	}
 }
 
-bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, core::String &buffer,
-								video::OpenFileMode type, const io::FormatDescription **formatDesc) {
-	if (open != nullptr && !*open) {
-		return false;
+void FileDialog::showError(const TimedError &error) const {
+	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
+	if (error.isValid(timeProvider->tickNow())) {
+		ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", error.value().c_str());
+	} else {
+		ImGui::TextUnformatted("");
 	}
+}
 
-	core_trace_scoped(FileDialog);
+bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String &buffer, video::OpenFileMode type,
+								const io::FormatDescription **formatDesc) {
 	ImGui::SetNextWindowSize(ImVec2(100.0f * ImGui::GetFontSize(), 0.0f), ImGuiCond_FirstUseEver);
 	const char *title;
 	switch (type) {
@@ -528,69 +528,42 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 		ImGui::OpenPopup(title);
 	}
 
-	if (ImGui::BeginPopupModal(title, open)) {
+	if (ImGui::BeginPopupModal(title)) {
 		if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 			ImGui::CloseCurrentPopup();
 		}
-
 		currentPathPanel();
-
 		quickAccessPanel(type, _bookmarks->strVal());
-
 		ImGui::SameLine();
-
 		bool doubleClickedFile = filesPanel(type);
-
-		if (type == video::OpenFileMode::Save) {
-			ImGui::InputText("Filename##filedialog", &_selectedEntry.name);
-		}
-
 		if (type != video::OpenFileMode::Open) {
 			if (ImGui::Button("New folder##filedialog")) {
 				ImGui::OpenPopup(NEW_FOLDER_POPUP);
 			}
 			ImGui::SameLine();
 		}
-
+		if (type == video::OpenFileMode::Save) {
+			ImGui::InputText("Filename##filedialog", &_selectedEntry.name);
+		}
 		ImGui::CheckboxVar("Show hidden##filedialog", _showHidden);
-
-		if (popups()) {
+		// select a file or directory
+		if (selectEntityPopup()) {
 			buffer = assemblePath(_currentPath, _selectedEntry);
 			resetState();
-			if (open != nullptr) {
-				*open = false;
-			}
-			if (formatDesc != nullptr) {
-				*formatDesc = _currentFilterFormat;
-			}
+			*formatDesc = _currentFilterFormat;
 			ImGui::EndPopup();
 			return true;
 		}
-
 		filter(type);
-
 		if (buttons(buffer, type, doubleClickedFile)) {
-			if (open != nullptr) {
-				*open = false;
-			}
-			if (formatDesc != nullptr) {
-				*formatDesc = _currentFilterFormat;
-			}
+			*formatDesc = _currentFilterFormat;
 			ImGui::EndPopup();
 			return true;
 		}
-
-		const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
-		if (_error.isValid(timeProvider->tickNow())) {
-			ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _error.value().c_str());
-		} else {
-			ImGui::TextUnformatted("");
+		showError(_error);
+		if (options && ImGui::CollapsingHeader("Options##filedialogoptions")) {
+			options(type, _currentFilterFormat);
 		}
-
-		if (fileDialogOptions && ImGui::CollapsingHeader("Options##filedialogoptions")) {
-			fileDialogOptions(type, _currentFilterFormat);
-		}
-
 		ImGui::EndPopup();
 	}
 	return false;

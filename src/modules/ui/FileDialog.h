@@ -57,26 +57,25 @@ private:
 	void quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks);
 	void currentPathPanel();
 	bool buttons(core::String &buffer, video::OpenFileMode type, bool doubleClickedFile);
-	bool popups();
+	bool selectEntityPopup();
 	void filter(video::OpenFileMode type);
 	/**
 	 * @return @c true if a file was double clicked
 	 */
 	bool filesPanel(video::OpenFileMode type);
+	void showError(const TimedError &error) const;
 
 public:
 	void construct();
 
 	bool openDir(video::OpenFileMode type, const io::FormatDescription* formats, const core::String& filename = "");
 	/**
-	* @param open The visibility state of the dialog. This is set to false if the dialog should get closed.
-	* This happens on user input. If the function returns @c true the boolean is set to false to no longer show
-	* the dialog.
 	* @param buffer Output buffer for the full path of the selected entity
 	* @return @c true if user input was made - either an entity was selected, or the selection was cancelled.
 	* @return @c false if no user input was made yet and the dialog should still run
 	*/
-	bool showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, core::String &buffer, video::OpenFileMode type, const io::FormatDescription **formatDesc = nullptr);
+	bool showFileDialog(video::FileDialogOptions &fileDialogOptions, core::String &buffer, video::OpenFileMode type,
+						const io::FormatDescription **formatDesc = nullptr);
 };
 
 }
