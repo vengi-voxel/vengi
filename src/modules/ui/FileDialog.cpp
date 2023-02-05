@@ -178,8 +178,9 @@ void FileDialog::removeBookmark(const core::String &bookmark) {
 }
 
 void FileDialog::bookmarkPanel(video::OpenFileMode type, const core::String &bookmarks) {
+	ScopedStyle style;
+	style.setItemSpacing(ImVec2(10, 10));
 	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(200, 300), true);
-	bool specialDirs = false;
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x;
 
 	static const char *folderNames[] = {"Download", "Desktop", "Documents", "Pictures", "Public", "Recent", "Cloud"};
@@ -187,42 +188,46 @@ void FileDialog::bookmarkPanel(video::OpenFileMode type, const core::String &boo
 	static_assert(lengthof(folderNames) == io::FilesystemDirectories::FS_Dir_Max, "Array size doesn't match enum value");
 	static_assert(lengthof(folderIcons) == io::FilesystemDirectories::FS_Dir_Max, "Array size doesn't match enum value");
 
-	for (int n = 0; n < io::FilesystemDirectories::FS_Dir_Max; ++n) {
-		const core::String& dir = io::filesystem()->specialDir((io::FilesystemDirectories)n);
-		if (dir.empty()) {
-			continue;
+	if (ImGui::TreeNode("Quick Access")) {
+		for (int n = 0; n < io::FilesystemDirectories::FS_Dir_Max; ++n) {
+			const core::String& dir = io::filesystem()->specialDir((io::FilesystemDirectories)n);
+			if (dir.empty()) {
+				continue;
+			}
+			bookMarkEntry(type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
 		}
-		bookMarkEntry(type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
-		specialDirs = true;
+		ImGui::TreePop();
 	}
 
-	if (specialDirs) {
-		ImGui::Separator();
+	if (ImGui::TreeNode("This PC")) {
+		const io::Paths& paths = io::filesystem()->paths();
+		for (const core::String& path : paths) {
+			const core::String& absPath = io::filesystem()->absolutePath(path);
+			if (absPath.empty()) {
+				continue;
+			}
+			bookMarkEntry(type, absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
+		}
+		ImGui::TreePop();
 	}
 
-	const io::Paths& paths = io::filesystem()->paths();
-	for (const core::String& path : paths) {
-		const core::String& absPath = io::filesystem()->absolutePath(path);
-		if (absPath.empty()) {
-			continue;
+	if (ImGui::TreeNode("Bookmarks")) {
+		core::DynamicArray<core::String> bm;
+		core::string::splitString(bookmarks, bm, ";");
+		for (const core::String& path : bm) {
+			const core::String& absPath = io::filesystem()->absolutePath(path);
+			if (absPath.empty()) {
+				removeBookmark(path);
+				continue;
+			}
+			if (ImGui::Button(ICON_FK_TRASH)) {
+				removeBookmark(path);
+			}
+			ImGui::TooltipText("Delete this bookmark");
+			ImGui::SameLine();
+			bookMarkEntry(type, absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
 		}
-		bookMarkEntry(type, absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
-	}
-
-	core::DynamicArray<core::String> bm;
-	core::string::splitString(bookmarks, bm, ";");
-	for (const core::String& path : bm) {
-		const core::String& absPath = io::filesystem()->absolutePath(path);
-		if (absPath.empty()) {
-			removeBookmark(path);
-			continue;
-		}
-		if (ImGui::Button(ICON_FK_TRASH)) {
-			removeBookmark(path);
-		}
-		ImGui::TooltipText("Delete this bookmark");
-		ImGui::SameLine();
-		bookMarkEntry(type, absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
+		ImGui::TreePop();
 	}
 
 	ImGui::EndChild();
