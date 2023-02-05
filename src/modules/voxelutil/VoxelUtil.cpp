@@ -120,24 +120,28 @@ static void fillRegion(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
 	for (int x = 0; x < width; ++x) {
 		for (int z = 1; z < depth - 1; ++z) {
 			const glm::ivec3 v1(x, 0, z);
-			if (voxel::isAir(in.voxel(v1 + mins).getMaterial())) {
+			const voxel::VoxelType m1 = in.voxel(v1 + mins).getMaterial();
+			if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
 			const glm::ivec3 v2(x, height - 1, z);
-			if (voxel::isAir(in.voxel(v2 + mins).getMaterial())) {
+			const voxel::VoxelType m2 = in.voxel(v2 + mins).getMaterial();
+			if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
 				positions.push_back(v2);
 				visited.set(v2, true);
 			}
 		}
 		for (int y = 0; y < height; ++y) {
 			const glm::ivec3 v1(x, y, 0);
-			if (voxel::isAir(in.voxel(v1 + mins).getMaterial())) {
+			const voxel::VoxelType m1 = in.voxel(v1 + mins).getMaterial();
+			if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
 			const glm::ivec3 v2(x, y, depth - 1);
-			if (voxel::isAir(in.voxel(v2 + mins).getMaterial())) {
+			const voxel::VoxelType m2 = in.voxel(v2 + mins).getMaterial();
+			if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
 				positions.push_back(v2);
 				visited.set(v2, true);
 			}
@@ -146,12 +150,14 @@ static void fillRegion(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
 	for (int y = 1; y < height - 1; ++y) {
 		for (int z = 1; z < depth - 1; ++z) {
 			const glm::ivec3 v1(0, y, z);
-			if (voxel::isAir(in.voxel(v1 + mins).getMaterial())) {
+			const voxel::VoxelType m1 = in.voxel(v1 + mins).getMaterial();
+			if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
 			const glm::ivec3 v2(width - 1, y, z);
-			if (voxel::isAir(in.voxel(v2 + mins).getMaterial())) {
+			const voxel::VoxelType m2 = in.voxel(v2 + mins).getMaterial();
+			if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
 				positions.push_back(v2);
 				visited.set(v2, true);
 			}
