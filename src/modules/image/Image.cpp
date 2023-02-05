@@ -289,7 +289,25 @@ glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wra
 		return glm::ivec2(0);
 	}
 
-	return glm::ivec2(glm::clamp(xint, 0, _width - 1), glm::clamp(yint, 0, _height - 1));
+	while (xint < 0) {
+		xint = glm::abs(xint) % width();
+		xint = width() - xint;
+	}
+
+	while (yint < 0) {
+		yint = glm::abs(yint) % height();
+		yint = height() - yint;
+	}
+
+	if (xint >= width()) {
+		xint %= width();
+	}
+
+	if (yint >= height()) {
+		yint %= height();
+	}
+
+	return glm::ivec2(xint, yint);
 }
 
 glm::vec2 Image::uv(int x, int y) const {
