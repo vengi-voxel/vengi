@@ -348,9 +348,9 @@ bool FileDialog::filesPanel(video::OpenFileMode type) {
 			ImGui::TableNextColumn();
 			const bool selected = i == _fileSelectIndex;
 			if (ImGui::Selectable(entry.name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {
+				resetState();
 				_fileSelectIndex = i;
 				_currentFile = *_files[i];
-				_error[0] = '\0';
 				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 					if (entry.isDirectory()) {
 						setCurrentPath(type, assemblePath(_currentPath, *_files[i]));
@@ -413,7 +413,7 @@ void FileDialog::construct() {
 void FileDialog::resetState() {
 	_fileSelectIndex = 0;
 	_currentFile = io::FilesystemEntry();
-	_error[0] = '\0';
+	_error = TimedError();
 }
 
 bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize,
@@ -577,10 +577,11 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			return true;
 		}
 		ImGui::SameLine();
+		const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
 		if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGuiKey_Enter) || doubleClickedFile) {
 			if (type == video::OpenFileMode::Directory) {
 				if (_currentFile.name.empty()) {
-					SDL_strlcpy(_error, "Error: You must select a folder!", sizeof(_error));
+					_error = TimedError("Error: You must select a folder!", timeProvider->tickNow(), 1500UL);
 				} else {
 					const core::String &fullPath = assemblePath(_currentPath, _currentFile);
 					SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
@@ -596,7 +597,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 				}
 			} else if (type == video::OpenFileMode::Open || type == video::OpenFileMode::Save) {
 				if (_currentFile.name.empty() || !_currentFile.isFile()) {
-					SDL_strlcpy(_error, "Error: You must select a file!", sizeof(_error));
+					_error = TimedError("Error: You must select a file!", timeProvider->tickNow(), 1500UL);
 				} else {
 					if (_currentFilterEntry != -1 && type == video::OpenFileMode::Save) {
 						const io::FormatDescription &desc = _filterEntries[_currentFilterEntry];
@@ -626,8 +627,8 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 		}
 		ImGui::SetItemDefaultFocus();
 
-		if (strlen(_error) > 0) {
-			ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _error);
+		if (_error.isValid(timeProvider->tickNow())) {
+			ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _error.value().c_str());
 		} else {
 			ImGui::TextUnformatted("");
 		}

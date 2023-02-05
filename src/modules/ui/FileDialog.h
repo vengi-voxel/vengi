@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "core/TimedValue.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FilesystemEntry.h"
 #include "core/Var.h"
@@ -17,8 +18,6 @@ struct FormatDescription;
 
 namespace ui {
 
-enum class FileDialogSortOrder { Up, Down, None };
-
 class FileDialog {
 private:
 	// current active path
@@ -28,7 +27,8 @@ private:
 	// sorted and filtered pointers to the cached file system entities
 	core::DynamicArray<const io::FilesystemEntry*> _files;
 
-	char _error[500] = "";
+	using TimedError = core::TimedValue<core::String>;
+	TimedError _error;
 	size_t _fileSelectIndex = 0;
 	io::FilesystemEntry _currentFile;
 
