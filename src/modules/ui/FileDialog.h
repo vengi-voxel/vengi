@@ -56,6 +56,7 @@ private:
 	void quickAccessEntry(video::OpenFileMode type, const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
 	void quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks);
 	void currentPathPanel();
+	bool buttons(core::String &buffer, video::OpenFileMode type, bool doubleClickedFile);
 	/**
 	 * @return @c true if a file was double clicked
 	 */
@@ -70,11 +71,10 @@ public:
 	* This happens on user input. If the function returns @c true the boolean is set to false to no longer show
 	* the dialog.
 	* @param buffer Output buffer for the full path of the selected entity
-	* @param bufferSize Output buffer size
 	* @return @c true if user input was made - either an entity was selected, or the selection was cancelled.
 	* @return @c false if no user input was made yet and the dialog should still run
 	*/
-	bool showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize, video::OpenFileMode type, const io::FormatDescription **formatDesc = nullptr);
+	bool showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, core::String &buffer, video::OpenFileMode type, const io::FormatDescription **formatDesc = nullptr);
 };
 
 }

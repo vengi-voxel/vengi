@@ -416,7 +416,7 @@ void FileDialog::resetState() {
 	_error = TimedError();
 }
 
-bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, char *buffer, unsigned int bufferSize,
+bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialogOptions, core::String &buffer,
 								video::OpenFileMode type, const io::FormatDescription **formatDesc) {
 	if (open != nullptr && !*open) {
 		return false;
@@ -507,7 +507,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 
 			if (ImGui::Button("Yes##filedialog-override")) {
 				const core::String &fullPath = assemblePath(_currentPath, _currentFile);
-				SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
+				buffer = fullPath;
 				resetState();
 				if (open != nullptr) {
 					*open = false;
@@ -553,20 +553,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			ImGui::PopItemWidth();
 		}
 
-		const char *buttonText = "Choose";
-		if (type == video::OpenFileMode::Open) {
-			buttonText = "Open";
-		} else if (type == video::OpenFileMode::Save) {
-			buttonText = "Save";
-		}
-
-		const ImVec2 cancelTextSize = ImGui::CalcTextSize("Cancel");
-		const ImVec2 chooseTextSize = ImGui::CalcTextSize(buttonText);
-		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - cancelTextSize.x - chooseTextSize.x - 40.0f);
-		if (ImGui::Button("Cancel##filedialog") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
-			resetState();
-			core_assert(bufferSize >= 1);
-			buffer[0] = '\0';
+		if (buttons(buffer, type, doubleClickedFile)) {
 			if (open != nullptr) {
 				*open = false;
 			}
@@ -576,57 +563,8 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			ImGui::EndPopup();
 			return true;
 		}
-		ImGui::SameLine();
-		const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
-		if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGuiKey_Enter) || doubleClickedFile) {
-			if (type == video::OpenFileMode::Directory) {
-				if (_currentFile.name.empty()) {
-					_error = TimedError("Error: You must select a folder!", timeProvider->tickNow(), 1500UL);
-				} else {
-					const core::String &fullPath = assemblePath(_currentPath, _currentFile);
-					SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
-					resetState();
-					if (open != nullptr) {
-						*open = false;
-					}
-					if (formatDesc != nullptr) {
-						*formatDesc = _currentFilterFormat;
-					}
-					ImGui::EndPopup();
-					return true;
-				}
-			} else if (type == video::OpenFileMode::Open || type == video::OpenFileMode::Save) {
-				if (_currentFile.name.empty() || !_currentFile.isFile()) {
-					_error = TimedError("Error: You must select a file!", timeProvider->tickNow(), 1500UL);
-				} else {
-					if (_currentFilterEntry != -1 && type == video::OpenFileMode::Save) {
-						const io::FormatDescription &desc = _filterEntries[_currentFilterEntry];
-						if (!desc.exts[0].empty()) {
-							_currentFile.name = core::string::stripExtension(_currentFile.name);
-							_currentFile.name.append(".");
-							_currentFile.name.append(desc.exts[0]);
-						}
-					}
-					const core::String &fullPath = assemblePath(_currentPath, _currentFile);
-					if (type == video::OpenFileMode::Save && io::filesystem()->exists(fullPath)) {
-						ImGui::OpenPopup(FILE_ALREADY_EXISTS_POPUP);
-					} else {
-						SDL_strlcpy(buffer, fullPath.c_str(), bufferSize);
-						resetState();
-						if (open != nullptr) {
-							*open = false;
-						}
-						if (formatDesc != nullptr) {
-							*formatDesc = _currentFilterFormat;
-						}
-						ImGui::EndPopup();
-						return true;
-					}
-				}
-			}
-		}
-		ImGui::SetItemDefaultFocus();
 
+		const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
 		if (_error.isValid(timeProvider->tickNow())) {
 			ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", _error.value().c_str());
 		} else {
@@ -639,6 +577,60 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 
 		ImGui::EndPopup();
 	}
+	return false;
+}
+
+bool FileDialog::buttons(core::String &buffer, video::OpenFileMode type, bool doubleClickedFile) {
+	const char *buttonText = "Choose";
+	if (type == video::OpenFileMode::Open) {
+		buttonText = "Open";
+	} else if (type == video::OpenFileMode::Save) {
+		buttonText = "Save";
+	}
+
+	const ImVec2 cancelTextSize = ImGui::CalcTextSize("Cancel");
+	const ImVec2 chooseTextSize = ImGui::CalcTextSize(buttonText);
+	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - cancelTextSize.x - chooseTextSize.x - 40.0f);
+	if (ImGui::Button("Cancel##filedialog") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
+		resetState();
+		buffer = "";
+		return true;
+	}
+	ImGui::SameLine();
+	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
+	if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGuiKey_Enter) || doubleClickedFile) {
+		if (type == video::OpenFileMode::Directory) {
+			if (_currentFile.name.empty()) {
+				_error = TimedError("Error: You must select a folder!", timeProvider->tickNow(), 1500UL);
+			} else {
+				buffer = assemblePath(_currentPath, _currentFile);
+				resetState();
+				return true;
+			}
+		} else if (type == video::OpenFileMode::Open || type == video::OpenFileMode::Save) {
+			if (_currentFile.name.empty() || !_currentFile.isFile()) {
+				_error = TimedError("Error: You must select a file!", timeProvider->tickNow(), 1500UL);
+			} else {
+				if (_currentFilterEntry != -1 && type == video::OpenFileMode::Save) {
+					const io::FormatDescription &desc = _filterEntries[_currentFilterEntry];
+					if (!desc.exts[0].empty()) {
+						_currentFile.name = core::string::stripExtension(_currentFile.name);
+						_currentFile.name.append(".");
+						_currentFile.name.append(desc.exts[0]);
+					}
+				}
+				const core::String &fullPath = assemblePath(_currentPath, _currentFile);
+				if (type == video::OpenFileMode::Save && io::filesystem()->exists(fullPath)) {
+					ImGui::OpenPopup(FILE_ALREADY_EXISTS_POPUP);
+				} else {
+					buffer = fullPath;
+					resetState();
+					return true;
+				}
+			}
+		}
+	}
+	ImGui::SetItemDefaultFocus();
 	return false;
 }
 
