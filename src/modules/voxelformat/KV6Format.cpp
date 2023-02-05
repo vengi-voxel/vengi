@@ -246,7 +246,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		for (uint32_t y = 0; y < ysiz_d; ++y) {
 			for (int end = idx + state->xyoffset[x][y]; idx < end; ++idx) {
 				const priv::voxtype& vox = state->voxdata[idx];
-				const voxel::Voxel col = voxel::createVoxel(vox.col);
+				const voxel::Voxel col = voxel::createVoxel(palette, vox.col);
 				volume->setVoxel((int)x, (int)((zsiz_h - 1) - vox.z_low_h), (int)y, col);
 			}
 		}
@@ -261,7 +261,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				const priv::voxtype& vox = state->voxdata[idx];
 				if (vox.vis & priv::KV6Visibility::Up) {
 					lastZ = vox.z_low_h;
-					lastCol = voxel::createVoxel(vox.col);
+					lastCol = voxel::createVoxel(palette, vox.col);
 				}
 				if (vox.vis & priv::KV6Visibility::Down) {
 					for (; lastZ < vox.z_low_h; ++lastZ) {

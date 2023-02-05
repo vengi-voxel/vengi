@@ -87,7 +87,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableRead
 				const uint32_t color = libvxl_map_get(&map, x, y, z);
 				const core::RGBA rgba = core::RGBA(vxl_red(color), vxl_green(color), vxl_blue(color));
 				const uint8_t paletteIndex = palLookup.findClosestIndex(rgba);
-				volume->setVoxel(x, (int)mapHeight - 1 - z, y, voxel::createVoxel(paletteIndex));
+				volume->setVoxel(x, (int)mapHeight - 1 - z, y, voxel::createVoxel(palette, paletteIndex));
 			}
 		}
 	}

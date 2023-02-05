@@ -482,7 +482,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream& stream, VXLModel& mdl, uint32_
 				wrap(stream.readUInt8(color))
 				uint8_t normal;
 				wrap(stream.readUInt8(normal))
-				const voxel::Voxel v = voxel::createVoxel(color);
+				const voxel::Voxel v = voxel::createVoxel(palette, color);
 				volume->setVoxel(x, z, y, v);
 				++z;
 			}

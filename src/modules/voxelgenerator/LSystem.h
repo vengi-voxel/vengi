@@ -89,7 +89,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 
 	TurtleStep step;
 	step.width = width;
-	step.voxel = voxel::createVoxel(0);
+	step.voxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 
 	for (size_t i = 0u; i < sentence.size(); ++i) {
 		const char c = sentence[i];
@@ -124,7 +124,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 			if (colorIndex == 0) {
 				step.voxel = voxel::Voxel();
 			} else if (colorIndex > 0 && colorIndex < 256) {
-				step.voxel = voxel::createVoxel(colorIndex);
+				step.voxel = voxel::createVoxel(voxel::VoxelType::Generic, colorIndex);
 			}
 			break;
 		}

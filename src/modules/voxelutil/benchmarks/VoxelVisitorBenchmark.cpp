@@ -12,7 +12,7 @@ public:
 	void SetUp(::benchmark::State &state) override {
 		app::AbstractBenchmark::SetUp(state);
 
-		const voxel::Voxel voxel = voxel::createVoxel(1);
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 		v.setVoxel(0, 0, 0, voxel);
 		v.setVoxel(0, 0, 2, voxel);
 		v.setVoxel(0, 2, 2, voxel);

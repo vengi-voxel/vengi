@@ -8,6 +8,7 @@
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
+#include "voxel/Voxel.h"
 
 #include <glm/geometric.hpp>
 
@@ -85,7 +86,7 @@ TEST_F(FaceTest, testPositiveZ) {
 
 TEST_F(FaceTest, testVisibility) {
 	const voxel::Region region(0, 31);
-	const voxel::Voxel voxel = voxel::createVoxel(1);
+	const voxel::Voxel voxel = voxel::createVoxel(VoxelType::Generic, 1);
 	voxel::RawVolume volume(region);
 	for (int x = 0; x < 3; ++x) {
 		for (int y = 0; y < 3; ++y) {

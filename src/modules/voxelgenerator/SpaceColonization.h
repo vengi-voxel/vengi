@@ -105,7 +105,7 @@ public:
 	template<class Volume>
 	void generateAttractionPoints(Volume& volume, const voxel::Voxel& voxel) const {
 		if (_root) {
-			const voxel::Voxel& root = voxel::createVoxel(0);
+			const voxel::Voxel& root = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 			volume.setVoxel(_root->_position, root);
 		}
 		for (const AttractionPoint& p : _attractionPoints) {

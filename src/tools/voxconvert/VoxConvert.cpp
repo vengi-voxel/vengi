@@ -412,13 +412,13 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 			voxel::RawVolume* volume = new voxel::RawVolume(region);
 			voxel::RawVolumeWrapper wrapper(volume);
 			voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
-			const voxel::Voxel dirtVoxel = voxel::createVoxel(1);
+			const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 			if (coloredHeightmap) {
 				voxel::PaletteLookup palLookup;
 				voxelutil::importColoredHeightmap(wrapper, palLookup, image, dirtVoxel);
 				node.setPalette(palLookup.palette());
 			} else {
-				const voxel::Voxel grassVoxel = voxel::createVoxel(2);
+				const voxel::Voxel grassVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 				voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
 			}
 			node.setVolume(volume, true);
@@ -585,7 +585,7 @@ void VoxConvert::script(const core::String &scriptParameters, voxelformat::Scene
 		if (luaScript.empty()) {
 			Log::error("Failed to load %s", tokens[0].c_str());
 		} else {
-			const voxel::Voxel voxel = voxel::createVoxel(color);
+			const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
 			core::DynamicArray<voxelgenerator::LUAParameterDescription> argsInfo;
 			if (!script.argumentInfo(luaScript, argsInfo)) {
 				Log::warn("Failed to get argument details");

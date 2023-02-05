@@ -16,6 +16,7 @@
 #include "private/NamedBinaryTag.h"
 #include "private/MinecraftPaletteMap.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelutil/VolumeCropper.h"
@@ -200,7 +201,7 @@ voxel::RawVolume* MCRFormat::finalize(SectionVolumes& volumes, int xPos, int zPo
 	return cropped;
 }
 
-bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &data, SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal) {
+bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette, const priv::NamedBinaryTag &data, SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal) {
 	const bool hasData = data.type() == priv::TagType::LONG_ARRAY && !data.longArray()->empty();
 
 	constexpr glm::ivec3 mins(0, 0, 0);
@@ -226,7 +227,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &da
 						return false;
 					}
 					if (color) {
-						const voxel::Voxel voxel = voxel::createVoxel(color);
+						const voxel::Voxel voxel = voxel::createVoxel(palette, color);
 						wrapper.setVoxel(sPos, voxel);
 					}
 				}
@@ -301,7 +302,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const priv::NamedBinaryTag &da
 					const uint16_t i = sPos.y * MAX_SIZE * MAX_SIZE + sPos.z * MAX_SIZE + sPos.x;
 					const uint8_t color = blocks[i];
 					if (color) {
-						const voxel::Voxel voxel = voxel::createVoxel(color);
+						const voxel::Voxel voxel = voxel::createVoxel(palette, color);
 						wrapper.setVoxel(sPos, voxel);
 					}
 				}
@@ -346,6 +347,8 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 	}
 	Log::debug("Found %i sections", (int)sectionsList->size());
 	SectionVolumes volumes;
+	voxel::Palette pal;
+	pal.minecraft();
 	for (const priv::NamedBinaryTag &section : *sectionsList) {
 		const priv::NamedBinaryTag &blockStates = section.get("block_states");
 		if (!blockStates.valid()) {
@@ -365,7 +368,7 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 			return error(volumes);
 		}
 		const priv::NamedBinaryTag &data = blockStates.get("data");
-		if (!parseBlockStates(dataVersion, data, volumes, sectionY, secPal)) {
+		if (!parseBlockStates(dataVersion, pal, data, volumes, sectionY, secPal)) {
 			Log::error("Failed to parse 'data' tag");
 			return error(volumes);
 		}
@@ -414,6 +417,8 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 	const priv::NBTList &sectionsList = *sections.list();
 	Log::debug("Found %i sections", (int)sectionsList.size());
 	SectionVolumes volumes;
+	voxel::Palette pal;
+	pal.minecraft();
 	for (const priv::NamedBinaryTag &section : sectionsList) {
 		const int8_t sectionY = section.get("Y").int8();
 		MinecraftSectionPalette secPal;
@@ -433,7 +438,7 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 			Log::error("Could not find '%s'", tagId.c_str());
 			return error(volumes);
 		}
-		if (!parseBlockStates(dataVersion, blockStates, volumes, sectionY, secPal)) {
+		if (!parseBlockStates(dataVersion, pal, blockStates, volumes, sectionY, secPal)) {
 			Log::error("Failed to parse '%s' tag", tagId.c_str());
 			return error(volumes);
 		}

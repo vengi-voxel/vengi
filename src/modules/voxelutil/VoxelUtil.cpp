@@ -384,7 +384,7 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
 			return true;
 		}
 		const uint8_t index = palLookup.findClosestIndex(rgba);
-		voxel::Voxel v = voxel::createVoxel(rgba.a < 255 ? voxel::VoxelType::Transparent : voxel::VoxelType::Generic, index);
+		voxel::Voxel v = voxel::createVoxel(palLookup.palette(), index);
 		return in.setVoxel(pos, v);
 	};
 

@@ -269,7 +269,7 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 		if (createPalette) {
 			palette.addColorToPalette(rgba, true);
 		}
-		const voxel::Voxel voxel = voxel::createVoxel(palette.getClosestMatch(rgba));
+		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(rgba));
 		wrapper.setVoxel(entry->first, voxel);
 	}
 	node.setPalette(palette);
@@ -278,7 +278,7 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 			return;
 		}
 		Log::debug("fill hollows");
-		const voxel::Voxel voxel = voxel::createVoxel(FillColorIndex);
+		const voxel::Voxel voxel = voxel::createVoxel(palette, FillColorIndex);
 		voxelutil::fillHollow(wrapper, voxel);
 	}
 }

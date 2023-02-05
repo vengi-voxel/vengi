@@ -14,7 +14,7 @@ class ModifierTest: public app::AbstractTest {
 protected:
 	void prepare(Modifier& modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs, ModifierType modifierType) {
 		modifier.setModifierType(modifierType);
-		modifier.setCursorVoxel(voxel::createVoxel(1));
+		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		modifier.setGridResolution(1);
 		modifier.setCursorPosition(mins, voxel::FaceNames::PositiveX);
 		EXPECT_TRUE(modifier.aabbStart());

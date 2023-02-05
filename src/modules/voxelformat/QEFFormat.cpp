@@ -107,7 +107,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			Log::error("Failed to parse voxel data line");
 			return false;
 		}
-		const voxel::Voxel voxel = voxel::createVoxel(color);
+		const voxel::Voxel voxel = voxel::createVoxel(palette, color);
 		volume->setVoxel(x, y, z, voxel);
 	}
 

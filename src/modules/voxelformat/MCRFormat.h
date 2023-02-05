@@ -94,7 +94,7 @@ private:
 
 	// shared across versions
 	bool parsePaletteList(int dataVersion, const priv::NamedBinaryTag& palette, MinecraftSectionPalette &sectionPal);
-	bool parseBlockStates(int dataVersion, const priv::NamedBinaryTag &data, SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal);
+	bool parseBlockStates(int dataVersion, const voxel::Palette &palette, const priv::NamedBinaryTag &data, SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal);
 
 	// new version (>= 2844)
 	voxel::RawVolume* parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector);

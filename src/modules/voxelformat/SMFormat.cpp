@@ -255,7 +255,7 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, SceneGraph &sceneGrap
 
 		glm::ivec3 pos = position + posByIndex(index);
 
-		volume->setVoxel(pos, voxel::createVoxel(palIndex));
+		volume->setVoxel(pos, voxel::createVoxel(palette, palIndex));
 		empty = false;
 	}
 

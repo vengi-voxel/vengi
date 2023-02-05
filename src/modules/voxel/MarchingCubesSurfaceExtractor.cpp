@@ -35,7 +35,8 @@ static inline Voxel blendMaterials(const Palette &palette, const Voxel &v1, cons
 	const core::RGBA c1 = palette.colors[v1.getColor()];
 	const core::RGBA c2 = palette.colors[v2.getColor()];
 	const core::RGBA blended = core::RGBA::mix(c1, c2, val);
-	return createVoxel(palette.getClosestMatch(blended));
+	const uint8_t palIdx = palette.getClosestMatch(blended);
+	return createVoxel(palette, palIdx);
 }
 
 // Gradient estimation

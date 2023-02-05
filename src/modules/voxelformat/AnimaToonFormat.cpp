@@ -65,7 +65,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, io::SeekableR
 								continue;
 							}
 							const uint8_t color = palette.getClosestMatch(v.rgba);
-							const voxel::Voxel voxel = voxel::createVoxel(color);
+							const voxel::Voxel voxel = voxel::createVoxel(palette, color);
 							volume->setVoxel((int)x, (int)y, (int)z, voxel);
 						}
 					}

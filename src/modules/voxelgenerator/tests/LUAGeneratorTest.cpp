@@ -32,7 +32,7 @@ protected:
 	void run(voxelformat::SceneGraph &sceneGraph, const core::String &script,
 			 const core::DynamicArray<core::String> &args = {}, bool validateDirtyRegion = false) {
 		const voxel::Region region(0, 0, 0, 7, 7, 7);
-		const voxel::Voxel voxel = voxel::createVoxel(42);
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 42);
 		int nodeId;
 		{
 			voxel::RawVolume *volume = new voxel::RawVolume(region);

@@ -318,8 +318,8 @@ void createTree(Volume& volume, const voxelgenerator::TreeContext& ctx, math::Ra
 	const voxel::Palette &palette = voxel::getPalette();
 	const uint8_t green = palette.getClosestMatch(core::RGBA(123, 162, 63));
 	const uint8_t brown = palette.getClosestMatch(core::RGBA(143, 90, 60));
-	const voxel::Voxel trunkVoxel = voxel::createVoxel(brown);
-	const voxel::Voxel leavesVoxel = voxel::createVoxel(green);
+	const voxel::Voxel trunkVoxel = voxel::createVoxel(palette, brown);
+	const voxel::Voxel leavesVoxel = voxel::createVoxel(palette, green);
 	if (ctx.cfg.type == TreeType::BranchesEllipsis) {
 		createTreeBranchEllipsis(volume, ctx.branchellipsis, random, trunkVoxel, leavesVoxel);
 	} else if (ctx.cfg.type == TreeType::Ellipsis) {

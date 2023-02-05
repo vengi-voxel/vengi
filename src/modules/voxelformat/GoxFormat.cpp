@@ -232,6 +232,9 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 					} else {
 						const core::RGBA color(v[0], v[1], v[2], v[3]);
 						index = palLookup.findClosestIndex(color);
+						if (v[3] != 255) {
+							voxelType = voxel::VoxelType::Transparent;
+						}
 					}
 					const voxel::Voxel voxel = voxel::createVoxel(voxelType, index);
 					blockVolume->setVoxel(x + x1, z + z1, y + y1, voxel);

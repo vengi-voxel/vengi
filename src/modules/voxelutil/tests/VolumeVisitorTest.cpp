@@ -12,7 +12,7 @@ class VolumeVisitorTest : public app::AbstractTest {};
 
 TEST_F(VolumeVisitorTest, testVisitSurface) {
 	const voxel::Region region(0, 2);
-	const voxel::Voxel voxel = voxel::createVoxel(1);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	voxel::RawVolume volume(region);
 	for (int x = 0; x < 3; ++x) {
 		for (int y = 0; y < 3; ++y) {
@@ -29,7 +29,7 @@ TEST_F(VolumeVisitorTest, testVisitSurface) {
 
 TEST_F(VolumeVisitorTest, testVisitSurfaceCorners) {
 	const voxel::Region region(0, 2);
-	const voxel::Voxel voxel = voxel::createVoxel(1);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	voxel::RawVolume volume(region);
 	EXPECT_TRUE(volume.setVoxel(0, 0, 0, voxel));
 	EXPECT_TRUE(volume.setVoxel(0, 0, 2, voxel));
@@ -55,7 +55,7 @@ class VolumeVisitorOrderTest : public VolumeVisitorParamTest {};
 
 TEST_P(VolumeVisitorOrderTest, testVisitor) {
 	const voxel::Region region(0, 200);
-	const voxel::Voxel voxel = voxel::createVoxel(1);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	voxel::RawVolume volume(region);
 	EXPECT_TRUE(volume.setVoxel(0, 0, 0, voxel));
 	EXPECT_TRUE(volume.setVoxel(0, 0, 2, voxel));

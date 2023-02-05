@@ -105,7 +105,7 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				if (name == "air") {
 					continue;
 				}
-				volume->setVoxel(x, y, z, voxel::createVoxel(findPaletteIndex(name, 0)));
+				volume->setVoxel(x, y, z, voxel::createVoxel(palette, findPaletteIndex(name, 0)));
 			}
 		}
 	}

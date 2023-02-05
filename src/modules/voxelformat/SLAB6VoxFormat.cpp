@@ -65,7 +65,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 				if (palIdx == 255) {
 					continue;
 				}
-				const voxel::Voxel& voxel = voxel::createVoxel(palIdx);
+				const voxel::Voxel& voxel = voxel::createVoxel(palette, palIdx);
 				// we have to flip depth with height for our own coordinate system
 				volume->setVoxel((int)width - (int)w - 1, (int)height - (int)h - 1, (int)d, voxel);
 			}

@@ -425,7 +425,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 						palette.addColorToPalette(color, false);
 					} else {
 						const uint8_t palIndex = palLookup.findClosestIndex(color);
-						const voxel::Voxel& voxel = voxel::createVoxel(palIndex);
+						const voxel::Voxel& voxel = voxel::createVoxel(palette, palIndex);
 						const uint32_t x = (index / size.z);
 						const uint32_t z = index % size.z;
 						for (int j = 0; j < rleLength; ++j) {
@@ -447,7 +447,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 					const uint32_t x = (index / size.z);
 					const uint32_t z = index % size.z;
 					const uint8_t palIndex = palLookup.findClosestIndex(color);
-					const voxel::Voxel& voxel = voxel::createVoxel(palIndex);
+					const voxel::Voxel& voxel = voxel::createVoxel(palette, palIndex);
 					volume->setVoxel((int)x, y, (int)z, voxel);
 				}
 				++y;

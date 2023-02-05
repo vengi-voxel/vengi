@@ -87,13 +87,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 	const core::String &id = core::string::format("##palitem-%i", palIdx);
 	if (ImGui::InvisibleButton(id.c_str(), colorButtonSize)) {
 		if (usableColor) {
-			voxel::VoxelType type;
-			if (palette.colors[palIdx].a < 255) {
-				type = voxel::VoxelType::Transparent;
-			} else {
-				type = voxel::VoxelType::Generic;
-			}
-			sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(type, palIdx));
+			sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(palette, palIdx));
 		}
 	}
 
@@ -266,13 +260,7 @@ void PalettePanel::closestColor(voxel::Palette &palette) {
 	char buf[256];
 	core::string::formatBuf(buf, sizeof(buf), "%i##closestmatchpalpanel", _closestMatch);
 	if (ImGui::Selectable(buf) && _closestMatch != -1) {
-		voxel::VoxelType type;
-		if (palette.colors[_closestMatch].a < 255) {
-			type = voxel::VoxelType::Transparent;
-		} else {
-			type = voxel::VoxelType::Generic;
-		}
-		sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(type, _closestMatch));
+		sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(palette, _closestMatch));
 	}
 }
 

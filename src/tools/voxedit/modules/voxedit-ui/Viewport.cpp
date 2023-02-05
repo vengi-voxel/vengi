@@ -147,7 +147,7 @@ void Viewport::dragAndDrop(float headerSize) {
 				if (node->visible() && node->type() == voxelformat::SceneGraphNodeType::Model) {
 					updateViewportTrace(headerSize);
 					ModifierFacade &modifier = sceneMgr().modifier();
-					modifier.setCursorVoxel(voxel::createVoxel(dragPalIdx));
+					modifier.setCursorVoxel(voxel::createVoxel(node->palette(), dragPalIdx));
 					modifier.aabbStart();
 					auto callback = [nodeId](const voxel::Region &region, ModifierType type, bool markUndo) {
 						if (type != ModifierType::Select && type != ModifierType::ColorPicker) {

@@ -74,7 +74,7 @@ void importColoredHeightmap(voxel::RawVolumeWrapper& volume, voxel::PaletteLooku
 					continue;
 				}
 				const uint8_t palidx = palLookup.findClosestIndex(core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
-				const voxel::Voxel voxel = voxel::createVoxel(palidx);
+				const voxel::Voxel voxel = voxel::createVoxel(palLookup.palette(), palidx);
 				volume.setVoxel(regionPos, voxel);
 			} else {
 				for (int y = 0; y < heightValue; ++y) {
@@ -88,7 +88,7 @@ void importColoredHeightmap(voxel::RawVolumeWrapper& volume, voxel::PaletteLooku
 						voxel = underground;
 					} else {
 						const uint8_t palidx = palLookup.findClosestIndex(core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
-						voxel = voxel::createVoxel(palidx);
+						voxel = voxel::createVoxel(palLookup.palette(), palidx);
 					}
 					volume.setVoxel(regionPos, voxel);
 				}
@@ -173,7 +173,7 @@ voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness)
 				continue;
 			}
 			const uint8_t index = palette.getClosestMatch(data);
-			const voxel::Voxel voxel = voxel::createVoxel(index);
+			const voxel::Voxel voxel = voxel::createVoxel(palette, index);
 			for (int z = 0; z < thickness; ++z) {
 				volume->setVoxel(x, (imageHeight - 1) - y, z, voxel);
 			}
@@ -227,7 +227,7 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 			}
 			const glm::vec4& color = core::Color::fromRGBA(data);
 			const uint8_t index = palLookup.findClosestIndex(color);
-			const voxel::Voxel voxel = voxel::createVoxel(index);
+			const voxel::Voxel voxel = voxel::createVoxel(palLookup.palette(), index);
 			const core::RGBA heightdata = heightmap->colorAt(x, y);
 			const float thickness = (float)heightdata.rgba;
 			const float maxthickness = maxDepth;

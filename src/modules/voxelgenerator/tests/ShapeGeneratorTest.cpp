@@ -31,7 +31,7 @@ protected:
 	static constexpr int _width { 32 };
 	static constexpr int _height { 32 };
 	static constexpr int _depth { 32 };
-	static constexpr voxel::Voxel _voxel = voxel::createVoxel(1);
+	static constexpr voxel::Voxel _voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	voxel::RawVolume *_volume = nullptr;
 
 	inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal1, const voxel::RawVolume& volume2, const voxel::Palette &pal2) {

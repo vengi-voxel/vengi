@@ -9,6 +9,7 @@
 #include "io/Stream.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
+#include "voxel/Palette.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelformat/SceneGraph.h"
 
@@ -41,6 +42,7 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 	const uint32_t numVoxels = state._w * state._h * state._d;
 	uint32_t index = 0;
 	uint32_t endIndex = 0;
+	const voxel::Palette &palette = node.palette();
 	while (endIndex < numVoxels) {
 		uint8_t value;
 		uint8_t count;
@@ -52,7 +54,7 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 			return false;
 		}
 		if (value != 0u) {
-			const voxel::Voxel voxel = voxel::createVoxel(value);
+			const voxel::Voxel voxel = voxel::createVoxel(palette, value);
 			for (uint32_t i = index; i < endIndex; ++i) {
 				const int32_t iy = (int32_t)(i % state._w);
 				const int32_t iz = (int32_t)((i / state._w) % state._h);

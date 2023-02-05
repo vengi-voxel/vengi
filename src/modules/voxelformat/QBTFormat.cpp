@@ -460,13 +460,13 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 					continue;
 				}
 				if (state.colorFormat == ColorFormat::Palette) {
-					const voxel::Voxel& voxel = voxel::createVoxel(red);
+					const voxel::Voxel& voxel = voxel::createVoxel(palette, red);
 					volume->setVoxel(x, y, z, voxel);
 				} else {
 					const core::RGBA color = core::RGBA(red, green, blue);
 					uint8_t index = 1;
 					palette.addColorToPalette(color, false, &index);
-					const voxel::Voxel& voxel = voxel::createVoxel(index);
+					const voxel::Voxel& voxel = voxel::createVoxel(palette, index);
 					volume->setVoxel(x, y, z, voxel);
 				}
 			}

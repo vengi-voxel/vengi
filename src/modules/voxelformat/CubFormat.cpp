@@ -87,7 +87,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 				}
 				const core::RGBA color(r, g, b);
 				const int index = palLookup.findClosestIndex(color);
-				const voxel::Voxel& voxel = voxel::createVoxel(index);
+				const voxel::Voxel& voxel = voxel::createVoxel(palette, index);
 				// we have to flip depth with height for our own coordinate system
 				volume->setVoxel((int)w, (int)h, (int)d, voxel);
 			}
