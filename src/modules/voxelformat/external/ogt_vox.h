@@ -489,6 +489,9 @@
     static const uint32_t CHUNK_ID_rOBJ = MAKE_VOX_CHUNK_ID('r','O','B','J');
     static const uint32_t CHUNK_ID_rCAM = MAKE_VOX_CHUNK_ID('r','C','A','M');
 
+    static const uint32_t NAME_MAX_LEN     = 256;       // max name len = 255 plus 1 for null terminator
+    static const uint32_t CHUNK_HEADER_LEN = 12;        // 4 bytes for each of: chunk_id, chunk_size, chunk_child_size 
+
     // Some older .vox files will not store a palette, in which case the following palette will be used!
     static const uint8_t k_default_vox_palette[256 * 4] = {
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xcc, 0xff, 0xff, 0xff, 0x99, 0xff, 0xff, 0xff, 0x66, 0xff, 0xff, 0xff, 0x33, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xcc, 0xff, 0xff, 0xff, 0xcc, 0xcc, 0xff,
@@ -536,19 +539,27 @@
     // string utilities
     #ifdef _MSC_VER
         #define _vox_str_scanf(str,...)      sscanf_s(str,__VA_ARGS__)
-        #define _vox_strcpy_static(dst,src)  strcpy_s(dst,src)
         #define _vox_strcasecmp(a,b)         _stricmp(a,b)
         #define _vox_strcmp(a,b)             strcmp(a,b)
         #define _vox_strlen(a)               strlen(a)
         #define _vox_sprintf(str,str_max,fmt,...)    sprintf_s(str, str_max, fmt, __VA_ARGS__)
     #else
         #define _vox_str_scanf(str,...)      sscanf(str,__VA_ARGS__)
-        #define _vox_strcpy_static(dst,src)  strcpy(dst,src)
         #define _vox_strcasecmp(a,b)         strcasecmp(a,b)
         #define _vox_strcmp(a,b)             strcmp(a,b)
         #define _vox_strlen(a)               strlen(a)
         #define _vox_sprintf(str,str_max,fmt,...)    snprintf(str, str_max, fmt, __VA_ARGS__)
     #endif
+
+    // Like strcpy, but will only copy the amount of characters from src that can fit in dst.
+    // Will assert if too many characters are in src.
+    template <size_t SIZE>
+    inline void _vox_strcpy_static(char (&dst)[SIZE], const char* src){
+        size_t storage_needed = _vox_strlen(src) + 1; // +1 for zero terminator
+        ogt_assert(storage_needed <= SIZE, "strcpy of src into dst would exceed storage in dst");
+        memcpy(dst, src, storage_needed <= SIZE ? storage_needed : SIZE);
+        dst[SIZE-1] = 0; // make sure we're always zero terminated.
+    }
 
     // 3d vector utilities
     struct vec3 {
@@ -978,7 +989,7 @@
         union {
             // used only when node_type == k_nodetype_transform
             struct {
-                char              name[65];                 // max name size is 64 plus 1 for null terminator
+                char              name[NAME_MAX_LEN];
                 ogt_vox_transform transform;                // root transform (always the first anim frame transform in the case of animated transform)
                 uint32_t          child_node_id;
                 uint32_t          layer_id;
@@ -1297,7 +1308,7 @@
                 }
                 case CHUNK_ID_SIZE:
                 {
-                    ogt_assert(chunk_size == 12 && chunk_child_size == 0, "unexpected chunk size for SIZE chunk");
+                    ogt_assert(chunk_size == CHUNK_HEADER_LEN && chunk_child_size == 0, "unexpected chunk size for SIZE chunk");
                     _vox_file_read_uint32(fp, &size_x);
                     _vox_file_read_uint32(fp, &size_y);
                     _vox_file_read_uint32(fp, &size_z);
@@ -1366,7 +1377,7 @@
                     //   _hidden: 0/1
                     //   _loop:   0/1
                     _vox_file_read_dict(&dict, fp);
-                    char node_name[65];
+                    char node_name[NAME_MAX_LEN];
                     _vox_strcpy_static(node_name, _vox_dict_get_value_as_string(&dict, "_name", ""));
                     bool hidden = _vox_dict_get_value_as_bool(&dict, "_hidden", false);
                     bool loop = _vox_dict_get_value_as_bool(&dict, "_loop", false);
@@ -2202,12 +2213,12 @@
         _vox_file_write_dict_key_value(fp, "_hidden", hidden_string);
         _vox_file_write_dict_key_value(fp, "_loop",   loop_string);
 
-        // get other properties.
+        // write other properties.
         _vox_file_write_uint32(fp, child_node_id);
         _vox_file_write_uint32(fp, UINT32_MAX); // reserved_id must have all bits set.
         _vox_file_write_uint32(fp, layer_id);
         if (transform_anim->num_keyframes == 0) {
-            _vox_file_write_uint32(fp, 1);          // num_frames must be 1
+            _vox_file_write_uint32(fp, 1);  // num_frames must be 1
             // write the frame dictionary
             _vox_file_write_uint32(fp, 2);  // 2 key values: "_r", "_t"
             _vox_file_write_dict_transform(fp, transform);
@@ -2215,14 +2226,14 @@
         else {
             _vox_file_write_uint32(fp, transform_anim->num_keyframes);          // num_frames must be 1
             for (uint32_t j = 0; j < transform_anim->num_keyframes; j++) {
-                _vox_file_write_uint32(fp, 3);  // 2 key values: "_r", "_t", "_f"
+                _vox_file_write_uint32(fp, 3);  // 3 key values: "_r", "_t", "_f"
                 _vox_file_write_dict_transform(fp, &transform_anim->keyframes[j].transform);
                 _vox_file_write_dict_key_value_uint32(fp, "_f", transform_anim->keyframes[j].frame_index);
             }
         }
 
         // patch up the chunk size in the header
-        uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
+        uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - CHUNK_HEADER_LEN;
         _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
     }
 
@@ -2338,7 +2349,7 @@
                 if (scene->instances[child_instance_index].group_index == group_index)
                     _vox_file_write_uint32(fp, first_instance_transform_node_id + child_instance_index);
 
-            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
+            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - CHUNK_HEADER_LEN;
             _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
         }
 
@@ -2374,7 +2385,7 @@
                 }
             }
             // compute and patch up the chunk size in the chunk header
-            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
+            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - CHUNK_HEADER_LEN;
             _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
         }
 
@@ -2438,7 +2449,7 @@
             _vox_file_write_dict_key_value(fp, "_fov", cam_fov);
 
             // compute and patch up the chunk size in the chunk header
-            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
+            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - CHUNK_HEADER_LEN;
             _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
         }
 
@@ -2536,7 +2547,7 @@
                     _vox_file_write_dict_key_value_float(fp, "_media", matl.media);
                 }
                 // compute and patch up the chunk size in the chunk header
-                uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
+                uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - CHUNK_HEADER_LEN;
                 _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
             }
         }
@@ -2567,7 +2578,7 @@
             _vox_file_write_uint32(fp, UINT32_MAX);                 // reserved id
 
             // compute and patch up the chunk size in the chunk header
-            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - 12;
+            uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - CHUNK_HEADER_LEN;
             _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
         }
 
