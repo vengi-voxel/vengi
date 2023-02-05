@@ -380,8 +380,8 @@ bool FileDialog::filesPanel(video::OpenFileMode type) {
 			const core::String &lastModified = core::TimeProvider::toString(entry.mtime);
 			ImGui::TextUnformatted(lastModified.c_str());
 		}
+		ImGui::EndTable();
 	}
-	ImGui::EndTable();
 	ImGui::EndChild();
 	return doubleClicked;
 }
@@ -411,8 +411,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 	if (open == nullptr || *open) {
 		bool doubleClickedFile = false;
 		core_trace_scoped(FileDialog);
-		// TODO: not dpi aware
-		ImGui::SetNextWindowSize(ImVec2(1200.0f, 700.0f), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(100.0f * ImGui::GetFontSize(), 0.0f), ImGuiCond_FirstUseEver);
 		const char *title;
 		switch (type) {
 		case video::OpenFileMode::Save:
