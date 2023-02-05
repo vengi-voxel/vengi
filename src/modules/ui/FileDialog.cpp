@@ -481,10 +481,6 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 
 			doubleClickedFile = filesPanel();
 
-			core::String selectedFilePath =
-				assemblePath(_currentPath, !_currentFolder.empty() ? _currentFolder : _currentFile);
-			ImGui::PushItemWidth(724);
-			ImGui::InputText("##selectedpath", &selectedFilePath, ImGuiInputTextFlags_ReadOnly);
 			if (type == video::OpenFileMode::Save) {
 				ImGui::InputText("Filename", &_currentFile);
 			}
