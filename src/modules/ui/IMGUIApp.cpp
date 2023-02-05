@@ -507,7 +507,7 @@ void IMGUIApp::fileDialog(const video::FileDialogSelectionCallback& callback, co
 	_fileDialogCallback = callback;
 	_fileDialogOptions = options;
 	_fileDialogMode = mode;
-	_fileDialog.openDir(formats, filename);
+	_fileDialog.openDir(mode, formats, filename);
 }
 
 }
