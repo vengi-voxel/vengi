@@ -114,6 +114,7 @@ extern bool isInteger(const core::String& in);
 extern bool isIntegerWithPostfix(const core::String& in);
 extern bool isAlpha(int c);
 extern bool isAbsolutePath(const core::String &in);
+extern bool isRootPath(const core::String &in);
 
 inline char *strncpyz(const char *input, size_t inputSize, char *target, size_t targetSize) {
 	core_assert(targetSize > 0);

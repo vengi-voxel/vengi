@@ -295,10 +295,17 @@ bool isIntegerWithPostfix(const core::String& in) {
 }
 
 bool isAbsolutePath(const core::String &in) {
-	if (in.size() >= 3 && in[0] != '\0' && isAlpha(in[0]) && in[1] == ':' && (in[2] == '\\' || in[2] == '/')) {
+	if (in.size() >= 3U && isAlpha(in[0]) && in[1] == ':' && (in[2] == '\\' || in[2] == '/')) {
 		return true;
 	}
 	return in.size() > 1U && (in[0] == '/' || in[0] == '\\');
+}
+
+bool isRootPath(const core::String &in) {
+	if (in.size() == 3U && isAlpha(in[0]) && in[1] == ':' && (in[2] == '\\' || in[2] == '/')) {
+		return true;
+	}
+	return in.size() == 1U && (in[0] == '/' || in[0] == '\\');
 }
 
 static bool patternMatch(const char *text, const char *pattern);
