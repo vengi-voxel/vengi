@@ -484,7 +484,6 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 			if (type == video::OpenFileMode::Save) {
 				ImGui::InputText("Filename", &_currentFile);
 			}
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
 
 			if (type != video::OpenFileMode::Open) {
 				if (ImGui::Button("New folder")) {
