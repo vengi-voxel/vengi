@@ -106,7 +106,7 @@ Objects: {
 	// https://github.com/libgdx/fbx-conv/blob/master/samples/blender/cube.fbx
 
 	for (const MeshExt &meshExt : meshes) {
-		const voxel::Mesh *mesh = meshExt.mesh;
+		const voxel::Mesh *mesh = &meshExt.mesh->mesh; // TODO: alpha support
 		Log::debug("Exporting layer %s", meshExt.name.c_str());
 		const int nv = (int)mesh->getNoOfVertices();
 		const int ni = (int)mesh->getNoOfIndices();

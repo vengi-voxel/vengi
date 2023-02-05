@@ -11,6 +11,7 @@
 #include "video/ScopedFrameBuffer.h"
 #include "video/Texture.h"
 #include "video/TextureConfig.h"
+#include "voxel/ChunkMesh.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VolumeMerger.h"
@@ -115,16 +116,18 @@ bool RawVolumeRenderer::init() {
 		State& state = _state[idx];
 		state._models[0] = glm::mat4(1.0f);
 		state._amounts = 1;
-		state._vertexBufferIndex = state._vertexBuffer.create();
-		if (state._vertexBufferIndex == -1) {
-			Log::error("Could not create the vertex buffer object");
-			return false;
-		}
+		for (int i = 0; i < MeshType_Max; ++i) {
+			state._vertexBufferIndex[i] = state._vertexBuffer[i].create();
+			if (state._vertexBufferIndex[i] == -1) {
+				Log::error("Could not create the vertex buffer object");
+				return false;
+			}
 
-		state._indexBufferIndex = state._vertexBuffer.create(nullptr, 0, video::BufferType::IndexBuffer);
-		if (state._indexBufferIndex == -1) {
-			Log::error("Could not create the vertex buffer object for the indices");
-			return false;
+			state._indexBufferIndex[i] = state._vertexBuffer[i].create(nullptr, 0, video::BufferType::IndexBuffer);
+			if (state._indexBufferIndex[i] == -1) {
+				Log::error("Could not create the vertex buffer object for the indices");
+				return false;
+			}
 		}
 	}
 
@@ -137,15 +140,17 @@ bool RawVolumeRenderer::init() {
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		State& state = _state[idx];
-		const video::Attribute& attributePos = getPositionVertexAttribute(
-				state._vertexBufferIndex, _voxelShader.getLocationPos(),
-				_voxelShader.getComponentsPos());
-		state._vertexBuffer.addAttribute(attributePos);
+		for (int i = 0; i < MeshType_Max; ++i) {
+			const video::Attribute& attributePos = getPositionVertexAttribute(
+					state._vertexBufferIndex[i], _voxelShader.getLocationPos(),
+					_voxelShader.getComponentsPos());
+			state._vertexBuffer[i].addAttribute(attributePos);
 
-		const video::Attribute& attributeInfo = getInfoVertexAttribute(
-				state._vertexBufferIndex, _voxelShader.getLocationInfo(),
-				_voxelShader.getComponentsInfo());
-		state._vertexBuffer.addAttribute(attributeInfo);
+			const video::Attribute& attributeInfo = getInfoVertexAttribute(
+					state._vertexBufferIndex[i], _voxelShader.getLocationInfo(),
+					_voxelShader.getComponentsInfo());
+			state._vertexBuffer[i].addAttribute(attributeInfo);
+		}
 	}
 
 	render::ShadowParameters shadowParams;
@@ -185,7 +190,7 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 		if (!onlyAir) {
 			_threadPool.enqueue([movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
 				++_runningExtractorTasks;
-				voxel::Mesh mesh(65536, 65536, true);
+				voxel::ChunkMesh mesh(65536, 65536, true);
 				voxel::Region extractRegion = finalRegion;
 				extractRegion.shiftUpperCorner(1, 1, 1);
 				voxel::extractCubicMesh(&movedCopy, extractRegion, &mesh, mins);
@@ -194,7 +199,7 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 				--_runningExtractorTasks;
 			});
 		} else {
-			_pendingQueue.emplace(mins, idx, core::move(voxel::Mesh(0, 0)));
+			_pendingQueue.emplace(mins, idx, core::move(voxel::ChunkMesh(0, 0)));
 		}
 		--maxExtraction;
 		if (maxExtraction == 0) {
@@ -211,12 +216,21 @@ void RawVolumeRenderer::update() {
 	ExtractionCtx result;
 	int cnt = 0;
 	while (_pendingQueue.pop(result)) {
-		Meshes& meshes = _meshes[result.mins];
+		Meshes& meshes = _meshes[MeshType_Opaque][result.mins];
 		if (meshes[result.idx] != nullptr) {
 			delete meshes[result.idx];
 		}
-		meshes[result.idx] = new voxel::Mesh(core::move(result.mesh));
-		if (!updateBufferForVolume(result.idx)) {
+		meshes[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh));
+		if (!updateBufferForVolume(result.idx, MeshType_Opaque)) {
+			Log::error("Failed to update the mesh at index %i", result.idx);
+		}
+
+		Meshes& meshesT = _meshes[MeshType_Transparency][result.mins];
+		if (meshesT[result.idx] != nullptr) {
+			delete meshesT[result.idx];
+		}
+		meshesT[result.idx] = new voxel::Mesh(core::move(result.mesh.meshT));
+		if (!updateBufferForVolume(result.idx, MeshType_Transparency)) {
 			Log::error("Failed to update the mesh at index %i", result.idx);
 		}
 		++cnt;
@@ -226,7 +240,7 @@ void RawVolumeRenderer::update() {
 	}
 }
 
-bool RawVolumeRenderer::updateBufferForVolume(int idx) {
+bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return false;
 	}
@@ -234,7 +248,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx) {
 
 	size_t vertCount = 0u;
 	size_t indCount = 0u;
-	for (auto& i : _meshes) {
+	for (auto& i : _meshes[type]) {
 		const Meshes& meshes = i.second;
 		const voxel::Mesh* mesh = meshes[idx];
 		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
@@ -248,8 +262,8 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx) {
 
 	State& state = _state[idx];
 	if (indCount == 0u || vertCount == 0u) {
-		state._vertexBuffer.update(state._vertexBufferIndex, nullptr, 0);
-		state._vertexBuffer.update(state._indexBufferIndex, nullptr, 0);
+		state._vertexBuffer[type].update(state._vertexBufferIndex[type], nullptr, 0);
+		state._vertexBuffer[type].update(state._indexBufferIndex[type], nullptr, 0);
 		return true;
 	}
 
@@ -262,7 +276,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx) {
 	voxel::IndexType* indicesPos = indicesBuf;
 
 	voxel::IndexType offset = (voxel::IndexType)0;
-	for (auto& i : _meshes) {
+	for (auto& i : _meshes[type]) {
 		const Meshes& meshes = i.second;
 		const voxel::Mesh* mesh = meshes[idx];
 		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
@@ -281,7 +295,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx) {
 		offset += vertexVector.size();
 	}
 
-	if (!state._vertexBuffer.update(state._vertexBufferIndex, verticesBuf, verticesBufSize)) {
+	if (!state._vertexBuffer[type].update(state._vertexBufferIndex[type], verticesBuf, verticesBufSize)) {
 		Log::error("Failed to update the vertex buffer");
 		core_free(indicesBuf);
 		core_free(verticesBuf);
@@ -289,36 +303,12 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx) {
 	}
 	core_free(verticesBuf);
 
-	if (!state._vertexBuffer.update(state._indexBufferIndex, indicesBuf, indicesBufSize)) {
+	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, indicesBufSize)) {
 		Log::error("Failed to update the index buffer");
 		core_free(indicesBuf);
 		return false;
 	}
 	core_free(indicesBuf);
-	return true;
-}
-
-bool RawVolumeRenderer::updateBufferForVolume(int idx, const voxel::VertexArray& vertices, const voxel::IndexArray& indices) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return false;
-	}
-	core_trace_scoped(RawVolumeRendererUpdate);
-
-	State& state = _state[idx];
-	if (indices.empty() || vertices.empty()) {
-		state._vertexBuffer.update(state._vertexBufferIndex, nullptr, 0);
-		state._vertexBuffer.update(state._indexBufferIndex, nullptr, 0);
-		return true;
-	}
-
-	if (!state._vertexBuffer.update(state._vertexBufferIndex, &vertices.front(), vertices.size() * sizeof(voxel::VertexArray::value_type))) {
-		Log::error("Failed to update the vertex buffer");
-		return false;
-	}
-	if (!state._vertexBuffer.update(state._indexBufferIndex, &indices.front(), indices.size() * sizeof(voxel::IndexArray::value_type))) {
-		Log::error("Failed to update the index buffer");
-		return false;
-	}
 	return true;
 }
 
@@ -344,24 +334,15 @@ bool RawVolumeRenderer::empty(int idx) const {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return true;
 	}
-	for (auto& i : _meshes) {
-		const Meshes& meshes = i.second;
-		if (meshes[idx] != nullptr && meshes[idx]->getNoOfIndices() > 0) {
-			return false;
+	for (int i = 0; i < MeshType_Max; ++i) {
+		for (auto& i : _meshes[i]) {
+			const Meshes& meshes = i.second;
+			if (meshes[idx] != nullptr && meshes[idx]->getNoOfIndices() > 0) {
+				return false;
+			}
 		}
 	}
 	return true;
-}
-
-void RawVolumeRenderer::deleteMeshes(Meshes& meshes, int idx) {
-	if (meshes[idx] == nullptr) {
-		return;
-	}
-	delete meshes[idx];
-	meshes[idx] = nullptr;
-	State& state = _state[idx];
-	state._vertexBuffer.update(state._vertexBufferIndex, nullptr, 0);
-	state._vertexBuffer.update(state._indexBufferIndex, nullptr, 0);
 }
 
 voxel::Region RawVolumeRenderer::calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const {
@@ -397,9 +378,15 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 				const glm::ivec3& mins = finalRegion.getLowerCorner();
 
 				if (!voxel::intersects(completeRegion, finalRegion)) {
-					auto i = _meshes.find(mins);
-					if (i != _meshes.end()) {
-						deleteMeshes(i->second, idx);
+					for (int i = 0; i < MeshType_Max; ++i) {
+						auto iter = _meshes[i].find(mins);
+						if (iter != _meshes[i].end()) {
+							delete iter->second[idx];
+							iter->second[idx] = nullptr;
+							State& state = _state[idx];
+							state._vertexBuffer[i].update(state._vertexBufferIndex[i], nullptr, 0);
+							state._vertexBuffer[i].update(state._indexBufferIndex[i], nullptr, 0);
+						}
 					}
 					continue;
 				}
@@ -480,24 +467,19 @@ void RawVolumeRenderer::updatePalette(int idx) {
 
 void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera& camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
-	uint32_t indices[MAX_VOLUMES];
 
-	core_memset(indices, 0, sizeof(indices));
-
-	uint32_t numIndices = 0u;
+	bool visible = false;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		const State& state = _state[idx];
 		if (state._hidden) {
 			continue;
 		}
-		const uint32_t nIndices = state._vertexBuffer.elements(state._indexBufferIndex, 1, sizeof(voxel::IndexType));
-		if (nIndices <= 0) {
+		if (!state.hasData()) {
 			continue;
 		}
-		numIndices += nIndices;
-		indices[idx] = nIndices;
+		visible = true;
 	}
-	if (numIndices == 0u) {
+	if (!visible) {
 		if (_bloom->boolVal()) {
 			video::ScopedFrameBuffer scoped(renderContext.frameBuffer);
 			video::clear(video::ClearFlag::Color);
@@ -515,18 +497,19 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		_shadow.update(camera, true);
 		if (shadow) {
 			video::ScopedShader scoped(_shadowMapShader);
-			_shadow.render([this, &indices] (int i, const glm::mat4& lightViewProjection) {
+			_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
 				_shadowMapShader.setLightviewprojection(lightViewProjection);
 				for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-					if (indices[idx] <= 0u) {
+					const State& state = _state[idx];
+					const uint32_t indices = state.indices(MeshType_Opaque);
+					if (indices == 0u) {
 						continue;
 					}
-					const State& state = _state[idx];
-					video::ScopedBuffer scopedBuf(state._vertexBuffer);
+					video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Opaque]);
 					_shadowMapShader.setModel(state._models);
 					_shadowMapShader.setPivot(state._pivots);
 					static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-					video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices[idx], state._amounts);
+					video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices, state._amounts);
 				}
 				return true;
 			}, true);
@@ -568,19 +551,43 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	} else if (mode == video::PolygonMode::Solid) {
 		video::enable(video::State::PolygonOffsetFill);
 	}
+
+	// --- opaque pass
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		if (indices[idx] <= 0u) {
+		const State& state = _state[idx];
+		const uint32_t indices = state.indices(MeshType_Opaque);
+		if (indices == 0u) {
 			continue;
 		}
 		updatePalette(idx);
 		video::ScopedPolygonMode polygonMode(mode);
-		const State& state = _state[idx];
-		video::ScopedBuffer scopedBuf(state._vertexBuffer);
+		video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Opaque]);
 		_voxelShader.setGray(state._gray);
 		_voxelShader.setModel(state._models);
 		_voxelShader.setPivot(state._pivots);
-		video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices[idx], state._amounts);
+		video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices, state._amounts);
 	}
+
+	// --- transparency pass
+	{
+		video::ScopedState scopedBlend(video::State::Blend, true);
+		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+			const State& state = _state[idx];
+			const uint32_t indices = state.indices(MeshType_Transparency);
+			if (indices == 0u) {
+				continue;
+			}
+			updatePalette(idx);
+			// TODO: alpha support - sort according to eye pos
+			video::ScopedPolygonMode polygonMode(mode);
+			video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Transparency]);
+			_voxelShader.setGray(state._gray);
+			_voxelShader.setModel(state._models);
+			_voxelShader.setPivot(state._pivots);
+			video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices, state._amounts);
+		}
+	}
+
 	if (mode == video::PolygonMode::Points) {
 		video::disable(video::State::PolygonOffsetPoint);
 	} else if (mode == video::PolygonMode::WireFrame) {
@@ -661,8 +668,14 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 	core_trace_scoped(RawVolumeRendererSetVolume);
 	state._rawVolume = volume;
 	if (deleteMesh) {
-		for (auto& i : _meshes) {
-			deleteMeshes(i.second, idx);
+		for (int i = 0; i < MeshType_Max; ++i) {
+			for (auto& iter : _meshes[i]) {
+				delete iter.second[idx];
+				iter.second[idx] = nullptr;
+				State& state = _state[idx];
+				state._vertexBuffer[i].update(state._vertexBufferIndex[i], nullptr, 0);
+				state._vertexBuffer[i].update(state._indexBufferIndex[i], nullptr, 0);
+			}
 		}
 	}
 	const size_t n = _extractRegions.size();
@@ -684,18 +697,22 @@ core::DynamicArray<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_voxelShader.shutdown();
 	_shadowMapShader.shutdown();
 	_materialBlock.shutdown();
-	for (auto& iter : _meshes) {
-		for (auto& mesh : iter.second) {
-			delete mesh;
+	for (int i = 0; i < MeshType_Max; ++i) {
+		for (auto& iter : _meshes[i]) {
+			for (auto& mesh : iter.second) {
+				delete mesh;
+			}
 		}
+		_meshes[i].clear();
 	}
-	_meshes.clear();
 	core::DynamicArray<voxel::RawVolume*> old(MAX_VOLUMES);
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		State& state = _state[idx];
-		state._vertexBuffer.shutdown();
-		state._vertexBufferIndex = -1;
-		state._indexBufferIndex = -1;
+		for (int i = 0; i < MeshType_Max; ++i) {
+			state._vertexBuffer[i].shutdown();
+			state._vertexBufferIndex[i] = -1;
+			state._indexBufferIndex[i] = -1;
+		}
 		// hand over the ownership to the caller
 		old.push_back(state._rawVolume);
 		state._rawVolume = nullptr;

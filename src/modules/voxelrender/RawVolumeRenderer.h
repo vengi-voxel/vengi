@@ -11,6 +11,7 @@
 #include "core/concurrent/Concurrency.h"
 #include "core/concurrent/ThreadPool.h"
 #include "render/BloomRenderer.h"
+#include "voxel/ChunkMesh.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -60,22 +61,35 @@ class RawVolumeRenderer : public core::NonCopyable {
 public:
 	static constexpr int MAX_VOLUMES = 2048;
 protected:
+	enum MeshType {
+		MeshType_Opaque,
+		MeshType_Transparency,
+		MeshType_Max
+	};
 	struct State {
 		bool _hidden = false;
 		bool _gray = false;
 		int32_t _amounts = 1;
-		int32_t _vertexBufferIndex = -1;
-		int32_t _indexBufferIndex = -1;
+		int32_t _vertexBufferIndex[MeshType_Max] {-1, -1};
+		int32_t _indexBufferIndex[MeshType_Max] {-1, -1};
 		glm::mat4 _models[shader::VoxelInstancedShaderConstants::getMaxInstances()];
 		glm::vec3 _pivots[shader::VoxelInstancedShaderConstants::getMaxInstances()];
-		video::Buffer _vertexBuffer;
+		video::Buffer _vertexBuffer[MeshType_Max];
 		voxel::RawVolume* _rawVolume = nullptr;
 		core::Optional<voxel::Palette> _palette;
+
+		uint32_t indices(MeshType type) const {
+			return _vertexBuffer[type].elements(_indexBufferIndex[type], 1, sizeof(voxel::IndexType));
+		}
+
+		bool hasData() const {
+			return indices(MeshType_Opaque) > 0 || indices(MeshType_Transparency) > 0;
+		}
 	};
 	core::Array<State, MAX_VOLUMES> _state {};
 	typedef core::Array<voxel::Mesh*, MAX_VOLUMES> Meshes;
 	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
-	MeshesMap _meshes;
+	MeshesMap _meshes[MeshType_Max];
 
 	static_assert(shader::VoxelInstancedShaderConstants::getMaxInstances() == shader::ShadowmapInstancedShaderConstants::getMaxInstances(), "max instances must match between shaders");
 	uint64_t _paletteHash = 0;
@@ -102,12 +116,12 @@ protected:
 
 	struct ExtractionCtx {
 		ExtractionCtx() {}
-		ExtractionCtx(const glm::ivec3& _mins, int _idx, voxel::Mesh&& _mesh) :
+		ExtractionCtx(const glm::ivec3& _mins, int _idx, voxel::ChunkMesh&& _mesh) :
 				mins(_mins), idx(_idx), mesh(_mesh) {
 		}
 		glm::ivec3 mins {};
 		int idx = -1;
-		voxel::Mesh mesh;
+		voxel::ChunkMesh mesh;
 
 		inline bool operator<(const ExtractionCtx &rhs) const {
 			return idx < rhs.idx;
@@ -118,7 +132,8 @@ protected:
 	core::ConcurrentPriorityQueue<ExtractionCtx> _pendingQueue;
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
 	void updatePalette(int idx);
-	void deleteMeshes(Meshes& meshes, int idx);
+	bool updateBufferForVolume(int idx, MeshType type);
+
 public:
 	RawVolumeRenderer();
 
@@ -143,9 +158,16 @@ public:
 	 * @brief Updates the vertex buffers manually
 	 * @sa extract()
 	 */
-	bool updateBufferForVolume(int idx);
-
-	bool updateBufferForVolume(int idx, const voxel::VertexArray& vertices, const voxel::IndexArray& indices);
+	bool updateBufferForVolume(int idx) {
+		bool success = true;
+		if (!updateBufferForVolume(idx, MeshType_Opaque)) {
+			success = false;
+		}
+		if (!updateBufferForVolume(idx, MeshType_Transparency)) {
+			success = false;
+		}
+		return success;
+	}
 
 	bool extractRegion(int idx, const voxel::Region& region);
 

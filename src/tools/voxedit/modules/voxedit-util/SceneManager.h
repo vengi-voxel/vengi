@@ -9,6 +9,7 @@
 #include "core/TimedValue.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
+#include "voxel/Voxel.h"
 #include "voxelfont/VoxelFont.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -379,6 +380,8 @@ public:
 	 */
 	bool trace(bool sceneMode, bool force = false, voxelutil::PickResult *result = nullptr);
 	void resetLastTrace();
+
+	void updateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType);
 
 	math::Axis lockedAxis() const;
 	void setLockedAxis(math::Axis axis, bool unlock);

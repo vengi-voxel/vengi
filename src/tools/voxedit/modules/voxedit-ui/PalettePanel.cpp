@@ -14,6 +14,7 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsForkAwesome.h"
+#include "voxel/Voxel.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -120,9 +121,14 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::RGBAPayload)) {
 			const glm::vec4 color = *(const glm::vec4 *)payload->Data;
+			const bool hasAlpha = palette.colors[palIdx].a != 255;
 			palette.colors[palIdx] = core::Color::getRGBA(color);
 			if (!existingColor) {
 				palette.colorCount = palIdx + 1;
+			} else if (hasAlpha && palette.colors[palIdx].a == 255) {
+				sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
+			} else if (!hasAlpha && palette.colors[palIdx].a != 255) {
+				sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
 			}
 			palette.markDirty();
 			palette.markSave();
@@ -326,9 +332,14 @@ bool PalettePanel::showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &
 	const bool existingColor = palIdx < maxPaletteEntries;
 
 	if (ImGui::ColorPicker4("Color", glm::value_ptr(color), flags)) {
+		const bool hasAlpha = palette.colors[palIdx].a != 255;
 		palette.colors[palIdx] = core::Color::getRGBA(color);
 		if (!existingColor) {
 			palette.colorCount = palIdx + 1;
+		} else if (hasAlpha && palette.colors[palIdx].a == 255) {
+			sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
+		} else if (!hasAlpha && palette.colors[palIdx].a != 255) {
+			sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
 		}
 		palette.markDirty();
 		palette.markSave();

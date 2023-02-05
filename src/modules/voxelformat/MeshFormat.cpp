@@ -17,6 +17,7 @@
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ThreadPool.h"
 #include "io/FormatDescription.h"
+#include "voxel/ChunkMesh.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/MarchingCubesSurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
@@ -282,7 +283,7 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 	}
 }
 
-MeshFormat::MeshExt::MeshExt(voxel::Mesh *_mesh, const SceneGraphNode& node, bool _applyTransform) :
+MeshFormat::MeshExt::MeshExt(voxel::ChunkMesh *_mesh, const SceneGraphNode& node, bool _applyTransform) :
 		mesh(_mesh), name(node.name()), applyTransform(_applyTransform) {
 	size = node.region().getDimensionsInVoxels();
 	nodeId = node.id();
@@ -385,7 +386,7 @@ bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	core_trace_mutex(core::Lock, lock, "MeshFormat");
 	for (const SceneGraphNode& node : sceneGraph) {
 		auto lambda = [&] () {
-			voxel::Mesh *mesh = new voxel::Mesh();
+			voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
 			if (marchingCubes) {
 				voxel::Region region = node.region();
 				region.shrink(-1);

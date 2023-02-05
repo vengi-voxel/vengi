@@ -8,6 +8,7 @@
 #include "private/Tri.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
+#include "voxel/ChunkMesh.h"
 
 namespace voxelformat {
 
@@ -32,8 +33,8 @@ public:
 protected:
 	uint8_t _flattenFactor;
 	struct MeshExt {
-		MeshExt(voxel::Mesh *mesh, const SceneGraphNode &node, bool applyTransform);
-		voxel::Mesh *mesh;
+		MeshExt(voxel::ChunkMesh *mesh, const SceneGraphNode &node, bool applyTransform);
+		voxel::ChunkMesh *mesh;
 		core::String name;
 		bool applyTransform = false;
 

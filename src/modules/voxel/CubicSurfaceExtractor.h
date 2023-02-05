@@ -10,7 +10,7 @@ namespace voxel {
 
 class RawVolume;
 class Region;
-class Mesh;
+class ChunkMesh;
 class Palette;
 
 /**
@@ -99,7 +99,7 @@ class Palette;
  * @li The user-provided mesh could have a different index type (e.g. 16-bit indices) to reduce memory usage.
  * @li The user could provide a custom mesh class, e.g a thin wrapper around an openGL VBO to allow direct writing into this structure.
  */
-void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Mesh* result, const glm::ivec3& translate, bool mergeQuads = true, bool reuseVertices = true, bool ambientOcclusion = true);
+void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, ChunkMesh* result, const glm::ivec3& translate, bool mergeQuads = true, bool reuseVertices = true, bool ambientOcclusion = true);
 
 }
 

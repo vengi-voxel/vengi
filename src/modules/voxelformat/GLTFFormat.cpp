@@ -217,7 +217,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 		meshIdxNodeMap.get(nodeId, meshExtIdx);
 		const MeshExt &meshExt = meshes[meshExtIdx];
 
-		const voxel::Mesh *mesh = meshExt.mesh;
+		const voxel::Mesh *mesh = &meshExt.mesh->mesh; // TODO: alpha support
 		Log::debug("Exporting layer %s", meshExt.name.c_str());
 
 		const int nv = (int)mesh->getNoOfVertices();

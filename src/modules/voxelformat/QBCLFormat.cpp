@@ -420,7 +420,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				if (alpha == 0) {
 					y += rleLength;
 				} else {
-					const core::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: alpha? */);
+					const core::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: alpha support? */);
 					if (header.loadPalette) {
 						palette.addColorToPalette(color, false);
 					} else {

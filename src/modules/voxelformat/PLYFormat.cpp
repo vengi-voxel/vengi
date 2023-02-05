@@ -29,7 +29,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 	int elements = 0;
 	int indices = 0;
 	for (const auto& meshExt : meshes) {
-		const voxel::Mesh& mesh = *meshExt.mesh;
+		const voxel::Mesh& mesh = meshExt.mesh->mesh; // TODO: alpha support
 		elements += (int)mesh.getNoOfVertices();
 		indices += (int)mesh.getNoOfIndices();
 	}
@@ -60,7 +60,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 	stream.writeStringFormat(false, "end_header\n");
 
 	for (const auto& meshExt : meshes) {
-		const voxel::Mesh& mesh = *meshExt.mesh;
+		const voxel::Mesh& mesh = meshExt.mesh->mesh; // TODO: alpha support
 		const int nv = (int)mesh.getNoOfVertices();
 		const voxel::VoxelVertex* vertices = mesh.getRawVertexData();
 		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
@@ -92,7 +92,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 	int idxOffset = 0;
 	for (const auto& meshExt : meshes) {
-		const voxel::Mesh& mesh = *meshExt.mesh;
+		const voxel::Mesh& mesh = meshExt.mesh->mesh; // TODO: alpha support
 		const int ni = (int)mesh.getNoOfIndices();
 		const int nv = (int)mesh.getNoOfVertices();
 		if (ni % 3 != 0) {

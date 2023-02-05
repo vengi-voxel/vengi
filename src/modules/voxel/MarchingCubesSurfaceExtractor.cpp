@@ -6,7 +6,7 @@
 #include "core/Color.h"
 #include "core/collection/Array2DView.h"
 #include "voxel/MarchingCubesTables.h"
-#include "voxel/Mesh.h"
+#include "voxel/ChunkMesh.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -52,7 +52,7 @@ static glm::vec3 computeCentralDifferenceGradient(const RawVolume::Sampler &volI
 	return glm::vec3(voxel1nx - voxel1px, voxel1ny - voxel1py, voxel1nz - voxel1pz);
 }
 
-void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, const Region &region, Mesh *result) {
+void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, const Region &region, ChunkMesh *result) {
 	core_assert_msg(volume != nullptr, "Provided volume cannot be null");
 	core_assert_msg(result != nullptr, "Provided mesh cannot be null");
 
@@ -194,8 +194,8 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 						surfaceVertex.info = 0;
 						surfaceVertex.flags = blendedVoxel.getFlags();
 
-						const IndexType lastVertexIndex = result->addVertex(surfaceVertex);
-						result->setNormal(lastVertexIndex, normal);
+						const IndexType lastVertexIndex = result->mesh.addVertex(surfaceVertex);
+						result->mesh.setNormal(lastVertexIndex, normal);
 						indicesView.get(x, y).x = (int)lastVertexIndex;
 
 						sampler.movePositiveX();
@@ -229,8 +229,8 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 						surfaceVertex.info = 0;
 						surfaceVertex.flags = blendedVoxel.getFlags();
 
-						const IndexType lastVertexIndex = result->addVertex(surfaceVertex);
-						result->setNormal(lastVertexIndex, normal);
+						const IndexType lastVertexIndex = result->mesh.addVertex(surfaceVertex);
+						result->mesh.setNormal(lastVertexIndex, normal);
 						indicesView.get(x, y).y = (int)lastVertexIndex;
 
 						sampler.movePositiveY();
@@ -264,8 +264,8 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 						surfaceVertex.info = 0;
 						surfaceVertex.flags = blendedVoxel.getFlags();
 
-						const IndexType lastVertexIndex = result->addVertex(surfaceVertex);
-						result->setNormal(lastVertexIndex, normal);
+						const IndexType lastVertexIndex = result->mesh.addVertex(surfaceVertex);
+						result->mesh.setNormal(lastVertexIndex, normal);
 						indicesView.get(x, y).z = (int)lastVertexIndex;
 
 						sampler.movePositiveZ();
@@ -320,7 +320,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 							const int32_t ind2 = indlist[triTable[cellIndex][i + 2]];
 
 							if (ind0 != -1 && ind1 != -1 && ind2 != -1) {
-								result->addTriangle(ind0, ind1, ind2);
+								result->mesh.addTriangle(ind0, ind1, ind2);
 							}
 						}
 					}

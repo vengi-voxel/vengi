@@ -80,7 +80,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 	int idxOffset = 0;
 	int texcoordOffset = 0;
 	for (const auto &meshExt : meshes) {
-		const voxel::Mesh *mesh = meshExt.mesh;
+		const voxel::Mesh *mesh = &meshExt.mesh->mesh; // TODO: alpha support
 		Log::debug("Exporting layer %s", meshExt.name.c_str());
 		const int nv = (int)mesh->getNoOfVertices();
 		const int ni = (int)mesh->getNoOfIndices();

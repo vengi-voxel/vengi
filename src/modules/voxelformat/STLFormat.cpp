@@ -172,7 +172,7 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 	int faceCount = 0;
 	for (const auto &meshExt : meshes) {
-		const voxel::Mesh *mesh = meshExt.mesh;
+		const voxel::Mesh *mesh = &meshExt.mesh->mesh; // TODO: alpha support
 		const int ni = (int)mesh->getNoOfIndices();
 		if (ni % 3 != 0) {
 			Log::error("Unexpected indices amount");
@@ -183,7 +183,7 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 	stream.writeUInt32(faceCount);
 
 	for (const auto &meshExt : meshes) {
-		const voxel::Mesh *mesh = meshExt.mesh;
+		const voxel::Mesh *mesh = &meshExt.mesh->mesh; // TODO: alpha support
 		Log::debug("Exporting layer %s", meshExt.name.c_str());
 		const int ni = (int)mesh->getNoOfIndices();
 		const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);

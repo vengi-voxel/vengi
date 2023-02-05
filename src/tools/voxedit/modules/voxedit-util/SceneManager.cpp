@@ -261,6 +261,17 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 	modified(nodeId, wrapper.dirtyRegion());
 }
 
+void SceneManager::updateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType) {
+	voxel::RawVolumeWrapper wrapper(volume(nodeId));
+	voxelutil::visitVolume(wrapper, [&wrapper, palIdx, newType](int x, int y, int z, const voxel::Voxel &v) {
+		if (v.getColor() != palIdx) {
+			return;
+		}
+		wrapper.setVoxel(x, y, z, voxel::createVoxel(newType, palIdx));
+	});
+	modified(nodeId, wrapper.dirtyRegion());
+}
+
 bool SceneManager::saveModels(const core::String& dir) {
 	bool state = false;
 	for (const voxelformat::SceneGraphNode & node : _sceneGraph) {
