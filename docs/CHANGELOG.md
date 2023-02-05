@@ -29,6 +29,8 @@ General:
    - Fixed saving the keybindings with multi click
    - Improved keybinding and ui setting saving (added a version)
    - Fixed invalid transform on re-parenting a node
+   - Refactored the file dialog
+   - Fixed issue in saving MagicaVoxel vox files under some special conditions
 
 VoxEdit:
 
@@ -45,6 +47,12 @@ VoxEdit:
    - Added templates to the menu (`robo` and `chr_knight`)
    - Allow to control the amount of viewports
    - Allow to define pre-defined region sizes (see `ve_regionsizes` cvar)
+   - Some ui actions are only available in edit mode
+   - Edit mode has support for the guizmo now - you can shift the volume boundaries
+   - Highlight copy&paste volume region
+   - Visually disable some buttons if they won't work in the current mode anyway
+   - Don't execute actions for hidden nodes
+   - New keybindings
 
 ## 0.0.23 (2022-12-17)
 
