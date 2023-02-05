@@ -148,7 +148,7 @@ TEST_F(SceneGraphTest, testPaletteMergeTooManyColors) {
 		pal.nippon();
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
-		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(1));
+		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setName("model");
 		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
@@ -158,7 +158,7 @@ TEST_F(SceneGraphTest, testPaletteMergeTooManyColors) {
 		pal.magicaVoxel();
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
-		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(2));
+		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setName("model2");
 		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
@@ -235,8 +235,8 @@ TEST_F(SceneGraphTest, testMerge) {
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("node1");
 		voxel::RawVolume* v = new voxel::RawVolume(voxel::Region(0, 1));
-		v->setVoxel(0, 0, 0, voxel::createVoxel(1));
-		v->setVoxel(1, 1, 1, voxel::createVoxel(1));
+		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setVolume(v, true);
 		sceneGraph.emplace(core::move(node));
 	}
@@ -244,7 +244,7 @@ TEST_F(SceneGraphTest, testMerge) {
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("node2");
 		voxel::RawVolume* v = new voxel::RawVolume(voxel::Region(1, 2));
-		v->setVoxel(1, 1, 1, voxel::createVoxel(2));
+		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setVolume(v, true);
 		sceneGraph.emplace(core::move(node));
 	}

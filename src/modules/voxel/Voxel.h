@@ -121,10 +121,6 @@ constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex) {
 	return Voxel(type, colorIndex);
 }
 
-constexpr Voxel createVoxel(uint8_t colorIndex) {
-	return Voxel(VoxelType::Generic, colorIndex);
-}
-
 inline bool isBlocked(VoxelType material) {
 	return material != VoxelType::Air;
 }

@@ -15,6 +15,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/FormatThumbnail.h"
@@ -69,8 +70,8 @@ void AbstractVoxFormatTest::dump(const core::String& structName, voxel::RawVolum
 void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &filename, Format *format, voxel::ValidateFlags flags) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(1));
 	voxel::RawVolume volume(region);
-	EXPECT_TRUE(volume.setVoxel(0, 0, 0, voxel::createVoxel(0)));
-	EXPECT_TRUE(volume.setVoxel(0, 0, 1, voxel::createVoxel(255)));
+	EXPECT_TRUE(volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)));
+	EXPECT_TRUE(volume.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 255)));
 	io::BufferedReadWriteStream stream((int64_t)(10 * 1024 * 1024));
 	SceneGraph sceneGraphsave(2);
 	{
@@ -89,8 +90,8 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &fil
 void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String& destFilename, Format &destFormat, voxel::ValidateFlags flags) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(1));
 	voxel::RawVolume original(region);
-	EXPECT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(0)));
-	EXPECT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(255)));
+	EXPECT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)));
+	EXPECT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 255)));
 	io::BufferedReadWriteStream srcFormatStream((int64_t)(10 * 1024 * 1024));
 	{
 		SceneGraph sceneGraphsave(2);
@@ -291,7 +292,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &sr
 void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Format* format) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
 	voxel::RawVolume original(region);
-	original.setVoxel(0, 0, 0, voxel::createVoxel(1));
+	original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 	SceneGraph sceneGraphsave(2);
 	{
@@ -312,10 +313,10 @@ void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Fo
 	pal.magicaVoxel();
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0, 1, 1));
 	voxel::RawVolume original(region);
-	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(0)));
-	ASSERT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(200)));
-	ASSERT_TRUE(original.setVoxel(0, 1, 1, voxel::createVoxel(201)));
-	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(pal.colorCount - 1)));
+	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(pal, 0)));
+	ASSERT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(pal, 200)));
+	ASSERT_TRUE(original.setVoxel(0, 1, 1, voxel::createVoxel(pal, 201)));
+	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(pal, pal.colorCount - 1)));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 	SceneGraph sceneGraphsave(2);
 	{
@@ -338,10 +339,10 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	voxel::RawVolume layer2(region);
 	voxel::RawVolume layer3(region);
 	voxel::RawVolume layer4(region);
-	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, voxel::createVoxel(1)));
-	EXPECT_TRUE(layer2.setVoxel(0, 0, 0, voxel::createVoxel(1)));
-	EXPECT_TRUE(layer3.setVoxel(0, 0, 0, voxel::createVoxel(1)));
-	EXPECT_TRUE(layer4.setVoxel(0, 0, 0, voxel::createVoxel(1)));
+	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(layer2.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(layer3.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(layer4.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	voxelformat::SceneGraph sceneGraph;
 	voxelformat::SceneGraphNode node1;
 	node1.setVolume(&layer1, false);
@@ -366,7 +367,7 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 void AbstractVoxFormatTest::testSave(const core::String &filename, Format *format) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
 	voxel::RawVolume layer1(region);
-	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, voxel::createVoxel(1)));
+	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	voxelformat::SceneGraph sceneGraph;
 	voxelformat::SceneGraphNode node1;
 	node1.setVolume(&layer1, false);
@@ -383,15 +384,15 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume original(region);
 
-	original.setVoxel(mins, mins, mins, voxel::createVoxel(0));
-	original.setVoxel(mins, mins, maxs, voxel::createVoxel(244));
-	original.setVoxel(mins, maxs, maxs, voxel::createVoxel(126));
-	original.setVoxel(mins, maxs, mins, voxel::createVoxel(254));
+	original.setVoxel(mins, mins, mins, voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	original.setVoxel(mins, mins, maxs, voxel::createVoxel(voxel::VoxelType::Generic, 244));
+	original.setVoxel(mins, maxs, maxs, voxel::createVoxel(voxel::VoxelType::Generic, 126));
+	original.setVoxel(mins, maxs, mins, voxel::createVoxel(voxel::VoxelType::Generic, 254));
 
-	original.setVoxel(maxs, maxs, maxs, voxel::createVoxel(1));
-	original.setVoxel(maxs, maxs, mins, voxel::createVoxel(245));
-	original.setVoxel(maxs, mins, mins, voxel::createVoxel(127));
-	original.setVoxel(maxs, mins, maxs, voxel::createVoxel(200));
+	original.setVoxel(maxs, maxs, maxs, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	original.setVoxel(maxs, maxs, mins, voxel::createVoxel(voxel::VoxelType::Generic, 245));
+	original.setVoxel(maxs, mins, mins, voxel::createVoxel(voxel::VoxelType::Generic, 127));
+	original.setVoxel(maxs, mins, maxs, voxel::createVoxel(voxel::VoxelType::Generic, 200));
 
 	testSaveLoadVolume(filename, original, format, flags);
 }
