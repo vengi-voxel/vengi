@@ -414,6 +414,7 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 	if (open == nullptr || *open) {
 		bool doubleClickedFile = false;
 		core_trace_scoped(FileDialog);
+		// TODO: not dpi aware
 		ImGui::SetNextWindowSize(ImVec2(1200.0f, 700.0f), ImGuiCond_FirstUseEver);
 		const char *title;
 		switch (type) {
