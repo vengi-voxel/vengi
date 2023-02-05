@@ -39,7 +39,6 @@ private:
 	core::String _filterAll;
 	core::DynamicArray<io::FormatDescription> _filterEntries;
 	core::VarPtr _showHidden;
-	bool _disableDeleteButton = false;
 	char _newFolderName[500] = "";
 	char _newFolderError[500] = "";
 

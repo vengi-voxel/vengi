@@ -5,6 +5,7 @@
 #include "FileDialog.h"
 #include "IconsFontAwesome6.h"
 #include "IconsForkAwesome.h"
+#include "ScopedStyle.h"
 #include "app/App.h"
 #include "core/Algorithm.h"
 #include "core/ArrayLength.h"
@@ -24,7 +25,6 @@
 namespace ui {
 
 static const char *FILE_ALREADY_EXISTS_POPUP = "File already exists##FileOverwritePopup";
-static const char *DELETE_FOLDER_POPUP = "Delete Folder##DeleteFolderPopup";
 static const char *NEW_FOLDER_POPUP = "Create folder##NewFolderPopup";
 
 static core::String assemblePath(const core::String &dir, const core::String &ent) {
@@ -480,19 +480,6 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 				ImGui::SameLine();
 			}
 
-			_disableDeleteButton = (_currentFolder == "");
-			if (_disableDeleteButton) {
-				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-				ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-			}
-			if (ImGui::Button("Delete folder")) {
-				ImGui::OpenPopup(DELETE_FOLDER_POPUP);
-			}
-			if (_disableDeleteButton) {
-				ImGui::PopStyleVar();
-				ImGui::PopItemFlag();
-			}
-			ImGui::SameLine();
 			ImGui::CheckboxVar("Show hidden", _showHidden);
 
 			ImVec2 center(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x * 0.5f,
@@ -558,26 +545,6 @@ bool FileDialog::showFileDialog(bool *open, video::FileDialogOptions &fileDialog
 				ImGui::EndPopup();
 			}
 
-			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-			if (ImGui::BeginPopupModal(DELETE_FOLDER_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-				ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "Are you sure you want to delete this folder?");
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
-				ImGui::TextUnformatted(_currentFolder.c_str());
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
-				if (ImGui::Button("Yes")) {
-					const core::String &removePath = assemblePath(_currentPath, _currentFolder);
-					if (!io::filesystem()->removeDir(removePath, false)) {
-						Log::warn("Failed to delete directory '%s'", removePath.c_str());
-					}
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("No") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::SetItemDefaultFocus();
-				ImGui::EndPopup();
-			}
 			if (!_filterEntries.empty()) {
 				ImGui::SameLine();
 				const char *label = "Filter";
