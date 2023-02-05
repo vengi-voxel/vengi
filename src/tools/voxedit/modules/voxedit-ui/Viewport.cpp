@@ -133,11 +133,12 @@ void Viewport::updateViewportTrace(float headerSize) {
 
 void Viewport::dragAndDrop(float headerSize) {
 	if (ImGui::BeginDragDropTarget()) {
-		// TODO: only in edit mode
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
-			const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
-			updateViewportTrace(headerSize);
-			sceneMgr().fillPlane(image);
+		if (!isSceneMode()) {
+			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
+				const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
+				updateViewportTrace(headerSize);
+				sceneMgr().fillPlane(image);
+			}
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
 			const int dragPalIdx = (int)(intptr_t)payload->Data;
