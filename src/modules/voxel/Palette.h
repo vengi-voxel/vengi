@@ -8,6 +8,7 @@
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "core/RGBA.h"
+#include "voxel/Voxel.h"
 #include <stdint.h>
 #include <glm/vec4.hpp>
 
@@ -135,5 +136,12 @@ public:
 	static bool createPalette(const image::ImagePtr& image, voxel::Palette &palette);
 	static bool convertImageToPalettePng(const image::ImagePtr& image, const char *paletteFile);
 };
+
+inline voxel::Voxel createVoxel(const voxel::Palette &pal, uint8_t index) {
+	if (pal.colors[index].a != 255) {
+		return createVoxel(VoxelType::Transparent, index);
+	}
+	return createVoxel(VoxelType::Generic, index);
+}
 
 } // namespace voxel
