@@ -365,6 +365,9 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type) {
 			}
 			ImGui::TableNextColumn();
 			const bool selected = i == _entryIndex;
+			if (selected) {
+				_selectedEntry = *_files[i];
+			}
 			const char *icon = iconForType(entry.type);
 			const float x = ImGui::GetCursorPosX();
 			if (icon != nullptr) {
