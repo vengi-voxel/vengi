@@ -3,9 +3,7 @@ set(SRCS
 	BloomRenderer.cpp BloomRenderer.h
 	CameraFrustum.cpp CameraFrustum.h
 	GridRenderer.cpp GridRenderer.h
-	Plane.h Plane.cpp
 	ShapeRenderer.cpp ShapeRenderer.h
-	TextureRenderer.cpp TextureRenderer.h
 )
 set(SHADERS
 	color

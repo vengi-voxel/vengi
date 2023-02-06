@@ -8,7 +8,7 @@
 #include "video/Texture.h"
 #include "video/Buffer.h"
 #include "TestglslcompShaders.h"
-#include "render/TextureRenderer.h"
+#include "testcore/TextureRenderer.h"
 
 /**
  * @brief Visual test for GLSL compute shaders

@@ -6,7 +6,7 @@
 
 #include "testcore/TestApp.h"
 #include "video/Texture.h"
-#include "render/TextureRenderer.h"
+#include "testcore/TextureRenderer.h"
 
 class TestTexture: public TestApp {
 private:

@@ -6,6 +6,12 @@ uniform mat4 u_model;
 uniform vec3 u_pivot;
 uniform int u_gray;
 
+#define MATERIALCOLORS 256
+layout(std140) uniform u_materialblock {
+	vec4 u_materialcolor[MATERIALCOLORS];
+	vec4 u_glowcolor[MATERIALCOLORS];
+};
+
 $out vec4 v_pos;
 $out vec4 v_color;
 $out vec4 v_glow;
@@ -13,12 +19,6 @@ $out float v_ambientocclusion;
 flat $out uint v_flags;
 
 #include "_shared.glsl"
-
-#define MATERIALCOLORS 256
-layout(std140) uniform u_materialblock {
-	vec4 u_materialcolor[MATERIALCOLORS];
-	vec4 u_glowcolor[MATERIALCOLORS];
-};
 
 #if cl_shadowmap == 1
 $out vec3 v_lightspacepos;

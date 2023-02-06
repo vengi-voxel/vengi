@@ -7,7 +7,7 @@
 #include "ui/IMGUIApp.h"
 #include "video/Camera.h"
 #include "render/Axis.h"
-#include "render/Plane.h"
+#include "Plane.h"
 #include "Movement.h"
 
 class TestApp: public ui::IMGUIApp {
