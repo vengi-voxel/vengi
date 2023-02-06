@@ -16,12 +16,6 @@ TEST_P(VoxelRenderShaderTest, testVoxelShader) {
 	shader.shutdown();
 }
 
-TEST_P(VoxelRenderShaderTest, testVoxelInstancedShader) {
-	shader::VoxelInstancedShader shader;
-	EXPECT_TRUE(shader.setup());
-	shader.shutdown();
-}
-
 VIDEO_SHADERTEST(VoxelRenderShaderTest)
 
 }

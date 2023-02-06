@@ -87,8 +87,8 @@ void RenderContext::shutdown() {
 }
 
 RawVolumeRenderer::RawVolumeRenderer() :
-		_voxelShader(shader::VoxelInstancedShader::getInstance()),
-		_shadowMapShader(shader::ShadowmapInstancedShader::getInstance()) {
+		_voxelShader(shader::VoxelShader::getInstance()),
+		_shadowMapShader(shader::ShadowmapShader::getInstance()) {
 }
 
 void RawVolumeRenderer::construct() {
@@ -114,8 +114,7 @@ bool RawVolumeRenderer::init() {
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		State& state = _state[idx];
-		state._models[0] = glm::mat4(1.0f);
-		state._amounts = 1;
+		state._model = glm::mat4(1.0f);
 		for (int i = 0; i < MeshType_Max; ++i) {
 			state._vertexBufferIndex[i] = state._vertexBuffer[i].create();
 			if (state._vertexBufferIndex[i] == -1) {
@@ -506,10 +505,10 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 						continue;
 					}
 					video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Opaque]);
-					_shadowMapShader.setModel(state._models);
-					_shadowMapShader.setPivot(state._pivots);
+					_shadowMapShader.setModel(state._model);
+					_shadowMapShader.setPivot(state._pivot);
 					static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-					video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices, state._amounts);
+					video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 				}
 				return true;
 			}, true);
@@ -563,9 +562,9 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		video::ScopedPolygonMode polygonMode(mode);
 		video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Opaque]);
 		_voxelShader.setGray(state._gray);
-		_voxelShader.setModel(state._models);
-		_voxelShader.setPivot(state._pivots);
-		video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices, state._amounts);
+		_voxelShader.setModel(state._model);
+		_voxelShader.setPivot(state._pivot);
+		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 	}
 
 	// --- transparency pass
@@ -582,9 +581,9 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			video::ScopedPolygonMode polygonMode(mode);
 			video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Transparency]);
 			_voxelShader.setGray(state._gray);
-			_voxelShader.setModel(state._models);
-			_voxelShader.setPivot(state._pivots);
-			video::drawElementsInstanced<voxel::IndexType>(video::Primitive::Triangles, indices, state._amounts);
+			_voxelShader.setModel(state._model);
+			_voxelShader.setPivot(state._pivot);
+			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 		}
 	}
 
@@ -604,11 +603,6 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	}
 }
 
-bool RawVolumeRenderer::setInstancingAmount(int idx, int amount) {
-	_state[idx]._amounts = glm::clamp(amount, 1, shader::VoxelInstancedShaderConstants::getMaxInstances());
-	return amount <= shader::VoxelInstancedShaderConstants::getMaxInstances();
-}
-
 bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4& model, const glm::vec3 &pivot, bool reset) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		Log::error("Given id %i is out of bounds", idx);
@@ -619,17 +613,9 @@ bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4& model, const gl
 		Log::error("No volume found at: %i", idx);
 		return false;
 	}
-	state._amounts = reset ? 1 : state._amounts + 1;
-	state._models[state._amounts - 1] = model;
-	state._pivots[state._amounts - 1] = pivot;
+	state._model = model;
+	state._pivot = pivot;
 	return true;
-}
-
-int RawVolumeRenderer::amount(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return -1;
-	}
-	return _state[idx]._amounts;
 }
 
 voxel::Region RawVolumeRenderer::region() const {

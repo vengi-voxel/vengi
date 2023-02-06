@@ -5,7 +5,7 @@ set(SRCS
 	ShaderAttribute.h
 	ImageGenerator.h ImageGenerator.cpp
 )
-set(SHADERS voxel voxel_instanced)
+set(SHADERS voxel)
 set(SRCS_SHADERS
 	shaders/_material.vert
 	shaders/_voxelflags.glsl

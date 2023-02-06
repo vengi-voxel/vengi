@@ -18,8 +18,7 @@
 #include "video/Buffer.h"
 #include "video/FrameBuffer.h"
 #include "VoxelrenderShaders.h"
-#include "VoxelInstancedShaderConstants.h"
-#include "ShadowmapInstancedShaderConstants.h"
+#include "VoxelShaderConstants.h"
 #include "voxel/Mesh.h"
 #include "render/Shadow.h"
 #include "core/GLM.h"
@@ -69,11 +68,10 @@ protected:
 	struct State {
 		bool _hidden = false;
 		bool _gray = false;
-		int32_t _amounts = 1;
 		int32_t _vertexBufferIndex[MeshType_Max] {-1, -1};
 		int32_t _indexBufferIndex[MeshType_Max] {-1, -1};
-		glm::mat4 _models[shader::VoxelInstancedShaderConstants::getMaxInstances()];
-		glm::vec3 _pivots[shader::VoxelInstancedShaderConstants::getMaxInstances()];
+		glm::mat4 _model;
+		glm::vec3 _pivot;
 		video::Buffer _vertexBuffer[MeshType_Max];
 		voxel::RawVolume* _rawVolume = nullptr;
 		core::Optional<voxel::Palette> _palette;
@@ -91,11 +89,10 @@ protected:
 	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
 	MeshesMap _meshes[MeshType_Max];
 
-	static_assert(shader::VoxelInstancedShaderConstants::getMaxInstances() == shader::ShadowmapInstancedShaderConstants::getMaxInstances(), "max instances must match between shaders");
 	uint64_t _paletteHash = 0;
 	shader::VoxelData _materialBlock;
-	shader::VoxelInstancedShader& _voxelShader;
-	shader::ShadowmapInstancedShader& _shadowMapShader;
+	shader::VoxelShader& _voxelShader;
+	shader::ShadowmapShader& _shadowMapShader;
 	render::Shadow _shadow;
 
 	core::VarPtr _meshSize;
@@ -180,12 +177,7 @@ public:
 	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, voxel::Palette* palette, bool deleteMesh = true);
 	voxel::RawVolume* setVolume(int idx, voxelformat::SceneGraphNode& node, bool deleteMesh = true);
 	bool setModelMatrix(int idx, const glm::mat4& model, const glm::vec3 &pivot, bool reset = true);
-	/**
-	 * @note Keep in mind to set the model matrices properly
-	 */
-	bool setInstancingAmount(int idx, int amount);
 
-	int amount(int idx) const;
 	bool empty(int idx = 0) const;
 	/**
 	 * @sa setVolume()
