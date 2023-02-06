@@ -4,14 +4,12 @@ set(SRCS
 	CameraFrustum.cpp CameraFrustum.h
 	GridRenderer.cpp GridRenderer.h
 	Plane.h Plane.cpp
-	Shadow.h Shadow.cpp
 	ShapeRenderer.cpp ShapeRenderer.h
 	TextureRenderer.cpp TextureRenderer.h
 )
 set(SHADERS
 	color
 	combine2
-	constants
 	convolution
 	default
 	shadowmap

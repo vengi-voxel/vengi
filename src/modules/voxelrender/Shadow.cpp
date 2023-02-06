@@ -21,7 +21,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
-namespace render {
+namespace voxelrender {
 
 Shadow::~Shadow() {
 	core_assert_msg(_parameters.maxDepthBuffers == -1, "Shadow::shutdown() wasn't called");
@@ -31,7 +31,7 @@ bool Shadow::init(const ShadowParameters& parameters) {
 	if (parameters.maxDepthBuffers < 1) {
 		return false;
 	}
-	if (parameters.maxDepthBuffers > shader::ConstantsShaderConstants::getMaxDepthBuffers()) {
+	if (parameters.maxDepthBuffers > shader::VoxelShaderConstants::getMaxDepthBuffers()) {
 		return false;
 	}
 	_parameters = parameters;
@@ -119,7 +119,7 @@ void Shadow::update(const video::Camera& camera, bool active) {
 	}
 
 	const glm::vec2 dim = dimension();
-	float planes[shader::ConstantsShaderConstants::getMaxDepthBuffers() * 2];
+	float planes[shader::VoxelShaderConstants::getMaxDepthBuffers() * 2];
 	camera.sliceFrustum(planes, _parameters.maxDepthBuffers * 2, _parameters.maxDepthBuffers, _parameters.sliceWeight);
 	const glm::mat4& inverseView = camera.inverseViewMatrix();
 	const glm::mat4& inverseLightView = _lightView * inverseView;

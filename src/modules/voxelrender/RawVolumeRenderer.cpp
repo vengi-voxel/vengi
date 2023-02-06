@@ -152,7 +152,7 @@ bool RawVolumeRenderer::init() {
 		}
 	}
 
-	render::ShadowParameters shadowParams;
+	voxelrender::ShadowParameters shadowParams;
 	shadowParams.maxDepthBuffers = shader::VoxelShaderConstants::getMaxDepthBuffers();
 	if (!_shadow.init(shadowParams)) {
 		Log::error("Failed to initialize the shadow object");

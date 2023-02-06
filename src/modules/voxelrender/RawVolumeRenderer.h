@@ -20,7 +20,7 @@
 #include "VoxelrenderShaders.h"
 #include "VoxelShaderConstants.h"
 #include "voxel/Mesh.h"
-#include "render/Shadow.h"
+#include "voxelrender/Shadow.h"
 #include "core/GLM.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
@@ -93,7 +93,7 @@ protected:
 	shader::VoxelData _materialBlock;
 	shader::VoxelShader& _voxelShader;
 	shader::ShadowmapShader& _shadowMapShader;
-	render::Shadow _shadow;
+	voxelrender::Shadow _shadow;
 
 	core::VarPtr _meshSize;
 	core::VarPtr _shadowMap;

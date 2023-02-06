@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ConstantsShaderConstants.h"
+#include "VoxelShaderConstants.h"
 #include "video/FrameBuffer.h"
 #include "video/Buffer.h"
 #include <functional>
@@ -17,7 +17,7 @@ namespace video {
 class Camera;
 }
 
-namespace render {
+namespace voxelrender {
 
 /**
  * @brief Paramerters to set up the @c Shadow instance
@@ -44,8 +44,8 @@ struct ShadowParameters {
  */
 class Shadow {
 public:
-	using Cascades = core::Array<glm::mat4, shader::ConstantsShaderConstants::getMaxDepthBuffers()>;
-	using Distances = core::Array<float, shader::ConstantsShaderConstants::getMaxDepthBuffers()>;
+	using Cascades = core::Array<glm::mat4, shader::VoxelShaderConstants::getMaxDepthBuffers()>;
+	using Distances = core::Array<float, shader::VoxelShaderConstants::getMaxDepthBuffers()>;
 private:
 	glm::vec3 _sunDirection;
 	glm::mat4 _lightView;

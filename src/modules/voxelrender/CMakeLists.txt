@@ -1,6 +1,7 @@
 set(LIB voxelrender)
 set(SRCS
 	SceneGraphRenderer.cpp SceneGraphRenderer.h
+	Shadow.h Shadow.cpp
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	ShaderAttribute.h
 	ImageGenerator.h ImageGenerator.cpp
