@@ -133,7 +133,7 @@ void Modifier::reset() {
 	_cursorPosition = glm::ivec3(0);
 	_face = voxel::FaceNames::Max;
 	_shapeType = ShapeType::AABB;
-	setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 0)); // TODO: alpha support
+	setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 0));
 }
 
 glm::ivec3 Modifier::aabbPosition() const {

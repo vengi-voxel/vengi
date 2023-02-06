@@ -914,6 +914,7 @@ void SceneManager::resetSceneState() {
 	_mementoHandler.markModification(node, voxel::Region::InvalidRegion);
 	_dirty = false;
 	_result = voxelutil::PickResult();
+	_modifier.setCursorVoxel(voxel::createVoxel(node.palette(), 0));
 	setCursorPosition(cursorPosition(), true);
 	setReferencePosition(node.region().getCenter());
 	resetLastTrace();
