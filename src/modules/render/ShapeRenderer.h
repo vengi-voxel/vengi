@@ -11,7 +11,6 @@
 #include "core/IComponent.h"
 #include "core/collection/DynamicArray.h"
 #include "ColorShader.h"
-#include "ColorInstancedShader.h"
 #include "DefaultShader.h"
 
 namespace render {
@@ -39,18 +38,13 @@ private:
 	bool _texcoords[MAX_MESHES] { false };
 	video::TextureUnit _texunits[MAX_MESHES] {video::TextureUnit::Max};
 	int32_t _indexIndex[MAX_MESHES];
-	// for instancing
-	int32_t _offsetIndex[MAX_MESHES];
-	int32_t _amounts[MAX_MESHES];
 	video::Primitive _primitives[MAX_MESHES];
 	uint32_t _currentMeshIndex = 0u;
 	shader::ColorShader& _colorShader;
-	shader::ColorInstancedShader& _colorInstancedShader;
 	shader::DefaultShader& _defaultShader;
 
 	core::DynamicArray<Vertex> _vertices;
 
-	int renderAllInstanced(const video::Camera& camera, const glm::mat4& model) const;
 	int renderAllTextured(const video::Camera& camera, const glm::mat4& model) const;
 	int renderAllColored(const video::Camera& camera, const glm::mat4& model) const;
 
@@ -78,24 +72,6 @@ public:
 	void shutdown() override;
 
 	void update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder);
-
-	/**
-	 * @brief Updating the positions for a mesh means that you are doing instanced rendering
-	 * @param[in] meshIndex The index returned by @c create() that should not get updated
-	 * @param[in] positions The positions to render the mesh instances at
-	 * @return @c true if the update was successful, @c false otherwise
-	 */
-	bool updatePositions(uint32_t meshIndex, const core::DynamicArray<glm::vec3>& positions);
-
-	/**
-	 * @brief Updating the positions for a mesh means that you are doing instanced rendering
-	 * @param[in] meshIndex The index returned by @c create() that should not get updated
-	 * @param[in] posBuf The raw buffer pointer
-	 * @param[in] posBufLength The size of the raw buffer given via @c posBuf
-	 * @note It's assumed that the positions are always defined by a 3-component float vector
-	 * @return @c true if the update was successful, @c false otherwise
-	 */
-	bool updatePositions(uint32_t meshIndex, const float* posBuf, size_t posBufLength);
 
 	bool render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f)) const;
 

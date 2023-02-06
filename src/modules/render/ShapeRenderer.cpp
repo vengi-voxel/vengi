@@ -14,13 +14,10 @@ namespace render {
 
 ShapeRenderer::ShapeRenderer() :
 		_colorShader(shader::ColorShader::getInstance()),
-		_colorInstancedShader(shader::ColorInstancedShader::getInstance()),
 		_defaultShader(shader::DefaultShader::getInstance()){
 	for (int i = 0; i < MAX_MESHES; ++i) {
 		_vertexIndex[i] = -1;
 		_indexIndex[i] = -1;
-		_offsetIndex[i] = -1;
-		_amounts[i] = -1;
 		_primitives[i] = video::Primitive::Triangles;
 	}
 }
@@ -39,10 +36,6 @@ bool ShapeRenderer::init() {
 		Log::error("Failed to setup color shader");
 		return false;
 	}
-	if (!_colorInstancedShader.setup()) {
-		Log::error("Failed to setup color instance shader");
-		return false;
-	}
 	return true;
 }
 
@@ -56,8 +49,6 @@ bool ShapeRenderer::deleteMesh(int32_t meshIndex) {
 	_vbo[meshIndex].shutdown();
 	_vertexIndex[meshIndex] = -1;
 	_indexIndex[meshIndex] = -1;
-	_offsetIndex[meshIndex] = -1;
-	_amounts[meshIndex] = -1;
 	_primitives[meshIndex] = video::Primitive::Triangles;
 	if (meshIndex > 0 && (uint32_t)meshIndex == _currentMeshIndex) {
 		--_currentMeshIndex;
@@ -130,15 +121,9 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 		core_assert_always(_vbo[meshIndex].addAttribute(attributeColor));
 	} else {
 		video::Attribute attributePos = _colorShader.getPosAttribute(_vertexIndex[meshIndex], &Vertex::pos);
-		// both shaders must have these at the same location
-		core_assert(attributePos.location == _colorInstancedShader.getLocationPos());
-		core_assert(attributePos.size == _colorInstancedShader.getComponentsPos());
 		core_assert_always(_vbo[meshIndex].addAttribute(attributePos));
 
 		video::Attribute attributeColor = _colorShader.getColorAttribute(_vertexIndex[meshIndex], &Vertex::color);
-		// both shaders must have these at the same location
-		core_assert(attributeColor.location == _colorInstancedShader.getLocationColor());
-		core_assert(attributeColor.size == _colorInstancedShader.getComponentsColor());
 		core_assert_always(_vbo[meshIndex].addAttribute(attributeColor));
 	}
 
@@ -175,43 +160,9 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 	_primitives[meshIndex] = shapeBuilder.primitive();
 }
 
-bool ShapeRenderer::updatePositions(uint32_t meshIndex, const core::DynamicArray<glm::vec3>& positions) {
-	const float* posBuf = nullptr;
-	if (!positions.empty()) {
-		posBuf = glm::value_ptr(positions.front());
-	}
-	return updatePositions(meshIndex, posBuf, positions.bytes());
-}
-
-bool ShapeRenderer::updatePositions(uint32_t meshIndex, const float* posBuf, size_t posBufLength) {
-	if (meshIndex >= MAX_MESHES) {
-		Log::warn("Invalid mesh index given: %u", meshIndex);
-		return false;
-	}
-	video::Buffer& vbo = _vbo[meshIndex];
-	if (_offsetIndex[meshIndex] == -1) {
-		_offsetIndex[meshIndex] = vbo.create(posBuf, posBufLength);
-		if (_offsetIndex[meshIndex] == -1) {
-			return false;
-		}
-		vbo.setMode(_offsetIndex[meshIndex], video::BufferMode::Stream);
-
-		// TODO: this looks broken... somehow
-		video::Attribute attributeOffset = _colorInstancedShader.getOffsetAttribute(_offsetIndex[meshIndex], &glm::vec3::x);
-		attributeOffset.divisor = 1;
-		attributeOffset.stride = (int)(attributeOffset.size * sizeof(float));
-		core_assert_always(_vbo[meshIndex].addAttribute(attributeOffset));
-	} else {
-		core_assert_always(vbo.update(_offsetIndex[meshIndex], posBuf, posBufLength));
-	}
-	_amounts[meshIndex] = posBufLength / (_colorInstancedShader.getComponentsOffset() * sizeof(float));
-	return true;
-}
-
 void ShapeRenderer::shutdown() {
 	_defaultShader.shutdown();
 	_colorShader.shutdown();
-	_colorInstancedShader.shutdown();
 	for (uint32_t i = 0u; i < _currentMeshIndex; ++i) {
 		deleteMesh(i);
 	}
@@ -242,39 +193,8 @@ bool ShapeRenderer::hiddenState(int32_t meshIndex) const {
 
 int ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& model) const {
 	int cnt = 0;
-	cnt += renderAllInstanced(camera, model);
 	cnt += renderAllTextured(camera, model);
 	cnt += renderAllColored(camera, model);
-	return cnt;
-}
-
-int ShapeRenderer::renderAllInstanced(const video::Camera& camera, const glm::mat4& model) const {
-	int cnt = 0;
-	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
-		if (_vertexIndex[meshIndex] == -1) {
-			continue;
-		}
-		if (_hidden[meshIndex]) {
-			continue;
-		}
-		if (_amounts[meshIndex] <= 0) {
-			continue;
-		}
-		core_assert(_offsetIndex[meshIndex] != -1);
-		if (!_colorInstancedShader.isActive()) {
-			// TODO: instanced texture shader?
-			_colorInstancedShader.activate();
-			core_assert_always(_colorInstancedShader.setViewprojection(camera.viewProjectionMatrix()));
-			core_assert_always(_colorInstancedShader.setModel(model));
-		}
-		core_assert_always(_vbo[meshIndex].bind());
-		const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
-		video::drawElementsInstanced<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices, _amounts[meshIndex]);
-		++cnt;
-	}
-	if (_colorInstancedShader.isActive()) {
-		_colorInstancedShader.deactivate();
-	}
 	return cnt;
 }
 
@@ -285,9 +205,6 @@ int ShapeRenderer::renderAllColored(const video::Camera& camera, const glm::mat4
 			continue;
 		}
 		if (_hidden[meshIndex]) {
-			continue;
-		}
-		if (_amounts[meshIndex] > 0) {
 			continue;
 		}
 		if (_texcoords[meshIndex] && video::currentTexture(_texunits[meshIndex]) != video::InvalidId) {
@@ -317,9 +234,6 @@ int ShapeRenderer::renderAllTextured(const video::Camera& camera, const glm::mat
 			continue;
 		}
 		if (_hidden[meshIndex]) {
-			continue;
-		}
-		if (_amounts[meshIndex] > 0) {
 			continue;
 		}
 		if (!_texcoords[meshIndex] || video::currentTexture(_texunits[meshIndex]) == video::InvalidId) {
@@ -360,33 +274,23 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 
 	const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
 
-	if (_amounts[meshIndex] > 0) {
-		core_assert(_offsetIndex[meshIndex] != -1);
-		_colorInstancedShader.activate();
-		core_assert_always(_colorInstancedShader.setViewprojection(camera.viewProjectionMatrix()));
-		core_assert_always(_colorInstancedShader.setModel(model));
-		core_assert_always(_vbo[meshIndex].bind());
-		video::drawElementsInstanced<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices, _amounts[meshIndex]);
-		_colorInstancedShader.deactivate();
+	const bool useTexture = _texcoords[meshIndex] && video::currentTexture(_texunits[meshIndex]) != video::InvalidId;
+	if (useTexture) {
+		_defaultShader.activate();
+		_defaultShader.setTexture(_texunits[meshIndex]);
+		core_assert_always(_defaultShader.setViewprojection(camera.viewProjectionMatrix()));
+		core_assert_always(_defaultShader.setModel(model));
 	} else {
-		const bool useTexture = _texcoords[meshIndex] && video::currentTexture(_texunits[meshIndex]) != video::InvalidId;
-		if (useTexture) {
-			_defaultShader.activate();
-			_defaultShader.setTexture(_texunits[meshIndex]);
-			core_assert_always(_defaultShader.setViewprojection(camera.viewProjectionMatrix()));
-			core_assert_always(_defaultShader.setModel(model));
-		} else {
-			_colorShader.activate();
-			core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
-			core_assert_always(_colorShader.setModel(model));
-		}
-		core_assert_always(_vbo[meshIndex].bind());
-		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
-		if (useTexture) {
-			_defaultShader.deactivate();
-		} else {
-			_colorShader.deactivate();
-		}
+		_colorShader.activate();
+		core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
+		core_assert_always(_colorShader.setModel(model));
+	}
+	core_assert_always(_vbo[meshIndex].bind());
+	video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
+	if (useTexture) {
+		_defaultShader.deactivate();
+	} else {
+		_colorShader.deactivate();
 	}
 	_vbo[meshIndex].unbind();
 	return true;

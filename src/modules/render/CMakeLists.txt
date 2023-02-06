@@ -10,13 +10,11 @@ set(SRCS
 )
 set(SHADERS
 	color
-	color_instanced
 	combine2
 	constants
 	convolution
 	default
 	shadowmap
-	shadowmap_instanced
 	texture
 )
 set(SRCS_SHADERS)
