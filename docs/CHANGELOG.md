@@ -31,6 +31,8 @@ General:
    - Fixed invalid transform on re-parenting a node
    - Refactored the file dialog
    - Fixed issue in saving MagicaVoxel vox files under some special conditions
+   - Implemented basic transparency support for voxels
+   - Fixed invalid clamping for uv based pixel lookup (mesh imports)
 
 VoxEdit:
 
