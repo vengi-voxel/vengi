@@ -103,6 +103,12 @@ Saves the png in the same dir as the vox file:
 
 There will be an `infile.png` now.
 
+## Convert to a different palette
+
+Convert the input file colors to a new palette by selecting the closest match:
+
+`./vengi-voxconvert -set palette built-in:nippon -set voxformat_createpalette false --input infile.vox --output outfile.vox`
+
 ## Extract single layers
 
 Extract just a few layers from the input file.
