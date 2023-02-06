@@ -8,7 +8,7 @@ set(SRCS
 )
 set(SHADERS voxel)
 set(SRCS_SHADERS
-	shaders/_voxelflags.glsl
+	shaders/_shared.glsl
 )
 foreach (SHADER ${SHADERS})
 	list(APPEND SRCS_SHADERS "shaders/${SHADER}.vert")

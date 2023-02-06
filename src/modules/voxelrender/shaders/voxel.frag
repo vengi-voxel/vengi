@@ -4,7 +4,17 @@ $in vec4 v_glow;
 $in float v_ambientocclusion;
 flat $in uint v_flags;
 
-uniform mat4 u_viewprojection;
+#include "_shared.glsl"
+
+uniform mediump vec3 u_lightdir;
+uniform lowp vec3 u_diffuse_color;
+uniform lowp vec3 u_ambient_color;
+layout(location = 0) $out vec4 o_color;
+layout(location = 1) $out vec4 o_glow;
+
+#ifndef cl_gamma
+#define cl_gamma 1.0
+#endif
 
 #if cl_shadowmap == 1
 
@@ -93,18 +103,6 @@ vec3 shadow(in float bias, in vec3 color, in vec3 diffuse, in vec3 ambient) {
 }
 
 #endif // cl_shadowmap == 1
-
-#include "_voxelflags.glsl"
-
-uniform mediump vec3 u_lightdir;
-uniform lowp vec3 u_diffuse_color;
-uniform lowp vec3 u_ambient_color;
-layout(location = 0) $out vec4 o_color;
-layout(location = 1) $out vec4 o_glow;
-
-#ifndef cl_gamma
-#define cl_gamma 1.0
-#endif
 
 vec4 calcColor(void) {
 	vec3 fdx = dFdx(v_pos.xyz);

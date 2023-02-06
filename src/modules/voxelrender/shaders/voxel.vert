@@ -4,7 +4,6 @@ $in uvec2 a_info;
 
 uniform mat4 u_model;
 uniform vec3 u_pivot;
-uniform mat4 u_viewprojection;
 uniform int u_gray;
 
 $out vec4 v_pos;
@@ -13,7 +12,7 @@ $out vec4 v_glow;
 $out float v_ambientocclusion;
 flat $out uint v_flags;
 
-#include "_voxelflags.glsl"
+#include "_shared.glsl"
 
 #define MATERIALCOLORS 256
 layout(std140) uniform u_materialblock {
