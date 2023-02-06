@@ -9,17 +9,13 @@ set(SRCS
 	TextureRenderer.cpp TextureRenderer.h
 )
 set(SHADERS
-	skybox
 	color
 	color_instanced
 	combine2
 	constants
 	convolution
 	default
-	depthbuffer_render
-	edge
 	shadowmap
-	shadowmap_render
 	shadowmap_instanced
 	texture
 )

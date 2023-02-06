@@ -22,7 +22,7 @@ flat $out uint v_flags;
 #include "_voxelflags.glsl"
 #include "_material.vert"
 #include "_shadowmap.vert"
-#include "_ambientocclusion.vert"
+const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
 
 void main(void) {
 	uint a_ao = (a_info[0] & 3u);

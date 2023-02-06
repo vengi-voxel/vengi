@@ -63,10 +63,7 @@ if (APPLE)
 endif()
 
 set(SRCS_SHADERS
-	shaders/_fog.vert shaders/_fog.frag
 	shaders/_fullscreen.vert
-	shaders/_daynight.frag
-	shaders/_ambientocclusion.vert
 	shaders/_shadowmap.vert shaders/_shadowmap.frag
 )
 set(FILES

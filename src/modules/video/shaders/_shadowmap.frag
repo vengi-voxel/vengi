@@ -1,11 +1,12 @@
 #if cl_shadowmap == 1
 
-uniform sampler2DArrayShadow u_shadowmap;
 $in vec3 v_lightspacepos;
 $in float v_viewz;
+$constant MaxDepthBuffers 4
+
+uniform sampler2DArrayShadow u_shadowmap;
 uniform vec2 u_depthsize;
 uniform vec4 u_distances;
-$constant MaxDepthBuffers 4
 uniform mat4 u_cascades[4];
 
 /**
