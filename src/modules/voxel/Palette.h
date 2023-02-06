@@ -138,7 +138,7 @@ public:
 };
 
 inline voxel::Voxel createVoxel(const voxel::Palette &pal, uint8_t index) {
-	if (pal.colors[index].a != 255) {
+	if (index < pal.colorCount && pal.colors[index].a != 255) {
 		return createVoxel(VoxelType::Transparent, index);
 	}
 	return createVoxel(VoxelType::Generic, index);
