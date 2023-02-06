@@ -62,18 +62,10 @@ if (APPLE)
 	list(APPEND SRCS WindowedAppOSX.m)
 endif()
 
-set(SRCS_SHADERS
-	shaders/_fullscreen.vert
-	shaders/_shadowmap.vert shaders/_shadowmap.frag
-)
-set(FILES
-)
-
-#set_source_files_properties(${SRCS_SHADERS} PROPERTIES LANGUAGE C)
 set(LIB video)
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} FILES ${FILES} DEPENDENCIES image util)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES image util)
 if (APPLE)
 	target_link_libraries(${LIB} PRIVATE "-framework OpenGL -framework CoreFoundation")
 endif()
