@@ -15,7 +15,12 @@ flat $out uint v_flags;
 
 #include "_voxelflags.glsl"
 #include "_material.vert"
-#include "_shadowmap.vert"
+
+#if cl_shadowmap == 1
+$out vec3 v_lightspacepos;
+$out float v_viewz;
+#endif
+
 const float aovalues[] = float[](0.15, 0.6, 0.8, 1.0);
 
 void main(void) {

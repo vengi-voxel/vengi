@@ -10,8 +10,6 @@ set(SHADERS voxel)
 set(SRCS_SHADERS
 	shaders/_material.vert
 	shaders/_voxelflags.glsl
-	shaders/_shadowmap.frag
-	shaders/_shadowmap.vert
 )
 foreach (SHADER ${SHADERS})
 	list(APPEND SRCS_SHADERS "shaders/${SHADER}.vert")
