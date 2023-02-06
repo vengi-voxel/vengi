@@ -15,10 +15,7 @@ set(SHADERS
 	shadowmap
 	texture
 )
-set(SRCS_SHADERS
-	shaders/_shadowmap.frag
-	shaders/_shadowmap.vert
-)
+set(SRCS_SHADERS)
 foreach (SHADER ${SHADERS})
 	list(APPEND SRCS_SHADERS "shaders/${SHADER}.vert")
 	list(APPEND SRCS_SHADERS "shaders/${SHADER}.frag")
