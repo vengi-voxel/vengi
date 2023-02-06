@@ -55,9 +55,10 @@ private:
 	void removeBookmark(const core::String &bookmark);
 	void quickAccessEntry(video::OpenFileMode type, const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
 	void quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks);
-	void currentPathPanel();
+	void currentPathPanel(video::OpenFileMode type);
 	bool buttons(core::String &buffer, video::OpenFileMode type, bool doubleClickedFile);
-	bool selectEntityPopup();
+	void popupNewFolder();
+	bool popupAlreadyExists();
 	void filter(video::OpenFileMode type);
 	/**
 	 * @return @c true if a file was double clicked

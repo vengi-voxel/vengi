@@ -142,7 +142,11 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 	const core::String &filePath = core::string::extractPath(filename);
 	if (filePath.empty() || !io::filesystem()->exists(filePath)) {
 		const core::String &lastDir = _lastDirVar->strVal();
-		_currentPath = lastDir;
+		if (io::filesystem()->exists(lastDir)) {
+			_currentPath = lastDir;
+		} else {
+			_currentPath = io::filesystem()->homePath();
+		}
 	} else {
 		_currentPath = filePath;
 	}
@@ -383,7 +387,7 @@ bool FileDialog::filesPanel(video::OpenFileMode type) {
 	return doubleClicked;
 }
 
-void FileDialog::currentPathPanel() {
+void FileDialog::currentPathPanel(video::OpenFileMode type) {
 	if (ImGui::Button(ICON_FK_BOOKMARK)) {
 		removeBookmark(_currentPath);
 		core::String bm = _bookmarks->strVal();
@@ -398,9 +402,17 @@ void FileDialog::currentPathPanel() {
 
 	ImGui::SameLine();
 
-	// TODO: make every path component a single clickable button to allow to change to that directory immediately
-	const core::String currentPath = core::string::format(ICON_FK_FOLDER_OPEN_O " Current path: %s", _currentPath.c_str());
-	ImGui::TextUnformatted(currentPath.c_str());
+	core::DynamicArray<core::String> components;
+	core::string::splitString(_currentPath, components, "/");
+	ImGui::TextUnformatted(">");
+	core::String path = "/";
+	for (const core::String &c : components) {
+		path = core::string::path(path, c);
+		ImGui::SameLine();
+		if (ImGui::Button(c.c_str())) {
+			setCurrentPath(type, path);
+		}
+	}
 }
 
 void FileDialog::construct() {
@@ -416,17 +428,17 @@ void FileDialog::resetState() {
 	_error = TimedError();
 }
 
-bool FileDialog::selectEntityPopup() {
+void FileDialog::popupNewFolder() {
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
 	const ImVec2 &windowSize = ImGui::GetWindowSize();
 	const ImVec2 center(windowPos.x + windowSize.x * 0.5f, windowPos.y + windowSize.y * 0.5f);
-	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 	if (ImGui::BeginPopupModal(NEW_FOLDER_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Enter a name for the new folder");
 		ImGui::InputText("##newfoldername", &_newFolderName.name);
-		if (ImGui::Button("Create##1")) {
+		if (ImGui::Button("Create##newfoldername-create")) {
 			if (_newFolderName.name.empty()) {
+				const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
 				_newFolderError = TimedError("Folder name can't be empty", timeProvider->tickNow(), 1500UL);
 			} else {
 				const core::String &newFilePath = assemblePath(_currentPath, _newFolderName);
@@ -436,7 +448,7 @@ bool FileDialog::selectEntityPopup() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button("Cancel##1") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
+		if (ImGui::Button("Cancel##newfoldername-cancel") || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 			_newFolderName = io::FilesystemEntry();
 			_newFolderError = TimedError();
 			ImGui::CloseCurrentPopup();
@@ -444,7 +456,9 @@ bool FileDialog::selectEntityPopup() {
 		showError(_newFolderError);
 		ImGui::EndPopup();
 	}
+}
 
+bool FileDialog::popupAlreadyExists() {
 	if (ImGui::BeginPopupModal(FILE_ALREADY_EXISTS_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::AlignTextToFramePadding();
 		ImGui::PushFont(imguiApp()->bigFont());
@@ -508,8 +522,7 @@ void FileDialog::showError(const TimedError &error) const {
 	}
 }
 
-bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String &buffer, video::OpenFileMode type,
-								const io::FormatDescription **formatDesc) {
+bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String &buffer, video::OpenFileMode type, const io::FormatDescription **formatDesc) {
 	ImGui::SetNextWindowSize(ImVec2(100.0f * ImGui::GetFontSize(), 0.0f), ImGuiCond_FirstUseEver);
 	const char *title;
 	switch (type) {
@@ -532,7 +545,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 		if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
 			ImGui::CloseCurrentPopup();
 		}
-		currentPathPanel();
+		currentPathPanel(type);
 		quickAccessPanel(type, _bookmarks->strVal());
 		ImGui::SameLine();
 		bool doubleClickedFile = filesPanel(type);
@@ -546,8 +559,8 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 			ImGui::InputText("Filename##filedialog", &_selectedEntry.name);
 		}
 		ImGui::CheckboxVar("Show hidden##filedialog", _showHidden);
-		// select a file or directory
-		if (selectEntityPopup()) {
+		popupNewFolder();
+		if (popupAlreadyExists()) {
 			buffer = assemblePath(_currentPath, _selectedEntry);
 			resetState();
 			*formatDesc = _currentFilterFormat;
