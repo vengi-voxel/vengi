@@ -8,7 +8,6 @@ set(SRCS
 )
 set(SHADERS voxel)
 set(SRCS_SHADERS
-	shaders/_material.vert
 	shaders/_voxelflags.glsl
 )
 foreach (SHADER ${SHADERS})

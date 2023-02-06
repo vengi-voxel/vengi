@@ -14,7 +14,12 @@ $out float v_ambientocclusion;
 flat $out uint v_flags;
 
 #include "_voxelflags.glsl"
-#include "_material.vert"
+
+#define MATERIALCOLORS 256
+layout(std140) uniform u_materialblock {
+	vec4 u_materialcolor[MATERIALCOLORS];
+	vec4 u_glowcolor[MATERIALCOLORS];
+};
 
 #if cl_shadowmap == 1
 $out vec3 v_lightspacepos;

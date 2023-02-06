@@ -3,6 +3,7 @@ $in vec4 v_color;
 $in vec4 v_glow;
 $in float v_ambientocclusion;
 flat $in uint v_flags;
+
 uniform mat4 u_viewprojection;
 
 #if cl_shadowmap == 1
