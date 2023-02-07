@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "core/Log.h"
 #include "video/Shader.h"
 #include "video/UniformBuffer.h"
 #include "core/Assert.h"
@@ -27,6 +28,11 @@ bool Shader::setUniformBuffer(const core::String& name, const UniformBuffer& buf
 		return false;
 	}
 	if (!uniform->block) {
+		return false;
+	}
+
+	if (uniform->size != (int)buffer.size()) {
+		Log::error("Uniform buffer size differs from uploaded structure size: %i vs %i", uniform->size, (int)buffer.size());
 		return false;
 	}
 
