@@ -1404,9 +1404,21 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name)
 
 int fetchUniforms(Id program, ShaderUniforms& uniforms, const core::String& name) {
 	video_trace_scoped(FetchUniforms);
-	int n = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORMS, GL_ACTIVE_UNIFORM_MAX_LENGTH, glGetActiveUniformName, glGetUniformLocation, false);
-	n += _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORM_BLOCKS, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, glGetActiveUniformBlockName, glGetUniformBlockIndex, true);
-	return n;
+	int uniformsCnt = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORMS, GL_ACTIVE_UNIFORM_MAX_LENGTH, glGetActiveUniformName, glGetUniformLocation, false);
+	int uniformBlocksCnt = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORM_BLOCKS, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, glGetActiveUniformBlockName, glGetUniformBlockIndex, true);
+
+	for (auto *e : uniforms) {
+		if (!e->value.block) {
+			continue;
+		}
+		glGetActiveUniformBlockiv(program, e->value.location, GL_UNIFORM_BLOCK_DATA_SIZE, &e->value.size);
+		if (e->value.size > limit(Limit::MaxUniformBufferSize)) {
+			Log::error("Max uniform buffer size exceeded for uniform %s at location %i (max is %i)", e->key.c_str(), e->value.location, limit(Limit::MaxUniformBufferSize));
+		} else if (e->value.size <= 0) {
+			Log::error("Failed to query size of uniform buffer %s at location %i (max is %i)", e->key.c_str(), e->value.location, limit(Limit::MaxUniformBufferSize));
+		}
+	}
+	return uniformsCnt + uniformBlocksCnt;
 }
 
 int fetchAttributes(Id program, ShaderAttributes& attributes, const core::String& name) {

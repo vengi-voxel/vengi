@@ -27,6 +27,7 @@ namespace video {
 class UniformBuffer {
 private:
 	Id _handle = InvalidId;
+	size_t _size = 0;
 
 public:
 	~UniformBuffer();
@@ -36,12 +37,16 @@ public:
 	Id handle() const;
 	bool create(const void *data, size_t size);
 	bool update(const void *data, size_t size);
-
+	size_t size() const;
 	/**
 	 * @param[in] index The index of the uniform block to bind the buffer to
 	 */
 	bool bind(uint32_t index = 0u) const;
 };
+
+inline size_t UniformBuffer::size() const {
+	return _size;
+}
 
 inline Id UniformBuffer::handle() const {
 	return _handle;

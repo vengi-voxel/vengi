@@ -455,6 +455,7 @@ enum class DebugSeverity {
 struct Uniform {
 	int location;
 	bool block;
+	int32_t size;
 };
 
 /**

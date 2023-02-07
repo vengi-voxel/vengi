@@ -29,6 +29,7 @@ bool UniformBuffer::update(const void *data, size_t size) {
 		return false;
 	}
 	video::bufferData(_handle, BufferType::UniformBuffer, BufferMode::Dynamic, data, size);
+	_size = size;
 	return true;
 }
 
