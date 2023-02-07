@@ -65,7 +65,8 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 		if (token == "std140") {
 			layout.blockLayout = BlockLayout::std140;
 		} else if (token == "std430") {
-			layout.blockLayout = BlockLayout::std430;
+			Log::error("Unsupported alignment");
+			return false;
 		} else if (token == "location") {
 			core_assert_always(tok.hasNext() && tok.next() == "=");
 			if (!tok.hasNext()) {

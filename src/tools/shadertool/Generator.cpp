@@ -170,9 +170,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			layout = layoutIter->second;
 		}
 
-		if (v.arraySize > 0 && isInteger) {
-			mproto += "const ";
-		} else if (cType.passBy == PassBy::Reference) {
+		if ((v.arraySize > 0 && isInteger) || cType.passBy == PassBy::Reference) {
 			mproto += "const ";
 		}
 		mproto += cType.ctype;
@@ -476,9 +474,6 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		case BlockLayout::std140:
 			ub += "std140";
 			break;
-		case BlockLayout::std430:
-			ub += "std430";
-			break;
 		default:
 			ub += "error";
 			break;
@@ -487,32 +482,57 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		ub += "\t#pragma pack(push, 1)\n\tstruct alignas(16) ";
 		ub += uniformBufferStructName;
 		ub += "Data {\n";
-		size_t structSize = 0u;
+		size_t offset = 0u;
 		int paddingCnt = 0;
 		for (auto& v : ubuf.members) {
+			const int align = ubuf.layout.typeAlign(v);
+			int padding = 0;
+			if (align <= 0) {
+				Log::error("Failed to determine alignment of uniform %s", v.name.c_str());
+				return false;
+			}
+			while (offset % align != 0) {
+				++offset;
+				++padding;
+			}
+			if (padding) {
+				if (padding > 1) {
+					ub += core::string::format("\t\tuint32_t _padding%i[%i];\n", paddingCnt, padding);
+				} else {
+					ub += core::string::format("\t\tuint32_t _padding%i;\n", paddingCnt);
+				}
+				++paddingCnt;
+			}
 			const core::String& uniformName = util::convertName(v.name, false);
 			const Types& cType = util::resolveTypes(v.type);
 			ub += "\t\t";
 			ub += cType.ctype;
 			ub += " ";
 			ub += uniformName;
-			const size_t memberSize = ubuf.layout.typeSize(v);
-			structSize += memberSize;
+			const size_t intSize = ubuf.layout.typeSize(v);
+			if (intSize == 0) {
+				Log::error("Failed to determine size of uniform %s", v.name.c_str());
+				return false;
+			}
 			if (v.arraySize > 0) {
 				ub += "[";
 				ub += core::string::toString(v.arraySize);
 				ub += "]";
 			}
 			ub += "; // ";
-			ub += core::string::toString((uint32_t)memberSize);
-			ub += " bytes\n";
-			ub += ubuf.layout.typePadding(v, paddingCnt);
+			ub += core::string::toString((uint32_t)(intSize * 4));
+			ub += " bytes - offset ";
+			ub += core::string::toString(offset * 4);
+			ub += " - alignment ";
+			ub += core::string::toString(align);
+			ub += "\n";
+			offset += intSize;
 		}
 		ub += "\t};\n\t#pragma pack(pop)\n";
 		ub += "\tstatic_assert(sizeof(";
 		ub += uniformBufferStructName;
 		ub += "Data) == ";
-		ub += core::string::toString((uint32_t)structSize);
+		ub += core::string::toString((uint32_t)((offset * 4) + 15) & ~15);
 		ub += ", \"Unexpected structure size for ";
 		ub += uniformBufferStructName;
 		ub += "Data\");\n";
