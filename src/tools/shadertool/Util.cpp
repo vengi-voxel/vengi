@@ -322,8 +322,8 @@ core::String std140Padding(const Variable& v, int& padding) {
 
 size_t std140Size(const Variable& v) {
 	const Types& cType = resolveTypes(v.type);
-	int components = cType.components;
-	int bytes = 4;
+	size_t components = cType.components;
+	size_t bytes = 4;
 	if (cType.type == Variable::Type::DVEC2
 	 || cType.type == Variable::Type::DVEC3
 	 || cType.type == Variable::Type::DVEC4
@@ -340,18 +340,16 @@ size_t std140Size(const Variable& v) {
 	 || cType.type == Variable::Type::DVEC3
 	 || cType.type == Variable::Type::IVEC3
 	 || cType.type == Variable::Type::BVEC3) {
-		components = 4;
+		components = 3;
 	}
 	if (cType.type == Variable::Type::MAT2) {
 		components = 4;
 	} else if (cType.type == Variable::Type::MAT3) {
-		components = 9; // FIXME
+		components = 9;
 	} else if (cType.type == Variable::Type::MAT4) {
 		components = 16;
-	} else if (cType.type == Variable::Type::MAT3X4) {
-		components = 16; // FIXME
-	} else if (cType.type == Variable::Type::MAT4X3) {
-		components = 16; // FIXME
+	} else if (cType.type == Variable::Type::MAT3X4 || cType.type == Variable::Type::MAT4X3) {
+		components = 12;
 	}
 	if (v.arraySize > 0) {
 		return components * bytes * v.arraySize;

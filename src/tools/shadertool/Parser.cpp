@@ -325,7 +325,8 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 			Log::error("Error in %s:%i:%i. Failed to parse the shader, could not get variable name for type %s", tok.file(), tok.line(), tok.col(), type.c_str());
 			return false;
 		}
-		while (type == "highp" || type == "mediump" || type == "lowp" || type == "precision") {
+		// https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)
+		while (type == "highp" || type == "mediump" || type == "lowp" || type == "precision" || type == "flat" || type == "noperspective" || type == "smooth") {
 			Log::trace("token: %s", type.c_str());
 			if (!tok.hasNext()) {
 				Log::error("Error in %s:%i:%i. Failed to parse the shader, could not get type", tok.file(), tok.line(), tok.col());
