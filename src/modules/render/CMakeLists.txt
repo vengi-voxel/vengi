@@ -9,7 +9,6 @@ set(SHADERS
 	color
 	combine2
 	convolution
-	default
 	shadowmap
 	texture
 )

@@ -13,8 +13,7 @@
 namespace render {
 
 ShapeRenderer::ShapeRenderer() :
-		_colorShader(shader::ColorShader::getInstance()),
-		_defaultShader(shader::DefaultShader::getInstance()){
+		_colorShader(shader::ColorShader::getInstance()) {
 	for (int i = 0; i < MAX_MESHES; ++i) {
 		_vertexIndex[i] = -1;
 		_indexIndex[i] = -1;
@@ -28,10 +27,6 @@ ShapeRenderer::~ShapeRenderer() {
 
 bool ShapeRenderer::init() {
 	core_assert_msg(_currentMeshIndex == 0, "ShapeRenderer was already in use");
-	if (!_defaultShader.setup()) {
-		Log::error("Failed to setup texture shader");
-		return false;
-	}
 	if (!_colorShader.setup()) {
 		Log::error("Failed to setup color shader");
 		return false;
@@ -146,7 +141,6 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 }
 
 void ShapeRenderer::shutdown() {
-	_defaultShader.shutdown();
 	_colorShader.shutdown();
 	for (uint32_t i = 0u; i < _currentMeshIndex; ++i) {
 		deleteMesh(i);

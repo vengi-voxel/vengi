@@ -11,7 +11,6 @@
 #include "core/IComponent.h"
 #include "core/collection/DynamicArray.h"
 #include "ColorShader.h"
-#include "DefaultShader.h"
 
 namespace render {
 
@@ -39,7 +38,6 @@ private:
 	video::Primitive _primitives[MAX_MESHES];
 	uint32_t _currentMeshIndex = 0u;
 	shader::ColorShader& _colorShader;
-	shader::DefaultShader& _defaultShader;
 
 	core::DynamicArray<Vertex> _vertices;
 
