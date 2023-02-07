@@ -14,7 +14,6 @@
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/TextureConfig.h"
-#include "video/StencilConfig.h"
 #include "image/Image.h"
 #include "core/Common.h"
 #include "core/Assert.h"
@@ -129,82 +128,6 @@ void readBuffer(GBufferTextureType textureType) {
 	video_trace_scoped(ReadBuffer);
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + textureType);
 	checkError();
-}
-
-//TODO: use FrameBufferConfig
-bool setupGBuffer(Id fbo, const glm::ivec2& dimension, Id* textures, size_t texCount, Id depthTexture) {
-	video_trace_scoped(SetupGBuffer);
-	const Id prev = bindFramebuffer(fbo);
-
-	TextureConfig cfg;
-	// we are going to write vec3 into the out vars in the shaders
-	cfg.format(TextureFormat::RGB32F).filter(TextureFilter::Nearest);
-
-	video::genTextures(cfg, texCount, textures);
-	video::genTextures(cfg, 1, &depthTexture);
-
-	for (size_t i = 0; i < texCount; ++i) {
-		bindTexture(TextureUnit::Upload, cfg.type(), textures[i]);
-		setupTexture(cfg);
-		static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, (GLuint)textures[i], 0);
-	}
-
-	bindTexture(TextureUnit::Upload, TextureType::Texture2D, depthTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, dimension.x, dimension.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, (GLuint)depthTexture, 0);
-
-	core_assert(texCount == GBUFFER_NUM_TEXTURES);
-	const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-	glDrawBuffers(SDL_arraysize(drawBuffers), drawBuffers);
-
-	const bool retVal = _priv::checkFramebufferStatus(fbo);
-	bindFramebuffer(prev);
-	return retVal;
-}
-
-bool setupCubemap(Id &handle, const image::ImagePtr images[6]) {
-	video_trace_scoped(SetupCubemap);
-	TextureConfig cfg;
-	cfg.type(TextureType::TextureCube);
-	cfg.filterMag(TextureFilter::Linear);
-	cfg.filterMin(TextureFilter::Linear);
-	cfg.wrapR(TextureWrap::ClampToEdge);
-	cfg.wrapS(TextureWrap::ClampToEdge);
-	cfg.wrapT(TextureWrap::ClampToEdge);
-	handle = video::genTexture(cfg);
-	bindTexture(TextureUnit::Upload, cfg.type(), handle);
-
-	static const GLenum types[] = {
-		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-		GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-		GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
-	};
-
-	for (int i = 0; i < lengthof(types); ++i) {
-		const image::ImagePtr& img = images[i];
-		if (!img) {
-			Log::error("No image specified for position %i", i);
-			return false;
-		}
-		if (img->width() <= 0 || img->height() <= 0) {
-			Log::error("Invalid image dimensions for position %i", i);
-			return false;
-		}
-		if (img->depth() != 4 && img->depth() != 3) {
-			Log::error("Unsupported image depth for position %i: %i", i, img->depth());
-			return false;
-		}
-		const GLenum mode = img->depth() == 4 ? GL_RGBA : GL_RGB;
-		glTexImage2D(types[i], 0, mode, img->width(), img->height(), 0, mode, GL_UNSIGNED_BYTE, img->data());
-		checkError();
-	}
-
-	video::setupTexture(cfg);
-	return true;
 }
 
 float lineWidth(float width) {
@@ -433,10 +356,6 @@ bool currentState(State state) {
 	return glstate().states[stateIndex];
 }
 
-bool isClipOriginLowerLeft() {
-	return glstate().clipOriginLowerLeft;
-}
-
 bool cullFace(Face face) {
 	if (glstate().cullFace == face) {
 		return false;
@@ -460,38 +379,6 @@ bool depthFunc(CompareFunc func) {
 
 CompareFunc getDepthFunc() {
 	return glstate().depthFunc;
-}
-
-bool setupStencil(const StencilConfig& config) {
-	video_trace_scoped(SetupStencil);
-	bool dirty = false;
-	CompareFunc func = config.func();
-	if (glstate().stencilFunc != func || glstate().stencilValue != config.value() || glstate().stencilMask != config.mask()) {
-		glStencilFunc(_priv::CompareFuncs[core::enumVal(func)], config.value(), config.mask());
-		checkError();
-		glstate().stencilFunc = func;
-		dirty = true;
-	}
-	// fail, zfail, zpass
-	if (glstate().stencilOpFail != config.failOp()
-			|| glstate().stencilOpZfail != config.zfailOp()
-			|| glstate().stencilOpZpass != config.zpassOp()) {
-		const GLenum failop = _priv::StencilOps[core::enumVal(config.failOp())];
-		const GLenum zfailop = _priv::StencilOps[core::enumVal(config.zfailOp())];
-		const GLenum zpassop = _priv::StencilOps[core::enumVal(config.zpassOp())];
-		glStencilOp(failop, zfailop, zpassop);
-		checkError();
-		glstate().stencilOpFail = config.failOp();
-		glstate().stencilOpZfail = config.zfailOp();
-		glstate().stencilOpZpass = config.zpassOp();
-		dirty = true;
-	}
-	if (glstate().stencilMask != config.mask()) {
-		glStencilMask(config.mask());
-		glstate().stencilMask = config.mask();
-		dirty = true;
-	}
-	return dirty;
 }
 
 bool blendEquation(BlendEquation func) {
@@ -660,37 +547,6 @@ void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	return data;
 }
 
-void* mapBufferRange(Id handle, intptr_t offset, size_t length, BufferType type, AccessMode mode) {
-	video_trace_scoped(MapBuffer);
-	const int modeIndex = core::enumVal(mode);
-	const GLenum glMode = _priv::AccessModes[modeIndex];
-	if (useFeature(Feature::DirectStateAccess)) {
-		void* data = glMapNamedBufferRange(handle, (GLintptr)offset, (GLsizeiptr)length, glMode);
-		checkError();
-		return data;
-	}
-	bindBuffer(type, handle);
-	const int typeIndex = core::enumVal(type);
-	const GLenum glType = _priv::BufferTypes[typeIndex];
-	void* data = glMapBufferRange(glType, (GLintptr)offset, (GLsizeiptr)length, glMode);
-	checkError();
-	unbindBuffer(type);
-	return data;
-}
-
-void unmapBuffer(Id handle, BufferType type) {
-	video_trace_scoped(UnmapBuffer);
-	const int typeIndex = core::enumVal(type);
-	const GLenum glType = _priv::BufferTypes[typeIndex];
-	if (useFeature(Feature::DirectStateAccess)) {
-		glUnmapNamedBuffer(handle);
-	} else {
-		bindBuffer(type, handle);
-		glUnmapBuffer(glType);
-	}
-	checkError();
-}
-
 bool bindBuffer(BufferType type, Id handle) {
 	video_trace_scoped(BindBuffer);
 	const int typeIndex = core::enumVal(type);
@@ -703,19 +559,6 @@ bool bindBuffer(BufferType type, Id handle) {
 	glBindBuffer(glType, handle);
 	checkError();
 	return true;
-}
-
-uint8_t *bufferStorage(BufferType type, size_t size) {
-	const int typeIndex = core::enumVal(type);
-	if (glstate().bufferHandle[typeIndex] == InvalidId) {
-		return nullptr;
-	}
-	core_assert(useFeature(Feature::BufferStorage));
-	const GLbitfield storageFlags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-	glBufferStorage(GL_ARRAY_BUFFER, (GLsizeiptr)size, nullptr, storageFlags);
-
-	const GLbitfield access = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-	return (uint8_t*)glMapBufferRange(GL_ARRAY_BUFFER, 0, (GLsizeiptr)size, access);
 }
 
 bool unbindBuffer(BufferType type) {
@@ -771,51 +614,6 @@ void deleteBuffers(uint8_t amount, Id* ids) {
 	for (uint8_t i = 0u; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
-}
-
-IdPtr genSync() {
-	return (IdPtr)glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-}
-
-void deleteSync(IdPtr& id) {
-	if (id == InvalidIdPtr) {
-		return;
-	}
-	static_assert(sizeof(IdPtr) >= sizeof(GLsync), "Unexpected sizes");
-	glDeleteSync((GLsync)id);
-	id = InvalidId;
-}
-
-bool waitForClientSync(IdPtr id, uint64_t timeout, bool syncFlushCommands) {
-	video_trace_scoped(WaitForClientSync);
-	if (id == InvalidIdPtr) {
-		return false;
-	}
-	static_assert(sizeof(IdPtr) >= sizeof(GLsync), "Unexpected sizes");
-#if SANITY_CHECKS_GL
-	if (!glIsSync((GLsync)id)) {
-		return false;
-	}
-#endif
-	const GLenum val = glClientWaitSync((GLsync)id, syncFlushCommands ? GL_SYNC_FLUSH_COMMANDS_BIT : (GLbitfield)0, (GLuint64)timeout);
-	checkError();
-	return val == GL_ALREADY_SIGNALED || val == GL_CONDITION_SATISFIED;
-}
-
-bool waitForSync(IdPtr id) {
-	video_trace_scoped(WaitForSync);
-	if (id == InvalidIdPtr) {
-		return false;
-	}
-	static_assert(sizeof(IdPtr) >= sizeof(GLsync), "Unexpected sizes");
-#if SANITY_CHECKS_GL
-	if (!glIsSync((GLsync)id)) {
-		return false;
-	}
-#endif
-	glWaitSync((GLsync)id, (GLbitfield)0, GL_TIMEOUT_IGNORED);
-	checkError();
-	return true;
 }
 
 void genVertexArrays(uint8_t amount, Id* ids) {
@@ -1034,153 +832,6 @@ void configureAttribute(const Attribute& a) {
 	}
 }
 
-Id genOcclusionQuery() {
-	GLuint id;
-	if (useFeature(Feature::DirectStateAccess)) {
-		glCreateQueries(GL_SAMPLES_PASSED, 1, &id);
-	} else {
-		glGenQueries(1, &id);
-	}
-	checkError();
-	return (Id)id;
-}
-
-Id genTransformFeedback() {
-	if (!useFeature(Feature::TransformFeedback)) {
-		return InvalidId;
-	}
-	GLuint id;
-	if (useFeature(Feature::DirectStateAccess)) {
-		glCreateTransformFeedbacks(1, &id);
-	} else {
-		glGenTransformFeedbacks(1, &id);
-	}
-	checkError();
-	return (Id)id;
-}
-
-void deleteTransformFeedback(Id& id) {
-	if (id == InvalidId) {
-		return;
-	}
-	if (glstate().transformFeedback == id) {
-		glstate().transformFeedback = InvalidId;
-	}
-	const GLuint lid = (GLuint)id;
-	glDeleteTransformFeedbacks(1, &lid);
-	id = InvalidId;
-	checkError();
-}
-
-bool bindTransformFeedback(Id id) {
-	if (id == InvalidId) {
-		return false;
-	}
-	if (glstate().transformFeedback == id) {
-		return true;
-	}
-	glstate().transformFeedback = id;
-	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, (GLuint)id);
-	return true;
-}
-
-bool bindTransforFeebackBuffer(int index, Id bufferId) {
-	if (!useFeature(Feature::TransformFeedback)) {
-		return false;
-	}
-	// the buffer must be of type GL_TRANSFORM_FEEDBACK_BUFFER
-	if (bufferId == InvalidId) {
-		return false;
-	}
-	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, index, (GLuint)bufferId);
-	return true;
-}
-
-bool beginTransformFeedback(Primitive primitive) {
-	if (!useFeature(Feature::TransformFeedback)) {
-		return false;
-	}
-	const GLenum glMode = _priv::Primitives[core::enumVal(primitive)];
-	if (glMode == GL_POINTS || glMode ==  GL_LINES || glMode == GL_TRIANGLES) {
-		glBeginTransformFeedback(glMode);
-		return true;
-	}
-	return false;
-}
-
-void pauseTransformFeedback() {
-	if (!useFeature(Feature::TransformFeedback)) {
-		return;
-	}
-	glPauseTransformFeedback();
-}
-
-void resumeTransformFeedback() {
-	if (!useFeature(Feature::TransformFeedback)) {
-		return;
-	}
-	glResumeTransformFeedback();
-}
-
-void endTransformFeedback() {
-	if (!useFeature(Feature::TransformFeedback)) {
-		return;
-	}
-	glEndTransformFeedback();
-}
-
-void deleteOcclusionQuery(Id& id) {
-	if (id == InvalidId) {
-		return;
-	}
-	if (glstate().occlusionQuery == id) {
-		glstate().occlusionQuery = InvalidId;
-	}
-	const GLuint lid = (GLuint)id;
-#if SANITY_CHECKS_GL
-	const GLboolean state = glIsQuery(lid);
-	core_assert_always(state == GL_TRUE);
-#endif
-	glDeleteQueries(1, &lid);
-	id = InvalidId;
-	checkError();
-}
-
-bool isOcclusionQuery(Id id) {
-	if (id == InvalidId) {
-		return false;
-	}
-	const GLuint lid = (GLuint)id;
-	const GLboolean state = glIsQuery(lid);
-	checkError();
-	return (bool)state;
-}
-
-bool beginOcclusionQuery(Id id) {
-	if (glstate().occlusionQuery == id || id == InvalidId) {
-		return false;
-	}
-	glstate().occlusionQuery = id;
-	const GLuint lid = (GLuint)id;
-#if SANITY_CHECKS_GL
-	const GLboolean state = glIsQuery(lid);
-	core_assert_always(state == GL_TRUE);
-#endif
-	glBeginQuery(GL_SAMPLES_PASSED, lid);
-	checkError();
-	return true;
-}
-
-bool endOcclusionQuery(Id id) {
-	if (glstate().occlusionQuery != id || id == InvalidId) {
-		return false;
-	}
-	glEndQuery(GL_SAMPLES_PASSED);
-	glstate().occlusionQuery = video::InvalidId;
-	checkError();
-	return true;
-}
-
 void flush() {
 	video_trace_scoped(Flush);
 	glFlush();
@@ -1191,44 +842,6 @@ void finish() {
 	video_trace_scoped(Finish);
 	glFinish();
 	checkError();
-}
-
-// TODO: cache this per id per frame - or just the last queried id?
-bool isOcclusionQueryAvailable(Id id) {
-	if (id == InvalidId) {
-		return false;
-	}
-	const GLuint lid = (GLuint)id;
-#if SANITY_CHECKS_GL
-	const GLboolean state = glIsQuery(lid);
-	core_assert_always(state == GL_TRUE);
-#endif
-	GLint available;
-	glGetQueryObjectiv(lid, GL_QUERY_RESULT_AVAILABLE, &available);
-	checkError();
-	return available != 0;
-}
-
-int getOcclusionQueryResult(Id id, bool wait) {
-	if (id == InvalidId) {
-		return -1;
-	}
-	const GLuint lid = (GLuint)id;
-	if (wait) {
-		while (!isOcclusionQueryAvailable(id)) {
-		}
-		GLint samples;
-		glGetQueryObjectiv(lid, GL_QUERY_RESULT, &samples);
-		checkError();
-		return (int)samples;
-	}
-	if (!isOcclusionQueryAvailable(id)) {
-		return -1;
-	}
-	GLint samples;
-	glGetQueryObjectiv(lid, GL_QUERY_RESULT, &samples);
-	checkError();
-	return (int)samples;
 }
 
 void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
@@ -1333,14 +946,6 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 	checkError();
 }
 
-size_t bufferSize(BufferType type) {
-	const GLenum glType = _priv::BufferTypes[core::enumVal(type)];
-	int size;
-	glGetBufferParameteriv(glType, GL_BUFFER_SIZE, &size);
-	checkError();
-	return size;
-}
-
 void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data, size_t size) {
 	video_trace_scoped(BufferSubData);
 	if (size == 0) {
@@ -1365,19 +970,6 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 			}
 		}
 	}
-}
-
-//TODO: use FrameBufferConfig
-void setupDepthCompareTexture(TextureType type, CompareFunc func, TextureCompareMode mode) {
-	video_trace_scoped(SetupDepthCompareTexture);
-	const GLenum glType = _priv::TextureTypes[core::enumVal(type)];
-	const GLenum glMode = _priv::TextureCompareModes[core::enumVal(mode)];
-	glTexParameteri(glType, GL_TEXTURE_COMPARE_MODE, glMode);
-	if (mode == TextureCompareMode::RefToTexture) {
-		const GLenum glFunc = _priv::CompareFuncs[core::enumVal(func)];
-		glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, glFunc);
-	}
-	checkError();
 }
 
 // the fbo is flipped in memory, we have to deal with it here
@@ -1566,29 +1158,6 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 	}
 }
 
-void drawElementsIndirect(Primitive mode, DataType type, const void* offset) {
-	video_trace_scoped(DrawElementsIndirect);
-	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
-	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
-	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
-	video::validate(glstate().programHandle);
-	glDrawElementsIndirect(glMode, glType, (const GLvoid*)offset);
-	checkError();
-}
-
-void drawMultiElementsIndirect(Primitive mode, DataType type, const void* offset, size_t commandSize, size_t stride) {
-	video_trace_scoped(DrawMultiElementsIndirect);
-	if (commandSize <= 0u) {
-		return;
-	}
-	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
-	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
-	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
-	video::validate(glstate().programHandle);
-	glMultiDrawElementsIndirect(glMode, glType, (const GLvoid*)offset, (GLsizei)commandSize, (GLsizei)stride);
-	checkError();
-}
-
 void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset) {
 	video_trace_scoped(DrawElements);
 	if (numIndices <= 0) {
@@ -1602,69 +1171,11 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset
 	checkError();
 }
 
-void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount) {
-	video_trace_scoped(DrawElementsInstanced);
-	if (numIndices <= 0) {
-		return;
-	}
-	if (amount <= 0) {
-		return;
-	}
-	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
-	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
-	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
-	video::validate(glstate().programHandle);
-	glDrawElementsInstanced(glMode, (GLsizei)numIndices, glType, nullptr, (GLsizei)amount);
-	checkError();
-}
-
-void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex) {
-	video_trace_scoped(DrawElementsBaseVertex);
-	if (numIndices <= 0) {
-		return;
-	}
-	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
-	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
-	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
-	video::validate(glstate().programHandle);
-	glDrawElementsBaseVertex(glMode, (GLsizei)numIndices, glType, GL_OFFSET_CAST(indexSize * baseIndex), (GLint)baseVertex);
-	checkError();
-}
-
 void drawArrays(Primitive mode, size_t count) {
 	video_trace_scoped(DrawArrays);
 	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
 	video::validate(glstate().programHandle);
 	glDrawArrays(glMode, (GLint)0, (GLsizei)count);
-	checkError();
-}
-
-void drawArraysIndirect(Primitive mode, void* offset) {
-	video_trace_scoped(DrawArraysIndirect);
-	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
-	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
-	video::validate(glstate().programHandle);
-	glDrawArraysIndirect(glMode, (const GLvoid*)&offset);
-	checkError();
-}
-
-void drawMultiArraysIndirect(Primitive mode, void* offset, size_t commandSize, size_t stride) {
-	video_trace_scoped(DrawMultiArraysIndirect);
-	if (commandSize <= 0u) {
-		return;
-	}
-	core_assert_msg(glstate().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
-	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
-	video::validate(glstate().programHandle);
-	glMultiDrawArraysIndirect(glMode, (const GLvoid*)offset, (GLsizei)commandSize, (GLsizei)stride);
-	checkError();
-}
-
-void drawInstancedArrays(Primitive mode, size_t count, size_t amount) {
-	video_trace_scoped(DrawInstancedArrays);
-	const GLenum glMode = _priv::Primitives[core::enumVal(mode)];
-	video::validate(glstate().programHandle);
-	glDrawArraysInstanced(glMode, (GLint)0, (GLsizei)count, (GLsizei)amount);
 	checkError();
 }
 
@@ -1760,27 +1271,6 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 	}
 	deleteShader(id);
 	return false;
-}
-
-bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode mode, const core::List<core::String>& varyings) {
-	video_trace_scoped(BindTransformFeedbackVaryings);
-	if (!useFeature(Feature::TransformFeedback)) {
-		return false;
-	}
-	if (varyings.empty() || mode == TransformFeedbackCaptureMode::Max) {
-		// nothing to do is success
-		return true;
-	}
-	core::DynamicArray<const GLchar*> transformFeedbackStarts(varyings.size());
-	for (auto& transformFeedbackVaryings : varyings) {
-		transformFeedbackStarts.push_back(transformFeedbackVaryings.c_str());
-	}
-	glTransformFeedbackVaryings((GLuint) program,
-			(GLsizei) transformFeedbackStarts.size(),
-			transformFeedbackStarts.data(),
-			(GLenum)_priv::TransformFeedbackCaptureModes[core::enumVal(mode)]);
-	video::checkError();
-	return true;
 }
 
 bool linkComputeShader(Id program, Id comp, const core::String& name) {

@@ -8,7 +8,6 @@
 #include "core/Assert.h"
 #include <SDL_video.h>
 #include "TextureConfig.h"
-#include "StencilConfig.h"
 #include "core/Var.h"
 #include "image/Image.h"
 

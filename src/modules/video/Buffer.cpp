@@ -62,33 +62,6 @@ void Buffer::setMode(int32_t idx, BufferMode mode) {
 	_modes[idx] = mode;
 }
 
-size_t Buffer::bufferSize(int32_t idx) const {
-	if (!isValid(idx)) {
-		return 0u;
-	}
-
-	const BufferType type = _targets[idx];
-	core_assert(video::boundBuffer(type) == _handles[idx]);
-	return video::bufferSize(type);
-}
-
-void* Buffer::mapData(int32_t idx, video::AccessMode mode) const {
-	if (!isValid(idx)) {
-		return nullptr;
-	}
-	bind();
-	const BufferType type = _targets[idx];
-	return video::mapBuffer(_handles[idx], type, mode);
-}
-
-void Buffer::unmapData(int32_t idx) const {
-	if (!isValid(idx)) {
-		return;
-	}
-	const BufferType type = _targets[idx];
-	video::unmapBuffer(_handles[idx], type);
-}
-
 bool Buffer::addAttribute(const Attribute& attribute) {
 	if (attribute.bufferIndex < 0) {
 		Log::debug("No buffer index is set");

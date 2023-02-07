@@ -55,21 +55,6 @@ public:
 	bool addAttribute(const Attribute& attribute);
 
 	/**
-	 * @return The size on the gpu
-	 * @note The buffer behind the given index must be bound
-	 * @sa size()
-	 */
-	size_t bufferSize(int32_t idx) const;
-
-	template<class T>
-	T* data(int32_t idx, video::AccessMode mode) const {
-		return (T*)mapData(idx, mode);
-	}
-
-	void* mapData(int32_t idx, video::AccessMode mode) const;
-	void unmapData(int32_t idx) const;
-
-	/**
 	 * This will only destroy the vao - not the buffer handles. Thus a new @c bind() call
 	 * will regenerate the vao
 	 *
@@ -125,7 +110,6 @@ public:
 	bool unbind() const;
 	/**
 	 * @return The size of the cpu allocated memory
-	 * @sa bufferSize()
 	 */
 	uint32_t size(int32_t idx) const;
 	uint32_t elements(int32_t idx, int components = 3, size_t componentSize = sizeof(float)) const;

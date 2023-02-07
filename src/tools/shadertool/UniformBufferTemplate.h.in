@@ -5,6 +5,7 @@
 #pragma once
 
 #include "video/UniformBuffer.h"
+#include <glm/matrix.hpp>
 
 namespace $namespace$ {
 

@@ -233,13 +233,6 @@ enum class BufferMode {
 	Max
 };
 
-enum class TransformFeedbackCaptureMode {
-	Interleaved,
-	Separate,
-
-	Max
-};
-
 enum class Primitive {
 	Points,
 	Lines,

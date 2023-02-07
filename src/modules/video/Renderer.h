@@ -125,26 +125,6 @@ inline void drawElements(Primitive mode, size_t numIndices, size_t indexSize, vo
 	drawElements(mode, numIndices, mapIndexTypeBySize(indexSize), offset);
 }
 
-/**
- * @sa IndirectDrawBuffer
- */
-template <class IndexType> inline void drawElementsIndirect(Primitive mode, void *offset) {
-	drawElementsIndirect(mode, mapType<IndexType>(), offset);
-}
-
-template <class IndexType> inline void drawMultiElementsIndirect(Primitive mode, void *offset, size_t commandSize) {
-	drawMultiElementsIndirect(mode, mapType<IndexType>(), offset, commandSize);
-}
-
-template <class IndexType> inline void drawElementsInstanced(Primitive mode, size_t numIndices, size_t amount) {
-	drawElementsInstanced(mode, numIndices, mapType<IndexType>(), amount);
-}
-
-template <class IndexType>
-inline void drawElementsBaseVertex(Primitive mode, size_t numIndices, int baseIndex, int baseVertex) {
-	drawElementsBaseVertex(mode, numIndices, mapType<IndexType>(), sizeof(IndexType), baseIndex, baseVertex);
-}
-
 inline bool hasFeature(Feature feature) {
 	return renderState().supports(feature);
 }

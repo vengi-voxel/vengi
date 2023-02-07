@@ -13,17 +13,12 @@ set(GL_SRCS
 )
 set(SRCS
 	Buffer.cpp Buffer.h
-	BufferLockMgr.cpp BufferLockMgr.h
 	Camera.cpp Camera.h
-	Cubemap.cpp Cubemap.h
 	DriverHints.cpp
 	FileDialogOptions.h
 	FrameBuffer.cpp FrameBuffer.h
 	FrameBufferConfig.cpp FrameBufferConfig.h
-	GBuffer.cpp GBuffer.h
-	IndirectDrawBuffer.cpp IndirectDrawBuffer.h
 	OpenFileMode.h
-	PersistentMappingBuffer.cpp PersistentMappingBuffer.h
 	Renderer.cpp Renderer.h
 	RendererInterface.h
 	RenderBuffer.cpp RenderBuffer.h
@@ -40,8 +35,6 @@ set(SRCS
 	ScopedScissor.h ScopedScissor.cpp
 	ScopedPolygonMode.h ScopedPolygonMode.cpp
 	ScopedRenderBuffer.h ScopedRenderBuffer.cpp
-	ShaderStorageBuffer.h ShaderStorageBuffer.cpp
-	StencilConfig.h StencilConfig.cpp
 	Texture.cpp Texture.h
 	TextureConfig.cpp TextureConfig.h
 	TexturePool.cpp TexturePool.h

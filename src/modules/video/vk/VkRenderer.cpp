@@ -153,15 +153,7 @@ bool checkError(bool triggerAssert) {
 	return false;
 }
 
-bool setupCubemap(Id &handle, const image::ImagePtr images[6]) {
-	return false;
-}
-
 void readBuffer(GBufferTextureType textureType) {
-}
-
-bool setupGBuffer(Id fbo, const glm::ivec2 &dimension, Id *textures, int texCount, Id depthTexture) {
-	return false;
 }
 
 float lineWidth(float width) {
@@ -206,10 +198,6 @@ bool disable(State state) {
 	return false;
 }
 
-bool isClipOriginLowerLeft() {
-	return false;
-}
-
 void colorMask(bool red, bool green, bool blue, bool alpha) {
 }
 
@@ -223,10 +211,6 @@ bool depthFunc(CompareFunc func) {
 
 CompareFunc getDepthFunc() {
 	return CompareFunc::Max;
-}
-
-bool setupStencil(const StencilConfig &config) {
-	return false;
 }
 
 void getBlendState(bool &enabled, BlendMode &src, BlendMode &dest, BlendEquation &func) {
@@ -284,17 +268,6 @@ Id boundBuffer(BufferType type) {
 	return InvalidId;
 }
 
-void unmapBuffer(Id handle, BufferType type) {
-}
-
-void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
-	return nullptr;
-}
-
-void *mapBufferRange(Id handle, intptr_t offset, size_t length, BufferType type, AccessMode mode) {
-	return nullptr;
-}
-
 bool bindBuffer(BufferType type, Id handle) {
 	return false;
 }
@@ -307,10 +280,6 @@ bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 	return false;
 }
 
-uint8_t *bufferStorage(BufferType type, size_t size) {
-	return nullptr;
-}
-
 void genBuffers(uint8_t amount, Id *ids) {
 }
 
@@ -318,21 +287,6 @@ void deleteBuffers(uint8_t amount, Id *ids) {
 }
 
 void genVertexArrays(uint8_t amount, Id *ids) {
-}
-
-IdPtr genSync() {
-	return InvalidIdPtr;
-}
-
-bool waitForClientSync(IdPtr id, uint64_t timeout, bool syncFlushCommands) {
-	return false;
-}
-
-bool waitForSync(IdPtr id) {
-	return false;
-}
-
-void deleteSync(IdPtr &id) {
 }
 
 void deleteShader(Id &id) {
@@ -389,33 +343,6 @@ void deleteRenderbuffers(uint8_t amount, Id *ids) {
 void configureAttribute(const Attribute &a) {
 }
 
-Id genOcclusionQuery() {
-	return InvalidId;
-}
-
-void deleteOcclusionQuery(Id &id) {
-}
-
-bool isOcclusionQuery(Id id) {
-	return false;
-}
-
-bool beginOcclusionQuery(Id id) {
-	return false;
-}
-
-bool endOcclusionQuery(Id id) {
-	return false;
-}
-
-bool isOcclusionQueryAvailable(Id id) {
-	return false;
-}
-
-int getOcclusionQueryResult(Id id, bool wait) {
-	return -1;
-}
-
 Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 	return InvalidId;
 }
@@ -435,13 +362,6 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
 }
 
 void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data, size_t size) {
-}
-
-size_t bufferSize(BufferType type) {
-	return 0;
-}
-
-void setupDepthCompareTexture(video::TextureType type, CompareFunc func, TextureCompareMode mode) {
 }
 
 const glm::vec4 &framebufferUV() {
@@ -466,28 +386,7 @@ void uploadTexture(video::TextureType type, video::TextureFormat format, int wid
 void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset) {
 }
 
-void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t amount) {
-}
-
-void drawElementsBaseVertex(Primitive mode, size_t numIndices, DataType type, size_t indexSize, int baseIndex, int baseVertex) {
-}
-
-void drawElementsIndirect(Primitive mode, DataType type, const void *offset) {
-}
-
-void drawMultiElementsIndirect(Primitive mode, DataType type, const void *offset, size_t commandSize, size_t stride) {
-}
-
-void drawArraysIndirect(Primitive mode, void *offset) {
-}
-
-void drawMultiArraysIndirect(Primitive mode, void *offset, size_t commandSize, size_t stride) {
-}
-
 void drawArrays(Primitive mode, size_t count) {
-}
-
-void drawInstancedArrays(Primitive mode, size_t count, size_t amount) {
 }
 
 void enableDebug(DebugSeverity severity) {
@@ -525,38 +424,6 @@ void flush() {
 }
 
 void finish() {
-}
-
-bool beginTransformFeedback(Primitive primitive) {
-	return false;
-}
-
-void pauseTransformFeedback() {
-}
-
-void resumeTransformFeedback() {
-}
-
-void endTransformFeedback() {
-}
-
-bool bindTransforFeebackBuffer(int index, Id bufferId) {
-	return false;
-}
-
-bool bindTransformFeedback(Id id) {
-	return false;
-}
-
-void deleteTransformFeedback(Id &id) {
-}
-
-Id genTransformFeedback() {
-	return InvalidId;
-}
-
-bool bindTransformFeedbackVaryings(Id program, TransformFeedbackCaptureMode transformFormat, const core::List<core::String> &transformVaryings) {
-	return false;
 }
 
 } // namespace video

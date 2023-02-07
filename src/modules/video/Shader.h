@@ -62,9 +62,6 @@ protected:
 
 	ShaderUniforms _uniforms;
 
-	TransformFeedbackCaptureMode _transformFormat = TransformFeedbackCaptureMode::Max;
-	core::List<core::String> _transformVaryings;
-
 	// can be used to validate that every uniform was set. The value type is the location index
 	mutable core::Map<int, bool, 4> _usedUniforms{128};
 	bool _recordUsedUniforms = false;
@@ -141,12 +138,6 @@ public:
 		return false;
 	}
 
-	/**
-	 * @note Must be called before calling @c setup()
-	 * @see setup()
-	 */
-	void setupTransformFeedback(const core::List<core::String>& transformVaryings, TransformFeedbackCaptureMode mode);
-
 	void recordUsedUniforms(bool state);
 
 	void clearUsedUniforms();
@@ -190,8 +181,6 @@ public:
 	 * @return @c false if this is no compute shader, or the execution failed.
 	 */
 	bool run(const glm::uvec3& workGroups, bool wait = false);
-
-	bool transformFeedback() const;
 
 	void checkAttribute(const core::String& attribute);
 	void checkUniform(const core::String& uniform);

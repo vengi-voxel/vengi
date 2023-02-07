@@ -245,12 +245,6 @@ static const GLenum Primitives[] {
 };
 static_assert(core::enumVal(Primitive::Max) == lengthof(Primitives), "Array sizes don't match Max");
 
-static const GLenum TransformFeedbackCaptureModes[] = {
-	GL_INTERLEAVED_ATTRIBS,
-	GL_SEPARATE_ATTRIBS
-};
-static_assert(core::enumVal(TransformFeedbackCaptureMode::Max) == lengthof(TransformFeedbackCaptureModes), "Array sizes don't match Max");
-
 static const GLenum TextureUnits[] {
 	GL_TEXTURE0,
 	GL_TEXTURE1,
