@@ -289,7 +289,7 @@ core::String convertName(const core::String& in, bool firstUpper) {
 core::String std140Padding(const Variable& v, int& padding) {
 	const Types& cType = cTypes[v.type];
 	if (cType.type == Variable::Type::FLOAT || cType.type == Variable::Type::INT || cType.type == Variable::Type::UNSIGNED_INT) {
-		return "\t\tuint64_t _padding" + core::string::toString(padding++) + ";\n";
+		return "\t\tuint8_t _padding" + core::string::toString(padding++) + "[12];\n";
 	}
 	if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::IVEC2 || cType.type == Variable::Type::UVEC2) {
 		return "\t\tuint64_t _padding" + core::string::toString(padding++) + ";\n";
@@ -299,6 +299,21 @@ core::String std140Padding(const Variable& v, int& padding) {
 	}
 	if (cType.type == Variable::Type::DVEC3) {
 		return "\t\tuint64_t _padding" + core::string::toString(padding++) + ";\n";
+	}
+	if (cType.type == Variable::Type::BOOL) {
+		return "\t\tuint8_t _padding" + core::string::toString(padding++) + "[15];\n";
+	}
+	if (cType.type == Variable::Type::BVEC2) {
+		return "\t\tuint8_t _padding" + core::string::toString(padding++) + "[14];\n";
+	}
+	if (cType.type == Variable::Type::BVEC3) {
+		return "\t\tuint8_t _padding" + core::string::toString(padding++) + "[13];\n";
+	}
+	if (cType.type == Variable::Type::BVEC4) {
+		return "\t\tuint8_t _padding" + core::string::toString(padding++) + "[12];\n";
+	}
+	if (cType.type == Variable::Type::MAT3) {
+		return "\t\tuint8_t _padding" + core::string::toString(padding++) + "[12];\n";
 	}
 	return "";
 }
@@ -320,19 +335,11 @@ size_t std140Size(const Variable& v) {
 	 || cType.type == Variable::Type::DOUBLE) {
 		bytes = 8;
 	}
-	if (cType.type == Variable::Type::VEC2
-	 || cType.type == Variable::Type::UVEC2
-	 || cType.type == Variable::Type::DVEC2
-	 || cType.type == Variable::Type::IVEC2
-	 || cType.type == Variable::Type::BVEC2) {
-		components = 2;
-	}
-	if (cType.type == Variable::Type::VEC3
-	 || cType.type == Variable::Type::UVEC3
-	 || cType.type == Variable::Type::DVEC3
-	 || cType.type == Variable::Type::IVEC3
-	 || cType.type == Variable::Type::BVEC3) {
-		components = 3;
+	if (cType.type == Variable::Type::BVEC2
+	 || cType.type == Variable::Type::BVEC3
+	 || cType.type == Variable::Type::BVEC4
+	 || cType.type == Variable::Type::BOOL) {
+		bytes = 1;
 	}
 	if (cType.type == Variable::Type::MAT2) {
 		components = 4;
