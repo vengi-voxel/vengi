@@ -111,6 +111,8 @@ bool RawVolumeRenderer::init() {
 		Log::error("Failed to init shadowmap shader");
 		return false;
 	}
+	shader::ShadowmapData::BlockData var;
+	_shadowMapUniformBlock.create(var);
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		State& state = _state[idx];
@@ -497,7 +499,9 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		if (shadow) {
 			video::ScopedShader scoped(_shadowMapShader);
 			_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
-				_shadowMapShader.setLightviewprojection(lightViewProjection);
+				shader::ShadowmapData::BlockData var;
+				var.lightviewprojection = lightViewProjection;
+
 				for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 					const State& state = _state[idx];
 					const uint32_t indices = state.indices(MeshType_Opaque);
@@ -505,8 +509,10 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 						continue;
 					}
 					video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Opaque]);
-					_shadowMapShader.setModel(state._model);
-					_shadowMapShader.setPivot(state._pivot);
+					var.model = state._model;
+					var.pivot = state._pivot;
+					_shadowMapUniformBlock.update(var);
+					_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
 					static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 					video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 				}

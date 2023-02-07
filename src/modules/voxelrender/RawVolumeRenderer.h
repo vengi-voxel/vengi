@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "RenderShaders.h"
+#include "ShadowmapData.h"
 #include "core/Optional.h"
 #include "core/collection/ConcurrentPriorityQueue.h"
 #include "core/concurrent/Atomic.h"
@@ -92,6 +92,7 @@ protected:
 	uint64_t _paletteHash = 0;
 	shader::VoxelData _materialBlock;
 	shader::VoxelShader& _voxelShader;
+	shader::ShadowmapData _shadowMapUniformBlock;
 	shader::ShadowmapShader& _shadowMapShader;
 	voxelrender::Shadow _shadow;
 

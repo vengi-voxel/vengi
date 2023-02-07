@@ -4,9 +4,12 @@
 
 $in vec3 a_pos;
 
-uniform mat4 u_lightviewprojection;
-uniform mat4 u_model;
-uniform vec3 u_pivot;
+layout(std140) uniform u_block
+{
+	mat4 u_lightviewprojection;
+	mat4 u_model;
+	vec3 u_pivot;
+};
 
 void main()
 {

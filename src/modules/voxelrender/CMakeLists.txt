@@ -6,7 +6,10 @@ set(SRCS
 	ShaderAttribute.h
 	ImageGenerator.h ImageGenerator.cpp
 )
-set(SHADERS voxel)
+set(SHADERS
+	voxel
+	shadowmap
+)
 set(SRCS_SHADERS
 	shaders/_shared.glsl
 )
