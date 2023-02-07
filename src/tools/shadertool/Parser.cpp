@@ -369,6 +369,8 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 			}
 			core_assert_always(tok.next() == "]");
 			core_assert_always(tok.next() == ";");
+		} else {
+			core_assert_always(tok.next() == ";");
 		}
 		// TODO: multi dimensional arrays are only supported in glsl >= 5.50
 		if (uniformBufferActive) {
