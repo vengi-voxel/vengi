@@ -4,7 +4,6 @@
 
 #pragma once
 
-#define USE_ALIGN_AS 1
 #include "Types.h"
 #include "core/String.h"
 
@@ -37,13 +36,9 @@ extern int getComponents(const Variable::Type type);
 
 extern Variable::Type getType(const core::String& type, int line);
 
-extern core::String std140Align(const Variable& v);
-
 extern core::String std140Padding(const Variable& v, int& padding);
 
 extern size_t std140Size(const Variable& v);
-
-extern core::String std430Align(const Variable& v);
 
 extern size_t std430Size(const Variable& v);
 

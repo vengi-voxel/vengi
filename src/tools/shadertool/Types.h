@@ -134,8 +134,6 @@ struct Layout {
 	BlockLayout blockLayout = BlockLayout::unknown;
 	video::ImageFormat imageFormat = video::ImageFormat::Max;
 
-	core::String typeAlign(const Variable& v) const;
-
 	size_t typeSize(const Variable& v) const;
 
 	core::String typePadding(const Variable& v, int& padding) const;

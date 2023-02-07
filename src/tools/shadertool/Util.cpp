@@ -275,7 +275,6 @@ core::String convertName(const core::String& in, bool firstUpper) {
 	return out;
 }
 
-
 /**
  * The size of each element in the array will be the size of the element type, rounded up to a multiple of the
  * size of a vec4. This is also the array’s alignment. The array’s size will be this rounded-up element’s size
@@ -287,36 +286,20 @@ core::String convertName(const core::String& in, bool firstUpper) {
  * a vec3 needs 12 bytes and it's 16 bytes aligned
  * a vec4 needs 16 bytes and it's 16 bytes aligned
  */
-core::String std140Align(const Variable& v) {
-#if USE_ALIGN_AS > 0
-	// TODO: generate uniform buffer struct - enforce std140 layout
-	// TODO: extract uniform blocks into aligned structs and generate methods to update them
-	//       align them via GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT - use glBindBufferRange
-	//       GL_MAX_UNIFORM_BLOCK_SIZE
-	const Types& cType = resolveTypes(v.type);
-	if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::VEC3 || cType.type == Variable::Type::VEC4
-	 || cType.type == Variable::Type::DVEC2 || cType.type == Variable::Type::DVEC3 || cType.type == Variable::Type::DVEC4
-	 || cType.type == Variable::Type::IVEC2 || cType.type == Variable::Type::IVEC3 || cType.type == Variable::Type::IVEC4
-	 || cType.type == Variable::Type::BVEC2 || cType.type == Variable::Type::BVEC3 || cType.type == Variable::Type::BVEC4) {
-		return "alignas(16) ";
-	}
-	if (cType.type == Variable::Type::FLOAT || cType.type == Variable::Type::DOUBLE) {
-		return "alignas(4) ";
-	}
-#endif
-	return "";
-}
-
 core::String std140Padding(const Variable& v, int& padding) {
-#if USE_ALIGN_AS == 0
 	const Types& cType = cTypes[v.type];
-	if (cType.type == Variable::Type::VEC3
-	 || cType.type == Variable::Type::DVEC3
-	 || cType.type == Variable::Type::IVEC3
-	 || cType.type == Variable::Type::BVEC3) {
-		return "\t\tfloat _padding" + core::string::toString(padding++) + ";\n";
+	if (cType.type == Variable::Type::FLOAT || cType.type == Variable::Type::INT || cType.type == Variable::Type::UNSIGNED_INT) {
+		return "\t\tuint64_t _padding" + core::string::toString(padding++) + ";\n";
 	}
-#endif
+	if (cType.type == Variable::Type::VEC2 || cType.type == Variable::Type::IVEC2 || cType.type == Variable::Type::UVEC2) {
+		return "\t\tuint64_t _padding" + core::string::toString(padding++) + ";\n";
+	}
+	if (cType.type == Variable::Type::VEC3 || cType.type == Variable::Type::IVEC3) {
+		return "\t\tuint32_t _padding" + core::string::toString(padding++) + ";\n";
+	}
+	if (cType.type == Variable::Type::DVEC3) {
+		return "\t\tuint64_t _padding" + core::string::toString(padding++) + ";\n";
+	}
 	return "";
 }
 
@@ -328,7 +311,6 @@ core::String std140Padding(const Variable& v, int& padding) {
  * definitions if the type is a multiple of 16 bytes
  */
 size_t std140Size(const Variable& v) {
-	// NOTE: this doesn't take a vec3 followed by a float into account - this is very limited
 	const Types& cType = resolveTypes(v.type);
 	size_t components = cType.components;
 	size_t bytes = 4;
@@ -339,12 +321,14 @@ size_t std140Size(const Variable& v) {
 		bytes = 8;
 	}
 	if (cType.type == Variable::Type::VEC2
+	 || cType.type == Variable::Type::UVEC2
 	 || cType.type == Variable::Type::DVEC2
 	 || cType.type == Variable::Type::IVEC2
 	 || cType.type == Variable::Type::BVEC2) {
 		components = 2;
 	}
 	if (cType.type == Variable::Type::VEC3
+	 || cType.type == Variable::Type::UVEC3
 	 || cType.type == Variable::Type::DVEC3
 	 || cType.type == Variable::Type::IVEC3
 	 || cType.type == Variable::Type::BVEC3) {
@@ -364,11 +348,6 @@ size_t std140Size(const Variable& v) {
 		return stride * v.arraySize;
 	}
 	return stride;
-}
-
-core::String std430Align(const Variable& v) {
-	// TODO: check this layout
-	return std140Align(v);
 }
 
 size_t std430Size(const Variable& v) {

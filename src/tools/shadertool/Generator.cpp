@@ -493,7 +493,6 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			const core::String& uniformName = util::convertName(v.name, false);
 			const Types& cType = util::resolveTypes(v.type);
 			ub += "\t\t";
-			ub += ubuf.layout.typeAlign(v);
 			ub += cType.ctype;
 			ub += " ";
 			ub += uniformName;
@@ -510,7 +509,6 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			ub += ubuf.layout.typePadding(v, paddingCnt);
 		}
 		ub += "\t};\n\t#pragma pack(pop)\n";
-#if USE_ALIGN_AS > 0
 		ub += "\tstatic_assert(sizeof(";
 		ub += uniformBufferStructName;
 		ub += "Data) == ";
@@ -518,7 +516,6 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		ub += ", \"Unexpected structure size for ";
 		ub += uniformBufferStructName;
 		ub += "Data\");\n";
-#endif
 		ub += "\n\tinline bool update(const ";
 		ub += uniformBufferStructName;
 		ub += "Data& var) {\n";
