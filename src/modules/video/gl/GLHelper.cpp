@@ -215,6 +215,9 @@ void setupLimitsAndSpecs() {
 
 	Log::debug("GL_MAX_ELEMENTS_VERTICES: %i", renderState().limits[core::enumVal(Limit::MaxElementVertices)]);
 	Log::debug("GL_MAX_ELEMENTS_INDICES: %i", renderState().limits[core::enumVal(Limit::MaxElementIndices)]);
+	Log::debug("GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT: %i", (int)renderState().specs[core::enumVal(Spec::UniformBufferAlignment)]);
+	Log::debug("GL_MAX_UNIFORM_BLOCK_SIZE: %i", (int)renderState().limits[core::enumVal(Limit::MaxUniformBufferSize)]);
+	Log::debug("GL_MAX_UNIFORM_BUFFER_BINDINGS: %i", (int)renderState().limits[core::enumVal(Limit::MaxUniformBufferBindings)]);
 }
 
 void setupFeatures() {

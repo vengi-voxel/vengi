@@ -32,7 +32,7 @@ bool Shader::setUniformBuffer(const core::String& name, const UniformBuffer& buf
 	}
 
 	if (uniform->size != (int)buffer.size()) {
-		Log::error("Uniform buffer size differs from uploaded structure size: %i vs %i", uniform->size, (int)buffer.size());
+		Log::error("Uniform buffer %s: size %i differs from uploaded structure size %i", name.c_str(), uniform->size, (int)buffer.size());
 		return false;
 	}
 

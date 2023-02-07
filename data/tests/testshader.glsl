@@ -11,6 +11,10 @@ layout(std140) uniform u_materialblock {
 	vec4 u_glowcolor[MATERIALCOLORS];
 	vec4 u_somevec4;
 	lowp vec4 u_somevec4lowp;
+	vec3 foobar1;
+	float foobar2;
+	vec4 foobar3;
+	vec2 foobar4;
 };
 
 uniform mat4 u_viewprojection;
