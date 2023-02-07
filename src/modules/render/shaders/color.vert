@@ -1,5 +1,7 @@
-uniform mat4 u_viewprojection;
-uniform mat4 u_model;
+layout(std140) uniform u_uniformblock {
+	mat4 u_viewprojection;
+	mat4 u_model;
+};
 
 layout(location = 1) $in vec4 a_pos;
 layout(location = 2) $in vec4 a_color;

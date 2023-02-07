@@ -2,6 +2,7 @@
  * @file
  */
 #include "ShapeRenderer.h"
+#include "ColorData.h"
 #include "video/Renderer.h"
 #include "core/Vector.h"
 #include "video/Shader.h"
@@ -31,6 +32,11 @@ bool ShapeRenderer::init() {
 		Log::error("Failed to setup color shader");
 		return false;
 	}
+
+	shader::ColorData::UniformblockData var;
+	_uniformBlock.create(var);
+
+	core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
 	return true;
 }
 
@@ -179,8 +185,11 @@ int ShapeRenderer::renderAllColored(const video::Camera& camera, const glm::mat4
 		}
 		if (!_colorShader.isActive()) {
 			_colorShader.activate();
-			core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
-			core_assert_always(_colorShader.setModel(model));
+			shader::ColorData::UniformblockData var;
+			var.model = model;
+			var.viewprojection = camera.viewProjectionMatrix();
+			_uniformBlock.update(var);
+			_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer());
 		}
 		core_assert_always(_vbo[meshIndex].bind());
 		const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
@@ -211,9 +220,12 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 
 	const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
 
+	shader::ColorData::UniformblockData var;
+	var.model = model;
+	var.viewprojection = camera.viewProjectionMatrix();
+	_uniformBlock.update(var);
 	_colorShader.activate();
-	core_assert_always(_colorShader.setViewprojection(camera.viewProjectionMatrix()));
-	core_assert_always(_colorShader.setModel(model));
+	_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer());
 	core_assert_always(_vbo[meshIndex].bind());
 	video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
 	_colorShader.deactivate();
