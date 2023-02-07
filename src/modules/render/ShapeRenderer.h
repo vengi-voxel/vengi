@@ -35,8 +35,6 @@ private:
 	video::Buffer _vbo[MAX_MESHES];
 	int32_t _vertexIndex[MAX_MESHES];
 	bool _hidden[MAX_MESHES] { false };
-	bool _texcoords[MAX_MESHES] { false };
-	video::TextureUnit _texunits[MAX_MESHES] {video::TextureUnit::Max};
 	int32_t _indexIndex[MAX_MESHES];
 	video::Primitive _primitives[MAX_MESHES];
 	uint32_t _currentMeshIndex = 0u;
@@ -45,7 +43,6 @@ private:
 
 	core::DynamicArray<Vertex> _vertices;
 
-	int renderAllTextured(const video::Camera& camera, const glm::mat4& model) const;
 	int renderAllColored(const video::Camera& camera, const glm::mat4& model) const;
 
 public:
@@ -66,8 +63,6 @@ public:
 
 	void hide(int32_t meshIndex, bool hide);
 	bool hiddenState(int32_t meshIndex) const;
-
-	void setTextureUnit(uint32_t meshIndex, video::TextureUnit unit);
 
 	void shutdown() override;
 
