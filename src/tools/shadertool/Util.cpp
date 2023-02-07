@@ -320,7 +320,15 @@ core::String std140Padding(const Variable& v, int& padding) {
 	return "";
 }
 
+/**
+ * The rules for std140 layout are covered quite well in the OpenGL specification (OpenGL 4.5, Section 7.6.2.2, page
+ * 137). Among the most important is the fact that arrays of types are not necessarily tightly packed. An array of
+ * floats in such a block will not be the equivalent to an array of floats in C/C++. The array stride (the bytes between
+ * array elements) is always rounded up to the size of a vec4 (ie: 16-bytes). So arrays will only match their C/C++
+ * definitions if the type is a multiple of 16 bytes
+ */
 size_t std140Size(const Variable& v) {
+	// NOTE: this doesn't take a vec3 followed by a float into account - this is very limited
 	const Types& cType = resolveTypes(v.type);
 	size_t components = cType.components;
 	size_t bytes = 4;
@@ -351,10 +359,11 @@ size_t std140Size(const Variable& v) {
 	} else if (cType.type == Variable::Type::MAT3X4 || cType.type == Variable::Type::MAT4X3) {
 		components = 12;
 	}
+	const size_t stride = ((components * bytes) + 15) & ~15;
 	if (v.arraySize > 0) {
-		return components * bytes * v.arraySize;
+		return stride * v.arraySize;
 	}
-	return components * bytes;
+	return stride;
 }
 
 core::String std430Align(const Variable& v) {

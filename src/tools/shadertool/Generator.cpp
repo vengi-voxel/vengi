@@ -484,7 +484,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			break;
 		}
 		ub += ") aligned uniform block structure\n\t */\n";
-		ub += "\t#pragma pack(push, 1)\n\tstruct ";
+		ub += "\t#pragma pack(push, 1)\n\tstruct alignas(16) ";
 		ub += uniformBufferStructName;
 		ub += "Data {\n";
 		size_t structSize = 0u;
