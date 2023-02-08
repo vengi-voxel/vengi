@@ -80,10 +80,6 @@ TParseContext::TParseContext(TSymbolTable& symbolTable, TIntermediate& interm, b
     globalBufferDefaults.layoutMatrix = ElmColumnMajor;
     globalBufferDefaults.layoutPacking = spvVersion.spv != 0 ? ElpStd430 : ElpShared;
 
-    // use storage buffer on SPIR-V 1.3 and up
-    if (spvVersion.spv >= EShTargetSpv_1_3)
-        intermediate.setUseStorageBuffer();
-
     globalInputDefaults.clear();
     globalOutputDefaults.clear();
 
@@ -1035,14 +1031,22 @@ TIntermTyped* TParseContext::handleDotDereference(const TSourceLoc& loc, TInterm
             inheritMemoryQualifiers(base->getQualifier(), result->getWritableType().getQualifier());
         } else {
             auto baseSymbol = base;
-            while (baseSymbol->getAsSymbolNode() == nullptr)
-                baseSymbol = baseSymbol->getAsBinaryNode()->getLeft();
-            TString structName;
-            structName.append("\'").append(baseSymbol->getAsSymbolNode()->getName().c_str()).append( "\'");
-            error(loc, "no such field in structure", field.c_str(), structName.c_str());
+            while (baseSymbol->getAsSymbolNode() == nullptr) {
+                auto binaryNode = baseSymbol->getAsBinaryNode();
+                if (binaryNode == nullptr) break;
+                baseSymbol = binaryNode->getLeft();
+            }
+            if (baseSymbol->getAsSymbolNode() != nullptr) {
+                TString structName;
+                structName.append("\'").append(baseSymbol->getAsSymbolNode()->getName().c_str()).append("\'");
+                error(loc, "no such field in structure", field.c_str(), structName.c_str());
+            } else {
+                error(loc, "no such field in structure", field.c_str(), "");
+            }
         }
     } else
-        error(loc, "does not apply to this type:", field.c_str(), base->getType().getCompleteString(intermediate.getEnhancedMsgs()).c_str());
+        error(loc, "does not apply to this type:", field.c_str(),
+          base->getType().getCompleteString(intermediate.getEnhancedMsgs()).c_str());
 
     // Propagate noContraction up the dereference chain
     if (base->getQualifier().isNoContraction())
@@ -3975,8 +3979,10 @@ void TParseContext::globalQualifierTypeCheck(const TSourceLoc& loc, const TQuali
         return;
     }
 
-    if (isTypeInt(publicType.basicType) || publicType.basicType == EbtDouble)
-        profileRequires(loc, EEsProfile, 300, nullptr, "shader input/output");
+    if (isTypeInt(publicType.basicType) || publicType.basicType == EbtDouble) {
+        profileRequires(loc, EEsProfile, 300, nullptr, "non-float shader input/output");
+        profileRequires(loc, ~EEsProfile, 130, nullptr, "non-float shader input/output");
+    }
 
     if (!qualifier.flat && !qualifier.isExplicitInterpolation() && !qualifier.isPervertexNV() && !qualifier.isPervertexEXT()) {
         if (isTypeInt(publicType.basicType) ||
