@@ -33,8 +33,7 @@ bool ShapeRenderer::init() {
 		return false;
 	}
 
-	shader::ColorData::UniformblockData var;
-	_uniformBlock.create(var);
+	_uniformBlock.create(_uniformBlockData);
 
 	core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
 	return true;
@@ -185,10 +184,9 @@ int ShapeRenderer::renderAllColored(const video::Camera& camera, const glm::mat4
 		}
 		if (!_colorShader.isActive()) {
 			_colorShader.activate();
-			shader::ColorData::UniformblockData var;
-			var.model = model;
-			var.viewprojection = camera.viewProjectionMatrix();
-			_uniformBlock.update(var);
+			_uniformBlockData.model = model;
+			_uniformBlockData.viewprojection = camera.viewProjectionMatrix();
+			_uniformBlock.update(_uniformBlockData);
 			_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer());
 		}
 		core_assert_always(_vbo[meshIndex].bind());
@@ -220,10 +218,9 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 
 	const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
 
-	shader::ColorData::UniformblockData var;
-	var.model = model;
-	var.viewprojection = camera.viewProjectionMatrix();
-	_uniformBlock.update(var);
+	_uniformBlockData.model = model;
+	_uniformBlockData.viewprojection = camera.viewProjectionMatrix();
+	_uniformBlock.update(_uniformBlockData);
 	_colorShader.activate();
 	_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer());
 	core_assert_always(_vbo[meshIndex].bind());
