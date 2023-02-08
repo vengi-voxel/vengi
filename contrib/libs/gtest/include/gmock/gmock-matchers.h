@@ -258,6 +258,7 @@
 #include <algorithm>
 #include <cmath>
 #include <initializer_list>
+#include <ios>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -3316,8 +3317,8 @@ class FieldsAreMatcherImpl<Struct, IndexSequence<I...>>
     std::vector<StringMatchResultListener> inner_listener(sizeof...(I));
 
     VariadicExpand(
-        {failed_pos == ~size_t{}&& !std::get<I>(matchers_).MatchAndExplain(
-                           std::get<I>(tuple), &inner_listener[I])
+        {failed_pos == ~size_t{} && !std::get<I>(matchers_).MatchAndExplain(
+                                        std::get<I>(tuple), &inner_listener[I])
              ? failed_pos = I
              : 0 ...});
     if (failed_pos != ~size_t{}) {
@@ -3643,23 +3644,6 @@ class UnorderedElementsAreMatcherImpl
     MatchMatrix matrix =
         AnalyzeElements(stl_container.begin(), stl_container.end(),
                         &element_printouts, listener);
-
-    if (matrix.LhsSize() == 0 && matrix.RhsSize() == 0) {
-      return true;
-    }
-
-    if (match_flags() == UnorderedMatcherRequire::ExactMatch) {
-      if (matrix.LhsSize() != matrix.RhsSize()) {
-        // The element count doesn't match.  If the container is empty,
-        // there's no need to explain anything as Google Mock already
-        // prints the empty container. Otherwise we just need to show
-        // how many elements there actually are.
-        if (matrix.LhsSize() != 0 && listener->IsInterested()) {
-          *listener << "which has " << Elements(matrix.LhsSize());
-        }
-        return false;
-      }
-    }
 
     return VerifyMatchMatrix(element_printouts, matrix, listener) &&
            FindPairing(matrix, listener);
@@ -4115,7 +4099,12 @@ class ArgsMatcherImpl : public MatcherInterface<ArgsTuple> {
     const char* sep = "";
     // Workaround spurious C4189 on MSVC<=15.7 when k is empty.
     (void)sep;
-    const char* dummy[] = {"", (*os << sep << "#" << k, sep = ", ")...};
+    // The static_cast to void is needed to silence Clang's -Wcomma warning.
+    // This pattern looks suspiciously like we may have mismatched parentheses
+    // and may have been trying to use the first operation of the comma operator
+    // as a member of the array, so Clang warns that we may have made a mistake.
+    const char* dummy[] = {
+        "", (static_cast<void>(*os << sep << "#" << k), sep = ", ")...};
     (void)dummy;
     *os << ") ";
   }
@@ -5485,8 +5474,7 @@ PolymorphicMatcher<internal::ExceptionMatcherImpl<Err>> ThrowsMessage(
   inline name##Matcher GMOCK_INTERNAL_WARNING_PUSH()                           \
       GMOCK_INTERNAL_WARNING_CLANG(ignored, "-Wunused-function")               \
           GMOCK_INTERNAL_WARNING_CLANG(ignored, "-Wunused-member-function")    \
-              name                                                             \
-              GMOCK_INTERNAL_WARNING_POP()() {                                 \
+              name GMOCK_INTERNAL_WARNING_POP()() {                            \
     return {};                                                                 \
   }                                                                            \
   template <typename arg_type>                                                 \

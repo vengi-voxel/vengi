@@ -46,6 +46,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <iomanip>
+#include <ios>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -58,6 +59,7 @@
 #include "gtest/gtest-assertion-result.h"
 #include "gtest/gtest-spi.h"
 #include "gtest/internal/custom/gtest.h"
+#include "gtest/internal/gtest-port.h"
 
 #if GTEST_OS_LINUX
 
@@ -194,6 +196,7 @@ const char kStackTraceMarker[] = "\nStack trace:\n";
 // is specified on the command line.
 bool g_help_flag = false;
 
+#if GTEST_HAS_FILE_SYSTEM
 // Utility function to Open File for Writing
 static FILE* OpenFileForWriting(const std::string& output_file) {
   FILE* fileout = nullptr;
@@ -208,6 +211,7 @@ static FILE* OpenFileForWriting(const std::string& output_file) {
   }
   return fileout;
 }
+#endif  // GTEST_HAS_FILE_SYSTEM
 
 }  // namespace internal
 
@@ -620,6 +624,7 @@ static ::std::vector<std::string> g_argvs;
 #endif  // defined(GTEST_CUSTOM_GET_ARGVS_)
 }
 
+#if GTEST_HAS_FILE_SYSTEM
 // Returns the current application's name, removing directory path if that
 // is present.
 FilePath GetCurrentExecutableName() {
@@ -633,6 +638,7 @@ FilePath GetCurrentExecutableName() {
 
   return result.RemoveDirectoryName();
 }
+#endif  // GTEST_HAS_FILE_SYSTEM
 
 // Functions for processing the gtest_output flag.
 
@@ -647,6 +653,7 @@ std::string UnitTestOptions::GetOutputFormat() {
                            static_cast<size_t>(colon - gtest_output_flag));
 }
 
+#if GTEST_HAS_FILE_SYSTEM
 // Returns the name of the requested output file, or the default if none
 // was explicitly specified.
 std::string UnitTestOptions::GetAbsolutePathToOutputFile() {
@@ -677,6 +684,7 @@ std::string UnitTestOptions::GetAbsolutePathToOutputFile() {
       GetOutputFormat().c_str()));
   return result.string();
 }
+#endif  // GTEST_HAS_FILE_SYSTEM
 
 // Returns true if and only if the wildcard pattern matches the string. Each
 // pattern consists of regular characters, single-character wildcards (?), and
@@ -1123,17 +1131,24 @@ std::string UnitTestImpl::CurrentOsStackTraceExceptTop(int skip_count) {
 // A helper class for measuring elapsed times.
 class Timer {
  public:
-  Timer() : start_(std::chrono::steady_clock::now()) {}
+  Timer() : start_(clock::now()) {}
 
   // Return time elapsed in milliseconds since the timer was created.
   TimeInMillis Elapsed() {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(
-               std::chrono::steady_clock::now() - start_)
+    return std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() -
+                                                                 start_)
         .count();
   }
 
  private:
-  std::chrono::steady_clock::time_point start_;
+  // Fall back to the system_clock when building with newlib on a system
+  // without a monotonic clock.
+#if defined(_NEWLIB_VERSION) && !defined(CLOCK_MONOTONIC)
+  using clock = std::chrono::system_clock;
+#else
+  using clock = std::chrono::steady_clock;
+#endif
+  clock::time_point start_;
 };
 
 // Returns a timestamp as milliseconds since the epoch. Note this time may jump
@@ -2444,11 +2459,6 @@ void Test::TearDown() {}
 void Test::RecordProperty(const std::string& key, const std::string& value) {
   UnitTest::GetInstance()->RecordProperty(key, value);
 }
-// We do not define a customary serialization except for integers,
-// but other values could be logged in this way.
-void Test::RecordProperty(const std::string& key, int64_t value) {
-  RecordProperty(key, (Message() << value).GetString());
-}
 
 namespace internal {
 
@@ -2784,37 +2794,6 @@ void ReportInvalidTestSuiteType(const char* test_suite_name,
                                           code_location.line)
                     << " " << errors.GetString();
 }
-}  // namespace internal
-
-namespace {
-
-// A predicate that checks the test name of a TestInfo against a known
-// value.
-//
-// This is used for implementation of the TestSuite class only.  We put
-// it in the anonymous namespace to prevent polluting the outer
-// namespace.
-//
-// TestNameIs is copyable.
-class TestNameIs {
- public:
-  // Constructor.
-  //
-  // TestNameIs has NO default constructor.
-  explicit TestNameIs(const char* name) : name_(name) {}
-
-  // Returns true if and only if the test name of test_info matches name_.
-  bool operator()(const TestInfo* test_info) const {
-    return test_info && test_info->name() == name_;
-  }
-
- private:
-  std::string name_;
-};
-
-}  // namespace
-
-namespace internal {
 
 // This method expands all parameterized tests registered with macros TEST_P
 // and INSTANTIATE_TEST_SUITE_P into regular tests and registers those.
@@ -3286,7 +3265,12 @@ static void ColoredPrintf(GTestColor color, const char* fmt, ...) {
   va_start(args, fmt);
 
   static const bool in_color_mode =
+#if GTEST_HAS_FILE_SYSTEM
       ShouldUseColor(posix::IsATTY(posix::FileNo(stdout)) != 0);
+#else
+      false;
+#endif  // GTEST_HAS_FILE_SYSTEM
+
   const bool use_color = in_color_mode && (color != GTestColor::kDefault);
 
   if (!use_color) {
@@ -3891,6 +3875,7 @@ void TestEventRepeater::OnTestIterationEnd(const UnitTest& unit_test,
 
 // End TestEventRepeater
 
+#if GTEST_HAS_FILE_SYSTEM
 // This class generates an XML output file.
 class XmlUnitTestResultPrinter : public EmptyTestEventListener {
  public:
@@ -4100,6 +4085,13 @@ std::string XmlUnitTestResultPrinter::RemoveInvalidXmlCharacters(
 // Formats the given time in milliseconds as seconds.
 std::string FormatTimeInMillisAsSeconds(TimeInMillis ms) {
   ::std::stringstream ss;
+  // For the exact N seconds, makes sure output has a trailing decimal point.
+  // Sets precision so that we won't have many trailing zeros (e.g., 300 ms
+  // will be just 0.3, 410 ms 0.41, and so on)
+  ss << std::fixed
+     << std::setprecision(
+            ms % 1000 == 0 ? 0 : (ms % 100 == 0 ? 1 : (ms % 10 == 0 ? 2 : 3)))
+     << std::showpoint;
   ss << (static_cast<double>(ms) * 1e-3);
   return ss.str();
 }
@@ -4438,7 +4430,9 @@ void XmlUnitTestResultPrinter::OutputXmlTestProperties(
 }
 
 // End XmlUnitTestResultPrinter
+#endif  // GTEST_HAS_FILE_SYSTEM
 
+#if GTEST_HAS_FILE_SYSTEM
 // This class generates an JSON output file.
 class JsonUnitTestResultPrinter : public EmptyTestEventListener {
  public:
@@ -4879,6 +4873,7 @@ std::string JsonUnitTestResultPrinter::TestPropertiesAsJson(
 }
 
 // End JsonUnitTestResultPrinter
+#endif  // GTEST_HAS_FILE_SYSTEM
 
 #if GTEST_CAN_STREAM_RESULTS_
 
@@ -4896,7 +4891,8 @@ std::string StreamingListener::UrlEncode(const char* str) {
       case '=':
       case '&':
       case '\n':
-        result.append("%" + String::FormatByte(static_cast<unsigned char>(ch)));
+        result.push_back('%');
+        result.append(String::FormatByte(static_cast<unsigned char>(ch)));
         break;
       default:
         result.push_back(ch);
@@ -5017,6 +5013,7 @@ void OsStackTraceGetter::UponLeavingGTest() GTEST_LOCK_EXCLUDED_(mutex_) {
 #endif  // GTEST_HAS_ABSL
 }
 
+#if GTEST_HAS_DEATH_TEST
 // A helper class that creates the premature-exit file in its
 // constructor and deletes the file in its destructor.
 class ScopedPrematureExitFile {
@@ -5036,7 +5033,7 @@ class ScopedPrematureExitFile {
   }
 
   ~ScopedPrematureExitFile() {
-#if !defined GTEST_OS_ESP8266
+#if !GTEST_OS_ESP8266
     if (!premature_exit_filepath_.empty()) {
       int retval = remove(premature_exit_filepath_.c_str());
       if (retval) {
@@ -5054,6 +5051,7 @@ class ScopedPrematureExitFile {
   ScopedPrematureExitFile(const ScopedPrematureExitFile&) = delete;
   ScopedPrematureExitFile& operator=(const ScopedPrematureExitFile&) = delete;
 };
+#endif  // GTEST_HAS_DEATH_TEST
 
 }  // namespace internal
 
@@ -5379,6 +5377,7 @@ void UnitTest::RecordProperty(const std::string& key,
 // We don't protect this under mutex_, as we only support calling it
 // from the main thread.
 int UnitTest::Run() {
+#if GTEST_HAS_DEATH_TEST
   const bool in_death_test_child_process =
       GTEST_FLAG_GET(internal_run_death_test).length() > 0;
 
@@ -5407,6 +5406,7 @@ int UnitTest::Run() {
       in_death_test_child_process
           ? nullptr
           : internal::posix::GetEnv("TEST_PREMATURE_EXIT_FILE"));
+#endif  // GTEST_HAS_DEATH_TEST
 
   // Captures the value of GTEST_FLAG(catch_exceptions).  This value will be
   // used for the duration of the program.
@@ -5462,11 +5462,13 @@ int UnitTest::Run() {
              : 1;
 }
 
+#if GTEST_HAS_FILE_SYSTEM
 // Returns the working directory when the first TEST() or TEST_F() was
 // executed.
 const char* UnitTest::original_working_dir() const {
   return impl_->original_working_dir_.c_str();
 }
+#endif  // GTEST_HAS_FILE_SYSTEM
 
 // Returns the TestSuite object for the test that's currently running,
 // or NULL if no test is running.
@@ -5599,6 +5601,7 @@ void UnitTestImpl::SuppressTestEventsIfInSubprocess() {
 // UnitTestOptions. Must not be called before InitGoogleTest.
 void UnitTestImpl::ConfigureXmlOutput() {
   const std::string& output_format = UnitTestOptions::GetOutputFormat();
+#if GTEST_HAS_FILE_SYSTEM
   if (output_format == "xml") {
     listeners()->SetDefaultXmlGenerator(new XmlUnitTestResultPrinter(
         UnitTestOptions::GetAbsolutePathToOutputFile().c_str()));
@@ -5609,6 +5612,10 @@ void UnitTestImpl::ConfigureXmlOutput() {
     GTEST_LOG_(WARNING) << "WARNING: unrecognized output format \""
                         << output_format << "\" ignored.";
   }
+#else
+  GTEST_LOG_(ERROR) << "ERROR: alternative output formats require "
+                    << "GTEST_HAS_FILE_SYSTEM to be enabled";
+#endif  // GTEST_HAS_FILE_SYSTEM
 }
 
 #if GTEST_CAN_STREAM_RESULTS_
@@ -5771,10 +5778,12 @@ bool UnitTestImpl::RunAllTests() {
   // user didn't call InitGoogleTest.
   PostFlagParsingInit();
 
+#if GTEST_HAS_FILE_SYSTEM
   // Even if sharding is not on, test runners may want to use the
   // GTEST_SHARD_STATUS_FILE to query whether the test supports the sharding
   // protocol.
   internal::WriteToShardStatusFileIfNeeded();
+#endif  // GTEST_HAS_FILE_SYSTEM
 
   // True if and only if we are in a subprocess for running a thread-safe-style
   // death test.
@@ -5954,6 +5963,7 @@ bool UnitTestImpl::RunAllTests() {
   return !failed;
 }
 
+#if GTEST_HAS_FILE_SYSTEM
 // Reads the GTEST_SHARD_STATUS_FILE environment variable, and creates the file
 // if the variable is present. If a file already exists at this location, this
 // function will write over it. If the variable is present, but the file cannot
@@ -5973,6 +5983,7 @@ void WriteToShardStatusFileIfNeeded() {
     fclose(file);
   }
 }
+#endif  // GTEST_HAS_FILE_SYSTEM
 
 // Checks whether sharding is enabled by examining the relevant
 // environment variable values. If the variables are present,
@@ -6164,6 +6175,7 @@ void UnitTestImpl::ListTestsMatchingFilter() {
     }
   }
   fflush(stdout);
+#if GTEST_HAS_FILE_SYSTEM
   const std::string& output_format = UnitTestOptions::GetOutputFormat();
   if (output_format == "xml" || output_format == "json") {
     FILE* fileout = OpenFileForWriting(
@@ -6181,6 +6193,7 @@ void UnitTestImpl::ListTestsMatchingFilter() {
     fprintf(fileout, "%s", StringStreamToString(&stream).c_str());
     fclose(fileout);
   }
+#endif  // GTEST_HAS_FILE_SYSTEM
 }
 
 // Sets the OS stack trace getter.
@@ -6569,7 +6582,7 @@ static bool ParseGoogleTestFlag(const char* const arg) {
   return false;
 }
 
-#if GTEST_USE_OWN_FLAGFILE_FLAG_
+#if GTEST_USE_OWN_FLAGFILE_FLAG_ && GTEST_HAS_FILE_SYSTEM
 static void LoadFlagsFromFile(const std::string& path) {
   FILE* flagfile = posix::FOpen(path.c_str(), "r");
   if (!flagfile) {
@@ -6585,7 +6598,7 @@ static void LoadFlagsFromFile(const std::string& path) {
     if (!ParseGoogleTestFlag(lines[i].c_str())) g_help_flag = true;
   }
 }
-#endif  // GTEST_USE_OWN_FLAGFILE_FLAG_
+#endif  // GTEST_USE_OWN_FLAGFILE_FLAG_ && GTEST_HAS_FILE_SYSTEM
 
 // Parses the command line for Google Test flags, without initializing
 // other parts of Google Test.  The type parameter CharType can be
@@ -6602,12 +6615,12 @@ void ParseGoogleTestFlagsOnlyImpl(int* argc, CharType** argv) {
     bool remove_flag = false;
     if (ParseGoogleTestFlag(arg)) {
       remove_flag = true;
-#if GTEST_USE_OWN_FLAGFILE_FLAG_
+#if GTEST_USE_OWN_FLAGFILE_FLAG_ && GTEST_HAS_FILE_SYSTEM
     } else if (ParseFlag(arg, "flagfile", &flagfile_value)) {
       GTEST_FLAG_SET(flagfile, flagfile_value);
       LoadFlagsFromFile(flagfile_value);
       remove_flag = true;
-#endif  // GTEST_USE_OWN_FLAGFILE_FLAG_
+#endif  // GTEST_USE_OWN_FLAGFILE_FLAG_ && GTEST_HAS_FILE_SYSTEM
     } else if (arg_string == "--help" || HasGoogleTestFlagPrefix(arg)) {
       // Both help flag and unrecognized Google Test flags (excluding
       // internal ones) trigger help display.

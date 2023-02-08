@@ -44,6 +44,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -91,7 +92,8 @@ GTEST_API_ TimeInMillis GetTimeInMillis();
 // Returns true if and only if Google Test should use colors in the output.
 GTEST_API_ bool ShouldUseColor(bool stdout_is_tty);
 
-// Formats the given time in milliseconds as seconds.
+// Formats the given time in milliseconds as seconds. If the input is an exact N
+// seconds, the output has a trailing decimal point (e.g., "N." intead of "N").
 GTEST_API_ std::string FormatTimeInMillisAsSeconds(TimeInMillis ms);
 
 // Converts the given time in milliseconds to a date string in the ISO 8601
@@ -396,9 +398,11 @@ class GTEST_API_ UnitTestOptions {
   static bool MatchesFilter(const std::string& name, const char* filter);
 };
 
+#if GTEST_HAS_FILE_SYSTEM
 // Returns the current application's name, removing directory path if that
 // is present.  Used by UnitTestOptions::GetOutputFile.
 GTEST_API_ FilePath GetCurrentExecutableName();
+#endif  // GTEST_HAS_FILE_SYSTEM
 
 // The role interface for getting the OS stack trace as a string.
 class OsStackTraceGetterInterface {
@@ -840,9 +844,11 @@ class GTEST_API_ UnitTestImpl {
   // The UnitTest object that owns this implementation object.
   UnitTest* const parent_;
 
+#if GTEST_HAS_FILE_SYSTEM
   // The working directory when the first TEST() or TEST_F() was
   // executed.
   internal::FilePath original_working_dir_;
+#endif  // GTEST_HAS_FILE_SYSTEM
 
   // The default test part result reporters.
   DefaultGlobalTestPartResultReporter default_global_test_part_result_reporter_;
