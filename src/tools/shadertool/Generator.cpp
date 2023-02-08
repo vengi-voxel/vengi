@@ -73,7 +73,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		uniforms += "});";
 
 		for (const Variable& uniform : shaderStruct.uniforms) {
-			uniformArrayInfo += "\t\tsetUniformArraySize(\"";
+			uniformArrayInfo += "\tsetUniformArraySize(\"";
 			uniformArrayInfo += uniform.name;
 			uniformArrayInfo += "\", ";
 			uniformArrayInfo += core::string::toString(uniform.arraySize);
@@ -100,20 +100,20 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		attributes += "});\n";
 
 		for (const Variable& v : shaderStruct.attributes) {
-			attributes += "\t\tconst int ";
+			attributes += "\tconst int ";
 			attributes += v.name;
 			attributes += "Location = getAttributeLocation(\"";
 			attributes += v.name;
 			attributes += "\");\n";
-			attributes += "\t\tif (";
+			attributes += "\tif (";
 			attributes += v.name;
 			attributes += "Location != -1) {\n";
-			attributes += "\t\t\tsetAttributeComponents(";
+			attributes += "\t\tsetAttributeComponents(";
 			attributes += v.name;
 			attributes += "Location, ";
 			attributes += core::string::toString(util::getComponents(v.type));
 			attributes += ");\n";
-			attributes += "\t\t}\n";
+			attributes += "\t}\n";
 		}
 	} else {
 		attributes += "// no attributes";
@@ -482,6 +482,13 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		ub += "\t#pragma pack(push, 1)\n\tstruct alignas(16) ";
 		ub += uniformBufferStructName;
 		ub += "Data {\n";
+
+		int offsetsIndex = 0;
+		core::String offsets;
+		offsets += "\n\tstatic constexpr const uint32_t ";
+		offsets += ubuf.name;
+		offsets += "_offsets[] = {";
+
 		size_t offset = 0u;
 		int paddingCnt = 0;
 		for (auto& v : ubuf.members) {
@@ -526,6 +533,28 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			ub += " - alignment ";
 			ub += core::string::toString(align);
 			ub += "\n";
+
+			uniforms += "\n\tif (";
+			uniforms += core::string::toString(offset * 4);
+			uniforms += " != getUniformBufferOffset(\"";
+			uniforms += v.name;
+			uniforms += "\")) {\n";
+			uniforms += "\t\tLog::error(\"Invalid offset found for uniform ";
+			uniforms += v.name;
+			uniforms += " %i - expected ";
+			uniforms += core::string::toString(offset * 4);
+			uniforms += "\", getUniformBufferOffset(\"";
+			uniforms += v.name;
+			uniforms += "\"));\n";
+			uniforms += "\t\treturn false;\n";
+			uniforms += "\t}\n";
+
+			if (offsetsIndex > 0) {
+				offsets += ", ";
+			}
+			offsets += core::string::toString(offset * 4);
+			++offsetsIndex;
+
 			offset += intSize;
 		}
 		ub += "\t};\n\t#pragma pack(pop)\n";
@@ -536,6 +565,25 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		ub += ", \"Unexpected structure size for ";
 		ub += uniformBufferStructName;
 		ub += "Data\");\n";
+
+		offsets += "};\n";
+		ub += offsets;
+
+		ub += "\n\tstatic constexpr const char *";
+		ub += ubuf.name;
+		ub += "_names[] = {";
+		int nameIndex = 0;
+		for (auto& v : ubuf.members) {
+			if (nameIndex > 0) {
+				ub += ", ";
+			}
+			ub += "\"";
+			ub += v.name;
+			ub += "\"";
+			++nameIndex;
+		}
+		ub += "};\n";
+
 		ub += "\n\tinline bool update(const ";
 		ub += uniformBufferStructName;
 		ub += "Data& var) {\n";

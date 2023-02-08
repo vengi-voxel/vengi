@@ -260,6 +260,7 @@ public:
 
 	// particular renderer api must implement this
 
+	int32_t getUniformBufferOffset(const char *name);
 	bool setUniformBuffer(const core::String& name, const UniformBuffer& buffer);
 	void setUniformui(int location, unsigned int value) const;
 	void setUniformi(int location, int value) const;

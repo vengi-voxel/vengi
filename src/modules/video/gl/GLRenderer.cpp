@@ -1411,7 +1411,6 @@ int fetchUniforms(Id program, ShaderUniforms& uniforms, const core::String& name
 		if (!e->value.block) {
 			continue;
 		}
-		glGetActiveUniformBlockiv(program, e->value.location, GL_UNIFORM_BLOCK_DATA_SIZE, &e->value.size);
 		if (e->value.size > limit(Limit::MaxUniformBufferSize)) {
 			Log::error("Max uniform buffer size exceeded for uniform %s at location %i (max is %i)", e->key.c_str(), e->value.location, limit(Limit::MaxUniformBufferSize));
 		} else if (e->value.size <= 0) {

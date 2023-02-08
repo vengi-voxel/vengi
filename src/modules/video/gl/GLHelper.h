@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Log.h"
+#include "core/collection/DynamicArray.h"
 #include "flextGL.h"
 #include "video/ShaderTypes.h"
 
@@ -38,7 +39,15 @@ static int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::Stri
 		if (array != nullptr) {
 			*array = '\0';
 		}
-		uniformMap.put(core::String(name), Uniform{location, block, 0});
+		Uniform uniform;
+		uniform.location = location;
+		uniform.block = block;
+		if (block) {
+			uniform.blockIndex = glGetUniformBlockIndex(program, name);
+			glGetActiveUniformBlockiv(program, location, GL_UNIFORM_BLOCK_DATA_SIZE, &uniform.size);
+			glGetActiveUniformBlockiv(program, location, GL_UNIFORM_BLOCK_BINDING, &uniform.blockBinding);
+		}
+		uniformMap.put(core::String(name), uniform);
 		Log::debug("Got uniform location for %s is %i (shader %s)", name, location, shaderNameC);
 	}
 	return numUniforms;

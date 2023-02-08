@@ -3,6 +3,8 @@
  */
 
 #include "core/Log.h"
+#include "core/collection/DynamicArray.h"
+#include "video/RendererInterface.h"
 #include "video/Shader.h"
 #include "video/UniformBuffer.h"
 #include "core/Assert.h"
@@ -22,6 +24,16 @@ bool Shader::setAttributeLocation(const core::String& name, int location) {
 	return true;
 }
 
+int32_t Shader::getUniformBufferOffset(const char *name) {
+	GLuint index;
+	glGetUniformIndices(_program, 1, &name, &index);
+	checkError();
+	GLint offset;
+	glGetActiveUniformsiv(_program, 1, &index, GL_UNIFORM_OFFSET, &offset);
+	checkError();
+	return offset;
+}
+
 bool Shader::setUniformBuffer(const core::String& name, const UniformBuffer& buffer) {
 	const Uniform* uniform = getUniform(name);
 	if (uniform == nullptr) {
@@ -36,12 +48,7 @@ bool Shader::setUniformBuffer(const core::String& name, const UniformBuffer& buf
 		return false;
 	}
 
-#if 0
-	const GLuint uniformBlockBinding = glGetUniformBlockIndex(_program, "name");
-#else
-	const GLuint uniformBlockBinding = 0;
-#endif
-	glUniformBlockBinding(_program, (GLuint)uniform->location, uniformBlockBinding);
+	glUniformBlockBinding(_program, (GLuint)uniform->blockIndex, (GLuint)uniform->blockBinding);
 	checkError();
 	addUsedUniform(uniform->location);
 	return buffer.bind();

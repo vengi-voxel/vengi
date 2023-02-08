@@ -21,6 +21,10 @@ bool Shader::setAttributeLocation(const core::String& name, int location) {
 	return true;
 }
 
+int32_t Shader::getUniformBufferOffset(const char *name) {
+	return false;
+}
+
 bool Shader::setUniformBuffer(const core::String& name, const UniformBuffer& buffer) {
 	const Uniform* uniform = getUniform(name);
 	if (uniform == nullptr) {
