@@ -26,7 +26,11 @@ protected:
 	void testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &destFilename, Format &destFormat,
 												voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
-	void canLoad(const core::String &filename, size_t expectedVolumes = 1);
+	void canLoad(SceneGraph &sceneGraph, const core::String &filename, size_t expectedVolumes = 1);
+	void canLoad(const core::String &filename, size_t expectedVolumes = 1) {
+		SceneGraph sceneGraph;
+		canLoad(sceneGraph, filename, expectedVolumes);
+	}
 	void testRGB(const core::String &filename, float maxDelta = 0.001f);
 	void testRGBSmall(const core::String &filename, io::SeekableReadStream &stream, voxelformat::SceneGraph &sceneGraph);
 	void testRGBSmall(const core::String &filename);

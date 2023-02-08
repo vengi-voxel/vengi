@@ -127,8 +127,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 	voxel::volumeComparator(original, voxel::getPalette(), *loaded, merged2.second, flags);
 }
 
-void AbstractVoxFormatTest::canLoad(const core::String &filename, size_t expectedVolumes) {
-	voxelformat::SceneGraph sceneGraph;
+void AbstractVoxFormatTest::canLoad(SceneGraph &sceneGraph, const core::String &filename, size_t expectedVolumes) {
 	const io::FilePtr& file = open(filename);
 	ASSERT_TRUE(file->validHandle()) << "Could not open " << filename;
 	io::FileStream stream(file);
