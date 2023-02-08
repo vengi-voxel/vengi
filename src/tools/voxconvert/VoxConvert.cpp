@@ -394,7 +394,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 		const bool importAsPlane = hasArg("--image-as-plane");
 		const bool importAsVolume = hasArg("--image-as-volume");
 		const bool importAsHeightmap = hasArg("--image-as-heightmap");
-		if (importAsHeightmap || (!importAsPlane && !importAsVolume)) {
+		if (importAsHeightmap || (!importAsPlane && !importAsVolume && !_exportPalette)) {
 			const bool coloredHeightmap = hasArg("--colored-heightmap");
 			if (image->width() > MaxHeightmapWidth || image->height() >= MaxHeightmapHeight) {
 				Log::warn("Skip creating heightmap - image dimensions exceeds the max allowed boundaries");

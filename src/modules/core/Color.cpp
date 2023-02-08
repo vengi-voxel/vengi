@@ -4,6 +4,7 @@
 
 #include "Color.h"
 #include <SDL_stdinc.h>
+#include "app/App.h"
 #include "core/Algorithm.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
@@ -166,6 +167,9 @@ static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const R
 	boxes.emplace_back(ColorBox{{0, 0, 0, 255}, {255, 255, 255, 255}, pixels});
 
 	while (boxes.size() < maxTargetBufColors) {
+		if (app::App::getInstance()->shouldQuit()) {
+			return 0;
+		}
 		size_t maxSize = 0;
 		size_t maxIndex = 0;
 		for (size_t i = 0; i < boxes.size(); ++i) {
@@ -184,6 +188,9 @@ static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const R
 
 	size_t n = 0;
 	for (const ColorBox &box : boxes) {
+		if (app::App::getInstance()->shouldQuit()) {
+			return 0;
+		}
 		if (box.pixels.empty()) {
 			continue;
 		}
@@ -233,6 +240,9 @@ static int quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 	for (int r = 0; r <= rmax; r += dim.r) {
 		for (int g = 0; g <= gmax; g += dim.g) {
 			for (int b = 0; b <= bmax; b += dim.b) {
+				if (app::App::getInstance()->shouldQuit()) {
+					return 0;
+				}
 				Tree::Contents contents;
 				const BBox queryAABB(r, g, b, r + dim.r - 1, g + dim.g - 1, b + dim.b - 1);
 				octree.query(queryAABB, contents);
@@ -269,6 +279,9 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 
 	bool changed = true;
 	while (changed) {
+		if (app::App::getInstance()->shouldQuit()) {
+			return 0;
+		}
 		changed = false;
 		core::DynamicArray<core::DynamicArray<glm::vec4>> clusters(maxTargetBufColors);
 		for (size_t i = 0; i < inputBufColors; ++i) {
@@ -320,6 +333,9 @@ static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 
 	// Iterate until we reach the desired number of boxes
 	while (boxes.size() < maxTargetBufColors) {
+		if (app::App::getInstance()->shouldQuit()) {
+			return 0;
+		}
 		// Find the box with the largest volume (i.e., the most pixels)
 		int maxVolume = std::numeric_limits<int>::min();
 		size_t maxVolumeIndex = 0;
