@@ -202,6 +202,7 @@ voxel::RawVolume* MCRFormat::finalize(SectionVolumes& volumes, int xPos, int zPo
 }
 
 bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette, const priv::NamedBinaryTag &data, SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal) {
+	Log::debug("Parse block states");
 	const bool hasData = data.type() == priv::TagType::LONG_ARRAY && !data.longArray()->empty();
 
 	constexpr glm::ivec3 mins(0, 0, 0);
@@ -340,22 +341,32 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 
 	Log::debug("xpos: %i, zpos: %i", xPos, zPos);
 
-	const priv::NBTList *sectionsList = sections.list();
-	if (sectionsList == nullptr) {
-		Log::error("Could not find 'sections' entries");
+	const priv::NBTList &sectionsList = *sections.list();
+	Log::debug("Found %i sections", (int)sectionsList.size());
+	if (sectionsList.empty()) {
+		Log::warn("Empty region - no sections found - version: %i", dataVersion);
 		return nullptr;
 	}
-	Log::debug("Found %i sections", (int)sectionsList->size());
 	SectionVolumes volumes;
 	voxel::Palette pal;
 	pal.minecraft();
-	for (const priv::NamedBinaryTag &section : *sectionsList) {
+	for (const priv::NamedBinaryTag &section : sectionsList) {
 		const priv::NamedBinaryTag &blockStates = section.get("block_states");
 		if (!blockStates.valid()) {
 			Log::error("Could not find 'block_states'");
 			return error(volumes);
 		}
-		const int8_t sectionY = section.get("Y").int8();
+		const priv::NamedBinaryTag &ylvl = section.get("Y");
+		if (!ylvl.valid()) {
+			Log::debug("Could not find Y int in section compound");
+			continue;
+		}
+		const int8_t sectionY = ylvl.int8();
+		if (sectionY == -1) {
+			Log::debug("Skip empty section compound");
+			continue;
+		}
+		Log::debug("Y level for section compound: %i", (int)sectionY);
 
 		const priv::NamedBinaryTag &palette = blockStates.get("palette");
 		if (!palette.valid()) {
@@ -392,16 +403,16 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 	if (dataVersion >= 1976) {
 		const core::String *tagStatus = root.get("Status").string();
 		if (tagStatus == nullptr) {
-			Log::warn("Status for level node wasn't found (version: %i)", dataVersion);
+			Log::debug("Status for level node wasn't found (version: %i)", dataVersion);
 		} else if (*tagStatus != "full") {
-			Log::warn("Status for level node is not full but %s (version: %i)", tagStatus->c_str(), dataVersion);
+			Log::debug("Status for level node is not full but %s (version: %i)", tagStatus->c_str(), dataVersion);
 		}
 	} else if (dataVersion >= 1628) {
 		const core::String *tagStatus = levels.get("Status").string();
 		if (tagStatus == nullptr) {
-			Log::warn("Status for level node wasn't found (version: %i)", dataVersion);
+			Log::debug("Status for level node wasn't found (version: %i)", dataVersion);
 		} else if (*tagStatus != "postprocessed") {
-			Log::warn("Status for level node is not postprocessed but %s (version: %i)", tagStatus->c_str(), dataVersion);
+			Log::debug("Status for level node is not postprocessed but %s (version: %i)", tagStatus->c_str(), dataVersion);
 		}
 	}
 
@@ -416,11 +427,27 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 	}
 	const priv::NBTList &sectionsList = *sections.list();
 	Log::debug("Found %i sections", (int)sectionsList.size());
+	if (sectionsList.empty()) {
+		Log::warn("Empty region - no sections found - version: %i", dataVersion);
+		root.print();
+		return nullptr;
+	}
 	SectionVolumes volumes;
 	voxel::Palette pal;
 	pal.minecraft();
 	for (const priv::NamedBinaryTag &section : sectionsList) {
-		const int8_t sectionY = section.get("Y").int8();
+		const priv::NamedBinaryTag &ylvl = section.get("Y");
+		if (!ylvl.valid()) {
+			Log::debug("Could not find Y int in section compound");
+			continue;
+		}
+		const int8_t sectionY = ylvl.int8();
+		if (sectionY == -1) {
+			Log::debug("Skip empty section compound");
+			continue;
+		}
+		Log::debug("Y level for section compound: %i", (int)sectionY);
+
 		MinecraftSectionPalette secPal;
 		const priv::NamedBinaryTag &palette = section.get("Palette");
 		if (palette.valid()) {
@@ -428,6 +455,8 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 				Log::error("Failed to parse 'Palette' tag");
 				return error(volumes);
 			}
+		} else {
+			Log::debug("Could not find a Palette compound in section %i", dataVersion);
 		}
 
 		// TODO:"Data"(byte_array)
@@ -435,8 +464,8 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 		const core::String &tagId = dataVersion <= 1343 ? "Blocks" : "BlockStates";
 		const priv::NamedBinaryTag &blockStates = section.get(tagId);
 		if (!blockStates.valid()) {
-			Log::error("Could not find '%s'", tagId.c_str());
-			return error(volumes);
+			Log::debug("Could not find '%s'", tagId.c_str());
+			continue;
 		}
 		if (!parseBlockStates(dataVersion, pal, blockStates, volumes, sectionY, secPal)) {
 			Log::error("Failed to parse '%s' tag", tagId.c_str());
