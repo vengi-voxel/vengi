@@ -5,7 +5,7 @@
 #include "IMGUIApp.h"
 
 #include "core/BindingContext.h"
-#include "dearimgui/backends/imgui_impl_sdl.h"
+#include "dearimgui/backends/imgui_impl_sdl2.h"
 #include "dearimgui/backends/imgui_impl_opengl3.h"
 #include "engine-config.h"
 #include "io/Filesystem.h"

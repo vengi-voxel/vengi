@@ -21,6 +21,8 @@
 // CHANGELOG
 // (minor and older changes stripped away, please see git history for details)
 //  2023-XX-XX: Platform: Added support for multiple windows via the ImGuiPlatformIO interface.
+//  2023-02-07: *BREAKING CHANGE* Renamed this backend file from imgui_impl_sdl.cpp/.h to imgui_impl_sdl2.cpp/.h in prevision for the future release of SDL3.
+//  2023-02-02: Avoid calling SDL_SetCursor() when cursor has not changed, as the function is surprisingly costly on Mac with latest SDL (may be fixed in next SDL version).
 //  2023-02-02: Added support for SDL 2.0.18+ preciseX/preciseY mouse wheel data for smooth scrolling + Scaling X value on Emscripten (bug?). (#4019, #6096)
 //  2023-02-02: Removed SDL_MOUSEWHEEL value clamping, as values seem correct in latest Emscripten. (#4019)
 //  2023-02-01: Flipping SDL_MOUSEWHEEL 'wheel.x' value to match other backends and offer consistent horizontal scrolling direction. (#4019, #6096, #1463)
@@ -70,7 +72,7 @@
 //  2016-10-15: Misc: Added a void* user_data parameter to Clipboard function handlers.
 
 #include "imgui.h"
-#include "imgui_impl_sdl.h"
+#include "imgui_impl_sdl2.h"
 
 // SDL
 // (the multi-viewports feature requires SDL features supported from SDL 2.0.4+. SDL 2.0.5+ is highly recommended)
@@ -103,6 +105,7 @@ struct ImGui_ImplSDL2_Data
     Uint32          MouseWindowID;
     int             MouseButtonsDown;
     SDL_Cursor*     MouseCursors[ImGuiMouseCursor_COUNT];
+    SDL_Cursor*     LastMouseCursor;
     int             PendingMouseLeaveFrame;
     char*           ClipboardTextData;
     bool            MouseCanUseGlobalState;
@@ -388,7 +391,7 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window, SDL_Renderer* renderer, void
     // Setup backend capabilities flags
     ImGui_ImplSDL2_Data* bd = IM_NEW(ImGui_ImplSDL2_Data)();
     io.BackendPlatformUserData = (void*)bd;
-    io.BackendPlatformName = "imgui_impl_sdl";
+    io.BackendPlatformName = "imgui_impl_sdl2";
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;           // We can honor GetMouseCursor() values (optional)
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;            // We can honor io.WantSetMousePos requests (optional, rarely used)
     if (mouse_can_use_global_state)
@@ -509,6 +512,7 @@ void ImGui_ImplSDL2_Shutdown()
         SDL_free(bd->ClipboardTextData);
     for (ImGuiMouseCursor cursor_n = 0; cursor_n < ImGuiMouseCursor_COUNT; cursor_n++)
         SDL_FreeCursor(bd->MouseCursors[cursor_n]);
+    bd->LastMouseCursor = NULL;
 
     io.BackendPlatformName = nullptr;
     io.BackendPlatformUserData = nullptr;
@@ -595,7 +599,12 @@ static void ImGui_ImplSDL2_UpdateMouseCursor()
     else
     {
         // Show OS mouse cursor
-        SDL_SetCursor(bd->MouseCursors[imgui_cursor] ? bd->MouseCursors[imgui_cursor] : bd->MouseCursors[ImGuiMouseCursor_Arrow]);
+        SDL_Cursor* expected_cursor = bd->MouseCursors[imgui_cursor] ? bd->MouseCursors[imgui_cursor] : bd->MouseCursors[ImGuiMouseCursor_Arrow];
+        if (bd->LastMouseCursor != expected_cursor)
+        {
+            SDL_SetCursor(expected_cursor); // SDL function doesn't have an early out (see #6113)
+            bd->LastMouseCursor = expected_cursor;
+        }
         SDL_ShowCursor(SDL_TRUE);
     }
 }
