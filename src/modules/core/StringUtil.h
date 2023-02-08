@@ -197,6 +197,10 @@ inline core::String extractExtension(const core::String& str) {
 	return str.substr(pos + 1) ;
 }
 
+/**
+ * @return the file name of a file path
+ * example: given input is @c /foo/bar/file.txt - the result is @c file.txt
+ */
 inline core::String extractFilenameWithExtension(const core::String& str) {
 	const size_t pathPos = str.rfind('/');
 	if (pathPos == core::String::npos) {

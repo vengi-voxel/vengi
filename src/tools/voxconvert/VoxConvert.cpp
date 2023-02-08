@@ -18,6 +18,7 @@
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -439,6 +440,11 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 			node.setName(core::string::extractFilename(infile));
 			sceneGraph.emplace(core::move(node));
 		}
+		if (_exportPalette) {
+			voxel::Palette pal;
+			const core::String &filename = core::string::stripExtension(infile) + ".png";
+			pal.convertImageToPalettePng(image, filename.c_str());
+		}
 	} else {
 		io::FileStream inputFileStream(inputFile);
 		voxelformat::SceneGraph newSceneGraph;
@@ -456,12 +462,13 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 		if (_dumpSceneGraph) {
 			dump(sceneGraph);
 		}
+
+		if (_exportPalette) {
+			const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
+			sceneGraph.firstPalette().save(paletteFile.c_str());
+		}
 	}
 
-	if (_exportPalette) {
-		const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
-		sceneGraph.firstPalette().save(paletteFile.c_str());
-	}
 	return true;
 }
 
