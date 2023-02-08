@@ -90,7 +90,12 @@ protected:
 	MeshesMap _meshes[MeshType_Max];
 
 	uint64_t _paletteHash = 0;
-	shader::VoxelData _materialBlock;
+
+	shader::VoxelData _voxelData;
+
+	shader::VoxelData::FragData _voxelShaderFragData;
+	shader::VoxelData::VertData _voxelShaderVertData;
+
 	shader::VoxelShader& _voxelShader;
 	shader::ShadowmapData _shadowMapUniformBlock;
 	shader::ShadowmapShader& _shadowMapShader;
@@ -99,9 +104,6 @@ protected:
 	core::VarPtr _meshSize;
 	core::VarPtr _shadowMap;
 	core::VarPtr _bloom;
-
-	glm::vec3 _diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
-	glm::vec3 _ambientColor = glm::vec3(0.2f, 0.2f, 0.2f);
 
 	struct ExtractRegion {
 		ExtractRegion(const voxel::Region &_region, int _idx) : region(_region), idx(_idx) {

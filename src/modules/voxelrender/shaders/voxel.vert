@@ -2,14 +2,14 @@
 $in vec3 a_pos;
 $in uvec2 a_info;
 
-uniform mat4 u_model;
-uniform vec3 u_pivot;
-uniform int u_gray;
-
 #define MATERIALCOLORS 256
-layout(std140) uniform u_materialblock {
+layout(std140) uniform u_vert {
 	vec4 u_materialcolor[MATERIALCOLORS];
 	vec4 u_glowcolor[MATERIALCOLORS];
+	mat4 u_viewprojection;
+	mat4 u_model;
+	vec3 u_pivot;
+	int u_gray;
 };
 
 $out vec4 v_pos;

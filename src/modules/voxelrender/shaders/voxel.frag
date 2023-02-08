@@ -6,9 +6,15 @@ flat $in uint v_flags;
 
 #include "_shared.glsl"
 
-uniform mediump vec3 u_lightdir;
-uniform lowp vec3 u_diffuse_color;
-uniform lowp vec3 u_ambient_color;
+layout(std140) uniform u_frag {
+	mediump vec3 u_lightdir;
+	lowp vec3 u_diffuse_color;
+	lowp vec3 u_ambient_color;
+	vec2 u_depthsize;
+	vec4 u_distances;
+	mat4 u_cascades[4];
+};
+
 layout(location = 0) $out vec4 o_color;
 layout(location = 1) $out vec4 o_glow;
 
@@ -23,9 +29,6 @@ $in float v_viewz;
 $constant MaxDepthBuffers 4
 
 uniform sampler2DArrayShadow u_shadowmap;
-uniform vec2 u_depthsize;
-uniform vec4 u_distances;
-uniform mat4 u_cascades[4];
 
 /**
  * perform percentage-closer shadow map lookup

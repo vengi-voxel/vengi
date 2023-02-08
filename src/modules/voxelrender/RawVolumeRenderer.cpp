@@ -132,7 +132,7 @@ bool RawVolumeRenderer::init() {
 		}
 	}
 
-	const int shaderMaterialColorsArraySize = lengthof(shader::VoxelData::MaterialblockData::materialcolor);
+	const int shaderMaterialColorsArraySize = lengthof(shader::VoxelData::VertData::materialcolor);
 	if (shaderMaterialColorsArraySize != voxel::PaletteMaxColors) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
 				shaderMaterialColorsArraySize, voxel::PaletteMaxColors);
@@ -161,10 +161,11 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
-	shader::VoxelData::MaterialblockData materialBlock;
-	core_memset(materialBlock.materialcolor, 0, sizeof(materialBlock.materialcolor));
-	core_memset(materialBlock.glowcolor, 0, sizeof(materialBlock.glowcolor));
-	_materialBlock.create(materialBlock);
+	_voxelShaderFragData.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	_voxelShaderFragData.ambientColor = glm::vec3(0.2f, 0.2f, 0.2f);
+
+	_voxelData.create(_voxelShaderFragData);
+	_voxelData.create(_voxelShaderVertData);
 
 	return true;
 }
@@ -314,21 +315,11 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 }
 
 void RawVolumeRenderer::setAmbientColor(const glm::vec3& color) {
-	if (glm::all(glm::epsilonEqual(_ambientColor, color, 0.001f))) {
-		return;
-	}
-	_ambientColor = color;
-	// force updating the cached uniform values
-	_voxelShader.markDirty();
+	_voxelShaderFragData.ambientColor = color;
 }
 
 void RawVolumeRenderer::setDiffuseColor(const glm::vec3& color) {
-	if (glm::all(glm::epsilonEqual(_diffuseColor, color, 0.001f))) {
-		return;
-	}
-	_diffuseColor = color;
-	// force updating the cached uniform values
-	_voxelShader.markDirty();
+	_voxelShaderFragData.diffuseColor = color;
 }
 
 bool RawVolumeRenderer::empty(int idx) const {
@@ -458,11 +449,10 @@ void RawVolumeRenderer::updatePalette(int idx) {
 		palette->toVec4f(materialColors);
 		core::DynamicArray<glm::vec4> glowColors;
 		palette->glowToVec4f(glowColors);
-
-		shader::VoxelData::MaterialblockData materialBlock;
-		core_memcpy(materialBlock.materialcolor, &materialColors.front(), sizeof(materialBlock.materialcolor));
-		core_memcpy(materialBlock.glowcolor, &glowColors.front(), sizeof(materialBlock.glowcolor));
-		_materialBlock.update(materialBlock);
+		for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
+			_voxelShaderVertData.materialcolor[i] = materialColors[i];
+			_voxelShaderVertData.glowcolor[i] = glowColors[i];
+		}
 	}
 }
 
@@ -526,22 +516,16 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		}
 	}
 
-	video::ScopedShader scoped(_voxelShader);
-	if (_voxelShader.isDirty()) {
-		_voxelShader.setMaterialblock(_materialBlock);
-		if (_shadowMap->boolVal()) {
-			_voxelShader.setShadowmap(video::TextureUnit::One);
-		}
-		_voxelShader.setDiffuseColor(_diffuseColor);
-		_voxelShader.setAmbientColor(_ambientColor);
-		_voxelShader.markClean();
+	_voxelShaderFragData.depthsize = _shadow.dimension();
+	for (int i = 0; i < shader::VoxelShaderConstants::getMaxDepthBuffers(); ++i) {
+		_voxelShaderFragData.cascades[i] = _shadow.cascades()[i];
+		_voxelShaderFragData.distances[i] = _shadow.distances()[i];
 	}
-	_voxelShader.setViewprojection(camera.viewProjectionMatrix());
+	_voxelShaderFragData.lightdir = _shadow.sunDirection();
+	_voxelData.update(_voxelShaderFragData);
+
+	video::ScopedShader scoped(_voxelShader);
 	if (_shadowMap->boolVal()) {
-		_voxelShader.setDepthsize(glm::vec2(_shadow.dimension()));
-		_voxelShader.setCascades(_shadow.cascades());
-		_voxelShader.setDistances(_shadow.distances());
-		_voxelShader.setLightdir(_shadow.sunDirection());
 		_shadow.bind(video::TextureUnit::One);
 	}
 
@@ -557,6 +541,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		video::enable(video::State::PolygonOffsetFill);
 	}
 
+	_paletteHash = 0;
 	// --- opaque pass
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		const State& state = _state[idx];
@@ -564,12 +549,19 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		if (indices == 0u) {
 			continue;
 		}
-		updatePalette(idx);
 		video::ScopedPolygonMode polygonMode(mode);
 		video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Opaque]);
-		_voxelShader.setGray(state._gray);
-		_voxelShader.setModel(state._model);
-		_voxelShader.setPivot(state._pivot);
+		updatePalette(idx);
+		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
+		_voxelShaderVertData.model = state._model;
+		_voxelShaderVertData.pivot = state._pivot;
+		_voxelShaderVertData.gray = state._gray;
+		_voxelData.update(_voxelShaderVertData);
+		_voxelShader.setFrag(_voxelData.getFragUniformBuffer());
+		_voxelShader.setVert(_voxelData.getVertUniformBuffer());
+		if (_shadowMap->boolVal()) {
+			_voxelShader.setShadowmap(video::TextureUnit::One);
+		}
 		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 	}
 
@@ -582,13 +574,20 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			if (indices == 0u) {
 				continue;
 			}
-			updatePalette(idx);
 			// TODO: alpha support - sort according to eye pos
 			video::ScopedPolygonMode polygonMode(mode);
 			video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Transparency]);
-			_voxelShader.setGray(state._gray);
-			_voxelShader.setModel(state._model);
-			_voxelShader.setPivot(state._pivot);
+			updatePalette(idx);
+			_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
+			_voxelShaderVertData.model = state._model;
+			_voxelShaderVertData.pivot = state._pivot;
+			_voxelShaderVertData.gray = state._gray;
+			_voxelData.update(_voxelShaderVertData);
+			_voxelShader.setFrag(_voxelData.getFragUniformBuffer());
+			_voxelShader.setVert(_voxelData.getVertUniformBuffer());
+			if (_shadowMap->boolVal()) {
+				_voxelShader.setShadowmap(video::TextureUnit::One);
+			}
 			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 		}
 	}
@@ -688,7 +687,7 @@ core::DynamicArray<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_threadPool.shutdown();
 	_voxelShader.shutdown();
 	_shadowMapShader.shutdown();
-	_materialBlock.shutdown();
+	_voxelData.shutdown();
 	for (int i = 0; i < MeshType_Max; ++i) {
 		for (auto& iter : _meshes[i]) {
 			for (auto& mesh : iter.second) {
