@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "RenderShaders.h"
+#include "ConvolutionShader.h"
+#include "Combine2Shader.h"
 #include "TextureShader.h"
 #include "video/Buffer.h"
 #include "video/Camera.h"

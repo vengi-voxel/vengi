@@ -3,8 +3,8 @@
  */
 
 #include "video/tests/AbstractGLTest.h"
-#include "RenderShaders.h"
-
+#include "ColorShader.h"
+#include "TextureShader.h"
 namespace render {
 
 
