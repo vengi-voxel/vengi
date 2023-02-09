@@ -33,6 +33,7 @@ General:
    - Fixed issue in saving MagicaVoxel vox files under some special conditions
    - Implemented basic transparency support for voxels
    - Fixed invalid clamping for uv based pixel lookup (mesh imports)
+   - Update renderer to only use uniform buffers
 
 VoxEdit:
 
