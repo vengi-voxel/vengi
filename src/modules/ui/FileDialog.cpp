@@ -181,10 +181,9 @@ void FileDialog::quickAccessEntry(video::OpenFileMode type, const core::String& 
 		if (bookmarkTitle.last() == '/') {
 			bookmarkTitle.erase(bookmarkTitle.size() - 1);
 		}
-		title = SDL_strrchr(bookmarkTitle.c_str(), '/');
-		if (title) {
-			++title;
-			bookmarkTitle = title;
+		const size_t pos = bookmarkTitle.rfind("/");
+		if (pos != core::String::npos) {
+			bookmarkTitle = bookmarkTitle.substr(pos + 1);
 		}
 	} else {
 		bookmarkTitle = title;
