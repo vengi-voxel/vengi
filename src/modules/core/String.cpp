@@ -251,6 +251,9 @@ String &String::operator=(const String &str) {
 }
 
 String &String::operator=(const char *str) {
+	if (str == c_str()) {
+		return *this;
+	}
 	const size_t len = SDL_strlen(str);
 	copyBuf(str, len);
 	return *this;
