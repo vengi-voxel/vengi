@@ -118,7 +118,7 @@ void BloomRenderer::blur(const video::TexturePtr &source, video::FrameBuffer &de
 	_convolutionFragData.coefficients0 = 0.25f;
 	_convolutionFragData.coefficients1 = 0.5f;
 	_convolutionFragData.coefficients2 = 0.25f;
-	_convolutionData.update(_convolutionFragData);
+	core_assert_always(_convolutionData.update(_convolutionFragData));
 	core_assert_always(_convolutionShader.setFrag(_convolutionData.getFragUniformBuffer()));
 	core_assert_always(video::bindTexture(video::TextureUnit::Zero, source));
 	dest.bind(true);
