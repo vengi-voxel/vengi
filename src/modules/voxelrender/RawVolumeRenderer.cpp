@@ -618,7 +618,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		const glm::ivec2 &dimension = frameBuffer.dimension();
 		const int w = dimension.x;
 		const int h = dimension.y;
-		video::blitFramebuffer(frameBuffer.handle(), video::currentFramebuffer(), video::ClearFlag::Depth, w, h);
+		video::blitFramebuffer(frameBuffer.handle(), video::currentFramebuffer(), video::ClearFlag::Color, w, h);
 	}
 }
 
