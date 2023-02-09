@@ -494,6 +494,9 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 
 				for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 					const State& state = _state[idx];
+					if (state._hidden) {
+						continue;
+					}
 					const uint32_t indices = state.indices(MeshType_Opaque);
 					if (indices == 0u) {
 						continue;
@@ -545,6 +548,9 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	// --- opaque pass
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		const State& state = _state[idx];
+		if (state._hidden) {
+			continue;
+		}
 		const uint32_t indices = state.indices(MeshType_Opaque);
 		if (indices == 0u) {
 			continue;
