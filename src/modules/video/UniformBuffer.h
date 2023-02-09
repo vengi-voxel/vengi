@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Renderer.h"
+#include "core/NonCopyable.h"
 
 namespace video {
 
@@ -24,7 +25,7 @@ namespace video {
  * effectively allow uniforms in multiple programs to be updated.
  * @ingroup Video
  */
-class UniformBuffer {
+class UniformBuffer : public core::NonCopyable {
 private:
 	Id _handle = InvalidId;
 	size_t _size = 0;

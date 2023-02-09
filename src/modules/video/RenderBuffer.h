@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Types.h"
+#include "core/NonCopyable.h"
 #include "core/SharedPtr.h"
 
 namespace video {
@@ -12,7 +13,7 @@ namespace video {
 class RenderBuffer;
 typedef core::SharedPtr<RenderBuffer> RenderBufferPtr;
 
-class RenderBuffer {
+class RenderBuffer : public core::NonCopyable {
 private:
 	Id _rbo = video::InvalidId;
 	const TextureFormat _format;

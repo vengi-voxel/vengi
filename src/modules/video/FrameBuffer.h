@@ -6,6 +6,7 @@
 
 #include "FrameBufferConfig.h"
 #include "Texture.h"
+#include "core/NonCopyable.h"
 #include "core/SharedPtr.h"
 
 namespace video {
@@ -19,7 +20,7 @@ typedef core::SharedPtr<RenderBuffer> RenderBufferPtr;
  * @sa FrameBufferConfig
  * @ingroup Video
  */
-class FrameBuffer {
+class FrameBuffer : public core::NonCopyable {
 	friend class ScopedFrameBuffer;
 private:
 	ClearFlag _clearFlag = ClearFlag::None;

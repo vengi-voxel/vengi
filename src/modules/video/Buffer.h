@@ -6,6 +6,7 @@
 
 #include "Types.h"
 #include <glm/vec2.hpp>
+#include "core/NonCopyable.h"
 #include "core/collection/List.h"
 
 #define VIDEO_BUFFER_HASH_COMPARE 0
@@ -16,7 +17,7 @@ namespace video {
  * @brief Wrapper for the opengl vertex buffer objects and vertex array objects.
  * @ingroup Video
  */
-class Buffer {
+class Buffer : public core::NonCopyable {
 private:
 	static constexpr int MAX_HANDLES = 6;
 	size_t _size[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
