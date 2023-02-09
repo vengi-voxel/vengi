@@ -161,8 +161,8 @@ bool RawVolumeRenderer::init() {
 		return false;
 	}
 
-	_voxelShaderFragData.diffuseColor = glm::vec3(1.0f, 1.0f, 1.0f);
-	_voxelShaderFragData.ambientColor = glm::vec3(0.2f, 0.2f, 0.2f);
+	_voxelShaderFragData.diffuseColor = glm::vec3(0.0f, 0.0f, 0.0f);
+	_voxelShaderFragData.ambientColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
 	_voxelData.create(_voxelShaderFragData);
 	_voxelData.create(_voxelShaderVertData);
