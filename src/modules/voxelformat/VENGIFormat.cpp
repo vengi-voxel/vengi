@@ -124,6 +124,7 @@ bool VENGIFormat::saveNodePaletteColors(const SceneGraph &sceneGraph, const Scen
 	for (int i = 0; i < palette.colorCount; ++i) {
 		wrapBool(stream.writeUInt32(palette.glowColors[i].rgba))
 	}
+	wrapBool(stream.writeUInt32(0)) // TODO: slot for amount of material properties
 	return true;
 }
 
@@ -210,6 +211,8 @@ bool VENGIFormat::loadNodePaletteColors(SceneGraph &sceneGraph, SceneGraphNode &
 	for (int i = 0; i < palette.colorCount; ++i) {
 		wrap(stream.readUInt32(palette.glowColors[i].rgba))
 	}
+	uint32_t palettePropertyCnt;
+	wrap(stream.readUInt32(palettePropertyCnt)) // TODO: slot for further extensions
 	node.setPalette(palette);
 	return true;
 }
