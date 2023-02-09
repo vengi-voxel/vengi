@@ -359,12 +359,10 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 		const priv::NamedBinaryTag &ylvl = section.get("Y");
 		if (!ylvl.valid()) {
 			Log::debug("Could not find Y int in section compound");
-			continue;
 		}
 		const int8_t sectionY = ylvl.int8();
 		if (sectionY == -1) {
 			Log::debug("Skip empty section compound");
-			continue;
 		}
 		Log::debug("Y level for section compound: %i", (int)sectionY);
 
@@ -430,7 +428,6 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 	Log::debug("Found %i sections", (int)sectionsList.size());
 	if (sectionsList.empty()) {
 		Log::warn("Empty region - no sections found - version: %i", dataVersion);
-		root.print();
 		return nullptr;
 	}
 	SectionVolumes volumes;
@@ -438,12 +435,10 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 		const priv::NamedBinaryTag &ylvl = section.get("Y");
 		if (!ylvl.valid()) {
 			Log::debug("Could not find Y int in section compound");
-			continue;
 		}
 		const int8_t sectionY = ylvl.int8();
 		if (sectionY == -1) {
 			Log::debug("Skip empty section compound");
-			continue;
 		}
 		Log::debug("Y level for section compound: %i", (int)sectionY);
 
