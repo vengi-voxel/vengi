@@ -555,14 +555,16 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		if (indices == 0u) {
 			continue;
 		}
-		video::ScopedPolygonMode polygonMode(mode);
-		video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Opaque]);
+
 		updatePalette(idx);
 		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 		_voxelShaderVertData.model = state._model;
 		_voxelShaderVertData.pivot = state._pivot;
 		_voxelShaderVertData.gray = state._gray;
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
+
+		video::ScopedPolygonMode polygonMode(mode);
+		video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Opaque]);
 		core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
 		core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
 		if (_shadowMap->boolVal()) {
@@ -580,15 +582,17 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			if (indices == 0u) {
 				continue;
 			}
-			// TODO: alpha support - sort according to eye pos
-			video::ScopedPolygonMode polygonMode(mode);
-			video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Transparency]);
+
 			updatePalette(idx);
 			_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 			_voxelShaderVertData.model = state._model;
 			_voxelShaderVertData.pivot = state._pivot;
 			_voxelShaderVertData.gray = state._gray;
 			core_assert_always(_voxelData.update(_voxelShaderVertData));
+
+			// TODO: alpha support - sort according to eye pos
+			video::ScopedPolygonMode polygonMode(mode);
+			video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Transparency]);
 			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
 			if (_shadowMap->boolVal()) {
