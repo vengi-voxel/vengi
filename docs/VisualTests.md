@@ -28,10 +28,6 @@ Test camera options and collisions.
 
 Uses GLSL compute shader to render a circle.
 
-## testglslgeom
-
-Test geometry shader integration
-
 ## testimgui
 
 Test the dearimgui integration
