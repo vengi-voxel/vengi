@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ShadowmapData.h"
+#include "core/NonCopyable.h"
 #include "core/Optional.h"
 #include "core/collection/ConcurrentPriorityQueue.h"
 #include "core/concurrent/Atomic.h"
@@ -42,7 +43,7 @@ class SceneGraphNode;
  */
 namespace voxelrender {
 
-struct RenderContext {
+struct RenderContext : public core::NonCopyable {
 	video::FrameBuffer frameBuffer;
 	render::BloomRenderer bloomRenderer;
 	bool sceneMode = false;

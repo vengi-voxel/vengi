@@ -86,7 +86,7 @@ void MainWindow::shutdownScenes() {
 	_lastHoveredScene = nullptr;
 }
 
-void MainWindow::initScenes() {
+bool MainWindow::initScenes() {
 	shutdownScenes();
 
 	if (_simplifiedView->boolVal()) {
@@ -101,20 +101,27 @@ void MainWindow::initScenes() {
 			sceneMode = false;
 		}
 	}
+	bool success = true;
 	for (size_t i = 0; i < _scenes.size(); ++i) {
-		_scenes[i]->init();
+		if (!_scenes[i]->init()) {
+			Log::error("Failed to initialize scene %i", (int)i);
+			success = false;
+		}
 	}
 	_lastHoveredScene = _scenes[0];
 
 	_simplifiedView->markClean();
 	_numViewports->markClean();
+	return success;
 }
 
 bool MainWindow::init() {
 	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
 	_numViewports = core::Var::getSafe(cfg::VoxEditViewports);
 
-	initScenes();
+	if (!initScenes()) {
+		return false;
+	}
 
 	_sceneGraphPanel.init();
 	_lsystemPanel.init();
@@ -499,7 +506,9 @@ bool MainWindow::allowToQuit() {
 void MainWindow::update() {
 	core_trace_scoped(MainWindow);
 	if (_simplifiedView->isDirty() || _numViewports->isDirty()) {
-		initScenes();
+		if (!initScenes()) {
+			Log::error("Failed to update scenes");
+		}
 	}
 
 	ImGuiViewport *viewport = ImGui::GetMainViewport();

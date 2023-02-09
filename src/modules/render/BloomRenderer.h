@@ -22,7 +22,7 @@ namespace render {
 /**
  * @brief Renders a textures with the shader::BlurShader
  */
-class BloomRenderer {
+class BloomRenderer : public core::NonCopyable {
 private:
 	shader::ConvolutionShader &_convolutionShader;
 	shader::TextureShader &_textureShader;

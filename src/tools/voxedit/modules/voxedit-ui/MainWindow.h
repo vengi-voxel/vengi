@@ -90,7 +90,7 @@ private:
 	bool isSceneMode() const;
 
 	void shutdownScenes();
-	void initScenes();
+	bool initScenes();
 
 	void leftWidget();
 	void mainWidget();

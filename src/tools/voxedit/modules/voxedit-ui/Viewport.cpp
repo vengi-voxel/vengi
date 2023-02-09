@@ -58,7 +58,9 @@ bool Viewport::init() {
 	_modelGuizmo = core::Var::getSafe(cfg::VoxEditModelGuizmo);
 	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
 	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
-	_renderContext.init(video::getWindowSize());
+	if (!_renderContext.init(video::getWindowSize())) {
+		return false;
+	}
 
 	resetCamera();
 

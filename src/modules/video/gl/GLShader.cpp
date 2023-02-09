@@ -37,9 +37,11 @@ int32_t Shader::getUniformBufferOffset(const char *name) {
 bool Shader::setUniformBuffer(const core::String& name, const UniformBuffer& buffer) {
 	const Uniform* uniform = getUniform(name);
 	if (uniform == nullptr) {
+		Log::error("%s is no uniform", name.c_str());
 		return false;
 	}
 	if (!uniform->block) {
+		Log::error("%s is no uniform buffer", name.c_str());
 		return false;
 	}
 
