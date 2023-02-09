@@ -504,42 +504,6 @@ bool Shader::run(const glm::uvec3& workGroups, bool wait) {
 	return video::runShader(_program, workGroups, wait);
 }
 
-void Shader::setUniformf(const core::String& name, const glm::vec2& values) const {
-	setUniformf(name, values.x, values.y);
-}
-
-void Shader::setUniformf(int location, const glm::vec2& values) const {
-	setUniformf(location, values.x, values.y);
-}
-
-void Shader::setUniformf(const core::String& name, const glm::vec3& values) const {
-	setUniformf(name, values.x, values.y, values.z);
-}
-
-void Shader::setUniformf(int location, const glm::vec3& values) const {
-	setUniformf(location, values.x, values.y, values.z);
-}
-
-void Shader::setUniformf(const core::String& name, const glm::vec4& values) const {
-	setUniformf(name, values.x, values.y, values.z, values.w);
-}
-
-void Shader::setUniformf(int location, const glm::vec4& values) const {
-	setUniformf(location, values.x, values.y, values.z, values.w);
-}
-
-void Shader::setUniformVec2(int location, const glm::vec2& value) const {
-	setUniform2fv(location, glm::value_ptr(value), 2);
-}
-
-void Shader::setUniformVec3(int location, const glm::vec3& value) const {
-	setUniform3fv(location, glm::value_ptr(value), 3);
-}
-
-void Shader::setUniformVec4(int location, const glm::vec4& value) const {
-	setUniform4fv(location, glm::value_ptr(value), 4);
-}
-
 ScopedShader::ScopedShader(const Shader& shader) :
 		_shader(shader), _oldShader(getProgram()) {
 	_alreadyActive = _shader.isActive();
