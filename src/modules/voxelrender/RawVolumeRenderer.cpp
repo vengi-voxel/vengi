@@ -525,11 +525,11 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		_voxelShaderFragData.distances[i] = _shadow.distances()[i];
 	}
 	_voxelShaderFragData.lightdir = _shadow.sunDirection();
-	_voxelData.update(_voxelShaderFragData);
+	core_assert_always(_voxelData.update(_voxelShaderFragData));
 
 	video::ScopedShader scoped(_voxelShader);
 	if (_shadowMap->boolVal()) {
-		_shadow.bind(video::TextureUnit::One);
+		core_assert_always(_shadow.bind(video::TextureUnit::One));
 	}
 
 	if (_bloom->boolVal()) {
