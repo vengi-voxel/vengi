@@ -4,9 +4,11 @@ layout(line_strip, max_vertices = 64) out;
 $in vec3 g_color[];
 $out vec3 v_color;
 
-uniform int u_sides;
-uniform float u_radius;
-uniform mat4 u_projection;
+layout(std140) uniform u_geom {
+	int u_sides;
+	float u_radius;
+	mat4 u_projection;
+};
 
 const float PI = 3.1415926;
 

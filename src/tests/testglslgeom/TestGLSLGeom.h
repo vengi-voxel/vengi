@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "TestData.h"
 #include "testcore/TestApp.h"
 #include "video/Buffer.h"
 #include "TestShader.h"
@@ -16,6 +17,7 @@
 class TestGLSLGeom: public TestApp {
 private:
 	using Super = TestApp;
+	shader::TestData _testData;
 	shader::TestShader _testShader;
 	video::Buffer _buffer;
 	int _sides = 16;

@@ -24,6 +24,16 @@ app::AppState TestGLSLGeom::onInit() {
 	}
 
 	_testShader.recordUsedUniforms(true);
+	shader::TestData::GeomData geom;
+	if (!_testData.create(geom)) {
+		Log::error("Failed to init the geometry shader uniform buffer");
+		return app::AppState::InitFailure;
+	}
+	shader::TestData::VertData vert;
+	if (!_testData.create(vert)) {
+		Log::error("Failed to init the vertex shader uniform buffer");
+		return app::AppState::InitFailure;
+	}
 
 	struct Buf {
 		glm::vec4 pos{0, 0, 0, 1};
@@ -43,6 +53,7 @@ app::AppState TestGLSLGeom::onInit() {
 app::AppState TestGLSLGeom::onCleanup() {
 	_testShader.shutdown();
 	_buffer.shutdown();
+	_testData.shutdown();
 	return Super::onCleanup();
 }
 
@@ -54,10 +65,16 @@ void TestGLSLGeom::onRenderUI() {
 
 void TestGLSLGeom::doRender() {
 	video::ScopedShader scopedShd(_testShader);
-	_testShader.setSides(_sides);
-	_testShader.setRadius(_radius);
-	_testShader.setView(camera().viewMatrix());
-	_testShader.setProjection(camera().projectionMatrix());
+	shader::TestData::GeomData geom;
+	geom.sides = _sides;
+	geom.radius = _radius;
+	geom.projection = camera().projectionMatrix();
+	shader::TestData::VertData vert;
+	vert.view = camera().viewMatrix();
+	_testData.update(geom);
+	_testData.update(vert);
+	_testShader.setGeom(_testData.getGeomUniformBuffer());
+	_testShader.setVert(_testData.getVertUniformBuffer());
 	video::ScopedBuffer scopedBuf(_buffer);
 	const int elements = _buffer.elements(0, _testShader.getComponentsPos());
 	video::drawArrays(_testShader.getPrimitiveTypeIn(), elements);
