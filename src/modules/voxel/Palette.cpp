@@ -13,6 +13,7 @@
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
 #include "core/RGBA.h"
+#include "core/collection/Set.h"
 #include "image/Image.h"
 #include "io/File.h"
 #include "io/FileStream.h"
@@ -48,6 +49,7 @@ void Palette::reduce(uint8_t targetColors) {
 }
 
 void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCount) {
+	Log::debug("quantize %i colors", (int)inputColorCount);
 	core::Color::ColorReductionType reductionType = core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
 	colorCount = core::Color::quantize(colors, lengthof(colors), inputColors, inputColorCount, reductionType);
 	markDirty();
@@ -813,13 +815,19 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 	}
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
-	core::Buffer<core::RGBA, 1024> colors;
-	Log::debug("Create palette for image: %s", image->name().c_str());
+	core::Set<core::RGBA> colorset;
+	Log::debug("Create palette for image: %s (%i:%i)", image->name().c_str(), imageWidth, imageHeight);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const core::RGBA data = image->colorAt(x, y);
-			colors.push_back(data);
+			colorset.insert(data);
 		}
+	}
+
+	core::Buffer<core::RGBA, 1024> colors;
+	colors.reserve(colorset.size());
+	for (const auto &e : colorset) {
+		colors.push_back(e->first);
 	}
 	palette._name = image->name();
 	palette.quantize(colors.data(), colors.size());
