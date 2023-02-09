@@ -529,20 +529,20 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			ub += "; // ";
 			ub += core::string::toString((uint32_t)(intSize * 4));
 			ub += " bytes - offset ";
-			ub += core::string::toString(offset * 4);
+			ub += core::string::toString((uint32_t)(offset * 4));
 			ub += " - alignment ";
 			ub += core::string::toString(align);
 			ub += "\n";
 
 			uniforms += "\n\tif (";
-			uniforms += core::string::toString(offset * 4);
+			uniforms += core::string::toString((uint32_t)(offset * 4));
 			uniforms += " != getUniformBufferOffset(\"";
 			uniforms += v.name;
 			uniforms += "\")) {\n";
 			uniforms += "\t\tLog::error(\"Invalid offset found for uniform ";
 			uniforms += v.name;
 			uniforms += " %i - expected ";
-			uniforms += core::string::toString(offset * 4);
+			uniforms += core::string::toString((uint32_t)(offset * 4));
 			uniforms += "\", getUniformBufferOffset(\"";
 			uniforms += v.name;
 			uniforms += "\"));\n";
@@ -552,7 +552,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			if (offsetsIndex > 0) {
 				offsets += ", ";
 			}
-			offsets += core::string::toString(offset * 4);
+			offsets += core::string::toString((uint32_t)(offset * 4));
 			++offsetsIndex;
 
 			offset += intSize;
