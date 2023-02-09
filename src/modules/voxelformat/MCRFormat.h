@@ -8,6 +8,7 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
+#include "voxel/Palette.h"
 
 namespace io {
 class ZipReadStream;
@@ -83,6 +84,7 @@ private:
 	struct MinecraftSectionPalette {
 		core::Buffer<uint8_t> pal;
 		uint32_t numBits = 0u;
+		voxel::Palette mcpal;
 	};
 
 	using SectionVolumes = core::DynamicArray<voxel::RawVolume *>;
@@ -97,10 +99,10 @@ private:
 	bool parseBlockStates(int dataVersion, const voxel::Palette &palette, const priv::NamedBinaryTag &data, SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal);
 
 	// new version (>= 2844)
-	voxel::RawVolume* parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector);
+	voxel::RawVolume* parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector, const voxel::Palette &palette);
 
 	// old version (< 2844)
-	voxel::RawVolume* parseLevelCompound(int dataVersion, const priv::NamedBinaryTag &root, int sector);
+	voxel::RawVolume* parseLevelCompound(int dataVersion, const priv::NamedBinaryTag &root, int sector, const voxel::Palette &palette);
 
 	bool readCompressedNBT(SceneGraph& sceneGraph, io::SeekableReadStream &stream, int sector, const voxel::Palette &palette);
 	bool loadMinecraftRegion(SceneGraph& sceneGraph, io::SeekableReadStream &stream, const voxel::Palette &palette);

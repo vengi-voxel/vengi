@@ -147,12 +147,12 @@ bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream
 	const int32_t dataVersion = root.get("DataVersion").int32();
 	Log::debug("Found data version %i", dataVersion);
 	if (dataVersion >= 2844) {
-		volume = parseSections(dataVersion, root, sector);
+		volume = parseSections(dataVersion, root, sector, palette);
 		if (volume == nullptr) {
 			return false;
 		}
 	} else {
-		volume = parseLevelCompound(dataVersion, root, sector);
+		volume = parseLevelCompound(dataVersion, root, sector, palette);
 		if (volume == nullptr) {
 			return false;
 		}
@@ -228,7 +228,8 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 						return false;
 					}
 					if (color) {
-						const voxel::Voxel voxel = voxel::createVoxel(palette, color);
+						const uint8_t palColIdx = palette.getClosestMatch(secPal.mcpal.colors[color]);
+						const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
 						wrapper.setVoxel(sPos, voxel);
 					}
 				}
@@ -303,7 +304,8 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 					const uint16_t i = sPos.y * MAX_SIZE * MAX_SIZE + sPos.z * MAX_SIZE + sPos.x;
 					const uint8_t color = blocks[i];
 					if (color) {
-						const voxel::Voxel voxel = voxel::createVoxel(palette, color);
+						const uint8_t palColIdx = palette.getClosestMatch(secPal.mcpal.colors[color]);
+						const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
 						wrapper.setVoxel(sPos, voxel);
 					}
 				}
@@ -325,7 +327,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 	return true;
 }
 
-voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector) {
+voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector, const voxel::Palette &pal) {
 	const priv::NamedBinaryTag &sections = root.get("sections");
 	if (!sections.valid()) {
 		Log::error("Could not find 'sections' tag");
@@ -348,8 +350,6 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 		return nullptr;
 	}
 	SectionVolumes volumes;
-	voxel::Palette pal;
-	pal.minecraft();
 	for (const priv::NamedBinaryTag &section : sectionsList) {
 		const priv::NamedBinaryTag &blockStates = section.get("block_states");
 		if (!blockStates.valid()) {
@@ -374,6 +374,7 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 			return error(volumes);
 		}
 		MinecraftSectionPalette secPal;
+		secPal.mcpal.minecraft();
 		if (!parsePaletteList(dataVersion, palette, secPal)) {
 			Log::error("Could not parse palette chunk");
 			return error(volumes);
@@ -387,7 +388,7 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 	return finalize(volumes, xPos, zPos);
 }
 
-voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::NamedBinaryTag &root, int sector) {
+voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::NamedBinaryTag &root, int sector, const voxel::Palette &pal) {
 	const priv::NamedBinaryTag &levels = root.get("Level");
 	if (!levels.valid()) {
 		Log::error("Could not find 'Level' tag");
@@ -433,8 +434,6 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 		return nullptr;
 	}
 	SectionVolumes volumes;
-	voxel::Palette pal;
-	pal.minecraft();
 	for (const priv::NamedBinaryTag &section : sectionsList) {
 		const priv::NamedBinaryTag &ylvl = section.get("Y");
 		if (!ylvl.valid()) {
@@ -449,6 +448,8 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 		Log::debug("Y level for section compound: %i", (int)sectionY);
 
 		MinecraftSectionPalette secPal;
+		secPal.mcpal.minecraft();
+
 		const priv::NamedBinaryTag &palette = section.get("Palette");
 		if (palette.valid()) {
 			if (!parsePaletteList(dataVersion, palette, secPal)) {
