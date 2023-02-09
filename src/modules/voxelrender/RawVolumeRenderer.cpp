@@ -610,11 +610,15 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		video::disable(video::State::PolygonOffsetFill);
 	}
 	if (_bloom->boolVal()) {
-		renderContext.frameBuffer.unbind();
-		const video::TexturePtr& color0 = renderContext.frameBuffer.texture(video::FrameBufferAttachment::Color0);
-		const video::TexturePtr& color1 = renderContext.frameBuffer.texture(video::FrameBufferAttachment::Color1);
+		video::FrameBuffer &frameBuffer = renderContext.frameBuffer;
+		frameBuffer.unbind();
+		const video::TexturePtr& color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
+		const video::TexturePtr& color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
 		renderContext.bloomRenderer.render(color0, color1);
-		video::blitFramebuffer(renderContext.frameBuffer.handle(), video::currentFramebuffer(), video::ClearFlag::Depth, renderContext.frameBuffer.dimension().x, renderContext.frameBuffer.dimension().y);
+		const glm::ivec2 &dimension = frameBuffer.dimension();
+		const int w = dimension.x;
+		const int h = dimension.y;
+		video::blitFramebuffer(frameBuffer.handle(), video::currentFramebuffer(), video::ClearFlag::Depth, w, h);
 	}
 }
 
