@@ -53,7 +53,7 @@ bool Shader::setUniformBuffer(const core::String& name, const UniformBuffer& buf
 	glUniformBlockBinding(_program, (GLuint)uniform->blockIndex, (GLuint)uniform->blockBinding);
 	checkError();
 	addUsedUniform(uniform->location);
-	return buffer.bind();
+	return buffer.bind(uniform->blockIndex);
 }
 
 void Shader::setUniformi(int location, int value) const {

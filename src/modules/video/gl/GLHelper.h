@@ -45,7 +45,7 @@ static int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::Stri
 		if (block) {
 			uniform.blockIndex = glGetUniformBlockIndex(program, name);
 			glGetActiveUniformBlockiv(program, location, GL_UNIFORM_BLOCK_DATA_SIZE, &uniform.size);
-			glGetActiveUniformBlockiv(program, location, GL_UNIFORM_BLOCK_BINDING, &uniform.blockBinding);
+			uniform.blockBinding = i;
 		}
 		uniformMap.put(core::String(name), uniform);
 		Log::debug("Got uniform location for %s is %i (shader %s)", name, location, shaderNameC);
