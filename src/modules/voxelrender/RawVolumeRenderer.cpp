@@ -685,6 +685,7 @@ void RawVolumeRenderer::setSunPosition(const glm::vec3& eye, const glm::vec3& ce
 
 core::DynamicArray<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
 	_threadPool.shutdown();
+	_voxelData.shutdown();
 	_voxelShader.shutdown();
 	_shadowMapShader.shutdown();
 	_voxelData.shutdown();

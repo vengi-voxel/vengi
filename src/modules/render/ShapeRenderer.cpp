@@ -146,6 +146,7 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 }
 
 void ShapeRenderer::shutdown() {
+	_uniformBlock.shutdown();
 	_colorShader.shutdown();
 	for (uint32_t i = 0u; i < _currentMeshIndex; ++i) {
 		deleteMesh(i);
