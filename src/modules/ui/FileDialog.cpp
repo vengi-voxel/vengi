@@ -429,6 +429,9 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 	core::string::splitString(_currentPath, components, "/");
 	ImGui::TextUnformatted(">");
 	core::String path = "/";
+#ifdef _WIN32
+	path = "";
+#endif
 	for (const core::String &c : components) {
 		path = core::string::path(path, c);
 		ImGui::SameLine();
