@@ -10,7 +10,7 @@ namespace voxel {
 
 class RawVolume;
 class Region;
-class ChunkMesh;
+struct ChunkMesh;
 class Palette;
 
 /**

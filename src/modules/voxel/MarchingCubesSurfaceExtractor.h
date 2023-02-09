@@ -8,7 +8,7 @@ namespace voxel {
 
 class RawVolume;
 class Region;
-class ChunkMesh;
+struct ChunkMesh;
 class Palette;
 
 // Also known as: "3D Contouring", "Marching Cubes", "Surface Reconstruction"
