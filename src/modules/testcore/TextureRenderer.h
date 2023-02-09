@@ -5,7 +5,7 @@
 #pragma once
 
 #include "video/Buffer.h"
-#include "RenderShaders.h"
+#include "TextureShader.h"
 #include <glm/fwd.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>

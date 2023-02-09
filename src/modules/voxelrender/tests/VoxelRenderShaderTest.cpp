@@ -3,7 +3,7 @@
  */
 
 #include "video/tests/AbstractGLTest.h"
-#include "VoxelrenderShaders.h"
+#include "VoxelShader.h"
 
 namespace voxelworldrender {
 

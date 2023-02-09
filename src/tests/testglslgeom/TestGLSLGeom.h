@@ -6,7 +6,7 @@
 
 #include "testcore/TestApp.h"
 #include "video/Buffer.h"
-#include "TestglslgeomShaders.h"
+#include "TestShader.h"
 
 /**
  * @brief Visual test for GLSL geometry shaders

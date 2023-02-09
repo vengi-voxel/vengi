@@ -7,7 +7,8 @@
 #include "testcore/TestApp.h"
 #include "video/Texture.h"
 #include "video/Buffer.h"
-#include "TestglslcompShaders.h"
+#include "TestShader.h"
+#include "TestShader.h"
 #include "testcore/TextureRenderer.h"
 
 /**

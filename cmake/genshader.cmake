@@ -111,22 +111,13 @@ function(generate_shaders TARGET)
 		endif()
 	endforeach()
 
-	convert_to_camel_case(${TARGET} _filetarget)
-	set(_shadersheader ${GEN_DIR}/${_filetarget}Shaders.h)
-	file(WRITE ${_shadersheader}.in "#pragma once\n")
-	foreach (header_path ${_headers})
-		string(REPLACE "${GEN_DIR}" "" header "${header_path}")
-		file(APPEND ${_shadersheader}.in "#include \"${header}\"\n")
-	endforeach()
 	add_custom_target(GenerateShaderBindings${TARGET}
 		DEPENDS ${_headers} ${_constantsheaders}
 		COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
 	)
-	engine_mark_as_generated(${_headers} ${_shaderconstantheaderpath} ${_sources} ${_shadersheader})
-	target_sources(${TARGET} PRIVATE ${_sources} ${_headers} ${_constantsheaders} ${_shadersheader})
+	target_sources(${TARGET} PRIVATE ${_sources} ${_headers} ${_constantsheaders})
+	engine_mark_as_generated(${_headers} ${_shaderconstantheaderpath} ${_sources})
 
-	add_custom_target(GenerateShaderHeader${TARGET} ${CMAKE_COMMAND} -D SRC=${_shadersheader}.in -D DST=${_shadersheader} -P ${CMAKE_BINARY_DIR}/UpdateShaderFile${TARGET}.cmake)
-	add_dependencies(${TARGET} GenerateShaderHeader${TARGET} UpdateShaders${TARGET})
-	add_dependencies(GenerateShaderHeader${TARGET} GenerateShaderBindings${TARGET})
-	add_dependencies(codegen GenerateShaderHeader${TARGET} UpdateShaders${TARGET})
+	add_dependencies(${TARGET} GenerateShaderBindings${TARGET} UpdateShaders${TARGET})
+	add_dependencies(codegen GenerateShaderBindings${TARGET} UpdateShaders${TARGET})
 endfunction()
