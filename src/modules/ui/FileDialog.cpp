@@ -184,10 +184,8 @@ void FileDialog::quickAccessEntry(video::OpenFileMode type, const core::String& 
 		title = SDL_strrchr(bookmarkTitle.c_str(), '/');
 		if (title) {
 			++title;
-		} else {
-			title = bookmarkTitle.c_str();
+			bookmarkTitle = title;
 		}
-		bookmarkTitle = title;
 	} else {
 		bookmarkTitle = title;
 	}
