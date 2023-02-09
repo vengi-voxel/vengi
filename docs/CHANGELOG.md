@@ -34,6 +34,7 @@ General:
    - Implemented basic transparency support for voxels
    - Fixed invalid clamping for uv based pixel lookup (mesh imports)
    - Update renderer to only use uniform buffers
+   - Fixed rendering issue for windows users
 
 VoxEdit:
 
