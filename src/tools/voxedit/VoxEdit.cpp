@@ -157,12 +157,13 @@ app::AppState VoxEdit::onConstruct() {
 		if (_mainWindow == nullptr) {
 			return;
 		}
-		if (args.empty()) {
+		core::String viewportId = args.empty() ? "" : args[0];
+		if (args.size() <= 1) {
 			const core::String filename = getSuggestedFilename("png");
-			saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->saveScreenshot(file); }, fileDialogOptions, io::format::images(), filename);
+			saveDialog([this, viewportId] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->saveScreenshot(file, viewportId); }, fileDialogOptions, io::format::images(), filename);
 			return;
 		}
-		_mainWindow->saveScreenshot(args[0]);
+		_mainWindow->saveScreenshot(args[1], viewportId);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current viewport as screenshot");
 
 	command::Command::registerCommand("togglescene", [this](const command::CmdArgs &args) {

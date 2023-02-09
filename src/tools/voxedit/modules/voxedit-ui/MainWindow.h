@@ -130,7 +130,7 @@ public:
 	bool allowToQuit();
 	Viewport* hoveredScene();
 
-	bool saveScreenshot(const core::String& file);
+	bool saveScreenshot(const core::String& file, const core::String &viewportId = "");
 };
 
 }

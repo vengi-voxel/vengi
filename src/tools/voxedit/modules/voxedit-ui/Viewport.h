@@ -135,7 +135,7 @@ public:
 	bool init();
 	void shutdown();
 
-	const core::String& id() const;
+	int id() const;
 
 	void resetCamera();
 	bool saveImage(const char* filename);
@@ -145,8 +145,8 @@ inline video::Camera& Viewport::camera() {
 	return _camera;
 }
 
-inline const core::String& Viewport::id() const {
-	return _uiId;
+inline int Viewport::id() const {
+	return _id;
 }
 
 inline bool Viewport::isHovered() const {

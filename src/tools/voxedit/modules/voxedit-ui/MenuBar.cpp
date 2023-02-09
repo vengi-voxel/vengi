@@ -46,7 +46,6 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 
 			actionMenuItem(ICON_FA_FLOPPY_DISK " Save", "save", listener);
 			actionMenuItem(ICON_FA_FLOPPY_DISK " Save as", "saveas", listener);
-			actionMenuItem(ICON_FA_CAMERA " Screenshot", "screenshot", listener);
 			ImGui::Separator();
 
 			if (ImGui::BeginMenu("Templates")) {

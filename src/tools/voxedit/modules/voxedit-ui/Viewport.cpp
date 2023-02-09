@@ -318,6 +318,8 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		if (!_simplifiedView->boolVal()) {
 			ImGui::Checkbox("Scene Mode", &_renderContext.sceneMode);
 		}
+		const core::String command = core::string::format("screenshot %i", _id);
+		ImGui::CommandMenuItem(ICON_FA_CAMERA " Screenshot", command.c_str(), listener);
 		ImGui::EndMenuBar();
 	}
 }

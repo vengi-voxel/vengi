@@ -613,13 +613,30 @@ Viewport* MainWindow::hoveredScene() {
 	return nullptr;
 }
 
-bool MainWindow::saveScreenshot(const core::String& file) {
-	if (!_lastHoveredScene->saveImage(file.c_str())) {
-		Log::warn("Failed to save screenshot to file '%s'", file.c_str());
+bool MainWindow::saveScreenshot(const core::String& file, const core::String &viewportId) {
+	if (viewportId.empty()) {
+		if (_lastHoveredScene != nullptr) {
+			if (!_lastHoveredScene->saveImage(file.c_str())) {
+				Log::warn("Failed to save screenshot to file '%s'", file.c_str());
+				return false;
+			}
+			Log::info("Screenshot created at '%s'", file.c_str());
+			return true;
+		}
 		return false;
 	}
-	Log::info("Screenshot created at '%s'", file.c_str());
-	return true;
+	for (Viewport *vp : _scenes) {
+		if (vp->id() != viewportId.toInt()) {
+			continue;
+		}
+		if (!vp->saveImage(file.c_str())) {
+			Log::warn("Failed to save screenshot to file '%s'", file.c_str());
+			return false;
+		}
+		Log::info("Screenshot created at '%s'", file.c_str());
+		return true;
+	}
+	return false;
 }
 
 void MainWindow::resetCamera() {
