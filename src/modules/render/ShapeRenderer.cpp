@@ -141,7 +141,7 @@ void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeB
 	if (!indices.empty()) {
 		indicesData = &indices.front();
 	}
-	vbo.update(_indexIndex[meshIndex], indicesData, indices.size() * sizeof(video::ShapeBuilder::Indices::value_type));
+	core_assert_always(vbo.update(_indexIndex[meshIndex], indicesData, indices.size() * sizeof(video::ShapeBuilder::Indices::value_type)));
 	_primitives[meshIndex] = shapeBuilder.primitive();
 }
 
@@ -187,8 +187,8 @@ int ShapeRenderer::renderAllColored(const video::Camera& camera, const glm::mat4
 			_colorShader.activate();
 			_uniformBlockData.model = model;
 			_uniformBlockData.viewprojection = camera.viewProjectionMatrix();
-			_uniformBlock.update(_uniformBlockData);
-			_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer());
+			core_assert_always(_uniformBlock.update(_uniformBlockData));
+			core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
 		}
 		core_assert_always(_vbo[meshIndex].bind());
 		const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
@@ -221,13 +221,13 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 
 	_uniformBlockData.model = model;
 	_uniformBlockData.viewprojection = camera.viewProjectionMatrix();
-	_uniformBlock.update(_uniformBlockData);
-	_colorShader.activate();
-	_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer());
+	core_assert_always(_uniformBlock.update(_uniformBlockData));
+	core_assert_always(_colorShader.activate());
+	core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
 	core_assert_always(_vbo[meshIndex].bind());
 	video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
 	_colorShader.deactivate();
-	_vbo[meshIndex].unbind();
+	core_assert_always(_vbo[meshIndex].unbind());
 	return true;
 }
 

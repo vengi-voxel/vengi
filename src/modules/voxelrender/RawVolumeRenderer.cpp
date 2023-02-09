@@ -556,9 +556,9 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		_voxelShaderVertData.model = state._model;
 		_voxelShaderVertData.pivot = state._pivot;
 		_voxelShaderVertData.gray = state._gray;
-		_voxelData.update(_voxelShaderVertData);
-		_voxelShader.setFrag(_voxelData.getFragUniformBuffer());
-		_voxelShader.setVert(_voxelData.getVertUniformBuffer());
+		core_assert_always(_voxelData.update(_voxelShaderVertData));
+		core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
+		core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
 		if (_shadowMap->boolVal()) {
 			_voxelShader.setShadowmap(video::TextureUnit::One);
 		}
@@ -582,9 +582,9 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			_voxelShaderVertData.model = state._model;
 			_voxelShaderVertData.pivot = state._pivot;
 			_voxelShaderVertData.gray = state._gray;
-			_voxelData.update(_voxelShaderVertData);
-			_voxelShader.setFrag(_voxelData.getFragUniformBuffer());
-			_voxelShader.setVert(_voxelData.getVertUniformBuffer());
+			core_assert_always(_voxelData.update(_voxelShaderVertData));
+			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
+			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
 			if (_shadowMap->boolVal()) {
 				_voxelShader.setShadowmap(video::TextureUnit::One);
 			}
