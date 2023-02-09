@@ -40,7 +40,6 @@ function(generate_shaders TARGET)
 	set(_sources)
 	set(_constantsheaders)
 	add_custom_target(UpdateShaders${TARGET})
-	file(WRITE ${CMAKE_BINARY_DIR}/UpdateShaderFile${TARGET}.cmake "configure_file(\${SRC} \${DST} @ONLY)")
 	if (NOT DEFINED video_SOURCE_DIR)
 		message(FATAL_ERROR "video project not found")
 	endif()
@@ -80,44 +79,30 @@ function(generate_shaders TARGET)
 			set(_shaderheaderpath "${GEN_DIR}${_f}Shader.h")
 			set(_shadersourcepath "${GEN_DIR}${_f}Shader.cpp")
 			set(_shaderconstantheaderpath "${GEN_DIR}${_f}ShaderConstants.h")
-			# TODO We have to add the shader/ dirs of all dependencies to the include path
 			add_custom_command(
-				OUTPUT ${_shaderheaderpath}.in ${_shadersourcepath}.in ${_shaderconstantheaderpath}.in
+				OUTPUT ${_shaderheaderpath} ${_shadersourcepath} ${_shaderconstantheaderpath}
 				IMPLICIT_DEPENDS C ${_shaders}
 				COMMENT "Validate ${_file}"
-				COMMAND ${CMAKE_COMMAND} -E env "APP_HOMEPATH=${CMAKE_CURRENT_BINARY_DIR}/" "LSAN_OPTIONS=exitcode=0" $<TARGET_FILE:shadertool> --glslang $<TARGET_FILE:glslangValidator> ${SHADERTOOL_INCLUDE_DIRS_PARAM} --postfix .in --shader ${_dir}/${_file} --constantstemplate  ${_template_constants_header} --headertemplate ${_template_header} --sourcetemplate ${_template_cpp} --buffertemplate ${_template_ub} --sourcedir ${GEN_DIR}
+				COMMAND ${CMAKE_COMMAND} -E env "APP_HOMEPATH=${CMAKE_CURRENT_BINARY_DIR}/" "LSAN_OPTIONS=exitcode=0"
+					$<TARGET_FILE:shadertool>
+					--glslang $<TARGET_FILE:glslangValidator>
+					${SHADERTOOL_INCLUDE_DIRS_PARAM}
+					--shader ${_dir}/${_file}
+					--constantstemplate  ${_template_constants_header}
+					--headertemplate ${_template_header}
+					--sourcetemplate ${_template_cpp}
+					--buffertemplate ${_template_ub}
+					--sourcedir ${GEN_DIR}
 				DEPENDS shadertool ${_shaders} ${_shadersdeps} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
 			)
 			list(APPEND _headers ${_shaderheaderpath})
 			list(APPEND _sources ${_shadersourcepath})
-			add_custom_command(
-				OUTPUT ${_shaderheaderpath}
-				COMMAND ${CMAKE_COMMAND} -D SRC=${_shaderheaderpath}.in -D DST=${_shaderheaderpath} -P ${CMAKE_BINARY_DIR}/UpdateShaderFile${TARGET}.cmake
-				DEPENDS ${_shaderheaderpath}.in
-			)
-			add_custom_command(
-				OUTPUT ${_shadersourcepath}
-				COMMAND ${CMAKE_COMMAND} -D SRC=${_shadersourcepath}.in -D DST=${_shadersourcepath} -P ${CMAKE_BINARY_DIR}/UpdateShaderFile${TARGET}.cmake
-				DEPENDS ${_shadersourcepath}.in
-			)
-			add_custom_command(
-				OUTPUT ${_shaderconstantheaderpath}
-				COMMAND ${CMAKE_COMMAND} -D SRC=${_shaderconstantheaderpath}.in -D DST=${_shaderconstantheaderpath} -P ${CMAKE_BINARY_DIR}/UpdateShaderFile${TARGET}.cmake
-				DEPENDS ${_shaderconstantheaderpath}.in
-			)
 			list(APPEND _constantsheaders ${_shaderconstantheaderpath})
 		else()
 			message(FATAL_ERROR "Could not find any shader files for ${_file} and target '${TARGET}'")
 		endif()
 	endforeach()
 
-	add_custom_target(GenerateShaderBindings${TARGET}
-		DEPENDS ${_headers} ${_constantsheaders}
-		COMMENT "Generate shader bindings for ${TARGET} in ${GEN_DIR}"
-	)
 	target_sources(${TARGET} PRIVATE ${_sources} ${_headers} ${_constantsheaders})
 	engine_mark_as_generated(${_headers} ${_shaderconstantheaderpath} ${_sources})
-
-	add_dependencies(${TARGET} GenerateShaderBindings${TARGET} UpdateShaders${TARGET})
-	add_dependencies(codegen GenerateShaderBindings${TARGET} UpdateShaders${TARGET})
 endfunction()
