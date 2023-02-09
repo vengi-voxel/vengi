@@ -112,8 +112,8 @@ void BloomRenderer::blur(const video::TexturePtr &source, video::FrameBuffer &de
 	{
 		const float y2 = (float)2.0f - halfWidth;
 		const float z2 = x * y2;
-		_convolutionFragData.offsets1.x = offset * y2 - z2;
-		_convolutionFragData.offsets1.y = z2;
+		_convolutionFragData.offsets2.x = offset * y2 - z2;
+		_convolutionFragData.offsets2.y = z2;
 	}
 	_convolutionFragData.coefficients0 = 0.25f;
 	_convolutionFragData.coefficients1 = 0.5f;
