@@ -25,7 +25,7 @@ General:
    - Added support for loading minetest mts files
    - Fixed Command&Conquer vxl format writing issue
    - Added own format with the extension `vengi`
-   - Added basic alpha support - but not yet in the renderer
+   - Added basic alpha support
    - Fixed saving the keybindings with multi click
    - Improved keybinding and ui setting saving (added a version)
    - Fixed invalid transform on re-parenting a node
