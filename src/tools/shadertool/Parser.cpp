@@ -68,55 +68,82 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 			Log::error("Unsupported alignment");
 			return false;
 		} else if (token == "location") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for location");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
 			layout.location = core::string::toInt(tok.next());
 		} else if (token == "offset") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for offset");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
 			layout.offset = core::string::toInt(tok.next());
 		} else if (token == "compontents") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for compontents");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
 			layout.components = core::string::toInt(tok.next());
 		} else if (token == "index") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for index");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
 			layout.index = core::string::toInt(tok.next());
 		} else if (token == "binding") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for binding");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
 			layout.binding = core::string::toInt(tok.next());
 		} else if (token == "xfb_buffer") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for xfb_buffer");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
 			layout.transformFeedbackBuffer = core::string::toInt(tok.next());
 		} else if (token == "xfb_offset") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for xfb_offset");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
 			layout.transformFeedbackOffset = core::string::toInt(tok.next());
 		} else if (token == "vertices") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for vertices");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
 			layout.tesselationVertices = core::string::toInt(tok.next());
 		} else if (token == "max_vertices") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected = for max_vertices");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
@@ -128,25 +155,37 @@ static bool parseLayout(TokenIterator& tok, Layout& layout) {
 		} else if (token == "early_fragment_tests") {
 			layout.earlyFragmentTests = true;
 		} else if (token == "primitive_type") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected =");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
 			layout.primitiveType = layoutPrimitiveType(tok.next());
 		} else if (token == "local_size_x") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected =");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
 			layout.localSize.x = core::string::toInt(tok.next());
 		} else if (token == "local_size_y") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected =");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
 			layout.localSize.y = core::string::toInt(tok.next());
 		} else if (token == "local_size_z") {
-			core_assert_always(tok.hasNext() && tok.next() == "=");
+			if (!tok.hasNext() || tok.next() != "=") {
+				Log::error("Expected =");
+				return false;
+			}
 			if (!tok.hasNext()) {
 				return false;
 			}
@@ -293,7 +332,10 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 				}
 				Log::trace("End of uniform block: %s", uniformBuffer.name.c_str());
 				shaderStruct.uniformBlocks.insert(uniformBuffer);
-				core_assert_always(tok.next() == ";");
+				if (tok.next() != ";") {
+					Log::error("Missing ;");
+					return false;
+				}
 			} else {
 				tok.prev();
 			}
@@ -306,7 +348,10 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 				}
 				Log::trace("End of buffer block: %s", shaderStorageBuffer.name.c_str());
 				shaderStruct.bufferBlocks.insert(shaderStorageBuffer);
-				core_assert_always(tok.next() == ";");
+				if (tok.next() != ";") {
+					Log::error("Missing ;");
+					return false;
+				}
 			} else {
 				tok.prev();
 			}
@@ -369,10 +414,19 @@ bool parse(const core::String& filename, ShaderStruct& shaderStruct, const core:
 					Log::warn("Warning in %s:%i:%i. Could not determine array size for %s (%s)", tok.file(), tok.line(), tok.col(), name.c_str(), number.c_str());
 				}
 			}
-			core_assert_always(tok.next() == "]");
-			core_assert_always(tok.next() == ";");
+			if (tok.next() != "]") {
+				Log::error("Missing ]");
+				return false;
+			}
+			if (tok.next() != ";") {
+				Log::error("Missing ;");
+				return false;
+			}
 		} else {
-			core_assert_always(tok.next() == ";");
+			if (tok.next() != ";") {
+				Log::error("Missing ;");
+				return false;
+			}
 		}
 		// TODO: multi dimensional arrays are only supported in glsl >= 5.50
 		if (uniformBufferActive) {
