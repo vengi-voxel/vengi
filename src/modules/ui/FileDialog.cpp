@@ -435,6 +435,7 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 		if (ImGui::Button(c.c_str())) {
 			setCurrentPath(type, path);
 		}
+		ImGui::TooltipText("%s", path.c_str());
 	}
 }
 
