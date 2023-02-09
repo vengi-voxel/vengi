@@ -47,6 +47,8 @@ bool BloomRenderer::init(bool yFlipped, int width, int height) {
 	_bufferIndex = _vbo.createFullscreenQuad();
 	_texBufferIndex = _vbo.create();
 
+	core_assert_always(_convolutionData.create(_convolutionFragData));
+
 	core_assert(_convolutionShader.getLocationPos() == _textureShader.getLocationPos());
 	core_assert(_convolutionShader.getLocationTexcoord() == _textureShader.getLocationTexcoord());
 	core_assert(_convolutionShader.getLocationPos() == _combine2Shader.getLocationPos());
@@ -92,18 +94,32 @@ bool BloomRenderer::resize(int width, int height) {
 
 void BloomRenderer::blur(const video::TexturePtr &source, video::FrameBuffer &dest, bool horizontal) {
 	constexpr int filterSize = shader::ConvolutionShaderConstants::getFilterSize();
-	glm::vec2 offsets[filterSize];
 	const float halfWidth = (float)(filterSize - 1) * 0.5f;
 	const float offset = 1.2f / (float)source->width();
 	const float x = horizontal ? offset : 0.0f;
-
-	for (int i = 0; i < filterSize; i++) {
-		const float y = (float)i - halfWidth;
-		const float z = x * y;
-		offsets[i].x = offset * y - z;
-		offsets[i].y = z;
+	{
+		const float y0 = (float)0.0f - halfWidth;
+		const float z0 = x * y0;
+		_convolutionFragData.offsets0.x = offset * y0 - z0;
+		_convolutionFragData.offsets0.y = z0;
 	}
-	core_assert_always(_convolutionShader.setOffsets(offsets));
+	{
+		const float y1 = (float)1.0f - halfWidth;
+		const float z1 = x * y1;
+		_convolutionFragData.offsets1.x = offset * y1 - z1;
+		_convolutionFragData.offsets1.y = z1;
+	}
+	{
+		const float y2 = (float)2.0f - halfWidth;
+		const float z2 = x * y2;
+		_convolutionFragData.offsets1.x = offset * y2 - z2;
+		_convolutionFragData.offsets1.y = z2;
+	}
+	_convolutionFragData.coefficients0 = 0.25f;
+	_convolutionFragData.coefficients1 = 0.5f;
+	_convolutionFragData.coefficients2 = 0.25f;
+	_convolutionData.update(_convolutionFragData);
+	core_assert_always(_convolutionShader.setFrag(_convolutionData.getFragUniformBuffer()));
 	core_assert_always(video::bindTexture(video::TextureUnit::Zero, source));
 	dest.bind(true);
 	video::viewport(0, 0, source->width(), source->height());
@@ -149,13 +165,8 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 	_vbo.createFullscreenTextureBufferYFlipped(_texBufferIndex);
 
 	{
-		constexpr int filterSize = shader::ConvolutionShaderConstants::getFilterSize();
-		static /* const */ float coeff[filterSize] = { // TODO: const
-			0.25f, 0.5f, 0.25f
-		};
 		video::ScopedShader scoped(_convolutionShader);
 		core_assert_always(_convolutionShader.setImage(video::TextureUnit::Zero));
-		core_assert_always(_convolutionShader.setCoefficients(coeff));
 		core_assert_always(_vbo.bind());
 		blur(glowTexture, _bloom[0], false);
 		blur(_bloom[0].texture(), _bloom[1], true);
@@ -242,6 +253,7 @@ void BloomRenderer::shutdown() {
 	for (int i = 0; i < lengthof(_bloom); ++i) {
 		_bloom[i].shutdown();
 	}
+	_convolutionData.shutdown();
 	_convolutionShader.shutdown();
 	_textureShader.shutdown();
 	_combine2Shader.shutdown();

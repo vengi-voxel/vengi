@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "ConvolutionData.h"
 #include "ConvolutionShader.h"
 #include "Combine2Shader.h"
 #include "TextureShader.h"
@@ -24,6 +25,8 @@ namespace render {
  */
 class BloomRenderer : public core::NonCopyable {
 private:
+	shader::ConvolutionData::FragData _convolutionFragData;
+	shader::ConvolutionData _convolutionData;
 	shader::ConvolutionShader &_convolutionShader;
 	shader::TextureShader &_textureShader;
 	shader::Combine2Shader &_combine2Shader;
