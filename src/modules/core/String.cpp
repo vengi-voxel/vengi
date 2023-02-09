@@ -254,6 +254,12 @@ String &String::operator=(const char *str) {
 	if (str == c_str()) {
 		return *this;
 	}
+	if (str > begin() && str < end()) {
+		// str pointer might get invalid after the assignment
+		core::String copy(str);
+		*this = copy;
+		return *this;
+	}
 	const size_t len = SDL_strlen(str);
 	copyBuf(str, len);
 	return *this;
