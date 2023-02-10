@@ -615,10 +615,6 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		const video::TexturePtr& color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
 		const video::TexturePtr& color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
 		renderContext.bloomRenderer.render(color0, color1);
-		const glm::ivec2 &dimension = frameBuffer.dimension();
-		const int w = dimension.x;
-		const int h = dimension.y;
-		video::blitFramebuffer(frameBuffer.handle(), video::currentFramebuffer(), video::ClearFlag::Color, w, h);
 	}
 }
 
