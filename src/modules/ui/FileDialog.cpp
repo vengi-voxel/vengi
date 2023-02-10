@@ -585,6 +585,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 		if (type == video::OpenFileMode::Save) {
 			ImGui::InputText("Filename##filedialog", &_selectedEntry.name);
 			_selectedEntry.type = io::FilesystemEntry::Type::file;
+			_entryIndex = -1;
 		}
 		ImGui::CheckboxVar("Show hidden##filedialog", _showHidden);
 		popupNewFolder();
