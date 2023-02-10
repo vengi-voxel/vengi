@@ -45,14 +45,14 @@ VoxEdit:
    - Switched the camera modifier to the right side of the viewport
    - Fixed diffuse and ambient color settings mix-up
    - Merged layer and scene graph panel into one
-   - Several guizmo related fixes and improvements
+   - Several gizmo related fixes and improvements
    - Added simple UI mode which removes some panels
    - Fixed a few memento (undo/redo) related issues
    - Added templates to the menu (`robo` and `chr_knight`)
    - Allow to control the amount of viewports
    - Allow to define pre-defined region sizes (see `ve_regionsizes` cvar)
    - Some ui actions are only available in edit mode
-   - Edit mode has support for the guizmo now - you can shift the volume boundaries
+   - Edit mode has support for the gizmo now - you can shift the volume boundaries
    - Highlight copy&paste volume region
    - Visually disable some buttons if they won't work in the current mode anyway
    - Don't execute actions for hidden nodes
@@ -192,7 +192,7 @@ VoxEdit:
    - Fixed start problems on some systems with multisampled framebuffers
    - Allow to drag and drop colors from the palette
    - Change between the edit and scene mode is now bound to `tab`
-   - Updated imguizmo to support clicking the view cube
+   - Updated imgizmo to support clicking the view cube
    - Cursor is no volume anymore but a plane
    - Implemented plane filling
    - Added extrude feature
@@ -237,7 +237,7 @@ VoxEdit:
    - Fixed viewport screenshot creation (now also bound to F5)
    - Added dialog to configure the mesh and voxel format settings for loading/saving
    - Improved the palette panel
-   - Improved the guizmo for translation and rotation
+   - Improved the gizmo for translation and rotation
    - Open in scene mode as default
 
 VoxConvert:

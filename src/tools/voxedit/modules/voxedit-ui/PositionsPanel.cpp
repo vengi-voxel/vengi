@@ -108,10 +108,10 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 				sceneMgr().resize(nodeId, newRegion);
 			}
 
-			if (ImGui::CollapsingHeader(ICON_FA_CUBE " Guizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-				ImGui::CheckboxVar("Show guizmo", cfg::VoxEditModelGuizmo);
-				ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGuizmoAllowAxisFlip);
-				ImGui::CheckboxVar("Snap", cfg::VoxEditGuizmoSnap);
+			if (ImGui::CollapsingHeader(ICON_FA_CUBE " Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+				ImGui::CheckboxVar("Show gizmo", cfg::VoxEditModelGizmo);
+				ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGizmoAllowAxisFlip);
+				ImGui::CheckboxVar("Snap", cfg::VoxEditGizmoSnap);
 			}
 		}
 	}
@@ -226,11 +226,11 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 
 	ImGui::NewLine();
 
-	if (ImGui::CollapsingHeader(ICON_FA_CUBE " Guizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGuizmoAllowAxisFlip);
-		ImGui::CheckboxVar("Activate rotate", cfg::VoxEditGuizmoRotation);
-		ImGui::CheckboxVar("Size", cfg::VoxEditGuizmoBounds);
-		ImGui::CheckboxVar("Snap", cfg::VoxEditGuizmoSnap);
+	if (ImGui::CollapsingHeader(ICON_FA_CUBE " Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGizmoAllowAxisFlip);
+		ImGui::CheckboxVar("Activate rotate", cfg::VoxEditGizmoRotation);
+		ImGui::CheckboxVar("Size", cfg::VoxEditGizmoBounds);
+		ImGui::CheckboxVar("Snap", cfg::VoxEditGizmoSnap);
 	}
 }
 

@@ -79,28 +79,28 @@ private:
 	video::Camera _camera;
 
 	core::VarPtr _showAxisVar;
-	core::VarPtr _guizmoRotation;
-	core::VarPtr _guizmoAllowAxisFlip;
-	core::VarPtr _guizmoSnap;
-	core::VarPtr _guizmoBounds;
-	core::VarPtr _modelGuizmo;
+	core::VarPtr _gizmoRotation;
+	core::VarPtr _gizmoAllowAxisFlip;
+	core::VarPtr _gizmoSnap;
+	core::VarPtr _gizmoBounds;
+	core::VarPtr _modelGizmo;
 	core::VarPtr _viewDistance;
 	core::VarPtr _simplifiedView;
 	core::VarPtr _rotationSpeed;
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
-	void handleGuizmo(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix);
+	void handleGizmo(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix);
 	/**
 	 * See the return value documentation of @c renderGizmo()
 	 * @sa renderGizmo()
 	 */
-	bool renderSceneAndModelGuizmo(const video::Camera &camera);
+	bool renderSceneAndModelGizmo(const video::Camera &camera);
 	void renderCameraManipulator(video::Camera &camera, float headerSize);
 	/**
-	 * @return @c true if the the guizmo was used in edit mode.
-	 * @note This does not return @c true if the guizmo was used in scene mode. This is due to the fact that the edit
-	 * mode volume trace has to be reset when we activate the guizmo. Otherwise you would span an aabb for the modifier
+	 * @return @c true if the the gizmo was used in edit mode.
+	 * @note This does not return @c true if the gizmo was used in scene mode. This is due to the fact that the edit
+	 * mode volume trace has to be reset when we activate the gizmo. Otherwise you would span an aabb for the modifier
 	 * to get executed in
 	 */
 	bool renderGizmo(video::Camera &camera, float headerSize, const ImVec2 &size);

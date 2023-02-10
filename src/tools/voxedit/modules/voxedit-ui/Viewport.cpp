@@ -51,11 +51,11 @@ Viewport::~Viewport() {
 bool Viewport::init() {
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 	_showAxisVar = core::Var::getSafe(cfg::VoxEditShowaxis);
-	_guizmoRotation = core::Var::getSafe(cfg::VoxEditGuizmoRotation);
-	_guizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGuizmoAllowAxisFlip);
-	_guizmoSnap = core::Var::getSafe(cfg::VoxEditGuizmoSnap);
-	_guizmoBounds = core::Var::getSafe(cfg::VoxEditGuizmoBounds);
-	_modelGuizmo = core::Var::getSafe(cfg::VoxEditModelGuizmo);
+	_gizmoRotation = core::Var::getSafe(cfg::VoxEditGizmoRotation);
+	_gizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGizmoAllowAxisFlip);
+	_gizmoSnap = core::Var::getSafe(cfg::VoxEditGizmoSnap);
+	_gizmoBounds = core::Var::getSafe(cfg::VoxEditGizmoBounds);
+	_modelGizmo = core::Var::getSafe(cfg::VoxEditModelGizmo);
 	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
 	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
 	if (!_renderContext.init(video::getWindowSize())) {
@@ -427,7 +427,7 @@ void Viewport::lock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFra
 	_transformMementoLocked = true;
 }
 
-void Viewport::handleGuizmo(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix) {
+void Viewport::handleGizmo(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix) {
 	if (ImGuizmo::IsUsing()) {
 		lock(node, keyFrameIdx);
 		glm::vec3 translate;
@@ -449,7 +449,7 @@ void Viewport::handleGuizmo(const voxelformat::SceneGraphNode &node, voxelformat
 	}
 }
 
-bool Viewport::renderSceneAndModelGuizmo(const video::Camera &camera) {
+bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 	if (activeNode == -1) {
@@ -472,7 +472,7 @@ bool Viewport::renderSceneAndModelGuizmo(const video::Camera &camera) {
 	const bool sceneMode = _renderContext.sceneMode;
 	if (sceneMode) {
 		operation |= ImGuizmo::BOUNDS | ImGuizmo::SCALE;
-		if (_guizmoRotation->boolVal()) {
+		if (_gizmoRotation->boolVal()) {
 			operation |= ImGuizmo::ROTATE;
 		}
 		const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
@@ -483,8 +483,8 @@ bool Viewport::renderSceneAndModelGuizmo(const video::Camera &camera) {
 			_bounds.maxs = mins + size;
 			_boundsNode.maxs = size;
 		}
-		bounds = _guizmoBounds->boolVal();
-	} else if (!_modelGuizmo->boolVal()) {
+		bounds = _gizmoBounds->boolVal();
+	} else if (!_modelGizmo->boolVal()) {
 		return false;
 	}
 
@@ -493,16 +493,16 @@ bool Viewport::renderSceneAndModelGuizmo(const video::Camera &camera) {
 	const bool manipulated =
 		ImGuizmo::Manipulate(glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()),
 							 (ImGuizmo::OPERATION)operation, ImGuizmo::MODE::LOCAL, glm::value_ptr(localMatrix),
-							 glm::value_ptr(deltaMatrix), _guizmoSnap->boolVal() ? snap : nullptr,
+							 glm::value_ptr(deltaMatrix), _gizmoSnap->boolVal() ? snap : nullptr,
 							 bounds ? glm::value_ptr(_bounds.mins) : nullptr, boundsSnap);
 	if (sceneMode) {
 		localMatrix = glm::translate(localMatrix, -shift);
-		handleGuizmo(node, keyFrameIdx, localMatrix);
+		handleGizmo(node, keyFrameIdx, localMatrix);
 		if (manipulated) {
 			sceneMgr().nodeUpdateTransform(activeNode, localMatrix, &deltaMatrix, keyFrameIdx);
 		}
 	} else {
-		handleGuizmo(node, InvalidKeyFrame, localMatrix);
+		handleGizmo(node, InvalidKeyFrame, localMatrix);
 		if (manipulated) {
 			sceneMgr().shift(activeNode, deltaMatrix[3]);
 			return true;
@@ -562,12 +562,12 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 
 	ImGuizmo::BeginFrame();
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
-	ImGuizmo::Enable(_renderContext.sceneMode || _modelGuizmo->boolVal());
-	ImGuizmo::AllowAxisFlip(_guizmoAllowAxisFlip->boolVal());
+	ImGuizmo::Enable(_renderContext.sceneMode || _modelGizmo->boolVal());
+	ImGuizmo::AllowAxisFlip(_gizmoAllowAxisFlip->boolVal());
 	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetRect(windowPos.x, windowPos.y + headerSize, size.x, size.y);
 	ImGuizmo::SetOrthographic(orthographic);
-	const bool modified = renderSceneAndModelGuizmo(camera);
+	const bool modified = renderSceneAndModelGizmo(camera);
 	renderCameraManipulator(camera, headerSize);
 	return modified;
 }
