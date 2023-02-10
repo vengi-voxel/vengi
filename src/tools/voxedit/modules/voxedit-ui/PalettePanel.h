@@ -35,8 +35,8 @@ private:
 	core::String _currentSelectedPalette;
 	core::DynamicArray<core::String> _availablePalettes;
 
-	void closestColor(voxel::Palette &palette);
-	void paletteActions(voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	void closestColor(voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	void paletteMenuBar(voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void createPopups(voxelformat::SceneGraphNode &node);
 
 	void addColor(float startingPosX, uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);

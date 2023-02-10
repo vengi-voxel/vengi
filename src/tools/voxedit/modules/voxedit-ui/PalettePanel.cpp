@@ -14,6 +14,7 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsForkAwesome.h"
+#include "voxel/Palette.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
@@ -230,8 +231,32 @@ void PalettePanel::createPopups(voxelformat::SceneGraphNode &node) {
 	}
 }
 
-void PalettePanel::paletteActions(voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+void PalettePanel::paletteMenuBar(voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	voxel::Palette &palette = node.palette();
+	if (ImGui::BeginMenuBar()) {
+		if (ImGui::BeginMenu(ICON_FA_PALETTE" File")) {
+			ImGui::CommandMenuItem(ICON_FA_PALETTE " Load##palette", "importpalette", true, &listener);
+			if (ImGui::MenuItem(ICON_FA_PAINTBRUSH" Switch##palette")) {
+				reloadAvailablePalettes();
+				ImGui::OpenPopup(POPUP_TITLE_LOAD_PALETTE);
+			}
+			if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " Export##savepalette")) {
+				imguiApp()->saveDialog([&](const core::String &file, const io::FormatDescription *desc) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
+			}
+			ImGui::TooltipText("Export the palette");
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu(ICON_FA_SORT " Sort")) {
+			ImGui::CommandMenuItem("Hue", "palette_sort hue", true, &listener);
+			ImGui::CommandMenuItem("Saturation", "palette_sort saturation", true, &listener);
+			ImGui::CommandMenuItem("Brightness", "palette_sort brightness", true, &listener);
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+}
+
+void PalettePanel::closestColor(voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	ImGui::SliderFloat(ICON_FA_SLIDERS, &_intensityChange, -1.0f, 1.0f);
 	ImGui::SameLine();
 	const core::String &paletteChangeCmd = core::string::format("palette_changeintensity %f", _intensityChange);
@@ -240,28 +265,7 @@ void PalettePanel::paletteActions(voxelformat::SceneGraphNode &node, command::Co
 		sceneMgr().mementoHandler().markPaletteChange(node);
 	}
 
-	ImGui::CommandButton(ICON_FA_PALETTE " Load##palette", "importpalette", nullptr, ImVec2(0.0f, 0.0f), &listener);
-	ImGui::SameLine();
-	if (ImGui::Button("Switch##palette")) {
-		reloadAvailablePalettes();
-		ImGui::OpenPopup(POPUP_TITLE_LOAD_PALETTE);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button(ICON_FA_FLOPPY_DISK " Export##savepalette")) {
-		imguiApp()->saveDialog([&](const core::String &file, const io::FormatDescription *desc) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
-	}
-	ImGui::TooltipText("Export the palette");
-	ImGui::SameLine();
-	// TODO:
-	if (ImGui::BeginMenu("Sort")) {
-		ImGui::CommandMenuItem("Hue", "palette_sort hue", true, &listener);
-		ImGui::CommandMenuItem("Saturation", "palette_sort saturation", true, &listener);
-		ImGui::CommandMenuItem("Brightness", "palette_sort brightness", true, &listener);
-		ImGui::EndMenu();
-	}
-}
-
-void PalettePanel::closestColor(voxel::Palette &palette) {
+	voxel::Palette &palette = node.palette();
 	if (ImGui::ColorEdit4("Color closest match", glm::value_ptr(_closestColor), ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs)) {
 		const core::RGBA rgba = core::Color::getRGBA(_closestColor);
 		_closestMatch = palette.getClosestMatch(rgba);
@@ -285,10 +289,11 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 	const int currentSelectedPalIdx = currentPaletteIndex();
 	_hasFocus = false;
 	_importPalette.clear();
-	if (ImGui::Begin(title)) {
+	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_MenuBar)) {
 		_hasFocus = ImGui::IsWindowHovered();
 		_colorHovered = false;
 
+		paletteMenuBar(node, listener);
 		const ImVec2 &pos = ImGui::GetCursorScreenPos();
 		for (int palIdx = 0; palIdx < voxel::PaletteMaxColors; ++palIdx) {
 			addColor(pos.x, palIdx, node, listener);
@@ -296,8 +301,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		ImGui::Dummy(ImVec2(0, ImGui::GetFrameHeight()));
 		ImGui::Text("palette index: %i (scene voxel index %i)", currentSelectedPalIdx, currentSceneHoveredPalIdx);
 
-		paletteActions(node, listener);
-		closestColor(node.palette());
+		closestColor(node, listener);
 		createPopups(node);
 	}
 
