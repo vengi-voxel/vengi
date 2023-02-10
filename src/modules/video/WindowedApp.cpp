@@ -434,7 +434,7 @@ app::AppState WindowedApp::onConstruct() {
 	app::AppState state = Super::onConstruct();
 	core::Var::get(cfg::ClientMultiSampleBuffers, "0");
 	core::Var::get(cfg::ClientMultiSampleSamples, "0");
-	core::Var::get(cfg::ClientFullscreen, "true", "Start the application in fullscreen mode", core::Var::boolValidator);
+	core::Var::get(cfg::ClientFullscreen, "false", "Start the application in fullscreen mode", core::Var::boolValidator);
 	core::Var::get(cfg::ClientWindowHighDPI, "false", core::CV_READONLY);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER, "Activate shadow map", core::Var::boolValidator);
 	core::Var::get(cfg::ClientBloom, "true", "Activate bloom post processing", core::Var::boolValidator);
