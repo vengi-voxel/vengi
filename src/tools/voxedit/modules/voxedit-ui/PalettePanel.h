@@ -28,6 +28,7 @@ private:
 	bool _hasFocus = false;
 	bool _searchFittingColors = false;
 	bool _colorPickerChange = false;
+	bool _popupSwitchPalette = false;
 	const uint32_t _redColor;
 	const uint32_t _yellowColor;
 	const uint32_t _darkRedColor;

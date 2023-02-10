@@ -34,9 +34,6 @@ PalettePanel::PalettePanel()
 void PalettePanel::reloadAvailablePalettes() {
 	core::DynamicArray<io::FilesystemEntry> entities;
 	io::filesystem()->list("", entities, "palette-*.png");
-	if (entities.empty()) {
-		Log::error("Could not find any palettes");
-	}
 	_availablePalettes.clear();
 	for (const io::FilesystemEntry& file : entities) {
 		if (file.type != io::FilesystemEntry::Type::file) {
@@ -197,6 +194,11 @@ uint8_t PalettePanel::currentSceneColor() const {
 }
 
 void PalettePanel::createPopups(voxelformat::SceneGraphNode &node) {
+	if (_popupSwitchPalette) {
+		ImGui::OpenPopup(POPUP_TITLE_LOAD_PALETTE);
+		_popupSwitchPalette = false;
+	}
+
 	if (ImGui::BeginPopupModal(POPUP_TITLE_LOAD_PALETTE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted("Select the palette");
 		ImGui::Separator();
@@ -235,10 +237,10 @@ void PalettePanel::paletteMenuBar(voxelformat::SceneGraphNode &node, command::Co
 	voxel::Palette &palette = node.palette();
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu(ICON_FA_PALETTE" File")) {
-			ImGui::CommandMenuItem(ICON_FA_PALETTE " Load##palette", "importpalette", true, &listener);
-			if (ImGui::MenuItem(ICON_FA_PAINTBRUSH" Switch##palette")) {
+			ImGui::CommandMenuItem(ICON_FA_PALETTE " Load##loadpalette", "importpalette", true, &listener);
+			if (ImGui::MenuItem(ICON_FA_PAINTBRUSH " Switch##switchpalette")) {
 				reloadAvailablePalettes();
-				ImGui::OpenPopup(POPUP_TITLE_LOAD_PALETTE);
+				_popupSwitchPalette = true;
 			}
 			if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " Export##savepalette")) {
 				imguiApp()->saveDialog([&](const core::String &file, const io::FormatDescription *desc) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
@@ -246,7 +248,7 @@ void PalettePanel::paletteMenuBar(voxelformat::SceneGraphNode &node, command::Co
 			ImGui::TooltipText("Export the palette");
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu(ICON_FA_SORT " Sort")) {
+		if (ImGui::BeginMenu(ICON_FA_SORT " Sort#sortpalette")) {
 			ImGui::CommandMenuItem("Hue", "palette_sort hue", true, &listener);
 			ImGui::CommandMenuItem("Saturation", "palette_sort saturation", true, &listener);
 			ImGui::CommandMenuItem("Brightness", "palette_sort brightness", true, &listener);
@@ -301,8 +303,8 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		ImGui::Dummy(ImVec2(0, ImGui::GetFrameHeight()));
 		ImGui::Text("palette index: %i (scene voxel index %i)", currentSelectedPalIdx, currentSceneHoveredPalIdx);
 
-		closestColor(node, listener);
 		createPopups(node);
+		closestColor(node, listener);
 	}
 
 	if (core::Var::getSafe(cfg::VoxEditShowColorPicker)->boolVal()) {
