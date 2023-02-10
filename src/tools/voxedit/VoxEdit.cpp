@@ -115,7 +115,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditShowgrid, "true", "Show the grid", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowlockedaxis, "true", "Show the currently locked axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowaabb, "true", "Show the axis aligned bounding box", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditRendershadow, "true", "Render with shadows", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditRendershadow, "true", "Render with shadows - make sure to set the scene lighting up properly", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditAnimationSpeed, "100", "Millisecond delay between frames hide/unhide when using the scene graph panel play button to animate the models in the scene");
 	core::Var::get(cfg::VoxEditGridsize, "1", "The size of the voxel grid", [](const core::String &val) {
 		const int intVal = core::string::toInt(val);
