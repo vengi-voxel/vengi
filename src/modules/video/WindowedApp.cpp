@@ -398,17 +398,6 @@ app::AppState WindowedApp::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	SDL_DisableScreenSaver();
-
-	if (SDL_SetWindowBrightness(_window, 1.0f) == -1) {
-		sdlCheckError();
-	}
-
-	const bool grabMouse = false;
-	if (grabMouse && (!fullscreen || numDisplays > 1)) {
-		//SDL_SetWindowGrab(_window, SDL_TRUE);
-	}
-
 	int screen = 0;
 	int modes = SDL_GetNumDisplayModes(screen);
 	Log::debug("possible display modes:");
