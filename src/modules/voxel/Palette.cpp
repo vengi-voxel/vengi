@@ -236,6 +236,72 @@ void Palette::changeIntensity(float scale) {
 	markSave();
 }
 
+void Palette::sortHue() {
+	struct Hue {
+		bool operator()(const core::RGBA &lhs, const core::RGBA &rhs) const {
+			float lhhue = 0.0f;
+			float lhsaturation = 0.0f;
+			float lhbrightness = 0.0f;
+			const glm::vec4 &lhc = core::Color::fromRGBA(lhs);
+
+			float rhhue = 0.0f;
+			float rhsaturation = 0.0f;
+			float rhbrightness = 0.0f;
+			const glm::vec4 &rhc = core::Color::fromRGBA(rhs);
+
+			core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
+			core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
+			return lhhue < rhhue;
+		}
+	};
+
+	core::sort(colors, &colors[colorCount], Hue());
+}
+
+void Palette::sortSaturation() {
+	struct Saturation {
+		bool operator()(const core::RGBA &lhs, const core::RGBA &rhs) const {
+			float lhhue = 0.0f;
+			float lhsaturation = 0.0f;
+			float lhbrightness = 0.0f;
+			const glm::vec4 &lhc = core::Color::fromRGBA(lhs);
+
+			float rhhue = 0.0f;
+			float rhsaturation = 0.0f;
+			float rhbrightness = 0.0f;
+			const glm::vec4 &rhc = core::Color::fromRGBA(rhs);
+
+			core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
+			core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
+			return lhsaturation < rhsaturation;
+		}
+	};
+
+	core::sort(colors, &colors[colorCount], Saturation());
+}
+
+void Palette::sortBrightness() {
+	struct Brightness {
+		bool operator()(const core::RGBA &lhs, const core::RGBA &rhs) const {
+			float lhhue = 0.0f;
+			float lhsaturation = 0.0f;
+			float lhbrightness = 0.0f;
+			const glm::vec4 &lhc = core::Color::fromRGBA(lhs);
+
+			float rhhue = 0.0f;
+			float rhsaturation = 0.0f;
+			float rhbrightness = 0.0f;
+			const glm::vec4 &rhc = core::Color::fromRGBA(rhs);
+
+			core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
+			core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
+			return lhbrightness < rhbrightness;
+		}
+	};
+
+	core::sort(colors, &colors[colorCount], Brightness());
+}
+
 bool Palette::save(const char *name) const {
 	if (name == nullptr || name[0] == '\0') {
 		if (_name.empty()) {

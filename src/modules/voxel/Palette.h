@@ -61,6 +61,10 @@ public:
 	void changeIntensity(float scale);
 	void reduce(uint8_t targetColors);
 
+	void sortHue();
+	void sortSaturation();
+	void sortBrightness();
+
 	static core::String print(const Palette &palette, bool colorAsHex = false);
 
 	/**
