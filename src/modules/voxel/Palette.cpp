@@ -256,6 +256,7 @@ void Palette::sortHue() {
 	};
 
 	core::sort(colors, &colors[colorCount], Hue());
+	markDirty();
 }
 
 void Palette::sortSaturation() {
@@ -278,6 +279,7 @@ void Palette::sortSaturation() {
 	};
 
 	core::sort(colors, &colors[colorCount], Saturation());
+	markDirty();
 }
 
 void Palette::sortBrightness() {
@@ -300,6 +302,7 @@ void Palette::sortBrightness() {
 	};
 
 	core::sort(colors, &colors[colorCount], Brightness());
+	markDirty();
 }
 
 bool Palette::save(const char *name) const {

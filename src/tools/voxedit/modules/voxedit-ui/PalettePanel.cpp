@@ -248,7 +248,7 @@ void PalettePanel::paletteMenuBar(voxelformat::SceneGraphNode &node, command::Co
 			ImGui::TooltipText("Export the palette");
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu(ICON_FA_SORT " Sort#sortpalette")) {
+		if (ImGui::BeginMenu(ICON_FA_SORT " Sort##sortpalette")) {
 			ImGui::CommandMenuItem("Hue", "palette_sort hue", true, &listener);
 			ImGui::CommandMenuItem("Saturation", "palette_sort saturation", true, &listener);
 			ImGui::CommandMenuItem("Brightness", "palette_sort brightness", true, &listener);
