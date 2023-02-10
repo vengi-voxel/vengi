@@ -105,6 +105,9 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 	if (ImGui::BeginDragDropTarget()) {
 		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
 			const uint8_t dragPalIdx = *(const uint8_t*)payload->Data;
+			if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl)) {
+				sceneMgr().exchangeColors(node.id(), palIdx, dragPalIdx);
+			}
 			core::exchange(palette.colors[palIdx], palette.colors[dragPalIdx]);
 			if (!existingColor) {
 				palette.colorCount = palIdx + 1;

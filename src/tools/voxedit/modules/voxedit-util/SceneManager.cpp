@@ -31,6 +31,7 @@
 #include "video/Types.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeMoveWrapper.h"
@@ -1104,6 +1105,9 @@ void SceneManager::shift(int nodeId, const glm::ivec3& m) {
 		return;
 	}
 	voxel::RawVolume *v = node->volume();
+	if (v == nullptr) {
+		return;
+	}
 	voxel::Region region = v->region();
 	v->translate(m);
 	region.accumulate(v->region());
@@ -1115,6 +1119,29 @@ void SceneManager::shift(int x, int y, int z) {
 	_sceneGraph.foreachGroup([&] (int nodeId) {
 		shift(nodeId, v);
 	});
+}
+
+void SceneManager::exchangeColors(int nodeId, uint8_t palIdx1, uint8_t palIdx2) {
+	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	voxel::RawVolume *v = node->volume();
+	if (v == nullptr) {
+		return;
+	}
+	const voxel::Palette &palette = node->palette();
+	voxel::RawVolumeWrapper wrapper(v);
+	voxelutil::visitVolume(*v, [&wrapper, &palette, palIdx1, palIdx2] (int x, int y, int z, const voxel::Voxel& voxel) {
+		if (voxel.getColor() == palIdx1) {
+			wrapper.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx2));
+		} else if (voxel.getColor() == palIdx2) {
+			wrapper.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx1));
+		}
+	});
+	if (wrapper.dirtyRegion().isValid()) {
+		modified(nodeId, wrapper.dirtyRegion());
+	}
 }
 
 bool SceneManager::setGridResolution(int resolution) {
