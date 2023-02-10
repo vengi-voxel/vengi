@@ -1273,6 +1273,25 @@ void SceneManager::construct() {
 		_mementoHandler.markPaletteChange(node);
 	}).setHelp("Change intensity by scaling the rgb values of the palette");
 
+	command::Command::registerCommand("palette_sort", [&] (const command::CmdArgs& args) {
+		if (args.empty()) {
+			Log::info("Usage: palette_sort [hue|saturation|brightness]");
+			return;
+		}
+		const core::String &type = args[0];
+		const int nodeId = activeNode();
+		voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		voxel::Palette &pal = node.palette();
+		if (type == "hue") {
+			pal.sortHue();
+		} else if (type == "brightness") {
+			pal.sortBrightness();
+		} else if (type == "saturation") {
+			pal.sortSaturation();
+		}
+		_mementoHandler.markPaletteChange(node);
+	}).setHelp("Change intensity by scaling the rgb values of the palette");
+
 	command::Command::registerActionButton("zoom_in", _zoomIn);
 	command::Command::registerActionButton("zoom_out", _zoomOut);
 	command::Command::registerActionButton("camera_rotate", _rotate);
