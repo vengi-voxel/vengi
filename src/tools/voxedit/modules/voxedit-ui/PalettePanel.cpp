@@ -251,6 +251,14 @@ void PalettePanel::paletteActions(voxelformat::SceneGraphNode &node, command::Co
 		imguiApp()->saveDialog([&](const core::String &file, const io::FormatDescription *desc) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
 	}
 	ImGui::TooltipText("Export the palette");
+	ImGui::SameLine();
+	// TODO:
+	if (ImGui::BeginMenu("Sort")) {
+		ImGui::CommandMenuItem("Hue", "palette_sort hue", true, &listener);
+		ImGui::CommandMenuItem("Saturation", "palette_sort saturation", true, &listener);
+		ImGui::CommandMenuItem("Brightness", "palette_sort brightness", true, &listener);
+		ImGui::EndMenu();
+	}
 }
 
 void PalettePanel::closestColor(voxel::Palette &palette) {
