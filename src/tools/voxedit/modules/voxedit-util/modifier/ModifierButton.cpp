@@ -28,7 +28,7 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 		if (_newType != ModifierType::None) {
 			_oldType = modifier.modifierType();
 			modifier.setModifierType(_newType);
-			sceneMgr().trace(false);
+			sceneMgr().trace(false, true);
 		}
 		modifier.aabbStart();
 	}
@@ -76,7 +76,7 @@ void ModifierButton::execute(bool single) {
 	sceneMgr().nodeForeachGroup(func);
 	if (_oldType != ModifierType::None) {
 		modifier.setModifierType(_oldType);
-		sceneMgr().trace(true);
+		sceneMgr().trace(false, true);
 		_oldType = ModifierType::None;
 	}
 	if (!single) {
