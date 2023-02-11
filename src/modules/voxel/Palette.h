@@ -54,6 +54,8 @@ public:
 		return _glowColors[_indices[i]];
 	}
 
+	void exchange(uint8_t idx1, uint8_t idx2);
+
 	const PaletteIndicesArray &indices() const {
 		return _indices;
 	}

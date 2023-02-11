@@ -46,6 +46,14 @@ void Palette::markDirty() {
 	_hash._hashColors[1] = core::hash(_glowColors, sizeof(_glowColors));
 }
 
+void Palette::exchange(uint8_t idx1, uint8_t idx2) {
+	if (idx1 == idx2) {
+		return;
+	}
+	core::exchange(_indices[idx1], _indices[idx2]);
+	markDirty();
+}
+
 void Palette::reduce(uint8_t targetColors) {
 	core::Color::ColorReductionType reductionType = core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
 	PaletteColorArray oldcolors;
