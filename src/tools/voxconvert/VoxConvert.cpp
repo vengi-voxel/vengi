@@ -202,7 +202,7 @@ app::AppState VoxConvert::onInit() {
 			return app::AppState::InitFailure;
 		}
 		if (palette.save(outfile.c_str())) {
-			Log::info("Saved palette with %i colors to %s", palette.colorCount, outfile.c_str());
+			Log::info("Saved palette with %i colors to %s", palette.colorCount(), outfile.c_str());
 			return state;
 		}
 		Log::error("Failed to write %s", outfile.c_str());

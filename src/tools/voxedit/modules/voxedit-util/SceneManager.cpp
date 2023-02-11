@@ -88,7 +88,7 @@ bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestC
 		}
 	}
 
-	if (palette.colorCount == 0 && !palette.load(paletteName.c_str())) {
+	if (palette.colorCount() == 0 && !palette.load(paletteName.c_str())) {
 		return false;
 	}
 	if (!setActivePalette(palette, searchBestColors)) {
@@ -581,7 +581,7 @@ bool SceneManager::setActivePalette(const voxel::Palette &palette, bool searchBe
 		core_assert(v != nullptr);
 		const voxel::Palette &oldPalette = node.palette();
 		const int voxels = voxelutil::visitVolume(wrapper, [&wrapper, &palette, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
-			const core::RGBA rgba = oldPalette.colors[voxel.getColor()];
+			const core::RGBA rgba = oldPalette.color(voxel.getColor());
 			const int newColor = palette.getClosestMatch(rgba);
 			if (newColor != -1) {
 				voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor);
@@ -594,7 +594,7 @@ bool SceneManager::setActivePalette(const voxel::Palette &palette, bool searchBe
 			return true;
 		}
 		if (!wrapper.dirtyRegion().isValid()) {
-			Log::warn("remapping palette indices failed: %i entries in the old palette", oldPalette.colorCount);
+			Log::warn("remapping palette indices failed: %i entries in the old palette", oldPalette.colorCount());
 		} else {
 			modified(nodeId, wrapper.dirtyRegion());
 		}
@@ -2487,8 +2487,8 @@ bool SceneManager::nodeActivate(int nodeId) {
 	}
 	_sceneGraph.setActiveNode(nodeId);
 	const voxel::Palette &palette = node.palette();
-	for (int i = 0; i < palette.colorCount; ++i) {
-		if (palette.colors[i].a > 0) {
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		if (palette.color(i).a > 0) {
 			_modifier.setCursorVoxel(voxel::createVoxel(palette, i));
 			break;
 		}

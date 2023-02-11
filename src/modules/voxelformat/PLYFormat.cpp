@@ -96,7 +96,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 					stream.writeStringFormat(false, " %f %f", uv.x, uv.y);
 				}
 				if (withColor) {
-					const core::RGBA color = palette.colors[v.colorIndex];
+					const core::RGBA color = palette.color(v.colorIndex);
 					stream.writeStringFormat(false, " %u %u %u", color.r, color.g, color.b);
 				}
 				stream.writeStringFormat(false, "\n");

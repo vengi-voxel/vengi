@@ -289,9 +289,9 @@ static int luaVoxel_volumewrapper_gc(lua_State *s) {
 
 static int luaVoxel_palette_colors(lua_State* s) {
 	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
-	lua_createtable(s, palette->colorCount, 0);
-	for (int i = 0; i < palette->colorCount; ++i) {
-		const glm::vec4& c = core::Color::fromRGBA(palette->colors[i]);
+	lua_createtable(s, palette->colorCount(), 0);
+	for (int i = 0; i < palette->colorCount(); ++i) {
+		const glm::vec4& c = core::Color::fromRGBA(palette->color(i));
 		lua_pushinteger(s, i + 1);
 		clua_push(s, c);
 		lua_settable(s, -3);
@@ -302,7 +302,7 @@ static int luaVoxel_palette_colors(lua_State* s) {
 static int luaVoxel_palette_color(lua_State* s) {
 	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
 	const uint8_t color = luaL_checkinteger(s, 2);
-	const glm::vec4& rgba = core::Color::fromRGBA(palette->colors[color]);
+	const glm::vec4& rgba = core::Color::fromRGBA(palette->color(color));
 	return clua_push(s, rgba);
 }
 
@@ -314,7 +314,7 @@ static int luaVoxel_palette_closestmatch(lua_State* s) {
 	const float g = (float)luaL_checkinteger(s, 3) / 255.0f;
 	const float b = (float)luaL_checkinteger(s, 4) / 255.0f;
 	const int match = core::Color::getClosestMatch(glm::vec4(r, b, g, 1.0f), materialColors);
-	if (match < 0 || match > palette->colorCount) {
+	if (match < 0 || match > palette->colorCount()) {
 		return clua_error(s, "Given color index is not valid or palette is not loaded");
 	}
 	lua_pushinteger(s, match);
@@ -325,7 +325,7 @@ static int luaVoxel_palette_similar(lua_State* s) {
 	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
 	const int paletteIndex = lua_tointeger(s, 2);
 	const int colorCount = lua_tointeger(s, 3);
-	if (paletteIndex < 0 || paletteIndex >= palette->colorCount) {
+	if (paletteIndex < 0 || paletteIndex >= palette->colorCount()) {
 		return clua_error(s, "Palette index out of bounds");
 	}
 	core::DynamicArray<glm::vec4> colors;

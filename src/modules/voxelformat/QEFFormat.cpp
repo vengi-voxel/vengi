@@ -81,7 +81,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	palette.colorCount = paletteSize;
+	palette.setSize(paletteSize);
 
 	for (int i = 0; i < paletteSize; ++i) {
 		float r, g, b;
@@ -91,7 +91,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			return false;
 		}
 		const glm::vec4 color(r, g, b, 1.0f);
-		palette.colors[i] = core::Color::getRGBA(color);
+		palette.color(i) = core::Color::getRGBA(color);
 	}
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	SceneGraphNode node;
@@ -135,9 +135,9 @@ bool QEFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	const uint32_t depth = region.getDepthInVoxels();
 	stream.writeStringFormat(false, "%i %i %i\n", width, depth, height);
 	const voxel::Palette& palette = merged.second;
-	stream.writeStringFormat(false, "%i\n", palette.colorCount);
-	for (int i = 0; i < palette.colorCount; ++i) {
-		const uint32_t c = palette.colors[i];
+	stream.writeStringFormat(false, "%i\n", palette.colorCount());
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		const core::RGBA c = palette.color(i);
 		const glm::vec4 &cv = core::Color::fromRGBA(c);
 		stream.writeStringFormat(false, "%f %f %f\n", cv.r, cv.g, cv.b);
 	}

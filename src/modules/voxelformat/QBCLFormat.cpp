@@ -195,7 +195,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 					newColor = 0;
 					Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
 				} else {
-					newColor = palette.colors[voxel.getColor()];
+					newColor = palette.color(voxel.getColor());
 					Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
 							x, y, z, (int)voxel.getColor(), (int)newColor.r, (int)newColor.g, (int)newColor.b, (int)newColor.a);
 				}
@@ -335,8 +335,8 @@ size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 	SceneGraph sceneGraph;
 	wrapBool(readNodes(filename, stream, sceneGraph, sceneGraph.root().id(), palette, header))
 
-	Log::debug("qbcl: loaded %i colors", palette.colorCount);
-	return palette.colorCount;
+	Log::debug("qbcl: loaded %i colors", palette.colorCount());
+	return palette.colorCount();
 }
 
 bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {

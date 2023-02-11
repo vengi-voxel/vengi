@@ -450,7 +450,7 @@ size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 		}
 	}
 
-	return palette.colorCount;
+	return palette.size();
 }
 
 
@@ -552,11 +552,11 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream& stream, const SceneGraph
 	GoxScopedChunkWriter scoped(stream, FourCC('M', 'A', 'T', 'E'));
 	const voxel::Palette& palette = sceneGraph.firstPalette();
 
-	for (int i = 0; i < palette.colorCount; ++i) {
+	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::String& name = core::string::format("mat%i", i);
 		const float value[3] = {0.0f, 0.0f, 0.0f};
 		wrapBool(saveChunk_DictEntry(stream, "name", name.c_str(), name.size()))
-		wrapBool(saveChunk_DictEntry(stream, "color", palette.colors[i]))
+		wrapBool(saveChunk_DictEntry(stream, "color", palette.color(i)))
 		wrapBool(saveChunk_DictEntry(stream, "metallic", value[0]))
 		wrapBool(saveChunk_DictEntry(stream, "roughness", value[0]))
 		wrapBool(saveChunk_DictEntry(stream, "emission", value))
@@ -651,7 +651,7 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const SceneGraph
 						if (voxel::isAir(voxel.getMaterial())) {
 							data[offset++] = 0;
 						} else {
-							data[offset++] = palette.colors[voxel.getColor()];
+							data[offset++] = palette.color(voxel.getColor());
 						}
 					}, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZX);
 

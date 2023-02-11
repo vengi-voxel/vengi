@@ -167,7 +167,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 					*zlibBuf++ = 0;
 					*zlibBuf++ = 0;
 				} else {
-					const core::RGBA voxelColor = palette.colors[voxel.getColor()];
+					const core::RGBA voxelColor = palette.color(voxel.getColor());
 					//const uint8_t alpha = voxelColor.a * 255.0f;
 					*zlibBuf++ = voxelColor.r;
 					*zlibBuf++ = voxelColor.g;
@@ -228,12 +228,12 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 
 bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream, const voxel::Palette& palette) const {
 	wrapSave(stream.writeString("COLORMAP", false));
-	wrapSave(stream.writeUInt32(palette.colorCount));
-	for (int i = 0; i < palette.colorCount; ++i) {
-		wrapSave(stream.writeUInt8(palette.colors[i].r));
-		wrapSave(stream.writeUInt8(palette.colors[i].g));
-		wrapSave(stream.writeUInt8(palette.colors[i].b));
-		wrapSave(stream.writeUInt8(palette.colors[i].a));
+	wrapSave(stream.writeUInt32(palette.colorCount()));
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		wrapSave(stream.writeUInt8(palette.color(i).r));
+		wrapSave(stream.writeUInt8(palette.color(i).g));
+		wrapSave(stream.writeUInt8(palette.color(i).b));
+		wrapSave(stream.writeUInt8(palette.color(i).a));
 	}
 
 	return true;
@@ -568,7 +568,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream, voxel::Palette &pal
 	if (colorCount > voxel::PaletteMaxColors) {
 		Log::warn("Can't load all palette colors (%u)", colorCount);
 	}
-	palette.colorCount = core_min((int)colorCount, voxel::PaletteMaxColors);
+	palette.setSize(core_min((int)colorCount, voxel::PaletteMaxColors));
 	for (uint32_t i = 0; i < colorCount; ++i) {
 		uint8_t colorByteR;
 		uint8_t colorByteG;
@@ -578,7 +578,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream, voxel::Palette &pal
 		wrap(stream.readUInt8(colorByteG));
 		wrap(stream.readUInt8(colorByteB));
 		wrap(stream.readUInt8(colorByteVisMask));
-		palette.colors[i] = core::RGBA(colorByteR, colorByteG, colorByteB);
+		palette.color(i) = core::RGBA(colorByteR, colorByteG, colorByteB);
 	}
 	return true;
 }
@@ -623,9 +623,10 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 				Log::error("Failed to load color map");
 				return 0;
 			}
-			Log::debug("Load qbt palette with %i entries", palette.colorCount);
-			if (palette.colorCount > 0) {
-				return palette.colorCount;
+			int colorCount = palette.colorCount();
+			Log::debug("Load qbt palette with %i entries", colorCount);
+			if (colorCount > 0) {
+				return colorCount;
 			}
 		} else if (0 == memcmp(buf, "DATATREE", 8)) {
 			wrapBool(skipNode(stream))
@@ -672,7 +673,7 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				Log::error("Failed to load color map");
 				return false;
 			}
-			if (palette.colorCount == 0) {
+			if (palette.colorCount() == 0) {
 				Log::debug("No color map found");
 			} else {
 				Log::debug("Color map loaded");

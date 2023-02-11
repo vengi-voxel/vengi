@@ -86,7 +86,7 @@ public:
 			newColor = 0u;
 			Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
 		} else {
-			newColor = _palette.colors[voxel.getColor()];
+			newColor = _palette.color(voxel.getColor());
 			Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
 					x, y, z, (int)voxel.getColor(), (int)newColor.r, (int)newColor.g, (int)newColor.b, (int)newColor.a);
 		}
@@ -400,7 +400,7 @@ bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::
 				}
 			}
 		}
-		Log::debug("%i colors loaded", palette.colorCount);
+		Log::debug("%i colors loaded", palette.colorCount());
 		return true;
 	}
 
@@ -429,7 +429,7 @@ bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::
 		}
 		++z;
 	}
-	Log::debug("%i colors loaded", palette.colorCount);
+	Log::debug("%i colors loaded", palette.colorCount());
 	return true;
 }
 
@@ -462,8 +462,8 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 			break;
 		}
 	}
-	Log::debug("%i qb colors loaded", palette.colorCount);
-	return palette.colorCount;
+	Log::debug("%i qb colors loaded", palette.colorCount());
+	return palette.colorCount();
 }
 
 bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) {

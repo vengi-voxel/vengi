@@ -53,7 +53,7 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 			}
 		}
 	}
-	return palette.colorCount;
+	return palette.size();
 }
 
 bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) {
@@ -137,9 +137,9 @@ bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 					continue;
 				}
 
-				core::RGBA rgba = palette.colors[voxel.getColor()];
+				core::RGBA rgba = palette.color(voxel.getColor());
 				if (rgba.r == 0u && rgba.g == 0u && rgba.b == 0u) {
-					rgba = palette.colors[palette.findReplacement(voxel.getColor())];
+					rgba = palette.color(palette.findReplacement(voxel.getColor()));
 				}
 				wrapBool(stream.writeUInt8(rgba.r))
 				wrapBool(stream.writeUInt8(rgba.g))

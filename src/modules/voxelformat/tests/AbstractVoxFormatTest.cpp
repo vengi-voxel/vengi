@@ -136,7 +136,7 @@ void AbstractVoxFormatTest::canLoad(SceneGraph &sceneGraph, const core::String &
 }
 
 void AbstractVoxFormatTest::checkColor(core::RGBA c1, const voxel::Palette &palette, uint8_t index, float maxDelta) {
-	const core::RGBA c2 = palette.colors[index];
+	const core::RGBA c2 = palette.color(index);
 	const float delta = core::Color::getDistance(c1, c2);
 	ASSERT_LE(delta, maxDelta) << "color1[" << core::Color::print(c1) << "], color2[" << core::Color::print(c2)
 							 << "], delta[" << delta << "]";
@@ -218,9 +218,9 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta
 	voxel::Palette palette;
 	EXPECT_TRUE(palette.nippon());
 
-	const core::RGBA red = palette.colors[37];
-	const core::RGBA green = palette.colors[149];
-	const core::RGBA blue = palette.colors[197];
+	const core::RGBA red = palette.color(37);
+	const core::RGBA green = palette.color(149);
+	const core::RGBA blue = palette.color(197);
 
 	for (const voxelformat::SceneGraphNode &node : sceneGraph) {
 		const voxel::RawVolume *volume = node.volume();
@@ -315,7 +315,7 @@ void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Fo
 	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(pal, 0)));
 	ASSERT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(pal, 200)));
 	ASSERT_TRUE(original.setVoxel(0, 1, 1, voxel::createVoxel(pal, 201)));
-	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(pal, pal.colorCount - 1)));
+	ASSERT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(pal, pal.colorCount() - 1)));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 	SceneGraph sceneGraphsave(2);
 	{

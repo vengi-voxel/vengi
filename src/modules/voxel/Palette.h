@@ -30,10 +30,33 @@ private:
 	} _hash {};
 
 	bool load(const uint8_t *rgbaBuf, size_t bufsize, const char *name);
+	PaletteColorArray _colors {};
+	PaletteColorArray _glowColors {};
+	int _colorCount = 0;
 public:
-	PaletteColorArray colors {};
-	PaletteColorArray glowColors {};
-	int colorCount = 0;
+	inline core::RGBA &color(uint8_t i) {
+		return _colors[i];
+	}
+
+	inline core::RGBA color(uint8_t i) const {
+		return _colors[i];
+	}
+
+	inline core::RGBA &glowColor(uint8_t i) {
+		return _glowColors[i];
+	}
+
+	inline core::RGBA glowColor(uint8_t i) const {
+		return _glowColors[i];
+	}
+
+	const PaletteColorArray &colors() const {
+		return _colors;
+	}
+
+	const PaletteColorArray &glowColors() const {
+		return _glowColors;
+	}
 
 	const core::String &name() const {
 		return _name;
@@ -42,9 +65,19 @@ public:
 	inline uint64_t hash() const {
 		return _hash._hash;
 	}
-	inline size_t size() const {
-		return colorCount;
+	int colorCount() const {
+		return _colorCount;
 	}
+	inline size_t size() const {
+		return _colorCount;
+	}
+	inline void setSize(int cnt) {
+		_colorCount = cnt;
+	}
+	inline void changeSize(int delta) {
+		_colorCount += delta;
+	}
+
 	bool load(const char *name);
 	bool save(const char *name = nullptr) const;
 
@@ -143,7 +176,7 @@ public:
 };
 
 inline voxel::Voxel createVoxel(const voxel::Palette &pal, uint8_t index) {
-	if (index < pal.colorCount && pal.colors[index].a != 255) {
+	if (index < pal.size() && pal.color(index).a != 255) {
 		return createVoxel(VoxelType::Transparent, index);
 	}
 	return createVoxel(VoxelType::Generic, index);

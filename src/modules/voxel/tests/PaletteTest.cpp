@@ -30,17 +30,17 @@ TEST_F(PaletteTest, testPaletteLookup) {
 TEST_F(PaletteTest, testGimpPalette) {
 	Palette pal;
 	pal.nippon();
-	const int cnt = pal.colorCount;
+	const int cnt = pal.colorCount();
 	ASSERT_TRUE(pal.saveGimpPalette("test.gpl", "test"));
 	EXPECT_TRUE(pal.load("test.gpl"));
-	EXPECT_EQ(pal.colorCount, cnt);
+	EXPECT_EQ(pal.colorCount(), cnt);
 }
 
 TEST_F(PaletteTest, testReduce) {
 	Palette pal;
 	pal.nippon();
 	pal.reduce(16);
-	EXPECT_LE(pal.colorCount, 16);
+	EXPECT_LE(pal.colorCount(), 16);
 }
 
 TEST_F(PaletteTest, testSavePngPalette) {
@@ -67,26 +67,26 @@ TEST_F(PaletteTest, testCopyPalette) {
 	Palette copy;
 	Palette pal;
 	pal.nippon();
-	for (int i = 0; i < pal.colorCount; ++i) {
-		ASSERT_TRUE(copy.addColorToPalette(pal.colors[i], false));
+	for (int i = 0; i < pal.colorCount(); ++i) {
+		ASSERT_TRUE(copy.addColorToPalette(pal.color(i), false));
 	}
-	ASSERT_EQ(pal.colorCount, copy.colorCount);
+	ASSERT_EQ(pal.colorCount(), copy.colorCount());
 }
 
 TEST_F(PaletteTest, testAddColor1) {
 	int emptySlot = 0;
 	Palette pal;
 	EXPECT_TRUE(pal.addColorToPalette(core::RGBA(0), true, nullptr, false, emptySlot));
-	ASSERT_EQ(1, pal.colorCount);
+	ASSERT_EQ(1, pal.colorCount());
 	EXPECT_TRUE(pal.addColorToPalette(core::RGBA(0, 0, 0, 255), true, nullptr, false, emptySlot));
-	ASSERT_EQ(2, pal.colorCount);
+	ASSERT_EQ(2, pal.colorCount());
 }
 
 TEST_F(PaletteTest, testAddColor2) {
 	int emptySlot = 0;
 	Palette pal;
 	EXPECT_TRUE(pal.addColorToPalette(core::RGBA(0, 0, 0, 255), true, nullptr, false, emptySlot));
-	ASSERT_EQ(2, pal.colorCount) << "Empty slot was not taken into account";
+	ASSERT_EQ(2, pal.colorCount()) << "Empty slot was not taken into account";
 	uint8_t index = -1;
 	EXPECT_FALSE(pal.addColorToPalette(core::RGBA(0), true, &index, false, emptySlot));
 	ASSERT_EQ(0, index);
@@ -95,9 +95,9 @@ TEST_F(PaletteTest, testAddColor2) {
 TEST_F(PaletteTest, testGetClosestMatch) {
 	Palette pal;
 	pal.magicaVoxel();
-	EXPECT_EQ(255, pal.colorCount);
-	for (int i = 0; i < pal.colorCount; ++i) {
-		const int match = pal.getClosestMatch(pal.colors[i]);
+	EXPECT_EQ(255, pal.colorCount());
+	for (int i = 0; i < pal.colorCount(); ++i) {
+		const int match = pal.getClosestMatch(pal.color(i));
 		EXPECT_EQ(i, match);
 	}
 }
@@ -105,10 +105,10 @@ TEST_F(PaletteTest, testGetClosestMatch) {
 TEST_F(PaletteTest, testRGBPalette) {
 	Palette pal;
 	pal.nippon();
-	const int cnt = pal.colorCount;
+	const int cnt = pal.colorCount();
 	ASSERT_TRUE(pal.save("test.pal"));
 	EXPECT_TRUE(pal.load("test.pal"));
-	EXPECT_EQ(pal.colorCount, cnt);
+	EXPECT_EQ(pal.colorCount(), cnt);
 }
 
 TEST_F(PaletteTest, testAddColorsNoDup) {
@@ -121,7 +121,7 @@ TEST_F(PaletteTest, testAddColorsNoDup) {
 	for (int i = 0; i < lengthof(colors); ++i) {
 		EXPECT_TRUE(pal.addColorToPalette(colors[i], false)) << "color entry " << i << " was not added (" << colors[i] << ")";
 	}
-	EXPECT_EQ(lengthof(colors), pal.colorCount);
+	EXPECT_EQ(lengthof(colors), pal.colorCount());
 }
 
 TEST_F(PaletteTest, testAddColorsQuantize) {
@@ -187,7 +187,7 @@ TEST_F(PaletteTest, testAddColorsQuantize) {
 	for (int i = 0; i < lengthof(colors); ++i) {
 		pal.addColorToPalette(colors[i], false);
 	}
-	EXPECT_EQ(voxel::PaletteMaxColors, pal.colorCount);
+	EXPECT_EQ(voxel::PaletteMaxColors, pal.colorCount());
 }
 
 TEST_F(PaletteTest, testExtractPaletteName) {

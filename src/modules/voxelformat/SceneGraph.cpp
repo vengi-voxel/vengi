@@ -399,15 +399,15 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) cons
 	bool tooManyColors = false;
 	for (const SceneGraphNode &node : *this) {
 		const voxel::Palette &nodePalette = node.palette();
-		for (int i = 0; i < nodePalette.colorCount; ++i) {
-			const core::RGBA rgba = nodePalette.colors[i];
+		for (int i = 0; i < nodePalette.colorCount(); ++i) {
+			const core::RGBA rgba = nodePalette.color(i);
 			if (palette.hasColor(rgba)) {
 				continue;
 			}
 			uint8_t index = 0;
 			int skipIndex = rgba.a == 0 ? -1 : emptyIndex;
 			if (!palette.addColorToPalette(rgba, false, &index, false, skipIndex)) {
-				if (index < palette.colorCount - 1) {
+				if (index < palette.colorCount() - 1) {
 					tooManyColors = true;
 					break;
 				}
@@ -422,7 +422,7 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) cons
 	}
 	if (tooManyColors) {
 		Log::debug("too many colors - restart, but skip similar");
-		palette.colorCount = 0;
+		palette.setSize(0);
 		for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
 			palette.removeGlow(i);
 		}
@@ -437,13 +437,13 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) cons
 				used.fill(true);
 			}
 			const voxel::Palette &nodePalette = node.palette();
-			for (int i = 0; i < nodePalette.colorCount; ++i) {
+			for (int i = 0; i < nodePalette.colorCount(); ++i) {
 				if (!used[i]) {
 					Log::trace("color %i not used, skip it for this node", i);
 					continue;
 				}
 				uint8_t index = 0;
-				const core::RGBA rgba = nodePalette.colors[i];
+				const core::RGBA rgba = nodePalette.color(i);
 				int skipIndex = rgba.a == 0 ? -1 : emptyIndex;
 				if (palette.addColorToPalette(rgba, true, &index, true, skipIndex)) {
 					if (nodePalette.hasGlow(i)) {
@@ -503,7 +503,7 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool transform) const {
 			if (isAir(voxel.getMaterial())) {
 				return false;
 			}
-			const core::RGBA color = node->palette().colors[voxel.getColor()];
+			const core::RGBA color = node->palette().color(voxel.getColor());
 			const uint8_t index = palette.getClosestMatch(color);
 			voxel.setColor(index);
 			return true;

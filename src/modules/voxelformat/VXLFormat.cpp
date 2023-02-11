@@ -311,13 +311,13 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, uint32_t numNodes, 
 
 	wrapBool(stream.writeUInt8(0x10U)) // startPaletteRemap
 	wrapBool(stream.writeUInt8(0x1fU)) // endPaletteRemap
-	for (int i = 0; i < palette.colorCount; ++i) {
-		const core::RGBA& rgba = palette.colors[i];
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		const core::RGBA& rgba = palette.color(i);
 		wrapBool(stream.writeUInt8(rgba.r))
 		wrapBool(stream.writeUInt8(rgba.g))
 		wrapBool(stream.writeUInt8(rgba.b))
 	}
-	for (int i = palette.colorCount; i < voxel::PaletteMaxColors; ++i) {
+	for (int i = palette.colorCount(); i < voxel::PaletteMaxColors; ++i) {
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
@@ -444,7 +444,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream& stream, VXLModel& mdl, uint32_
 	SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(header.name);
-	if (palette.colorCount > 0) {
+	if (palette.colorCount() > 0) {
 		node.setPalette(palette);
 	}
 
@@ -599,13 +599,13 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel:
 	Log::debug("Tailers: %u", hdr.layerInfoCount);
 	Log::debug("BodySize: %u", hdr.dataSize);
 
-	palette.colorCount = voxel::PaletteMaxColors;
+	palette.setSize(voxel::PaletteMaxColors);
 	bool valid = false;
 	for (uint32_t n = 0; n < hdr.paletteCount; ++n) {
 		wrap(stream.readUInt8(hdr.palette.startPaletteRemap)) // 0x1f
 		wrap(stream.readUInt8(hdr.palette.endPaletteRemap)) // 0x10
 		Log::debug("palette %u: %u start, %u end palette offset", n, hdr.palette.startPaletteRemap, hdr.palette.endPaletteRemap);
-		for (int i = 0; i < palette.colorCount; ++i) {
+		for (int i = 0; i < palette.colorCount(); ++i) {
 			wrap(stream.readUInt8(hdr.palette.palette[i][0]))
 			wrap(stream.readUInt8(hdr.palette.palette[i][1]))
 			wrap(stream.readUInt8(hdr.palette.palette[i][2]))
@@ -619,9 +619,9 @@ bool VXLFormat::readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel:
 	}
 
 	if (valid) {
-		for (int i = 0; i < palette.colorCount; ++i) {
+		for (int i = 0; i < palette.colorCount(); ++i) {
 			const uint8_t *p = hdr.palette.palette[i];
-			palette.colors[i] = core::RGBA(p[0], p[1], p[2]);
+			palette.color(i) = core::RGBA(p[0], p[1], p[2]);
 		}
 	} else {
 		palette.commandAndConquer();
@@ -822,7 +822,7 @@ size_t VXLFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	if (!readHeader(stream, mdl, palette)) {
 		return false;
 	}
-	return palette.colorCount;
+	return palette.colorCount();
 }
 
 bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette) {

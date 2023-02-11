@@ -53,7 +53,7 @@ bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel
 	if (voxel::isAir(voxel.getMaterial())) {
 		wrapBool(stream.writeUInt8(EMPTY_PALETTE))
 	} else {
-		const core::RGBA color = nodePalette.colors[voxel.getColor()];
+		const core::RGBA color = nodePalette.color(voxel.getColor());
 		const int palIndex = palette.getClosestMatch(color, nullptr, EMPTY_PALETTE);
 		if (palIndex < 0) {
 			Log::error("Got palette index %i for %s", palIndex, core::Color::print(color, true).c_str());
@@ -127,7 +127,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	}
 
 	voxel::Palette palette = sceneGraph.mergePalettes(true, EMPTY_PALETTE);
-	int numColors = palette.colorCount;
+	int numColors = palette.colorCount();
 	if (numColors >= voxel::PaletteMaxColors) {
 		numColors = voxel::PaletteMaxColors - 1;
 	}
@@ -138,7 +138,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 
 	// albedo palette
 	for (int i = 0; i < numColors; ++i) {
-		const core::RGBA &matcolor = palette.colors[i];
+		const core::RGBA &matcolor = palette.color(i);
 		wrapBool(stream.writeUInt8(matcolor.r))
 		wrapBool(stream.writeUInt8(matcolor.g))
 		wrapBool(stream.writeUInt8(matcolor.b))
@@ -152,7 +152,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	}
 	// emissive palette
 	for (int i = 0; i < numColors; ++i) {
-		const core::RGBA &glowcolor = palette.glowColors[i];
+		const core::RGBA &glowcolor = palette.glowColor(i);
 		const bool emissive = glowcolor.a > 0;
 		if (emissive) {
 			wrapBool(stream.writeUInt8(glowcolor.r))
@@ -186,12 +186,12 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 
 	wrapBool(stream.writeUInt8(numColors))
 	for (int i = 0; i < numColors; ++i) {
-		const core::RGBA &matcolor = palette.colors[i];
+		const core::RGBA &matcolor = palette.color(i);
 		wrapBool(stream.writeUInt8(matcolor.b))
 		wrapBool(stream.writeUInt8(matcolor.g))
 		wrapBool(stream.writeUInt8(matcolor.r))
 		wrapBool(stream.writeUInt8(matcolor.a))
-		const core::RGBA &glowcolor = palette.glowColors[i];
+		const core::RGBA &glowcolor = palette.glowColor(i);
 		const bool emissive = glowcolor.a > 0;
 		wrapBool(stream.writeBool(emissive))
 	}
@@ -459,12 +459,12 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt8(alpha));
 		uint8_t emissive;
 		wrap(stream.readUInt8(emissive));
-		palette.colors[i] = core::RGBA(red, green, blue, alpha);
+		palette.color(i) = core::RGBA(red, green, blue, alpha);
 		if (emissive) {
-			palette.glowColors[i] = palette.colors[i];
+			palette.glowColor(i) = palette.color(i);
 		}
 	}
-	palette.colorCount = materialAmount;
+	palette.setSize(materialAmount);
 
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 

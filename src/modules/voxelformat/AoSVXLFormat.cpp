@@ -151,7 +151,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 		colorBuffer.push_back(e->first);
 	}
 	palette.quantize(colorBuffer.data(), colorBuffer.size());
-	return palette.colorCount;
+	return palette.size();
 }
 
 glm::ivec3 AoSVXLFormat::maxSize() const {
@@ -183,7 +183,7 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 
 	for (const SceneGraphNode &node : sceneGraph) {
 		voxelutil::visitVolume(*node.volume(), [&map, &node, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
-			const core::RGBA rgba = node.palette().colors[voxel.getColor()];
+			const core::RGBA rgba = node.palette().color(voxel.getColor());
 			const uint32_t color = vxl_color(rgba);
 			libvxl_map_set(&map, x, z, mapHeight - 1 - y, color);
 		});

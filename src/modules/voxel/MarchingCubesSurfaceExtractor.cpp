@@ -32,8 +32,8 @@ static inline Voxel blendMaterials(const Palette &palette, const Voxel &v1, cons
 	if (isAir(v2.getMaterial())) {
 		return v1;
 	}
-	const core::RGBA c1 = palette.colors[v1.getColor()];
-	const core::RGBA c2 = palette.colors[v2.getColor()];
+	const core::RGBA c1 = palette.color(v1.getColor());
+	const core::RGBA c2 = palette.color(v2.getColor());
 	const core::RGBA blended = core::RGBA::mix(c1, c2, val);
 	const uint8_t palIdx = palette.getClosestMatch(blended);
 	return createVoxel(palette, palIdx);

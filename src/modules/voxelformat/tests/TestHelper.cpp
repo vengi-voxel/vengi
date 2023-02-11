@@ -73,10 +73,10 @@ int countVoxels(const voxel::RawVolume& volume, const voxel::Voxel &voxel) {
 }
 
 void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta) {
-	ASSERT_EQ(pal1.colorCount, pal2.colorCount);
-	for (int i = 0; i < pal1.colorCount; ++i) {
-		const core::RGBA& c1 = pal1.colors[i];
-		const core::RGBA& c2 = pal2.colors[i];
+	ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
+	for (int i = 0; i < pal1.colorCount(); ++i) {
+		const core::RGBA& c1 = pal1.color(i);
+		const core::RGBA& c2 = pal2.color(i);
 		const float delta = core::Color::getDistance(c1, c2);
 		ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
 								   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
@@ -188,8 +188,8 @@ void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal
 					continue;
 				}
 
-				const core::RGBA& c1 = pal1.colors[voxel1.getColor()];
-				const core::RGBA& c2 = pal2.colors[voxel2.getColor()];
+				const core::RGBA& c1 = pal1.color(voxel1.getColor());
+				const core::RGBA& c2 = pal2.color(voxel2.getColor());
 				const float delta = core::Color::getDistance(c1, c2);
 				ASSERT_LT(delta, maxDelta)
 					<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " in material - voxel1["

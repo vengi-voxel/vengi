@@ -84,7 +84,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Palette &palet
 									colorGuardVoxel = child;
 									continue;
 								}
-								const glm::vec4& color = core::Color::fromRGBA(palette.colors[child.getColor()]);
+								const glm::vec4& color = core::Color::fromRGBA(palette.color(child.getColor()));
 								avgColorRed += color.r;
 								avgColorGreen += color.g;
 								avgColorBlue += color.b;
@@ -98,7 +98,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Palette &palet
 				// means that higher LOD meshes actually shrink away which ensures cracks aren't visible.
 				if (solidVoxels >= 7.0f) {
 					if (colorContributors <= 0.0f) {
-						const glm::vec4 &color = core::Color::fromRGBA(palette.colors[colorGuardVoxel.getColor()]);
+						const glm::vec4 &color = core::Color::fromRGBA(palette.color(colorGuardVoxel.getColor()));
 						avgColorRed += color.r;
 						avgColorGreen += color.g;
 						avgColorBlue += color.b;
@@ -181,7 +181,7 @@ void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Palette &palet
 								++exposedFaces;
 							}
 
-							const glm::vec4& color = core::Color::fromRGBA(palette.colors[child.getColor()]);
+							const glm::vec4& color = core::Color::fromRGBA(palette.color(child.getColor()));
 							totalRed += color.r * exposedFaces;
 							totalGreen += color.g * exposedFaces;
 							totalBlue += color.b * exposedFaces;

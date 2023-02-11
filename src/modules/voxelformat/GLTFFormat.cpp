@@ -166,7 +166,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 				{
 					tinygltf::Image colorPaletteImg;
 					image::Image image("pal");
-					image.loadRGBA((const unsigned char *)palette.colors, voxel::PaletteMaxColors, 1);
+					image.loadRGBA((const unsigned char *)palette.colors(), voxel::PaletteMaxColors, 1);
 					const core::String &pal64 = image.pngBase64();
 					colorPaletteImg.uri = "data:image/png;base64,";
 					colorPaletteImg.width = voxel::PaletteMaxColors;
@@ -333,7 +333,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 					}
 
 				} else if (withColor) {
-					const glm::vec4 &color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
+					const glm::vec4 &color = core::Color::fromRGBA(palette.color(v.colorIndex));
 
 					for (int colorIdx = 0; colorIdx < glm::vec4::length(); colorIdx++) {
 						FloatUnion floatCharUn;
@@ -855,7 +855,7 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node,
 		Log::debug("step: %i, tris: %i", n, (int)tris.size());
 	}
 
-	Log::debug("colors: %i", palette.colorCount);
+	Log::debug("colors: %i", (int)palette.size());
 	node.setPalette(palette);
 	if (fillHollow) {
 		Log::debug("fill hollows");

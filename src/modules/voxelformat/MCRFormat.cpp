@@ -228,7 +228,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 						return false;
 					}
 					if (color) {
-						const uint8_t palColIdx = palette.getClosestMatch(secPal.mcpal.colors[color]);
+						const uint8_t palColIdx = palette.getClosestMatch(secPal.mcpal.color(color));
 						const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
 						wrapper.setVoxel(sPos, voxel);
 					}
@@ -304,7 +304,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 					const uint16_t i = sPos.y * MAX_SIZE * MAX_SIZE + sPos.z * MAX_SIZE + sPos.x;
 					const uint8_t color = blocks[i];
 					if (color) {
-						const uint8_t palColIdx = palette.getClosestMatch(secPal.mcpal.colors[color]);
+						const uint8_t palColIdx = palette.getClosestMatch(secPal.mcpal.color(color));
 						const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
 						wrapper.setVoxel(sPos, voxel);
 					}

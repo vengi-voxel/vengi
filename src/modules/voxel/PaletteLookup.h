@@ -17,7 +17,7 @@ private:
 	core::Map<core::RGBA, uint8_t, 521> _paletteMap;
 public:
 	PaletteLookup(const voxel::Palette &palette, int maxSize = 32768) : _palette(palette), _paletteMap(maxSize) {
-		if (_palette.colorCount <= 0) {
+		if (_palette.colorCount() <= 0) {
 			_palette.nippon();
 		}
 	}

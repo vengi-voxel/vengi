@@ -217,7 +217,7 @@ Objects: {
 				for (int i = 0; i < ni; i++) {
 					const uint32_t index = indices[i];
 					const voxel::VoxelVertex &v = vertices[index];
-					const glm::vec4 &color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
+					const glm::vec4 &color = core::Color::fromRGBA(palette.color(v.colorIndex));
 					if (i > 0) {
 						wrapBool(stream.writeString(",", false))
 					}

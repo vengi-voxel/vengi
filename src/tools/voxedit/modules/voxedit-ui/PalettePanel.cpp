@@ -55,7 +55,7 @@ void PalettePanel::reloadAvailablePalettes() {
 
 void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	voxel::Palette &palette = node.palette();
-	const int maxPaletteEntries = palette.colorCount;
+	const int maxPaletteEntries = palette.colorCount();
 	const float borderWidth = 1.0f;
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
 	const ImDrawListFlags backupFlags = drawList->Flags;
@@ -67,16 +67,16 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
 	const ImVec2 v1(globalCursorPos.x + borderWidth, globalCursorPos.y + borderWidth);
 	const ImVec2 v2(globalCursorPos.x + colorButtonSize.x, globalCursorPos.y + colorButtonSize.y);
-	const bool usableColor = palette.colors[palIdx].a > 0;
+	const bool usableColor = palette.color(palIdx).a > 0;
 	const core::String &contextMenuId = core::string::format("Actions##context-palitem-%i", palIdx);
 	const bool existingColor = palIdx < maxPaletteEntries;
 	if (existingColor) {
-		if (palette.colors[palIdx].a != 255) {
-			core::RGBA other = palette.colors[palIdx];
+		if (palette.color(palIdx).a != 255) {
+			core::RGBA other = palette.color(palIdx);
 			other.a = 255;
-			drawList->AddRectFilledMultiColor(v1, v2, palette.colors[palIdx], palette.colors[palIdx], palette.colors[palIdx], other);
+			drawList->AddRectFilledMultiColor(v1, v2, palette.color(palIdx), palette.color(palIdx), palette.color(palIdx), other);
 		} else {
-			drawList->AddRectFilled(v1, v2, palette.colors[palIdx]);
+			drawList->AddRectFilled(v1, v2, palette.color(palIdx));
 		}
 	} else {
 		drawList->AddRect(v1, v2, core::RGBA(0, 0, 0, 255));
@@ -106,9 +106,9 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 			if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl)) {
 				sceneMgr().exchangeColors(node.id(), palIdx, dragPalIdx);
 			}
-			core::exchange(palette.colors[palIdx], palette.colors[dragPalIdx]);
+			core::exchange(palette.color(palIdx), palette.color(dragPalIdx));
 			if (!existingColor) {
-				palette.colorCount = palIdx + 1;
+				palette.setSize(palIdx + 1);
 			}
 			palette.markDirty();
 			palette.markSave();
@@ -116,13 +116,13 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::RGBAPayload)) {
 			const glm::vec4 color = *(const glm::vec4 *)payload->Data;
-			const bool hasAlpha = palette.colors[palIdx].a != 255;
-			palette.colors[palIdx] = core::Color::getRGBA(color);
+			const bool hasAlpha = palette.color(palIdx).a != 255;
+			palette.color(palIdx) = core::Color::getRGBA(color);
 			if (!existingColor) {
-				palette.colorCount = palIdx + 1;
-			} else if (hasAlpha && palette.colors[palIdx].a == 255) {
+				palette.setSize(palIdx + 1);
+			} else if (hasAlpha && palette.color(palIdx).a == 255) {
 				sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
-			} else if (!hasAlpha && palette.colors[palIdx].a != 255) {
+			} else if (!hasAlpha && palette.color(palIdx).a != 255) {
 				sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
 			}
 			palette.markDirty();
@@ -169,7 +169,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 		_colorHovered = true;
 		drawList->AddRect(v1, v2, _redColor, 0.0f, 0, 2.0f);
 	} else if (palIdx == currentSceneColor()) {
-		if (palette.colors[currentSceneColor()].a > 0) {
+		if (palette.color(currentSceneColor()).a > 0) {
 			drawList->AddRect(v1, v2, _yellowColor, 0.0f, 0, 2.0f);
 		}
 	} else if (palIdx == currentPaletteIndex()) {
@@ -332,18 +332,18 @@ bool PalettePanel::showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &
 	} else {
 		flags |= ImGuiColorEditFlags_PickerHueBar;
 	}
-	glm::vec4 color = core::Color::fromRGBA(palette.colors[palIdx]);
-	const int maxPaletteEntries = palette.colorCount;
+	glm::vec4 color = core::Color::fromRGBA(palette.color(palIdx));
+	const int maxPaletteEntries = palette.colorCount();
 	const bool existingColor = palIdx < maxPaletteEntries;
 
 	if (ImGui::ColorPicker4("Color", glm::value_ptr(color), flags)) {
-		const bool hasAlpha = palette.colors[palIdx].a != 255;
-		palette.colors[palIdx] = core::Color::getRGBA(color);
+		const bool hasAlpha = palette.color(palIdx).a != 255;
+		palette.color(palIdx) = core::Color::getRGBA(color);
 		if (!existingColor) {
-			palette.colorCount = palIdx + 1;
-		} else if (hasAlpha && palette.colors[palIdx].a == 255) {
+			palette.setSize(palIdx + 1);
+		} else if (hasAlpha && palette.color(palIdx).a == 255) {
 			sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
-		} else if (!hasAlpha && palette.colors[palIdx].a != 255) {
+		} else if (!hasAlpha && palette.color(palIdx).a != 255) {
 			sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
 		}
 		palette.markDirty();

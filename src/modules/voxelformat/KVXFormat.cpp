@@ -182,18 +182,18 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	palette.colorCount = voxel::PaletteMaxColors;
+	palette.setSize(voxel::PaletteMaxColors);
 	/**
 	 * The last 768 bytes of the KVX file is a standard 256-color VGA palette.
 	 * The palette is in (Red:0, Green:1, Blue:2) order and intensities range
 	 * from 0-63.
 	 */
-	for (int i = 0; i < palette.colorCount; ++i) {
+	for (int i = 0; i < palette.colorCount(); ++i) {
 		uint8_t r, g, b;
 		wrap(stream.readUInt8(r))
 		wrap(stream.readUInt8(g))
 		wrap(stream.readUInt8(b))
-		palette.colors[i] = core::RGBA(r, g, b);
+		palette.color(i) = core::RGBA(r, g, b);
 	}
 	stream.seek(currentPos);
 
@@ -325,7 +325,7 @@ bool KVXFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 
 	// TODO: this is not correct
 	for (const priv::slab &data : voxdata) {
-		const core::RGBA color = merged.second.colors[data.col];
+		const core::RGBA color = merged.second.color(data.col);
 		wrapBool(stream.writeUInt8(color.b))
 		wrapBool(stream.writeUInt8(color.g))
 		wrapBool(stream.writeUInt8(color.r))
@@ -335,7 +335,7 @@ bool KVXFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 
 	// palette is last
 	for (int i = 0; i < merged.second.colorCount; ++i) {
-		const core::RGBA color = merged.second.colors[i];
+		const core::RGBA color = merged.second.color(i);
 		wrapBool(stream.writeUInt8(color.b))
 		wrapBool(stream.writeUInt8(color.g))
 		wrapBool(stream.writeUInt8(color.r))

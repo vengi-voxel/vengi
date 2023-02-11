@@ -55,16 +55,16 @@ void ScriptPanel::update(const char *title) {
 				const voxel::Palette &palette = sceneMgr().activePalette();
 				core::String &str = _scriptParameters[i];
 				int val = core::string::toInt(str);
-				if (val >= 0 && val < palette.colorCount) {
+				if (val >= 0 && val < palette.colorCount()) {
 					const float size = 20;
 					const ImVec2 v1(ImGui::GetWindowPos().x + ImGui::GetCursorPosX(), ImGui::GetWindowPos().y + ImGui::GetCursorPosY());
 					const ImVec2 v2(v1.x + size, v1.y + size);
 					ImDrawList* drawList = ImGui::GetWindowDrawList();
-					drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(palette.colors[val]));
+					drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(palette.color(val)));
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + size);
 				}
 				if (ImGui::InputInt(p.name.c_str(), &val)) {
-					if (val >= 0 && val < palette.colorCount) {
+					if (val >= 0 && val < palette.colorCount()) {
 						str = core::string::toString(val);
 					}
 				}

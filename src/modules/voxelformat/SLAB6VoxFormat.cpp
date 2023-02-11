@@ -42,14 +42,14 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 
 	const int64_t voxelPos = stream.pos();
 	stream.skip((int64_t)width * height * depth);
-	palette.colorCount = voxel::PaletteMaxColors;
-	for (int i = 0; i < palette.colorCount; ++i) {
+	palette.setSize(voxel::PaletteMaxColors);
+	for (int i = 0; i < palette.colorCount(); ++i) {
 		uint8_t r, g, b;
 		wrap(stream.readUInt8(r))
 		wrap(stream.readUInt8(g))
 		wrap(stream.readUInt8(b))
 
-		palette.colors[i] = core::RGBA(r, g, b);
+		palette.color(i) = core::RGBA(r, g, b);
 	}
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
@@ -111,13 +111,13 @@ bool SLAB6VoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String
 		}
 	}
 
-	for (int i = 0; i < palette.colorCount; ++i) {
-		const core::RGBA &rgba = palette.colors[i];
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		const core::RGBA &rgba = palette.color(i);
 		wrapBool(stream.writeUInt8(rgba.r))
 		wrapBool(stream.writeUInt8(rgba.g))
 		wrapBool(stream.writeUInt8(rgba.b))
 	}
-	for (int i = palette.colorCount; i < voxel::PaletteMaxColors; ++i) {;
+	for (int i = palette.colorCount(); i < voxel::PaletteMaxColors; ++i) {;
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))

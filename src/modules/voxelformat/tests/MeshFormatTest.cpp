@@ -113,8 +113,8 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	voxelformat::SceneGraph sceneGraph;
 
 	voxel::getPalette().nippon();
-	const core::RGBA nipponRed = voxel::getPalette().colors[37];
-	const core::RGBA nipponBlue = voxel::getPalette().colors[202];
+	const core::RGBA nipponRed = voxel::getPalette().color(37);
+	const core::RGBA nipponBlue = voxel::getPalette().color(202);
 	const float size = 10.0f;
 	b.setPosition({size, 0.0f, size});
 	b.setColor(core::Color::fromRGBA(nipponRed));
@@ -125,7 +125,7 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 
 	// color of the tip is green
 	video::ShapeBuilder::Colors colors = b.getColors();
-	const core::RGBA nipponGreen = voxel::getPalette().colors[145];
+	const core::RGBA nipponGreen = voxel::getPalette().color(145);
 	colors[0] = core::Color::fromRGBA(nipponGreen);
 	colors[1] = core::Color::fromRGBA(nipponBlue);
 
@@ -143,7 +143,7 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	ASSERT_NE(nullptr, node);
 	voxel::getPalette() = node->palette();
 	const voxel::RawVolume *v = node->volume();
-	const voxel::PaletteColorArray &paletteColors = node->palette().colors;
+	const voxel::PaletteColorArray &paletteColors = node->palette().colors();
 	EXPECT_COLOR_NEAR(nipponRed, paletteColors[v->voxel(0, 0, 0).getColor()], 0.00004f);
 	EXPECT_COLOR_NEAR(nipponRed, paletteColors[v->voxel(size * 2, 0, size * 2).getColor()], 0.00004f);
 	EXPECT_COLOR_NEAR(nipponBlue, paletteColors[v->voxel(0, 0, size * 2).getColor()], 0.00044f);

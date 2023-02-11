@@ -70,7 +70,7 @@ size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableRead
 		}
 		stream.skip(1);
 	}
-	return palette.colorCount;
+	return palette.colorCount();
 }
 
 static bool skipNewline(io::SeekableReadStream &stream) {
@@ -200,7 +200,7 @@ bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String 
 				if (voxel.getMaterial() == voxel::VoxelType::Air) {
 					stream.writeString("#00000000", false);
 				} else {
-					const core::RGBA rgba = palette.colors[voxel.getColor()];
+					const core::RGBA rgba = palette.color(voxel.getColor());
 					stream.writeStringFormat(false, "#%02X%02X%02X%02X", rgba.r, rgba.g, rgba.b, rgba.a);
 				}
 				if (x != width - 1) {

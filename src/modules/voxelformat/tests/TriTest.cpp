@@ -55,7 +55,7 @@ TEST_F(TriTest, testColorAt) {
 		tri.uv[1] = glm::vec2((float)i / 256.0f, 1.0f);
 		tri.uv[2] = glm::vec2((float)(i + 1) / 256.0f, 1.0f);
 		const core::RGBA color = tri.colorAt(tri.centerUV());
-		ASSERT_EQ(pal.colors[i], color) << "i: " << i << " " << core::Color::print(pal.colors[i]) << " vs "
+		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << core::Color::print(pal.color(i)) << " vs "
 										<< core::Color::print(color);
 	}
 }

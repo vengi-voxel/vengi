@@ -29,8 +29,8 @@ namespace voxelformat {
 class FormatPaletteTest : public AbstractVoxFormatTest {
 protected:
 	bool checkNoAlpha(const voxel::Palette &palette) {
-		for (int i = 0; i < palette.colorCount; ++i) {
-			if (palette.colors[i].a != 255) {
+		for (int i = 0; i < palette.colorCount(); ++i) {
+			if (palette.color(i).a != 255) {
 				return false;
 			}
 		}
@@ -58,9 +58,9 @@ protected:
 		//ASSERT_TRUE(checkNoAlpha(palPalette));
 
 		for (size_t i = 0; i < rgbExpectedColors; ++i) {
-			ASSERT_EQ(rgbPalette.colors[i], palPalette.colors[i])
-				<< i << ": rgb " << core::Color::print(rgbPalette.colors[i]) << " versus pal "
-				<< core::Color::print(palPalette.colors[i]) << "\n"
+			ASSERT_EQ(rgbPalette.color(i), palPalette.color(i))
+				<< i << ": rgb " << core::Color::print(rgbPalette.color(i)) << " versus pal "
+				<< core::Color::print(palPalette.color(i)) << "\n"
 				<< voxel::Palette::print(rgbPalette) << "\n"
 				<< voxel::Palette::print(palPalette);
 		}
@@ -87,8 +87,8 @@ protected:
 		ASSERT_TRUE(checkNoAlpha(rgbPalette));
 
 		for (size_t i = 0; i < rgbExpectedColors; ++i) {
-			ASSERT_TRUE(palPalette.hasColor(rgbPalette.colors[i]))
-				<< i << ": Could not find color " << core::Color::print(rgbPalette.colors[i]) << " in pal palette\n"
+			ASSERT_TRUE(palPalette.hasColor(rgbPalette.color(i)))
+				<< i << ": Could not find color " << core::Color::print(rgbPalette.color(i)) << " in pal palette\n"
 				<< voxel::Palette::print(palPalette);
 		}
 	}
@@ -114,8 +114,8 @@ protected:
 
 		// the colors might have a different ordering here it depends on the order we read the volume for the rgb format
 		for (size_t i = 0; i < expectedColors; ++i) {
-			ASSERT_TRUE(rgbPalette1.hasColor(rgbPalette2.colors[i]))
-				<< i << ": Could not find color " << core::Color::print(rgbPalette2.colors[i]) << " in rgb palette\n"
+			ASSERT_TRUE(rgbPalette1.hasColor(rgbPalette2.color(i)))
+				<< i << ": Could not find color " << core::Color::print(rgbPalette2.color(i)) << " in rgb palette\n"
 				<< voxel::Palette::print(rgbPalette1);
 		}
 	}
@@ -140,9 +140,9 @@ protected:
 		//ASSERT_TRUE(checkNoAlpha(palPalette2));
 
 		for (size_t i = 0; i < expectedColors; ++i) {
-			ASSERT_EQ(palPalette1.colors[i], palPalette2.colors[i])
-				<< i << ": pal " << core::Color::print(palPalette1.colors[i]) << " versus pal "
-				<< core::Color::print(palPalette2.colors[i]) << "\n"
+			ASSERT_EQ(palPalette1.color(i), palPalette2.color(i))
+				<< i << ": pal " << core::Color::print(palPalette1.color(i)) << " versus pal "
+				<< core::Color::print(palPalette2.color(i)) << "\n"
 				<< voxel::Palette::print(palPalette1) << "\n"
 				<< voxel::Palette::print(palPalette2);
 		}

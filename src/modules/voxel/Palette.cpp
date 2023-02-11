@@ -28,36 +28,36 @@
 namespace voxel {
 
 void Palette::fill() {
-	for (int i = colorCount; i < PaletteMaxColors; ++i) {
-		colors[i] = core::RGBA(64, 64, 64, 255);
+	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
+		_colors[i] = core::RGBA(64, 64, 64, 255);
 	}
-	colorCount = PaletteMaxColors;
+	_colorCount = PaletteMaxColors;
 }
 
 void Palette::markDirty() {
 	_dirty = true;
-	_hash._hashColors[0] = core::hash(colors, sizeof(colors));
-	_hash._hashColors[1] = core::hash(glowColors, sizeof(glowColors));
+	_hash._hashColors[0] = core::hash(_colors, sizeof(_colors));
+	_hash._hashColors[1] = core::hash(_glowColors, sizeof(_glowColors));
 }
 
 void Palette::reduce(uint8_t targetColors) {
 	core::Color::ColorReductionType reductionType = core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
 	PaletteColorArray oldcolors;
-	core_memcpy(oldcolors, colors, sizeof(PaletteColorArray));
-	colorCount = core::Color::quantize(colors, targetColors, oldcolors, colorCount, reductionType);
+	core_memcpy(oldcolors, _colors, sizeof(PaletteColorArray));
+	_colorCount = core::Color::quantize(_colors, targetColors, oldcolors, _colorCount, reductionType);
 	markDirty();
 }
 
 void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCount) {
-	Log::debug("quantize %i colors", (int)inputColorCount);
+	Log::debug("quantize %i _colors", (int)inputColorCount);
 	core::Color::ColorReductionType reductionType = core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
-	colorCount = core::Color::quantize(colors, lengthof(colors), inputColors, inputColorCount, reductionType);
+	_colorCount = core::Color::quantize(_colors, lengthof(_colors), inputColors, inputColorCount, reductionType);
 	markDirty();
 }
 
 bool Palette::hasColor(core::RGBA rgba) {
-	for (int i = 0; i < colorCount; ++i) {
-		if (colors[i] == rgba) {
+	for (int i = 0; i < _colorCount; ++i) {
+		if (_colors[i] == rgba) {
 			return true;
 		}
 	}
@@ -65,8 +65,8 @@ bool Palette::hasColor(core::RGBA rgba) {
 }
 
 bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar, int skipSlotIndex) {
-	for (int i = 0; i < colorCount; ++i) {
-		if (colors[i] == rgba) {
+	for (int i = 0; i < _colorCount; ++i) {
+		if (_colors[i] == rgba) {
 			if (index) {
 				*index = i;
 			}
@@ -75,11 +75,11 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 	}
 	static constexpr float MaxThreshold = 0.00014f;
 	if (skipSimilar) {
-		for (int i = 0; i < colorCount; ++i) {
-			if (abs(colors[i].a - rgba.a) > 10) {
+		for (int i = 0; i < _colorCount; ++i) {
+			if (abs(_colors[i].a - rgba.a) > 10) {
 				continue;
 			}
-			const float dist = core::Color::getDistance(colors[i], rgba);
+			const float dist = core::Color::getDistance(_colors[i], rgba);
 			if (dist < MaxThreshold) {
 				if (index) {
 					*index = i;
@@ -89,26 +89,26 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 		}
 	}
 
-	if (colorCount == skipSlotIndex && colorCount < PaletteMaxColors) {
+	if (_colorCount == skipSlotIndex && _colorCount < PaletteMaxColors) {
 		if (rgba.a != 0) {
-			++colorCount;
+			++_colorCount;
 		}
 	}
 
-	if (colorCount < PaletteMaxColors) {
+	if (_colorCount < PaletteMaxColors) {
 		if (index) {
-			*index = colorCount;
+			*index = _colorCount;
 		}
-		colors[colorCount++] = rgba;
+		_colors[_colorCount++] = rgba;
 		return true;
 	}
 
-	for (int i = 0; i < colorCount; ++i) {
-		if (colors[i].a == 0) {
+	for (int i = 0; i < _colorCount; ++i) {
+		if (_colors[i].a == 0) {
 			if (index) {
 				*index = i;
 			}
-			colors[i] = rgba;
+			_colors[i] = rgba;
 			return true;
 		}
 	}
@@ -119,24 +119,24 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 		// will replace that color with the new rgba value
 		int bestIndex = -1;
 		float bestColorDistance = FLT_MAX;
-		for (int i = 0; i < colorCount; ++i) {
+		for (int i = 0; i < _colorCount; ++i) {
 			if (i == skipSlotIndex) {
 				continue;
 			}
 			float colorDistance = 0.0f;
-			const int closestColorIdx = getClosestMatch(colors[i], &colorDistance, i);
+			const int closestColorIdx = getClosestMatch(_colors[i], &colorDistance, i);
 			if (colorDistance < bestColorDistance) {
 				bestColorDistance = colorDistance;
 				bestIndex = closestColorIdx;
 			}
 		}
 		if (bestIndex != -1) {
-			const float dist = core::Color::getDistance(colors[bestIndex], rgba);
+			const float dist = core::Color::getDistance(_colors[bestIndex], rgba);
 			if (dist > MaxThreshold) {
 				if (index) {
 					*index = bestIndex;
 				}
-				colors[bestIndex] = rgba;
+				_colors[bestIndex] = rgba;
 				return true;
 			}
 		}
@@ -148,21 +148,21 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 }
 
 core::String Palette::print(const Palette &palette, bool colorAsHex) {
-	if (palette.colorCount == 0) {
-		return "no colors";
+	if (palette._colorCount == 0) {
+		return "no _colors";
 	}
 	core::String palStr;
 	core::String line;
-	for (int i = 0; i < palette.colorCount; ++i) {
+	for (int i = 0; i < palette._colorCount; ++i) {
 		if (i % 16 == 0 && !line.empty()) {
 			palStr.append(core::string::format("%03i %s\n", i - 16, line.c_str()));
 			line = "";
 		}
-		const core::String c = core::Color::print(palette.colors[i], colorAsHex);
+		const core::String c = core::Color::print(palette._colors[i], colorAsHex);
 		line += c;
 	}
 	if (!line.empty()) {
-		palStr.append(core::string::format("%03i %s\n", palette.colorCount / 16 * 16, line.c_str()));
+		palStr.append(core::string::format("%03i %s\n", palette._colorCount / 16 * 16, line.c_str()));
 	}
 	return palStr;
 }
@@ -171,18 +171,18 @@ int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) c
 	if (size() == 0) {
 		return -1;
 	}
-	for (int i = 0; i < colorCount; ++i) {
+	for (int i = 0; i < _colorCount; ++i) {
 		if (i == skip) {
 			continue;
 		}
-		if (colors[i] == rgba) {
+		if (_colors[i] == rgba) {
 			return i;
 		}
 	}
 
 	if (rgba.a == 0) {
-		for (int i = 0; i < colorCount; ++i) {
-			if (colors[i].a == 0) {
+		for (int i = 0; i < _colorCount; ++i) {
+			if (_colors[i].a == 0) {
 				return i;
 			}
 		}
@@ -198,14 +198,14 @@ int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) c
 	const glm::vec4 color = core::Color::fromRGBA(rgba);
 	core::Color::getHSB(color, hue, saturation, brightness);
 
-	for (int i = 0; i < colorCount; ++i) {
+	for (int i = 0; i < _colorCount; ++i) {
 		if (i == skip) {
 			continue;
 		}
-		if (colors[i].a == 0) {
+		if (_colors[i].a == 0) {
 			continue;
 		}
-		const float val = core::Color::getDistance(colors[i], hue, saturation, brightness);
+		const float val = core::Color::getDistance(_colors[i], hue, saturation, brightness);
 		if (val < minDistance) {
 			minDistance = val;
 			minIndex = (int)i;
@@ -218,7 +218,7 @@ int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) c
 }
 
 uint8_t Palette::findReplacement(uint8_t index) const {
-	const int replacement = getClosestMatch(colors[index], nullptr, index);
+	const int replacement = getClosestMatch(_colors[index], nullptr, index);
 	if (replacement == -1) {
 		return index;
 	}
@@ -227,10 +227,10 @@ uint8_t Palette::findReplacement(uint8_t index) const {
 
 void Palette::changeIntensity(float scale) {
 	const float f = glm::abs(scale) + 1.0f;
-	for (int i = 0; i < colorCount; ++i) {
-		const glm::vec4 &color = core::Color::fromRGBA(colors[i]);
+	for (int i = 0; i < _colorCount; ++i) {
+		const glm::vec4 &color = core::Color::fromRGBA(_colors[i]);
 		const glm::vec4 &newColor = scale < 0.0f ? core::Color::darker(color, f) : core::Color::brighter(color, f);
-		colors[i] = core::Color::getRGBA(newColor);
+		_colors[i] = core::Color::getRGBA(newColor);
 	}
 	markDirty();
 	markSave();
@@ -255,7 +255,7 @@ void Palette::sortHue() {
 		}
 	};
 
-	core::sort(colors, &colors[colorCount], Hue());
+	core::sort(_colors, &_colors[_colorCount], Hue());
 	markDirty();
 }
 
@@ -278,7 +278,7 @@ void Palette::sortSaturation() {
 		}
 	};
 
-	core::sort(colors, &colors[colorCount], Saturation());
+	core::sort(_colors, &_colors[_colorCount], Saturation());
 	markDirty();
 }
 
@@ -301,7 +301,7 @@ void Palette::sortBrightness() {
 		}
 	};
 
-	core::sort(colors, &colors[colorCount], Brightness());
+	core::sort(_colors, &_colors[_colorCount], Brightness());
 	markDirty();
 }
 
@@ -338,7 +338,7 @@ bool Palette::save(const char *name) const {
 	pngName += ".png";
 	image::Image img(pngName);
 	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
-	img.loadRGBA((const uint8_t *)colors, lengthof(colors), 1);
+	img.loadRGBA((const uint8_t *)_colors, lengthof(_colors), 1);
 	if (!img.writePng()) {
 		Log::warn("Failed to write the palette file '%s'", pngName.c_str());
 		return false;
@@ -351,11 +351,11 @@ bool Palette::saveGlow(const char *name) const {
 		return false;
 	}
 	image::Image img(name);
-	Log::info("Save glow palette colors to %s", name);
+	Log::info("Save glow palette _colors to %s", name);
 	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
-	img.loadRGBA((const uint8_t *)glowColors, lengthof(glowColors), 1);
+	img.loadRGBA((const uint8_t *)_glowColors, lengthof(_glowColors), 1);
 	if (!img.writePng()) {
-		Log::warn("Failed to write the glow palette colors file '%s'", name);
+		Log::warn("Failed to write the glow palette _colors file '%s'", name);
 		return false;
 	}
 	return true;
@@ -371,7 +371,7 @@ bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize, const char *name) {
 		return false;
 	}
 	if (ncolors > PaletteMaxColors) {
-		Log::warn("Too many colors given for palette.");
+		Log::warn("Too many _colors given for palette.");
 	}
 	ncolors = core_min(ncolors, PaletteMaxColors);
 	image::ImagePtr img = image::createEmptyImage(name);
@@ -387,7 +387,7 @@ bool Palette::load(const image::ImagePtr &img) {
 		Log::warn("Palette image has invalid depth (expected: 4bpp, got %i)", img->depth());
 		return false;
 	}
-	core_memset(glowColors, 0, sizeof(glowColors));
+	core_memset(_glowColors, 0, sizeof(_glowColors));
 	if (img->width() * img->height() > PaletteMaxColors) {
 		return createPalette(img, *this);
 	}
@@ -396,16 +396,16 @@ bool Palette::load(const image::ImagePtr &img) {
 		ncolors = PaletteMaxColors;
 		Log::warn("Palette image has invalid dimensions - we need max 256x1(depth: 4)");
 	}
-	colorCount = ncolors;
-	for (int i = 0; i < colorCount; ++i) {
-		colors[i] = img->colorAt(i, 0);
+	_colorCount = ncolors;
+	for (int i = 0; i < _colorCount; ++i) {
+		_colors[i] = img->colorAt(i, 0);
 	}
-	for (int i = colorCount; i < PaletteMaxColors; ++i) {
-		colors[i] = core::RGBA(0);
+	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
+		_colors[i] = core::RGBA(0);
 	}
 	_name = img->name();
 	markDirty();
-	Log::debug("Set up %i material colors", colorCount);
+	Log::debug("Set up %i material _colors", _colorCount);
 	return true;
 }
 
@@ -414,7 +414,7 @@ bool Palette::load(const char *paletteName) {
 		return false;
 	}
 	if (SDL_strncmp(paletteName, "node:", 5) == 0) {
-		if (colorCount == 0) {
+		if (_colorCount == 0) {
 			nippon();
 		}
 		_name = paletteName + 5;
@@ -477,22 +477,22 @@ bool Palette::loadRGBPalette(const char *filename) {
 		return false;
 	}
 	io::FileStream stream(paletteFile);
-	colorCount = PaletteMaxColors;
+	_colorCount = PaletteMaxColors;
 	_name = paletteFile->name();
-	for (int i = 0; i < colorCount; ++i) {
-		if (stream.readUInt8(colors[i].r) == -1) {
+	for (int i = 0; i < _colorCount; ++i) {
+		if (stream.readUInt8(_colors[i].r) == -1) {
 			Log::error("Failed to read color %i", i);
 			return false;
 		}
-		if (stream.readUInt8(colors[i].g) == -1) {
+		if (stream.readUInt8(_colors[i].g) == -1) {
 			Log::error("Failed to read color %i", i);
 			return false;
 		}
-		if (stream.readUInt8(colors[i].b) == -1) {
+		if (stream.readUInt8(_colors[i].b) == -1) {
 			Log::error("Failed to read color %i", i);
 			return false;
 		}
-		colors[i].a = 255;
+		_colors[i].a = 255;
 	}
 	markDirty();
 	return true;
@@ -506,8 +506,8 @@ bool Palette::saveCSVPalette(const char *filename) const {
 		Log::error("Failed to open file %s for saving the rgb csv palette", filename);
 		return false;
 	}
-	for (int i = 0; i < colorCount; ++i) {
-		if (!stream.writeStringFormat(false, "%i, %i, %i, ", colors[i].r, colors[i].g, colors[i].b)) {
+	for (int i = 0; i < _colorCount; ++i) {
+		if (!stream.writeStringFormat(false, "%i, %i, %i, ", _colors[i].r, _colors[i].g, _colors[i].b)) {
 			return false;
 		}
 	}
@@ -522,10 +522,10 @@ bool Palette::saveRGBPalette(const char *filename) const {
 		return false;
 	}
 	io::FileStream stream(paletteFile);
-	for (int i = 0; i < colorCount; ++i) {
-		stream.writeUInt8(colors[i].r);
-		stream.writeUInt8(colors[i].g);
-		stream.writeUInt8(colors[i].b);
+	for (int i = 0; i < _colorCount; ++i) {
+		stream.writeUInt8(_colors[i].r);
+		stream.writeUInt8(_colors[i].g);
+		stream.writeUInt8(_colors[i].b);
 	}
 	return true;
 }
@@ -538,7 +538,7 @@ bool Palette::loadCSVPalette(const char *filename) {
 
 	io::MemoryReadStream stream(content.c_str(), content.size());
 	char line[2048];
-	colorCount = 0;
+	_colorCount = 0;
 	_name = filename;
 
 	while (stream.readLine(sizeof(line), line)) {
@@ -547,14 +547,14 @@ bool Palette::loadCSVPalette(const char *filename) {
 			Log::error("Failed to parse line '%s'", line);
 			continue;
 		}
-		if (colorCount >= PaletteMaxColors) {
-			Log::warn("Not all colors were loaded");
+		if (_colorCount >= PaletteMaxColors) {
+			Log::warn("Not all _colors were loaded");
 			break;
 		}
-		colors[colorCount++] = core::RGBA(r, g, b);
+		_colors[_colorCount++] = core::RGBA(r, g, b);
 	}
 	markDirty();
-	return colorCount > 0;
+	return _colorCount > 0;
 }
 
 bool Palette::loadQubiclePalette(const char *filename) {
@@ -592,7 +592,7 @@ bool Palette::loadQubiclePalette(const char *filename) {
 		core::RGBA color2 = 0;
 	};
 
-	colorCount = 0;
+	_colorCount = 0;
 	for (int i = 0; i < PaletteMaxColors; ++i) {
 		entry e;
 		stream.readUInt8(e.palColor.a);
@@ -608,10 +608,10 @@ bool Palette::loadQubiclePalette(const char *filename) {
 		}
 
 		// ignore alpha here
-		colors[colorCount++] = core::RGBA(e.palColor.r, e.palColor.g, e.palColor.b);
+		_colors[_colorCount++] = core::RGBA(e.palColor.r, e.palColor.g, e.palColor.b);
 	}
 	markDirty();
-	return colorCount > 0;
+	return _colorCount > 0;
 }
 
 bool Palette::loadGimpPalette(const char *filename) {
@@ -624,7 +624,7 @@ bool Palette::loadGimpPalette(const char *filename) {
 	const core::String &gpl = paletteFile->load();
 	io::MemoryReadStream stream(gpl.c_str(), gpl.size());
 	char line[2048];
-	colorCount = 0;
+	_colorCount = 0;
 	_name = paletteFile->name();
 	while (stream.readLine(sizeof(line), line)) {
 		if (line[0] == '#') {
@@ -642,14 +642,14 @@ bool Palette::loadGimpPalette(const char *filename) {
 			Log::error("Failed to parse line '%s'", line);
 			continue;
 		}
-		if (colorCount >= PaletteMaxColors) {
-			Log::warn("Not all colors were loaded");
+		if (_colorCount >= PaletteMaxColors) {
+			Log::warn("Not all _colors were loaded");
 			break;
 		}
-		colors[colorCount++] = core::RGBA(r, g, b);
+		_colors[_colorCount++] = core::RGBA(r, g, b);
 	}
 	markDirty();
-	return colorCount > 0;
+	return _colorCount > 0;
 }
 
 bool Palette::saveGimpPalette(const char *filename, const char *name) const {
@@ -663,8 +663,8 @@ bool Palette::saveGimpPalette(const char *filename, const char *name) const {
 	stream.writeString("GIMP Palette\n", false);
 	stream.writeStringFormat(false, "Name: %s\n", name);
 	stream.writeString("# Generated by vengi " PROJECT_VERSION " github.com/mgerhardy/vengi\n", false);
-	for (int i = 0; i < colorCount; ++i) {
-		stream.writeStringFormat(false, "%3i %3i %3i\tcolor index %i\n", colors[i].r, colors[i].g, colors[i].b, i);
+	for (int i = 0; i < _colorCount; ++i) {
+		stream.writeStringFormat(false, "%3i %3i %3i\tcolor index %i\n", _colors[i].r, _colors[i].g, _colors[i].b, i);
 	}
 	return true;
 }
@@ -893,48 +893,48 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 		}
 	}
 
-	core::Buffer<core::RGBA, 1024> colors;
-	colors.reserve(colorset.size());
+	core::Buffer<core::RGBA, 1024> _colors;
+	_colors.reserve(colorset.size());
 	for (const auto &e : colorset) {
-		colors.push_back(e->first);
+		_colors.push_back(e->first);
 	}
 	palette._name = image->name();
-	palette.quantize(colors.data(), colors.size());
+	palette.quantize(_colors.data(), _colors.size());
 	palette.markDirty();
 	return true;
 }
 
 bool Palette::hasGlow(uint8_t idx) const {
-	return glowColors[idx] != 0u;
+	return _glowColors[idx] != 0u;
 }
 
 void Palette::removeGlow(uint8_t idx) {
-	glowColors[idx] = 0;
+	_glowColors[idx] = 0;
 	markDirty();
 }
 
 void Palette::setGlow(uint8_t idx, float factor) {
 	// TODO: handle factor
-	glowColors[idx] = colors[idx];
+	_glowColors[idx] = _colors[idx];
 	markDirty();
 }
 
 void Palette::toVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
 	vec4f.reserve(PaletteMaxColors);
-	for (int i = 0; i < colorCount; ++i) {
-		vec4f.push_back(core::Color::fromRGBA(colors[i]));
+	for (int i = 0; i < _colorCount; ++i) {
+		vec4f.push_back(core::Color::fromRGBA(_colors[i]));
 	}
-	for (int i = colorCount; i < PaletteMaxColors; ++i) {
+	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
 		vec4f.emplace_back(0.0f);
 	}
 }
 
 void Palette::glowToVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
 	vec4f.reserve(PaletteMaxColors);
-	for (int i = 0; i < colorCount; ++i) {
-		vec4f.push_back(core::Color::fromRGBA(glowColors[i]));
+	for (int i = 0; i < _colorCount; ++i) {
+		vec4f.push_back(core::Color::fromRGBA(_glowColors[i]));
 	}
-	for (int i = colorCount; i < PaletteMaxColors; ++i) {
+	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
 		vec4f.emplace_back(0.0f);
 	}
 }
@@ -948,7 +948,7 @@ bool Palette::convertImageToPalettePng(const image::ImagePtr &image, const char 
 		return false;
 	}
 	const image::ImagePtr &paletteImg = image::createEmptyImage("**palette**");
-	return paletteImg->writePng(paletteFile, (const uint8_t *)palette.colors, palette.colorCount, 1, 4);
+	return paletteImg->writePng(paletteFile, (const uint8_t *)palette.colors(), (int)palette.size(), 1, 4);
 }
 
 } // namespace voxel

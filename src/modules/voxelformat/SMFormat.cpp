@@ -177,21 +177,21 @@ static constexpr glm::ivec3 posByIndex(uint32_t blockIndex) {
 }
 
 size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+	palette.setSize(lengthof(priv::paletteColors));
 	for (int i = 0; i < lengthof(priv::paletteColors); ++i) {
-		palette.colors[i] = priv::paletteColors[i];
+		palette.color(i) = priv::paletteColors[i];
 	}
-	palette.colorCount = lengthof(priv::paletteColors);
-	return palette.colorCount;
+	return palette.colorCount();
 }
 
 bool SMFormat::readSegment(io::SeekableReadStream &stream, SceneGraph &sceneGraph, const core::Map<int, int>& blockPal) {
 	const int64_t startHeader = stream.pos();
 	Log::debug("read segment");
 	voxel::Palette palette;
+	palette.setSize(lengthof(priv::paletteColors));
 	for (int i = 0; i < lengthof(priv::paletteColors); ++i) {
-		palette.colors[i] = priv::paletteColors[i];
+		palette.color(i) = priv::paletteColors[i];
 	}
-	palette.colorCount = lengthof(priv::paletteColors);
 
 	uint8_t version;
 	wrap(stream.readUInt8(version))

@@ -127,7 +127,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 				pos *= scale;
 				stream.writeStringFormat(false, "v %.04f %.04f %.04f", pos.x, pos.y, pos.z);
 				if (withColor) {
-					const glm::vec4& color = core::Color::fromRGBA(palette.colors[v.colorIndex]);
+					const glm::vec4& color = core::Color::fromRGBA(palette.color(v.colorIndex));
 					stream.writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
 				}
 				wrapBool(stream.writeStringFormat(false, "\n"))

@@ -121,16 +121,16 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 			uint32_t palMagic;
 			wrap(stream.readUInt32(palMagic))
 			if (palMagic == FourCC('S','P','a','l')) {
-				palette.colorCount = voxel::PaletteMaxColors;
-				for (int i = 0; i < palette.colorCount; ++i) {
+				palette.setSize(voxel::PaletteMaxColors);
+				for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
 					uint8_t r, g, b;
 					wrap(stream.readUInt8(b))
 					wrap(stream.readUInt8(g))
 					wrap(stream.readUInt8(r))
-					palette.colors[i] = core::RGBA(r, g, b, 255u);
+					palette.color(i) = core::RGBA(r, g, b, 255u);
 				}
 			}
-			return palette.colorCount;
+			return palette.size();
 		}
 	}
 	return 0;
@@ -197,13 +197,13 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			uint32_t palMagic;
 			wrap(stream.readUInt32(palMagic))
 			if (palMagic == FourCC('S','P','a','l')) {
-				palette.colorCount = voxel::PaletteMaxColors;
-				for (int i = 0; i < palette.colorCount; ++i) {
+				palette.setSize(voxel::PaletteMaxColors);
+				for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
 					uint8_t r, g, b;
 					wrap(stream.readUInt8(b))
 					wrap(stream.readUInt8(g))
 					wrap(stream.readUInt8(r))
-					palette.colors[i] = core::RGBA(r, g, b, 255u);
+					palette.color(i) = core::RGBA(r, g, b, 255u);
 				}
 			}
 		}
@@ -350,7 +350,7 @@ bool KV6Format::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	wrapBool(stream.writeUInt32(numvoxs))
 
 	for (const priv::voxtype &data : voxdata) {
-		const core::RGBA color = merged.second.colors[data.col];
+		const core::RGBA color = merged.second.color(data.col);
 		wrapBool(stream.writeUInt8(color.b))
 		wrapBool(stream.writeUInt8(color.g))
 		wrapBool(stream.writeUInt8(color.r))
@@ -377,13 +377,13 @@ bool KV6Format::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 
 	const uint32_t palMagic = FourCC('S','P','a','l');
 	wrapBool(stream.writeUInt32(palMagic))
-	for (int i = 0; i < merged.second.colorCount; ++i) {
-		const core::RGBA color = merged.second.colors[i];
+	for (int i = 0; i < merged.second.colorCount(); ++i) {
+		const core::RGBA color = merged.second.color(i);
 		wrapBool(stream.writeUInt8(color.b))
 		wrapBool(stream.writeUInt8(color.g))
 		wrapBool(stream.writeUInt8(color.r))
 	}
-	for (int i = merged.second.colorCount; i < voxel::PaletteMaxColors; ++i) {
+	for (int i = merged.second.colorCount(); i < voxel::PaletteMaxColors; ++i) {
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
