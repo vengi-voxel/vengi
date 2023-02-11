@@ -17,6 +17,7 @@ namespace voxel {
 static constexpr int PaletteMaxColors = 256;
 // RGBA color values in the range [0-255]
 using PaletteColorArray = core::RGBA[PaletteMaxColors];
+using PaletteIndicesArray = uint8_t[PaletteMaxColors];
 
 class Palette {
 private:
@@ -33,21 +34,32 @@ private:
 	PaletteColorArray _colors {};
 	PaletteColorArray _glowColors {};
 	int _colorCount = 0;
+	PaletteIndicesArray _indices;
 public:
+	Palette();
+
 	inline core::RGBA &color(uint8_t i) {
-		return _colors[i];
+		return _colors[_indices[i]];
 	}
 
 	inline core::RGBA color(uint8_t i) const {
-		return _colors[i];
+		return _colors[_indices[i]];
 	}
 
 	inline core::RGBA &glowColor(uint8_t i) {
-		return _glowColors[i];
+		return _glowColors[_indices[i]];
 	}
 
 	inline core::RGBA glowColor(uint8_t i) const {
-		return _glowColors[i];
+		return _glowColors[_indices[i]];
+	}
+
+	const PaletteIndicesArray &indices() const {
+		return _indices;
+	}
+
+	PaletteIndicesArray &indices(){
+		return _indices;
 	}
 
 	const PaletteColorArray &colors() const {

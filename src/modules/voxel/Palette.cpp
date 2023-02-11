@@ -27,6 +27,12 @@
 
 namespace voxel {
 
+Palette::Palette() {
+	for (int i = 0; i < PaletteMaxColors; ++i) {
+		_indices[i] = i;
+	}
+}
+
 void Palette::fill() {
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
 		_colors[i] = core::RGBA(64, 64, 64, 255);
