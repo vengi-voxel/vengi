@@ -97,6 +97,7 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 				ImGui::CheckboxVar(ICON_FA_DICE_SIX " Bounding box", cfg::VoxEditShowaabb);
 				ImGui::CheckboxVar("Shadow", cfg::VoxEditRendershadow);
 				ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
+				ImGui::CheckboxVar("Allow multi monior", cfg::UIMultiMonitor);
 				ImGui::CheckboxVar("Color picker", cfg::VoxEditShowColorPicker);
 				ImGui::CheckboxVar("Color wheel", cfg::VoxEditColorWheel);
 				ImGui::CheckboxVar("Simplified UI", cfg::VoxEditSimplifiedView);

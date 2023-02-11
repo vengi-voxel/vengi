@@ -171,8 +171,9 @@ app::AppState IMGUIApp::onConstruct() {
 		return themeIdx >= 0 && themeIdx <= 3;
 	});
 	core::Var::get(cfg::UINotifyDismissMillis, "3000", "Timeout for notifications in millis");
-	_renderUI = core::Var::get(cfg::ClientRenderUI, "true");
-	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST);
+	core::Var::get(cfg::UIMultiMonitor, "true", "Allow multi monitor setups - requires a restart", core::Var::boolValidator);
+	_renderUI = core::Var::get(cfg::ClientRenderUI, "true", "Render the ui", core::Var::boolValidator);
+	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST, "Show metric and debug window", core::Var::boolValidator);
 	_uiFontSize = core::Var::get(cfg::UIFontSize, "14", -1, "Allow to change the ui font size",
 								[](const core::String &val) {
 									const float size = core::string::toFloat(val);
@@ -266,7 +267,7 @@ app::AppState IMGUIApp::onInit() {
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	if (!isSingleWindowMode()) {
+	if (!isSingleWindowMode() && core::Var::getSafe(cfg::UIMultiMonitor)->boolVal()) {
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 		// io.ConfigViewportsNoAutoMerge = true;
 		// io.ConfigViewportsNoTaskBarIcon = true;

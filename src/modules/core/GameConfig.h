@@ -27,6 +27,7 @@ constexpr const char *UIStyle = "ui_style";
 // filedialog
 constexpr const char *UIFileDialogShowHidden = "ui_filedialogshowhidden";
 constexpr const char *UINotifyDismissMillis = "ui_notifydismiss";
+constexpr const char *UIMultiMonitor = "ui_multimonitor";
 constexpr const char *UIBookmarks = "ui_bookmarks";
 
 constexpr const char *ClientGamma = "cl_gamma";
