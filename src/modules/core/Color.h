@@ -111,6 +111,14 @@ public:
 
 	static RGBA getRGBA(const glm::vec4&);
 	static void getHSB(const glm::vec4&, float& hue, float& saturation, float& brightness);
+	/**
+	 * https://en.wikipedia.org/wiki/CIELAB_color_space
+	 *
+	 * @param[out] L lightness of the color (0 yields black and 100 indicates diffuse white; specular white may be higher)
+	 * @param[out] a position between red and green (negative values indicate green and positive values indicate red)
+	 * @param[out] b position between yellow and blue (negative values indicate blue and positive values indicate yellow)
+	 */
+	static void getCIELab(const glm::vec4&, float& L, float& a, float &b);
 
 	static glm::vec3 gray(const glm::vec3&);
 	static glm::vec4 gray(const glm::vec4&);

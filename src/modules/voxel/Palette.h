@@ -111,6 +111,7 @@ public:
 	void sortHue();
 	void sortSaturation();
 	void sortBrightness();
+	void sortCIELab();
 
 	static core::String print(const Palette &palette, bool colorAsHex = false);
 

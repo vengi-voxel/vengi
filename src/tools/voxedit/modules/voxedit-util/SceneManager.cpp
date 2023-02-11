@@ -1275,7 +1275,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("palette_sort", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
-			Log::info("Usage: palette_sort [hue|saturation|brightness]");
+			Log::info("Usage: palette_sort [hue|saturation|brightness|cielab]");
 			return;
 		}
 		const core::String &type = args[0];
@@ -1286,6 +1286,8 @@ void SceneManager::construct() {
 			pal.sortHue();
 		} else if (type == "brightness") {
 			pal.sortBrightness();
+		} else if (type == "cielab") {
+			pal.sortCIELab();
 		} else if (type == "saturation") {
 			pal.sortSaturation();
 		}

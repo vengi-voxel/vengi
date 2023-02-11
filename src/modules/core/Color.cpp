@@ -19,6 +19,9 @@
 #include <glm/gtc/epsilon.hpp>
 #include <glm/ext/scalar_integer.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/color_space.hpp>
+
 #include <SDL.h>
 #include <random>
 #include <stdio.h>
@@ -602,6 +605,63 @@ core::RGBA Color::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t
 		return core::RGBA(r, g, b, a);
 	}
 	return core::RGBA(r / f * f, g / f * f, b / f * f, a);
+}
+
+void Color::getCIELab(const glm::vec4 &color, float &L, float &a, float &b) {
+	float red, green, blue;
+	if (color.r > 0.04045f) {
+		red = glm::pow(((color.r + 0.055f) / 1.055f), 2.4f);
+	} else {
+		red = color.r / 12.92f;
+	}
+
+	if (color.g > 0.04045f) {
+		green = glm::pow(((color.g + 0.055f) / 1.055f), 2.4f);
+	} else {
+		green = color.g / 12.92f;
+	}
+
+	if (color.b > 0.04045f) {
+		blue = glm::pow(((color.b + 0.055f) / 1.055f), 2.4f);
+	} else {
+		blue = color.b / 12.92f;
+	}
+
+	red = red * 100.0f;
+	green = green * 100.0f;
+	blue = blue * 100.0f;
+
+	// XYZ color space
+	const float x = red * 0.4124f + green * 0.3576f + blue * 0.1805f;
+	const float y = red * 0.2126f + green * 0.7152f + blue * 0.0722f;
+	const float z = red * 0.0193f + green * 0.1192f + blue * 0.9505f;
+
+	// standard illuminant D65
+	float fx = x / 95.047f;
+	float fy = y / 100.0f;
+	float fz = z / 108.883f;
+
+	if (fx > 0.008856f) {
+		fx = glm::pow(fx, 1.0f / 3.0f);
+	} else {
+		fx = (7.787f * fx) + (4.0f / 29.0f);
+	}
+
+	if (fy > 0.008856f) {
+		fy = glm::pow(fy, 1.0f / 3.0f);
+	} else {
+		fy = (7.787f * fy) + (4.0f / 29.0f);
+	}
+
+	if (fz > 0.008856f) {
+		fz = glm::pow(fz, 1.0f / 3.0f);
+	} else {
+		fz = (7.787f * fz) + (4.0f / 29.0f);
+	}
+
+	L = 116.0f * fy - 16.0f;
+	a = 500.0f * (fx - fy);
+	b = 200.0f * (fy - fz);
 }
 
 RGBA Color::getRGBA(const glm::vec4 &color) {

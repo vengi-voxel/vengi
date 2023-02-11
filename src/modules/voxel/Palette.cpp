@@ -14,6 +14,7 @@
 #include "core/collection/Buffer.h"
 #include "core/RGBA.h"
 #include "core/collection/Set.h"
+#include <glm/gtx/norm.hpp>
 #include "image/Image.h"
 #include "io/File.h"
 #include "io/FileStream.h"
@@ -303,6 +304,27 @@ void Palette::sortBrightness() {
 		core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
 		core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
 		return lhbrightness < rhbrightness;
+	});
+	markDirty();
+}
+
+void Palette::sortCIELab() {
+	core::sort(_indices, &_indices[_colorCount], [this] (uint8_t lhs, uint8_t rhs) {
+		float lhL = 0.0f;
+		float lha = 0.0f;
+		float lhb = 0.0f;
+		const glm::vec4 &lhc = core::Color::fromRGBA(_colors[lhs]);
+
+		float rhL = 0.0f;
+		float rha = 0.0f;
+		float rhb = 0.0f;
+		const glm::vec4 &rhc = core::Color::fromRGBA(_colors[rhs]);
+
+		core::Color::getCIELab(lhc, lhL, lha, lhb);
+		core::Color::getCIELab(rhc, rhL, rha, rhb);
+		const glm::vec3 lcielab(lhL, lha, lhb);
+		const glm::vec3 rcielab(rhL, rha, rhb);
+		return glm::length2(lcielab) < glm::length2(rcielab);
 	});
 	markDirty();
 }

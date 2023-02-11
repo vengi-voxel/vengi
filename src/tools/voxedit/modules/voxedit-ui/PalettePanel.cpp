@@ -253,6 +253,7 @@ void PalettePanel::paletteMenuBar(voxelformat::SceneGraphNode &node, command::Co
 			ImGui::CommandMenuItem("Hue", "palette_sort hue", true, &listener);
 			ImGui::CommandMenuItem("Saturation", "palette_sort saturation", true, &listener);
 			ImGui::CommandMenuItem("Brightness", "palette_sort brightness", true, &listener);
+			ImGui::CommandMenuItem("CIELab", "palette_sort cielab", true, &listener);
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
