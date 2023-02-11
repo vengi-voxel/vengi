@@ -12,6 +12,16 @@
 namespace util {
 namespace button {
 
+#ifdef __APPLE__
+#define KMOD_CONTROL KMOD_GUI
+#define KMOD_LCONTROL KMOD_LGUI
+#define KMOD_RCONTROL KMOD_RGUI
+#else
+#define KMOD_CONTROL KMOD_CTRL
+#define KMOD_LCONTROL KMOD_LCTRL
+#define KMOD_RCONTROL KMOD_RCTRL
+#endif
+
 #define CUSTOM_SDL_BUTTON_OFFSET (SDL_BUTTON_X2 + 10)
 static const int32_t CUSTOM_SCANCODES               = SDL_NUM_SCANCODES + 1;
 static const int32_t CUSTOM_SDLK_MOUSE_LEFT         = CUSTOM_SDL_KEYCODE(SDL_BUTTON_LEFT);
@@ -47,17 +57,17 @@ static constexpr struct ModifierMapping {
 } MODIFIERMAPPING[] = {
 	{KMOD_LSHIFT, "left_shift"},
 	{KMOD_RSHIFT, "right_shift"},
-	{KMOD_LCTRL, "left_ctrl"},
-	{KMOD_RCTRL, "right_ctrl"},
+	{KMOD_LCONTROL, "left_ctrl"},
+	{KMOD_RCONTROL, "right_ctrl"},
 	{KMOD_LALT, "left_alt"},
 	{KMOD_RALT, "right_alt"},
 	{KMOD_ALT, "alt"},
 	{KMOD_SHIFT, "shift"},
-	{KMOD_CTRL, "ctrl"},
+	{KMOD_CONTROL, "ctrl"},
 	{KMOD_ALT | KMOD_SHIFT, "alt+shift"},
-	{KMOD_CTRL | KMOD_SHIFT, "ctrl+shift"},
-	{KMOD_ALT | KMOD_CTRL, "alt+ctrl"},
-	{KMOD_ALT | KMOD_SHIFT | KMOD_SHIFT, "ctrl+alt+shift"},
+	{KMOD_CONTROL | KMOD_SHIFT, "ctrl+shift"},
+	{KMOD_ALT | KMOD_CONTROL, "alt+ctrl"},
+	{KMOD_CONTROL | KMOD_ALT | KMOD_SHIFT, "ctrl+alt+shift"},
 	{0, nullptr}
 };
 

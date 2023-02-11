@@ -5,6 +5,7 @@
 #include "TestCamera.h"
 #include "testcore/TestAppMain.h"
 #include "core/Log.h"
+#include "util/CustomButtonNames.h"
 #include <SDL.h>
 
 TestCamera::TestCamera(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
@@ -150,7 +151,7 @@ bool TestCamera::onMouseWheel(int32_t x, int32_t y) {
 	const SDL_Keymod mods = SDL_GetModState();
 	if (mods & KMOD_SHIFT) {
 		video::Camera& c = _renderCamera[_targetCamera];
-		if (mods & KMOD_CTRL) {
+		if (mods & KMOD_CONTROL) {
 			c.setNearPlane(c.nearPlane() + (float)y);
 		} else {
 			c.setFarPlane(c.farPlane() + (float)y);
@@ -186,7 +187,7 @@ bool TestCamera::onKeyPress(int32_t key, int16_t modifier) {
 			delta = 1;
 		}
 
-		if (modifier & KMOD_CTRL) {
+		if (modifier & KMOD_CONTROL) {
 			c.setNearPlane(c.nearPlane() + (float)delta);
 		} else {
 			c.setFarPlane(c.farPlane() + (float)delta);

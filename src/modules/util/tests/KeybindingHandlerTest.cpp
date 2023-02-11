@@ -140,22 +140,22 @@ TEST_F(KeybindingHandlerTest, testLeftShiftModifier) {
 }
 
 TEST_F(KeybindingHandlerTest, testAllValidModifier) {
-	execute(SDLK_w, KMOD_LSHIFT | KMOD_LCTRL | KMOD_LALT);
+	execute(SDLK_w, KMOD_LSHIFT | KMOD_LCONTROL | KMOD_LALT);
 	EXPECT_TRUE(_allmodscommand) << "expected command wasn't executed";
 }
 
 TEST_F(KeybindingHandlerTest, testAllValidModifier2) {
-	execute(SDLK_w, KMOD_RSHIFT | KMOD_LCTRL | KMOD_RALT);
+	execute(SDLK_w, KMOD_RSHIFT | KMOD_LCONTROL | KMOD_RALT);
 	EXPECT_TRUE(_allmodscommand) << "expected command wasn't executed";
 }
 
 TEST_F(KeybindingHandlerTest, testCtrlShiftModifier) {
-	execute(SDLK_w, KMOD_LSHIFT | KMOD_LCTRL);
+	execute(SDLK_w, KMOD_LSHIFT | KMOD_LCONTROL);
 	EXPECT_TRUE(_ctrlshiftmodcommand) << "expected command wasn't executed";
 }
 
 TEST_F(KeybindingHandlerTest, testLShiftRCtrlModifier) {
-	execute(SDLK_w, KMOD_LSHIFT | KMOD_RCTRL);
+	execute(SDLK_w, KMOD_LSHIFT | KMOD_RCONTROL);
 	EXPECT_TRUE(_ctrlshiftmodcommand) << "expected command wasn't executed";
 }
 
@@ -185,15 +185,15 @@ TEST_F(KeybindingHandlerTest, testDoubleLeftClick) {
 }
 
 TEST_F(KeybindingHandlerTest, testCtrlModifierA) {
-	executeActionButtonCommand(SDLK_a, KMOD_RCTRL);
+	executeActionButtonCommand(SDLK_a, KMOD_RCONTROL);
 }
 
 TEST_F(KeybindingHandlerTest, testCtrlModifierAWrongModifierPressed) {
-	notExecute(SDLK_a, KMOD_LCTRL);
+	notExecute(SDLK_a, KMOD_LCONTROL);
 }
 
 TEST_F(KeybindingHandlerTest, testCtrlModifier) {
-	executeActionButtonCommand(SDLK_w, KMOD_LCTRL);
+	executeActionButtonCommand(SDLK_w, KMOD_LCONTROL);
 }
 
 TEST_F(KeybindingHandlerTest, testModifierMasksAltSimple) {
@@ -213,11 +213,11 @@ TEST_F(KeybindingHandlerTest, testModifierMasksShiftSimple) {
 }
 
 TEST_F(KeybindingHandlerTest, testModifierMasksCtrlSimple) {
-	EXPECT_TRUE(isValidForBinding(KMOD_LCTRL, KMOD_CTRL)) << "lctrl pressed - ctrl bound";
-	EXPECT_TRUE(isValidForBinding(KMOD_RCTRL, KMOD_CTRL)) << "rctrl pressed - ctrl bound";
+	EXPECT_TRUE(isValidForBinding(KMOD_LCONTROL, KMOD_CONTROL)) << "lctrl pressed - ctrl bound";
+	EXPECT_TRUE(isValidForBinding(KMOD_RCONTROL, KMOD_CONTROL)) << "rctrl pressed - ctrl bound";
 
-	EXPECT_TRUE(isValidForBinding(KMOD_LCTRL, KMOD_LCTRL)) << "lctrl pressed - lctrl bound";
-	EXPECT_FALSE(isValidForBinding(KMOD_RCTRL, KMOD_LCTRL)) << "rctrl pressed - lctrl bound";
+	EXPECT_TRUE(isValidForBinding(KMOD_LCONTROL, KMOD_LCONTROL)) << "lctrl pressed - lctrl bound";
+	EXPECT_FALSE(isValidForBinding(KMOD_RCONTROL, KMOD_LCONTROL)) << "rctrl pressed - lctrl bound";
 }
 
 TEST_F(KeybindingHandlerTest, testModifierMasksInvalidModifiers) {

@@ -38,23 +38,11 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 			} else if (lower == "right_alt") {
 				modifier |= KMOD_RALT;
 			} else if (lower == "ctrl") {
-#ifdef __APPLE__
-				modifier |= KMOD_GUI;
-#else
-				modifier |= KMOD_CTRL;
-#endif
+				modifier |= KMOD_CONTROL;
 			} else if (lower == "left_ctrl") {
-#ifdef __APPLE__
-				modifier |= KMOD_LGUI;
-#else
-				modifier |= KMOD_LCTRL;
-#endif
+				modifier |= KMOD_LCONTROL;
 			} else if (lower == "right_ctrl") {
-#ifdef __APPLE__
-				modifier |= KMOD_RGUI;
-#else
-				modifier |= KMOD_RCTRL;
-#endif
+				modifier |= KMOD_RCONTROL;
 			} else {
 				key = token;
 				if (key.empty()) {

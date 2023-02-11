@@ -3,6 +3,7 @@
  */
 
 #include "app/tests/AbstractTest.h"
+#include "util/CustomButtonNames.h"
 #include "util/KeybindingParser.h"
 #include <SDL.h>
 
@@ -49,11 +50,11 @@ TEST(KeybindingParserTest, testParsing) {
 		const CommandModifierPair& pair = i->second;
 		const core::String& command = pair.command;
 		const int16_t mod = pair.modifier;
-		if ((mod & KMOD_SHIFT) && (mod & KMOD_ALT) && (mod & KMOD_CTRL)) {
+		if ((mod & KMOD_SHIFT) && (mod & KMOD_ALT) && (mod & KMOD_CONTROL)) {
 			EXPECT_EQ("allmodscommand", command);
 			EXPECT_FALSE(allmodscommand);
 			allmodscommand = true;
-		} else if ((mod & KMOD_SHIFT) && (mod & KMOD_CTRL)) {
+		} else if ((mod & KMOD_SHIFT) && (mod & KMOD_CONTROL)) {
 			EXPECT_EQ("ctrlshiftmodcommand", command);
 			EXPECT_FALSE(ctrlshiftmodcommand);
 			ctrlshiftmodcommand = true;
@@ -61,7 +62,7 @@ TEST(KeybindingParserTest, testParsing) {
 			EXPECT_EQ("+xyz", command);
 			EXPECT_FALSE(xyz);
 			xyz = true;
-		} else if (mod & KMOD_CTRL) {
+		} else if (mod & KMOD_CONTROL) {
 			EXPECT_EQ("+bar", command);
 			EXPECT_FALSE(bar);
 			bar = true;
@@ -109,7 +110,7 @@ TEST(KeybindingParserTest, testParsing) {
 		const core::String& command = pair.command;
 		const int16_t mod = pair.modifier;
 		EXPECT_EQ("echo +", command);
-		EXPECT_TRUE(mod & KMOD_CTRL) << "command " << command << " modifier wasn't parsed properly";
+		EXPECT_TRUE(mod & KMOD_CONTROL) << "command " << command << " modifier wasn't parsed properly";
 		++count;
 	}
 	EXPECT_EQ(1, count);

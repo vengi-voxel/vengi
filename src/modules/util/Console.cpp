@@ -16,6 +16,7 @@
 #include "core/Tokenizer.h"
 #include "command/CommandHandler.h"
 #include "VarUtil.h"
+#include "util/CustomButtonNames.h"
 #include <SDL.h>
 
 namespace util {
@@ -133,7 +134,7 @@ bool Console::onKeyPress(int32_t key, int16_t modifier) {
 		return true;
 	}
 
-	if (modifier & KMOD_CTRL) {
+	if (modifier & KMOD_CONTROL) {
 		if (key == SDLK_TAB || key == SDLK_d) {
 			toggle();
 		} else if (key == SDLK_a || key == SDLK_b) {
@@ -282,7 +283,7 @@ void Console::insertText(const core::String& text) {
 		return;
 	}
 	const SDL_Keymod state = SDL_GetModState();
-	if (state & (KMOD_CTRL | KMOD_ALT)) {
+	if (state & (KMOD_LCONTROL | KMOD_ALT)) {
 		return;
 	}
 	if (_overwrite && _cursorPos < int(_commandLine.size())) {
