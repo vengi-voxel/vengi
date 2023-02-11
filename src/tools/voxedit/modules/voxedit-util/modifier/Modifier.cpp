@@ -376,13 +376,87 @@ void Modifier::unlock() {
 	_locked = false;
 }
 
-bool Modifier::aabbAction(voxel::RawVolume *volume,
-						  const std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)> &callback) {
+bool Modifier::lineModifier(voxel::RawVolume *&volume, const Callback &callback) {
+	voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
+	const glm::ivec3 &start = referencePosition();
+	const glm::ivec3 &end = cursorPosition();
+	voxel::Voxel voxel = cursorVoxel();
+	if (isMode(ModifierType::Erase)) {
+		voxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
+	}
+	voxelutil::RaycastResult result = voxelutil::raycastWithEndpoints(&wrapper, start, end, [=](auto &sampler) {
+		const bool air = voxel::isAir(sampler.voxel().getMaterial());
+		if ((!isMode(ModifierType::Erase) && !isMode(ModifierType::Paint)) && !air) {
+			return true;
+		}
+		sampler.setVoxel(voxel);
+		return true;
+	});
+	Log::debug("result: %i", (int)result);
+	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
+	if (modifiedRegion.isValid()) {
+		callback(modifiedRegion, _modifierType, true);
+	}
+	return true;
+}
+
+bool Modifier::planeModifier(voxel::RawVolume *&volume, const Callback &callback) {
+	voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
+	voxel::Voxel hitVoxel = hitCursorVoxel();
+
+	if (isMode(ModifierType::Place)) {
+		voxelutil::extrudePlane(wrapper, cursorPosition(), cursorFace(), hitVoxel, cursorVoxel());
+	} else if (isMode(ModifierType::Erase)) {
+		voxelutil::erasePlane(wrapper, cursorPosition(), cursorFace(), hitVoxel);
+	} else if (isMode(ModifierType::Paint)) {
+		voxelutil::paintPlane(wrapper, cursorPosition(), cursorFace(), hitVoxel, cursorVoxel());
+	} else {
+		Log::error("Unsupported plane modifier");
+		return false;
+	}
+
+	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
+	if (modifiedRegion.isValid()) {
+		voxel::logRegion("Dirty region", modifiedRegion);
+		callback(modifiedRegion, _modifierType, true);
+	}
+	return true;
+}
+
+bool Modifier::pathModifier(voxel::RawVolume *&volume, const Callback &callback) {
+	core::List<glm::ivec3> listResult(4096);
+	const glm::ivec3 &start = referencePosition();
+	const glm::ivec3 &end = cursorPosition();
+	voxelutil::AStarPathfinderParams<voxel::RawVolume> params(
+		volume, start, end, &listResult,
+		[=](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
+			if (voxel::isBlocked(vol->voxel(pos).getMaterial())) {
+				return false;
+			}
+			return voxelutil::isTouching(vol, pos);
+		},
+		4.0f, 10000, voxelutil::Connectivity::EighteenConnected);
+	voxelutil::AStarPathfinder pathfinder(params);
+	if (!pathfinder.execute()) {
+		Log::warn("Failed to execute pathfinder - is the reference position correctly placed on another voxel?");
+		return false;
+	}
+	voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
+	for (const glm::ivec3& p : listResult) {
+		wrapper.setVoxel(p, cursorVoxel());
+	}
+	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
+	if (modifiedRegion.isValid()) {
+		callback(modifiedRegion, _modifierType, true);
+	}
+	return true;
+}
+
+bool Modifier::aabbAction(voxel::RawVolume *volume, const Callback &callback) {
 	if (_locked) {
 		return false;
 	}
-	const bool selectFlag = (_modifierType & ModifierType::Select) == ModifierType::Select;
-	if (selectFlag) {
+	if (isMode(ModifierType::Select)) {
 		const math::AABB<int> a = aabb();
 		Log::debug("select mode");
 		select(a.mins(), a.maxs());
@@ -397,94 +471,18 @@ bool Modifier::aabbAction(voxel::RawVolume *volume,
 		return true;
 	}
 
-	const bool colorPickerFlag = (_modifierType & ModifierType::ColorPicker) == ModifierType::ColorPicker;
-	if (colorPickerFlag) {
+	if (isMode(ModifierType::ColorPicker)) {
 		setCursorVoxel(hitCursorVoxel());
 		return true;
 	}
-
-	const bool placeFlag = (_modifierType & ModifierType::Place) == ModifierType::Place;
-	const bool eraseFlag = (_modifierType & ModifierType::Erase) == ModifierType::Erase;
-	const bool paintFlag = (_modifierType & ModifierType::Paint) == ModifierType::Paint;
-
-	const bool lineFlag = (_modifierType & ModifierType::Line) == ModifierType::Line;
-	if (lineFlag) {
-		voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
-		const glm::ivec3 &start = referencePosition();
-		const glm::ivec3 &end = cursorPosition();
-		voxel::Voxel voxel = cursorVoxel();
-		if (eraseFlag) {
-			voxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
-		}
-		voxelutil::RaycastResult result = voxelutil::raycastWithEndpoints(&wrapper, start, end, [=](auto &sampler) {
-			const bool air = voxel::isAir(sampler.voxel().getMaterial());
-			if ((!eraseFlag && !paintFlag) && !air) {
-				return true;
-			}
-			sampler.setVoxel(voxel);
-			return true;
-		});
-		Log::debug("result: %i", (int)result);
-		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
-		if (modifiedRegion.isValid()) {
-			callback(modifiedRegion, _modifierType, true);
-		}
-		return true;
+	if (isMode(ModifierType::Line)) {
+		return lineModifier(volume, callback);
 	}
-	const bool pathFlag = (_modifierType & ModifierType::Path) == ModifierType::Path;
-	if (pathFlag) {
-		core::List<glm::ivec3> listResult(4096);
-		const glm::ivec3 &start = referencePosition();
-		const glm::ivec3 &end = cursorPosition();
-		voxelutil::AStarPathfinderParams<voxel::RawVolume> params(
-			volume, start, end, &listResult,
-			[=](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
-				if (lineFlag) {
-					return true;
-				}
-
-				if (voxel::isBlocked(vol->voxel(pos).getMaterial())) {
-					return false;
-				}
-				return voxelutil::isTouching(vol, pos);
-			},
-			4.0f, 10000, voxelutil::Connectivity::EighteenConnected);
-		voxelutil::AStarPathfinder pathfinder(params);
-		if (!pathfinder.execute()) {
-			Log::warn("Failed to execute pathfinder - is the reference position correctly placed on another voxel?");
-			return false;
-		}
-		voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
-		for (const glm::ivec3& p : listResult) {
-			wrapper.setVoxel(p, cursorVoxel());
-		}
-		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
-		if (modifiedRegion.isValid()) {
-			callback(modifiedRegion, _modifierType, true);
-		}
-		return true;
+	if (isMode(ModifierType::Path)) {
+		return pathModifier(volume, callback);
 	}
-
 	if (planeMode()) {
-		voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
-		voxel::Voxel hitVoxel = hitCursorVoxel();
-		if (placeFlag) {
-			voxelutil::extrudePlane(wrapper, cursorPosition(), cursorFace(), hitVoxel, cursorVoxel());
-		} else if (eraseFlag) {
-			voxelutil::erasePlane(wrapper, cursorPosition(), cursorFace(), hitVoxel);
-		} else if (paintFlag) {
-			voxelutil::paintPlane(wrapper, cursorPosition(), cursorFace(), hitVoxel, cursorVoxel());
-		} else {
-			Log::error("Unsupported plane modifier");
-			return false;
-		}
-
-		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
-		if (modifiedRegion.isValid()) {
-			voxel::logRegion("Dirty region", modifiedRegion);
-			callback(modifiedRegion, _modifierType, true);
-		}
-		return true;
+		return planeModifier(volume, callback);
 	}
 
 	ModifierVolumeWrapper wrapper(volume, _modifierType);

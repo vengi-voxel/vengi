@@ -177,6 +177,8 @@ public:
 	glm::ivec3 aabbDim() const;
 	glm::ivec3 aabbPosition() const;
 
+	using Callback = std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)>;
+
 	/**
 	 * @brief Pick the start position of the modifier execution bounding box
 	 */
@@ -186,7 +188,11 @@ public:
 	 * @param[out,in] volume The volume to modify
 	 * @param callback Called for every region that was modified for the current active modifier.
 	 */
-	bool aabbAction(voxel::RawVolume* volume, const std::function<void(const voxel::Region& region, ModifierType type, bool markUndo)>& callback);
+	bool aabbAction(voxel::RawVolume *volume, const Callback &callback);
+
+	bool lineModifier(voxel::RawVolume *&volume, const Callback &callback);
+	bool planeModifier(voxel::RawVolume *&volume, const Callback &callback);
+	bool pathModifier(voxel::RawVolume *&volume, const Callback &callback);
 	void aabbAbort();
 	void aabbStep();
 
