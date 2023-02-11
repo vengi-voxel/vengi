@@ -251,71 +251,59 @@ void Palette::changeIntensity(float scale) {
 }
 
 void Palette::sortHue() {
-	struct Hue {
-		bool operator()(const core::RGBA &lhs, const core::RGBA &rhs) const {
-			float lhhue = 0.0f;
-			float lhsaturation = 0.0f;
-			float lhbrightness = 0.0f;
-			const glm::vec4 &lhc = core::Color::fromRGBA(lhs);
+	core::sort(_indices, &_indices[_colorCount], [this] (uint8_t lhs, uint8_t rhs) {
+		float lhhue = 0.0f;
+		float lhsaturation = 0.0f;
+		float lhbrightness = 0.0f;
+		const glm::vec4 &lhc = core::Color::fromRGBA(_colors[lhs]);
 
-			float rhhue = 0.0f;
-			float rhsaturation = 0.0f;
-			float rhbrightness = 0.0f;
-			const glm::vec4 &rhc = core::Color::fromRGBA(rhs);
+		float rhhue = 0.0f;
+		float rhsaturation = 0.0f;
+		float rhbrightness = 0.0f;
+		const glm::vec4 &rhc = core::Color::fromRGBA(_colors[rhs]);
 
-			core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
-			core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
-			return lhhue < rhhue;
-		}
-	};
-
-	core::sort(_colors, &_colors[_colorCount], Hue());
+		core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
+		core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
+		return lhhue < rhhue;
+	});
 	markDirty();
 }
 
 void Palette::sortSaturation() {
-	struct Saturation {
-		bool operator()(const core::RGBA &lhs, const core::RGBA &rhs) const {
-			float lhhue = 0.0f;
-			float lhsaturation = 0.0f;
-			float lhbrightness = 0.0f;
-			const glm::vec4 &lhc = core::Color::fromRGBA(lhs);
+	core::sort(_indices, &_indices[_colorCount], [this] (uint8_t lhs, uint8_t rhs) {
+		float lhhue = 0.0f;
+		float lhsaturation = 0.0f;
+		float lhbrightness = 0.0f;
+		const glm::vec4 &lhc = core::Color::fromRGBA(_colors[lhs]);
 
-			float rhhue = 0.0f;
-			float rhsaturation = 0.0f;
-			float rhbrightness = 0.0f;
-			const glm::vec4 &rhc = core::Color::fromRGBA(rhs);
+		float rhhue = 0.0f;
+		float rhsaturation = 0.0f;
+		float rhbrightness = 0.0f;
+		const glm::vec4 &rhc = core::Color::fromRGBA(_colors[rhs]);
 
-			core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
-			core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
-			return lhsaturation < rhsaturation;
-		}
-	};
-
-	core::sort(_colors, &_colors[_colorCount], Saturation());
+		core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
+		core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
+		return lhsaturation < rhsaturation;
+	});
 	markDirty();
 }
 
 void Palette::sortBrightness() {
-	struct Brightness {
-		bool operator()(const core::RGBA &lhs, const core::RGBA &rhs) const {
-			float lhhue = 0.0f;
-			float lhsaturation = 0.0f;
-			float lhbrightness = 0.0f;
-			const glm::vec4 &lhc = core::Color::fromRGBA(lhs);
+	core::sort(_indices, &_indices[_colorCount], [this] (uint8_t lhs, uint8_t rhs) {
+		float lhhue = 0.0f;
+		float lhsaturation = 0.0f;
+		float lhbrightness = 0.0f;
+		const glm::vec4 &lhc = core::Color::fromRGBA(_colors[lhs]);
 
-			float rhhue = 0.0f;
-			float rhsaturation = 0.0f;
-			float rhbrightness = 0.0f;
-			const glm::vec4 &rhc = core::Color::fromRGBA(rhs);
+		float rhhue = 0.0f;
+		float rhsaturation = 0.0f;
+		float rhbrightness = 0.0f;
+		const glm::vec4 &rhc = core::Color::fromRGBA(_colors[rhs]);
 
-			core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
-			core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
-			return lhbrightness < rhbrightness;
-		}
-	};
-
-	core::sort(_colors, &_colors[_colorCount], Brightness());
+		core::Color::getHSB(lhc, lhhue, lhsaturation, lhbrightness);
+		core::Color::getHSB(rhc, rhhue, rhsaturation, rhbrightness);
+		return lhbrightness < rhbrightness;
+	});
 	markDirty();
 }
 

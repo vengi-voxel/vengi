@@ -104,14 +104,15 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::Sce
 		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
 			const uint8_t dragPalIdx = *(const uint8_t*)payload->Data;
 			if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl)) {
-				sceneMgr().exchangeColors(node.id(), palIdx, dragPalIdx);
+				palette.exchange(palIdx, dragPalIdx);
+			} else {
+				core::exchange(palette.color(palIdx), palette.color(dragPalIdx));
+				if (!existingColor) {
+					palette.setSize(palIdx + 1);
+				}
+				palette.markDirty();
+				palette.markSave();
 			}
-			core::exchange(palette.color(palIdx), palette.color(dragPalIdx));
-			if (!existingColor) {
-				palette.setSize(palIdx + 1);
-			}
-			palette.markDirty();
-			palette.markSave();
 			sceneMgr().mementoHandler().markPaletteChange(node);
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::RGBAPayload)) {
