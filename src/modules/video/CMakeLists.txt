@@ -56,11 +56,13 @@ if (APPLE)
 endif()
 
 set(LIB video)
-set(OpenGL_GL_PREFERENCE GLVND)
-find_package(OpenGL)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES image util)
-if (APPLE)
-	target_link_libraries(${LIB} PRIVATE "-framework OpenGL -framework CoreFoundation")
+if (RENDERER STREQUAL "GL")
+	set(OpenGL_GL_PREFERENCE GLVND)
+	find_package(OpenGL)
+	if (APPLE)
+		target_link_libraries(${LIB} PRIVATE "-framework OpenGL -framework CoreFoundation")
+	endif()
 endif()
 set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)
 
@@ -80,7 +82,6 @@ if (PYTHON3_EXECUTABLE)
 endif()
 
 set(TEST_SRCS
-	tests/AbstractGLTest.h
 	tests/ShaderTest.cpp
 	tests/CameraTest.cpp
 	tests/RendererTest.cpp
