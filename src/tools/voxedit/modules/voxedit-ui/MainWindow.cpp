@@ -530,9 +530,7 @@ void MainWindow::update() {
 		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 		windowFlags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
 		windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoMove;
-		if (!core::Var::getSafe(cfg::ClientFullscreen)->boolVal()) {
-			windowFlags |= ImGuiWindowFlags_NoTitleBar;
-		}
+		windowFlags |= ImGuiWindowFlags_NoTitleBar;
 		if (sceneMgr().dirty()) {
 			windowFlags |= ImGuiWindowFlags_UnsavedDocument;
 		}

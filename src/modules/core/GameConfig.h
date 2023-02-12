@@ -9,15 +9,12 @@ namespace cfg {
 constexpr const char *ClientMouseRotationSpeed = "cl_cammouserotspeed";
 constexpr const char *ClientVSync = "cl_vsync";
 constexpr const char *ClientDebugSeverity = "cl_debugseverity";
-constexpr const char *ClientFullscreen = "cl_fullscreen";
 constexpr const char *ClientMultiSampleSamples = "cl_multisamplesamples";
 constexpr const char *ClientMultiSampleBuffers = "cl_multisamplebuffers";
 constexpr const char *ClientShadowMapSize = "cl_shadowmapsize";
 constexpr const char *ClientOpenGLVersion = "cl_openglversion";
 constexpr const char *ClientRenderUI = "cl_renderui";
-constexpr const char *ClientWindowWidth = "cl_width";
 constexpr const char *ClientWindowDisplay = "cl_display";
-constexpr const char *ClientWindowHeight = "cl_height";
 constexpr const char *ClientWindowHighDPI = "cl_highdpi";
 constexpr const char *UIShowMetrics = "ui_showmetrics";
 constexpr const char *UIFontSize = "ui_fontsize";

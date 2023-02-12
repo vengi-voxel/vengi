@@ -226,19 +226,6 @@ void WindowedApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 }
 
 bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
-	if ((modifier & KMOD_ALT) && key == SDLK_RETURN) {
-		const uint32_t flags = SDL_GetWindowFlags(_window);
-		if (flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) {
-			core::Var::getSafe(cfg::ClientFullscreen)->setVal(false);
-			Log::debug("Add window border and allow to resize (windowed)");
-			SDL_SetWindowFullscreen(_window, 0);
-		} else {
-			core::Var::getSafe(cfg::ClientFullscreen)->setVal(true);
-			Log::debug("Remove window border and don't allow to resize (fullscreen)");
-			SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-		}
-		return true;
-	}
 	return handleKeyPress(key, modifier);
 }
 
@@ -310,9 +297,6 @@ app::AppState WindowedApp::onInit() {
 		Log::debug("Display %i: %i:%i x %i:%i (dpi: %f, h: %f, v: %f)", i, dr.x, dr.y, dr.w, dr.h, ddpi, hdpi, vdpi);
 	}
 
-	int width = core::Var::get(cfg::ClientWindowWidth, displayMode.w)->intVal();
-	int height = core::Var::get(cfg::ClientWindowHeight, displayMode.h)->intVal();
-
 	video::setup();
 
 	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
@@ -323,8 +307,6 @@ app::AppState WindowedApp::onInit() {
 	SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS, "32");
 #endif
 	SDL_SetHint(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK, "1");
-
-	const bool fullscreen = core::Var::getSafe(cfg::ClientFullscreen)->boolVal();
 
 	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 	if (!_showWindow) {
@@ -339,9 +321,6 @@ app::AppState WindowedApp::onInit() {
 	} else {
 		Log::debug("Disable high dpi support");
 	}
-	if (fullscreen) {
-		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	}
 
 	const int videoDrivers = SDL_GetNumVideoDrivers();
 	for (int i = 0; i < videoDrivers; ++i) {
@@ -350,12 +329,9 @@ app::AppState WindowedApp::onInit() {
 
 	Log::debug("driver: %s", SDL_GetCurrentVideoDriver());
 	Log::debug("found %i displays (use %i at %i:%i)", numDisplays, displayIndex, displayBounds.x, displayBounds.y);
-	if (fullscreen && numDisplays > 1) {
-		width = displayMode.w;
-		height = displayMode.h;
-		Log::debug("use fake fullscreen for display %i: %i:%i", displayIndex, width, height);
-	}
 
+	const int width = 1024;
+	const int height = 768;
 	_window = createWindow(width, height, displayIndex, flags);
 	if (!_window) {
 		Log::warn("Failed to get multisampled window - try to disable it");
@@ -367,6 +343,8 @@ app::AppState WindowedApp::onInit() {
 			return app::AppState::InitFailure;
 		}
 	}
+
+	SDL_MaximizeWindow(_window);
 
 	if (displayIndex != SDL_GetWindowDisplayIndex(_window)) {
 		Log::error("Failed to create window at display %i", displayIndex);
@@ -414,7 +392,6 @@ app::AppState WindowedApp::onConstruct() {
 	app::AppState state = Super::onConstruct();
 	core::Var::get(cfg::ClientMultiSampleBuffers, "0");
 	core::Var::get(cfg::ClientMultiSampleSamples, "0");
-	core::Var::get(cfg::ClientFullscreen, "false", "Start the application in fullscreen mode", core::Var::boolValidator);
 	core::Var::get(cfg::ClientWindowHighDPI, "false", core::CV_READONLY);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER, "Activate shadow map", core::Var::boolValidator);
 	core::Var::get(cfg::ClientBloom, "true", "Activate bloom post processing", core::Var::boolValidator);

@@ -28,9 +28,6 @@ void TestApp::onWindowResize(void *windowHandle, int windowWidth, int windowHeig
 }
 
 app::AppState TestApp::onConstruct() {
-	core::Var::get(cfg::ClientFullscreen, "false");
-	core::Var::get(cfg::ClientWindowWidth, "1024");
-	core::Var::get(cfg::ClientWindowHeight, "768");
 	app::AppState state = Super::onConstruct();
 
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
