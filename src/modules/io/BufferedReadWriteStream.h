@@ -42,6 +42,8 @@ public:
 	BufferedReadWriteStream(int64_t size = 0);
 	virtual ~BufferedReadWriteStream();
 
+	void reset();
+
 	// get the raw data pointer for the buffer
 	const uint8_t* getBuffer() const;
 	// return the allocated buffer - any other read or write operation on this stream is undefined
