@@ -127,12 +127,12 @@ void main(void) {
 		float xx = abs(fract(v_pos.x));
 		float yy = abs(fract(v_pos.y));
 		float zz = abs(fract(v_pos.z));
-		bool nearX = xx <= epsilona;
-		bool nearY = yy <= epsilona;
-		bool nearZ = zz <= epsilona;
-		bool overX = xx <= epsilonb;
-		bool overY = yy <= epsilonb;
-		bool overZ = zz <= epsilonb;
+		bool nearX = (xx <= epsilona || 1.0 - xx <= epsilona);
+		bool nearY = (yy <= epsilona || 1.0 - yy <= epsilona);
+		bool nearZ = (zz <= epsilona || 1.0 - zz <= epsilona);
+		bool overX = (xx <= epsilonb || 1.0 - xx <= epsilonb);
+		bool overY = (yy <= epsilonb || 1.0 - yy <= epsilonb);
+		bool overZ = (zz <= epsilonb || 1.0 - zz <= epsilonb);
 		if ((nearX && !overX) || (nearY && !overY) || (nearZ && !overZ)) {
 			o_color = vec4(v_color.rgb * vec3(0.3, 0.3, 0.3), v_color.a);
 		} else {
