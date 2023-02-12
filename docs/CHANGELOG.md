@@ -35,6 +35,7 @@ General:
    - Fixed invalid clamping for uv based pixel lookup (mesh imports)
    - Update renderer to only use uniform buffers
    - Fixed rendering issue for windows users
+   - Fixed fullscreen issues for windows users
 
 VoxEdit:
 
@@ -48,7 +49,7 @@ VoxEdit:
    - Several gizmo related fixes and improvements
    - Added simple UI mode which removes some panels
    - Fixed a few memento (undo/redo) related issues
-   - Added templates to the menu (`robo` and `chr_knight`)
+   - Added templates to the menu (`robo`, `chess`, `head` and `chr_knight`)
    - Allow to control the amount of viewports
    - Allow to define pre-defined region sizes (see `ve_regionsizes` cvar)
    - Some ui actions are only available in edit mode
