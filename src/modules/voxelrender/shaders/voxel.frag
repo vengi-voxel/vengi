@@ -124,15 +124,15 @@ void main(void) {
 		// TODO: these must be zoom, scale and view related
 		const float epsilona = 0.025;
 		const float epsilonb = 0.0001;
-		float xx = fract(v_pos.x);
-		float yy = fract(v_pos.y);
-		float zz = fract(v_pos.z);
-		bool nearX = (xx >= -epsilona && xx <= epsilona);
-		bool nearY = (yy >= -epsilona && yy <= epsilona);
-		bool nearZ = (zz >= -epsilona && zz <= epsilona);
-		bool overX = (xx >= -epsilonb && xx <= epsilonb);
-		bool overY = (yy >= -epsilonb && yy <= epsilonb);
-		bool overZ = (zz >= -epsilonb && zz <= epsilonb);
+		float xx = abs(fract(v_pos.x));
+		float yy = abs(fract(v_pos.y));
+		float zz = abs(fract(v_pos.z));
+		bool nearX = xx <= epsilona;
+		bool nearY = yy <= epsilona;
+		bool nearZ = zz <= epsilona;
+		bool overX = xx <= epsilonb;
+		bool overY = yy <= epsilonb;
+		bool overZ = zz <= epsilonb;
 		if ((nearX && !overX) || (nearY && !overY) || (nearZ && !overZ)) {
 			o_color = vec4(v_color.rgb * vec3(0.3, 0.3, 0.3), v_color.a);
 		} else {
