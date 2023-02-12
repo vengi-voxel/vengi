@@ -79,7 +79,7 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 				ImGui::EndMenu();
 			}
 
-			actionMenuItem("Prefab", "prefab", listener);
+			actionMenuItem("Add to scene", "import", listener);
 			ImGui::Separator();
 			actionMenuItem(ICON_FA_IMAGE " Heightmap", "importheightmap", listener);
 			actionMenuItem(ICON_FA_IMAGE " Colored heightmap", "importcoloredheightmap", listener);

@@ -322,7 +322,7 @@ static void mergeIfNeeded(voxelformat::SceneGraph &newSceneGraph) {
 	}
 }
 
-bool SceneManager::prefab(const core::String& file) {
+bool SceneManager::import(const core::String& file) {
 	if (file.empty()) {
 		Log::error("Can't import model: No file given");
 		return false;

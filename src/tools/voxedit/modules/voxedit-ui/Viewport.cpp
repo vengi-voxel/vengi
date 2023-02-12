@@ -163,7 +163,7 @@ void Viewport::dragAndDrop(float headerSize) {
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
 			const core::String &filename = *(core::String *)payload->Data;
-			sceneMgr().prefab(filename);
+			sceneMgr().import(filename);
 		}
 
 		ImGui::EndDragDropTarget();

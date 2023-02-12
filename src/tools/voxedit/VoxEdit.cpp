@@ -56,7 +56,7 @@ void VoxEdit::onDropFile(const core::String& file) {
 			return;
 		}
 	}
-	if (voxedit::sceneMgr().prefab(file)) {
+	if (voxedit::sceneMgr().import(file)) {
 		return;
 	}
 	Log::warn("Failed to handle %s as drop file event", file.c_str());
@@ -202,12 +202,12 @@ app::AppState VoxEdit::onConstruct() {
 		_mainWindow->load(args[0], nullptr);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Load a scene from the given volume file");
 
-	command::Command::registerCommand("prefab", [this](const command::CmdArgs &args) {
+	command::Command::registerCommand("import", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([](const core::String &file, const io::FormatDescription *desc) { voxedit::sceneMgr().prefab(file); }, fileDialogOptions, voxelformat::voxelLoad());
+			openDialog([](const core::String &file, const io::FormatDescription *desc) { voxedit::sceneMgr().import(file); }, fileDialogOptions, voxelformat::voxelLoad());
 			return;
 		}
-		voxedit::sceneMgr().prefab(args[0]);
+		voxedit::sceneMgr().import(args[0]);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Add a volume to the existing scene from the given file");
 
 	command::Command::registerCommand("importheightmap", [this](const command::CmdArgs &args) {

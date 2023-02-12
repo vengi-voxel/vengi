@@ -339,7 +339,7 @@ public:
 	 * @brief Import an existing model
 	 * @note Placed relative to the reference position in the current scene
 	 */
-	bool prefab(const core::String& file);
+	bool import(const core::String& file);
 
 	bool runScript(const core::String& script, const core::DynamicArray<core::String>& args);
 
