@@ -283,7 +283,7 @@ void Console::insertText(const core::String& text) {
 		return;
 	}
 	const SDL_Keymod state = SDL_GetModState();
-	if (state & (KMOD_LCONTROL | KMOD_ALT)) {
+	if (state & (KMOD_CONTROL | KMOD_ALT)) {
 		return;
 	}
 	if (_overwrite && _cursorPos < int(_commandLine.size())) {
