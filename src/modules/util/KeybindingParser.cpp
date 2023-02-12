@@ -18,35 +18,37 @@ namespace util {
 
 void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& command, const core::String &context) {
 	int modifier = KMOD_NONE;
-	core::TokenizerConfig cfg;
-	core::Tokenizer tok(cfg, key, COMMAND_PRESSED);
 	core::BindingContext bindingContext = core::parseBindingContext(context);
-	const core::DynamicArray<core::String>& line = tok.tokens();
-	if (line.size() > 1) {
-		for (const core::String& token : line) {
-			const core::String& lower = token.toLower();
-			if (lower == "shift") {
-				modifier |= KMOD_SHIFT;
-			} else if (lower == "left_shift") {
-				modifier |= KMOD_LSHIFT;
-			} else if (lower == "right_shift") {
-				modifier |= KMOD_RSHIFT;
-			} else if (lower == "alt") {
-				modifier |= KMOD_ALT;
-			} else if (lower == "left_alt") {
-				modifier |= KMOD_LALT;
-			} else if (lower == "right_alt") {
-				modifier |= KMOD_RALT;
-			} else if (lower == "ctrl") {
-				modifier |= KMOD_CONTROL;
-			} else if (lower == "left_ctrl") {
-				modifier |= KMOD_LCONTROL;
-			} else if (lower == "right_ctrl") {
-				modifier |= KMOD_RCONTROL;
-			} else {
-				key = token;
-				if (key.empty()) {
-					key = COMMAND_PRESSED;
+	if (key.size() > 1 && key.contains(COMMAND_PRESSED)) {
+		core::TokenizerConfig cfg;
+		core::Tokenizer tok(cfg, key, COMMAND_PRESSED);
+		const core::DynamicArray<core::String>& line = tok.tokens();
+		if (line.size() > 1) {
+			for (const core::String& token : line) {
+				const core::String& lower = token.toLower();
+				if (lower == "shift") {
+					modifier |= KMOD_SHIFT;
+				} else if (lower == "left_shift") {
+					modifier |= KMOD_LSHIFT;
+				} else if (lower == "right_shift") {
+					modifier |= KMOD_RSHIFT;
+				} else if (lower == "alt") {
+					modifier |= KMOD_ALT;
+				} else if (lower == "left_alt") {
+					modifier |= KMOD_LALT;
+				} else if (lower == "right_alt") {
+					modifier |= KMOD_RALT;
+				} else if (lower == "ctrl") {
+					modifier |= KMOD_CONTROL;
+				} else if (lower == "left_ctrl") {
+					modifier |= KMOD_LCONTROL;
+				} else if (lower == "right_ctrl") {
+					modifier |= KMOD_RCONTROL;
+				} else {
+					key = token;
+					if (key.empty()) {
+						key = COMMAND_PRESSED;
+					}
 				}
 			}
 		}
