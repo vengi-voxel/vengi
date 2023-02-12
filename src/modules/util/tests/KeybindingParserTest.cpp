@@ -26,6 +26,7 @@ right_mouse void all
 double_right_mouse void all
 wheelup void all
 wheeldown void all
++ "echo only+" all
 )";
 }
 
@@ -34,7 +35,7 @@ TEST(KeybindingParserTest, testParsing) {
 	const BindMap& m = p.getBindings();
 	ASSERT_FALSE(m.empty());
 	ASSERT_EQ(0, p.invalidBindings());
-	const size_t expected = 15;
+	const size_t expected = 16;
 	EXPECT_EQ(expected, m.size());
 
 	int key = 'w';
@@ -109,11 +110,18 @@ TEST(KeybindingParserTest, testParsing) {
 		const CommandModifierPair& pair = i->second;
 		const core::String& command = pair.command;
 		const int16_t mod = pair.modifier;
-		EXPECT_EQ("echo +", command);
-		EXPECT_TRUE(mod & KMOD_CONTROL) << "command " << command << " modifier wasn't parsed properly";
-		++count;
+		if ((mod & KMOD_CONTROL)) {
+			EXPECT_EQ("echo +", command);
+			EXPECT_TRUE(mod & KMOD_CONTROL) << "command " << command << " modifier wasn't parsed properly";
+			++count;
+		} else {
+			if (mod == 0) {
+				EXPECT_EQ("echo only+", command);
+				++count;
+			}
+		}
 	}
-	EXPECT_EQ(1, count);
+	EXPECT_EQ(2, count);
 
 	key = SDLK_LALT;
 	count = 0;

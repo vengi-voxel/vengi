@@ -89,7 +89,7 @@ KeybindingParser::KeybindingParser(const core::String& bindings) :
 		if (line[0] == '#' || line[0] == '/') {
 			continue;
 		}
-		core::Tokenizer tok(line);
+		core::Tokenizer tok(line, " ");
 		if (tok.size() == 3u) {
 			const core::String key = tok.next();
 			const core::String command = tok.next();
