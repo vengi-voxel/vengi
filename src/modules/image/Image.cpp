@@ -341,6 +341,10 @@ bool Image::writePng(io::SeekableWriteStream &stream) const {
 	return writePng(stream, _data, _width, _height, _depth);
 }
 
+bool Image::writeJPEG(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth, int quality) {
+	return stbi_write_jpg_to_func(stream_write_func, &stream, width, height, depth, (const void*)buffer, quality) != 0;
+}
+
 bool Image::writePng(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth) {
 	return stbi_write_png_to_func(stream_write_func, &stream, width, height, depth, (const void*)buffer, width * depth) != 0;
 }

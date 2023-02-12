@@ -58,6 +58,10 @@ public:
 	static void flipVerticalRGBA(uint8_t *pixels, int w, int h);
 	bool writePng(io::SeekableWriteStream &stream) const;
 	static bool writePng(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth);
+	/**
+	 * @param[in] quality Ranges from 1 to 100 where higher is better
+	 */
+	static bool writeJPEG(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth, int quality = 100);
 	static bool writePng(const char *name, const uint8_t *buffer, int width, int height, int depth);
 	bool writePng() const;
 	core::String pngBase64() const;
