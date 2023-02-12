@@ -1,5 +1,6 @@
 set(SRCS
 	Image.cpp Image.h
+	AVI.cpp AVI.h
 	external/image_DXT.c external/image_DXT.h
 	external/image_helper.c external/image_helper.h
 	external/wfETC.c external/wfETC.h
@@ -12,6 +13,7 @@ endif()
 
 set(TEST_SRCS
 	tests/ImageTest.cpp
+	tests/AVITest.cpp
 )
 
 set(TEST_FILES

@@ -334,7 +334,9 @@ uint8_t* createPng(const void *pixels, int width, int height, int depth, int *pn
 
 static void stream_write_func(void *context, void *data, int size) {
 	io::SeekableWriteStream *stream = (io::SeekableWriteStream*)context;
-	stream->write(data, size);
+	if (stream->write(data, size) != size) {
+		Log::error("Failed to write to image stream");
+	}
 }
 
 bool Image::writePng(io::SeekableWriteStream &stream) const {
