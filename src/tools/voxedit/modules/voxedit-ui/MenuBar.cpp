@@ -13,6 +13,8 @@
 #include "voxedit-util/SceneManager.h"
 #include "engine-config.h"
 #include "robo.h"
+#include "chess.h"
+#include "head.h"
 #include "chr_knight.h"
 #include "voxelformat/VolumeFormat.h"
 
@@ -61,6 +63,18 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 					file.name = "chr_knight.qb";
 					file.desc = voxelformat::qubicleBinary();
 					loadTemplate(file, chr_knight_data, chr_knight_size);
+				}
+				if (ImGui::MenuItem("chess", nullptr, false, enabled)) {
+					io::FileDescription file;
+					file.name = "chess.vengi";
+					file.desc = voxelformat::vengi();
+					loadTemplate(file, chess_data, chess_size);
+				}
+				if (ImGui::MenuItem("head", nullptr, false, enabled)) {
+					io::FileDescription file;
+					file.name = "head.vengi";
+					file.desc = voxelformat::vengi();
+					loadTemplate(file, head_data, head_size);
 				}
 				ImGui::EndMenu();
 			}

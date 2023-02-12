@@ -59,10 +59,14 @@ io::FormatDescription qubicleBinary() {
 	return {"Qubicle Binary", {"qb"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 }
 
+io::FormatDescription vengi() {
+	return {"Vengi", {"vengi"}, [] (uint32_t magic) {return magic == FourCC('V','E', 'N','G');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+}
+
 const io::FormatDescription* voxelLoad() {
 	// this is the list of supported voxel volume formats that are have importers implemented
 	static const io::FormatDescription desc[] = {
-		{"Vengi", {"vengi"}, [] (uint32_t magic) {return magic == FourCC('V','E', 'N','G');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		vengi(),
 		qubicleBinary(),
 		{"MagicaVoxel", {"vox"}, [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Qubicle Binary Tree", {"qbt"}, [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},

@@ -1,10 +1,14 @@
 set(LIB voxedit-ui)
 engine_file_to_header("robo" ${ROOT_DIR}/data/voxedit/robo.qb ${GENERATE_DIR}/robo.h)
 engine_file_to_header("chr_knight" ${ROOT_DIR}/data/voxedit/chr_knight.qb ${GENERATE_DIR}/chr_knight.h)
+engine_file_to_header("chess" ${ROOT_DIR}/data/voxedit/chess.vengi ${GENERATE_DIR}/chess.h)
+engine_file_to_header("head" ${ROOT_DIR}/data/voxedit/head.vengi ${GENERATE_DIR}/head.h)
 
 set(SRCS
 	${GENERATE_DIR}/robo.h
 	${GENERATE_DIR}/chr_knight.h
+	${GENERATE_DIR}/chess.h
+	${GENERATE_DIR}/head.h
 	AnimationTimeline.h AnimationTimeline.cpp
 	AnimationPanel.h AnimationPanel.cpp
 	AssetPanel.h AssetPanel.cpp

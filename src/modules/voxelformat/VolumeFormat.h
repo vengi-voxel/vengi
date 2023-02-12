@@ -22,6 +22,8 @@ extern const io::FormatDescription* voxelLoad();
 extern const io::FormatDescription* voxelSave();
 extern io::FormatDescription tiberianSun();
 extern io::FormatDescription qubicleBinary();
+extern io::FormatDescription vengi();
+
 
 /**
  * @brief Tries to load a palette from the given file. This can either be an image which is reduced to 256 colors or a
