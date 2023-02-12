@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include "command/CommandHandler.h"
+namespace command {
+struct CommandExecutionListener;
+}
 
 namespace voxedit {
 

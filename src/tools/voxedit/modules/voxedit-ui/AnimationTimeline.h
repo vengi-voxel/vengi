@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/String.h"
-#include "imgui.h"
 
 namespace voxedit {
 

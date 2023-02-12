@@ -4,6 +4,7 @@
 
 #include "AnimationPanel.h"
 #include "core/Trace.h"
+#include "command/CommandHandler.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/IMGUIEx.h"
 
