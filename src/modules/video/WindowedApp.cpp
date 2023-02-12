@@ -226,26 +226,18 @@ void WindowedApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 }
 
 bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
-	if (modifier & KMOD_LALT) {
-		if (key == SDLK_RETURN) {
-			SDL_DisplayMode displayMode;
-			if (SDL_GetWindowDisplayMode(_window, &displayMode) == 0) {
-				const uint32_t flags = SDL_GetWindowFlags(_window);
-				if (flags & SDL_WINDOW_BORDERLESS) {
-					SDL_SetWindowBordered(_window, SDL_TRUE);
-					SDL_SetWindowResizable(_window, SDL_TRUE);
-					core::Var::getSafe(cfg::ClientFullscreen)->setVal(false);
-					Log::debug("Add window border and allow to resize (windowed)");
-				} else {
-					SDL_SetWindowBordered(_window, SDL_FALSE);
-					SDL_SetWindowResizable(_window, SDL_FALSE);
-					core::Var::getSafe(cfg::ClientFullscreen)->setVal(true);
-					Log::debug("Remove window border and don't allow to resize (fullscreen)");
-				}
-				SDL_SetWindowSize(_window, displayMode.w, displayMode.h);
-			}
-			return true;
+	if ((modifier & KMOD_ALT) && key == SDLK_RETURN) {
+		const uint32_t flags = SDL_GetWindowFlags(_window);
+		if (flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+			core::Var::getSafe(cfg::ClientFullscreen)->setVal(false);
+			Log::debug("Add window border and allow to resize (windowed)");
+			SDL_SetWindowFullscreen(_window, 0);
+		} else {
+			core::Var::getSafe(cfg::ClientFullscreen)->setVal(true);
+			Log::debug("Remove window border and don't allow to resize (fullscreen)");
+			SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 		}
+		return true;
 	}
 	return handleKeyPress(key, modifier);
 }
@@ -334,10 +326,8 @@ app::AppState WindowedApp::onInit() {
 
 	const bool fullscreen = core::Var::getSafe(cfg::ClientFullscreen)->boolVal();
 
-	int flags = SDL_WINDOW_OPENGL;
-	if (_showWindow) {
-		flags |= SDL_WINDOW_SHOWN;
-	} else {
+	int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+	if (!_showWindow) {
 		flags |= SDL_WINDOW_HIDDEN;
 	}
 	SDL_Rect displayBounds;
@@ -350,9 +340,7 @@ app::AppState WindowedApp::onInit() {
 		Log::debug("Disable high dpi support");
 	}
 	if (fullscreen) {
-		flags |= SDL_WINDOW_BORDERLESS;
-	} else {
-		flags |= SDL_WINDOW_RESIZABLE;
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
 
 	const int videoDrivers = SDL_GetNumVideoDrivers();
