@@ -29,9 +29,9 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);
 		if (ImGui::BeginMenu(ICON_FA_FILE " File")) {
-			actionMenuItem("New", "new", listener);
+			actionMenuItem(ICON_FA_SQUARE " New", "new", listener);
 			actionMenuItem(ICON_FK_FLOPPY_O " Load", "load", listener);
-			if (ImGui::BeginMenu("Recently opened")) {
+			if (ImGui::BeginMenu(ICON_FA_BARS " Recently opened")) {
 				int recentlyOpened = 0;
 				for (const core::String& f : _lastOpenedFiles) {
 					if (f.empty()) {
@@ -50,7 +50,7 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 			actionMenuItem(ICON_FA_FLOPPY_DISK " Save as", "saveas", listener);
 			ImGui::Separator();
 
-			if (ImGui::BeginMenu("Templates")) {
+			if (ImGui::BeginMenu(ICON_FA_CART_SHOPPING " Templates")) {
 				const bool enabled = !sceneMgr().dirty();
 				if (ImGui::MenuItem("robo", nullptr, false, enabled)) {
 					io::FileDescription file;
@@ -79,7 +79,7 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 				ImGui::EndMenu();
 			}
 
-			actionMenuItem("Add to scene", "import", listener);
+			actionMenuItem(ICON_FA_SQUARE_PLUS " Add to scene", "import", listener);
 			ImGui::Separator();
 			actionMenuItem(ICON_FA_IMAGE " Heightmap", "importheightmap", listener);
 			actionMenuItem(ICON_FA_IMAGE " Colored heightmap", "importcoloredheightmap", listener);
