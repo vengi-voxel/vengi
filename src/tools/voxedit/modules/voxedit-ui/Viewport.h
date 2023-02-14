@@ -4,23 +4,17 @@
 
 #pragma once
 
-#include "command/CommandHandler.h"
-#include "video/Camera.h"
-#include "video/FrameBuffer.h"
-#include "imgui.h"
-#include "video/WindowedApp.h"
+#include "ui/IMGUIEx.h"
+#include "image/AVI.h"
 #include "video/gl/GLTypes.h"
 #include "video/Camera.h"
-#include "video/FrameBuffer.h"
 #include "voxel/Region.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelrender/RawVolumeRenderer.h"
 
-namespace voxelformat {
-class SceneGraphNode;
+namespace io {
+class FileStream;
 }
-
-struct ImGuiDockNode;
 
 namespace voxedit {
 
@@ -36,6 +30,8 @@ private:
 	const bool _detailedTitle;
 	bool _hovered = false;
 	SceneCameraMode _camMode = SceneCameraMode::Free;
+	image::AVI _avi;
+	io::FileStream *_videoWriteStream = nullptr;
 
 	/**
 	 * while we are still modifying the transform or shifting the volume we don't want to
@@ -110,12 +106,14 @@ private:
 	void dragAndDrop(float headerSize);
 	void renderBottomBar();
 	void renderViewport();
+	void toggleVideoRecording();
 	void renderMenuBar(command::CommandExecutionListener *listener);
 	void menuBarCameraMode();
 	void menuBarCameraProjection();
 	void resetCamera(const glm::vec3 &pos, float distance, const voxel::Region &region);
 	void resize(const glm::ivec2& frameBufferSize);
 	void move(bool pan, bool rotate, int x, int y);
+	image::ImagePtr renderToImage(const char *imageName);
 public:
 	Viewport(int id, bool sceneMode, bool detailedTitle = true);
 	~Viewport();

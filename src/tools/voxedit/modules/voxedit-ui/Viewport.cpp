@@ -4,12 +4,13 @@
 
 #include "Viewport.h"
 #include "DragAndDropPayload.h"
+#include "app/App.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Var.h"
 #include "image/Image.h"
-#include "imgui.h"
+#include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "math/Ray.h"
 #include "ui/IMGUIApp.h"
@@ -18,15 +19,13 @@
 #include "ui/dearimgui/ImGuizmo.h"
 #include "video/Camera.h"
 #include "video/Renderer.h"
-#include "video/ShapeBuilder.h"
 #include "video/WindowedApp.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/RawVolume.h"
-#include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/SceneGraphNode.h"
+
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
@@ -307,6 +306,22 @@ void Viewport::toggleScene() {
 	}
 }
 
+void Viewport::toggleVideoRecording() {
+	if (_videoWriteStream == nullptr) {
+		video::WindowedApp::getInstance()->saveDialog(
+			[this](const core::String &file, const io::FormatDescription *desc) {
+				_videoWriteStream = new io::FileStream(io::filesystem()->open(file, io::FileMode::SysWrite));
+				_avi.open(*_videoWriteStream, _renderContext.frameBuffer.dimension().x,
+						  _renderContext.frameBuffer.dimension().y);
+			},
+			{}, nullptr, "video.avi");
+	} else {
+		_avi.close(*_videoWriteStream);
+		delete _videoWriteStream;
+		_videoWriteStream = nullptr;
+	}
+}
+
 void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 	if (ImGui::BeginMenuBar()) {
 		const MementoHandler &mementoHandler = sceneMgr().mementoHandler();
@@ -322,7 +337,9 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		ImGui::CommandMenuItem(ICON_FA_CAMERA " Screenshot", command.c_str(), listener);
 		if (_renderContext.sceneMode) {
 			const core::String commandVideo = core::string::format("video %i", _id);
-			ImGui::CommandMenuItem(ICON_FA_CAMERA " Video", commandVideo.c_str(), listener);
+			if (ImGui::MenuItem(ICON_FA_CAMERA " Video")) {
+				toggleVideoRecording();
+			}
 		}
 		ImGui::EndMenuBar();
 	}
@@ -350,18 +367,29 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 		renderViewport();
 	}
 	ImGui::End();
+
+	if (_videoWriteStream) {
+		const image::ImagePtr &image = renderToImage("**video**");
+		if (image && image->isLoaded()) {
+			// TODO: move into thread
+			_avi.writeFrame(*_videoWriteStream, image->data(), image->width(), image->height());
+		}
+	}
 }
 
 void Viewport::shutdown() {
 	_renderContext.shutdown();
 }
 
-bool Viewport::saveImage(const char *filename) {
+image::ImagePtr Viewport::renderToImage(const char *imageName) {
 	_renderContext.frameBuffer.bind(true);
 	sceneMgr().render(_renderContext, camera(), SceneManager::RenderScene);
 	_renderContext.frameBuffer.unbind();
+	return _renderContext.frameBuffer.image(imageName, video::FrameBufferAttachment::Color0);
+}
 
-	const image::ImagePtr &image = _renderContext.frameBuffer.image(filename, video::FrameBufferAttachment::Color0);
+bool Viewport::saveImage(const char *filename) {
+	const image::ImagePtr &image = renderToImage(filename);
 	if (!image) {
 		Log::error("Failed to read texture");
 		return false;
