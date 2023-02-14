@@ -189,16 +189,11 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			change |= ImGui::InputFloat3("Sc", matrixScale);
 			change |= ImGui::InputFloat3("Pv", glm::value_ptr(pivot));
 
-			static const char *interpolationStrings[] = {"Instant",		 "Linear",		  "QuadEaseIn",
-														 "QuadEaseOut",	 "QuadEaseInOut", "CubicEaseIn",
-														 "CubicEaseOut", "CubicEaseInOut"};
-			static_assert((int)voxelformat::InterpolationType::Max == lengthof(interpolationStrings), "Array sizes don't match");
-
 			const int currentInterpolation = (int)sceneGraphKeyFrame.interpolation;
-			if (ImGui::BeginCombo("Interpolation##interpolationstrings", interpolationStrings[currentInterpolation])) {
-				for (int n = 0; n < lengthof(interpolationStrings); n++) {
+			if (ImGui::BeginCombo("Interpolation##interpolationstrings", voxelformat::InterpolationTypeStr[currentInterpolation])) {
+				for (int n = 0; n < lengthof(voxelformat::InterpolationTypeStr); n++) {
 					const bool isSelected = (currentInterpolation == n);
-					if (ImGui::Selectable(interpolationStrings[n], isSelected)) {
+					if (ImGui::Selectable(voxelformat::InterpolationTypeStr[n], isSelected)) {
 						sceneGraphKeyFrame.interpolation = (voxelformat::InterpolationType)n;
 					}
 					if (isSelected) {

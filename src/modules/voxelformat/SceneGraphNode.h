@@ -25,8 +25,8 @@ namespace voxelformat {
 
 class SceneGraph;
 class SceneGraphNode;
-using FrameIndex = uint32_t;
-using KeyFrameIndex = uint32_t;
+using FrameIndex = int32_t;
+using KeyFrameIndex = int32_t;
 #define InvalidKeyFrame ((voxelformat::KeyFrameIndex)-1)
 
 enum class SceneGraphNodeType : uint8_t {
@@ -238,6 +238,7 @@ public:
 
 	KeyFrameIndex addKeyFrame(FrameIndex frameIdx);
 	bool removeKeyFrame(FrameIndex frameIdx);
+	bool removeKeyFrameByIndex(KeyFrameIndex keyFrameIdx);
 	void sortKeyFrames();
 	const SceneGraphKeyFrames &keyFrames() const;
 	bool setKeyFrames(const SceneGraphKeyFrames&);

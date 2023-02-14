@@ -2382,14 +2382,14 @@ bool SceneManager::nodeAddKeyFrame(int nodeId, voxelformat::FrameIndex frameIdx)
 	return nodeAddKeyframe(node, frameIdx);
 }
 
-bool SceneManager::nodeRemoveKeyFrame(int nodeId, voxelformat::KeyFrameIndex keyFrameIdx) {
+bool SceneManager::nodeRemoveKeyFrameByIndex(int nodeId, voxelformat::KeyFrameIndex keyFrameIdx) {
 	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-		return nodeRemoveKeyframe(*node, keyFrameIdx);
+		return nodeRemoveKeyFrameByIndex(*node, keyFrameIdx);
 	}
 	return false;
 }
 
-bool SceneManager::nodeRemoveKeyframe(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
+bool SceneManager::nodeRemoveKeyFrameByIndex(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
 	return node.removeKeyFrameByIndex(keyFrameIdx);
 }
 

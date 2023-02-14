@@ -105,8 +105,8 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 		Log::debug("Found %i keyframes", keyFrameCount);
 
 		for (int kf = 0; kf < keyFrameCount; ++kf) {
-			uint32_t frameIdx;
-			wrap(stream.readUInt32(frameIdx))
+			FrameIndex frameIdx;
+			wrap(stream.readInt32(frameIdx))
 
 			KeyFrameIndex keyFrameIdx;
 			keyFrameIdx = node.addKeyFrame(frameIdx);
@@ -169,7 +169,7 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::SeekableReadStream &stream,
 									SceneGraph &sceneGraph, SceneGraphNode& node, const core::String &animId, int version) {
 	KeyFrameIndex keyFrameCount;
-	wrap(stream.readUInt32(keyFrameCount))
+	wrap(stream.readInt32(keyFrameCount))
 	Log::debug("Found %u keyframes in node %s", keyFrameCount, node.name().c_str());
 
 	const glm::vec3 pivot = node.transform().pivot(); // save the pivot before we override the transform
@@ -180,7 +180,7 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 	}
 	for (KeyFrameIndex keyFrameIdx = 0u; keyFrameIdx < keyFrameCount; ++keyFrameIdx) {
 		SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
-		wrap(stream.readUInt32(keyFrame.frameIdx))
+		wrap(stream.readInt32(keyFrame.frameIdx))
 		int32_t interpolation;
 		wrap(stream.readInt32(interpolation))
 		if (interpolation < 0 || interpolation >= lengthof(vxa_priv::interpolationTypes)) {

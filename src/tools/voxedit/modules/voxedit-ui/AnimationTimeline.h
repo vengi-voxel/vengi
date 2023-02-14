@@ -5,14 +5,23 @@
 #pragma once
 
 #include "core/String.h"
+#include "voxelformat/SceneGraphNode.h"
 
 namespace voxedit {
 
 class AnimationTimeline {
 private:
 	bool _play = false;
+	double _seconds = 0.0;
+	uint32_t _startFrame = 0;
+	uint32_t _endFrame = 64;
+	voxelformat::KeyFrameIndex _deleteKeyFrameIdx = InvalidKeyFrame;
+	int _deleteFrameNode = -1;
+
 public:
-	bool update(const char *sequencerTitle);
+	void header(voxelformat::FrameIndex &currentFrame, voxelformat::FrameIndex maxFrame);
+	void sequencer(voxelformat::FrameIndex &currentFrame);
+	bool update(const char *sequencerTitle, double deltaFrameSeconds);
 };
 
 } // namespace voxedit

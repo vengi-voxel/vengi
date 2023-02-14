@@ -17,7 +17,7 @@ IMGUI_API void RenderNeoSequencerTopBarBackground(const ImVec4 &color, const ImV
 IMGUI_API void RenderNeoSequencerTopBarOverlay(float zoom, float valuesWidth, uint32_t startFrame, uint32_t endFrame,
 											   uint32_t offsetFrame, const ImVec2 &cursor, const ImVec2 &size,
 											   ImDrawList *drawList = nullptr, bool drawFrameLines = true,
-											   bool drawFrameText = true);
+											   bool drawFrameText = true, float maxPixelsPerTick = -1.0f);
 IMGUI_API void RenderNeoTimelineLabel(const char *label, const ImVec2 &cursor, const ImVec2 &size, const ImVec4 &color,
 									  bool isGroup = false, bool isOpen = false, ImDrawList *drawList = nullptr);
 IMGUI_API void RenderNeoTimelane(bool selected, const ImVec2 &cursor, const ImVec2 &size, const ImVec4 &highlightColor,

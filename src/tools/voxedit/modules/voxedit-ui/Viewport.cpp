@@ -320,6 +320,10 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		}
 		const core::String command = core::string::format("screenshot %i", _id);
 		ImGui::CommandMenuItem(ICON_FA_CAMERA " Screenshot", command.c_str(), listener);
+		if (_renderContext.sceneMode) {
+			const core::String commandVideo = core::string::format("video %i", _id);
+			ImGui::CommandMenuItem(ICON_FA_CAMERA " Video", commandVideo.c_str(), listener);
+		}
 		ImGui::EndMenuBar();
 	}
 }

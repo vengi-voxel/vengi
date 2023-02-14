@@ -257,7 +257,7 @@ void MainWindow::mainWidget() {
 	// bottom
 	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR, _app);
 	if (isSceneMode()) {
-		_animationTimeline.update(TITLE_ANIMATION_TIMELINE);
+		_animationTimeline.update(TITLE_ANIMATION_TIMELINE, _app->deltaFrameSeconds());
 	}
 }
 

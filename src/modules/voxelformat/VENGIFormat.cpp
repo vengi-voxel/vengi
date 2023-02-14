@@ -261,7 +261,7 @@ bool VENGIFormat::loadAnimation(SceneGraph &sceneGraph, SceneGraphNode &node, ui
 
 bool VENGIFormat::loadNodeKeyFrame(SceneGraph &sceneGraph, SceneGraphNode &node, uint32_t version, io::ReadStream &stream) {
 	FrameIndex frameIdx = 0;
-	wrap(stream.readUInt32(frameIdx))
+	wrap(stream.readInt32(frameIdx))
 	KeyFrameIndex keyFrameIdx = node.addKeyFrame(frameIdx);
 	if (keyFrameIdx == InvalidKeyFrame) {
 		keyFrameIdx = node.keyFrameForFrame(frameIdx);

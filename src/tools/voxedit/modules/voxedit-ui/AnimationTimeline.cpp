@@ -15,94 +15,125 @@
 
 namespace voxedit {
 
-bool AnimationTimeline::update(const char *sequencerTitle) {
-	voxelformat::FrameIndex currentFrame = sceneMgr().currentFrame();
-	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
-	uint32_t startFrame = 0;
-	uint32_t endFrame = 0;
-	for (voxelformat::SceneGraphNode &modelNode : sceneGraph) {
-		endFrame = core_max(modelNode.maxFrame(), endFrame);
+void AnimationTimeline::header(voxelformat::FrameIndex &currentFrame, voxelformat::FrameIndex maxFrame) {
+	if (ImGui::DisabledButton(ICON_FA_SQUARE_PLUS " Add", _play)) {
+		sceneMgr().nodeAddKeyFrame(-1, currentFrame);
 	}
+	ImGui::SameLine();
+	if (ImGui::DisabledButton(ICON_FA_SQUARE_MINUS " Remove", _play)) {
+		sceneMgr().nodeRemoveKeyFrameByIndex(-1, currentFrame);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button(ICON_FA_ARROW_RIGHT_ARROW_LEFT)) {
+		_startFrame = 0;
+		_endFrame = core_max(64, maxFrame + 1);
+	}
+	ImGui::SameLine();
 
 	if (_play) {
-		if (endFrame <= 0) {
+		if (ImGui::Button(ICON_FA_STOP)) {
+			_play = false;
+		}
+	} else {
+		if (ImGui::DisabledButton(ICON_FA_PLAY, maxFrame <= 0)) {
+			_play = true;
+		}
+	}
+}
+
+void AnimationTimeline::sequencer(voxelformat::FrameIndex &currentFrame) {
+	ImGuiNeoSequencerFlags flags = ImGuiNeoSequencerFlags_AlwaysShowHeader;
+	flags |= ImGuiNeoSequencerFlags_EnableSelection;
+	flags |= ImGuiNeoSequencerFlags_AllowLengthChanging;
+	flags |= ImGuiNeoSequencerFlags_Selection_EnableDragging;
+	flags |= ImGuiNeoSequencerFlags_Selection_EnableDeletion;
+
+	if (ImGui::BeginNeoSequencer("##neo-sequencer", (uint32_t *)&currentFrame, (uint32_t *)&_startFrame,
+								 (uint32_t *)&_endFrame, {0, 0}, flags)) {
+		voxelformat::KeyFrameIndex deleteKeyFrameIdx = InvalidKeyFrame;
+		int deleteFrameNode = -1;
+
+		const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+		for (voxelformat::SceneGraphNode &modelNode : sceneGraph) {
+			const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
+			if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
+				voxelformat::KeyFrameIndex keyFrameIdx = 0;
+				for (voxelformat::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
+					ImGui::NeoKeyframe(&kf.frameIdx);
+					if (ImGui::IsNeoKeyframeRightClicked() && ImGui::NeoCanDeleteSelection()) {
+						deleteKeyFrameIdx = keyFrameIdx;
+						deleteFrameNode = modelNode.id();
+					}
+
+					if (ImGui::IsNeoKeyframeHovered()) {
+						ImGui::BeginTooltip();
+						const char *interpolation = voxelformat::InterpolationTypeStr[(int)kf.interpolation];
+						ImGui::Text("Keyframe %i, Interpolation: %s", kf.frameIdx, interpolation);
+						ImGui::EndTooltip();
+					}
+					++keyFrameIdx;
+				}
+
+				sceneMgr().setCurrentFrame(currentFrame);
+				if (ImGui::IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags_NewlySelected)) {
+					sceneMgr().nodeActivate(modelNode.id());
+				} else if (sceneMgr().sceneGraph().activeNode() == modelNode.id()) {
+					ImGui::SetSelectedTimeline(label.c_str());
+				}
+				ImGui::EndNeoTimeLine();
+			}
+		}
+
+		ImGui::EndNeoSequencer();
+
+		if (deleteFrameNode != -1) {
+			ImGui::OpenPopup("keyframe-context-menu");
+			_deleteKeyFrameIdx = deleteKeyFrameIdx;
+			_deleteFrameNode = deleteFrameNode;
+		}
+		ImGuiWindowFlags popupFlags = 0;
+		popupFlags |= ImGuiWindowFlags_AlwaysAutoResize;
+		popupFlags |= ImGuiWindowFlags_NoTitleBar;
+		popupFlags |= ImGuiWindowFlags_NoSavedSettings;
+		if (ImGui::BeginPopup("keyframe-context-menu", popupFlags)) {
+			// TODO: implement copy & paste
+			// TODO: implement duplicate
+			if (ImGui::MenuItem(ICON_FA_TRASH " Delete keyframe")) {
+				// TODO: delete all selected keyframes
+				if (!sceneMgr().nodeRemoveKeyFrameByIndex(_deleteFrameNode, _deleteKeyFrameIdx)) {
+					Log::warn("Failed to delete key frame index %i for node %i", _deleteKeyFrameIdx, _deleteFrameNode);
+				}
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+	}
+}
+
+bool AnimationTimeline::update(const char *sequencerTitle, double deltaFrameSeconds) {
+	voxelformat::FrameIndex currentFrame = sceneMgr().currentFrame();
+	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	voxelformat::FrameIndex maxFrame = 0;
+	for (voxelformat::SceneGraphNode &modelNode : sceneGraph) {
+		maxFrame = core_max(modelNode.maxFrame(), maxFrame);
+	}
+	_seconds += deltaFrameSeconds;
+
+	if (_play) {
+		if (maxFrame <= 0) {
 			_play = false;
 		} else {
 			// TODO: anim fps
-			currentFrame = (currentFrame + 1) % endFrame;
+			currentFrame = (currentFrame + 1) % maxFrame;
 			sceneMgr().setCurrentFrame(currentFrame);
 		}
 	}
 	if (ImGui::Begin(sequencerTitle)) {
-		if (ImGui::DisabledButton(ICON_FA_SQUARE_PLUS " Add", _play)) {
-			sceneMgr().nodeForeachGroup([&](int nodeId) {
-				voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
-				if (node.addKeyFrame(currentFrame) == InvalidKeyFrame) {
-					Log::error("Failed to add keyframe for frame %i", (int)currentFrame);
-					return;
-				}
-				const uint32_t newKeyFrameIdx = node.keyFrameForFrame(currentFrame);
-				if (newKeyFrameIdx > 0) {
-					node.keyFrame(newKeyFrameIdx).setTransform(node.keyFrame(newKeyFrameIdx - 1).transform());
-				}
-			});
-		}
-		ImGui::SameLine();
-		if (ImGui::DisabledButton(ICON_FA_SQUARE_MINUS " Remove", _play)) {
-			sceneMgr().nodeForeachGroup([&](int nodeId) {
-				voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
-				if (!node.removeKeyFrame(currentFrame)) {
-					Log::error("Failed to remove frame %i", (int)currentFrame);
-				}
-			});
-		}
-		ImGui::SameLine();
-
-		if (_play) {
-			if (ImGui::Button(ICON_FA_STOP)) {
-				_play = false;
-			}
-		} else {
-			if (ImGui::DisabledButton(ICON_FA_PLAY, endFrame <= 0)) {
-				_play = true;
-			}
-		}
-
-		if (endFrame < 10) {
-			endFrame = 64;
-		} else {
-			endFrame += endFrame / 10;
-		}
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f,0.0f});
+		header(currentFrame, maxFrame);
 		if (ImGui::BeginChild("##neo-sequencer-child")) {
-			if (ImGui::BeginNeoSequencer("##neo-sequencer", &currentFrame, &startFrame, &endFrame, {0, 0}, ImGuiNeoSequencerFlags_AlwaysShowHeader)) {
-				for (voxelformat::SceneGraphNode &modelNode : sceneGraph) {
-					core::DynamicArray<voxelformat::FrameIndex *> keys;
-					keys.reserve(modelNode.keyFrames().size());
-					for (voxelformat::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
-						keys.push_back(&kf.frameIdx);
-					}
-					const core::String &label =
-						core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
-					uint32_t **keyframes = keys.data();
-					const uint32_t keyframeCount = keys.size();
-					if (ImGui::BeginNeoTimeline(label.c_str(), keyframes, keyframeCount, nullptr,
-												ImGuiNeoTimelineFlags_None)) {
-						sceneMgr().setCurrentFrame(currentFrame);
-						if (ImGui::IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags_NewlySelected)) {
-							sceneMgr().nodeActivate(modelNode.id());
-						} else if (sceneMgr().sceneGraph().activeNode() == modelNode.id()) {
-							ImGui::SetSelectedTimeline(label.c_str());
-						}
-						ImGui::EndNeoTimeLine();
-					}
-				}
-				ImGui::EndNeoSequencer();
-			}
+			sequencer(currentFrame);
 		}
 		ImGui::EndChild();
-		ImGui::PopStyleVar();
 	}
 	ImGui::End();
 	return true;
