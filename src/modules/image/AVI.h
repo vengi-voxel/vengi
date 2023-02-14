@@ -41,8 +41,8 @@ namespace image {
 class AVI {
 private:
 	struct State {
-		uint32_t moviSize;
-		int fps;
+		uint32_t moviSize = 0;
+		int fps = 0;
 	};
 
 	State _state;
