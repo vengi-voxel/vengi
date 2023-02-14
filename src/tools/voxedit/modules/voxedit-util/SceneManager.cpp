@@ -2343,18 +2343,54 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix,
 									   voxelformat::KeyFrameIndex keyFrameIdx) {
-	if (nodeId != -1) {
-		if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-			return nodeUpdateTransform(*node, localMatrix, deltaMatrix, keyFrameIdx);
-		}
+	if (nodeId == -1) {
+		nodeForeachGroup([&] (int nodeId) {
+			if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+				nodeUpdateTransform(*node, localMatrix, deltaMatrix, keyFrameIdx);
+			}
+		});
+		return true;
+	}
+	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeUpdateTransform(*node, localMatrix, deltaMatrix, keyFrameIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeAddKeyframe(voxelformat::SceneGraphNode &node, voxelformat::FrameIndex frameIdx) {
+	if (node.addKeyFrame(frameIdx) == InvalidKeyFrame) {
+		Log::error("Failed to add keyframe for frame %i", (int)frameIdx);
 		return false;
 	}
-	nodeForeachGroup([&] (int nodeId) {
-		if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-			nodeUpdateTransform(*node, localMatrix, deltaMatrix, keyFrameIdx);
-		}
-	});
-	return true;
+	const voxelformat::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
+	if (newKeyFrameIdx > 0) {
+		node.keyFrame(newKeyFrameIdx).setTransform(node.keyFrame(newKeyFrameIdx - 1).transform());
+		return true;
+	}
+	return false;
+}
+
+bool SceneManager::nodeAddKeyFrame(int nodeId, voxelformat::FrameIndex frameIdx) {
+	if (nodeId == -1) {
+		nodeForeachGroup([&](int nodeId) {
+			voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
+			nodeAddKeyframe(node, frameIdx);
+		});
+		return true;
+	}
+	voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	return nodeAddKeyframe(node, frameIdx);
+}
+
+bool SceneManager::nodeRemoveKeyFrame(int nodeId, voxelformat::KeyFrameIndex keyFrameIdx) {
+	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeRemoveKeyframe(*node, keyFrameIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeRemoveKeyframe(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
+	return node.removeKeyFrameByIndex(keyFrameIdx);
 }
 
 bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &localMatrix,
