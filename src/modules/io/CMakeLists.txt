@@ -8,6 +8,8 @@ set(SRCS
 	StdStreamBuf.h
 	Stream.cpp Stream.h
 	MemoryReadStream.cpp MemoryReadStream.h
+	BufferedWriteStream.h
+	BufferedSeekableWriteStream.h
 	BufferedZipReadStream.cpp BufferedZipReadStream.h
 	StringStream.cpp StringStream.h
 	ZipArchive.h ZipArchive.cpp
@@ -29,6 +31,7 @@ set(TEST_FILES
 
 set(TEST_SRCS
 	tests/BufferedReadWriteStreamTest.cpp
+	tests/BufferedWriteStreamTest.cpp
 	tests/FilesystemTest.cpp
 	tests/FileStreamTest.cpp
 	tests/FormatDescriptionTest.cpp

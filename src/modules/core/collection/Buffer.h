@@ -242,6 +242,10 @@ public:
 		_buffer = nullptr;
 	}
 
+	void reset() {
+		_size = 0u;
+	}
+
 	void append(const TYPE* array, size_t n) {
 		checkBufferSize(_size + n);
 		for (size_t i = 0u; i < n; ++i) {
