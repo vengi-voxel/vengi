@@ -184,9 +184,11 @@ bool AVI::writeHeader(io::SeekableWriteStream &stream, uint32_t riffSize, uint32
 }
 
 bool AVI::open(io::SeekableWriteStream &stream, int width, int height, int fps) {
+	_state = State();
 	_state.fps = fps;
 	_state.moviSize = 4; // 4 byte movi id
 
+	_header = AVIMAINHEADER();
 	_header.dwMicroSecPerFrame = (uint32_t)(1000000.0f / (float)_state.fps);
 	_header.dwFlags = AVIF_HASINDEX | AVIF_ISINTERLEAVED;
 	_header.dwHeight = height;
