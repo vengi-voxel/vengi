@@ -59,6 +59,10 @@ void RenderNeoSequencerTopBarOverlay(float zoom, float valuesWidth, uint32_t sta
 			perFrameWidth *= (float)primaryFrames;
 		}
 
+		if (primaryFrames == 0) {
+			return;
+		}
+
 		for (int32_t i = 0; i < count; i++) {
 
 			const auto primaryFrame = ((viewStart + i) % primaryFrames == 0);
