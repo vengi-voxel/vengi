@@ -12,6 +12,7 @@
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "io/File.h"
+#include "io/FileStream.h"
 #include "io/FilesystemEntry.h"
 #include <SDL.h>
 #ifndef __WINDOWS__
@@ -388,6 +389,16 @@ core::String Filesystem::writePath(const char *name) const {
 	return _homePath + name;
 }
 
+long Filesystem::write(const core::String& filename, io::ReadStream &stream) {
+	const core::String &fullPath = _homePath + filename;
+	const core::String path(core::string::extractPath(fullPath.c_str()));
+	createDir(path, true);
+	io::File f(fullPath, FileMode::Write);
+	long written = f.write(stream);
+	f.close();
+	return written;
+}
+
 bool Filesystem::write(const core::String &filename, const uint8_t *content, size_t length) {
 	const core::String &fullPath = _homePath + filename;
 	const core::String path(core::string::extractPath(fullPath.c_str()));
@@ -409,6 +420,16 @@ bool Filesystem::syswrite(const core::String &filename, const uint8_t *content, 
 	}
 	f.open(FileMode::SysWrite);
 	return f.write(content, length) == static_cast<long>(length);
+}
+
+long Filesystem::syswrite(const core::String& filename, io::ReadStream &stream) const {
+	io::File f(filename, FileMode::SysWrite);
+	if (!createDir(f.path())) {
+		Log::error("Failed to write to %s: Could not create the directory", filename.c_str());
+		return false;
+	}
+	f.open(FileMode::SysWrite);
+	return f.write(stream);
 }
 
 bool Filesystem::syswrite(const core::String &filename, const core::String &string) const {

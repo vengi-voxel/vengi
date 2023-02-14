@@ -7,6 +7,7 @@
 #include "core/String.h"
 #include "core/SharedPtr.h"
 #include "IOResource.h"
+#include "io/Stream.h"
 
 struct SDL_RWops;
 
@@ -92,6 +93,7 @@ public:
 	const core::String& name() const;
 
 	SDL_RWops* createRWops(FileMode mode) const;
+	long write(io::ReadStream &stream) const;
 	long write(const unsigned char *buf, size_t len) const;
 	/**
 	 * @brief Reads the content of the file into a buffer. The buffer is allocated inside this function.

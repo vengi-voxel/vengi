@@ -12,6 +12,7 @@
 #include "core/collection/Stack.h"
 #include "core/collection/StringMap.h"
 #include "core/Common.h"
+#include "io/Stream.h"
 
 namespace io {
 
@@ -138,6 +139,8 @@ public:
 
 	bool write(const core::String& filename, const uint8_t* content, size_t length);
 
+	long write(const core::String& filename, io::ReadStream &stream);
+
 	bool write(const core::String& filename, const core::String& string);
 
 	/**
@@ -145,6 +148,7 @@ public:
 	 * known file system structure of the application. It just uses the given name.
 	 */
 	bool syswrite(const core::String& filename, const uint8_t* content, size_t length) const;
+	long syswrite(const core::String& filename, io::ReadStream &stream) const;
 
 	/**
 	 * @note The difference to the usual write() methods is that the given path is not put into the

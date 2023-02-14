@@ -91,11 +91,39 @@ SDL_RWops* File::createRWops(FileMode mode) const {
 	return rwops;
 }
 
+long File::write(io::ReadStream &stream) const {
+	if (_file == nullptr) {
+		Log::debug("Invalid file handle - can write stream (path: %s)", _rawPath.c_str());
+		return -1L;
+	}
+	if (_mode != FileMode::Write && _mode != FileMode::SysWrite) {
+		Log::debug("Invalid file mode given - can write stream (path: %s)", _rawPath.c_str());
+		return -1L;
+	}
+	char buf[4096 * 10];
+	long l = 0;
+	while (!stream.eos()) {
+		const int len = stream.read(buf, sizeof(buf));
+		if (len == -1) {
+			return -1L;
+		}
+		const size_t written = SDL_RWwrite(_file, buf, 1, len);
+		if (written == 0) {
+			Log::debug("Error writing file - can write buffer of length %i (path: %s)", (int)len, _rawPath.c_str());
+			return -1L;
+		}
+		l += len;
+	}
+
+	Log::debug("%i bytes were written into path %s", (int)l, _rawPath.c_str());
+	return l;
+}
+
 long File::write(const unsigned char *buf, size_t len) const {
 	if (_file == nullptr) {
 		Log::debug("Invalid file handle - can write buffer of length %i (path: %s)",
 				(int)len, _rawPath.c_str());
-		return -1;
+		return -1L;
 	}
 	if (_mode != FileMode::Write && _mode != FileMode::SysWrite) {
 		Log::debug("Invalid file mode given - can write buffer of length %i (path: %s)",

@@ -24,11 +24,8 @@ BufferedReadWriteStream::~BufferedReadWriteStream() {
 }
 
 void BufferedReadWriteStream::reset() {
-	core_free(_buffer);
-	_buffer = nullptr;
 	_size = 0u;
 	_pos = 0u;
-	resizeBuffer(_capacity);
 }
 
 uint8_t* BufferedReadWriteStream::release() {
