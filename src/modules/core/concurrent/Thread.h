@@ -8,7 +8,12 @@ struct SDL_Thread;
 
 namespace core {
 
-typedef int (* ThreadFunction) (void *data);
+/**
+ * @param data what was passed as `data` in the ctor of the Thread class
+ * @returns a value that can be reported through join().
+ */
+typedef int (*ThreadFunction)(void *data);
+
 typedef unsigned long ThreadId;
 
 class Thread {
@@ -31,4 +36,4 @@ inline bool Thread::joinable() const {
 	return _thread != nullptr;
 }
 
-}
+} // namespace core
