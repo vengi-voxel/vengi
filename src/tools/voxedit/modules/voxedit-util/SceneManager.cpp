@@ -2382,11 +2382,22 @@ bool SceneManager::nodeAddKeyFrame(int nodeId, voxelformat::FrameIndex frameIdx)
 	return nodeAddKeyframe(node, frameIdx);
 }
 
+bool SceneManager::nodeRemoveKeyFrame(int nodeId, voxelformat::FrameIndex frameIdx) {
+	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeRemoveKeyFrame(*node, frameIdx);
+	}
+	return false;
+}
+
 bool SceneManager::nodeRemoveKeyFrameByIndex(int nodeId, voxelformat::KeyFrameIndex keyFrameIdx) {
 	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRemoveKeyFrameByIndex(*node, keyFrameIdx);
 	}
 	return false;
+}
+
+bool SceneManager::nodeRemoveKeyFrame(voxelformat::SceneGraphNode &node, voxelformat::FrameIndex frameIdx) {
+	return node.removeKeyFrame(frameIdx);
 }
 
 bool SceneManager::nodeRemoveKeyFrameByIndex(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {

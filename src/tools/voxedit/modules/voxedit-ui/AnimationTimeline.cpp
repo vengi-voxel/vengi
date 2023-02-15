@@ -21,13 +21,15 @@ void AnimationTimeline::header(voxelformat::FrameIndex &currentFrame, voxelforma
 	}
 	ImGui::SameLine();
 	if (ImGui::DisabledButton(ICON_FA_SQUARE_MINUS " Remove", _play)) {
-		sceneMgr().nodeRemoveKeyFrameByIndex(-1, currentFrame);
+		sceneMgr().nodeRemoveKeyFrame(-1, currentFrame);
 	}
+	ImGui::TooltipText("Delete the current keyframe on all nodes");
 	ImGui::SameLine();
 	if (ImGui::Button(ICON_FA_ARROW_RIGHT_ARROW_LEFT)) {
 		_startFrame = 0;
 		_endFrame = core_max(64, maxFrame + 1);
 	}
+	ImGui::TooltipText("Crop frames");
 	ImGui::SameLine();
 
 	if (_play) {

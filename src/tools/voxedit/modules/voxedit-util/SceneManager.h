@@ -415,11 +415,13 @@ private:
 	bool nodeRemove(voxelformat::SceneGraphNode &node, bool recursive);
 	bool nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx);
 	bool nodeRemoveKeyFrameByIndex(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx);
+	bool nodeRemoveKeyFrame(voxelformat::SceneGraphNode &node, voxelformat::FrameIndex frameIdx);
 	bool nodeAddKeyframe(voxelformat::SceneGraphNode &node, voxelformat::FrameIndex frameIdx);
 	void nodeDuplicate(const voxelformat::SceneGraphNode &node);
 public:
 	bool nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx);
 	bool nodeRemoveKeyFrameByIndex(int nodeId, voxelformat::KeyFrameIndex keyFrameIdx);
+	bool nodeRemoveKeyFrame(int nodeId, voxelformat::FrameIndex frameIdx);
 	bool nodeAddKeyFrame(int nodeId, voxelformat::FrameIndex frameIdx);
 	bool nodeMove(int sourceNodeId, int targetNodeId);
 	bool nodeRename(int nodeId, const core::String &name);
