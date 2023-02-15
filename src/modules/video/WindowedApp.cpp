@@ -148,7 +148,7 @@ app::AppState WindowedApp::onRunning() {
 	core::Singleton<ShaderManager>::getInstance().update();
 
 	const uint64_t end = core::TimeProvider::highResTime();
-	const double frameDelta = (end - _timeProvider->highResTickTime()) / (double)core::TimeProvider::highResTimeResolution() * 1000.0;
+	const double frameDelta = (double)(end - _timeProvider->highResTickTime()) / (double)core::TimeProvider::highResTimeResolution() * 1000.0;
 	_fps = 1.0 / frameDelta;
 
 	video_trace_frame_end();
