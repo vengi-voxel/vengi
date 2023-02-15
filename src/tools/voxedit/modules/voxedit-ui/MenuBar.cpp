@@ -104,11 +104,14 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste at reference##referencepos", "paste", sceneManager.hasClipboardCopy(), &listener);
 			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste at cursor##cursor", "pastecursor", sceneManager.hasClipboardCopy(), &listener);
 			ImGui::Separator();
+			actionMenuItem(ICON_FK_TERMINAL " Console", "toggleconsole", listener);
+			ImGui::Separator();
 			if (ImGui::BeginMenu(ICON_FA_GEAR " Options")) {
 				ImGui::CheckboxVar(ICON_FA_BORDER_ALL " Grid", cfg::VoxEditShowgrid);
 				ImGui::CheckboxVar("Show axis", cfg::VoxEditShowaxis);
 				ImGui::CheckboxVar("Show locked axis", cfg::VoxEditShowlockedaxis);
 				ImGui::CheckboxVar(ICON_FA_DICE_SIX " Bounding box", cfg::VoxEditShowaabb);
+				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 				ImGui::CheckboxVar("Shadow", cfg::VoxEditRendershadow);
 				ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
 				ImGui::CheckboxVar("Allow multi monior", cfg::UIMultiMonitor);
@@ -159,25 +162,10 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 				}
 				ImGui::TooltipText("The color reduction algorithm that is used when importing RGBA colors from images or rgba formats");
 
-				// TODO: move into viewport menubar
-				video::Camera *camera = sceneMgr().activeCamera();
-				if (camera) {
-					glm::vec3 omega = camera->omega();
-					if (ImGui::InputFloat("Camera rotation", &omega.y)) {
-						camera->setOmega(omega);
-					}
-				}
-				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 				ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);
 				if (ImGui::Button("Reset layout")) {
 					resetDockLayout = true;
 				}
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu(ICON_FA_EYE " View")) {
-				actionMenuItem(ICON_FK_VIDEO_CAMERA " Reset camera", "resetcamera", listener);
-				actionMenuItem(ICON_FK_TH " View toggle", "togglescene", listener);
-				actionMenuItem(ICON_FK_TERMINAL " Console", "toggleconsole", listener);
 				ImGui::EndMenu();
 			}
 			ImGui::Separator();

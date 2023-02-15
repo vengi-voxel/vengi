@@ -4,6 +4,7 @@
 
 #include "Viewport.h"
 #include "DragAndDropPayload.h"
+#include "IconsForkAwesome.h"
 #include "app/App.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
@@ -331,21 +332,29 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		if (!_simplifiedView->boolVal()) {
 			ImGui::Checkbox("Scene Mode", &_renderContext.sceneMode);
 		}
-		const core::String command = core::string::format("screenshot %i", _id);
-		ImGui::CommandMenuItem(ICON_FA_CAMERA " Screenshot", command.c_str(), listener);
-		if (_renderContext.sceneMode) {
-			const core::String commandVideo = core::string::format("video %i", _id);
-			const char *title = ICON_FA_CAMERA " Video";
-			if (_avi.isRecording()) {
-				title = ICON_FA_STOP " Video";
+		if (ImGui::BeginMenu(ICON_FA_EYE " View")) {
+			ImGui::CommandMenuItem(ICON_FK_VIDEO_CAMERA " Reset camera", "resetcamera", true, listener);
+			glm::vec3 omega = _camera.omega();
+			if (ImGui::InputFloat("Camera rotation", &omega.y)) {
+				_camera.setOmega(omega);
 			}
-			if (ImGui::MenuItem(title)) {
-				toggleVideoRecording();
+			const core::String command = core::string::format("screenshot %i", _id);
+			ImGui::CommandMenuItem(ICON_FA_CAMERA " Screenshot", command.c_str(), listener);
+			if (_renderContext.sceneMode) {
+				const core::String commandVideo = core::string::format("video %i", _id);
+				const char *title = ICON_FA_CAMERA " Video";
+				if (_avi.isRecording()) {
+					title = ICON_FA_STOP " Video";
+				}
+				if (ImGui::MenuItem(title)) {
+					toggleVideoRecording();
+				}
+				const uint32_t pendingFrames = _avi.pendingFrames();
+				if (pendingFrames > 0u) {
+					ImGui::TooltipText("Pending frames: %u", _avi.pendingFrames());
+				}
 			}
-			const uint32_t pendingFrames = _avi.pendingFrames();
-			if (pendingFrames > 0u) {
-				ImGui::TooltipText("Pending frames: %u", _avi.pendingFrames());
-			}
+			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
 	}
