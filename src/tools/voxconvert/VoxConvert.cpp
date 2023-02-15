@@ -121,7 +121,8 @@ void VoxConvert::usage() const {
 		for (const core::String& ext : desc->exts) {
 			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
 		}
-	}	Log::info("Built-in palettes:");
+	}
+	Log::info("Built-in palettes:");
 	for (int i = 0; i < lengthof(voxel::Palette::builtIn); ++i) {
 		Log::info(" * %s", voxel::Palette::builtIn[i]);
 	}

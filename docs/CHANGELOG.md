@@ -37,6 +37,10 @@ General:
    - Fixed rendering issue for windows users
    - Fixed fullscreen issues for windows users
 
+VoxConvert:
+
+   - Show supported palette and image formats in help screen (`--help`)
+
 VoxEdit:
 
    - Disable animation window if there are no animations to show
