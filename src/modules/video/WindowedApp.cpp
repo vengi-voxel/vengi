@@ -191,6 +191,8 @@ bool WindowedApp::isDarkMode() const {
 		}
 	}
 	return true;
+#else
+	return true;
 #endif
 }
 
