@@ -33,27 +33,6 @@ public:
 	static void info(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 	static void warn(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 	static void error(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
-
-	static bool enable(uint32_t id, Level level);
-	static bool disable(uint32_t id);
-
-	/**
-	 * @brief Get log id for given name
-	 */
-	template<int N>
-	static constexpr uint32_t logid(const char (&name)[N]) {
-		return (uint32_t)core::hash(name);
-	}
-
-	static uint32_t logid(const char* name, int size) {
-		return (uint32_t)core::hash(name, size);
-	}
-
-	static void trace(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
-	static void debug(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
-	static void info(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
-	static void warn(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
-	static void error(uint32_t id, CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(2);
 };
 
 extern "C" void c_logtrace(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);

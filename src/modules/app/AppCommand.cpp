@@ -223,50 +223,6 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		Log::warn("%s", args[0].c_str());
 	}).setHelp("Log given message as warn");
 
-	command::Command::registerCommand("log", [] (const command::CmdArgs& args) {
-		if (args.size() < 2) {
-			Log::info("Usage: log <logid> <trace|debug|info|warn|error|none>");
-			return;
-		}
-		const core::String& id = args[0];
-		const Log::Level level = Log::toLogLevel(args[1].c_str());
-		const auto hashVal = Log::logid(id.c_str(), id.size());
-		if (level == Log::Level::None) {
-			Log::disable(hashVal);
-			Log::info("Disabling logging for %s (%u)", id.c_str(), hashVal);
-		} else {
-			Log::enable(hashVal, level);
-			Log::info("Set log level for %s to %s (%u)", id.c_str(), args[1].c_str(), hashVal);
-		}
-	}).setHelp("Change the log level on an id base").setArgumentCompleter([] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
-		if (str[0] == 't') {
-			matches.push_back("trace");
-			return 1;
-		}
-		if (str[0] == 'd') {
-			matches.push_back("debug");
-			return 1;
-		}
-		if (str[0] == 'i') {
-			matches.push_back("info");
-			return 1;
-		}
-		if (str[0] == 'w') {
-			matches.push_back("warn");
-			return 1;
-		}
-		if (str[0] == 'e') {
-			matches.push_back("error");
-			return 1;
-		}
-		matches.push_back("trace");
-		matches.push_back("debug");
-		matches.push_back("info");
-		matches.push_back("warn");
-		matches.push_back("error");
-		return 5;
-	});
-
 	command::Command::registerCommand("cvarlist", [] (const command::CmdArgs& args) {
 		util::visitVarSorted([&] (const core::VarPtr& var) {
 			if (!args.empty() && !core::string::matches(var->name(), args[0])) {

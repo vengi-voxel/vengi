@@ -44,7 +44,7 @@ set(SRCS
 	GameConfig.h
 	GLM.cpp GLM.h
 	GLMConst.h
-	Hash.h
+	Hash.cpp Hash.h
 	IComponent.h
 	Log.cpp Log.h
 	MD5.cpp MD5.h
@@ -114,7 +114,6 @@ set(TEST_SRCS
 	tests/CoreTest.cpp
 	tests/DynamicArrayTest.cpp
 	tests/ListTest.cpp
-	tests/LogTest.cpp
 	tests/MapTest.cpp
 	tests/DynamicMapTest.cpp
 	tests/MD5Test.cpp

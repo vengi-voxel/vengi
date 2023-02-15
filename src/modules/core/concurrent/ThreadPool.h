@@ -42,8 +42,6 @@
 namespace core {
 
 class ThreadPool final {
-private:
-	static constexpr auto logid = Log::logid("ThreadPool");
 public:
 	explicit ThreadPool(size_t, const char *name = nullptr);
 	~ThreadPool();

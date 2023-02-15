@@ -12,7 +12,6 @@
 #include "core/Assert.h"
 #include <string.h>
 #include <stdio.h>
-#include <unordered_map>
 
 #ifdef HAVE_SYSLOG_H
 #include <syslog.h>
@@ -40,7 +39,6 @@ static bool _syslog = false;
 static FILE* _logfile = nullptr;
 static constexpr int bufSize = 4096;
 static SDL_LogPriority _logLevel = SDL_LOG_PRIORITY_INFO;
-static std::unordered_map<uint32_t, int> _logActive;
 
 #ifdef HAVE_SYSLOG_H
 static SDL_LogOutputFunction _syslogLogCallback = nullptr;
@@ -162,7 +160,6 @@ void Log::shutdown() {
 		fclose(priv::_logfile);
 		priv::_logfile = nullptr;
 	}
-	priv::_logActive.clear();
 	priv::_logLevel = SDL_LOG_PRIORITY_INFO;
 	priv::_syslog = false;
 }
@@ -285,94 +282,6 @@ void Log::error(const char* msg, ...) {
 	va_start(args, msg);
 	errorVA(0u, msg, args);
 	va_end(args);
-}
-
-void Log::trace(uint32_t id, const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
-		auto i = priv::_logActive.find(id);
-		if (i == priv::_logActive.end()) {
-			return;
-		}
-		if (i->second > SDL_LOG_PRIORITY_VERBOSE) {
-			return;
-		}
-	}
-	va_list args;
-	va_start(args, msg);
-	traceVA(id, msg, args);
-	va_end(args);
-}
-
-void Log::debug(uint32_t id, const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_DEBUG) {
-		auto i = priv::_logActive.find(id);
-		if (i == priv::_logActive.end()) {
-			return;
-		}
-		if (i->second > SDL_LOG_PRIORITY_DEBUG) {
-			return;
-		}
-	}
-	va_list args;
-	va_start(args, msg);
-	debugVA(id, msg, args);
-	va_end(args);
-}
-
-void Log::info(uint32_t id, const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_INFO) {
-		auto i = priv::_logActive.find(id);
-		if (i == priv::_logActive.end()) {
-			return;
-		}
-		if (i->second > SDL_LOG_PRIORITY_INFO) {
-			return;
-		}
-	}
-	va_list args;
-	va_start(args, msg);
-	infoVA(id, msg, args);
-	va_end(args);
-}
-
-void Log::warn(uint32_t id, const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_WARN) {
-		auto i = priv::_logActive.find(id);
-		if (i == priv::_logActive.end()) {
-			return;
-		}
-		if (i->second > SDL_LOG_PRIORITY_WARN) {
-			return;
-		}
-	}
-	va_list args;
-	va_start(args, msg);
-	warnVA(id, msg, args);
-	va_end(args);
-}
-
-void Log::error(uint32_t id, const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_ERROR) {
-		auto i = priv::_logActive.find(id);
-		if (i == priv::_logActive.end()) {
-			return;
-		}
-		if (i->second > SDL_LOG_PRIORITY_ERROR) {
-			return;
-		}
-	}
-	va_list args;
-	va_start(args, msg);
-	errorVA(id, msg, args);
-	va_end(args);
-}
-
-bool Log::enable(uint32_t id, Log::Level level) {
-	return priv::_logActive.insert(std::make_pair(id, core::enumVal(level))).second;
-}
-
-bool Log::disable(uint32_t id) {
-	return priv::_logActive.erase(id) == 1;
 }
 
 void c_logtrace(const char* msg, ...) {
