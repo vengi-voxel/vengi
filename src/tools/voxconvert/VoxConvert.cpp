@@ -109,6 +109,10 @@ void VoxConvert::usage() const {
 			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
 		}
 	}
+	Log::info("Built-in palettes:");
+	for (int i = 0; i < lengthof(voxel::Palette::builtIn); ++i) {
+		Log::info(" * %s", voxel::Palette::builtIn[i]);
+	}
 	Log::info("Links:");
 	Log::info(" * Bug reports: https://github.com/mgerhardy/vengi");
 	Log::info(" * Twitter: https://twitter.com/MartinGerhardy");
