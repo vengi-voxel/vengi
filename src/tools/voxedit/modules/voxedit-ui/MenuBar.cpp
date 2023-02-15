@@ -158,6 +158,8 @@ bool MenuBar::update(ui::IMGUIApp* app, command::CommandExecutionListener &liste
 					ImGui::EndCombo();
 				}
 				ImGui::TooltipText("The color reduction algorithm that is used when importing RGBA colors from images or rgba formats");
+
+				// TODO: move into viewport menubar
 				video::Camera *camera = sceneMgr().activeCamera();
 				if (camera) {
 					glm::vec3 omega = camera->omega();
