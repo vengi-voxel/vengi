@@ -2358,6 +2358,7 @@ bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix,
 }
 
 bool SceneManager::nodeAddKeyframe(voxelformat::SceneGraphNode &node, voxelformat::FrameIndex frameIdx) {
+	// TODO: memento state
 	if (node.addKeyFrame(frameIdx) == InvalidKeyFrame) {
 		Log::error("Failed to add keyframe for frame %i", (int)frameIdx);
 		return false;
@@ -2397,10 +2398,12 @@ bool SceneManager::nodeRemoveKeyFrameByIndex(int nodeId, voxelformat::KeyFrameIn
 }
 
 bool SceneManager::nodeRemoveKeyFrame(voxelformat::SceneGraphNode &node, voxelformat::FrameIndex frameIdx) {
+	// TODO: memento state
 	return node.removeKeyFrame(frameIdx);
 }
 
 bool SceneManager::nodeRemoveKeyFrameByIndex(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
+	// TODO: memento state
 	return node.removeKeyFrameByIndex(keyFrameIdx);
 }
 
