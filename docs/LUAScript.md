@@ -195,6 +195,8 @@ local mins = region:mins()
 
 * `region()`: Return the region of the volume.
 
+* `text(ttffont, text, [x], [y], [z], [size=16], [thickness=1], [spacing=0])`: Renders the given `text`. `x`, `y`, and `z` are the region lower boundary coordinates by default.
+
 * `fillHollow([color])`: Tries to fill all hollows in the volume.
 
 * `importHeightmap(filename, [underground], [surface])`: Imports the given image as heightmap into the current volume. Use the `underground` and `surface` voxel colors for this (or pick some defaults if they were not specified). Also see `importColoredHeightmap` if you want to colorize your surface.

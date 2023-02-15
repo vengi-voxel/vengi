@@ -30,7 +30,7 @@ set(SRCS
 	LSystem.h LSystem.cpp
 	LUAGenerator.h LUAGenerator.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} LUA_SRCS ${LUA_SRCS} DEPENDENCIES voxelutil noise commonlua)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} LUA_SRCS ${LUA_SRCS} DEPENDENCIES voxelutil voxelfont noise commonlua)
 
 set(TEST_SRCS
 	tests/LSystemTest.cpp

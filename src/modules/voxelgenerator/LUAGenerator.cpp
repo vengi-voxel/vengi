@@ -5,6 +5,7 @@
 #include "LUAGenerator.h"
 #include "commonlua/LUAFunctions.h"
 #include "core/StringUtil.h"
+#include "core/UTF8.h"
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "lauxlib.h"
@@ -22,6 +23,7 @@
 #include "io/Filesystem.h"
 #include "noise/Simplex.h"
 #include "app/App.h"
+#include "voxelfont/VoxelFont.h"
 #include "voxelformat/SceneGraphUtil.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
@@ -259,6 +261,32 @@ static int luaVoxel_volumewrapper_crop(lua_State *s) {
 		volume->setVolume(v);
 		volume->update();
 	}
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_text(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const voxel::Region &region = volume->region();
+	const char *ttffont = lua_tostring(s, 2);
+	const char *text = lua_tostring(s, 3);
+	int x = (int)luaL_optinteger(s, 4, region.getLowerX());
+	const int y = (int)luaL_optinteger(s, 5, region.getLowerY());
+	const int z = (int)luaL_optinteger(s, 6, region.getLowerZ());
+	const int size = (int)luaL_optinteger(s, 7, 16);
+	const int thickness = (int)luaL_optinteger(s, 8, 1);
+	const int spacing = (int)luaL_optinteger(s, 9, 0);
+	voxelfont::VoxelFont font;
+	if (!font.init(ttffont)) {
+		clua_error(s, "Could not initialize font %s", ttffont);
+	}
+	const char **str = &text;
+	glm::ivec3 pos(x, y, z);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
+	for (int c = core::utf8::next(str); c != -1; c = core::utf8::next(str)) {
+		pos.x += font.renderCharacter(c, size, thickness, pos, *volume, voxel);
+		pos.x += spacing;
+	}
+	font.shutdown();
 	return 0;
 }
 
@@ -672,6 +700,7 @@ static void prepareState(lua_State* s) {
 		{"translate", luaVoxel_volumewrapper_translate},
 		{"resize", luaVoxel_volumewrapper_resize},
 		{"crop", luaVoxel_volumewrapper_crop},
+		{"text", luaVoxel_volumewrapper_text},
 		{"fillHollow", luaVoxel_volumewrapper_fillhollow},
 		{"importHeightmap", luaVoxel_volumewrapper_importheightmap},
 		{"importColoredHeightmap", luaVoxel_volumewrapper_importcoloredheightmap},
