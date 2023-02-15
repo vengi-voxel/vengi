@@ -492,15 +492,15 @@ void MainWindow::registerPopups() {
 	}
 }
 
-bool MainWindow::allowToQuit() {
+QuitDisallowReason MainWindow::allowToQuit() {
 	if (_forceQuit) {
-		return true;
+		return QuitDisallowReason::None;
 	}
 	if (voxedit::sceneMgr().dirty()) {
 		_popupUnsavedChangesQuit = true;
-		return false;
+		return QuitDisallowReason::UnsavedChanges;
 	}
-	return true;
+	return QuitDisallowReason::None;
 }
 
 void MainWindow::update() {

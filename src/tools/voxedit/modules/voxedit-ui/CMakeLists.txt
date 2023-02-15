@@ -28,6 +28,7 @@ set(SRCS
 	TreePanel.h TreePanel.cpp
 	Util.h Util.cpp
 	Viewport.h Viewport.cpp
+	QuitDisallowReason.h
 )
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ui voxedit-util)

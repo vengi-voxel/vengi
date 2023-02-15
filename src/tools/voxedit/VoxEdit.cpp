@@ -11,6 +11,7 @@
 #include "core/concurrent/Concurrency.h"
 #include "io/FormatDescription.h"
 #include "video/WindowedApp.h"
+#include "voxedit-ui/QuitDisallowReason.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-util/Config.h"
 #include "core/TimeProvider.h"
@@ -327,7 +328,8 @@ app::AppState VoxEdit::onInit() {
 }
 
 bool VoxEdit::allowedToQuit() {
-	if (!_mainWindow->allowToQuit()) {
+	voxedit::QuitDisallowReason reason = _mainWindow->allowToQuit();
+	if (reason == voxedit::QuitDisallowReason::UnsavedChanges) {
 		_showFileDialog = false;
 		return false;
 	}

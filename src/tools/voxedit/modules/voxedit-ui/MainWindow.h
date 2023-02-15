@@ -17,6 +17,7 @@
 #include "voxedit-ui/MementoPanel.h"
 #include "voxedit-ui/PositionsPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
+#include "voxedit-ui/QuitDisallowReason.h"
 #include "voxedit-ui/SceneGraphPanel.h"
 #include "voxedit-ui/MenuBar.h"
 #include "voxedit-ui/ToolsPanel.h"
@@ -127,7 +128,7 @@ public:
 	void toggleScene();
 	void resetCamera();
 	void update();
-	bool allowToQuit();
+	QuitDisallowReason allowToQuit();
 	Viewport* hoveredScene();
 
 	bool saveScreenshot(const core::String& file, const core::String &viewportId = "");
