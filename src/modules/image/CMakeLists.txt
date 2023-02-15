@@ -1,6 +1,7 @@
 set(SRCS
 	Image.cpp Image.h
 	AVI.cpp AVI.h
+	AVIRecorder.cpp AVIRecorder.h
 	external/image_DXT.c external/image_DXT.h
 	external/image_helper.c external/image_helper.h
 	external/wfETC.c external/wfETC.h
