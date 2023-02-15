@@ -13,8 +13,8 @@ class AnimationTimeline {
 private:
 	bool _play = false;
 	double _seconds = 0.0;
-	uint32_t _startFrame = 0;
-	uint32_t _endFrame = 64;
+	int32_t _startFrame = 0;
+	int32_t _endFrame = 64;
 	voxelformat::KeyFrameIndex _deleteKeyFrameIdx = InvalidKeyFrame;
 	int _deleteFrameNode = -1;
 

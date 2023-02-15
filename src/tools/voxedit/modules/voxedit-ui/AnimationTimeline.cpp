@@ -48,8 +48,7 @@ void AnimationTimeline::sequencer(voxelformat::FrameIndex &currentFrame) {
 	flags |= ImGuiNeoSequencerFlags_Selection_EnableDragging;
 	flags |= ImGuiNeoSequencerFlags_Selection_EnableDeletion;
 
-	if (ImGui::BeginNeoSequencer("##neo-sequencer", (uint32_t *)&currentFrame, (uint32_t *)&_startFrame,
-								 (uint32_t *)&_endFrame, {0, 0}, flags)) {
+	if (ImGui::BeginNeoSequencer("##neo-sequencer", &currentFrame, &_startFrame, &_endFrame, {0, 0}, flags)) {
 		voxelformat::KeyFrameIndex deleteKeyFrameIdx = InvalidKeyFrame;
 		int deleteFrameNode = -1;
 

@@ -93,6 +93,8 @@ struct ImGuiNeoSequencerStyle {
 };
 
 namespace ImGui {
+typedef int32_t FrameIndexType;
+
 IMGUI_API const ImVec4 &GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol idx);
 IMGUI_API ImGuiNeoSequencerStyle &GetNeoSequencerStyle();
 
@@ -100,16 +102,16 @@ IMGUI_API void PushNeoSequencerStyleColor(ImGuiNeoSequencerCol idx, ImU32 col);
 IMGUI_API void PushNeoSequencerStyleColor(ImGuiNeoSequencerCol idx, const ImVec4 &col);
 IMGUI_API void PopNeoSequencerStyleColor(int count = 1);
 
-IMGUI_API bool BeginNeoSequencer(const char *id, uint32_t *frame, uint32_t *startFrame, uint32_t *endFrame,
-								 const ImVec2 &size = ImVec2(0, 0),
+IMGUI_API bool BeginNeoSequencer(const char *id, FrameIndexType *frame, FrameIndexType *startFrame,
+								 FrameIndexType *endFrame, const ImVec2 &size = ImVec2(0, 0),
 								 ImGuiNeoSequencerFlags flags = ImGuiNeoSequencerFlags_None);
 IMGUI_API void EndNeoSequencer(); // Call only when BeginNeoSequencer() returns true!!
 
 IMGUI_API bool BeginNeoGroup(const char *label, bool *open = nullptr);
 IMGUI_API void EndNeoGroup();
 
-IMGUI_API bool BeginNeoTimeline(const char *label, int32_t **keyframes, uint32_t keyframeCount, bool *open = nullptr,
-								ImGuiNeoTimelineFlags flags = ImGuiNeoTimelineFlags_None);
+IMGUI_API bool BeginNeoTimeline(const char *label, FrameIndexType **keyframes, uint32_t keyframeCount,
+								bool *open = nullptr, ImGuiNeoTimelineFlags flags = ImGuiNeoTimelineFlags_None);
 IMGUI_API void EndNeoTimeLine(); // Call only when BeginNeoTimeline() returns true!!
 
 // Fully customizable timeline with per key callback
@@ -134,14 +136,12 @@ IMGUI_API bool IsNeoKeyframeSelectionRightClicked(); // Is selection rightclicke
 
 // Call only in BeginNeoTimeline / EndNeoTimeLine scope, returns selection per timeline and size per timeline
 IMGUI_API uint32_t GetNeoKeyframeSelectionSize();
-IMGUI_API void GetNeoKeyframeSelection(int32_t *selection);
+IMGUI_API void GetNeoKeyframeSelection(FrameIndexType *selection);
 
 // Sets currently selected timeline inside BeginNeoSequencer scope
 IMGUI_API void SetSelectedTimeline(const char *timelineLabel);
 
 IMGUI_API bool IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags flags = ImGuiNeoTimelineIsSelectedFlags_None);
-
-IMGUI_API bool NeoBeginCreateKeyframe(int32_t *frame);
 
 } // namespace ImGui
 

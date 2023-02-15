@@ -52,6 +52,9 @@ void RenderNeoSequencerTopBarOverlay(float zoom, float valuesWidth, uint32_t sta
 
 		float perFrameWidth = GetPerFrameWidth(size.x, valuesWidth, endFrame, startFrame, zoom);
 
+		if (perFrameWidth <= 0.0f)
+			return;
+
 		while (perFrameWidth < maxPixelsPerTick) {
 			primaryFrames = pow(10, counter++);
 			secondaryFrames = pow(10, counter);
@@ -59,8 +62,9 @@ void RenderNeoSequencerTopBarOverlay(float zoom, float valuesWidth, uint32_t sta
 			perFrameWidth *= (float)primaryFrames;
 		}
 
-		if (primaryFrames == 0) {
-			return;
+		if (primaryFrames == 0 || secondaryFrames == 0) {
+			primaryFrames = 1;
+			secondaryFrames = 10;
 		}
 
 		for (int32_t i = 0; i < count; i++) {
@@ -81,7 +85,7 @@ void RenderNeoSequencerTopBarOverlay(float zoom, float valuesWidth, uint32_t sta
 
 			if (drawFrameText && secondaryFrame) {
 				char text[10];
-				const auto printRes = snprintf(text, sizeof(text), "%u", viewStart + i);
+				const auto printRes = snprintf(text, sizeof(text), "%i", viewStart + i);
 				if (printRes > 0) {
 					drawList->AddText(NULL, 0, {p1.x + 2.0f, barArea.Min.y}, IM_COL32_WHITE, text);
 				}

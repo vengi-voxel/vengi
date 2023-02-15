@@ -38,9 +38,9 @@ struct ImGuiNeoSequencerInternalData {
 	ImVec2 Size = {0, 0};		// Size of whole sequencer
 	ImVec2 TopBarSize = {0, 0}; // Size of top bar without Zoom
 
-	uint32_t StartFrame = 0;
-	uint32_t EndFrame = 0;
-	uint32_t OffsetFrame = 0; // Offset from start
+	FrameIndexType StartFrame = 0;
+	FrameIndexType EndFrame = 0;
+	FrameIndexType OffsetFrame = 0; // Offset from start
 
 	float ValuesWidth = 32.0f; // Width of biggest label in timeline, used for offset of timeline
 
@@ -57,7 +57,7 @@ struct ImGuiNeoSequencerInternalData {
 	ImVector<ImGuiID> TimelineStack;
 	ImVector<ImGuiID> GroupStack;
 
-	uint32_t CurrentFrame = 0;
+	FrameIndexType CurrentFrame = 0;
 	bool HoldingCurrentFrame = false; // Are we draging current frame?
 	ImVec4 CurrentFrameColor; // Color of current frame, we have to save it because we render on EndNeoSequencer, but
 							  // process at BeginneoSequencer
@@ -67,7 +67,7 @@ struct ImGuiNeoSequencerInternalData {
 	// Selection
 	ImVector<ImGuiID> Selection; // Contains ids of keyframes
 	ImVec2 SelectionMouseStart = {0, 0};
-	SelectionState selectionState = SelectionState::Idle;
+	SelectionState StateOfSelection = SelectionState::Idle;
 	ImVec2 DraggingMouseStart = {0, 0};
 	bool StartDragging = true;
 	ImVector<int32_t> DraggingSelectionStart; // Contains start values of all selection elements
@@ -113,9 +113,9 @@ static float getPerFrameWidth(ImGuiNeoSequencerInternalData &context) {
 	return GetPerFrameWidth(context.Size.x, context.ValuesWidth, context.EndFrame, context.StartFrame, context.Zoom);
 }
 
-static float getKeyframePositionX(uint32_t frame, ImGuiNeoSequencerInternalData &context) {
+static float getKeyframePositionX(FrameIndexType frame, ImGuiNeoSequencerInternalData &context) {
 	const auto perFrameWidth = getPerFrameWidth(context);
-	return (float)(frame - context.OffsetFrame) * perFrameWidth;
+	return (float)(frame - context.OffsetFrame - context.StartFrame) * perFrameWidth;
 }
 
 static float getWorkTimelineWidth(ImGuiNeoSequencerInternalData &context) {
@@ -124,7 +124,7 @@ static float getWorkTimelineWidth(ImGuiNeoSequencerInternalData &context) {
 }
 
 // Dont pull frame from context, its used for dragging
-static ImRect getCurrentFrameBB(uint32_t frame, ImGuiNeoSequencerInternalData &context) {
+static ImRect getCurrentFrameBB(FrameIndexType frame, ImGuiNeoSequencerInternalData &context) {
 	const auto &imStyle = GetStyle();
 	const auto width = style.CurrentFramePointerSize * GetIO().FontGlobalScale;
 	const auto cursor =
@@ -137,7 +137,7 @@ static ImRect getCurrentFrameBB(uint32_t frame, ImGuiNeoSequencerInternalData &c
 	return rect;
 }
 
-static void processCurrentFrame(uint32_t *frame, ImGuiNeoSequencerInternalData &context) {
+static void processCurrentFrame(FrameIndexType *frame, ImGuiNeoSequencerInternalData &context) {
 	auto pointerRect = getCurrentFrameBB(*frame, context);
 	pointerRect.Min -= ImVec2{2.0f, 2.0f};
 	pointerRect.Max += ImVec2{2.0f, 2.0f};
@@ -170,7 +170,7 @@ static void processCurrentFrame(uint32_t *frame, ImGuiNeoSequencerInternalData &
 
 			const auto frameViewVal = (float)context.StartFrame + (clamped * (float)viewSize);
 
-			const auto finalFrame = (uint32_t)round(frameViewVal) + context.OffsetFrame;
+			const auto finalFrame = (FrameIndexType)round(frameViewVal) + context.OffsetFrame;
 
 			context.CurrentFrameColor = GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol_FramePointerPressed);
 
@@ -233,7 +233,7 @@ static bool getKeyframeInSelection(int32_t value, ImGuiID id, ImGuiNeoSequencerI
 		addKeyframeToDeleteData(value, context, timelineId);
 	}
 
-	if (context.selectionState != SelectionState::Selecting) {
+	if (context.StateOfSelection != SelectionState::Selecting) {
 		return context.Selection.contains(id);
 	}
 
@@ -326,16 +326,16 @@ static bool createKeyframe(int32_t *frame) {
 	bool hovered = ItemHoverable(bb, id);
 
 	if (context.SelectionEnabled && context.Selection.contains(id) &&
-		(context.selectionState != SelectionState::Selecting)) {
+		(context.StateOfSelection != SelectionState::Selecting)) {
 		// process dragging
 		if (bb.Contains(GetMousePos()) && IsMouseClicked(ImGuiMouseButton_Left) &&
-			context.selectionState != SelectionState::Dragging && context.DraggingEnabled) {
+			context.StateOfSelection != SelectionState::Dragging && context.DraggingEnabled) {
 			// Start dragging
 			context.StartDragging = true;
 		}
 
-		if (context.selectionState == SelectionState::Dragging) {
-			uint32_t *it = context.Selection.find(id);
+		if (context.StateOfSelection == SelectionState::Dragging) {
+			ImGuiID *it = context.Selection.find(id);
 			int32_t index = context.Selection.index_from_ptr(it);
 
 			if (context.DraggingSelectionStart.size() < index + 1 || context.DraggingSelectionStart[index] == -1) {
@@ -347,9 +347,9 @@ static bool createKeyframe(int32_t *frame) {
 			}
 			float mouseDelta = GetMousePos().x - context.DraggingMouseStart.x;
 
-			int32_t offset = int32_t(mouseDelta / (context.Size.x / context.EndFrame - context.StartFrame));
+			auto offsetA = int32_t(mouseDelta / (context.Size.x / (float)context.EndFrame - (float)context.StartFrame));
 
-			*frame = context.DraggingSelectionStart[index] + offset;
+			*frame = context.DraggingSelectionStart[index] + offsetA;
 		}
 	}
 
@@ -357,9 +357,12 @@ static bool createKeyframe(int32_t *frame) {
 
 	context.IsLastKeyframeSelected = inSelection;
 
-	ImColor color = getKeyframeColor(context, hovered, inSelection);
+	if (timelineOffset >= 0.0f) {
 
-	drawList->AddCircleFilled(pos + ImVec2{0, currentTimelineHeight / 2.f}, currentTimelineHeight / 3.0f, color, 4);
+		ImColor color = getKeyframeColor(context, hovered, inSelection);
+
+		drawList->AddCircleFilled(pos + ImVec2{0, currentTimelineHeight / 2.f}, currentTimelineHeight / 3.0f, color, 4);
+	}
 
 	context.IsLastKeyframeHovered = hovered;
 	context.IsLastKeyframeRightClicked = hovered && IsMouseClicked(ImGuiMouseButton_Right);
@@ -403,7 +406,7 @@ static float calculateZoomBarHeight() {
 }
 
 static void processAndRenderZoom(ImGuiNeoSequencerInternalData &context, const ImVec2 &cursor, bool allowEditingLength,
-								 uint32_t *start, uint32_t *end) {
+								 FrameIndexType *start, FrameIndexType *end) {
 	const auto &imStyle = GetStyle();
 	ImGuiWindow *window = GetCurrentWindow();
 
@@ -424,8 +427,8 @@ static void processAndRenderZoom(ImGuiNeoSequencerInternalData &context, const I
 
 	const auto zoomBarEndWithSpacing = ImVec2{bb.Max.x + imStyle.ItemSpacing.x, bb.Min.y};
 
-	int32_t startFrameVal = (int32_t)*start;
-	int32_t endFrameVal = (int32_t)*end;
+	FrameIndexType startFrameVal = *start;
+	FrameIndexType endFrameVal = *end;
 
 	if (allowEditingLength) {
 		const float sideOffset = imStyle.ItemSpacing.x / 2.0f;
@@ -436,24 +439,24 @@ static void processAndRenderZoom(ImGuiNeoSequencerInternalData &context, const I
 		window->DC.CursorPos.x += sideOffset;
 
 		PushItemWidth(inputWidth);
-		InputScalar("##input_start_frame", ImGuiDataType_U32, &startFrameVal, NULL, NULL, NULL,
+		InputScalar("##input_start_frame", ImGuiDataType_U32, &startFrameVal, NULL, NULL, "%i",
 					allowEditingLength ? 0 : ImGuiInputTextFlags_ReadOnly);
 
 		window->DC.CursorPos = ImVec2{zoomBarEndWithSpacing.x, cursor.y};
 		window->DC.CursorPos.x -= sideOffset;
 
 		PushItemWidth(inputWidth);
-		InputScalar("##input_end_frame", ImGuiDataType_U32, &endFrameVal, NULL, NULL, NULL,
+		InputScalar("##input_end_frame", ImGuiDataType_U32, &endFrameVal, NULL, NULL, "%i",
 					allowEditingLength ? 0 : ImGuiInputTextFlags_ReadOnly);
 
 		window->DC.CursorPos = prevWindowCursor;
 	}
 
-	if (startFrameVal < 0)
-		startFrameVal = (int32_t)*start;
-
-	if (endFrameVal < 0)
-		endFrameVal = (int32_t)*end;
+	// if (startFrameVal < 0)
+	//     startFrameVal = (int32_t) *start;
+	//
+	// if (endFrameVal < 0)
+	//    endFrameVal = (int32_t) *end;
 
 	if (endFrameVal <= startFrameVal)
 		endFrameVal = (int32_t)*end;
@@ -506,7 +509,7 @@ static void processAndRenderZoom(ImGuiNeoSequencerInternalData &context, const I
 		const float currentScroll = GetIO().MouseWheel;
 
 		context.Zoom = ImClamp(context.Zoom + float(currentScroll) * 0.3f, 1.0f, (float)viewWidth);
-		const auto newZoomWidth = (uint32_t)ceil((float)totalFrames / (context.Zoom));
+		const auto newZoomWidth = (FrameIndexType)ceil((float)totalFrames / (context.Zoom));
 
 		if (*start + context.OffsetFrame + newZoomWidth > *end)
 			context.OffsetFrame = ImMax(0U, totalFrames - viewWidth);
@@ -524,8 +527,8 @@ static void processAndRenderZoom(ImGuiNeoSequencerInternalData &context, const I
 
 			const auto singleFrameWidthOffsetNormalized = singleFrameWidthOffset / bb.GetWidth();
 
-			uint32_t finalFrame =
-				(uint32_t)((float)(normalized - sliderWidthNormalized / 2.0f) / singleFrameWidthOffsetNormalized);
+			FrameIndexType finalFrame =
+				(FrameIndexType)((float)(normalized - sliderWidthNormalized / 2.0f) / singleFrameWidthOffsetNormalized);
 
 			if (normalized - sliderWidthNormalized / 2.0f < 0.0f) {
 				finalFrame = 0;
@@ -549,7 +552,7 @@ static void processAndRenderZoom(ImGuiNeoSequencerInternalData &context, const I
 
 	const auto res = ItemAdd(finalSliderInteractBB, 0);
 
-	const auto viewStart = *start + (uint32_t)context.OffsetFrame;
+	const auto viewStart = *start + context.OffsetFrame;
 	const auto viewEnd = viewStart + viewWidth;
 
 	if (res) {
@@ -566,7 +569,7 @@ static void processAndRenderZoom(ImGuiNeoSequencerInternalData &context, const I
 
 		char overlayTextBuffer[128];
 
-		snprintf(overlayTextBuffer, sizeof(overlayTextBuffer), "%d - %d", viewStart, viewEnd);
+		snprintf(overlayTextBuffer, sizeof(overlayTextBuffer), "%i - %i", viewStart, viewEnd);
 
 		const auto overlaySize = CalcTextSize(overlayTextBuffer);
 
@@ -578,7 +581,7 @@ static void processSelection(ImGuiNeoSequencerInternalData &context) {
 	context.DeleteDataDirty = false;
 
 	if (context.StartDragging) {
-		context.selectionState = SelectionState::Dragging;
+		context.StateOfSelection = SelectionState::Dragging;
 		context.DraggingMouseStart = GetMousePos();
 		context.StartDragging = false;
 		return;
@@ -592,14 +595,14 @@ static void processSelection(ImGuiNeoSequencerInternalData &context) {
 	if (IsMouseDown(ImGuiMouseButton_Left) && windowWorkRect.Contains(GetMousePos()) &&
 		sequencerWorkRect.Contains(GetMousePos())) {
 		// Not dragging yet
-		switch (context.selectionState) {
+		switch (context.StateOfSelection) {
 		case SelectionState::Idle: {
 			if (!IsMouseClicked(ImGuiMouseButton_Left))
 				return;
 			SetKeyOwner(MouseButtonToKey(ImGuiMouseButton_Left), context.Id);
 
 			context.SelectionMouseStart = GetMousePos();
-			context.selectionState = SelectionState::Selecting;
+			context.StateOfSelection = SelectionState::Selecting;
 			break;
 		}
 		case SelectionState::Selecting: {
@@ -611,18 +614,18 @@ static void processSelection(ImGuiNeoSequencerInternalData &context) {
 		}
 		}
 	} else {
-		switch (context.selectionState) {
+		switch (context.StateOfSelection) {
 		case SelectionState::Idle: {
 			break;
 		}
 		case SelectionState::Selecting: {
 			context.SelectionMouseStart = {0, 0};
-			context.selectionState = SelectionState::Idle;
+			context.StateOfSelection = SelectionState::Idle;
 			break;
 		}
 		case SelectionState::Dragging: {
 			context.DraggingSelectionStart.resize(0);
-			context.selectionState = SelectionState::Idle;
+			context.StateOfSelection = SelectionState::Idle;
 			context.DraggingMouseStart = {0, 0};
 			context.DeleteDataDirty = true;
 			for (auto &&t : context.SelectionData)
@@ -634,7 +637,7 @@ static void processSelection(ImGuiNeoSequencerInternalData &context) {
 }
 
 static void renderSelection(ImGuiNeoSequencerInternalData &context) {
-	if (context.selectionState != SelectionState::Selecting) {
+	if (context.StateOfSelection != SelectionState::Selecting) {
 		return;
 	}
 	const ImVec2 currentMousePosition = GetMousePos();
@@ -727,8 +730,8 @@ ImGuiNeoSequencerStyle &GetNeoSequencerStyle() {
 	return style;
 }
 
-bool BeginNeoSequencer(const char *idin, uint32_t *frame, uint32_t *startFrame, uint32_t *endFrame, const ImVec2 &size,
-					   ImGuiNeoSequencerFlags flags) {
+bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *startFrame, FrameIndexType *endFrame,
+					   const ImVec2 &size, ImGuiNeoSequencerFlags flags) {
 	IM_ASSERT(!inSequencer && "Called when while in other NeoSequencer, that won't work, call End!");
 	IM_ASSERT(*startFrame < *endFrame && "Start frame must be smaller than end frame");
 
@@ -881,10 +884,6 @@ IMGUI_API void EndNeoGroup() {
 	return EndNeoTimeLine();
 }
 
-bool NeoBeginCreateKeyframe(uint32_t *frame) {
-	return false;
-}
-
 #ifdef __cplusplus
 
 bool BeginNeoTimeline(const char *label, std::vector<int32_t> &keyframes, bool *open, ImGuiNeoTimelineFlags flags) {
@@ -1019,7 +1018,7 @@ bool BeginNeoTimelineEx(const char *label, bool *open, ImGuiNeoTimelineFlags fla
 	return result;
 }
 
-bool BeginNeoTimeline(const char *label, int32_t **keyframes, uint32_t keyframeCount, bool *open,
+bool BeginNeoTimeline(const char *label, FrameIndexType **keyframes, uint32_t keyframeCount, bool *open,
 					  ImGuiNeoTimelineFlags flags) {
 	if (!BeginNeoTimelineEx(label, open, flags))
 		return false;
@@ -1101,7 +1100,7 @@ bool NeoIsSelecting() {
 	IM_ASSERT(inSequencer && "Not in active sequencer!");
 	auto &context = sequencerData[currentSequencer];
 
-	return context.selectionState == SelectionState::Selecting;
+	return context.StateOfSelection == SelectionState::Selecting;
 }
 
 bool NeoHasSelection() {
@@ -1115,7 +1114,7 @@ bool NeoIsDraggingSelection() {
 	IM_ASSERT(inSequencer && "Not in active sequencer!");
 	auto &context = sequencerData[currentSequencer];
 
-	return context.selectionState == SelectionState::Dragging;
+	return context.StateOfSelection == SelectionState::Dragging;
 }
 
 uint32_t GetNeoKeyframeSelectionSize() {
@@ -1136,7 +1135,7 @@ uint32_t GetNeoKeyframeSelectionSize() {
 	return 0;
 }
 
-void GetNeoKeyframeSelection(int32_t *selection) {
+void GetNeoKeyframeSelection(FrameIndexType *selection) {
 	IM_ASSERT(inSequencer && "Not in active sequencer!");
 	auto &context = sequencerData[currentSequencer];
 
@@ -1148,7 +1147,7 @@ void GetNeoKeyframeSelection(int32_t *selection) {
 
 	for (auto &&deleteSelection : context.SelectionData) {
 		if (deleteSelection.TimelineID == timelineId) {
-			for (int i = 0; i < deleteSelection.KeyframesToDelete.size(); i++) {
+			for (int32_t i = 0; i < deleteSelection.KeyframesToDelete.size(); i++) {
 				selection[i] = deleteSelection.KeyframesToDelete[i];
 			}
 			return;
