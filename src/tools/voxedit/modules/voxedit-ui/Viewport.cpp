@@ -307,18 +307,16 @@ void Viewport::toggleScene() {
 }
 
 void Viewport::toggleVideoRecording() {
-	if (_videoWriteStream == nullptr) {
+	if (!_avi.isRecording()) {
 		video::WindowedApp::getInstance()->saveDialog(
 			[this](const core::String &file, const io::FormatDescription *desc) {
-				_videoWriteStream = new io::FileStream(io::filesystem()->open(file, io::FileMode::SysWrite));
-				_avi.open(*_videoWriteStream, _renderContext.frameBuffer.dimension().x,
-						  _renderContext.frameBuffer.dimension().y);
+				const glm::ivec2 &dim = _renderContext.frameBuffer.dimension();
+				_avi.startRecording(file.c_str(), dim.x, dim.y);
 			},
 			{}, nullptr, "video.avi");
 	} else {
-		_avi.close(*_videoWriteStream);
-		delete _videoWriteStream;
-		_videoWriteStream = nullptr;
+		Log::debug("Stop recording");
+		_avi.stopRecording();
 	}
 }
 
@@ -337,8 +335,16 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		ImGui::CommandMenuItem(ICON_FA_CAMERA " Screenshot", command.c_str(), listener);
 		if (_renderContext.sceneMode) {
 			const core::String commandVideo = core::string::format("video %i", _id);
-			if (ImGui::MenuItem(ICON_FA_CAMERA " Video")) {
+			const char *title = ICON_FA_CAMERA " Video";
+			if (_avi.isRecording()) {
+				title = ICON_FA_STOP " Video";
+			}
+			if (ImGui::MenuItem(title)) {
 				toggleVideoRecording();
+			}
+			const uint32_t pendingFrames = _avi.pendingFrames();
+			if (pendingFrames > 0u) {
+				ImGui::TooltipText("Pending frames: %u", _avi.pendingFrames());
 			}
 		}
 		ImGui::EndMenuBar();
@@ -368,17 +374,16 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 	}
 	ImGui::End();
 
-	if (_videoWriteStream) {
-		const image::ImagePtr &image = renderToImage("**video**");
-		if (image && image->isLoaded()) {
-			// TODO: move into thread
-			_avi.writeFrame(*_videoWriteStream, image->data(), image->width(), image->height());
-		}
+	if (_avi.isRecording()) {
+		_avi.enqueueFrame(renderToImage("**video**"));
+	} else if (_avi.hasFinished()) {
+		_avi.flush();
 	}
 }
 
 void Viewport::shutdown() {
 	_renderContext.shutdown();
+	_avi.abort();
 }
 
 image::ImagePtr Viewport::renderToImage(const char *imageName) {

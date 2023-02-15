@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ui/IMGUIEx.h"
-#include "image/AVI.h"
+#include "image/AVIRecorder.h"
 #include "video/gl/GLTypes.h"
 #include "video/Camera.h"
 #include "voxel/Region.h"
@@ -30,8 +30,7 @@ private:
 	const bool _detailedTitle;
 	bool _hovered = false;
 	SceneCameraMode _camMode = SceneCameraMode::Free;
-	image::AVI _avi;
-	io::FileStream *_videoWriteStream = nullptr;
+	image::AVIRecorder _avi;
 
 	/**
 	 * while we are still modifying the transform or shifting the volume we don't want to
