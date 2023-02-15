@@ -17,6 +17,7 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
+#include "io/FormatDescription.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
@@ -109,7 +110,18 @@ void VoxConvert::usage() const {
 			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
 		}
 	}
-	Log::info("Built-in palettes:");
+	Log::info("Supported image formats:");
+	for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
+		for (const core::String& ext : desc->exts) {
+			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
+		}
+	}
+	Log::info("Supported palette formats:");
+	for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
+		for (const core::String& ext : desc->exts) {
+			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
+		}
+	}	Log::info("Built-in palettes:");
 	for (int i = 0; i < lengthof(voxel::Palette::builtIn); ++i) {
 		Log::info(" * %s", voxel::Palette::builtIn[i]);
 	}
