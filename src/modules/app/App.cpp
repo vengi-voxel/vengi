@@ -22,7 +22,21 @@
 #include <signal.h>
 #include <cfenv>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 namespace app {
+
+#ifdef __EMSCRIPTEN__
+void App::runFrameEmscripten() {
+	if (AppState::InvalidAppState != _staticInstance->_curState) {
+		emscripten_cancel_main_loop();
+		return;
+	}
+	_staticInstance->onFrame();
+}
+#endif
 
 static void catch_function(int signo) {
 	core_stacktrace();
@@ -84,9 +98,13 @@ void App::setArgs(int argc, char *argv[]) {
 
 int App::startMainLoop(int argc, char *argv[]) {
 	setArgs(argc, argv);
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop(runFrameEmscripten, 0, 1);
+#else
 	while (AppState::InvalidAppState != _curState) {
 		onFrame();
 	}
+#endif
 	return _exitCode;
 }
 

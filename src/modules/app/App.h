@@ -120,6 +120,10 @@ protected:
 	virtual void usage() const;
 	void setArgs(int argc, char *argv[]);
 
+#ifdef __EMSCRIPTEN__
+	static void runFrameEmscripten();
+#endif
+
 public:
 	App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~App();

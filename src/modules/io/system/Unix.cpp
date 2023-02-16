@@ -7,7 +7,7 @@
 #include "io/FilesystemEntry.h"
 #include <SDL_platform.h>
 
-#if defined(__LINUX__) || defined(__MACOSX__)
+#if defined(__LINUX__) || defined(__MACOSX__) || defined(__EMSCRIPTEN__)
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -19,6 +19,10 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <dirent.h>
+
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
 
 #ifdef __MACOSX__
 #include <sysdir.h>
