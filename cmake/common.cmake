@@ -73,13 +73,6 @@ if (NOT MSVC)
 
 find_program(DESKTOP_FILE_VALIDATE_EXECUTABLE desktop-file-validate)
 
-if (USE_GPROF)
-	check_cxx_compiler_flag("-pg" COMPILER_SUPPORTS_GNUPROF)
-	if (COMPILER_SUPPORTS_GNUPROF)
-		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg")
-	endif()
-endif()
-
 check_cxx_compiler_flag("-Wthread-safety" HAVE_THREAD_SAFETY_CHECKS)
 if (HAVE_THREAD_SAFETY_CHECKS)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wthread-safety")
