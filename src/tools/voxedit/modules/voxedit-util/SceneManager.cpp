@@ -360,6 +360,11 @@ bool SceneManager::load(const io::FileDescription& file) {
 		Log::error("Failed to open model file '%s'", file.c_str());
 		return false;
 	}
+
+	if (_loadingFuture.valid()) {
+		Log::error("Failed to load '%s' - still loading another model", file.c_str());
+		return false;
+	}
 	core::ThreadPool& threadPool = app::App::getInstance()->threadPool();
 	_loadingFuture = threadPool.enqueue([filePtr] () {
 		voxelformat::SceneGraph newSceneGraph;
