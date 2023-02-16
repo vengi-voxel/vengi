@@ -119,7 +119,7 @@ bool SceneManager::importPalette(const core::String& file) {
 }
 
 bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool bothSides) {
-	const image::ImagePtr& img = image::loadImage(file, false);
+	const image::ImagePtr& img = image::loadImage(file);
 	voxel::RawVolume *v = voxelutil::importAsVolume(img, maxDepth, bothSides);
 	if (v == nullptr) {
 		return false;
@@ -131,7 +131,7 @@ bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool b
 }
 
 bool SceneManager::importAsPlane(const core::String& file) {
-	const image::ImagePtr& img = image::loadImage(file, false);
+	const image::ImagePtr& img = image::loadImage(file);
 	voxel::RawVolume *v = voxelutil::importAsPlane(img);
 	if (v == nullptr) {
 		return false;
@@ -148,7 +148,7 @@ bool SceneManager::importHeightmap(const core::String& file) {
 	if (v == nullptr) {
 		return false;
 	}
-	const image::ImagePtr& img = image::loadImage(file, false);
+	const image::ImagePtr& img = image::loadImage(file);
 	if (!img->isLoaded()) {
 		return false;
 	}
@@ -168,7 +168,7 @@ bool SceneManager::importColoredHeightmap(const core::String& file) {
 	if (v == nullptr) {
 		return false;
 	}
-	const image::ImagePtr& img = image::loadImage(file, false);
+	const image::ImagePtr& img = image::loadImage(file);
 	if (!img->isLoaded()) {
 		return false;
 	}

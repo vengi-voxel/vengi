@@ -383,7 +383,7 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 
 image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) {
 	const core::String imageName = filename + ".png";
-	return image::loadImage(imageName, false);
+	return image::loadImage(imageName);
 }
 
 bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version) {

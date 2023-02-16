@@ -66,7 +66,7 @@ bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel
 
 image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) {
 	const core::String imageName = filename + ".png";
-	return image::loadImage(imageName, false);
+	return image::loadImage(imageName);
 }
 
 bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {

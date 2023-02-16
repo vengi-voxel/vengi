@@ -141,7 +141,7 @@ TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveZ) {
 TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 	voxel::PaletteLookup palLookup;
 
-	const image::ImagePtr& img = image::loadImage("test-fillplane.png", false);
+	const image::ImagePtr& img = image::loadImage("test-fillplane.png");
 
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
 	EXPECT_EQ(10, img->width());

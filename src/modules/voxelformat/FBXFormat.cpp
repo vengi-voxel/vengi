@@ -493,7 +493,7 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 
 			const core::String &relativeFilename = priv::_ufbx_to_string(texture ? texture->relative_filename : material->name);
 			const core::String &name = lookupTexture(filename, relativeFilename);
-			image::ImagePtr tex = image::loadImage(name, false);
+			image::ImagePtr tex = image::loadImage(name);
 			if (tex->isLoaded()) {
 				Log::debug("Use image %s", name.c_str());
 				textures.put(texname, tex);

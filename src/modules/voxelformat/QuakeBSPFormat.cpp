@@ -230,7 +230,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionTextures(const core::String &filename, 
 		const core::String &path = extractBaseDir(filename);
 		textureName = core::string::path(path, "textures", textureName);
 		Log::debug("Search image %s in path %s", textureName.c_str(), path.c_str());
-		image::ImagePtr tex = image::loadImage(textureName, false);
+		image::ImagePtr tex = image::loadImage(textureName);
 		if (tex->isLoaded()) {
 			Log::debug("Use image %s", textureName.c_str());
 			textureMap.put(textureName, tex);

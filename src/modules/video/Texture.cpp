@@ -185,7 +185,7 @@ TexturePtr createWhiteTexture(const core::String& name) {
 }
 
 TexturePtr createTextureFromImage(const core::String& filename) {
-	return createTextureFromImage(image::loadImage(filename, false));
+	return createTextureFromImage(image::loadImage(filename));
 }
 
 TexturePtr createTexture(const TextureConfig& cfg, int width, int height, const core::String& name) {

@@ -102,8 +102,11 @@ inline ImagePtr createEmptyImage(const core::String& name) {
 }
 
 extern uint8_t* createPng(const void *pixels, int width, int height, int depth, int *pngSize);
-extern ImagePtr loadImage(const io::FilePtr& file, bool async = true);
-extern ImagePtr loadImage(const core::String& filename, bool async = true);
+extern ImagePtr loadImage(const io::FilePtr& file);
+/**
+ * @brief If there is no extension given, all supported extensions are tried
+ */
+extern ImagePtr loadImage(const core::String& filename);
 
 extern core::String print(const image::ImagePtr &image);
 

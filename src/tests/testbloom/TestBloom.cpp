@@ -24,7 +24,7 @@ app::AppState TestBloom::onInit() {
 
 	setUICamera();
 
-	const image::ImagePtr &sceneImg = image::loadImage("bloom_scene", false);
+	const image::ImagePtr &sceneImg = image::loadImage("bloom_scene");
 	if (!sceneImg->isLoaded()) {
 		Log::error("Failed to load the image for the scene");
 		return app::AppState::InitFailure;
@@ -40,7 +40,7 @@ app::AppState TestBloom::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	const image::ImagePtr &glowImg = image::loadImage("bloom_extracted", false);
+	const image::ImagePtr &glowImg = image::loadImage("bloom_extracted");
 	if (!glowImg->isLoaded()) {
 		Log::error("Failed to load the image for the glow");
 		return app::AppState::InitFailure;

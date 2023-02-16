@@ -26,8 +26,8 @@ private:
 public:
 	TexturePool(const io::FilesystemPtr& filesystem);
 
-	video::TexturePtr load(const core::String& name, bool emptyAsFallback = true, bool async = false);
-	image::ImagePtr loadImage(const core::String& name, bool async);
+	video::TexturePtr load(const core::String& name, bool emptyAsFallback = true);
+	image::ImagePtr loadImage(const core::String& name);
 
 	const core::StringMap<TexturePtr> &cache() {
 		return _cache;

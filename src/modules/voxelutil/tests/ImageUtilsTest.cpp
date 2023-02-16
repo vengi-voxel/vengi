@@ -13,7 +13,7 @@ class ImageUtilsTest: public app::AbstractTest {
 };
 
 TEST_F(ImageUtilsTest, testImportAsPlane) {
-	const image::ImagePtr& img = image::loadImage("test-palette-in.png", false);
+	const image::ImagePtr& img = image::loadImage("test-palette-in.png");
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
 	const int depth = 2;
 	core::ScopedPtr<voxel::RawVolume> volume(voxelutil::importAsPlane(img, 2));

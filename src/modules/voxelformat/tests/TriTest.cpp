@@ -40,7 +40,7 @@ TEST_F(TriTest, testFlat) {
 }
 
 TEST_F(TriTest, testColorAt) {
-	const image::ImagePtr &texture = image::loadImage("palette-nippon.png", false);
+	const image::ImagePtr &texture = image::loadImage("palette-nippon.png");
 	ASSERT_TRUE(texture);
 	ASSERT_EQ(256, texture->width());
 	ASSERT_EQ(1, texture->height());

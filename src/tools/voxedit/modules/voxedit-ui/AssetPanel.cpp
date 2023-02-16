@@ -45,7 +45,7 @@ void AssetPanel::loadTextures(const core::String &dir) {
 	for (const auto &e : entities) {
 		const core::String &fullName = core::string::path(dir, e.name);
 		if (io::isImage(fullName)) {
-			_texturePool.load(fullName, false, true);
+			_texturePool.load(fullName, false);
 		}
 	}
 }
@@ -95,7 +95,7 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 					continue;
 				}
 				const video::Id handle = e->second->handle();
-				const image::ImagePtr &image = _texturePool.loadImage(e->first, false);
+				const image::ImagePtr &image = _texturePool.loadImage(e->first);
 				ImGui::ImageButton(handle, ImVec2(50, 50));
 				ImGui::TooltipText("%s: %i:%i", image->name().c_str(), image->width(), image->height());
 				if (n % maxImages == 0) {

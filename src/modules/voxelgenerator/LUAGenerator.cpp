@@ -228,7 +228,7 @@ static int luaVoxel_volumewrapper_fillhollow(lua_State *s) {
 static int luaVoxel_volumewrapper_importheightmap(lua_State *s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const core::String imageName = lua_tostring(s, 2);
-	const image::ImagePtr &image = image::loadImage(imageName, false);
+	const image::ImagePtr &image = image::loadImage(imageName);
 	if (!image || !image->isLoaded()) {
 		return clua_error(s, "Image %s could not get loaded", imageName.c_str());
 	}
@@ -243,7 +243,7 @@ static int luaVoxel_volumewrapper_importheightmap(lua_State *s) {
 static int luaVoxel_volumewrapper_importcoloredheightmap(lua_State *s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const core::String imageName = lua_tostring(s, 2);
-	const image::ImagePtr &image = image::loadImage(imageName, false);
+	const image::ImagePtr &image = image::loadImage(imageName);
 	if (!image || !image->isLoaded()) {
 		return clua_error(s, "Image %s could not get loaded", imageName.c_str());
 	}

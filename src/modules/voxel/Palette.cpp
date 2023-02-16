@@ -476,7 +476,7 @@ bool Palette::load(const char *paletteName) {
 	} else if (extension == "pal") {
 		return loadRGBPalette(paletteName);
 	}
-	const image::ImagePtr &img = image::loadImage(paletteFile, false);
+	const image::ImagePtr &img = image::loadImage(paletteFile);
 	if (!img->isLoaded()) {
 		Log::error("Failed to load image %s", paletteFile->name().c_str());
 		return false;

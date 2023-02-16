@@ -694,7 +694,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 					core::String name = image.uri.c_str();
 					if (!textures.hasKey(name)) {
 						name = lookupTexture(filename, name);
-						image::ImagePtr tex = image::loadImage(name, false);
+						image::ImagePtr tex = image::loadImage(name);
 						if (tex->isLoaded()) {
 							Log::debug("Use image %s", name.c_str());
 							diffuseTexture = image.uri.c_str();

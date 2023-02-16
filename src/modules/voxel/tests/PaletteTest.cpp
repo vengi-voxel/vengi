@@ -195,7 +195,7 @@ TEST_F(PaletteTest, testExtractPaletteName) {
 }
 
 TEST_F(PaletteTest, testCreateAndLoadPalette) {
-	const image::ImagePtr& img = image::loadImage("test-palette-in.png", false);
+	const image::ImagePtr& img = image::loadImage("test-palette-in.png");
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
 	voxel::Palette palette;
 	EXPECT_TRUE(voxel::Palette::createPalette(img, palette)) << "Failed to create palette image";

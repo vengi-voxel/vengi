@@ -289,7 +289,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 		}
 
 		name = lookupTexture(filename, name);
-		image::ImagePtr tex = image::loadImage(name, false);
+		image::ImagePtr tex = image::loadImage(name);
 		if (tex->isLoaded()) {
 			Log::debug("Use image %s", name.c_str());
 			textures.put(material.diffuse_texname.c_str(), tex);

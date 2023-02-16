@@ -106,19 +106,15 @@ core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wr
 	return colorAt(pc.x, pc.y);
 }
 
-ImagePtr loadImage(const io::FilePtr& file, bool async) {
+ImagePtr loadImage(const io::FilePtr& file) {
 	const ImagePtr& i = createEmptyImage(file->name());
-	if (async) {
-		app::App::getInstance()->threadPool().enqueue([=] () { i->load(file); });
-	} else {
-		if (!i->load(file)) {
-			Log::warn("Failed to load image %s", i->name().c_str());
-		}
+	if (!i->load(file)) {
+		Log::warn("Failed to load image %s", i->name().c_str());
 	}
 	return i;
 }
 
-ImagePtr loadImage(const core::String& filename, bool async) {
+ImagePtr loadImage(const core::String& filename) {
 	io::FilePtr file;
 	if (!core::string::extractExtension(filename).empty()) {
 		file = io::filesystem()->open(filename);
@@ -143,7 +139,7 @@ ImagePtr loadImage(const core::String& filename, bool async) {
 		return createEmptyImage(filename);
 	}
 	Log::debug("Load image '%s'", filename.c_str());
-	return loadImage(file, async);
+	return loadImage(file);
 }
 
 bool Image::load(const uint8_t* buffer, int length) {

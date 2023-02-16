@@ -71,14 +71,14 @@ TEST_F(ImageTest, DISABLED_testWriteJPEG) {
 }
 
 TEST_F(ImageTest, testGet) {
-	const image::ImagePtr& img = image::loadImage("test-palette-in.png", false);
+	const image::ImagePtr& img = image::loadImage("test-palette-in.png");
 	const core::RGBA rgba = img->colorAt(33, 7);
 	const core::RGBA expected(243, 238, 236);
 	EXPECT_EQ(rgba, expected) << image::print(img);
 }
 
 TEST_F(ImageTest, testUVPixelBoundaries) {
-	const image::ImagePtr& img = image::loadImage("test-palette-in.png", false);
+	const image::ImagePtr& img = image::loadImage("test-palette-in.png");
 	ASSERT_EQ(glm::vec2(0.0f, 0.0f), img->uv(0, img->height())) << "lower left corner of the image";
 	ASSERT_EQ(glm::vec2(1.0f, 0.0f), img->uv(img->width(), img->height())) << "lower right corner of the image";
 	ASSERT_EQ(glm::vec2(1.0f, 1.0f), img->uv(img->width(), 0)) << "upper right corner of the image";
@@ -86,7 +86,7 @@ TEST_F(ImageTest, testUVPixelBoundaries) {
 }
 
 TEST_F(ImageTest, testUVPixelConversion) {
-	const image::ImagePtr& img = image::loadImage("test-palette-in.png", false);
+	const image::ImagePtr& img = image::loadImage("test-palette-in.png");
 	for (int x = 0; x < img->width(); ++x) {
 		for (int y = 0; y < img->height(); ++y) {
 			const glm::vec2 &uv = img->uv(x, y);

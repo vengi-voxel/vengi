@@ -195,7 +195,7 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 	core::String heightmapFile = core::string::stripExtension(image->name());
 	heightmapFile.append("-dm.");
 	heightmapFile.append(extinfile);
-	const image::ImagePtr& heightmap = image::loadImage(heightmapFile, false);
+	const image::ImagePtr& heightmap = image::loadImage(heightmapFile);
 	if (!heightmap || !heightmap->isLoaded()) {
 		Log::error("Couldn't load heightmap %s", heightmapFile.c_str());
 		return nullptr;

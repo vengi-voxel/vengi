@@ -403,7 +403,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 	}
 	const bool inputIsImage = inputFile->isAnyOf(io::format::images());
 	if (inputIsImage) {
-		const image::ImagePtr& image = image::loadImage(inputFile, false);
+		const image::ImagePtr& image = image::loadImage(inputFile);
 		if (!image || !image->isLoaded()) {
 			Log::error("Couldn't load image %s", infile.c_str());
 			return false;
