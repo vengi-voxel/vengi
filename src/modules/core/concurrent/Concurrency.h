@@ -93,7 +93,6 @@ extern bool setThreadName(const char *name);
 
 enum class ThreadPriority { High, Normal, Low };
 
-extern size_t getThreadId();
 extern void setThreadPriority(ThreadPriority prio);
 
 }

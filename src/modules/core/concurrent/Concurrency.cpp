@@ -6,7 +6,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include <SDL_platform.h>
-#include <thread>
+#include <SDL_cpuinfo.h>
 
 #if defined(__LINUX__) || defined(__MACOSX__) || defined(__IPHONEOS__)
 #include <dlfcn.h>
@@ -121,15 +121,11 @@ void setThreadPriority(ThreadPriority prio) {
 }
 
 uint32_t cpus() {
-	return core_max(1u, std::thread::hardware_concurrency());
+	return core_max(1, SDL_GetCPUCount());
 }
 
 uint32_t halfcpus() {
-	return core_max(1u, std::thread::hardware_concurrency() / 2u);
-}
-
-size_t getThreadId() {
-	return std::hash<std::thread::id>{}(std::this_thread::get_id());
+	return core_max(1, SDL_GetCPUCount() / 2u);
 }
 
 }
