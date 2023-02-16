@@ -349,6 +349,8 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 			const uint32_t pendingFrames = _avi.pendingFrames();
 			if (pendingFrames > 0u) {
 				ImGui::TooltipText("Pending frames: %u", pendingFrames);
+			} else {
+				ImGui::TooltipText("You can control the fps of the video with the cvar core_maxfps: %u", pendingFrames);
 			}
 			ImGui::EndMenu();
 		}
