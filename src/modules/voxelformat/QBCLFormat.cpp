@@ -293,10 +293,9 @@ bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 		if (size > 0) {
 			wrapBool(stream.writeUInt32(image->width()))
 			wrapBool(stream.writeUInt32(image->height()))
-			const core::RGBA* rgba = (const core::RGBA*)image->data();
 			for (int x = 0; x < image->width(); ++x) {
 				for (int y = 0; y < image->height(); ++y) {
-					const core::RGBA color = *rgba++;
+					const core::RGBA color = image->colorAt(x, y);
 					stream.writeUInt8(color.b);
 					stream.writeUInt8(color.g);
 					stream.writeUInt8(color.r);
