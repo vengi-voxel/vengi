@@ -13,6 +13,7 @@
 #ifndef RTLD_DEFAULT
 #define RTLD_DEFAULT nullptr
 #endif
+#include <errno.h>
 #include <pthread.h>
 #include <sys/time.h>
 #include <sys/resource.h>
