@@ -11,6 +11,9 @@ set(SRCS
 	modifier/ModifierButton.h modifier/ModifierButton.cpp
 	modifier/ModifierType.h
 
+	SceneRenderer.h SceneRenderer.cpp
+	SceneUtil.h SceneUtil.cpp
+
 	ModelNodeSettings.h
 
 	tool/Clipboard.h tool/Clipboard.cpp

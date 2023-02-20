@@ -127,11 +127,6 @@ bool MainWindow::init() {
 	_lsystemPanel.init();
 	_treePanel.init();
 
-	_showGridVar = core::Var::getSafe(cfg::VoxEditShowgrid);
-	_showLockedAxisVar = core::Var::getSafe(cfg::VoxEditShowlockedaxis);
-	_showAabbVar = core::Var::getSafe(cfg::VoxEditShowaabb);
-	_renderShadowVar = core::Var::getSafe(cfg::VoxEditRendershadow);
-	_gridSizeVar = core::Var::getSafe(cfg::VoxEditGridsize);
 	_lastOpenedFile = core::Var::getSafe(cfg::VoxEditLastFile);
 	_lastOpenedFiles = core::Var::getSafe(cfg::VoxEditLastFiles);
 	loadLastOpenedFiles(_lastOpenedFiles->strVal());
@@ -310,17 +305,6 @@ void MainWindow::rightWidget() {
 }
 
 // end of right side
-
-void MainWindow::updateSettings() {
-	SceneManager &mgr = sceneMgr();
-	mgr.setGridResolution(_gridSizeVar->intVal());
-	mgr.setRenderLockAxis(_showLockedAxisVar->boolVal());
-	mgr.setRenderShadow(_renderShadowVar->boolVal());
-
-	render::GridRenderer &gridRenderer = mgr.gridRenderer();
-	gridRenderer.setRenderAABB(_showAabbVar->boolVal());
-	gridRenderer.setRenderGrid(_showGridVar->boolVal());
-}
 
 void MainWindow::dialog(const char *icon, const char *text) {
 	ImGui::AlignTextToFramePadding();
@@ -598,8 +582,6 @@ void MainWindow::update() {
 
 		ImGui::DockBuilderFinish(dockIdMain);
 	}
-
-	updateSettings();
 }
 
 Viewport* MainWindow::hoveredScene() {

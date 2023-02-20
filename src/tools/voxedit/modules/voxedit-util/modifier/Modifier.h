@@ -206,7 +206,7 @@ public:
 	const glm::ivec3& cursorPosition() const;
 
 	const glm::ivec3& referencePosition() const;
-	void setReferencePosition(const glm::ivec3& pos);
+	virtual void setReferencePosition(const glm::ivec3& pos);
 
 	const voxel::Voxel& hitCursorVoxel() const;
 	void setHitCursorVoxel(const voxel::Voxel&);
@@ -221,10 +221,6 @@ public:
 
 inline const voxel::Voxel& Modifier::hitCursorVoxel() const {
 	return _hitCursorVoxel;
-}
-
-inline void Modifier::setReferencePosition(const glm::ivec3 &pos) {
-	_referencePos = pos;
 }
 
 inline const glm::ivec3& Modifier::referencePosition() const {

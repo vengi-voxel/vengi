@@ -134,7 +134,7 @@ video::Camera toCamera(const glm::ivec2 &size, const voxelformat::SceneGraphNode
 	return camera;
 }
 
-void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, voxelformat::FrameIndex frame, bool hideInactive,
+void SceneGraphRenderer::prepare(const voxelformat::SceneGraph &sceneGraph, voxelformat::FrameIndex frame, bool hideInactive,
 								 bool grayInactive) {
 	// remove those volumes that are no longer part of the scene graph
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
@@ -148,7 +148,7 @@ void SceneGraphRenderer::prepare(voxelformat::SceneGraph &sceneGraph, voxelforma
 	_cameras.clear();
 	for (voxelformat::SceneGraph::iterator iter = sceneGraph.begin(voxelformat::SceneGraphNodeType::Camera);
 		 iter != sceneGraph.end(); ++iter) {
-		voxelformat::SceneGraphNodeCamera &cameraNode = voxelformat::toCameraNode(*iter);
+		const voxelformat::SceneGraphNodeCamera &cameraNode = voxelformat::toCameraNode(*iter);
 		if (!cameraNode.visible()) {
 			continue;
 		}

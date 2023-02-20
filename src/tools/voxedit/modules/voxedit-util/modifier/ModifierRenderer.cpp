@@ -22,6 +22,11 @@ bool ModifierRenderer::init() {
 		return false;
 	}
 
+	_shapeBuilder.clear();
+	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue, 0.8f));
+	_shapeBuilder.sphere(8, 6, 0.5f);
+	_referencePointMesh = _shapeRenderer.create(_shapeBuilder);
+
 	return true;
 }
 
@@ -30,6 +35,7 @@ void ModifierRenderer::shutdown() {
 	_aabbMeshIndex = -1;
 	_selectionIndex = -1;
 	_voxelCursorMesh = -1;
+	_referencePointMesh = -1;
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 }
@@ -122,6 +128,12 @@ void ModifierRenderer::render(const video::Camera& camera, const glm::mat4& mode
 	const video::ScopedState cullFace(video::State::CullFace, false);
 	_shapeRenderer.render(_voxelCursorMesh, camera, model);
 	_shapeRenderer.render(_mirrorMeshIndex, camera);
+	_shapeRenderer.render(_referencePointMesh, camera, _referencePointModelMatrix);
+}
+
+void ModifierRenderer::updateReferencePosition(const glm::ivec3 &pos) {
+	const glm::vec3 posAligned((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f);
+	_referencePointModelMatrix = glm::translate(posAligned);
 }
 
 void ModifierRenderer::renderSelection(const video::Camera& camera) {

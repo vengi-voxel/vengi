@@ -239,6 +239,10 @@ math::Axis Modifier::getSizeAndHeightFromAxisAndDim(math::Axis axis, const glm::
 	return axis;
 }
 
+void Modifier::setReferencePosition(const glm::ivec3 &pos) {
+	_referencePos = pos;
+}
+
 bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type, bool markUndo)>& callback, bool markUndo) {
 	glm::ivec3 operateMins = mins;
 	glm::ivec3 operateMaxs = maxs;

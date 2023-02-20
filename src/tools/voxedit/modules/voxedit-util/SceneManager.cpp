@@ -60,6 +60,7 @@
 #include "AxisUtil.h"
 #include "Config.h"
 #include "MementoHandler.h"
+#include "SceneUtil.h"
 #include "tool/Clipboard.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -397,23 +398,8 @@ void SceneManager::setMousePos(int x, int y) {
 	}
 	_mouseCursor.x = x;
 	_mouseCursor.y = y;
+	// moving the mouse would trigger mouse tracing again
 	_traceViaMouse = true;
-}
-
-void SceneManager::queueRegionExtraction(int nodeId, const voxel::Region& region) {
-	bool addNew = true;
-	for (const auto& r : _extractRegions) {
-		if (r.nodeId != nodeId) {
-			continue;
-		}
-		if (r.region.containsRegion(region)) {
-			addNew = false;
-			break;
-		}
-	}
-	if (addNew) {
-		_extractRegions.push_back({region, nodeId});
-	}
 }
 
 void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, bool markUndo, uint64_t renderRegionMillis) {
@@ -424,9 +410,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 		_mementoHandler.markModification(node, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
-		queueRegionExtraction(nodeId, modifiedRegion);
-		const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
-		_highlightRegion = TimedRegion(modifiedRegion, timeProvider->tickNow(), renderRegionMillis);
+		_sceneRenderer.queueRegionExtraction(nodeId, modifiedRegion, renderRegionMillis);
 	}
 	markDirty();
 	resetLastTrace();
@@ -475,10 +459,6 @@ void SceneManager::crop() {
 	const int nodeId = activeNode();
 	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
-		return;
-	}
-	if (_volumeRenderer.empty(*node)) {
-		Log::info("Empty volumes can't be cropped");
 		return;
 	}
 	voxel::RawVolume* newVolume = voxelutil::cropVolume(node->volume());
@@ -946,7 +926,7 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 		Log::debug("Add node %i to scene graph", newNodeId);
 		if (type == voxelformat::SceneGraphNodeType::Model) {
 			// update the whole volume
-			queueRegionExtraction(newNodeId, region);
+			_sceneRenderer.queueRegionExtraction(newNodeId, region);
 
 			_result = voxelutil::PickResult();
 			nodeActivate(newNodeId);
@@ -963,7 +943,7 @@ int SceneManager::addNodeToSceneGraph(voxelformat::SceneGraphNode &node, int par
 bool SceneManager::loadSceneGraph(voxelformat::SceneGraph&& sceneGraph) {
 	core_trace_scoped(LoadSceneGraph);
 	_sceneGraph = core::move(sceneGraph);
-	_volumeRenderer.clear();
+	_sceneRenderer.clear();
 
 	const size_t nodesAdded = _sceneGraph.size();
 	if (nodesAdded == 0) {
@@ -976,24 +956,8 @@ bool SceneManager::loadSceneGraph(voxelformat::SceneGraph&& sceneGraph) {
 	return true;
 }
 
-math::AABB<float> SceneManager::toAABB(const voxel::Region& region) const {
-	return math::AABB<float>(glm::floor(region.getLowerCornerf()), glm::floor(glm::vec3(region.getUpperCornerf() + 1.0f)));
-}
-
-math::OBB<float> SceneManager::toOBB(bool sceneMode, const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const {
-	core_assert(region.isValid());
-	if (sceneMode) {
-		const glm::vec3 pivot = (transform.pivot() - 0.5f) * glm::vec3(region.getDimensionsInVoxels()) - region.getLowerCornerf();
-		const glm::vec3 &extents = transform.worldScale() * glm::vec3(region.getDimensionsInVoxels()) / 2.0f;
-		const glm::vec3 &center = transform.worldTranslation();
-		const glm::mat4x4 &matrix = transform.worldMatrix();
-		return math::OBB<float>(center, pivot, extents, matrix);
-	}
-	return math::OBB<float>(glm::floor(region.getLowerCornerf()), glm::floor(glm::vec3(region.getUpperCornerf() + 1.0f)));
-}
-
 void SceneManager::updateGridRenderer(const voxel::Region& region) {
-	_gridRenderer.update(toAABB(region));
+	gridRenderer().update(toAABB(region));
 }
 
 voxelformat::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {
@@ -1045,7 +1009,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 		return false;
 	}
 	_sceneGraph.clear();
-	_volumeRenderer.clear();
+	_sceneRenderer.clear();
 
 	voxel::RawVolume* v = new voxel::RawVolume(region);
 	voxelformat::SceneGraphNode node;
@@ -1162,79 +1126,22 @@ bool SceneManager::setGridResolution(int resolution) {
 	return true;
 }
 
-void SceneManager::updateAABBMesh(bool sceneMode) {
-	_shapeBuilder.clear();
-	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
-		if (!node.visible()) {
-			continue;
-		}
-		const voxel::RawVolume* v = node.volume();
-		core_assert(v != nullptr);
-		const voxel::Region& region = node.region();
-		if (node.id() == activeNode()) {
-			_shapeBuilder.setColor(core::Color::White);
-		} else {
-			_shapeBuilder.setColor(core::Color::Gray);
-		}
-		_shapeBuilder.obb(toOBB(sceneMode, region, node.transformForFrame(_currentFrameIdx)));
-	}
-	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
-}
-
 void SceneManager::render(voxelrender::RenderContext &renderContext, const video::Camera& camera, uint8_t renderMask) {
-	video::ScopedState depthTest(video::State::DepthTest, true);
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderScene) {
-		_volumeRenderer.setSceneMode(renderContext.sceneMode);
-		updateAABBMesh(renderContext.sceneMode);
-		_volumeRenderer.prepare(_sceneGraph, _currentFrameIdx, _hideInactive->boolVal(), _grayInactive->boolVal());
-		_volumeRenderer.render(renderContext, camera, _renderShadow, false);
-		extractVolume();
+		_sceneRenderer.renderScene(renderContext, camera, _sceneGraph, _currentFrameIdx);
 	}
 	const bool renderUI = (renderMask & RenderUI) != 0u;
 	if (renderUI) {
-		video::ScopedState blend(video::State::Blend, true);
-		if (renderContext.sceneMode) {
-			if (_showAabbVar->boolVal()) {
-				_shapeRenderer.render(_aabbMeshIndex, camera);
-			}
-		} else {
-			const int nodeId = activeNode();
-			voxelformat::SceneGraphNode *n = sceneGraphNode(nodeId);
-			const voxel::Region& region = n->volume()->region();
-			_gridRenderer.render(camera, toAABB(region));
-
-			_modifier.render(camera);
-
-			if (_renderLockAxis) {
-				for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
-					// TODO: fix z-fighting
-					_shapeRenderer.render(_planeMeshIndex[i], camera);
-				}
-			}
-		}
-
-		const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
-		const uint64_t highlightMillis = _highlightRegion.remaining(timeProvider->tickNow());
-		if (highlightMillis > 0) {
-			video::ScopedPolygonMode o(video::PolygonMode::Solid, glm::vec2(1.0f, 1.0f));
-			_shapeBuilder.clear();
-			_shapeBuilder.setColor(core::Color::alpha(core::Color::Green, 0.2f));
-			_shapeBuilder.cube(_highlightRegion.value().getLowerCornerf(), _highlightRegion.value().getUpperCornerf() + 1.0f);
-			_shapeRenderer.createOrUpdate(_highlightMeshIndex, _shapeBuilder);
-			_shapeRenderer.render(_highlightMeshIndex, camera);
-			video::polygonOffset(glm::vec2(0.0f));
-		}
-
-		video::disable(video::State::DepthTest);
-		_shapeRenderer.render(_referencePointMesh, camera, _referencePointModelMatrix);
+		_sceneRenderer.renderUI(renderContext, camera, _sceneGraph);
+		_modifier.render(camera);
 	}
 }
 
 void SceneManager::construct() {
 	_modifier.construct();
 	_mementoHandler.construct();
-	_volumeRenderer.construct();
+	_sceneRenderer.construct();
 
 	command::Command::registerCommand("xs", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -1820,10 +1727,6 @@ void SceneManager::construct() {
 			nodeDuplicate(*node);
 		}
 	}).setHelp("Duplicates the current node or the given node id");
-
-	_showAabbVar = core::Var::getSafe(cfg::VoxEditShowaabb);
-	_grayInactive = core::Var::getSafe(cfg::VoxEditGrayInactive);
-	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
 }
 
 void SceneManager::renderText(const char *str, int size, int thickness, int spacing, const char *font) {
@@ -1893,16 +1796,8 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the memento handler");
 		return false;
 	}
-	if (!_volumeRenderer.init()) {
-		Log::error("Failed to initialize the volume renderer");
-		return false;
-	}
-	if (!_shapeRenderer.init()) {
-		Log::error("Failed to initialize the shape renderer");
-		return false;
-	}
-	if (!_gridRenderer.init()) {
-		Log::error("Failed to initialize the grid renderer");
+	if (!_sceneRenderer.init()) {
+		Log::error("Failed to initialize the scene renderer");
 		return false;
 	}
 	if (!_modifier.init()) {
@@ -1916,19 +1811,8 @@ bool SceneManager::init() {
 	}
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
-	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "1.0 1.0 1.0");
-	_diffuseColor = core::Var::get(cfg::VoxEditDiffuseColor, "0.0 0.0 0.0");
 	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
 	_lastAutoSave = timeProvider->tickSeconds();
-
-	for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
-		_planeMeshIndex[i] = -1;
-	}
-
-	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue, 0.8f));
-	_shapeBuilder.sphere(8, 6, 0.5f);
-	_referencePointMesh = _shapeRenderer.create(_shapeBuilder);
 
 	_lockedAxis = math::Axis::None;
 	return true;
@@ -1992,7 +1876,7 @@ bool SceneManager::update(double nowSeconds) {
 		}
 	}
 	_modifier.update(nowSeconds);
-	_volumeRenderer.update();
+	_sceneRenderer.update();
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {
 			continue;
@@ -2016,8 +1900,6 @@ bool SceneManager::update(double nowSeconds) {
 		});
 	}
 
-	_volumeRenderer.setAmbientColor(_ambientColor->vec3Val());
-	_volumeRenderer.setDiffuseColor(_diffuseColor->vec3Val());
 	animate(nowSeconds);
 	autosave();
 	return loadedNewScene;
@@ -2033,47 +1915,19 @@ void SceneManager::shutdown() {
 
 	autosave();
 
-	_volumeRenderer.shutdown();
+	_sceneRenderer.shutdown();
 	_sceneGraph.clear();
 	_mementoHandler.clearStates();
 
 	_luaGenerator.shutdown();
 	_modifier.shutdown();
-	_shapeRenderer.shutdown();
-	_shapeBuilder.shutdown();
-	_gridRenderer.shutdown();
 	_mementoHandler.shutdown();
 	_voxelFont.shutdown();
-
-	_referencePointMesh = -1;
-	_aabbMeshIndex = -1;
-	_highlightMeshIndex = -1;
 
 	command::Command::unregisterActionButton("zoom_in");
 	command::Command::unregisterActionButton("zoom_out");
 	command::Command::unregisterActionButton("camera_rotate");
 	command::Command::unregisterActionButton("camera_pan");
-}
-
-bool SceneManager::extractVolume() {
-	core_trace_scoped(SceneManagerExtract);
-	const size_t n = _extractRegions.size();
-	if (n <= 0) {
-		return false;
-	}
-	Log::debug("Extract the meshes for %i regions", (int)n);
-	for (size_t i = 0; i < n; ++i) {
-		const voxel::Region& region = _extractRegions[i].region;
-		if (voxelformat::SceneGraphNode* node = sceneGraphNode(_extractRegions[i].nodeId)) {
-			if (!_volumeRenderer.extractRegion(*node, region)) {
-				Log::error("Failed to extract the model mesh");
-			}
-			Log::debug("Extract node %i", _extractRegions[i].nodeId);
-			voxel::logRegion("Extraction", region);
-		}
-	}
-	_extractRegions.clear();
-	return true;
 }
 
 void SceneManager::lsystem(const core::String &axiom, const core::DynamicArray<voxelgenerator::lsystem::Rule> &rules, float angle, float length,
@@ -2095,9 +1949,6 @@ void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
 
 void SceneManager::setReferencePosition(const glm::ivec3& pos) {
 	_modifier.setReferencePosition(pos);
-	const glm::ivec3 &refPos = _modifier.referencePosition();
-	const glm::vec3 posAligned((float)refPos.x + 0.5f, (float)refPos.y + 0.5f, (float)refPos.z + 0.5f);
-	_referencePointModelMatrix = glm::translate(posAligned);
 }
 
 void SceneManager::moveCursor(int x, int y, int z) {
@@ -2156,53 +2007,77 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	if (oldCursorPos == pos) {
 		return;
 	}
-	updateLockedPlane(math::Axis::X);
-	updateLockedPlane(math::Axis::Y);
-	updateLockedPlane(math::Axis::Z);
+	_sceneRenderer.updateLockedPlanes(_lockedAxis, _sceneGraph, cursorPosition());
 }
 
-bool SceneManager::trace(bool sceneMode, bool force, voxelutil::PickResult *result) {
+bool SceneManager::trace(bool sceneMode, bool force) {
 	if (_modifier.isLocked()) {
 		return false;
 	}
-
-	if (result) {
-		*result = _result;
-	}
 	if (sceneMode) {
-		if (_sceneModeNodeIdTrace != -1) {
-			// if the trace is not forced, and the mouse cursor position did not change, don't
-			// re-execute the trace.
-			if (_lastRaytraceX == _mouseCursor.x && _lastRaytraceY == _mouseCursor.y && !force) {
-				return true;
-			}
-		}
-		_sceneModeNodeIdTrace = -1;
-		core_trace_scoped(EditorSceneOnProcessUpdateRay);
-		_lastRaytraceX = _mouseCursor.x;
-		_lastRaytraceY = _mouseCursor.y;
-		float intersectDist = _camera->farPlane();
-		const math::Ray& ray = _camera->mouseRay(_mouseCursor);
-		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
-			if (!node.visible()) {
-				continue;
-			}
-			const voxel::Region& region = node.region();
-			float distance = 0.0f;
-			const math::OBB<float>& obb = toOBB(sceneMode, region, node.transformForFrame(_currentFrameIdx));
-			if (obb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
-				if (distance < intersectDist) {
-					intersectDist = distance;
-					_sceneModeNodeIdTrace = node.id();
-				}
-			}
-		}
-		Log::trace("Hovered node: %i", _sceneModeNodeIdTrace);
+		traceScene(force);
 		return true;
 	}
 
+	return mouseRayTrace(force);
+}
+
+void SceneManager::traceScene(bool force) {
+	if (_sceneModeNodeIdTrace != -1) {
+		// if the trace is not forced, and the mouse cursor position did not change, don't
+		// re-execute the trace.
+		if (_lastRaytraceX == _mouseCursor.x && _lastRaytraceY == _mouseCursor.y && !force) {
+			return;
+		}
+	}
+	_sceneModeNodeIdTrace = -1;
+	core_trace_scoped(EditorSceneOnProcessUpdateRay);
+	_lastRaytraceX = _mouseCursor.x;
+	_lastRaytraceY = _mouseCursor.y;
+	float intersectDist = _camera->farPlane();
+	const math::Ray& ray = _camera->mouseRay(_mouseCursor);
+	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
+		if (!node.visible()) {
+			continue;
+		}
+		const voxel::Region& region = node.region();
+		float distance = 0.0f;
+		const math::OBB<float>& obb = toOBB(true, region, node.transformForFrame(_currentFrameIdx));
+		if (obb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
+			if (distance < intersectDist) {
+				intersectDist = distance;
+				_sceneModeNodeIdTrace = node.id();
+			}
+		}
+	}
+	Log::trace("Hovered node: %i", _sceneModeNodeIdTrace);
+}
+
+void SceneManager::updateCursor() {
+	if (_modifier.modifierTypeRequiresExistingVoxel()) {
+		if (_result.didHit) {
+			setCursorPosition(_result.hitVoxel);
+		} else if (_result.validPreviousPosition) {
+			setCursorPosition(_result.previousPosition);
+		}
+	} else if (_result.validPreviousPosition) {
+		setCursorPosition(_result.previousPosition);
+	} else if (_result.didHit) {
+		setCursorPosition(_result.hitVoxel);
+	}
+
+	const voxel::RawVolume *v = activeVolume();
+	if (_result.didHit) {
+		_modifier.setHitCursorVoxel(v->voxel(_result.hitVoxel));
+	} else {
+		_modifier.setHitCursorVoxel(voxel::Voxel());
+	}
+	_modifier.setVoxelAtCursor(v->voxel(_modifier.cursorPosition()));
+}
+
+bool SceneManager::mouseRayTrace(bool force) {
 	// mouse tracing is disabled - e.g. because the voxel cursor was moved by keyboard
-	// shortcuts in this case the execution of the modifier would result in a
+	// shortcuts. In this case the execution of the modifier would result in a
 	// re-execution of the trace. And that would move the voxel cursor to the mouse pos
 	if (!_traceViaMouse) {
 		return false;
@@ -2212,13 +2087,20 @@ bool SceneManager::trace(bool sceneMode, bool force, voxelutil::PickResult *resu
 	if (_lastRaytraceX == _mouseCursor.x && _lastRaytraceY == _mouseCursor.y && !force) {
 		return true;
 	}
-	if (_camera == nullptr) {
+	video::Camera *camera = activeCamera();
+	if (camera == nullptr) {
 		return false;
 	}
 	const voxel::RawVolume* v = activeVolume();
 	if (v == nullptr) {
 		return false;
 	}
+	const math::Ray& ray = camera->mouseRay(_mouseCursor);
+	const float rayLength = camera->farPlane();
+
+	const glm::vec3& dirWithLength = ray.direction * rayLength;
+	static constexpr voxel::Voxel air;
+
 	Log::trace("Execute new trace for %i:%i (%i:%i)",
 			_mouseCursor.x, _mouseCursor.y, _lastRaytraceX, _lastRaytraceY);
 
@@ -2226,18 +2108,13 @@ bool SceneManager::trace(bool sceneMode, bool force, voxelutil::PickResult *resu
 	_lastRaytraceX = _mouseCursor.x;
 	_lastRaytraceY = _mouseCursor.y;
 
-	const math::Ray& ray = _camera->mouseRay(_mouseCursor);
-	float rayLength = _camera->farPlane();
-	const glm::vec3& dirWithLength = ray.direction * rayLength;
-	static constexpr voxel::Voxel air;
-
 	_result.didHit = false;
 	_result.validPreviousPosition = false;
 	_result.firstInvalidPosition = false;
 	_result.firstValidPosition = false;
 	_result.direction = ray.direction;
 	_result.hitFace = voxel::FaceNames::Max;
-	voxelutil::raycastWithDirection(v, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
+	voxelutil::raycastWithDirection(activeVolume(), ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
 		if (!_result.firstValidPosition && sampler.currentPositionValid()) {
 			_result.firstPosition = sampler.position();
 			_result.firstValidPosition = true;
@@ -2286,53 +2163,9 @@ bool SceneManager::trace(bool sceneMode, bool force, voxelutil::PickResult *resu
 		Log::debug("Raycast face hit: %i", (int)_result.hitFace);
 	}
 
-	if (_modifier.modifierTypeRequiresExistingVoxel()) {
-		if (_result.didHit) {
-			setCursorPosition(_result.hitVoxel);
-		} else if (_result.validPreviousPosition) {
-			setCursorPosition(_result.previousPosition);
-		}
-	} else if (_result.validPreviousPosition) {
-		setCursorPosition(_result.previousPosition);
-	} else if (_result.didHit) {
-		setCursorPosition(_result.hitVoxel);
-	}
-
-	if (_result.didHit) {
-		_modifier.setHitCursorVoxel(v->voxel(_result.hitVoxel));
-	} else {
-		_modifier.setHitCursorVoxel(voxel::Voxel());
-	}
-	_modifier.setVoxelAtCursor(v->voxel(_modifier.cursorPosition()));
-
-	if (result) {
-		*result = _result;
-	}
+	updateCursor();
 
 	return true;
-}
-
-void SceneManager::updateLockedPlane(math::Axis axis) {
-	if (axis == math::Axis::None) {
-		return;
-	}
-	const int index = math::getIndexForAxis(axis);
-	int32_t& meshIndex = _planeMeshIndex[index];
-	if ((_lockedAxis & axis) == math::Axis::None) {
-		if (meshIndex != -1) {
-			_shapeRenderer.deleteMesh(meshIndex);
-			meshIndex = -1;
-		}
-		return;
-	}
-
-	const glm::vec4 colors[] = {
-		core::Color::LightRed,
-		core::Color::LightGreen,
-		core::Color::LightBlue
-	};
-	updateShapeBuilderForPlane(_shapeBuilder, _sceneGraph.region(), false, cursorPosition(), axis, core::Color::alpha(colors[index], 0.4f));
-	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
 
 void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
@@ -2341,9 +2174,7 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	} else {
 		_lockedAxis |= axis;
 	}
-	updateLockedPlane(math::Axis::X);
-	updateLockedPlane(math::Axis::Y);
-	updateLockedPlane(math::Axis::Z);
+	_sceneRenderer.updateLockedPlanes(_lockedAxis, _sceneGraph, cursorPosition());
 }
 
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix,

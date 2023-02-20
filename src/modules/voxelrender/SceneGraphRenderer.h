@@ -43,7 +43,7 @@ public:
 	void setSceneMode(bool sceneMode);
 	bool extractRegion(voxelformat::SceneGraphNode &node, const voxel::Region& region);
 	bool empty(voxelformat::SceneGraphNode &node);
-	void prepare(voxelformat::SceneGraph &sceneGraph, voxelformat::FrameIndex frame = 0, bool hideInactive = false, bool grayInactive = false);
+	void prepare(const voxelformat::SceneGraph &sceneGraph, voxelformat::FrameIndex frame = 0, bool hideInactive = false, bool grayInactive = false);
 	void extractAll();
 	/**
 	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is false, you have to call @c update() manually!

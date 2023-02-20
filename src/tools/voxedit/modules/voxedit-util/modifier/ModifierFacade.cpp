@@ -26,6 +26,11 @@ bool ModifierFacade::setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos)
 	return false;
 }
 
+void ModifierFacade::setReferencePosition(const glm::ivec3& pos) {
+	Super::setReferencePosition(pos);
+	_modifierRenderer.updateReferencePosition(_referencePos);
+}
+
 void ModifierFacade::render(const video::Camera& camera) {
 	if (_locked) {
 		return;

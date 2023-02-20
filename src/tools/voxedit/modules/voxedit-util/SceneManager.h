@@ -6,7 +6,6 @@
 
 #include "core/Enum.h"
 #include "core/ScopedPtr.h"
-#include "core/TimedValue.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
 #include "voxel/Voxel.h"
@@ -17,20 +16,15 @@
 #include "voxel/RawVolume.h"
 #include "voxelgenerator/TreeContext.h"
 #include "voxelgenerator/LSystem.h"
-#include "voxelrender/SceneGraphRenderer.h"
 #include "voxelformat/Format.h"
-#include "video/ShapeBuilder.h"
-#include "render/ShapeRenderer.h"
-#include "render/GridRenderer.h"
 #include "core/Var.h"
 #include "core/Singleton.h"
 #include "command/ActionButton.h"
-#include "math/Axis.h"
-#include "math/OBB.h"
 #include "MementoHandler.h"
 #include "voxelgenerator/LUAGenerator.h"
 #include "modifier/ModifierType.h"
 #include "modifier/ModifierFacade.h"
+#include "SceneRenderer.h"
 #include <functional>
 
 namespace voxedit {
@@ -68,40 +62,19 @@ CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
 class SceneManager : public core::IComponent {
 private:
 	voxelformat::SceneGraph _sceneGraph;
-	voxelrender::SceneGraphRenderer _volumeRenderer;
-	render::GridRenderer _gridRenderer;
-	video::ShapeBuilder _shapeBuilder;
-	render::ShapeRenderer _shapeRenderer;
 	MementoHandler _mementoHandler;
 	ModifierFacade _modifier;
 	voxelfont::VoxelFont _voxelFont;
 	core::ScopedPtr<voxel::RawVolume> _copy;
 	std::future<voxelformat::SceneGraph> _loadingFuture;
+	SceneRenderer _sceneRenderer;
 
 	/**
 	 * The @c video::Camera instance of the currently active @c Viewport
 	 */
 	video::Camera* _camera = nullptr;
 
-	int32_t _highlightMeshIndex = -1;
-	int32_t _aabbMeshIndex = -1;
-	int32_t _referencePointMesh = -1;
-	glm::mat4 _referencePointModelMatrix { 1.0f };
-
 	core::VarPtr _autoSaveSecondsDelay;
-	core::VarPtr _ambientColor;
-	core::VarPtr _diffuseColor;
-	core::VarPtr _grayInactive;
-	core::VarPtr _hideInactive;
-	core::VarPtr _showAabbVar;
-
-	struct DirtyRegion {
-		voxel::Region region;
-		int nodeId;
-	};
-	using RegionQueue = core::DynamicArray<DirtyRegion>;
-	RegionQueue _extractRegions;
-	void queueRegionExtraction(int nodeId, const voxel::Region& region);
 
 	math::Axis _lockedAxis = math::Axis::None;
 
@@ -110,28 +83,22 @@ private:
 	// auto-saving once we saved a dirty state
 	bool _needAutoSave = false;
 
-	bool _renderShadow = true;
-	bool _renderLockAxis = true;
-
 	bool _traceViaMouse = true;
 	int _sceneModeNodeIdTrace = -1;
 
 	io::FileDescription _lastFilename;
 	double _lastAutoSave = 0u;
 
-	int32_t _planeMeshIndex[3] = {-1, -1, -1};
-
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
 
 	// model animation speed
-	int _currentAnimationModelIdx = 0;
 	double _animationSpeed = 0.0;
 	double _nextFrameSwitch = 0.0;
-	voxelformat::FrameIndex _currentFrameIdx = 0;
+	int _currentAnimationModelIdx = 0;
 
-	using TimedRegion = core::TimedValue<voxel::Region>;
-	TimedRegion _highlightRegion;
+	// timeline animation
+	voxelformat::FrameIndex _currentFrameIdx = 0;
 
 	int _initialized = 0;
 	int _size = 128;
@@ -165,11 +132,9 @@ private:
 	void setReferencePosition(const glm::ivec3& pos);
 	void updateGridRenderer(const voxel::Region& region);
 	void zoom(video::Camera& camera, float level) const;
-	bool extractVolume();
-	void updateLockedPlane(math::Axis axis);
-	void updateAABBMesh(bool sceneMode);
-	math::AABB<float> toAABB(const voxel::Region& region) const;
-	math::OBB<float> toOBB(bool sceneMode, const voxel::Region& region, const voxelformat::SceneGraphTransform &transform) const;
+	bool mouseRayTrace(bool force);
+	void updateCursor();
+	void traceScene(bool force);
 protected:
 	bool setSceneGraphNodeVolume(voxelformat::SceneGraphNode &node, voxel::RawVolume* volume);
 	bool loadSceneGraph(voxelformat::SceneGraph&& sceneGraph);
@@ -380,15 +345,13 @@ public:
 	 *
 	 * @sa resetLastTrace()
 	 */
-	bool trace(bool sceneMode, bool force = false, voxelutil::PickResult *result = nullptr);
+	bool trace(bool sceneMode, bool force = false);
 	void resetLastTrace();
 
 	void updateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType);
 
 	math::Axis lockedAxis() const;
 	void setLockedAxis(math::Axis axis, bool unlock);
-	void setRenderLockAxis(bool renderLockAxis);
-	void setRenderShadow(bool shadow);
 	bool setGridResolution(int resolution);
 
 	voxelformat::SceneGraphNode *sceneGraphNode(int nodeId);
@@ -401,12 +364,8 @@ public:
 	ModifierFacade& modifier();
 	const MementoHandler& mementoHandler() const;
 	MementoHandler& mementoHandler();
-	const voxelrender::SceneGraphRenderer& renderer() const;
-	voxelrender::SceneGraphRenderer& renderer();
 	render::GridRenderer& gridRenderer();
 	voxelgenerator::LUAGenerator& luaGenerator();
-	video::ShapeBuilder& shapeBuilder();
-	render::ShapeRenderer& shapeRenderer();
 	const voxelformat::SceneGraph &sceneGraph();
 
 private:
@@ -448,24 +407,8 @@ inline const core::String& SceneManager::filename() const {
 	return _lastFilename.name;
 }
 
-inline video::ShapeBuilder &SceneManager::shapeBuilder() {
-	return _shapeBuilder;
-}
-
-inline render::ShapeRenderer &SceneManager::shapeRenderer() {
-	return _shapeRenderer;
-}
-
 inline voxelgenerator::LUAGenerator& SceneManager::luaGenerator() {
 	return _luaGenerator;
-}
-
-inline void SceneManager::setRenderLockAxis(bool renderLockAxis) {
-	_renderLockAxis = renderLockAxis;
-}
-
-inline void SceneManager::setRenderShadow(bool shadow) {
-	_renderShadow = shadow;
 }
 
 inline void SceneManager::setActiveCamera(video::Camera* camera) {
@@ -477,14 +420,6 @@ inline void SceneManager::setActiveCamera(video::Camera* camera) {
 
 inline video::Camera* SceneManager::activeCamera() {
 	return _camera;
-}
-
-inline voxelrender::SceneGraphRenderer& SceneManager::renderer() {
-	return _volumeRenderer;
-}
-
-inline const voxelrender::SceneGraphRenderer& SceneManager::renderer() const {
-	return _volumeRenderer;
 }
 
 inline math::Axis SceneManager::lockedAxis() const {
@@ -500,7 +435,7 @@ inline MementoHandler& SceneManager::mementoHandler() {
 }
 
 inline render::GridRenderer& SceneManager::gridRenderer() {
-	return _gridRenderer;
+	return _sceneRenderer.gridRenderer();
 }
 
 inline bool SceneManager::dirty() const {

@@ -42,11 +42,6 @@ private:
 		}
 	};
 
-	core::VarPtr _showGridVar;
-	core::VarPtr _showLockedAxisVar;
-	core::VarPtr _showAabbVar;
-	core::VarPtr _renderShadowVar;
-	core::VarPtr _gridSizeVar;
 	core::VarPtr _lastOpenedFile;
 	core::VarPtr _lastOpenedFiles;
 	core::VarPtr _simplifiedView;
@@ -108,7 +103,6 @@ private:
 
 	void afterLoad(const core::String &file);
 
-	void updateSettings();
 	void registerPopups();
 
 public:
