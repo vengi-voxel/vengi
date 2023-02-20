@@ -277,7 +277,7 @@ void SceneManager::updateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType 
 bool SceneManager::saveModels(const core::String& dir) {
 	bool state = false;
 	for (const voxelformat::SceneGraphNode & node : _sceneGraph) {
-		const core::String filename = core::string::path(dir, node.name() + ".qb");
+		const core::String filename = core::string::path(dir, node.name() + ".vengi");
 		state |= saveNode(node.id(), filename);
 	}
 	return state;
