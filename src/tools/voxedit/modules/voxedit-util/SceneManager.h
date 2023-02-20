@@ -127,6 +127,12 @@ private:
 	 * are left, scene is no longer dirty and so on.
 	 */
 	void resetSceneState();
+	/**
+	 * @param[in] nodeId The node to set the volume for
+	 * @param[in] volume The new volume - the ownership is taken over by the node if the return value of this function is @c true. If
+	 * the return function is @c false, the caller has to take care about the memory of the volume.
+	 * @param[in] deleteMesh TODO: handle deleteMesh somehow
+	 */
 	bool setNewVolume(int nodeId, voxel::RawVolume* volume, bool deleteMesh = true);
 	void autosave();
 	void setReferencePosition(const glm::ivec3& pos);

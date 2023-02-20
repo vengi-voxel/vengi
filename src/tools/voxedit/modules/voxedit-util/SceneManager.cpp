@@ -978,7 +978,6 @@ const voxelformat::SceneGraph &SceneManager::sceneGraph() {
 	return _sceneGraph;
 }
 
-// TODO: handle deleteMesh somehow
 bool SceneManager::setNewVolume(int nodeId, voxel::RawVolume* volume, bool deleteMesh) {
 	core_trace_scoped(SetNewVolume);
 	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
