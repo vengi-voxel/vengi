@@ -1201,7 +1201,8 @@ void SceneManager::construct() {
 			pal.sortSaturation();
 		}
 		_mementoHandler.markPaletteChange(node);
-	}).setHelp("Change intensity by scaling the rgb values of the palette");
+	}).setHelp("Change intensity by scaling the rgb values of the palette").
+		setArgumentCompleter(command::valueCompleter({"hue", "saturation", "brightness", "cielab"}));
 
 	command::Command::registerActionButton("zoom_in", _zoomIn);
 	command::Command::registerActionButton("zoom_out", _zoomOut);
