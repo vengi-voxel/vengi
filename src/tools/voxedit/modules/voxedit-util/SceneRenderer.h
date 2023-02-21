@@ -56,7 +56,7 @@ public:
 	void clear();
 
 	void updateLockedPlanes(math::Axis lockedAxis, const voxelformat::SceneGraph &sceneGraph, const glm::ivec3& cursorPosition);
-	void queueRegionExtraction(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0);
+	void updateRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0);
 	render::GridRenderer &gridRenderer();
 
 	void update();

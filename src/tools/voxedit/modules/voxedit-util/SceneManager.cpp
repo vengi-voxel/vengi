@@ -410,7 +410,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 		_mementoHandler.markModification(node, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
-		_sceneRenderer.queueRegionExtraction(nodeId, modifiedRegion, renderRegionMillis);
+		_sceneRenderer.updateRegion(nodeId, modifiedRegion, renderRegionMillis);
 	}
 	markDirty();
 	resetLastTrace();
@@ -926,7 +926,7 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 		Log::debug("Add node %i to scene graph", newNodeId);
 		if (type == voxelformat::SceneGraphNodeType::Model) {
 			// update the whole volume
-			_sceneRenderer.queueRegionExtraction(newNodeId, region);
+			_sceneRenderer.updateRegion(newNodeId, region);
 
 			_result = voxelutil::PickResult();
 			nodeActivate(newNodeId);
@@ -1113,15 +1113,11 @@ void SceneManager::exchangeColors(int nodeId, uint8_t palIdx1, uint8_t palIdx2) 
 }
 
 bool SceneManager::setGridResolution(int resolution) {
-	const bool ret = gridRenderer().setGridResolution(resolution);
-	if (!ret) {
+	if (_modifier.gridResolution() == resolution) {
 		return false;
 	}
-
-	const int res = gridRenderer().gridResolution();
-	_modifier.setGridResolution(res);
+	_modifier.setGridResolution(resolution);
 	setCursorPosition(cursorPosition(), true);
-
 	return true;
 }
 
@@ -1141,6 +1137,8 @@ void SceneManager::construct() {
 	_modifier.construct();
 	_mementoHandler.construct();
 	_sceneRenderer.construct();
+
+	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
 
 	command::Command::registerCommand("xs", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -1809,7 +1807,7 @@ bool SceneManager::init() {
 		return false;
 	}
 
-	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
+	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
 	_lastAutoSave = timeProvider->tickSeconds();
 
@@ -1876,6 +1874,7 @@ bool SceneManager::update(double nowSeconds) {
 	}
 	_modifier.update(nowSeconds);
 	_sceneRenderer.update();
+	setGridResolution(_gridSize->intVal());
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {
 			continue;

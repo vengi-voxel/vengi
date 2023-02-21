@@ -75,6 +75,7 @@ private:
 	video::Camera* _camera = nullptr;
 
 	core::VarPtr _autoSaveSecondsDelay;
+	core::VarPtr _gridSize;
 
 	math::Axis _lockedAxis = math::Axis::None;
 

@@ -215,9 +215,14 @@ public:
 	voxel::FaceNames cursorFace() const;
 
 	void setGridResolution(int resolution);
+	int gridResolution() const;
 
 	void reset();
 };
+
+inline int Modifier::gridResolution() const {
+	return _gridResolution;
+}
 
 inline const voxel::Voxel& Modifier::hitCursorVoxel() const {
 	return _hitCursorVoxel;

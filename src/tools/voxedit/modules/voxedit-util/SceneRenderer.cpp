@@ -65,7 +65,7 @@ void SceneRenderer::shutdown() {
 	_highlightMeshIndex = -1;
 }
 
-void SceneRenderer::queueRegionExtraction(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis) {
+void SceneRenderer::updateRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis) {
 	bool addNew = true;
 	for (const auto &r : _extractRegions) {
 		if (r.nodeId != nodeId) {
