@@ -98,7 +98,11 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 void FileDialog::selectFilter(video::OpenFileMode type, int index) {
 	core_assert(index >= -1 && index <= (int)_filterEntries.size());
 	_currentFilterEntry = index;
-	_lastFilter->setVal(_currentFilterEntry);
+	if (type == video::OpenFileMode::Open) {
+		_lastFilterOpen->setVal(_currentFilterEntry);
+	} else if (type == video::OpenFileMode::Save) {
+		_lastFilterSave->setVal(_currentFilterEntry);
+	}
 	if (_currentFilterEntry != -1) {
 		_currentFilterFormat = &_filterEntries[_currentFilterEntry];
 	} else {
@@ -132,7 +136,12 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 			_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED);
 		}
 
-		int lastFilter = _lastFilter->intVal();
+		int lastFilter = 0;
+		if (type == video::OpenFileMode::Open) {
+			lastFilter = _lastFilterOpen->intVal();
+		} else if (type == video::OpenFileMode::Save) {
+			lastFilter = _lastFilterSave->intVal();
+		}
 		if (lastFilter < 0 || lastFilter >= (int)_filterEntries.size()) {
 			lastFilter = 0;
 		}
@@ -446,7 +455,8 @@ void FileDialog::construct() {
 	_bookmarks = core::Var::get(cfg::UIBookmarks, "");
 	_showHidden = core::Var::get(cfg::UIFileDialogShowHidden, "false", "Show hidden file system entities");
 	_lastDirVar = core::Var::get(cfg::UILastDirectory, io::filesystem()->homePath().c_str());
-	_lastFilter = core::Var::get(cfg::UILastFilter, "0", "The last selected file type filter in the file dialog");
+	_lastFilterSave = core::Var::get(cfg::UILastFilterSave, "0", "The last selected file type filter in the file dialog");
+	_lastFilterOpen = core::Var::get(cfg::UILastFilterOpen, "0", "The last selected file type filter in the file dialog");
 }
 
 void FileDialog::resetState() {

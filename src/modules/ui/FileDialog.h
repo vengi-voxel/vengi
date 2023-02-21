@@ -41,7 +41,8 @@ private:
 	core::VarPtr _showHidden;
 	core::VarPtr _bookmarks;
 	core::VarPtr _lastDirVar;
-	core::VarPtr _lastFilter;
+	core::VarPtr _lastFilterSave;
+	core::VarPtr _lastFilterOpen;
 
 	io::FilesystemEntry _newFolderName;
 	TimedError _newFolderError;
