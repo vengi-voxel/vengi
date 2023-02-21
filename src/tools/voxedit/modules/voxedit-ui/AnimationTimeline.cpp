@@ -51,21 +51,18 @@ void AnimationTimeline::sequencer(voxelformat::FrameIndex &currentFrame) {
 	flags |= ImGuiNeoSequencerFlags_Selection_EnableDeletion;
 
 	if (ImGui::BeginNeoSequencer("##neo-sequencer", &currentFrame, &_startFrame, &_endFrame, {0, 0}, flags)) {
-		voxelformat::KeyFrameIndex deleteKeyFrameIdx = InvalidKeyFrame;
-		int deleteFrameNode = -1;
-
+		_selectionBuffer.clear();
+		if (_clearSelection) {
+			ImGui::NeoClearSelection();
+			_clearSelection = false;
+		}
+		core::Buffer<voxelformat::FrameIndex> selectedFrames;
 		const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 		for (voxelformat::SceneGraphNode &modelNode : sceneGraph) {
 			const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
 			if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
-				voxelformat::KeyFrameIndex keyFrameIdx = 0;
 				for (voxelformat::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
 					ImGui::NeoKeyframe(&kf.frameIdx);
-					if (ImGui::IsNeoKeyframeRightClicked() && ImGui::NeoCanDeleteSelection()) {
-						deleteKeyFrameIdx = keyFrameIdx;
-						deleteFrameNode = modelNode.id();
-					}
-
 					if (kf.frameIdx < 0) {
 						kf.frameIdx = 0;
 					}
@@ -76,7 +73,6 @@ void AnimationTimeline::sequencer(voxelformat::FrameIndex &currentFrame) {
 						ImGui::Text("Keyframe %i, Interpolation: %s", kf.frameIdx, interpolation);
 						ImGui::EndTooltip();
 					}
-					++keyFrameIdx;
 				}
 
 				sceneMgr().setCurrentFrame(currentFrame);
@@ -85,30 +81,60 @@ void AnimationTimeline::sequencer(voxelformat::FrameIndex &currentFrame) {
 				} else if (sceneMgr().sceneGraph().activeNode() == modelNode.id()) {
 					ImGui::SetSelectedTimeline(label.c_str());
 				}
+				uint32_t selectionCount = ImGui::GetNeoKeyframeSelectionSize();
+				if (selectionCount > 0) {
+					selectedFrames.clear();
+					if (selectionCount > selectedFrames.capacity()) {
+						selectedFrames.resize(selectionCount);
+					}
+					ImGui::GetNeoKeyframeSelection(selectedFrames.data());
+					for (uint32_t i = 0; i < selectionCount; ++i) {
+						_selectionBuffer.push_back(Selection{selectedFrames[i], modelNode.id()});
+					}
+				}
 				ImGui::EndNeoTimeLine();
 			}
 		}
+		bool selectionRightClicked = ImGui::IsNeoKeyframeSelectionRightClicked();
 
 		ImGui::EndNeoSequencer();
 
-		if (deleteFrameNode != -1) {
+		if (selectionRightClicked || ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
 			ImGui::OpenPopup("keyframe-context-menu");
-			_deleteKeyFrameIdx = deleteKeyFrameIdx;
-			_deleteFrameNode = deleteFrameNode;
 		}
 		ImGuiWindowFlags popupFlags = 0;
 		popupFlags |= ImGuiWindowFlags_AlwaysAutoResize;
 		popupFlags |= ImGuiWindowFlags_NoTitleBar;
 		popupFlags |= ImGuiWindowFlags_NoSavedSettings;
 		if (ImGui::BeginPopup("keyframe-context-menu", popupFlags)) {
-			// TODO: implement copy & paste
-			// TODO: implement duplicate
-			if (ImGui::MenuItem(ICON_FA_TRASH " Delete keyframe")) {
-				// TODO: delete all selected keyframes
-				if (!sceneMgr().nodeRemoveKeyFrameByIndex(_deleteFrameNode, _deleteKeyFrameIdx)) {
-					Log::warn("Failed to delete key frame index %i for node %i", _deleteKeyFrameIdx, _deleteFrameNode);
-				}
+			if (ImGui::MenuItem(ICON_FA_SQUARE_PLUS " Add")) {
+				sceneMgr().nodeAddKeyFrame(-1, currentFrame);
+				_clearSelection = true;
 				ImGui::CloseCurrentPopup();
+			}
+			if (!_selectionBuffer.empty()) {
+#if 0
+				if (ImGui::MenuItem(ICON_FA_COPY " Copy")) {
+					// TODO: implement copy
+				}
+				if (ImGui::MenuItem(ICON_FA_PASTE " Paste")) {
+					// TODO: implement paste
+				}
+#endif
+				if (ImGui::MenuItem(ICON_FA_COPY " Duplicate keyframe")) {
+					for (const Selection &sel : _selectionBuffer) {
+						sceneMgr().nodeAddKeyFrame(sel.nodeId, sel.frameIdx + 1);
+					}
+					_clearSelection = true;
+					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::MenuItem(ICON_FA_TRASH " Delete keyframe")) {
+					for (const Selection &sel : _selectionBuffer) {
+						sceneMgr().nodeRemoveKeyFrame(sel.nodeId, sel.frameIdx);
+					}
+					_clearSelection = true;
+					ImGui::CloseCurrentPopup();
+				}
 			}
 			ImGui::EndPopup();
 		}

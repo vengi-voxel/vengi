@@ -2221,7 +2221,7 @@ bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix,
 bool SceneManager::nodeAddKeyframe(voxelformat::SceneGraphNode &node, voxelformat::FrameIndex frameIdx) {
 	// TODO: memento state
 	if (node.addKeyFrame(frameIdx) == InvalidKeyFrame) {
-		Log::error("Failed to add keyframe for frame %i", (int)frameIdx);
+		Log::warn("Failed to add keyframe for frame %i", (int)frameIdx);
 		return false;
 	}
 	const voxelformat::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
