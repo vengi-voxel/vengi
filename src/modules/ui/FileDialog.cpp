@@ -643,7 +643,8 @@ bool FileDialog::buttons(core::String &buffer, video::OpenFileMode type, bool do
 			} else {
 				if (_currentFilterEntry != -1 && type == video::OpenFileMode::Save) {
 					const io::FormatDescription &desc = _filterEntries[_currentFilterEntry];
-					if (!desc.exts[0].empty()) {
+					const core::String &extension = core::string::extractExtension(_selectedEntry.name);
+					if (!desc.matchesExtension(extension)) {
 						_selectedEntry.name = core::string::stripExtension(_selectedEntry.name);
 						_selectedEntry.name.append(".");
 						_selectedEntry.name.append(desc.exts[0]);
