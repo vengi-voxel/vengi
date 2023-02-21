@@ -78,14 +78,12 @@ static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sc
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 		const int validModels = (int)sceneGraph.size();
 		if (node.type() == voxelformat::SceneGraphNodeType::Model) {
-			// TODO; this should not be needed - the commands should all get the node id to operate on without modifying the current active node
-			sceneMgr().nodeActivate(node.id());
 			commandNodeMenu(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "layerdelete", node, validModels > 1, &listener);
-			ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", validModels > 1, &listener);
-			ImGui::CommandMenuItem(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "layerduplicate", true, &listener);
+			commandNodeMenu(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", node, validModels > 1, &listener);
+			commandNodeMenu(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "layerduplicate", node, true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_EYE " Show all" SCENEGRAPHPOPUP, "layershowall", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide all" SCENEGRAPHPOPUP, "layerhideall", true, &listener);
-			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge" SCENEGRAPHPOPUP, "layermerge", validModels > 1, &listener);
+			commandNodeMenu(ICON_FA_OBJECT_GROUP " Merge" SCENEGRAPHPOPUP, "layermerge", node, validModels > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge all" SCENEGRAPHPOPUP, "layermergeall", validModels > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge visible" SCENEGRAPHPOPUP, "layermergevisible", validModels > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge locked" SCENEGRAPHPOPUP, "layermergelocked", validModels > 1, &listener);

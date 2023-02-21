@@ -1512,7 +1512,10 @@ void SceneManager::construct() {
 	command::Command::registerCommand("layermerge", [&] (const command::CmdArgs& args) {
 		int nodeId1;
 		int nodeId2;
-		if (args.size() == 2) {
+		if (args.size() == 1) {
+			nodeId2 = core::string::toInt(args[0]);
+			nodeId1 = _sceneGraph.prevModelNode(nodeId2);
+		} else if (args.size() == 2) {
 			nodeId1 = core::string::toInt(args[0]);
 			nodeId2 = core::string::toInt(args[1]);
 		} else {
@@ -1710,8 +1713,9 @@ void SceneManager::construct() {
 	}).setHelp("Unlock all nodes");
 
 	command::Command::registerCommand("layerhideothers", [&] (const command::CmdArgs& args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
-			if (node.id() == activeNode()) {
+			if (node.id() == nodeId) {
 				node.setVisible(true);
 				continue;
 			}
