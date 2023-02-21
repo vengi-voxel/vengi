@@ -599,7 +599,6 @@ static void processSelection(ImGuiNeoSequencerInternalData &context) {
 		case SelectionState::Idle: {
 			if (!IsMouseClicked(ImGuiMouseButton_Left))
 				return;
-			SetKeyOwner(MouseButtonToKey(ImGuiMouseButton_Left), context.Id);
 
 			context.SelectionMouseStart = GetMousePos();
 			context.StateOfSelection = SelectionState::Selecting;
@@ -735,13 +734,11 @@ bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *
 	IM_ASSERT(!inSequencer && "Called when while in other NeoSequencer, that won't work, call End!");
 	IM_ASSERT(*startFrame < *endFrame && "Start frame must be smaller than end frame");
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
 	static char childNameStorage[64];
 	snprintf(childNameStorage, sizeof(childNameStorage), "##%s_child_wrapper", idin);
 	const bool openChild = BeginChild(childNameStorage);
 
 	if (!openChild) {
-		PopStyleVar();
 		EndChild();
 		return openChild;
 	}
@@ -872,7 +869,6 @@ void EndNeoSequencer() {
 	PopID();
 	resetID();
 
-	PopStyleVar();
 	EndChild();
 }
 
@@ -1041,17 +1037,10 @@ void EndNeoTimeLine() {
 	context.ValuesCursor.x += imStyle.FramePadding.x + (float)currentTimelineDepth * style.DepthItemSpacing;
 	context.ValuesCursor.y += currentTimelineHeight;
 
-	if (context.LastTimelineOpenned) {
-		currentTimelineDepth++;
-	} else {
-		finishPreviousTimeline(context);
-	}
-
 	finishPreviousTimeline(context);
-	currentTimelineDepth--;
 
-	if (context.TimelineStack.end() && context.GroupStack.end() &&
-		*context.TimelineStack.end() == *context.GroupStack.end()) {
+	if (!context.TimelineStack.empty() && !context.GroupStack.empty() &&
+		context.TimelineStack.back() == context.GroupStack.back()) {
 		currentTimelineDepth--;
 		context.GroupStack.pop_back();
 	}
