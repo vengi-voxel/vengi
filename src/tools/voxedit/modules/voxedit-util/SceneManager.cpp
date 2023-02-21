@@ -70,6 +70,28 @@
 
 namespace voxedit {
 
+inline auto nodeCompleter(const voxelformat::SceneGraph &sceneGraph) {
+	return [&] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
+		int i = 0;
+		for (const auto &modelNode : sceneGraph) {
+			matches.push_back(core::string::toString(modelNode.id()));
+		}
+		return i;
+	};
+}
+
+inline auto paletteCompleter() {
+	return [&] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
+		int i = 0;
+		for (i = 0; i < lengthof(voxel::Palette::builtIn); ++i) {
+			if (core::string::startsWith(voxel::Palette::builtIn[i], str.c_str())) {
+				matches.push_back(voxel::Palette::builtIn[i]);
+			}
+		}
+		return i;
+	};
+}
+
 SceneManager::~SceneManager() {
 	core_assert_msg(_initialized == 0, "SceneManager was not properly shut down");
 }
@@ -1230,7 +1252,7 @@ void SceneManager::construct() {
 			const voxel::Region &region = v->region();
 			_modifier.select(region.getLowerCorner(), region.getUpperCorner());
 		}
-	}).setHelp("Unselect all");
+	}).setHelp("Unselect all").setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
 
 	command::Command::registerCommand("text", [this] (const command::CmdArgs& args) {
 		if (args.size() != 2) {
@@ -1266,7 +1288,7 @@ void SceneManager::construct() {
 		if (!saveNode(nodeId, file)) {
 			Log::error("Failed to save node %i to file: %s", nodeId, file.c_str());
 		}
-	}).setHelp("Save a single node to the given path with their node names");
+	}).setHelp("Save a single node to the given path with their node names").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("newscene", [&] (const command::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
@@ -1297,7 +1319,7 @@ void SceneManager::construct() {
 			nodeId = core::string::toInt(args[0]);
 		}
 		scale(nodeId);
-	}).setHelp("Scale the current active node or the given node down");
+	}).setHelp("Scale the current active node or the given node down").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("colortolayer", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1347,7 +1369,7 @@ void SceneManager::construct() {
 			return;
 		}
 		loadPalette(args[0]);
-	}).setHelp("Load an existing palette by name. E.g. 'built-in:nippon'");
+	}).setHelp("Load an existing palette by name. E.g. 'built-in:nippon'").setArgumentCompleter(paletteCompleter());
 
 	command::Command::registerCommand("cursor", [this] (const command::CmdArgs& args) {
 		if (args.size() < 3) {
@@ -1498,7 +1520,7 @@ void SceneManager::construct() {
 			nodeId1 = _sceneGraph.prevModelNode(nodeId2);
 		}
 		mergeNodes(nodeId1, nodeId2);
-	}).setHelp("Merge two given nodes or active model node with the next one");
+	}).setHelp("Merge two given nodes or active model node with the next one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("layermergeall", [&] (const command::CmdArgs& args) {
 		mergeNodes(NodeMergeFlags::All);
@@ -1578,7 +1600,7 @@ void SceneManager::construct() {
 		}
 		const math::Axis axis = math::toAxis(args[0]);
 		flip(axis);
-	}).setHelp("Flip the selected nodes around the given axis");
+	}).setHelp("Flip the selected nodes around the given axis").setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
 
 	command::Command::registerCommand("lock", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
@@ -1588,7 +1610,7 @@ void SceneManager::construct() {
 		const math::Axis axis = math::toAxis(args[0]);
 		const bool unlock = (_lockedAxis & axis) == axis;
 		setLockedAxis(axis, unlock);
-	}).setHelp("Toggle locked mode for the given axis at the current cursor position");
+	}).setHelp("Toggle locked mode for the given axis at the current cursor position").setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
 
 	command::Command::registerCommand("lockx", [&] (const command::CmdArgs& args) {
 		const math::Axis axis = math::Axis::X;
@@ -1630,28 +1652,28 @@ void SceneManager::construct() {
 				nodeRemove(*node, false);
 			}
 		}
-	}).setHelp("Delete a particular node by id - or the current active one");
+	}).setHelp("Delete a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("layerlock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(true);
 		}
-	}).setHelp("Lock a particular node by id - or the current active one");
+	}).setHelp("Lock a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("togglelayerlock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(!node->locked());
 		}
-	}).setHelp("Toggle the lock state of a particular node by id - or the current active one");
+	}).setHelp("Toggle the lock state of a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("layerunlock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(false);
 		}
-	}).setHelp("Unlock a particular node by id - or the current active one");
+	}).setHelp("Unlock a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("layeractive", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -1660,14 +1682,14 @@ void SceneManager::construct() {
 		}
 		const int nodeId = core::string::toInt(args[0]);
 		nodeActivate(nodeId);
-	}).setHelp("Set or print the current active node");
+	}).setHelp("Set or print the current active node").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("togglelayerstate", [&](const command::CmdArgs &args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			node->setVisible(!node->visible());
 		}
-	}).setHelp("Toggle the visible state of a node");
+	}).setHelp("Toggle the visible state of a node").setArgumentCompleter(nodeCompleter(_sceneGraph));;
 
 	command::Command::registerCommand("layerhideall", [&](const command::CmdArgs &args) {
 		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
@@ -1695,7 +1717,7 @@ void SceneManager::construct() {
 			}
 			node.setVisible(false);
 		}
-	}).setHelp("Hide all model nodes except the active one");
+	}).setHelp("Hide all model nodes except the active one").setArgumentCompleter(nodeCompleter(_sceneGraph));;
 
 	command::Command::registerCommand("layerrename", [&] (const command::CmdArgs& args) {
 		if (args.size() == 1) {
@@ -1711,7 +1733,7 @@ void SceneManager::construct() {
 		} else {
 			Log::info("Usage: layerrename [<nodeid>] newname");
 		}
-	}).setHelp("Rename the current node or the given node id");
+	}).setHelp("Rename the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));;
 
 	command::Command::registerCommand("layershowall", [&] (const command::CmdArgs& args) {
 		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
@@ -1724,7 +1746,7 @@ void SceneManager::construct() {
 		if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			nodeDuplicate(*node);
 		}
-	}).setHelp("Duplicates the current node or the given node id");
+	}).setHelp("Duplicates the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));;
 }
 
 void SceneManager::renderText(const char *str, int size, int thickness, int spacing, const char *font) {
