@@ -65,7 +65,11 @@ void SceneRenderer::shutdown() {
 	_highlightMeshIndex = -1;
 }
 
-void SceneRenderer::updateRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis) {
+void SceneRenderer::updateGridRegion(const voxel::Region &region) {
+	_gridRenderer.update(toAABB(region));
+}
+
+void SceneRenderer::updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis) {
 	bool addNew = true;
 	for (const auto &r : _extractRegions) {
 		if (r.nodeId != nodeId) {

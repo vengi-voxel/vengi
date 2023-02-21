@@ -371,7 +371,6 @@ public:
 	ModifierFacade& modifier();
 	const MementoHandler& mementoHandler() const;
 	MementoHandler& mementoHandler();
-	render::GridRenderer& gridRenderer();
 	voxelgenerator::LUAGenerator& luaGenerator();
 	const voxelformat::SceneGraph &sceneGraph();
 
@@ -439,10 +438,6 @@ inline const MementoHandler& SceneManager::mementoHandler() const {
 
 inline MementoHandler& SceneManager::mementoHandler() {
 	return _mementoHandler;
-}
-
-inline render::GridRenderer& SceneManager::gridRenderer() {
-	return _sceneRenderer.gridRenderer();
 }
 
 inline bool SceneManager::dirty() const {

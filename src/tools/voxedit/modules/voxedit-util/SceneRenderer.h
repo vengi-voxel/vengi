@@ -52,22 +52,18 @@ public:
 
 	void construct();
 	bool init();
-	void shutdown();
+	void update();
 	void clear();
+	void shutdown();
 
 	void updateLockedPlanes(math::Axis lockedAxis, const voxelformat::SceneGraph &sceneGraph, const glm::ivec3& cursorPosition);
-	void updateRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0);
-	render::GridRenderer &gridRenderer();
+	void updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0);
+	void updateGridRegion(const voxel::Region &region);
 
-	void update();
 	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera,
 				  const voxelformat::SceneGraph &sceneGraph);
 	void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera,
 					 const voxelformat::SceneGraph &sceneGraph, voxelformat::FrameIndex frame);
 };
-
-inline render::GridRenderer &SceneRenderer::gridRenderer() {
-	return _gridRenderer;
-}
 
 } // namespace voxedit

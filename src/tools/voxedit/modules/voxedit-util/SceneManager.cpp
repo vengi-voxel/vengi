@@ -410,7 +410,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 		_mementoHandler.markModification(node, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
-		_sceneRenderer.updateRegion(nodeId, modifiedRegion, renderRegionMillis);
+		_sceneRenderer.updateNodeRegion(nodeId, modifiedRegion, renderRegionMillis);
 	}
 	markDirty();
 	resetLastTrace();
@@ -926,7 +926,7 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 		Log::debug("Add node %i to scene graph", newNodeId);
 		if (type == voxelformat::SceneGraphNodeType::Model) {
 			// update the whole volume
-			_sceneRenderer.updateRegion(newNodeId, region);
+			_sceneRenderer.updateNodeRegion(newNodeId, region);
 
 			_result = voxelutil::PickResult();
 			nodeActivate(newNodeId);
@@ -957,7 +957,7 @@ bool SceneManager::loadSceneGraph(voxelformat::SceneGraph&& sceneGraph) {
 }
 
 void SceneManager::updateGridRenderer(const voxel::Region& region) {
-	gridRenderer().update(toAABB(region));
+	_sceneRenderer.updateGridRegion(region);
 }
 
 voxelformat::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {
@@ -1951,7 +1951,7 @@ void SceneManager::setReferencePosition(const glm::ivec3& pos) {
 
 void SceneManager::moveCursor(int x, int y, int z) {
 	glm::ivec3 p = cursorPosition();
-	const int res = gridRenderer().gridResolution();
+	const int res = _modifier.gridResolution();
 	p.x += x * res;
 	p.y += y * res;
 	p.z += z * res;
@@ -1969,7 +1969,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 		return;
 	}
 
-	const int res = gridRenderer().gridResolution();
+	const int res = _modifier.gridResolution();
 	const voxel::Region& region = v->region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3 delta = pos - mins;
