@@ -656,7 +656,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     Sint16 axis;
 
     /* Some controllers have larger packets over NDIS, but the real size is in data[3] */
-    size = SDL_min(data[3], size);
+    size = SDL_min(4 + data[3], size);
 
     /* Enable paddles on the Xbox Elite controller when connected over USB */
     if (ctx->has_paddles && !ctx->has_unmapped_state && size == 50) {
