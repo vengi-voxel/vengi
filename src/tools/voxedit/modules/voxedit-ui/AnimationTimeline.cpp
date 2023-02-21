@@ -66,6 +66,10 @@ void AnimationTimeline::sequencer(voxelformat::FrameIndex &currentFrame) {
 						deleteFrameNode = modelNode.id();
 					}
 
+					if (kf.frameIdx < 0) {
+						kf.frameIdx = 0;
+					}
+
 					if (ImGui::IsNeoKeyframeHovered()) {
 						ImGui::BeginTooltip();
 						const char *interpolation = voxelformat::InterpolationTypeStr[(int)kf.interpolation];
