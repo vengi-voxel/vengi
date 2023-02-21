@@ -67,6 +67,7 @@ private:
 	voxelfont::VoxelFont _voxelFont;
 	core::ScopedPtr<voxel::RawVolume> _copy;
 	std::future<voxelformat::SceneGraph> _loadingFuture;
+	// TODO: move this out of the mgr class - this should be unit testable in headless mode
 	SceneRenderer _sceneRenderer;
 
 	/**
