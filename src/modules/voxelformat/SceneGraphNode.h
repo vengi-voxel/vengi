@@ -270,6 +270,10 @@ public:
 	 */
 	SceneGraphTransform transformForFrame(FrameIndex frameIdx) const;
 
+	/**
+	 * @note Only use this accessor if you know that the given key frame index exists
+	 */
+	const SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx) const;
 	SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx);
 
 	/**

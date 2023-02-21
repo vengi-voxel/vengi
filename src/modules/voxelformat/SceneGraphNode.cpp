@@ -493,6 +493,11 @@ SceneGraphKeyFrame& SceneGraphNode::keyFrame(KeyFrameIndex keyFrameIdx) {
 	return _keyFrames[keyFrameIdx];
 }
 
+const SceneGraphKeyFrame& SceneGraphNode::keyFrame(KeyFrameIndex keyFrameIdx) const {
+	core_assert((int)_keyFrames.size() > keyFrameIdx);
+	return _keyFrames[keyFrameIdx];
+}
+
 SceneGraphTransform& SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) {
 	return _keyFrames[keyFrameIdx].transform();
 }
