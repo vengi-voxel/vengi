@@ -43,4 +43,15 @@ int complete(const io::FilesystemPtr& filesystem, core::String dir, const core::
 	return i;
 }
 
+int complete(const core::String& match, core::DynamicArray<core::String>& matches, const char* const* values, size_t valueCount) {
+	int i = 0;
+	for (size_t n = 0; n < valueCount; ++n) {
+		if (core::string::startsWith(values[n], match.c_str())) {
+			matches.push_back(values[n]);
+			++i;
+		}
+	}
+	return i;
+}
+
 }

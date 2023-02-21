@@ -13,10 +13,18 @@
 namespace command {
 
 extern int complete(const io::FilesystemPtr& filesystem, core::String dir, const core::String& match, core::DynamicArray<core::String>& matches, const char* pattern);
+extern int complete(const core::String& match, core::DynamicArray<core::String>& matches, const char* const* values, size_t valueCount);
 
 inline auto fileCompleter(const io::FilesystemPtr& filesystem, const core::String& lastDirectory, const char* pattern = "*") {
 	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		return complete(filesystem, lastDirectory, str, matches, pattern);
+	};
+}
+
+template<size_t N>
+inline auto valueCompleter(const char *const (&values)[N]) {
+	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
+		return complete(str, matches, values, N);
 	};
 }
 

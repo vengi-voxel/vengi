@@ -20,6 +20,14 @@ struct Array {
 		return SIZE;
 	}
 
+	const TYPE* data() const {
+		return _items;
+	}
+
+	TYPE* data() {
+		return _items;
+	}
+
 	constexpr bool empty() const {
 		return false;
 	}
