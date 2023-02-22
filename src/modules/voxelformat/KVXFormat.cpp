@@ -334,13 +334,13 @@ bool KVXFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	}
 
 	// palette is last
-	for (int i = 0; i < merged.second.colorCount; ++i) {
+	for (int i = 0; i < merged.second.colorCount(); ++i) {
 		const core::RGBA color = merged.second.color(i);
 		wrapBool(stream.writeUInt8(color.b))
 		wrapBool(stream.writeUInt8(color.g))
 		wrapBool(stream.writeUInt8(color.r))
 	}
-	for (int i = merged.second.colorCount; i < voxel::PaletteMaxColors; ++i) {
+	for (int i = merged.second.colorCount(); i < voxel::PaletteMaxColors; ++i) {
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
