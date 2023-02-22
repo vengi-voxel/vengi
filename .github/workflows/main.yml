@@ -22,7 +22,7 @@ jobs:
         - uses: actions/checkout@v3
 
         - name: Setup
-          run: brew install sdl2 python glslang ninja ccache
+          run: brew install sdl2 python glslang ninja ccache pkg-config
 
         - name: ccache
           uses: actions/cache@v3
