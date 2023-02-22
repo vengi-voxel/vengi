@@ -139,7 +139,8 @@ const io::FormatDescription* voxelSave() {
 		{"Polygon File Format", {"ply"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"FBX Ascii", {"fbx"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
-		{"GL Transmission Format", {"gltf", "glb"}, nullptr, VOX_FORMAT_FLAG_MESH},
+		{"GLTF Binary", {"glb"}, nullptr, VOX_FORMAT_FLAG_MESH},
+		{"GLTF Text", {"gltf"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"", {}, nullptr, 0u}
 	};
 	return desc;
