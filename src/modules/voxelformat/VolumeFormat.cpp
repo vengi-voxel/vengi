@@ -251,7 +251,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 			format = core::make_shared<FBXFormat>();
 		} else if (ext == "schematic") {
 			format = core::make_shared<SchematicFormat>();
-		} else if (ext == "gltf") {
+		} else if (ext == "gltf" || ext == "glb") {
 			format = core::make_shared<GLTFFormat>();
 		} else {
 			Log::warn("Unknown extension %s", ext.c_str());
@@ -426,10 +426,10 @@ bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, const io::
 			}
 		}
 	}
-	Log::warn("Failed to save file with unknown type: %s - saving as qb instead", ext.c_str());
+	Log::warn("Failed to save file with unknown type: %s - saving as vengi instead", ext.c_str());
 	VENGIFormat vengiFormat;
 	stream.seek(0);
-	return vengiFormat.save(sceneGraph, filename, stream, thumbnailCreator);
+	return vengiFormat.save(sceneGraph, core::string::stripExtension(filename) + ".vengi", stream, thumbnailCreator);
 }
 
 bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, SceneGraph &sceneGraph, ThumbnailCreator thumbnailCreator) {
