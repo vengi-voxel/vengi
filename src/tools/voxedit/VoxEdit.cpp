@@ -77,23 +77,6 @@ core::String VoxEdit::getSuggestedFilename(const char *extension) const {
 	return core::string::replaceExtension(filename, extension);
 }
 
-static bool ivec3ListValidator(const core::String& value) {
-	if (value.empty()) {
-		return true;
-	}
-	core::DynamicArray<core::String> regionSizes;
-	core::string::splitString(value, regionSizes, ",");
-	for (const core::String &s : regionSizes) {
-		const glm::ivec3 maxs = core::string::parseIVec3(s);
-		for (int i = 0; i < 3; ++i) {
-			if (maxs[i] <= 0 || maxs[i] > 256) {
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
 void VoxEdit::toggleScene() {
 	if (_mainWindow == nullptr) {
 		return;
@@ -109,16 +92,13 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditShowColorPicker, "false", "Always show the color picker below the palette", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditModificationDismissMillis, "1500", "Milliseconds that a region should get highlighted in a few situations");
 	core::Var::get(cfg::VoxEditModificationDismissMillis, "1500", "Milliseconds that a region should get highlighted in a few situations");
-	core::Var::get(cfg::VoxEditRegionSizes, "", "Show fixed region sizes in the positions panel", ivec3ListValidator);
+	core::Var::get(cfg::VoxEditRegionSizes, "", "Show fixed region sizes in the positions panel", core::Var::ivec3ListValidator<0, 256>);
 	core::Var::get(cfg::VoxEditShowgrid, "true", "Show the grid", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowlockedaxis, "true", "Show the currently locked axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowaabb, "true", "Show the axis aligned bounding box", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditRendershadow, "true", "Render with shadows - make sure to set the scene lighting up properly", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditAnimationSpeed, "100", "Millisecond delay between frames hide/unhide when using the scene graph panel play button to animate the models in the scene");
-	core::Var::get(cfg::VoxEditGridsize, "1", "The size of the voxel grid", [](const core::String &val) {
-		const int intVal = core::string::toInt(val);
-		return intVal >= 1 && intVal <= 64;
-	});
+	core::Var::get(cfg::VoxEditGridsize, "1", "The size of the voxel grid", core::Var::minMaxValidator<2, 64>);
 	core::Var::get(cfg::VoxEditLastFile, "");
 	core::Var::get(cfg::VoxEditLastFiles, "");
 	core::Var::get(cfg::VoxEditGrayInactive, "false", "Render the inactive nodes in gray scale mode", core::Var::boolValidator);
@@ -131,10 +111,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditGizmoBounds, "false", "Allow to change the volume bounds in scene mode", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditModelGizmo, "false", "Show the gizmo to also translate the region", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditLastPalette, voxel::Palette::builtIn[0]);
-	core::Var::get(cfg::VoxEditViewports, "2", "The amount of viewports (not in simple ui mode)", [](const core::String &val) {
-		const int intVal = core::string::toInt(val);
-		return intVal >= 2 && intVal <= cfg::MaxViewports;
-	});
+	core::Var::get(cfg::VoxEditViewports, "2", "The amount of viewports (not in simple ui mode)", core::Var::minMaxValidator<3, cfg::MaxViewports>);
 	core::Var::get(cfg::VoxEditSimplifiedView, "false", "Hide some panels to simplify the ui - restart on change", core::Var::boolValidator);
 
 	voxelformat::FormatConfig::init();

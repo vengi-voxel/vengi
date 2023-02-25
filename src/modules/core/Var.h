@@ -90,6 +90,8 @@ protected:
 	ValidatorFunc _validator = nullptr;
 
 	void addValueToHistory(const core::String& value);
+	static bool _ivec3ListValidator(const core::String& value, int nmin, int nmax);
+	static bool _minMaxValidator(const core::String& value, int nmin, int nmax);
 
 	// invisible - use the static get method
 	Var(const core::String& name, const core::String& value = "", uint32_t flags = 0u, const char *help = nullptr, ValidatorFunc validatorFunc = nullptr);
@@ -98,6 +100,22 @@ public:
 
 	static bool boolValidator(const core::String& value) {
 		return value == "1" || value == "true" || value == "false" || value == "0";
+	}
+
+	template<size_t NMIN, size_t NMAX>
+	static bool ivec3ListValidator(const core::String& value) {
+		if (value.empty()) {
+			return true;
+		}
+		return _ivec3ListValidator(value, NMIN, NMAX);
+	}
+
+	template<size_t NMIN, size_t NMAX>
+	static bool minMaxValidator(const core::String& value) {
+		if (value.empty()) {
+			return true;
+		}
+		return _minMaxValidator(value, NMIN, NMAX);
 	}
 
 	/**

@@ -51,6 +51,28 @@ VarPtr Var::getSafe(const core::String& name) {
 	return var;
 }
 
+bool Var::_ivec3ListValidator(const core::String& value, int nmin, int nmax) {
+	core::DynamicArray<core::String> regionSizes;
+	core::string::splitString(value, regionSizes, ",");
+	for (const core::String &s : regionSizes) {
+		const glm::ivec3 maxs = core::string::parseIVec3(s);
+		for (int i = 0; i < 3; ++i) {
+			if (maxs[i] <= nmin || maxs[i] > nmax) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+bool Var::_minMaxValidator(const core::String& value, int nmin, int nmax) {
+	const int v = value.toInt();
+	if (v <= nmin || v > nmax) {
+		return false;
+	}
+	return true;
+}
+
 core::String Var::str(const core::String& name) {
 	const VarPtr& var = get(name);
 	if (!var) {
