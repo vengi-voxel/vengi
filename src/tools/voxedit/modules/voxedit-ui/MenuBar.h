@@ -23,7 +23,8 @@ public:
 	/**
 	 * @return true if the dock layout should get reset
 	 */
-	bool update(ui::IMGUIApp* app, command::CommandExecutionListener &listener);
+	void colorReductionOptions();
+	bool update(ui::IMGUIApp *app, command::CommandExecutionListener &listener);
 	bool _popupSceneSettings = false;
 };
 
