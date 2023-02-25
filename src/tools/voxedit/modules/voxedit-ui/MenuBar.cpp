@@ -3,9 +3,11 @@
  */
 
 #include "MenuBar.h"
+#include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "core/GameConfig.h"
+#include "core/StringUtil.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsForkAwesome.h"
 #include "ui/IconsFontAwesome6.h"
@@ -203,11 +205,18 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::TextWrapped("This application is not yet ready for production use. We are always looking for help and feedback to improve things. If you are a developer (C++ and lua) or voxel artist, please consider contributing.");
 			ImGui::PopStyleColor(1);
 			ImGui::PopTextWrapPos();
+			ImGui::Separator();
 			ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/vengi");
 			ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy");
 			ImGui::URLItem(ICON_FK_MASTODON " Mastodon", "https://mastodon.social/@mgerhardy");
 			ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy");
-
+			ImGui::Separator();
+			ImGui::Text("Search paths:");
+			for (const core::String &path : io::filesystem()->paths()) {
+				const core::String &abspath = io::filesystem()->absolutePath(path);
+				core::String fileurl = "file://" + abspath;
+				ImGui::URLItem(abspath.c_str(), fileurl.c_str());
+			}
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
