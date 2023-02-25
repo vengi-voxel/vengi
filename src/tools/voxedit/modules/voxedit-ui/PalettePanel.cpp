@@ -218,7 +218,7 @@ void PalettePanel::createPopups(voxelformat::SceneGraphNode &node) {
 		}
 
 		ImGui::Checkbox("Color match", &_searchFittingColors);
-		ImGui::TooltipText("Search for matching colors in the new palette");
+		ImGui::TooltipText("Adopt the current voxels to the best fitting colors of\nthe new palette.");
 
 		if (ImGui::Button(ICON_FA_CHECK " OK##loadpalette")) {
 			sceneMgr().loadPalette(_currentSelectedPalette, _searchFittingColors);
