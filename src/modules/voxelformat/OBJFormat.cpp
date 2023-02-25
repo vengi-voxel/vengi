@@ -63,8 +63,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 	Log::debug("Exporting %i layers", (int)meshes.size());
 
-	core::String mtlname = core::string::stripExtension(filename);
-	mtlname.append(".mtl");
+	const core::String &mtlname = core::string::replaceExtension(filename, "mtl");
 	Log::debug("Use mtl file: %s", mtlname.c_str());
 
 	const io::FilePtr &file = io::filesystem()->open(mtlname, io::FileMode::SysWrite);

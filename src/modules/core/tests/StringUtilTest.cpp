@@ -89,6 +89,11 @@ TEST_F(StringUtilTest, testStripExtension) {
 	EXPECT_EQ("foo.bar", core::string::stripExtension("foo.bar.foo"));
 }
 
+TEST_F(StringUtilTest, testReplaceExtension) {
+	EXPECT_EQ("foo.foo", core::string::replaceExtension("foo.bar", "foo"));
+	EXPECT_EQ("foo.foo", core::string::replaceExtension("foo", "foo"));
+}
+
 TEST_F(StringUtilTest, testExtractPath) {
 	EXPECT_EQ("/a/b/c/def/", core::string::extractPath("/a/b/c/def/foo.bar"));
 	EXPECT_EQ("E:/a/b/c/def/", core::string::extractPath("E:/a/b/c/def/foo.bar"));

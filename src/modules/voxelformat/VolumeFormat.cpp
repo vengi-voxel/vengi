@@ -10,6 +10,7 @@
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
+#include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
@@ -426,10 +427,7 @@ bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, const io::
 			}
 		}
 	}
-	Log::warn("Failed to save file with unknown type: %s - saving as vengi instead", ext.c_str());
-	VENGIFormat vengiFormat;
-	stream.seek(0);
-	return vengiFormat.save(sceneGraph, core::string::stripExtension(filename) + ".vengi", stream, thumbnailCreator);
+	return false;
 }
 
 bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, SceneGraph &sceneGraph, ThumbnailCreator thumbnailCreator) {
@@ -439,7 +437,14 @@ bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, S
 	}
 
 	io::FileStream stream(filePtr);
-	return saveFormat(sceneGraph, filePtr->name(), desc, stream, thumbnailCreator);
+	if (!saveFormat(sceneGraph, filePtr->name(), desc, stream, thumbnailCreator)) {
+		Log::warn("Failed to save file %s - saving as vengi instead", filePtr->name().c_str());
+		VENGIFormat vengiFormat;
+		const core::String &newName = core::string::replaceExtension(filePtr->name(), "vengi");
+		io::FileStream newStream(io::filesystem()->open(newName, io::FileMode::SysWrite));
+		return vengiFormat.save(sceneGraph, newName, newStream, thumbnailCreator);
+	}
+	return true;
 }
 
 }

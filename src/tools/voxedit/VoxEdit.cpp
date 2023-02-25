@@ -74,7 +74,7 @@ core::String VoxEdit::getSuggestedFilename(const char *extension) const {
 	if (extension == nullptr) {
 		return filename;
 	}
-	return core::string::stripExtension(filename) + "." + extension;
+	return core::string::replaceExtension(filename, extension);
 }
 
 static bool ivec3ListValidator(const core::String& value) {

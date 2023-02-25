@@ -459,7 +459,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 		}
 		if (_exportPalette) {
 			voxel::Palette pal;
-			const core::String &filename = core::string::stripExtension(infile) + ".png";
+			const core::String &filename = core::string::replaceExtension(infile, "png");
 			pal.convertImageToPalettePng(image, filename.c_str());
 		}
 	} else {
@@ -481,7 +481,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 		}
 
 		if (_exportPalette) {
-			const core::String &paletteFile = core::string::stripExtension(infile) + ".png";
+			const core::String &paletteFile = core::string::replaceExtension(infile, "png");
 			sceneGraph.firstPalette().save(paletteFile.c_str());
 		}
 	}

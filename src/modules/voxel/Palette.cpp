@@ -358,8 +358,7 @@ bool Palette::save(const char *name) const {
 		}
 		return true;
 	}
-	core::String pngName = core::string::stripExtension(name);
-	pngName += ".png";
+	const core::String &pngName = core::string::replaceExtension(name, "png");
 	image::Image img(pngName);
 	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
 	img.loadRGBA((const uint8_t *)_colors, lengthof(_colors), 1);
