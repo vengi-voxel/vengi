@@ -401,9 +401,7 @@ const char *CommandMenuItem(const char *title, const char *command, bool enabled
 
 void URLItem(const char *title, const char *url) {
 	const core::String& cmd = core::String::format("url %s", url);
-	if (CommandButton(title, cmd.c_str())) {
-		imguiApp()->minimize();
-	}
+	CommandButton(title, cmd.c_str());
 }
 
 bool Fullscreen(const char *title, ImGuiWindowFlags additionalFlags) {
