@@ -170,16 +170,16 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				colorReductionOptions();
 
 				ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);
-				if (ImGui::Button("Reset layout")) {
+				if (ImGui::ButtonFullWidth("Reset layout")) {
 					resetDockLayout = true;
 				}
 				ImGui::EndMenu();
 			}
 			ImGui::Separator();
-			if (ImGui::Button("Scene settings")) {
+			if (ImGui::ButtonFullWidth("Scene settings")) {
 				_popupSceneSettings = true;
 			}
-			if (ImGui::Button("Bindings")) {
+			if (ImGui::ButtonFullWidth("Bindings")) {
 				app->showBindingsDialog();
 			}
 			ImGui::EndMenu();
