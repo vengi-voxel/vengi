@@ -115,6 +115,7 @@ int executeCommands(const core::String& commandLine, CommandExecutionListener *l
 		char buf[512];
 		replacePlaceholders(trimmed, buf, sizeof(buf));
 		core::TokenizerConfig innerCfg;
+		innerCfg.skipComments = false;
 		const core::Tokenizer tokInner(innerCfg, buf, " ");
 		if (tokInner.tokens().empty()) {
 			continue;

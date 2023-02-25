@@ -46,7 +46,9 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}
 		const char *url = args[0].c_str();
 #if SDL_VERSION_ATLEAST(2, 0, 14)
-		SDL_OpenURL(url);
+		if (SDL_OpenURL(url) == -1) {
+			Log::warn("Failed to open url %s with error: %s", url, SDL_GetError());
+		}
 #else
 
 #ifdef _WIN32
