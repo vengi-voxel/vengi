@@ -216,6 +216,8 @@ void PalettePanel::createPopups(voxelformat::SceneGraphNode &node) {
 			}
 			ImGui::EndCombo();
 		}
+		ImGui::TooltipText("To add your own palettes here, put a palette-name.png into one of\n"
+						   "the search directories or load it into any node to appear here.");
 
 		ImGui::Checkbox("Color match", &_searchFittingColors);
 		ImGui::TooltipText("Adopt the current voxels to the best fitting colors of\nthe new palette.");
