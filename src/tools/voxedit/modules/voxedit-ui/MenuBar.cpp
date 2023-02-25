@@ -206,16 +206,17 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::PopStyleColor(1);
 			ImGui::PopTextWrapPos();
 			ImGui::Separator();
-			ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/vengi");
-			ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy");
-			ImGui::URLItem(ICON_FK_MASTODON " Mastodon", "https://mastodon.social/@mgerhardy");
-			ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy");
+			const float w = ImGui::GetContentRegionAvail().x;
+			ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/vengi", w);
+			ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy", w);
+			ImGui::URLItem(ICON_FK_MASTODON " Mastodon", "https://mastodon.social/@mgerhardy", w);
+			ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy", w);
 			ImGui::Separator();
 			ImGui::Text("Search paths:");
 			for (const core::String &path : io::filesystem()->paths()) {
 				const core::String &abspath = io::filesystem()->absolutePath(path);
 				core::String fileurl = "file://" + abspath;
-				ImGui::URLItem(abspath.c_str(), fileurl.c_str());
+				ImGui::URLItem(abspath.c_str(), fileurl.c_str(), w);
 			}
 			ImGui::EndMenu();
 		}
