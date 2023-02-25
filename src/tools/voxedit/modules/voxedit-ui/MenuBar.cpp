@@ -207,7 +207,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::PopTextWrapPos();
 			ImGui::Separator();
 			const float w = ImGui::GetContentRegionAvail().x;
-			ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/vengi", w);
+			ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/vengi/issues", w);
+			ImGui::URLItem(ICON_FK_QUESTION " Help", "https://mgerhardy.github.io/vengi/", w);
 			ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy", w);
 			ImGui::URLItem(ICON_FK_MASTODON " Mastodon", "https://mastodon.social/@mgerhardy", w);
 			ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy", w);
