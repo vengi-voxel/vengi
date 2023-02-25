@@ -57,7 +57,7 @@ bool Var::_ivec3ListValidator(const core::String& value, int nmin, int nmax) {
 	for (const core::String &s : regionSizes) {
 		const glm::ivec3 maxs = core::string::parseIVec3(s);
 		for (int i = 0; i < 3; ++i) {
-			if (maxs[i] <= nmin || maxs[i] > nmax) {
+			if (maxs[i] < nmin || maxs[i] > nmax) {
 				return false;
 			}
 		}
@@ -67,7 +67,7 @@ bool Var::_ivec3ListValidator(const core::String& value, int nmin, int nmax) {
 
 bool Var::_minMaxValidator(const core::String& value, int nmin, int nmax) {
 	const int v = value.toInt();
-	if (v <= nmin || v > nmax) {
+	if (v < nmin || v > nmax) {
 		return false;
 	}
 	return true;
