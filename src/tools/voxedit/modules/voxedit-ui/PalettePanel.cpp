@@ -203,7 +203,7 @@ void PalettePanel::createPopups(voxelformat::SceneGraphNode &node) {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_LOAD_PALETTE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted("Select the palette");
 		ImGui::Separator();
-		if (ImGui::BeginCombo(ICON_FA_TREE " Type", _currentSelectedPalette.c_str(), 0)) {
+		if (ImGui::BeginCombo("##type", _currentSelectedPalette.c_str(), 0)) {
 			for (const core::String& palette : _availablePalettes) {
 				if (ImGui::Selectable(palette.c_str(), palette == _currentSelectedPalette)) {
 					_currentSelectedPalette = palette;
