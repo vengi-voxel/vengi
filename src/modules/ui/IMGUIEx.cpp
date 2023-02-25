@@ -399,9 +399,13 @@ const char *CommandMenuItem(const char *title, const char *command, bool enabled
 	return nullptr;
 }
 
-void URLItem(const char *title, const char *url) {
+void URLItem(const char *title, const char *url, float width) {
 	const core::String& cmd = core::String::format("url %s", url);
-	CommandButton(title, cmd.c_str());
+	CommandButton(title, cmd.c_str(), nullptr, ImVec2(width, 0));
+}
+
+bool ButtonFullWidth(const char *title) {
+	return Button(title, ImVec2(ImGui::GetContentRegionAvail().x, 0));
 }
 
 bool Fullscreen(const char *title, ImGuiWindowFlags additionalFlags) {
