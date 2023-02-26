@@ -2388,7 +2388,7 @@ void SceneManager::markDirty() {
 
 bool SceneManager::nodeRemove(voxelformat::SceneGraphNode &node, bool recursive) {
 	const int nodeId = node.id();
-	const core::String &name = node.name();
+	const core::String name = node.name();
 	Log::debug("Delete node %i with name %s", nodeId, name.c_str());
 	_mementoHandler.markNodeRemoved(node);
 	if (!_sceneGraph.removeNode(nodeId, recursive)) {
@@ -2396,11 +2396,18 @@ bool SceneManager::nodeRemove(voxelformat::SceneGraphNode &node, bool recursive)
 		// TODO: _mementoHandler.removeLast();
 		return false;
 	}
-	markDirty();
 	if (_sceneGraph.empty()) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
-		newScene(true, name, region);
-		// TODO: allow to undo the removal of the last node
+		voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(region), true);
+		if (name.empty()) {
+			node.setName("unnamed");
+		} else {
+			node.setName(name);
+		}
+		addNodeToSceneGraph(node);
+	} else {
+		markDirty();
 	}
 	return true;
 }
