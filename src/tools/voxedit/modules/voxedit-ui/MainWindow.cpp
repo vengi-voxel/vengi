@@ -156,7 +156,11 @@ bool MainWindow::save(const core::String &file, const io::FormatDescription *des
 	io::FileDescription fd;
 	const core::String &ext = core::string::extractExtension(file);
 	if (ext.empty()) {
-		fd.set(file + ".vengi", desc);
+		core::String newExt = "vengi";
+		if (desc && !desc->exts.empty()) {
+			newExt = desc->exts[0];
+		}
+		fd.set(file + "." + newExt, desc);
 	} else {
 		fd.set(file, desc);
 	}
