@@ -204,17 +204,22 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const voxelformat
 			}
 		}
 		if (ImGui::BeginDragDropTarget()) {
-			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload)) {
+			const ImGuiPayload *payload = ImGui::GetDragDropPayload();
+			if (payload->IsDataType(dragdrop::SceneNodePayload)) {
 				const int sourceNodeId = *(int *)payload->Data;
-				const int targetNode = node.id();
-				if (!sceneMgr().nodeMove(sourceNodeId, targetNode)) {
-					Log::error("Failed to move node");
+				if (sceneGraph.canChangeParent(node, sourceNodeId)) {
+					if (ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload) != nullptr) {
+						const int targetNode = node.id();
+						if (!sceneMgr().nodeMove(sourceNodeId, targetNode)) {
+							Log::error("Failed to move node");
+						}
+						ImGui::EndDragDropTarget();
+						if (open) {
+							ImGui::TreePop();
+						}
+						return;
+					}
 				}
-				ImGui::EndDragDropTarget();
-				if (open) {
-					ImGui::TreePop();
-				}
-				return;
 			}
 			ImGui::EndDragDropTarget();
 		}

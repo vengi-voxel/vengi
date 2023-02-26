@@ -107,6 +107,8 @@ public:
 	bool hasNode(int nodeId) const;
 	bool removeNode(int nodeId, bool recursive);
 	bool changeParent(int nodeId, int newParentId);
+	bool nodeHasChildren(const SceneGraphNode &node, int childId) const;
+	bool canChangeParent(const SceneGraphNode &node, int newParentId) const;
 
 	/**
 	 * @brief Pre-allocated memory in the graph without adding the nodes

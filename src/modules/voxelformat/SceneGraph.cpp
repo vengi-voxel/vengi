@@ -262,17 +262,39 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	return nodeId;
 }
 
-bool SceneGraph::changeParent(int nodeId, int newParentId) {
-	if (nodeId == root().id()) {
-		return false;
+bool SceneGraph::nodeHasChildren(const SceneGraphNode &n, int childId) const {
+	for (int c : n.children()) {
+		if (c == childId) {
+			return true;
+		}
 	}
-	if (!hasNode(nodeId)) {
+	for (int c : n.children()) {
+		if (nodeHasChildren(node(c), childId)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool SceneGraph::canChangeParent(const SceneGraphNode &node, int newParentId) const {
+	if (node.id() == root().id()) {
 		return false;
 	}
 	if (!hasNode(newParentId)) {
 		return false;
 	}
+	return !nodeHasChildren(node, newParentId);
+}
+
+bool SceneGraph::changeParent(int nodeId, int newParentId) {
+	if (!hasNode(nodeId)) {
+		return false;
+	}
 	SceneGraphNode& n = node(nodeId);
+	if (!canChangeParent(n, newParentId)) {
+		return false;
+	}
+
 	const int oldParentId = n.parent();
 	if (!node(oldParentId).removeChild(nodeId)) {
 		return false;

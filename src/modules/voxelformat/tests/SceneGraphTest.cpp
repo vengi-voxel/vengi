@@ -273,4 +273,50 @@ TEST_F(SceneGraphTest, testKeyframes) {
 	EXPECT_EQ(1u, node.keyFrames().size());
 }
 
+TEST_F(SceneGraphTest, testMoveParentAsNewChild) {
+	SceneGraph sceneGraph;
+	int originalParentNodeId = 1;
+	int originalChildNodeId = 2;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setName("originalparent");
+		EXPECT_EQ(originalParentNodeId, sceneGraph.emplace(core::move(node), 0)) << "Unexpected node id returned - root node is 0 - next should be 1";
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setName("originalchild");
+		EXPECT_EQ(originalChildNodeId, sceneGraph.emplace(core::move(node), originalParentNodeId));
+	}
+	ASSERT_FALSE(sceneGraph.changeParent(originalParentNodeId, originalChildNodeId));
+}
+
+TEST_F(SceneGraphTest, testMove) {
+	SceneGraph sceneGraph;
+	int originalParentNodeId = 1;
+	int originalChildNodeId = 2;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setName("model1");
+		EXPECT_EQ(originalParentNodeId, sceneGraph.emplace(core::move(node), 0)) << "Unexpected node id returned - root node is 0 - next should be 1";
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
+		node.setName("model2");
+		EXPECT_EQ(originalChildNodeId, sceneGraph.emplace(core::move(node), 0));
+	}
+	ASSERT_TRUE(sceneGraph.changeParent(originalParentNodeId, originalChildNodeId));
+	ASSERT_EQ(1u, sceneGraph.root().children().size()) << "Expected to have one child after the move";
+	ASSERT_EQ(originalChildNodeId, sceneGraph.root().children().front());
+	const SceneGraphNode &newParentNode = sceneGraph.node(originalChildNodeId);
+	ASSERT_EQ(1u, newParentNode.children().size());
+	ASSERT_EQ(originalParentNodeId, newParentNode.children().front());
+	for (const auto &n : sceneGraph) {
+		EXPECT_FALSE(n.transform(0).dirty()) << "node " << n.name().c_str() << " still has a dirty transform after the move";
+	}
+}
+
 }
