@@ -159,7 +159,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 	} else {
 		_currentPath = filePath;
 	}
-	_selectedEntry = io::FilesystemEntry{core::string::extractFilenameWithExtension(filename), io::FilesystemEntry::Type::file, 0, 0};
+	_selectedEntry = io::FilesystemEntry{core::string::extractFilenameWithExtension(filename), filename, io::FilesystemEntry::Type::file, 0, 0};
 
 	if (!io::filesystem()->exists(_currentPath)) {
 		_currentPath = io::filesystem()->homePath();

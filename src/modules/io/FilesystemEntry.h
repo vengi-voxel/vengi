@@ -11,6 +11,7 @@ namespace io {
 
 struct FilesystemEntry {
 	core::String name;
+	core::String fullPath;
 	enum class Type : uint8_t {
 		file,
 		dir,

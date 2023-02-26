@@ -366,7 +366,7 @@ bool SceneManager::import(const core::String& file) {
 	voxelformat::SceneGraphNode groupNode(voxelformat::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(file));
 	int newNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
-	bool state = true;
+	bool state = false;
 	for (voxelformat::SceneGraphNode& node : newSceneGraph) {
 		state |= addNodeToSceneGraph(node, newNodeId) != -1;
 	}

@@ -105,7 +105,7 @@ public:
 	 * @param filter Wildcard for filtering the returned entities
 	 * @return @c true if the directory could get opened
 	 */
-	bool list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "") const;
+	bool list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "", int depth = 0) const;
 
 	static bool isReadableDir(const core::String& name);
 	static bool isRelativePath(const core::String& name);
@@ -173,7 +173,7 @@ public:
 	 */
 	bool removeFile(const core::String& file) const;
 private:
-	static bool _list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "");
+	static bool _list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "", int depth = 0);
 };
 
 inline const Paths& Filesystem::paths() const {

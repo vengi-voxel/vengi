@@ -152,21 +152,16 @@ bool Filesystem::createDir(const core::String &dir, bool recursive) const {
 }
 
 bool Filesystem::_list(const core::String &directory, core::DynamicArray<FilesystemEntry> &entities,
-					   const core::String &filter) {
+					   const core::String &filter, int depth) {
 	const core::DynamicArray<FilesystemEntry> &entries = fs_scandir(directory.c_str());
-	if (entries.empty()) {
-		Log::debug("No files found in %s", directory.c_str());
-		return false;
-	}
 	for (FilesystemEntry entry : entries) {
 		normalizePath(entry.name);
-		core::String fullPath = core::string::path(directory, entry.name);
+		entry.fullPath = core::string::path(directory, entry.name);
 		if (entry.type == FilesystemEntry::Type::link) {
-			const core::String pointer = core::string::path(directory, entry.name);
-			core::String symlink = fs_readlink(pointer.c_str());
+			core::String symlink = fs_readlink(entry.fullPath.c_str());
 			normalizePath(symlink);
 			if (symlink.empty()) {
-				Log::debug("Could not resolve symlink %s", pointer.c_str());
+				Log::debug("Could not resolve symlink %s", entry.fullPath.c_str());
 				continue;
 			}
 			if (!filter.empty()) {
@@ -176,7 +171,9 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 				}
 			}
 
-			fullPath = isRelativePath(symlink) ? core::string::path(directory, symlink) : symlink;
+			entry.fullPath = isRelativePath(symlink) ? core::string::path(directory, symlink) : symlink;
+		} else if (entry.type == FilesystemEntry::Type::dir && depth > 0) {
+			_list(entry.fullPath, entities, filter, depth - 1);
 		} else {
 			if (!filter.empty()) {
 				if (!core::string::fileMatchesMultiple(entry.name.c_str(), filter.c_str())) {
@@ -186,24 +183,28 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 			}
 
 		}
-		if (!fs_stat(fullPath.c_str(), entry)) {
-			Log::debug("Could not stat file %s", fullPath.c_str());
+		if (!fs_stat(entry.fullPath.c_str(), entry)) {
+			Log::debug("Could not stat file %s", entry.fullPath.c_str());
 		}
 		entities.push_back(entry);
+	}
+	if (entries.empty()) {
+		Log::debug("No files found in %s", directory.c_str());
+		return false;
 	}
 	return true;
 }
 
 bool Filesystem::list(const core::String &directory, core::DynamicArray<FilesystemEntry> &entities,
-					  const core::String &filter) const {
+					  const core::String &filter, int depth) const {
 	if (isRelativePath(directory)) {
 		for (const core::String &p : _paths) {
-			const core::String fullDir = p + directory;
+			const core::String fullDir = core::string::path(p, directory);
 			Log::debug("List %s in %s", filter.c_str(), fullDir.c_str());
-			_list(fullDir, entities, filter);
+			_list(fullDir, entities, filter, depth);
 		}
 	} else {
-		_list(directory, entities, filter);
+		_list(directory, entities, filter, depth);
 	}
 	return true;
 }
