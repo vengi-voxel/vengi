@@ -109,6 +109,16 @@ void FileDialog::selectFilter(video::OpenFileMode type, int index) {
 		_currentFilterFormat = nullptr;
 	}
 	applyFilter(type);
+
+	if (_currentFilterEntry != -1 && type == video::OpenFileMode::Save) {
+		const io::FormatDescription &desc = _filterEntries[_currentFilterEntry];
+		const core::String &extension = core::string::extractExtension(_selectedEntry.name);
+		if (!desc.exts.empty() && !desc.matchesExtension(extension)) {
+			_selectedEntry.name = core::string::stripExtension(_selectedEntry.name);
+			_selectedEntry.name.append(".");
+			_selectedEntry.name.append(desc.exts[0]);
+		}
+	}
 }
 
 bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* formats, const core::String& filename) {
@@ -504,7 +514,7 @@ bool FileDialog::popupAlreadyExists() {
 		ImGui::SameLine();
 		ImGui::Spacing();
 		ImGui::SameLine();
-		ImGui::TextUnformatted("Do you want to overwrite the file?");
+		ImGui::Text("%s already exist.\nDo you want to overwrite the file?", _selectedEntry.name.c_str());
 		ImGui::Spacing();
 		ImGui::Separator();
 
@@ -651,15 +661,6 @@ bool FileDialog::buttons(core::String &buffer, video::OpenFileMode type, bool do
 			if (_selectedEntry.name.empty() || !_selectedEntry.isFile()) {
 				_error = TimedError("Error: You must select a file!", timeProvider->tickNow(), 1500UL);
 			} else {
-				if (_currentFilterEntry != -1 && type == video::OpenFileMode::Save) {
-					const io::FormatDescription &desc = _filterEntries[_currentFilterEntry];
-					const core::String &extension = core::string::extractExtension(_selectedEntry.name);
-					if (!desc.matchesExtension(extension)) {
-						_selectedEntry.name = core::string::stripExtension(_selectedEntry.name);
-						_selectedEntry.name.append(".");
-						_selectedEntry.name.append(desc.exts[0]);
-					}
-				}
 				const core::String &fullPath = assemblePath(_currentPath, _selectedEntry);
 				if (type == video::OpenFileMode::Save && io::filesystem()->exists(fullPath)) {
 					ImGui::OpenPopup(FILE_ALREADY_EXISTS_POPUP);
