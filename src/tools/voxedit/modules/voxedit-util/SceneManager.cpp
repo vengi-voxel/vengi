@@ -667,6 +667,15 @@ bool SceneManager::mementoRename(const MementoState& s) {
 	return nodeRename(s.nodeId, s.name);
 }
 
+bool SceneManager::mementoKeyFrames(const MementoState& s) {
+	Log::debug("Memento: keyframes of node %i (%s)", s.nodeId, s.name.c_str());
+	if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+		node->setKeyFrames(*s.keyFrames.value());
+		return true;
+	}
+	return false;
+}
+
 bool SceneManager::mementoPaletteChange(const MementoState& s) {
 	Log::debug("Memento: palette change of node %i to %s", s.nodeId, s.name.c_str());
 	if (voxelformat::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
@@ -701,6 +710,7 @@ bool SceneManager::mementoModification(const MementoState& s) {
 bool SceneManager::mementoStateToNode(const MementoState &s) {
 	voxelformat::SceneGraphNodeType type = voxelformat::SceneGraphNodeType::Model;
 	if (!s.hasVolumeData()) {
+		// TODO: what about cameras and so on?
 		type = voxelformat::SceneGraphNodeType::Group;
 	}
 	voxelformat::SceneGraphNode node(type);
@@ -714,6 +724,9 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 			node.setPalette(*s.palette.value());
 		}
 	}
+	if (s.keyFrames.hasValue()) {
+		node.setKeyFrames(*s.keyFrames.value());
+	}
 	node.setName(s.name);
 	const int newNodeId = addNodeToSceneGraph(node, s.parentId);
 	_mementoHandler.updateNodeId(s.nodeId, newNodeId);
@@ -726,6 +739,9 @@ bool SceneManager::mementoStateExecute(const MementoState &s, bool isRedo) {
 	if (s.type == MementoType::SceneNodeRenamed) {
 		return mementoRename(s);
 	}
+	if (s.type == MementoType::SceneNodeKeyFrames) {
+		return mementoKeyFrames(s);
+	}
 	if (s.type == MementoType::SceneNodePaletteChanged) {
 		return mementoPaletteChange(s);
 	}
@@ -736,9 +752,9 @@ bool SceneManager::mementoStateExecute(const MementoState &s, bool isRedo) {
 	if (s.type == MementoType::SceneNodeTransform) {
 		Log::debug("Memento: transform of node %i", s.nodeId);
 		if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
-			voxelformat::SceneGraphTransform &transform = node->keyFrame(s.keyFrame).transform();
+			voxelformat::SceneGraphTransform &transform = node->keyFrame(s.keyFrameIdx).transform();
 			transform.setWorldMatrix(s.worldMatrix);
-			transform.update(_sceneGraph, *node, s.keyFrame);
+			transform.update(_sceneGraph, *node, s.keyFrameIdx);
 			return true;
 		}
 		return false;
@@ -954,7 +970,7 @@ void SceneManager::resetSceneState() {
 	nodeActivate(node.id());
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
-	_mementoHandler.markModification(node, voxel::Region::InvalidRegion);
+	_mementoHandler.markInitialNodeState(node);
 	_dirty = false;
 	_result = voxelutil::PickResult();
 	_modifier.setCursorVoxel(voxel::createVoxel(node.palette(), 0));

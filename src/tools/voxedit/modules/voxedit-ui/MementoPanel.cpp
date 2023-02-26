@@ -11,7 +11,7 @@
 namespace voxedit {
 
 static inline core::String toString(const MementoState &state, int n) {
-	return core::string::format("%s: node %i, parent %i, keyframe: %u, name: %s##%i", MementoHandler::typeToString(state.type), state.nodeId, state.parentId, state.keyFrame, state.name.c_str(), n);
+	return core::string::format("%s: node %i, parent %i, keyframe: %u, name: %s##%i", MementoHandler::typeToString(state.type), state.nodeId, state.parentId, state.keyFrameIdx, state.name.c_str(), n);
 }
 
 void MementoPanel::update(const char *title, command::CommandExecutionListener &listener) {

@@ -32,6 +32,7 @@ enum class MementoType {
 	SceneNodeRenamed,
 	SceneNodeTransform,
 	SceneNodePaletteChanged,
+	SceneNodeKeyFrames,
 	PaletteChanged,
 
 	Max
@@ -94,7 +95,8 @@ struct MementoState {
 	MementoData data;
 	int parentId = -1;
 	int nodeId = -1;
-	voxelformat::KeyFrameIndex keyFrame = 0;
+	core::Optional<voxelformat::SceneGraphKeyFrames> keyFrames;
+	voxelformat::KeyFrameIndex keyFrameIdx = 0;
 	core::String name;
 	glm::mat4x4 worldMatrix{1.0f};
 	/**
@@ -105,18 +107,29 @@ struct MementoState {
 	core::Optional<voxel::Palette> palette;
 
 	MementoState() :
-			type(MementoType::Max), parentId(0), nodeId(0), keyFrame(0) {
+			type(MementoType::Max), parentId(0), nodeId(0), keyFrameIdx(0) {
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, const core::String &_name,
-				 const voxel::Region &_region, const glm::mat4x4 &_worldMatrix, voxelformat::KeyFrameIndex _frameId = 0, const core::Optional<voxel::Palette> &_palette = {})
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(_frameId), name(_name), worldMatrix(_worldMatrix),
+				 const voxel::Region &_region, const glm::mat4x4 &_worldMatrix, voxelformat::KeyFrameIndex _keyFrameIdx = 0, const core::Optional<voxel::Palette> &_palette = {})
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix),
 		  region(_region), palette(_palette) {
 	}
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, core::String &&_name,
-				 voxel::Region &&_region, glm::mat4x4 &&_worldMatrix, voxelformat::KeyFrameIndex _frameId, core::Optional<voxel::Palette> &&_palette)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrame(_frameId), name(_name), worldMatrix(_worldMatrix), region(_region), palette(_palette) {
+				 voxel::Region &&_region, glm::mat4x4 &&_worldMatrix, voxelformat::KeyFrameIndex _keyFrameIdx, core::Optional<voxel::Palette> &&_palette)
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), palette(_palette) {
+	}
+
+	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, const core::String &_name,
+				 const voxel::Region &_region, const core::Optional<voxelformat::SceneGraphKeyFrames> &_keyFrames, const core::Optional<voxel::Palette> &_palette = {})
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrames(_keyFrames), name(_name),
+		  region(_region), palette(_palette) {
+	}
+
+	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, core::String &&_name,
+				 voxel::Region &&_region, core::Optional<voxelformat::SceneGraphKeyFrames> &&_keyFrames, core::Optional<voxel::Palette> &&_palette)
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrames(_keyFrames), name(_name), region(_region), palette(_palette) {
 	}
 
 	inline bool valid() const {
@@ -150,6 +163,7 @@ private:
 
 	MementoState undoRename(const MementoState &s);
 	MementoState undoPaletteChange(const MementoState &s);
+	MementoState undoKeyFrames(const MementoState &s);
 	MementoState undoTransform(const MementoState &s);
 	MementoState undoModification(const MementoState &s);
 public:
@@ -192,12 +206,17 @@ public:
 	void markUndo(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume, MementoType type,
 				  const voxel::Region &region, const glm::mat4 &transformMatrix, voxelformat::KeyFrameIndex keyFrameIdx,
 				  const core::Optional<voxel::Palette> &palette = {});
+	void markUndoKeyFrames(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume,
+						   MementoType type, const voxel::Region &region,
+						   const voxelformat::SceneGraphKeyFrames &keyFrames,
+						   const core::Optional<voxel::Palette> &palette = {});
 
 	void markKeyFramesChange(const voxelformat::SceneGraphNode &node);
 	void markNodeRemoved(const voxelformat::SceneGraphNode &node);
 	void markNodeAdded(const voxelformat::SceneGraphNode &node);
 	void markNodeTransform(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx);
 	void markModification(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion);
+	void markInitialNodeState(const voxelformat::SceneGraphNode &node);
 	void markNodeRenamed(const voxelformat::SceneGraphNode &node);
 	void markNodeMoved(int targetId, int sourceId);
 	void markPaletteChange(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion = voxel::Region::InvalidRegion);

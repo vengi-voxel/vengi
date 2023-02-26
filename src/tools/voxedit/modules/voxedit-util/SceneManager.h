@@ -190,6 +190,7 @@ protected:
 	bool mementoStateExecute(const MementoState &s, bool isRedo);
 	bool mementoStateToNode(const MementoState &s);
 	bool mementoRename(const MementoState &s);
+	bool mementoKeyFrames(const MementoState& s);
 	bool mementoPaletteChange(const MementoState &s);
 	bool mementoModification(const MementoState &s);
 
