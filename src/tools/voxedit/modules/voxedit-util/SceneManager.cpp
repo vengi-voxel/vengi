@@ -2262,6 +2262,7 @@ bool SceneManager::nodeAddKeyframe(voxelformat::SceneGraphNode &node, voxelforma
 	const voxelformat::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
 	if (newKeyFrameIdx > 0) {
 		node.keyFrame(newKeyFrameIdx).setTransform(node.keyFrame(newKeyFrameIdx - 1).transform());
+		markDirty();
 		return true;
 	}
 	return false;
@@ -2295,12 +2296,20 @@ bool SceneManager::nodeRemoveKeyFrameByIndex(int nodeId, voxelformat::KeyFrameIn
 
 bool SceneManager::nodeRemoveKeyFrame(voxelformat::SceneGraphNode &node, voxelformat::FrameIndex frameIdx) {
 	// TODO: memento state
-	return node.removeKeyFrame(frameIdx);
+	if (node.removeKeyFrame(frameIdx)) {
+		markDirty();
+		return true;
+	}
+	return false;
 }
 
 bool SceneManager::nodeRemoveKeyFrameByIndex(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
 	// TODO: memento state
-	return node.removeKeyFrameByIndex(keyFrameIdx);
+	if (node.removeKeyFrameByIndex(keyFrameIdx)) {
+		markDirty();
+		return true;
+	}
+	return false;
 }
 
 bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &localMatrix,
