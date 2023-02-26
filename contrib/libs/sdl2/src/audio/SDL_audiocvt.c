@@ -198,10 +198,18 @@ static int SDL_ResampleAudio(const int chans, const int inrate, const int outrat
                              const float *inbuf, const int inbuflen,
                              float *outbuf, const int outbuflen)
 {
+    /* !!! FIXME: this produces artifacts if we don't work at double precision, but this turns out to
+                  be a big performance hit. Until we can resolve this better, we force this to double
+                  for amd64 CPUs, which should be able to take the hit for now, vs small embedded
+                  things that might end up in a software fallback here. */
     /* Note that this used to be double, but it looks like we can get by with float in most cases at
        almost twice the speed on Intel processors, and orders of magnitude more
        on CPUs that need a software fallback for double calculations. */
+    #if defined(_M_X64) || defined(__x86_64__)
+    typedef double ResampleFloatType;
+    #else
     typedef float ResampleFloatType;
+    #endif
 
     const ResampleFloatType finrate = (ResampleFloatType)inrate;
     const ResampleFloatType ratio = ((float)outrate) / ((float)inrate);
@@ -233,7 +241,7 @@ static int SDL_ResampleAudio(const int chans, const int inrate, const int outrat
                 const int srcframe = srcindex - j;
                 /* !!! FIXME: we can bubble this conditional out of here by doing a pre loop. */
                 const float insample = (srcframe < 0) ? lpadding[((paddinglen + srcframe) * chans) + chan] : inbuf[(srcframe * chans) + chan];
-                outsample += (insample * (ResamplerFilter[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)] + (interpolation1 * ResamplerFilterDifference[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)])));
+                outsample += (float) (insample * (ResamplerFilter[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)] + (interpolation1 * ResamplerFilterDifference[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)])));
             }
 
             /* Do the right wing! */
@@ -242,7 +250,7 @@ static int SDL_ResampleAudio(const int chans, const int inrate, const int outrat
                 const int srcframe = srcindex + 1 + j;
                 /* !!! FIXME: we can bubble this conditional out of here by doing a post loop. */
                 const float insample = (srcframe >= inframes) ? rpadding[((srcframe - inframes) * chans) + chan] : inbuf[(srcframe * chans) + chan];
-                outsample += (insample * (ResamplerFilter[filterindex2 + jsamples] + (interpolation2 * ResamplerFilterDifference[filterindex2 + jsamples])));
+                outsample += (float) (insample * (ResamplerFilter[filterindex2 + jsamples] + (interpolation2 * ResamplerFilterDifference[filterindex2 + jsamples])));
             }
 
             *(dst++) = outsample;
