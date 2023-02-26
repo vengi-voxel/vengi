@@ -154,14 +154,19 @@ void MainWindow::shutdown() {
 
 bool MainWindow::save(const core::String &file, const io::FormatDescription *desc) {
 	io::FileDescription fd;
-	fd.set(file, desc);
+	const core::String &ext = core::string::extractExtension(file);
+	if (ext.empty()) {
+		fd.set(file + ".vengi", desc);
+	} else {
+		fd.set(file, desc);
+	}
 	if (!sceneMgr().save(fd)) {
 		Log::warn("Failed to save the model");
 		_popupFailedToSave = true;
 		return false;
 	}
-	Log::info("Saved the model to %s", file.c_str());
-	_lastOpenedFile->setVal(file);
+	Log::info("Saved the model to %s", fd.c_str());
+	_lastOpenedFile->setVal(fd.name);
 	return true;
 }
 
