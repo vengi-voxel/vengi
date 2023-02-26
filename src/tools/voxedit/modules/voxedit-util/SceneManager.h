@@ -313,6 +313,7 @@ public:
 	 * @note Placed relative to the reference position in the current scene
 	 */
 	bool import(const core::String& file);
+	bool importDirectory(const core::String& directory, const io::FormatDescription *format = nullptr, int depth = 3);
 
 	bool runScript(const core::String& script, const core::DynamicArray<core::String>& args);
 

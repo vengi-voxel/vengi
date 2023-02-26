@@ -16,6 +16,7 @@
 #include "core/TimeProvider.h"
 #include "core/UTF8.h"
 #include "core/collection/DynamicArray.h"
+#include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
@@ -371,6 +372,40 @@ bool SceneManager::import(const core::String& file) {
 		state |= addNodeToSceneGraph(node, newNodeId) != -1;
 	}
 
+	return state;
+}
+
+bool SceneManager::importDirectory(const core::String& directory, const io::FormatDescription *format, int depth) {
+	if (directory.empty()) {
+		return false;
+	}
+	core::DynamicArray<io::FilesystemEntry> entities;
+	io::filesystem()->list(directory, entities, format ? format->wildCard() : "", depth);
+	if (entities.empty()) {
+		Log::info("Could not find any model in %s", directory.c_str());
+		return false;
+	}
+	bool state = false;
+	voxelformat::SceneGraphNode groupNode(voxelformat::SceneGraphNodeType::Group);
+	groupNode.setName(core::string::extractFilename(directory));
+	int importGroupNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
+
+	for (const auto &e : entities) {
+		if (format == nullptr && !voxelformat::isModelFormat(e.name)) {
+			continue;
+		}
+		voxelformat::SceneGraph newSceneGraph;
+		io::FilePtr filePtr = io::filesystem()->open(e.fullPath, io::FileMode::SysRead);
+		io::FileStream stream(filePtr);
+		if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph)) {
+			Log::error("Failed to load %s", e.fullPath.c_str());
+		} else {
+			mergeIfNeeded(newSceneGraph);
+			for (voxelformat::SceneGraphNode& node : newSceneGraph) {
+				state |= addNodeToSceneGraph(node, importGroupNodeId) != -1;
+			}
+		}
+	}
 	return state;
 }
 

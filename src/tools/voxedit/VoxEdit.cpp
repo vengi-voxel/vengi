@@ -188,6 +188,27 @@ app::AppState VoxEdit::onConstruct() {
 		voxedit::sceneMgr().import(args[0]);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Add a volume to the existing scene from the given file");
 
+	command::Command::registerCommand("importdirectory", [this](const command::CmdArgs &args) {
+		if (args.empty()) {
+			directoryDialog([](const core::String &file, const io::FormatDescription *desc) { voxedit::sceneMgr().importDirectory(file); }, fileDialogOptions);
+			return;
+		}
+		const io::FormatDescription* format = nullptr;
+		if (args.size() == 2) {
+			for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+				if (desc->matchesExtension(args[1])) {
+					format = desc;
+					break;
+				}
+			}
+			if (format == nullptr) {
+				Log::error("Could not find a supported format for %s", args[1].c_str());
+				return;
+			}
+		}
+		voxedit::sceneMgr().importDirectory(args[0], format);
+	}).setHelp("Import all files from a given directory");
+
 	command::Command::registerCommand("importheightmap", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
 			openDialog([] (const core::String &file, const io::FormatDescription *desc) { voxedit::sceneMgr().importHeightmap(file); }, fileDialogOptions, io::format::images());

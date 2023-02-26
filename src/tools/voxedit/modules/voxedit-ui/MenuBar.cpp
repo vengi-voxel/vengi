@@ -101,7 +101,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::EndMenu();
 			}
 
-			actionMenuItem(ICON_FA_SQUARE_PLUS " Add to scene", "import", listener);
+			actionMenuItem(ICON_FA_SQUARE_PLUS " Add file to scene", "import", listener);
+			actionMenuItem(ICON_FA_SQUARE_PLUS " Add directory to scene", "importdirectory", listener);
 			ImGui::Separator();
 			actionMenuItem(ICON_FA_IMAGE " Heightmap", "importheightmap", listener);
 			actionMenuItem(ICON_FA_IMAGE " Colored heightmap", "importcoloredheightmap", listener);
