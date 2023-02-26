@@ -66,6 +66,7 @@ VoxEdit:
    - Allow to sort the palette colors by hue, saturation or brightness
    - Allow to select and drag keyframes in the animation timeline
    - Export animations as AVI
+   - Allow to import a whole directory into a scene
 
 ## 0.0.23 (2022-12-17)
 
