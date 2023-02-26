@@ -468,7 +468,7 @@ void libvxl_write(struct libvxl_map* map, void* out, size_t* size) {
 	size_t sx = (map->width + LIBVXL_CHUNK_SIZE - 1) / LIBVXL_CHUNK_SIZE;
 	size_t sy = (map->height + LIBVXL_CHUNK_SIZE - 1) / LIBVXL_CHUNK_SIZE;
 
-	size_t *chunk_offsets = (size_t*)libvxl_mem_malloc(sx * sy);
+	size_t* chunk_offsets = libvxl_mem_malloc(sx * sy * sizeof(size_t));
 	memset(chunk_offsets, 0, sx * sy * sizeof(size_t));
 
 	size_t offset = 0;
