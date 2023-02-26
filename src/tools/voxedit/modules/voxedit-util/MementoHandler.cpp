@@ -298,6 +298,10 @@ void MementoHandler::updateNodeId(int nodeId, int newNodeId) {
 	}
 }
 
+void MementoHandler::markKeyFramesChange(const voxelformat::SceneGraphNode &node) {
+	// TODO: implement me
+}
+
 void MementoHandler::markNodeRemoved(const voxelformat::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const int parentId = node.parent();

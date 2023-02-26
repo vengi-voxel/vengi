@@ -193,6 +193,7 @@ public:
 				  const voxel::Region &region, const glm::mat4 &transformMatrix, voxelformat::KeyFrameIndex keyFrameIdx,
 				  const core::Optional<voxel::Palette> &palette = {});
 
+	void markKeyFramesChange(const voxelformat::SceneGraphNode &node);
 	void markNodeRemoved(const voxelformat::SceneGraphNode &node);
 	void markNodeAdded(const voxelformat::SceneGraphNode &node);
 	void markNodeTransform(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx);
