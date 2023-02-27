@@ -22,29 +22,55 @@
 
 namespace voxedit {
 
-static core::String toString(const voxelformat::SceneGraphTransform &transform) {
-	core::String str;
-	const glm::vec3 &pivot = transform.pivot();
-	str.append(core::String::format("piv %.2f:%.2f:%.2f\n", pivot.x, pivot.y, pivot.z));
-	const glm::vec3 &tr = transform.worldTranslation();
-	str.append(core::String::format("trn %.2f:%.2f:%.2f\n", tr.x, tr.y, tr.z));
-	const glm::quat &rt = transform.worldOrientation();
-	const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
-	str.append(core::String::format("ori %.2ff%.2f:%.2f:%.2f\n", rt.x, rt.y, rt.z, rt.w));
-	str.append(core::String::format("ang %.2f:%.2f:%.2f\n", rtEuler.x, rtEuler.y, rtEuler.z));
-	const glm::vec3 &sc = transform.worldScale();
-	str.append(core::String::format("sca %.2f:%.2f:%.2f\n", sc.x, sc.y, sc.z));
-	return str;
-}
+void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
+	core::String deleteKey;
+	static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
+										ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
+										ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg |
+										ImGuiTableFlags_NoSavedSettings;
+	ui::ScopedStyle style;
+	style.setIndentSpacing(0.0f);
+	if (ImGui::BeginTable("##nodelist", 3, tableFlags)) {
+		const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
+									ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
 
-static void detailView(const voxelformat::SceneGraphNode &node) {
-	const float maxPropKeyLength = ImGui::CalcTextSize("maxpropertykey").x;
-	ImGui::PushItemWidth(maxPropKeyLength);
-	for (const auto &entry : node.properties()) {
-		// TODO: allow to edit them
-		ImGui::LabelText(entry->value.c_str(), "%s", entry->key.c_str());
+		ImGui::TableSetupColumn("Name##nodeproperty", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn("Value##nodeproperty", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn("##nodepropertydelete", colFlags);
+		ImGui::TableHeadersRow();
+
+		for (const auto &entry : node.properties()) {
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::TextUnformatted(entry->key.c_str());
+			ImGui::TableNextColumn();
+			const core::String &id = core::string::format("##%i-%s", node.id(), entry->key.c_str());
+			ImGui::InputText(id.c_str(), &entry->value);
+			ImGui::TableNextColumn();
+			const core::String &deleteId = core::string::format(ICON_FA_TRASH "##%i-%s-delete", node.id(), entry->key.c_str());
+			if (ImGui::Button(deleteId.c_str())) {
+				deleteKey = entry->key;
+			}
+			ImGui::TooltipText("Delete this node and all children");
+		}
+
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
+		ImGui::InputText("##newpropertykey", &_propertyKey);
+		ImGui::TableNextColumn();
+		ImGui::InputText("##newpropertyvalue", &_propertyValue);
+		ImGui::TableNextColumn();
+		if (ImGui::Button(ICON_FA_PLUS "##nodepropertyadd")) {
+			node.setProperty(_propertyKey, _propertyValue);
+			_propertyKey = _propertyValue = "";
+		}
+
+		ImGui::EndTable();
 	}
-	ImGui::PopItemWidth();
+
+	if (!deleteKey.empty()) {
+		node.properties().remove(deleteKey);
+	}
 }
 
 static void commandNodeMenu(const char *title, const char *command, const voxelformat::SceneGraphNode &node,

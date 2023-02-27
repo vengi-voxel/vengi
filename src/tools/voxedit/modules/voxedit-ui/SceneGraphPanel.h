@@ -25,7 +25,10 @@ private:
 	core::VarPtr _hideInactive;
 	bool _showNodeDetails = true;
 	bool _hasFocus = false;
+	core::String _propertyKey;
+	core::String _propertyValue;
 
+	void detailView(voxelformat::SceneGraphNode &node);
 	void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGraph &sceneGraph,
 							  voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener,
 							  int depth) const;
