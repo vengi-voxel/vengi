@@ -207,9 +207,9 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const voxelformat
 			const ImGuiPayload *payload = ImGui::GetDragDropPayload();
 			if (payload->IsDataType(dragdrop::SceneNodePayload)) {
 				const int sourceNodeId = *(int *)payload->Data;
-				if (sceneGraph.canChangeParent(node, sourceNodeId)) {
+				const int targetNode = node.id();
+				if (sceneGraph.canChangeParent(sceneGraph.node(sourceNodeId), targetNode)) {
 					if (ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload) != nullptr) {
-						const int targetNode = node.id();
 						if (!sceneMgr().nodeMove(sourceNodeId, targetNode)) {
 							Log::error("Failed to move node");
 						}
