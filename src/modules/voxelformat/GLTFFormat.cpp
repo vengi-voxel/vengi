@@ -856,6 +856,11 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node,
 	}
 
 	Log::debug("colors: %i", (int)palette.size());
+	if (palette.colorCount() == 1) {
+		if (palette.colors()[0].a == 0) {
+			palette.color(0).a = 255;
+		}
+	}
 	node.setPalette(palette);
 	if (fillHollow) {
 		Log::debug("fill hollows");
