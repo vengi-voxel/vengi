@@ -168,6 +168,7 @@ const char *MementoHandler::typeToString(MementoType type) {
 		"SceneNodeTransform",
 		"SceneNodePaletteChanged",
 		"SceneNodeKeyFrames",
+		"SceneNodeProperties",
 		"PaletteChanged"
 	};
 	static_assert((int)MementoType::Max == lengthof(states), "Array sizes don't match");
@@ -249,11 +250,21 @@ MementoState MementoHandler::undoPaletteChange(const MementoState &s) {
 	return _states[0];
 }
 
+MementoState MementoHandler::undoNodeProperties(const MementoState &s) {
+	for (int i = _statePosition; i >= 0; --i) {
+		MementoState &prevS = _states[i];
+		if (prevS.properties.hasValue()) {
+			return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, s.keyFrames, s.palette, prevS.properties};
+		}
+	}
+	return _states[0];
+}
+
 MementoState MementoHandler::undoKeyFrames(const MementoState &s) {
 	for (int i = _statePosition; i >= 0; --i) {
 		MementoState &prevS = _states[i];
 		if (prevS.keyFrames.hasValue()) {
-			return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, prevS.keyFrames, prevS.palette};
+			return MementoState{s.type, s.data, s.parentId, s.nodeId, s.name, s.region, prevS.keyFrames, s.palette};
 		}
 	}
 	return _states[0];
@@ -283,6 +294,8 @@ MementoState MementoHandler::undo() {
 		return undoTransform(s);
 	} else if (s.type == MementoType::SceneNodePaletteChanged) {
 		return undoPaletteChange(s);
+	} else if (s.type == MementoType::SceneNodeProperties) {
+		return undoNodeProperties(s);
 	} else if (s.type == MementoType::SceneNodeKeyFrames) {
 		return undoKeyFrames(s);
 	} else if (s.type == MementoType::SceneNodeRenamed) {
@@ -309,6 +322,20 @@ void MementoHandler::updateNodeId(int nodeId, int newNodeId) {
 			state.parentId = newNodeId;
 		}
 	}
+}
+
+void MementoHandler::markNodePropertyChange(const voxelformat::SceneGraphNode &node) {
+	const int nodeId = node.id();
+	if (!markUndoPreamble(nodeId)) {
+		return;
+	}
+	const int parentId = node.parent();
+	const core::String &name = node.name();
+	Log::debug("New node property undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
+	core::Optional<voxelformat::SceneGraphNodeProperties> properties;
+	properties.setValue(node.properties());
+	MementoState state(MementoType::SceneNodeProperties, parentId, nodeId, name, properties);
+	addState(core::move(state));
 }
 
 void MementoHandler::markKeyFramesChange(const voxelformat::SceneGraphNode &node) {
@@ -355,7 +382,9 @@ void MementoHandler::markInitialNodeState(const voxelformat::SceneGraphNode &nod
 		palette.setValue(node.palette());
 		Log::debug("palette modification hash: %lu", node.palette().hash());
 	}
-	markUndoKeyFrames(parentId, nodeId, name, volume, MementoType::Modification, voxel::Region::InvalidRegion, node.keyFrames(), palette);
+	core::Optional<voxelformat::SceneGraphNodeProperties> properties;
+	properties.setValue(node.properties());
+	markUndoKeyFrames(parentId, nodeId, name, volume, MementoType::Modification, voxel::Region::InvalidRegion, node.keyFrames(), palette, properties);
 }
 
 void MementoHandler::markModification(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion) {
@@ -448,7 +477,8 @@ void MementoHandler::markUndo(int parentId, int nodeId, const core::String &name
 void MementoHandler::markUndoKeyFrames(int parentId, int nodeId, const core::String &name,
 									   const voxel::RawVolume *volume, MementoType type, const voxel::Region &region,
 									   const voxelformat::SceneGraphKeyFrames &keyFrames,
-									   const core::Optional<voxel::Palette> &palette) {
+									   const core::Optional<voxel::Palette> &palette,
+									   const core::Optional<voxelformat::SceneGraphNodeProperties> &properties) {
 	if (!markUndoPreamble(nodeId)) {
 		return;
 	}
@@ -457,7 +487,7 @@ void MementoHandler::markUndoKeyFrames(int parentId, int nodeId, const core::Str
 	const MementoData& data = MementoData::fromVolume(volume, region);
 	core::Optional<voxelformat::SceneGraphKeyFrames> kf;
 	kf.setValue(keyFrames);
-	MementoState state(type, data, parentId, nodeId, name, region, kf, palette);
+	MementoState state(type, data, parentId, nodeId, name, region, kf, palette, properties);
 	addState(core::move(state));
 }
 

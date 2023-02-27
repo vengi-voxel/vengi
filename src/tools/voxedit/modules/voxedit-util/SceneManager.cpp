@@ -685,6 +685,16 @@ bool SceneManager::mementoRename(const MementoState& s) {
 	return nodeRename(s.nodeId, s.name);
 }
 
+bool SceneManager::mementoProperties(const MementoState& s) {
+	Log::debug("Memento: properties of node %i (%s)", s.nodeId, s.name.c_str());
+	if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+		node->properties().clear();
+		core_assert(s.properties.hasValue());
+		node->addProperties(*s.properties.value());
+		return true;
+	}
+	return false;
+}
 bool SceneManager::mementoKeyFrames(const MementoState& s) {
 	Log::debug("Memento: keyframes of node %i (%s)", s.nodeId, s.name.c_str());
 	if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
@@ -745,6 +755,10 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 	if (s.keyFrames.hasValue()) {
 		node.setKeyFrames(*s.keyFrames.value());
 	}
+	if (s.properties.hasValue()) {
+		node.properties().clear();
+		node.addProperties(*s.properties.value());
+	}
 	node.setName(s.name);
 	const int newNodeId = addNodeToSceneGraph(node, s.parentId);
 	_mementoHandler.updateNodeId(s.nodeId, newNodeId);
@@ -759,6 +773,9 @@ bool SceneManager::mementoStateExecute(const MementoState &s, bool isRedo) {
 	}
 	if (s.type == MementoType::SceneNodeKeyFrames) {
 		return mementoKeyFrames(s);
+	}
+	if (s.type == MementoType::SceneNodeProperties) {
+		return mementoProperties(s);
 	}
 	if (s.type == MementoType::SceneNodePaletteChanged) {
 		return mementoPaletteChange(s);
@@ -2404,16 +2421,20 @@ bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 
 bool SceneManager::nodeSetProperty(int nodeId, const core::String &key, const core::String &value) {
 	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-		// TODO: memento state
-		return node->setProperty(key, value);
+		if (node->setProperty(key, value)) {
+			_mementoHandler.markNodePropertyChange(*node);
+			return true;
+		}
 	}
 	return false;
 }
 
 bool SceneManager::nodeRemoveProperty(int nodeId, const core::String &key) {
 	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-		// TODO: memento state
-		return node->properties().remove(key);
+		if (node->properties().remove(key)) {
+			_mementoHandler.markNodePropertyChange(*node);
+			return true;
+		}
 	}
 	return false;
 }

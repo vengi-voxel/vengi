@@ -180,6 +180,7 @@ public:
 
 using SceneGraphNodeChildren = const core::Buffer<int, 32>;
 using SceneGraphKeyFrames = core::DynamicArray<SceneGraphKeyFrame>;
+using SceneGraphNodeProperties = core::StringMap<core::String>;
 
 /**
  * @brief Struct that holds the metadata and the volume
@@ -211,7 +212,7 @@ protected:
 	voxel::RawVolume *_volume = nullptr;
 	SceneGraphKeyFrames _keyFrames;
 	core::Buffer<int, 32> _children;
-	core::StringMap<core::String> _properties;
+	SceneGraphNodeProperties _properties;
 	mutable core::Optional<voxel::Palette> _palette;
 
 	/**
