@@ -32,7 +32,11 @@ private:
 	void recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGraph &sceneGraph,
 							  voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener,
 							  int depth) const;
-
+	/**
+	 * @return @c true if the property was handled with a special ui input widget - @c false if it should just be a
+	 * normal text input field
+	 */
+	bool handleCameraProperty(voxelformat::SceneGraphNode &node, const core::String &key, core::String &value);
 public:
 	bool _popupNewModelNode = false;
 	bool init();

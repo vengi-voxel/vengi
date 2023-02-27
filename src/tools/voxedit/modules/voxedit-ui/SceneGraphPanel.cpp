@@ -21,6 +21,11 @@
 
 namespace voxedit {
 
+bool SceneGraphPanel::handleCameraProperty(voxelformat::SceneGraphNode &node, const core::String &key, core::String &value) {
+	// TODO: implement comboboxes and float inputs for camera properties
+	return false;
+}
+
 void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
 	core::String deleteKey;
 	static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
@@ -44,9 +49,17 @@ void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
 			ImGui::TextUnformatted(entry->key.c_str());
 			ImGui::TableNextColumn();
 			const core::String &id = core::string::format("##%i-%s", node.id(), entry->key.c_str());
-			core::String value = entry->value;
-			if (ImGui::InputText(id.c_str(), &value, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
-				sceneMgr().nodeSetProperty(node.id(), entry->key, value);
+			bool propertyAlreadyHandled = false;
+
+			if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
+				propertyAlreadyHandled = handleCameraProperty(node, entry->key, entry->value);
+			}
+
+			if (!propertyAlreadyHandled) {
+				core::String value = entry->value;
+				if (ImGui::InputText(id.c_str(), &value, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+					sceneMgr().nodeSetProperty(node.id(), entry->key, value);
+				}
 			}
 			ImGui::TableNextColumn();
 			const core::String &deleteId = core::string::format(ICON_FA_TRASH "##%i-%s-delete", node.id(), entry->key.c_str());
