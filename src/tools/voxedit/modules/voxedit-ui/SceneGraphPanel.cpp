@@ -60,7 +60,7 @@ void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
 		ImGui::InputText("##newpropertyvalue", &_propertyValue);
 		ImGui::TableNextColumn();
 		if (ImGui::Button(ICON_FA_PLUS "##nodepropertyadd")) {
-			node.setProperty(_propertyKey, _propertyValue);
+			sceneMgr().nodeSetProperty(node.id(), _propertyKey, _propertyValue);
 			_propertyKey = _propertyValue = "";
 		}
 
@@ -68,7 +68,7 @@ void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
 	}
 
 	if (!deleteKey.empty()) {
-		node.properties().remove(deleteKey);
+		sceneMgr().nodeRemoveProperty(node.id(), deleteKey);
 	}
 }
 

@@ -392,6 +392,8 @@ public:
 	bool nodeRemoveKeyFrame(int nodeId, voxelformat::FrameIndex frameIdx);
 	bool nodeAddKeyFrame(int nodeId, voxelformat::FrameIndex frameIdx);
 	bool nodeMove(int sourceNodeId, int targetNodeId);
+	bool nodeSetProperty(int nodeId, const core::String &key, const core::String &value);
+	bool nodeRemoveProperty(int nodeId, const core::String &key);
 	bool nodeRename(int nodeId, const core::String &name);
 	bool nodeRemove(int nodeId, bool recursive);
 	bool nodeSetVisible(int nodeId, bool visible);

@@ -2402,6 +2402,22 @@ bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 	return false;
 }
 
+bool SceneManager::nodeSetProperty(int nodeId, const core::String &key, const core::String &value) {
+	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		// TODO: memento state
+		return node->setProperty(key, value);
+	}
+	return false;
+}
+
+bool SceneManager::nodeRemoveProperty(int nodeId, const core::String &key) {
+	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		// TODO: memento state
+		return node->properties().remove(key);
+	}
+	return false;
+}
+
 bool SceneManager::nodeRename(int nodeId, const core::String &name) {
 	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRename(*node, name);
