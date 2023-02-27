@@ -62,6 +62,7 @@ public:
 	voxel::Region region() const;
 	/**
 	 * @return The region of the locked/grouped (model) nodes
+	 * @note May return voxel::Region::InvalidRegion if the current active node is no model node
 	 */
 	voxel::Region groupRegion() const;
 

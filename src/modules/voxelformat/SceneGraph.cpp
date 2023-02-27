@@ -180,10 +180,16 @@ void SceneGraph::updateTransforms() {
 voxel::Region SceneGraph::groupRegion() const {
 	int nodeId = activeNode();
 	voxel::Region region = node(nodeId).region();
+	if (!region.isValid()) {
+		return region;
+	}
 	if (node(nodeId).locked()) {
 		for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
 			if ((*iter).locked()) {
-				region.accumulate((*iter).region());
+				const voxel::Region& childRegion = (*iter).region();
+				if (childRegion.isValid()) {
+					region.accumulate(childRegion);
+				}
 			}
 		}
 	}
