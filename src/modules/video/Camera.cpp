@@ -119,6 +119,9 @@ void Camera::lerp(const Camera& target) {
 	setTargetDistance(target.targetDistance());
 	setWorldPosition(target.worldPosition());
 	setOrientation(target.quaternion());
+
+	_orthoZoom = 1.0f;
+	_distance = 100.0f;
 }
 
 void Camera::setOmega(const glm::vec3& omega) {
