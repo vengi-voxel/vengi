@@ -3,17 +3,16 @@
  */
 
 #include "SceneGraphPanel.h"
-#include "ScopedStyle.h"
-#include "Toolbar.h"
 #include "Util.h"
 #include "core/collection/DynamicArray.h"
 #include "core/Color.h"
-#include "imgui.h"
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/IconsFontAwesome6.h"
 #include "ui/IMGUIEx.h"
+#include "ui/ScopedStyle.h"
+#include "ui/Toolbar.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "DragAndDropPayload.h"
 #include <glm/gtc/type_ptr.hpp>
