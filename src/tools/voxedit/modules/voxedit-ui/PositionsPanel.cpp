@@ -3,7 +3,8 @@
  */
 
 #include "PositionsPanel.h"
-#include "Toolbar.h"
+#include "ui/ScopedStyle.h"
+#include "ui/Toolbar.h"
 #include "Util.h"
 #include "core/Color.h"
 #include "ui/IconsFontAwesome6.h"
@@ -191,20 +192,25 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			change |= ImGui::InputFloat3("Sc", matrixScale);
 			change |= ImGui::InputFloat3("Pv", glm::value_ptr(pivot));
 
-			const int currentInterpolation = (int)sceneGraphKeyFrame.interpolation;
-			if (ImGui::BeginCombo("Interpolation##interpolationstrings", voxelformat::InterpolationTypeStr[currentInterpolation])) {
-				for (int n = 0; n < lengthof(voxelformat::InterpolationTypeStr); n++) {
-					const bool isSelected = (currentInterpolation == n);
-					if (ImGui::Selectable(voxelformat::InterpolationTypeStr[n], isSelected)) {
-						sceneGraphKeyFrame.interpolation = (voxelformat::InterpolationType)n;
-					}
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
-					}
+			{
+				ui::ScopedStyle style;
+				if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
+					style.disableItem();
 				}
-				ImGui::EndCombo();
+				const int currentInterpolation = (int)sceneGraphKeyFrame.interpolation;
+				if (ImGui::BeginCombo("Interpolation##interpolationstrings", voxelformat::InterpolationTypeStr[currentInterpolation])) {
+					for (int n = 0; n < lengthof(voxelformat::InterpolationTypeStr); n++) {
+						const bool isSelected = (currentInterpolation == n);
+						if (ImGui::Selectable(voxelformat::InterpolationTypeStr[n], isSelected)) {
+							sceneGraphKeyFrame.interpolation = (voxelformat::InterpolationType)n;
+						}
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
 			}
-
 			if (change) {
 				glm::mat4 matrix;
 				_lastChanged = true;
