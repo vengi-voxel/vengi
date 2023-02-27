@@ -39,32 +39,12 @@ static core::String toString(const voxelformat::SceneGraphTransform &transform) 
 
 static void detailView(const voxelformat::SceneGraphNode &node) {
 	const float maxPropKeyLength = ImGui::CalcTextSize("maxpropertykey").x;
-	if (node.type() == voxelformat::SceneGraphNodeType::Model) {
-		const voxel::Region &region = node.region();
-		const glm::ivec3 &pos = region.getLowerCorner();
-		const glm::ivec3 &size = region.getDimensionsInVoxels();
-		ImGui::PushItemWidth(maxPropKeyLength);
-		ImGui::LabelText(core::string::format("%i:%i:%i", pos.x, pos.y, pos.z).c_str(), "position");
-		ImGui::LabelText(core::string::format("%i:%i:%i", size.x, size.y, size.z).c_str(), "size");
-		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-			sceneMgr().nodeActivate(node.id());
-		}
-		ImGui::PopItemWidth();
-	}
 	ImGui::PushItemWidth(maxPropKeyLength);
 	for (const auto &entry : node.properties()) {
 		// TODO: allow to edit them
 		ImGui::LabelText(entry->value.c_str(), "%s", entry->key.c_str());
 	}
 	ImGui::PopItemWidth();
-	if (node.keyFrames().size() > 1) {
-		for (const auto &entry : node.keyFrames()) {
-			const core::String &kftText = toString(entry.transform());
-			ImGui::TextWrapped("%i (%s, long rotation: %s)\n%s", entry.frameIdx,
-							voxelformat::InterpolationTypeStr[core::enumVal(entry.interpolation)],
-							entry.longRotation ? "true" : "false", kftText.c_str());
-		}
-	}
 }
 
 static void commandNodeMenu(const char *title, const char *command, const voxelformat::SceneGraphNode &node,
