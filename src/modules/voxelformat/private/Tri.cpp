@@ -13,8 +13,8 @@ namespace voxelformat {
 bool Tri::flat() const {
 	const float eps = glm::epsilon<float>();
 	const glm::bvec3 &zerocheck = glm::epsilonEqual(normal(), glm::zero<glm::vec3>(), eps);
-	// if the normal of at least two components is zero
-	return zerocheck[0] + zerocheck[1] + zerocheck[2] == 2;
+	// if the normal of two components is zero
+	return (int)zerocheck[0] + (int)zerocheck[1] + (int)zerocheck[2] == 2;
 }
 
 glm::vec3 Tri::normal() const {

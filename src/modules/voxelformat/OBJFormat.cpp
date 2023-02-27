@@ -238,6 +238,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 	io::StdIStreamBuf stdStreamBuf(stream);
 	std::istream inputStream(&stdStreamBuf);
 	tinyobj::MaterialFileReader matFileReader(mtlbasedir.c_str());
+	Log::debug("Load obj %s", filename.c_str());
 	const bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, &inputStream, &matFileReader, true, false);
 	if (!warn.empty()) {
 		core::DynamicArray<core::String> lines;

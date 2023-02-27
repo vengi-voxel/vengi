@@ -93,7 +93,7 @@ core::RGBA MeshFormat::PosSampling::avgColor(uint8_t flattenFactor) const {
 	for (const PosSamplingEntry &pe : entries) {
 		sumArea += pe.area;
 	}
-	core::RGBA color(0, 0, 0);
+	core::RGBA color(0, 0, 0, 255);
 	if (sumArea <= 0.0f) {
 		return color;
 	}
@@ -159,16 +159,21 @@ void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &pos
 	}
 }
 
-bool MeshFormat::isAxisAligned(const TriCollection &tris) {
+bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
 	for (const Tri &tri : tris) {
+		if (!glm::epsilonEqual(glm::mod(tri.area(), 0.5f), 0.0f, 0.0001f)) {
+			return false;
+		}
 		if (!tri.flat()) {
 			Log::debug("No axis aligned mesh found");
+#ifdef DEBUG
 			for (int i = 0; i < 3; ++i) {
 				const glm::vec3 &v = tri.vertices[i];
 				Log::debug("tri.vertices[%i]: %f:%f:%f", i, v.x, v.y, v.z);
 			}
 			const glm::vec3 &n = tri.normal();
 			Log::debug("tri.normal: %f:%f:%f", n.x, n.y, n.z);
+#endif
 			return false;
 		}
 	}
@@ -182,7 +187,7 @@ int MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, c
 		return -1;
 	}
 
-	const bool axisAligned = isAxisAligned(tris);
+	const bool axisAligned = isVoxelMesh(tris);
 
 	glm::vec3 trisMins;
 	glm::vec3 trisMaxs;

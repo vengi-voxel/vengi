@@ -1014,7 +1014,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	glm::ivec3 imins;
 	glm::ivec3 imaxs;
 
-	const bool axisAligned = isAxisAligned(tris);
+	const bool axisAligned = isVoxelMesh(tris);
 	if (axisAligned) {
 		const glm::vec3 aabbCenterDelta = (mins + maxs) / 2.0f;
 
@@ -1122,7 +1122,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 				for (size_t keyFrameIdx = 0; keyFrameIdx < accessor->count; ++keyFrameIdx) {
 					const float *buf = (const float *)transformBuf;
 					transformBuf += stride;
-					SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+					SceneGraphKeyFrame &keyFrame = node.keyFrame((KeyFrameIndex)keyFrameIdx);
 					keyFrame.interpolation = interpolation;
 					SceneGraphTransform &transform = keyFrame.transform();
 					if (type == "translation") {

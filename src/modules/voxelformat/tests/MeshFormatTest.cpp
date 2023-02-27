@@ -82,7 +82,7 @@ TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
 		tris.push_back(tri);
 	}
 
-	EXPECT_TRUE(MeshFormat::isAxisAligned(tris));
+	EXPECT_TRUE(MeshFormat::isVoxelMesh(tris));
 
 	{
 		tri.vertices[0] = glm::vec3(0, 0, 0);
@@ -91,7 +91,7 @@ TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
 		tris.push_back(tri);
 	}
 
-	EXPECT_FALSE(MeshFormat::isAxisAligned(tris));
+	EXPECT_FALSE(MeshFormat::isVoxelMesh(tris));
 }
 
 TEST_F(MeshFormatTest, testVoxelizeColor) {

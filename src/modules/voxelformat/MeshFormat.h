@@ -29,7 +29,7 @@ public:
 	 */
 	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
 	static bool calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
-	static bool isAxisAligned(const TriCollection &tris);
+	static bool isVoxelMesh(const TriCollection &tris);
 protected:
 	uint8_t _flattenFactor;
 	struct MeshExt {
