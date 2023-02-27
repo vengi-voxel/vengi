@@ -2502,10 +2502,6 @@ bool SceneManager::nodeActivate(int nodeId) {
 		video::Camera nodeCamera = voxelrender::toCamera(activeCamera()->size(), cameraNode);
 		nodeCamera.update(0.0f);
 		activeCamera()->lerp(nodeCamera);
-		return false;
-	} else if (node.type() != voxelformat::SceneGraphNodeType::Model) {
-		Log::warn("Given node id %i is no model node", nodeId);
-		return false;
 	}
 	_sceneGraph.setActiveNode(nodeId);
 	const voxel::Palette &palette = node.palette();

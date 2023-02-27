@@ -96,22 +96,24 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 			}
 		} else {
 			const voxel::RawVolume *v = sceneMgr().volume(nodeId);
-			const voxel::Region &region = v->region();
-			glm::ivec3 mins = region.getLowerCorner();
-			glm::ivec3 maxs = region.getDimensionsInVoxels();
-			if (xyzValues("pos", mins)) {
-				const glm::ivec3 &f = mins - region.getLowerCorner();
-				sceneMgr().shift(nodeId, f);
-			}
-			if (xyzValues("size", maxs)) {
-				voxel::Region newRegion(region.getLowerCorner(), maxs - 1);
-				sceneMgr().resize(nodeId, newRegion);
-			}
+			if (v != nullptr) {
+				const voxel::Region &region = v->region();
+				glm::ivec3 mins = region.getLowerCorner();
+				glm::ivec3 maxs = region.getDimensionsInVoxels();
+				if (xyzValues("pos", mins)) {
+					const glm::ivec3 &f = mins - region.getLowerCorner();
+					sceneMgr().shift(nodeId, f);
+				}
+				if (xyzValues("size", maxs)) {
+					voxel::Region newRegion(region.getLowerCorner(), maxs - 1);
+					sceneMgr().resize(nodeId, newRegion);
+				}
 
-			if (ImGui::CollapsingHeader(ICON_FA_CUBE " Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-				ImGui::CheckboxVar("Show gizmo", cfg::VoxEditModelGizmo);
-				ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGizmoAllowAxisFlip);
-				ImGui::CheckboxVar("Snap", cfg::VoxEditGizmoSnap);
+				if (ImGui::CollapsingHeader(ICON_FA_CUBE " Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+					ImGui::CheckboxVar("Show gizmo", cfg::VoxEditModelGizmo);
+					ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGizmoAllowAxisFlip);
+					ImGui::CheckboxVar("Snap", cfg::VoxEditGizmoSnap);
+				}
 			}
 		}
 	}

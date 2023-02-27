@@ -299,16 +299,18 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		_hasFocus = ImGui::IsWindowHovered();
 		_colorHovered = false;
 
-		paletteMenuBar(node, listener);
-		const ImVec2 &pos = ImGui::GetCursorScreenPos();
-		for (int palIdx = 0; palIdx < voxel::PaletteMaxColors; ++palIdx) {
-			addColor(pos.x, palIdx, node, listener);
-		}
-		ImGui::Dummy(ImVec2(0, ImGui::GetFrameHeight()));
-		ImGui::Text("palette index: %i (scene voxel index %i)", currentSelectedPalIdx, currentSceneHoveredPalIdx);
+		if (node.type() == voxelformat::SceneGraphNodeType::Model) {
+			paletteMenuBar(node, listener);
+			const ImVec2 &pos = ImGui::GetCursorScreenPos();
+			for (int palIdx = 0; palIdx < voxel::PaletteMaxColors; ++palIdx) {
+				addColor(pos.x, palIdx, node, listener);
+			}
+			ImGui::Dummy(ImVec2(0, ImGui::GetFrameHeight()));
+			ImGui::Text("palette index: %i (scene voxel index %i)", currentSelectedPalIdx, currentSceneHoveredPalIdx);
 
-		createPopups(node);
-		closestColor(node, listener);
+			createPopups(node);
+			closestColor(node, listener);
+		}
 	}
 
 	if (core::Var::getSafe(cfg::VoxEditShowColorPicker)->boolVal()) {
