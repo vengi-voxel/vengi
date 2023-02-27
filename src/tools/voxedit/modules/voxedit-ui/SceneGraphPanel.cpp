@@ -339,22 +339,8 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 		}
 		ImGui::EndChild();
 		ImGui::Separator();
-		ImDrawList *drawList = ImGui::GetWindowDrawList();
-		const ImVec2 halfSize(ImGui::GetTextLineHeight() / 2.0f, ImGui::GetTextLineHeight() / 2.0f);
-		const ImVec2 pos = ImGui::GetCursorScreenPos();
-		const ImVec2 trianglePos(pos.x + halfSize.x, pos.y + halfSize.y);
-		const ImVec2 buttonSize(halfSize.x * 2.0f, halfSize.y * 2.0f);
-		const ImGuiDir buttonDir = _showNodeDetails ? ImGuiDir_Down : ImGuiDir_Up;
-		ImGui::RenderArrowPointingAt(drawList, trianglePos, halfSize, buttonDir, ImGui::GetColorU32(ImGuiCol_Text));
-		if (ImGui::InvisibleButton("##expandtriangle", buttonSize)) {
-			_showNodeDetails ^= true;
-			if (_showNodeDetails) {
-				ImGui::BeginChild("detail##scenegraphpanel");
-				detailView(sceneGraph.node(sceneGraph.activeNode()));
-				ImGui::EndChild();
-			} else {
-				ImGui::TooltipText("Show node details");
-			}
+		if (ImGui::CollapsingHeader("Details")) {
+			detailView(sceneGraph.node(sceneGraph.activeNode()));
 		}
 	}
 	ImGui::End();
