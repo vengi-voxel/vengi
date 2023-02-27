@@ -340,7 +340,10 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 		ImGui::EndChild();
 		ImGui::Separator();
 		if (ImGui::CollapsingHeader("Details")) {
+			_showNodeDetails = true;
 			detailView(sceneGraph.node(sceneGraph.activeNode()));
+		} else {
+			_showNodeDetails = false;
 		}
 	}
 	ImGui::End();
