@@ -67,6 +67,7 @@ VoxEdit:
    - Allow to select and drag keyframes in the animation timeline
    - Export animations as AVI
    - Allow to import a whole directory into a scene
+   - Allow to select all node types in the scene graph panel
 
 ## 0.0.23 (2022-12-17)
 
