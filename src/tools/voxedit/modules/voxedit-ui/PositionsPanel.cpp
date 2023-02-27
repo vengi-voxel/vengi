@@ -177,8 +177,8 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 		const int activeNode = sceneGraph.activeNode();
 		if (activeNode != -1) {
 			voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
-			const uint32_t frame = sceneMgr().currentFrame();
-			const uint32_t keyFrame = node.keyFrameForFrame(frame);
+			const voxelformat::FrameIndex frame = sceneMgr().currentFrame();
+			const voxelformat::KeyFrameIndex keyFrame = node.keyFrameForFrame(frame);
 			voxelformat::SceneGraphKeyFrame &sceneGraphKeyFrame = node.keyFrame(keyFrame);
 			voxelformat::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
 			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
