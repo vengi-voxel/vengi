@@ -522,7 +522,7 @@ void App::usage() const {
 	Log::info("take precendence over the one the is found in the configuration file. Next is the configuration");
 	Log::info("file - this one will take precendence over the default settings that are specified in the code.");
 	Log::info("The environment variable can be either lower case or upper case. For example it will work if you");
-	Log::info("have CL_WIDTH or cl_width exported. The lower case variant has the higher priority.");
+	Log::info("have CL_GAMMA or cl_gamma exported. The lower case variant has the higher priority.");
 	Log::info("Examples:");
 	Log::info("export the variable CORE_LOGLEVEL with the value 1 to override previous values.");
 	Log::info("%s -set core_loglevel 1.", _appname.c_str());

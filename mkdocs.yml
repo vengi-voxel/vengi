@@ -40,6 +40,7 @@ nav:
   - VoxEdit:
       - voxedit/Index.md
       - voxedit/Features.md
+      - voxedit/Usage.md
       - voxedit/Controls.md
       - voxedit/Configuration.md
       - voxedit/Screenshots.md

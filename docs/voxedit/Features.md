@@ -2,23 +2,24 @@
 
 A few of the features are:
 
-* LUA [scripting](../LUAScript.md) api and built-in editor
-* Layer and scene graph support
-* Auto cropping volumes
-* Auto generate content like trees or noise volumes
-* Import images as heightmaps, palettes or planes
+* Layer and key frame animation support
+* Viewport screenshots and AVI video recording
 * Customizable UI
-* L-System integration
+* Multiple viewports to view the model from all sides while editing it
+* Multi monitor support
+* LUA [scripting](../LUAScript.md) api and built-in editor
 * Undo/Redo
-* Custom color palettes
-* Viewport screenshots
-* Layer animation support
-* Key-Frame animation support (WIP)
-* Custom key bindings
-* Show commands of actions (to configure your own key bindings)
 * Copy/Cut/Paste - paste to cursor or reference position
+* Layer and scene graph support
+* Custom color palettes with sorting and several color reduction algorithms
+* Custom key bindings
+* Import images as heightmaps, palettes or planes
+* Import meshes and voxelize them - see [supported formats](../Formats.md)
+* Import whole folders of single models into one scene
 * Exporting single layers or whole scenes into meshes and a lot of other formats
+* Voxelize true type font text
+* Procedurally generated content like trees and a L-System integration
 * Generate level of details (LOD) volumes
-* Import meshes and voxelize them
+* Cropping volumes
 
 There are a lot more features to explore. If you feel like something is missing here but is supported, please let me know.

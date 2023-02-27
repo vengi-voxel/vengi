@@ -227,7 +227,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (!voxedit::sceneMgr().importColoredHeightmap(args[0])) {
 			Log::error("Failed to execute 'importcoloredheightmap' for file '%s'", args[0].c_str());
 		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import a 2d heightmap image into the current active node");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import a 2d heightmap image into the current active node. The height is encoded in the alpha channel with this method.");
 
 	command::Command::registerCommand("importplane", [this](const command::CmdArgs &args) {
 		if (args.empty()) {

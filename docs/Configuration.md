@@ -13,7 +13,7 @@ the command line, every other method will not be used. If the engine finds the c
 one will take precendence over the one the is found in the configuration file. Next is the configuration file - this one will
 take precendence over the default settings that are specified in the code.
 
-The environment variable can be either lower case or upper case. For example it will work if you have `CL_WIDTH` or `cl_width`
+The environment variable can be either lower case or upper case. For example it will work if you have `CL_GAMMA` or `cl_gamma`
 exported. The lower case variant has the higher priority.
 
 ### Commandline
@@ -71,10 +71,7 @@ with a description and hints how to modify/use them.
 | ----------------------------- | ---------------------------------------------------------------------------------------- |
 | `cl_vsync`                    | enable or disable v-sync                                                                 |
 | `cl_gamma`                    | tweak the gamma value that is applied last on rendering                                  |
-| `cl_width`                    | the window width                                                                         |
-| `cl_height`                   | the window height                                                                        |
 | `cl_display`                  | the display index if you are using multiple monitors `[0-numDisplays)`                   |
-| `cl_fullscreen`               | `true` or `1` to run the window-based applications in fullscreen mode                    |
 
 ## Voxel settings
 

@@ -1,10 +1,10 @@
 # About
 
-This is an opensource, cross platform voxel volume editor with scripting support.
+This is an opensource, cross platform voxel volume editor with scripting and animation support.
 
-You can load and save a lot of different [voxel formats](../Formats.md). Its built around [256 color palettes](../Palette.md). Animation support is in progress.
+You can load and save a lot of different [voxel formats](../Formats.md). Its built around [256 color palettes](../Palette.md).
 
-> The voxel editor is not yet ready for production work - if you are a **developer** or **voxel artist**, please consider contributing.
+> The voxel editor is under development - if you are a **developer** or **voxel artist**, please consider contributing.
 
 # Requirements
 
@@ -13,6 +13,7 @@ You can load and save a lot of different [voxel formats](../Formats.md). Its bui
 # Further reading
 
 * [Features](Features.md)
+* [Usage](Usage.md)
 * [Configuration](Configuration.md)
 * [Controls](Controls.md)
 * [Screenshots](Screenshots.md)

@@ -1,5 +1,6 @@
 # Controls
 
+* `TAB` switches between scene and edit mode
 * Placing voxels via left mouse button or SHIFT+[CTRL+]Cursors
 * Deleting voxels via right mouse button
 * Rotating viewport via middle mouse button and moving the mouse
