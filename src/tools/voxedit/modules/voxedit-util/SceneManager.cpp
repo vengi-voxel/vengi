@@ -266,6 +266,9 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 void SceneManager::fillHollow() {
 	_sceneGraph.foreachGroup([&] (int nodeId) {
 		voxel::RawVolume *v = volume(nodeId);
+		if (v == nullptr) {
+			return;
+		}
 		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 		voxelutil::fillHollow(wrapper, _modifier.cursorVoxel());
 		modified(nodeId, wrapper.dirtyRegion());
@@ -278,6 +281,9 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 		return;
 	}
 	voxel::RawVolume *v = volume(nodeId);
+	if (v == nullptr) {
+		return;
+	}
 	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 	const glm::ivec3 &pos = _modifier.cursorPosition();
 	const voxel::FaceNames face = _modifier.cursorFace();
@@ -287,7 +293,11 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 }
 
 void SceneManager::updateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType) {
-	voxel::RawVolumeWrapper wrapper(volume(nodeId));
+	voxel::RawVolume *v = volume(nodeId);
+	if (v == nullptr) {
+		return;
+	}
+	voxel::RawVolumeWrapper wrapper(v);
 	voxelutil::visitVolume(wrapper, [&wrapper, palIdx, newType](int x, int y, int z, const voxel::Voxel &v) {
 		if (v.getColor() != palIdx) {
 			return;
@@ -474,9 +484,18 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 }
 
 void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
-	voxel::RawVolume* newVolume = new voxel::RawVolume(_sceneGraph.groupRegion());
+	const voxel::Region &region = _sceneGraph.groupRegion();
+	if (!region.isValid()) {
+		Log::warn("Invalid node region");
+		return;
+	}
+	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
 	_sceneGraph.foreachGroup([&] (int nodeId) {
-		voxel::RawVolumeWrapper wrapper(volume(nodeId));
+		voxel::RawVolume *v = volume(nodeId);
+		if (v == nullptr) {
+			return;
+		}
+		voxel::RawVolumeWrapper wrapper(v);
 		voxelutil::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
 			if (voxel.getColor() == voxelColor.getColor()) {
 				newVolume->setVoxel(x, y, z, voxel);
@@ -492,11 +511,11 @@ void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
 }
 
 void SceneManager::scale(int nodeId) {
-	voxel::RawVolume* srcVolume = volume(nodeId);
-	if (srcVolume == nullptr) {
+	voxel::RawVolume* v = volume(nodeId);
+	if (v == nullptr) {
 		return;
 	}
-	const voxel::Region srcRegion = srcVolume->region();
+	const voxel::Region srcRegion = v->region();
 	const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 	if (targetDimensionsHalf.x < 0 || targetDimensionsHalf.y < 0 || targetDimensionsHalf.z < 0) {
 		Log::debug("Can't scale anymore");
@@ -504,7 +523,7 @@ void SceneManager::scale(int nodeId) {
 	}
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 	voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
-	voxelutil::rescaleVolume(*srcVolume, _sceneGraph.node(nodeId).palette(), *destVolume);
+	voxelutil::rescaleVolume(*v, _sceneGraph.node(nodeId).palette(), *destVolume);
 	if (!setNewVolume(nodeId, destVolume, true)) {
 		delete destVolume;
 		return;
@@ -531,6 +550,9 @@ void SceneManager::crop() {
 
 void SceneManager::resize(int nodeId, const glm::ivec3& size) {
 	voxel::RawVolume* v = volume(nodeId);
+	if (v == nullptr) {
+		return;
+	}
 	voxel::Region region = v->region();
 	region.shiftUpperCorner(size);
 	resize(nodeId, region);
@@ -655,11 +677,7 @@ voxel::RawVolume* SceneManager::activeVolume() {
 		Log::error("No active node in scene graph");
 		return nullptr;
 	}
-	voxel::RawVolume* v = volume(nodeId);
-	if (v == nullptr) {
-		Log::error("No active volume found for node id %i", nodeId);
-	}
-	return v;
+	return volume(nodeId);
 }
 
 bool SceneManager::mementoRename(const MementoState& s) {
@@ -829,9 +847,11 @@ bool SceneManager::copy() {
 	if (!selection.isValid()) {
 		return false;
 	}
-	const int nodeId = activeNode();
-	voxel::RawVolume* model = volume(nodeId);
-	_copy = voxedit::tool::copy(model, selection);
+	voxel::RawVolume* v = activeVolume();
+	if (v == nullptr) {
+		return false;
+	}
+	_copy = voxedit::tool::copy(v, selection);
 	return true;
 }
 
@@ -841,9 +861,12 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 		return false;
 	}
 	const int nodeId = activeNode();
-	voxel::RawVolume* model = volume(nodeId);
+	voxel::RawVolume* v = volume(nodeId);
+	if (v == nullptr) {
+		return false;
+	}
 	voxel::Region modifiedRegion;
-	voxedit::tool::paste(model, _copy, pos, modifiedRegion);
+	voxedit::tool::paste(v, _copy, pos, modifiedRegion);
 	if (!modifiedRegion.isValid()) {
 		Log::debug("Failed to paste");
 		return false;
@@ -860,9 +883,12 @@ bool SceneManager::cut() {
 		return false;
 	}
 	const int nodeId = activeNode();
-	voxel::RawVolume* model = volume(nodeId);
+	voxel::RawVolume* v = volume(nodeId);
+	if (v == nullptr) {
+		return false;
+	}
 	voxel::Region modifiedRegion;
-	_copy = voxedit::tool::cut(model, selection, modifiedRegion);
+	_copy = voxedit::tool::cut(v, selection, modifiedRegion);
 	if (_copy == nullptr) {
 		Log::debug("Failed to cut");
 		return false;
@@ -1122,10 +1148,13 @@ void SceneManager::rotate(int angleX, int angleY, int angleZ) {
 }
 
 void SceneManager::move(int nodeId, const glm::ivec3& m) {
-	const voxel::RawVolume* model = volume(nodeId);
-	voxel::RawVolume* newVolume = new voxel::RawVolume(model->region());
+	const voxel::RawVolume* v = volume(nodeId);
+	if (v == nullptr) {
+		return;
+	}
+	voxel::RawVolume* newVolume = new voxel::RawVolume(v->region());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
-	voxelutil::moveVolume(&wrapper, model, m);
+	voxelutil::moveVolume(&wrapper, v, m);
 	if (!setNewVolume(nodeId, newVolume)) {
 		delete newVolume;
 		return;
@@ -1483,8 +1512,8 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("center_referenceposition", [&] (const command::CmdArgs& args) {
 		const glm::ivec3& refPos = referencePosition();
-		_sceneGraph.foreachGroup([&] (int nodeId) {
-			const auto* v = volume(nodeId);
+		_sceneGraph.foreachGroup([&](int nodeId) {
+			const voxel::RawVolume *v = volume(nodeId);
 			if (v == nullptr) {
 				return;
 			}
@@ -1495,9 +1524,9 @@ void SceneManager::construct() {
 		});
 	}).setHelp("Center the current active nodes at the reference position");
 
-	command::Command::registerCommand("center_origin", [&] (const command::CmdArgs& args) {
-		_sceneGraph.foreachGroup([&] (int nodeId) {
-			const auto* v = volume(nodeId);
+	command::Command::registerCommand("center_origin", [&](const command::CmdArgs &args) {
+		_sceneGraph.foreachGroup([&](int nodeId) {
+			const voxel::RawVolume *v = volume(nodeId);
 			if (v == nullptr) {
 				return;
 			}
@@ -1840,8 +1869,8 @@ int SceneManager::addModelChild(const core::String& name, int width, int height,
 }
 
 void SceneManager::flip(math::Axis axis) {
-	_sceneGraph.foreachGroup([&] (int nodeId) {
-		auto* v = volume(nodeId);
+	_sceneGraph.foreachGroup([&](int nodeId) {
+		voxel::RawVolume *v = volume(nodeId);
 		if (v == nullptr) {
 			return;
 		}
@@ -1895,8 +1924,11 @@ bool SceneManager::init() {
 
 bool SceneManager::runScript(const core::String& script, const core::DynamicArray<core::String>& args) {
 	const int nodeId = activeNode();
-	voxel::RawVolume* volume = this->volume(nodeId);
-	const voxel::Region& region = _modifier.createRegion(volume);
+	voxel::RawVolume* v = volume(nodeId);
+	if (v == nullptr) {
+		return false;
+	}
+	const voxel::Region& region = _modifier.createRegion(v);
 	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
 	const bool retVal = _luaGenerator.exec(script, _sceneGraph, nodeId, region, _modifier.cursorVoxel(), dirtyRegion, args);
 	modified(nodeId, dirtyRegion);
@@ -2010,7 +2042,11 @@ void SceneManager::lsystem(const core::String &axiom, const core::DynamicArray<v
 		float width, float widthIncrement, int iterations, float leavesRadius) {
 	math::Random random;
 	const int nodeId = activeNode();
-	voxel::RawVolumeWrapper wrapper(volume(nodeId));
+	voxel::RawVolume *v = volume(nodeId);
+	if (v == nullptr) {
+		return;
+	}
+	voxel::RawVolumeWrapper wrapper(v);
 	voxelgenerator::lsystem::generate(wrapper, referencePosition(), axiom, rules, angle, length, width, widthIncrement, iterations, random, leavesRadius);
 	modified(nodeId, wrapper.dirtyRegion());
 }
@@ -2018,7 +2054,11 @@ void SceneManager::lsystem(const core::String &axiom, const core::DynamicArray<v
 void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
 	math::Random random(ctx.cfg.seed);
 	const int nodeId = activeNode();
-	voxel::RawVolumeWrapper wrapper(volume(nodeId));
+	voxel::RawVolume *v = volume(nodeId);
+	if (v == nullptr) {
+		return;
+	}
+	voxel::RawVolumeWrapper wrapper(v);
 	voxelgenerator::tree::createTree(wrapper, ctx, random);
 	modified(nodeId, wrapper.dirtyRegion());
 }
@@ -2143,12 +2183,14 @@ void SceneManager::updateCursor() {
 	}
 
 	const voxel::RawVolume *v = activeVolume();
-	if (_result.didHit) {
+	if (_result.didHit && v) {
 		_modifier.setHitCursorVoxel(v->voxel(_result.hitVoxel));
 	} else {
 		_modifier.setHitCursorVoxel(voxel::Voxel());
 	}
-	_modifier.setVoxelAtCursor(v->voxel(_modifier.cursorPosition()));
+	if (v) {
+		_modifier.setVoxelAtCursor(v->voxel(_modifier.cursorPosition()));
+	}
 }
 
 bool SceneManager::mouseRayTrace(bool force) {
@@ -2190,7 +2232,7 @@ bool SceneManager::mouseRayTrace(bool force) {
 	_result.firstValidPosition = false;
 	_result.direction = ray.direction;
 	_result.hitFace = voxel::FaceNames::Max;
-	voxelutil::raycastWithDirection(activeVolume(), ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
+	voxelutil::raycastWithDirection(v, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
 		if (!_result.firstValidPosition && sampler.currentPositionValid()) {
 			_result.firstPosition = sampler.position();
 			_result.firstValidPosition = true;
