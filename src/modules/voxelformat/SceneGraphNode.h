@@ -339,6 +339,17 @@ public:
 	int fieldOfView() const;
 	void setFieldOfView(int val);
 
+	/**
+	 * aspect ratio (width over height) of the field of view, or the aspect ratio of the viewport
+	 */
+	void setAspectRatio(float val);
+	float aspectRatio() const;
+
+	int width() const;
+	void setWidth(int val);
+	int height() const;
+	void setHeight(int val);
+
 	float farPlane() const;
 	void setFarPlane(float val);
 

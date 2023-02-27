@@ -90,19 +90,17 @@ static tinygltf::Camera processCamera(const SceneGraphNodeCamera &cam) {
 	c.name = cam.name().c_str();
 	if (cam.isPerspective()) {
 		c.type = "perspective";
-		c.perspective.aspectRatio = 1.0;
+		c.perspective.aspectRatio = cam.aspectRatio();
 		c.perspective.yfov = cam.fieldOfView();
 		c.perspective.zfar = cam.farPlane();
 		c.perspective.znear = cam.nearPlane();
-	}
-	// TODO:
-	/* else if (cam.isOrthographic()) {
+	} else if (cam.isOrthographic()) {
 		c.type = "orthographic";
-		// c.orthographic.xmag = right * 2;
-		// c.orthographic.ymag = top * 2;
+		c.orthographic.xmag = cam.width() / 2.0;
+		c.orthographic.ymag = cam.height() / 2.0;
 		c.orthographic.zfar = cam.farPlane();
 		c.orthographic.znear = cam.nearPlane();
-	}*/
+	}
 	return c;
 }
 
@@ -899,15 +897,13 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 		node.setTransform(keyFrameIdx, transform);
 		if (cam.type == "orthographic") {
 			node.setOrthographic();
-			// TODO: These define the magnification of the camera in x- and y-direction, and basically describe the width and height of the viewing volume.
-			//node.set...(cam.orthographic.xmag);
-			//node.set...(cam.orthographic.ymag);
+			node.setWidth((int)(cam.orthographic.xmag * 2.0));
+			node.setHeight((int)(cam.orthographic.ymag * 2.0));
 			node.setFarPlane((float)cam.orthographic.zfar);
 			node.setNearPlane((float)cam.orthographic.znear);
 		} else if (cam.type == "perspective") {
 			node.setPerspective();
-			// TODO:
-			//node.setAspectRatio((int)cam.perspective.aspectRatio); // aspect ratio of the viewport
+			node.setAspectRatio((float)cam.perspective.aspectRatio);
 			node.setFieldOfView((int)glm::degrees(cam.perspective.yfov)); // Field Of View in Y-direction in radians
 			node.setFarPlane((float)cam.perspective.zfar);
 			node.setNearPlane((float)cam.perspective.znear);

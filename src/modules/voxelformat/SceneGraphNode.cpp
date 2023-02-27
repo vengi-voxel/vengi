@@ -695,12 +695,36 @@ void SceneGraphNodeCamera::setPerspective() {
 	setProperty("cam_mode", "perspective");
 }
 
-int SceneGraphNodeCamera::fieldOfView() const{
+int SceneGraphNodeCamera::width() const {
+	return property("cam_width").toInt();
+}
+
+void SceneGraphNodeCamera::setWidth(int val) {
+	setProperty("cam_width", core::string::toString(val));
+}
+
+int SceneGraphNodeCamera::height() const {
+	return property("cam_height").toInt();
+}
+
+void SceneGraphNodeCamera::setHeight(int val) {
+	setProperty("cam_height", core::string::toString(val));
+}
+
+int SceneGraphNodeCamera::fieldOfView() const {
 	return property("cam_fov").toInt();
 }
 
-void SceneGraphNodeCamera::setFieldOfView(int val){
+void SceneGraphNodeCamera::setFieldOfView(int val) {
 	setProperty("cam_fov", core::string::toString(val));
+}
+
+float SceneGraphNodeCamera::aspectRatio() const {
+	return property("cam_aspect").toFloat();
+}
+
+void SceneGraphNodeCamera::setAspectRatio(float val) {
+	setProperty("cam_aspect", core::string::toString(val));
 }
 
 } // namespace voxelformat

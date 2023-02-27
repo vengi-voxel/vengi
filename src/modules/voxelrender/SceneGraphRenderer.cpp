@@ -95,6 +95,9 @@ voxelformat::SceneGraphNodeCamera toCameraNode(const video::Camera& camera) {
 	voxelformat::SceneGraphTransform transform;
 	const voxelformat::KeyFrameIndex keyFrameIdx = 0;
 	transform.setWorldMatrix(camera.viewMatrix());
+	node.setAspectRatio(camera.aspect());
+	node.setWidth(camera.size().x);
+	node.setHeight(camera.size().y);
 	node.setTransform(keyFrameIdx, transform);
 	node.setFarPlane(camera.farPlane());
 	node.setNearPlane(camera.nearPlane());
@@ -110,7 +113,8 @@ voxelformat::SceneGraphNodeCamera toCameraNode(const video::Camera& camera) {
 
 video::Camera toCamera(const glm::ivec2 &size, const voxelformat::SceneGraphNodeCamera &cameraNode) {
 	video::Camera camera;
-	camera.setSize(size);
+	// width, heigth and aspect of the cameraNode are not taken into account here
+	camera.setSize(glm::max(glm::ivec2(1, 1), size));
 	if (cameraNode.isOrthographic()) {
 		camera.setMode(video::CameraMode::Orthogonal);
 	} else {
@@ -127,9 +131,9 @@ video::Camera toCamera(const glm::ivec2 &size, const voxelformat::SceneGraphNode
 	camera.setWorldPosition(transform.worldTranslation());
 	camera.setOrientation(transform.worldOrientation());
 	camera.setRotationType(video::CameraRotationType::Eye);
-	const int fov = cameraNode.fieldOfView();
-	if (fov > 0) {
-		camera.setFieldOfView(glm::radians((float)fov));
+	const int fovDegree = cameraNode.fieldOfView();
+	if (fovDegree > 0) {
+		camera.setFieldOfView((float)fovDegree);
 	}
 	return camera;
 }
@@ -152,8 +156,8 @@ void SceneGraphRenderer::prepare(const voxelformat::SceneGraph &sceneGraph, voxe
 		if (!cameraNode.visible()) {
 			continue;
 		}
-		// size is set later
-		video::Camera camera = toCamera(glm::ivec2(100), cameraNode);
+		const glm::ivec2 size(cameraNode.width(), cameraNode.height());
+		video::Camera camera = toCamera(size, cameraNode);
 		_cameras.push_back(camera);
 	}
 
