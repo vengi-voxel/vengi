@@ -50,7 +50,7 @@ void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
 			if (ImGui::Button(deleteId.c_str())) {
 				deleteKey = entry->key;
 			}
-			ImGui::TooltipText("Delete this node and all children");
+			ImGui::TooltipText("Delete this node property");
 		}
 
 		ImGui::TableNextRow();
