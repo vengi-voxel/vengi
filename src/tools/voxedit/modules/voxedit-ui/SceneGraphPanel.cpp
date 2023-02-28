@@ -4,6 +4,7 @@
 
 #include "SceneGraphPanel.h"
 #include "Util.h"
+#include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "core/Color.h"
 #include "voxedit-util/ModelNodeSettings.h"
@@ -21,9 +22,37 @@
 
 namespace voxedit {
 
-bool SceneGraphPanel::handleCameraProperty(voxelformat::SceneGraphNodeCamera &node, const core::String &key, core::String &value) {
-	// TODO: implement comboboxes and float inputs for camera properties
-	return false;
+bool SceneGraphPanel::handleCameraProperty(voxelformat::SceneGraphNodeCamera &node, const core::String &key, const core::String &value) {
+	const core::String &id = core::string::format("##%i-%s", node.id(), key.c_str());
+	if (key == voxelformat::SceneGraphNodeCamera::PropMode) {
+		int currentMode = value == voxelformat::SceneGraphNodeCamera::Modes[0] ? 0 : 1;
+
+		if (ImGui::BeginCombo(id.c_str(), voxelformat::SceneGraphNodeCamera::Modes[currentMode])) {
+			for (int n = 0; n < IM_ARRAYSIZE(voxelformat::SceneGraphNodeCamera::Modes); n++) {
+				const bool isSelected = (currentMode == n);
+				if (ImGui::Selectable(voxelformat::SceneGraphNodeCamera::Modes[n], isSelected)) {
+					sceneMgr().nodeSetProperty(node.id(), key, voxelformat::SceneGraphNodeCamera::Modes[n]);
+				}
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+	} else if (voxelformat::SceneGraphNodeCamera::isFloatProperty(key)) {
+		float fvalue = core::string::toFloat(value);
+		if (ImGui::InputFloat(id.c_str(), &fvalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
+			sceneMgr().nodeSetProperty(node.id(), key, core::string::toString(fvalue));
+		}
+	} else if (voxelformat::SceneGraphNodeCamera::isIntProperty(key)) {
+		int ivalue = core::string::toInt(value);
+		if (ImGui::InputInt(id.c_str(), &ivalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
+			sceneMgr().nodeSetProperty(node.id(), key, core::string::toString(ivalue));
+		}
+	} else {
+		return false;
+	}
+	return true;
 }
 
 void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
@@ -48,7 +77,6 @@ void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
 			ImGui::TableNextColumn();
 			ImGui::TextUnformatted(entry->key.c_str());
 			ImGui::TableNextColumn();
-			const core::String &id = core::string::format("##%i-%s", node.id(), entry->key.c_str());
 			bool propertyAlreadyHandled = false;
 
 			if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
@@ -57,6 +85,7 @@ void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
 
 			if (!propertyAlreadyHandled) {
 				core::String value = entry->value;
+				const core::String &id = core::string::format("##%i-%s", node.id(), entry->key.c_str());
 				if (ImGui::InputText(id.c_str(), &value, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
 					sceneMgr().nodeSetProperty(node.id(), entry->key, value);
 				}

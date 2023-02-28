@@ -334,6 +334,23 @@ private:
 public:
 	SceneGraphNodeCamera();
 
+	static constexpr const char *Modes[] = {"orthographic", "perspective"};
+	static constexpr const char *PropMode = "cam_mode";
+	static constexpr const char *PropNearPlane = "cam_nearplane";
+	static constexpr const char *PropFarPlane = "cam_farplane";
+	static constexpr const char *PropWidth = "cam_width";
+	static constexpr const char *PropHeight = "cam_height";
+	static constexpr const char *PropAspect = "cam_aspect";
+	static constexpr const char *PropFov = "cam_fov";
+
+	static bool isFloatProperty(const core::String &key) {
+		 return key == PropNearPlane || key == PropFarPlane || key == PropAspect;
+	}
+
+	static bool isIntProperty(const core::String &key) {
+		 return key == PropHeight || key == PropWidth || key == PropFov;
+	}
+
 	/**
 	 * @brief Field of view in degree
 	 */

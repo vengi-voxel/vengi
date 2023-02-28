@@ -659,67 +659,67 @@ SceneGraphNodeCamera::SceneGraphNodeCamera() : Super(SceneGraphNodeType::Camera)
 }
 
 float SceneGraphNodeCamera::farPlane() const {
-	return propertyf("cam_farplane");
+	return propertyf(PropFarPlane);
 }
 
 void SceneGraphNodeCamera::setFarPlane(float val) {
-	setProperty("cam_farplane", core::string::toString(val));
+	setProperty(PropFarPlane, core::string::toString(val));
 }
 
 float SceneGraphNodeCamera::nearPlane() const {
-	return propertyf("cam_nearplane");
+	return propertyf(PropNearPlane);
 }
 
 void SceneGraphNodeCamera::setNearPlane(float val) {
-	setProperty("cam_nearplane", core::string::toString(val));
+	setProperty(PropNearPlane, core::string::toString(val));
 }
 
 bool SceneGraphNodeCamera::isOrthographic() const {
-	return property("cam_mode") == "orthographic";
+	return property(PropMode) == Modes[0];
 }
 
 void SceneGraphNodeCamera::setOrthographic() {
-	setProperty("cam_mode", "orthographic");
+	setProperty(PropMode, Modes[0]);
 }
 
 bool SceneGraphNodeCamera::isPerspective() const {
-	return property("cam_mode") == "perspective";
+	return property(PropMode) == Modes[1];
 }
 
 void SceneGraphNodeCamera::setPerspective() {
-	setProperty("cam_mode", "perspective");
+	setProperty(PropMode, Modes[1]);
 }
 
 int SceneGraphNodeCamera::width() const {
-	return property("cam_width").toInt();
+	return property(PropWidth).toInt();
 }
 
 void SceneGraphNodeCamera::setWidth(int val) {
-	setProperty("cam_width", core::string::toString(val));
+	setProperty(PropWidth, core::string::toString(val));
 }
 
 int SceneGraphNodeCamera::height() const {
-	return property("cam_height").toInt();
+	return property(PropHeight).toInt();
 }
 
 void SceneGraphNodeCamera::setHeight(int val) {
-	setProperty("cam_height", core::string::toString(val));
+	setProperty(PropHeight, core::string::toString(val));
 }
 
 int SceneGraphNodeCamera::fieldOfView() const {
-	return property("cam_fov").toInt();
+	return property(PropFov).toInt();
 }
 
 void SceneGraphNodeCamera::setFieldOfView(int val) {
-	setProperty("cam_fov", core::string::toString(val));
+	setProperty(PropFov, core::string::toString(val));
 }
 
 float SceneGraphNodeCamera::aspectRatio() const {
-	return property("cam_aspect").toFloat();
+	return property(PropAspect).toFloat();
 }
 
 void SceneGraphNodeCamera::setAspectRatio(float val) {
-	setProperty("cam_aspect", core::string::toString(val));
+	setProperty(PropAspect, core::string::toString(val));
 }
 
 } // namespace voxelformat
