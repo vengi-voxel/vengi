@@ -68,6 +68,7 @@ VoxEdit:
    - Export animations as AVI
    - Allow to import a whole directory into a scene
    - Allow to select all node types in the scene graph panel
+   - Allow to edit node properties
 
 ## 0.0.23 (2022-12-17)
 
