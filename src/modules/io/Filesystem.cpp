@@ -18,6 +18,9 @@
 #ifndef __WINDOWS__
 #include <unistd.h>
 #endif
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 namespace io {
 
@@ -39,6 +42,16 @@ Filesystem::~Filesystem() {
 bool Filesystem::init(const core::String &organisation, const core::String &appname) {
 	_organisation = organisation;
 	_appname = appname;
+
+#ifdef __EMSCRIPTEN__
+	EM_ASM(
+		FS.mkdir('/libsdl');
+		FS.mount(IDBFS, {}, '/libsdl');
+		FS.syncfs(true, function (err) {
+			assert(!err);
+		});
+	);
+#endif
 
 	char *path = SDL_GetBasePath();
 	if (path == nullptr) {
@@ -214,6 +227,12 @@ bool Filesystem::chdir(const core::String &directory) {
 }
 
 void Filesystem::shutdown() {
+#ifdef __EMSCRIPTEN__
+	EM_ASM(
+		FS.syncfs(true, function (err) {
+		});
+	);
+#endif
 }
 
 core::String Filesystem::absolutePath(const core::String &path) {

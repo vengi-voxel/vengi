@@ -13,20 +13,20 @@
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
 #include "io/Filesystem.h"
-#include <pwd.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <errno.h>
-#include <stdlib.h>
 #include <dirent.h>
+#include <errno.h>
+#include <pwd.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
 #endif
 
 #ifdef __MACOSX__
-#include <sysdir.h>
 #include <libproc.h>
+#include <sysdir.h>
 #endif
 
 namespace io {
@@ -116,6 +116,7 @@ static core::String load(const core::String &file) {
 } // namespace priv
 
 bool initState(io::FilesystemState &state) {
+#ifndef __EMSCRIPTEN__
 	char *envHome = priv::getHome();
 	if (envHome == nullptr) {
 		Log::debug("Can't read xdg user dirs: HOME env var not found");
@@ -179,7 +180,7 @@ bool initState(io::FilesystemState &state) {
 		}
 		state._directories[n] = core::string::path(envHome, state._directories[n]);
 	}
-
+#endif
 	return true;
 }
 

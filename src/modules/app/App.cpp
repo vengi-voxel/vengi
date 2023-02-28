@@ -30,7 +30,7 @@ namespace app {
 
 #ifdef __EMSCRIPTEN__
 void App::runFrameEmscripten() {
-	if (AppState::InvalidAppState != _staticInstance->_curState) {
+	if (AppState::InvalidAppState == _staticInstance->_curState) {
 		emscripten_cancel_main_loop();
 		return;
 	}

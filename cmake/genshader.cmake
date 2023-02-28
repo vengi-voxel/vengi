@@ -79,22 +79,26 @@ function(generate_shaders TARGET)
 			set(_shaderheaderpath "${GEN_DIR}${_f}Shader.h")
 			set(_shadersourcepath "${GEN_DIR}${_f}Shader.cpp")
 			set(_shaderconstantheaderpath "${GEN_DIR}${_f}ShaderConstants.h")
-			add_custom_command(
-				OUTPUT ${_shaderheaderpath} ${_shadersourcepath} ${_shaderconstantheaderpath}
-				IMPLICIT_DEPENDS C ${_shaders}
-				COMMENT "Validate ${_file}"
-				COMMAND ${CMAKE_COMMAND} -E env "APP_HOMEPATH=${CMAKE_CURRENT_BINARY_DIR}/" "LSAN_OPTIONS=exitcode=0"
-					$<TARGET_FILE:shadertool>
-					--glslang $<TARGET_FILE:glslangValidator>
-					${SHADERTOOL_INCLUDE_DIRS_PARAM}
-					--shader ${_dir}/${_file}
-					--constantstemplate  ${_template_constants_header}
-					--headertemplate ${_template_header}
-					--sourcetemplate ${_template_cpp}
-					--buffertemplate ${_template_ub}
-					--sourcedir ${GEN_DIR}
-				DEPENDS shadertool ${_shaders} ${_shadersdeps} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
-			)
+			if (NOT CMAKE_CROSSCOMPILING)
+				add_custom_command(
+					OUTPUT ${_shaderheaderpath} ${_shadersourcepath} ${_shaderconstantheaderpath}
+					IMPLICIT_DEPENDS C ${_shaders}
+					COMMENT "Validate ${_file}"
+					COMMAND ${CMAKE_COMMAND} -E env "APP_HOMEPATH=${CMAKE_CURRENT_BINARY_DIR}/" "LSAN_OPTIONS=exitcode=0"
+						$<TARGET_FILE:shadertool>
+						--glslang $<TARGET_FILE:glslangValidator>
+						${SHADERTOOL_INCLUDE_DIRS_PARAM}
+						--shader ${_dir}/${_file}
+						--constantstemplate  ${_template_constants_header}
+						--headertemplate ${_template_header}
+						--sourcetemplate ${_template_cpp}
+						--buffertemplate ${_template_ub}
+						--sourcedir ${GEN_DIR}
+					DEPENDS shadertool ${_shaders} ${_shadersdeps} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
+				)
+			else()
+				message(WARNING "Source code generation must be done by native toolchain")
+			endif()
 			list(APPEND _headers ${_shaderheaderpath})
 			list(APPEND _sources ${_shadersourcepath})
 			list(APPEND _constantsheaders ${_shaderconstantheaderpath})

@@ -24,6 +24,12 @@ void ThreadPool::abort() {
 }
 
 void ThreadPool::init() {
+#ifdef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN_PTHREADS__
+#error "Compile with -pthread"
+#endif
+#endif
+
 	_force = false;
 	_stop = false;
 	_workers.reserve(_threads);

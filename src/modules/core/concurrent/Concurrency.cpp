@@ -98,7 +98,7 @@ void setThreadPriority(ThreadPriority prio) {
 		value = THREAD_PRIORITY_NORMAL;
 	}
 	SetThreadPriority(GetCurrentThread(), value);
-#else
+#elif not defined(__EMSCRIPTEN__)
 	struct sched_param sched;
 	int policy;
 	pthread_t thread = pthread_self();

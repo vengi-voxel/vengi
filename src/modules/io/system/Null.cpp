@@ -4,7 +4,7 @@
 
 #include <SDL_platform.h>
 
-#if !defined(__LINUX__) && !defined(__MACOSX__) && !defined(__WINDOWS__)
+#if !defined(__LINUX__) && !defined(__MACOSX__) && !defined(__WINDOWS__) && !defined(__EMSCRIPTEN__)
 #include "io/Filesystem.h"
 
 namespace io {

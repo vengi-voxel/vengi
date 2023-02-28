@@ -16,31 +16,39 @@ function(engine_install TARGET FILE DESTINATION INSTALL_DATA)
 endfunction()
 
 function(engine_compressed_file_to_header NAME INPUT_FILE OUTPUT_FILE)
-	add_custom_command(
-		OUTPUT ${OUTPUT_FILE}
-		COMMAND
-			binary_to_compressed_c
-			${INPUT_FILE}
-			${NAME} > ${OUTPUT_FILE}
-		DEPENDS ${INPUT_FILE} binary_to_compressed_c
-		COMMENT "Generate c header for compressed ${INPUT_FILE} in ${OUTPUT_FILE}"
-		VERBATIM
-	)
+	if (NOT CMAKE_CROSSCOMPILING)
+		add_custom_command(
+			OUTPUT ${OUTPUT_FILE}
+			COMMAND
+				binary_to_compressed_c
+				${INPUT_FILE}
+				${NAME} > ${OUTPUT_FILE}
+			DEPENDS ${INPUT_FILE} binary_to_compressed_c
+			COMMENT "Generate c header for compressed ${INPUT_FILE} in ${OUTPUT_FILE}"
+			VERBATIM
+		)
+	else()
+		message(WARNING "Source code generation must be done by native toolchain")
+	endif()
 	engine_mark_as_generated(${OUTPUT_FILE})
 endfunction()
 
 function(engine_file_to_header NAME INPUT_FILE OUTPUT_FILE)
-	add_custom_command(
-		OUTPUT ${OUTPUT_FILE}
-		COMMAND
-			binary_to_compressed_c
-			-nocompress
-			${INPUT_FILE}
-			${NAME} > ${OUTPUT_FILE}
-		DEPENDS ${INPUT_FILE} binary_to_compressed_c
-		COMMENT "Generate c header for ${INPUT_FILE} in ${OUTPUT_FILE}"
-		VERBATIM
-	)
+	if (NOT CMAKE_CROSSCOMPILING)
+		add_custom_command(
+			OUTPUT ${OUTPUT_FILE}
+			COMMAND
+				binary_to_compressed_c
+				-nocompress
+				${INPUT_FILE}
+				${NAME} > ${OUTPUT_FILE}
+			DEPENDS ${INPUT_FILE} binary_to_compressed_c
+			COMMENT "Generate c header for ${INPUT_FILE} in ${OUTPUT_FILE}"
+			VERBATIM
+		)
+	else()
+		message(WARNING "Source code generation must be done by native toolchain")
+	endif()
 	engine_mark_as_generated(${OUTPUT_FILE})
 endfunction()
 
@@ -220,9 +228,13 @@ function(engine_add_executable)
 		target_sources(${_EXE_TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/application.manifest)
 		target_sources(${_EXE_TARGET} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/application.rc)
 	elseif (EMSCRIPTEN)
-		em_link_js_library(${_EXE_TARGET} ${ROOT_DIR}/contrib/installer/emscripten/library.js)
-		configure_file(${ROOT_DIR}/contrib/installer/emscripten/shell.html.in ${CMAKE_CURRENT_BINARY_DIR}/shell.html @ONLY)
-		#set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "--preload-file ${DATA_DIR}/${_EXE_TARGET}@/ --shell-file ${CMAKE_CURRENT_BINARY_DIR}/shell.html")
+		#set(CMAKE_EXECUTABLE_SUFFIX ".html")
+		if (_EXE_WINDOWED)
+			#em_link_js_library(${_EXE_TARGET} ${ROOT_DIR}/contrib/installer/emscripten/library.js)
+			configure_file(${ROOT_DIR}/contrib/installer/emscripten/index.html.in ${CMAKE_CURRENT_BINARY_DIR}/index.html @ONLY)
+			set_target_properties(${_EXE_TARGET} PROPERTIES SUFFIX ".html")
+			set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "--preload-file ${DATA_DIR}/${_EXE_TARGET}/ --shell-file ${CMAKE_CURRENT_BINARY_DIR}/index.html")
+		endif()
 	elseif(UNIX)
 		if (_EXE_WINDOWED)
 			if (EXISTS ${ROOT_DIR}/contrib/installer/linux/${_EXE_TARGET}.desktop.in)
@@ -281,9 +293,9 @@ function(engine_add_executable)
 	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_FILES "${_EXE_FILES}")
 
 	if (${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
-		foreach (_file ${_EXE_FILES})
-			set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "--preload-file ${ROOT_DIR}/data/${_file}@${_file}")
-		endforeach()
+		# foreach (_file ${_EXE_FILES})
+			# set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "--preload-file ${DATA_DIR}/${_file}@${_file}")
+		# endforeach()
 	endif()
 
 	if (MSVC)

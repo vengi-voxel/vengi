@@ -5,6 +5,10 @@ BUILDDIR       ?= ./build/$(BUILDTYPE)
 INSTALL_DIR    ?= $(BUILDDIR)
 GENERATOR      ?= -GNinja
 CMAKE          ?= cmake
+EMSDK_DIR      ?= $(HOME)/dev/emsdk
+EMSDK_UPSTREAM ?= $(EMSDK_DIR)/upstream/emscripten/
+EMCMAKE        ?= $(EMSDK_UPSTREAM)/emcmake
+EMRUN          ?= $(EMSDK_UPSTREAM)/emrun
 CMAKE_OPTIONS  ?= -DCMAKE_BUILD_TYPE=$(BUILDTYPE) $(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot
 ifneq ($(Q),@)
 	CTEST_FLAGS ?= -V
@@ -223,10 +227,6 @@ update-ufbx:
 	$(call UPDATE_GIT,ufbx,https://github.com/bqqbarbhg/ufbx.git)
 	cp $(UPDATEDIR)/ufbx.sync/ufbx.h $(UPDATEDIR)/ufbx.sync/ufbx.c src/modules/voxelformat/external
 
-# TODO lua support
-updatelibs: update-stb update-googletest update-benchmark update-backward update-dearimgui update-glm update-sdl2 update-glslang update-simplecpp
-	$(MAKE) -C $(BUILDDIR) update-libs
-
 update-icons:
 	$(call UPDATE_GIT,font-awesome,https://github.com/FortAwesome/Font-Awesome)
 	$(call UPDATE_GIT,iconfontcppheaders,https://github.com/juliettef/IconFontCppHeaders)
@@ -239,3 +239,14 @@ update-icons:
 update-fonts:
 	curl -o $(UPDATEDIR)/arimo.zip https://fonts.google.com/download?family=Arimo
 	unzip -jo $(UPDATEDIR)/arimo.zip static/Arimo-Regular.ttf -d data/ui
+
+emscripten:
+	$(Q)$(CMAKE) --build $(BUILDDIR) --target voxedit
+	$(Q)mkdir -p build/emscripten
+	$(Q)rm -rf build/emscripten/generated
+	$(Q)cp -r $(BUILDDIR)/generated build/emscripten
+	$(Q)$(EMCMAKE) $(CMAKE) -H$(CURDIR) -Bbuild/emscripten $(CMAKE_OPTIONS)
+	$(Q)$(CMAKE) --build build/emscripten --target voxedit
+
+emscripten-run: emscripten
+	$(Q)$(EMRUN) build/emscripten/voxedit/vengi-voxedit.html
