@@ -21,7 +21,7 @@
 
 namespace voxedit {
 
-bool SceneGraphPanel::handleCameraProperty(voxelformat::SceneGraphNode &node, const core::String &key, core::String &value) {
+bool SceneGraphPanel::handleCameraProperty(voxelformat::SceneGraphNodeCamera &node, const core::String &key, core::String &value) {
 	// TODO: implement comboboxes and float inputs for camera properties
 	return false;
 }
@@ -52,7 +52,7 @@ void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
 			bool propertyAlreadyHandled = false;
 
 			if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
-				propertyAlreadyHandled = handleCameraProperty(node, entry->key, entry->value);
+				propertyAlreadyHandled = handleCameraProperty(voxelformat::toCameraNode(node), entry->key, entry->value);
 			}
 
 			if (!propertyAlreadyHandled) {
