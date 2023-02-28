@@ -110,8 +110,6 @@ extern TexturePtr createTextureFromImage(const core::String& filename);
 
 extern TexturePtr createTexture(const TextureConfig& cfg, int width = 1, int height = 1, const core::String& name = "");
 
-extern bool saveTexture(const TexturePtr& texture, const core::String &name);
-
 extern bool bindTexture(TextureUnit unit, const Texture& texture);
 
 extern bool bindTexture(TextureUnit unit, const TexturePtr& texture);

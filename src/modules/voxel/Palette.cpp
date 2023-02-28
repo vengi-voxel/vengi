@@ -362,7 +362,12 @@ bool Palette::save(const char *name) const {
 	image::Image img(pngName);
 	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
 	img.loadRGBA((const uint8_t *)_colors, lengthof(_colors), 1);
-	if (!img.writePng()) {
+	const io::FilePtr &file = io::filesystem()->open(img.name(), io::FileMode::SysWrite);
+	io::FileStream stream(file);
+	if (!stream.valid()) {
+		return false;
+	}
+	if (!img.writePng(stream)) {
 		Log::warn("Failed to write the palette file '%s'", pngName.c_str());
 		return false;
 	}
@@ -377,7 +382,12 @@ bool Palette::saveGlow(const char *name) const {
 	Log::info("Save glow palette _colors to %s", name);
 	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
 	img.loadRGBA((const uint8_t *)_glowColors, lengthof(_glowColors), 1);
-	if (!img.writePng()) {
+	const io::FilePtr &file = io::filesystem()->open(img.name(), io::FileMode::SysWrite);
+	io::FileStream stream(file);
+	if (!stream.valid()) {
+		return false;
+	}
+	if (!img.writePng(stream)) {
 		Log::warn("Failed to write the glow palette _colors file '%s'", name);
 		return false;
 	}
@@ -971,7 +981,14 @@ bool Palette::convertImageToPalettePng(const image::ImagePtr &image, const char 
 		return false;
 	}
 	const image::ImagePtr &paletteImg = image::createEmptyImage("**palette**");
-	return paletteImg->writePng(paletteFile, (const uint8_t *)palette.colors(), (int)palette.size(), 1, 4);
+	const io::FilesystemPtr &filesystem = io::filesystem();
+	io::FilePtr file = filesystem->open(paletteFile, io::FileMode::SysWrite);
+	io::FileStream stream(file);
+	if (!stream.valid()) {
+		Log::error("Failed to open file %s for saving the palette as png", paletteFile);
+		return false;
+	}
+	return paletteImg->writePng(stream, (const uint8_t *)palette.colors(), (int)palette.size(), 1, 4);
 }
 
 } // namespace voxel

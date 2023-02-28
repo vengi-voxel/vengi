@@ -10,7 +10,6 @@
 #include "core/concurrent/ThreadPool.h"
 #include "core/Assert.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "core/StandardLib.h"
 #include "io/FormatDescription.h"
@@ -26,8 +25,6 @@
 #define STBI_REALLOC core_realloc
 #define STBI_FREE core_free
 #define STBI_NO_FAILURE_STRINGS
-#define STBI_NO_HDR
-#define STBI_NO_GIF
 
 #define STBIW_ASSERT core_assert
 #define STBIW_MALLOC core_malloc
@@ -42,6 +39,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "external/stb_image.h"
 
+#define STBI_WRITE_NO_STDIO
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "external/stb_image_write.h"
 
@@ -314,16 +312,6 @@ glm::vec2 Image::uv(int x, int y, int w, int h) {
 	return glm::vec2((float)x / (float)w, ((float)h - (float)y) / (float)h);
 }
 
-bool Image::writePng(const char *name, const uint8_t* buffer, int width, int height, int depth) {
-	const io::FilePtr &file = io::filesystem()->open(name, io::FileMode::SysWrite);
-	if (!file->validHandle()) {
-		Log::error("Failed to open %s for writing", name);
-		return false;
-	}
-	io::FileStream stream(file);
-	return writePng(stream, buffer, width, height, depth);
-}
-
 uint8_t* createPng(const void *pixels, int width, int height, int depth, int *pngSize) {
 	return (uint8_t*)stbi_write_png_to_mem((const unsigned char*)pixels, 0, width, height, depth, pngSize);
 }
@@ -345,13 +333,6 @@ bool Image::writeJPEG(io::SeekableWriteStream &stream, const uint8_t* buffer, in
 
 bool Image::writePng(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth) {
 	return stbi_write_png_to_func(stream_write_func, &stream, width, height, depth, (const void*)buffer, width * depth) != 0;
-}
-
-bool Image::writePng() const {
-	if (_state != io::IOSTATE_LOADED) {
-		return false;
-	}
-	return stbi_write_png(_name.c_str(), _width, _height, _depth, (const void*)_data, _width * _depth) != 0;
 }
 
 core::String Image::pngBase64() const {

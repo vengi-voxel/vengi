@@ -3,6 +3,7 @@
  */
 
 #include "app/tests/AbstractTest.h"
+#include "io/FileStream.h"
 #include "noise/Noise.h"
 #include "image/Image.h"
 #include "core/GLM.h"
@@ -31,7 +32,10 @@ protected:
 		const float frequency = 0.7f;
 		const float amplitude = 1.0f;
 		noise.seamlessNoise(buffer, width, octaves, persistence, frequency, amplitude);
-		EXPECT_TRUE(image::Image::writePng("testseamlessNoise.png", buffer, width, height, components));
+		const io::FilePtr &file = io::filesystem()->open("testseamlessNoise.png", io::FileMode::SysWrite);
+		ASSERT_TRUE(file->validHandle());
+		io::FileStream stream(file);
+		EXPECT_TRUE(image::Image::writePng(stream, buffer, width, height, components));
 		noise.shutdown();
 	}
 };

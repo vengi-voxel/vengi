@@ -406,7 +406,12 @@ bool Viewport::saveImage(const char *filename) {
 		Log::error("Failed to read texture");
 		return false;
 	}
-	return image->writePng();
+	const io::FilePtr &file = io::filesystem()->open(image->name(), io::FileMode::SysWrite);
+	io::FileStream stream(file);
+	if (!stream.valid()) {
+		return false;
+	}
+	return image->writePng(stream);
 }
 
 void Viewport::resetCamera() {
