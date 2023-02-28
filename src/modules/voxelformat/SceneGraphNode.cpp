@@ -6,6 +6,7 @@
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include <glm/gtx/matrix_decompose.hpp>
 #include "util/Easing.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
@@ -75,13 +76,10 @@ void SceneGraphTransform::setWorldScale(const glm::vec3 &scale) {
 
 void SceneGraphTransform::setWorldMatrix(const glm::mat4x4 &matrix) {
 	core_assert_msg((_dirty & DIRTY_LOCALVALUES) == 0u, "local was already modified");
+	glm::vec3 skew;
+	glm::vec4 perspective;
+	glm::decompose(matrix, _worldScale, _worldOrientation, _worldTranslation, skew, perspective);
 	_dirty |= DIRTY_WORLDVALUES;
-	_worldTranslation = matrix[3];
-	_worldScale.x = glm::length(glm::vec3(matrix[0]));
-	_worldScale.y = glm::length(glm::vec3(matrix[1]));
-	_worldScale.z = glm::length(glm::vec3(matrix[2]));
-	const glm::mat3 rotMtx(glm::vec3(matrix[0]) / _worldScale, glm::vec3(matrix[1]) / _worldScale, glm::vec3(matrix[2]) / _worldScale);
-	_worldOrientation = glm::quat_cast(rotMtx);
 }
 
 void SceneGraphTransform::setLocalTranslation(const glm::vec3 &translation) {
@@ -113,13 +111,10 @@ void SceneGraphTransform::setLocalScale(const glm::vec3 &scale) {
 
 void SceneGraphTransform::setLocalMatrix(const glm::mat4x4 &matrix) {
 	core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "world was already modified");
+	glm::vec3 skew;
+	glm::vec4 perspective;
+	glm::decompose(matrix, _localScale, _localOrientation, _localTranslation, skew, perspective);
 	_dirty |= DIRTY_LOCALVALUES;
-	_localTranslation = matrix[3];
-	_localScale.x = glm::length(glm::vec3(matrix[0]));
-	_localScale.y = glm::length(glm::vec3(matrix[1]));
-	_localScale.z = glm::length(glm::vec3(matrix[2]));
-	const glm::mat3 rotMtx(glm::vec3(matrix[0]) / _localScale, glm::vec3(matrix[1]) / _localScale, glm::vec3(matrix[2]) / _localScale);
-	_localOrientation = glm::quat_cast(rotMtx);
 }
 
 void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFrameSeconds) {

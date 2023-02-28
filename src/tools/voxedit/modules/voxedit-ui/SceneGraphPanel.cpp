@@ -318,7 +318,6 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 				sceneMgr.addNodeToSceneGraph(node, sceneGraph.activeNode());
 			});
 
-			// TODO: cleanup delete nodes/layers
 			toolbar.button(ICON_FA_TRASH, "Remove the active node with all its children", [&sceneGraph, &sceneMgr]() {
 				sceneMgr.nodeRemove(sceneGraph.activeNode(), true);
 			});
