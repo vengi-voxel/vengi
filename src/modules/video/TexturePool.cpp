@@ -18,6 +18,9 @@ video::TexturePtr TexturePool::load(const core::String &name, bool emptyAsFallba
 	}
 
 	const image::ImagePtr &image = loadImage(name);
+	if (!image || image->isFailed()) {
+		return TexturePtr();
+	}
 	TexturePtr texture = createTextureFromImage(image);
 	if (!texture && emptyAsFallback) {
 		texture = _empty;
