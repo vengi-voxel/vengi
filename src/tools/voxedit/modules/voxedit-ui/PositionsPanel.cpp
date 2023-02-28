@@ -187,10 +187,10 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 												  matrixScale);
 			bool change = false;
 			glm::vec3 pivot = transform.pivot();
-			change |= ImGui::InputFloat3("Tr", matrixTranslation);
-			change |= ImGui::InputFloat3("Rt", matrixRotation);
-			change |= ImGui::InputFloat3("Sc", matrixScale);
-			change |= ImGui::InputFloat3("Pv", glm::value_ptr(pivot));
+			change |= ImGui::InputFloat3("Tr", matrixTranslation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			change |= ImGui::InputFloat3("Rt", matrixRotation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			change |= ImGui::InputFloat3("Sc", matrixScale, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			change |= ImGui::InputFloat3("Pv", glm::value_ptr(pivot), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 
 			{
 				ui::ScopedStyle style;
