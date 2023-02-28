@@ -84,10 +84,17 @@ void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
 			}
 
 			if (!propertyAlreadyHandled) {
-				core::String value = entry->value;
 				const core::String &id = core::string::format("##%i-%s", node.id(), entry->key.c_str());
-				if (ImGui::InputText(id.c_str(), &value, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
-					sceneMgr().nodeSetProperty(node.id(), entry->key, value);
+				if (entry->value == "true" || entry->value == "false") {
+					bool value = core::string::toBool(entry->value);
+					if (ImGui::Checkbox(id.c_str(), &value)) {
+						sceneMgr().nodeSetProperty(node.id(), entry->key, value ? "true" : "false");
+					}
+				} else {
+					core::String value = entry->value;
+					if (ImGui::InputText(id.c_str(), &value, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+						sceneMgr().nodeSetProperty(node.id(), entry->key, value);
+					}
 				}
 			}
 			ImGui::TableNextColumn();
