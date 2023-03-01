@@ -22,6 +22,7 @@
 #include "util/IncludeUtil.h"
 #include "util/VarUtil.h"
 #include <glm/gtc/type_ptr.hpp>
+#include "engine-config.h"
 
 namespace video {
 
@@ -352,11 +353,13 @@ const Uniform* Shader::getUniform(const core::String& name) const {
 
 int Shader::fetchUniforms() {
 	_uniforms.clear();
+	Log::debug("Fetch uniforms");
 	return video::fetchUniforms(_program, _uniforms, _name);
 }
 
 int Shader::fetchAttributes() {
 	_attributes.clear();
+	Log::debug("Fetch attributes");
 	return video::fetchAttributes(_program, _attributes, _name);
 }
 
@@ -375,9 +378,9 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	core::String src;
 	src.append("#version ");
 	src.append(core::string::toString(glslVersion));
-	if (GLSLVersion::isGLES(glslVersion)) {
-		src.append(" es");
-	}
+#if USE_OPENGLES
+	src.append(" es");
+#endif
 
 	src.append("\n");
 	if (shaderType == ShaderType::Compute) {
@@ -386,19 +389,19 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		//src.append("#extension GL_ARB_compute_variable_group_size : enable\n");
 	}
 
-	if (GLSLVersion::isGLES(glslVersion)) {
-		if (shaderType == ShaderType::Vertex) {
-			src.append("precision highp float;\n");
-			src.append("precision highp int;\n");
-			src.append("precision lowp sampler2D;\n");
-			src.append("precision lowp sampler2DArrayShadow;\n");
-		} else if (shaderType == ShaderType::Fragment) {
-			src.append("precision mediump float;\n");
-			src.append("precision mediump int;\n");
-			src.append("precision lowp sampler2D;\n");
-			src.append("precision lowp sampler2DArrayShadow;\n");
-		}
+#if USE_OPENGLES
+	if (shaderType == ShaderType::Vertex) {
+		src.append("precision highp float;\n");
+		src.append("precision highp int;\n");
+		src.append("precision lowp sampler2D;\n");
+		src.append("precision lowp sampler2DArrayShadow;\n");
+	} else if (shaderType == ShaderType::Fragment) {
+		src.append("precision mediump float;\n");
+		src.append("precision mediump int;\n");
+		src.append("precision lowp sampler2D;\n");
+		src.append("precision lowp sampler2DArrayShadow;\n");
 	}
+#endif
 
 	util::visitVarSorted([&] (const core::VarPtr& var) {
 		src.append("#define ");

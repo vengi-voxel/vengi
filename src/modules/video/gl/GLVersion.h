@@ -4,18 +4,21 @@
 
 #pragma once
 
+#include "engine-config.h"
+
 namespace video {
 
 struct GLVersion {
 	int majorVersion;
 	int minorVersion;
+	bool es;
 
-	constexpr GLVersion(int _major, int _minor) :
-			majorVersion(_major), minorVersion(_minor) {
+	constexpr GLVersion(int _major, int _minor, bool _es = false) :
+			majorVersion(_major), minorVersion(_minor), es(_es) {
 	}
 
 	inline bool operator==(const GLVersion& rhs) const {
-		return majorVersion == rhs.majorVersion && minorVersion == rhs.minorVersion;
+		return majorVersion == rhs.majorVersion && minorVersion == rhs.minorVersion && es == rhs.es;
 	}
 
 	inline bool isAtLeast(int major, int minor) {
@@ -32,7 +35,8 @@ struct GLSLVersion {
 		V140 = 140,
 		V150 = 150,
 		V300 = 300,
-		V320es = 320,
+		V310 = 310,
+		V320 = 320,
 		V330 = 330,
 		V400 = 400,
 		V410 = 410,
@@ -41,9 +45,6 @@ struct GLSLVersion {
 		V440 = 440,
 		V450 = 450
 	};
-	static bool isGLES(int v) {
-		return v == V320es;
-	}
 };
 
 constexpr GLVersion GL2_0(2, 0);
@@ -58,15 +59,17 @@ constexpr GLVersion GL4_2(4, 2);
 constexpr GLVersion GL4_3(4, 3);
 constexpr GLVersion GL4_4(4, 4);
 constexpr GLVersion GL4_5(4, 5);
+constexpr GLVersion GLES2(2, 0, true); // WebGL 1.0
+constexpr GLVersion GLES3(3, 0, true); // WebGL 2.0
 
 // https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
 constexpr struct Versions {
 	GLVersion version;
 	int glslVersion;
 } GLVersions[] = {
-#ifdef GL_ES_VERSION_2_0
-	{GL2_0, GLSLVersion::V100},
-	{GL3_0, GLSLVersion::V300},
+#if USE_OPENGLES
+	{GLES2, GLSLVersion::V100},
+	{GLES3, GLSLVersion::V300}
 #else
 	{GL2_0, GLSLVersion::V110},
 	{GL2_1, GLSLVersion::V120},

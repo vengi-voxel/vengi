@@ -1405,7 +1405,11 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name)
 
 int fetchUniforms(Id program, ShaderUniforms& uniforms, const core::String& name) {
 	video_trace_scoped(FetchUniforms);
+#ifdef USE_OPENGLES
+	int uniformsCnt = 0;
+#else
 	int uniformsCnt = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORMS, GL_ACTIVE_UNIFORM_MAX_LENGTH, glGetActiveUniformName, glGetUniformLocation, false);
+#endif
 	int uniformBlocksCnt = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORM_BLOCKS, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, glGetActiveUniformBlockName, glGetUniformBlockIndex, true);
 
 	if (limit(Limit::MaxUniformBufferSize) > 0) {
@@ -1476,11 +1480,18 @@ void setup() {
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 #if USE_OPENGLES
+	GLVersion glv = GLES3;
+	Log::debug("Request gles context %i.%i", glv.majorVersion, glv.minorVersion);
+	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
+		if (GLVersions[i].version == glv) {
+			Shader::glslVersion = GLVersions[i].glslVersion;
+			break;
+		}
+	}
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-	Shader::glslVersion = GLSLVersion::V320es;
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glv.majorVersion);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glv.minorVersion);
 #else
 	const core::VarPtr& glVersion = core::Var::getSafe(cfg::ClientOpenGLVersion);
 	int glMinor = 0, glMajor = 0;
@@ -1494,6 +1505,7 @@ void setup() {
 	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
 		if (GLVersions[i].version == glv) {
 			Shader::glslVersion = GLVersions[i].glslVersion;
+			break;
 		}
 	}
 	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);

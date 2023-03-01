@@ -18,6 +18,14 @@ namespace _priv {
 template<typename GetName, typename GetLocation>
 static int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::String& shaderName, GLenum activeEnum,
 		GLenum activeMaxLengthEnum, GetName getName, GetLocation getLocation, bool block) {
+	if (!getName) {
+		Log::error("Invalid function pointer for getName");
+		return 0;
+	}
+	if (!getLocation) {
+		Log::error("Invalid function pointer for getLocation");
+		return 0;
+	}
 	GLint numUniforms = 0;
 	glGetProgramiv(program, activeEnum, &numUniforms);
 	GLint uniformNameSize = 0;

@@ -240,13 +240,13 @@ update-fonts:
 	curl -o $(UPDATEDIR)/arimo.zip https://fonts.google.com/download?family=Arimo
 	unzip -jo $(UPDATEDIR)/arimo.zip static/Arimo-Regular.ttf -d data/ui
 
-emscripten:
-	$(Q)$(CMAKE) --build $(BUILDDIR) --target voxedit
+emscripten-%:
+	$(Q)$(CMAKE) --build $(BUILDDIR) --target $(subst emscripten-,,$@)
 	$(Q)mkdir -p build/emscripten
 	$(Q)rm -rf build/emscripten/generated
 	$(Q)cp -r $(BUILDDIR)/generated build/emscripten
 	$(Q)$(EMCMAKE) $(CMAKE) -H$(CURDIR) -Bbuild/emscripten $(CMAKE_OPTIONS)
-	$(Q)$(CMAKE) --build build/emscripten --target voxedit
+	$(Q)$(CMAKE) --build build/emscripten --target $(subst emscripten-,,$@)
 
-emscripten-run: emscripten
-	$(Q)$(EMRUN) build/emscripten/voxedit/vengi-voxedit.html
+run-emscripten-%: emscripten-%
+	$(Q)$(EMRUN) build/emscripten/$(subst run-emscripten-,,$@)/vengi-$(subst run-emscripten-,,$@).html
