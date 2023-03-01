@@ -9,8 +9,6 @@ option(THUMBNAILER "Builds thumbnailer (needs TOOLS to be active)" ON)
 option(VOXCONVERT "Builds voxconvert (needs TOOLS to be active)" ON)
 
 option(USE_CCACHE "Use ccache" ON)
-option(USE_GPROF "Use gprof - will become slow" OFF)
-option(USE_GCOV "Use gcov - will become slow" OFF)
 option(USE_DOXYGEN_CHECK "Use -Wdocumentation if available" OFF)
 option(USE_CPPCHECK "Enable cppcheck" OFF)
 option(USE_CLANG_TIDY "Enable Clang Tidy" OFF)

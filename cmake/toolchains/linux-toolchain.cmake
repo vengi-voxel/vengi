@@ -7,11 +7,6 @@ include(CheckIncludeFiles)
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads)
 
-if (USE_GCOV)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
-endif()
-
 if (CMAKE_COMPILER_IS_GNUCXX)
 	check_function_exists(__atomic_fetch_add_4 HAVE___ATOMIC_FETCH_ADD_4)
 	if (NOT HAVE___ATOMIC_FETCH_ADD_4)
@@ -42,11 +37,6 @@ check_include_files("syslog.h" HAVE_SYSLOG_H)
 check_include_files("execinfo.h" HAVE_EXECINFO_H)
 check_include_files("sys/resource.h" HAVE_SYS_RESOURCE_H)
 check_include_files("sys/time.h" HAVE_SYS_TIME_H)
-
-if (USE_COVERAGE)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
-endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -D_GNU_SOURCE -D_BSD_SOURCE -D_DEFAULT_SOURCE -D_XOPEN_SOURCE")
