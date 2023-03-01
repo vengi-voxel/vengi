@@ -465,10 +465,13 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		core::String replaceTexture2D = "texture2D";
 		core::String replaceTexture3D = "texture3D";
 		core::String replaceShadow2D = "shadow2D";
+#ifndef USE_OPENGLES
 		if (glslVersion < GLSLVersion::V130) {
 			replaceIn = "attribute";
 			replaceOut = "varying";
-		} else {
+		} else
+#endif
+		{
 			replaceTexture1D = "texture";
 			replaceTexture2D = "texture";
 			replaceTexture3D = "texture";

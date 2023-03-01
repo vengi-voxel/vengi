@@ -1099,8 +1099,13 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 			glNamedFramebufferTexture(glstate().framebufferHandle, glAttachmentType, textureId, 0);
 			checkError();
 		} else {
+#ifdef USE_OPENGLES
+			core_assert(glFramebufferTextureLayer != nullptr);
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, glAttachmentType, textureId, 0, 0);
+#else
 			core_assert(glFramebufferTexture != nullptr);
 			glFramebufferTexture(GL_FRAMEBUFFER, glAttachmentType, textureId, 0);
+#endif
 			checkError();
 		}
 		if (glAttachmentType >= GL_COLOR_ATTACHMENT0 && glAttachmentType <= GL_COLOR_ATTACHMENT15) {
