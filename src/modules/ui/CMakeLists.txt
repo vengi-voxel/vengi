@@ -50,5 +50,8 @@ imgui_build_font(ArimoRegular Arimo-Regular.ttf)
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app)
 target_compile_definitions(${LIB} PUBLIC -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_OBSOLETE_KEYIO)
+if (USE_OPENGLES)
+	target_compile_definitions(${LIB} PUBLIC -DIMGUI_IMPL_OPENGL_ES3)
+endif()
 target_include_directories(${LIB} PUBLIC . ${GEN_DIR} dearimgui)
 set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)

@@ -8,6 +8,7 @@ option(VOXEDIT "Builds voxedit (needs TOOLS to be active)" ON)
 option(THUMBNAILER "Builds thumbnailer (needs TOOLS to be active)" ON)
 option(VOXCONVERT "Builds voxconvert (needs TOOLS to be active)" ON)
 
+option(USE_OPENGLES "Enable OpenGLES" OFF)
 option(USE_CCACHE "Use ccache" ON)
 option(USE_DOXYGEN_CHECK "Use -Wdocumentation if available" OFF)
 option(USE_CPPCHECK "Enable cppcheck" OFF)

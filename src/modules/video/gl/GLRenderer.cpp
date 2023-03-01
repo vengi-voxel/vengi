@@ -35,6 +35,7 @@
 #include "video/Trace.h"
 #include "video/Types.h"
 #include "video/gl/flextGL.h"
+#include "engine-config.h"
 #ifdef TRACY_ENABLE
 #include "core/tracy/TracyOpenGL.hpp"
 #endif
@@ -1474,6 +1475,13 @@ void setup() {
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+#if USE_OPENGLES
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	Shader::glslVersion = GLSLVersion::V320es;
+#else
 	const core::VarPtr& glVersion = core::Var::getSafe(cfg::ClientOpenGLVersion);
 	int glMinor = 0, glMajor = 0;
 	if (SDL_sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
@@ -1508,6 +1516,7 @@ void setup() {
 	Log::debug("Enable opengl debug context");
 #endif
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
+#endif
 }
 
 void resize(int windowWidth, int windowHeight, float scaleFactor) {
