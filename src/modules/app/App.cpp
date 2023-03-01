@@ -154,13 +154,18 @@ void App::onFrame() {
 		case AppState::Construct: {
 			core_trace_scoped(AppOnConstruct);
 			_nextState = onConstruct();
+			Log::debug("AppState::Construct done");
 			break;
 		}
 		case AppState::Init: {
 			core_trace_scoped(AppOnInit);
+			Log::debug("AppState::BeforeInit");
 			onBeforeInit();
+			Log::debug("AppState::Init");
 			_nextState = onInit();
+			Log::debug("AppState::AfterInit");
 			onAfterInit();
+			Log::debug("AppState::Init done");
 			_nextFrameSeconds = now;
 			break;
 		}
@@ -170,6 +175,7 @@ void App::onFrame() {
 				_exitCode = 1;
 			}
 			_nextState = onCleanup();
+			Log::debug("AppState::InitFailure done");
 			break;
 		}
 		case AppState::Running: {
@@ -204,12 +210,14 @@ void App::onFrame() {
 		case AppState::Cleanup: {
 			core_trace_scoped(AppOnCleanup);
 			_nextState = onCleanup();
+			Log::debug("AppState::Cleanup done");
 			break;
 		}
 		case AppState::Destroy: {
 			core_trace_scoped(AppOnDestroy);
 			_nextState = onDestroy();
 			_curState = AppState::InvalidAppState;
+			Log::debug("AppState::Destroy done");
 			break;
 		}
 		default:
@@ -314,9 +322,12 @@ void App::onBeforeInit() {
 }
 
 AppState App::onInit() {
+	Log::debug("Initialize sdl");
 	SDL_Init(SDL_INIT_TIMER|SDL_INIT_EVENTS);
+	Log::debug("Initialize the threadpool");
 	_threadPool->init();
 
+	Log::debug("Initialize the cvars");
 	const io::FilePtr& varsFile = _filesystem->open(_appname + ".vars");
 	const core::String &content = varsFile->load();
 	core::Tokenizer t(content);
@@ -361,6 +372,7 @@ AppState App::onInit() {
 		core::Var::get(name, value.c_str(), flagsMask);
 	}
 
+	Log::debug("Initialize the log system");
 	Log::init();
 	_logLevelVar = core::Var::getSafe(cfg::CoreLogLevel);
 	_syslogVar = core::Var::getSafe(cfg::CoreSysLog);
