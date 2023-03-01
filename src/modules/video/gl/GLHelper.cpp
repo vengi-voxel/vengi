@@ -109,8 +109,10 @@ debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
 bool checkFramebufferStatus(video::Id fbo) {
 	GLenum status;
 	if (useFeature(Feature::DirectStateAccess)) {
+		core_assert(glCheckNamedFramebufferStatus != nullptr);
 		status = glCheckNamedFramebufferStatus(fbo, GL_FRAMEBUFFER);
 	} else {
+		core_assert(glCheckFramebufferStatus != nullptr);
 		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	}
 	if (status == GL_FRAMEBUFFER_COMPLETE) {
@@ -140,6 +142,7 @@ bool checkFramebufferStatus(video::Id fbo) {
 }
 
 void setupLimitsAndSpecs() {
+	core_assert(glGetIntegerv != nullptr);
 	glGetIntegerv(GL_MAX_SAMPLES, &renderState().limits[core::enumVal(Limit::MaxSamples)]);
 	checkError();
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &renderState().limits[core::enumVal(Limit::MaxTextureSize)]);
@@ -163,6 +166,7 @@ void setupLimitsAndSpecs() {
 	glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &renderState().limits[core::enumVal(Limit::MaxFragmentInputComponents)]);
 	checkError();
 	if (hasFeature(Feature::ComputeShaders)) {
+		core_assert(glGetIntegeri_v != nullptr);
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupCountX)]);
 		checkError();
 		glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &renderState().limits[core::enumVal(Limit::MaxComputeWorkGroupCountY)]);
@@ -243,6 +247,7 @@ void setupFeatures() {
 	static_assert(core::enumVal(Feature::Max) == (int)SDL_arraysize(extensionArray), "Array sizes don't match for Feature enum");
 
 	int numExts;
+	core_assert(glGetIntegerv != nullptr);
 	glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
 	Log::debug("OpenGL extensions:");
 	for (int i = 0; i < numExts; ++i) {
@@ -277,15 +282,12 @@ void setupFeatures() {
 	}
 #endif
 
-#ifdef SDL_VIDEO_OPENGL_ES2
+#ifdef USE_OPENGLES
 	renderState().features[core::enumVal(Feature::TextureHalfFloat)] = SDL_GL_ExtensionSupported("GL_ARB_texture_half_float");
-#else
-	renderState().features[core::enumVal(Feature::TextureHalfFloat)] = renderState().features[core::enumVal(Feature::TextureFloat)];
-#endif
-
-#ifdef SDL_VIDEO_OPENGL_ES3
 	renderState().features[core::enumVal(Feature::InstancedArrays)] = true;
 	renderState().features[core::enumVal(Feature::TextureCompressionETC2)] = true;
+#else
+	renderState().features[core::enumVal(Feature::TextureHalfFloat)] = renderState().features[core::enumVal(Feature::TextureFloat)];
 #endif
 }
 

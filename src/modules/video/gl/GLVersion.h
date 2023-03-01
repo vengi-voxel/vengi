@@ -61,6 +61,7 @@ constexpr GLVersion GL4_4(4, 4);
 constexpr GLVersion GL4_5(4, 5);
 constexpr GLVersion GLES2(2, 0, true); // WebGL 1.0
 constexpr GLVersion GLES3(3, 0, true); // WebGL 2.0
+constexpr GLVersion GLES32(3, 2, true);
 
 // https://github.com/mattdesl/lwjgl-basics/wiki/GLSL-Versions
 constexpr struct Versions {
@@ -69,7 +70,8 @@ constexpr struct Versions {
 } GLVersions[] = {
 #if USE_OPENGLES
 	{GLES2, GLSLVersion::V100},
-	{GLES3, GLSLVersion::V300}
+	{GLES3, GLSLVersion::V300},
+	{GLES32, GLSLVersion::V320}
 #else
 	{GL2_0, GLSLVersion::V110},
 	{GL2_1, GLSLVersion::V120},
