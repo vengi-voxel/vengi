@@ -18,20 +18,7 @@ void flextLoadOpenGLFunctions(void);
  */
 int flextInit(void)
 {
-    int major;
-    int minor;
-
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
-
     flextLoadOpenGLFunctions();
-
-    /* --- Check for minimal version and profile --- */
-
-    if (major * 10 + minor < 33) {
-        return SDL_SetError("OpenGL context hasn't the expected version 3.3.");
-    }
-
 
     /* --- Check for extensions --- */
 

@@ -25,13 +25,8 @@
 
 namespace video {
 
-#ifdef GL_ES_VERSION_3_1
-// default to opengles3
-int Shader::glslVersion = GLSLVersion::V310;
-#else
 // default to opengl4
 int Shader::glslVersion = GLSLVersion::V430;
-#endif
 
 Shader::Shader() {
 	for (int i = 0; i < (int)ShaderType::Max; ++i) {
@@ -380,11 +375,29 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	core::String src;
 	src.append("#version ");
 	src.append(core::string::toString(glslVersion));
+	if (GLSLVersion::isGLES(glslVersion)) {
+		src.append(" es");
+	}
+
 	src.append("\n");
 	if (shaderType == ShaderType::Compute) {
 		src.append("#extension GL_ARB_compute_shader : enable\n");
 		src.append("#extension GL_ARB_shader_storage_buffer_object : enable\n");
 		//src.append("#extension GL_ARB_compute_variable_group_size : enable\n");
+	}
+
+	if (GLSLVersion::isGLES(glslVersion)) {
+		if (shaderType == ShaderType::Vertex) {
+			src.append("precision highp float;\n");
+			src.append("precision highp int;\n");
+			src.append("precision lowp sampler2D;\n");
+			src.append("precision lowp sampler2DArrayShadow;\n");
+		} else if (shaderType == ShaderType::Fragment) {
+			src.append("precision mediump float;\n");
+			src.append("precision mediump int;\n");
+			src.append("precision lowp sampler2D;\n");
+			src.append("precision lowp sampler2DArrayShadow;\n");
+		}
 	}
 
 	util::visitVarSorted([&] (const core::VarPtr& var) {

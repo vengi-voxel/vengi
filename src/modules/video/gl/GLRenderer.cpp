@@ -1407,14 +1407,16 @@ int fetchUniforms(Id program, ShaderUniforms& uniforms, const core::String& name
 	int uniformsCnt = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORMS, GL_ACTIVE_UNIFORM_MAX_LENGTH, glGetActiveUniformName, glGetUniformLocation, false);
 	int uniformBlocksCnt = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORM_BLOCKS, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, glGetActiveUniformBlockName, glGetUniformBlockIndex, true);
 
-	for (auto *e : uniforms) {
-		if (!e->value.block) {
-			continue;
-		}
-		if (e->value.size > limit(Limit::MaxUniformBufferSize)) {
-			Log::error("Max uniform buffer size exceeded for uniform %s at location %i (max is %i)", e->key.c_str(), e->value.location, limit(Limit::MaxUniformBufferSize));
-		} else if (e->value.size <= 0) {
-			Log::error("Failed to query size of uniform buffer %s at location %i (max is %i)", e->key.c_str(), e->value.location, limit(Limit::MaxUniformBufferSize));
+	if (limit(Limit::MaxUniformBufferSize) > 0) {
+		for (auto *e : uniforms) {
+			if (!e->value.block) {
+				continue;
+			}
+			if (e->value.size > limit(Limit::MaxUniformBufferSize)) {
+				Log::error("Max uniform buffer size exceeded for uniform %s at location %i (max is %i)", e->key.c_str(), e->value.location, limit(Limit::MaxUniformBufferSize));
+			} else if (e->value.size <= 0) {
+				Log::error("Failed to query size of uniform buffer %s at location %i (max is %i)", e->key.c_str(), e->value.location, limit(Limit::MaxUniformBufferSize));
+			}
 		}
 	}
 	return uniformsCnt + uniformBlocksCnt;
@@ -1447,6 +1449,7 @@ void destroyContext(RendererContext& context) {
 
 RendererContext createContext(SDL_Window* window) {
 	core_assert(window != nullptr);
+	Log::debug("Trying to create an opengl context");
 	return (RendererContext)SDL_GL_CreateContext(window);
 }
 
@@ -1463,6 +1466,14 @@ void endFrame(SDL_Window* window) {
 }
 
 void setup() {
+	SDL_ClearError();
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 	const core::VarPtr& glVersion = core::Var::getSafe(cfg::ClientOpenGLVersion);
 	int glMinor = 0, glMajor = 0;
 	if (SDL_sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
@@ -1477,15 +1488,6 @@ void setup() {
 			Shader::glslVersion = GLVersions[i].glslVersion;
 		}
 	}
-
-	SDL_ClearError();
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
 	const core::VarPtr& multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
 	int samples = multisampleSamples->intVal();

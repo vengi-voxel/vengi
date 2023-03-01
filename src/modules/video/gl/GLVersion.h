@@ -24,22 +24,26 @@ struct GLVersion {
 };
 
 struct GLSLVersion {
-enum VersionIdentifiers {
-	V100 = 100,
-	V110 = 110,
-	V120 = 120,
-	V130 = 130,
-	V140 = 140,
-	V150 = 150,
-	V300 = 300,
-	V330 = 330,
-	V400 = 400,
-	V410 = 410,
-	V420 = 420,
-	V430 = 430,
-	V440 = 440,
-	V450 = 450
-};
+	enum VersionIdentifiers {
+		V100 = 100,
+		V110 = 110,
+		V120 = 120,
+		V130 = 130,
+		V140 = 140,
+		V150 = 150,
+		V300 = 300,
+		V320es = 320,
+		V330 = 330,
+		V400 = 400,
+		V410 = 410,
+		V420 = 420,
+		V430 = 430,
+		V440 = 440,
+		V450 = 450
+	};
+	static bool isGLES(int v) {
+		return v == V320es;
+	}
 };
 
 constexpr GLVersion GL2_0(2, 0);
