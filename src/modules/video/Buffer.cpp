@@ -172,7 +172,9 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 	}
 #endif
 	_size[idx] = size;
+#ifndef __EMSCRIPTEN__
 	core_assert_16byte_aligned(data);
+#endif
 	//core_assert_msg((_size[idx] & 15) == 0, "Size is not aligned properly: %i", (int)_size[idx]);
 	const BufferType type = _targets[idx];
 	const Id id = _handles[idx];

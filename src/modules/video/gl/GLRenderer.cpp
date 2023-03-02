@@ -1217,9 +1217,11 @@ void setupTexture(const TextureConfig& config) {
 		glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, glFunc);
 		checkError();
 	}
+#ifndef __EMSCRIPTEN__
 	if (config.useBorderColor()) {
 		glTexParameterfv(glType, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
 	}
+#endif
 	const uint8_t alignment = config.alignment();
 	if (alignment > 0u) {
 		core_assert(alignment == 1 || alignment == 2 || alignment == 4 || alignment == 8);

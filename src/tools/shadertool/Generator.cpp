@@ -548,7 +548,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			uniforms += "\", getUniformBufferOffset(\"";
 			uniforms += v.name;
 			uniforms += "\"));\n";
-			uniforms += "\t\treturn false;\n";
+			//uniforms += "\t\treturn false;\n";
 			uniforms += "\t}\n";
 
 			if (offsetsIndex > 0) {

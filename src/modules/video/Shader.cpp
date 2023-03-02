@@ -390,16 +390,14 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	}
 
 #if USE_OPENGLES
-	if (shaderType == ShaderType::Vertex) {
+	if (shaderType == ShaderType::Vertex || shaderType == ShaderType::Fragment) {
 		src.append("precision highp float;\n");
 		src.append("precision highp int;\n");
-		src.append("precision lowp sampler2D;\n");
-		src.append("precision lowp sampler2DArrayShadow;\n");
-	} else if (shaderType == ShaderType::Fragment) {
-		src.append("precision mediump float;\n");
-		src.append("precision mediump int;\n");
-		src.append("precision lowp sampler2D;\n");
-		src.append("precision lowp sampler2DArrayShadow;\n");
+		src.append("precision highp samplerCube;\n");
+		src.append("precision highp sampler2D;\n");
+		src.append("precision highp sampler3D;\n");
+		src.append("precision highp sampler2DArray;\n");
+		src.append("precision highp sampler2DArrayShadow;\n");
 	}
 #endif
 
