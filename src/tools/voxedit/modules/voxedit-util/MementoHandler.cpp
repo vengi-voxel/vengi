@@ -22,6 +22,7 @@
 #include "core/Zip.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelutil/VoxelUtil.h"
+#include <inttypes.h>
 
 namespace voxedit {
 
@@ -355,7 +356,7 @@ void MementoHandler::markNodeRemoved(const voxelformat::SceneGraphNode &node) {
 	Log::debug("Mark node %i as deleted (%s)", nodeId, name.c_str());
 	core::Optional<voxel::Palette> palette;
 	palette.setValue(node.palette());
-	Log::debug("palette node added hash: %lu", node.palette().hash());
+	Log::debug("palette node added hash: %" PRIu64, node.palette().hash());
 	markUndoKeyFrames(parentId, nodeId, name, volume, MementoType::SceneNodeRemoved, voxel::Region::InvalidRegion, node.keyFrames(), palette);
 }
 
@@ -367,7 +368,7 @@ void MementoHandler::markNodeAdded(const voxelformat::SceneGraphNode &node) {
 	Log::debug("Mark node %i as added (%s)", nodeId, name.c_str());
 	core::Optional<voxel::Palette> palette;
 	palette.setValue(node.palette());
-	Log::debug("palette node added hash: %lu", node.palette().hash());
+	Log::debug("palette node added hash: %" PRIu64, node.palette().hash());
 	markUndoKeyFrames(parentId, nodeId, name, volume, MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, node.keyFrames(), palette);
 }
 
@@ -380,7 +381,7 @@ void MementoHandler::markInitialNodeState(const voxelformat::SceneGraphNode &nod
 	core::Optional<voxel::Palette> palette;
 	if (_states.empty()) {
 		palette.setValue(node.palette());
-		Log::debug("palette modification hash: %lu", node.palette().hash());
+		Log::debug("palette modification hash: %" PRIu64, node.palette().hash());
 	}
 	core::Optional<voxelformat::SceneGraphNodeProperties> properties;
 	properties.setValue(node.properties());
@@ -396,7 +397,7 @@ void MementoHandler::markModification(const voxelformat::SceneGraphNode &node, c
 	core::Optional<voxel::Palette> palette;
 	if (_states.empty()) {
 		palette.setValue(node.palette());
-		Log::debug("palette modification hash: %lu", node.palette().hash());
+		Log::debug("palette modification hash: %" PRIu64, node.palette().hash());
 	}
 	markUndo(parentId, nodeId, name, volume, MementoType::Modification, modifiedRegion, glm::mat4(1.0f), 0, palette);
 }
@@ -415,7 +416,7 @@ void MementoHandler::markPaletteChange(const voxelformat::SceneGraphNode &node, 
 	Log::debug("Mark node %i palette change (%s)", nodeId, name.c_str());
 	core::Optional<voxel::Palette> palette;
 	palette.setValue(node.palette());
-	Log::debug("palette change hash: %lu", node.palette().hash());
+	Log::debug("palette change hash: %" PRIu64, node.palette().hash());
 	markUndo(parentId, nodeId, name, volume, MementoType::SceneNodePaletteChanged, modifiedRegion, transformMatrix, keyFrameIdx, palette);
 }
 
