@@ -9,6 +9,9 @@
 #ifdef HAVE_BACKWARD
 #include <backward.h>
 #endif
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 void core_stacktrace() {
 #ifdef HAVE_BACKWARD
@@ -24,6 +27,11 @@ void core_stacktrace() {
 		Log::error("%s", c);
 		c = l + 1;
 	}
+#endif
+#ifdef __EMSCRIPTEN__
+	EM_ASM({
+		stackTrace();
+	});
 #endif
 }
 
