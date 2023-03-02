@@ -81,4 +81,4 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_C_FLAGS_RELEASE}
 #-fsanitize=undefined
 #set(SANITIZE_FLAGS "-fsanitize=address -fsanitize-address-use-after-scope")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_C_FLAGS_DEBUG} -fstack-protector-strong -fno-omit-frame-pointer ${SANITIZE_FLAGS}")
-set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer ${SANITIZE_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer ${SANITIZE_FLAGS}")
