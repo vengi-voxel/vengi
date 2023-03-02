@@ -377,6 +377,7 @@ AppState App::onInit() {
 	_logLevelVar = core::Var::getSafe(cfg::CoreLogLevel);
 	_syslogVar = core::Var::getSafe(cfg::CoreSysLog);
 
+	core::Var::needsSaving();
 	core::Var::visit([&] (const core::VarPtr& var) {
 		var->markClean();
 	});
