@@ -315,7 +315,10 @@ app::AppState WindowedApp::onInit() {
 		flags |= SDL_WINDOW_HIDDEN;
 	}
 	SDL_Rect displayBounds;
-	SDL_GetDisplayBounds(displayIndex, &displayBounds);
+	if (SDL_GetDisplayUsableBounds(displayIndex, &displayBounds) < 0) {
+		Log::error("Failed to query usable display bounds: %s", SDL_GetError());
+		displayBounds.h = displayBounds.w = displayBounds.x = displayBounds.y = 0;
+	}
 	const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHighDPI);
 	if (highDPI->boolVal()) {
 		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
@@ -332,8 +335,8 @@ app::AppState WindowedApp::onInit() {
 	Log::debug("driver: %s", SDL_GetCurrentVideoDriver());
 	Log::debug("found %i displays (use %i at %i:%i)", numDisplays, displayIndex, displayBounds.x, displayBounds.y);
 
-	const int width = 1024;
-	const int height = 768;
+	const int width = core_max(1024, displayBounds.w);
+	const int height = core_max(768, displayBounds.h);
 	_window = createWindow(width, height, displayIndex, flags);
 	if (!_window) {
 		Log::warn("Failed to get multisampled window - try to disable it");
