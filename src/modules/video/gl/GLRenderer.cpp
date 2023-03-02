@@ -1610,19 +1610,11 @@ void setup() {
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 #if USE_OPENGLES
+	int contextFlags = 0;
 	GLVersion glv = GLES3;
-	Log::debug("Request gles context %i.%i", glv.majorVersion, glv.minorVersion);
-	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
-		if (GLVersions[i].version == glv) {
-			Shader::glslVersion = GLVersions[i].glslVersion;
-			break;
-		}
-	}
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glv.majorVersion);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glv.minorVersion);
 #else
+	int contextFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
 	const core::VarPtr& glVersion = core::Var::getSafe(cfg::ClientOpenGLVersion);
 	int glMinor = 0, glMajor = 0;
 	if (SDL_sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
@@ -1630,14 +1622,9 @@ void setup() {
 		glMajor = version.majorVersion;
 		glMinor = version.minorVersion;
 	}
-	Log::debug("Request gl context %i.%i", glMajor, glMinor);
 	GLVersion glv(glMajor, glMinor);
-	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
-		if (GLVersions[i].version == glv) {
-			Shader::glslVersion = GLVersions[i].glslVersion;
-			break;
-		}
-	}
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#endif
 	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
 	const core::VarPtr& multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
 	int samples = multisampleSamples->intVal();
@@ -1649,16 +1636,20 @@ void setup() {
 	}
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, buffers);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
+	Log::debug("Request gles context %i.%i", glv.majorVersion, glv.minorVersion);
+	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
+		if (GLVersions[i].version == glv) {
+			Shader::glslVersion = GLVersions[i].glslVersion;
+			break;
+		}
+	}
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glv.majorVersion);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glv.minorVersion);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	int contextFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
 #ifdef DEBUG
 	contextFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
 	Log::debug("Enable opengl debug context");
 #endif
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
-#endif
 }
 
 void resize(int windowWidth, int windowHeight, float scaleFactor) {
