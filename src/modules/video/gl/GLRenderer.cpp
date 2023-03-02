@@ -1098,15 +1098,14 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 			core_assert(glNamedFramebufferTexture != nullptr);
 			glNamedFramebufferTexture(glstate().framebufferHandle, glAttachmentType, textureId, 0);
 			checkError();
+		} else if (textureTarget == TextureType::Texture2D) {
+			core_assert(glFramebufferTexture2D != nullptr);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachmentType, GL_TEXTURE_2D, textureId, 0);
+			checkError();
 		} else {
-#ifdef USE_OPENGLES
+			core_assert(textureTarget == TextureType::Texture3D || textureTarget == TextureType::Texture2DArray || textureTarget == TextureType::Texture2DMultisampleArray);
 			core_assert(glFramebufferTextureLayer != nullptr);
 			glFramebufferTextureLayer(GL_FRAMEBUFFER, glAttachmentType, textureId, 0, 0);
-#else
-			core_assert(glFramebufferTexture != nullptr);
-			glFramebufferTexture(GL_FRAMEBUFFER, glAttachmentType, textureId, 0);
-#endif
-			checkError();
 		}
 		if (glAttachmentType >= GL_COLOR_ATTACHMENT0 && glAttachmentType <= GL_COLOR_ATTACHMENT15) {
 			attachments.push_back(glAttachmentType);
