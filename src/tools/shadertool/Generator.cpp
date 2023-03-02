@@ -193,6 +193,10 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			mproto += " ";
 			mproto += v.name;
 		}
+		methods += "\nbool ";
+		methods += filename;
+		methods += "::";
+		methods += mproto;
 
 		if (v.isSampler() && layout.binding != -1) {
 			mproto += " = video::TextureUnit::";
@@ -201,12 +205,10 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 
 		if (v.arraySize == -1) {
 			mproto += ", int amount";
+			methods += ", int amount";
 		}
 		mproto += ") const";
-		methods += "\nbool ";
-		methods += filename;
-		methods += "::";
-		methods += mproto;
+		methods += ") const";
 		methods += " {\n";
 		prototypes += "\n";
 		prototypes += "\t/**\n";
