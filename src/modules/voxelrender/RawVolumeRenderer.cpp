@@ -471,10 +471,6 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		visible = true;
 	}
 	if (!visible) {
-		if (_bloom->boolVal()) {
-			video::ScopedFrameBuffer scoped(renderContext.frameBuffer);
-			video::clear(video::ClearFlag::Color);
-		}
 		return;
 	}
 
@@ -532,9 +528,6 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		core_assert_always(_shadow.bind(video::TextureUnit::One));
 	}
 
-	if (_bloom->boolVal()) {
-		renderContext.frameBuffer.bind(true);
-	}
 	const video::PolygonMode mode = camera.polygonMode();
 	if (mode == video::PolygonMode::Points) {
 		video::enable(video::State::PolygonOffsetPoint);
@@ -611,7 +604,6 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	}
 	if (_bloom->boolVal()) {
 		video::FrameBuffer &frameBuffer = renderContext.frameBuffer;
-		frameBuffer.unbind();
 		const video::TexturePtr& color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
 		const video::TexturePtr& color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
 		renderContext.bloomRenderer.render(color0, color1);

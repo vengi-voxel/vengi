@@ -21,7 +21,6 @@
 namespace voxelrender {
 
 static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender::SceneGraphRenderer &volumeRenderer, const voxelformat::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
-	video::FrameBuffer frameBuffer;
 	video::clearColor(ctx.clearColor);
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
@@ -33,13 +32,8 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 	video::TextureConfig textureCfg;
 	textureCfg.wrap(video::TextureWrap::ClampToEdge);
 	textureCfg.format(video::TextureFormat::RGBA);
-	video::FrameBufferConfig cfg;
-	cfg.dimension(glm::ivec2(ctx.outputSize)).depthBuffer(true).depthBufferFormat(video::TextureFormat::D24);
-	cfg.addTextureAttachment(textureCfg, video::FrameBufferAttachment::Color0);
-	frameBuffer.init(cfg);
 
 	core_trace_scoped(EditorSceneRenderFramebuffer);
-	frameBuffer.bind(true);
 	volumeRenderer.prepare(const_cast<voxelformat::SceneGraph&>(sceneGraph));
 
 	{
@@ -60,14 +54,12 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 		camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 		camera.setOmega(ctx.omega);
 		camera.update(ctx.deltaFrameSeconds);
+		renderContext.frameBuffer.bind(true);
 		volumeRenderer.render(renderContext, camera, true, true);
+		renderContext.frameBuffer.unbind();
 	}
-	frameBuffer.unbind();
 
-	image::ImagePtr image = frameBuffer.image("thumbnail", video::FrameBufferAttachment::Color0);
-	frameBuffer.shutdown();
-
-	return image;
+	return renderContext.frameBuffer.image("thumbnail", video::FrameBufferAttachment::Color0);
 }
 
 image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, const voxelformat::ThumbnailContext &ctx) {
