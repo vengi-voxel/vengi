@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/BindingContext.h"
 #include "core/IComponent.h"
 #include "KeybindingParser.h"
 #include "core/collection/Set.h"
@@ -45,6 +46,16 @@ public:
 	bool init();
 	void reset(int version);
 	void removeApplicationKeyBindings(int version);
+
+	bool registerBinding(const core::String &command, int32_t key, int16_t modifier = 0,
+						 core::BindingContext context = core::BindingContext::All, uint16_t count = 1);
+
+	bool registerBinding(const core::String &keys, const core::String &command,
+						 core::BindingContext context = core::BindingContext::All, uint16_t count = 1);
+
+	bool registerBinding(const core::String &keys, const core::String &command,
+						 const core::String &context, uint16_t count = 1);
+
 
 	/**
 	 * @brief Print the binding line for a key/modifier combination

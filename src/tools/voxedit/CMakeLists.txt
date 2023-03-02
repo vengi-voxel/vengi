@@ -7,7 +7,6 @@ set(SRCS
 )
 
 set(FILES
-	voxedit/keybindings.cfg
 	voxedit/scripts/test-import-plane.cfg
 	voxedit/scripts/test-layers.cfg
 	voxedit/scripts/test-animate.cfg

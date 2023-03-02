@@ -13,6 +13,7 @@
 #include "core/Log.h"
 #include "io/File.h"
 #include "io/Filesystem.h"
+#include "util/KeybindingParser.h"
 #include <SDL.h>
 
 namespace util {
@@ -188,6 +189,34 @@ void KeyBindingHandler::construct() {
 
 void KeyBindingHandler::shutdown(int version) {
 	core::String keybindings;
+	keybindings += R"(
+# modifier+key command context
+# get a list of bindable commands from the console by using the cmdlist command
+#
+# modifiers are
+# * alt, right_alt, left_alt
+# * shift, right_shift, left_shift
+# * ctrl, right_ctrl, left_ctrl
+#
+# valid contexts are
+# * all
+# * model (only available in model mode)
+# * scene (only available in scene mode)
+# * editing (both model and scene)
+#
+# mouse related buttons
+# * left_mouse
+# * middle_mouse
+# * right_mouse
+# * double_left_mouse
+# * double_middle_mouse
+# * double_right_mouse
+# * x1_mouse
+# * x2_mouse
+# * wheelup
+# * wheeldown
+#
+)";
 	for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 		const int32_t key = i->first;
 		const CommandModifierPair& pair = i->second;
@@ -242,15 +271,40 @@ bool KeyBindingHandler::load(int version) {
 	return loadBindings(bindings);
 }
 
+bool KeyBindingHandler::registerBinding(const core::String &keys, const core::String &command, core::BindingContext context,
+					 uint16_t count) {
+	KeybindingParser p(keys, command, "");
+	for (const auto &entry : p.getBindings()) {
+		return registerBinding(command, entry.first, entry.second.modifier, context, count);
+	}
+	return false;
+}
+
+bool KeyBindingHandler::registerBinding(const core::String &keys, const core::String &command, const core::String &context,
+					 uint16_t count) {
+	KeybindingParser p(keys, command, context);
+	for (const auto &entry : p.getBindings()) {
+		return registerBinding(command, entry.first, entry.second.modifier, entry.second.context, count);
+	}
+	return false;
+}
+
+bool KeyBindingHandler::registerBinding(const core::String &command, int32_t key, int16_t modifier,
+										core::BindingContext context, uint16_t count) {
+	auto i = _bindings.find(key);
+	// don't add the same binding more than once
+	if (i != _bindings.end() && i->second.command == command && i->second.modifier == modifier) {
+		return false;
+	}
+	_bindings.insert(std::make_pair(key, CommandModifierPair{command, modifier, count, context}));
+	return true;
+}
+
 bool KeyBindingHandler::loadBindings(const core::String &bindings) {
 	const KeybindingParser p(bindings);
 	for (const auto& entry : p.getBindings()) {
-		auto i = _bindings.find(entry.first);
-		// don't add the same binding more than once
-		if (i != _bindings.end() && i->second.command == entry.second.command && i->second.modifier == entry.second.modifier) {
-			continue;
-		}
-		_bindings.insert(std::make_pair(entry.first, entry.second));
+		registerBinding(entry.second.command, entry.first, entry.second.modifier, entry.second.context,
+						entry.second.count);
 	}
 	return !_bindings.empty();
 }

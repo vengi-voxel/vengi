@@ -255,7 +255,7 @@ app::AppState WindowedApp::onInit() {
 		return app::AppState::InitFailure;
 	}
 	if (!_keybindingHandler.load(_keybindingsVersion)) {
-		Log::warn("Failed to load the keybindings");
+		Log::debug("Failed to load the keybindings");
 	}
 
 	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
