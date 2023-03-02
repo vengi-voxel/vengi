@@ -217,6 +217,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::Text("Search paths:");
 			for (const core::String &path : io::filesystem()->paths()) {
 				const core::String &abspath = io::filesystem()->absolutePath(path);
+				if (abspath.empty()) {
+					continue;
+				}
 				core::String fileurl = "file://" + abspath;
 				ImGui::URLItem(abspath.c_str(), fileurl.c_str(), w);
 			}
