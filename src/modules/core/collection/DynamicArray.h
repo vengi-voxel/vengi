@@ -8,7 +8,6 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/StandardLib.h"
-#include <cstdlib>
 #include <new>
 
 namespace core {
@@ -40,12 +39,12 @@ private:
 			return;
 		}
 		_capacity = align(newSize);
-		TYPE* newBuffer = (TYPE*)std::aligned_alloc(16, _capacity * sizeof(TYPE));
+		TYPE* newBuffer = (TYPE*)core_aligned_malloc(_capacity * sizeof(TYPE));
 		for (size_t i = 0u; i < _size; ++i) {
 			new ((void*)&newBuffer[i]) TYPE(core::move(_buffer[i]));
 			_buffer[i].~TYPE();
 		}
-		std::free(_buffer);
+		core_aligned_free(_buffer);
 		_buffer = newBuffer;
 	}
 public:
@@ -371,7 +370,7 @@ public:
 		for (size_t i = 0u; i < _size; ++i) {
 			_buffer[i].~TYPE();
 		}
-		std::free(_buffer);
+		core_aligned_free(_buffer);
 		_capacity = 0u;
 		_size = 0u;
 		_buffer = nullptr;
