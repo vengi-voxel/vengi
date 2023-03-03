@@ -33,6 +33,15 @@ int32_t Shader::getUniformBufferOffset(const char *name) {
 	GLint offset;
 	core_assert(glGetActiveUniformsiv != nullptr);
 	glGetActiveUniformsiv(_program, 1, &index, GL_UNIFORM_OFFSET, &offset);
+	GLint type;
+	glGetActiveUniformsiv(_program, 1, &index, GL_UNIFORM_TYPE, &type);
+	GLint size;
+	glGetActiveUniformsiv(_program, 1, &index, GL_UNIFORM_SIZE, &size); // array length, not actual type size;
+	GLint matrixStride;
+	glGetActiveUniformsiv(_program, 1, &index, GL_UNIFORM_MATRIX_STRIDE, &matrixStride);
+	GLint arrayStride;
+	glGetActiveUniformsiv(_program, 1, &index, GL_UNIFORM_ARRAY_STRIDE, &arrayStride);
+	Log::debug("%s: offset: %i, type: %i, size: %i, matrixStride: %i, arrayStride: %i", name, offset, type, size, matrixStride, arrayStride);
 	checkError();
 	return offset;
 }

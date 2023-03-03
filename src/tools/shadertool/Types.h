@@ -152,6 +152,7 @@ struct ShaderStruct {
 	core::StringMap<Layout> layouts;
 	core::StringMap<core::String> constants;
 	// ubo
+	// https://github.com/freedesktop-unofficial-mirror/piglit-test/blob/26323b93557675aa9a1e9675c6eddbc92a69ccda/tests/spec/arb_uniform_buffer_object/uniform-types.c
 	core::List<BufferBlock> uniformBlocks;
 	// ssbo
 	core::List<BufferBlock> bufferBlocks;
