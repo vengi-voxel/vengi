@@ -64,10 +64,6 @@ static void sysLogOutputFunction(void *userdata, int category, SDL_LogPriority p
 #endif
 }
 
-void Log::setLogLevel(Level level) {
-	priv::_logLevel = (SDL_LogPriority)core::enumVal(level);
-}
-
 Log::Level Log::toLogLevel(const char* level) {
 	const core::String string(level);
 	if (core::string::iequals(string, "trace")) {

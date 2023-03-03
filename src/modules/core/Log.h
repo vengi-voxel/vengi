@@ -22,7 +22,6 @@ public:
 		Error = SDL_LOG_PRIORITY_ERROR
 	};
 
-	static void setLogLevel(Level level);
 	static Level toLogLevel(const char* level);
 	static const char* toLogLevel(Level level);
 
