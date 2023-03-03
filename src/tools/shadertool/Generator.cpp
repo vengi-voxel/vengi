@@ -121,10 +121,16 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 
 	core::String methods;
 	core::String prototypes;
-	if (uniformSize > 0 || attributeSize > 0) {
-		methods += "\n";
-		prototypes += "\n";
-	}
+
+	prototypes += "\n\tint getFragmentShaderOutputs() const;\n";
+	methods += "int ";
+	methods += filename;
+	methods += "::getFragmentShaderOutputs() const {\n";
+	methods += "\treturn ";
+	methods += core::string::toString((int)shaderStruct.outs.size());
+	methods += ";\n";
+	methods += "}\n";
+
 	if (shaderStruct.out.layout.maxGeometryVertices > 0) {
 		prototypes += "\n\tint getMaxGeometryVertices() const;\n";
 		methods += "int ";
