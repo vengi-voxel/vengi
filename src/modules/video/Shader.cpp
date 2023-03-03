@@ -378,7 +378,7 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	core::String src;
 	src.append("#version ");
 	src.append(core::string::toString(glslVersion));
-#if USE_OPENGLES
+#ifdef USE_OPENGLES
 	src.append(" es");
 #endif
 
@@ -389,7 +389,7 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 		//src.append("#extension GL_ARB_compute_variable_group_size : enable\n");
 	}
 
-#if USE_OPENGLES
+#ifdef USE_OPENGLES
 	if (shaderType == ShaderType::Vertex || shaderType == ShaderType::Fragment) {
 		src.append("precision highp float;\n");
 		src.append("precision highp int;\n");

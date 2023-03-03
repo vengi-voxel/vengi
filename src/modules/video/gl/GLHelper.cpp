@@ -283,7 +283,8 @@ void setupFeatures() {
 #endif
 
 #ifdef USE_OPENGLES
-	renderState().features[core::enumVal(Feature::TextureHalfFloat)] = SDL_GL_ExtensionSupported("GL_ARB_texture_half_float");
+	renderState().features[core::enumVal(Feature::TextureFloat)] = true;
+	renderState().features[core::enumVal(Feature::TextureHalfFloat)] = true;
 	renderState().features[core::enumVal(Feature::InstancedArrays)] = true;
 	renderState().features[core::enumVal(Feature::TextureCompressionETC2)] = true;
 #else

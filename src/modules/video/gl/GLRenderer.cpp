@@ -136,15 +136,22 @@ void readBuffer(GBufferTextureType textureType) {
 }
 
 float lineWidth(float width) {
-#ifdef USE_OPENGLES
-	return 1.0f;
-#else
 	// line width > 1.0 is deprecated in core profile context
 	if (glstate().glVersion.isAtLeast(3, 2)) {
 		return glstate().lineWidth;
 	}
 	video_trace_scoped(LineWidth);
 	if (glstate().smoothedLineWidth.x < 0.0f) {
+#ifdef USE_OPENGLES
+		GLfloat buf[2];
+		core_assert(glGetFloatv != nullptr);
+		glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
+		glstate().smoothedLineWidth.x = buf[0];
+		glstate().smoothedLineWidth.y = buf[1];
+		glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, buf);
+		glstate().aliasedLineWidth.x = buf[0];
+		glstate().aliasedLineWidth.y = buf[1];
+#else
 		GLdouble buf[2];
 		core_assert(glGetDoublev != nullptr);
 		glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
@@ -153,6 +160,7 @@ float lineWidth(float width) {
 		glGetDoublev(GL_ALIASED_LINE_WIDTH_RANGE, buf);
 		glstate().aliasedLineWidth.x = (float)buf[0];
 		glstate().aliasedLineWidth.y = (float)buf[1];
+#endif
 		// TODO GL_SMOOTH_LINE_WIDTH_GRANULARITY
 	}
 	if (glm::abs(glstate().lineWidth - width) < glm::epsilon<float>()) {
@@ -172,7 +180,6 @@ float lineWidth(float width) {
 	}
 	glstate().lineWidth = width;
 	return oldWidth;
-#endif
 }
 
 const glm::vec4& currentClearColor() {
@@ -1605,7 +1612,7 @@ void setup() {
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-#if USE_OPENGLES
+#ifdef USE_OPENGLES
 	int contextFlags = 0;
 	GLVersion glv = GLES3;
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
