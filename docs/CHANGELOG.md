@@ -37,6 +37,7 @@ General:
    - Fixed rendering issue for windows users
    - Fixed fullscreen issues for windows users
    - Extended lua script bindings to allow to render text as voxels
+   - Support GLES3 rendering
 
 VoxConvert:
 
