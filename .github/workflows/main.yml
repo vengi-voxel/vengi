@@ -129,7 +129,7 @@ jobs:
 
     emscripten:
         timeout-minutes: 60
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-latest
 
         steps:
         - uses: actions/checkout@v3
@@ -153,8 +153,18 @@ jobs:
 
         - name: Emscripten
           run: |
-            make voxedit
-            make emscripten-voxedit
+            cmake -H. -Bbuild -GNinja
+            cmake --build build --target voxedit
+            mkdir -p build/emscripten
+            cp -r build/generated build/emscripten
+            emcmake cmake -H. -Bbuild/emscripten -GNinja
+            cmake --build build/emscripten --target voxedit
+
+        - name: Upload the build artifacts
+          uses: actions/upload-artifact@v3
+          with:
+            name: emscripten
+            path: build/emscripten/voxedit
 
     windows:
         timeout-minutes: 45
