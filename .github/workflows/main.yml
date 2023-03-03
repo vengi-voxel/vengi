@@ -127,6 +127,35 @@ jobs:
             cd build
             ctest -V .
 
+    emscripten:
+        timeout-minutes: 60
+        runs-on: ubuntu-22.04
+
+        steps:
+        - uses: actions/checkout@v3
+
+        - name: Setup
+          run: |
+            sudo apt-get update
+            sudo apt-get install liblua5.4-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache
+
+        - uses: mymindstorm/setup-emsdk@v10
+          with:
+            version: 2.0.27
+
+        - name: ccache
+          uses: actions/cache@v3
+          with:
+            path: |
+              ~/.ccache
+            key: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-emscripten-build-${{ hashFiles('**/CMakeLists.txt') }}
+            restore-keys: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-emscripten-build-${{ hashFiles('**/CMakeLists.txt') }}
+
+        - name: Emscripten
+          run: |
+            make voxedit
+            make emscripten-voxedit
+
     windows:
         timeout-minutes: 45
         runs-on: windows-2022
