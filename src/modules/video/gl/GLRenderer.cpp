@@ -1532,12 +1532,8 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name)
 
 int fetchUniforms(Id program, ShaderUniforms& uniforms, const core::String& name) {
 	video_trace_scoped(FetchUniforms);
-#ifdef USE_OPENGLES
-	int uniformsCnt = 0;
-#else
-	int uniformsCnt = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORMS, GL_ACTIVE_UNIFORM_MAX_LENGTH, glGetActiveUniformName, glGetUniformLocation, false);
-#endif
-	int uniformBlocksCnt = _priv::fillUniforms(program, uniforms, name, GL_ACTIVE_UNIFORM_BLOCKS, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, glGetActiveUniformBlockName, glGetUniformBlockIndex, true);
+	int uniformsCnt = _priv::fillUniforms(program, uniforms, name, false);
+	int uniformBlocksCnt = _priv::fillUniforms(program, uniforms, name, true);
 
 	if (limit(Limit::MaxUniformBufferSize) > 0) {
 		for (auto *e : uniforms) {

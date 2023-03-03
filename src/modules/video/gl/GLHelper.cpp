@@ -291,6 +291,65 @@ void setupFeatures() {
 #endif
 }
 
+int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::String& shaderName, bool block) {
+	GLenum activeEnum;
+	GLenum activeMaxLengthEnum;
+	if (block) {
+		activeEnum = GL_ACTIVE_UNIFORM_BLOCKS;
+		activeMaxLengthEnum = GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH;
+	} else {
+		activeEnum = GL_ACTIVE_UNIFORMS;
+		activeMaxLengthEnum = GL_ACTIVE_UNIFORM_MAX_LENGTH;
+	}
+	GLint numUniforms = 0;
+	glGetProgramiv(program, activeEnum, &numUniforms);
+	GLint uniformNameSize = 0;
+	glGetProgramiv(program, activeMaxLengthEnum, &uniformNameSize);
+	char name[4096];
+	if (uniformNameSize + 1 >= (int)sizeof(name)) {
+		return 0;
+	}
+
+	const char *shaderNameC = shaderName.c_str();
+	for (int i = 0; i < numUniforms; i++) {
+		int location;
+		if (block) {
+			core_assert(glGetActiveUniformBlockName != nullptr);
+			glGetActiveUniformBlockName(program, i, uniformNameSize, nullptr, name);
+			core_assert(glGetUniformBlockIndex != nullptr);
+			location = glGetUniformBlockIndex(program, name);
+		} else {
+			GLint size = 0;
+			GLenum type = 0;
+			core_assert(glGetActiveUniform != nullptr);
+			glGetActiveUniform(program, i, uniformNameSize, nullptr, &size, &type, name);
+			core_assert(glGetUniformLocation != nullptr);
+			location = glGetUniformLocation(program, name);
+		}
+		if (location < 0) {
+			Log::debug("Could not get uniform location for %s is %i (shader %s)", name, location, shaderNameC);
+			continue;
+		}
+		char* array = SDL_strchr(name, '[');
+		if (array != nullptr) {
+			*array = '\0';
+		}
+		Uniform uniform;
+		uniform.location = location;
+		uniform.block = block;
+		if (block) {
+			core_assert(glGetUniformBlockIndex != nullptr);
+			uniform.blockIndex = glGetUniformBlockIndex(program, name);
+			core_assert(glGetActiveUniformBlockiv != nullptr);
+			glGetActiveUniformBlockiv(program, location, GL_UNIFORM_BLOCK_DATA_SIZE, &uniform.size);
+			uniform.blockBinding = i;
+		}
+		uniformMap.put(core::String(name), uniform);
+		Log::debug("Got uniform location for %s is %i (shader %s)", name, location, shaderNameC);
+	}
+	return numUniforms;
+}
+
 }
 
 }
