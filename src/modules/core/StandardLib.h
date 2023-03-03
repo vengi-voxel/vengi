@@ -5,6 +5,7 @@
 #pragma once
 
 #include <SDL_stdinc.h>
+#include <SDL_cpuinfo.h>
 
 #ifndef core_malloc
 #define core_malloc SDL_malloc
@@ -16,6 +17,14 @@
 
 #ifndef core_free
 #define core_free SDL_free
+#endif
+
+#ifndef core_aligned_malloc
+#define core_aligned_malloc SDL_SIMDAlloc
+#endif
+
+#ifndef core_aligned_free
+#define core_aligned_free SDL_SIMDFree
 #endif
 
 #ifndef core_memset
