@@ -99,7 +99,7 @@ void AnimationTimeline::sequencer(voxelformat::FrameIndex &currentFrame) {
 
 		ImGui::EndNeoSequencer();
 
-		if (selectionRightClicked || ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+		if (selectionRightClicked) {
 			ImGui::OpenPopup("keyframe-context-menu");
 		}
 		ImGuiWindowFlags popupFlags = 0;
