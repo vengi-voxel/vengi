@@ -27,22 +27,32 @@ bool Shader::setAttributeLocation(const core::String& name, int location) {
 
 int32_t Shader::getUniformBufferOffset(const char *name) {
 	GLuint index;
+	const GLchar *uniformNames[1];
+	uniformNames[0] = name;
 	core_assert(glGetUniformIndices != nullptr);
-	glGetUniformIndices(_program, 1, &name, &index);
+	glGetUniformIndices(_program, 1, uniformNames, &index);
 	checkError();
+	if (index == GL_INVALID_INDEX) {
+		Log::error("Could not query uniform index for %s", name);
+		return -1;
+	}
 	GLint offset;
 	core_assert(glGetActiveUniformsiv != nullptr);
 	glGetActiveUniformsiv(_program, 1, &index, GL_UNIFORM_OFFSET, &offset);
+	checkError();
 	GLint type;
 	glGetActiveUniformsiv(_program, 1, &index, GL_UNIFORM_TYPE, &type);
+	checkError();
 	GLint size;
 	glGetActiveUniformsiv(_program, 1, &index, GL_UNIFORM_SIZE, &size); // array length, not actual type size;
+	checkError();
 	GLint matrixStride;
 	glGetActiveUniformsiv(_program, 1, &index, GL_UNIFORM_MATRIX_STRIDE, &matrixStride);
+	checkError();
 	GLint arrayStride;
 	glGetActiveUniformsiv(_program, 1, &index, GL_UNIFORM_ARRAY_STRIDE, &arrayStride);
-	Log::debug("%s: offset: %i, type: %i, size: %i, matrixStride: %i, arrayStride: %i", name, offset, type, size, matrixStride, arrayStride);
 	checkError();
+	Log::debug("%s: offset: %i, type: %i, size: %i, matrixStride: %i, arrayStride: %i", name, offset, type, size, matrixStride, arrayStride);
 	return offset;
 }
 

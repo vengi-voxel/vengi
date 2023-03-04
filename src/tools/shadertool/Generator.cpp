@@ -546,9 +546,15 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			uniforms += core::string::toString((uint32_t)(offset * 4));
 			uniforms += " != getUniformBufferOffset(\"";
 			uniforms += v.name;
+			if (v.arraySize > 0) {
+				uniforms += "[0]";
+			}
 			uniforms += "\")) {\n";
 			uniforms += "\t\tLog::error(\"Invalid offset found for uniform ";
 			uniforms += v.name;
+			if (v.arraySize > 0) {
+				uniforms += "[0]";
+			}
 			uniforms += " %i - expected ";
 			uniforms += core::string::toString((uint32_t)(offset * 4));
 			uniforms += "\", getUniformBufferOffset(\"";
