@@ -58,6 +58,7 @@ if (NOT LUA54_FOUND)
 	configure_lua(${LIB})
 endif()
 
+if (NOT CMAKE_CROSSCOMPILING)
 find_program(LUAC_EXECUTABLE NAMES luac luac5.4)
 if (LUAC_EXECUTABLE)
 	execute_process(
@@ -89,3 +90,4 @@ else()
 	add_executable(luac IMPORTED GLOBAL)
 	set_property(TARGET luac PROPERTY IMPORTED_LOCATION ${LUAC_EXECUTABLE})
 endif()
+endif(NOT CMAKE_CROSSCOMPILING)
