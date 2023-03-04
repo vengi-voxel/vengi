@@ -153,11 +153,11 @@ jobs:
 
         - name: Emscripten
           run: |
-            cmake -H. -Bbuild
+            cmake -H. -Bbuild -GNinja
             cmake --build build --target codegen
             mkdir -p build/emscripten
             cp -r build/generated build/emscripten
-            emcmake cmake -H. -Bbuild/emscripten -DCMAKE_VERBOSE_MAKEFILE=TRUE -DCMAKE_BUILD_TYPE=Release
+            emcmake cmake -H. -Bbuild/emscripten -GNinja -DCMAKE_BUILD_TYPE=Release
             cmake --build build/emscripten --target voxedit
 
         - name: Upload the build artifacts
