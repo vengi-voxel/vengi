@@ -27,6 +27,8 @@ function(engine_compressed_file_to_header NAME INPUT_FILE OUTPUT_FILE)
 			COMMENT "Generate c header for compressed ${INPUT_FILE} in ${OUTPUT_FILE}"
 			VERBATIM
 		)
+		add_custom_target(engine_compressed_file_to_header_${NAME} DEPENDS ${OUTPUT_FILE})
+		add_dependencies(codegen engine_compressed_file_to_header_${NAME})
 	else()
 		message(WARNING "Source code generation must be done by native toolchain")
 	endif()
@@ -46,6 +48,8 @@ function(engine_file_to_header NAME INPUT_FILE OUTPUT_FILE)
 			COMMENT "Generate c header for ${INPUT_FILE} in ${OUTPUT_FILE}"
 			VERBATIM
 		)
+		add_custom_target(engine_file_to_header_${NAME} DEPENDS ${OUTPUT_FILE})
+		add_dependencies(codegen engine_file_to_header_${NAME})
 	else()
 		message(WARNING "Source code generation must be done by native toolchain")
 	endif()

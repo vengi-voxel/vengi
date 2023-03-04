@@ -107,6 +107,8 @@ function(generate_shaders TARGET)
 		endif()
 	endforeach()
 
+	add_custom_target(generate_shaders_${TARGET} DEPENDS ${_headers} ${_constantsheaders})
+	add_dependencies(codegen generate_shaders_${TARGET})
 	target_sources(${TARGET} PRIVATE ${_sources} ${_headers} ${_constantsheaders})
 	engine_mark_as_generated(${_headers} ${_shaderconstantheaderpath} ${_sources})
 endfunction()

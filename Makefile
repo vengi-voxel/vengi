@@ -65,6 +65,9 @@ update-videobindings:
 release-%:
 	$(Q)$(MAKE) BUILDTYPE=Release $(subst release-,,$@)
 
+codegen: $(BUILDDIR)/CMakeCache.txt
+	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
+
 shelltests: all
 	$(Q)cd $(BUILDDIR) && ctest -V -C $(BUILDTYPE) -R shelltests-
 
@@ -241,7 +244,7 @@ update-fonts:
 	unzip -jo $(UPDATEDIR)/arimo.zip static/Arimo-Regular.ttf -d data/ui
 
 emscripten-%:
-	$(Q)$(CMAKE) --build $(BUILDDIR) --target $(subst emscripten-,,$@)
+	$(Q)$(CMAKE) --build $(BUILDDIR) --target codegen
 	$(Q)mkdir -p build/emscripten
 	$(Q)rm -rf build/emscripten/generated
 	$(Q)cp -r $(BUILDDIR)/generated build/emscripten

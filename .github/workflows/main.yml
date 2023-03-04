@@ -154,7 +154,7 @@ jobs:
         - name: Emscripten
           run: |
             cmake -H. -Bbuild -GNinja
-            cmake --build build --target voxedit
+            cmake --build build --target codegen
             mkdir -p build/emscripten
             cp -r build/generated build/emscripten
             emcmake cmake -H. -Bbuild/emscripten -GNinja
