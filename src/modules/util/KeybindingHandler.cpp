@@ -264,7 +264,7 @@ bool KeyBindingHandler::load(int version) {
 		bindings = file->load();
 	}
 	if (bindings.empty()) {
-		Log::warn("Failed to load key bindings from '%s' - file is empty", file->name().c_str());
+		Log::debug("Failed to load key bindings from '%s' - file is empty", file->name().c_str());
 		return false;
 	}
 	Log::debug("Load key bindings from '%s'", file->name().c_str());
