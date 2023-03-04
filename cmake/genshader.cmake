@@ -97,7 +97,7 @@ function(generate_shaders TARGET)
 					DEPENDS shadertool ${_shaders} ${_shadersdeps} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
 				)
 			else()
-				message(WARNING "Source code generation must be done by native toolchain")
+				message(STATUS "Source code generation must be done by native toolchain")
 			endif()
 			list(APPEND _headers ${_shaderheaderpath})
 			list(APPEND _sources ${_shadersourcepath})
