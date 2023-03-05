@@ -145,7 +145,7 @@ bool GoxFormat::loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &s
 	return true;
 }
 
-image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) {
+image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream, const LoadContext &ctx) {
 	uint32_t magic;
 	wrapImg(stream.readUInt32(magic))
 
@@ -411,7 +411,7 @@ bool GoxFormat::loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 
@@ -454,7 +454,7 @@ size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 }
 
 
-bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
+bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 
@@ -524,10 +524,10 @@ bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream& stream, const SceneGraph
 	return true;
 }
 
-bool GoxFormat::saveChunk_IMG(const SceneGraph &sceneGraph, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool GoxFormat::saveChunk_IMG(const SceneGraph &sceneGraph, io::SeekableWriteStream& stream, const SaveContext &savectx) {
 	ThumbnailContext ctx;
 	ctx.outputSize = glm::ivec2(128);
-	const image::ImagePtr &image = createThumbnail(sceneGraph, thumbnailCreator, ctx);
+	const image::ImagePtr &image = createThumbnail(sceneGraph, savectx.thumbnailCreator, ctx);
 	if (!image) {
 		return true;
 	}
@@ -676,11 +676,11 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const SceneGraph
 	return true;
 }
 
-bool GoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
+bool GoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	wrapSave(stream.writeUInt32(FourCC('G', 'O', 'X', ' ')))
 	wrapSave(stream.writeUInt32(2))
 
-	wrapBool(saveChunk_IMG(sceneGraph, stream, thumbnailCreator))
+	wrapBool(saveChunk_IMG(sceneGraph, stream, ctx))
 	wrapBool(saveChunk_PREV(stream))
 	int blocks = 0;
 	wrapBool(saveChunk_BL16(stream, sceneGraph, blocks))

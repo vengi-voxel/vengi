@@ -18,9 +18,9 @@ namespace voxelformat {
 class MTSFormat : public PaletteFormat {
 public:
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
-						   voxel::Palette &palette) override;
+						   voxel::Palette &palette, const LoadContext &ctx) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream,
-					ThumbnailCreator thumbnailCreator) override;
+					const SaveContext &ctx) override;
 };
 
 } // namespace voxelformat

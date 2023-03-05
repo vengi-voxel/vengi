@@ -36,7 +36,7 @@ namespace voxelformat {
 		}                                                                                                              \
 	} while (0)
 
-bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
+bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	const int64_t length = stream.size();
 	if (length < SECTOR_BYTES) {
 		Log::error("File does not contain enough data");
@@ -516,7 +516,7 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 		return false; \
 	}
 
-bool MCRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool MCRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		uint8_t raw[3] = {0, 0, 0}; // TODO
 		_offsets[i].sectorCount = 0; // TODO

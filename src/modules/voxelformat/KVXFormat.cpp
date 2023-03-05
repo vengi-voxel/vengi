@@ -103,7 +103,7 @@ struct slab {
 		return false; \
 	}
 
-bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
+bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	// Total # of bytes (not including numbytes) in each mip-map level
 	// but there is only 1 mip-map level
 	uint32_t numbytes;
@@ -255,7 +255,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false; \
 	}
 
-bool KVXFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool KVXFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 #if 0
 	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {

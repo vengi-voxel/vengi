@@ -34,7 +34,7 @@
 namespace voxelformat {
 
 bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-										SceneGraph &sceneGraph, voxel::Palette &palette) {
+										SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &loadctx) {
 	palette.minecraft();
 	io::ZipReadStream zipStream(stream);
 	priv::NamedBinaryTagContext ctx;
@@ -390,7 +390,7 @@ void SchematicFormat::addMetadata_r(const core::String &key, const priv::NamedBi
 }
 
 bool SchematicFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
-								 io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
+								 io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	// save as sponge-3
 	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {

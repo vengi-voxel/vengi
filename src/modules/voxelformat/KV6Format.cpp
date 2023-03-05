@@ -92,7 +92,7 @@ struct State {
 		return 0; \
 	}
 
-size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 	if (magic != FourCC('K','v','x','l')) {
@@ -143,7 +143,7 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 		return false; \
 	}
 
-bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
+bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 	if (magic != FourCC('K','v','x','l')) {
@@ -291,7 +291,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false; \
 	}
 
-bool KV6Format::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool KV6Format::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");

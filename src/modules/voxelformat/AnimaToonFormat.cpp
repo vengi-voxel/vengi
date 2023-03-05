@@ -22,7 +22,7 @@ namespace voxelformat {
 	}
 
 bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-									 SceneGraph &sceneGraph, const voxel::Palette &palette) {
+									 SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	const int64_t size = stream.size();
 	core::String str(size, ' ');
 	if (!stream.readString((int)str.size(), str.c_str())) {

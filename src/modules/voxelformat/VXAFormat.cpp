@@ -243,7 +243,7 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 	return true;
 }
 
-bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))
@@ -363,7 +363,7 @@ bool VXAFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 	return true;
 }
 
-bool VXAFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool VXAFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	const voxelformat::SceneGraphNode &root = sceneGraph.root();
 	const voxelformat::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();

@@ -19,14 +19,14 @@ TEST_F(GLTFFormatTest, testExportMesh) {
 		const core::String filename = "rgb.qb";
 		const io::FilePtr &file = open(filename);
 		io::FileStream stream(file);
-		EXPECT_TRUE(sourceFormat.load(filename, stream, sceneGraph));
+		EXPECT_TRUE(sourceFormat.load(filename, stream, sceneGraph, testLoadCtx));
 	}
 	ASSERT_TRUE(sceneGraph.size() > 0);
 	GLTFFormat f;
 	const core::String outFilename = "exportrgb.gltf";
 	const io::FilePtr &outFile = open(outFilename, io::FileMode::SysWrite);
 	io::FileStream outStream(outFile);
-	EXPECT_TRUE(f.saveGroups(sceneGraph, outFilename, outStream, testThumbnailCreator));
+	EXPECT_TRUE(f.saveGroups(sceneGraph, outFilename, outStream, testSaveCtx));
 }
 
 TEST_F(GLTFFormatTest, testImportAnimation) {
@@ -35,7 +35,7 @@ TEST_F(GLTFFormatTest, testImportAnimation) {
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file);
 	SceneGraph sceneGraph;
-	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph));
+	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
 	ASSERT_EQ(2u, sceneGraph.size());
 	SceneGraphNode* node = sceneGraph[1];
 	ASSERT_TRUE(node != nullptr);
@@ -49,7 +49,7 @@ TEST_F(GLTFFormatTest, testVoxelizeCube) {
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file);
 	SceneGraph sceneGraph;
-	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph));
+	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
 	EXPECT_TRUE(sceneGraph.size() > 0);
 }
 
@@ -59,7 +59,7 @@ TEST_F(GLTFFormatTest, DISABLED_testVoxelizeLantern) {
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file);
 	SceneGraph sceneGraph;
-	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph));
+	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
 	EXPECT_TRUE(sceneGraph.size() > 0);
 }
 

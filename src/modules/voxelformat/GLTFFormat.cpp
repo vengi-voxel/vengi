@@ -1161,7 +1161,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	return true;
 }
 
-bool GLTFFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool GLTFFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) {
 	uint32_t magic;
 	stream.peekUInt32(magic);
 	const int64_t size = stream.size();

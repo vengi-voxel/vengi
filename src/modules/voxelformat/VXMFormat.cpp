@@ -64,12 +64,12 @@ bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel
 	return true;
 }
 
-image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) {
+image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream, const LoadContext &ctx) {
 	const core::String imageName = filename + ".png";
 	return image::loadImage(imageName);
 }
 
-bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	wrapBool(stream.writeUInt32(FourCC('V','X','M','C')));
 	const glm::vec3 pivot(0.5f);
 
@@ -248,7 +248,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return true;
 }
 
-bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette) {
+bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))

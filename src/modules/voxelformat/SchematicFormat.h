@@ -37,8 +37,8 @@ protected:
 	void addMetadata_r(const core::String &key, const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxelformat::SceneGraphNode &node);
 	void parseMetadata(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxelformat::SceneGraphNode &node);
 	int parsePalette(const priv::NamedBinaryTag &schematic, core::Buffer<int> &mcpal) const;
-	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
-	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) override;
+	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) override;
+	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override;
 };
 
 }

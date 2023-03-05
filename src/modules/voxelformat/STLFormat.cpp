@@ -115,7 +115,7 @@ bool STLFormat::parseBinary(io::SeekableReadStream &stream, TriCollection &tris)
 	return true;
 }
 
-bool STLFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool STLFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic));
 	const bool ascii = FourCC('s', 'o', 'l', 'i') == magic;

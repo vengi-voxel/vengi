@@ -78,7 +78,8 @@ protected:
 		ASSERT_TRUE(file) << "Can't open " << filename;
 		io::FileStream stream(file);
 		voxelformat::SceneGraph sceneGraph;
-		ASSERT_TRUE(format.load(file->fileName(), stream, sceneGraph));
+		voxelformat::LoadContext loadCtx;
+		ASSERT_TRUE(format.load(file->fileName(), stream, sceneGraph, loadCtx));
 		voxelformat::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
 		core::ScopedPtr<voxel::RawVolume> v( merged.first);
 		ASSERT_NE(nullptr, v) << "Can't load " << filename;

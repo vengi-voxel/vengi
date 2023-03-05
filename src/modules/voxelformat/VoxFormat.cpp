@@ -64,7 +64,7 @@ VoxFormat::VoxFormat() {
 	ogt_vox_set_memory_allocator(_ogt_alloc, _ogt_free);
 }
 
-size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) {
+size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette, const LoadContext &ctx) {
 	const size_t size = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
 	if (stream.read(buffer, size) == -1) {
@@ -253,7 +253,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, Scen
 	return true;
 }
 
-bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
+bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	const size_t size = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
 	if (stream.read(buffer, size) == -1) {
@@ -501,7 +501,7 @@ glm::ivec3 VoxFormat::maxSize() const {
 	return maxSize;
 }
 
-bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
+bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &savectx) {
 	voxel::Palette palette = sceneGraph.mergePalettes(true, 0);
 	if (palette.colorCount() <= 0) {
 		Log::error("Could not find any colors in the merged palette");

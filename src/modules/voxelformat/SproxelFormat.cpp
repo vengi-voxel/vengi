@@ -28,7 +28,7 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
 	char buf[512];
 	wrapBool(stream.readLine(sizeof(buf), buf))
 
@@ -105,7 +105,7 @@ static bool skipComma(io::SeekableReadStream &stream) {
 	return true;
 }
 
-bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
+bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	char buf[512];
 	wrapBool(stream.readLine(sizeof(buf), buf))
 
@@ -171,7 +171,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 	return sceneGraph.emplace(core::move(node)) > 0;
 }
 
-bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
+bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");

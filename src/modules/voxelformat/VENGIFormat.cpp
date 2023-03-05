@@ -355,7 +355,7 @@ bool VENGIFormat::loadNode(SceneGraph &sceneGraph, int parent, uint32_t version,
 	return false;
 }
 
-bool VENGIFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool VENGIFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	wrapBool(stream.writeUInt32(FourCC('V','E','N','G')))
 	io::ZipWriteStream zipStream(stream);
 	wrapBool(zipStream.writeUInt32(1))
@@ -365,7 +365,7 @@ bool VENGIFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &f
 	return true;
 }
 
-bool VENGIFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool VENGIFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 	if (magic != FourCC('V','E','N','G')) {

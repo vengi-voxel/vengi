@@ -18,9 +18,9 @@ namespace voxelformat {
 class DatFormat : public PaletteFormat {
 protected:
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
-						   voxel::Palette &palette) override;
+						   voxel::Palette &palette, const LoadContext &ctx) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) override {
+					io::SeekableWriteStream &stream, const SaveContext &ctx) override {
 		return false;
 	}
 };

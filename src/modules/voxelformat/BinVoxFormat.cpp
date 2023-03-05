@@ -69,7 +69,7 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 	return true;
 }
 
-bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) {
 	char line[512];
 	wrapBool(stream.readLine(sizeof(line), line))
 	if (0 != strcmp(line, "#binvox 1")) {
@@ -119,7 +119,7 @@ bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 	return true;
 }
 
-bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");

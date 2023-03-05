@@ -24,7 +24,7 @@ namespace voxelformat {
 class OBJFormat : public MeshFormat {
 private:
 	bool writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId, const core::String &mapKd) const;
-	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
+	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) override;
 public:
 	bool saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes& meshes, const core::String &filename, io::SeekableWriteStream& stream, const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override;
 };

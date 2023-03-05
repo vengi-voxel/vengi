@@ -57,10 +57,10 @@ TEST_F(AoSVXLFormatTest, testSave) {
 	sceneGraph.emplace(core::move(node1));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 
-	ASSERT_TRUE(f.save(sceneGraph, filename, bufferedStream, testThumbnailCreator));
+	ASSERT_TRUE(f.save(sceneGraph, filename, bufferedStream, testSaveCtx));
 	bufferedStream.seek(0);
 	SceneGraph sceneGraphLoad;
-	EXPECT_TRUE(f.load(filename, bufferedStream, sceneGraphLoad));
+	EXPECT_TRUE(f.load(filename, bufferedStream, sceneGraphLoad, testLoadCtx));
 	EXPECT_EQ(sceneGraphLoad.size(), 4);
 }
 

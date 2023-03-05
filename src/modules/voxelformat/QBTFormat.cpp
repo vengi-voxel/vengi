@@ -283,7 +283,7 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sce
 	return scoped.success();
 }
 
-bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	const voxelformat::SceneGraphNode &root = sceneGraph.root();
 	const voxelformat::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();
@@ -609,7 +609,7 @@ bool QBTFormat::loadHeader(io::SeekableReadStream& stream, Header &state) {
 	return true;
 }
 
-size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
 	Header state;
 	wrapBool(loadHeader(stream, state))
 
@@ -661,7 +661,7 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return 0;
 }
 
-bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
+bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	Header state;
 	wrapBool(loadHeader(stream, state))
 

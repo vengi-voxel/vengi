@@ -709,7 +709,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 	return voxelizeNode(name, sceneGraph, tris) > 0;
 }
 
-bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) {
 	static const uint32_t q1Version = FourCC('\x1d', '\0', '\0', '\0');
 	static const uint32_t bspMagic = FourCC('I', 'B', 'S', 'P');
 

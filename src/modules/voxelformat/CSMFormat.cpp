@@ -48,7 +48,7 @@ static bool readString(io::SeekableReadStream& stream, core::String& str, bool r
 	return true;
 }
 
-bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
+bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t magic, version, blank, matrixCount;
 	wrap(stream.readUInt32(magic))
 	const bool isNVM = magic == FourCC('.','N','V','M');
@@ -139,7 +139,7 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 #undef wrap
 #undef wrapBool
 
-bool CSMFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool CSMFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	return false;
 }
 

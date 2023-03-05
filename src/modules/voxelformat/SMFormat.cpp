@@ -106,7 +106,7 @@ static const struct BlockPalIdx {
 	{907, 12}, {908, 12}, {909, 12}, {910, 12}, {911, 12}, {912, 12}, {913, 12}, {914, 12}, {915, 12}, {916, 12},
 	{917, 12}, {918, 12}, {919, 12}, {920, 12}, {921, 12}};
 
-bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
+bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	io::ZipArchive archive;
 	if (!archive.open(&stream)) {
 		Log::error("Failed to load zip archive from %s", filename.c_str());
@@ -176,7 +176,7 @@ static constexpr glm::ivec3 posByIndex(uint32_t blockIndex) {
 	return glm::ivec3(x, y, z);
 }
 
-size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
 	palette.setSize(lengthof(priv::paletteColors));
 	for (int i = 0; i < lengthof(priv::paletteColors); ++i) {
 		palette.color(i) = priv::paletteColors[i];

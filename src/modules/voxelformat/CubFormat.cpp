@@ -26,7 +26,7 @@ namespace voxelformat {
 		return false; \
 	}
 
-size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
@@ -56,7 +56,7 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.size();
 }
 
-bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) {
+bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
@@ -103,7 +103,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 
 #undef wrap
 
-bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");

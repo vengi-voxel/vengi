@@ -27,7 +27,7 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
+bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	char buf[64];
 
 	wrapBool(stream.readLine(sizeof(buf), buf))
@@ -114,7 +114,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	return true;
 }
 
-bool QEFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool QEFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	stream.writeString("Qubicle Exchange Format\n", false);
 	stream.writeString("Version 0.2\n", false);
 	stream.writeString("www.minddesk.com\n", false);

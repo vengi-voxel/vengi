@@ -280,14 +280,14 @@ bool QBCLFormat::saveNode(io::SeekableWriteStream& stream, const SceneGraph& sce
 	return true;
 }
 
-bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &savectx) {
 	wrapBool(stream.writeUInt32(FourCC('Q','B','C','L')))
 	wrapBool(stream.writeUInt32(131331))
 	wrapBool(stream.writeUInt32(qbcl::VERSION))
 	bool imageAdded = false;
 	ThumbnailContext ctx;
 	ctx.outputSize = glm::ivec2(128);
-	const image::ImagePtr &image = createThumbnail(sceneGraph, thumbnailCreator, ctx);
+	const image::ImagePtr &image = createThumbnail(sceneGraph, savectx.thumbnailCreator, ctx);
 	if (image) {
 		const int size = image->width() * image->height() * image->depth();
 		if (size > 0) {
@@ -326,7 +326,7 @@ bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	return saveNode(stream, sceneGraph, sceneGraph.root());
 }
 
-size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
 	Header header;
 	wrapBool(readHeader(stream, header))
 	header.loadPalette = true;
@@ -595,7 +595,7 @@ bool QBCLFormat::readHeader(io::SeekableReadStream& stream, Header &header) {
 	return true;
 }
 
-bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) {
+bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	Header header;
 	wrapBool(readHeader(stream, header))
 
@@ -614,7 +614,7 @@ bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 	return true;
 }
 
-image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream) {
+image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream, const LoadContext &ctx) {
 	uint32_t magic;
 	wrapImg(stream.readUInt32(magic))
 	if (magic != FourCC('Q', 'B', 'C', 'L')) {

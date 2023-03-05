@@ -56,7 +56,7 @@ protected:
 	 * Convert your input mesh into @c Tri instances and use the methods of this class to help voxelizing those.
 	 * @see voxelizeNode()
 	 */
-	virtual bool voxelizeGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph);
+	virtual bool voxelizeGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph, const LoadContext &ctx);
 
 	static glm::vec2 paletteUV(int colorIndex);
 
@@ -90,9 +90,9 @@ public:
 	static core::String lookupTexture(const core::String &meshFilename, const core::String &in);
 
 	MeshFormat();
-	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, SceneGraph &sceneGraph) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, SceneGraph &sceneGraph, const LoadContext &ctx) override;
 	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) override;
+					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
 };
 
 } // namespace voxel

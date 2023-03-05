@@ -452,7 +452,7 @@ int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const c
 	return nodeId;
 }
 
-bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) {
 	ufbx_stream ufbxstream;
 	core_memset(&ufbxstream, 0, sizeof(ufbxstream));
 	ufbxstream.user = &stream;

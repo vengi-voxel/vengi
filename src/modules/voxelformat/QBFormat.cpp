@@ -177,7 +177,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 	return writer.success();
 }
 
-bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	wrapSave(stream.writeUInt32(131331)) // version
 	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
 	const bool leftHanded = core::Var::getSafe(cfg::VoxformatQBSaveLeftHanded)->boolVal();
@@ -433,7 +433,7 @@ bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::
 	return true;
 }
 
-size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
 	State state;
 	wrap(stream.readUInt32(state._version))
 	uint32_t colorFormat;
@@ -466,7 +466,7 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 	return palette.colorCount();
 }
 
-bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) {
+bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	State state;
 	wrap(stream.readUInt32(state._version))
 	uint32_t colorFormat;

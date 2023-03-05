@@ -42,16 +42,16 @@ private:
 	bool loadModel(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, Header &state);
 	bool loadNode(io::SeekableReadStream& stream, SceneGraph &sceneGraph, int parent, voxel::Palette &palette, Header &state);
 	bool loadColorMap(io::SeekableReadStream& stream, voxel::Palette &palette);
-	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
+	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) override;
 
 	bool saveNode(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node, bool colorMap) const;
 	bool saveCompound(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node, bool colorMap) const;
 	bool saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node, bool colorMap) const;
 	bool saveColorMap(io::SeekableWriteStream& stream, const voxel::Palette& palette) const;
 	bool saveModel(io::SeekableWriteStream& stream, const SceneGraph &sceneGraph, const SceneGraphNode& node, bool colorMap) const;
-	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) override;
+	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override;
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) override;
 };
 
 }

@@ -63,14 +63,15 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 }
 
 image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, const voxelformat::ThumbnailContext &ctx) {
-	image::ImagePtr image = voxelformat::loadScreenshot(fileName, stream);
+	voxelformat::LoadContext loadctx;
+	image::ImagePtr image = voxelformat::loadScreenshot(fileName, stream, loadctx);
 	if (image && image->isLoaded()) {
 		return image;
 	}
 
 	voxelformat::SceneGraph sceneGraph;
 	stream.seek(0);
-	if (!voxelformat::loadFormat(fileName, stream, sceneGraph)) {
+	if (!voxelformat::loadFormat(fileName, stream, sceneGraph, loadctx)) {
 		Log::error("Failed to load given input file: %s", fileName.c_str());
 		return image::ImagePtr();
 	}
@@ -112,7 +113,8 @@ bool volumeTurntable(const core::String &modelFile, const core::String &imageFil
 	voxelformat::SceneGraph sceneGraph;
 	io::FileStream stream(io::filesystem()->open(modelFile, io::FileMode::SysRead));
 	stream.seek(0);
-	if (!voxelformat::loadFormat(modelFile, stream, sceneGraph)) {
+	voxelformat::LoadContext loadctx;
+	if (!voxelformat::loadFormat(modelFile, stream, sceneGraph, loadctx)) {
 		Log::error("Failed to load given input file: %s", modelFile.c_str());
 		return false;
 	}

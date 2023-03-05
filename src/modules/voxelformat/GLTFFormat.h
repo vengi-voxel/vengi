@@ -65,7 +65,7 @@ private:
 	bool subdivideShape(SceneGraphNode &node, const TriCollection &tris, const glm::vec3 &offset,
 						bool axisAlignedMesh) const;
 
-	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) override;
+	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) override;
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const SceneGraph &sceneGraph, const Meshes &meshes,
 					const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad,

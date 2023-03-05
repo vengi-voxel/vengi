@@ -294,13 +294,13 @@ MeshFormat::MeshExt::MeshExt(voxel::ChunkMesh *_mesh, const SceneGraphNode& node
 	nodeId = node.id();
 }
 
-bool MeshFormat::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) {
-	const bool retVal = voxelizeGroups(filename, file, sceneGraph);
+bool MeshFormat::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph, const LoadContext &ctx) {
+	const bool retVal = voxelizeGroups(filename, file, sceneGraph, ctx);
 	sceneGraph.updateTransforms();
 	return retVal;
 }
 
-bool MeshFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph) {
+bool MeshFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &, SceneGraph &, const LoadContext &) {
 	Log::debug("Mesh %s can't get voxelized yet", filename.c_str());
 	return false;
 }
@@ -373,7 +373,7 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 	return fullpath;
 }
 
-bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
 	const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 	const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();

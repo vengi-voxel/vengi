@@ -24,6 +24,16 @@ namespace voxelformat {
 class SceneGraph;
 class SceneGraphNode;
 
+typedef void (*ProgressMonitor)(int cur, int max);
+
+struct LoadContext {
+	ProgressMonitor monitor = nullptr;
+};
+struct SaveContext {
+	ProgressMonitor monitor = nullptr;
+	ThumbnailCreator thumbnailCreator = nullptr;
+};
+
 // the max amount of voxels - [0-255]
 static constexpr int MaxRegionSize = 256;
 
@@ -96,11 +106,11 @@ protected:
 	 * @param[in] thumbnailCreator A callback that is either null or returns an instance of @c image::ImagePtr for the thumbnail of the
 	 * given scene graph. Some formats have embedded screenshots.
 	 */
-	virtual bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) = 0;
+	virtual bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) = 0;
 	/**
 	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes
 	 */
-	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) = 0;
+	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) = 0;
 public:
 	virtual ~Format() = default;
 
@@ -108,7 +118,7 @@ public:
 	 * Some formats have embedded screenshots of the model. This method doesn't load anything else than that image.
 	 * @note Not supported by many formats.
 	 */
-	virtual image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream);
+	virtual image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream, const LoadContext &ctx);
 
 	/**
 	 * @brief Only load the palette that is included in the format
@@ -119,9 +129,9 @@ public:
 	 *
 	 * @return the amount of colors found in the palette
 	 */
-	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette);
-	virtual bool load(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph);
-	virtual bool save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator);
+	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx);
+	virtual bool load(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx);
+	virtual bool save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx);
 };
 
 /**
@@ -139,17 +149,17 @@ class NoColorFormat : public Format {
  */
 class PaletteFormat : public Format {
 protected:
-	virtual bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette) = 0;
+	virtual bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) = 0;
 
 	/**
 	 * @brief This indicates whether the format only supports one palette for the whole scene graph
 	 */
 	virtual bool onlyOnePalette() { return true; }
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override final;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) override final;
 
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
-	bool save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) override final;
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) override;
+	bool save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override final;
 };
 
 /**
@@ -161,8 +171,8 @@ public:
 class RGBAFormat : public Format {
 protected:
 	uint8_t _flattenFactor;
-	virtual bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette) = 0;
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
+	virtual bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) = 0;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) override;
 	core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) const;
 	core::RGBA flattenRGB(core::RGBA rgba) const;
 public:

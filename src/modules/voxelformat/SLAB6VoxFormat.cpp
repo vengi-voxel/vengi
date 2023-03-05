@@ -23,7 +23,7 @@
 
 namespace voxelformat {
 
-bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette) {
+bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t depth, height, width;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
@@ -78,7 +78,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 	return true;
 }
 
-bool SLAB6VoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool SLAB6VoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");

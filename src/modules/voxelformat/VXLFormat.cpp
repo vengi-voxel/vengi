@@ -360,7 +360,7 @@ bool VXLFormat::saveVXL(core::DynamicArray<const SceneGraphNode*> &nodes, const 
 	return true;
 }
 
-bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	core::DynamicArray<const SceneGraphNode*> body;
 	core::DynamicArray<const SceneGraphNode*> barrel;
 	core::DynamicArray<const SceneGraphNode*> turret;
@@ -808,16 +808,16 @@ bool VXLFormat::saveHVA(const core::String &filename, const SceneGraph& sceneGra
 	return true;
 }
 
-bool VXLFormat::loadFromFile(const core::String &filename, SceneGraph& sceneGraph, voxel::Palette &palette) {
+bool VXLFormat::loadFromFile(const core::String &filename, SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	const io::FilePtr &file = io::filesystem()->open(filename);
 	if (file && file->validHandle()) {
 		io::FileStream stream(file);
-		return loadGroupsPalette(filename, stream, sceneGraph, palette);
+		return loadGroupsPalette(filename, stream, sceneGraph, palette, ctx);
 	}
 	return true;
 }
 
-size_t VXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+size_t VXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
 	VXLModel mdl;
 	if (!readHeader(stream, mdl, palette)) {
 		return false;
@@ -825,7 +825,7 @@ size_t VXLFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.colorCount();
 }
 
-bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette) {
+bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	VXLModel mdl;
 
 	wrapBool(readHeader(stream, mdl, palette))
@@ -849,10 +849,10 @@ bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrapBool(loadHVA(basename + ".hva", mdl, sceneGraph))
 
 	if (!core::string::endsWith(filename, "barl.vxl")) {
-		wrapBool(loadFromFile(basename + "barl.vxl", sceneGraph, palette));
+		wrapBool(loadFromFile(basename + "barl.vxl", sceneGraph, palette, ctx));
 	}
 	if (!core::string::endsWith(filename, "tur.vxl")) {
-		wrapBool(loadFromFile(basename + "tur.vxl", sceneGraph, palette));
+		wrapBool(loadFromFile(basename + "tur.vxl", sceneGraph, palette, ctx));
 	}
 
 	return true;

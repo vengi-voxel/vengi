@@ -79,7 +79,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &fil
 		node.setVolume(&volume, false);
 		sceneGraphsave.emplace(core::move(node));
 	}
-	ASSERT_TRUE(format->save(sceneGraphsave, filename, stream, testThumbnailCreator));
+	ASSERT_TRUE(format->save(sceneGraphsave, filename, stream, testSaveCtx));
 	stream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette merged = load(filename, stream, *format);
 	ASSERT_NE(nullptr, merged.first);
@@ -98,7 +98,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 		SceneGraphNode node;
 		node.setVolume(&original, false);
 		sceneGraphsave.emplace(core::move(node));
-		EXPECT_TRUE(srcFormat.save(sceneGraphsave, destFilename, srcFormatStream, testThumbnailCreator)) << "Could not save " << destFilename;
+		EXPECT_TRUE(srcFormat.save(sceneGraphsave, destFilename, srcFormatStream, testSaveCtx)) << "Could not save " << destFilename;
 	}
 	srcFormatStream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette merged = load(destFilename, srcFormatStream, srcFormat);
@@ -115,7 +115,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 		SceneGraphNode node;
 		node.setVolume(merged.first, false);
 		sceneGraphsave.emplace(core::move(node));
-		EXPECT_TRUE(destFormat.save(sceneGraphsave, destFilename, stream, testThumbnailCreator)) << "Could not save " << destFilename;
+		EXPECT_TRUE(destFormat.save(sceneGraphsave, destFilename, stream, testSaveCtx)) << "Could not save " << destFilename;
 	}
 	stream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette merged2 = load(destFilename, stream, destFormat);
@@ -131,7 +131,7 @@ void AbstractVoxFormatTest::canLoad(SceneGraph &sceneGraph, const core::String &
 	const io::FilePtr& file = open(filename);
 	ASSERT_TRUE(file->validHandle()) << "Could not open " << filename;
 	io::FileStream stream(file);
-	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph)) << "Could not load " << filename;
+	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph, testLoadCtx)) << "Could not load " << filename;
 	ASSERT_EQ(expectedVolumes, sceneGraph.size());
 }
 
@@ -143,7 +143,7 @@ void AbstractVoxFormatTest::checkColor(core::RGBA c1, const voxel::Palette &pale
 }
 
 void AbstractVoxFormatTest::testRGBSmall(const core::String &filename, io::SeekableReadStream &stream, voxelformat::SceneGraph &sceneGraph) {
-	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph));
+	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph, testLoadCtx));
 	EXPECT_EQ(1u, sceneGraph.size());
 
 	voxel::Palette palette;
@@ -180,7 +180,7 @@ void AbstractVoxFormatTest::testLoadScreenshot(const core::String &filename, int
 											   const core::RGBA expectedColor, int expectedX, int expectedY) {
 	io::FileStream loadStream(open(filename));
 	ASSERT_TRUE(loadStream.valid());
-	const image::ImagePtr &image = voxelformat::loadScreenshot(filename, loadStream);
+	const image::ImagePtr &image = voxelformat::loadScreenshot(filename, loadStream, testLoadCtx);
 	ASSERT_TRUE(image);
 	EXPECT_EQ(image->width(), width) << image::print(image);
 	EXPECT_EQ(image->height(), height) << image::print(image);
@@ -200,7 +200,7 @@ void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename, c
 	}
 
 	io::BufferedReadWriteStream saveStream((int64_t)(10 * 1024 * 1024));
-	ASSERT_TRUE(voxelformat::saveFormat(sceneGraph, saveFilename, nullptr, saveStream, testThumbnailCreator));
+	ASSERT_TRUE(voxelformat::saveFormat(sceneGraph, saveFilename, nullptr, saveStream, testSaveCtx));
 	saveStream.seek(0);
 
 	SceneGraph loadSceneGraph;
@@ -212,7 +212,7 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta
 	const io::FilePtr& file = open(filename);
 	ASSERT_TRUE(file->validHandle()) << "Could not open " << filename.c_str();
 	io::FileStream stream(file);
-	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph)) << "Failed to load " << filename.c_str();
+	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph, testLoadCtx)) << "Failed to load " << filename.c_str();
 	EXPECT_EQ(1u, sceneGraph.size()) << "Unexpected scene graph size for " << filename.c_str();
 
 	voxel::Palette palette;
@@ -251,7 +251,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename,
 	voxelformat::SceneGraph sceneGraph;
 	ASSERT_TRUE(loadGroups(srcFilename, srcFormat, sceneGraph)) << "Failed to load " << srcFilename;
 	io::BufferedReadWriteStream stream((int64_t)(10 * 1024 * 1024));
-	ASSERT_TRUE(destFormat.save(sceneGraph, destFilename, stream, testThumbnailCreator)) << "Could not save " << destFilename;
+	ASSERT_TRUE(destFormat.save(sceneGraph, destFilename, stream, testSaveCtx)) << "Could not save " << destFilename;
 	stream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(destFilename, stream, destFormat);
 	core::ScopedPtr<voxel::RawVolume> loaded(mergedLoad.first);
@@ -269,21 +269,21 @@ void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &sr
 #if WRITE_TO_FILE
 	{
 		io::FileStream stream(open(destFilename, io::FileMode::SysWrite));
-		ASSERT_TRUE(destFormat.save(srcSceneGraph, destFilename, stream, testThumbnailCreator)) << "Could not save " << destFilename;
+		ASSERT_TRUE(destFormat.save(srcSceneGraph, destFilename, stream, testSaveCtx)) << "Could not save " << destFilename;
 	}
 #else
 	io::BufferedReadWriteStream stream((int64_t)(10 * 1024 * 1024));
-	ASSERT_TRUE(destFormat.save(srcSceneGraph, destFilename, stream, testThumbnailCreator)) << "Could not save " << destFilename;
+	ASSERT_TRUE(destFormat.save(srcSceneGraph, destFilename, stream, testSaveCtx)) << "Could not save " << destFilename;
 	stream.seek(0);
 #endif
 	voxelformat::SceneGraph destSceneGraph;
 #if WRITE_TO_FILE
 	{
 		io::FileStream stream(open(destFilename));
-		ASSERT_TRUE(destFormat.load(destFilename, stream, destSceneGraph)) << "Failed to load the target format";
+		ASSERT_TRUE(destFormat.load(destFilename, stream, destSceneGraph, testLoadCtx)) << "Failed to load the target format";
 	}
 #else
-	ASSERT_TRUE(destFormat.load(destFilename, stream, destSceneGraph)) << "Failed to load the target format";
+	ASSERT_TRUE(destFormat.load(destFilename, stream, destSceneGraph, testLoadCtx)) << "Failed to load the target format";
 #endif
 	voxel::sceneGraphComparator(srcSceneGraph, destSceneGraph, flags, maxDelta);
 }
@@ -299,7 +299,7 @@ void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Fo
 		node.setVolume(&original, false);
 		sceneGraphsave.emplace(core::move(node));
 	}
-	ASSERT_TRUE(format->save(sceneGraphsave, filename, bufferedStream, testThumbnailCreator));
+	ASSERT_TRUE(format->save(sceneGraphsave, filename, bufferedStream, testSaveCtx));
 	bufferedStream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
 	core::ScopedPtr<voxel::RawVolume> loaded(mergedLoad.first);
@@ -324,7 +324,7 @@ void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Fo
 		node.setPalette(pal);
 		sceneGraphsave.emplace(core::move(node));
 	}
-	ASSERT_TRUE(format->save(sceneGraphsave, filename, bufferedStream, testThumbnailCreator));
+	ASSERT_TRUE(format->save(sceneGraphsave, filename, bufferedStream, testSaveCtx));
 	bufferedStream.seek(0);
 	voxelformat::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
 	core::ScopedPtr<voxel::RawVolume> loaded(mergedLoad.first);
@@ -356,10 +356,10 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 	sceneGraph.emplace(core::move(node3));
 	sceneGraph.emplace(core::move(node4));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
-	ASSERT_TRUE(format->save(sceneGraph, filename, bufferedStream, testThumbnailCreator));
+	ASSERT_TRUE(format->save(sceneGraph, filename, bufferedStream, testSaveCtx));
 	bufferedStream.seek(0);
 	voxelformat::SceneGraph sceneGraphLoad;
-	EXPECT_TRUE(format->load(filename, bufferedStream, sceneGraphLoad));
+	EXPECT_TRUE(format->load(filename, bufferedStream, sceneGraphLoad, testLoadCtx));
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
 
@@ -372,10 +372,10 @@ void AbstractVoxFormatTest::testSave(const core::String &filename, Format *forma
 	node1.setVolume(&layer1, false);
 	sceneGraph.emplace(core::move(node1));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
-	ASSERT_TRUE(format->save(sceneGraph, filename, bufferedStream, testThumbnailCreator));
+	ASSERT_TRUE(format->save(sceneGraph, filename, bufferedStream, testSaveCtx));
 	voxelformat::SceneGraph sceneGraphLoad;
 	bufferedStream.seek(0);
-	EXPECT_TRUE(format->load(filename, bufferedStream, sceneGraphLoad));
+	EXPECT_TRUE(format->load(filename, bufferedStream, sceneGraphLoad, testLoadCtx));
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
 
@@ -436,7 +436,7 @@ void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, con
 	writeStream = &bufferedStream;
 #endif
 
-	ASSERT_TRUE(format->save(sceneGraph, filename, *writeStream, testThumbnailCreator)) << "Could not save the scene graph";
+	ASSERT_TRUE(format->save(sceneGraph, filename, *writeStream, testSaveCtx)) << "Could not save the scene graph";
 
 #if WRITE_TO_FILE
 	io::FilePtr readfile = open(filename);
@@ -463,7 +463,7 @@ io::FilePtr AbstractVoxFormatTest::open(const core::String &filename, io::FileMo
 
 SceneGraph::MergedVolumePalette AbstractVoxFormatTest::load(const core::String& filename, io::SeekableReadStream& stream, Format& format) {
 	SceneGraph sceneGraph;
-	if (!format.load(filename, stream, sceneGraph)) {
+	if (!format.load(filename, stream, sceneGraph, testLoadCtx)) {
 		Log::error("Failed to load %s", filename.c_str());
 		return SceneGraph::MergedVolumePalette{};
 	}
@@ -494,7 +494,7 @@ bool AbstractVoxFormatTest::loadGroups(const core::String& filename, Format& for
 		return false;
 	}
 	io::FileStream stream(file);
-	return format.load(filename, stream, sceneGraph);
+	return format.load(filename, stream, sceneGraph, testLoadCtx);
 }
 
 int AbstractVoxFormatTest::loadPalette(const core::String& filename, Format& format, voxel::Palette &palette) {
@@ -504,7 +504,7 @@ int AbstractVoxFormatTest::loadPalette(const core::String& filename, Format& for
 		return 0;
 	}
 	io::FileStream stream(file);
-	const int size = (int)format.loadPalette(filename, stream, palette);
+	const int size = (int)format.loadPalette(filename, stream, palette, testLoadCtx);
 	const core::String paletteFilename = core::string::extractFilename(filename) + ".png";
 	palette.save(paletteFilename.c_str());
 	return size;

@@ -45,7 +45,7 @@ static inline uint8_t vxl_red(uint32_t c) {
 	return (c >> 16) & 0xFF;
 }
 
-bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette) {
+bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	const int64_t size = stream.size();
 	uint8_t* data = (uint8_t*)core_malloc(size);
 	if (stream.read(data, size) == -1) {
@@ -102,7 +102,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableRead
 	return true;
 }
 
-size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) {
+size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
 	const int64_t size = stream.size();
 	uint8_t* data = (uint8_t*)core_malloc(size);
 	if (stream.read(data, size) == -1) {
@@ -158,7 +158,7 @@ glm::ivec3 AoSVXLFormat::maxSize() const {
 	return glm::ivec3(512, 256, 512);
 }
 
-bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) {
+bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	const voxel::Region& region = sceneGraph.region();
 	glm::ivec3 size = region.getDimensionsInVoxels();
 	glm::ivec3 targetSize(512, size.y, 512);

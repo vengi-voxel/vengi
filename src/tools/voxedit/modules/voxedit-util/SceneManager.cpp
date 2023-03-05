@@ -39,6 +39,7 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "voxelfont/VoxelFont.h"
+#include "voxelformat/Format.h"
 #include "voxelformat/SceneGraph.h"
 #include "voxelformat/SceneGraphNode.h"
 #include "voxelformat/SceneGraphUtil.h"
@@ -255,7 +256,9 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	voxelformat::SceneGraphNode newNode;
 	voxelformat::copyNode(*node, newNode, false);
 	newSceneGraph.emplace(core::move(newNode));
-	if (voxelformat::saveFormat(filePtr, &_lastFilename.desc, newSceneGraph, voxelrender::volumeThumbnail)) {
+	voxelformat::SaveContext saveCtx;
+	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
+	if (voxelformat::saveFormat(filePtr, &_lastFilename.desc, newSceneGraph, saveCtx)) {
 		Log::info("Saved node %i to %s", nodeId, filePtr->name().c_str());
 		return true;
 	}
@@ -332,7 +335,9 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 		return false;
 	}
 
-	if (voxelformat::saveFormat(filePtr, &_lastFilename.desc, _sceneGraph, voxelrender::volumeThumbnail)) {
+	voxelformat::SaveContext saveCtx;
+	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
+	if (voxelformat::saveFormat(filePtr, &_lastFilename.desc, _sceneGraph, saveCtx)) {
 		if (!autosave) {
 			_dirty = false;
 			_lastFilename = file;
@@ -368,7 +373,8 @@ bool SceneManager::import(const core::String& file) {
 	}
 	voxelformat::SceneGraph newSceneGraph;
 	io::FileStream stream(filePtr);
-	if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph)) {
+	voxelformat::LoadContext loadCtx;
+	if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph, loadCtx)) {
 		Log::error("Failed to load %s", file.c_str());
 		return false;
 	}
@@ -407,7 +413,8 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		voxelformat::SceneGraph newSceneGraph;
 		io::FilePtr filePtr = io::filesystem()->open(e.fullPath, io::FileMode::SysRead);
 		io::FileStream stream(filePtr);
-		if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph)) {
+		voxelformat::LoadContext loadCtx;
+		if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph, loadCtx)) {
 			Log::error("Failed to load %s", e.fullPath.c_str());
 		} else {
 			mergeIfNeeded(newSceneGraph);
@@ -437,7 +444,8 @@ bool SceneManager::load(const io::FileDescription& file) {
 	_loadingFuture = threadPool.enqueue([filePtr] () {
 		voxelformat::SceneGraph newSceneGraph;
 		io::FileStream stream(filePtr);
-		voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph);
+		voxelformat::LoadContext loadCtx;
+		voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph, loadCtx);
 		mergeIfNeeded(newSceneGraph);
 		// TODO: stuff that happens in RawVolumeRenderer::extractRegion and
 		// RawVolumeRenderer::scheduleExtractions should happen here
@@ -450,7 +458,8 @@ bool SceneManager::load(const io::FileDescription& file) {
 bool SceneManager::load(const io::FileDescription& file, const uint8_t *data, size_t size) {
 	voxelformat::SceneGraph newSceneGraph;
 	io::MemoryReadStream stream(data, size);
-	voxelformat::loadFormat(file.name, stream, newSceneGraph);
+	voxelformat::LoadContext loadCtx;
+	voxelformat::loadFormat(file.name, stream, newSceneGraph, loadCtx);
 	mergeIfNeeded(newSceneGraph);
 	if (loadSceneGraph(core::move(newSceneGraph))) {
 		_needAutoSave = false;

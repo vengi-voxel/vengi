@@ -228,7 +228,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 #undef wrapBool
 
-bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph) {
+bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;

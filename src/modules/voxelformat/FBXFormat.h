@@ -26,7 +26,7 @@ private:
 						  const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords, const SceneGraph &sceneGraph);
 	bool saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 						 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords, const SceneGraph &sceneGraph);
-	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) override;
+	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) override;
 	int addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const;
 	int addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const;
 	int addCameraNode(const ufbx_scene *scene, const ufbx_node *node, SceneGraph &sceneGraph, int parent) const;

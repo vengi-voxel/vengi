@@ -41,20 +41,20 @@ protected:
 	void testRGBToPaletteFormat(voxelformat::Format &rgbFormat, const core::String &rgbFile, size_t rgbExpectedColors, voxelformat::Format &paletteFormat, const core::String &palFile, size_t palExpectedColors) {
 		io::FileStream rgbStream(open(rgbFile));
 		voxel::Palette rgbPalette;
-		ASSERT_EQ(rgbExpectedColors, rgbFormat.loadPalette(rgbFile, rgbStream, rgbPalette));
+		ASSERT_EQ(rgbExpectedColors, rgbFormat.loadPalette(rgbFile, rgbStream, rgbPalette, testLoadCtx));
 		ASSERT_TRUE(checkNoAlpha(rgbPalette));
 
 		rgbStream.seek(0);
 
 		SceneGraph rgbSceneGraph;
-		ASSERT_TRUE(rgbFormat.load(rgbFile, rgbStream, rgbSceneGraph)) << "Failed to load rgb model " << rgbFile;
+		ASSERT_TRUE(rgbFormat.load(rgbFile, rgbStream, rgbSceneGraph, testLoadCtx)) << "Failed to load rgb model " << rgbFile;
 
 		io::BufferedReadWriteStream palWriteStream;
-		ASSERT_TRUE(paletteFormat.save(rgbSceneGraph, palFile, palWriteStream, testThumbnailCreator)) << "Failed to write pal model " << palFile;
+		ASSERT_TRUE(paletteFormat.save(rgbSceneGraph, palFile, palWriteStream, testSaveCtx)) << "Failed to write pal model " << palFile;
 		palWriteStream.seek(0);
 
 		voxel::Palette palPalette;
-		ASSERT_EQ(paletteFormat.loadPalette(palFile, palWriteStream, palPalette), palExpectedColors);
+		ASSERT_EQ(paletteFormat.loadPalette(palFile, palWriteStream, palPalette, testLoadCtx), palExpectedColors);
 		//ASSERT_TRUE(checkNoAlpha(palPalette));
 
 		for (size_t i = 0; i < rgbExpectedColors; ++i) {
@@ -70,20 +70,20 @@ protected:
 	void testPaletteToRGBFormat(voxelformat::Format &palFormat, const core::String &palFile, size_t palExpectedColors, voxelformat::Format &rgbFormat, const core::String &rgbFile, size_t rgbExpectedColors) {
 		io::FileStream palStream(open(palFile));
 		voxel::Palette palPalette;
-		ASSERT_EQ(palExpectedColors, palFormat.loadPalette(palFile, palStream, palPalette));
+		ASSERT_EQ(palExpectedColors, palFormat.loadPalette(palFile, palStream, palPalette, testLoadCtx));
 		//ASSERT_TRUE(checkNoAlpha(palPalette));
 
 		palStream.seek(0);
 
 		SceneGraph palSceneGraph;
-		ASSERT_TRUE(palFormat.load(palFile, palStream, palSceneGraph)) << "Failed to load pal model " << palFile;
+		ASSERT_TRUE(palFormat.load(palFile, palStream, palSceneGraph, testLoadCtx)) << "Failed to load pal model " << palFile;
 
 		io::BufferedReadWriteStream rgbWriteStream;
-		ASSERT_TRUE(rgbFormat.save(palSceneGraph, rgbFile, rgbWriteStream, testThumbnailCreator)) << "Failed to write rgb model " << rgbFile;
+		ASSERT_TRUE(rgbFormat.save(palSceneGraph, rgbFile, rgbWriteStream, testSaveCtx)) << "Failed to write rgb model " << rgbFile;
 		rgbWriteStream.seek(0);
 
 		voxel::Palette rgbPalette;
-		ASSERT_EQ(rgbFormat.loadPalette(rgbFile, rgbWriteStream, rgbPalette), rgbExpectedColors);
+		ASSERT_EQ(rgbFormat.loadPalette(rgbFile, rgbWriteStream, rgbPalette, testLoadCtx), rgbExpectedColors);
 		ASSERT_TRUE(checkNoAlpha(rgbPalette));
 
 		for (size_t i = 0; i < rgbExpectedColors; ++i) {
@@ -96,20 +96,20 @@ protected:
 	void testRGBToRGBFormat(voxelformat::Format &rgbFormat1, const core::String &rgbFile1, voxelformat::Format &rgbFormat2, const core::String &rgbFile2, size_t expectedColors) {
 		io::FileStream palStream(open(rgbFile1));
 		voxel::Palette rgbPalette1;
-		ASSERT_EQ(expectedColors, rgbFormat1.loadPalette(rgbFile1, palStream, rgbPalette1));
+		ASSERT_EQ(expectedColors, rgbFormat1.loadPalette(rgbFile1, palStream, rgbPalette1, testLoadCtx));
 		ASSERT_TRUE(checkNoAlpha(rgbPalette1));
 
 		palStream.seek(0);
 
 		SceneGraph palSceneGraph;
-		ASSERT_TRUE(rgbFormat1.load(rgbFile1, palStream, palSceneGraph)) << "Failed to load rgb model " << rgbFile1;
+		ASSERT_TRUE(rgbFormat1.load(rgbFile1, palStream, palSceneGraph, testLoadCtx)) << "Failed to load rgb model " << rgbFile1;
 
 		io::BufferedReadWriteStream rgbWriteStream;
-		ASSERT_TRUE(rgbFormat2.save(palSceneGraph, rgbFile2, rgbWriteStream, testThumbnailCreator)) << "Failed to write rgb model " << rgbFile2;
+		ASSERT_TRUE(rgbFormat2.save(palSceneGraph, rgbFile2, rgbWriteStream, testSaveCtx)) << "Failed to write rgb model " << rgbFile2;
 		rgbWriteStream.seek(0);
 
 		voxel::Palette rgbPalette2;
-		ASSERT_EQ(rgbFormat2.loadPalette(rgbFile2, rgbWriteStream, rgbPalette2), expectedColors);
+		ASSERT_EQ(rgbFormat2.loadPalette(rgbFile2, rgbWriteStream, rgbPalette2, testLoadCtx), expectedColors);
 		ASSERT_TRUE(checkNoAlpha(rgbPalette2));
 
 		// the colors might have a different ordering here it depends on the order we read the volume for the rgb format
@@ -123,20 +123,20 @@ protected:
 	void testPaletteToPaletteFormat(voxelformat::Format &palFormat1, const core::String &palFile1, voxelformat::Format &palFormat2, const core::String &palFile2, size_t expectedColors) {
 		io::FileStream palStream(open(palFile1));
 		voxel::Palette palPalette1;
-		ASSERT_EQ(expectedColors, palFormat1.loadPalette(palFile1, palStream, palPalette1));
+		ASSERT_EQ(expectedColors, palFormat1.loadPalette(palFile1, palStream, palPalette1, testLoadCtx));
 		//ASSERT_TRUE(checkNoAlpha(palPalette1));
 
 		palStream.seek(0);
 
 		SceneGraph palSceneGraph;
-		ASSERT_TRUE(palFormat1.load(palFile1, palStream, palSceneGraph)) << "Failed to load pal model " << palFile1;
+		ASSERT_TRUE(palFormat1.load(palFile1, palStream, palSceneGraph, testLoadCtx)) << "Failed to load pal model " << palFile1;
 
 		io::BufferedReadWriteStream rgbWriteStream;
-		ASSERT_TRUE(palFormat2.save(palSceneGraph, palFile2, rgbWriteStream, testThumbnailCreator)) << "Failed to write pal model " << palFile2;
+		ASSERT_TRUE(palFormat2.save(palSceneGraph, palFile2, rgbWriteStream, testSaveCtx)) << "Failed to write pal model " << palFile2;
 		rgbWriteStream.seek(0);
 
 		voxel::Palette palPalette2;
-		ASSERT_EQ(palFormat2.loadPalette(palFile2, rgbWriteStream, palPalette2), expectedColors);
+		ASSERT_EQ(palFormat2.loadPalette(palFile2, rgbWriteStream, palPalette2, testLoadCtx), expectedColors);
 		//ASSERT_TRUE(checkNoAlpha(palPalette2));
 
 		for (size_t i = 0; i < expectedColors; ++i) {

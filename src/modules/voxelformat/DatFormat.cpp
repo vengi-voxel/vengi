@@ -37,7 +37,7 @@
 namespace voxelformat {
 
 bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
-								  voxel::Palette &palette) {
+								  voxel::Palette &palette, const LoadContext &loadctx) {
 	palette.minecraft();
 	io::ZipReadStream zipStream(stream);
 	priv::NamedBinaryTagContext ctx;
@@ -107,7 +107,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			Log::warn("Could not open %s", filename.c_str());
 			continue;
 		}
-		futures.emplace_back(threadPool.enqueue([file]() {
+		futures.emplace_back(threadPool.enqueue([file, &loadctx]() {
 			io::FileStream stream(file);
 			SceneGraph newSceneGraph;
 			if (stream.size() <= 2l * MCRFormat::SECTOR_BYTES) {
@@ -115,7 +115,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				return core::move(newSceneGraph);
 			}
 			MCRFormat mcrFormat;
-			if (!mcrFormat.load(file->name(), stream, newSceneGraph)) {
+			if (!mcrFormat.load(file->name(), stream, newSceneGraph, loadctx)) {
 				Log::warn("Could not load %s", file->name().c_str());
 			}
 			const voxelformat::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();

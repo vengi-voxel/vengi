@@ -31,7 +31,7 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &in, SceneGraph &sceneGraph, voxel::Palette &) {
+bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &in, SceneGraph &sceneGraph, voxel::Palette &, const LoadContext &ctx) {
 	io::ZipReadStream stream(in, (int)in.size());
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
@@ -70,7 +70,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		io::FileStream childStream(file);
 		VXMFormat f;
 		SceneGraph subGraph;
-		if (!f.load(path, childStream, subGraph)) {
+		if (!f.load(path, childStream, subGraph, ctx)) {
 			Log::warn("Failed to load vxm tile %s", path);
 			continue;
 		}
@@ -128,7 +128,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	return true;
 }
 
-bool VXTFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, ThumbnailCreator thumbnailCreator) {
+bool VXTFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	return false;
 }
 

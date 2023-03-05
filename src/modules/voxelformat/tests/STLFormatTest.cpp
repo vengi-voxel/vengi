@@ -17,7 +17,7 @@ TEST_F(STLFormatTest, testVoxelizeAscii) {
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file);
 	SceneGraph sceneGraph;
-	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph));
+	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
 	EXPECT_TRUE(sceneGraph.size() > 0);
 }
 
@@ -27,7 +27,7 @@ TEST_F(STLFormatTest, testVoxelizeCube) {
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file);
 	SceneGraph sceneGraph;
-	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph));
+	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
 	EXPECT_TRUE(sceneGraph.size() > 0);
 }
 

@@ -24,7 +24,7 @@ namespace voxelformat {
 	}
 
 bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
-								  voxel::Palette &palette) {
+								  voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 	if (magic != FourCC('M','T','S','M')) {
@@ -121,7 +121,7 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 #undef wrap
 
 bool MTSFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream,
-						   ThumbnailCreator thumbnailCreator) {
+						   const SaveContext &) {
 	return false;
 }
 

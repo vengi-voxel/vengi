@@ -46,7 +46,7 @@ TEST_F(QBCLFormatTest, testLoadCrabby) {
 		const io::FilePtr& file = open(filename);
 		ASSERT_TRUE(file->validHandle());
 		io::FileStream stream(file);
-		ASSERT_TRUE(voxelformat::loadFormat(filename, stream, qbclsceneGraph));
+		ASSERT_TRUE(voxelformat::loadFormat(filename, stream, qbclsceneGraph, testLoadCtx));
 	}
 	voxelformat::SceneGraph voxsceneGraph;
 	{
@@ -54,7 +54,7 @@ TEST_F(QBCLFormatTest, testLoadCrabby) {
 		const io::FilePtr& file = open(filename);
 		ASSERT_TRUE(file->validHandle());
 		io::FileStream stream(file);
-		ASSERT_TRUE(voxelformat::loadFormat(filename, stream, voxsceneGraph));
+		ASSERT_TRUE(voxelformat::loadFormat(filename, stream, voxsceneGraph, testLoadCtx));
 	}
 	voxel::sceneGraphComparator(qbclsceneGraph, voxsceneGraph, voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette);
 }

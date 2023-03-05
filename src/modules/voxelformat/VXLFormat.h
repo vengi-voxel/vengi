@@ -155,18 +155,18 @@ private:
 	bool prepareModel(VXLModel& mdl) const;
 	bool readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel::Palette &palette);
 
-	bool loadFromFile(const core::String &filename, SceneGraph& sceneGraph, voxel::Palette &palette);
+	bool loadFromFile(const core::String &filename, SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx);
 
 	static glm::mat4 switchYAndZ(const glm::mat4 &in);
 	static void convertRead(glm::mat4 &glmMatrix, const VXLLayerInfo& footer, bool hva);
 	static void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &glmMatrix, const glm::vec3& mins, bool hva);
 
 protected:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette) override;
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) override;
 
-	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette) override;
+	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) override;
 
-	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, ThumbnailCreator thumbnailCreator) override;
+	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override;
 };
 
 }

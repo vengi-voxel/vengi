@@ -32,7 +32,7 @@ TEST_F(VoxFormatTest, testLoadCharacter) {
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
 	SceneGraph sceneGraph;
-	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph));
+	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph, testLoadCtx));
 	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {
 		character_0::create(),	character_1::create(),	character_2::create(),	character_3::create(),
@@ -54,7 +54,7 @@ TEST_F(VoxFormatTest, testLoadGlasses) {
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
 	SceneGraph sceneGraph;
-	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph));
+	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph, testLoadCtx));
 	ASSERT_EQ(1u, sceneGraph.size());
 	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {glasses_0::create()};
@@ -73,7 +73,7 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
 	SceneGraph sceneGraph;
-	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph));
+	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph, testLoadCtx));
 	ASSERT_EQ(72u, sceneGraph.size());
 	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {
@@ -150,13 +150,13 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 	io::FileStream stream(filesave);
 	const io::FilePtr &fileLoadAfterSave = open(name);
 	io::FileStream streamread(fileLoadAfterSave.get());
-	f.load(name, streamread, sceneGraph);
+	f.load(name, streamread, sceneGraph, testLoadCtx);
 #else
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 
-	ASSERT_TRUE(f.save(sceneGraphsave, name, stream, testThumbnailCreator));
+	ASSERT_TRUE(f.save(sceneGraphsave, name, stream, testSaveCtx));
 	stream.seek(0);
-	f.load(name, stream, sceneGraph);
+	f.load(name, stream, sceneGraph, testLoadCtx);
 #endif
 	EXPECT_EQ(3, (int)sceneGraph.size());
 }
