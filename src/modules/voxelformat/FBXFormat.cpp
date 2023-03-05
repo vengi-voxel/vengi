@@ -334,13 +334,13 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 
 		const ufbx_material *material = mesh_mat->material;
 		const image::Image* texture = nullptr;
+		const core::String &materialName = priv::_ufbx_to_string(material->name);
 		if (material != nullptr) {
-			const core::String &t = priv::_ufbx_to_string(material->name);
-			auto textureIter = textures.find(t);
+			auto textureIter = textures.find(materialName);
 			if (textureIter != textures.end()) {
 				texture = textureIter->second.get();
 			} else {
-				Log::warn("Failed to find texture for %s", t.c_str());
+				Log::debug("Failed to find texture for %s", materialName.c_str());
 			}
 		}
 
@@ -350,9 +350,11 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 				if (prop->type == UFBX_PROP_COLOR) {
 					const glm::vec3 rgb = priv::_ufbx_to_vec3(prop->value_vec3);
 					diffuseColor = core::Color::getRGBA(glm::vec4(rgb, 1.0f));
+					Log::debug("Found rgb diffuse color for %s", materialName.c_str());
 				} else if (prop->type == UFBX_PROP_COLOR_WITH_ALPHA) {
 					const glm::vec4 rgba = priv::_ufbx_to_vec4(prop->value_vec4);
 					diffuseColor = core::Color::getRGBA(rgba);
+					Log::debug("Found rgba diffuse color for %s", materialName.c_str());
 				}
 			}
 		}
@@ -404,7 +406,17 @@ int FBXFormat::addCameraNode(const ufbx_scene *scene, const ufbx_node *node, Sce
 
 	SceneGraphNodeCamera camNode;
 	camNode.setName(priv::_ufbx_to_string(node->name));
-	camNode.setFieldOfView((int)camera->field_of_view_deg.x);
+	camNode.setAspectRatio((float)camera->aspect_ratio);
+	camNode.setNearPlane((float)camera->near_plane);
+	camNode.setFarPlane((float)camera->far_plane);
+	if (camera->projection_mode == UFBX_PROJECTION_MODE_PERSPECTIVE) {
+		camNode.setPerspective();
+		camNode.setFieldOfView((int)camera->field_of_view_deg.x);
+	} else if (camera->projection_mode == UFBX_PROJECTION_MODE_ORTHOGRAPHIC) {
+		camNode.setOrthographic();
+		camNode.setWidth((int)camera->orthographic_size.x);
+		camNode.setHeight((int)camera->orthographic_size.y);
+	}
 	SceneGraphTransform transform;
 	priv::_ufbx_to_transform(transform, node);
 	KeyFrameIndex keyFrameIdx = 0;
@@ -489,7 +501,7 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 				continue;
 			}
 			const ufbx_material *material = mesh_mat->material;
-			if (material == nullptr) {
+			if (material == nullptr || material->textures.count == 0) {
 				continue;
 			}
 			const core::String &texname = priv::_ufbx_to_string(material->name);
