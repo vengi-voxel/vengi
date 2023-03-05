@@ -344,6 +344,19 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 			}
 		}
 
+		core::RGBA diffuseColor(0, 0, 0, 255);
+		if (material) {
+			if (const ufbx_prop *prop = ufbx_find_prop(&material->props, "DiffuseColor")) {
+				if (prop->type == UFBX_PROP_COLOR) {
+					const glm::vec3 rgb = priv::_ufbx_to_vec3(prop->value_vec3);
+					diffuseColor = core::Color::getRGBA(glm::vec4(rgb, 1.0f));
+				} else if (prop->type == UFBX_PROP_COLOR_WITH_ALPHA) {
+					const glm::vec4 rgba = priv::_ufbx_to_vec4(prop->value_vec4);
+					diffuseColor = core::Color::getRGBA(rgba);
+				}
+			}
+		}
+
 		for (size_t fi = 0; fi < mesh_mat->num_faces; fi++) {
 			const ufbx_face face = mesh->faces.data[mesh_mat->face_indices.data[fi]];
 			const size_t num_tris = ufbx_triangulate_face(tri_indices.data(), num_tri_indices, mesh, face);
@@ -356,6 +369,8 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					if (mesh->vertex_color.exists) {
 						const ufbx_vec4 &color = ufbx_get_vertex_vec4(&mesh->vertex_color, ix);
 						tri.color[ti] = core::Color::getRGBA(priv::_ufbx_to_vec4(color));
+					} else {
+						tri.color[ti] = diffuseColor;
 					}
 					const ufbx_vec2 &uv = mesh->vertex_uv.exists ? ufbx_get_vertex_vec2(&mesh->vertex_uv, ix) : default_uv;
 					tri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale;
@@ -459,6 +474,11 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 		Log::error("Failed to load: %s", ufbxerror.description.data);
 		return false;
 	}
+	if (ufbxerror.type != UFBX_ERROR_NONE) {
+		char err[4096];
+		ufbx_format_error(err, sizeof(err), &ufbxerror);
+		Log::error("Error while loading fbx: %s", err);
+	}
 
 	core::StringMap<image::ImagePtr> textures;
 	for (size_t i = 0; i < ufbxscene->meshes.count; ++i) {
@@ -498,7 +518,7 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 				Log::debug("Use image %s", name.c_str());
 				textures.put(texname, tex);
 			} else {
-				Log::warn("Failed to load image %s", relativeFilename.c_str());
+				Log::debug("Failed to load image %s", relativeFilename.c_str());
 				textures.put(texname, image::ImagePtr());
 			}
 		}
