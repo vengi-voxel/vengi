@@ -111,7 +111,7 @@ bool RawVolumeRenderer::init() {
 		Log::error("Failed to init shadowmap shader");
 		return false;
 	}
-	shader::ShadowmapData::BlockData var;
+	alignas(16) shader::ShadowmapData::BlockData var;
 	_shadowMapUniformBlock.create(var);
 
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
@@ -485,7 +485,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		if (shadow) {
 			video::ScopedShader scoped(_shadowMapShader);
 			_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
-				shader::ShadowmapData::BlockData var;
+				alignas(16) shader::ShadowmapData::BlockData var;
 				var.lightviewprojection = lightViewProjection;
 
 				for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
