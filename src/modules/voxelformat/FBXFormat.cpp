@@ -334,19 +334,13 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 
 		const ufbx_material *material = mesh_mat->material;
 		const image::Image* texture = nullptr;
-		const core::String &materialName = priv::_ufbx_to_string(material->name);
+		core::RGBA diffuseColor(0, 0, 0, 255);
 		if (material != nullptr) {
+			const core::String &materialName = priv::_ufbx_to_string(material->name);
 			auto textureIter = textures.find(materialName);
 			if (textureIter != textures.end()) {
 				texture = textureIter->second.get();
-			} else {
-				Log::debug("Failed to find texture for %s", materialName.c_str());
-			}
-		}
-
-		core::RGBA diffuseColor(0, 0, 0, 255);
-		if (material) {
-			if (const ufbx_prop *prop = ufbx_find_prop(&material->props, "DiffuseColor")) {
+			} else if (const ufbx_prop *prop = ufbx_find_prop(&material->props, "DiffuseColor")) {
 				if (prop->type == UFBX_PROP_COLOR) {
 					const glm::vec3 rgb = priv::_ufbx_to_vec3(prop->value_vec3);
 					diffuseColor = core::Color::getRGBA(glm::vec4(rgb, 1.0f));
@@ -356,6 +350,8 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					diffuseColor = core::Color::getRGBA(rgba);
 					Log::debug("Found rgba diffuse color for %s", materialName.c_str());
 				}
+			} else {
+				Log::debug("Failed to find texture and diffuse color for %s", materialName.c_str());
 			}
 		}
 
