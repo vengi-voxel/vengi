@@ -394,6 +394,9 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 	KeyFrameIndex keyFrameIdx = 0;
 	SceneGraphTransform &transform = sceneGraphNode.keyFrame(0).transform();
 	priv::_ufbx_to_transform(transform, node);
+	for (const auto &prop : node->props.props) {
+		sceneGraphNode.setProperty(priv::_ufbx_to_string(prop.name), priv::_ufbx_to_string(prop.value_str));
+	}
 	sceneGraphNode.setTransform(keyFrameIdx, transform);
 	// TODO: animations - see ufbx_evaluate_transform
 	return nodeId;
