@@ -278,6 +278,20 @@ static inline glm::vec2 _ufbx_to_vec2(const ufbx_vec2 &v) {
 	return glm::vec2((float)v.x, (float)v.y);
 }
 
+const ufbx_prop *_ufbx_color_prop(const ufbx_props &props) {
+	const ufbx_prop *p;
+	p = ufbx_find_prop(&props, "DiffuseColor");
+	if (p != nullptr) {
+		return p;
+	}
+	p = ufbx_find_prop(&props, "Diffuse");
+	if (p != nullptr) {
+		return p;
+	}
+	p = ufbx_find_prop(&props, "Color");
+	return p;
+}
+
 static inline glm::vec3 _ufbx_to_vec3(const ufbx_vec3 &v) {
 	return glm::vec3((float)v.x, (float)v.y, (float)v.z);
 }
@@ -340,19 +354,23 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 			auto textureIter = textures.find(materialName);
 			if (textureIter != textures.end()) {
 				texture = textureIter->second.get();
-			} else if (const ufbx_prop *prop = ufbx_find_prop(&material->props, "DiffuseColor")) {
+			} else if (const ufbx_prop *prop = priv::_ufbx_color_prop(material->props)) {
 				if (prop->type == UFBX_PROP_COLOR) {
 					const glm::vec3 rgb = priv::_ufbx_to_vec3(prop->value_vec3);
 					diffuseColor = core::Color::getRGBA(glm::vec4(rgb, 1.0f));
-					Log::debug("Found rgb diffuse color for %s", materialName.c_str());
+					Log::debug("Found rgb diffuse color for '%s'", materialName.c_str());
 				} else if (prop->type == UFBX_PROP_COLOR_WITH_ALPHA) {
 					const glm::vec4 rgba = priv::_ufbx_to_vec4(prop->value_vec4);
 					diffuseColor = core::Color::getRGBA(rgba);
-					Log::debug("Found rgba diffuse color for %s", materialName.c_str());
+					Log::debug("Found rgba diffuse color for '%s'", materialName.c_str());
+				} else {
+					Log::debug("Unknown material color type: %i for '%s'", (int)prop->type, materialName.c_str());
 				}
 			} else {
-				Log::debug("Failed to find texture and diffuse color for %s", materialName.c_str());
+				Log::debug("Failed to find texture and diffuse color for '%s'", materialName.c_str());
 			}
+		} else {
+			Log::debug("No material assigned for mesh at slot %i", (int)pi);
 		}
 
 		for (size_t fi = 0; fi < mesh_mat->num_faces; fi++) {
