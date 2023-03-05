@@ -71,6 +71,7 @@
         width: 300px;
       }
     </style>
+    <script src="./coi-serviceworker.js"></script>
   </head>
   <body style="zoom: 1.0">
     <div id="preload">
