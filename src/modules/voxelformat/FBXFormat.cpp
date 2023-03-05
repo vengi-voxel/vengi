@@ -325,31 +325,29 @@ static inline void _ufbx_to_transform(SceneGraphTransform &transform, const ufbx
 int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const {
 	Log::debug("Add model node");
 	const glm::vec3 &scale = getScale();
-	ufbx_vec2 default_uv;
-	core_memset(&default_uv, 0, sizeof(default_uv));
+	ufbx_vec2 defaultUV;
+	core_memset(&defaultUV, 0, sizeof(defaultUV));
 	const ufbx_mesh *mesh = node->mesh;
 	core_assert(mesh != nullptr);
 
-	const size_t num_tri_indices = mesh->max_face_triangles * 3;
-	core::Buffer<uint32_t> tri_indices(num_tri_indices);
+	const size_t numTriIndices = mesh->max_face_triangles * 3;
+	core::Buffer<uint32_t> triIndices(numTriIndices);
 
 	TriCollection tris;
-	tris.reserve(num_tri_indices);
+	tris.reserve(numTriIndices);
 
-	Log::debug("there are %i materials in the mesh", (int)mesh->materials.count);
-	Log::debug("vertex colors: %s", mesh->vertex_color.exists ? "true" : "false");
+	Log::debug("There are %i materials in the mesh", (int)mesh->materials.count);
+	Log::debug("Vertex colors: %s", mesh->vertex_color.exists ? "true" : "false");
 
-	for (size_t pi = 0; pi < mesh->materials.count; pi++) {
-		const ufbx_mesh_material *mesh_mat = &mesh->materials.data[pi];
-		if (mesh_mat->num_triangles == 0) {
+	for (const ufbx_mesh_material &meshMaterial : mesh->materials) {
+		if (meshMaterial.num_triangles == 0) {
 			continue;
 		}
-		Log::debug("faces: %i - material: %s", (int)mesh_mat->num_faces, mesh_mat->material ? "yes" : "no");
+		Log::debug("Faces: %i - material: %s", (int)meshMaterial.num_faces, meshMaterial.material ? "yes" : "no");
 
-		const ufbx_material *material = mesh_mat->material;
 		const image::Image* texture = nullptr;
 		core::RGBA diffuseColor(0, 0, 0, 255);
-		if (material != nullptr) {
+		if (const ufbx_material *material = meshMaterial.material) {
 			const core::String &materialName = priv::_ufbx_to_string(material->name);
 			auto textureIter = textures.find(materialName);
 			if (textureIter != textures.end()) {
@@ -370,17 +368,17 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 				Log::debug("Failed to find texture and diffuse color for '%s'", materialName.c_str());
 			}
 		} else {
-			Log::debug("No material assigned for mesh at slot %i", (int)pi);
+			Log::debug("No material assigned for mesh");
 		}
 
-		for (size_t fi = 0; fi < mesh_mat->num_faces; fi++) {
-			const ufbx_face face = mesh->faces.data[mesh_mat->face_indices.data[fi]];
-			const size_t num_tris = ufbx_triangulate_face(tri_indices.data(), num_tri_indices, mesh, face);
+		for (size_t fi = 0; fi < meshMaterial.num_faces; fi++) {
+			const ufbx_face face = mesh->faces[meshMaterial.face_indices[fi]];
+			const size_t numTris = ufbx_triangulate_face(triIndices.data(), numTriIndices, mesh, face);
 
-			for (size_t vi = 0; vi < num_tris; vi++) {
+			for (size_t vi = 0; vi < numTris; vi++) {
 				Tri tri;
 				for (int ti = 0; ti < 3; ++ti) {
-					const uint32_t ix = tri_indices[vi * 3 + ti];
+					const uint32_t ix = triIndices[vi * 3 + ti];
 					const ufbx_vec3 &pos = ufbx_get_vertex_vec3(&mesh->vertex_position, ix);
 					if (mesh->vertex_color.exists) {
 						const ufbx_vec4 &color = ufbx_get_vertex_vec4(&mesh->vertex_color, ix);
@@ -388,7 +386,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					} else {
 						tri.color[ti] = diffuseColor;
 					}
-					const ufbx_vec2 &uv = mesh->vertex_uv.exists ? ufbx_get_vertex_vec2(&mesh->vertex_uv, ix) : default_uv;
+					const ufbx_vec2 &uv = mesh->vertex_uv.exists ? ufbx_get_vertex_vec2(&mesh->vertex_uv, ix) : defaultUV;
 					tri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale;
 					tri.uv[ti] = priv::_ufbx_to_vec2(uv);
 				}
@@ -406,7 +404,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 
 	SceneGraphNode &sceneGraphNode = sceneGraph.node(nodeId);
 	KeyFrameIndex keyFrameIdx = 0;
-	SceneGraphTransform &transform = sceneGraphNode.keyFrame(0).transform();
+	SceneGraphTransform &transform = sceneGraphNode.keyFrame(keyFrameIdx).transform();
 	priv::_ufbx_to_transform(transform, node);
 	for (const auto &prop : node->props.props) {
 		sceneGraphNode.setProperty(priv::_ufbx_to_string(prop.name), priv::_ufbx_to_string(prop.value_str));
@@ -417,7 +415,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 }
 
 int FBXFormat::addCameraNode(const ufbx_scene *scene, const ufbx_node *node, SceneGraph &sceneGraph, int parent) const {
-	Log::debug("Add model node");
+	Log::debug("Add camera node");
 	const ufbx_camera *camera = node->camera;
 	core_assert(camera != nullptr);
 
@@ -511,9 +509,9 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 
 	core::StringMap<image::ImagePtr> textures;
 	for (size_t i = 0; i < ufbxscene->meshes.count; ++i) {
-		const ufbx_mesh *mesh = ufbxscene->meshes.data[i];
+		const ufbx_mesh *mesh = ufbxscene->meshes[i];
 		for (size_t pi = 0; pi < mesh->materials.count; pi++) {
-			const ufbx_mesh_material *mesh_mat = &mesh->materials.data[pi];
+			const ufbx_mesh_material *mesh_mat = &mesh->materials[pi];
 			if (mesh_mat->num_triangles == 0) {
 				continue;
 			}
@@ -536,7 +534,7 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 			}*/
 
 			if (textures.hasKey(texname)) {
-				Log::debug("texture for material '%s' is already loaded", texname.c_str());
+				Log::debug("Texture for material '%s' is already loaded", texname.c_str());
 				continue;
 			}
 
