@@ -476,7 +476,7 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 	ufbxopts.raw_filename.size = filename.size();
 
 	ufbxopts.allow_null_material = true;
-	ufbxopts.target_axes = ufbx_axes_right_handed_y_up;
+	ufbxopts.target_axes = ufbx_axes_right_handed_y_up; // TODO: see issue https://github.com/mgerhardy/vengi/issues/227
 	ufbxopts.target_unit_meters = 1.0f;
 
 	ufbx_error ufbxerror;
