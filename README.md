@@ -21,6 +21,10 @@ Or "nightly"-builds here at [github action artifacts](https://github.com/mgerhar
 
 ![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-2023-01.png)
 
+## Online version
+
+[voxedit](https://mgerhardy.github.io/vengi-voxedit-html5/)
+
 ## SAST Tools
 
 [PVS-Studio](https://pvs-studio.com/en/pvs-studio/?utm_source=github&utm_medium=organic&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.
