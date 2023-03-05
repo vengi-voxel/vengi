@@ -25,7 +25,7 @@ namespace render {
  */
 class BloomRenderer : public core::NonCopyable {
 private:
-	shader::ConvolutionData::FragData _convolutionFragData;
+	alignas(16) shader::ConvolutionData::ConvData _convolutionFragData;
 	shader::ConvolutionData _convolutionData;
 	shader::ConvolutionShader &_convolutionShader;
 	shader::TextureShader &_textureShader;

@@ -95,8 +95,8 @@ protected:
 
 	shader::VoxelData _voxelData;
 
-	shader::VoxelData::FragData _voxelShaderFragData;
-	shader::VoxelData::VertData _voxelShaderVertData;
+	alignas(16) shader::VoxelData::FragData _voxelShaderFragData;
+	alignas(16) shader::VoxelData::VertData _voxelShaderVertData;
 
 	shader::VoxelShader& _voxelShader;
 	shader::ShadowmapData _shadowMapUniformBlock;

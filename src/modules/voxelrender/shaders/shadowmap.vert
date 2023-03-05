@@ -8,6 +8,7 @@ layout(std140) uniform u_block {
 	mat4 u_lightviewprojection;
 	mat4 u_model;
 	vec3 u_pivot;
+	int u_padding;
 };
 
 void main() {

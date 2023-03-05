@@ -37,7 +37,7 @@ private:
 	int32_t _indexIndex[MAX_MESHES];
 	video::Primitive _primitives[MAX_MESHES];
 	uint32_t _currentMeshIndex = 0u;
-	mutable shader::ColorData::UniformblockData _uniformBlockData;
+	alignas(16) mutable shader::ColorData::UniformblockData _uniformBlockData;
 	mutable shader::ColorData _uniformBlock;
 	shader::ColorShader& _colorShader;
 

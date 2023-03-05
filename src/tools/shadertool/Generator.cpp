@@ -487,7 +487,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 			break;
 		}
 		ub += ") aligned uniform block structure\n\t */\n";
-		ub += "\t#pragma pack(push, 1)\n\tstruct alignas(16) ";
+		ub += "\t#pragma pack(push, 1)\n\tstruct ";
 		ub += uniformBufferStructName;
 		ub += "Data {\n";
 
@@ -575,7 +575,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		ub += "\tstatic_assert(sizeof(";
 		ub += uniformBufferStructName;
 		ub += "Data) == ";
-		ub += core::string::toString((uint32_t)((offset * 4) + 15) & ~15);
+		ub += core::string::toString((uint32_t)(offset * 4));
 		ub += ", \"Unexpected structure size for ";
 		ub += uniformBufferStructName;
 		ub += "Data\");\n";
