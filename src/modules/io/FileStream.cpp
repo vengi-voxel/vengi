@@ -38,9 +38,7 @@ bool FileStream::flush() {
 	if (_rwops == nullptr) {
 		return false;
 	}
-	FileMode mode = _file->mode();
-	_file->close();
-	return _file->open(mode);
+	return _file->flush();
 }
 
 int FileStream::write(const void *buf, size_t size) {

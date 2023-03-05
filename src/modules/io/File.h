@@ -55,6 +55,7 @@ public:
 	 */
 	bool open(FileMode mode);
 	void close();
+	bool flush();
 	int read(void *buf, size_t size, size_t maxnum);
 	long tell() const;
 	long seek(long offset, int seekType) const;

@@ -240,6 +240,15 @@ int File::read(void *buf, size_t size, size_t maxnum) {
 	return n;
 }
 
+bool File::flush() {
+	if (_file != nullptr) {
+		SDL_RWclose(_file);
+		_file = createRWops(_mode);
+		return _file != nullptr;
+	}
+	return false;
+}
+
 void File::close() {
 	if (_file != nullptr) {
 		SDL_RWclose(_file);
