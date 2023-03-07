@@ -62,36 +62,6 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 	return renderContext.frameBuffer.image("thumbnail", video::FrameBufferAttachment::Color0);
 }
 
-image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, const voxelformat::ThumbnailContext &ctx) {
-	voxelformat::LoadContext loadctx;
-	image::ImagePtr image = voxelformat::loadScreenshot(fileName, stream, loadctx);
-	if (image && image->isLoaded()) {
-		return image;
-	}
-
-	scenegraph::SceneGraph sceneGraph;
-	stream.seek(0);
-	if (!voxelformat::loadFormat(fileName, stream, sceneGraph, loadctx)) {
-		Log::error("Failed to load given input file: %s", fileName.c_str());
-		return image::ImagePtr();
-	}
-
-	voxelrender::SceneGraphRenderer volumeRenderer;
-	RenderContext renderContext;
-	renderContext.init(ctx.outputSize);
-	volumeRenderer.construct();
-	if (!volumeRenderer.init()) {
-		Log::error("Failed to initialize the renderer");
-		return image::ImagePtr();
-	}
-
-	volumeRenderer.setSceneMode(true);
-	image = volumeThumbnail(renderContext, volumeRenderer, sceneGraph, ctx);
-	volumeRenderer.shutdown();
-	renderContext.shutdown();
-	return image;
-}
-
 image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
 	voxelrender::SceneGraphRenderer volumeRenderer;
 	volumeRenderer.construct();
@@ -109,16 +79,7 @@ image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const 
 	return image;
 }
 
-bool volumeTurntable(const core::String &modelFile, const core::String &imageFile, voxelformat::ThumbnailContext ctx, int loops) {
-	scenegraph::SceneGraph sceneGraph;
-	io::FileStream stream(io::filesystem()->open(modelFile, io::FileMode::SysRead));
-	stream.seek(0);
-	voxelformat::LoadContext loadctx;
-	if (!voxelformat::loadFormat(modelFile, stream, sceneGraph, loadctx)) {
-		Log::error("Failed to load given input file: %s", modelFile.c_str());
-		return false;
-	}
-
+bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::String &imageFile, voxelformat::ThumbnailContext ctx, int loops) {
 	voxelrender::SceneGraphRenderer volumeRenderer;
 	RenderContext renderContext;
 	renderContext.init(ctx.outputSize);
@@ -147,7 +108,7 @@ bool volumeTurntable(const core::String &modelFile, const core::String &imageFil
 				Log::info("Write image %s", filepath.c_str());
 			}
 		} else {
-			Log::error("Failed to create thumbnail for %s", modelFile.c_str());
+			Log::error("Failed to create thumbnail for %s", imageFile.c_str());
 			volumeRenderer.shutdown();
 			renderContext.shutdown();
 			return false;

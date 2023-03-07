@@ -20,7 +20,7 @@ set(SRCS
 )
 
 set(LIB voxedit-util)
-set(DEPENDENCIES voxelrender voxelgenerator voxelfont)
+set(DEPENDENCIES voxelrender voxelformat voxelgenerator voxelfont)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS

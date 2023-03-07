@@ -65,6 +65,36 @@ app::AppState Thumbnailer::onInit() {
 	return state;
 }
 
+static image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, const voxelformat::ThumbnailContext &ctx) {
+	voxelformat::LoadContext loadctx;
+	image::ImagePtr image = voxelformat::loadScreenshot(fileName, stream, loadctx);
+	if (image && image->isLoaded()) {
+		return image;
+	}
+
+	scenegraph::SceneGraph sceneGraph;
+	stream.seek(0);
+	if (!voxelformat::loadFormat(fileName, stream, sceneGraph, loadctx)) {
+		Log::error("Failed to load given input file: %s", fileName.c_str());
+		return image::ImagePtr();
+	}
+	return voxelrender::volumeThumbnail(sceneGraph, ctx);
+}
+
+static bool volumeTurntable(const core::String &modelFile, const core::String &imageFile, voxelformat::ThumbnailContext ctx, int loops) {
+	scenegraph::SceneGraph sceneGraph;
+	io::FileStream stream(io::filesystem()->open(modelFile, io::FileMode::SysRead));
+	stream.seek(0);
+	voxelformat::LoadContext loadctx;
+	if (!voxelformat::loadFormat(modelFile, stream, sceneGraph, loadctx)) {
+		Log::error("Failed to load given input file: %s", modelFile.c_str());
+		return false;
+	}
+
+	return voxelrender::volumeTurntable(sceneGraph, imageFile, ctx, loops);
+}
+
+
 app::AppState Thumbnailer::onRunning() {
 	app::AppState state = Super::onRunning();
 	if (state != app::AppState::Running) {
@@ -77,10 +107,10 @@ app::AppState Thumbnailer::onRunning() {
 	ctx.outputSize = glm::ivec2(outputSize);
 	const bool renderTurntable = hasArg("--turntable");
 	if (renderTurntable) {
-		voxelrender::volumeTurntable(_infile->name(), _outfile, ctx, 16);
+		volumeTurntable(_infile->name(), _outfile, ctx, 16);
 	} else {
 		io::FileStream stream(_infile);
-		const image::ImagePtr &image = voxelrender::volumeThumbnail(_infile->name(), stream, ctx);
+		const image::ImagePtr &image = volumeThumbnail(_infile->name(), stream, ctx);
 		saveImage(image);
 	}
 

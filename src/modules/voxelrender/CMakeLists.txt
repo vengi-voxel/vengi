@@ -18,7 +18,7 @@ foreach (SHADER ${SHADERS})
 	list(APPEND SRCS_SHADERS "shaders/${SHADER}.frag")
 endforeach()
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES render voxelformat)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES render scenegraph)
 generate_shaders(${LIB} ${SHADERS})
 
 set(TEST_SRCS
