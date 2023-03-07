@@ -196,6 +196,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 			if (!load || magic == FourCC('V', 'O', 'X', ' ')) {
 				format = core::make_shared<VoxFormat>();
 			} else {
+				// TODO: saving in slab6 vox format is not possible with this construction
 				format = core::make_shared<SLAB6VoxFormat>();
 			}
 		} else if (ext == "qbt" || magic == FourCC('Q', 'B', ' ', '2')) {
