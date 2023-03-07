@@ -184,7 +184,6 @@ uint32_t libvxl_map_get(struct libvxl_map* map, int x, int y, int z);
 //! @param y y-coordinate of block column
 //! @param result pointer to *int[2]*, is filled with color at *index 0* and height at *index 1*
 //! @note *result* is left unmodified if [x,y,z] is out of map bounds
-//! @returns *nothing, see result param*
 void libvxl_map_gettop(struct libvxl_map* map, int x, int y, uint32_t* result);
 
 //! @brief Set block at location [x,y,z] to a new color
@@ -226,7 +225,7 @@ bool libvxl_size(size_t* size, size_t* depth, const void* data, size_t len);
 void libvxl_stream(struct libvxl_stream* stream, struct libvxl_map* map, size_t chunk_size);
 
 //! @brief Free a stream from memory
-//! @param map stream to free
+//! @param stream stream to free
 void libvxl_stream_free(struct libvxl_stream* stream);
 
 //! @brief Read bytes from the stream, this is at most stream->chunk_size bytes

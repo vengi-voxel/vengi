@@ -33,6 +33,10 @@ struct LoadContext {
 };
 struct SaveContext {
 	ProgressMonitor monitor = nullptr;
+	/**
+	 * A callback that are either null or returns an instance of @c image::ImagePtr for the thumbnail of the
+	 * given scene graph. Some formats have embedded screenshots.
+	 */
 	ThumbnailCreator thumbnailCreator = nullptr;
 };
 
@@ -105,8 +109,7 @@ protected:
 	 * @param[in] sceneGraph The @c SceneGraph instance to save
 	 * @param[in] filename The target file name. Some formats needs this next to the stream to identify or load additional files.
 	 * @param[out] stream The target stream to write into
-	 * @param[in] thumbnailCreator A callback that is either null or returns an instance of @c image::ImagePtr for the thumbnail of the
-	 * given scene graph. Some formats have embedded screenshots.
+	 * @param[in] ctx A context object for saving
 	 */
 	virtual bool saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) = 0;
 	/**
