@@ -26,13 +26,25 @@ class SceneGraphNode;
 
 namespace voxelformat {
 
-typedef void (*ProgressMonitor)(int cur, int max);
+typedef void (*ProgressMonitor)(const char *name, int cur, int max);
 
 struct LoadContext {
 	ProgressMonitor monitor = nullptr;
+	inline void progress(const char *name, int cur, int max) const  {
+		if (monitor == nullptr) {
+			return;
+		}
+		monitor(name, cur, max);
+	}
 };
 struct SaveContext {
 	ProgressMonitor monitor = nullptr;
+	inline void progress(const char *name, int cur, int max) const {
+		if (monitor == nullptr) {
+			return;
+		}
+		monitor(name, cur, max);
+	}
 	/**
 	 * A callback that are either null or returns an instance of @c image::ImagePtr for the thumbnail of the
 	 * given scene graph. Some formats have embedded screenshots.
@@ -113,7 +125,7 @@ protected:
 	 */
 	virtual bool saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) = 0;
 	/**
-	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes
+	 * @brief If the format supports multiple layers or groups, this method load them into the scene graph
 	 */
 	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) = 0;
 public:

@@ -394,6 +394,10 @@ core::String VoxConvert::getFilenameForLayerName(const core::String &inputfile, 
 	return core::string::path(core::string::extractPath(inputfile), core::string::sanitizeFilename(name));
 }
 
+static void printProgress(const char *name, int cur, int max) {
+	// Log::info("%s: %i/%i", name, cur, max);
+}
+
 bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGraph &sceneGraph, bool multipleInputs) {
 	Log::info("-- current input file: %s", infile.c_str());
 	const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
@@ -467,6 +471,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 		io::FileStream inputFileStream(inputFile);
 		scenegraph::SceneGraph newSceneGraph;
 		voxelformat::LoadContext loadCtx;
+		loadCtx.monitor = printProgress;
 		if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newSceneGraph, loadCtx)) {
 			return false;
 		}
