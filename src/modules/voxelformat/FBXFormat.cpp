@@ -29,7 +29,7 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool FBXFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneGraph, const Meshes &meshes,
+bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
 						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
 	return saveMeshesAscii(meshes, filename, stream, scale, quad, withColor, withTexCoords, sceneGraph);
@@ -59,7 +59,7 @@ public:
 };
 
 bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad,
-					bool withColor, bool withTexCoords, const SceneGraph &sceneGraph) {
+					bool withColor, bool withTexCoords, const scenegraph::SceneGraph &sceneGraph) {
 	wrapBool(stream.writeString("Kaydara FBX Binary  ", true))
 	stream.writeUInt8(0x1A);  // unknown
 	stream.writeUInt8(0x00);  // unknown
@@ -70,7 +70,7 @@ bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filen
 
 // https://github.com/blender/blender/blob/00e219d8e97afcf3767a6d2b28a6d05bcc984279/release/io/export_fbx.py
 bool FBXFormat::saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad,
-					bool withColor, bool withTexCoords, const SceneGraph &sceneGraph) {
+					bool withColor, bool withTexCoords, const scenegraph::SceneGraph &sceneGraph) {
 	int meshCount = 0;
 	for (const MeshExt &meshExt : meshes) {
 		for (int i = 0; i < 2; ++i) {
@@ -128,10 +128,10 @@ Objects: {
 				Log::error("Unexpected indices amount");
 				return false;
 			}
-			const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 			const voxel::Palette &palette = graphNode.palette();
-			const KeyFrameIndex keyFrameIdx = 0;
-			const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
+			const scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 			const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 			const voxel::IndexType *indices = mesh->getRawIndexData();
 			const char *objectName = meshExt.name.c_str();
@@ -313,7 +313,7 @@ static inline glm::mat4 _ufbx_to_um_mat(const ufbx_matrix &m) {
 	};
 }
 
-static inline void _ufbx_to_transform(SceneGraphTransform &transform, const ufbx_node *node) {
+static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_node *node) {
 	const glm::mat4 &mat = _ufbx_to_um_mat(node->node_to_parent);
 	const glm::vec3 lt = transform.localTranslation();
 	transform.setLocalMatrix(mat);
@@ -322,7 +322,7 @@ static inline void _ufbx_to_transform(SceneGraphTransform &transform, const ufbx
 
 } // namespace priv
 
-int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const {
+int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const {
 	Log::debug("Add model node");
 	const glm::vec3 &scale = getScale();
 	ufbx_vec2 defaultUV;
@@ -402,9 +402,9 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 		return nodeId;
 	}
 
-	SceneGraphNode &sceneGraphNode = sceneGraph.node(nodeId);
-	KeyFrameIndex keyFrameIdx = 0;
-	SceneGraphTransform &transform = sceneGraphNode.keyFrame(keyFrameIdx).transform();
+	scenegraph::SceneGraphNode &sceneGraphNode = sceneGraph.node(nodeId);
+	scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	scenegraph::SceneGraphTransform &transform = sceneGraphNode.keyFrame(keyFrameIdx).transform();
 	priv::_ufbx_to_transform(transform, node);
 	for (const auto &prop : node->props.props) {
 		sceneGraphNode.setProperty(priv::_ufbx_to_string(prop.name), priv::_ufbx_to_string(prop.value_str));
@@ -414,12 +414,12 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 	return nodeId;
 }
 
-int FBXFormat::addCameraNode(const ufbx_scene *scene, const ufbx_node *node, SceneGraph &sceneGraph, int parent) const {
+int FBXFormat::addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph, int parent) const {
 	Log::debug("Add camera node");
 	const ufbx_camera *camera = node->camera;
 	core_assert(camera != nullptr);
 
-	SceneGraphNodeCamera camNode;
+	scenegraph::SceneGraphNodeCamera camNode;
 	camNode.setName(priv::_ufbx_to_string(node->name));
 	camNode.setAspectRatio((float)camera->aspect_ratio);
 	camNode.setNearPlane((float)camera->near_plane);
@@ -432,14 +432,14 @@ int FBXFormat::addCameraNode(const ufbx_scene *scene, const ufbx_node *node, Sce
 		camNode.setWidth((int)camera->orthographic_size.x);
 		camNode.setHeight((int)camera->orthographic_size.y);
 	}
-	SceneGraphTransform transform;
+	scenegraph::SceneGraphTransform transform;
 	priv::_ufbx_to_transform(transform, node);
-	KeyFrameIndex keyFrameIdx = 0;
+	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	camNode.setTransform(keyFrameIdx, transform);
 	return sceneGraph.emplace(core::move(camNode), parent);
 }
 
-int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const {
+int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const {
 	int nodeId = parent;
 	if (node->mesh != nullptr) {
 		nodeId = addMeshNode(scene, node, filename, sceneGraph, textures, parent);
@@ -467,7 +467,7 @@ int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const c
 	return nodeId;
 }
 
-bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) {
+bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	ufbx_stream ufbxstream;
 	core_memset(&ufbxstream, 0, sizeof(ufbxstream));
 	ufbxstream.user = &stream;

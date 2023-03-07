@@ -14,7 +14,7 @@
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeVisitor.h"
 
-namespace voxelformat {
+namespace scenegraph {
 
 SceneGraph::SceneGraph(int nodes) : _nodes(nodes) {
 	clear();

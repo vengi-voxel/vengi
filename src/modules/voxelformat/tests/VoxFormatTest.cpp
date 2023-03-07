@@ -31,7 +31,7 @@ TEST_F(VoxFormatTest, testLoadCharacter) {
 	const io::FilePtr &file = open("vox_character.vox");
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
-	SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph, testLoadCtx));
 	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {
@@ -53,7 +53,7 @@ TEST_F(VoxFormatTest, testLoadGlasses) {
 	const io::FilePtr &file = open("vox_glasses.vox");
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
-	SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph, testLoadCtx));
 	ASSERT_EQ(1u, sceneGraph.size());
 	// dump(file->fileName(), sceneGraph);
@@ -72,7 +72,7 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 	const io::FilePtr &file = open("8ontop.vox");
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
-	SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph, testLoadCtx));
 	ASSERT_EQ(72u, sceneGraph.size());
 	// dump(file->fileName(), sceneGraph);
@@ -136,10 +136,10 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 	bigVolume.setVoxel(256, 0, 0, voxel);
 	bigVolume.setVoxel(512, 0, 0, voxel);
 	const core::String name = "bigvolume.vox";
-	SceneGraph sceneGraph;
-	SceneGraph sceneGraphsave(2);
+	scenegraph::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraphsave(2);
 	{
-		SceneGraphNode node;
+		scenegraph::SceneGraphNode node;
 		node.setVolume(&bigVolume, false);
 		sceneGraphsave.emplace(core::move(node));
 	}

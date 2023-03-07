@@ -27,7 +27,7 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool BinVoxFormat::readData(State& state, const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph) {
+bool BinVoxFormat::readData(State& state, const core::String& filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph) {
 	const voxel::Region region(0, 0, 0, (int)state._d - 1, (int)state._w - 1, (int)state._h - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region found in file");
@@ -35,7 +35,7 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 	}
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
 	sceneGraph.emplace(core::move(node));
@@ -69,7 +69,7 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 	return true;
 }
 
-bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) {
+bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) {
 	char line[512];
 	wrapBool(stream.readLine(sizeof(line), line))
 	if (0 != strcmp(line, "#binvox 1")) {
@@ -119,8 +119,8 @@ bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 	return true;
 }
 
-bool BinVoxFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
-	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;

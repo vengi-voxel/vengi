@@ -7,7 +7,7 @@
 #include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraphNode.h"
 
-namespace voxelformat {
+namespace scenegraph {
 
 class SceneGraphUtilTest : public app::AbstractTest {};
 

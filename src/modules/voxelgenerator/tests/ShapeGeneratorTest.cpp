@@ -77,10 +77,10 @@ protected:
 		const io::FilePtr& file = io::filesystem()->open(filename);
 		ASSERT_TRUE(file) << "Can't open " << filename;
 		io::FileStream stream(file);
-		voxelformat::SceneGraph sceneGraph;
+		scenegraph::SceneGraph sceneGraph;
 		voxelformat::LoadContext loadCtx;
 		ASSERT_TRUE(format.load(file->fileName(), stream, sceneGraph, loadCtx));
-		voxelformat::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
+		scenegraph::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
 		core::ScopedPtr<voxel::RawVolume> v( merged.first);
 		ASSERT_NE(nullptr, v) << "Can't load " << filename;
 		volumeComparator(*v, voxel::getPalette(), *_volume, voxel::getPalette());

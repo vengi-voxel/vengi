@@ -29,7 +29,7 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream &in, SceneGraph &sceneGraph, const LoadContext &ctx) {
+bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream &in, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	io::ZipReadStream stream(in, (int)in.size());
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
@@ -77,7 +77,7 @@ bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	return !sceneGraph.empty();
 }
 
-bool VXCFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
+bool VXCFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	return false;
 }
 

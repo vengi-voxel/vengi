@@ -42,7 +42,7 @@ void PalettePanel::reloadAvailablePalettes() {
 		const core::String& name = voxel::Palette::extractPaletteName(file.name);
 		_availablePalettes.push_back(name);
 	}
-	for (const voxelformat::SceneGraphNode &node : sceneMgr().sceneGraph()) {
+	for (const scenegraph::SceneGraphNode &node : sceneMgr().sceneGraph()) {
 		core::String id;
 		if (node.name().empty()) {
 			id = core::string::format("node:%i##%i", node.id(), node.id());
@@ -53,7 +53,7 @@ void PalettePanel::reloadAvailablePalettes() {
 	}
 }
 
-void PalettePanel::addColor(float startingPosX, uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+void PalettePanel::addColor(float startingPosX, uint8_t palIdx, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	voxel::Palette &palette = node.palette();
 	const int maxPaletteEntries = palette.colorCount();
 	const float borderWidth = 1.0f;
@@ -194,7 +194,7 @@ uint8_t PalettePanel::currentSceneColor() const {
 	return sceneMgr().hitCursorVoxel().getColor();
 }
 
-void PalettePanel::createPopups(voxelformat::SceneGraphNode &node) {
+void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 	if (_popupSwitchPalette) {
 		ImGui::OpenPopup(POPUP_TITLE_LOAD_PALETTE);
 		_popupSwitchPalette = false;
@@ -236,7 +236,7 @@ void PalettePanel::createPopups(voxelformat::SceneGraphNode &node) {
 	}
 }
 
-void PalettePanel::paletteMenuBar(voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	voxel::Palette &palette = node.palette();
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu(ICON_FA_PALETTE" File")) {
@@ -262,7 +262,7 @@ void PalettePanel::paletteMenuBar(voxelformat::SceneGraphNode &node, command::Co
 	}
 }
 
-void PalettePanel::closestColor(voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	ImGui::SliderFloat(ICON_FA_SLIDERS, &_intensityChange, -1.0f, 1.0f);
 	ImGui::SameLine();
 	const core::String &paletteChangeCmd = core::string::format("palette_changeintensity %f", _intensityChange);
@@ -286,9 +286,9 @@ void PalettePanel::closestColor(voxelformat::SceneGraphNode &node, command::Comm
 }
 
 void PalettePanel::update(const char *title, command::CommandExecutionListener &listener) {
-	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
-	voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
+	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	const ImVec2 windowSize(10.0f * ImGui::GetFrameHeight(), ImGui::GetContentRegionMax().y);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	const int currentSceneHoveredPalIdx = currentSceneColor();
@@ -299,7 +299,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		_hasFocus = ImGui::IsWindowHovered();
 		_colorHovered = false;
 
-		if (node.type() == voxelformat::SceneGraphNodeType::Model) {
+		if (node.type() == scenegraph::SceneGraphNodeType::Model) {
 			paletteMenuBar(node, listener);
 			const ImVec2 &pos = ImGui::GetCursorScreenPos();
 			for (int palIdx = 0; palIdx < voxel::PaletteMaxColors; ++palIdx) {
@@ -329,7 +329,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 	}
 }
 
-bool PalettePanel::showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+bool PalettePanel::showColorPicker(uint8_t palIdx, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	voxel::Palette &palette = node.palette();
 	ImGuiColorEditFlags flags = ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB;
 	flags |= ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar;

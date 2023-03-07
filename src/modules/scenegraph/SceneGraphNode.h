@@ -21,13 +21,13 @@ class Region;
 class Palette;
 }
 
-namespace voxelformat {
+namespace scenegraph {
 
 class SceneGraph;
 class SceneGraphNode;
 using FrameIndex = int32_t;
 using KeyFrameIndex = int32_t;
-#define InvalidKeyFrame ((voxelformat::KeyFrameIndex)-1)
+#define InvalidKeyFrame ((scenegraph::KeyFrameIndex)-1)
 
 enum class SceneGraphNodeType : uint8_t {
 	Root,
@@ -48,7 +48,7 @@ static constexpr const char* SceneGraphNodeTypeStr[] {
 	"Camera",
 	"Unknown"
 };
-static_assert((int)(voxelformat::SceneGraphNodeType::Max) == lengthof(SceneGraphNodeTypeStr), "Array sizes don't match Max");
+static_assert((int)(scenegraph::SceneGraphNodeType::Max) == lengthof(SceneGraphNodeTypeStr), "Array sizes don't match Max");
 
 class alignas(16) SceneGraphTransform {
 private:
@@ -155,7 +155,7 @@ static constexpr const char *InterpolationTypeStr[] {
 	"CubicEaseOut",
 	"CubicEaseInOut"
 };
-static_assert(int(voxelformat::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
+static_assert(int(scenegraph::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
 
 class SceneGraphKeyFrame {
 private:

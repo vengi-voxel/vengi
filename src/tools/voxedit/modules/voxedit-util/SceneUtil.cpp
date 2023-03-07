@@ -10,7 +10,7 @@ math::AABB<float> toAABB(const voxel::Region& region) {
 	return math::AABB<float>(glm::floor(region.getLowerCornerf()), glm::floor(glm::vec3(region.getUpperCornerf() + 1.0f)));
 }
 
-math::OBB<float> toOBB(bool sceneMode, const voxel::Region &region, const voxelformat::SceneGraphTransform &transform) {
+math::OBB<float> toOBB(bool sceneMode, const voxel::Region &region, const scenegraph::SceneGraphTransform &transform) {
 	core_assert(region.isValid());
 	if (sceneMode) {
 		const glm::vec3 pivot =

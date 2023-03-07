@@ -40,16 +40,16 @@ namespace voxelgenerator {
 class LuaRawVolumeWrapper : public voxel::RawVolumeWrapper {
 private:
 	using Super = voxel::RawVolumeWrapper;
-	voxelformat::SceneGraphNode *_node;
+	scenegraph::SceneGraphNode *_node;
 public:
-	LuaRawVolumeWrapper(voxelformat::SceneGraphNode *node) : Super(node->volume()), _node(node) {
+	LuaRawVolumeWrapper(scenegraph::SceneGraphNode *node) : Super(node->volume()), _node(node) {
 	}
 
 	~LuaRawVolumeWrapper() {
 		update();
 	}
 
-	voxelformat::SceneGraphNode *node() {
+	scenegraph::SceneGraphNode *node() {
 		return _node;
 	}
 
@@ -116,11 +116,11 @@ static int luaVoxel_pushregion(lua_State* s, const voxel::Region* region) {
 	return clua_pushudata(s, region, luaVoxel_metaregion());
 }
 
-static voxelformat::SceneGraphNode* luaVoxel_toscenegraphnode(lua_State* s, int n) {
-	return *(voxelformat::SceneGraphNode**)clua_getudata<voxelformat::SceneGraphNode*>(s, n, luaVoxel_metascenegraphnode());
+static scenegraph::SceneGraphNode* luaVoxel_toscenegraphnode(lua_State* s, int n) {
+	return *(scenegraph::SceneGraphNode**)clua_getudata<scenegraph::SceneGraphNode*>(s, n, luaVoxel_metascenegraphnode());
 }
 
-static int luaVoxel_pushscenegraphnode(lua_State* s, voxelformat::SceneGraphNode& node) {
+static int luaVoxel_pushscenegraphnode(lua_State* s, scenegraph::SceneGraphNode& node) {
 	return clua_pushudata(s, &node, luaVoxel_metascenegraphnode());
 }
 
@@ -128,7 +128,7 @@ static LuaRawVolumeWrapper* luaVoxel_tovolumewrapper(lua_State* s, int n) {
 	return *(LuaRawVolumeWrapper**)clua_getudata<LuaRawVolumeWrapper*>(s, n, luaVoxel_metavolumewrapper());
 }
 
-static int luaVoxel_pushvolumewrapper(lua_State* s, voxelformat::SceneGraphNode* node) {
+static int luaVoxel_pushvolumewrapper(lua_State* s, scenegraph::SceneGraphNode* node) {
 	if (node == nullptr) {
 		return clua_error(s, "No node given - can't push");
 	}
@@ -623,16 +623,16 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	const voxel::Region* region = voxelgenerator::luaVoxel_toRegion(s, 2);
 	const bool visible = clua_optboolean(s, 3, true);
 	voxel::RawVolume *v = new voxel::RawVolume(*region);
-	voxelformat::SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(v, true);
 	node.setName(name);
 	node.setVisible(visible);
 	const glm::vec3 rp = v->region().getPivot();
 	const glm::vec3 size = v->region().getDimensionsInVoxels();
 	node.setPivot(0, rp, size);
-	voxelformat::SceneGraph* sceneGraph = lua::LUA::globalData<voxelformat::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
 	int* currentNodeId = lua::LUA::globalData<int>(s, luaVoxel_globalnodeid());
-	const int nodeId = voxelformat::addNodeToSceneGraph(*sceneGraph, node, *currentNodeId);
+	const int nodeId = scenegraph::addNodeToSceneGraph(*sceneGraph, node, *currentNodeId);
 	if (nodeId == -1) {
 		return clua_error(s, "Failed to add new node");
 	}
@@ -642,53 +642,53 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 
 static int luaVoxel_scenegraph_get_node(lua_State* s) {
 	int nodeId = (int)luaL_optinteger(s, 1, -1);
-	voxelformat::SceneGraph* sceneGraph = lua::LUA::globalData<voxelformat::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
 	if (nodeId == -1) {
 		nodeId = sceneGraph->activeNode();
 	}
 	if (!sceneGraph->hasNode(nodeId)) {
 		return clua_error(s, "Could not find node for id %d", nodeId);
 	}
-	voxelformat::SceneGraphNode& node = sceneGraph->node(nodeId);
-	if (node.type() != voxelformat::SceneGraphNodeType::Model) {
+	scenegraph::SceneGraphNode& node = sceneGraph->node(nodeId);
+	if (node.type() != scenegraph::SceneGraphNodeType::Model) {
 		return clua_error(s, "Invalid node for id %d", nodeId);
 	}
 	return luaVoxel_pushscenegraphnode(s, node);
 }
 
 static int luaVoxel_scenegraphnode_volume(lua_State* s) {
-	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	return luaVoxel_pushvolumewrapper(s, node);
 }
 
 static int luaVoxel_scenegraphnode_palette(lua_State* s) {
-	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	voxel::Palette &palette = node->palette();
 	return luaVoxel_pushpalette(s, &palette);
 }
 
 static int luaVoxel_scenegraphnode_name(lua_State* s) {
-	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	lua_pushstring(s, node->name().c_str());
 	return 1;
 }
 
 static int luaVoxel_scenegraphnode_setname(lua_State* s) {
-	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	const char *newName = lua_tostring(s, 2);
 	node->setName(newName);
 	return 0;
 }
 
 static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
-	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	voxel::Palette *palette = luaVoxel_toPalette(s, 2);
 	node->setPalette(*palette);
 	return 0;
 }
 
 static int luaVoxel_scenegraphnode_tostring(lua_State *s) {
-	voxelformat::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	lua_pushfstring(s, "layer: [%d, %s]", node->id(), node->name().c_str());
 	return 1;
 }
@@ -971,7 +971,7 @@ core::DynamicArray<LUAScript> LUAGenerator::listScripts() const {
 	return scripts;
 }
 
-bool LUAGenerator::exec(const core::String &luaScript, voxelformat::SceneGraph &sceneGraph, int nodeId,
+bool LUAGenerator::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGraph, int nodeId,
 						const voxel::Region &region, const voxel::Voxel &voxel, voxel::Region &dirtyRegion,
 						const core::DynamicArray<core::String> &args) {
 	core::DynamicArray<LUAParameterDescription> argsInfo;
@@ -988,7 +988,7 @@ bool LUAGenerator::exec(const core::String &luaScript, voxelformat::SceneGraph &
 		return true;
 	}
 
-	voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
+	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	voxel::RawVolume *v = node.volume();
 	if (v == nullptr) {
 		Log::error("Node %i has no volume", nodeId);
@@ -996,7 +996,7 @@ bool LUAGenerator::exec(const core::String &luaScript, voxelformat::SceneGraph &
 	}
 
 	lua::LUA lua;
-	lua.newGlobalData<voxelformat::SceneGraph>(luaVoxel_globalscenegraph(), &sceneGraph);
+	lua.newGlobalData<scenegraph::SceneGraph>(luaVoxel_globalscenegraph(), &sceneGraph);
 	lua.newGlobalData<voxel::Region>(luaVoxel_globaldirtyregion(), &dirtyRegion);
 	lua.newGlobalData<int>(luaVoxel_globalnodeid(), &nodeId);
 	lua.newGlobalData<noise::Noise>(luaVoxel_globalnoise(), &_noise);

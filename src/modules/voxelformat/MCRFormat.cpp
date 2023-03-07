@@ -36,7 +36,7 @@ namespace voxelformat {
 		}                                                                                                              \
 	} while (0)
 
-bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	const int64_t length = stream.size();
 	if (length < SECTOR_BYTES) {
 		Log::error("File does not contain enough data");
@@ -90,7 +90,7 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	return false;
 }
 
-bool MCRFormat::loadMinecraftRegion(SceneGraph &sceneGraph, io::SeekableReadStream &stream, const voxel::Palette &palette) {
+bool MCRFormat::loadMinecraftRegion(scenegraph::SceneGraph &sceneGraph, io::SeekableReadStream &stream, const voxel::Palette &palette) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		if (_offsets[i].sectorCount == 0u || _offsets[i].offset < sizeof(_offsets)) {
 			continue;
@@ -110,7 +110,7 @@ bool MCRFormat::loadMinecraftRegion(SceneGraph &sceneGraph, io::SeekableReadStre
 	return true;
 }
 
-bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream &stream, int sector, const voxel::Palette &palette) {
+bool MCRFormat::readCompressedNBT(scenegraph::SceneGraph &sceneGraph, io::SeekableReadStream &stream, int sector, const voxel::Palette &palette) {
 	uint32_t nbtSize;
 	wrap(stream.readUInt32BE(nbtSize));
 	if (nbtSize == 0) {
@@ -157,7 +157,7 @@ bool MCRFormat::readCompressedNBT(SceneGraph &sceneGraph, io::SeekableReadStream
 			return false;
 		}
 	}
-	SceneGraphNode node(SceneGraphNodeType::Model);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
@@ -516,7 +516,7 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 		return false; \
 	}
 
-bool MCRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool MCRFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		uint8_t raw[3] = {0, 0, 0}; // TODO
 		_offsets[i].sectorCount = 0; // TODO
@@ -536,7 +536,7 @@ bool MCRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return saveMinecraftRegion(sceneGraph, stream);
 }
 
-bool MCRFormat::saveMinecraftRegion(const voxelformat::SceneGraph &sceneGraph, io::SeekableWriteStream& stream) {
+bool MCRFormat::saveMinecraftRegion(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream& stream) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		if (_offsets[i].sectorCount == 0u) {
 			continue;
@@ -549,7 +549,7 @@ bool MCRFormat::saveMinecraftRegion(const voxelformat::SceneGraph &sceneGraph, i
 	return true;
 }
 
-bool MCRFormat::saveCompressedNBT(const voxelformat::SceneGraph &sceneGraph, io::SeekableWriteStream& stream, int sector) {
+bool MCRFormat::saveCompressedNBT(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream& stream, int sector) {
 	const int64_t sizeOffset = stream.pos();
 	wrapBool(stream.writeUInt32BE(0));
 	// the version is included in the length
@@ -585,9 +585,9 @@ bool MCRFormat::saveCompressedNBT(const voxelformat::SceneGraph &sceneGraph, io:
 	return stream.seek(nbtEndOffset) != -1;
 }
 
-bool MCRFormat::saveSections(const voxelformat::SceneGraph &sceneGraph, priv::NBTList &sections, int sector) {
+bool MCRFormat::saveSections(const scenegraph::SceneGraph &sceneGraph, priv::NBTList &sections, int sector) {
 #if 0
-	for (const SceneGraphNode &node : sceneGraph) {
+	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
 		priv::NBTCompound blockStates;
 		blockStates.put("data", 0); // parseBlockStates
 		blockStates.put("palette", 0); // parsePaletteList

@@ -145,8 +145,8 @@ void Viewport::dragAndDrop(float headerSize) {
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
 			const int dragPalIdx = (int)(intptr_t)payload->Data;
 			const int nodeId = sceneMgr().sceneGraph().activeNode();
-			if (voxelformat::SceneGraphNode *node = sceneMgr().sceneGraphNode(nodeId)) {
-				if (node->visible() && node->type() == voxelformat::SceneGraphNodeType::Model) {
+			if (scenegraph::SceneGraphNode *node = sceneMgr().sceneGraphNode(nodeId)) {
+				if (node->visible() && node->type() == scenegraph::SceneGraphNodeType::Model) {
 					updateViewportTrace(headerSize);
 					ModifierFacade &modifier = sceneMgr().modifier();
 					modifier.setCursorVoxel(voxel::createVoxel(node->palette(), dragPalIdx));
@@ -415,7 +415,7 @@ bool Viewport::saveImage(const char *filename) {
 }
 
 void Viewport::resetCamera() {
-	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const voxel::Region &sceneRegion = sceneGraph.region();
 	const glm::vec3 &pos = sceneRegion.getCenter();
 	const int activeNode = sceneGraph.activeNode();
@@ -448,7 +448,7 @@ void Viewport::reset() {
 	}
 }
 
-void Viewport::unlock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
+void Viewport::unlock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx) {
 	if (!_transformMementoLocked) {
 		return;
 	}
@@ -463,7 +463,7 @@ void Viewport::unlock(const voxelformat::SceneGraphNode &node, voxelformat::KeyF
 	_transformMementoLocked = false;
 }
 
-void Viewport::lock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
+void Viewport::lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx) {
 	if (_transformMementoLocked) {
 		return;
 	}
@@ -476,7 +476,7 @@ void Viewport::lock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFra
 	_transformMementoLocked = true;
 }
 
-void Viewport::handleGizmo(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix) {
+void Viewport::handleGizmo(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix) {
 	if (ImGuizmo::IsUsing()) {
 		lock(node, keyFrameIdx);
 		glm::vec3 translate;
@@ -499,13 +499,13 @@ void Viewport::handleGizmo(const voxelformat::SceneGraphNode &node, voxelformat:
 }
 
 bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
-	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 	if (activeNode == -1) {
 		reset();
 		return false;
 	}
-	voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
+	scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
 
 	const float step = core::Var::getSafe(cfg::VoxEditGridsize)->floatVal();
 	const float snap[]{step, step, step};
@@ -513,7 +513,7 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
 	const voxel::Region &region = node.region();
 	const glm::vec3 size = region.getDimensionsInVoxels();
-	const voxelformat::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
+	const scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
 
 	glm::mat4 localMatrix(1.0f);
 	int operation = ImGuizmo::TRANSLATE;
@@ -524,7 +524,7 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 		if (_gizmoRotation->boolVal()) {
 			operation |= ImGuizmo::ROTATE;
 		}
-		const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 		localMatrix = transform.localMatrix();
 		const glm::vec3 mins = -transform.pivot() * size;
 		if (glm::any(glm::epsilonNotEqual(mins, _bounds.mins, glm::epsilon<float>()))) {

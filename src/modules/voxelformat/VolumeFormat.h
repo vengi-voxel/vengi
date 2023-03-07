@@ -35,13 +35,13 @@ extern bool importPalette(const core::String &filename, voxel::Palette &palette)
  */
 extern size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette, const LoadContext &ctx);
 extern image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream, const LoadContext &ctx);
-extern bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx);
+extern bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx);
 
 /**
  * @brief Save both to volume or to mesh - depends on the given file extension
  */
-extern bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, SceneGraph &sceneGraph, const SaveContext &ctx);
-extern bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, const io::FormatDescription *desc, io::SeekableWriteStream &stream, const SaveContext &ctx);
+extern bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, scenegraph::SceneGraph &sceneGraph, const SaveContext &ctx);
+extern bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::FormatDescription *desc, io::SeekableWriteStream &stream, const SaveContext &ctx);
 
 extern bool isMeshFormat(const core::String &filename);
 extern bool isMeshFormat(const io::FormatDescription &desc);

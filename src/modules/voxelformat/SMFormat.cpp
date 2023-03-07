@@ -106,7 +106,7 @@ static const struct BlockPalIdx {
 	{907, 12}, {908, 12}, {909, 12}, {910, 12}, {911, 12}, {912, 12}, {913, 12}, {914, 12}, {915, 12}, {916, 12},
 	{917, 12}, {918, 12}, {919, 12}, {920, 12}, {921, 12}};
 
-bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	io::ZipArchive archive;
 	if (!archive.open(&stream)) {
 		Log::error("Failed to load zip archive from %s", filename.c_str());
@@ -142,7 +142,7 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 	return !sceneGraph.empty();
 }
 
-bool SMFormat::readSmd3(io::SeekableReadStream &stream, SceneGraph &sceneGraph, const core::Map<int, int>& blockPal) {
+bool SMFormat::readSmd3(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const core::Map<int, int>& blockPal) {
 	uint32_t version;
 	wrap(stream.readUInt32BE(version))
 
@@ -184,7 +184,7 @@ size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 	return palette.colorCount();
 }
 
-bool SMFormat::readSegment(io::SeekableReadStream &stream, SceneGraph &sceneGraph, const core::Map<int, int>& blockPal) {
+bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const core::Map<int, int>& blockPal) {
 	const int64_t startHeader = stream.pos();
 	Log::debug("read segment");
 	voxel::Palette palette;
@@ -222,7 +222,7 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, SceneGraph &sceneGrap
 	const voxel::Region region(position, position + (priv::blocks - 1));
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 
-	SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setPalette(palette);
 	bool empty = true;

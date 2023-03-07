@@ -22,16 +22,16 @@
 
 namespace voxedit {
 
-bool SceneGraphPanel::handleCameraProperty(voxelformat::SceneGraphNodeCamera &node, const core::String &key, const core::String &value) {
+bool SceneGraphPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key, const core::String &value) {
 	const core::String &id = core::string::format("##%i-%s", node.id(), key.c_str());
-	if (key == voxelformat::SceneGraphNodeCamera::PropMode) {
-		int currentMode = value == voxelformat::SceneGraphNodeCamera::Modes[0] ? 0 : 1;
+	if (key == scenegraph::SceneGraphNodeCamera::PropMode) {
+		int currentMode = value == scenegraph::SceneGraphNodeCamera::Modes[0] ? 0 : 1;
 
-		if (ImGui::BeginCombo(id.c_str(), voxelformat::SceneGraphNodeCamera::Modes[currentMode])) {
-			for (int n = 0; n < IM_ARRAYSIZE(voxelformat::SceneGraphNodeCamera::Modes); n++) {
+		if (ImGui::BeginCombo(id.c_str(), scenegraph::SceneGraphNodeCamera::Modes[currentMode])) {
+			for (int n = 0; n < IM_ARRAYSIZE(scenegraph::SceneGraphNodeCamera::Modes); n++) {
 				const bool isSelected = (currentMode == n);
-				if (ImGui::Selectable(voxelformat::SceneGraphNodeCamera::Modes[n], isSelected)) {
-					sceneMgr().nodeSetProperty(node.id(), key, voxelformat::SceneGraphNodeCamera::Modes[n]);
+				if (ImGui::Selectable(scenegraph::SceneGraphNodeCamera::Modes[n], isSelected)) {
+					sceneMgr().nodeSetProperty(node.id(), key, scenegraph::SceneGraphNodeCamera::Modes[n]);
 				}
 				if (isSelected) {
 					ImGui::SetItemDefaultFocus();
@@ -39,12 +39,12 @@ bool SceneGraphPanel::handleCameraProperty(voxelformat::SceneGraphNodeCamera &no
 			}
 			ImGui::EndCombo();
 		}
-	} else if (voxelformat::SceneGraphNodeCamera::isFloatProperty(key)) {
+	} else if (scenegraph::SceneGraphNodeCamera::isFloatProperty(key)) {
 		float fvalue = core::string::toFloat(value);
 		if (ImGui::InputFloat(id.c_str(), &fvalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
 			sceneMgr().nodeSetProperty(node.id(), key, core::string::toString(fvalue));
 		}
-	} else if (voxelformat::SceneGraphNodeCamera::isIntProperty(key)) {
+	} else if (scenegraph::SceneGraphNodeCamera::isIntProperty(key)) {
 		int ivalue = core::string::toInt(value);
 		if (ImGui::InputInt(id.c_str(), &ivalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
 			sceneMgr().nodeSetProperty(node.id(), key, core::string::toString(ivalue));
@@ -55,7 +55,7 @@ bool SceneGraphPanel::handleCameraProperty(voxelformat::SceneGraphNodeCamera &no
 	return true;
 }
 
-void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
+void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 	core::String deleteKey;
 	static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 										ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
@@ -79,8 +79,8 @@ void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
 			ImGui::TableNextColumn();
 			bool propertyAlreadyHandled = false;
 
-			if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
-				propertyAlreadyHandled = handleCameraProperty(voxelformat::toCameraNode(node), entry->key, entry->value);
+			if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
+				propertyAlreadyHandled = handleCameraProperty(scenegraph::toCameraNode(node), entry->key, entry->value);
 			}
 
 			if (!propertyAlreadyHandled) {
@@ -124,17 +124,17 @@ void SceneGraphPanel::detailView(voxelformat::SceneGraphNode &node) {
 	}
 }
 
-static void commandNodeMenu(const char *title, const char *command, const voxelformat::SceneGraphNode &node,
+static void commandNodeMenu(const char *title, const char *command, const scenegraph::SceneGraphNode &node,
 							bool enabled, command::CommandExecutionListener *listener) {
 	const core::String &cmd = core::string::format("%s %i", command, node.id());
 	ImGui::CommandMenuItem(title, cmd.c_str(), enabled, listener);
 }
 
-static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sceneGraph, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", node.id());
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 		const int validModels = (int)sceneGraph.size();
-		if (node.type() == voxelformat::SceneGraphNodeType::Model) {
+		if (node.type() == scenegraph::SceneGraphNodeType::Model) {
 			commandNodeMenu(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "layerdelete", node, validModels > 1, &listener);
 			commandNodeMenu(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", node, validModels > 1, &listener);
 			commandNodeMenu(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "layerduplicate", node, true, &listener);
@@ -157,12 +157,12 @@ static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sc
 			ImGui::TooltipText("Delete this node and all children");
 		}
 		if (ImGui::MenuItem(ICON_FA_SQUARE_PLUS " Add new group" SCENEGRAPHPOPUP)) {
-			voxelformat::SceneGraphNode groupNode(voxelformat::SceneGraphNodeType::Group);
+			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 			groupNode.setName("new group");
 			sceneMgr().addNodeToSceneGraph(groupNode, node.id());
 		}
 		if (ImGui::MenuItem(ICON_FA_SQUARE_PLUS " Add new camera" SCENEGRAPHPOPUP)) {
-			voxelformat::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
+			scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
 			sceneMgr().addNodeToSceneGraph(cameraNode);
 		}
 		// only on pressing enter to prevent a memento state flood
@@ -173,8 +173,8 @@ static void contextMenu(video::Camera& camera, const voxelformat::SceneGraph &sc
 	}
 }
 
-void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const voxelformat::SceneGraph &sceneGraph,
-							  voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener,
+void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
+							  scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener,
 							  int depth) const {
 	const int nodeId = node.id();
 	bool open = false;
@@ -214,20 +214,20 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const voxelformat
 
 		core::String name;
 		switch (node.type()) {
-		case voxelformat::SceneGraphNodeType::Model:
+		case scenegraph::SceneGraphNodeType::Model:
 			name = ICON_FA_CUBES;
 			break;
-		case voxelformat::SceneGraphNodeType::Root:
-		case voxelformat::SceneGraphNodeType::Group:
+		case scenegraph::SceneGraphNodeType::Root:
+		case scenegraph::SceneGraphNodeType::Group:
 			name = ICON_FA_OBJECT_GROUP;
 			break;
-		case voxelformat::SceneGraphNodeType::Camera:
+		case scenegraph::SceneGraphNodeType::Camera:
 			name = ICON_FA_CAMERA;
 			break;
-		case voxelformat::SceneGraphNodeType::Unknown:
+		case scenegraph::SceneGraphNodeType::Unknown:
 			name = ICON_FA_CIRCLE_QUESTION;
 			break;
-		case voxelformat::SceneGraphNodeType::Max:
+		case scenegraph::SceneGraphNodeType::Max:
 			break;
 		}
 		name.append(core::string::format(" %s##%i", node.name().c_str(), node.id()));
@@ -317,7 +317,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		_hasFocus = ImGui::IsWindowHovered();
-		const voxelformat::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
+		const scenegraph::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
 		core_trace_scoped(SceneGraphPanel);
 		ImVec2 size = ImGui::GetWindowSize();
 		const float textLineHeight = ImGui::GetTextLineHeight();
@@ -330,13 +330,13 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 			size.y = textLineHeight * 2.0f;
 		}
 		if (ImGui::BeginChild("master##scenegraphpanel", size)) {
-			const bool onlyOneModel = sceneGraph.size(voxelformat::SceneGraphNodeType::Model) <= 1;
+			const bool onlyOneModel = sceneGraph.size(scenegraph::SceneGraphNodeType::Model) <= 1;
 			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 			ui::Toolbar toolbar(buttonSize);
 
 			toolbar.button(ICON_FA_SQUARE_PLUS, "Add a new model node", [&sceneGraph, this, modelNodeSettings] () {
 				const int nodeId = sceneGraph.activeNode();
-				voxelformat::SceneGraphNode &node = sceneGraph.node(nodeId);
+				scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 				const voxel::RawVolume* v = node.volume();
 				const voxel::Region& region = v->region();
 				modelNodeSettings->position = region.getLowerCorner();
@@ -349,7 +349,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 			});
 
 			toolbar.button(ICON_FA_SQUARE_PLUS, "Add a new group", [&sceneGraph, &sceneMgr] () {
-				voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Group);
+				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 				node.setName("new group");
 				sceneMgr.addNodeToSceneGraph(node, sceneGraph.activeNode());
 			});

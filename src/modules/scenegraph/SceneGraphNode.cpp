@@ -22,7 +22,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-namespace voxelformat {
+namespace scenegraph {
 
 SceneGraphTransform::SceneGraphTransform() :
 	_worldOrientation{glm::quat_identity<float, glm::defaultp>()},
@@ -642,7 +642,7 @@ SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex frameIdx) const
 		deltaFrameSeconds = 0.0;
 		break;
 	}
-	voxelformat::SceneGraphTransform transform = *source;
+	scenegraph::SceneGraphTransform transform = *source;
 	transform.lerp(*target, deltaFrameSeconds);
 	return transform;
 }

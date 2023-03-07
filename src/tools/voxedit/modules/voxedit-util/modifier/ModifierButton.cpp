@@ -59,7 +59,7 @@ void ModifierButton::execute(bool single) {
 	Modifier& modifier = sceneMgr().modifier();
 	int nodes = 0;
 	auto func = [&] (int nodeId) {
-		if (voxelformat::SceneGraphNode *node = sceneMgr().sceneGraphNode(nodeId)) {
+		if (scenegraph::SceneGraphNode *node = sceneMgr().sceneGraphNode(nodeId)) {
 			if (!node->visible()) {
 				return;
 			}

@@ -97,11 +97,11 @@ TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
 TEST_F(MeshFormatTest, testVoxelizeColor) {
 	class TestMesh : public MeshFormat {
 	public:
-		bool saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &, const core::String &,
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &, const core::String &,
 						io::SeekableWriteStream &, const glm::vec3 &, bool, bool, bool) override {
 			return false;
 		}
-		void voxelize(voxelformat::SceneGraph &sceneGraph, const MeshFormat::TriCollection &tris) {
+		void voxelize(scenegraph::SceneGraph &sceneGraph, const MeshFormat::TriCollection &tris) {
 			voxelizeNode("test", sceneGraph, tris);
 		}
 	};
@@ -110,7 +110,7 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	MeshFormat::TriCollection tris;
 
 	video::ShapeBuilder b;
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 
 	voxel::getPalette().nippon();
 	const core::RGBA nipponRed = voxel::getPalette().color(37);
@@ -139,7 +139,7 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 		tris.push_back(tri);
 	}
 	mesh.voxelize(sceneGraph, tris);
-	SceneGraphNode *node = sceneGraph.findNodeByName("test");
+	scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName("test");
 	ASSERT_NE(nullptr, node);
 	voxel::getPalette() = node->palette();
 	const voxel::RawVolume *v = node->volume();

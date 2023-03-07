@@ -6,7 +6,7 @@
 
 #include "scenegraph/SceneGraph.h"
 
-namespace voxelformat {
+namespace scenegraph {
 
 void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume);
 

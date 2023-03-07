@@ -10,9 +10,11 @@ namespace voxel {
 struct VoxelVertex;
 }
 
-namespace voxelformat {
-
+namespace scenegraph {
 class SceneGraphTransform;
+}
+
+namespace voxelformat {
 
 /**
  * @brief Standard Triangle Language
@@ -34,14 +36,14 @@ class SceneGraphTransform;
  */
 class STLFormat : public MeshFormat {
 private:
-	bool writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1, const SceneGraphTransform &transform, const glm::vec3 &scale);
+	bool writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1, const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale);
 
 	bool parseBinary(io::SeekableReadStream &stream, TriCollection &tris);
 	bool parseAscii(io::SeekableReadStream &stream, TriCollection &tris);
 
-	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) override;
+	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 public:
-	bool saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &meshes, const core::String &filename,
+	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &meshes, const core::String &filename,
 					io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
 					bool withTexCoords) override;
 };

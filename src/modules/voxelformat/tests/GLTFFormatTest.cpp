@@ -13,7 +13,7 @@ namespace voxelformat {
 class GLTFFormatTest : public AbstractVoxFormatTest {};
 
 TEST_F(GLTFFormatTest, testExportMesh) {
-	SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	{
 		QBFormat sourceFormat;
 		const core::String filename = "rgb.qb";
@@ -34,10 +34,10 @@ TEST_F(GLTFFormatTest, testImportAnimation) {
 	const core::String filename = "glTF/BoxAnimated.glb";
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file);
-	SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
 	ASSERT_EQ(2u, sceneGraph.size());
-	SceneGraphNode* node = sceneGraph[1];
+	scenegraph::SceneGraphNode* node = sceneGraph[1];
 	ASSERT_TRUE(node != nullptr);
 	ASSERT_FALSE(node->keyFrames().empty());
 	ASSERT_GE(node->keyFrames().size(), 2u);
@@ -48,7 +48,7 @@ TEST_F(GLTFFormatTest, testVoxelizeCube) {
 	const core::String filename = "glTF/cube/Cube.gltf";
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file);
-	SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
 	EXPECT_TRUE(sceneGraph.size() > 0);
 }
@@ -58,7 +58,7 @@ TEST_F(GLTFFormatTest, DISABLED_testVoxelizeLantern) {
 	const core::String filename = "glTF/lantern/Lantern.gltf";
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file);
-	SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
 	EXPECT_TRUE(sceneGraph.size() > 0);
 }

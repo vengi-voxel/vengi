@@ -9,7 +9,7 @@
 #include "core/collection/DynamicArray.h"
 #include <glm/vec4.hpp>
 
-namespace voxelformat {
+namespace scenegraph {
 class SceneGraphNode;
 }
 
@@ -36,12 +36,12 @@ private:
 	core::String _currentSelectedPalette;
 	core::DynamicArray<core::String> _availablePalettes;
 
-	void closestColor(voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
-	void paletteMenuBar(voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
-	void createPopups(voxelformat::SceneGraphNode &node);
+	void closestColor(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	void paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	void createPopups(scenegraph::SceneGraphNode &node);
 
-	void addColor(float startingPosX, uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
-	bool showColorPicker(uint8_t palIdx, voxelformat::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	void addColor(float startingPosX, uint8_t palIdx, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	bool showColorPicker(uint8_t palIdx, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void reloadAvailablePalettes();
 
 	uint8_t currentSceneColor() const;

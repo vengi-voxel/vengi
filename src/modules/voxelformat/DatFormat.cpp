@@ -36,7 +36,7 @@
 
 namespace voxelformat {
 
-bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
+bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 								  voxel::Palette &palette, const LoadContext &loadctx) {
 	palette.minecraft();
 	io::ZipReadStream zipStream(stream);
@@ -62,7 +62,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	int rootNode = sceneGraph.root().id();
 	if (levelName.valid() && levelName.type() == priv::TagType::STRING) {
 		const core::String &name = *levelName.string();
-		voxelformat::SceneGraphNode groupNode(voxelformat::SceneGraphNodeType::Group);
+		scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 		groupNode.setName(name);
 		rootNode = sceneGraph.emplace(core::move(groupNode));
 		Log::debug("Level name: %s", name.c_str());
@@ -95,7 +95,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	int nodesAdded = 0;
 	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
 
-	core::DynamicArray<std::future<SceneGraph> > futures;
+	core::DynamicArray<std::future<scenegraph::SceneGraph> > futures;
 	Log::info("Found %i region files", (int)entities.size());
 	for (const io::FilesystemEntry &e : entities) {
 		if (e.type != io::FilesystemEntry::Type::file) {
@@ -109,7 +109,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		}
 		futures.emplace_back(threadPool.enqueue([file, &loadctx]() {
 			io::FileStream stream(file);
-			SceneGraph newSceneGraph;
+			scenegraph::SceneGraph newSceneGraph;
 			if (stream.size() <= 2l * MCRFormat::SECTOR_BYTES) {
 				Log::debug("Skip empty region file %s", file->name().c_str());
 				return core::move(newSceneGraph);
@@ -118,12 +118,12 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			if (!mcrFormat.load(file->name(), stream, newSceneGraph, loadctx)) {
 				Log::warn("Could not load %s", file->name().c_str());
 			}
-			const voxelformat::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();
+			const scenegraph::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();
 			newSceneGraph.clear();
 			if (merged.first == nullptr) {
 				return core::move(newSceneGraph);
 			}
-			voxelformat::SceneGraphNode node;
+			scenegraph::SceneGraphNode node;
 			node.setVolume(merged.first, true);
 			node.setPalette(merged.second);
 			newSceneGraph.emplace(core::move(node));
@@ -133,8 +133,8 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	Log::debug("Scheduled %i regions", (int)futures.size());
 	int count = 0;
 	for (auto & f : futures) {
-		SceneGraph newSceneGraph = core::move(f.get());
-		nodesAdded += voxelformat::addSceneGraphNodes(sceneGraph, newSceneGraph, rootNode);
+		scenegraph::SceneGraph newSceneGraph = core::move(f.get());
+		nodesAdded += scenegraph::addSceneGraphNodes(sceneGraph, newSceneGraph, rootNode);
 		Log::debug("... loaded %i", count++);
 	}
 

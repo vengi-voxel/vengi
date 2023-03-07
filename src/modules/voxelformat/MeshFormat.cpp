@@ -39,7 +39,7 @@ MeshFormat::MeshFormat() {
 	_flattenFactor = core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->intVal();
 }
 
-MeshFormat::MeshExt* MeshFormat::getParent(const voxelformat::SceneGraph &sceneGraph, MeshFormat::Meshes &meshes, int nodeId) {
+MeshFormat::MeshExt* MeshFormat::getParent(const scenegraph::SceneGraph &sceneGraph, MeshFormat::Meshes &meshes, int nodeId) {
 	if (!sceneGraph.hasNode(nodeId)) {
 		return nullptr;
 	}
@@ -181,7 +181,7 @@ bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
 	return true;
 }
 
-int MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, const TriCollection &tris, int parent) const {
+int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris, int parent) const {
 	if (tris.empty()) {
 		Log::warn("Empty volume - no triangles given");
 		return -1;
@@ -205,7 +205,7 @@ int MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, c
 		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
 				  vdim.x, vdim.y, vdim.z);
 	}
-	SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(new voxel::RawVolume(region), true);
 	node.setName(name);
 
@@ -231,9 +231,9 @@ int MeshFormat::voxelizeNode(const core::String &name, SceneGraph &sceneGraph, c
 		voxelizeTris(node, posMap, fillHollow);
 	}
 
-	SceneGraphTransform transform;
+	scenegraph::SceneGraphTransform transform;
 	transform.setLocalTranslation(region.getLowerCornerf());
-	KeyFrameIndex keyFrameIdx = 0;
+	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 
 	node.volume()->translate(-region.getLowerCorner());
@@ -257,7 +257,7 @@ bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::
 	return true;
 }
 
-void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) const {
+void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) const {
 	Log::debug("create voxels");
 	voxel::RawVolumeWrapper wrapper(node.volume());
 	voxel::Palette palette;
@@ -288,19 +288,19 @@ void MeshFormat::voxelizeTris(voxelformat::SceneGraphNode &node, const PosMap &p
 	}
 }
 
-MeshFormat::MeshExt::MeshExt(voxel::ChunkMesh *_mesh, const SceneGraphNode& node, bool _applyTransform) :
+MeshFormat::MeshExt::MeshExt(voxel::ChunkMesh *_mesh, const scenegraph::SceneGraphNode& node, bool _applyTransform) :
 		mesh(_mesh), name(node.name()), applyTransform(_applyTransform) {
 	size = node.region().getDimensionsInVoxels();
 	nodeId = node.id();
 }
 
-bool MeshFormat::loadGroups(const core::String &filename, io::SeekableReadStream& file, SceneGraph& sceneGraph, const LoadContext &ctx) {
+bool MeshFormat::loadGroups(const core::String &filename, io::SeekableReadStream& file, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) {
 	const bool retVal = voxelizeGroups(filename, file, sceneGraph, ctx);
 	sceneGraph.updateTransforms();
 	return retVal;
 }
 
-bool MeshFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &, SceneGraph &, const LoadContext &) {
+bool MeshFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &, scenegraph::SceneGraph &, const LoadContext &) {
 	Log::debug("Mesh %s can't get voxelized yet", filename.c_str());
 	return false;
 }
@@ -373,7 +373,7 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 	return fullpath;
 }
 
-bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool MeshFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
 	const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 	const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
@@ -389,7 +389,7 @@ bool MeshFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 	Meshes meshes;
 	core::Map<int, int> meshIdxNodeMap;
 	core_trace_mutex(core::Lock, lock, "MeshFormat");
-	for (const SceneGraphNode& node : sceneGraph) {
+	for (const scenegraph::SceneGraphNode& node : sceneGraph) {
 		auto lambda = [&] () {
 			voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
 			if (marchingCubes) {

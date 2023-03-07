@@ -52,15 +52,15 @@ public:
 		}
 	}
 
-	ScopedQBCLHeader(io::SeekableWriteStream &stream, SceneGraphNodeType type) : _stream(stream) {
+	ScopedQBCLHeader(io::SeekableWriteStream &stream, scenegraph::SceneGraphNodeType type) : _stream(stream) {
 		uint32_t nodeType = 0;
 		switch (type) {
-		case SceneGraphNodeType::Group:
-		case SceneGraphNodeType::Root:
+		case scenegraph::SceneGraphNodeType::Group:
+		case scenegraph::SceneGraphNodeType::Root:
 			nodeType = qbcl::NODE_TYPE_MODEL;
 			Log::debug("Write model node");
 			break;
-		case SceneGraphNodeType::Model:
+		case scenegraph::SceneGraphNodeType::Model:
 			nodeType = qbcl::NODE_TYPE_MATRIX;
 			Log::debug("Write matrix node");
 			break;
@@ -142,9 +142,9 @@ static bool writeRLE(io::WriteStream& stream, core::RGBA color, uint8_t count) {
 	return true;
 }
 
-bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraphNode& node) const {
+bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const scenegraph::SceneGraphNode& node) const {
 	const voxel::Region& region = node.region();
-	const voxelformat::SceneGraphTransform &transform = node.transform(0);
+	const scenegraph::SceneGraphTransform &transform = node.transform(0);
 	const glm::ivec3& translation = transform.localTranslation();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
@@ -230,17 +230,17 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const SceneGraph
 	return true;
 }
 
-bool QBCLFormat::saveCompound(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node) const {
+bool QBCLFormat::saveCompound(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node) const {
 	wrapSave(saveMatrix(stream, node))
 	wrapSave(stream.writeUInt32((int)node.children().size()));
 	for (int nodeId : node.children()) {
-		const SceneGraphNode &node = sceneGraph.node(nodeId);
+		const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 		wrapSave(saveNode(stream, sceneGraph, node))
 	}
 	return true;
 }
 
-bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node) const {
+bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node) const {
 	const uint32_t children = (uint32_t)node.children().size();
 	qbcl::ScopedQBCLHeader header(stream, node.type());
 	wrapSave(stream.writeUInt32(1)) // unknown
@@ -257,16 +257,16 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sc
 	wrapSave(stream.writeUInt32(children));
 
 	for (int nodeId : node.children()) {
-		const SceneGraphNode &node = sceneGraph.node(nodeId);
+		const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 		wrapSave(saveNode(stream, sceneGraph, node))
 	}
 
 	return true;
 }
 
-bool QBCLFormat::saveNode(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node) const {
-	const SceneGraphNodeType type = node.type();
-	if (type == SceneGraphNodeType::Model) {
+bool QBCLFormat::saveNode(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node) const {
+	const scenegraph::SceneGraphNodeType type = node.type();
+	if (type == scenegraph::SceneGraphNodeType::Model) {
 		if (node.children().empty()) {
 			qbcl::ScopedQBCLHeader header(stream, node.type());
 			wrapSave(saveMatrix(stream, node) && header.success())
@@ -274,13 +274,13 @@ bool QBCLFormat::saveNode(io::SeekableWriteStream& stream, const SceneGraph& sce
 			qbcl::ScopedQBCLHeader scoped(stream, qbcl::NODE_TYPE_COMPOUND);
 			wrapSave(saveCompound(stream, sceneGraph, node) && scoped.success())
 		}
-	} else if (type == SceneGraphNodeType::Group || type == SceneGraphNodeType::Root) {
+	} else if (type == scenegraph::SceneGraphNodeType::Group || type == scenegraph::SceneGraphNodeType::Root) {
 		wrapSave(saveModel(stream, sceneGraph, node))
 	}
 	return true;
 }
 
-bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &savectx) {
+bool QBCLFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &savectx) {
 	wrapBool(stream.writeUInt32(FourCC('Q','B','C','L')))
 	wrapBool(stream.writeUInt32(131331))
 	wrapBool(stream.writeUInt32(qbcl::VERSION))
@@ -313,7 +313,7 @@ bool QBCLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fi
 		wrapBool(stream.writeUInt32(0)) // thumbnail w/h
 	}
 
-	const SceneGraphNode& rootNode = sceneGraph.root();
+	const scenegraph::SceneGraphNode& rootNode = sceneGraph.root();
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Title")))
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Description")))
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Metadata")))
@@ -331,15 +331,15 @@ size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 	wrapBool(readHeader(stream, header))
 	header.loadPalette = true;
 
-	SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	wrapBool(readNodes(filename, stream, sceneGraph, sceneGraph.root().id(), palette, header))
 
 	Log::debug("qbcl: loaded %i colors", palette.colorCount());
 	return palette.colorCount();
 }
 
-bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
-	SceneGraphTransform transform;
+bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
+	scenegraph::SceneGraphTransform transform;
 	Log::debug("Matrix name: %s", name.c_str());
 
 	glm::uvec3 size;
@@ -460,7 +460,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 		return true;
 	}
 
-	SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(volume.release(), true);
 	node.setVisible(nodeHeader.visible);
 	node.setLocked(nodeHeader.locked);
@@ -470,18 +470,18 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	} else {
 		node.setName(name);
 	}
-	const KeyFrameIndex keyFrameIdx = 0;
+	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	const int id = sceneGraph.emplace(core::move(node), parent);
 	return id != -1;
 }
 
-bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
+bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
 	const size_t skip = 3 * 3 * sizeof(float);
 	stream.skip((int64_t)skip); // TODO: rotation matrix?
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount))
-	SceneGraphNode node(SceneGraphNodeType::Group);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	if (name.empty()) {
 		node.setName("Model");
 	} else {
@@ -497,8 +497,8 @@ bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream&
 	return true;
 }
 
-bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
-	SceneGraphNode node(SceneGraphNodeType::Group);
+bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	if (name.empty()) {
 		node.setName("Compound");
 	} else {
@@ -517,7 +517,7 @@ bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStre
 	return true;
 }
 
-bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &header) {
+bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &header) {
 	uint32_t type;
 	wrap(stream.readUInt32(type))
 	uint32_t unknown;
@@ -595,14 +595,14 @@ bool QBCLFormat::readHeader(io::SeekableReadStream& stream, Header &header) {
 	return true;
 }
 
-bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	Header header;
 	wrapBool(readHeader(stream, header))
 
 	voxel::Palette palCopy = palette;
 	wrapBool(readNodes(filename, stream, sceneGraph, -1, palCopy, header))
 
-	SceneGraphNode& rootNode = sceneGraph.node(sceneGraph.root().id());
+	scenegraph::SceneGraphNode& rootNode = sceneGraph.node(sceneGraph.root().id());
 	rootNode.setProperty("Title", header.title);
 	rootNode.setProperty("Description", header.desc);
 	rootNode.setProperty("Metadata", header.metadata);

@@ -447,7 +447,7 @@ bool QuakeBSPFormat::loadQuake1Vertices(io::SeekableReadStream &stream, const Bs
 }
 
 bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableReadStream &stream,
-											 SceneGraph &sceneGraph, const BspHeader &header) {
+											 scenegraph::SceneGraph &sceneGraph, const BspHeader &header) {
 	core::StringMap<image::ImagePtr> textureMap;
 	core::DynamicArray<Texture> textures;
 	if (!loadQuake1Textures(filename, stream, header, textures, textureMap)) {
@@ -538,7 +538,7 @@ static int parseMaxLevel(const core::String &entities) {
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream,
-											 SceneGraph &sceneGraph, const BspHeader &header) {
+											 scenegraph::SceneGraph &sceneGraph, const BspHeader &header) {
 	Log::debug("Load textures");
 	core::StringMap<image::ImagePtr> textureMap;
 	core::DynamicArray<Texture> textures;
@@ -606,7 +606,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 
 bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
 							  const core::DynamicArray<BspEdge> &edges, const core::DynamicArray<int32_t> &surfEdges,
-							  const core::DynamicArray<BspVertex> &vertices, SceneGraph &sceneGraph, voxel::PaletteLookup &palLookup,
+							  const core::DynamicArray<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph, voxel::PaletteLookup &palLookup,
 							  const core::String &name) {
 	int vertexCount = 0;
 	int indexCount = 0;
@@ -709,7 +709,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 	return voxelizeNode(name, sceneGraph, tris) > 0;
 }
 
-bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) {
+bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	static const uint32_t q1Version = FourCC('\x1d', '\0', '\0', '\0');
 	static const uint32_t bspMagic = FourCC('I', 'B', 'S', 'P');
 

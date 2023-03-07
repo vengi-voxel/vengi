@@ -7,7 +7,7 @@
 #include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraphNode.h"
 
-namespace voxelformat {
+namespace scenegraph {
 
 static int addToGraph(SceneGraph &sceneGraph, SceneGraphNode &&node, int parent) {
 	if (parent > 0 && !sceneGraph.hasNode(parent)) {

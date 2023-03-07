@@ -146,7 +146,7 @@ static bool spanIsEmpty(const voxel::RawVolume *v, int x, int z) {
 	return true;
 }
 
-bool VXLFormat::writeLayer(io::SeekableWriteStream& stream, const SceneGraphNode& node, VXLLayerOffset& offsets, uint64_t nodeSectionOffset) const {
+bool VXLFormat::writeLayer(io::SeekableWriteStream& stream, const scenegraph::SceneGraphNode& node, VXLLayerOffset& offsets, uint64_t nodeSectionOffset) const {
 	const voxel::Region& region = node.region();
 	const glm::ivec3& size = region.getDimensionsInVoxels();
 	if (size.x > 255 || size.y > 255 || size.z > 255) {
@@ -228,7 +228,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream& stream, const SceneGraphNode
 	return true;
 }
 
-bool VXLFormat::writeLayerHeader(io::SeekableWriteStream& stream, const SceneGraphNode& node, uint32_t nodeIdx) const {
+bool VXLFormat::writeLayerHeader(io::SeekableWriteStream& stream, const scenegraph::SceneGraphNode& node, uint32_t nodeIdx) const {
 	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + nodeIdx * LayerHeaderSize));
 	Log::debug("Write layer header at %u", (int)stream.pos());
 	core::String name = node.name().substr(0, 15);
@@ -245,7 +245,7 @@ bool VXLFormat::writeLayerHeader(io::SeekableWriteStream& stream, const SceneGra
 	return true;
 }
 
-bool VXLFormat::writeLayerInfo(io::SeekableWriteStream& stream, const SceneGraphNode& node, const VXLLayerOffset& offsets) const {
+bool VXLFormat::writeLayerInfo(io::SeekableWriteStream& stream, const scenegraph::SceneGraphNode& node, const VXLLayerOffset& offsets) const {
 	Log::debug("SpanStartOffset: %i", (int32_t)offsets.start);
 	Log::debug("SpanEndOffset: %i", (int32_t)offsets.end);
 	Log::debug("SpanDataOffset: %i", (int32_t)offsets.data);
@@ -254,8 +254,8 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream& stream, const SceneGraph
 	wrapBool(stream.writeUInt32(offsets.end))
 	wrapBool(stream.writeUInt32(offsets.data))
 
-	const FrameIndex frameIdx = 0;
-	const SceneGraphTransform &transform = node.transform(frameIdx);
+	const scenegraph::FrameIndex frameIdx = 0;
+	const scenegraph::SceneGraphTransform &transform = node.transform(frameIdx);
 	const glm::vec3 &mins = transform.localTranslation();
 	VXLMatrix vxlMatrix;
 	convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), false);
@@ -326,21 +326,21 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream& stream, uint32_t numNodes, 
 	return true;
 }
 
-bool VXLFormat::saveVXL(core::DynamicArray<const SceneGraphNode*> &nodes, const core::String &filename, io::SeekableWriteStream& stream) {
+bool VXLFormat::saveVXL(core::DynamicArray<const scenegraph::SceneGraphNode*> &nodes, const core::String &filename, io::SeekableWriteStream& stream) {
 	if (nodes.empty()) {
 		return false;
 	}
 	const uint32_t numLayers = nodes.size();
 	wrapBool(writeHeader(stream, numLayers, nodes[0]->palette()))
 	for (uint32_t i = 0; i < numLayers; ++i) {
-		const SceneGraphNode* node = nodes[(int)i];
+		const scenegraph::SceneGraphNode* node = nodes[(int)i];
 		wrapBool(writeLayerHeader(stream, *node, i))
 	}
 
 	core::Buffer<VXLLayerOffset> layerOffsets(numLayers);
 	const uint64_t bodyStart = stream.pos();
 	for (uint32_t i = 0; i < numLayers; ++i) {
-		const SceneGraphNode* node = nodes[(int)i];
+		const scenegraph::SceneGraphNode* node = nodes[(int)i];
 		wrapBool(writeLayer(stream, *node, layerOffsets[i], bodyStart))
 	}
 
@@ -354,16 +354,16 @@ bool VXLFormat::saveVXL(core::DynamicArray<const SceneGraphNode*> &nodes, const 
 	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + LayerHeaderSize * numLayers + bodySize));
 
 	for (uint32_t i = 0; i < numLayers; ++i) {
-		const SceneGraphNode* node = nodes[(int)i];
+		const scenegraph::SceneGraphNode* node = nodes[(int)i];
 		wrapBool(writeLayerInfo(stream, *node, layerOffsets[i]))
 	}
 	return true;
 }
 
-bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
-	core::DynamicArray<const SceneGraphNode*> body;
-	core::DynamicArray<const SceneGraphNode*> barrel;
-	core::DynamicArray<const SceneGraphNode*> turret;
+bool VXLFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+	core::DynamicArray<const scenegraph::SceneGraphNode*> body;
+	core::DynamicArray<const scenegraph::SceneGraphNode*> barrel;
+	core::DynamicArray<const scenegraph::SceneGraphNode*> turret;
 
 	const uint32_t numNodes = sceneGraph.size();
 	body.reserve(numNodes);
@@ -371,7 +371,7 @@ bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	turret.reserve(numNodes);
 
 	// TODO: split the nodes into the max allowed size
-	for (const SceneGraphNode &node : sceneGraph) {
+	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
 		const core::String &lowerName = node.name().toLower();
 		if (lowerName.contains("barrel")) {
 			barrel.push_back(&node);
@@ -404,7 +404,7 @@ bool VXLFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return saveHVA(basename + ".hva", sceneGraph);
 }
 
-bool VXLFormat::readLayer(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx, SceneGraph& sceneGraph, const voxel::Palette &palette) const {
+bool VXLFormat::readLayer(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette) const {
 	const uint64_t nodeStart = stream.pos();
 	const VXLLayerInfo &footer = mdl.layerInfos[nodeIdx];
 	const VXLLayerHeader &header = mdl.layerHeaders[nodeIdx];
@@ -441,7 +441,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream& stream, VXLModel& mdl, uint32_
 	// y and z are switched here
 	Log::debug("size.x: %i, size.y: %i, size.z: %i", footer.xsize, (int)footer.zsize, (int)footer.ysize);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(header.name);
 	if (palette.colorCount() > 0) {
@@ -451,9 +451,9 @@ bool VXLFormat::readLayer(io::SeekableReadStream& stream, VXLModel& mdl, uint32_
 	glm::mat4 glmMatrix = footer.transform.toMat4();
 	convertRead(glmMatrix, footer, false);
 
-	SceneGraphTransform transform;
+	scenegraph::SceneGraphTransform transform;
 	transform.setLocalMatrix(glmMatrix);
-	const KeyFrameIndex keyFrameIdx = 0;
+	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 
 	for (uint32_t i = 0u; i < baseSize; ++i) {
@@ -495,7 +495,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream& stream, VXLModel& mdl, uint32_
 	return true;
 }
 
-bool VXLFormat::readLayers(io::SeekableReadStream& stream, VXLModel& mdl, SceneGraph& sceneGraph, const voxel::Palette &palette) const {
+bool VXLFormat::readLayers(io::SeekableReadStream& stream, VXLModel& mdl, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette) const {
 	const VXLHeader& hdr = mdl.header;
 	sceneGraph.reserve(hdr.layerCount);
 	const int64_t bodyPos = stream.pos();
@@ -700,7 +700,7 @@ bool VXLFormat::readHVAFrames(io::SeekableReadStream& stream, const VXLModel &md
 	return true;
 }
 
-bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, SceneGraph& sceneGraph) {
+bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, scenegraph::SceneGraph& sceneGraph) {
 	HVAModel file;
 	{
 		const io::FilesystemPtr &filesystem = io::filesystem();
@@ -718,13 +718,13 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 		const HVAFrames &sectionMatrices = file.frames[keyFrameIdx];
 		for (uint32_t vxlNodeId = 0; vxlNodeId < file.header.numLayers; ++vxlNodeId) {
 			const core::String &name = file.header.nodeNames[vxlNodeId];
-			SceneGraphNode* node = sceneGraph.findNodeByName(name);
+			scenegraph::SceneGraphNode* node = sceneGraph.findNodeByName(name);
 			if (node == nullptr) {
 				Log::debug("Can't find node with name %s", name.c_str());
 				continue;
 			}
 			// hva transforms are overriding the vxl transform
-			SceneGraphKeyFrame &kf = node->keyFrame(keyFrameIdx);
+			scenegraph::SceneGraphKeyFrame &kf = node->keyFrame(keyFrameIdx);
 			kf.frameIdx = keyFrameIdx * 6; // running at 6 fps
 
 			const int nodeId = file.header.layerIds[vxlNodeId];
@@ -732,7 +732,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 				glm::mat4 glmMatrix = sectionMatrices[vxlNodeId].toMat4();
 				convertRead(glmMatrix, mdl.layerInfos[nodeId], true);
 
-				SceneGraphTransform transform;
+				scenegraph::SceneGraphTransform transform;
 				transform.setLocalMatrix(glmMatrix);
 				kf.setTransform(transform);
 			}
@@ -741,7 +741,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, Scene
 	return true;
 }
 
-bool VXLFormat::writeHVAHeader(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph) const {
+bool VXLFormat::writeHVAHeader(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph) const {
 	char name[16];
 	core_memset(name, 0, sizeof(name));
 	// TODO: name
@@ -751,7 +751,7 @@ bool VXLFormat::writeHVAHeader(io::SeekableWriteStream& stream, const SceneGraph
 	}
 	uint32_t numFrames = 0;
 
-	for (const SceneGraphNode &node : sceneGraph) {
+	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
 		numFrames = core_max(numFrames, node.keyFrames().size());
 	}
 
@@ -759,7 +759,7 @@ bool VXLFormat::writeHVAHeader(io::SeekableWriteStream& stream, const SceneGraph
 	uint32_t numNodes = sceneGraph.size();
 	stream.writeUInt32(numNodes);
 	for (uint32_t frame = 0; frame < numFrames; ++frame) {
-		for (const SceneGraphNode &node : sceneGraph) {
+		for (const scenegraph::SceneGraphNode &node : sceneGraph) {
 			const core::String &name = node.name().substr(0, 15);
 			if (stream.write(name.c_str(), name.size()) == -1) {
 				Log::error("Failed to write layer name");
@@ -773,15 +773,15 @@ bool VXLFormat::writeHVAHeader(io::SeekableWriteStream& stream, const SceneGraph
 	return true;
 }
 
-bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph) const {
+bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph) const {
 	uint32_t numFrames = 0;
-	for (const SceneGraphNode &node : sceneGraph) {
+	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
 		numFrames = core_max(numFrames, node.keyFrames().size());
 	}
 
 	for (uint32_t i = 0; i < numFrames; ++i) {
-		for (const SceneGraphNode &node : sceneGraph) {
-			const SceneGraphTransform &transform = node.transform(i);
+		for (const scenegraph::SceneGraphNode &node : sceneGraph) {
+			const scenegraph::SceneGraphTransform &transform = node.transform(i);
 			VXLMatrix vxlMatrix;
 			convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), true);
 
@@ -796,7 +796,7 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph
 	return true;
 }
 
-bool VXLFormat::saveHVA(const core::String &filename, const SceneGraph& sceneGraph) {
+bool VXLFormat::saveHVA(const core::String &filename, const scenegraph::SceneGraph& sceneGraph) {
 	const io::FilesystemPtr &filesystem = io::filesystem();
 	io::FilePtr hvaFile = filesystem->open(filename, io::FileMode::SysWrite);
 	if (!hvaFile->validHandle()) {
@@ -808,7 +808,7 @@ bool VXLFormat::saveHVA(const core::String &filename, const SceneGraph& sceneGra
 	return true;
 }
 
-bool VXLFormat::loadFromFile(const core::String &filename, SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool VXLFormat::loadFromFile(const core::String &filename, scenegraph::SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	const io::FilePtr &file = io::filesystem()->open(filename);
 	if (file && file->validHandle()) {
 		io::FileStream stream(file);
@@ -825,7 +825,7 @@ size_t VXLFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.colorCount();
 }
 
-bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	VXLModel mdl;
 
 	wrapBool(readHeader(stream, mdl, palette))

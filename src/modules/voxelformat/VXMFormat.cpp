@@ -69,7 +69,7 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 	return image::loadImage(imageName);
 }
 
-bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool VXMFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	wrapBool(stream.writeUInt32(FourCC('V','X','M','C')));
 	const glm::vec3 pivot(0.5f);
 
@@ -203,7 +203,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	}
 	wrapBool(stream.writeUInt8(layers))
 
-	for (const SceneGraphNode &node : sceneGraph) {
+	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
 		voxel::RawVolume::Sampler sampler(node.volume());
 		wrapBool(stream.writeString(node.name()))
 		wrapBool(stream.writeBool(node.visible()))
@@ -248,7 +248,7 @@ bool VXMFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return true;
 }
 
-bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))
@@ -274,7 +274,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	SceneGraphTransform transform;
+	scenegraph::SceneGraphTransform transform;
 	transform.setPivot(glm::vec3{0.5f, 0.0f, 0.5f});
 	glm::uvec3 size(0);
 	Log::debug("Found vxm%i", version);
@@ -514,14 +514,14 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			}
 			idx += length;
 		}
-		SceneGraphNode node(SceneGraphNodeType::Model);
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(volume, true);
 		node.setName(layerName);
 		node.setVisible(visible);
 		node.setPalette(palette);
 		node.setProperty("vxmversion", core::string::toString(version));
 		node.setProperty("filename", filename);
-		const KeyFrameIndex keyFrameIdx = 0;
+		const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		node.setTransform(keyFrameIdx, transform);
 		sceneGraph.emplace(core::move(node));
 	}

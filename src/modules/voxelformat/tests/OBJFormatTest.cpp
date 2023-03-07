@@ -17,13 +17,13 @@ TEST_F(OBJFormatTest, testVoxelize) {
 	const core::String filename = "cube.obj";
 	const io::FilePtr &file = open(filename);
 	io::FileStream stream(file);
-	SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
 	EXPECT_TRUE(sceneGraph.size() > 0);
 }
 
 TEST_F(OBJFormatTest, testExportMesh) {
-	SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	{
 		QBFormat sourceFormat;
 		const core::String filename = "rgb.qb";

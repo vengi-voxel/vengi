@@ -105,7 +105,7 @@ static bool skipComma(io::SeekableReadStream &stream) {
 	return true;
 }
 
-bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	char buf[512];
 	wrapBool(stream.readLine(sizeof(buf), buf))
 
@@ -126,7 +126,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 	}
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 
 	voxel::PaletteLookup palLookup(palette);
@@ -171,8 +171,8 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 	return sceneGraph.emplace(core::move(node)) > 0;
 }
 
-bool SproxelFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
+	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;

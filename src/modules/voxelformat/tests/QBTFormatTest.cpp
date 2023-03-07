@@ -45,7 +45,7 @@ TEST_F(QBTFormatTest, testSave) {
 }
 
 TEST_F(QBTFormatTest, testResaveMultipleLayers) {
-	SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	{
 		QBTFormat f;
 		io::FilePtr file = open("qubicle.qbt");

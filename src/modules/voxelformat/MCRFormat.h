@@ -104,15 +104,15 @@ private:
 	// old version (< 2844)
 	voxel::RawVolume* parseLevelCompound(int dataVersion, const priv::NamedBinaryTag &root, int sector, const voxel::Palette &palette);
 
-	bool readCompressedNBT(SceneGraph& sceneGraph, io::SeekableReadStream &stream, int sector, const voxel::Palette &palette);
-	bool loadMinecraftRegion(SceneGraph& sceneGraph, io::SeekableReadStream &stream, const voxel::Palette &palette);
+	bool readCompressedNBT(scenegraph::SceneGraph& sceneGraph, io::SeekableReadStream &stream, int sector, const voxel::Palette &palette);
+	bool loadMinecraftRegion(scenegraph::SceneGraph& sceneGraph, io::SeekableReadStream &stream, const voxel::Palette &palette);
 
-	bool saveSections(const voxelformat::SceneGraph &sceneGraph, priv::NBTList &sections, int sector);
-	bool saveCompressedNBT(const voxelformat::SceneGraph &sceneGraph, io::SeekableWriteStream& stream, int sector);
-	bool saveMinecraftRegion(const voxelformat::SceneGraph &sceneGraph, io::SeekableWriteStream& stream);
+	bool saveSections(const scenegraph::SceneGraph &sceneGraph, priv::NBTList &sections, int sector);
+	bool saveCompressedNBT(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream& stream, int sector);
+	bool saveMinecraftRegion(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream& stream);
 protected:
-	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) override;
-	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override;
+	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) override;
+	bool saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override;
 };
 
 }

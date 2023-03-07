@@ -51,15 +51,15 @@ public:
 		}
 	}
 
-	ScopedQBTHeader(io::SeekableWriteStream &stream, SceneGraphNodeType type) : _stream(stream) {
+	ScopedQBTHeader(io::SeekableWriteStream &stream, scenegraph::SceneGraphNodeType type) : _stream(stream) {
 		uint32_t nodeType = 0;
 		switch (type) {
-		case SceneGraphNodeType::Group:
-		case SceneGraphNodeType::Root:
+		case scenegraph::SceneGraphNodeType::Group:
+		case scenegraph::SceneGraphNodeType::Root:
 			nodeType = qbt::NODE_TYPE_MODEL;
 			Log::debug("Write model node");
 			break;
-		case SceneGraphNodeType::Model:
+		case scenegraph::SceneGraphNodeType::Model:
 			nodeType = qbt::NODE_TYPE_MATRIX;
 			Log::debug("Write matrix node");
 			break;
@@ -137,7 +137,7 @@ public:
 		return false; \
 	}
 
-bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node, bool colorMap) const {
+bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const scenegraph::SceneGraphNode& node, bool colorMap) const {
 	const voxel::Region& region = node.region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3& maxs = region.getUpperCorner();
@@ -191,8 +191,8 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode
 	wrapSaveFree(stream.writePascalStringUInt32LE(node.name()));
 	Log::debug("Save matrix with name %s", node.name().c_str());
 
-	const KeyFrameIndex keyFrameIdx = 0;
-	const voxelformat::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const glm::ivec3 offset = glm::round(transform.localTranslation());
 	wrapSaveFree(stream.writeInt32(offset.x));
 	wrapSaveFree(stream.writeInt32(offset.y));
@@ -239,19 +239,19 @@ bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream, const voxel::Palet
 	return true;
 }
 
-bool QBTFormat::saveCompound(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node, bool colorMap) const {
+bool QBTFormat::saveCompound(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node, bool colorMap) const {
 	wrapSave(saveMatrix(stream, node, colorMap))
 	wrapSave(stream.writeUInt32((int)node.children().size()));
 	for (int nodeId : node.children()) {
-		const SceneGraphNode &node = sceneGraph.node(nodeId);
+		const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 		wrapSave(saveNode(stream, sceneGraph, node, colorMap))
 	}
 	return true;
 }
 
-bool QBTFormat::saveNode(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node, bool colorMap) const {
-	const SceneGraphNodeType type = node.type();
-	if (type == SceneGraphNodeType::Model) {
+bool QBTFormat::saveNode(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node, bool colorMap) const {
+	const scenegraph::SceneGraphNodeType type = node.type();
+	if (type == scenegraph::SceneGraphNodeType::Model) {
 		if (node.children().empty()) {
 			qbt::ScopedQBTHeader header(stream, node.type());
 			wrapSave(saveMatrix(stream, node, colorMap) && header.success())
@@ -259,16 +259,16 @@ bool QBTFormat::saveNode(io::SeekableWriteStream& stream, const SceneGraph& scen
 			qbt::ScopedQBTHeader scoped(stream, qbt::NODE_TYPE_COMPOUND);
 			wrapSave(saveCompound(stream, sceneGraph, node, colorMap) && scoped.success())
 		}
-	} else if (type == SceneGraphNodeType::Group || type == SceneGraphNodeType::Root) {
+	} else if (type == scenegraph::SceneGraphNodeType::Group || type == scenegraph::SceneGraphNodeType::Root) {
 		wrapSave(saveModel(stream, sceneGraph, node, colorMap))
 	}
 	return true;
 }
 
-bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph, const SceneGraphNode& node, bool colorMap) const {
+bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node, bool colorMap) const {
 	if (node.children().size() == 1) {
 		for (int nodeId : node.children()) {
-			const SceneGraphNode &cnode = sceneGraph.node(nodeId);
+			const scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
 			wrapSave(saveNode(stream, sceneGraph, cnode, colorMap))
 		}
 		return true;
@@ -277,15 +277,15 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const SceneGraph& sce
 	const int children = (int)node.children().size();
 	wrapSave(stream.writeUInt32(children));
 	for (int nodeId : node.children()) {
-		const SceneGraphNode &cnode = sceneGraph.node(nodeId);
+		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
 		wrapSave(saveNode(stream, sceneGraph, cnode, colorMap))
 	}
 	return scoped.success();
 }
 
-bool QBTFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
-	const voxelformat::SceneGraphNode &root = sceneGraph.root();
-	const voxelformat::SceneGraphNodeChildren &children = root.children();
+bool QBTFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+	const scenegraph::SceneGraphNode &root = sceneGraph.root();
+	const scenegraph::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();
 	if (childCount <= 0) {
 		Log::error("Empty scene graph - can't save qbt");
@@ -341,8 +341,8 @@ bool QBTFormat::skipNode(io::SeekableReadStream& stream) {
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &state) {
-	SceneGraphNode node(SceneGraphNodeType::Group);
+bool QBTFormat::loadCompound(io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &state) {
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	node.setName("Compound");
 	int nodeId = sceneGraph.emplace(core::move(node), parent);
 
@@ -390,12 +390,12 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, SceneGraph& sceneGr
  * The M byte is used to store visibility of the 6 faces of a voxel and whether as voxel is solid or air. If M is bigger than 0 then the voxel is solid. Even when a voxel
  * is solid is may not be needed to be rendered because it is a core voxel that is surrounded by 6 other voxels and thus invisible. If M = 1 then the voxel is a core voxel.
  */
-bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &state) {
+bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &state) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt32LE(name))
 	Log::debug("Matrix name: %s", name.c_str());
 	glm::ivec3 translation;
-	SceneGraphTransform transform;
+	scenegraph::SceneGraphTransform transform;
 	wrap(stream.readInt32(translation.x))
 	wrap(stream.readInt32(translation.y))
 	wrap(stream.readInt32(translation.z))
@@ -472,11 +472,11 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
 			}
 		}
 	}
-	SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(volume.release(), true);
 	node.setName(name);
 	node.setPalette(palette);
-	const KeyFrameIndex keyFrameIdx = 0;
+	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	const int id = sceneGraph.emplace(core::move(node), parent);
 	return id != -1;
@@ -489,7 +489,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, SceneGraph& sceneGrap
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &state) {
+bool QBTFormat::loadModel(io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &state) {
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount));
 	if (childCount > 2048u) {
@@ -497,7 +497,7 @@ bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& sceneGraph
 		return false;
 	}
 	Log::debug("Found %u children", childCount);
-	SceneGraphNode node(SceneGraphNodeType::Group);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	node.setName("Model");
 	int nodeId = sceneGraph.emplace(core::move(node), parent);
 	for (uint32_t i = 0; i < childCount; i++) {
@@ -513,7 +513,7 @@ bool QBTFormat::loadModel(io::SeekableReadStream& stream, SceneGraph& sceneGraph
  * SectionCaption 8 bytes = "DATATREE"
  * RootNode, can currently either be Model, Compound or Matrix
  */
-bool QBTFormat::loadNode(io::SeekableReadStream& stream, SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &state) {
+bool QBTFormat::loadNode(io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &state) {
 	uint32_t nodeTypeID;
 	wrap(stream.readUInt32(nodeTypeID));
 	uint32_t dataSize;
@@ -645,7 +645,7 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 		char buf[8];
 		wrapBool(stream.readString(sizeof(buf), buf));
 		if (0 == memcmp(buf, "DATATREE", 8)) {
-			SceneGraph sceneGraph;
+			scenegraph::SceneGraph sceneGraph;
 			if (!loadNode(stream, sceneGraph, sceneGraph.root().id(), palette, state)) {
 				Log::error("Failed to load node");
 				return false;
@@ -661,7 +661,7 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return 0;
 }
 
-bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	Header state;
 	wrapBool(loadHeader(stream, state))
 
@@ -691,7 +691,7 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			return false;
 		}
 	}
-	for (SceneGraphNode &node : sceneGraph) {
+	for (scenegraph::SceneGraphNode &node : sceneGraph) {
 		node.setPalette(palette);
 	}
 	return true;

@@ -109,8 +109,8 @@ static inline glm::vec4 calcTransform(const glm::mat4x4 &mat, const glm::ivec3 &
 	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
 }
 
-static bool loadKeyFrames(voxelformat::SceneGraph &sceneGraph, voxelformat::SceneGraphNode& node, const ogt_vox_keyframe_transform* transformKeyframes, uint32_t numKeyframes) {
-	SceneGraphKeyFrames kf;
+static bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode& node, const ogt_vox_keyframe_transform* transformKeyframes, uint32_t numKeyframes) {
+	scenegraph::SceneGraphKeyFrames kf;
 	Log::debug("Load %d keyframes", numKeyframes);
 	kf.reserve(numKeyframes);
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < numKeyframes; ++keyFrameIdx) {
@@ -121,9 +121,9 @@ static bool loadKeyFrames(voxelformat::SceneGraph &sceneGraph, voxelformat::Scen
 		const glm::vec4 ogtKeyFrameCol2(keyframeTransform.m20, keyframeTransform.m21, keyframeTransform.m22, keyframeTransform.m23);
 		const glm::vec4 ogtKeyFrameCol3(keyframeTransform.m30, keyframeTransform.m31, keyframeTransform.m32, keyframeTransform.m33);
 		const glm::mat4 ogtKeyFrameMat = glm::mat4{ogtKeyFrameCol0, ogtKeyFrameCol1, ogtKeyFrameCol2, ogtKeyFrameCol3};
-		SceneGraphKeyFrame sceneGraphKeyFrame;
+		scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
 		sceneGraphKeyFrame.frameIdx = transform_keyframe.frame_index;
-		sceneGraphKeyFrame.interpolation = InterpolationType::Linear;
+		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
 		sceneGraphKeyFrame.transform().setWorldMatrix(ogtKeyFrameMat);
 		kf.push_back(sceneGraphKeyFrame);
@@ -131,7 +131,7 @@ static bool loadKeyFrames(voxelformat::SceneGraph &sceneGraph, voxelformat::Scen
 	return node.setKeyFrames(kf);
 }
 
-bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden) {
+bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden) {
 	const ogt_vox_instance& ogtInstance = scene->instances[ogt_instanceIdx];
 	const ogt_vox_transform& ogtTransform = ogtInstance.transform;
 	const glm::vec4 ogtCol0(ogtTransform.m00, ogtTransform.m01, ogtTransform.m02, ogtTransform.m03);
@@ -152,7 +152,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	const glm::ivec3 shift = region.getLowerCorner();
 	region.shift(-shift);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
-	SceneGraphTransform transform;
+	scenegraph::SceneGraphTransform transform;
 	transform.setWorldTranslation(shift);
 
 	for (uint32_t k = 0; k < ogtModel->size_z; ++k) {
@@ -170,7 +170,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 		}
 	}
 
-	SceneGraphNode node(SceneGraphNodeType::Model);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	const char *name = ogtInstance.name;
 	if (name == nullptr) {
 		const ogt_vox_layer &layer = scene->layers[ogtInstance.layer_index];
@@ -187,7 +187,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	}
 	loadKeyFrames(sceneGraph, node, ogtInstance.transform_anim.keyframes, ogtInstance.transform_anim.num_keyframes);
 	// TODO: we are overriding the keyframe data here
-	const KeyFrameIndex keyFrameIdx = 0;
+	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	node.setName(name);
 	node.setVisible(!ogtInstance.hidden && !groupHidden);
@@ -196,13 +196,13 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	return sceneGraph.emplace(core::move(node), parent) != -1;
 }
 
-bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances, const voxel::Palette &palette) {
+bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances, const voxel::Palette &palette) {
 	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
 	const char *name = "Group";
 	const uint32_t layerIdx = ogt_group.layer_index;
 	// TODO: group transforms are not handled correctly
-	SceneGraphNode node(SceneGraphNodeType::Group);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	if (layerIdx < scene->num_layers) {
 		const ogt_vox_layer &layer = scene->layers[layerIdx];
 		hidden |= layer.hidden;
@@ -253,7 +253,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, Scen
 	return true;
 }
 
-bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	const size_t size = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
 	if (stream.read(buffer, size) == -1) {
@@ -330,11 +330,11 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		const glm::mat4& orientation = glm::mat4_cast(quat);
 		const glm::mat4& viewMatrix = glm::translate(orientation, -newPosition);
 		{
-			SceneGraphNodeCamera camNode;
+			scenegraph::SceneGraphNodeCamera camNode;
 			camNode.setName(core::String::format("Camera %u", c.camera_id));
-			SceneGraphTransform transform;
+			scenegraph::SceneGraphTransform transform;
 			transform.setWorldMatrix(viewMatrix);
-			const KeyFrameIndex keyFrameIdx = 0;
+			const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			camNode.setTransform(keyFrameIdx, transform);
 			camNode.setFieldOfView(c.fov);
 			camNode.setFarPlane((float)c.radius);
@@ -362,16 +362,16 @@ int VoxFormat::findClosestPaletteIndex(const voxel::Palette &palette) {
 	return core::Color::getClosestMatch(first, materialColors) + 1;
 }
 
-void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &node, ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx, const voxel::Palette &palette, uint8_t replacement) {
+void VoxFormat::addNodeToScene(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx, const voxel::Palette &palette, uint8_t replacement) {
 	Log::debug("Save node '%s' with parent group %u and layer %u", node.name().c_str(), parentGroupIdx, layerIdx);
-	if (node.type() == SceneGraphNodeType::Root || node.type() == SceneGraphNodeType::Group) {
-		if (node.type() == SceneGraphNodeType::Root) {
+	if (node.type() == scenegraph::SceneGraphNodeType::Root || node.type() == scenegraph::SceneGraphNodeType::Group) {
+		if (node.type() == scenegraph::SceneGraphNodeType::Root) {
 			Log::debug("Add root node");
 		} else {
 			Log::debug("Add group node");
 		}
 		const bool addLayers = core::Var::getSafe(cfg::VoxformatVOXCreateLayers)->boolVal();
-		if (node.type() == SceneGraphNodeType::Root || addLayers) {
+		if (node.type() == scenegraph::SceneGraphNodeType::Root || addLayers) {
 			// TODO: only add the layer if there are models in this group?
 			// https://github.com/mgerhardy/vengi/issues/186
 			ogt_vox_layer ogt_layer;
@@ -387,7 +387,7 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 		}
 		const uint32_t ownLayerId = (int)ctx.layers.size() - 1;
 		const bool addGroups = core::Var::getSafe(cfg::VoxformatVOXCreateGroups)->boolVal();
-		if (node.type() == SceneGraphNodeType::Root || addGroups) {
+		if (node.type() == scenegraph::SceneGraphNodeType::Root || addGroups) {
 			ogt_vox_group ogt_group;
 			core_memset(&ogt_group, 0, sizeof(ogt_group));
 			ogt_group.hidden = !node.visible();
@@ -401,10 +401,10 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 		for (int childId : node.children()) {
 			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, ownGroupId, ownLayerId, palette, replacement);
 		}
-	} else if (node.type() == SceneGraphNodeType::Camera) {
+	} else if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
 		Log::debug("Add camera node");
-		const SceneGraphNodeCamera &camera = toCameraNode(node);
-		const SceneGraphTransform &transform = camera.transform(0);
+		const scenegraph::SceneGraphNodeCamera &camera = toCameraNode(node);
+		const scenegraph::SceneGraphTransform &transform = camera.transform(0);
 		{
 			ogt_vox_cam ogt_cam;
 			core_memset(&ogt_cam, 0, sizeof(ogt_cam));
@@ -426,7 +426,7 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 		for (int childId : node.children()) {
 			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx, palette, replacement);
 		}
-	} else if (node.type() == SceneGraphNodeType::Model) {
+	} else if (node.type() == scenegraph::SceneGraphNodeType::Model) {
 		Log::debug("Add model node");
 		const voxel::Region region = node.region();
 		const voxel::Palette &nodePalette = node.palette();
@@ -474,7 +474,7 @@ void VoxFormat::addNodeToScene(const SceneGraph &sceneGraph, SceneGraphNode &nod
 			const glm::vec3 &mins = region.getLowerCornerf();
 			const glm::vec3 &maxs = region.getUpperCornerf();
 			const glm::vec3 width = maxs - mins + 1.0f;
-			for (const SceneGraphKeyFrame& kf : node.keyFrames()) {
+			for (const scenegraph::SceneGraphKeyFrame& kf : node.keyFrames()) {
 				ogt_vox_keyframe_transform ogt_keyframe;
 				core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
 				ogt_keyframe.frame_index = kf.frameIdx;
@@ -501,7 +501,7 @@ glm::ivec3 VoxFormat::maxSize() const {
 	return maxSize;
 }
 
-bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &savectx) {
+bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &savectx) {
 	voxel::Palette palette = sceneGraph.mergePalettes(true, 0);
 	if (palette.colorCount() <= 0) {
 		Log::error("Could not find any colors in the merged palette");
@@ -513,7 +513,7 @@ bool VoxFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &fil
 	Log::debug("Found closest palette slot %i as replacement", palReplacement);
 
 	ogt_SceneContext ctx;
-	const SceneGraphNode &root = sceneGraph.root();
+	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	addNodeToScene(sceneGraph, sceneGraph.node(root.id()), ctx, k_invalid_group_index, 0, palette, palReplacement);
 
 	core::Buffer<const ogt_vox_model *> modelPtr;

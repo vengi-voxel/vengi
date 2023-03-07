@@ -103,7 +103,7 @@ struct slab {
 		return false; \
 	}
 
-bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	// Total # of bytes (not including numbytes) in each mip-map level
 	// but there is only 1 mip-map level
 	uint32_t numbytes;
@@ -129,7 +129,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	/**
 	 * Centroid of voxel. For extra precision, this location has been shifted up by 8 bits.
 	 */
-	SceneGraphTransform transform;
+	scenegraph::SceneGraphTransform transform;
 	uint32_t pivx_w, pivy_d, pivz_h;
 	wrap(stream.readUInt32(pivx_w))
 	wrap(stream.readUInt32(pivy_d))
@@ -198,10 +198,10 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	stream.seek(currentPos);
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
-	const KeyFrameIndex keyFrameIdx = 0;
+	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
@@ -255,9 +255,9 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false; \
 	}
 
-bool KVXFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool KVXFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 #if 0
-	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;

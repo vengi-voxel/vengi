@@ -27,7 +27,7 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	char buf[64];
 
 	wrapBool(stream.readLine(sizeof(buf), buf))
@@ -94,7 +94,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		palette.color(i) = core::Color::getRGBA(color);
 	}
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
-	SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
 	node.setPalette(palette);
@@ -114,12 +114,12 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	return true;
 }
 
-bool QEFFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool QEFFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	stream.writeString("Qubicle Exchange Format\n", false);
 	stream.writeString("Version 0.2\n", false);
 	stream.writeString("www.minddesk.com\n", false);
 
-	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;

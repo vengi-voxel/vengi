@@ -12,7 +12,7 @@ namespace voxel {
 class RawVolume;
 }
 
-namespace voxelformat {
+namespace scenegraph {
 
 using SceneGraphAnimationIds = core::DynamicArray<core::String>;
 

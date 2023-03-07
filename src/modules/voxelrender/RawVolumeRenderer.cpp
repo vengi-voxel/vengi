@@ -643,7 +643,7 @@ voxel::Region RawVolumeRenderer::region() const {
 	return region;
 }
 
-voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxelformat::SceneGraphNode& node, bool deleteMesh) {
+voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, scenegraph::SceneGraphNode& node, bool deleteMesh) {
 	return setVolume(idx, node.volume(), &node.palette(), deleteMesh);
 }
 

@@ -87,15 +87,15 @@ void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, f
 	}
 }
 
-void keyFrameComparator(const voxelformat::SceneGraphKeyFrames &keyframes1, const voxelformat::SceneGraphKeyFrames &keyframes2, ValidateFlags flags) {
+void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const scenegraph::SceneGraphKeyFrames &keyframes2, ValidateFlags flags) {
 	if ((flags & ValidateFlags::Animations) == ValidateFlags::Animations) {
 		ASSERT_EQ(keyframes1.size(), keyframes2.size());
 		for (size_t i = 0; i < keyframes1.size(); ++i) {
 			ASSERT_EQ(keyframes1[i].frameIdx, keyframes2[i].frameIdx);
 			ASSERT_EQ(keyframes1[i].longRotation, keyframes2[i].longRotation);
 			ASSERT_EQ(keyframes1[i].interpolation, keyframes2[i].interpolation);
-			const voxelformat::SceneGraphTransform &t1 = keyframes1[i].transform();
-			const voxelformat::SceneGraphTransform &t2 = keyframes2[i].transform();
+			const scenegraph::SceneGraphTransform &t1 = keyframes1[i].transform();
+			const scenegraph::SceneGraphTransform &t2 = keyframes2[i].transform();
 			ASSERT_FALSE(t1.dirty()) << "Key frame " << i << " is not yet updated";
 			ASSERT_FALSE(t2.dirty()) << "Key frame " << i << " is not yet updated";
 			if ((flags & ValidateFlags::Translation) == ValidateFlags::Translation) {
@@ -126,8 +126,8 @@ void keyFrameComparator(const voxelformat::SceneGraphKeyFrames &keyframes1, cons
 		ASSERT_EQ(keyframes1[0].frameIdx, keyframes2[0].frameIdx);
 		ASSERT_EQ(keyframes1[0].longRotation, keyframes2[0].longRotation);
 		ASSERT_EQ(keyframes1[0].interpolation, keyframes2[0].interpolation);
-		const voxelformat::SceneGraphTransform &t1 = keyframes1[0].transform();
-		const voxelformat::SceneGraphTransform &t2 = keyframes2[0].transform();
+		const scenegraph::SceneGraphTransform &t1 = keyframes1[0].transform();
+		const scenegraph::SceneGraphTransform &t2 = keyframes2[0].transform();
 		ASSERT_FALSE(t1.dirty()) << "Key frame 0 is not yet updated";
 		ASSERT_FALSE(t2.dirty()) << "Key frame 0 is not yet updated";
 		if ((flags & ValidateFlags::Translation) == ValidateFlags::Translation) {
@@ -203,13 +203,13 @@ void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal
 	}
 }
 
-void sceneGraphComparator(const voxelformat::SceneGraph &graph1, const voxelformat::SceneGraph &graph2, ValidateFlags flags, float maxDelta) {
+void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, ValidateFlags flags, float maxDelta) {
 	ASSERT_EQ(graph1.size(), graph2.size());
 	const int n = (int)graph1.size();
 	for (int i = 0; i < n; ++i) {
-		const voxelformat::SceneGraphNode *node1 = graph1[i];
+		const scenegraph::SceneGraphNode *node1 = graph1[i];
 		ASSERT_NE(nullptr, node1);
-		const voxelformat::SceneGraphNode *node2 = graph2[i];
+		const scenegraph::SceneGraphNode *node2 = graph2[i];
 		ASSERT_NE(nullptr, node2);
 		if ((flags & ValidateFlags::Palette) == ValidateFlags::Palette) {
 			paletteComparator(node1->palette(), node2->palette(), maxDelta);

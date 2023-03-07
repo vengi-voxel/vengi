@@ -22,14 +22,14 @@ protected:
 		return true;
 	}
 
-	void runFile(voxelformat::SceneGraph &sceneGraph, const core::String &filename,
+	void runFile(scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 				 const core::DynamicArray<core::String> &args = {}, bool validateDirtyRegion = false) {
 		const core::String &content = fileToString(filename);
 		ASSERT_FALSE(content.empty()) << "Could not load " << filename.c_str();
 		run(sceneGraph, content, args, validateDirtyRegion);
 	}
 
-	void run(voxelformat::SceneGraph &sceneGraph, const core::String &script,
+	void run(scenegraph::SceneGraph &sceneGraph, const core::String &script,
 			 const core::DynamicArray<core::String> &args = {}, bool validateDirtyRegion = false) {
 		const voxel::Region region(0, 0, 0, 7, 7, 7);
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 42);
@@ -42,7 +42,7 @@ protected:
 			volume->setVoxel(2, 0, 0, voxel);
 			volume->setVoxel(2, 1, 0, voxel);
 			volume->setVoxel(2, 2, 0, voxel);
-			voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(volume, true);
 			nodeId = sceneGraph.emplace(core::move(node));
 		}
@@ -87,7 +87,7 @@ TEST_F(LUAGeneratorTest, testExecute) {
 		end
 	)";
 
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	run(sceneGraph, script);
 	ASSERT_EQ(1u, sceneGraph.size());
 	voxel::RawVolume *volume = sceneGraph.node(sceneGraph.activeNode()).volume();
@@ -142,7 +142,7 @@ TEST_F(LUAGeneratorTest, testArguments) {
 	core::DynamicArray<core::String> args;
 	args.push_back("param1");
 	args.push_back("param2");
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	run(sceneGraph, script, args);
 }
 
@@ -154,62 +154,62 @@ TEST_F(LUAGeneratorTest, testSceneGraph) {
 			layer:volume():setVoxel(0, 0, 0, color)
 		end
 	)";
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	run(sceneGraph, script);
 }
 
 TEST_F(LUAGeneratorTest, testScriptCover) {
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "cover.lua");
 }
 
 TEST_F(LUAGeneratorTest, testScriptGrass) {
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "grass.lua");
 }
 
 TEST_F(LUAGeneratorTest, testScriptGrid) {
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "grid.lua");
 }
 
 TEST_F(LUAGeneratorTest, testScriptNoise) {
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "noise.lua", {}, true);
 }
 
 TEST_F(LUAGeneratorTest, testScriptPyramid) {
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "pyramid.lua", {}, true);
 }
 
 TEST_F(LUAGeneratorTest, testScriptPlanet) {
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "planet.lua", {}, true);
 }
 
 TEST_F(LUAGeneratorTest, testScriptThicken) {
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "thicken.lua");
 }
 
 TEST_F(LUAGeneratorTest, testScriptSimilarColor) {
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "similarcolor.lua");
 }
 
 TEST_F(LUAGeneratorTest, testScriptSplitColor) {
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "splitcolor.lua");
 }
 
 TEST_F(LUAGeneratorTest, testScriptSplitObjects) {
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "splitobjects.lua");
 }
 
 TEST_F(LUAGeneratorTest, testScriptReplaceColor) {
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "replacecolor.lua");
 }
 

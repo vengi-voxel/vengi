@@ -268,7 +268,7 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	for (const core::String& infile : infiles) {
 		if (filesystem()->isReadableDir(infile)) {
 			core::DynamicArray<io::FilesystemEntry> entities;
@@ -295,7 +295,7 @@ app::AppState VoxConvert::onInit() {
 		}
 	}
 	if (!scriptParameters.empty() && sceneGraph.empty()) {
-		voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		const voxel::Region region(0, 63);
 		node.setVolume(new voxel::RawVolume(region), true);
 		node.setName("Script generated");
@@ -325,13 +325,13 @@ app::AppState VoxConvert::onInit() {
 
 	if (_mergeVolumes) {
 		Log::info("Merge layers");
-		const voxelformat::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+		const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 		if (merged.first == nullptr) {
 			Log::error("Failed to merge volumes");
 			return app::AppState::InitFailure;
 		}
 		sceneGraph.clear();
-		voxelformat::SceneGraphNode node;
+		scenegraph::SceneGraphNode node;
 		node.setPalette(merged.second);
 		node.setVolume(merged.first, true);
 		node.setName(infilesstr);
@@ -394,7 +394,7 @@ core::String VoxConvert::getFilenameForLayerName(const core::String &inputfile, 
 	return core::string::path(core::string::extractPath(inputfile), core::string::sanitizeFilename(name));
 }
 
-bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneGraph &sceneGraph, bool multipleInputs) {
+bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGraph &sceneGraph, bool multipleInputs) {
 	Log::info("-- current input file: %s", infile.c_str());
 	const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
 	if (!inputFile->exists()) {
@@ -430,7 +430,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 			voxel::Region region(0, 0, 0, image->width(), maxHeight - 1, image->height());
 			voxel::RawVolume* volume = new voxel::RawVolume(region);
 			voxel::RawVolumeWrapper wrapper(volume);
-			voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 			if (coloredHeightmap) {
 				voxel::PaletteLookup palLookup;
@@ -445,7 +445,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 			sceneGraph.emplace(core::move(node));
 		}
 		if (importAsVolume) {
-			voxelformat::SceneGraphNode node;
+			scenegraph::SceneGraphNode node;
 			const int maxDepth = glm::clamp(core::string::toInt(getArgVal("--image-as-volume-max-depth")), 1, 255);
 			const bool bothSides = core::string::toBool(getArgVal("--image-as-volume-both-sides"));
 			node.setVolume(voxelutil::importAsVolume(image, maxDepth, bothSides), true);
@@ -453,7 +453,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 			sceneGraph.emplace(core::move(node));
 		}
 		if (importAsPlane) {
-			voxelformat::SceneGraphNode node;
+			scenegraph::SceneGraphNode node;
 			node.setVolume(voxelutil::importAsPlane(image), true);
 			node.setName(core::string::extractFilename(infile));
 			sceneGraph.emplace(core::move(node));
@@ -465,7 +465,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 		}
 	} else {
 		io::FileStream inputFileStream(inputFile);
-		voxelformat::SceneGraph newSceneGraph;
+		scenegraph::SceneGraph newSceneGraph;
 		voxelformat::LoadContext loadCtx;
 		if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newSceneGraph, loadCtx)) {
 			return false;
@@ -473,11 +473,11 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 
 		int parent = sceneGraph.root().id();
 		if (multipleInputs) {
-			voxelformat::SceneGraphNode groupNode(voxelformat::SceneGraphNodeType::Group);
+			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 			groupNode.setName(core::string::extractFilename(infile));
 			parent = sceneGraph.emplace(core::move(groupNode), parent);
 		}
-		voxelformat::addSceneGraphNodes(sceneGraph, newSceneGraph, parent);
+		scenegraph::addSceneGraphNodes(sceneGraph, newSceneGraph, parent);
 		if (_dumpSceneGraph) {
 			dump(sceneGraph);
 		}
@@ -491,14 +491,14 @@ bool VoxConvert::handleInputFile(const core::String &infile, voxelformat::SceneG
 	return true;
 }
 
-void VoxConvert::exportLayersIntoSingleObjects(voxelformat::SceneGraph& sceneGraph, const core::String &inputfile) {
+void VoxConvert::exportLayersIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile) {
 	Log::info("Export layers into single objects");
 	int n = 0;
 	voxelformat::SaveContext saveCtx;
-	for (voxelformat::SceneGraphNode& node : sceneGraph) {
-		voxelformat::SceneGraph newSceneGraph;
-		voxelformat::SceneGraphNode newNode;
-		voxelformat::copyNode(node, newNode, false);
+	for (scenegraph::SceneGraphNode& node : sceneGraph) {
+		scenegraph::SceneGraph newSceneGraph;
+		scenegraph::SceneGraphNode newNode;
+		scenegraph::copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
 		const core::String& filename = getFilenameForLayerName(inputfile, node.name(), n);
 		if (voxelformat::saveFormat(filesystem()->open(filename, io::FileMode::SysWrite), nullptr, newSceneGraph, saveCtx)) {
@@ -516,39 +516,39 @@ glm::ivec3 VoxConvert::getArgIvec3(const core::String &name) {
 	return t;
 }
 
-void VoxConvert::split(const glm::ivec3 &size, voxelformat::SceneGraph& sceneGraph) {
+void VoxConvert::split(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph) {
 	Log::info("split volumes at %i:%i:%i", size.x, size.y, size.z);
-	const voxelformat::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	sceneGraph.clear();
 	core::DynamicArray<voxel::RawVolume *> rawVolumes;
 	voxelutil::splitVolume(merged.first, size, rawVolumes);
 	delete merged.first;
 	for (voxel::RawVolume *v : rawVolumes) {
-		voxelformat::SceneGraphNode node;
+		scenegraph::SceneGraphNode node;
 		node.setVolume(v, true);
 		node.setPalette(merged.second);
 		sceneGraph.emplace(core::move(node));
 	}
 }
 
-int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId, int indent) {
-	const voxelformat::SceneGraphNode& node = sceneGraph.node(nodeId);
+int VoxConvert::dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId, int indent) {
+	const scenegraph::SceneGraphNode& node = sceneGraph.node(nodeId);
 
-	const voxelformat::SceneGraphNodeType type = node.type();
+	const scenegraph::SceneGraphNodeType type = node.type();
 
 	Log::info("%*sNode: %i (parent %i)", indent, " ", nodeId, node.parent());
 	Log::info("%*s  |- name: %s", indent, " ", node.name().c_str());
-	Log::info("%*s  |- type: %s", indent, " ", voxelformat::SceneGraphNodeTypeStr[core::enumVal(type)]);
+	Log::info("%*s  |- type: %s", indent, " ", scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)]);
 	int voxels = 0;
-	if (type == voxelformat::SceneGraphNodeType::Model) {
+	if (type == scenegraph::SceneGraphNodeType::Model) {
 		voxel::RawVolume *v = node.volume();
 		Log::info("%*s  |- volume: %s", indent, " ", v != nullptr ? v->region().toString().c_str() : "no volume");
 		if (v) {
 			voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &) { ++voxels; });
 		}
 		Log::info("%*s  |- voxels: %i", indent, " ", voxels);
-	} else if (type == voxelformat::SceneGraphNodeType::Camera) {
-		const voxelformat::SceneGraphNodeCamera &cameraNode = voxelformat::toCameraNode(node);
+	} else if (type == scenegraph::SceneGraphNodeType::Camera) {
+		const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(node);
 		Log::info("%*s  |- field of view: %i", indent, " ", cameraNode.fieldOfView());
 		Log::info("%*s  |- nearplane: %f", indent, " ", cameraNode.nearPlane());
 		Log::info("%*s  |- farplane: %f", indent, " ", cameraNode.farPlane());
@@ -557,12 +557,12 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 	for (const auto & entry : node.properties()) {
 		Log::info("%*s  |- %s: %s", indent, " ", entry->key.c_str(), entry->value.c_str());
 	}
-	for (const voxelformat::SceneGraphKeyFrame &kf : node.keyFrames()) {
+	for (const scenegraph::SceneGraphKeyFrame &kf : node.keyFrames()) {
 		Log::info("%*s  |- keyframe: %i", indent, " ", kf.frameIdx);
 		Log::info("%*s    |- long rotation: %s", indent, " ", kf.longRotation ? "true" : "false");
-		Log::info("%*s    |- interpolation: %s", indent, " ", voxelformat::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
+		Log::info("%*s    |- interpolation: %s", indent, " ", scenegraph::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
 		Log::info("%*s    |- transform", indent, " ");
-		const voxelformat::SceneGraphTransform &transform = kf.transform();
+		const scenegraph::SceneGraphTransform &transform = kf.transform();
 		const glm::vec3 &pivot = transform.pivot();
 		Log::info("%*s      |- pivot %f:%f:%f", indent, " ", pivot.x, pivot.y, pivot.z);
 		const glm::vec3 &tr  = transform.worldTranslation();
@@ -589,19 +589,19 @@ int VoxConvert::dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId
 	return voxels;
 }
 
-void VoxConvert::dump(const voxelformat::SceneGraph& sceneGraph) {
+void VoxConvert::dump(const scenegraph::SceneGraph& sceneGraph) {
 	int voxels = dumpNode_r(sceneGraph, sceneGraph.root().id(), 0);
 	Log::info("Voxel count: %i", voxels);
 }
 
-void VoxConvert::crop(voxelformat::SceneGraph& sceneGraph) {
+void VoxConvert::crop(scenegraph::SceneGraph& sceneGraph) {
 	Log::info("Crop volumes");
-	for (voxelformat::SceneGraphNode& node : sceneGraph) {
+	for (scenegraph::SceneGraphNode& node : sceneGraph) {
 		node.setVolume(voxelutil::cropVolume(node.volume()), true);
 	}
 }
 
-void VoxConvert::script(const core::String &scriptParameters, voxelformat::SceneGraph& sceneGraph, uint8_t color) {
+void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneGraph& sceneGraph, uint8_t color) {
 	voxelgenerator::LUAGenerator script;
 	if (!script.init()) {
 		Log::warn("Failed to initialize the script bindings");
@@ -622,7 +622,7 @@ void VoxConvert::script(const core::String &scriptParameters, voxelformat::Scene
 				args[i - 1] = tokens[i];
 			}
 			Log::info("Execute script %s", tokens[0].c_str());
-			for (voxelformat::SceneGraphNode& node : sceneGraph) {
+			for (scenegraph::SceneGraphNode& node : sceneGraph) {
 				voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
 				script.exec(luaScript, sceneGraph, node.id(), node.region(), voxel, dirtyRegion, args);
 			}
@@ -632,9 +632,9 @@ void VoxConvert::script(const core::String &scriptParameters, voxelformat::Scene
 	script.shutdown();
 }
 
-void VoxConvert::scale(voxelformat::SceneGraph& sceneGraph) {
+void VoxConvert::scale(scenegraph::SceneGraph& sceneGraph) {
 	Log::info("Scale layers");
-	for (voxelformat::SceneGraphNode& node : sceneGraph) {
+	for (scenegraph::SceneGraphNode& node : sceneGraph) {
 		const voxel::Region srcRegion = node.region();
 		const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
@@ -646,14 +646,14 @@ void VoxConvert::scale(voxelformat::SceneGraph& sceneGraph) {
 	}
 }
 
-void VoxConvert::resize(const glm::ivec3 &size, voxelformat::SceneGraph& sceneGraph) {
+void VoxConvert::resize(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph) {
 	Log::info("Resize layers");
-	for (voxelformat::SceneGraphNode& node : sceneGraph) {
+	for (scenegraph::SceneGraphNode& node : sceneGraph) {
 		node.setVolume(voxelutil::resize(node.volume(), size), true);
 	}
 }
 
-void VoxConvert::filterVolumes(voxelformat::SceneGraph& sceneGraph) {
+void VoxConvert::filterVolumes(scenegraph::SceneGraph& sceneGraph) {
 	const core::String &filter = getArgVal("--filter");
 	if (filter.empty()) {
 		Log::warn("No filter specified");
@@ -686,18 +686,18 @@ void VoxConvert::filterVolumes(voxelformat::SceneGraph& sceneGraph) {
 	Log::info("Filtered layers: %i", (int)layers.size());
 }
 
-void VoxConvert::mirror(const core::String& axisStr, voxelformat::SceneGraph& sceneGraph) {
+void VoxConvert::mirror(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph) {
 	const math::Axis axis = math::toAxis(axisStr);
 	if (axis == math::Axis::None) {
 		return;
 	}
 	Log::info("Mirror on axis %c", axisStr[0]);
-	for (voxelformat::SceneGraphNode &node : sceneGraph) {
+	for (scenegraph::SceneGraphNode &node : sceneGraph) {
 		node.setVolume(voxelutil::mirrorAxis(node.volume(), axis), true);
 	}
 }
 
-void VoxConvert::rotate(const core::String& axisStr, voxelformat::SceneGraph& sceneGraph) {
+void VoxConvert::rotate(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph) {
 	const math::Axis axis = math::toAxis(axisStr);
 	if (axis == math::Axis::None) {
 		return;
@@ -711,16 +711,16 @@ void VoxConvert::rotate(const core::String& axisStr, voxelformat::SceneGraph& sc
 		return;
 	}
 	Log::info("Rotate on axis %c by %f degree", axisStr[0], degree);
-	for (voxelformat::SceneGraphNode &node : sceneGraph) {
+	for (scenegraph::SceneGraphNode &node : sceneGraph) {
 		glm::vec3 rotVec{0.0f};
 		rotVec[math::getIndexForAxis(axis)] = degree;
 		node.setVolume(voxelutil::rotateVolume(node.volume(), rotVec, glm::vec3(0.5f)), true);
 	}
 }
 
-void VoxConvert::translate(const glm::ivec3& pos, voxelformat::SceneGraph& sceneGraph) {
+void VoxConvert::translate(const glm::ivec3& pos, scenegraph::SceneGraph& sceneGraph) {
 	Log::info("Translate by %i:%i:%i", pos.x, pos.y, pos.z);
-	for (voxelformat::SceneGraphNode &node : sceneGraph) {
+	for (scenegraph::SceneGraphNode &node : sceneGraph) {
 		node.translate(pos);
 	}
 }

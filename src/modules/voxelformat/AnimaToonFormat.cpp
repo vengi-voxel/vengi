@@ -22,7 +22,7 @@ namespace voxelformat {
 	}
 
 bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-									 SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+									 scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	const int64_t size = stream.size();
 	core::String str(size, ' ');
 	if (!stream.readString((int)str.size(), str.c_str())) {
@@ -50,7 +50,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, io::SeekableR
 				glm::uvec3 size(32);
 				const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 				voxel::RawVolume *volume = new voxel::RawVolume(region);
-				SceneGraphNode node;
+				scenegraph::SceneGraphNode node;
 				node.setVolume(volume, true);
 				node.setName(name);
 				node.setPalette(palette);

@@ -49,7 +49,7 @@ void SceneGraphRenderer::update() {
 	_renderer.update();
 }
 
-static inline int getVolumeId(const voxelformat::SceneGraphNode &node) {
+static inline int getVolumeId(const scenegraph::SceneGraphNode &node) {
 	// TODO: using the node id here is not good as they are increasing when you modify the scene graph
 	return node.id();
 }
@@ -59,11 +59,11 @@ static inline int getNodeId(int volumeIdx) {
 	return volumeIdx;
 }
 
-bool SceneGraphRenderer::empty(voxelformat::SceneGraphNode &node) {
+bool SceneGraphRenderer::empty(scenegraph::SceneGraphNode &node) {
 	return _renderer.empty(getVolumeId(node));
 }
 
-bool SceneGraphRenderer::extractRegion(voxelformat::SceneGraphNode &node, const voxel::Region &region) {
+bool SceneGraphRenderer::extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region &region) {
 	return _renderer.extractRegion(getVolumeId(node), region);
 }
 
@@ -90,10 +90,10 @@ void SceneGraphRenderer::clear() {
 	}
 }
 
-voxelformat::SceneGraphNodeCamera toCameraNode(const video::Camera& camera) {
-	voxelformat::SceneGraphNodeCamera node;
-	voxelformat::SceneGraphTransform transform;
-	const voxelformat::KeyFrameIndex keyFrameIdx = 0;
+scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera& camera) {
+	scenegraph::SceneGraphNodeCamera node;
+	scenegraph::SceneGraphTransform transform;
+	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	transform.setWorldMatrix(camera.viewMatrix());
 	node.setAspectRatio(camera.aspect());
 	node.setWidth(camera.size().x);
@@ -111,7 +111,7 @@ voxelformat::SceneGraphNodeCamera toCameraNode(const video::Camera& camera) {
 	return node;
 }
 
-video::Camera toCamera(const glm::ivec2 &size, const voxelformat::SceneGraphNodeCamera &cameraNode) {
+video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode) {
 	video::Camera camera;
 	// width, heigth and aspect of the cameraNode are not taken into account here
 	camera.setSize(glm::max(glm::ivec2(1, 1), size));
@@ -126,8 +126,8 @@ video::Camera toCamera(const glm::ivec2 &size, const voxelformat::SceneGraphNode
 		camera.setFarPlane(fplane);
 		camera.setNearPlane(nplane);
 	}
-	voxelformat::KeyFrameIndex keyFrameIdx = 0;
-	const voxelformat::SceneGraphTransform &transform = cameraNode.transform(keyFrameIdx);
+	scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	const scenegraph::SceneGraphTransform &transform = cameraNode.transform(keyFrameIdx);
 	camera.setWorldPosition(transform.worldTranslation());
 	camera.setOrientation(transform.worldOrientation());
 	camera.setRotationType(video::CameraRotationType::Eye);
@@ -138,7 +138,7 @@ video::Camera toCamera(const glm::ivec2 &size, const voxelformat::SceneGraphNode
 	return camera;
 }
 
-void SceneGraphRenderer::prepare(const voxelformat::SceneGraph &sceneGraph, voxelformat::FrameIndex frame, bool hideInactive,
+void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frame, bool hideInactive,
 								 bool grayInactive) {
 	// remove those volumes that are no longer part of the scene graph
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
@@ -150,9 +150,9 @@ void SceneGraphRenderer::prepare(const voxelformat::SceneGraph &sceneGraph, voxe
 		}
 	}
 	_cameras.clear();
-	for (voxelformat::SceneGraph::iterator iter = sceneGraph.begin(voxelformat::SceneGraphNodeType::Camera);
+	for (scenegraph::SceneGraph::iterator iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera);
 		 iter != sceneGraph.end(); ++iter) {
-		const voxelformat::SceneGraphNodeCamera &cameraNode = voxelformat::toCameraNode(*iter);
+		const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(*iter);
 		if (!cameraNode.visible()) {
 			continue;
 		}
@@ -162,7 +162,7 @@ void SceneGraphRenderer::prepare(const voxelformat::SceneGraph &sceneGraph, voxe
 	}
 
 	const int activeNode = sceneGraph.activeNode();
-	for (voxelformat::SceneGraphNode &node : sceneGraph) {
+	for (scenegraph::SceneGraphNode &node : sceneGraph) {
 		const int id = getVolumeId(node);
 		if (id >= RawVolumeRenderer::MAX_VOLUMES) {
 			continue;
@@ -173,7 +173,7 @@ void SceneGraphRenderer::prepare(const voxelformat::SceneGraph &sceneGraph, voxe
 			_renderer.extractRegion(id, node.region());
 		}
 		if (_sceneMode) {
-			const voxelformat::SceneGraphTransform &transform = node.transformForFrame(frame);
+			const scenegraph::SceneGraphTransform &transform = node.transformForFrame(frame);
 			const glm::vec3 pivot = transform.worldScale() * transform.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
 			_renderer.setModelMatrix(id, transform.worldMatrix(), pivot);
 		} else {

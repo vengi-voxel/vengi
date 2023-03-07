@@ -20,7 +20,7 @@
 
 namespace voxelrender {
 
-static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender::SceneGraphRenderer &volumeRenderer, const voxelformat::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
+static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender::SceneGraphRenderer &volumeRenderer, const scenegraph::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
 	video::clearColor(ctx.clearColor);
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
@@ -34,7 +34,7 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 	textureCfg.format(video::TextureFormat::RGBA);
 
 	core_trace_scoped(EditorSceneRenderFramebuffer);
-	volumeRenderer.prepare(const_cast<voxelformat::SceneGraph&>(sceneGraph));
+	volumeRenderer.prepare(const_cast<scenegraph::SceneGraph&>(sceneGraph));
 
 	{
 		const voxel::Region &region = sceneGraph.region();
@@ -69,7 +69,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 		return image;
 	}
 
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	stream.seek(0);
 	if (!voxelformat::loadFormat(fileName, stream, sceneGraph, loadctx)) {
 		Log::error("Failed to load given input file: %s", fileName.c_str());
@@ -92,7 +92,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadSt
 	return image;
 }
 
-image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
+image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
 	voxelrender::SceneGraphRenderer volumeRenderer;
 	volumeRenderer.construct();
 	RenderContext renderContext;
@@ -110,7 +110,7 @@ image::ImagePtr volumeThumbnail(const voxelformat::SceneGraph &sceneGraph, const
 }
 
 bool volumeTurntable(const core::String &modelFile, const core::String &imageFile, voxelformat::ThumbnailContext ctx, int loops) {
-	voxelformat::SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	io::FileStream stream(io::filesystem()->open(modelFile, io::FileMode::SysRead));
 	stream.seek(0);
 	voxelformat::LoadContext loadctx;

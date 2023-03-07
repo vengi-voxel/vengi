@@ -56,7 +56,7 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.size();
 }
 
-bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
@@ -93,7 +93,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 			}
 		}
 	}
-	SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
@@ -103,8 +103,8 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 
 #undef wrap
 
-bool CubFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
-	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+bool CubFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;

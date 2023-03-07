@@ -39,13 +39,13 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	core::String name = node.name();
 	if (name.empty()) {
 		name = core::string::format("%i", node.id());
 	}
 	wrapBool(stream.writeString(node.name(), true))
-	if (node.type() != SceneGraphNodeType::Model) {
+	if (node.type() != scenegraph::SceneGraphNodeType::Model) {
 		wrapBool(stream.writeString("", true))
 	} else {
 		const core::String baseName = core::string::stripExtension(core::string::extractFilename(filename));
@@ -59,8 +59,8 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 			return false;
 		}
 		io::FileStream wstream(outputFile);
-		SceneGraph newSceneGraph;
-		SceneGraphNode newNode;
+		scenegraph::SceneGraph newSceneGraph;
+		scenegraph::SceneGraphNode newNode;
 		copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
 		wrapBool(f.save(newSceneGraph, fullPath, wstream, ctx))
@@ -72,13 +72,13 @@ bool VXRFormat::saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraph
 	const int32_t childCount = (int32_t)node.children().size();
 	wrapBool(stream.writeInt32(childCount));
 	for (int child : node.children()) {
-		const voxelformat::SceneGraphNode &cnode = sceneGraph.node(child);
+		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(child);
 		wrapBool(saveRecursiveNode(sceneGraph, cnode, filename, stream, ctx))
 	}
 	return true;
 }
 
-bool VXRFormat::saveNodeProperties(const SceneGraphNode* node, io::SeekableWriteStream& stream) {
+bool VXRFormat::saveNodeProperties(const scenegraph::SceneGraphNode* node, io::SeekableWriteStream& stream) {
 	wrapBool(stream.writeBool(boolProperty(node, "collidable", true)))
 	wrapBool(stream.writeBool(boolProperty(node, "decorative", false)))
 	if (node == nullptr) {
@@ -109,16 +109,16 @@ bool VXRFormat::saveNodeProperties(const SceneGraphNode* node, io::SeekableWrite
 	return true;
 }
 
-bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
-	const voxelformat::SceneGraphNode &root = sceneGraph.root();
-	const voxelformat::SceneGraphNodeChildren &children = root.children();
+bool VXRFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+	const scenegraph::SceneGraphNode &root = sceneGraph.root();
+	const scenegraph::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();
 	if (childCount <= 0) {
 		Log::error("Empty scene graph - can't save vxr");
 		return false;
 	}
 	wrapBool(stream.writeUInt32(FourCC('V','X','R','9')))
-	SceneGraphAnimationIds animationIds = sceneGraph.animations();
+	scenegraph::SceneGraphAnimationIds animationIds = sceneGraph.animations();
 	if (animationIds.empty()) {
 		animationIds.push_back("Idle");
 	}
@@ -137,7 +137,7 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 		wrapBool(stream.writeInt32(childCount))
 	}
 	for (int child : children) {
-		const voxelformat::SceneGraphNode &node = sceneGraph.node(child);
+		const scenegraph::SceneGraphNode &node = sceneGraph.node(child);
 		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream, ctx))
 	}
 	const core::String &basePath = core::string::extractPath(filename);
@@ -157,7 +157,7 @@ bool VXRFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &fil
 	return true;
 }
 
-bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph &sceneGraph, SceneGraphNode &node, int version, const LoadContext &ctx) {
+bool VXRFormat::loadChildVXM(const core::String& vxmPath, scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, int version, const LoadContext &ctx) {
 	const io::FilePtr& file = io::filesystem()->open(vxmPath);
 	if (!file->validHandle()) {
 		Log::error("Could not open file '%s'", vxmPath.c_str());
@@ -165,24 +165,24 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph &sceneGraph
 	}
 	io::FileStream stream(file);
 	VXMFormat f;
-	SceneGraph childSceneGraph;
+	scenegraph::SceneGraph childSceneGraph;
 	if (!f.load(vxmPath, stream, childSceneGraph, ctx)) {
 		Log::error("Failed to load '%s'", vxmPath.c_str());
 		return false;
 	}
-	const int modelCount = (int)childSceneGraph.size(SceneGraphNodeType::Model);
+	const int modelCount = (int)childSceneGraph.size(scenegraph::SceneGraphNodeType::Model);
 	if (modelCount < 1) {
 		Log::error("No models found in vxm file: %i", modelCount);
 		return false;
 	}
 	Log::debug("Found %i layers in vxm", modelCount);
 
-	SceneGraphNode* childModelNode = childSceneGraph[0];
+	scenegraph::SceneGraphNode* childModelNode = childSceneGraph[0];
 	core_assert_always(childModelNode != nullptr);
 	childModelNode->releaseOwnership();
 
 	const core::String nodeName = node.name();
-	voxelformat::copyNode(*childModelNode, node, false);
+	scenegraph::copyNode(*childModelNode, node, false);
 	node.setVolume(childModelNode->volume(), true);
 	// restore old name
 	node.setName(nodeName);
@@ -203,14 +203,14 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, SceneGraph &sceneGraph
 	return true;
 }
 
-static const InterpolationType interpolationTypes[]{
-	InterpolationType::Instant,		 InterpolationType::Linear,			InterpolationType::QuadEaseIn,
-	InterpolationType::QuadEaseOut,	 InterpolationType::QuadEaseInOut,	InterpolationType::CubicEaseIn,
-	InterpolationType::CubicEaseOut, InterpolationType::CubicEaseInOut,
+static const scenegraph::InterpolationType interpolationTypes[]{
+	scenegraph::InterpolationType::Instant,		 scenegraph::InterpolationType::Linear,			scenegraph::InterpolationType::QuadEaseIn,
+	scenegraph::InterpolationType::QuadEaseOut,	 scenegraph::InterpolationType::QuadEaseInOut,	scenegraph::InterpolationType::CubicEaseIn,
+	scenegraph::InterpolationType::CubicEaseOut, scenegraph::InterpolationType::CubicEaseInOut,
 };
 
-bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, int parent, const LoadContext &ctx) {
-	SceneGraphNode node(SceneGraphNodeType::Model);
+bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int version, int parent, const LoadContext &ctx) {
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	char nodeId[1024];
 	wrapBool(stream.readString(sizeof(nodeId), nodeId, true))
 	node.setName(nodeId);
@@ -224,14 +224,14 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	int32_t keyFrameCount;
 	wrap(stream.readInt32(keyFrameCount))
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
-		SceneGraphKeyFrame& keyFrame = node.keyFrame(i);
+		scenegraph::SceneGraphKeyFrame& keyFrame = node.keyFrame(i);
 		uint32_t frame;
 		wrap(stream.readUInt32(frame)) // frame index
 		keyFrame.frameIdx = frame;
 		int32_t interpolation;
 		wrap(stream.readInt32(interpolation))
 		if (interpolation < 0 || interpolation >= lengthof(interpolationTypes)) {
-			keyFrame.interpolation = InterpolationType::Linear;
+			keyFrame.interpolation = scenegraph::InterpolationType::Linear;
 			Log::warn("Could not find a supported easing type for %i", interpolation);
 		} else {
 			keyFrame.interpolation = interpolationTypes[interpolation];
@@ -239,7 +239,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		if (version > 1) {
 			keyFrame.longRotation = stream.readBool();
 		}
-		SceneGraphTransform &transform = keyFrame.transform();
+		scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 		transform.setPivot(glm::vec3(0.5f));
 
 		glm::quat localOrientation;
@@ -300,8 +300,8 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 }
 
 // the positions that were part of the previous vxr versions are now in vxa
-bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, int parent, const LoadContext &ctx) {
-	SceneGraphNode node(SceneGraphNodeType::Model);
+bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int version, int parent, const LoadContext &ctx) {
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	char id[1024];
 	wrapBool(stream.readString(sizeof(id), id, true))
 	char filename[1024];
@@ -313,7 +313,7 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 		}
 	}
 	if (node.volume() == nullptr) {
-		node = SceneGraphNode(SceneGraphNodeType::Group);
+		node = scenegraph::SceneGraphNode(scenegraph::SceneGraphNodeType::Group);
 	}
 	node.setName(id);
 	node.setProperty("id", id);
@@ -386,7 +386,7 @@ image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::Seek
 	return image::loadImage(imageName);
 }
 
-bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, const LoadContext &ctx) {
+bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int version, const LoadContext &ctx) {
 	uint32_t childAndModelCount;
 	wrap(stream.readUInt32(childAndModelCount))
 	uint32_t children = 0;
@@ -400,8 +400,8 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 	for (int32_t i = 0; i < modelCount; ++i) {
 		char nodeId[1024];
 		wrapBool(stream.readString(sizeof(nodeId), nodeId, true))
-		SceneGraphNode* node = sceneGraph.findNodeByName(nodeId);
-		if (node == nullptr || node->type() != SceneGraphNodeType::Model) {
+		scenegraph::SceneGraphNode* node = sceneGraph.findNodeByName(nodeId);
+		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
 			Log::error("Can't find referenced model node %s", nodeId);
 			return false;
 		}
@@ -417,7 +417,7 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 	return true;
 }
 
-bool VXRFormat::handleVersion8AndLater(io::SeekableReadStream& stream, SceneGraphNode &node, const LoadContext &ctx) {
+bool VXRFormat::handleVersion8AndLater(io::SeekableReadStream& stream, scenegraph::SceneGraphNode &node, const LoadContext &ctx) {
 	char baseTemplate[1024];
 	wrapBool(stream.readString(sizeof(baseTemplate), baseTemplate, true))
 	node.setProperty("basetemplate", baseTemplate);
@@ -456,9 +456,9 @@ bool VXRFormat::handleVersion8AndLater(io::SeekableReadStream& stream, SceneGrap
 	return true;
 }
 
-bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, int version, const LoadContext &ctx) {
+bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int version, const LoadContext &ctx) {
 	const int rootNodeId = sceneGraph.root().id();
-	SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
+	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
 
 	// TODO: allow to specify the animation to import... (via cvar?)
 	char defaultAnim[1024] = "";
@@ -507,12 +507,12 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	return true;
 }
 
-bool VXRFormat::saveVXA(const SceneGraph& sceneGraph, const core::String &vxaPath, io::SeekableWriteStream& vxaStream, const core::String &animation, const SaveContext &ctx) {
+bool VXRFormat::saveVXA(const scenegraph::SceneGraph& sceneGraph, const core::String &vxaPath, io::SeekableWriteStream& vxaStream, const core::String &animation, const SaveContext &ctx) {
 	VXAFormat f;
 	return f.save(sceneGraph, vxaPath, vxaStream, ctx);
 }
 
-bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath, const LoadContext &ctx) {
+bool VXRFormat::loadVXA(scenegraph::SceneGraph& sceneGraph, const core::String& vxaPath, const LoadContext &ctx) {
 	Log::debug("Try to load a vxa file: %s", vxaPath.c_str());
 	const io::FilePtr& file = io::filesystem()->open(vxaPath);
 	if (!file->validHandle()) {
@@ -523,7 +523,7 @@ bool VXRFormat::loadVXA(SceneGraph& sceneGraph, const core::String& vxaPath, con
 	return format.load(vxaPath, stream, sceneGraph, ctx);
 }
 
-bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &, const LoadContext &ctx) {
+bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, voxel::Palette &, const LoadContext &ctx) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))

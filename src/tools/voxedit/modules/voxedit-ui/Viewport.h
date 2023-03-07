@@ -51,14 +51,14 @@ private:
 	 * @sa lock()
 	 * @sa reset()
 	 */
-	void unlock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx = InvalidKeyFrame);
+	void unlock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx = InvalidKeyFrame);
 	/**
 	 * @param[in] keyFrameIdx Only given when we are modifying a transform in scene mode - in edit mode this
 	 * should be @c InvalidKeyFrame
 	 * @sa unlock()
 	 * @sa reset()
 	 */
-	void lock(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx = InvalidKeyFrame);
+	void lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx = InvalidKeyFrame);
 
 	int _mouseX = 0;
 	int _mouseY = 0;
@@ -85,7 +85,7 @@ private:
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
-	void handleGizmo(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix);
+	void handleGizmo(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix);
 	/**
 	 * See the return value documentation of @c renderGizmo()
 	 * @sa renderGizmo()

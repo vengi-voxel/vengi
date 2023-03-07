@@ -143,7 +143,7 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 		return false; \
 	}
 
-bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 	if (magic != FourCC('K','v','x','l')) {
@@ -162,7 +162,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	SceneGraphTransform transform;
+	scenegraph::SceneGraphTransform transform;
 	glm::vec3 pivot;
 	wrap(stream.readFloat(pivot.x))
 	wrap(stream.readFloat(pivot.y))
@@ -272,10 +272,10 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		}
 	}
 
-	SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(filename);
-	KeyFrameIndex keyFrameIdx = 0;
+	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
@@ -291,8 +291,8 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false; \
 	}
 
-bool KV6Format::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
-	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+bool KV6Format::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;

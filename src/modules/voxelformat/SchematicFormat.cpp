@@ -34,7 +34,7 @@
 namespace voxelformat {
 
 bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-										SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &loadctx) {
+										scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &loadctx) {
 	palette.minecraft();
 	io::ZipReadStream zipStream(stream);
 	priv::NamedBinaryTagContext ctx;
@@ -73,7 +73,7 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::Seekab
 	return false;
 }
 
-bool SchematicFormat::loadSponge1And2(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
+bool SchematicFormat::loadSponge1And2(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 									  voxel::Palette &palette) {
 	const priv::NamedBinaryTag &blockData = schematic.get("BlockData");
 	if (blockData.valid() && blockData.type() == priv::TagType::BYTE_ARRAY) {
@@ -83,7 +83,7 @@ bool SchematicFormat::loadSponge1And2(const priv::NamedBinaryTag &schematic, Sce
 	return false;
 }
 
-bool SchematicFormat::loadSponge3(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
+bool SchematicFormat::loadSponge3(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 								  voxel::Palette &palette, int version) {
 	const priv::NamedBinaryTag &blocks = schematic.get("Blocks");
 	if (blocks.valid() && blocks.type() == priv::TagType::BYTE_ARRAY) {
@@ -93,7 +93,7 @@ bool SchematicFormat::loadSponge3(const priv::NamedBinaryTag &schematic, SceneGr
 	return false;
 }
 
-bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph, voxel::Palette &palette, int dataVersion) {
+bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, int dataVersion) {
 	const priv::NamedBinaryTag &blocks = schematic.get("blocks");
 	if (blocks.valid() && blocks.type() == priv::TagType::LIST) {
 		const priv::NBTList &list = *blocks.list();
@@ -137,7 +137,7 @@ bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, SceneGraph 
 			const glm::ivec3 v(x, y, z);
 			volume->setVoxel(v, voxel::createVoxel(palette, state));
 		}
-		SceneGraphNode node(SceneGraphNodeType::Model);
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(volume, true);
 		voxel::Palette palette;
 		palette.minecraft();
@@ -159,7 +159,7 @@ static glm::ivec3 voxelPosFromIndex(int width, int depth, int idx) {
 	return glm::ivec3(x, y, z);
 }
 
-bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
+bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 									 voxel::Palette &palette, const priv::NamedBinaryTag &blockData) {
 	const core::DynamicArray<int8_t> *blocks = blockData.byteArray();
 	if (blocks == nullptr) {
@@ -204,7 +204,7 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, Scen
 	const int32_t z = schematic.get("z").int32();
 	volume->translate(glm::ivec3(x, y, z));
 
-	SceneGraphNode node(SceneGraphNodeType::Model);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setPalette(palLookup.palette());
 	int nodeId = sceneGraph.emplace(core::move(node));
@@ -215,7 +215,7 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, Scen
 	return true;
 }
 
-bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
+bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 								  voxel::Palette &palette, const priv::NamedBinaryTag &blocks, int version) {
 	core::Buffer<int> mcpal;
 	const int paletteEntry = parsePalette(schematic, mcpal);
@@ -254,7 +254,7 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, SceneGr
 	const int32_t z = schematic.get("z").int32();
 	volume->translate(glm::ivec3(x, y, z));
 
-	SceneGraphNode node(SceneGraphNodeType::Model);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setPalette(palLookup.palette());
 	int nodeId = sceneGraph.emplace(core::move(node));
@@ -310,8 +310,8 @@ int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::B
 	return -1;
 }
 
-void SchematicFormat::parseMetadata(const priv::NamedBinaryTag &schematic, SceneGraph &sceneGraph,
-									voxelformat::SceneGraphNode &node) {
+void SchematicFormat::parseMetadata(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
+									scenegraph::SceneGraphNode &node) {
 	const priv::NamedBinaryTag &metadata = schematic.get("Metadata");
 	if (metadata.valid()) {
 		if (const core::String *str = metadata.get("Name").string()) {
@@ -331,11 +331,11 @@ void SchematicFormat::parseMetadata(const priv::NamedBinaryTag &schematic, Scene
 	}
 }
 
-void SchematicFormat::addMetadata_r(const core::String &key, const priv::NamedBinaryTag &nbt, SceneGraph &sceneGraph,
-									voxelformat::SceneGraphNode &node) {
+void SchematicFormat::addMetadata_r(const core::String &key, const priv::NamedBinaryTag &nbt, scenegraph::SceneGraph &sceneGraph,
+									scenegraph::SceneGraphNode &node) {
 	switch (nbt.type()) {
 	case priv::TagType::COMPOUND: {
-		SceneGraphNode compoundNode(SceneGraphNodeType::Group);
+		scenegraph::SceneGraphNode compoundNode(scenegraph::SceneGraphNodeType::Group);
 		compoundNode.setName(key);
 		int nodeId = sceneGraph.emplace(core::move(compoundNode), node.id());
 		for (const auto &e : *nbt.compound()) {
@@ -367,7 +367,7 @@ void SchematicFormat::addMetadata_r(const core::String &key, const priv::NamedBi
 		break;
 	case priv::TagType::LIST: {
 		const priv::NBTList &list = *nbt.list();
-		SceneGraphNode listNode(SceneGraphNodeType::Group);
+		scenegraph::SceneGraphNode listNode(scenegraph::SceneGraphNodeType::Group);
 		listNode.setName(core::string::format("%s: %i", key.c_str(), (int)list.size()));
 		int nodeId = sceneGraph.emplace(core::move(listNode), node.id());
 		for (const priv::NamedBinaryTag &e : list) {
@@ -389,10 +389,10 @@ void SchematicFormat::addMetadata_r(const core::String &key, const priv::NamedBi
 	}
 }
 
-bool SchematicFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
+bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 								 io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	// save as sponge-3
-	const SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
+	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;

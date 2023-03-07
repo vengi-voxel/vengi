@@ -54,7 +54,7 @@ bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String
 	return true;
 }
 
-bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneGraph, const Meshes &meshes,
+bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
 						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
 	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/vengi\n");
@@ -92,9 +92,9 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 				Log::error("Unexpected indices amount");
 				return false;
 			}
-			const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-			KeyFrameIndex keyFrameIdx = 0;
-			const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
+			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+			scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 			const voxel::Palette &palette = graphNode.palette();
 
 			const core::String hashId = core::String::format("%" PRIu64, palette.hash());
@@ -228,7 +228,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 
 #undef wrapBool
 
-bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) {
+bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;

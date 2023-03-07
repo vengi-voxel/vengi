@@ -21,24 +21,24 @@ protected:
 		testSaveCtx.thumbnailCreator = testThumbnailCreator;
 	}
 
-	static image::ImagePtr testThumbnailCreator(const SceneGraph &sceneGraph, const ThumbnailContext &ctx);
+	static image::ImagePtr testThumbnailCreator(const scenegraph::SceneGraph &sceneGraph, const ThumbnailContext &ctx);
 
 	void checkColor(core::RGBA, const voxel::Palette &palette, uint8_t index, float maxDelta);
 
-	void dump(const core::String &srcFilename, const SceneGraph &sceneGraph);
+	void dump(const core::String &srcFilename, const scenegraph::SceneGraph &sceneGraph);
 	void dump(const core::String &structName, voxel::RawVolume *v, const core::String &filename);
 
 	void testFirstAndLastPaletteIndex(const core::String &filename, Format *format, voxel::ValidateFlags flags);
 	void testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &destFilename, Format &destFormat,
 												voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
-	void canLoad(SceneGraph &sceneGraph, const core::String &filename, size_t expectedVolumes = 1);
+	void canLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename, size_t expectedVolumes = 1);
 	void canLoad(const core::String &filename, size_t expectedVolumes = 1) {
-		SceneGraph sceneGraph;
+		scenegraph::SceneGraph sceneGraph;
 		canLoad(sceneGraph, filename, expectedVolumes);
 	}
 	void testRGB(const core::String &filename, float maxDelta = 0.001f);
-	void testRGBSmall(const core::String &filename, io::SeekableReadStream &stream, voxelformat::SceneGraph &sceneGraph);
+	void testRGBSmall(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph);
 	void testRGBSmall(const core::String &filename);
 	// save as the same format
 	void testRGBSmallSaveLoad(const core::String &filename);
@@ -64,11 +64,11 @@ protected:
 
 	io::FilePtr open(const core::String &filename, io::FileMode mode = io::FileMode::Read);
 
-	SceneGraph::MergedVolumePalette load(const core::String& filename, io::SeekableReadStream& stream, Format& format);
+	scenegraph::SceneGraph::MergedVolumePalette load(const core::String& filename, io::SeekableReadStream& stream, Format& format);
 
-	SceneGraph::MergedVolumePalette load(const core::String& filename, Format& format);
+	scenegraph::SceneGraph::MergedVolumePalette load(const core::String& filename, Format& format);
 
-	bool loadGroups(const core::String& filename, Format& format, voxelformat::SceneGraph &sceneGraph);
+	bool loadGroups(const core::String& filename, Format& format, scenegraph::SceneGraph &sceneGraph);
 
 	int loadPalette(const core::String& filename, Format& format, voxel::Palette &palette);
 

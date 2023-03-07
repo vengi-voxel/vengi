@@ -23,7 +23,7 @@ protected:
 
 TEST_F(RawVolumeRendererTest, testExtractRegion) {
 	voxel::RawVolume v(voxel::Region(-1, 1));
-	voxelformat::SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(&v, false);
 
 	RawVolumeRenderer renderer;
@@ -47,7 +47,7 @@ TEST_F(RawVolumeRendererTest, testExtractRegion) {
 
 TEST_F(RawVolumeRendererTest, testExtractRegionBoundary) {
 	voxel::RawVolume v(voxel::Region(0, 31));
-	voxelformat::SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(&v, false);
 
 	RawVolumeRenderer renderer;

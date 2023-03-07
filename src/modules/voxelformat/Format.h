@@ -19,10 +19,12 @@ class Mesh;
 class Palette;
 }
 
-namespace voxelformat {
-
+namespace scenegraph {
 class SceneGraph;
 class SceneGraphNode;
+}
+
+namespace voxelformat {
 
 typedef void (*ProgressMonitor)(int cur, int max);
 
@@ -87,7 +89,7 @@ protected:
 	 * @brief Split volumes according to their max size into several smaller volumes
 	 * Some formats only support small volumes sizes per object - but multiple objects.
 	 */
-	void splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop = false);
+	void splitVolumes(const scenegraph::SceneGraph& srcSceneGraph, scenegraph::SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop = false);
 
 	/**
 	 * Some formats are running loop that the user might want to interrupt with CTRL+c or the like. Long lasting loops should query
@@ -95,10 +97,10 @@ protected:
 	 */
 	static bool stopExecution();
 
-	static core::String stringProperty(const SceneGraphNode* node, const core::String &name, const core::String &defaultVal = "");
-	static bool boolProperty(const SceneGraphNode* node, const core::String &name, bool defaultVal = false);
-	static float floatProperty(const SceneGraphNode* node, const core::String &name, float defaultVal = 0.0f);
-	static image::ImagePtr createThumbnail(const SceneGraph& sceneGraph, ThumbnailCreator thumbnailCreator, const ThumbnailContext &ctx);
+	static core::String stringProperty(const scenegraph::SceneGraphNode* node, const core::String &name, const core::String &defaultVal = "");
+	static bool boolProperty(const scenegraph::SceneGraphNode* node, const core::String &name, bool defaultVal = false);
+	static float floatProperty(const scenegraph::SceneGraphNode* node, const core::String &name, float defaultVal = 0.0f);
+	static image::ImagePtr createThumbnail(const scenegraph::SceneGraph& sceneGraph, ThumbnailCreator thumbnailCreator, const ThumbnailContext &ctx);
 	/**
 	 * @param[in] sceneGraph The @c SceneGraph instance to save
 	 * @param[in] filename The target file name. Some formats needs this next to the stream to identify or load additional files.
@@ -106,11 +108,11 @@ protected:
 	 * @param[in] thumbnailCreator A callback that is either null or returns an instance of @c image::ImagePtr for the thumbnail of the
 	 * given scene graph. Some formats have embedded screenshots.
 	 */
-	virtual bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) = 0;
+	virtual bool saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) = 0;
 	/**
 	 * @brief If the format supports multiple layers or groups, this method will give them to you as single volumes
 	 */
-	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) = 0;
+	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) = 0;
 public:
 	virtual ~Format() = default;
 
@@ -130,8 +132,8 @@ public:
 	 * @return the amount of colors found in the palette
 	 */
 	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx);
-	virtual bool load(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx);
-	virtual bool save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx);
+	virtual bool load(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx);
+	virtual bool save(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx);
 };
 
 /**
@@ -149,17 +151,17 @@ class NoColorFormat : public Format {
  */
 class PaletteFormat : public Format {
 protected:
-	virtual bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) = 0;
+	virtual bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) = 0;
 
 	/**
 	 * @brief This indicates whether the format only supports one palette for the whole scene graph
 	 */
 	virtual bool onlyOnePalette() { return true; }
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) override final;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) override final;
 
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) override;
-	bool save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override final;
+	bool save(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override final;
 };
 
 /**
@@ -171,8 +173,8 @@ public:
 class RGBAFormat : public Format {
 protected:
 	uint8_t _flattenFactor;
-	virtual bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) = 0;
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) override;
+	virtual bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) = 0;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) override;
 	core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) const;
 	core::RGBA flattenRGB(core::RGBA rgba) const;
 public:

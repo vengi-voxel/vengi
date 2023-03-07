@@ -11,7 +11,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "TestHelper.h"
 
-namespace voxelformat {
+namespace scenegraph {
 
 class SceneGraphTest: public app::AbstractTest {
 };

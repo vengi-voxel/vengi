@@ -47,7 +47,7 @@ const float FPS = 12.0f; // TODO: fps
 }
 
 void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
-								 const SceneGraphNode &graphNode, Stack &stack, const SceneGraph &sceneGraph,
+								 const scenegraph::SceneGraphNode &graphNode, Stack &stack, const scenegraph::SceneGraph &sceneGraph,
 								 const glm::vec3 &scale) {
 	node.name = graphNode.name().c_str();
 	Log::debug("process node %s", node.name.c_str());
@@ -78,14 +78,14 @@ void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinyg
 
 	stack.pop();
 
-	const voxelformat::SceneGraphNodeChildren &nodeChidren = graphNode.children();
+	const scenegraph::SceneGraphNodeChildren &nodeChidren = graphNode.children();
 
 	for (int i = (int)nodeChidren.size() - 1; i >= 0; i--) {
 		stack.emplace_back(nodeChidren[i], idx);
 	}
 }
 
-static tinygltf::Camera processCamera(const SceneGraphNodeCamera &cam) {
+static tinygltf::Camera processCamera(const scenegraph::SceneGraphNodeCamera &cam) {
 	tinygltf::Camera c;
 	c.name = cam.name().c_str();
 	if (cam.isPerspective()) {
@@ -104,7 +104,7 @@ static tinygltf::Camera processCamera(const SceneGraphNodeCamera &cam) {
 	return c;
 }
 
-bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const SceneGraph &sceneGraph,
+bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 							const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 							const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
 	unsigned char uvYVal[4] = {0, 0, 0, 63};
@@ -147,12 +147,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 	core::Map<uint64_t, int> paletteMaterialIndices((int)sceneGraph.size());
 	while (!stack.empty()) {
 		const int nodeId = stack.back().first;
-		const SceneGraphNode &graphNode = sceneGraph.node(nodeId);
+		const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(nodeId);
 		const voxel::Palette &palette = graphNode.palette();
 
 		int materialId = -1;
 		int texcoordIndex = 0;
-		if (graphNode.type() == SceneGraphNodeType::Model) {
+		if (graphNode.type() == scenegraph::SceneGraphNodeType::Model) {
 			const auto palTexIter = paletteMaterialIndices.find(palette.hash());
 			if (palTexIter != paletteMaterialIndices.end()) {
 				materialId = palTexIter->second;
@@ -230,8 +230,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 				return false;
 			}
 
-			KeyFrameIndex keyFrameIdx = 0;
-			const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
+			scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 			const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 			const voxel::IndexType *indices = mesh->getRawIndexData();
 			const char *objectName = meshExt.name.c_str();
@@ -472,7 +472,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const Sce
 	}
 
 	m.scenes.emplace_back(core::move(scene));
-	for (auto iter = sceneGraph.begin(SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
+	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
 		tinygltf::Camera gltfCamera = processCamera(toCameraNode(*iter));
 		if (gltfCamera.type.empty()) {
 			continue;
@@ -536,8 +536,8 @@ void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::Dyn
 
 } // namespace gltf_priv
 
-voxelformat::SceneGraphTransform GLTFFormat::loadGltfTransform(const tinygltf::Node &gltfNode) const {
-	SceneGraphTransform transform;
+scenegraph::SceneGraphTransform GLTFFormat::loadGltfTransform(const tinygltf::Node &gltfNode) const {
+	scenegraph::SceneGraphTransform transform;
 	if (gltfNode.matrix.size() == 16) {
 		transform.setLocalMatrix(glm::mat4((float)gltfNode.matrix[0], (float)gltfNode.matrix[1], (float)gltfNode.matrix[2],
 									  (float)gltfNode.matrix[3], (float)gltfNode.matrix[4], (float)gltfNode.matrix[5],
@@ -794,7 +794,7 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 	return foundPosition;
 }
 
-bool GLTFFormat::subdivideShape(SceneGraphNode &node,
+bool GLTFFormat::subdivideShape(scenegraph::SceneGraphNode &node,
 								const TriCollection &tris,
 								const glm::vec3 &offset,
 								bool axisAlignedMesh) const {
@@ -868,7 +868,7 @@ bool GLTFFormat::subdivideShape(SceneGraphNode &node,
 	return true;
 }
 
-bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneGraph, core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model, int gltfNodeIdx, int parentNodeId) const {
+bool GLTFFormat::loadGltfNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph, core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model, int gltfNodeIdx, int parentNodeId) const {
 	const tinygltf::Node &gltfNode = model.nodes[gltfNodeIdx];
 	Log::debug("Found node with name '%s'", gltfNode.name.c_str());
 	Log::debug(" - camera: %i", gltfNode.camera);
@@ -877,7 +877,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	Log::debug(" - children: %i", (int)gltfNode.children.size());
 
 	if (gltfNode.camera != -1) {
-		const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
+		const scenegraph::SceneGraphTransform &transform = loadGltfTransform(gltfNode);
 		if (gltfNode.camera < 0 || gltfNode.camera >= (int)model.cameras.size()) {
 			Log::debug("Skip invalid camera node %i", gltfNode.camera);
 			for (int childId : gltfNode.children) {
@@ -887,13 +887,13 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 		}
 		Log::debug("Camera node %i", gltfNodeIdx);
 		const tinygltf::Camera &cam = model.cameras[gltfNode.camera];
-		SceneGraphNodeCamera node;
+		scenegraph::SceneGraphNodeCamera node;
 		if (!cam.name.empty()) {
 			node.setName(cam.name.c_str());
 		} else {
 			node.setName(gltfNode.name.c_str());
 		}
-		const KeyFrameIndex keyFrameIdx = 0;
+		const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		node.setTransform(keyFrameIdx, transform);
 		if (cam.type == "orthographic") {
 			node.setOrthographic();
@@ -916,11 +916,11 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	}
 
 	if (gltfNode.mesh < 0 || gltfNode.mesh >= (int)model.meshes.size()) {
-		const SceneGraphTransform &transform = loadGltfTransform(gltfNode);
+		const scenegraph::SceneGraphTransform &transform = loadGltfTransform(gltfNode);
 		Log::debug("No mesh node (%i) - add a group %i", gltfNode.mesh, gltfNodeIdx);
-		SceneGraphNode node(SceneGraphNodeType::Group);
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 		node.setName(gltfNode.name.c_str());
-		KeyFrameIndex keyFrameIdx = 0;
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		node.setTransform(keyFrameIdx, transform);
 		int groupId = sceneGraph.emplace(core::move(node), parentNodeId);
 		if (groupId == -1) {
@@ -1041,11 +1041,11 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	}
 	Log::debug("region mins(%i:%i:%i)/maxs(%i:%i:%i)", imins.x, imins.y, imins.z, imaxs.x, imaxs.y, imaxs.z);
 
-	SceneGraphNode node;
-	SceneGraphTransform transform = loadGltfTransform(gltfNode);
+	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphTransform transform = loadGltfTransform(gltfNode);
 	transform.setPivot(-regionOffset / glm::vec3(vdim));
 	node.setName(gltfNode.name.c_str());
-	KeyFrameIndex keyFrameIdx = 0;
+	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx++, transform);
 
 	// keyframes https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_007_Animations.md
@@ -1065,11 +1065,11 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 			}
 			const tinygltf::AnimationSampler &sampler = animation.samplers[channel.sampler];
 			const std::string& type = channel.target_path;
-			InterpolationType interpolation = InterpolationType::Linear;
+			scenegraph::InterpolationType interpolation = scenegraph::InterpolationType::Linear;
 			if (sampler.interpolation == "LINEAR") {
-				interpolation = InterpolationType::Linear;
+				interpolation = scenegraph::InterpolationType::Linear;
 			} else if (sampler.interpolation == "STEP") {
-				interpolation = InterpolationType::Instant;
+				interpolation = scenegraph::InterpolationType::Instant;
 			// } else if (sampler.interpolation == "CUBICSPLINE") {
 				// TODO: implement easing for this type
 				// interpolation = InterpolationType::Linear;
@@ -1090,7 +1090,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 				const uint8_t *buf = buffer.data.data() + offset;
 				for (size_t i = 0; i < accessor->count; ++i) {
 					const float seconds = *(const float*)buf;
-					node.addKeyFrame((FrameIndex)(seconds * _priv::FPS));
+					node.addKeyFrame((scenegraph::FrameIndex)(seconds * _priv::FPS));
 					buf += stride;
 				}
 			}
@@ -1118,9 +1118,9 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 				for (size_t keyFrameIdx = 0; keyFrameIdx < accessor->count; ++keyFrameIdx) {
 					const float *buf = (const float *)transformBuf;
 					transformBuf += stride;
-					SceneGraphKeyFrame &keyFrame = node.keyFrame((KeyFrameIndex)keyFrameIdx);
+					scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame((scenegraph::KeyFrameIndex)keyFrameIdx);
 					keyFrame.interpolation = interpolation;
-					SceneGraphTransform &transform = keyFrame.transform();
+					scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 					if (type == "translation") {
 						core_assert(accessor->type == TINYGLTF_TYPE_VEC3);
 						glm::vec3 v(buf[0], buf[1], buf[2]);
@@ -1161,7 +1161,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, SceneGraph &sceneG
 	return true;
 }
 
-bool GLTFFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) {
+bool GLTFFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	uint32_t magic;
 	stream.peekUInt32(magic);
 	const int64_t size = stream.size();
@@ -1211,7 +1211,7 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, io::SeekableReadSt
 	Log::debug("Lights: %i", (int)model.lights.size());
 	const int parentNodeId = sceneGraph.root().id();
 
-	SceneGraphNode& root = sceneGraph.node(parentNodeId);
+	scenegraph::SceneGraphNode& root = sceneGraph.node(parentNodeId);
 	if (!model.asset.generator.empty()) {
 		root.setProperty("Generator", model.asset.generator.c_str());
 	}

@@ -44,9 +44,9 @@ private:
 	using TimedRegion = core::TimedValue<voxel::Region>;
 	TimedRegion _highlightRegion;
 
-	void updateAABBMesh(bool sceneMode, const voxelformat::SceneGraph &sceneGraph, voxelformat::FrameIndex frameIdx);
-	bool extractVolume(const voxelformat::SceneGraph &sceneGraph);
-	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const voxelformat::SceneGraph &sceneGraph, const glm::ivec3& cursorPosition);
+	void updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
+	bool extractVolume(const scenegraph::SceneGraph &sceneGraph);
+	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const scenegraph::SceneGraph &sceneGraph, const glm::ivec3& cursorPosition);
 public:
 	SceneRenderer();
 
@@ -56,14 +56,14 @@ public:
 	void clear();
 	void shutdown();
 
-	void updateLockedPlanes(math::Axis lockedAxis, const voxelformat::SceneGraph &sceneGraph, const glm::ivec3& cursorPosition);
+	void updateLockedPlanes(math::Axis lockedAxis, const scenegraph::SceneGraph &sceneGraph, const glm::ivec3& cursorPosition);
 	void updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0);
 	void updateGridRegion(const voxel::Region &region);
 
 	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera,
-				  const voxelformat::SceneGraph &sceneGraph);
+				  const scenegraph::SceneGraph &sceneGraph);
 	void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera,
-					 const voxelformat::SceneGraph &sceneGraph, voxelformat::FrameIndex frame);
+					 const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frame);
 };
 
 } // namespace voxedit

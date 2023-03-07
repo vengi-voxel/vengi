@@ -51,15 +51,15 @@ TEST_F(AoSVXLFormatTest, testSave) {
 			EXPECT_TRUE(layer1.setVoxel(x, 1, z, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		}
 	}
-	SceneGraph sceneGraph;
-	SceneGraphNode node1;
+	scenegraph::SceneGraph sceneGraph;
+	scenegraph::SceneGraphNode node1;
 	node1.setVolume(&layer1, false);
 	sceneGraph.emplace(core::move(node1));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 
 	ASSERT_TRUE(f.save(sceneGraph, filename, bufferedStream, testSaveCtx));
 	bufferedStream.seek(0);
-	SceneGraph sceneGraphLoad;
+	scenegraph::SceneGraph sceneGraphLoad;
 	EXPECT_TRUE(f.load(filename, bufferedStream, sceneGraphLoad, testLoadCtx));
 	EXPECT_EQ(sceneGraphLoad.size(), 4);
 }

@@ -115,7 +115,7 @@ bool STLFormat::parseBinary(io::SeekableReadStream &stream, TriCollection &tris)
 	return true;
 }
 
-bool STLFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) {
+bool STLFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic));
 	const bool ascii = FourCC('s', 'o', 'l', 'i') == magic;
@@ -140,7 +140,7 @@ bool STLFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 
 #undef wrap
 
-bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1, const SceneGraphTransform &transform, const glm::vec3 &scale) {
+bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1, const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale) {
 	glm::vec3 pos;
 	if (meshExt.applyTransform) {
 		pos = transform.apply(v1.position, meshExt.size);
@@ -160,7 +160,7 @@ bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &mesh
 	return true;
 }
 
-bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneGraph, const Meshes &meshes,
+bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
 						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
 	stream.writeStringFormat(false, "github.com/mgerhardy/vengi");
@@ -195,9 +195,9 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 			}
 			Log::debug("Exporting layer %s", meshExt.name.c_str());
 			const int ni = (int)mesh->getNoOfIndices();
-			const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-			KeyFrameIndex keyFrameIdx = 0;
-			const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
+			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+			scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 			const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 			const voxel::IndexType *indices = mesh->getRawIndexData();
 

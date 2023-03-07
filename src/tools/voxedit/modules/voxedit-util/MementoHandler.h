@@ -96,9 +96,9 @@ struct MementoState {
 	MementoData data;
 	int parentId = -1;
 	int nodeId = -1;
-	core::Optional<voxelformat::SceneGraphKeyFrames> keyFrames;
-	core::Optional<voxelformat::SceneGraphNodeProperties> properties;
-	voxelformat::KeyFrameIndex keyFrameIdx = 0;
+	core::Optional<scenegraph::SceneGraphKeyFrames> keyFrames;
+	core::Optional<scenegraph::SceneGraphNodeProperties> properties;
+	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	core::String name;
 	glm::mat4x4 worldMatrix{1.0f};
 	/**
@@ -113,28 +113,28 @@ struct MementoState {
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, const core::String &_name,
-				 const voxel::Region &_region, const glm::mat4x4 &_worldMatrix, voxelformat::KeyFrameIndex _keyFrameIdx = 0, const core::Optional<voxel::Palette> &_palette = {})
+				 const voxel::Region &_region, const glm::mat4x4 &_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx = 0, const core::Optional<voxel::Palette> &_palette = {})
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix),
 		  region(_region), palette(_palette) {
 	}
 
-	MementoState(MementoType _type, int _parentId, int _nodeId, const core::String &_name, const core::Optional<voxelformat::SceneGraphNodeProperties> &_properties)
+	MementoState(MementoType _type, int _parentId, int _nodeId, const core::String &_name, const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties)
 		: type(_type), parentId(_parentId), nodeId(_nodeId), properties(_properties), name(_name) {
 	}
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, core::String &&_name,
-				 voxel::Region &&_region, glm::mat4x4 &&_worldMatrix, voxelformat::KeyFrameIndex _keyFrameIdx, core::Optional<voxel::Palette> &&_palette)
+				 voxel::Region &&_region, glm::mat4x4 &&_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx, core::Optional<voxel::Palette> &&_palette)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), palette(_palette) {
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, const core::String &_name,
-				 const voxel::Region &_region, const core::Optional<voxelformat::SceneGraphKeyFrames> &_keyFrames, const core::Optional<voxel::Palette> &_palette = {}, const core::Optional<voxelformat::SceneGraphNodeProperties> &_properties = {})
+				 const voxel::Region &_region, const core::Optional<scenegraph::SceneGraphKeyFrames> &_keyFrames, const core::Optional<voxel::Palette> &_palette = {}, const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties = {})
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrames(_keyFrames), properties(_properties), name(_name),
 		  region(_region), palette(_palette) {
 	}
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, core::String &&_name,
-				 voxel::Region &&_region, core::Optional<voxelformat::SceneGraphKeyFrames> &&_keyFrames, core::Optional<voxel::Palette> &&_palette, core::Optional<voxelformat::SceneGraphNodeProperties> &&_properties)
+				 voxel::Region &&_region, core::Optional<scenegraph::SceneGraphKeyFrames> &&_keyFrames, core::Optional<voxel::Palette> &&_palette, core::Optional<scenegraph::SceneGraphNodeProperties> &&_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), keyFrames(_keyFrames), properties(_properties), name(_name), region(_region), palette(_palette) {
 	}
 
@@ -211,24 +211,24 @@ public:
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
 	void markUndo(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume, MementoType type,
-				  const voxel::Region &region, const glm::mat4 &transformMatrix, voxelformat::KeyFrameIndex keyFrameIdx,
+				  const voxel::Region &region, const glm::mat4 &transformMatrix, scenegraph::KeyFrameIndex keyFrameIdx,
 				  const core::Optional<voxel::Palette> &palette = {});
 	void markUndoKeyFrames(int parentId, int nodeId, const core::String &name, const voxel::RawVolume *volume,
 						   MementoType type, const voxel::Region &region,
-						   const voxelformat::SceneGraphKeyFrames &keyFrames,
+						   const scenegraph::SceneGraphKeyFrames &keyFrames,
 						   const core::Optional<voxel::Palette> &palette = {},
-						   const core::Optional<voxelformat::SceneGraphNodeProperties> &properties = {});
+						   const core::Optional<scenegraph::SceneGraphNodeProperties> &properties = {});
 
-	void markNodePropertyChange(const voxelformat::SceneGraphNode &node);
-	void markKeyFramesChange(const voxelformat::SceneGraphNode &node);
-	void markNodeRemoved(const voxelformat::SceneGraphNode &node);
-	void markNodeAdded(const voxelformat::SceneGraphNode &node);
-	void markNodeTransform(const voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx);
-	void markModification(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion);
-	void markInitialNodeState(const voxelformat::SceneGraphNode &node);
-	void markNodeRenamed(const voxelformat::SceneGraphNode &node);
+	void markNodePropertyChange(const scenegraph::SceneGraphNode &node);
+	void markKeyFramesChange(const scenegraph::SceneGraphNode &node);
+	void markNodeRemoved(const scenegraph::SceneGraphNode &node);
+	void markNodeAdded(const scenegraph::SceneGraphNode &node);
+	void markNodeTransform(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
+	void markModification(const scenegraph::SceneGraphNode &node, const voxel::Region& modifiedRegion);
+	void markInitialNodeState(const scenegraph::SceneGraphNode &node);
+	void markNodeRenamed(const scenegraph::SceneGraphNode &node);
 	void markNodeMoved(int targetId, int sourceId);
-	void markPaletteChange(const voxelformat::SceneGraphNode &node, const voxel::Region& modifiedRegion = voxel::Region::InvalidRegion);
+	void markPaletteChange(const scenegraph::SceneGraphNode &node, const voxel::Region& modifiedRegion = voxel::Region::InvalidRegion);
 
 	/**
 	 * @brief The scene graph is giving new nodes for each insert - thus while undo redo we get new node ids for each new node.

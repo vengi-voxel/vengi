@@ -18,7 +18,7 @@
 
 namespace voxelformat {
 
-bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneGraph, const Meshes &meshes,
+bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
 						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
 	int elements = 0;
@@ -76,9 +76,9 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const SceneGraph &sceneG
 			}
 			const int nv = (int)mesh.getNoOfVertices();
 			const voxel::VoxelVertex* vertices = mesh.getRawVertexData();
-			const SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-			KeyFrameIndex keyFrameIdx = 0;
-			const SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
+			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
+			scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 			const voxel::Palette &palette = graphNode.palette();
 
 			for (int i = 0; i < nv; ++i) {

@@ -376,7 +376,7 @@ void MainWindow::registerPopups() {
 
 		if (ImGui::Button(ICON_FA_CHECK " OK##modelsettings")) {
 			ImGui::CloseCurrentPopup();
-			voxelformat::SceneGraphNode node;
+			scenegraph::SceneGraphNode node;
 			voxel::RawVolume* v = new voxel::RawVolume(_modelNodeSettings.region());
 			node.setVolume(v, true);
 			node.setName(_modelNodeSettings.name.c_str());

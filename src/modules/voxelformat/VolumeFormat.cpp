@@ -335,7 +335,7 @@ size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream,
 	return 0;
 }
 
-bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &newSceneGraph, const LoadContext &ctx) {
+bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &newSceneGraph, const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumeFormat);
 	const uint32_t magic = loadMagic(stream);
 	const core::String &fileext = core::string::extractExtension(filename);
@@ -389,7 +389,7 @@ bool isModelFormat(const core::String &filename) {
 	return false;
 }
 
-bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, const io::FormatDescription *desc, io::SeekableWriteStream &stream, const SaveContext &ctx) {
+bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::FormatDescription *desc, io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	if (sceneGraph.empty()) {
 		Log::error("Failed to save model file %s - no volumes given", filename.c_str());
 		return false;
@@ -431,7 +431,7 @@ bool saveFormat(SceneGraph &sceneGraph, const core::String &filename, const io::
 	return false;
 }
 
-bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, SceneGraph &sceneGraph, const SaveContext &ctx) {
+bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, scenegraph::SceneGraph &sceneGraph, const SaveContext &ctx) {
 	if (!filePtr->validHandle()) {
 		Log::error("Failed to save model - no valid file given");
 		return false;

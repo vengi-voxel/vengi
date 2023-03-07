@@ -61,12 +61,12 @@ CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
  */
 class SceneManager : public core::IComponent {
 private:
-	voxelformat::SceneGraph _sceneGraph;
+	scenegraph::SceneGraph _sceneGraph;
 	MementoHandler _mementoHandler;
 	ModifierFacade _modifier;
 	voxelfont::VoxelFont _voxelFont;
 	core::ScopedPtr<voxel::RawVolume> _copy;
-	std::future<voxelformat::SceneGraph> _loadingFuture;
+	std::future<scenegraph::SceneGraph> _loadingFuture;
 	// TODO: move this out of the mgr class - this should be unit testable in headless mode
 	SceneRenderer _sceneRenderer;
 
@@ -100,7 +100,7 @@ private:
 	int _currentAnimationModelIdx = 0;
 
 	// timeline animation
-	voxelformat::FrameIndex _currentFrameIdx = 0;
+	scenegraph::FrameIndex _currentFrameIdx = 0;
 
 	int _initialized = 0;
 	int _size = 128;
@@ -144,8 +144,8 @@ private:
 	void updateCursor();
 	void traceScene(bool force);
 protected:
-	bool setSceneGraphNodeVolume(voxelformat::SceneGraphNode &node, voxel::RawVolume* volume);
-	bool loadSceneGraph(voxelformat::SceneGraph&& sceneGraph);
+	bool setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, voxel::RawVolume* volume);
+	bool loadSceneGraph(scenegraph::SceneGraph&& sceneGraph);
 	int activeNode() const;
 	int addModelChild(const core::String& name, int width, int height, int depth);
 
@@ -218,8 +218,8 @@ public:
 	bool cameraRotate() const;
 	bool cameraPan() const;
 
-	voxelformat::FrameIndex currentFrame() const;
-	void setCurrentFrame(voxelformat::FrameIndex frameIdx);
+	scenegraph::FrameIndex currentFrame() const;
+	void setCurrentFrame(scenegraph::FrameIndex frameIdx);
 
 	void setActiveCamera(video::Camera* camera);
 	video::Camera* activeCamera();
@@ -320,7 +320,7 @@ public:
 	bool runScript(const core::String& script, const core::DynamicArray<core::String>& args);
 
 	bool newScene(bool force, const core::String& name, const voxel::Region& region);
-	int addNodeToSceneGraph(voxelformat::SceneGraphNode &node, int parent = 0);
+	int addNodeToSceneGraph(scenegraph::SceneGraphNode &node, int parent = 0);
 
 	/**
 	 * @return @c true if the scene was modified and not saved yet
@@ -365,8 +365,8 @@ public:
 	void setLockedAxis(math::Axis axis, bool unlock);
 	bool setGridResolution(int resolution);
 
-	voxelformat::SceneGraphNode *sceneGraphNode(int nodeId);
-	const voxelformat::SceneGraphNode *sceneGraphNode(int nodeId) const;
+	scenegraph::SceneGraphNode *sceneGraphNode(int nodeId);
+	const scenegraph::SceneGraphNode *sceneGraphNode(int nodeId) const;
 
 	bool hasClipboardCopy() const;
 
@@ -376,22 +376,22 @@ public:
 	const MementoHandler& mementoHandler() const;
 	MementoHandler& mementoHandler();
 	voxelgenerator::LUAGenerator& luaGenerator();
-	const voxelformat::SceneGraph &sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph();
 
 private:
 	void onNewNodeAdded(int newNodeId);
-	bool nodeRename(voxelformat::SceneGraphNode &node, const core::String &name);
-	bool nodeRemove(voxelformat::SceneGraphNode &node, bool recursive);
-	bool nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx);
-	bool nodeRemoveKeyFrameByIndex(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx);
-	bool nodeRemoveKeyFrame(voxelformat::SceneGraphNode &node, voxelformat::FrameIndex frameIdx);
-	bool nodeAddKeyframe(voxelformat::SceneGraphNode &node, voxelformat::FrameIndex frameIdx);
-	void nodeDuplicate(const voxelformat::SceneGraphNode &node);
+	bool nodeRename(scenegraph::SceneGraphNode &node, const core::String &name);
+	bool nodeRemove(scenegraph::SceneGraphNode &node, bool recursive);
+	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx);
+	bool nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
+	bool nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
+	bool nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
+	void nodeDuplicate(const scenegraph::SceneGraphNode &node);
 public:
-	bool nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx);
-	bool nodeRemoveKeyFrameByIndex(int nodeId, voxelformat::KeyFrameIndex keyFrameIdx);
-	bool nodeRemoveKeyFrame(int nodeId, voxelformat::FrameIndex frameIdx);
-	bool nodeAddKeyFrame(int nodeId, voxelformat::FrameIndex frameIdx);
+	bool nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx);
+	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
+	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
+	bool nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeMove(int sourceNodeId, int targetNodeId);
 	bool nodeSetProperty(int nodeId, const core::String &key, const core::String &value);
 	bool nodeRemoveProperty(int nodeId, const core::String &key);
@@ -407,11 +407,11 @@ inline bool SceneManager::hasClipboardCopy() const {
 	return _copy != nullptr;
 }
 
-inline voxelformat::FrameIndex SceneManager::currentFrame() const {
+inline scenegraph::FrameIndex SceneManager::currentFrame() const {
 	return _currentFrameIdx;
 }
 
-inline void SceneManager::setCurrentFrame(voxelformat::FrameIndex frameIdx) {
+inline void SceneManager::setCurrentFrame(scenegraph::FrameIndex frameIdx) {
 	_currentFrameIdx = frameIdx;
 }
 

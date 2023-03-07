@@ -45,7 +45,7 @@ static inline uint8_t vxl_red(uint32_t c) {
 	return (c >> 16) & 0xFF;
 }
 
-bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	const int64_t size = stream.size();
 	uint8_t* data = (uint8_t*)core_malloc(size);
 	if (stream.read(data, size) == -1) {
@@ -71,10 +71,10 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableRead
 
 	Log::debug("Read vxl of size %i:%i:%i", (int)mapSize, (int)mapHeight, (int)mapSize);
 
-	SceneGraph newSceneGraph;
+	scenegraph::SceneGraph newSceneGraph;
 	const voxel::Region region(0, 0, 0, (int)mapSize - 1, (int)mapHeight - 1, (int)mapSize - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	voxel::PaletteLookup palLookup(palette);
 
@@ -158,7 +158,7 @@ glm::ivec3 AoSVXLFormat::maxSize() const {
 	return glm::ivec3(512, 256, 512);
 }
 
-bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	const voxel::Region& region = sceneGraph.region();
 	glm::ivec3 size = region.getDimensionsInVoxels();
 	glm::ivec3 targetSize(512, size.y, 512);
@@ -181,7 +181,7 @@ bool AoSVXLFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &
 		return false;
 	}
 
-	for (const SceneGraphNode &node : sceneGraph) {
+	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
 		voxelutil::visitVolume(*node.volume(), [&map, &node, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
 			const core::RGBA rgba = node.palette().color(voxel.getColor());
 			const uint32_t color = vxl_color(rgba);

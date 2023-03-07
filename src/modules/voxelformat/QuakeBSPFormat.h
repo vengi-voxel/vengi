@@ -104,12 +104,12 @@ private:
 
 	bool voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
 				  const core::DynamicArray<BspEdge> &edges, const core::DynamicArray<int32_t> &surfEdges,
-				  const core::DynamicArray<BspVertex> &vertices, SceneGraph &sceneGraph,
+				  const core::DynamicArray<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph,
 				  voxel::PaletteLookup &palLookup, const core::String &name);
 
 	int32_t validateLump(const BspLump &lump, size_t elementSize) const;
 
-	bool loadQuake1Bsp(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
+	bool loadQuake1Bsp(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					   const BspHeader &header);
 	bool loadQuake1Textures(const core::String &filename, io::SeekableReadStream &stream, const BspHeader &header,
 							core::DynamicArray<Texture> &textures, core::StringMap<image::ImagePtr> &textureMap);
@@ -120,7 +120,7 @@ private:
 	bool loadQuake1Vertices(io::SeekableReadStream &stream, const BspHeader &header,
 							core::DynamicArray<BspVertex> &vertices);
 
-	bool loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
+	bool loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 								 const BspHeader &header);
 	bool loadUFOAlienInvasionTextures(const core::String &filename, io::SeekableReadStream &stream,
 									  const BspHeader &header, core::DynamicArray<Texture> &textures,
@@ -137,9 +137,9 @@ private:
 	bool loadUFOAlienInvasionModels(io::SeekableReadStream &stream, const BspHeader &header,
 									core::DynamicArray<Model> &models);
 
-	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const LoadContext &ctx) override;
+	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 public:
-	bool saveMeshes(const core::Map<int, int> &, const SceneGraph &, const Meshes &meshes, const core::String &filename,
+	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &meshes, const core::String &filename,
 					io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
 					bool withTexCoords) override {
 		return false;

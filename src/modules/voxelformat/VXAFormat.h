@@ -18,11 +18,11 @@ namespace voxelformat {
  */
 class VXAFormat : public Format {
 private:
-	bool recursiveImportNodeSince3(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, SceneGraphNode& node, const core::String &animId, int version);
-	bool recursiveImportNodeBefore3(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, SceneGraphNode& node, const core::String &animId, int version);
-	bool saveRecursiveNode(const SceneGraph& sceneGraph, const SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream);
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) override;
-	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override;
+	bool recursiveImportNodeSince3(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, scenegraph::SceneGraphNode& node, const core::String &animId, int version);
+	bool recursiveImportNodeBefore3(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, scenegraph::SceneGraphNode& node, const core::String &animId, int version);
+	bool saveRecursiveNode(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream);
+	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) override;
+	bool saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override;
 };
 
 }

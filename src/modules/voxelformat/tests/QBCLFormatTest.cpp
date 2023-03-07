@@ -40,7 +40,7 @@ TEST_F(QBCLFormatTest, testLoadScreenshot) {
 }
 
 TEST_F(QBCLFormatTest, testLoadCrabby) {
-	voxelformat::SceneGraph qbclsceneGraph;
+	scenegraph::SceneGraph qbclsceneGraph;
 	{
 		const core::String filename = "crabby.qbcl";
 		const io::FilePtr& file = open(filename);
@@ -48,7 +48,7 @@ TEST_F(QBCLFormatTest, testLoadCrabby) {
 		io::FileStream stream(file);
 		ASSERT_TRUE(voxelformat::loadFormat(filename, stream, qbclsceneGraph, testLoadCtx));
 	}
-	voxelformat::SceneGraph voxsceneGraph;
+	scenegraph::SceneGraph voxsceneGraph;
 	{
 		const core::String filename = "crabby.vox";
 		const io::FilePtr& file = open(filename);

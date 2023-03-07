@@ -126,36 +126,36 @@ private:
 
 	// writing
 	bool writeLayerBodyEntry(io::SeekableWriteStream& stream, const voxel::RawVolume* volume, uint8_t x, uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount, uint8_t normalType) const;
-	bool writeLayer(io::SeekableWriteStream& stream, const SceneGraphNode& node, VXLLayerOffset& offsets, uint64_t nodeSectionOffset) const;
-	bool writeLayerHeader(io::SeekableWriteStream& stream, const SceneGraphNode& node, uint32_t nodeIdx) const;
-	bool writeLayerInfo(io::SeekableWriteStream& stream, const SceneGraphNode& node, const VXLLayerOffset& offsets) const;
+	bool writeLayer(io::SeekableWriteStream& stream, const scenegraph::SceneGraphNode& node, VXLLayerOffset& offsets, uint64_t nodeSectionOffset) const;
+	bool writeLayerHeader(io::SeekableWriteStream& stream, const scenegraph::SceneGraphNode& node, uint32_t nodeIdx) const;
+	bool writeLayerInfo(io::SeekableWriteStream& stream, const scenegraph::SceneGraphNode& node, const VXLLayerOffset& offsets) const;
 	bool writeHeader(io::SeekableWriteStream& stream, uint32_t numNodes, const voxel::Palette &palette);
 
 	// reading
 	bool readLayerHeader(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const;
 	bool readLayerInfo(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx) const;
-	bool readLayer(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx, SceneGraph& sceneGraph, const voxel::Palette &palette) const;
-	bool readLayers(io::SeekableReadStream& stream, VXLModel& mdl, SceneGraph& sceneGraph, const voxel::Palette &palette) const;
+	bool readLayer(io::SeekableReadStream& stream, VXLModel& mdl, uint32_t nodeIdx, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette) const;
+	bool readLayers(io::SeekableReadStream& stream, VXLModel& mdl, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette) const;
 	bool readLayerInfos(io::SeekableReadStream& stream, VXLModel& mdl) const;
 	bool readLayerHeaders(io::SeekableReadStream& stream, VXLModel& mdl) const;
 
-	bool writeHVAHeader(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph) const;
-	bool writeHVAFrames(io::SeekableWriteStream& stream, const SceneGraph& sceneGraph) const;
+	bool writeHVAHeader(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph) const;
+	bool writeHVAFrames(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph) const;
 	bool readHVAHeader(io::SeekableReadStream& stream, HVAHeader& header) const;
 	bool readHVAFrames(io::SeekableReadStream& stream, const VXLModel &mdl, HVAModel& file) const;
 
 	/**
 	 * @brief Hierarchical Voxel Animation
 	 */
-	bool loadHVA(const core::String &filename, const VXLModel &mdl, SceneGraph& sceneGraph);
-	bool saveHVA(const core::String &filename, const SceneGraph& sceneGraph);
+	bool loadHVA(const core::String &filename, const VXLModel &mdl, scenegraph::SceneGraph& sceneGraph);
+	bool saveHVA(const core::String &filename, const scenegraph::SceneGraph& sceneGraph);
 
-	bool saveVXL(core::DynamicArray<const SceneGraphNode*> &nodes, const core::String &filename, io::SeekableWriteStream& stream);
+	bool saveVXL(core::DynamicArray<const scenegraph::SceneGraphNode*> &nodes, const core::String &filename, io::SeekableWriteStream& stream);
 
 	bool prepareModel(VXLModel& mdl) const;
 	bool readHeader(io::SeekableReadStream& stream, VXLModel& mdl, voxel::Palette &palette);
 
-	bool loadFromFile(const core::String &filename, SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx);
+	bool loadFromFile(const core::String &filename, scenegraph::SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx);
 
 	static glm::mat4 switchYAndZ(const glm::mat4 &in);
 	static void convertRead(glm::mat4 &glmMatrix, const VXLLayerInfo& footer, bool hva);
@@ -164,9 +164,9 @@ private:
 protected:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) override;
 
-	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) override;
+	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) override;
 
-	bool saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override;
+	bool saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override;
 };
 
 }

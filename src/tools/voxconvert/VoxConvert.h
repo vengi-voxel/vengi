@@ -41,21 +41,21 @@ private:
 protected:
 	glm::ivec3 getArgIvec3(const core::String &name);
 	core::String getFilenameForLayerName(const core::String& inputfile, const core::String &layerName, int id);
-	bool handleInputFile(const core::String &infile, voxelformat::SceneGraph &sceneGraph, bool multipleInputs);
+	bool handleInputFile(const core::String &infile, scenegraph::SceneGraph &sceneGraph, bool multipleInputs);
 
 	void usage() const override;
-	void mirror(const core::String& axisStr, voxelformat::SceneGraph& sceneGraph);
-	void rotate(const core::String& axisStr, voxelformat::SceneGraph& sceneGraph);
-	void scale(voxelformat::SceneGraph& sceneGraph);
-	void resize(const glm::ivec3 &size, voxelformat::SceneGraph& sceneGraph);
-	void script(const core::String &scriptParameters, voxelformat::SceneGraph& sceneGraph, uint8_t color);
-	void translate(const glm::ivec3& pos, voxelformat::SceneGraph& sceneGraph);
-	void crop(voxelformat::SceneGraph& sceneGraph);
-	int dumpNode_r(const voxelformat::SceneGraph& sceneGraph, int nodeId, int indent);
-	void dump(const voxelformat::SceneGraph& sceneGraph);
-	void filterVolumes(voxelformat::SceneGraph& sceneGraph);
-	void exportLayersIntoSingleObjects(voxelformat::SceneGraph& sceneGraph, const core::String &inputfile);
-	void split(const glm::ivec3 &size, voxelformat::SceneGraph& sceneGraph);
+	void mirror(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph);
+	void rotate(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph);
+	void scale(scenegraph::SceneGraph& sceneGraph);
+	void resize(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph);
+	void script(const core::String &scriptParameters, scenegraph::SceneGraph& sceneGraph, uint8_t color);
+	void translate(const glm::ivec3& pos, scenegraph::SceneGraph& sceneGraph);
+	void crop(scenegraph::SceneGraph& sceneGraph);
+	int dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId, int indent);
+	void dump(const scenegraph::SceneGraph& sceneGraph);
+	void filterVolumes(scenegraph::SceneGraph& sceneGraph);
+	void exportLayersIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile);
+	void split(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph);
 public:
 	VoxConvert(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 

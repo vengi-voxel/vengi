@@ -27,7 +27,7 @@
 
 namespace voxelformat {
 
-core::String Format::stringProperty(const SceneGraphNode* node, const core::String &name, const core::String &defaultVal) {
+core::String Format::stringProperty(const scenegraph::SceneGraphNode* node, const core::String &name, const core::String &defaultVal) {
 	if (node == nullptr) {
 		return defaultVal;
 	}
@@ -37,7 +37,7 @@ core::String Format::stringProperty(const SceneGraphNode* node, const core::Stri
 	return node->property(name);
 }
 
-bool Format::boolProperty(const SceneGraphNode* node, const core::String &name, bool defaultVal) {
+bool Format::boolProperty(const scenegraph::SceneGraphNode* node, const core::String &name, bool defaultVal) {
 	if (node == nullptr) {
 		return defaultVal;
 	}
@@ -47,7 +47,7 @@ bool Format::boolProperty(const SceneGraphNode* node, const core::String &name, 
 	return core::string::toBool(node->property(name));
 }
 
-float Format::floatProperty(const SceneGraphNode* node, const core::String &name, float defaultVal) {
+float Format::floatProperty(const scenegraph::SceneGraphNode* node, const core::String &name, float defaultVal) {
 	if (node == nullptr) {
 		return defaultVal;
 	}
@@ -57,7 +57,7 @@ float Format::floatProperty(const SceneGraphNode* node, const core::String &name
 	return core::string::toFloat(node->property(name));
 }
 
-image::ImagePtr Format::createThumbnail(const SceneGraph& sceneGraph, ThumbnailCreator thumbnailCreator, const ThumbnailContext &ctx) {
+image::ImagePtr Format::createThumbnail(const scenegraph::SceneGraph& sceneGraph, ThumbnailCreator thumbnailCreator, const ThumbnailContext &ctx) {
 	if (thumbnailCreator == nullptr) {
 		return image::ImagePtr();
 	}
@@ -66,9 +66,9 @@ image::ImagePtr Format::createThumbnail(const SceneGraph& sceneGraph, ThumbnailC
 }
 
 // TODO: split is destroying groups
-void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop) {
+void Format::splitVolumes(const scenegraph::SceneGraph& srcSceneGraph, scenegraph::SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop) {
 	destSceneGraph.reserve(srcSceneGraph.size());
-	for (SceneGraphNode &node : srcSceneGraph) {
+	for (scenegraph::SceneGraphNode &node : srcSceneGraph) {
 		if (stopExecution()) {
 			break;
 		}
@@ -78,7 +78,7 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 			continue;
 		}
 		if (glm::all(glm::lessThanEqual(region.getDimensionsInVoxels(), maxSize))) {
-			SceneGraphNode newNode;
+			scenegraph::SceneGraphNode newNode;
 			copyNode(node, newNode, true);
 			destSceneGraph.emplace(core::move(newNode));
 			Log::debug("No split needed for node '%s'", node.name().c_str());
@@ -88,7 +88,7 @@ void Format::splitVolumes(const SceneGraph& srcSceneGraph, SceneGraph& destScene
 		core::DynamicArray<voxel::RawVolume *> rawVolumes;
 		voxelutil::splitVolume(node.volume(), maxSize, rawVolumes);
 		for (voxel::RawVolume *v : rawVolumes) {
-			SceneGraphNode newNode;
+			scenegraph::SceneGraphNode newNode;
 			if (crop) {
 				voxel::RawVolume *cv = voxelutil::cropVolume(v);
 				delete v;
@@ -127,7 +127,7 @@ size_t Format::loadPalette(const core::String &, io::SeekableReadStream &, voxel
 }
 
 size_t PaletteFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
-	SceneGraph sceneGraph;
+	scenegraph::SceneGraph sceneGraph;
 	loadGroupsPalette(filename, stream, sceneGraph, palette, ctx);
 	return palette.size();
 }
@@ -145,11 +145,11 @@ bool Format::singleVolume() const {
 	return core::Var::getSafe(cfg::VoxformatMerge)->boolVal();
 }
 
-bool Format::save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool Format::save(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	bool needsSplit = false;
 	const glm::ivec3 maxsize = maxSize();
 	if (maxsize.x > 0 && maxsize.y > 0 && maxsize.z > 0) {
-		for (SceneGraphNode &node : sceneGraph) {
+		for (scenegraph::SceneGraphNode &node : sceneGraph) {
 			const voxel::Region& region = node.region();
 			const glm::ivec3 &maxs = region.getDimensionsInVoxels();
 			if (glm::all(glm::lessThanEqual(maxs, maxsize))) {
@@ -167,9 +167,9 @@ bool Format::save(const SceneGraph& sceneGraph, const core::String &filename, io
 	}
 
 	if (singleVolume()) {
-		SceneGraph::MergedVolumePalette merged = sceneGraph.merge(true);
-		SceneGraph mergedSceneGraph(2);
-		SceneGraphNode mergedNode(SceneGraphNodeType::Model);
+		scenegraph::SceneGraph::MergedVolumePalette merged = sceneGraph.merge(true);
+		scenegraph::SceneGraph mergedSceneGraph(2);
+		scenegraph::SceneGraphNode mergedNode(scenegraph::SceneGraphNodeType::Model);
 		mergedNode.setVolume(merged.first, true);
 		mergedNode.setPalette(merged.second);
 		mergedSceneGraph.emplace(core::move(mergedNode));
@@ -177,14 +177,14 @@ bool Format::save(const SceneGraph& sceneGraph, const core::String &filename, io
 	}
 
 	if (needsSplit) {
-		SceneGraph newSceneGraph;
+		scenegraph::SceneGraph newSceneGraph;
 		splitVolumes(sceneGraph, newSceneGraph, maxsize);
 		return saveGroups(newSceneGraph, filename, stream, ctx);
 	}
 	return saveGroups(sceneGraph, filename, stream, ctx);
 }
 
-bool Format::load(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) {
+bool Format::load(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) {
 	return loadGroups(filename, stream, sceneGraph, ctx);
 }
 
@@ -192,7 +192,7 @@ bool Format::stopExecution() {
 	return app::App::getInstance()->shouldQuit();
 }
 
-bool PaletteFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) {
+bool PaletteFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) {
 	voxel::Palette palette;
 	if (!loadGroupsPalette(filename, stream, sceneGraph, palette, ctx)) {
 		return false;
@@ -201,7 +201,7 @@ bool PaletteFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 	return true;
 }
 
-bool PaletteFormat::save(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool PaletteFormat::save(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	if (onlyOnePalette()) {
 		// TODO: reduce palettes to one - construct a new scene graph
 	}
@@ -220,7 +220,7 @@ core::RGBA RGBAFormat::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) co
 	return core::Color::flattenRGB(r, g, b, a, _flattenFactor);
 }
 
-bool RGBAFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const LoadContext &ctx) {
+bool RGBAFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) {
 	voxel::Palette palette;
 	const bool createPalette = core::Var::get(cfg::VoxelCreatePalette);
 	if (createPalette) {

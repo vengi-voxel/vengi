@@ -31,7 +31,7 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &in, SceneGraph &sceneGraph, voxel::Palette &, const LoadContext &ctx) {
+bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &in, scenegraph::SceneGraph &sceneGraph, voxel::Palette &, const LoadContext &ctx) {
 	io::ZipReadStream stream(in, (int)in.size());
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
@@ -57,7 +57,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrap(stream.readInt32(depth))
 	int32_t models;
 	wrap(stream.readInt32(models))
-	SceneGraph tileGraph;
+	scenegraph::SceneGraph tileGraph;
 
 	for (int32_t i = 0; i < models; ++i) {
 		char path[1024];
@@ -69,13 +69,13 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		}
 		io::FileStream childStream(file);
 		VXMFormat f;
-		SceneGraph subGraph;
+		scenegraph::SceneGraph subGraph;
 		if (!f.load(path, childStream, subGraph, ctx)) {
 			Log::warn("Failed to load vxm tile %s", path);
 			continue;
 		}
-		for (const SceneGraphNode &node : subGraph) {
-			SceneGraphNode newNode(SceneGraphNodeType::Model);
+		for (const scenegraph::SceneGraphNode &node : subGraph) {
+			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 			copyNode(node, newNode, true);
 			newNode.setProperty("tileidx", core::string::format("%i", i));
 			newNode.setName(path);
@@ -102,7 +102,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			continue;
 		}
 
-		const SceneGraphNode* node = tileGraph[modelIdx];
+		const scenegraph::SceneGraphNode* node = tileGraph[modelIdx];
 		if (node == nullptr) {
 			Log::warn("Failed to get model from scene graph with index %i", modelIdx);
 			continue;
@@ -116,7 +116,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			const int32_t x = i / (height * depth);
 			const int32_t y = (i / depth) % height;
 			const int32_t z = i % depth;
-			SceneGraphNode tileNode(SceneGraphNodeType::Model);
+			scenegraph::SceneGraphNode tileNode(scenegraph::SceneGraphNodeType::Model);
 			copyNode(*node, tileNode, true);
 			const glm::ivec3 pos(x * tileSize, y * tileSize, z * tileSize);
 			tileNode.volume()->translate(pos); // TODO
@@ -128,7 +128,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	return true;
 }
 
-bool VXTFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
+bool VXTFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	return false;
 }
 

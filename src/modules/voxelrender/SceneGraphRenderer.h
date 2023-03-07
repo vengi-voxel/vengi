@@ -17,8 +17,8 @@ namespace voxelrender {
 /**
  * @see voxelformat::toCameraNode()
  */
-video::Camera toCamera(const glm::ivec2 &size, const voxelformat::SceneGraphNodeCamera &cameraNode);
-voxelformat::SceneGraphNodeCamera toCameraNode(const video::Camera& camera);
+video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode);
+scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera& camera);
 
 
 /**
@@ -41,9 +41,9 @@ public:
 	void setDiffuseColor(const glm::vec3& color);
 
 	void setSceneMode(bool sceneMode);
-	bool extractRegion(voxelformat::SceneGraphNode &node, const voxel::Region& region);
-	bool empty(voxelformat::SceneGraphNode &node);
-	void prepare(const voxelformat::SceneGraph &sceneGraph, voxelformat::FrameIndex frame = 0, bool hideInactive = false, bool grayInactive = false);
+	bool extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region& region);
+	bool empty(scenegraph::SceneGraphNode &node);
+	void prepare(const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frame = 0, bool hideInactive = false, bool grayInactive = false);
 	void extractAll();
 	/**
 	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is false, you have to call @c update() manually!

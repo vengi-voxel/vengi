@@ -46,7 +46,7 @@ protected:
 
 		rgbStream.seek(0);
 
-		SceneGraph rgbSceneGraph;
+		scenegraph::SceneGraph rgbSceneGraph;
 		ASSERT_TRUE(rgbFormat.load(rgbFile, rgbStream, rgbSceneGraph, testLoadCtx)) << "Failed to load rgb model " << rgbFile;
 
 		io::BufferedReadWriteStream palWriteStream;
@@ -75,7 +75,7 @@ protected:
 
 		palStream.seek(0);
 
-		SceneGraph palSceneGraph;
+		scenegraph::SceneGraph palSceneGraph;
 		ASSERT_TRUE(palFormat.load(palFile, palStream, palSceneGraph, testLoadCtx)) << "Failed to load pal model " << palFile;
 
 		io::BufferedReadWriteStream rgbWriteStream;
@@ -101,7 +101,7 @@ protected:
 
 		palStream.seek(0);
 
-		SceneGraph palSceneGraph;
+		scenegraph::SceneGraph palSceneGraph;
 		ASSERT_TRUE(rgbFormat1.load(rgbFile1, palStream, palSceneGraph, testLoadCtx)) << "Failed to load rgb model " << rgbFile1;
 
 		io::BufferedReadWriteStream rgbWriteStream;
@@ -128,7 +128,7 @@ protected:
 
 		palStream.seek(0);
 
-		SceneGraph palSceneGraph;
+		scenegraph::SceneGraph palSceneGraph;
 		ASSERT_TRUE(palFormat1.load(palFile1, palStream, palSceneGraph, testLoadCtx)) << "Failed to load pal model " << palFile1;
 
 		io::BufferedReadWriteStream rgbWriteStream;

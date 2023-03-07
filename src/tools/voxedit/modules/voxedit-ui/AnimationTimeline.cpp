@@ -15,7 +15,7 @@
 
 namespace voxedit {
 
-void AnimationTimeline::header(voxelformat::FrameIndex &currentFrame, voxelformat::FrameIndex maxFrame) {
+void AnimationTimeline::header(scenegraph::FrameIndex &currentFrame, scenegraph::FrameIndex maxFrame) {
 	if (ImGui::DisabledButton(ICON_FA_SQUARE_PLUS " Add", _play)) {
 		sceneMgr().nodeAddKeyFrame(-1, currentFrame);
 	}
@@ -43,7 +43,7 @@ void AnimationTimeline::header(voxelformat::FrameIndex &currentFrame, voxelforma
 	}
 }
 
-void AnimationTimeline::sequencer(voxelformat::FrameIndex &currentFrame) {
+void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 	ImGuiNeoSequencerFlags flags = ImGuiNeoSequencerFlags_AlwaysShowHeader;
 	flags |= ImGuiNeoSequencerFlags_EnableSelection;
 	flags |= ImGuiNeoSequencerFlags_AllowLengthChanging;
@@ -56,12 +56,12 @@ void AnimationTimeline::sequencer(voxelformat::FrameIndex &currentFrame) {
 			ImGui::NeoClearSelection();
 			_clearSelection = false;
 		}
-		core::Buffer<voxelformat::FrameIndex> selectedFrames;
-		const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
-		for (voxelformat::SceneGraphNode &modelNode : sceneGraph) {
+		core::Buffer<scenegraph::FrameIndex> selectedFrames;
+		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+		for (scenegraph::SceneGraphNode &modelNode : sceneGraph) {
 			const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
 			if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
-				for (voxelformat::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
+				for (scenegraph::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
 					ImGui::NeoKeyframe(&kf.frameIdx);
 					if (kf.frameIdx < 0) {
 						kf.frameIdx = 0;
@@ -69,7 +69,7 @@ void AnimationTimeline::sequencer(voxelformat::FrameIndex &currentFrame) {
 
 					if (ImGui::IsNeoKeyframeHovered()) {
 						ImGui::BeginTooltip();
-						const char *interpolation = voxelformat::InterpolationTypeStr[(int)kf.interpolation];
+						const char *interpolation = scenegraph::InterpolationTypeStr[(int)kf.interpolation];
 						ImGui::Text("Keyframe %i, Interpolation: %s", kf.frameIdx, interpolation);
 						ImGui::EndTooltip();
 					}
@@ -142,10 +142,10 @@ void AnimationTimeline::sequencer(voxelformat::FrameIndex &currentFrame) {
 }
 
 bool AnimationTimeline::update(const char *sequencerTitle, double deltaFrameSeconds) {
-	voxelformat::FrameIndex currentFrame = sceneMgr().currentFrame();
-	const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
-	voxelformat::FrameIndex maxFrame = 0;
-	for (voxelformat::SceneGraphNode &modelNode : sceneGraph) {
+	scenegraph::FrameIndex currentFrame = sceneMgr().currentFrame();
+	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	scenegraph::FrameIndex maxFrame = 0;
+	for (scenegraph::SceneGraphNode &modelNode : sceneGraph) {
 		maxFrame = core_max(modelNode.maxFrame(), maxFrame);
 	}
 	_seconds += deltaFrameSeconds;

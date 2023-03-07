@@ -23,7 +23,7 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph,
+bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 								  voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
@@ -110,7 +110,7 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		}
 	}
 
-	SceneGraphNode node(SceneGraphNodeType::Model);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
@@ -120,7 +120,7 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 #undef wrap
 
-bool MTSFormat::saveGroups(const SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream,
+bool MTSFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream,
 						   const SaveContext &) {
 	return false;
 }

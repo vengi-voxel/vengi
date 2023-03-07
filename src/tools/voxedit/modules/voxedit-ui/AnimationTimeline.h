@@ -19,14 +19,14 @@ private:
 	int32_t _startFrame = 0;
 	int32_t _endFrame = 64;
 	struct Selection {
-		voxelformat::FrameIndex frameIdx;
+		scenegraph::FrameIndex frameIdx;
 		int nodeId;
 	};
 	core::Buffer<Selection> _selectionBuffer;
 
 public:
-	void header(voxelformat::FrameIndex &currentFrame, voxelformat::FrameIndex maxFrame);
-	void sequencer(voxelformat::FrameIndex &currentFrame);
+	void header(scenegraph::FrameIndex &currentFrame, scenegraph::FrameIndex maxFrame);
+	void sequencer(scenegraph::FrameIndex &currentFrame);
 	bool update(const char *sequencerTitle, double deltaFrameSeconds);
 };
 

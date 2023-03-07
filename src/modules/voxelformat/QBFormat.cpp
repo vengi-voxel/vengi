@@ -71,7 +71,7 @@ private:
 	}
 
 public:
-	MatrixWriter(io::SeekableWriteStream &stream, const voxelformat::SceneGraphNode &node, bool leftHanded)
+	MatrixWriter(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node, bool leftHanded)
 		: _stream(stream), _volume(node.volume()), _palette(node.palette()), _maxs(node.region().getUpperCorner()),
 		  _leftHanded(leftHanded) {
 	}
@@ -133,7 +133,7 @@ public:
 	}
 };
 
-bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode& node, bool leftHanded) const {
+bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const scenegraph::SceneGraphNode& node, bool leftHanded) const {
 	const int nameLength = (int)node.name().size();
 	wrapSave(stream.writeUInt8(nameLength));
 	wrapSave(stream.writeString(node.name(), false));
@@ -154,8 +154,8 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 		wrapSave(stream.writeUInt32(size.x));
 	}
 
-	const KeyFrameIndex keyFrameIdx = 0;
-	const SceneGraphTransform &transform = node.transform(keyFrameIdx);
+	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const glm::ivec3 &offset = glm::round(transform.worldTranslation());
 	if (leftHanded) {
 		wrapSave(stream.writeInt32(offset.x));
@@ -177,7 +177,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const SceneGraphNode&
 	return writer.success();
 }
 
-bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool QBFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	wrapSave(stream.writeUInt32(131331)) // version
 	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
 	const bool leftHanded = core::Var::getSafe(cfg::VoxformatQBSaveLeftHanded)->boolVal();
@@ -186,7 +186,7 @@ bool QBFormat::saveGroups(const SceneGraph& sceneGraph, const core::String &file
 	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))
 	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
 	wrapSave(stream.writeUInt32((uint32_t)sceneGraph.size()))
-	for (const SceneGraphNode& node : sceneGraph) {
+	for (const scenegraph::SceneGraphNode& node : sceneGraph) {
 		if (!saveMatrix(stream, node, leftHanded)) {
 			return false;
 		}
@@ -229,7 +229,7 @@ bool QBFormat::readColor(State& state, io::SeekableReadStream& stream, core::RGB
 	return true;
 }
 
-bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup) {
+bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt8(name))
 	Log::debug("Matrix name: %s", name.c_str());
@@ -250,7 +250,7 @@ bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 		return false;
 	}
 
-	SceneGraphTransform transform;
+	scenegraph::SceneGraphTransform transform;
 	{
 		glm::ivec3 offset(0);
 		if (state._zAxisOrientation == ZAxisOrientation::LeftHanded) {
@@ -298,10 +298,10 @@ bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 				}
 			}
 		}
-		SceneGraphNode node(SceneGraphNodeType::Model);
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(v.release(), true);
 		node.setName(name);
-		const KeyFrameIndex keyFrameIdx = 0;
+		const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		node.setTransform(keyFrameIdx, transform);
 		node.setPalette(palLookup.palette());
 		sceneGraph.emplace(core::move(node));
@@ -346,11 +346,11 @@ bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, SceneGra
 		}
 		++z;
 	}
-	SceneGraphNode node(SceneGraphNodeType::Model);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(v.release(), true);
 	node.setName(name);
 	node.setPalette(palLookup.palette());
-	const KeyFrameIndex keyFrameIdx = 0;
+	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	sceneGraph.emplace(core::move(node));
 	Log::debug("Matrix read");
@@ -466,7 +466,7 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 	return palette.colorCount();
 }
 
-bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	State state;
 	wrap(stream.readUInt32(state._version))
 	uint32_t colorFormat;

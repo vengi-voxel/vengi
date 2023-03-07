@@ -12,7 +12,7 @@
 
 struct lua_State;
 
-namespace voxelformat {
+namespace scenegraph {
 class SceneGraph;
 }
 
@@ -75,7 +75,7 @@ public:
 	core::String load(const core::String& scriptName) const;
 	core::DynamicArray<LUAScript> listScripts() const;
 	bool argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params);
-	bool exec(const core::String& luaScript, voxelformat::SceneGraph &sceneGraph, int nodeId, const voxel::Region& region, const voxel::Voxel& voxel, voxel::Region &dirtyRegion, const core::DynamicArray<core::String>& args = {});
+	bool exec(const core::String& luaScript, scenegraph::SceneGraph &sceneGraph, int nodeId, const voxel::Region& region, const voxel::Voxel& voxel, voxel::Region &dirtyRegion, const core::DynamicArray<core::String>& args = {});
 };
 
 inline auto scriptCompleter(const io::FilesystemPtr& filesystem) {

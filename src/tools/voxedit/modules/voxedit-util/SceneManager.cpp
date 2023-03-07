@@ -72,7 +72,7 @@
 
 namespace voxedit {
 
-inline auto nodeCompleter(const voxelformat::SceneGraph &sceneGraph) {
+inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
 	return [&] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		int i = 0;
 		for (const auto &modelNode : sceneGraph) {
@@ -149,7 +149,7 @@ bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool b
 	if (v == nullptr) {
 		return false;
 	}
-	voxelformat::SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(v, true);
 	node.setName(core::string::extractFilename(img->name().c_str()));
 	return addNodeToSceneGraph(node) != -1;
@@ -161,7 +161,7 @@ bool SceneManager::importAsPlane(const core::String& file) {
 	if (v == nullptr) {
 		return false;
 	}
-	voxelformat::SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(v, true);
 	node.setName(core::string::extractFilename(img->name().c_str()));
 	return addNodeToSceneGraph(node) != -1;
@@ -187,7 +187,7 @@ bool SceneManager::importHeightmap(const core::String& file) {
 
 bool SceneManager::importColoredHeightmap(const core::String& file) {
 	const int nodeId = activeNode();
-	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
+	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	core_assert(node != nullptr);
 	voxel::RawVolume* v = node->volume();
 	if (v == nullptr) {
@@ -243,18 +243,18 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
 	}
-	const voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId);
+	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
 		Log::warn("Node with id %i wasn't found", nodeId);
 		return true;
 	}
-	if (node->type() != voxelformat::SceneGraphNodeType::Model) {
+	if (node->type() != scenegraph::SceneGraphNodeType::Model) {
 		Log::warn("Given node is no model node");
 		return false;
 	}
-	voxelformat::SceneGraph newSceneGraph;
-	voxelformat::SceneGraphNode newNode;
-	voxelformat::copyNode(*node, newNode, false);
+	scenegraph::SceneGraph newSceneGraph;
+	scenegraph::SceneGraphNode newNode;
+	scenegraph::copyNode(*node, newNode, false);
 	newSceneGraph.emplace(core::move(newNode));
 	voxelformat::SaveContext saveCtx;
 	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
@@ -312,7 +312,7 @@ void SceneManager::updateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType 
 
 bool SceneManager::saveModels(const core::String& dir) {
 	bool state = false;
-	for (const voxelformat::SceneGraphNode & node : _sceneGraph) {
+	for (const scenegraph::SceneGraphNode & node : _sceneGraph) {
 		const core::String filename = core::string::path(dir, node.name() + ".vengi");
 		state |= saveNode(node.id(), filename);
 	}
@@ -350,11 +350,11 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 	return false;
 }
 
-static void mergeIfNeeded(voxelformat::SceneGraph &newSceneGraph) {
+static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
 	if (newSceneGraph.size() > voxelrender::RawVolumeRenderer::MAX_VOLUMES) {
-		const voxelformat::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge(true);
+		const scenegraph::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge(true);
 		newSceneGraph.clear();
-		voxelformat::SceneGraphNode node;
+		scenegraph::SceneGraphNode node;
 		node.setVolume(merged.first, true);
 		node.setPalette(merged.second);
 		newSceneGraph.emplace(core::move(node));
@@ -371,7 +371,7 @@ bool SceneManager::import(const core::String& file) {
 		Log::error("Failed to open model file %s", file.c_str());
 		return false;
 	}
-	voxelformat::SceneGraph newSceneGraph;
+	scenegraph::SceneGraph newSceneGraph;
 	io::FileStream stream(filePtr);
 	voxelformat::LoadContext loadCtx;
 	if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph, loadCtx)) {
@@ -380,11 +380,11 @@ bool SceneManager::import(const core::String& file) {
 	}
 	mergeIfNeeded(newSceneGraph);
 
-	voxelformat::SceneGraphNode groupNode(voxelformat::SceneGraphNodeType::Group);
+	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(file));
 	int newNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
 	bool state = false;
-	for (voxelformat::SceneGraphNode& node : newSceneGraph) {
+	for (scenegraph::SceneGraphNode& node : newSceneGraph) {
 		state |= addNodeToSceneGraph(node, newNodeId) != -1;
 	}
 
@@ -402,7 +402,7 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		return false;
 	}
 	bool state = false;
-	voxelformat::SceneGraphNode groupNode(voxelformat::SceneGraphNodeType::Group);
+	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(directory));
 	int importGroupNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
 
@@ -410,7 +410,7 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		if (format == nullptr && !voxelformat::isModelFormat(e.name)) {
 			continue;
 		}
-		voxelformat::SceneGraph newSceneGraph;
+		scenegraph::SceneGraph newSceneGraph;
 		io::FilePtr filePtr = io::filesystem()->open(e.fullPath, io::FileMode::SysRead);
 		io::FileStream stream(filePtr);
 		voxelformat::LoadContext loadCtx;
@@ -418,7 +418,7 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 			Log::error("Failed to load %s", e.fullPath.c_str());
 		} else {
 			mergeIfNeeded(newSceneGraph);
-			for (voxelformat::SceneGraphNode& node : newSceneGraph) {
+			for (scenegraph::SceneGraphNode& node : newSceneGraph) {
 				state |= addNodeToSceneGraph(node, importGroupNodeId) != -1;
 			}
 		}
@@ -442,7 +442,7 @@ bool SceneManager::load(const io::FileDescription& file) {
 	}
 	core::ThreadPool& threadPool = app::App::getInstance()->threadPool();
 	_loadingFuture = threadPool.enqueue([filePtr] () {
-		voxelformat::SceneGraph newSceneGraph;
+		scenegraph::SceneGraph newSceneGraph;
 		io::FileStream stream(filePtr);
 		voxelformat::LoadContext loadCtx;
 		voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph, loadCtx);
@@ -456,7 +456,7 @@ bool SceneManager::load(const io::FileDescription& file) {
 }
 
 bool SceneManager::load(const io::FileDescription& file, const uint8_t *data, size_t size) {
-	voxelformat::SceneGraph newSceneGraph;
+	scenegraph::SceneGraph newSceneGraph;
 	io::MemoryReadStream stream(data, size);
 	voxelformat::LoadContext loadCtx;
 	voxelformat::loadFormat(file.name, stream, newSceneGraph, loadCtx);
@@ -482,7 +482,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 	Log::debug("Modified node %i, record undo state: %s", nodeId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
-		voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 		_mementoHandler.markModification(node, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
@@ -513,7 +513,7 @@ void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
 		});
 		modified(nodeId, wrapper.dirtyRegion());
 	});
-	voxelformat::SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(newVolume, true);
 	node.setName(core::string::format("color: %i", (int)voxelColor.getColor()));
 	addNodeToSceneGraph(node);
@@ -542,7 +542,7 @@ void SceneManager::scale(int nodeId) {
 
 void SceneManager::crop() {
 	const int nodeId = activeNode();
-	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
+	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
 		return;
 	}
@@ -571,7 +571,7 @@ void SceneManager::resize(int nodeId, const voxel::Region &region) {
 	if (!region.isValid()) {
 		return;
 	}
-	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
+	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
 		return;
 	}
@@ -613,13 +613,13 @@ void SceneManager::resizeAll(const glm::ivec3& size) {
 }
 
 voxel::RawVolume* SceneManager::volume(int nodeId) {
-	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
+	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	core_assert_msg(node != nullptr, "Node with id %i wasn't found in the scene graph", nodeId);
 	return node->volume();
 }
 
 const voxel::RawVolume* SceneManager::volume(int nodeId) const {
-	const voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
+	const scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	core_assert_msg(node != nullptr, "Node with id %i wasn't found in the scene graph", nodeId);
 	return node->volume();
 }
@@ -643,8 +643,8 @@ bool SceneManager::setActivePalette(const voxel::Palette &palette, bool searchBe
 		Log::warn("Failed to set the active palette - node with id %i not found", nodeId);
 		return false;
 	}
-	voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	if (node.type() != voxelformat::SceneGraphNodeType::Model) {
+	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	if (node.type() != scenegraph::SceneGraphNodeType::Model) {
 		Log::warn("Failed to set the active palette - node with id %i is no model node", nodeId);
 		return false;
 	}
@@ -696,7 +696,7 @@ bool SceneManager::mementoRename(const MementoState& s) {
 
 bool SceneManager::mementoProperties(const MementoState& s) {
 	Log::debug("Memento: properties of node %i (%s)", s.nodeId, s.name.c_str());
-	if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
 		node->properties().clear();
 		core_assert(s.properties.hasValue());
 		node->addProperties(*s.properties.value());
@@ -706,7 +706,7 @@ bool SceneManager::mementoProperties(const MementoState& s) {
 }
 bool SceneManager::mementoKeyFrames(const MementoState& s) {
 	Log::debug("Memento: keyframes of node %i (%s)", s.nodeId, s.name.c_str());
-	if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
 		node->setKeyFrames(*s.keyFrames.value());
 		return true;
 	}
@@ -715,7 +715,7 @@ bool SceneManager::mementoKeyFrames(const MementoState& s) {
 
 bool SceneManager::mementoPaletteChange(const MementoState& s) {
 	Log::debug("Memento: palette change of node %i to %s", s.nodeId, s.name.c_str());
-	if (voxelformat::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
+	if (scenegraph::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
 		node->setPalette(*s.palette.value());
 		if (s.hasVolumeData()) {
 			mementoModification(s);
@@ -728,7 +728,7 @@ bool SceneManager::mementoPaletteChange(const MementoState& s) {
 
 bool SceneManager::mementoModification(const MementoState& s) {
 	Log::debug("Memento: modification in volume of node %i (%s)", s.nodeId, s.name.c_str());
-	if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
 		if (node->region() != s.dataRegion()) {
 			node->setVolume(new voxel::RawVolume(s.dataRegion()), true);
 		}
@@ -745,13 +745,13 @@ bool SceneManager::mementoModification(const MementoState& s) {
 }
 
 bool SceneManager::mementoStateToNode(const MementoState &s) {
-	voxelformat::SceneGraphNodeType type = voxelformat::SceneGraphNodeType::Model;
+	scenegraph::SceneGraphNodeType type = scenegraph::SceneGraphNodeType::Model;
 	if (!s.hasVolumeData()) {
 		// TODO: what about cameras and so on?
-		type = voxelformat::SceneGraphNodeType::Group;
+		type = scenegraph::SceneGraphNodeType::Group;
 	}
-	voxelformat::SceneGraphNode node(type);
-	if (type == voxelformat::SceneGraphNodeType::Model) {
+	scenegraph::SceneGraphNode node(type);
+	if (type == scenegraph::SceneGraphNodeType::Model) {
 		node.setVolume(new voxel::RawVolume(s.dataRegion()), true);
 		MementoData::toVolume(node.volume(), s.data);
 		const glm::vec3 pivot = node.region().getPivot();
@@ -795,8 +795,8 @@ bool SceneManager::mementoStateExecute(const MementoState &s, bool isRedo) {
 	}
 	if (s.type == MementoType::SceneNodeTransform) {
 		Log::debug("Memento: transform of node %i", s.nodeId);
-		if (voxelformat::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
-			voxelformat::SceneGraphTransform &transform = node->keyFrame(s.keyFrameIdx).transform();
+		if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+			scenegraph::SceneGraphTransform &transform = node->keyFrame(s.keyFrameIdx).transform();
 			transform.setWorldMatrix(s.worldMatrix);
 			transform.update(_sceneGraph, *node, s.keyFrameIdx);
 			return true;
@@ -931,7 +931,7 @@ void SceneManager::resetLastTrace() {
 	_lastRaytraceX = _lastRaytraceY = -1;
 }
 
-static bool shouldGetMerged(const voxelformat::SceneGraphNode &node, NodeMergeFlags flags) {
+static bool shouldGetMerged(const scenegraph::SceneGraphNode &node, NodeMergeFlags flags) {
 	bool add = false;
 	if ((flags & NodeMergeFlags::All) != NodeMergeFlags::None) {
 		add = true;
@@ -946,25 +946,25 @@ static bool shouldGetMerged(const voxelformat::SceneGraphNode &node, NodeMergeFl
 }
 
 int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
-	voxelformat::SceneGraph newSceneGraph;
+	scenegraph::SceneGraph newSceneGraph;
 	for (int nodeId : nodeIds) {
-		voxelformat::SceneGraphNode copiedNode;
-		const voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId);
-		if (node == nullptr || node->type() != voxelformat::SceneGraphNodeType::Model) {
+		scenegraph::SceneGraphNode copiedNode;
+		const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
 			continue;
 		}
-		voxelformat::copyNode(*node, copiedNode, true);
+		scenegraph::copyNode(*node, copiedNode, true);
 		newSceneGraph.emplace(core::move(copiedNode));
 	}
-	voxelformat::SceneGraph::MergedVolumePalette merged = newSceneGraph.merge();
+	scenegraph::SceneGraph::MergedVolumePalette merged = newSceneGraph.merge();
 	if (merged.first == nullptr) {
 		return -1;
 	}
 
-	voxelformat::SceneGraphNode newNode(voxelformat::SceneGraphNodeType::Model);
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	int parent = 0;
-	if (voxelformat::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
-		voxelformat::copyNode(*firstNode, newNode, false);
+	if (scenegraph::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
+		scenegraph::copyNode(*firstNode, newNode, false);
 	}
 	newNode.setVolume(merged.first, true);
 	newNode.setPalette(merged.second);
@@ -982,7 +982,7 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 int SceneManager::mergeNodes(NodeMergeFlags flags) {
 	core::DynamicArray<int> nodeIds;
 	nodeIds.reserve(_sceneGraph.size());
-	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
+	for (scenegraph::SceneGraphNode &node : _sceneGraph) {
 		if (!shouldGetMerged(node, flags)) {
 			continue;
 		}
@@ -1018,7 +1018,7 @@ void SceneManager::resetSceneState() {
 	// this also resets the cursor voxel - but nodeActive() will set it to the first usable index
 	// that's why this call must happen before the nodeActive() call.
 	_modifier.reset();
-	voxelformat::SceneGraphNode &node = *_sceneGraph.begin();
+	scenegraph::SceneGraphNode &node = *_sceneGraph.begin();
 	nodeActivate(node.id());
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
@@ -1035,13 +1035,13 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 	if (newNodeId == -1) {
 		return;
 	}
-	if (voxelformat::SceneGraphNode *node = sceneGraphNode(newNodeId)) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(newNodeId)) {
 		const voxel::Region &region = node->region();
 		const core::String &name = node->name();
-		const voxelformat::SceneGraphNodeType type = node->type();
+		const scenegraph::SceneGraphNodeType type = node->type();
 		Log::debug("Adding node %i with name %s", newNodeId, name.c_str());
 
-		for (voxelformat::SceneGraphKeyFrame &keyFrame : node->keyFrames()) {
+		for (scenegraph::SceneGraphKeyFrame &keyFrame : node->keyFrames()) {
 			keyFrame.transform().update(sceneGraph(), *node, keyFrame.frameIdx);
 		}
 
@@ -1049,7 +1049,7 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 		markDirty();
 
 		Log::debug("Add node %i to scene graph", newNodeId);
-		if (type == voxelformat::SceneGraphNodeType::Model) {
+		if (type == scenegraph::SceneGraphNodeType::Model) {
 			// update the whole volume
 			_sceneRenderer.updateNodeRegion(newNodeId, region);
 
@@ -1059,13 +1059,13 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 	}
 }
 
-int SceneManager::addNodeToSceneGraph(voxelformat::SceneGraphNode &node, int parent) {
-	const int newNodeId = voxelformat::addNodeToSceneGraph(_sceneGraph, node, parent);
+int SceneManager::addNodeToSceneGraph(scenegraph::SceneGraphNode &node, int parent) {
+	const int newNodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, node, parent);
 	onNewNodeAdded(newNodeId);
 	return newNodeId;
 }
 
-bool SceneManager::loadSceneGraph(voxelformat::SceneGraph&& sceneGraph) {
+bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph) {
 	core_trace_scoped(LoadSceneGraph);
 	_sceneGraph = core::move(sceneGraph);
 	_sceneRenderer.clear();
@@ -1085,34 +1085,34 @@ void SceneManager::updateGridRenderer(const voxel::Region& region) {
 	_sceneRenderer.updateGridRegion(region);
 }
 
-voxelformat::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {
+scenegraph::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {
 	if (_sceneGraph.hasNode(nodeId)) {
 		return &_sceneGraph.node(nodeId);
 	}
 	return nullptr;
 }
 
-const voxelformat::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) const {
+const scenegraph::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) const {
 	if (_sceneGraph.hasNode(nodeId)) {
 		return &_sceneGraph.node(nodeId);
 	}
 	return nullptr;
 }
 
-const voxelformat::SceneGraph &SceneManager::sceneGraph() {
+const scenegraph::SceneGraph &SceneManager::sceneGraph() {
 	return _sceneGraph;
 }
 
 bool SceneManager::setNewVolume(int nodeId, voxel::RawVolume* volume, bool deleteMesh) {
 	core_trace_scoped(SetNewVolume);
-	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
+	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
 		return false;
 	}
 	return setSceneGraphNodeVolume(*node, volume);
 }
 
-bool SceneManager::setSceneGraphNodeVolume(voxelformat::SceneGraphNode &node, voxel::RawVolume* volume) {
+bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, voxel::RawVolume* volume) {
 	node.setVolume(volume, true);
 
 	const voxel::Region& region = volume->region();
@@ -1136,14 +1136,14 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	_sceneRenderer.clear();
 
 	voxel::RawVolume* v = new voxel::RawVolume(region);
-	voxelformat::SceneGraphNode node;
+	scenegraph::SceneGraphNode node;
 	node.setVolume(v, true);
 	if (name.empty()) {
 		node.setName("unnamed");
 	} else {
 		node.setName(name);
 	}
-	const int nodeId = voxelformat::addNodeToSceneGraph(_sceneGraph, node, 0);
+	const int nodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, node, 0);
 	if (nodeId == -1) {
 		Log::error("Failed to add empty volume to new scene graph");
 		return false;
@@ -1159,7 +1159,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 void SceneManager::rotate(int angleX, int angleY, int angleZ) {
 	const glm::vec3 angle(angleX, angleY, angleZ);
 	_sceneGraph.foreachGroup([&](int nodeId) {
-		voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId);
+		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 		if (node == nullptr) {
 			return;
 		}
@@ -1196,7 +1196,7 @@ void SceneManager::move(int x, int y, int z) {
 }
 
 void SceneManager::shift(int nodeId, const glm::ivec3& m) {
-	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
+	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
 		return;
 	}
@@ -1218,7 +1218,7 @@ void SceneManager::shift(int x, int y, int z) {
 }
 
 void SceneManager::exchangeColors(int nodeId, uint8_t palIdx1, uint8_t palIdx2) {
-	voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId);
+	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
 		return;
 	}
@@ -1304,7 +1304,7 @@ void SceneManager::construct() {
 		}
 		const float scale = core::string::toFloat(args[0]);
 		const int nodeId = activeNode();
-		voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 		voxel::Palette &pal = node.palette();
 		pal.changeIntensity(scale);
 		_mementoHandler.markPaletteChange(node);
@@ -1317,7 +1317,7 @@ void SceneManager::construct() {
 		}
 		const core::String &type = args[0];
 		const int nodeId = activeNode();
-		voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 		voxel::Palette &pal = node.palette();
 		if (type == "hue") {
 			pal.sortHue();
@@ -1756,8 +1756,8 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("layerdelete", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
-		if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId)) {
-			if (node->type() == voxelformat::SceneGraphNodeType::Model) {
+		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
+			if (node->type() == scenegraph::SceneGraphNodeType::Model) {
 				nodeRemove(*node, false);
 			}
 		}
@@ -1765,21 +1765,21 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("layerlock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
-		if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId)) {
+		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(true);
 		}
 	}).setHelp("Lock a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("togglelayerlock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
-		if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId)) {
+		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(!node->locked());
 		}
 	}).setHelp("Toggle the lock state of a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("layerunlock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
-		if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId)) {
+		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(false);
 		}
 	}).setHelp("Unlock a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
@@ -1795,32 +1795,32 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("togglelayerstate", [&](const command::CmdArgs &args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
-		if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			node->setVisible(!node->visible());
 		}
 	}).setHelp("Toggle the visible state of a node").setArgumentCompleter(nodeCompleter(_sceneGraph));;
 
 	command::Command::registerCommand("layerhideall", [&](const command::CmdArgs &args) {
-		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
+		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
 			node.setVisible(false);
 		}
 	}).setHelp("Hide all nodes");
 
 	command::Command::registerCommand("layerlockall", [&](const command::CmdArgs &args) {
-		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
+		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
 			node.setLocked(true);
 		}
 	}).setHelp("Lock all nodes");
 
 	command::Command::registerCommand("layerunlockall", [&] (const command::CmdArgs& args) {
-		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
+		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
 			node.setLocked(false);
 		}
 	}).setHelp("Unlock all nodes");
 
 	command::Command::registerCommand("layerhideothers", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
-		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
+		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
 			if (node.id() == nodeId) {
 				node.setVisible(true);
 				continue;
@@ -1832,12 +1832,12 @@ void SceneManager::construct() {
 	command::Command::registerCommand("layerrename", [&] (const command::CmdArgs& args) {
 		if (args.size() == 1) {
 			const int nodeId = activeNode();
-			if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 				nodeRename(*node, args[0]);
 			}
 		} else if (args.size() == 2) {
 			const int nodeId = core::string::toInt(args[0]);
-			if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 				nodeRename(*node, args[1]);
 			}
 		} else {
@@ -1846,14 +1846,14 @@ void SceneManager::construct() {
 	}).setHelp("Rename the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));;
 
 	command::Command::registerCommand("layershowall", [&] (const command::CmdArgs& args) {
-		for (voxelformat::SceneGraphNode &node : _sceneGraph) {
+		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
 			node.setVisible(true);
 		}
 	}).setHelp("Show all nodes");
 
 	command::Command::registerCommand("layerduplicate", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
-		if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			nodeDuplicate(*node);
 		}
 	}).setHelp("Duplicates the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));;
@@ -1886,7 +1886,7 @@ int SceneManager::addModelChild(const core::String& name, int width, int height,
 		Log::warn("Invalid size provided (%i:%i:%i)", width, height, depth);
 		return -1;
 	}
-	voxelformat::SceneGraphNode modelNode;
+	scenegraph::SceneGraphNode modelNode;
 	modelNode.setVolume(new voxel::RawVolume(region), true);
 	modelNode.setName(name);
 	const int parentId = activeNode();
@@ -1971,10 +1971,10 @@ void SceneManager::animate(double nowSeconds) {
 	}
 	if (_nextFrameSwitch <= nowSeconds) {
 		_nextFrameSwitch = nowSeconds + _animationSpeed;
-		const int modelCount = (int)_sceneGraph.size(voxelformat::SceneGraphNodeType::Model);
+		const int modelCount = (int)_sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
 		const int roundTrip = modelCount + _currentAnimationModelIdx;
 		for (int modelIdx = _currentAnimationModelIdx + 1; modelIdx < roundTrip; ++modelIdx) {
-			voxelformat::SceneGraphNode *node = _sceneGraph[_currentAnimationModelIdx];
+			scenegraph::SceneGraphNode *node = _sceneGraph[_currentAnimationModelIdx];
 			core_assert_always(node != nullptr);
 			node->setVisible(false);
 			_currentAnimationModelIdx = modelIdx % modelCount;
@@ -2005,7 +2005,7 @@ bool SceneManager::update(double nowSeconds) {
 				_dirty = false;
 				loadedNewScene = true;
 			}
-			_loadingFuture = std::future<voxelformat::SceneGraph>();
+			_loadingFuture = std::future<scenegraph::SceneGraph>();
 		}
 	}
 	_modifier.update(nowSeconds);
@@ -2178,7 +2178,7 @@ void SceneManager::traceScene(bool force) {
 	_lastRaytraceY = _mouseCursor.y;
 	float intersectDist = _camera->farPlane();
 	const math::Ray& ray = _camera->mouseRay(_mouseCursor);
-	for (voxelformat::SceneGraphNode &node : _sceneGraph) {
+	for (scenegraph::SceneGraphNode &node : _sceneGraph) {
 		if (!node.visible()) {
 			continue;
 		}
@@ -2322,27 +2322,27 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 }
 
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix,
-									   voxelformat::KeyFrameIndex keyFrameIdx) {
+									   scenegraph::KeyFrameIndex keyFrameIdx) {
 	if (nodeId == -1) {
 		nodeForeachGroup([&] (int nodeId) {
-			if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 				nodeUpdateTransform(*node, localMatrix, deltaMatrix, keyFrameIdx);
 			}
 		});
 		return true;
 	}
-	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeUpdateTransform(*node, localMatrix, deltaMatrix, keyFrameIdx);
 	}
 	return false;
 }
 
-bool SceneManager::nodeAddKeyframe(voxelformat::SceneGraphNode &node, voxelformat::FrameIndex frameIdx) {
+bool SceneManager::nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx) {
 	if (node.addKeyFrame(frameIdx) == InvalidKeyFrame) {
 		Log::warn("Failed to add keyframe for frame %i", (int)frameIdx);
 		return false;
 	}
-	const voxelformat::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
+	const scenegraph::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
 	if (newKeyFrameIdx > 0) {
 		node.keyFrame(newKeyFrameIdx).setTransform(node.keyFrame(newKeyFrameIdx - 1).transform());
 		_mementoHandler.markKeyFramesChange(node);
@@ -2352,33 +2352,33 @@ bool SceneManager::nodeAddKeyframe(voxelformat::SceneGraphNode &node, voxelforma
 	return false;
 }
 
-bool SceneManager::nodeAddKeyFrame(int nodeId, voxelformat::FrameIndex frameIdx) {
+bool SceneManager::nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) {
 	if (nodeId == -1) {
 		nodeForeachGroup([&](int nodeId) {
-			voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
+			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 			nodeAddKeyframe(node, frameIdx);
 		});
 		return true;
 	}
-	voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	return nodeAddKeyframe(node, frameIdx);
 }
 
-bool SceneManager::nodeRemoveKeyFrame(int nodeId, voxelformat::FrameIndex frameIdx) {
-	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+bool SceneManager::nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRemoveKeyFrame(*node, frameIdx);
 	}
 	return false;
 }
 
-bool SceneManager::nodeRemoveKeyFrameByIndex(int nodeId, voxelformat::KeyFrameIndex keyFrameIdx) {
-	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+bool SceneManager::nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRemoveKeyFrameByIndex(*node, keyFrameIdx);
 	}
 	return false;
 }
 
-bool SceneManager::nodeRemoveKeyFrame(voxelformat::SceneGraphNode &node, voxelformat::FrameIndex frameIdx) {
+bool SceneManager::nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx) {
 	if (node.removeKeyFrame(frameIdx)) {
 		_mementoHandler.markKeyFramesChange(node);
 		markDirty();
@@ -2387,7 +2387,7 @@ bool SceneManager::nodeRemoveKeyFrame(voxelformat::SceneGraphNode &node, voxelfo
 	return false;
 }
 
-bool SceneManager::nodeRemoveKeyFrameByIndex(voxelformat::SceneGraphNode &node, voxelformat::KeyFrameIndex keyFrameIdx) {
+bool SceneManager::nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx) {
 	if (node.removeKeyFrameByIndex(keyFrameIdx)) {
 		_mementoHandler.markKeyFramesChange(node);
 		markDirty();
@@ -2396,15 +2396,15 @@ bool SceneManager::nodeRemoveKeyFrameByIndex(voxelformat::SceneGraphNode &node, 
 	return false;
 }
 
-bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const glm::mat4 &localMatrix,
-									   const glm::mat4 *deltaMatrix, voxelformat::KeyFrameIndex keyFrameIdx) {
+bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &localMatrix,
+									   const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx) {
 	glm::vec3 translation;
 	glm::quat orientation;
 	glm::vec3 scale;
 	glm::vec3 skew;
 	glm::vec4 perspective;
-	voxelformat::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
-	voxelformat::SceneGraphTransform &transform = keyFrame.transform();
+	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 	glm::decompose(localMatrix, scale, orientation, translation, skew, perspective);
 	transform.setLocalTranslation(translation);
 	transform.setLocalOrientation(orientation);
@@ -2419,7 +2419,7 @@ bool SceneManager::nodeUpdateTransform(voxelformat::SceneGraphNode &node, const 
 
 bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 	if (_sceneGraph.changeParent(sourceNodeId, targetNodeId)) {
-		voxelformat::SceneGraphNode *node = sceneGraphNode(sourceNodeId);
+		scenegraph::SceneGraphNode *node = sceneGraphNode(sourceNodeId);
 		core_assert(node != nullptr);
 		_mementoHandler.markNodeMoved(targetNodeId, sourceNodeId);
 		markDirty();
@@ -2429,7 +2429,7 @@ bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 }
 
 bool SceneManager::nodeSetProperty(int nodeId, const core::String &key, const core::String &value) {
-	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		if (node->setProperty(key, value)) {
 			_mementoHandler.markNodePropertyChange(*node);
 			return true;
@@ -2439,7 +2439,7 @@ bool SceneManager::nodeSetProperty(int nodeId, const core::String &key, const co
 }
 
 bool SceneManager::nodeRemoveProperty(int nodeId, const core::String &key) {
-	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		if (node->properties().remove(key)) {
 			_mementoHandler.markNodePropertyChange(*node);
 			return true;
@@ -2449,13 +2449,13 @@ bool SceneManager::nodeRemoveProperty(int nodeId, const core::String &key) {
 }
 
 bool SceneManager::nodeRename(int nodeId, const core::String &name) {
-	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRename(*node, name);
 	}
 	return false;
 }
 
-bool SceneManager::nodeRename(voxelformat::SceneGraphNode &node, const core::String &name) {
+bool SceneManager::nodeRename(scenegraph::SceneGraphNode &node, const core::String &name) {
 	node.setName(name);
 	_mementoHandler.markNodeRenamed(node);
 	markDirty();
@@ -2463,7 +2463,7 @@ bool SceneManager::nodeRename(voxelformat::SceneGraphNode &node, const core::Str
 }
 
 bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
-	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		node->setVisible(visible);
 		return true;
 	}
@@ -2471,7 +2471,7 @@ bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
 }
 
 bool SceneManager::nodeSetLocked(int nodeId, bool visible) {
-	if (voxelformat::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		node->setLocked(visible);
 		return true;
 	}
@@ -2479,7 +2479,7 @@ bool SceneManager::nodeSetLocked(int nodeId, bool visible) {
 }
 
 bool SceneManager::nodeRemove(int nodeId, bool recursive) {
-	if (voxelformat::SceneGraphNode* node = sceneGraphNode(nodeId)) {
+	if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 		return nodeRemove(*node, recursive);
 	}
 	return false;
@@ -2490,7 +2490,7 @@ void SceneManager::markDirty() {
 	_dirty = true;
 }
 
-bool SceneManager::nodeRemove(voxelformat::SceneGraphNode &node, bool recursive) {
+bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) {
 	const int nodeId = node.id();
 	const core::String name = node.name();
 	Log::debug("Delete node %i with name %s", nodeId, name.c_str());
@@ -2502,7 +2502,7 @@ bool SceneManager::nodeRemove(voxelformat::SceneGraphNode &node, bool recursive)
 	}
 	if (_sceneGraph.empty()) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
-		voxelformat::SceneGraphNode node(voxelformat::SceneGraphNodeType::Model);
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume(region), true);
 		if (name.empty()) {
 			node.setName("unnamed");
@@ -2516,11 +2516,11 @@ bool SceneManager::nodeRemove(voxelformat::SceneGraphNode &node, bool recursive)
 	return true;
 }
 
-void SceneManager::nodeDuplicate(const voxelformat::SceneGraphNode &node) {
-	if (node.type() != voxelformat::SceneGraphNodeType::Model) {
+void SceneManager::nodeDuplicate(const scenegraph::SceneGraphNode &node) {
+	if (node.type() != scenegraph::SceneGraphNodeType::Model) {
 		return;
 	}
-	const int newNodeId = voxelformat::addNodeToSceneGraph(_sceneGraph, node, node.parent());
+	const int newNodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, node, node.parent());
 	onNewNodeAdded(newNodeId);
 #if 0
 	for (int childNodeId : node.children()) {
@@ -2542,9 +2542,9 @@ bool SceneManager::nodeActivate(int nodeId) {
 		return true;
 	}
 	Log::debug("Activate node %i", nodeId);
-	voxelformat::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
-		const voxelformat::SceneGraphNodeCamera& cameraNode = voxelformat::toCameraNode(node);
+	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
+		const scenegraph::SceneGraphNodeCamera& cameraNode = scenegraph::toCameraNode(node);
 		video::Camera nodeCamera = voxelrender::toCamera(activeCamera()->size(), cameraNode);
 		nodeCamera.update(0.0f);
 		activeCamera()->lerp(nodeCamera);

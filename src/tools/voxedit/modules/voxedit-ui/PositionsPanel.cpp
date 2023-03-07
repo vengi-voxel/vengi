@@ -174,14 +174,14 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 
 void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader(ICON_FA_ARROW_UP " Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-		const voxelformat::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 		const int activeNode = sceneGraph.activeNode();
 		if (activeNode != -1) {
-			voxelformat::SceneGraphNode &node = sceneGraph.node(activeNode);
-			const voxelformat::FrameIndex frame = sceneMgr().currentFrame();
-			const voxelformat::KeyFrameIndex keyFrame = node.keyFrameForFrame(frame);
-			voxelformat::SceneGraphKeyFrame &sceneGraphKeyFrame = node.keyFrame(keyFrame);
-			voxelformat::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
+			scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
+			const scenegraph::FrameIndex frame = sceneMgr().currentFrame();
+			const scenegraph::KeyFrameIndex keyFrame = node.keyFrameForFrame(frame);
+			scenegraph::SceneGraphKeyFrame &sceneGraphKeyFrame = node.keyFrame(keyFrame);
+			scenegraph::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
 			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
 			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform.worldMatrix()), matrixTranslation, matrixRotation,
 												  matrixScale);
@@ -194,15 +194,15 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 
 			{
 				ui::ScopedStyle style;
-				if (node.type() == voxelformat::SceneGraphNodeType::Camera) {
+				if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
 					style.disableItem();
 				}
 				const int currentInterpolation = (int)sceneGraphKeyFrame.interpolation;
-				if (ImGui::BeginCombo("Interpolation##interpolationstrings", voxelformat::InterpolationTypeStr[currentInterpolation])) {
-					for (int n = 0; n < lengthof(voxelformat::InterpolationTypeStr); n++) {
+				if (ImGui::BeginCombo("Interpolation##interpolationstrings", scenegraph::InterpolationTypeStr[currentInterpolation])) {
+					for (int n = 0; n < lengthof(scenegraph::InterpolationTypeStr); n++) {
 						const bool isSelected = (currentInterpolation == n);
-						if (ImGui::Selectable(voxelformat::InterpolationTypeStr[n], isSelected)) {
-							sceneGraphKeyFrame.interpolation = (voxelformat::InterpolationType)n;
+						if (ImGui::Selectable(scenegraph::InterpolationTypeStr[n], isSelected)) {
+							sceneGraphKeyFrame.interpolation = (scenegraph::InterpolationType)n;
 						}
 						if (isSelected) {
 							ImGui::SetItemDefaultFocus();

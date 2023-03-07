@@ -19,10 +19,10 @@ namespace voxelformat {
  */
 class SMFormat : public RGBAFormat {
 private:
-	bool readSmd3(io::SeekableReadStream &stream, SceneGraph &sceneGraph, const core::Map<int, int>& blockPal);
-	bool readSegment(io::SeekableReadStream &stream, SceneGraph &sceneGraph, const core::Map<int, int>& blockPal);
-	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) override;
-	bool saveGroups(const SceneGraph &sceneGraph, const core::String &filename,
+	bool readSmd3(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const core::Map<int, int>& blockPal);
+	bool readSegment(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const core::Map<int, int>& blockPal);
+	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) override;
+	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override {
 		return false;
 	}

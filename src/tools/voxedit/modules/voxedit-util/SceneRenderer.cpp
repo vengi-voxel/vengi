@@ -87,14 +87,14 @@ void SceneRenderer::updateNodeRegion(int nodeId, const voxel::Region &region, ui
 	_highlightRegion = TimedRegion(region, timeProvider->tickNow(), renderRegionMillis);
 }
 
-static voxelformat::SceneGraphNode *sceneGraphNode(const voxelformat::SceneGraph &sceneGraph, int nodeId) {
+static scenegraph::SceneGraphNode *sceneGraphNode(const scenegraph::SceneGraph &sceneGraph, int nodeId) {
 	if (sceneGraph.hasNode(nodeId)) {
 		return &sceneGraph.node(nodeId);
 	}
 	return nullptr;
 }
 
-bool SceneRenderer::extractVolume(const voxelformat::SceneGraph &sceneGraph) {
+bool SceneRenderer::extractVolume(const scenegraph::SceneGraph &sceneGraph) {
 	core_trace_scoped(SceneManagerExtract);
 	const size_t n = _extractRegions.size();
 	if (n <= 0) {
@@ -103,7 +103,7 @@ bool SceneRenderer::extractVolume(const voxelformat::SceneGraph &sceneGraph) {
 	Log::debug("Extract the meshes for %i regions", (int)n);
 	for (size_t i = 0; i < n; ++i) {
 		const voxel::Region &region = _extractRegions[i].region;
-		if (voxelformat::SceneGraphNode *node = sceneGraphNode(sceneGraph, _extractRegions[i].nodeId)) {
+		if (scenegraph::SceneGraphNode *node = sceneGraphNode(sceneGraph, _extractRegions[i].nodeId)) {
 			if (!_volumeRenderer.extractRegion(*node, region)) {
 				Log::error("Failed to extract the model mesh");
 			}
@@ -115,14 +115,14 @@ bool SceneRenderer::extractVolume(const voxelformat::SceneGraph &sceneGraph) {
 	return true;
 }
 
-void SceneRenderer::updateLockedPlanes(math::Axis lockedAxis, const voxelformat::SceneGraph &sceneGraph,
+void SceneRenderer::updateLockedPlanes(math::Axis lockedAxis, const scenegraph::SceneGraph &sceneGraph,
 									   const glm::ivec3 &cursorPosition) {
 	updateLockedPlane(lockedAxis, math::Axis::X, sceneGraph, cursorPosition);
 	updateLockedPlane(lockedAxis, math::Axis::Y, sceneGraph, cursorPosition);
 	updateLockedPlane(lockedAxis, math::Axis::Z, sceneGraph, cursorPosition);
 }
 
-void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const voxelformat::SceneGraph &sceneGraph,
+void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const scenegraph::SceneGraph &sceneGraph,
 									  const glm::ivec3 &cursorPosition) {
 	if (axis == math::Axis::None) {
 		return;
@@ -143,10 +143,10 @@ void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, co
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
 
-void SceneRenderer::updateAABBMesh(bool sceneMode, const voxelformat::SceneGraph &sceneGraph,
-								   voxelformat::FrameIndex frame) {
+void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
+								   scenegraph::FrameIndex frame) {
 	_shapeBuilder.clear();
-	for (voxelformat::SceneGraphNode &node : sceneGraph) {
+	for (scenegraph::SceneGraphNode &node : sceneGraph) {
 		if (!node.visible()) {
 			continue;
 		}
@@ -174,7 +174,7 @@ void SceneRenderer::update() {
 }
 
 void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera,
-								const voxelformat::SceneGraph &sceneGraph, voxelformat::FrameIndex frameIdx) {
+								const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx) {
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	_volumeRenderer.setSceneMode(renderContext.sceneMode);
 	updateAABBMesh(renderContext.sceneMode, sceneGraph, frameIdx);
@@ -184,7 +184,7 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 }
 
 void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera,
-							 const voxelformat::SceneGraph &sceneGraph) {
+							 const scenegraph::SceneGraph &sceneGraph) {
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	video::ScopedState blend(video::State::Blend, true);
 	if (renderContext.sceneMode) {
@@ -192,7 +192,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 			_shapeRenderer.render(_aabbMeshIndex, camera);
 		}
 	} else {
-		voxelformat::SceneGraphNode *n = sceneGraphNode(sceneGraph, sceneGraph.activeNode());
+		scenegraph::SceneGraphNode *n = sceneGraphNode(sceneGraph, sceneGraph.activeNode());
 		const voxel::Region &region = n->volume()->region();
 		_gridRenderer.render(camera, toAABB(region));
 
