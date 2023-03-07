@@ -60,6 +60,10 @@ io::FormatDescription qubicleBinary() {
 	return {"Qubicle Binary", {"qb"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 }
 
+io::FormatDescription magicaVoxel() {
+	return {"MagicaVoxel", {"vox"}, [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+}
+
 io::FormatDescription vengi() {
 	return {"Vengi", {"vengi"}, [] (uint32_t magic) {return magic == FourCC('V','E', 'N','G');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 }
@@ -69,7 +73,7 @@ const io::FormatDescription* voxelLoad() {
 	static const io::FormatDescription desc[] = {
 		vengi(),
 		qubicleBinary(),
-		{"MagicaVoxel", {"vox"}, [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		magicaVoxel(),
 		{"Qubicle Binary Tree", {"qbt"}, [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Qubicle Project", {"qbcl"}, [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Sandbox VoxEdit Tilemap", {"vxt"}, [] (uint32_t magic) {return magic == FourCC('V','X','T','1');}, 0u},
@@ -184,21 +188,18 @@ static const io::FormatDescription *getDescription(const core::String &ext, uint
 	return nullptr;
 }
 
-static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint32_t magic, bool load) {
+static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint32_t magic, bool load) {
 	core::SharedPtr<Format> format;
-	for (const core::String& ext : desc->exts) {
+	for (const core::String& ext : desc.exts) {
 		// you only have to check one of the supported extensions here
 		if (ext == "vengi") {
 			format = core::make_shared<VENGIFormat>();
 		} else if (ext == "qb") {
 			format = core::make_shared<QBFormat>();
+		} else if (ext == "vox" && desc.name == magicaVoxel().name) {
+			format = core::make_shared<VoxFormat>();
 		} else if (ext == "vox") {
-			if (!load || magic == FourCC('V', 'O', 'X', ' ')) {
-				format = core::make_shared<VoxFormat>();
-			} else {
-				// TODO: saving in slab6 vox format is not possible with this construction
-				format = core::make_shared<SLAB6VoxFormat>();
-			}
+			format = core::make_shared<SLAB6VoxFormat>();
 		} else if (ext == "qbt" || magic == FourCC('Q', 'B', ' ', '2')) {
 			format = core::make_shared<QBTFormat>();
 		} else if (ext == "kvx") {
@@ -229,9 +230,9 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription *desc, uint
 			format = core::make_shared<VXCFormat>();
 		} else if (ext == "vxt") {
 			format = core::make_shared<VXTFormat>();
-		} else if (ext == "vxl" && desc->name == "Tiberian Sun") {
+		} else if (ext == "vxl" && desc.name == tiberianSun().name) {
 			format = core::make_shared<VXLFormat>();
-		} else if (ext == "vxl" && desc->name == "AceOfSpades") {
+		} else if (ext == "vxl" && desc.name == "AceOfSpades") {
 			format = core::make_shared<AoSVXLFormat>();
 		} else if (ext == "csm" || ext == "nvm") {
 			format = core::make_shared<CSMFormat>();
@@ -278,7 +279,7 @@ image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStr
 		Log::warn("Format %s doesn't have a screenshot embedded", desc->name.c_str());
 		return image::ImagePtr();
 	}
-	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
+	const core::SharedPtr<Format> &f = getFormat(*desc, magic, true);
 	if (f) {
 		stream.seek(0);
 		return f->loadScreenshot(filename, stream, ctx);
@@ -324,7 +325,7 @@ size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream,
 		Log::warn("Format %s doesn't have a palette embedded", desc->name.c_str());
 		return 0;
 	}
-	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
+	const core::SharedPtr<Format> &f = getFormat(*desc, magic, true);
 	if (f) {
 		stream.seek(0);
 		const size_t n = f->loadPalette(filename, stream, palette, ctx);
@@ -344,7 +345,7 @@ bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, sc
 	if (desc == nullptr) {
 		return false;
 	}
-	const core::SharedPtr<Format> &f = getFormat(desc, magic, true);
+	const core::SharedPtr<Format> &f = getFormat(*desc, magic, true);
 	if (f) {
 		if (!f->load(filename, stream, newSceneGraph, ctx)) {
 			Log::error("Error while loading %s", filename.c_str());
@@ -406,7 +407,7 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 		}
 	}
 	if (desc != nullptr) {
-		core::SharedPtr<Format> f = getFormat(desc, 0u, false);
+		core::SharedPtr<Format> f = getFormat(*desc, 0u, false);
 		if (f) {
 			if (f->save(sceneGraph, filename, stream, ctx)) {
 				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
@@ -418,7 +419,7 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 	}
 	for (desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
-			core::SharedPtr<Format> f = getFormat(desc, 0u, false);
+			core::SharedPtr<Format> f = getFormat(*desc, 0u, false);
 			if (f) {
 				if (f->save(sceneGraph, filename, stream, ctx)) {
 					Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
