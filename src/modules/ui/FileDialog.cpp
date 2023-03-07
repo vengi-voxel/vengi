@@ -29,6 +29,7 @@ namespace ui {
 
 static const char *FILE_ALREADY_EXISTS_POPUP = "File already exists##FileOverwritePopup";
 static const char *NEW_FOLDER_POPUP = "Create folder##NewFolderPopup";
+static const char *FILEDIALOGBOOKMARKDND = "filedialog-dir";
 
 enum class FileDialogColumnId {
 	File,
@@ -190,9 +191,9 @@ bool FileDialog::readDir(video::OpenFileMode type) {
 	return true;
 }
 
-void FileDialog::quickAccessEntry(video::OpenFileMode type, const core::String& path, float width, const char *title, const char *icon) {
+bool FileDialog::quickAccessEntry(video::OpenFileMode type, const core::String& path, float width, const char *title, const char *icon) {
 	if (path.empty()) {
-		return;
+		return false;
 	}
 	core::String bookmarkTitle;
 	if (title == nullptr) {
@@ -218,6 +219,7 @@ void FileDialog::quickAccessEntry(video::OpenFileMode type, const core::String& 
 		setCurrentPath(type, path);
 	}
 	ImGui::TooltipText("%s", path.c_str());
+	return true;
 }
 
 void FileDialog::removeBookmark(const core::String &bookmark) {
@@ -276,6 +278,13 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 	}
 
 	if (ImGui::TreeNode("Bookmarks")) {
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(FILEDIALOGBOOKMARKDND)) {
+				const core::String &directory = *(core::String *)payload->Data;
+				addBookmark(directory);
+			}
+			ImGui::EndDragDropTarget();
+		}
 		core::DynamicArray<core::String> bm;
 		core::string::splitString(bookmarks, bm, ";");
 		for (const core::String& path : bm) {
@@ -284,12 +293,15 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 				removeBookmark(path);
 				continue;
 			}
-			if (ImGui::Button(ICON_FK_TRASH)) {
-				removeBookmark(path);
+			if (quickAccessEntry(type, absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER)) {
+				if (ImGui::BeginPopupContextItem()) {
+					if (ImGui::Button(ICON_FK_TRASH " Remove bookmark")) {
+						removeBookmark(path);
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::EndPopup();
+				}
 			}
-			ImGui::TooltipText("Delete this bookmark");
-			ImGui::SameLine();
-			quickAccessEntry(type, absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
 		}
 		ImGui::TreePop();
 	}
@@ -405,6 +417,15 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type) {
 					}
 				}
 			}
+			if (entry.type == io::FilesystemEntry::Type::dir) {
+				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+					_dragAndDropName = core::string::path(_currentPath, entry.name);
+					ImGui::TextUnformatted(_dragAndDropName.c_str());
+					ImGui::SetDragDropPayload(FILEDIALOGBOOKMARKDND, &_dragAndDropName, sizeof(core::String),
+												ImGuiCond_Always);
+					ImGui::EndDragDropSource();
+				}
+			}
 			ImGui::TableNextColumn();
 			const core::String &humanSize = core::string::humanSize(entry.size);
 			ImGui::TextUnformatted(humanSize.c_str());
@@ -429,16 +450,21 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type) {
 	return doubleClickedFile;
 }
 
+void FileDialog::addBookmark(const core::String &bookmark) {
+	Log::error("Add new bookmark: %s", bookmark.c_str());
+	removeBookmark(bookmark);
+	core::String bm = _bookmarks->strVal();
+	if (bm.empty()) {
+		bm.append(bookmark);
+	} else {
+		bm.append(";" + bookmark);
+	}
+	_bookmarks->setVal(bm);
+}
+
 void FileDialog::currentPathPanel(video::OpenFileMode type) {
 	if (ImGui::Button(ICON_FK_BOOKMARK)) {
-		removeBookmark(_currentPath);
-		core::String bm = _bookmarks->strVal();
-		if (bm.empty()) {
-			bm.append(_currentPath);
-		} else {
-			bm.append(";" + _currentPath);
-		}
-		_bookmarks->setVal(bm);
+		addBookmark(_currentPath);
 	}
 	ImGui::TooltipText("Add a bookmark for the current active folder");
 
@@ -456,6 +482,14 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 		ImGui::SameLine();
 		if (ImGui::Button(c.c_str())) {
 			setCurrentPath(type, path);
+		}
+
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+			_dragAndDropName = path;
+			ImGui::TextUnformatted(_dragAndDropName.c_str());
+			ImGui::SetDragDropPayload(FILEDIALOGBOOKMARKDND, &_dragAndDropName, sizeof(core::String),
+										ImGuiCond_Always);
+			ImGui::EndDragDropSource();
 		}
 		ImGui::TooltipText("%s", path.c_str());
 	}

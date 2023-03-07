@@ -47,6 +47,8 @@ private:
 	io::FilesystemEntry _newFolderName;
 	TimedError _newFolderError;
 
+	core::String _dragAndDropName;
+
 	void setCurrentPath(video::OpenFileMode type, const core::String& path);
 	void selectFilter(video::OpenFileMode type, int index);
 	bool hide(const core::String &file) const;
@@ -54,7 +56,8 @@ private:
 	void applyFilter(video::OpenFileMode type);
 	bool readDir(video::OpenFileMode type);
 	void removeBookmark(const core::String &bookmark);
-	void quickAccessEntry(video::OpenFileMode type, const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
+	void addBookmark(const core::String &bookmark);
+	bool quickAccessEntry(video::OpenFileMode type, const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
 	void quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks);
 	void currentPathPanel(video::OpenFileMode type);
 	bool buttons(core::String &buffer, video::OpenFileMode type, bool doubleClickedFile);
