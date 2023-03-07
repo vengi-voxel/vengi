@@ -6,7 +6,7 @@
 
 #include "voxel/tests/AbstractVoxelTest.h"
 #include "voxelformat/Format.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 #include "TestHelper.h"
 
 namespace voxelformat {

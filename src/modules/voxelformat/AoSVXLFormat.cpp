@@ -13,8 +13,8 @@
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
 #define libvxl_assert core_assert_msg
 #define libvxl_mem_malloc core_malloc

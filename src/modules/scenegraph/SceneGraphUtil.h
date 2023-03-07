@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 
 namespace voxelformat {
 

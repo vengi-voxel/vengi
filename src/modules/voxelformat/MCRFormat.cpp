@@ -18,7 +18,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolumeWrapper.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 

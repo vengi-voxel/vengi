@@ -7,7 +7,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "voxel/MaterialColor.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 
 #define wrap(read) \
 	if ((read) != 0) { \

@@ -7,7 +7,7 @@
 #include "render/GridRenderer.h"
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/SceneGraphRenderer.h"
 

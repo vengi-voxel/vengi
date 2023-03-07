@@ -13,7 +13,7 @@
 #include "video/TextureConfig.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/CubicSurfaceExtractor.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"

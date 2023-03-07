@@ -15,7 +15,7 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/QBFormat.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxel/tests/VoxelPrinter.h"

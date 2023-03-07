@@ -6,7 +6,7 @@
 #include "math/AABB.h"
 
 #include "voxel/Region.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace voxedit {
 

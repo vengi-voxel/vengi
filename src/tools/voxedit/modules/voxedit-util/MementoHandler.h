@@ -8,7 +8,7 @@
 #include "voxel/Palette.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "core/collection/RingBuffer.h"
 #include "core/String.h"
 #include <stdint.h>

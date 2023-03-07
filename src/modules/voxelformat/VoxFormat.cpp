@@ -18,8 +18,8 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <SDL_endian.h>
 #define OGT_VOX_BIGENDIAN_SWAP32  SDL_SwapLE32

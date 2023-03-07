@@ -11,7 +11,7 @@
 #include "core/Color.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/Palette.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {

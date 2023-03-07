@@ -22,7 +22,7 @@
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxelutil/VoxelUtil.h"
 #include <SDL_timer.h>
 #include <future>

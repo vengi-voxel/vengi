@@ -27,8 +27,8 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/MCRFormat.h"
-#include "voxelformat/SceneGraphNode.h"
-#include "voxelformat/SceneGraphUtil.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 

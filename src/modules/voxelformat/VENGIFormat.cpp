@@ -13,8 +13,8 @@
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
 
 #define wrapBool(action) \

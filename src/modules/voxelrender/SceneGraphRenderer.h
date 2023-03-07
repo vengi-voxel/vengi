@@ -7,7 +7,7 @@
 #include "RawVolumeRenderer.h"
 #include "core/collection/DynamicArray.h"
 #include "render/CameraFrustum.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 
 /**
  * Basic voxel rendering

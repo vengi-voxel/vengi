@@ -13,7 +13,7 @@
 #include "core/tests/TestHelper.h"
 #include "core/tests/TestColorHelper.h"
 #include "voxel/tests/VoxelPrinter.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 #include <gtest/gtest.h>
 
 namespace glm {

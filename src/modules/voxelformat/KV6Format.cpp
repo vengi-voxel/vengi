@@ -16,7 +16,7 @@
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 

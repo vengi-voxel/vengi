@@ -12,8 +12,8 @@
 #include "io/ZipReadStream.h"
 #include "private/MinecraftPaletteMap.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace voxelformat {
 

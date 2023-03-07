@@ -5,7 +5,7 @@
 #include "ModifierButton.h"
 #include "core/BindingContext.h"
 #include "../SceneManager.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace voxedit {
 

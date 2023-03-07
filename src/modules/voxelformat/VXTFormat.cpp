@@ -12,8 +12,8 @@
 #include "io/Filesystem.h"
 #include "io/ZipReadStream.h"
 #include "voxel/RawVolume.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphUtil.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "voxelformat/VXMFormat.h"
 #include "voxelformat/VXRFormat.h"
 

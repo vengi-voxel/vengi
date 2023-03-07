@@ -4,7 +4,7 @@
 
 #include "voxelrender/RawVolumeRenderer.h"
 #include "app/tests/AbstractTest.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace voxelrender {
 

@@ -11,7 +11,7 @@
 #include "core/Log.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolumeWrapper.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 
 namespace voxelformat {
 

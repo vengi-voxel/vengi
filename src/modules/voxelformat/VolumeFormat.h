@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 #include "Format.h"
 #include "core/collection/Array.h"
 #include "io/File.h"

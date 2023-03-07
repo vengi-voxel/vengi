@@ -10,8 +10,8 @@
 #include "ui/IconsForkAwesome.h"
 #include "ui/dearimgui/imgui_neo_sequencer.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace voxedit {
 

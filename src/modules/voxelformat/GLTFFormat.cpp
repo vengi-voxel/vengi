@@ -24,8 +24,8 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/VoxelVertex.h"
 #include "core/collection/DynamicArray.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/PaletteLookup.h"
 #include "voxelutil/VoxelUtil.h"
 

@@ -16,8 +16,8 @@
 #include "ui/IconsForkAwesome.h"
 #include "voxel/Palette.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include <glm/gtc/type_ptr.hpp>
 
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"

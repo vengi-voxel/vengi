@@ -6,7 +6,7 @@
 
 #include "Format.h"
 #include "voxel/RawVolume.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace voxelformat {
 

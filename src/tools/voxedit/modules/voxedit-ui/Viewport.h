@@ -9,7 +9,7 @@
 #include "video/gl/GLTypes.h"
 #include "video/Camera.h"
 #include "voxel/Region.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxelrender/RawVolumeRenderer.h"
 
 namespace io {

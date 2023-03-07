@@ -18,8 +18,8 @@
 #include "io/Filesystem.h"
 #include "io/Stream.h"
 #include "voxel/RawVolume.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>
 

@@ -18,9 +18,9 @@
 #include "io/Stream.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/Format.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
-#include "voxelformat/SceneGraphUtil.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "voxelformat/VXAFormat.h"
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>

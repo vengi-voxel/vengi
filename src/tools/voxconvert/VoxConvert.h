@@ -5,7 +5,7 @@
 #pragma once
 
 #include "app/CommandlineApp.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 
 /**
  * @brief This tool is able to convert voxel volumes between different formats

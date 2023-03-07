@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/String.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace voxedit {
 

@@ -41,9 +41,6 @@ set(SRCS
 	OBJFormat.h OBJFormat.cpp
 	PLYFormat.h PLYFormat.cpp
 	QuakeBSPFormat.h QuakeBSPFormat.cpp
-	SceneGraph.h SceneGraph.cpp
-	SceneGraphNode.h SceneGraphNode.cpp
-	SceneGraphUtil.h SceneGraphUtil.cpp
 	SproxelFormat.h SproxelFormat.cpp
 	SchematicFormat.h SchematicFormat.cpp
 	SMFormat.h SMFormat.cpp
@@ -54,7 +51,7 @@ set(SRCS
 	GLTFFormat.h GLTFFormat.cpp
 	VENGIFormat.h VENGIFormat.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph)
 
 set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
@@ -77,8 +74,6 @@ set(TEST_SRCS
 	tests/QBCLFormatTest.cpp
 	tests/QEFFormatTest.cpp
 	tests/QuakeBSPFormatTest.cpp
-	tests/SceneGraphTest.cpp
-	tests/SceneGraphUtilTest.cpp
 	tests/SchematicFormatTest.cpp
 	tests/SproxelFormatTest.cpp
 	tests/SLAB6VoxFormatTest.cpp

@@ -14,7 +14,7 @@
 #include "ui/IMGUIEx.h"
 #include "ui/ScopedStyle.h"
 #include "ui/Toolbar.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "DragAndDropPayload.h"
 #include <glm/gtc/type_ptr.hpp>
 

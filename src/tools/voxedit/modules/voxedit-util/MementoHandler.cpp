@@ -20,7 +20,7 @@
 #include "core/StandardLib.h"
 #include "core/Log.h"
 #include "core/Zip.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VoxelUtil.h"
 #include <inttypes.h>
 

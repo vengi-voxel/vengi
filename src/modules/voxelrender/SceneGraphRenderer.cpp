@@ -27,8 +27,8 @@
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelutil/VolumeMerger.h"
 

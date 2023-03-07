@@ -23,7 +23,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/PaletteLookup.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace voxelformat {

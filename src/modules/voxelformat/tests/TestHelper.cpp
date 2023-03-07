@@ -11,8 +11,8 @@
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
 #include "voxelformat/MeshFormat.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>

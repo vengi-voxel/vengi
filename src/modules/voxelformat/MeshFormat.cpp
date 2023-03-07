@@ -23,7 +23,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/Mesh.h"
 #include "voxelformat/private/Tri.h"

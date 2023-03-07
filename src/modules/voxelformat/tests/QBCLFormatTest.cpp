@@ -5,7 +5,7 @@
 #include "AbstractVoxFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
 #include "voxelformat/QBCLFormat.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/VolumeFormat.h"
 #include "io/FileStream.h"
 

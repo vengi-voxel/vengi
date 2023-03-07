@@ -8,7 +8,7 @@
 #include "core/Log.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {

@@ -2,10 +2,10 @@
  * @file
  */
 
-#include "voxelformat/SceneGraphUtil.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "app/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace voxelformat {
 

@@ -9,8 +9,8 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/ZipReadStream.h"
 #include "util/Base64.h"
-#include "voxelformat/SceneGraph.h"
-#include "voxelformat/SceneGraphNode.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace voxelformat {
 

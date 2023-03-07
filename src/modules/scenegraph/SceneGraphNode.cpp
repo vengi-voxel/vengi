@@ -12,7 +12,7 @@
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 
 #include <glm/gtc/epsilon.hpp>
 #include <glm/ext/quaternion_common.hpp>

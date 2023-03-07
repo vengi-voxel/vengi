@@ -23,7 +23,7 @@
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/SceneGraph.h"
+#include "scenegraph/SceneGraph.h"
 
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_access.hpp>
