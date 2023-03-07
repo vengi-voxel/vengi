@@ -3,11 +3,13 @@
  */
 
 #include "MenuBar.h"
+#include "IMGUIApp.h"
 #include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "core/GameConfig.h"
 #include "core/StringUtil.h"
+#include "io/FormatDescription.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsForkAwesome.h"
 #include "ui/IconsFontAwesome6.h"
@@ -109,7 +111,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			actionMenuItem(ICON_FA_IMAGE " Image as plane", "importplane", listener);
 			actionMenuItem(ICON_FA_IMAGE " Image as volume", "importvolume", listener);
 			ImGui::Separator();
-			if (ImGui::MenuItem("Quit")) {
+			if (ImGui::MenuItem(ICON_FA_DOOR_CLOSED " Quit")) {
 				app->requestQuit();
 			}
 			ImGui::EndMenu();
@@ -198,32 +200,106 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::EndMenu();
 		}
 #endif
-		if (ImGui::BeginMenu(ICON_FK_INFO " About")) {
-			ImGui::Text("VoxEdit " PROJECT_VERSION);
-			ImGui::Separator();
-			ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + 360.0f);
-			ImGui::PushStyleColor(ImGuiCol_Text, core::Color::Green);
-			ImGui::TextWrapped("This application is not yet ready for production use. We are always looking for help and feedback to improve things. If you are a developer (C++ and lua) or voxel artist, please consider contributing.");
-			ImGui::PopStyleColor(1);
-			ImGui::PopTextWrapPos();
-			ImGui::Separator();
-			const float w = ImGui::GetContentRegionAvail().x;
-			ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/vengi/issues", w);
-			ImGui::URLItem(ICON_FK_QUESTION " Help", "https://mgerhardy.github.io/vengi/", w);
-			ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy", w);
-			ImGui::URLItem(ICON_FK_MASTODON " Mastodon", "https://mastodon.social/@mgerhardy", w);
-			ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy", w);
-			ImGui::Separator();
-			ImGui::Text("Search paths:");
-			for (const core::String &path : io::filesystem()->paths()) {
-				const core::String &abspath = io::filesystem()->absolutePath(path);
-				if (abspath.empty()) {
-					continue;
+		if (ImGui::MenuItem(ICON_FK_INFO " About")) {
+			ImGui::OpenPopup("About##popuptitle");
+		}
+
+		bool aboutOpen = true;
+		if (ImGui::BeginPopupModal("About##popuptitle", &aboutOpen)) {
+			if (ImGui::BeginTabBar("##abouttabbar")) {
+				const float w = ImGui::GetContentRegionAvail().x;
+
+				if (ImGui::BeginTabItem("vengi")) {
+					ImGui::Text("VoxEdit " PROJECT_VERSION);
+					ImGui::Dummy(ImVec2(1, 10));
+					ImGui::Text("This is a beta release!");
+					ImGui::Dummy(ImVec2(1, 10));
+					ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/vengi/issues", w);
+					ImGui::URLItem(ICON_FK_QUESTION " Help", "https://mgerhardy.github.io/vengi/", w);
+					ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy", w);
+					ImGui::URLItem(ICON_FK_MASTODON " Mastodon", "https://mastodon.social/@mgerhardy", w);
+					ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy", w);
+					ImGui::EndTabItem();
 				}
-				core::String fileurl = "file://" + abspath;
-				ImGui::URLItem(abspath.c_str(), fileurl.c_str(), w);
+
+				if (ImGui::BeginTabItem("Credits")) {
+					ImGui::URLItem("backward-cpp", "https://github.com/bombela/backward-cpp.git", w);
+					ImGui::URLItem("dearimgui", "https://github.com/ocornut/imgui.git", w);
+					ImGui::URLItem("glm", "https://github.com/g-truc/glm.git", w);
+					ImGui::URLItem("imguizmo", "https://github.com/CedricGuillemet/ImGuizmo.git", w);
+					ImGui::URLItem("im-neo-sequencer", "https://gitlab.com/GroGy/im-neo-sequencer.git", w);
+					ImGui::URLItem("libvxl", "https://github.com/xtreme8000/libvxl.git", w);
+					ImGui::URLItem("lua", "https://www.lua.org/", w);
+					ImGui::URLItem("ogt_vox", "https://github.com/jpaver/opengametools", w);
+					ImGui::URLItem("polyvox", "http://www.volumesoffun.com/", w);
+					ImGui::URLItem("SDL2", "https://github.com/libsdl-org/SDL.git", w);
+					ImGui::URLItem("stb/SOIL2", "https://github.com/SpartanJ/SOIL2.git", w);
+					ImGui::URLItem("tinygltf", "https://github.com/syoyo/tinygltf.git", w);
+					ImGui::URLItem("tinyobjloader", "https://github.com/tinyobjloader/tinyobjloader.git", w);
+					ImGui::URLItem("ufbx", "https://github.com/bqqbarbhg/ufbx.git", w);
+					ImGui::EndTabItem();
+				}
+				if (ImGui::BeginTabItem("Formats")) {
+					ImGui::Text("Voxel load");
+					if (ImGui::BeginTable("##voxelload", 2, ImGuiTableFlags_Borders)) {
+						for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+							ImGui::TableNextColumn();
+							ImGui::Text("%s", desc->name.c_str());
+							ImGui::TableNextColumn();
+							ImGui::Text("%s", desc->wildCard().c_str());
+						}
+						ImGui::EndTable();
+					}
+					ImGui::Dummy(ImVec2(1, 10));
+					ImGui::Text("Voxel save");
+					if (ImGui::BeginTable("##voxelsave", 2, ImGuiTableFlags_Borders)) {
+						for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
+							ImGui::TableNextColumn();
+							ImGui::Text("%s", desc->name.c_str());
+							ImGui::TableNextColumn();
+							ImGui::Text("%s", desc->wildCard().c_str());
+						}
+						ImGui::EndTable();
+					}
+					ImGui::Dummy(ImVec2(1, 10));
+					ImGui::Text("Palettes");
+					if (ImGui::BeginTable("##palettes", 2, ImGuiTableFlags_Borders)) {
+						for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
+							ImGui::TableNextColumn();
+							ImGui::Text("%s", desc->name.c_str());
+							ImGui::TableNextColumn();
+							ImGui::Text("%s", desc->wildCard().c_str());
+						}
+						ImGui::EndTable();
+					}
+					ImGui::Dummy(ImVec2(1, 10));
+					ImGui::Text("Images");
+					if (ImGui::BeginTable("##images", 2, ImGuiTableFlags_Borders)) {
+						for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
+							ImGui::TableNextColumn();
+							ImGui::Text("%s", desc->name.c_str());
+							ImGui::TableNextColumn();
+							ImGui::Text("%s", desc->wildCard().c_str());
+						}
+						ImGui::EndTable();
+					}
+					ImGui::EndTabItem();
+				}
+
+				if (ImGui::BeginTabItem("Paths")) {
+					for (const core::String &path : io::filesystem()->paths()) {
+						const core::String &abspath = io::filesystem()->absolutePath(path);
+						if (abspath.empty()) {
+							continue;
+						}
+						core::String fileurl = "file://" + abspath;
+						ImGui::URLItem(abspath.c_str(), fileurl.c_str(), w);
+					}
+					ImGui::EndTabItem();
+				}
+				ImGui::EndTabBar();
 			}
-			ImGui::EndMenu();
+			ImGui::EndPopup();
 		}
 		ImGui::EndMenuBar();
 	}
