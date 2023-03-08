@@ -473,6 +473,19 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	if (!visible) {
 		return;
 	}
+	for (auto& i : _meshes[MeshType_Transparency]) {
+		for (int idx = 0; idx < (int)i.second.size(); ++idx) {
+			const State& state = _state[idx];
+			if (state._hidden) {
+				continue;
+			}
+			// TODO: transform - vertices are in object space - eye in world space
+			// inverse of state._model - but take pivot into account
+			if (i.second[idx]->sort(camera.eye())) {
+				updateBufferForVolume(idx, MeshType_Transparency);
+			}
+		}
+	}
 
 	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);

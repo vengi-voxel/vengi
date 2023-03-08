@@ -234,4 +234,19 @@ bool Mesh::operator<(const Mesh& rhs) const {
 	return glm::all(glm::lessThan(getOffset(), rhs.getOffset()));
 }
 
+bool Mesh::sort(const glm::vec3 &objectSpaceEye) {
+#if 0
+	for (int idx = 0; idx < (int)_vecIndices.size(); idx += 3) {
+		const voxel::IndexType i0 = _vecIndices[idx + 0];
+		const voxel::IndexType i1 = _vecIndices[idx + 1];
+		const voxel::IndexType i2 = _vecIndices[idx + 2];
+		const voxel::VoxelVertex &v0 = _vecVertices[i0];
+		const voxel::VoxelVertex &v1 = _vecVertices[i1];
+		const voxel::VoxelVertex &v2 = _vecVertices[i2];
+		const glm::vec3 center = (v0.position + v1.position + v2.position) / 3.0f;
+	}
+#endif
+	return false;
+}
+
 }

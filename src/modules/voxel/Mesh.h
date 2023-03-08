@@ -42,6 +42,10 @@ public:
 	VertexArray& getVertexVector();
 	NormalArray& getNormalVector();
 
+	// e.g. for transparency
+	// returns true if sorting was needed
+	bool sort(const glm::vec3 &objectSpaceEye);
+
 	const glm::ivec3& getOffset() const;
 	void setOffset(const glm::ivec3& offset);
 
