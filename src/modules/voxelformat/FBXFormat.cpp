@@ -313,11 +313,13 @@ static inline glm::mat4 _ufbx_to_um_mat(const ufbx_matrix &m) {
 	};
 }
 
-static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_node *node) {
+static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_node *node, const glm::vec3 &scale) {
 	const glm::mat4 &mat = _ufbx_to_um_mat(node->node_to_parent);
 	const glm::vec3 lt = transform.localTranslation();
 	transform.setLocalMatrix(mat);
 	transform.setLocalTranslation(transform.localTranslation() + lt);
+	const glm::vec3 ls = transform.localScale() / scale;
+	transform.setLocalScale(ls);
 }
 
 } // namespace priv
@@ -405,7 +407,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 	scenegraph::SceneGraphNode &sceneGraphNode = sceneGraph.node(nodeId);
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	scenegraph::SceneGraphTransform &transform = sceneGraphNode.keyFrame(keyFrameIdx).transform();
-	priv::_ufbx_to_transform(transform, node);
+	priv::_ufbx_to_transform(transform, node, scale);
 	for (const auto &prop : node->props.props) {
 		sceneGraphNode.setProperty(priv::_ufbx_to_string(prop.name), priv::_ufbx_to_string(prop.value_str));
 	}
@@ -433,7 +435,7 @@ int FBXFormat::addCameraNode(const ufbx_scene *scene, const ufbx_node *node, sce
 		camNode.setHeight((int)camera->orthographic_size.y);
 	}
 	scenegraph::SceneGraphTransform transform;
-	priv::_ufbx_to_transform(transform, node);
+	priv::_ufbx_to_transform(transform, node, glm::vec3(1.0f));
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	camNode.setTransform(keyFrameIdx, transform);
 	return sceneGraph.emplace(core::move(camNode), parent);

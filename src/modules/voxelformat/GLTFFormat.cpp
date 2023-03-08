@@ -565,6 +565,7 @@ scenegraph::SceneGraphTransform GLTFFormat::loadGltfTransform(const tinygltf::No
 		const glm::mat4 modelMat = scaleMat * rotMat * transMat;
 		transform.setLocalMatrix(modelMat);
 	}
+	transform.setLocalScale(transform.localScale() / getScale());
 	return transform;
 }
 
