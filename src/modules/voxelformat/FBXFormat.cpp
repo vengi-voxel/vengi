@@ -278,20 +278,6 @@ static inline glm::vec2 _ufbx_to_vec2(const ufbx_vec2 &v) {
 	return glm::vec2((float)v.x, (float)v.y);
 }
 
-const ufbx_prop *_ufbx_color_prop(const ufbx_props &props) {
-	const ufbx_prop *p;
-	p = ufbx_find_prop(&props, "DiffuseColor");
-	if (p != nullptr) {
-		return p;
-	}
-	p = ufbx_find_prop(&props, "Diffuse");
-	if (p != nullptr) {
-		return p;
-	}
-	p = ufbx_find_prop(&props, "Color");
-	return p;
-}
-
 static inline glm::vec3 _ufbx_to_vec3(const ufbx_vec3 &v) {
 	return glm::vec3((float)v.x, (float)v.y, (float)v.z);
 }
@@ -348,26 +334,24 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 		Log::debug("Faces: %i - material: %s", (int)meshMaterial.num_faces, meshMaterial.material ? "yes" : "no");
 
 		const image::Image* texture = nullptr;
-		core::RGBA diffuseColor(0, 0, 0, 255);
+		float baseColorFactor = 1.0f;
+		glm::vec4 baseColorRGBA(1.0f);
+
 		if (const ufbx_material *material = meshMaterial.material) {
+			if (material->pbr.base_factor.has_value) {
+				baseColorFactor = (float)material->pbr.base_factor.value_real;
+			}
+			if (material->pbr.base_color.has_value) {
+				if (material->pbr.base_color.value_components == 3) {
+					baseColorRGBA = glm::vec4(priv::_ufbx_to_vec3(material->pbr.base_color.value_vec3), 1.0f);
+				} else if (material->pbr.base_color.value_components == 4) {
+					baseColorRGBA = priv::_ufbx_to_vec4(material->pbr.base_color.value_vec4);
+				}
+			}
 			const core::String &materialName = priv::_ufbx_to_string(material->name);
 			auto textureIter = textures.find(materialName);
 			if (textureIter != textures.end()) {
 				texture = textureIter->second.get();
-			} else if (const ufbx_prop *prop = priv::_ufbx_color_prop(material->props)) {
-				if (prop->type == UFBX_PROP_COLOR) {
-					const glm::vec3 rgb = priv::_ufbx_to_vec3(prop->value_vec3);
-					diffuseColor = core::Color::getRGBA(glm::vec4(rgb, 1.0f));
-					Log::debug("Found rgb diffuse color for '%s'", materialName.c_str());
-				} else if (prop->type == UFBX_PROP_COLOR_WITH_ALPHA) {
-					const glm::vec4 rgba = priv::_ufbx_to_vec4(prop->value_vec4);
-					diffuseColor = core::Color::getRGBA(rgba);
-					Log::debug("Found rgba diffuse color for '%s'", materialName.c_str());
-				} else {
-					Log::debug("Unknown material color type: %i for '%s'", (int)prop->type, materialName.c_str());
-				}
-			} else {
-				Log::debug("Failed to find texture and diffuse color for '%s'", materialName.c_str());
 			}
 		} else {
 			Log::debug("No material assigned for mesh");
@@ -383,10 +367,12 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					const uint32_t ix = triIndices[vi * 3 + ti];
 					const ufbx_vec3 &pos = ufbx_get_vertex_vec3(&mesh->vertex_position, ix);
 					if (mesh->vertex_color.exists) {
-						const ufbx_vec4 &color = ufbx_get_vertex_vec4(&mesh->vertex_color, ix);
-						tri.color[ti] = core::Color::getRGBA(priv::_ufbx_to_vec4(color));
+						const glm::vec4 &vertexColor = priv::_ufbx_to_vec4(ufbx_get_vertex_vec4(&mesh->vertex_color, ix));
+						glm::vec4 mixedColor = vertexColor * baseColorRGBA * baseColorFactor;
+						mixedColor.a = vertexColor.a;
+						tri.color[ti] = core::Color::getRGBA(mixedColor);
 					} else {
-						tri.color[ti] = diffuseColor;
+						tri.color[ti] = core::Color::getRGBA(baseColorRGBA);
 					}
 					const ufbx_vec2 &uv = mesh->vertex_uv.exists ? ufbx_get_vertex_vec2(&mesh->vertex_uv, ix) : defaultUV;
 					tri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale;
