@@ -132,6 +132,7 @@ void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFram
 	setLocalScale(glm::mix(_localScale, dest._localScale, factor));
 	_dirty = 0u;
 
+	_normalizedPivot = glm::mix(_normalizedPivot, dest._normalizedPivot, factor);
 	_worldMat = glm::translate(_worldTranslation) * glm::mat4_cast(_worldOrientation) * glm::scale(_worldScale);
 	_localMat = glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(_localScale);
 }
