@@ -50,6 +50,7 @@ Viewport::~Viewport() {
 
 bool Viewport::init() {
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
+	_cursorDetails = core::Var::getSafe(cfg::VoxEditCursorDetails);
 	_showAxisVar = core::Var::getSafe(cfg::VoxEditShowaxis);
 	_gizmoRotation = core::Var::getSafe(cfg::VoxEditGizmoRotation);
 	_gizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGizmoAllowAxisFlip);
@@ -234,12 +235,37 @@ void Viewport::renderViewport() {
 		renderViewportImage(contentSize);
 		const bool modifiedRegion = renderGizmo(camera(), headerSize, contentSize);
 
-		if (sceneMgr().isLoading()) {
+		const SceneManager& mgr = sceneMgr();
+		if (mgr.isLoading()) {
 			const float radius = ImGui::GetFontSize() * 12.0f;
 			ImGui::LoadingIndicatorCircle("Loading", radius, core::Color::White, core::Color::Gray);
 		} else if (ImGui::IsItemHovered() && !modifiedRegion) {
-			if (sceneMgr().modifier().isMode(ModifierType::ColorPicker)) {
+			const ModifierFacade& modifier = mgr.modifier();
+			if (modifier.isMode(ModifierType::ColorPicker)) {
 				ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+			}
+			if (!_renderContext.sceneMode && _cursorDetails->intVal()) {
+				const int cursorDetailsLevel = _cursorDetails->intVal();
+				const glm::ivec3& cursorPos = modifier.cursorPosition();
+				if (cursorDetailsLevel == 1) {
+					ImGui::TooltipText("%i:%i:%i", cursorPos.x, cursorPos.y, cursorPos.z);
+				} else {
+					const int activeNode = mgr.sceneGraph().activeNode();
+					if (const voxel::RawVolume *v = mgr.volume(activeNode)) {
+						const glm::ivec3 &mins = v->region().getLowerCorner();
+						const glm::ivec3 &size = v->region().getDimensionsInVoxels();
+						if (mins.x == 0 && mins.y == 0 && mins.z == 0) {
+							ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\n",
+											mins.x, mins.y, mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y,
+											cursorPos.z);
+						} else {
+							ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\nrelative: %i:%i:%i",
+											mins.x, mins.y, mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y,
+											cursorPos.z, cursorPos.x - mins.x, cursorPos.y - mins.y,
+											cursorPos.z - mins.z);
+						}
+					}
+				}
 			}
 			_hovered = true;
 			updateViewportTrace(headerSize);

@@ -376,7 +376,7 @@ public:
 	const MementoHandler& mementoHandler() const;
 	MementoHandler& mementoHandler();
 	voxelgenerator::LUAGenerator& luaGenerator();
-	const scenegraph::SceneGraph &sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph() const;
 
 private:
 	void onNewNodeAdded(int newNodeId);

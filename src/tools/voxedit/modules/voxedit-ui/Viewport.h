@@ -82,6 +82,7 @@ private:
 	core::VarPtr _viewDistance;
 	core::VarPtr _simplifiedView;
 	core::VarPtr _rotationSpeed;
+	core::VarPtr _cursorDetails;
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);

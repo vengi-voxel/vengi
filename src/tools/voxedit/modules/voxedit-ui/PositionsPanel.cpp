@@ -117,6 +117,8 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 				}
 			}
 		}
+
+		ImGui::SliderVarInt("Cursor details", cfg::VoxEditCursorDetails, 0, 2);
 	}
 
 	ImGui::NewLine();
@@ -230,6 +232,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 	ImGui::NewLine();
 
 	if (ImGui::CollapsingHeader(ICON_FA_CUBE " Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::CheckboxVar("Show gizmo", cfg::VoxEditShowaxis);
 		ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGizmoAllowAxisFlip);
 		ImGui::CheckboxVar("Activate rotate", cfg::VoxEditGizmoRotation);
 		ImGui::CheckboxVar("Size", cfg::VoxEditGizmoBounds);

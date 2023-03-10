@@ -1099,7 +1099,7 @@ const scenegraph::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) const
 	return nullptr;
 }
 
-const scenegraph::SceneGraph &SceneManager::sceneGraph() {
+const scenegraph::SceneGraph &SceneManager::sceneGraph() const {
 	return _sceneGraph;
 }
 

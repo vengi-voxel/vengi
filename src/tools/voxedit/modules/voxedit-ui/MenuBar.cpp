@@ -133,7 +133,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::Separator();
 			if (ImGui::BeginMenu(ICON_FA_GEAR " Options")) {
 				ImGui::CheckboxVar(ICON_FA_BORDER_ALL " Grid", cfg::VoxEditShowgrid);
-				ImGui::CheckboxVar("Show axis", cfg::VoxEditShowaxis);
+				ImGui::CheckboxVar("Show gizmo", cfg::VoxEditShowaxis);
 				ImGui::CheckboxVar("Show locked axis", cfg::VoxEditShowlockedaxis);
 				ImGui::CheckboxVar(ICON_FA_DICE_SIX " Bounding box", cfg::VoxEditShowaabb);
 				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);

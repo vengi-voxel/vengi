@@ -105,6 +105,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditHideInactive, "false", "Hide the inactive nodes", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditViewdistance, "5000");
 	core::Var::get(cfg::VoxEditShowaxis, "true", "Show the axis", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditCursorDetails, "1", "Print cursor details in edit mode", core::Var::minMaxValidator<0, 2>);
 	core::Var::get(cfg::VoxEditGizmoRotation, "false", "Activate rotations for the gizmo in scene mode", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGizmoAllowAxisFlip, "true", "Flip axis or stay along the positive world/local axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGizmoSnap, "true", "Use the grid size for snap", core::Var::boolValidator);
