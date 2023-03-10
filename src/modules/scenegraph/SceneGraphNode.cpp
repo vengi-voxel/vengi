@@ -495,7 +495,7 @@ const SceneGraphKeyFrame& SceneGraphNode::keyFrame(KeyFrameIndex keyFrameIdx) co
 }
 
 SceneGraphTransform& SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) {
-	return _keyFrames[keyFrameIdx].transform();
+	return keyFrame(keyFrameIdx).transform();
 }
 
 const SceneGraphTransform& SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) const {
