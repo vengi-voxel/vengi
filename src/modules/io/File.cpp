@@ -7,6 +7,9 @@
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include <SDL.h>
+#ifdef __EMSCRIPTEN__
+#include "system/emscripten_browser_file.h"
+#endif
 
 namespace io {
 
@@ -253,6 +256,25 @@ void File::close() {
 	if (_file != nullptr) {
 		SDL_RWclose(_file);
 		_file = nullptr;
+#ifdef __EMSCRIPTEN__
+		if (_mode == FileMode::SysWrite) {
+			_file = createRWops(FileMode::SysRead);
+			_mode = FileMode::SysRead;
+			if (_file == nullptr) {
+				Log::error("Failed to download file %s", _rawPath.c_str());
+			} else {
+				uint8_t *buf = nullptr;
+				const int len = read((void **)&buf);
+				if (len > 0) {
+					emscripten_browser_file::download(_rawPath.c_str(), "application/octet-stream", buf, (size_t)len);
+				}
+				delete[] buf;
+				SDL_RWclose(_file);
+				_file = nullptr;
+			}
+			_mode = FileMode::SysWrite;
+		}
+#endif
 	}
 }
 

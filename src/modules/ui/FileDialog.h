@@ -11,6 +11,9 @@
 #include "io/FilesystemEntry.h"
 #include "core/Var.h"
 #include "video/FileDialogOptions.h"
+#ifdef __EMSCRIPTEN__
+#include "io/system/emscripten_browser_file.h"
+#endif
 
 namespace io {
 struct FormatDescription;
@@ -69,6 +72,10 @@ private:
 	 */
 	bool entitiesPanel(video::OpenFileMode type);
 	void showError(const TimedError &error) const;
+
+#ifdef __EMSCRIPTEN__
+	static void uploadHandler(std::string const& filename, std::string const& mimetype, std::string_view buffer, void* userdata);
+#endif
 
 public:
 	void construct();

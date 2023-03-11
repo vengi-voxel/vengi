@@ -22,6 +22,7 @@
 #include "io/Filesystem.h"
 #include "io/FilesystemEntry.h"
 #include "io/FormatDescription.h"
+#include "io/MemoryReadStream.h"
 #include "ui/IMGUIApp.h"
 #include "video/OpenFileMode.h"
 
@@ -122,6 +123,16 @@ void FileDialog::selectFilter(video::OpenFileMode type, int index) {
 	}
 }
 
+#ifdef __EMSCRIPTEN__
+void FileDialog::uploadHandler(std::string const& filename, std::string const& mimetype, std::string_view buffer, void* userdata) {
+	io::MemoryReadStream stream(buffer.data(), buffer.size());
+	const core::String *path = (const core::String*)userdata;
+	FileDialog *fileDialog = (FileDialog*)userdata;
+	io::filesystem()->write(filename.c_str(), stream);
+	fileDialog->readDir(video::OpenFileMode::Open);
+}
+#endif
+
 bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* formats, const core::String& filename) {
 	_filterEntries.clear();
 	if (formats == nullptr) {
@@ -176,6 +187,12 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 		_currentPath = io::filesystem()->homePath();
 		_lastDirVar->setVal(_currentPath);
 	}
+
+#ifdef __EMSCRIPTEN__
+	if (type == video::OpenFileMode::Open) {
+		emscripten_browser_file::upload("", uploadHandler, &_currentPath);
+	}
+#endif
 
 	return readDir(type);
 }
