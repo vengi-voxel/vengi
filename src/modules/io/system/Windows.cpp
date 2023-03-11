@@ -14,7 +14,7 @@
 #include "io/Filesystem.h"
 #include <SDL_stdinc.h>
 
-#include "dirent.h"
+#include "windirent.h"
 #include <initguid.h>
 #include <knownfolders.h>
 #include <shlobj.h>
