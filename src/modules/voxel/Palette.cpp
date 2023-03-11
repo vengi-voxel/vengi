@@ -917,7 +917,11 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 	}
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
-	core::Set<core::RGBA> colorset;
+	if (imageWidth * imageHeight > 512 * 512) {
+		Log::error("Failed to convert image to palette - scale it down to max 512:512");
+		return false;
+	}
+	core::Set<core::RGBA> colorset((size_t)(imageWidth * imageHeight));
 	Log::debug("Create palette for image: %s (%i:%i)", image->name().c_str(), imageWidth, imageHeight);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
