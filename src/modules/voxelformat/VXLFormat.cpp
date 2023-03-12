@@ -720,7 +720,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, scene
 			const core::String &name = file.header.nodeNames[vxlNodeId];
 			scenegraph::SceneGraphNode* node = sceneGraph.findNodeByName(name);
 			if (node == nullptr) {
-				Log::debug("Can't find node with name %s", name.c_str());
+				Log::warn("Can't find node with name '%s' for vxl node %u", name.c_str(), vxlNodeId);
 				continue;
 			}
 			// hva transforms are overriding the vxl transform
