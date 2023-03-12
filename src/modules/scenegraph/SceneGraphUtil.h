@@ -8,7 +8,7 @@
 
 namespace scenegraph {
 
-void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume);
+void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume, bool copyKeyFrames = true);
 
 // this makes a copy of the volumes affected
 int addNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent);

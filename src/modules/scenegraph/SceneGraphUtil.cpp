@@ -21,9 +21,11 @@ static int addToGraph(SceneGraph &sceneGraph, SceneGraphNode &&node, int parent)
 	return newNodeId;
 }
 
-static void copy(const SceneGraphNode &node, SceneGraphNode &target) {
+static void copy(const SceneGraphNode &node, SceneGraphNode &target, bool copyKeyFrames = true) {
 	target.setName(node.name());
-	target.setKeyFrames(node.keyFrames());
+	if (copyKeyFrames) {
+		target.setKeyFrames(node.keyFrames());
+	}
 	target.setVisible(node.visible());
 	target.setLocked(node.locked());
 	target.addProperties(node.properties());
@@ -35,14 +37,14 @@ static void copy(const SceneGraphNode &node, SceneGraphNode &target) {
 	}
 }
 
-void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume) {
+void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume, bool copyKeyFrames) {
 	// TODO: also add all children
 	if (copyVolume) {
 		target.setVolume(new voxel::RawVolume(src.volume()), true);
 	} else {
 		target.setVolume(src.volume(), false);
 	}
-	copy(src, target);
+	copy(src, target, copyKeyFrames);
 }
 
 int addNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent) {

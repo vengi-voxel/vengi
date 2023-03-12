@@ -182,7 +182,7 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, scenegraph::SceneGraph
 	childModelNode->releaseOwnership();
 
 	const core::String nodeName = node.name();
-	scenegraph::copyNode(*childModelNode, node, false);
+	scenegraph::copyNode(*childModelNode, node, false, version >= 3);
 	node.setVolume(childModelNode->volume(), true);
 	// restore old name
 	node.setName(nodeName);
@@ -251,7 +251,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		float ignoredScale = 1.0f;
 
 		wrap(stream.readFloat(localTranslation.x))
-		// localTranslation.x *= -1.0f;
+		localTranslation.x *= -1.0f; // version 2 needed this
 		wrap(stream.readFloat(localTranslation.y))
 		wrap(stream.readFloat(localTranslation.z))
 		if (version >= 3) {
