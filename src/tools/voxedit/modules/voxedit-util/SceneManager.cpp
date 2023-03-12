@@ -1392,8 +1392,15 @@ void SceneManager::construct() {
 			}
 			const voxel::Region &region = v->region();
 			_modifier.select(region.getLowerCorner(), region.getUpperCorner());
+		} else if (args[0] == "invert") {
+			voxel::RawVolume* v = activeVolume();
+			if (!v) {
+				return;
+			}
+			const voxel::Region &region = v->region();
+			_modifier.invert(region);
 		}
-	}).setHelp("Unselect all").setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
+	}).setHelp("Select all nothing or invert").setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
 
 	command::Command::registerCommand("text", [this] (const command::CmdArgs& args) {
 		if (args.size() != 2) {

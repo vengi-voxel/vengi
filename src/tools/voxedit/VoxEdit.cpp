@@ -314,6 +314,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("double_left_mouse",    "mouse_node_select",            "scene");
 	_keybindingHandler.registerBinding("ctrl+a",               "select all",                   "model");
 	_keybindingHandler.registerBinding("ctrl+d",               "select none",                  "model");
+	_keybindingHandler.registerBinding("ctrl+i",               "select invert",                "model");
 	_keybindingHandler.registerBinding("+",                    "resize 1",                     "model");
 	_keybindingHandler.registerBinding("-",                    "resize -1",                    "model");
 	_keybindingHandler.registerBinding("left",                 "+movecursorleft",              "model");

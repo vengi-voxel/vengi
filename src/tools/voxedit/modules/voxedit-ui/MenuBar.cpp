@@ -189,6 +189,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 		}
 		if (ImGui::BeginMenu(ICON_FA_SQUARE " Select")) {
 			actionMenuItem("None", "select none", listener);
+			actionMenuItem("Invert", "select invert", listener);
 			actionMenuItem("All", "select all", listener);
 			ImGui::EndMenu();
 		}

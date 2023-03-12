@@ -21,6 +21,7 @@ public:
 
 	bool select(const glm::ivec3& mins, const glm::ivec3& maxs) override;
 	void unselect() override;
+	void invert(const voxel::Region &region) override;
 	void setReferencePosition(const glm::ivec3& pos) override;
 	bool setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) override;
 	void render(const video::Camera& camera);

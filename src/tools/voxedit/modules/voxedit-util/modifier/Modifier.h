@@ -124,6 +124,7 @@ public:
 
 	virtual bool select(const glm::ivec3& mins, const glm::ivec3& maxs);
 	virtual void unselect();
+	virtual void invert(const voxel::Region &region);
 
 	void translate(const glm::ivec3& v);
 

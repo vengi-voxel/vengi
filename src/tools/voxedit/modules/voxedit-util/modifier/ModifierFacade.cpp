@@ -85,12 +85,22 @@ bool ModifierFacade::select(const glm::ivec3& mins, const glm::ivec3& maxs) {
 	return false;
 }
 
+void ModifierFacade::invert(const voxel::Region &region) {
+	if (_locked) {
+		return;
+	}
+	Super::invert(region);
+	if (_selectionValid) {
+		_modifierRenderer.updateSelectionBuffers(_selection);
+	}
+}
+
 void ModifierFacade::unselect() {
 	if (_locked) {
 		return;
 	}
+	Super::unselect();
 	if (_selectionValid) {
-		Super::unselect();
 		_modifierRenderer.updateSelectionBuffers(_selection);
 	}
 }
