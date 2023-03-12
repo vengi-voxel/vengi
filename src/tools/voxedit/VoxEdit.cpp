@@ -351,7 +351,6 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("ctrl+f",               "toggle ve_showaabb",           "all");
 	_keybindingHandler.registerBinding("ctrl+w",               "toggle ve_rendershadow",       "all");
 
-	// TODO: currently only camera controls are distinguished
 	if (keymap == KeyBindings::Blender) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
