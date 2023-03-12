@@ -391,6 +391,11 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("left_alt+middle_mouse",  "+camera_pan",                "editing");
 		_keybindingHandler.registerBinding("right_alt+middle_mouse", "+camera_pan",                "editing");
 		_keybindingHandler.registerBinding("middle_mouse",           "+camera_pan",                "editing");
+		_keybindingHandler.registerBinding("i",                      "pickcolor",                  "model");
+		_keybindingHandler.registerBinding("e",                      "actionerase",                "model");
+		_keybindingHandler.registerBinding("a",                      "actionplace",                "model");
+		_keybindingHandler.registerBinding("b",                      "actionpaint",                "model");
+		_keybindingHandler.registerBinding("m",                      "actionselect",               "model");
 	} else {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
