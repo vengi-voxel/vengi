@@ -399,6 +399,7 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
 		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
 		_keybindingHandler.registerBinding("ctrl+tab",               "toggleconsole",              "all");
+		_keybindingHandler.registerBinding("right_mouse",            "+camera_pan",                "editing");
 		_keybindingHandler.registerBinding("middle_mouse",           "+camera_rotate",             "editing");
 		_keybindingHandler.registerBinding("left_alt",               "+camera_pan",                "editing");
 		_keybindingHandler.registerBinding("right_alt",              "+camera_pan",                "editing");
