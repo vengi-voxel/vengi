@@ -17,6 +17,7 @@ General:
 VoxEdit:
 
    - Allow to export selections only
+   - Started to support different keymaps (blender, qubicle, magicavoxel and vengi own)
 
 ## 0.0.24 (2023-03-12)
 

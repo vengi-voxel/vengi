@@ -48,44 +48,11 @@ bool replacePlaceholders(const core::String& str, char *buf, size_t bufSize) {
 	return true;
 }
 
-// https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#C++
-size_t levensteinDistance(const core::String &source, const core::String &target) {
-	if (source.size() > target.size()) {
-		return levensteinDistance(target, source);
-	}
-
-	const size_t minSize = source.size();
-	const size_t maxSize = target.size();
-	core::DynamicArray<size_t> levDist(minSize + 1);
-
-	for (size_t i = 0; i <= minSize; ++i) {
-		levDist[i] = i;
-	}
-
-	for (size_t j = 1; j <= maxSize; ++j) {
-		size_t previousDiagonal = levDist[0];
-		++levDist[0];
-
-		for (size_t i = 1; i <= minSize; ++i) {
-			const size_t previousDiagonalSave = levDist[i];
-			if (source[i - 1] == target[j - 1]) {
-				levDist[i] = previousDiagonal;
-			} else {
-				levDist[i] = core_min(core_min(levDist[i - 1], levDist[i]),
-						previousDiagonal) + 1;
-			}
-			previousDiagonal = previousDiagonalSave;
-		}
-	}
-
-	return levDist[minSize];
-}
-
 static core::String findPotentialMatch(const core::String& arg) {
 	core::String match;
 	size_t leastCost = 1000000u;
 	command::Command::visit([&] (const command::Command& c) {
-		const size_t cost = levensteinDistance(arg, c.name());
+		const size_t cost = core::string::levensteinDistance(arg, c.name());
 		if (cost < leastCost) {
 			leastCost = cost;
 			match = c.name();

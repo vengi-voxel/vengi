@@ -18,6 +18,7 @@ extern core::String format(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_
 extern bool formatBuf(char *buf, size_t bufSize, CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(3);
 extern core::String humanSize(uint64_t bytes);
 
+size_t levensteinDistance(const core::String &source, const core::String &target);
 int toInt(const char* str);
 
 inline int toInt(const core::String& str) {

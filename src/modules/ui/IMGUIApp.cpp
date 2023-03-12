@@ -5,6 +5,7 @@
 #include "IMGUIApp.h"
 
 #include "core/BindingContext.h"
+#include "core/StringUtil.h"
 #include "dearimgui/backends/imgui_impl_sdl2.h"
 #include "dearimgui/backends/imgui_impl_opengl3.h"
 #include "engine-config.h"
@@ -179,6 +180,10 @@ app::AppState IMGUIApp::onConstruct() {
 									const float size = core::string::toFloat(val);
 									return size >= 2.0f;
 								});
+
+	_uiKeyMap = core::Var::get(cfg::UIKeyMap, "0", "Which keybinding to use");
+	core_assert(!_uiKeyMap->isDirty());
+
 	command::Command::registerCommand("ui_showtextures", [&] (const command::CmdArgs& args) {
 		_showTexturesDialog = true;
 	});
@@ -339,6 +344,13 @@ app::AppState IMGUIApp::onRunning() {
 
 	_console.update(_deltaFrameSeconds);
 
+	if (_uiKeyMap->isDirty() || _resetKeybindings) {
+		_keybindingHandler.clear();
+		loadKeymap(_uiKeyMap->intVal());
+		_uiKeyMap->markClean();
+		_resetKeybindings = false;
+	}
+
 	if (_uiFontSize->isDirty()) {
 		loadFonts();
 		_uiFontSize->markClean();
@@ -408,6 +420,20 @@ app::AppState IMGUIApp::onRunning() {
 					const util::CommandModifierPair& pair = i->second;
 					const core::String& command = pair.command;
 					const core::String& keyBinding = _keybindingHandler.getKeyBindingsString(command.c_str(), pair.count);
+					const command::Command* cmd = nullptr;
+					if (command.contains(" ")) {
+						cmd = command::Command::getCommand(command.substr(0, command.find(" ")));
+					} else {
+						cmd = command::Command::getCommand(command);
+					}
+					if (_bindingsFilter.size() >= 2u) {
+						const bool matchCmd = core::string::icontains(command, _bindingsFilter);
+						const bool matchKey = core::string::icontains(keyBinding, _bindingsFilter);
+						const bool matchHelp = cmd ? core::string::icontains(cmd->help(), _bindingsFilter) : true;
+						if (!matchCmd && !matchKey && !matchHelp) {
+							continue;
+						}
+					}
 					ImGui::TableNextColumn();
 					// TODO: change binding
 					const core::String &deleteButton = core::string::format(ICON_FA_TRASH "##del-key-%i", n++);
@@ -420,12 +446,6 @@ app::AppState IMGUIApp::onRunning() {
 					ImGui::TextUnformatted(command.c_str());
 					ImGui::TableNextColumn();
 					ImGui::TextUnformatted(core::bindingContextString(pair.context).c_str());
-					const command::Command* cmd = nullptr;
-					if (command.contains(" ")) {
-						cmd = command::Command::getCommand(command.substr(0, command.find(" ")));
-					} else {
-						cmd = command::Command::getCommand(command);
-					}
 					ImGui::TableNextColumn();
 					if (!cmd) {
 						ImGui::TextColored(core::Color::Red, "Failed to get command for %s", command.c_str());
@@ -435,10 +455,27 @@ app::AppState IMGUIApp::onRunning() {
 				}
 				ImGui::EndTable();
 			}
-			if (ImGui::Button("Reset to default")) {
-				resetKeybindings();
+			if (!_uiKeyMaps.empty()) {
+				const int currentKeyMap = _uiKeyMap->intVal();
+				if (ImGui::BeginCombo("Keymap", _uiKeyMaps[(int)currentKeyMap].c_str(), ImGuiComboFlags_None)) {
+					for (int i = 0; i < (int)_uiKeyMaps.size(); ++i) {
+						const bool selected = i == currentKeyMap;
+						if (ImGui::Selectable(_uiKeyMaps[i].c_str(), selected)) {
+							_uiKeyMap->setVal(core::string::toString(i));
+						}
+						if (selected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+			} else {
+				if (ImGui::Button("Reset to default")) {
+					_resetKeybindings = true;
+				}
 			}
-			// TODO: add binding
+			ImGui::SameLine();
+			ImGui::InputText("Filter", &_bindingsFilter);
 			ImGui::EndPopup();
 		}
 

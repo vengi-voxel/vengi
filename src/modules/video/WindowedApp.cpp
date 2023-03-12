@@ -448,7 +448,6 @@ app::AppState WindowedApp::onCleanup() {
 
 void WindowedApp::resetKeybindings() {
 	_keybindingHandler.reset(_keybindingsVersion);
-	_keybindingHandler.load(_keybindingsVersion);
 }
 
 void WindowedApp::showCursor(bool show) {

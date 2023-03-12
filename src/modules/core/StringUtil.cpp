@@ -308,6 +308,39 @@ bool isRootPath(const core::String &in) {
 	return in.size() == 1U && (in[0] == '/' || in[0] == '\\');
 }
 
+// https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#C++
+size_t levensteinDistance(const core::String &source, const core::String &target) {
+	if (source.size() > target.size()) {
+		return levensteinDistance(target, source);
+	}
+
+	const size_t minSize = source.size();
+	const size_t maxSize = target.size();
+	core::DynamicArray<size_t> levDist(minSize + 1);
+
+	for (size_t i = 0; i <= minSize; ++i) {
+		levDist[i] = i;
+	}
+
+	for (size_t j = 1; j <= maxSize; ++j) {
+		size_t previousDiagonal = levDist[0];
+		++levDist[0];
+
+		for (size_t i = 1; i <= minSize; ++i) {
+			const size_t previousDiagonalSave = levDist[i];
+			if (source[i - 1] == target[j - 1]) {
+				levDist[i] = previousDiagonal;
+			} else {
+				levDist[i] = core_min(core_min(levDist[i - 1], levDist[i]),
+						previousDiagonal) + 1;
+			}
+			previousDiagonal = previousDiagonalSave;
+		}
+	}
+
+	return levDist[minSize];
+}
+
 static bool patternMatch(const char *text, const char *pattern);
 static bool patternMatchMulti(const char* text, const char* pattern) {
 	const char *p = pattern;

@@ -18,6 +18,7 @@ constexpr const char *ClientWindowDisplay = "cl_display";
 constexpr const char *ClientWindowHighDPI = "cl_highdpi";
 constexpr const char *UIShowMetrics = "ui_showmetrics";
 constexpr const char *UIFontSize = "ui_fontsize";
+constexpr const char *UIKeyMap = "ui_keymap";
 constexpr const char *UILastDirectory = "ui_lastdirectory";
 constexpr const char *UILastFilterSave = "ui_lastfiltersave";
 constexpr const char *UILastFilterOpen = "ui_lastfilteropen";

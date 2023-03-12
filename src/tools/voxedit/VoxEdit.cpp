@@ -37,6 +37,13 @@ VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPt
 	_allowRelativeMouseMode = false;
 	_iniVersion = 1;
 	_keybindingsVersion = 1;
+
+	// see KeyBindings enum
+	_uiKeyMaps.push_back("Vengi");
+	_uiKeyMaps.push_back("Blender");
+	_uiKeyMaps.push_back("Magicavoxel");
+	_uiKeyMaps.push_back("Qubicle");
+	core_assert(KeyBindings::Max == (int)_uiKeyMaps.size());
 }
 
 app::AppState VoxEdit::onCleanup() {
@@ -288,6 +295,98 @@ app::AppState VoxEdit::onConstruct() {
 	return state;
 }
 
+void VoxEdit::loadKeymap(int keymap) {
+	_keybindingHandler.registerBinding("ctrl+z",               "undo",                         "all");
+	_keybindingHandler.registerBinding("shift+ctrl+z",         "redo",                         "all");
+	_keybindingHandler.registerBinding("ctrl+y",               "redo",                         "all");
+	_keybindingHandler.registerBinding("ctrl+o",               "load",                         "all");
+	_keybindingHandler.registerBinding("ctrl+s",               "save",                         "all");
+	_keybindingHandler.registerBinding("ctrl+n",               "new",                          "all");
+	_keybindingHandler.registerBinding("tab",                  "togglescene",                  "editing");
+	_keybindingHandler.registerBinding("delete",               "layerdelete",                  "scene");
+	_keybindingHandler.registerBinding("ctrl+l",               "togglelayerstate",             "editing");
+	_keybindingHandler.registerBinding("shift+l",              "togglelayerlock",              "editing");
+	_keybindingHandler.registerBinding("ctrl+c",               "copy",                         "editing");
+	_keybindingHandler.registerBinding("ctrl+v",               "paste",                        "editing");
+	_keybindingHandler.registerBinding("ctrl+x",               "cut",                          "editing");
+	_keybindingHandler.registerBinding("ctrl+shift+v",         "pastecursor",                  "editing");
+	_keybindingHandler.registerBinding("1",                    "toggle ve_hideinactive",       "editing");
+	_keybindingHandler.registerBinding("double_left_mouse",    "mouse_node_select",            "scene");
+	_keybindingHandler.registerBinding("ctrl+a",               "select all",                   "model");
+	_keybindingHandler.registerBinding("ctrl+d",               "select none",                  "model");
+	_keybindingHandler.registerBinding("+",                    "resize 1",                     "model");
+	_keybindingHandler.registerBinding("-",                    "resize -1",                    "model");
+	_keybindingHandler.registerBinding("left",                 "+movecursorleft",              "model");
+	_keybindingHandler.registerBinding("right",                "+movecursorright",             "model");
+	_keybindingHandler.registerBinding("up",                   "+movecursorforward",           "model");
+	_keybindingHandler.registerBinding("down",                 "+movecursorbackward",          "model");
+	_keybindingHandler.registerBinding("ctrl+up",              "+movecursorup",                "model");
+	_keybindingHandler.registerBinding("ctrl+down",            "+movecursordown",              "model");
+	_keybindingHandler.registerBinding("left_shift",           "+actionexecute",               "model");
+	_keybindingHandler.registerBinding("v",                    "+actionexecute",               "model");
+	_keybindingHandler.registerBinding("left_mouse",           "+actionexecute",               "model");
+	_keybindingHandler.registerBinding("escape",               "abortaction",                  "model");
+	_keybindingHandler.registerBinding("p",                    "pickcolor",                    "model");
+	_keybindingHandler.registerBinding("return",               "setreferencepositiontocursor", "model");
+	_keybindingHandler.registerBinding("keypad_enter",         "setreferencepositiontocursor", "model");
+	_keybindingHandler.registerBinding("shift+r",              "setreferenceposition 0 0 0",   "model");
+	_keybindingHandler.registerBinding("shift+d",              "actionerase",                  "model");
+	_keybindingHandler.registerBinding("shift+c",              "actionpaint",                  "model");
+	_keybindingHandler.registerBinding("shift+p",              "actionplace",                  "model");
+	_keybindingHandler.registerBinding("shift+o",              "actionoverride",               "model");
+	_keybindingHandler.registerBinding("shift+x",              "lockx",                        "model");
+	_keybindingHandler.registerBinding("shift+y",              "locky",                        "model");
+	_keybindingHandler.registerBinding("shift+z",              "lockz",                        "model");
+	_keybindingHandler.registerBinding("shift+1",              "lockx",                        "model");
+	_keybindingHandler.registerBinding("shift+2",              "locky",                        "model");
+	_keybindingHandler.registerBinding("shift+3",              "lockz",                        "model");
+	_keybindingHandler.registerBinding("ctrl+1",               "mirroraxisx",                  "model");
+	_keybindingHandler.registerBinding("ctrl+2",               "mirroraxisy",                  "model");
+	_keybindingHandler.registerBinding("ctrl+3",               "mirroraxisz",                  "model");
+	_keybindingHandler.registerBinding("ctrl+4",               "mirroraxisnone",               "model");
+	_keybindingHandler.registerBinding("ctrl+left_mouse",      "+actionexecutedelete",         "model");
+	_keybindingHandler.registerBinding("wheelup",              "+zoom_in",                     "editing");
+	_keybindingHandler.registerBinding("wheeldown",            "+zoom_out",                    "editing");
+	// TODO: currently only camera controls are distinguished
+	if (keymap == KeyBindings::Blender) {
+		_keybindingHandler.registerBinding("space",                  "layerduplicate",             "editing");
+		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
+		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
+		_keybindingHandler.registerBinding("ctrl+tab",               "toggleconsole",              "all");
+		_keybindingHandler.registerBinding("middle_mouse",           "+camera_rotate",             "editing");
+		_keybindingHandler.registerBinding("alt+left_mouse",         "+camera_rotate",             "editing");
+		_keybindingHandler.registerBinding("shift+middle_mouse",     "+camera_pan",                "editing");
+		_keybindingHandler.registerBinding("left_alt",               "+camera_pan",                "editing");
+	} else if (keymap == KeyBindings::Magicavoxel) {
+		_keybindingHandler.registerBinding("ctrl+shift+p",           "layerduplicate",             "editing");
+		_keybindingHandler.registerBinding("f6",                     "screenshot",                 "all");
+		_keybindingHandler.registerBinding("6",                      "screenshot",                 "all");
+		_keybindingHandler.registerBinding("4",                      "resetcamera",                "editing");
+		_keybindingHandler.registerBinding("f1",                     "toggleconsole",              "all");
+		_keybindingHandler.registerBinding("right_mouse",            "+camera_rotate",             "editing");
+		_keybindingHandler.registerBinding("middle_mouse",           "+camera_pan",                "editing");
+	} else if (keymap == KeyBindings::Qubicle) {
+		_keybindingHandler.registerBinding("space",                  "layerduplicate",             "editing");
+		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
+		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
+		_keybindingHandler.registerBinding("ctrl+tab",               "toggleconsole",              "all");
+		_keybindingHandler.registerBinding("left_alt+left_mouse",    "+camera_rotate",             "editing");
+		_keybindingHandler.registerBinding("right_alt+left_mouse",   "+camera_rotate",             "editing");
+		_keybindingHandler.registerBinding("right_mouse",            "+camera_rotate",             "editing");
+		_keybindingHandler.registerBinding("left_alt+middle_mouse",  "+camera_pan",                "editing");
+		_keybindingHandler.registerBinding("right_alt+middle_mouse", "+camera_pan",                "editing");
+		_keybindingHandler.registerBinding("middle_mouse",           "+camera_pan",                "editing");
+	} else {
+		_keybindingHandler.registerBinding("space",                  "layerduplicate",             "editing");
+		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
+		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
+		_keybindingHandler.registerBinding("ctrl+tab",               "toggleconsole",              "all");
+		_keybindingHandler.registerBinding("middle_mouse",           "+camera_rotate",             "editing");
+		_keybindingHandler.registerBinding("left_alt",               "+camera_pan",                "editing");
+		_keybindingHandler.registerBinding("right_alt",              "+camera_pan",                "editing");
+	}
+}
+
 app::AppState VoxEdit::onInit() {
 	const app::AppState state = Super::onInit();
 	if (state != app::AppState::Running) {
@@ -295,64 +394,7 @@ app::AppState VoxEdit::onInit() {
 	}
 
 	if (_keybindingHandler.bindings().empty()) {
-		_keybindingHandler.registerBinding("ctrl+tab",             "toggleconsole",               "all");
-		_keybindingHandler.registerBinding("ctrl+z",               "undo",                        "all");
-		_keybindingHandler.registerBinding("shift+ctrl+z",         "redo",                        "all");
-		_keybindingHandler.registerBinding("ctrl+y",               "redo",                        "all");
-		_keybindingHandler.registerBinding("ctrl+o",               "load",                        "all");
-		_keybindingHandler.registerBinding("ctrl+s",               "save",                        "all");
-		_keybindingHandler.registerBinding("ctrl+n",               "new",                         "all");
-		_keybindingHandler.registerBinding("f5",                   "screenshot",                  "all");
-		_keybindingHandler.registerBinding(",",                    "resetcamera",                 "editing");
-		_keybindingHandler.registerBinding("tab",                  "togglescene",                 "editing");
-		_keybindingHandler.registerBinding("space",                "layerduplicate",              "editing");
-		_keybindingHandler.registerBinding("delete",               "layerdelete",                 "scene");
-		_keybindingHandler.registerBinding("ctrl+l",               "togglelayerstate",            "editing");
-		_keybindingHandler.registerBinding("shift+l",              "togglelayerlock",             "editing");
-		_keybindingHandler.registerBinding("wheelup",              "+zoom_in",                    "editing");
-		_keybindingHandler.registerBinding("wheeldown",            "+zoom_out",                   "editing");
-		_keybindingHandler.registerBinding("middle_mouse",         "+camera_rotate",              "editing");
-		_keybindingHandler.registerBinding("left_alt",             "+camera_pan",                 "editing");
-		_keybindingHandler.registerBinding("right_alt",            "+camera_pan",                 "editing");
-		_keybindingHandler.registerBinding("ctrl+c",               "copy",                        "editing");
-		_keybindingHandler.registerBinding("ctrl+v",               "paste",                       "editing");
-		_keybindingHandler.registerBinding("ctrl+x",               "cut",                         "editing");
-		_keybindingHandler.registerBinding("ctrl+shift+v",         "pastecursor",                 "editing");
-		_keybindingHandler.registerBinding("1",                    "toggle ve_hideinactive",      "editing");
-		_keybindingHandler.registerBinding("double_left_mouse",    "mouse_node_select",            "scene");
-		_keybindingHandler.registerBinding("ctrl+a",               "select all",                   "model");
-		_keybindingHandler.registerBinding("+",                    "resize 1",                     "model");
-		_keybindingHandler.registerBinding("-",                    "resize -1",                    "model");
-		_keybindingHandler.registerBinding("left",                 "+movecursorleft",              "model");
-		_keybindingHandler.registerBinding("right",                "+movecursorright",             "model");
-		_keybindingHandler.registerBinding("up",                   "+movecursorforward",           "model");
-		_keybindingHandler.registerBinding("down",                 "+movecursorbackward",          "model");
-		_keybindingHandler.registerBinding("ctrl+up",              "+movecursorup",                "model");
-		_keybindingHandler.registerBinding("ctrl+down",            "+movecursordown",              "model");
-		_keybindingHandler.registerBinding("left_shift",           "+actionexecute",               "model");
-		_keybindingHandler.registerBinding("v",                    "+actionexecute",               "model");
-		_keybindingHandler.registerBinding("left_mouse",           "+actionexecute",               "model");
-		_keybindingHandler.registerBinding("right_mouse",          "+actionexecutedelete",         "model");
-		_keybindingHandler.registerBinding("escape",               "abortaction",                  "model");
-		_keybindingHandler.registerBinding("p",                    "pickcolor",                    "model");
-		_keybindingHandler.registerBinding("return",               "setreferencepositiontocursor", "model");
-		_keybindingHandler.registerBinding("keypad_enter",         "setreferencepositiontocursor", "model");
-		_keybindingHandler.registerBinding("shift+r",              "setreferenceposition 0 0 0",   "model");
-		_keybindingHandler.registerBinding("shift+d",              "actionerase",                  "model");
-		_keybindingHandler.registerBinding("shift+c",              "actionpaint",                  "model");
-		_keybindingHandler.registerBinding("shift+p",              "actionplace",                  "model");
-		_keybindingHandler.registerBinding("shift+o",              "actionoverride",               "model");
-		_keybindingHandler.registerBinding("shift+x",              "lockx",                        "model");
-		_keybindingHandler.registerBinding("shift+y",              "locky",                        "model");
-		_keybindingHandler.registerBinding("shift+z",              "lockz",                        "model");
-		_keybindingHandler.registerBinding("shift+1",              "lockx",                        "model");
-		_keybindingHandler.registerBinding("shift+2",              "locky",                        "model");
-		_keybindingHandler.registerBinding("shift+3",              "lockz",                        "model");
-		_keybindingHandler.registerBinding("ctrl+1",               "mirroraxisx",                  "model");
-		_keybindingHandler.registerBinding("ctrl+2",               "mirroraxisy",                  "model");
-		_keybindingHandler.registerBinding("ctrl+3",               "mirroraxisz",                  "model");
-		_keybindingHandler.registerBinding("ctrl+4",               "mirroraxisnone",               "model");
-		_keybindingHandler.registerBinding("c",                    "centerplane",                  "model");
+		loadKeymap(_uiKeyMap->intVal());
 	}
 
 	if (!voxedit::sceneMgr().init()) {
@@ -417,6 +459,7 @@ app::AppState VoxEdit::onRunning() {
 	if (state != app::AppState::Running) {
 		return state;
 	}
+
 	const voxedit::Viewport *scene = _mainWindow->hoveredScene();
 	if (scene) {
 		if (scene->isSceneMode()) {

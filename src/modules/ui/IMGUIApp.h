@@ -5,6 +5,7 @@
 #pragma once
 
 #include "FileDialog.h"
+#include "core/collection/DynamicArray.h"
 #include "video/WindowedApp.h"
 #include "video/Buffer.h"
 #include "Console.h"
@@ -34,6 +35,28 @@ protected:
 	core::VarPtr _lastDirectory;
 	core::VarPtr _uistyle;
 
+	/**
+	 * The current keymap as index to the registered keymaps from the
+	 * particular application
+	 */
+	core::VarPtr _uiKeyMap;
+	/**
+	 * the array indices are the keymap ids given to @c loadKeyMap()
+	 * the strings in this array are used to print the names in the
+	 * key binding dialog
+	 *
+	 * each ui application can register its own keymaps by pushing
+	 * strings into this array.
+	 */
+	core::DynamicArray<core::String> _uiKeyMaps;
+	/**
+	 * string to filter the bindings in the binding dialog
+	 */
+	core::String _bindingsFilter;
+	/**
+	 * Reset the custom keybindings and load the default keymap
+	 */
+	bool _resetKeybindings = false;
 	bool _showBindingsDialog = false;
 	bool _showTexturesDialog = false;
 	bool _showFileDialog = false;
@@ -59,6 +82,12 @@ protected:
 	FileDialog _fileDialog;
 
 	void setColorTheme();
+	/**
+	 * @brief Configure the default keymap bindings for the application
+	 * @param[in] The application can support several different keymaps - you get the keymap id here to load the desired keymap
+	 * @note this is saved in the cvar @c cfg::UIKeyMap
+	 */
+	virtual void loadKeymap(int keymap) {}
 
 	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;

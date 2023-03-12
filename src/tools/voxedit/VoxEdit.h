@@ -28,6 +28,16 @@ private:
 
 	core::String getSuggestedFilename(const char *extension = nullptr) const;
 
+	enum KeyBindings {
+		Vengi = 0,
+		Blender = 1,
+		Magicavoxel = 2,
+		Qubicle = 3,
+		Max
+	};
+
+	void loadKeymap(int keymap) override;
+
 public:
 	VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
