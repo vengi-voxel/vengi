@@ -251,10 +251,9 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		float ignoredScale = 1.0f;
 
 		wrap(stream.readFloat(localTranslation.x))
-		//nodeFrame.transform.position.x *= -1.0f;
+		// localTranslation.x *= -1.0f;
 		wrap(stream.readFloat(localTranslation.y))
 		wrap(stream.readFloat(localTranslation.z))
-		transform.setWorldTranslation(localTranslation);
 		if (version >= 3) {
 			wrap(stream.readFloat(ignoredTranslation.x))
 			wrap(stream.readFloat(ignoredTranslation.y))
