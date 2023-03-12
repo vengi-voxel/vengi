@@ -190,9 +190,33 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			bool change = false;
 			glm::vec3 pivot = transform.pivot();
 			change |= ImGui::InputFloat3("Tr", matrixTranslation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_X "##resettr")) {
+				matrixTranslation[0] = matrixTranslation[1] = matrixTranslation[2] = 0.0f;
+				change = true;
+			}
+			ImGui::TooltipText("Reset");
 			change |= ImGui::InputFloat3("Rt", matrixRotation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_X "##resetrt")) {
+				matrixRotation[0] = matrixRotation[1] = matrixRotation[2] = 0.0f;
+				change = true;
+			}
+			ImGui::TooltipText("Reset");
 			change |= ImGui::InputFloat3("Sc", matrixScale, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_X "##resetsc")) {
+				matrixScale[0] = matrixScale[1] = matrixScale[2] = 1.0f;
+				change = true;
+			}
+			ImGui::TooltipText("Reset");
 			change |= ImGui::InputFloat3("Pv", glm::value_ptr(pivot), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_X "##resetpv")) {
+				pivot[0] = pivot[1] = pivot[2] = 0.0f;
+				change = true;
+			}
+			ImGui::TooltipText("Reset");
 
 			{
 				ui::ScopedStyle style;
