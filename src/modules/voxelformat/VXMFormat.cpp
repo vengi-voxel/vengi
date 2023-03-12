@@ -510,7 +510,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				const int x = i / (int)(size.y * size.z);
 				const int y = (i / (int)size.z) % (int)size.y;
 				const int z = i % (int)size.z;
-				volume->setVoxel(x, y, z, voxel);
+				volume->setVoxel(size.x - x - 1, y, z, voxel);
 			}
 			idx += length;
 		}

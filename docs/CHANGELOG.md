@@ -10,6 +10,10 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 ## 0.0.25 (2023-XX-XX)
 
+General:
+
+   - Fixed invalid x axis handling for Sandbox VXM format
+
 VoxEdit:
 
    - Allow to export selections only
