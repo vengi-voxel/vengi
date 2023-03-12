@@ -44,6 +44,7 @@ public:
 	void construct();
 	void shutdown(int version);
 	bool init();
+	void clear();
 	void reset(int version);
 	void removeApplicationKeyBindings(int version);
 

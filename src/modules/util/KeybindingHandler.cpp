@@ -246,6 +246,10 @@ void KeyBindingHandler::removeApplicationKeyBindings(int version) {
 
 void KeyBindingHandler::reset(int version) {
 	removeApplicationKeyBindings(version);
+	clear();
+}
+
+void KeyBindingHandler::clear() {
 	_bindings.clear();
 }
 
