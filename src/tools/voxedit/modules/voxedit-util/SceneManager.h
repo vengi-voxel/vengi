@@ -290,6 +290,7 @@ public:
 	 * influence on the dirty state handling of the scene.
 	 */
 	bool save(const io::FileDescription& file, bool autosave = false);
+	bool saveSelection(const io::FileDescription& file);
 	/**
 	 * @brief Loads a volume from the given file
 	 * @param[in] file The file to load. The volume format is determined by the file extension.

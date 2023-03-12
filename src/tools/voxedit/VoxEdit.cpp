@@ -170,6 +170,15 @@ app::AppState VoxEdit::onConstruct() {
 		saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, fileDialogOptions, voxelformat::voxelSave(), filename);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current scene as a volume to the given file");
 
+	command::Command::registerCommand("exportselection", [&] (const command::CmdArgs& args) {
+		static auto func = [] (const core::String &file, const io::FormatDescription *desc) {
+			io::FileDescription fd;
+			fd.set(file, desc);
+			voxedit::sceneMgr().saveSelection(fd);
+		};
+		saveDialog(func, fileDialogOptions, voxelformat::voxelSave());
+	}).setHelp("Save the selection from the current active model node");
+
 	command::Command::registerCommand("load", [this](const command::CmdArgs &args) {
 		if (_mainWindow == nullptr) {
 			return;

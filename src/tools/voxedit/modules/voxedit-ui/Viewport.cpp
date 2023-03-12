@@ -4,6 +4,7 @@
 
 #include "Viewport.h"
 #include "DragAndDropPayload.h"
+#include "IconsFontAwesome6.h"
 #include "IconsForkAwesome.h"
 #include "app/App.h"
 #include "core/ArrayLength.h"
@@ -380,6 +381,8 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 			}
 			ImGui::EndMenu();
 		}
+		ImGui::CommandMenuItem(ICON_FA_FILE " Save selection", "exportselection", sceneMgr().modifier().selection().isValid(), listener);
+
 		ImGui::EndMenuBar();
 	}
 }

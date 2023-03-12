@@ -868,6 +868,41 @@ bool SceneManager::doRedo() {
 	return mementoStateExecute(s, true);
 }
 
+bool SceneManager::saveSelection(const io::FileDescription& file) {
+	const Selection& selection = _modifier.selection();
+	if (!selection.isValid()) {
+		return false;
+	}
+	const int nodeId = activeNode();
+	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+	if (node == nullptr) {
+		Log::warn("Node with id %i wasn't found", nodeId);
+		return true;
+	}
+	if (node->type() != scenegraph::SceneGraphNodeType::Model) {
+		Log::warn("Given node is no model node");
+		return false;
+	}
+	const io::FilePtr& filePtr = io::filesystem()->open(file.name, io::FileMode::SysWrite);
+	if (!filePtr->validHandle()) {
+		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
+		return false;
+	}
+	scenegraph::SceneGraph newSceneGraph;
+	scenegraph::SceneGraphNode newNode;
+	scenegraph::copyNode(*node, newNode, false);
+	newNode.setVolume(new voxel::RawVolume(*node->volume(), selection), true);
+	newSceneGraph.emplace(core::move(newNode));
+	voxelformat::SaveContext saveCtx;
+	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
+	if (voxelformat::saveFormat(filePtr, &file.desc, newSceneGraph, saveCtx)) {
+		Log::info("Saved node %i to %s", nodeId, filePtr->name().c_str());
+		return true;
+	}
+	Log::warn("Failed to save node %i to %s", nodeId, filePtr->name().c_str());
+	return false;
+}
+
 bool SceneManager::copy() {
 	const Selection& selection = _modifier.selection();
 	if (!selection.isValid()) {

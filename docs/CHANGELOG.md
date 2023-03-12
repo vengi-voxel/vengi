@@ -10,7 +10,9 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 ## 0.0.25 (2023-XX-XX)
 
-General:
+VoxEdit:
+
+   - Allow to export selections only
 
 ## 0.0.24 (2023-03-12)
 
