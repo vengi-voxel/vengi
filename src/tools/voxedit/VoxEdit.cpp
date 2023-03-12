@@ -346,6 +346,11 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("ctrl+4",               "mirroraxisnone",               "model");
 	_keybindingHandler.registerBinding("wheelup",              "+zoom_in",                     "editing");
 	_keybindingHandler.registerBinding("wheeldown",            "+zoom_out",                    "editing");
+	_keybindingHandler.registerBinding("ctrl+e",               "toggle r_renderoutline",       "all");
+	_keybindingHandler.registerBinding("ctrl+g",               "toggle ve_showgrid",           "all");
+	_keybindingHandler.registerBinding("ctrl+f",               "toggle ve_showaabb",           "all");
+	_keybindingHandler.registerBinding("ctrl+w",               "toggle ve_rendershadow",       "all");
+
 	// TODO: currently only camera controls are distinguished
 	if (keymap == KeyBindings::Blender) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
