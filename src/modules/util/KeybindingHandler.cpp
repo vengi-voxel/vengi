@@ -296,9 +296,16 @@ bool KeyBindingHandler::registerBinding(const core::String &keys, const core::St
 bool KeyBindingHandler::registerBinding(const core::String &command, int32_t key, int16_t modifier,
 										core::BindingContext context, uint16_t count) {
 	auto i = _bindings.find(key);
-	// don't add the same binding more than once
-	if (i != _bindings.end() && i->second.command == command && i->second.modifier == modifier) {
-		return false;
+	if (i != _bindings.end()) {
+		if (i->second.command == command && i->second.modifier == modifier && i->second.count == count && i->second.context == context) {
+			// don't add the same binding more than once
+			return true;
+		}
+		if (i->second.modifier == modifier && (i->second.context & context) != 0) {
+			const core::String &desc = toString(key, modifier, count);
+			Log::error("There is already a binding for %s: %s", desc.c_str(), i->second.command.c_str());
+			return false;
+		}
 	}
 	_bindings.insert(std::make_pair(key, CommandModifierPair{command, modifier, count, context}));
 	return true;
