@@ -178,6 +178,9 @@ STBIWDEF int stbi_write_bmp(char const *filename, int w, int h, int comp, const 
 STBIWDEF int stbi_write_tga(char const *filename, int w, int h, int comp, const void  *data);
 STBIWDEF int stbi_write_hdr(char const *filename, int w, int h, int comp, const float *data);
 STBIWDEF int stbi_write_jpg(char const *filename, int x, int y, int comp, const void  *data, int quality);
+#ifndef STBI_WRITE_NO_QOI
+STBIWDEF int stbi_write_qoi(char const *filename, int w, int h, int comp, const void  *data);
+#endif
 
 #ifdef STBIW_WINDOWS_UTF8
 STBIWDEF int stbiw_convert_wchar_to_utf8(char *buffer, size_t bufferlen, const wchar_t* input);
@@ -191,7 +194,9 @@ STBIWDEF int stbi_write_bmp_to_func(stbi_write_func *func, void *context, int w,
 STBIWDEF int stbi_write_tga_to_func(stbi_write_func *func, void *context, int w, int h, int comp, const void  *data);
 STBIWDEF int stbi_write_hdr_to_func(stbi_write_func *func, void *context, int w, int h, int comp, const float *data);
 STBIWDEF int stbi_write_jpg_to_func(stbi_write_func *func, void *context, int x, int y, int comp, const void  *data, int quality);
-
+#ifndef STBI_WRITE_NO_QOI
+STBIWDEF int stbi_write_qoi_to_func(stbi_write_func *func, void *context, int w, int h, int comp, const void  *data);
+#endif
 STBIWDEF void stbi_flip_vertically_on_write(int flip_boolean);
 
 #endif//INCLUDE_STB_IMAGE_WRITE_H
@@ -1623,6 +1628,10 @@ STBIWDEF int stbi_write_jpg(char const *filename, int x, int y, int comp, const 
    } else
       return 0;
 }
+#endif
+
+#ifndef STBI_WRITE_NO_QOI
+#include "stbi_qoi_write.h"
 #endif
 
 #endif // STB_IMAGE_WRITE_IMPLEMENTATION
