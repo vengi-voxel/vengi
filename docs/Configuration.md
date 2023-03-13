@@ -3,15 +3,15 @@
 ## Variables
 
 The engine can get configured by so called cvars (configuration variables). These variables can be modified from within
-the game via key bindings, in-game console, the ui or scripts.
+the game via key bindings, built-in console, the ui or scripts.
 
 To get a list of supported cvars (they might differ from application to application), type the command `cvarlist` to the
-in-game console (`CTRL+Tab` in the default binding) - or execute the application with `--help` (Example: `vengi-voxedit.exe --help`).
+built-in console (`CTRL+Tab` in the default binding) - or execute the application with `--help` (Example: `vengi-voxedit.exe --help`).
 
 The variables can get their initial value from various sources. The highest order is the command line. If you specify it on
 the command line, every other method will not be used. If the engine finds the cvar name in your environment variables, this
-one will take precendence over the one the is found in the configuration file. Next is the configuration file - this one will
-take precendence over the default settings that are specified in the code.
+one will take precedence over the one the is found in the configuration file. Next is the configuration file - this one will
+take precedence over the default settings that are specified in the code.
 
 The environment variable can be either lower case or upper case. For example it will work if you have `CL_GAMMA` or `cl_gamma`
 exported. The lower case variant has the higher priority.
