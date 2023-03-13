@@ -142,6 +142,8 @@ bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteSt
 	wrapBool(stream.writeUInt32(FourCC('N','O','D','E')))
 	wrapBool(stream.writePascalStringUInt16LE(node.name()))
 	wrapBool(stream.writePascalStringUInt16LE(scenegraph::SceneGraphNodeTypeStr[(int)node.type()]))
+	wrapBool(stream.writeInt32(node.id()))
+	wrapBool(stream.writeInt32(node.reference()))
 	wrapBool(stream.writeBool(node.visible()))
 	wrapBool(stream.writeBool(node.locked()))
 	wrapBool(stream.writeUInt32(node.color().rgba))
@@ -287,7 +289,7 @@ bool VENGIFormat::loadNodeKeyFrame(scenegraph::SceneGraph &sceneGraph, scenegrap
 	return true;
 }
 
-bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ReadStream& stream) {
+bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ReadStream& stream, NodeMapping &nodeMapping) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt16LE(name))
 	core::String type;
@@ -298,8 +300,8 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 		return false;
 	}
 	Log::debug("Load node with name '%s' of type %s", name.c_str(), type.c_str());
-	int nodeId = nodeType == scenegraph::SceneGraphNodeType::Root ? sceneGraph.root().id() : -1;
-	if (nodeId == -1) {
+	int nodeId = nodeType == scenegraph::SceneGraphNodeType::Root ? sceneGraph.root().id() : InvalidNodeId;
+	if (nodeId == InvalidNodeId) {
 		scenegraph::SceneGraphNode node(nodeType);
 		node.setName(name);
 		if (nodeType == scenegraph::SceneGraphNodeType::Model) {
@@ -314,6 +316,15 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 	}
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 
+	if (version >= 2) {
+		int fileNodeId;
+		wrap(stream.readInt32(fileNodeId))
+		int referenceNodeId;
+		wrap(stream.readInt32(referenceNodeId))
+		// will get fixed up later once we know all node ids
+		node.setReference(referenceNodeId);
+		nodeMapping.put(fileNodeId, nodeId);
+	}
 	node.setVisible(stream.readBool());
 	node.setLocked(stream.readBool());
 	core::RGBA color;
@@ -344,7 +355,7 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 				return false;
 			}
 		} else if (chunkMagic == FourCC('N','O','D','E')) {
-			if (!loadNode(sceneGraph, node.id(), version, stream)) {
+			if (!loadNode(sceneGraph, node.id(), version, stream, nodeMapping)) {
 				return false;
 			}
 		} else if (chunkMagic == FourCC('E','N','D','N')) {
@@ -358,7 +369,7 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 bool VENGIFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	wrapBool(stream.writeUInt32(FourCC('V','E','N','G')))
 	io::ZipWriteStream zipStream(stream);
-	wrapBool(zipStream.writeUInt32(1))
+	wrapBool(zipStream.writeUInt32(2))
 	if (!saveNode(sceneGraph, zipStream, sceneGraph.root())) {
 		return false;
 	}
@@ -375,15 +386,26 @@ bool VENGIFormat::loadGroups(const core::String &filename, io::SeekableReadStrea
 	io::ZipReadStream zipStream(stream);
 	uint32_t version;
 	wrap(zipStream.readUInt32(version))
-	if (version > 1) {
+	if (version > 2) {
 		Log::error("Unsupported version %u", version);
 		return false;
 	}
 	uint32_t chunkMagic;
 	wrap(zipStream.readUInt32(chunkMagic))
+	NodeMapping nodeMapping;
 	if (chunkMagic == FourCC('N','O','D','E')) {
-		if (!loadNode(sceneGraph, sceneGraph.root().id(), version, zipStream)) {
+		if (!loadNode(sceneGraph, sceneGraph.root().id(), version, zipStream, nodeMapping)) {
 			return false;
+		}
+		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::ModelReference); iter != sceneGraph.end(); ++iter) {
+			scenegraph::SceneGraphNode &node = *iter;
+			int nodeId;
+			if (!nodeMapping.get(node.reference(), nodeId)) {
+				Log::error("Failed to perform node id mapping for references");
+				return false;
+			}
+			Log::debug("Update node reference for node %i to: %i", node.id(), nodeId);
+			node.setReference(nodeId);
 		}
 		sceneGraph.updateTransforms();
 		return true;
