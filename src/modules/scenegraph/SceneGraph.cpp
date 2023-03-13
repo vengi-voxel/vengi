@@ -33,7 +33,7 @@ SceneGraph::SceneGraph(SceneGraph &&other) noexcept {
 	_nextNodeId = other._nextNodeId;
 	other._nextNodeId = 0;
 	_activeNodeId = other._activeNodeId;
-	other._activeNodeId = -1;
+	other._activeNodeId = InvalidNodeId;
 	_animations = core::move(other._animations);
 }
 
@@ -43,7 +43,7 @@ SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
 		_nextNodeId = other._nextNodeId;
 		other._nextNodeId = 0;
 		_activeNodeId = other._activeNodeId;
-		other._activeNodeId = -1;
+		other._activeNodeId = InvalidNodeId;
 		_animations = core::move(other._animations);
 	}
 	return *this;
@@ -100,18 +100,18 @@ const SceneGraphNode& SceneGraph::root() const {
 int SceneGraph::prevModelNode(int nodeId) const {
 	auto iter = _nodes.find(nodeId);
 	if (iter ==  _nodes.end()) {
-		return -1;
+		return InvalidNodeId;
 	}
 	const SceneGraphNode &ownNode = iter->second;
-	if (ownNode.parent() == -1) {
-		return -1;
+	if (ownNode.parent() == InvalidNodeId) {
+		return InvalidNodeId;
 	}
-	int lastChild = -1;
+	int lastChild = InvalidNodeId;
 	const SceneGraphNode &parentNode = node(ownNode.parent());
 	const auto &children = parentNode.children();
 	for (int child : children) {
 		if (child == nodeId) {
-			if (lastChild == -1) {
+			if (lastChild == InvalidNodeId) {
 				break;
 			}
 			return lastChild;
@@ -125,17 +125,17 @@ int SceneGraph::prevModelNode(int nodeId) const {
 		return parentNode.id();
 	}
 	core_assert_msg(false, "Node %i is not part of the parent node", nodeId);
-	return -1;
+	return InvalidNodeId;
 }
 
 int SceneGraph::nextModelNode(int nodeId) const {
 	auto iter = _nodes.find(nodeId);
 	if (iter ==  _nodes.end()) {
-		return -1;
+		return InvalidNodeId;
 	}
 	const SceneGraphNode &ownNode = iter->second;
-	if (ownNode.parent() == -1) {
-		return -1;
+	if (ownNode.parent() == InvalidNodeId) {
+		return InvalidNodeId;
 	}
 	const auto &children = node(ownNode.parent()).children();
 	for (int child : children) {
@@ -156,7 +156,7 @@ int SceneGraph::nextModelNode(int nodeId) const {
 			return (*modelIter).id();
 		}
 	}
-	return -1;
+	return InvalidNodeId;
 }
 
 void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
@@ -232,7 +232,7 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	if (node.type() == SceneGraphNodeType::Root && _nextNodeId != 0) {
 		Log::error("No second root node is allowed in the scene graph");
 		node.release();
-		return -1;
+		return InvalidNodeId;
 	}
 	if (node.type() == SceneGraphNodeType::Model) {
 		core_assert(node.volume() != nullptr);
@@ -242,21 +242,21 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	if (parent >= nodeId) {
 		Log::error("Invalid parent id given: %i", parent);
 		node.release();
-		return -1;
+		return InvalidNodeId;
 	}
 	if (parent >= 0) {
 		auto parentIter = _nodes.find(parent);
 		if (parentIter == _nodes.end()) {
 			Log::error("Could not find parent node with id %i", parent);
 			node.release();
-			return -1;
+			return InvalidNodeId;
 		}
 		Log::debug("Add child %i to node %i", nodeId, parent);
 		parentIter->value.addChild(nodeId);
 	}
 	++_nextNodeId;
 	node.setId(nodeId);
-	if (_activeNodeId == -1) {
+	if (_activeNodeId == InvalidNodeId) {
 		// try to set a sane default value for the active node
 		if (node.type() == SceneGraphNodeType::Model) {
 			_activeNodeId = nodeId;
@@ -396,7 +396,7 @@ void SceneGraph::clear() {
 	SceneGraphNode node(SceneGraphNodeType::Root);
 	node.setName("root");
 	node.setId(0);
-	node.setParent(-1);
+	node.setParent(InvalidNodeId);
 	_nodes.emplace(0, core::move(node));
 }
 

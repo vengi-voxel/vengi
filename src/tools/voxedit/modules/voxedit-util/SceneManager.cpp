@@ -152,7 +152,7 @@ bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool b
 	scenegraph::SceneGraphNode node;
 	node.setVolume(v, true);
 	node.setName(core::string::extractFilename(img->name().c_str()));
-	return addNodeToSceneGraph(node) != -1;
+	return addNodeToSceneGraph(node) != InvalidNodeId;
 }
 
 bool SceneManager::importAsPlane(const core::String& file) {
@@ -164,7 +164,7 @@ bool SceneManager::importAsPlane(const core::String& file) {
 	scenegraph::SceneGraphNode node;
 	node.setVolume(v, true);
 	node.setName(core::string::extractFilename(img->name().c_str()));
-	return addNodeToSceneGraph(node) != -1;
+	return addNodeToSceneGraph(node) != InvalidNodeId;
 }
 
 bool SceneManager::importHeightmap(const core::String& file) {
@@ -280,7 +280,7 @@ void SceneManager::fillHollow() {
 
 void SceneManager::fillPlane(const image::ImagePtr &image) {
 	const int nodeId = activeNode();
-	if (nodeId == -1) {
+	if (nodeId == InvalidNodeId) {
 		return;
 	}
 	voxel::RawVolume *v = volume(nodeId);
@@ -385,7 +385,7 @@ bool SceneManager::import(const core::String& file) {
 	int newNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
 	bool state = false;
 	for (scenegraph::SceneGraphNode& node : newSceneGraph) {
-		state |= addNodeToSceneGraph(node, newNodeId) != -1;
+		state |= addNodeToSceneGraph(node, newNodeId) != InvalidNodeId;
 	}
 
 	return state;
@@ -419,7 +419,7 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		} else {
 			mergeIfNeeded(newSceneGraph);
 			for (scenegraph::SceneGraphNode& node : newSceneGraph) {
-				state |= addNodeToSceneGraph(node, importGroupNodeId) != -1;
+				state |= addNodeToSceneGraph(node, importGroupNodeId) != InvalidNodeId;
 			}
 		}
 	}
@@ -682,7 +682,7 @@ bool SceneManager::setActivePalette(const voxel::Palette &palette, bool searchBe
 
 voxel::RawVolume* SceneManager::activeVolume() {
 	const int nodeId = activeNode();
-	if (nodeId == -1) {
+	if (nodeId == InvalidNodeId) {
 		Log::error("No active node in scene graph");
 		return nullptr;
 	}
@@ -771,7 +771,7 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 	node.setName(s.name);
 	const int newNodeId = addNodeToSceneGraph(node, s.parentId);
 	_mementoHandler.updateNodeId(s.nodeId, newNodeId);
-	return newNodeId != -1;
+	return newNodeId != InvalidNodeId;
 }
 
 bool SceneManager::mementoStateExecute(const MementoState &s, bool isRedo) {
@@ -959,7 +959,7 @@ bool SceneManager::cut() {
 }
 
 void SceneManager::resetLastTrace() {
-	_sceneModeNodeIdTrace = -1;
+	_sceneModeNodeIdTrace = InvalidNodeId;
 	if (!_traceViaMouse) {
 		return;
 	}
@@ -993,7 +993,7 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	}
 	scenegraph::SceneGraph::MergedVolumePalette merged = newSceneGraph.merge();
 	if (merged.first == nullptr) {
-		return -1;
+		return InvalidNodeId;
 	}
 
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
@@ -1005,8 +1005,8 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	newNode.setPalette(merged.second);
 
 	int newNodeId = addNodeToSceneGraph(newNode, parent);
-	if (newNodeId == -1) {
-		return -1;
+	if (newNodeId == InvalidNodeId) {
+		return newNodeId;
 	}
 	for (int nodeId : nodeIds) {
 		nodeRemove(nodeId, false);
@@ -1025,7 +1025,7 @@ int SceneManager::mergeNodes(NodeMergeFlags flags) {
 	}
 
 	if (nodeIds.size() <= 1) {
-		return -1;
+		return InvalidNodeId;
 	}
 
 	return mergeNodes(nodeIds);
@@ -1033,15 +1033,15 @@ int SceneManager::mergeNodes(NodeMergeFlags flags) {
 
 int SceneManager::mergeNodes(int nodeId1, int nodeId2) {
 	if (!_sceneGraph.hasNode(nodeId1) || !_sceneGraph.hasNode(nodeId2)) {
-		return -1;
+		return InvalidNodeId;
 	}
 	voxel::RawVolume *volume1 = volume(nodeId1);
 	if (volume1 == nullptr) {
-		return -1;
+		return InvalidNodeId;
 	}
 	voxel::RawVolume *volume2 = volume(nodeId2);
 	if (volume2 == nullptr) {
-		return -1;
+		return InvalidNodeId;
 	}
 	core::DynamicArray<int> nodeIds(2);
 	nodeIds[0] = nodeId1;
@@ -1067,7 +1067,7 @@ void SceneManager::resetSceneState() {
 }
 
 void SceneManager::onNewNodeAdded(int newNodeId) {
-	if (newNodeId == -1) {
+	if (newNodeId == InvalidNodeId) {
 		return;
 	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(newNodeId)) {
@@ -1179,7 +1179,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 		node.setName(name);
 	}
 	const int nodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, node, 0);
-	if (nodeId == -1) {
+	if (nodeId == InvalidNodeId) {
 		Log::error("Failed to add empty volume to new scene graph");
 		return false;
 	}
@@ -1372,7 +1372,7 @@ void SceneManager::construct() {
 	command::Command::registerActionButton("camera_rotate", _rotate);
 	command::Command::registerActionButton("camera_pan", _pan);
 	command::Command::registerCommand("mouse_node_select", [&] (const command::CmdArgs&) {
-		if (_sceneModeNodeIdTrace != -1) {
+		if (_sceneModeNodeIdTrace != InvalidNodeId) {
 			Log::debug("switch active node to hovered from scene graph mode: %i", _sceneModeNodeIdTrace);
 			nodeActivate(_sceneModeNodeIdTrace);
 		}
@@ -1926,7 +1926,7 @@ int SceneManager::addModelChild(const core::String& name, int width, int height,
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	if (!region.isValid()) {
 		Log::warn("Invalid size provided (%i:%i:%i)", width, height, depth);
-		return -1;
+		return InvalidNodeId;
 	}
 	scenegraph::SceneGraphNode modelNode;
 	modelNode.setVolume(new voxel::RawVolume(region), true);
@@ -2207,14 +2207,14 @@ bool SceneManager::trace(bool sceneMode, bool force) {
 }
 
 void SceneManager::traceScene(bool force) {
-	if (_sceneModeNodeIdTrace != -1) {
+	if (_sceneModeNodeIdTrace != InvalidNodeId) {
 		// if the trace is not forced, and the mouse cursor position did not change, don't
 		// re-execute the trace.
 		if (_lastRaytraceX == _mouseCursor.x && _lastRaytraceY == _mouseCursor.y && !force) {
 			return;
 		}
 	}
-	_sceneModeNodeIdTrace = -1;
+	_sceneModeNodeIdTrace = InvalidNodeId;
 	core_trace_scoped(EditorSceneOnProcessUpdateRay);
 	_lastRaytraceX = _mouseCursor.x;
 	_lastRaytraceY = _mouseCursor.y;
@@ -2365,7 +2365,7 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix,
 									   scenegraph::KeyFrameIndex keyFrameIdx) {
-	if (nodeId == -1) {
+	if (nodeId == InvalidNodeId) {
 		nodeForeachGroup([&] (int nodeId) {
 			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 				nodeUpdateTransform(*node, localMatrix, deltaMatrix, keyFrameIdx);
@@ -2395,7 +2395,7 @@ bool SceneManager::nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph:
 }
 
 bool SceneManager::nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) {
-	if (nodeId == -1) {
+	if (nodeId == InvalidNodeId) {
 		nodeForeachGroup([&](int nodeId) {
 			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 			nodeAddKeyframe(node, frameIdx);

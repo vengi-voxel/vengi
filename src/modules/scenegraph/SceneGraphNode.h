@@ -182,6 +182,8 @@ using SceneGraphNodeChildren = const core::Buffer<int, 32>;
 using SceneGraphKeyFrames = core::DynamicArray<SceneGraphKeyFrame>;
 using SceneGraphNodeProperties = core::StringMap<core::String>;
 
+#define InvalidNodeId (-1)
+
 /**
  * @brief Struct that holds the metadata and the volume
  * @sa SceneGraph
@@ -202,8 +204,9 @@ protected:
 	static constexpr uint8_t Visible = 1 << 1;
 	static constexpr uint8_t Locked = 1 << 2;
 
-	int _id = -1;
+	int _id = InvalidNodeId;
 	int _parent = 0;
+	int _referenceId = InvalidNodeId;
 	SceneGraphNodeType _type;
 	uint8_t _flags = 0u;
 	core::RGBA _color;
@@ -219,6 +222,7 @@ protected:
 	 * @brief Called in emplace() if a parent id is given
 	 */
 	void setParent(int id);
+	void setId(int id);
 
 public:
 	~SceneGraphNode() { release(); }
@@ -249,7 +253,6 @@ public:
 	KeyFrameIndex keyFrameForFrame(FrameIndex frameIdx) const;
 
 	int id() const;
-	void setId(int id);
 	int parent() const;
 	const voxel::Palette &palette() const;
 	voxel::Palette &palette();

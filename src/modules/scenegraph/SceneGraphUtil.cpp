@@ -14,9 +14,9 @@ static int addToGraph(SceneGraph &sceneGraph, SceneGraphNode &&node, int parent)
 		parent = sceneGraph.root().id();
 	}
 	int newNodeId = sceneGraph.emplace(core::move(node), parent);
-	if (newNodeId == -1) {
+	if (newNodeId == InvalidNodeId) {
 		Log::error("Failed to add node to the scene");
-		return -1;
+		return InvalidNodeId;
 	}
 	return newNodeId;
 }
@@ -69,7 +69,7 @@ int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent
 
 static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, SceneGraphNode &sourceNode, int parent) {
 	const int newNodeId = addNodeToSceneGraph(target, sourceNode, parent);
-	if (newNodeId == -1) {
+	if (newNodeId == InvalidNodeId) {
 		Log::error("Failed to add node to the scene graph");
 		return 0;
 	}
@@ -101,7 +101,7 @@ static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, co
 		newNode.setVolume(new voxel::RawVolume(sourceNode.volume()), true);
 	}
 	const int newNodeId = addToGraph(target, core::move(newNode), parent);
-	if (newNodeId == -1) {
+	if (newNodeId == InvalidNodeId) {
 		Log::error("Failed to add node to the scene graph");
 		return 0;
 	}

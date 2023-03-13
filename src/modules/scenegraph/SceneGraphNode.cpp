@@ -180,7 +180,7 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 		return;
 	}
 
-	if (node.id() == -1) {
+	if (node.id() == InvalidNodeId) {
 		Log::warn("Node not yet part of the scene graph - don't perform any update");
 		return;
 	}
@@ -193,7 +193,7 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 			_localScale = _worldScale;
 		} else {
 			const int parentId = node.parent();
-			core_assert_msg(parentId != -1, "node %i (%s) doesn't have a root", node.id(), node.name().c_str());
+			core_assert_msg(parentId != InvalidNodeId, "node %i (%s) doesn't have a root", node.id(), node.name().c_str());
 			const SceneGraphNode &parent = sceneGraph.node(parentId);
 			const KeyFrameIndex keyFrameIdx = parent.keyFrameForFrame(frameIdx);
 			const SceneGraphTransform &parentTransform = parent.transform(keyFrameIdx);
@@ -221,7 +221,7 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 			_worldMat = _localMat;
 		} else {
 			const int parentId = node.parent();
-			core_assert_msg(parentId != -1, "node %i (%s) doesn't have a root", node.id(), node.name().c_str());
+			core_assert_msg(parentId != InvalidNodeId, "node %i (%s) doesn't have a root", node.id(), node.name().c_str());
 			const SceneGraphNode &parent = sceneGraph.node(parentId);
 			const KeyFrameIndex keyFrameIdx = parent.keyFrameForFrame(frameIdx);
 			const glm::mat4 &parentWorldMat = parent.transform(keyFrameIdx).worldMatrix();
@@ -249,7 +249,7 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 		// update own world matrix
 		if (node.type() != SceneGraphNodeType::Root) {
 			const int parentId = node.parent();
-			core_assert_msg(parentId != -1, "node %i (%s) doesn't have a root", node.id(), node.name().c_str());
+			core_assert_msg(parentId != InvalidNodeId, "node %i (%s) doesn't have a root", node.id(), node.name().c_str());
 			const SceneGraphNode &parent = sceneGraph.node(parentId);
 			const KeyFrameIndex keyFrameIdx = parent.keyFrameForFrame(frameIdx);
 			const glm::mat4 &parentWorldMat = parent.transform(keyFrameIdx).worldMatrix();
@@ -286,10 +286,10 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	move._volume = nullptr;
 	_name = core::move(move._name);
 	_id = move._id;
-	move._id = -1;
+	move._id = InvalidNodeId;
 	_palette = core::move(move._palette);
 	_parent = move._parent;
-	move._parent = -1;
+	move._parent = InvalidNodeId;
 	_keyFrames = core::move(move._keyFrames);
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
@@ -307,10 +307,10 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	move._volume = nullptr;
 	_name = core::move(move._name);
 	_id = move._id;
-	move._id = -1;
+	move._id = InvalidNodeId;
 	_palette = core::move(move._palette);
 	_parent = move._parent;
-	move._parent = -1;
+	move._parent = InvalidNodeId;
 	_keyFrames = core::move(move._keyFrames);
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
