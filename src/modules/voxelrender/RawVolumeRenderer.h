@@ -75,6 +75,7 @@ protected:
 		glm::mat4 _model;
 		glm::vec3 _pivot;
 		video::Buffer _vertexBuffer[MeshType_Max];
+		int _reference = -1;
 		voxel::RawVolume* _rawVolume = nullptr;
 		core::Optional<voxel::Palette> _palette;
 
@@ -181,6 +182,11 @@ public:
 	 */
 	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, voxel::Palette* palette, bool deleteMesh = true);
 	voxel::RawVolume* setVolume(int idx, scenegraph::SceneGraphNode& node, bool deleteMesh = true);
+	/**
+	 * @brief Allows to render the same model with different transforms
+	 */
+	void setVolumeReference(int idx, int referencedIdx);
+	void resetReferences();
 	bool setModelMatrix(int idx, const glm::mat4& model, const glm::vec3 &pivot, bool reset = true);
 
 	bool empty(int idx = 0) const;

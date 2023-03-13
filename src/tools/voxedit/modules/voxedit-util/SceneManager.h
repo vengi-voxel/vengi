@@ -388,6 +388,7 @@ private:
 	bool nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
 	void nodeDuplicate(const scenegraph::SceneGraphNode &node);
+	bool nodeReference(const scenegraph::SceneGraphNode &node);
 public:
 	bool nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);

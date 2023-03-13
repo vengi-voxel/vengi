@@ -20,4 +20,6 @@ int addSceneGraphNodes(SceneGraph& target, SceneGraph& source, int parent);
 
 int copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent);
 
+int createNodeReference(SceneGraph &target, const SceneGraphNode &node);
+
 } // namespace voxel

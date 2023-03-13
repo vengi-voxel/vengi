@@ -116,12 +116,12 @@ int SceneGraph::prevModelNode(int nodeId) const {
 			}
 			return lastChild;
 		}
-		if (node(child).type() == SceneGraphNodeType::Model) {
+		if (node(child).isModelNode()) {
 			lastChild = child;
 			continue;
 		}
 	}
-	if (parentNode.type() == SceneGraphNodeType::Model) {
+	if (parentNode.isModelNode()) {
 		return parentNode.id();
 	}
 	core_assert_msg(false, "Node %i is not part of the parent node", nodeId);
@@ -142,7 +142,7 @@ int SceneGraph::nextModelNode(int nodeId) const {
 		if (child == nodeId) {
 			continue;
 		}
-		if (node(child).type() == SceneGraphNodeType::Model) {
+		if (node(child).isModelNode()) {
 			return child;
 		}
 	}
@@ -258,7 +258,7 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	node.setId(nodeId);
 	if (_activeNodeId == InvalidNodeId) {
 		// try to set a sane default value for the active node
-		if (node.type() == SceneGraphNodeType::Model) {
+		if (node.isModelNode()) {
 			_activeNodeId = nodeId;
 		}
 	}

@@ -138,6 +138,7 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 			commandNodeMenu(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "layerdelete", node, validModels > 1, &listener);
 			commandNodeMenu(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", node, validModels > 1, &listener);
 			commandNodeMenu(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "layerduplicate", node, true, &listener);
+			commandNodeMenu(ICON_FA_COPY " Create reference" SCENEGRAPHPOPUP, "noderef", node, true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_EYE " Show all" SCENEGRAPHPOPUP, "layershowall", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide all" SCENEGRAPHPOPUP, "layerhideall", true, &listener);
 			commandNodeMenu(ICON_FA_OBJECT_GROUP " Merge" SCENEGRAPHPOPUP, "layermerge", node, validModels > 1, &listener);
@@ -214,6 +215,9 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 
 		core::String name;
 		switch (node.type()) {
+		case scenegraph::SceneGraphNodeType::ModelReference:
+			name = ICON_FA_CUBES_STACKED;
+			break;
 		case scenegraph::SceneGraphNodeType::Model:
 			name = ICON_FA_CUBES;
 			break;
@@ -227,6 +231,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		case scenegraph::SceneGraphNodeType::Unknown:
 			name = ICON_FA_CIRCLE_QUESTION;
 			break;
+		case scenegraph::SceneGraphNodeType::AllModels:
 		case scenegraph::SceneGraphNodeType::Max:
 			break;
 		}

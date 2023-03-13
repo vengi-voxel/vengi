@@ -30,12 +30,27 @@ static void copy(const SceneGraphNode &node, SceneGraphNode &target, bool copyKe
 	target.setLocked(node.locked());
 	target.setColor(node.color());
 	target.addProperties(node.properties());
+	target.setReference(node.reference());
 	if (node.type() == SceneGraphNodeType::Model) {
 		target.setPalette(node.palette());
 		core_assert(node.volume() != nullptr);
+	} else if (node.type() == SceneGraphNodeType::ModelReference) {
+		core_assert(node.reference() != InvalidNodeId);
 	} else {
 		core_assert(node.volume() == nullptr);
 	}
+}
+
+int createNodeReference(SceneGraph &target, const SceneGraphNode &node) {
+	if (!node.isReferenceable()) {
+		return InvalidNodeId;
+	}
+
+	SceneGraphNode newNode(SceneGraphNodeType::ModelReference);
+	newNode.setReference(node.id());
+	newNode.setName(node.name() + " reference");
+	newNode.setColor(node.color());
+	return addToGraph(target, core::move(newNode), node.parent());
 }
 
 void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume, bool copyKeyFrames) {

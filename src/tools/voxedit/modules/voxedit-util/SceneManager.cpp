@@ -764,6 +764,9 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 			node.setPalette(*s.palette.value());
 		}
 	}
+	if (type == scenegraph::SceneGraphNodeType::ModelReference) {
+		node.setReference(s.referenceId);
+	}
 	if (s.keyFrames.hasValue()) {
 		node.setKeyFrames(*s.keyFrames.value());
 	}
@@ -1902,6 +1905,13 @@ void SceneManager::construct() {
 			nodeDuplicate(*node);
 		}
 	}).setHelp("Duplicates the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
+
+	command::Command::registerCommand("noderef", [&] (const command::CmdArgs& args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
+		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+			nodeReference(*node);
+		}
+	}).setHelp("Create a node reference for the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
 }
 
 void SceneManager::renderText(const char *str, int size, int thickness, int spacing, const char *font) {
@@ -2539,6 +2549,15 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	const int nodeId = node.id();
 	const core::String name = node.name();
 	Log::debug("Delete node %i with name %s", nodeId, name.c_str());
+	core::Buffer<int> removeReferenceNodes;
+	for (auto iter = _sceneGraph.begin(scenegraph::SceneGraphNodeType::ModelReference); iter != _sceneGraph.end(); ++iter) {
+		if ((*iter).reference() == nodeId) {
+			removeReferenceNodes.push_back((*iter).id());
+		}
+	}
+	for (int nodeId : removeReferenceNodes) {
+		nodeRemove(_sceneGraph.node(nodeId), recursive);
+	}
 	// TODO: memento and recursive... - we only record the one node in the memento state - not the children
 	_mementoHandler.markNodeRemoved(node);
 	if (!_sceneGraph.removeNode(nodeId, recursive)) {
@@ -2574,6 +2593,12 @@ void SceneManager::nodeDuplicate(const scenegraph::SceneGraphNode &node) {
 		// TODO: duplicate children
 	}
 #endif
+}
+
+bool SceneManager::nodeReference(const scenegraph::SceneGraphNode &node) {
+	const int newNodeId = scenegraph::createNodeReference(_sceneGraph, node);
+	onNewNodeAdded(newNodeId);
+	return newNodeId != InvalidNodeId;
 }
 
 void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {

@@ -154,8 +154,7 @@ void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scene
 		}
 	}
 	_cameras.clear();
-	for (scenegraph::SceneGraph::iterator iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera);
-		 iter != sceneGraph.end(); ++iter) {
+	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(*iter);
 		if (!cameraNode.visible()) {
 			continue;
@@ -166,7 +165,8 @@ void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scene
 	}
 
 	const int activeNode = sceneGraph.activeNode();
-	for (scenegraph::SceneGraphNode &node : sceneGraph) {
+	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Model); iter != sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
 		const int id = getVolumeId(node);
 		if (id >= RawVolumeRenderer::MAX_VOLUMES) {
 			continue;
@@ -192,6 +192,32 @@ void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scene
 			_renderer.gray(id, id != activeNode);
 		} else {
 			_renderer.gray(id, false);
+		}
+	}
+
+	if (_sceneMode) {
+		_renderer.resetReferences();
+		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::ModelReference); iter != sceneGraph.end(); ++iter) {
+			const scenegraph::SceneGraphNode &node = *iter;
+			const int id = getVolumeId(node);
+			if (id >= RawVolumeRenderer::MAX_VOLUMES) {
+				continue;
+			}
+			const int referencedId = getVolumeId(node.reference());
+			_renderer.setVolumeReference(id, referencedId);
+			const scenegraph::SceneGraphTransform &transform = node.transformForFrame(frame);
+			const glm::vec3 pivot = transform.worldScale() * transform.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
+			_renderer.setModelMatrix(id, transform.worldMatrix(), pivot);
+			if (hideInactive) {
+				_renderer.hide(id, id != activeNode);
+			} else {
+				_renderer.hide(id, !node.visible());
+			}
+			if (grayInactive) {
+				_renderer.gray(id, id != activeNode);
+			} else {
+				_renderer.gray(id, false);
+			}
 		}
 	}
 }

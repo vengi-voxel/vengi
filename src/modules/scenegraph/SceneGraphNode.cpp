@@ -287,6 +287,8 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_name = core::move(move._name);
 	_id = move._id;
 	move._id = InvalidNodeId;
+	_referenceId = move._referenceId;
+	move._referenceId = InvalidNodeId;
 	_palette = core::move(move._palette);
 	_parent = move._parent;
 	move._parent = InvalidNodeId;
@@ -308,6 +310,8 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_name = core::move(move._name);
 	_id = move._id;
 	move._id = InvalidNodeId;
+	_referenceId = move._referenceId;
+	move._referenceId = InvalidNodeId;
 	_palette = core::move(move._palette);
 	_parent = move._parent;
 	move._parent = InvalidNodeId;
@@ -382,6 +386,26 @@ void SceneGraphNode::setVolume(const voxel::RawVolume *volume, bool transferOwne
 		_flags &= ~VolumeOwned;
 	}
 	_volume = (voxel::RawVolume *)volume;
+}
+
+bool SceneGraphNode::isModelNode() const {
+	return _type == SceneGraphNodeType::Model || _type == SceneGraphNodeType::ModelReference;
+}
+
+bool SceneGraphNode::isReferenceable() const {
+	return _type == SceneGraphNodeType::Model;
+}
+
+int SceneGraphNode::reference() const {
+	return _referenceId;
+}
+
+bool SceneGraphNode::setReference(int nodeId) {
+	if (_type != SceneGraphNodeType::ModelReference) {
+		return false;
+	}
+	_referenceId = nodeId;
+	return true;
 }
 
 const voxel::Region &SceneGraphNode::region() const {

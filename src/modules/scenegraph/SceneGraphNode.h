@@ -32,11 +32,14 @@ using KeyFrameIndex = int32_t;
 enum class SceneGraphNodeType : uint8_t {
 	Root,
 	Model,
+	ModelReference,
 	Group,
 	Camera,
 	Unknown,
 
-	Max
+	Max,
+
+	AllModels // Fake type for the iterator
 };
 
 // these identifiers are using in the vengi format for the different node types
@@ -44,6 +47,7 @@ enum class SceneGraphNodeType : uint8_t {
 static constexpr const char* SceneGraphNodeTypeStr[] {
 	"Root",
 	"Model",
+	"ModelReference",
 	"Group",
 	"Camera",
 	"Unknown"
@@ -236,6 +240,9 @@ public:
 	void releaseOwnership();
 	bool owns() const;
 
+	bool isReferenceable() const;
+	bool isModelNode() const;
+
 	core::RGBA color() const;
 	void setColor(core::RGBA color);
 
@@ -254,6 +261,9 @@ public:
 
 	int id() const;
 	int parent() const;
+	int reference() const;
+	bool setReference(int nodeId);
+
 	const voxel::Palette &palette() const;
 	voxel::Palette &palette();
 	void setPalette(const voxel::Palette &palette);

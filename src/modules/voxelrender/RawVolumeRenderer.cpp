@@ -502,7 +502,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 				var.lightviewprojection = lightViewProjection;
 
 				for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-					const State& state = _state[idx];
+					const State& state = _state[idx]._reference != -1 ? _state[_state[idx]._reference] : _state[idx];
 					if (state._hidden) {
 						continue;
 					}
@@ -511,8 +511,8 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 						continue;
 					}
 					video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Opaque]);
-					var.model = state._model;
-					var.pivot = state._pivot;
+					var.model = _state[idx]._model;
+					var.pivot = _state[idx]._pivot;
 					_shadowMapUniformBlock.update(var);
 					_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
 					static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
@@ -553,7 +553,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	_paletteHash = 0;
 	// --- opaque pass
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		const State& state = _state[idx];
+		const State& state = _state[idx]._reference != -1 ? _state[_state[idx]._reference] : _state[idx];
 		if (state._hidden) {
 			continue;
 		}
@@ -564,9 +564,9 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 
 		updatePalette(idx);
 		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
-		_voxelShaderVertData.model = state._model;
-		_voxelShaderVertData.pivot = state._pivot;
-		_voxelShaderVertData.gray = state._gray;
+		_voxelShaderVertData.model = _state[idx]._model;
+		_voxelShaderVertData.pivot = _state[idx]._pivot;
+		_voxelShaderVertData.gray = _state[idx]._gray;
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
 		video::ScopedPolygonMode polygonMode(mode);
@@ -583,7 +583,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	{
 		video::ScopedState scopedBlend(video::State::Blend, true);
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-			const State& state = _state[idx];
+			const State& state = _state[idx]._reference != -1 ? _state[_state[idx]._reference] : _state[idx];
 			const uint32_t indices = state.indices(MeshType_Transparency);
 			if (indices == 0u) {
 				continue;
@@ -591,9 +591,9 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 
 			updatePalette(idx);
 			_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
-			_voxelShaderVertData.model = state._model;
-			_voxelShaderVertData.pivot = state._pivot;
-			_voxelShaderVertData.gray = state._gray;
+			_voxelShaderVertData.model = _state[idx]._model;
+			_voxelShaderVertData.pivot = _state[idx]._pivot;
+			_voxelShaderVertData.gray = _state[idx]._gray;
 			core_assert_always(_voxelData.update(_voxelShaderVertData));
 
 			// TODO: alpha support - sort according to eye pos
@@ -629,7 +629,7 @@ bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4& model, const gl
 		return false;
 	}
 	State& state = _state[idx];
-	if (state._rawVolume == nullptr) {
+	if (state._reference == -1 && state._rawVolume == nullptr) {
 		Log::error("No volume found at: %i", idx);
 		return false;
 	}
@@ -658,6 +658,20 @@ voxel::Region RawVolumeRenderer::region() const {
 
 voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, scenegraph::SceneGraphNode& node, bool deleteMesh) {
 	return setVolume(idx, node.volume(), &node.palette(), deleteMesh);
+}
+
+void RawVolumeRenderer::resetReferences() {
+	for (auto &s : _state) {
+		s._reference = -1;
+	}
+}
+
+void RawVolumeRenderer::setVolumeReference(int idx, int referencedIdx) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return;
+	}
+	State& state = _state[idx];
+	state._reference = referencedIdx;
 }
 
 voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume, voxel::Palette* palette, bool deleteMesh) {

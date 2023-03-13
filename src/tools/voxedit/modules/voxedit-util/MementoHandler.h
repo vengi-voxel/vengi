@@ -96,6 +96,7 @@ struct MementoState {
 	MementoData data;
 	int parentId = InvalidNodeId;
 	int nodeId = InvalidNodeId;
+	int referenceId = InvalidNodeId;
 	scenegraph::SceneGraphNodeType nodeType;
 	core::Optional<scenegraph::SceneGraphKeyFrames> keyFrames;
 	core::Optional<scenegraph::SceneGraphNodeProperties> properties;
@@ -113,30 +114,30 @@ struct MementoState {
 			type(MementoType::Max), parentId(0), nodeId(0), keyFrameIdx(0) {
 	}
 
-	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, const core::String &_name, scenegraph::SceneGraphNodeType _nodeType,
+	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId, const core::String &_name, scenegraph::SceneGraphNodeType _nodeType,
 				 const voxel::Region &_region, const glm::mat4x4 &_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx = 0, const core::Optional<voxel::Palette> &_palette = {})
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix),
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId), nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix),
 		  region(_region), palette(_palette) {
 	}
 
-	MementoState(MementoType _type, int _parentId, int _nodeId, const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties)
-		: type(_type), parentId(_parentId), nodeId(_nodeId), nodeType(_nodeType), properties(_properties), name(_name) {
+	MementoState(MementoType _type, int _parentId, int _nodeId, int _referenceId, const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties)
+		: type(_type), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId), nodeType(_nodeType), properties(_properties), name(_name) {
 	}
 
-	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
+	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
 				 voxel::Region &&_region, glm::mat4x4 &&_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx, core::Optional<voxel::Palette> &&_palette)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), palette(_palette) {
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId), nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), palette(_palette) {
 	}
 
-	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, const core::String &_name, scenegraph::SceneGraphNodeType _nodeType,
+	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId, const core::String &_name, scenegraph::SceneGraphNodeType _nodeType,
 				 const voxel::Region &_region, const core::Optional<scenegraph::SceneGraphKeyFrames> &_keyFrames, const core::Optional<voxel::Palette> &_palette = {}, const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties = {})
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name),
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId), nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name),
 		  region(_region), palette(_palette) {
 	}
 
-	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
+	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
 				 voxel::Region &&_region, core::Optional<scenegraph::SceneGraphKeyFrames> &&_keyFrames, core::Optional<voxel::Palette> &&_palette, core::Optional<scenegraph::SceneGraphNodeProperties> &&_properties)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), region(_region), palette(_palette) {
+		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId), nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), region(_region), palette(_palette) {
 	}
 
 	inline bool valid() const {
@@ -211,12 +212,13 @@ public:
 	 * @param[in] volume The state of the volume
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
-	void markUndo(int parentId, int nodeId, const core::String &name, scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
+	void markUndo(int parentId, int nodeId, int referenceId, const core::String &name,
+				  scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
 				  const voxel::Region &region, const glm::mat4 &transformMatrix, scenegraph::KeyFrameIndex keyFrameIdx,
 				  const core::Optional<voxel::Palette> &palette = {});
-	void markUndoKeyFrames(int parentId, int nodeId, const core::String &name, scenegraph::SceneGraphNodeType nodeType,
-						   const voxel::RawVolume *volume, MementoType type, const voxel::Region &region,
-						   const scenegraph::SceneGraphKeyFrames &keyFrames,
+	void markUndoKeyFrames(int parentId, int nodeId, int referenceId, const core::String &name,
+						   scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
+						   const voxel::Region &region, const scenegraph::SceneGraphKeyFrames &keyFrames,
 						   const core::Optional<voxel::Palette> &palette = {},
 						   const core::Optional<scenegraph::SceneGraphNodeProperties> &properties = {});
 

@@ -87,9 +87,18 @@ void SceneRenderer::updateNodeRegion(int nodeId, const voxel::Region &region, ui
 	_highlightRegion = TimedRegion(region, timeProvider->tickNow(), renderRegionMillis);
 }
 
-static scenegraph::SceneGraphNode *sceneGraphNode(const scenegraph::SceneGraph &sceneGraph, int nodeId) {
+/**
+ * @brief Return the real model node, not the reference
+ */
+static scenegraph::SceneGraphNode *sceneGraphModelNode(const scenegraph::SceneGraph &sceneGraph, int nodeId) {
 	if (sceneGraph.hasNode(nodeId)) {
-		return &sceneGraph.node(nodeId);
+		scenegraph::SceneGraphNode *n = &sceneGraph.node(nodeId);
+		if (n->reference() != InvalidNodeId) {
+			if (sceneGraph.hasNode(n->reference())) {
+				n = &sceneGraph.node(n->reference());
+			}
+		}
+		return n;
 	}
 	return nullptr;
 }
@@ -103,7 +112,7 @@ bool SceneRenderer::extractVolume(const scenegraph::SceneGraph &sceneGraph) {
 	Log::debug("Extract the meshes for %i regions", (int)n);
 	for (size_t i = 0; i < n; ++i) {
 		const voxel::Region &region = _extractRegions[i].region;
-		if (scenegraph::SceneGraphNode *node = sceneGraphNode(sceneGraph, _extractRegions[i].nodeId)) {
+		if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(sceneGraph, _extractRegions[i].nodeId)) {
 			if (!_volumeRenderer.extractRegion(*node, region)) {
 				Log::error("Failed to extract the model mesh");
 			}
@@ -191,8 +200,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 		if (_showAABB->boolVal()) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);
 		}
-	} else {
-		scenegraph::SceneGraphNode *n = sceneGraphNode(sceneGraph, sceneGraph.activeNode());
+	} else if (scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNode())) {
 		const voxel::Region &region = n->volume()->region();
 		_gridRenderer.render(camera, toAABB(region));
 

@@ -161,8 +161,13 @@ public:
 					++_startNodeId;
 					continue;
 				}
-				if (_sceneGraph->node(_startNodeId).type() == filter) {
+				SceneGraphNodeType type = _sceneGraph->node(_startNodeId).type();
+				if (type == _filter) {
 					break;
+				} else if (_filter == SceneGraphNodeType::AllModels) {
+					if (type == SceneGraphNodeType::Model || type == SceneGraphNodeType::ModelReference) {
+						break;
+					}
 				}
 				++_startNodeId;
 			}
@@ -182,8 +187,13 @@ public:
 					if (!_sceneGraph->hasNode(_startNodeId)) {
 						continue;
 					}
-					if (_sceneGraph->node(_startNodeId).type() == _filter) {
+					SceneGraphNodeType type = _sceneGraph->node(_startNodeId).type();
+					if (type == _filter) {
 						break;
+					} else if (_filter == SceneGraphNodeType::AllModels) {
+						if (type == SceneGraphNodeType::Model || type == SceneGraphNodeType::ModelReference) {
+							break;
+						}
 					}
 				}
 			}
