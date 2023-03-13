@@ -94,8 +94,8 @@ public:
 struct MementoState {
 	MementoType type;
 	MementoData data;
-	int parentId = -1;
-	int nodeId = -1;
+	int parentId = InvalidNodeId;
+	int nodeId = InvalidNodeId;
 	scenegraph::SceneGraphNodeType nodeType;
 	core::Optional<scenegraph::SceneGraphKeyFrames> keyFrames;
 	core::Optional<scenegraph::SceneGraphNodeProperties> properties;
