@@ -44,7 +44,7 @@ You can get a list of search paths by calling the particular application with th
 ## Commands
 
 To get a list of supported commands (they might differ from application to application), type the command `cmdlist` to the
-in-game console (`CTRL+Tab` in the default binding).
+built-in console (`CTRL+Tab` in the default binding).
 
 You can also get a list when doing `./vengi-app --help` on the command line.
 
