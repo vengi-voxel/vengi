@@ -32,7 +32,7 @@ private:
 	void detailView(scenegraph::SceneGraphNode &node);
 	void recursiveAddNodes(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
 							  scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener,
-							  int depth) const;
+							  int depth, int referencedNodeId) const;
 	/**
 	 * @return @c true if the property was handled with a special ui input widget - @c false if it should just be a
 	 * normal text input field

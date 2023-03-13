@@ -183,9 +183,17 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 
 void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
 							  scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener,
-							  int depth) const {
+							  int depth, int referencedNodeId) const {
 	const int nodeId = node.id();
 	bool open = false;
+	const bool referenceNode = node.reference() == sceneGraph.activeNode();
+	const bool referencedNode = referencedNodeId == nodeId;
+	const bool referenceHighlight = referenceNode || referencedNode;
+
+	ui::ScopedStyle refStyle;
+	if (referenceHighlight) {
+		refStyle.darker(ImGuiCol_Text);
+	}
 
 	ImGui::TableNextRow();
 	{ // column 1
@@ -242,8 +250,8 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		case scenegraph::SceneGraphNodeType::Max:
 			break;
 		}
-		name.append(core::string::format(" %s##%i", node.name().c_str(), node.id()));
-		const bool selected = node.id() == sceneGraph.activeNode();
+		name.append(core::string::format(" %s##%i", node.name().c_str(), nodeId));
+		const bool selected = nodeId == sceneGraph.activeNode();
 		ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth;
 		if (node.isLeaf()) {
 			treeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
@@ -263,10 +271,10 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		}
 		ImGui::Unindent(indent);
 
-		if (node.id() != sceneGraph.root().id()) {
+		if (nodeId != sceneGraph.root().id()) {
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 				ImGui::Text("%s", name.c_str());
-				const int sourceNodeId = node.id();
+				const int sourceNodeId = nodeId;
 				ImGui::SetDragDropPayload(dragdrop::SceneNodePayload, (const void *)&sourceNodeId, sizeof(int),
 										  ImGuiCond_Always);
 				ImGui::EndDragDropSource();
@@ -276,7 +284,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 			const ImGuiPayload *payload = ImGui::GetDragDropPayload();
 			if (payload->IsDataType(dragdrop::SceneNodePayload)) {
 				const int sourceNodeId = *(int *)payload->Data;
-				const int targetNode = node.id();
+				const int targetNode = nodeId;
 				if (sceneGraph.canChangeParent(sceneGraph.node(sourceNodeId), targetNode)) {
 					if (ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload) != nullptr) {
 						if (!sceneMgr().nodeMove(sourceNodeId, targetNode)) {
@@ -294,7 +302,12 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		}
 		contextMenu(camera, sceneGraph, node, listener);
 		if (ImGui::IsItemActivated()) {
-			sceneMgr().nodeActivate(node.id());
+			sceneMgr().nodeActivate(nodeId);
+		}
+		if (referenceNode) {
+			ImGui::TooltipText("Reference Node");
+		} else if (referencedNode) {
+			ImGui::TooltipText("Reference Target Node");
 		}
 	}
 	{ // column 5
@@ -309,7 +322,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 
 	if (open) {
 		for (int nodeIdx : node.children()) {
-			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(nodeIdx), listener, depth + 1);
+			recursiveAddNodes(camera, sceneGraph, sceneGraph.node(nodeIdx), listener, depth + 1, referencedNodeId);
 		}
 		ImGui::TreePop();
 	}
@@ -401,7 +414,14 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 				ImGui::TableSetupColumn("##nodedelete", colFlags);
 				ImGui::TableHeadersRow();
 				// TODO: filter by name and type
-				recursiveAddNodes(camera, sceneGraph, sceneGraph.node(sceneGraph.root().id()), listener, 0);
+
+				int referencedNode = InvalidNodeId;
+				const scenegraph::SceneGraphNode& activeNode = sceneGraph.node(sceneGraph.activeNode());
+				if (activeNode.type() == scenegraph::SceneGraphNodeType::ModelReference) {
+					referencedNode = activeNode.reference();
+				}
+
+				recursiveAddNodes(camera, sceneGraph, sceneGraph.node(sceneGraph.root().id()), listener, 0, referencedNode);
 				ImGui::EndTable();
 			}
 		}
