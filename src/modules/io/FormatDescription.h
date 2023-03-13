@@ -31,6 +31,17 @@ struct FormatDescription {
 		return !name.empty();
 	}
 	bool operator<(const FormatDescription &rhs) const;
+
+	bool operator==(const FormatDescription &rhs) const {
+		if (name.empty() || rhs.name.empty()) {
+			if (rhs.exts.empty()) {
+				return false;
+			}
+			return matchesExtension(rhs.exts[0]);
+		}
+		return name == rhs.name;
+	}
+
 	/**
 	 * @brief Return the comma separated wildcard for the extensions of this format description
 	 */

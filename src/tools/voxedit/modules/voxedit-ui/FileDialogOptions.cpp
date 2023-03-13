@@ -43,19 +43,18 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		if (forceApplyOptions || !meshFormat) {
 			ImGui::CheckboxVar("Single object", cfg::VoxformatMerge);
 		}
-		if (forceApplyOptions || desc->matchesExtension("qbt")) {
+		if (forceApplyOptions || *desc == voxelformat::qubicleBinaryTree()) {
 			ImGui::CheckboxVar("Palette mode", cfg::VoxformatQBTPaletteMode);
 			ImGui::CheckboxVar("Merge compounds", cfg::VoxformatQBTMergeCompounds);
 		}
-		if (forceApplyOptions || desc->matchesExtension("vox")) {
+		if (forceApplyOptions || *desc == voxelformat::magicaVoxel()) {
 			ImGui::CheckboxVar("Create groups", cfg::VoxformatVOXCreateGroups);
 			ImGui::CheckboxVar("Create layers", cfg::VoxformatVOXCreateLayers);
 		}
-		if (forceApplyOptions || desc->matchesExtension("qb")) {
+		if (forceApplyOptions || *desc == voxelformat::qubicleBinary()) {
 			ImGui::CheckboxVar("Left handed", cfg::VoxformatQBSaveLeftHanded);
 		}
-		const io::FormatDescription &tiberianSun = voxelformat::tiberianSun();
-		if (forceApplyOptions || (desc->name == tiberianSun.name && desc->matchesExtension(tiberianSun.exts[0]))) {
+		if (forceApplyOptions || *desc == voxelformat::tiberianSun()) {
 			const char *normalTypes[] = {nullptr, nullptr, "Tiberian Sun", nullptr, "Red Alert"};
 			const core::VarPtr &normalTypeVar = core::Var::getSafe(cfg::VoxformatVXLNormalType);
 			const int currentNormalType = normalTypeVar->intVal();

@@ -64,6 +64,10 @@ io::FormatDescription magicaVoxel() {
 	return {"MagicaVoxel", {"vox"}, [] (uint32_t magic) {return magic == FourCC('V','O','X',' ');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 }
 
+io::FormatDescription qubicleBinaryTree() {
+	return {"Qubicle Binary Tree", {"qbt"}, [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+}
+
 io::FormatDescription vengi() {
 	return {"Vengi", {"vengi"}, [] (uint32_t magic) {return magic == FourCC('V','E', 'N','G');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 }
@@ -74,7 +78,7 @@ const io::FormatDescription* voxelLoad() {
 		vengi(),
 		qubicleBinary(),
 		magicaVoxel(),
-		{"Qubicle Binary Tree", {"qbt"}, [] (uint32_t magic) {return magic == FourCC('Q','B',' ','2');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		qubicleBinaryTree(),
 		{"Qubicle Project", {"qbcl"}, [] (uint32_t magic) {return magic == FourCC('Q','B','C','L');}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Sandbox VoxEdit Tilemap", {"vxt"}, [] (uint32_t magic) {return magic == FourCC('V','X','T','1');}, 0u},
 		{"Sandbox VoxEdit Collection", {"vxc"}, nullptr, 0u},
