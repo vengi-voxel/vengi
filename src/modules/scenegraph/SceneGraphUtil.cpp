@@ -28,6 +28,7 @@ static void copy(const SceneGraphNode &node, SceneGraphNode &target, bool copyKe
 	}
 	target.setVisible(node.visible());
 	target.setLocked(node.locked());
+	target.setColor(node.color());
 	target.addProperties(node.properties());
 	if (node.type() == SceneGraphNodeType::Model) {
 		target.setPalette(node.palette());
