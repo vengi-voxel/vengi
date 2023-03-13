@@ -46,7 +46,7 @@ Voxelize an obj and save as magicavoxel (including colors):
 > For obj the mtl file must be in the same dir as the obj files, as well as the
 > potential textures.
 >
-> glTF is supported both in ascii and binary - but the satelite files must also
+> glTF is supported both in ascii and binary - but the satellite files must also
 > reside in the same dir as the `glb` or `gltf` file.
 
 `./vengi-voxconvert -set voxformat_scale 2 -set palette /path/to/palette.png --input mesh.obj --output voxels.vox`

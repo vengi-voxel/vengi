@@ -2,7 +2,7 @@
 
 Command line tool to convert voxel volume, image or polygon formats between each other.
 
-Modifying the voxels is also supported - rotating, transfering, create lod, extract palette, execute lua scripts and a lot more.
+Modifying the voxels is also supported - rotating, transferring, create lod, extract palette, execute lua scripts and a lot more.
 
 If you need a way to automate your voxel assets for your art pipeline, voxconvert might be a tool you find useful.
 

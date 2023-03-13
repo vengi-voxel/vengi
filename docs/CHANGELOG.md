@@ -194,7 +194,7 @@ General:
    - Refactored and extended the lua script integration
    - Implemented applying depth/height map to a 2d plane
    - Added support for new magicavoxel format (animations)
-   - Preserve node hierarchie when saving vxr
+   - Preserve node hierarchy when saving vxr
    - GLTF voxelization
    - Allow to enable certain renderer features
    - Expose more noise functions to the lua scripts
@@ -391,7 +391,7 @@ General:
    - License for our own voxel models is now CC-BY-SA
    - Support loading just the thumbnails from voxel formats
    - Support bigger volume sizes for a few formats
-   - Don't polute the home directory with build dir settings
+   - Don't pollute the home directory with build dir settings
    - Fixed gamma handling in shaders
    - Added bookmark support to the ui dialog
 

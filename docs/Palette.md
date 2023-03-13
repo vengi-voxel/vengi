@@ -21,4 +21,4 @@ There are several color or palette related cvars available:
 * `voxformat_createpalette`: Allows you to disable the palette creation and use the palette specified via `palette` cvar
 * `core_colorreduction`: Allows you to specify a color reduction value when e.g. importing RGB(A) based voxel or mesh formats
 
-You can find the detailed description and more cvars by using e.g. [voxconverts](voxconvert/Index.md) `--help` parameter
+You can find the detailed description and more cvars by using e.g. the [voxconvert](voxconvert/Index.md) `--help` parameter

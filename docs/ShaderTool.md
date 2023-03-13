@@ -15,7 +15,7 @@ The code is generated into the build directory in `generated/shaders`.
 
 ## Description
 
-The generator uses `ShaderTemplate.h.in` and `UniformBufferTemplate.h.in` as a base to generat the C++ source files.
+The generator uses `ShaderTemplate.h.in` and `UniformBufferTemplate.h.in` as a base to generate the C++ source files.
 
 There are several variables in the template file that are replaced by the generator.
 
