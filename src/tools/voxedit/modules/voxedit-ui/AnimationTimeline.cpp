@@ -85,9 +85,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 				uint32_t selectionCount = ImGui::GetNeoKeyframeSelectionSize();
 				if (selectionCount > 0) {
 					selectedFrames.clear();
-					if (selectionCount > selectedFrames.capacity()) {
-						selectedFrames.resize(selectionCount);
-					}
+					selectedFrames.resizeIfNeeded(selectionCount);
 					ImGui::GetNeoKeyframeSelection(selectedFrames.data());
 					for (uint32_t i = 0; i < selectionCount; ++i) {
 						_selectionBuffer.push_back(Selection{selectedFrames[i], modelNode.id()});

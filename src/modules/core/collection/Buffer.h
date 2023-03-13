@@ -295,6 +295,13 @@ public:
 		_size = size;
 	}
 
+	void resizeIfNeeded(size_t size) {
+		if (size > capacity()) {
+			replaceBuffer(size);
+		}
+		_size = size;
+	}
+
 	template<typename ITER>
 	void insert(iterator pos, ITER first, ITER last) {
 		if (first == last) {
