@@ -151,7 +151,14 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 			ImGui::CommandMenuItem(ICON_FA_ARROWS_TO_CIRCLE " Center reference" SCENEGRAPHPOPUP, "center_referenceposition", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_FLOPPY_DISK " Save all" SCENEGRAPHPOPUP, "layerssave", true, &listener);
 			commandNodeMenu(ICON_FA_FLOPPY_DISK " Save" SCENEGRAPHPOPUP, "layersave", node, true, &listener);
-		} else {
+		} else if (node.type() == scenegraph::SceneGraphNodeType::ModelReference) {
+			if (ImGui::MenuItem(ICON_FA_CUBES_STACKED " Convert to model" SCENEGRAPHPOPUP)) {
+				sceneMgr().nodeUnreference(node.id());
+			}
+			ImGui::TooltipText("Unreference from model and allow to edit the voxels for this node");
+		}
+
+		if (node.type() != scenegraph::SceneGraphNodeType::Model) {
 			if (ImGui::MenuItem(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP)) {
 				sceneMgr().nodeRemove(node.id(), true);
 			}

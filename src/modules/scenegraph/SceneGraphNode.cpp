@@ -408,6 +408,27 @@ bool SceneGraphNode::setReference(int nodeId) {
 	return true;
 }
 
+bool SceneGraphNode::unreferenceModelNode(const SceneGraphNode &node) {
+	if (_type != SceneGraphNodeType::ModelReference) {
+		Log::error("Failed to unreference - %i is no reference node", _id);
+		return false;
+	}
+	core_assert(_referenceId != InvalidNodeId);
+	if (node.type() != SceneGraphNodeType::Model) {
+		Log::error("Failed to unreference - node %i is no model node", node.id());
+		return false;
+	}
+	if (node.id() != _referenceId) {
+		Log::error("This node wasn't referenced - can't unreference from %i, expected %i", node.id(), reference());
+		return false;
+	}
+	_type = SceneGraphNodeType::Model;
+	_referenceId = InvalidNodeId;
+	setVolume(new voxel::RawVolume(node.volume()), true);
+	setPalette(node.palette());
+	return true;
+}
+
 const voxel::Region &SceneGraphNode::region() const {
 	if (_volume == nullptr) {
 		return voxel::Region::InvalidRegion;

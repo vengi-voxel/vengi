@@ -263,6 +263,7 @@ public:
 	int parent() const;
 	int reference() const;
 	bool setReference(int nodeId);
+	bool unreferenceModelNode(const SceneGraphNode &node);
 
 	const voxel::Palette &palette() const;
 	voxel::Palette &palette();

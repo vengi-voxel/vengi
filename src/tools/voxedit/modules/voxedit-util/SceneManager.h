@@ -380,6 +380,8 @@ public:
 	const scenegraph::SceneGraph &sceneGraph() const;
 
 private:
+	bool isValidReferenceNode(const scenegraph::SceneGraphNode &node) const;
+
 	void onNewNodeAdded(int newNodeId);
 	bool nodeRename(scenegraph::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(scenegraph::SceneGraphNode &node, bool recursive);
@@ -389,6 +391,7 @@ private:
 	bool nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
 	void nodeDuplicate(const scenegraph::SceneGraphNode &node);
 	bool nodeReference(const scenegraph::SceneGraphNode &node);
+	bool nodeUnreference(scenegraph::SceneGraphNode &node);
 public:
 	bool nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
@@ -402,6 +405,7 @@ public:
 	bool nodeSetVisible(int nodeId, bool visible);
 	bool nodeSetLocked(int nodeId, bool visible);
 	bool nodeActivate(int nodeId);
+	bool nodeUnreference(int nodeId);
 	void nodeForeachGroup(const std::function<void(int)>& f);
 };
 

@@ -2601,6 +2601,40 @@ bool SceneManager::nodeReference(const scenegraph::SceneGraphNode &node) {
 	return newNodeId != InvalidNodeId;
 }
 
+bool SceneManager::isValidReferenceNode(const scenegraph::SceneGraphNode &node) const {
+	if (node.type() != scenegraph::SceneGraphNodeType::ModelReference) {
+		Log::error("Node %i is not a reference model", node.id());
+		return false;
+	}
+	if (!_sceneGraph.hasNode(node.reference())) {
+		Log::error("Node %i is not valid anymore - referenced node doesn't exist", node.id());
+		return false;
+	}
+	return true;
+}
+
+bool SceneManager::nodeUnreference(scenegraph::SceneGraphNode &node) {
+	if (!isValidReferenceNode(node)) {
+		return false;
+	}
+	if (scenegraph::SceneGraphNode* referencedNode = sceneGraphNode(node.reference())) {
+		if (referencedNode->type() != scenegraph::SceneGraphNodeType::Model) {
+			Log::error("Referenced node is no model node - failed to unreference");
+			return false;
+		}
+		return node.unreferenceModelNode(*referencedNode);
+	}
+	Log::error("Referenced node is wasn't found - failed to unreference");
+	return false;
+}
+
+bool SceneManager::nodeUnreference(int nodeId) {
+	if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
+		return nodeUnreference(*node);
+	}
+	return false;
+}
+
 void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
 	_sceneGraph.foreachGroup(f);
 }
