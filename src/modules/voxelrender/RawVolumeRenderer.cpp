@@ -436,7 +436,7 @@ void RawVolumeRenderer::gray(int idx, bool gray) {
 
 void RawVolumeRenderer::updatePalette(int idx) {
 	const voxel::Palette *palette;
-	const State &state = _state[idx];
+	const State& state = _state[idx]._reference != -1 ? _state[_state[idx]._reference] : _state[idx];
 	if (state._palette.hasValue()) {
 		palette = state._palette.value();
 	} else {
