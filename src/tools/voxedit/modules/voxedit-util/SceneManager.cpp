@@ -1840,7 +1840,7 @@ void SceneManager::construct() {
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			node->setVisible(!node->visible());
 		}
-	}).setHelp("Toggle the visible state of a node").setArgumentCompleter(nodeCompleter(_sceneGraph));;
+	}).setHelp("Toggle the visible state of a node").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("layerhideall", [&](const command::CmdArgs &args) {
 		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
@@ -1869,7 +1869,7 @@ void SceneManager::construct() {
 			}
 			node.setVisible(false);
 		}
-	}).setHelp("Hide all model nodes except the active one").setArgumentCompleter(nodeCompleter(_sceneGraph));;
+	}).setHelp("Hide all model nodes except the active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("layerrename", [&] (const command::CmdArgs& args) {
 		if (args.size() == 1) {
@@ -1885,7 +1885,7 @@ void SceneManager::construct() {
 		} else {
 			Log::info("Usage: layerrename [<nodeid>] newname");
 		}
-	}).setHelp("Rename the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));;
+	}).setHelp("Rename the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("layershowall", [&] (const command::CmdArgs& args) {
 		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
@@ -1898,7 +1898,7 @@ void SceneManager::construct() {
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			nodeDuplicate(*node);
 		}
-	}).setHelp("Duplicates the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));;
+	}).setHelp("Duplicates the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
 }
 
 void SceneManager::renderText(const char *str, int size, int thickness, int spacing, const char *font) {
