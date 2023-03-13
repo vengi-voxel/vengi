@@ -2539,6 +2539,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	const int nodeId = node.id();
 	const core::String name = node.name();
 	Log::debug("Delete node %i with name %s", nodeId, name.c_str());
+	// TODO: memento and recursive... - we only record the one node in the memento state - not the children
 	_mementoHandler.markNodeRemoved(node);
 	if (!_sceneGraph.removeNode(nodeId, recursive)) {
 		Log::error("Failed to remove node with id %i", nodeId);
@@ -2562,6 +2563,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 }
 
 void SceneManager::nodeDuplicate(const scenegraph::SceneGraphNode &node) {
+	// TODO: allow to duplicate other node types, too
 	if (node.type() != scenegraph::SceneGraphNodeType::Model) {
 		return;
 	}
