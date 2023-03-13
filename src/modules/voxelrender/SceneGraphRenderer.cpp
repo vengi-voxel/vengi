@@ -49,9 +49,13 @@ void SceneGraphRenderer::update() {
 	_renderer.update();
 }
 
-static inline int getVolumeId(const scenegraph::SceneGraphNode &node) {
+static inline int getVolumeId(int nodeId) {
 	// TODO: using the node id here is not good as they are increasing when you modify the scene graph
-	return node.id();
+	return nodeId;
+}
+
+static inline int getVolumeId(const scenegraph::SceneGraphNode &node) {
+	return getVolumeId(node.id());
 }
 
 static inline int getNodeId(int volumeIdx) {
