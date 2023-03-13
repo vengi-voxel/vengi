@@ -75,6 +75,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 
 	const voxel::Region& region = sceneGraph.region();
 	const glm::ivec3& mins = region.getLowerCorner();
+	const glm::ivec3& maxs = region.getUpperCorner();
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
 	const uint32_t depth = region.getDepthInVoxels();
@@ -218,7 +219,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 					// this might fail - vxm uses the same size for each layer - we don't
 					// in case the position is outside of the node volume, we are putting
 					// the border voxel of the volume into the file
-					sampler.setPosition(mins.x + x, mins.y + y, mins.z + z);
+					sampler.setPosition(maxs.x - x, mins.y + y, mins.z + z);
 					const voxel::Voxel &voxel = sampler.voxel();
 					if (prevVoxel.getColor() != voxel.getColor() || voxel.getMaterial() != prevVoxel.getMaterial() || rleCount >= 255) {
 						wrapBool(writeRLE(stream, rleCount, prevVoxel, node.palette(), palette))
