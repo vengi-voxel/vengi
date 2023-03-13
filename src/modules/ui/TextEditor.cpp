@@ -1,3 +1,4 @@
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "TextEditor.h"
 #include "core/Common.h"
 #include "core/UTF8.h"
@@ -6,7 +7,6 @@
 
 #include <SDL.h>
 
-#define IMGUI_DEFINE_MATH_OPERATORS
 #include "dearimgui/imgui_internal.h" // for imGui::GetCurrentWindow()
 
 template <class InputIt1, class InputIt2, class BinaryPredicate>
@@ -963,7 +963,7 @@ void TextEditor::Render(const char *aTitle, const ImVec2 &aSize, bool aBorder) {
 
 	if (_handleKeyboardInputs) {
 		HandleKeyboardInputs();
-		ImGui::PushAllowKeyboardFocus(true);
+		ImGui::PushTabStop(true);
 	}
 
 	if (_handleMouseInputs)
@@ -973,7 +973,7 @@ void TextEditor::Render(const char *aTitle, const ImVec2 &aSize, bool aBorder) {
 	Render();
 
 	if (_handleKeyboardInputs)
-		ImGui::PopAllowKeyboardFocus();
+		ImGui::PopTabStop();
 
 	if (!_ignoreImGuiChild)
 		ImGui::EndChild();
