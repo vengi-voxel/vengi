@@ -211,7 +211,7 @@ static int SDL_FindFreePlayerIndex()
             return player_index;
         }
     }
-    return player_index;
+    return -1;
 }
 
 static int SDL_GetPlayerIndexForJoystickID(SDL_JoystickID instance_id)
