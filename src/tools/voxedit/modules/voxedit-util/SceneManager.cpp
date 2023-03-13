@@ -745,10 +745,13 @@ bool SceneManager::mementoModification(const MementoState& s) {
 }
 
 bool SceneManager::mementoStateToNode(const MementoState &s) {
-	scenegraph::SceneGraphNodeType type = scenegraph::SceneGraphNodeType::Model;
-	if (!s.hasVolumeData()) {
-		// TODO: what about cameras and so on?
-		type = scenegraph::SceneGraphNodeType::Group;
+	scenegraph::SceneGraphNodeType type = s.nodeType;
+	if (type == scenegraph::SceneGraphNodeType::Max) {
+		if (!s.hasVolumeData()) {
+			type = scenegraph::SceneGraphNodeType::Group;
+		} else {
+			type = scenegraph::SceneGraphNodeType::Model;
+		}
 	}
 	scenegraph::SceneGraphNode node(type);
 	if (type == scenegraph::SceneGraphNodeType::Model) {
