@@ -13,6 +13,7 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 General:
 
    - Fixed invalid x axis handling for Sandbox VXM format
+   - Support model references to build a complex scene
 
 VoxEdit:
 
