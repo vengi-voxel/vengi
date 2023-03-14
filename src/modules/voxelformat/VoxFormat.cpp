@@ -131,7 +131,7 @@ static bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneG
 	return node.setKeyFrames(kf);
 }
 
-bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden) {
+bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden) {
 	const ogt_vox_instance& ogtInstance = scene->instances[ogt_instanceIdx];
 	const ogt_vox_transform& ogtTransform = ogtInstance.transform;
 	const glm::vec4 ogtCol0(ogtTransform.m00, ogtTransform.m01, ogtTransform.m02, ogtTransform.m03);
@@ -196,7 +196,7 @@ bool VoxFormat::addInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx
 	return sceneGraph.emplace(core::move(node), parent) != -1;
 }
 
-bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances, const voxel::Palette &palette) {
+bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances, const voxel::Palette &palette) {
 	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
 	const char *name = "Group";
@@ -233,7 +233,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scen
 		if (!addedInstances.insert(n)) {
 			continue;
 		}
-		if (!addInstance(scene, n, sceneGraph, groupId, zUpMat, palette, hidden)) {
+		if (!loadInstance(scene, n, sceneGraph, groupId, zUpMat, palette, hidden)) {
 			return false;
 		}
 	}
@@ -245,7 +245,7 @@ bool VoxFormat::addGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scen
 			continue;
 		}
 		Log::debug("Found matching group (%u) with scene graph parent: %i", groupIdx, groupId);
-		if (!addGroup(scene, groupIdx, sceneGraph, groupId, zUpMat, addedInstances, palette)) {
+		if (!loadGroup(scene, groupIdx, sceneGraph, groupId, zUpMat, addedInstances, palette)) {
 			return false;
 		}
 	}
@@ -301,7 +301,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			continue;
 		}
 		Log::debug("Add root group %u/%u", i, scene->num_groups);
-		if (!addGroup(scene, i, sceneGraph, -1, zUpMat, addedInstances, palette)) {
+		if (!loadGroup(scene, i, sceneGraph, -1, zUpMat, addedInstances, palette)) {
 			ogt_vox_destroy_scene(scene);
 			return false;
 		}
@@ -312,7 +312,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			continue;
 		}
 		// TODO: the parent is wrong
-		if (!addInstance(scene, n, sceneGraph, sceneGraph.root().id(), zUpMat, palette)) {
+		if (!loadInstance(scene, n, sceneGraph, sceneGraph.root().id(), zUpMat, palette)) {
 			ogt_vox_destroy_scene(scene);
 			return false;
 		}
@@ -362,7 +362,7 @@ int VoxFormat::findClosestPaletteIndex(const voxel::Palette &palette) {
 	return core::Color::getClosestMatch(first, materialColors) + 1;
 }
 
-void VoxFormat::addNodeToScene(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx, const voxel::Palette &palette, uint8_t replacement) {
+void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx, const voxel::Palette &palette, uint8_t replacement) {
 	Log::debug("Save node '%s' with parent group %u and layer %u", node.name().c_str(), parentGroupIdx, layerIdx);
 	if (node.type() == scenegraph::SceneGraphNodeType::Root || node.type() == scenegraph::SceneGraphNodeType::Group) {
 		if (node.type() == scenegraph::SceneGraphNodeType::Root) {
@@ -399,7 +399,7 @@ void VoxFormat::addNodeToScene(const scenegraph::SceneGraph &sceneGraph, scenegr
 		}
 		const uint32_t ownGroupId = (int)ctx.groups.size() - 1;
 		for (int childId : node.children()) {
-			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, ownGroupId, ownLayerId, palette, replacement);
+			saveNode(sceneGraph, sceneGraph.node(childId), ctx, ownGroupId, ownLayerId, palette, replacement);
 		}
 	} else if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
 		Log::debug("Add camera node");
@@ -424,7 +424,7 @@ void VoxFormat::addNodeToScene(const scenegraph::SceneGraph &sceneGraph, scenegr
 			ctx.cameras.push_back(ogt_cam);
 		}
 		for (int childId : node.children()) {
-			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx, palette, replacement);
+			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx, palette, replacement);
 		}
 	} else if (node.type() == scenegraph::SceneGraphNodeType::Model) {
 		Log::debug("Add model node");
@@ -489,8 +489,10 @@ void VoxFormat::addNodeToScene(const scenegraph::SceneGraph &sceneGraph, scenegr
 			}
 		}
 		for (int childId : node.children()) {
-			addNodeToScene(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx, palette, replacement);
+			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx, palette, replacement);
 		}
+	} else if (node.type() == scenegraph::SceneGraphNodeType::ModelReference) {
+		Log::error("Model references not yet supported");
 	} else {
 		Log::error("Unhandled node type %i", (int)node.type());
 	}
@@ -514,7 +516,7 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	ogt_SceneContext ctx;
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
-	addNodeToScene(sceneGraph, sceneGraph.node(root.id()), ctx, k_invalid_group_index, 0, palette, palReplacement);
+	saveNode(sceneGraph, sceneGraph.node(root.id()), ctx, k_invalid_group_index, 0, palette, palReplacement);
 
 	core::Buffer<const ogt_vox_model *> modelPtr;
 	modelPtr.reserve(ctx.models.size());

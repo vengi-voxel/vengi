@@ -84,7 +84,7 @@ protected:
 	void setColorTheme();
 	/**
 	 * @brief Configure the default keymap bindings for the application
-	 * @param[in] The application can support several different keymaps - you get the keymap id here to load the desired keymap
+	 * @param[in] keymap The application can support several different keymaps - you get the keymap id here to load the desired keymap
 	 * @note this is saved in the cvar @c cfg::UIKeyMap
 	 */
 	virtual void loadKeymap(int keymap) {}
