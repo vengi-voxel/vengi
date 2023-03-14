@@ -448,7 +448,7 @@ void Viewport::resetCamera() {
 	const voxel::Region &sceneRegion = sceneGraph.region();
 	const glm::vec3 &pos = sceneRegion.getCenter();
 	const int activeNode = sceneGraph.activeNode();
-	const voxel::RawVolume *v = activeNode != -1 ? sceneMgr().volume(activeNode) : nullptr;
+	const voxel::RawVolume *v = activeNode != InvalidNodeId ? sceneMgr().volume(activeNode) : nullptr;
 	voxel::Region region;
 	if (v != nullptr) {
 		region = v->region();
