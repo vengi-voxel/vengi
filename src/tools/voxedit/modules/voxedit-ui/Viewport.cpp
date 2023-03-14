@@ -109,10 +109,10 @@ bool Viewport::isFixedCamera() const {
 
 void Viewport::move(bool pan, bool rotate, int x, int y) {
 	if (rotate) {
-		const float yaw = (float)(x - _mouseX);
-		const float pitch = (float)(y - _mouseY);
-		const float s = _rotationSpeed->floatVal();
 		if (!isFixedCamera()) {
+			const float yaw = (float)(x - _mouseX);
+			const float pitch = (float)(y - _mouseY);
+			const float s = _rotationSpeed->floatVal();
 			_camera.turn(yaw * s);
 			_camera.setPitch(pitch * s);
 		}
