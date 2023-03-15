@@ -66,7 +66,9 @@ void SceneRenderer::shutdown() {
 }
 
 void SceneRenderer::updateGridRegion(const voxel::Region &region) {
-	_gridRenderer.update(toAABB(region));
+	if (region.isValid()) {
+		_gridRenderer.update(toAABB(region));
+	}
 }
 
 void SceneRenderer::updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis) {
