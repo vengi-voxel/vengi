@@ -201,7 +201,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 			_shapeRenderer.render(_aabbMeshIndex, camera);
 		}
 	} else if (scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNode())) {
-		const voxel::Region &region = n->volume()->region();
+		const voxel::Region &region = n->region();
 		_gridRenderer.render(camera, toAABB(region));
 
 		if (_showLockedAxis->boolVal()) {
