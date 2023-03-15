@@ -134,11 +134,12 @@ video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeC
 	const scenegraph::SceneGraphTransform &transform = cameraNode.transform(keyFrameIdx);
 	camera.setWorldPosition(transform.worldTranslation());
 	camera.setOrientation(transform.worldOrientation());
-	camera.setRotationType(video::CameraRotationType::Eye);
+	camera.setRotationType(video::CameraRotationType::Target);
 	const int fovDegree = cameraNode.fieldOfView();
 	if (fovDegree > 0) {
 		camera.setFieldOfView((float)fovDegree);
 	}
+	camera.update(0.0);
 	return camera;
 }
 
