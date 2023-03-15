@@ -2650,9 +2650,13 @@ bool SceneManager::nodeActivate(int nodeId) {
 	Log::debug("Activate node %i", nodeId);
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
+		video::Camera *camera = activeCamera();
+		if (camera == nullptr) {
+			return false;
+		}
 		const scenegraph::SceneGraphNodeCamera& cameraNode = scenegraph::toCameraNode(node);
-		video::Camera nodeCamera = voxelrender::toCamera(activeCamera()->size(), cameraNode);
-		activeCamera()->lerp(nodeCamera);
+		video::Camera nodeCamera = voxelrender::toCamera(camera->size(), cameraNode);
+		camera->lerp(nodeCamera);
 	}
 	_sceneGraph.setActiveNode(nodeId);
 	const voxel::Palette &palette = node.palette();
