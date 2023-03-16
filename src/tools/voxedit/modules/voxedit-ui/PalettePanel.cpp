@@ -268,7 +268,6 @@ void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::Comma
 	const core::String &paletteChangeCmd = core::string::format("palette_changeintensity %f", _intensityChange);
 	if (ImGui::CommandButton("Apply", paletteChangeCmd.c_str(), nullptr, ImVec2(0.0f, 0.0f), &listener)) {
 		_intensityChange = 0.0f;
-		sceneMgr().mementoHandler().markPaletteChange(node);
 	}
 
 	voxel::Palette &palette = node.palette();
