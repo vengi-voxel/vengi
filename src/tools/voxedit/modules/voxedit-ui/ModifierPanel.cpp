@@ -95,21 +95,21 @@ void ModifierPanel::addMirrorPlanes(command::CommandExecutionListener &listener)
 	ImGui::TooltipText("Mirror along the z axis at the reference position");
 }
 
-void ModifierPanel::addModifierModes() {
+void ModifierPanel::addModifierModes(command::CommandExecutionListener &listener) {
 	Modifier &modifier = sceneMgr().modifier();
 	bool plane = modifier.planeMode();
 	if (ImGui::Checkbox("Plane##modifiertype", &plane)) {
-		modifier.setPlaneMode(plane);
+		command::executeCommands("togglemodeplane", &listener);
 	}
 	ImGui::TooltipText("Modifies the whole plane or connected voxels - can be seen as extrude feature");
 	bool single = modifier.singleMode();
 	if (ImGui::Checkbox("Single##modifiertype", &single)) {
-		modifier.setSingleMode(single);
+		command::executeCommands("togglemodesingle", &listener);
 	}
 	ImGui::TooltipText("Only interact with single voxels - don't span an area - one click one modification");
 	bool center = modifier.centerMode();
 	if (ImGui::Checkbox("Center##modifiertype", &center)) {
-		modifier.setCenterMode(center);
+		command::executeCommands("togglemodecenter", &listener);
 	}
 	ImGui::TooltipText("This is using the point of the click to span the area - not one of the edges");
 }
@@ -119,7 +119,7 @@ void ModifierPanel::update(const char *title, command::CommandExecutionListener 
 		core_trace_scoped(ToolsPanel);
 		addModifiers(listener);
 		ImGui::Separator();
-		addModifierModes();
+		addModifierModes(listener);
 		addShapes();
 		addMirrorPlanes(listener);
 	}

@@ -15,7 +15,7 @@ private:
 	bool mirrorAxisRadioButton(const char *title, math::Axis type, command::CommandExecutionListener &listener);
 	void addShapes();
 	void addMirrorPlanes(command::CommandExecutionListener &listener);
-	void addModifierModes();
+	void addModifierModes(command::CommandExecutionListener &listener);
 	void addModifiers(command::CommandExecutionListener &listener);
 public:
 	void update(const char *title, command::CommandExecutionListener &listener);

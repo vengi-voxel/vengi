@@ -99,6 +99,18 @@ void Modifier::construct() {
 	command::Command::registerCommand("mirroraxisnone", [&] (const command::CmdArgs& args) {
 		setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
 	}).setHelp("Disable mirror axis");
+
+	command::Command::registerCommand("togglemodecenter", [&] (const command::CmdArgs& args) {
+		setCenterMode(!centerMode());
+	}).setHelp("Toggle center plane building");
+
+	command::Command::registerCommand("togglemodeplane", [&] (const command::CmdArgs& args) {
+		setPlaneMode(!planeMode());
+	}).setHelp("Toggle plane building mode (extrude)");
+
+	command::Command::registerCommand("togglemodesingle", [&] (const command::CmdArgs& args) {
+		setSingleMode(!singleMode());
+	}).setHelp("Toggle single voxel building mode");
 }
 
 bool Modifier::init() {

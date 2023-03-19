@@ -1787,10 +1787,6 @@ void SceneManager::construct() {
 		setLockedAxis(axis, unlock);
 	}).setHelp("Toggle locked mode for the z axis at the current cursor position");
 
-	command::Command::registerCommand("centerplane", [&] (const command::CmdArgs& args) {
-		modifier().setCenterMode(!modifier().centerMode());
-	}).setHelp("Toggle center plane building");
-
 	command::Command::registerCommand("layeradd", [&] (const command::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
 		const char *width = args.size() > 1 ? args[1].c_str() : "64";
