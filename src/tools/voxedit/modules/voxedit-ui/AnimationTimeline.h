@@ -17,7 +17,7 @@ private:
 	bool _clearSelection = false;
 	double _seconds = 0.0;
 	int32_t _startFrame = 0;
-	int32_t _endFrame = 64;
+	int32_t _endFrame = -1;
 	struct Selection {
 		scenegraph::FrameIndex frameIdx;
 		int nodeId;
@@ -28,6 +28,12 @@ public:
 	void header(scenegraph::FrameIndex &currentFrame, scenegraph::FrameIndex maxFrame);
 	void sequencer(scenegraph::FrameIndex &currentFrame);
 	bool update(const char *sequencerTitle, double deltaFrameSeconds);
+	void resetFrames();
 };
+
+inline void AnimationTimeline::resetFrames() {
+	_startFrame = 0;
+	_endFrame = -1;
+}
 
 } // namespace voxedit

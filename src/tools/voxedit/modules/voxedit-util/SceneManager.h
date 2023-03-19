@@ -200,6 +200,9 @@ public:
 
 	void construct() override;
 	bool init() override;
+	/**
+	 * @return @c true if a new scene was loaded, @c false otherwise
+	 */
 	bool update(double nowSeconds);
 	void shutdown() override;
 

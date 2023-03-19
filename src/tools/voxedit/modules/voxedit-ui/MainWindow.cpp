@@ -195,6 +195,11 @@ bool MainWindow::load(const core::String &file, const io::FormatDescription *des
 	return false;
 }
 
+void MainWindow::onNewScene() {
+	resetCamera();
+	_animationTimeline.resetFrames();
+}
+
 void MainWindow::afterLoad(const core::String &file) {
 	_lastOpenedFile->setVal(file);
 	resetCamera();

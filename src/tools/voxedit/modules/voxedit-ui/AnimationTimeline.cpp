@@ -148,6 +148,9 @@ bool AnimationTimeline::update(const char *sequencerTitle, double deltaFrameSeco
 		const scenegraph::SceneGraphNode &modelNode = *iter;
 		maxFrame = core_max(modelNode.maxFrame(), maxFrame);
 	}
+	if (_endFrame == -1) {
+		_endFrame = core_max(64, maxFrame + 1);
+	}
 	_seconds += deltaFrameSeconds;
 
 	if (_play) {

@@ -472,7 +472,7 @@ bool VoxEdit::allowedToQuit() {
 
 void VoxEdit::onRenderUI() {
 	if (voxedit::sceneMgr().update(_nowSeconds)) {
-		_mainWindow->resetCamera();
+		_mainWindow->onNewScene();
 	}
 	_mainWindow->update();
 }

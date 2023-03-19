@@ -121,6 +121,7 @@ public:
 
 	void toggleScene();
 	void resetCamera();
+	void onNewScene();
 	void update();
 	QuitDisallowReason allowToQuit();
 	Viewport* hoveredScene();
