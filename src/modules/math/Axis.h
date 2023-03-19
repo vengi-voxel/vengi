@@ -28,6 +28,10 @@ inline constexpr int getIndexForAxis(math::Axis axis) {
 	return 2;
 }
 
+inline constexpr char getCharForAxis(math::Axis axis) {
+	return (char)('x' + (int)axis - 1);
+}
+
 math::Axis toAxis(const core::String& axisStr);
 
 }
