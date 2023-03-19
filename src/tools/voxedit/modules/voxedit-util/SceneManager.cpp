@@ -1393,14 +1393,14 @@ void SceneManager::construct() {
 			_modifier.unselect();
 		} else if (args[0] == "all") {
 			voxel::RawVolume* v = activeVolume();
-			if (!v) {
+			if (v == nullptr) {
 				return;
 			}
 			const voxel::Region &region = v->region();
 			_modifier.select(region.getLowerCorner(), region.getUpperCorner());
 		} else if (args[0] == "invert") {
 			voxel::RawVolume* v = activeVolume();
-			if (!v) {
+			if (v == nullptr) {
 				return;
 			}
 			const voxel::Region &region = v->region();
@@ -1416,7 +1416,7 @@ void SceneManager::construct() {
 		const core::String &str = args[0];
 		const int size = args[1].toInt();
 		renderText(str.c_str(), size);
-	}).setHelp("Render a character to the reference position");
+	}).setHelp("Render characters at the reference position");
 
 	command::Command::registerCommand("layerssave", [&] (const command::CmdArgs& args) {
 		core::String dir = ".";
@@ -2287,7 +2287,7 @@ void SceneManager::updateCursor() {
 	}
 
 	const voxel::RawVolume *v = activeVolume();
-	if (_result.didHit && v) {
+	if (_result.didHit && v != nullptr) {
 		_modifier.setHitCursorVoxel(v->voxel(_result.hitVoxel));
 	} else {
 		_modifier.setHitCursorVoxel(voxel::Voxel());
