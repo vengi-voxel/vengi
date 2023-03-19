@@ -1392,19 +1392,16 @@ void SceneManager::construct() {
 		if (args[0] == "none") {
 			_modifier.unselect();
 		} else if (args[0] == "all") {
-			voxel::RawVolume* v = activeVolume();
-			if (v == nullptr) {
-				return;
+			if (const scenegraph::SceneGraphNode *node = sceneGraphNode(activeNode())) {
+				const voxel::Region &region = node->region();
+				if (region.isValid()) {
+					_modifier.select(region.getLowerCorner(), region.getUpperCorner());
+				}
 			}
-			const voxel::Region &region = v->region();
-			_modifier.select(region.getLowerCorner(), region.getUpperCorner());
 		} else if (args[0] == "invert") {
-			voxel::RawVolume* v = activeVolume();
-			if (v == nullptr) {
-				return;
+			if (const scenegraph::SceneGraphNode *node = sceneGraphNode(activeNode())) {
+				_modifier.invert(node->region());
 			}
-			const voxel::Region &region = v->region();
-			_modifier.invert(region);
 		}
 	}).setHelp("Select all nothing or invert").setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
 
