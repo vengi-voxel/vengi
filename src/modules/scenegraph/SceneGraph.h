@@ -254,6 +254,25 @@ public:
 			f(nodeId);
 		}
 	}
+
+	/**
+	 * @brief Loops over the child nodes
+	 */
+	template<class FUNC>
+	void visitChildren(int nodeId, bool recursive, FUNC&& f) {
+		if (!hasNode(nodeId)) {
+			return;
+		}
+		const SceneGraphNodeChildren childrenCopy = node(nodeId).children();
+		for (int childNodeId : childrenCopy) {
+			if (hasNode(childNodeId)) {
+				f(node(childNodeId));
+				if (recursive) {
+					visitChildren(childNodeId, recursive, f);
+				}
+			}
+		}
+	}
 };
 
 } // namespace voxel
