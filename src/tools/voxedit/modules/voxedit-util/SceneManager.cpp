@@ -1943,8 +1943,7 @@ void SceneManager::renderText(const char *str, int size, int thickness, int spac
 	if (v == nullptr) {
 		return;
 	}
-	voxel::RawVolumeWrapper wrapper(v);
-
+	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 	const char **s = &str;
 	glm::ivec3 pos = referencePosition();
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
