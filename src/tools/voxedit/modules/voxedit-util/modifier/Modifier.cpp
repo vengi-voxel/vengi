@@ -85,15 +85,15 @@ void Modifier::construct() {
 	}).setHelp("Change the shape type to 'dome'");
 
 	command::Command::registerCommand("mirroraxisx", [&] (const command::CmdArgs& args) {
-		setMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
+		toggleMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the x axis");
 
 	command::Command::registerCommand("mirroraxisy", [&] (const command::CmdArgs& args) {
-		setMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
+		toggleMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the y axis");
 
 	command::Command::registerCommand("mirroraxisz", [&] (const command::CmdArgs& args) {
-		setMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
+		toggleMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the z axis");
 
 	command::Command::registerCommand("mirroraxisnone", [&] (const command::CmdArgs& args) {
@@ -547,6 +547,14 @@ void Modifier::setGridResolution(int resolution) {
 	}
 	if (_aabbFirstPos.z % resolution != 0) {
 		_aabbFirstPos.z = (_aabbFirstPos.z / resolution) * resolution;
+	}
+}
+
+void Modifier::toggleMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos) {
+	if (mirrorAxis() == axis) {
+		setMirrorAxis(math::Axis::None, mirrorPos);
+	} else {
+		setMirrorAxis(axis, mirrorPos);
 	}
 }
 

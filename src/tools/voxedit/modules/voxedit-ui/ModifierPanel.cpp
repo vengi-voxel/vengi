@@ -83,7 +83,7 @@ void ModifierPanel::addMirrorPlanes(command::CommandExecutionListener &listener)
 		style.disableItem();
 		modifier.setMirrorAxis(math::Axis::None, glm::ivec3(0));
 	}
-	mirrorAxisRadioButton("Disable mirror##mirror", math::Axis::None);
+	mirrorAxisRadioButton("Disable mirror##mirror", math::Axis::None, listener);
 	ImGui::SameLine();
 	mirrorAxisRadioButton("X##mirror", math::Axis::X, listener);
 	ImGui::TooltipText("Mirror along the x axis at the reference position");

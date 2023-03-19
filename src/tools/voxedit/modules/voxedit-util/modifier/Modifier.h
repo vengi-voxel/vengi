@@ -158,6 +158,7 @@ public:
 
 	math::Axis mirrorAxis() const;
 	virtual bool setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
+	void toggleMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
 
 	ModifierType modifierType() const;
 	void setModifierType(ModifierType type);
