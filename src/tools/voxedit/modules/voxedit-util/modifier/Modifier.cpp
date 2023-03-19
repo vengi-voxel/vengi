@@ -60,29 +60,13 @@ void Modifier::construct() {
 		setModifierType(ModifierType::Place | ModifierType::Erase);
 	}).setHelp("Change the modifier type to 'override'");
 
-	command::Command::registerCommand("shapeaabb", [&] (const command::CmdArgs& args) {
-		setShapeType(ShapeType::AABB);
-	}).setHelp("Change the shape type to 'aabb'");
-
-	command::Command::registerCommand("shapetorus", [&] (const command::CmdArgs& args) {
-		setShapeType(ShapeType::Torus);
-	}).setHelp("Change the shape type to 'torus'");
-
-	command::Command::registerCommand("shapecylinder", [&] (const command::CmdArgs& args) {
-		setShapeType(ShapeType::Cylinder);
-	}).setHelp("Change the shape type to 'cylinder'");
-
-	command::Command::registerCommand("shapeellipse", [&] (const command::CmdArgs& args) {
-		setShapeType(ShapeType::Ellipse);
-	}).setHelp("Change the shape type to 'ellipse'");
-
-	command::Command::registerCommand("shapecone", [&] (const command::CmdArgs& args) {
-		setShapeType(ShapeType::Cone);
-	}).setHelp("Change the shape type to 'cone'");
-
-	command::Command::registerCommand("shapedome", [&] (const command::CmdArgs& args) {
-		setShapeType(ShapeType::Dome);
-	}).setHelp("Change the shape type to 'dome'");
+	for (int type = ShapeType::Min; type < ShapeType::Max; ++type) {
+		const core::String &typeStr = core::String::lower(ShapeTypeStr[type]);
+		const core::String &cmd = "shape" + typeStr;
+		command::Command::registerCommand(cmd.c_str(), [&, type] (const command::CmdArgs& args) {
+			setShapeType((ShapeType)type);
+		}).setHelp("Change the modifier shape type");
+	}
 
 	command::Command::registerCommand("mirroraxisx", [&] (const command::CmdArgs& args) {
 		toggleMirrorAxis(math::Axis::X, sceneMgr().referencePosition());

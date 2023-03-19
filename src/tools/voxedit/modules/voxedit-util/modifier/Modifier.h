@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/ArrayLength.h"
 #include "core/GLM.h"
 #include "core/IComponent.h"
 #include "core/collection/DynamicArray.h"
@@ -28,7 +29,8 @@ enum ShapeType {
 	Dome,
 	Ellipse,
 
-	Max
+	Max,
+	Min = AABB,
 };
 
 static constexpr const char* ShapeTypeStr[ShapeType::Max] {
@@ -39,6 +41,7 @@ static constexpr const char* ShapeTypeStr[ShapeType::Max] {
 	"Dome",
 	"Ellipse"
 };
+static_assert(lengthof(ShapeTypeStr) == (int)ShapeType::Max, "Array size mismatch");
 
 /**
  * @brief This class is responsible for manipulating the volume with the configured shape and for

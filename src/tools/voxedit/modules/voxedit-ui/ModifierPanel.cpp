@@ -48,7 +48,7 @@ bool ModifierPanel::mirrorAxisRadioButton(const char *title, math::Axis type, co
 	return false;
 }
 
-void ModifierPanel::addShapes() {
+void ModifierPanel::addShapes(command::CommandExecutionListener &listener) {
 	Modifier &modifier = sceneMgr().modifier();
 	const bool plane = modifier.planeMode();
 
@@ -63,7 +63,9 @@ void ModifierPanel::addShapes() {
 			const ShapeType type = (ShapeType)i;
 			const bool selected = type == currentSelectedShapeType;
 			if (ImGui::Selectable(ShapeTypeStr[i], selected)) {
-				modifier.setShapeType(type);
+				const core::String &typeStr = core::String::lower(ShapeTypeStr[i]);
+				const core::String &cmd = "shape" + typeStr;
+				command::executeCommands(cmd, &listener);
 			}
 			if (selected) {
 				ImGui::SetItemDefaultFocus();
@@ -120,7 +122,7 @@ void ModifierPanel::update(const char *title, command::CommandExecutionListener 
 		addModifiers(listener);
 		ImGui::Separator();
 		addModifierModes(listener);
-		addShapes();
+		addShapes(listener);
 		addMirrorPlanes(listener);
 	}
 	ImGui::End();
