@@ -12,9 +12,9 @@ namespace voxedit {
 
 class ModifierPanel {
 private:
-	bool mirrorAxisRadioButton(const char *title, math::Axis type);
+	bool mirrorAxisRadioButton(const char *title, math::Axis type, command::CommandExecutionListener &listener);
 	void addShapes();
-	void addMirrorPlanes();
+	void addMirrorPlanes(command::CommandExecutionListener &listener);
 	void addModifierModes();
 	void addModifiers(command::CommandExecutionListener &listener);
 public:

@@ -35,12 +35,14 @@ void ModifierPanel::addModifiers(command::CommandExecutionListener &listener) {
 	toolbar.button(ICON_FA_EYE_DROPPER, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));
 }
 
-bool ModifierPanel::mirrorAxisRadioButton(const char *title, math::Axis type) {
+bool ModifierPanel::mirrorAxisRadioButton(const char *title, math::Axis type, command::CommandExecutionListener &listener) {
 	voxedit::ModifierFacade &modifier = sceneMgr().modifier();
 	ui::ScopedStyle style;
 	veui::AxisStyleText(style, type, false);
 	if (ImGui::RadioButton(title, modifier.mirrorAxis() == type)) {
-		modifier.setMirrorAxis(type, sceneMgr().referencePosition());
+		core::String cmd = "mirroraxis"; // mirroraxisx, mirroraxisy, mirroraxisz
+		cmd += math::getCharForAxis(type);
+		command::executeCommands(cmd, &listener);
 		return true;
 	}
 	return false;
@@ -71,7 +73,7 @@ void ModifierPanel::addShapes() {
 	}
 }
 
-void ModifierPanel::addMirrorPlanes() {
+void ModifierPanel::addMirrorPlanes(command::CommandExecutionListener &listener) {
 	Modifier &modifier = sceneMgr().modifier();
 	const bool plane = modifier.planeMode();
 
@@ -83,13 +85,13 @@ void ModifierPanel::addMirrorPlanes() {
 	}
 	mirrorAxisRadioButton("Disable mirror##mirror", math::Axis::None);
 	ImGui::SameLine();
-	mirrorAxisRadioButton("X##mirror", math::Axis::X);
+	mirrorAxisRadioButton("X##mirror", math::Axis::X, listener);
 	ImGui::TooltipText("Mirror along the x axis at the reference position");
 	ImGui::SameLine();
-	mirrorAxisRadioButton("Y##mirror", math::Axis::Y);
+	mirrorAxisRadioButton("Y##mirror", math::Axis::Y, listener);
 	ImGui::TooltipText("Mirror along the y axis at the reference position");
 	ImGui::SameLine();
-	mirrorAxisRadioButton("Z##mirror", math::Axis::Z);
+	mirrorAxisRadioButton("Z##mirror", math::Axis::Z, listener);
 	ImGui::TooltipText("Mirror along the z axis at the reference position");
 }
 
@@ -119,7 +121,7 @@ void ModifierPanel::update(const char *title, command::CommandExecutionListener 
 		ImGui::Separator();
 		addModifierModes();
 		addShapes();
-		addMirrorPlanes();
+		addMirrorPlanes(listener);
 	}
 	ImGui::End();
 }
