@@ -1848,11 +1848,28 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Toggle the visible state of a node").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
+	command::Command::registerCommand("layershowall", [&] (const command::CmdArgs& args) {
+		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
+			node.setVisible(true);
+		}
+	}).setHelp("Show all nodes");
+
 	command::Command::registerCommand("layerhideall", [&](const command::CmdArgs &args) {
 		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
 			node.setVisible(false);
 		}
 	}).setHelp("Hide all nodes");
+
+	command::Command::registerCommand("layerhideothers", [&] (const command::CmdArgs& args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
+		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
+			if (node.id() == nodeId) {
+				node.setVisible(true);
+				continue;
+			}
+			node.setVisible(false);
+		}
+	}).setHelp("Hide all model nodes except the active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("layerlockall", [&](const command::CmdArgs &args) {
 		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
@@ -1865,17 +1882,6 @@ void SceneManager::construct() {
 			node.setLocked(false);
 		}
 	}).setHelp("Unlock all nodes");
-
-	command::Command::registerCommand("layerhideothers", [&] (const command::CmdArgs& args) {
-		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
-		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
-			if (node.id() == nodeId) {
-				node.setVisible(true);
-				continue;
-			}
-			node.setVisible(false);
-		}
-	}).setHelp("Hide all model nodes except the active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("layerrename", [&] (const command::CmdArgs& args) {
 		if (args.size() == 1) {
@@ -1892,12 +1898,6 @@ void SceneManager::construct() {
 			Log::info("Usage: layerrename [<nodeid>] newname");
 		}
 	}).setHelp("Rename the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
-
-	command::Command::registerCommand("layershowall", [&] (const command::CmdArgs& args) {
-		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
-			node.setVisible(true);
-		}
-	}).setHelp("Show all nodes");
 
 	command::Command::registerCommand("layerduplicate", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
