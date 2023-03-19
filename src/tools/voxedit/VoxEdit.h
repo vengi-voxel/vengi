@@ -28,10 +28,11 @@ private:
 
 	core::String getSuggestedFilename(const char *extension = nullptr) const;
 
+	// 0 is the default binding
 	enum KeyBindings {
-		Vengi = 0,
+		Magicavoxel = 0,
 		Blender = 1,
-		Magicavoxel = 2,
+		Vengi = 2,
 		Qubicle = 3,
 		Max
 	};

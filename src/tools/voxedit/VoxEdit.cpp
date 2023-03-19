@@ -39,9 +39,9 @@ VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPt
 	_keybindingsVersion = 1;
 
 	// see KeyBindings enum
-	_uiKeyMaps.push_back("Vengi");
-	_uiKeyMaps.push_back("Blender");
 	_uiKeyMaps.push_back("Magicavoxel");
+	_uiKeyMaps.push_back("Blender");
+	_uiKeyMaps.push_back("Vengi");
 	_uiKeyMaps.push_back("Qubicle");
 	core_assert(KeyBindings::Max == (int)_uiKeyMaps.size());
 }
@@ -396,7 +396,7 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("a",                      "actionplace",                "model");
 		_keybindingHandler.registerBinding("b",                      "actionpaint",                "model");
 		_keybindingHandler.registerBinding("m",                      "actionselect",               "model");
-	} else {
+	} else /*if (keymap == KeyBindings::Vengi) */ {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
 		_keybindingHandler.registerBinding("space",                  "layerduplicate",             "editing");
