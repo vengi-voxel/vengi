@@ -38,7 +38,7 @@ public:
 	void updateAABBMirrorMesh(const glm::vec3 &mins, const glm::vec3 &maxs, const glm::vec3 &minsMirror,
 							  const glm::vec3 &maxsMirror);
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos);
-	void updateSelectionBuffers(const Selection &selection);
+	void updateSelectionBuffers(const Selections &selections);
 	void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face, bool flip);
 };
 

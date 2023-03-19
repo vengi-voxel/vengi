@@ -875,8 +875,8 @@ bool SceneManager::doRedo() {
 }
 
 bool SceneManager::saveSelection(const io::FileDescription& file) {
-	const Selection& selection = _modifier.selection();
-	if (!selection.isValid()) {
+	const Selections& selections = _modifier.selections();
+	if (selections.empty()) {
 		return false;
 	}
 	const int nodeId = activeNode();
@@ -894,31 +894,34 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
 	}
-	scenegraph::SceneGraph newSceneGraph;
-	scenegraph::SceneGraphNode newNode;
-	scenegraph::copyNode(*node, newNode, false);
-	newNode.setVolume(new voxel::RawVolume(*node->volume(), selection), true);
-	newSceneGraph.emplace(core::move(newNode));
-	voxelformat::SaveContext saveCtx;
-	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
-	if (voxelformat::saveFormat(filePtr, &file.desc, newSceneGraph, saveCtx)) {
-		Log::info("Saved node %i to %s", nodeId, filePtr->name().c_str());
-		return true;
+	for (const Selection &selection : selections) {
+		scenegraph::SceneGraph newSceneGraph;
+		scenegraph::SceneGraphNode newNode;
+		scenegraph::copyNode(*node, newNode, false);
+		newNode.setVolume(new voxel::RawVolume(*node->volume(), selection), true);
+		newSceneGraph.emplace(core::move(newNode));
+		voxelformat::SaveContext saveCtx;
+		saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
+		if (voxelformat::saveFormat(filePtr, &file.desc, newSceneGraph, saveCtx)) {
+			Log::info("Saved node %i to %s", nodeId, filePtr->name().c_str());
+		} else {
+			Log::warn("Failed to save node %i to %s", nodeId, filePtr->name().c_str());
+			return false;
+		}
 	}
-	Log::warn("Failed to save node %i to %s", nodeId, filePtr->name().c_str());
-	return false;
+	return true;
 }
 
 bool SceneManager::copy() {
-	const Selection& selection = _modifier.selection();
-	if (!selection.isValid()) {
+	const Selections& selections = _modifier.selections();
+	if (selections.empty()) {
 		return false;
 	}
 	voxel::RawVolume* v = activeVolume();
 	if (v == nullptr) {
 		return false;
 	}
-	_copy = voxedit::tool::copy(v, selection);
+	_copy = voxedit::tool::copy(v, selections);
 	return true;
 }
 
@@ -944,8 +947,8 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 }
 
 bool SceneManager::cut() {
-	const Selection& selection = _modifier.selection();
-	if (!selection.isValid()) {
+	const Selections& selections = _modifier.selections();
+	if (selections.empty()) {
 		Log::debug("Nothing selected - failed to cut");
 		return false;
 	}
@@ -955,7 +958,7 @@ bool SceneManager::cut() {
 		return false;
 	}
 	voxel::Region modifiedRegion;
-	_copy = voxedit::tool::cut(v, selection, modifiedRegion);
+	_copy = voxedit::tool::cut(v, selections, modifiedRegion);
 	if (_copy == nullptr) {
 		Log::debug("Failed to cut");
 		return false;
@@ -1625,9 +1628,9 @@ void SceneManager::construct() {
 	}).setHelp("Copy selection");
 
 	command::Command::registerCommand("paste", [&] (const command::CmdArgs& args) {
-		const Selection& selection = _modifier.selection();
-		if (selection.isValid()) {
-			paste(selection.getLowerCorner());
+		const Selections& selections = _modifier.selections();
+		if (!selections.empty()) {
+			paste(selections[0].getLowerCorner());
 		} else {
 			paste(referencePosition());
 		}

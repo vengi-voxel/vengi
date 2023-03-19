@@ -302,7 +302,7 @@ void Region::shiftUpperCorner(const glm::ivec3& amount) {
 }
 
 /**
- * The amount can be specified seperatly for each direction. Negative shrinkage
+ * The amount can be specified separately for each direction. Negative shrinkage
  * is possible but you should prefer the grow() function for clarity.
  * @param amount The amount to shrink by (one component for each direction).
  */

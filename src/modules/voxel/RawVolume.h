@@ -6,6 +6,7 @@
 
 #include "Voxel.h"
 #include "Region.h"
+#include "core/collection/DynamicArray.h"
 #include <glm/vec3.hpp>
 
 namespace voxel {
@@ -92,6 +93,7 @@ public:
 	RawVolume(const RawVolume& copy);
 	RawVolume(RawVolume&& move) noexcept;
 	RawVolume(const RawVolume& copy, const Region& region, bool *onlyAir = nullptr);
+	RawVolume(const RawVolume& copy, const core::DynamicArray<Region>& regions);
 
 	static RawVolume* createRaw(const Voxel* data, const voxel::Region& region) {
 		return new RawVolume(data, region);

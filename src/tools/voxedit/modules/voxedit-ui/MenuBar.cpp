@@ -123,9 +123,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandMenuItem(ICON_FA_ROTATE_RIGHT " Redo", "redo", mementoHandler.canRedo(), &listener);
 			ImGui::Separator();
 			const Modifier &modifier = sceneManager.modifier();
-			const Selection &selection = modifier.selection();
-			ImGui::CommandMenuItem(ICON_FA_SCISSORS " Cut", "cut", selection.isValid(), &listener);
-			ImGui::CommandMenuItem(ICON_FA_COPY " Copy", "copy", selection.isValid(), &listener);
+			const Selections &selections = modifier.selections();
+			ImGui::CommandMenuItem(ICON_FA_SCISSORS " Cut", "cut", !selections.empty(), &listener);
+			ImGui::CommandMenuItem(ICON_FA_COPY " Copy", "copy", !selections.empty(), &listener);
 			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste at reference##referencepos", "paste", sceneManager.hasClipboardCopy(), &listener);
 			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste at cursor##cursor", "pastecursor", sceneManager.hasClipboardCopy(), &listener);
 			ImGui::Separator();

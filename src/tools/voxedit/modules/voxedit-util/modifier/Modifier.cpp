@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include "command/Command.h"
 #include "ui/dearimgui/imgui_internal.h"
+#include "voxedit-util/modifier/Selection.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -207,7 +208,7 @@ void Modifier::invert(const Selection &selection) {
 }
 
 void Modifier::unselect() {
-	_selection = voxel::Region::InvalidRegion;
+	_selections.clear();
 	_selectionValid = false;
 }
 
@@ -215,8 +216,23 @@ bool Modifier::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 	if (_locked) {
 		return false;
 	}
-	_selection = voxel::Region{mins, maxs};
-	_selectionValid = _selection.isValid();
+	const Selection sel{mins, maxs};
+	if (!sel.isValid()) {
+		return false;
+	}
+	_selectionValid = true;
+	for (size_t i = 0; i < _selections.size();) {
+		Selection &s = _selections[i];
+		if (sel.containsRegion(s)) {
+			_selections.erase(i);
+		} else if (voxel::intersects(sel, s)) {
+			// TODO: slice
+			++i;
+		} else {
+			++i;
+		}
+	}
+	_selections.push_back(sel);
 	return true;
 }
 
@@ -252,10 +268,6 @@ void Modifier::setReferencePosition(const glm::ivec3 &pos) {
 bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type, bool markUndo)>& callback, bool markUndo) {
 	glm::ivec3 operateMins = mins;
 	glm::ivec3 operateMaxs = maxs;
-	if (_selectionValid) {
-		operateMins = (glm::max)(mins, _selection.getLowerCorner());
-		operateMaxs = (glm::min)(maxs, _selection.getUpperCorner());
-	}
 
 	const voxel::Region region(operateMins, operateMaxs);
 	voxel::logRegion("Shape action execution", region);
@@ -363,7 +375,7 @@ voxel::RawVolumeWrapper Modifier::createRawVolumeWrapper(voxel::RawVolume* volum
 voxel::Region Modifier::createRegion(const voxel::RawVolume* volume) const {
 	voxel::Region region = volume->region();
 	if (_selectionValid) {
-		voxel::Region srcRegion(_selection);
+		voxel::Region srcRegion = accumulate(_selections);
 		srcRegion.cropTo(region);
 		return srcRegion;
 	}
@@ -471,7 +483,7 @@ bool Modifier::aabbAction(voxel::RawVolume *volume, const Callback &callback) {
 		Log::debug("select mode");
 		select(a.mins(), a.maxs());
 		if (_selectionValid) {
-			callback(_selection, _modifierType, false);
+			callback(accumulate(_selections), _modifierType, false);
 		}
 		return true;
 	}
@@ -495,7 +507,7 @@ bool Modifier::aabbAction(voxel::RawVolume *volume, const Callback &callback) {
 		return planeModifier(volume, callback);
 	}
 
-	ModifierVolumeWrapper wrapper(volume, _modifierType);
+	ModifierVolumeWrapper wrapper(volume, _modifierType, _selections);
 	const math::AABB<int> a = aabb();
 	glm::ivec3 minsMirror = a.mins();
 	glm::ivec3 maxsMirror = a.maxs();

@@ -79,7 +79,7 @@ void ModifierFacade::render(const video::Camera& camera) {
 
 bool ModifierFacade::select(const glm::ivec3& mins, const glm::ivec3& maxs) {
 	if (Super::select(mins, maxs)) {
-		_modifierRenderer.updateSelectionBuffers(_selection);
+		_modifierRenderer.updateSelectionBuffers(_selections);
 		return true;
 	}
 	return false;
@@ -91,7 +91,7 @@ void ModifierFacade::invert(const voxel::Region &region) {
 	}
 	Super::invert(region);
 	if (_selectionValid) {
-		_modifierRenderer.updateSelectionBuffers(_selection);
+		_modifierRenderer.updateSelectionBuffers(_selections);
 	}
 }
 
@@ -101,7 +101,7 @@ void ModifierFacade::unselect() {
 	}
 	Super::unselect();
 	if (_selectionValid) {
-		_modifierRenderer.updateSelectionBuffers(_selection);
+		_modifierRenderer.updateSelectionBuffers(_selections);
 	}
 }
 

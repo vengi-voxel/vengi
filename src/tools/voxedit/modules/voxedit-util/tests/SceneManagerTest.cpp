@@ -279,7 +279,7 @@ TEST_F(SceneManagerTest, testRenameUndoRedo) {
 TEST_F(SceneManagerTest, testCopyPaste) {
 	testSetVoxel(testMins(), 1);
 	testSelect(testMins(), testMaxs());
-	EXPECT_TRUE(modifier().selection().isValid());
+	EXPECT_FALSE(modifier().selections().empty());
 	EXPECT_TRUE(copy());
 
 	EXPECT_NE(-1, addModelChild("paste target", 1, 1, 1));

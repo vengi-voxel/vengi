@@ -16,7 +16,8 @@ namespace voxedit {
 class ModifierVolumeWrapper {
 private:
 	voxel::RawVolume* _volume;
-	const voxel::Region& _region;
+	const Selections _selections;
+	voxel::Region _region;
 	voxel::Region _dirtyRegion = voxel::Region::InvalidRegion;
 	const ModifierType _modifierType;
 
@@ -39,8 +40,8 @@ public:
 		Sampler(ModifierVolumeWrapper& volume) : Super(volume.volume()) {};
 	};
 
-	ModifierVolumeWrapper(voxel::RawVolume* volume, ModifierType modifierType) :
-			_volume(volume), _region(volume->region()), _modifierType(modifierType) {
+	ModifierVolumeWrapper(voxel::RawVolume* volume, ModifierType modifierType, const Selections &selections) :
+			_volume(volume), _selections(selections), _region(volume->region()), _modifierType(modifierType) {
 		_eraseVoxels = (_modifierType & ModifierType::Erase) == ModifierType::Erase;
 		_overwrite = (_modifierType & ModifierType::Place) == ModifierType::Place && _eraseVoxels;
 		_update = (_modifierType & ModifierType::Paint) == ModifierType::Paint;
@@ -87,6 +88,13 @@ public:
 		return _dirtyRegion;
 	}
 
+	inline bool skip(int x, int y, int z) const {
+		if (_selections.empty()) {
+			return !_region.containsPoint(x, y, z);
+		}
+		return !contains(_selections, x, y, z);
+	}
+
 	/**
 	 * @return @c false if the voxel was not placed because the given position is outside of the valid region, @c
 	 * true if the voxel was placed in the region.
@@ -103,7 +111,7 @@ public:
 				return false;
 			}
 		}
-		if (!_region.containsPoint(x, y, z)) {
+		if (skip(x, y, z)) {
 			return false;
 		}
 		voxel::Voxel placeVoxel = voxel;

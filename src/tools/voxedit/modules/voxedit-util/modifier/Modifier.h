@@ -6,6 +6,7 @@
 
 #include "core/GLM.h"
 #include "core/IComponent.h"
+#include "core/collection/DynamicArray.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "math/Axis.h"
@@ -48,7 +49,7 @@ static constexpr const char* ShapeTypeStr[ShapeType::Max] {
  */
 class Modifier : public core::IComponent {
 protected:
-	Selection _selection = voxel::Region::InvalidRegion;
+	Selections _selections;
 	bool _selectionValid = false;
 	bool _secondPosValid = false;
 	bool _aabbMode = false; /** true if the current action spans an aabb */
@@ -144,7 +145,7 @@ public:
 	 * @sa secondActionDirection()
 	 */
 	bool needsSecondAction();
-	const Selection& selection() const;
+	const Selections& selections() const;
 
 	/**
 	 * @brief The modifier can build the aabb from the center of the current
@@ -305,8 +306,8 @@ inline const glm::ivec3& Modifier::cursorPosition() const {
 	return _cursorPosition;
 }
 
-inline const Selection& Modifier::selection() const {
-	return _selection;
+inline const Selections& Modifier::selections() const {
+	return _selections;
 }
 
 }

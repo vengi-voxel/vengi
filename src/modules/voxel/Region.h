@@ -615,11 +615,8 @@ inline void Region::shrink(int32_t amountX, int32_t amountY, int32_t amountZ) {
 	update();
 }
 
-/**
- * This function only returns true if the regions are really intersecting and not simply touching.
- */
 inline bool intersects(const Region& a, const Region& b) {
-	// No intersection if seperated along an axis.
+	// No intersection if separated along an axis.
 	if (a.getUpperX() < b.getLowerX() || a.getLowerX() > b.getUpperX())
 		return false;
 	if (a.getUpperY() < b.getLowerY() || a.getLowerY() > b.getUpperY())
