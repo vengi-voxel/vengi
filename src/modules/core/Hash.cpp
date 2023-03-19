@@ -6,6 +6,8 @@
 
 namespace core {
 
+// MurmurHash3 was written by Austin Appleby, and is placed in the public
+// domain. The author hereby disclaims copyright to this source code.
 uint32_t hash(const void *key, int len, uint32_t seed) {
 	const uint8_t *data = (const uint8_t *)key;
 	const int nblocks = len / 4;
