@@ -1862,6 +1862,26 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Hide all nodes");
 
+	command::Command::registerCommand("layershowallchildren", [&] (const command::CmdArgs& args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
+		_sceneGraph.visitChildren(nodeId, true, [] (scenegraph::SceneGraphNode &node) {
+			node.setVisible(true);
+		});
+		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+			node->setVisible(true);
+		}
+	}).setHelp("Show all children nodes");
+
+	command::Command::registerCommand("layerhideallchildren", [&](const command::CmdArgs &args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
+		_sceneGraph.visitChildren(nodeId, true, [] (scenegraph::SceneGraphNode &node) {
+			node.setVisible(false);
+		});
+		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+			node->setVisible(false);
+		}
+	}).setHelp("Hide all children nodes");
+
 	command::Command::registerCommand("layerhideothers", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {

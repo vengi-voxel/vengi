@@ -134,8 +134,8 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", node.id());
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 		const int validModels = (int)sceneGraph.size();
-		ImGui::CommandMenuItem(ICON_FA_EYE " Show all" SCENEGRAPHPOPUP, "layershowall", true, &listener);
-		ImGui::CommandMenuItem(ICON_FA_EYE_SLASH " Hide all" SCENEGRAPHPOPUP, "layerhideall", true, &listener);
+		commandNodeMenu(ICON_FA_EYE " Show all" SCENEGRAPHPOPUP, "layershowallchildren", node, true, &listener);
+		commandNodeMenu(ICON_FA_EYE_SLASH " Hide all" SCENEGRAPHPOPUP, "layerhideallchildren", node, true, &listener);
 		commandNodeMenu(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", node, validModels > 1, &listener);
 		ImGui::CommandMenuItem(ICON_FA_LOCK " Lock all" SCENEGRAPHPOPUP, "layerlockall", true, &listener);
 		ImGui::CommandMenuItem(ICON_FA_UNLOCK " Unlock all" SCENEGRAPHPOPUP, "layerunlockall", true, &listener);
