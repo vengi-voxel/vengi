@@ -2332,6 +2332,9 @@ bool SceneManager::mouseRayTrace(bool force) {
 	_result.firstValidPosition = false;
 	_result.direction = ray.direction;
 	_result.hitFace = voxel::FaceNames::Max;
+
+	// TODO: we could optionally limit the raycast to the selection
+
 	voxelutil::raycastWithDirection(v, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
 		if (!_result.firstValidPosition && sampler.currentPositionValid()) {
 			_result.firstPosition = sampler.position();
