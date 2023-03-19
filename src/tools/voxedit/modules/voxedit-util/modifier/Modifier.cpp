@@ -25,8 +25,8 @@ Modifier::Modifier() :
 }
 
 void Modifier::construct() {
-	command::Command::registerActionButton("actionexecute", _actionExecuteButton);
-	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton);
+	command::Command::registerActionButton("actionexecute", _actionExecuteButton, "Execute the modifier action");
+	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton, "Execute the modifier action in delete mode");
 
 	command::Command::registerCommand("actionselect", [&] (const command::CmdArgs& args) {
 		setModifierType(ModifierType::Select);

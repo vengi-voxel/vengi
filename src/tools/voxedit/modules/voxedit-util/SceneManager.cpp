@@ -1376,10 +1376,10 @@ void SceneManager::construct() {
 	}).setHelp("Change intensity by scaling the rgb values of the palette").
 		setArgumentCompleter(command::valueCompleter({"hue", "saturation", "brightness", "cielab"}));
 
-	command::Command::registerActionButton("zoom_in", _zoomIn);
-	command::Command::registerActionButton("zoom_out", _zoomOut);
-	command::Command::registerActionButton("camera_rotate", _rotate);
-	command::Command::registerActionButton("camera_pan", _pan);
+	command::Command::registerActionButton("zoom_in", _zoomIn, "Zoom in");
+	command::Command::registerActionButton("zoom_out", _zoomOut, "Zoom out");
+	command::Command::registerActionButton("camera_rotate", _rotate, "Rotate the camera");
+	command::Command::registerActionButton("camera_pan", _pan, "Pan the camera");
 	command::Command::registerCommand("mouse_node_select", [&] (const command::CmdArgs&) {
 		if (_sceneModeNodeIdTrace != InvalidNodeId) {
 			Log::debug("switch active node to hovered from scene graph mode: %i", _sceneModeNodeIdTrace);
