@@ -64,7 +64,7 @@ void ModifierPanel::addShapes(command::CommandExecutionListener &listener) {
 			const bool selected = type == currentSelectedShapeType;
 			if (ImGui::Selectable(ShapeTypeStr[i], selected)) {
 				const core::String &typeStr = core::String::lower(ShapeTypeStr[i]);
-				const core::String &cmd = "shape" + typeStr;
+				const core::String &cmd = "shape" + typeStr; // shapeaabb, ...
 				command::executeCommands(cmd, &listener);
 			}
 			if (selected) {
