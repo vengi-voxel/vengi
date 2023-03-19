@@ -195,9 +195,9 @@ bool Modifier::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
 	return true;
 }
 
-void Modifier::invert(const voxel::Region &region) {
+void Modifier::invert(const Selection &selection) {
 	if (!_selectionValid) {
-		select(region.getLowerCorner(), region.getUpperCorner());
+		select(selection.getLowerCorner(), selection.getUpperCorner());
 	} else {
 		// TODO:
 	}
