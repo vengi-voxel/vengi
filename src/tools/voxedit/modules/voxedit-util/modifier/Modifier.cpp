@@ -196,6 +196,9 @@ bool Modifier::getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const {
 }
 
 void Modifier::invert(const Selection &selection) {
+	if (!selection.isValid()) {
+		return;
+	}
 	if (!_selectionValid) {
 		select(selection.getLowerCorner(), selection.getUpperCorner());
 	} else {
@@ -212,13 +215,8 @@ bool Modifier::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 	if (_locked) {
 		return false;
 	}
-	const bool selectActive = (_modifierType & ModifierType::Erase) == ModifierType::None;
-	if (selectActive) {
-		_selection = voxel::Region{mins, maxs};
-		_selectionValid = _selection.isValid();
-	} else {
-		unselect();
-	}
+	_selection = voxel::Region{mins, maxs};
+	_selectionValid = _selection.isValid();
 	return true;
 }
 
