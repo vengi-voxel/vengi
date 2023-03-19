@@ -19,7 +19,7 @@ void ModifierPanel::addModifiers(command::CommandExecutionListener &listener) {
 	ui::ScopedStyle style;
 	style.setFont(imguiApp()->bigIconFont());
 	const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-	ui::Toolbar toolbar(buttonSize);
+	ui::Toolbar toolbar(buttonSize, &listener);
 	const voxedit::ModifierFacade &modifier = sceneMgr().modifier();
 	const bool moverride = modifier.isMode(ModifierType::Place | ModifierType::Erase);
 	const bool mplace = !moverride && modifier.isMode(ModifierType::Place);
