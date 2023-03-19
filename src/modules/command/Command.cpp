@@ -42,19 +42,21 @@ bool Command::unregisterCommand(const char* name) {
 	return removed;
 }
 
-ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button) {
+ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button, const char *help) {
 	core::ScopedWriteLock lock(_lock);
-	const Command cPressed(COMMAND_PRESSED + name, [&] (const command::CmdArgs& args) {
+	Command cPressed(COMMAND_PRESSED + name, [&] (const command::CmdArgs& args) {
 		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
 		const double seconds = args.size() >= 2 ? core::string::toDouble(args[1]) : 0.0;
 		button.handleDown(key, seconds);
 	});
+	cPressed.setHelp(help);
 	_cmds.put(cPressed.name(), cPressed);
-	const Command cReleased(COMMAND_RELEASED + name, [&] (const command::CmdArgs& args) {
+	Command cReleased(COMMAND_RELEASED + name, [&] (const command::CmdArgs& args) {
 		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
 		const double seconds = args.size() >= 2 ? core::string::toDouble(args[1]) : 0.0;
 		button.handleUp(key, seconds);
 	});
+	cReleased.setHelp(help);
 	_cmds.put(cReleased.name(), cReleased);
 	updateSortedList();
 	return ActionButtonCommands(COMMAND_PRESSED + name, COMMAND_RELEASED + name);

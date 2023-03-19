@@ -80,7 +80,7 @@ public:
 	 * @note This class is not taking ownership of the button instance. You have to ensure
 	 * that the instance given here is alive as long as the commands are bound.
 	 */
-	static ActionButtonCommands registerActionButton(const core::String& name, ActionButton& button);
+	static ActionButtonCommands registerActionButton(const core::String& name, ActionButton& button, const char *help = nullptr);
 	static bool unregisterActionButton(const core::String& name);
 
 	static void shutdown();
