@@ -1339,7 +1339,7 @@ void SceneManager::construct() {
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		command::Command::registerActionButton(
 				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
-				_move[i]);
+				_move[i], "Move the cursor by keys, not but viewport mouse trace");
 	}
 	command::Command::registerCommand("palette_changeintensity", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
