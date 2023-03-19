@@ -58,7 +58,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		}
 		core::Buffer<scenegraph::FrameIndex> selectedFrames;
 		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
-		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::AllModels); iter != sceneGraph.end(); ++iter) {
+		for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 			const scenegraph::SceneGraphNode &modelNode = *iter;
 			const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
 			if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
@@ -144,7 +144,7 @@ bool AnimationTimeline::update(const char *sequencerTitle, double deltaFrameSeco
 	scenegraph::FrameIndex currentFrame = sceneMgr().currentFrame();
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	scenegraph::FrameIndex maxFrame = 0;
-	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::AllModels); iter != sceneGraph.end(); ++iter) {
+	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &modelNode = *iter;
 		maxFrame = core_max(modelNode.maxFrame(), maxFrame);
 	}

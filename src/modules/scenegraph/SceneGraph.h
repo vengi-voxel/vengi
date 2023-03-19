@@ -162,7 +162,7 @@ public:
 					continue;
 				}
 				SceneGraphNodeType type = _sceneGraph->node(_startNodeId).type();
-				if (type == _filter) {
+				if (type == _filter || _filter == SceneGraphNodeType::All) {
 					break;
 				} else if (_filter == SceneGraphNodeType::AllModels) {
 					if (type == SceneGraphNodeType::Model || type == SceneGraphNodeType::ModelReference) {
@@ -188,7 +188,7 @@ public:
 						continue;
 					}
 					SceneGraphNodeType type = _sceneGraph->node(_startNodeId).type();
-					if (type == _filter) {
+					if (type == _filter || _filter == SceneGraphNodeType::All) {
 						break;
 					} else if (_filter == SceneGraphNodeType::AllModels) {
 						if (type == SceneGraphNodeType::Model || type == SceneGraphNodeType::ModelReference) {
@@ -224,6 +224,14 @@ public:
 
 	inline auto begin(SceneGraphNodeType filter = SceneGraphNodeType::Model) const {
 		return iterator(0, _nextNodeId, filter, this);
+	}
+
+	inline auto beginAll() const {
+		return begin(SceneGraphNodeType::All);
+	}
+
+	inline auto beginAllModels() const {
+		return begin(SceneGraphNodeType::AllModels);
 	}
 
 	inline auto end() const {

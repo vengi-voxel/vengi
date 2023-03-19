@@ -248,6 +248,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 			name = ICON_FA_CIRCLE_QUESTION;
 			break;
 		case scenegraph::SceneGraphNodeType::AllModels:
+		case scenegraph::SceneGraphNodeType::All:
 		case scenegraph::SceneGraphNodeType::Max:
 			break;
 		}

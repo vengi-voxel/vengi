@@ -39,7 +39,8 @@ enum class SceneGraphNodeType : uint8_t {
 
 	Max,
 
-	AllModels // Fake type for the iterator
+	AllModels, // Fake type for the iterator
+	All
 };
 
 // these identifiers are using in the vengi format for the different node types

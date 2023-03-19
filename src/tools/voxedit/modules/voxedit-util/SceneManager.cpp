@@ -1849,20 +1849,23 @@ void SceneManager::construct() {
 	}).setHelp("Toggle the visible state of a node").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("layershowall", [&] (const command::CmdArgs& args) {
-		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
+		for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
+			scenegraph::SceneGraphNode &node = *iter;
 			node.setVisible(true);
 		}
 	}).setHelp("Show all nodes");
 
 	command::Command::registerCommand("layerhideall", [&](const command::CmdArgs &args) {
-		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
+		for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
+			scenegraph::SceneGraphNode &node = *iter;
 			node.setVisible(false);
 		}
 	}).setHelp("Hide all nodes");
 
 	command::Command::registerCommand("layerhideothers", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
-		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
+		for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
+			scenegraph::SceneGraphNode &node = *iter;
 			if (node.id() == nodeId) {
 				node.setVisible(true);
 				continue;
