@@ -1426,7 +1426,7 @@ void SceneManager::construct() {
 		if (!saveModels(dir)) {
 			Log::error("Failed to save models to dir: %s", dir.c_str());
 		}
-	}).setHelp("Save all nodes into filenames represented by their node names");
+	}).setHelp("Save all model nodes into filenames represented by their node names");
 
 	command::Command::registerCommand("layersave", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
