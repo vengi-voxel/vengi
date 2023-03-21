@@ -9,6 +9,7 @@
 #include "app/App.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
+#include "core/Log.h"
 #include "core/Common.h"
 #include "core/Var.h"
 #include "image/Image.h"

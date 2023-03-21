@@ -19,6 +19,7 @@
 #include "command/CommandCompleter.h"
 #include "video/Renderer.h"
 #include "io/Filesystem.h"
+#include "core/Log.h"
 
 #include "voxedit-util/SceneManager.h"
 

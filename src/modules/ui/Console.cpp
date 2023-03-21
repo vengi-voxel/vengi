@@ -6,6 +6,7 @@
 #include "IMGUIApp.h"
 #include "dearimgui/imgui_internal.h"
 #include "core/Color.h"
+#include <SDL_log.h>
 
 namespace ui {
 
@@ -13,7 +14,7 @@ Console::Console() :
 		Super() {
 }
 
-void Console::addLogLine(int category, SDL_LogPriority priority, const char *message) {
+void Console::addLogLine(int category, int priority, const char *message) {
 	Super::addLogLine(category, priority, message);
 	if (priority < SDL_LOG_PRIORITY_INFO) {
 		return;
@@ -42,9 +43,9 @@ void Console::addLogLine(int category, SDL_LogPriority priority, const char *mes
 	_notifications.emplace_back(toastType, rawMsg);
 }
 
-void Console::drawString(int x, int y, const glm::ivec4& color, int, const char* str, int len) {
+void Console::drawString(int x, int y, const int color[4], int, const char* str, int len) {
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
-	drawList->AddText(ImVec2(x, y), IM_COL32(color.r, color.g, color.b, color.a), str);
+	drawList->AddText(ImVec2(x, y), IM_COL32(color[0], color[1], color[2], color[3]), str);
 }
 
 void Console::afterRender(const math::Rect<int> &rect) {

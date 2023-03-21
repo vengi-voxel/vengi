@@ -4,6 +4,7 @@
 
 #include "Console.h"
 #include "app/App.h"
+#include "core/ArrayLength.h"
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "core/String.h"
@@ -32,7 +33,7 @@ static const glm::ivec4 colors[MAX_COLORS] = {
 	glm::ivec4(255, 255, 0, 255),
 	glm::ivec4(255, 0, 0, 255),
 };
-static_assert(SDL_arraysize(colors) == MAX_COLORS, "Color count doesn't match");
+static_assert(lengthof(colors) == MAX_COLORS, "Color count doesn't match");
 
 static const ConsoleColor priorityColors[SDL_NUM_LOG_PRIORITIES] = {
 	GRAY,
@@ -43,11 +44,11 @@ static const ConsoleColor priorityColors[SDL_NUM_LOG_PRIORITIES] = {
 	RED,
 	RED
 };
-static_assert(SDL_arraysize(priorityColors) == SDL_NUM_LOG_PRIORITIES, "Priority count doesn't match");
+static_assert(lengthof(priorityColors) == SDL_NUM_LOG_PRIORITIES, "Priority count doesn't match");
 }
 
 Console::Console() :
-		_mainThread(std::this_thread::get_id()) {
+		_mainThread(SDL_ThreadID()) {
 }
 
 Console::~Console() {
@@ -72,9 +73,8 @@ void Console::skipColor(const char **cstr) {
 }
 
 void Console::construct() {
-	SDL_LogGetOutputFunction(&_logFunction, &_logUserData);
-	SDL_LogSetOutputFunction(logConsole, this);
-	_autoEnable = core::Var::get("ui_autoconsole", "false", "Activate console on output");
+	SDL_LogGetOutputFunction((SDL_LogOutputFunction*)&_logFunction, &_logUserData);
+	SDL_LogSetOutputFunction((SDL_LogOutputFunction)logConsole, this);
 	command::Command::registerCommand("toggleconsole", [&] (const command::CmdArgs& args) { toggle(); }).setHelp("Toggle the built-in console");
 	command::Command::registerCommand("clear", [&] (const command::CmdArgs& args) { clear(); }).setHelp("Clear the text from the built-in console");
 	command::Command::registerCommand("history", [&] (const command::CmdArgs& args) { printHistory(); }).setHelp("Print the command history");
@@ -108,8 +108,7 @@ void Console::shutdown() {
 	command::Command::unregisterCommand("toggleconsole");
 	command::Command::unregisterCommand("clear");
 	command::Command::unregisterCommand("history");
-	_autoEnable = {};
-	SDL_LogSetOutputFunction(_logFunction, _logUserData);
+	SDL_LogSetOutputFunction((SDL_LogOutputFunction)_logFunction, _logUserData);
 }
 
 void Console::printHistory() {
@@ -537,29 +536,23 @@ core::String Console::removeAnsiColors(const char* message) {
 	return out;
 }
 
-void Console::logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message) {
-	if ((int) priority < 0 || priority >= SDL_NUM_LOG_PRIORITIES) {
+void Console::logConsole(void *userdata, int category, int priority, const char *message) {
+	if (priority < 0 || priority >= SDL_NUM_LOG_PRIORITIES) {
 		return;
 	}
 	if (priority < SDL_LogGetPriority(category)) {
 		return;
 	}
 	Console* console = (Console*)userdata;
-	if (std::this_thread::get_id() != console->_mainThread) {
+	if (SDL_ThreadID() != console->_mainThread) {
 		core_assert(message);
 		console->_messageQueue.emplace(category, priority, message);
 		return;
 	}
 	console->addLogLine(category, priority, message);
-	if (priority < SDL_LOG_PRIORITY_ERROR) {
-		return;
-	}
-	if (!console->_consoleActive && console->_autoEnable->boolVal()) {
-		console->toggle();
-	}
 }
 
-void Console::addLogLine(int category, SDL_LogPriority priority, const char *message) {
+void Console::addLogLine(int category, int priority, const char *message) {
 	const core::String& cleaned = removeAnsiColors(message);
 	const bool hasColor = isColor(cleaned.c_str());
 	if (hasColor) {
@@ -570,7 +563,7 @@ void Console::addLogLine(int category, SDL_LogPriority priority, const char *mes
 		_messages.emplace_back(color + cleaned);
 	}
 	if (_useOriginalLogFunction) {
-		_logFunction(_logUserData, category, priority, message);
+		((SDL_LogOutputFunction)_logFunction)(_logUserData, category, (SDL_LogPriority)priority, message);
 	}
 }
 
@@ -580,19 +573,11 @@ bool Console::toggle() {
 }
 
 void Console::update(double /*deltaFrameSeconds*/) {
-	core_assert(_mainThread == std::this_thread::get_id());
+	core_assert(_mainThread == SDL_ThreadID());
 	LogLine msg;
-	bool toggleConsole = false;
 	while (_messageQueue.pop(msg)) {
 		core_assert(msg.message);
 		addLogLine(msg.category, msg.priority, msg.message);
-		toggleConsole |= msg.priority >= SDL_LOG_PRIORITY_ERROR;
-	}
-	if (toggleConsole) {
-		return;
-	}
-	if (!_consoleActive && _autoEnable->boolVal()) {
-		toggle();
 	}
 }
 
@@ -619,7 +604,7 @@ void Console::drawString(int x, int y, const core::String& str, int len) {
 			color = colors[colorIndex];
 		}
 	}
-	drawString(x, y, color, colorIndex, cstr, len);
+	drawString(x, y, &color[0], colorIndex, cstr, len);
 }
 
 void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {

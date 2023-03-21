@@ -6,6 +6,7 @@
 #include "SceneUtil.h"
 #include "app/App.h"
 #include "core/TimeProvider.h"
+#include "core/Log.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
 #include "voxedit-util/AxisUtil.h"

@@ -5,6 +5,7 @@
 #include "ModifierRenderer.h"
 #include "core/Color.h"
 #include "math/Axis.h"
+#include "core/Log.h"
 #include "video/Camera.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"

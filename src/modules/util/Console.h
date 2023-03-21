@@ -4,17 +4,11 @@
 
 #pragma once
 
-#include <SDL_stdinc.h>
-#include <SDL_log.h>
 #include "core/String.h"
-#include "core/Var.h"
-#include "core/Assert.h"
+#include "math/Rect.h"
 #include "core/IComponent.h"
 #include "core/collection/DynamicArray.h"
-#include "math/Rect.h"
 #include "core/collection/ConcurrentQueue.h"
-#include <thread>
-#include <glm/fwd.hpp>
 
 namespace util {
 
@@ -58,12 +52,11 @@ protected:
 	 * @brief Data structure to store a log entry call from a different thread.
 	 */
 	struct LogLine {
-		LogLine(int _category = 0, SDL_LogPriority _priority = (SDL_LogPriority)0, const char* _message = nullptr) :
-				category(_category), priority(_priority), message(_message ? SDL_strdup(_message) : nullptr) {
+		LogLine(int _category = 0, int _priority = 0, const char* _message = nullptr) :
+				category(_category), priority(_priority), message(_message ? core_strdup(_message) : nullptr) {
 		}
 		~LogLine() {
-			SDL_free(message);
-			message = (char*)(intptr_t)0xdeadbeef;
+			core_free(message);
 		}
 		LogLine(LogLine&& o) noexcept {
 			category = o.category;
@@ -72,7 +65,7 @@ protected:
 			o.message = nullptr;
 		}
 		int category;
-		SDL_LogPriority priority;
+		int priority;
 		char* message;
 
 		LogLine& operator=(LogLine&& o) noexcept {
@@ -92,20 +85,19 @@ protected:
 			category = o.category;
 			priority = o.priority;
 			if (message) {
-				SDL_free(message);
+				core_free(message);
 			}
-			message = SDL_strdup(o.message);
+			message = core_strdup(o.message);
 			return *this;
 		}
 	};
 	core::ConcurrentQueue<LogLine> _messageQueue;
 	Messages _history;
 	uint32_t _historyPos = 0;
-	const std::thread::id _mainThread;
+	const unsigned long _mainThread;
 	bool _consoleActive = false;
-	SDL_LogOutputFunction _logFunction = nullptr;
+	void *_logFunction = nullptr;
 	void *_logUserData = nullptr;
-	core::VarPtr _autoEnable;
 	core::String _commandLine;
 	// commandline character will get overwritten if this is true
 	bool _overwrite = false;
@@ -118,8 +110,8 @@ protected:
 	int _fontSize = 14;
 
 	static core::String removeAnsiColors(const char* message);
-	static void logConsole(void *userdata, int category, SDL_LogPriority priority, const char *message);
-	virtual void addLogLine(int category, SDL_LogPriority priority, const char *message);
+	static void logConsole(void *userdata, int category, int priority, const char *message);
+	virtual void addLogLine(int category, int priority, const char *message);
 
 	// cursor move on the commandline
 	void cursorLeft();
@@ -152,7 +144,7 @@ protected:
 	virtual void afterRender(const math::Rect<int> &rect) {}
 	virtual int lineHeight() = 0;
 	virtual glm::ivec2 stringSize(const char *c, int length) = 0;
-	virtual void drawString(int x, int y, const glm::ivec4& color, int colorIndex, const char* str, int len) = 0;
+	virtual void drawString(int x, int y, const int color[4], int colorIndex, const char* str, int len) = 0;
 
 public:
 	Console();

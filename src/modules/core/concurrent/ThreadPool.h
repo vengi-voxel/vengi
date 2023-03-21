@@ -37,7 +37,6 @@
 #include "core/concurrent/ConditionVariable.h"
 #include "core/Trace.h"
 #include "core/SharedPtr.h"
-#include "core/Log.h"
 
 namespace core {
 

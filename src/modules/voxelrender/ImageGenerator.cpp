@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/StringUtil.h"
+#include "core/Log.h"
 #include "image/Image.h"
 #include "io/File.h"
 #include "io/FileStream.h"

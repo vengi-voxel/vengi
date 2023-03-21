@@ -4,6 +4,7 @@
 
 #include "ModifierButton.h"
 #include "core/BindingContext.h"
+#include "core/Log.h"
 #include "../SceneManager.h"
 #include "scenegraph/SceneGraphNode.h"
 

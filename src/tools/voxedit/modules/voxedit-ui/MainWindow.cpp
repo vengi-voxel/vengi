@@ -9,6 +9,7 @@
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
 #include "core/ArrayLength.h"
+#include "core/Log.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
 #include "ui/IconsForkAwesome.h"

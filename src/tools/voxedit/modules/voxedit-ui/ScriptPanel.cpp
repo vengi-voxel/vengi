@@ -6,6 +6,7 @@
 #include "DragAndDropPayload.h"
 #include "core/Algorithm.h"
 #include "core/StringUtil.h"
+#include "core/Log.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsForkAwesome.h"

@@ -5,6 +5,7 @@
 #include "SceneGraphPanel.h"
 #include "Util.h"
 #include "core/StringUtil.h"
+#include "core/Log.h"
 #include "core/collection/DynamicArray.h"
 #include "core/Color.h"
 #include "voxedit-util/ModelNodeSettings.h"
