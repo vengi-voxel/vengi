@@ -4,7 +4,6 @@
 
 #pragma once
 #include <SDL_main.h>
-#include <memory>
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
 

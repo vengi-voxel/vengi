@@ -11,7 +11,6 @@
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/ReadWriteLock.h"
 #include "command/ActionButton.h"
-#include <memory>
 #include <functional>
 
 namespace command {
