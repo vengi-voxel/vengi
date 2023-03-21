@@ -4,14 +4,12 @@
 
 #pragma once
 
-#include "core/concurrent/ReadWriteLock.h"
 #include "core/GameConfig.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/collection/Map.h"
 #include "core/collection/DynamicArray.h"
 #include <string.h>
-#include <glm/fwd.hpp>
 
 namespace core {
 
@@ -64,7 +62,6 @@ protected:
 	friend class SharedPtr<Var>;
 	typedef Map<core::String, VarPtr, 64, core::StringHash> VarMap;
 	static VarMap _vars;
-	static ReadWriteLock _lock;
 
 	const core::String _name;
 	const char* _help = nullptr;
@@ -88,6 +85,9 @@ protected:
 	uint32_t _currentHistoryPos = 0;
 	bool _dirty = false;
 	ValidatorFunc _validator = nullptr;
+
+	static void lock();
+	static void unlock();
 
 	void addValueToHistory(const core::String& value);
 	static bool _ivec3ListValidator(const core::String& value, int nmin, int nmax);
@@ -167,10 +167,11 @@ public:
 
 	template<class Functor>
 	static void visit(Functor&& func) {
-		ScopedReadLock lock(_lock);
+		lock();
 		for (auto i = _vars.begin(); i != _vars.end(); ++i) {
 			func(i->second);
 		}
+		unlock();
 	}
 
 	template<class Functor>
@@ -274,7 +275,7 @@ public:
 	 * @return the value of the variable as @c bool. @c true if the string value is either @c 1 or @c true, @c false otherwise
 	 */
 	bool boolVal() const;
-	glm::vec3 vec3Val() const;
+	void vec3Val(float out[3]) const;
 	bool setVal(const core::String& value);
 	inline bool setVal(const char* value) {
 		if (!SDL_strcmp(_history[_currentHistoryPos]._value.c_str(), value)) {

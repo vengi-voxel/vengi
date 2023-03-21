@@ -178,9 +178,11 @@ void SceneRenderer::update() {
 	_gridRenderer.setRenderAABB(_showAABB->boolVal());
 	_gridRenderer.setRenderGrid(_showGrid->boolVal());
 	_gridRenderer.setGridResolution(_gridSize->intVal());
-
-	_volumeRenderer.setAmbientColor(_ambientColor->vec3Val());
-	_volumeRenderer.setDiffuseColor(_diffuseColor->vec3Val());
+	glm::vec3 val;
+	_ambientColor->vec3Val(&val[0]);
+	_volumeRenderer.setAmbientColor(val);
+	_diffuseColor->vec3Val(&val[0]);
+	_volumeRenderer.setDiffuseColor(val);
 	_volumeRenderer.update();
 }
 

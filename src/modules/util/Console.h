@@ -14,6 +14,7 @@
 #include "math/Rect.h"
 #include "core/collection/ConcurrentQueue.h"
 #include <thread>
+#include <glm/fwd.hpp>
 
 namespace util {
 

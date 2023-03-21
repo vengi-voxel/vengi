@@ -214,7 +214,8 @@ bool SliderVarFloat(const char* label, const char* varName, float v_min, float v
 }
 
 bool ColorEdit3Var(const char* label, const char* varName) {
-	glm::vec3 col = core::Var::getSafe(varName)->vec3Val();
+	glm::vec3 col;
+	core::Var::getSafe(varName)->vec3Val(&col[0]);
 	if (ImGui::ColorEdit3(label, glm::value_ptr(col))) {
 		const core::String &c = core::string::format("%f %f %f", col.x, col.y, col.z);
 		core::Var::getSafe(varName)->setVal(c);

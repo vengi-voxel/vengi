@@ -8,17 +8,27 @@
 #include "core/GLM.h"
 #include "core/Assert.h"
 #include "core/StringUtil.h"
+#include "core/concurrent/ReadWriteLock.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 
 namespace core {
 
+static ReadWriteLock _lock{"Var"};
+
 const core::String VAR_TRUE("true");
 const core::String VAR_FALSE("false");
 
 Var::VarMap Var::_vars;
-ReadWriteLock Var::_lock("Var");
 uint8_t Var::_visitFlags = 0u;
+
+void Var::lock() {
+	_lock.lockWrite();
+}
+
+void Var::unlock() {
+	_lock.unlockWrite();
+}
 
 VarPtr Var::get(const core::String& name, int value, int32_t flags) {
 	char buf[64];
@@ -90,7 +100,7 @@ bool Var::boolean(const core::String& name) {
 	return var->boolVal();
 }
 
-glm::vec3 Var::vec3Val() const {
+void Var::vec3Val(float out[3]) const {
 	float x, y, z;
 #ifdef _MSC_VER
 	if (::sscanf_s(strVal().c_str(), "%f:%f:%f", &x, &y, &z) != 3) {
@@ -99,10 +109,13 @@ glm::vec3 Var::vec3Val() const {
 	if (::sscanf(strVal().c_str(), "%f:%f:%f", &x, &y, &z) != 3) {
 		if (::sscanf(strVal().c_str(), "%f %f %f", &x, &y, &z) != 3) {
 #endif
-			return glm::zero<glm::vec3>();
+			out[0] = out[1] = out[2] = 0.0f;
+			return;
 		}
 	}
-	return glm::vec3(x, y, z);
+	out[0] = x;
+	out[1] = y;
+	out[2] = z;
 }
 
 VarPtr Var::get(const core::String& name, const char* value, int32_t flags, const char *help, ValidatorFunc validatorFunc) {
