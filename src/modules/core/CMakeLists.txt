@@ -16,7 +16,6 @@ set(SRCS
 	collection/List.h
 	collection/Map.h collection/Map.cpp
 	collection/Set.h
-	collection/SetUtil.h
 	collection/Stack.h
 	collection/StringMap.h
 	collection/StringSet.h
@@ -122,7 +121,6 @@ set(TEST_SRCS
 	tests/QueueTest.cpp
 	tests/ReadWriteLockTest.cpp
 	tests/RingBufferTest.cpp
-	tests/SetUtilTest.cpp
 	tests/SharedPtrTest.cpp
 	tests/StackTest.cpp
 	tests/StringTest.cpp

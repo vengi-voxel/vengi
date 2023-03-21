@@ -7,7 +7,6 @@
 #include "core/Assert.h"
 #include "core/Common.h"
 #include <stddef.h>
-#include <stdint.h>
 
 namespace core {
 
