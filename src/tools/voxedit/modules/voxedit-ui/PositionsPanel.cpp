@@ -81,7 +81,8 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 			core::DynamicArray<core::String> regionSizes;
 			core::string::splitString(sizes, regionSizes, ",");
 			for (const core::String &s : regionSizes) {
-				const glm::ivec3 maxs = core::string::parseIVec3(s);
+				glm::ivec3 maxs;
+				core::string::parseIVec3(s, &maxs[0]);
 				for (int i = 0; i < 3; ++i) {
 					if (maxs[i] <= 0 || maxs[i] > 256) {
 						return;

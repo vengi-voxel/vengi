@@ -8,15 +8,14 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include <inttypes.h>
-#include <glm/fwd.hpp>
 
 namespace core {
 namespace string {
 
-extern core::String sanitizeFilename(const core::String& input);
-extern core::String format(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
-extern bool formatBuf(char *buf, size_t bufSize, CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(3);
-extern core::String humanSize(uint64_t bytes);
+core::String sanitizeFilename(const core::String& input);
+core::String format(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+bool formatBuf(char *buf, size_t bufSize, CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(3);
+core::String humanSize(uint64_t bytes);
 
 size_t levensteinDistance(const core::String &source, const core::String &target);
 int toInt(const char* str);
@@ -25,7 +24,7 @@ inline int toInt(const core::String& str) {
 	return toInt(str.c_str());
 }
 
-extern int64_t toLong(const char* str);
+int64_t toLong(const char* str);
 inline int64_t toLong(const core::String& str) {
 	return toLong(str.c_str());
 }
@@ -59,9 +58,9 @@ double toDouble(const char* str);
  *
  * @return The function returns @c nullptr if the token wasn't found inside the given buffer boundaries.
  */
-extern char* getBeforeToken(char **buffer, const char *token, size_t bufferSize);
+char* getBeforeToken(char **buffer, const char *token, size_t bufferSize);
 
-extern void splitString(const core::String& string, core::DynamicArray<core::String>& tokens, const char* delimiters = " \t\r\n\f\v");
+void splitString(const core::String& string, core::DynamicArray<core::String>& tokens, const char* delimiters = " \t\r\n\f\v");
 
 char toUpper(char in);
 char toLower(char in);
@@ -96,12 +95,12 @@ inline bool endsWith(const core::String& string, const core::String& end) {
 	return false;
 }
 
-extern core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr, size_t replaceStrSize);
+core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr, size_t replaceStrSize);
 
 core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr);
 
-extern void replaceAllChars(core::String& str, char in, char out);
-extern void replaceAllChars(char* str, char in, char out);
+void replaceAllChars(core::String& str, char in, char out);
+void replaceAllChars(char* str, char in, char out);
 
 inline core::String replaceAll(const core::String& str, const core::String& searchStr, const core::String& replaceStr) {
 	if (searchStr.size() == 1 && replaceStr.size() == 1) {
@@ -112,12 +111,12 @@ inline core::String replaceAll(const core::String& str, const core::String& sear
 	return replaceAll(str, searchStr, replaceStr.c_str(), replaceStr.size());
 }
 
-extern bool isNumber(const core::String &in);
-extern bool isInteger(const core::String& in);
-extern bool isIntegerWithPostfix(const core::String& in);
-extern bool isAlpha(int c);
-extern bool isAbsolutePath(const core::String &in);
-extern bool isRootPath(const core::String &in);
+bool isNumber(const core::String &in);
+bool isInteger(const core::String& in);
+bool isIntegerWithPostfix(const core::String& in);
+bool isAlpha(int c);
+bool isAbsolutePath(const core::String &in);
+bool isRootPath(const core::String &in);
 
 inline char *strncpyz(const char *input, size_t inputSize, char *target, size_t targetSize) {
 	core_assert(targetSize > 0);
@@ -344,8 +343,8 @@ core::String join(const ITER& begin, const ITER& end, const char *delimiter, FUN
  * @param[in] pattern The pattern can deal with wildcards like * and ?
  * @param[in] text The text to match against the pattern
  */
-extern bool matches(const char* text, const char* pattern);
-extern bool matches(const char* text, const core::String& pattern);
+bool matches(const char* text, const char* pattern);
+bool matches(const char* text, const core::String& pattern);
 inline bool matches(const core::String& text, const core::String& pattern) {
 	return matches(text.c_str(), pattern);
 }
@@ -355,40 +354,39 @@ inline bool matches(const core::String& text, const core::String& pattern) {
  * @note Only for file extensions
  * @return @c true if any of the given patterns matched with the given input text
  */
-extern bool fileMatchesMultiple(const char* text, const char* patterns);
+bool fileMatchesMultiple(const char* text, const char* patterns);
 
 /**
  * @param[in,out] str Converts a string into UpperCamelCase.
  * @note Underscores are removed and the following character is also converted to upper case.
  * Example: @c foo_bar will end as @c FooBar
  */
-extern void upperCamelCase(core::String& str);
-extern core::String upperCamelCase(const core::String& str);
+void upperCamelCase(core::String& str);
+core::String upperCamelCase(const core::String& str);
 
-extern void lowerCamelCase(core::String& str);
-extern core::String lowerCamelCase(const core::String& str);
+void lowerCamelCase(core::String& str);
+core::String lowerCamelCase(const core::String& str);
 
-extern char* append(char* buf, size_t bufsize, const char* string);
+char* append(char* buf, size_t bufsize, const char* string);
 
-extern int count(const char *buf, char chr);
+int count(const char *buf, char chr);
 
-extern core::String eraseAllChars(const core::String& str, char chr);
+core::String eraseAllChars(const core::String& str, char chr);
 
 /**
  * @note Call @c core_free() on the returned string
  */
-extern char *urlEncode(const char *str);
+char *urlEncode(const char *str);
 
-extern int parseHex(const char *hex, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a);
+int parseHex(const char *hex, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a);
 
 // taken from tiny_obj_loader - sscanf is locale dependent
-extern void parseReal2(float *x, float *y, const char **token, float default_x = 0.0f,
+void parseReal2(float *x, float *y, const char **token, float default_x = 0.0f,
 					   float default_y = 0.0f);
-extern void parseReal3(float *x, float *y, float *z, const char **token, float default_x = 0.0f,
+void parseReal3(float *x, float *y, float *z, const char **token, float default_x = 0.0f,
 					   float default_y = 0.0f, float default_z = 0.0f);
-extern bool parseReal(const char **token, float *out);
-extern glm::vec3 parseVec3(const core::String &in);
-extern glm::ivec3 parseIVec3(const core::String &in);
+bool parseReal(const char **token, float *out);
+void parseIVec3(const core::String &in, int32_t *out);
 
 }
 }

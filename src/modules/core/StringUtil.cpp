@@ -808,25 +808,16 @@ void parseReal3(float *x, float *y, float *z, const char **token, float default_
 	*z = parseReal(token, default_z);
 }
 
-glm::vec3 parseVec3(const core::String &in) {
-	const char *s = in.c_str();
-	glm::vec3 out;
-	parseReal3(&out.x, &out.y, &out.z, &s, 0.0f, 0.0f, 0.0f);
-	return out;
-}
-
-glm::ivec3 parseIVec3(const core::String &in) {
+void parseIVec3(const core::String &in, int32_t *out) {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(3);
 	splitString(in, tokens);
 	if (tokens.size() > 3) {
 		tokens.resize(3);
 	}
-	glm::ivec3 out(0);
 	for (size_t i = 0; i < tokens.size(); ++i) {
 		out[(int)i] = tokens[i].toInt();
 	}
-	return out;
 }
 
 }

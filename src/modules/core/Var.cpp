@@ -55,7 +55,8 @@ bool Var::_ivec3ListValidator(const core::String& value, int nmin, int nmax) {
 	core::DynamicArray<core::String> regionSizes;
 	core::string::splitString(value, regionSizes, ",");
 	for (const core::String &s : regionSizes) {
-		const glm::ivec3 maxs = core::string::parseIVec3(s);
+		glm::ivec3 maxs;
+		core::string::parseIVec3(s, &maxs[0]);
 		for (int i = 0; i < 3; ++i) {
 			if (maxs[i] < nmin || maxs[i] > nmax) {
 				return false;
