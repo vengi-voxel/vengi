@@ -8,7 +8,7 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/StandardLib.h"
-#include <stdint.h>
+#include <cstdint> // intptr_t - not available in stdint.h
 #include <new>
 
 namespace core {
