@@ -35,22 +35,6 @@ private:
 	SizeType _maxPoolSize = (SizeType)0;
 	SizeType _currentAllocatedItems = (SizeType)0;
 
-	template<class ... Args>
-	void callConstructor(std::false_type, T *ptr, Args&& ...) {
-	}
-
-	template<class ... Args>
-	void callConstructor(std::true_type, T *ptr, Args&& ...args) {
-		new (ptr)Type(core::forward<Args>(args) ... );
-	}
-
-	void callDestructor(std::false_type, T *ptr) {
-	}
-
-	void callDestructor(std::true_type, T *ptr) {
-		ptr->~T();
-	}
-
 	inline bool outOfRange(Type* ptr) const {
 		return ptr < &_poolBuf[0] || ptr > &_poolBuf[_maxPoolSize - 1];
 	}
@@ -142,7 +126,7 @@ public:
 			_nextFreeSlot = *(Type**)ptr;
 			++_currentAllocatedItems;
 			core_assert_msg(_nextFreeSlot == POOLBUFFER_END_MARKER || !outOfRange(_nextFreeSlot), "Out of range after %i allocated slots", (int)_currentAllocatedItems);
-			callConstructor(std::is_class<T> {}, ptr);
+			new ((void*)ptr) Type();
 		}
 
 		return ptr;
@@ -158,7 +142,7 @@ public:
 			_nextFreeSlot = *(Type**)ptr;
 			++_currentAllocatedItems;
 			core_assert_msg(_nextFreeSlot == POOLBUFFER_END_MARKER || !outOfRange(_nextFreeSlot), "Out of range after %i allocated slots", (int)_currentAllocatedItems);
-			callConstructor(std::is_class<T> {}, ptr, core::forward<Args>(args) ...);
+			new ((void*)ptr) Type(core::forward<Args>(args) ...);
 		}
 
 		return ptr;
@@ -174,7 +158,7 @@ public:
 		}
 
 		core_assert(_currentAllocatedItems > 0);
-		callDestructor(std::is_class<T> {}, ptr);
+		ptr->~Type();
 		*(Type**) ptr = _nextFreeSlot;
 		_nextFreeSlot = ptr;
 		--_currentAllocatedItems;
