@@ -14,7 +14,7 @@ set(SRCS
 	collection/DynamicArray.h
 	collection/Functions.h
 	collection/List.h
-	collection/Map.h
+	collection/Map.h collection/Map.cpp
 	collection/Set.h
 	collection/SetUtil.h
 	collection/Stack.h

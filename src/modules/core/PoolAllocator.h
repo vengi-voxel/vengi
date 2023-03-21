@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/Assert.h"
-#include "core/Common.h"
 #include "core/NonCopyable.h"
 #include "core/StandardLib.h"
 #include <stdint.h>
