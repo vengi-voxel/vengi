@@ -134,7 +134,7 @@ public:
 		return _ptr;
 	}
 
-	void operator=(std::nullptr_t) {
+	void operator=(decltype(nullptr)) {
 		release();
 	}
 
@@ -166,11 +166,11 @@ public:
 		return _ptr >= rhs._ptr;
 	}
 
-	bool operator==(std::nullptr_t) const {
+	bool operator==(decltype(nullptr)) const {
 		return nullptr == _ptr;
 	}
 
-	bool operator!=(std::nullptr_t) const {
+	bool operator!=(decltype(nullptr)) const {
 		return nullptr != _ptr;
 	}
 };

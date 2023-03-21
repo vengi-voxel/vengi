@@ -4,7 +4,6 @@
 #include "ShapeRenderer.h"
 #include "ColorData.h"
 #include "video/Renderer.h"
-#include "core/Vector.h"
 #include "video/Shader.h"
 #include "video/ScopedPolygonMode.h"
 #include "core/Log.h"

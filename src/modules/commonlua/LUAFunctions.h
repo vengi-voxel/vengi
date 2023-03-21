@@ -87,13 +87,13 @@ int clua_error(lua_State *s, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINT
 
 template<class T>
 bool clua_istype(lua_State *s, int n) {
-	using RAWTYPE = typename std::remove_pointer<T>::type;
+	using RAWTYPE = typename core::remove_pointer<T>::type;
 	return luaL_testudata(s, n, clua_meta<RAWTYPE>::name()) != nullptr;
 }
 
 template<typename T>
 bool clua_isvec(lua_State *s, int n) {
-	using RAWTYPE = typename std::remove_pointer<T>::type;
+	using RAWTYPE = typename core::remove_pointer<T>::type;
 	if (!lua_istable(s, n)) {
 		return false;
 	}
@@ -111,13 +111,13 @@ bool clua_isvec(lua_State *s, int n) {
 
 template<class T>
 int clua_push(lua_State* s, const T& v) {
-	using RAWTYPE = typename std::remove_pointer<T>::type;
+	using RAWTYPE = typename core::remove_pointer<T>::type;
 	return clua_pushudata<T>(s, v, clua_meta<RAWTYPE>::name());
 }
 
 template<class T>
 T* clua_get(lua_State *s, int n) {
-	using RAWTYPE = typename std::remove_pointer<T>::type;
+	using RAWTYPE = typename core::remove_pointer<T>::type;
 	return clua_getudata<T*>(s, n, clua_meta<RAWTYPE>::name());
 }
 
