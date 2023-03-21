@@ -6,6 +6,7 @@
 #include "core/StringUtil.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
+#include <SDL_stdinc.h>
 
 namespace core {
 

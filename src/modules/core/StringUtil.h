@@ -73,6 +73,8 @@ inline bool startsWith(const core::String& string, const core::String& token) {
 	return !string.compare(0, token.size(), token);
 }
 
+size_t len(const char *string);
+
 bool startsWith(const core::String& string, const char* token);
 
 bool startsWith(const char* string, const char* token);

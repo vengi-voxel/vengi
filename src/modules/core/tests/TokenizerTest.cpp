@@ -6,6 +6,7 @@
 #include "core/StringUtil.h"
 #include "core/tests/TestHelper.h"
 #include "core/Tokenizer.h"
+#include <SDL_stdinc.h>
 
 namespace core {
 

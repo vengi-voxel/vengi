@@ -9,6 +9,7 @@
 #include "core/ArrayLength.h"
 #include <string.h>
 #include <inttypes.h>
+#include <SDL_stdinc.h>
 
 namespace core {
 

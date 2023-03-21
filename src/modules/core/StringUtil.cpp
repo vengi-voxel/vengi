@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/ArrayLength.h"
 #include "core/StandardLib.h"
+#include <SDL_stdinc.h>
 #include <SDL_platform.h>
 #include <ctype.h>
 #include <math.h>
@@ -15,6 +16,10 @@
 
 namespace core {
 namespace string {
+
+size_t len(const char *string) {
+	return SDL_strlen(string);
+}
 
 int64_t toLong(const char* str) {
 	return ::atol(str);

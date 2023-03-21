@@ -103,7 +103,7 @@ typedef std::vector<QuadList> QuadListVector;
  * space) while the voxel behind the potential quad would have a value
  * greater than zero (typically indicating it is solid).
  */
-SDL_FORCE_INLINE bool isQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
+CORE_FORCE_INLINE bool isQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
 	if (isAir(back) || isTransparent(back)) {
 		return false;
 	}
@@ -113,7 +113,7 @@ SDL_FORCE_INLINE bool isQuadNeeded(VoxelType back, VoxelType front, FaceNames fa
 	return true;
 }
 
-SDL_FORCE_INLINE bool isTransparentQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
+CORE_FORCE_INLINE bool isTransparentQuadNeeded(VoxelType back, VoxelType front, FaceNames face) {
 	if (isAir(back) || !isTransparent(back)) {
 		return false;
 	}
@@ -123,11 +123,11 @@ SDL_FORCE_INLINE bool isTransparentQuadNeeded(VoxelType back, VoxelType front, F
 	return true;
 }
 
-SDL_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
+CORE_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
 	return v1.colorIndex == v2.colorIndex && v1.info == v2.info;
 }
 
-SDL_FORCE_INLINE bool isSameColor(const VoxelVertex& v1, const VoxelVertex& v2) {
+CORE_FORCE_INLINE bool isSameColor(const VoxelVertex& v1, const VoxelVertex& v2) {
 	return v1.colorIndex == v2.colorIndex;
 }
 
@@ -217,7 +217,7 @@ static bool performQuadMerging(QuadList& quads, Mesh* meshCurrent, bool ambientO
  * @brief We are checking the voxels above us. There are four possible ambient occlusion values
  * for a vertex.
  */
-SDL_FORCE_INLINE uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner) {
+CORE_FORCE_INLINE uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner) {
 	if (side1 && side2) {
 		return 0;
 	}
@@ -230,7 +230,7 @@ SDL_FORCE_INLINE uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool cor
  * the quads. This can be done by comparing the ambient occlusion values for each quad and selecting
  * an appropriate orientation. Quad vertices must be sorted in clockwise order.
  */
-SDL_FORCE_INLINE bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01, const VoxelVertex& v10, const VoxelVertex& v11) {
+CORE_FORCE_INLINE bool isQuadFlipped(const VoxelVertex& v00, const VoxelVertex& v01, const VoxelVertex& v10, const VoxelVertex& v11) {
 	return v00.ambientOcclusion + v11.ambientOcclusion > v01.ambientOcclusion + v10.ambientOcclusion;
 }
 

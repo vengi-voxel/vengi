@@ -38,8 +38,8 @@ public:
 	Tokenizer(const TokenizerConfig &cfg, const char* s, size_t len, const char *sep = " (){};", const char *split = "");
 	Tokenizer(const char* s, size_t len, const char *sep = " (){};", const char *split = "") : Tokenizer(TokenizerConfig(), s, len, sep, split) {}
 
-	Tokenizer(const TokenizerConfig &cfg, const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(cfg, string, SDL_strlen(string), sep, split) {}
-	Tokenizer(const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(TokenizerConfig(), string, SDL_strlen(string), sep, split) {}
+	Tokenizer(const TokenizerConfig &cfg, const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(cfg, string, core::string::len(string), sep, split) {}
+	Tokenizer(const char* string, const char *sep = " (){};", const char *split = "") : Tokenizer(TokenizerConfig(), string, core::string::len(string), sep, split) {}
 	Tokenizer(const core::String& string, const char *sep = " (){};", const char *split = "") : Tokenizer(TokenizerConfig(), string.c_str(), string.size(), sep, split) {}
 	Tokenizer(const TokenizerConfig &cfg, const core::String& string, const char *sep = " (){};", const char *split = "") : Tokenizer(cfg, string.c_str(), string.size(), sep, split) {}
 

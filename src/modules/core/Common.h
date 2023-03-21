@@ -19,6 +19,16 @@
 #define CORE_FORCE_INLINE inline
 #endif
 
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 supports __func__ as a standard. */
+#define CORE_FUNCTION __func__
+#elif ((defined(__GNUC__) && (__GNUC__ >= 2)) || defined(_MSC_VER) || defined(__WATCOMC__))
+#define CORE_FUNCTION __FUNCTION__
+#else
+#define CORE_FUNCTION "???"
+#endif
+#define CORE_FILE __FILE__
+#define CORE_LINE __LINE__
+
 #if defined(_MSC_VER) && (_MSC_VER >= 1600) /* VS 2010 and above */
 #include <sal.h>
 #if _MSC_VER >= 1400

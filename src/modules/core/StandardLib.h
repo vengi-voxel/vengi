@@ -15,7 +15,7 @@
 #endif
 
 extern "C" void SDLCALL SDL_SIMDFree(void *ptr);
-extern "C" void * SDLCALL SDL_SIMDAlloc(const size_t len);
+extern "C" void *SDLCALL SDL_SIMDAlloc(const size_t len);
 extern "C" void *SDLCALL SDL_malloc(size_t size);
 extern "C" void *SDLCALL SDL_realloc(void *mem, size_t size);
 extern "C" void SDLCALL SDL_free(void *mem);

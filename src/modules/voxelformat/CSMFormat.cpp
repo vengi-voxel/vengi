@@ -21,7 +21,7 @@ namespace voxelformat {
 
 #define wrapBool(read) \
 	if (!(read)) { \
-		Log::debug("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
+		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE); \
 		return false; \
 	}
 

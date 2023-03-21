@@ -34,13 +34,13 @@ namespace voxelformat {
 
 #define wrap(read) \
 	if ((read) != 0) { \
-		Log::error("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
+		Log::error("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE); \
 		return false; \
 	}
 
 #define wrapBool(read) \
 	if (!(read)) { \
-		Log::error("Error: " CORE_STRINGIFY(read) " at " SDL_FILE ":%i", SDL_LINE); \
+		Log::error("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE); \
 		return false; \
 	}
 

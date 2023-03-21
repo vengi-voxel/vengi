@@ -29,9 +29,9 @@ namespace voxelformat {
 #define wrap(expression)                                                                                               \
 	do {                                                                                                               \
 		if ((expression) != 0) {                                                                                       \
-			Log::error("Could not load file: Not enough data in stream " CORE_STRINGIFY(#expression) " at " SDL_FILE   \
+			Log::error("Could not load file: Not enough data in stream " CORE_STRINGIFY(#expression) " at " CORE_FILE   \
 																									 ":%i",            \
-					   SDL_LINE);                                                                                      \
+					   CORE_LINE);                                                                                      \
 			return false;                                                                                              \
 		}                                                                                                              \
 	} while (0)
