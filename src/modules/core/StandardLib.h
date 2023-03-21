@@ -22,6 +22,7 @@ extern "C" void SDLCALL SDL_free(void *mem);
 extern "C" void *SDLCALL SDL_memset(void *dst, int c, size_t len);
 extern "C" void *SDLCALL SDL_memcpy(void *dst, const void *src, size_t len);
 extern "C" int SDLCALL SDL_memcmp(const void *s1, const void *s2, size_t len);
+extern "C" char *SDLCALL SDL_strdup(const char *str);
 
 #ifndef core_malloc
 #define core_malloc SDL_malloc
@@ -33,6 +34,10 @@ extern "C" int SDLCALL SDL_memcmp(const void *s1, const void *s2, size_t len);
 
 #ifndef core_free
 #define core_free SDL_free
+#endif
+
+#ifndef core_strdup
+#define core_strdup SDL_strdup
 #endif
 
 #ifndef core_aligned_malloc
