@@ -65,7 +65,7 @@ App* App::getInstance() {
 }
 
 App::App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
-		_filesystem(filesystem), _threadPool(std::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
+		_filesystem(filesystem), _threadPool(core::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
 		_timeProvider(timeProvider) {
 #ifdef FE_TONEAREST
 	std::fesetround(FE_TONEAREST);
@@ -633,8 +633,8 @@ core::String App::getArgVal(const core::String& arg, const core::String& default
 
 App::Argument& App::registerArg(const core::String& arg) {
 	const App::Argument argument(arg);
-	_arguments.insert(argument);
-	return *_arguments.back();
+	_arguments.push_back(argument);
+	return _arguments.back();
 }
 
 bool App::saveConfiguration() {

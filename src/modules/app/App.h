@@ -6,15 +6,11 @@
 
 #include "core/Common.h"
 #include "core/Trace.h"
-#include "core/BindingContext.h"
 #include "core/String.h"
-#include "core/collection/List.h"
-#include "core/concurrent/Atomic.h"
+#include "core/collection/DynamicArray.h"
 #include "core/SharedPtr.h"
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
-#include <memory>
-#include <stack>
 
 #define ORGANISATION "vengi"
 
@@ -23,7 +19,7 @@
  */
 namespace core {
 class ThreadPool;
-typedef std::shared_ptr<ThreadPool> ThreadPoolPtr;
+typedef core::SharedPtr<ThreadPool> ThreadPoolPtr;
 
 class Var;
 typedef core::SharedPtr<Var> VarPtr;
@@ -267,7 +263,7 @@ public:
 	static App* getInstance();
 
 private:
-	core::List<Argument> _arguments;
+	core::DynamicArray<Argument> _arguments;
 };
 
 inline double App::nowSeconds() const {
