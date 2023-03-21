@@ -14,7 +14,7 @@ class TestApp : public App {
 public:
 	TestApp(int argc = 0, const char *args[] = nullptr)
 		: App(core::make_shared<io::Filesystem>(),
-			  std::make_shared<core::TimeProvider>()) {
+			  core::make_shared<core::TimeProvider>()) {
 		setArgs(argc, (char **)args);
 	}
 };

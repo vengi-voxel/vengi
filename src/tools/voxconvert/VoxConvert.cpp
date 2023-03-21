@@ -732,7 +732,7 @@ void VoxConvert::translate(const glm::ivec3& pos, scenegraph::SceneGraph& sceneG
 
 int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = core::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
+	const core::TimeProviderPtr& timeProvider = core::make_shared<core::TimeProvider>();
 	VoxConvert app(filesystem, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

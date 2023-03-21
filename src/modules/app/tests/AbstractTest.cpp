@@ -26,7 +26,7 @@ core::String AbstractTest::fileToString(const core::String& filename) const {
 
 void AbstractTest::SetUp() {
 	const io::FilesystemPtr filesystem = core::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	const core::TimeProviderPtr timeProvider = core::make_shared<core::TimeProvider>();
 	_testApp = new TestApp(filesystem, timeProvider, this);
 	_testApp->run();
 	const bool isRunning = _testApp->_curState == AppState::Running;

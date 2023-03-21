@@ -499,7 +499,7 @@ app::AppState VoxEdit::onRunning() {
 
 int main(int argc, char *argv[]) {
 	const io::FilesystemPtr& filesystem = core::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
+	const core::TimeProviderPtr& timeProvider = core::make_shared<core::TimeProvider>();
 	VoxEdit app(filesystem, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

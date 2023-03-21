@@ -10,7 +10,6 @@
 #include "core/StandardLib.h"
 #include <new>
 #include <stddef.h>
-#include <type_traits>
 
 namespace core {
 
@@ -50,7 +49,7 @@ public:
 	constexpr SharedPtr() : _ptr(nullptr), _refCnt(nullptr) {
 	}
 
-	constexpr SharedPtr(std::nullptr_t) : _ptr(nullptr), _refCnt(nullptr) {
+	constexpr SharedPtr(decltype(nullptr)) : _ptr(nullptr), _refCnt(nullptr) {
 	}
 
 	SharedPtr(const SharedPtr &obj) : _ptr(obj.get()), _refCnt(obj.refCnt()) {

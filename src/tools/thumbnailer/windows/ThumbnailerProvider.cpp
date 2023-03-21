@@ -86,7 +86,7 @@ IFACEMETHODIMP ThumbnailerProvider::Initialize(LPCWSTR pfilePath, DWORD grfMode)
 
 IFACEMETHODIMP ThumbnailerProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha) {
 	const io::FilesystemPtr& filesystem = core::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>();
+	const core::TimeProviderPtr& timeProvider = core::make_shared<core::TimeProvider>();
 	DLLThumbnailer app(filesystem, timeProvider, phbmp);
 	char argv1[32];
 	core::string::formatBuf(argv1, sizeof(argv1), "thumbnailer");

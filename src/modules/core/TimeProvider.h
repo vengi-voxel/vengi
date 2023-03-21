@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "core/SharedPtr.h"
 #include "core/String.h"
-#include <memory>
 
 namespace core {
 
@@ -61,6 +61,6 @@ public:
 	void setTickTime(uint64_t tickMillis);
 };
 
-typedef std::shared_ptr<TimeProvider> TimeProviderPtr;
+typedef core::SharedPtr<TimeProvider> TimeProviderPtr;
 
 }

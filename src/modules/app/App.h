@@ -12,6 +12,7 @@
 #include "core/concurrent/Atomic.h"
 #include "core/SharedPtr.h"
 #include "io/Filesystem.h"
+#include "core/TimeProvider.h"
 #include <memory>
 #include <stack>
 
@@ -28,7 +29,7 @@ class Var;
 typedef core::SharedPtr<Var> VarPtr;
 
 class TimeProvider;
-typedef std::shared_ptr<TimeProvider> TimeProviderPtr;
+typedef core::SharedPtr<TimeProvider> TimeProviderPtr;
 }
 
 namespace app {

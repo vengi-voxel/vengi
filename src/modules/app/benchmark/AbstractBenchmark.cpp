@@ -19,7 +19,7 @@ SDL_AssertState Test_AssertionHandler(const SDL_AssertData* data, void* userdata
 void AbstractBenchmark::SetUp(benchmark::State& st) {
 	SDL_SetAssertionHandler(Test_AssertionHandler, nullptr);
 	const io::FilesystemPtr filesystem = core::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr timeProvider = std::make_shared<core::TimeProvider>();
+	const core::TimeProviderPtr timeProvider = core::make_shared<core::TimeProvider>();
 	_benchmarkApp = new BenchmarkApp(filesystem, timeProvider, this);
 }
 

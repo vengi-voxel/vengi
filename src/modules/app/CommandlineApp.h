@@ -27,7 +27,7 @@ public:
 #define CONSOLE_APP(consoleAppName) \
 int main(int argc, char *argv[]) { \
 	const io::FilesystemPtr& filesystem = core::make_shared<io::Filesystem>(); \
-	const core::TimeProviderPtr& timeProvider = std::make_shared<core::TimeProvider>(); \
+	const core::TimeProviderPtr& timeProvider = core::make_shared<core::TimeProvider>(); \
 	consoleAppName app(filesystem, timeProvider); \
 	return app.startMainLoop(argc, argv); \
 }
