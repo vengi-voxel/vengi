@@ -6,7 +6,6 @@
 
 #include "core/Common.h"
 #include "core/NonCopyable.h"
-#include "core/String.h"
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -15,6 +14,10 @@
  * @defgroup IO IO
  * @{
  */
+
+namespace core {
+class String;
+}
 
 namespace io {
 
