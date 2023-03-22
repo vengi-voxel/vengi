@@ -54,6 +54,9 @@ const SceneGraphAnimationIds& SceneGraph::animations() const {
 }
 
 bool SceneGraph::addAnimation(const core::String &animation) {
+	if (animation.empty()) {
+		return false;
+	}
 	if (core::find(_animations.begin(), _animations.end(), animation) != _animations.end()) {
 		return false;
 	}
