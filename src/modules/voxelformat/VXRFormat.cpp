@@ -418,6 +418,8 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 			}
 		}
 	}
+
+	setPivots(sceneGraph);
 	return true;
 }
 
@@ -507,6 +509,7 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	if (!vxaPath.empty() && !loadVXA(sceneGraph, vxaPath, ctx)) {
 		Log::warn("Failed to load %s", vxaPath.c_str());
 	}
+	setPivots(sceneGraph);
 	// some files since version 6 still have stuff here
 	return true;
 }
@@ -525,6 +528,15 @@ bool VXRFormat::loadVXA(scenegraph::SceneGraph& sceneGraph, const core::String& 
 	io::FileStream stream(file);
 	VXAFormat format;
 	return format.load(vxaPath, stream, sceneGraph, ctx);
+}
+
+void VXRFormat::setPivots(scenegraph::SceneGraph& sceneGraph) {
+	for (scenegraph::SceneGraphNode &node : sceneGraph) {
+		const glm::vec3 pivot = node.keyFrames()[0].transform().pivot();
+		for (scenegraph::SceneGraphKeyFrame &kf : node.keyFrames()) {
+			kf.transform().setPivot(pivot);
+		}
+	}
 }
 
 bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, voxel::Palette &, const LoadContext &ctx) {

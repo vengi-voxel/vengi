@@ -20,6 +20,7 @@ class VXRFormat : public PaletteFormat {
 private:
 	bool onlyOnePalette() override { return false; }
 	bool loadChildVXM(const core::String& vxmPath, scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, int version, const LoadContext &ctx);
+	void setPivots(scenegraph::SceneGraph& sceneGraph);
 
 	bool handleVersion8AndLater(io::SeekableReadStream& stream, scenegraph::SceneGraphNode &node, const LoadContext &ctx);
 	bool importChild(const core::String& vxmPath, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int version, int parent, const LoadContext &ctx);
