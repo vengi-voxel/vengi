@@ -24,6 +24,7 @@
 #include "voxelformat/VXAFormat.h"
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <SDL_stdinc.h>
 
 namespace voxelformat {
 
@@ -180,6 +181,10 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, scenegraph::SceneGraph
 	scenegraph::SceneGraphNode* childModelNode = childSceneGraph[0];
 	core_assert_always(childModelNode != nullptr);
 	childModelNode->releaseOwnership();
+
+	const glm::vec3 pivot = childModelNode->transform().pivot();
+	const core::String &pivotStr = core::string::format("%f:%f:%f", pivot.x, pivot.y, pivot.z);
+	node.setProperty("pivot", pivotStr.c_str());
 
 	const core::String nodeName = node.name();
 	scenegraph::copyNode(*childModelNode, node, false, version >= 3);
