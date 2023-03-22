@@ -332,6 +332,7 @@ public:
 	 * keyframes.
 	 */
 	SceneGraphTransform transformForFrame(FrameIndex frameIdx) const;
+	SceneGraphTransform transformForFrame(const SceneGraphKeyFrames &kfs, FrameIndex frameIdx) const;
 
 	/**
 	 * @note Only use this accessor if you know that the given key frame index exists

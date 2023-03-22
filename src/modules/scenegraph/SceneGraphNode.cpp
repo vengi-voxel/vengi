@@ -616,7 +616,7 @@ KeyFrameIndex SceneGraphNode::keyFrameForFrame(FrameIndex frameIdx) const {
 	return n - 1;
 }
 
-SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex frameIdx) const {
+SceneGraphTransform SceneGraphNode::transformForFrame(const SceneGraphKeyFrames &kfs, FrameIndex frameIdx) const {
 	// TODO ik solver https://github.com/mgerhardy/vengi/issues/182
 	const SceneGraphTransform *source = nullptr;
 	const SceneGraphTransform *target = nullptr;
@@ -624,7 +624,6 @@ SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex frameIdx) const
 	FrameIndex endFrameIdx = 0;
 	InterpolationType interpolationType = InterpolationType::Linear;
 
-	const SceneGraphKeyFrames &kfs = keyFrames();
 	for (const SceneGraphKeyFrame &kf : kfs) {
 		if (kf.frameIdx <= frameIdx) {
 			source = &kf.transform();
@@ -680,6 +679,10 @@ SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex frameIdx) const
 	scenegraph::SceneGraphTransform transform = *source;
 	transform.lerp(*target, deltaFrameSeconds);
 	return transform;
+}
+
+SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex frameIdx) const {
+	return transformForFrame(keyFrames(), frameIdx);
 }
 
 FrameIndex SceneGraphNode::maxFrame() const {

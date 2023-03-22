@@ -458,6 +458,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ctx.models.push_back(ogt_model);
 		}
 		{
+			const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames();
 			{
 				ogt_vox_instance ogt_instance;
 				core_memset(&ogt_instance, 0, sizeof(ogt_instance));
@@ -466,7 +467,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 				ogt_instance.layer_index = layerIdx;
 				ogt_instance.name = node.name().c_str();
 				ogt_instance.hidden = !node.visible();
-				ogt_instance.transform_anim.num_keyframes = node.keyFrames().size();
+				ogt_instance.transform_anim.num_keyframes = keyFrames.size();
 				ogt_instance.transform_anim.keyframes = ogt_instance.transform_anim.num_keyframes ? &ctx.keyframeTransforms[ctx.transformKeyFrameIdx] : nullptr;
 				ctx.instances.push_back(ogt_instance);
 			}
@@ -474,7 +475,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			const glm::vec3 &mins = region.getLowerCornerf();
 			const glm::vec3 &maxs = region.getUpperCornerf();
 			const glm::vec3 width = maxs - mins + 1.0f;
-			for (const scenegraph::SceneGraphKeyFrame& kf : node.keyFrames()) {
+			for (const scenegraph::SceneGraphKeyFrame& kf : keyFrames) {
 				ogt_vox_keyframe_transform ogt_keyframe;
 				core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
 				ogt_keyframe.frame_index = kf.frameIdx;
