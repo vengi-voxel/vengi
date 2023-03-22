@@ -255,6 +255,7 @@ public:
 	bool removeKeyFrameByIndex(KeyFrameIndex keyFrameIdx);
 	void sortKeyFrames();
 	const SceneGraphKeyFrames &keyFrames() const;
+	SceneGraphKeyFrames &keyFrames();
 	bool setKeyFrames(const SceneGraphKeyFrames&);
 	/**
 	 * @brief Get the index of the keyframe for the given frame

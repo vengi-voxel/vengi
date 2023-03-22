@@ -27,7 +27,7 @@ protected:
 	core::Map<int, SceneGraphNode> _nodes;
 	int _nextNodeId = 0;
 	int _activeNodeId = InvalidNodeId;
-	core::DynamicArray<core::String> _animations;
+	SceneGraphAnimationIds _animations;
 
 	void updateTransforms_r(SceneGraphNode &node);
 
