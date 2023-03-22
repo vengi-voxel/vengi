@@ -229,6 +229,7 @@ protected:
 	 */
 	void setParent(int id);
 	void setId(int id);
+	void sortKeyFrames();
 
 public:
 	~SceneGraphNode() { release(); }
@@ -248,20 +249,6 @@ public:
 	core::RGBA color() const;
 	void setColor(core::RGBA color);
 
-	FrameIndex maxFrame() const;
-
-	KeyFrameIndex addKeyFrame(FrameIndex frameIdx);
-	bool removeKeyFrame(FrameIndex frameIdx);
-	bool removeKeyFrameByIndex(KeyFrameIndex keyFrameIdx);
-	void sortKeyFrames();
-	const SceneGraphKeyFrames &keyFrames() const;
-	SceneGraphKeyFrames &keyFrames();
-	bool setKeyFrames(const SceneGraphKeyFrames&);
-	/**
-	 * @brief Get the index of the keyframe for the given frame
-	 */
-	KeyFrameIndex keyFrameForFrame(FrameIndex frameIdx) const;
-
 	int id() const;
 	int parent() const;
 	int reference() const;
@@ -277,22 +264,6 @@ public:
 	bool isLeaf() const;
 	bool addChild(int id);
 	bool removeChild(int id);
-	void setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTransform &transform);
-	SceneGraphTransform &transform(KeyFrameIndex keyFrameIdx = 0);
-	const SceneGraphTransform &transform(KeyFrameIndex keyFrameIdx = 0) const;
-
-	/**
-	 * @brief Interpolates the transforms for the given frame. It searches the keyframe before and after
-	 * the given input frame and interpolates according to the given delta frames between the particular
-	 * keyframes.
-	 */
-	SceneGraphTransform transformForFrame(FrameIndex frameIdx) const;
-
-	/**
-	 * @note Only use this accessor if you know that the given key frame index exists
-	 */
-	const SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx) const;
-	SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx);
 
 	/**
 	 * @return voxel::RawVolume - might be @c nullptr
@@ -319,8 +290,6 @@ public:
 	 */
 	void setVolume(const voxel::RawVolume *volume, bool transferOwnership);
 
-	void translate(const glm::ivec3 &v, FrameIndex frameIdx = InvalidFrame);
-
 	// meta data
 
 	const core::String &name() const;
@@ -330,7 +299,6 @@ public:
 	void setVisible(bool visible);
 	bool locked() const;
 	void setLocked(bool locked);
-	void setPivot(FrameIndex frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size);
 
 	const SceneGraphNodeChildren &children() const;
 	const core::StringMap<core::String> &properties() const;
@@ -342,6 +310,37 @@ public:
 	bool setProperty(const core::String& key, const char *value);
 	bool setProperty(const core::String& key, bool value);
 	bool setProperty(const core::String& key, const core::String& value);
+
+	FrameIndex maxFrame() const;
+	KeyFrameIndex addKeyFrame(FrameIndex frameIdx);
+	bool removeKeyFrame(FrameIndex frameIdx);
+	bool removeKeyFrameByIndex(KeyFrameIndex keyFrameIdx);
+	const SceneGraphKeyFrames &keyFrames() const;
+	SceneGraphKeyFrames &keyFrames();
+	bool setKeyFrames(const SceneGraphKeyFrames&);
+	/**
+	 * @brief Get the index of the keyframe for the given frame
+	 */
+	KeyFrameIndex keyFrameForFrame(FrameIndex frameIdx) const;
+	void setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTransform &transform);
+	SceneGraphTransform &transform(KeyFrameIndex keyFrameIdx = 0);
+	const SceneGraphTransform &transform(KeyFrameIndex keyFrameIdx = 0) const;
+
+	/**
+	 * @brief Interpolates the transforms for the given frame. It searches the keyframe before and after
+	 * the given input frame and interpolates according to the given delta frames between the particular
+	 * keyframes.
+	 */
+	SceneGraphTransform transformForFrame(FrameIndex frameIdx) const;
+
+	/**
+	 * @note Only use this accessor if you know that the given key frame index exists
+	 */
+	const SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx) const;
+	SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx);
+
+	void translate(const glm::ivec3 &v, FrameIndex frameIdx = InvalidFrame);
+	void setPivot(FrameIndex frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size);
 };
 
 class SceneGraphNodeCamera : public SceneGraphNode {
