@@ -28,6 +28,7 @@ protected:
 	int _nextNodeId = 0;
 	int _activeNodeId = InvalidNodeId;
 	SceneGraphAnimationIds _animations;
+	core::String _activeAnimation;
 
 	void updateTransforms_r(SceneGraphNode &node);
 
@@ -70,7 +71,13 @@ public:
 	 * @brief The list of known animation ids
 	 */
 	const SceneGraphAnimationIds &animations() const;
-	bool addAnimation(const core::String& animation);
+	bool addAnimation(const core::String &animation);
+	/**
+	 * @brief Change the active animation for all nodes to the given animation
+	 * @note This must be called once all nodes are added
+	 */
+	bool setAnimation(const core::String &animation);
+	const core::String &activeAnimation() const;
 
 	void updateTransforms();
 

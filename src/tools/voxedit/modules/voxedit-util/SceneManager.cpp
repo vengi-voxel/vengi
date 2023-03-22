@@ -1144,6 +1144,18 @@ const scenegraph::SceneGraph &SceneManager::sceneGraph() const {
 	return _sceneGraph;
 }
 
+bool SceneManager::setAnimation(const core::String &animation) {
+	return _sceneGraph.setAnimation(animation);
+}
+
+bool SceneManager::addAnimation(const core::String &animation) {
+	if (_sceneGraph.addAnimation(animation)) {
+		// TODO: memento
+		return true;
+	}
+	return false;
+}
+
 bool SceneManager::setNewVolume(int nodeId, voxel::RawVolume* volume, bool deleteMesh) {
 	core_trace_scoped(SetNewVolume);
 	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);

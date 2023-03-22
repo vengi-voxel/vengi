@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "core/String.h"
+
 namespace command {
 struct CommandExecutionListener;
 }
@@ -15,7 +17,10 @@ namespace voxedit {
  * the animation.
  */
 class AnimationPanel {
+private:
+	core::String _newAnimation;
 public:
+
 	void update(const char *title, command::CommandExecutionListener &listener);
 };
 

@@ -292,7 +292,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_palette = core::move(move._palette);
 	_parent = move._parent;
 	move._parent = InvalidNodeId;
-	_keyFrames = core::move(move._keyFrames);
+	_keyFrames = core::move(move._keyFrames);;
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
 	_type = move._type;

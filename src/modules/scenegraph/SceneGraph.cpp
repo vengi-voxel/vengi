@@ -16,9 +16,9 @@
 
 namespace scenegraph {
 
-SceneGraph::SceneGraph(int nodes) : _nodes(nodes) {
+SceneGraph::SceneGraph(int nodes) : _nodes(nodes), _activeAnimation(DEFAULT_ANIMATION) {
 	clear();
-	_animations.push_back("Default");
+	_animations.push_back(_activeAnimation);
 }
 
 SceneGraph::~SceneGraph() {
@@ -35,6 +35,7 @@ SceneGraph::SceneGraph(SceneGraph &&other) noexcept {
 	_activeNodeId = other._activeNodeId;
 	other._activeNodeId = InvalidNodeId;
 	_animations = core::move(other._animations);
+	_activeAnimation = core::move(other._activeAnimation);
 }
 
 SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
@@ -45,8 +46,20 @@ SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
 		_activeNodeId = other._activeNodeId;
 		other._activeNodeId = InvalidNodeId;
 		_animations = core::move(other._animations);
+		_activeAnimation = core::move(other._activeAnimation);
 	}
 	return *this;
+}
+
+bool SceneGraph::setAnimation(const core::String &animation) {
+	if (animation.empty()) {
+		return false;
+	}
+	if (core::find(_animations.begin(), _animations.end(), animation) == _animations.end()) {
+		return false;
+	}
+	_activeAnimation = animation;
+	return true;
 }
 
 const SceneGraphAnimationIds& SceneGraph::animations() const {
@@ -62,6 +75,10 @@ bool SceneGraph::addAnimation(const core::String &animation) {
 	}
 	_animations.push_back(animation);
 	return true;
+}
+
+const core::String &SceneGraph::activeAnimation() const {
+	return _activeAnimation;
 }
 
 int SceneGraph::activeNode() const {

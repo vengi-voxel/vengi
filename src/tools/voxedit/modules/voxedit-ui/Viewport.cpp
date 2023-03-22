@@ -535,7 +535,7 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 		reset();
 		return false;
 	}
-	scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
+	const scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
 
 	const float step = core::Var::getSafe(cfg::VoxEditGridsize)->floatVal();
 	const float snap[]{step, step, step};

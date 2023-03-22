@@ -29,6 +29,7 @@ using FrameIndex = int32_t;
 using KeyFrameIndex = int32_t;
 #define InvalidKeyFrame ((scenegraph::KeyFrameIndex)-1)
 #define InvalidFrame ((scenegraph::FrameIndex)-1)
+#define DEFAULT_ANIMATION "Default"
 
 enum class SceneGraphNodeType : uint8_t {
 	Root,

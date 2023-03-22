@@ -510,6 +510,10 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 		Log::warn("Failed to load %s", vxaPath.c_str());
 	}
 	setPivots(sceneGraph);
+
+	Log::debug("Default animation is: '%s", defaultAnim);
+	sceneGraph.setAnimation(defaultAnim);
+
 	// some files since version 6 still have stuff here
 	return true;
 }

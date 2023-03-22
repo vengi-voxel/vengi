@@ -224,6 +224,9 @@ public:
 	scenegraph::FrameIndex currentFrame() const;
 	void setCurrentFrame(scenegraph::FrameIndex frameIdx);
 
+	bool setAnimation(const core::String &animation);
+	bool addAnimation(const core::String &animation);
+
 	void setActiveCamera(video::Camera* camera);
 	video::Camera* activeCamera();
 
