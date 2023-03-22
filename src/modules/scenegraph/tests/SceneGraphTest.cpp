@@ -260,17 +260,18 @@ TEST_F(SceneGraphTest, testKeyframes) {
 	for (int i = 0; i < 10; ++i) {
 		EXPECT_EQ(0u, node.keyFrameForFrame(i)) << "Failed to get the correct key frame for frame " << i;
 	}
-	EXPECT_EQ(1u, node.keyFrames().size());
+	const SceneGraphKeyFrames &kfs = node.keyFrames();
+	EXPECT_EQ(1u, kfs.size());
 	EXPECT_NE(InvalidKeyFrame, node.addKeyFrame(6));
 	for (int i = 6; i < 10; ++i) {
 		EXPECT_EQ(1u, node.keyFrameForFrame(i)) << "Failed to get the correct key frame for frame " << i;
 	}
-	EXPECT_EQ(2u, node.keyFrames().size());
+	EXPECT_EQ(2u, kfs.size());
 	EXPECT_TRUE(node.removeKeyFrame(6));
-	EXPECT_EQ(1u, node.keyFrames().size());
+	EXPECT_EQ(1u, kfs.size());
 	EXPECT_NE(InvalidKeyFrame, node.addKeyFrame(6));
 	EXPECT_TRUE(node.removeKeyFrame(8));
-	EXPECT_EQ(1u, node.keyFrames().size());
+	EXPECT_EQ(1u, kfs.size());
 }
 
 TEST_F(SceneGraphTest, testMoveParentAsNewChild) {
