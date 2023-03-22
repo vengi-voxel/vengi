@@ -77,6 +77,15 @@ bool SceneGraph::addAnimation(const core::String &animation) {
 	return true;
 }
 
+bool SceneGraph::removeAnimation(const core::String &animation) {
+	auto iter = core::find(_animations.begin(), _animations.end(), animation);
+	if (iter == _animations.end()) {
+		return false;
+	}
+	_animations.erase(iter);
+	return true;
+}
+
 const core::String &SceneGraph::activeAnimation() const {
 	return _activeAnimation;
 }

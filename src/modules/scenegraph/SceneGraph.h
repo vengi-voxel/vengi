@@ -72,6 +72,8 @@ public:
 	 */
 	const SceneGraphAnimationIds &animations() const;
 	bool addAnimation(const core::String &animation);
+	bool removeAnimation(const core::String &animation);
+
 	/**
 	 * @brief Change the active animation for all nodes to the given animation
 	 * @note This must be called once all nodes are added
