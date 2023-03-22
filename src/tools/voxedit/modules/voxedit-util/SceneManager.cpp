@@ -1082,9 +1082,7 @@ void SceneManager::onNewNodeAdded(int newNodeId) {
 		const scenegraph::SceneGraphNodeType type = node->type();
 		Log::debug("Adding node %i with name %s", newNodeId, name.c_str());
 
-		for (scenegraph::SceneGraphKeyFrame &keyFrame : node->keyFrames()) {
-			keyFrame.transform().update(sceneGraph(), *node, keyFrame.frameIdx);
-		}
+		_sceneGraph.updateTransforms();
 
 		_mementoHandler.markNodeAdded(*node);
 		markDirty();
