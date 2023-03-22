@@ -222,6 +222,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	wrapBool(stream.readString(sizeof(animationId), animationId, true))
 	node.setProperty("animationid", animationId);
 	sceneGraph.addAnimation(animationId);
+	node.setAnimation(animationId);
 	int32_t keyFrameCount;
 	wrap(stream.readInt32(keyFrameCount))
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
@@ -482,26 +483,12 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	const core::String& basePath = core::string::extractPath(filename);
 	core::DynamicArray<io::FilesystemEntry> entities;
 	io::filesystem()->list(basePath, entities, "*.vxa");
-	core::String vxaPath;
-	const core::String& baseName = core::string::extractFilename(filename);
-	if (defaultAnim[0] != '\0') {
-		vxaPath = core::string::path(basePath, core::string::format("%s.%s.vxa", baseName.c_str(), defaultAnim));
-		Log::debug("Load the default animation %s", defaultAnim);
-	} else if (!entities.empty()) {
-		vxaPath = core::string::path(basePath, entities[0].name);
-		Log::debug("No default animation set, use the first available vxa: %s", entities[0].name.c_str());
-	} else {
-		Log::warn("Could not find any vxa file for %s", filename.c_str());
-	}
 
 	for (const io::FilesystemEntry& entry : entities) {
-		const core::String &animWithExt = entry.name.substr(baseName.size() + 1);
-		const core::String &anim = core::string::extractFilename(animWithExt);
-		sceneGraph.addAnimation(anim);
-	}
-
-	if (!vxaPath.empty() && !loadVXA(sceneGraph, vxaPath, ctx)) {
-		Log::warn("Failed to load %s", vxaPath.c_str());
+		const core::String &vxaPath = core::string::path(basePath, entry.name);
+		if (!loadVXA(sceneGraph, vxaPath, ctx)) {
+			Log::warn("Failed to load %s", vxaPath.c_str());
+		}
 	}
 
 	Log::debug("Default animation is: '%s", defaultAnim);

@@ -598,6 +598,16 @@ const SceneGraphKeyFrames &SceneGraphNode::keyFrames() const {
 	return *_keyFrames;
 }
 
+const SceneGraphKeyFrames &SceneGraphNode::keyFrames(const core::String &anim) const {
+	static SceneGraphKeyFrames kfDummy{SceneGraphKeyFrame{}};
+	auto iter = _keyFramesMap.find(anim);
+	if (iter == _keyFramesMap.end()) {
+		Log::error("No keyframes for animation '%s'", anim.c_str());
+		return kfDummy;
+	}
+	return iter->value;
+}
+
 SceneGraphKeyFrames *SceneGraphNode::keyFrames() {
 	return _keyFrames;
 }
@@ -689,6 +699,11 @@ KeyFrameIndex SceneGraphNode::keyFrameForFrame(FrameIndex frameIdx) const {
 		}
 	}
 	return n - 1;
+}
+
+SceneGraphTransform SceneGraphNode::transformForFrame(const core::String &animation, FrameIndex frameIdx) const {
+	const SceneGraphKeyFrames &kfs = keyFrames(animation);
+	return transformForFrame(kfs, frameIdx);
 }
 
 SceneGraphTransform SceneGraphNode::transformForFrame(const SceneGraphKeyFrames &kfs, FrameIndex frameIdx) const {

@@ -59,6 +59,9 @@ bool SceneGraph::setAnimation(const core::String &animation) {
 		return false;
 	}
 	_activeAnimation = animation;
+	for (const auto &entry : _nodes) {
+		entry->value.setAnimation(animation);
+	}
 	return true;
 }
 
@@ -83,6 +86,9 @@ bool SceneGraph::removeAnimation(const core::String &animation) {
 		return false;
 	}
 	_animations.erase(iter);
+	for (const auto &entry : _nodes) {
+		entry->value.removeAnimation(animation);
+	}
 	return true;
 }
 
@@ -198,7 +204,12 @@ void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
 }
 
 void SceneGraph::updateTransforms() {
-	updateTransforms_r(node(0));
+	const core::String animId = _activeAnimation;
+	for (const core::String &animation : animations()) {
+		core_assert_always(setAnimation(animation));
+		updateTransforms_r(node(0));
+	}
+	core_assert_always(setAnimation(animId));
 }
 
 voxel::Region SceneGraph::groupRegion() const {
@@ -287,6 +298,7 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 		}
 	}
 	node.setParent(parent);
+	node.setAnimation(_activeAnimation);
 	Log::debug("Adding scene graph node of type %i with id %i and parent %i", (int)node.type(), node.id(), node.parent());
 	_nodes.emplace(nodeId, core::forward<SceneGraphNode>(node));
 	return nodeId;
@@ -336,13 +348,15 @@ bool SceneGraph::changeParent(int nodeId, int newParentId) {
 	n.setParent(newParentId);
 	const SceneGraphNode &parentNode = node(newParentId);
 
-	for (SceneGraphKeyFrame &keyframe : *n.keyFrames()) {
-		SceneGraphTransform &transform = keyframe.transform();
-		const SceneGraphTransform &parentFrameTransform = parentNode.transformForFrame(keyframe.frameIdx);
-		const glm::vec3 &tdelta = transform.worldTranslation() - parentFrameTransform.worldTranslation();
-		const glm::quat &tquat = transform.worldOrientation() - parentFrameTransform.worldOrientation();
-		transform.setLocalTranslation(tdelta);
-		transform.setLocalOrientation(tquat);
+	for (const core::String &animation : animations()) {
+		for (SceneGraphKeyFrame &keyframe : n.keyFrames(animation)) {
+			SceneGraphTransform &transform = keyframe.transform();
+			const SceneGraphTransform &parentFrameTransform = parentNode.transformForFrame(animation, keyframe.frameIdx);
+			const glm::vec3 &tdelta = transform.worldTranslation() - parentFrameTransform.worldTranslation();
+			const glm::quat &tquat = transform.worldOrientation() - parentFrameTransform.worldOrientation();
+			transform.setLocalTranslation(tdelta);
+			transform.setLocalOrientation(tquat);
+		}
 	}
 	updateTransforms();
 	return true;

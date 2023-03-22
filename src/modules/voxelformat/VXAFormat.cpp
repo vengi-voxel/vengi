@@ -152,7 +152,7 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 		}
 	}
 
-	for (scenegraph::SceneGraphKeyFrame &keyFrame : *node.keyFrames()) {
+	for (scenegraph::SceneGraphKeyFrame &keyFrame : node.keyFrames(animId)) {
 		const glm::quat &tempAngles = keyFrame.transform().localOrientation();
 		const glm::vec3 eulerAngles(tempAngles[0], tempAngles[1], tempAngles[2]);
 		const glm::quat localOrientation(eulerAngles);
@@ -302,6 +302,8 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 	}
 
 	sceneGraph.node(0).setProperty("vxaversion", core::string::toString(version));
+	sceneGraph.addAnimation(animId);
+	sceneGraph.setAnimation(animId);
 
 	const int32_t sceneGraphRootChildren = (int32_t)sceneGraph.root().children().size();
 	if (rootChildren != sceneGraphRootChildren) {
@@ -331,7 +333,7 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 bool VXAFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 								  const core::String &animation, const core::String &filename,
 								  io::SeekableWriteStream &stream) {
-	const scenegraph::SceneGraphKeyFrames &kfs = node.keyFrames();
+	const scenegraph::SceneGraphKeyFrames &kfs = node.keyFrames(animation);
 	wrapBool(stream.writeUInt32(kfs.size()))
 	for (const scenegraph::SceneGraphKeyFrame &kf : kfs) {
 		wrapBool(stream.writeInt32(kf.frameIdx))

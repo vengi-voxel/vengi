@@ -1053,6 +1053,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, scenegraph::SceneG
 		const core::String animationName = animation.name.c_str();
 		if (!animationName.empty()) {
 			sceneGraph.addAnimation(animationName);
+			node.setAnimation(animationName);
 		}
 
 		const std::vector<tinygltf::AnimationChannel> &channels = animation.channels;

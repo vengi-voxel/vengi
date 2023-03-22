@@ -316,6 +316,7 @@ public:
 	bool removeKeyFrame(FrameIndex frameIdx);
 	bool removeKeyFrameByIndex(KeyFrameIndex keyFrameIdx);
 	const SceneGraphKeyFrames &keyFrames() const;
+	const SceneGraphKeyFrames &keyFrames(const core::String &anim) const;
 	/**
 	 * @sa hasActiveAnimation()
 	 */
@@ -344,6 +345,7 @@ public:
 	 * keyframes.
 	 */
 	SceneGraphTransform transformForFrame(FrameIndex frameIdx) const;
+	SceneGraphTransform transformForFrame(const core::String &animation, FrameIndex frameIdx) const;
 	SceneGraphTransform transformForFrame(const SceneGraphKeyFrames &kfs, FrameIndex frameIdx) const;
 
 	/**
