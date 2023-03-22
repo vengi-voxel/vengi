@@ -10,6 +10,7 @@
 #include "core/StandardLib.h"
 #include <cstdint> // intptr_t - not available in stdint.h
 #include <new>
+#include <initializer_list>
 
 namespace core {
 
@@ -52,6 +53,10 @@ public:
 	using value_type = TYPE;
 
 	DynamicArray() {
+	}
+
+	DynamicArray(std::initializer_list<TYPE> other) {
+		insert(end(), other.begin(), other.end());
 	}
 
 	explicit DynamicArray(size_t amount) {
