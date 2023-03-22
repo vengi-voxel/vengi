@@ -436,20 +436,6 @@ const voxel::Region &SceneGraphNode::region() const {
 	return _volume->region();
 }
 
-void SceneGraphNode::translate(const glm::ivec3 &v, FrameIndex frameIdx) {
-	if (frameIdx == InvalidFrame) {
-		for (SceneGraphKeyFrame &kf : keyFrames()) {
-			SceneGraphTransform &transform = kf.transform();
-			transform.setWorldTranslation(transform.worldTranslation() + glm::vec3(v));
-		}
-		return;
-	}
-
-	const KeyFrameIndex keyFrameIdx = keyFrameForFrame(frameIdx);
-	SceneGraphTransform &transform = keyFrame(keyFrameIdx).transform();
-	transform.setWorldTranslation(transform.worldTranslation() + glm::vec3(v));
-}
-
 bool SceneGraphNode::isLeaf() const {
 	return _children.empty();
 }
@@ -535,12 +521,6 @@ SceneGraphKeyFrame& SceneGraphNode::keyFrame(KeyFrameIndex keyFrameIdx) {
 	return kfs[keyFrameIdx];
 }
 
-const SceneGraphKeyFrame& SceneGraphNode::keyFrame(KeyFrameIndex keyFrameIdx) const {
-	const SceneGraphKeyFrames &kfs = keyFrames();
-	core_assert((int)kfs.size() > keyFrameIdx);
-	return kfs[keyFrameIdx];
-}
-
 SceneGraphTransform& SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) {
 	return keyFrame(keyFrameIdx).transform();
 }
@@ -556,11 +536,6 @@ const SceneGraphTransform& SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) 
 void SceneGraphNode::setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTransform &transform) {
 	SceneGraphKeyFrame &nodeFrame = keyFrame(keyFrameIdx);
 	nodeFrame.setTransform(transform);
-}
-
-void SceneGraphNode::setPivot(KeyFrameIndex keyFrameIdx, const glm::ivec3 &pos, const glm::ivec3 &size) {
-	SceneGraphKeyFrame &nodeFrame = keyFrame(keyFrameIdx);
-	nodeFrame.transform().setPivot(glm::vec3(pos) / glm::vec3(size));
 }
 
 const SceneGraphKeyFrames &SceneGraphNode::keyFrames() const {

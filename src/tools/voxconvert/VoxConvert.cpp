@@ -726,7 +726,9 @@ void VoxConvert::rotate(const core::String& axisStr, scenegraph::SceneGraph& sce
 void VoxConvert::translate(const glm::ivec3& pos, scenegraph::SceneGraph& sceneGraph) {
 	Log::info("Translate by %i:%i:%i", pos.x, pos.y, pos.z);
 	for (scenegraph::SceneGraphNode &node : sceneGraph) {
-		node.translate(pos);
+		if (voxel::RawVolume *v = node.volume()) {
+			v->translate(pos);
+		}
 	}
 }
 

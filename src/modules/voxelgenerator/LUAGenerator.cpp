@@ -167,7 +167,7 @@ static int luaVoxel_volumewrapper_translate(lua_State* s) {
 	const int x = (int)luaL_checkinteger(s, 2);
 	const int y = (int)luaL_optinteger(s, 3, 0);
 	const int z = (int)luaL_optinteger(s, 4, 0);
-	volume->node()->translate(glm::ivec3(x, y, z));
+	volume->volume()->translate(glm::ivec3(x, y, z));
 	return 0;
 }
 
@@ -627,9 +627,6 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	node.setVolume(v, true);
 	node.setName(name);
 	node.setVisible(visible);
-	const glm::vec3 rp = v->region().getPivot();
-	const glm::vec3 size = v->region().getDimensionsInVoxels();
-	node.setPivot(0, rp, size);
 	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
 	int* currentNodeId = lua::LUA::globalData<int>(s, luaVoxel_globalnodeid());
 	const int nodeId = scenegraph::addNodeToSceneGraph(*sceneGraph, node, *currentNodeId);

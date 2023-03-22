@@ -757,9 +757,6 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		node.setVolume(new voxel::RawVolume(s.dataRegion()), true);
 		MementoData::toVolume(node.volume(), s.data);
-		const glm::vec3 pivot = node.region().getPivot();
-		const glm::vec3 dimensions = node.region().getDimensionsInVoxels();
-		node.setPivot(0, pivot, dimensions);
 		if (s.palette.hasValue()) {
 			node.setPalette(*s.palette.value());
 		}

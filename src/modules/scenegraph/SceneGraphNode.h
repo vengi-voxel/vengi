@@ -336,11 +336,7 @@ public:
 	/**
 	 * @note Only use this accessor if you know that the given key frame index exists
 	 */
-	const SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx) const;
 	SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx);
-
-	void translate(const glm::ivec3 &v, FrameIndex frameIdx = InvalidFrame);
-	void setPivot(FrameIndex frameIdx, const glm::ivec3 &pos, const glm::ivec3 &size);
 };
 
 class SceneGraphNodeCamera : public SceneGraphNode {
