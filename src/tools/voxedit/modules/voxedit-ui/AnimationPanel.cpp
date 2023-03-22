@@ -11,7 +11,7 @@
 namespace voxedit {
 
 void AnimationPanel::update(const char *title, command::CommandExecutionListener &listener) {
-	const core::DynamicArray<core::String> &animations = sceneMgr().sceneGraph().animations();
+	const scenegraph::SceneGraphAnimationIds &animations = sceneMgr().sceneGraph().animations();
 	if (animations.size() <= 1) {
 		return;
 	}
