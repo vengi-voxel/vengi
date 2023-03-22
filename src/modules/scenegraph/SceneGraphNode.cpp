@@ -437,7 +437,7 @@ const voxel::Region &SceneGraphNode::region() const {
 }
 
 void SceneGraphNode::translate(const glm::ivec3 &v, FrameIndex frameIdx) {
-	if (frameIdx == (FrameIndex)-1) {
+	if (frameIdx == InvalidFrame) {
 		for (SceneGraphKeyFrame &kf : _keyFrames) {
 			SceneGraphTransform &transform = kf.transform();
 			transform.setWorldTranslation(transform.worldTranslation() + glm::vec3(v));

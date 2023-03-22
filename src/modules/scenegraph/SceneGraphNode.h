@@ -28,6 +28,7 @@ class SceneGraphNode;
 using FrameIndex = int32_t;
 using KeyFrameIndex = int32_t;
 #define InvalidKeyFrame ((scenegraph::KeyFrameIndex)-1)
+#define InvalidFrame ((scenegraph::FrameIndex)-1)
 
 enum class SceneGraphNodeType : uint8_t {
 	Root,
@@ -317,7 +318,7 @@ public:
 	 */
 	void setVolume(const voxel::RawVolume *volume, bool transferOwnership);
 
-	void translate(const glm::ivec3 &v, FrameIndex frameIdx = -1);
+	void translate(const glm::ivec3 &v, FrameIndex frameIdx = InvalidFrame);
 
 	// meta data
 
