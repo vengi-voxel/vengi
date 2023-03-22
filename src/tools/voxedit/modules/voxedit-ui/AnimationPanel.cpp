@@ -40,6 +40,12 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 			}
 			ImGui::EndCombo();
 		}
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FK_MINUS " Delete##animationpanel")) {
+			if (!sceneMgr().removeAnimation(currentAnimation)) {
+				Log::error("Failed to remove animation %s", currentAnimation.c_str());
+			}
+		}
 	}
 	ImGui::End();
 }
