@@ -59,9 +59,9 @@ static void calculateHash(const scenegraph::SceneGraph& sceneGraph, uint64_t has
 	const scenegraph::SceneGraphNodeChildren &children = root.children();
 
 	const int childCount = (int)children.size();
-	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
+	if (childCount != 1 || sceneGraph.node(children[0]).name() != SANDBOX_CONTROLLER_NODE) {
 		// add controller node (see VXRFormat)
-		stream.writeString("Controller", false);
+		stream.writeString(SANDBOX_CONTROLLER_NODE, false);
 		stream.writeString(core::string::toHex(childCount).toUpper(), false);
 	}
 	for (int child : children) {
@@ -108,8 +108,7 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 			scenegraph::FrameIndex frameIdx;
 			wrap(stream.readInt32(frameIdx))
 
-			scenegraph::KeyFrameIndex keyFrameIdx;
-			keyFrameIdx = node.addKeyFrame(frameIdx);
+			scenegraph::KeyFrameIndex keyFrameIdx = node.addKeyFrame(frameIdx);
 			if (keyFrameIdx == InvalidKeyFrame) {
 				keyFrameIdx = node.keyFrameForFrame(frameIdx);
 			}

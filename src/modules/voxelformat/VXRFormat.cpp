@@ -128,9 +128,9 @@ bool VXRFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 	wrapBool(stream.writeInt32(1))
 	wrapBool(stream.writeString(stringProperty(&root, "basetemplate")))
 	wrapBool(stream.writeBool(boolProperty(&root, "static", false)))
-	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
+	if (childCount != 1 || sceneGraph.node(children[0]).name() != SANDBOX_CONTROLLER_NODE) {
 		// add controller node (see VXAFormat)
-		wrapBool(stream.writeString("Controller", true))
+		wrapBool(stream.writeString(SANDBOX_CONTROLLER_NODE, true))
 		wrapBool(stream.writeString("", true))
 
 		wrapBool(saveNodeProperties(nullptr, stream))

@@ -8,6 +8,8 @@
 
 namespace voxelformat {
 
+#define SANDBOX_CONTROLLER_NODE "Controller"
+
 /**
  * @brief VoxEdit (Sandbox) (vxa)
  * Animation file that together with vxr and vxm files form the full asset
