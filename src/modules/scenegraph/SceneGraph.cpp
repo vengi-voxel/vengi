@@ -189,21 +189,16 @@ int SceneGraph::nextModelNode(int nodeId) const {
 }
 
 void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
+	for (SceneGraphKeyFrame &keyframe : *n.keyFrames()) {
+		keyframe.transform().update(*this, n, keyframe.frameIdx);
+	}
 	for (int childrenId : n.children()) {
-		SceneGraphNode &children = node(childrenId);
-		for (auto &keyframe : *children.keyFrames()) {
-			keyframe.transform().update(*this, children, keyframe.frameIdx);
-		}
-		updateTransforms_r(children);
+		updateTransforms_r(node(childrenId));
 	}
 }
 
 void SceneGraph::updateTransforms() {
-	SceneGraphNode &root = node(0);
-	for (auto &keyframe : *root.keyFrames()) {
-		keyframe.transform().update(*this, root, keyframe.frameIdx);
-	}
-	updateTransforms_r(root);
+	updateTransforms_r(node(0));
 }
 
 voxel::Region SceneGraph::groupRegion() const {
