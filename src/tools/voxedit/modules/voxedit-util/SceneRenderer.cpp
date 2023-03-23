@@ -170,7 +170,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		} else {
 			_shapeBuilder.setColor(core::Color::Gray);
 		}
-		_shapeBuilder.obb(toOBB(sceneMode, region, node.transformForFrame(frame)));
+		_shapeBuilder.obb(toOBB(sceneMode, region, node.pivot(), node.transformForFrame(frame)));
 	}
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }

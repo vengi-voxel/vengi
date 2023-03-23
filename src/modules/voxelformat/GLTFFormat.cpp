@@ -230,8 +230,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				return false;
 			}
 
-			scenegraph::KeyFrameIndex keyFrameIdx = 0;
-			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 			const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 			const voxel::IndexType *indices = mesh->getRawIndexData();
 			const char *objectName = meshExt.name.c_str();
@@ -281,7 +279,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			const glm::vec3 &offset = mesh->getOffset();
 
-			const glm::vec3 pivotOffset = offset - transform.pivot() * meshExt.size;
+			const glm::vec3 pivotOffset = offset - meshExt.pivot * meshExt.size;
 			for (int j = 0; j < nv; j++) {
 				const voxel::VoxelVertex &v = vertices[j];
 
@@ -1044,7 +1042,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, scenegraph::SceneG
 
 	scenegraph::SceneGraphNode node;
 	scenegraph::SceneGraphTransform transform = loadGltfTransform(gltfNode);
-	transform.setPivot(-regionOffset / glm::vec3(vdim));
+	node.setPivot(-regionOffset / glm::vec3(vdim));
 	node.setName(gltfNode.name.c_str());
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx++, transform);

@@ -85,7 +85,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				const voxel::VoxelVertex& v = vertices[i];
 				glm::vec3 pos;
 				if (meshExt.applyTransform) {
-					pos = transform.apply(v.position, meshExt.size);
+					pos = transform.apply(v.position, meshExt.pivot * meshExt.size);
 				} else {
 					pos = v.position;
 				}

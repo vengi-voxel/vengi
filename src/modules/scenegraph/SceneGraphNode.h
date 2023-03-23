@@ -85,15 +85,11 @@ private:
 	 */
 	glm::vec3 _localScale{1.0f};
 
-	// should be the normalized value between 0 and 1
-	glm::vec3 _normalizedPivot{0.0f};
-
 	// indicated which values were changed
 	uint32_t _dirty = 0u;
 
 public:
 	SceneGraphTransform();
-	void setPivot(const glm::vec3 &normalizedPivot);
 
 	inline bool dirty() const {
 		return _dirty != 0u;
@@ -118,8 +114,6 @@ public:
 
 	void lerp(const SceneGraphTransform &dest, double deltaFrameSeconds);
 
-	const glm::vec3 &pivot() const;
-
 	const glm::mat4x4 &worldMatrix() const;
 	const glm::vec3 &worldTranslation() const;
 	const glm::quat &worldOrientation() const;
@@ -137,7 +131,7 @@ public:
 	 * @note The matrix must be up-to-date
 	 * @note The rotation is applied relatively to the given pivot - that's why we need the real size here.
 	 */
-	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &size) const;
+	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &pivot) const;
 };
 
 enum class InterpolationType : uint8_t {
@@ -261,6 +255,9 @@ public:
 	const voxel::Palette &palette() const;
 	voxel::Palette &palette();
 	void setPalette(const voxel::Palette &palette);
+
+	void setPivot(const glm::vec3 &pivot);
+	const glm::vec3 &pivot() const;
 
 	SceneGraphNodeType type() const;
 

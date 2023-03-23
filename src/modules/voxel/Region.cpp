@@ -24,7 +24,6 @@ void Region::update() {
 	_center = _mins + _width / 2;
 	_voxels = _width + glm::ivec3(1);
 	_stride = _voxels.x * _voxels.y;
-	_pivot = glm::vec3(glm::floor((float)_voxels.x / 2.0f), glm::floor((float)_voxels.y / 2.0f), glm::floor((float)_voxels.z / 2.0f));
 }
 
 core::String Region::toString(bool center) const {
@@ -168,8 +167,12 @@ const glm::ivec3& Region::getCenter() const {
 	return _center;
 }
 
-const glm::vec3& Region::getPivot() const {
+const glm::vec3& Region::pivot() const {
 	return _pivot;
+}
+
+void Region::setPivot(const glm::vec3 &normalizedPivot) {
+	_pivot = normalizedPivot;
 }
 
 /**

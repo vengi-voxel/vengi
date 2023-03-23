@@ -189,7 +189,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform.worldMatrix()), matrixTranslation, matrixRotation,
 												  matrixScale);
 			bool change = false;
-			glm::vec3 pivot = transform.pivot();
+			glm::vec3 pivot = node.pivot();
 			change |= ImGui::InputFloat3("Tr", matrixTranslation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_X "##resettr")) {
@@ -244,7 +244,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale,
 														glm::value_ptr(matrix));
 				transform.setWorldMatrix(matrix);
-				transform.setPivot(pivot);
+				node.setPivot(pivot);
 				transform.update(sceneGraph, node, frame);
 			}
 			if (!change && _lastChanged) {

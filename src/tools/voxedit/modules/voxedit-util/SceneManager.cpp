@@ -1223,7 +1223,7 @@ void SceneManager::rotate(int angleX, int angleY, int angleZ) {
 			return;
 		}
 		const voxel::RawVolume *model = node->volume();
-		const glm::vec3 &pivot = node->transform(_currentFrameIdx).pivot();
+		const glm::vec3 &pivot = node->pivot();
 		voxel::RawVolume *newVolume = voxelutil::rotateVolume(model, angle, pivot);
 		voxel::Region r = newVolume->region();
 		r.accumulate(model->region());
@@ -2272,7 +2272,7 @@ void SceneManager::traceScene(bool force) {
 		}
 		const voxel::Region& region = node.region();
 		float distance = 0.0f;
-		const math::OBB<float>& obb = toOBB(true, region, node.transformForFrame(_currentFrameIdx));
+		const math::OBB<float>& obb = toOBB(true, region, node.pivot(), node.transformForFrame(_currentFrameIdx));
 		if (obb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
 			if (distance < intersectDist) {
 				intersectDist = distance;
@@ -2705,8 +2705,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 	const voxel::Region& region = node.region();
 	updateGridRenderer(region);
 	if (!region.containsPoint(referencePosition())) {
-		const uint32_t frame = 0;
-		const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.transform(frame).pivot() * glm::vec3(region.getDimensionsInVoxels()));
+		const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.pivot() * glm::vec3(region.getDimensionsInVoxels()));
 		setReferencePosition(glm::ivec3(pivot));
 	}
 	if (!region.containsPoint(cursorPosition())) {

@@ -171,8 +171,6 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 	wrap(stream.readInt32(keyFrameCount))
 	Log::debug("Found %u keyframes in node %s", keyFrameCount, node.name().c_str());
 
-	const glm::vec3 pivot = node.transform().pivot(); // save the pivot before we override the transform
-
 	if (keyFrameCount > 0) {
 		// allocate all key frames
 		node.keyFrame(keyFrameCount - 1);
@@ -221,7 +219,7 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 		if (version == 1) {
 			// version 1 needs to correct its translation by the pivot translation
 			const glm::vec3 volumesize = node.region().getDimensionsInVoxels();
-			const glm::vec3 pivotTranslation = (pivot * 2.0f - 1.0f) * 0.5f * volumesize;
+			const glm::vec3 pivotTranslation = (node.pivot() * 2.0f - 1.0f) * 0.5f * volumesize;
 			transform.setLocalTranslation(localTranslation - pivotTranslation);
 		} else {
 			transform.setLocalTranslation(localTranslation);

@@ -112,9 +112,6 @@ void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const
 				ASSERT_EQ(lrot1, lrot2) << "Matrix failed for frame " << i;
 
 			}
-			if ((flags & ValidateFlags::Pivot) == ValidateFlags::Pivot) {
-				ASSERT_EQ(t1.pivot(), t2.pivot()) << "Pivot failed for frame " << i;
-			}
 			if ((flags & ValidateFlags::Scale) == ValidateFlags::Scale) {
 				ASSERT_EQ(t1.worldScale(), t2.worldScale()) << "Scale failed for frame " << i;
 				ASSERT_EQ(t1.localScale(), t2.localScale()) << "Scale failed for frame " << i;
@@ -132,9 +129,6 @@ void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const
 		ASSERT_FALSE(t2.dirty()) << "Key frame 0 is not yet updated";
 		if ((flags & ValidateFlags::Translation) == ValidateFlags::Translation) {
 			ASSERT_EQ(t1.worldTranslation(), t2.worldTranslation()) << "Translation failed for frame 0";
-		}
-		if ((flags & ValidateFlags::Pivot) == ValidateFlags::Pivot) {
-			ASSERT_EQ(t1.pivot(), t2.pivot()) << "Pivot failed for frame 0";
 		}
 	}
 }
@@ -216,6 +210,9 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 		}
 		// it's intended that includingRegion is false here!
 		volumeComparator(*node1->volume(), node1->palette(), *node2->volume(), node2->palette(), flags, maxDelta);
+		if ((flags & ValidateFlags::Pivot) == ValidateFlags::Pivot) {
+			ASSERT_EQ(node1->pivot(), node2->pivot()) << "Pivot failed";
+		}
 		keyFrameComparator(node1->keyFrames(), node2->keyFrames(), flags);
 	}
 }

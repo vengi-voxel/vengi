@@ -107,10 +107,6 @@ bool VENGIFormat::saveNodeKeyFrame(const scenegraph::SceneGraph &sceneGraph, con
 	for (int i = 0; i < 16; ++i) {
 		wrapBool(stream.writeFloat(localMatrix[i]))
 	}
-	const glm::vec3 &pivot = transform.pivot();
-	wrapBool(stream.writeFloat(pivot.x))
-	wrapBool(stream.writeFloat(pivot.y))
-	wrapBool(stream.writeFloat(pivot.z))
 	return true;
 }
 
@@ -147,6 +143,9 @@ bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteSt
 	wrapBool(stream.writeBool(node.visible()))
 	wrapBool(stream.writeBool(node.locked()))
 	wrapBool(stream.writeUInt32(node.color().rgba))
+	wrapBool(stream.writeFloat(node.pivot().x))
+	wrapBool(stream.writeFloat(node.pivot().y))
+	wrapBool(stream.writeFloat(node.pivot().z))
 	wrapBool(saveNodeProperties(sceneGraph, node, stream))
 	if (node.palette().isBuiltIn()) {
 		wrapBool(saveNodePaletteIdentifier(sceneGraph, node, stream))
@@ -281,11 +280,14 @@ bool VENGIFormat::loadNodeKeyFrame(scenegraph::SceneGraph &sceneGraph, scenegrap
 		wrap(stream.readFloat(localMatrixPtr[i]))
 	}
 	transform.setLocalMatrix(localMatrix);
-	glm::vec3 pivot;
-	wrap(stream.readFloat(pivot.x))
-	wrap(stream.readFloat(pivot.y))
-	wrap(stream.readFloat(pivot.z))
-	transform.setPivot(pivot);
+	if (version <= 2) {
+		glm::vec3 pivot;
+		wrap(stream.readFloat(pivot.x))
+		wrap(stream.readFloat(pivot.y))
+		wrap(stream.readFloat(pivot.z))
+		node.setPivot(pivot);
+	}
+
 	return true;
 }
 
@@ -330,6 +332,13 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 	core::RGBA color;
 	wrap(stream.readUInt32(color.rgba))
 	node.setColor(color);
+	if (version >= 3) {
+		glm::vec3 pivot;
+		wrap(stream.readFloat(pivot.x))
+		wrap(stream.readFloat(pivot.y))
+		wrap(stream.readFloat(pivot.z))
+		node.setPivot(pivot);
+	}
 
 	while (!stream.eos()) {
 		uint32_t chunkMagic;
@@ -369,7 +378,7 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 bool VENGIFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
 	wrapBool(stream.writeUInt32(FourCC('V','E','N','G')))
 	io::ZipWriteStream zipStream(stream);
-	wrapBool(zipStream.writeUInt32(2))
+	wrapBool(zipStream.writeUInt32(3))
 	if (!saveNode(sceneGraph, zipStream, sceneGraph.root())) {
 		return false;
 	}
@@ -386,7 +395,7 @@ bool VENGIFormat::loadGroups(const core::String &filename, io::SeekableReadStrea
 	io::ZipReadStream zipStream(stream);
 	uint32_t version;
 	wrap(zipStream.readUInt32(version))
-	if (version > 2) {
+	if (version > 3) {
 		Log::error("Unsupported version %u", version);
 		return false;
 	}

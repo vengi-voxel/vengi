@@ -143,7 +143,7 @@ bool STLFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1, const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale) {
 	glm::vec3 pos;
 	if (meshExt.applyTransform) {
-		pos = transform.apply(v1.position, meshExt.size);
+		pos = transform.apply(v1.position, meshExt.pivot * meshExt.size);
 	} else {
 		pos = v1.position;
 	}

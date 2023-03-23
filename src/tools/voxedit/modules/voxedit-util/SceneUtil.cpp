@@ -13,11 +13,11 @@ math::AABB<float> toAABB(const voxel::Region& region) {
 	return math::AABB<float>(1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f);
 }
 
-math::OBB<float> toOBB(bool sceneMode, const voxel::Region &region, const scenegraph::SceneGraphTransform &transform) {
+math::OBB<float> toOBB(bool sceneMode, const voxel::Region &region, const glm::vec3 &normalizedPivot, const scenegraph::SceneGraphTransform &transform) {
 	core_assert(region.isValid());
 	if (sceneMode) {
 		const glm::vec3 pivot =
-			(transform.pivot() - 0.5f) * glm::vec3(region.getDimensionsInVoxels()) - region.getLowerCornerf();
+			(normalizedPivot - 0.5f) * glm::vec3(region.getDimensionsInVoxels()) - region.getLowerCornerf();
 		const glm::vec3 &extents = transform.worldScale() * glm::vec3(region.getDimensionsInVoxels()) / 2.0f;
 		const glm::vec3 &center = transform.worldTranslation();
 		const glm::mat4x4 &matrix = transform.worldMatrix();

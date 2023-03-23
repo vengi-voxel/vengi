@@ -172,7 +172,6 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	glm::vec3 normalizedPivot = pivot / glm::vec3(xsiz_w, ysiz_d, zsiz_h);
 	core::exchange(normalizedPivot.y, normalizedPivot.z);
-	transform.setPivot(normalizedPivot);
 
 	const voxel::Region region(0, 0, 0, (int)xsiz_w - 1, (int)zsiz_h - 1, (int)ysiz_d - 1);
 	if (!region.isValid()) {
@@ -276,6 +275,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	node.setVolume(volume, true);
 	node.setName(filename);
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	node.setPivot(normalizedPivot);
 	node.setTransform(keyFrameIdx, transform);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));

@@ -203,7 +203,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const scenegraph::Sc
 	wrapSaveFree(stream.writeUInt32(localScale.y));
 	wrapSaveFree(stream.writeUInt32(localScale.z));
 
-	const glm::vec3 &pivot = transform.pivot();
+	const glm::vec3 &pivot = node.pivot();
 	wrapSaveFree(stream.writeFloat(pivot.x));
 	wrapSaveFree(stream.writeFloat(pivot.y));
 	wrapSaveFree(stream.writeFloat(pivot.z));
@@ -415,7 +415,6 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, scenegraph::SceneGrap
 	wrap(stream.readUInt32(size.x))
 	wrap(stream.readUInt32(size.y))
 	wrap(stream.readUInt32(size.z))
-	transform.setPivot(pivot);
 
 	uint32_t voxelDataSize;
 	wrap(stream.readUInt32(voxelDataSize))
@@ -475,6 +474,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, scenegraph::SceneGrap
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume.release(), true);
 	node.setName(name);
+	node.setPivot(pivot);
 	node.setPalette(palette);
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);

@@ -29,10 +29,6 @@ SceneGraphTransform::SceneGraphTransform() :
 	_localOrientation{glm::quat_identity<float, glm::defaultp>()} {
 }
 
-void SceneGraphTransform::setPivot(const glm::vec3 &normalizedPivot) {
-	_normalizedPivot = normalizedPivot;
-}
-
 void SceneGraphTransform::setTransforms(const glm::vec3 &worldTranslation, const glm::quat &worldOrientation, const glm::vec3 &worldScale,
 					const glm::vec3 &localTranslation, const glm::quat &localOrientation, const glm::vec3 &localScale) {
 	_worldTranslation = worldTranslation;
@@ -132,13 +128,8 @@ void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFram
 	setLocalScale(glm::mix(_localScale, dest._localScale, factor));
 	_dirty = 0u;
 
-	_normalizedPivot = glm::mix(_normalizedPivot, dest._normalizedPivot, factor);
 	_worldMat = glm::translate(_worldTranslation) * glm::mat4_cast(_worldOrientation) * glm::scale(_worldScale);
 	_localMat = glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(_localScale);
-}
-
-const glm::vec3 &SceneGraphTransform::pivot() const {
-	return _normalizedPivot;
 }
 
 const glm::mat4x4 &SceneGraphTransform::localMatrix() const {
@@ -276,9 +267,9 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 	_dirty = 0u;
 }
 
-glm::vec3 SceneGraphTransform::apply(const glm::vec3 &pos, const glm::vec3 &size) const {
+glm::vec3 SceneGraphTransform::apply(const glm::vec3 &pos, const glm::vec3 &pivot) const {
 	core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "Missing update for world matrix %i", (int)_dirty);
-	return glm::vec3(_worldMat * (glm::vec4(pos, 1.0f) - glm::vec4(_normalizedPivot * size, 0.0f)));
+	return glm::vec3(_worldMat * (glm::vec4(pos, 1.0f) - glm::vec4(pivot, 0.0f)));
 }
 
 SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
@@ -402,6 +393,16 @@ voxel::Palette &SceneGraphNode::palette() {
 		_palette.setValue(palette);
 	}
 	return *_palette.value();
+}
+
+void SceneGraphNode::setPivot(const glm::vec3 &pivot) {
+	if (voxel::RawVolume *v = volume()) {
+		v->region().setPivot(pivot);
+	}
+}
+
+const glm::vec3 &SceneGraphNode::pivot() const {
+	return region().pivot();
 }
 
 void SceneGraphNode::release() {

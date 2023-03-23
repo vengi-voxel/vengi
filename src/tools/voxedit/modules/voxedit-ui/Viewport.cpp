@@ -555,8 +555,8 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 			operation |= ImGuizmo::ROTATE;
 		}
 		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+		const glm::vec3 mins = -node.pivot() * size;
 		localMatrix = transform.localMatrix();
-		const glm::vec3 mins = -transform.pivot() * size;
 		if (glm::any(glm::epsilonNotEqual(mins, _bounds.mins, glm::epsilon<float>()))) {
 			_bounds.mins = mins;
 			_bounds.maxs = mins + size;

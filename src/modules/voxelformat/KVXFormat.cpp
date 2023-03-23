@@ -146,7 +146,6 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	normalizedPivot.y = (float)pivy_d / 256.0f;
 	normalizedPivot.z = (float)pivz_h / 256.0f;
 	core::exchange(normalizedPivot.y, normalizedPivot.z);
-	transform.setPivot(normalizedPivot);
 
 	/**
 	 * For compression purposes, I store the column pointers
@@ -204,6 +203,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	node.setPalette(palette);
+	node.setPivot(normalizedPivot);
 	sceneGraph.emplace(core::move(node));
 
 	uint32_t lastZ = 0;

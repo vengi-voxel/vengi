@@ -276,7 +276,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	scenegraph::SceneGraphTransform transform;
-	transform.setPivot(glm::vec3{0.5f, 0.0f, 0.5f});
+	glm::vec3 normalizedPivot = glm::vec3{0.5f, 0.0f, 0.5f};
 	glm::uvec3 size(0);
 	Log::debug("Found vxm%i", version);
 	if (version >= 6) {
@@ -285,11 +285,9 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt32(size.z));
 	}
 	if (version >= 5) {
-		glm::vec3 normalizedPivot;
 		wrap(stream.readFloat(normalizedPivot.x));
 		wrap(stream.readFloat(normalizedPivot.y));
 		wrap(stream.readFloat(normalizedPivot.z));
-		transform.setPivot(normalizedPivot);
 	}
 	if (version >= 9) {
 		uint8_t surface;
@@ -519,6 +517,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		node.setVolume(volume, true);
 		node.setName(layerName);
 		node.setVisible(visible);
+		node.setPivot(normalizedPivot);
 		node.setPalette(palette);
 		node.setProperty("vxmversion", core::string::toString(version));
 		node.setProperty("filename", filename);

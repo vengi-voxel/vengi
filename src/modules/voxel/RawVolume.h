@@ -124,6 +124,11 @@ public:
 	const Region& region() const;
 
 	/**
+	 * @return A Region representing the extent of the volume.
+	 */
+	Region& region() { return _region; }
+
+	/**
 	 * @return The width of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g. 0 to 63 then the width is 64.
 	 * @sa height(), getDepth()
 	 */

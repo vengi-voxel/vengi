@@ -292,6 +292,7 @@ MeshFormat::MeshExt::MeshExt(voxel::ChunkMesh *_mesh, const scenegraph::SceneGra
 		mesh(_mesh), name(node.name()), applyTransform(_applyTransform) {
 	size = node.region().getDimensionsInVoxels();
 	nodeId = node.id();
+	pivot = node.pivot();
 }
 
 bool MeshFormat::loadGroups(const core::String &filename, io::SeekableReadStream& file, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) {

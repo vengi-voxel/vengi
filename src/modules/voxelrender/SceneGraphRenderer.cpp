@@ -179,7 +179,7 @@ void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scene
 		}
 		if (_sceneMode) {
 			const scenegraph::SceneGraphTransform &transform = node.transformForFrame(frame);
-			const glm::vec3 pivot = transform.worldScale() * transform.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
+			const glm::vec3 pivot = transform.worldScale() * node.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
 			_renderer.setModelMatrix(id, transform.worldMatrix(), pivot);
 		} else {
 			_renderer.setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f));
@@ -207,7 +207,7 @@ void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scene
 			const int referencedId = getVolumeId(node.reference());
 			_renderer.setVolumeReference(id, referencedId);
 			const scenegraph::SceneGraphTransform &transform = node.transformForFrame(frame);
-			const glm::vec3 pivot = transform.worldScale() * transform.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
+			const glm::vec3 pivot = transform.worldScale() * node.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
 			_renderer.setModelMatrix(id, transform.worldMatrix(), pivot);
 			if (hideInactive) {
 				_renderer.hide(id, id != activeNode);

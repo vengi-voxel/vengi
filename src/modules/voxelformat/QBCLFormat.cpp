@@ -164,7 +164,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const scenegraph
 	wrapSave(outStream.writeInt32(translation.y))
 	wrapSave(outStream.writeInt32(translation.z))
 
-	const glm::vec3 &normalizedPivot = transform.pivot();
+	const glm::vec3 &normalizedPivot = node.pivot();
 	wrapSave(outStream.writeFloat(/* TODO mins.x +*/ normalizedPivot.x * size.x))
 	wrapSave(outStream.writeFloat(/* TODO mins.y +*/ normalizedPivot.y * size.y))
 	wrapSave(outStream.writeFloat(/* TODO mins.z +*/ normalizedPivot.z * size.z))

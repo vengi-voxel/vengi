@@ -182,10 +182,6 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, scenegraph::SceneGraph
 	core_assert_always(childModelNode != nullptr);
 	childModelNode->releaseOwnership();
 
-	const glm::vec3 pivot = childModelNode->transform().pivot();
-	const core::String &pivotStr = core::string::format("%f:%f:%f", pivot.x, pivot.y, pivot.z);
-	node.setProperty("pivot", pivotStr.c_str());
-
 	const core::String nodeName = node.name();
 	scenegraph::copyNode(*childModelNode, node, false, version >= 3);
 	node.setVolume(childModelNode->volume(), true);
@@ -245,7 +241,6 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			keyFrame.longRotation = stream.readBool();
 		}
 		scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-		transform.setPivot(glm::vec3(0.5f));
 
 		glm::quat localOrientation;
 		glm::vec3 localTranslation{0.0f};
@@ -419,7 +414,6 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 		}
 	}
 
-	setPivots(sceneGraph);
 	return true;
 }
 
@@ -509,7 +503,6 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	if (!vxaPath.empty() && !loadVXA(sceneGraph, vxaPath, ctx)) {
 		Log::warn("Failed to load %s", vxaPath.c_str());
 	}
-	setPivots(sceneGraph);
 
 	Log::debug("Default animation is: '%s", defaultAnim);
 	sceneGraph.setAnimation(defaultAnim);
@@ -532,15 +525,6 @@ bool VXRFormat::loadVXA(scenegraph::SceneGraph& sceneGraph, const core::String& 
 	io::FileStream stream(file);
 	VXAFormat format;
 	return format.load(vxaPath, stream, sceneGraph, ctx);
-}
-
-void VXRFormat::setPivots(scenegraph::SceneGraph& sceneGraph) {
-	for (scenegraph::SceneGraphNode &node : sceneGraph) {
-		const glm::vec3 pivot = (*node.keyFrames())[0].transform().pivot();
-		for (scenegraph::SceneGraphKeyFrame &kf : *node.keyFrames()) {
-			kf.transform().setPivot(pivot);
-		}
-	}
 }
 
 bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, voxel::Palette &, const LoadContext &ctx) {

@@ -119,7 +119,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 				glm::vec3 pos;
 				if (meshExt.applyTransform) {
-					pos = transform.apply(v.position, meshExt.size);
+					pos = transform.apply(v.position, meshExt.pivot * meshExt.size);
 				} else {
 					pos = v.position;
 				}

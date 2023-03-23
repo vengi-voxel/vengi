@@ -39,6 +39,7 @@ protected:
 		bool applyTransform = false;
 
 		glm::vec3 size{0.0f};
+		glm::vec3 pivot{0.0f};
 		int nodeId = -1;
 	};
 	using Meshes = core::DynamicArray<MeshExt>;

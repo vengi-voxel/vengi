@@ -544,6 +544,8 @@ int VoxConvert::dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId,
 	Log::info("%*sNode: %i (parent %i)", indent, " ", nodeId, node.parent());
 	Log::info("%*s  |- name: %s", indent, " ", node.name().c_str());
 	Log::info("%*s  |- type: %s", indent, " ", scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)]);
+	const glm::vec3 &pivot = node.pivot();
+	Log::info("%*s  |- pivot %f:%f:%f", indent, " ", pivot.x, pivot.y, pivot.z);
 	int voxels = 0;
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		voxel::RawVolume *v = node.volume();
@@ -568,8 +570,6 @@ int VoxConvert::dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId,
 		Log::info("%*s    |- interpolation: %s", indent, " ", scenegraph::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
 		Log::info("%*s    |- transform", indent, " ");
 		const scenegraph::SceneGraphTransform &transform = kf.transform();
-		const glm::vec3 &pivot = transform.pivot();
-		Log::info("%*s      |- pivot %f:%f:%f", indent, " ", pivot.x, pivot.y, pivot.z);
 		const glm::vec3 &tr  = transform.worldTranslation();
 		Log::info("%*s      |- translation %f:%f:%f", indent, " ", tr.x, tr.y, tr.z);
 		const glm::vec3 &ltr = transform.localTranslation();
