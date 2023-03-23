@@ -23,7 +23,7 @@ private:
 	bool saveNodeProperties(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, io::WriteStream &stream);
 	bool saveNodeData(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, io::WriteStream &stream);
 	bool saveAnimation(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, const core::String &animation, io::WriteStream &stream);
-	bool saveNodeKeyFrame(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphKeyFrame &keyframe, io::WriteStream &stream);
+	bool saveNodeKeyFrame(const scenegraph::SceneGraphKeyFrame &keyframe, io::WriteStream &stream);
 	bool saveNodePaletteColors(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, io::WriteStream &stream);
 	bool saveNodePaletteIdentifier(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, io::WriteStream &stream);
 	bool saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteStream &stream, const scenegraph::SceneGraphNode &node);

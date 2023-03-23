@@ -67,7 +67,7 @@ bool VENGIFormat::saveAnimation(const scenegraph::SceneGraph &sceneGraph, const 
 	wrapBool(stream.writeUInt32(FourCC('A','N','I','M')))
 	wrapBool(stream.writePascalStringUInt16LE(animation))
 	for (const scenegraph::SceneGraphKeyFrame &keyframe : node.keyFrames()) {
-		wrapBool(saveNodeKeyFrame(sceneGraph, keyframe, stream))
+		wrapBool(saveNodeKeyFrame(keyframe, stream))
 	}
 	wrapBool(stream.writeUInt32(FourCC('E','N','D','A')))
 	return true;
@@ -97,7 +97,7 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 	return true;
 }
 
-bool VENGIFormat::saveNodeKeyFrame(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphKeyFrame &keyframe, io::WriteStream &stream) {
+bool VENGIFormat::saveNodeKeyFrame(const scenegraph::SceneGraphKeyFrame &keyframe, io::WriteStream &stream) {
 	wrapBool(stream.writeUInt32(FourCC('K','E','Y','F')))
 	wrapBool(stream.writeUInt32(keyframe.frameIdx))
 	wrapBool(stream.writeBool(keyframe.longRotation))
