@@ -402,7 +402,6 @@ inline constexpr Region::Region() :
  */
 inline Region::Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz) :
 		_mins(minsx, minsy, minsz), _maxs(maxsx, maxsy, maxsz), _width(_maxs - _mins), _voxels(_width + 1), _center(_mins + _width / 2),
-		_pivot(glm::floor((float)_voxels.x / 2.0f), glm::floor((float)_voxels.y / 2.0f), glm::floor((float)_voxels.z / 2.0f)),
 		_stride(_voxels.x * _voxels.y) {
 }
 
