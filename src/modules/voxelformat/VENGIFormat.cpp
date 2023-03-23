@@ -63,7 +63,7 @@ bool VENGIFormat::saveNodeProperties(const scenegraph::SceneGraph &sceneGraph, c
 	return true;
 }
 
-bool VENGIFormat::saveAnimation(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, const core::String &animation, io::WriteStream &stream) {
+bool VENGIFormat::saveAnimation(const scenegraph::SceneGraphNode &node, const core::String &animation, io::WriteStream &stream) {
 	wrapBool(stream.writeUInt32(FourCC('A','N','I','M')))
 	wrapBool(stream.writePascalStringUInt16LE(animation))
 	for (const scenegraph::SceneGraphKeyFrame &keyframe : node.keyFrames()) {
@@ -154,7 +154,7 @@ bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteSt
 	}
 	wrapBool(saveNodeData(sceneGraph, node, stream))
 	for (const core::String &animation : sceneGraph.animations()) {
-		wrapBool(saveAnimation(sceneGraph, node, animation, stream))
+		wrapBool(saveAnimation(node, animation, stream))
 	}
 	for (int childId : node.children()) {
 		wrapBool(saveNode(sceneGraph, stream, sceneGraph.node(childId)))
