@@ -292,7 +292,9 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_palette = core::move(move._palette);
 	_parent = move._parent;
 	move._parent = InvalidNodeId;
-	_keyFrames = core::move(move._keyFrames);;
+	_keyFrames = move._keyFrames;
+	move._keyFrames = nullptr;
+	_keyFramesMap = core::move(move._keyFramesMap);
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
 	_type = move._type;
@@ -315,7 +317,9 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_palette = core::move(move._palette);
 	_parent = move._parent;
 	move._parent = InvalidNodeId;
-	_keyFrames = core::move(move._keyFrames);
+	_keyFrames = move._keyFrames;
+	move._keyFrames = nullptr;
+	_keyFramesMap = core::move(move._keyFramesMap);
 	_properties = core::move(move._properties);
 	_children = core::move(move._children);
 	_type = move._type;
@@ -326,9 +330,52 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 
 SceneGraphNode::SceneGraphNode(SceneGraphNodeType type)
 	: _type(type), _flags(VolumeOwned | Visible), _properties(128) {
-	// ensure that there is at least one frame
-	SceneGraphKeyFrame frame;
-	_keyFrames.emplace_back(frame);
+	// ensure that there is at least one animation with keyframes
+	setAnimation(DEFAULT_ANIMATION);
+}
+
+bool SceneGraphNode::addAnimation(const core::String &anim) {
+	if (_keyFramesMap.hasKey(anim)) {
+		Log::debug("Animation %s already exists", anim.c_str());
+		return false;
+	}
+	SceneGraphKeyFrames frames;
+	frames.emplace_back(SceneGraphKeyFrame{});
+	_keyFramesMap.emplace(anim, core::move(frames));
+	Log::debug("Added animation %s to node %s (%i)", anim.c_str(), _name.c_str(), _id);
+	return true;
+}
+
+bool SceneGraphNode::removeAnimation(const core::String &anim) {
+	auto iter = _keyFramesMap.find(anim);
+	if (iter == _keyFramesMap.end()) {
+		return false;
+	}
+	if (_keyFrames == &iter->value) {
+		_keyFrames = nullptr;
+	}
+	_keyFramesMap.erase(iter);
+	if (_keyFramesMap.empty()) {
+		setAnimation(DEFAULT_ANIMATION);
+	}
+	return true;
+}
+
+bool SceneGraphNode::setAnimation(const core::String &anim) {
+	auto iter = _keyFramesMap.find(anim);
+	if (iter == _keyFramesMap.end()) {
+		Log::debug("Node %s (%i) doesn't have animation %s yet - adding it now", _name.c_str(), _id, anim.c_str());
+		if (!addAnimation(anim)) {
+			Log::error("Failed to add animation %s to node '%s' (%i)", anim.c_str(), _name.c_str(), _id);
+			return false;
+		}
+		iter = _keyFramesMap.find(anim);
+	}
+
+	Log::debug("Switched animation for node %s (%i) to %s", _name.c_str(), _id, anim.c_str());
+	_keyFrames = &iter->value;
+	core_assert_msg(!_keyFrames->empty(), "Empty keyframes for anim %s", anim.c_str());
+	return true;
 }
 
 void SceneGraphNode::setPalette(const voxel::Palette &palette) {
@@ -540,11 +587,20 @@ void SceneGraphNode::setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTra
 }
 
 const SceneGraphKeyFrames &SceneGraphNode::keyFrames() const {
-	return _keyFrames;
+	static SceneGraphKeyFrames kfDummy{SceneGraphKeyFrame{}};
+	if (_keyFrames == nullptr) {
+		Log::error("No animation set for node '%s' (%i)", _name.c_str(), _id);
+		return kfDummy;
+	}
+	return *_keyFrames;
 }
 
 SceneGraphKeyFrames *SceneGraphNode::keyFrames() {
-	return &_keyFrames;
+	return _keyFrames;
+}
+
+bool SceneGraphNode::hasActiveAnimation() const {
+	return _keyFrames != nullptr;
 }
 
 KeyFrameIndex SceneGraphNode::addKeyFrame(FrameIndex frameIdx) {
@@ -602,6 +658,15 @@ bool SceneGraphNode::setKeyFrames(const SceneGraphKeyFrames &kf) {
 		return true;
 	}
 	return false;
+}
+
+void SceneGraphNode::setAllKeyFrames(const SceneGraphKeyFramesMap &map, const core::String &animation) {
+	_keyFramesMap = map;
+	setAnimation(animation);
+}
+
+const SceneGraphKeyFramesMap &SceneGraphNode::allKeyFrames() const {
+	return _keyFramesMap;
 }
 
 KeyFrameIndex SceneGraphNode::keyFrameForFrame(FrameIndex frameIdx) const {

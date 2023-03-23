@@ -187,6 +187,7 @@ public:
 
 using SceneGraphNodeChildren = const core::Buffer<int, 32>;
 using SceneGraphKeyFrames = core::DynamicArray<SceneGraphKeyFrame>;
+using SceneGraphKeyFramesMap = core::StringMap<SceneGraphKeyFrames>;
 using SceneGraphNodeProperties = core::StringMap<core::String>;
 
 #define InvalidNodeId (-1)
@@ -220,7 +221,8 @@ protected:
 
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
-	SceneGraphKeyFrames _keyFrames;
+	SceneGraphKeyFramesMap _keyFramesMap;
+	SceneGraphKeyFrames *_keyFrames = nullptr;
 	core::Buffer<int, 32> _children;
 	SceneGraphNodeProperties _properties;
 	mutable core::Optional<voxel::Palette> _palette;
@@ -317,8 +319,20 @@ public:
 	bool removeKeyFrame(FrameIndex frameIdx);
 	bool removeKeyFrameByIndex(KeyFrameIndex keyFrameIdx);
 	const SceneGraphKeyFrames &keyFrames() const;
+	/**
+	 * @sa hasActiveAnimation()
+	 */
 	SceneGraphKeyFrames *keyFrames();
+	/**
+	 * @brief Set the keyframes for the current active animation
+	 */
 	bool setKeyFrames(const SceneGraphKeyFrames&);
+	void setAllKeyFrames(const SceneGraphKeyFramesMap &map, const core::String &animation);
+	const SceneGraphKeyFramesMap &allKeyFrames() const;
+	bool hasActiveAnimation() const;
+	bool addAnimation(const core::String &anim);
+	bool removeAnimation(const core::String &anim);
+	bool setAnimation(const core::String &anim);
 	/**
 	 * @brief Get the index of the keyframe for the given frame
 	 */

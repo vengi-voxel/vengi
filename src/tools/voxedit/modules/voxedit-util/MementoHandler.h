@@ -98,7 +98,7 @@ struct MementoState {
 	int nodeId = InvalidNodeId;
 	int referenceId = InvalidNodeId;
 	scenegraph::SceneGraphNodeType nodeType;
-	core::Optional<scenegraph::SceneGraphKeyFrames> keyFrames;
+	core::Optional<scenegraph::SceneGraphKeyFramesMap> keyFrames;
 	core::Optional<scenegraph::SceneGraphNodeProperties> properties;
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	core::String name;
@@ -130,13 +130,13 @@ struct MementoState {
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId, const core::String &_name, scenegraph::SceneGraphNodeType _nodeType,
-				 const voxel::Region &_region, const core::Optional<scenegraph::SceneGraphKeyFrames> &_keyFrames, const core::Optional<voxel::Palette> &_palette = {}, const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties = {})
+				 const voxel::Region &_region, const core::Optional<scenegraph::SceneGraphKeyFramesMap> &_keyFrames, const core::Optional<voxel::Palette> &_palette = {}, const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties = {})
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId), nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name),
 		  region(_region), palette(_palette) {
 	}
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
-				 voxel::Region &&_region, core::Optional<scenegraph::SceneGraphKeyFrames> &&_keyFrames, core::Optional<voxel::Palette> &&_palette, core::Optional<scenegraph::SceneGraphNodeProperties> &&_properties)
+				 voxel::Region &&_region, core::Optional<scenegraph::SceneGraphKeyFramesMap> &&_keyFrames, core::Optional<voxel::Palette> &&_palette, core::Optional<scenegraph::SceneGraphNodeProperties> &&_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId), nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), region(_region), palette(_palette) {
 	}
 
@@ -218,7 +218,7 @@ public:
 				  const core::Optional<voxel::Palette> &palette = {});
 	void markUndoKeyFrames(int parentId, int nodeId, int referenceId, const core::String &name,
 						   scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
-						   const voxel::Region &region, const scenegraph::SceneGraphKeyFrames &keyFrames,
+						   const voxel::Region &region, const scenegraph::SceneGraphKeyFramesMap &keyFrames,
 						   const core::Optional<voxel::Palette> &palette = {},
 						   const core::Optional<scenegraph::SceneGraphNodeProperties> &properties = {});
 

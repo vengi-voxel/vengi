@@ -707,7 +707,7 @@ bool SceneManager::mementoProperties(const MementoState& s) {
 bool SceneManager::mementoKeyFrames(const MementoState& s) {
 	Log::debug("Memento: keyframes of node %i (%s)", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
-		node->setKeyFrames(*s.keyFrames.value());
+		node->setAllKeyFrames(*s.keyFrames.value(), _sceneGraph.activeAnimation());
 		return true;
 	}
 	return false;
@@ -765,7 +765,7 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 		node.setReference(s.referenceId);
 	}
 	if (s.keyFrames.hasValue()) {
-		node.setKeyFrames(*s.keyFrames.value());
+		node.setAllKeyFrames(*s.keyFrames.value(), _sceneGraph.activeAnimation());
 	}
 	if (s.properties.hasValue()) {
 		node.properties().clear();
