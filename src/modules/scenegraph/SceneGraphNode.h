@@ -256,7 +256,7 @@ public:
 	voxel::Palette &palette();
 	void setPalette(const voxel::Palette &palette);
 
-	void setPivot(const glm::vec3 &pivot);
+	bool setPivot(const glm::vec3 &pivot);
 	const glm::vec3 &pivot() const;
 
 	SceneGraphNodeType type() const;

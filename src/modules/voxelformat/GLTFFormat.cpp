@@ -1042,7 +1042,6 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, scenegraph::SceneG
 
 	scenegraph::SceneGraphNode node;
 	scenegraph::SceneGraphTransform transform = loadGltfTransform(gltfNode);
-	node.setPivot(-regionOffset / glm::vec3(vdim));
 	node.setName(gltfNode.name.c_str());
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx++, transform);
@@ -1143,6 +1142,7 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, scenegraph::SceneG
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	node.setVolume(volume, true);
+	node.setPivot(-regionOffset / glm::vec3(vdim));
 	int newParent = parentNodeId;
 	// TODO: use voxelizeNode here and remove subdivideShape
 	if (!subdivideShape(node, tris, regionOffset * scale, axisAligned)) {

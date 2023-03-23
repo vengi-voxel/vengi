@@ -395,10 +395,12 @@ voxel::Palette &SceneGraphNode::palette() {
 	return *_palette.value();
 }
 
-void SceneGraphNode::setPivot(const glm::vec3 &pivot) {
+bool SceneGraphNode::setPivot(const glm::vec3 &pivot) {
 	if (voxel::RawVolume *v = volume()) {
 		v->region().setPivot(pivot);
+		return true;
 	}
+	return false;
 }
 
 const glm::vec3 &SceneGraphNode::pivot() const {

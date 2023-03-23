@@ -358,9 +358,6 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	wrap(stream.readFloat(pivot.y));
 	wrap(stream.readFloat(pivot.z));
 
-	// the pivot is given in voxel coordinates
-	//transform.setPivot(pivot / glm::vec3(size));
-
 	uint32_t compressedDataSize;
 	wrap(stream.readUInt32(compressedDataSize));
 	Log::debug("Matrix size: %u:%u:%u with %u bytes", size.x, size.y, size.z, compressedDataSize);
@@ -472,6 +469,8 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	}
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
+	// the pivot is given in voxel coordinates
+	//node.setPivot(pivot / glm::vec3(size)); // TODO:
 	const int id = sceneGraph.emplace(core::move(node), parent);
 	return id != -1;
 }
