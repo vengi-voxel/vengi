@@ -771,6 +771,9 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 		node.properties().clear();
 		node.addProperties(*s.properties.value());
 	}
+	if (s.data.region().isValid()) {
+		node.setPivot(s.region.pivot());
+	}
 	node.setName(s.name);
 	const int newNodeId = addNodeToSceneGraph(node, s.parentId);
 	_mementoHandler.updateNodeId(s.nodeId, newNodeId);
@@ -799,6 +802,7 @@ bool SceneManager::mementoStateExecute(const MementoState &s, bool isRedo) {
 	if (s.type == MementoType::SceneNodeTransform) {
 		Log::debug("Memento: transform of node %i", s.nodeId);
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+			node->setPivot(s.pivot);
 			scenegraph::SceneGraphTransform &transform = node->keyFrame(s.keyFrameIdx).transform();
 			transform.setWorldMatrix(s.worldMatrix);
 			transform.update(_sceneGraph, *node, s.keyFrameIdx);
