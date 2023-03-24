@@ -107,6 +107,14 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 		for (int kf = 0; kf < keyFrameCount; ++kf) {
 			scenegraph::FrameIndex frameIdx;
 			wrap(stream.readInt32(frameIdx))
+			// max frames are 720 for vxa
+			if (channel == 6 && frameIdx > 0) {
+				int32_t interpolationIgnored;
+				wrap(stream.readInt32(interpolationIgnored))
+				float valIgnored;
+				wrap(stream.readFloat(valIgnored))
+				continue;
+			}
 
 			scenegraph::KeyFrameIndex keyFrameIdx = node.addKeyFrame(frameIdx);
 			if (keyFrameIdx == InvalidKeyFrame) {
@@ -157,8 +165,7 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 		Log::error("Child count mismatch between loaded node %i and the vxa (%i)", node.id(), children);
 		return false;
 	}
-	for (int32_t i = 0; i < children; ++i) {
-		const int nodeId = node.children()[i];
+	for (const int nodeId : node.children()) {
 		scenegraph::SceneGraphNode& cnode = sceneGraph.node(nodeId);
 		wrapBool(recursiveImportNodeBefore3(filename, stream, sceneGraph, cnode, animId, version))
 	}
