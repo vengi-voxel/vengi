@@ -191,7 +191,7 @@ int SceneGraph::nextModelNode(int nodeId) const {
 void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
 	for (int childrenId : n.children()) {
 		SceneGraphNode &children = node(childrenId);
-		for (auto &keyframe : children.keyFrames()) {
+		for (auto &keyframe : *children.keyFrames()) {
 			keyframe.transform().update(*this, children, keyframe.frameIdx);
 		}
 		updateTransforms_r(children);
@@ -200,7 +200,7 @@ void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
 
 void SceneGraph::updateTransforms() {
 	SceneGraphNode &root = node(0);
-	for (auto &keyframe : root.keyFrames()) {
+	for (auto &keyframe : *root.keyFrames()) {
 		keyframe.transform().update(*this, root, keyframe.frameIdx);
 	}
 	updateTransforms_r(root);
@@ -341,7 +341,7 @@ bool SceneGraph::changeParent(int nodeId, int newParentId) {
 	n.setParent(newParentId);
 	const SceneGraphNode &parentNode = node(newParentId);
 
-	for (SceneGraphKeyFrame &keyframe : n.keyFrames()) {
+	for (SceneGraphKeyFrame &keyframe : *n.keyFrames()) {
 		SceneGraphTransform &transform = keyframe.transform();
 		const SceneGraphTransform &parentFrameTransform = parentNode.transformForFrame(keyframe.frameIdx);
 		const glm::vec3 &tdelta = transform.worldTranslation() - parentFrameTransform.worldTranslation();

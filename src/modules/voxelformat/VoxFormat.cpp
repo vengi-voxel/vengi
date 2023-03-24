@@ -458,7 +458,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ctx.models.push_back(ogt_model);
 		}
 		{
-			const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames();
+			const scenegraph::SceneGraphKeyFrames &keyFrames = *node.keyFrames();
 			{
 				ogt_vox_instance ogt_instance;
 				core_memset(&ogt_instance, 0, sizeof(ogt_instance));

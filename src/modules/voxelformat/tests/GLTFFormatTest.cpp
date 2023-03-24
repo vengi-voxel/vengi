@@ -39,8 +39,8 @@ TEST_F(GLTFFormatTest, testImportAnimation) {
 	ASSERT_EQ(2u, sceneGraph.size());
 	scenegraph::SceneGraphNode* node = sceneGraph[1];
 	ASSERT_TRUE(node != nullptr);
-	ASSERT_FALSE(node->keyFrames().empty());
-	ASSERT_GE(node->keyFrames().size(), 2u);
+	ASSERT_FALSE(node->keyFrames()->empty());
+	ASSERT_GE(node->keyFrames()->size(), 2u);
 }
 
 TEST_F(GLTFFormatTest, testVoxelizeCube) {

@@ -317,7 +317,7 @@ public:
 	bool removeKeyFrame(FrameIndex frameIdx);
 	bool removeKeyFrameByIndex(KeyFrameIndex keyFrameIdx);
 	const SceneGraphKeyFrames &keyFrames() const;
-	SceneGraphKeyFrames &keyFrames();
+	SceneGraphKeyFrames *keyFrames();
 	bool setKeyFrames(const SceneGraphKeyFrames&);
 	/**
 	 * @brief Get the index of the keyframe for the given frame

@@ -536,8 +536,8 @@ bool VXRFormat::loadVXA(scenegraph::SceneGraph& sceneGraph, const core::String& 
 
 void VXRFormat::setPivots(scenegraph::SceneGraph& sceneGraph) {
 	for (scenegraph::SceneGraphNode &node : sceneGraph) {
-		const glm::vec3 pivot = node.keyFrames()[0].transform().pivot();
-		for (scenegraph::SceneGraphKeyFrame &kf : node.keyFrames()) {
+		const glm::vec3 pivot = (*node.keyFrames())[0].transform().pivot();
+		for (scenegraph::SceneGraphKeyFrame &kf : *node.keyFrames()) {
 			kf.transform().setPivot(pivot);
 		}
 	}
