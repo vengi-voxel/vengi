@@ -61,7 +61,10 @@ static constexpr int MaxRegionSize = 256;
  * @ingroup Formats
  */
 class Format {
+private:
+	uint8_t _flattenFactor;
 protected:
+
 	/**
 	 * @brief If you have to split the volumes in the scene graph because the format only supports a certain size, you
 	 * can return the max size here. If the returned value is not a valid volume size (<= 0) the value is ignored.
@@ -107,6 +110,9 @@ protected:
 	 */
 	void splitVolumes(const scenegraph::SceneGraph& srcSceneGraph, scenegraph::SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop = false);
 
+	core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) const;
+	core::RGBA flattenRGB(core::RGBA rgba) const;
+
 	/**
 	 * Some formats are running loop that the user might want to interrupt with CTRL+c or the like. Long lasting loops should query
 	 * this boolean and respect the users wish to quit the application.
@@ -129,6 +135,7 @@ protected:
 	 */
 	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) = 0;
 public:
+	Format();
 	virtual ~Format() = default;
 
 	/**
@@ -187,13 +194,8 @@ public:
  */
 class RGBAFormat : public Format {
 protected:
-	uint8_t _flattenFactor;
 	virtual bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) = 0;
 	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) override;
-	core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) const;
-	core::RGBA flattenRGB(core::RGBA rgba) const;
-public:
-	RGBAFormat();
 };
 
 /**

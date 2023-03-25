@@ -208,15 +208,15 @@ bool PaletteFormat::save(const scenegraph::SceneGraph& sceneGraph, const core::S
 	return Format::save(sceneGraph, filename, stream, ctx);
 }
 
-RGBAFormat::RGBAFormat() {
+Format::Format() {
 	_flattenFactor = core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->intVal();
 }
 
-core::RGBA RGBAFormat::flattenRGB(core::RGBA rgba) const {
+core::RGBA Format::flattenRGB(core::RGBA rgba) const {
 	return core::Color::flattenRGB(rgba.r, rgba.g, rgba.b, rgba.a, _flattenFactor);
 }
 
-core::RGBA RGBAFormat::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const {
+core::RGBA Format::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const {
 	return core::Color::flattenRGB(r, g, b, a, _flattenFactor);
 }
 
