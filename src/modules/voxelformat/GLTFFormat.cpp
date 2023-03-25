@@ -56,9 +56,10 @@ static int addBuffer(tinygltf::Model &m, io::BufferedReadWriteStream &stream, co
 
 }
 
-void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
-								 const scenegraph::SceneGraphNode &graphNode, Stack &stack, const scenegraph::SceneGraph &sceneGraph,
-								 const glm::vec3 &scale, bool exportAnimations) {
+void GLTFFormat::processGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &m, tinygltf::Node &node,
+								 tinygltf::Scene &scene, const scenegraph::SceneGraphNode &graphNode, Stack &stack,
+								 const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale,
+								 bool exportAnimations) {
 	node.name = graphNode.name().c_str();
 	Log::debug("process node %s", node.name.c_str());
 	const int idx = (int)m.nodes.size();
@@ -83,6 +84,7 @@ void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinyg
 	}
 
 	m.nodes.push_back(node);
+	nodeMapping.put(graphNode.id(), idx);
 
 	if (stack.back().second != -1) {
 		m.nodes[stack.back().second].children.push_back(idx);
@@ -144,7 +146,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	Stack stack;
 	stack.emplace_back(0, -1);
 
+	const bool exportAnimations = sceneGraph.hasAnimations();
+
 	core::Map<uint64_t, int> paletteMaterialIndices((int)sceneGraph.size());
+	core::Map<int, int> nodeMapping((int)sceneGraph.nodeSize());
 	while (!stack.empty()) {
 		const int nodeId = stack.back().first;
 		const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(nodeId);
@@ -204,11 +209,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				Log::debug("New material id %i for hash %" PRIu64, materialId, palette.hash());
 			}
 		}
-		bool exportAnimations = sceneGraph.hasAnimations();
 
 		if (meshIdxNodeMap.find(nodeId) == meshIdxNodeMap.end()) {
 			tinygltf::Node node;
-			processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale, false);
+			processGltfNode(nodeMapping, m, node, scene, graphNode, stack, sceneGraph, scale, false);
 			continue;
 		}
 
@@ -401,7 +405,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			{
 				tinygltf::Node node;
 				node.mesh = (int)m.meshes.size();
-				processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale, exportAnimations);
+				processGltfNode(nodeMapping, m, node, scene, graphNode, stack, sceneGraph, scale, exportAnimations);
 			}
 
 
@@ -424,19 +428,23 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			if (withTexCoords || withColor) {
 				m.accessors.emplace_back(core::move(colorTexAccessor));
 			}
-
-			if (exportAnimations) {
-				// export the current active animation as first animation
-				const core::String &activeAnimation = sceneGraph.activeAnimation();
-				saveAnimation(m, scene, graphNode, sceneGraph, activeAnimation);
-				for (const core::String &animation : sceneGraph.animations()) {
-					if (animation == activeAnimation) {
-						continue;
-					}
-					saveAnimation(m, scene, graphNode, sceneGraph, animation);
-				}
-			}
 		}
+	}
+
+	if (exportAnimations) {
+		Log::error("Export %i animations for %i nodes", (int)sceneGraph.animations().size(), (int)nodeMapping.size());
+		for (const core::String &animationId : sceneGraph.animations()) {
+			tinygltf::Animation animation;
+			animation.name = animationId.c_str();
+			Log::debug("save animation: %s", animationId.c_str());
+			for (const auto & e : nodeMapping) {
+				const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(e->key);
+				saveAnimation(e->value, m, scene, graphNode, sceneGraph, animation);
+			}
+			m.animations.emplace_back(animation);
+		}
+	} else {
+		Log::error("No animations found");
 	}
 
 	m.scenes.emplace_back(core::move(scene));
@@ -458,14 +466,15 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	return true;
 }
 
-void GLTFFormat::saveAnimation(tinygltf::Model &m, tinygltf::Scene &scene, const scenegraph::SceneGraphNode &graphNode,
-							   const scenegraph::SceneGraph &sceneGraph, const core::String &animationId) {
-	Log::debug("save animation: %s", animationId.c_str());
-	const scenegraph::FrameIndex maxFrames = sceneGraph.maxFrames(animationId);
+void GLTFFormat::saveAnimation(int targetNode, tinygltf::Model &model, tinygltf::Scene &scene,
+							   const scenegraph::SceneGraphNode &node, const scenegraph::SceneGraph &sceneGraph,
+							   tinygltf::Animation &animation) {
+	const core::String animationId = animation.name.c_str();
+	const scenegraph::FrameIndex maxFrames = node.maxFrame(animationId);
+	Log::debug("Save animation %s for node %s with %i frames", animationId.c_str(), node.name().c_str(), maxFrames);
 	if (maxFrames <= 0) {
 		return;
 	}
-	const int targetNode = (int)m.nodes.size() - 1;
 	io::BufferedReadWriteStream osTime((int64_t)(maxFrames * sizeof(float)));
 	io::BufferedReadWriteStream osTranslation((int64_t)(maxFrames * 3 * sizeof(float)));
 	io::BufferedReadWriteStream osRotation((int64_t)(maxFrames * 4 * sizeof(float)));
@@ -474,7 +483,7 @@ void GLTFFormat::saveAnimation(tinygltf::Model &m, tinygltf::Scene &scene, const
 	for (scenegraph::FrameIndex i = 0; i < maxFrames; ++i) {
 		osTime.writeFloat((float)i / _priv::FPS);
 
-		const scenegraph::SceneGraphTransform &transform = graphNode.transformForFrame(animationId, i);
+		const scenegraph::SceneGraphTransform &transform = node.transformForFrame(animationId, i);
 		const glm::vec3 &translation = transform.localTranslation();
 		osTranslation.writeFloat(translation.x);
 		osTranslation.writeFloat(translation.y);
@@ -492,79 +501,77 @@ void GLTFFormat::saveAnimation(tinygltf::Model &m, tinygltf::Scene &scene, const
 		osScale.writeFloat(scale.z);
 	}
 
-	const int bufferTimeId = _priv::addBuffer(m, osTime, "time");
-	const int bufferTranslationId = _priv::addBuffer(m, osTranslation, "translation");
-	const int bufferRotationId = _priv::addBuffer(m, osRotation, "rotation");
-	const int bufferScaleId = _priv::addBuffer(m, osScale, "scale");
+	const int bufferTimeId = _priv::addBuffer(model, osTime, "time");
+	const int bufferTranslationId = _priv::addBuffer(model, osTranslation, "translation");
+	const int bufferRotationId = _priv::addBuffer(model, osRotation, "rotation");
+	const int bufferScaleId = _priv::addBuffer(model, osScale, "scale");
 
-	const int timeAccessorIdx = (int)m.accessors.size();
+	const int timeAccessorIdx = (int)model.accessors.size();
 	{
 		tinygltf::Accessor accessor;
 		accessor.type = TINYGLTF_TYPE_SCALAR;
-		accessor.bufferView = (int)m.bufferViews.size();
+		accessor.bufferView = (int)model.bufferViews.size();
 		accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 		accessor.count = maxFrames;
 		accessor.minValues.push_back(0.0);
 		accessor.maxValues.push_back((double)(maxFrames - 1) / _priv::FPS);
-		m.accessors.emplace_back(accessor);
+		model.accessors.emplace_back(accessor);
 
 		tinygltf::BufferView bufferView;
 		bufferView.buffer = bufferTimeId;
 		bufferView.byteLength = osTime.size();
-		Log::debug("animation %s time buffer view at %i", animationId.c_str(), (int)m.bufferViews.size());
-		m.bufferViews.emplace_back(bufferView);
+		Log::debug("animation %s time buffer view at %i", animationId.c_str(), (int)model.bufferViews.size());
+		model.bufferViews.emplace_back(bufferView);
 	}
 
-	const int translationAccessorIndex = (int)m.accessors.size();
+	const int translationAccessorIndex = (int)model.accessors.size();
 	{
 		tinygltf::Accessor accessor;
 		accessor.type = TINYGLTF_TYPE_VEC3;
-		accessor.bufferView = (int)m.bufferViews.size();
+		accessor.bufferView = (int)model.bufferViews.size();
 		accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 		accessor.count = maxFrames;
-		m.accessors.emplace_back(accessor);
+		model.accessors.emplace_back(accessor);
 
 		tinygltf::BufferView bufferView;
 		bufferView.buffer = bufferTranslationId;
 		bufferView.byteLength = osTranslation.size();
-		Log::debug("animation %s time buffer view at %i", animationId.c_str(), (int)m.bufferViews.size());
-		m.bufferViews.emplace_back(bufferView);
+		Log::debug("animation %s time buffer view at %i", animationId.c_str(), (int)model.bufferViews.size());
+		model.bufferViews.emplace_back(bufferView);
 	}
-	const int rotationAccessorIndex = (int)m.accessors.size();
+	const int rotationAccessorIndex = (int)model.accessors.size();
 	{
 		tinygltf::Accessor accessor;
 		accessor.type = TINYGLTF_TYPE_VEC4;
-		accessor.bufferView = (int)m.bufferViews.size();
+		accessor.bufferView = (int)model.bufferViews.size();
 		accessor.byteOffset = 0;
 		accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 		accessor.count = maxFrames;
-		m.accessors.emplace_back(accessor);
+		model.accessors.emplace_back(accessor);
 
 		tinygltf::BufferView bufferView;
 		bufferView.buffer = bufferRotationId;
 		bufferView.byteLength = osRotation.size();
 		Log::debug("anim rotation buffer: %i", accessor.bufferView);
-		m.bufferViews.emplace_back(bufferView);
+		model.bufferViews.emplace_back(bufferView);
 	}
-	const int scaleAccessorIndex = (int)m.accessors.size();
+	const int scaleAccessorIndex = (int)model.accessors.size();
 	{
 		tinygltf::Accessor accessor;
 		accessor.type = TINYGLTF_TYPE_VEC3;
-		accessor.bufferView = (int)m.bufferViews.size();
+		accessor.bufferView = (int)model.bufferViews.size();
 		accessor.byteOffset = 0;
 		accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 		accessor.count = maxFrames;
-		m.accessors.emplace_back(accessor);
+		model.accessors.emplace_back(accessor);
 
 		tinygltf::BufferView bufferView;
 		bufferView.buffer = bufferScaleId;
 		bufferView.byteLength = osScale.size();
 		Log::debug("anim scale buffer: %i", accessor.bufferView);
-		m.bufferViews.emplace_back(bufferView);
+		model.bufferViews.emplace_back(bufferView);
 	}
 
-	tinygltf::Animation animation;
-	animation.name = animationId.c_str();
 	{
 		tinygltf::AnimationSampler sampler;
 		sampler.input = timeAccessorIdx;
@@ -606,8 +613,6 @@ void GLTFFormat::saveAnimation(tinygltf::Model &m, tinygltf::Scene &scene, const
 		channel.target_path = "scale";
 		animation.channels.emplace_back(channel);
 	}
-
-	m.animations.emplace_back(animation);
 }
 
 size_t GLTFFormat::getGltfAccessorSize(const tinygltf::Accessor &accessor) const {

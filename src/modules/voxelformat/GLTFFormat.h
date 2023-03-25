@@ -15,6 +15,7 @@ struct Scene;
 struct Material;
 struct Primitive;
 struct Accessor;
+struct Animation;
 } // namespace tinygltf
 
 namespace scenegraph {
@@ -35,8 +36,8 @@ class GLTFFormat : public MeshFormat {
 private:
 	// exporting
 	typedef core::DynamicArray<core::Pair<int, int>> Stack;
-	void processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
-						 const scenegraph::SceneGraphNode &graphNode, Stack &stack,
+	void processGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &m, tinygltf::Node &node,
+						 tinygltf::Scene &scene, const scenegraph::SceneGraphNode &graphNode, Stack &stack,
 						 const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations);
 
 	// importing (voxelization)
@@ -66,8 +67,9 @@ private:
 	bool subdivideShape(scenegraph::SceneGraphNode &node, const TriCollection &tris, const glm::vec3 &offset,
 						bool axisAlignedMesh) const;
 
-	void saveAnimation(tinygltf::Model &m, tinygltf::Scene &scene, const scenegraph::SceneGraphNode &graphNode,
-					   const scenegraph::SceneGraph &sceneGraph, const core::String &animationId);
+	void saveAnimation(int targetNode, tinygltf::Model &m, tinygltf::Scene &scene,
+					   const scenegraph::SceneGraphNode &node, const scenegraph::SceneGraph &sceneGraph,
+					   tinygltf::Animation &animation);
 
 	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
