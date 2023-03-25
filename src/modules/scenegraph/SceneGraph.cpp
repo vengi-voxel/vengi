@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Pair.h"
+#include "core/StringUtil.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
@@ -317,6 +318,9 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	}
 	++_nextNodeId;
 	node.setId(nodeId);
+	if (node.name().empty()) {
+		node.setName(core::string::format("node %i", nodeId));
+	}
 	if (_activeNodeId == InvalidNodeId) {
 		// try to set a sane default value for the active node
 		if (node.isModelNode()) {
