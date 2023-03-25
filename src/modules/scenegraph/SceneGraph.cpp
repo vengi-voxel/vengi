@@ -89,6 +89,12 @@ bool SceneGraph::removeAnimation(const core::String &animation) {
 	for (const auto &entry : _nodes) {
 		entry->value.removeAnimation(animation);
 	}
+	if (_animations.empty()) {
+		addAnimation(DEFAULT_ANIMATION);
+		setAnimation(DEFAULT_ANIMATION);
+	} else if (_activeAnimation == animation) {
+		setAnimation(*_animations.begin());
+	}
 	return true;
 }
 
