@@ -998,7 +998,10 @@ bool GLTFFormat::loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const ti
 			animationName = core::string::format("animation %i", (int)animIdx);
 		}
 		sceneGraph.addAnimation(animationName);
-		node.setAnimation(animationName);
+		if (!node.setAnimation(animationName)) {
+			Log::error("Failed to switch animation to %s", animationName.c_str());
+			return false;
+		}
 
 		const std::vector<tinygltf::AnimationChannel> &channels = animation.channels;
 		for (const tinygltf::AnimationChannel &channel : channels) {
@@ -1033,7 +1036,13 @@ bool GLTFFormat::loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const ti
 				const uint8_t *buf = buffer.data.data() + offset;
 				for (size_t i = 0; i < accessor->count; ++i) {
 					const float seconds = *(const float *)buf;
-					node.addKeyFrame((scenegraph::FrameIndex)(seconds * _priv::FPS));
+					if (node.addKeyFrame((scenegraph::FrameIndex)(seconds * _priv::FPS)) == InvalidKeyFrame) {
+						Log::debug("Failed to add keyframe for %f seconds (%i) for node %s (animation %s)", seconds,
+								  (int)accessor->count, node.name().c_str(), animationName.c_str());
+					} else {
+						Log::debug("Added keyframe for %f seconds (%i) for node %s (animation %s)", seconds,
+								  (int)accessor->count, node.name().c_str(), animationName.c_str());
+					}
 					buf += stride;
 				}
 			}
@@ -1058,7 +1067,7 @@ bool GLTFFormat::loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const ti
 					Log::warn("Skip non float type for sampler output");
 					continue;
 				}
-				for (scenegraph::KeyFrameIndex keyFrameIdx = 0; keyFrameIdx < (scenegraph::FrameIndex)accessor->count; ++keyFrameIdx) {
+				for (scenegraph::KeyFrameIndex keyFrameIdx = 0; keyFrameIdx < (scenegraph::KeyFrameIndex)accessor->count; ++keyFrameIdx) {
 					const float *buf = (const float *)transformBuf;
 					transformBuf += stride;
 					scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
@@ -1269,9 +1278,10 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, scenegraph::SceneG
 	node.setName(gltfNode.name.c_str());
 
 	if (!loadGltfAnimations(sceneGraph, model, gltfNodeIdx, node)) {
+		Log::debug("No animation found or loaded for node %s", node.name().c_str());
 		scenegraph::SceneGraphTransform transform = loadGltfTransform(gltfNode);
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		node.setTransform(keyFrameIdx++, transform);
+		node.setTransform(keyFrameIdx, transform);
 	}
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);

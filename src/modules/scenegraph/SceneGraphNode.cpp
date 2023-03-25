@@ -624,6 +624,7 @@ KeyFrameIndex SceneGraphNode::addKeyFrame(FrameIndex frameIdx) {
 	for (size_t i = 0; i < kfs->size(); ++i) {
 		const SceneGraphKeyFrame &kf = (*kfs)[i];
 		if (kf.frameIdx == frameIdx) {
+			Log::debug("keyframe already exists at index %i", (int)i);
 			return InvalidKeyFrame;
 		}
 	}
