@@ -9,9 +9,11 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
+#include "core/collection/DynamicMap.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -387,9 +389,7 @@ bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::
 	wrap(stream.readInt32(tmp));
 
 	if (state._compressed == Compression::None) {
-		const uint32_t maxSize = size.x * size.y * size.z;
-		core::Buffer<core::RGBA> colors;
-		colors.reserve(maxSize);
+		core::DynamicMap<core::RGBA, bool, 11, core::RGBAHasher> colors;
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {
@@ -399,11 +399,17 @@ bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::
 					if (color.a == 0) {
 						continue;
 					}
-					colors.push_back(flattenRGB(color.r, color.g, color.b));
+					colors.put(flattenRGB(color.r, color.g, color.b), true);
 				}
 			}
 		}
-		palette.quantize(colors.data(), colors.size());
+		const size_t colorCount = colors.size();
+		core::Buffer<core::RGBA> colorBuffer;
+		colorBuffer.reserve(colorCount);
+		for (const auto & e : colors) {
+			colorBuffer.push_back(e->first);
+		}
+		palette.quantize(colorBuffer.data(), colorBuffer.size());
 		Log::debug("%i colors loaded", palette.colorCount());
 		return true;
 	}
