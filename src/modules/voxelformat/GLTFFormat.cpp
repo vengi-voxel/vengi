@@ -44,30 +44,34 @@
 namespace voxelformat {
 
 namespace _priv {
-const float FPS = 12.0f; // TODO: fps
+const float FPS = 24.0f;
 }
 
 void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
 								 const scenegraph::SceneGraphNode &graphNode, Stack &stack, const scenegraph::SceneGraph &sceneGraph,
-								 const glm::vec3 &scale) {
+								 const glm::vec3 &scale, bool exportAnimations) {
 	node.name = graphNode.name().c_str();
 	Log::debug("process node %s", node.name.c_str());
 	const int idx = (int)m.nodes.size();
 
-	glm::mat4x4 nodeLocalMatrix = graphNode.transform().localMatrix();
-	if (graphNode.id() == 0) {
-		nodeLocalMatrix = glm::scale(nodeLocalMatrix, scale);
+	if (!exportAnimations) {
+		glm::mat4x4 nodeLocalMatrix = graphNode.transform().localMatrix();
+		if (graphNode.id() == 0) {
+			nodeLocalMatrix = glm::scale(nodeLocalMatrix, scale);
+		}
+
+		if (nodeLocalMatrix != glm::mat4(1.0f)) {
+			std::vector<double> nodeMatrixArray;
+			nodeMatrixArray.reserve(16);
+			const float *pSource = (const float *)glm::value_ptr(nodeLocalMatrix);
+
+			for (int i = 0; i < 16; ++i) {
+				nodeMatrixArray.push_back(pSource[i]);
+			}
+
+			node.matrix = nodeMatrixArray;
+		}
 	}
-
-	std::vector<double> nodeMatrixArray;
-	nodeMatrixArray.reserve(16);
-	const float *pSource = (const float *)glm::value_ptr(nodeLocalMatrix);
-
-	for (int i = 0; i < 16; ++i) {
-		nodeMatrixArray.push_back(pSource[i]);
-	}
-
-	node.matrix = nodeMatrixArray;
 
 	m.nodes.push_back(node);
 
@@ -79,10 +83,10 @@ void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinyg
 
 	stack.pop();
 
-	const scenegraph::SceneGraphNodeChildren &nodeChidren = graphNode.children();
+	const scenegraph::SceneGraphNodeChildren &nodeChildren = graphNode.children();
 
-	for (int i = (int)nodeChidren.size() - 1; i >= 0; i--) {
-		stack.emplace_back(nodeChidren[i], idx);
+	for (int i = (int)nodeChildren.size() - 1; i >= 0; i--) {
+		stack.emplace_back(nodeChildren[i], idx);
 	}
 }
 
@@ -191,10 +195,11 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				Log::debug("New material id %i for hash %" PRIu64, materialId, palette.hash());
 			}
 		}
+		bool exportAnimations = true;
 
 		if (meshIdxNodeMap.find(nodeId) == meshIdxNodeMap.end()) {
 			tinygltf::Node node;
-			processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale);
+			processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale, false);
 			continue;
 		}
 
@@ -250,7 +255,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			glm::vec3 maxVertex(-FLT_MAX);
 			glm::vec3 minVertex(FLT_MAX);
-			glm::vec2 minMaxUVX(FLT_MAX, -FLT_MAX);
 
 			const glm::vec3 &offset = mesh->getOffset();
 
@@ -281,14 +285,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 					os.writeFloat(uv.x);
 					os.writeFloat(uv.y);
-
-					if (minMaxUVX[0] > uv.x) {
-						minMaxUVX[0] = uv.x;
-					}
-
-					if (minMaxUVX[1] < uv.x) {
-						minMaxUVX[1] = uv.x;
-					}
 				} else if (withColor) {
 					const glm::vec4 &color = core::Color::fromRGBA(palette.color(v.colorIndex));
 
@@ -337,16 +333,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			tinygltf::Accessor colorTexAccessor;
 			if (withTexCoords) {
-				// Uvs
 				colorTexAccessor.bufferView = (int)m.bufferViews.size() + 1;
 				colorTexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 				colorTexAccessor.count = nv;
 				colorTexAccessor.byteOffset = 12;
 				colorTexAccessor.type = TINYGLTF_TYPE_VEC2;
-				colorTexAccessor.maxValues = {minMaxUVX[1], 0.5};
-				colorTexAccessor.minValues = {minMaxUVX[0], 0.5};
 			} else if (withColor) {
-				// Uvs
 				colorTexAccessor.bufferView = (int)m.bufferViews.size() + 1;
 				colorTexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 				colorTexAccessor.count = nv;
@@ -376,7 +368,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			{
 				tinygltf::Node node;
 				node.mesh = (int)m.meshes.size();
-				processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale);
+				processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale, exportAnimations);
 			}
 
 
@@ -388,7 +380,9 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			}
 
 			m.meshes.emplace_back(core::move(expMesh));
+			Log::debug("Index buffer view at %i", (int)m.bufferViews.size());
 			m.bufferViews.emplace_back(core::move(indicesBufferView));
+			Log::debug("vertex buffer view at %i", (int)m.bufferViews.size());
 			m.bufferViews.emplace_back(core::move(verticesUvBufferView));
 			m.accessors.emplace_back(core::move(indicesAccessor));
 			m.accessors.emplace_back(core::move(verticesAccessor));
@@ -397,8 +391,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				m.accessors.emplace_back(core::move(colorTexAccessor));
 			}
 
-			// TODO: save all of them
-			processAnimation(m, scene, graphNode, sceneGraph, sceneGraph.activeAnimation());
+			if (exportAnimations) {
+				// TODO: save all of them
+				processAnimation(m, scene, graphNode, sceneGraph, sceneGraph.activeAnimation());
+			}
 		}
 	}
 
@@ -421,6 +417,14 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	return true;
 }
 
+static int addBuffer(tinygltf::Model &m, io::BufferedReadWriteStream &stream, const char *name) {
+	tinygltf::Buffer buffer;
+	buffer.name = name;
+	buffer.data.insert(buffer.data.end(), stream.getBuffer(), stream.getBuffer() + stream.size());
+	m.buffers.emplace_back(core::move(buffer));
+	return (int)(m.buffers.size() - 1);
+}
+
 void GLTFFormat::processAnimation(tinygltf::Model &m, tinygltf::Scene &scene,
 								  const scenegraph::SceneGraphNode &graphNode, const scenegraph::SceneGraph &sceneGraph,
 								  const core::String &animationId) {
@@ -428,6 +432,149 @@ void GLTFFormat::processAnimation(tinygltf::Model &m, tinygltf::Scene &scene,
 	if (maxFrames <= 0) {
 		return;
 	}
+	const int targetNode = (int)m.meshes.size() - 1;
+	io::BufferedReadWriteStream osTime((int64_t)(maxFrames * sizeof(float)));
+	io::BufferedReadWriteStream osTranslation((int64_t)(maxFrames * 3 * sizeof(float)));
+	io::BufferedReadWriteStream osRotation((int64_t)(maxFrames * 4 * sizeof(float)));
+	io::BufferedReadWriteStream osScale((int64_t)(maxFrames * 3 * sizeof(float)));
+
+	for (scenegraph::FrameIndex i = 0; i < maxFrames; ++i) {
+		osTime.writeFloat((float)i / _priv::FPS);
+
+		const scenegraph::SceneGraphTransform &transform = graphNode.transformForFrame(i);
+		const glm::vec3 &translation = transform.localTranslation();
+		osTranslation.writeFloat(translation.x);
+		osTranslation.writeFloat(translation.y);
+		osTranslation.writeFloat(translation.z);
+
+		const glm::quat &rotation = transform.localOrientation();
+		osRotation.writeFloat(rotation.x);
+		osRotation.writeFloat(rotation.y);
+		osRotation.writeFloat(rotation.z);
+		osRotation.writeFloat(rotation.w);
+
+		const glm::vec3 &scale = transform.localScale();
+		osScale.writeFloat(scale.x);
+		osScale.writeFloat(scale.y);
+		osScale.writeFloat(scale.z);
+	}
+
+	int bufferTimeId = addBuffer(m, osTime, "time");
+	int bufferTranslationId = addBuffer(m, osTranslation, "translation");
+	int bufferRotationId = addBuffer(m, osRotation, "rotation");
+	int bufferScaleId = addBuffer(m, osScale, "scale");
+
+	const int timeAccessorIdx = (int)m.accessors.size();
+	{
+		tinygltf::Accessor accessor;
+		accessor.type = TINYGLTF_TYPE_SCALAR;
+		accessor.bufferView = (int)m.bufferViews.size();
+		accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+		accessor.count = maxFrames;
+		accessor.minValues.push_back(0.0);
+		accessor.maxValues.push_back((double)(maxFrames - 1) / _priv::FPS);
+		m.accessors.emplace_back(accessor);
+
+		tinygltf::BufferView bufferView;
+		bufferView.buffer = bufferTimeId;
+		bufferView.byteLength = osTime.size();
+		Log::debug("animation %s time buffer view at %i", animationId.c_str(), (int)m.bufferViews.size());
+		m.bufferViews.emplace_back(bufferView);
+	}
+
+	const int translationAccessorIndex = (int)m.accessors.size();
+	{
+		tinygltf::Accessor accessor;
+		accessor.type = TINYGLTF_TYPE_VEC3;
+		accessor.bufferView = (int)m.bufferViews.size();
+		accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+		accessor.count = maxFrames;
+		m.accessors.emplace_back(accessor);
+
+		tinygltf::BufferView bufferView;
+		bufferView.buffer = bufferTranslationId;
+		bufferView.byteLength = osTranslation.size();
+		Log::debug("animation %s time buffer view at %i", animationId.c_str(), (int)m.bufferViews.size());
+		m.bufferViews.emplace_back(bufferView);
+	}
+	const int rotationAccessorIndex = (int)m.accessors.size();
+	{
+		tinygltf::Accessor accessor;
+		accessor.type = TINYGLTF_TYPE_VEC4;
+		accessor.bufferView = (int)m.bufferViews.size();
+		accessor.byteOffset = 0;
+		accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+		accessor.count = maxFrames;
+		m.accessors.emplace_back(accessor);
+
+		tinygltf::BufferView bufferView;
+		bufferView.buffer = bufferRotationId;
+		bufferView.byteLength = osRotation.size();
+		Log::debug("anim rotation buffer: %i", accessor.bufferView);
+		m.bufferViews.emplace_back(bufferView);
+	}
+	const int scaleAccessorIndex = (int)m.accessors.size();
+	{
+		tinygltf::Accessor accessor;
+		accessor.type = TINYGLTF_TYPE_VEC3;
+		accessor.bufferView = (int)m.bufferViews.size();
+		accessor.byteOffset = 0;
+		accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+		accessor.count = maxFrames;
+		m.accessors.emplace_back(accessor);
+
+		tinygltf::BufferView bufferView;
+		bufferView.buffer = bufferScaleId;
+		bufferView.byteLength = osScale.size();
+		Log::debug("anim scale buffer: %i", accessor.bufferView);
+		m.bufferViews.emplace_back(bufferView);
+	}
+
+	tinygltf::Animation animation;
+	animation.name = animationId.c_str();
+	{
+		tinygltf::AnimationSampler sampler;
+		sampler.input = timeAccessorIdx;
+		sampler.output = translationAccessorIndex;
+		sampler.interpolation = "LINEAR";
+		animation.samplers.emplace_back(sampler);
+
+		tinygltf::AnimationChannel channel;
+		channel.sampler = (int)animation.samplers.size() - 1;
+		channel.target_node = targetNode;
+		channel.target_path = "translation";
+		animation.channels.emplace_back(channel);
+	}
+
+	{
+		tinygltf::AnimationSampler sampler;
+		sampler.input = timeAccessorIdx;
+		sampler.output = rotationAccessorIndex;
+		sampler.interpolation = "LINEAR";
+		animation.samplers.emplace_back(sampler);
+
+		tinygltf::AnimationChannel channel;
+		channel.sampler = (int)animation.samplers.size() - 1;
+		channel.target_node = targetNode;
+		channel.target_path = "rotation";
+		animation.channels.emplace_back(channel);
+	}
+
+	{
+		tinygltf::AnimationSampler sampler;
+		sampler.input = timeAccessorIdx;
+		sampler.output = scaleAccessorIndex;
+		sampler.interpolation = "LINEAR";
+		animation.samplers.emplace_back(sampler);
+
+		tinygltf::AnimationChannel channel;
+		channel.sampler = (int)animation.samplers.size() - 1;
+		channel.target_node = targetNode;
+		channel.target_path = "scale";
+		animation.channels.emplace_back(channel);
+	}
+
+	m.animations.emplace_back(animation);
 }
 
 size_t GLTFFormat::getGltfAccessorSize(const tinygltf::Accessor &accessor) const {
