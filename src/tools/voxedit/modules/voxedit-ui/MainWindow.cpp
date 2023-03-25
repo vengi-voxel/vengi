@@ -307,7 +307,7 @@ void MainWindow::rightWidget() {
 	_positionsPanel.update(TITLE_POSITIONS, _lastSceneMode, _lastExecutedCommand);
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, _lastExecutedCommand);
 	_assetPanel.update(TITLE_ASSET, _lastSceneMode, _lastExecutedCommand);
-	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand);
+	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand, &_animationTimeline);
 	_mementoPanel.update(TITLE_MEMENTO, _lastExecutedCommand);
 
 	// bottom

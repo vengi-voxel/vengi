@@ -12,6 +12,8 @@ struct CommandExecutionListener;
 
 namespace voxedit {
 
+class AnimationTimeline;
+
 /**
  * @brief The animation panel will open all available animations for a model and allows you to switch
  * the animation.
@@ -21,7 +23,7 @@ private:
 	core::String _newAnimation;
 public:
 
-	void update(const char *title, command::CommandExecutionListener &listener);
+	void update(const char *title, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline);
 };
 
 } // namespace voxedit

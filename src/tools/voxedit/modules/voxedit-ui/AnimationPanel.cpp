@@ -7,12 +7,13 @@
 #include "core/Log.h"
 #include "core/Trace.h"
 #include "command/CommandHandler.h"
+#include "voxedit-ui/AnimationTimeline.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/IMGUIEx.h"
 
 namespace voxedit {
 
-void AnimationPanel::update(const char *title, command::CommandExecutionListener &listener) {
+void AnimationPanel::update(const char *title, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline) {
 	const scenegraph::SceneGraphAnimationIds &animations = sceneMgr().sceneGraph().animations();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		ImGui::InputText("##nameanimationpanel", &_newAnimation);
@@ -23,6 +24,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 			} else {
 				_newAnimation = "";
 			}
+			animationTimeline->resetFrames();
 		}
 
 		const core::String& currentAnimation = sceneMgr().sceneGraph().activeAnimation();
@@ -33,6 +35,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 					if (!sceneMgr().setAnimation(animation)) {
 						Log::error("Failed to activate animation %s", animation.c_str());
 					}
+					animationTimeline->resetFrames();
 				}
 				if (isSelected) {
 					ImGui::SetItemDefaultFocus();
@@ -45,6 +48,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 			if (!sceneMgr().removeAnimation(currentAnimation)) {
 				Log::error("Failed to remove animation %s", currentAnimation.c_str());
 			}
+			animationTimeline->resetFrames();
 		}
 	}
 	ImGui::End();
