@@ -11,6 +11,7 @@ namespace voxelformat {
 /**
  * @brief VoxEdit (Sandbox) (vxr)
  * Transforms - since version 4 or higher the animations are part of a vxa file
+ * They are designed to run at 24 fps
  * @sa VXMFormat
  * @sa VXAFormat
  *
