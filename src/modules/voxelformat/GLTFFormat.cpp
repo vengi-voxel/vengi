@@ -212,6 +212,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			if (mesh->isEmpty()) {
 				continue;
 			}
+
 			Log::debug("Exporting layer %s", meshExt.name.c_str());
 
 			const int nv = (int)mesh->getNoOfVertices();
@@ -222,8 +223,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				return false;
 			}
 
-			const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
-			const voxel::IndexType *indices = mesh->getRawIndexData();
+			const voxel::VertexArray &vertices = mesh->getVertexVector();
+			const voxel::IndexArray &indices = mesh->getIndexVector();
 			const char *objectName = meshExt.name.c_str();
 
 			if (objectName[0] == '\0') {
@@ -231,7 +232,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			}
 
 			tinygltf::Mesh expMesh;
-			io::BufferedReadWriteStream os;
+			const size_t expectedSize = (size_t)ni * sizeof(voxel::IndexType) + (size_t)nv * 7 * sizeof(float);
+			io::BufferedReadWriteStream os((int64_t)expectedSize);
 
 			expMesh.name = std::string(objectName);
 
@@ -251,6 +253,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				}
 			}
 
+			static_assert(sizeof(voxel::IndexType) == 4, "if not 4 bytes - we might need padding here");
 			const unsigned int FLOAT_BUFFER_OFFSET = os.size();
 
 			glm::vec3 maxVertex(-FLT_MAX);
@@ -260,9 +263,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			const glm::vec3 pivotOffset = offset - meshExt.pivot * meshExt.size;
 			for (int j = 0; j < nv; j++) {
-				const voxel::VoxelVertex &v = vertices[j];
-
-				glm::vec3 pos = v.position;
+				glm::vec3 pos = vertices[j].position;
 
 				if (meshExt.applyTransform) {
 					pos = pos + pivotOffset;
@@ -281,13 +282,11 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				}
 
 				if (withTexCoords) {
-					const glm::vec2 &uv = paletteUV(v.colorIndex);
-
+					const glm::vec2 &uv = paletteUV(vertices[j].colorIndex);
 					os.writeFloat(uv.x);
 					os.writeFloat(uv.y);
 				} else if (withColor) {
-					const glm::vec4 &color = core::Color::fromRGBA(palette.color(v.colorIndex));
-
+					const glm::vec4 &color = core::Color::fromRGBA(palette.color(vertices[j].colorIndex));
 					for (int colorIdx = 0; colorIdx < glm::vec4::length(); colorIdx++) {
 						os.writeFloat(color[colorIdx]);
 					}
@@ -304,10 +303,11 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			verticesUvBufferView.buffer = (int)m.buffers.size();
 			verticesUvBufferView.byteOffset = FLOAT_BUFFER_OFFSET;
 			verticesUvBufferView.byteLength = os.size() - FLOAT_BUFFER_OFFSET;
+			verticesUvBufferView.byteStride = sizeof(glm::vec3);
 			if (withTexCoords) {
-				verticesUvBufferView.byteStride = 20;
+				verticesUvBufferView.byteStride += sizeof(glm::vec2);
 			} else if (withColor) {
-				verticesUvBufferView.byteStride = 28;
+				verticesUvBufferView.byteStride += sizeof(glm::vec4);
 			}
 			verticesUvBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
@@ -336,13 +336,13 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				colorTexAccessor.bufferView = (int)m.bufferViews.size() + 1;
 				colorTexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 				colorTexAccessor.count = nv;
-				colorTexAccessor.byteOffset = 12;
+				colorTexAccessor.byteOffset = 1 * sizeof(glm::vec3);
 				colorTexAccessor.type = TINYGLTF_TYPE_VEC2;
 			} else if (withColor) {
 				colorTexAccessor.bufferView = (int)m.bufferViews.size() + 1;
 				colorTexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 				colorTexAccessor.count = nv;
-				colorTexAccessor.byteOffset = 12;
+				colorTexAccessor.byteOffset = 1 * sizeof(glm::vec3);
 				colorTexAccessor.type = TINYGLTF_TYPE_VEC4;
 			}
 
@@ -373,7 +373,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 
 			{
-				os.seek(0);
 				tinygltf::Buffer buffer;
 				buffer.data.insert(buffer.data.end(), os.getBuffer(), os.getBuffer() + os.size());
 				m.buffers.emplace_back(core::move(buffer));
