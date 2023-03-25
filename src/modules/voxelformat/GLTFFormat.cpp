@@ -432,19 +432,20 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	}
 
 	if (exportAnimations) {
-		Log::error("Export %i animations for %i nodes", (int)sceneGraph.animations().size(), (int)nodeMapping.size());
+		Log::debug("Export %i animations for %i nodes", (int)sceneGraph.animations().size(), (int)nodeMapping.size());
+		m.animations.reserve(sceneGraph.animations().size());
 		for (const core::String &animationId : sceneGraph.animations()) {
 			tinygltf::Animation animation;
 			animation.name = animationId.c_str();
 			Log::debug("save animation: %s", animationId.c_str());
 			for (const auto & e : nodeMapping) {
 				const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(e->key);
-				saveAnimation(e->value, m, scene, graphNode, sceneGraph, animation);
+				saveAnimation(e->value, m, graphNode, animation);
 			}
 			m.animations.emplace_back(animation);
 		}
 	} else {
-		Log::error("No animations found");
+		Log::debug("No animations found");
 	}
 
 	m.scenes.emplace_back(core::move(scene));
@@ -466,8 +467,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	return true;
 }
 
-void GLTFFormat::saveAnimation(int targetNode, tinygltf::Model &model, tinygltf::Scene &scene,
-							   const scenegraph::SceneGraphNode &node, const scenegraph::SceneGraph &sceneGraph,
+void GLTFFormat::saveAnimation(int targetNode, tinygltf::Model &model, const scenegraph::SceneGraphNode &node,
 							   tinygltf::Animation &animation) {
 	const core::String animationId = animation.name.c_str();
 	const scenegraph::FrameIndex maxFrames = node.maxFrame(animationId);

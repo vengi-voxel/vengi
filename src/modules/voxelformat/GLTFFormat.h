@@ -67,8 +67,7 @@ private:
 	bool subdivideShape(scenegraph::SceneGraphNode &node, const TriCollection &tris, const glm::vec3 &offset,
 						bool axisAlignedMesh) const;
 
-	void saveAnimation(int targetNode, tinygltf::Model &m, tinygltf::Scene &scene,
-					   const scenegraph::SceneGraphNode &node, const scenegraph::SceneGraph &sceneGraph,
+	void saveAnimation(int targetNode, tinygltf::Model &m, const scenegraph::SceneGraphNode &node,
 					   tinygltf::Animation &animation);
 
 	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
