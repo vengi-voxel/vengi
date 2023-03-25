@@ -333,12 +333,11 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 	core::RGBA color;
 	wrap(stream.readUInt32(color.rgba))
 	node.setColor(color);
+	glm::vec3 pivot(0.0f);
 	if (version >= 3) {
-		glm::vec3 pivot;
 		wrap(stream.readFloat(pivot.x))
 		wrap(stream.readFloat(pivot.y))
 		wrap(stream.readFloat(pivot.z))
-		node.setPivot(pivot);
 	}
 
 	while (!stream.eos()) {
@@ -369,6 +368,7 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 				return false;
 			}
 		} else if (chunkMagic == FourCC('E','N','D','N')) {
+			node.setPivot(pivot);
 			return true;
 		}
 	}
