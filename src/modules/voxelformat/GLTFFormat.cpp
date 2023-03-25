@@ -397,6 +397,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				m.accessors.emplace_back(core::move(colorTexAccessor));
 			}
 
+			// TODO: save all of them
+			processAnimation(m, scene, graphNode, sceneGraph, sceneGraph.activeAnimation());
 		}
 	}
 
@@ -417,6 +419,15 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	}
 
 	return true;
+}
+
+void GLTFFormat::processAnimation(tinygltf::Model &m, tinygltf::Scene &scene,
+								  const scenegraph::SceneGraphNode &graphNode, const scenegraph::SceneGraph &sceneGraph,
+								  const core::String &animationId) {
+	const scenegraph::FrameIndex maxFrames = sceneGraph.maxFrames();
+	if (maxFrames <= 0) {
+		return;
+	}
 }
 
 size_t GLTFFormat::getGltfAccessorSize(const tinygltf::Accessor &accessor) const {
