@@ -129,8 +129,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 	Log::debug("Exporting %i layers", (int)meshes.size());
 
-	int nthNodeIdx = 0;
-
 	Stack stack;
 	stack.emplace_back(0, -1);
 
@@ -403,9 +401,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			{
 				// Build the mesh meshPrimitive and add it to the mesh
 				tinygltf::Primitive meshPrimitive;
-				meshPrimitive.indices = (int)m.accessors.size(); // The index of the accessor for the vertex indices
-				meshPrimitive.attributes["POSITION"] =
-					(int)m.accessors.size() + 1; // The index of the accessor for positions
+				// The index of the accessor for the vertex indices
+				meshPrimitive.indices = (int)m.accessors.size();
+				// The index of the accessor for positions
+				meshPrimitive.attributes["POSITION"] = (int)m.accessors.size() + 1;
 				if (withTexCoords) {
 					const core::String &texcoordsKey = core::String::format("TEXCOORD_%i", texcoordIndex);
 					meshPrimitive.attributes[texcoordsKey.c_str()] = (int)m.accessors.size() + 2;
@@ -419,7 +418,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			{
 				tinygltf::Node node;
-				node.mesh = nthNodeIdx;
+				node.mesh = (int)m.meshes.size();
 				processGltfNode(m, node, scene, graphNode, stack, sceneGraph, scale);
 			}
 
@@ -463,7 +462,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				m.accessors.emplace_back(core::move(colorTexAccessor));
 			}
 
-			nthNodeIdx++;
 		}
 	}
 
