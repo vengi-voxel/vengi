@@ -665,24 +665,18 @@ scenegraph::SceneGraphTransform GLTFFormat::loadGltfTransform(const tinygltf::No
 									  (float)gltfNode.matrix[12], (float)gltfNode.matrix[13],
 									  (float)gltfNode.matrix[14], (float)gltfNode.matrix[15]));
 	} else {
-		glm::mat4 scaleMat(1.0f);
-		glm::mat4 rotMat(1.0f);
-		glm::mat4 transMat(1.0f);
 		if (gltfNode.scale.size() == 3) {
-			scaleMat = glm::scale(glm::mat4(1.0f), glm::vec3(gltfNode.scale[0], gltfNode.scale[1], gltfNode.scale[2]));
+			transform.setLocalScale(glm::vec3(gltfNode.scale[0], gltfNode.scale[1], gltfNode.scale[2]));
 		}
 		if (gltfNode.rotation.size() == 4) {
 			const glm::quat quat((float)gltfNode.rotation[0], (float)gltfNode.rotation[1], (float)gltfNode.rotation[2],
 								 (float)gltfNode.rotation[3]);
-			rotMat = glm::mat4_cast(quat);
+			transform.setLocalOrientation(quat);
 		}
 		if (gltfNode.translation.size() == 3) {
-			transMat = glm::translate(glm::mat4(1.0f),
-									  glm::vec3((float)gltfNode.translation[0], (float)gltfNode.translation[1],
+			transform.setLocalTranslation(glm::vec3((float)gltfNode.translation[0], (float)gltfNode.translation[1],
 												(float)gltfNode.translation[2]));
 		}
-		const glm::mat4 modelMat = scaleMat * rotMat * transMat;
-		transform.setLocalMatrix(modelMat);
 	}
 	transform.setLocalScale(transform.localScale() / getScale());
 	return transform;
@@ -988,7 +982,112 @@ bool GLTFFormat::subdivideShape(scenegraph::SceneGraphNode &node,
 	return true;
 }
 
-bool GLTFFormat::loadGltfNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph, core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model, int gltfNodeIdx, int parentNodeId) const {
+// keyframes https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_007_Animations.md
+bool GLTFFormat::loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &model, int &gltfNodeIdx,
+									scenegraph::SceneGraphNode &node) const {
+	const size_t animCnt = model.animations.size();
+	int frames = 0;
+	for (size_t animIdx = 0; animIdx < animCnt; ++animIdx) {
+		const tinygltf::Animation &animation = model.animations[animIdx];
+		core::String animationName = animation.name.c_str();
+		if (animationName.empty()) {
+			animationName = core::string::format("animation %i", (int)animIdx);
+		}
+		sceneGraph.addAnimation(animationName);
+		node.setAnimation(animationName);
+
+		const std::vector<tinygltf::AnimationChannel> &channels = animation.channels;
+		for (const tinygltf::AnimationChannel &channel : channels) {
+			if (channel.target_node != gltfNodeIdx) {
+				continue;
+			}
+			++frames;
+			const tinygltf::AnimationSampler &sampler = animation.samplers[channel.sampler];
+			scenegraph::InterpolationType interpolation = scenegraph::InterpolationType::Linear;
+			if (sampler.interpolation == "LINEAR") {
+				interpolation = scenegraph::InterpolationType::Linear;
+			} else if (sampler.interpolation == "STEP") {
+				interpolation = scenegraph::InterpolationType::Instant;
+				// } else if (sampler.interpolation == "CUBICSPLINE") {
+				// TODO: implement easing for this type
+				// interpolation = InterpolationType::Linear;
+			}
+
+			// get the key frame seconds (float)
+			{
+				const tinygltf::Accessor *accessor = getGltfAccessor(model, sampler.input);
+				if (accessor == nullptr || accessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT ||
+					accessor->type != TINYGLTF_TYPE_SCALAR) {
+					Log::warn("Could not get accessor for samplers");
+					continue;
+				}
+				const tinygltf::BufferView &bufferView = model.bufferViews[accessor->bufferView];
+				const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+				const size_t stride = bufferView.byteStride ? bufferView.byteStride : 4;
+
+				const size_t offset = accessor->byteOffset + bufferView.byteOffset;
+				const uint8_t *buf = buffer.data.data() + offset;
+				for (size_t i = 0; i < accessor->count; ++i) {
+					const float seconds = *(const float *)buf;
+					node.addKeyFrame((scenegraph::FrameIndex)(seconds * _priv::FPS));
+					buf += stride;
+				}
+			}
+
+			// get the key frame values (xyz for translation and scale and xyzw for the rotation)
+			{
+				const tinygltf::Accessor *accessor = getGltfAccessor(model, sampler.output);
+				if (accessor == nullptr) {
+					Log::warn("Could not get accessor for samplers");
+					continue;
+				}
+
+				const size_t size = getGltfAccessorSize(*accessor);
+				const tinygltf::BufferView &bufferView = model.bufferViews[accessor->bufferView];
+				const tinygltf::Buffer &buffer = model.buffers[bufferView.buffer];
+				const size_t stride = bufferView.byteStride ? bufferView.byteStride : size;
+
+				const size_t offset = accessor->byteOffset + bufferView.byteOffset;
+				const uint8_t *transformBuf = buffer.data.data() + offset;
+
+				if (accessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
+					Log::warn("Skip non float type for sampler output");
+					continue;
+				}
+				for (scenegraph::FrameIndex frameIdx = 0; frameIdx < (scenegraph::FrameIndex)accessor->count;
+					 ++frameIdx) {
+					const float *buf = (const float *)transformBuf;
+					transformBuf += stride;
+					scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(frameIdx);
+					scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+					keyFrame.interpolation = interpolation;
+					keyFrame.frameIdx = frameIdx;
+					scenegraph::SceneGraphTransform &transform = keyFrame.transform();
+					if (channel.target_path == "translation") {
+						core_assert(accessor->type == TINYGLTF_TYPE_VEC3);
+						glm::vec3 v(buf[0], buf[1], buf[2]);
+						transform.setLocalTranslation(v);
+					} else if (channel.target_path == "rotation") {
+						core_assert(accessor->type == TINYGLTF_TYPE_VEC4);
+						glm::quat orientation(buf[0], buf[1], buf[2], buf[3]);
+						transform.setLocalOrientation(orientation);
+					} else if (channel.target_path == "scale") {
+						core_assert(accessor->type == TINYGLTF_TYPE_VEC3);
+						glm::vec3 v(buf[0], buf[1], buf[2]);
+						transform.setLocalScale(v);
+					} else if (channel.target_path == "weights") {
+						// TODO: not supported yet
+						break;
+					}
+				}
+			}
+		}
+	}
+	return frames > 0;
+}
+bool GLTFFormat::loadGltfNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
+								core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model,
+								int gltfNodeIdx, int parentNodeId) const {
 	const tinygltf::Node &gltfNode = model.nodes[gltfNodeIdx];
 	Log::debug("Found node with name '%s'", gltfNode.name.c_str());
 	Log::debug(" - camera: %i", gltfNode.camera);
@@ -1036,13 +1135,16 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, scenegraph::SceneG
 	}
 
 	if (gltfNode.mesh < 0 || gltfNode.mesh >= (int)model.meshes.size()) {
-		const scenegraph::SceneGraphTransform &transform = loadGltfTransform(gltfNode);
-		Log::debug("No mesh node (%i) - add a group %i", gltfNode.mesh, gltfNodeIdx);
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
-		node.setName(gltfNode.name.c_str());
-		scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		node.setTransform(keyFrameIdx, transform);
-		int groupId = sceneGraph.emplace(core::move(node), parentNodeId);
+		int groupId = -1;
+		if (!sceneGraph.root().children().empty()) {
+			const scenegraph::SceneGraphTransform &transform = loadGltfTransform(gltfNode);
+			Log::debug("No mesh node (%i) - add a group %i", gltfNode.mesh, gltfNodeIdx);
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
+			node.setName(gltfNode.name.c_str());
+			scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			node.setTransform(keyFrameIdx, transform);
+			groupId = sceneGraph.emplace(core::move(node), parentNodeId);
+		}
 		if (groupId == -1) {
 			groupId = parentNodeId;
 		}
@@ -1162,104 +1264,12 @@ bool GLTFFormat::loadGltfNode_r(const core::String &filename, scenegraph::SceneG
 	Log::debug("region mins(%i:%i:%i)/maxs(%i:%i:%i)", imins.x, imins.y, imins.z, imaxs.x, imaxs.y, imaxs.z);
 
 	scenegraph::SceneGraphNode node;
-	scenegraph::SceneGraphTransform transform = loadGltfTransform(gltfNode);
 	node.setName(gltfNode.name.c_str());
-	scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	node.setTransform(keyFrameIdx++, transform);
 
-	// keyframes https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_007_Animations.md
-	const size_t animCnt = model.animations.size();
-	for (size_t animIdx = 0; animIdx < animCnt; ++animIdx) {
-		const tinygltf::Animation &animation = model.animations[animIdx];
-		const core::String animationName = animation.name.c_str();
-		if (!animationName.empty()) {
-			sceneGraph.addAnimation(animationName);
-			node.setAnimation(animationName);
-		}
-
-		const std::vector<tinygltf::AnimationChannel> &channels = animation.channels;
-		for (const tinygltf::AnimationChannel& channel : channels) {
-			const int nodeId = channel.target_node;
-			if (nodeId != gltfNodeIdx) {
-				continue;
-			}
-			const tinygltf::AnimationSampler &sampler = animation.samplers[channel.sampler];
-			const std::string& type = channel.target_path;
-			scenegraph::InterpolationType interpolation = scenegraph::InterpolationType::Linear;
-			if (sampler.interpolation == "LINEAR") {
-				interpolation = scenegraph::InterpolationType::Linear;
-			} else if (sampler.interpolation == "STEP") {
-				interpolation = scenegraph::InterpolationType::Instant;
-			// } else if (sampler.interpolation == "CUBICSPLINE") {
-				// TODO: implement easing for this type
-				// interpolation = InterpolationType::Linear;
-			}
-
-			// get the key frame seconds (float)
-			{
-				const tinygltf::Accessor *accessor = getGltfAccessor(model, sampler.input);
-				if (accessor == nullptr || accessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || accessor->type != TINYGLTF_TYPE_SCALAR) {
-					Log::warn("Could not get accessor for samplers");
-					continue;
-				}
-				const tinygltf::BufferView& bufferView = model.bufferViews[accessor->bufferView];
-				const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-				const size_t stride = bufferView.byteStride ? bufferView.byteStride : 4;
-
-				const size_t offset = accessor->byteOffset + bufferView.byteOffset;
-				const uint8_t *buf = buffer.data.data() + offset;
-				for (size_t i = 0; i < accessor->count; ++i) {
-					const float seconds = *(const float*)buf;
-					node.addKeyFrame((scenegraph::FrameIndex)(seconds * _priv::FPS));
-					buf += stride;
-				}
-			}
-
-			// get the key frame values (xyz for translation and scale and xyzw for the rotation)
-			{
-				const tinygltf::Accessor *accessor = getGltfAccessor(model, sampler.output);
-				if (accessor == nullptr) {
-					Log::warn("Could not get accessor for samplers");
-					continue;
-				}
-
-				const size_t size = getGltfAccessorSize(*accessor);
-				const tinygltf::BufferView& bufferView = model.bufferViews[accessor->bufferView];
-				const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-				const size_t stride = bufferView.byteStride ? bufferView.byteStride : size;
-
-				const size_t offset = accessor->byteOffset + bufferView.byteOffset;
-				const uint8_t *transformBuf = buffer.data.data() + offset;
-
-				if (accessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
-					Log::warn("Skip non float type for sampler output");
-					continue;
-				}
-				for (size_t keyFrameIdx = 0; keyFrameIdx < accessor->count; ++keyFrameIdx) {
-					const float *buf = (const float *)transformBuf;
-					transformBuf += stride;
-					scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame((scenegraph::KeyFrameIndex)keyFrameIdx);
-					keyFrame.interpolation = interpolation;
-					scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-					if (type == "translation") {
-						core_assert(accessor->type == TINYGLTF_TYPE_VEC3);
-						glm::vec3 v(buf[0], buf[1], buf[2]);
-						transform.setLocalTranslation(v);
-					} else if (type == "rotation") {
-						core_assert(accessor->type == TINYGLTF_TYPE_VEC4);
-						glm::quat orientation(buf[0], buf[1], buf[2], buf[3]);
-						transform.setLocalOrientation(orientation);
-					} else if (type == "scale") {
-						core_assert(accessor->type == TINYGLTF_TYPE_VEC3);
-						glm::vec3 v(buf[0], buf[1], buf[2]);
-						transform.setLocalScale(v);
-					} else if (type == "weights") {
-						// TODO: not supported yet
-						break;
-					}
-				}
-			}
-		}
+	if (!loadGltfAnimations(sceneGraph, model, gltfNodeIdx, node)) {
+		scenegraph::SceneGraphTransform transform = loadGltfTransform(gltfNode);
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		node.setTransform(keyFrameIdx++, transform);
 	}
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);

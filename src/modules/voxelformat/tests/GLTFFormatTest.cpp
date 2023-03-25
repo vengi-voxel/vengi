@@ -38,6 +38,9 @@ TEST_F(GLTFFormatTest, testImportAnimation) {
 	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
 	ASSERT_EQ(2u, sceneGraph.size());
 	scenegraph::SceneGraphNode* node = sceneGraph[1];
+	EXPECT_GE(sceneGraph.animations().size(), 1u);
+	EXPECT_EQ("animation 0", sceneGraph.animations().back());
+	EXPECT_TRUE(sceneGraph.setAnimation(sceneGraph.animations().back()));
 	ASSERT_TRUE(node != nullptr);
 	ASSERT_FALSE(node->keyFrames()->empty());
 	ASSERT_GE(node->keyFrames()->size(), 2u);
