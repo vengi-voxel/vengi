@@ -15,7 +15,7 @@ General:
    - Fixed invalid x axis handling for Sandbox VXM format
    - Fixed pivot handling in VXR/VXA format
    - Support model references to build a complex scene
-   - Extended GLTF support to animation and normal export
+   - Extended GLTF support to animation import and export as well as normal export
 
 VoxEdit:
 
