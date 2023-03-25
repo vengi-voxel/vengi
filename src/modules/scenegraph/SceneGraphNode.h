@@ -311,7 +311,7 @@ public:
 	bool setProperty(const core::String& key, bool value);
 	bool setProperty(const core::String& key, const core::String& value);
 
-	FrameIndex maxFrame() const;
+	FrameIndex maxFrame(const core::String &animation) const;
 	KeyFrameIndex addKeyFrame(FrameIndex frameIdx);
 	bool removeKeyFrame(FrameIndex frameIdx);
 	bool removeKeyFrameByIndex(KeyFrameIndex keyFrameIdx);

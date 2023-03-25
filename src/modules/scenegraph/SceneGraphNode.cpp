@@ -775,9 +775,9 @@ SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex frameIdx) const
 	return transformForFrame(keyFrames(), frameIdx);
 }
 
-FrameIndex SceneGraphNode::maxFrame() const {
+FrameIndex SceneGraphNode::maxFrame(const core::String &animation) const {
 	FrameIndex maxFrameIdx = 0;
-	const SceneGraphKeyFrames &kfs = keyFrames();
+	const SceneGraphKeyFrames &kfs = keyFrames(animation);
 	for (const auto &keyframe : kfs) {
 		maxFrameIdx = core_max(keyframe.frameIdx, maxFrameIdx);
 	}

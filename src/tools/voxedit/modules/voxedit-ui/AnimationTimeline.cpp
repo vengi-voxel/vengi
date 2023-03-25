@@ -145,7 +145,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 bool AnimationTimeline::update(const char *sequencerTitle, double deltaFrameSeconds) {
 	scenegraph::FrameIndex currentFrame = sceneMgr().currentFrame();
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
-	const scenegraph::FrameIndex maxFrame = sceneGraph.maxFrames();
+	const scenegraph::FrameIndex maxFrame = sceneGraph.maxFrames(sceneGraph.activeAnimation());
 	if (_endFrame == -1) {
 		_endFrame = core_max(64, maxFrame + 1);
 	}

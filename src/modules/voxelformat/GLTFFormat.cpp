@@ -428,7 +428,7 @@ static int addBuffer(tinygltf::Model &m, io::BufferedReadWriteStream &stream, co
 void GLTFFormat::processAnimation(tinygltf::Model &m, tinygltf::Scene &scene,
 								  const scenegraph::SceneGraphNode &graphNode, const scenegraph::SceneGraph &sceneGraph,
 								  const core::String &animationId) {
-	const scenegraph::FrameIndex maxFrames = sceneGraph.maxFrames();
+	const scenegraph::FrameIndex maxFrames = sceneGraph.maxFrames(animationId);
 	if (maxFrames <= 0) {
 		return;
 	}
@@ -441,7 +441,7 @@ void GLTFFormat::processAnimation(tinygltf::Model &m, tinygltf::Scene &scene,
 	for (scenegraph::FrameIndex i = 0; i < maxFrames; ++i) {
 		osTime.writeFloat((float)i / _priv::FPS);
 
-		const scenegraph::SceneGraphTransform &transform = graphNode.transformForFrame(i);
+		const scenegraph::SceneGraphTransform &transform = graphNode.transformForFrame(animationId, i);
 		const glm::vec3 &translation = transform.localTranslation();
 		osTranslation.writeFloat(translation.x);
 		osTranslation.writeFloat(translation.y);
