@@ -673,8 +673,7 @@ scenegraph::SceneGraphTransform GLTFFormat::loadGltfTransform(const tinygltf::No
 			transform.setLocalScale(glm::vec3(gltfNode.scale[0], gltfNode.scale[1], gltfNode.scale[2]));
 		}
 		if (gltfNode.rotation.size() == 4) {
-			const glm::quat quat((float)gltfNode.rotation[0], (float)gltfNode.rotation[1], (float)gltfNode.rotation[2],
-								 (float)gltfNode.rotation[3]);
+			const glm::quat quat((float)gltfNode.rotation[3], (float)gltfNode.rotation[0], (float)gltfNode.rotation[1], (float)gltfNode.rotation[2]);
 			transform.setLocalOrientation(quat);
 		}
 		if (gltfNode.translation.size() == 3) {
@@ -1079,7 +1078,7 @@ bool GLTFFormat::loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const ti
 						transform.setLocalTranslation(v);
 					} else if (channel.target_path == "rotation") {
 						core_assert(accessor->type == TINYGLTF_TYPE_VEC4);
-						glm::quat orientation(buf[0], buf[1], buf[2], buf[3]);
+						glm::quat orientation(buf[3], buf[0], buf[1], buf[2]);
 						transform.setLocalOrientation(orientation);
 					} else if (channel.target_path == "scale") {
 						core_assert(accessor->type == TINYGLTF_TYPE_VEC3);
