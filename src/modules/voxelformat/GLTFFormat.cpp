@@ -429,7 +429,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				// export the current active animation as first animation
 				processAnimation(m, scene, graphNode, sceneGraph, sceneGraph.activeAnimation());
 				for (const core::String &animation : sceneGraph.animations()) {
-					if (animation ==  sceneGraph.activeAnimation()) {
+					if (animation == sceneGraph.activeAnimation()) {
 						continue;
 					}
 					processAnimation(m, scene, graphNode, sceneGraph, animation);
@@ -464,7 +464,7 @@ void GLTFFormat::processAnimation(tinygltf::Model &m, tinygltf::Scene &scene,
 	if (maxFrames <= 0) {
 		return;
 	}
-	const int targetNode = (int)m.meshes.size() - 1;
+	const int targetNode = (int)m.nodes.size() - 1;
 	io::BufferedReadWriteStream osTime((int64_t)(maxFrames * sizeof(float)));
 	io::BufferedReadWriteStream osTranslation((int64_t)(maxFrames * 3 * sizeof(float)));
 	io::BufferedReadWriteStream osRotation((int64_t)(maxFrames * 4 * sizeof(float)));
