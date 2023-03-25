@@ -53,7 +53,7 @@ private:
 							const tinygltf::Model &model, const tinygltf::Primitive &primitive,
 							core::DynamicArray<GltfVertex> &vertices) const;
 
-	bool loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &model, int &gltfNodeIdx,
+	bool loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &model, int gltfNodeIdx,
 							scenegraph::SceneGraphNode &node) const;
 	bool loadGltfNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
 						core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model, int gltfNodeIdx,

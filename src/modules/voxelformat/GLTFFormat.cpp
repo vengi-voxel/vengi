@@ -470,20 +470,18 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 void GLTFFormat::saveAnimation(int targetNode, tinygltf::Model &model, const scenegraph::SceneGraphNode &node,
 							   tinygltf::Animation &animation) {
 	const core::String animationId = animation.name.c_str();
-	const scenegraph::FrameIndex maxFrames = node.maxFrame(animationId);
+	const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames(animationId);
+	const int maxFrames = (int)keyFrames.size();
 	Log::debug("Save animation %s for node %s with %i frames", animationId.c_str(), node.name().c_str(), maxFrames);
-	if (maxFrames <= 0) {
-		return;
-	}
 	io::BufferedReadWriteStream osTime((int64_t)(maxFrames * sizeof(float)));
 	io::BufferedReadWriteStream osTranslation((int64_t)(maxFrames * 3 * sizeof(float)));
 	io::BufferedReadWriteStream osRotation((int64_t)(maxFrames * 4 * sizeof(float)));
 	io::BufferedReadWriteStream osScale((int64_t)(maxFrames * 3 * sizeof(float)));
 
-	for (scenegraph::FrameIndex i = 0; i < maxFrames; ++i) {
-		osTime.writeFloat((float)i / _priv::FPS);
+	for (const scenegraph::SceneGraphKeyFrame &keyFrame : keyFrames) {
+		osTime.writeFloat((float)keyFrame.frameIdx / _priv::FPS);
 
-		const scenegraph::SceneGraphTransform &transform = node.transformForFrame(animationId, i);
+		const scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 		const glm::vec3 &translation = transform.localTranslation();
 		osTranslation.writeFloat(translation.x);
 		osTranslation.writeFloat(translation.y);
@@ -989,7 +987,7 @@ bool GLTFFormat::subdivideShape(scenegraph::SceneGraphNode &node,
 }
 
 // keyframes https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_007_Animations.md
-bool GLTFFormat::loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &model, int &gltfNodeIdx,
+bool GLTFFormat::loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &model, int gltfNodeIdx,
 									scenegraph::SceneGraphNode &node) const {
 	const size_t animCnt = model.animations.size();
 	int frames = 0;
@@ -1060,13 +1058,11 @@ bool GLTFFormat::loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const ti
 					Log::warn("Skip non float type for sampler output");
 					continue;
 				}
-				for (scenegraph::FrameIndex frameIdx = 0; frameIdx < (scenegraph::FrameIndex)accessor->count; ++frameIdx) {
+				for (scenegraph::KeyFrameIndex keyFrameIdx = 0; keyFrameIdx < (scenegraph::FrameIndex)accessor->count; ++keyFrameIdx) {
 					const float *buf = (const float *)transformBuf;
 					transformBuf += stride;
-					scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(frameIdx);
 					scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 					keyFrame.interpolation = interpolation;
-					keyFrame.frameIdx = frameIdx;
 					scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 					if (channel.target_path == "translation") {
 						core_assert(accessor->type == TINYGLTF_TYPE_VEC3);
