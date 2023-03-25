@@ -74,6 +74,10 @@ public:
 	bool addAnimation(const core::String &animation);
 	bool removeAnimation(const core::String &animation);
 	FrameIndex maxFrames(const core::String &animation) const;
+	/**
+	 * Checks if at least one of the nodes has multiple keyframes
+	 */
+	bool hasAnimations() const;
 
 	/**
 	 * @brief Change the active animation for all nodes to the given animation

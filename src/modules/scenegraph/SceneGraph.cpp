@@ -98,6 +98,17 @@ bool SceneGraph::removeAnimation(const core::String &animation) {
 	return true;
 }
 
+bool SceneGraph::hasAnimations() const {
+	for (const core::String &animation : animations())  {
+		for (const auto &entry : _nodes) {
+			if (entry->value.keyFrames(animation).size() > 1) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 const core::String &SceneGraph::activeAnimation() const {
 	return _activeAnimation;
 }

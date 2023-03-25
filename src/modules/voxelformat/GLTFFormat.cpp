@@ -195,7 +195,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				Log::debug("New material id %i for hash %" PRIu64, materialId, palette.hash());
 			}
 		}
-		bool exportAnimations = true;
+		bool exportAnimations = sceneGraph.hasAnimations();
 
 		if (meshIdxNodeMap.find(nodeId) == meshIdxNodeMap.end()) {
 			tinygltf::Node node;
