@@ -5,6 +5,7 @@
 #pragma once
 
 #include "MeshFormat.h"
+#include "core/Pair.h"
 #include "core/collection/StringMap.h"
 
 namespace tinygltf {
@@ -33,13 +34,7 @@ namespace voxelformat {
 class GLTFFormat : public MeshFormat {
 private:
 	// exporting
-	struct Pair {
-		constexpr Pair(int f, int s) : first(f), second(s) {
-		}
-		int first;
-		int second;
-	};
-	typedef core::DynamicArray<Pair> Stack;
+	typedef core::DynamicArray<core::Pair<int, int>> Stack;
 	void processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
 						 const scenegraph::SceneGraphNode &graphNode, Stack &stack, const scenegraph::SceneGraph &sceneGraph,
 						 const glm::vec3 &scale, bool exportAnimations);
