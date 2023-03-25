@@ -224,15 +224,20 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			}
 
 			const voxel::VertexArray &vertices = mesh->getVertexVector();
+			const voxel::NormalArray &normals = mesh->getNormalVector();
 			const voxel::IndexArray &indices = mesh->getIndexVector();
 			const char *objectName = meshExt.name.c_str();
+			const bool exportNormals = !normals.empty();
+			if (exportNormals) {
+				Log::debug("Export normals for mesh %i", i);
+			}
 
 			if (objectName[0] == '\0') {
 				objectName = "Noname";
 			}
 
 			tinygltf::Mesh expMesh;
-			const size_t expectedSize = (size_t)ni * sizeof(voxel::IndexType) + (size_t)nv * 7 * sizeof(float);
+			const size_t expectedSize = (size_t)ni * sizeof(voxel::IndexType) + (size_t)nv * 10 * sizeof(float);
 			io::BufferedReadWriteStream os((int64_t)expectedSize);
 
 			expMesh.name = std::string(objectName);
@@ -281,6 +286,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 					}
 				}
 
+				if (exportNormals) {
+					for (int coordIndex = 0; coordIndex < glm::vec3::length(); coordIndex++) {
+						os.writeFloat(normals[j][coordIndex]);
+					}
+				}
+
 				if (withTexCoords) {
 					const glm::vec2 &uv = paletteUV(vertices[j].colorIndex);
 					os.writeFloat(uv.x);
@@ -304,6 +315,9 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			verticesUvBufferView.byteOffset = FLOAT_BUFFER_OFFSET;
 			verticesUvBufferView.byteLength = os.size() - FLOAT_BUFFER_OFFSET;
 			verticesUvBufferView.byteStride = sizeof(glm::vec3);
+			if (exportNormals) {
+				verticesUvBufferView.byteStride += sizeof(glm::vec3);
+			}
 			if (withTexCoords) {
 				verticesUvBufferView.byteStride += sizeof(glm::vec2);
 			} else if (withColor) {
@@ -331,22 +345,29 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			verticesAccessor.maxValues = {maxVertex[0], maxVertex[1], maxVertex[2]};
 			verticesAccessor.minValues = {minVertex[0], minVertex[1], minVertex[2]};
 
+			// Describe the layout of normals - they are followed
+			tinygltf::Accessor normalAccessor;
+			normalAccessor.bufferView = (int)m.bufferViews.size() + 1;
+			normalAccessor.byteOffset = sizeof(glm::vec3);
+			normalAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+			normalAccessor.count = nv;
+			normalAccessor.type = TINYGLTF_TYPE_VEC3;
+
 			tinygltf::Accessor colorTexAccessor;
 			if (withTexCoords) {
 				colorTexAccessor.bufferView = (int)m.bufferViews.size() + 1;
 				colorTexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 				colorTexAccessor.count = nv;
-				colorTexAccessor.byteOffset = 1 * sizeof(glm::vec3);
+				colorTexAccessor.byteOffset = (exportNormals ? 2 : 1) * sizeof(glm::vec3);
 				colorTexAccessor.type = TINYGLTF_TYPE_VEC2;
 			} else if (withColor) {
 				colorTexAccessor.bufferView = (int)m.bufferViews.size() + 1;
 				colorTexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 				colorTexAccessor.count = nv;
-				colorTexAccessor.byteOffset = 1 * sizeof(glm::vec3);
+				colorTexAccessor.byteOffset = (exportNormals ? 2 : 1) * sizeof(glm::vec3);
 				colorTexAccessor.type = TINYGLTF_TYPE_VEC4;
 			}
 
-			// TODO: normals
 			{
 				// Build the mesh meshPrimitive and add it to the mesh
 				tinygltf::Primitive meshPrimitive;
@@ -354,11 +375,14 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				meshPrimitive.indices = (int)m.accessors.size();
 				// The index of the accessor for positions
 				meshPrimitive.attributes["POSITION"] = (int)m.accessors.size() + 1;
+				if (exportNormals) {
+					meshPrimitive.attributes["NORMAL"] = (int)m.accessors.size() + 2;
+				}
 				if (withTexCoords) {
 					const core::String &texcoordsKey = core::String::format("TEXCOORD_%i", texcoordIndex);
-					meshPrimitive.attributes[texcoordsKey.c_str()] = (int)m.accessors.size() + 2;
+					meshPrimitive.attributes[texcoordsKey.c_str()] = (int)m.accessors.size() + (exportNormals ? 3 : 2);
 				} else if (withColor) {
-					meshPrimitive.attributes["COLOR_0"] = (int)m.accessors.size() + 2;
+					meshPrimitive.attributes["COLOR_0"] = (int)m.accessors.size() + (exportNormals ? 3 : 2);
 				}
 				meshPrimitive.material = materialId;
 				meshPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
@@ -385,7 +409,9 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			m.bufferViews.emplace_back(core::move(verticesUvBufferView));
 			m.accessors.emplace_back(core::move(indicesAccessor));
 			m.accessors.emplace_back(core::move(verticesAccessor));
-
+			if (exportNormals) {
+				m.accessors.emplace_back(core::move(normalAccessor));
+			}
 			if (withTexCoords || withColor) {
 				m.accessors.emplace_back(core::move(colorTexAccessor));
 			}
