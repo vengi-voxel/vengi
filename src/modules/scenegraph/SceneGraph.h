@@ -73,6 +73,7 @@ public:
 	const SceneGraphAnimationIds &animations() const;
 	bool addAnimation(const core::String &animation);
 	bool removeAnimation(const core::String &animation);
+	FrameIndex maxFrames() const;
 
 	/**
 	 * @brief Change the active animation for all nodes to the given animation

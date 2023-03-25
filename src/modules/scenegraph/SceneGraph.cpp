@@ -102,6 +102,15 @@ const core::String &SceneGraph::activeAnimation() const {
 	return _activeAnimation;
 }
 
+FrameIndex SceneGraph::maxFrames() const {
+	FrameIndex maxFrame = 0;
+	for (auto iter = beginAllModels(); iter != end(); ++iter) {
+		const scenegraph::SceneGraphNode &modelNode = *iter;
+		maxFrame = core_max(modelNode.maxFrame(), maxFrame);
+	}
+	return maxFrame;
+}
+
 int SceneGraph::activeNode() const {
 	return _activeNodeId;
 }

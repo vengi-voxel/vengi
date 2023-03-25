@@ -145,11 +145,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 bool AnimationTimeline::update(const char *sequencerTitle, double deltaFrameSeconds) {
 	scenegraph::FrameIndex currentFrame = sceneMgr().currentFrame();
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
-	scenegraph::FrameIndex maxFrame = 0;
-	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNode &modelNode = *iter;
-		maxFrame = core_max(modelNode.maxFrame(), maxFrame);
-	}
+	const scenegraph::FrameIndex maxFrame = sceneGraph.maxFrames();
 	if (_endFrame == -1) {
 		_endFrame = core_max(64, maxFrame + 1);
 	}
