@@ -462,7 +462,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, scenegraph::SceneGrap
 					const voxel::Voxel& voxel = voxel::createVoxel(palette, red);
 					volume->setVoxel(x, y, z, voxel);
 				} else {
-					const core::RGBA color = core::RGBA(red, green, blue);
+					const core::RGBA color = flattenRGB(red, green, blue);
 					uint8_t index = 1;
 					palette.addColorToPalette(color, false, &index);
 					const voxel::Voxel& voxel = voxel::createVoxel(palette, index);

@@ -387,6 +387,9 @@ bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::
 	wrap(stream.readInt32(tmp));
 
 	if (state._compressed == Compression::None) {
+		const uint32_t maxSize = size.x * size.y * size.z;
+		core::Buffer<core::RGBA> colors;
+		colors.reserve(maxSize);
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {
@@ -396,10 +399,11 @@ bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::
 					if (color.a == 0) {
 						continue;
 					}
-					palette.addColorToPalette(core::RGBA(color.r, color.g, color.b), false);
+					colors.push_back(flattenRGB(color.r, color.g, color.b));
 				}
 			}
 		}
+		palette.quantize(colors.data(), colors.size());
 		Log::debug("%i colors loaded", palette.colorCount());
 		return true;
 	}
