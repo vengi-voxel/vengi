@@ -343,13 +343,13 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			}
 
 			tinygltf::BufferView indicesBufferView;
-			indicesBufferView.buffer = nthNodeIdx;
+			indicesBufferView.buffer = (int)m.buffers.size();
 			indicesBufferView.byteOffset = 0;
 			indicesBufferView.byteLength = FLOAT_BUFFER_OFFSET - paddingBytes;
 			indicesBufferView.target = TINYGLTF_TARGET_ELEMENT_ARRAY_BUFFER;
 
 			tinygltf::BufferView verticesUvBufferView;
-			verticesUvBufferView.buffer = nthNodeIdx;
+			verticesUvBufferView.buffer = (int)m.buffers.size();
 			verticesUvBufferView.byteOffset = FLOAT_BUFFER_OFFSET;
 			verticesUvBufferView.byteLength = buffer.data.size() - FLOAT_BUFFER_OFFSET;
 			if (withTexCoords) {
@@ -361,7 +361,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			// Describe the layout of indicesBufferView, the indices of the vertices
 			tinygltf::Accessor indicesAccessor;
-			indicesAccessor.bufferView = 2 * nthNodeIdx;
+			indicesAccessor.bufferView = (int)m.bufferViews.size();
 			indicesAccessor.byteOffset = 0;
 			indicesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT;
 			static_assert(sizeof(IndexUnion) == 4, "");
@@ -372,7 +372,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			// Describe the layout of verticesUvBufferView, the vertices themself
 			tinygltf::Accessor verticesAccessor;
-			verticesAccessor.bufferView = 2 * nthNodeIdx + 1;
+			verticesAccessor.bufferView = (int)m.bufferViews.size() + 1;
 			verticesAccessor.byteOffset = 0;
 			verticesAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 			verticesAccessor.count = nv;
@@ -383,7 +383,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			tinygltf::Accessor colorTexAccessor;
 			if (withTexCoords) {
 				// Uvs
-				colorTexAccessor.bufferView = 2 * nthNodeIdx + 1;
+				colorTexAccessor.bufferView = (int)m.bufferViews.size() + 1;
 				colorTexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 				colorTexAccessor.count = nv;
 				colorTexAccessor.byteOffset = 12;
@@ -392,27 +392,25 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				colorTexAccessor.minValues = {minMaxUVX[0], 0.5};
 			} else if (withColor) {
 				// Uvs
-				colorTexAccessor.bufferView = 2 * nthNodeIdx + 1;
+				colorTexAccessor.bufferView = (int)m.bufferViews.size() + 1;
 				colorTexAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 				colorTexAccessor.count = nv;
 				colorTexAccessor.byteOffset = 12;
 				colorTexAccessor.type = TINYGLTF_TYPE_VEC4;
 			}
 
-			uint8_t primIdxFactor = (withTexCoords || withColor) ? 3 : 2;
-
 			// TODO: normals
 			{
 				// Build the mesh meshPrimitive and add it to the mesh
 				tinygltf::Primitive meshPrimitive;
-				meshPrimitive.indices = primIdxFactor * nthNodeIdx; // The index of the accessor for the vertex indices
+				meshPrimitive.indices = (int)m.accessors.size(); // The index of the accessor for the vertex indices
 				meshPrimitive.attributes["POSITION"] =
-					primIdxFactor * nthNodeIdx + 1; // The index of the accessor for positions
+					(int)m.accessors.size() + 1; // The index of the accessor for positions
 				if (withTexCoords) {
 					const core::String &texcoordsKey = core::String::format("TEXCOORD_%i", texcoordIndex);
-					meshPrimitive.attributes[texcoordsKey.c_str()] = primIdxFactor * nthNodeIdx + 2;
+					meshPrimitive.attributes[texcoordsKey.c_str()] = (int)m.accessors.size() + 2;
 				} else if (withColor) {
-					meshPrimitive.attributes["COLOR_0"] = primIdxFactor * nthNodeIdx + 2;
+					meshPrimitive.attributes["COLOR_0"] = (int)m.accessors.size() + 2;
 				}
 				meshPrimitive.material = materialId;
 				meshPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
