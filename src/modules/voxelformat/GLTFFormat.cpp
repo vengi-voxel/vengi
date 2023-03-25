@@ -45,6 +45,15 @@ namespace voxelformat {
 
 namespace _priv {
 const float FPS = 24.0f;
+
+static int addBuffer(tinygltf::Model &m, io::BufferedReadWriteStream &stream, const char *name) {
+	tinygltf::Buffer buffer;
+	buffer.name = name;
+	buffer.data.insert(buffer.data.end(), stream.getBuffer(), stream.getBuffer() + stream.size());
+	m.buffers.emplace_back(core::move(buffer));
+	return (int)(m.buffers.size() - 1);
+}
+
 }
 
 void GLTFFormat::processGltfNode(tinygltf::Model &m, tinygltf::Node &node, tinygltf::Scene &scene,
@@ -448,14 +457,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	return true;
 }
 
-static int addBuffer(tinygltf::Model &m, io::BufferedReadWriteStream &stream, const char *name) {
-	tinygltf::Buffer buffer;
-	buffer.name = name;
-	buffer.data.insert(buffer.data.end(), stream.getBuffer(), stream.getBuffer() + stream.size());
-	m.buffers.emplace_back(core::move(buffer));
-	return (int)(m.buffers.size() - 1);
-}
-
 void GLTFFormat::processAnimation(tinygltf::Model &m, tinygltf::Scene &scene,
 								  const scenegraph::SceneGraphNode &graphNode, const scenegraph::SceneGraph &sceneGraph,
 								  const core::String &animationId) {
@@ -490,10 +491,10 @@ void GLTFFormat::processAnimation(tinygltf::Model &m, tinygltf::Scene &scene,
 		osScale.writeFloat(scale.z);
 	}
 
-	int bufferTimeId = addBuffer(m, osTime, "time");
-	int bufferTranslationId = addBuffer(m, osTranslation, "translation");
-	int bufferRotationId = addBuffer(m, osRotation, "rotation");
-	int bufferScaleId = addBuffer(m, osScale, "scale");
+	const int bufferTimeId = _priv::addBuffer(m, osTime, "time");
+	const int bufferTranslationId = _priv::addBuffer(m, osTranslation, "translation");
+	const int bufferRotationId = _priv::addBuffer(m, osRotation, "rotation");
+	const int bufferScaleId = _priv::addBuffer(m, osScale, "scale");
 
 	const int timeAccessorIdx = (int)m.accessors.size();
 	{
