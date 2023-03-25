@@ -1085,9 +1085,9 @@ bool GLTFFormat::loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const ti
 						core_assert(accessor->type == TINYGLTF_TYPE_VEC3);
 						glm::vec3 v(buf[0], buf[1], buf[2]);
 						transform.setLocalScale(v);
-					} else if (channel.target_path == "weights") {
-						// TODO: not supported yet
-						break;
+					} else {
+						Log::debug("Unsupported target path %s", channel.target_path.c_str());
+						continue;
 					}
 				}
 			}
