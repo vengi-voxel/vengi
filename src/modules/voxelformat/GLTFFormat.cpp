@@ -392,8 +392,14 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			}
 
 			if (exportAnimations) {
-				// TODO: save all of them
+				// export the current active animation as first animation
 				processAnimation(m, scene, graphNode, sceneGraph, sceneGraph.activeAnimation());
+				for (const core::String &animation : sceneGraph.animations()) {
+					if (animation ==  sceneGraph.activeAnimation()) {
+						continue;
+					}
+					processAnimation(m, scene, graphNode, sceneGraph, animation);
+				}
 			}
 		}
 	}
