@@ -13,12 +13,14 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 General:
 
    - Fixed invalid x axis handling for Sandbox VXM format
+   - Fixed pivot handling in VXR/VXA format
    - Support model references to build a complex scene
 
 VoxEdit:
 
    - Allow to export selections only
    - Started to support different keymaps (blender, qubicle, magicavoxel and vengi own)
+   - Added support for multiple animations in one scene
 
 ## 0.0.24 (2023-03-12)
 
