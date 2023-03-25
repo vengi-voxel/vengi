@@ -427,12 +427,13 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			if (exportAnimations) {
 				// export the current active animation as first animation
-				processAnimation(m, scene, graphNode, sceneGraph, sceneGraph.activeAnimation());
+				const core::String &activeAnimation = sceneGraph.activeAnimation();
+				saveAnimation(m, scene, graphNode, sceneGraph, activeAnimation);
 				for (const core::String &animation : sceneGraph.animations()) {
-					if (animation == sceneGraph.activeAnimation()) {
+					if (animation == activeAnimation) {
 						continue;
 					}
-					processAnimation(m, scene, graphNode, sceneGraph, animation);
+					saveAnimation(m, scene, graphNode, sceneGraph, animation);
 				}
 			}
 		}
@@ -457,9 +458,9 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	return true;
 }
 
-void GLTFFormat::processAnimation(tinygltf::Model &m, tinygltf::Scene &scene,
-								  const scenegraph::SceneGraphNode &graphNode, const scenegraph::SceneGraph &sceneGraph,
-								  const core::String &animationId) {
+void GLTFFormat::saveAnimation(tinygltf::Model &m, tinygltf::Scene &scene, const scenegraph::SceneGraphNode &graphNode,
+							   const scenegraph::SceneGraph &sceneGraph, const core::String &animationId) {
+	Log::debug("save animation: %s", animationId.c_str());
 	const scenegraph::FrameIndex maxFrames = sceneGraph.maxFrames(animationId);
 	if (maxFrames <= 0) {
 		return;
@@ -1054,8 +1055,7 @@ bool GLTFFormat::loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const ti
 					Log::warn("Skip non float type for sampler output");
 					continue;
 				}
-				for (scenegraph::FrameIndex frameIdx = 0; frameIdx < (scenegraph::FrameIndex)accessor->count;
-					 ++frameIdx) {
+				for (scenegraph::FrameIndex frameIdx = 0; frameIdx < (scenegraph::FrameIndex)accessor->count; ++frameIdx) {
 					const float *buf = (const float *)transformBuf;
 					transformBuf += stride;
 					scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(frameIdx);
@@ -1085,6 +1085,7 @@ bool GLTFFormat::loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const ti
 	}
 	return frames > 0;
 }
+
 bool GLTFFormat::loadGltfNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
 								core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model,
 								int gltfNodeIdx, int parentNodeId) const {
