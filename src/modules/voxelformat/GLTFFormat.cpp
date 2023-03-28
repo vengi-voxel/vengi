@@ -132,12 +132,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	tinygltf::Model m;
 
 	// Define the asset. The version is required
-	tinygltf::Asset asset;
-	asset.version = "2.0";
+	m.asset.version = "2.0";
 	const core::String &generator =
 		core::string::format("%s " PROJECT_VERSION, app::App::getInstance()->appname().c_str());
-	asset.generator = generator.c_str();
-	m.asset = asset;
+	m.asset.generator = generator.c_str();
 
 	tinygltf::Scene scene;
 
@@ -474,9 +472,9 @@ void GLTFFormat::saveAnimation(int targetNode, tinygltf::Model &model, const sce
 	const int maxFrames = (int)keyFrames.size();
 	Log::debug("Save animation %s for node %s with %i frames", animationId.c_str(), node.name().c_str(), maxFrames);
 	io::BufferedReadWriteStream osTime((int64_t)(maxFrames * sizeof(float)));
-	io::BufferedReadWriteStream osTranslation((int64_t)(maxFrames * 3 * sizeof(float)));
-	io::BufferedReadWriteStream osRotation((int64_t)(maxFrames * 4 * sizeof(float)));
-	io::BufferedReadWriteStream osScale((int64_t)(maxFrames * 3 * sizeof(float)));
+	io::BufferedReadWriteStream osTranslation((int64_t)((size_t)maxFrames * 3 * sizeof(float)));
+	io::BufferedReadWriteStream osRotation((int64_t)((size_t)maxFrames * 4 * sizeof(float)));
+	io::BufferedReadWriteStream osScale((int64_t)((size_t)maxFrames * 3 * sizeof(float)));
 
 	for (const scenegraph::SceneGraphKeyFrame &keyFrame : keyFrames) {
 		osTime.writeFloat((float)keyFrame.frameIdx / _priv::FPS);
@@ -614,7 +612,7 @@ void GLTFFormat::saveAnimation(int targetNode, tinygltf::Model &model, const sce
 }
 
 size_t GLTFFormat::getGltfAccessorSize(const tinygltf::Accessor &accessor) const {
-	return tinygltf::GetComponentSizeInBytes(accessor.componentType) * tinygltf::GetNumComponentsInType(accessor.type);
+	return (size_t)tinygltf::GetComponentSizeInBytes(accessor.componentType) * tinygltf::GetNumComponentsInType(accessor.type);
 }
 
 const tinygltf::Accessor *GLTFFormat::getGltfAccessor(const tinygltf::Model &model, int id) const {
