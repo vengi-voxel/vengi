@@ -95,18 +95,37 @@ void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::Dyn
 	}
 }
 
+static tinygltf::Camera processCamera(const scenegraph::SceneGraphNodeCamera &camera) {
+	tinygltf::Camera gltfCamera;
+	gltfCamera.name = camera.name().c_str();
+	if (camera.isPerspective()) {
+		gltfCamera.type = "perspective";
+		gltfCamera.perspective.aspectRatio = camera.aspectRatio();
+		gltfCamera.perspective.yfov = camera.fieldOfView();
+		gltfCamera.perspective.zfar = camera.farPlane();
+		gltfCamera.perspective.znear = camera.nearPlane();
+	} else if (camera.isOrthographic()) {
+		gltfCamera.type = "orthographic";
+		gltfCamera.orthographic.xmag = camera.width() / 2.0;
+		gltfCamera.orthographic.ymag = camera.height() / 2.0;
+		gltfCamera.orthographic.zfar = camera.farPlane();
+		gltfCamera.orthographic.znear = camera.nearPlane();
+	}
+	return gltfCamera;
+}
+
 } // namespace _priv
 
 void GLTFFormat::saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &gltfModel, tinygltf::Node &gltfNode,
-							  tinygltf::Scene &gltfScene, const scenegraph::SceneGraphNode &graphNode, Stack &stack,
+							  tinygltf::Scene &gltfScene, const scenegraph::SceneGraphNode &node, Stack &stack,
 							  const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations) {
-	gltfNode.name = graphNode.name().c_str();
+	gltfNode.name = node.name().c_str();
 	Log::debug("process node %s", gltfNode.name.c_str());
 	const int idx = (int)gltfModel.nodes.size();
 
 	if (!exportAnimations) {
-		glm::mat4x4 nodeLocalMatrix = graphNode.transform().localMatrix();
-		if (graphNode.id() == 0) {
+		glm::mat4x4 nodeLocalMatrix = node.transform().localMatrix();
+		if (node.id() == 0) {
 			nodeLocalMatrix = glm::scale(nodeLocalMatrix, scale);
 		}
 
@@ -124,7 +143,7 @@ void GLTFFormat::saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model 
 	}
 
 	gltfModel.nodes.push_back(gltfNode);
-	nodeMapping.put(graphNode.id(), idx);
+	nodeMapping.put(node.id(), idx);
 
 	if (stack.back().second != -1) {
 		gltfModel.nodes[stack.back().second].children.push_back(idx);
@@ -134,30 +153,11 @@ void GLTFFormat::saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model 
 
 	stack.pop();
 
-	const scenegraph::SceneGraphNodeChildren &nodeChildren = graphNode.children();
+	const scenegraph::SceneGraphNodeChildren &nodeChildren = node.children();
 
 	for (int i = (int)nodeChildren.size() - 1; i >= 0; i--) {
 		stack.emplace_back(nodeChildren[i], idx);
 	}
-}
-
-static tinygltf::Camera processCamera(const scenegraph::SceneGraphNodeCamera &cam) {
-	tinygltf::Camera gltfCamera;
-	gltfCamera.name = cam.name().c_str();
-	if (cam.isPerspective()) {
-		gltfCamera.type = "perspective";
-		gltfCamera.perspective.aspectRatio = cam.aspectRatio();
-		gltfCamera.perspective.yfov = cam.fieldOfView();
-		gltfCamera.perspective.zfar = cam.farPlane();
-		gltfCamera.perspective.znear = cam.nearPlane();
-	} else if (cam.isOrthographic()) {
-		gltfCamera.type = "orthographic";
-		gltfCamera.orthographic.xmag = cam.width() / 2.0;
-		gltfCamera.orthographic.ymag = cam.height() / 2.0;
-		gltfCamera.orthographic.zfar = cam.farPlane();
-		gltfCamera.orthographic.znear = cam.nearPlane();
-	}
-	return gltfCamera;
 }
 
 bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
@@ -188,12 +188,12 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	core::Map<int, int> nodeMapping((int)sceneGraph.nodeSize());
 	while (!stack.empty()) {
 		const int nodeId = stack.back().first;
-		const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(nodeId);
-		const voxel::Palette &palette = graphNode.palette();
+		const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+		const voxel::Palette &palette = node.palette();
 
 		int materialId = -1;
 		int texcoordIndex = 0;
-		if (graphNode.type() == scenegraph::SceneGraphNodeType::Model) {
+		if (node.type() == scenegraph::SceneGraphNodeType::Model) {
 			const auto palTexIter = paletteMaterialIndices.find(palette.hash());
 			if (palTexIter != paletteMaterialIndices.end()) {
 				materialId = palTexIter->second;
@@ -248,7 +248,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 		if (meshIdxNodeMap.find(nodeId) == meshIdxNodeMap.end()) {
 			tinygltf::Node gltfNode;
-			saveGltfNode(nodeMapping, gltfModel, gltfNode, gltfScene, graphNode, stack, sceneGraph, scale, false);
+			saveGltfNode(nodeMapping, gltfModel, gltfNode, gltfScene, node, stack, sceneGraph, scale, false);
 			continue;
 		}
 
@@ -442,7 +442,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			{
 				tinygltf::Node gltfNode;
 				gltfNode.mesh = (int)gltfModel.meshes.size();
-				saveGltfNode(nodeMapping, gltfModel, gltfNode, gltfScene, graphNode, stack, sceneGraph, scale,
+				saveGltfNode(nodeMapping, gltfModel, gltfNode, gltfScene, node, stack, sceneGraph, scale,
 							 exportAnimations);
 			}
 
@@ -477,8 +477,8 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			gltfAnimation.name = animationId.c_str();
 			Log::debug("save animation: %s", animationId.c_str());
 			for (const auto &e : nodeMapping) {
-				const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(e->key);
-				saveAnimation(e->value, gltfModel, graphNode, gltfAnimation);
+				const scenegraph::SceneGraphNode &node = sceneGraph.node(e->key);
+				saveAnimation(e->value, gltfModel, node, gltfAnimation);
 			}
 			gltfModel.animations.emplace_back(gltfAnimation);
 		}
@@ -488,7 +488,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 	gltfModel.scenes.emplace_back(core::move(gltfScene));
 	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
-		tinygltf::Camera gltfCamera = processCamera(toCameraNode(*iter));
+		tinygltf::Camera gltfCamera = _priv::processCamera(toCameraNode(*iter));
 		if (gltfCamera.type.empty()) {
 			continue;
 		}
