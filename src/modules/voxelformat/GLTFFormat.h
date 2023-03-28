@@ -40,6 +40,9 @@ private:
 					  tinygltf::Scene &gltfScene, const scenegraph::SceneGraphNode &graphNode, Stack &stack,
 					  const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations);
 
+	void saveAnimation(int targetNode, tinygltf::Model &m, const scenegraph::SceneGraphNode &node,
+					   tinygltf::Animation &gltfAnimation);
+
 	// importing (voxelization)
 	struct GltfVertex {
 		glm::vec3 pos{0.0f};
@@ -75,10 +78,6 @@ private:
 
 	bool subdivideShape(scenegraph::SceneGraphNode &node, const TriCollection &tris, const glm::vec3 &offset,
 						bool axisAlignedMesh) const;
-
-	void saveAnimation(int targetNode, tinygltf::Model &m, const scenegraph::SceneGraphNode &node,
-					   tinygltf::Animation &gltfAnimation);
-
 	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 
