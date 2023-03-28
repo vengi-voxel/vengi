@@ -55,23 +55,23 @@ private:
 		image::TextureWrap wrapS = image::TextureWrap::Repeat;
 		image::TextureWrap wrapT = image::TextureWrap::Repeat;
 	};
-	bool loadGltfTextures(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
-						  const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
-						  GltfTextureData &textureData) const;
-	bool loadGlftAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
-							const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
-							core::DynamicArray<GltfVertex> &vertices) const;
+	bool loadTextures(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
+					  const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
+					  GltfTextureData &textureData) const;
+	bool loadAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
+						const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
+						core::DynamicArray<GltfVertex> &vertices) const;
 
-	bool loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &model, int gltfNodeIdx,
-							scenegraph::SceneGraphNode &node) const;
-	bool loadGltfNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
-						core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &gltfModel, int gltfNodeIdx,
-						int parentNodeId) const;
-	bool loadGltfIndices(const tinygltf::Model &model, const tinygltf::Primitive &gltfPrimitive,
-						 core::DynamicArray<uint32_t> &indices, size_t indicesOffset) const;
-	scenegraph::SceneGraphTransform loadGltfTransform(const tinygltf::Node &gltfNode) const;
-	size_t getGltfAccessorSize(const tinygltf::Accessor &gltfAccessor) const;
-	const tinygltf::Accessor *getGltfAccessor(const tinygltf::Model &gltfModel, int id) const;
+	bool loadAnimations(scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &model, int gltfNodeIdx,
+						scenegraph::SceneGraphNode &node) const;
+	bool loadNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
+					core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &gltfModel, int gltfNodeIdx,
+					int parentNodeId) const;
+	bool loadIndices(const tinygltf::Model &model, const tinygltf::Primitive &gltfPrimitive,
+					 core::DynamicArray<uint32_t> &indices, size_t indicesOffset) const;
+	scenegraph::SceneGraphTransform loadTransform(const tinygltf::Node &gltfNode) const;
+	size_t accessorSize(const tinygltf::Accessor &gltfAccessor) const;
+	const tinygltf::Accessor *getAccessor(const tinygltf::Model &gltfModel, int id) const;
 
 	bool subdivideShape(scenegraph::SceneGraphNode &node, const TriCollection &tris, const glm::vec3 &offset,
 						bool axisAlignedMesh) const;
