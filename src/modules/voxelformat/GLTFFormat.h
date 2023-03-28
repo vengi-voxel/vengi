@@ -49,6 +49,14 @@ private:
 		core::RGBA color{0};
 		core::String texture;
 	};
+	struct GltfTextureData {
+		core::String diffuseTexture;
+		core::String texCoordAttribute;
+		image::TextureWrap wrapS = image::TextureWrap::Repeat;
+		image::TextureWrap wrapT = image::TextureWrap::Repeat;
+	};
+	bool loadGltfTextures(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
+						  const tinygltf::Model &model, const tinygltf::Primitive &primitive, GltfTextureData& textureData) const;
 	bool loadGlftAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 							const tinygltf::Model &model, const tinygltf::Primitive &primitive,
 							core::DynamicArray<GltfVertex> &vertices) const;

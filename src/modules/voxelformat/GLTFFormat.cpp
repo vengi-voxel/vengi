@@ -44,6 +44,7 @@
 namespace voxelformat {
 
 namespace _priv {
+
 const float FPS = 24.0f;
 
 static int addBuffer(tinygltf::Model &m, io::BufferedReadWriteStream &stream, const char *name) {
@@ -52,6 +53,37 @@ static int addBuffer(tinygltf::Model &m, io::BufferedReadWriteStream &stream, co
 	buffer.data.insert(buffer.data.end(), stream.getBuffer(), stream.getBuffer() + stream.size());
 	m.buffers.emplace_back(core::move(buffer));
 	return (int)(m.buffers.size() - 1);
+}
+
+static image::TextureWrap convertTextureWrap(int wrap) {
+	if (wrap == TINYGLTF_TEXTURE_WRAP_REPEAT) {
+		return image::TextureWrap::Repeat;
+	} else if (wrap == TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE) {
+		return image::TextureWrap::ClampToEdge;
+	} else if (wrap == TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT) {
+		return image::TextureWrap::MirroredRepeat;
+	}
+	Log::warn("Unknown wrap mode found in sampler: %i", wrap);
+	return image::TextureWrap::Repeat;
+}
+
+static core::RGBA toColor(const tinygltf::Accessor *attributeAccessor, const uint8_t *buf) {
+	if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
+		const float *colorData = (const float *)(buf);
+		const float alpha = attributeAccessor->type == TINYGLTF_TYPE_VEC4 ? colorData[3] : 1.0f;
+		return core::Color::getRGBA(glm::vec4(colorData[0], colorData[1], colorData[2], alpha));
+	} else if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
+		const uint8_t *colorData = buf;
+		const uint8_t alpha = attributeAccessor->type == TINYGLTF_TYPE_VEC4 ? colorData[3] : 255u;
+		return core::RGBA(colorData[0], colorData[1], colorData[2], alpha);
+	} else if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+		const uint16_t *colorData = (const uint16_t *)buf;
+		const uint8_t alpha = attributeAccessor->type == TINYGLTF_TYPE_VEC4 ? colorData[3] / 256u : 255u;
+		return core::RGBA(colorData[0] / 256, colorData[1] / 256, colorData[2] / 256, alpha);
+	} else {
+		Log::warn("Skip unknown type for vertex colors (%i)", attributeAccessor->componentType);
+	}
+	return core::RGBA(0, 0, 0, 255);
 }
 
 }
@@ -729,27 +761,11 @@ bool GLTFFormat::loadGltfIndices(const tinygltf::Model &model, const tinygltf::P
 	return true;
 }
 
-static image::TextureWrap convertTextureWrap(int wrap) {
-	if (wrap == TINYGLTF_TEXTURE_WRAP_REPEAT) {
-		return image::TextureWrap::Repeat;
-	} else if (wrap == TINYGLTF_TEXTURE_WRAP_CLAMP_TO_EDGE) {
-		return image::TextureWrap::ClampToEdge;
-	} else if (wrap == TINYGLTF_TEXTURE_WRAP_MIRRORED_REPEAT) {
-		return image::TextureWrap::MirroredRepeat;
-	}
-	Log::warn("Unknown wrap mode found in sampler: %i", wrap);
-	return image::TextureWrap::Repeat;
-}
-
-bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
-									const tinygltf::Model &model, const tinygltf::Primitive &primitive,
-									core::DynamicArray<GltfVertex> &vertices) const {
-	core::String diffuseTexture;
+bool GLTFFormat::loadGltfTextures(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
+								  const tinygltf::Model &model, const tinygltf::Primitive &primitive, GltfTextureData& textureData) const {
 	Log::debug("Primitive material: %i", primitive.material);
 	Log::debug("Primitive mode: %i", primitive.mode);
 	int texCoordIndex = 0;
-	image::TextureWrap wrapS = image::TextureWrap::Repeat;
-	image::TextureWrap wrapT = image::TextureWrap::Repeat;
 	if (primitive.material >= 0 && primitive.material < (int)model.materials.size()) {
 		const tinygltf::Material *gltfMaterial = &model.materials[primitive.material];
 		// TODO: load emissiveTexture
@@ -761,8 +777,8 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 				if (colorTexture.sampler >= 0 && colorTexture.sampler < (int)model.samplers.size()) {
 					const tinygltf::Sampler &sampler = model.samplers[colorTexture.sampler];
 					Log::debug("Sampler: %s, wrapS: %i, wrapT: %i", sampler.name.c_str(), sampler.wrapS, sampler.wrapT);
-					wrapS = convertTextureWrap(sampler.wrapS);
-					wrapT = convertTextureWrap(sampler.wrapT);
+					textureData.wrapS = _priv::convertTextureWrap(sampler.wrapS);
+					textureData.wrapT = _priv::convertTextureWrap(sampler.wrapT);
 				}
 				const tinygltf::Image &image = model.images[colorTexture.source];
 				Log::debug("Image components: %i, width: %i, height: %i, bits: %i", image.component, image.width,
@@ -778,8 +794,8 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 							if (!tex->load(buf, (int)imgBufferView.byteLength)) {
 								Log::warn("Failed to load embedded image %s", image.name.c_str());
 							} else {
-								diffuseTexture = image.name.c_str();
-								textures.emplace(diffuseTexture, core::move(tex));
+								textureData.diffuseTexture = image.name.c_str();
+								textures.emplace(textureData.diffuseTexture, core::move(tex));
 							}
 						} else {
 							Log::warn("Invalid buffer index for image: %i", imgBufferView.buffer);
@@ -794,8 +810,8 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 							core_assert(image.image.size() == (size_t)(image.width * image.height * image.component));
 							tex->loadRGBA(image.image.data(), image.width, image.height);
 							Log::debug("Use image %s", name.c_str());
-							diffuseTexture = name.c_str();
-							textures.emplace(diffuseTexture, core::move(tex));
+							textureData.diffuseTexture = name.c_str();
+							textures.emplace(textureData.diffuseTexture, core::move(tex));
 							texCoordIndex = textureInfo.texCoord;
 						} else {
 							Log::warn("Failed to load image with %i components", image.component);
@@ -810,14 +826,14 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 						image::ImagePtr tex = image::loadImage(name);
 						if (tex->isLoaded()) {
 							Log::debug("Use image %s", name.c_str());
-							diffuseTexture = image.uri.c_str();
-							textures.emplace(diffuseTexture, core::move(tex));
+							textureData.diffuseTexture = image.uri.c_str();
+							textures.emplace(textureData.diffuseTexture, core::move(tex));
 							texCoordIndex = textureInfo.texCoord;
 						} else {
 							Log::warn("Failed to load %s", name.c_str());
 						}
 					} else {
-						diffuseTexture = name;
+						textureData.diffuseTexture = name;
 					}
 				}
 			} else {
@@ -828,8 +844,19 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 		}
 	}
 
-	const core::String texCoordAttribute = core::string::format("TEXCOORD_%i", texCoordIndex);
-	Log::debug("Texcoords: %s", texCoordAttribute.c_str());
+	textureData.texCoordAttribute = core::string::format("TEXCOORD_%i", texCoordIndex);
+	Log::debug("Texcoords: %s", textureData.texCoordAttribute.c_str());
+
+	return true;
+}
+
+bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
+									const tinygltf::Model &model, const tinygltf::Primitive &primitive,
+									core::DynamicArray<GltfVertex> &vertices) const {
+	GltfTextureData textureData;
+	if (!loadGltfTextures(filename, textures, model, primitive, textureData)) {
+		return false;
+	}
 
 	bool foundPosition = false;
 	size_t verticesOffset = vertices.size();
@@ -860,10 +887,10 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 			for (size_t i = 0; i < attributeAccessor->count; i++) {
 				const float *posData = (const float *)buf;
 				vertices[verticesOffset + i].pos = glm::vec3(posData[0], posData[1], posData[2]);
-				vertices[verticesOffset + i].texture = diffuseTexture;
+				vertices[verticesOffset + i].texture = textureData.diffuseTexture;
 				buf += stride;
 			}
-		} else if (attrType == texCoordAttribute.c_str()) {
+		} else if (attrType == textureData.texCoordAttribute.c_str()) {
 			if (attributeAccessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
 				Log::debug("Skip non float type (%i) for %s", attributeAccessor->componentType, attrType.c_str());
 				continue;
@@ -872,35 +899,14 @@ bool GLTFFormat::loadGlftAttributes(const core::String &filename, core::StringMa
 			for (size_t i = 0; i < attributeAccessor->count; i++) {
 				const float *uvData = (const float *)buf;
 				vertices[verticesOffset + i].uv = glm::vec2(uvData[0], uvData[1]);
-				vertices[verticesOffset + i].wrapS = wrapS;
-				vertices[verticesOffset + i].wrapT = wrapT;
+				vertices[verticesOffset + i].wrapS = textureData.wrapS;
+				vertices[verticesOffset + i].wrapT = textureData.wrapT;
 				buf += stride;
 			}
 		} else if (core::string::startsWith(attrType.c_str(), "COLOR")) {
-			if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
-				for (size_t i = 0; i < attributeAccessor->count; i++) {
-					const float *colorData = (const float *)(buf);
-					const float alpha = attributeAccessor->type == TINYGLTF_TYPE_VEC4 ? colorData[3] : 1.0f;
-					vertices[verticesOffset + i].color = core::Color::getRGBA(glm::vec4(colorData[0], colorData[1], colorData[2], alpha));
-					buf += stride;
-				}
-			} else if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
-				for (size_t i = 0; i < attributeAccessor->count; i++) {
-					const uint8_t *colorData = buf;
-					const uint8_t alpha = attributeAccessor->type == TINYGLTF_TYPE_VEC4 ? colorData[3] : 255u;
-					vertices[verticesOffset + i].color = core::RGBA(colorData[0], colorData[1], colorData[2], alpha);
-					buf += stride;
-				}
-			} else if (attributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-				for (size_t i = 0; i < attributeAccessor->count; i++) {
-					const uint16_t *colorData = (const uint16_t *)buf;
-					const uint8_t alpha = attributeAccessor->type == TINYGLTF_TYPE_VEC4 ? colorData[3] / 256u : 255u;
-					vertices[verticesOffset + i].color = core::RGBA(colorData[0] / 256, colorData[1] / 256, colorData[2] / 256, alpha);
-					buf += stride;
-				}
-			} else {
-				Log::warn("Skip unknown type for vertex colors (%i) for %s", attributeAccessor->componentType, attrType.c_str());
-				continue;
+			for (size_t i = 0; i < attributeAccessor->count; i++) {
+				vertices[verticesOffset + i].color = _priv::toColor(attributeAccessor, buf);
+				buf += stride;
 			}
 		} else {
 			Log::debug("Skip unhandled attribute %s", attrType.c_str());
