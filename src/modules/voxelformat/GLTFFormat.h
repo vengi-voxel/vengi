@@ -36,9 +36,9 @@ class GLTFFormat : public MeshFormat {
 private:
 	// exporting
 	typedef core::DynamicArray<core::Pair<int, int>> Stack;
-	void processGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &m, tinygltf::Node &node,
-						 tinygltf::Scene &scene, const scenegraph::SceneGraphNode &graphNode, Stack &stack,
-						 const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations);
+	void saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &gltfModel, tinygltf::Node &gltfNode,
+					  tinygltf::Scene &gltfScene, const scenegraph::SceneGraphNode &graphNode, Stack &stack,
+					  const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations);
 
 	// importing (voxelization)
 	struct GltfVertex {
@@ -56,27 +56,28 @@ private:
 		image::TextureWrap wrapT = image::TextureWrap::Repeat;
 	};
 	bool loadGltfTextures(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
-						  const tinygltf::Model &model, const tinygltf::Primitive &primitive, GltfTextureData& textureData) const;
+						  const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
+						  GltfTextureData &textureData) const;
 	bool loadGlftAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
-							const tinygltf::Model &model, const tinygltf::Primitive &primitive,
+							const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
 							core::DynamicArray<GltfVertex> &vertices) const;
 
 	bool loadGltfAnimations(scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &model, int gltfNodeIdx,
 							scenegraph::SceneGraphNode &node) const;
 	bool loadGltfNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
-						core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &model, int gltfNodeIdx,
+						core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &gltfModel, int gltfNodeIdx,
 						int parentNodeId) const;
-	bool loadGltfIndices(const tinygltf::Model &model, const tinygltf::Primitive &primitive,
+	bool loadGltfIndices(const tinygltf::Model &model, const tinygltf::Primitive &gltfPrimitive,
 						 core::DynamicArray<uint32_t> &indices, size_t indicesOffset) const;
 	scenegraph::SceneGraphTransform loadGltfTransform(const tinygltf::Node &gltfNode) const;
-	size_t getGltfAccessorSize(const tinygltf::Accessor &accessor) const;
-	const tinygltf::Accessor *getGltfAccessor(const tinygltf::Model &model, int id) const;
+	size_t getGltfAccessorSize(const tinygltf::Accessor &gltfAccessor) const;
+	const tinygltf::Accessor *getGltfAccessor(const tinygltf::Model &gltfModel, int id) const;
 
 	bool subdivideShape(scenegraph::SceneGraphNode &node, const TriCollection &tris, const glm::vec3 &offset,
 						bool axisAlignedMesh) const;
 
 	void saveAnimation(int targetNode, tinygltf::Model &m, const scenegraph::SceneGraphNode &node,
-					   tinygltf::Animation &animation);
+					   tinygltf::Animation &gltfAnimation);
 
 	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
