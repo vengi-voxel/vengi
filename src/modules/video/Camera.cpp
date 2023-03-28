@@ -9,6 +9,7 @@
 #include "core/Singleton.h"
 #include <glm/gtc/epsilon.hpp>
 #include "core/Var.h"
+#include <glm/gtx/quaternion.hpp>
 #include "math/AABB.h"
 #include "core/GLM.h"
 #include "math/Ray.h"
@@ -22,7 +23,7 @@
 namespace video {
 
 Camera::Camera(CameraType type, CameraMode mode) :
-	_type(type), _mode(mode), _worldPos(glm::vec3(0.0f)), _omega(0.0f) {
+	_type(type), _mode(mode), _quat(glm::quat_identity<float, glm::defaultp>()) {
 }
 
 float Camera::pitch() const {
