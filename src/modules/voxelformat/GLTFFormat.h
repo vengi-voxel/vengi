@@ -16,6 +16,7 @@ struct Material;
 struct Primitive;
 struct Accessor;
 struct Animation;
+struct AnimationChannel;
 } // namespace tinygltf
 
 namespace scenegraph {
@@ -65,6 +66,9 @@ private:
 						const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
 						core::DynamicArray<GltfVertex> &vertices) const;
 
+	bool loadAnimationChannel(const tinygltf::Model &gltfModel, const tinygltf::Animation &gltfAnimation,
+							  const tinygltf::AnimationChannel &gltfAnimChannel,
+							  scenegraph::SceneGraphNode &node) const;
 	bool loadAnimations(scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &model, int gltfNodeIdx,
 						scenegraph::SceneGraphNode &node) const;
 	bool loadNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
