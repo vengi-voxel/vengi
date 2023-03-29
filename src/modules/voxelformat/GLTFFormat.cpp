@@ -6,31 +6,23 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/FourCC.h"
-#include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/RGBA.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
-#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
-#include "core/concurrent/Lock.h"
-#include "core/concurrent/ThreadPool.h"
 #include "engine-config.h"
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/Filesystem.h"
 #include "io/StdStreamBuf.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/Palette.h"
-#include "voxel/PaletteLookup.h"
-#include "voxel/RawVolumeWrapper.h"
 #include "voxel/VoxelVertex.h"
 #include "voxelutil/VoxelUtil.h"
 
-#include <future>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -919,78 +911,6 @@ bool GLTFFormat::loadAttributes(const core::String &filename, core::StringMap<im
 	return foundPosition;
 }
 
-bool GLTFFormat::subdivideShape(scenegraph::SceneGraphNode &node, const TriCollection &tris, const glm::vec3 &offset,
-								bool axisAlignedMesh) const {
-	auto func = [&offset, &axisAlignedMesh](Tri tri) {
-		for (size_t i = 0; i < 3; ++i) {
-			tri.vertices[i] -= offset;
-		}
-		TriCollection subdivided;
-
-		if (axisAlignedMesh) {
-			subdivided.push_back(tri);
-		} else {
-			subdivideTri(tri, subdivided);
-		}
-
-		return core::move(subdivided);
-	};
-
-	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
-	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
-	core::DynamicArray<std::future<TriCollection>> futures;
-	futures.reserve(tris.size());
-	threadPool.reserve(futures.size());
-	for (const Tri &tri : tris) {
-		futures.emplace_back(threadPool.enqueue(func, tri));
-	}
-
-	voxel::Palette palette;
-	voxel::RawVolume *volume = node.volume();
-	int n = 0;
-	for (auto &f : futures) {
-		const TriCollection &tris = f.get();
-		if (!tris.empty()) {
-			PosMap posMap;
-
-			if (axisAlignedMesh) {
-				const glm::vec3 &triMins = glm::round(tris[0].mins());
-				const glm::vec3 &triMaxs = glm::round(tris[0].maxs());
-				const glm::ivec3 &triDimensions = glm::max(glm::abs(triMaxs - triMins), 1.0f);
-				posMap = PosMap(triDimensions.x * triDimensions.y * triDimensions.z);
-				transformTrisAxisAligned(tris, posMap);
-			} else {
-				posMap = PosMap((int)tris.size() * 3);
-				transformTris(tris, posMap);
-			}
-
-			for (const auto &entry : posMap) {
-				const PosSampling &pos = entry->second;
-				const core::RGBA color = pos.avgColor(_flattenFactor);
-				palette.addColorToPalette(color, true);
-				const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(color));
-				volume->setVoxel(entry->first, voxel);
-			}
-		}
-		++n;
-		Log::debug("step: %i, tris: %i", n, (int)tris.size());
-	}
-
-	Log::debug("colors: %i", (int)palette.size());
-	if (palette.colorCount() == 1) {
-		if (palette.colors()[0].a == 0) {
-			palette.color(0).a = 255;
-		}
-	}
-	node.setPalette(palette);
-	if (fillHollow) {
-		Log::debug("fill hollows");
-		voxel::RawVolumeWrapper wrapper(volume);
-		voxelutil::fillHollow(wrapper, voxel::Voxel(voxel::VoxelType::Generic, 2));
-	}
-	return true;
-}
-
 bool GLTFFormat::loadAnimationChannel(const tinygltf::Model &gltfModel, const tinygltf::Animation &gltfAnimation,
 									  const tinygltf::AnimationChannel &gltfAnimChannel,
 									  scenegraph::SceneGraphNode &node) const {
@@ -1252,48 +1172,12 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 		tris.push_back(tri);
 	}
 
-	glm::vec3 mins;
-	glm::vec3 maxs;
-	calculateAABB(tris, mins, maxs);
-
-	glm::vec3 regionOffset(0.0f);
-	glm::ivec3 imins;
-	glm::ivec3 imaxs;
-
-	const bool axisAligned = isVoxelMesh(tris);
-	if (axisAligned) {
-		const glm::vec3 aabbCenterDelta = (mins + maxs) / 2.0f;
-
-		mins -= aabbCenterDelta;
-		maxs -= aabbCenterDelta;
-
-		imins = glm::round(mins);
-		const glm::vec3 minsDelta = glm::vec3(imins) - mins;
-
-		imaxs = glm::round(maxs + minsDelta);
-		imaxs -= 1;
-
-		regionOffset = aabbCenterDelta - minsDelta;
-	} else {
-		imins = glm::floor(mins);
-		imaxs = glm::ceil(maxs);
+	const int nodeId = voxelizeNode(gltfNode.name.c_str(), sceneGraph, tris, parentNodeId, false);
+	if (nodeId == InvalidNodeId) {
+		// ignore this node
+		return true;
 	}
-
-	const voxel::Region region(imins, imaxs);
-	if (!region.isValid()) {
-		Log::error("Invalid region found %s", region.toString().c_str());
-		return false;
-	}
-	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
-	if (glm::any(glm::greaterThan(vdim, glm::ivec3(512)))) {
-		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
-				  vdim.x, vdim.y, vdim.z);
-	}
-	Log::debug("region mins(%i:%i:%i)/maxs(%i:%i:%i)", imins.x, imins.y, imins.z, imaxs.x, imaxs.y, imaxs.z);
-
-	scenegraph::SceneGraphNode node;
-	node.setName(gltfNode.name.c_str());
-
+	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	if (!loadAnimations(sceneGraph, gltfModel, gltfNodeIdx, node)) {
 		Log::debug("No animation found or loaded for node %s", node.name().c_str());
 		scenegraph::SceneGraphTransform transform = loadTransform(gltfNode);
@@ -1301,22 +1185,8 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 		node.setTransform(keyFrameIdx, transform);
 	}
 
-	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	node.setVolume(volume, true);
-	node.setPivot(-regionOffset / glm::vec3(vdim));
-	int newParent = parentNodeId;
-	// TODO: use voxelizeNode here and remove subdivideShape
-	if (!subdivideShape(node, tris, regionOffset * scale, axisAligned)) {
-		Log::error("Failed to subdivide node %i", gltfNodeIdx);
-	} else {
-		newParent = sceneGraph.emplace(core::move(node), parentNodeId);
-		if (newParent == -1) {
-			Log::error("Failed to add node");
-			newParent = parentNodeId;
-		}
-	}
 	for (int childId : gltfNode.children) {
-		loadNode_r(filename, sceneGraph, textures, gltfModel, childId, newParent);
+		loadNode_r(filename, sceneGraph, textures, gltfModel, childId, nodeId);
 	}
 	return true;
 }

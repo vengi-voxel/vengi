@@ -80,8 +80,6 @@ private:
 	size_t accessorSize(const tinygltf::Accessor &gltfAccessor) const;
 	const tinygltf::Accessor *getAccessor(const tinygltf::Model &gltfModel, int id) const;
 
-	bool subdivideShape(scenegraph::SceneGraphNode &node, const TriCollection &tris, const glm::vec3 &offset,
-						bool axisAlignedMesh) const;
 	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 
