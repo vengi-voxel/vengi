@@ -17,6 +17,7 @@
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ThreadPool.h"
 #include "io/FormatDescription.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/MarchingCubesSurfaceExtractor.h"
@@ -181,10 +182,10 @@ bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
 	return true;
 }
 
-int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris, int parent) const {
+int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris, int parent, bool resetOrigin) const {
 	if (tris.empty()) {
 		Log::warn("Empty volume - no triangles given");
-		return -1;
+		return InvalidNodeId;
 	}
 
 	const bool axisAligned = isVoxelMesh(tris);
@@ -197,7 +198,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 	const voxel::Region region(glm::floor(trisMins), glm::ceil(trisMaxs));
 	if (!region.isValid()) {
 		Log::error("Invalid region: %s", region.toString().c_str());
-		return -1;
+		return InvalidNodeId;
 	}
 
 	const glm::ivec3 &vdim = region.getDimensionsInVoxels();
@@ -223,7 +224,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		}
 		if (subdivided.empty()) {
 			Log::warn("Empty volume - could not subdivide");
-			return -1;
+			return InvalidNodeId;
 		}
 
 		PosMap posMap((int)subdivided.size() * 3);
@@ -236,7 +237,9 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 
-	node.volume()->translate(-region.getLowerCorner());
+	if (resetOrigin) {
+		node.volume()->translate(-region.getLowerCorner());
+	}
 
 	return sceneGraph.emplace(core::move(node), parent);
 }
@@ -276,6 +279,11 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 		}
 		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(rgba));
 		wrapper.setVoxel(entry->first, voxel);
+	}
+	if (palette.colorCount() == 1) {
+		if (palette.colors()[0].a == 0) {
+			palette.color(0).a = 255;
+		}
 	}
 	node.setPalette(palette);
 	if (fillHollow) {

@@ -64,7 +64,7 @@ protected:
 	/**
 	 * @see voxelizeGroups()
 	 */
-	int voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris, int parent = 0) const;
+	int voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris, int parent = 0, bool resetOrigin = true) const;
 
 	struct PosSamplingEntry {
 		inline PosSamplingEntry(float _area, core::RGBA _color) : area(_area), color(_color) {
