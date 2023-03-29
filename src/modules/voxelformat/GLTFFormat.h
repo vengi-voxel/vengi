@@ -62,11 +62,11 @@ private:
 		core::RGBA baseColor{255, 255, 255, 255};
 	};
 	void loadTexture(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
-					 const tinygltf::Model &gltfModel, GltfMaterialData &textureData,
+					 const tinygltf::Model &gltfModel, GltfMaterialData &materialData,
 					 const tinygltf::TextureInfo &gltfTextureInfo, int textureIndex) const;
-	bool loadTextures(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
+	bool loadMaterial(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 					  const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
-					  GltfMaterialData &textureData) const;
+					  GltfMaterialData &materialData) const;
 	bool loadAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 						const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
 						core::DynamicArray<GltfVertex> &vertices) const;
