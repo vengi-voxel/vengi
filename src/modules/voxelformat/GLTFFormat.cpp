@@ -845,6 +845,8 @@ bool GLTFFormat::loadMaterial(const core::String &filename, core::StringMap<imag
 		} else {
 			Log::debug("Invalid texture index given %i", gltfTextureInfo.index);
 		}
+		const glm::vec4 color = glm::make_vec4(&gltfMaterial->pbrMetallicRoughness.baseColorFactor[0]);
+		materialData.baseColor = core::Color::getRGBA(color);
 	}
 
 	return true;
@@ -889,6 +891,7 @@ bool GLTFFormat::loadAttributes(const core::String &filename, core::StringMap<im
 				const float *posData = (const float *)buf;
 				vertices[verticesOffset + i].pos = glm::vec3(posData[0], posData[1], posData[2]);
 				vertices[verticesOffset + i].texture = textureData.diffuseTexture;
+				vertices[verticesOffset + i].color = textureData.baseColor;
 				buf += stride;
 			}
 		} else if (attrType == textureData.texCoordAttribute.c_str()) {
