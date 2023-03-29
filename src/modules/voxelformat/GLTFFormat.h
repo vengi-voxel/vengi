@@ -17,6 +17,7 @@ struct Primitive;
 struct Accessor;
 struct Animation;
 struct AnimationChannel;
+struct TextureInfo;
 } // namespace tinygltf
 
 namespace scenegraph {
@@ -53,15 +54,19 @@ private:
 		core::RGBA color{0};
 		core::String texture;
 	};
-	struct GltfTextureData {
+	struct GltfMaterialData {
 		core::String diffuseTexture;
 		core::String texCoordAttribute;
 		image::TextureWrap wrapS = image::TextureWrap::Repeat;
 		image::TextureWrap wrapT = image::TextureWrap::Repeat;
+		core::RGBA baseColor{255, 255, 255, 255};
 	};
+	void loadTexture(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
+					 const tinygltf::Model &gltfModel, GltfMaterialData &textureData,
+					 const tinygltf::TextureInfo &gltfTextureInfo, int textureIndex) const;
 	bool loadTextures(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 					  const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
-					  GltfTextureData &textureData) const;
+					  GltfMaterialData &textureData) const;
 	bool loadAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 						const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
 						core::DynamicArray<GltfVertex> &vertices) const;
