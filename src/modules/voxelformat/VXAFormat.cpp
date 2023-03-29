@@ -90,6 +90,7 @@ static int getInterpolationType(scenegraph::InterpolationType type) {
 			return i;
 		}
 	}
+	// ignore
 	return -1;
 }
 
@@ -124,9 +125,11 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 			keyFrame.frameIdx = frameIdx;
 			int32_t interpolation;
 			wrap(stream.readInt32(interpolation))
-			if (interpolation < 0 || interpolation >= lengthof(vxa_priv::interpolationTypes)) {
+			if (interpolation == -1) {
 				keyFrame.interpolation = scenegraph::InterpolationType::Linear;
-				Log::warn("Could not find a supported easing type for %i", interpolation);
+			} else if (interpolation < 0 || interpolation >= lengthof(vxa_priv::interpolationTypes)) {
+				keyFrame.interpolation = scenegraph::InterpolationType::Linear;
+				Log::warn("Could not find a supported easing type for %i (%s)", interpolation, filename.c_str());
 			} else {
 				keyFrame.interpolation = vxa_priv::interpolationTypes[interpolation];
 			}
@@ -166,8 +169,8 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 		return false;
 	}
 	for (const int nodeId : node.children()) {
-		scenegraph::SceneGraphNode& cnode = sceneGraph.node(nodeId);
-		wrapBool(recursiveImportNodeBefore3(filename, stream, sceneGraph, cnode, animId, version))
+		scenegraph::SceneGraphNode& childNode = sceneGraph.node(nodeId);
+		wrapBool(recursiveImportNodeBefore3(filename, stream, sceneGraph, childNode, animId, version))
 	}
 	return true;
 }
@@ -235,7 +238,7 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 	int32_t children;
 	wrap(stream.readInt32(children))
 	if (children != (int32_t)node.children().size()) {
-		Log::error("Child count mismatch between loaded node %i and the vxa (%i)", node.id(), children);
+		Log::error("Child count mismatch between loaded node %i and the vxa (%i/%i)", node.id(), children, (int)node.children().size());
 		return false;
 	}
 	for (int32_t i = 0; i < children; ++i) {
@@ -338,10 +341,6 @@ bool VXAFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 	for (const scenegraph::SceneGraphKeyFrame &kf : kfs) {
 		wrapBool(stream.writeInt32(kf.frameIdx))
 		const int interpolation = vxa_priv::getInterpolationType(kf.interpolation);
-		if (interpolation == -1) {
-			Log::error("Could not find valid interpolation mapping for %i", (int)kf.interpolation);
-			return false;
-		}
 		wrapBool(stream.writeInt32(interpolation))
 		wrapBool(stream.writeBool(kf.longRotation))
 		const scenegraph::SceneGraphTransform &transform = kf.transform();
