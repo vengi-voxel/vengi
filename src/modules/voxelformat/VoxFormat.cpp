@@ -122,7 +122,7 @@ static bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneG
 		const glm::vec4 ogtKeyFrameCol3(keyframeTransform.m30, keyframeTransform.m31, keyframeTransform.m32, keyframeTransform.m33);
 		const glm::mat4 ogtKeyFrameMat = glm::mat4{ogtKeyFrameCol0, ogtKeyFrameCol1, ogtKeyFrameCol2, ogtKeyFrameCol3};
 		scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
-		sceneGraphKeyFrame.frameIdx = transform_keyframe.frame_index;
+		sceneGraphKeyFrame.frameIdx = (scenegraph::FrameIndex)transform_keyframe.frame_index;
 		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
 		sceneGraphKeyFrame.transform().setWorldMatrix(ogtKeyFrameMat);

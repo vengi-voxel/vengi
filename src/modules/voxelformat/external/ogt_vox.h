@@ -423,6 +423,7 @@
     static const uint32_t k_read_scene_flags_groups                      = 1 << 0; // if not specified, all instance transforms will be flattened into world space. If specified, will read group information and keep all transforms as local transform relative to the group they are in.
     static const uint32_t k_read_scene_flags_keyframes                   = 1 << 1; // if specified, all instances and groups will contain keyframe data.
     static const uint32_t k_read_scene_flags_keep_empty_models_instances = 1 << 2; // if specified, all empty models and instances referencing those will be kept rather than culled.
+    static const uint32_t k_read_scene_flags_keep_duplicate_models       = 1 << 3; // if specified, we do not de-duplicate models.
 
     // creates a scene from a vox file within a memory buffer of a given size.
     // you can destroy the input buffer once you have the scene as this function will allocate separate memory for the scene objecvt.
@@ -490,7 +491,7 @@
     static const uint32_t CHUNK_ID_rCAM = MAKE_VOX_CHUNK_ID('r','C','A','M');
 
     static const uint32_t NAME_MAX_LEN     = 256;       // max name len = 255 plus 1 for null terminator
-    static const uint32_t CHUNK_HEADER_LEN = 12;        // 4 bytes for each of: chunk_id, chunk_size, chunk_child_size 
+    static const uint32_t CHUNK_HEADER_LEN = 12;        // 4 bytes for each of: chunk_id, chunk_size, chunk_child_size
 
     // Some older .vox files will not store a palette, in which case the following palette will be used!
     static const uint8_t k_default_vox_palette[256 * 4] = {
@@ -1912,28 +1913,29 @@
         // check for models that are identical by doing a pair-wise compare. If we find identical
         // models, we'll end up with NULL gaps in the model_ptrs array, but instances will have
         // been remapped to keep the earlier model.
-        for (uint32_t i = 0; i < model_ptrs.size(); i++) {
-            if (!model_ptrs[i])
-                continue;
-            for (uint32_t j = i+1; j < model_ptrs.size(); j++) {
-                if (!model_ptrs[j] || !_vox_models_are_equal(model_ptrs[i], model_ptrs[j]))
+        if (0 == (read_flags & k_read_scene_flags_keep_duplicate_models)) {
+            for (uint32_t i = 0; i < model_ptrs.size(); i++) {
+                if (!model_ptrs[i])
                     continue;
-                // model i and model j are the same, so free model j and keep model i.
-                _vox_free(model_ptrs[j]);
-                model_ptrs[j] = NULL;
-                // remap all instances that were referring to j to now refer to i.
-                for (uint32_t k = 0; k < instances.size(); k++) {
-                    if (instances[k].model_index == j)
-                        instances[k].model_index = i;
-                    if (instances[k].model_anim.num_keyframes) {
-                        ogt_vox_keyframe_model* keyframes = (ogt_vox_keyframe_model* )&misc_data[(size_t)instances[k].model_anim.keyframes];
-                        for (uint32_t f = 0; f < instances[k].model_anim.num_keyframes; f++) {
-                            if (keyframes[f].model_index == j)
-                                keyframes[f].model_index = i;
+                for (uint32_t j = i+1; j < model_ptrs.size(); j++) {
+                    if (!model_ptrs[j] || !_vox_models_are_equal(model_ptrs[i], model_ptrs[j]))
+                        continue;
+                    // model i and model j are the same, so free model j and keep model i.
+                    _vox_free(model_ptrs[j]);
+                    model_ptrs[j] = NULL;
+                    // remap all instances that were referring to j to now refer to i.
+                    for (uint32_t k = 0; k < instances.size(); k++) {
+                        if (instances[k].model_index == j)
+                            instances[k].model_index = i;
+                        if (instances[k].model_anim.num_keyframes) {
+                            ogt_vox_keyframe_model* keyframes = (ogt_vox_keyframe_model* )&misc_data[(size_t)instances[k].model_anim.keyframes];
+                            for (uint32_t f = 0; f < instances[k].model_anim.num_keyframes; f++) {
+                                if (keyframes[f].model_index == j)
+                                    keyframes[f].model_index = i;
+                            }
                         }
                     }
                 }
-
             }
         }
 
