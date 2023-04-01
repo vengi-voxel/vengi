@@ -407,6 +407,19 @@ const glm::vec3 &SceneGraphNode::pivot() const {
 	return region().pivot();
 }
 
+/**
+ * @brief Apply the given @c translation vector to all keyframe transform of this node
+ */
+void SceneGraphNode::translate(const glm::vec3 &translation) {
+	for (auto* keyFrames : _keyFramesMap) {
+		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
+			SceneGraphTransform &transform = keyFrame.transform();
+			transform.setLocalTranslation(transform.localTranslation() + translation);
+		}
+	}
+}
+
+
 void SceneGraphNode::release() {
 	if (_flags & VolumeOwned) {
 		delete _volume;

@@ -258,6 +258,10 @@ public:
 
 	bool setPivot(const glm::vec3 &pivot);
 	const glm::vec3 &pivot() const;
+	/**
+	 * @brief Apply the given @c translation vector to all keyframe transform of this node
+	 */
+	void translate(const glm::vec3 &translation);
 
 	SceneGraphNodeType type() const;
 

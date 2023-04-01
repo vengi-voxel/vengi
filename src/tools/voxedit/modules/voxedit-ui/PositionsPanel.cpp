@@ -211,11 +211,12 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				change = true;
 			}
 			ImGui::TooltipText("Reset");
-			change |= ImGui::InputFloat3("Pv", glm::value_ptr(pivot), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			bool pivotChanged = ImGui::InputFloat3("Pv", glm::value_ptr(pivot), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			change |= pivotChanged;
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_X "##resetpv")) {
 				pivot[0] = pivot[1] = pivot[2] = 0.0f;
-				change = true;
+				pivotChanged = change = true;
 			}
 			ImGui::TooltipText("Reset");
 
@@ -241,10 +242,26 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			if (change) {
 				glm::mat4 matrix;
 				_lastChanged = true;
+
+				if (pivotChanged) {
+					const glm::vec3 oldPivot = node.pivot();
+					const glm::vec3 deltaPivot = oldPivot - pivot;
+					const glm::vec3 size = node.region().getDimensionsInVoxels();
+					if (node.setPivot(pivot)) {
+						for (int i = 0; i < 3; ++i) {
+							matrixTranslation[i] -= deltaPivot[i] * size[i];
+						}
+					}
+
+					for (int nodeId : node.children()) {
+						sceneGraph.node(nodeId).translate(deltaPivot * size);
+					}
+				}
+
 				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale,
 														glm::value_ptr(matrix));
 				transform.setWorldMatrix(matrix);
-				node.setPivot(pivot);
+
 				transform.update(sceneGraph, node, frame);
 			}
 			if (!change && _lastChanged) {
