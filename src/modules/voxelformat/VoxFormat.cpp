@@ -60,6 +60,44 @@ static const ogt_vox_transform ogt_identity_transform {
 	0.0f, 0.0f, 0.0f, 1.0f
 };
 
+/**
+ * @brief Calculate the scene graph object transformation. Used for the voxel and the AABB of the volume.
+ *
+ * @param mat The world space model matrix (rotation and translation) for the chunk
+ * @param pos The position inside the untransformed chunk (local position)
+ * @param pivot The pivot to do the rotation around. This is the @code chunk_size - 1 + 0.5 @endcode. Please
+ * note that the @c w component must be @c 0.0
+ * @return glm::vec4 The transformed world position
+ */
+static inline glm::vec4 calcTransform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec4 &pivot) {
+	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
+}
+
+static glm::mat4 ogtTransformToMat(const ogt_vox_transform &t) {
+	const glm::vec4 col0(t.m00, t.m01, t.m02, t.m03);
+	const glm::vec4 col1(t.m10, t.m11, t.m12, t.m13);
+	const glm::vec4 col2(t.m20, t.m21, t.m22, t.m23);
+	const glm::vec4 col3(t.m30, t.m31, t.m32, t.m33);
+	return glm::mat4{col0, col1, col2, col3};
+}
+
+static bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode& node, const ogt_vox_keyframe_transform* transformKeyframes, uint32_t numKeyframes) {
+	scenegraph::SceneGraphKeyFrames kf;
+	Log::debug("Load %d keyframes", numKeyframes);
+	kf.reserve(numKeyframes);
+	for (uint32_t keyFrameIdx = 0; keyFrameIdx < numKeyframes; ++keyFrameIdx) {
+		const ogt_vox_keyframe_transform& transform_keyframe = transformKeyframes[keyFrameIdx];
+		const glm::mat4 worldMatrix = ogtTransformToMat(transform_keyframe.transform);
+		scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
+		sceneGraphKeyFrame.frameIdx = (scenegraph::FrameIndex)transform_keyframe.frame_index;
+		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
+		sceneGraphKeyFrame.longRotation = false;
+		sceneGraphKeyFrame.transform().setWorldMatrix(worldMatrix);
+		kf.push_back(sceneGraphKeyFrame);
+	}
+	return node.setKeyFrames(kf);
+}
+
 VoxFormat::VoxFormat() {
 	ogt_vox_set_memory_allocator(_ogt_alloc, _ogt_free);
 }
@@ -96,49 +134,9 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.size();
 }
 
-/**
- * @brief Calculate the scene graph object transformation. Used for the voxel and the AABB of the volume.
- *
- * @param mat The world space model matrix (rotation and translation) for the chunk
- * @param pos The position inside the untransformed chunk (local position)
- * @param pivot The pivot to do the rotation around. This is the @code chunk_size - 1 + 0.5 @endcode. Please
- * note that the @c w component must be @c 0.0
- * @return glm::vec4 The transformed world position
- */
-static inline glm::vec4 calcTransform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec4 &pivot) {
-	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
-}
-
-static bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode& node, const ogt_vox_keyframe_transform* transformKeyframes, uint32_t numKeyframes) {
-	scenegraph::SceneGraphKeyFrames kf;
-	Log::debug("Load %d keyframes", numKeyframes);
-	kf.reserve(numKeyframes);
-	for (uint32_t keyFrameIdx = 0; keyFrameIdx < numKeyframes; ++keyFrameIdx) {
-		const ogt_vox_keyframe_transform& transform_keyframe = transformKeyframes[keyFrameIdx];
-		const ogt_vox_transform& keyframeTransform = transform_keyframe.transform;
-		const glm::vec4 ogtKeyFrameCol0(keyframeTransform.m00, keyframeTransform.m01, keyframeTransform.m02, keyframeTransform.m03);
-		const glm::vec4 ogtKeyFrameCol1(keyframeTransform.m10, keyframeTransform.m11, keyframeTransform.m12, keyframeTransform.m13);
-		const glm::vec4 ogtKeyFrameCol2(keyframeTransform.m20, keyframeTransform.m21, keyframeTransform.m22, keyframeTransform.m23);
-		const glm::vec4 ogtKeyFrameCol3(keyframeTransform.m30, keyframeTransform.m31, keyframeTransform.m32, keyframeTransform.m33);
-		const glm::mat4 ogtKeyFrameMat = glm::mat4{ogtKeyFrameCol0, ogtKeyFrameCol1, ogtKeyFrameCol2, ogtKeyFrameCol3};
-		scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
-		sceneGraphKeyFrame.frameIdx = (scenegraph::FrameIndex)transform_keyframe.frame_index;
-		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
-		sceneGraphKeyFrame.longRotation = false;
-		sceneGraphKeyFrame.transform().setWorldMatrix(ogtKeyFrameMat);
-		kf.push_back(sceneGraphKeyFrame);
-	}
-	return node.setKeyFrames(kf);
-}
-
 bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden) {
 	const ogt_vox_instance& ogtInstance = scene->instances[ogt_instanceIdx];
-	const ogt_vox_transform& ogtTransform = ogtInstance.transform;
-	const glm::vec4 ogtCol0(ogtTransform.m00, ogtTransform.m01, ogtTransform.m02, ogtTransform.m03);
-	const glm::vec4 ogtCol1(ogtTransform.m10, ogtTransform.m11, ogtTransform.m12, ogtTransform.m13);
-	const glm::vec4 ogtCol2(ogtTransform.m20, ogtTransform.m21, ogtTransform.m22, ogtTransform.m23);
-	const glm::vec4 ogtCol3(ogtTransform.m30, ogtTransform.m31, ogtTransform.m32, ogtTransform.m33);
-	const glm::mat4 ogtMat = glm::mat4{ogtCol0, ogtCol1, ogtCol2, ogtCol3};
+	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance.transform);
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
 	const uint8_t *ogtVoxels = ogtModel->voxel_data;
 	const uint8_t *ogtVoxel = ogtVoxels;
