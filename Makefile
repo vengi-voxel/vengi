@@ -167,6 +167,23 @@ update-sdl2:
 	cp -r $(UPDATEDIR)/sdl2.sync/include/* contrib/libs/sdl2/include
 	cp -r $(UPDATEDIR)/sdl2.sync/cmake/* contrib/libs/sdl2/cmake
 
+update-lzfse:
+	$(call UPDATE_GIT,lzfse,git@github.com:lzfse/lzfse.git)
+	cp $(UPDATEDIR)/lzfse.sync/src/lzvn_decode_base.h contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzfse_encode_tables.h contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzvn_encode_base.h contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzfse.h contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzfse_fse.h contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzfse_tunables.h contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzfse_internal.h contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzfse_decode.c contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzfse_decode_base.c contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzfse_encode.c contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzfse_encode_base.c contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzfse_fse.c contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzvn_decode_base.c contrib/libs/lzfse
+	cp $(UPDATEDIR)/lzfse.sync/src/lzvn_encode_base.c contrib/libs/lzfse
+
 update-glslang:
 	$(call UPDATE_GIT,glslang,https://github.com/KhronosGroup/glslang.git)
 	rm -rf tools/glslang/External

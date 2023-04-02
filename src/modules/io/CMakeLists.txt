@@ -7,6 +7,7 @@ set(SRCS
 	IOResource.h
 	StdStreamBuf.h
 	Stream.cpp Stream.h
+	LZFSEReadStream.h LZFSEReadStream.cpp
 	MemoryReadStream.cpp MemoryReadStream.h
 	BufferedWriteStream.h
 	BufferedSeekableWriteStream.h
