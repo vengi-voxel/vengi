@@ -260,7 +260,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		core_free(buffer);
 		return false;
 	}
-	const uint32_t ogt_vox_flags = k_read_scene_flags_groups | k_read_scene_flags_keyframes | k_read_scene_flags_keep_empty_models_instances;
+	const uint32_t ogt_vox_flags = k_read_scene_flags_groups | k_read_scene_flags_keyframes | k_read_scene_flags_keep_empty_models_instances | k_read_scene_flags_keep_duplicate_models;
 	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, ogt_vox_flags);
 	core_free(buffer);
 	if (scene == nullptr) {
