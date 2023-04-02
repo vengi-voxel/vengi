@@ -201,7 +201,6 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 	bool hidden = ogt_group.hidden;
 	const char *name = "Group";
 	const uint32_t layerIdx = ogt_group.layer_index;
-	// TODO: group transforms are not handled correctly
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	if (layerIdx < scene->num_layers) {
 		const ogt_vox_layer &layer = scene->layers[layerIdx];
@@ -260,7 +259,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		core_free(buffer);
 		return false;
 	}
-	const uint32_t ogt_vox_flags = k_read_scene_flags_groups | k_read_scene_flags_keyframes | k_read_scene_flags_keep_empty_models_instances | k_read_scene_flags_keep_duplicate_models;
+	const uint32_t ogt_vox_flags = k_read_scene_flags_keyframes | k_read_scene_flags_keep_empty_models_instances | k_read_scene_flags_keep_duplicate_models;
 	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, ogt_vox_flags);
 	core_free(buffer);
 	if (scene == nullptr) {
