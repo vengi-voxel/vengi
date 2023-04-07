@@ -1373,6 +1373,11 @@ void SceneManager::construct() {
 		_mementoHandler.markPaletteChange(node);
 	}).setHelp("Change intensity by scaling the rgb values of the palette");
 
+	command::Command::registerCommand("palette_removeunused", [&] (const command::CmdArgs& args) {
+		const int nodeId = activeNode();
+		removeUnusedColors(nodeId);
+	}).setHelp("Remove unused colors from palette");
+
 	command::Command::registerCommand("palette_sort", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			Log::info("Usage: palette_sort [hue|saturation|brightness|cielab]");
@@ -1950,6 +1955,40 @@ void SceneManager::construct() {
 			nodeReference(*node);
 		}
 	}).setHelp("Create a node reference for the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
+}
+
+void SceneManager::removeUnusedColors(int nodeId) {
+	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	const voxel::RawVolume *v = node.volume();
+	if (v == nullptr) {
+		return;
+	}
+	core::Array<bool, voxel::PaletteMaxColors> usedColors;
+	usedColors.fill(false);
+
+	voxel::Palette &pal = node.palette();
+	voxelutil::visitVolume(*v, [&usedColors] (int x, int y, int z, const voxel::Voxel& voxel) {
+		usedColors[voxel.getColor()] = true;
+		return true;
+	});
+	int unused = 0;
+	for (size_t i = 0; i < usedColors.size(); ++i) {
+		if (!usedColors[i]) {
+			++unused;
+		}
+	}
+	if (unused >= voxel::PaletteMaxColors) {
+		Log::warn("Removing all colors from the palette is not allowed");
+		return;
+	}
+	for (size_t i = 0; i < usedColors.size(); ++i) {
+		if (!usedColors[i]) {
+			pal.color(i) = core::RGBA(0);
+		}
+	}
+	pal.markDirty();
+	pal.markSave();
+	_mementoHandler.markPaletteChange(node);
 }
 
 void SceneManager::renderText(const char *str, int size, int thickness, int spacing, const char *font) {

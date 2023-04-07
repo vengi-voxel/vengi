@@ -258,6 +258,10 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 			ImGui::CommandMenuItem("CIELab", "palette_sort cielab", true, &listener);
 			ImGui::EndMenu();
 		}
+		if (ImGui::BeginMenu("Tools##toolspalette")) {
+			ImGui::CommandMenuItem("Remove unused color", "palette_removeunused", true, &listener);
+			ImGui::EndMenu();
+		}
 		ImGui::EndMenuBar();
 	}
 }

@@ -290,6 +290,8 @@ public:
 	void fillPlane(const image::ImagePtr &image);
 	void renderText(const char *text, int size = 16, int thickness = 1, int spacing = 0, const char *font = "font.ttf");
 
+	void removeUnusedColors(int nodeId);
+
 	/**
 	 * @brief Save the volume data to the given file
 	 * @param[in] file The file to store the volume data in. The file extension defines the volume format.
