@@ -108,7 +108,7 @@ const io::FormatDescription* voxelLoad() {
 		{"StarMade", {"sment"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"AnimaToon", {"scn"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
-		{"GL Transmission Format", {"gltf", "glb"}, nullptr, VOX_FORMAT_FLAG_MESH},
+		{"GL Transmission Format", {"gltf", "glb", "vrm"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Build engine", {"kvx"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"AceOfSpades", {"kv6"}, [] (uint32_t magic) {return magic == FourCC('K','v','x','l');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
@@ -258,7 +258,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			format = core::make_shared<FBXFormat>();
 		} else if (ext == "schematic") {
 			format = core::make_shared<SchematicFormat>();
-		} else if (ext == "gltf" || ext == "glb") {
+		} else if (ext == "gltf" || ext == "glb" || ext == "vrm") {
 			format = core::make_shared<GLTFFormat>();
 		} else {
 			Log::warn("Unknown extension %s", ext.c_str());
