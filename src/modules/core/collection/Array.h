@@ -16,7 +16,7 @@ template<class TYPE, size_t SIZE>
 struct Array {
 	TYPE _items[SIZE];
 
-	constexpr static size_t size() {
+	constexpr size_t size() const {
 		return SIZE;
 	}
 
