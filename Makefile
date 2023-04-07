@@ -133,6 +133,7 @@ update-imguizmo:
 	$(call UPDATE_GIT,imguizmo,https://github.com/CedricGuillemet/ImGuizmo.git)
 	cp $(UPDATEDIR)/imguizmo.sync/ImGuizmo.* src/modules/ui/dearimgui
 	dos2unix src/modules/ui/dearimgui/ImGuizmo*
+	sed -i 's/[ \t]*$$//' src/modules/ui/dearimgui/ImGuizmo*
 
 update-im-neo-sequencer:
 	$(call UPDATE_GIT,im-neo-sequencer,https://gitlab.com/GroGy/im-neo-sequencer.git)
