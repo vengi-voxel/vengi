@@ -36,6 +36,7 @@ set(SRCS
 	VXRFormat.h VXRFormat.cpp
 	VXTFormat.h VXTFormat.cpp
 	VXLFormat.h VXLFormat.cpp
+	VMaxFormat.h VMaxFormat.cpp
 	MeshFormat.h MeshFormat.cpp
 	CubFormat.h CubFormat.cpp
 	OBJFormat.h OBJFormat.cpp
