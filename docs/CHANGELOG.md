@@ -17,6 +17,7 @@ General:
    - Support model references to build a complex scene
    - Extended GLTF support to animation import and export as well as normal export
    - Fixed missing base color support for GLTF
+   - Support for some parts of VoxelMax format
 
 VoxEdit:
 
