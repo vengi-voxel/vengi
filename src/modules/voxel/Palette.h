@@ -21,7 +21,6 @@ using PaletteIndicesArray = uint8_t[PaletteMaxColors];
 
 class Palette {
 private:
-	bool load(const image::ImagePtr &img);
 	bool _dirty = false;
 	bool _needsSave = false;
 	core::String _name;
@@ -93,6 +92,7 @@ public:
 	}
 
 	bool load(const char *name);
+	bool load(const image::ImagePtr &img);
 	bool save(const char *name = nullptr) const;
 
 	bool loadGimpPalette(const char *filename);

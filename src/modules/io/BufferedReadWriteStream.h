@@ -50,6 +50,13 @@ public:
 	uint8_t* release();
 	int write(const void *buf, size_t size) override;
 	int read(void *buf, size_t size) override;
+	/**
+	 * @param[in] position This is the number of bytes to offset
+	 * @param[in] whence @c SEEK_SET offset is used as absolute position from the beginning of the stream.
+	 * @c SEEK_CUR offset is taken as relative offset from the current position.
+	 * @c SEEK_END offset is used relative to the end of the stream.
+	 * @return -1 on error - otherwise the current offset in the stream
+	 */
 	int64_t seek(int64_t position, int whence = SEEK_SET) override;
 	int64_t pos() const override;
 	int64_t size() const override;

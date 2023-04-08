@@ -99,13 +99,15 @@ inline ImagePtr createEmptyImage(const core::String& name) {
 	return core::make_shared<Image>(name);
 }
 
-extern uint8_t* createPng(const void *pixels, int width, int height, int depth, int *pngSize);
-extern ImagePtr loadImage(const io::FilePtr& file);
+uint8_t* createPng(const void *pixels, int width, int height, int depth, int *pngSize);
+ImagePtr loadImage(const io::FilePtr& file);
+ImagePtr loadImage(const core::String &name, io::SeekableReadStream &stream, int length = -1);
+
 /**
  * @brief If there is no extension given, all supported extensions are tried
  */
-extern ImagePtr loadImage(const core::String& filename);
+ImagePtr loadImage(const core::String& filename);
 
-extern core::String print(const image::ImagePtr &image);
+core::String print(const image::ImagePtr &image);
 
 }
