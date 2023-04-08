@@ -43,6 +43,7 @@
 #include "voxelformat/SchematicFormat.h"
 #include "voxelformat/SproxelFormat.h"
 #include "voxelformat/VENGIFormat.h"
+#include "voxelformat/VMaxFormat.h"
 #include "voxelformat/VXCFormat.h"
 #include "voxelformat/VXLFormat.h"
 #include "voxelformat/VXMFormat.h"
@@ -118,6 +119,7 @@ const io::FormatDescription* voxelLoad() {
 		{"Chronovox", {"csm"}, [](uint32_t magic) { return magic == FourCC('.', 'C', 'S', 'M'); }, 0u},
 		{"Nicks Voxel Model", {"nvm"}, [](uint32_t magic) { return magic == FourCC('.', 'N', 'V', 'M'); }, 0u},
 		{"SLAB6 vox", {"vox"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"VoxelMax", {"vmax.zip"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 		{"", {}, nullptr, 0u}
 	};
 	return desc;
@@ -161,9 +163,11 @@ static uint32_t loadMagic(io::SeekableReadStream &stream) {
 	return magicWord;
 }
 
-static const io::FormatDescription *getDescription(const core::String &ext, uint32_t magic) {
+static const io::FormatDescription *getDescription(const core::String &filename, uint32_t magic) {
+	const core::String ext = core::string::extractExtension(filename);
+	const core::String extFull = core::string::extractAllExtensions(filename);
 	for (const io::FormatDescription *desc = voxelLoad(); desc->valid(); ++desc) {
-		if (!desc->matchesExtension(ext)) {
+		if (!desc->matchesExtension(ext) && !desc->matchesExtension(extFull)) {
 			continue;
 		}
 		if (magic > 0 && desc->isA && !desc->isA(magic)) {
@@ -184,10 +188,10 @@ static const io::FormatDescription *getDescription(const core::String &ext, uint
 			return desc;
 		}
 	}
-	if (ext.empty()) {
+	if (extFull.empty()) {
 		Log::warn("Could not identify the format");
 	} else {
-		Log::warn("Could not find a supported format description for %s", ext.c_str());
+		Log::warn("Could not find a supported format description for %s", extFull.c_str());
 	}
 	return nullptr;
 }
@@ -230,6 +234,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			format = core::make_shared<VXMFormat>();
 		} else if (ext == "vxr") {
 			format = core::make_shared<VXRFormat>();
+		} else if (ext == "vmax.zip") {
+			format = core::make_shared<VMaxFormat>();
 		} else if (ext == "vxc") {
 			format = core::make_shared<VXCFormat>();
 		} else if (ext == "vxt") {
@@ -273,10 +279,10 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream, const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumeScreenshot);
 	const uint32_t magic = loadMagic(stream);
-	const core::String &fileext = core::string::extractExtension(filename);
-	const io::FormatDescription *desc = getDescription(fileext, magic);
+
+	const io::FormatDescription *desc = getDescription(filename, magic);
 	if (desc == nullptr) {
-		Log::warn("Format %s isn't supported", fileext.c_str());
+		Log::warn("Format %s isn't supported", filename.c_str());
 		return image::ImagePtr();
 	}
 	if (!(desc->flags & VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED)) {
@@ -288,8 +294,7 @@ image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStr
 		stream.seek(0);
 		return f->loadScreenshot(filename, stream, ctx);
 	}
-	Log::error("Failed to load model screenshot from file %s - unsupported file format for extension '%s'",
-			   filename.c_str(), fileext.c_str());
+	Log::error("Failed to load model screenshot from file %s - unsupported file format", filename.c_str());
 	return image::ImagePtr();
 }
 
@@ -319,10 +324,9 @@ bool importPalette(const core::String &filename, voxel::Palette &palette) {
 size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette, const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumePalette);
 	const uint32_t magic = loadMagic(stream);
-	const core::String &fileext = core::string::extractExtension(filename);
-	const io::FormatDescription *desc = getDescription(fileext, magic);
+	const io::FormatDescription *desc = getDescription(filename, magic);
 	if (desc == nullptr) {
-		Log::warn("Format %s isn't supported", fileext.c_str());
+		Log::warn("Format %s isn't supported", filename.c_str());
 		return 0;
 	}
 	if (!(desc->flags & VOX_FORMAT_FLAG_PALETTE_EMBEDDED)) {
@@ -336,16 +340,15 @@ size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream,
 		palette.markDirty();
 		return n;
 	}
-	Log::error("Failed to load model palette from file %s - unsupported file format for extension '%s'",
-			   filename.c_str(), fileext.c_str());
+	Log::error("Failed to load model palette from file %s - unsupported file format",
+			   filename.c_str());
 	return 0;
 }
 
 bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &newSceneGraph, const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumeFormat);
 	const uint32_t magic = loadMagic(stream);
-	const core::String &fileext = core::string::extractExtension(filename);
-	const io::FormatDescription *desc = getDescription(fileext, magic);
+	const io::FormatDescription *desc = getDescription(filename, magic);
 	if (desc == nullptr) {
 		return false;
 	}
@@ -356,8 +359,7 @@ bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, sc
 			newSceneGraph.clear();
 		}
 	} else {
-		Log::error("Failed to load model file %s - unsupported file format for extension '%s'", filename.c_str(),
-				  fileext.c_str());
+		Log::error("Failed to load model file %s - unsupported file format", filename.c_str());
 		return false;
 	}
 	if (newSceneGraph.empty()) {
