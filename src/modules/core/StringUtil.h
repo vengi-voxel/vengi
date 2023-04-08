@@ -204,7 +204,15 @@ inline core::String extractExtension(const core::String& str) {
 	if (pos == core::String::npos) {
 		return "";
 	}
-	return str.substr(pos + 1) ;
+	return str.substr(pos + 1);
+}
+
+inline core::String extractAllExtensions(const core::String& str) {
+	const size_t pos = str.find(".");
+	if (pos == core::String::npos) {
+		return "";
+	}
+	return str.substr(pos + 1);
 }
 
 /**
