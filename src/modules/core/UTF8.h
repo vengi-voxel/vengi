@@ -16,7 +16,14 @@ namespace utf8 {
  */
 extern int next(const char** str);
 
-extern int toUtf8(unsigned int c, char *buf, size_t bufSize);
+extern int toUtf8(uint32_t c, char *buf, size_t bufSize);
+/**
+ * @param[in] wchars The input string
+ * @param[in] wcharSize The size of the input string in characters
+ * @param[out] buf The output buffer
+ * @param[in] bufSize The size of the output buffer in bytes
+ */
+extern int toUtf8(const uint16_t *wchars, size_t wcharSize, char *buf, size_t bufSize);
 
 extern size_t length(const char* str);
 

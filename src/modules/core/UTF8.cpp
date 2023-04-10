@@ -3,11 +3,69 @@
  */
 
 #include "UTF8.h"
+#include "core/StandardLib.h"
 
 namespace core {
 namespace utf8 {
 
-int toUtf8(unsigned int c, char *buf, size_t bufSize) {
+int toUtf8(const uint16_t *wchars, size_t wcharSize, char *buf, size_t bufSize) {
+	if (wcharSize == 0) {
+		if (bufSize <= 0) {
+			return -1;
+		}
+		buf[0] = '\0';
+		return 0;
+	}
+	size_t bufPos = 0;
+	uint32_t w;
+	bool leadSubst = false;
+	for (size_t i = 0; i < wcharSize; ++i) {
+		const uint16_t wchar = wchars[i];
+		if (wchar >= 0xd800 && wchar <= 0xdbff) {
+			if (!leadSubst) {
+				leadSubst = true;
+				w = 0x010000 + ((wchar & 0x3ff) << 10);
+			} else {
+				leadSubst = false;
+				w = 0;
+			}
+		} else if (wchar >= 0xdc00 && wchar <= 0xdfff) {
+			if (leadSubst) {
+				if (bufPos + 4 >= bufSize) {
+					return -1;
+				}
+				leadSubst = false;
+				w = w | (wchar & 0x3ff);
+				buf[bufPos++] = (char)(0xf0 + ((w >> 18) & 0x7));
+				buf[bufPos++] = (char)(0x80 + ((w >> 12) & 0x3f));
+				buf[bufPos++] = (char)(0x80 + ((w >> 6) & 0x3f));
+				buf[bufPos++] = (char)(0x80 + (w & 0x3f));
+			}
+		} else if (wchar >= 0x800) {
+			if (bufPos + 3 >= bufSize) {
+				return -1;
+			}
+			buf[bufPos++] = (char)(0xe0 + ((wchar >> 12) & 0xf));
+			buf[bufPos++] = (char)(0x80 + ((wchar >> 6) & 0x3f));
+			buf[bufPos++] = (char)(0x80 + (wchar & 0x3f));
+		} else if (wchar >= 0x80) {
+			if (bufPos + 2 >= bufSize) {
+				return -1;
+			}
+			buf[bufPos++] = (char)(0xc0 + ((wchar >> 6) & 0x1f));
+			buf[bufPos++] = (char)(0x80 + (wchar & 0x3f));
+		} else {
+			if (bufPos + 1 >= bufSize) {
+				return -1;
+			}
+			buf[bufPos++] = (char)(wchar & 0x7f);
+		}
+	}
+	buf[bufPos] = '\0';
+	return (int)bufPos;
+}
+
+int toUtf8(uint32_t c, char *buf, size_t bufSize) {
 	if (c < 0x80) {
 		if (bufSize < 1) {
 			return 0;
@@ -151,6 +209,5 @@ int next(const char **str) {
 	*str += len;
 	return cp;
 }
-}
-
-}
+} // namespace utf8
+} // namespace core
