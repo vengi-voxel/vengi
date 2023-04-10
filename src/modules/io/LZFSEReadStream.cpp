@@ -37,16 +37,16 @@ LZFSEReadStream::~LZFSEReadStream() {
 	core_free(_extractedBuffer);
 }
 
-bool LZFSEReadStream::eos() const {
-	return _readStream->eos();
+int64_t LZFSEReadStream::seek(int64_t position, int whence) {
+	return _readStream->seek(position, whence);
 }
 
-int64_t LZFSEReadStream::remaining() const {
-	return _readStream->remaining();
+int64_t LZFSEReadStream::size() const {
+	return _readStream->size();
 }
 
-int64_t LZFSEReadStream::skip(int64_t delta) {
-	return _readStream->skip(delta);
+int64_t LZFSEReadStream::pos() const {
+	return _readStream->pos();
 }
 
 int LZFSEReadStream::read(void *buf, size_t size) {

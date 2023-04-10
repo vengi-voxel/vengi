@@ -12,7 +12,7 @@ namespace io {
 /**
  * @ingroup IO
  */
-class LZFSEReadStream : public io::ReadStream {
+class LZFSEReadStream : public io::SeekableReadStream {
 private:
 	io::MemoryReadStream *_readStream = nullptr;
 	uint8_t *_extractedBuffer = nullptr;
@@ -33,26 +33,15 @@ public:
 	 */
 	int read(void *dataPtr, size_t dataSize) override;
 	/**
-	 * @return @c true if the end of the compressed stream was found
+	 * @param[in] position This is the number of bytes to offset
+	 * @param[in] whence @c SEEK_SET offset is used as absolute position from the beginning of the stream.
+	 * @c SEEK_CUR offset is taken as relative offset from the current position.
+	 * @c SEEK_END offset is used relative to the end of the stream.
+	 * @return -1 on error - otherwise the current offset in the stream
 	 */
-	bool eos() const override;
-
-	/**
-	 * @brief Advances the position in the stream without reading the bytes.
-	 * @param delta the bytes to skip
-	 * @return -1 on error
-	 */
-	int64_t skip(int64_t delta);
-
-	/**
-	 * @brief The remaining amount of bytes to read from the input stream. This is
-	 * either the amount of remaining bytes in the input stream, or if the @c size
-	 * parameter was specified in the constructor, the amounts of bytes that are left
-	 * relative to the size that was specified.
-	 *
-	 * @return int64_t
-	 */
-	int64_t remaining() const;
+	int64_t seek(int64_t position, int whence = SEEK_SET) override;
+	int64_t size() const override;
+	int64_t pos() const override;
 };
 
 } // namespace io
