@@ -423,12 +423,36 @@ int ReadStream::readFloat(float &val) {
 	return retVal;
 }
 
+int ReadStream::readDouble(double &val) {
+	union toint {
+		double f;
+		uint64_t i;
+	} tmp;
+	const int retVal = readUInt64(tmp.i);
+	if (retVal == 0) {
+		val = tmp.f;
+	}
+	return retVal;
+}
+
 int ReadStream::readFloatBE(float &val) {
 	union toint {
 		float f;
 		uint32_t i;
 	} tmp;
 	const int retVal = readUInt32BE(tmp.i);
+	if (retVal == 0) {
+		val = tmp.f;
+	}
+	return retVal;
+}
+
+int ReadStream::readDoubleBE(double &val) {
+	union toint {
+		double f;
+		uint64_t i;
+	} tmp;
+	const int retVal = readUInt64BE(tmp.i);
 	if (retVal == 0) {
 		val = tmp.f;
 	}

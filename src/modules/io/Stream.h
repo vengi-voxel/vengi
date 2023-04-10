@@ -70,6 +70,10 @@ public:
 	 * @return -1 on error - 0 on success
 	 */
 	int readFloat(float &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
+	int readDouble(double &val);
 
 	/**
 	 * @return -1 on error - 0 on success
@@ -103,6 +107,10 @@ public:
 	 * @return -1 on error - 0 on success
 	 */
 	int readFloatBE(float &val);
+	/**
+	 * @return -1 on error - 0 on success
+	 */
+	int readDoubleBE(double &val);
 	/**
 	 * @brief Read a fixed-width string from a file. It may be null-terminated, but
 	 * the position of the stream is still advanced by the given length
