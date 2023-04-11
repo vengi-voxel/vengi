@@ -86,6 +86,7 @@ set(TEST_SRCS
 	tests/VXRFormatTest.cpp
 	tests/VXMFormatTest.cpp
 	tests/VENGIFormatTest.cpp
+	tests/VMaxFormatTest.cpp
 
 	tests/MinecraftPaletteMapTest.cpp
 	tests/NamedBinaryTagTest.cpp
@@ -121,6 +122,7 @@ set(TEST_FILES
 	tests/cube.stl
 	tests/ascii.stl
 	tests/test.gox
+	tests/test.plist
 	tests/test.vxm
 	tests/test2.vxm
 	tests/8ontop.vox
