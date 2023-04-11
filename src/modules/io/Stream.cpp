@@ -300,6 +300,7 @@ bool ReadStream::readString(int length, char *strbuff, bool terminated) {
 
 bool ReadStream::readString(int length, core::String &str, bool terminated) {
 	str.clear();
+	str.reserve(length);
 	for (int i = 0; i < length; ++i) {
 		uint8_t chr;
 		if (readUInt8(chr) != 0) {
