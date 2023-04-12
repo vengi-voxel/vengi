@@ -7,6 +7,7 @@ set(SRCS
 	external/ufbx.h external/ufbx.c
 	external/libvxl.h external/libvxl.c
 
+	private/BinaryPList.h private/BinaryPList.cpp
 	private/MinecraftPaletteMap.h private/MinecraftPaletteMap.cpp
 	private/NamedBinaryTag.h private/NamedBinaryTag.cpp
 	private/SchematicIntReader.h private/SchematicIntWriter.h
@@ -88,6 +89,7 @@ set(TEST_SRCS
 	tests/VENGIFormatTest.cpp
 	tests/VMaxFormatTest.cpp
 
+	tests/BinaryPListTest.cpp
 	tests/MinecraftPaletteMapTest.cpp
 	tests/NamedBinaryTagTest.cpp
 	tests/TriTest.cpp
