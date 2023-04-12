@@ -125,6 +125,11 @@ set(TEST_FILES
 	tests/ascii.stl
 	tests/test.gox
 	tests/test.plist
+	tests/palette.settings.vmaxpsb
+	tests/0voxel.vmax.zip
+	tests/1voxel.vmax.zip
+	tests/2voxel.vmax.zip
+	tests/5voxel.vmax.zip
 	tests/test.vxm
 	tests/test2.vxm
 	tests/8ontop.vox

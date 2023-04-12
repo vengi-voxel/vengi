@@ -41,4 +41,13 @@ TEST_F(BinaryPListTest, testRead) {
 	ASSERT_STREQ("John Doe", name->second.asString().c_str());
 }
 
+TEST_F(BinaryPListTest, testReadVMaxPalette) {
+	io::FileStream stream(io::filesystem()->open("palette.settings.vmaxpsb", io::FileMode::Read));
+	const priv::BinaryPList &plist = priv::BinaryPList::parse(stream);
+	ASSERT_TRUE(plist.isDict());
+	ASSERT_EQ(11u, plist.asDict().size());
+	ASSERT_TRUE(plist.asDict().hasKey("materials"));
+	ASSERT_TRUE(plist.asDict().hasKey("name"));
+}
+
 } // namespace voxelformat
