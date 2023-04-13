@@ -236,7 +236,8 @@ bool VMaxFormat::loadVolume(const core::String &filename, io::ZipArchive &archiv
 
 		io::MemoryReadStream dsStream(dsData.data(), dsSize);
 
-		// TODO: find out the chunk position
+		// TODO: find out the chunk position - chunk position is snapshots.s[x].id - which is a
+		// morton32 encoded position
 
 		Log::debug("Found voxel data with size %i", (int)dsStream.size());
 		// io::filesystem()->write(filename + ".ds.bin", dsStream);

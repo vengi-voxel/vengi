@@ -19,6 +19,7 @@ namespace voxelformat {
  * up to 2040 materials
  * 256x256x256 working area
  * unlimited history
+ * z points upwards
  *
  * ------------------
  *
@@ -77,18 +78,24 @@ namespace voxelformat {
  * VolumeStats
  * * case count
  * * case scount
- * * case min
- * * case max
+ * * case min  //morton32
+ * * case max  //morton32
  * * case emin // extent in case the workarea is less than 256^3
  * * case emax
  * * case smin // s means selected
  * * case smax
  * * case extent
  *
+ * voxel_p_morton = stats.min + offset_in_chunk_data + chunk_min_morton
+ *
+ * the row of voxels saved inside a chunk doesnt necessarily starts from 0 and ends to 32^3
+ * if the voxel is in the middle, you need to use stats.min and read till stats.max
+ * if you place a voxel at 0,0,0 and at 31,31,31 inside the chunk, whole stuff is saved
+ *
  * the volume itself is split in 32^3 chunks and saved in snapshots that come with a unique identifier:
  *
  * Snapshot Identifier
- * * case cid = "c" chunk id
+ * * case cid = "c" chunk indexes (also morton)
  * * case sid = "s" snapshot id (timeline)
  * * case type = "t" type uint8 see below
  *
@@ -113,7 +120,7 @@ namespace voxelformat {
  *
  * a voxel has:
  * * 1 byte extended layer info - there are only 8 materials used for now 0-7 and 8 selected versions for them 8-15,
- * with option to add more in the future up to 128
+ *   with option to add more in the future up to 128
  * * 3 bytes position (not saved, given by morton index in the sequence)
  * * 1 byte palette index 0 means deleted
  *
