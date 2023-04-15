@@ -253,8 +253,8 @@ Region Region::rotate(const glm::mat4 &mat, const glm::vec3 & pivot) const {
 	glm::vec3 newMaxs(-FLT_MAX);
 	for (int i = 0; i < 8; ++i) {
 		target[i] = mat * vertices[i];
-		newMins = glm::min(glm::vec3(target[i]), newMins);
-		newMaxs = glm::max(glm::vec3(target[i]), newMaxs);
+		newMins = glm::min(glm::vec3(target[i] - 0.5f), newMins);
+		newMaxs = glm::max(glm::vec3(target[i] - 0.5f), newMaxs);
 	}
 	const voxel::Region region(glm::floor(newMins), glm::ceil(newMaxs));
 	return region;
