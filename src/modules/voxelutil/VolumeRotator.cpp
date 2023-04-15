@@ -3,11 +3,11 @@
  */
 
 #include "VolumeRotator.h"
+#include "core/Assert.h"
+#include "core/GLM.h"
+#include "math/AABB.h"
 #include "math/Axis.h"
 #include "voxel/RawVolume.h"
-#include "math/AABB.h"
-#include "core/GLM.h"
-#include "core/Assert.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #define GLM_ENABLE_EXPERIMENTAL
@@ -19,24 +19,32 @@ static inline glm::vec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos,
 	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
 }
 
+static voxel::Region rotateRegion(const voxel::Region &srcRegion, const glm::mat4 &mat, const glm::vec4 &pivot) {
+	const glm::ivec3 &mins = srcRegion.getLowerCorner();
+	const glm::ivec3 &maxs = srcRegion.getUpperCorner();
+	const glm::ivec3 &transformedMins = transform(mat, mins, pivot);
+	const glm::ivec3 &transformedMaxs = transform(mat, maxs, pivot);
+	const voxel::Region region(glm::min(transformedMins, transformedMaxs), glm::max(transformedMins, transformedMaxs));
+	return region;
+}
+
 /**
  * @param[in] source The RawVolume to rotate
  * @param[in] angles The angles for the x, y and z axis given in degrees
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  */
-voxel::RawVolume* rotateVolume(const voxel::RawVolume* source, const glm::vec3& angles, const glm::vec3& normalizedPivot) {
+voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &angles,
+							   const glm::vec3 &normalizedPivot) {
 	const float pitch = glm::radians(angles.x);
 	const float yaw = glm::radians(angles.y);
 	const float roll = glm::radians(angles.z);
-	const glm::mat4& mat = glm::eulerAngleXYZ(pitch, yaw, roll);
+	const glm::mat4 &mat = glm::eulerAngleXYZ(pitch, yaw, roll);
 	const voxel::Region srcRegion = source->region();
 
 	const glm::vec4 pivot = glm::vec4(glm::floor(normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels())), 0.0f);
-	const glm::ivec3& transformedMins = transform(mat, srcRegion.getLowerCorner(), pivot);
-	const glm::ivec3& transformedMaxs = transform(mat, srcRegion.getUpperCorner(), pivot);
-	const voxel::Region region(glm::min(transformedMins, transformedMaxs), glm::max(transformedMins, transformedMaxs));
-	voxel::RawVolume* destination = new voxel::RawVolume(region);
+	const voxel::Region &region = rotateRegion(srcRegion, mat, pivot);
+	voxel::RawVolume *destination = new voxel::RawVolume(region);
 	voxel::RawVolume::Sampler destSampler(destination);
 	voxel::RawVolume::Sampler srcSampler(source);
 
@@ -49,7 +57,9 @@ voxel::RawVolume* rotateVolume(const voxel::RawVolume* source, const glm::vec3& 
 					const glm::ivec3 destPos(x, y, z);
 					const glm::ivec3 &volumePos = transform(mat, destPos, pivot);
 					destSampler.setPosition(volumePos);
-					core_assert_msg(region.containsPoint(volumePos), "volumepos %i:%i:%i is not part of the rotated region %s", volumePos.x, volumePos.y, volumePos.z, region.toString().c_str());
+					core_assert_msg(region.containsPoint(volumePos),
+									"volumepos %i:%i:%i is not part of the rotated region %s", volumePos.x, volumePos.y,
+									volumePos.z, region.toString().c_str());
 					destSampler.setVoxel(voxel);
 				}
 				srcSampler.movePositiveX();
@@ -62,20 +72,20 @@ voxel::RawVolume* rotateVolume(const voxel::RawVolume* source, const glm::vec3& 
 	return destination;
 }
 
-voxel::RawVolume* rotateAxis(const voxel::RawVolume* source, math::Axis axis) {
+voxel::RawVolume *rotateAxis(const voxel::RawVolume *source, math::Axis axis) {
 	glm::vec3 rotVec{0.0f};
 	rotVec[math::getIndexForAxis(axis)] = 90.0f;
 	return rotateVolume(source, rotVec, glm::vec3(0.5f));
 }
 
-voxel::RawVolume* mirrorAxis(const voxel::RawVolume* source, math::Axis axis) {
-	const voxel::Region& srcRegion = source->region();
-	voxel::RawVolume* destination = new voxel::RawVolume(source);
+voxel::RawVolume *mirrorAxis(const voxel::RawVolume *source, math::Axis axis) {
+	const voxel::Region &srcRegion = source->region();
+	voxel::RawVolume *destination = new voxel::RawVolume(source);
 	voxel::RawVolume::Sampler destSampler(destination);
 	voxel::RawVolume::Sampler srcSampler(source);
 
-	const glm::ivec3& mins = srcRegion.getLowerCorner();
-	const glm::ivec3& maxs = srcRegion.getUpperCorner();
+	const glm::ivec3 &mins = srcRegion.getLowerCorner();
+	const glm::ivec3 &maxs = srcRegion.getUpperCorner();
 
 	if (axis == math::Axis::X) {
 		for (int32_t z = mins.z; z <= maxs.z; ++z) {
@@ -117,4 +127,4 @@ voxel::RawVolume* mirrorAxis(const voxel::RawVolume* source, math::Axis axis) {
 	return destination;
 }
 
-}
+} // namespace voxelutil
