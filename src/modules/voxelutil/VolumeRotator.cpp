@@ -19,15 +19,6 @@ static inline glm::vec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos,
 	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
 }
 
-static voxel::Region rotateRegion(const voxel::Region &srcRegion, const glm::mat4 &mat, const glm::vec4 &pivot) {
-	const glm::ivec3 &mins = srcRegion.getLowerCorner();
-	const glm::ivec3 &maxs = srcRegion.getUpperCorner();
-	const glm::ivec3 &transformedMins = transform(mat, mins, pivot);
-	const glm::ivec3 &transformedMaxs = transform(mat, maxs, pivot);
-	const voxel::Region region(glm::min(transformedMins, transformedMaxs), glm::max(transformedMins, transformedMaxs));
-	return region;
-}
-
 /**
  * @param[in] source The RawVolume to rotate
  * @param[in] angles The angles for the x, y and z axis given in degrees
@@ -43,7 +34,7 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &
 	const voxel::Region srcRegion = source->region();
 
 	const glm::vec4 pivot = glm::vec4(glm::floor(normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels())), 0.0f);
-	const voxel::Region &region = rotateRegion(srcRegion, mat, pivot);
+	const voxel::Region &region = srcRegion.rotate(mat, pivot);
 	voxel::RawVolume *destination = new voxel::RawVolume(region);
 	voxel::RawVolume::Sampler destSampler(destination);
 	voxel::RawVolume::Sampler srcSampler(source);

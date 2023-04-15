@@ -202,6 +202,7 @@ public:
 	void shrink(int32_t amountX, int32_t amountY, int32_t amountZ);
 	/** Shrinks this region by the amounts specified. */
 	void shrink(const glm::ivec3& v3dAmount);
+	Region rotate(const glm::mat4 &mat, const glm::vec3 &pivot) const;
 
 	core::String toString(bool center = false) const;
 

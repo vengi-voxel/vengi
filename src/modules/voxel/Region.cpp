@@ -236,6 +236,17 @@ void Region::accumulate(const glm::ivec3& pos) {
 	accumulate(pos.x, pos.y, pos.z);
 }
 
+static inline glm::vec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec4 &pivot) {
+	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
+}
+
+Region Region::rotate(const glm::mat4 &mat, const glm::vec3 & pivot) const {
+	const glm::ivec3 &transformedMins = transform(mat, _mins, glm::vec4(pivot, 1.0f));
+	const glm::ivec3 &transformedMaxs = transform(mat, _maxs, glm::vec4(pivot, 1.0f));
+	const voxel::Region region(glm::min(transformedMins, transformedMaxs), glm::max(transformedMins, transformedMaxs));
+	return region;
+}
+
 /**
  * Constructs a Region and sets the lower and upper corners to the specified values.
  * @param mins The desired lower corner of the Region.
