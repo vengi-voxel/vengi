@@ -8,6 +8,7 @@
 #include "core/ScopedPtr.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
+#include "util/Movement.h"
 #include "voxel/Voxel.h"
 #include "voxelfont/VoxelFont.h"
 #include "scenegraph/SceneGraph.h"
@@ -64,6 +65,7 @@ private:
 	scenegraph::SceneGraph _sceneGraph;
 	MementoHandler _mementoHandler;
 	ModifierFacade _modifier;
+	util::Movement _movement;
 	voxelfont::VoxelFont _voxelFont;
 	core::ScopedPtr<voxel::RawVolume> _copy;
 	std::future<scenegraph::SceneGraph> _loadingFuture;

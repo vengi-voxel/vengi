@@ -10,7 +10,7 @@
 #include <glm/vec3.hpp>
 #include <stdint.h>
 
-namespace testcore {
+namespace util {
 
 /**
  * @brief Movement component that does the input listening
@@ -24,7 +24,8 @@ protected:
 	command::ActionButton _moveBackward;
 	command::ActionButton _moveForward;
 
-	double _deltaSeconds = 0.0;
+	double _deltaSeconds = -1.0;
+	double _nowSeconds = 0.0;
 
 	glm::vec3 calculateDelta(const glm::quat& rot, double speed);
 
@@ -32,7 +33,7 @@ public:
 	virtual ~Movement() {}
 	void construct() override;
 	bool init() override;
-	void update(double deltaFrameSeconds);
+	void update(double nowSeconds);
 	void shutdown() override;
 
 	bool left() const;

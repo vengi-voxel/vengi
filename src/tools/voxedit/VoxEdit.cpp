@@ -352,6 +352,11 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("ctrl+g",               "toggle ve_showgrid",           "all");
 	_keybindingHandler.registerBinding("ctrl+f",               "toggle ve_showaabb",           "all");
 	_keybindingHandler.registerBinding("ctrl+w",               "toggle ve_rendershadow",       "all");
+	_keybindingHandler.registerBinding("w",                    "+move_forward",                "all");
+	_keybindingHandler.registerBinding("w",                    "+move_forward",                "all");
+	_keybindingHandler.registerBinding("a",                    "+move_left",                   "all");
+	_keybindingHandler.registerBinding("s",                    "+move_backward",               "all");
+	_keybindingHandler.registerBinding("d",                    "+move_right",                  "all");
 
 	if (keymap == KeyBindings::Blender) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");

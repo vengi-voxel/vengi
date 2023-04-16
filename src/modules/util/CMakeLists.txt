@@ -7,6 +7,7 @@ set(SRCS
 	KeybindingParser.h KeybindingParser.cpp
 	KeybindingHandler.h KeybindingHandler.cpp
 	IncludeUtil.h IncludeUtil.cpp
+	Movement.cpp Movement.h
 	VarUtil.h
 )
 set(LIB util)

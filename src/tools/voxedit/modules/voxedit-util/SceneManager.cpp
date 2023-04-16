@@ -26,6 +26,7 @@
 #include "math/Axis.h"
 #include "math/Random.h"
 #include "math/Ray.h"
+#include "video/Camera.h"
 #include "video/Renderer.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
@@ -1333,6 +1334,7 @@ void SceneManager::construct() {
 	_modifier.construct();
 	_mementoHandler.construct();
 	_sceneRenderer.construct();
+	_movement.construct();
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
 
@@ -2070,7 +2072,10 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the modifier");
 		return false;
 	}
-
+	if (!_movement.init()) {
+		Log::error("Failed to initialize the movement controller");
+		return false;
+	}
 	if (!_luaGenerator.init()) {
 		Log::error("Failed to initialize the lua generator bindings");
 		return false;
@@ -2144,6 +2149,14 @@ bool SceneManager::update(double nowSeconds) {
 			_loadingFuture = std::future<scenegraph::SceneGraph>();
 		}
 	}
+
+	_movement.update(nowSeconds);
+	video::Camera *camera = activeCamera();
+	if (camera != nullptr && camera->rotationType() == video::CameraRotationType::Eye) {
+		const glm::vec3& moveDelta = _movement.moveDelta(100.0f); // TODO: speed should be a cvar
+		camera->move(moveDelta);
+	}
+
 	_modifier.update(nowSeconds);
 	_sceneRenderer.update();
 	setGridResolution(_gridSize->intVal());
@@ -2189,6 +2202,7 @@ void SceneManager::shutdown() {
 	_sceneGraph.clear();
 	_mementoHandler.clearStates();
 
+	_movement.shutdown();
 	_luaGenerator.shutdown();
 	_modifier.shutdown();
 	_mementoHandler.shutdown();

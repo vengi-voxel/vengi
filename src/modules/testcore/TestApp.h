@@ -8,7 +8,7 @@
 #include "video/Camera.h"
 #include "render/Axis.h"
 #include "Plane.h"
-#include "Movement.h"
+#include "util/Movement.h"
 
 class TestApp: public ui::IMGUIApp {
 private:
@@ -21,7 +21,7 @@ protected:
 	render::Axis _axis;
 	render::Plane _plane;
 	glm::vec4 _planeColor = core::Color::White;
-	testcore::Movement _movement;
+	util::Movement _movement;
 	core::VarPtr _rotationSpeed;
 	float _cameraSpeed = 10.0f;
 

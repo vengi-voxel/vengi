@@ -9,7 +9,7 @@
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/functions.hpp>
 
-namespace testcore {
+namespace util {
 
 bool Movement::init() {
 	return true;
@@ -23,7 +23,6 @@ void Movement::construct() {
 }
 
 void Movement::shutdown() {
-	_deltaSeconds = 0.0;
 	command::Command::unregisterActionButton("move_forward");
 	command::Command::unregisterActionButton("move_backward");
 	command::Command::unregisterActionButton("move_left");
@@ -34,8 +33,13 @@ void Movement::shutdown() {
 	_moveBackward.handleUp(command::ACTION_BUTTON_ALL_KEYS, 0ul);
 }
 
-void Movement::update(double deltaFrameSeconds) {
-	_deltaSeconds += deltaFrameSeconds;
+void Movement::update(double nowSeconds) {
+	if (_deltaSeconds < 0.0) {
+		_deltaSeconds = 0.0;
+	} else {
+		_deltaSeconds = nowSeconds - _nowSeconds;
+	}
+	_nowSeconds = nowSeconds;
 }
 
 glm::vec3 Movement::calculateDelta(const glm::quat& rot, double speed) {

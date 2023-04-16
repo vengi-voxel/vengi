@@ -1,6 +1,5 @@
 set(SRCS
 	TestApp.cpp TestApp.h
-	Movement.cpp Movement.h
 	Plane.h Plane.cpp
 	TextureRenderer.cpp TextureRenderer.h
 	TestAppMain.h
