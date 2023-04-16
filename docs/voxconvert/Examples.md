@@ -173,3 +173,26 @@ Windows batch (or `cmd.exe`) example to convert all png in the current directory
 ```cmd
 for %f in (*.png) do call vengi-voxconvert --input "%~f" --output "%~nf.vox"
 ```
+
+Process all pngs in the `Input` folder with a depth map to create voxel models in the `Output` folder.
+
+```cmd
+@echo off
+setlocal enabledelayedexpansion
+
+set INPUT_FOLDER=\Input
+set OUTPUT_FOLDER=\Output
+
+for %%f in (%INPUT_FOLDER%*.png) do (
+    set "input_file=%%f"
+    set "file_name=%%~nf"
+
+    echo Processing !input_file!
+    if not "!file_name!"=="!file_name:-dm=!" (
+        echo Skipping !input_file! due to -dm in the name.
+    ) else (
+        set "output_file=%OUTPUT_FOLDER%!file_name!.vox"
+        vengi-voxconvert --image-as-volume --image-as-volume-max-depth 2 --image-as-volume-both-sides false --input "!input_file!" --output "!output_file!"
+    )
+)
+```
