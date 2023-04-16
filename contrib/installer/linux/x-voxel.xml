@@ -22,6 +22,10 @@
     </magic>
     <glob pattern="*.vox"/>
   </mime-type>
+  <mime-type type="application/x-voxelmax">
+    <comment>Voxel model MagicaVoxel</comment>
+    <glob pattern="*.vmax.zip"/>
+  </mime-type>
   <mime-type type="application/x-minetest">
     <comment>Minetest Schematic File</comment>
     <glob pattern="*.mts"/>
