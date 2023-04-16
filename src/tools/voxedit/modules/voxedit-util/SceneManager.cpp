@@ -978,13 +978,13 @@ void SceneManager::resetLastTrace() {
 
 static bool shouldGetMerged(const scenegraph::SceneGraphNode &node, NodeMergeFlags flags) {
 	bool add = false;
-	if ((flags & NodeMergeFlags::Visible) != NodeMergeFlags::None) {
+	if ((flags & NodeMergeFlags::Visible) == NodeMergeFlags::Visible) {
 		add = node.visible();
-	} else if ((flags & NodeMergeFlags::Invisible) != NodeMergeFlags::None) {
+	} else if ((flags & NodeMergeFlags::Invisible) == NodeMergeFlags::Invisible) {
 		add = !node.visible();
-	} else if ((flags & NodeMergeFlags::Locked) != NodeMergeFlags::None) {
+	} else if ((flags & NodeMergeFlags::Locked) == NodeMergeFlags::Locked) {
 		add = node.locked();
-	} else if ((flags & NodeMergeFlags::All) != NodeMergeFlags::None) {
+	} else if ((flags & NodeMergeFlags::All) == NodeMergeFlags::All) {
 		add = true;
 	}
 	return add;
