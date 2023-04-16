@@ -170,7 +170,7 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 	}
 	for (const int nodeId : node.children()) {
 		scenegraph::SceneGraphNode& childNode = sceneGraph.node(nodeId);
-		wrapBool(recursiveImportNodeBefore3(filename, stream, sceneGraph, childNode, animId, version))
+		wrapBool(recursiveImportNodeSince3(filename, stream, sceneGraph, childNode, animId, version))
 	}
 	return true;
 }
