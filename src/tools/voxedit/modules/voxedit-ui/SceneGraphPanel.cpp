@@ -145,7 +145,8 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 			commandNodeMenu(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "layerdelete", node, validModels > 1, &listener);
 			commandNodeMenu(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "layerduplicate", node, true, &listener);
 			commandNodeMenu(ICON_FA_COPY " Create reference" SCENEGRAPHPOPUP, "noderef", node, true, &listener);
-			commandNodeMenu(ICON_FA_OBJECT_GROUP " Merge" SCENEGRAPHPOPUP, "layermerge", node, validModels > 1, &listener);
+			const int prevNode = sceneGraph.prevModelNode(node.id());
+			commandNodeMenu(ICON_FA_OBJECT_GROUP " Merge" SCENEGRAPHPOPUP, "layermerge", node, prevNode != InvalidNodeId, &listener);
 			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge all" SCENEGRAPHPOPUP, "layermergeall", validModels > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge visible" SCENEGRAPHPOPUP, "layermergevisible", validModels > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge locked" SCENEGRAPHPOPUP, "layermergelocked", validModels > 1, &listener);

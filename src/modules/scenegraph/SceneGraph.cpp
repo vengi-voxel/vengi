@@ -152,6 +152,9 @@ SceneGraphNode& SceneGraph::node(int nodeId) const {
 }
 
 bool SceneGraph::hasNode(int nodeId) const {
+	if (nodeId == InvalidNodeId) {
+		return false;
+	}
 	return _nodes.find(nodeId) != _nodes.end();
 }
 
@@ -186,7 +189,6 @@ int SceneGraph::prevModelNode(int nodeId) const {
 	if (parentNode.isModelNode()) {
 		return parentNode.id();
 	}
-	core_assert_msg(false, "Node %i is not part of the parent node", nodeId);
 	return InvalidNodeId;
 }
 
