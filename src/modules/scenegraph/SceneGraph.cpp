@@ -570,13 +570,17 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool transform) const {
 
 	voxel::Region mergedRegion = voxel::Region::InvalidRegion;
 	const voxel::Palette &palette = mergePalettes(true);
+	const KeyFrameIndex keyFrameIdx = 0;
 
 	for (const SceneGraphNode &node : *this) {
 		nodes.push_back(&node);
 
-		const glm::vec3 &translation = node.transform(0).worldTranslation();
 		voxel::Region region = node.region();
-		region.shift(translation);
+		if (transform) {
+			const SceneGraphTransform &transform = node.transform(keyFrameIdx);
+			const glm::vec3 &translation = transform.worldTranslation();
+			region.shift(translation);
+		}
 		if (mergedRegion.isValid()) {
 			mergedRegion.accumulate(region);
 		} else {
@@ -590,7 +594,6 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool transform) const {
 		const voxel::Region& sourceRegion = node->region();
 		voxel::Region destRegion = sourceRegion;
 		if (transform) {
-			const KeyFrameIndex keyFrameIdx = 0;
 			const SceneGraphTransform &transform = node->transform(keyFrameIdx);
 			const glm::vec3 &translation = transform.worldTranslation();
 			destRegion.shift(translation);
@@ -607,7 +610,6 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool transform) const {
 			return true;
 		});
 	}
-	merged->translate(-mergedRegion.getLowerCorner());
 	return MergedVolumePalette{merged, palette};
 }
 

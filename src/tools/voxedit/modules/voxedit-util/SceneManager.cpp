@@ -1001,7 +1001,8 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 		scenegraph::copyNode(*node, copiedNode, true);
 		newSceneGraph.emplace(core::move(copiedNode));
 	}
-	scenegraph::SceneGraph::MergedVolumePalette merged = newSceneGraph.merge();
+	bool applyTransformPosition = true;
+	scenegraph::SceneGraph::MergedVolumePalette merged = newSceneGraph.merge(applyTransformPosition);
 	if (merged.first == nullptr) {
 		return InvalidNodeId;
 	}
@@ -1010,6 +1011,10 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	int parent = 0;
 	if (scenegraph::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
 		scenegraph::copyNode(*firstNode, newNode, false);
+	}
+	if (applyTransformPosition) {
+		scenegraph::SceneGraphTransform &transform = newNode.keyFrame(0).transform();
+		transform.setWorldTranslation(glm::vec3(0.0f));
 	}
 	newNode.setVolume(merged.first, true);
 	newNode.setPalette(merged.second);
