@@ -17,7 +17,7 @@ LZFSEReadStream::LZFSEReadStream(io::SeekableReadStream &readStream, int size) {
 	BufferedReadWriteStream s(readStream, size <= 0 ? readStream.remaining() : size);
 	size_t extractedBufferSize = 10 * s.size();
 	void *auxBuffer = core_malloc(lzfse_decode_scratch_size());
-	_extractedBuffer = (uint8_t *)malloc(extractedBufferSize);
+	_extractedBuffer = (uint8_t *)core_malloc(extractedBufferSize);
 	size_t extractedSize = 0;
 	while (1) {
 		extractedSize = lzfse_decode_buffer(_extractedBuffer, extractedBufferSize, s.getBuffer(), s.size(), auxBuffer);
