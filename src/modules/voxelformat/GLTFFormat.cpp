@@ -137,13 +137,15 @@ void GLTFFormat::saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model 
 	gltfModel.nodes.push_back(gltfNode);
 	nodeMapping.put(node.id(), idx);
 
-	if (stack.back().second != -1) {
+	if (!stack.empty() && stack.back().second != -1) {
 		gltfModel.nodes[stack.back().second].children.push_back(idx);
 	} else {
 		gltfScene.nodes.push_back(idx);
 	}
 
-	stack.pop();
+	if (!stack.empty()) {
+		stack.pop();
+	}
 
 	const scenegraph::SceneGraphNodeChildren &nodeChildren = node.children();
 
