@@ -393,7 +393,7 @@ public:
 private:
 	bool isValidReferenceNode(const scenegraph::SceneGraphNode &node) const;
 
-	void onNewNodeAdded(int newNodeId);
+	void onNewNodeAdded(int newNodeId, bool isChildren = false);
 	bool nodeRename(scenegraph::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(scenegraph::SceneGraphNode &node, bool recursive);
 	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx);

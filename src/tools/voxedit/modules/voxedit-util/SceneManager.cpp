@@ -1082,35 +1082,45 @@ void SceneManager::resetSceneState() {
 	resetLastTrace();
 }
 
-void SceneManager::onNewNodeAdded(int newNodeId) {
+void SceneManager::onNewNodeAdded(int newNodeId, bool isChildren) {
 	if (newNodeId == InvalidNodeId) {
 		return;
 	}
+
+	if (!isChildren) {
+		_sceneGraph.updateTransforms();
+	}
+
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(newNodeId)) {
-		const voxel::Region &region = node->region();
 		const core::String &name = node->name();
 		const scenegraph::SceneGraphNodeType type = node->type();
 		Log::debug("Adding node %i with name %s", newNodeId, name.c_str());
 
-		_sceneGraph.updateTransforms();
-
 		_mementoHandler.markNodeAdded(*node);
+
+		for (int childId : node->children()) {
+			onNewNodeAdded(childId, true);
+		}
+
 		markDirty();
 
 		Log::debug("Add node %i to scene graph", newNodeId);
 		if (type == scenegraph::SceneGraphNodeType::Model) {
+			const voxel::Region &region = node->region();
 			// update the whole volume
 			_sceneRenderer.updateNodeRegion(newNodeId, region);
 
 			_result = voxelutil::PickResult();
-			nodeActivate(newNodeId);
+			if (!isChildren) {
+				nodeActivate(newNodeId);
+			}
 		}
 	}
 }
 
 int SceneManager::addNodeToSceneGraph(scenegraph::SceneGraphNode &node, int parent) {
-	const int newNodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, node, parent);
-	onNewNodeAdded(newNodeId);
+	const int newNodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, node, parent, false);
+	onNewNodeAdded(newNodeId, false);
 	return newNodeId;
 }
 
@@ -1933,7 +1943,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Unlock all nodes");
 
-	command::Command::registerCommand("layerrename", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("noderename", [&] (const command::CmdArgs& args) {
 		if (args.size() == 1) {
 			const int nodeId = activeNode();
 			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
@@ -1945,11 +1955,11 @@ void SceneManager::construct() {
 				nodeRename(*node, args[1]);
 			}
 		} else {
-			Log::info("Usage: layerrename [<nodeid>] newname");
+			Log::info("Usage: noderename [<nodeid>] newname");
 		}
 	}).setHelp("Rename the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
-	command::Command::registerCommand("layerduplicate", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("nodeduplicate", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			nodeDuplicate(*node);
@@ -2680,22 +2690,13 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 }
 
 void SceneManager::nodeDuplicate(const scenegraph::SceneGraphNode &node) {
-	// TODO: allow to duplicate other node types, too
-	if (node.type() != scenegraph::SceneGraphNodeType::Model) {
-		return;
-	}
-	const int newNodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, node, node.parent());
-	onNewNodeAdded(newNodeId);
-#if 0
-	for (int childNodeId : node.children()) {
-		// TODO: duplicate children
-	}
-#endif
+	const int newNodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, node, node.parent(), true);
+	onNewNodeAdded(newNodeId, false);
 }
 
 bool SceneManager::nodeReference(const scenegraph::SceneGraphNode &node) {
 	const int newNodeId = scenegraph::createNodeReference(_sceneGraph, node);
-	onNewNodeAdded(newNodeId);
+	onNewNodeAdded(newNodeId, false);
 	return newNodeId != InvalidNodeId;
 }
 

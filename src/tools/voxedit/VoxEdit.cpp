@@ -361,7 +361,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	if (keymap == KeyBindings::Blender) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
-		_keybindingHandler.registerBinding("space",                  "layerduplicate",             "editing");
+		_keybindingHandler.registerBinding("space",                  "nodeduplicate",              "editing");
 		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
 		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
 		_keybindingHandler.registerBinding("ctrl+tab",               "toggleconsole",              "all");
@@ -371,7 +371,7 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("left_alt",               "+camera_pan",                "editing");
 	} else if (keymap == KeyBindings::Magicavoxel) {
 		_keybindingHandler.registerBinding("shift+left_mouse",       "+actionexecutedelete",       "model");
-		_keybindingHandler.registerBinding("ctrl+shift+p",           "layerduplicate",             "editing");
+		_keybindingHandler.registerBinding("ctrl+shift+p",           "nodeduplicate",              "editing");
 		_keybindingHandler.registerBinding("1",                      "mirroraxisx",                "model");
 		_keybindingHandler.registerBinding("2",                      "mirroraxisz",                "model");
 		_keybindingHandler.registerBinding("3",                      "mirroraxisy",                "model");
@@ -388,7 +388,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	} else if (keymap == KeyBindings::Qubicle) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
-		_keybindingHandler.registerBinding("space",                  "layerduplicate",             "editing");
+		_keybindingHandler.registerBinding("space",                  "nodeduplicate",              "editing");
 		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
 		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
 		_keybindingHandler.registerBinding("ctrl+tab",               "toggleconsole",              "all");
@@ -406,7 +406,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	} else /*if (keymap == KeyBindings::Vengi) */ {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
-		_keybindingHandler.registerBinding("space",                  "layerduplicate",             "editing");
+		_keybindingHandler.registerBinding("space",                  "nodeduplicate",              "editing");
 		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
 		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
 		_keybindingHandler.registerBinding("ctrl+tab",               "toggleconsole",              "all");

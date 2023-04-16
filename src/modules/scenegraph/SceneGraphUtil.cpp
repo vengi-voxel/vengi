@@ -64,16 +64,22 @@ void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume
 	copy(src, target, copyKeyFrames);
 }
 
-int addNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent) {
+int addNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent, bool recursive) {
 	SceneGraphNode newNode(node.type());
 	copy(node, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
 		newNode.setVolume(new voxel::RawVolume(node.volume()), true);
 	}
-	return addToGraph(sceneGraph, core::move(newNode), parent);
+	const int nodeId = addToGraph(sceneGraph, core::move(newNode), parent);
+	if (recursive) {
+		for (int childId : node.children()) {
+			addNodeToSceneGraph(sceneGraph, sceneGraph.node(childId), nodeId, recursive);
+		}
+	}
+	return nodeId;
 }
 
-int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent) {
+int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, bool recursive) {
 	SceneGraphNode newNode(node.type());
 	copy(node, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
@@ -81,7 +87,13 @@ int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent
 		newNode.setVolume(node.volume(), true);
 		node.releaseOwnership();
 	}
-	return addToGraph(sceneGraph, core::move(newNode), parent);
+	const int nodeId = addToGraph(sceneGraph, core::move(newNode), parent);
+	if (recursive) {
+		for (int childId : node.children()) {
+			addNodeToSceneGraph(sceneGraph, sceneGraph.node(childId), nodeId, recursive);
+		}
+	}
+	return nodeId;
 }
 
 static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, SceneGraphNode &sourceNode, int parent) {
