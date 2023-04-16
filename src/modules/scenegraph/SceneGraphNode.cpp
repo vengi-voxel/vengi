@@ -407,6 +407,10 @@ const glm::vec3 &SceneGraphNode::pivot() const {
 	return region().pivot();
 }
 
+glm::vec3 SceneGraphNode::worldPivot() const {
+	return region().worldPivot();
+}
+
 /**
  * @brief Apply the given @c translation vector to all keyframe transform of this node
  */

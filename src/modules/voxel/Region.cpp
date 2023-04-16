@@ -171,6 +171,10 @@ const glm::vec3& Region::pivot() const {
 	return _pivot;
 }
 
+glm::vec3 Region::worldPivot() const {
+	return glm::vec3(_mins) + _pivot * glm::vec3(_voxels);
+}
+
 void Region::setPivot(const glm::vec3 &normalizedPivot) {
 	_pivot = normalizedPivot;
 }

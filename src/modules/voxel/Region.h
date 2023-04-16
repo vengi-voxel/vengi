@@ -74,6 +74,7 @@ public:
 	const glm::ivec3& getCenter() const;
 	/** normalized pivot */
 	const glm::vec3& pivot() const;
+	glm::vec3 worldPivot() const;
 	void setPivot(const glm::vec3 &normalizedPivot);
 	/** Gets the position of the lower corner. */
 	const glm::ivec3& getLowerCorner() const;
