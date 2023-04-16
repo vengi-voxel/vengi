@@ -20,12 +20,15 @@ General:
    - Support for some parts of VoxelMax format
    - Fixed Sandbox VXA version 3 support
    - Fixed volume rotation issues
+   - Fixed volume merging issues
 
 VoxEdit:
 
    - Allow to export selections only
    - Started to support different keymaps (blender, qubicle, magicavoxel and vengi own)
    - Added support for multiple animations in one scene
+   - Allow to duplicate all scene graph nodes
+   - (Re-)implemented WASD controls in camera eye mode
 
 ## 0.0.24 (2023-03-12)
 
