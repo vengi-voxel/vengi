@@ -18,6 +18,8 @@ General:
    - Extended GLTF support to animation import and export as well as normal export
    - Fixed missing base color support for GLTF
    - Support for some parts of VoxelMax format
+   - Fixed Sandbox VXA version 3 support
+   - Fixed volume rotation issues
 
 VoxEdit:
 
