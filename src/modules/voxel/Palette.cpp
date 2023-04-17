@@ -47,6 +47,10 @@ void Palette::markDirty() {
 	_hash._hashColors[1] = core::hash(_glowColors, sizeof(_glowColors));
 }
 
+glm::vec4 Palette::color4(uint8_t i) const {
+	return core::Color::fromRGBA(color(i));
+}
+
 void Palette::exchange(uint8_t idx1, uint8_t idx2) {
 	if (idx1 == idx2) {
 		return;

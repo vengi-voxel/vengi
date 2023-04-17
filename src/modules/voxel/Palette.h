@@ -45,6 +45,8 @@ public:
 		return _colors[_indices[i]];
 	}
 
+	glm::vec4 color4(uint8_t i) const;
+
 	inline core::RGBA &glowColor(uint8_t i) {
 		return _glowColors[_indices[i]];
 	}
