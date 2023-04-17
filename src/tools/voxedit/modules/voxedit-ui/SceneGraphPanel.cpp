@@ -366,10 +366,12 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 			toolbar.button(ICON_FA_SQUARE_PLUS, "Add a new model node", [&sceneGraph, this, modelNodeSettings] () {
 				const int nodeId = sceneGraph.activeNode();
 				scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-				const voxel::RawVolume* v = node.volume();
-				const voxel::Region& region = v->region();
-				modelNodeSettings->position = region.getLowerCorner();
-				modelNodeSettings->size = region.getDimensionsInVoxels();
+				if (node.type() == scenegraph::SceneGraphNodeType::Model) {
+					const voxel::RawVolume* v = node.volume();
+					const voxel::Region& region = v->region();
+					modelNodeSettings->position = region.getLowerCorner();
+					modelNodeSettings->size = region.getDimensionsInVoxels();
+				}
 				if (modelNodeSettings->name.empty()) {
 					modelNodeSettings->name = node.name();
 				}
