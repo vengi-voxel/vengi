@@ -1239,7 +1239,7 @@ void SceneManager::rotate(int angleX, int angleY, int angleZ) {
 	const glm::vec3 angle(angleX, angleY, angleZ);
 	_sceneGraph.foreachGroup([&](int nodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-		if (node == nullptr) {
+		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
 			return;
 		}
 		const voxel::RawVolume *model = node->volume();
