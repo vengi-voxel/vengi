@@ -193,11 +193,6 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 	const bool referencedNode = referencedNodeId == nodeId;
 	const bool referenceHighlight = referenceNode || referencedNode;
 
-	ui::ScopedStyle refStyle;
-	if (referenceHighlight) {
-		refStyle.darker(ImGuiCol_Text);
-	}
-
 	ImGui::TableNextRow();
 	{ // column 1
 		ImGui::TableNextColumn();
@@ -229,6 +224,11 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		}
 	}
 	{ // column 4
+		ui::ScopedStyle refStyle;
+		if (referenceHighlight) {
+			refStyle.darker(ImGuiCol_Text);
+		}
+
 		ImGui::TableNextColumn();
 
 		core::String name;
