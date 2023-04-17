@@ -1196,6 +1196,9 @@ bool SceneManager::setNewVolume(int nodeId, voxel::RawVolume* volume, bool delet
 }
 
 bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, voxel::RawVolume* volume) {
+	if (node.type() != scenegraph::SceneGraphNodeType::Model) {
+		return false;
+	}
 	node.setVolume(volume, true);
 
 	const voxel::Region& region = volume->region();
