@@ -269,7 +269,11 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 
 void SceneManager::fillHollow() {
 	_sceneGraph.foreachGroup([&] (int nodeId) {
-		voxel::RawVolume *v = volume(nodeId);
+		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+			return;
+		}
+		voxel::RawVolume *v = node->volume();
 		if (v == nullptr) {
 			return;
 		}
@@ -1245,6 +1249,9 @@ void SceneManager::rotate(int angleX, int angleY, int angleZ) {
 		const voxel::RawVolume *model = node->volume();
 		const glm::vec3 &pivot = node->pivot();
 		voxel::RawVolume *newVolume = voxelutil::rotateVolume(model, angle, pivot);
+		if (newVolume == nullptr) {
+			return;
+		}
 		voxel::Region r = newVolume->region();
 		r.accumulate(model->region());
 		setSceneGraphNodeVolume(*node, newVolume);
