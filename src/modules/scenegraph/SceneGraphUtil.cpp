@@ -55,7 +55,6 @@ int createNodeReference(SceneGraph &target, const SceneGraphNode &node) {
 }
 
 void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume, bool copyKeyFrames) {
-	// TODO: also add all children
 	if (copyVolume) {
 		target.setVolume(new voxel::RawVolume(src.volume()), true);
 	} else {
