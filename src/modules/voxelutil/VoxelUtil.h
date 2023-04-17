@@ -12,6 +12,7 @@
 namespace voxel {
 class RawVolume;
 class Region;
+class Palette;
 class Voxel;
 class RawVolumeWrapper;
 }
@@ -19,6 +20,8 @@ class RawVolumeWrapper;
 namespace voxelutil {
 
 bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const voxel::Region &targetRegion);
+
+void fillInterpolated(voxel::RawVolume *v, const voxel::Palette &palette);
 
 bool copy(const voxel::RawVolume &in, const voxel::Region &inRegion, voxel::RawVolume &out,
 		  const voxel::Region &outRegion);

@@ -10,43 +10,23 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
 #include "voxel/Face.h"
+#include "voxel/PaletteLookup.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxel/PaletteLookup.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
 
-bool isTouching(const voxel::RawVolume *volume, const glm::ivec3& pos) {
+bool isTouching(const voxel::RawVolume *volume, const glm::ivec3 &pos) {
 	static const glm::ivec3 offsets[] = {
-		glm::ivec3(0, 0, -1),
-		glm::ivec3(0, 0, +1),
-		glm::ivec3(0, -1, 0),
-		glm::ivec3(0, +1, 0),
-		glm::ivec3(-1, 0, 0),
-		glm::ivec3(+1, 0, 0),
-		glm::ivec3(0, -1, -1),
-		glm::ivec3(0, -1, +1),
-		glm::ivec3(0, +1, -1),
-		glm::ivec3(0, +1, +1),
-		glm::ivec3(-1, 0, -1),
-		glm::ivec3(-1, 0, +1),
-		glm::ivec3(+1, 0, -1),
-		glm::ivec3(+1, 0, +1),
-		glm::ivec3(-1, -1, 0),
-		glm::ivec3(-1, +1, 0),
-		glm::ivec3(+1, -1, 0),
-		glm::ivec3(+1, +1, 0),
-		glm::ivec3(-1, -1, -1),
-		glm::ivec3(-1, -1, +1),
-		glm::ivec3(-1, +1, -1),
-		glm::ivec3(-1, +1, +1),
-		glm::ivec3(+1, -1, -1),
-		glm::ivec3(+1, -1, +1),
-		glm::ivec3(+1, +1, -1),
-		glm::ivec3(+1, +1, +1)
-	};
+		glm::ivec3(0, 0, -1),	glm::ivec3(0, 0, +1),	glm::ivec3(0, -1, 0),	glm::ivec3(0, +1, 0),
+		glm::ivec3(-1, 0, 0),	glm::ivec3(+1, 0, 0),	glm::ivec3(0, -1, -1),	glm::ivec3(0, -1, +1),
+		glm::ivec3(0, +1, -1),	glm::ivec3(0, +1, +1),	glm::ivec3(-1, 0, -1),	glm::ivec3(-1, 0, +1),
+		glm::ivec3(+1, 0, -1),	glm::ivec3(+1, 0, +1),	glm::ivec3(-1, -1, 0),	glm::ivec3(-1, +1, 0),
+		glm::ivec3(+1, -1, 0),	glm::ivec3(+1, +1, 0),	glm::ivec3(-1, -1, -1), glm::ivec3(-1, -1, +1),
+		glm::ivec3(-1, +1, -1), glm::ivec3(-1, +1, +1), glm::ivec3(+1, -1, -1), glm::ivec3(+1, -1, +1),
+		glm::ivec3(+1, +1, -1), glm::ivec3(+1, +1, +1)};
 	const voxel::Region &region = volume->region();
 	for (int i = 0; i < lengthof(offsets); ++i) {
 		const glm::ivec3 &volPos = pos + offsets[i];
@@ -58,6 +38,64 @@ bool isTouching(const voxel::RawVolume *volume, const glm::ivec3& pos) {
 		}
 	}
 	return false;
+}
+
+void fillInterpolated(voxel::RawVolume *v, const voxel::Palette &palette) {
+	const voxel::Region &region = v->region();
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::ivec3 &maxs = region.getUpperCorner();
+	voxel::RawVolume::Sampler sampler(v);
+	for (int x = mins.x; x <= maxs.x; ++x) {
+		for (int y = mins.y; y <= maxs.y; ++y) {
+			for (int z = mins.z; z <= maxs.z; ++z) {
+				sampler.setPosition(x, y, z);
+				if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+					continue;
+				}
+
+				const voxel::Voxel voxel000 = sampler.peekVoxel0px0py0pz();
+				const voxel::Voxel voxel001 = sampler.peekVoxel0px0py1pz();
+				const voxel::Voxel voxel010 = sampler.peekVoxel0px1py0pz();
+				const voxel::Voxel voxel011 = sampler.peekVoxel0px1py1pz();
+				const voxel::Voxel voxel100 = sampler.peekVoxel1px0py0pz();
+				const voxel::Voxel voxel101 = sampler.peekVoxel1px0py1pz();
+				const voxel::Voxel voxel110 = sampler.peekVoxel1px1py0pz();
+				const voxel::Voxel voxel111 = sampler.peekVoxel1px1py1pz();
+
+				const bool blocked000 = voxel::isBlocked(voxel000.getMaterial());
+				const bool blocked001 = voxel::isBlocked(voxel001.getMaterial());
+				const bool blocked010 = voxel::isBlocked(voxel010.getMaterial());
+				const bool blocked011 = voxel::isBlocked(voxel011.getMaterial());
+				const bool blocked100 = voxel::isBlocked(voxel100.getMaterial());
+				const bool blocked101 = voxel::isBlocked(voxel101.getMaterial());
+				const bool blocked110 = voxel::isBlocked(voxel110.getMaterial());
+				const bool blocked111 = voxel::isBlocked(voxel111.getMaterial());
+
+				const int blocked = (int)blocked000 + (int)blocked001 + (int)blocked010 + (int)blocked011 +
+									(int)blocked100 + (int)blocked101 + (int)blocked110 + (int)blocked111;
+				if (blocked < 4) {
+					continue;
+				}
+
+				const glm::vec4 color000(blocked000 ? palette.color4(voxel000.getColor()) : glm::vec4(0.0f));
+				const glm::vec4 color001(blocked001 ? palette.color4(voxel001.getColor()) : glm::vec4(0.0f));
+				const glm::vec4 color010(blocked010 ? palette.color4(voxel010.getColor()) : glm::vec4(0.0f));
+				const glm::vec4 color011(blocked011 ? palette.color4(voxel011.getColor()) : glm::vec4(0.0f));
+				const glm::vec4 color100(blocked100 ? palette.color4(voxel100.getColor()) : glm::vec4(0.0f));
+				const glm::vec4 color101(blocked101 ? palette.color4(voxel101.getColor()) : glm::vec4(0.0f));
+				const glm::vec4 color110(blocked110 ? palette.color4(voxel110.getColor()) : glm::vec4(0.0f));
+				const glm::vec4 color111(blocked111 ? palette.color4(voxel111.getColor()) : glm::vec4(0.0f));
+				const glm::vec4 colorSum =
+					color000 + color001 + color010 + color011 + color100 + color101 + color110 + color111;
+				const glm::vec4 colorAvg = colorSum / (float)blocked;
+				const int idx = palette.getClosestMatch(core::Color::getRGBA(colorAvg));
+				if (idx == -1) {
+					continue;
+				}
+				sampler.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, idx));
+			}
+		}
+	}
 }
 
 bool isEmpty(const voxel::RawVolume &v, const voxel::Region &region) {
@@ -235,28 +273,28 @@ static int walkPlane_r(IVec3Set &visited, voxel::RawVolumeWrapper &in, const vox
 	}
 	int n = 1;
 	if (region.containsPoint(position.x + 1, position.y, position.z)) {
-		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x + 1, position.y, position.z), checkOffset,
-						 face);
+		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x + 1, position.y, position.z),
+						 checkOffset, face);
 	}
 	if (region.containsPoint(position.x - 1, position.y, position.z)) {
-		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x - 1, position.y, position.z), checkOffset,
-						 face);
+		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x - 1, position.y, position.z),
+						 checkOffset, face);
 	}
 	if (region.containsPoint(position.x, position.y + 1, position.z)) {
-		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y + 1, position.z), checkOffset,
-						 face);
+		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y + 1, position.z),
+						 checkOffset, face);
 	}
 	if (region.containsPoint(position.x, position.y - 1, position.z)) {
-		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y - 1, position.z), checkOffset,
-						 face);
+		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y - 1, position.z),
+						 checkOffset, face);
 	}
 	if (region.containsPoint(position.x, position.y, position.z + 1)) {
-		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y, position.z + 1), checkOffset,
-						 face);
+		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y, position.z + 1),
+						 checkOffset, face);
 	}
 	if (region.containsPoint(position.x, position.y, position.z - 1)) {
-		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y, position.z - 1), checkOffset,
-						 face);
+		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y, position.z - 1),
+						 checkOffset, face);
 	}
 	return n;
 }

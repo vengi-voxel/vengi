@@ -8,7 +8,9 @@
 #include "math/AABB.h"
 #include "math/Axis.h"
 #include "voxel/RawVolume.h"
+#include "voxelutil/VoxelUtil.h"
 #include "voxel/Region.h"
+#include "voxel/Palette.h"
 #include "voxel/Voxel.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
@@ -25,7 +27,7 @@ static inline glm::vec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos,
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  */
-voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &angles,
+voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const core::Optional<voxel::Palette> &palette, const glm::vec3 &angles,
 							   const glm::vec3 &normalizedPivot) {
 	const float pitch = glm::radians(angles.x);
 	const float yaw = glm::radians(angles.y);
@@ -33,7 +35,7 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &
 	const glm::mat4 &mat = glm::eulerAngleXYZ(pitch, yaw, roll);
 	const voxel::Region srcRegion = source->region();
 
-	const glm::vec4 pivot = glm::vec4(srcRegion.getLowerCornerf() + glm::floor(normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels())), 0.0f);
+	const glm::vec4 pivot(srcRegion.getLowerCornerf() + normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels()), 0.0f);
 	const voxel::Region &region = srcRegion.rotate(mat, pivot);
 	voxel::RawVolume *destination = new voxel::RawVolume(region);
 	voxel::RawVolume::Sampler destSampler(destination);
@@ -57,6 +59,9 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &
 			}
 		}
 	}
+	if (palette.hasValue()) {
+		fillInterpolated(destination, *palette.value());
+	}
 	// TODO: use the pivot luke
 	const glm::ivec3 &delta = srcRegion.getCenter() - destination->region().getCenter();
 	destination->translate(delta);
@@ -66,7 +71,7 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &
 voxel::RawVolume *rotateAxis(const voxel::RawVolume *source, math::Axis axis) {
 	glm::vec3 rotVec{0.0f};
 	rotVec[math::getIndexForAxis(axis)] = 90.0f;
-	return rotateVolume(source, rotVec, glm::vec3(0.5f));
+	return rotateVolume(source, core::Optional<voxel::Palette>{}, rotVec, glm::vec3(0.5f));
 }
 
 voxel::RawVolume *mirrorAxis(const voxel::RawVolume *source, math::Axis axis) {
