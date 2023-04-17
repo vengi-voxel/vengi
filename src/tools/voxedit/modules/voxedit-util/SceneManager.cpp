@@ -1243,17 +1243,20 @@ void SceneManager::rotate(int angleX, int angleY, int angleZ) {
 	const glm::vec3 angle(angleX, angleY, angleZ);
 	_sceneGraph.foreachGroup([&](int nodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+		if (node == nullptr) {
 			return;
 		}
-		const voxel::RawVolume *model = node->volume();
+		const voxel::RawVolume *v = node->volume();
+		if (v == nullptr) {
+			return;
+		}
 		const glm::vec3 &pivot = node->pivot();
-		voxel::RawVolume *newVolume = voxelutil::rotateVolume(model, angle, pivot);
+		voxel::RawVolume *newVolume = voxelutil::rotateVolume(v, angle, pivot);
 		if (newVolume == nullptr) {
 			return;
 		}
 		voxel::Region r = newVolume->region();
-		r.accumulate(model->region());
+		r.accumulate(v->region());
 		setSceneGraphNodeVolume(*node, newVolume);
 		modified(nodeId, r);
 	});
