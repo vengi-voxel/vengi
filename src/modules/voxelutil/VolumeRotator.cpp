@@ -27,7 +27,7 @@ static inline glm::vec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos,
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  */
-voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const core::Optional<voxel::Palette> &palette, const glm::vec3 &angles,
+voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &angles,
 							   const glm::vec3 &normalizedPivot) {
 	const float pitch = glm::radians(angles.x);
 	const float yaw = glm::radians(angles.y);
@@ -59,9 +59,6 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const core::Optio
 			}
 		}
 	}
-	if (palette.hasValue()) {
-		fillInterpolated(destination, *palette.value());
-	}
 	// TODO: use the pivot luke
 	const glm::ivec3 &delta = srcRegion.getCenter() - destination->region().getCenter();
 	destination->translate(delta);
@@ -71,7 +68,7 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const core::Optio
 voxel::RawVolume *rotateAxis(const voxel::RawVolume *source, math::Axis axis) {
 	glm::vec3 rotVec{0.0f};
 	rotVec[math::getIndexForAxis(axis)] = 90.0f;
-	return rotateVolume(source, core::Optional<voxel::Palette>{}, rotVec, glm::vec3(0.5f));
+	return rotateVolume(source, rotVec, glm::vec3(0.5f));
 }
 
 voxel::RawVolume *mirrorAxis(const voxel::RawVolume *source, math::Axis axis) {

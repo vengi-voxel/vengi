@@ -1244,9 +1244,7 @@ void SceneManager::rotate(int angleX, int angleY, int angleZ) {
 		}
 		const voxel::RawVolume *model = node->volume();
 		const glm::vec3 &pivot = node->pivot();
-		core::Optional<voxel::Palette> pal;
-		pal.setValue(&node->palette());
-		voxel::RawVolume *newVolume = voxelutil::rotateVolume(model, pal, angle, pivot);
+		voxel::RawVolume *newVolume = voxelutil::rotateVolume(model, angle, pivot);
 		voxel::Region r = newVolume->region();
 		r.accumulate(model->region());
 		setSceneGraphNodeVolume(*node, newVolume);

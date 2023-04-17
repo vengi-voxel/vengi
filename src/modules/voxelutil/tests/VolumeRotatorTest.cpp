@@ -50,7 +50,7 @@ TEST_F(VolumeRotatorTest, testRotateAxisY45) {
 	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateVolume(
-		&smallVolume, core::Optional<voxel::Palette>{}, glm::vec3(0.0f, 45.0f, 0.0f), glm::vec3(0.0, 0.5f, 0.0f)));
+		&smallVolume, glm::vec3(0.0f, 45.0f, 0.0f), glm::vec3(0.0, 0.5f, 0.0f)));
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 }
 
