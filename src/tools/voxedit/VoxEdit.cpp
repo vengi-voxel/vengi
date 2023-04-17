@@ -324,7 +324,6 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("down",                 "+movecursorbackward",          "model");
 	_keybindingHandler.registerBinding("ctrl+up",              "+movecursorup",                "model");
 	_keybindingHandler.registerBinding("ctrl+down",            "+movecursordown",              "model");
-	_keybindingHandler.registerBinding("left_shift",           "+actionexecute",               "model");
 	_keybindingHandler.registerBinding("v",                    "+actionexecute",               "model");
 	_keybindingHandler.registerBinding("left_mouse",           "+actionexecute",               "model");
 	_keybindingHandler.registerBinding("escape",               "abortaction",                  "model");
