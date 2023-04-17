@@ -162,18 +162,21 @@ private:
 		bool h = false;						   // hidden
 	};
 
-	// scene.json
+	// scene.json camera
+	// angles are in euler angles
+	// The camera might follow the Scenekit orientation, so Y is screen facing here (roll angle -> depth)
+	// The camera is on a stick: (Camera posX,posY) - zoom - (Origin)
 	struct VMaxCamera {
-		float da = 0.0f;				 //
-		float ha = 0.19591334462165833f; //
-		float lda = 0.0f;				 //
-		float lha = 1.8209133148193359f; //
-		float lwa = 0.25f;				 //
+		float da = 0.0f;				 // anglesDepth
+		float ha = 0.19591334462165833f; // anglesHeight
+		float wa = 0.0f;				 // anglesWidth
+		float lda = 0.0f;				 // anglesLightsDepth
+		float lha = 1.8209133148193359f; // anglesLightsHeight
+		float lwa = 0.25f;				 // anglesLightsWidth
 		glm::vec3 o{0.0f};				 // origin
-		float px = 0.0f;				 //
-		float py = 0.0f;				 //
-		float wa = 0.0f;				 //
-		float z = 512.0f;				 //
+		float px = 0.0f;				 // positionX
+		float py = 0.0f;				 // positionY
+		float z = 512.0f;				 // zoom
 	};
 
 	// scene.json
