@@ -8,9 +8,6 @@
 
 namespace video {
 
-TexturePool::TexturePool(const io::FilesystemPtr &filesystem) : _filesystem(filesystem) {
-}
-
 video::TexturePtr TexturePool::load(const core::String &name, bool emptyAsFallback) {
 	auto i = _cache.find(name);
 	if (i != _cache.end()) {

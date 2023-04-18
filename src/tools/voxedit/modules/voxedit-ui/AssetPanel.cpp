@@ -22,7 +22,7 @@
 
 namespace voxedit {
 
-AssetPanel::AssetPanel(const io::FilesystemPtr &filesystem) : _texturePool(filesystem), _filesystem(filesystem) {
+AssetPanel::AssetPanel(const io::FilesystemPtr &filesystem) : _filesystem(filesystem) {
 	loadTextures(filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Pictures));
 	loadModels(filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents));
 }

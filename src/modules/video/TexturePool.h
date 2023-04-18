@@ -19,13 +19,10 @@ namespace video {
  */
 class TexturePool : public core::IComponent {
 private:
-	io::FilesystemPtr _filesystem;
 	core::StringMap<TexturePtr> _cache;
 	core::StringMap<image::ImagePtr> _images;
 	TexturePtr _empty;
 public:
-	TexturePool(const io::FilesystemPtr& filesystem);
-
 	video::TexturePtr load(const core::String& name, bool emptyAsFallback = true);
 	image::ImagePtr loadImage(const core::String& name);
 
