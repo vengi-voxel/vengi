@@ -2641,6 +2641,11 @@ bool SceneManager::nodeRename(scenegraph::SceneGraphNode &node, const core::Stri
 bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		node->setVisible(visible);
+		if (node->type() == scenegraph::SceneGraphNodeType::Group) {
+			_sceneGraph.visitChildren(nodeId, true, [visible] (scenegraph::SceneGraphNode &node) {
+				node.setVisible(visible);
+			});
+		}
 		return true;
 	}
 	return false;
