@@ -103,6 +103,13 @@ private:
 
 	void afterLoad(const core::String &file);
 
+	void newSceneTemplates();
+	void popupNewScene();
+	void popupFailedSave();
+	void popupUnsavedChanges();
+	void popupUnsavedDiscard();
+	void popupSceneSettings();
+	void popupModelNodeSettings();
 	void registerPopups();
 
 public:

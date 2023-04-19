@@ -4,19 +4,19 @@
 
 #include "MainWindow.h"
 #include "ScopedStyle.h"
-#include "Viewport.h"
 #include "Util.h"
+#include "Viewport.h"
 #include "command/CommandHandler.h"
-#include "core/StringUtil.h"
 #include "core/ArrayLength.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
-#include "ui/IconsForkAwesome.h"
-#include "ui/IconsFontAwesome6.h"
-#include "ui/IMGUIApp.h"
 #include "ui/FileDialog.h"
+#include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IconsFontAwesome6.h"
+#include "ui/IconsForkAwesome.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
@@ -57,20 +57,20 @@ MainWindow::~MainWindow() {
 void MainWindow::loadLastOpenedFiles(const core::String &string) {
 	core::DynamicArray<core::String> tokens;
 	core::string::splitString(string, tokens, ";");
-	for (const core::String& s : tokens) {
+	for (const core::String &s : tokens) {
 		_lastOpenedFilesRingBuffer.push_back(s);
 	}
 }
 
 void MainWindow::addLastOpenedFile(const core::String &file) {
-	for (const core::String& s : _lastOpenedFilesRingBuffer) {
+	for (const core::String &s : _lastOpenedFilesRingBuffer) {
 		if (s == file) {
 			return;
 		}
 	}
 	_lastOpenedFilesRingBuffer.push_back(file);
 	core::String str;
-	for (const core::String& s : _lastOpenedFilesRingBuffer) {
+	for (const core::String &s : _lastOpenedFilesRingBuffer) {
 		if (!str.empty()) {
 			str.append(";");
 		}
@@ -177,7 +177,8 @@ bool MainWindow::save(const core::String &file, const io::FormatDescription *des
 
 bool MainWindow::load(const core::String &file, const io::FormatDescription *desc) {
 	if (file.empty()) {
-		_app->openDialog([this] (const core::String file, const io::FormatDescription *desc) { load(file, desc); }, {}, voxelformat::voxelLoad());
+		_app->openDialog([this](const core::String file, const io::FormatDescription *desc) { load(file, desc); }, {},
+						 voxelformat::voxelLoad());
 		return true;
 	}
 
@@ -334,127 +335,7 @@ void MainWindow::dialog(const char *icon, const char *text) {
 	ImGui::Separator();
 }
 
-void MainWindow::registerPopups() {
-	if (_popupUnsaved) {
-		ImGui::OpenPopup(POPUP_TITLE_UNSAVED);
-		_popupUnsaved = false;
-	}
-	if (_popupNewScene) {
-		ImGui::OpenPopup(POPUP_TITLE_NEW_SCENE);
-		_popupNewScene = false;
-	}
-	if (_popupFailedToSave) {
-		ImGui::OpenPopup(POPUP_TITLE_FAILED_TO_SAVE);
-		_popupFailedToSave = false;
-	}
-	if (_menuBar._popupSceneSettings) {
-		ImGui::OpenPopup(POPUP_TITLE_SCENE_SETTINGS);
-		_menuBar._popupSceneSettings = false;
-	}
-	if (_popupUnsavedChangesQuit) {
-		ImGui::OpenPopup(POPUP_TITLE_UNSAVED_SCENE);
-		_popupUnsavedChangesQuit = false;
-	}
-	if (_sceneGraphPanel._popupNewModelNode) {
-		ImGui::OpenPopup(POPUP_TITLE_MODEL_NODE_SETTINGS);
-		_sceneGraphPanel._popupNewModelNode = false;
-	}
-
-	if (ImGui::BeginPopupModal(POPUP_TITLE_MODEL_NODE_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::Text("Name");
-		ImGui::Separator();
-		ImGui::InputText("##modelsettingsname", &_modelNodeSettings.name);
-		ImGui::NewLine();
-
-		ImGui::Text("Position");
-		ImGui::Separator();
-		veui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
-		veui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
-		veui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
-		ImGui::NewLine();
-
-		ImGui::Text("Size");
-		ImGui::Separator();
-		veui::InputAxisInt(math::Axis::X, "Width##sizex", &_modelNodeSettings.size.x);
-		veui::InputAxisInt(math::Axis::Y, "Height##sizey", &_modelNodeSettings.size.y);
-		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_modelNodeSettings.size.z);
-		ImGui::NewLine();
-
-		if (ImGui::Button(ICON_FA_CHECK " OK##modelsettings")) {
-			ImGui::CloseCurrentPopup();
-			scenegraph::SceneGraphNode node;
-			voxel::RawVolume* v = new voxel::RawVolume(_modelNodeSettings.region());
-			node.setVolume(v, true);
-			node.setName(_modelNodeSettings.name.c_str());
-			sceneMgr().addNodeToSceneGraph(node, _modelNodeSettings.parent);
-		}
-		ImGui::SetItemDefaultFocus();
-		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_XMARK " Cancel##modelsettings")) {
-			ImGui::CloseCurrentPopup();
-		}
-
-		ImGui::EndPopup();
-	}
-
-	if (ImGui::BeginPopup(POPUP_TITLE_SCENE_SETTINGS, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::TextUnformatted("Scene settings");
-		ImGui::Separator();
-
-		ImGui::ColorEdit3Var("Diffuse color", cfg::VoxEditDiffuseColor);
-		ImGui::ColorEdit3Var("Ambient color", cfg::VoxEditAmbientColor);
-
-		if (ImGui::Button(ICON_FA_CHECK " Done##scenesettings")) {
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::SetItemDefaultFocus();
-		ImGui::EndPopup();
-	}
-
-	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		dialog(ICON_FA_QUESTION, "There are unsaved modifications.\nDo you wish to discard them?");
-		if (ImGui::Button(ICON_FA_CHECK " Yes##unsaved")) {
-			ImGui::CloseCurrentPopup();
-			if (!_loadFile.empty()) {
-				sceneMgr().load(_loadFile);
-				afterLoad(_loadFile.name);
-			} else {
-				createNew(true);
-			}
-		}
-		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_XMARK " No##unsaved")) {
-			ImGui::CloseCurrentPopup();
-			_loadFile.clear();
-		}
-		ImGui::SetItemDefaultFocus();
-		ImGui::EndPopup();
-	}
-
-	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		dialog(ICON_FA_QUESTION, "Unsaved changes - are you sure to quit?");
-		if (ImGui::Button(ICON_FA_CHECK " OK##unsavedscene")) {
-			_forceQuit = true;
-			_app->requestQuit();
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::SetItemDefaultFocus();
-		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_XMARK " Cancel##unsavedscene")) {
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::EndPopup();
-	}
-
-	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
-		dialog(ICON_FA_TRIANGLE_EXCLAMATION, "Failed to save the model!");
-		if (ImGui::Button(ICON_FA_CHECK " OK##failedsave")) {
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::SetItemDefaultFocus();
-		ImGui::EndPopup();
-	}
-
+void MainWindow::popupNewScene() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Name");
 		ImGui::Separator();
@@ -489,6 +370,139 @@ void MainWindow::registerPopups() {
 		}
 		ImGui::EndPopup();
 	}
+}
+void MainWindow::popupFailedSave() {
+	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
+		dialog(ICON_FA_TRIANGLE_EXCLAMATION, "Failed to save the model!");
+		if (ImGui::Button(ICON_FA_CHECK " OK##failedsave")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::EndPopup();
+	}
+}
+void MainWindow::popupUnsavedChanges() {
+	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		dialog(ICON_FA_QUESTION, "Unsaved changes - are you sure to quit?");
+		if (ImGui::Button(ICON_FA_CHECK " OK##unsavedscene")) {
+			_forceQuit = true;
+			_app->requestQuit();
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_XMARK " Cancel##unsavedscene")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+}
+void MainWindow::popupUnsavedDiscard() {
+	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		dialog(ICON_FA_QUESTION, "There are unsaved modifications.\nDo you wish to discard them?");
+		if (ImGui::Button(ICON_FA_CHECK " Yes##unsaved")) {
+			ImGui::CloseCurrentPopup();
+			if (!_loadFile.empty()) {
+				sceneMgr().load(_loadFile);
+				afterLoad(_loadFile.name);
+			} else {
+				createNew(true);
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_XMARK " No##unsaved")) {
+			ImGui::CloseCurrentPopup();
+			_loadFile.clear();
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::EndPopup();
+	}
+}
+void MainWindow::popupSceneSettings() {
+	if (ImGui::BeginPopup(POPUP_TITLE_SCENE_SETTINGS, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::TextUnformatted("Scene settings");
+		ImGui::Separator();
+
+		ImGui::ColorEdit3Var("Diffuse color", cfg::VoxEditDiffuseColor);
+		ImGui::ColorEdit3Var("Ambient color", cfg::VoxEditAmbientColor);
+
+		if (ImGui::Button(ICON_FA_CHECK " Done##scenesettings")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::EndPopup();
+	}
+}
+void MainWindow::popupModelNodeSettings() {
+	if (ImGui::BeginPopupModal(POPUP_TITLE_MODEL_NODE_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::Text("Name");
+		ImGui::Separator();
+		ImGui::InputText("##modelsettingsname", &_modelNodeSettings.name);
+		ImGui::NewLine();
+
+		ImGui::Text("Position");
+		ImGui::Separator();
+		veui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
+		veui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
+		veui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
+		ImGui::NewLine();
+
+		ImGui::Text("Size");
+		ImGui::Separator();
+		veui::InputAxisInt(math::Axis::X, "Width##sizex", &_modelNodeSettings.size.x);
+		veui::InputAxisInt(math::Axis::Y, "Height##sizey", &_modelNodeSettings.size.y);
+		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_modelNodeSettings.size.z);
+		ImGui::NewLine();
+
+		if (ImGui::Button(ICON_FA_CHECK " OK##modelsettings")) {
+			ImGui::CloseCurrentPopup();
+			scenegraph::SceneGraphNode node;
+			voxel::RawVolume *v = new voxel::RawVolume(_modelNodeSettings.region());
+			node.setVolume(v, true);
+			node.setName(_modelNodeSettings.name.c_str());
+			sceneMgr().addNodeToSceneGraph(node, _modelNodeSettings.parent);
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_XMARK " Cancel##modelsettings")) {
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+}
+void MainWindow::registerPopups() {
+	if (_popupUnsaved) {
+		ImGui::OpenPopup(POPUP_TITLE_UNSAVED);
+		_popupUnsaved = false;
+	}
+	if (_popupNewScene) {
+		ImGui::OpenPopup(POPUP_TITLE_NEW_SCENE);
+		_popupNewScene = false;
+	}
+	if (_popupFailedToSave) {
+		ImGui::OpenPopup(POPUP_TITLE_FAILED_TO_SAVE);
+		_popupFailedToSave = false;
+	}
+	if (_menuBar._popupSceneSettings) {
+		ImGui::OpenPopup(POPUP_TITLE_SCENE_SETTINGS);
+		_menuBar._popupSceneSettings = false;
+	}
+	if (_popupUnsavedChangesQuit) {
+		ImGui::OpenPopup(POPUP_TITLE_UNSAVED_SCENE);
+		_popupUnsavedChangesQuit = false;
+	}
+	if (_sceneGraphPanel._popupNewModelNode) {
+		ImGui::OpenPopup(POPUP_TITLE_MODEL_NODE_SETTINGS);
+		_sceneGraphPanel._popupNewModelNode = false;
+	}
+
+	popupModelNodeSettings();
+	popupSceneSettings();
+	popupUnsavedDiscard();
+	popupUnsavedChanges();
+	popupFailedSave();
+	popupNewScene();
 }
 
 QuitDisallowReason MainWindow::allowToQuit() {
@@ -599,7 +613,7 @@ void MainWindow::update() {
 	}
 }
 
-Viewport* MainWindow::hoveredScene() {
+Viewport *MainWindow::hoveredScene() {
 	for (size_t i = 0; i < _scenes.size(); ++i) {
 		if (_scenes[i]->isHovered()) {
 			return _scenes[i];
@@ -608,7 +622,7 @@ Viewport* MainWindow::hoveredScene() {
 	return nullptr;
 }
 
-bool MainWindow::saveScreenshot(const core::String& file, const core::String &viewportId) {
+bool MainWindow::saveScreenshot(const core::String &file, const core::String &viewportId) {
 	if (viewportId.empty()) {
 		if (_lastHoveredScene != nullptr) {
 			if (!_lastHoveredScene->saveImage(file.c_str())) {
