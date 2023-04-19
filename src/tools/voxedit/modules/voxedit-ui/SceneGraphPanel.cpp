@@ -205,6 +205,9 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
 			sceneMgr().nodeSetVisible(nodeId, visible);
 		}
+		if (_hideInactive->boolVal()) {
+			ImGui::TooltipText("Disabled because inactive nodes are hidden and the active node is always visible");
+		}
 	}
 	{ // column 2
 		ImGui::TableNextColumn();

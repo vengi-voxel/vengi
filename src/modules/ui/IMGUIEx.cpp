@@ -237,7 +237,7 @@ float CalcComboBoxWidth(const char *previewLabel, bool withPadding) {
 }
 
 bool TooltipText(const char* msg, ...) {
-	if (ImGui::IsItemHovered()) {
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
 		ImGui::BeginTooltip();
 
 		va_list ap;
