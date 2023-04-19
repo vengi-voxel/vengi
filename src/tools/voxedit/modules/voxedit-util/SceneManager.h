@@ -414,7 +414,7 @@ public:
 	bool nodeRename(int nodeId, const core::String &name);
 	bool nodeRemove(int nodeId, bool recursive);
 	bool nodeSetVisible(int nodeId, bool visible);
-	bool nodeSetLocked(int nodeId, bool visible);
+	bool nodeSetLocked(int nodeId, bool locked);
 	bool nodeActivate(int nodeId);
 	bool nodeUnreference(int nodeId);
 	void nodeForeachGroup(const std::function<void(int)>& f);

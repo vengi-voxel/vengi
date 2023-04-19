@@ -2651,9 +2651,9 @@ bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
 	return false;
 }
 
-bool SceneManager::nodeSetLocked(int nodeId, bool visible) {
+bool SceneManager::nodeSetLocked(int nodeId, bool locked) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-		node->setLocked(visible);
+		node->setLocked(locked);
 		return true;
 	}
 	return false;

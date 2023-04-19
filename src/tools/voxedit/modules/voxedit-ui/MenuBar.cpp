@@ -9,18 +9,22 @@
 #include "core/Color.h"
 #include "core/GameConfig.h"
 #include "core/StringUtil.h"
+#include "engine-config.h"
 #include "io/FormatDescription.h"
 #include "ui/IMGUIEx.h"
-#include "ui/IconsForkAwesome.h"
 #include "ui/IconsFontAwesome6.h"
+#include "ui/IconsForkAwesome.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "engine-config.h"
-#include "robo.h"
-#include "chess.h"
-#include "head.h"
-#include "chr_knight.h"
 #include "voxelformat/VolumeFormat.h"
+
+// generated models
+#include "chess.h"
+#include "chr_dwarf.h"
+#include "chr_knight.h"
+#include "head.h"
+#include "robo.h"
+#include "twinsen.h"
 
 namespace voxedit {
 
@@ -48,6 +52,25 @@ void MenuBar::colorReductionOptions() {
 		"The color reduction algorithm that is used when importing RGBA colors from images or rgba formats");
 }
 
+void MenuBar::addTemplates() {
+#define VENGI_TEMPLATE(templateName)                                                                                   \
+	if (ImGui::MenuItem(#templateName, nullptr, false, !sceneMgr().dirty())) {                                         \
+		io::FileDescription file;                                                                                      \
+		file.name = #templateName ".vengi";                                                                            \
+		file.desc = voxelformat::vengi();                                                                              \
+		loadTemplate(file, templateName##_data, templateName##_size);                                                  \
+	}
+
+	VENGI_TEMPLATE(robo)
+	VENGI_TEMPLATE(chr_knight)
+	VENGI_TEMPLATE(chr_dwarf)
+	VENGI_TEMPLATE(chess)
+	VENGI_TEMPLATE(head)
+	VENGI_TEMPLATE(twinsen)
+
+#undef VENGI_TEMPLATE
+}
+
 bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &listener) {
 	bool resetDockLayout = false;
 	if (ImGui::BeginMenuBar()) {
@@ -57,11 +80,11 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			actionMenuItem(ICON_FK_FLOPPY_O " Load", "load", listener);
 			if (ImGui::BeginMenu(ICON_FA_BARS " Recently opened")) {
 				int recentlyOpened = 0;
-				for (const core::String& f : _lastOpenedFiles) {
+				for (const core::String &f : _lastOpenedFiles) {
 					if (f.empty()) {
 						break;
 					}
-					const core::String& item = core::string::format("%s##%i", f.c_str(), recentlyOpened);
+					const core::String &item = core::string::format("%s##%i", f.c_str(), recentlyOpened);
 					if (ImGui::MenuItem(item.c_str())) {
 						command::executeCommands("load \"" + f + "\"", &listener);
 					}
@@ -75,31 +98,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::Separator();
 
 			if (ImGui::BeginMenu(ICON_FA_CART_SHOPPING " Templates")) {
-				const bool enabled = !sceneMgr().dirty();
-				if (ImGui::MenuItem("robo", nullptr, false, enabled)) {
-					io::FileDescription file;
-					file.name = "robo.qb";
-					file.desc = voxelformat::qubicleBinary();
-					loadTemplate(file, robo_data, robo_size);
-				}
-				if (ImGui::MenuItem("chr_knight", nullptr, false, enabled)) {
-					io::FileDescription file;
-					file.name = "chr_knight.qb";
-					file.desc = voxelformat::qubicleBinary();
-					loadTemplate(file, chr_knight_data, chr_knight_size);
-				}
-				if (ImGui::MenuItem("chess", nullptr, false, enabled)) {
-					io::FileDescription file;
-					file.name = "chess.vengi";
-					file.desc = voxelformat::vengi();
-					loadTemplate(file, chess_data, chess_size);
-				}
-				if (ImGui::MenuItem("head", nullptr, false, enabled)) {
-					io::FileDescription file;
-					file.name = "head.vengi";
-					file.desc = voxelformat::vengi();
-					loadTemplate(file, head_data, head_size);
-				}
+				addTemplates();
 				ImGui::EndMenu();
 			}
 
@@ -126,8 +125,10 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			const Selections &selections = modifier.selections();
 			ImGui::CommandMenuItem(ICON_FA_SCISSORS " Cut", "cut", !selections.empty(), &listener);
 			ImGui::CommandMenuItem(ICON_FA_COPY " Copy", "copy", !selections.empty(), &listener);
-			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste at reference##referencepos", "paste", sceneManager.hasClipboardCopy(), &listener);
-			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste at cursor##cursor", "pastecursor", sceneManager.hasClipboardCopy(), &listener);
+			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste at reference##referencepos", "paste",
+								   sceneManager.hasClipboardCopy(), &listener);
+			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste at cursor##cursor", "pastecursor",
+								   sceneManager.hasClipboardCopy(), &listener);
 			ImGui::Separator();
 			actionMenuItem(ICON_FK_TERMINAL " Console", "toggleconsole", listener);
 			ImGui::Separator();
@@ -149,12 +150,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::SliderVarInt("View distance", cfg::VoxEditViewdistance, 10, 5000);
 				ImGui::InputVarInt("Font size", cfg::UIFontSize, 1, 5);
 
-				static constexpr const char* ColorThemeStr[] {
-					"CorporateGrey",
-					"Dark",
-					"Light",
-					"Classic"
-				};
+				static constexpr const char *ColorThemeStr[]{"CorporateGrey", "Dark", "Light", "Classic"};
 				const core::VarPtr &uistyle = core::Var::getSafe(cfg::UIStyle);
 				const int currentUIStyle = uistyle->intVal();
 				if (ImGui::BeginCombo("Color theme", ColorThemeStr[(int)currentUIStyle], ImGuiComboFlags_None)) {
@@ -307,8 +303,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 	return resetDockLayout;
 }
 
-void MenuBar::loadTemplate(const io::FileDescription& file, const unsigned int *data, size_t size) {
-	sceneMgr().load(file, (const uint8_t*)data, size);
+void MenuBar::loadTemplate(const io::FileDescription &file, const unsigned int *data, size_t size) {
+	sceneMgr().load(file, (const uint8_t *)data, size);
 }
 
-}
+} // namespace voxedit
