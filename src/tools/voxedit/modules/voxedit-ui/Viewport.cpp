@@ -16,6 +16,7 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "math/Ray.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/ScopedStyle.h"
@@ -529,6 +530,7 @@ void Viewport::handleGizmo(const scenegraph::SceneGraphNode &node, scenegraph::K
 }
 
 bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
+	const bool sceneMode = _renderContext.sceneMode;
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 	if (activeNode == -1) {
@@ -536,6 +538,10 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 		return false;
 	}
 	const scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
+	if (!sceneMode && node.type() != scenegraph::SceneGraphNodeType::Model) {
+		reset();
+		return false;
+	}
 
 	const float step = core::Var::getSafe(cfg::VoxEditGridsize)->floatVal();
 	const float snap[]{step, step, step};
@@ -548,7 +554,6 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	glm::mat4 localMatrix(1.0f);
 	int operation = ImGuizmo::TRANSLATE;
 	bool bounds = false;
-	const bool sceneMode = _renderContext.sceneMode;
 	if (sceneMode) {
 		operation |= ImGuizmo::BOUNDS | ImGuizmo::SCALE;
 		if (_gizmoRotation->boolVal()) {
