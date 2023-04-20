@@ -173,6 +173,7 @@ public:
 	}
 
 	bool extractRegion(int idx, const voxel::Region& region);
+	const voxel::Palette &palette(int idx = 0) const;
 
 	/**
 	 * @param[in,out] volume The RawVolume pointer

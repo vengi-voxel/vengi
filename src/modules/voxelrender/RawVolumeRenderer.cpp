@@ -14,6 +14,7 @@
 #include "voxel/ChunkMesh.h"
 #include "voxel/CubicSurfaceExtractor.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/MarchingCubesSurfaceExtractor.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
@@ -170,6 +171,16 @@ bool RawVolumeRenderer::init() {
 	return true;
 }
 
+const voxel::Palette &RawVolumeRenderer::palette(int idx) const {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return voxel::getPalette();
+	}
+	if (!_state[idx]._palette.hasValue()) {
+		return voxel::getPalette();
+	}
+	return *_state[idx]._palette.value();
+}
+
 bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 	const size_t n = _extractRegions.size();
 	if (n == 0) {
@@ -190,12 +201,19 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 		voxel::RawVolume copy(v, voxel::Region(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2), &onlyAir);
 		const glm::ivec3& mins = finalRegion.getLowerCorner();
 		if (!onlyAir) {
-			_threadPool.enqueue([movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
+			const voxel::Palette &pal = palette(idx);
+			_threadPool.enqueue([movedPal = core::move(pal), movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
 				++_runningExtractorTasks;
 				voxel::ChunkMesh mesh(65536, 65536, true);
 				voxel::Region extractRegion = finalRegion;
-				extractRegion.shiftUpperCorner(1, 1, 1);
-				voxel::extractCubicMesh(&movedCopy, extractRegion, &mesh, mins);
+				bool marchingCubes = false;
+				if (marchingCubes) {
+					extractRegion.shrink(-1);
+					voxel::extractMarchingCubesMesh(&movedCopy, movedPal, extractRegion, &mesh);
+				} else {
+					extractRegion.shiftUpperCorner(1, 1, 1);
+					voxel::extractCubicMesh(&movedCopy, extractRegion, &mesh, mins);
+				}
 				_pendingQueue.emplace(mins, idx, core::move(mesh));
 				Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
 				--_runningExtractorTasks;
