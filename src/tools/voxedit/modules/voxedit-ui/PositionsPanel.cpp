@@ -107,7 +107,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 					sceneMgr().shift(nodeId, f);
 				}
 				if (xyzValues("size", maxs)) {
-					voxel::Region newRegion(region.getLowerCorner(), maxs - 1);
+					voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + maxs - 1);
 					sceneMgr().resize(nodeId, newRegion);
 				}
 
