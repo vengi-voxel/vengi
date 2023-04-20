@@ -24,7 +24,10 @@ private:
 	TexturePtr _empty;
 public:
 	video::TexturePtr load(const core::String& name, bool emptyAsFallback = true);
+	video::TexturePtr load(const core::String& name, const uint8_t *rgba, size_t size);
+	video::TexturePtr get(const core::String& name);
 	image::ImagePtr loadImage(const core::String& name);
+	image::ImagePtr loadImage(const core::String& name, const uint8_t *rgba, size_t size);
 
 	const core::StringMap<TexturePtr> &cache() {
 		return _cache;
