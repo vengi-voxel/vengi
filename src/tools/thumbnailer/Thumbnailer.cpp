@@ -94,7 +94,6 @@ static bool volumeTurntable(const core::String &modelFile, const core::String &i
 	return voxelrender::volumeTurntable(sceneGraph, imageFile, ctx, loops);
 }
 
-
 app::AppState Thumbnailer::onRunning() {
 	app::AppState state = Super::onRunning();
 	if (state != app::AppState::Running) {

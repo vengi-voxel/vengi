@@ -17,11 +17,26 @@
 #include "ui/IMGUIEx.h"
 #include "ui/IconsFontAwesome6.h"
 #include "ui/IconsForkAwesome.h"
+#include "video/Texture.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxelformat/VolumeFormat.h"
 #include <glm/gtc/type_ptr.hpp>
+
+// generated models
+#include "chess.h"
+#include "chess_png.h"
+#include "chr_dwarf.h"
+#include "chr_dwarf_png.h"
+#include "chr_knight.h"
+#include "chr_knight_png.h"
+#include "head.h"
+#include "head_png.h"
+#include "robo.h"
+#include "robo_png.h"
+#include "twinsen.h"
+#include "twinsen_png.h"
 
 #define TITLE_STATUSBAR "##statusbar"
 #define TITLE_PALETTE ICON_FA_PALETTE " Palette##title"
@@ -46,6 +61,26 @@
 #define POPUP_TITLE_MODEL_NODE_SETTINGS "Model settings##popuptitle"
 
 namespace voxedit {
+
+// clang-format off
+#define TM_ENTRY(name, id) {name, id##_data, id##_size, id##_png_data, id##_png_size}
+static const struct TemplateModel {
+	const char *name;
+	const unsigned int *data;
+	const unsigned int size;
+	const unsigned int *imageData;
+	const unsigned int imageSize;
+} TEMPLATEMODELS[] = {
+	TM_ENTRY("Chess", chess),
+	TM_ENTRY("Dwarf", chr_dwarf),
+	TM_ENTRY("Knight", chr_knight),
+	TM_ENTRY("Head", head),
+	TM_ENTRY("Robo", robo),
+	TM_ENTRY("Twinsen", twinsen)
+};
+#undef TM_ENTRY
+
+// clang-format on
 
 MainWindow::MainWindow(ui::IMGUIApp *app) : _app(app), _assetPanel(app->filesystem()) {
 }
@@ -127,6 +162,12 @@ bool MainWindow::init() {
 	_sceneGraphPanel.init();
 	_lsystemPanel.init();
 	_treePanel.init();
+	_texturePool.init();
+
+	for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
+		_texturePool.load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,
+						  (size_t)TEMPLATEMODELS[i].imageSize);
+	}
 
 	_lastOpenedFile = core::Var::getSafe(cfg::VoxEditLastFile);
 	_lastOpenedFiles = core::Var::getSafe(cfg::VoxEditLastFiles);
@@ -151,6 +192,7 @@ void MainWindow::shutdown() {
 	}
 	_lsystemPanel.shutdown();
 	_treePanel.shutdown();
+	_texturePool.shutdown();
 }
 
 bool MainWindow::save(const core::String &file, const io::FormatDescription *desc) {
@@ -335,8 +377,33 @@ void MainWindow::dialog(const char *icon, const char *text) {
 	ImGui::Separator();
 }
 
+void MainWindow::addTemplate(const TemplateModel &model) {
+	io::FileDescription fileDesc;
+	const core::String name = model.name;
+	fileDesc.name = name + ".vengi";
+	fileDesc.desc = voxelformat::vengi();
+	ImGui::TableNextColumn();
+	const video::TexturePtr &texture = _texturePool.get(name);
+	ImGui::Image(texture->handle(), ImVec2((float)texture->width(), (float)texture->height()));
+	if (ImGui::Selectable(name.c_str())) {
+		sceneMgr().load(fileDesc, (const uint8_t*)model.data, (size_t)model.size);
+	}
+}
+
+void MainWindow::newSceneTemplates() {
+	if (ImGui::BeginTable("##templates", 3, ImGuiTableFlags_SizingStretchProp)) {
+		for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
+			addTemplate(TEMPLATEMODELS[i]);
+		}
+		ImGui::EndTable();
+	}
+}
+
 void MainWindow::popupNewScene() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		newSceneTemplates();
+		ImGui::Separator();
+
 		ImGui::Text("Name");
 		ImGui::Separator();
 		ImGui::InputText("##newscenename", &_modelNodeSettings.name);

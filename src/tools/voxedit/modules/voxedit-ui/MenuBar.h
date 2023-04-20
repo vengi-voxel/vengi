@@ -17,8 +17,6 @@ class MenuBar {
 private:
 	LastOpenedFiles _lastOpenedFiles;
 	bool actionMenuItem(const char *title, const char *command, command::CommandExecutionListener &listener);
-	void loadTemplate(const io::FileDescription& file, const unsigned int *data, size_t size);
-	void addTemplates();
 public:
 	void setLastOpenedFiles(const LastOpenedFiles &lastOpenedFiles);
 	/**

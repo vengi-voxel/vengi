@@ -32,6 +32,7 @@
 namespace voxedit {
 
 class Viewport;
+struct TemplateModel;
 
 class MainWindow {
 private:
@@ -77,10 +78,11 @@ private:
 	MenuBar _menuBar;
 	StatusBar _statusBar;
 	AnimationTimeline _animationTimeline;
+	video::TexturePool _texturePool;
 
 	/**
-	* @brief Convert semicolon-separated string into the @c _lastOpenedFilesRingBuffer array
-	*/
+	 * @brief Convert semicolon-separated string into the @c _lastOpenedFilesRingBuffer array
+	 */
 	void loadLastOpenedFiles(const core::String &string);
 	void addLastOpenedFile(const core::String &file);
 	bool isSceneMode() const;
@@ -111,7 +113,7 @@ private:
 	void popupSceneSettings();
 	void popupModelNodeSettings();
 	void registerPopups();
-
+	void addTemplate(const TemplateModel &model);
 public:
 	MainWindow(ui::IMGUIApp *app);
 	virtual ~MainWindow();

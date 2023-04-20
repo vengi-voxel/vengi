@@ -18,14 +18,6 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/VolumeFormat.h"
 
-// generated models
-#include "chess.h"
-#include "chr_dwarf.h"
-#include "chr_knight.h"
-#include "head.h"
-#include "robo.h"
-#include "twinsen.h"
-
 namespace voxedit {
 
 bool MenuBar::actionMenuItem(const char *title, const char *command, command::CommandExecutionListener &listener) {
@@ -50,25 +42,6 @@ void MenuBar::colorReductionOptions() {
 	}
 	ImGui::TooltipText(
 		"The color reduction algorithm that is used when importing RGBA colors from images or rgba formats");
-}
-
-void MenuBar::addTemplates() {
-#define VENGI_TEMPLATE(templateName)                                                                                   \
-	if (ImGui::MenuItem(#templateName, nullptr, false, !sceneMgr().dirty())) {                                         \
-		io::FileDescription file;                                                                                      \
-		file.name = #templateName ".vengi";                                                                            \
-		file.desc = voxelformat::vengi();                                                                              \
-		loadTemplate(file, templateName##_data, templateName##_size);                                                  \
-	}
-
-	VENGI_TEMPLATE(robo)
-	VENGI_TEMPLATE(chr_knight)
-	VENGI_TEMPLATE(chr_dwarf)
-	VENGI_TEMPLATE(chess)
-	VENGI_TEMPLATE(head)
-	VENGI_TEMPLATE(twinsen)
-
-#undef VENGI_TEMPLATE
 }
 
 bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &listener) {
@@ -96,11 +69,6 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			actionMenuItem(ICON_FA_FLOPPY_DISK " Save", "save", listener);
 			actionMenuItem(ICON_FA_FLOPPY_DISK " Save as", "saveas", listener);
 			ImGui::Separator();
-
-			if (ImGui::BeginMenu(ICON_FA_CART_SHOPPING " Templates")) {
-				addTemplates();
-				ImGui::EndMenu();
-			}
 
 			actionMenuItem(ICON_FA_SQUARE_PLUS " Add file to scene", "import", listener);
 			actionMenuItem(ICON_FA_SQUARE_PLUS " Add directory to scene", "importdirectory", listener);
@@ -301,10 +269,6 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 		ImGui::EndMenuBar();
 	}
 	return resetDockLayout;
-}
-
-void MenuBar::loadTemplate(const io::FileDescription &file, const unsigned int *data, size_t size) {
-	sceneMgr().load(file, (const uint8_t *)data, size);
 }
 
 } // namespace voxedit
