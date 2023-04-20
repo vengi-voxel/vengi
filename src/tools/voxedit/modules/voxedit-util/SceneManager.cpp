@@ -379,7 +379,9 @@ bool SceneManager::import(const core::String& file) {
 	scenegraph::SceneGraph newSceneGraph;
 	io::FileStream stream(filePtr);
 	voxelformat::LoadContext loadCtx;
-	if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph, loadCtx)) {
+	io::FileDescription fileDesc;
+	fileDesc.set(filePtr->name());
+	if (!voxelformat::loadFormat(fileDesc, stream, newSceneGraph, loadCtx)) {
 		Log::error("Failed to load %s", file.c_str());
 		return false;
 	}
@@ -419,7 +421,9 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		io::FilePtr filePtr = io::filesystem()->open(e.fullPath, io::FileMode::SysRead);
 		io::FileStream stream(filePtr);
 		voxelformat::LoadContext loadCtx;
-		if (!voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph, loadCtx)) {
+		io::FileDescription fileDesc;
+		fileDesc.set(filePtr->name(), format);
+		if (!voxelformat::loadFormat(fileDesc, stream, newSceneGraph, loadCtx)) {
 			Log::error("Failed to load %s", e.fullPath.c_str());
 		} else {
 			mergeIfNeeded(newSceneGraph);
@@ -446,11 +450,11 @@ bool SceneManager::load(const io::FileDescription& file) {
 		return false;
 	}
 	core::ThreadPool& threadPool = app::App::getInstance()->threadPool();
-	_loadingFuture = threadPool.enqueue([filePtr] () {
+	_loadingFuture = threadPool.enqueue([filePtr, file] () {
 		scenegraph::SceneGraph newSceneGraph;
 		io::FileStream stream(filePtr);
 		voxelformat::LoadContext loadCtx;
-		voxelformat::loadFormat(filePtr->name(), stream, newSceneGraph, loadCtx);
+		voxelformat::loadFormat(file, stream, newSceneGraph, loadCtx);
 		mergeIfNeeded(newSceneGraph);
 		// TODO: stuff that happens in RawVolumeRenderer::extractRegion and
 		// RawVolumeRenderer::scheduleExtractions should happen here
@@ -464,7 +468,7 @@ bool SceneManager::load(const io::FileDescription& file, const uint8_t *data, si
 	scenegraph::SceneGraph newSceneGraph;
 	io::MemoryReadStream stream(data, size);
 	voxelformat::LoadContext loadCtx;
-	voxelformat::loadFormat(file.name, stream, newSceneGraph, loadCtx);
+	voxelformat::loadFormat(file, stream, newSceneGraph, loadCtx);
 	mergeIfNeeded(newSceneGraph);
 	if (loadSceneGraph(core::move(newSceneGraph))) {
 		_needAutoSave = false;

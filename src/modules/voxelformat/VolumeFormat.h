@@ -36,7 +36,7 @@ bool importPalette(const core::String &filename, voxel::Palette &palette);
  */
 size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette, const LoadContext &ctx);
 image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream, const LoadContext &ctx);
-bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx);
+bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx);
 
 /**
  * @brief Save both to volume or to mesh - depends on the given file extension

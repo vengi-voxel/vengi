@@ -196,6 +196,14 @@ static const io::FormatDescription *getDescription(const core::String &filename,
 	return nullptr;
 }
 
+static const io::FormatDescription *getDescription(const io::FileDescription &fileDesc, uint32_t magic) {
+	if (fileDesc.desc.valid()) {
+		return &fileDesc.desc;
+	}
+	const core::String filename = fileDesc.name;
+	return getDescription(filename, magic);
+}
+
 static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint32_t magic, bool load) {
 	core::SharedPtr<Format> format;
 	for (const core::String& ext : desc.exts) {
@@ -345,13 +353,14 @@ size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream,
 	return 0;
 }
 
-bool loadFormat(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &newSceneGraph, const LoadContext &ctx) {
+bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &stream, scenegraph::SceneGraph &newSceneGraph, const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumeFormat);
 	const uint32_t magic = loadMagic(stream);
-	const io::FormatDescription *desc = getDescription(filename, magic);
+	const io::FormatDescription *desc = getDescription(fileDesc, magic);
 	if (desc == nullptr) {
 		return false;
 	}
+	const core::String &filename = fileDesc.name;
 	const core::SharedPtr<Format> &f = getFormat(*desc, magic, true);
 	if (f) {
 		if (!f->load(filename, stream, newSceneGraph, ctx)) {

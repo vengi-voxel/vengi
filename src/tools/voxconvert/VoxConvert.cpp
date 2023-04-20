@@ -472,7 +472,9 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 		scenegraph::SceneGraph newSceneGraph;
 		voxelformat::LoadContext loadCtx;
 		loadCtx.monitor = printProgress;
-		if (!voxelformat::loadFormat(inputFile->name(), inputFileStream, newSceneGraph, loadCtx)) {
+		io::FileDescription fileDesc;
+		fileDesc.set(inputFile->name());
+		if (!voxelformat::loadFormat(fileDesc, inputFileStream, newSceneGraph, loadCtx)) {
 			return false;
 		}
 

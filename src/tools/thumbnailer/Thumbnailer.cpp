@@ -11,6 +11,7 @@
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
+#include "io/FormatDescription.h"
 #include "voxel/MaterialColor.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
@@ -74,20 +75,24 @@ static image::ImagePtr volumeThumbnail(const core::String &fileName, io::Seekabl
 
 	scenegraph::SceneGraph sceneGraph;
 	stream.seek(0);
-	if (!voxelformat::loadFormat(fileName, stream, sceneGraph, loadctx)) {
+	io::FileDescription fileDesc;
+	fileDesc.set(fileName);
+	if (!voxelformat::loadFormat(fileDesc, stream, sceneGraph, loadctx)) {
 		Log::error("Failed to load given input file: %s", fileName.c_str());
 		return image::ImagePtr();
 	}
 	return voxelrender::volumeThumbnail(sceneGraph, ctx);
 }
 
-static bool volumeTurntable(const core::String &modelFile, const core::String &imageFile, voxelformat::ThumbnailContext ctx, int loops) {
+static bool volumeTurntable(const core::String &fileName, const core::String &imageFile, voxelformat::ThumbnailContext ctx, int loops) {
 	scenegraph::SceneGraph sceneGraph;
-	io::FileStream stream(io::filesystem()->open(modelFile, io::FileMode::SysRead));
+	io::FileStream stream(io::filesystem()->open(fileName, io::FileMode::SysRead));
 	stream.seek(0);
 	voxelformat::LoadContext loadctx;
-	if (!voxelformat::loadFormat(modelFile, stream, sceneGraph, loadctx)) {
-		Log::error("Failed to load given input file: %s", modelFile.c_str());
+	io::FileDescription fileDesc;
+	fileDesc.set(fileName);
+	if (!voxelformat::loadFormat(fileDesc, stream, sceneGraph, loadctx)) {
+		Log::error("Failed to load given input file: %s", fileName.c_str());
 		return false;
 	}
 

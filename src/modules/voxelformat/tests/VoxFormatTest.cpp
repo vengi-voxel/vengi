@@ -32,7 +32,9 @@ TEST_F(VoxFormatTest, testLoadCharacter) {
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
 	scenegraph::SceneGraph sceneGraph;
-	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph, testLoadCtx));
+	io::FileDescription fileDesc;
+	fileDesc.set(file->name());
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx));
 	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {
 		character_0::create(),	character_1::create(),	character_2::create(),	character_3::create(),
@@ -54,7 +56,9 @@ TEST_F(VoxFormatTest, testLoadGlasses) {
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
 	scenegraph::SceneGraph sceneGraph;
-	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph, testLoadCtx));
+	io::FileDescription fileDesc;
+	fileDesc.set(file->name());
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx));
 	ASSERT_EQ(1u, sceneGraph.size());
 	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {glasses_0::create()};
@@ -73,7 +77,9 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
 	scenegraph::SceneGraph sceneGraph;
-	ASSERT_TRUE(voxelformat::loadFormat(file->name(), stream, sceneGraph, testLoadCtx));
+	io::FileDescription fileDesc;
+	fileDesc.set(file->name());
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx));
 	ASSERT_EQ(72u, sceneGraph.size());
 	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {

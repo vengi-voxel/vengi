@@ -25,8 +25,10 @@ TEST_F(VolumeFormatTest, testLoadFormat) {
 		io::FilePtr file = open(files[i]);
 		ASSERT_TRUE(file->validHandle());
 		io::FileStream stream(file);
+		io::FileDescription fileDesc;
+		fileDesc.set(file->name());
 		scenegraph::SceneGraph newSceneGraph;
-		EXPECT_TRUE(loadFormat(file->name(), stream, newSceneGraph, testLoadCtx)) << "Failed to load " << files[i];
+		EXPECT_TRUE(loadFormat(fileDesc, stream, newSceneGraph, testLoadCtx)) << "Failed to load " << files[i];
 		EXPECT_GT(newSceneGraph.size(), 0u) << "Empty scene graph for " << files[i];
 	}
 }

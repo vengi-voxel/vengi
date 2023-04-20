@@ -11,6 +11,7 @@
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
@@ -131,7 +132,9 @@ void AbstractVoxFormatTest::canLoad(scenegraph::SceneGraph &sceneGraph, const co
 	const io::FilePtr& file = open(filename);
 	ASSERT_TRUE(file->validHandle()) << "Could not open " << filename;
 	io::FileStream stream(file);
-	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph, testLoadCtx)) << "Could not load " << filename;
+	io::FileDescription fileDesc;
+	fileDesc.set(filename);
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx)) << "Could not load " << filename;
 	ASSERT_EQ(expectedVolumes, sceneGraph.size());
 }
 
@@ -143,7 +146,9 @@ void AbstractVoxFormatTest::checkColor(core::RGBA c1, const voxel::Palette &pale
 }
 
 void AbstractVoxFormatTest::testRGBSmall(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph) {
-	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph, testLoadCtx));
+	io::FileDescription fileDesc;
+	fileDesc.set(filename);
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx));
 	EXPECT_EQ(1u, sceneGraph.size());
 
 	voxel::Palette palette;
@@ -212,7 +217,9 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta
 	const io::FilePtr& file = open(filename);
 	ASSERT_TRUE(file->validHandle()) << "Could not open " << filename.c_str();
 	io::FileStream stream(file);
-	ASSERT_TRUE(voxelformat::loadFormat(filename, stream, sceneGraph, testLoadCtx)) << "Failed to load " << filename.c_str();
+	io::FileDescription fileDesc;
+	fileDesc.set(filename);
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx)) << "Failed to load " << filename.c_str();
 	EXPECT_EQ(1u, sceneGraph.size()) << "Unexpected scene graph size for " << filename.c_str();
 
 	voxel::Palette palette;
