@@ -342,7 +342,7 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 
 	voxelformat::SaveContext saveCtx;
 	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
-	if (voxelformat::saveFormat(filePtr, &_lastFilename.desc, _sceneGraph, saveCtx)) {
+	if (voxelformat::saveFormat(filePtr, &file.desc, _sceneGraph, saveCtx)) {
 		if (!autosave) {
 			_dirty = false;
 			_lastFilename = file;
