@@ -53,6 +53,10 @@
 
 namespace voxelformat {
 
+io::FormatDescription aceOfSpades() {
+	return {"AceOfSpades", {"vxl"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+}
+
 io::FormatDescription tiberianSun() {
 	return {"Tiberian Sun", {"vxl"}, [] (uint32_t magic) {return magic == FourCC('V','o','x','e');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 }
@@ -114,7 +118,7 @@ const io::FormatDescription* voxelLoad() {
 		{"Build engine", {"kvx"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"AceOfSpades", {"kv6"}, [] (uint32_t magic) {return magic == FourCC('K','v','x','l');}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		tiberianSun(),
-		{"AceOfSpades", {"vxl"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		aceOfSpades(),
 		{"Qubicle Exchange", {"qef"}, [](uint32_t magic) { return magic == FourCC('Q', 'u', 'b', 'i'); }, 0u},
 		{"Chronovox", {"csm"}, [](uint32_t magic) { return magic == FourCC('.', 'C', 'S', 'M'); }, 0u},
 		{"Nicks Voxel Model", {"nvm"}, [](uint32_t magic) { return magic == FourCC('.', 'N', 'V', 'M'); }, 0u},
@@ -250,7 +254,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			format = core::make_shared<VXTFormat>();
 		} else if (ext == "vxl" && desc.name == tiberianSun().name) {
 			format = core::make_shared<VXLFormat>();
-		} else if (ext == "vxl" && desc.name == "AceOfSpades") {
+		} else if (ext == "vxl" && desc.name == aceOfSpades().name) {
 			format = core::make_shared<AoSVXLFormat>();
 		} else if (ext == "csm" || ext == "nvm") {
 			format = core::make_shared<CSMFormat>();

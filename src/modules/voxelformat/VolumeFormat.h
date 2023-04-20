@@ -20,6 +20,7 @@ namespace voxelformat {
 
 const io::FormatDescription* voxelLoad();
 const io::FormatDescription* voxelSave();
+io::FormatDescription aceOfSpades();
 io::FormatDescription tiberianSun();
 io::FormatDescription qubicleBinary();
 io::FormatDescription qubicleBinaryTree();
