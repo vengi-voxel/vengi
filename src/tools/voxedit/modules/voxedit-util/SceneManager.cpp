@@ -469,6 +469,7 @@ bool SceneManager::load(const io::FileDescription& file, const uint8_t *data, si
 	if (loadSceneGraph(core::move(newSceneGraph))) {
 		_needAutoSave = false;
 		_dirty = false;
+		_lastFilename.clear();
 	}
 	return true;
 }
