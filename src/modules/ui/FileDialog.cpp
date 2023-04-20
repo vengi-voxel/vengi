@@ -151,7 +151,9 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 			++f;
 		}
 		core::sort(_filterEntries.begin(), _filterEntries.end(), core::Less<io::FormatDescription>());
-		io::createGroupPatterns(formats, _filterEntries);
+		if (type == video::OpenFileMode::Open) {
+			io::createGroupPatterns(formats, _filterEntries);
+		}
 		_filterAll = io::convertToAllFilePattern(formats);
 		if (!_filterAll.empty()) {
 			// must be the first entry - see applyFilter()
