@@ -43,7 +43,7 @@ foreach (vengi_model ${VENGI_MODELS})
 	set(pngheader ${GENERATE_DIR}/${vengi_model}_png.h)
 	engine_file_to_header(${vengi_model} ${DATA_DIR}/voxedit/${vengi_model}.vengi ${header})
 	engine_file_to_header(${vengi_model}_png ${GENERATE_DIR}/${vengi_model}.png ${pngheader})
-	list(APPEND SRCS ${header})
+	list(APPEND SRCS ${header} ${pngheader})
 endforeach()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ui voxedit-util)
