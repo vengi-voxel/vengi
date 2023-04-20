@@ -59,13 +59,10 @@ cmake:
 ccmake:
 	$(Q)ccmake -B$(BUILDDIR) -S.
 
-update-videobindings:
-	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
-
 release-%:
 	$(Q)$(MAKE) BUILDTYPE=Release $(subst release-,,$@)
 
-codegen: $(BUILDDIR)/CMakeCache.txt
+thumbnailer voxedit voxconvert update-videobindings codegen: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 
 shelltests: all
