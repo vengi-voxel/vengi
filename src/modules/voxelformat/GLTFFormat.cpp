@@ -89,6 +89,11 @@ void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::Dyn
 
 static tinygltf::Camera processCamera(const scenegraph::SceneGraphNodeCamera &camera) {
 	tinygltf::Camera gltfCamera;
+	const float delta = camera.nearPlane() - camera.farPlane();
+	if (glm::abs(delta) < 0.0001f) {
+		// invalid
+		return gltfCamera;
+	}
 	gltfCamera.name = camera.name().c_str();
 	if (camera.isPerspective()) {
 		gltfCamera.type = "perspective";
