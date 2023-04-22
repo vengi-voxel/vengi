@@ -2110,6 +2110,7 @@ bool SceneManager::init() {
 	}
 
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
+	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
 	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
 	_lastAutoSave = timeProvider->tickSeconds();
 
@@ -2356,8 +2357,9 @@ void SceneManager::traceScene(bool force) {
 	_lastRaytraceY = _mouseCursor.y;
 	float intersectDist = _camera->farPlane();
 	const math::Ray& ray = _camera->mouseRay(_mouseCursor);
+	const bool hideInactive = _hideInactive->boolVal();
 	for (scenegraph::SceneGraphNode &node : _sceneGraph) {
-		if (!node.visible()) {
+		if (!node.visible() || (hideInactive && node.id() != activeNode())) {
 			continue;
 		}
 		const voxel::Region& region = node.region();

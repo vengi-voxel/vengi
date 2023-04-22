@@ -79,6 +79,7 @@ private:
 
 	core::VarPtr _autoSaveSecondsDelay;
 	core::VarPtr _gridSize;
+	core::VarPtr _hideInactive;
 
 	math::Axis _lockedAxis = math::Axis::None;
 
