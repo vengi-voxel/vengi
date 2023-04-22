@@ -1178,6 +1178,7 @@ bool SceneManager::setAnimation(const core::String &animation) {
 bool SceneManager::addAnimation(const core::String &animation) {
 	if (_sceneGraph.addAnimation(animation)) {
 		// TODO: memento
+		//_mementoHandler.markAddedAnimation(animation);
 		return true;
 	}
 	return false;
@@ -1186,6 +1187,7 @@ bool SceneManager::addAnimation(const core::String &animation) {
 bool SceneManager::removeAnimation(const core::String &animation) {
 	if (_sceneGraph.removeAnimation(animation)) {
 		// TODO: memento
+		//_mementoHandler.markRemovedAnimation(animation);
 		return true;
 	}
 	return false;
@@ -1365,6 +1367,7 @@ void SceneManager::construct() {
 	_movement.construct();
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
+	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0f");
 
 	command::Command::registerCommand("xs", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -2182,7 +2185,7 @@ bool SceneManager::update(double nowSeconds) {
 	_movement.update(nowSeconds);
 	video::Camera *camera = activeCamera();
 	if (camera != nullptr && camera->rotationType() == video::CameraRotationType::Eye) {
-		const glm::vec3& moveDelta = _movement.moveDelta(100.0f); // TODO: speed should be a cvar
+		const glm::vec3& moveDelta = _movement.moveDelta(_movementSpeed->floatVal());
 		camera->move(moveDelta);
 	}
 
