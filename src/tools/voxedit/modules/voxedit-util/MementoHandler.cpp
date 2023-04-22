@@ -489,6 +489,14 @@ void MementoHandler::markUndo(int parentId, int nodeId, int referenceId, const c
 	addState(core::move(state));
 }
 
+bool MementoHandler::removeLast() {
+	if (_states.empty()) {
+		return false;
+	}
+	_states.erase_back(1);
+	return true;
+}
+
 void MementoHandler::markUndoKeyFrames(int parentId, int nodeId, int referenceId, const core::String &name, scenegraph::SceneGraphNodeType nodeType,
 									   const voxel::RawVolume *volume, MementoType type, const voxel::Region &region, const glm::vec3 &pivot,
 									   const scenegraph::SceneGraphKeyFramesMap &keyFrames,

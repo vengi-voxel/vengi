@@ -2695,7 +2695,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	_mementoHandler.markNodeRemoved(node);
 	if (!_sceneGraph.removeNode(nodeId, recursive)) {
 		Log::error("Failed to remove node with id %i", nodeId);
-		// TODO: _mementoHandler.removeLast();
+		_mementoHandler.removeLast();
 		return false;
 	}
 	if (_sceneGraph.empty()) {

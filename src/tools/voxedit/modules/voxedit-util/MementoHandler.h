@@ -234,6 +234,7 @@ public:
 						   const voxel::Region &region, const glm::vec3 &pivot, const scenegraph::SceneGraphKeyFramesMap &keyFrames,
 						   const core::Optional<voxel::Palette> &palette = {},
 						   const core::Optional<scenegraph::SceneGraphNodeProperties> &properties = {});
+	bool removeLast();
 
 	void markNodePropertyChange(const scenegraph::SceneGraphNode &node);
 	void markKeyFramesChange(const scenegraph::SceneGraphNode &node);
