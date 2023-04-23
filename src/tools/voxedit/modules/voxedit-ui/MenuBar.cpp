@@ -93,9 +93,11 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			const Selections &selections = modifier.selections();
 			ImGui::CommandMenuItem(ICON_FA_SCISSORS " Cut", "cut", !selections.empty(), &listener);
 			ImGui::CommandMenuItem(ICON_FA_COPY " Copy", "copy", !selections.empty(), &listener);
-			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste at reference##referencepos", "paste",
+			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste at reference##pastereferencepos", "paste",
 								   sceneManager.hasClipboardCopy(), &listener);
-			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste at cursor##cursor", "pastecursor",
+			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste at cursor##pastecursor", "pastecursor",
+								   sceneManager.hasClipboardCopy(), &listener);
+			ImGui::CommandMenuItem(ICON_FA_PASTE " Paste as new node##pastenewnode", "pastenewnode",
 								   sceneManager.hasClipboardCopy(), &listener);
 			ImGui::Separator();
 			actionMenuItem(ICON_FK_TERMINAL " Console", "toggleconsole", listener);

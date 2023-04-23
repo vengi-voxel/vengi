@@ -177,6 +177,7 @@ protected:
 
 	bool copy();
 	bool paste(const glm::ivec3& pos);
+	bool pasteAsNewNode();
 	bool cut();
 
 	void rotate(int angleX, int angleY, int angleZ);

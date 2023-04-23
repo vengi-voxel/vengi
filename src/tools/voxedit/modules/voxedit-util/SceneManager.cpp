@@ -936,6 +936,19 @@ bool SceneManager::copy() {
 	return true;
 }
 
+bool SceneManager::pasteAsNewNode() {
+	if (_copy == nullptr) {
+		Log::debug("Nothing copied yet - failed to paste");
+		return false;
+	}
+	const int nodeId = activeNode();
+	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+	scenegraph::copyNode(node, newNode, false);
+	newNode.setVolume(new voxel::RawVolume(*_copy), true);
+	return addNodeToSceneGraph(newNode, node.parent()) != InvalidNodeId;
+}
+
 bool SceneManager::paste(const glm::ivec3& pos) {
 	if (_copy == nullptr) {
 		Log::debug("Nothing copied yet - failed to paste");
@@ -1701,6 +1714,10 @@ void SceneManager::construct() {
 	command::Command::registerCommand("pastecursor", [&] (const command::CmdArgs& args) {
 		paste(_modifier.cursorPosition());
 	}).setHelp("Paste clipboard to current cursor position");
+
+	command::Command::registerCommand("pastenewnode", [&] (const command::CmdArgs& args) {
+		pasteAsNewNode();
+	}).setHelp("Paste clipboard as a new node");
 
 	command::Command::registerCommand("cut", [&] (const command::CmdArgs& args) {
 		cut();
