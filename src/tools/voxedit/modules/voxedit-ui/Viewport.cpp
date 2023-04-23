@@ -174,50 +174,6 @@ void Viewport::dragAndDrop(float headerSize) {
 	}
 }
 
-void Viewport::renderBottomBar() {
-	const float height = ImGui::GetFrameHeight();
-	const ImVec2 windowSize = ImGui::GetWindowSize();
-
-	if (!isFixedCamera()) {
-		static const char *camRotTypes[] = {"Reference Point", "Eye"};
-		static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
-		ImGui::SetCursorPos(ImVec2(0.0f, windowSize.y - height));
-		const int currentCamRotType = (int)camera().rotationType();
-		ImGui::SetNextItemWidth(ImGui::CalcComboBoxWidth(camRotTypes[currentCamRotType]));
-		if (ImGui::BeginCombo("##referencepoint", camRotTypes[currentCamRotType])) {
-			for (int n = 0; n < lengthof(camRotTypes); n++) {
-				const bool isSelected = (currentCamRotType == n);
-				if (ImGui::Selectable(camRotTypes[n], isSelected)) {
-					camera().setRotationType((video::CameraRotationType)n);
-				}
-				if (isSelected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-	}
-
-	static const char *polygonModes[] = {"Points", "Lines", "Solid"};
-	static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
-	const int currentPolygonMode = (int)camera().polygonMode();
-	const float polygonModeMaxWidth = ImGui::CalcComboBoxWidth(polygonModes[currentPolygonMode]);
-	ImGui::SetCursorPos(ImVec2(windowSize.x - polygonModeMaxWidth, windowSize.y - height));
-	ImGui::SetNextItemWidth(polygonModeMaxWidth);
-	if (ImGui::BeginCombo("##polygonmode", polygonModes[currentPolygonMode])) {
-		for (int n = 0; n < lengthof(polygonModes); n++) {
-			const bool isSelected = (currentPolygonMode == n);
-			if (ImGui::Selectable(polygonModes[n], isSelected)) {
-				camera().setPolygonMode((video::PolygonMode)n);
-			}
-			if (isSelected) {
-				ImGui::SetItemDefaultFocus();
-			}
-		}
-		ImGui::EndCombo();
-	}
-}
-
 void Viewport::renderViewportImage(const glm::ivec2 &contentSize) {
 	// use the uv coords here to take a potential fb flip into account
 	const glm::vec4 &uv = _renderContext.frameBuffer.uv();
@@ -275,7 +231,6 @@ void Viewport::renderViewport() {
 		}
 
 		dragAndDrop(headerSize);
-		renderBottomBar();
 	}
 }
 
@@ -380,6 +335,40 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 				ImGui::TooltipText("Pending frames: %u", pendingFrames);
 			} else {
 				ImGui::TooltipText("You can control the fps of the video with the cvar %s\nPending frames: %u", cfg::CoreMaxFPS, pendingFrames);
+			}
+
+			if (!isFixedCamera()) {
+				static const char *camRotTypes[] = {"Reference Point", "Eye"};
+				static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
+				const int currentCamRotType = (int)camera().rotationType();
+				if (ImGui::BeginCombo("Camera movement##referencepoint", camRotTypes[currentCamRotType])) {
+					for (int n = 0; n < lengthof(camRotTypes); n++) {
+						const bool isSelected = (currentCamRotType == n);
+						if (ImGui::Selectable(camRotTypes[n], isSelected)) {
+							camera().setRotationType((video::CameraRotationType)n);
+						}
+						if (isSelected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+			}
+
+			static const char *polygonModes[] = {"Points", "Lines", "Solid"};
+			static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
+			const int currentPolygonMode = (int)camera().polygonMode();
+			if (ImGui::BeginCombo("Render mode##polygonmode", polygonModes[currentPolygonMode])) {
+				for (int n = 0; n < lengthof(polygonModes); n++) {
+					const bool isSelected = (currentPolygonMode == n);
+					if (ImGui::Selectable(polygonModes[n], isSelected)) {
+						camera().setPolygonMode((video::PolygonMode)n);
+					}
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
 			}
 			ImGui::EndMenu();
 		}

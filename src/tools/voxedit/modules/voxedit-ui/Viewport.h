@@ -104,7 +104,6 @@ private:
 	bool isFixedCamera() const;
 	void renderViewportImage(const glm::ivec2 &contentSize);
 	void dragAndDrop(float headerSize);
-	void renderBottomBar();
 	void renderViewport();
 	void toggleVideoRecording();
 	void renderMenuBar(command::CommandExecutionListener *listener);
