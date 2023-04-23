@@ -730,20 +730,24 @@ void RawVolumeRenderer::setSunPosition(const glm::vec3& eye, const glm::vec3& ce
 	_shadow.setPosition(eye, center, up);
 }
 
-core::DynamicArray<voxel::RawVolume*> RawVolumeRenderer::shutdown() {
-	_threadPool.shutdown();
-	_voxelShader.shutdown();
-	_shadowMapShader.shutdown();
-	_voxelData.shutdown();
-	_shadowMapUniformBlock.shutdown();
+void RawVolumeRenderer::clearMeshes() {
 	for (int i = 0; i < MeshType_Max; ++i) {
-		for (auto& iter : _meshes[i]) {
-			for (auto& mesh : iter.second) {
+		for (auto &iter : _meshes[i]) {
+			for (auto &mesh : iter.second) {
 				delete mesh;
 			}
 		}
 		_meshes[i].clear();
 	}
+}
+
+core::DynamicArray<voxel::RawVolume *> RawVolumeRenderer::shutdown() {
+	_threadPool.shutdown();
+	_voxelShader.shutdown();
+	_shadowMapShader.shutdown();
+	_voxelData.shutdown();
+	_shadowMapUniformBlock.shutdown();
+	clearMeshes();
 	core::DynamicArray<voxel::RawVolume*> old(MAX_VOLUMES);
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		State& state = _state[idx];

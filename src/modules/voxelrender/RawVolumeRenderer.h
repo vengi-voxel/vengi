@@ -222,7 +222,8 @@ public:
 	 *
 	 * @sa init()
 	 */
-	core::DynamicArray<voxel::RawVolume*> shutdown();
+	void clearMeshes();
+	core::DynamicArray<voxel::RawVolume *> shutdown();
 };
 
 inline int RawVolumeRenderer::pendingExtractions() const {
