@@ -29,6 +29,8 @@ VoxEdit:
    - Added support for multiple animations in one scene
    - Allow to duplicate all scene graph nodes
    - (Re-)implemented WASD controls in camera eye mode
+   - Fixed copy&paste errors with multiple selections
+   - Updated new scene dialog to include the templates
 
 ## 0.0.24 (2023-03-12)
 
