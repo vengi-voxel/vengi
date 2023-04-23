@@ -3,12 +3,13 @@
  */
 
 #include "AbstractVoxelTest.h"
+#include "core/collection/DynamicArray.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
 namespace voxel {
 
-class PolyVoxTest: public AbstractVoxelTest {
+class RawVolumeTest: public AbstractVoxelTest {
 protected:
 	bool pageIn(const voxel::Region& region, RawVolume &v) {
 		v.setVoxel(1, 2, 1, voxel::createVoxel(VoxelType::Generic, 0));
@@ -23,20 +24,33 @@ protected:
 		v.setVoxel(1, 1, 2, voxel::createVoxel(VoxelType::Generic, 0));
 		v.setVoxel(2, 1, 2, voxel::createVoxel(VoxelType::Generic, 0));
 
-		v.setVoxel(0, 0, 0, voxel::createVoxel(VoxelType::Generic, 0));
-		v.setVoxel(1, 0, 0, voxel::createVoxel(VoxelType::Generic, 0));
-		v.setVoxel(2, 0, 0, voxel::createVoxel(VoxelType::Generic, 0));
-		v.setVoxel(0, 0, 1, voxel::createVoxel(VoxelType::Generic, 0));
-		v.setVoxel(1, 0, 1, voxel::createVoxel(VoxelType::Generic, 0));
-		v.setVoxel(2, 0, 1, voxel::createVoxel(VoxelType::Generic, 0));
-		v.setVoxel(0, 0, 2, voxel::createVoxel(VoxelType::Generic, 0));
-		v.setVoxel(1, 0, 2, voxel::createVoxel(VoxelType::Generic, 0));
-		v.setVoxel(2, 0, 2, voxel::createVoxel(VoxelType::Generic, 0));
+		v.setVoxel(0, 0, 0, voxel::createVoxel(VoxelType::Generic, 1));
+		v.setVoxel(1, 0, 0, voxel::createVoxel(VoxelType::Generic, 2));
+		v.setVoxel(2, 0, 0, voxel::createVoxel(VoxelType::Generic, 3));
+		v.setVoxel(0, 0, 1, voxel::createVoxel(VoxelType::Generic, 4));
+		v.setVoxel(1, 0, 1, voxel::createVoxel(VoxelType::Generic, 5));
+		v.setVoxel(2, 0, 1, voxel::createVoxel(VoxelType::Generic, 6));
+		v.setVoxel(0, 0, 2, voxel::createVoxel(VoxelType::Generic, 7));
+		v.setVoxel(1, 0, 2, voxel::createVoxel(VoxelType::Generic, 8));
+		v.setVoxel(2, 0, 2, voxel::createVoxel(VoxelType::Generic, 9));
 		return true;
 	}
 };
 
-TEST_F(PolyVoxTest, testSamplerPeek) {
+TEST_F(RawVolumeTest, testCopyRegions) {
+	RawVolume v(_region);
+	pageIn(v.region(), v);
+
+	core::DynamicArray<voxel::Region> regions;
+	regions.push_back(Region(0, 0, 2, 0, 0, 2)); // color index 7
+	regions.push_back(Region(2, 0, 0, 2, 0, 0)); // color index 3
+	RawVolume v2(v, regions);
+	EXPECT_EQ(v2.region(), Region(0, 0, 0, 2, 0, 2));
+	EXPECT_EQ(7, v2.voxel(0, 0, 2).getColor());
+	EXPECT_EQ(3, v2.voxel(2, 0, 0).getColor());
+}
+
+TEST_F(RawVolumeTest, testSamplerPeek) {
 	RawVolume v(_region);
 	pageIn(v.region(), v);
 	ASSERT_EQ(VoxelType::Generic, v.voxel(1, 2, 1).getMaterial());
@@ -50,7 +64,7 @@ TEST_F(PolyVoxTest, testSamplerPeek) {
 	ASSERT_EQ(VoxelType::Generic, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
-TEST_F(PolyVoxTest, testSamplerPeekWithMovingX) {
+TEST_F(RawVolumeTest, testSamplerPeekWithMovingX) {
 	RawVolume v(_region);
 	pageIn(v.region(), v);
 	RawVolume::Sampler sampler(v);
@@ -61,7 +75,7 @@ TEST_F(PolyVoxTest, testSamplerPeekWithMovingX) {
 	ASSERT_EQ(VoxelType::Generic, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
-TEST_F(PolyVoxTest, testSamplerPeekWithAir) {
+TEST_F(RawVolumeTest, testSamplerPeekWithAir) {
 	RawVolume v(_region);
 	pageIn(v.region(), v);
 	RawVolume::Sampler sampler(v);
@@ -71,7 +85,7 @@ TEST_F(PolyVoxTest, testSamplerPeekWithAir) {
 	ASSERT_EQ(VoxelType::Generic, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
-TEST_F(PolyVoxTest, testSamplerPeekWithTipOfTheGeom) {
+TEST_F(RawVolumeTest, testSamplerPeekWithTipOfTheGeom) {
 	RawVolume v(_region);
 	pageIn(v.region(), v);
 	RawVolume::Sampler sampler(v);
@@ -81,7 +95,7 @@ TEST_F(PolyVoxTest, testSamplerPeekWithTipOfTheGeom) {
 	ASSERT_EQ(VoxelType::Generic, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
-TEST_F(PolyVoxTest, testFullSamplerLoop) {
+TEST_F(RawVolumeTest, testFullSamplerLoop) {
 	RawVolume v(_region);
 	pageIn(v.region(), v);
 	RawVolume::Sampler volumeSampler(v);

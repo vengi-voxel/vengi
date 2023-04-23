@@ -56,37 +56,24 @@ static inline voxel::Region accumulate(const core::DynamicArray<Region>& regions
 	return r;
 }
 
-RawVolume::RawVolume(const RawVolume &src, const core::DynamicArray<Region> &regions)
-	: _region(accumulate(regions)) {
+RawVolume::RawVolume(const RawVolume &src, const core::DynamicArray<Region> &copyRegions)
+	: _region(accumulate(copyRegions)) {
+	_region.cropTo(src.region());
 	setBorderValue(src.borderValue());
-	_mins = glm::ivec3((std::numeric_limits<int>::max)() / 2);
-	_maxs = glm::ivec3((std::numeric_limits<int>::min)() / 2);
-	_boundsValid = false;
-	const glm::ivec3 &srcMins = src._region.getLowerCorner();
-	const int srcYStride = src._region.getWidthInVoxels();
-	const int srcZStride = src._region.getWidthInVoxels() * src._region.getHeightInVoxels();
-	const size_t size = width() * height() * depth() * sizeof(Voxel);
-	_data = (Voxel *)core_malloc(size);
+	initialise(_region);
 
-	for (const voxel::Region &region : regions) {
-		const glm::ivec3 &tgtMins = region.getLowerCorner();
-		const glm::ivec3 &tgtMaxs = region.getUpperCorner();
-		const int tgtYStride = region.getWidthInVoxels();
-		const int tgtZStride = region.getWidthInVoxels() * region.getHeightInVoxels();
-		for (int x = tgtMins.x; x <= tgtMaxs.x; ++x) {
-			const int32_t tgtXPos = x - tgtMins.x;
-			const int32_t srcXPos = x - srcMins.x;
-			for (int y = tgtMins.y; y <= tgtMaxs.y; ++y) {
-				const int32_t tgtYPos = y - tgtMins.y;
-				const int32_t srcYPos = y - srcMins.y;
-				const int tgtStrideLocal = tgtXPos + tgtYPos * tgtYStride;
-				const int srcStrideLocal = srcXPos + srcYPos * srcYStride;
-				for (int z = tgtMins.z; z <= tgtMaxs.z; ++z) {
-					const int32_t tgtZPos = z - tgtMins.z;
-					const int32_t srcZPos = z - srcMins.z;
-					const int tgtindex = tgtStrideLocal + tgtZPos * tgtZStride;
-					const int srcindex = srcStrideLocal + srcZPos * srcZStride;
-					_data[tgtindex] = src._data[srcindex];
+	for (Region copyRegion : copyRegions) {
+		copyRegion.cropTo(_region);
+		RawVolume::Sampler destSampler(*this);
+		RawVolume::Sampler srcSampler(src);
+		for (int32_t x = copyRegion.getLowerX(); x <= copyRegion.getUpperX(); ++x) {
+			for (int32_t y = copyRegion.getLowerY(); y <= copyRegion.getUpperY(); ++y) {
+				srcSampler.setPosition(x, y, copyRegion.getLowerZ());
+				destSampler.setPosition(x, y, copyRegion.getLowerZ());
+				for (int32_t z = copyRegion.getLowerZ(); z <= copyRegion.getUpperZ(); ++z) {
+					destSampler.setVoxel(srcSampler.voxel());
+					destSampler.movePositiveZ();
+					srcSampler.movePositiveZ();
 				}
 			}
 		}
@@ -192,10 +179,9 @@ Voxel* RawVolume::copyVoxels() const {
  */
 const Voxel& RawVolume::voxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const {
 	if (_region.containsPoint(uXPos, uYPos, uZPos)) {
-		const Region& regValidRegion = _region;
-		const int32_t iLocalXPos = uXPos - regValidRegion.getLowerX();
-		const int32_t iLocalYPos = uYPos - regValidRegion.getLowerY();
-		const int32_t iLocalZPos = uZPos - regValidRegion.getLowerZ();
+		const int32_t iLocalXPos = uXPos - _region.getLowerX();
+		const int32_t iLocalYPos = uYPos - _region.getLowerY();
+		const int32_t iLocalZPos = uZPos - _region.getLowerZ();
 
 		return _data[iLocalXPos + iLocalYPos * width() + iLocalZPos * width() * height()];
 	}
