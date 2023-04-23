@@ -452,7 +452,6 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 	}
 
 	const ImVec2& maxs = ImGui::GetWindowContentRegionMax();
-	const ImVec2 restore = ImGui::GetCursorPos();
 	ImGui::SetCursorPosX(maxs.x / 2.0f - indicator_radius);
 	ImGui::SetCursorPosY(maxs.y / 2.0f - indicator_radius);
 
@@ -470,7 +469,6 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 	const ImRect bb(pos, ImVec2(pos.x + indicator_radius * 2.0f, pos.y + indicator_radius * 2.0f));
 	ItemSize(bb, g.Style.FramePadding.y);
 	if (!ItemAdd(bb, id)) {
-		ImGui::SetCursorPos(restore);
 		return;
 	}
 	const float t = (float)g.Time;
@@ -487,7 +485,6 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 		window->DrawList->AddCircleFilled(ImVec2(pos.x + indicator_radius + x, pos.y + indicator_radius - y),
 										  circle_radius + growth * circle_radius, GetColorU32(color));
 	}
-	ImGui::SetCursorPos(restore);
 }
 
 }
