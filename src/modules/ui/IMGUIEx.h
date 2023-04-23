@@ -9,6 +9,7 @@
 #include "core/Common.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
+#include "core/collection/Buffer.h"
 #include "dearimgui/imgui.h"
 #include "video/Types.h"
 #include <glm/fwd.hpp>
@@ -43,6 +44,7 @@ IMGUI_API bool InputVarInt(const char *label, const char *varName, int step = 1,
 						   ImGuiInputTextFlags extra_flags = 0);
 IMGUI_API bool CheckboxVar(const char *label, const core::VarPtr &var);
 IMGUI_API bool CheckboxVar(const char *label, const char *varName);
+IMGUI_API bool ComboVar(const char* label, const char* varName, const core::Buffer<const char *> &items);
 IMGUI_API bool SliderVarInt(const char *label, const core::VarPtr &var, int v_min, int v_max, const char *format = "%d",
 							ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderVarInt(const char *label, const char *varName, int v_min, int v_max, const char *format = "%d",
