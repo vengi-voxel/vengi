@@ -181,14 +181,17 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 		const int activeNode = sceneGraph.activeNode();
 		if (activeNode != -1) {
 			scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
+
 			const scenegraph::FrameIndex frame = sceneMgr().currentFrame();
 			const scenegraph::KeyFrameIndex keyFrame = node.keyFrameForFrame(frame);
 			scenegraph::SceneGraphKeyFrame &sceneGraphKeyFrame = node.keyFrame(keyFrame);
 			scenegraph::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
 			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform.worldMatrix()), matrixTranslation, matrixRotation,
+			const glm::mat4 &matrix = _localSpace ? transform.localMatrix() : transform.worldMatrix();
+			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(matrix), matrixTranslation, matrixRotation,
 												  matrixScale);
 			bool change = false;
+			ImGui::Checkbox("Local transforms", &_localSpace);
 			glm::vec3 pivot = node.pivot();
 			change |= ImGui::InputFloat3("Tr", matrixTranslation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
@@ -260,7 +263,11 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 
 				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale,
 														glm::value_ptr(matrix));
-				transform.setWorldMatrix(matrix);
+				if (_localSpace) {
+					transform.setLocalMatrix(matrix);
+				} else {
+					transform.setWorldMatrix(matrix);
+				}
 
 				transform.update(sceneGraph, node, frame);
 			}
