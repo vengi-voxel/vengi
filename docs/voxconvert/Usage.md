@@ -11,7 +11,7 @@
 * `--colored-heightmap`: Use the alpha channel of the heightmap as height and the rgb data as surface color.
 * `--image-as-volume`: import given input image as volume. Uses a depth map to make a volume out of the image.
 * `--image-as-volume-max-depth`: importing image as volume max depth
-* `--image-as-volume-both-sides`: importing image as volume and use the depth map for both sides
+* `--image-as-volume-both-sides`: importing image as volume and use the depth map for both sides. The depth-map has the postfix `-dm`. For example the image is called `image.png` then the depth-map image must be called `image-dm.png`. Also see the [examples](Examples.md).
 * `--image-as-plane`: import input images as planes
 * `--input <file>`: allows to specify input files. You can specify more than one file
 * `--merge`: will merge a multi layer volume (like `vox`, `qb` or `qbt`) into a single volume of the target file
