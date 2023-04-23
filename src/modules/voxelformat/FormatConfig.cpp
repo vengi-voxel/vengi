@@ -19,7 +19,7 @@ bool FormatConfig::init() {
 				   core::Color::toColorReductionTypeString(core::Color::ColorReductionType::MedianCut),
 				   "Controls the algorithm that is used to perform the color reduction", colorReductionValidator);
 	core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, "Merge similar quads to optimize the mesh", core::Var::boolValidator);
-	core::Var::get(cfg::VoxelMeshMode, "0", core::CV_NOPERSIST, "0 = cubes, 1 = marching cubes", core::Var::minMaxValidator<0, 1>);
+	core::Var::get(cfg::VoxelMeshMode, "0", "0 = cubes, 1 = marching cubes", core::Var::minMaxValidator<0, 1>);
 	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST, "Reuse vertices or always create new ones", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST, "Extra vertices for ambient occlusion", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatRGBFlattenFactor, "0", core::CV_NOPERSIST, "To flatten factor for RGBA and mesh formats", [](const core::String &var) {
