@@ -1711,7 +1711,11 @@ void SceneManager::construct() {
 	command::Command::registerCommand("paste", [&] (const command::CmdArgs& args) {
 		const Selections& selections = _modifier.selections();
 		if (!selections.empty()) {
-			paste(selections[0].getLowerCorner());
+			voxel::Region r = selections[0];
+			for (const Selection &region : selections) {
+				r.accumulate(region);
+			}
+			paste(r.getLowerCorner());
 		} else {
 			paste(referencePosition());
 		}
