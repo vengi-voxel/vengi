@@ -117,6 +117,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::CheckboxVar("Color picker", cfg::VoxEditShowColorPicker);
 				ImGui::CheckboxVar("Color wheel", cfg::VoxEditColorWheel);
 				ImGui::CheckboxVar("Simplified UI", cfg::VoxEditSimplifiedView);
+				// TODO: activate me - but we first have to upload the normals - see voxel.frag
+				// ImGui::ComboVar("Mesh mode", cfg::VoxelMeshMode, {"Cubes", "Marching cubes"});
 				ImGui::InputVarInt("Model animation speed", cfg::VoxEditAnimationSpeed);
 				ImGui::InputVarInt("Viewports", cfg::VoxEditViewports, 1, 1);
 				ImGui::SliderVarFloat("Zoom speed", cfg::ClientCameraZoomSpeed, 0.1f, 200.0f);

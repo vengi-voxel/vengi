@@ -362,8 +362,6 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 			}
 			ImGui::EndCombo();
 		}
-		// TODO: activate me - but we first have to upload the normals - see voxel.frag
-		// ImGui::ComboVar("Mesh mode", cfg::VoxelMeshMode, {"Cubes", "Marching cubes"});
 		ImGui::EndMenu();
 	}
 }
