@@ -992,7 +992,8 @@ bool SceneManager::cut() {
 		delete _copy;
 		return false;
 	}
-	modified(nodeId, modifiedRegion);
+	const int64_t dismissMillis = core::Var::getSafe(cfg::VoxEditModificationDismissMillis)->intVal();
+	modified(nodeId, modifiedRegion, true, dismissMillis);
 	return true;
 }
 
