@@ -108,7 +108,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::CheckboxVar("Show gizmo", cfg::VoxEditShowaxis);
 				ImGui::CheckboxVar("Show locked axis", cfg::VoxEditShowlockedaxis);
 				ImGui::CheckboxVar(ICON_FA_DICE_SIX " Bounding box", cfg::VoxEditShowaabb);
+				ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() == 1);
 				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
+				ImGui::EndDisabled();
 				ImGui::CheckboxVar("Shadow", cfg::VoxEditRendershadow);
 				ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
 				ImGui::CheckboxVar("Allow multi monitor", cfg::UIMultiMonitor);
