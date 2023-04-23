@@ -125,22 +125,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::SliderVarInt("View distance", cfg::VoxEditViewdistance, 10, 5000);
 				ImGui::InputVarInt("Font size", cfg::UIFontSize, 1, 5);
 
-				static constexpr const char *ColorThemeStr[]{"CorporateGrey", "Dark", "Light", "Classic"};
-				const core::VarPtr &uistyle = core::Var::getSafe(cfg::UIStyle);
-				const int currentUIStyle = uistyle->intVal();
-				if (ImGui::BeginCombo("Color theme", ColorThemeStr[(int)currentUIStyle], ImGuiComboFlags_None)) {
-					for (int i = 0; i < lengthof(ColorThemeStr); ++i) {
-						const bool selected = i == currentUIStyle;
-						if (ImGui::Selectable(ColorThemeStr[i], selected)) {
-							uistyle->setVal(core::string::toString(i));
-						}
-						if (selected) {
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					ImGui::EndCombo();
-				}
-
+				ImGui::ComboVar("Color theme", cfg::UIStyle, {"CorporateGrey", "Dark", "Light", "Classic"});
 				colorReductionOptions();
 
 				ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);
