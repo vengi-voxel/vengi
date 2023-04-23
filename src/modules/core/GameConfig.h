@@ -49,13 +49,13 @@ constexpr const char *CoreColorReduction = "core_colorreduction";
 
 // The size of the mesh chunk
 constexpr const char *VoxelMeshSize = "voxel_meshsize";
+constexpr const char *VoxelMeshMode = "voxel_meshmode";
 
 constexpr const char *AppHomePath = "app_homepath";
 
 constexpr const char *VoxelPalette = "palette";
 constexpr const char *VoxelCreatePalette = "voxformat_createpalette";
 constexpr const char *VoxformatMergequads = "voxformat_mergequads";
-constexpr const char *VoxformatMarchingCubes = "voxformat_marchingcubes";
 constexpr const char *VoxformatReusevertices = "voxformat_reusevertices";
 constexpr const char *VoxformatAmbientocclusion = "voxformat_ambientocclusion";
 constexpr const char *VoxformatRGBFlattenFactor = "voxformat_rgbflattenfactor";

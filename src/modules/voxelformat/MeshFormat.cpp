@@ -390,7 +390,8 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core
 	const bool withColor = core::Var::getSafe(cfg::VoxformatWithcolor)->boolVal();
 	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
 	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
-	const bool marchingCubes = core::Var::getSafe(cfg::VoxformatMarchingCubes)->boolVal();
+	const int meshMode = core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
+	const bool marchingCubes = meshMode == 1;
 
 	const glm::vec3 &scale = getScale();
 	const size_t models = sceneGraph.size();

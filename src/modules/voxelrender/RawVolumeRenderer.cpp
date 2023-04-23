@@ -93,13 +93,15 @@ RawVolumeRenderer::RawVolumeRenderer() :
 }
 
 void RawVolumeRenderer::construct() {
-	core::Var::get(cfg::VoxelMeshSize, "64", core::CV_READONLY);
+	_meshSize = core::Var::get(cfg::VoxelMeshSize, "64", core::CV_READONLY);
 }
 
 bool RawVolumeRenderer::init() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	_bloom = core::Var::getSafe(cfg::ClientBloom);
-	_meshSize = core::Var::getSafe(cfg::VoxelMeshSize);
+	_meshMode = core::Var::getSafe(cfg::VoxelMeshMode);
+
+	_meshMode->markClean();
 
 	_threadPool.init();
 	Log::debug("Threadpool size: %i", (int)_threadPool.size());
@@ -189,6 +191,7 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 	if (maxExtraction == 0) {
 		return true;
 	}
+	const bool marchingCubes = _meshMode->intVal() == 1;
 	size_t i;
 	for (i = 0; i < n; ++i) {
 		const int idx = _extractRegions[i].idx;
@@ -202,11 +205,10 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 		const glm::ivec3& mins = finalRegion.getLowerCorner();
 		if (!onlyAir) {
 			const voxel::Palette &pal = palette(idx);
-			_threadPool.enqueue([movedPal = core::move(pal), movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
+			_threadPool.enqueue([marchingCubes, movedPal = core::move(pal), movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
 				++_runningExtractorTasks;
 				voxel::ChunkMesh mesh(65536, 65536, true);
 				voxel::Region extractRegion = finalRegion;
-				bool marchingCubes = false;
 				if (marchingCubes) {
 					extractRegion.shrink(-1);
 					voxel::extractMarchingCubesMesh(&movedCopy, movedPal, extractRegion, &mesh);
@@ -232,6 +234,16 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 }
 
 void RawVolumeRenderer::update() {
+	if (_meshMode->isDirty()) {
+		clearPendingExtractions();
+		for (int i = 0; i < MAX_VOLUMES; ++i) {
+			if (_state[i]._rawVolume) {
+				extractRegion(i, _state[i]._rawVolume->region());
+			}
+		}
+
+		_meshMode->markClean();
+	}
 	scheduleExtractions();
 	ExtractionCtx result;
 	int cnt = 0;

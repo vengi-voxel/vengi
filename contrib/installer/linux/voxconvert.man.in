@@ -337,13 +337,13 @@ Config vars to control the meshing:
 .PP
 \fBvoxformat_transform_mesh\fP: Apply the keyframe transforms to the mesh
 .PP
-\fBvoxformat_marchingcubes\fP: Use the marching cubes algorithm to produce the mesh
-.PP
 \fBvoxformat_createpalette\fP: Setting this to false will use use the palette configured by \fBpalette\fP cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats.
 .PP
 \fBvoxformat_rgbflattenfactor\fP: To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats
+.PP
+\fBvoxel_meshmode\fP: Set to 1 to use the marching cubes algorithm to produce the mesh
 
-Basic voxelization is supported for ply, gltf, stl, bsp and obj files, too. The following cvars can be modified here:
+Basic voxelization is supported for ply, gltf, stl, bsp, fbx and obj files, too. The following cvars can be modified here:
 
 .PP
 \fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects
@@ -355,8 +355,6 @@ Basic voxelization is supported for ply, gltf, stl, bsp and obj files, too. The 
 \fBvoxformat_scale_y\fP: Scale the vertices on Y axis by the given factor
 .PP
 \fBvoxformat_scale_z\fP: Scale the vertices on Z axis by the given factor
-.PP
-\fBvoxformat_voxel_mesh\fP: Optimize import precision assuming that the mesh is composed of uniform voxels
 
 .SH HOMEPAGE
 https://github.com/mgerhardy/vengi

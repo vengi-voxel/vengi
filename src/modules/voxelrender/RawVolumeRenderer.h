@@ -107,6 +107,7 @@ protected:
 	core::VarPtr _meshSize;
 	core::VarPtr _shadowMap;
 	core::VarPtr _bloom;
+	core::VarPtr _meshMode;
 
 	struct ExtractRegion {
 		ExtractRegion(const voxel::Region &_region, int _idx) : region(_region), idx(_idx) {
