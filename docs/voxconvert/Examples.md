@@ -34,7 +34,7 @@ Splitting single objects that are not connected to other objects can also be spl
 
 `./vengi-voxconvert --script splitobject --input infile.vox --output outfile.vox`
 
-## Voxelize an obj, gltf, ply or stl file
+## Voxelize a obj, gltf, ply, fbx, stl or any supported mesh file
 
 Voxelize an obj and save as magicavoxel (including colors):
 
