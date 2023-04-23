@@ -110,6 +110,8 @@ vec3 shadow(in float bias, in vec3 color, in vec3 diffuse, in vec3 ambient) {
 vec4 calcColor(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
 	vec3 fdy = dFdy(v_pos.xyz);
+	// http://www.aclockworkberry.com/shader-derivative-functions/
+	// face normal (flat shading)
 	vec3 normal = normalize(cross(fdx, fdy));
 	float ndotl1 = dot(normal, u_lightdir);
 	float ndotl2 = dot(normal, -u_lightdir);
