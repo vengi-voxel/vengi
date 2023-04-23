@@ -8,6 +8,7 @@
 #include "core/Assert.h"
 #include "core/StandardLib.h"
 #include <new>
+#include <initializer_list>
 
 namespace core {
 
@@ -61,6 +62,11 @@ public:
 		checkBufferSize(amount);
 		core_memset(_buffer, 0, _capacity * sizeof(TYPE));
 		_size = amount;
+	}
+
+	Buffer(std::initializer_list<TYPE> other) {
+		reserve(other.size());
+		insert(end(), other.begin(), other.end());
 	}
 
 	Buffer(const Buffer& other) {
