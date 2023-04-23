@@ -305,6 +305,68 @@ void Viewport::toggleVideoRecording() {
 	}
 }
 
+void Viewport::menuBarView(command::CommandExecutionListener *listener) {
+	if (ImGui::BeginMenu(ICON_FA_EYE " View")) {
+		ImGui::CommandMenuItem(ICON_FK_VIDEO_CAMERA " Reset camera", "resetcamera", true, listener);
+
+		glm::vec3 omega = _camera.omega();
+		if (ImGui::InputFloat("Camera rotation", &omega.y)) {
+			_camera.setOmega(omega);
+		}
+
+		const core::String command = core::string::format("screenshot %i", _id);
+		ImGui::CommandMenuItem(ICON_FA_CAMERA " Screenshot", command.c_str(), listener);
+
+		if (ImGui::MenuItem(_avi.isRecording() ? ICON_FA_STOP " Video" : ICON_FA_CAMERA " Video")) {
+			toggleVideoRecording();
+		}
+		const uint32_t pendingFrames = _avi.pendingFrames();
+		if (pendingFrames > 0u) {
+			ImGui::TooltipText("Pending frames: %u", pendingFrames);
+		} else {
+			ImGui::TooltipText("You can control the fps of the video with the cvar %s\nPending frames: %u",
+							   cfg::CoreMaxFPS, pendingFrames);
+		}
+
+		if (!isFixedCamera()) {
+			static const char *camRotTypes[] = {"Reference Point", "Eye"};
+			static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max,
+						  "Array size doesn't match enum values");
+			const int currentCamRotType = (int)camera().rotationType();
+			if (ImGui::BeginCombo("Camera movement##referencepoint", camRotTypes[currentCamRotType])) {
+				for (int n = 0; n < lengthof(camRotTypes); n++) {
+					const bool isSelected = (currentCamRotType == n);
+					if (ImGui::Selectable(camRotTypes[n], isSelected)) {
+						camera().setRotationType((video::CameraRotationType)n);
+					}
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+		}
+
+		static const char *polygonModes[] = {"Points", "Lines", "Solid"};
+		static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
+		const int currentPolygonMode = (int)camera().polygonMode();
+		if (ImGui::BeginCombo("Render mode##polygonmode", polygonModes[currentPolygonMode])) {
+			for (int n = 0; n < lengthof(polygonModes); n++) {
+				const bool isSelected = (currentPolygonMode == n);
+				if (ImGui::Selectable(polygonModes[n], isSelected)) {
+					camera().setPolygonMode((video::PolygonMode)n);
+				}
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::EndMenu();
+	}
+	ImGui::CommandMenuItem(ICON_FA_FILE " Save selection", "exportselection", !sceneMgr().modifier().selections().empty(), listener);
+}
+
 void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 	if (ImGui::BeginMenuBar()) {
 		const MementoHandler &mementoHandler = sceneMgr().mementoHandler();
@@ -316,63 +378,7 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		if (!_simplifiedView->boolVal()) {
 			ImGui::Checkbox("Scene Mode", &_renderContext.sceneMode);
 		}
-		if (ImGui::BeginMenu(ICON_FA_EYE " View")) {
-			ImGui::CommandMenuItem(ICON_FK_VIDEO_CAMERA " Reset camera", "resetcamera", true, listener);
-
-			glm::vec3 omega = _camera.omega();
-			if (ImGui::InputFloat("Camera rotation", &omega.y)) {
-				_camera.setOmega(omega);
-			}
-
-			const core::String command = core::string::format("screenshot %i", _id);
-			ImGui::CommandMenuItem(ICON_FA_CAMERA " Screenshot", command.c_str(), listener);
-
-			if (ImGui::MenuItem(_avi.isRecording() ? ICON_FA_STOP " Video" : ICON_FA_CAMERA " Video")) {
-				toggleVideoRecording();
-			}
-			const uint32_t pendingFrames = _avi.pendingFrames();
-			if (pendingFrames > 0u) {
-				ImGui::TooltipText("Pending frames: %u", pendingFrames);
-			} else {
-				ImGui::TooltipText("You can control the fps of the video with the cvar %s\nPending frames: %u", cfg::CoreMaxFPS, pendingFrames);
-			}
-
-			if (!isFixedCamera()) {
-				static const char *camRotTypes[] = {"Reference Point", "Eye"};
-				static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
-				const int currentCamRotType = (int)camera().rotationType();
-				if (ImGui::BeginCombo("Camera movement##referencepoint", camRotTypes[currentCamRotType])) {
-					for (int n = 0; n < lengthof(camRotTypes); n++) {
-						const bool isSelected = (currentCamRotType == n);
-						if (ImGui::Selectable(camRotTypes[n], isSelected)) {
-							camera().setRotationType((video::CameraRotationType)n);
-						}
-						if (isSelected) {
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					ImGui::EndCombo();
-				}
-			}
-
-			static const char *polygonModes[] = {"Points", "Lines", "Solid"};
-			static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
-			const int currentPolygonMode = (int)camera().polygonMode();
-			if (ImGui::BeginCombo("Render mode##polygonmode", polygonModes[currentPolygonMode])) {
-				for (int n = 0; n < lengthof(polygonModes); n++) {
-					const bool isSelected = (currentPolygonMode == n);
-					if (ImGui::Selectable(polygonModes[n], isSelected)) {
-						camera().setPolygonMode((video::PolygonMode)n);
-					}
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-				ImGui::EndCombo();
-			}
-			ImGui::EndMenu();
-		}
-		ImGui::CommandMenuItem(ICON_FA_FILE " Save selection", "exportselection", !sceneMgr().modifier().selections().empty(), listener);
+		menuBarView(listener);
 
 		ImGui::EndMenuBar();
 	}

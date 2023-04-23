@@ -106,6 +106,7 @@ private:
 	void dragAndDrop(float headerSize);
 	void renderViewport();
 	void toggleVideoRecording();
+	void menuBarView(command::CommandExecutionListener *listener);
 	void renderMenuBar(command::CommandExecutionListener *listener);
 	void menuBarCameraMode();
 	void menuBarCameraProjection();
