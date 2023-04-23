@@ -987,6 +987,11 @@ bool SceneManager::cut() {
 		Log::debug("Failed to cut");
 		return false;
 	}
+	if (!modifiedRegion.isValid()) {
+		Log::debug("Failed to cut");
+		delete _copy;
+		return false;
+	}
 	modified(nodeId, modifiedRegion);
 	return true;
 }

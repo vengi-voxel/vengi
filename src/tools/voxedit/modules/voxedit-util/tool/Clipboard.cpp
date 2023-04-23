@@ -41,10 +41,12 @@ voxel::RawVolume* cut(voxel::RawVolume *volume, const Selections &selections, vo
 				}
 			}
 		}
-		if (modifiedRegion.isValid()) {
-			modifiedRegion.accumulate(wrapper.dirtyRegion());
-		} else {
-			modifiedRegion = wrapper.dirtyRegion();
+		if (wrapper.dirtyRegion().isValid()) {
+			if (modifiedRegion.isValid()) {
+				modifiedRegion.accumulate(wrapper.dirtyRegion());
+			} else {
+				modifiedRegion = wrapper.dirtyRegion();
+			}
 		}
 	}
 	return v;
