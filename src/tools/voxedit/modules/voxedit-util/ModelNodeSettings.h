@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include "core/Optional.h"
 #include "core/String.h"
+#include "voxel/Palette.h"
 #include "voxel/Region.h"
 #include <glm/vec3.hpp>
 
@@ -16,6 +18,7 @@ static constexpr const int MaxVolumeSize = 256;
 
 struct ModelNodeSettings {
 	core::String name;
+	core::Optional<voxel::Palette> palette;
 	glm::ivec3 position;
 	glm::ivec3 size;
 	int parent = 0;

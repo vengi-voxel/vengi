@@ -4,6 +4,7 @@
 
 #include "SceneGraphPanel.h"
 #include "Util.h"
+#include "core/Optional.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "core/collection/DynamicArray.h"
@@ -368,12 +369,14 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 
 			toolbar.button(ICON_FA_SQUARE_PLUS, "Add a new model node", [&sceneGraph, this, modelNodeSettings] () {
 				const int nodeId = sceneGraph.activeNode();
+				modelNodeSettings->palette.setValue(nullptr);
 				scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 				if (node.type() == scenegraph::SceneGraphNodeType::Model) {
 					const voxel::RawVolume* v = node.volume();
 					const voxel::Region& region = v->region();
 					modelNodeSettings->position = region.getLowerCorner();
 					modelNodeSettings->size = region.getDimensionsInVoxels();
+					modelNodeSettings->palette.setValue(node.palette());
 				}
 				if (modelNodeSettings->name.empty()) {
 					modelNodeSettings->name = node.name();

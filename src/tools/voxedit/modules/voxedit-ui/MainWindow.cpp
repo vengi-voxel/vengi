@@ -438,6 +438,7 @@ void MainWindow::popupNewScene() {
 		ImGui::EndPopup();
 	}
 }
+
 void MainWindow::popupFailedSave() {
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
 		dialog(ICON_FA_TRIANGLE_EXCLAMATION, "Failed to save the model!");
@@ -448,6 +449,7 @@ void MainWindow::popupFailedSave() {
 		ImGui::EndPopup();
 	}
 }
+
 void MainWindow::popupUnsavedChanges() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		dialog(ICON_FA_QUESTION, "Unsaved changes - are you sure to quit?");
@@ -464,6 +466,7 @@ void MainWindow::popupUnsavedChanges() {
 		ImGui::EndPopup();
 	}
 }
+
 void MainWindow::popupUnsavedDiscard() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		dialog(ICON_FA_QUESTION, "There are unsaved modifications.\nDo you wish to discard them?");
@@ -485,6 +488,7 @@ void MainWindow::popupUnsavedDiscard() {
 		ImGui::EndPopup();
 	}
 }
+
 void MainWindow::popupSceneSettings() {
 	if (ImGui::BeginPopup(POPUP_TITLE_SCENE_SETTINGS, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted("Scene settings");
@@ -500,6 +504,7 @@ void MainWindow::popupSceneSettings() {
 		ImGui::EndPopup();
 	}
 }
+
 void MainWindow::popupModelNodeSettings() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_MODEL_NODE_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Name");
@@ -527,6 +532,9 @@ void MainWindow::popupModelNodeSettings() {
 			voxel::RawVolume *v = new voxel::RawVolume(_modelNodeSettings.region());
 			node.setVolume(v, true);
 			node.setName(_modelNodeSettings.name.c_str());
+			if (_modelNodeSettings.palette.hasValue()) {
+				node.setPalette(*_modelNodeSettings.palette.value());
+			}
 			sceneMgr().addNodeToSceneGraph(node, _modelNodeSettings.parent);
 		}
 		ImGui::SetItemDefaultFocus();
@@ -538,6 +546,7 @@ void MainWindow::popupModelNodeSettings() {
 		ImGui::EndPopup();
 	}
 }
+
 void MainWindow::registerPopups() {
 	if (_popupUnsaved) {
 		ImGui::OpenPopup(POPUP_TITLE_UNSAVED);
