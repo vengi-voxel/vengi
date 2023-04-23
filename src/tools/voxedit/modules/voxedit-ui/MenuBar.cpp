@@ -68,6 +68,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 
 			actionMenuItem(ICON_FA_FLOPPY_DISK " Save", "save", listener);
 			actionMenuItem(ICON_FA_FLOPPY_DISK " Save as", "saveas", listener);
+			ImGui::CommandMenuItem(ICON_FA_FILE " Save selection", "exportselection", !sceneMgr().modifier().selections().empty(), &listener);
 			ImGui::Separator();
 
 			actionMenuItem(ICON_FA_SQUARE_PLUS " Add file to scene", "import", listener);

@@ -364,7 +364,6 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 		}
 		ImGui::EndMenu();
 	}
-	ImGui::CommandMenuItem(ICON_FA_FILE " Save selection", "exportselection", !sceneMgr().modifier().selections().empty(), listener);
 }
 
 void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
