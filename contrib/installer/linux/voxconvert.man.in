@@ -223,7 +223,7 @@ Command and Conquer (*.vxl)
 .TP
 CubeWorld (*.cub)
 .TP
-GL Transmission Format (*.gltf)
+GL Transmission Format (*.gltf, *.glb)
 .TP
 Goxel (*.gox)
 .TP

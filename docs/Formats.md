@@ -40,7 +40,7 @@
 | Name                       | Extension | Loading | Saving    |
 | :------------------------- | --------- | ------- | --------- |
 | Filmbox                    | fbx       | X       | X (ascii) |
-| GL Transmission Format     | gltf      | X       | X         |
+| GL Transmission Format     | gltf, glb | X       | X         |
 | Quake 1/UFO:Alien Invasion | bsp       | X       |           |
 | Standard Triangle Language | stl       | X       | X         |
 | Wavefront Object           | obj       | X       | X         |
