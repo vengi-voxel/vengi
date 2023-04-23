@@ -36,6 +36,8 @@ This is e.g. `nippon`. The tool will then try to look up the file `palette-nippo
 You can convert to a different palette with this command. The closest possible color will be chosen for each
 color from the source file palette to the specified palette.
 
+If something isn't working as you expected it to work, it might be an option to activate the debug logging. But the output can be a bit overwhelming. See the [configuration](../Configuration.md) logging section about more details.
+
 ## The order of execution is:
 
 * filter
