@@ -388,9 +388,9 @@ bool isMeshFormat(const io::FormatDescription &desc) {
 	return desc.flags & VOX_FORMAT_FLAG_MESH;
 }
 
-bool isMeshFormat(const core::String &filename) {
+bool isMeshFormat(const core::String &filename, bool save) {
 	const core::String &ext = core::string::extractExtension(filename);
-	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
+	for (const io::FormatDescription *desc = save ? voxelformat::voxelSave() : voxelformat::voxelLoad(); desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext) && isMeshFormat(*desc)) {
 			return true;
 		}

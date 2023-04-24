@@ -45,7 +45,7 @@ bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &str
 bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, scenegraph::SceneGraph &sceneGraph, const SaveContext &ctx);
 bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::FormatDescription *desc, io::SeekableWriteStream &stream, const SaveContext &ctx);
 
-bool isMeshFormat(const core::String &filename);
+bool isMeshFormat(const core::String &filename, bool save);
 bool isMeshFormat(const io::FormatDescription &desc);
 bool isModelFormat(const core::String &filename);
 

@@ -160,7 +160,7 @@ app::AppState VoxConvert::onInit() {
 			}
 			io::normalizePath(val);
 			infiles.push_back(val);
-			if (voxelformat::isMeshFormat(val)) {
+			if (voxelformat::isMeshFormat(val, false)) {
 				inputIsMesh = true;
 			}
 			if (!infilesstr.empty()) {
@@ -191,7 +191,7 @@ app::AppState VoxConvert::onInit() {
 	_resizeVolumes    = hasArg("--resize");
 
 	Log::info("Options");
-	if (inputIsMesh || voxelformat::isMeshFormat(outfile)) {
+	if (inputIsMesh || voxelformat::isMeshFormat(outfile, true)) {
 		Log::info("* mergeQuads:        - %s", _mergeQuads->strVal().c_str());
 		Log::info("* reuseVertices:     - %s", _reuseVertices->strVal().c_str());
 		Log::info("* ambientOcclusion:  - %s", _ambientOcclusion->strVal().c_str());

@@ -34,11 +34,11 @@ TEST_F(VolumeFormatTest, testLoadFormat) {
 }
 
 TEST_F(VolumeFormatTest, testIsMeshFormat) {
-	EXPECT_TRUE(isMeshFormat("foo.obj"));
-	EXPECT_TRUE(isMeshFormat("foo.glb"));
-	EXPECT_TRUE(isMeshFormat("foo.gltf"));
-	EXPECT_TRUE(isMeshFormat("foo.ply"));
-	EXPECT_TRUE(isMeshFormat("foo.stl"));
+	EXPECT_TRUE(isMeshFormat("foo.obj", false));
+	EXPECT_TRUE(isMeshFormat("foo.glb", false));
+	EXPECT_TRUE(isMeshFormat("foo.gltf", false));
+	EXPECT_TRUE(isMeshFormat("foo.ply", false));
+	EXPECT_TRUE(isMeshFormat("foo.stl", false));
 }
 
 } // namespace voxelformat
