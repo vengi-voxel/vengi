@@ -219,6 +219,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		voxelizeTris(node, posMap, fillHollow);
 	} else {
 		TriCollection subdivided;
+		Log::debug("Subdivide triangles");
 		for (const Tri &tri : tris) {
 			subdivideTri(tri, subdivided);
 		}
@@ -274,10 +275,13 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 		}
 		const PosSampling &pos = entry->second;
 		const core::RGBA rgba = pos.avgColor(_flattenFactor);
+		uint8_t index;
 		if (createPalette) {
-			palette.addColorToPalette(rgba, true);
+			palette.addColorToPalette(rgba, true, &index);
+		} else {
+			index = palette.getClosestMatch(rgba);
 		}
-		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(rgba));
+		const voxel::Voxel voxel = voxel::createVoxel(palette, index);
 		wrapper.setVoxel(entry->first, voxel);
 	}
 	if (palette.colorCount() == 1) {
