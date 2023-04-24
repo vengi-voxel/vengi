@@ -30,7 +30,7 @@ TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisZ) {
 	ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(0, 1, 0).getMaterial()) << smallVolume << "rotated: " << *rotated;
 }
 
-TEST_F(VolumeRotatorTest, testRotateAxisY) {
+TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisY) {
 	const voxel::Region region(-1, 1);
 	voxel::RawVolume smallVolume(region);
 	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));

@@ -16,6 +16,7 @@ protected:
 	void SetUp() override {
 		Super::SetUp();
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
+		core::Var::get(cfg::VoxelMeshMode, "0");
 		core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER, "Activate shadow map", core::Var::boolValidator);
 		core::Var::get(cfg::ClientBloom, "true", "Activate bloom post processing", core::Var::boolValidator);
 	}
