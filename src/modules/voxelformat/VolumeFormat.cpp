@@ -29,6 +29,7 @@
 #include "voxelformat/KV6Format.h"
 #include "voxelformat/KVXFormat.h"
 #include "voxelformat/MCRFormat.h"
+#include "voxelformat/MD2Format.h"
 #include "voxelformat/MTSFormat.h"
 #include "voxelformat/OBJFormat.h"
 #include "voxelformat/PLYFormat.h"
@@ -107,6 +108,9 @@ const io::FormatDescription* voxelLoad() {
 		{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Quake BSP", {"bsp"}, [](uint32_t magic) {
 				return magic == FourCC('I', 'B', 'S', 'P') || magic == FourCC('\x1d', '\0', '\0', '\0');
+		}, VOX_FORMAT_FLAG_MESH},
+		{"Quake 2 Model", {"md2"}, [](uint32_t magic) {
+				return magic == FourCC('I', 'D', 'P', '2');
 		}, VOX_FORMAT_FLAG_MESH},
 		{"FBX", {"fbx"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Sproxel csv", {"csv"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
@@ -274,6 +278,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			format = core::make_shared<PLYFormat>();
 		} else if (ext == "fbx") {
 			format = core::make_shared<FBXFormat>();
+		} else if (ext == "md2") {
+			format = core::make_shared<MD2Format>();
 		} else if (ext == "schematic") {
 			format = core::make_shared<SchematicFormat>();
 		} else if (ext == "gltf" || ext == "glb" || ext == "vrm") {

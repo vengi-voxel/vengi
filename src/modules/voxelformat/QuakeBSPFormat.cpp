@@ -24,8 +24,6 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxelutil/VoxelUtil.h"
-#include <SDL_timer.h>
-#include <future>
 
 namespace voxelformat {
 

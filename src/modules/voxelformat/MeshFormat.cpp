@@ -111,7 +111,7 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 }
 
 void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) const {
-	Log::trace("subdivided into %i triangles", (int)subdivided.size());
+	Log::debug("subdivided into %i triangles", (int)subdivided.size());
 	for (const Tri &tri : subdivided) {
 		if (stopExecution()) {
 			return;
@@ -262,7 +262,7 @@ bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::
 }
 
 void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) const {
-	Log::debug("create voxels");
+	Log::debug("create voxels for %i positions", (int)posMap.size());
 	voxel::RawVolumeWrapper wrapper(node.volume());
 	voxel::Palette palette;
 	const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();

@@ -30,6 +30,7 @@ set(SRCS
 	QBCLFormat.h QBCLFormat.cpp
 	QEFFormat.h QEFFormat.cpp
 	MCRFormat.h MCRFormat.cpp
+	MD2Format.h MD2Format.cpp
 	MTSFormat.h MTSFormat.cpp
 	VXAFormat.h VXAFormat.cpp
 	VXCFormat.h VXCFormat.cpp
@@ -70,6 +71,7 @@ set(TEST_SRCS
 	tests/KV6FormatTest.cpp
 	tests/MeshFormatTest.cpp
 	tests/MCRFormatTest.cpp
+	tests/MD2FormatTest.cpp
 	tests/OBJFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp

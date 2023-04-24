@@ -21,6 +21,7 @@ General:
    - Fixed Sandbox VXA version 3 support
    - Fixed volume rotation issues
    - Fixed volume merging issues
+   - Added Quake2 Model (`md2`) support
 
 VoxEdit:
 
