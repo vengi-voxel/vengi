@@ -7,9 +7,9 @@ Voxel engine and tools like a voxel editor or volume converter.
 
 Please consider donating to help to continue the work on this project. See the sponsor button.
 
-Find more information about how to compile and run the game or tools [here](https://mgerhardy.github.io/vengi/).
+Find more information about how to compile and run the tools [here](https://mgerhardy.github.io/vengi/).
 
-Join our [discord server](https://discord.gg/AgjCPXy) and help developing the game and/or tools.
+Join our [discord server](https://discord.gg/AgjCPXy) and help developing by feature request or bug reports.
 
 ## Download
 
