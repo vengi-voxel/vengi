@@ -289,8 +289,28 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		0.0f, 0.0f, 0.0f, 1.0f};
 	// glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	core::Set<uint32_t> addedInstances;
+	Log::debug("vox groups: %u", scene->num_groups);
+	for (uint32_t i = 0; i < scene->num_groups; ++i) {
+		if (scene->groups[i].name) {
+			Log::debug(" %u: %s", i, scene->groups[i].name);
+		}
+	}
+	Log::debug("vox instances: %u", scene->num_instances);
+	for (uint32_t i = 0; i < scene->num_instances; ++i) {
+		if (scene->instances[i].name) {
+			Log::debug(" %u: %s", i, scene->instances[i].name);
+		}
+	}
+	Log::debug("vox layers: %u", scene->num_layers);
+	for (uint32_t i = 0; i < scene->num_layers; ++i) {
+		if (scene->layers[i].name) {
+			Log::debug(" %u: %s", i, scene->layers[i].name);
+		}
+	}
+	Log::debug("vox models: %u", scene->num_models);
+	Log::debug("vox cameras: %u", scene->num_cameras);
 
+	core::Set<uint32_t> addedInstances;
 	for (uint32_t i = 0; i < scene->num_groups; ++i) {
 		const ogt_vox_group &group = scene->groups[i];
 		// find the main group nodes
