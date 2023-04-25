@@ -221,11 +221,22 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		transformTrisAxisAligned(tris, posMap);
 		voxelizeTris(node, posMap, fillHollow);
 	} else {
-		TriCollection subdivided;
 		Log::debug("Subdivide triangles");
+		core::DynamicArray<std::future<TriCollection>> futures;
+		futures.reserve(tris.size());
 		for (const Tri &tri : tris) {
-			subdivideTri(tri, subdivided);
+			futures.emplace_back(app::App::getInstance()->threadPool().enqueue([tri]() {
+				TriCollection subdivided;
+				subdivideTri(tri, subdivided);
+				return subdivided;
+			}));
 		}
+		TriCollection subdivided;
+		for (std::future<TriCollection> &future : futures) {
+			const TriCollection &sub = future.get();
+			subdivided.insert(subdivided.end(), sub.begin(), sub.end());
+		}
+
 		if (subdivided.empty()) {
 			Log::warn("Empty volume - could not subdivide");
 			return InvalidNodeId;
