@@ -39,4 +39,4 @@ inline testing::AssertionResult CmpHelperRGBAEQ(const char *lhs_expression, cons
 } // namespace priv
 } // namespace core
 
-#define EXPECT_COLOR_NEAR(rgba1, rgba2, delta) ASSERT_PRED_FORMAT3(::core::priv::CmpHelperRGBAEQ, rgba1, rgba2, delta)
+#define EXPECT_COLOR_NEAR(rgba1, rgba2, delta) EXPECT_PRED_FORMAT3(::core::priv::CmpHelperRGBAEQ, rgba1, rgba2, delta)
