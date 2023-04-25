@@ -35,7 +35,7 @@ set(VENGI_MODELS
 foreach (vengi_model ${VENGI_MODELS})
 	add_custom_command(
 		OUTPUT ${GENERATE_DIR}/${vengi_model}.png
-		COMMAND thumbnailer --size 128 ${DATA_DIR}/voxedit/${vengi_model}.vengi ${GENERATE_DIR}/${vengi_model}.png
+		COMMAND thumbnailer --falback --size 128 ${DATA_DIR}/voxedit/${vengi_model}.vengi ${GENERATE_DIR}/${vengi_model}.png
 		DEPENDS ${DATA_DIR}/voxedit/${vengi_model}.vengi
 	)
 	set_source_files_properties(${GENERATE_DIR}/${vengi_model}.png PROPERTIES GENERATED TRUE)
