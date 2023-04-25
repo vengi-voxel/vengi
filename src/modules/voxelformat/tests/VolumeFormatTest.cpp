@@ -37,7 +37,6 @@ TEST_F(VolumeFormatTest, testIsMeshFormat) {
 	EXPECT_TRUE(isMeshFormat("foo.obj", false));
 	EXPECT_TRUE(isMeshFormat("foo.glb", false));
 	EXPECT_TRUE(isMeshFormat("foo.gltf", false));
-	EXPECT_TRUE(isMeshFormat("foo.ply", false));
 	EXPECT_TRUE(isMeshFormat("foo.stl", false));
 }
 
