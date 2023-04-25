@@ -384,10 +384,13 @@ void MainWindow::addTemplate(const TemplateModel &model) {
 	fileDesc.desc = voxelformat::vengi();
 	ImGui::TableNextColumn();
 	const video::TexturePtr &texture = _texturePool.get(name);
-	ImGui::Image(texture->handle(), ImVec2((float)texture->width(), (float)texture->height()));
-	if (ImGui::Selectable(name.c_str())) {
+	const core::String id = "##" + name;
+	const ImVec2 size((float)texture->width(), (float)texture->height());
+	if (ImGui::ImageButton(texture->handle(), size)) {
+		ImGui::CloseCurrentPopup();
 		sceneMgr().load(fileDesc, (const uint8_t*)model.data, (size_t)model.size);
 	}
+	ImGui::TooltipText("%s", name.c_str());
 }
 
 void MainWindow::newSceneTemplates() {
