@@ -7,6 +7,7 @@
 #include "command/Command.h"
 #include "core/StringUtil.h"
 #include "glm/gtc/constants.hpp"
+#include "image/Image.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
@@ -33,13 +34,25 @@ app::AppState Thumbnailer::onConstruct() {
 
 	registerArg("--size").setShort("-s").setDescription("Size of the thumbnail in pixels").setDefaultValue("128").setMandatory();
 	registerArg("--turntable").setShort("-t").setDescription("Render in different angles");
+	registerArg("--fallback").setDescription("Create a fallback thumbnail if an error occurs");
 
 	return state;
 }
 
 app::AppState Thumbnailer::onInit() {
 	const app::AppState state = Super::onInit();
-	if (state != app::AppState::Running) {
+	/*if (state != app::AppState::Running)*/ {
+		const bool fallback = hasArg("--fallback");
+		if (fallback) {
+			if (_argc >= 2) {
+				_outfile = _argv[_argc - 1];
+			}
+			image::ImagePtr image = image::createEmptyImage(_outfile);
+			core::RGBA black(0, 0, 0, 255);
+			image->loadRGBA((const uint8_t*)&black, 1, 1);
+			saveImage(image);
+			return app::AppState::Cleanup;
+		}
 		return state;
 	}
 
@@ -126,6 +139,10 @@ bool Thumbnailer::saveImage(const image::ImagePtr &image) {
 	if (image) {
 		const io::FilePtr& outfile = io::filesystem()->open(_outfile, io::FileMode::SysWrite);
 		io::FileStream outStream(outfile);
+		if (!outStream.valid()) {
+			Log::error("Failed to open %s for writing", _outfile.c_str());
+			return false;
+		}
 		if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
 			Log::error("Failed to write image %s", _outfile.c_str());
 		} else {
