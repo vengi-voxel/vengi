@@ -35,6 +35,11 @@ clean:
 distclean:
 	$(Q)git clean -fdx
 
+%.png: data/voxedit/%.vengi
+	$(Q)$(BUILDDIR)/thumbnailer/vengi-thumbnailer $< data/voxedit/$@
+
+thumbnails: thumbnailer $(patsubst data/voxedit/%.vengi,%.png,$(wildcard data/voxedit/*.vengi))
+
 deb-changelog:
 	$(Q)contrib/installer/linux/changelog.py docs/CHANGELOG.md > debian/changelog
 
