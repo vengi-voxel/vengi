@@ -37,6 +37,7 @@ struct Tri {
 	glm::ivec3 roundedMins() const;
 	glm::ivec3 roundedMaxs() const;
 	core::RGBA colorAt(const glm::vec2 &uv) const;
+	core::RGBA centerColor() const;
 
 	// Sierpinski gasket with keeping the middle
 	void subdivide(Tri out[4]) const;

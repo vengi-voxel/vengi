@@ -47,6 +47,13 @@ glm::vec3 Tri::maxs() const {
 	return glm::max(vertices[0], glm::max(vertices[1], vertices[2]));
 }
 
+core::RGBA Tri::centerColor() const {
+	if (texture) {
+		return texture->colorAt(centerUV(), wrapS, wrapT);
+	}
+	return core::RGBA::mix(core::RGBA::mix(color[0], color[1]), color[2]);
+}
+
 core::RGBA Tri::colorAt(const glm::vec2 &uv) const {
 	if (texture) {
 		return texture->colorAt(uv, wrapS, wrapT);

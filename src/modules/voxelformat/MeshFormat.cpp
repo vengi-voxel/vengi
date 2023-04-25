@@ -118,10 +118,9 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 			return;
 		}
 		const float area = tri.area();
-		const glm::vec2 &uv = tri.centerUV();
-		const core::RGBA color = tri.colorAt(uv);
+		const core::RGBA rgba = tri.centerColor();
 		const glm::ivec3 p(glm::round(tri.center()));
-		posMap.emplace(p, {area, color});
+		posMap.emplace(p, {area, rgba});
 	}
 }
 
@@ -131,8 +130,7 @@ void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &pos
 		if (stopExecution()) {
 			return;
 		}
-		const glm::vec2 &uv = tri.centerUV();
-		const core::RGBA rgba = tri.colorAt(uv);
+		const core::RGBA rgba = tri.centerColor();
 		const float area = tri.area();
 		const glm::vec3 &normal = glm::normalize(tri.normal());
 		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
@@ -142,7 +140,6 @@ void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &pos
 		Log::debug("maxs: %i:%i:%i", maxs.x, maxs.y, maxs.z);
 		Log::debug("normal: %f:%f:%f", normal.x, normal.y, normal.z);
 		Log::debug("sideDelta: %i:%i:%i", sideDelta.x, sideDelta.y, sideDelta.z);
-		Log::debug("uv: %f:%f", uv.x, uv.y);
 
 		for (int x = mins.x; x < maxs.x; x++) {
 			for (int y = mins.y; y < maxs.y; y++) {
