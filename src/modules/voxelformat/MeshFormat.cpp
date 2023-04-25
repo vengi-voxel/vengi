@@ -13,6 +13,7 @@
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicMap.h"
 #include "core/collection/Map.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ThreadPool.h"
@@ -120,7 +121,13 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 		const float area = tri.area();
 		const core::RGBA rgba = tri.centerColor();
 		const glm::ivec3 p(glm::round(tri.center()));
-		posMap.emplace(p, {area, rgba});
+		auto iter = posMap.find(p);
+		if (iter == posMap.end()) {
+			posMap.emplace(p, {area, rgba});
+		} else if (iter->value.entries.size() < 4 && iter->value.entries[0].color != rgba) {
+			PosSampling &pos = iter->value;
+			pos.entries.emplace_back(area, rgba);
+		}
 	}
 }
 
@@ -273,26 +280,39 @@ bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::
 }
 
 void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) const {
-	Log::debug("create voxels for %i positions", (int)posMap.size());
 	voxel::RawVolumeWrapper wrapper(node.volume());
 	voxel::Palette palette;
 	const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
-	if (!createPalette) {
+	if (createPalette) {
+		core::DynamicMap<core::RGBA, bool, 11, core::RGBAHasher> colors;
+		Log::debug("create palette");
+		for (const auto &entry : posMap) {
+			if (stopExecution()) {
+				return;
+			}
+			const PosSampling &pos = entry->second;
+			const core::RGBA rgba = pos.avgColor(_flattenFactor);
+			colors.put(rgba, true);
+		}
+		const size_t colorCount = colors.size();
+		core::Buffer<core::RGBA> colorBuffer;
+		colorBuffer.reserve(colorCount);
+		for (const auto & e : colors) {
+			colorBuffer.push_back(e->first);
+		}
+		palette.quantize(colorBuffer.data(), colorBuffer.size());
+	} else {
 		palette = voxel::getPalette();
 	}
+
+	Log::debug("create voxels for %i positions", (int)posMap.size());
 	for (const auto &entry : posMap) {
 		if (stopExecution()) {
 			return;
 		}
 		const PosSampling &pos = entry->second;
 		const core::RGBA rgba = pos.avgColor(_flattenFactor);
-		uint8_t index;
-		if (createPalette) {
-			palette.addColorToPalette(rgba, true, &index);
-		} else {
-			index = palette.getClosestMatch(rgba);
-		}
-		const voxel::Voxel voxel = voxel::createVoxel(palette, index);
+		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(rgba));
 		wrapper.setVoxel(entry->first, voxel);
 	}
 	if (palette.colorCount() == 1) {

@@ -68,7 +68,7 @@ void Palette::reduce(uint8_t targetColors) {
 }
 
 void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCount) {
-	Log::debug("quantize %i _colors", (int)inputColorCount);
+	Log::debug("quantize %i colors", (int)inputColorCount);
 	core::Color::ColorReductionType reductionType = core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
 	_colorCount = core::Color::quantize(_colors, lengthof(_colors), inputColors, inputColorCount, reductionType);
 	markDirty();
