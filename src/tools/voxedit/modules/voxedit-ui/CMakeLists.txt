@@ -33,16 +33,10 @@ set(VENGI_MODELS
 	twinsen
 )
 foreach (vengi_model ${VENGI_MODELS})
-	add_custom_command(
-		OUTPUT ${GENERATE_DIR}/${vengi_model}.png
-		COMMAND thumbnailer --fallback --size 128 ${DATA_DIR}/voxedit/${vengi_model}.vengi ${GENERATE_DIR}/${vengi_model}.png
-		DEPENDS ${DATA_DIR}/voxedit/${vengi_model}.vengi
-	)
-	set_source_files_properties(${GENERATE_DIR}/${vengi_model}.png PROPERTIES GENERATED TRUE)
 	set(header ${GENERATE_DIR}/${vengi_model}.h)
 	set(pngheader ${GENERATE_DIR}/${vengi_model}_png.h)
 	engine_file_to_header(${vengi_model} ${DATA_DIR}/voxedit/${vengi_model}.vengi ${header})
-	engine_file_to_header(${vengi_model}_png ${GENERATE_DIR}/${vengi_model}.png ${pngheader})
+	engine_file_to_header(${vengi_model}_png ${DATA_DIR}/voxedit/${vengi_model}.png ${pngheader})
 	list(APPEND SRCS ${header} ${pngheader})
 endforeach()
 
