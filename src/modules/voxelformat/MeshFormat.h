@@ -84,8 +84,8 @@ protected:
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
 
 	void voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, bool hillHollow) const;
-	void transformTris(const TriCollection &subdivided, PosMap &posMap) const;
-	void transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap) const;
+	static void transformTris(const TriCollection &subdivided, PosMap &posMap);
+	static void transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap);
 
 public:
 	static core::String lookupTexture(const core::String &meshFilename, const core::String &in);
