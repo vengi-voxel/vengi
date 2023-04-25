@@ -41,7 +41,7 @@ app::AppState Thumbnailer::onConstruct() {
 
 app::AppState Thumbnailer::onInit() {
 	const app::AppState state = Super::onInit();
-	/*if (state != app::AppState::Running)*/ {
+	if (state != app::AppState::Running) {
 		const bool fallback = hasArg("--fallback");
 		if (fallback) {
 			if (_argc >= 2) {
@@ -127,6 +127,10 @@ app::AppState Thumbnailer::onRunning() {
 		volumeTurntable(_infile->name(), _outfile, ctx, 16);
 	} else {
 		io::FileStream stream(_infile);
+		if (!stream.valid()) {
+			Log::error("Failed to open %s for reading", _infile->name().c_str());
+			return app::AppState::Cleanup;
+		}
 		const image::ImagePtr &image = volumeThumbnail(_infile->name(), stream, ctx);
 		saveImage(image);
 	}

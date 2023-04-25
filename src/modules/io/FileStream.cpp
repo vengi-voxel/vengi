@@ -31,7 +31,7 @@ FileStream::~FileStream() {
 }
 
 bool FileStream::valid() const {
-	return _file->validHandle();
+	return _file && _file->validHandle();
 }
 
 bool FileStream::flush() {
