@@ -7,6 +7,7 @@ if (COMPILER_SUPPORTS_WDOCUMENTATION)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdocumentation -Wno-documentation-unknown-command")
 endif()
 
+add_subdirectory(pch)
 add_subdirectory(core)
 add_subdirectory(io)
 add_subdirectory(command)

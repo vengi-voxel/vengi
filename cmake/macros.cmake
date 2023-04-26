@@ -382,6 +382,8 @@ function(engine_add_module)
 	if (_LIB_PRIVATE_DEPENDENCIES)
 		target_link_libraries(${_LIB_TARGET} PRIVATE ${_LIB_PRIVATE_DEPENDENCIES})
 	endif()
+	target_link_libraries(${_LIB_TARGET} PRIVATE pch)
+	#target_precompile_headers(${_LIB_TARGET} REUSE_FROM pch)
 
 	if (USE_CPPCHECK)
 		find_program(CPPCHECK cppcheck)

@@ -76,7 +76,6 @@ endif()
 
 set(LIB core)
 
-
 set(LIBS sdl2 glm ${CMAKE_DL_LIBS})
 
 if (USE_STACKTRACES)
