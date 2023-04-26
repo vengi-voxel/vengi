@@ -272,6 +272,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setName(obj.n);
+	node.setVisible(!obj.h);
 	node.setPalette(palette);
 	node.setVolume(v, true);
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
