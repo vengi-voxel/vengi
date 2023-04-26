@@ -4,4 +4,4 @@
 	dh $@ --buildsystem=cmake+ninja
 
 override_dh_ctest_configure:
-	dh_ctest_configure -- -DUNITTESTS:BOOL=OFF -DVISUALTESTS:BOOL=OFF
+	dh_ctest_configure -- -DUNITTESTS:BOOL=OFF -DVISUALTESTS:BOOL=OFF -DCMAKE_UNITY_BUILD:BOOL=ON
