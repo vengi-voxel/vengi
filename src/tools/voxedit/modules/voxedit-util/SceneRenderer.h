@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/TimedValue.h"
 #include "math/Axis.h"
 #include "render/GridRenderer.h"

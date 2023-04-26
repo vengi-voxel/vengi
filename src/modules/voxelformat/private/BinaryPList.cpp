@@ -10,6 +10,8 @@
 #include "io/Stream.h"
 #include <cstdint>
 
+namespace voxelformat {
+
 namespace priv {
 
 void PListData::copy(BPListFormats type, const PListData &data) {
@@ -646,3 +648,5 @@ BinaryPList BinaryPList::parse(io::SeekableReadStream &stream, BPListState &stat
 }
 
 } // namespace priv
+
+} // namespace voxelformat

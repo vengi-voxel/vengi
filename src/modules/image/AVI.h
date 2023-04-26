@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/FourCC.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"

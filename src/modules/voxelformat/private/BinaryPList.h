@@ -12,6 +12,8 @@
 #include "io/Stream.h"
 #include <stdint.h>
 
+namespace voxelformat {
+
 namespace priv {
 
 enum BPListFormats : uint8_t {
@@ -244,3 +246,5 @@ public:
 };
 
 } // namespace priv
+
+} // namespace voxelformat
