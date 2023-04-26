@@ -197,7 +197,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances, const voxel::Palette &palette) {
 	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
-	const char *name = "Group";
+	const char *name = ogt_group.name ? ogt_group.name : "Group";
 	const uint32_t layerIdx = ogt_group.layer_index;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	if (layerIdx < scene->num_layers) {
@@ -257,7 +257,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		core_free(buffer);
 		return false;
 	}
-	const uint32_t ogt_vox_flags = k_read_scene_flags_keyframes | k_read_scene_flags_keep_empty_models_instances | k_read_scene_flags_keep_duplicate_models;
+	const uint32_t ogt_vox_flags = k_read_scene_flags_keyframes | k_read_scene_flags_keep_empty_models_instances | k_read_scene_flags_groups | k_read_scene_flags_keep_duplicate_models;
 	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, ogt_vox_flags);
 	core_free(buffer);
 	if (scene == nullptr) {
