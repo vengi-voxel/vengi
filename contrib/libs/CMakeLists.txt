@@ -44,5 +44,11 @@ else()
 	add_library(sdl2 INTERFACE)
 	target_link_libraries(sdl2 INTERFACE SDL2::SDL2main SDL2-static)
 endif()
+set(SDL_PCH
+	<SDL.h>
+	<SDL_stdinc.h>
+	<SDL_atomic.h>
+)
+target_precompile_headers(sdl2 INTERFACE ${SDL_PCH})
 
 add_subdirectory(simplecpp)
