@@ -217,13 +217,13 @@ public:
 	bool scheduleExtractions(size_t maxExtraction = 1);
 	void update();
 
+	void clearMeshes();
 	/**
 	 * @return the managed voxel::RawVolume instance pointer, or @c nullptr if there is none set.
 	 * @note You take the ownership of the returned volume pointers. Don't forget to delete them.
 	 *
 	 * @sa init()
 	 */
-	void clearMeshes();
 	core::DynamicArray<voxel::RawVolume *> shutdown();
 };
 
