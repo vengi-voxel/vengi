@@ -18,3 +18,9 @@
 #include <string>
 #include <exception>
 #include <iterator>
+#include <functional>
+#include <memory>
+#include <regex>
+#include <thread>
+#include <atomic>
+#include <type_traits>
