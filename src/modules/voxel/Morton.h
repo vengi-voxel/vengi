@@ -9,6 +9,11 @@
 namespace voxel {
 
 // Based on: http://www.forceflow.be/2013/10/07/morton-encodingdecoding-through-bit-interleaving-implementations/
+// http://www.volumesoffun.com/implementing-morton-ordering-for-chunked-voxel-data/
+// http://bitmath.blogspot.com/2012/11/tesseral-arithmetic.html
+// https://fgiesen.wordpress.com/2011/01/17/texture-tiling-and-swizzling/
+// https://github.com/aavenel/FastMortonKeys/blob/master/mortonkeys.h
+// https://gist.github.com/aavenel/a5349516aa33b7499eef
 static const uint32_t morton256_x[256] =
 {
 	0x00000000,
