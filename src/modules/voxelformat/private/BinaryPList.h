@@ -85,10 +85,6 @@ union PListData {
 	void copy(BPListFormats type, const PListData &data);
 };
 
-/**
- * @note https://minecraft.fandom.com/wiki/NBT_format
- * @note https://wiki.vg/NBT
- */
 class BinaryPList {
 private:
 	PListData _tagData{};
