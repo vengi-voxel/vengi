@@ -20,6 +20,7 @@
 #include "core/Log.h"
 #include "io/FormatDescription.h"
 #include "math/Rect.h"
+#include "util/KeybindingHandler.h"
 #include "video/Renderer.h"
 #include "video/Shader.h"
 #include "video/ScopedViewPort.h"
@@ -419,7 +420,7 @@ app::AppState IMGUIApp::onRunning() {
 				for (util::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
 					const util::CommandModifierPair& pair = i->second;
 					const core::String& command = pair.command;
-					const core::String& keyBinding = _keybindingHandler.getKeyBindingsString(command.c_str(), pair.count);
+					const core::String& keyBinding = util::KeyBindingHandler::toString(i->first, i->second.modifier, pair.count);
 					const command::Command* cmd = nullptr;
 					if (command.contains(" ")) {
 						cmd = command::Command::getCommand(command.substr(0, command.find(" ")));

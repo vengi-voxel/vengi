@@ -90,7 +90,7 @@ private:
 	bool _needAutoSave = false;
 
 	bool _traceViaMouse = true;
-	int _sceneModeNodeIdTrace = -1;
+	int _sceneModeNodeIdTrace = InvalidNodeId;
 
 	io::FileDescription _lastFilename;
 	double _lastAutoSave = 0u;

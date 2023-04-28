@@ -48,26 +48,26 @@ public:
 	void reset(int version);
 	void removeApplicationKeyBindings(int version);
 
-	bool registerBinding(const core::String &command, int32_t key, int16_t modifier = 0,
-						 core::BindingContext context = core::BindingContext::All, uint16_t count = 1);
+	bool registerBinding(const core::String &command, int32_t key, int16_t modifier,
+						 core::BindingContext context, uint16_t count);
 
 	bool registerBinding(const core::String &keys, const core::String &command,
-						 core::BindingContext context = core::BindingContext::All, uint16_t count = 1);
+						 core::BindingContext context);
 
 	bool registerBinding(const core::String &keys, const core::String &command,
-						 const core::String &context, uint16_t count = 1);
+						 const core::String &context);
 
 
 	/**
 	 * @brief Print the binding line for a key/modifier combination
 	 */
-	static core::String toString(int32_t key, int16_t modifier, uint16_t count = 1u);
+	static core::String toString(int32_t key, int16_t modifier, uint16_t count);
 	/**
 	 * @brief Resolve the bindings for a given command string
 	 * @return Empty string if the given command doesn't have a binding, or the value
 	 * of @c toString(key, modifier) if a binding was found.
 	 */
-	core::String getKeyBindingsString(const char *cmd, uint16_t count = 1u) const;
+	core::String getKeyBindingsString(const char *cmd) const;
 
 	/**
 	 * @brief Loads a keybindings file

@@ -123,7 +123,7 @@ void KeyBindingHandler::construct() {
 		for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {
 			const CommandModifierPair& pair = i->second;
 			const core::String& command = pair.command;
-			const core::String& keyBinding = getKeyBindingsString(command.c_str(), pair.count);
+			const core::String& keyBinding = toString(i->first, i->second.modifier, pair.count);
 			Log::info("%-25s %s", keyBinding.c_str(), command.c_str());
 		}
 	}).setHelp("Show all known key bindings");
@@ -275,20 +275,18 @@ bool KeyBindingHandler::load(int version) {
 	return loadBindings(bindings);
 }
 
-bool KeyBindingHandler::registerBinding(const core::String &keys, const core::String &command, core::BindingContext context,
-					 uint16_t count) {
+bool KeyBindingHandler::registerBinding(const core::String &keys, const core::String &command, core::BindingContext context) {
 	KeybindingParser p(keys, command, "");
 	for (const auto &entry : p.getBindings()) {
-		return registerBinding(command, entry.first, entry.second.modifier, context, count);
+		return registerBinding(command, entry.first, entry.second.modifier, context, entry.second.count);
 	}
 	return false;
 }
 
-bool KeyBindingHandler::registerBinding(const core::String &keys, const core::String &command, const core::String &context,
-					 uint16_t count) {
+bool KeyBindingHandler::registerBinding(const core::String &keys, const core::String &command, const core::String &context) {
 	KeybindingParser p(keys, command, context);
 	for (const auto &entry : p.getBindings()) {
-		return registerBinding(command, entry.first, entry.second.modifier, entry.second.context, count);
+		return registerBinding(command, entry.first, entry.second.modifier, entry.second.context, entry.second.count);
 	}
 	return false;
 }
@@ -334,10 +332,11 @@ core::String KeyBindingHandler::toString(int32_t key, int16_t modifier, uint16_t
 	return core::string::format("%s+%s", modifierName, name.c_str());
 }
 
-core::String KeyBindingHandler::getKeyBindingsString(const char *cmd, uint16_t count) const {
+core::String KeyBindingHandler::getKeyBindingsString(const char *cmd) const {
 	int16_t modifier;
 	int32_t key;
-	if (!resolveKeyBindings(cmd, &modifier, &key, nullptr)) {
+	uint16_t count;
+	if (!resolveKeyBindings(cmd, &modifier, &key, &count)) {
 		return "";
 	}
 	return toString(key, modifier, count);
