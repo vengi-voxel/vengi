@@ -41,15 +41,7 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 
 	{
 		const voxel::Region &region = sceneGraph.region();
-		glm::vec3 center(0.0f);
-		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::AllModels); iter != sceneGraph.end(); ++iter) {
-			const voxel::RawVolume *v = (*iter).volume();
-			if (v != nullptr) {
-				center += v->region().getCenter();
-			}
-			center += (*iter).transform(0).worldTranslation();
-		}
-		center /= sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
+		const glm::vec3 &center = sceneGraph.center();
 		const glm::vec3 dim(region.getDimensionsInVoxels());
 		const int height = region.getHeightInCells();
 		const float distance = ctx.distance <= 0.01f ? glm::length(dim) : ctx.distance;
