@@ -79,7 +79,7 @@ app::AppState Thumbnailer::onInit() {
 	return state;
 }
 
-static image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, const voxelformat::ThumbnailContext &ctx) {
+static image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, voxelformat::ThumbnailContext &ctx) {
 	voxelformat::LoadContext loadctx;
 	image::ImagePtr image = voxelformat::loadScreenshot(fileName, stream, loadctx);
 	if (image && image->isLoaded()) {
@@ -94,6 +94,13 @@ static image::ImagePtr volumeThumbnail(const core::String &fileName, io::Seekabl
 		Log::error("Failed to load given input file: %s", fileName.c_str());
 		return image::ImagePtr();
 	}
+
+	const voxel::Region &sceneRegion = sceneGraph.region();
+	const glm::ivec3 &regionSize = sceneRegion.getDimensionsInVoxels();
+	const float maxDim = (float)glm::max(regionSize.x, glm::max(regionSize.y, regionSize.z));
+	const float distance = maxDim * 2.0f;
+	ctx.distance = distance;
+
 	return voxelrender::volumeThumbnail(sceneGraph, ctx);
 }
 
