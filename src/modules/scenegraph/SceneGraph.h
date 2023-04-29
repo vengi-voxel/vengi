@@ -141,6 +141,8 @@ public:
 		return _nodes.size();
 	}
 
+	glm::vec3 center() const;
+
 	using MergedVolumePalette = core::Pair<voxel::RawVolume*, voxel::Palette>;
 	/**
 	 * @brief Merge all available nodes into one big volume.

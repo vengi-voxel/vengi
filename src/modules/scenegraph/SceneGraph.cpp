@@ -274,6 +274,20 @@ voxel::Region SceneGraph::region() const {
 	return r;
 }
 
+glm::vec3 SceneGraph::center() const {
+	glm::vec3 center(0.0f);
+	float n = 0.0f;
+	for (auto iter = begin(SceneGraphNodeType::AllModels); iter != end(); ++iter) {
+		center += (*iter).transform(0).worldTranslation();
+		n += 1.0f;
+	}
+	if (n > 0.0f) {
+		center /= n;
+	}
+	center += region().getCenter();
+	return center;
+}
+
 SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) {
 	for (const auto& entry : _nodes) {
 		Log::trace("node name: %s", entry->value.name().c_str());
