@@ -71,11 +71,11 @@ bool Viewport::init() {
 	return true;
 }
 
-void Viewport::resetCamera(const glm::vec3 &pos, float distance, const glm::ivec3 &center, const glm::ivec3 &size) {
+void Viewport::resetCamera(float distance, const glm::ivec3 &center, const glm::ivec3 &size) {
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.setFarPlane(_viewDistance->floatVal());
-	_camera.setTarget(pos);
+	_camera.setTarget(center);
 	_camera.setTargetDistance(distance);
 	if (_camMode == SceneCameraMode::Free) {
 		const int height = size.y;
@@ -440,29 +440,22 @@ void Viewport::resetCamera() {
 	const voxel::Region &sceneRegion = sceneGraph.region();
 	const int activeNode = sceneGraph.activeNode();
 	const voxel::RawVolume *v = sceneMgr().volume(activeNode);
-	glm::vec3 pos(0.0f);
 	glm::ivec3 center(0);
 	glm::ivec3 size(0);
-	if (_renderContext.sceneMode && activeNode != InvalidNodeId) {
-		const scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
-		const scenegraph::SceneGraphTransform &transform = node.transform(0);
-		const glm::vec3 &translation = transform.worldTranslation();
-		const voxel::Region &region = v->region();
-		size = region.getDimensionsInVoxels();
-		center = region.getCenter() + glm::ivec3(translation);
-		pos = center;
+	if (_renderContext.sceneMode) {
+		center = sceneGraph.center();
 	} else if (v != nullptr) {
 		const voxel::Region &region = v->region();
 		size = region.getDimensionsInVoxels();
 		center = region.getCenter();
-		pos = center;
 	} else {
 		center = sceneRegion.getCenter();
-		pos = center;
 	}
 
-	const float distance = (float)sceneRegion.getHeightInVoxels() * 2.0f;
-	resetCamera(pos, distance, center, size);
+	const glm::ivec3 &regionSize = sceneRegion.getDimensionsInVoxels();
+	const float maxDim = (float)glm::max(regionSize.x, glm::max(regionSize.y, regionSize.z));
+	const float distance = maxDim * 2.0f;
+	resetCamera(distance, center, size);
 }
 
 bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
