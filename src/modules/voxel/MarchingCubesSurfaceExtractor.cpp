@@ -101,7 +101,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 			for (int32_t x = 0; x < w; x++) {
 				// Note: In many cases the provided region will be (mostly) empty which means mesh vertices/indices
 				// are not generated and the only thing that is done for each cell is the computation of "cellIndex".
-				// It appears that retriving the voxel value is not so expensive and that it is the bitwise combining
+				// It appears that retrieving the voxel value is not so expensive and that it is the bitwise combining
 				// which actually carries the cost.
 				//
 				// If we really need to speed this up more then it may be possible to pack 4 8-bit cell indices into
@@ -162,7 +162,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 					// adjacent voxels. Perhaps we could expand this and eliminate duplicates in the future.
 					// Alternatively, we could compute vertex normals from adjacent face normals instead of via central
 					// differencing, but not for vertices on the edge of the region (as this causes visual
-					// discontinities).
+					// discontinuities).
 					const glm::vec3 n111 = computeCentralDifferenceGradient(sampler);
 
 					/* Find the vertices where the surface intersects the cube */
