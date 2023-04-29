@@ -623,6 +623,9 @@ void SceneManager::resizeAll(const glm::ivec3& size) {
 }
 
 voxel::RawVolume* SceneManager::volume(int nodeId) {
+	if (nodeId == InvalidNodeId) {
+		return nullptr;
+	}
 	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	core_assert_msg(node != nullptr, "Node with id %i wasn't found in the scene graph", nodeId);
 	return node->volume();

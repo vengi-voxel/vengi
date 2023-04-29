@@ -110,7 +110,7 @@ private:
 	void renderMenuBar(command::CommandExecutionListener *listener);
 	void menuBarCameraMode();
 	void menuBarCameraProjection();
-	void resetCamera(const glm::vec3 &pos, float distance, const voxel::Region &region);
+	void resetCamera(const glm::vec3 &pos, float distance, const glm::ivec3 &center, const glm::ivec3 &size);
 	void resize(const glm::ivec2& frameBufferSize);
 	void move(bool pan, bool rotate, int x, int y);
 	image::ImagePtr renderToImage(const char *imageName);

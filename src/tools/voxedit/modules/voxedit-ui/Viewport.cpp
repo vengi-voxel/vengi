@@ -71,26 +71,22 @@ bool Viewport::init() {
 	return true;
 }
 
-void Viewport::resetCamera(const glm::vec3 &pos, float distance, const voxel::Region &region) {
+void Viewport::resetCamera(const glm::vec3 &pos, float distance, const glm::ivec3 &center, const glm::ivec3 &size) {
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.setFarPlane(_viewDistance->floatVal());
 	_camera.setTarget(pos);
-	glm::ivec3 center = pos;
-	if (region.isValid()) {
-		center = region.getCenter();
-	}
 	_camera.setTargetDistance(distance);
 	if (_camMode == SceneCameraMode::Free) {
-		const int height = region.getHeightInCells();
+		const int height = size.y;
 		_camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 	} else if (_camMode == SceneCameraMode::Top) {
-		const int height = region.getHeightInCells();
+		const int height = size.y;
 		_camera.setWorldPosition(glm::vec3(center.x, height + center.y, center.z));
 	} else if (_camMode == SceneCameraMode::Left) {
 		_camera.setWorldPosition(glm::vec3(-center.x, center.y, center.z));
 	} else if (_camMode == SceneCameraMode::Front) {
-		const int depth = region.getDepthInCells();
+		const int depth = size.z;
 		_camera.setWorldPosition(glm::vec3(center.x, center.y, -depth - center.z));
 	}
 }
@@ -442,15 +438,31 @@ bool Viewport::saveImage(const char *filename) {
 void Viewport::resetCamera() {
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const voxel::Region &sceneRegion = sceneGraph.region();
-	const glm::vec3 &pos = sceneRegion.getCenter();
 	const int activeNode = sceneGraph.activeNode();
-	const voxel::RawVolume *v = activeNode != InvalidNodeId ? sceneMgr().volume(activeNode) : nullptr;
-	voxel::Region region;
-	if (v != nullptr) {
-		region = v->region();
+	const voxel::RawVolume *v = sceneMgr().volume(activeNode);
+	glm::vec3 pos(0.0f);
+	glm::ivec3 center(0);
+	glm::ivec3 size(0);
+	if (_renderContext.sceneMode && activeNode != InvalidNodeId) {
+		const scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
+		const scenegraph::SceneGraphTransform &transform = node.transform(0);
+		const glm::vec3 &translation = transform.worldTranslation();
+		const voxel::Region &region = v->region();
+		size = region.getDimensionsInVoxels();
+		center = region.getCenter() + glm::ivec3(translation);
+		pos = center;
+	} else if (v != nullptr) {
+		const voxel::Region &region = v->region();
+		size = region.getDimensionsInVoxels();
+		center = region.getCenter();
+		pos = center;
+	} else {
+		center = sceneRegion.getCenter();
+		pos = center;
 	}
+
 	const float distance = (float)sceneRegion.getHeightInVoxels() * 2.0f;
-	resetCamera(pos, distance, region);
+	resetCamera(pos, distance, center, size);
 }
 
 bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
