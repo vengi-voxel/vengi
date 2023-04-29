@@ -11,10 +11,12 @@
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
 #include "video/Renderer.h"
 #include "video/Texture.h"
+#include "voxel/RawVolume.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/SceneGraphRenderer.h"
@@ -39,7 +41,15 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 
 	{
 		const voxel::Region &region = sceneGraph.region();
-		const glm::vec3 center(region.getCenter());
+		glm::vec3 center(0.0f);
+		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::AllModels); iter != sceneGraph.end(); ++iter) {
+			const voxel::RawVolume *v = (*iter).volume();
+			if (v != nullptr) {
+				center += v->region().getCenter();
+			}
+			center += (*iter).transform(0).worldTranslation();
+		}
+		center /= sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
 		const glm::vec3 dim(region.getDimensionsInVoxels());
 		const int height = region.getHeightInCells();
 		const float distance = ctx.distance <= 0.01f ? glm::length(dim) : ctx.distance;
