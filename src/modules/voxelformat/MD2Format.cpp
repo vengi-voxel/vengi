@@ -114,12 +114,12 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 	}
 	// clang-format off
 	wrap(stream.readFloat(frameHdr.scale.x))
-	wrap(stream.readFloat(frameHdr.scale.y))
 	wrap(stream.readFloat(frameHdr.scale.z))
+	wrap(stream.readFloat(frameHdr.scale.y))
 	Log::debug("Scale: %f %f %f", frameHdr.scale.x, frameHdr.scale.y, frameHdr.scale.z);
 	wrap(stream.readFloat(frameHdr.translate.x))
-	wrap(stream.readFloat(frameHdr.translate.y))
 	wrap(stream.readFloat(frameHdr.translate.z))
+	wrap(stream.readFloat(frameHdr.translate.y))
 	Log::debug("Translate: %f %f %f", frameHdr.translate.x, frameHdr.translate.y, frameHdr.translate.z);
 
 	if (!stream.readString(sizeof(frameHdr.name), frameHdr.name)) {
@@ -134,8 +134,8 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 	for (uint32_t i = 0; i < hdr.numVerts; ++i) {
 		glm::u8vec4 vertex;
 		stream.readUInt8(vertex.x);
-		stream.readUInt8(vertex.y);
 		stream.readUInt8(vertex.z);
+		stream.readUInt8(vertex.y);
 		stream.readUInt8(vertex.w); // normal index
 		// uncompressed vertex
 		vertices.push_back(glm::vec3(vertex) * frameHdr.scale + frameHdr.translate);
@@ -169,8 +169,8 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		// clang-format off
 		glm::u16vec3 vertexIndices;
 		wrap(stream.readUInt16(vertexIndices.x))
-		wrap(stream.readUInt16(vertexIndices.y))
 		wrap(stream.readUInt16(vertexIndices.z))
+		wrap(stream.readUInt16(vertexIndices.y))
 		if (vertexIndices.x >= hdr.numVerts || vertexIndices.y >= hdr.numVerts || vertexIndices.z >= hdr.numVerts) {
 			Log::error("Invalid vertex index");
 			return false;
@@ -178,8 +178,8 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 
 		glm::u16vec3 uvIndices;
 		wrap(stream.readUInt16(uvIndices.x))
-		wrap(stream.readUInt16(uvIndices.y))
 		wrap(stream.readUInt16(uvIndices.z))
+		wrap(stream.readUInt16(uvIndices.y))
 		if (uvIndices.x >= hdr.numST || uvIndices.y >= hdr.numST || uvIndices.z >= hdr.numST) {
 			Log::error("Invalid uv index");
 			return false;
