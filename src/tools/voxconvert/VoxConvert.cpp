@@ -280,7 +280,7 @@ app::AppState VoxConvert::onInit() {
 					continue;
 				}
 				const core::String fullpath = core::string::path(infile, entry.name);
-				if (!handleInputFile(fullpath, sceneGraph, infiles.size() > 1)) {
+				if (handleInputFile(fullpath, sceneGraph, entities.size() > 1)) {
 					++success;
 				}
 			}
