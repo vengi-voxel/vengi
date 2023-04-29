@@ -23,6 +23,7 @@
 * `--script "<script> <args>"`: execute the given script - see [scripting support](../LUAScript.md) for more details
 * `--split <x:y:z>`: slices the volumes into pieces of the given size
 * `--translate <x:y:z>`: translates the volumes by x (right), y (up), z (back)
+* `--wildcard <wildcard>`: e.g. `*.vox`. Allow to specify a wildcard in situations where the `--input` value is a directory
 
 Just type `vengi-voxconvert` to get a full list of commands and options.
 

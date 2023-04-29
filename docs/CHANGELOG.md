@@ -23,6 +23,11 @@ General:
    - Fixed volume merging issues
    - Added Quake2 Model (`md2`) support
 
+VoxConvert:
+
+   - Fixed `--input` handling if the value is a directory
+   - Added option `--wildcard` to specify a wildcard in cases where the `--input` value is a directory
+
 VoxEdit:
 
    - Allow to export selections only

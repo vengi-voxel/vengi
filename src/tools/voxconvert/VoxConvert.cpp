@@ -65,6 +65,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--image-as-heightmap").setDescription("Import given input images as heightmaps");
 	registerArg("--colored-heightmap").setDescription("Use the alpha channel of the heightmap as height and the rgb data as surface color");
 	registerArg("--input").setShort("-i").setDescription("Allow to specify input files");
+	registerArg("--wildcard").setShort("-w").setDescription("Allow to specify input file filter if --input is a directory");
 	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
 	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
 	registerArg("--output").setShort("-o").setDescription("Allow to specify the output file");
@@ -272,7 +273,7 @@ app::AppState VoxConvert::onInit() {
 	for (const core::String& infile : infiles) {
 		if (filesystem()->isReadableDir(infile)) {
 			core::DynamicArray<io::FilesystemEntry> entities;
-			filesystem()->list(infile, entities);
+			filesystem()->list(infile, entities, getArgVal("--wildcard", ""));
 			Log::info("Found %i entries in dir %s", (int)entities.size(), infile.c_str());
 			int success = 0;
 			for (const io::FilesystemEntry &entry : entities) {

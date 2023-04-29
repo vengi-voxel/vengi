@@ -134,6 +134,10 @@ Enable trace, debug or info logging
 \fB\--version|-v\fR
 Print the version of the application.
 
+.TP
+\fB\--wildcard|-v\fR
+Allow to specify the wildcard that is used in cases where the \fB\--input\fR value is a directory
+
 .SH ORDER OF EXECUTION
 
 .TP
@@ -186,6 +190,8 @@ Minecraft Schematic (*.schem, *.schematic, *.nbt)
 Nicks Voxel Model (*.nvm)
 .TP
 Quake 1/UFO:Alien Invasion (*.bsp)
+.TP
+Quake 2 model (*.md2)
 .TP
 Qubicle Binary Tree (*.qbt)
 .TP
