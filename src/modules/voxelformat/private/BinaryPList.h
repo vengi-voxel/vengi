@@ -174,7 +174,12 @@ public:
 
 	static BinaryPList parse(io::SeekableReadStream &stream);
 
+	bool empty() const;
+	size_t size() const;
+
 	bool operator==(const BinaryPList &val) const;
+
+	const BinaryPList &getDictEntry(const core::String &id) const;
 
 	inline bool valid() const {
 		return _tagType != BPListFormats::MAX;

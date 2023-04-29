@@ -88,7 +88,7 @@ namespace voxelformat {
  *
  * voxel_p_morton = stats.min + offset_in_chunk_data + chunk_min_morton
  *
- * the row of voxels saved inside a chunk doesnt necessarily starts from 0 and ends to 32^3
+ * the row of voxels saved inside a chunk doesn't necessarily starts from 0 and ends to 32^3
  * if the voxel is in the middle, you need to use stats.min and read till stats.max
  * if you place a voxel at 0,0,0 and at 31,31,31 inside the chunk, whole stuff is saved
  *
@@ -160,6 +160,26 @@ private:
 		glm::vec3 e_mi{0.0f};				   // boundsMin
 		bool s = true;						   // selected
 		bool h = false;						   // hidden
+	};
+
+	enum class SnapshotType : uint8_t { UndoRestore = 0, RedoRestore, Undo, Redo, Checkpoint, Selection };
+
+	struct VolumeExtent {
+		int o;
+		int min[3];
+		int max[3];
+	};
+
+	struct VolumeStats {
+		int count;
+		int scount;
+		int min[4];  // morton32
+		int max[4];  // morton32
+		int emin; // extent in case the workarea is less than 256^3
+		int emax;
+		int smin[4]; // s means selected
+		int smax[4];
+		VolumeExtent extent;
 	};
 
 	// scene.json camera

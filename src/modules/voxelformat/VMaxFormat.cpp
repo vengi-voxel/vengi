@@ -18,6 +18,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxelformat/Format.h"
+#include "voxel/Morton.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -199,42 +200,42 @@ bool VMaxFormat::loadVolume(const core::String &filename, io::ZipArchive &archiv
 	}
 
 	for (size_t i = 0; i < snapshotsArray.size(); ++i) {
-		const priv::BinaryPList &snapshotDict = snapshotsArray[i];
-		if (!snapshotDict.isDict()) {
-			Log::error("Node 'snapshots' child %i is no dict", (int)i);
+		const priv::BinaryPList &snapshot = snapshotsArray[i].getDictEntry("s");
+		if (snapshot.empty()) {
+			Log::error("Node 'snapshots' child %i doesn't contain node 's'", (int)i);
 			return false;
 		}
 
-		const priv::PListDict::iterator snapshotId = snapshotDict.asDict().find("s");
-		if (snapshotId == snapshotDict.asDict().end()) {
-			Log::error("Node 'snapshots' doesn't contain node 's'");
-			return false;
+		// const priv::BinaryPList &deselectedLayerColorUsage = snapshot.getDictEntry("dlc");
+		const priv::BinaryPList &data = snapshot.getDictEntry("ds");
+		// const priv::BinaryPList &layerColorUsage = snapshot.getDictEntry("lc");
+		// const priv::BinaryPList &stats = snapshot.getDictEntry("st");
+		const priv::BinaryPList &identifier = snapshot.getDictEntry("id");
+		const priv::BinaryPList &identifierC = identifier.getDictEntry("c");
+		const priv::BinaryPList &identifierS = identifier.getDictEntry("s");
+		const priv::BinaryPList &identifierT = identifier.getDictEntry("t");
+
+		uint64_t mortonChunkIdx = 0, idTimeline = 0;
+		SnapshotType type = SnapshotType::UndoRestore;
+		if (identifierC.isInt()) {
+			mortonChunkIdx = identifierC.asInt();
 		}
-		if (!snapshotId->value.isDict()) {
-			Log::error("Snapshot node 's' is no dict");
-			return false;
+		if (identifierS.isInt()) {
+			idTimeline = identifierS.asInt();
+		}
+		if (identifierT.isInt()) {
+			type = (SnapshotType)identifierT.asUInt8();
 		}
 
-		const priv::PListDict &volumeDict = snapshotId->value.asDict();
-		// auto dlcIter = volumeDict.find("dlc"); // data
-		// auto lcIter = volumeDict.find("lc"); // data
-		const priv::PListDict::iterator dsIter = volumeDict.find("ds");
-		if (dsIter == volumeDict.end()) {
-			Log::error("Failed to find the 'ds' node");
-			return false;
-		}
-		if (!dsIter->value.isData()) {
-			Log::error("Node 'ds' is no data node");
-			return false;
-		}
-		const priv::PListByteArray &dsData = dsIter->value.asData();
-		const size_t dsSize = dsData.size();
+		Log::debug("identifier: c(%i), s(%i), t(%i)", (int)mortonChunkIdx, (int)idTimeline, (int)type);
+
+		const size_t dsSize = data.size();
 		if (dsSize == 0u) {
 			Log::error("Node 'ds' is empty");
 			return false;
 		}
 
-		io::MemoryReadStream dsStream(dsData.data(), dsSize);
+		io::MemoryReadStream dsStream(data.asData().data(), dsSize);
 
 		// TODO: find out the chunk position - chunk position is snapshots.s[x].id - which is a
 		// morton32 encoded position

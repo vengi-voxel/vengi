@@ -216,6 +216,50 @@ BinaryPList::~BinaryPList() {
 	}
 }
 
+const BinaryPList &BinaryPList::getDictEntry(const core::String &id) const {
+	static BinaryPList empty;
+	if (!isDict()) {
+		return empty;
+	}
+	auto iter = asDict().find(id);
+	if (iter == asDict().end()) {
+		return empty;
+	}
+	return iter->value;
+}
+
+bool BinaryPList::empty() const {
+	if (isDict()) {
+		return asDict().empty();
+	}
+	if (isString()) {
+		return asString().empty();
+	}
+	if (isArray()) {
+		return asArray().empty();
+	}
+	if (isData()) {
+		return asData().empty();
+	}
+	return false;
+}
+
+size_t BinaryPList::size() const {
+	if (isDict()) {
+		return asDict().size();
+	}
+	if (isString()) {
+		return asString().size();
+	}
+	if (isArray()) {
+		return asArray().size();
+	}
+	if (isData()) {
+		return asData().size();
+	}
+	return 0u;
+}
+
 bool BinaryPList::parseHeader(io::SeekableReadStream &stream) {
 	char header[8];
 	if (stream.read(header, sizeof(header)) == -1) {
