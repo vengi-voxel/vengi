@@ -22,6 +22,7 @@ General:
    - Fixed volume rotation issues
    - Fixed volume merging issues
    - Added Quake2 Model (`md2`) support
+   - Removed cvar `voxformat_marchingcubes` and replaced with `voxel_meshmode` (set to `1` to use marching cubes)
 
 VoxConvert:
 
