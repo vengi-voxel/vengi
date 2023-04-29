@@ -227,7 +227,36 @@ bool VMaxFormat::loadVolume(const core::String &filename, io::ZipArchive &archiv
 			type = (SnapshotType)identifierT.asUInt8();
 		}
 
+		// max volume size 256x256x256 and each chunk is 32x32x32 - to the max amount of chunks are 8x8x8 (512)
+		constexpr uint64_t MaxChunks = 512u;
+		if (mortonChunkIdx > MaxChunks) {
+			Log::error("identifier: c(%i) is out of range", (int)mortonChunkIdx);
+			return false;
+		}
+
 		Log::debug("identifier: c(%i), s(%i), t(%i)", (int)mortonChunkIdx, (int)idTimeline, (int)type);
+
+#if 0
+		struct Chunk {
+			// TODO:
+			bool empty() const {
+				return true;
+			}
+		};
+		core::Array<Chunk, MaxChunks> chunks;
+		Chunk &targetChunk = chunks[mortonChunkIdx];
+
+		for (int x = 0; x < 8; ++x) {
+			for (int y = 0; y < 8; ++y) {
+				for (int z = 0; z < 8; ++z) {
+					if (chunks[voxel::mortonIndex(x,y, z)].empty()) {
+						continue;
+					}
+					// TODO:
+				}
+			}
+		}
+#endif
 
 		const size_t dsSize = data.size();
 		if (dsSize == 0u) {
