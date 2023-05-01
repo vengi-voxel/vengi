@@ -9,11 +9,12 @@ function arguments()
 		{ name = 'grasscolor', desc = 'the palette index of the color to use as grass', type = 'colorindex', default = '-1', min = '-1', max = '255' },
 		{ name = 'height', desc = 'the height of the grass to add', type = 'int', default = '4' },
 		{ name = 'density', desc = 'the density of the grass', type = 'int', default = '2' },
-		{ name = 'similarcolors', desc = 'the amount of similar colors', type = 'int', default = '4' }
+		{ name = 'similarcolors', desc = 'the amount of similar colors', type = 'int', default = '4' },
+		{ name = 'upwards', desc = 'let the grass grow upwards if true, downwards if false', type = 'bool', default = 'true' }
 	}
 end
 
-function main(node, region, color, grasscolor, height, density, similarcolors)
+function main(node, region, color, grasscolor, height, density, similarcolors, upwards)
 	local volume = node:volume()
 	if grasscolor == -1 then
 		grasscolor = node:palette():match(0, 255, 0)
@@ -25,8 +26,14 @@ function main(node, region, color, grasscolor, height, density, similarcolors)
 		local indidx = math.random(1, #newindices)
 		local c = newindices[indidx]
 		for h = 1, rndHeight do
-			if volume:voxel(x, y + h + 1, z) == -1 then
-				volume:setVoxel(x, y + h, z, c)
+			if upwards then
+				if volume:voxel(x, y + h + 1, z) == -1 then
+					volume:setVoxel(x, y + h, z, c)
+				end
+			else
+				if volume:voxel(x, y - h - 1, z) == -1 then
+					volume:setVoxel(x, y - h, z, c)
+				end
 			end
 		end
 	end
