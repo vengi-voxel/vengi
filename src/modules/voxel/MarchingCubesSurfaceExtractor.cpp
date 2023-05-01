@@ -59,7 +59,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 
 	result->clear();
 
-	// Store some commonly used values for performance and convienience
+	// Store some commonly used values for performance and convenience
 	const int32_t w = region.getWidthInVoxels();
 	const int32_t h = region.getHeightInVoxels();
 	const int32_t d = region.getDepthInVoxels();
@@ -190,7 +190,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 						const Voxel blendedVoxel = blendMaterials(palette, v011, v111, interpolate);
 
 						VoxelVertex surfaceVertex;
-						surfaceVertex.position = v3dPosition;
+						surfaceVertex.position = v3dPosition + region.getLowerCornerf();
 						surfaceVertex.colorIndex = blendedVoxel.getColor();
 						surfaceVertex.info = 0;
 						surfaceVertex.flags = blendedVoxel.getFlags();
@@ -225,7 +225,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 						const Voxel blendedVoxel = blendMaterials(palette, v101, v111, interpolate);
 
 						VoxelVertex surfaceVertex;
-						surfaceVertex.position = v3dPosition;
+						surfaceVertex.position = v3dPosition + region.getLowerCornerf();
 						surfaceVertex.colorIndex = blendedVoxel.getColor();
 						surfaceVertex.info = 0;
 						surfaceVertex.flags = blendedVoxel.getFlags();
@@ -260,7 +260,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, c
 						const Voxel blendedVoxel = blendMaterials(palette, v110, v111, interpolate);
 
 						VoxelVertex surfaceVertex;
-						surfaceVertex.position = v3dPosition;
+						surfaceVertex.position = v3dPosition + region.getLowerCornerf();
 						surfaceVertex.colorIndex = blendedVoxel.getColor();
 						surfaceVertex.info = 0;
 						surfaceVertex.flags = blendedVoxel.getFlags();
