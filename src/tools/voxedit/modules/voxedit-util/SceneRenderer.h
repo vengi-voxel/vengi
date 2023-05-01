@@ -62,6 +62,8 @@ public:
 	void updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0);
 	void updateGridRegion(const voxel::Region &region);
 
+	void nodeRemove(int nodeId);
+
 	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera,
 				  const scenegraph::SceneGraph &sceneGraph);
 	void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera,

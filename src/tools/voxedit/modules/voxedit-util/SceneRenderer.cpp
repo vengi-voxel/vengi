@@ -175,6 +175,10 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
 
+void SceneRenderer::nodeRemove(int nodeId) {
+	_volumeRenderer.nodeRemove(nodeId);
+}
+
 void SceneRenderer::update() {
 	_gridRenderer.setRenderAABB(_showAABB->boolVal());
 	_gridRenderer.setRenderGrid(_showGrid->boolVal());

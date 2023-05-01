@@ -143,6 +143,14 @@ video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeC
 	return camera;
 }
 
+void SceneGraphRenderer::nodeRemove(int nodeId) {
+	const int id = getVolumeId(nodeId);
+	if (id < 0 || id >= RawVolumeRenderer::MAX_VOLUMES) {
+		return;
+	}
+	_renderer.setVolume(id, nullptr, nullptr, true);
+}
+
 void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frame, bool hideInactive,
 								 bool grayInactive) {
 	// remove those volumes that are no longer part of the scene graph

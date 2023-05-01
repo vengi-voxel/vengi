@@ -40,6 +40,8 @@ public:
 	void setAmbientColor(const glm::vec3& color);
 	void setDiffuseColor(const glm::vec3& color);
 
+	void nodeRemove(int nodeId);
+
 	void setSceneMode(bool sceneMode);
 	bool extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region& region);
 	bool empty(scenegraph::SceneGraphNode &node);

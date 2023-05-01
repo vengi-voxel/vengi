@@ -137,6 +137,8 @@ protected:
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
 	void updatePalette(int idx);
 	bool updateBufferForVolume(int idx, MeshType type);
+	void clearMeshes();
+	void deleteMesh(int idx, MeshType meshType, Meshes &array);
 
 public:
 	RawVolumeRenderer();
@@ -182,7 +184,7 @@ public:
 	 *
 	 * @sa volume()
 	 */
-	voxel::RawVolume* setVolume(int idx, voxel::RawVolume* volume, voxel::Palette* palette, bool deleteMesh = true);
+	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, voxel::Palette *palette, bool meshDelete = true);
 	voxel::RawVolume* setVolume(int idx, scenegraph::SceneGraphNode& node, bool deleteMesh = true);
 	/**
 	 * @brief Allows to render the same model with different transforms
@@ -217,7 +219,6 @@ public:
 	bool scheduleExtractions(size_t maxExtraction = 1);
 	void update();
 
-	void clearMeshes();
 	/**
 	 * @return the managed voxel::RawVolume instance pointer, or @c nullptr if there is none set.
 	 * @note You take the ownership of the returned volume pointers. Don't forget to delete them.

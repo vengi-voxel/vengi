@@ -136,6 +136,15 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", node.id());
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
 		const int validModels = (int)sceneGraph.size();
+		scenegraph::SceneGraphNodeType nodeType = node.type();
+
+		// only on pressing enter to prevent a memento state flood
+		if (ImGui::InputText("Name" SCENEGRAPHPOPUP, &node.name(), ImGuiInputTextFlags_EnterReturnsTrue)) {
+			sceneMgr().nodeRename(node.id(), node.name());
+		}
+
+		// don't access node data below this - the commands that are executed here can make the node reference invalid
+
 		commandNodeMenu(ICON_FA_EYE " Show all" SCENEGRAPHPOPUP, "layershowallchildren", node, true, &listener);
 		commandNodeMenu(ICON_FA_EYE_SLASH " Hide all" SCENEGRAPHPOPUP, "layerhideallchildren", node, true, &listener);
 		commandNodeMenu(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", node, validModels > 1, &listener);
@@ -143,7 +152,7 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 		ImGui::CommandMenuItem(ICON_FA_UNLOCK " Unlock all" SCENEGRAPHPOPUP, "layerunlockall", true, &listener);
 		commandNodeMenu(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "nodeduplicate", node, true, &listener);
 
-		if (node.type() == scenegraph::SceneGraphNodeType::Model) {
+		if (nodeType == scenegraph::SceneGraphNodeType::Model) {
 			commandNodeMenu(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "layerdelete", node, validModels > 1, &listener);
 			commandNodeMenu(ICON_FA_COPY " Create reference" SCENEGRAPHPOPUP, "noderef", node, true, &listener);
 			const int prevNode = sceneGraph.prevModelNode(node.id());
@@ -154,7 +163,7 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 			ImGui::CommandMenuItem(ICON_FA_DOWN_LEFT_AND_UP_RIGHT_TO_CENTER " Center origin" SCENEGRAPHPOPUP, "center_origin", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_ARROWS_TO_CIRCLE " Center reference" SCENEGRAPHPOPUP, "center_referenceposition", true, &listener);
 			commandNodeMenu(ICON_FA_FLOPPY_DISK " Save" SCENEGRAPHPOPUP, "layersave", node, true, &listener);
-		} else if (node.type() == scenegraph::SceneGraphNodeType::ModelReference) {
+		} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
 			if (ImGui::MenuItem(ICON_FA_CUBES_STACKED " Convert to model" SCENEGRAPHPOPUP)) {
 				sceneMgr().nodeUnreference(node.id());
 			}
@@ -162,7 +171,7 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 		}
 		ImGui::CommandMenuItem(ICON_FA_FLOPPY_DISK " Save all" SCENEGRAPHPOPUP, "layerssave", true, &listener);
 
-		if (node.type() != scenegraph::SceneGraphNodeType::Model) {
+		if (nodeType != scenegraph::SceneGraphNodeType::Model) {
 			if (ImGui::MenuItem(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP)) {
 				sceneMgr().nodeRemove(node.id(), true);
 			}
@@ -176,10 +185,6 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 		if (ImGui::MenuItem(ICON_FA_SQUARE_PLUS " Add new camera" SCENEGRAPHPOPUP)) {
 			scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
 			sceneMgr().addNodeToSceneGraph(cameraNode);
-		}
-		// only on pressing enter to prevent a memento state flood
-		if (ImGui::InputText("Name" SCENEGRAPHPOPUP, &node.name(), ImGuiInputTextFlags_EnterReturnsTrue)) {
-			sceneMgr().nodeRename(node.id(), node.name());
 		}
 		ImGui::EndPopup();
 	}

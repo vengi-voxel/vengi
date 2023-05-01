@@ -178,10 +178,10 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 	//core_assert_msg((_size[idx] & 15) == 0, "Size is not aligned properly: %i", (int)_size[idx]);
 	const BufferType type = _targets[idx];
 	const Id id = _handles[idx];
-	if (oldSize >= size && _modes[idx] != BufferMode::Static) {
+	if (size > 0 && oldSize >= size && _modes[idx] != BufferMode::Static) {
 		video::bufferSubData(id, type, 0, data, size);
 	} else {
-		if (orphaning) {
+		if (orphaning && size > 0) {
 			if (oldSize < size) {
 				video::bufferData(id, type, _modes[idx], nullptr, size);
 			}

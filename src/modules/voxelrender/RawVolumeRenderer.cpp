@@ -403,11 +403,7 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 					for (int i = 0; i < MeshType_Max; ++i) {
 						auto iter = _meshes[i].find(mins);
 						if (iter != _meshes[i].end()) {
-							delete iter->second[idx];
-							iter->second[idx] = nullptr;
-							State& state = _state[idx];
-							state._vertexBuffer[i].update(state._vertexBufferIndex[i], nullptr, 0);
-							state._vertexBuffer[i].update(state._indexBufferIndex[i], nullptr, 0);
+							deleteMesh(idx, (MeshType)i, iter->second);
 						}
 					}
 					continue;
@@ -704,7 +700,20 @@ void RawVolumeRenderer::setVolumeReference(int idx, int referencedIdx) {
 	state._reference = referencedIdx;
 }
 
-voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume, voxel::Palette* palette, bool deleteMesh) {
+void RawVolumeRenderer::deleteMesh(int idx, MeshType meshType, Meshes &array) {
+	voxel::Mesh *mesh = array[idx];
+	delete mesh;
+	array[idx] = nullptr;
+	State &state = _state[idx];
+	video::Buffer &vertexBuffer = state._vertexBuffer[meshType];
+	vertexBuffer.update(state._vertexBufferIndex[meshType], nullptr, 0);
+	core_assert(vertexBuffer.size(state._vertexBufferIndex[meshType]) == 0);
+	vertexBuffer.update(state._indexBufferIndex[meshType], nullptr, 0);
+	core_assert(vertexBuffer.size(state._indexBufferIndex[meshType]) == 0);
+}
+
+voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume, voxel::Palette *palette,
+											   bool meshDelete) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
@@ -717,14 +726,10 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, voxel::RawVolume* volume
 	}
 	core_trace_scoped(RawVolumeRendererSetVolume);
 	state._rawVolume = volume;
-	if (deleteMesh) {
+	if (meshDelete) {
 		for (int i = 0; i < MeshType_Max; ++i) {
 			for (auto& iter : _meshes[i]) {
-				delete iter.second[idx];
-				iter.second[idx] = nullptr;
-				State& state = _state[idx];
-				state._vertexBuffer[i].update(state._vertexBufferIndex[i], nullptr, 0);
-				state._vertexBuffer[i].update(state._indexBufferIndex[i], nullptr, 0);
+				deleteMesh(idx, (MeshType)i, iter.second);
 			}
 		}
 	}
