@@ -66,6 +66,12 @@ namespace voxelformat {
 		(obj).name = (json)[#name].get<std::string>().c_str();                                                         \
 	}
 
+#define wrap(action) \
+	if ((action) == -1) { \
+		Log::error("Error: Failed to execute " CORE_STRINGIFY(action) " (line %i)", (int)__LINE__); \
+		return false; \
+	}
+
 bool VMaxFormat::loadSceneJson(io::ZipArchive &archive, VMaxScene &scene) const {
 	io::BufferedReadWriteStream contentsStream;
 	if (!archive.load("scene.json", contentsStream)) {
@@ -230,7 +236,7 @@ bool VMaxFormat::loadVolume(const core::String &filename, io::ZipArchive &archiv
 
 		// max volume size 256x256x256 and each chunk is 32x32x32 - to the max amount of chunks are 8x8x8 (512)
 		constexpr uint64_t MaxVolumeSize = 256u;
-		constexpr uint64_t MaxChunkSize = 32u;
+		constexpr uint64_t MaxChunkSize = 32u; // TODO: this is theoretically variable - but we don't support it yet
 		constexpr uint64_t MaxVolumeChunks = MaxVolumeSize / MaxChunkSize;
 		constexpr uint64_t MaxChunks = MaxVolumeChunks * MaxVolumeChunks * MaxVolumeChunks;
 		if (mortonChunkIdx > MaxChunks) {
@@ -240,42 +246,6 @@ bool VMaxFormat::loadVolume(const core::String &filename, io::ZipArchive &archiv
 
 		Log::debug("identifier: c(%i), s(%i), t(%i)", (int)mortonChunkIdx, (int)idTimeline, (int)type);
 
-#if 0
-		struct Chunk {
-			// TODO:
-			bool empty() const {
-				return true;
-			}
-		};
-		core::Array<Chunk, MaxChunks> chunks;
-
-		// TODO: load all chunks here
-
-		Chunk &targetChunk = chunks[mortonChunkIdx];
-
-		for (int x = 0; x < (int)MaxVolumeChunks; ++x) {
-			for (int y = 0; y < (int)MaxVolumeChunks; ++y) {
-				for (int z = 0; z < (int)MaxVolumeChunks; ++z) {
-					if (chunks[voxel::mortonIndex(x * (int)MaxChunkSize, y * (int)MaxChunkSize, z * (int)MaxChunkSize)].empty()) {
-						continue;
-					}
-					const glm::ivec3 mins(x * (int)MaxChunkSize, y * (int)MaxChunkSize, z * (int)MaxChunkSize);
-					const glm::ivec3 maxs = mins + (int)(MaxChunkSize - 1);
-					const voxel::Region region(mins, maxs);
-					voxel::RawVolumeWrapper wrapper(v, region);
-					for (int vx = mins.x; vx <= maxs.x; ++vx) {
-						for (int vy = mins.y; vy <= maxs.y; ++vy) {
-							for (int vz = mins.z; vz <= maxs.z; ++vz) {
-								const uint8_t palIdx = 0; // TODO:
-								wrapper.setVoxel(vx, vy, vz, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
-							}
-						}
-					}
-				}
-			}
-		}
-#endif
-
 		const size_t dsSize = data.size();
 		if (dsSize == 0u) {
 			Log::error("Node 'ds' is empty");
@@ -283,12 +253,55 @@ bool VMaxFormat::loadVolume(const core::String &filename, io::ZipArchive &archiv
 		}
 
 		io::MemoryReadStream dsStream(data.asData().data(), dsSize);
-
-		// TODO: find out the chunk position - chunk position is snapshots.s[x].id - which is a
-		// morton32 encoded position
-
 		Log::debug("Found voxel data with size %i", (int)dsStream.size());
-		// io::filesystem()->write(filename + ".ds.bin", dsStream);
+
+		// search the chunk world position by getting the morton index for the snapshot id
+		for (int x = 0; x < (int)MaxVolumeSize; ++x) {
+			for (int y = 0; y < (int)MaxVolumeSize; ++y) {
+				for (int z = 0; z < (int)MaxVolumeSize; ++z) {
+					if (mortonChunkIdx != voxel::mortonIndex(x, y, z)) {
+						// chunk world position doesn't match the snapshot id
+						continue;
+					}
+					Log::debug("Found chunk pos at %i:%i:%i", x, y, z);
+
+					const glm::ivec3 mins(x * (int)MaxChunkSize, y * (int)MaxChunkSize, z * (int)MaxChunkSize);
+					const glm::ivec3 maxs = mins + (int)(MaxChunkSize - 1);
+					const voxel::Region region(mins, maxs);
+					voxel::RawVolumeWrapper wrapper(v, region);
+					// read the voxels from the stream
+					uint32_t mortonIdx = 0u;
+					while (dsStream.remaining() > 0) {
+						// there are only 8 materials used for now 0-7 and 8 selected versions for them 8-15,
+						// with option to add more in the future up to 128
+						uint8_t extendedLayerInfo;
+						// palette index 0 means air
+						uint8_t palIdx;
+						wrap(dsStream.readUInt8(extendedLayerInfo))
+						wrap(dsStream.readUInt8(palIdx))
+						// the voxels are stored in morton order - use the index to find the voxel position
+						++mortonIdx;
+						if (palIdx == 0) {
+							continue;
+						}
+						// this loop is using the morton index to get the voxel position
+						for (int vx = 0; vx < (int)MaxChunkSize; ++vx) {
+							for (int vy = 0; vy < (int)MaxChunkSize; ++vy) {
+								for (int vz = 0; vz < (int)MaxChunkSize; ++vz) {
+									const uint32_t idx = voxel::mortonIndex(vx, vy, vz);
+									if (idx != mortonIdx) {
+										continue;
+									}
+									// TODO: maybe y and z are swapped?
+									wrapper.setVoxel(mins.x + vx, mins.y + vy, mins.z + vz, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
+								}
+							}
+						}
+					}
+					break;
+				}
+			}
+		}
 	}
 
 	Log::error("Not yet supported to load the voxel data");
@@ -387,5 +400,12 @@ size_t VMaxFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 	}
 	return palette.colorCount();
 }
+
+#undef jsonVec
+#undef jsonInt
+#undef jsonFloat
+#undef jsonBool
+#undef jsonString
+#undef wrap
 
 } // namespace voxelformat
