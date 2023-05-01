@@ -16,6 +16,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxelformat/Format.h"
 #include "voxel/Morton.h"
@@ -228,7 +229,10 @@ bool VMaxFormat::loadVolume(const core::String &filename, io::ZipArchive &archiv
 		}
 
 		// max volume size 256x256x256 and each chunk is 32x32x32 - to the max amount of chunks are 8x8x8 (512)
-		constexpr uint64_t MaxChunks = 512u;
+		constexpr uint64_t MaxVolumeSize = 256u;
+		constexpr uint64_t MaxChunkSize = 32u;
+		constexpr uint64_t MaxVolumeChunks = MaxVolumeSize / MaxChunkSize;
+		constexpr uint64_t MaxChunks = MaxVolumeChunks * MaxVolumeChunks * MaxVolumeChunks;
 		if (mortonChunkIdx > MaxChunks) {
 			Log::error("identifier: c(%i) is out of range", (int)mortonChunkIdx);
 			return false;
@@ -244,15 +248,29 @@ bool VMaxFormat::loadVolume(const core::String &filename, io::ZipArchive &archiv
 			}
 		};
 		core::Array<Chunk, MaxChunks> chunks;
+
+		// TODO: load all chunks here
+
 		Chunk &targetChunk = chunks[mortonChunkIdx];
 
-		for (int x = 0; x < 8; ++x) {
-			for (int y = 0; y < 8; ++y) {
-				for (int z = 0; z < 8; ++z) {
-					if (chunks[voxel::mortonIndex(x,y, z)].empty()) {
+		for (int x = 0; x < (int)MaxVolumeChunks; ++x) {
+			for (int y = 0; y < (int)MaxVolumeChunks; ++y) {
+				for (int z = 0; z < (int)MaxVolumeChunks; ++z) {
+					if (chunks[voxel::mortonIndex(x * (int)MaxChunkSize, y * (int)MaxChunkSize, z * (int)MaxChunkSize)].empty()) {
 						continue;
 					}
-					// TODO:
+					const glm::ivec3 mins(x * (int)MaxChunkSize, y * (int)MaxChunkSize, z * (int)MaxChunkSize);
+					const glm::ivec3 maxs = mins + (int)(MaxChunkSize - 1);
+					const voxel::Region region(mins, maxs);
+					voxel::RawVolumeWrapper wrapper(v, region);
+					for (int vx = mins.x; vx <= maxs.x; ++vx) {
+						for (int vy = mins.y; vy <= maxs.y; ++vy) {
+							for (int vz = mins.z; vz <= maxs.z; ++vz) {
+								const uint8_t palIdx = 0; // TODO:
+								wrapper.setVoxel(vx, vy, vz, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
+							}
+						}
+					}
 				}
 			}
 		}
