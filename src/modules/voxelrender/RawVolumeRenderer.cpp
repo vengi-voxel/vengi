@@ -248,6 +248,9 @@ void RawVolumeRenderer::update() {
 	ExtractionCtx result;
 	int cnt = 0;
 	while (_pendingQueue.pop(result)) {
+		if (_state[result.idx]._rawVolume == nullptr) {
+			continue;
+		}
 		Meshes& meshes = _meshes[MeshType_Opaque][result.mins];
 		if (meshes[result.idx] != nullptr) {
 			delete meshes[result.idx];
