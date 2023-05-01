@@ -912,7 +912,7 @@ static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::Strin
 			lua_pushstring(s, arg.c_str());
 			break;
 		case LUAParameterType::Boolean: {
-			const bool val = arg == "1" || arg == "true";
+			const bool val = core::string::toBool(arg);
 			lua_pushboolean(s, val ? 1 : 0);
 			break;
 		}

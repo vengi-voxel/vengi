@@ -126,7 +126,7 @@ void ScriptPanel::update(const char *title) {
 			}
 			case voxelgenerator::LUAParameterType::Boolean: {
 				core::String &str = _scriptParameters[i];
-				bool checked = str == "1";
+				bool checked = core::string::toBool(str);
 				if (ImGui::Checkbox(p.name.c_str(), &checked)) {
 					str = checked ? "1" : "0";
 				}
