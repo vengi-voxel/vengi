@@ -23,13 +23,14 @@ struct PickResult {
 	bool didHit = false;
 	/** Indicates whether @c firstPosition is valid */
 	bool firstValidPosition = false;
+	/** this might be false if the raycast started in a solid voxel */
 	bool validPreviousPosition = false;
 	bool firstInvalidPosition = false;
 
 	/** The location of the solid voxel it hit */
 	glm::ivec3 hitVoxel;
 
-	/** The location of the step before we end the trace - see @a validPreviousLocation */
+	/** The location of the step before we end the trace - see @a validPreviousPosition */
 	glm::ivec3 previousPosition;
 	/** The location where the trace entered the valid volume region */
 	glm::ivec3 firstPosition;
