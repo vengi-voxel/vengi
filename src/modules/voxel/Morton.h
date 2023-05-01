@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Assert.h"
 #include <stdint.h>
 
 namespace voxel {
@@ -113,16 +114,20 @@ inline uint32_t mortonIndex(uint8_t uXPos, uint8_t uYPos, uint8_t uZPos) {
 	return morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
 }
 
-inline bool mortonIndexToCoord(uint32_t index, uint8_t &uXPos, uint8_t &uYPos, uint8_t &uZPos) {
-	for (int x = 0; x < 256; ++x) {
-		for (int y = 0; y < 256; ++y) {
-			for (int z = 0; z < 256; ++z) {
+/**
+ * Maps the given index to the x, y and z positions with z running fastest, followed by y and lastly x
+ */
+inline bool mortonIndexToCoord(uint32_t index, uint8_t &uXPos, uint8_t &uYPos, uint8_t &uZPos, uint32_t maxDepth = 256) {
+	core_assert(maxDepth <= 256);
+	for (uint32_t x = 0; x < maxDepth; ++x) {
+		for (uint32_t y = 0; y < maxDepth; ++y) {
+			for (uint32_t z = 0; z < maxDepth; ++z) {
 				if (index != voxel::mortonIndex(x, y, z)) {
 					continue;
 				}
-				uXPos = x;
-				uYPos = y;
-				uZPos = z;
+				uXPos = (uint8_t)x;
+				uYPos = (uint8_t)y;
+				uZPos = (uint8_t)z;
 				return true;
 			}
 		}

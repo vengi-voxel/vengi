@@ -290,7 +290,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 			}
 			uint8_t x, y, z;
 			// y and z are swapped here
-			if (!voxel::mortonIndexToCoord(mortonIdx, x, z, y)) {
+			if (!voxel::mortonIndexToCoord(mortonIdx, x, z, y, MaxChunkSize)) {
 				Log::error("Failed to lookup voxel position for morton index %i", mortonIdx);
 				return false;
 			}
