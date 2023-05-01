@@ -113,4 +113,21 @@ inline uint32_t mortonIndex(uint8_t uXPos, uint8_t uYPos, uint8_t uZPos) {
 	return morton256_x[uXPos] | morton256_y[uYPos] | morton256_z[uZPos];
 }
 
+inline bool mortonIndexToCoord(uint32_t index, uint8_t &uXPos, uint8_t &uYPos, uint8_t &uZPos) {
+	for (int x = 0; x < 256; ++x) {
+		for (int y = 0; y < 256; ++y) {
+			for (int z = 0; z < 256; ++z) {
+				if (index != voxel::mortonIndex(x, y, z)) {
+					continue;
+				}
+				uXPos = x;
+				uYPos = y;
+				uZPos = z;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 } // namespace voxel

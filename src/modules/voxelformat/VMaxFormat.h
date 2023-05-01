@@ -232,7 +232,7 @@ private:
 	bool loadPalette(io::ZipArchive &archive, const core::String &paletteName, voxel::Palette &palette,
 					 const LoadContext &ctx) const;
 	bool loadVolume(const core::String &filename, io::ZipArchive &archive, const LoadContext &ctx,
-					const VMaxObject &obj, voxel::RawVolume *v) const;
+					const VMaxObject &obj, voxel::RawVolume **volume) const;
 
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
 						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,

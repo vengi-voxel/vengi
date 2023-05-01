@@ -5,6 +5,7 @@
 #include "VMaxFormat.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
+#include "core/collection/Array3DView.h"
 #include "external/json.hpp"
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
@@ -18,6 +19,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
+#include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include "voxel/Morton.h"
 #include <glm/common.hpp>
@@ -168,8 +170,13 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRea
 	return true;
 }
 
-bool VMaxFormat::loadVolume(const core::String &filename, io::ZipArchive &archive, const LoadContext &ctx,
-							const VMaxObject &obj, voxel::RawVolume *v) const {
+bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archive, scenegraph::SceneGraph &sceneGraph,
+							const LoadContext &ctx, const VMaxObject &obj) const {
+	voxel::Palette palette;
+	if (!loadPalette(archive, obj.pal, palette, ctx)) {
+		return false;
+	}
+
 	io::BufferedReadWriteStream data;
 	if (!archive.load(obj.data, data)) {
 		Log::error("Failed to load %s", obj.data.c_str());
@@ -222,29 +229,29 @@ bool VMaxFormat::loadVolume(const core::String &filename, io::ZipArchive &archiv
 		const priv::BinaryPList &identifierS = identifier.getDictEntry("s");
 		const priv::BinaryPList &identifierT = identifier.getDictEntry("t");
 
-		uint64_t mortonChunkIdx = 0, idTimeline = 0;
+		int mortonChunkIdx = 0, idTimeline = 0;
 		SnapshotType type = SnapshotType::UndoRestore;
 		if (identifierC.isInt()) {
-			mortonChunkIdx = identifierC.asInt();
+			mortonChunkIdx = (int)identifierC.asInt();
 		}
 		if (identifierS.isInt()) {
-			idTimeline = identifierS.asInt();
+			idTimeline = (int)identifierS.asInt();
 		}
 		if (identifierT.isInt()) {
 			type = (SnapshotType)identifierT.asUInt8();
 		}
 
 		// max volume size 256x256x256 and each chunk is 32x32x32 - to the max amount of chunks are 8x8x8 (512)
-		constexpr uint64_t MaxVolumeSize = 256u;
-		constexpr uint64_t MaxChunkSize = 32u; // TODO: this is theoretically variable - but we don't support it yet
-		constexpr uint64_t MaxVolumeChunks = MaxVolumeSize / MaxChunkSize;
-		constexpr uint64_t MaxChunks = MaxVolumeChunks * MaxVolumeChunks * MaxVolumeChunks;
+		constexpr int MaxVolumeSize = 256u;
+		constexpr int MaxChunkSize = 32u; // TODO: this is theoretically variable - but we don't support it yet
+		constexpr int MaxVolumeChunks = MaxVolumeSize / MaxChunkSize;
+		constexpr int MaxChunks = MaxVolumeChunks * MaxVolumeChunks * MaxVolumeChunks;
 		if (mortonChunkIdx > MaxChunks) {
-			Log::error("identifier: c(%i) is out of range", (int)mortonChunkIdx);
+			Log::error("identifier: c(%i) is out of range", mortonChunkIdx);
 			return false;
 		}
 
-		Log::debug("identifier: c(%i), s(%i), t(%i)", (int)mortonChunkIdx, (int)idTimeline, (int)type);
+		Log::debug("identifier: c(%i), s(%i), t(%i)", mortonChunkIdx, idTimeline, (int)type);
 
 		const size_t dsSize = data.size();
 		if (dsSize == 0u) {
@@ -256,89 +263,60 @@ bool VMaxFormat::loadVolume(const core::String &filename, io::ZipArchive &archiv
 		Log::debug("Found voxel data with size %i", (int)dsStream.size());
 
 		// search the chunk world position by getting the morton index for the snapshot id
-		for (int x = 0; x < (int)MaxVolumeSize; ++x) {
-			for (int y = 0; y < (int)MaxVolumeSize; ++y) {
-				for (int z = 0; z < (int)MaxVolumeSize; ++z) {
-					if (mortonChunkIdx != voxel::mortonIndex(x, y, z)) {
-						// chunk world position doesn't match the snapshot id
-						continue;
-					}
-					Log::debug("Found chunk pos at %i:%i:%i", x, y, z);
+		uint8_t chunkX, chunkY, chunkZ;
+		// y and z are swapped here
+		if (!voxel::mortonIndexToCoord(mortonChunkIdx, chunkX, chunkZ, chunkY)) {
+			Log::error("Failed to lookup chunk position for morton index %i", mortonChunkIdx);
+			return false;
+		}
 
-					const glm::ivec3 mins(x * (int)MaxChunkSize, y * (int)MaxChunkSize, z * (int)MaxChunkSize);
-					const glm::ivec3 maxs = mins + (int)(MaxChunkSize - 1);
-					const voxel::Region region(mins, maxs);
-					voxel::RawVolumeWrapper wrapper(v, region);
-					// read the voxels from the stream
-					uint32_t mortonIdx = 0u;
-					while (dsStream.remaining() > 0) {
-						// there are only 8 materials used for now 0-7 and 8 selected versions for them 8-15,
-						// with option to add more in the future up to 128
-						uint8_t extendedLayerInfo;
-						// palette index 0 means air
-						uint8_t palIdx;
-						wrap(dsStream.readUInt8(extendedLayerInfo))
-						wrap(dsStream.readUInt8(palIdx))
-						// the voxels are stored in morton order - use the index to find the voxel position
-						++mortonIdx;
-						if (palIdx == 0) {
-							continue;
-						}
-						// this loop is using the morton index to get the voxel position
-						for (int vx = 0; vx < (int)MaxChunkSize; ++vx) {
-							for (int vy = 0; vy < (int)MaxChunkSize; ++vy) {
-								for (int vz = 0; vz < (int)MaxChunkSize; ++vz) {
-									const uint32_t idx = voxel::mortonIndex(vx, vy, vz);
-									if (idx != mortonIdx) {
-										continue;
-									}
-									// TODO: maybe y and z are swapped?
-									wrapper.setVoxel(mins.x + vx, mins.y + vy, mins.z + vz, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
-								}
-							}
-						}
-					}
-					break;
-				}
+		// now loop over the 'voxels' array and create a volume from it
+		const voxel::Region region(0, MaxChunkSize - 1);
+		voxel::RawVolume* v = new voxel::RawVolume(region);
+
+		uint32_t mortonIdx = 0;
+		while (!dsStream.eos()) {
+			// there are only 8 materials used for now 0-7 and 8 selected versions for them 8-15,
+			// with option to add more in the future up to 128
+			uint8_t extendedLayerInfo;
+			// palette index 0 means air
+			uint8_t palIdx;
+			wrap(dsStream.readUInt8(extendedLayerInfo))
+			wrap(dsStream.readUInt8(palIdx))
+			++mortonIdx;
+			// the voxels are stored in morton order - use the index to find the voxel position
+			if (palIdx == 0) {
+				continue;
 			}
+			uint8_t x, y, z;
+			// y and z are swapped here
+			if (!voxel::mortonIndexToCoord(mortonIdx, x, z, y)) {
+				Log::error("Failed to lookup voxel position for morton index %i", mortonIdx);
+				return false;
+			}
+			v->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
+		}
+		const glm::ivec3 mins(chunkX * MaxChunkSize, chunkY * MaxChunkSize, chunkZ * MaxChunkSize);
+		v->translate(mins);
+
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldScale(obj.t_s);
+		transform.setWorldTranslation(obj.t_p);
+		transform.setWorldOrientation(glm::quat(obj.t_r.w, obj.t_r.x, obj.t_r.y, obj.t_r.z));
+
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setName(obj.n);
+		node.setVisible(!obj.h);
+		node.setPalette(palette);
+		node.setVolume(v, true);
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		node.setTransform(keyFrameIdx, transform);
+		if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
+			return false;
 		}
 	}
 
-	Log::error("Not yet supported to load the voxel data");
-	return false;
-}
-
-bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archive, scenegraph::SceneGraph &sceneGraph,
-							const LoadContext &ctx, const VMaxObject &obj) const {
-	voxel::Palette palette;
-	if (!loadPalette(archive, obj.pal, palette, ctx)) {
-		return false;
-	}
-
-	const glm::vec3 mins = obj.e_c + obj.e_mi;
-	const glm::vec3 maxs = obj.e_c + obj.e_ma;
-	const voxel::Region region(glm::ivec3(mins), glm::ivec3(maxs) - 1);
-	if (!region.isValid()) {
-		Log::error("Invalid region for object '%s': %s", obj.n.c_str(), region.toString().c_str());
-		return false;
-	}
-	voxel::RawVolume *v = new voxel::RawVolume(region);
-
-	loadVolume(filename, archive, ctx, obj, v);
-
-	scenegraph::SceneGraphTransform transform;
-	transform.setWorldScale(obj.t_s);
-	transform.setWorldTranslation(obj.t_p);
-	transform.setWorldOrientation(glm::quat(obj.t_r.w, obj.t_r.x, obj.t_r.y, obj.t_r.z));
-
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setName(obj.n);
-	node.setVisible(!obj.h);
-	node.setPalette(palette);
-	node.setVolume(v, true);
-	scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	node.setTransform(keyFrameIdx, transform);
-	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
+	return true;
 }
 
 image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
