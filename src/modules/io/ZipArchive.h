@@ -17,6 +17,8 @@ public:
 	ZipArchive();
 	~ZipArchive();
 
+	static bool validStream(io::SeekableReadStream &stream);
+
 	bool open(io::SeekableReadStream *stream);
 	bool load(const core::String &file, io::SeekableWriteStream &out);
 	void close();

@@ -60,6 +60,24 @@ static size_t ziparchive_write(void *userdata, mz_uint64 offset, const void *tar
 	return written;
 }
 
+bool ZipArchive::validStream(io::SeekableReadStream &stream) {
+	const int64_t currentPos = stream.pos();
+	mz_zip_archive zip;
+	memset(&zip, 0, sizeof(zip));
+	zip.m_pRead = ziparchive_read;
+	zip.m_pIO_opaque = &stream;
+	int64_t size = stream.size();
+	if (!mz_zip_reader_init(&zip, size, 0)) {
+		const mz_zip_error error = mz_zip_get_last_error(&zip);
+		const char *err = mz_zip_get_error_string(error);
+		Log::debug("Failed to initialize the zip reader with stream of size '%i': %s", (int)size, err);
+		stream.seek(currentPos);
+		return false;
+	}
+	stream.seek(currentPos);
+	return true;
+}
+
 bool ZipArchive::open(io::SeekableReadStream *stream) {
 	if (stream == nullptr) {
 		Log::error("No stream given");
