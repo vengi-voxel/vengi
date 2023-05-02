@@ -174,9 +174,6 @@ inline uint32_t mortonIndex(uint8_t uXPos, uint8_t uYPos, uint8_t uZPos) {
 	return priv::morton256_x[uXPos] | priv::morton256_y[uYPos] | priv::morton256_z[uZPos];
 }
 
-/**
- * Maps the given index to the x, y and z positions with z running fastest, followed by y and lastly x
- */
 inline bool mortonIndexToCoord(uint32_t index, uint8_t &x, uint8_t &y, uint8_t &z) {
 	x = priv::mortonDecode(index, priv::morton256_decode_x);
 	y = priv::mortonDecode(index, priv::morton256_decode_y);
