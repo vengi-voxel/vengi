@@ -267,6 +267,13 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 		return false;
 	}
 
+	int parent = sceneGraph.root().id();
+	if (!obj.pid.empty()) {
+		if (scenegraph::SceneGraphNode *parentNode = sceneGraph.findNodeByPropertyValue("uuid", obj.pid)) {
+			parent = parentNode->id();
+		}
+	}
+
 	scenegraph::SceneGraph objectSceneGraph;
 	for (size_t i = 0; i < snapshotsArray.size(); ++i) {
 		const priv::BinaryPList &snapshot = snapshotsArray[i].getDictEntry("s");
@@ -374,7 +381,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 	node.setVisible(!obj.h);
 	node.setPalette(merged.second);
 	node.setVolume(merged.first, true);
-	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
+	return sceneGraph.emplace(core::move(node), parent) != InvalidNodeId;
 }
 
 image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
