@@ -282,6 +282,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 
 	scenegraph::SceneGraph objectSceneGraph;
 	for (size_t i = 0; i < snapshotsArray.size(); ++i) {
+		Log::debug("Load snapshot %i of %i", (int)i, (int)snapshotsArray.size());
 		const priv::BinaryPList &snapshot = snapshotsArray[i].getDictEntry("s");
 		if (snapshot.empty()) {
 			Log::error("Node 'snapshots' child %i doesn't contain node 's'", (int)i);
