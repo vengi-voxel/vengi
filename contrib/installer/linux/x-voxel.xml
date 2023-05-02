@@ -23,8 +23,9 @@
     <glob pattern="*.vox"/>
   </mime-type>
   <mime-type type="application/x-voxelmax">
-    <comment>Voxel model MagicaVoxel</comment>
+    <comment>VoxelMax</comment>
     <glob pattern="*.vmax.zip"/>
+    <glob pattern="*.vmaxb"/>
   </mime-type>
   <mime-type type="application/x-minetest">
     <comment>Minetest Schematic File</comment>

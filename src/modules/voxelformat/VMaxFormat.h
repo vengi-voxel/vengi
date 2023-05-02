@@ -6,6 +6,7 @@
 
 #include "Format.h"
 #include "core/collection/DynamicArray.h"
+#include "io/Stream.h"
 #include "voxelformat/private/BinaryPList.h"
 
 namespace io {
@@ -175,9 +176,9 @@ private:
 		int count;
 		int scount;
 		// a snapshot doesn't start from 0, that's why you need stats.min
-		int min[4];  // morton32, x, y, z and sum
-		int max[4];  // morton32, x, y, z and sum
-		int emin; // extent in case the workarea is less than 256^3
+		int min[4]; // morton32, x, y, z and sum
+		int max[4]; // morton32, x, y, z and sum
+		int emin;	// extent in case the workarea is less than 256^3
 		int emax;
 		int smin[4]; // s means selected
 		int smax[4];
@@ -237,11 +238,19 @@ private:
 	VolumeStats parseStats(const priv::BinaryPList &snapshot) const;
 	VolumeId parseId(const priv::BinaryPList &snapshot) const;
 
+	bool loadPaletteFromFile(const core::String &paletteName, voxel::Palette &palette) const;
+	bool loadPaletteForVMax(const core::String &filename, voxel::Palette &palette) const;
+	bool loadSceneJsonFromStream(io::SeekableReadStream &stream, VMaxScene &scene) const;
 	bool loadSceneJson(io::ZipArchive &zipArchive, VMaxScene &scene) const;
-	bool loadObject(const core::String &filename, io::ZipArchive &archive, scenegraph::SceneGraph &sceneGraph,
+	bool loadObjectFromStream(const core::String &filename, io::SeekableReadStream &data,
+							  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const VMaxObject &obj,
+							  const voxel::Palette &palette) const;
+	bool loadObjectFromArchive(const core::String &filename, io::ZipArchive &archive, scenegraph::SceneGraph &sceneGraph,
 					const LoadContext &ctx, const VMaxObject &obj) const;
-	bool loadPalette(io::ZipArchive &archive, const core::String &paletteName, voxel::Palette &palette,
-					 const LoadContext &ctx) const;
+	bool loadPaletteFromStream(const core::String &paletteName, voxel::Palette &palette,
+							   io::SeekableReadStream &stream) const;
+	bool loadPaletteFromArchive(io::ZipArchive &archive, const core::String &paletteName, voxel::Palette &palette,
+								const LoadContext &ctx) const;
 	bool loadVolume(const core::String &filename, io::ZipArchive &archive, const LoadContext &ctx,
 					const VMaxObject &obj, voxel::RawVolume **volume) const;
 

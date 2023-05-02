@@ -3,25 +3,31 @@
  */
 
 #include "VMaxFormat.h"
+#include "app/App.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "core/collection/Array3DView.h"
 #include "external/json.hpp"
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/File.h"
+#include "io/FileStream.h"
 #include "io/LZFSEReadStream.h"
 #include "io/MemoryReadStream.h"
+#include "io/StdStreamBuf.h"
+#include "io/Stream.h"
 #include "io/ZipArchive.h"
 #include "private/BinaryPList.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/Morton.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
-#include "voxel/Morton.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -68,10 +74,10 @@ namespace voxelformat {
 		(obj).name = (json)[#name].get<std::string>().c_str();                                                         \
 	}
 
-#define wrap(action) \
-	if ((action) == -1) { \
-		Log::error("Error: Failed to execute " CORE_STRINGIFY(action) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrap(action)                                                                                                   \
+	if ((action) == -1) {                                                                                              \
+		Log::error("Error: Failed to execute " CORE_STRINGIFY(action) " (line %i)", (int)__LINE__);                    \
+		return false;                                                                                                  \
 	}
 
 namespace vmax {
@@ -90,9 +96,14 @@ bool VMaxFormat::loadSceneJson(io::ZipArchive &archive, VMaxScene &scene) const 
 	}
 
 	contentsStream.seek(0);
+	return loadSceneJsonFromStream(contentsStream, scene);
+}
 
-	std::string jsonStr((const char *)contentsStream.getBuffer(), contentsStream.size());
-	nlohmann::json json = nlohmann::json::parse(jsonStr);
+bool VMaxFormat::loadSceneJsonFromStream(io::SeekableReadStream &stream, VMaxScene &scene) const {
+	io::StdIStreamBuf buf(stream);
+	std::istream is(&buf);
+	nlohmann::json json;
+	is >> json;
 	if (json.is_null()) {
 		Log::error("Failed to parse the json");
 		return false;
@@ -156,29 +167,61 @@ bool VMaxFormat::loadSceneJson(io::ZipArchive &archive, VMaxScene &scene) const 
 bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
 								   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
 								   const LoadContext &ctx) {
-	io::ZipArchive archive;
-	if (!archive.open(&stream)) {
-		Log::error("Failed to open zip archive %s", filename.c_str());
-		return false;
-	}
-
 	VMaxScene scene;
-	if (!loadSceneJson(archive, scene)) {
+	if (io::ZipArchive::validStream(stream)) {
+		io::ZipArchive archive;
+		if (!archive.open(&stream)) {
+			Log::error("Failed to open zip archive %s", filename.c_str());
+			return false;
+		}
+
+		if (!loadSceneJson(archive, scene)) {
+			return false;
+		}
+
+		Log::debug("Load %i scene objects", (int)scene.objects.size());
+		for (size_t i = 0; i < scene.objects.size(); ++i) {
+			if (stopExecution()) {
+				return false;
+			}
+			const VMaxObject &obj = scene.objects[i];
+			if (!loadObjectFromArchive(filename, archive, sceneGraph, ctx, obj)) {
+				Log::error("Failed to load object %s", obj.n.c_str());
+				return false;
+			}
+			Log::debug("Load scene object %i of %i", (int)i, (int)scene.objects.size());
+		}
+		return true;
+	}
+	core_assert(core::string::extractExtension(filename) == "vmaxb");
+	const core::String &path = core::string::extractPath(filename);
+	const core::String &contents = core::string::extractFilenameWithExtension(filename);
+	const core::String &sceneJsonPath = core::string::path(path, "scene.json");
+	const io::FilePtr &file = io::filesystem()->open(sceneJsonPath);
+	io::FileStream sceneJsonStream(file);
+	if (!loadSceneJsonFromStream(sceneJsonStream, scene)) {
 		return false;
 	}
-
 	Log::debug("Load %i scene objects", (int)scene.objects.size());
 	for (size_t i = 0; i < scene.objects.size(); ++i) {
 		if (stopExecution()) {
 			return false;
 		}
 		const VMaxObject &obj = scene.objects[i];
-		if (!loadObject(filename, archive, sceneGraph, ctx, obj)) {
+		if (obj.data != contents) {
+			continue;
+		}
+		if (!loadPaletteFromFile(core::string::path(path, obj.pal), palette)) {
+			return false;
+		}
+		if (!loadObjectFromStream(filename, stream, sceneGraph, ctx, obj, palette)) {
 			Log::error("Failed to load object %s", obj.n.c_str());
 			return false;
 		}
 		Log::debug("Load scene object %i of %i", (int)i, (int)scene.objects.size());
+		break;
 	}
+
 	return true;
 }
 
@@ -234,10 +277,11 @@ VMaxFormat::VolumeId VMaxFormat::parseId(const priv::BinaryPList &snapshot) cons
 	return volumeId;
 }
 
-bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archive, scenegraph::SceneGraph &sceneGraph,
-							const LoadContext &ctx, const VMaxObject &obj) const {
+bool VMaxFormat::loadObjectFromArchive(const core::String &filename, io::ZipArchive &archive,
+									   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
+									   const VMaxObject &obj) const {
 	voxel::Palette palette;
-	if (!loadPalette(archive, obj.pal, palette, ctx)) {
+	if (!loadPaletteFromArchive(archive, obj.pal, palette, ctx)) {
 		return false;
 	}
 
@@ -250,6 +294,12 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 		Log::error("Failed to seek to the beginning of the sub stream");
 		return false;
 	}
+	return loadObjectFromStream(filename, data, sceneGraph, ctx, obj, palette);
+}
+
+bool VMaxFormat::loadObjectFromStream(const core::String &filename, io::SeekableReadStream &data,
+									  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const VMaxObject &obj,
+									  const voxel::Palette &palette) const {
 	io::LZFSEReadStream stream(data);
 	priv::BinaryPList plist = priv::BinaryPList::parse(stream);
 	if (!plist.isDict()) {
@@ -296,9 +346,8 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 		const VolumeStats &volumeStats = parseStats(snapshot);
 		const VolumeExtent &extent = volumeStats.extent;
 
-		Log::debug("volumestats.extent: mins(%i, %i, %i), maxs(%i, %i, %i)",
-			extent.min[0], extent.min[1], extent.min[2],
-			extent.max[0], extent.max[1], extent.max[2]);
+		Log::debug("volumestats.extent: mins(%i, %i, %i), maxs(%i, %i, %i)", extent.min[0], extent.min[1],
+				   extent.min[2], extent.max[0], extent.max[1], extent.max[2]);
 
 		if (volumeId.mortonChunkIdx > vmax::MaxChunks) {
 			Log::error("identifier: c(%i) is out of range", volumeId.mortonChunkIdx);
@@ -324,7 +373,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 
 		// now loop over the 'voxels' array and create a volume from it
 		const voxel::Region region(0, vmax::MaxChunkSize);
-		voxel::RawVolume* v = new voxel::RawVolume(region);
+		voxel::RawVolume *v = new voxel::RawVolume(region);
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(v, true);
 		node.setPalette(palette);
@@ -344,6 +393,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 			// with option to add more in the future up to 128
 			uint8_t extendedLayerInfo;
 			// palette index 0 means air
+			// clang-format off
 			uint8_t palIdx;
 			wrap(dsStream.readUInt8(extendedLayerInfo))
 			wrap(dsStream.readUInt8(palIdx))
@@ -351,6 +401,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 				++mortonIdx;
 				continue;
 			}
+			// clang-format on
 			uint8_t x, y, z;
 			// the voxels are stored in morton order - use the index to find the voxel position
 			// y and z are swapped here
@@ -359,7 +410,8 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 				return false;
 			}
 			++mortonIdx;
-			wrapper.setVoxel(chunkOffsetX + x, chunkOffsetY + y, chunkOffsetZ + z, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
+			wrapper.setVoxel(chunkOffsetX + x, chunkOffsetY + y, chunkOffsetZ + z,
+							 voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
 		}
 		const glm::ivec3 mins(chunkX * vmax::MaxChunkSize, chunkY * vmax::MaxChunkSize, chunkZ * vmax::MaxChunkSize);
 		v->translate(mins);
@@ -396,39 +448,39 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 
 image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
 										   const LoadContext &ctx) {
-	io::ZipArchive archive;
-	if (!archive.open(&stream)) {
-		Log::error("Failed to open zip archive %s", filename.c_str());
-		return image::ImagePtr();
+	core::String thumbnailPath = core::string::path("QuickLook", "Thumbnail.png");
+	if (io::ZipArchive::validStream(stream)) {
+		io::ZipArchive archive;
+		if (!archive.open(&stream)) {
+			Log::error("Failed to open zip archive %s", filename.c_str());
+			return image::ImagePtr();
+		}
+
+		io::BufferedReadWriteStream contentsStream;
+		if (!archive.load(thumbnailPath, contentsStream)) {
+			Log::error("Failed to load %s from %s", thumbnailPath.c_str(), filename.c_str());
+			return image::ImagePtr();
+		}
+
+		if (contentsStream.seek(0) == -1) {
+			Log::error("Failed to seek to the beginning of the sub stream for %s", filename.c_str());
+			return 0u;
+		}
+		return image::loadImage(core::string::extractFilenameWithExtension(thumbnailPath), contentsStream);
 	}
 
-	io::BufferedReadWriteStream contentsStream;
-	if (!archive.load("QuickLook/Thumbnail.png", contentsStream)) {
-		Log::error("Failed to load QuickLook/Thumbnail.png from %s", filename.c_str());
-		return image::ImagePtr();
-	}
-
-	if (contentsStream.seek(0) == -1) {
-		Log::error("Failed to seek to the beginning of the sub stream for %s", filename.c_str());
-		return 0u;
-	}
-	return image::loadImage("Thumbnail.png", contentsStream);
+	core_assert(core::string::extractExtension(filename) == "vmaxb");
+	const core::String &path = core::string::extractPath(filename);
+	thumbnailPath =
+		core::string::path(path, "QuickLook", core::string::extractFilenameWithExtension(filename) + ".png");
+	const io::FilePtr &file = io::filesystem()->open(thumbnailPath);
+	io::FileStream fileStream(file);
+	return image::loadImage(core::string::extractFilenameWithExtension(thumbnailPath), fileStream);
 }
 
-bool VMaxFormat::loadPalette(io::ZipArchive &archive, const core::String &paletteName, voxel::Palette &palette,
-							 const LoadContext &ctx) const {
-	io::BufferedReadWriteStream contentsStream;
-	if (!archive.load(paletteName, contentsStream)) {
-		Log::error("Failed to load %s", paletteName.c_str());
-		return false;
-	}
-
-	if (contentsStream.seek(0) == -1) {
-		Log::error("Failed to seek to the beginning of the sub stream for the palette %s", paletteName.c_str());
-		return false;
-	}
-
-	const image::ImagePtr &img = image::loadImage(paletteName, contentsStream);
+bool VMaxFormat::loadPaletteFromStream(const core::String &paletteName, voxel::Palette &palette,
+									   io::SeekableReadStream &stream) const {
+	const image::ImagePtr &img = image::loadImage(paletteName, stream);
 	if (!img->isLoaded()) {
 		Log::error("Failed to load image %s", paletteName.c_str());
 		return false;
@@ -440,18 +492,56 @@ bool VMaxFormat::loadPalette(io::ZipArchive &archive, const core::String &palett
 	return true;
 }
 
-size_t VMaxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
-							   const LoadContext &ctx) {
-	io::ZipArchive archive;
-	if (!archive.open(&stream)) {
-		Log::error("Failed to open zip archive %s", filename.c_str());
-		return 0u;
+bool VMaxFormat::loadPaletteFromArchive(io::ZipArchive &archive, const core::String &paletteName,
+										voxel::Palette &palette, const LoadContext &ctx) const {
+	io::BufferedReadWriteStream contentsStream;
+	if (!archive.load(paletteName, contentsStream)) {
+		Log::error("Failed to load %s", paletteName.c_str());
+		return false;
 	}
 
-	if (!loadPalette(archive, "palette.png", palette, ctx)) {
-		return 0u;
+	if (contentsStream.seek(0) == -1) {
+		Log::error("Failed to seek to the beginning of the sub stream for the palette %s", paletteName.c_str());
+		return false;
+	}
+
+	return loadPaletteFromStream(paletteName, palette, contentsStream);
+}
+
+size_t VMaxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+							   const LoadContext &ctx) {
+	if (io::ZipArchive::validStream(stream)) {
+		io::ZipArchive archive;
+		if (archive.open(&stream)) {
+			Log::error("Failed to open zip archive %s", filename.c_str());
+			return 0u;
+		}
+
+		const core::String &paletteName = "palette.png";
+		if (!loadPaletteFromArchive(archive, paletteName, palette, ctx)) {
+			return 0u;
+		}
+	} else {
+		if (!loadPaletteForVMax(filename, palette)) {
+			return 0u;
+		}
 	}
 	return palette.colorCount();
+}
+
+bool VMaxFormat::loadPaletteFromFile(const core::String &paletteName, voxel::Palette &palette) const {
+	const io::FilePtr &file = io::filesystem()->open(paletteName);
+	io::FileStream fileStream(file);
+	return loadPaletteFromStream(paletteName, palette, fileStream);
+}
+
+bool VMaxFormat::loadPaletteForVMax(const core::String &filename, voxel::Palette &palette) const {
+	core_assert(core::string::extractExtension(filename) == "vmaxb");
+	const core::String &path = core::string::extractPath(filename);
+	const core::String &baseName = core::string::extractFilename(filename);
+	const core::String &paletteName =
+		core::string::path(path, core::string::replaceAll(baseName, "contents", "palette") + ".png");
+	return loadPaletteFromFile(paletteName, palette);
 }
 
 #undef jsonVec
