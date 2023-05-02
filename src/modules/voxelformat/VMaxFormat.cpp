@@ -338,6 +338,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 		}
 		Log::debug("chunkOffset: %i, %i, %i", chunkOffsetX, chunkOffsetY, chunkOffsetZ);
 		uint32_t mortonIdx = 0;
+		voxel::RawVolumeWrapper wrapper(v);
 		while (!dsStream.eos()) {
 			// there are only 8 materials used for now 0-7 and 8 selected versions for them 8-15,
 			// with option to add more in the future up to 128
@@ -358,7 +359,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 				return false;
 			}
 			++mortonIdx;
-			v->setVoxel(chunkOffsetX + x, chunkOffsetY + y, chunkOffsetZ + z, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
+			wrapper.setVoxel(chunkOffsetX + x, chunkOffsetY + y, chunkOffsetZ + z, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
 		}
 		const glm::ivec3 mins(chunkX * vmax::MaxChunkSize, chunkY * vmax::MaxChunkSize, chunkZ * vmax::MaxChunkSize);
 		v->translate(mins);
