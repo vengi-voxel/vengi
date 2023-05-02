@@ -33,7 +33,7 @@
 | Sproxel                    | csv       | X       | X      | X          | X       |            | [spec](https://github.com/emilk/sproxel/blob/master/ImportExport.cpp)    |
 | StarMade                   | sment     | X       |        | X          | X       |            | [spec](https://starmadepedia.net/wiki/Blueprint_File_Formats)            |
 | Vengi                      | vengi     | X       | X      | X          | X       | X          |                                                                          |
-| VoxelMax                   | vmax      |         |        | X          | X       |            |                                                                          |
+| VoxelMax                   | vmax      | X       |        | X          | X       |            |                                                                          |
 
 ## Mesh formats
 

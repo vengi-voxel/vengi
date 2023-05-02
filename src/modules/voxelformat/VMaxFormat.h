@@ -6,6 +6,7 @@
 
 #include "Format.h"
 #include "core/collection/DynamicArray.h"
+#include "voxelformat/private/BinaryPList.h"
 
 namespace io {
 class ZipArchive;
@@ -165,7 +166,7 @@ private:
 	enum class SnapshotType : uint8_t { UndoRestore = 0, RedoRestore, Undo, Redo, Checkpoint, Selection };
 
 	struct VolumeExtent {
-		int o;
+		int o; // order: chunkOrder = t >> chunkExtent.order
 		int min[3];
 		int max[3];
 	};
@@ -173,8 +174,9 @@ private:
 	struct VolumeStats {
 		int count;
 		int scount;
-		int min[4];  // morton32
-		int max[4];  // morton32
+		// a snapshot doesn't start from 0, that's why you need stats.min
+		int min[4];  // morton32, x, y, z and sum
+		int max[4];  // morton32, x, y, z and sum
 		int emin; // extent in case the workarea is less than 256^3
 		int emax;
 		int smin[4]; // s means selected
@@ -225,6 +227,15 @@ private:
 		core::String background = "#FBFBFBFF"; //
 		core::String lcolor = "#FFFFFFFF";	   //
 	};
+
+	struct VolumeId {
+		int mortonChunkIdx = 0;
+		int idTimeline = 0;
+		SnapshotType type = SnapshotType::UndoRestore;
+	};
+
+	VolumeStats parseStats(const priv::BinaryPList &snapshot) const;
+	VolumeId parseId(const priv::BinaryPList &snapshot) const;
 
 	bool loadSceneJson(io::ZipArchive &zipArchive, VMaxScene &scene) const;
 	bool loadObject(const core::String &filename, io::ZipArchive &archive, scenegraph::SceneGraph &sceneGraph,

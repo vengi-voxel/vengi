@@ -127,7 +127,7 @@ const io::FormatDescription* voxelLoad() {
 		{"Chronovox", {"csm"}, [](uint32_t magic) { return magic == FourCC('.', 'C', 'S', 'M'); }, 0u},
 		{"Nicks Voxel Model", {"nvm"}, [](uint32_t magic) { return magic == FourCC('.', 'N', 'V', 'M'); }, 0u},
 		{"SLAB6 vox", {"vox"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"VoxelMax", {"vmax.zip"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+		{"VoxelMax", {"vmax.zip", "zip"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 		{"", {}, nullptr, 0u}
 	};
 	return desc;

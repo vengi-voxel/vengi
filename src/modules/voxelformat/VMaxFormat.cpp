@@ -74,6 +74,14 @@ namespace voxelformat {
 		return false; \
 	}
 
+namespace vmax {
+// max volume size 256x256x256 and each chunk is 32x32x32 - to the max amount of chunks are 8x8x8 (512)
+constexpr int MaxVolumeSize = 256u;
+constexpr int MaxChunkSize = 32u; // TODO: this is theoretically variable - but we don't support it yet
+constexpr int MaxVolumeChunks = MaxVolumeSize / MaxChunkSize;
+constexpr int MaxChunks = MaxVolumeChunks * MaxVolumeChunks * MaxVolumeChunks;
+} // namespace vmax
+
 bool VMaxFormat::loadSceneJson(io::ZipArchive &archive, VMaxScene &scene) const {
 	io::BufferedReadWriteStream contentsStream;
 	if (!archive.load("scene.json", contentsStream)) {
@@ -159,8 +167,6 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRea
 		return false;
 	}
 
-	// layers are in own contents files. They start at contents, contents1, contents2, ... and so on. The same
-	// is true for palettes
 	for (const auto &obj : scene.objects) {
 		if (!loadObject(filename, archive, sceneGraph, ctx, obj)) {
 			Log::error("Failed to load object %s", obj.n.c_str());
@@ -168,6 +174,58 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRea
 		}
 	}
 	return true;
+}
+
+VMaxFormat::VolumeStats VMaxFormat::parseStats(const priv::BinaryPList &snapshot) const {
+	VolumeStats volumeStats;
+	const priv::BinaryPList &stats = snapshot.getDictEntry("st");
+	const priv::BinaryPList &extent = stats.getDictEntry("extent");
+	volumeStats.count = (int)stats.getDictEntry("count").asInt();
+	volumeStats.scount = (int)stats.getDictEntry("scount").asInt();
+	const priv::PListArray &statsMins = stats.getDictEntry("min").asArray();
+	const priv::PListArray &statsMaxs = stats.getDictEntry("max").asArray();
+	const priv::PListArray &statsSmins = stats.getDictEntry("smin").asArray();
+	const priv::PListArray &statsSmaxs = stats.getDictEntry("smax").asArray();
+	for (int i = 0; i < 4; ++i) {
+		volumeStats.min[i] = (int)statsMins[i].asInt();
+		volumeStats.max[i] = (int)statsMaxs[i].asInt();
+		volumeStats.smin[i] = (int)statsSmins[i].asInt();
+		volumeStats.smax[i] = (int)statsSmaxs[i].asInt();
+	}
+	// TODO: is this extent.mins/maxs ?? volumeStats.emin
+	// TODO: is this extent.mins/maxs ?? volumeStats.emax
+	volumeStats.extent.o = (int)extent.getDictEntry("o").asInt();
+	// const priv::BinaryPList &regionBounds = extent.getDictEntry("r");
+	// const priv::PListArray &extentMins = regionBounds.getDictEntry("min").asArray();
+	// const priv::PListArray &extentMaxs = regionBounds.getDictEntry("max").asArray();
+	// for (int i = 0; i < 3; ++i) {
+	// 	volumeStats.extent.min[i] = (int)extentMins[i].asInt();
+	// 	volumeStats.extent.max[i] = (int)extentMaxs[i].asInt();
+	// }
+
+	return volumeStats;
+}
+
+VMaxFormat::VolumeId VMaxFormat::parseId(const priv::BinaryPList &snapshot) const {
+	VolumeId volumeId;
+	const priv::BinaryPList &identifier = snapshot.getDictEntry("id");
+	const priv::BinaryPList &identifierC = identifier.getDictEntry("c");
+	const priv::BinaryPList &identifierS = identifier.getDictEntry("s");
+	const priv::BinaryPList &identifierT = identifier.getDictEntry("t");
+
+	if (identifierC.isInt()) {
+		volumeId.mortonChunkIdx = (int)identifierC.asInt();
+	}
+	if (identifierS.isInt()) {
+		volumeId.idTimeline = (int)identifierS.asInt();
+	}
+	if (identifierT.isInt()) {
+		volumeId.type = (SnapshotType)identifierT.asUInt8();
+	}
+
+	Log::debug("identifier: c(%i), s(%i), t(%i)", volumeId.mortonChunkIdx, volumeId.idTimeline, (int)volumeId.type);
+
+	return volumeId;
 }
 
 bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archive, scenegraph::SceneGraph &sceneGraph,
@@ -187,10 +245,6 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 		return false;
 	}
 	io::LZFSEReadStream stream(data);
-
-	// io::filesystem()->write(filename + ".plist", stream);
-	// stream.seek(0);
-
 	priv::BinaryPList plist = priv::BinaryPList::parse(stream);
 	if (!plist.isDict()) {
 		Log::error("Expected a bplist dict");
@@ -213,6 +267,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 		return false;
 	}
 
+	scenegraph::SceneGraph objectSceneGraph;
 	for (size_t i = 0; i < snapshotsArray.size(); ++i) {
 		const priv::BinaryPList &snapshot = snapshotsArray[i].getDictEntry("s");
 		if (snapshot.empty()) {
@@ -223,35 +278,18 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 		// const priv::BinaryPList &deselectedLayerColorUsage = snapshot.getDictEntry("dlc");
 		const priv::BinaryPList &data = snapshot.getDictEntry("ds");
 		// const priv::BinaryPList &layerColorUsage = snapshot.getDictEntry("lc");
-		// const priv::BinaryPList &stats = snapshot.getDictEntry("st");
-		const priv::BinaryPList &identifier = snapshot.getDictEntry("id");
-		const priv::BinaryPList &identifierC = identifier.getDictEntry("c");
-		const priv::BinaryPList &identifierS = identifier.getDictEntry("s");
-		const priv::BinaryPList &identifierT = identifier.getDictEntry("t");
+		const VolumeId &volumeId = parseId(snapshot);
+		const VolumeStats &volumeStats = parseStats(snapshot);
+		const VolumeExtent &extent = volumeStats.extent;
 
-		int mortonChunkIdx = 0, idTimeline = 0;
-		SnapshotType type = SnapshotType::UndoRestore;
-		if (identifierC.isInt()) {
-			mortonChunkIdx = (int)identifierC.asInt();
-		}
-		if (identifierS.isInt()) {
-			idTimeline = (int)identifierS.asInt();
-		}
-		if (identifierT.isInt()) {
-			type = (SnapshotType)identifierT.asUInt8();
-		}
+		Log::debug("volumestats.extent: mins(%i, %i, %i), maxs(%i, %i, %i)",
+			extent.min[0], extent.min[1], extent.min[2],
+			extent.max[0], extent.max[1], extent.max[2]);
 
-		// max volume size 256x256x256 and each chunk is 32x32x32 - to the max amount of chunks are 8x8x8 (512)
-		constexpr int MaxVolumeSize = 256u;
-		constexpr int MaxChunkSize = 32u; // TODO: this is theoretically variable - but we don't support it yet
-		constexpr int MaxVolumeChunks = MaxVolumeSize / MaxChunkSize;
-		constexpr int MaxChunks = MaxVolumeChunks * MaxVolumeChunks * MaxVolumeChunks;
-		if (mortonChunkIdx > MaxChunks) {
-			Log::error("identifier: c(%i) is out of range", mortonChunkIdx);
+		if (volumeId.mortonChunkIdx > vmax::MaxChunks) {
+			Log::error("identifier: c(%i) is out of range", volumeId.mortonChunkIdx);
 			return false;
 		}
-
-		Log::debug("identifier: c(%i), s(%i), t(%i)", mortonChunkIdx, idTimeline, (int)type);
 
 		const size_t dsSize = data.size();
 		if (dsSize == 0u) {
@@ -265,15 +303,33 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 		// search the chunk world position by getting the morton index for the snapshot id
 		uint8_t chunkX, chunkY, chunkZ;
 		// y and z are swapped here
-		if (!voxel::mortonIndexToCoord(mortonChunkIdx, chunkX, chunkZ, chunkY)) {
-			Log::error("Failed to lookup chunk position for morton index %i", mortonChunkIdx);
+		if (!voxel::mortonIndexToCoord(volumeId.mortonChunkIdx, chunkX, chunkZ, chunkY)) {
+			Log::error("Failed to lookup chunk position for morton index %i", volumeId.mortonChunkIdx);
 			return false;
 		}
 
 		// now loop over the 'voxels' array and create a volume from it
-		const voxel::Region region(0, MaxChunkSize - 1);
+		const voxel::Region region(0, vmax::MaxChunkSize);
 		voxel::RawVolume* v = new voxel::RawVolume(region);
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setVolume(v, true);
+		node.setPalette(palette);
 
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldScale(obj.t_s);
+		transform.setWorldTranslation(obj.t_p);
+		transform.setWorldOrientation(glm::quat(obj.t_r.w, obj.t_r.x, obj.t_r.y, obj.t_r.z));
+
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		node.setTransform(keyFrameIdx, transform);
+		const int mortonStartIdx = volumeStats.min[3];
+		uint8_t chunkOffsetX, chunkOffsetY, chunkOffsetZ;
+		// y and z are swapped here
+		if (!voxel::mortonIndexToCoord(mortonStartIdx, chunkOffsetX, chunkOffsetZ, chunkOffsetY)) {
+			Log::error("Failed to get chunk offset from morton index %i", mortonStartIdx);
+			return false;
+		}
+		Log::debug("chunkOffset: %i, %i, %i", chunkOffsetX, chunkOffsetY, chunkOffsetZ);
 		uint32_t mortonIdx = 0;
 		while (!dsStream.eos()) {
 			// there are only 8 materials used for now 0-7 and 8 selected versions for them 8-15,
@@ -283,40 +339,42 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 			uint8_t palIdx;
 			wrap(dsStream.readUInt8(extendedLayerInfo))
 			wrap(dsStream.readUInt8(palIdx))
-			++mortonIdx;
 			// the voxels are stored in morton order - use the index to find the voxel position
 			if (palIdx == 0) {
+				++mortonIdx;
 				continue;
 			}
 			uint8_t x, y, z;
 			// y and z are swapped here
-			if (!voxel::mortonIndexToCoord(mortonIdx, x, z, y, MaxChunkSize)) {
+			if (!voxel::mortonIndexToCoord(mortonIdx, x, z, y, vmax::MaxChunkSize)) {
 				Log::error("Failed to lookup voxel position for morton index %i", mortonIdx);
 				return false;
 			}
-			v->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
+			++mortonIdx;
+			v->setVoxel(chunkOffsetX + x, chunkOffsetY + y, chunkOffsetZ + z, voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
 		}
-		const glm::ivec3 mins(chunkX * MaxChunkSize, chunkY * MaxChunkSize, chunkZ * MaxChunkSize);
+		const glm::ivec3 mins(chunkX * vmax::MaxChunkSize, chunkY * vmax::MaxChunkSize, chunkZ * vmax::MaxChunkSize);
 		v->translate(mins);
 
-		scenegraph::SceneGraphTransform transform;
-		transform.setWorldScale(obj.t_s);
-		transform.setWorldTranslation(obj.t_p);
-		transform.setWorldOrientation(glm::quat(obj.t_r.w, obj.t_r.x, obj.t_r.y, obj.t_r.z));
-
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setName(obj.n);
-		node.setVisible(!obj.h);
-		node.setPalette(palette);
-		node.setVolume(v, true);
-		scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		node.setTransform(keyFrameIdx, transform);
-		if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
+		if (objectSceneGraph.emplace(core::move(node)) == InvalidNodeId) {
 			return false;
 		}
 	}
-
-	return true;
+	const scenegraph::SceneGraph::MergedVolumePalette &merged = objectSceneGraph.merge();
+	if (merged.first == nullptr) {
+		Log::error("No volumes found in the scene graph");
+		return false;
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setName(obj.n);
+	node.setProperty("uuid", obj.id);
+	if (!obj.pid.empty()) {
+		node.setProperty("parent-uuid", obj.pid);
+	}
+	node.setVisible(!obj.h);
+	node.setPalette(merged.second);
+	node.setVolume(merged.first, true);
+	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
 image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
