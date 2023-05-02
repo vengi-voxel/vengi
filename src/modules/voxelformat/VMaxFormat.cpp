@@ -167,11 +167,17 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRea
 		return false;
 	}
 
-	for (const auto &obj : scene.objects) {
+	Log::debug("Load %i scene objects", (int)scene.objects.size());
+	for (size_t i = 0; i < scene.objects.size(); ++i) {
+		if (stopExecution()) {
+			return false;
+		}
+		const VMaxObject &obj = scene.objects[i];
 		if (!loadObject(filename, archive, sceneGraph, ctx, obj)) {
 			Log::error("Failed to load object %s", obj.n.c_str());
 			return false;
 		}
+		Log::debug("Load scene object %i of %i", (int)i, (int)scene.objects.size());
 	}
 	return true;
 }
