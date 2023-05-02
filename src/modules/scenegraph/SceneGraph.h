@@ -100,6 +100,7 @@ public:
 	int emplace(SceneGraphNode &&node, int parent = 0);
 
 	SceneGraphNode* findNodeByName(const core::String& name);
+	SceneGraphNode* findNodeByPropertyValue(const core::String &key, const core::String &value) const;
 	SceneGraphNode* first();
 
 	const SceneGraphNode& root() const;

@@ -288,6 +288,15 @@ glm::vec3 SceneGraph::center() const {
 	return center;
 }
 
+SceneGraphNode* SceneGraph::findNodeByPropertyValue(const core::String &key, const core::String &value) const {
+	for (const auto& entry : _nodes) {
+		if (entry->value.property(key) == value) {
+			return &entry->value;
+		}
+	}
+	return nullptr;
+}
+
 SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) {
 	for (const auto& entry : _nodes) {
 		Log::trace("node name: %s", entry->value.name().c_str());
