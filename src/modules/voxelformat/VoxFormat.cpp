@@ -89,6 +89,7 @@ static bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneG
 		const ogt_vox_keyframe_transform& transform_keyframe = transformKeyframes[keyFrameIdx];
 		const glm::mat4 worldMatrix = ogtTransformToMat(transform_keyframe.transform);
 		scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
+		// TODO: zUpMat?
 		sceneGraphKeyFrame.frameIdx = (scenegraph::FrameIndex)transform_keyframe.frame_index;
 		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;

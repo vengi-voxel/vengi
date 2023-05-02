@@ -329,13 +329,6 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 		node.setVolume(v, true);
 		node.setPalette(palette);
 
-		scenegraph::SceneGraphTransform transform;
-		transform.setWorldScale(obj.t_s);
-		transform.setWorldTranslation(obj.t_p);
-		transform.setWorldOrientation(glm::quat(obj.t_r.w, obj.t_r.x, obj.t_r.y, obj.t_r.z));
-
-		scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		node.setTransform(keyFrameIdx, transform);
 		const int mortonStartIdx = volumeStats.min[3];
 		uint8_t chunkOffsetX, chunkOffsetY, chunkOffsetZ;
 		// y and z are swapped here
@@ -382,6 +375,15 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setName(obj.n);
+
+	scenegraph::SceneGraphTransform transform;
+	transform.setWorldScale(obj.t_s);
+	// TODO: zUpMat
+	transform.setWorldTranslation(obj.t_p);
+	transform.setWorldOrientation(glm::quat(obj.t_r.w, obj.t_r.x, obj.t_r.y, obj.t_r.z));
+
+	scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	node.setTransform(keyFrameIdx, transform);
 	node.setProperty("uuid", obj.id);
 	if (!obj.pid.empty()) {
 		node.setProperty("parent-uuid", obj.pid);
