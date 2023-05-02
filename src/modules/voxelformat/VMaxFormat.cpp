@@ -346,12 +346,12 @@ bool VMaxFormat::loadObject(const core::String &filename, io::ZipArchive &archiv
 			uint8_t palIdx;
 			wrap(dsStream.readUInt8(extendedLayerInfo))
 			wrap(dsStream.readUInt8(palIdx))
-			// the voxels are stored in morton order - use the index to find the voxel position
 			if (palIdx == 0) {
 				++mortonIdx;
 				continue;
 			}
 			uint8_t x, y, z;
+			// the voxels are stored in morton order - use the index to find the voxel position
 			// y and z are swapped here
 			if (!voxel::mortonIndexToCoord(mortonIdx, x, z, y, vmax::MaxChunkSize)) {
 				Log::error("Failed to lookup voxel position for morton index %i", mortonIdx);
