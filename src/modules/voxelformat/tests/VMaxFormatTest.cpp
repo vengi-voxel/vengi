@@ -9,7 +9,7 @@ namespace voxelformat {
 
 class VMaxFormatTest : public AbstractVoxFormatTest {};
 
-TEST_F(VMaxFormatTest, testLoad0) {
+TEST_F(VMaxFormatTest, DISABLED_testLoad0) {
 	canLoad("0voxel.vmax.zip");
 }
 

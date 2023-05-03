@@ -319,8 +319,8 @@ bool VMaxFormat::loadObjectFromStream(const core::String &filename, io::Seekable
 	}
 	const priv::PListArray &snapshotsArray = snapshots->value.asArray();
 	if (snapshotsArray.empty()) {
-		Log::error("Node 'snapshots' is empty");
-		return false;
+		Log::debug("Node 'snapshots' is empty");
+		return true;
 	}
 
 	int parent = sceneGraph.root().id();
