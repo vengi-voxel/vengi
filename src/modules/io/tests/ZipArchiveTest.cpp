@@ -19,8 +19,8 @@ TEST_F(ZipArchiveTest, testZipArchive) {
 	const io::FilePtr &file = fs.open("iotest.zip", io::FileMode::Read);
 	FileStream fileStream(file);
 	ZipArchive archive;
-	ASSERT_TRUE(archive.open(&fileStream));
-	const ZipArchiveFiles &files = archive.files();
+	ASSERT_TRUE(archive.init(file->fileName(), &fileStream));
+	const ArchiveFiles &files = archive.files();
 	ASSERT_EQ(3u, files.size());
 	BufferedReadWriteStream outstream((int64_t)files[0].size);
 	archive.load(files[0].name, outstream);

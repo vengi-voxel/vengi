@@ -1,4 +1,5 @@
 set(SRCS
+	Archive.cpp Archive.h
 	BufferedReadWriteStream.cpp BufferedReadWriteStream.h
 	File.cpp File.h
 	FileStream.cpp FileStream.h

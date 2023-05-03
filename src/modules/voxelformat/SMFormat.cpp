@@ -108,7 +108,7 @@ static const struct BlockPalIdx {
 
 bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
 	io::ZipArchive archive;
-	if (!archive.open(&stream)) {
+	if (!archive.init(filename, &stream)) {
 		Log::error("Failed to load zip archive from %s", filename.c_str());
 		return false;
 	}
@@ -116,7 +116,7 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 	for (int i = 0; i < lengthof(BLOCKPAL); ++i) {
 		blockPal.put(BLOCKPAL[i].blockId, BLOCKPAL[i].palIdx);
 	}
-	const io::ZipArchiveFiles &files = archive.files();
+	const io::ArchiveFiles &files = archive.files();
 	for (const io::FilesystemEntry &e : files) {
 		const core::String &extension = core::string::extractExtension(e.name);
 		const bool isSmd3 = extension == "smd3";

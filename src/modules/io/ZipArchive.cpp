@@ -14,10 +14,14 @@ ZipArchive::ZipArchive() {
 }
 
 ZipArchive::~ZipArchive() {
-	close();
+	ZipArchive::shutdown();
 }
 
-void ZipArchive::close() {
+void ZipArchive::shutdown() {
+	reset();
+}
+
+void ZipArchive::reset() {
 	if (_zip == nullptr) {
 		return;
 	}
@@ -78,12 +82,12 @@ bool ZipArchive::validStream(io::SeekableReadStream &stream) {
 	return true;
 }
 
-bool ZipArchive::open(io::SeekableReadStream *stream) {
+bool ZipArchive::init(const core::String &path, io::SeekableReadStream *stream) {
 	if (stream == nullptr) {
 		Log::error("No stream given");
 		return false;
 	}
-	close();
+	reset();
 	_zip = core_malloc(sizeof(mz_zip_archive));
 	memset(_zip, 0, sizeof(mz_zip_archive));
 	((mz_zip_archive*)_zip)->m_pRead = ziparchive_read;

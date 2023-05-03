@@ -170,7 +170,7 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRea
 	VMaxScene scene;
 	if (io::ZipArchive::validStream(stream)) {
 		io::ZipArchive archive;
-		if (!archive.open(&stream)) {
+		if (!archive.init(filename, &stream)) {
 			Log::error("Failed to open zip archive %s", filename.c_str());
 			return false;
 		}
@@ -185,7 +185,11 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRea
 				return false;
 			}
 			const VMaxObject &obj = scene.objects[i];
-			if (!loadObjectFromArchive(filename, archive, sceneGraph, ctx, obj)) {
+			voxel::Palette palette;
+			if (!loadPaletteFromArchive(archive, obj.pal, palette, ctx)) {
+				return false;
+			}
+			if (!loadObjectFromArchive(filename, archive, sceneGraph, ctx, obj, palette)) {
 				Log::error("Failed to load object %s", obj.n.c_str());
 				return false;
 			}
@@ -279,12 +283,7 @@ VMaxFormat::VolumeId VMaxFormat::parseId(const priv::BinaryPList &snapshot) cons
 
 bool VMaxFormat::loadObjectFromArchive(const core::String &filename, io::ZipArchive &archive,
 									   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
-									   const VMaxObject &obj) const {
-	voxel::Palette palette;
-	if (!loadPaletteFromArchive(archive, obj.pal, palette, ctx)) {
-		return false;
-	}
-
+									   const VMaxObject &obj, const voxel::Palette &palette) const {
 	io::BufferedReadWriteStream data;
 	if (!archive.load(obj.data, data)) {
 		Log::error("Failed to load %s", obj.data.c_str());
@@ -451,7 +450,7 @@ image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::See
 	core::String thumbnailPath = core::string::path("QuickLook", "Thumbnail.png");
 	if (io::ZipArchive::validStream(stream)) {
 		io::ZipArchive archive;
-		if (!archive.open(&stream)) {
+		if (!archive.init(filename, &stream)) {
 			Log::error("Failed to open zip archive %s", filename.c_str());
 			return image::ImagePtr();
 		}
@@ -512,7 +511,7 @@ size_t VMaxFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 							   const LoadContext &ctx) {
 	if (io::ZipArchive::validStream(stream)) {
 		io::ZipArchive archive;
-		if (archive.open(&stream)) {
+		if (archive.init(filename, &stream)) {
 			Log::error("Failed to open zip archive %s", filename.c_str());
 			return 0u;
 		}

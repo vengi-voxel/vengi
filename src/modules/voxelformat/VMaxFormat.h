@@ -246,7 +246,7 @@ private:
 							  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const VMaxObject &obj,
 							  const voxel::Palette &palette) const;
 	bool loadObjectFromArchive(const core::String &filename, io::ZipArchive &archive, scenegraph::SceneGraph &sceneGraph,
-					const LoadContext &ctx, const VMaxObject &obj) const;
+					const LoadContext &ctx, const VMaxObject &obj, const voxel::Palette &palette) const;
 	bool loadPaletteFromStream(const core::String &paletteName, voxel::Palette &palette,
 							   io::SeekableReadStream &stream) const;
 	bool loadPaletteFromArchive(io::ZipArchive &archive, const core::String &paletteName, voxel::Palette &palette,

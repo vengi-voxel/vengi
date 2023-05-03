@@ -1,33 +1,29 @@
+/**
+ * @file
+ */
+
 #pragma once
 
 #include "core/collection/DynamicArray.h"
-#include "io/Filesystem.h"
+#include "io/Archive.h"
 #include "io/Stream.h"
 
 namespace io {
 
-using ZipArchiveFiles = core::DynamicArray<FilesystemEntry>;
-
-class ZipArchive {
+class ZipArchive : public Archive {
 private:
 	void *_zip = nullptr;
-	ZipArchiveFiles _files;
+	void reset();
 
 public:
 	ZipArchive();
-	~ZipArchive();
+	virtual ~ZipArchive();
 
 	static bool validStream(io::SeekableReadStream &stream);
 
-	bool open(io::SeekableReadStream *stream);
-	bool load(const core::String &file, io::SeekableWriteStream &out);
-	void close();
-
-	const ZipArchiveFiles &files() const;
+	bool init(const core::String &path, io::SeekableReadStream *stream) override;
+	bool load(const core::String &file, io::SeekableWriteStream &out) override;
+	void shutdown() override;
 };
-
-inline const ZipArchiveFiles &ZipArchive::files() const {
-	return _files;
-}
 
 } // namespace io
