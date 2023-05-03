@@ -285,25 +285,21 @@ Region operator+(const Region& region, const glm::ivec3& amount) {
 }
 
 /**
- * The boundary value can be used to ensure a position is only considered to be inside
- * the Region if it is that far in in all directions. Also, the test is inclusive such
+ * The test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
- * @param boundary The desired boundary value.
  */
-bool Region::containsPoint(const glm::vec3& pos, float boundary) const {
-	return containsPoint(pos.x, pos.y, pos.z, boundary);
+bool Region::containsPoint(const glm::vec3& pos) const {
+	return containsPoint(pos.x, pos.y, pos.z);
 }
 
 /**
- * The boundary value can be used to ensure a position is only considered to be inside
- * the Region if it is that far in in all directions. Also, the test is inclusive such
+ * The test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
- * @param boundary The desired boundary value.
  */
-bool Region::containsPoint(const glm::ivec3& pos, uint8_t boundary) const {
-	return containsPoint(pos.x, pos.y, pos.z, boundary);
+bool Region::containsPoint(const glm::ivec3& pos) const {
+	return containsPoint(pos.x, pos.y, pos.z);
 }
 
 /**

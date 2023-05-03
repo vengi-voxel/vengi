@@ -133,28 +133,28 @@ public:
 	bool isOnBorderZ(const int z) const;
 
 	/** Tests whether the given point is contained in this Region. */
-	bool containsPoint(float fX, float fY, float fZ, float boundary = 0.0f) const;
+	bool containsPoint(float fX, float fY, float fZ) const;
 	/** Tests whether the given point is contained in this Region. */
-	bool containsPoint(const glm::vec3& pos, float boundary = 0.0f) const;
+	bool containsPoint(const glm::vec3& pos) const;
 	/** Tests whether the given point is contained in this Region. */
-	bool containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t boundary = 0) const;
+	bool containsPoint(int32_t iX, int32_t iY, int32_t iZ) const;
 	/** Tests whether the given point is contained in this Region. */
-	bool containsPoint(const glm::ivec3& pos, uint8_t boundary = 0) const;
+	bool containsPoint(const glm::ivec3& pos) const;
 	/** Tests whether the given position is contained in the 'x' range of this Region. */
-	bool containsPointInX(float pos, float boundary = 0.0f) const;
+	bool containsPointInX(float pos) const;
 	/** Tests whether the given position is contained in the 'x' range of this Region. */
-	bool containsPointInX(int32_t pos, uint8_t boundary = 0) const;
+	bool containsPointInX(int32_t pos) const;
 	/** Tests whether the given position is contained in the 'y' range of this Region. */
-	bool containsPointInY(float pos, float boundary = 0.0f) const;
+	bool containsPointInY(float pos) const;
 	/** Tests whether the given position is contained in the 'y' range of this Region. */
-	bool containsPointInY(int32_t pos, uint8_t boundary = 0) const;
+	bool containsPointInY(int32_t pos) const;
 	/** Tests whether the given position is contained in the 'z' range of this Region. */
-	bool containsPointInZ(float pos, float boundary = 0.0f) const;
+	bool containsPointInZ(float pos) const;
 	/** Tests whether the given position is contained in the 'z' range of this Region. */
-	bool containsPointInZ(int32_t pos, uint8_t boundary = 0) const;
+	bool containsPointInZ(int32_t pos) const;
 
 	/** Tests whether the given Region is contained in this Region. */
-	bool containsRegion(const Region& reg, uint8_t boundary = 0) const;
+	bool containsRegion(const Region& reg) const;
 
 	/** Enlarges the Region so that it contains the specified position. */
 	void accumulate(int32_t iX, int32_t iY, int32_t iZ);
@@ -441,109 +441,91 @@ inline bool Region::isOnBorderZ(const int z) const {
 }
 
 /**
- * The boundary value can be used to ensure a position is only considered to be inside
- * the Region if it is that far in in all directions. Also, the test is inclusive such
+ * The test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param fX The 'x' position of the point to test.
  * @param fY The 'y' position of the point to test.
  * @param fZ The 'z' position of the point to test.
- * @param boundary The desired boundary value.
  */
-inline bool Region::containsPoint(float fX, float fY, float fZ, float boundary) const {
-	return (fX <= _maxs.x - boundary) && (fY <= _maxs.y - boundary) && (fZ <= _maxs.z - boundary) && (fX >= _mins.x + boundary) && (fY >= _mins.y + boundary)
-			&& (fZ >= _mins.z + boundary);
+inline bool Region::containsPoint(float fX, float fY, float fZ) const {
+	return (fX <= _maxs.x) && (fY <= _maxs.y) && (fZ <= _maxs.z) && (fX >= _mins.x) && (fY >= _mins.y) &&
+		   (fZ >= _mins.z);
 }
 
 /**
- * The boundary value can be used to ensure a position is only considered to be inside
- * the Region if it is that far in in all directions. Also, the test is inclusive such
+ * The test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param iX The 'x' position of the point to test.
  * @param iY The 'y' position of the point to test.
  * @param iZ The 'z' position of the point to test.
- * @param boundary The desired boundary value.
  */
-inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ, uint8_t boundary) const {
-	return (iX <= _maxs.x - boundary) && (iY <= _maxs.y - boundary) && (iZ <= _maxs.z - boundary) && (iX >= _mins.x + boundary) && (iY >= _mins.y + boundary)
-			&& (iZ >= _mins.z + boundary);
+inline bool Region::containsPoint(int32_t iX, int32_t iY, int32_t iZ) const {
+	return (iX <= _maxs.x) && (iY <= _maxs.y) && (iZ <= _maxs.z) && (iX >= _mins.x) && (iY >= _mins.y) &&
+		   (iZ >= _mins.z);
 }
 
 /**
- * The boundary value can be used to ensure a position is only considered to be inside
- * the Region if it is that far in in the 'x' direction. Also, the test is inclusive such
+ * The test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
- * @param boundary The desired boundary value.
  */
-inline bool Region::containsPointInX(float pos, float boundary) const {
-	return (pos <= _maxs.x - boundary) && (pos >= _mins.x + boundary);
+inline bool Region::containsPointInX(float pos) const {
+	return (pos <= _maxs.x) && (pos >= _mins.x);
 }
 
 /**
- * The boundary value can be used to ensure a position is only considered to be inside
- * the Region if it is that far in in the 'x' direction. Also, the test is inclusive such
+ * The test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
- * @param boundary The desired boundary value.
  */
-inline bool Region::containsPointInX(int32_t pos, uint8_t boundary) const {
-	return (pos <= _maxs.x - boundary) && (pos >= _mins.x + boundary);
+inline bool Region::containsPointInX(int32_t pos) const {
+	return (pos <= _maxs.x) && (pos >= _mins.x);
 }
 
 /**
- * The boundary value can be used to ensure a position is only considered to be inside
- * the Region if it is that far in in the 'y' direction. Also, the test is inclusive such
+ * The test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
- * @param boundary The desired boundary value.
  */
-inline bool Region::containsPointInY(float pos, float boundary) const {
-	return (pos <= _maxs.y - boundary) && (pos >= _mins.y + boundary);
+inline bool Region::containsPointInY(float pos) const {
+	return (pos <= _maxs.y) && (pos >= _mins.y);
 }
 
 /**
- * The boundary value can be used to ensure a position is only considered to be inside
- * the Region if it is that far in in the 'y' direction. Also, the test is inclusive such
+ * The test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
- * @param boundary The desired boundary value.
  */
-inline bool Region::containsPointInY(int32_t pos, uint8_t boundary) const {
-	return (pos <= _maxs.y - boundary) && (pos >= _mins.y + boundary);
+inline bool Region::containsPointInY(int32_t pos) const {
+	return (pos <= _maxs.y) && (pos >= _mins.y);
 }
 
 /**
- * The boundary value can be used to ensure a position is only considered to be inside
- * the Region if it is that far in in the 'z' direction. Also, the test is inclusive such
+ * The test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
- * @param boundary The desired boundary value.
  */
-inline bool Region::containsPointInZ(float pos, float boundary) const {
-	return (pos <= _maxs.z - boundary) && (pos >= _mins.z + boundary);
+inline bool Region::containsPointInZ(float pos) const {
+	return (pos <= _maxs.z) && (pos >= _mins.z);
 }
 
 /**
- * The boundary value can be used to ensure a position is only considered to be inside
- * the Region if it is that far in in the 'z' direction. Also, the test is inclusive such
+ * The test is inclusive such
  * that positions lying exactly on the edge of the Region are considered to be inside it.
  * @param pos The position to test.
- * @param boundary The desired boundary value.
  */
-inline bool Region::containsPointInZ(int32_t pos, uint8_t boundary) const {
-	return (pos <= _maxs.z - boundary) && (pos >= _mins.z + boundary);
+inline bool Region::containsPointInZ(int32_t pos) const {
+	return (pos <= _maxs.z) && (pos >= _mins.z);
 }
 
 /**
- * The boundary value can be used to ensure a region is only considered to be inside
- * another Region if it is that far in in all directions. Also, the test is inclusive such
+ * The test is inclusive such
  * that a region is considered to be inside of itself.
  * @param reg The region to test.
- * @param boundary The desired boundary value.
  */
-inline bool Region::containsRegion(const Region& reg, uint8_t boundary) const {
-	return (reg._maxs.x <= _maxs.x - boundary) && (reg._maxs.y <= _maxs.y - boundary) && (reg._maxs.z <= _maxs.z - boundary) && (reg._mins.x >= _mins.x + boundary)
-			&& (reg._mins.y >= _mins.y + boundary) && (reg._mins.z >= _mins.z + boundary);
+inline bool Region::containsRegion(const Region& reg) const {
+	return (reg._maxs.x <= _maxs.x) && (reg._maxs.y <= _maxs.y) && (reg._maxs.z <= _maxs.z) && (reg._mins.x >= _mins.x)
+			&& (reg._mins.y >= _mins.y) && (reg._mins.z >= _mins.z);
 }
 
 inline bool Region::isValid() const {
@@ -601,7 +583,7 @@ inline void Region::shrink(int32_t amount) {
 }
 
 /**
- * The amount can be specified seperatly for each direction. Negative shrinkage
+ * The amount can be specified separately for each direction. Negative shrinkage
  * is possible but you should prefer the grow() function for clarity.
  * @param amountX The amount to shrink by in 'x'.
  * @param amountY The amount to shrink by in 'y'.

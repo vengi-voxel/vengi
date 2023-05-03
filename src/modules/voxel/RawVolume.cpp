@@ -172,16 +172,16 @@ Voxel* RawVolume::copyVoxels() const {
 /**
  * This version of the function is provided so that the wrap mode does not need
  * to be specified as a template parameter, as it may be confusing to some users.
- * @param uXPos The @c x position of the voxel
- * @param uYPos The @c y position of the voxel
- * @param uZPos The @c z position of the voxel
+ * @param x The @c x position of the voxel
+ * @param y The @c y position of the voxel
+ * @param z The @c z position of the voxel
  * @return The voxel value
  */
-const Voxel& RawVolume::voxel(int32_t uXPos, int32_t uYPos, int32_t uZPos) const {
-	if (_region.containsPoint(uXPos, uYPos, uZPos)) {
-		const int32_t iLocalXPos = uXPos - _region.getLowerX();
-		const int32_t iLocalYPos = uYPos - _region.getLowerY();
-		const int32_t iLocalZPos = uZPos - _region.getLowerZ();
+const Voxel& RawVolume::voxel(int32_t x, int32_t y, int32_t z) const {
+	if (_region.containsPoint(x, y, z)) {
+		const int32_t iLocalXPos = x - _region.getLowerX();
+		const int32_t iLocalYPos = y - _region.getLowerY();
+		const int32_t iLocalZPos = z - _region.getLowerZ();
 
 		return _data[iLocalXPos + iLocalYPos * width() + iLocalZPos * width() * height()];
 	}
