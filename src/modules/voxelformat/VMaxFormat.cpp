@@ -10,6 +10,7 @@
 #include "core/collection/Array3DView.h"
 #include "external/json.hpp"
 #include "image/Image.h"
+#include "io/Archive.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
 #include "io/FileStream.h"
@@ -88,9 +89,9 @@ constexpr int MaxVolumeChunks = MaxVolumeSize / MaxChunkSize;
 constexpr int MaxChunks = MaxVolumeChunks * MaxVolumeChunks * MaxVolumeChunks;
 } // namespace vmax
 
-bool VMaxFormat::loadSceneJson(io::ZipArchive &archive, VMaxScene &scene) const {
+bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) const {
 	io::BufferedReadWriteStream contentsStream;
-	if (!archive.load("scene.json", contentsStream)) {
+	if (!archive->load("scene.json", contentsStream)) {
 		Log::error("Failed to load scene.json");
 		return false;
 	}
@@ -168,64 +169,41 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRea
 								   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
 								   const LoadContext &ctx) {
 	VMaxScene scene;
-	if (io::ZipArchive::validStream(stream)) {
-		io::ZipArchive archive;
-		if (!archive.init(filename, &stream)) {
-			Log::error("Failed to open zip archive %s", filename.c_str());
-			return false;
-		}
-
-		if (!loadSceneJson(archive, scene)) {
-			return false;
-		}
-
-		Log::debug("Load %i scene objects", (int)scene.objects.size());
-		for (size_t i = 0; i < scene.objects.size(); ++i) {
-			if (stopExecution()) {
-				return false;
-			}
-			const VMaxObject &obj = scene.objects[i];
-			voxel::Palette palette;
-			if (!loadPaletteFromArchive(archive, obj.pal, palette, ctx)) {
-				return false;
-			}
-			if (!loadObjectFromArchive(filename, archive, sceneGraph, ctx, obj, palette)) {
-				Log::error("Failed to load object %s", obj.n.c_str());
-				return false;
-			}
-			Log::debug("Load scene object %i of %i", (int)i, (int)scene.objects.size());
-		}
-		return true;
-	}
-	core_assert(core::string::extractExtension(filename) == "vmaxb");
-	const core::String &path = core::string::extractPath(filename);
-	const core::String &contents = core::string::extractFilenameWithExtension(filename);
-	const core::String &sceneJsonPath = core::string::path(path, "scene.json");
-	const io::FilePtr &file = io::filesystem()->open(sceneJsonPath);
-	io::FileStream sceneJsonStream(file);
-	if (!loadSceneJsonFromStream(sceneJsonStream, scene)) {
+	io::ArchivePtr archive = io::openArchive(filename, &stream);
+	if (!archive) {
+		Log::error("Failed to create archive for %s", filename.c_str());
 		return false;
 	}
+	if (!loadSceneJson(archive, scene)) {
+		return false;
+	}
+
 	Log::debug("Load %i scene objects", (int)scene.objects.size());
+	const core::String &ext = core::string::extractExtension(filename);
+	const core::String &objName = core::string::extractFilenameWithExtension(filename);
+	const bool onlyOneObject = ext == "vmaxb";
 	for (size_t i = 0; i < scene.objects.size(); ++i) {
 		if (stopExecution()) {
 			return false;
 		}
 		const VMaxObject &obj = scene.objects[i];
-		if (obj.data != contents) {
+		if (onlyOneObject && obj.data != objName) {
+			Log::debug("Skip to load object %s", obj.data.c_str());
 			continue;
 		}
-		if (!loadPaletteFromFile(core::string::path(path, obj.pal), palette)) {
+		voxel::Palette palette;
+		if (!loadPaletteFromArchive(archive, obj.pal, palette, ctx)) {
 			return false;
 		}
-		if (!loadObjectFromStream(filename, stream, sceneGraph, ctx, obj, palette)) {
+		if (!loadObjectFromArchive(filename, archive, sceneGraph, ctx, obj, palette)) {
 			Log::error("Failed to load object %s", obj.n.c_str());
 			return false;
 		}
 		Log::debug("Load scene object %i of %i", (int)i, (int)scene.objects.size());
-		break;
+		if (onlyOneObject) {
+			break;
+		}
 	}
-
 	return true;
 }
 
@@ -281,11 +259,11 @@ VMaxFormat::VolumeId VMaxFormat::parseId(const priv::BinaryPList &snapshot) cons
 	return volumeId;
 }
 
-bool VMaxFormat::loadObjectFromArchive(const core::String &filename, io::ZipArchive &archive,
+bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::ArchivePtr &archive,
 									   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
 									   const VMaxObject &obj, const voxel::Palette &palette) const {
 	io::BufferedReadWriteStream data;
-	if (!archive.load(obj.data, data)) {
+	if (!archive->load(obj.data, data)) {
 		Log::error("Failed to load %s", obj.data.c_str());
 		return false;
 	}
@@ -447,34 +425,23 @@ bool VMaxFormat::loadObjectFromStream(const core::String &filename, io::Seekable
 
 image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
 										   const LoadContext &ctx) {
+	io::ArchivePtr archive = io::openArchive(filename, &stream);
+	if (!archive) {
+		Log::error("Failed to create archive for %s", filename.c_str());
+		return image::ImagePtr{};
+	}
+	io::BufferedReadWriteStream contentsStream;
 	core::String thumbnailPath = core::string::path("QuickLook", "Thumbnail.png");
-	if (io::ZipArchive::validStream(stream)) {
-		io::ZipArchive archive;
-		if (!archive.init(filename, &stream)) {
-			Log::error("Failed to open zip archive %s", filename.c_str());
-			return image::ImagePtr();
-		}
-
-		io::BufferedReadWriteStream contentsStream;
-		if (!archive.load(thumbnailPath, contentsStream)) {
-			Log::error("Failed to load %s from %s", thumbnailPath.c_str(), filename.c_str());
-			return image::ImagePtr();
-		}
-
-		if (contentsStream.seek(0) == -1) {
-			Log::error("Failed to seek to the beginning of the sub stream for %s", filename.c_str());
-			return 0u;
-		}
-		return image::loadImage(core::string::extractFilenameWithExtension(thumbnailPath), contentsStream);
+	if (!archive->load(thumbnailPath, contentsStream)) {
+		Log::error("Failed to load %s from %s", thumbnailPath.c_str(), filename.c_str());
+		return image::ImagePtr();
 	}
 
-	core_assert(core::string::extractExtension(filename) == "vmaxb");
-	const core::String &path = core::string::extractPath(filename);
-	thumbnailPath =
-		core::string::path(path, "QuickLook", core::string::extractFilenameWithExtension(filename) + ".png");
-	const io::FilePtr &file = io::filesystem()->open(thumbnailPath);
-	io::FileStream fileStream(file);
-	return image::loadImage(core::string::extractFilenameWithExtension(thumbnailPath), fileStream);
+	if (contentsStream.seek(0) == -1) {
+		Log::error("Failed to seek to the beginning of the sub stream for %s", filename.c_str());
+		return 0u;
+	}
+	return image::loadImage(core::string::extractFilenameWithExtension(thumbnailPath), contentsStream);
 }
 
 bool VMaxFormat::loadPaletteFromStream(const core::String &paletteName, voxel::Palette &palette,
@@ -491,10 +458,10 @@ bool VMaxFormat::loadPaletteFromStream(const core::String &paletteName, voxel::P
 	return true;
 }
 
-bool VMaxFormat::loadPaletteFromArchive(io::ZipArchive &archive, const core::String &paletteName,
+bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName,
 										voxel::Palette &palette, const LoadContext &ctx) const {
 	io::BufferedReadWriteStream contentsStream;
-	if (!archive.load(paletteName, contentsStream)) {
+	if (!archive->load(paletteName, contentsStream)) {
 		Log::error("Failed to load %s", paletteName.c_str());
 		return false;
 	}
@@ -509,21 +476,14 @@ bool VMaxFormat::loadPaletteFromArchive(io::ZipArchive &archive, const core::Str
 
 size_t VMaxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
 							   const LoadContext &ctx) {
-	if (io::ZipArchive::validStream(stream)) {
-		io::ZipArchive archive;
-		if (archive.init(filename, &stream)) {
-			Log::error("Failed to open zip archive %s", filename.c_str());
-			return 0u;
-		}
-
-		const core::String &paletteName = "palette.png";
-		if (!loadPaletteFromArchive(archive, paletteName, palette, ctx)) {
-			return 0u;
-		}
-	} else {
-		if (!loadPaletteForVMax(filename, palette)) {
-			return 0u;
-		}
+	io::ArchivePtr archive = io::openArchive(filename, &stream);
+	if (!archive) {
+		Log::error("Failed to create archive for %s", filename.c_str());
+		return false;
+	}
+	const core::String &paletteName = "palette.png";
+	if (!loadPaletteFromArchive(archive, paletteName, palette, ctx)) {
+		return 0u;
 	}
 	return palette.colorCount();
 }

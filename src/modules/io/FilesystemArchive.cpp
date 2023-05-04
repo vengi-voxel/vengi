@@ -21,6 +21,7 @@ bool FilesystemArchive::init(const core::String &path, io::SeekableReadStream *s
 }
 
 bool FilesystemArchive::load(const core::String &filePath, io::SeekableWriteStream &out) {
+	// TODO: use the file list to implement case insensitive search
 	const core::String archiveFilePath = core::string::path(_path, filePath);
 	io::FileStream stream(io::filesystem()->open(archiveFilePath));
 	if (!stream.valid()) {
