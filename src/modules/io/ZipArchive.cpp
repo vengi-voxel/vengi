@@ -34,7 +34,7 @@ static size_t ziparchive_read(void *userdata, mz_uint64 offset, void *targetBuf,
 	io::SeekableReadStream *stream = (io::SeekableReadStream *)userdata;
 	mz_int64 currentPos = stream->pos();
 	if ((mz_int64)offset < 0) {
-		Log::error("ziparchive_read: Invalid file offset");
+		Log::debug("ziparchive_read: Invalid file offset: %i", (int)offset);
 		return 0;
 	}
 	if (currentPos != (mz_int64)offset && stream->seek((mz_int64)offset, SEEK_SET) == -1) {
@@ -71,7 +71,7 @@ bool ZipArchive::validStream(io::SeekableReadStream &stream) {
 	zip.m_pRead = ziparchive_read;
 	zip.m_pIO_opaque = &stream;
 	int64_t size = stream.size();
-	if (!mz_zip_reader_init(&zip, size, 0)) {
+	if (!mz_zip_reader_init(&zip, size, MZ_ZIP_FLAG_VALIDATE_HEADERS_ONLY)) {
 		const mz_zip_error error = mz_zip_get_last_error(&zip);
 		const char *err = mz_zip_get_error_string(error);
 		Log::debug("Failed to initialize the zip reader with stream of size '%i': %s", (int)size, err);
