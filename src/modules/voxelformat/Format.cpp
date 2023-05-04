@@ -188,6 +188,17 @@ bool Format::load(const core::String &filename, io::SeekableReadStream& stream, 
 	return loadGroups(filename, stream, sceneGraph, ctx);
 }
 
+glm::mat4 Format::transformMatrix() const {
+	// rotation matrix to convert into our coordinate system (mv has z pointing upwards)
+	const glm::mat4 zUpMat{
+		-1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f};
+	// glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	return zUpMat;
+}
+
 bool Format::stopExecution() {
 	return app::App::getInstance()->shouldQuit();
 }

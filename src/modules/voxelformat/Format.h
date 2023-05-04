@@ -113,6 +113,9 @@ protected:
 	core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) const;
 	core::RGBA flattenRGB(core::RGBA rgba) const;
 
+	// convert the coordinate system from z up to y up
+	glm::mat4 transformMatrix() const;
+
 	/**
 	 * Some formats are running loop that the user might want to interrupt with CTRL+c or the like. Long lasting loops should query
 	 * this boolean and respect the users wish to quit the application.

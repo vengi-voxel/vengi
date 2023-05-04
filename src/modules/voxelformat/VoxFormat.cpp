@@ -282,14 +282,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 	Log::debug("vox load color count: %i", palette.colorCount());
 
-	// rotation matrix to convert into our coordinate system (mv has z pointing upwards)
-	const glm::mat4 zUpMat{
-		-1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f};
-	// glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
+	const glm::mat4 zUpMat = transformMatrix();
 	Log::debug("vox groups: %u", scene->num_groups);
 	for (uint32_t i = 0; i < scene->num_groups; ++i) {
 		if (scene->groups[i].name) {
