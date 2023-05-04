@@ -168,7 +168,7 @@ inline uint8_t mortonDecode(uint32_t m, const uint8_t *LUT) {
 	return (uint8_t)a;
 }
 
-}
+} // namespace priv
 
 inline uint32_t mortonIndex(uint8_t uXPos, uint8_t uYPos, uint8_t uZPos) {
 	return priv::morton256_x[uXPos] | priv::morton256_y[uYPos] | priv::morton256_z[uZPos];

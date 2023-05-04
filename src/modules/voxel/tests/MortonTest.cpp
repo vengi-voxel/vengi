@@ -18,4 +18,19 @@ TEST_F(MortonTest, testLookup) {
 	ASSERT_EQ(5, z);
 }
 
+TEST_F(MortonTest, DISABLED_testLookup256) {
+	for (int x = 0; x < 256; ++x) {
+		for (int y = 0; y < 256; ++y) {
+			for (int z = 0; z < 256; ++z) {
+				const uint32_t idx = voxel::mortonIndex(x, y, z);
+				uint8_t xx, yy, zz;
+				ASSERT_TRUE(voxel::mortonIndexToCoord(idx, xx, yy, zz));
+				EXPECT_EQ(x, xx);
+				EXPECT_EQ(y, yy);
+				EXPECT_EQ(z, zz);
+			}
+		}
+	}
+}
+
 } // namespace voxel
