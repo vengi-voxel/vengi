@@ -126,12 +126,12 @@ bool ZipArchive::init(const core::String &path, io::SeekableReadStream *stream) 
 	return true;
 }
 
-bool ZipArchive::load(const core::String &file, io::SeekableWriteStream &out) {
+bool ZipArchive::load(const core::String &filePath, io::SeekableWriteStream &out) {
 	if ((mz_zip_archive*)_zip == nullptr) {
 		Log::error("No zip archive loaded");
 		return false;
 	}
-	return mz_zip_reader_extract_file_to_callback((mz_zip_archive*)_zip, file.c_str(), ziparchive_write, (void *)&out, 0);
+	return mz_zip_reader_extract_file_to_callback((mz_zip_archive*)_zip, filePath.c_str(), ziparchive_write, (void *)&out, 0);
 }
 
 } // namespace io

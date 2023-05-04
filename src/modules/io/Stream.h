@@ -233,6 +233,8 @@ public:
 		return true;
 	}
 
+	bool write(ReadStream &stream);
+
 	bool writeBool(bool val);
 
 	bool writeInt8(int8_t val);

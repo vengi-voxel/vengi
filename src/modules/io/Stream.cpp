@@ -12,6 +12,23 @@
 
 namespace io {
 
+bool WriteStream::write(ReadStream &stream) {
+	uint8_t buf[1024 * 32];
+	while (!stream.eos()) {
+		int l = stream.read(buf, sizeof(buf));
+		if (l == -1) {
+			return false;
+		}
+		if (l == 0) {
+			return true;
+		}
+		if (!write(buf, l)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 bool WriteStream::writeStringFormat(bool terminate, const char *fmt, ...) {
 	va_list ap;
 	const size_t bufSize = 4096;

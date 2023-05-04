@@ -4,6 +4,7 @@ set(SRCS
 	File.cpp File.h
 	FileStream.cpp FileStream.h
 	Filesystem.cpp Filesystem.h
+	FilesystemArchive.cpp FilesystemArchive.h
 	FormatDescription.cpp FormatDescription.h
 	IOResource.h
 	StdStreamBuf.h

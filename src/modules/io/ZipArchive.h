@@ -22,7 +22,7 @@ public:
 	static bool validStream(io::SeekableReadStream &stream);
 
 	bool init(const core::String &path, io::SeekableReadStream *stream) override;
-	bool load(const core::String &file, io::SeekableWriteStream &out) override;
+	bool load(const core::String &filePath, io::SeekableWriteStream &out) override;
 	void shutdown() override;
 };
 
