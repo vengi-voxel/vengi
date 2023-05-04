@@ -169,7 +169,7 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRea
 								   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
 								   const LoadContext &ctx) {
 	VMaxScene scene;
-	io::ArchivePtr archive = io::openArchive(filename, &stream);
+	const io::ArchivePtr &archive = io::openArchive(filename, &stream);
 	if (!archive) {
 		Log::error("Failed to create archive for %s", filename.c_str());
 		return false;
@@ -425,7 +425,7 @@ bool VMaxFormat::loadObjectFromStream(const core::String &filename, io::Seekable
 
 image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
 										   const LoadContext &ctx) {
-	io::ArchivePtr archive = io::openArchive(filename, &stream);
+	const io::ArchivePtr &archive = io::openArchive(filename, &stream);
 	if (!archive) {
 		Log::error("Failed to create archive for %s", filename.c_str());
 		return image::ImagePtr{};
@@ -439,7 +439,7 @@ image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::See
 
 	if (contentsStream.seek(0) == -1) {
 		Log::error("Failed to seek to the beginning of the sub stream for %s", filename.c_str());
-		return 0u;
+		return image::ImagePtr();
 	}
 	return image::loadImage(core::string::extractFilenameWithExtension(thumbnailPath), contentsStream);
 }
@@ -476,10 +476,10 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 
 size_t VMaxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
 							   const LoadContext &ctx) {
-	io::ArchivePtr archive = io::openArchive(filename, &stream);
+	const io::ArchivePtr &archive = io::openArchive(filename, &stream);
 	if (!archive) {
 		Log::error("Failed to create archive for %s", filename.c_str());
-		return false;
+		return 0u;
 	}
 	const core::String &paletteName = "palette.png";
 	if (!loadPaletteFromArchive(archive, paletteName, palette, ctx)) {

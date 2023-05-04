@@ -12,6 +12,7 @@
 namespace io {
 
 using ArchiveFiles = core::DynamicArray<io::FilesystemEntry>;
+using SeekableReadStreamPtr = core::SharedPtr<SeekableReadStream>;
 
 /**
  * @ingroup IO
@@ -32,6 +33,7 @@ public:
 	virtual void shutdown();
 
 	virtual bool load(const core::String &filePath, io::SeekableWriteStream &out) = 0;
+	virtual SeekableReadStreamPtr readStream(const core::String &filePath);
 };
 
 inline const ArchiveFiles &Archive::files() const {
