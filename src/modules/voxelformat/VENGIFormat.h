@@ -15,6 +15,8 @@ namespace voxelformat {
  * with animation and (lua-)script support.
  *
  * It's a RIFF header based format. It stores one palette per model node.
+ *
+ * @ingroup Formats
  */
 class VENGIFormat : public Format {
 private:

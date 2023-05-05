@@ -1,5 +1,6 @@
 /**
  * @file
+ * @ingroup Formats
  */
 
 #pragma once
