@@ -10,10 +10,6 @@
 #include "io/Stream.h"
 #include "voxelformat/private/BinaryPList.h"
 
-namespace io {
-class ZipArchive;
-}
-
 namespace voxelformat {
 
 /**
