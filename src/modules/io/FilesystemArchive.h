@@ -8,6 +8,9 @@
 
 namespace io {
 
+/**
+ * @ingroup IO
+ */
 class FilesystemArchive : public Archive {
 protected:
 	core::String _path;

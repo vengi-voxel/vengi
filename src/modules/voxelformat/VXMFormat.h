@@ -9,7 +9,7 @@
 namespace voxelformat {
 
 /**
- * @brief VoxEdit (Sandbox) (vmx)
+ * @brief VoxEdit (Sandbox) (vxm)
  * The voxel model
  * @sa VXAFormat
  * @sa VXRFormat
