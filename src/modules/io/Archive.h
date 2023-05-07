@@ -39,6 +39,10 @@ public:
 	 * only @c "level1/level2/file.txt".
 	 */
 	virtual bool load(const core::String &filePath, io::SeekableWriteStream &out) = 0;
+	/**
+	 * @note the default implementation of readStream() uses load() internally
+	 * this might not be the most efficient way to read a file from an archive
+	 */
 	virtual SeekableReadStreamPtr readStream(const core::String &filePath);
 };
 
