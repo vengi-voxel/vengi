@@ -500,6 +500,7 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 
 bool VXRFormat::saveVXA(const scenegraph::SceneGraph& sceneGraph, const core::String &vxaPath, io::SeekableWriteStream& vxaStream, const core::String &animation, const SaveContext &ctx) {
 	VXAFormat f;
+	// sceneGraph.setAnimation(animation);
 	return f.save(sceneGraph, vxaPath, vxaStream, ctx);
 }
 
