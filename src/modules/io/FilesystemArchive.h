@@ -14,9 +14,6 @@ protected:
 public:
 	virtual ~FilesystemArchive();
 	bool init(const core::String &path, io::SeekableReadStream *stream) override;
-	/**
-	 * @param[in] filePath The relative filePath to the path the archive was initialized with
-	 */
 	bool load(const core::String &filePath, io::SeekableWriteStream &out) override;
 	SeekableReadStreamPtr readStream(const core::String &filePath) override;
 };

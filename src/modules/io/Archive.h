@@ -33,6 +33,11 @@ public:
 	virtual bool init(const core::String &path, io::SeekableReadStream *stream);
 	virtual void shutdown();
 
+	/**
+	 * @param[in] filePath The relative filePath to the path the archive was initialized with. For example if the
+	 * archive was initialized with @c "/data" and the file is @c "/data/level1/level2/file.txt" then the @c filePath is
+	 * only @c "level1/level2/file.txt".
+	 */
 	virtual bool load(const core::String &filePath, io::SeekableWriteStream &out) = 0;
 	virtual SeekableReadStreamPtr readStream(const core::String &filePath);
 };
