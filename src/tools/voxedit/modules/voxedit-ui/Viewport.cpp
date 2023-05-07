@@ -9,8 +9,8 @@
 #include "app/App.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
-#include "core/Log.h"
 #include "core/Common.h"
+#include "core/Log.h"
 #include "core/Var.h"
 #include "image/Image.h"
 #include "io/FileStream.h"
@@ -190,18 +190,18 @@ void Viewport::renderViewport() {
 		renderViewportImage(contentSize);
 		const bool modifiedRegion = renderGizmo(camera(), headerSize, contentSize);
 
-		const SceneManager& mgr = sceneMgr();
+		const SceneManager &mgr = sceneMgr();
 		if (mgr.isLoading()) {
 			const float radius = ImGui::GetFontSize() * 12.0f;
 			ImGui::LoadingIndicatorCircle("Loading", radius, core::Color::White, core::Color::Gray);
 		} else if (ImGui::IsItemHovered() && !modifiedRegion) {
-			const ModifierFacade& modifier = mgr.modifier();
+			const ModifierFacade &modifier = mgr.modifier();
 			if (modifier.isMode(ModifierType::ColorPicker)) {
 				ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 			}
 			if (!_renderContext.sceneMode && _cursorDetails->intVal()) {
 				const int cursorDetailsLevel = _cursorDetails->intVal();
-				const glm::ivec3& cursorPos = modifier.cursorPosition();
+				const glm::ivec3 &cursorPos = modifier.cursorPosition();
 				if (cursorDetailsLevel == 1) {
 					ImGui::TooltipText("%i:%i:%i", cursorPos.x, cursorPos.y, cursorPos.z);
 				} else {
@@ -210,14 +210,13 @@ void Viewport::renderViewport() {
 						const glm::ivec3 &mins = v->region().getLowerCorner();
 						const glm::ivec3 &size = v->region().getDimensionsInVoxels();
 						if (mins.x == 0 && mins.y == 0 && mins.z == 0) {
-							ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\n",
-											mins.x, mins.y, mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y,
-											cursorPos.z);
+							ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\n", mins.x, mins.y,
+											   mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z);
 						} else {
 							ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\nrelative: %i:%i:%i",
-											mins.x, mins.y, mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y,
-											cursorPos.z, cursorPos.x - mins.x, cursorPos.y - mins.y,
-											cursorPos.z - mins.z);
+											   mins.x, mins.y, mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y,
+											   cursorPos.z, cursorPos.x - mins.x, cursorPos.y - mins.y,
+											   cursorPos.z - mins.z);
 						}
 					}
 				}
@@ -387,7 +386,8 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 	style.setWindowRounding(0.0f);
 	style.setWindowBorderSize(0.0f);
 	style.setWindowPadding(ImVec2(0.0f, 0.0f));
-	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoFocusOnAppearing;
+	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
+								 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoFocusOnAppearing;
 	const char *modeStr = isSceneMode() ? "SceneMode" : "EditMode";
 
 	core::String name;
@@ -506,7 +506,8 @@ void Viewport::lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrame
 	_transformMementoLocked = true;
 }
 
-void Viewport::handleGizmo(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix) {
+void Viewport::handleGizmo(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
+						   const glm::mat4 &localMatrix) {
 	if (ImGuizmo::IsUsing()) {
 		lock(node, keyFrameIdx);
 		glm::vec3 translate;
@@ -573,11 +574,10 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 
 	const glm::vec3 &shift = region.getLowerCornerf();
 	localMatrix = glm::translate(localMatrix, shift);
-	const bool manipulated =
-		ImGuizmo::Manipulate(glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()),
-							 (ImGuizmo::OPERATION)operation, ImGuizmo::MODE::LOCAL, glm::value_ptr(localMatrix),
-							 glm::value_ptr(deltaMatrix), _gizmoSnap->boolVal() ? snap : nullptr,
-							 bounds ? glm::value_ptr(_bounds.mins) : nullptr, boundsSnap);
+	const bool manipulated = ImGuizmo::Manipulate(
+		glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()), (ImGuizmo::OPERATION)operation,
+		ImGuizmo::MODE::LOCAL, glm::value_ptr(localMatrix), glm::value_ptr(deltaMatrix),
+		_gizmoSnap->boolVal() ? snap : nullptr, bounds ? glm::value_ptr(_bounds.mins) : nullptr, boundsSnap);
 	if (sceneMode) {
 		localMatrix = glm::translate(localMatrix, -shift);
 		handleGizmo(node, keyFrameIdx, localMatrix);
