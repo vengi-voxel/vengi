@@ -266,6 +266,10 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 	}
 
 	io::LZFSEReadStream stream(data);
+
+	// io::filesystem()->write(filename + ".plist", stream);
+	// stream.seek(0);
+
 	priv::BinaryPList plist = priv::BinaryPList::parse(stream);
 	if (!plist.isDict()) {
 		Log::error("Expected a bplist dict");
