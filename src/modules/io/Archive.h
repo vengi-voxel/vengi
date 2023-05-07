@@ -28,7 +28,6 @@ public:
 	virtual ~Archive() = default;
 
 	/**
-	 * @param[in] path
 	 * @param[in] stream @c io::SeekableReadStream pointer can be @c nullptr
 	 */
 	virtual bool init(const core::String &path, io::SeekableReadStream *stream);

@@ -751,7 +751,6 @@ void TextEditor::Render() {
 			Line &line = _lines[lineNo];
 			longest =
 				core_max(_textStart + TextDistanceToLineStart(Coordinates(lineNo, GetLineMaxColumn(lineNo))), longest);
-			int columnNo = 0;
 			Coordinates lineStartCoord(lineNo, 0);
 			Coordinates lineEndCoord(lineNo, GetLineMaxColumn(lineNo));
 
@@ -908,7 +907,6 @@ void TextEditor::Render() {
 						_lineBuffer += line[i++].mChar;
 					}
 				}
-				++columnNo;
 			}
 
 			if (!_lineBuffer.empty()) {
