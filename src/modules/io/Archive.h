@@ -24,6 +24,7 @@ protected:
 
 public:
 	const ArchiveFiles &files() const;
+	virtual ~Archive() = default;
 
 	/**
 	 * @param[in] path

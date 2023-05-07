@@ -5,6 +5,7 @@
 #include "ZipArchive.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
+#define MINIZ_NO_STDIO
 #include "core/external/miniz.h"
 #include "io/Stream.h"
 
@@ -25,7 +26,7 @@ void ZipArchive::reset() {
 	if (_zip == nullptr) {
 		return;
 	}
-	mz_zip_reader_end((mz_zip_archive*)_zip);
+	mz_zip_end((mz_zip_archive*)_zip);
 	core_free(_zip);
 	_zip = nullptr;
 }
@@ -64,11 +65,26 @@ static size_t ziparchive_write(void *userdata, mz_uint64 offset, const void *tar
 	return written;
 }
 
+static void *ziparchive_malloc(void *opaque, size_t items, size_t size) {
+	return core_malloc(items * size);
+}
+
+static void ziparchive_free(void *opaque, void *address) {
+	core_free(address);
+}
+
+static void *ziparchive_realloc(void *opaque, void *address, size_t items, size_t size) {
+	return core_realloc(address, items * size);
+}
+
 bool ZipArchive::validStream(io::SeekableReadStream &stream) {
 	const int64_t currentPos = stream.pos();
 	mz_zip_archive zip;
-	memset(&zip, 0, sizeof(zip));
+	mz_zip_zero_struct(&zip);
 	zip.m_pRead = ziparchive_read;
+	zip.m_pAlloc = ziparchive_malloc;
+	zip.m_pRealloc = ziparchive_realloc;
+	zip.m_pFree = ziparchive_free;
 	zip.m_pIO_opaque = &stream;
 	int64_t size = stream.size();
 	if (!mz_zip_reader_init(&zip, size, MZ_ZIP_FLAG_VALIDATE_HEADERS_ONLY)) {
@@ -76,9 +92,11 @@ bool ZipArchive::validStream(io::SeekableReadStream &stream) {
 		const char *err = mz_zip_get_error_string(error);
 		Log::debug("Failed to initialize the zip reader with stream of size '%i': %s", (int)size, err);
 		stream.seek(currentPos);
+		mz_zip_end(&zip);
 		return false;
 	}
 	stream.seek(currentPos);
+	mz_zip_end(&zip);
 	return true;
 }
 
@@ -88,30 +106,35 @@ bool ZipArchive::init(const core::String &path, io::SeekableReadStream *stream) 
 		return false;
 	}
 	reset();
-	_zip = core_malloc(sizeof(mz_zip_archive));
-	memset(_zip, 0, sizeof(mz_zip_archive));
-	((mz_zip_archive*)_zip)->m_pRead = ziparchive_read;
-	((mz_zip_archive*)_zip)->m_pIO_opaque = stream;
+	mz_zip_archive *zip = (mz_zip_archive *)core_malloc(sizeof(mz_zip_archive));
+	_zip = zip;
+	mz_zip_zero_struct(zip);
+	zip->m_pAlloc = ziparchive_malloc;
+	zip->m_pRealloc = ziparchive_realloc;
+	zip->m_pFree = ziparchive_free;
+	zip->m_pRead = ziparchive_read;
+	zip->m_pIO_opaque = stream;
 	_files.clear();
 	int64_t size = stream->size();
-	if (!mz_zip_reader_init((mz_zip_archive*)_zip, size, 0)) {
-		const mz_zip_error error = mz_zip_get_last_error((mz_zip_archive*)_zip);
+	if (!mz_zip_reader_init(zip, size, 0)) {
+		const mz_zip_error error = mz_zip_get_last_error(zip);
 		const char *err = mz_zip_get_error_string(error);
 		Log::error("Failed to initialize the zip reader with stream of size '%i': %s", (int)size, err);
+		reset();
 		return false;
 	}
 
-	mz_uint numFiles = mz_zip_reader_get_num_files((mz_zip_archive*)_zip);
+	mz_uint numFiles = mz_zip_reader_get_num_files(zip);
 
 	mz_zip_archive_file_stat zipStat;
 	for (mz_uint i = 0; i < numFiles; ++i) {
-		if (mz_zip_reader_is_file_a_directory((mz_zip_archive*)_zip, i)) {
+		if (mz_zip_reader_is_file_a_directory(zip, i)) {
 			continue;
 		}
-		if (mz_zip_reader_is_file_encrypted((mz_zip_archive*)_zip, i)) {
+		if (mz_zip_reader_is_file_encrypted(zip, i)) {
 			continue;
 		}
-		if (!mz_zip_reader_file_stat((mz_zip_archive*)_zip, i, &zipStat)) {
+		if (!mz_zip_reader_file_stat(zip, i, &zipStat)) {
 			continue;
 		}
 		FilesystemEntry entry;
