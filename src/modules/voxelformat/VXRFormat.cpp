@@ -3,6 +3,8 @@
  */
 
 #include "VXRFormat.h"
+#include "VXAFormat.h"
+#include "VXMFormat.h"
 #include "core/Assert.h"
 #include "core/Color.h"
 #include "core/Common.h"
@@ -10,7 +12,6 @@
 #include "core/GLM.h"
 #include "core/Log.h"
 #include "app/App.h"
-#include "VXMFormat.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "io/FileStream.h"
@@ -21,10 +22,8 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
-#include "voxelformat/VXAFormat.h"
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <SDL_stdinc.h>
 
 namespace voxelformat {
 
