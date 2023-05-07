@@ -3,48 +3,52 @@
  */
 
 #include "VXAFormat.h"
+#include "VXMFormat.h"
+#include "app/App.h"
 #include "core/Assert.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/GLM.h"
 #include "core/Log.h"
-#include "app/App.h"
-#include "VXMFormat.h"
 #include "core/MD5.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
-#include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/RawVolume.h"
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 namespace voxelformat {
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load vxa file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load vxa file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
-#define wrapBool(read) \
-	if ((read) != true) { \
-		Log::error("Could not load vxa file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if ((read) != true) {                                                                                              \
+		Log::error("Could not load vxa file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
 namespace vxa_priv {
 static const scenegraph::InterpolationType interpolationTypes[]{
-	scenegraph::InterpolationType::Instant,		 scenegraph::InterpolationType::Linear,			scenegraph::InterpolationType::QuadEaseIn,
-	scenegraph::InterpolationType::QuadEaseOut,	 scenegraph::InterpolationType::QuadEaseInOut,	scenegraph::InterpolationType::CubicEaseIn,
-	scenegraph::InterpolationType::CubicEaseOut, scenegraph::InterpolationType::CubicEaseInOut,
+	scenegraph::InterpolationType::Instant,		  scenegraph::InterpolationType::Linear,
+	scenegraph::InterpolationType::QuadEaseIn,	  scenegraph::InterpolationType::QuadEaseOut,
+	scenegraph::InterpolationType::QuadEaseInOut, scenegraph::InterpolationType::CubicEaseIn,
+	scenegraph::InterpolationType::CubicEaseOut,  scenegraph::InterpolationType::CubicEaseInOut,
 };
 
-static void addNodeToHashStream_r(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node, io::WriteStream &stream) {
+static void addNodeToHashStream_r(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+								  io::WriteStream &stream) {
 	stream.writeString(node.name(), false);
 	const core::String &childHex = core::string::toHex((int32_t)node.children().size()).toUpper();
 	stream.writeString(childHex, false);
@@ -53,7 +57,7 @@ static void addNodeToHashStream_r(const scenegraph::SceneGraph& sceneGraph, cons
 	}
 }
 
-static void calculateHash(const scenegraph::SceneGraph& sceneGraph, uint64_t hash[2]) {
+static void calculateHash(const scenegraph::SceneGraph &sceneGraph, uint64_t hash[2]) {
 	io::BufferedReadWriteStream stream;
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	const scenegraph::SceneGraphNodeChildren &children = root.children();
@@ -94,9 +98,11 @@ static int getInterpolationType(scenegraph::InterpolationType type) {
 	return -1;
 }
 
-}
+} // namespace vxa_priv
 
-bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, scenegraph::SceneGraphNode& node, const core::String &animId, int version) {
+bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::SeekableReadStream &stream,
+										  scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+										  const core::String &animId, int version) {
 	// channel 0-2 position (float)
 	// channel 3-5 rotation (euler angles in radians)
 	// channel 6 local scale (float)
@@ -134,7 +140,7 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 				keyFrame.interpolation = vxa_priv::interpolationTypes[interpolation];
 			}
 			if (channel == 3) {
-				/* bool slerp =*/ stream.readBool(); // TODO:
+				/* bool slerp =*/stream.readBool(); // TODO:
 			}
 
 			float val;
@@ -169,14 +175,15 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 		return false;
 	}
 	for (const int nodeId : node.children()) {
-		scenegraph::SceneGraphNode& childNode = sceneGraph.node(nodeId);
+		scenegraph::SceneGraphNode &childNode = sceneGraph.node(nodeId);
 		wrapBool(recursiveImportNodeSince3(filename, stream, sceneGraph, childNode, animId, version))
 	}
 	return true;
 }
 
 bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::SeekableReadStream &stream,
-									scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode& node, const core::String &animId, int version) {
+										   scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+										   const core::String &animId, int version) {
 	scenegraph::KeyFrameIndex keyFrameCount;
 	wrap(stream.readInt32(keyFrameCount))
 	Log::debug("Found %u keyframes in node %s", keyFrameCount, node.name().c_str());
@@ -243,14 +250,15 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 	}
 	for (int32_t i = 0; i < children; ++i) {
 		const int nodeId = node.children()[i];
-		scenegraph::SceneGraphNode& cnode = sceneGraph.node(nodeId);
+		scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
 		wrapBool(recursiveImportNodeBefore3(filename, stream, sceneGraph, cnode, animId, version))
 	}
 
 	return true;
 }
 
-bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) {
+bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream,
+						   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))
@@ -310,13 +318,14 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream&
 
 	const int32_t sceneGraphRootChildren = (int32_t)sceneGraph.root().children().size();
 	if (rootChildren != sceneGraphRootChildren) {
-		Log::error("VXA root child count doesn't match with current loaded scene graph %i vs %i", rootChildren, sceneGraphRootChildren);
+		Log::error("VXA root child count doesn't match with current loaded scene graph %i vs %i", rootChildren,
+				   sceneGraphRootChildren);
 		return false;
 	}
 
 	for (int32_t i = 0; i < rootChildren; ++i) {
 		const int nodeId = sceneGraph.root().children()[i];
-		scenegraph::SceneGraphNode& node = sceneGraph.node(nodeId);
+		scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 		if (version <= 2) {
 			if (!recursiveImportNodeBefore3(filename, stream, sceneGraph, node, animId, version)) {
 				Log::error("VXA: failed to import children for version %i", version);
@@ -370,7 +379,8 @@ bool VXAFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 	return true;
 }
 
-bool VXAFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool VXAFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	const scenegraph::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();
@@ -411,4 +421,4 @@ bool VXAFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 #undef wrap
 #undef wrapBool
 
-}
+} // namespace voxelformat

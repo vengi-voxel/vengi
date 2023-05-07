@@ -4,23 +4,22 @@
 
 #include "VXMFormat.h"
 #include "app/App.h"
-#include "io/Filesystem.h"
-#include "io/FileStream.h"
+#include "core/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
-#include "core/Color.h"
 #include "core/GLM.h"
+#include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
+#include "io/FileStream.h"
+#include "io/Filesystem.h"
 #include "io/Stream.h"
-#include "voxel/MaterialColor.h"
-#include "core/Log.h"
-#include "core/ScopedPtr.h"
-#include "voxel/Palette.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
 #include <glm/common.hpp>
-#include <sys/types.h>
 
 namespace voxelformat {
 
@@ -45,7 +44,8 @@ static const uint8_t EMPTY_PALETTE = 0xFFu;
 		return false; \
 	}
 
-bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel &voxel, const voxel::Palette &nodePalette, const voxel::Palette &palette) const {
+bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel &voxel,
+						 const voxel::Palette &nodePalette, const voxel::Palette &palette) const {
 	if (length == 0) {
 		return true;
 	}
@@ -64,7 +64,8 @@ bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel
 	return true;
 }
 
-image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream, const LoadContext &ctx) {
+image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+										  const LoadContext &ctx) {
 	const core::String imageName = filename + ".png";
 	return image::loadImage(imageName);
 }
@@ -73,9 +74,9 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 	wrapBool(stream.writeUInt32(FourCC('V','X','M','C')));
 	const glm::vec3 pivot(0.5f);
 
-	const voxel::Region& region = sceneGraph.region();
-	const glm::ivec3& mins = region.getLowerCorner();
-	const glm::ivec3& maxs = region.getUpperCorner();
+	const voxel::Region &region = sceneGraph.region();
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::ivec3 &maxs = region.getUpperCorner();
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
 	const uint32_t depth = region.getDepthInVoxels();
@@ -249,7 +250,8 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 	return true;
 }
 
-bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))
@@ -333,7 +335,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		}
 	}
 	if (version >= 8) {
-		float dummy;                   // since version 'A'
+		float dummy;				   // since version 'A'
 		wrap(stream.readFloat(dummy)); // lod scale
 		wrap(stream.readFloat(dummy)); // lod pivot x
 		wrap(stream.readFloat(dummy)); // lod pivot y
@@ -433,9 +435,9 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	if (version >= 11) {
 		stream.skip(256l * 4l); // palette data rgba
 		stream.skip(256l * 4l); // palette data rgba for emissive materials
-		uint8_t chunkAmount; // palette chunks
+		uint8_t chunkAmount;	// palette chunks
 		wrap(stream.readUInt8(chunkAmount));
-		for (int i = 0; i < (int) chunkAmount; ++i) {
+		for (int i = 0; i < (int)chunkAmount; ++i) {
 			char chunkId[1024];
 			wrapBool(stream.readString(sizeof(chunkId), chunkId, true))
 			stream.skip(1); // chunk offset
@@ -447,7 +449,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrap(stream.readUInt8(materialAmount));
 	Log::debug("Palette of size %i", (int)materialAmount);
 
-	for (int i = 0; i < (int) materialAmount; ++i) {
+	for (int i = 0; i < (int)materialAmount; ++i) {
 		uint8_t blue;
 		wrap(stream.readUInt8(blue));
 		uint8_t green;
@@ -482,7 +484,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		} else {
 			core::string::formatBuf(layerName, sizeof(layerName), "Layer %i", layer);
 		}
-		voxel::RawVolume* volume = new voxel::RawVolume(region);
+		voxel::RawVolume *volume = new voxel::RawVolume(region);
 		for (;;) {
 			uint8_t length;
 			wrapDelete(stream.readUInt8(length), volume);
@@ -551,4 +553,4 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 #undef wrapBool
 #undef wrapDelete
 
-}
+} // namespace voxelformat

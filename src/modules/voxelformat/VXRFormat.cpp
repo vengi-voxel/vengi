@@ -5,23 +5,23 @@
 #include "VXRFormat.h"
 #include "VXAFormat.h"
 #include "VXMFormat.h"
+#include "app/App.h"
 #include "core/Assert.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/GLM.h"
 #include "core/Log.h"
-#include "app/App.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
-#include "voxel/RawVolume.h"
-#include "voxelformat/Format.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
+#include "voxel/RawVolume.h"
+#include "voxelformat/Format.h"
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -39,7 +39,9 @@ namespace voxelformat {
 		return false; \
 	}
 
-bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+								  const core::String &filename, io::SeekableWriteStream &stream,
+								  const SaveContext &ctx) {
 	core::String name = node.name();
 	if (name.empty()) {
 		name = core::string::format("%i", node.id());
@@ -78,7 +80,7 @@ bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph& sceneGraph, cons
 	return true;
 }
 
-bool VXRFormat::saveNodeProperties(const scenegraph::SceneGraphNode* node, io::SeekableWriteStream& stream) {
+bool VXRFormat::saveNodeProperties(const scenegraph::SceneGraphNode *node, io::SeekableWriteStream &stream) {
 	wrapBool(stream.writeBool(boolProperty(node, "collidable", true)))
 	wrapBool(stream.writeBool(boolProperty(node, "decorative", false)))
 	if (node == nullptr) {
@@ -109,7 +111,8 @@ bool VXRFormat::saveNodeProperties(const scenegraph::SceneGraphNode* node, io::S
 	return true;
 }
 
-bool VXRFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool VXRFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	const scenegraph::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();
@@ -156,8 +159,9 @@ bool VXRFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 	return true;
 }
 
-bool VXRFormat::loadChildVXM(const core::String& vxmPath, scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, int version, const LoadContext &ctx) {
-	const io::FilePtr& file = io::filesystem()->open(vxmPath);
+bool VXRFormat::loadChildVXM(const core::String &vxmPath, scenegraph::SceneGraph &sceneGraph,
+							 scenegraph::SceneGraphNode &node, int version, const LoadContext &ctx) {
+	const io::FilePtr &file = io::filesystem()->open(vxmPath);
 	if (!file->validHandle()) {
 		Log::error("Could not open file '%s'", vxmPath.c_str());
 		return false;
@@ -176,7 +180,7 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, scenegraph::SceneGraph
 	}
 	Log::debug("Found %i layers in vxm", modelCount);
 
-	scenegraph::SceneGraphNode* childModelNode = childSceneGraph[0];
+	scenegraph::SceneGraphNode *childModelNode = childSceneGraph[0];
 	core_assert_always(childModelNode != nullptr);
 	childModelNode->releaseOwnership();
 
@@ -203,12 +207,15 @@ bool VXRFormat::loadChildVXM(const core::String& vxmPath, scenegraph::SceneGraph
 }
 
 static const scenegraph::InterpolationType interpolationTypes[]{
-	scenegraph::InterpolationType::Instant,		 scenegraph::InterpolationType::Linear,			scenegraph::InterpolationType::QuadEaseIn,
-	scenegraph::InterpolationType::QuadEaseOut,	 scenegraph::InterpolationType::QuadEaseInOut,	scenegraph::InterpolationType::CubicEaseIn,
-	scenegraph::InterpolationType::CubicEaseOut, scenegraph::InterpolationType::CubicEaseInOut,
+	scenegraph::InterpolationType::Instant,		  scenegraph::InterpolationType::Linear,
+	scenegraph::InterpolationType::QuadEaseIn,	  scenegraph::InterpolationType::QuadEaseOut,
+	scenegraph::InterpolationType::QuadEaseInOut, scenegraph::InterpolationType::CubicEaseIn,
+	scenegraph::InterpolationType::CubicEaseOut,  scenegraph::InterpolationType::CubicEaseInOut,
 };
 
-bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int version, int parent, const LoadContext &ctx) {
+bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::SeekableReadStream &stream,
+											  scenegraph::SceneGraph &sceneGraph, int version, int parent,
+											  const LoadContext &ctx) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	char nodeId[1024];
 	wrapBool(stream.readString(sizeof(nodeId), nodeId, true))
@@ -298,7 +305,8 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 }
 
 // the positions that were part of the previous vxr versions are now in vxa
-bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int version, int parent, const LoadContext &ctx) {
+bool VXRFormat::importChild(const core::String &vxmPath, io::SeekableReadStream &stream,
+							scenegraph::SceneGraph &sceneGraph, int version, int parent, const LoadContext &ctx) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	char id[1024];
 	wrapBool(stream.readString(sizeof(id), id, true))
@@ -379,12 +387,14 @@ bool VXRFormat::importChild(const core::String& vxmPath, io::SeekableReadStream&
 	return true;
 }
 
-image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream, const LoadContext &ctx) {
+image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+										  const LoadContext &ctx) {
 	const core::String imageName = filename + ".png";
 	return image::loadImage(imageName);
 }
 
-bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int version, const LoadContext &ctx) {
+bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::SeekableReadStream &stream,
+											 scenegraph::SceneGraph &sceneGraph, int version, const LoadContext &ctx) {
 	uint32_t childAndModelCount;
 	wrap(stream.readUInt32(childAndModelCount))
 	uint32_t children = 0;
@@ -416,7 +426,8 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 	return true;
 }
 
-bool VXRFormat::handleVersion8AndLater(io::SeekableReadStream& stream, scenegraph::SceneGraphNode &node, const LoadContext &ctx) {
+bool VXRFormat::handleVersion8AndLater(io::SeekableReadStream &stream, scenegraph::SceneGraphNode &node,
+									   const LoadContext &ctx) {
 	char baseTemplate[1024];
 	wrapBool(stream.readString(sizeof(baseTemplate), baseTemplate, true))
 	node.setProperty("basetemplate", baseTemplate);
@@ -455,7 +466,8 @@ bool VXRFormat::handleVersion8AndLater(io::SeekableReadStream& stream, scenegrap
 	return true;
 }
 
-bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int version, const LoadContext &ctx) {
+bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::SeekableReadStream &stream,
+										   scenegraph::SceneGraph &sceneGraph, int version, const LoadContext &ctx) {
 	const int rootNodeId = sceneGraph.root().id();
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
 
@@ -478,11 +490,11 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 		wrapBool(importChild(filename, stream, sceneGraph, version, rootNodeId, ctx))
 	}
 
-	const core::String& basePath = core::string::extractPath(filename);
+	const core::String &basePath = core::string::extractPath(filename);
 	core::DynamicArray<io::FilesystemEntry> entities;
 	io::filesystem()->list(basePath, entities, "*.vxa");
 
-	for (const io::FilesystemEntry& entry : entities) {
+	for (const io::FilesystemEntry &entry : entities) {
 		const core::String &vxaPath = core::string::path(basePath, entry.name);
 		if (!loadVXA(sceneGraph, vxaPath, ctx)) {
 			Log::warn("Failed to load %s", vxaPath.c_str());
@@ -496,14 +508,15 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	return true;
 }
 
-bool VXRFormat::saveVXA(const scenegraph::SceneGraph& sceneGraph, const core::String &vxaPath, io::SeekableWriteStream& vxaStream, const core::String &animation, const SaveContext &ctx) {
+bool VXRFormat::saveVXA(const scenegraph::SceneGraph &sceneGraph, const core::String &vxaPath,
+						io::SeekableWriteStream &vxaStream, const core::String &animation, const SaveContext &ctx) {
 	VXAFormat f;
 	return f.save(sceneGraph, vxaPath, vxaStream, ctx);
 }
 
-bool VXRFormat::loadVXA(scenegraph::SceneGraph& sceneGraph, const core::String& vxaPath, const LoadContext &ctx) {
+bool VXRFormat::loadVXA(scenegraph::SceneGraph &sceneGraph, const core::String &vxaPath, const LoadContext &ctx) {
 	Log::debug("Try to load a vxa file: %s", vxaPath.c_str());
-	const io::FilePtr& file = io::filesystem()->open(vxaPath);
+	const io::FilePtr &file = io::filesystem()->open(vxaPath);
 	if (!file->validHandle()) {
 		return false;
 	}
@@ -512,7 +525,8 @@ bool VXRFormat::loadVXA(scenegraph::SceneGraph& sceneGraph, const core::String& 
 	return format.load(vxaPath, stream, sceneGraph, ctx);
 }
 
-bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, voxel::Palette &, const LoadContext &ctx) {
+bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &, const LoadContext &ctx) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))
@@ -549,4 +563,4 @@ bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 #undef wrap
 #undef wrapBool
 
-}
+} // namespace voxelformat
