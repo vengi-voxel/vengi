@@ -143,7 +143,6 @@ bool VXRFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 	}
 	const core::String &basePath = core::string::extractPath(filename);
 	const core::String &baseName = core::string::extractFilename(filename);
-	// TODO: we only support one animation for the transforms at the moment
 	for (const core::String &id : animationIds) {
 		const core::String &vxaFilename = core::string::format("%s.%s.vxa", baseName.c_str(), id.c_str());
 		const core::String &vxaPath = core::string::path(basePath, vxaFilename);
@@ -500,7 +499,6 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 
 bool VXRFormat::saveVXA(const scenegraph::SceneGraph& sceneGraph, const core::String &vxaPath, io::SeekableWriteStream& vxaStream, const core::String &animation, const SaveContext &ctx) {
 	VXAFormat f;
-	// sceneGraph.setAnimation(animation);
 	return f.save(sceneGraph, vxaPath, vxaStream, ctx);
 }
 
