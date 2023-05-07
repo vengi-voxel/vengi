@@ -10,6 +10,9 @@
 
 namespace io {
 
+/**
+ * @ingroup IO
+ */
 class ZipArchive : public Archive {
 private:
 	void *_zip = nullptr;

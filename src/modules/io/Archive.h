@@ -16,7 +16,8 @@ using SeekableReadStreamPtr = core::SharedPtr<SeekableReadStream>;
 
 /**
  * @ingroup IO
- * @see ZipArchive
+ * @sa ZipArchive
+ * @sa FilesystemArchive
  */
 class Archive {
 protected:
