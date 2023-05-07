@@ -10,11 +10,11 @@
 #include "engine-config.h"
 #include "io/File.h"
 #include "io/FileStream.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 
 namespace voxelformat {
 
@@ -23,7 +23,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 						   bool quad, bool withColor, bool withTexCoords) {
 	int elements = 0;
 	int indices = 0;
-	for (const auto& meshExt : meshes) {
+	for (const auto &meshExt : meshes) {
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
 			const voxel::Mesh &mesh = meshExt.mesh->mesh[i];
 			if (mesh.isEmpty()) {
@@ -68,21 +68,21 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	stream.writeStringFormat(false, "property list uchar uint vertex_indices\n");
 	stream.writeStringFormat(false, "end_header\n");
 
-	for (const auto& meshExt : meshes) {
+	for (const auto &meshExt : meshes) {
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
 			const voxel::Mesh &mesh = meshExt.mesh->mesh[i];
 			if (mesh.isEmpty()) {
 				continue;
 			}
 			const int nv = (int)mesh.getNoOfVertices();
-			const voxel::VoxelVertex* vertices = mesh.getRawVertexData();
+			const voxel::VoxelVertex *vertices = mesh.getRawVertexData();
 			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 			scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 			const voxel::Palette &palette = graphNode.palette();
 
 			for (int i = 0; i < nv; ++i) {
-				const voxel::VoxelVertex& v = vertices[i];
+				const voxel::VoxelVertex &v = vertices[i];
 				glm::vec3 pos;
 				if (meshExt.applyTransform) {
 					pos = transform.apply(v.position, meshExt.pivot * meshExt.size);
@@ -105,7 +105,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	}
 
 	int idxOffset = 0;
-	for (const auto& meshExt : meshes) {
+	for (const auto &meshExt : meshes) {
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
 			const voxel::Mesh &mesh = meshExt.mesh->mesh[i];
 			if (mesh.isEmpty()) {
@@ -117,19 +117,19 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				Log::error("Unexpected indices amount");
 				return false;
 			}
-			const voxel::IndexType* indices = mesh.getRawIndexData();
+			const voxel::IndexType *indices = mesh.getRawIndexData();
 			if (quad) {
 				for (int i = 0; i < ni; i += 6) {
-					const uint32_t one   = idxOffset + indices[i + 0];
-					const uint32_t two   = idxOffset + indices[i + 1];
+					const uint32_t one = idxOffset + indices[i + 0];
+					const uint32_t two = idxOffset + indices[i + 1];
 					const uint32_t three = idxOffset + indices[i + 2];
-					const uint32_t four  = idxOffset + indices[i + 5];
+					const uint32_t four = idxOffset + indices[i + 5];
 					stream.writeStringFormat(false, "4 %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
 				}
 			} else {
 				for (int i = 0; i < ni; i += 3) {
-					const uint32_t one   = idxOffset + indices[i + 0];
-					const uint32_t two   = idxOffset + indices[i + 1];
+					const uint32_t one = idxOffset + indices[i + 0];
+					const uint32_t two = idxOffset + indices[i + 1];
 					const uint32_t three = idxOffset + indices[i + 2];
 					stream.writeStringFormat(false, "3 %i %i %i\n", (int)one, (int)two, (int)three);
 				}
@@ -139,4 +139,4 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	}
 	return sceneGraph.firstPalette().save(paletteName.c_str());
 }
-}
+} // namespace voxelformat

@@ -4,30 +4,31 @@
 
 #include "BinVoxFormat.h"
 #include "core/Color.h"
+#include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
-#include "core/StringUtil.h"
-#include "core/Log.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolumeWrapper.h"
-#include "scenegraph/SceneGraph.h"
 
 namespace voxelformat {
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load binvox file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load binvox file: Not enough data in stream " CORE_STRINGIFY(read));                     \
+		return false;                                                                                                  \
 	}
 
-#define wrapBool(read) \
-	if (!(read)) { \
-		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if (!(read)) {                                                                                                     \
+		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                  \
+		return false;                                                                                                  \
 	}
 
-bool BinVoxFormat::readData(State& state, const core::String& filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph) {
+bool BinVoxFormat::readData(State &state, const core::String &filename, io::SeekableReadStream &stream,
+							scenegraph::SceneGraph &sceneGraph) {
 	const voxel::Region region(0, 0, 0, (int)state._d - 1, (int)state._w - 1, (int)state._h - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region found in file");
@@ -60,7 +61,8 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 				const int32_t iz = (int32_t)((i / state._w) % state._h);
 				const int32_t ix = (int32_t)(i / (state._w * state._h));
 				if (!volume->setVoxel(ix, iy, iz, voxel)) {
-					Log::debug("Failed to store voxel at x: %i, y: %i, z: %i (region: %s)", ix, iy, iz, region.toString().c_str());
+					Log::debug("Failed to store voxel at x: %i, y: %i, z: %i (region: %s)", ix, iy, iz,
+							   region.toString().c_str());
 				}
 			}
 		}
@@ -69,7 +71,8 @@ bool BinVoxFormat::readData(State& state, const core::String& filename, io::Seek
 	return true;
 }
 
-bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) {
+bool BinVoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream,
+							  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	char line[512];
 	wrapBool(stream.readLine(sizeof(line), line))
 	if (0 != strcmp(line, "#binvox 1")) {
@@ -119,7 +122,8 @@ bool BinVoxFormat::loadGroups(const core::String& filename, io::SeekableReadStre
 	return true;
 }
 
-bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+							  io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
@@ -127,7 +131,7 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const co
 	}
 	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
 
-	const voxel::Region& region = merged.first->region();
+	const voxel::Region &region = merged.first->region();
 	voxel::RawVolume::Sampler sampler(merged.first);
 
 	const int32_t width = region.getWidthInVoxels();
@@ -135,7 +139,7 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const co
 	const int32_t depth = region.getDepthInVoxels();
 	const glm::ivec3 mins = region.getLowerCorner();
 	const glm::ivec3 maxs = region.getUpperCorner();
-	const glm::ivec3& offset = -mins;
+	const glm::ivec3 &offset = -mins;
 	const float scale = 1.0f;
 
 	wrapBool(stream.writeString("#binvox 1\n", false))
@@ -150,12 +154,13 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const co
 	const int maxIndex = width * height * depth;
 	glm::ivec3 pos = mins;
 	const uint8_t emptyColorReplacement = merged.second.findReplacement(0);
-	Log::debug("found replacement for %s at index %u: %s at index %u", core::Color::print(merged.second.color(0)).c_str(), 0,
+	Log::debug("found replacement for %s at index %u: %s at index %u",
+			   core::Color::print(merged.second.color(0)).c_str(), 0,
 			   core::Color::print(merged.second.color(emptyColorReplacement)).c_str(), emptyColorReplacement);
 	for (int idx = 0; idx < maxIndex; ++idx) {
 		if (!sampler.setPosition(pos)) {
-			Log::error("Failed to set position for index %i (%i:%i:%i) (w:%i,h:%i,d:%i)",
-				idx, pos.x, pos.y, pos.z, width, height, depth);
+			Log::error("Failed to set position for index %i (%i:%i:%i) (w:%i,h:%i,d:%i)", idx, pos.x, pos.y, pos.z,
+					   width, height, depth);
 			return false;
 		}
 		const voxel::Voxel voxel = sampler.voxel();
@@ -203,8 +208,8 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const co
 	voxels += count;
 	const uint32_t expectedVoxels = width * height * depth;
 	if (voxels != expectedVoxels) {
-		Log::error("Not enough data was written: %u vs %u (w: %u, h: %u, d: %u)",
-			voxels, expectedVoxels, width, height, depth);
+		Log::error("Not enough data was written: %u vs %u (w: %u, h: %u, d: %u)", voxels, expectedVoxels, width, height,
+				   depth);
 		return false;
 	}
 	return true;
@@ -213,4 +218,4 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const co
 #undef wrap
 #undef wrapBool
 
-}
+} // namespace voxelformat

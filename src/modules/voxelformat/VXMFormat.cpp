@@ -25,23 +25,26 @@ namespace voxelformat {
 
 static const uint8_t EMPTY_PALETTE = 0xFFu;
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load vxm file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load vxm file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
-#define wrapDelete(read, mem) \
-	if ((read) != 0) { \
-		Log::error("Could not load vxm file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		delete (mem); \
-		return false; \
+#define wrapDelete(read, mem)                                                                                          \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load vxm file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		delete (mem);                                                                                                  \
+		return false;                                                                                                  \
 	}
 
-#define wrapBool(read) \
-	if ((read) != true) { \
-		Log::error("Could not load vxm file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if ((read) != true) {                                                                                              \
+		Log::error("Could not load vxm file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
 bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel &voxel,
@@ -70,8 +73,9 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 	return image::loadImage(imageName);
 }
 
-bool VXMFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
-	wrapBool(stream.writeUInt32(FourCC('V','X','M','C')));
+bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+	wrapBool(stream.writeUInt32(FourCC('V', 'X', 'M', 'C')));
 	const glm::vec3 pivot(0.5f);
 
 	const voxel::Region &region = sceneGraph.region();
@@ -222,7 +226,8 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 					// the border voxel of the volume into the file
 					sampler.setPosition(maxs.x - x, mins.y + y, mins.z + z);
 					const voxel::Voxel &voxel = sampler.voxel();
-					if (prevVoxel.getColor() != voxel.getColor() || voxel.getMaterial() != prevVoxel.getMaterial() || rleCount >= 255) {
+					if (prevVoxel.getColor() != voxel.getColor() || voxel.getMaterial() != prevVoxel.getMaterial() ||
+						rleCount >= 255) {
 						wrapBool(writeRLE(stream, rleCount, prevVoxel, node.palette(), palette))
 						prevVoxel = voxel;
 						rleCount = 0;
@@ -258,8 +263,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrap(stream.readUInt8(magic[2]))
 	wrap(stream.readUInt8(magic[3]))
 	if (magic[0] != 'V' || magic[1] != 'X' || magic[2] != 'M') {
-		Log::error("Could not load vxm file: Invalid magic found (%c%c%c%c)",
-			magic[0], magic[1], magic[2], magic[3]);
+		Log::error("Could not load vxm file: Invalid magic found (%c%c%c%c)", magic[0], magic[1], magic[2], magic[3]);
 		return false;
 	}
 	int version;

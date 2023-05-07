@@ -27,16 +27,18 @@
 
 namespace voxelformat {
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load vxr file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load vxr file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
-#define wrapBool(read) \
-	if ((read) != true) { \
-		Log::error("Could not load vxr file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if ((read) != true) {                                                                                              \
+		Log::error("Could not load vxr file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
 bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
@@ -120,7 +122,7 @@ bool VXRFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		Log::error("Empty scene graph - can't save vxr");
 		return false;
 	}
-	wrapBool(stream.writeUInt32(FourCC('V','X','R','9')))
+	wrapBool(stream.writeUInt32(FourCC('V', 'X', 'R', '9')))
 	scenegraph::SceneGraphAnimationIds animationIds = sceneGraph.animations();
 	if (animationIds.empty()) {
 		animationIds.push_back("Idle");
@@ -231,7 +233,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	int32_t keyFrameCount;
 	wrap(stream.readInt32(keyFrameCount))
 	for (int32_t i = 0u; i < keyFrameCount; ++i) {
-		scenegraph::SceneGraphKeyFrame& keyFrame = node.keyFrame(i);
+		scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(i);
 		int32_t frame;
 		wrap(stream.readInt32(frame)) // frame index
 		keyFrame.frameIdx = frame;
@@ -408,7 +410,7 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 	for (int32_t i = 0; i < modelCount; ++i) {
 		char nodeId[1024];
 		wrapBool(stream.readString(sizeof(nodeId), nodeId, true))
-		scenegraph::SceneGraphNode* node = sceneGraph.findNodeByName(nodeId);
+		scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName(nodeId);
 		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
 			Log::error("Can't find referenced model node %s", nodeId);
 			return false;
@@ -436,7 +438,7 @@ bool VXRFormat::handleVersion8AndLater(io::SeekableReadStream &stream, scenegrap
 	if (isStatic) {
 		int32_t lodLevels;
 		wrap(stream.readInt32(lodLevels))
-		for (int32_t i = 0 ; i < lodLevels; ++i) {
+		for (int32_t i = 0; i < lodLevels; ++i) {
 			uint32_t dummy;
 			wrap(stream.readUInt32(dummy))
 			wrap(stream.readUInt32(dummy))
@@ -533,8 +535,7 @@ bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrap(stream.readUInt8(magic[2]))
 	wrap(stream.readUInt8(magic[3]))
 	if (magic[0] != 'V' || magic[1] != 'X' || magic[2] != 'R') {
-		Log::error("Could not load vxr file: Invalid magic found (%c%c%c%c)",
-			magic[0], magic[1], magic[2], magic[3]);
+		Log::error("Could not load vxr file: Invalid magic found (%c%c%c%c)", magic[0], magic[1], magic[2], magic[3]);
 		return false;
 	}
 	int version;

@@ -17,6 +17,7 @@
 #include "io/ZipWriteStream.h"
 #include "private/MinecraftPaletteMap.h"
 #include "private/NamedBinaryTag.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
@@ -24,7 +25,6 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "scenegraph/SceneGraph.h"
 #include "voxelformat/private/SchematicIntReader.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
@@ -34,7 +34,8 @@
 namespace voxelformat {
 
 bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-										scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &loadctx) {
+										scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+										const LoadContext &loadctx) {
 	palette.minecraft();
 	io::ZipReadStream zipStream(stream);
 	priv::NamedBinaryTagContext ctx;
@@ -93,7 +94,8 @@ bool SchematicFormat::loadSponge3(const priv::NamedBinaryTag &schematic, scenegr
 	return false;
 }
 
-bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, int dataVersion) {
+bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
+							  voxel::Palette &palette, int dataVersion) {
 	const priv::NamedBinaryTag &blocks = schematic.get("blocks");
 	if (blocks.valid() && blocks.type() == priv::TagType::LIST) {
 		const priv::NBTList &list = *blocks.list();
@@ -104,7 +106,7 @@ bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, scenegraph:
 				Log::error("Unexpected nbt type: %i", (int)compound.type());
 				return false;
 			}
-			const priv::NamedBinaryTag& pos = compound.get("pos");
+			const priv::NamedBinaryTag &pos = compound.get("pos");
 			if (pos.type() != priv::TagType::LIST) {
 				Log::error("Unexpected nbt type for pos: %i", (int)pos.type());
 				return false;
@@ -331,8 +333,8 @@ void SchematicFormat::parseMetadata(const priv::NamedBinaryTag &schematic, scene
 	}
 }
 
-void SchematicFormat::addMetadata_r(const core::String &key, const priv::NamedBinaryTag &nbt, scenegraph::SceneGraph &sceneGraph,
-									scenegraph::SceneGraphNode &node) {
+void SchematicFormat::addMetadata_r(const core::String &key, const priv::NamedBinaryTag &nbt,
+									scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node) {
 	switch (nbt.type()) {
 	case priv::TagType::COMPOUND: {
 		scenegraph::SceneGraphNode compoundNode(scenegraph::SceneGraphNodeType::Group);

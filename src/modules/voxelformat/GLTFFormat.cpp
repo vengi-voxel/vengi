@@ -78,7 +78,7 @@ static core::RGBA toColor(const tinygltf::Accessor *gltfAttributeAccessor, const
 	return core::RGBA(0, 0, 0, 255);
 }
 
-template <typename T>
+template<typename T>
 void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::DynamicArray<uint32_t> &indices,
 					 uint32_t offset) {
 	for (size_t i = 0; i < count; i++) {

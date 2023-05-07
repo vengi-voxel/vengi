@@ -13,12 +13,12 @@
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
-#include "private/NamedBinaryTag.h"
 #include "private/MinecraftPaletteMap.h"
+#include "private/NamedBinaryTag.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolumeWrapper.h"
-#include "scenegraph/SceneGraph.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 
@@ -29,14 +29,15 @@ namespace voxelformat {
 #define wrap(expression)                                                                                               \
 	do {                                                                                                               \
 		if ((expression) != 0) {                                                                                       \
-			Log::error("Could not load file: Not enough data in stream " CORE_STRINGIFY(#expression) " at " CORE_FILE   \
+			Log::error("Could not load file: Not enough data in stream " CORE_STRINGIFY(#expression) " at " CORE_FILE  \
 																									 ":%i",            \
-					   CORE_LINE);                                                                                      \
+					   CORE_LINE);                                                                                     \
 			return false;                                                                                              \
 		}                                                                                                              \
 	} while (0)
 
-bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	const int64_t length = stream.size();
 	if (length < SECTOR_BYTES) {
 		Log::error("File does not contain enough data");
@@ -48,7 +49,8 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	int chunkZ = 0;
 	char type = 'a';
 	if (SDL_sscanf(name.c_str(), "r.%i.%i.mc%c", &chunkX, &chunkZ, &type) != 3) {
-		Log::warn("Failed to parse the region chunk boundaries from filename %s (%i.%i.%c)", name.c_str(), chunkX, chunkZ, type);
+		Log::warn("Failed to parse the region chunk boundaries from filename %s (%i.%i.%c)", name.c_str(), chunkX,
+				  chunkZ, type);
 	}
 
 	palette.minecraft();
@@ -90,7 +92,8 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	return false;
 }
 
-bool MCRFormat::loadMinecraftRegion(scenegraph::SceneGraph &sceneGraph, io::SeekableReadStream &stream, const voxel::Palette &palette) {
+bool MCRFormat::loadMinecraftRegion(scenegraph::SceneGraph &sceneGraph, io::SeekableReadStream &stream,
+									const voxel::Palette &palette) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		if (_offsets[i].sectorCount == 0u || _offsets[i].offset < sizeof(_offsets)) {
 			continue;
@@ -110,7 +113,8 @@ bool MCRFormat::loadMinecraftRegion(scenegraph::SceneGraph &sceneGraph, io::Seek
 	return true;
 }
 
-bool MCRFormat::readCompressedNBT(scenegraph::SceneGraph &sceneGraph, io::SeekableReadStream &stream, int sector, const voxel::Palette &palette) {
+bool MCRFormat::readCompressedNBT(scenegraph::SceneGraph &sceneGraph, io::SeekableReadStream &stream, int sector,
+								  const voxel::Palette &palette) {
 	uint32_t nbtSize;
 	wrap(stream.readUInt32BE(nbtSize));
 	if (nbtSize == 0) {
@@ -185,14 +189,14 @@ voxel::RawVolume *MCRFormat::error(SectionVolumes &volumes) {
 	return nullptr;
 }
 
-voxel::RawVolume* MCRFormat::finalize(SectionVolumes& volumes, int xPos, int zPos) {
+voxel::RawVolume *MCRFormat::finalize(SectionVolumes &volumes, int xPos, int zPos) {
 	if (volumes.empty()) {
 		Log::error("No volumes found at %i:%i", xPos, zPos);
 		return nullptr;
 	}
 	// TODO: only merge connected y chunks - don't fill empty chunks - just a waste of memory
 	voxel::RawVolume *merged = voxelutil::merge(volumes);
-	for (voxel::RawVolume* v : volumes) {
+	for (voxel::RawVolume *v : volumes) {
 		delete v;
 	}
 	merged->translate(glm::ivec3(xPos * MAX_SIZE, 0, zPos * MAX_SIZE));
@@ -201,7 +205,8 @@ voxel::RawVolume* MCRFormat::finalize(SectionVolumes& volumes, int xPos, int zPo
 	return cropped;
 }
 
-bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette, const priv::NamedBinaryTag &data, SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal) {
+bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette, const priv::NamedBinaryTag &data,
+								 SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal) {
 	Log::debug("Parse block states");
 	const bool hasData = data.type() == priv::TagType::LONG_ARRAY && !data.longArray()->empty();
 
@@ -223,7 +228,8 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 				for (sPos.x = 0; sPos.x < MAX_SIZE; ++sPos.x) {
 					const int color = getVoxel(dataVersion, data, sPos);
 					if (color < 0) {
-						Log::error("Failed to load voxel at position %i:%i:%i (dataversion: %i)", sPos.x, sPos.y, sPos.z, dataVersion);
+						Log::error("Failed to load voxel at position %i:%i:%i (dataversion: %i)", sPos.x, sPos.y,
+								   sPos.z, dataVersion);
 						delete v;
 						return false;
 					}
@@ -327,7 +333,8 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 	return true;
 }
 
-voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector, const voxel::Palette &pal) {
+voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector,
+										   const voxel::Palette &pal) {
 	const priv::NamedBinaryTag &sections = root.get("sections");
 	if (!sections.valid()) {
 		Log::error("Could not find 'sections' tag");
@@ -386,7 +393,8 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 	return finalize(volumes, xPos, zPos);
 }
 
-voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::NamedBinaryTag &root, int sector, const voxel::Palette &pal) {
+voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::NamedBinaryTag &root, int sector,
+												const voxel::Palette &pal) {
 	const priv::NamedBinaryTag &levels = root.get("Level");
 	if (!levels.valid()) {
 		Log::error("Could not find 'Level' tag");
@@ -411,7 +419,8 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 		if (tagStatus == nullptr) {
 			Log::debug("Status for level node wasn't found (version: %i)", dataVersion);
 		} else if (*tagStatus != "postprocessed") {
-			Log::debug("Status for level node is not postprocessed but %s (version: %i)", tagStatus->c_str(), dataVersion);
+			Log::debug("Status for level node is not postprocessed but %s (version: %i)", tagStatus->c_str(),
+					   dataVersion);
 		}
 	}
 
@@ -456,7 +465,7 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 		}
 
 		// TODO:"Data"(byte_array)
-		//const priv::NamedBinaryTag &data = section.get("Data");
+		// const priv::NamedBinaryTag &data = section.get("Data");
 		const core::String &tagId = dataVersion <= 1343 ? "Blocks" : "BlockStates";
 		const priv::NamedBinaryTag &blockStates = section.get(tagId);
 		if (!blockStates.valid()) {
@@ -471,7 +480,8 @@ voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::Nam
 	return finalize(volumes, xPos, zPos);
 }
 
-bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &palette, MinecraftSectionPalette &sectionPal) {
+bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &palette,
+								 MinecraftSectionPalette &sectionPal) {
 	if (palette.type() != priv::TagType::LIST) {
 		Log::error("Invalid type for palette: %i", (int)palette.type());
 		return false;
@@ -510,15 +520,16 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 
 #undef wrap
 
-#define wrapBool(write) \
-	if ((write) == false) { \
-		Log::error("Could not save mcr file: " CORE_STRINGIFY(write)); \
-		return false; \
+#define wrapBool(write)                                                                                                \
+	if ((write) == false) {                                                                                            \
+		Log::error("Could not save mcr file: " CORE_STRINGIFY(write));                                                 \
+		return false;                                                                                                  \
 	}
 
-bool MCRFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool MCRFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
-		uint8_t raw[3] = {0, 0, 0}; // TODO
+		uint8_t raw[3] = {0, 0, 0};	 // TODO
 		_offsets[i].sectorCount = 0; // TODO
 
 		core_assert(_offsets[i].offset < sizeof(_offsets));
@@ -536,7 +547,7 @@ bool MCRFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 	return saveMinecraftRegion(sceneGraph, stream);
 }
 
-bool MCRFormat::saveMinecraftRegion(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream& stream) {
+bool MCRFormat::saveMinecraftRegion(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		if (_offsets[i].sectorCount == 0u) {
 			continue;
@@ -549,7 +560,8 @@ bool MCRFormat::saveMinecraftRegion(const scenegraph::SceneGraph &sceneGraph, io
 	return true;
 }
 
-bool MCRFormat::saveCompressedNBT(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream& stream, int sector) {
+bool MCRFormat::saveCompressedNBT(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,
+								  int sector) {
 	const int64_t sizeOffset = stream.pos();
 	wrapBool(stream.writeUInt32BE(0));
 	// the version is included in the length

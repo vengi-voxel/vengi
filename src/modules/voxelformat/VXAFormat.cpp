@@ -245,7 +245,8 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 	int32_t children;
 	wrap(stream.readInt32(children))
 	if (children != (int32_t)node.children().size()) {
-		Log::error("Child count mismatch between loaded node %i and the vxa (%i/%i)", node.id(), children, (int)node.children().size());
+		Log::error("Child count mismatch between loaded node %i and the vxa (%i/%i)", node.id(), children,
+				   (int)node.children().size());
 		return false;
 	}
 	for (int32_t i = 0; i < children; ++i) {
@@ -265,8 +266,7 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	wrap(stream.readUInt8(magic[2]))
 	wrap(stream.readUInt8(magic[3]))
 	if (magic[0] != 'V' || magic[1] != 'X' || magic[2] != 'A') {
-		Log::error("Could not load vxa file: Invalid magic found (%c%c%c%c)",
-			magic[0], magic[1], magic[2], magic[3]);
+		Log::error("Could not load vxa file: Invalid magic found (%c%c%c%c)", magic[0], magic[1], magic[2], magic[3]);
 		return false;
 	}
 	int version;
@@ -293,7 +293,7 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	wrap(stream.readUInt64(md5[0]))
 	wrap(stream.readUInt64(md5[1]))
 
-	uint64_t hash[2] {0};
+	uint64_t hash[2]{0};
 	vxa_priv::calculateHash(sceneGraph, hash);
 
 	if (SDL_memcmp(md5, hash, sizeof(hash))) {
@@ -397,8 +397,8 @@ bool VXAFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	}
 	const core::String &animationId = baseFilename.substr(idx + 1);
 
-	wrapBool(stream.writeUInt32(FourCC('V','X','A','2')))
-	uint64_t hash[2] {0};
+	wrapBool(stream.writeUInt32(FourCC('V', 'X', 'A', '2')))
+	uint64_t hash[2]{0};
 	vxa_priv::calculateHash(sceneGraph, hash);
 	wrapBool(stream.writeUInt64(hash[0]))
 	wrapBool(stream.writeUInt64(hash[1]))

@@ -19,6 +19,8 @@
 #include "io/ZipWriteStream.h"
 #include "private/MinecraftPaletteMap.h"
 #include "private/NamedBinaryTag.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
@@ -27,8 +29,6 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/MCRFormat.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "scenegraph/SceneGraphUtil.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 
@@ -36,8 +36,9 @@
 
 namespace voxelformat {
 
-bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-								  voxel::Palette &palette, const LoadContext &loadctx) {
+bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+								  const LoadContext &loadctx) {
 	palette.minecraft();
 	io::ZipReadStream zipStream(stream);
 	priv::NamedBinaryTagContext ctx;
@@ -95,7 +96,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	int nodesAdded = 0;
 	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
 
-	core::DynamicArray<std::future<scenegraph::SceneGraph> > futures;
+	core::DynamicArray<std::future<scenegraph::SceneGraph>> futures;
 	Log::info("Found %i region files", (int)entities.size());
 	for (const io::FilesystemEntry &e : entities) {
 		if (e.type != io::FilesystemEntry::Type::file) {
@@ -132,7 +133,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 	Log::debug("Scheduled %i regions", (int)futures.size());
 	int count = 0;
-	for (auto & f : futures) {
+	for (auto &f : futures) {
 		scenegraph::SceneGraph newSceneGraph = core::move(f.get());
 		nodesAdded += scenegraph::addSceneGraphNodes(sceneGraph, newSceneGraph, rootNode);
 		Log::debug("... loaded %i", count++);

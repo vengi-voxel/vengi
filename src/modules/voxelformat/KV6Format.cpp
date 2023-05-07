@@ -12,27 +12,19 @@
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Stream.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxel/Face.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
-#include "scenegraph/SceneGraph.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
 
-
 namespace priv {
 
-enum KV6Visibility {
-	Left = 1,
-	Right = 2,
-	Front = 4,
-	Back = 8,
-	Up = 16,
-	Down = 32
-};
+enum KV6Visibility { Left = 1, Right = 2, Front = 4, Back = 8, Up = 16, Down = 32 };
 
 static uint8_t calculateVisibility(const voxel::RawVolume *v, int x, int y, int z) {
 	uint8_t vis = 0;
@@ -69,33 +61,34 @@ static uint8_t calculateDir(const voxel::RawVolume *, int, int, int, const voxel
 }
 
 struct voxtype {
-	uint8_t z_low_h = 0;	///< z coordinate of this surface voxel (height - our y)
-	uint8_t z_high = 0;		///< always 0
-	uint8_t col = 0;		///< palette index
-	uint8_t vis = 0;		///< Low 6 bits say if neighbor is solid or air - @sa priv::KV6Visibility
-	uint8_t dir = 0;		///< Uses 256-entry lookup table - lighting bit - @sa priv::directions
+	uint8_t z_low_h = 0; ///< z coordinate of this surface voxel (height - our y)
+	uint8_t z_high = 0;	 ///< always 0
+	uint8_t col = 0;	 ///< palette index
+	uint8_t vis = 0;	 ///< Low 6 bits say if neighbor is solid or air - @sa priv::KV6Visibility
+	uint8_t dir = 0;	 ///< Uses 256-entry lookup table - lighting bit - @sa priv::directions
 };
 
 constexpr uint32_t MAXVOXS = 1048576;
 
 struct State {
 	priv::voxtype voxdata[MAXVOXS];
-	int32_t xlen[256] {};
-	uint16_t xyoffset[256][256] {};
+	int32_t xlen[256]{};
+	uint16_t xyoffset[256][256]{};
 };
 
 } // namespace priv
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load kv6 file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return 0; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load kv6 file: Not enough data in stream " CORE_STRINGIFY(read));                        \
+		return 0;                                                                                                      \
 	}
 
-size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
+size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+							  const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
-	if (magic != FourCC('K','v','x','l')) {
+	if (magic != FourCC('K', 'v', 'x', 'l')) {
 		Log::error("Invalid magic");
 		return 0;
 	}
@@ -120,7 +113,7 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 		if (stream.remaining() != 0) {
 			uint32_t palMagic;
 			wrap(stream.readUInt32(palMagic))
-			if (palMagic == FourCC('S','P','a','l')) {
+			if (palMagic == FourCC('S', 'P', 'a', 'l')) {
 				palette.setSize(voxel::PaletteMaxColors);
 				for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
 					uint8_t r, g, b;
@@ -137,16 +130,17 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 }
 
 #undef wrap
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load kv6 file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load kv6 file: Not enough data in stream " CORE_STRINGIFY(read));                        \
+		return false;                                                                                                  \
 	}
 
-bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
-	if (magic != FourCC('K','v','x','l')) {
+	if (magic != FourCC('K', 'v', 'x', 'l')) {
 		Log::error("Invalid magic");
 		return false;
 	}
@@ -195,7 +189,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		if (stream.remaining() != 0) {
 			uint32_t palMagic;
 			wrap(stream.readUInt32(palMagic))
-			if (palMagic == FourCC('S','P','a','l')) {
+			if (palMagic == FourCC('S', 'P', 'a', 'l')) {
 				palette.setSize(voxel::PaletteMaxColors);
 				for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
 					uint8_t r, g, b;
@@ -217,14 +211,15 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt8(palg))
 		wrap(stream.readUInt8(palr))
 		wrap(stream.readUInt8(pala)) // always 128
-		const glm::vec4& color = core::Color::fromRGBA(palr, palg, palb, 255);
+		const glm::vec4 &color = core::Color::fromRGBA(palr, palg, palb, 255);
 		state->voxdata[c].col = palLookup.findClosestIndex(color);
 		wrap(stream.readUInt8(state->voxdata[c].z_low_h))
 		wrap(stream.readUInt8(state->voxdata[c].z_high))
 		wrap(stream.readUInt8(state->voxdata[c].vis))
 		wrap(stream.readUInt8(state->voxdata[c].dir))
-		Log::debug("voxel %u/%u z-low: %u, z_high: %u, vis: %i. dir: %u, pal: %u",
-				c, numvoxs, state->voxdata[c].z_low_h, state->voxdata[c].z_high, state->voxdata[c].vis, state->voxdata[c].dir, state->voxdata[c].col);
+		Log::debug("voxel %u/%u z-low: %u, z_high: %u, vis: %i. dir: %u, pal: %u", c, numvoxs,
+				   state->voxdata[c].z_low_h, state->voxdata[c].z_high, state->voxdata[c].vis, state->voxdata[c].dir,
+				   state->voxdata[c].col);
 	}
 	for (uint32_t x = 0u; x < xsiz_w; ++x) {
 		wrap(stream.readInt32(state->xlen[x]))
@@ -244,7 +239,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	for (uint32_t x = 0; x < xsiz_w; ++x) {
 		for (uint32_t y = 0; y < ysiz_d; ++y) {
 			for (int end = idx + state->xyoffset[x][y]; idx < end; ++idx) {
-				const priv::voxtype& vox = state->voxdata[idx];
+				const priv::voxtype &vox = state->voxdata[idx];
 				const voxel::Voxel col = voxel::createVoxel(palette, vox.col);
 				volume->setVoxel((int)x, (int)((zsiz_h - 1) - vox.z_low_h), (int)y, col);
 			}
@@ -257,7 +252,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			voxel::Voxel lastCol;
 			uint32_t lastZ = 256;
 			for (int end = idx + state->xyoffset[x][y]; idx < end; ++idx) {
-				const priv::voxtype& vox = state->voxdata[idx];
+				const priv::voxtype &vox = state->voxdata[idx];
 				if (vox.vis & priv::KV6Visibility::Up) {
 					lastZ = vox.z_low_h;
 					lastCol = voxel::createVoxel(palette, vox.col);
@@ -285,13 +280,14 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 #undef wrap
 
-#define wrapBool(read) \
-	if ((read) == false) { \
-		Log::error("Could not write kv6 file: Not enough space in stream " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if ((read) == false) {                                                                                             \
+		Log::error("Could not write kv6 file: Not enough space in stream " CORE_STRINGIFY(read));                      \
+		return false;                                                                                                  \
 	}
 
-bool KV6Format::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
@@ -307,24 +303,27 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 		return false;
 	}
 
-	int32_t xlen[256] {};
-	uint16_t xyoffset[256][256] {}; // our z
+	int32_t xlen[256]{};
+	uint16_t xyoffset[256][256]{}; // our z
 
 	core::DynamicArray<priv::voxtype> voxdata;
-	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(*merged.first, [&](int x, int y, int z, const voxel::Voxel &voxel) {
-		priv::voxtype vd;
-		const int x_low_w = x - region.getLowerX();
-		// flip y and z here
-		const int y_low_d = z - region.getLowerZ();
-		vd.z_low_h = region.getHeightInCells() - (y - region.getLowerY());
-		vd.z_high = 0;
-		vd.col = voxel.getColor();
-		vd.vis = priv::calculateVisibility(merged.first, x, y, z);
-		vd.dir = priv::calculateDir(merged.first, x, y, z, voxel);
-		voxdata.push_back(vd);
-		++xlen[x_low_w];
-		++xyoffset[x_low_w][y_low_d];
-	}, voxelutil::VisitorOrder::XZY);
+	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(
+		*merged.first,
+		[&](int x, int y, int z, const voxel::Voxel &voxel) {
+			priv::voxtype vd;
+			const int x_low_w = x - region.getLowerX();
+			// flip y and z here
+			const int y_low_d = z - region.getLowerZ();
+			vd.z_low_h = region.getHeightInCells() - (y - region.getLowerY());
+			vd.z_high = 0;
+			vd.col = voxel.getColor();
+			vd.vis = priv::calculateVisibility(merged.first, x, y, z);
+			vd.dir = priv::calculateDir(merged.first, x, y, z, voxel);
+			voxdata.push_back(vd);
+			++xlen[x_low_w];
+			++xyoffset[x_low_w][y_low_d];
+		},
+		voxelutil::VisitorOrder::XZY);
 
 	constexpr uint32_t MAXVOXS = 1048576;
 	if (numvoxs > MAXVOXS) {
@@ -332,7 +331,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 		return false;
 	}
 
-	wrapBool(stream.writeUInt32(FourCC('K','v','x','l')))
+	wrapBool(stream.writeUInt32(FourCC('K', 'v', 'x', 'l')))
 
 	const int xsiz_w = dim.x;
 	// flip y and z here
@@ -359,8 +358,8 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 		wrapBool(stream.writeUInt8(data.z_high))
 		wrapBool(stream.writeUInt8(data.vis))
 		wrapBool(stream.writeUInt8(data.dir))
-		Log::debug("voxel z-low: %u, z_high: %u, vis: %i. dir: %u, pal: %u",
-				data.z_low_h, data.z_high, data.vis, data.dir, data.col);
+		Log::debug("voxel z-low: %u, z_high: %u, vis: %i. dir: %u, pal: %u", data.z_low_h, data.z_high, data.vis,
+				   data.dir, data.col);
 	}
 
 	for (int x = 0u; x < xsiz_w; ++x) {
@@ -375,7 +374,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 		}
 	}
 
-	const uint32_t palMagic = FourCC('S','P','a','l');
+	const uint32_t palMagic = FourCC('S', 'P', 'a', 'l');
 	wrapBool(stream.writeUInt32(palMagic))
 	for (int i = 0; i < merged.second.colorCount(); ++i) {
 		const core::RGBA color = merged.second.color(i);
@@ -394,4 +393,4 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 
 #undef wrapBool
 
-}
+} // namespace voxelformat

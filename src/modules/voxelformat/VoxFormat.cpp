@@ -15,22 +15,22 @@
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "math/Math.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <SDL_endian.h>
-#define OGT_VOX_BIGENDIAN_SWAP32  SDL_SwapLE32
+#define OGT_VOX_BIGENDIAN_SWAP32 SDL_SwapLE32
 #define OGT_VOX_IMPLEMENTATION
 #define ogt_assert(x, msg) core_assert_msg(x, "%s", msg)
 #include "external/ogt_vox.h"
 #include <glm/ext/matrix_transform.hpp>
-#include <glm/gtc/matrix_access.hpp>
-#include <glm/gtx/transform.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/transform.hpp>
 
 namespace voxelformat {
 
@@ -53,12 +53,8 @@ static void _ogt_free(void *mem) {
 	core_free(mem);
 }
 
-static const ogt_vox_transform ogt_identity_transform {
-	1.0f, 0.0f, 0.0f, 0.0f,
-	0.0f, 1.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f, 0.0f,
-	0.0f, 0.0f, 0.0f, 1.0f
-};
+static const ogt_vox_transform ogt_identity_transform{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+													  0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 
 /**
  * @brief Calculate the scene graph object transformation. Used for the voxel and the AABB of the volume.
@@ -81,12 +77,13 @@ static glm::mat4 ogtTransformToMat(const ogt_vox_transform &t) {
 	return glm::mat4{col0, col1, col2, col3};
 }
 
-static bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode& node, const ogt_vox_keyframe_transform* transformKeyframes, uint32_t numKeyframes) {
+static bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+						  const ogt_vox_keyframe_transform *transformKeyframes, uint32_t numKeyframes) {
 	scenegraph::SceneGraphKeyFrames kf;
 	Log::debug("Load %d keyframes", numKeyframes);
 	kf.reserve(numKeyframes);
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < numKeyframes; ++keyFrameIdx) {
-		const ogt_vox_keyframe_transform& transform_keyframe = transformKeyframes[keyFrameIdx];
+		const ogt_vox_keyframe_transform &transform_keyframe = transformKeyframes[keyFrameIdx];
 		const glm::mat4 worldMatrix = ogtTransformToMat(transform_keyframe.transform);
 		scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
 		// TODO: zUpMat?
@@ -103,7 +100,8 @@ VoxFormat::VoxFormat() {
 	ogt_vox_set_memory_allocator(_ogt_alloc, _ogt_free);
 }
 
-size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette, const LoadContext &ctx) {
+size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+							  const LoadContext &ctx) {
 	const size_t size = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
 	if (stream.read(buffer, size) == -1) {
@@ -135,18 +133,20 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.size();
 }
 
-bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden) {
-	const ogt_vox_instance& ogtInstance = scene->instances[ogt_instanceIdx];
+bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
+							 int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden) {
+	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
 	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance.transform);
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
 	const uint8_t *ogtVoxels = ogtModel->voxel_data;
 	const uint8_t *ogtVoxel = ogtVoxels;
 	const glm::ivec3 maxs(ogtModel->size_x - 1, ogtModel->size_y - 1, ogtModel->size_z - 1);
-	const glm::vec4 pivot(glm::floor((float)ogtModel->size_x / 2.0f), glm::floor((float)ogtModel->size_y / 2.0f), glm::floor((float)ogtModel->size_z / 2.0f), 0.0f);
-	const glm::ivec3& transformedMins = calcTransform(ogtMat, glm::ivec3(0), pivot);
-	const glm::ivec3& transformedMaxs = calcTransform(ogtMat, maxs, pivot);
-	const glm::ivec3& zUpMins = calcTransform(zUpMat, transformedMins, glm::ivec4(0));
-	const glm::ivec3& zUpMaxs = calcTransform(zUpMat, transformedMaxs, glm::ivec4(0));
+	const glm::vec4 pivot(glm::floor((float)ogtModel->size_x / 2.0f), glm::floor((float)ogtModel->size_y / 2.0f),
+						  glm::floor((float)ogtModel->size_z / 2.0f), 0.0f);
+	const glm::ivec3 &transformedMins = calcTransform(ogtMat, glm::ivec3(0), pivot);
+	const glm::ivec3 &transformedMaxs = calcTransform(ogtMat, maxs, pivot);
+	const glm::ivec3 &zUpMins = calcTransform(zUpMat, transformedMins, glm::ivec4(0));
+	const glm::ivec3 &zUpMaxs = calcTransform(zUpMat, transformedMaxs, glm::ivec4(0));
 	voxel::Region region(glm::min(zUpMins, zUpMaxs), glm::max(zUpMins, zUpMaxs));
 	const glm::ivec3 shift = region.getLowerCorner();
 	region.shift(-shift);
@@ -195,7 +195,9 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	return sceneGraph.emplace(core::move(node), parent) != -1;
 }
 
-bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph, int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances, const voxel::Palette &palette) {
+bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph,
+						  int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances,
+						  const voxel::Palette &palette) {
 	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
 	const char *name = ogt_group.name ? ogt_group.name : "Group";
@@ -251,14 +253,16 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 	return true;
 }
 
-bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	const size_t size = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
 	if (stream.read(buffer, size) == -1) {
 		core_free(buffer);
 		return false;
 	}
-	const uint32_t ogt_vox_flags = k_read_scene_flags_keyframes | k_read_scene_flags_keep_empty_models_instances | k_read_scene_flags_groups | k_read_scene_flags_keep_duplicate_models;
+	const uint32_t ogt_vox_flags = k_read_scene_flags_keyframes | k_read_scene_flags_keep_empty_models_instances |
+								   k_read_scene_flags_groups | k_read_scene_flags_keep_duplicate_models;
 	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, ogt_vox_flags);
 	core_free(buffer);
 	if (scene == nullptr) {
@@ -330,16 +334,16 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	for (uint32_t n = 0; n < scene->num_cameras; ++n) {
-		const ogt_vox_cam& c = scene->cameras[n];
+		const ogt_vox_cam &c = scene->cameras[n];
 		const glm::vec3 target(c.focus[0], c.focus[1], c.focus[2]);
 		const glm::vec3 angles(c.angle[0], c.angle[1], c.angle[2]);
 		const glm::quat quat(glm::radians(angles));
 		const float distance = (float)c.radius;
-		const glm::vec3& forward = glm::conjugate(quat) * glm::forward;
-		const glm::vec3& backward = -forward;
-		const glm::vec3& newPosition = target + backward * distance;
-		const glm::mat4& orientation = glm::mat4_cast(quat);
-		const glm::mat4& viewMatrix = glm::translate(orientation, -newPosition);
+		const glm::vec3 &forward = glm::conjugate(quat) * glm::forward;
+		const glm::vec3 &backward = -forward;
+		const glm::vec3 &newPosition = target + backward * distance;
+		const glm::mat4 &orientation = glm::mat4_cast(quat);
+		const glm::mat4 &viewMatrix = glm::translate(orientation, -newPosition);
 		{
 			scenegraph::SceneGraphNodeCamera camNode;
 			camNode.setName(core::String::format("Camera %u", c.camera_id));
@@ -373,7 +377,9 @@ int VoxFormat::findClosestPaletteIndex(const voxel::Palette &palette) {
 	return core::Color::getClosestMatch(first, materialColors) + 1;
 }
 
-void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx, const voxel::Palette &palette, uint8_t replacement) {
+void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+						 ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx,
+						 const voxel::Palette &palette, uint8_t replacement) {
 	Log::debug("Save node '%s' with parent group %u and layer %u", node.name().c_str(), parentGroupIdx, layerIdx);
 	if (node.type() == scenegraph::SceneGraphNodeType::Root || node.type() == scenegraph::SceneGraphNodeType::Group) {
 		if (node.type() == scenegraph::SceneGraphNodeType::Root) {
@@ -449,22 +455,26 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ogt_model.size_y = region.getDepthInVoxels();
 			ogt_model.size_z = region.getHeightInVoxels();
 			const int voxelSize = (int)(ogt_model.size_x * ogt_model.size_y * ogt_model.size_z);
-			uint8_t *dataptr = (uint8_t*)core_malloc(voxelSize);
+			uint8_t *dataptr = (uint8_t *)core_malloc(voxelSize);
 			ogt_model.voxel_data = dataptr;
-			voxelutil::visitVolume(*node.volume(), [&] (int, int, int, const voxel::Voxel& voxel) {
-				const core::RGBA rgba = nodePalette.color(voxel.getColor());
-				if (rgba.a == 0 || isAir(voxel.getMaterial())) {
-					*dataptr++ = 0;
-				} else {
-					const uint8_t palIndex = palette.getClosestMatch(rgba, nullptr, 0);
-					if (palIndex == 0u && !ctx.paletteErrorPrinted) {
-						Log::debug("palette index %u: %s mapped to %s", voxel.getColor(), core::Color::print(rgba).c_str(), core::Color::print(palette.color(0)).c_str());
-						Log::error("Could not find a valid color for %u", voxel.getColor());
-						ctx.paletteErrorPrinted = true;
+			voxelutil::visitVolume(
+				*node.volume(),
+				[&](int, int, int, const voxel::Voxel &voxel) {
+					const core::RGBA rgba = nodePalette.color(voxel.getColor());
+					if (rgba.a == 0 || isAir(voxel.getMaterial())) {
+						*dataptr++ = 0;
+					} else {
+						const uint8_t palIndex = palette.getClosestMatch(rgba, nullptr, 0);
+						if (palIndex == 0u && !ctx.paletteErrorPrinted) {
+							Log::debug("palette index %u: %s mapped to %s", voxel.getColor(),
+									   core::Color::print(rgba).c_str(), core::Color::print(palette.color(0)).c_str());
+							Log::error("Could not find a valid color for %u", voxel.getColor());
+							ctx.paletteErrorPrinted = true;
+						}
+						*dataptr++ = palIndex;
 					}
-					*dataptr++ = palIndex;
-				}
-			}, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
+				},
+				voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
 
 			ctx.models.push_back(ogt_model);
 		}
@@ -479,14 +489,16 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 				ogt_instance.name = node.name().c_str();
 				ogt_instance.hidden = !node.visible();
 				ogt_instance.transform_anim.num_keyframes = keyFrames.size();
-				ogt_instance.transform_anim.keyframes = ogt_instance.transform_anim.num_keyframes ? &ctx.keyframeTransforms[ctx.transformKeyFrameIdx] : nullptr;
+				ogt_instance.transform_anim.keyframes = ogt_instance.transform_anim.num_keyframes
+															? &ctx.keyframeTransforms[ctx.transformKeyFrameIdx]
+															: nullptr;
 				ctx.instances.push_back(ogt_instance);
 			}
 
 			const glm::vec3 &mins = region.getLowerCornerf();
 			const glm::vec3 &maxs = region.getUpperCornerf();
 			const glm::vec3 width = maxs - mins + 1.0f;
-			for (const scenegraph::SceneGraphKeyFrame& kf : keyFrames) {
+			for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
 				ogt_vox_keyframe_transform ogt_keyframe;
 				core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
 				ogt_keyframe.frame_index = kf.frameIdx;
@@ -515,7 +527,8 @@ glm::ivec3 VoxFormat::maxSize() const {
 	return maxSize;
 }
 
-bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &savectx) {
+bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &savectx) {
 	voxel::Palette palette = sceneGraph.mergePalettes(true, 0);
 	if (palette.colorCount() <= 0) {
 		Log::error("Could not find any colors in the merged palette");
@@ -598,4 +611,4 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	return true;
 }
 
-} // namespace voxel
+} // namespace voxelformat

@@ -6,24 +6,26 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
-#include "voxel/MaterialColor.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxel/MaterialColor.h"
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                  \
+		return false;                                                                                                  \
 	}
 
-#define wrapBool(read) \
-	if (!(read)) { \
-		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if (!(read)) {                                                                                                     \
+		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                  \
+		return false;                                                                                                  \
 	}
 
 namespace voxelformat {
 
-bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+									   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+									   const LoadContext &ctx) {
 	uint32_t depth, height, width;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
@@ -65,7 +67,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 				if (palIdx == 255) {
 					continue;
 				}
-				const voxel::Voxel& voxel = voxel::createVoxel(palette, palIdx);
+				const voxel::Voxel &voxel = voxel::createVoxel(palette, palIdx);
 				// we have to flip depth with height for our own coordinate system
 				volume->setVoxel((int)width - (int)w - 1, (int)height - (int)h - 1, (int)d, voxel);
 			}
@@ -78,7 +80,8 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 	return true;
 }
 
-bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+								io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
@@ -99,7 +102,7 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const 
 	for (int w = region.getUpperX(); w >= region.getLowerX(); --w) {
 		for (int d = region.getLowerZ(); d <= region.getUpperZ(); ++d) {
 			for (int h = region.getUpperY(); h >= region.getLowerY(); --h) {
-				const voxel::Voxel& voxel = merged.first->voxel(w, h, d);
+				const voxel::Voxel &voxel = merged.first->voxel(w, h, d);
 				if (voxel::isAir(voxel.getMaterial())) {
 					wrapBool(stream.writeUInt8(255))
 				} else if (voxel.getColor() == 255) {
@@ -117,7 +120,8 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const 
 		wrapBool(stream.writeUInt8(rgba.g))
 		wrapBool(stream.writeUInt8(rgba.b))
 	}
-	for (int i = palette.colorCount(); i < voxel::PaletteMaxColors; ++i) {;
+	for (int i = palette.colorCount(); i < voxel::PaletteMaxColors; ++i) {
+		;
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
@@ -129,4 +133,4 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const 
 #undef wrap
 #undef wrapBool
 
-} // namespace voxel
+} // namespace voxelformat

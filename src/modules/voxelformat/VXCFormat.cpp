@@ -9,7 +9,6 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
-#include "app/App.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxelformat/VXMFormat.h"
@@ -17,19 +16,22 @@
 
 namespace voxelformat {
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load vxc file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load vxc file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
-#define wrapBool(read) \
-	if ((read) != true) { \
-		Log::error("Could not load vxc file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if ((read) != true) {                                                                                              \
+		Log::error("Could not load vxc file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
-bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream &in, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream &in, scenegraph::SceneGraph &sceneGraph,
+						   const LoadContext &ctx) {
 	io::ZipReadStream stream(in, (int)in.size());
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
@@ -37,8 +39,7 @@ bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	wrap(stream.readUInt8(magic[2]))
 	wrap(stream.readUInt8(magic[3]))
 	if (magic[0] != 'V' || magic[1] != 'X' || magic[2] != 'C') {
-		Log::error("Could not load vxc file: Invalid magic found (%c%c%c%c)",
-			magic[0], magic[1], magic[2], magic[3]);
+		Log::error("Could not load vxc file: Invalid magic found (%c%c%c%c)", magic[0], magic[1], magic[2], magic[3]);
 		return false;
 	}
 	int version = magic[3] - '0';
@@ -77,11 +78,12 @@ bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	return !sceneGraph.empty();
 }
 
-bool VXCFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
+bool VXCFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	return false;
 }
 
 #undef wrap
 #undef wrapBool
 
-} // namespace voxel
+} // namespace voxelformat

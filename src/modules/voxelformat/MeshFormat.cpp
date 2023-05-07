@@ -297,7 +297,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 		const size_t colorCount = colors.size();
 		core::Buffer<core::RGBA> colorBuffer;
 		colorBuffer.reserve(colorCount);
-		for (const auto & e : colors) {
+		for (const auto &e : colors) {
 			colorBuffer.push_back(e->first);
 		}
 		palette.quantize(colorBuffer.data(), colorBuffer.size());

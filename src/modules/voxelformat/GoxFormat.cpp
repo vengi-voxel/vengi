@@ -12,18 +12,18 @@
 #include "io/Stream.h"
 #include "math/Axis.h"
 #include "math/Math.h"
-#include "voxel/MaterialColor.h"
-#include "voxel/Palette.h"
-#include "voxel/RawVolume.h"
-#include "voxel/Voxel.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
+#include "voxel/PaletteLookup.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
-#include "voxel/PaletteLookup.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace voxelformat {
@@ -54,11 +54,12 @@ namespace voxelformat {
 
 class GoxScopedChunkWriter {
 private:
-	io::SeekableWriteStream& _stream;
+	io::SeekableWriteStream &_stream;
 	int64_t _chunkSizePos;
 	uint32_t _chunkId;
+
 public:
-	GoxScopedChunkWriter(io::SeekableWriteStream& stream, uint32_t chunkId) : _stream(stream), _chunkId(chunkId) {
+	GoxScopedChunkWriter(io::SeekableWriteStream &stream, uint32_t chunkId) : _stream(stream), _chunkId(chunkId) {
 		uint8_t buf[4];
 		FourCCRev(buf, chunkId);
 		Log::debug("Saving %c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
@@ -86,7 +87,8 @@ bool GoxFormat::loadChunk_Header(GoxChunk &c, io::SeekableReadStream &stream) {
 	if (stream.eos()) {
 		return false;
 	}
-	core_assert_msg(stream.remaining() >= 8, "stream should at least contain 8 more bytes, but only has %i", (int)stream.remaining());
+	core_assert_msg(stream.remaining() >= 8, "stream should at least contain 8 more bytes, but only has %i",
+					(int)stream.remaining());
 	wrap(stream.readUInt32(c.type))
 	wrap(stream.readInt32(c.length))
 	c.streamStartPos = stream.pos();
@@ -145,7 +147,8 @@ bool GoxFormat::loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &s
 	return true;
 }
 
-image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream, const LoadContext &ctx) {
+image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+										  const LoadContext &ctx) {
 	uint32_t magic;
 	wrapImg(stream.readUInt32(magic))
 
@@ -176,7 +179,8 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::Seek
 	return image::ImagePtr();
 }
 
-bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette) {
+bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
+							   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette) {
 	const int size = (int)sceneGraph.size();
 	voxel::RawVolume *layerVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 	uint32_t blockCount;
@@ -272,7 +276,7 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 			node.setName(dictValue);
 		} else if (!strcmp(dictKey, "visible")) {
 			// "visible" (bool)
-			visible = *(const bool*)dictValue;
+			visible = *(const bool *)dictValue;
 		} else if (!strcmp(dictKey, "mat")) {
 			// "mat" (4x4 matrix)
 			scenegraph::SceneGraphTransform transform;
@@ -290,9 +294,9 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 		} else if (!strcmp(dictKey, "base_id") || !strcmp(dictKey, "material")) {
 			// "base_id" int
 			// "material" int (index)
-			node.setProperty(dictKey, core::string::toString(*(const int32_t*)dictValue));
+			node.setProperty(dictKey, core::string::toString(*(const int32_t *)dictValue));
 		} else if (!strcmp(dictKey, "color")) {
-			const core::RGBA color = *(const uint32_t*)dictValue;
+			const core::RGBA color = *(const uint32_t *)dictValue;
 			node.setColor(core::RGBA(color));
 		} else if (!strcmp(dictKey, "box") || !strcmp(dictKey, "shape")) {
 			// "box" 4x4 bounding box float
@@ -317,8 +321,8 @@ bool GoxFormat::loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-bool GoxFormat::loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableReadStream &stream) {
-	uint8_t* png = (uint8_t*)core_malloc(c.length);
+bool GoxFormat::loadChunk_BL16(State &state, const GoxChunk &c, io::SeekableReadStream &stream) {
+	uint8_t *png = (uint8_t *)core_malloc(c.length);
 	wrapBool(loadChunk_ReadData(stream, (char *)png, c.length))
 	image::ImagePtr img = image::createEmptyImage("gox-voxeldata");
 	bool success = img->load(png, c.length);
@@ -336,7 +340,8 @@ bool GoxFormat::loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-bool GoxFormat::loadChunk_MATE(State& state, const GoxChunk &c, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph) {
+bool GoxFormat::loadChunk_MATE(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
+							   scenegraph::SceneGraph &sceneGraph) {
 	char dictKey[256];
 	char dictValue[256];
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
@@ -349,7 +354,8 @@ bool GoxFormat::loadChunk_MATE(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph) {
+bool GoxFormat::loadChunk_CAMR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
+							   scenegraph::SceneGraph &sceneGraph) {
 	char dictKey[256];
 	char dictValue[256];
 	scenegraph::SceneGraphNodeCamera node;
@@ -362,10 +368,10 @@ bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableRead
 			node.setProperty(dictKey, "true");
 		} else if (!strcmp(dictKey, "dist")) {
 			// "dist" float
-			node.setFarPlane(*(const float*)dictValue);
+			node.setFarPlane(*(const float *)dictValue);
 		} else if (!strcmp(dictKey, "ortho")) {
 			// "ortho" bool
-			const bool ortho = *(const bool*)dictValue;
+			const bool ortho = *(const bool *)dictValue;
 			if (ortho) {
 				node.setOrthographic();
 			} else {
@@ -388,7 +394,8 @@ bool GoxFormat::loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-bool GoxFormat::loadChunk_IMG(State& state, const GoxChunk &c, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph) {
+bool GoxFormat::loadChunk_IMG(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
+							  scenegraph::SceneGraph &sceneGraph) {
 	char dictKey[256];
 	char dictValue[256];
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
@@ -397,7 +404,8 @@ bool GoxFormat::loadChunk_IMG(State& state, const GoxChunk &c, io::SeekableReadS
 	return true;
 }
 
-bool GoxFormat::loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph) {
+bool GoxFormat::loadChunk_LIGH(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
+							   scenegraph::SceneGraph &sceneGraph) {
 	char dictKey[256];
 	char dictValue[256];
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
@@ -411,7 +419,8 @@ bool GoxFormat::loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
+size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+							  const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 
@@ -453,8 +462,9 @@ size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.size();
 }
 
-
-bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+							   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							   const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 
@@ -493,7 +503,8 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	return !sceneGraph.empty();
 }
 
-bool GoxFormat::saveChunk_DictEntry(io::SeekableWriteStream &stream, const char *key, const void *value, size_t valueSize) {
+bool GoxFormat::saveChunk_DictEntry(io::SeekableWriteStream &stream, const char *key, const void *value,
+									size_t valueSize) {
 	const int keyLength = (int)SDL_strlen(key);
 	wrapBool(stream.writeUInt32(keyLength))
 	if (stream.write(key, keyLength) == -1) {
@@ -508,7 +519,7 @@ bool GoxFormat::saveChunk_DictEntry(io::SeekableWriteStream &stream, const char 
 	return true;
 }
 
-bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream& stream, const scenegraph::SceneGraph &sceneGraph) {
+bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph) {
 	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
 		GoxScopedChunkWriter scoped(stream, FourCC('C', 'A', 'M', 'R'));
 		const scenegraph::SceneGraphNodeCamera &cam = toCameraNode(*iter);
@@ -524,7 +535,8 @@ bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream& stream, const scenegraph
 	return true;
 }
 
-bool GoxFormat::saveChunk_IMG(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream& stream, const SaveContext &savectx) {
+bool GoxFormat::saveChunk_IMG(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,
+							  const SaveContext &savectx) {
 	ThumbnailContext ctx;
 	ctx.outputSize = glm::ivec2(128);
 	const image::ImagePtr &image = createThumbnail(sceneGraph, savectx.thumbnailCreator, ctx);
@@ -540,20 +552,20 @@ bool GoxFormat::saveChunk_IMG(const scenegraph::SceneGraph &sceneGraph, io::Seek
 	return true;
 }
 
-bool GoxFormat::saveChunk_PREV(io::SeekableWriteStream& stream) {
+bool GoxFormat::saveChunk_PREV(io::SeekableWriteStream &stream) {
 	return true; // not used
 }
 
-bool GoxFormat::saveChunk_LIGH(io::SeekableWriteStream& stream) {
+bool GoxFormat::saveChunk_LIGH(io::SeekableWriteStream &stream) {
 	return true; // not used
 }
 
-bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream& stream, const scenegraph::SceneGraph &sceneGraph) {
+bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph) {
 	GoxScopedChunkWriter scoped(stream, FourCC('M', 'A', 'T', 'E'));
-	const voxel::Palette& palette = sceneGraph.firstPalette();
+	const voxel::Palette &palette = sceneGraph.firstPalette();
 
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		const core::String& name = core::string::format("mat%i", i);
+		const core::String &name = core::string::format("mat%i", i);
 		const float value[3] = {0.0f, 0.0f, 0.0f};
 		wrapBool(saveChunk_DictEntry(stream, "name", name.c_str(), name.size()))
 		wrapBool(saveChunk_DictEntry(stream, "color", palette.color(i)))
@@ -564,7 +576,8 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream& stream, const scenegraph
 	return true;
 }
 
-bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const scenegraph::SceneGraph &sceneGraph, int numBlocks) {
+bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+							   int numBlocks) {
 	int blockUid = 0;
 	int layerId = 0;
 	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
@@ -574,12 +587,15 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const scenegraph
 
 		GoxScopedChunkWriter scoped(stream, FourCC('L', 'A', 'Y', 'R'));
 		int layerBlocks = 0;
-		voxelutil::visitVolume(*node.volume(), voxel::Region(mins, maxs), BlockSize, BlockSize, BlockSize, [&] (int x, int y, int z, const voxel::Voxel &) {
-			if (isEmptyBlock(node.volume(), glm::ivec3(BlockSize), x, y, z)) {
-				return;
-			}
-			++layerBlocks;
-		}, voxelutil::VisitAll());
+		voxelutil::visitVolume(
+			*node.volume(), voxel::Region(mins, maxs), BlockSize, BlockSize, BlockSize,
+			[&](int x, int y, int z, const voxel::Voxel &) {
+				if (isEmptyBlock(node.volume(), glm::ivec3(BlockSize), x, y, z)) {
+					return;
+				}
+				++layerBlocks;
+			},
+			voxelutil::VisitAll());
 
 		Log::debug("blocks: %i", layerBlocks);
 
@@ -608,7 +624,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const scenegraph
 		}
 		wrapBool(saveChunk_DictEntry(stream, "name", node.name().c_str(), node.name().size()))
 		glm::mat4 mat(1.0f);
-		wrapBool(saveChunk_DictEntry(stream, "mat", (const uint8_t*)glm::value_ptr(mat), sizeof(mat)))
+		wrapBool(saveChunk_DictEntry(stream, "mat", (const uint8_t *)glm::value_ptr(mat), sizeof(mat)))
 		wrapBool(saveChunk_DictEntry(stream, "id", layerId))
 		const core::RGBA layerRGBA = node.color();
 		wrapBool(saveChunk_DictEntry(stream, "color", layerRGBA.rgba))
@@ -627,7 +643,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream& stream, const scenegraph
 	return true;
 }
 
-bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const scenegraph::SceneGraph &sceneGraph, int &blocks) {
+bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph, int &blocks) {
 	blocks = 0;
 	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
 		const voxel::Region &region = node.region();
@@ -642,18 +658,22 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const scenegraph
 						continue;
 					}
 					GoxScopedChunkWriter scoped(stream, FourCC('B', 'L', '1', '6'));
-					const voxel::Region blockRegion(bx, by, bz, bx + BlockSize - 1, by + BlockSize - 1, bz + BlockSize - 1);
+					const voxel::Region blockRegion(bx, by, bz, bx + BlockSize - 1, by + BlockSize - 1,
+													bz + BlockSize - 1);
 					const size_t size = (size_t)BlockSize * BlockSize * BlockSize * 4;
-					uint32_t *data = (uint32_t*)core_malloc(size);
+					uint32_t *data = (uint32_t *)core_malloc(size);
 					int offset = 0;
-					const voxel::Palette& palette = node.palette();
-					voxelutil::visitVolume(*mirrored, blockRegion, [&](int, int, int, const voxel::Voxel& voxel) {
-						if (voxel::isAir(voxel.getMaterial())) {
-							data[offset++] = 0;
-						} else {
-							data[offset++] = palette.color(voxel.getColor());
-						}
-					}, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZX);
+					const voxel::Palette &palette = node.palette();
+					voxelutil::visitVolume(
+						*mirrored, blockRegion,
+						[&](int, int, int, const voxel::Voxel &voxel) {
+							if (voxel::isAir(voxel.getMaterial())) {
+								data[offset++] = 0;
+							} else {
+								data[offset++] = palette.color(voxel.getColor());
+							}
+						},
+						voxelutil::VisitAll(), voxelutil::VisitorOrder::YZX);
 
 					int pngSize = 0;
 					uint8_t *png = image::createPng(data, 64, 64, 4, &pngSize);
@@ -676,7 +696,8 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream& stream, const scenegraph
 	return true;
 }
 
-bool GoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
+bool GoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	wrapSave(stream.writeUInt32(FourCC('G', 'O', 'X', ' ')))
 	wrapSave(stream.writeUInt32(2))
 
@@ -697,4 +718,4 @@ bool GoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 #undef wrap
 #undef wrapSave
 
-} // namespace voxel
+} // namespace voxelformat

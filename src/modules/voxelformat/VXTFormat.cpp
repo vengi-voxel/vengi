@@ -11,27 +11,30 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/ZipReadStream.h"
-#include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphUtil.h"
+#include "voxel/RawVolume.h"
 #include "voxelformat/VXMFormat.h"
 #include "voxelformat/VXRFormat.h"
 
 namespace voxelformat {
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load vxt file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load vxt file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
-#define wrapBool(read) \
-	if ((read) != true) { \
-		Log::error("Could not load vxt file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if ((read) != true) {                                                                                              \
+		Log::error("Could not load vxt file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
-bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &in, scenegraph::SceneGraph &sceneGraph, voxel::Palette &, const LoadContext &ctx) {
+bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &in,
+								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &, const LoadContext &ctx) {
 	io::ZipReadStream stream(in, (int)in.size());
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
@@ -39,8 +42,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrap(stream.readUInt8(magic[2]))
 	wrap(stream.readUInt8(magic[3]))
 	if (magic[0] != 'V' || magic[1] != 'X' || magic[2] != 'T') {
-		Log::error("Could not load vxt file: Invalid magic found (%c%c%c%c)",
-			magic[0], magic[1], magic[2], magic[3]);
+		Log::error("Could not load vxt file: Invalid magic found (%c%c%c%c)", magic[0], magic[1], magic[2], magic[3]);
 		return false;
 	}
 	int version = magic[3] - '0';
@@ -62,7 +64,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	for (int32_t i = 0; i < models; ++i) {
 		char path[1024];
 		wrapBool(stream.readString(sizeof(path), path, true))
-		const io::FilePtr& file = io::filesystem()->open(path);
+		const io::FilePtr &file = io::filesystem()->open(path);
 		if (!file->validHandle()) {
 			Log::warn("Could not load file %s", path);
 			continue;
@@ -102,15 +104,15 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			continue;
 		}
 
-		const scenegraph::SceneGraphNode* node = tileGraph[modelIdx];
+		const scenegraph::SceneGraphNode *node = tileGraph[modelIdx];
 		if (node == nullptr) {
 			Log::warn("Failed to get model from scene graph with index %i", modelIdx);
 			continue;
 		}
 		const int tileSize = 64; // TODO: positioning unknown
 		if (version >= 2) {
-			//const uint32_t forward = (orientation & 0xF0) >> 4;
-			//const uint32_t up = orientation & 0xF;
+			// const uint32_t forward = (orientation & 0xF0) >> 4;
+			// const uint32_t up = orientation & 0xF;
 		}
 		for (int32_t i = idx; i < idx + rle; ++i) {
 			const int32_t x = i / (height * depth);
@@ -120,7 +122,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			copyNode(*node, tileNode, true);
 			const glm::ivec3 pos(x * tileSize, y * tileSize, z * tileSize);
 			tileNode.volume()->translate(pos); // TODO
-			//tileNode.transform().position = pos;
+			// tileNode.transform().position = pos;
 			tileGraph.emplace(core::move(tileNode));
 		}
 		idx += rle;
@@ -128,11 +130,12 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	return true;
 }
 
-bool VXTFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
+bool VXTFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	return false;
 }
 
 #undef wrap
 #undef wrapBool
 
-} // namespace voxel
+} // namespace voxelformat

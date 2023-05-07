@@ -11,8 +11,8 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/ZipArchive.h"
 #include "io/ZipReadStream.h"
-#include "voxel/Voxel.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxel/Voxel.h"
 #include <fcntl.h>
 
 namespace voxelformat {
@@ -36,13 +36,13 @@ constexpr core::RGBA paletteColors[] = {
 
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \
-		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                    \
+		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                  \
 		return false;                                                                                                  \
 	}
 
 #define wrapBool(read)                                                                                                 \
 	if (!(read)) {                                                                                                     \
-		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                    \
+		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                  \
 		return false;                                                                                                  \
 	}
 
@@ -106,7 +106,9 @@ static const struct BlockPalIdx {
 	{907, 12}, {908, 12}, {909, 12}, {910, 12}, {911, 12}, {912, 12}, {913, 12}, {914, 12}, {915, 12}, {916, 12},
 	{917, 12}, {918, 12}, {919, 12}, {920, 12}, {921, 12}};
 
-bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+							  scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							  const LoadContext &ctx) {
 	io::ZipArchive archive;
 	if (!archive.init(filename, &stream)) {
 		Log::error("Failed to load zip archive from %s", filename.c_str());
@@ -142,7 +144,8 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 	return !sceneGraph.empty();
 }
 
-bool SMFormat::readSmd3(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const core::Map<int, int>& blockPal) {
+bool SMFormat::readSmd3(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+						const core::Map<int, int> &blockPal) {
 	uint32_t version;
 	wrap(stream.readUInt32BE(version))
 
@@ -176,7 +179,8 @@ static constexpr glm::ivec3 posByIndex(uint32_t blockIndex) {
 	return glm::ivec3(x, y, z);
 }
 
-size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
+size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+							 const LoadContext &ctx) {
 	palette.setSize(lengthof(priv::paletteColors));
 	for (int i = 0; i < lengthof(priv::paletteColors); ++i) {
 		palette.color(i) = priv::paletteColors[i];
@@ -184,7 +188,8 @@ size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 	return palette.colorCount();
 }
 
-bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const core::Map<int, int>& blockPal) {
+bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+						   const core::Map<int, int> &blockPal) {
 	const int64_t startHeader = stream.pos();
 	Log::debug("read segment");
 	voxel::Palette palette;

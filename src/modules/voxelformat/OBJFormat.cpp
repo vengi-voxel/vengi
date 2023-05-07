@@ -18,25 +18,26 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/StdStreamBuf.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "external/tiny_obj_loader.h"
 
 namespace voxelformat {
 
-#define wrapBool(read) \
-	if ((read) == false) { \
-		Log::error("Failed to write obj " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if ((read) == false) {                                                                                             \
+		Log::error("Failed to write obj " CORE_STRINGIFY(read));                                                       \
+		return false;                                                                                                  \
 	}
 
-bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId, const core::String &mapKd) const {
+bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId,
+							 const core::String &mapKd) const {
 	if (!stream.writeStringFormat(false, "\nnewmtl %s\n", mtlId.c_str())) {
 		Log::error("Failed to write obj newmtl");
 		return false;
@@ -126,7 +127,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				pos *= scale;
 				stream.writeStringFormat(false, "v %.04f %.04f %.04f", pos.x, pos.y, pos.z);
 				if (withColor) {
-					const glm::vec4& color = core::Color::fromRGBA(palette.color(v.colorIndex));
+					const glm::vec4 &color = core::Color::fromRGBA(palette.color(v.colorIndex));
 					stream.writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
 				}
 				wrapBool(stream.writeStringFormat(false, "\n"))
@@ -158,17 +159,20 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					const uint32_t four = idxOffset + indices[i + 5] + 1;
 					if (withTexCoords) {
 						if (withNormals) {
-							stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one, uvi + 1,(int)one,  (int)two, uvi + 2,
-													(int)two, (int)three, uvi + 3, (int)three, (int)four, uvi + 4, (int)four);
+							stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
+													 uvi + 1, (int)one, (int)two, uvi + 2, (int)two, (int)three,
+													 uvi + 3, (int)three, (int)four, uvi + 4, (int)four);
 						} else {
-							stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n", (int)one, uvi + 1, (int)two, uvi + 2,
-													(int)three, uvi + 3, (int)four, uvi + 4);
+							stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n", (int)one, uvi + 1, (int)two,
+													 uvi + 2, (int)three, uvi + 3, (int)four, uvi + 4);
 						}
 					} else {
 						if (withNormals) {
-							stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three, (int)four, (int)one, (int)two, (int)three, (int)four);
+							stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i %i//%i\n", (int)one, (int)two,
+													 (int)three, (int)four, (int)one, (int)two, (int)three, (int)four);
 						} else {
-							stream.writeStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
+							stream.writeStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three,
+													 (int)four);
 						}
 					}
 				}
@@ -190,15 +194,18 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					const uint32_t three = idxOffset + indices[i + 2] + 1;
 					if (withTexCoords) {
 						if (withNormals) {
-							stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one, texcoordOffset + i + 1, (int)one, (int)two,
-													texcoordOffset + i + 2, (int)two, (int)three, texcoordOffset + i + 3, (int)three);
+							stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
+													 texcoordOffset + i + 1, (int)one, (int)two, texcoordOffset + i + 2,
+													 (int)two, (int)three, texcoordOffset + i + 3, (int)three);
 						} else {
-							stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, texcoordOffset + i + 1, (int)two,
-													texcoordOffset + i + 2, (int)three, texcoordOffset + i + 3);
+							stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, texcoordOffset + i + 1,
+													 (int)two, texcoordOffset + i + 2, (int)three,
+													 texcoordOffset + i + 3);
 						}
 					} else {
 						if (withNormals) {
-							stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three, (int)one, (int)two, (int)three);
+							stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three,
+													 (int)one, (int)two, (int)three);
 						} else {
 							stream.writeStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
 						}
@@ -228,29 +235,31 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 #undef wrapBool
 
-bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 	std::string warn;
 	std::string err;
-	const core::String& mtlbasedir = core::string::extractPath(filename);
+	const core::String &mtlbasedir = core::string::extractPath(filename);
 	io::StdIStreamBuf stdStreamBuf(stream);
 	std::istream inputStream(&stdStreamBuf);
 	tinyobj::MaterialFileReader matFileReader(mtlbasedir.c_str());
 	Log::debug("Load obj %s", filename.c_str());
-	const bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, &inputStream, &matFileReader, true, false);
+	const bool ret =
+		tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, &inputStream, &matFileReader, true, false);
 	if (!warn.empty()) {
 		core::DynamicArray<core::String> lines;
 		core::string::splitString(warn.c_str(), lines, "\n");
-		for (const core::String& str : lines) {
+		for (const core::String &str : lines) {
 			Log::warn("%s", str.c_str());
 		}
 	}
 	if (!err.empty()) {
 		core::DynamicArray<core::String> lines;
 		core::string::splitString(err.c_str(), lines, "\n");
-		for (const core::String& str : lines) {
+		for (const core::String &str : lines) {
 			Log::error("%s", str.c_str());
 		}
 	}
@@ -342,7 +351,8 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 					}
 				}
 				if (attrib.colors.empty()) {
-					const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2], 1.0f);
+					const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2],
+												 1.0f);
 					tri.color[0] = tri.color[1] = tri.color[2] = core::Color::getRGBA(diffuseColor);
 				}
 			}
@@ -358,4 +368,4 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 	return !sceneGraph.empty();
 }
 
-} // namespace voxel
+} // namespace voxelformat

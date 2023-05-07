@@ -10,23 +10,23 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
 
-#define wrapBool(action) \
-	if ((action) != true) { \
-		Log::error("Error: Failed to execute " CORE_STRINGIFY(action) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrapBool(action)                                                                                               \
+	if ((action) != true) {                                                                                            \
+		Log::error("Error: Failed to execute " CORE_STRINGIFY(action) " (line %i)", (int)__LINE__);                    \
+		return false;                                                                                                  \
 	}
 
-#define wrap(action) \
-	if ((action) == -1) { \
-		Log::error("Error: Failed to execute " CORE_STRINGIFY(action) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrap(action)                                                                                                   \
+	if ((action) == -1) {                                                                                              \
+		Log::error("Error: Failed to execute " CORE_STRINGIFY(action) " (line %i)", (int)__LINE__);                    \
+		return false;                                                                                                  \
 	}
 
 namespace voxelformat {
@@ -49,35 +49,38 @@ static scenegraph::InterpolationType toInterpolationType(const core::String &typ
 	return scenegraph::InterpolationType::Max;
 }
 
-bool VENGIFormat::saveNodeProperties(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, io::WriteStream &stream) {
+bool VENGIFormat::saveNodeProperties(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+									 io::WriteStream &stream) {
 	const core::StringMap<core::String> &properties = node.properties();
 	if (properties.empty()) {
 		return true;
 	}
 	wrapBool(stream.writeUInt32(FourCC('P', 'R', 'O', 'P')))
 	wrapBool(stream.writeUInt32(properties.size()))
-	for (const auto & e : properties) {
+	for (const auto &e : properties) {
 		wrapBool(stream.writePascalStringUInt16LE(e->key))
 		wrapBool(stream.writePascalStringUInt16LE(e->value))
 	}
 	return true;
 }
 
-bool VENGIFormat::saveAnimation(const scenegraph::SceneGraphNode &node, const core::String &animation, io::WriteStream &stream) {
-	wrapBool(stream.writeUInt32(FourCC('A','N','I','M')))
+bool VENGIFormat::saveAnimation(const scenegraph::SceneGraphNode &node, const core::String &animation,
+								io::WriteStream &stream) {
+	wrapBool(stream.writeUInt32(FourCC('A', 'N', 'I', 'M')))
 	wrapBool(stream.writePascalStringUInt16LE(animation))
 	for (const scenegraph::SceneGraphKeyFrame &keyframe : node.keyFrames(animation)) {
 		wrapBool(saveNodeKeyFrame(keyframe, stream))
 	}
-	wrapBool(stream.writeUInt32(FourCC('E','N','D','A')))
+	wrapBool(stream.writeUInt32(FourCC('E', 'N', 'D', 'A')))
 	return true;
 }
 
-bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, io::WriteStream &stream) {
+bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+							   io::WriteStream &stream) {
 	if (node.type() != scenegraph::SceneGraphNodeType::Model) {
 		return true;
 	}
-	wrapBool(stream.writeUInt32(FourCC('D','A','T','A')))
+	wrapBool(stream.writeUInt32(FourCC('D', 'A', 'T', 'A')))
 	const voxel::RawVolume *v = node.volume();
 	const voxel::Region &region = v->region();
 	wrapBool(stream.writeInt32(region.getLowerX()))
@@ -86,7 +89,7 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 	wrapBool(stream.writeInt32(region.getUpperX()))
 	wrapBool(stream.writeInt32(region.getUpperY()))
 	wrapBool(stream.writeInt32(region.getUpperZ()))
-	auto visitor = [&stream] (int, int, int, const voxel::Voxel &voxel) {
+	auto visitor = [&stream](int, int, int, const voxel::Voxel &voxel) {
 		const bool air = isAir(voxel.getMaterial());
 		stream.writeBool(air);
 		if (!air) {
@@ -98,7 +101,7 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 }
 
 bool VENGIFormat::saveNodeKeyFrame(const scenegraph::SceneGraphKeyFrame &keyframe, io::WriteStream &stream) {
-	wrapBool(stream.writeUInt32(FourCC('K','E','Y','F')))
+	wrapBool(stream.writeUInt32(FourCC('K', 'E', 'Y', 'F')))
 	wrapBool(stream.writeUInt32(keyframe.frameIdx))
 	wrapBool(stream.writeBool(keyframe.longRotation))
 	wrapBool(stream.writePascalStringUInt16LE(scenegraph::InterpolationTypeStr[(int)keyframe.interpolation]))
@@ -110,8 +113,9 @@ bool VENGIFormat::saveNodeKeyFrame(const scenegraph::SceneGraphKeyFrame &keyfram
 	return true;
 }
 
-bool VENGIFormat::saveNodePaletteColors(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, io::WriteStream &stream) {
-	wrapBool(stream.writeUInt32(FourCC('P','A','L','C')))
+bool VENGIFormat::saveNodePaletteColors(const scenegraph::SceneGraph &sceneGraph,
+										const scenegraph::SceneGraphNode &node, io::WriteStream &stream) {
+	wrapBool(stream.writeUInt32(FourCC('P', 'A', 'L', 'C')))
 	const voxel::Palette &palette = node.palette();
 	wrapBool(stream.writeUInt32(palette.colorCount()))
 	for (int i = 0; i < palette.colorCount(); ++i) {
@@ -128,14 +132,16 @@ bool VENGIFormat::saveNodePaletteColors(const scenegraph::SceneGraph &sceneGraph
 	return true;
 }
 
-bool VENGIFormat::saveNodePaletteIdentifier(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, io::WriteStream &stream) {
-	wrapBool(stream.writeUInt32(FourCC('P','A','L','I')))
+bool VENGIFormat::saveNodePaletteIdentifier(const scenegraph::SceneGraph &sceneGraph,
+											const scenegraph::SceneGraphNode &node, io::WriteStream &stream) {
+	wrapBool(stream.writeUInt32(FourCC('P', 'A', 'L', 'I')))
 	wrapBool(stream.writePascalStringUInt16LE(node.palette().name()))
 	return true;
 }
 
-bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteStream& stream, const scenegraph::SceneGraphNode& node) {
-	wrapBool(stream.writeUInt32(FourCC('N','O','D','E')))
+bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteStream &stream,
+						   const scenegraph::SceneGraphNode &node) {
+	wrapBool(stream.writeUInt32(FourCC('N', 'O', 'D', 'E')))
 	wrapBool(stream.writePascalStringUInt16LE(node.name()))
 	wrapBool(stream.writePascalStringUInt16LE(scenegraph::SceneGraphNodeTypeStr[(int)node.type()]))
 	wrapBool(stream.writeInt32(node.id()))
@@ -159,11 +165,12 @@ bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteSt
 	for (int childId : node.children()) {
 		wrapBool(saveNode(sceneGraph, stream, sceneGraph.node(childId)))
 	}
-	wrapBool(stream.writeUInt32(FourCC('E','N','D','N')))
+	wrapBool(stream.writeUInt32(FourCC('E', 'N', 'D', 'N')))
 	return true;
 }
 
-bool VENGIFormat::loadNodeProperties(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version, io::ReadStream &stream) {
+bool VENGIFormat::loadNodeProperties(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+									 uint32_t version, io::ReadStream &stream) {
 	uint32_t propertyCount;
 	wrap(stream.readUInt32(propertyCount))
 	Log::debug("Load %u properties", propertyCount);
@@ -176,7 +183,8 @@ bool VENGIFormat::loadNodeProperties(scenegraph::SceneGraph &sceneGraph, scenegr
 	return true;
 }
 
-bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version, io::ReadStream &stream) {
+bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
+							   io::ReadStream &stream) {
 	glm::ivec3 mins, maxs;
 	wrap(stream.readInt32(mins.x))
 	wrap(stream.readInt32(mins.y))
@@ -190,21 +198,23 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 	node.setVolume(v, true);
 	const voxel::Palette &palette = node.palette();
 
-	auto visitor = [&stream, v, &palette] (int x, int y, int z, const voxel::Voxel &voxel) {
+	auto visitor = [&stream, v, &palette](int x, int y, int z, const voxel::Voxel &voxel) {
 		const bool air = stream.readBool();
 		if (air) {
 			return;
 		}
 		uint8_t color;
 		stream.readUInt8(color);
-		const voxel::VoxelType type = palette.color(color).a != 255 ? voxel::VoxelType::Transparent : voxel::VoxelType::Generic;
+		const voxel::VoxelType type =
+			palette.color(color).a != 255 ? voxel::VoxelType::Transparent : voxel::VoxelType::Generic;
 		v->setVoxel(x, y, z, voxel::createVoxel(type, color));
 	};
 	voxelutil::visitVolume(*v, visitor, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);
 	return true;
 }
 
-bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version, io::ReadStream &stream) {
+bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+										uint32_t version, io::ReadStream &stream) {
 	voxel::Palette palette;
 	uint32_t colorCount;
 	wrap(stream.readUInt32(colorCount))
@@ -226,7 +236,8 @@ bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scen
 	return true;
 }
 
-bool VENGIFormat::loadNodePaletteIdentifier(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version, io::ReadStream &stream) {
+bool VENGIFormat::loadNodePaletteIdentifier(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+											uint32_t version, io::ReadStream &stream) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt16LE(name))
 	voxel::Palette palette;
@@ -240,7 +251,8 @@ bool VENGIFormat::loadNodePaletteIdentifier(scenegraph::SceneGraph &sceneGraph, 
 	return true;
 }
 
-bool VENGIFormat::loadAnimation(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version, io::ReadStream &stream) {
+bool VENGIFormat::loadAnimation(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
+								io::ReadStream &stream) {
 	core::String animation;
 	wrapBool(stream.readPascalStringUInt16LE(animation))
 	Log::debug("Load node animation %s", animation.c_str());
@@ -249,11 +261,11 @@ bool VENGIFormat::loadAnimation(scenegraph::SceneGraph &sceneGraph, scenegraph::
 	while (!stream.eos()) {
 		uint32_t chunkMagic;
 		wrap(stream.readUInt32(chunkMagic))
-		if (chunkMagic == FourCC('K','E','Y','F')) {
+		if (chunkMagic == FourCC('K', 'E', 'Y', 'F')) {
 			if (!loadNodeKeyFrame(sceneGraph, node, version, stream)) {
 				return false;
 			}
-		} else if (chunkMagic == FourCC('E','N','D','A')) {
+		} else if (chunkMagic == FourCC('E', 'N', 'D', 'A')) {
 			return true;
 		}
 	}
@@ -261,7 +273,8 @@ bool VENGIFormat::loadAnimation(scenegraph::SceneGraph &sceneGraph, scenegraph::
 	return false;
 }
 
-bool VENGIFormat::loadNodeKeyFrame(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version, io::ReadStream &stream) {
+bool VENGIFormat::loadNodeKeyFrame(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+								   uint32_t version, io::ReadStream &stream) {
 	scenegraph::FrameIndex frameIdx = 0;
 	wrap(stream.readInt32(frameIdx))
 	scenegraph::KeyFrameIndex keyFrameIdx = node.addKeyFrame(frameIdx);
@@ -292,7 +305,8 @@ bool VENGIFormat::loadNodeKeyFrame(scenegraph::SceneGraph &sceneGraph, scenegrap
 	return true;
 }
 
-bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ReadStream& stream, NodeMapping &nodeMapping) {
+bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ReadStream &stream,
+						   NodeMapping &nodeMapping) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt16LE(name))
 	core::String type;
@@ -343,31 +357,31 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 	while (!stream.eos()) {
 		uint32_t chunkMagic;
 		wrap(stream.readUInt32(chunkMagic))
-		if (chunkMagic == FourCC('P','R','O','P')) {
+		if (chunkMagic == FourCC('P', 'R', 'O', 'P')) {
 			if (!loadNodeProperties(sceneGraph, node, version, stream)) {
 				return false;
 			}
-		} else if (chunkMagic == FourCC('D','A','T','A')) {
+		} else if (chunkMagic == FourCC('D', 'A', 'T', 'A')) {
 			if (!loadNodeData(sceneGraph, node, version, stream)) {
 				return false;
 			}
-		} else if (chunkMagic == FourCC('P','A','L','C')) {
+		} else if (chunkMagic == FourCC('P', 'A', 'L', 'C')) {
 			if (!loadNodePaletteColors(sceneGraph, node, version, stream)) {
 				return false;
 			}
-		} else if (chunkMagic == FourCC('P','A','L','I')) {
+		} else if (chunkMagic == FourCC('P', 'A', 'L', 'I')) {
 			if (!loadNodePaletteIdentifier(sceneGraph, node, version, stream)) {
 				return false;
 			}
-		} else if (chunkMagic == FourCC('A','N','I','M')) {
+		} else if (chunkMagic == FourCC('A', 'N', 'I', 'M')) {
 			if (!loadAnimation(sceneGraph, node, version, stream)) {
 				return false;
 			}
-		} else if (chunkMagic == FourCC('N','O','D','E')) {
+		} else if (chunkMagic == FourCC('N', 'O', 'D', 'E')) {
 			if (!loadNode(sceneGraph, node.id(), version, stream, nodeMapping)) {
 				return false;
 			}
-		} else if (chunkMagic == FourCC('E','N','D','N')) {
+		} else if (chunkMagic == FourCC('E', 'N', 'D', 'N')) {
 			node.setPivot(pivot);
 			return true;
 		}
@@ -376,8 +390,9 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 	return false;
 }
 
-bool VENGIFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
-	wrapBool(stream.writeUInt32(FourCC('V','E','N','G')))
+bool VENGIFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+							 io::SeekableWriteStream &stream, const SaveContext &ctx) {
+	wrapBool(stream.writeUInt32(FourCC('V', 'E', 'N', 'G')))
 	io::ZipWriteStream zipStream(stream);
 	wrapBool(zipStream.writeUInt32(3))
 	if (!saveNode(sceneGraph, zipStream, sceneGraph.root())) {
@@ -386,10 +401,11 @@ bool VENGIFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const cor
 	return true;
 }
 
-bool VENGIFormat::loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) {
+bool VENGIFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream,
+							 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
-	if (magic != FourCC('V','E','N','G')) {
+	if (magic != FourCC('V', 'E', 'N', 'G')) {
 		Log::error("Invalid magic");
 		return false;
 	}
@@ -403,11 +419,12 @@ bool VENGIFormat::loadGroups(const core::String &filename, io::SeekableReadStrea
 	uint32_t chunkMagic;
 	wrap(zipStream.readUInt32(chunkMagic))
 	NodeMapping nodeMapping;
-	if (chunkMagic == FourCC('N','O','D','E')) {
+	if (chunkMagic == FourCC('N', 'O', 'D', 'E')) {
 		if (!loadNode(sceneGraph, sceneGraph.root().id(), version, zipStream, nodeMapping)) {
 			return false;
 		}
-		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::ModelReference); iter != sceneGraph.end(); ++iter) {
+		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::ModelReference); iter != sceneGraph.end();
+			 ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
 			int nodeId;
 			if (!nodeMapping.get(node.reference(), nodeId)) {
@@ -427,4 +444,4 @@ bool VENGIFormat::loadGroups(const core::String &filename, io::SeekableReadStrea
 #undef wrap
 #undef wrapBool
 
-}
+} // namespace voxelformat

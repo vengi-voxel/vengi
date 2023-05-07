@@ -23,18 +23,26 @@ namespace voxelformat {
 class FBXFormat : public MeshFormat {
 private:
 	bool saveMeshesBinary(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
-						  const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords, const scenegraph::SceneGraph &sceneGraph);
+						  const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
+						  const scenegraph::SceneGraph &sceneGraph);
 	bool saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
-						 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords, const scenegraph::SceneGraph &sceneGraph);
-	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) override;
-	int addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const;
-	int addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const;
-	int addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph, int parent) const;
+						 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
+						 const scenegraph::SceneGraph &sceneGraph);
+	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
+	int addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
+				  scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures,
+				  int parent) const;
+	int addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
+					scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures,
+					int parent) const;
+	int addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
+					  int parent) const;
 
 public:
-	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
-					const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad,
-					bool withColor, bool withTexCoords) override;
+	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
+					const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override;
 };
 
 } // namespace voxelformat

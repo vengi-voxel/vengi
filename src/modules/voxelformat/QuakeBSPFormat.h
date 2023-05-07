@@ -35,7 +35,7 @@ private:
 
 	// q1
 	struct BspTextureBase {
-		glm::vec4 st[2] {}; // st - xyz+offset
+		glm::vec4 st[2]{};		   // st - xyz+offset
 		uint32_t surfaceFlags = 0; // miptex index in q1
 		uint32_t value = 0;
 	};
@@ -46,9 +46,9 @@ private:
 	static_assert(sizeof(BspTexture) == 72, "Unexpected size of BspTexture");
 
 	struct BspModel {
-		glm::vec3 mins {0.0f};
-		glm::vec3 maxs {0.0f};
-		glm::vec3 position {0.0f};
+		glm::vec3 mins{0.0f};
+		glm::vec3 maxs{0.0f};
+		glm::vec3 position{0.0f};
 		int32_t node = 0;
 		int32_t faceId = 0;
 		int32_t faceCount = 0;
@@ -72,7 +72,7 @@ private:
 	static_assert(sizeof(BspFace) == 20, "Unexpected size of BspFace");
 
 	struct BspEdge {
-		int16_t vertexIndices[2] {0, 0}; // negative means counter clock wise
+		int16_t vertexIndices[2]{0, 0}; // negative means counter clock wise
 	};
 	static_assert(sizeof(BspEdge) == 4, "Unexpected size of BspEdge");
 
@@ -120,8 +120,8 @@ private:
 	bool loadQuake1Vertices(io::SeekableReadStream &stream, const BspHeader &header,
 							core::DynamicArray<BspVertex> &vertices);
 
-	bool loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-								 const BspHeader &header);
+	bool loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream,
+								 scenegraph::SceneGraph &sceneGraph, const BspHeader &header);
 	bool loadUFOAlienInvasionTextures(const core::String &filename, io::SeekableReadStream &stream,
 									  const BspHeader &header, core::DynamicArray<Texture> &textures,
 									  core::StringMap<image::ImagePtr> &textureMap);
@@ -137,11 +137,13 @@ private:
 	bool loadUFOAlienInvasionModels(io::SeekableReadStream &stream, const BspHeader &header,
 									core::DynamicArray<Model> &models);
 
-	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
+	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
+
 public:
-	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &meshes, const core::String &filename,
-					io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
-					bool withTexCoords) override {
+	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &meshes,
+					const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad,
+					bool withColor, bool withTexCoords) override {
 		return false;
 	}
 };

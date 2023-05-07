@@ -8,9 +8,9 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/PaletteLookup.h"
-#include "scenegraph/SceneGraph.h"
 
 namespace voxelformat {
 
@@ -28,7 +28,8 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
+size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+								  const LoadContext &ctx) {
 	char buf[512];
 	wrapBool(stream.readLine(sizeof(buf), buf))
 
@@ -105,7 +106,9 @@ static bool skipComma(io::SeekableReadStream &stream) {
 	return true;
 }
 
-bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+								   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+								   const LoadContext &ctx) {
 	char buf[512];
 	wrapBool(stream.readLine(sizeof(buf), buf))
 
@@ -171,7 +174,8 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 	return sceneGraph.emplace(core::move(node)) > 0;
 }
 
-bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream, const SaveContext &ctx) {
+bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+							   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
@@ -191,7 +195,7 @@ bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const c
 		return false;
 	}
 
-	const voxel::Palette& palette = merged.second;
+	const voxel::Palette &palette = merged.second;
 	for (int y = height - 1; y >= 0; y--) {
 		for (int z = 0u; z < depth; ++z) {
 			for (int x = 0u; x < width; ++x) {
@@ -217,4 +221,4 @@ bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const c
 #undef wrap
 #undef wrapBool
 
-}; // namespace voxel
+}; // namespace voxelformat

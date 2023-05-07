@@ -12,11 +12,11 @@
 #include "core/collection/DynamicMap.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
@@ -24,38 +24,38 @@ namespace voxelformat {
 namespace qb {
 const int RLE_FLAG = 2;
 const int NEXT_SLICE_FLAG = 6;
-}
+} // namespace qb
 
-#define wrapSave(write) \
-	if ((write) == false) { \
-		Log::error("Could not save qb file: " CORE_STRINGIFY(write) " failed"); \
-		return false; \
+#define wrapSave(write)                                                                                                \
+	if ((write) == false) {                                                                                            \
+		Log::error("Could not save qb file: " CORE_STRINGIFY(write) " failed");                                        \
+		return false;                                                                                                  \
 	}
 
-#define wrapSaveWriter(write) \
-	if ((write) == false) { \
-		Log::error("Could not save qb file: " CORE_STRINGIFY(write) " failed"); \
-		_error = true; \
-		return; \
+#define wrapSaveWriter(write)                                                                                          \
+	if ((write) == false) {                                                                                            \
+		Log::error("Could not save qb file: " CORE_STRINGIFY(write) " failed");                                        \
+		_error = true;                                                                                                 \
+		return;                                                                                                        \
 	}
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read));                         \
+		return false;                                                                                                  \
 	}
 
-#define wrapBool(read) \
-	if ((read) == false) { \
-		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if ((read) == false) {                                                                                             \
+		Log::error("Could not load qb file: Not enough data in stream " CORE_STRINGIFY(read));                         \
+		return false;                                                                                                  \
 	}
 
 class MatrixWriter {
 private:
-	io::SeekableWriteStream& _stream;
+	io::SeekableWriteStream &_stream;
 	const voxel::RawVolume *_volume;
-	const voxel::Palette& _palette;
+	const voxel::Palette &_palette;
 	const glm::ivec3 _maxs;
 
 	const bool _leftHanded;
@@ -89,8 +89,8 @@ public:
 			Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
 		} else {
 			newColor = _palette.color(voxel.getColor());
-			Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
-					x, y, z, (int)voxel.getColor(), (int)newColor.r, (int)newColor.g, (int)newColor.b, (int)newColor.a);
+			Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))", x, y, z,
+					   (int)voxel.getColor(), (int)newColor.r, (int)newColor.g, (int)newColor.b, (int)newColor.a);
 		}
 
 		if (newColor != _currentColor) {
@@ -135,12 +135,13 @@ public:
 	}
 };
 
-bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const scenegraph::SceneGraphNode& node, bool leftHanded) const {
+bool QBFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
+						  bool leftHanded) const {
 	const int nameLength = (int)node.name().size();
 	wrapSave(stream.writeUInt8(nameLength));
 	wrapSave(stream.writeString(node.name(), false));
 
-	const voxel::Region& region = node.region();
+	const voxel::Region &region = node.region();
 	if (!region.isValid()) {
 		Log::error("Invalid region");
 		return false;
@@ -173,13 +174,14 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream& stream, const scenegraph::Sce
 		visitOrder = voxelutil::VisitorOrder::XYZ;
 	}
 	MatrixWriter writer(stream, node, leftHanded);
-	voxelutil::visitVolume(*node.volume(), [&writer] (int x, int y, int z, const voxel::Voxel &voxel) {
-		writer.addVoxel(x, y, z, voxel);
-	}, voxelutil::VisitAll(), visitOrder);
+	voxelutil::visitVolume(
+		*node.volume(), [&writer](int x, int y, int z, const voxel::Voxel &voxel) { writer.addVoxel(x, y, z, voxel); },
+		voxelutil::VisitAll(), visitOrder);
 	return writer.success();
 }
 
-bool QBFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool QBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						  io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	wrapSave(stream.writeUInt32(131331)) // version
 	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
 	const bool leftHanded = core::Var::getSafe(cfg::VoxformatQBSaveLeftHanded)->boolVal();
@@ -188,7 +190,7 @@ bool QBFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::
 	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))
 	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
 	wrapSave(stream.writeUInt32((uint32_t)sceneGraph.size()))
-	for (const scenegraph::SceneGraphNode& node : sceneGraph) {
+	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
 		if (!saveMatrix(stream, node, leftHanded)) {
 			return false;
 		}
@@ -196,7 +198,7 @@ bool QBFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::
 	return true;
 }
 
-voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream, voxel::PaletteLookup &palLookup) {
+voxel::Voxel QBFormat::getVoxel(State &state, io::SeekableReadStream &stream, voxel::PaletteLookup &palLookup) {
 	core::RGBA color(0);
 	if (!readColor(state, stream, color)) {
 		return voxel::Voxel();
@@ -209,7 +211,7 @@ voxel::Voxel QBFormat::getVoxel(State& state, io::SeekableReadStream& stream, vo
 	return v;
 }
 
-bool QBFormat::readColor(State& state, io::SeekableReadStream& stream, core::RGBA &color) {
+bool QBFormat::readColor(State &state, io::SeekableReadStream &stream, core::RGBA &color) {
 	if (state._colorFormat == ColorFormat::RGBA) {
 		wrap(stream.readUInt8(color.r))
 		wrap(stream.readUInt8(color.g))
@@ -231,7 +233,8 @@ bool QBFormat::readColor(State& state, io::SeekableReadStream& stream, core::RGB
 	return true;
 }
 
-bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, voxel::PaletteLookup &palLookup) {
+bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+						  voxel::PaletteLookup &palLookup) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt8(name))
 	Log::debug("Matrix name: %s", name.c_str());
@@ -279,8 +282,7 @@ bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, scenegra
 		return false;
 	}
 
-	if (region.getDepthInVoxels() >= 2048 || region.getHeightInVoxels() >= 2048
-		|| region.getWidthInVoxels() >= 2048) {
+	if (region.getDepthInVoxels() >= 2048 || region.getHeightInVoxels() >= 2048 || region.getWidthInVoxels() >= 2048) {
 		Log::error("Region exceeds the max allowed boundaries");
 		return false;
 	}
@@ -291,7 +293,7 @@ bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, scenegra
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {
 				for (uint32_t x = 0; x < size.x; ++x) {
-					const voxel::Voxel& voxel = getVoxel(state, stream, palLookup);
+					const voxel::Voxel &voxel = getVoxel(state, stream, palLookup);
 					if (state._zAxisOrientation == ZAxisOrientation::LeftHanded) {
 						v->setVoxel((int)x, (int)y, (int)z, voxel);
 					} else {
@@ -359,7 +361,7 @@ bool QBFormat::readMatrix(State& state, io::SeekableReadStream& stream, scenegra
 	return true;
 }
 
-bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::Palette &palette) {
+bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, voxel::Palette &palette) {
 	uint8_t nameLength;
 	wrap(stream.readUInt8(nameLength));
 	if (stream.skip(nameLength) == -1) {
@@ -406,7 +408,7 @@ bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::
 		const size_t colorCount = colors.size();
 		core::Buffer<core::RGBA> colorBuffer;
 		colorBuffer.reserve(colorCount);
-		for (const auto & e : colors) {
+		for (const auto &e : colors) {
 			colorBuffer.push_back(e->first);
 		}
 		palette.quantize(colorBuffer.data(), colorBuffer.size());
@@ -443,7 +445,8 @@ bool QBFormat::readPalette(State& state, io::SeekableReadStream& stream, voxel::
 	return true;
 }
 
-size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
+size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+							 const LoadContext &ctx) {
 	State state;
 	wrap(stream.readUInt32(state._version))
 	uint32_t colorFormat;
@@ -476,7 +479,9 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 	return palette.colorCount();
 }
 
-bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool QBFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+							  scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							  const LoadContext &ctx) {
 	State state;
 	wrap(stream.readUInt32(state._version))
 	uint32_t colorFormat;
@@ -518,7 +523,7 @@ bool QBFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStre
 	return true;
 }
 
-}
+} // namespace voxelformat
 
 #undef wrap
 #undef wrapBool

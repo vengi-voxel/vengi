@@ -4,11 +4,11 @@
 
 #include "STLFormat.h"
 #include "core/Color.h"
-#include "core/StringUtil.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
-#include "voxel/Mesh.h"
+#include "core/StringUtil.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxel/Mesh.h"
 #include <SDL_stdinc.h>
 
 namespace voxelformat {
@@ -74,10 +74,10 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) 
 	return true;
 }
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Failed to read stl " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Failed to read stl " CORE_STRINGIFY(read));                                                        \
+		return false;                                                                                                  \
 	}
 
 bool STLFormat::parseBinary(io::SeekableReadStream &stream, TriCollection &tris) {
@@ -115,7 +115,8 @@ bool STLFormat::parseBinary(io::SeekableReadStream &stream, TriCollection &tris)
 	return true;
 }
 
-bool STLFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+bool STLFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic));
 	const bool ascii = FourCC('s', 'o', 'l', 'i') == magic;
@@ -140,7 +141,8 @@ bool STLFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 
 #undef wrap
 
-bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1, const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale) {
+bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &meshExt, const voxel::VoxelVertex &v1,
+							const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale) {
 	glm::vec3 pos;
 	if (meshExt.applyTransform) {
 		pos = transform.apply(v1.position, meshExt.pivot * meshExt.size);
@@ -239,4 +241,4 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	return true;
 }
 
-} // namespace voxel
+} // namespace voxelformat

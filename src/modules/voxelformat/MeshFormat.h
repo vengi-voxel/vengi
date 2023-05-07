@@ -5,9 +5,9 @@
 #pragma once
 
 #include "Format.h"
-#include "private/Tri.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
+#include "private/Tri.h"
 #include "voxel/ChunkMesh.h"
 
 namespace voxelformat {
@@ -30,6 +30,7 @@ public:
 	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
 	static bool calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
 	static bool isVoxelMesh(const TriCollection &tris);
+
 protected:
 	uint8_t _flattenFactor;
 	struct MeshExt {
@@ -48,7 +49,7 @@ protected:
 							const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
 							bool withTexCoords = true) = 0;
 
-	static MeshExt* getParent(const scenegraph::SceneGraph &sceneGraph, Meshes &meshes, int nodeId);
+	static MeshExt *getParent(const scenegraph::SceneGraph &sceneGraph, Meshes &meshes, int nodeId);
 	static glm::vec3 getScale();
 
 	/**
@@ -57,14 +58,16 @@ protected:
 	 * Convert your input mesh into @c Tri instances and use the methods of this class to help voxelizing those.
 	 * @see voxelizeNode()
 	 */
-	virtual bool voxelizeGroups(const core::String &filename, io::SeekableReadStream& file, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx);
+	virtual bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &file,
+								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx);
 
 	static glm::vec2 paletteUV(int colorIndex);
 
 	/**
 	 * @see voxelizeGroups()
 	 */
-	int voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris, int parent = 0, bool resetOrigin = true) const;
+	int voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris,
+					 int parent = 0, bool resetOrigin = true) const;
 
 	struct PosSamplingEntry {
 		inline PosSamplingEntry(float _area, core::RGBA _color) : area(_area), color(_color) {
@@ -91,9 +94,10 @@ public:
 	static core::String lookupTexture(const core::String &meshFilename, const core::String &in);
 
 	MeshFormat();
-	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, scenegraph::SceneGraph &sceneGraph,
+					const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
 };
 
-} // namespace voxel
+} // namespace voxelformat

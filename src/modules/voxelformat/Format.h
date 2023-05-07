@@ -8,21 +8,21 @@
 
 #pragma once
 
+#include "image/Image.h"
 #include "io/Stream.h"
 #include "voxel/RawVolume.h"
-#include "image/Image.h"
 #include "voxelformat/FormatThumbnail.h"
 #include <glm/fwd.hpp>
 
 namespace voxel {
 class Mesh;
 class Palette;
-}
+} // namespace voxel
 
 namespace scenegraph {
 class SceneGraph;
 class SceneGraphNode;
-}
+} // namespace scenegraph
 
 namespace voxelformat {
 
@@ -30,7 +30,7 @@ typedef void (*ProgressMonitor)(const char *name, int cur, int max);
 
 struct LoadContext {
 	ProgressMonitor monitor = nullptr;
-	inline void progress(const char *name, int cur, int max) const  {
+	inline void progress(const char *name, int cur, int max) const {
 		if (monitor == nullptr) {
 			return;
 		}
@@ -63,23 +63,23 @@ static constexpr int MaxRegionSize = 256;
 class Format {
 private:
 	uint8_t _flattenFactor;
-protected:
 
+protected:
 	/**
 	 * @brief If you have to split the volumes in the scene graph because the format only supports a certain size, you
 	 * can return the max size here. If the returned value is not a valid volume size (<= 0) the value is ignored.
 	 * @sa singleVolume()
-	 * @note @c singleVolume() and @c maxSize() don't work well together as the first would merge everything, and the latter
-	 * would split it again if the max size was exceeded.
+	 * @note @c singleVolume() and @c maxSize() don't work well together as the first would merge everything, and the
+	 * latter would split it again if the max size was exceeded.
 	 */
 	virtual glm::ivec3 maxSize() const;
 
 	/**
-	 * @brief If a format only supports a single volume. If this returns true, the @¢ save() method gets a scene graph with
-	 * only one model
+	 * @brief If a format only supports a single volume. If this returns true, the @¢ save() method gets a scene graph
+	 * with only one model
 	 * @sa maxSize()
-	 * @note @c singleVolume() and @c maxSize() don't work well together as the first would merge everything, and the latter
-	 * would split it again if the max size was exceeded.
+	 * @note @c singleVolume() and @c maxSize() don't work well together as the first would merge everything, and the
+	 * latter would split it again if the max size was exceeded.
 	 */
 	virtual bool singleVolume() const;
 
@@ -103,12 +103,13 @@ protected:
 	 * @param[out] mins The extends of the aabb aligned with @c maxSize
 	 * @param[out] maxs The extends of the aabb aligned with @c maxSize
 	 */
-	void calcMinsMaxs(const voxel::Region& region, const glm::ivec3 &maxSize, glm::ivec3 &mins, glm::ivec3 &maxs) const;
+	void calcMinsMaxs(const voxel::Region &region, const glm::ivec3 &maxSize, glm::ivec3 &mins, glm::ivec3 &maxs) const;
 	/**
 	 * @brief Split volumes according to their max size into several smaller volumes
 	 * Some formats only support small volumes sizes per object - but multiple objects.
 	 */
-	void splitVolumes(const scenegraph::SceneGraph& srcSceneGraph, scenegraph::SceneGraph& destSceneGraph, const glm::ivec3 &maxSize, bool crop = false);
+	void splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph,
+					  const glm::ivec3 &maxSize, bool crop = false);
 
 	core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) const;
 	core::RGBA flattenRGB(core::RGBA rgba) const;
@@ -117,26 +118,33 @@ protected:
 	glm::mat4 transformMatrix() const;
 
 	/**
-	 * Some formats are running loop that the user might want to interrupt with CTRL+c or the like. Long lasting loops should query
-	 * this boolean and respect the users wish to quit the application.
+	 * Some formats are running loop that the user might want to interrupt with CTRL+c or the like. Long lasting loops
+	 * should query this boolean and respect the users wish to quit the application.
 	 */
 	static bool stopExecution();
 
-	static core::String stringProperty(const scenegraph::SceneGraphNode* node, const core::String &name, const core::String &defaultVal = "");
-	static bool boolProperty(const scenegraph::SceneGraphNode* node, const core::String &name, bool defaultVal = false);
-	static float floatProperty(const scenegraph::SceneGraphNode* node, const core::String &name, float defaultVal = 0.0f);
-	static image::ImagePtr createThumbnail(const scenegraph::SceneGraph& sceneGraph, ThumbnailCreator thumbnailCreator, const ThumbnailContext &ctx);
+	static core::String stringProperty(const scenegraph::SceneGraphNode *node, const core::String &name,
+									   const core::String &defaultVal = "");
+	static bool boolProperty(const scenegraph::SceneGraphNode *node, const core::String &name, bool defaultVal = false);
+	static float floatProperty(const scenegraph::SceneGraphNode *node, const core::String &name,
+							   float defaultVal = 0.0f);
+	static image::ImagePtr createThumbnail(const scenegraph::SceneGraph &sceneGraph, ThumbnailCreator thumbnailCreator,
+										   const ThumbnailContext &ctx);
 	/**
 	 * @param[in] sceneGraph The @c SceneGraph instance to save
-	 * @param[in] filename The target file name. Some formats needs this next to the stream to identify or load additional files.
+	 * @param[in] filename The target file name. Some formats needs this next to the stream to identify or load
+	 * additional files.
 	 * @param[out] stream The target stream to write into
 	 * @param[in] ctx A context object for saving
 	 */
-	virtual bool saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) = 0;
+	virtual bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+							io::SeekableWriteStream &stream, const SaveContext &ctx) = 0;
 	/**
 	 * @brief If the format supports multiple layers or groups, this method load them into the scene graph
 	 */
-	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) = 0;
+	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream &stream,
+							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) = 0;
+
 public:
 	Format();
 	virtual ~Format() = default;
@@ -145,7 +153,8 @@ public:
 	 * Some formats have embedded screenshots of the model. This method doesn't load anything else than that image.
 	 * @note Not supported by many formats.
 	 */
-	virtual image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream& stream, const LoadContext &ctx);
+	virtual image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+										   const LoadContext &ctx);
 
 	/**
 	 * @brief Only load the palette that is included in the format
@@ -156,9 +165,12 @@ public:
 	 *
 	 * @return the amount of colors found in the palette
 	 */
-	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx);
-	virtual bool load(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx);
-	virtual bool save(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx);
+	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+							   const LoadContext &ctx);
+	virtual bool load(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+					  const LoadContext &ctx);
+	virtual bool save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+					  io::SeekableWriteStream &stream, const SaveContext &ctx);
 };
 
 /**
@@ -166,8 +178,7 @@ public:
  *
  * @ingroup Formats
  */
-class NoColorFormat : public Format {
-};
+class NoColorFormat : public Format {};
 
 /**
  * @brief A format with an embedded palette
@@ -176,17 +187,24 @@ class NoColorFormat : public Format {
  */
 class PaletteFormat : public Format {
 protected:
-	virtual bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, voxel::Palette &palette, const LoadContext &ctx) = 0;
+	virtual bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+								   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+								   const LoadContext &ctx) = 0;
 
 	/**
 	 * @brief This indicates whether the format only supports one palette for the whole scene graph
 	 */
-	virtual bool onlyOnePalette() { return true; }
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) override final;
+	virtual bool onlyOnePalette() {
+		return true;
+	}
+	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+					const LoadContext &ctx) override final;
 
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) override;
-	bool save(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override final;
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+					   const LoadContext &ctx) override;
+	bool save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream,
+			  const SaveContext &ctx) override final;
 };
 
 /**
@@ -197,14 +215,16 @@ public:
  */
 class RGBAFormat : public Format {
 protected:
-	virtual bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) = 0;
-	bool loadGroups(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) override;
+	virtual bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+								scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+								const LoadContext &ctx) = 0;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+					const LoadContext &ctx) override;
 };
 
 /**
  * @ingroup Formats
  */
-class RGBASinglePaletteFormat : public RGBAFormat {
-};
+class RGBASinglePaletteFormat : public RGBAFormat {};
 
-}
+} // namespace voxelformat

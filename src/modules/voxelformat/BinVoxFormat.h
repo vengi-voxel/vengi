@@ -29,10 +29,14 @@ private:
 		float _scale = 0.0f;
 	};
 
-	bool readData(State& state, const core::String& filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph);
+	bool readData(State &state, const core::String &filename, io::SeekableReadStream &stream,
+				  scenegraph::SceneGraph &sceneGraph);
+
 protected:
-	bool loadGroups(const core::String& filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const LoadContext &ctx) override;
-	bool saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override;
+	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+					const LoadContext &ctx) override;
+	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
 };
 
-}
+} // namespace voxelformat

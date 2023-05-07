@@ -9,12 +9,12 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicMap.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
 #define libvxl_assert core_assert_msg
 #define libvxl_mem_malloc core_malloc
@@ -26,10 +26,10 @@ extern "C" {
 
 namespace voxelformat {
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load AoE vxl file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load AoE vxl file: Not enough data in stream " CORE_STRINGIFY(read));                    \
+		return false;                                                                                                  \
 	}
 
 static inline uint32_t vxl_color(core::RGBA rgba) {
@@ -45,9 +45,11 @@ static inline uint8_t vxl_red(uint32_t c) {
 	return (c >> 16) & 0xFF;
 }
 
-bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+								  const LoadContext &ctx) {
 	const int64_t size = stream.size();
-	uint8_t* data = (uint8_t*)core_malloc(size);
+	uint8_t *data = (uint8_t *)core_malloc(size);
 	if (stream.read(data, size) == -1) {
 		Log::error("Failed to read vxl stream for %s of size %i", filename.c_str(), (int)size);
 		core_free(data);
@@ -102,9 +104,10 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String& filename, io::SeekableRead
 	return true;
 }
 
-size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
+size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+								 const LoadContext &ctx) {
 	const int64_t size = stream.size();
-	uint8_t* data = (uint8_t*)core_malloc(size);
+	uint8_t *data = (uint8_t *)core_malloc(size);
 	if (stream.read(data, size) == -1) {
 		Log::error("Failed to read vxl stream for %s of size %i", filename.c_str(), (int)size);
 		core_free(data);
@@ -147,7 +150,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 	const size_t colorCount = colors.size();
 	core::Buffer<core::RGBA> colorBuffer;
 	colorBuffer.reserve(colorCount);
-	for (const auto & e : colors) {
+	for (const auto &e : colors) {
 		colorBuffer.push_back(e->first);
 	}
 	palette.quantize(colorBuffer.data(), colorBuffer.size());
@@ -158,8 +161,9 @@ glm::ivec3 AoSVXLFormat::maxSize() const {
 	return glm::ivec3(512, 256, 512);
 }
 
-bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
-	const voxel::Region& region = sceneGraph.region();
+bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+							  io::SeekableWriteStream &stream, const SaveContext &ctx) {
+	const voxel::Region &region = sceneGraph.region();
 	glm::ivec3 size = region.getDimensionsInVoxels();
 	glm::ivec3 targetSize(512, size.y, 512);
 	if (targetSize.y <= 64) {
@@ -182,11 +186,12 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	}
 
 	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
-		voxelutil::visitVolume(*node.volume(), [&map, &node, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
-			const core::RGBA rgba = node.palette().color(voxel.getColor());
-			const uint32_t color = vxl_color(rgba);
-			libvxl_map_set(&map, x, z, mapHeight - 1 - y, color);
-		});
+		voxelutil::visitVolume(*node.volume(),
+							   [&map, &node, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
+								   const core::RGBA rgba = node.palette().color(voxel.getColor());
+								   const uint32_t color = vxl_color(rgba);
+								   libvxl_map_set(&map, x, z, mapHeight - 1 - y, color);
+							   });
 	}
 
 	uint8_t buf[4096];
@@ -208,4 +213,4 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 
 #undef wrap
 
-}
+} // namespace voxelformat

@@ -12,11 +12,11 @@
 #include "core/Var.h"
 #include "engine-config.h"
 #include "io/StdStreamBuf.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 
 #define ufbx_assert core_assert
 #include "external/ufbx.h"
@@ -37,7 +37,7 @@ bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 class FBXScopedHeader {
 private:
-	io::SeekableWriteStream& _stream;
+	io::SeekableWriteStream &_stream;
 	/**
 	 * @brief EndOffset is the distance from the beginning of the file to the end of the node record (i.e. the first
 	 * byte of whatever comes next). This can be used to easily skip over unknown or not required records.
@@ -45,7 +45,7 @@ private:
 	int64_t _endOffsetPos;
 
 public:
-	FBXScopedHeader(io::SeekableWriteStream& stream) : _stream(stream) {
+	FBXScopedHeader(io::SeekableWriteStream &stream) : _stream(stream) {
 		_endOffsetPos = stream.pos();
 		stream.writeUInt32(0u);
 	}
@@ -58,8 +58,9 @@ public:
 	}
 };
 
-bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad,
-					bool withColor, bool withTexCoords, const scenegraph::SceneGraph &sceneGraph) {
+bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+								 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
+								 const scenegraph::SceneGraph &sceneGraph) {
 	wrapBool(stream.writeString("Kaydara FBX Binary  ", true))
 	stream.writeUInt8(0x1A);  // unknown
 	stream.writeUInt8(0x00);  // unknown
@@ -69,8 +70,9 @@ bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filen
 }
 
 // https://github.com/blender/blender/blob/00e219d8e97afcf3767a6d2b28a6d05bcc984279/release/io/export_fbx.py
-bool FBXFormat::saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad,
-					bool withColor, bool withTexCoords, const scenegraph::SceneGraph &sceneGraph) {
+bool FBXFormat::saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+								const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
+								const scenegraph::SceneGraph &sceneGraph) {
 	int meshCount = 0;
 	for (const MeshExt &meshExt : meshes) {
 		for (int i = 0; i < 2; ++i) {
@@ -107,7 +109,7 @@ Definitions: {
 Objects: {
 
 )",
-							PROJECT_VERSION, app::App::getInstance()->appname().c_str(), PROJECT_VERSION, meshCount);
+							 PROJECT_VERSION, app::App::getInstance()->appname().c_str(), PROJECT_VERSION, meshCount);
 
 	Log::debug("Exporting %i layers", meshCount);
 
@@ -193,27 +195,26 @@ Objects: {
 				wrapBool(stream.writeString("\n\n", false))
 				// TODO: UVIndex needed or only for IndexToDirect?
 
-				wrapBool(stream.writeString(
-					"\t\tLayerElementTexture: 0 {\n"
-					"\t\t\tVersion: 101\n"
-					"\t\t\tName: \"\"\n" // TODO
-					"\t\t\tMappingInformationType: \"AllSame\"\n"
-					"\t\t\tReferenceInformationType: \"Direct\"\n"
-					"\t\t\tBlendMode: \"Translucent\"\n"
-					"\t\t\tTextureAlpha: 1\n"
-					"\t\t\tTextureId: 0\n"
-					"\t\t}\n"))
+				wrapBool(stream.writeString("\t\tLayerElementTexture: 0 {\n"
+											"\t\t\tVersion: 101\n"
+											"\t\t\tName: \"\"\n" // TODO
+											"\t\t\tMappingInformationType: \"AllSame\"\n"
+											"\t\t\tReferenceInformationType: \"Direct\"\n"
+											"\t\t\tBlendMode: \"Translucent\"\n"
+											"\t\t\tTextureAlpha: 1\n"
+											"\t\t\tTextureId: 0\n"
+											"\t\t}\n"))
 			}
 
 			if (withColor) {
 				stream.writeStringFormat(false,
-										"\t\tLayerElementColor: 0 {\n"
-										"\t\t\tVersion: 101\n"
-										"\t\t\tName: \"%sColors\"\n"
-										"\t\t\tMappingInformationType: \"ByPolygonVertex\"\n"
-										"\t\t\tReferenceInformationType: \"Direct\"\n"
-										"\t\t\tColors: ",
-										objectName);
+										 "\t\tLayerElementColor: 0 {\n"
+										 "\t\t\tVersion: 101\n"
+										 "\t\t\tName: \"%sColors\"\n"
+										 "\t\t\tMappingInformationType: \"ByPolygonVertex\"\n"
+										 "\t\t\tReferenceInformationType: \"Direct\"\n"
+										 "\t\t\tColors: ",
+										 objectName);
 				for (int i = 0; i < ni; i++) {
 					const uint32_t index = indices[i];
 					const voxel::VoxelVertex &v = vertices[index];
@@ -230,13 +231,13 @@ Objects: {
 				wrapBool(stream.writeString("\t\t}\n", false))
 
 				wrapBool(stream.writeString("\t\tLayer: 0 {\n"
-								"\t\t\tVersion: 100\n"
-								"\t\t\tLayerElement: {\n"
-								"\t\t\t\tTypedIndex: 0\n"
-								"\t\t\t\tType: \"LayerElementColor\"\n"
-								"\t\t\t}\n"
-								"\t\t}\n",
-								false))
+											"\t\t\tVersion: 100\n"
+											"\t\t\tLayerElement: {\n"
+											"\t\t\t\tTypedIndex: 0\n"
+											"\t\t\t\tType: \"LayerElementColor\"\n"
+											"\t\t\t}\n"
+											"\t\t}\n",
+											false))
 			}
 
 			// close the model
@@ -292,14 +293,13 @@ static inline core::String _ufbx_to_string(const ufbx_string &s) {
 
 static inline glm::mat4 _ufbx_to_um_mat(const ufbx_matrix &m) {
 	return glm::mat4{
-		(float)m.m00, (float)m.m01, (float)m.m02, (float)m.m03,
-		(float)m.m10, (float)m.m11, (float)m.m12, (float)m.m13,
-		(float)m.m20, (float)m.m21, (float)m.m22, (float)m.m23,
-		0.0f, 0.0f, 0.0f, 1.0f,
+		(float)m.m00, (float)m.m01, (float)m.m02, (float)m.m03, (float)m.m10, (float)m.m11, (float)m.m12, (float)m.m13,
+		(float)m.m20, (float)m.m21, (float)m.m22, (float)m.m23, 0.0f,		  0.0f,			0.0f,		  1.0f,
 	};
 }
 
-static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_node *node, const glm::vec3 &scale) {
+static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_node *node,
+									  const glm::vec3 &scale) {
 	const glm::mat4 &mat = _ufbx_to_um_mat(node->node_to_parent);
 	const glm::vec3 lt = transform.localTranslation();
 	transform.setLocalMatrix(mat);
@@ -310,7 +310,9 @@ static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform
 
 } // namespace priv
 
-int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const {
+int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
+						   scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures,
+						   int parent) const {
 	Log::debug("Add model node");
 	const glm::vec3 &scale = getScale();
 	ufbx_vec2 defaultUV;
@@ -333,7 +335,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 		}
 		Log::debug("Faces: %i - material: %s", (int)meshMaterial.num_faces, meshMaterial.material ? "yes" : "no");
 
-		const image::Image* texture = nullptr;
+		const image::Image *texture = nullptr;
 		float baseColorFactor = 1.0f;
 		glm::vec4 baseColorRGBA(1.0f);
 
@@ -367,14 +369,16 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					const uint32_t ix = triIndices[vi * 3 + ti];
 					const ufbx_vec3 &pos = ufbx_get_vertex_vec3(&mesh->vertex_position, ix);
 					if (mesh->vertex_color.exists) {
-						const glm::vec4 &vertexColor = priv::_ufbx_to_vec4(ufbx_get_vertex_vec4(&mesh->vertex_color, ix));
+						const glm::vec4 &vertexColor =
+							priv::_ufbx_to_vec4(ufbx_get_vertex_vec4(&mesh->vertex_color, ix));
 						glm::vec4 mixedColor = vertexColor * baseColorRGBA * baseColorFactor;
 						mixedColor.a = vertexColor.a;
 						tri.color[ti] = core::Color::getRGBA(mixedColor);
 					} else {
 						tri.color[ti] = core::Color::getRGBA(baseColorRGBA);
 					}
-					const ufbx_vec2 &uv = mesh->vertex_uv.exists ? ufbx_get_vertex_vec2(&mesh->vertex_uv, ix) : defaultUV;
+					const ufbx_vec2 &uv =
+						mesh->vertex_uv.exists ? ufbx_get_vertex_vec2(&mesh->vertex_uv, ix) : defaultUV;
 					tri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale;
 					tri.uv[ti] = priv::_ufbx_to_vec2(uv);
 				}
@@ -402,7 +406,8 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 	return nodeId;
 }
 
-int FBXFormat::addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph, int parent) const {
+int FBXFormat::addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
+							 int parent) const {
 	Log::debug("Add camera node");
 	const ufbx_camera *camera = node->camera;
 	core_assert(camera != nullptr);
@@ -427,7 +432,9 @@ int FBXFormat::addCameraNode(const ufbx_scene *scene, const ufbx_node *node, sce
 	return sceneGraph.emplace(core::move(camNode), parent);
 }
 
-int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename, scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures, int parent) const {
+int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
+						 scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures,
+						 int parent) const {
 	int nodeId = parent;
 	if (node->mesh != nullptr) {
 		nodeId = addMeshNode(scene, node, filename, sceneGraph, textures, parent);
@@ -455,7 +462,8 @@ int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const c
 	return nodeId;
 }
 
-bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	ufbx_stream ufbxstream;
 	core_memset(&ufbxstream, 0, sizeof(ufbxstream));
 	ufbxstream.user = &stream;
@@ -526,7 +534,8 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 				continue;
 			}
 
-			const core::String &relativeFilename = priv::_ufbx_to_string(texture ? texture->relative_filename : material->name);
+			const core::String &relativeFilename =
+				priv::_ufbx_to_string(texture ? texture->relative_filename : material->name);
 			const core::String &name = lookupTexture(filename, relativeFilename);
 			image::ImagePtr tex = image::loadImage(name);
 			if (tex->isLoaded()) {

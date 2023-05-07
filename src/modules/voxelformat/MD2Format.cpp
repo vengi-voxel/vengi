@@ -32,7 +32,6 @@ bool MD2Format::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 
 	const int64_t startOffset = stream.pos();
 
-	// clang-format off
 	wrap(stream.readUInt32(hdr.magic))
 	if (hdr.magic != FourCC('I', 'D', 'P', '2')) {
 		Log::error("Could not load md2 file: Invalid magic");
@@ -72,8 +71,6 @@ bool MD2Format::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 		return false;
 	}
 
-	// clang-format on
-
 	core::StringMap<image::ImagePtr> textures;
 
 	stream.seek(startOffset + hdr.offsetSkins);
@@ -112,7 +109,6 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		Log::error("Failed to seek to frame header");
 		return false;
 	}
-	// clang-format off
 	wrap(stream.readFloat(frameHdr.scale.x))
 	wrap(stream.readFloat(frameHdr.scale.z))
 	wrap(stream.readFloat(frameHdr.scale.y))
@@ -126,7 +122,6 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		Log::error("Failed to read frame name");
 		return false;
 	}
-	// clang-format on
 
 	core::DynamicArray<glm::vec3> vertices;
 	vertices.reserve(hdr.numVerts);
@@ -166,7 +161,6 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 	}
 	Log::debug("Reading %i triangles", hdr.numTris);
 	for (uint32_t i = 0; i < hdr.numTris; ++i) {
-		// clang-format off
 		glm::u16vec3 vertexIndices;
 		wrap(stream.readUInt16(vertexIndices.x))
 		wrap(stream.readUInt16(vertexIndices.z))
@@ -190,7 +184,6 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 			tri.vertices[j] = vertices[vertexIndices[j]] * scale;
 			tri.uv[j] = uvs[uvIndices[j]];
 		}
-		// clang-format on
 		if (!textures.empty()) {
 			tri.texture = textures.begin()->second.get();
 		}

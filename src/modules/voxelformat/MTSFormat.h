@@ -17,10 +17,11 @@ namespace voxelformat {
  */
 class MTSFormat : public PaletteFormat {
 public:
-	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-						   voxel::Palette &palette, const LoadContext &ctx) override;
-	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream,
-					const SaveContext &ctx) override;
+	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+						   const LoadContext &ctx) override;
+	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
 };
 
 } // namespace voxelformat

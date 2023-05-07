@@ -8,25 +8,27 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/FileStream.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/PaletteLookup.h"
-#include "scenegraph/SceneGraph.h"
 
 namespace voxelformat {
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load cub file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load cub file: Not enough data in stream " CORE_STRINGIFY(read));                        \
+		return false;                                                                                                  \
 	}
 
-#define wrapBool(read) \
-	if ((read) != true) { \
-		Log::error("Could not load cub file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if ((read) != true) {                                                                                              \
+		Log::error("Could not load cub file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
-size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
+size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+							  const LoadContext &ctx) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
@@ -56,7 +58,9 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.size();
 }
 
-bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+							   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							   const LoadContext &ctx) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
@@ -87,7 +91,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 				}
 				const core::RGBA color(r, g, b);
 				const int index = palLookup.findClosestIndex(color);
-				const voxel::Voxel& voxel = voxel::createVoxel(palette, index);
+				const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 				// we have to flip depth with height for our own coordinate system
 				volume->setVoxel((int)w, (int)h, (int)d, voxel);
 			}
@@ -103,7 +107,8 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 
 #undef wrap
 
-bool CubFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool CubFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
 		Log::error("Failed to merge volumes");
@@ -111,9 +116,9 @@ bool CubFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 	}
 	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
 
-	const voxel::Region& region = merged.first->region();
+	const voxel::Region &region = merged.first->region();
 	voxel::RawVolume::Sampler sampler(merged.first);
-	const glm::ivec3& lower = region.getLowerCorner();
+	const glm::ivec3 &lower = region.getLowerCorner();
 
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
@@ -129,7 +134,7 @@ bool CubFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 		for (uint32_t z = 0u; z < depth; ++z) {
 			for (uint32_t x = 0u; x < width; ++x) {
 				core_assert_always(sampler.setPosition(lower.x + x, lower.y + y, lower.z + z));
-				const voxel::Voxel& voxel = sampler.voxel();
+				const voxel::Voxel &voxel = sampler.voxel();
 				if (voxel.getMaterial() == voxel::VoxelType::Air) {
 					wrapBool(stream.writeUInt8(0))
 					wrapBool(stream.writeUInt8(0))
@@ -153,4 +158,4 @@ bool CubFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 #undef wrap
 #undef wrapBool
 
-}
+} // namespace voxelformat

@@ -369,7 +369,6 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 			// with option to add more in the future up to 128
 			uint8_t extendedLayerInfo;
 			// palette index 0 means air
-			// clang-format off
 			uint8_t palIdx;
 			wrap(dsStream.readUInt8(extendedLayerInfo))
 			wrap(dsStream.readUInt8(palIdx))
@@ -377,7 +376,6 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 				++mortonIdx;
 				continue;
 			}
-			// clang-format on
 			uint8_t x, y, z;
 			// the voxels are stored in morton order - use the index to find the voxel position
 			// y and z are swapped here

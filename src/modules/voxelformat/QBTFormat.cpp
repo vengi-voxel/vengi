@@ -15,11 +15,11 @@
 #include "core/Zip.h"
 #include "io/BufferedZipReadStream.h"
 #include "io/FileStream.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 
@@ -29,7 +29,6 @@ namespace qbt {
 const int NODE_TYPE_MATRIX = 0;
 const int NODE_TYPE_MODEL = 1;
 const int NODE_TYPE_COMPOUND = 2;
-
 
 class ScopedQBTHeader {
 private:
@@ -109,52 +108,55 @@ public:
 	}
 };
 
-}
+} // namespace qbt
 
-#define wrapSave(write) \
-	if ((write) == false) { \
-		Log::error("Could not save qbt file: " CORE_STRINGIFY(write) " failed"); \
-		return false; \
+#define wrapSave(write)                                                                                                \
+	if ((write) == false) {                                                                                            \
+		Log::error("Could not save qbt file: " CORE_STRINGIFY(write) " failed");                                       \
+		return false;                                                                                                  \
 	}
 
-#define wrapSaveFree(write) \
-	if ((write) == false) { \
-		Log::error("Could not save qbt file: " CORE_STRINGIFY(write) " failed"); \
-		delete[] compressedBuf; \
-		delete[] zlibBuffer; \
-		return false; \
+#define wrapSaveFree(write)                                                                                            \
+	if ((write) == false) {                                                                                            \
+		Log::error("Could not save qbt file: " CORE_STRINGIFY(write) " failed");                                       \
+		delete[] compressedBuf;                                                                                        \
+		delete[] zlibBuffer;                                                                                           \
+		return false;                                                                                                  \
 	}
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load qbt file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load qbt file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
-#define wrapBool(read) \
-	if ((read) == false) { \
-		Log::error("Could not load qbt file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)", (int)__LINE__); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if ((read) == false) {                                                                                             \
+		Log::error("Could not load qbt file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
+		return false;                                                                                                  \
 	}
 
-bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const scenegraph::SceneGraphNode& node, bool colorMap) const {
-	const voxel::Region& region = node.region();
-	const glm::ivec3& mins = region.getLowerCorner();
-	const glm::ivec3& maxs = region.getUpperCorner();
+bool QBTFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
+						   bool colorMap) const {
+	const voxel::Region &region = node.region();
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::ivec3 &maxs = region.getUpperCorner();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
 
 	const int zlibBufSize = size.x * size.y * size.z * (int)sizeof(uint32_t);
 	core_assert(zlibBufSize > 0);
-	uint8_t * const zlibBuffer = new uint8_t[zlibBufSize];
+	uint8_t *const zlibBuffer = new uint8_t[zlibBufSize];
 	const uint32_t compressedBufSize = core::zip::compressBound(zlibBufSize);
 	uint8_t *compressedBuf = new uint8_t[compressedBufSize];
-	const voxel::Palette& palette = node.palette();
+	const voxel::Palette &palette = node.palette();
 
-	uint8_t* zlibBuf = zlibBuffer;
+	uint8_t *zlibBuf = zlibBuffer;
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
 			for (int y = mins.y; y <= maxs.y; ++y) {
-				const voxel::Voxel& voxel = node.volume()->voxel(x, y, z);
+				const voxel::Voxel &voxel = node.volume()->voxel(x, y, z);
 				if (isAir(voxel.getMaterial())) {
 					*zlibBuf++ = (uint8_t)0;
 					*zlibBuf++ = (uint8_t)0;
@@ -168,7 +170,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const scenegraph::Sc
 					*zlibBuf++ = 0;
 				} else {
 					const core::RGBA voxelColor = palette.color(voxel.getColor());
-					//const uint8_t alpha = voxelColor.a * 255.0f;
+					// const uint8_t alpha = voxelColor.a * 255.0f;
 					*zlibBuf++ = voxelColor.r;
 					*zlibBuf++ = voxelColor.g;
 					*zlibBuf++ = voxelColor.b;
@@ -198,7 +200,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const scenegraph::Sc
 	wrapSaveFree(stream.writeInt32(offset.y));
 	wrapSaveFree(stream.writeInt32(offset.z));
 
-	const glm::uvec3 localScale { 1 };
+	const glm::uvec3 localScale{1};
 	wrapSaveFree(stream.writeUInt32(localScale.x));
 	wrapSaveFree(stream.writeUInt32(localScale.y));
 	wrapSaveFree(stream.writeUInt32(localScale.z));
@@ -226,7 +228,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream& stream, const scenegraph::Sc
 	return true;
 }
 
-bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream, const voxel::Palette& palette) const {
+bool QBTFormat::saveColorMap(io::SeekableWriteStream &stream, const voxel::Palette &palette) const {
 	wrapSave(stream.writeString("COLORMAP", false));
 	wrapSave(stream.writeUInt32(palette.colorCount()));
 	for (int i = 0; i < palette.colorCount(); ++i) {
@@ -239,7 +241,8 @@ bool QBTFormat::saveColorMap(io::SeekableWriteStream& stream, const voxel::Palet
 	return true;
 }
 
-bool QBTFormat::saveCompound(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node, bool colorMap) const {
+bool QBTFormat::saveCompound(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+							 const scenegraph::SceneGraphNode &node, bool colorMap) const {
 	wrapSave(saveMatrix(stream, node, colorMap))
 	wrapSave(stream.writeUInt32((int)node.children().size()));
 	for (int nodeId : node.children()) {
@@ -249,7 +252,8 @@ bool QBTFormat::saveCompound(io::SeekableWriteStream& stream, const scenegraph::
 	return true;
 }
 
-bool QBTFormat::saveNode(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node, bool colorMap) const {
+bool QBTFormat::saveNode(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+						 const scenegraph::SceneGraphNode &node, bool colorMap) const {
 	const scenegraph::SceneGraphNodeType type = node.type();
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		if (node.children().empty()) {
@@ -265,7 +269,8 @@ bool QBTFormat::saveNode(io::SeekableWriteStream& stream, const scenegraph::Scen
 	return true;
 }
 
-bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node, bool colorMap) const {
+bool QBTFormat::saveModel(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+						  const scenegraph::SceneGraphNode &node, bool colorMap) const {
 	if (node.children().size() == 1) {
 		for (int nodeId : node.children()) {
 			const scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
@@ -283,7 +288,8 @@ bool QBTFormat::saveModel(io::SeekableWriteStream& stream, const scenegraph::Sce
 	return scoped.success();
 }
 
-bool QBTFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool QBTFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	const scenegraph::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();
@@ -292,15 +298,15 @@ bool QBTFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 		return false;
 	}
 
-	wrapSave(stream.writeUInt32(FourCC('Q','B',' ','2')))
-	wrapSave(stream.writeUInt8(1)); // version
-	wrapSave(stream.writeUInt8(0)); // version
+	wrapSave(stream.writeUInt32(FourCC('Q', 'B', ' ', '2')))
+	wrapSave(stream.writeUInt8(1));	   // version
+	wrapSave(stream.writeUInt8(0));	   // version
 	wrapSave(stream.writeFloat(1.0f)); // globalscale
 	wrapSave(stream.writeFloat(1.0f)); // globalscale
 	wrapSave(stream.writeFloat(1.0f)); // globalscale
 	const bool colorMap = core::Var::getSafe(cfg::VoxformatQBTPaletteMode)->boolVal();
 	if (colorMap) {
-		const voxel::Palette& palette = sceneGraph.firstPalette();
+		const voxel::Palette &palette = sceneGraph.firstPalette();
 		if (!saveColorMap(stream, palette)) {
 			return false;
 		}
@@ -316,7 +322,7 @@ bool QBTFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 	return saveNode(stream, sceneGraph, sceneGraph.root(), colorMap);
 }
 
-bool QBTFormat::skipNode(io::SeekableReadStream& stream) {
+bool QBTFormat::skipNode(io::SeekableReadStream &stream) {
 	// node type, can be ignored
 	uint32_t nodeTypeId;
 	wrap(stream.readUInt32(nodeTypeId));
@@ -329,19 +335,16 @@ bool QBTFormat::skipNode(io::SeekableReadStream& stream) {
 /**
  * Compound Node
  * TypeID 4 bytes, uint = 2
- * DataSize 4 bytes, uint, number of bytes used for this node and all child nodes (excluding TypeID and DataSize of this node)
- * NameLength  4 bytes
- * Name NameLength bytes, char
- * Position X, Y, Z 3 * 4 bytes, int, position relative to parent node
- * LocalScale X, Y, Z 3 * 4 bytes, uint
- * Pivot X, Y, Z 3 * 4 bytes, float
- * Size X, Y, Z 3 * 4 bytes, uint
+ * DataSize 4 bytes, uint, number of bytes used for this node and all child nodes (excluding TypeID and DataSize of this
+ * node) NameLength  4 bytes Name NameLength bytes, char Position X, Y, Z 3 * 4 bytes, int, position relative to parent
+ * node LocalScale X, Y, Z 3 * 4 bytes, uint Pivot X, Y, Z 3 * 4 bytes, float Size X, Y, Z 3 * 4 bytes, uint
  * CompoundVoxelDataSize 4 bytes, uint
  * CompoundVoxelData VoxelDataSize bytes, zlib compressed voxel data
  * ChildCount 4 bytes, uint, number of child nodes
  * Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadCompound(io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &state) {
+bool QBTFormat::loadCompound(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
+							 voxel::Palette &palette, Header &state) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	node.setName("Compound");
 	int nodeId = sceneGraph.emplace(core::move(node), parent);
@@ -382,15 +385,18 @@ bool QBTFormat::loadCompound(io::SeekableReadStream& stream, scenegraph::SceneGr
  * VoxelData VoxelDataSize bytes, zlib compressed voxel data
  *
  * Voxel Data
- * Voxel data is stored in a 3D grid. The data is compressed using zlib and stored in X, Y, Z with Y running fastest and X running slowest. Each voxel uses 4 bytes:
- * RGBM. RGB stores true color information and M the visibility Mask.
+ * Voxel data is stored in a 3D grid. The data is compressed using zlib and stored in X, Y, Z with Y running fastest and
+ * X running slowest. Each voxel uses 4 bytes: RGBM. RGB stores true color information and M the visibility Mask.
  *
- * If a color map is included then the R byte references to a color of the color map. In this case the G and B bytes may contain additional secondary data references.
+ * If a color map is included then the R byte references to a color of the color map. In this case the G and B bytes may
+ * contain additional secondary data references.
  *
- * The M byte is used to store visibility of the 6 faces of a voxel and whether as voxel is solid or air. If M is bigger than 0 then the voxel is solid. Even when a voxel
- * is solid is may not be needed to be rendered because it is a core voxel that is surrounded by 6 other voxels and thus invisible. If M = 1 then the voxel is a core voxel.
+ * The M byte is used to store visibility of the 6 faces of a voxel and whether as voxel is solid or air. If M is bigger
+ * than 0 then the voxel is solid. Even when a voxel is solid is may not be needed to be rendered because it is a core
+ * voxel that is surrounded by 6 other voxels and thus invisible. If M = 1 then the voxel is a core voxel.
  */
-bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &state) {
+bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
+						   voxel::Palette &palette, Header &state) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt32LE(name))
 	Log::debug("Matrix name: %s", name.c_str());
@@ -459,13 +465,13 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, scenegraph::SceneGrap
 					continue;
 				}
 				if (state.colorFormat == ColorFormat::Palette) {
-					const voxel::Voxel& voxel = voxel::createVoxel(palette, red);
+					const voxel::Voxel &voxel = voxel::createVoxel(palette, red);
 					volume->setVoxel(x, y, z, voxel);
 				} else {
 					const core::RGBA color = flattenRGB(red, green, blue);
 					uint8_t index = 1;
 					palette.addColorToPalette(color, false, &index);
-					const voxel::Voxel& voxel = voxel::createVoxel(palette, index);
+					const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 					volume->setVoxel(x, y, z, voxel);
 				}
 			}
@@ -485,11 +491,11 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream& stream, scenegraph::SceneGrap
 /**
  * Model Node
  * TypeID 4 bytes, uint = 1
- * DataSize 4 bytes, uint, number of bytes used for this node and all child nodes (excluding TypeID and DataSize of this node)
- * ChildCount 4 bytes, uint, number of child nodes
- * Children ChildCount nodes currently of type Matrix or Compound
+ * DataSize 4 bytes, uint, number of bytes used for this node and all child nodes (excluding TypeID and DataSize of this
+ * node) ChildCount 4 bytes, uint, number of child nodes Children ChildCount nodes currently of type Matrix or Compound
  */
-bool QBTFormat::loadModel(io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &state) {
+bool QBTFormat::loadModel(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
+						  voxel::Palette &palette, Header &state) {
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount));
 	if (childCount > 2048u) {
@@ -513,7 +519,8 @@ bool QBTFormat::loadModel(io::SeekableReadStream& stream, scenegraph::SceneGraph
  * SectionCaption 8 bytes = "DATATREE"
  * RootNode, can currently either be Model, Compound or Matrix
  */
-bool QBTFormat::loadNode(io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &state) {
+bool QBTFormat::loadNode(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
+						 voxel::Palette &palette, Header &state) {
 	uint32_t nodeTypeID;
 	wrap(stream.readUInt32(nodeTypeID));
 	uint32_t dataSize;
@@ -561,7 +568,7 @@ bool QBTFormat::loadNode(io::SeekableReadStream& stream, scenegraph::SceneGraph&
  * ColorCount 4 bytes, uint, if this value is 0 then no color map is used
  * Colors ColorCount * 4 bytes, rgba
  */
-bool QBTFormat::loadColorMap(io::SeekableReadStream& stream, voxel::Palette &palette) {
+bool QBTFormat::loadColorMap(io::SeekableReadStream &stream, voxel::Palette &palette) {
 	uint32_t colorCount;
 	wrap(stream.readUInt32(colorCount));
 	Log::debug("Load color map with %u colors", colorCount);
@@ -583,7 +590,6 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream, voxel::Palette &pal
 	return true;
 }
 
-
 /**
  * Header
  * Magic  4 bytes must be 0x32204251 = "QB 2"
@@ -591,10 +597,10 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream& stream, voxel::Palette &pal
  * VersionMinor 1 byte, currently = 0
  * GlobalScale X, Y, Z 3 * 4 bytes, float, normally 1, 1, 1, can be used in case voxels are not cubes (e.g. Lego Bricks)
  */
-bool QBTFormat::loadHeader(io::SeekableReadStream& stream, Header &state) {
+bool QBTFormat::loadHeader(io::SeekableReadStream &stream, Header &state) {
 	uint32_t header;
 	wrap(stream.readUInt32(header))
-	constexpr uint32_t headerMagic = FourCC('Q','B',' ','2');
+	constexpr uint32_t headerMagic = FourCC('Q', 'B', ' ', '2');
 	if (header != headerMagic) {
 		Log::error("Could not load qbt file: Invalid magic found (%u vs %u)", header, headerMagic);
 		return false;
@@ -609,7 +615,8 @@ bool QBTFormat::loadHeader(io::SeekableReadStream& stream, Header &state) {
 	return true;
 }
 
-size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
+size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+							  const LoadContext &ctx) {
 	Header state;
 	wrapBool(loadHeader(stream, state))
 
@@ -631,8 +638,8 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 		} else if (0 == memcmp(buf, "DATATREE", 8)) {
 			wrapBool(skipNode(stream))
 		} else {
-			Log::error("Unknown section found: %c%c%c%c%c%c%c%c",
-					buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
+			Log::error("Unknown section found: %c%c%c%c%c%c%c%c", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5],
+					   buf[6], buf[7]);
 			break;
 		}
 	}
@@ -651,8 +658,8 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 				return false;
 			}
 		} else {
-			Log::error("Unknown section found: %c%c%c%c%c%c%c%c",
-					buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
+			Log::error("Unknown section found: %c%c%c%c%c%c%c%c", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5],
+					   buf[6], buf[7]);
 			break;
 		}
 	}
@@ -661,7 +668,8 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return 0;
 }
 
-bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	Header state;
 	wrapBool(loadHeader(stream, state))
 
@@ -686,8 +694,8 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				return false;
 			}
 		} else {
-			Log::error("Unknown section found: %c%c%c%c%c%c%c%c",
-					buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
+			Log::error("Unknown section found: %c%c%c%c%c%c%c%c", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5],
+					   buf[6], buf[7]);
 			return false;
 		}
 	}
@@ -702,4 +710,4 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 #undef wrap
 #undef wrapBool
 
-}
+} // namespace voxelformat

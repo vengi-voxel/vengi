@@ -11,9 +11,9 @@
 #include "core/collection/DynamicArray.h"
 #include "io/ZipReadStream.h"
 #include "private/MinecraftPaletteMap.h"
-#include "voxel/Voxel.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/Voxel.h"
 
 namespace voxelformat {
 
@@ -23,11 +23,11 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-								  voxel::Palette &palette, const LoadContext &ctx) {
+bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
-	if (magic != FourCC('M','T','S','M')) {
+	if (magic != FourCC('M', 'T', 'S', 'M')) {
 		Log::error("Invalid magic");
 		return false;
 	}
@@ -120,8 +120,8 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 #undef wrap
 
-bool MTSFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream,
-						   const SaveContext &) {
+bool MTSFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &) {
 	return false;
 }
 

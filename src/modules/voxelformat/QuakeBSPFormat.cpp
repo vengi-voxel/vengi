@@ -19,10 +19,10 @@
 #include "core/concurrent/ThreadPool.h"
 #include "image/Image.h"
 #include "io/Filesystem.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
-#include "scenegraph/SceneGraph.h"
 #include "voxelutil/VoxelUtil.h"
 
 namespace voxelformat {
@@ -43,7 +43,6 @@ static const uint32_t quake1TexinfoLump = 6;
 static const uint32_t quake1FacesLump = 7;
 static const uint32_t quake1EdgesLump = 12;
 static const uint32_t quake1SurfedgesLump = 13;
-
 
 } // namespace _priv
 
@@ -72,8 +71,8 @@ static core::String extractBaseDir(const core::String &filename) {
 }
 
 bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::SeekableReadStream &stream,
-												  const BspHeader &header, core::DynamicArray<Texture> &textures,
-												  core::StringMap<image::ImagePtr> &textureMap) {
+										const BspHeader &header, core::DynamicArray<Texture> &textures,
+										core::StringMap<image::ImagePtr> &textureMap) {
 	core::DynamicArray<Quake1Texinfo> miptex;
 
 	struct TextureLump {
@@ -162,7 +161,7 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 			continue;
 		}
 		const int pixelSize = width * height;
-		uint8_t *pixels = (uint8_t*)core_malloc(pixelSize);
+		uint8_t *pixels = (uint8_t *)core_malloc(pixelSize);
 		if (stream.read(pixels, pixelSize) == -1) {
 			Log::error("Failed to read %i bytes to pixel data %i", pixelSize, i);
 			continue;
@@ -172,7 +171,7 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 		for (int i = 0; i < pixelSize; ++i) {
 			buffer[i] = pal.color(pixels[i]);
 		}
-		if (tex->loadRGBA((const uint8_t*)buffer.data(), width, height)) {
+		if (tex->loadRGBA((const uint8_t *)buffer.data(), width, height)) {
 			Log::debug("Use image %s", texture.name);
 			textureMap.put(texture.name, tex);
 			texture.image = tex;
@@ -262,7 +261,7 @@ bool QuakeBSPFormat::loadQuake1Faces(io::SeekableReadStream &stream, const BspHe
 		wrap(stream.readInt16(face.textureId))
 
 		const char *texName = textures[face.textureId].name;
-		if (!core::string::startsWith(texName, "sky")/* && texName[0] != '*'*/) {
+		if (!core::string::startsWith(texName, "sky") /* && texName[0] != '*'*/) {
 			faces.push_back(face);
 		} else {
 			Log::debug("skip face with %s", texName);
@@ -321,7 +320,8 @@ bool QuakeBSPFormat::loadUFOAlienInvasionFacesForLevel(io::SeekableReadStream &s
 		const int32_t begin = models[i].faceId;
 		const int32_t end = begin + models[i].faceCount;
 		for (int32_t f = begin; f < end; ++f) {
-			core_assert_msg(f >= 0 && f < (int)faces.size(), "Face index is out of bounds: %i vs %i", f, (int)faces.size());
+			core_assert_msg(f >= 0 && f < (int)faces.size(), "Face index is out of bounds: %i vs %i", f,
+							(int)faces.size());
 			Face &face = faces[f];
 			if (face.used) {
 				continue;
@@ -445,7 +445,7 @@ bool QuakeBSPFormat::loadQuake1Vertices(io::SeekableReadStream &stream, const Bs
 }
 
 bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableReadStream &stream,
-											 scenegraph::SceneGraph &sceneGraph, const BspHeader &header) {
+								   scenegraph::SceneGraph &sceneGraph, const BspHeader &header) {
 	core::StringMap<image::ImagePtr> textureMap;
 	core::DynamicArray<Texture> textures;
 	if (!loadQuake1Textures(filename, stream, header, textures, textureMap)) {
@@ -483,7 +483,8 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 	return true;
 }
 
-bool QuakeBSPFormat::loadUFOAlienInvasionModels(io::SeekableReadStream& stream, const BspHeader &header, core::DynamicArray<Model> &models) {
+bool QuakeBSPFormat::loadUFOAlienInvasionModels(io::SeekableReadStream &stream, const BspHeader &header,
+												core::DynamicArray<Model> &models) {
 	const int32_t modelCount = validateLump(header.lumps[_priv::ufoaiModelsLump], sizeof(BspModel));
 	if (modelCount <= 0) {
 		Log::error("Invalid bsp file with no models in lump");
@@ -594,7 +595,8 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 			continue;
 		}
 		Log::debug("Voxelize level %i", i);
-		if (voxelize(textures, facesLevel, edges, surfEdges, vertices, sceneGraph, palLookup, core::string::format("Level %i", i + 1))) {
+		if (voxelize(textures, facesLevel, edges, surfEdges, vertices, sceneGraph, palLookup,
+					 core::string::format("Level %i", i + 1))) {
 			state = true;
 		}
 	}
@@ -604,8 +606,8 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 
 bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
 							  const core::DynamicArray<BspEdge> &edges, const core::DynamicArray<int32_t> &surfEdges,
-							  const core::DynamicArray<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph, voxel::PaletteLookup &palLookup,
-							  const core::String &name) {
+							  const core::DynamicArray<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph,
+							  voxel::PaletteLookup &palLookup, const core::String &name) {
 	int vertexCount = 0;
 	int indexCount = 0;
 	for (const Face &face : faces) {
@@ -707,7 +709,8 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 	return voxelizeNode(name, sceneGraph, tris) > 0;
 }
 
-bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+									scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	static const uint32_t q1Version = FourCC('\x1d', '\0', '\0', '\0');
 	static const uint32_t bspMagic = FourCC('I', 'B', 'S', 'P');
 

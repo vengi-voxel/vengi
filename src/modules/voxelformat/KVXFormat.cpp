@@ -3,15 +3,15 @@
  */
 
 #include "KVXFormat.h"
-#include "io/Stream.h"
-#include "voxel/MaterialColor.h"
-#include "io/FileStream.h"
-#include "core/StringUtil.h"
-#include "core/Log.h"
 #include "core/Color.h"
-#include "voxel/PaletteLookup.h"
-#include "voxel/Palette.h"
+#include "core/Log.h"
+#include "core/StringUtil.h"
+#include "io/FileStream.h"
+#include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxel/MaterialColor.h"
+#include "voxel/Palette.h"
+#include "voxel/PaletteLookup.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -97,13 +97,14 @@ struct slab {
 
 } // namespace priv
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load kvx file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load kvx file: Not enough data in stream " CORE_STRINGIFY(read));                        \
+		return false;                                                                                                  \
 	}
 
-bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	// Total # of bytes (not including numbytes) in each mip-map level
 	// but there is only 1 mip-map level
 	uint32_t numbytes;
@@ -249,13 +250,14 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 #undef wrap
 
-#define wrapBool(read) \
-	if ((read) == false) { \
-		Log::error("Could not write kv6 file: Not enough space in stream " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if ((read) == false) {                                                                                             \
+		Log::error("Could not write kv6 file: Not enough space in stream " CORE_STRINGIFY(read));                      \
+		return false;                                                                                                  \
 	}
 
-bool KVXFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 #if 0
 	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
@@ -358,4 +360,4 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core:
 
 #undef wrapBool
 
-}
+} // namespace voxelformat

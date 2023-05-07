@@ -4,26 +4,26 @@
 
 #include "QBCLFormat.h"
 #include "core/ArrayLength.h"
+#include "core/Assert.h"
+#include "core/Color.h"
 #include "core/Enum.h"
 #include "core/FourCC.h"
+#include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Zip.h"
-#include "core/Color.h"
-#include "core/Assert.h"
-#include "core/Log.h"
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/BufferedZipReadStream.h"
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
+#include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include "voxel/PaletteLookup.h"
-#include "scenegraph/SceneGraph.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace voxelformat {
@@ -36,7 +36,6 @@ const int VERSION = 2;
 const int NODE_TYPE_MATRIX = 0;
 const int NODE_TYPE_MODEL = 1;
 const int NODE_TYPE_COMPOUND = 2;
-
 
 class ScopedQBCLHeader {
 private:
@@ -81,36 +80,36 @@ public:
 	}
 };
 
-}
+} // namespace qbcl
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read));                       \
+		return false;                                                                                                  \
 	}
 
-#define wrapImg(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load qbcl screenshot file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return image::ImagePtr(); \
+#define wrapImg(read)                                                                                                  \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load qbcl screenshot file: Not enough data in stream " CORE_STRINGIFY(read));            \
+		return image::ImagePtr();                                                                                      \
 	}
 
-#define wrapBool(read) \
-	if ((read) == false) { \
-		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if ((read) == false) {                                                                                             \
+		Log::error("Could not load qbcl file: Not enough data in stream " CORE_STRINGIFY(read));                       \
+		return false;                                                                                                  \
 	}
 
-#define wrapSave(write) \
-	if ((write) == false) { \
-		Log::error("Could not save qbcl file: " CORE_STRINGIFY(write) " failed"); \
-		return false; \
+#define wrapSave(write)                                                                                                \
+	if ((write) == false) {                                                                                            \
+		Log::error("Could not save qbcl file: " CORE_STRINGIFY(write) " failed");                                      \
+		return false;                                                                                                  \
 	}
 
-#define wrapSaveNegative(write) \
-	if ((write) == -1) { \
-		Log::error("Could not save qbcl file: " CORE_STRINGIFY(write) " failed"); \
-		return false; \
+#define wrapSaveNegative(write)                                                                                        \
+	if ((write) == -1) {                                                                                               \
+		Log::error("Could not save qbcl file: " CORE_STRINGIFY(write) " failed");                                      \
+		return false;                                                                                                  \
 	}
 
 static bool saveColor(io::WriteStream &stream, core::RGBA color) {
@@ -122,7 +121,7 @@ static bool saveColor(io::WriteStream &stream, core::RGBA color) {
 	return true;
 }
 
-static bool writeRLE(io::WriteStream& stream, core::RGBA color, uint8_t count) {
+static bool writeRLE(io::WriteStream &stream, core::RGBA color, uint8_t count) {
 	if (count == 0) {
 		return true;
 	}
@@ -133,21 +132,21 @@ static bool writeRLE(io::WriteStream& stream, core::RGBA color, uint8_t count) {
 		wrapSave(saveColor(stream, color))
 		wrapSave(saveColor(stream, color))
 	} else if (count > 2) {
-		wrapSave(stream.writeUInt8(count))			 // r
-		wrapSave(stream.writeUInt8(0))				 // g
-		wrapSave(stream.writeUInt8(0))				 // b
+		wrapSave(stream.writeUInt8(count))			// r
+		wrapSave(stream.writeUInt8(0))				// g
+		wrapSave(stream.writeUInt8(0))				// b
 		wrapSave(stream.writeUInt8(qbcl::RLE_FLAG)) // mask
 		wrapSave(saveColor(stream, color))
 	}
 	return true;
 }
 
-bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const scenegraph::SceneGraphNode& node) const {
-	const voxel::Region& region = node.region();
+bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph::SceneGraphNode &node) const {
+	const voxel::Region &region = node.region();
 	const scenegraph::SceneGraphTransform &transform = node.transform(0);
-	const glm::ivec3& translation = transform.localTranslation();
-	const glm::ivec3& mins = region.getLowerCorner();
-	const glm::ivec3& maxs = region.getUpperCorner();
+	const glm::ivec3 &translation = transform.localTranslation();
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::ivec3 &maxs = region.getUpperCorner();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
 
 	wrapSave(outStream.writeUInt32(1)) // unknown
@@ -189,15 +188,16 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const scenegraph
 			const int64_t dataSizePos = rleDataStream.pos();
 			wrapSave(rleDataStream.writeUInt16(rleEntries))
 			for (int y = mins.y; y <= maxs.y; ++y) {
-				const voxel::Voxel& voxel = v->voxel(x, y, z);
+				const voxel::Voxel &voxel = v->voxel(x, y, z);
 				core::RGBA newColor;
 				if (voxel == Empty) {
 					newColor = 0;
 					Log::trace("Save empty voxel: x %i, y %i, z %i", x, y, z);
 				} else {
 					newColor = palette.color(voxel.getColor());
-					Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))",
-							x, y, z, (int)voxel.getColor(), (int)newColor.r, (int)newColor.g, (int)newColor.b, (int)newColor.a);
+					Log::trace("Save voxel: x %i, y %i, z %i (color: index(%i) => rgba(%i:%i:%i:%i))", x, y, z,
+							   (int)voxel.getColor(), (int)newColor.r, (int)newColor.g, (int)newColor.b,
+							   (int)newColor.a);
 				}
 				if (newColor != currentColor || count == 255) {
 					wrapSave(writeRLE(rleDataStream, currentColor, count))
@@ -230,7 +230,8 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream& outStream, const scenegraph
 	return true;
 }
 
-bool QBCLFormat::saveCompound(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node) const {
+bool QBCLFormat::saveCompound(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+							  const scenegraph::SceneGraphNode &node) const {
 	wrapSave(saveMatrix(stream, node))
 	wrapSave(stream.writeUInt32((int)node.children().size()));
 	for (int nodeId : node.children()) {
@@ -240,7 +241,8 @@ bool QBCLFormat::saveCompound(io::SeekableWriteStream& stream, const scenegraph:
 	return true;
 }
 
-bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node) const {
+bool QBCLFormat::saveModel(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+						   const scenegraph::SceneGraphNode &node) const {
 	const uint32_t children = (uint32_t)node.children().size();
 	qbcl::ScopedQBCLHeader header(stream, node.type());
 	wrapSave(stream.writeUInt32(1)) // unknown
@@ -264,7 +266,8 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream& stream, const scenegraph::Sc
 	return true;
 }
 
-bool QBCLFormat::saveNode(io::SeekableWriteStream& stream, const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode& node) const {
+bool QBCLFormat::saveNode(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+						  const scenegraph::SceneGraphNode &node) const {
 	const scenegraph::SceneGraphNodeType type = node.type();
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		if (node.children().empty()) {
@@ -280,8 +283,9 @@ bool QBCLFormat::saveNode(io::SeekableWriteStream& stream, const scenegraph::Sce
 	return true;
 }
 
-bool QBCLFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &savectx) {
-	wrapBool(stream.writeUInt32(FourCC('Q','B','C','L')))
+bool QBCLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+							io::SeekableWriteStream &stream, const SaveContext &savectx) {
+	wrapBool(stream.writeUInt32(FourCC('Q', 'B', 'C', 'L')))
 	wrapBool(stream.writeUInt32(131331))
 	wrapBool(stream.writeUInt32(qbcl::VERSION))
 	bool imageAdded = false;
@@ -313,7 +317,7 @@ bool QBCLFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core
 		wrapBool(stream.writeUInt32(0)) // thumbnail w/h
 	}
 
-	const scenegraph::SceneGraphNode& rootNode = sceneGraph.root();
+	const scenegraph::SceneGraphNode &rootNode = sceneGraph.root();
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Title")))
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Description")))
 	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Metadata")))
@@ -326,7 +330,8 @@ bool QBCLFormat::saveGroups(const scenegraph::SceneGraph& sceneGraph, const core
 	return saveNode(stream, sceneGraph, sceneGraph.root());
 }
 
-size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) {
+size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+							   const LoadContext &ctx) {
 	Header header;
 	wrapBool(readHeader(stream, header))
 	header.loadPalette = true;
@@ -338,7 +343,9 @@ size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 	return palette.colorCount();
 }
 
-bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
+bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream &stream,
+							scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
+							voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
 	scenegraph::SceneGraphTransform transform;
 	Log::debug("Matrix name: %s", name.c_str());
 
@@ -421,7 +428,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 						palette.addColorToPalette(color, false);
 					} else {
 						const uint8_t palIndex = palLookup.findClosestIndex(color);
-						const voxel::Voxel& voxel = voxel::createVoxel(palette, palIndex);
+						const voxel::Voxel &voxel = voxel::createVoxel(palette, palIndex);
 						const uint32_t x = (index / size.z);
 						const uint32_t z = index % size.z;
 						for (int j = 0; j < rleLength; ++j) {
@@ -443,7 +450,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 					const uint32_t x = (index / size.z);
 					const uint32_t z = index % size.z;
 					const uint8_t palIndex = palLookup.findClosestIndex(color);
-					const voxel::Voxel& voxel = voxel::createVoxel(palette, palIndex);
+					const voxel::Voxel &voxel = voxel::createVoxel(palette, palIndex);
 					volume->setVoxel((int)x, y, (int)z, voxel);
 				}
 				++y;
@@ -470,12 +477,14 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	// the pivot is given in voxel coordinates
-	//node.setPivot(pivot / glm::vec3(size)); // TODO:
+	// node.setPivot(pivot / glm::vec3(size)); // TODO:
 	const int id = sceneGraph.emplace(core::move(node), parent);
 	return id != -1;
 }
 
-bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
+bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream &stream,
+						   scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
+						   voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
 	const size_t skip = 3 * 3 * sizeof(float);
 	stream.skip((int64_t)skip); // TODO: rotation matrix?
 	uint32_t childCount;
@@ -496,7 +505,9 @@ bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream&
 	return true;
 }
 
-bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, const core::String &name, voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
+bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream &stream,
+							  scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
+							  voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	if (name.empty()) {
 		node.setName("Compound");
@@ -516,7 +527,8 @@ bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStre
 	return true;
 }
 
-bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, int parent, voxel::Palette &palette, Header &header) {
+bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream &stream,
+						   scenegraph::SceneGraph &sceneGraph, int parent, voxel::Palette &palette, Header &header) {
 	uint32_t type;
 	wrap(stream.readUInt32(type))
 	uint32_t unknown;
@@ -563,7 +575,7 @@ bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream&
 	return true;
 }
 
-bool QBCLFormat::readHeader(io::SeekableReadStream& stream, Header &header) {
+bool QBCLFormat::readHeader(io::SeekableReadStream &stream, Header &header) {
 	wrap(stream.readUInt32(header.magic))
 	if (header.magic != FourCC('Q', 'B', 'C', 'L')) {
 		Log::error("Invalid magic found - no qbcl file");
@@ -594,14 +606,16 @@ bool QBCLFormat::readHeader(io::SeekableReadStream& stream, Header &header) {
 	return true;
 }
 
-bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+								scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+								const LoadContext &ctx) {
 	Header header;
 	wrapBool(readHeader(stream, header))
 
 	voxel::Palette palCopy = palette;
 	wrapBool(readNodes(filename, stream, sceneGraph, -1, palCopy, header))
 
-	scenegraph::SceneGraphNode& rootNode = sceneGraph.node(sceneGraph.root().id());
+	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
 	rootNode.setProperty("Title", header.title);
 	rootNode.setProperty("Description", header.desc);
 	rootNode.setProperty("Metadata", header.metadata);
@@ -613,7 +627,8 @@ bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 	return true;
 }
 
-image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream& stream, const LoadContext &ctx) {
+image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+										   const LoadContext &ctx) {
 	uint32_t magic;
 	wrapImg(stream.readUInt32(magic))
 	if (magic != FourCC('Q', 'B', 'C', 'L')) {
@@ -640,7 +655,7 @@ image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::See
 	return img;
 }
 
-}
+} // namespace voxelformat
 
 #undef wrapImg
 #undef wrap

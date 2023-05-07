@@ -12,7 +12,7 @@
 namespace scenegraph {
 class SceneGraph;
 class SceneGraphNode;
-}
+} // namespace scenegraph
 
 namespace voxelformat {
 

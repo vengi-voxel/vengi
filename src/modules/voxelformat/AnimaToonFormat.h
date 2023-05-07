@@ -63,10 +63,13 @@ protected:
 		return false;
 	}
 
-	bool loadGroupsRGBA(const core::String& filename, io::SeekableReadStream& stream, scenegraph::SceneGraph& sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) override;
-	bool saveGroups(const scenegraph::SceneGraph& sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) override {
+	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+						scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+						const LoadContext &ctx) override;
+	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+					io::SeekableWriteStream &stream, const SaveContext &ctx) override {
 		return false;
 	}
 };
 
-}
+} // namespace voxelformat

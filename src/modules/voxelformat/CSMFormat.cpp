@@ -6,26 +6,26 @@
 #include "core/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/Voxel.h"
-#include "scenegraph/SceneGraph.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
 
-#define wrap(read) \
-	if ((read) != 0) { \
-		Log::error("Could not load csm file: Not enough data in stream " CORE_STRINGIFY(read)); \
-		return false; \
+#define wrap(read)                                                                                                     \
+	if ((read) != 0) {                                                                                                 \
+		Log::error("Could not load csm file: Not enough data in stream " CORE_STRINGIFY(read));                        \
+		return false;                                                                                                  \
 	}
 
-#define wrapBool(read) \
-	if (!(read)) { \
-		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE); \
-		return false; \
+#define wrapBool(read)                                                                                                 \
+	if (!(read)) {                                                                                                     \
+		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                  \
+		return false;                                                                                                  \
 	}
 
-static bool readString(io::SeekableReadStream& stream, core::String& str, bool readStringAsInt) {
+static bool readString(io::SeekableReadStream &stream, core::String &str, bool readStringAsInt) {
 	if (readStringAsInt) {
 		uint32_t length;
 		wrap(stream.readUInt32(length))
@@ -48,10 +48,12 @@ static bool readString(io::SeekableReadStream& stream, core::String& str, bool r
 	return true;
 }
 
-bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) {
+bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+							   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							   const LoadContext &ctx) {
 	uint32_t magic, version, blank, matrixCount;
 	wrap(stream.readUInt32(magic))
-	const bool isNVM = magic == FourCC('.','N','V','M');
+	const bool isNVM = magic == FourCC('.', 'N', 'V', 'M');
 	wrap(stream.readUInt32(version))
 	wrap(stream.readUInt32(blank))
 	wrap(stream.readUInt32(matrixCount))
@@ -118,7 +120,7 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 			}
 			const core::RGBA color = flattenRGB(r, g, b);
 			const int index = palLookup.findClosestIndex(color);
-			const voxel::Voxel& voxel = voxel::createVoxel(palette, index);
+			const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 
 			for (uint32_t v = matrixIndex; v < matrixIndex + count; ++v) {
 				const int x = (int)glm::mod((float)glm::floor((float)v / (float)(sizez * sizey)), (float)sizex);
@@ -139,8 +141,9 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 #undef wrap
 #undef wrapBool
 
-bool CSMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream& stream, const SaveContext &ctx) {
+bool CSMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	return false;
 }
 
-}
+} // namespace voxelformat

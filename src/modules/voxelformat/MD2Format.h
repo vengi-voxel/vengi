@@ -54,8 +54,8 @@ public:
 private:
 	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
-	bool loadFrame(const core::String &filename, io::SeekableReadStream &stream, int64_t startOffset, const MD2Header &hdr,
-				   uint32_t frameIndex, scenegraph::SceneGraph &sceneGraph,
+	bool loadFrame(const core::String &filename, io::SeekableReadStream &stream, int64_t startOffset,
+				   const MD2Header &hdr, uint32_t frameIndex, scenegraph::SceneGraph &sceneGraph,
 				   const core::StringMap<image::ImagePtr> &textures);
 
 public:

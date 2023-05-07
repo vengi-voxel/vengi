@@ -88,12 +88,17 @@ private:
 	bool loadChunk_ReadData(io::SeekableReadStream &stream, char *buff, int size);
 	void loadChunk_ValidateCRC(io::SeekableReadStream &stream);
 	bool loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value);
-	bool loadChunk_LAYR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette);
-	bool loadChunk_BL16(State& state, const GoxChunk &c, io::SeekableReadStream &stream);
-	bool loadChunk_MATE(State& state, const GoxChunk &c, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph);
-	bool loadChunk_CAMR(State& state, const GoxChunk &c, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph);
-	bool loadChunk_IMG(State& state, const GoxChunk &c, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph);
-	bool loadChunk_LIGH(State& state, const GoxChunk &c, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph);
+	bool loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
+						scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette);
+	bool loadChunk_BL16(State &state, const GoxChunk &c, io::SeekableReadStream &stream);
+	bool loadChunk_MATE(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
+						scenegraph::SceneGraph &sceneGraph);
+	bool loadChunk_CAMR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
+						scenegraph::SceneGraph &sceneGraph);
+	bool loadChunk_IMG(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
+					   scenegraph::SceneGraph &sceneGraph);
+	bool loadChunk_LIGH(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
+						scenegraph::SceneGraph &sceneGraph);
 
 	bool saveChunk_DictEntry(io::SeekableWriteStream &stream, const char *key, const void *value, size_t valueSize);
 
@@ -103,7 +108,8 @@ private:
 	}
 
 	// Write image info and preview pic - not used.
-	bool saveChunk_IMG(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream& stream, const SaveContext &ctx);
+	bool saveChunk_IMG(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,
+					   const SaveContext &ctx);
 	bool saveChunk_PREV(io::SeekableWriteStream &stream);
 	// Write all the cameras - not used.
 	bool saveChunk_CAMR(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph);
@@ -116,12 +122,17 @@ private:
 	bool saveChunk_MATE(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph);
 	// Write all the layers.
 	bool saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph, int numBlocks);
-	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) override;
+	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+						scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+						const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
+
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream& stream, voxel::Palette &palette, const LoadContext &ctx) override;
-	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream, const LoadContext &ctx) override;
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+					   const LoadContext &ctx) override;
+	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+								   const LoadContext &ctx) override;
 };
 
-} // namespace voxel
+} // namespace voxelformat
