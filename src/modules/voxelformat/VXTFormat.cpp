@@ -109,11 +109,23 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			Log::warn("Failed to get model from scene graph with index %i", modelIdx);
 			continue;
 		}
-		const int tileSize = 64; // TODO: positioning unknown
+#if 0
+		// 0-6 are valid orientation values
+		uint32_t forward = 1; // TODO: orientation
+		uint32_t up = 3; // TODO: orientation
 		if (version >= 2) {
-			// const uint32_t forward = (orientation & 0xF0) >> 4;
-			// const uint32_t up = orientation & 0xF;
+			forward = (orientation & 0xF0) >> 4;
+			up = orientation & 0xF;
 		}
+
+		const float nX[6]{-1.0f, 1.0f,  0.0f, 0.0f,  0.0f, 0.0f};
+		const float nY[6]{ 0.0f, 0.0f, -1.0f, 1.0f,  0.0f, 0.0f};
+		const float nZ[6]{ 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, 1.0f};
+
+		const glm::vec3 forwardVec(nX[forward], nY[forward], nZ[forward]);
+		const glm::vec3 upVec(nX[up], nY[up], nZ[up]);
+#endif
+		const int tileSize = 64; // TODO: positioning unknown
 		for (int32_t i = idx; i < idx + rle; ++i) {
 			const int32_t x = i / (height * depth);
 			const int32_t y = (i / depth) % height;
