@@ -30,6 +30,7 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include <glm/common.hpp>
+#include <glm/gtx/transform.hpp>
 
 namespace voxelformat {
 
@@ -82,25 +83,17 @@ namespace voxelformat {
 	}
 
 namespace vmax {
-// max volume size 256x256x256 and each chunk is 32x32x32 - to the max amount of chunks are 8x8x8 (512)
 constexpr int MaxVolumeSize = 256u;
-constexpr int MaxChunkSize = 32u; // TODO: this is theoretically variable - but we don't support it yet
-constexpr int MaxVolumeChunks = MaxVolumeSize / MaxChunkSize;
-constexpr int MaxChunks = MaxVolumeChunks * MaxVolumeChunks * MaxVolumeChunks;
 } // namespace vmax
 
 bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) const {
-	io::BufferedReadWriteStream contentsStream;
-	if (!archive->load("scene.json", contentsStream)) {
+	io::BufferedReadWriteStream stream;
+	if (!archive->load("scene.json", stream)) {
 		Log::error("Failed to load scene.json");
 		return false;
 	}
 
-	contentsStream.seek(0);
-	return loadSceneJsonFromStream(contentsStream, scene);
-}
-
-bool VMaxFormat::loadSceneJsonFromStream(io::SeekableReadStream &stream, VMaxScene &scene) const {
+	stream.seek(0);
 	io::StdIStreamBuf buf(stream);
 	std::istream is(&buf);
 	nlohmann::json json;
@@ -271,12 +264,7 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 		Log::error("Failed to seek to the beginning of the sub stream");
 		return false;
 	}
-	return loadObjectFromStream(filename, data, sceneGraph, ctx, obj, palette);
-}
 
-bool VMaxFormat::loadObjectFromStream(const core::String &filename, io::SeekableReadStream &data,
-									  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const VMaxObject &obj,
-									  const voxel::Palette &palette) const {
 	io::LZFSEReadStream stream(data);
 	priv::BinaryPList plist = priv::BinaryPList::parse(stream);
 	if (!plist.isDict()) {
@@ -326,7 +314,11 @@ bool VMaxFormat::loadObjectFromStream(const core::String &filename, io::Seekable
 		Log::debug("volumestats.extent: mins(%i, %i, %i), maxs(%i, %i, %i)", extent.min[0], extent.min[1],
 				   extent.min[2], extent.max[0], extent.max[1], extent.max[2]);
 
-		if (volumeId.mortonChunkIdx > vmax::MaxChunks) {
+		const int maxChunkSize = 1 << extent.o;
+		const int maxVolumeChunks = vmax::MaxVolumeSize / maxChunkSize;
+		const int maxChunks = maxVolumeChunks * maxVolumeChunks * maxVolumeChunks;
+
+		if (volumeId.mortonChunkIdx > maxChunks) {
 			Log::error("identifier: c(%i) is out of range", volumeId.mortonChunkIdx);
 			return false;
 		}
@@ -349,7 +341,7 @@ bool VMaxFormat::loadObjectFromStream(const core::String &filename, io::Seekable
 		}
 
 		// now loop over the 'voxels' array and create a volume from it
-		const voxel::Region region(0, vmax::MaxChunkSize);
+		const voxel::Region region(0, maxChunkSize - 1);
 		voxel::RawVolume *v = new voxel::RawVolume(region);
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(v, true);
@@ -365,6 +357,9 @@ bool VMaxFormat::loadObjectFromStream(const core::String &filename, io::Seekable
 		Log::debug("chunkOffset: %i, %i, %i", chunkOffsetX, chunkOffsetY, chunkOffsetZ);
 		uint32_t mortonIdx = 0;
 		voxel::RawVolumeWrapper wrapper(v);
+
+		Log::debug("start voxel: %i", volumeStats.scount);
+		Log::debug("amount of voxels: %i", volumeStats.count);
 		while (!dsStream.eos()) {
 			// there are only 8 materials used for now 0-7 and 8 selected versions for them 8-15,
 			// with option to add more in the future up to 128
@@ -387,10 +382,13 @@ bool VMaxFormat::loadObjectFromStream(const core::String &filename, io::Seekable
 				return false;
 			}
 			++mortonIdx;
-			wrapper.setVoxel(chunkOffsetX + x, chunkOffsetY + y, chunkOffsetZ + z,
-							 voxel::createVoxel(voxel::VoxelType::Generic, palIdx));
+			if (!wrapper.setVoxel(chunkOffsetX + x, chunkOffsetY + y, chunkOffsetZ + z,
+								  voxel::createVoxel(voxel::VoxelType::Generic, palIdx))) {
+				Log::warn("Failed to set voxel at %i, %i, %i (morton index: %u)", chunkOffsetX + x, chunkOffsetY + y,
+						  chunkOffsetZ + z, mortonIdx);
+			}
 		}
-		const glm::ivec3 mins(chunkX * vmax::MaxChunkSize, chunkY * vmax::MaxChunkSize, chunkZ * vmax::MaxChunkSize);
+		const glm::ivec3 mins(chunkX * maxChunkSize, chunkY * maxChunkSize, chunkZ * maxChunkSize);
 		v->translate(mins);
 
 		if (objectSceneGraph.emplace(core::move(node)) == InvalidNodeId) {
@@ -406,10 +404,9 @@ bool VMaxFormat::loadObjectFromStream(const core::String &filename, io::Seekable
 	node.setName(obj.n);
 
 	scenegraph::SceneGraphTransform transform;
-	transform.setWorldScale(obj.t_s);
-	// TODO: zUpMat
-	transform.setWorldTranslation(obj.t_p);
-	transform.setWorldOrientation(glm::quat(obj.t_r.w, obj.t_r.x, obj.t_r.y, obj.t_r.z));
+	const glm::mat4x4 matrix =
+		glm::translate(obj.t_p) * glm::mat4_cast(glm::quat(glm::radians(obj.t_r))) * glm::scale(obj.t_s);
+	transform.setLocalMatrix(matrix);
 
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
@@ -431,7 +428,7 @@ image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::See
 		return image::ImagePtr{};
 	}
 	io::BufferedReadWriteStream contentsStream;
-	core::String thumbnailPath = core::string::path("QuickLook", "Thumbnail.png");
+	const core::String &thumbnailPath = core::string::path("QuickLook", "Thumbnail.png");
 	if (!archive->load(thumbnailPath, contentsStream)) {
 		Log::error("Failed to load %s from %s", thumbnailPath.c_str(), filename.c_str());
 		return image::ImagePtr();
@@ -444,8 +441,19 @@ image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::See
 	return image::loadImage(core::string::extractFilenameWithExtension(thumbnailPath), contentsStream);
 }
 
-bool VMaxFormat::loadPaletteFromStream(const core::String &paletteName, voxel::Palette &palette,
-									   io::SeekableReadStream &stream) const {
+bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName,
+										voxel::Palette &palette, const LoadContext &ctx) const {
+	io::BufferedReadWriteStream stream;
+	if (!archive->load(paletteName, stream)) {
+		Log::error("Failed to load %s", paletteName.c_str());
+		return false;
+	}
+
+	if (stream.seek(0) == -1) {
+		Log::error("Failed to seek to the beginning of the sub stream for the palette %s", paletteName.c_str());
+		return false;
+	}
+
 	const image::ImagePtr &img = image::loadImage(paletteName, stream);
 	if (!img->isLoaded()) {
 		Log::error("Failed to load image %s", paletteName.c_str());
@@ -458,22 +466,6 @@ bool VMaxFormat::loadPaletteFromStream(const core::String &paletteName, voxel::P
 	return true;
 }
 
-bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName,
-										voxel::Palette &palette, const LoadContext &ctx) const {
-	io::BufferedReadWriteStream contentsStream;
-	if (!archive->load(paletteName, contentsStream)) {
-		Log::error("Failed to load %s", paletteName.c_str());
-		return false;
-	}
-
-	if (contentsStream.seek(0) == -1) {
-		Log::error("Failed to seek to the beginning of the sub stream for the palette %s", paletteName.c_str());
-		return false;
-	}
-
-	return loadPaletteFromStream(paletteName, palette, contentsStream);
-}
-
 size_t VMaxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
 							   const LoadContext &ctx) {
 	const io::ArchivePtr &archive = io::openArchive(filename, &stream);
@@ -481,26 +473,19 @@ size_t VMaxFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 		Log::error("Failed to create archive for %s", filename.c_str());
 		return 0u;
 	}
+
+	// TODO: there is also a "pal" dict in the vmaxb plist file for some files
+	// pal->dict
+	//      colors->data
+	//      materials->array
+	//            dict
+	//      name->string
+
 	const core::String &paletteName = "palette.png";
 	if (!loadPaletteFromArchive(archive, paletteName, palette, ctx)) {
 		return 0u;
 	}
 	return palette.colorCount();
-}
-
-bool VMaxFormat::loadPaletteFromFile(const core::String &paletteName, voxel::Palette &palette) const {
-	const io::FilePtr &file = io::filesystem()->open(paletteName);
-	io::FileStream fileStream(file);
-	return loadPaletteFromStream(paletteName, palette, fileStream);
-}
-
-bool VMaxFormat::loadPaletteForVMax(const core::String &filename, voxel::Palette &palette) const {
-	core_assert(core::string::extractExtension(filename) == "vmaxb");
-	const core::String &path = core::string::extractPath(filename);
-	const core::String &baseName = core::string::extractFilename(filename);
-	const core::String &paletteName =
-		core::string::path(path, core::string::replaceAll(baseName, "contents", "palette") + ".png");
-	return loadPaletteFromFile(paletteName, palette);
 }
 
 #undef jsonVec

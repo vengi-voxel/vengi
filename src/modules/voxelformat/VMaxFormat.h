@@ -235,23 +235,12 @@ private:
 	VolumeStats parseStats(const priv::BinaryPList &snapshot) const;
 	VolumeId parseId(const priv::BinaryPList &snapshot) const;
 
-	bool loadPaletteFromFile(const core::String &paletteName, voxel::Palette &palette) const;
-	bool loadPaletteForVMax(const core::String &filename, voxel::Palette &palette) const;
-	bool loadSceneJsonFromStream(io::SeekableReadStream &stream, VMaxScene &scene) const;
-	bool loadSceneJson(const io::ArchivePtr &zipArchive, VMaxScene &scene) const;
-	bool loadObjectFromStream(const core::String &filename, io::SeekableReadStream &data,
-							  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const VMaxObject &obj,
-							  const voxel::Palette &palette) const;
+	bool loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) const;
 	bool loadObjectFromArchive(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const VMaxObject &obj,
 							   const voxel::Palette &palette) const;
-	bool loadPaletteFromStream(const core::String &paletteName, voxel::Palette &palette,
-							   io::SeekableReadStream &stream) const;
 	bool loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName, voxel::Palette &palette,
 								const LoadContext &ctx) const;
-	bool loadVolume(const core::String &filename, const io::ArchivePtr &archive, const LoadContext &ctx,
-					const VMaxObject &obj, voxel::RawVolume **volume) const;
-
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
 						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
 						   const LoadContext &ctx) override;
