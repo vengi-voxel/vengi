@@ -4,6 +4,7 @@ set(SRCS
 	AxisUtil.h AxisUtil.cpp
 	Config.h
 
+	modifier/IModifierRenderer.h
 	modifier/Modifier.h modifier/Modifier.cpp
 	modifier/ModifierRenderer.h modifier/ModifierRenderer.cpp
 	modifier/ModifierFacade.h modifier/ModifierFacade.cpp
@@ -11,6 +12,7 @@ set(SRCS
 	modifier/ModifierButton.h modifier/ModifierButton.cpp
 	modifier/ModifierType.h
 
+	ISceneRenderer.h
 	SceneRenderer.h SceneRenderer.cpp
 	SceneUtil.h SceneUtil.cpp
 
@@ -27,6 +29,7 @@ set(TEST_SRCS
 	tests/MementoHandlerTest.cpp
 	tests/ModifierTest.cpp
 	tests/SceneManagerTest.cpp
+	tests/SceneRendererTest.cpp
 )
 
 gtest_suite_sources(tests

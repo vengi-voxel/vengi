@@ -9,29 +9,35 @@
 
 namespace voxedit {
 
+ModifierFacade::ModifierFacade(const ModifierRendererPtr &modifierRenderer) : _modifierRenderer(modifierRenderer) {
+}
+
 bool ModifierFacade::init() {
-	return Super::init() && _modifierRenderer.init();
+	if (!Super::init()) {
+		return false;
+	}
+	return _modifierRenderer->init();
 }
 
 void ModifierFacade::shutdown() {
 	Super::shutdown();
-	_modifierRenderer.shutdown();
+	_modifierRenderer->shutdown();
 }
 
-bool ModifierFacade::setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos) {
+bool ModifierFacade::setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
 	if (Super::setMirrorAxis(axis, mirrorPos)) {
-		_modifierRenderer.updateMirrorPlane(axis, mirrorPos);
+		_modifierRenderer->updateMirrorPlane(axis, mirrorPos);
 		return true;
 	}
 	return false;
 }
 
-void ModifierFacade::setReferencePosition(const glm::ivec3& pos) {
+void ModifierFacade::setReferencePosition(const glm::ivec3 &pos) {
 	Super::setReferencePosition(pos);
-	_modifierRenderer.updateReferencePosition(_referencePos);
+	_modifierRenderer->updateReferencePosition(_referencePos);
 }
 
-void ModifierFacade::render(const video::Camera& camera) {
+void ModifierFacade::render(const video::Camera &camera) {
 	if (_locked) {
 		return;
 	}
@@ -39,15 +45,15 @@ void ModifierFacade::render(const video::Camera& camera) {
 		static glm::ivec3 lastCursor = aabbPosition();
 		static math::Axis lastMirrorAxis = _mirrorAxis;
 
-		const glm::ivec3& cursor = aabbPosition();
+		const glm::ivec3 &cursor = aabbPosition();
 		const bool needsUpdate = lastCursor != cursor || lastMirrorAxis != _mirrorAxis;
 
 		if (needsUpdate) {
 			lastMirrorAxis = _mirrorAxis;
 			lastCursor = cursor;
-			const math::AABB<int>& bbox = aabb();
-			const glm::ivec3& mins = bbox.mins();
-			const glm::ivec3& maxs = bbox.maxs();
+			const math::AABB<int> &bbox = aabb();
+			const glm::ivec3 &mins = bbox.mins();
+			const glm::ivec3 &maxs = bbox.maxs();
 			glm::ivec3 minsMirror = mins;
 			glm::ivec3 maxsMirror = maxs;
 			const int size = _gridResolution;
@@ -55,31 +61,31 @@ void ModifierFacade::render(const video::Camera& camera) {
 				const math::AABB<int> first(mins, maxs);
 				const math::AABB<int> second(minsMirror, maxsMirror);
 				if (math::intersects(first, second)) {
-					_modifierRenderer.updateAABBMesh(mins, maxsMirror + size);
+					_modifierRenderer->updateAABBMesh(mins, maxsMirror + size);
 				} else {
-					_modifierRenderer.updateAABBMirrorMesh(mins, maxs + size, minsMirror, maxsMirror + size);
+					_modifierRenderer->updateAABBMirrorMesh(mins, maxs + size, minsMirror, maxsMirror + size);
 				}
 			} else {
-				_modifierRenderer.updateAABBMesh(mins, maxs + size);
+				_modifierRenderer->updateAABBMesh(mins, maxs + size);
 			}
 		}
 
-		_modifierRenderer.renderAABBMode(camera);
+		_modifierRenderer->renderAABBMode(camera);
 	}
 	const glm::ivec3 pos = aabbPosition();
-	const glm::mat4& translate = glm::translate(glm::vec3(pos));
-	const glm::mat4& scale = glm::scale(translate, glm::vec3((float)_gridResolution));
+	const glm::mat4 &translate = glm::translate(glm::vec3(pos));
+	const glm::mat4 &scale = glm::scale(translate, glm::vec3((float)_gridResolution));
 	const bool flip = voxel::isAir(_voxelAtCursor.getMaterial());
-	_modifierRenderer.updateCursor(_cursorVoxel, _face, flip);
-	_modifierRenderer.render(camera, scale);
+	_modifierRenderer->updateCursor(_cursorVoxel, _face, flip);
+	_modifierRenderer->render(camera, scale);
 	if (_selectionValid) {
-		_modifierRenderer.renderSelection(camera);
+		_modifierRenderer->renderSelection(camera);
 	}
 }
 
-bool ModifierFacade::select(const glm::ivec3& mins, const glm::ivec3& maxs) {
+bool ModifierFacade::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 	if (Super::select(mins, maxs)) {
-		_modifierRenderer.updateSelectionBuffers(_selections);
+		_modifierRenderer->updateSelectionBuffers(_selections);
 		return true;
 	}
 	return false;
@@ -91,7 +97,7 @@ void ModifierFacade::invert(const voxel::Region &region) {
 	}
 	Super::invert(region);
 	if (_selectionValid) {
-		_modifierRenderer.updateSelectionBuffers(_selections);
+		_modifierRenderer->updateSelectionBuffers(_selections);
 	}
 }
 
@@ -101,8 +107,8 @@ void ModifierFacade::unselect() {
 	}
 	Super::unselect();
 	if (_selectionValid) {
-		_modifierRenderer.updateSelectionBuffers(_selections);
+		_modifierRenderer->updateSelectionBuffers(_selections);
 	}
 }
 
-}
+} // namespace voxedit

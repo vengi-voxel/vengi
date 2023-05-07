@@ -4,18 +4,20 @@
 
 #pragma once
 
+#include "core/IComponent.h"
 #include "core/TimedValue.h"
 #include "math/Axis.h"
 #include "render/GridRenderer.h"
 #include "render/ShapeRenderer.h"
-#include "video/ShapeBuilder.h"
 #include "scenegraph/SceneGraph.h"
+#include "video/ShapeBuilder.h"
+#include "voxedit-util/ISceneRenderer.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/SceneGraphRenderer.h"
 
 namespace voxedit {
 
-class SceneRenderer {
+class SceneRenderer : public ISceneRenderer {
 private:
 	voxelrender::SceneGraphRenderer _volumeRenderer;
 	render::GridRenderer _gridRenderer;
@@ -48,26 +50,30 @@ private:
 
 	void updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx);
 	bool extractVolume(const scenegraph::SceneGraph &sceneGraph);
-	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const scenegraph::SceneGraph &sceneGraph, const glm::ivec3& cursorPosition);
+	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const scenegraph::SceneGraph &sceneGraph,
+						   const glm::ivec3 &cursorPosition);
+
 public:
 	SceneRenderer();
+	virtual ~SceneRenderer() = default;
 
-	void construct();
-	bool init();
-	void update();
-	void clear();
-	void shutdown();
+	// IComponent
+	void construct() override;
+	bool init() override;
+	void shutdown() override;
 
-	void updateLockedPlanes(math::Axis lockedAxis, const scenegraph::SceneGraph &sceneGraph, const glm::ivec3& cursorPosition);
-	void updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0);
-	void updateGridRegion(const voxel::Region &region);
-
-	void nodeRemove(int nodeId);
-
+	// ISceneRenderer
+	void update() override;
+	void clear() override;
+	void updateLockedPlanes(math::Axis lockedAxis, const scenegraph::SceneGraph &sceneGraph,
+							const glm::ivec3 &cursorPosition) override;
+	void updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0) override;
+	void updateGridRegion(const voxel::Region &region) override;
+	void nodeRemove(int nodeId) override;
 	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera,
-				  const scenegraph::SceneGraph &sceneGraph);
+				  const scenegraph::SceneGraph &sceneGraph) override;
 	void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera,
-					 const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frame);
+					 const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frame) override;
 };
 
 } // namespace voxedit

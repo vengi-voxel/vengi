@@ -31,6 +31,7 @@
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
 #include "video/Types.h"
+#include "voxedit-util/modifier/ModifierRenderer.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
@@ -48,6 +49,7 @@
 #include "voxelgenerator/TreeGenerator.h"
 #include "voxelrender/ImageGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
+#include "voxelrender/SceneGraphRenderer.h"
 #include "voxelutil/Picking.h"
 #include "voxelutil/Raycast.h"
 #include "voxelutil/VolumeCropper.h"
@@ -93,6 +95,13 @@ inline auto paletteCompleter() {
 		}
 		return i;
 	};
+}
+
+SceneManager::SceneManager() : SceneManager(core::make_shared<SceneRenderer>(), core::make_shared<ModifierRenderer>()) {
+}
+
+SceneManager::SceneManager(const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
+	: _sceneRenderer(sceneRenderer), _modifier(modifierRenderer) {
 }
 
 SceneManager::~SceneManager() {
@@ -496,7 +505,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 		_mementoHandler.markModification(node, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
-		_sceneRenderer.updateNodeRegion(nodeId, modifiedRegion, renderRegionMillis);
+		_sceneRenderer->updateNodeRegion(nodeId, modifiedRegion, renderRegionMillis);
 	}
 	markDirty();
 	resetLastTrace();
@@ -1139,7 +1148,7 @@ void SceneManager::onNewNodeAdded(int newNodeId, bool isChildren) {
 		if (type == scenegraph::SceneGraphNodeType::Model) {
 			const voxel::Region &region = node->region();
 			// update the whole volume
-			_sceneRenderer.updateNodeRegion(newNodeId, region);
+			_sceneRenderer->updateNodeRegion(newNodeId, region);
 
 			_result = voxelutil::PickResult();
 			if (!isChildren) {
@@ -1158,7 +1167,7 @@ int SceneManager::addNodeToSceneGraph(scenegraph::SceneGraphNode &node, int pare
 bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph) {
 	core_trace_scoped(LoadSceneGraph);
 	_sceneGraph = core::move(sceneGraph);
-	_sceneRenderer.clear();
+	_sceneRenderer->clear();
 
 	const size_t nodesAdded = _sceneGraph.size();
 	if (nodesAdded == 0) {
@@ -1172,7 +1181,7 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph) {
 }
 
 void SceneManager::updateGridRenderer(const voxel::Region& region) {
-	_sceneRenderer.updateGridRegion(region);
+	_sceneRenderer->updateGridRegion(region);
 }
 
 scenegraph::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {
@@ -1248,7 +1257,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 		return false;
 	}
 	_sceneGraph.clear();
-	_sceneRenderer.clear();
+	_sceneRenderer->clear();
 
 	voxel::RawVolume* v = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node;
@@ -1373,11 +1382,11 @@ bool SceneManager::setGridResolution(int resolution) {
 void SceneManager::render(voxelrender::RenderContext &renderContext, const video::Camera& camera, uint8_t renderMask) {
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderScene) {
-		_sceneRenderer.renderScene(renderContext, camera, _sceneGraph, _currentFrameIdx);
+		_sceneRenderer->renderScene(renderContext, camera, _sceneGraph, _currentFrameIdx);
 	}
 	const bool renderUI = (renderMask & RenderUI) != 0u;
 	if (renderUI) {
-		_sceneRenderer.renderUI(renderContext, camera, _sceneGraph);
+		_sceneRenderer->renderUI(renderContext, camera, _sceneGraph);
 		_modifier.render(camera);
 	}
 }
@@ -1385,7 +1394,7 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 void SceneManager::construct() {
 	_modifier.construct();
 	_mementoHandler.construct();
-	_sceneRenderer.construct();
+	_sceneRenderer->construct();
 	_movement.construct();
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
@@ -2125,7 +2134,7 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the memento handler");
 		return false;
 	}
-	if (!_sceneRenderer.init()) {
+	if (!_sceneRenderer->init()) {
 		Log::error("Failed to initialize the scene renderer");
 		return false;
 	}
@@ -2220,7 +2229,7 @@ bool SceneManager::update(double nowSeconds) {
 	}
 
 	_modifier.update(nowSeconds);
-	_sceneRenderer.update();
+	_sceneRenderer->update();
 	setGridResolution(_gridSize->intVal());
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		if (!_move[i].pressed()) {
@@ -2260,7 +2269,7 @@ void SceneManager::shutdown() {
 
 	autosave();
 
-	_sceneRenderer.shutdown();
+	_sceneRenderer->shutdown();
 	_sceneGraph.clear();
 	_mementoHandler.clearStates();
 
@@ -2361,7 +2370,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	if (oldCursorPos == pos) {
 		return;
 	}
-	_sceneRenderer.updateLockedPlanes(_lockedAxis, _sceneGraph, cursorPosition());
+	_sceneRenderer->updateLockedPlanes(_lockedAxis, _sceneGraph, cursorPosition());
 }
 
 bool SceneManager::trace(bool sceneMode, bool force) {
@@ -2534,7 +2543,7 @@ void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
 	} else {
 		_lockedAxis |= axis;
 	}
-	_sceneRenderer.updateLockedPlanes(_lockedAxis, _sceneGraph, cursorPosition());
+	_sceneRenderer->updateLockedPlanes(_lockedAxis, _sceneGraph, cursorPosition());
 }
 
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix,
@@ -2731,7 +2740,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 		_mementoHandler.removeLast();
 		return false;
 	}
-	_sceneRenderer.nodeRemove(nodeId);
+	_sceneRenderer->nodeRemove(nodeId);
 	if (_sceneGraph.empty()) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
