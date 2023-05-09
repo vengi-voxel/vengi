@@ -185,25 +185,33 @@ void Viewport::renderCursor() {
 	if (modifier.isMode(ModifierType::ColorPicker)) {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 	}
-	if (!_renderContext.sceneMode && _cursorDetails->intVal()) {
-		const int cursorDetailsLevel = _cursorDetails->intVal();
-		const glm::ivec3 &cursorPos = modifier.cursorPosition();
-		if (cursorDetailsLevel == 1) {
-			ImGui::TooltipText("%i:%i:%i", cursorPos.x, cursorPos.y, cursorPos.z);
+
+	if (_renderContext.sceneMode) {
+		return;
+	}
+
+	const int cursorDetailsLevel = _cursorDetails->intVal();
+	if (cursorDetailsLevel == 0) {
+		return;
+	}
+
+	const glm::ivec3 &cursorPos = modifier.cursorPosition();
+	if (cursorDetailsLevel == 1) {
+		ImGui::TooltipText("%i:%i:%i", cursorPos.x, cursorPos.y, cursorPos.z);
+		return;
+	}
+
+	const int activeNode = mgr.sceneGraph().activeNode();
+	if (const voxel::RawVolume *v = mgr.volume(activeNode)) {
+		const glm::ivec3 &mins = v->region().getLowerCorner();
+		const glm::ivec3 &size = v->region().getDimensionsInVoxels();
+		if (mins.x == 0 && mins.y == 0 && mins.z == 0) {
+			ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\n", mins.x, mins.y, mins.z,
+								size.x, size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z);
 		} else {
-			const int activeNode = mgr.sceneGraph().activeNode();
-			if (const voxel::RawVolume *v = mgr.volume(activeNode)) {
-				const glm::ivec3 &mins = v->region().getLowerCorner();
-				const glm::ivec3 &size = v->region().getDimensionsInVoxels();
-				if (mins.x == 0 && mins.y == 0 && mins.z == 0) {
-					ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\n", mins.x, mins.y, mins.z,
-									   size.x, size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z);
-				} else {
-					ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\nrelative: %i:%i:%i", mins.x,
-									   mins.y, mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z,
-									   cursorPos.x - mins.x, cursorPos.y - mins.y, cursorPos.z - mins.z);
-				}
-			}
+			ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\nrelative: %i:%i:%i", mins.x,
+								mins.y, mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z,
+								cursorPos.x - mins.x, cursorPos.y - mins.y, cursorPos.z - mins.z);
 		}
 	}
 }
