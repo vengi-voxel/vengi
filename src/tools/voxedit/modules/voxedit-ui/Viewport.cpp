@@ -180,14 +180,14 @@ void Viewport::renderViewportImage(const glm::ivec2 &contentSize) {
 }
 
 void Viewport::renderCursor() {
+	if (_renderContext.sceneMode) {
+		return;
+	}
+
 	const SceneManager &mgr = sceneMgr();
 	const ModifierFacade &modifier = mgr.modifier();
 	if (modifier.isMode(ModifierType::ColorPicker)) {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-	}
-
-	if (_renderContext.sceneMode) {
-		return;
 	}
 
 	const int cursorDetailsLevel = _cursorDetails->intVal();
@@ -232,8 +232,8 @@ void Viewport::renderViewport() {
 			ImGui::LoadingIndicatorCircle("Loading", radius, core::Color::White, core::Color::Gray);
 		} else if (ImGui::IsItemHovered() && !modifiedRegion) {
 			renderCursor();
-			_hovered = true;
 			updateViewportTrace(headerSize);
+			_hovered = true;
 		}
 
 		dragAndDrop(headerSize);
