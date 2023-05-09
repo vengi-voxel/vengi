@@ -14,6 +14,6 @@ and PCManFM.
 
 ## Windows Explorer
 
-There is a [pull request](https://github.com/mgerhardy/vengi/pull/92>) already (but it's not yet finished and would need the help of a windows developer).
+There is a `voxelthumb.dll` that must get registered via `regsvr32 /s voxelthumb.dll`.
 
 > You can still run this application from the windows command line to generate thumbnail images of your voxel models. See the [examples](Examples.md) for more details.

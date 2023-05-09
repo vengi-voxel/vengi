@@ -1,10 +1,10 @@
 # Example
 
-This allows you to create the thumbnails manually.
+## Manual thumbnails creation
 
-## Unix
+### Unix
 
-```bash
+```sh
 for i in $(find $HOME/dev/vengi -name "*.vox" -or -name "*.cub" -or -name "*.qbt" -or -name "*.qb" -or -name "*.vxl" -or -name "*.vxm"); do
  fullpath=$(readlink -f $i)
  md5=$(echo -n "file://$fullpath" | md5sum -z | awk ' { print $1.".png" }')
@@ -12,11 +12,19 @@ for i in $(find $HOME/dev/vengi -name "*.vox" -or -name "*.cub" -or -name "*.qbt
 done
 ```
 
-## Windows
+### Windows
 
 ```ps
 $array = "1-2,5", "1-2,7"
 foreach ($i in $array){
-  ./vengi-thumbnailer -s 128 $i $i.png
+  ./vengi-thumbnailer.exe -s 128 $i $i.png
 }
+```
+
+## Turntables
+
+The thumbnailer is able to generate scene turntables with 16 images.
+
+```sh
+./vengi-thumbnailer -s 128 --turntable somevoxel.vox somevoxel.png
 ```
