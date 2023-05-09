@@ -637,12 +637,18 @@ voxel::RawVolume* SceneManager::volume(int nodeId) {
 	}
 	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	core_assert_msg(node != nullptr, "Node with id %i wasn't found in the scene graph", nodeId);
+	if (node == nullptr) {
+		return nullptr;
+	}
 	return node->volume();
 }
 
 const voxel::RawVolume* SceneManager::volume(int nodeId) const {
 	const scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	core_assert_msg(node != nullptr, "Node with id %i wasn't found in the scene graph", nodeId);
+	if (node == nullptr) {
+		return nullptr;
+	}
 	return node->volume();
 }
 
