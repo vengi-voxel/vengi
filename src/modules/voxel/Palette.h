@@ -14,7 +14,8 @@
 
 namespace voxel {
 
-static constexpr int PaletteMaxColors = 256;
+static const int PaletteMaxColors = 256;
+static const int PaletteColorNotFound = -1;
 // RGBA color values in the range [0-255]
 using PaletteColorArray = core::RGBA[PaletteMaxColors];
 using PaletteIndicesArray = uint8_t[PaletteMaxColors];

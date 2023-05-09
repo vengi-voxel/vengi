@@ -136,7 +136,7 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 		// now we are looking for the color in the existing palette entries that is most similar
 		// to other entries in the palette. If this entry is than above a certain threshold, we
 		// will replace that color with the new rgba value
-		int bestIndex = -1;
+		int bestIndex = PaletteColorNotFound;
 		float bestColorDistance = FLT_MAX;
 		for (int i = 0; i < _colorCount; ++i) {
 			if (i == skipSlotIndex) {
@@ -149,7 +149,7 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 				bestIndex = closestColorIdx;
 			}
 		}
-		if (bestIndex != -1) {
+		if (bestIndex != PaletteColorNotFound) {
 			const float dist = core::Color::getDistance(_colors[bestIndex], rgba);
 			if (dist > MaxThreshold) {
 				if (index) {
@@ -188,7 +188,7 @@ core::String Palette::print(const Palette &palette, bool colorAsHex) {
 
 int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) const {
 	if (size() == 0) {
-		return -1;
+		return PaletteColorNotFound;
 	}
 	for (int i = 0; i < _colorCount; ++i) {
 		if (i == skip) {
@@ -205,11 +205,11 @@ int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) c
 				return i;
 			}
 		}
-		return -1;
+		return PaletteColorNotFound;
 	}
 
 	float minDistance = FLT_MAX;
-	int minIndex = -1;
+	int minIndex = PaletteColorNotFound;
 
 	float hue;
 	float saturation;
@@ -238,7 +238,7 @@ int Palette::getClosestMatch(const core::RGBA rgba, float *distance, int skip) c
 
 uint8_t Palette::findReplacement(uint8_t index) const {
 	const int replacement = getClosestMatch(_colors[index], nullptr, index);
-	if (replacement == -1) {
+	if (replacement == PaletteColorNotFound) {
 		return index;
 	}
 	return replacement;

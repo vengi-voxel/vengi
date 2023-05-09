@@ -89,7 +89,7 @@ void fillInterpolated(voxel::RawVolume *v, const voxel::Palette &palette) {
 					color000 + color001 + color010 + color011 + color100 + color101 + color110 + color111;
 				const glm::vec4 colorAvg = colorSum / (float)blocked;
 				const int idx = palette.getClosestMatch(core::Color::getRGBA(colorAvg));
-				if (idx == -1) {
+				if (idx == voxel::PaletteColorNotFound) {
 					continue;
 				}
 				sampler.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, idx));

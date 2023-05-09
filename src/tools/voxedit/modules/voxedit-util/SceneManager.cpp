@@ -684,7 +684,7 @@ bool SceneManager::setActivePalette(const voxel::Palette &palette, bool searchBe
 		const int voxels = voxelutil::visitVolume(wrapper, [&wrapper, &palette, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
 			const core::RGBA rgba = oldPalette.color(voxel.getColor());
 			const int newColor = palette.getClosestMatch(rgba);
-			if (newColor != -1) {
+			if (newColor != voxel::PaletteColorNotFound) {
 				voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor);
 				wrapper.setVoxel(x, y, z, newVoxel);
 			}
