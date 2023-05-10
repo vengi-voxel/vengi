@@ -3,16 +3,16 @@
  */
 
 #include "StringUtil.h"
-#include "core/Common.h"
 #include "core/ArrayLength.h"
+#include "core/Common.h"
 #include "core/StandardLib.h"
-#include <SDL_stdinc.h>
 #include <SDL_platform.h>
+#include <SDL_stdinc.h>
 #include <ctype.h>
+#include <glm/vec3.hpp>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <glm/vec3.hpp>
 
 namespace core {
 namespace string {
@@ -21,31 +21,31 @@ size_t len(const char *string) {
 	return SDL_strlen(string);
 }
 
-int64_t toLong(const char* str) {
+int64_t toLong(const char *str) {
 	return ::atol(str);
 }
 
-int toInt(const char* str) {
+int toInt(const char *str) {
 	return SDL_atoi(str);
 }
 
-float toFloat(const core::String& str) {
+float toFloat(const core::String &str) {
 	return (float)SDL_atof(str.c_str());
 }
 
-double toDouble(const core::String& str) {
+double toDouble(const core::String &str) {
 	return (double)SDL_atof(str.c_str());
 }
 
-double toDouble(const char* str) {
+double toDouble(const char *str) {
 	return (double)SDL_atof(str);
 }
 
-bool startsWith(const char* string, const char* token) {
+bool startsWith(const char *string, const char *token) {
 	return !SDL_strncmp(string, token, SDL_strlen(token));
 }
 
-bool startsWith(const core::String& string, const char* token) {
+bool startsWith(const core::String &string, const char *token) {
 	const size_t tokensize = SDL_strlen(token);
 	if (string.size() < tokensize) {
 		return false;
@@ -54,14 +54,19 @@ bool startsWith(const core::String& string, const char* token) {
 }
 
 bool contains(const char *haystack, const char *needle) {
-	const char *pos = (const char*)SDL_strstr(haystack, needle);
+	const char *pos = (const char *)SDL_strstr(haystack, needle);
 	return pos != nullptr;
 }
 
-char toUpper(char in) { return (char)SDL_toupper((int)in); }
-char toLower(char in) { return (char)SDL_tolower((int)in); }
+char toUpper(char in) {
+	return (char)SDL_toupper((int)in);
+}
 
-bool iequals(const core::String& a, const core::String& b) {
+char toLower(char in) {
+	return (char)SDL_tolower((int)in);
+}
+
+bool iequals(const core::String &a, const core::String &b) {
 	const size_t sz = a.size();
 	if (b.size() != sz) {
 		return false;
@@ -74,17 +79,22 @@ bool iequals(const core::String& a, const core::String& b) {
 	return true;
 }
 
-/**
- * @brief Locate the string after the last occurrence of the given character in the input string
- * @return nullptr if the character is not part of the input string. Otherwise the pointer to the character
- * followed by the last found match.
- */
-const char* after(const char* input, int character) {
+const char *after(const char *input, int character) {
 	const char *s = SDL_strrchr(input, character);
 	if (s != nullptr) {
 		++s;
 	}
 	return s;
+}
+
+bool endsWith(const core::String& string, const core::String& end) {
+	const size_t strLength = string.size();
+	const size_t endLength = end.size();
+	if (strLength >= endLength) {
+		const size_t index = strLength - endLength;
+		return string.compare(index, endLength, end) == 0;
+	}
+	return false;
 }
 
 core::String toHex(int32_t number) {
@@ -97,7 +107,7 @@ core::String toHex(int32_t number) {
 	return rc;
 }
 
-core::String eraseAllChars(const core::String& str, char chr) {
+core::String eraseAllChars(const core::String &str, char chr) {
 	if (str.empty()) {
 		return str;
 	}
@@ -112,7 +122,7 @@ core::String eraseAllChars(const core::String& str, char chr) {
 	return tmp;
 }
 
-char* getBeforeToken(char **buffer, const char *token, size_t bufferSize) {
+char *getBeforeToken(char **buffer, const char *token, size_t bufferSize) {
 	if (bufferSize <= 0) {
 		return nullptr;
 	}
@@ -144,10 +154,11 @@ bool formatBuf(char *buf, size_t bufSize, const char *msg, ...) {
 }
 
 // TODO: take NAME_MAX into account
-core::String sanitizeFilename(const core::String& input) {
-	static const char unsafeChars[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
-										0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c,
-										0x1d, 0x1e, 0x1f, 0x22, 0x2a, 0x2f, 0x3a, 0x3c, 0x3e, 0x3f, 0x5c, 0x7c, 0x7f, 0x00};
+core::String sanitizeFilename(const core::String &input) {
+	static const char unsafeChars[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b,
+									   0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16,
+									   0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x22, 0x2a,
+									   0x2f, 0x3a, 0x3c, 0x3e, 0x3f, 0x5c, 0x7c, 0x7f, 0x00};
 
 	if (input.size() == 0) {
 		return input;
@@ -195,7 +206,7 @@ core::String humanSize(uint64_t bytes) {
 char *urlEncode(const char *inBuf) {
 	const char *inBufPos = inBuf;
 	const size_t maxSize = SDL_strlen(inBuf) * 3;
-	char *outBuf = (char*)core_malloc(maxSize + 1);
+	char *outBuf = (char *)core_malloc(maxSize + 1);
 	char *outBufPos = outBuf;
 	while (inBufPos[0] != '\0') {
 		const uint8_t inChr = inBufPos[0];
@@ -214,11 +225,11 @@ char *urlEncode(const char *inBuf) {
 	return outBuf;
 }
 
-void replaceAllChars(core::String& str, char in, char out) {
+void replaceAllChars(core::String &str, char in, char out) {
 	replaceAllChars(str.c_str(), in, out);
 }
 
-void replaceAllChars(char* str, char in, char out) {
+void replaceAllChars(char *str, char in, char out) {
 	char *p = str;
 	while (*p != '\0') {
 		if (*p == in) {
@@ -228,11 +239,12 @@ void replaceAllChars(char* str, char in, char out) {
 	}
 }
 
-core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr) {
+core::String replaceAll(const core::String &str, const core::String &searchStr, const char *replaceStr) {
 	return replaceAll(str, searchStr, replaceStr, SDL_strlen(replaceStr));
 }
 
-core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr, size_t replaceStrSize) {
+core::String replaceAll(const core::String &str, const core::String &searchStr, const char *replaceStr,
+						size_t replaceStrSize) {
 	if (str.empty()) {
 		return str;
 	}
@@ -247,7 +259,16 @@ core::String replaceAll(const core::String& str, const core::String& searchStr, 
 	return s;
 }
 
-void splitString(const core::String& string, core::DynamicArray<core::String>& tokens, const char* delimiters) {
+core::String replaceAll(const core::String& str, const core::String& searchStr, const core::String& replaceStr) {
+	if (searchStr.size() == 1 && replaceStr.size() == 1) {
+		core::String copy = str;
+		replaceAllChars(copy, searchStr[0], replaceStr[0]);
+		return copy;
+	}
+	return replaceAll(str, searchStr, replaceStr.c_str(), replaceStr.size());
+}
+
+void splitString(const core::String &string, core::DynamicArray<core::String> &tokens, const char *delimiters) {
 	// Skip delimiters at beginning.
 	size_t lastPos = string.find_first_not_of(delimiters, 0);
 	// Find first "non-delimiter".
@@ -273,7 +294,7 @@ bool isAlpha(int c) {
 	return ::SDL_isalpha(c);
 }
 
-bool isInteger(const core::String& in) {
+bool isInteger(const core::String &in) {
 	for (size_t i = 0u; i < in.size(); i++) {
 		if (!SDL_isdigit(in[i])) {
 			if (i == 0 && in[i] == '-') {
@@ -285,7 +306,7 @@ bool isInteger(const core::String& in) {
 	return true;
 }
 
-bool isIntegerWithPostfix(const core::String& in) {
+bool isIntegerWithPostfix(const core::String &in) {
 	for (size_t i = 0u; i < in.size(); i++) {
 		if (!SDL_isdigit(in[i])) {
 			if (i == 0 && in[i] == '-') {
@@ -336,8 +357,7 @@ size_t levensteinDistance(const core::String &source, const core::String &target
 			if (source[i - 1] == target[j - 1]) {
 				levDist[i] = previousDiagonal;
 			} else {
-				levDist[i] = core_min(core_min(levDist[i - 1], levDist[i]),
-						previousDiagonal) + 1;
+				levDist[i] = core_min(core_min(levDist[i - 1], levDist[i]), previousDiagonal) + 1;
 			}
 			previousDiagonal = previousDiagonalSave;
 		}
@@ -347,7 +367,7 @@ size_t levensteinDistance(const core::String &source, const core::String &target
 }
 
 static bool patternMatch(const char *text, const char *pattern);
-static bool patternMatchMulti(const char* text, const char* pattern) {
+static bool patternMatchMulti(const char *text, const char *pattern) {
 	const char *p = pattern;
 	const char *t = text;
 	char c;
@@ -403,21 +423,21 @@ static bool patternMatch(const char *text, const char *pattern) {
 	return *t == '\0';
 }
 
-bool matches(const char* text, const core::String& pattern) {
+bool matches(const char *text, const core::String &pattern) {
 	if (pattern.empty()) {
 		return true;
 	}
 	return patternMatch(text, pattern.c_str());
 }
 
-bool matches(const char* text, const char* pattern) {
+bool matches(const char *text, const char *pattern) {
 	if (pattern == nullptr || pattern[0] == '\0') {
 		return true;
 	}
 	return patternMatch(text, pattern);
 }
 
-bool fileMatchesMultiple(const char* text, const char* patterns) {
+bool fileMatchesMultiple(const char *text, const char *patterns) {
 	char buf[4096];
 	SDL_strlcpy(buf, patterns, sizeof(buf));
 	buf[sizeof(buf) - 1] = '\0';
@@ -459,7 +479,7 @@ bool fileMatchesMultiple(const char* text, const char* patterns) {
 	return core::string::matches(text, patternBuf);
 }
 
-static void camelCase(core::String& str, bool upperCamelCase) {
+static void camelCase(core::String &str, bool upperCamelCase) {
 	if (str.empty()) {
 		return;
 	}
@@ -496,27 +516,27 @@ static void camelCase(core::String& str, bool upperCamelCase) {
 	}
 }
 
-core::String lowerCamelCase(const core::String& str) {
+core::String lowerCamelCase(const core::String &str) {
 	core::String copy = str;
 	lowerCamelCase(copy);
 	return copy;
 }
 
-core::String upperCamelCase(const core::String& str) {
+core::String upperCamelCase(const core::String &str) {
 	core::String copy = str;
 	upperCamelCase(copy);
 	return copy;
 }
 
-void upperCamelCase(core::String& str) {
+void upperCamelCase(core::String &str) {
 	camelCase(str, true);
 }
 
-void lowerCamelCase(core::String& str) {
+void lowerCamelCase(core::String &str) {
 	camelCase(str, false);
 }
 
-char* append(char* buf, size_t bufsize, const char* string) {
+char *append(char *buf, size_t bufsize, const char *string) {
 	const size_t bufl = SDL_strlen(buf);
 	if (bufl >= bufsize) {
 		return nullptr;
@@ -529,7 +549,7 @@ char* append(char* buf, size_t bufsize, const char* string) {
 	if (remaining <= l) {
 		return nullptr;
 	}
-	char* p = buf + bufl;
+	char *p = buf + bufl;
 	for (size_t i = 0u; i < l; ++i) {
 		*p++ = *string++;
 	}
@@ -553,10 +573,9 @@ int count(const char *buf, char chr) {
 	return count;
 }
 
-#define IS_DIGIT(x) \
-  (static_cast<unsigned int>((x) - '0') < static_cast<unsigned int>(10))
-#define ISUPPERHEX(X)   (((X) >= 'A') && ((X) <= 'F'))
-#define ISLOWERHEX(X)   (((X) >= 'a') && ((X) <= 'f'))
+#define IS_DIGIT(x) (static_cast<unsigned int>((x) - '0') < static_cast<unsigned int>(10))
+#define ISUPPERHEX(X) (((X) >= 'A') && ((X) <= 'F'))
+#define ISLOWERHEX(X) (((X) >= 'a') && ((X) <= 'f'))
 
 int parseHex(const char *hex, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) {
 	if (hex[0] == '#') {
@@ -820,5 +839,71 @@ void parseIVec3(const core::String &in, int32_t *out) {
 	}
 }
 
+char *strncpyz(const char *input, size_t inputSize, char *target, size_t targetSize) {
+	core_assert(targetSize > 0);
+	while (--targetSize > 0 && inputSize > 0 && *input != '\0') {
+		*target++ = *input++;
+		--inputSize;
+	}
+	*target = '\0';
+	return target;
 }
+
+core::String sanitizeDirPath(core::String str) {
+	str.replaceAllChars('\\', '/');
+	while (endsWith(str, "/")) {
+		str.erase(str.size() - 1, 1);
+	}
+	return str.append("/");
 }
+
+core::String extractPath(const core::String& str) {
+	const size_t pos = str.rfind("/");
+	if (pos == core::String::npos) {
+		return "";
+	}
+	return str.substr(0, pos + 1) ;
+}
+
+core::String stripExtension(const core::String& str) {
+	const size_t pos = str.rfind(".");
+	if (pos == core::String::npos) {
+		return str;
+	}
+	return str.substr(0, pos) ;
+}
+
+core::String replaceExtension(const core::String &filename, const core::String& newExtension) {
+	const size_t pos = filename.rfind(".");
+	if (pos == core::String::npos) {
+		return filename + "." + newExtension;
+	}
+	return filename.substr(0, pos + 1) + newExtension;
+}
+
+core::String extractExtension(const core::String& str) {
+	const size_t pos = str.rfind(".");
+	if (pos == core::String::npos) {
+		return "";
+	}
+	return str.substr(pos + 1);
+}
+
+core::String extractAllExtensions(const core::String& str) {
+	const size_t pos = str.find(".");
+	if (pos == core::String::npos) {
+		return "";
+	}
+	return str.substr(pos + 1);
+}
+
+core::String extractFilenameWithExtension(const core::String& str) {
+	const size_t pathPos = str.rfind('/');
+	if (pathPos == core::String::npos) {
+		return str;
+	}
+	return str.substr(pathPos + 1);
+}
+
+} // namespace string
+} // namespace core

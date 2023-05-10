@@ -85,31 +85,14 @@ bool startsWith(const char* string, const char* token);
  */
 const char* after(const char* input, int character);
 
-inline bool endsWith(const core::String& string, const core::String& end) {
-	const size_t strLength = string.size();
-	const size_t endLength = end.size();
-	if (strLength >= endLength) {
-		const size_t index = strLength - endLength;
-		return string.compare(index, endLength, end) == 0;
-	}
-	return false;
-}
+bool endsWith(const core::String& string, const core::String& end);
 
 core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr, size_t replaceStrSize);
-
 core::String replaceAll(const core::String& str, const core::String& searchStr, const char* replaceStr);
+core::String replaceAll(const core::String& str, const core::String& searchStr, const core::String& replaceStr);
 
 void replaceAllChars(core::String& str, char in, char out);
 void replaceAllChars(char* str, char in, char out);
-
-inline core::String replaceAll(const core::String& str, const core::String& searchStr, const core::String& replaceStr) {
-	if (searchStr.size() == 1 && replaceStr.size() == 1) {
-		core::String copy = str;
-		replaceAllChars(copy, searchStr[0], replaceStr[0]);
-		return copy;
-	}
-	return replaceAll(str, searchStr, replaceStr.c_str(), replaceStr.size());
-}
 
 bool isNumber(const core::String &in);
 bool isInteger(const core::String& in);
@@ -118,27 +101,13 @@ bool isAlpha(int c);
 bool isAbsolutePath(const core::String &in);
 bool isRootPath(const core::String &in);
 
-inline char *strncpyz(const char *input, size_t inputSize, char *target, size_t targetSize) {
-	core_assert(targetSize > 0);
-	while (--targetSize > 0 && inputSize > 0 && *input != '\0') {
-		*target++ = *input++;
-		--inputSize;
-	}
-	*target = '\0';
-	return target;
-}
+char *strncpyz(const char *input, size_t inputSize, char *target, size_t targetSize);
 
 /**
  * @brief Ensure that exactly one / is at the end of the given path
  * @sa io::normalizePath()
  */
-inline core::String sanitizeDirPath(core::String str) {
-	str.replaceAllChars('\\', '/');
-	while (endsWith(str, "/")) {
-		str.erase(str.size() - 1, 1);
-	}
-	return str.append("/");
-}
+core::String sanitizeDirPath(core::String str);
 
 /**
  * @brief Assembles a string with path separators between the given values
@@ -175,57 +144,16 @@ inline core::String path() {
  * @brief extract path with trailing /
  * @note Assumed to be normalized (no \ , only /)
  */
-inline core::String extractPath(const core::String& str) {
-	const size_t pos = str.rfind("/");
-	if (pos == core::String::npos) {
-		return "";
-	}
-	return str.substr(0, pos + 1) ;
-}
-
-inline core::String stripExtension(const core::String& str) {
-	const size_t pos = str.rfind(".");
-	if (pos == core::String::npos) {
-		return str;
-	}
-	return str.substr(0, pos) ;
-}
-
-inline core::String replaceExtension(const core::String &filename, const core::String& newExtension) {
-	const size_t pos = filename.rfind(".");
-	if (pos == core::String::npos) {
-		return filename + "." + newExtension;
-	}
-	return filename.substr(0, pos + 1) + newExtension;
-}
-
-inline core::String extractExtension(const core::String& str) {
-	const size_t pos = str.rfind(".");
-	if (pos == core::String::npos) {
-		return "";
-	}
-	return str.substr(pos + 1);
-}
-
-inline core::String extractAllExtensions(const core::String& str) {
-	const size_t pos = str.find(".");
-	if (pos == core::String::npos) {
-		return "";
-	}
-	return str.substr(pos + 1);
-}
-
+core::String extractPath(const core::String& str);
+core::String stripExtension(const core::String& str);
+core::String replaceExtension(const core::String &filename, const core::String& newExtension);
+core::String extractExtension(const core::String& str);
+core::String extractAllExtensions(const core::String& str);
 /**
  * @return the file name of a file path
  * example: given input is @c /foo/bar/file.txt - the result is @c file.txt
  */
-inline core::String extractFilenameWithExtension(const core::String& str) {
-	const size_t pathPos = str.rfind('/');
-	if (pathPos == core::String::npos) {
-		return str;
-	}
-	return str.substr(pathPos + 1);
-}
+core::String extractFilenameWithExtension(const core::String& str);
 
 bool contains(const char *haystack, const char *needle);
 
