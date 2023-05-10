@@ -432,7 +432,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 				Log::warn("There is no height value in the image - it is imported as flat plane");
 			}
 			Log::info("Generate from heightmap (%i:%i) with max height of %i", image->width(), image->height(), maxHeight);
-			voxel::Region region(0, 0, 0, image->width(), maxHeight - 1, image->height());
+			voxel::Region region(0, 0, 0, image->width() - 1, maxHeight - 1, image->height() - 1);
 			voxel::RawVolume* volume = new voxel::RawVolume(region);
 			voxel::RawVolumeWrapper wrapper(volume);
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);

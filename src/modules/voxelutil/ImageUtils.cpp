@@ -107,9 +107,11 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 	const glm::ivec3& mins = region.getLowerCorner();
 	const float stepWidthY = (float)imageHeight / (float)volumeDepth;
 	const float stepWidthX = (float)imageWidth / (float)volumeWidth;
+	Log::debug("stepwidth: %f %f", stepWidthX, stepWidthY);
 	const int maxImageHeight = importHeightMaxHeight(image, true);
 	const float scaleHeight = (float)volumeHeight / (float)maxImageHeight;
 	float imageY = 0.0f;
+	// TODO: use a volume sampler
 	for (int z = 0; z < volumeDepth; ++z, imageY += stepWidthY) {
 		float imageX = 0.0f;
 		for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
