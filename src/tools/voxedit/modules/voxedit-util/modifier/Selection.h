@@ -19,7 +19,7 @@ inline bool contains(const Selections &selections, int x, int y, int z) {
 		}
 	}
 	return false;
-};
+}
 
 inline voxel::Region accumulate(const Selections &selections) {
 	if (selections.empty()) {
