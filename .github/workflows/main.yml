@@ -121,7 +121,7 @@ jobs:
             cd build
             cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On
             cmake --build .
-            cmake --install . --component voxedit --prefix install-voxedit
+            cmake --install . --component voxedit --prefix install-voxedit/usr
 
         - name: Test
           run: |
@@ -132,7 +132,7 @@ jobs:
           run: |
             curl https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20220822-1/linuxdeploy-x86_64.AppImage --output linuxdeploy-x86_64.AppImage --silent -L -f
             chmod +x linuxdeploy-x86_64.AppImage
-            ./linuxdeploy-x86_64.AppImage --output=appimage --appdir build/install-voxedit/usr
+            ./linuxdeploy-x86_64.AppImage --output=appimage --appdir build/install-voxedit
 
         - name: Upload the AppImage artifacts
           uses: actions/upload-artifact@v3
