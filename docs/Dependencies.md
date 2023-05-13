@@ -19,7 +19,7 @@ the higher priority. Usually you don't have to install anything of these.
 ## Debian
 
 ```bash
-apt-get install libglm-dev lua5.4 liblua5.4-dev libsdl2-dev wayland-protocols pkg-config
+apt-get install binutils-dev libunwind-dev libglm-dev lua5.4 liblua5.4-dev libsdl2-dev wayland-protocols pkg-config
 ```
 
 ## Arch
