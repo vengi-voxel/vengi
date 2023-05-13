@@ -105,7 +105,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install binutils-dev libunwind-dev liblua5.4-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache
+            sudo apt-get install libfuse2 binutils-dev libunwind-dev liblua5.4-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache
 
         - name: ccache
           uses: actions/cache@v3
