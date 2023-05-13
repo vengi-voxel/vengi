@@ -89,11 +89,6 @@ void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::Dyn
 
 static tinygltf::Camera processCamera(const scenegraph::SceneGraphNodeCamera &camera) {
 	tinygltf::Camera gltfCamera;
-	const float delta = camera.nearPlane() - camera.farPlane();
-	if (glm::abs(delta) < 0.0001f) {
-		// invalid
-		return gltfCamera;
-	}
 	gltfCamera.name = camera.name().c_str();
 	if (camera.isPerspective()) {
 		gltfCamera.type = "perspective";
@@ -109,6 +104,39 @@ static tinygltf::Camera processCamera(const scenegraph::SceneGraphNodeCamera &ca
 		gltfCamera.orthographic.znear = camera.nearPlane();
 	}
 	return gltfCamera;
+}
+
+static bool validateCamera(const tinygltf::Camera &camera) {
+	if (camera.type == "perspective") {
+		if (camera.perspective.aspectRatio <= 0.0) {
+			return false;
+		}
+		if (camera.perspective.yfov <= 0.0) {
+			return false;
+		}
+		if (camera.perspective.znear <= 0.0) {
+			return false;
+		}
+		if (camera.perspective.zfar <= 0.0) {
+			return false;
+		}
+		// if (camera.perspective.zfar <= camera.perspective.znear) {
+		// 	return false;
+		// }
+		return true;
+	} else if (camera.type == "orthographic") {
+		if (camera.orthographic.xmag == 0.0) {
+			return false;
+		}
+		if (camera.orthographic.ymag == 0.0) {
+			return false;
+		}
+		if (camera.orthographic.zfar <= camera.orthographic.znear) {
+			return false;
+		}
+		return true;
+	}
+	return false;
 }
 
 } // namespace _priv
@@ -488,7 +516,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	gltfModel.scenes.emplace_back(core::move(gltfScene));
 	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
 		tinygltf::Camera gltfCamera = _priv::processCamera(toCameraNode(*iter));
-		if (gltfCamera.type.empty()) {
+		if (!_priv::validateCamera(gltfCamera)) {
 			continue;
 		}
 		gltfModel.cameras.push_back(gltfCamera);
