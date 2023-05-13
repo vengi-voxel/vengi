@@ -121,11 +121,27 @@ jobs:
             cd build
             cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On
             cmake --build .
+            cmake --install . --component voxedit --prefix install-voxedit
 
         - name: Test
           run: |
             cd build
             ctest -V .
+
+        - name: Install LinuxDeploy
+          uses: miurahr/install-linuxdeploy-action@v1
+          with:
+            plugins: appimage
+
+        - name: AppImage
+          run: |
+            linuxdeploy-x86_64.AppImage --output=appimage --appdir build/install-voxedit/usr
+
+        - name: Upload the AppImage artifacts
+          uses: actions/upload-artifact@v3
+          with:
+            name: appimage
+            path: voxedit*.AppImage
 
     emscripten:
         timeout-minutes: 60
