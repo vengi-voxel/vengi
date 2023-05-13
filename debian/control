@@ -8,6 +8,8 @@ Build-Depends:
  dh-cmake-compat (= 1),
  dh-sequence-cmake,
  debhelper,
+ binutils-dev,
+ libunwind-dev,
  libsdl2-dev,
  liblua5.4-dev,
  wayland-protocols,
