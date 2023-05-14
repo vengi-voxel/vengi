@@ -8,14 +8,29 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <description>
-    <p>A voxel editor with character animation support and loading/saving into a lot of voxel volume formats.</p>
+    <p>A voxel editor with animation support and loading/saving into a lot of voxel volume formats.</p>
   </description>
   <screenshots>
     <screenshot type="default">
-      <image type="source">https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-2023-01.png</image>
+      <image type="source">https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-02_2023.png</image>
     </screenshot>
   </screenshots>
+  <keywords>
+    <keyword>3D</keyword>
+    <keyword>modeling</keyword>
+    <keyword>voxel</keyword>
+    <keyword>engine</keyword>
+    <keyword>pixel</keyword>
+    <keyword>art</keyword>
+  </keywords>
+  <categories>
+    <category>Graphics</category>
+    <category>Utility</category>
+  </categories>
   <releases>
+    <release version="v0.0.24" date="2023-93-12" type="stable">
+      <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.24</url>
+    </release>
     <release version="v0.0.23" date="2022-12-17" type="stable">
       <url>https://github.com/mgerhardy/vengi/releases/tag/v0.0.23</url>
     </release>
