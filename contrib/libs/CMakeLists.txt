@@ -54,3 +54,4 @@ set(SDL_PCH
 target_precompile_headers(sdl2 INTERFACE ${SDL_PCH})
 
 add_subdirectory(simplecpp)
+add_subdirectory(yocto)
