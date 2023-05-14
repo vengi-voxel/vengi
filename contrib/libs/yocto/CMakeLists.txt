@@ -8,6 +8,7 @@ add_library(yocto STATIC
 	yocto_trace.h yocto_trace.cpp
 	yocto_parallel.h
 )
+target_include_directories(yocto PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_target_properties(yocto PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED YES)
 target_link_libraries(yocto PRIVATE stb_image)
