@@ -8,7 +8,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/collection/Array3DView.h"
-#include "external/json.hpp"
+#include <json.hpp>
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/BufferedReadWriteStream.h"

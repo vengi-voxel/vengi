@@ -8,7 +8,7 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "voxel/Palette.h"
-#include "voxelformat/external/json.hpp"
+#include <json.hpp>
 #include <glm/vec3.hpp>
 
 namespace voxelformat {

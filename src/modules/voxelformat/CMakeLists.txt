@@ -3,7 +3,6 @@ set(SRCS
 	external/ogt_vox.h
 	external/tiny_obj_loader.h
 	external/tiny_gltf.h
-	external/json.hpp
 	external/ufbx.h external/ufbx.c
 	external/libvxl.h external/libvxl.c
 
@@ -54,7 +53,7 @@ set(SRCS
 	GLTFFormat.h GLTFFormat.cpp
 	VENGIFormat.h VENGIFormat.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph json)
 
 set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
