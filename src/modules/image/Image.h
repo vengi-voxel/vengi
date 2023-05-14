@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/NonCopyable.h"
 #include "core/RGBA.h"
 #include "io/IOResource.h"
 #include "io/File.h"
@@ -29,7 +30,7 @@ enum TextureWrap : uint8_t {
 /**
  * @brief Wrapper for image loading
  */
-class Image: public io::IOResource {
+class Image: public io::IOResource, core::NonCopyable {
 private:
 	core::String _name;
 	int _width = -1;
