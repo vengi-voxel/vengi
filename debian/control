@@ -11,6 +11,7 @@ Build-Depends:
  binutils-dev,
  libunwind-dev,
  libsdl2-dev,
+ libfreetype-dev,
  liblua5.4-dev,
  wayland-protocols,
  pkg-config
