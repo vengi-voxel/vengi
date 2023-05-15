@@ -5,6 +5,8 @@ set(SRCS
 	image_helper.h
 	pkm_helper.h
 	pvr_helper.h
+	stb_image_resize.c
+	stb_image_resize.h
 	stb_image_write.h
 	stb_image.h
 	stbi_DDS_c.h
