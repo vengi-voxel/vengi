@@ -43,6 +43,7 @@ bool FileStream::flush() {
 
 int FileStream::write(const void *buf, size_t size) {
 	if (_rwops == nullptr) {
+		Log::debug("No file handle");
 		return -1;
 	}
 	if (size == 0) {
@@ -50,7 +51,7 @@ int FileStream::write(const void *buf, size_t size) {
 	}
 	const int64_t written = (int64_t)SDL_RWwrite(_rwops, buf, 1, size);
 	if (written != (int64_t)size) {
-		Log::debug("File write error: %s", SDL_GetError());
+		Log::error("File write error: %s (%i vs %i)", SDL_GetError(), (int)written, (int)size);
 		return -1;
 	}
 	_pos = SDL_RWtell(_rwops);
