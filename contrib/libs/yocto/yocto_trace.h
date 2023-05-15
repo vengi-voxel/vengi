@@ -83,7 +83,7 @@ enum struct trace_sampler_type {
 enum struct trace_falsecolor_type {
   // clang-format off
   position, normal, frontfacing, gnormal, gfrontfacing, texcoord, mtype, color,
-  emission, roughness, opacity, metallic, delta, instance, shape, material, 
+  emission, roughness, opacity, metallic, delta, instance, shape, material,
   element, highlight
   // clang-format on
 };
@@ -217,7 +217,7 @@ void trace_start(trace_context& context, trace_state& state,
 void trace_cancel(trace_context& context);
 
 // Async done
-void trace_done(trace_context& context);
+bool trace_done(const trace_context& context);
 
 // Async preview
 void trace_preview(color_image& image, trace_context& context,
