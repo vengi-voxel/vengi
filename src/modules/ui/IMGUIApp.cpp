@@ -290,8 +290,8 @@ app::AppState IMGUIApp::onInit() {
 		// io.ConfigViewportsNoTaskBarIcon = true;
 	}
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
-	io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+	// io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports;
+	// io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
 	// test dpi related issues on linux with
 	// xrandr | grep connected | grep -v disconnected | awk '{print $1}'
 	// xrandr --output <screen-name> --scale 1.6x1.6
