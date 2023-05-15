@@ -3,9 +3,21 @@
  */
 
 #include "PathTracer.h"
+#include "core/Color.h"
+#include "core/Var.h"
+#include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "voxel/ChunkMesh.h"
+#include "voxel/CubicSurfaceExtractor.h"
+#include "voxel/MarchingCubesSurfaceExtractor.h"
+#include "voxel/Mesh.h"
+#include "voxel/Palette.h"
+#include "voxel/RawVolume.h"
+#include "voxelutil/VolumeVisitor.h"
+#include "yocto_scene.h"
 #include <yocto_trace.h>
 
 namespace voxelpathtracer {
@@ -68,23 +80,86 @@ PathTracer::PathTracer() : _state(new PathTracerState()) {
 }
 
 PathTracer::~PathTracer() {
+	stop();
 	delete _state;
+}
+
+bool PathTracer::createScene(const voxel::Palette &palette, const voxel::Mesh &mesh) {
+	// TODO: in order to use glowing, we have to use materials here and support multiple shapes
+	yocto::shape_data shape;
+	const voxel::IndexArray &indices = mesh.getIndexVector();
+	const voxel::VertexArray &vertices = mesh.getVertexVector();
+	const voxel::NormalArray &normals = mesh.getNormalVector();
+	const bool useNormals = normals.size() == vertices.size();
+	shape.colors.resize(vertices.size());
+	shape.positions.resize(vertices.size());
+	shape.normals.resize(normals.size());
+	for (int i = 0; i < (int)vertices.size(); ++i) {
+		const auto &vertex = vertices[i];
+		const core::RGBA rgba = palette.color(vertex.colorIndex);
+		const glm::vec4 &color = core::Color::fromRGBA(rgba);
+		shape.colors[i] = {color[0], color[1], color[2], color[3]};
+		shape.positions[i] = {vertex.position[0], vertex.position[1], vertex.position[2]};
+		if (useNormals) {
+			shape.normals[i] = {normals[i][0], normals[i][1], normals[i][2]};
+		}
+	}
+
+	const int tris = (int)indices.size() / 3;
+	shape.triangles.resize(tris);
+	for (int i = 0; i < tris; i++) {
+		shape.triangles[i] = {i * 3 + 0, i * 3 + 1, i * 3 + 2};
+	}
+	_state->scene.shapes.push_back(shape);
+	// TODO: create proper material
+	_state->scene.materials.push_back({});
+	if (_state->scene.cameras.empty()) {
+		yocto::add_camera(_state->scene);
+	}
+	if (_state->scene.environments.empty()) {
+		yocto::add_sky(_state->scene);
+	}
+
+	const glm::vec3 &mins = mesh.getOffset();
+	yocto::instance_data instance_data;
+	instance_data.frame = yocto::translation_frame({mins[0], mins[1], mins[2]}),
+	instance_data.shape = (int)_state->scene.shapes.size() - 1;
+	instance_data.material = (int)_state->scene.materials.size() - 1;
+	_state->scene.instances.push_back(instance_data);
+	return true;
 }
 
 bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 	_state->scene = {};
 	_state->lights = {};
-	// TODO: create mesh
-	// TODO: create yocto shape from mesh
-	// TODO: create yocto scene by adding shapes
-	// _state->scene.shapes.push_back(shape);
-	// const glm::vec3 mins = node->region().getLowerCornerf();
-	// yocto::instance_data instance_data;
-	// instance_data.frame = yocto::translation_frame({mins[0], mins[1], mins[2]}),
-	// instance_data.shape = (int)_state->scene.shapes.size() - 1;
-	// instance_data.material = (int)_state->scene.materials.size() - 1;
-	// _state->scene.instances.push_back(instance_data);
-	return false;
+	const bool marchingCubes = core::Var::getSafe(cfg::VoxelMeshMode)->intVal() == 1;
+	for (const auto &node : sceneGraph) {
+		const voxel::RawVolume *v = node.volume();
+		if (v == nullptr) {
+			continue;
+		}
+
+		voxel::ChunkMesh mesh(65536, 65536, true);
+		voxel::Region region = v->region();
+		if (marchingCubes) {
+			region.shrink(-1);
+			voxel::extractMarchingCubesMesh(v, node.palette(), region, &mesh);
+		} else {
+			region.shiftUpperCorner(1, 1, 1);
+			voxel::extractCubicMesh(v, region, &mesh, v->region().getLowerCorner());
+		}
+
+		if (!createScene(node.palette(), mesh.mesh[0])) {
+			return false;
+		}
+		if (!createScene(node.palette(), mesh.mesh[1])) {
+			return false;
+		}
+	}
+
+	_state->bvh = make_trace_bvh(_state->scene, _state->params);
+	_state->lights = make_trace_lights(_state->scene, _state->params);
+	return true;
 }
 
 bool PathTracer::start(const scenegraph::SceneGraph &sceneGraph, int dimensions, int samples) {
@@ -93,8 +168,7 @@ bool PathTracer::start(const scenegraph::SceneGraph &sceneGraph, int dimensions,
 	_state->params.samples = samples;
 	_state->state = make_trace_state(_state->scene, _state->params);
 	trace_start(_state->context, _state->state, _state->scene, _state->bvh, _state->lights, _state->params);
-
-	return false;
+	return true;
 }
 
 bool PathTracer::stop() {
@@ -103,17 +177,28 @@ bool PathTracer::stop() {
 }
 
 bool PathTracer::update() {
-	// TODO: implement
-	return false;
+	return yocto::trace_done(_state->context);
 }
 
 image::ImagePtr PathTracer::image() const {
-	if (!_state->context.stop && !_state->context.done) {
+	if (!yocto::trace_done(_state->context)) {
+		yocto::image_data image = yocto::make_image(_state->state.width, _state->state.height, true);
+		trace_preview(image, _state->context, _state->state, _state->scene, _state->bvh, _state->lights,
+					  _state->params);
+		priv::YoctoImageReadStream stream(image);
+		image::ImagePtr i = image::createEmptyImage("pathtracer");
+		if (!i->loadRGBA(stream, image.width, image.height)) {
+			return {};
+		}
+		return i;
+	}
+	const yocto::image_data &image = yocto::get_image(_state->state);
+	priv::YoctoImageReadStream stream(image);
+	image::ImagePtr i = image::createEmptyImage("pathtracer");
+	if (!i->loadRGBA(stream, image.width, image.height)) {
 		return {};
 	}
-	// yocto::image_data imageData = yocto::get_image(_state->state);
-	// TODO: implement
-	return {};
+	return i;
 }
 
 } // namespace voxelpathtracer

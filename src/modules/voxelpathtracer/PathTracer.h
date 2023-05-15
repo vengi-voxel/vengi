@@ -9,6 +9,11 @@
 namespace image {
 class Image;
 typedef core::SharedPtr<Image> ImagePtr;
+} // namespace image
+
+namespace voxel {
+class Mesh;
+class Palette;
 }
 
 namespace scenegraph {
@@ -23,6 +28,7 @@ class PathTracer {
 private:
 	PathTracerState *_state;
 
+	bool createScene(const voxel::Palette &palette, const voxel::Mesh &mesh);
 	bool createScene(const scenegraph::SceneGraph &sceneGraph);
 
 public:
