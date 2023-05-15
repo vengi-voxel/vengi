@@ -144,7 +144,6 @@ update-im-neo-sequencer:
 	cp $(UPDATEDIR)/im-neo-sequencer.sync/LICENSE src/modules/ui/dearimgui/LICENSE-sequencer
 	clang-format -i src/modules/ui/dearimgui/imgui_neo*
 
-# the backend code is just copied to merge in potiential changes
 update-dearimgui:
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git -b docking)
 	cp $(UPDATEDIR)/imgui.sync/im*.h $(UPDATEDIR)/imgui.sync/im*.cpp $(UPDATEDIR)/imgui.sync/misc/cpp/* src/modules/ui/dearimgui
@@ -152,6 +151,7 @@ update-dearimgui:
 	cp $(UPDATEDIR)/imgui.sync/backends/imgui_impl_opengl3* src/modules/ui/dearimgui/backends
 	cp $(UPDATEDIR)/imgui.sync/examples/example_sdl2_opengl3/main.cpp src/modules/ui/dearimgui/backends/example_sdl2_opengl3.cpp
 	cp $(UPDATEDIR)/imgui.sync/misc/fonts/binary_to_compressed_c.cpp tools/binary_to_compressed_c
+	cp $(UPDATEDIR)/imgui.sync/misc/freetype/* src/modules/ui/dearimgui/misc/freetype
 	mv src/modules/ui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
 
 update-glm:

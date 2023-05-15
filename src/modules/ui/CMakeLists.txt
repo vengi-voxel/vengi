@@ -33,6 +33,11 @@ set(SRCS
 	dearimgui/ImGuizmo.cpp dearimgui/ImGuizmo.h
 )
 
+find_package(Freetype)
+if (FREETYPE_FOUND)
+	list(APPEND SRCS dearimgui/misc/freetype/imgui_freetype.cpp)
+endif()
+
 set(GEN_DIR ${GENERATE_DIR}/${LIB})
 file(MAKE_DIRECTORY ${GEN_DIR})
 
@@ -49,6 +54,11 @@ imgui_build_font(ForkAwesomeWebFont forkawesome-webfont.ttf)
 imgui_build_font(ArimoRegular Arimo-Regular.ttf)
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app)
+
+if (FREETYPE_FOUND)
+	target_link_libraries(${LIB} PUBLIC Freetype::Freetype)
+	target_compile_definitions(${LIB} PUBLIC -DIMGUI_ENABLE_FREETYPE)
+endif()
 target_compile_definitions(${LIB} PUBLIC -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_OBSOLETE_KEYIO)
 if (USE_OPENGLES)
 	target_compile_definitions(${LIB} PUBLIC -DIMGUI_IMPL_OPENGL_ES2)
