@@ -3,6 +3,9 @@
  */
 
 #include "IMGUIApp.h"
+#ifdef IMGUI_ENABLE_FREETYPE
+#include "misc/freetype/imgui_freetype.h"
+#endif
 
 #include "core/BindingContext.h"
 #include "core/StringUtil.h"
@@ -197,43 +200,51 @@ void IMGUIApp::loadFonts() {
 
 	const ImWchar *rangesBasic = io.Fonts->GetGlyphRangesDefault();
 
+	const float fontSize = _uiFontSize->floatVal();
+
 	ImFontConfig fontCfg;
 	fontCfg.MergeMode = true;
+#ifdef IMGUI_ENABLE_FREETYPE
+	fontCfg.FontBuilderFlags = ImGuiFreeTypeBuilderFlags_LightHinting;
+#endif
 
 	ImFontConfig bigFontIconCfg;
 	bigFontIconCfg.MergeMode = true;
-	bigFontIconCfg.GlyphMinAdvanceX = _uiFontSize->floatVal() * 2.0f;
+	bigFontIconCfg.GlyphMinAdvanceX = fontSize * 2.0f;
 	bigFontIconCfg.GlyphMaxAdvanceX = bigFontIconCfg.GlyphMinAdvanceX;
+#ifdef IMGUI_ENABLE_FREETYPE
+	bigFontIconCfg.FontBuilderFlags = ImGuiFreeTypeBuilderFlags_LightHinting;
+#endif
 
 	ImFontConfig fontIconCfg;
 	fontIconCfg.MergeMode = true;
-	fontIconCfg.GlyphMinAdvanceX = _uiFontSize->floatVal();
+	fontIconCfg.GlyphMinAdvanceX = fontSize;
 	fontIconCfg.GlyphMaxAdvanceX = bigFontIconCfg.GlyphMinAdvanceX;
 
 	static const ImWchar rangesFAIcons[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
 	static const ImWchar rangesFKIcons[] = {ICON_MIN_FK, ICON_MAX_FK, 0};
 
 	_defaultFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-											_uiFontSize->floatVal(), nullptr, rangesBasic);
+											fontSize, nullptr, rangesBasic);
 	io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											_uiFontSize->floatVal(), &fontIconCfg, rangesFAIcons);
+											fontSize, &fontIconCfg, rangesFAIcons);
 	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
-											_uiFontSize->floatVal(), &fontIconCfg, rangesFKIcons);
+											fontSize, &fontIconCfg, rangesFKIcons);
 
 	_bigFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-											_uiFontSize->floatVal() * 2.0f, nullptr, rangesBasic);
+											fontSize * 2.0f, nullptr, rangesBasic);
 
 	_bigIconFont = io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											_uiFontSize->floatVal() * 1.5f, &bigFontIconCfg, rangesFAIcons);
+											fontSize * 1.5f, &bigFontIconCfg, rangesFAIcons);
 	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
-											_uiFontSize->floatVal() * 1.5f, &bigFontIconCfg, rangesFKIcons);
+											fontSize * 1.5f, &bigFontIconCfg, rangesFKIcons);
 
 	_smallFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-											_uiFontSize->floatVal() * 0.8f, nullptr, rangesBasic	);
+											fontSize * 0.8f, nullptr, rangesBasic	);
 	io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											_uiFontSize->floatVal(), &fontIconCfg, rangesFAIcons);
+											fontSize, &fontIconCfg, rangesFAIcons);
 	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
-											_uiFontSize->floatVal(), &fontIconCfg, rangesFKIcons);
+											fontSize, &fontIconCfg, rangesFKIcons);
 
 	unsigned char *pixels;
 	int width, height;
