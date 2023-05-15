@@ -181,18 +181,15 @@ bool PathTracer::update() {
 }
 
 image::ImagePtr PathTracer::image() const {
+	yocto::image_data image;
 	if (!yocto::trace_done(_state->context)) {
-		yocto::image_data image = yocto::make_image(_state->state.width, _state->state.height, true);
+		image = yocto::make_image(_state->state.width, _state->state.height, true);
 		trace_preview(image, _state->context, _state->state, _state->scene, _state->bvh, _state->lights,
 					  _state->params);
-		priv::YoctoImageReadStream stream(image);
-		image::ImagePtr i = image::createEmptyImage("pathtracer");
-		if (!i->loadRGBA(stream, image.width, image.height)) {
-			return {};
-		}
-		return i;
+	} else {
+		image = yocto::get_image(_state->state);
 	}
-	const yocto::image_data &image = yocto::get_image(_state->state);
+
 	priv::YoctoImageReadStream stream(image);
 	image::ImagePtr i = image::createEmptyImage("pathtracer");
 	if (!i->loadRGBA(stream, image.width, image.height)) {
