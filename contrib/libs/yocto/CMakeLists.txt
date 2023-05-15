@@ -19,7 +19,7 @@ endif(UNIX AND NOT APPLE)
 
 # warning flags
 if(UNIX)
-	target_compile_options(yocto PUBLIC -Wall -Wno-conversion -Wno-sign-conversion -Wno-sign-compare -Wno-implicit-float-conversion -Wno-unused-variable)
+	target_compile_options(yocto PUBLIC -Wall -Wno-conversion -Wno-parentheses -Wno-sign-conversion -Wno-sign-compare -Wno-implicit-float-conversion -Wno-unused-variable)
 endif()
 
 if(MSVC)
