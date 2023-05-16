@@ -78,7 +78,7 @@ ifneq ($(OS),Windows_NT)
 	$(Q)$(CMAKE) -E create_symlink $(BUILDDIR)/compile_commands.json compile_commands.json
 endif
 
-%-run %-debug %-perf: %
+%-run %-debug %-perf tests-%: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 
 dependency-%:
