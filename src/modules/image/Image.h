@@ -108,6 +108,7 @@ ImagePtr loadImage(const core::String &name, io::SeekableReadStream &stream, int
  * @brief If there is no extension given, all supported extensions are tried
  */
 ImagePtr loadImage(const core::String& filename);
+bool writeImage(const image::ImagePtr &image, const core::String& filename);
 
 core::String print(const image::ImagePtr &image);
 

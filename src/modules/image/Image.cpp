@@ -10,6 +10,7 @@
 #include "core/concurrent/ThreadPool.h"
 #include "core/Assert.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "core/StandardLib.h"
 #include "io/FormatDescription.h"
@@ -102,6 +103,14 @@ core::RGBA Image::colorAt(int x, int y) const {
 core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT) const {
 	const glm::ivec2 pc = pixels(uv, wrapS, wrapT);
 	return colorAt(pc.x, pc.y);
+}
+
+bool writeImage(const image::ImagePtr &image, const core::String &filename) {
+	const io::FilePtr &png = io::filesystem()->open(filename, io::FileMode::SysWrite);
+	if (!png->validHandle())
+		return false;
+	io::FileStream pngstream(png);
+	return image->writePng(pngstream);
 }
 
 ImagePtr loadImage(const io::FilePtr& file) {
