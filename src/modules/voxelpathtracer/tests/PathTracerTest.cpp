@@ -53,9 +53,6 @@ TEST_F(PathTracerTest, DISABLED_test) {
 	ASSERT_TRUE(img->isLoaded());
 	ASSERT_EQ(dimensions, img->width());
 	// ASSERT_EQ(dimensions, img->height());
-	const io::FilePtr &png = io::filesystem()->open(file->name() + ".png", io::FileMode::SysWrite);
-	ASSERT_TRUE(png->validHandle()) << "Failed to open " << png->fileName();
-	io::FileStream pngstream(png);
-	ASSERT_TRUE(img->writePng(pngstream)) << "Failed to write png to " << png->fileName();
+	image::writeImage(img, file->name() + ".png");
 	ASSERT_TRUE(pathTracer.stop());
 }
