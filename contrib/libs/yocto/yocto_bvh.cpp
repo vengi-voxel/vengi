@@ -1132,14 +1132,17 @@ void update_scene_ebvh(scene_ebvh& sbvh, const scene_data& scene,
 shape_intersection intersect_shape_ebvh(const shape_ebvh& sbvh,
     const shape_data& shape, const ray3f& ray, bool find_any) {
   assert(false && "Embree not available");
+  return {};
 }
 scene_intersection intersect_scene_ebvh(const scene_ebvh& sbvh,
     const scene_data& scene, const ray3f& ray, bool find_any) {
   assert(false && "Embree not available");
+  return {};
 }
 scene_intersection intersect_instance_ebvh(const scene_ebvh& sbvh,
     const scene_data& scene, int instance, const ray3f& ray, bool find_any) {
   assert(false && "Embree not available");
+  return {};
 }
 
 #endif
