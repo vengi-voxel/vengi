@@ -113,12 +113,6 @@ bool PathTracer::createScene(const voxel::Palette &palette, const voxel::Mesh &m
 	_state->scene.shapes.push_back(shape);
 	// TODO: create proper material
 	_state->scene.materials.push_back({});
-	if (_state->scene.cameras.empty()) {
-		yocto::add_camera(_state->scene);
-	}
-	if (_state->scene.environments.empty()) {
-		yocto::add_sky(_state->scene);
-	}
 
 	const glm::vec3 &mins = mesh.getOffset();
 	yocto::instance_data instance_data;
@@ -156,6 +150,11 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 			return false;
 		}
 	}
+
+	core_assert(_state->scene.cameras.empty());
+	yocto::add_camera(_state->scene);
+	core_assert(_state->scene.environments.empty());
+	yocto::add_sky(_state->scene);
 
 	_state->bvh = make_trace_bvh(_state->scene, _state->params);
 	_state->lights = make_trace_lights(_state->scene, _state->params);
