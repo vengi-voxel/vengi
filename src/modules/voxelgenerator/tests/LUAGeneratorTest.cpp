@@ -203,6 +203,11 @@ TEST_F(LUAGeneratorTest, testScriptSplitColor) {
 	runFile(sceneGraph, "splitcolor.lua");
 }
 
+TEST_F(LUAGeneratorTest, testScriptGradient) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "gradient.lua");
+}
+
 TEST_F(LUAGeneratorTest, testScriptSplitObjects) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "splitobjects.lua");
