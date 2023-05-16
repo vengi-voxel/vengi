@@ -39,6 +39,7 @@ VoxEdit:
    - (Re-)implemented WASD controls in camera eye mode
    - Fixed copy&paste errors with multiple selections
    - Updated new scene dialog to include the templates
+   - Improved font quality
 
 Thumbnailer:
 

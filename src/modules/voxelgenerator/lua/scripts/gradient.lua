@@ -32,5 +32,4 @@ function main(node, region, color, minheight)
 			end
 		end
 	end
-
 end
