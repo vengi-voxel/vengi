@@ -374,7 +374,7 @@ void VoxEdit::loadKeymap(int keymap) {
 		_keybindingHandler.registerBinding("2",                      "mirroraxisz",                "model");
 		_keybindingHandler.registerBinding("3",                      "mirroraxisy",                "model");
 		_keybindingHandler.registerBinding("4",                      "resetcamera",                "editing");
-		_keybindingHandler.registerBinding("6",                      "screenshot",                 "all");
+		_keybindingHandler.registerBinding("6",                      "screenshot",                 "editing");
 		_keybindingHandler.registerBinding("f1",                     "toggleconsole",              "all");
 		_keybindingHandler.registerBinding("f6",                     "screenshot",                 "all");
 		_keybindingHandler.registerBinding("right_mouse",            "+camera_rotate",             "editing");
