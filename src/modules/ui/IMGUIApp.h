@@ -70,6 +70,8 @@ protected:
 	 */
 	int _iniVersion = 0;
 
+	float _dpiScale = 1.0f;
+
 	video::OpenFileMode _fileDialogMode = video::OpenFileMode::Directory;
 	video::FileDialogSelectionCallback _fileDialogCallback {};
 	video::FileDialogOptions _fileDialogOptions {};

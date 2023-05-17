@@ -200,7 +200,7 @@ void IMGUIApp::loadFonts() {
 
 	const ImWchar *rangesBasic = io.Fonts->GetGlyphRangesDefault();
 
-	const float fontSize = _uiFontSize->floatVal();
+	const float fontSize = _uiFontSize->floatVal() * _dpiScale;
 
 	ImFontConfig fontCfg;
 	fontCfg.MergeMode = true;
@@ -363,7 +363,9 @@ app::AppState IMGUIApp::onRunning() {
 		_resetKeybindings = false;
 	}
 
-	if (_uiFontSize->isDirty()) {
+	const float dpiScale = core_max(0.1f, ImGui::GetMainViewport()->DpiScale);
+	if (_uiFontSize->isDirty() || glm::abs(dpiScale - _dpiScale) > 0.001f) {
+		_dpiScale = dpiScale;
 		loadFonts();
 		_uiFontSize->markClean();
 	}
