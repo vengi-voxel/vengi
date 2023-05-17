@@ -200,7 +200,7 @@ void IMGUIApp::loadFonts() {
 
 	const ImWchar *rangesBasic = io.Fonts->GetGlyphRangesDefault();
 
-	const float fontSize = _uiFontSize->floatVal() * _dpiScale;
+	const float fontSize = glm::floor(_uiFontSize->floatVal() * _dpiScale);
 
 	ImFontConfig fontCfg;
 	fontCfg.MergeMode = true;
