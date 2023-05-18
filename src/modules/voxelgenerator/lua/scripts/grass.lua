@@ -8,7 +8,7 @@ function arguments()
 	return {
 		{ name = 'grasscolor', desc = 'the palette index of the color to use as grass', type = 'colorindex', default = '-1', min = '-1', max = '255' },
 		{ name = 'height', desc = 'the height of the grass to add', type = 'int', default = '4' },
-		{ name = 'density', desc = 'the density of the grass', type = 'int', default = '2' },
+		{ name = 'density', desc = 'the density of the grass', type = 'int', default = '2', min = '1', max = '100' },
 		{ name = 'similarcolors', desc = 'the amount of similar colors', type = 'int', default = '4' },
 		{ name = 'upwards', desc = 'let the grass grow upwards if true, downwards if false', type = 'bool', default = 'true' }
 	}

@@ -98,9 +98,16 @@ void ScriptPanel::update(const char *title) {
 				core::String &str = _scriptParameters[i];
 				float val = core::string::toFloat(str);
 				if (p.shouldClamp()) {
-					float maxVal = (float)p.maxValue;
-					float minVal = (float)p.minValue;
-					if (ImGui::SliderFloat(p.name.c_str(), &val, minVal, maxVal)) {
+					const float maxVal = (float)p.maxValue;
+					const float minVal = (float)p.minValue;
+					const char *format;
+					if (glm::abs(maxVal - minVal) <= 10.0f) {
+						format = "%.6f";
+					} else {
+						format = "%.3f";
+					}
+
+					if (ImGui::SliderFloat(p.name.c_str(), &val, minVal, maxVal, format)) {
 						str = core::string::toString(val);
 					}
 				} else if (ImGui::InputFloat(p.name.c_str(), &val)) {
