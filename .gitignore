@@ -16,3 +16,4 @@ autosave-*
 /.vscode
 compile_commands.json
 /.cache
+/*.AppImage
