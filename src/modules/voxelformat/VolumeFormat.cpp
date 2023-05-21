@@ -239,7 +239,7 @@ static const io::FormatDescription *getDescription(const core::String &filename,
 }
 
 static const io::FormatDescription *getDescription(const io::FileDescription &fileDesc, uint32_t magic) {
-	if (fileDesc.desc.valid()) {
+	if (fileDesc.desc.valid() && !fileDesc.desc.exts.empty()) {
 		return &fileDesc.desc;
 	}
 	const core::String filename = fileDesc.name;
