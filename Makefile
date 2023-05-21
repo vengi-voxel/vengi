@@ -264,6 +264,12 @@ update-fonts:
 	curl -o $(UPDATEDIR)/arimo.zip https://fonts.google.com/download?family=Arimo
 	unzip -jo $(UPDATEDIR)/arimo.zip static/Arimo-Regular.ttf -d data/ui
 
+appimage: voxedit
+	$(Q)cd $(BUILDDIR) && cmake --install . --component voxedit --prefix install-voxedit/usr
+	$(Q)cd $(BUILDDIR) && curl https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20220822-1/linuxdeploy-x86_64.AppImage --output linuxdeploy-x86_64.AppImage --silent -L -f
+	$(Q)chmod +x $(BUILDDIR)/linuxdeploy-x86_64.AppImage
+	$(Q)$(BUILDDIR)/linuxdeploy-x86_64.AppImage --output=appimage --appdir $(BUILDDIR)/install-voxedit
+
 emscripten-%:
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target codegen
 	$(Q)mkdir -p build/emscripten
