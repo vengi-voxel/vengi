@@ -243,22 +243,22 @@ void Region::accumulate(const glm::ivec3& pos) {
 Region Region::rotate(const glm::mat4 &mat, const glm::vec3 & pivot) const {
 	const glm::vec4 pivot4(pivot, 0.0f);
 	const glm::vec4 vertices[] {
-		glm::vec4((float)_mins.x + 0.5f, (float)_mins.y + 0.5f, (float)_mins.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_maxs.x + 0.5f, (float)_mins.y + 0.5f, (float)_mins.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_mins.x + 0.5f, (float)_maxs.y + 0.5f, (float)_mins.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_maxs.x + 0.5f, (float)_maxs.y + 0.5f, (float)_mins.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_mins.x + 0.5f, (float)_mins.y + 0.5f, (float)_maxs.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_maxs.x + 0.5f, (float)_mins.y + 0.5f, (float)_maxs.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_mins.x + 0.5f, (float)_maxs.y + 0.5f, (float)_maxs.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_maxs.x + 0.5f, (float)_maxs.y + 0.5f, (float)_maxs.z + 0.5f, 1.0f) - pivot4
+		glm::vec4((float)_mins.x + 0.5f, (float)_mins.y + 0.5f, (float)_mins.z + 0.5f, 1.0f) + pivot4,
+		glm::vec4((float)_maxs.x + 0.5f, (float)_mins.y + 0.5f, (float)_mins.z + 0.5f, 1.0f) + pivot4,
+		glm::vec4((float)_mins.x + 0.5f, (float)_maxs.y + 0.5f, (float)_mins.z + 0.5f, 1.0f) + pivot4,
+		glm::vec4((float)_maxs.x + 0.5f, (float)_maxs.y + 0.5f, (float)_mins.z + 0.5f, 1.0f) + pivot4,
+		glm::vec4((float)_mins.x + 0.5f, (float)_mins.y + 0.5f, (float)_maxs.z + 0.5f, 1.0f) + pivot4,
+		glm::vec4((float)_maxs.x + 0.5f, (float)_mins.y + 0.5f, (float)_maxs.z + 0.5f, 1.0f) + pivot4,
+		glm::vec4((float)_mins.x + 0.5f, (float)_maxs.y + 0.5f, (float)_maxs.z + 0.5f, 1.0f) + pivot4,
+		glm::vec4((float)_maxs.x + 0.5f, (float)_maxs.y + 0.5f, (float)_maxs.z + 0.5f, 1.0f) + pivot4
 	};
-	glm::vec4 target[8];
 	glm::vec3 newMins(FLT_MAX);
 	glm::vec3 newMaxs(-FLT_MAX);
 	for (int i = 0; i < 8; ++i) {
-		target[i] = mat * vertices[i];
-		newMins = glm::min(glm::vec3(target[i] - 0.5f), newMins);
-		newMaxs = glm::max(glm::vec3(target[i] - 0.5f), newMaxs);
+		const glm::vec4 &target = mat * vertices[i];
+		const glm::vec3 &corrected = glm::vec3(target - 0.5f - pivot4);
+		newMins = glm::min(corrected, newMins);
+		newMaxs = glm::max(corrected, newMaxs);
 	}
 	const voxel::Region region(glm::floor(newMins), glm::ceil(newMaxs));
 	return region;

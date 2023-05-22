@@ -35,7 +35,7 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &
 	const glm::mat4 &mat = glm::eulerAngleXYZ(pitch, yaw, roll);
 	const voxel::Region srcRegion = source->region();
 
-	const glm::vec4 pivot(srcRegion.getLowerCornerf() + normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels()), 0.0f);
+	const glm::vec4 pivot(normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels()), 0.0f);
 	const voxel::Region &region = srcRegion.rotate(mat, pivot);
 	voxel::RawVolume *destination = new voxel::RawVolume(region);
 	voxel::RawVolume::Sampler destSampler(destination);
