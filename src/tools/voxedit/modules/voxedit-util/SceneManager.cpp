@@ -1243,7 +1243,13 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 	if (node.type() != scenegraph::SceneGraphNodeType::Model) {
 		return false;
 	}
+	if (node.volume() == volume) {
+		return true;
+	}
+
 	node.setVolume(volume, true);
+	// the old volume pointer might no longer be used
+	_sceneRenderer->nodeRemove(node.id());
 
 	const voxel::Region& region = volume->region();
 	updateGridRenderer(region);
