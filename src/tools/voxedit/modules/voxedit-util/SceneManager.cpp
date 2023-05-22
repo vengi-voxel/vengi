@@ -1247,7 +1247,9 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 		return true;
 	}
 
+	const glm::vec3 pivot = node.pivot();
 	node.setVolume(volume, true);
+	node.setPivot(pivot);
 	// the old volume pointer might no longer be used
 	_sceneRenderer->nodeRemove(node.id());
 
