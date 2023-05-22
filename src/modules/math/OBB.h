@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/GLM.h"
+#include "core/Pair.h"
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
@@ -78,6 +79,23 @@ public:
 
 	T depth() const {
 		return _extents.z * (T)2;
+	}
+
+	core::Pair<Vec, Vec> bounds() const {
+		Vec corners[] = {Vec(-_extents.x, -_extents.y, -_extents.z), Vec(_extents.x, -_extents.y, -_extents.z),
+						 Vec(-_extents.x, _extents.y, -_extents.z),	 Vec(_extents.x, _extents.y, -_extents.z),
+						 Vec(-_extents.x, -_extents.y, _extents.z),	 Vec(_extents.x, -_extents.y, _extents.z),
+						 Vec(-_extents.x, _extents.y, _extents.z),	 Vec(_extents.x, _extents.y, _extents.z)};
+		for (int i = 0; i < 8; i++) {
+			corners[i] = _origin + glm::vec3(_rotation * glm::vec4(corners[i], 1.0f));
+		}
+		Vec minCoords(FLT_MAX);
+		Vec maxCoords(-FLT_MAX);
+		for (int i = 0; i < 8; i++) {
+			minCoords = glm::min(minCoords, corners[i]);
+			maxCoords = glm::max(maxCoords, corners[i]);
+		}
+		return core::Pair<Vec, Vec>(minCoords, maxCoords);
 	}
 
 	bool contains(const glm::vec3 &point) const {

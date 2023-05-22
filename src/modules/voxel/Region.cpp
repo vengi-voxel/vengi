@@ -256,7 +256,7 @@ Region Region::rotate(const glm::mat4 &mat, const glm::vec3 & pivot) const {
 	glm::vec3 newMaxs(-FLT_MAX);
 	for (int i = 0; i < 8; ++i) {
 		const glm::vec4 &target = mat * vertices[i];
-		const glm::vec3 &corrected = glm::vec3(target - 0.5f - pivot4);
+		const glm::vec3 &corrected = glm::vec3(target) - 0.5f - pivot;
 		newMins = glm::min(corrected, newMins);
 		newMaxs = glm::max(corrected, newMaxs);
 	}
