@@ -23,7 +23,7 @@ TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisZ) {
 	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateAxis(&smallVolume, math::Axis::Y));
+	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateAxis(&smallVolume, math::Axis::Z));
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(0, 0, 0).getMaterial()) << smallVolume << "rotated: " << *rotated;
 	ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(-1, 0, 0).getMaterial()) << smallVolume << "rotated: " << *rotated;
@@ -43,6 +43,19 @@ TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisY) {
 	ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(0, 0, -1).getMaterial()) << smallVolume << "rotated: " << *rotated;
 }
 
+TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisX) {
+	const voxel::Region region(-1, 1);
+	voxel::RawVolume smallVolume(region);
+	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateAxis(&smallVolume, math::Axis::X));
+	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
+	ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(0, 0, 0).getMaterial()) << smallVolume << "rotated: " << *rotated;
+	ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(0, 0, 1).getMaterial()) << smallVolume << "rotated: " << *rotated;
+	ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(1, 0, 0).getMaterial()) << smallVolume << "rotated: " << *rotated;
+}
+
 TEST_F(VolumeRotatorTest, testRotateAxisY45) {
 	const voxel::Region region(-1, 1);
 	voxel::RawVolume smallVolume(region);
@@ -52,19 +65,6 @@ TEST_F(VolumeRotatorTest, testRotateAxisY45) {
 	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateVolume(
 		&smallVolume, glm::vec3(0.0f, 45.0f, 0.0f), glm::vec3(0.0, 0.5f, 0.0f)));
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
-}
-
-TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisX) {
-	const voxel::Region region(-1, 1);
-	voxel::RawVolume smallVolume(region);
-	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateAxis(&smallVolume, math::Axis::Y));
-	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
-	ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(0, 0, 0).getMaterial()) << smallVolume << "rotated: " << *rotated;
-	ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(0, 0, 1).getMaterial()) << smallVolume << "rotated: " << *rotated;
-	ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(1, 0, 0).getMaterial()) << smallVolume << "rotated: " << *rotated;
 }
 
 TEST_F(VolumeRotatorTest, DISABLED_testRotate45Y) {

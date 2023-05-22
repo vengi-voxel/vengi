@@ -16,6 +16,10 @@ namespace voxel {
 
 static const int VolumePrintThreshold = 20;
 
+inline std::ostream &operator<<(::std::ostream &os, const voxel::VoxelType &dt) {
+	return os << VoxelTypeStr[(int)dt];
+}
+
 inline ::std::ostream &operator<<(::std::ostream &os, const voxel::Region &region) {
 	return os << "region["
 			  << "mins(" << region.getLowerCorner().x << ":" << region.getLowerCorner().y << ":"
