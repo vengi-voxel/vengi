@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 
@@ -33,12 +34,15 @@ bool FilesystemArchive::load(const core::String &filePath, io::SeekableWriteStre
 
 SeekableReadStreamPtr FilesystemArchive::readStream(const core::String &filePath) {
 	const core::String &archiveFilePath = core::string::path(_path, filePath);
-	const core::SharedPtr<io::FileStream> &stream =
-		core::make_shared<io::FileStream>(io::filesystem()->open(archiveFilePath));
-	if (stream->valid()) {
-		return stream;
+	const io::FilePtr &file = io::filesystem()->open(archiveFilePath);
+	if (!file->validHandle()) {
+		return {};
 	}
-	return SeekableReadStreamPtr{};
+	const core::SharedPtr<io::FileStream> &stream = core::make_shared<io::FileStream>(file);
+	if (!stream->valid()) {
+		return {};
+	}
+	return stream;
 }
 
 } // namespace io

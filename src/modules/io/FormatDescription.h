@@ -79,18 +79,18 @@ static const io::FormatDescription ALL_SUPPORTED {"All supported", {}, nullptr, 
  * @param desc a terminated list of @c FormatDescription objects
  * @return a comma separated list of the extension wildcards (e.g. @code *.ext,*.ext2 @endcode)
  */
-extern core::String convertToAllFilePattern(const FormatDescription *desc);
+core::String convertToAllFilePattern(const FormatDescription *desc);
 /**
  * @return The extension list of the given format description. @code Name (*.ext1,*.ext2) @endcode
  */
-extern core::String convertToFilePattern(const FormatDescription &desc);
-extern bool isImage(const core::String &file);
-extern bool isA(const core::String& file, const FormatDescription *desc);
+core::String convertToFilePattern(const FormatDescription &desc);
+bool isImage(const core::String &file);
+bool isA(const core::String& file, const FormatDescription *desc);
 
 /**
  * @brief Add additional filter groups like "All Minecraft", "All Qubicle" filters
  */
-extern void createGroupPatterns(const FormatDescription *desc, core::DynamicArray<io::FormatDescription> &groups);
+void createGroupPatterns(const FormatDescription *desc, core::DynamicArray<io::FormatDescription> &groups);
 
 namespace format {
 
