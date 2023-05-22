@@ -165,6 +165,11 @@ protected:
 	bool doUndo();
 	bool doRedo();
 
+	/**
+	 * @param[in] angleX in degree
+	 * @param[in] angleY in degree
+	 * @param[in] angleZ in degree
+	 */
 	void rotate(int angleX, int angleY, int angleZ);
 
 	/**

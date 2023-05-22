@@ -17,7 +17,7 @@ protected:
 	}
 };
 
-TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisZ) {
+TEST_F(VolumeRotatorTest, testRotateAxisZ) {
 	const voxel::Region region(-1, 1);
 	voxel::RawVolume smallVolume(region);
 	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
@@ -30,7 +30,7 @@ TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisZ) {
 	ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(0, 1, 0).getMaterial()) << smallVolume << "rotated: " << *rotated;
 }
 
-TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisY) {
+TEST_F(VolumeRotatorTest, testRotateAxisY) {
 	const voxel::Region region(-1, 1);
 	voxel::RawVolume smallVolume(region);
 	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
@@ -43,7 +43,7 @@ TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisY) {
 	ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(0, 0, -1).getMaterial()) << smallVolume << "rotated: " << *rotated;
 }
 
-TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisX) {
+TEST_F(VolumeRotatorTest, testRotateAxisX) {
 	const voxel::Region region(-1, 1);
 	voxel::RawVolume smallVolume(region);
 	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));

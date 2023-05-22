@@ -68,7 +68,7 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &
 voxel::RawVolume *rotateAxis(const voxel::RawVolume *source, math::Axis axis) {
 	glm::vec3 rotVec{0.0f};
 	rotVec[math::getIndexForAxis(axis)] = 90.0f;
-	return rotateVolume(source, rotVec, glm::vec3(0.5f));
+	return rotateVolume(source, rotVec, glm::vec3(0.0f));
 }
 
 voxel::RawVolume *mirrorAxis(const voxel::RawVolume *source, math::Axis axis) {
