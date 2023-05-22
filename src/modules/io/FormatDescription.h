@@ -27,8 +27,10 @@ struct FormatDescription {
 	bool (*isA)(uint32_t magic) = nullptr;	/**< function to check whether a magic byte matches for the format description */
 	uint32_t flags = 0u;					/**< flags for user defined properties */
 
+	// There are pseudo formats (like 'All supported') that are not valid format descriptions in the sense that they are not standing for a real format.
+	// These pseudo formats are used to group other formats together and usually don't have extensions.
 	inline bool valid() const {
-		return !name.empty();
+		return !name.empty() && !exts.empty();
 	}
 	bool operator<(const FormatDescription &rhs) const;
 
