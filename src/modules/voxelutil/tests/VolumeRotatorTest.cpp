@@ -27,30 +27,35 @@ protected:
 		voxel::RawVolume *rotated = voxelutil::rotateAxis(&smallVolume, axis, pivot);
 		return rotated;
 	}
+
+	void rotateAxisAndValidate(math::Axis axis, const glm::vec3 &pivot, const glm::ivec3 positions[3]) {
+		core::ScopedPtr<voxel::RawVolume> rotated(rotateAxis(axis, pivot));
+		ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
+		validate(rotated, positions[0].x, positions[0].y, positions[0].z);
+		validate(rotated, positions[1].x, positions[1].y, positions[1].z);
+		validate(rotated, positions[2].x, positions[2].y, positions[2].z);
+	}
 };
 
 TEST_F(VolumeRotatorTest, testRotateAxisX) {
-	core::ScopedPtr<voxel::RawVolume> rotated(rotateAxis(math::Axis::X, {0.0f, 0.0f, 0.0f}));
-	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
-	validate(rotated, 0, 0, 0);
-	validate(rotated, 0, 0, 1);
-	validate(rotated, 1, 0, 0);
+	const math::Axis axis = math::Axis::X;
+	const glm::vec3 pivot{0.0f, 0.0f, 0.0f};
+	const glm::ivec3 positions[] = {{0, 0, 0}, {0, 0, 1}, {1, 0, 0}};
+	rotateAxisAndValidate(axis, pivot, positions);
 }
 
 TEST_F(VolumeRotatorTest, testRotateAxisY) {
-	core::ScopedPtr<voxel::RawVolume> rotated(rotateAxis(math::Axis::Y, {0.0f, 0.0f, 0.0f}));
-	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
-	validate(rotated, 0, 0, 0);
-	validate(rotated, 0, 1, 0);
-	validate(rotated, 0, 0, -1);
+	const math::Axis axis = math::Axis::Y;
+	const glm::vec3 pivot{0.0f, 0.0f, 0.0f};
+	const glm::ivec3 positions[] = {{0, 0, 0}, {0, 1, 0}, {0, 0, -1}};
+	rotateAxisAndValidate(axis, pivot, positions);
 }
 
 TEST_F(VolumeRotatorTest, testRotateAxisZ) {
-	core::ScopedPtr<voxel::RawVolume> rotated(rotateAxis(math::Axis::Z, {0.0f, 0.0f, 0.0f}));
-	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
-	validate(rotated, 0, 0, 0);
-	validate(rotated, -1, 0, 0);
-	validate(rotated, 0, 1, 0);
+	const math::Axis axis = math::Axis::Z;
+	const glm::vec3 pivot{0.0f, 0.0f, 0.0f};
+	const glm::ivec3 positions[] = {{0, 0, 0}, {-1, 0, 0}, {0, 1, 0}};
+	rotateAxisAndValidate(axis, pivot, positions);
 }
 
 TEST_F(VolumeRotatorTest, testRotateAxisY45) {
