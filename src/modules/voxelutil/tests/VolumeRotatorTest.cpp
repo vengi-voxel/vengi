@@ -25,6 +25,9 @@ protected:
 		EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		voxel::RawVolume *rotated = voxelutil::rotateAxis(&smallVolume, axis, pivot);
+		if (rotated) {
+			EXPECT_EQ(rotated->region(), region);
+		}
 		return rotated;
 	}
 
@@ -54,6 +57,27 @@ TEST_F(VolumeRotatorTest, testRotateAxisY) {
 TEST_F(VolumeRotatorTest, testRotateAxisZ) {
 	const math::Axis axis = math::Axis::Z;
 	const glm::vec3 pivot{0.0f, 0.0f, 0.0f};
+	const glm::ivec3 positions[] = {{0, 0, 0}, {-1, 0, 0}, {0, 1, 0}};
+	rotateAxisAndValidate(axis, pivot, positions);
+}
+
+TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisXPivot) {
+	const math::Axis axis = math::Axis::X;
+	const glm::vec3 pivot{0.5f, 0.5f, 0.5f};
+	const glm::ivec3 positions[] = {{0, 0, 0}, {0, 0, 1}, {1, 0, 0}};
+	rotateAxisAndValidate(axis, pivot, positions);
+}
+
+TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisYPivot) {
+	const math::Axis axis = math::Axis::Y;
+	const glm::vec3 pivot{0.5f, 0.5f, 0.5f};
+	const glm::ivec3 positions[] = {{0, 0, 0}, {0, 1, 0}, {0, 0, -1}};
+	rotateAxisAndValidate(axis, pivot, positions);
+}
+
+TEST_F(VolumeRotatorTest, DISABLED_testRotateAxisZPivot) {
+	const math::Axis axis = math::Axis::Z;
+	const glm::vec3 pivot{0.5f, 0.5f, 0.5f};
 	const glm::ivec3 positions[] = {{0, 0, 0}, {-1, 0, 0}, {0, 1, 0}};
 	rotateAxisAndValidate(axis, pivot, positions);
 }
