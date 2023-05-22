@@ -14,10 +14,6 @@ namespace voxelutil {
 
 class VolumeRotatorTest : public app::AbstractTest {
 protected:
-	inline core::String str(const voxel::Region &region) const {
-		return region.toString();
-	}
-
 	void validate(const core::ScopedPtr<voxel::RawVolume> &rotated, int x, int y, int z) {
 		ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(x, y, z).getMaterial()) << *rotated;
 	}
@@ -79,8 +75,8 @@ TEST_F(VolumeRotatorTest, DISABLED_testRotate45Y) {
 	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateAxis(&smallVolume, math::Axis::Y));
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	const voxel::Region &rotatedRegion = rotated->region();
-	EXPECT_NE(rotatedRegion, region) << "Rotating by 45 degree should increase the size of the volume "
-									 << str(rotatedRegion) << " " << str(region);
+	EXPECT_NE(rotatedRegion, region) << "Rotating by 45 degree should increase the size of the volume " << rotatedRegion
+									 << " " << region;
 }
 
 } // namespace voxelutil
