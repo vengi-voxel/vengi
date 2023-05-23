@@ -436,6 +436,7 @@ void SceneGraphNode::releaseOwnership() {
 }
 
 void SceneGraphNode::setVolume(voxel::RawVolume *volume, bool transferOwnership) {
+	const glm::vec3 p = pivot();
 	release();
 	if (transferOwnership) {
 		_flags |= VolumeOwned;
@@ -443,6 +444,7 @@ void SceneGraphNode::setVolume(voxel::RawVolume *volume, bool transferOwnership)
 		_flags &= ~VolumeOwned;
 	}
 	_volume = volume;
+	setPivot(p);
 }
 
 void SceneGraphNode::setVolume(const voxel::RawVolume *volume, bool transferOwnership) {
