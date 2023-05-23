@@ -159,10 +159,10 @@ bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool b
 	if (v == nullptr) {
 		return false;
 	}
-	scenegraph::SceneGraphNode node;
-	node.setVolume(v, true);
-	node.setName(core::string::extractFilename(img->name().c_str()));
-	return addNodeToSceneGraph(node) != InvalidNodeId;
+	scenegraph::SceneGraphNode newNode;
+	newNode.setVolume(v, true);
+	newNode.setName(core::string::extractFilename(img->name().c_str()));
+	return addNodeToSceneGraph(newNode) != InvalidNodeId;
 }
 
 bool SceneManager::importAsPlane(const core::String& file) {
@@ -171,10 +171,10 @@ bool SceneManager::importAsPlane(const core::String& file) {
 	if (v == nullptr) {
 		return false;
 	}
-	scenegraph::SceneGraphNode node;
-	node.setVolume(v, true);
-	node.setName(core::string::extractFilename(img->name().c_str()));
-	return addNodeToSceneGraph(node) != InvalidNodeId;
+	scenegraph::SceneGraphNode newNode;
+	newNode.setVolume(v, true);
+	newNode.setName(core::string::extractFilename(img->name().c_str()));
+	return addNodeToSceneGraph(newNode) != InvalidNodeId;
 }
 
 bool SceneManager::importHeightmap(const core::String& file) {
@@ -368,10 +368,10 @@ static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
 	if (newSceneGraph.size() > voxelrender::RawVolumeRenderer::MAX_VOLUMES) {
 		const scenegraph::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge(true);
 		newSceneGraph.clear();
-		scenegraph::SceneGraphNode node;
-		node.setVolume(merged.first, true);
-		node.setPalette(merged.second);
-		newSceneGraph.emplace(core::move(node));
+		scenegraph::SceneGraphNode newNode;
+		newNode.setVolume(merged.first, true);
+		newNode.setPalette(merged.second);
+		newSceneGraph.emplace(core::move(newNode));
 	}
 }
 
@@ -532,10 +532,10 @@ void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
 		});
 		modified(nodeId, wrapper.dirtyRegion());
 	});
-	scenegraph::SceneGraphNode node;
-	node.setVolume(newVolume, true);
-	node.setName(core::string::format("color: %i", (int)voxelColor.getColor()));
-	addNodeToSceneGraph(node);
+	scenegraph::SceneGraphNode newNode;
+	newNode.setVolume(newVolume, true);
+	newNode.setName(core::string::format("color: %i", (int)voxelColor.getColor()));
+	addNodeToSceneGraph(newNode);
 }
 
 void SceneManager::scale(int nodeId) {
@@ -781,29 +781,29 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 			type = scenegraph::SceneGraphNodeType::Model;
 		}
 	}
-	scenegraph::SceneGraphNode node(type);
+	scenegraph::SceneGraphNode newNode(type);
 	if (type == scenegraph::SceneGraphNodeType::Model) {
-		node.setVolume(new voxel::RawVolume(s.dataRegion()), true);
-		MementoData::toVolume(node.volume(), s.data);
+		newNode.setVolume(new voxel::RawVolume(s.dataRegion()), true);
+		MementoData::toVolume(newNode.volume(), s.data);
 		if (s.palette.hasValue()) {
-			node.setPalette(*s.palette.value());
+			newNode.setPalette(*s.palette.value());
 		}
 	}
 	if (type == scenegraph::SceneGraphNodeType::ModelReference) {
-		node.setReference(s.referenceId);
+		newNode.setReference(s.referenceId);
 	}
 	if (s.keyFrames.hasValue()) {
-		node.setAllKeyFrames(*s.keyFrames.value(), _sceneGraph.activeAnimation());
+		newNode.setAllKeyFrames(*s.keyFrames.value(), _sceneGraph.activeAnimation());
 	}
 	if (s.properties.hasValue()) {
-		node.properties().clear();
-		node.addProperties(*s.properties.value());
+		newNode.properties().clear();
+		newNode.addProperties(*s.properties.value());
 	}
 	if (s.data.region().isValid()) {
-		node.setPivot(s.region.pivot());
+		newNode.setPivot(s.region.pivot());
 	}
-	node.setName(s.name);
-	const int newNodeId = addNodeToSceneGraph(node, s.parentId);
+	newNode.setName(s.name);
+	const int newNodeId = addNodeToSceneGraph(newNode, s.parentId);
 	_mementoHandler.updateNodeId(s.nodeId, newNodeId);
 	return newNodeId != InvalidNodeId;
 }
@@ -1247,9 +1247,7 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 		return true;
 	}
 
-	const glm::vec3 pivot = node.pivot();
 	node.setVolume(volume, true);
-	node.setPivot(pivot);
 	// the old volume pointer might no longer be used
 	_sceneRenderer->nodeRemove(node.id());
 
@@ -1274,14 +1272,14 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	_sceneRenderer->clear();
 
 	voxel::RawVolume* v = new voxel::RawVolume(region);
-	scenegraph::SceneGraphNode node;
-	node.setVolume(v, true);
+	scenegraph::SceneGraphNode newNode;
+	newNode.setVolume(v, true);
 	if (name.empty()) {
-		node.setName("unnamed");
+		newNode.setName("unnamed");
 	} else {
-		node.setName(name);
+		newNode.setName(name);
 	}
-	const int nodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, node, 0);
+	const int nodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, newNode, 0);
 	if (nodeId == InvalidNodeId) {
 		Log::error("Failed to add empty volume to new scene graph");
 		return false;
@@ -2108,11 +2106,11 @@ int SceneManager::addModelChild(const core::String& name, int width, int height,
 		Log::warn("Invalid size provided (%i:%i:%i)", width, height, depth);
 		return InvalidNodeId;
 	}
-	scenegraph::SceneGraphNode modelNode;
-	modelNode.setVolume(new voxel::RawVolume(region), true);
-	modelNode.setName(name);
+	scenegraph::SceneGraphNode newNode;
+	newNode.setVolume(new voxel::RawVolume(region), true);
+	newNode.setName(name);
 	const int parentId = activeNode();
-	const int nodeId = addNodeToSceneGraph(modelNode, parentId);
+	const int nodeId = addNodeToSceneGraph(newNode, parentId);
 	return nodeId;
 }
 
@@ -2757,14 +2755,14 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	_sceneRenderer->nodeRemove(nodeId);
 	if (_sceneGraph.empty()) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(new voxel::RawVolume(region), true);
+		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+		newNode.setVolume(new voxel::RawVolume(region), true);
 		if (name.empty()) {
-			node.setName("unnamed");
+			newNode.setName("unnamed");
 		} else {
-			node.setName(name);
+			newNode.setName(name);
 		}
-		addNodeToSceneGraph(node);
+		addNodeToSceneGraph(newNode);
 	} else {
 		markDirty();
 	}

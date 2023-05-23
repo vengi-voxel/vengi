@@ -531,14 +531,14 @@ void MainWindow::popupModelNodeSettings() {
 
 		if (ImGui::Button(ICON_FA_CHECK " OK##modelsettings")) {
 			ImGui::CloseCurrentPopup();
-			scenegraph::SceneGraphNode node;
+			scenegraph::SceneGraphNode newNode;
 			voxel::RawVolume *v = new voxel::RawVolume(_modelNodeSettings.region());
-			node.setVolume(v, true);
-			node.setName(_modelNodeSettings.name.c_str());
+			newNode.setVolume(v, true);
+			newNode.setName(_modelNodeSettings.name.c_str());
 			if (_modelNodeSettings.palette.hasValue()) {
-				node.setPalette(*_modelNodeSettings.palette.value());
+				newNode.setPalette(*_modelNodeSettings.palette.value());
 			}
-			sceneMgr().addNodeToSceneGraph(node, _modelNodeSettings.parent);
+			sceneMgr().addNodeToSceneGraph(newNode, _modelNodeSettings.parent);
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
