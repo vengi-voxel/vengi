@@ -758,7 +758,12 @@ bool SceneManager::mementoModification(const MementoState& s) {
 	Log::debug("Memento: modification in volume of node %i (%s)", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
 		if (node->region() != s.dataRegion()) {
-			node->setVolume(new voxel::RawVolume(s.dataRegion()), true);
+			voxel::RawVolume *v = new voxel::RawVolume(s.dataRegion());
+			if (!setSceneGraphNodeVolume(*node, v)) {
+				delete v;
+			}
+		} else {
+			node->setPivot(s.dataRegion().pivot());
 		}
 		MementoData::toVolume(node->volume(), s.data);
 		node->setName(s.name);
