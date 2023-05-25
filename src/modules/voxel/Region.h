@@ -72,6 +72,7 @@ public:
 
 	/** Gets the centre of the region */
 	const glm::ivec3& getCenter() const;
+	glm::vec3 calcCenterf() const;
 	/** normalized pivot */
 	const glm::vec3& pivot() const;
 	glm::vec3 worldPivot() const;

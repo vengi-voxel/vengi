@@ -173,4 +173,20 @@ TEST_F(RegionTest, testMoveIntoBiggerThanSize) {
 	ASSERT_EQ(pos, glm::ivec3(10, 10, -10));
 }
 
+TEST_F(RegionTest, testDimensions) {
+	voxel::Region region(0, 3);
+	EXPECT_EQ(glm::ivec3(4), region.getDimensionsInVoxels());
+	EXPECT_EQ(glm::ivec3(3), region.getDimensionsInCells());
+}
+
+TEST_F(RegionTest, testCenter) {
+	voxel::Region region(0, 3);
+	EXPECT_EQ(glm::ivec3(1), region.getCenter());
+	EXPECT_EQ(glm::vec3(1.5f), region.calcCenterf());
+
+	voxel::Region region2(-1, 1);
+	EXPECT_EQ(glm::ivec3(0), region2.getCenter());
+	EXPECT_EQ(glm::vec3(0.5f), region2.calcCenterf());
+}
+
 } // namespace voxel

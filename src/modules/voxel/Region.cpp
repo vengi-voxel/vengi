@@ -167,6 +167,10 @@ const glm::ivec3& Region::getCenter() const {
 	return _center;
 }
 
+glm::vec3 Region::calcCenterf() const {
+	return glm::vec3(_mins + _width) / 2.0f;
+}
+
 const glm::vec3& Region::pivot() const {
 	return _pivot;
 }
