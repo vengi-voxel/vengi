@@ -11,7 +11,7 @@ set(SRCS
 	Random.cpp Random.h
 	Ray.h
 	Rect.h
-	Math.h
+	Math.h Math.cpp
 )
 set(LIB math)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core)
@@ -19,6 +19,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core)
 set(TEST_SRCS
 	tests/AABBTest.cpp
 	tests/FrustumTest.cpp
+	tests/MathTest.cpp
 	tests/OctreeTest.cpp
 	tests/PlaneTest.cpp
 	tests/QuadTreeTest.cpp
