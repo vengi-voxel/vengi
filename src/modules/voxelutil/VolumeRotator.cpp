@@ -17,8 +17,9 @@
 
 namespace voxelutil {
 
-static inline glm::vec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec4 &pivot) {
-	return glm::round(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) + pivot) - 0.5f - pivot);
+glm::ivec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec3 &pivot) {
+	const glm::vec3 &e = mat * (glm::vec4((float)pos.x + 0.5f - pivot.x, (float)pos.y + 0.5f - pivot.y, (float)pos.z + 0.5f - pivot.z, 1.0f));
+	return glm::floor(e + pivot);
 }
 
 /**
@@ -35,7 +36,7 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &
 	const glm::mat4 &mat = glm::eulerAngleXYZ(pitch, yaw, roll);
 	const voxel::Region srcRegion = source->region();
 
-	const glm::vec4 pivot(normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels()), 0.0f);
+	const glm::vec3 pivot(normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels()));
 	const voxel::Region &region = srcRegion.rotate(mat, pivot);
 	voxel::RawVolume *destination = new voxel::RawVolume(region);
 	voxel::RawVolume::Sampler destSampler(destination);
