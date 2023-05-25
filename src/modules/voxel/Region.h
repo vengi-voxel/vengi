@@ -391,7 +391,7 @@ inline Region::Region(int mins, int maxs) :
  * Constructs a Region and clears all extents to zero.
  */
 inline constexpr Region::Region() :
-		_mins(0), _maxs(0), _width(0), _voxels(1), _center(0), _pivot(0.5f), _stride(0) {
+		_mins(0), _maxs(0), _width(0), _voxels(1), _center(0), _stride(0) {
 }
 
 /**
