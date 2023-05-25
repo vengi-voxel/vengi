@@ -6,28 +6,15 @@
 #include "app/tests/AbstractTest.h"
 #include "core/ScopedPtr.h"
 #include "math/Axis.h"
+#include "math/Math.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/tests/VoxelPrinter.h"
-#include <glm/gtx/euler_angles.hpp>
-
-namespace glm {
-::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
-	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-	return os;
-}
-} // namespace glm
 
 namespace voxelutil {
 
 class VolumeRotatorTest : public app::AbstractTest {
 protected:
-	void rotateAroundPivot(const glm::vec3 &pivot, const glm::ivec3 &input, const glm::ivec3 &expected) {
-		const glm::mat4 &mat = glm::eulerAngleY(glm::radians(90.0f));
-		const glm::ivec3 &destination = voxelutil::transform(mat, input, pivot);
-		EXPECT_EQ(expected, destination) << expected << " vs " << destination;
-	}
-
 	void validate(const core::ScopedPtr<voxel::RawVolume> &rotated, int x, int y, int z) {
 		ASSERT_EQ(voxel::VoxelType::Generic, rotated->voxel(x, y, z).getMaterial()) << *rotated;
 	}
@@ -53,13 +40,6 @@ protected:
 		validate(rotated, positions[2].x, positions[2].y, positions[2].z);
 	}
 };
-
-TEST_F(VolumeRotatorTest, DISABLED_testTransform) {
-	const glm::vec3 pivot{0.0f, 0.0f, 0.0f};
-	const glm::ivec3 pos(0, 0, 0);
-	const glm::ivec3 expected(0, 0, 0);
-	rotateAroundPivot(pivot, pos, expected);
-}
 
 TEST_F(VolumeRotatorTest, testRotateAxisX) {
 	const math::Axis axis = math::Axis::X;

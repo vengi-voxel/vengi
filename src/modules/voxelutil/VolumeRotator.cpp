@@ -7,6 +7,7 @@
 #include "core/GLM.h"
 #include "math/AABB.h"
 #include "math/Axis.h"
+#include "math/Math.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VoxelUtil.h"
 #include "voxel/Region.h"
@@ -16,11 +17,6 @@
 #include <glm/gtx/euler_angles.hpp>
 
 namespace voxelutil {
-
-glm::ivec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec3 &pivot) {
-	const glm::vec3 &e = mat * (glm::vec4((float)pos.x + 0.5f - pivot.x, (float)pos.y + 0.5f - pivot.y, (float)pos.z + 0.5f - pivot.z, 1.0f));
-	return glm::floor(e + pivot);
-}
 
 /**
  * @param[in] source The RawVolume to rotate
@@ -49,7 +45,7 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &
 				const voxel::Voxel &voxel = srcSampler.voxel();
 				if (!voxel::isAir(voxel.getMaterial())) {
 					const glm::ivec3 destPos(x, y, z);
-					const glm::ivec3 &volumePos = transform(mat, destPos, pivot);
+					const glm::ivec3 &volumePos = math::transform(mat, destPos, pivot);
 					destSampler.setPosition(volumePos);
 					core_assert_msg(region.containsPoint(volumePos),
 									"volumepos %i:%i:%i is not part of the rotated region %s", volumePos.x, volumePos.y,

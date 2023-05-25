@@ -240,6 +240,9 @@ void Region::accumulate(const glm::ivec3& pos) {
 	accumulate(pos.x, pos.y, pos.z);
 }
 
+/**
+ * @see math::transform()
+ */
 Region Region::rotate(const glm::mat4 &mat, const glm::vec3 &pivot) const {
 	const glm::vec4 pivot4(pivot, 0.0f);
 	const glm::vec4 vertices[]{

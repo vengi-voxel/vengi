@@ -14,8 +14,6 @@ class Voxel;
 
 namespace voxelutil {
 
-glm::ivec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec3 &pivot);
-
 /**
  * @brief Rotate the given volume by the given angles in degree
  */
