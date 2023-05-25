@@ -9,6 +9,7 @@
 #include "math/Axis.h"
 #include "math/Math.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/VoxelUtil.h"
 #include "voxel/Region.h"
 #include "voxel/Palette.h"
@@ -24,42 +25,42 @@ namespace voxelutil {
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  */
-voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &angles,
+voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::vec3 &angles,
 							   const glm::vec3 &normalizedPivot) {
 	const float pitch = glm::radians(angles.x);
 	const float yaw = glm::radians(angles.y);
 	const float roll = glm::radians(angles.z);
 	const glm::mat4 &mat = glm::eulerAngleXYZ(pitch, yaw, roll);
-	const voxel::Region srcRegion = source->region();
+	const voxel::Region srcRegion = srcVolume->region();
 
 	const glm::vec3 pivot(normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels()));
-	const voxel::Region &region = srcRegion.rotate(mat, pivot);
-	voxel::RawVolume *destination = new voxel::RawVolume(region);
-	voxel::RawVolume::Sampler destSampler(destination);
-	voxel::RawVolume::Sampler srcSampler(source);
+	const voxel::Region &destRegion = srcRegion.rotate(mat, pivot);
+	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
+	voxel::RawVolumeWrapper destVolumeWrapper(destVolume);
 
+	voxel::RawVolume::Sampler srcSampler(srcVolume);
+	srcSampler.setPosition(srcRegion.getLowerCorner());
 	for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
+		voxel::RawVolume::Sampler srcSampler2 = srcSampler;
 		for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
-			srcSampler.setPosition(srcRegion.getLowerX(), y, z);
+			voxel::RawVolume::Sampler srcSampler3 = srcSampler2;
 			for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
-				const voxel::Voxel &voxel = srcSampler.voxel();
+				const voxel::Voxel voxel = srcSampler3.voxel();
 				if (!voxel::isAir(voxel.getMaterial())) {
-					const glm::ivec3 destPos(x, y, z);
-					const glm::ivec3 &volumePos = math::transform(mat, destPos, pivot);
-					destSampler.setPosition(volumePos);
-					core_assert_msg(region.containsPoint(volumePos),
-									"volumepos %i:%i:%i is not part of the rotated region %s", volumePos.x, volumePos.y,
-									volumePos.z, region.toString().c_str());
-					destSampler.setVoxel(voxel);
+					const glm::ivec3 srcPos(x, y, z);
+					const glm::ivec3 &destPos = math::transform(mat, srcPos, pivot);
+					destVolumeWrapper.setVoxel(destPos, voxel);
 				}
-				srcSampler.movePositiveX();
+				srcSampler3.movePositiveX();
 			}
+			srcSampler2.movePositiveY();
 		}
+		srcSampler.movePositiveZ();
 	}
 	// TODO: use the pivot luke
-	const glm::ivec3 &delta = srcRegion.getCenter() - destination->region().getCenter();
-	destination->translate(delta);
-	return destination;
+	const glm::ivec3 &delta = srcRegion.getCenter() - destVolume->region().getCenter();
+	destVolume->translate(delta);
+	return destVolume;
 }
 
 voxel::RawVolume *rotateAxis(const voxel::RawVolume *source, math::Axis axis,
