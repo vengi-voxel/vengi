@@ -40,37 +40,48 @@ TEST_F(RegionTest, testContains) {
 }
 
 TEST_F(RegionTest, testRotateAxisY45) {
-	const glm::vec3 angles(0.0f, 45.0f, 0.0f);
-	const float pitch = glm::radians(angles.x);
-	const float yaw = glm::radians(angles.y);
-	const float roll = glm::radians(angles.z);
-	const glm::mat4 &mat = glm::eulerAngleXYZ(pitch, yaw, roll);
-	const glm::vec3 pivot(0.0f, 0.0f, 0.0f);
-
-	const voxel::Region region(-10, 10);
-
-	const voxel::Region &rotated = region.rotate(mat, pivot);
+	const glm::mat4 &mat = glm::eulerAngleY(glm::radians(45.0f));
+	const voxel::Region region(0, 3);
+	const voxel::Region &rotated = region.rotate(mat, region.calcCenterf());
 	const glm::ivec3 mins = rotated.getLowerCorner();
 	const glm::ivec3 maxs = rotated.getUpperCorner();
 
+	EXPECT_EQ(0, mins.y) << "The rotated volume should be at the same height as the original one";
+	EXPECT_EQ(3, maxs.y) << "The rotated volume should be at the same height as the original one";
+	EXPECT_EQ(-1, mins.x);
+	EXPECT_EQ(4, maxs.x);
+	EXPECT_EQ(-1, mins.z);
+	EXPECT_EQ(4, maxs.z);
+}
+
+TEST_F(RegionTest, testRotateAxisY90) {
+	const glm::mat4 &mat = glm::eulerAngleY(glm::radians(90.0f));
+	const voxel::Region region(-10, 10);
+	const glm::vec3 center(0.0f);
+	const glm::ivec3 dimensionBeforeRotation = region.getDimensionsInVoxels();
+	const voxel::Region &rotated = region.rotate(mat, center);
+	const glm::ivec3 mins = rotated.getLowerCorner();
+	const glm::ivec3 maxs = rotated.getUpperCorner();
+	const glm::ivec3 dimensionAfterRotation = rotated.getDimensionsInVoxels();
+
 	EXPECT_EQ(-10, mins.y) << "The rotated volume should be at the same height as the original one";
 	EXPECT_EQ(10, maxs.y) << "The rotated volume should be at the same height as the original one";
-	EXPECT_EQ(-14, mins.x);
-	EXPECT_EQ(14, maxs.x);
-	EXPECT_EQ(-15, mins.z);
-	EXPECT_EQ(14, maxs.z);
+	EXPECT_EQ(-10, mins.x);
+	EXPECT_EQ(10, maxs.x);
+	EXPECT_EQ(-10, mins.z);
+	EXPECT_EQ(10, maxs.z);
+
+	EXPECT_EQ(dimensionBeforeRotation, dimensionAfterRotation);
 }
 
 TEST_F(RegionTest, testRotateAxisPivotMins) {
 	const voxel::Region region(-10, 10);
-	const glm::vec3 pivot(-10.0f, -10.0f, -10.0f);
-	rotateAroundPivot(region, pivot);
+	rotateAroundPivot(region, region.getLowerCornerf());
 }
 
 TEST_F(RegionTest, testRotateAxisPivotMaxs) {
 	const voxel::Region region(-10, 10);
-	const glm::vec3 pivot(10.0f, 10.0f, 10.0f);
-	rotateAroundPivot(region, pivot);
+	rotateAroundPivot(region, region.getUpperCornerf());
 }
 
 TEST_F(RegionTest, testRotateAxisPivotMinsxy) {

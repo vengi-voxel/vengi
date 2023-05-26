@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include <glm/vector_relational.hpp>
 #include "math/AABB.h"
+#include "math/Math.h"
 #include "math/Rect.h"
 #include "math/Random.h"
 #define GLM_ENABLE_EXPERIMENTAL
@@ -248,26 +249,25 @@ void Region::accumulate(const glm::ivec3& pos) {
  * @see math::transform()
  */
 Region Region::rotate(const glm::mat4 &mat, const glm::vec3 &pivot) const {
-	const glm::vec4 pivot4(pivot, 0.0f);
 	const glm::vec4 vertices[]{
-		glm::vec4((float)_mins.x + 0.5f, (float)_mins.y + 0.5f, (float)_mins.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_maxs.x + 0.5f, (float)_mins.y + 0.5f, (float)_mins.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_mins.x + 0.5f, (float)_maxs.y + 0.5f, (float)_mins.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_maxs.x + 0.5f, (float)_maxs.y + 0.5f, (float)_mins.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_mins.x + 0.5f, (float)_mins.y + 0.5f, (float)_maxs.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_maxs.x + 0.5f, (float)_mins.y + 0.5f, (float)_maxs.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_mins.x + 0.5f, (float)_maxs.y + 0.5f, (float)_maxs.z + 0.5f, 1.0f) - pivot4,
-		glm::vec4((float)_maxs.x + 0.5f, (float)_maxs.y + 0.5f, (float)_maxs.z + 0.5f, 1.0f) - pivot4
+		glm::vec4((float)_mins.x - 0.5f - pivot.x, (float)_mins.y - 0.5f - pivot.y, (float)_mins.z - 0.5f - pivot.z, 1.0f),
+		glm::vec4((float)_maxs.x + 0.5f - pivot.x, (float)_mins.y - 0.5f - pivot.y, (float)_mins.z - 0.5f - pivot.z, 1.0f),
+		glm::vec4((float)_mins.x - 0.5f - pivot.x, (float)_maxs.y + 0.5f - pivot.y, (float)_mins.z - 0.5f - pivot.z, 1.0f),
+		glm::vec4((float)_maxs.x + 0.5f - pivot.x, (float)_maxs.y + 0.5f - pivot.y, (float)_mins.z - 0.5f - pivot.z, 1.0f),
+		glm::vec4((float)_mins.x - 0.5f - pivot.x, (float)_mins.y - 0.5f - pivot.y, (float)_maxs.z + 0.5f - pivot.z, 1.0f),
+		glm::vec4((float)_maxs.x + 0.5f - pivot.x, (float)_mins.y - 0.5f - pivot.y, (float)_maxs.z + 0.5f - pivot.z, 1.0f),
+		glm::vec4((float)_mins.x - 0.5f - pivot.x, (float)_maxs.y + 0.5f - pivot.y, (float)_maxs.z + 0.5f - pivot.z, 1.0f),
+		glm::vec4((float)_maxs.x + 0.5f - pivot.x, (float)_maxs.y + 0.5f - pivot.y, (float)_maxs.z + 0.5f - pivot.z, 1.0f)
 	};
-	glm::vec3 newMins(FLT_MAX);
-	glm::vec3 newMaxs(-FLT_MAX);
+	glm::ivec3 newMins(INT_MAX);
+	glm::ivec3 newMaxs(INT_MIN);
 	for (int i = 0; i < 8; ++i) {
-		const glm::vec4 &target = mat * vertices[i];
-		const glm::vec3 &corrected = glm::floor(glm::vec3(target) + pivot);
+		const glm::vec3 &target = mat * vertices[i];
+		const glm::ivec3 &corrected = glm::round(target + 0.5f + pivot);
 		newMins = glm::min(corrected, newMins);
 		newMaxs = glm::max(corrected, newMaxs);
 	}
-	const voxel::Region region(newMins, newMaxs);
+	const voxel::Region region(newMins, newMaxs - 1);
 	return region;
 }
 
