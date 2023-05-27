@@ -17,14 +17,13 @@ namespace voxelutil {
 /**
  * @brief Rotate the given volume by the given angles in degree
  */
-extern voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::vec3 &angles,
+extern voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const glm::ivec3 &angles,
 									  const glm::vec3 &normalizedPivot);
 /**
  * @brief Rotate the given volume on the given axis by 90 degree. This method does not lose any voxels
  * @note The volume size might differ
  */
-extern voxel::RawVolume *rotateAxis(const voxel::RawVolume *source, math::Axis axis,
-									  const glm::vec3 &normalizedPivot = {0.0f, 0.0f, 0.0f});
+extern voxel::RawVolume *rotateAxis(const voxel::RawVolume *source, math::Axis axis);
 /**
  * @brief Mirrors the given volume on the given axis
  */

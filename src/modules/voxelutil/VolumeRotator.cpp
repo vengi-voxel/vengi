@@ -5,6 +5,7 @@
 #include "VolumeRotator.h"
 #include "core/Assert.h"
 #include "core/GLM.h"
+#include "core/Log.h"
 #include "math/AABB.h"
 #include "math/Axis.h"
 #include "math/Math.h"
@@ -25,11 +26,46 @@ namespace voxelutil {
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  */
-voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::vec3 &angles,
+voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::ivec3 &angles,
 							   const glm::vec3 &normalizedPivot) {
-	const float pitch = glm::radians(angles.x);
-	const float yaw = glm::radians(angles.y);
-	const float roll = glm::radians(angles.z);
+	if (angles.x % 90 == 0 && angles.y % 90 == 0 && angles.z % 90 == 0) {
+		glm::ivec3 remaining = glm::abs(angles);
+		while (remaining.x > 270) {
+			remaining.x -= 90;
+		}
+		while (remaining.y > 270) {
+			remaining.y -= 90;
+		}
+		while (remaining.z > 270) {
+			remaining.z -= 90;
+		}
+		voxel::RawVolume *rotated = nullptr;
+		while (remaining.x >= 90 || remaining.y >= 90 || remaining.z >= 90) {
+			const bool isSourceVolume = rotated == nullptr;
+			const voxel::RawVolume *input = isSourceVolume ? srcVolume : rotated;
+			math::Axis axis;
+			if (remaining.x >= 90) {
+				axis = math::Axis::X;
+				remaining.x -= 90;
+			} else if (remaining.y >= 90) {
+				axis = math::Axis::Y;
+				remaining.y -= 90;
+			} else {
+				core_assert(remaining.z >= 90);
+				axis = math::Axis::Z;
+				remaining.z -= 90;
+			}
+
+			rotated = rotateAxis(input, axis);
+			if (!isSourceVolume) {
+				delete input;
+			}
+		}
+		return rotated;
+	}
+	const float pitch = glm::radians((float)angles.x);
+	const float yaw = glm::radians((float)angles.y);
+	const float roll = glm::radians((float)angles.z);
 	const glm::mat4 &mat = glm::eulerAngleXYZ(pitch, yaw, roll);
 	const voxel::Region srcRegion = srcVolume->region();
 
@@ -57,17 +93,79 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::vec
 		}
 		srcSampler.movePositiveZ();
 	}
-	// TODO: use the pivot luke
-	const glm::ivec3 &delta = srcRegion.getCenter() - destVolume->region().getCenter();
-	destVolume->translate(delta);
 	return destVolume;
 }
 
-voxel::RawVolume *rotateAxis(const voxel::RawVolume *source, math::Axis axis,
-									  const glm::vec3 &normalizedPivot) {
-	glm::vec3 angles{0.0f};
-	angles[math::getIndexForAxis(axis)] = 90.0f;
-	return rotateVolume(source, angles, normalizedPivot);
+voxel::RawVolume *rotateAxis(const voxel::RawVolume *srcVolume, math::Axis axis) {
+	const voxel::Region &srcRegion = srcVolume->region();
+	const glm::ivec3 srcMins = srcRegion.getLowerCorner();
+	const glm::ivec3 srcMaxs = srcRegion.getUpperCorner();
+	if (axis == math::Axis::X) {
+		const voxel::Region destRegion(srcMins.x, srcMins.z, srcMins.y, srcMaxs.x, srcMaxs.z, srcMaxs.y);
+		voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
+
+		voxel::RawVolume::Sampler srcSampler(srcVolume);
+		srcSampler.setPosition(srcRegion.getLowerCorner());
+		for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
+			voxel::RawVolume::Sampler srcSampler2 = srcSampler;
+			for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
+				voxel::RawVolume::Sampler srcSampler3 = srcSampler2;
+				for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
+					const voxel::Voxel voxel = srcSampler3.voxel();
+					if (!voxel::isAir(voxel.getMaterial())) {
+						destVolume->setVoxel(x, z, srcMaxs.y - y, voxel);
+					}
+					srcSampler3.movePositiveX();
+				}
+				srcSampler2.movePositiveY();
+			}
+			srcSampler.movePositiveZ();
+		}
+		return destVolume;
+	} else if (axis == math::Axis::Y) {
+		const voxel::Region destRegion(srcMins.z, srcMins.y, srcMins.x, srcMaxs.z, srcMaxs.y, srcMaxs.x);
+		voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
+
+		voxel::RawVolume::Sampler srcSampler(srcVolume);
+		srcSampler.setPosition(srcRegion.getLowerCorner());
+		for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
+			voxel::RawVolume::Sampler srcSampler2 = srcSampler;
+			for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
+				voxel::RawVolume::Sampler srcSampler3 = srcSampler2;
+				for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
+					const voxel::Voxel voxel = srcSampler3.voxel();
+					if (!voxel::isAir(voxel.getMaterial())) {
+						destVolume->setVoxel(srcMaxs.z - z, y, x, voxel);
+					}
+					srcSampler3.movePositiveX();
+				}
+				srcSampler2.movePositiveY();
+			}
+			srcSampler.movePositiveZ();
+		}
+		return destVolume;
+	}
+	const voxel::Region destRegion(srcMins.y, srcMins.x, srcMins.z, srcMaxs.y, srcMaxs.x, srcMaxs.z);
+	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
+
+	voxel::RawVolume::Sampler srcSampler(srcVolume);
+	srcSampler.setPosition(srcRegion.getLowerCorner());
+	for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
+		voxel::RawVolume::Sampler srcSampler2 = srcSampler;
+		for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
+			voxel::RawVolume::Sampler srcSampler3 = srcSampler2;
+			for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
+				const voxel::Voxel voxel = srcSampler3.voxel();
+				if (!voxel::isAir(voxel.getMaterial())) {
+					destVolume->setVoxel(y, srcMaxs.x - x, z, voxel);
+				}
+				srcSampler3.movePositiveX();
+			}
+			srcSampler2.movePositiveY();
+		}
+		srcSampler.movePositiveZ();
+	}
+	return destVolume;
 }
 
 voxel::RawVolume *mirrorAxis(const voxel::RawVolume *source, math::Axis axis) {
