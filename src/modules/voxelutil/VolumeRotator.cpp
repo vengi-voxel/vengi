@@ -21,13 +21,14 @@
 namespace voxelutil {
 
 /**
- * @param[in] source The RawVolume to rotate
+ * @param[in] srcVolume The RawVolume to rotate
  * @param[in] angles The angles for the x, y and z axis given in degrees
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  */
 voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::ivec3 &angles,
 							   const glm::vec3 &normalizedPivot) {
+	// TODO: implement sampling http://www.leptonica.org/rotation.html
 	const float pitch = glm::radians((float)angles.x);
 	const float yaw = glm::radians((float)angles.y);
 	const float roll = glm::radians((float)angles.z);

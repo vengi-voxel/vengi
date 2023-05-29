@@ -31,6 +31,13 @@ protected:
 	void rotateAxisAndValidate(math::Axis axis, const glm::ivec3 positions[4]) {
 		const voxel::Region region(-1, 1);
 		voxel::RawVolume smallVolume(region);
+		// build a block in a 3x3 volume area with the center voxel
+		// being at 0,0,0
+		// -------
+		// |  x  |
+		// |x c x|
+		// |     |
+		// -------
 		EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		EXPECT_TRUE(smallVolume.setVoxel(-1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
