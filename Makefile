@@ -101,10 +101,10 @@ tracy:
 
 update-stb:
 	$(call UPDATE_GIT,SOIL2,https://github.com/SpartanJ/SOIL2.git)
-	cp $(UPDATEDIR)/SOIL2.sync/src/SOIL2/* src/modules/image/external
-	rm src/modules/image/external/SOIL2.*
-	find src/modules/image/external -type f -exec dos2unix {} \;
-	find src/modules/image/external -type f -exec sed -i 's/[ \t]*$$//' {} \;
+	cp $(UPDATEDIR)/SOIL2.sync/src/SOIL2/* contrib/libs/stb_image
+	rm contrib/libs/stb_image/SOIL2.*
+	find contrib/libs/stb_image -type f -exec dos2unix {} \;
+	find contrib/libs/stb_image -type f -exec sed -i 's/[ \t]*$$//' {} \;
 	$(call UPDATE_GIT,stb,https://github.com/nothings/stb.git)
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxelfont/external/stb_truetype.h
 
