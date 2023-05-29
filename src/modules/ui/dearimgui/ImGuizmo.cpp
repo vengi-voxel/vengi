@@ -729,6 +729,9 @@ namespace IMGUIZMO_NAMESPACE
       bool mBelowPlaneLimit[3];
       float mAxisFactor[3];
 
+      float mAxisLimit=0.0025f;
+      float mPlaneLimit=0.02f;
+
       // bounds stretching
       vec_t mBoundsPivot;
       vec_t mBoundsAnchor;
@@ -845,7 +848,10 @@ namespace IMGUIZMO_NAMESPACE
       }
 
       vec_t clipSpaceAxis = endOfSegment - startOfSegment;
-      clipSpaceAxis.y /= gContext.mDisplayRatio;
+      if (gContext.mDisplayRatio < 1.0)
+         clipSpaceAxis.x *= gContext.mDisplayRatio;
+      else
+         clipSpaceAxis.y /= gContext.mDisplayRatio;
       float segmentLengthInClipSpace = sqrtf(clipSpaceAxis.x * clipSpaceAxis.x + clipSpaceAxis.y * clipSpaceAxis.y);
       return segmentLengthInClipSpace;
    }
@@ -983,6 +989,11 @@ namespace IMGUIZMO_NAMESPACE
    bool IsUsing()
    {
       return (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID)) || gContext.mbUsingBounds;
+   }
+
+   bool IsUsingAny()
+   {
+      return gContext.mbUsing || gContext.mbUsingBounds;
    }
 
    bool IsOver()
@@ -1170,8 +1181,8 @@ namespace IMGUIZMO_NAMESPACE
          float axisLengthInClipSpace = GetSegmentLengthClipSpace(makeVect(0.f, 0.f, 0.f), dirAxis * gContext.mScreenFactor, localCoordinates);
 
          float paraSurf = GetParallelogram(makeVect(0.f, 0.f, 0.f), dirPlaneX * gContext.mScreenFactor, dirPlaneY * gContext.mScreenFactor);
-         belowPlaneLimit = (paraSurf > 0.0025f);
-         belowAxisLimit = (axisLengthInClipSpace > 0.02f);
+         belowPlaneLimit = (paraSurf > gContext.mAxisLimit);
+         belowAxisLimit = (axisLengthInClipSpace > gContext.mPlaneLimit);
 
          // and store values
          gContext.mAxisFactor[axisIndex] = mulAxis;
@@ -1266,7 +1277,7 @@ namespace IMGUIZMO_NAMESPACE
 
          for (int i = 0; i < circleMul * halfCircleSegmentCount + 1; i++)
          {
-            float ng = angleStart + (float)circleMul * ZPI * ((float)i / (float)halfCircleSegmentCount);
+            float ng = angleStart + (float)circleMul * ZPI * ((float)i / (float)(circleMul * halfCircleSegmentCount));
             vec_t axisPos = makeVect(cosf(ng), sinf(ng), 0.f);
             vec_t pos = makeVect(axisPos[axis], axisPos[(axis + 1) % 3], axisPos[(axis + 2) % 3]) * gContext.mScreenFactor * rotationDisplayFactor;
             circlePos[i] = worldToPos(pos, gContext.mMVP);
@@ -1292,7 +1303,7 @@ namespace IMGUIZMO_NAMESPACE
          ImVec2 circlePos[halfCircleSegmentCount + 1];
 
          circlePos[0] = worldToPos(gContext.mModel.v.position, gContext.mViewProjection);
-         for (unsigned int i = 1; i < halfCircleSegmentCount; i++)
+         for (unsigned int i = 1; i < halfCircleSegmentCount + 1; i++)
          {
             float ng = gContext.mRotationAngle * ((float)(i - 1) / (float)(halfCircleSegmentCount - 1));
             matrix_t rotateVectorMatrix;
@@ -1302,8 +1313,8 @@ namespace IMGUIZMO_NAMESPACE
             pos *= gContext.mScreenFactor * rotationDisplayFactor;
             circlePos[i] = worldToPos(pos + gContext.mModel.v.position, gContext.mViewProjection);
          }
-         drawList->AddConvexPolyFilled(circlePos, halfCircleSegmentCount, GetColorU32(ROTATION_USING_FILL));
-         drawList->AddPolyline(circlePos, halfCircleSegmentCount, GetColorU32(ROTATION_USING_BORDER), true, gContext.mStyle.RotationLineThickness);
+         drawList->AddConvexPolyFilled(circlePos, halfCircleSegmentCount + 1, GetColorU32(ROTATION_USING_FILL));
+         drawList->AddPolyline(circlePos, halfCircleSegmentCount + 1, GetColorU32(ROTATION_USING_BORDER), true, gContext.mStyle.RotationLineThickness);
 
          ImVec2 destinationPosOnScreen = circlePos[1];
          char tmps[512];
@@ -2479,6 +2490,16 @@ namespace IMGUIZMO_NAMESPACE
    void AllowAxisFlip(bool value)
    {
      gContext.mAllowAxisFlip = value;
+   }
+
+   void SetAxisLimit(float value)
+   {
+     gContext.mAxisLimit=value;
+   }
+
+   void SetPlaneLimit(float value)
+   {
+     gContext.mPlaneLimit = value;
    }
 
    bool Manipulate(const float* view, const float* projection, OPERATION operation, MODE mode, float* matrix, float* deltaMatrix, const float* snap, const float* localBounds, const float* boundsSnap)

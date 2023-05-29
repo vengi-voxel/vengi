@@ -136,6 +136,9 @@ namespace IMGUIZMO_NAMESPACE
    // return true if mouse IsOver or if the gizmo is in moving state
    IMGUI_API bool IsUsing();
 
+   // return true if any gizmo is in moving state
+   IMGUI_API bool IsUsingAny();
+
    // enable/disable the gizmo. Stay in the state until next call to Enable.
    // gizmo is rendered with gray half transparent color when disabled
    IMGUI_API void Enable(bool enable);
@@ -223,6 +226,11 @@ namespace IMGUIZMO_NAMESPACE
    // When true (default), the guizmo axis flip for better visibility
    // When false, they always stay along the positive world/local axis
    IMGUI_API void AllowAxisFlip(bool value);
+
+   // Configure the limit where axis are hidden
+   IMGUI_API void SetAxisLimit(float value);
+   // Configure the limit where planes are hiden
+   IMGUI_API void SetPlaneLimit(float value);
 
    enum COLOR
    {
