@@ -214,8 +214,7 @@ int WIN_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void *
-WIN_GL_GetProcAddress(_THIS, const char *proc)
+void *WIN_GL_GetProcAddress(_THIS, const char *proc)
 {
     void *func;
 
@@ -689,8 +688,7 @@ int WIN_GL_SetupWindow(_THIS, SDL_Window *window)
     return retval;
 }
 
-SDL_bool
-WIN_GL_UseEGL(_THIS)
+SDL_bool WIN_GL_UseEGL(_THIS)
 {
     SDL_assert(_this->gl_data != NULL);
     SDL_assert(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
@@ -698,8 +696,7 @@ WIN_GL_UseEGL(_THIS)
     return SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, SDL_FALSE) || _this->gl_config.major_version == 1 || _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major || (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor); /* No WGL extension for OpenGL ES 1.x profiles. */
 }
 
-SDL_GLContext
-WIN_GL_CreateContext(_THIS, SDL_Window *window)
+SDL_GLContext WIN_GL_CreateContext(_THIS, SDL_Window *window)
 {
     HDC hdc = ((SDL_WindowData *)window->driverdata)->hdc;
     HGLRC context, share_context;
@@ -717,7 +714,7 @@ WIN_GL_CreateContext(_THIS, SDL_Window *window)
         _this->GL_GetSwapInterval = WIN_GLES_GetSwapInterval;
         _this->GL_SwapWindow = WIN_GLES_SwapWindow;
         _this->GL_DeleteContext = WIN_GLES_DeleteContext;
-        
+
         if (WIN_GLES_LoadLibrary(_this, NULL) != 0) {
             return NULL;
         }
@@ -783,20 +780,20 @@ WIN_GL_CreateContext(_THIS, SDL_Window *window)
                 attribs[iattr++] = _this->gl_config.flags;
             }
 
-            /* only set if wgl extension is available */
-            if (_this->gl_data->HAS_WGL_ARB_context_flush_control) {
+            /* only set if wgl extension is available and not the default setting */
+            if ((_this->gl_data->HAS_WGL_ARB_context_flush_control) && (_this->gl_config.release_behavior == 0)) {
                 attribs[iattr++] = WGL_CONTEXT_RELEASE_BEHAVIOR_ARB;
                 attribs[iattr++] = _this->gl_config.release_behavior ? WGL_CONTEXT_RELEASE_BEHAVIOR_FLUSH_ARB : WGL_CONTEXT_RELEASE_BEHAVIOR_NONE_ARB;
             }
 
-            /* only set if wgl extension is available */
-            if (_this->gl_data->HAS_WGL_ARB_create_context_robustness) {
+            /* only set if wgl extension is available and not the default setting */
+            if ((_this->gl_data->HAS_WGL_ARB_create_context_robustness) && (_this->gl_config.reset_notification != 0)) {
                 attribs[iattr++] = WGL_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB;
                 attribs[iattr++] = _this->gl_config.reset_notification ? WGL_LOSE_CONTEXT_ON_RESET_ARB : WGL_NO_RESET_NOTIFICATION_ARB;
             }
 
-            /* only set if wgl extension is available */
-            if (_this->gl_data->HAS_WGL_ARB_create_context_no_error) {
+            /* only set if wgl extension is available and not the default setting */
+            if ((_this->gl_data->HAS_WGL_ARB_create_context_no_error) && (_this->gl_config.no_error != 0)) {
                 attribs[iattr++] = WGL_CONTEXT_OPENGL_NO_ERROR_ARB;
                 attribs[iattr++] = _this->gl_config.no_error;
             }
@@ -894,8 +891,7 @@ void WIN_GL_DeleteContext(_THIS, SDL_GLContext context)
     _this->gl_data->wglDeleteContext((HGLRC)context);
 }
 
-SDL_bool
-WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window *fromWindow, SDL_Window *toWindow)
+SDL_bool WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window *fromWindow, SDL_Window *toWindow)
 {
     HDC hfromdc = ((SDL_WindowData *)fromWindow->driverdata)->hdc;
     HDC htodc = ((SDL_WindowData *)toWindow->driverdata)->hdc;

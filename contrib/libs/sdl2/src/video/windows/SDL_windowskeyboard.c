@@ -131,10 +131,8 @@ void WIN_UpdateKeymap(SDL_bool send_event)
         }
 
         /* If this key is one of the non-mappable keys, ignore it */
-        /* Not mapping numbers fixes the French layout, giving numeric keycodes for the number keys, which is the expected behavior */
-        if ((keymap[scancode] & SDLK_SCANCODE_MASK) ||
-            /*  scancode == SDL_SCANCODE_GRAVE || */ /* Uncomment this line to re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
-            (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0)) {
+        /* Uncomment the second part re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
+        if ((keymap[scancode] & SDLK_SCANCODE_MASK) /*|| scancode == SDL_SCANCODE_GRAVE*/) {
             continue;
         }
 
@@ -289,8 +287,7 @@ SDL_bool WIN_IsTextInputShown(_THIS)
     return SDL_FALSE;
 }
 
-SDL_bool
-IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
+SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
 {
     return SDL_FALSE;
 }
@@ -1001,8 +998,7 @@ static void IME_HideCandidateList(SDL_VideoData *videodata)
     IME_SendEditingEvent(videodata);
 }
 
-SDL_bool
-IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
+SDL_bool IME_HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
 {
     SDL_bool trap = SDL_FALSE;
     HIMC himc = 0;
