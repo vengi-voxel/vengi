@@ -128,19 +128,13 @@
 	#define UFBXI_FEATURE_XML 0
 #endif
 
-#if UFBXI_FEATURE_TESSELLATION
-	#define UFBXI_FEATURE_SPATIAL 1
-#else
-	#define UFBXI_FEATURE_SPATIAL 0
-#endif
-
 #if UFBXI_FEATURE_TRIANGULATION
 	#define UFBXI_FEATURE_KD 1
 #else
 	#define UFBXI_FEATURE_KD 0
 #endif
 
-#if !UFBXI_FEATURE_SUBDIVISION || !UFBXI_FEATURE_TESSELLATION || !UFBXI_FEATURE_GEOMETRY_CACHE || !UFBXI_FEATURE_SCENE_EVALUATION || !UFBXI_FEATURE_SKINNING_EVALUATION || !UFBXI_FEATURE_TRIANGULATION || !UFBXI_FEATURE_INDEX_GENERATION || !UFBXI_FEATURE_XML || !UFBXI_FEATURE_SPATIAL || !UFBXI_FEATURE_KD
+#if !UFBXI_FEATURE_SUBDIVISION || !UFBXI_FEATURE_TESSELLATION || !UFBXI_FEATURE_GEOMETRY_CACHE || !UFBXI_FEATURE_SCENE_EVALUATION || !UFBXI_FEATURE_SKINNING_EVALUATION || !UFBXI_FEATURE_TRIANGULATION || !UFBXI_FEATURE_INDEX_GENERATION || !UFBXI_FEATURE_XML || !UFBXI_FEATURE_KD
 	#define UFBXI_PARTIAL_FEATURES 1
 #endif
 
@@ -180,7 +174,6 @@
 	#define ufbx_copysign ufbxi_math_fn(copysign)
 	#define ufbx_fmin ufbxi_math_fn(fmin)
 	#define ufbx_fmax ufbxi_math_fn(fmax)
-	#define ufbx_frexp ufbxi_math_fn(frexp)
 #endif
 
 #if defined(UFBX_NO_MATH_H) && !defined(UFBX_NO_MATH_DECLARATIONS)
@@ -196,7 +189,6 @@
 	double ufbx_fmin(double a, double b);
 	double ufbx_fmax(double a, double b);
 	double ufbx_fabs(double x);
-	double ufbx_frexp(double x, int *eptr);
 	double ufbx_copysign(double x, double y);
 #endif
 
@@ -662,7 +654,7 @@ ufbx_static_assert(sizeof_f64, sizeof(double) == 8);
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 3, 1)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 5, 0)
 const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
@@ -5073,6 +5065,8 @@ static const ufbx_vec3 ufbxi_one_vec3 = { 1.0f, 1.0f, 1.0f };
 #define UFBXI_DPI (3.14159265358979323846)
 #define UFBXI_DEG_TO_RAD ((ufbx_real)(UFBXI_PI / 180.0))
 #define UFBXI_RAD_TO_DEG ((ufbx_real)(180.0 / UFBXI_PI))
+#define UFBXI_DEG_TO_RAD_DOUBLE (UFBXI_DPI / 180.0)
+#define UFBXI_RAD_TO_DEG_DOUBLE (180.0 / UFBXI_DPI)
 #define UFBXI_MM_TO_INCH ((ufbx_real)0.0393700787)
 
 ufbx_inline ufbx_vec3 ufbxi_add3(ufbx_vec3 a, ufbx_vec3 b) {
@@ -7164,7 +7158,7 @@ static bool ufbxi_is_array_node(ufbxi_context *uc, ufbxi_parse_state parent, con
 			// Ignore blend shape FullWeights as it's used in Blender for vertex groups
 			// which we don't currently handle. https://developer.blender.org/T90382
 			// TODO: Should we present this to users anyway somehow?
-			info->type = 'd';
+			info->type = 'r';
 			if (!uc->opts.disable_quirks && uc->exporter == UFBX_EXPORTER_BLENDER_BINARY) {
 				info->type = '-';
 			}
@@ -11964,7 +11958,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_blend_channel(ufbxi_context
 	ufbxi_check(channel);
 
 	ufbx_real_list list = { NULL, 0 };
-	ufbxi_value_array *full_weights = ufbxi_find_array(node, ufbxi_FullWeights, 'd');
+	ufbxi_value_array *full_weights = ufbxi_find_array(node, ufbxi_FullWeights, 'r');
 	if (full_weights) {
 		list.data = (ufbx_real*)full_weights->data;
 		list.count = full_weights->size;
@@ -18251,12 +18245,14 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_finalize_scene(ufbxi_context *uc
 			skin->weights.data = ufbxi_push_zero(&uc->result, ufbx_skin_weight, total_weights);
 			ufbxi_check(skin->weights.data);
 
+			bool retain_all = !uc->opts.clean_skin_weights;
+
 			// Count the number of weights per vertex
 			ufbxi_for_ptr_list(ufbx_skin_cluster, p_cluster, skin->clusters) {
 				ufbx_skin_cluster *cluster = *p_cluster;
 				for (size_t i = 0; i < cluster->num_weights; i++) {
 					uint32_t vertex = cluster->vertices.data[i];
-					if (vertex < num_vertices) {
+					if (vertex < num_vertices && (retain_all || cluster->weights.data[i] > 0.0f)) {
 						skin->vertices.data[vertex].num_weights++;
 					}
 				}
@@ -18293,7 +18289,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_finalize_scene(ufbxi_context *uc
 				ufbx_skin_cluster *cluster = *p_cluster;
 				for (size_t i = 0; i < cluster->num_weights; i++) {
 					uint32_t vertex = cluster->vertices.data[i];
-					if (vertex < num_vertices) {
+					if (vertex < num_vertices && (retain_all || cluster->weights.data[i] > 0.0f)) {
 						uint32_t local_index = skin->vertices.data[vertex].num_weights++;
 						uint32_t index = skin->vertices.data[vertex].weight_begin + local_index;
 						skin->weights.data[index].cluster_index = cluster_index;
@@ -22459,134 +22455,6 @@ ufbxi_nodiscard static ufbxi_noinline ufbx_scene *ufbxi_evaluate_scene(ufbxi_eva
 
 #endif
 
-// -- Spatial
-
-#if UFBXI_FEATURE_SPATIAL
-
-typedef struct {
-	int32_t x, y, z;
-} ufbxi_spatial_key;
-
-typedef struct {
-	ufbxi_spatial_key key;
-	ufbx_vec3 position;
-} ufbxi_spatial_bucket;
-
-static ufbxi_forceinline uint32_t ufbxi_hash_spatial_key(ufbxi_spatial_key key)
-{
-	uint32_t h = 0;
-	h = (h<<6) + (h>>2) + 0x9e3779b9 + ufbxi_hash32((uint32_t)key.x);
-	h = (h<<6) + (h>>2) + 0x9e3779b9 + ufbxi_hash32((uint32_t)key.y);
-	h = (h<<6) + (h>>2) + 0x9e3779b9 + ufbxi_hash32((uint32_t)key.z);
-	return h;
-}
-
-static int ufbxi_map_cmp_spatial_key(void *user, const void *va, const void *vb)
-{
-	(void)user;
-	ufbxi_spatial_key a = *(const ufbxi_spatial_key*)va, b = *(const ufbxi_spatial_key*)vb;
-	if (a.x != b.x) return a.x < b.x ? -1 : +1;
-	if (a.y != b.y) return a.y < b.y ? -1 : +1;
-	if (a.z != b.z) return a.z < b.z ? -1 : +1;
-	return 0;
-}
-
-static int32_t ufbxi_noinline ufbxi_spatial_coord(ufbx_real v)
-{
-	bool negative = false;
-	if (v < 0.0f) {
-		v = -v;
-		negative = true;
-	}
-	if (!(v < 1.27605887595e+38f)) {
-		return INT32_MIN;
-	}
-
-	const int32_t min_exponent = -20;
-	const int32_t mantissa_bits = 21;
-	const int32_t mantissa_max = 1 << mantissa_bits;
-
-	int exponent = 0;
-	double mantissa = ufbx_frexp(v, &exponent);
-	if (exponent < min_exponent) {
-		return 0;
-	} else {
-		int32_t biased = (int32_t)(exponent - min_exponent);
-		int32_t truncated_mantissa = (int32_t)(mantissa * (double)(mantissa_max*2)) - mantissa_max;
-		int32_t value = (biased << mantissa_bits) + truncated_mantissa;
-		return negative ? -value : value;
-	}
-}
-
-static uint32_t ufbxi_noinline ufbxi_insert_spatial_imp(ufbxi_map *map, int32_t kx, int32_t ky, int32_t kz)
-{
-	ufbxi_spatial_key key = { kx, ky, kz };
-	uint32_t hash = ufbxi_hash_spatial_key(key);
-	ufbxi_spatial_bucket *bucket = ufbxi_map_find(map, ufbxi_spatial_bucket, hash, &key);
-	if (bucket) {
-		return (uint32_t)(bucket - (ufbxi_spatial_bucket*)map->items);
-	} else {
-		return UINT32_MAX;
-	}
-}
-
-static uint32_t ufbxi_noinline ufbxi_insert_spatial(ufbxi_map *map, const ufbx_vec3 *pos)
-{
-	int32_t kx = ufbxi_spatial_coord(pos->x);
-	int32_t ky = ufbxi_spatial_coord(pos->y);
-	int32_t kz = ufbxi_spatial_coord(pos->z);
-
-	uint32_t ix = UINT32_MAX;
-	if (kx != INT32_MIN && ky != INT32_MIN && kz != INT32_MIN) {
-		const int32_t low_bits = 2, low_mask = (1 << low_bits) - 1;
-
-		kx += low_mask/2;
-		ky += low_mask/2;
-		kz += low_mask/2;
-
-		int32_t dx = (((kx+1) & low_mask) < 2) ? (((kx >> (low_bits-1)) & 1) ? +1 : -1) : 0;
-		int32_t dy = (((ky+1) & low_mask) < 2) ? (((ky >> (low_bits-1)) & 1) ? +1 : -1) : 0;
-		int32_t dz = (((kz+1) & low_mask) < 2) ? (((kz >> (low_bits-1)) & 1) ? +1 : -1) : 0;
-		int32_t dnum = (dx&1) + (dy&1) + (dz&1);
-
-		kx >>= low_bits;
-		ky >>= low_bits;
-		kz >>= low_bits;
-
-		ix = ufbxi_insert_spatial_imp(map, kx, ky, kz);
-
-		if (dnum >= 1 && ix == UINT32_MAX) {
-			if (dx) ix = ufbxi_insert_spatial_imp(map, kx+dx, ky, kz);
-			if (dy) ix = ufbxi_insert_spatial_imp(map, kx, ky+dy, kz);
-			if (dz) ix = ufbxi_insert_spatial_imp(map, kx, ky, kz+dz);
-
-			if (dnum >= 2 && ix == UINT32_MAX) {
-				if (dx && dy) ix = ufbxi_insert_spatial_imp(map, kx+dx, ky+dy, kz);
-				if (dy && dz) ix = ufbxi_insert_spatial_imp(map, kx, ky+dy, kz+dz);
-				if (dx && dz) ix = ufbxi_insert_spatial_imp(map, kx+dx, ky, kz+dz);
-
-				if (dnum >= 3 && ix == UINT32_MAX) {
-					ix = ufbxi_insert_spatial_imp(map, kx+dx, ky+dy, kz+dz);
-				}
-			}
-		}
-	}
-
-	if (ix == UINT32_MAX) {
-		ix = map->size;
-		ufbxi_spatial_key key = { kx, ky, kz };
-		uint32_t hash = ufbxi_hash_spatial_key(key);
-		ufbxi_spatial_bucket *bucket = ufbxi_map_insert(map, ufbxi_spatial_bucket, hash, &key);
-		ufbxi_check_return_err(map->ator->error, bucket, UINT32_MAX);
-		bucket->key = key;
-		bucket->position = *pos;
-	}
-
-	return ix;
-}
-
-#endif
-
 // -- NURBS
 
 static ufbxi_forceinline ufbx_real ufbxi_nurbs_weight(const ufbx_real_list *knots, size_t knot, size_t degree, ufbx_real u)
@@ -22806,33 +22674,38 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_tessellate_nurbs_surface_imp(ufb
 		ufbxi_check_err(&tc->error, !ufbxi_does_overflow(over_uv, over_u, over_v));
 	}
 
-	ufbxi_map_init(&tc->position_map, &tc->ator_tmp, &ufbxi_map_cmp_spatial_key, NULL);
-
 	size_t faces_u = (spans_u - 1) * sub_u;
 	size_t faces_v = (spans_v - 1) * sub_v;
 
-	size_t indices_u = spans_u + (spans_u - 1) * sub_u;
-	size_t indices_v = spans_v + (spans_v - 1) * sub_v;
+	size_t indices_u = spans_u + (spans_u - 1) * (sub_u - 1);
+	size_t indices_v = spans_v + (spans_v - 1) * (sub_v - 1);
 
 	size_t num_faces = faces_u * faces_v;
 	size_t num_indices = indices_u * indices_v;
 	ufbxi_check_err(&tc->error, num_indices <= INT32_MAX);
 
 	uint32_t *position_ix = ufbxi_push(&tc->tmp, uint32_t, num_indices);
+	ufbx_vec3 *positions = ufbxi_push(&tc->result, ufbx_vec3, num_indices + 1);
+	ufbx_vec3 *normals = ufbxi_push(&tc->result, ufbx_vec3, num_indices + 1);
 	ufbx_vec2 *uvs = ufbxi_push(&tc->result, ufbx_vec2, num_indices + 1);
 	ufbx_vec3 *tangents = ufbxi_push(&tc->result, ufbx_vec3, num_indices + 1);
 	ufbx_vec3 *bitangents = ufbxi_push(&tc->result, ufbx_vec3, num_indices + 1);
 	ufbxi_check_err(&tc->error, position_ix && uvs && tangents && bitangents);
 
+	*positions++ = ufbx_zero_vec3;
+	*normals++ = ufbx_zero_vec3;
 	*uvs++ = ufbx_zero_vec2;
 	*tangents++ = ufbx_zero_vec3;
 	*bitangents++ = ufbx_zero_vec3;
+
+	uint32_t num_positions = 0;
 
 	for (size_t span_v = 0; span_v < spans_v; span_v++) {
 		size_t splits_v = span_v + 1 == spans_v ? 1 : sub_v;
 
 		for (size_t split_v = 0; split_v < splits_v; split_v++) {
 			size_t ix_v = span_v * sub_v + split_v;
+			ufbx_assert(ix_v < indices_v);
 
 			ufbx_real v = surface->basis_v.spans.data[span_v];
 			if (split_v > 0) {
@@ -22848,6 +22721,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_tessellate_nurbs_surface_imp(ufb
 				size_t splits_u = span_u + 1 == spans_u ? 1 : sub_u;
 				for (size_t split_u = 0; split_u < splits_u; split_u++) {
 					size_t ix_u = span_u * sub_u + split_u;
+					ufbx_assert(ix_u < indices_u);
 
 					ufbx_real u = surface->basis_u.spans.data[span_u];
 					if (split_u > 0) {
@@ -22862,14 +22736,55 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_tessellate_nurbs_surface_imp(ufb
 					ufbx_surface_point point = ufbx_evaluate_nurbs_surface(surface, u, v);
 					ufbx_vec3 pos = point.position;
 
-					uint32_t pos_ix = ufbxi_insert_spatial(&tc->position_map, &pos);
-					ufbxi_check_err(&tc->error, pos_ix != UINT32_MAX);
-
 					ufbx_vec3 tangent_u = ufbxi_slow_normalize3(&point.derivative_u);
 					ufbx_vec3 tangent_v = ufbxi_slow_normalize3(&point.derivative_v);
 
+					// Check if there's any wrapped positions that we could match
+					size_t neighbors[5];
+					size_t num_neighbors = 0;
+
+					if ((span_v == 0 && (span_u > 0 || split_u > 0)) || (span_u == 0 && (span_v > 0 || split_v > 0))) {
+						// Top/left
+						neighbors[num_neighbors++] = 0;
+					}
+					if (span_v + 1 == spans_v) {
+						// Bottom
+						neighbors[num_neighbors++] = ix_u;
+						if (span_u > 0 || split_u > 0) {
+							neighbors[num_neighbors++] = ix_v * indices_u;
+						}
+					}
+					if (span_u + 1 == spans_u) {
+						// Right
+						neighbors[num_neighbors++] = ix_v * indices_u;
+						if (span_v > 0 || split_v > 0) {
+							neighbors[num_neighbors++] = indices_u - 1;
+						}
+					}
+
 					size_t ix = ix_v * indices_u + ix_u;
-					position_ix[ix] = (uint32_t)pos_ix;
+
+					uint32_t pos_ix = num_positions;
+					for (size_t i = 0; i < num_neighbors; i++) {
+						size_t nb_ix = neighbors[i];
+						ufbx_assert(nb_ix < ix);
+						uint32_t nb_pos_ix = position_ix[nb_ix];
+						ufbx_vec3 nb_pos = positions[nb_pos_ix];
+						ufbx_real dx = nb_pos.x - pos.x;
+						ufbx_real dy = nb_pos.y - pos.y;
+						ufbx_real dz = nb_pos.z - pos.z;
+						ufbx_real delta = dx*dx + dy*dy + dz*dz;
+						if (delta < 0.0000001f) { // TODO: Configurable / something more rigorous
+							pos_ix = nb_pos_ix;
+							break;
+						}
+					}
+
+					position_ix[ix] = pos_ix;
+					if (pos_ix == num_positions) {
+						positions[pos_ix] = pos;
+						num_positions = pos_ix + 1;
+					}
 					uvs[ix].x = original_u;
 					uvs[ix].y = original_v;
 					tangents[ix] = tangent_u;
@@ -22923,18 +22838,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_tessellate_nurbs_surface_imp(ufb
 		}
 	}
 
-	size_t num_positions = tc->position_map.size;
-	ufbx_vec3 *positions = ufbxi_push(&tc->result, ufbx_vec3, num_positions + 1);
-	ufbx_vec3 *normals = ufbxi_push(&tc->result, ufbx_vec3, num_positions + 1);
 	ufbxi_check_err(&tc->error, positions && normals);
-
-	*positions++ = ufbx_zero_vec3;
-	*normals++ = ufbx_zero_vec3;
-
-	ufbxi_spatial_bucket *buckets = (ufbxi_spatial_bucket*)tc->position_map.items;
-	for (size_t i = 0; i < num_positions; i++) {
-		positions[i] = buckets[i].position;
-	}
 
 	mesh->element.name.data = ufbxi_empty_char;
 	mesh->element.type = UFBX_ELEMENT_MESH;
@@ -26094,12 +25998,12 @@ ufbx_abi ufbxi_noinline ufbx_vec3 ufbx_quat_rotate_vec3(ufbx_quat q, ufbx_vec3 v
 
 ufbx_abi ufbxi_noinline ufbx_quat ufbx_euler_to_quat(ufbx_vec3 v, ufbx_rotation_order order)
 {
-	v.x *= UFBXI_DEG_TO_RAD * 0.5;
-	v.y *= UFBXI_DEG_TO_RAD * 0.5;
-	v.z *= UFBXI_DEG_TO_RAD * 0.5;
-	double cx = ufbx_cos((double)v.x), sx = ufbx_sin((double)v.x);
-	double cy = ufbx_cos((double)v.y), sy = ufbx_sin((double)v.y);
-	double cz = ufbx_cos((double)v.z), sz = ufbx_sin((double)v.z);
+	double vx = v.x * (UFBXI_DEG_TO_RAD_DOUBLE * 0.5);
+	double vy = v.y * (UFBXI_DEG_TO_RAD_DOUBLE * 0.5);
+	double vz = v.z * (UFBXI_DEG_TO_RAD_DOUBLE * 0.5);
+	double cx = ufbx_cos(vx), sx = ufbx_sin(vx);
+	double cy = ufbx_cos(vy), sy = ufbx_sin(vy);
+	double cz = ufbx_cos(vz), sz = ufbx_sin(vz);
 	ufbx_quat q;
 
 	// Generated by `misc/gen_rotation_order.py`
@@ -26150,9 +26054,14 @@ ufbx_abi ufbxi_noinline ufbx_quat ufbx_euler_to_quat(ufbx_vec3 v, ufbx_rotation_
 
 ufbx_abi ufbxi_noinline ufbx_vec3 ufbx_quat_to_euler(ufbx_quat q, ufbx_rotation_order order)
 {
-	const double eps = 0.999999999;
+	// TODO: Derive these rigorously
+	#if defined(UFBX_REAL_IS_FLOAT)
+		const double eps = 0.9999999;
+	#else
+		const double eps = 0.999999999;
+	#endif
 
-	ufbx_vec3 v;
+	double vx, vy, vz;
 	double t;
 
 	double qx = q.x, qy = q.y, qz = q.z, qw = q.w;
@@ -26162,83 +26071,85 @@ ufbx_abi ufbxi_noinline ufbx_vec3 ufbx_quat_to_euler(ufbx_quat q, ufbx_rotation_
 	case UFBX_ROTATION_ORDER_XYZ:
 		t = 2.0f*(qw*qy - qx*qz);
 		if (ufbx_fabs(t) < eps) {
-			v.y = (ufbx_real)ufbx_asin(t);
-			v.z = (ufbx_real)ufbx_atan2(2.0f*(qw*qz + qx*qy), 2.0f*(qw*qw + qx*qx) - 1.0f);
-			v.x = (ufbx_real)-ufbx_atan2(-2.0f*(qw*qx + qy*qz), 2.0f*(qw*qw + qz*qz) - 1.0f);
+			vy = ufbx_asin(t);
+			vz = ufbx_atan2(2.0f*(qw*qz + qx*qy), 2.0f*(qw*qw + qx*qx) - 1.0f);
+			vx = -ufbx_atan2(-2.0f*(qw*qx + qy*qz), 2.0f*(qw*qw + qz*qz) - 1.0f);
 		} else {
-			v.y = (ufbx_real)ufbx_copysign(UFBXI_DPI*0.5, t);
-			v.z = (ufbx_real)(ufbx_atan2(-2.0f*t*(qw*qx - qy*qz), t*(2.0f*qw*qy + 2.0f*qx*qz)));
-			v.x = 0.0f;
+			vy = ufbx_copysign(UFBXI_DPI*0.5, t);
+			vz = ufbx_atan2(-2.0f*t*(qw*qx - qy*qz), t*(2.0f*qw*qy + 2.0f*qx*qz));
+			vx = 0.0f;
 		}
 		break;
 	case UFBX_ROTATION_ORDER_XZY:
 		t = 2.0f*(qw*qz + qx*qy);
 		if (ufbx_fabs(t) < eps) {
-			v.z = (ufbx_real)ufbx_asin(t);
-			v.y = (ufbx_real)ufbx_atan2(2.0f*(qw*qy - qx*qz), 2.0f*(qw*qw + qx*qx) - 1.0f);
-			v.x = (ufbx_real)-ufbx_atan2(-2.0f*(qw*qx - qy*qz), 2.0f*(qw*qw + qy*qy) - 1.0f);
+			vz = ufbx_asin(t);
+			vy = ufbx_atan2(2.0f*(qw*qy - qx*qz), 2.0f*(qw*qw + qx*qx) - 1.0f);
+			vx = -ufbx_atan2(-2.0f*(qw*qx - qy*qz), 2.0f*(qw*qw + qy*qy) - 1.0f);
 		} else {
-			v.z = (ufbx_real)ufbx_copysign(UFBXI_DPI*0.5, t);
-			v.y = (ufbx_real)(ufbx_atan2(2.0f*t*(qw*qx + qy*qz), -t*(2.0f*qx*qy - 2.0f*qw*qz)));
-			v.x = 0.0f;
+			vz = ufbx_copysign(UFBXI_DPI*0.5, t);
+			vy = ufbx_atan2(2.0f*t*(qw*qx + qy*qz), -t*(2.0f*qx*qy - 2.0f*qw*qz));
+			vx = 0.0f;
 		}
 		break;
 	case UFBX_ROTATION_ORDER_YZX:
 		t = 2.0f*(qw*qz - qx*qy);
 		if (ufbx_fabs(t) < eps) {
-			v.z = (ufbx_real)ufbx_asin(t);
-			v.x = (ufbx_real)ufbx_atan2(2.0f*(qw*qx + qy*qz), 2.0f*(qw*qw + qy*qy) - 1.0f);
-			v.y = (ufbx_real)-ufbx_atan2(-2.0f*(qw*qy + qx*qz), 2.0f*(qw*qw + qx*qx) - 1.0f);
+			vz = ufbx_asin(t);
+			vx = ufbx_atan2(2.0f*(qw*qx + qy*qz), 2.0f*(qw*qw + qy*qy) - 1.0f);
+			vy = -ufbx_atan2(-2.0f*(qw*qy + qx*qz), 2.0f*(qw*qw + qx*qx) - 1.0f);
 		} else {
-			v.z = (ufbx_real)ufbx_copysign(UFBXI_DPI*0.5, t);
-			v.x = (ufbx_real)(ufbx_atan2(-2.0f*t*(qw*qy - qx*qz), t*(2.0f*qw*qz + 2.0f*qx*qy)));
-			v.y = 0.0f;
+			vz = ufbx_copysign(UFBXI_DPI*0.5, t);
+			vx = ufbx_atan2(-2.0f*t*(qw*qy - qx*qz), t*(2.0f*qw*qz + 2.0f*qx*qy));
+			vy = 0.0f;
 		}
 		break;
 	case UFBX_ROTATION_ORDER_YXZ:
 		t = 2.0f*(qw*qx + qy*qz);
 		if (ufbx_fabs(t) < eps) {
-			v.x = (ufbx_real)ufbx_asin(t);
-			v.z = (ufbx_real)ufbx_atan2(2.0f*(qw*qz - qx*qy), 2.0f*(qw*qw + qy*qy) - 1.0f);
-			v.y = (ufbx_real)-ufbx_atan2(-2.0f*(qw*qy - qx*qz), 2.0f*(qw*qw + qz*qz) - 1.0f);
+			vx = ufbx_asin(t);
+			vz = ufbx_atan2(2.0f*(qw*qz - qx*qy), 2.0f*(qw*qw + qy*qy) - 1.0f);
+			vy = -ufbx_atan2(-2.0f*(qw*qy - qx*qz), 2.0f*(qw*qw + qz*qz) - 1.0f);
 		} else {
-			v.x = (ufbx_real)ufbx_copysign(UFBXI_DPI*0.5, t);
-			v.z = (ufbx_real)(ufbx_atan2(2.0f*t*(qw*qy + qx*qz), -t*(2.0f*qy*qz - 2.0f*qw*qx)));
-			v.y = 0.0f;
+			vx = ufbx_copysign(UFBXI_DPI*0.5, t);
+			vz = ufbx_atan2(2.0f*t*(qw*qy + qx*qz), -t*(2.0f*qy*qz - 2.0f*qw*qx));
+			vy = 0.0f;
 		}
 		break;
 	case UFBX_ROTATION_ORDER_ZXY:
 		t = 2.0f*(qw*qx - qy*qz);
 		if (ufbx_fabs(t) < eps) {
-			v.x = (ufbx_real)ufbx_asin(t);
-			v.y = (ufbx_real)ufbx_atan2(2.0f*(qw*qy + qx*qz), 2.0f*(qw*qw + qz*qz) - 1.0f);
-			v.z = (ufbx_real)-ufbx_atan2(-2.0f*(qw*qz + qx*qy), 2.0f*(qw*qw + qy*qy) - 1.0f);
+			vx = ufbx_asin(t);
+			vy = ufbx_atan2(2.0f*(qw*qy + qx*qz), 2.0f*(qw*qw + qz*qz) - 1.0f);
+			vz = -ufbx_atan2(-2.0f*(qw*qz + qx*qy), 2.0f*(qw*qw + qy*qy) - 1.0f);
 		} else {
-			v.x = (ufbx_real)ufbx_copysign(UFBXI_DPI*0.5, t);
-			v.y = (ufbx_real)(ufbx_atan2(-2.0f*t*(qw*qz - qx*qy), t*(2.0f*qw*qx + 2.0f*qy*qz)));
-			v.z = 0.0f;
+			vx = ufbx_copysign(UFBXI_DPI*0.5, t);
+			vy = ufbx_atan2(-2.0f*t*(qw*qz - qx*qy), t*(2.0f*qw*qx + 2.0f*qy*qz));
+			vz = 0.0f;
 		}
 		break;
 	case UFBX_ROTATION_ORDER_ZYX:
 		t = 2.0f*(qw*qy + qx*qz);
 		if (ufbx_fabs(t) < eps) {
-			v.y = (ufbx_real)ufbx_asin(t);
-			v.x = (ufbx_real)ufbx_atan2(2.0f*(qw*qx - qy*qz), 2.0f*(qw*qw + qz*qz) - 1.0f);
-			v.z = (ufbx_real)-ufbx_atan2(-2.0f*(qw*qz - qx*qy), 2.0f*(qw*qw + qx*qx) - 1.0f);
+			vy = ufbx_asin(t);
+			vx = ufbx_atan2(2.0f*(qw*qx - qy*qz), 2.0f*(qw*qw + qz*qz) - 1.0f);
+			vz = -ufbx_atan2(-2.0f*(qw*qz - qx*qy), 2.0f*(qw*qw + qx*qx) - 1.0f);
 		} else {
-			v.y = (ufbx_real)ufbx_copysign(UFBXI_DPI*0.5, t);
-			v.x = (ufbx_real)(ufbx_atan2(2.0f*t*(qw*qz + qx*qy), -t*(2.0f*qx*qz - 2.0f*qw*qy)));
-			v.z = 0.0f;
+			vy = ufbx_copysign(UFBXI_DPI*0.5, t);
+			vx = ufbx_atan2(2.0f*t*(qw*qz + qx*qy), -t*(2.0f*qx*qz - 2.0f*qw*qy));
+			vz = 0.0f;
 		}
 		break;
 	default:
-		v.x = v.y = v.z = 0.0;
+		vx = vy = vz = 0.0;
 		break;
 	}
 
-	v.x *= UFBXI_RAD_TO_DEG;
-	v.y *= UFBXI_RAD_TO_DEG;
-	v.z *= UFBXI_RAD_TO_DEG;
+	vx *= UFBXI_RAD_TO_DEG_DOUBLE;
+	vy *= UFBXI_RAD_TO_DEG_DOUBLE;
+	vz *= UFBXI_RAD_TO_DEG_DOUBLE;
+
+	ufbx_vec3 v = { (ufbx_real)vx, (ufbx_real)vy, (ufbx_real)vz };
 	return v;
 }
 
