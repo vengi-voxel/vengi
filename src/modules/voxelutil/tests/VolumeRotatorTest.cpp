@@ -27,20 +27,20 @@ namespace voxelutil {
 
 class VolumeRotatorTest : public app::AbstractTest {
 protected:
-	void rotateAxisAndValidate(math::Axis axis, const glm::ivec3 positions[3]) {
-		const voxel::Region region(-1, 2);
+	// {0, 0, 0}, {0, 1, 0}, {-1, 0, 0}, {1, 0, 0}
+	void rotateAxisAndValidate(math::Axis axis, const glm::ivec3 positions[4]) {
+		const voxel::Region region(-1, 1);
 		voxel::RawVolume smallVolume(region);
 		EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_TRUE(smallVolume.setVoxel(-1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		EXPECT_TRUE(smallVolume.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateAxis(&smallVolume, axis));
 		ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 		ASSERT_EQ(rotated->region(), region) << "Rotating around an axis should not modify the region";
-		for (int i = 0; i < 3; ++i) {
-			ASSERT_TRUE(voxel::isBlocked(rotated->voxel(positions[i]).getMaterial()))
-				<< "Expected to find a voxel at position " << positions[i] << "\n"
-				<< smallVolume << "\nversus\n"
+		for (int i = 0; i < 4; ++i) {
+			EXPECT_TRUE(voxel::isBlocked(rotated->voxel(positions[i]).getMaterial()))
+				<< "Expected to find a voxel at position " << positions[i] << "(" << i << ")\n"
 				<< *rotated;
 		}
 		glm::ivec3 remaining(0);
@@ -71,10 +71,7 @@ protected:
 		ASSERT_TRUE(voxel::isBlocked(unRotated->voxel(0, 1, 0).getMaterial())) << "Expected to find a voxel\n"
 																			   << smallVolume << "\nversus\n"
 																			   << *unRotated;
-		ASSERT_TRUE(voxel::isBlocked(unRotated->voxel(1, 0, 0).getMaterial())) << "Expected to find a voxel\n"
-																			   << smallVolume << "\nversus\n"
-																			   << *unRotated;
-		ASSERT_TRUE(voxel::isBlocked(unRotated->voxel(2, 2, 2).getMaterial())) << "Expected to find a voxel\n"
+		ASSERT_TRUE(voxel::isBlocked(unRotated->voxel(-1, 0, 0).getMaterial())) << "Expected to find a voxel\n"
 																			   << smallVolume << "\nversus\n"
 																			   << *unRotated;
 	}
@@ -82,19 +79,19 @@ protected:
 
 TEST_F(VolumeRotatorTest, testRotateAxisX) {
 	const math::Axis axis = math::Axis::X;
-	const glm::ivec3 positions[]{{1, 0, 2}, {0, 0, 2}, {0, 0, 1}};
+	const glm::ivec3 positions[]{{0, 0, 0}, {0, 0, -1}, {-1, 0, 0}, {1, 0, 0}};
 	rotateAxisAndValidate(axis, positions);
 }
 
 TEST_F(VolumeRotatorTest, testRotateAxisY) {
 	const math::Axis axis = math::Axis::Y;
-	const glm::ivec3 positions[]{{2, 0, 0}, {2, 0, 1}, {2, 1, 0}};
+	const glm::ivec3 positions[]{{0, 0, 0}, {0, 1, 0}, {0, 0, 1}, {0, 0, -1}};
 	rotateAxisAndValidate(axis, positions);
 }
 
 TEST_F(VolumeRotatorTest, testRotateAxisZ) {
 	const math::Axis axis = math::Axis::Z;
-	const glm::ivec3 positions[]{{1, 2, 0}, {0, 2, 0}, {0, 1, 0}};
+	const glm::ivec3 positions[]{{0, 0, 0}, {0, 1, 0}, {0, -1, 0}, {1, 0, 0}};
 	rotateAxisAndValidate(axis, positions);
 }
 

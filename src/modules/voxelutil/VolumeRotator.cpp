@@ -73,7 +73,7 @@ voxel::RawVolume *rotateAxis(const voxel::RawVolume *srcVolume, math::Axis axis)
 		srcSampler.setPosition(srcRegion.getLowerCorner());
 		for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
 			voxel::RawVolume::Sampler srcSampler2 = srcSampler;
-			for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
+			for (int32_t y = 0; y < srcRegion.getHeightInVoxels(); ++y) {
 				voxel::RawVolume::Sampler srcSampler3 = srcSampler2;
 				for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
 					const voxel::Voxel voxel = srcSampler3.voxel();
@@ -93,7 +93,7 @@ voxel::RawVolume *rotateAxis(const voxel::RawVolume *srcVolume, math::Axis axis)
 
 		voxel::RawVolume::Sampler srcSampler(srcVolume);
 		srcSampler.setPosition(srcRegion.getLowerCorner());
-		for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
+		for (int32_t z = 0; z < srcRegion.getDepthInVoxels(); ++z) {
 			voxel::RawVolume::Sampler srcSampler2 = srcSampler;
 			for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
 				voxel::RawVolume::Sampler srcSampler3 = srcSampler2;
@@ -119,7 +119,7 @@ voxel::RawVolume *rotateAxis(const voxel::RawVolume *srcVolume, math::Axis axis)
 		voxel::RawVolume::Sampler srcSampler2 = srcSampler;
 		for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
 			voxel::RawVolume::Sampler srcSampler3 = srcSampler2;
-			for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
+			for (int32_t x = 0; x < srcRegion.getWidthInVoxels(); ++x) {
 				const voxel::Voxel voxel = srcSampler3.voxel();
 				if (!voxel::isAir(voxel.getMaterial())) {
 					destVolume->setVoxel(y, srcMaxs.x - x, z, voxel);
