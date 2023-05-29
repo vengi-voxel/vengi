@@ -9,12 +9,12 @@
 #include "math/AABB.h"
 #include "math/Axis.h"
 #include "math/Math.h"
+#include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
-#include "voxelutil/VoxelUtil.h"
 #include "voxel/Region.h"
-#include "voxel/Palette.h"
 #include "voxel/Voxel.h"
+#include "voxelutil/VoxelUtil.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
 
@@ -26,8 +26,8 @@ namespace voxelutil {
  * @return A new RawVolume. It's the caller's responsibility to free this
  * memory.
  */
-voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::ivec3 &angles,
-							   const glm::vec3 &normalizedPivot) {
+voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const voxel::Palette &palette,
+							   const glm::ivec3 &angles, const glm::vec3 &normalizedPivot) {
 	// TODO: implement sampling http://www.leptonica.org/rotation.html
 	const float pitch = glm::radians((float)angles.x);
 	const float yaw = glm::radians((float)angles.y);
@@ -49,9 +49,10 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::ive
 			for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
 				const voxel::Voxel voxel = srcSampler3.voxel();
 				if (!voxel::isAir(voxel.getMaterial())) {
-					const glm::ivec3 srcPos(x, y, z);
-					const glm::ivec3 &destPos = math::transform(mat, srcPos, pivot);
-					destVolumeWrapper.setVoxel(destPos, voxel);
+					const glm::vec3 srcPos(x, y, z);
+					const glm::vec3 &destPos = math::transform(mat, srcPos, pivot);
+					const glm::ivec3 &destPosFloor = glm::floor(destPos);
+					destVolumeWrapper.setVoxel(destPosFloor, voxel);
 				}
 				srcSampler3.movePositiveX();
 			}

@@ -722,7 +722,7 @@ void VoxConvert::rotate(const core::String& axisStr, scenegraph::SceneGraph& sce
 	for (scenegraph::SceneGraphNode &node : sceneGraph) {
 		glm::vec3 rotVec{0.0f};
 		rotVec[math::getIndexForAxis(axis)] = degree;
-		node.setVolume(voxelutil::rotateVolume(node.volume(), rotVec, glm::vec3(0.5f)), true);
+		node.setVolume(voxelutil::rotateVolume(node.volume(), node.palette(), rotVec, glm::vec3(0.5f)), true);
 	}
 }
 
