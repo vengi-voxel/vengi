@@ -170,7 +170,7 @@ protected:
 	 * @param[in] angleY in degree
 	 * @param[in] angleZ in degree
 	 */
-	void rotate(int angleX, int angleY, int angleZ);
+	void rotate(math::Axis axis);
 
 	/**
 	 * @brief Move the voxels inside the volume regions

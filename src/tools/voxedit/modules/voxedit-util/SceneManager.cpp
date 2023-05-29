@@ -1297,8 +1297,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	return true;
 }
 
-void SceneManager::rotate(int angleX, int angleY, int angleZ) {
-	const glm::vec3 angle(angleX, angleY, angleZ);
+void SceneManager::rotate(math::Axis axis) {
 	_sceneGraph.foreachGroup([&](int nodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 		if (node == nullptr) {
@@ -1308,8 +1307,7 @@ void SceneManager::rotate(int angleX, int angleY, int angleZ) {
 		if (v == nullptr) {
 			return;
 		}
-		const glm::vec3 &pivot = node->pivot();
-		voxel::RawVolume *newVolume = voxelutil::rotateVolume(v, angle, pivot);
+		voxel::RawVolume *newVolume = voxelutil::rotateAxis(v, axis);
 		if (newVolume == nullptr) {
 			return;
 		}
@@ -1771,14 +1769,12 @@ void SceneManager::construct() {
 	}).setHelp("Redo your last step");
 
 	command::Command::registerCommand("rotate", [&] (const command::CmdArgs& args) {
-		if (args.size() < 3) {
-			Log::info("Usage: rotate <x> <y> <z>");
+		if (args.size() < 1) {
+			Log::info("Usage: rotate <x|y|z>");
 			return;
 		}
-		const int x = core::string::toInt(args[0]);
-		const int y = core::string::toInt(args[1]);
-		const int z = core::string::toInt(args[2]);
-		rotate(x, y, z);
+		const math::Axis axis = math::toAxis(args[0]);
+		rotate(axis);
 	}).setHelp("Rotate active nodes by the given angles (in degree)");
 
 	command::Command::registerCommand("layermerge", [&] (const command::CmdArgs& args) {

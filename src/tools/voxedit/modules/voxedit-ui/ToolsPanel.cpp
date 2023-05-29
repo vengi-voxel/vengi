@@ -33,15 +33,15 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 
 	const float buttonWidth = (float)imguiApp()->fontSize() * 4;
 	if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-		veui::AxisButton(math::Axis::X, "X##rotate", "rotate 90 0 0", ICON_FK_REPEAT, nullptr, buttonWidth,
+		veui::AxisButton(math::Axis::X, "X##rotate", "rotate x", ICON_FK_REPEAT, nullptr, buttonWidth,
 							&listener);
 		ImGui::TooltipText("Rotate by 90 degree on the x axis");
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Y, "Y##rotate", "rotate 0 90 0", ICON_FK_REPEAT, nullptr, buttonWidth,
+		veui::AxisButton(math::Axis::Y, "Y##rotate", "rotate y", ICON_FK_REPEAT, nullptr, buttonWidth,
 							&listener);
 		ImGui::TooltipText("Rotate by 90 degree on the y axis");
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Z, "Z##rotate", "rotate 0 0 90", ICON_FK_REPEAT, nullptr, buttonWidth,
+		veui::AxisButton(math::Axis::Z, "Z##rotate", "rotate z", ICON_FK_REPEAT, nullptr, buttonWidth,
 							&listener);
 		ImGui::TooltipText("Rotate by 90 degree on the z axis");
 	}

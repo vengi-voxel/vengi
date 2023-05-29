@@ -28,11 +28,12 @@ namespace voxelutil {
 class VolumeRotatorTest : public app::AbstractTest {
 protected:
 	void rotateAxisAndValidate(math::Axis axis, const glm::ivec3 positions[3]) {
-		const voxel::Region region(0, 2);
+		const voxel::Region region(-1, 2);
 		voxel::RawVolume smallVolume(region);
 		EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		EXPECT_TRUE(smallVolume.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateAxis(&smallVolume, axis));
 		ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 		ASSERT_EQ(rotated->region(), region) << "Rotating around an axis should not modify the region";
@@ -42,10 +43,27 @@ protected:
 				<< smallVolume << "\nversus\n"
 				<< *rotated;
 		}
-		glm::ivec3 angles(0);
-		angles[math::getIndexForAxis(axis)] = 270;
-		core::ScopedPtr<voxel::RawVolume> unRotated(voxelutil::rotateVolume(rotated, angles, glm::vec3(0.0f)));
-		ASSERT_NE(nullptr, unRotated);
+		glm::ivec3 remaining(0);
+		remaining[math::getIndexForAxis(axis)] = 270;
+
+		core::ScopedPtr<voxel::RawVolume> unRotated;
+		while (remaining.x >= 90 || remaining.y >= 90 || remaining.z >= 90) {
+			const voxel::RawVolume *input = unRotated == nullptr ? rotated : unRotated;
+			math::Axis axis;
+			if (remaining.x >= 90) {
+				axis = math::Axis::X;
+				remaining.x -= 90;
+			} else if (remaining.y >= 90) {
+				axis = math::Axis::Y;
+				remaining.y -= 90;
+			} else {
+				core_assert(remaining.z >= 90);
+				axis = math::Axis::Z;
+				remaining.z -= 90;
+			}
+
+			unRotated = rotateAxis(input, axis);
+		}
 		ASSERT_EQ(unRotated->region(), region);
 		ASSERT_TRUE(voxel::isBlocked(unRotated->voxel(0, 0, 0).getMaterial())) << "Expected to find a voxel\n"
 																			   << smallVolume << "\nversus\n"
@@ -54,6 +72,9 @@ protected:
 																			   << smallVolume << "\nversus\n"
 																			   << *unRotated;
 		ASSERT_TRUE(voxel::isBlocked(unRotated->voxel(1, 0, 0).getMaterial())) << "Expected to find a voxel\n"
+																			   << smallVolume << "\nversus\n"
+																			   << *unRotated;
+		ASSERT_TRUE(voxel::isBlocked(unRotated->voxel(2, 2, 2).getMaterial())) << "Expected to find a voxel\n"
 																			   << smallVolume << "\nversus\n"
 																			   << *unRotated;
 	}

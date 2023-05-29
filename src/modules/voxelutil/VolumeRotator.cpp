@@ -28,41 +28,6 @@ namespace voxelutil {
  */
 voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::ivec3 &angles,
 							   const glm::vec3 &normalizedPivot) {
-	if (angles.x % 90 == 0 && angles.y % 90 == 0 && angles.z % 90 == 0) {
-		glm::ivec3 remaining = glm::abs(angles);
-		while (remaining.x > 270) {
-			remaining.x -= 90;
-		}
-		while (remaining.y > 270) {
-			remaining.y -= 90;
-		}
-		while (remaining.z > 270) {
-			remaining.z -= 90;
-		}
-		voxel::RawVolume *rotated = nullptr;
-		while (remaining.x >= 90 || remaining.y >= 90 || remaining.z >= 90) {
-			const bool isSourceVolume = rotated == nullptr;
-			const voxel::RawVolume *input = isSourceVolume ? srcVolume : rotated;
-			math::Axis axis;
-			if (remaining.x >= 90) {
-				axis = math::Axis::X;
-				remaining.x -= 90;
-			} else if (remaining.y >= 90) {
-				axis = math::Axis::Y;
-				remaining.y -= 90;
-			} else {
-				core_assert(remaining.z >= 90);
-				axis = math::Axis::Z;
-				remaining.z -= 90;
-			}
-
-			rotated = rotateAxis(input, axis);
-			if (!isSourceVolume) {
-				delete input;
-			}
-		}
-		return rotated;
-	}
 	const float pitch = glm::radians((float)angles.x);
 	const float yaw = glm::radians((float)angles.y);
 	const float roll = glm::radians((float)angles.z);
