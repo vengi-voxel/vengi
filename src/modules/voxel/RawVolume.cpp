@@ -315,6 +315,22 @@ bool RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 	return false;
 }
 
+void RawVolume::Sampler::movePositive(math::Axis axis, uint32_t offset) {
+	switch (axis) {
+	case math::Axis::X:
+		movePositiveX(offset);
+		break;
+	case math::Axis::Y:
+		movePositiveY(offset);
+		break;
+	case math::Axis::Z:
+		movePositiveZ(offset);
+		break;
+	default:
+		break;
+	}
+}
+
 void RawVolume::Sampler::movePositiveX(uint32_t offset) {
 	const bool bIsOldPositionValid = currentPositionValid();
 
@@ -375,6 +391,22 @@ void RawVolume::Sampler::movePositiveZ(uint32_t offset) {
 		_currentVoxel += (intptr_t)(_volume->width() * _volume->height() * offset);
 	} else {
 		_currentVoxel = nullptr;
+	}
+}
+
+void RawVolume::Sampler::moveNegative(math::Axis axis, uint32_t offset) {
+	switch (axis) {
+	case math::Axis::X:
+		moveNegativeX(offset);
+		break;
+	case math::Axis::Y:
+		moveNegativeY(offset);
+		break;
+	case math::Axis::Z:
+		moveNegativeZ(offset);
+		break;
+	default:
+		break;
 	}
 }
 

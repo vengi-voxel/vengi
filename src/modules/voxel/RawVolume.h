@@ -7,6 +7,7 @@
 #include "Voxel.h"
 #include "Region.h"
 #include "core/collection/DynamicArray.h"
+#include "math/Axis.h"
 #include <glm/vec3.hpp>
 
 namespace voxel {
@@ -35,10 +36,12 @@ public:
 		void movePositiveX(uint32_t offset = 1);
 		void movePositiveY(uint32_t offset = 1);
 		void movePositiveZ(uint32_t offset = 1);
+		void movePositive(math::Axis axis, uint32_t offset = 1);
 
 		void moveNegativeX(uint32_t offset = 1);
 		void moveNegativeY(uint32_t offset = 1);
 		void moveNegativeZ(uint32_t offset = 1);
+		void moveNegative(math::Axis axis, uint32_t offset = 1);
 
 		const Voxel& peekVoxel1nx1ny1nz() const;
 		const Voxel& peekVoxel1nx1ny0pz() const;
