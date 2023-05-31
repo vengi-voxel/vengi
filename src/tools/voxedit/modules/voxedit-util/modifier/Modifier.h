@@ -51,6 +51,8 @@ static_assert(lengthof(ShapeTypeStr) == (int)ShapeType::Max, "Array size mismatc
  * at the center, mirroring the modifications and so on.
  */
 class Modifier : public core::IComponent {
+public:
+	using Callback = std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)>;
 protected:
 	Selections _selections;
 	bool _selectionValid = false;
@@ -102,6 +104,10 @@ protected:
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
 	math::Axis getSizeAndHeightFromAxisAndDim(math::Axis axis, const glm::ivec3& dimensions, double &size, double &height) const;
 	bool executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type, bool markUndo)>& callback, bool markUndo);
+
+	bool lineModifier(voxel::RawVolume *volume, const Callback &callback);
+	bool planeModifier(voxel::RawVolume *volume, const Callback &callback);
+	bool pathModifier(voxel::RawVolume *volume, const Callback &callback);
 
 	math::AABB<int> aabb() const;
 public:
@@ -183,22 +189,16 @@ public:
 	glm::ivec3 aabbDim() const;
 	glm::ivec3 aabbPosition() const;
 
-	using Callback = std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)>;
-
 	/**
 	 * @brief Pick the start position of the modifier execution bounding box
 	 */
 	bool aabbStart();
 	/**
-	 * @brief End the current ModifierType execution and modify tha given volume according to the type.
+	 * @brief End the current ModifierType execution and modify the given volume according to the type.
 	 * @param[out,in] volume The volume to modify
 	 * @param callback Called for every region that was modified for the current active modifier.
 	 */
 	bool aabbAction(voxel::RawVolume *volume, const Callback &callback);
-
-	bool lineModifier(voxel::RawVolume *&volume, const Callback &callback);
-	bool planeModifier(voxel::RawVolume *&volume, const Callback &callback);
-	bool pathModifier(voxel::RawVolume *&volume, const Callback &callback);
 	void aabbAbort();
 	void aabbStep();
 

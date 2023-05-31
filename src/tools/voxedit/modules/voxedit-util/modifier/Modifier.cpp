@@ -394,7 +394,7 @@ void Modifier::unlock() {
 	_locked = false;
 }
 
-bool Modifier::lineModifier(voxel::RawVolume *&volume, const Callback &callback) {
+bool Modifier::lineModifier(voxel::RawVolume *volume, const Callback &callback) {
 	voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
 	const glm::ivec3 &start = referencePosition();
 	const glm::ivec3 &end = cursorPosition();
@@ -418,7 +418,7 @@ bool Modifier::lineModifier(voxel::RawVolume *&volume, const Callback &callback)
 	return true;
 }
 
-bool Modifier::planeModifier(voxel::RawVolume *&volume, const Callback &callback) {
+bool Modifier::planeModifier(voxel::RawVolume *volume, const Callback &callback) {
 	voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
 	voxel::Voxel hitVoxel = hitCursorVoxel();
 
@@ -441,7 +441,7 @@ bool Modifier::planeModifier(voxel::RawVolume *&volume, const Callback &callback
 	return true;
 }
 
-bool Modifier::pathModifier(voxel::RawVolume *&volume, const Callback &callback) {
+bool Modifier::pathModifier(voxel::RawVolume *volume, const Callback &callback) {
 	core::List<glm::ivec3> listResult(4096);
 	const glm::ivec3 &start = referencePosition();
 	const glm::ivec3 &end = cursorPosition();
