@@ -114,33 +114,6 @@
 // Read about ImGuiBackendFlags_RendererHasVtxOffset for details.
 //#define ImDrawIdx unsigned int
 
-#define IMGUI_OVERRIDE_DRAWVERT_STRUCT_LAYOUT \
-struct ImDrawVert { \
-	union { \
-		ImVec2 pos; \
-		struct { \
-			float x; \
-			float y; \
-		}; \
-	}; \
-	union { \
-		ImVec2 uv; \
-		struct { \
-			float u; \
-			float v; \
-		}; \
-	}; \
-	union { \
-		ImU32 col; \
-		struct { \
-			uint8_t r; \
-			uint8_t g; \
-			uint8_t b; \
-			uint8_t a; \
-		}; \
-	}; \
-};
-
 //---- Override ImDrawCallback signature (will need to modify renderer backends accordingly)
 //struct ImDrawList;
 //struct ImDrawCmd;
