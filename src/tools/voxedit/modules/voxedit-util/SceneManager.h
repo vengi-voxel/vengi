@@ -206,8 +206,6 @@ public:
 	void resize(int nodeId, const voxel::Region &region);
 	void resize(int nodeId, const glm::ivec3 &size);
 
-	void exchangeColors(int nodeId, uint8_t palIdx1, uint8_t palIdx2);
-
 	/**
 	 * @brief Shift the whole volume by the given voxel amount
 	 */

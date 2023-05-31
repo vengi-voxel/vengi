@@ -1362,29 +1362,6 @@ void SceneManager::shift(int x, int y, int z) {
 	});
 }
 
-void SceneManager::exchangeColors(int nodeId, uint8_t palIdx1, uint8_t palIdx2) {
-	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
-	if (node == nullptr) {
-		return;
-	}
-	voxel::RawVolume *v = node->volume();
-	if (v == nullptr) {
-		return;
-	}
-	const voxel::Palette &palette = node->palette();
-	voxel::RawVolumeWrapper wrapper(v);
-	voxelutil::visitVolume(*v, [&wrapper, &palette, palIdx1, palIdx2] (int x, int y, int z, const voxel::Voxel& voxel) {
-		if (voxel.getColor() == palIdx1) {
-			wrapper.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx2));
-		} else if (voxel.getColor() == palIdx2) {
-			wrapper.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx1));
-		}
-	});
-	if (wrapper.dirtyRegion().isValid()) {
-		modified(nodeId, wrapper.dirtyRegion());
-	}
-}
-
 bool SceneManager::setGridResolution(int resolution) {
 	if (_modifier.gridResolution() == resolution) {
 		return false;
