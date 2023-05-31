@@ -1775,7 +1775,7 @@ void SceneManager::construct() {
 		}
 		const math::Axis axis = math::toAxis(args[0]);
 		rotate(axis);
-	}).setHelp("Rotate active nodes by the given angles (in degree)");
+	}).setHelp("Rotate active nodes around the given axis");
 
 	command::Command::registerCommand("layermerge", [&] (const command::CmdArgs& args) {
 		int nodeId1;
