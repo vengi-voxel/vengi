@@ -1607,7 +1607,8 @@ void SceneManager::construct() {
 			Log::info("Expected to get the palette NAME as part of palette-NAME.[png|lua]");
 			return;
 		}
-		loadPalette(args[0]);
+		bool searchBestColors = false;
+		loadPalette(args[0], searchBestColors);
 	}).setHelp("Load an existing palette by name. E.g. 'built-in:nippon'").setArgumentCompleter(paletteCompleter());
 
 	command::Command::registerCommand("cursor", [this] (const command::CmdArgs& args) {
