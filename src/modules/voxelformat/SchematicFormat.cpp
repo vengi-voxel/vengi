@@ -142,8 +142,6 @@ bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, scenegraph:
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(volume, true);
-		voxel::Palette palette;
-		palette.minecraft();
 		node.setPalette(palette);
 		int nodeId = sceneGraph.emplace(core::move(node));
 		return nodeId != InvalidNodeId;
