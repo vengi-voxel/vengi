@@ -18,6 +18,7 @@
 #include "private/MinecraftPaletteMap.h"
 #include "private/NamedBinaryTag.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
@@ -145,7 +146,7 @@ bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, scenegraph:
 		palette.minecraft();
 		node.setPalette(palette);
 		int nodeId = sceneGraph.emplace(core::move(node));
-		return nodeId != -1;
+		return nodeId != InvalidNodeId;
 	}
 	Log::error("Could not find valid 'blocks' tags");
 	return false;

@@ -383,7 +383,7 @@ bool VXRFormat::importChild(const core::String &vxmPath, io::SeekableReadStream 
 		int32_t children = 0;
 		wrap(stream.readInt32(children))
 		for (int32_t i = 0; i < children; ++i) {
-			wrapBool(importChild(vxmPath, stream, sceneGraph, version, nodeId != -1 ? nodeId : parent, ctx))
+			wrapBool(importChild(vxmPath, stream, sceneGraph, version, nodeId != InvalidNodeId ? nodeId : parent, ctx))
 		}
 	}
 	return true;

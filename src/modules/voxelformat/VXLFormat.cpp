@@ -19,6 +19,7 @@
 #include "io/Filesystem.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
@@ -739,7 +740,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, scene
 			kf.frameIdx = keyFrameIdx * 6; // running at 6 fps
 
 			const int nodeId = file.header.layerIds[vxlNodeId];
-			if (nodeId != -1) {
+			if (nodeId != InvalidNodeId) {
 				glm::mat4 glmMatrix = sectionMatrices[vxlNodeId].toMat4();
 				convertRead(glmMatrix, mdl.layerInfos[nodeId], true);
 
