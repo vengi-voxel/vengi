@@ -24,6 +24,7 @@ General:
    - Added Quake2 Model (`md2`) support
    - Removed cvar `voxformat_marchingcubes` and replaced with `voxel_meshmode` (set to `1` to use marching cubes)
    - Added new lua script `gradient.lua`
+   - Improved `csm` and `nvm` format support
 
 VoxConvert:
 
@@ -40,6 +41,7 @@ VoxEdit:
    - Fixed copy&paste errors with multiple selections
    - Updated new scene dialog to include the templates
    - Improved font quality
+   - Fixed a few crashes
 
 Thumbnailer:
 
