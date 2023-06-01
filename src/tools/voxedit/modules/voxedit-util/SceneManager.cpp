@@ -2444,7 +2444,7 @@ bool SceneManager::mouseRayTrace(bool force) {
 	if (_lastRaytraceX == _mouseCursor.x && _lastRaytraceY == _mouseCursor.y && !force) {
 		return true;
 	}
-	video::Camera *camera = activeCamera();
+	const video::Camera *camera = activeCamera();
 	if (camera == nullptr) {
 		return false;
 	}
