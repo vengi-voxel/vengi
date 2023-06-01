@@ -100,6 +100,7 @@ public:
 	int emplace(SceneGraphNode &&node, int parent = 0);
 
 	SceneGraphNode* findNodeByName(const core::String& name);
+	const SceneGraphNode* findNodeByName(const core::String& name) const;
 	SceneGraphNode* findNodeByPropertyValue(const core::String &key, const core::String &value) const;
 	SceneGraphNode* first();
 
@@ -122,7 +123,7 @@ public:
 	SceneGraphNode& node(int nodeId) const;
 	bool hasNode(int nodeId) const;
 	bool removeNode(int nodeId, bool recursive);
-	bool changeParent(int nodeId, int newParentId);
+	bool changeParent(int nodeId, int newParentId, bool updateTransform = true);
 	bool nodeHasChildren(const SceneGraphNode &node, int childId) const;
 	bool canChangeParent(const SceneGraphNode &node, int newParentId) const;
 

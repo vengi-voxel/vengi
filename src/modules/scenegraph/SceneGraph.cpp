@@ -307,6 +307,16 @@ SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) {
 	return nullptr;
 }
 
+const SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) const {
+	for (const auto& entry : _nodes) {
+		Log::trace("node name: %s", entry->value.name().c_str());
+		if (entry->value.name() == name) {
+			return &entry->value;
+		}
+	}
+	return nullptr;
+}
+
 SceneGraphNode* SceneGraph::first() {
 	for (const auto& entry : _nodes) {
 		return &entry->value;
@@ -383,7 +393,7 @@ bool SceneGraph::canChangeParent(const SceneGraphNode &node, int newParentId) co
 	return !nodeHasChildren(node, newParentId);
 }
 
-bool SceneGraph::changeParent(int nodeId, int newParentId) {
+bool SceneGraph::changeParent(int nodeId, int newParentId, bool updateTransform) {
 	if (!hasNode(nodeId)) {
 		return false;
 	}
@@ -401,19 +411,20 @@ bool SceneGraph::changeParent(int nodeId, int newParentId) {
 		return false;
 	}
 	n.setParent(newParentId);
-	const SceneGraphNode &parentNode = node(newParentId);
-
-	for (const core::String &animation : animations()) {
-		for (SceneGraphKeyFrame &keyframe : n.keyFrames(animation)) {
-			SceneGraphTransform &transform = keyframe.transform();
-			const SceneGraphTransform &parentFrameTransform = parentNode.transformForFrame(animation, keyframe.frameIdx);
-			const glm::vec3 &tdelta = transform.worldTranslation() - parentFrameTransform.worldTranslation();
-			const glm::quat &tquat = transform.worldOrientation() - parentFrameTransform.worldOrientation();
-			transform.setLocalTranslation(tdelta);
-			transform.setLocalOrientation(tquat);
+	if (updateTransform) {
+		const SceneGraphNode &parentNode = node(newParentId);
+		for (const core::String &animation : animations()) {
+			for (SceneGraphKeyFrame &keyframe : n.keyFrames(animation)) {
+				SceneGraphTransform &transform = keyframe.transform();
+				const SceneGraphTransform &parentFrameTransform = parentNode.transformForFrame(animation, keyframe.frameIdx);
+				const glm::vec3 &tdelta = transform.worldTranslation() - parentFrameTransform.worldTranslation();
+				const glm::quat &tquat = transform.worldOrientation() - parentFrameTransform.worldOrientation();
+				transform.setLocalTranslation(tdelta);
+				transform.setLocalOrientation(tquat);
+			}
 		}
+		updateTransforms();
 	}
-	updateTransforms();
 	return true;
 }
 

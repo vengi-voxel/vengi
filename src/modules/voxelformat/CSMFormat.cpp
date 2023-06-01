@@ -7,6 +7,7 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/Voxel.h"
 #include <glm/common.hpp>
@@ -48,6 +49,30 @@ static bool readString(io::SeekableReadStream &stream, core::String &str, bool r
 	return true;
 }
 
+static void updateParents(scenegraph::SceneGraph &sceneGraph) {
+	for (scenegraph::SceneGraph::iterator iter = sceneGraph.beginAll(); iter != sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
+		const core::String &parent = node.property("parent");
+		if (parent.empty()) {
+			Log::debug("no parent for node %s", node.name().c_str());
+			continue;
+		}
+		if (const scenegraph::SceneGraphNode *parentNode = sceneGraph.findNodeByName(parent)) {
+			Log::debug("change parent for node %s to %s", node.name().c_str(), parent.c_str());
+			sceneGraph.changeParent(node.id(), parentNode->id(), false);
+		} else {
+			Log::warn("Failed to find parent node '%s' for node '%s'", parent.c_str(), node.name().c_str());
+		}
+	}
+}
+
+static core::String makeNameUnique(const scenegraph::SceneGraph &sceneGraph, core::String name) {
+	while (sceneGraph.findNodeByName(name) != nullptr) {
+		name.append("+");
+	}
+	return name;
+}
+
 bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
 							   const LoadContext &ctx) {
@@ -57,6 +82,7 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	wrap(stream.readUInt32(version))
 	wrap(stream.readUInt32(blank))
 	wrap(stream.readUInt32(matrixCount))
+	Log::debug("CSM version: %i", version);
 
 	if (isNVM && version > 2) {
 		Log::warn("nvm is only supported up to version 2");
@@ -75,10 +101,10 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 		if (version > 1) {
 			wrapBool(readString(stream, parent, readStringAsInt))
 		}
-		uint16_t posx, posy, posz;
-		wrap(stream.readUInt16(posx))
-		wrap(stream.readUInt16(posy))
-		wrap(stream.readUInt16(posz))
+		int16_t posx, posy, posz;
+		wrap(stream.readInt16(posx))
+		wrap(stream.readInt16(posy))
+		wrap(stream.readInt16(posz))
 
 		uint16_t sizex, sizey, sizez;
 		wrap(stream.readUInt16(sizex))
@@ -131,9 +157,27 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 
 			matrixIndex += count;
 		}
+		if (version >= 2) {
+			name = makeNameUnique(sceneGraph, name);
+		}
 		node.setName(name);
+		scenegraph::SceneGraphTransform transform;
+		if (version >= 4) {
+			transform.setWorldTranslation(glm::vec3(posx, posy, posz) / 10.0f);
+		} else {
+			transform.setWorldTranslation(glm::vec3(posx, posy, posz) / 2.0f);
+		}
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		node.setTransform(keyFrameIdx, transform);
+
+		if (!parent.empty()) {
+			node.setProperty("parent", parent);
+		}
 		node.setPalette(palLookup.palette());
 		sceneGraph.emplace(core::move(node));
+	}
+	if (version > 1) {
+		updateParents(sceneGraph);
 	}
 	return true;
 }
