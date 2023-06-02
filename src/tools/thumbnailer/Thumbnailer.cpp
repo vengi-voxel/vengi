@@ -95,12 +95,6 @@ static image::ImagePtr volumeThumbnail(const core::String &fileName, io::Seekabl
 		return image::ImagePtr();
 	}
 
-	const voxel::Region &sceneRegion = sceneGraph.region();
-	const glm::ivec3 &regionSize = sceneRegion.getDimensionsInVoxels();
-	const float maxDim = (float)glm::max(regionSize.x, glm::max(regionSize.y, regionSize.z));
-	const float distance = maxDim * 2.0f;
-	ctx.distance = distance;
-
 	return voxelrender::volumeThumbnail(sceneGraph, ctx);
 }
 
