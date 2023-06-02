@@ -205,6 +205,7 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 		const glm::ivec3& mins = finalRegion.getLowerCorner();
 		if (!onlyAir) {
 			const voxel::Palette &pal = palette(idx);
+			++_pendingExtractorTasks;
 			_threadPool.enqueue([marchingCubes, movedPal = core::move(pal), movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
 				++_runningExtractorTasks;
 				voxel::ChunkMesh mesh(65536, 65536, true);
@@ -219,6 +220,7 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 				_pendingQueue.emplace(mins, idx, core::move(mesh));
 				Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
 				--_runningExtractorTasks;
+				--_pendingExtractorTasks;
 			});
 		} else {
 			_pendingQueue.emplace(mins, idx, core::move(voxel::ChunkMesh(0, 0)));
@@ -421,7 +423,7 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 }
 
 void RawVolumeRenderer::waitForPendingExtractions() {
-	while (_runningExtractorTasks > 0) {
+	while (_pendingExtractorTasks > 0) {
 		SDL_Delay(1);
 	}
 }
@@ -433,6 +435,7 @@ void RawVolumeRenderer::clearPendingExtractions() {
 		SDL_Delay(1);
 	}
 	_pendingQueue.clear();
+	_pendingExtractorTasks = 0;
 }
 
 bool RawVolumeRenderer::hidden(int idx) const {

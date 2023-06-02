@@ -133,6 +133,7 @@ protected:
 	};
 	core::ThreadPool _threadPool { core::halfcpus(), "VolumeRndr" };
 	core::AtomicInt _runningExtractorTasks { 0 };
+	core::AtomicInt _pendingExtractorTasks { 0 };
 	core::ConcurrentPriorityQueue<ExtractionCtx> _pendingQueue;
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
 	void updatePalette(int idx);
