@@ -333,6 +333,13 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		}
 	}
 
+	addCameras(scene, sceneGraph);
+
+	ogt_vox_destroy_scene(scene);
+	return true;
+}
+
+void VoxFormat::addCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph) {
 	for (uint32_t n = 0; n < scene->num_cameras; ++n) {
 		const ogt_vox_cam &c = scene->cameras[n];
 		const glm::vec3 target(c.focus[0], c.focus[1], c.focus[2]);
@@ -362,9 +369,6 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			sceneGraph.emplace(core::move(camNode), sceneGraph.root().id());
 		}
 	}
-
-	ogt_vox_destroy_scene(scene);
-	return true;
 }
 
 int VoxFormat::findClosestPaletteIndex(const voxel::Palette &palette) {
