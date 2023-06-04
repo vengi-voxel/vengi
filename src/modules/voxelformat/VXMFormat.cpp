@@ -548,6 +548,28 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			wrap(stream.readUInt32(normal))
 		}
 		// here might be another byte - but it isn't written everytime
+		uint8_t templateModelResized;
+		stream.peekUInt8(templateModelResized);
+		if (!stream.eos() && templateModelResized != 127) {
+			stream.readBool(); // templateModelResized
+		}
+		if (!stream.eos()) {
+			uint8_t sentinelByte;
+			wrap(stream.readUInt8(sentinelByte))
+			if (sentinelByte != 127) {
+				Log::warn("Sentinel byte is not 127");
+				return true; // true anyway, because the additional palette data is optional
+			}
+			uint8_t selectedPalette;
+			wrap(stream.readUInt8(selectedPalette))
+			if (selectedPalette != 255) {
+				for (int i = 0; i < 255; ++i) {
+					uint32_t color;
+					wrap(stream.readUInt32(color))
+					/*bool emissive =*/ stream.readBool();
+				}
+			}
+		}
 	}
 
 	return true;
