@@ -30,6 +30,7 @@ private:
 
 	void printDetails(const ogt_vox_scene *scene);
 	void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph);
+	bool loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette);
 	int findClosestPaletteIndex(const voxel::Palette &palette);
 	bool loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
 					  int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden = false);

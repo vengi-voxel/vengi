@@ -288,11 +288,17 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	loadPalette(scene, palette);
-
-	const glm::mat4 zUpMat = transformMatrix();
 	printDetails(scene);
+	loadPalette(scene, palette);
+	if (!loadScene(scene, sceneGraph, palette)) {
+		return false;
+	}
+	ogt_vox_destroy_scene(scene);
+	return true;
+}
 
+bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette) {
+	const glm::mat4 zUpMat = transformMatrix();
 	core::Set<uint32_t> addedInstances;
 	for (uint32_t i = 0; i < scene->num_groups; ++i) {
 		const ogt_vox_group &group = scene->groups[i];
@@ -320,7 +326,6 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	loadCameras(scene, sceneGraph);
 
-	ogt_vox_destroy_scene(scene);
 	return true;
 }
 
