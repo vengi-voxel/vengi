@@ -14,6 +14,14 @@ static const uint8_t SAMPLER_INVALIDX = 1 << 0;
 static const uint8_t SAMPLER_INVALIDY = 1 << 1;
 static const uint8_t SAMPLER_INVALIDZ = 1 << 2;
 
+size_t RawVolume::size(const Region &region) {
+	const size_t w = region.getWidthInVoxels();
+	const size_t h = region.getHeightInVoxels();
+	const size_t d = region.getDepthInVoxels();
+	const size_t size = w * h * d * sizeof(Voxel);
+	return size;
+}
+
 RawVolume::RawVolume(const Region& regValid) :
 		_region(regValid), _mins((std::numeric_limits<int>::max)()), _maxs((std::numeric_limits<int>::min)()), _boundsValid(false) {
 	//Create a volume of the right size.

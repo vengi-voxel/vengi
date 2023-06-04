@@ -98,6 +98,11 @@ public:
 	RawVolume(const RawVolume& copy, const Region& region, bool *onlyAir = nullptr);
 	RawVolume(const RawVolume& copy, const core::DynamicArray<Region>& regions);
 
+	/**
+	 * @brief Calculate the amount of bytes a volume with the given region would consume
+	 */
+	static size_t size(const Region& region);
+
 	static RawVolume* createRaw(const Voxel* data, const voxel::Region& region) {
 		return new RawVolume(data, region);
 	}
