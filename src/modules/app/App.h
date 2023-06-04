@@ -98,6 +98,7 @@ protected:
 	 * can set the exit code to expose the reason to the console that called the application.
 	 */
 	int _exitCode = 0;
+	int _availableMemoryMiB = 0;
 
 	static App* _staticInstance;
 
@@ -165,6 +166,8 @@ public:
 	void remBlocker(AppState blockedState);
 
 	bool saveConfiguration();
+
+	bool hasEnoughMemory(size_t bytes) const;
 
 	const core::String& appname() const;
 

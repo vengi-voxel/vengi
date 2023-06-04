@@ -3,6 +3,7 @@
  */
 
 #include "App.h"
+#include <SDL_cpuinfo.h>
 #include "app/AppCommand.h"
 #include "core/Var.h"
 #include "core/concurrent/ThreadPool.h"
@@ -393,6 +394,8 @@ AppState App::onInit() {
 		}
 	}
 
+	_availableMemoryMiB = SDL_GetSystemRAM();
+
 	core_trace_init();
 
 	return AppState::Running;
@@ -447,6 +450,15 @@ void App::onAfterInit() {
 		_logLevelVar->markClean();
 		_syslogVar->markClean();
 	}
+}
+
+bool App::hasEnoughMemory(size_t bytes) const {
+	if (_availableMemoryMiB <= 0) {
+		// assume we have enough memory if the system does not report the available memory
+		return true;
+	}
+	const uint32_t s = 1024 * 1024;
+	return _availableMemoryMiB * (size_t)s >= bytes;
 }
 
 void App::usage() const {
