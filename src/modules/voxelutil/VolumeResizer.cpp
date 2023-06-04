@@ -3,12 +3,16 @@
  */
 
 #include "VolumeResizer.h"
+#include "app/App.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxel/RawVolumeWrapper.h"
 
 namespace voxelutil {
 
 voxel::RawVolume* resize(const voxel::RawVolume* source, const voxel::Region &region) {
+	if (!app::App::getInstance()->hasEnoughMemory(voxel::RawVolume::size(region))) {
+		return nullptr;
+	}
 	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
 	const voxel::Region& srcRegion = source->region();
 	voxel::RawVolumeWrapper wrapper(newVolume);
