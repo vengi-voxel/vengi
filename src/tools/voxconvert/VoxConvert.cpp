@@ -657,7 +657,12 @@ void VoxConvert::scale(scenegraph::SceneGraph& sceneGraph) {
 void VoxConvert::resize(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph) {
 	Log::info("Resize layers");
 	for (scenegraph::SceneGraphNode& node : sceneGraph) {
-		node.setVolume(voxelutil::resize(node.volume(), size), true);
+		voxel::RawVolume *v = voxelutil::resize(node.volume(), size);
+		if (v == nullptr) {
+			Log::warn("Failed to resize volume");
+			continue;
+		}
+		node.setVolume(v, true);
 	}
 }
 

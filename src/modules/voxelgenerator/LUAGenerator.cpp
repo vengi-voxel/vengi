@@ -178,10 +178,11 @@ static int luaVoxel_volumewrapper_resize(lua_State *s) {
 	const int d = (int)luaL_optinteger(s, 4, 0);
 	const bool extendMins = (int)clua_optboolean(s, 5, false);
 	voxel::RawVolume *v = voxelutil::resize(volume->volume(), glm::ivec3(w, h, d), extendMins);
-	if (v != nullptr) {
-		volume->setVolume(v);
-		volume->update();
+	if (v == nullptr) {
+		return clua_error(s, "Failed to resize the volume");
 	}
+	volume->setVolume(v);
+	volume->update();
 	return 0;
 }
 
