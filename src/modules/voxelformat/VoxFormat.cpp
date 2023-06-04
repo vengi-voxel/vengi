@@ -253,6 +253,24 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 	return true;
 }
 
+void VoxFormat::loadPalette(const ogt_vox_scene *scene, voxel::Palette &palette) {
+	palette.setSize(0);
+	int palIdx = 0;
+	for (int i = 0; i < lengthof(scene->palette.color) - 1; ++i) {
+		const ogt_vox_rgba color = scene->palette.color[(i + 1) & 255];
+		palette.color(palIdx) = core::RGBA(color.r, color.g, color.b, color.a);
+		const ogt_vox_matl &matl = scene->materials.matl[(i + 1) & 255];
+		if (matl.type == ogt_matl_type_emit) {
+			palette.glowColor(palIdx) = palette.color(palIdx);
+		}
+		++palIdx;
+		if (color.a != 0) {
+			palette.setSize(palIdx);
+		}
+	}
+	Log::debug("vox load color count: %i", palette.colorCount());
+}
+
 bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
 								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	const size_t size = stream.size();
@@ -270,21 +288,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	palette.setSize(0);
-	int palIdx = 0;
-	for (int i = 0; i < lengthof(scene->palette.color) - 1; ++i) {
-		const ogt_vox_rgba color = scene->palette.color[(i + 1) & 255];
-		palette.color(palIdx) = core::RGBA(color.r, color.g, color.b, color.a);
-		const ogt_vox_matl &matl = scene->materials.matl[(i + 1) & 255];
-		if (matl.type == ogt_matl_type_emit) {
-			palette.glowColor(palIdx) = palette.color(palIdx);
-		}
-		++palIdx;
-		if (color.a != 0) {
-			palette.setSize(palIdx);
-		}
-	}
-	Log::debug("vox load color count: %i", palette.colorCount());
+	loadPalette(scene, palette);
 
 	const glm::mat4 zUpMat = transformMatrix();
 	Log::debug("vox groups: %u", scene->num_groups);
@@ -333,13 +337,13 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		}
 	}
 
-	addCameras(scene, sceneGraph);
+	loadCameras(scene, sceneGraph);
 
 	ogt_vox_destroy_scene(scene);
 	return true;
 }
 
-void VoxFormat::addCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph) {
+void VoxFormat::loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph) {
 	for (uint32_t n = 0; n < scene->num_cameras; ++n) {
 		const ogt_vox_cam &c = scene->cameras[n];
 		const glm::vec3 target(c.focus[0], c.focus[1], c.focus[2]);

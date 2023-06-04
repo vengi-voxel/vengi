@@ -28,13 +28,14 @@ class VoxFormat : public PaletteFormat {
 private:
 	glm::ivec3 maxSize() const override;
 
-	void addCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph);
+	void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph);
 	int findClosestPaletteIndex(const voxel::Palette &palette);
 	bool loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
 					  int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden = false);
 	bool loadGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, scenegraph::SceneGraph &sceneGraph,
 				   int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances,
 				   const voxel::Palette &palette);
+	void loadPalette(const ogt_vox_scene *scene, voxel::Palette &palette);
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
 						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
 						   const LoadContext &ctx) override;
