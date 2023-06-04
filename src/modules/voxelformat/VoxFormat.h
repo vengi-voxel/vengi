@@ -28,6 +28,7 @@ class VoxFormat : public PaletteFormat {
 private:
 	glm::ivec3 maxSize() const override;
 
+	void printDetails(const ogt_vox_scene *scene);
 	void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph);
 	int findClosestPaletteIndex(const voxel::Palette &palette);
 	bool loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,

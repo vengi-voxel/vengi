@@ -291,26 +291,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	loadPalette(scene, palette);
 
 	const glm::mat4 zUpMat = transformMatrix();
-	Log::debug("vox groups: %u", scene->num_groups);
-	for (uint32_t i = 0; i < scene->num_groups; ++i) {
-		if (scene->groups[i].name) {
-			Log::debug(" %u: %s", i, scene->groups[i].name);
-		}
-	}
-	Log::debug("vox instances: %u", scene->num_instances);
-	for (uint32_t i = 0; i < scene->num_instances; ++i) {
-		if (scene->instances[i].name) {
-			Log::debug(" %u: %s", i, scene->instances[i].name);
-		}
-	}
-	Log::debug("vox layers: %u", scene->num_layers);
-	for (uint32_t i = 0; i < scene->num_layers; ++i) {
-		if (scene->layers[i].name) {
-			Log::debug(" %u: %s", i, scene->layers[i].name);
-		}
-	}
-	Log::debug("vox models: %u", scene->num_models);
-	Log::debug("vox cameras: %u", scene->num_cameras);
+	printDetails(scene);
 
 	core::Set<uint32_t> addedInstances;
 	for (uint32_t i = 0; i < scene->num_groups; ++i) {
@@ -341,6 +322,30 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	ogt_vox_destroy_scene(scene);
 	return true;
+}
+
+void VoxFormat::printDetails(const ogt_vox_scene *scene) {
+	Log::debug("vox groups: %u", scene->num_groups);
+	for (uint32_t i = 0; i < scene->num_groups; ++i) {
+		if (scene->groups[i].name) {
+			Log::debug(" %u: %s", i, scene->groups[i].name);
+		}
+	}
+	Log::debug("vox instances: %u", scene->num_instances);
+	for (uint32_t i = 0; i < scene->num_instances; ++i) {
+		if (scene->instances[i].name) {
+			Log::debug(" %u: %s", i, scene->instances[i].name);
+		}
+	}
+	Log::debug("vox layers: %u", scene->num_layers);
+	for (uint32_t i = 0; i < scene->num_layers; ++i) {
+		if (scene->layers[i].name) {
+			Log::debug(" %u: %s", i, scene->layers[i].name);
+		}
+	}
+	Log::debug("vox models: %u", scene->num_models);
+	Log::debug("vox cameras: %u", scene->num_cameras);
+
 }
 
 void VoxFormat::loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph) {
