@@ -92,6 +92,8 @@ protected:
 	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
 	MeshesMap _meshes[MeshType_Max];
 
+	int resolveIdx(int idx) const;
+
 	uint64_t _paletteHash = 0;
 
 	shader::VoxelData _voxelData;

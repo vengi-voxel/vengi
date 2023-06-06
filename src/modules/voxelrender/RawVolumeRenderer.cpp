@@ -177,10 +177,11 @@ const voxel::Palette &RawVolumeRenderer::palette(int idx) const {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return voxel::getPalette();
 	}
-	if (!_state[idx]._palette.hasValue()) {
+	const int bufferIndex = resolveIdx(idx);
+	if (!_state[bufferIndex]._palette.hasValue()) {
 		return voxel::getPalette();
 	}
-	return *_state[idx]._palette.value();
+	return *_state[bufferIndex]._palette.value();
 }
 
 bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
@@ -283,11 +284,12 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	}
 	core_trace_scoped(RawVolumeRendererUpdate);
 
+	const int bufferIndex = resolveIdx(idx);
 	size_t vertCount = 0u;
 	size_t indCount = 0u;
 	for (auto& i : _meshes[type]) {
 		const Meshes& meshes = i.second;
-		const voxel::Mesh* mesh = meshes[idx];
+		const voxel::Mesh* mesh = meshes[bufferIndex];
 		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
 			continue;
 		}
@@ -297,8 +299,9 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 		indCount += indexVector.size();
 	}
 
-	State& state = _state[idx];
+	State& state = _state[bufferIndex];
 	if (indCount == 0u || vertCount == 0u) {
+		Log::debug("clear vertexbuffer: %i", idx);
 		state._vertexBuffer[type].update(state._vertexBufferIndex[type], nullptr, 0);
 		state._vertexBuffer[type].update(state._indexBufferIndex[type], nullptr, 0);
 		return true;
@@ -315,7 +318,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	voxel::IndexType offset = (voxel::IndexType)0;
 	for (auto& i : _meshes[type]) {
 		const Meshes& meshes = i.second;
-		const voxel::Mesh* mesh = meshes[idx];
+		const voxel::Mesh* mesh = meshes[bufferIndex];
 		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
 			continue;
 		}
@@ -332,6 +335,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 		offset += vertexVector.size();
 	}
 
+	Log::debug("update vertexbuffer: %i (type: %i)", idx, type);
 	if (!state._vertexBuffer[type].update(state._vertexBufferIndex[type], verticesBuf, verticesBufSize)) {
 		Log::error("Failed to update the vertex buffer");
 		core_free(indicesBuf);
@@ -340,6 +344,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	}
 	core_free(verticesBuf);
 
+	Log::debug("update indexbuffer: %i (type: %i)", idx, type);
 	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, indicesBufSize)) {
 		Log::error("Failed to update the index buffer");
 		core_free(indicesBuf);
@@ -357,14 +362,23 @@ void RawVolumeRenderer::setDiffuseColor(const glm::vec3& color) {
 	_voxelShaderFragData.diffuseColor = color;
 }
 
+int RawVolumeRenderer::resolveIdx(int idx) const {
+	const int reference = _state[idx]._reference;
+	if (reference != -1) {
+		return resolveIdx(_state[idx]._reference);
+	}
+	return idx;
+}
+
 bool RawVolumeRenderer::empty(int idx) const {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return true;
 	}
+	const int bufferIndex = resolveIdx(idx);
 	for (int i = 0; i < MeshType_Max; ++i) {
 		for (auto& i : _meshes[i]) {
 			const Meshes& meshes = i.second;
-			if (meshes[idx] != nullptr && meshes[idx]->getNoOfIndices() > 0) {
+			if (meshes[bufferIndex] != nullptr && meshes[bufferIndex]->getNoOfIndices() > 0) {
 				return false;
 			}
 		}
@@ -380,7 +394,8 @@ voxel::Region RawVolumeRenderer::calculateExtractRegion(int x, int y, int z, con
 
 bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 	core_trace_scoped(RawVolumeRendererExtract);
-	voxel::RawVolume* v = volume(idx);
+	const int bufferIndex = resolveIdx(idx);
+	voxel::RawVolume* v = volume(bufferIndex);
 	if (v == nullptr) {
 		return false;
 	}
@@ -408,14 +423,14 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 					for (int i = 0; i < MeshType_Max; ++i) {
 						auto iter = _meshes[i].find(mins);
 						if (iter != _meshes[i].end()) {
-							deleteMesh(idx, (MeshType)i, iter->second);
+							deleteMesh(bufferIndex, (MeshType)i, iter->second);
 						}
 					}
 					continue;
 				}
 
 				Log::debug("extract region: %s", finalRegion.toString().c_str());
-				_extractRegions.emplace_back(finalRegion, idx);
+				_extractRegions.emplace_back(finalRegion, bufferIndex);
 			}
 		}
 	}
@@ -468,7 +483,8 @@ void RawVolumeRenderer::gray(int idx, bool gray) {
 
 void RawVolumeRenderer::updatePalette(int idx) {
 	const voxel::Palette *palette;
-	const State& state = _state[idx]._reference != -1 ? _state[_state[idx]._reference] : _state[idx];
+	const int bufferIndex = resolveIdx(idx);
+	const State& state = _state[bufferIndex];
 	if (state._palette.hasValue()) {
 		palette = state._palette.value();
 	} else {
@@ -493,11 +509,14 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 
 	bool visible = false;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		const State& state = _state[idx];
-		if (state._hidden) {
+		if (_state[idx]._hidden) {
 			continue;
 		}
-		if (!state.hasData()) {
+		const int bufferIndex = resolveIdx(idx);
+		if (!_state[bufferIndex].hasData()) {
+			if (_state[bufferIndex]._rawVolume) {
+				Log::debug("No data, but volume: %i", bufferIndex);
+			}
 			continue;
 		}
 		visible = true;
@@ -506,15 +525,15 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		return;
 	}
 	for (auto& i : _meshes[MeshType_Transparency]) {
-		for (int idx = 0; idx < (int)i.second.size(); ++idx) {
-			const State& state = _state[idx];
-			if (state._hidden) {
+		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+			if (_state[idx]._hidden) {
 				continue;
 			}
+			const int bufferIndex = resolveIdx(idx);
 			// TODO: transform - vertices are in object space - eye in world space
 			// inverse of state._model - but take pivot into account
-			if (i.second[idx]->sort(camera.eye())) {
-				updateBufferForVolume(idx, MeshType_Transparency);
+			if (i.second[bufferIndex]->sort(camera.eye())) {
+				updateBufferForVolume(bufferIndex, MeshType_Transparency);
 			}
 		}
 	}
@@ -534,15 +553,15 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 				var.lightviewprojection = lightViewProjection;
 
 				for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-					const State& state = _state[idx]._reference != -1 ? _state[_state[idx]._reference] : _state[idx];
-					if (state._hidden) {
+					if (_state[idx]._hidden) {
 						continue;
 					}
-					const uint32_t indices = state.indices(MeshType_Opaque);
+					const int bufferIndex = resolveIdx(idx);
+					const uint32_t indices = _state[bufferIndex].indices(MeshType_Opaque);
 					if (indices == 0u) {
 						continue;
 					}
-					video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Opaque]);
+					video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[MeshType_Opaque]);
 					var.model = _state[idx]._model;
 					var.pivot = _state[idx]._pivot;
 					_shadowMapUniformBlock.update(var);
@@ -585,16 +604,19 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	_paletteHash = 0;
 	// --- opaque pass
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		const State& state = _state[idx]._reference != -1 ? _state[_state[idx]._reference] : _state[idx];
-		if (state._hidden) {
+		if (_state[idx]._hidden) {
 			continue;
 		}
-		const uint32_t indices = state.indices(MeshType_Opaque);
+		const int bufferIndex = resolveIdx(idx);
+		const uint32_t indices = _state[bufferIndex].indices(MeshType_Opaque);
 		if (indices == 0u) {
+			if (_state[bufferIndex]._rawVolume) {
+				Log::debug("No indices but volume for idx %d: %d (ref: %i)", idx, bufferIndex, _state[bufferIndex]._reference);
+			}
 			continue;
 		}
 
-		updatePalette(idx);
+		updatePalette(bufferIndex);
 		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 		_voxelShaderVertData.model = _state[idx]._model;
 		_voxelShaderVertData.pivot = _state[idx]._pivot;
@@ -602,7 +624,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
 		video::ScopedPolygonMode polygonMode(mode);
-		video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Opaque]);
+		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[MeshType_Opaque]);
 		core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
 		core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
 		if (_shadowMap->boolVal()) {
@@ -615,8 +637,11 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	{
 		video::ScopedState scopedBlend(video::State::Blend, true);
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-			const State& state = _state[idx]._reference != -1 ? _state[_state[idx]._reference] : _state[idx];
-			const uint32_t indices = state.indices(MeshType_Transparency);
+			if (_state[idx]._hidden) {
+				continue;
+			}
+			const int bufferIndex = resolveIdx(idx);
+			const uint32_t indices = _state[bufferIndex].indices(MeshType_Transparency);
 			if (indices == 0u) {
 				continue;
 			}
@@ -630,7 +655,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 
 			// TODO: alpha support - sort according to eye pos
 			video::ScopedPolygonMode polygonMode(mode);
-			video::ScopedBuffer scopedBuf(state._vertexBuffer[MeshType_Transparency]);
+			video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[MeshType_Transparency]);
 			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
 			if (_shadowMap->boolVal()) {
@@ -712,6 +737,8 @@ void RawVolumeRenderer::deleteMesh(int idx, MeshType meshType, Meshes &array) {
 	array[idx] = nullptr;
 	State &state = _state[idx];
 	video::Buffer &vertexBuffer = state._vertexBuffer[meshType];
+	Log::debug("clear vertexbuffer: %i", idx);
+
 	vertexBuffer.update(state._vertexBufferIndex[meshType], nullptr, 0);
 	core_assert(vertexBuffer.size(state._vertexBufferIndex[meshType]) == 0);
 	vertexBuffer.update(state._indexBufferIndex[meshType], nullptr, 0);
