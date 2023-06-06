@@ -10,6 +10,7 @@ set(LUA_SRCS
 	scripts/gradient.lua
 	scripts/grass.lua
 	scripts/grid.lua
+	scripts/maze.lua
 	scripts/noise.lua
 	scripts/noise-builtin.lua
 	scripts/planet.lua
