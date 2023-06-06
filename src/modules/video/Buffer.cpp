@@ -49,7 +49,8 @@ uint32_t Buffer::size(int32_t idx) const {
 }
 
 uint32_t Buffer::elements(int32_t idx, int components, size_t componentSize) const {
-	return size(idx) / (components * (uint32_t)componentSize);
+	const uint32_t s = size(idx);
+	return s / (components * (uint32_t)componentSize);
 }
 
 Id Buffer::bufferHandle(int32_t idx) const {
