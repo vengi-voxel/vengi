@@ -365,7 +365,7 @@ void RawVolumeRenderer::setDiffuseColor(const glm::vec3& color) {
 int RawVolumeRenderer::resolveIdx(int idx) const {
 	const int reference = _state[idx]._reference;
 	if (reference != -1) {
-		return resolveIdx(_state[idx]._reference);
+		return resolveIdx(reference);
 	}
 	return idx;
 }
