@@ -26,6 +26,7 @@ General:
    - Added new lua script `gradient.lua`
    - Improved `csm` and `nvm` format support
    - Added lua script for generating mazes
+   - Added the ability to easily scale a volume up
 
 VoxConvert:
 
