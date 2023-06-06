@@ -46,58 +46,43 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
 							 int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette) {
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
-	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
-	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance, 0, scene, ogtModel);
-	const glm::vec4 &ogtPivot = ogtVolumePivot(ogtModel);
-	const glm::ivec3 &ogtMins = calcTransform(ogtMat, glm::ivec3(0), ogtPivot);
-	const glm::ivec3 &ogtMaxs = calcTransform(ogtMat, ogtVolumeSize(ogtModel), ogtPivot);
-	const glm::ivec3 mins(-(ogtMins.x + 1), ogtMins.z, ogtMins.y);
-	const glm::ivec3 maxs(-(ogtMaxs.x + 1), ogtMaxs.z, ogtMaxs.y);
-	voxel::Region region(glm::min(mins, maxs), glm::max(mins, maxs));
-	const glm::ivec3 shift = region.getLowerCorner();
-	region.shift(-shift);
-	voxel::RawVolume *v = new voxel::RawVolume(region);
-	scenegraph::SceneGraphTransform transform;
-	transform.setWorldTranslation(shift);
-
-	const uint8_t *ogtVoxel = ogtModel->voxel_data;
-	for (uint32_t k = 0; k < ogtModel->size_z; ++k) {
-		for (uint32_t j = 0; j < ogtModel->size_y; ++j) {
-			for (uint32_t i = 0; i < ogtModel->size_x; ++i, ++ogtVoxel) {
-				if (ogtVoxel[0] == 0) {
-					continue;
-				}
-				const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
-				const glm::ivec3 &ogtPos = calcTransform(ogtMat, glm::ivec3(i, j, k), ogtPivot);
-				const glm::ivec3 pos(-(ogtPos.x + 1), ogtPos.z, ogtPos.y);
-				v->setVoxel(pos - shift, voxel);
-			}
-		}
+	scenegraph::SceneGraphNodeType type = scenegraph::SceneGraphNodeType::Model;
+	if (models[ogtInstance.model_index].nodeId != InvalidNodeId) {
+		type = scenegraph::SceneGraphNodeType::ModelReference;
+	}
+	const ogt_vox_layer &layer = scene->layers[ogtInstance.layer_index];
+	const core::RGBA col(layer.color.r, layer.color.g, layer.color.b, layer.color.a);
+	const char *name = ogtInstance.name == nullptr ? layer.name : ogtInstance.name;
+	if (name == nullptr) {
+		name = "";
 	}
 
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	loadKeyFrames(sceneGraph, node, ogtInstance, scene);
-	// TODO: we are overriding the keyframe data here
-	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	node.setTransform(keyFrameIdx, transform);
-	node.setColor(instanceColor(scene, ogtInstance));
-	if (ogtInstance.layer_index < scene->num_layers) {
-		const ogt_vox_layer &ogtLayer = scene->layers[ogtInstance.layer_index];
-		if (ogtLayer.name != nullptr) {
-			node.setProperty("layer", ogtLayer.name);
-		}
-	}
-	node.setProperty("layerId", core::string::toString(ogtInstance.layer_index));
-	node.setName(instanceName(scene, ogtInstance));
-	node.setVisible(!instanceHidden(scene, ogtInstance));
-	node.setVolume(v, true);
-	// TODO: use already loaded models and create a model reference if needed
-	// TODO: node.setVolume(new voxel::RawVolume(models[ogtInstance.model_index].volume), true);
-	// TODO: set correct pivot
-	// TODO: node.setPivot({ogtPivot.x / (float)ogtModel->size_x, ogtPivot.z / (float)ogtModel->size_z, ogtPivot.y / (float)ogtModel->size_y});
-	// TODO: node.setPivot({(ogtPivot.x + 0.5f) / (float)ogtModel->size_x, (ogtPivot.z + 0.5f) / (float)ogtModel->size_z, (ogtPivot.y + 0.5f) / (float)ogtModel->size_y});
+	scenegraph::SceneGraphNode node(type);
+	node.setName(name);
+	node.setColor(col);
+	node.setVisible(!ogtInstance.hidden);
 	node.setPalette(palette);
-	return sceneGraph.emplace(core::move(node), parent) != -1;
+	if (type == scenegraph::SceneGraphNodeType::ModelReference) {
+		node.setReference(models[ogtInstance.model_index].nodeId);
+	} else {
+		node.setVolume(models[ogtInstance.model_index].volume, true);
+		models[ogtInstance.model_index].volume = nullptr;
+	}
+	const glm::vec3 pivot(0.5f);
+	node.setPivot(pivot);
+	if (!loadKeyFrames(sceneGraph, node, ogtInstance, scene)) {
+		scenegraph::SceneGraphTransform transform;
+		const glm::mat4 &worldMatrix = ogtTransformToMat(ogtInstance, 0, scene, scene->models[ogtInstance.model_index]);
+		transform.setWorldMatrix(worldMatrix);
+		const scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		node.setTransform(keyFrameIdx, transform);
+	}
+	const int nodeId = sceneGraph.emplace(core::move(node), parent);
+	if (nodeId != InvalidNodeId) {
+		models[ogtInstance.model_index].nodeId = nodeId;
+		return true;
+	}
+	return false;
 }
 
 bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph,
@@ -126,9 +111,9 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 	}
 
 	for (uint32_t groupIdx = 0; groupIdx < scene->num_groups; ++groupIdx) {
-		const ogt_vox_group &group = scene->groups[groupIdx];
-		Log::debug("group %u with parent: %u (searching for %u)", groupIdx, group.parent_group_index, ogt_groupIdx);
-		if (group.parent_group_index != ogt_groupIdx) {
+		const ogt_vox_group &ogtGroup = scene->groups[groupIdx];
+		Log::debug("group %u with parent: %u (searching for %u)", groupIdx, ogtGroup.parent_group_index, ogt_groupIdx);
+		if (ogtGroup.parent_group_index != ogt_groupIdx) {
 			continue;
 		}
 		Log::debug("Found matching group (%u) with scene graph parent: %i", groupIdx, groupId);
@@ -345,6 +330,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 				voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
 
 			ctx.models.push_back(ogt_model);
+			ctx.nodeToModel.put(node.id(), (int)ctx.models.size() - 1);
 		}
 		saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx, ctx.models.size() - 1);
 		for (int childId : node.children()) {
@@ -370,6 +356,11 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	MVSceneContext ctx;
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	saveNode(sceneGraph, sceneGraph.node(root.id()), ctx, k_invalid_group_index, 0);
+	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::ModelReference); iter != sceneGraph.end();
+		 ++iter) {
+		// TODO: parentGroupIdx, layerId and modelIdx
+		saveInstance(sceneGraph, *iter, ctx, 0, 0, 0);
+	}
 
 	core::Buffer<const ogt_vox_model *> modelPtr;
 	modelPtr.reserve(ctx.models.size());
