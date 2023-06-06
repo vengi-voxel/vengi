@@ -209,11 +209,7 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 		if (layer.name != nullptr) {
 			name = layer.name;
 		}
-		core::RGBA color;
-		color.r = layer.color.r;
-		color.g = layer.color.g;
-		color.b = layer.color.b;
-		color.a = layer.color.a;
+		const core::RGBA color(layer.color.r, layer.color.g, layer.color.b, layer.color.a);
 		node.setColor(color);
 	}
 	loadKeyFrames(sceneGraph, node, ogt_group.transform_anim.keyframes, ogt_group.transform_anim.num_keyframes);
