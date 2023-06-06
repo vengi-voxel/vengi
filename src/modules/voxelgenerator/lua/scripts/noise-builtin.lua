@@ -11,38 +11,47 @@ function arguments()
 end
 
 local function noise2d(volume, region, color, freq, amplitude, type)
-	local visitorSimplex = function (volume, x, z)
+	local visitor = function (noiseVolume, x, z)
+		if noiseVolume == nil then
+			error("volume is nil")
+		end
 		local maxY = amplitude * noise.noise2(x * freq, z * freq) * region:height()
 		for y = 0, maxY do
-			volume:setVoxel(x, y, z, color)
+			noiseVolume:setVoxel(x, y, z, color)
 		end
 	end
-	local visitorWorley = function (volume, x, z)
-		local maxY = amplitude * noise.worley2(x * freq, z * freq) * region:height()
-		for y = 0, maxY do
-			volume:setVoxel(x, y, z, color)
-		end
-	end
-
-	local visitor = visitorSimplex
 	if (type == 'worley') then
-		visitor = visitorWorley
+		visitor = function (noiseVolume, x, z)
+			if noiseVolume == nil then
+				error("volume is nil")
+			end
+			local maxY = amplitude * noise.worley2(x * freq, z * freq) * region:height()
+			for y = 0, maxY do
+				noiseVolume:setVoxel(x, y, z, color)
+			end
+		end
 	end
 	vol.visitXZ(volume, region, visitor)
 end
 
 local function noise3d(volume, region, color, freq, amplitude, threshold, type)
-	local visitorSimplex = function (volume, x, y, z)
+	local visitorSimplex = function (noiseVolume, x, y, z)
+		if noiseVolume == nil then
+			error("volume is nil")
+		end
 		local val = amplitude * noise.noise3(x * freq, y * freq, z * freq)
 		if (val > threshold) then
-			volume:setVoxel(x, y, z, color)
+			noiseVolume:setVoxel(x, y, z, color)
 		end
 	end
 
-	local visitorWorley = function (volume, x, y, z)
+	local visitorWorley = function (noiseVolume, x, y, z)
+		if noiseVolume == nil then
+			error("volume is nil")
+		end
 		local val = amplitude * noise.worley3(x * freq, y * freq, z * freq)
 		if (val > threshold) then
-			volume:setVoxel(x, y, z, color)
+			noiseVolume:setVoxel(x, y, z, color)
 		end
 	end
 	local visitor = visitorSimplex
@@ -52,7 +61,8 @@ local function noise3d(volume, region, color, freq, amplitude, threshold, type)
 	vol.visitYXZ(volume, region, visitor)
 end
 
-function main(volume, region, color, freq, amplitude, dimensions, threshold, type)
+function main(node, region, color, freq, amplitude, dimensions, threshold, type)
+	local volume = node:volume()
 	if (dimensions == 2) then
 		noise2d(volume, region, color, freq, amplitude, type)
 	else
