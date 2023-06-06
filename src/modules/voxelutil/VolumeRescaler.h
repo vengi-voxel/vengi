@@ -3,11 +3,13 @@
  */
 #pragma once
 
+#include "app/App.h"
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/Region.h"
 
@@ -44,8 +46,8 @@ static bool isHidden(Sampler &srcSampler) {
  * be exactly half of the size of the sourceRegion.
  */
 template<typename SourceVolume, typename DestVolume>
-void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Palette &palette, const voxel::Region& sourceRegion, DestVolume& destVolume, const voxel::Region& destRegion) {
-	core_trace_scoped(RescaleVolume);
+void scaleDown(const SourceVolume& sourceVolume, const voxel::Palette &palette, const voxel::Region& sourceRegion, DestVolume& destVolume, const voxel::Region& destRegion) {
+	core_trace_scoped(ScaleVolumeDown);
 	typename SourceVolume::Sampler srcSampler(sourceVolume);
 
 	core::DynamicArray<glm::vec4> materialColors;
@@ -206,8 +208,45 @@ void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Palette &palet
 }
 
 template<typename SourceVolume, typename DestVolume>
-void rescaleVolume(const SourceVolume& sourceVolume, const voxel::Palette &palette, DestVolume& destVolume) {
-	rescaleVolume(sourceVolume, palette, sourceVolume.region(), destVolume, destVolume.region());
+void scaleDown(const SourceVolume& sourceVolume, const voxel::Palette &palette, DestVolume& destVolume) {
+	scaleDown(sourceVolume, palette, sourceVolume.region(), destVolume, destVolume.region());
+}
+
+voxel::RawVolume *scaleUp(const voxel::RawVolume& sourceVolume) {
+	const voxel::Region srcRegion = sourceVolume.region();
+	const glm::ivec3& targetDimensions = srcRegion.getDimensionsInVoxels() * 2;
+	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensions);
+	if (!app::App::getInstance()->hasEnoughMemory(voxel::RawVolume::size(destRegion))) {
+		return nullptr;
+	}
+
+	static const glm::ivec3 directions[8] = {glm::ivec3(0, 0, 0), glm::ivec3(1, 0, 0), glm::ivec3(0, 1, 0),
+											 glm::ivec3(1, 1, 0), glm::ivec3(0, 0, 1), glm::ivec3(1, 0, 1),
+											 glm::ivec3(0, 1, 1), glm::ivec3(1, 1, 1)};
+
+	voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
+	voxel::RawVolume::Sampler sourceSampler(sourceVolume);
+	sourceSampler.setPosition(srcRegion.getLowerCorner());
+	for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); x += 1) {
+		voxel::RawVolume::Sampler sampler2 = sourceSampler;
+		for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); y += 1) {
+			voxel::RawVolume::Sampler sampler3 = sampler2;
+			for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); z += 1) {
+				const voxel::Voxel &voxel = sampler3.voxel();
+				if (voxel::isAir(voxel.getMaterial())) {
+					continue;
+				}
+				const glm::ivec3 targetPos = sampler3.position() * 2;
+				for (int i = 0; i < 8; ++i) {
+					destVolume->setVoxel(targetPos + directions[i], voxel);
+				}
+				sampler3.movePositiveZ(1);
+			}
+			sampler2.movePositiveY(1);
+		}
+		sourceSampler.movePositiveX(1);
+	}
+	return destVolume;
 }
 
 }

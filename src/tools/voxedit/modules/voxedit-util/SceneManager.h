@@ -158,7 +158,8 @@ protected:
 
 	void colorToNewNode(const voxel::Voxel voxelColor);
 	void crop();
-	void scale(int nodeId);
+	void scaleDown(int nodeId);
+	void scaleUp(int nodeId);
 	void resizeAll(const glm::ivec3 &size);
 	int size() const;
 

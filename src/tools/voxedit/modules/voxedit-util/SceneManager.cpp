@@ -538,7 +538,23 @@ void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
 	addNodeToSceneGraph(newNode);
 }
 
-void SceneManager::scale(int nodeId) {
+void SceneManager::scaleUp(int nodeId) {
+	voxel::RawVolume* v = volume(nodeId);
+	if (v == nullptr) {
+		return;
+	}
+	voxel::RawVolume *destVolume = voxelutil::scaleUp(*v);
+	if (destVolume == nullptr) {
+		return;
+	}
+	if (!setNewVolume(nodeId, destVolume, true)) {
+		delete destVolume;
+		return;
+	}
+	modified(nodeId, destVolume->region());
+}
+
+void SceneManager::scaleDown(int nodeId) {
 	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
 		return;
@@ -551,7 +567,7 @@ void SceneManager::scale(int nodeId) {
 	}
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 	voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
-	voxelutil::rescaleVolume(*v, _sceneGraph.node(nodeId).palette(), *destVolume);
+	voxelutil::scaleDown(*v, _sceneGraph.node(nodeId).palette(), *destVolume);
 	if (!setNewVolume(nodeId, destVolume, true)) {
 		delete destVolume;
 		return;
@@ -1551,14 +1567,23 @@ void SceneManager::construct() {
 		crop();
 	}).setHelp("Crop the current active node to the voxel boundaries");
 
-	command::Command::registerCommand("scale", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("scaledown", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
 		int nodeId = activeNode();
 		if (argc == 1) {
 			nodeId = core::string::toInt(args[0]);
 		}
-		scale(nodeId);
+		scaleDown(nodeId);
 	}).setHelp("Scale the current active node or the given node down").setArgumentCompleter(nodeCompleter(_sceneGraph));
+
+	command::Command::registerCommand("scaleup", [&] (const command::CmdArgs& args) {
+		const int argc = (int)args.size();
+		int nodeId = activeNode();
+		if (argc == 1) {
+			nodeId = core::string::toInt(args[0]);
+		}
+		scaleUp(nodeId);
+	}).setHelp("Scale the current active node or the given node up").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("colortolayer", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();

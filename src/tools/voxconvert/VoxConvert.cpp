@@ -648,7 +648,7 @@ void VoxConvert::scale(scenegraph::SceneGraph& sceneGraph) {
 		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 		if (destRegion.isValid()) {
 			voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
-			voxelutil::rescaleVolume(*node.volume(), node.palette(), *destVolume);
+			voxelutil::scaleDown(*node.volume(), node.palette(), *destVolume);
 			node.setVolume(destVolume, true);
 		}
 	}

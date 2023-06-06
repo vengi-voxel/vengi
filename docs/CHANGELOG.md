@@ -25,6 +25,7 @@ General:
    - Removed cvar `voxformat_marchingcubes` and replaced with `voxel_meshmode` (set to `1` to use marching cubes)
    - Added new lua script `gradient.lua`
    - Improved `csm` and `nvm` format support
+   - Added lua script for generating mazes
 
 VoxConvert:
 
