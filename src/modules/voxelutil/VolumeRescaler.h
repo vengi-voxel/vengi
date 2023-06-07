@@ -233,10 +233,7 @@ voxel::RawVolume *scaleUp(const voxel::RawVolume& sourceVolume) {
 			voxel::RawVolume::Sampler sampler3 = sampler2;
 			for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); z += 1) {
 				const voxel::Voxel &voxel = sampler3.voxel();
-				if (voxel::isAir(voxel.getMaterial())) {
-					continue;
-				}
-				const glm::ivec3 targetPos = sampler3.position() * 2;
+				const glm::ivec3 targetPos(x * 2, y * 2, z * 2);
 				for (int i = 0; i < 8; ++i) {
 					destVolume->setVoxel(targetPos + directions[i], voxel);
 				}
