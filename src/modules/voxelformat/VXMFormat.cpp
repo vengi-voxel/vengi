@@ -17,6 +17,7 @@
 #include "io/Filesystem.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include <glm/common.hpp>
@@ -209,8 +210,9 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	}
 	wrapBool(stream.writeUInt8(layers))
 
-	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
-		voxel::RawVolume::Sampler sampler(node.volume());
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		voxel::RawVolume::Sampler sampler(sceneGraph.resolveVolume(node));
 		wrapBool(stream.writeString(node.name()))
 		wrapBool(stream.writeBool(node.visible()))
 

@@ -42,7 +42,9 @@ void PalettePanel::reloadAvailablePalettes() {
 		const core::String& name = voxel::Palette::extractPaletteName(file.name);
 		_availablePalettes.push_back(name);
 	}
-	for (const scenegraph::SceneGraphNode &node : sceneMgr().sceneGraph()) {
+	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		core::String id;
 		if (node.name().empty()) {
 			id = core::string::format("node:%i##%i", node.id(), node.id());

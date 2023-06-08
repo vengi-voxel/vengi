@@ -78,7 +78,8 @@ namespace voxedit {
 inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
 	return [&] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		int i = 0;
-		for (const auto &modelNode : sceneGraph) {
+		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+			scenegraph::SceneGraphNode &modelNode = *iter;
 			matches.push_back(core::string::toString(modelNode.id()));
 		}
 		return i;
@@ -348,7 +349,8 @@ void SceneManager::updateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType 
 
 bool SceneManager::saveModels(const core::String& dir) {
 	bool state = false;
-	for (const scenegraph::SceneGraphNode & node : _sceneGraph) {
+	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		const core::String filename = core::string::path(dir, node.name() + ".vengi");
 		state |= saveNode(node.id(), filename);
 	}
@@ -422,7 +424,8 @@ bool SceneManager::import(const core::String& file) {
 	groupNode.setName(core::string::extractFilename(file));
 	int newNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
 	bool state = false;
-	for (scenegraph::SceneGraphNode& node : newSceneGraph) {
+	for (auto iter = newSceneGraph.beginModel(); iter != newSceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
 		state |= addNodeToSceneGraph(node, newNodeId) != InvalidNodeId;
 	}
 
@@ -458,7 +461,8 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 			Log::error("Failed to load %s", e.fullPath.c_str());
 		} else {
 			mergeIfNeeded(newSceneGraph);
-			for (scenegraph::SceneGraphNode& node : newSceneGraph) {
+			for (auto iter = newSceneGraph.beginModel(); iter != newSceneGraph.end(); ++iter) {
+				scenegraph::SceneGraphNode &node = *iter;
 				state |= addNodeToSceneGraph(node, importGroupNodeId) != InvalidNodeId;
 			}
 		}
@@ -1126,7 +1130,8 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 int SceneManager::mergeNodes(NodeMergeFlags flags) {
 	core::DynamicArray<int> nodeIds;
 	nodeIds.reserve(_sceneGraph.size());
-	for (scenegraph::SceneGraphNode &node : _sceneGraph) {
+	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		if (!shouldGetMerged(node, flags)) {
 			continue;
 		}
@@ -1162,7 +1167,7 @@ void SceneManager::resetSceneState() {
 	// this also resets the cursor voxel - but nodeActive() will set it to the first usable index
 	// that's why this call must happen before the nodeActive() call.
 	_modifier.reset();
-	scenegraph::SceneGraphNode &node = *_sceneGraph.begin();
+	scenegraph::SceneGraphNode &node = *_sceneGraph.beginModel();
 	nodeActivate(node.id());
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
@@ -2038,13 +2043,15 @@ void SceneManager::construct() {
 	}).setHelp("Hide all model nodes except the active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("layerlockall", [&](const command::CmdArgs &args) {
-		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
+		for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
+			scenegraph::SceneGraphNode &node = *iter;
 			node.setLocked(true);
 		}
 	}).setHelp("Lock all nodes");
 
 	command::Command::registerCommand("layerunlockall", [&] (const command::CmdArgs& args) {
-		for (scenegraph::SceneGraphNode &node : _sceneGraph) {
+		for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
+			scenegraph::SceneGraphNode &node = *iter;
 			node.setLocked(false);
 		}
 	}).setHelp("Unlock all nodes");
@@ -2227,20 +2234,27 @@ void SceneManager::animate(double nowSeconds) {
 	if (!animateActive()) {
 		return;
 	}
-	if (_nextFrameSwitch <= nowSeconds) {
-		_nextFrameSwitch = nowSeconds + _animationSpeed;
-		const int modelCount = (int)_sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
-		const int roundTrip = modelCount + _currentAnimationModelIdx;
-		for (int modelIdx = _currentAnimationModelIdx + 1; modelIdx < roundTrip; ++modelIdx) {
-			scenegraph::SceneGraphNode *node = _sceneGraph[_currentAnimationModelIdx];
-			core_assert_always(node != nullptr);
-			node->setVisible(false);
-			_currentAnimationModelIdx = modelIdx % modelCount;
-			node = _sceneGraph[_currentAnimationModelIdx];
-			core_assert_always(node != nullptr);
-			node->setVisible(true);
-			return;
-		}
+	if (_nextFrameSwitch > nowSeconds) {
+		return;
+	}
+	_nextFrameSwitch = nowSeconds + _animationSpeed;
+
+	if (_currentAnimationNodeId == InvalidNodeId) {
+		_currentAnimationNodeId = (*_sceneGraph.beginModel()).id();
+	}
+
+	scenegraph::SceneGraphNode &prev = _sceneGraph.node(_currentAnimationNodeId);
+	if (prev.isModelNode()) {
+		prev.setVisible(false);
+	}
+
+	_currentAnimationNodeId = _sceneGraph.nextModelNode(_currentAnimationNodeId);
+	if (_currentAnimationNodeId == InvalidNodeId) {
+		_currentAnimationNodeId = _sceneGraph.nextModelNode(_sceneGraph.root().id());
+	}
+	scenegraph::SceneGraphNode &node = _sceneGraph.node(_currentAnimationNodeId);
+	if (node.isModelNode()) {
+		node.setVisible(true);
 	}
 }
 
@@ -2446,7 +2460,7 @@ void SceneManager::traceScene(bool force) {
 	float intersectDist = _camera->farPlane();
 	const math::Ray& ray = _camera->mouseRay(_mouseCursor);
 	const bool hideInactive = _hideInactive->boolVal();
-	for (auto iter = _sceneGraph.begin(scenegraph::SceneGraphNodeType::AllModels); iter != _sceneGraph.end(); ++iter) {
+	for (auto iter = _sceneGraph.beginAllModels(); iter != _sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode& node = *iter;
 		if (!node.visible() || (hideInactive && node.id() != activeNode())) {
 			continue;

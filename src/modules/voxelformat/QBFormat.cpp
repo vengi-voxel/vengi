@@ -135,13 +135,13 @@ public:
 	}
 };
 
-bool QBFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
-						  bool leftHanded) const {
+bool QBFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+						  const scenegraph::SceneGraphNode &node, bool leftHanded) const {
 	const int nameLength = (int)node.name().size();
 	wrapSave(stream.writeUInt8(nameLength));
 	wrapSave(stream.writeString(node.name(), false));
 
-	const voxel::Region &region = node.region();
+	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	if (!region.isValid()) {
 		Log::error("Invalid region");
 		return false;
@@ -175,7 +175,8 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sce
 	}
 	MatrixWriter writer(stream, node, leftHanded);
 	voxelutil::visitVolume(
-		*node.volume(), [&writer](int x, int y, int z, const voxel::Voxel &voxel) { writer.addVoxel(x, y, z, voxel); },
+		*sceneGraph.resolveVolume(node),
+		[&writer](int x, int y, int z, const voxel::Voxel &voxel) { writer.addVoxel(x, y, z, voxel); },
 		voxelutil::VisitAll(), visitOrder);
 	return writer.success();
 }
@@ -190,8 +191,9 @@ bool QBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::
 	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))
 	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
 	wrapSave(stream.writeUInt32((uint32_t)sceneGraph.size()))
-	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
-		if (!saveMatrix(stream, node, leftHanded)) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		if (!saveMatrix(stream, sceneGraph, node, leftHanded)) {
 			return false;
 		}
 	}

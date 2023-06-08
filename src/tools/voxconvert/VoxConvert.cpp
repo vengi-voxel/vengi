@@ -503,7 +503,8 @@ void VoxConvert::exportLayersIntoSingleObjects(scenegraph::SceneGraph& sceneGrap
 	Log::info("Export layers into single objects");
 	int n = 0;
 	voxelformat::SaveContext saveCtx;
-	for (scenegraph::SceneGraphNode& node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::SceneGraphNode newNode;
 		scenegraph::copyNode(node, newNode, false);
@@ -604,7 +605,8 @@ void VoxConvert::dump(const scenegraph::SceneGraph& sceneGraph) {
 
 void VoxConvert::crop(scenegraph::SceneGraph& sceneGraph) {
 	Log::info("Crop volumes");
-	for (scenegraph::SceneGraphNode& node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
 		node.setVolume(voxelutil::cropVolume(node.volume()), true);
 	}
 }
@@ -630,7 +632,8 @@ void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneG
 				args[i - 1] = tokens[i];
 			}
 			Log::info("Execute script %s", tokens[0].c_str());
-			for (scenegraph::SceneGraphNode& node : sceneGraph) {
+			for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+				const scenegraph::SceneGraphNode &node = *iter;
 				voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
 				script.exec(luaScript, sceneGraph, node.id(), node.region(), voxel, dirtyRegion, args);
 			}
@@ -642,7 +645,8 @@ void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneG
 
 void VoxConvert::scale(scenegraph::SceneGraph& sceneGraph) {
 	Log::info("Scale layers");
-	for (scenegraph::SceneGraphNode& node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
 		const voxel::Region srcRegion = node.region();
 		const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
@@ -656,7 +660,8 @@ void VoxConvert::scale(scenegraph::SceneGraph& sceneGraph) {
 
 void VoxConvert::resize(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph) {
 	Log::info("Resize layers");
-	for (scenegraph::SceneGraphNode& node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
 		voxel::RawVolume *v = voxelutil::resize(node.volume(), size);
 		if (v == nullptr) {
 			Log::warn("Failed to resize volume");
@@ -690,11 +695,16 @@ void VoxConvert::filterVolumes(scenegraph::SceneGraph& sceneGraph) {
 			layers.insert(layer);
 		}
 	}
-	for (int i = 0; i < (int)sceneGraph.size(); ++i) {
+	auto iter = sceneGraph.beginModel();
+	core::Set<int> removeNodes;
+	for (int i = 0; iter != sceneGraph.end(); ++i, ++iter) {
 		if (!layers.has(i)) {
-			sceneGraph[i]->release();
+			removeNodes.insert((*iter).id());
 			Log::debug("Remove layer %i - not part of the filter expression", i);
 		}
+	}
+	for (const auto &entry : removeNodes) {
+		sceneGraph.removeNode(entry->key, false);
 	}
 	Log::info("Filtered layers: %i", (int)layers.size());
 }
@@ -705,7 +715,8 @@ void VoxConvert::mirror(const core::String& axisStr, scenegraph::SceneGraph& sce
 		return;
 	}
 	Log::info("Mirror on axis %c", axisStr[0]);
-	for (scenegraph::SceneGraphNode &node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
 		node.setVolume(voxelutil::mirrorAxis(node.volume(), axis), true);
 	}
 }
@@ -724,7 +735,8 @@ void VoxConvert::rotate(const core::String& axisStr, scenegraph::SceneGraph& sce
 		return;
 	}
 	Log::info("Rotate on axis %c by %f degree", axisStr[0], degree);
-	for (scenegraph::SceneGraphNode &node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
 		glm::vec3 rotVec{0.0f};
 		rotVec[math::getIndexForAxis(axis)] = degree;
 		node.setVolume(voxelutil::rotateVolume(node.volume(), node.palette(), rotVec, glm::vec3(0.5f)), true);
@@ -733,7 +745,8 @@ void VoxConvert::rotate(const core::String& axisStr, scenegraph::SceneGraph& sce
 
 void VoxConvert::translate(const glm::ivec3& pos, scenegraph::SceneGraph& sceneGraph) {
 	Log::info("Translate by %i:%i:%i", pos.x, pos.y, pos.z);
-	for (scenegraph::SceneGraphNode &node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
 		if (voxel::RawVolume *v = node.volume()) {
 			v->translate(pos);
 		}

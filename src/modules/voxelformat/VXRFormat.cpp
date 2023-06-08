@@ -182,13 +182,12 @@ bool VXRFormat::loadChildVXM(const core::String &vxmPath, scenegraph::SceneGraph
 	}
 	Log::debug("Found %i layers in vxm", modelCount);
 
-	scenegraph::SceneGraphNode *childModelNode = childSceneGraph[0];
-	core_assert_always(childModelNode != nullptr);
-	childModelNode->releaseOwnership();
+	scenegraph::SceneGraphNode &childModelNode = *childSceneGraph.beginModel();
+	childModelNode.releaseOwnership();
 
 	const core::String nodeName = node.name();
-	scenegraph::copyNode(*childModelNode, node, false, version >= 3);
-	node.setVolume(childModelNode->volume(), true);
+	scenegraph::copyNode(childModelNode, node, false, version >= 3);
+	node.setVolume(childModelNode.volume(), true);
 	// restore old name
 	node.setName(nodeName);
 

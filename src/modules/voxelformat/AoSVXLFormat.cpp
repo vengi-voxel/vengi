@@ -185,8 +185,9 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		return false;
 	}
 
-	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
-		voxelutil::visitVolume(*node.volume(),
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		voxelutil::visitVolume(*sceneGraph.resolveVolume(node),
 							   [&map, &node, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {
 								   const core::RGBA rgba = node.palette().color(voxel.getColor());
 								   const uint32_t color = vxl_color(rgba);

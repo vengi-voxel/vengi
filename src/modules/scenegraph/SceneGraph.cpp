@@ -136,7 +136,8 @@ bool SceneGraph::setActiveNode(int nodeId) {
 }
 
 voxel::Palette &SceneGraph::firstPalette() const {
-	for (SceneGraphNode& node : *this) {
+	for (auto iter = beginModel(); iter != end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
 		return node.palette();
 	}
 	return voxel::getPalette();
@@ -211,7 +212,7 @@ int SceneGraph::nextModelNode(int nodeId) const {
 		}
 	}
 	bool found = false;
-	for (iterator modelIter = begin(); modelIter != end(); ++modelIter) {
+	for (iterator modelIter = beginModel(); modelIter != end(); ++modelIter) {
 		if ((*modelIter).id() == nodeId) {
 			found = true;
 			continue;
@@ -263,7 +264,8 @@ voxel::Region SceneGraph::groupRegion() const {
 voxel::Region SceneGraph::region() const {
 	voxel::Region r;
 	bool validVolume = false;
-	for (const SceneGraphNode& node : *this) {
+	for (auto iter = beginModel(); iter != end(); ++iter) {
+		const SceneGraphNode &node = *iter;
 		if (validVolume) {
 			r.accumulate(node.region());
 			continue;
@@ -460,7 +462,7 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 	if (_activeNodeId == nodeId) {
 		if (!empty(SceneGraphNodeType::Model)) {
 			// get the first model node
-			_activeNodeId = (*begin()).id();
+			_activeNodeId = (*beginModel()).id();
 		} else {
 			_activeNodeId = root().id();
 		}
@@ -511,32 +513,11 @@ void SceneGraph::clear() {
 	_nodes.emplace(0, core::move(node));
 }
 
-const SceneGraphNode *SceneGraph::operator[](int modelIdx) const {
-	for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
-		if (modelIdx == 0) {
-			return &*iter;
-		}
-		--modelIdx;
-	}
-	Log::error("Could not find scene graph node for model id %i", modelIdx);
-	return nullptr;
-}
-
-SceneGraphNode *SceneGraph::operator[](int modelIdx) {
-	for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
-		if (modelIdx == 0) {
-			return &*iter;
-		}
-		--modelIdx;
-	}
-	Log::error("Could not find scene graph node for model id %i", modelIdx);
-	return nullptr;
-}
-
 voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) const {
 	voxel::Palette palette;
 	bool tooManyColors = false;
-	for (const SceneGraphNode &node : *this) {
+	for (auto iter = beginModel(); iter != end(); ++iter) {
+		const SceneGraphNode &node = *iter;
 		const voxel::Palette &nodePalette = node.palette();
 		for (int i = 0; i < nodePalette.colorCount(); ++i) {
 			const core::RGBA rgba = nodePalette.color(i);
@@ -565,7 +546,8 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) cons
 		for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
 			palette.removeGlow(i);
 		}
-		for (const SceneGraphNode &node : *this) {
+		for (auto iter = beginModel(); iter != end(); ++iter) {
+			const SceneGraphNode &node = *iter;
 			core::Array<bool, voxel::PaletteMaxColors> used;
 			if (removeUnused) {
 				used.fill(false);
@@ -615,7 +597,8 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool transform) const {
 	if (n == 0) {
 		return MergedVolumePalette{};
 	} else if (n == 1) {
-		for (SceneGraphNode& node : *this) {
+		for (auto iter = beginModel(); iter != end(); ++iter) {
+			const SceneGraphNode &node = *iter;
 			return MergedVolumePalette{new voxel::RawVolume(node.volume()), node.palette()};
 		}
 	}

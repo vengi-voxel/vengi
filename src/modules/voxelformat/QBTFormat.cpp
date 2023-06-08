@@ -699,7 +699,8 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			return false;
 		}
 	}
-	for (scenegraph::SceneGraphNode &node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
 		node.setPalette(palette);
 	}
 	return true;

@@ -316,8 +316,9 @@ TEST_F(SceneGraphTest, testMove) {
 	const SceneGraphNode &newParentNode = sceneGraph.node(originalChildNodeId);
 	ASSERT_EQ(1u, newParentNode.children().size());
 	ASSERT_EQ(originalParentNodeId, newParentNode.children().front());
-	for (const auto &n : sceneGraph) {
-		EXPECT_FALSE(n.transform(0).dirty()) << "node " << n.name().c_str() << " still has a dirty transform after the move";
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const SceneGraphNode &node = *iter;
+		EXPECT_FALSE(node.transform(0).dirty()) << "node " << node.name().c_str() << " still has a dirty transform after the move";
 	}
 }
 

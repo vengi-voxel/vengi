@@ -97,7 +97,7 @@ private:
 	// model animation speed
 	double _animationSpeed = 0.0;
 	double _nextFrameSwitch = 0.0;
-	int _currentAnimationModelIdx = 0;
+	int _currentAnimationNodeId = InvalidNodeId;
 
 	// timeline animation
 	scenegraph::FrameIndex _currentFrameIdx = 0;

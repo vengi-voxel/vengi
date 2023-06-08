@@ -172,9 +172,6 @@ public:
 	 */
 	void clear();
 
-	const SceneGraphNode *operator[](int modelIdx) const;
-	SceneGraphNode *operator[](int modelIdx);
-
 	class iterator {
 	private:
 		int _startNodeId = -1;
@@ -245,7 +242,11 @@ public:
 		}
 	};
 
-	inline auto begin(SceneGraphNodeType filter = SceneGraphNodeType::Model) {
+	inline auto begin(SceneGraphNodeType filter) {
+		return iterator(0, _nextNodeId, filter, this);
+	}
+
+	inline auto begin(SceneGraphNodeType filter) const {
 		return iterator(0, _nextNodeId, filter, this);
 	}
 
@@ -253,12 +254,12 @@ public:
 		return iterator(0, _nextNodeId, SceneGraphNodeType::Max, this);
 	}
 
-	inline auto begin(SceneGraphNodeType filter = SceneGraphNodeType::Model) const {
-		return iterator(0, _nextNodeId, filter, this);
-	}
-
 	inline auto beginAll() const {
 		return begin(SceneGraphNodeType::All);
+	}
+
+	inline auto beginModel() const {
+		return begin(SceneGraphNodeType::Model);
 	}
 
 	inline auto beginAllModels() const {

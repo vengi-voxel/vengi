@@ -76,7 +76,8 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			Log::warn("Failed to load vxm tile %s", path);
 			continue;
 		}
-		for (const scenegraph::SceneGraphNode &node : subGraph) {
+		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+			const scenegraph::SceneGraphNode &node = *iter;
 			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 			copyNode(node, newNode, true);
 			newNode.setProperty("tileidx", core::string::format("%i", i));
@@ -104,7 +105,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			continue;
 		}
 
-		const scenegraph::SceneGraphNode *node = tileGraph[modelIdx];
+		const scenegraph::SceneGraphNode *node = tileGraph.findNodeByPropertyValue("tileidx", core::string::format("%i", modelIdx));
 		if (node == nullptr) {
 			Log::warn("Failed to get model from scene graph with index %i", modelIdx);
 			continue;

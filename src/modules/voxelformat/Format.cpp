@@ -71,7 +71,8 @@ image::ImagePtr Format::createThumbnail(const scenegraph::SceneGraph &sceneGraph
 void Format::splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph,
 						  const glm::ivec3 &maxSize, bool crop) {
 	destSceneGraph.reserve(srcSceneGraph.size());
-	for (scenegraph::SceneGraphNode &node : srcSceneGraph) {
+	for (auto iter = srcSceneGraph.beginModel(); iter != srcSceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		if (stopExecution()) {
 			break;
 		}
@@ -155,7 +156,8 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 	bool needsSplit = false;
 	const glm::ivec3 maxsize = maxSize();
 	if (maxsize.x > 0 && maxsize.y > 0 && maxsize.z > 0) {
-		for (scenegraph::SceneGraphNode &node : sceneGraph) {
+		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+			const scenegraph::SceneGraphNode &node = *iter;
 			const voxel::Region &region = node.region();
 			const glm::ivec3 &maxs = region.getDimensionsInVoxels();
 			if (glm::all(glm::lessThanEqual(maxs, maxsize))) {

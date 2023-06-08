@@ -580,15 +580,16 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 							   int numBlocks) {
 	int blockUid = 0;
 	int layerId = 0;
-	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
-		const voxel::Region &region = node.region();
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		glm::ivec3 mins, maxs;
 		calcMinsMaxs(region, glm::ivec3(BlockSize), mins, maxs);
 
 		GoxScopedChunkWriter scoped(stream, FourCC('L', 'A', 'Y', 'R'));
 		int layerBlocks = 0;
 		voxelutil::visitVolume(
-			*node.volume(), voxel::Region(mins, maxs), BlockSize, BlockSize, BlockSize,
+			*sceneGraph.resolveVolume(node), voxel::Region(mins, maxs), BlockSize, BlockSize, BlockSize,
 			[&](int x, int y, int z, const voxel::Voxel &) {
 				if (isEmptyBlock(node.volume(), glm::ivec3(BlockSize), x, y, z)) {
 					return;
@@ -645,12 +646,13 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 
 bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph, int &blocks) {
 	blocks = 0;
-	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
-		const voxel::Region &region = node.region();
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		glm::ivec3 mins, maxs;
 		calcMinsMaxs(region, glm::ivec3(BlockSize), mins, maxs);
 
-		voxel::RawVolume *mirrored = voxelutil::mirrorAxis(node.volume(), math::Axis::X);
+		voxel::RawVolume *mirrored = voxelutil::mirrorAxis(sceneGraph.resolveVolume(node), math::Axis::X);
 		for (int by = mins.y; by <= maxs.y; by += BlockSize) {
 			for (int bz = mins.z; bz <= maxs.z; bz += BlockSize) {
 				for (int bx = mins.x; bx <= maxs.x; bx += BlockSize) {

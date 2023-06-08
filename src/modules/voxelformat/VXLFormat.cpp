@@ -147,7 +147,7 @@ static bool spanIsEmpty(const voxel::RawVolume *v, int x, int z) {
 	return true;
 }
 
-bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
+bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 						   VXLLayerOffset &offsets, uint64_t nodeSectionOffset) const {
 	const voxel::Region &region = node.region();
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
@@ -331,7 +331,7 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, 
 	return true;
 }
 
-bool VXLFormat::saveVXL(core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
+bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph, core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
 						io::SeekableWriteStream &stream) {
 	if (nodes.empty()) {
 		return false;
@@ -347,7 +347,7 @@ bool VXLFormat::saveVXL(core::DynamicArray<const scenegraph::SceneGraphNode *> &
 	const uint64_t bodyStart = stream.pos();
 	for (uint32_t i = 0; i < numLayers; ++i) {
 		const scenegraph::SceneGraphNode *node = nodes[(int)i];
-		wrapBool(writeLayer(stream, *node, layerOffsets[i], bodyStart))
+		wrapBool(writeLayer(stream, sceneGraph, *node, layerOffsets[i], bodyStart))
 	}
 
 	const uint64_t afterBodyPos = stream.pos();
@@ -378,7 +378,8 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	turret.reserve(numNodes);
 
 	// TODO: split the nodes into the max allowed size
-	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		const core::String &lowerName = node.name().toLower();
 		if (lowerName.contains("barrel")) {
 			barrel.push_back(&node);
@@ -391,20 +392,20 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	const core::String &basename = core::string::stripExtension(filename);
 
-	if (!saveVXL(body, filename, stream)) {
+	if (!saveVXL(sceneGraph, body, filename, stream)) {
 		return false;
 	}
 	if (!barrel.empty()) {
 		const core::String &extFilename = basename + "barl.vxl";
 		io::FileStream extStream(io::filesystem()->open(extFilename, io::FileMode::SysWrite));
-		if (extStream.valid() && !saveVXL(barrel, extFilename, extStream)) {
+		if (extStream.valid() && !saveVXL(sceneGraph, barrel, extFilename, extStream)) {
 			Log::warn("Failed to write %s", extFilename.c_str());
 		}
 	}
 	if (!turret.empty()) {
 		const core::String &extFilename = basename + "tur.vxl";
 		io::FileStream extStream(io::filesystem()->open(extFilename, io::FileMode::SysWrite));
-		if (extStream.valid() && !saveVXL(turret, extFilename, extStream)) {
+		if (extStream.valid() && !saveVXL(sceneGraph, turret, extFilename, extStream)) {
 			Log::warn("Failed to write %s", extFilename.c_str());
 		}
 	}
@@ -763,7 +764,8 @@ bool VXLFormat::writeHVAHeader(io::SeekableWriteStream &stream, const scenegraph
 	}
 	uint32_t numFrames = 0;
 
-	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		numFrames = core_max(numFrames, node.keyFrames().size());
 	}
 
@@ -771,7 +773,8 @@ bool VXLFormat::writeHVAHeader(io::SeekableWriteStream &stream, const scenegraph
 	uint32_t numNodes = sceneGraph.size();
 	stream.writeUInt32(numNodes);
 	for (uint32_t frame = 0; frame < numFrames; ++frame) {
-		for (const scenegraph::SceneGraphNode &node : sceneGraph) {
+		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+			const scenegraph::SceneGraphNode &node = *iter;
 			const core::String &name = node.name().substr(0, 15);
 			if (stream.write(name.c_str(), name.size()) == -1) {
 				Log::error("Failed to write layer name");
@@ -787,12 +790,14 @@ bool VXLFormat::writeHVAHeader(io::SeekableWriteStream &stream, const scenegraph
 
 bool VXLFormat::writeHVAFrames(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph) const {
 	uint32_t numFrames = 0;
-	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		numFrames = core_max(numFrames, node.keyFrames().size());
 	}
 
 	for (uint32_t i = 0; i < numFrames; ++i) {
-		for (const scenegraph::SceneGraphNode &node : sceneGraph) {
+		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+			scenegraph::SceneGraphNode &node = *iter;
 			const scenegraph::SceneGraphTransform &transform = node.transform(i);
 			VXLMatrix vxlMatrix;
 			convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), true);

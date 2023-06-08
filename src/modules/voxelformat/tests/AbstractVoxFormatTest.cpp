@@ -40,7 +40,8 @@ image::ImagePtr AbstractVoxFormatTest::testThumbnailCreator(const scenegraph::Sc
 void AbstractVoxFormatTest::dump(const core::String& srcFilename, const scenegraph::SceneGraph &sceneGraph) {
 	int i = 0;
 	const core::String& prefix = core::string::extractFilename(srcFilename);
-	for (const auto &node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		const core::String& file = core::string::format("%s-%02i-%s.txt", prefix.c_str(), i, node.name().c_str());
 		const core::String& structName = core::string::format("model_%i", i);
 		dump(structName, node.volume(), core::string::sanitizeFilename(file));
@@ -158,7 +159,8 @@ void AbstractVoxFormatTest::testRGBSmall(const core::String &filename, io::Seeka
 	const core::RGBA green(0, 255, 0);
 	const core::RGBA blue(0, 0, 255);
 
-	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::RawVolume *volume = node.volume();
 		EXPECT_EQ(3, voxelutil::visitVolume(*volume, [] (int, int, int, const voxel::Voxel&) {}));
 		checkColor(blue, node.palette(), volume->voxel( 0,  0,  0).getColor(), 0.0f);
@@ -229,7 +231,8 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta
 	const core::RGBA green = palette.color(149);
 	const core::RGBA blue = palette.color(197);
 
-	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::RawVolume *volume = node.volume();
 		EXPECT_EQ(99, voxelutil::visitVolume(*volume, [] (int, int, int, const voxel::Voxel&) {}));
 		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0,  0).getMaterial()) << "Failed rgb check for " << filename.c_str();

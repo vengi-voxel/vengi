@@ -127,7 +127,8 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 	_state->scene = {};
 	_state->lights = {};
 	const bool marchingCubes = core::Var::getSafe(cfg::VoxelMeshMode)->intVal() == 1;
-	for (const auto &node : sceneGraph) {
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			continue;

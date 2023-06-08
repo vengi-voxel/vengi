@@ -51,7 +51,8 @@ private:
 	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
 						const LoadContext &ctx) override;
-	bool saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node, bool leftHanded) const;
+	bool saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+					const scenegraph::SceneGraphNode &node, bool leftHanded) const;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
 

@@ -437,17 +437,21 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	Meshes meshes;
 	core::Map<int, int> meshIdxNodeMap;
 	core_trace_mutex(core::Lock, lock, "MeshFormat");
-	for (const scenegraph::SceneGraphNode &node : sceneGraph) {
-		auto lambda = [&]() {
+	// TODO: this could get optimized by re-using the same mesh for multiple nodes (in case of reference nodes)
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
+		const voxel::Region region = sceneGraph.resolveRegion(node);
+		auto lambda = [&, region]() {
 			voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
 			if (marchingCubes) {
-				voxel::Region region = node.region();
-				region.shrink(-1);
-				voxel::extractMarchingCubesMesh(node.volume(), node.palette(), region, mesh);
+				voxel::Region extractRegion = region;
+				extractRegion.shrink(-1);
+				voxel::extractMarchingCubesMesh(volume, node.palette(), extractRegion, mesh);
 			} else {
-				voxel::Region region = node.region();
-				region.shiftUpperCorner(1, 1, 1);
-				voxel::extractCubicMesh(node.volume(), region, mesh, glm::ivec3(0), mergeQuads, reuseVertices,
+				voxel::Region extractRegion = region;
+				extractRegion.shiftUpperCorner(1, 1, 1);
+				voxel::extractCubicMesh(volume, extractRegion, mesh, glm::ivec3(0), mergeQuads, reuseVertices,
 										ambientOcclusion);
 			}
 			core::ScopedLock scoped(lock);

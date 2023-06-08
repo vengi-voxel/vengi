@@ -42,11 +42,12 @@ TEST_F(VoxFormatTest, testLoadCharacter) {
 		character_8::create(),	character_9::create(),	character_10::create(), character_11::create(),
 		character_12::create(), character_13::create(), character_14::create(), character_15::create()};
 	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
-	for (int i = 0; i < lengthof(volumes); ++i) {
+	auto iter = sceneGraph.beginModel();
+	for (int i = 0; i < lengthof(volumes); ++i, ++iter) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
-		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
-		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), voxel::ValidateFlags::All, 0.01f);
-		EXPECT_EQ(v1.region().getLowerCornerf(), sceneGraph[i]->transform(0).worldTranslation());
+		const voxel::RawVolume &v2 = *(*iter).volume();
+		volumeComparator(v1, voxel::getPalette(), v2, (*iter).palette(), voxel::ValidateFlags::All, 0.01f);
+		EXPECT_EQ(v1.region().getLowerCornerf(), (*iter).transform(0).worldTranslation());
 	}
 }
 
@@ -63,11 +64,12 @@ TEST_F(VoxFormatTest, testLoadGlasses) {
 	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {glasses_0::create()};
 	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
-	for (int i = 0; i < lengthof(volumes); ++i) {
+	auto iter = sceneGraph.beginModel();
+	for (int i = 0; i < lengthof(volumes); ++i, ++iter) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
-		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
-		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), voxel::ValidateFlags::All, 0.011f);
-		EXPECT_EQ(v1.region().getLowerCornerf(), sceneGraph[i]->transform(0).worldTranslation());
+		const voxel::RawVolume &v2 = *(*iter).volume();
+		volumeComparator(v1, voxel::getPalette(), v2, (*iter).palette(), voxel::ValidateFlags::All, 0.011f);
+		EXPECT_EQ(v1.region().getLowerCornerf(), (*iter).transform(0).worldTranslation());
 	}
 }
 
@@ -103,11 +105,12 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 		eightontop_68::create(), eightontop_69::create(), eightontop_70::create(), eightontop_71::create(),
 	};
 	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
-	for (int i = 0; i < lengthof(volumes); ++i) {
+	auto iter = sceneGraph.beginModel();
+	for (int i = 0; i < lengthof(volumes); ++i, ++iter) {
 		const voxel::RawVolume &v1 = *volumes[i].get();
-		const voxel::RawVolume &v2 = *sceneGraph[i]->volume();
-		volumeComparator(v1, voxel::getPalette(), v2, sceneGraph[i]->palette(), voxel::ValidateFlags::All, 0.02f);
-		EXPECT_EQ(v1.region().getLowerCornerf(), sceneGraph[i]->transform(0).worldTranslation());
+		const voxel::RawVolume &v2 = *(*iter).volume();
+		volumeComparator(v1, voxel::getPalette(), v2, (*iter).palette(), voxel::ValidateFlags::All, 0.02f);
+		EXPECT_EQ(v1.region().getLowerCornerf(), (*iter).transform(0).worldTranslation());
 	}
 }
 

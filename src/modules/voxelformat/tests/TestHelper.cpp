@@ -200,20 +200,20 @@ void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, ValidateFlags flags, float maxDelta) {
 	ASSERT_EQ(graph1.size(), graph2.size());
 	const int n = (int)graph1.size();
-	for (int i = 0; i < n; ++i) {
-		const scenegraph::SceneGraphNode *node1 = graph1[i];
-		ASSERT_NE(nullptr, node1);
-		const scenegraph::SceneGraphNode *node2 = graph2[i];
-		ASSERT_NE(nullptr, node2);
+	auto iter1 = graph1.beginModel();
+	auto iter2 = graph2.beginModel();
+	for (; iter1 != graph1.end() && iter2 != graph2.end(); ++iter1, ++iter2) {
+		const scenegraph::SceneGraphNode &node1 = *iter1;
+		const scenegraph::SceneGraphNode &node2 = *iter2;
 		if ((flags & ValidateFlags::Palette) == ValidateFlags::Palette) {
-			paletteComparator(node1->palette(), node2->palette(), maxDelta);
+			paletteComparator(node1.palette(), node2.palette(), maxDelta);
 		}
 		// it's intended that includingRegion is false here!
-		volumeComparator(*node1->volume(), node1->palette(), *node2->volume(), node2->palette(), flags, maxDelta);
+		volumeComparator(*node1.volume(), node1.palette(), *node2.volume(), node2.palette(), flags, maxDelta);
 		if ((flags & ValidateFlags::Pivot) == ValidateFlags::Pivot) {
-			ASSERT_EQ(node1->pivot(), node2->pivot()) << "Pivot failed";
+			ASSERT_EQ(node1.pivot(), node2.pivot()) << "Pivot failed";
 		}
-		keyFrameComparator(node1->keyFrames(), node2->keyFrames(), flags);
+		keyFrameComparator(node1.keyFrames(), node2.keyFrames(), flags);
 	}
 }
 

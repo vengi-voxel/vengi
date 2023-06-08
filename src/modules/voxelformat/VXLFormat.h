@@ -129,8 +129,8 @@ private:
 	// writing
 	bool writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, uint8_t x, uint8_t y,
 							 uint8_t z, uint8_t skipCount, uint8_t voxelCount, uint8_t normalType) const;
-	bool writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node, VXLLayerOffset &offsets,
-					uint64_t nodeSectionOffset) const;
+	bool writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+					const scenegraph::SceneGraphNode &node, VXLLayerOffset &offsets, uint64_t nodeSectionOffset) const;
 	bool writeLayerHeader(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
 						  uint32_t nodeIdx) const;
 	bool writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
@@ -158,7 +158,8 @@ private:
 	bool loadHVA(const core::String &filename, const VXLModel &mdl, scenegraph::SceneGraph &sceneGraph);
 	bool saveHVA(const core::String &filename, const scenegraph::SceneGraph &sceneGraph);
 
-	bool saveVXL(core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
+	bool saveVXL(const scenegraph::SceneGraph &sceneGraph,
+				 core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
 				 io::SeekableWriteStream &stream);
 
 	bool prepareModel(VXLModel &mdl) const;
