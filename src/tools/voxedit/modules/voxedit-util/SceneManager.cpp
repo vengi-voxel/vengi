@@ -632,7 +632,11 @@ void SceneManager::resize(int nodeId, const voxel::Region &region) {
 	if (node == nullptr) {
 		return;
 	}
-	voxel::RawVolume* v = node->volume();
+	voxel::RawVolume* v = _sceneGraph.resolveVolume(*node);
+	if (v == nullptr) {
+		Log::error("Failed to lookup volume for node %i", nodeId);
+		return;
+	}
 	const voxel::Region oldRegion = v->region();
 	Log::debug("Resize volume from %s to %s", oldRegion.toString().c_str(), region.toString().c_str());
 	voxel::RawVolume* newVolume = voxelutil::resize(v, region);

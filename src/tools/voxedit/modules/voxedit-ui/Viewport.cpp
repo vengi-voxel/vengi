@@ -558,7 +558,7 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	const float snap[]{step, step, step};
 	glm::mat4 deltaMatrix(0.0f);
 	const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
-	const voxel::Region &region = node.region();
+	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	const glm::vec3 size = region.getDimensionsInVoxels();
 	const scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
 
