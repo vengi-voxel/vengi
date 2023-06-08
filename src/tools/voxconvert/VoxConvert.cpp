@@ -632,9 +632,14 @@ void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneG
 				args[i - 1] = tokens[i];
 			}
 			Log::info("Execute script %s", tokens[0].c_str());
+			core::DynamicArray<int> nodes;
 			for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
-				const scenegraph::SceneGraphNode &node = *iter;
+				nodes.push_back((*iter).id());
+			}
+			for (int nodeId : nodes) {
+				const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 				voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
+				Log::debug("execute for node: %i", nodeId);
 				script.exec(luaScript, sceneGraph, node.id(), node.region(), voxel, dirtyRegion, args);
 			}
 		}
