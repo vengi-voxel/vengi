@@ -1,5 +1,9 @@
 /**
  * @file
+ * @defgroup SceneGraph
+ * @{
+ * Stores the node hierarchy of a scene.
+ * @}
  */
 
 #pragma once

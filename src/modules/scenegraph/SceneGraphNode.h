@@ -57,6 +57,9 @@ static constexpr const char* SceneGraphNodeTypeStr[] {
 };
 static_assert((int)(scenegraph::SceneGraphNodeType::Max) == lengthof(SceneGraphNodeTypeStr), "Array sizes don't match Max");
 
+/**
+ * @ingroup SceneGraph
+ */
 class alignas(16) SceneGraphTransform {
 private:
 	enum {
@@ -134,6 +137,9 @@ public:
 	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &pivot) const;
 };
 
+/**
+ * @ingroup SceneGraph
+ */
 enum class InterpolationType : uint8_t {
 	Instant = 0,
 	Linear = 1,
@@ -158,6 +164,9 @@ static constexpr const char *InterpolationTypeStr[] {
 };
 static_assert(int(scenegraph::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
 
+/**
+ * @ingroup SceneGraph
+ */
 class SceneGraphKeyFrame {
 private:
 	SceneGraphTransform _transform;
@@ -189,6 +198,7 @@ using SceneGraphNodeProperties = core::StringMap<core::String>;
 /**
  * @brief Struct that holds the metadata and the volume
  * @sa SceneGraph
+ * @ingroup SceneGraph
  */
 class SceneGraphNode {
 	friend class SceneGraph;
