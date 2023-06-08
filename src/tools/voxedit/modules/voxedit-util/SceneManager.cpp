@@ -78,7 +78,7 @@ namespace voxedit {
 inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
 	return [&] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		int i = 0;
-		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &modelNode = *iter;
 			matches.push_back(core::string::toString(modelNode.id()));
 		}
@@ -352,7 +352,7 @@ void SceneManager::updateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType 
 
 bool SceneManager::saveModels(const core::String& dir) {
 	bool state = false;
-	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
+	for (auto iter = _sceneGraph.beginAllModels(); iter != _sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const core::String filename = core::string::path(dir, node.name() + ".vengi");
 		state |= saveNode(node.id(), filename);
@@ -427,7 +427,7 @@ bool SceneManager::import(const core::String& file) {
 	groupNode.setName(core::string::extractFilename(file));
 	int newNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
 	bool state = false;
-	for (auto iter = newSceneGraph.beginModel(); iter != newSceneGraph.end(); ++iter) {
+	for (auto iter = newSceneGraph.beginAllModels(); iter != newSceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
 		state |= addNodeToSceneGraph(node, newNodeId) != InvalidNodeId;
 	}

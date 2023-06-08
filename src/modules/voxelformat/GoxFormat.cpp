@@ -580,7 +580,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 							   int numBlocks) {
 	int blockUid = 0;
 	int layerId = 0;
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		glm::ivec3 mins, maxs;
@@ -646,7 +646,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 
 bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph, int &blocks) {
 	blocks = 0;
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		glm::ivec3 mins, maxs;

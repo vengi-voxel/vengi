@@ -136,7 +136,7 @@ bool SceneGraph::setActiveNode(int nodeId) {
 }
 
 voxel::Palette &SceneGraph::firstPalette() const {
-	for (auto iter = beginModel(); iter != end(); ++iter) {
+	for (auto iter = beginAllModels(); iter != end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
 		return node.palette();
 	}
@@ -516,7 +516,7 @@ void SceneGraph::clear() {
 voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) const {
 	voxel::Palette palette;
 	bool tooManyColors = false;
-	for (auto iter = beginModel(); iter != end(); ++iter) {
+	for (auto iter = beginAllModels(); iter != end(); ++iter) {
 		const SceneGraphNode &node = *iter;
 		const voxel::Palette &nodePalette = node.palette();
 		for (int i = 0; i < nodePalette.colorCount(); ++i) {
@@ -546,7 +546,7 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) cons
 		for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
 			palette.removeGlow(i);
 		}
-		for (auto iter = beginModel(); iter != end(); ++iter) {
+		for (auto iter = beginAllModels(); iter != end(); ++iter) {
 			const SceneGraphNode &node = *iter;
 			core::Array<bool, voxel::PaletteMaxColors> used;
 			if (removeUnused) {

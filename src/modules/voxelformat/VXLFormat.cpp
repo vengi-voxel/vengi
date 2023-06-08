@@ -378,7 +378,7 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	turret.reserve(numNodes);
 
 	// TODO: split the nodes into the max allowed size
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const core::String &lowerName = node.name().toLower();
 		if (lowerName.contains("barrel")) {
@@ -764,7 +764,7 @@ bool VXLFormat::writeHVAHeader(io::SeekableWriteStream &stream, const scenegraph
 	}
 	uint32_t numFrames = 0;
 
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		numFrames = core_max(numFrames, node.keyFrames().size());
 	}
@@ -773,7 +773,7 @@ bool VXLFormat::writeHVAHeader(io::SeekableWriteStream &stream, const scenegraph
 	uint32_t numNodes = sceneGraph.size();
 	stream.writeUInt32(numNodes);
 	for (uint32_t frame = 0; frame < numFrames; ++frame) {
-		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 			const scenegraph::SceneGraphNode &node = *iter;
 			const core::String &name = node.name().substr(0, 15);
 			if (stream.write(name.c_str(), name.size()) == -1) {
@@ -790,13 +790,13 @@ bool VXLFormat::writeHVAHeader(io::SeekableWriteStream &stream, const scenegraph
 
 bool VXLFormat::writeHVAFrames(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph) const {
 	uint32_t numFrames = 0;
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		numFrames = core_max(numFrames, node.keyFrames().size());
 	}
 
 	for (uint32_t i = 0; i < numFrames; ++i) {
-		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
 			const scenegraph::SceneGraphTransform &transform = node.transform(i);
 			VXLMatrix vxlMatrix;

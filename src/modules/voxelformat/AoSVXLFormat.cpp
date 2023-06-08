@@ -185,7 +185,7 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		return false;
 	}
 
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		voxelutil::visitVolume(*sceneGraph.resolveVolume(node),
 							   [&map, &node, mapHeight](int x, int y, int z, const voxel::Voxel &voxel) {

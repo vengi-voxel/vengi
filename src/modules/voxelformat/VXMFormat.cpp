@@ -203,14 +203,14 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		wrapBool(stream.writeBool(emissive))
 	}
 
-	int layers = (int)sceneGraph.size();
+	int layers = (int)sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
 	if (layers > 0xFF) {
 		Log::warn("Failed to save to vxm - max layer size exceeded");
 		return false;
 	}
 	wrapBool(stream.writeUInt8(layers))
 
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		voxel::RawVolume::Sampler sampler(sceneGraph.resolveVolume(node));
 		wrapBool(stream.writeString(node.name()))
