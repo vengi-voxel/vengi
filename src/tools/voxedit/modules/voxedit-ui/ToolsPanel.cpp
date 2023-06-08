@@ -30,6 +30,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		toolbar.button(ICON_FA_COMPRESS, "scaledown");
 		toolbar.button(ICON_FK_ARROWS, "scaleup");
 		toolbar.button(ICON_FA_FILL_DRIP, "fillhollow");
+		toolbar.button(ICON_FK_ERASER, "hollow");
 	}
 
 	const float buttonWidth = (float)imguiApp()->fontSize() * 4;
