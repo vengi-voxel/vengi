@@ -173,7 +173,7 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 		return false;
 	}
 
-	if (singleVolume()) {
+	if (singleVolume() && sceneGraph.size() > 1) {
 		scenegraph::SceneGraph::MergedVolumePalette merged = sceneGraph.merge(true);
 		scenegraph::SceneGraph mergedSceneGraph(2);
 		scenegraph::SceneGraphNode mergedNode(scenegraph::SceneGraphNodeType::Model);
