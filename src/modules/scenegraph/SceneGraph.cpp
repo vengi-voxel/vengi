@@ -589,6 +589,20 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) cons
 	return palette;
 }
 
+voxel::Region SceneGraph::resolveRegion(const SceneGraphNode &n) const {
+	if (n.type() == SceneGraphNodeType::ModelReference) {
+		return resolveRegion(node(n.reference()));
+	}
+	return n.region();
+}
+
+voxel::RawVolume *SceneGraph::resolveVolume(const SceneGraphNode &n) const {
+	if (n.type() == SceneGraphNodeType::ModelReference) {
+		return resolveVolume(node(n.reference()));
+	}
+	return n.volume();
+}
+
 SceneGraph::MergedVolumePalette SceneGraph::merge(bool transform) const {
 	const size_t n = size();
 	if (n == 0) {

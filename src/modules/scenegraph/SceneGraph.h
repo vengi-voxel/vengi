@@ -155,6 +155,15 @@ public:
 	MergedVolumePalette merge(bool transform = true) const;
 
 	/**
+	 * Performs the recursive lookup in case of model references
+	 */
+	voxel::Region resolveRegion(const SceneGraphNode& node) const;
+	/**
+	 * Performs the recursive lookup in case of model references
+	 */
+	voxel::RawVolume *resolveVolume(const SceneGraphNode &node) const;
+
+	/**
 	 * @brief Delete the owned volumes
 	 */
 	void clear();
