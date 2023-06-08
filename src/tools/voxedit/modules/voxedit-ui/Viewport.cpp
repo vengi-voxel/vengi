@@ -544,7 +544,7 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	const bool sceneMode = _renderContext.sceneMode;
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
-	if (activeNode == -1) {
+	if (activeNode == InvalidNodeId) {
 		reset();
 		return false;
 	}

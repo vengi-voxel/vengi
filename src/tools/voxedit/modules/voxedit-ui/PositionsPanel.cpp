@@ -179,7 +179,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader(ICON_FA_ARROW_UP " Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 		const int activeNode = sceneGraph.activeNode();
-		if (activeNode != -1) {
+		if (activeNode != InvalidNodeId) {
 			scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
 
 			const scenegraph::FrameIndex frame = sceneMgr().currentFrame();
