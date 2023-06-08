@@ -391,4 +391,17 @@ int visitSurfaceVolume(const Volume &volume, Visitor &&visitor, VisitorOrder ord
 	return cnt;
 }
 
+template <class Volume, class Visitor>
+int visitUndergroundVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order = VisitorOrder::ZYX) {
+	int cnt = 0;
+	const auto hullVisitor = [&cnt, &volume, visitor](int x, int y, int z, const voxel::Voxel &voxel) {
+		if (visibleFaces(volume, x, y, z) == voxel::FaceBits::None) {
+			visitor(x, y, z, voxel);
+			++cnt;
+		}
+	};
+	visitVolume(volume, hullVisitor, SkipEmpty(), order);
+	return cnt;
+}
+
 } // namespace voxelutil
