@@ -2446,11 +2446,12 @@ void SceneManager::traceScene(bool force) {
 	float intersectDist = _camera->farPlane();
 	const math::Ray& ray = _camera->mouseRay(_mouseCursor);
 	const bool hideInactive = _hideInactive->boolVal();
-	for (scenegraph::SceneGraphNode &node : _sceneGraph) {
+	for (auto iter = _sceneGraph.begin(scenegraph::SceneGraphNodeType::AllModels); iter != _sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode& node = *iter;
 		if (!node.visible() || (hideInactive && node.id() != activeNode())) {
 			continue;
 		}
-		const voxel::Region& region = node.region();
+		const voxel::Region& region = _sceneGraph.resolveRegion(node);
 		float distance = 0.0f;
 		const math::OBB<float>& obb = toOBB(true, region, node.pivot(), node.transformForFrame(_currentFrameIdx));
 		if (obb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
