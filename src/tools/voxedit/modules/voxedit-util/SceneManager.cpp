@@ -687,7 +687,7 @@ const voxel::RawVolume* SceneManager::volume(int nodeId) const {
 	if (node == nullptr) {
 		return nullptr;
 	}
-	return node->volume();
+	return _sceneGraph.resolveVolume(*node);
 }
 
 int SceneManager::activeNode() const {
@@ -970,7 +970,7 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::SceneGraphNode newNode;
 		scenegraph::copyNode(*node, newNode, false);
-		newNode.setVolume(new voxel::RawVolume(*node->volume(), selection), true);
+		newNode.setVolume(new voxel::RawVolume(_sceneGraph.resolveVolume(*node), selection), true);
 		newSceneGraph.emplace(core::move(newNode));
 		voxelformat::SaveContext saveCtx;
 		saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
