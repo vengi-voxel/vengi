@@ -292,6 +292,28 @@ void SceneManager::fillHollow() {
 	});
 }
 
+void SceneManager::hollow() {
+	_sceneGraph.foreachGroup([&](int nodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+			return;
+		}
+		voxel::RawVolume *v = node->volume();
+		if (v == nullptr) {
+			return;
+		}
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
+		core::DynamicArray<glm::ivec3> filled;
+		voxelutil::visitUndergroundVolume(wrapper, [&filled](int x, int y, int z, const voxel::Voxel &voxel) {
+			filled.emplace_back(x, y, z);
+		});
+		for (const glm::ivec3 &pos : filled) {
+			wrapper.setVoxel(pos, voxel::Voxel());
+		}
+		modified(nodeId, wrapper.dirtyRegion());
+	});
+}
+
 void SceneManager::fillPlane(const image::ImagePtr &image) {
 	const int nodeId = activeNode();
 	if (nodeId == InvalidNodeId) {
@@ -1604,6 +1626,10 @@ void SceneManager::construct() {
 	command::Command::registerCommand("fillhollow", [&] (const command::CmdArgs& args) {
 		fillHollow();
 	}).setHelp("Fill the inner parts of closed models");
+
+	command::Command::registerCommand("hollow", [&] (const command::CmdArgs& args) {
+		hollow();
+	}).setHelp("Remove non visible voxels");
 
 	command::Command::registerCommand("setreferenceposition", [&] (const command::CmdArgs& args) {
 		if (args.size() != 3) {
