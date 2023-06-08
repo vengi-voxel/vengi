@@ -56,6 +56,7 @@ int createNodeReference(SceneGraph &target, const SceneGraphNode &node) {
 
 void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume, bool copyKeyFrames) {
 	if (copyVolume) {
+		core_assert_msg(src.volume() != nullptr, "Source node has no volume - and is of type %d", (int)src.type());
 		target.setVolume(new voxel::RawVolume(src.volume()), true);
 	} else {
 		target.setVolume(src.volume(), false);
