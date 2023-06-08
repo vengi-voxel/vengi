@@ -158,18 +158,21 @@ void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, co
 void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
 								   scenegraph::FrameIndex frame) {
 	_shapeBuilder.clear();
-	for (scenegraph::SceneGraphNode &node : sceneGraph) {
+	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::AllModels); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
 		if (!node.visible()) {
 			continue;
 		}
-		const voxel::RawVolume *v = node.volume();
-		core_assert(v != nullptr);
-		const voxel::Region &region = node.region();
 		if (node.id() == sceneGraph.activeNode()) {
 			_shapeBuilder.setColor(core::Color::White);
+		} else if (node.isReference()) {
+			_shapeBuilder.setColor(core::Color::Yellow);
 		} else {
 			_shapeBuilder.setColor(core::Color::Gray);
 		}
+		const voxel::RawVolume *v = sceneGraph.resolveVolume(node);
+		core_assert(v != nullptr);
+		const voxel::Region &region = v->region();
 		_shapeBuilder.obb(toOBB(sceneMode, region, node.pivot(), node.transformForFrame(frame)));
 	}
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);

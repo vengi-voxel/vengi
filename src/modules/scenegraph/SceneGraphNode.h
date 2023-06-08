@@ -254,6 +254,7 @@ public:
 	void releaseOwnership();
 	bool owns() const;
 
+	bool isReference() const;
 	bool isReferenceable() const;
 	bool isModelNode() const;
 

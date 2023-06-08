@@ -458,6 +458,10 @@ void SceneGraphNode::setVolume(const voxel::RawVolume *volume, bool transferOwne
 	_volume = (voxel::RawVolume *)volume;
 }
 
+bool SceneGraphNode::isReference() const {
+	return _type == SceneGraphNodeType::ModelReference;
+}
+
 bool SceneGraphNode::isModelNode() const {
 	return _type == SceneGraphNodeType::Model || _type == SceneGraphNodeType::ModelReference;
 }
