@@ -266,6 +266,9 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	scenegraph::SceneGraph newSceneGraph;
 	scenegraph::SceneGraphNode newNode;
 	scenegraph::copyNode(*node, newNode, false);
+	if (node->isReference()) {
+		newNode.setVolume(_sceneGraph.resolveVolume(*node), false);
+	}
 	newSceneGraph.emplace(core::move(newNode));
 	voxelformat::SaveContext saveCtx;
 	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
