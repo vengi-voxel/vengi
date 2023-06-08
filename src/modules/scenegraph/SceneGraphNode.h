@@ -58,6 +58,10 @@ static constexpr const char* SceneGraphNodeTypeStr[] {
 static_assert((int)(scenegraph::SceneGraphNodeType::Max) == lengthof(SceneGraphNodeTypeStr), "Array sizes don't match Max");
 
 /**
+ * @brief The node transformation
+ * @note This needs a call to @c update() to apply the chances that were made by the setters. Not doing so will trigger
+ * asserts.
+ * @note You can't modify local and world transforms at the same time.
  * @ingroup SceneGraph
  */
 class alignas(16) SceneGraphTransform {
@@ -376,6 +380,9 @@ public:
 	SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx);
 };
 
+/**
+ * @ingroup SceneGraph
+ */
 class SceneGraphNodeCamera : public SceneGraphNode {
 private:
 	using Super = SceneGraphNode;
