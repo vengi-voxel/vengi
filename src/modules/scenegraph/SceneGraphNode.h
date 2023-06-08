@@ -272,14 +272,20 @@ public:
 	bool removeChild(int id);
 
 	/**
+	 * @note If this node is a reference node ( @c SceneGraphNodeType::ModelReference ) then this will return @c
+	 * nullptr, too - use @c SceneGraph::resolveVolume() instead.
 	 * @return voxel::RawVolume - might be @c nullptr
 	 */
 	voxel::RawVolume *volume() const;
 	/**
+	 * @note If this node is a reference node ( @c SceneGraphNodeType::ModelReference ) then this will return @c
+	 * nullptr, too - use @c SceneGraph::resolveVolume() instead.
 	 * @return voxel::RawVolume - might be @c nullptr
 	 */
 	voxel::RawVolume *volume();
 	/**
+	 * @note If this node is a reference node ( @c SceneGraphNodeType::ModelReference ) then this will return an invalid
+	 * region - use @c SceneGraph::resolveRegion() instead.
 	 * @return voxel::Region instance that is invalid when the volume is not set for this instance.
 	 */
 	const voxel::Region &region() const;
