@@ -56,17 +56,16 @@ void ModifierFacade::render(const video::Camera &camera) {
 			const glm::ivec3 &maxs = bbox.maxs();
 			glm::ivec3 minsMirror = mins;
 			glm::ivec3 maxsMirror = maxs;
-			const int size = _gridResolution;
 			if (getMirrorAABB(minsMirror, maxsMirror)) {
 				const math::AABB<int> first(mins, maxs);
 				const math::AABB<int> second(minsMirror, maxsMirror);
 				if (math::intersects(first, second)) {
-					_modifierRenderer->updateAABBMesh(mins, maxsMirror + size);
+					_modifierRenderer->updateAABBMesh(mins, maxsMirror + 1);
 				} else {
-					_modifierRenderer->updateAABBMirrorMesh(mins, maxs + size, minsMirror, maxsMirror + size);
+					_modifierRenderer->updateAABBMirrorMesh(mins, maxs + 1, minsMirror, maxsMirror + 1);
 				}
 			} else {
-				_modifierRenderer->updateAABBMesh(mins, maxs + size);
+				_modifierRenderer->updateAABBMesh(mins, maxs + 1);
 			}
 		}
 
