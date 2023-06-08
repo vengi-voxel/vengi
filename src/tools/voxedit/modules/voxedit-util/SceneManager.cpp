@@ -2835,7 +2835,11 @@ bool SceneManager::nodeUnreference(scenegraph::SceneGraphNode &node) {
 			Log::error("Referenced node is no model node - failed to unreference");
 			return false;
 		}
-		return node.unreferenceModelNode(*referencedNode);
+		if (!node.unreferenceModelNode(*referencedNode)) {
+			return false;
+		}
+		modified(node.id(), node.volume()->region());
+		return true;
 	}
 	Log::error("Referenced node is wasn't found - failed to unreference");
 	return false;
