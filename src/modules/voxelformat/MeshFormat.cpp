@@ -440,9 +440,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	// TODO: this could get optimized by re-using the same mesh for multiple nodes (in case of reference nodes)
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
-		const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
-		const voxel::Region region = sceneGraph.resolveRegion(node);
-		auto lambda = [&, region]() {
+		auto lambda = [&, volume = sceneGraph.resolveVolume(node), region = sceneGraph.resolveRegion(node)]() {
 			voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
 			if (marchingCubes) {
 				voxel::Region extractRegion = region;
