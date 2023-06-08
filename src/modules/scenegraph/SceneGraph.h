@@ -206,6 +206,7 @@ public:
 		}
 
 		iterator &operator++() {
+			core_assert_msg(_sceneGraph->_nextNodeId == _endNodeId, "Concurrent modification detected!");
 			if (_startNodeId != _endNodeId) {
 				for (;;) {
 					++_startNodeId;
