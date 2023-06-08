@@ -481,10 +481,17 @@ bool SceneGraph::empty(SceneGraphNodeType type) const {
 }
 
 size_t SceneGraph::size(SceneGraphNodeType type) const {
+	if (type == SceneGraphNodeType::All) {
+		return _nodes.size();
+	}
 	size_t n = 0;
 	for (const auto& entry : _nodes) {
 		if (entry->value.type() == type) {
 			++n;
+		} else if (type == SceneGraphNodeType::AllModels) {
+			if (entry->value.isModelNode()) {
+				++n;
+			}
 		}
 	}
 	return n;
