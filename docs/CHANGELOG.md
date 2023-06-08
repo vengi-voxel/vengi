@@ -44,6 +44,7 @@ VoxEdit:
    - Updated new scene dialog to include the templates
    - Improved font quality
    - Fixed a few crashes
+   - Added hollow functionality to remove invisible voxels
 
 Thumbnailer:
 
