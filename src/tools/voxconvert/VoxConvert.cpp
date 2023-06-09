@@ -75,6 +75,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
 	registerArg("--scriptcolor").setDefaultValue("1").setDescription("Set the palette index that is given to the script parameters");
 	registerArg("--split").setDescription("Slices the volumes into pieces of the given size <x:y:z>");
+	registerArg("--surface-only").setDescription("Remove any non surface voxel");
 	registerArg("--translate").setShort("-t").setDescription("Translate the volumes by x (right), y (up), z (back)");
 
 	voxelformat::FormatConfig::init();
@@ -187,6 +188,7 @@ app::AppState VoxConvert::onInit() {
 	_exportPalette    = hasArg("--export-palette");
 	_exportLayers     = hasArg("--export-layers");
 	_cropVolumes      = hasArg("--crop");
+	_surfaceOnly      = hasArg("--surface-only");
 	_splitVolumes     = hasArg("--split");
 	_dumpSceneGraph   = hasArg("--dump");
 	_resizeVolumes    = hasArg("--resize");
@@ -239,6 +241,7 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* merge volumes:     - %s", (_mergeVolumes     ? "true" : "false"));
 	Log::info("* scale volumes:     - %s", (_scaleVolumes     ? "true" : "false"));
 	Log::info("* crop volumes:      - %s", (_cropVolumes      ? "true" : "false"));
+	Log::info("* surface only:      - %s", (_surfaceOnly      ? "true" : "false"));
 	Log::info("* split volumes:     - %s", (_splitVolumes     ? "true" : "false"));
 	Log::info("* mirror volumes:    - %s", (_mirrorVolumes    ? "true" : "false"));
 	Log::info("* translate volumes: - %s", (_translateVolumes ? "true" : "false"));
@@ -366,6 +369,10 @@ app::AppState VoxConvert::onInit() {
 
 	if (_cropVolumes) {
 		crop(sceneGraph);
+	}
+
+	if (_surfaceOnly) {
+		removeNonSurfaceVoxels(sceneGraph);
 	}
 
 	if (_splitVolumes) {
@@ -608,6 +615,20 @@ void VoxConvert::crop(scenegraph::SceneGraph& sceneGraph) {
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
 		node.setVolume(voxelutil::cropVolume(node.volume()), true);
+	}
+}
+
+void VoxConvert::removeNonSurfaceVoxels(scenegraph::SceneGraph& sceneGraph) {
+	Log::info("Remove non-surface voxels");
+	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
+		core::DynamicArray<glm::ivec3> filled;
+		voxelutil::visitUndergroundVolume(*node.volume(), [&filled](int x, int y, int z, const voxel::Voxel &voxel) {
+			filled.emplace_back(x, y, z);
+		});
+		for (const glm::ivec3 &pos : filled) {
+			node.volume()->setVoxel(pos, voxel::Voxel());
+		}
 	}
 }
 

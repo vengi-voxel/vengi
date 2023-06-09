@@ -34,6 +34,7 @@ private:
 	bool _exportPalette = false;
 	bool _exportLayers = false;
 	bool _cropVolumes = false;
+	bool _surfaceOnly = false;
 	bool _splitVolumes = false;
 	bool _dumpSceneGraph = false;
 	bool _resizeVolumes = false;
@@ -51,6 +52,7 @@ protected:
 	void script(const core::String &scriptParameters, scenegraph::SceneGraph& sceneGraph, uint8_t color);
 	void translate(const glm::ivec3& pos, scenegraph::SceneGraph& sceneGraph);
 	void crop(scenegraph::SceneGraph& sceneGraph);
+	void removeNonSurfaceVoxels(scenegraph::SceneGraph& sceneGraph);
 	int dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId, int indent);
 	void dump(const scenegraph::SceneGraph& sceneGraph);
 	void filterVolumes(scenegraph::SceneGraph& sceneGraph);

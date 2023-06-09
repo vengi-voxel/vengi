@@ -113,6 +113,10 @@ Set the palette index that is given to the script parameters. This is the palett
 Slices the volumes into pieces of the given size
 
 .TP
+\fB\--surface-only\fR
+Remove any non surface voxel.
+
+.TP
 \fB\--translate|-t <x:y:z>\fR
 Translate the volumes by x (right), y (up), z (back).
 

@@ -22,6 +22,7 @@
 * `--scale`: perform lod conversion of the input volume (50% scale per call)
 * `--script "<script> <args>"`: execute the given script - see [scripting support](../LUAScript.md) for more details
 * `--split <x:y:z>`: slices the volumes into pieces of the given size
+* `--surface-only`: Remove any non surface voxel.
 * `--translate <x:y:z>`: translates the volumes by x (right), y (up), z (back)
 * `--wildcard <wildcard>`: e.g. `*.vox`. Allow to specify a wildcard in situations where the `--input` value is a directory
 
