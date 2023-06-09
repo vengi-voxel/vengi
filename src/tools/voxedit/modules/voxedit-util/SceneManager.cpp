@@ -2653,6 +2653,13 @@ bool SceneManager::nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) 
 	return nodeAddKeyframe(node, frameIdx);
 }
 
+int SceneManager::nodeReference(int nodeId) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeReference(*node);
+	}
+	return InvalidNodeId;
+}
+
 bool SceneManager::nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRemoveKeyFrame(*node, frameIdx);
@@ -2826,10 +2833,10 @@ void SceneManager::nodeDuplicate(const scenegraph::SceneGraphNode &node) {
 	onNewNodeAdded(newNodeId, false);
 }
 
-bool SceneManager::nodeReference(const scenegraph::SceneGraphNode &node) {
+int SceneManager::nodeReference(const scenegraph::SceneGraphNode &node) {
 	const int newNodeId = scenegraph::createNodeReference(_sceneGraph, node);
 	onNewNodeAdded(newNodeId, false);
-	return newNodeId != InvalidNodeId;
+	return newNodeId;
 }
 
 bool SceneManager::isValidReferenceNode(const scenegraph::SceneGraphNode &node) const {

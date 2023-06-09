@@ -543,7 +543,7 @@ void Viewport::handleGizmo(const scenegraph::SceneGraphNode &node, scenegraph::K
 bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	const bool sceneMode = _renderContext.sceneMode;
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
-	const int activeNode = sceneGraph.activeNode();
+	int activeNode = sceneGraph.activeNode();
 	if (activeNode == InvalidNodeId) {
 		reset();
 		return false;
@@ -592,6 +592,15 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	if (sceneMode) {
 		localMatrix = glm::translate(localMatrix, -shift);
 		handleGizmo(node, keyFrameIdx, localMatrix);
+
+		if (node.type() == scenegraph::SceneGraphNodeType::Model && ImGui::IsKeyPressed(ImGuiKey_LeftShift)) {
+			const int newNode = sceneMgr().nodeReference(node.id());
+			if (newNode != InvalidNodeId) {
+				if (sceneMgr().nodeActivate(newNode)) {
+					activeNode = newNode;
+				}
+			}
+		}
 		if (manipulated) {
 			sceneMgr().nodeUpdateTransform(activeNode, localMatrix, &deltaMatrix, keyFrameIdx);
 		}
