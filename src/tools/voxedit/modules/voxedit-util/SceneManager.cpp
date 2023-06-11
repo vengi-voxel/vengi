@@ -2655,6 +2655,9 @@ bool SceneManager::nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) 
 
 int SceneManager::nodeReference(int nodeId) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		if (node->isReference()) {
+			return nodeReference(node->reference());
+		}
 		return nodeReference(*node);
 	}
 	return InvalidNodeId;
