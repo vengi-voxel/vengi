@@ -163,6 +163,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		if (!node.visible()) {
 			continue;
 		}
+		// TODO: these colors don't work in all the color themes
 		if (node.id() == sceneGraph.activeNode()) {
 			_shapeBuilder.setColor(core::Color::White);
 		} else if (node.isReference()) {
