@@ -29,7 +29,7 @@ private:
 	glm::ivec3 maxSize() const override;
 
 	void addInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ogt_SceneContext &ctx,
-				   uint32_t &parentGroupIdx, uint32_t &layerIdx);
+				   uint32_t parentGroupIdx, uint32_t layerIdx);
 	void printDetails(const ogt_vox_scene *scene);
 	void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph);
 	bool loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette);

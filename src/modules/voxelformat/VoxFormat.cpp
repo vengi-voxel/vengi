@@ -391,10 +391,25 @@ int VoxFormat::findClosestPaletteIndex(const voxel::Palette &palette) {
 	return core::Color::getClosestMatch(first, materialColors) + 1;
 }
 
+static bool checkRotationRow(const glm::vec3 &vec) {
+	for (int i = 0; i < 3; i++) {
+		if (vec[i] == 1.0f || vec[i] == -1.0f) {
+			return true;
+		}
+		core_assert_msg(vec[i] == 0.0f, "rotation vector should contain only 0.0f, 1.0f, or -1.0f");
+	}
+	return false;
+}
+
+static void checkRotation(const ogt_vox_transform &transform) {
+	core_assert(checkRotationRow({transform.m00, transform.m01, transform.m02}));
+	core_assert(checkRotationRow({transform.m10, transform.m11, transform.m12}));
+	core_assert(checkRotationRow({transform.m20, transform.m21, transform.m22}));
+}
+
 void VoxFormat::addInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-							ogt_SceneContext &ctx, uint32_t &parentGroupIdx, uint32_t &layerIdx) {
+							ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx) {
 	const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames(sceneGraph.activeAnimation());
-	const voxel::Region region = node.region();
 	{
 		ogt_vox_instance ogt_instance;
 		core_memset(&ogt_instance, 0, sizeof(ogt_instance));
@@ -404,11 +419,13 @@ void VoxFormat::addInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph
 		ogt_instance.name = node.name().c_str();
 		ogt_instance.hidden = !node.visible();
 		ogt_instance.transform_anim.num_keyframes = keyFrames.size();
+		// set this to the start pointer of the ctx.keyframeTransforms array - the array is filled below
 		ogt_instance.transform_anim.keyframes =
 			ogt_instance.transform_anim.num_keyframes ? &ctx.keyframeTransforms[ctx.transformKeyFrameIdx] : nullptr;
 		ctx.instances.push_back(ogt_instance);
 	}
 
+	const voxel::Region region = sceneGraph.resolveRegion(node);
 	const glm::vec3 &mins = region.getLowerCornerf();
 	const glm::vec3 &maxs = region.getUpperCornerf();
 	const glm::vec3 width = maxs - mins + 1.0f;
@@ -422,6 +439,7 @@ void VoxFormat::addInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph
 		ogt_keyframe.transform.m30 = -glm::floor(kftransform.x + 0.5f);
 		ogt_keyframe.transform.m31 = kftransform.z;
 		ogt_keyframe.transform.m32 = kftransform.y;
+		checkRotation(ogt_keyframe.transform);
 		// TODO: apply rotation - but rotations are not interpolated - they must be aligned here somehow...
 		ctx.keyframeTransforms[ctx.transformKeyFrameIdx++] = ogt_keyframe;
 	}
