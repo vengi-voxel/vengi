@@ -593,7 +593,8 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 		localMatrix = glm::translate(localMatrix, -shift);
 		handleGizmo(node, keyFrameIdx, localMatrix);
 
-		if (node.type() == scenegraph::SceneGraphNodeType::Model && ImGui::IsKeyPressed(ImGuiKey_LeftShift)) {
+		if (!_gizmoActivated && node.type() == scenegraph::SceneGraphNodeType::Model &&
+			ImGui::IsKeyPressed(ImGuiKey_LeftShift) && ImGui::IsKeyPressed(ImGuiKey_MouseLeft)) {
 			const int newNode = sceneMgr().nodeReference(node.id());
 			if (newNode != InvalidNodeId) {
 				if (sceneMgr().nodeActivate(newNode)) {
@@ -604,8 +605,10 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 		if (manipulated) {
 			sceneMgr().nodeUpdateTransform(activeNode, localMatrix, &deltaMatrix, keyFrameIdx);
 		}
+		_gizmoActivated = ImGuizmo::IsUsingAny();
 	} else {
 		handleGizmo(node, InvalidKeyFrame, localMatrix);
+		_gizmoActivated = ImGuizmo::IsUsingAny();
 		if (manipulated) {
 			sceneMgr().shift(activeNode, deltaMatrix[3]);
 			return true;
