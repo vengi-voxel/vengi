@@ -391,6 +391,42 @@ int VoxFormat::findClosestPaletteIndex(const voxel::Palette &palette) {
 	return core::Color::getClosestMatch(first, materialColors) + 1;
 }
 
+void VoxFormat::addInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+							ogt_SceneContext &ctx, uint32_t &parentGroupIdx, uint32_t &layerIdx) {
+	const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames(sceneGraph.activeAnimation());
+	const voxel::Region region = node.region();
+	{
+		ogt_vox_instance ogt_instance;
+		core_memset(&ogt_instance, 0, sizeof(ogt_instance));
+		ogt_instance.group_index = parentGroupIdx;
+		ogt_instance.model_index = ctx.models.size() - 1;
+		ogt_instance.layer_index = layerIdx;
+		ogt_instance.name = node.name().c_str();
+		ogt_instance.hidden = !node.visible();
+		ogt_instance.transform_anim.num_keyframes = keyFrames.size();
+		ogt_instance.transform_anim.keyframes =
+			ogt_instance.transform_anim.num_keyframes ? &ctx.keyframeTransforms[ctx.transformKeyFrameIdx] : nullptr;
+		ctx.instances.push_back(ogt_instance);
+	}
+
+	const glm::vec3 &mins = region.getLowerCornerf();
+	const glm::vec3 &maxs = region.getUpperCornerf();
+	const glm::vec3 width = maxs - mins + 1.0f;
+	for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
+		ogt_vox_keyframe_transform ogt_keyframe;
+		core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
+		ogt_keyframe.frame_index = kf.frameIdx;
+		ogt_keyframe.transform = ogt_identity_transform;
+		// y and z are flipped here
+		const glm::vec3 kftransform = mins + kf.transform().worldTranslation() + width / 2.0f;
+		ogt_keyframe.transform.m30 = -glm::floor(kftransform.x + 0.5f);
+		ogt_keyframe.transform.m31 = kftransform.z;
+		ogt_keyframe.transform.m32 = kftransform.y;
+		// TODO: apply rotation - but rotations are not interpolated - they must be aligned here somehow...
+		ctx.keyframeTransforms[ctx.transformKeyFrameIdx++] = ogt_keyframe;
+	}
+}
+
 void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 						 ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx,
 						 const voxel::Palette &palette, uint8_t replacement) {
@@ -492,40 +528,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 
 			ctx.models.push_back(ogt_model);
 		}
-		{
-			const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames(sceneGraph.activeAnimation());
-			{
-				ogt_vox_instance ogt_instance;
-				core_memset(&ogt_instance, 0, sizeof(ogt_instance));
-				ogt_instance.group_index = parentGroupIdx;
-				ogt_instance.model_index = ctx.models.size() - 1;
-				ogt_instance.layer_index = layerIdx;
-				ogt_instance.name = node.name().c_str();
-				ogt_instance.hidden = !node.visible();
-				ogt_instance.transform_anim.num_keyframes = keyFrames.size();
-				ogt_instance.transform_anim.keyframes = ogt_instance.transform_anim.num_keyframes
-															? &ctx.keyframeTransforms[ctx.transformKeyFrameIdx]
-															: nullptr;
-				ctx.instances.push_back(ogt_instance);
-			}
-
-			const glm::vec3 &mins = region.getLowerCornerf();
-			const glm::vec3 &maxs = region.getUpperCornerf();
-			const glm::vec3 width = maxs - mins + 1.0f;
-			for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
-				ogt_vox_keyframe_transform ogt_keyframe;
-				core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
-				ogt_keyframe.frame_index = kf.frameIdx;
-				ogt_keyframe.transform = ogt_identity_transform;
-				// y and z are flipped here
-				const glm::vec3 kftransform = mins + kf.transform().worldTranslation() + width / 2.0f;
-				ogt_keyframe.transform.m30 = -glm::floor(kftransform.x + 0.5f);
-				ogt_keyframe.transform.m31 = kftransform.z;
-				ogt_keyframe.transform.m32 = kftransform.y;
-				// TODO: apply rotation - but rotations are not interpolated - they must be aligned here somehow...
-				ctx.keyframeTransforms[ctx.transformKeyFrameIdx++] = ogt_keyframe;
-			}
-		}
+		addInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx);
 		for (int childId : node.children()) {
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx, palette, replacement);
 		}
