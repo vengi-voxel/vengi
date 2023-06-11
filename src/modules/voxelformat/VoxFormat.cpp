@@ -134,7 +134,7 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 }
 
 bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
-							 int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden) {
+							 int parent, core::DynamicArray<ModelToNode> &models, const voxel::Palette &palette, bool groupHidden) {
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
 	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance.transform);
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
@@ -145,6 +145,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 						  glm::floor((float)ogtModel->size_z / 2.0f), 0.0f);
 	const glm::ivec3 &transformedMins = calcTransform(ogtMat, glm::ivec3(0), pivot);
 	const glm::ivec3 &transformedMaxs = calcTransform(ogtMat, maxs, pivot);
+	const glm::mat4 zUpMat = transformMatrix();
 	const glm::ivec3 &zUpMins = calcTransform(zUpMat, transformedMins, glm::ivec4(0));
 	const glm::ivec3 &zUpMaxs = calcTransform(zUpMat, transformedMaxs, glm::ivec4(0));
 	voxel::Region region(glm::min(zUpMins, zUpMaxs), glm::max(zUpMins, zUpMaxs));
@@ -196,7 +197,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 }
 
 bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph,
-						  int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances,
+						  int parent, core::DynamicArray<ModelToNode> &models, core::Set<uint32_t> &addedInstances,
 						  const voxel::Palette &palette) {
 	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
@@ -229,7 +230,7 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 		if (!addedInstances.insert(n)) {
 			continue;
 		}
-		if (!loadInstance(scene, n, sceneGraph, groupId, zUpMat, palette, hidden)) {
+		if (!loadInstance(scene, n, sceneGraph, groupId, models, palette, hidden)) {
 			return false;
 		}
 	}
@@ -241,7 +242,7 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 			continue;
 		}
 		Log::debug("Found matching group (%u) with scene graph parent: %i", groupIdx, groupId);
-		if (!loadGroup(scene, groupIdx, sceneGraph, groupId, zUpMat, addedInstances, palette)) {
+		if (!loadGroup(scene, groupIdx, sceneGraph, groupId, models, addedInstances, palette)) {
 			return false;
 		}
 	}
@@ -293,8 +294,41 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	return true;
 }
 
-bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette) {
-	const glm::mat4 zUpMat = transformMatrix();
+core::DynamicArray<VoxFormat::ModelToNode> VoxFormat::loadModels(const ogt_vox_scene *scene,
+																 const voxel::Palette &palette) {
+	core::DynamicArray<ModelToNode> models;
+	models.reserve(scene->num_models);
+	for (uint32_t i = 0; i < scene->num_models; ++i) {
+		const ogt_vox_model *ogtModel = scene->models[i];
+		if (ogtModel == nullptr) {
+			models.push_back({nullptr, InvalidNodeId});
+			continue;
+		}
+		const uint8_t *ogtVoxels = ogtModel->voxel_data;
+		const uint8_t *ogtVoxel = ogtVoxels;
+		const glm::ivec3 maxs(ogtModel->size_x - 1, ogtModel->size_z - 1, ogtModel->size_y - 1);
+		voxel::Region region(glm::ivec3(0), maxs);
+		voxel::RawVolume *v = new voxel::RawVolume(region);
+
+		for (uint32_t z = 0; z < ogtModel->size_z; ++z) {
+			for (uint32_t y = 0; y < ogtModel->size_y; ++y) {
+				for (uint32_t x = 0; x < ogtModel->size_x; ++x, ++ogtVoxel) {
+					if (ogtVoxel[0] == 0) {
+						continue;
+					}
+					const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
+					v->setVoxel(maxs.x - (int)x, (int)z, (int)y, voxel);
+				}
+			}
+		}
+		models.push_back({v, InvalidNodeId});
+	}
+	return models;
+}
+
+bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph,
+						  const voxel::Palette &palette) {
+	core::DynamicArray<ModelToNode> models = loadModels(scene, palette);
 	core::Set<uint32_t> addedInstances;
 	for (uint32_t i = 0; i < scene->num_groups; ++i) {
 		const ogt_vox_group &group = scene->groups[i];
@@ -303,7 +337,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 			continue;
 		}
 		Log::debug("Add root group %u/%u", i, scene->num_groups);
-		if (!loadGroup(scene, i, sceneGraph, -1, zUpMat, addedInstances, palette)) {
+		if (!loadGroup(scene, i, sceneGraph, -1, models, addedInstances, palette)) {
 			ogt_vox_destroy_scene(scene);
 			return false;
 		}
@@ -314,13 +348,20 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 			continue;
 		}
 		// TODO: the parent is wrong
-		if (!loadInstance(scene, n, sceneGraph, sceneGraph.root().id(), zUpMat, palette)) {
+		if (!loadInstance(scene, n, sceneGraph, sceneGraph.root().id(), models, palette)) {
 			ogt_vox_destroy_scene(scene);
 			return false;
 		}
 	}
 
 	loadCameras(scene, sceneGraph);
+
+	for (ModelToNode &i : models) {
+		if (i.volume != nullptr) {
+			delete i.volume;
+		}
+	}
+	models.clear();
 
 	return true;
 }

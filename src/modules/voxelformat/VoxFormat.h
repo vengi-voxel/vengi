@@ -6,6 +6,7 @@
 
 #include "Format.h"
 #include "core/collection/Set.h"
+#include "scenegraph/SceneGraphNode.h"
 
 struct ogt_vox_scene;
 
@@ -28,16 +29,21 @@ class VoxFormat : public PaletteFormat {
 private:
 	glm::ivec3 maxSize() const override;
 
+	struct ModelToNode {
+		voxel::RawVolume *volume = nullptr;
+		int nodeId = InvalidNodeId;
+	};
+	core::DynamicArray<ModelToNode> loadModels(const ogt_vox_scene *scene, const voxel::Palette &palette);
 	void addInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ogt_SceneContext &ctx,
-				   uint32_t parentGroupIdx, uint32_t layerIdx);
+					 uint32_t parentGroupIdx, uint32_t layerIdx);
 	void printDetails(const ogt_vox_scene *scene);
 	void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph);
 	bool loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette);
 	int findClosestPaletteIndex(const voxel::Palette &palette);
 	bool loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
-					  int parent, const glm::mat4 &zUpMat, const voxel::Palette &palette, bool groupHidden = false);
+					  int parent, core::DynamicArray<ModelToNode> &models, const voxel::Palette &palette, bool groupHidden = false);
 	bool loadGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, scenegraph::SceneGraph &sceneGraph,
-				   int parent, const glm::mat4 &zUpMat, core::Set<uint32_t> &addedInstances,
+				   int parent, core::DynamicArray<ModelToNode> &models, core::Set<uint32_t> &addedInstances,
 				   const voxel::Palette &palette);
 	void loadPalette(const ogt_vox_scene *scene, voxel::Palette &palette);
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
