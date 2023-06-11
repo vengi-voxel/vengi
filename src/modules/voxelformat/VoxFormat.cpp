@@ -141,8 +141,8 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	const uint8_t *ogtVoxels = ogtModel->voxel_data;
 	const uint8_t *ogtVoxel = ogtVoxels;
 	const glm::ivec3 maxs(ogtModel->size_x - 1, ogtModel->size_y - 1, ogtModel->size_z - 1);
-	const glm::vec4 pivot(glm::floor((float)ogtModel->size_x / 2.0f), glm::floor((float)ogtModel->size_y / 2.0f),
-						  glm::floor((float)ogtModel->size_z / 2.0f), 0.0f);
+	const glm::vec4 pivot((float)(int)(ogtModel->size_x / 2), (float)(int)(ogtModel->size_y / 2),
+						  (float)(int)(ogtModel->size_z / 2), 0.0f);
 	const glm::ivec3 &transformedMins = calcTransform(ogtMat, glm::ivec3(0), pivot);
 	const glm::ivec3 &transformedMaxs = calcTransform(ogtMat, maxs, pivot);
 	const glm::mat4 zUpMat = transformMatrix();
