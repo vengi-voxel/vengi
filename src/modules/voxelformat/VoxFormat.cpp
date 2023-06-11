@@ -352,8 +352,8 @@ void VoxFormat::printDetails(const ogt_vox_scene *scene) {
 void VoxFormat::loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph) {
 	for (uint32_t n = 0; n < scene->num_cameras; ++n) {
 		const ogt_vox_cam &c = scene->cameras[n];
-		const glm::vec3 target(c.focus[0], c.focus[1], c.focus[2]);
-		const glm::vec3 angles(c.angle[0], c.angle[1], c.angle[2]);
+		const glm::vec3 target(c.focus[0], c.focus[2], c.focus[1]);
+		const glm::vec3 angles(c.angle[0], c.angle[2], c.angle[1]);
 		const glm::quat quat(glm::radians(angles));
 		const float distance = (float)c.radius;
 		const glm::vec3 &forward = glm::conjugate(quat) * glm::forward;
@@ -426,9 +426,8 @@ void VoxFormat::addInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph
 	}
 
 	const voxel::Region region = sceneGraph.resolveRegion(node);
-	const glm::vec3 &mins = region.getLowerCornerf();
-	const glm::vec3 &maxs = region.getUpperCornerf();
-	const glm::vec3 width = maxs - mins + 1.0f;
+	const glm::vec3 width(region.getDimensionsInCells());
+	const glm::vec3 mins(region.getLowerCornerf());
 	for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
 		ogt_vox_keyframe_transform ogt_keyframe;
 		core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
@@ -480,6 +479,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ogt_group.layer_index = ownLayerId;
 			ogt_group.parent_group_index = parentGroupIdx;
 			ogt_group.transform = ogt_identity_transform;
+			checkRotation(ogt_group.transform);
 			ctx.groups.push_back(ogt_group);
 		}
 		const uint32_t ownGroupId = (int)ctx.groups.size() - 1;
