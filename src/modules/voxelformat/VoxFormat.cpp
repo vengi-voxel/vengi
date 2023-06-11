@@ -426,7 +426,7 @@ void VoxFormat::addInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph
 	}
 
 	const voxel::Region region = sceneGraph.resolveRegion(node);
-	const glm::vec3 width(region.getDimensionsInCells());
+	const glm::vec3 width(region.getDimensionsInVoxels());
 	const glm::vec3 mins(region.getLowerCornerf());
 	for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
 		ogt_vox_keyframe_transform ogt_keyframe;
