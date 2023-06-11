@@ -496,12 +496,12 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ogt_cam.camera_id = ctx.cameras.size();
 			const glm::vec3 &euler = glm::eulerAngles(transform.worldOrientation());
 			ogt_cam.angle[0] = euler[0];
-			ogt_cam.angle[1] = euler[1];
-			ogt_cam.angle[2] = euler[2];
+			ogt_cam.angle[1] = euler[2];
+			ogt_cam.angle[2] = euler[1];
 			const glm::vec3 &pos = transform.worldTranslation();
 			ogt_cam.focus[0] = pos[0];
-			ogt_cam.focus[1] = pos[1];
-			ogt_cam.focus[2] = pos[2];
+			ogt_cam.focus[1] = pos[2];
+			ogt_cam.focus[2] = pos[1];
 			ogt_cam.mode = camera.isPerspective() ? ogt_cam_mode_perspective : ogt_cam_mode_orthographic;
 			ogt_cam.radius = (int)camera.farPlane();
 			ogt_cam.fov = camera.fieldOfView();
