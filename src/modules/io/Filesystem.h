@@ -110,7 +110,7 @@ public:
 	static bool isReadableDir(const core::String& name);
 	static bool isRelativePath(const core::String& name);
 
-	static core::String absolutePath(const core::String& path);
+	core::String absolutePath(const core::String& path);
 
 	/**
 	 * @brief Changes the current working directory

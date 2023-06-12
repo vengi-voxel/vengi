@@ -238,6 +238,14 @@ void Filesystem::shutdown() {
 core::String Filesystem::absolutePath(const core::String &path) {
 	core::String abspath = fs_realpath(path.c_str());
 	if (abspath.empty()) {
+		for (const core::String &p : paths()) {
+			const core::String &fullPath = core::string::path(p, path);
+			abspath = fs_realpath(fullPath.c_str());
+			if (!abspath.empty()) {
+				normalizePath(abspath);
+				return abspath;
+			}
+		}
 		Log::error("Failed to get absolute path for '%s'", path.c_str());
 		return "";
 	}
