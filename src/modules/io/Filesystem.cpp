@@ -91,7 +91,11 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 	const core::VarPtr &corePath =
 		core::Var::get(cfg::CorePath, "", 0, "Specifies an additional filesystem search path - must end on /");
 	if (!corePath->strVal().empty()) {
-		core_assert_always(registerPath(corePath->strVal()));
+		if (exists(corePath->strVal())) {
+			core_assert_always(registerPath(corePath->strVal()));
+		} else {
+			Log::warn("%s '%s' does not exist", cfg::CorePath, corePath->strVal().c_str());
+		}
 	}
 
 	if (!_basePath.empty()) {
