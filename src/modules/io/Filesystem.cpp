@@ -86,6 +86,17 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 #ifdef PKGDATADIR
 	core_assert_always(registerPath(PKGDATADIR));
 #endif
+
+	// https://docs.appimage.org/packaging-guide/environment-variables.html
+	const char *appImageDirectory = SDL_getenv("APPDIR");
+	if (appImageDirectory != nullptr) {
+		const core::String appDir = _organisation + "-" + _appname;
+		const core::String appImagePath = core::string::sanitizeDirPath(core::string::path(appImageDirectory, "usr", "share", appDir));
+		if (exists(appImagePath)) {
+			core_assert_always(registerPath(appImagePath));
+		}
+	}
+
 	// this cvar allows to change the application data directory at runtime - it has lower priority
 	// as the backed-in PKGDATADIR (if defined) - and also lower priority as the home directory.
 	const core::VarPtr &corePath =
