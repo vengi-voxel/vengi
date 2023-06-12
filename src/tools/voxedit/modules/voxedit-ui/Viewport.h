@@ -21,9 +21,9 @@ namespace voxedit {
 class Viewport {
 private:
 	enum class SceneCameraMode : uint8_t {
-		Free, Top, Left, Front, Max
+		Free, Top, Bottom, Left, Right, Front, Back, Max
 	};
-	static constexpr const char *SceneCameraModeStr[] = {"Free", "Top", "Left", "Front"};
+	static constexpr const char *SceneCameraModeStr[] = {"Free", "Top", "Bottom", "Left", "Right", "Front", "Back"};
 	static_assert(lengthof(SceneCameraModeStr) == (int)SceneCameraMode::Max, "Array size doesn't match enum values");
 	const int _id;
 	const core::String _uiId;

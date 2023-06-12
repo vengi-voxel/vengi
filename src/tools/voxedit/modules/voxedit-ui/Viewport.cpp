@@ -78,16 +78,19 @@ void Viewport::resetCamera(float distance, const glm::ivec3 &center, const glm::
 	_camera.setTarget(center);
 	_camera.setTargetDistance(distance);
 	if (_camMode == SceneCameraMode::Free) {
-		const int height = size.y;
-		_camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
+		_camera.setWorldPosition(glm::vec3(-distance, (float)size.y + distance, -distance));
 	} else if (_camMode == SceneCameraMode::Top) {
-		const int height = size.y;
-		_camera.setWorldPosition(glm::vec3(center.x, height + center.y, center.z));
+		_camera.setWorldPosition(glm::vec3(center.x, center.y + size.y, center.z));
+	} else if (_camMode == SceneCameraMode::Bottom) {
+		_camera.setWorldPosition(glm::vec3(center.x, center.y - size.y, center.z));
 	} else if (_camMode == SceneCameraMode::Left) {
-		_camera.setWorldPosition(glm::vec3(-center.x, center.y, center.z));
+		_camera.setWorldPosition(glm::vec3(center.x + size.x, center.y, center.z));
+	} else if (_camMode == SceneCameraMode::Right) {
+		_camera.setWorldPosition(glm::vec3(center.x - size.x, center.y, center.z));
 	} else if (_camMode == SceneCameraMode::Front) {
-		const int depth = size.z;
-		_camera.setWorldPosition(glm::vec3(center.x, center.y, -depth - center.z));
+		_camera.setWorldPosition(glm::vec3(center.x, center.y, center.z + size.z));
+	} else if (_camMode == SceneCameraMode::Back) {
+		_camera.setWorldPosition(glm::vec3(center.x, center.y, center.z - size.z));
 	}
 }
 
