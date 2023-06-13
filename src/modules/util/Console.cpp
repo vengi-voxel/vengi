@@ -651,7 +651,7 @@ void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {
 	drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt, startY, _commandLine, (int)_commandLine.size());
 	if (_cursorBlink) {
 		const glm::ivec2& l = stringSize(_commandLine.c_str(), _cursorPos);
-		drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt + l.x, startY, _consoleCursor, (int)_consoleCursor.size());
+		drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt + l.x, startY + 1, _consoleCursor, (int)_consoleCursor.size());
 	}
 
 	afterRender(rect);

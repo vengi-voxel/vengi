@@ -28,7 +28,7 @@ protected:
 
 	const char* _historyFilename = "history";
 	core::String _consolePrompt = "> ";
-	core::String _consoleCursor = ".";
+	core::String _consoleCursor = "_";
 	char _colorMark = '^';
 
 	core::String getColor(ConsoleColor color);
