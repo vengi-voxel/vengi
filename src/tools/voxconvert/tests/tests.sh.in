@@ -64,5 +64,5 @@ $BINARY -f --input "$SPLITFILE" --script splitobjects --output "$SPLITTARGETFILE
 echo "check if $SPLITTARGETFILE exists"
 test -f "$SPLITTARGETFILE"
 echo "check that $SPLITTARGETFILE has 4 models"
-$BINARY  --input "$SPLITTARGETFILE" --dump 2>&1 | grep "4 models"
+$BINARY  --input "$SPLITTARGETFILE" --dump 2>&1 | grep "4 model nodes"
 echo
