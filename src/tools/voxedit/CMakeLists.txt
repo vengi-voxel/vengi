@@ -7,7 +7,6 @@ set(SRCS
 )
 
 set(FILES
-	voxedit/scripts/test-import-plane.cfg
 	voxedit/scripts/test-layers.cfg
 	voxedit/scripts/test-animate.cfg
 	shared/font.ttf
