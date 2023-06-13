@@ -112,7 +112,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}
 		const core::String& cmds = io::filesystem()->load(args[0]);
 		if (cmds.empty()) {
-			Log::warn("Could not load script - or file was empty.");
+			Log::warn("Could not load script '%s' - or file was empty.", args[0].c_str());
 			return;
 		}
 		command::Command::execute(cmds);
