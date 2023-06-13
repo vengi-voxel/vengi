@@ -1953,7 +1953,7 @@ void SceneManager::construct() {
 		addModelChild(name, iw, ih, id);
 	}).setHelp("Add a new model node (with a given name and width, height, depth - all optional)");
 
-	command::Command::registerCommand("layerdelete", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("nodedelete", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			if (node->type() == scenegraph::SceneGraphNodeType::Model) {

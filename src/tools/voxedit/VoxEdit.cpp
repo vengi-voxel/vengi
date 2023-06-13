@@ -305,7 +305,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("ctrl+shift+s",         "saveas",                       "all");
 	_keybindingHandler.registerBinding("ctrl+n",               "new",                          "all");
 	_keybindingHandler.registerBinding("tab",                  "togglescene",                  "editing");
-	_keybindingHandler.registerBinding("delete",               "layerdelete",                  "scene");
+	_keybindingHandler.registerBinding("delete",               "nodedelete",                   "scene");
 	_keybindingHandler.registerBinding("shift+h",              "togglelayerstate",             "editing");
 	_keybindingHandler.registerBinding("shift+l",              "togglelayerlock",              "editing");
 	_keybindingHandler.registerBinding("ctrl+c",               "copy",                         "editing");
