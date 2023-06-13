@@ -145,11 +145,11 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 
 		// don't access node data below this - the commands that are executed here can make the node reference invalid
 
-		commandNodeMenu(ICON_FA_EYE " Show all" SCENEGRAPHPOPUP, "layershowallchildren", node, true, &listener);
-		commandNodeMenu(ICON_FA_EYE_SLASH " Hide all" SCENEGRAPHPOPUP, "layerhideallchildren", node, true, &listener);
-		commandNodeMenu(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "layerhideothers", node, validModels > 1, &listener);
-		ImGui::CommandMenuItem(ICON_FA_LOCK " Lock all" SCENEGRAPHPOPUP, "layerlockall", true, &listener);
-		ImGui::CommandMenuItem(ICON_FA_UNLOCK " Unlock all" SCENEGRAPHPOPUP, "layerunlockall", true, &listener);
+		commandNodeMenu(ICON_FA_EYE " Show all" SCENEGRAPHPOPUP, "nodeshowallchildren", node, true, &listener);
+		commandNodeMenu(ICON_FA_EYE_SLASH " Hide all" SCENEGRAPHPOPUP, "nodehideallchildren", node, true, &listener);
+		commandNodeMenu(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "nodehideothers", node, validModels > 1, &listener);
+		ImGui::CommandMenuItem(ICON_FA_LOCK " Lock all" SCENEGRAPHPOPUP, "modellockall", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_UNLOCK " Unlock all" SCENEGRAPHPOPUP, "modelunlockall", true, &listener);
 		commandNodeMenu(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "nodeduplicate", node, true, &listener);
 
 		if (nodeType == scenegraph::SceneGraphNodeType::Model) {
@@ -411,8 +411,8 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 				}
 				ImGui::TooltipCommand("animate");
 			});
-			toolbar.button(ICON_FA_EYE, "layershowall");
-			toolbar.button(ICON_FA_EYE_SLASH, "layerhideall");
+			toolbar.button(ICON_FA_EYE, "showall");
+			toolbar.button(ICON_FA_EYE_SLASH, "hideall");
 			toolbar.end();
 			static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 												ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |

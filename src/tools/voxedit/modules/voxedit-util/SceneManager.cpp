@@ -1962,21 +1962,21 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Delete a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
-	command::Command::registerCommand("layerlock", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("nodelock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(true);
 		}
 	}).setHelp("Lock a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
-	command::Command::registerCommand("togglelayerlock", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("nodetogglelock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(!node->locked());
 		}
 	}).setHelp("Toggle the lock state of a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
-	command::Command::registerCommand("layerunlock", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("nodeunlock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(false);
@@ -1992,28 +1992,28 @@ void SceneManager::construct() {
 		nodeActivate(nodeId);
 	}).setHelp("Set or print the current active node").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
-	command::Command::registerCommand("togglelayerstate", [&](const command::CmdArgs &args) {
+	command::Command::registerCommand("nodetogglevisible", [&](const command::CmdArgs &args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			node->setVisible(!node->visible());
 		}
 	}).setHelp("Toggle the visible state of a node").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
-	command::Command::registerCommand("layershowall", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("showall", [&] (const command::CmdArgs& args) {
 		for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
 			node.setVisible(true);
 		}
 	}).setHelp("Show all nodes");
 
-	command::Command::registerCommand("layerhideall", [&](const command::CmdArgs &args) {
+	command::Command::registerCommand("hideall", [&](const command::CmdArgs &args) {
 		for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
 			node.setVisible(false);
 		}
 	}).setHelp("Hide all nodes");
 
-	command::Command::registerCommand("layershowallchildren", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("nodeshowallchildren", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		_sceneGraph.visitChildren(nodeId, true, [] (scenegraph::SceneGraphNode &node) {
 			node.setVisible(true);
@@ -2023,7 +2023,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Show all children nodes");
 
-	command::Command::registerCommand("layerhideallchildren", [&](const command::CmdArgs &args) {
+	command::Command::registerCommand("nodehideallchildren", [&](const command::CmdArgs &args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		_sceneGraph.visitChildren(nodeId, true, [] (scenegraph::SceneGraphNode &node) {
 			node.setVisible(false);
@@ -2033,7 +2033,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Hide all children nodes");
 
-	command::Command::registerCommand("layerhideothers", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("nodehideothers", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
@@ -2045,14 +2045,14 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Hide all model nodes except the active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
-	command::Command::registerCommand("layerlockall", [&](const command::CmdArgs &args) {
+	command::Command::registerCommand("modellockall", [&](const command::CmdArgs &args) {
 		for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
 			node.setLocked(true);
 		}
 	}).setHelp("Lock all nodes");
 
-	command::Command::registerCommand("layerunlockall", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("modelunlockall", [&] (const command::CmdArgs& args) {
 		for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
 			node.setLocked(false);

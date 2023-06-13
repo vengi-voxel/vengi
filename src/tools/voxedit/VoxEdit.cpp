@@ -306,8 +306,8 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("ctrl+n",               "new",                          "all");
 	_keybindingHandler.registerBinding("tab",                  "togglescene",                  "editing");
 	_keybindingHandler.registerBinding("delete",               "nodedelete",                   "scene");
-	_keybindingHandler.registerBinding("shift+h",              "togglelayerstate",             "editing");
-	_keybindingHandler.registerBinding("shift+l",              "togglelayerlock",              "editing");
+	_keybindingHandler.registerBinding("shift+h",              "nodetogglevisible",            "editing");
+	_keybindingHandler.registerBinding("shift+l",              "nodetogglelock",               "editing");
 	_keybindingHandler.registerBinding("ctrl+c",               "copy",                         "editing");
 	_keybindingHandler.registerBinding("ctrl+v",               "paste",                        "editing");
 	_keybindingHandler.registerBinding("ctrl+x",               "cut",                          "editing");
