@@ -1705,7 +1705,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Resize your volume about given x, y and z size");
 
-	command::Command::registerCommand("layersize", [this] (const command::CmdArgs& args) {
+	command::Command::registerCommand("modelsize", [this] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
 		if (argc == 1) {
 			const int size = core::string::toInt(args[0]);
@@ -1719,7 +1719,7 @@ void SceneManager::construct() {
 		} else {
 			resize(activeNode(), glm::ivec3(1));
 		}
-	}).setHelp("Resize your current node about given x, y and z size");
+	}).setHelp("Resize your current model node about given x, y and z size");
 
 	command::Command::registerCommand("shift", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1770,7 +1770,7 @@ void SceneManager::construct() {
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
 		move(x, y, z);
-	}).setHelp("Move the voxels inside the volume by the given values");
+	}).setHelp("Move the voxels inside the volume by the given values without changing the volume bounds");
 
 	command::Command::registerCommand("copy", [&] (const command::CmdArgs& args) {
 		copy();

@@ -43,7 +43,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		style.setFramePadding(ImVec2(4));
 		ui::Toolbar toolbar(buttonSize, &listener);
 		toolbar.button(ICON_FA_CROP, "crop");
-		toolbar.button(ICON_FA_EXPAND, "layersize");
+		toolbar.button(ICON_FA_EXPAND, "modelsize");
 		toolbar.button(ICON_FA_OBJECT_UNGROUP, "colortolayer");
 		toolbar.button(ICON_FA_COMPRESS, "scaledown");
 		toolbar.button(ICON_FK_ARROWS, "scaleup");
