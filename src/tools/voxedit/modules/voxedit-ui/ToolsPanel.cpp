@@ -15,7 +15,25 @@
 namespace voxedit {
 
 void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
-	// TODO: add actions here
+	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const int activeNode = sceneGraph.activeNode();
+
+	if (scenegraph::SceneGraphNode *node = sceneMgr().sceneGraphNode(activeNode)) {
+		const scenegraph::SceneGraphNodeType nodeType = node->type();
+		if (ImGui::CollapsingHeader("Action", ImGuiTreeNodeFlags_DefaultOpen)) {
+			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
+			ui::ScopedStyle style;
+			style.setFramePadding(ImVec2(4));
+			ui::Toolbar toolbar(buttonSize, &listener);
+			toolbar.button(ICON_FA_COPY, "nodeduplicate");
+			if (nodeType == scenegraph::SceneGraphNodeType::Model) {
+				toolbar.button(ICON_FA_TRASH, "nodedelete");
+				toolbar.button(ICON_FA_COPY, "noderef");
+				toolbar.button(ICON_FA_DOWN_LEFT_AND_UP_RIGHT_TO_CENTER, "center_origin");
+				toolbar.button(ICON_FA_ARROWS_TO_CIRCLE, "center_referenceposition");
+			}
+		}
+	}
 }
 
 void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
