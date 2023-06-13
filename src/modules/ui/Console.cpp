@@ -64,7 +64,7 @@ int Console::lineHeight() {
 }
 
 glm::ivec2 Console::stringSize(const char* s, int length) {
-	const ImVec2& v = ImGui::CalcTextSize(s);
+	const ImVec2& v = ImGui::CalcTextSize(s, s + length);
 	return glm::ivec2(v.x + 0.5f, v.y + 0.5f);
 }
 
