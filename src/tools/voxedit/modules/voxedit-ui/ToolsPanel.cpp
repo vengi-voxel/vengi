@@ -23,7 +23,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 		ui::ScopedStyle style;
 		style.setFramePadding(ImVec2(4));
-		ui::Toolbar toolbar(buttonSize);
+		ui::Toolbar toolbar(buttonSize, &listener);
 		toolbar.button(ICON_FA_CROP, "crop");
 		toolbar.button(ICON_FA_EXPAND, "layersize");
 		toolbar.button(ICON_FA_OBJECT_UNGROUP, "colortolayer");
