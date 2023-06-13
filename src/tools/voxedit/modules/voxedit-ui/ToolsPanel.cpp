@@ -4,9 +4,9 @@
 
 #include "ToolsPanel.h"
 #include "Toolbar.h"
-#include "ui/IMGUIApp.h"
-#include "ui/IconsFontAwesome6.h"
 #include "Util.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsFontAwesome6.h"
 #include "ui/IconsForkAwesome.h"
@@ -35,16 +35,13 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 
 	const float buttonWidth = (float)imguiApp()->fontSize() * 4;
 	if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-		veui::AxisButton(math::Axis::X, "X##rotate", "rotate x", ICON_FK_REPEAT, nullptr, buttonWidth,
-							&listener);
+		veui::AxisButton(math::Axis::X, "X##rotate", "rotate x", ICON_FK_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipText("Rotate by 90 degree on the x axis");
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Y, "Y##rotate", "rotate y", ICON_FK_REPEAT, nullptr, buttonWidth,
-							&listener);
+		veui::AxisButton(math::Axis::Y, "Y##rotate", "rotate y", ICON_FK_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipText("Rotate by 90 degree on the y axis");
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Z, "Z##rotate", "rotate z", ICON_FK_REPEAT, nullptr, buttonWidth,
-							&listener);
+		veui::AxisButton(math::Axis::Z, "Z##rotate", "rotate z", ICON_FK_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipText("Rotate by 90 degree on the z axis");
 	}
 
@@ -80,11 +77,14 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 	ImGui::NewLine();
 
 	if (ImGui::CollapsingHeader("Flip on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-		veui::AxisButton(math::Axis::X, ICON_FK_ARROWS_H " X##flip", "flip x", nullptr, nullptr, buttonWidth, &listener);
+		veui::AxisButton(math::Axis::X, ICON_FK_ARROWS_H " X##flip", "flip x", nullptr, nullptr, buttonWidth,
+						 &listener);
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Y, ICON_FK_ARROWS_V " Y##flip", "flip y", nullptr, nullptr, buttonWidth, &listener);
+		veui::AxisButton(math::Axis::Y, ICON_FK_ARROWS_V " Y##flip", "flip y", nullptr, nullptr, buttonWidth,
+						 &listener);
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Z, ICON_FK_ARROWS_H " Z##flip", "flip z", nullptr, nullptr, buttonWidth, &listener);
+		veui::AxisButton(math::Axis::Z, ICON_FK_ARROWS_H " Z##flip", "flip z", nullptr, nullptr, buttonWidth,
+						 &listener);
 	}
 }
 
