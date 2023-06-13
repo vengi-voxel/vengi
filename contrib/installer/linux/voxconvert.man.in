@@ -28,14 +28,14 @@ Dump the scene graph of the input file.
 Export the used palette data into an image.
 
 .TP
-\fB\--export-layers\fR
-Export all the layers of a scene into single files. It is suggested to name the layers
+\fB\--export-models\fR
+Export all the models of a scene into single files. It is suggested to name the models
 properly to get reasonable file names.
 
 .TP
 \fB\--filter <filter>\fR
-Will filter out layers not mentioned in the expression. E.g. 1-2,4 will handle layer
-1, 2 and 4. It is the same as 1,2,4. The first layer is 0.
+Will filter out models not mentioned in the expression. E.g. 1-2,4 will handle model
+1, 2 and 4. It is the same as 1,2,4. The first model is 0.
 
 .TP
 \fB\--force|-f\fR
@@ -76,7 +76,7 @@ Allow to specify input files.
 
 .TP
 \fB\--merge|-m\fR
-Merge all layers into one. Some destination formats only support one layer - for
+Merge all models into one. Some destination formats only support one model - for
 those formats this is an explicit parameter. If you are going to export to a mesh
 format like wavefront obj, this option changes the behaviour of the exporter, too.
 
@@ -257,13 +257,13 @@ Standard Triangle Language (*.stl)
 .TP
 Wavefront Object (*.obj)
 
-.SH LAYERS
+.SH MODELS
 
-Some formats also have layer support. Our layers are maybe not the layers you know from your favorite editor. Each
-layer can currently only have one object or volume in it. To get the proper layer ids (starting from 0) for your voxel
-file, you should load it once in voxedit and check the layer panel.
+Some formats also have multiple model support. Our models are maybe not the models you know from your favorite editor. Each
+model can currently only have one object or volume in it. To get the proper model ids (starting from 0) for your voxel
+file, you should load it once in voxedit and check the model panel or use --dump to get a list.
 
-Especially magicavoxel supports more objects in one layer. This might be confusing to get the right numbers for
+Especially magicavoxel supports more objects in one model. This might be confusing to get the right numbers for
 voxconvert.
 
 .SH EXAMPLES
@@ -271,33 +271,33 @@ voxconvert.
 .SS Level of detail (LOD)
 Generate a lod scaled by 50% from the input model:
 
-\fB@NAME@ -s --input infile.vox output.vox\fP
+\fB@NAME@ -s --input infile.vengi output.vengi\fP
 
 .SS Merge several models
 Merge several models into one:
 
-\fB@NAME@ --input one.vox --input two.vox --output onetwo.vox\fP
+\fB@NAME@ --input one.vengi --input two.vengi --output onetwo.vengi\fP
 
 .SS Generate from heightmap
 Just specify the heightmap as input file like this:
 
-\fB@NAME@ --input heightmap.png --output outfile.vox\fP
+\fB@NAME@ --input heightmap.png --output outfile.vengi\fP
 
 .SS Translate the voxels
 You can translate the voxels in the world like this:
 
-\fB@NAME@ --translate 0:10:0 --input heightmap.png --output outfile.vox\fP
+\fB@NAME@ --translate 0:10:0 --input heightmap.png --output outfile.vengi\fP
 
 This would move the voxels 10 units upwards. But keep in mind that not every format supports to store a translation offset.
 
 .SS Execute lua script
 Use the \fB--script\fP parameter:
 
-\fB@NAME@ --script "cover 2" --input infile.vox --output outfile.vox\fP
+\fB@NAME@ --script "cover 2" --input infile.vengi --output outfile.vengi\fP
 
 This is executing the script in \fB./scripts/cover.lua\fP with a parameter of \fB2\fP.
 
-\fB@NAME@ --script "./scripts/cover.lua 2" --input infile.vox --output outfile.vox\fP
+\fB@NAME@ --script "./scripts/cover.lua 2" --input infile.vengi --output outfile.vengi\fP
 
 This is doing exactly the same as above - just with a full path.
 
@@ -306,21 +306,21 @@ The scripting docs are available at https://mgerhardy.github.io/vengi/LUAScript/
 .SS Extract palette png
 Saves the png in the same dir as the vox file:
 
-\fB@NAME@ --export-palette --input infile.vox --output outfile.vox\fP
+\fB@NAME@ --export-palette --input infile.vengi --output outfile.vengi\fP
 
 There will be an \fBinfile.png\fP now.
 
-.SS Extract single layers
-Extract just a few layers from the input file.
+.SS Extract single models
+Extract just a few models from the input file.
 
-\fB@NAME@ --filter 1-2,4 --input infile.vox --output outfile.vox\fP
+\fB@NAME@ --filter 1-2,4 --input infile.vengi --output outfile.vengi\fP
 
-This will export layers 1, 2 and 4.
+This will export models 1, 2 and 4.
 
 .SS Convert to mesh
 You can export your volume model into a obj or ply.
 
-\fB@NAME@ --input infile.vox --output outfile.obj\fP
+\fB@NAME@ --input infile.vengi --output outfile.obj\fP
 
 Config vars to control the meshing:
 
@@ -370,7 +370,7 @@ Basic voxelization is supported for ply, gltf, stl, bsp, fbx and obj files, too.
 https://github.com/mgerhardy/vengi
 
 .SH COPYRIGHT
-Copyright \[co] 2015\-2022 by Martin Gerhardy.
+Copyright \[co] 2015\-2023 by Martin Gerhardy.
 
 .SH BUGS
 If you find a bug, please report it at https://github.com/mgerhardy/vengi/issues

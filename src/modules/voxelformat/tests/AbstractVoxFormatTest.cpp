@@ -342,25 +342,25 @@ void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Fo
 	voxel::volumeComparator(original, pal, *loaded, mergedLoad.second, voxel::ValidateFlags::Color | voxel::ValidateFlags::Region);
 }
 
-void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename, Format *format) {
+void AbstractVoxFormatTest::testSaveMultipleModels(const core::String &filename, Format *format) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
-	voxel::RawVolume layer1(region);
-	voxel::RawVolume layer2(region);
-	voxel::RawVolume layer3(region);
-	voxel::RawVolume layer4(region);
-	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-	EXPECT_TRUE(layer2.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-	EXPECT_TRUE(layer3.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-	EXPECT_TRUE(layer4.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	voxel::RawVolume model1(region);
+	voxel::RawVolume model2(region);
+	voxel::RawVolume model3(region);
+	voxel::RawVolume model4(region);
+	EXPECT_TRUE(model1.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(model2.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(model3.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	EXPECT_TRUE(model4.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node1;
-	node1.setVolume(&layer1, false);
+	node1.setVolume(&model1, false);
 	scenegraph::SceneGraphNode node2;
-	node2.setVolume(&layer2, false);
+	node2.setVolume(&model2, false);
 	scenegraph::SceneGraphNode node3;
-	node3.setVolume(&layer3, false);
+	node3.setVolume(&model3, false);
 	scenegraph::SceneGraphNode node4;
-	node4.setVolume(&layer4, false);
+	node4.setVolume(&model4, false);
 	sceneGraph.emplace(core::move(node1));
 	sceneGraph.emplace(core::move(node2));
 	sceneGraph.emplace(core::move(node3));
@@ -375,11 +375,11 @@ void AbstractVoxFormatTest::testSaveMultipleLayers(const core::String &filename,
 
 void AbstractVoxFormatTest::testSave(const core::String &filename, Format *format) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
-	voxel::RawVolume layer1(region);
-	EXPECT_TRUE(layer1.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	voxel::RawVolume model1(region);
+	EXPECT_TRUE(model1.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node1;
-	node1.setVolume(&layer1, false);
+	node1.setVolume(&model1, false);
 	sceneGraph.emplace(core::move(node1));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 	ASSERT_TRUE(format->save(sceneGraph, filename, bufferedStream, testSaveCtx));

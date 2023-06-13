@@ -133,7 +133,7 @@ TEST_F(VoxFormatTest, testSaveSmallVoxel) {
 
 TEST_F(VoxFormatTest, testSaveMultipleLayers) {
 	VoxFormat f;
-	testSaveMultipleLayers("mv-multiplelayersavetest.vox", &f);
+	testSaveMultipleModels("mv-multiplemodelsavetest.vox", &f);
 }
 
 TEST_F(VoxFormatTest, testSaveBigVolume) {

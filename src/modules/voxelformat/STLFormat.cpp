@@ -195,7 +195,7 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			if (mesh->isEmpty()) {
 				continue;
 			}
-			Log::debug("Exporting layer %s", meshExt.name.c_str());
+			Log::debug("Exporting model %s", meshExt.name.c_str());
 			const int ni = (int)mesh->getNoOfIndices();
 			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 			scenegraph::KeyFrameIndex keyFrameIdx = 0;

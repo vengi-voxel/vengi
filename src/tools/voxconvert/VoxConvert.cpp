@@ -52,11 +52,11 @@ VoxConvert::VoxConvert(const io::FilesystemPtr& filesystem, const core::TimeProv
 
 app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
-	registerArg("--crop").setDescription("Reduce the volumes to their real voxel sizes");
+	registerArg("--crop").setDescription("Reduce the models to their real voxel sizes");
 	registerArg("--dump").setDescription("Dump the scene graph of the input file");
-	registerArg("--export-layers").setDescription("Export all the layers of a scene into single files");
+	registerArg("--export-models").setDescription("Export all the models of a scene into single files");
 	registerArg("--export-palette").setDescription("Export the used palette data into an image");
-	registerArg("--filter").setDescription("Layer filter. For example '1-4,6'");
+	registerArg("--filter").setDescription("Model filter. For example '1-4,6'");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--image-as-plane").setDescription("Import given input images as planes");
 	registerArg("--image-as-volume").setDescription("Import given input image as volume");
@@ -66,17 +66,17 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--colored-heightmap").setDescription("Use the alpha channel of the heightmap as height and the rgb data as surface color");
 	registerArg("--input").setShort("-i").setDescription("Allow to specify input files");
 	registerArg("--wildcard").setShort("-w").setDescription("Allow to specify input file filter if --input is a directory");
-	registerArg("--merge").setShort("-m").setDescription("Merge layers into one volume");
+	registerArg("--merge").setShort("-m").setDescription("Merge models into one volume");
 	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
 	registerArg("--output").setShort("-o").setDescription("Allow to specify the output file");
 	registerArg("--rotate").setDescription("Rotate by 90 degree at the given axis (x, y or z), specify e.g. x:180 to rotate around x by 180 degree.");
 	registerArg("--resize").setDescription("Resize the volume by the given x (right), y (up) and z (back) values");
-	registerArg("--scale").setShort("-s").setDescription("Scale layer to 50% of its original size");
+	registerArg("--scale").setShort("-s").setDescription("Scale model to 50% of its original size");
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
 	registerArg("--scriptcolor").setDefaultValue("1").setDescription("Set the palette index that is given to the script parameters");
-	registerArg("--split").setDescription("Slices the volumes into pieces of the given size <x:y:z>");
+	registerArg("--split").setDescription("Slices the models into pieces of the given size <x:y:z>");
 	registerArg("--surface-only").setDescription("Remove any non surface voxel");
-	registerArg("--translate").setShort("-t").setDescription("Translate the volumes by x (right), y (up), z (back)");
+	registerArg("--translate").setShort("-t").setDescription("Translate the models by x (right), y (up), z (back)");
 
 	voxelformat::FormatConfig::init();
 
@@ -180,18 +180,18 @@ app::AppState VoxConvert::onInit() {
 		io::normalizePath(outfile);
 	}
 
-	_mergeVolumes     = hasArg("--merge");
-	_scaleVolumes     = hasArg("--scale");
-	_mirrorVolumes    = hasArg("--mirror");
-	_rotateVolumes    = hasArg("--rotate");
-	_translateVolumes = hasArg("--translate");
+	_mergeModels      = hasArg("--merge");
+	_scaleModels      = hasArg("--scale");
+	_mirrorModels     = hasArg("--mirror");
+	_rotateModels     = hasArg("--rotate");
+	_translateModels  = hasArg("--translate");
 	_exportPalette    = hasArg("--export-palette");
-	_exportLayers     = hasArg("--export-layers");
-	_cropVolumes      = hasArg("--crop");
+	_exportModels     = hasArg("--export-models");
+	_cropModels       = hasArg("--crop");
 	_surfaceOnly      = hasArg("--surface-only");
-	_splitVolumes     = hasArg("--split");
+	_splitModels      = hasArg("--split");
 	_dumpSceneGraph   = hasArg("--dump");
-	_resizeVolumes    = hasArg("--resize");
+	_resizeModels     = hasArg("--resize");
 
 	Log::info("Options");
 	if (inputIsMesh || voxelformat::isMeshFormat(outfile, true)) {
@@ -238,17 +238,17 @@ app::AppState VoxConvert::onInit() {
 		Log::info("* script:            - %s", scriptParameters.c_str());
 	}
 	Log::info("* dump scene graph:  - %s", (_dumpSceneGraph   ? "true" : "false"));
-	Log::info("* merge volumes:     - %s", (_mergeVolumes     ? "true" : "false"));
-	Log::info("* scale volumes:     - %s", (_scaleVolumes     ? "true" : "false"));
-	Log::info("* crop volumes:      - %s", (_cropVolumes      ? "true" : "false"));
+	Log::info("* merge models:      - %s", (_mergeModels      ? "true" : "false"));
+	Log::info("* scale models:      - %s", (_scaleModels      ? "true" : "false"));
+	Log::info("* crop models:       - %s", (_cropModels       ? "true" : "false"));
 	Log::info("* surface only:      - %s", (_surfaceOnly      ? "true" : "false"));
-	Log::info("* split volumes:     - %s", (_splitVolumes     ? "true" : "false"));
-	Log::info("* mirror volumes:    - %s", (_mirrorVolumes    ? "true" : "false"));
-	Log::info("* translate volumes: - %s", (_translateVolumes ? "true" : "false"));
-	Log::info("* rotate volumes:    - %s", (_rotateVolumes    ? "true" : "false"));
+	Log::info("* split models:      - %s", (_splitModels      ? "true" : "false"));
+	Log::info("* mirror models:     - %s", (_mirrorModels     ? "true" : "false"));
+	Log::info("* translate models:  - %s", (_translateModels  ? "true" : "false"));
+	Log::info("* rotate models:     - %s", (_rotateModels     ? "true" : "false"));
 	Log::info("* export palette:    - %s", (_exportPalette    ? "true" : "false"));
-	Log::info("* export layers:     - %s", (_exportLayers     ? "true" : "false"));
-	Log::info("* resize volumes:    - %s", (_resizeVolumes    ? "true" : "false"));
+	Log::info("* export models:     - %s", (_exportModels     ? "true" : "false"));
+	Log::info("* resize models:     - %s", (_resizeModels     ? "true" : "false"));
 
 	voxel::Palette palette = voxel::getPalette();
 
@@ -267,7 +267,7 @@ app::AppState VoxConvert::onInit() {
 			Log::error("Could not open target file: %s", outfile.c_str());
 			return app::AppState::InitFailure;
 		}
-	} else if (!_exportLayers && !_exportPalette && !_dumpSceneGraph) {
+	} else if (!_exportModels && !_exportPalette && !_dumpSceneGraph) {
 		Log::error("No output specified");
 		return app::AppState::InitFailure;
 	}
@@ -314,24 +314,24 @@ app::AppState VoxConvert::onInit() {
 	const bool applyFilter = hasArg("--filter");
 	if (applyFilter) {
 		if (infiles.size() == 1u) {
-			filterVolumes(sceneGraph);
+			filterModels(sceneGraph);
 		} else {
-			Log::warn("Don't apply layer filters for multiple input files");
+			Log::warn("Don't apply model filters for multiple input files");
 		}
 	}
 
-	if (_exportLayers) {
+	if (_exportModels) {
 		if (infiles.size() > 1) {
-			Log::warn("The format and path of the first input file is used for exporting all layers");
+			Log::warn("The format and path of the first input file is used for exporting all models");
 		}
-		exportLayersIntoSingleObjects(sceneGraph, infiles[0]);
+		exportModelsIntoSingleObjects(sceneGraph, infiles[0]);
 	}
 
-	if (_mergeVolumes) {
-		Log::info("Merge layers");
+	if (_mergeModels) {
+		Log::info("Merge models");
 		const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 		if (merged.first == nullptr) {
-			Log::error("Failed to merge volumes");
+			Log::error("Failed to merge models");
 			return app::AppState::InitFailure;
 		}
 		sceneGraph.clear();
@@ -342,23 +342,23 @@ app::AppState VoxConvert::onInit() {
 		sceneGraph.emplace(core::move(node));
 	}
 
-	if (_scaleVolumes) {
+	if (_scaleModels) {
 		scale(sceneGraph);
 	}
 
-	if (_resizeVolumes) {
+	if (_resizeModels) {
 		resize(getArgIvec3("--resize"), sceneGraph);
 	}
 
-	if (_mirrorVolumes) {
+	if (_mirrorModels) {
 		mirror(getArgVal("--mirror"), sceneGraph);
 	}
 
-	if (_rotateVolumes) {
+	if (_rotateModels) {
 		rotate(getArgVal("--rotate"), sceneGraph);
 	}
 
-	if (_translateVolumes) {
+	if (_translateModels) {
 		translate(getArgIvec3("--translate"), sceneGraph);
 	}
 
@@ -367,7 +367,7 @@ app::AppState VoxConvert::onInit() {
 		script(scriptParameters, sceneGraph, color.toInt());
 	}
 
-	if (_cropVolumes) {
+	if (_cropModels) {
 		crop(sceneGraph);
 	}
 
@@ -375,12 +375,12 @@ app::AppState VoxConvert::onInit() {
 		removeNonSurfaceVoxels(sceneGraph);
 	}
 
-	if (_splitVolumes) {
+	if (_splitModels) {
 		split(getArgIvec3("--split"), sceneGraph);
 	}
 
 	if (outputFile) {
-		Log::debug("Save %i volumes", (int)sceneGraph.size());
+		Log::debug("Save %i models", (int)sceneGraph.size());
 		voxelformat::SaveContext saveCtx;
 		if (!voxelformat::saveFormat(outputFile, nullptr, sceneGraph, saveCtx)) {
 			Log::error("Failed to write to output file '%s'", outfile.c_str());
@@ -391,13 +391,13 @@ app::AppState VoxConvert::onInit() {
 	return state;
 }
 
-core::String VoxConvert::getFilenameForLayerName(const core::String &inputfile, const core::String &layerName, int id) {
+core::String VoxConvert::getFilenameForModelName(const core::String &inputfile, const core::String &modelName, int id) {
 	const core::String &ext = core::string::extractExtension(inputfile);
 	core::String name;
-	if (layerName.empty()) {
-		name = core::string::format("layer-%i.%s", id, ext.c_str());
+	if (modelName.empty()) {
+		name = core::string::format("model-%i.%s", id, ext.c_str());
 	} else {
-		name = core::string::format("%s.%s", layerName.c_str(), ext.c_str());
+		name = core::string::format("%s.%s", modelName.c_str(), ext.c_str());
 	}
 	return core::string::path(core::string::extractPath(inputfile), core::string::sanitizeFilename(name));
 }
@@ -506,8 +506,8 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 	return true;
 }
 
-void VoxConvert::exportLayersIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile) {
-	Log::info("Export layers into single objects");
+void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile) {
+	Log::info("Export models into single objects");
 	int n = 0;
 	voxelformat::SaveContext saveCtx;
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
@@ -516,7 +516,7 @@ void VoxConvert::exportLayersIntoSingleObjects(scenegraph::SceneGraph& sceneGrap
 		scenegraph::SceneGraphNode newNode;
 		scenegraph::copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
-		const core::String& filename = getFilenameForLayerName(inputfile, node.name(), n);
+		const core::String& filename = getFilenameForModelName(inputfile, node.name(), n);
 		if (voxelformat::saveFormat(filesystem()->open(filename, io::FileMode::SysWrite), nullptr, newSceneGraph, saveCtx)) {
 			Log::info(" .. %s", filename.c_str());
 		} else {
@@ -670,7 +670,7 @@ void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneG
 }
 
 void VoxConvert::scale(scenegraph::SceneGraph& sceneGraph) {
-	Log::info("Scale layers");
+	Log::info("Scale models");
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
 		const voxel::Region srcRegion = node.region();
@@ -685,7 +685,7 @@ void VoxConvert::scale(scenegraph::SceneGraph& sceneGraph) {
 }
 
 void VoxConvert::resize(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph) {
-	Log::info("Resize layers");
+	Log::info("Resize models");
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
 		voxel::RawVolume *v = voxelutil::resize(node.volume(), size);
@@ -697,14 +697,14 @@ void VoxConvert::resize(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGra
 	}
 }
 
-void VoxConvert::filterVolumes(scenegraph::SceneGraph& sceneGraph) {
+void VoxConvert::filterModels(scenegraph::SceneGraph& sceneGraph) {
 	const core::String &filter = getArgVal("--filter");
 	if (filter.empty()) {
 		Log::warn("No filter specified");
 		return;
 	}
 
-	core::Set<int> layers;
+	core::Set<int> models;
 	core::DynamicArray<core::String> tokens;
 	core::string::splitString(filter, tokens, ",");
 	for (const core::String& token : tokens) {
@@ -713,26 +713,26 @@ void VoxConvert::filterVolumes(scenegraph::SceneGraph& sceneGraph) {
 			const size_t index = token.find("-");
 			const core::String &endString = token.substr(index + 1);
 			const int end = endString.toInt();
-			for (int layer = start; layer <= end; ++layer) {
-				layers.insert(layer);
+			for (int modelIndex = start; modelIndex <= end; ++modelIndex) {
+				models.insert(modelIndex);
 			}
 		} else {
-			const int layer = token.toInt();
-			layers.insert(layer);
+			const int modelIndex = token.toInt();
+			models.insert(modelIndex);
 		}
 	}
 	auto iter = sceneGraph.beginModel();
 	core::Set<int> removeNodes;
 	for (int i = 0; iter != sceneGraph.end(); ++i, ++iter) {
-		if (!layers.has(i)) {
+		if (!models.has(i)) {
 			removeNodes.insert((*iter).id());
-			Log::debug("Remove layer %i - not part of the filter expression", i);
+			Log::debug("Remove model %i - not part of the filter expression", i);
 		}
 	}
 	for (const auto &entry : removeNodes) {
 		sceneGraph.removeNode(entry->key, false);
 	}
-	Log::info("Filtered layers: %i", (int)layers.size());
+	Log::info("Filtered models: %i", (int)models.size());
 }
 
 void VoxConvert::mirror(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph) {

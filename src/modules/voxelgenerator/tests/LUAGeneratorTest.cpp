@@ -149,9 +149,9 @@ TEST_F(LUAGeneratorTest, testArguments) {
 TEST_F(LUAGeneratorTest, testSceneGraph) {
 	const core::String script = R"(
 		function main(node, region, color)
-			local layer = scenegraph.get()
-			layer:setName("foobar")
-			layer:volume():setVoxel(0, 0, 0, color)
+			local model = scenegraph.get()
+			model:setName("foobar")
+			model:volume():setVoxel(0, 0, 0, color)
 		end
 	)";
 	scenegraph::SceneGraph sceneGraph;

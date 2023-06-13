@@ -289,7 +289,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				continue;
 			}
 
-			Log::debug("Exporting layer %s", meshExt.name.c_str());
+			Log::debug("Exporting model %s", meshExt.name.c_str());
 
 			const int nv = (int)mesh->getNoOfVertices();
 			const int ni = (int)mesh->getNoOfIndices();

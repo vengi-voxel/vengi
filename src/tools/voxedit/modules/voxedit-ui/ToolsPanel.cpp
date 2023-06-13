@@ -26,9 +26,9 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 			style.setFramePadding(ImVec2(4));
 			ui::Toolbar toolbar(buttonSize, &listener);
 			toolbar.button(ICON_FA_COPY, "nodeduplicate");
+			toolbar.button(ICON_FA_TRASH, "nodedelete");
 			if (nodeType == scenegraph::SceneGraphNodeType::Model) {
-				toolbar.button(ICON_FA_TRASH, "nodedelete");
-				toolbar.button(ICON_FA_COPY, "noderef");
+				toolbar.button(ICON_FA_COPY, "modelref");
 				toolbar.button(ICON_FA_DOWN_LEFT_AND_UP_RIGHT_TO_CENTER, "center_origin");
 				toolbar.button(ICON_FA_ARROWS_TO_CIRCLE, "center_referenceposition");
 			}
@@ -44,7 +44,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ui::Toolbar toolbar(buttonSize, &listener);
 		toolbar.button(ICON_FA_CROP, "crop");
 		toolbar.button(ICON_FA_EXPAND, "modelsize");
-		toolbar.button(ICON_FA_OBJECT_UNGROUP, "colortolayer");
+		toolbar.button(ICON_FA_OBJECT_UNGROUP, "colortomodel");
 		toolbar.button(ICON_FA_COMPRESS, "scaledown");
 		toolbar.button(ICON_FK_ARROWS, "scaleup");
 		toolbar.button(ICON_FA_FILL_DRIP, "fillhollow");

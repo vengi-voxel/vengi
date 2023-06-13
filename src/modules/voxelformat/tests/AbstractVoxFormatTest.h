@@ -46,7 +46,7 @@ protected:
 	// save as any other format
 	void testRGBSmallSaveLoad(const core::String &filename, const core::String &saveFilename);
 
-	void testSaveMultipleLayers(const core::String &filename, Format *format);
+	void testSaveMultipleModels(const core::String &filename, Format *format);
 	void testSaveSingleVoxel(const core::String &filename, Format *format);
 	void testSaveSmallVolume(const core::String &filename, Format *format);
 

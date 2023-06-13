@@ -111,7 +111,7 @@ Objects: {
 )",
 							 PROJECT_VERSION, app::App::getInstance()->appname().c_str(), PROJECT_VERSION, meshCount);
 
-	Log::debug("Exporting %i layers", meshCount);
+	Log::debug("Exporting %i models", meshCount);
 
 	// TODO: maybe also export Model: "Model::Camera", "Camera"
 	// TODO: are connections and relations needed?
@@ -123,7 +123,7 @@ Objects: {
 			if (mesh->isEmpty()) {
 				continue;
 			}
-			Log::debug("Exporting layer %s", meshExt.name.c_str());
+			Log::debug("Exporting model %s", meshExt.name.c_str());
 			const int nv = (int)mesh->getNoOfVertices();
 			const int ni = (int)mesh->getNoOfIndices();
 			if (ni % 3 != 0) {

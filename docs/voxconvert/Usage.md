@@ -3,9 +3,9 @@
 `./vengi-voxconvert --merge --scale --input infile --output outfile`
 
 * `--crop`: reduces the volume sizes to their voxel boundaries.
-* `--export-layers`: export all the layers of a scene into single files. It is suggested to name the layers properly to get reasonable file names.
+* `--export-models`: export all the models of a scene into single files. It is suggested to name the models properly to get reasonable file names.
 * `--export-palette`: will save the included palette as png next to the source file.
-* `--filter <filter>`: will filter out layers not mentioned in the expression. E.g. `1-2,4` will handle layer 1, 2 and 4. It is the same as `1,2,4`. The first layer is `0`. See the layers note below.
+* `--filter <filter>`: will filter out models not mentioned in the expression. E.g. `1-2,4` will handle model 1, 2 and 4. It is the same as `1,2,4`. The first model is `0`. See the models note below.
 * `--force`: overwrite existing files
 * `--image-as-heightmap`: import input images as heightmap (default)
 * `--colored-heightmap`: Use the alpha channel of the heightmap as height and the rgb data as surface color.
@@ -14,7 +14,7 @@
 * `--image-as-volume-both-sides`: importing image as volume and use the depth map for both sides. The depth-map has the postfix `-dm`. For example the image is called `image.png` then the depth-map image must be called `image-dm.png`. Also see the [examples](Examples.md).
 * `--image-as-plane`: import input images as planes
 * `--input <file>`: allows to specify input files. You can specify more than one file
-* `--merge`: will merge a multi layer volume (like `vox`, `qb` or `qbt`) into a single volume of the target file
+* `--merge`: will merge a multi model volume (like `vox`, `qb` or `qbt`) into a single volume of the target file
 * `--mirror <x|y|z>`: allows you to mirror the volumes at x, y and z axis
 * `--output <file>`: allows you to specify the output filename
 * `--resize <x:y:z>`: resize the volume by the given x (right), y (up) and z (back) values
@@ -43,7 +43,7 @@ If something isn't working as you expected it to work, it might be an option to 
 ## The order of execution is:
 
 * filter
-* export layers
+* export models
 * merge
 * scale
 * mirror
@@ -54,9 +54,9 @@ If something isn't working as you expected it to work, it might be an option to 
 * crop
 * split
 
-## Layers
+## Models
 
-Some formats also have layer support. Our layers are maybe not the layers you know from your favorite editor. Each layer can currently only have one object or volume in it. To get the proper layer ids (starting from 0) for your voxel file, you should load it once in [voxedit](../voxedit/Index.md) and check the layer panel.
+Some formats also have multiple model support. Our models are maybe not the models you know from your favorite editor. Each model can currently only have one object or volume in it. To get the proper model ids (starting from 0) for your voxel file, you should load it once in [voxedit](../voxedit/Index.md) and check the model panel or use `--dump` to get a list.
 
-Especially magicavoxel supports more objects in one layer. This might be confusing to get the right numbers for `voxconvert`. See [this issue](https://github.com/mgerhardy/vengi/issues/68) for a few more details.
+Especially magicavoxel supports more objects in one model. This might be confusing to get the right numbers for `voxconvert`. See [this issue](https://github.com/mgerhardy/vengi/issues/68) for a few more details.
 

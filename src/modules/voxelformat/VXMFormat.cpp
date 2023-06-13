@@ -203,12 +203,12 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		wrapBool(stream.writeBool(emissive))
 	}
 
-	int layers = (int)sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
-	if (layers > 0xFF) {
-		Log::warn("Failed to save to vxm - max layer size exceeded");
+	int models = (int)sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
+	if (models > 0xFF) {
+		Log::warn("Failed to save to vxm - max model size exceeded");
 		return false;
 	}
-	wrapBool(stream.writeUInt8(layers))
+	wrapBool(stream.writeUInt8(models))
 
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
@@ -223,7 +223,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		for (uint32_t x = 0u; x < width; ++x) {
 			for (uint32_t y = 0u; y < height; ++y) {
 				for (uint32_t z = 0u; z < depth; ++z) {
-					// this might fail - vxm uses the same size for each layer - we don't
+					// this might fail - vxm uses the same size for each model - we don't
 					// in case the position is outside of the node volume, we are putting
 					// the border voxel of the volume into the file
 					sampler.setPosition(maxs.x - x, mins.y + y, mins.z + z);
@@ -475,20 +475,20 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 
-	uint8_t maxLayers = 1;
+	uint8_t maxModels = 1;
 	if (version >= 12) {
-		wrap(stream.readUInt8(maxLayers));
+		wrap(stream.readUInt8(maxModels));
 	}
 
-	for (uint8_t layer = 0; layer < maxLayers; ++layer) {
+	for (uint8_t model = 0; model < maxModels; ++model) {
 		int idx = 0;
 		bool visible = true;
-		char layerName[1024];
+		char modelName[1024];
 		if (version >= 12) {
-			wrapBool(stream.readString(sizeof(layerName), layerName, true))
+			wrapBool(stream.readString(sizeof(modelName), modelName, true))
 			visible = stream.readBool();
 		} else {
-			core::string::formatBuf(layerName, sizeof(layerName), "Layer %i", layer);
+			core::string::formatBuf(modelName, sizeof(modelName), "Model %i", model);
 		}
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
 		for (;;) {
@@ -523,7 +523,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(volume, true);
-		node.setName(layerName);
+		node.setName(modelName);
 		node.setVisible(visible);
 		node.setPivot(normalizedPivot);
 		node.setPalette(palette);

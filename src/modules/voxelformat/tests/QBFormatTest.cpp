@@ -39,7 +39,7 @@ TEST_F(QBFormatTest, testSaveSmallVoxel) {
 
 TEST_F(QBFormatTest, testSaveMultipleLayers) {
 	QBFormat f;
-	testSaveMultipleLayers("qubicle-multiplelayersavetest.qb", &f);
+	testSaveMultipleModels("qubicle-multiplemodelsavetest.qb", &f);
 }
 
 TEST_F(QBFormatTest, testLoadSave) {

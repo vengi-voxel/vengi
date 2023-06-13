@@ -109,13 +109,13 @@ Convert the input file colors to a new palette by selecting the closest match:
 
 `./vengi-voxconvert -set palette built-in:nippon -set voxformat_createpalette false --input infile.vox --output outfile.vox`
 
-## Extract single layers
+## Extract single models
 
-Extract just a few layers from the input file.
+Extract just a few models from the input file.
 
 `./vengi-voxconvert --filter 1-2,4 --input infile.vox --output outfile.vox`
 
-This will export layers 1, 2 and 4.
+This will export models 1, 2 and 4.
 
 ## Convert to mesh
 
@@ -145,7 +145,7 @@ for i in *.vxm; do vengi-voxconvert --input "$i" --output "${i%.vxm}.gltf" done
 
 > https://docs.microsoft.com/en-us/powershell/scripting/learn/ps101/06-flow-control?view=powershell-7.2
 
-An example for the windows powershell to extract single layers into a new model
+An example for the windows powershell to extract single models into a new model
 
 ```ps
 $array = "1-2,5", "1-2,7"

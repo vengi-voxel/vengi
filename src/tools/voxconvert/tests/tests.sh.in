@@ -44,9 +44,9 @@ convert qbt qb
 convert cub qb
 convert vox qb
 
-echo "export layers of @DATA_DIR@/$FILE"
+echo "export models of @DATA_DIR@/$FILE"
 cp @DATA_DIR@/$FILE @CMAKE_BINARY_DIR@
-$BINARY -f --input @CMAKE_BINARY_DIR@/$FILE --export-layers
+$BINARY -f --input @CMAKE_BINARY_DIR@/$FILE --export-models
 echo
 
 echo "export palette of @DATA_DIR@/$FILE"
@@ -63,6 +63,6 @@ cp $SPLITFILE @CMAKE_BINARY_DIR@
 $BINARY -f --input "$SPLITFILE" --script splitobjects --output "$SPLITTARGETFILE"
 echo "check if $SPLITTARGETFILE exists"
 test -f "$SPLITTARGETFILE"
-echo "check that $SPLITTARGETFILE has 4 layers"
-$BINARY  --input "$SPLITTARGETFILE" --dump 2>&1 | grep "4 layers"
+echo "check that $SPLITTARGETFILE has 4 models"
+$BINARY  --input "$SPLITTARGETFILE" --dump 2>&1 | grep "4 models"
 echo

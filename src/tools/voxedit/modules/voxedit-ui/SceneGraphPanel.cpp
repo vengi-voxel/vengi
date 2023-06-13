@@ -151,32 +151,26 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 		ImGui::CommandMenuItem(ICON_FA_LOCK " Lock all" SCENEGRAPHPOPUP, "modellockall", true, &listener);
 		ImGui::CommandMenuItem(ICON_FA_UNLOCK " Unlock all" SCENEGRAPHPOPUP, "modelunlockall", true, &listener);
 		commandNodeMenu(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "nodeduplicate", node, true, &listener);
+		commandNodeMenu(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "nodedelete", node, true, &listener);
 
 		if (nodeType == scenegraph::SceneGraphNodeType::Model) {
-			commandNodeMenu(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "nodedelete", node, validModels > 1, &listener);
-			commandNodeMenu(ICON_FA_COPY " Create reference" SCENEGRAPHPOPUP, "noderef", node, true, &listener);
+			commandNodeMenu(ICON_FA_COPY " Create reference" SCENEGRAPHPOPUP, "modelref", node, true, &listener);
 			const int prevNode = sceneGraph.prevModelNode(node.id());
-			commandNodeMenu(ICON_FA_OBJECT_GROUP " Merge" SCENEGRAPHPOPUP, "layermerge", node, prevNode != InvalidNodeId, &listener);
-			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge all" SCENEGRAPHPOPUP, "layermergeall", validModels > 1, &listener);
-			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge visible" SCENEGRAPHPOPUP, "layermergevisible", validModels > 1, &listener);
-			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge locked" SCENEGRAPHPOPUP, "layermergelocked", validModels > 1, &listener);
+			commandNodeMenu(ICON_FA_OBJECT_GROUP " Merge" SCENEGRAPHPOPUP, "modelmerge", node, prevNode != InvalidNodeId, &listener);
+			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge all" SCENEGRAPHPOPUP, "modelsmergeall", validModels > 1, &listener);
+			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge visible" SCENEGRAPHPOPUP, "modelsmergevisible", validModels > 1, &listener);
+			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge locked" SCENEGRAPHPOPUP, "modelsmergelocked", validModels > 1, &listener);
 			ImGui::CommandMenuItem(ICON_FA_DOWN_LEFT_AND_UP_RIGHT_TO_CENTER " Center origin" SCENEGRAPHPOPUP, "center_origin", true, &listener);
 			ImGui::CommandMenuItem(ICON_FA_ARROWS_TO_CIRCLE " Center reference" SCENEGRAPHPOPUP, "center_referenceposition", true, &listener);
-			commandNodeMenu(ICON_FA_FLOPPY_DISK " Save" SCENEGRAPHPOPUP, "layersave", node, true, &listener);
+			commandNodeMenu(ICON_FA_FLOPPY_DISK " Save" SCENEGRAPHPOPUP, "modelsave", node, true, &listener);
 		} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
 			if (ImGui::MenuItem(ICON_FA_CUBES_STACKED " Convert to model" SCENEGRAPHPOPUP)) {
 				sceneMgr().nodeUnreference(node.id());
 			}
 			ImGui::TooltipText("Unreference from model and allow to edit the voxels for this node");
 		}
-		ImGui::CommandMenuItem(ICON_FA_FLOPPY_DISK " Save all" SCENEGRAPHPOPUP, "layerssave", true, &listener);
+		ImGui::CommandMenuItem(ICON_FA_FLOPPY_DISK " Save all" SCENEGRAPHPOPUP, "modelssave", validModels > 1, &listener);
 
-		if (nodeType != scenegraph::SceneGraphNodeType::Model) {
-			if (ImGui::MenuItem(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP)) {
-				sceneMgr().nodeRemove(node.id(), true);
-			}
-			ImGui::TooltipText("Delete this node and all children");
-		}
 		if (ImGui::MenuItem(ICON_FA_SQUARE_PLUS " Add new group" SCENEGRAPHPOPUP)) {
 			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 			groupNode.setName("new group");

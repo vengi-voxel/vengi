@@ -1553,7 +1553,7 @@ void SceneManager::construct() {
 		renderText(str.c_str(), size);
 	}).setHelp("Render characters at the reference position");
 
-	command::Command::registerCommand("layerssave", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("modelssave", [&] (const command::CmdArgs& args) {
 		core::String dir = ".";
 		if (!args.empty()) {
 			dir = args[0];
@@ -1563,14 +1563,14 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Save all model nodes into filenames represented by their node names");
 
-	command::Command::registerCommand("layersave", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("modelsave", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
 		if (argc < 1) {
-			Log::info("Usage: layersave <nodeid> [<file>]");
+			Log::info("Usage: modelsave <nodeid> [<file>]");
 			return;
 		}
 		const int nodeId = core::string::toInt(args[0]);
-		core::String file = core::string::format("node%i.vox", nodeId);
+		core::String file = core::string::format("node%i.vengi", nodeId);
 		if (args.size() == 2) {
 			file = args[1];
 		}
@@ -1619,7 +1619,7 @@ void SceneManager::construct() {
 		scaleUp(nodeId);
 	}).setHelp("Scale the current active node or the given node up").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
-	command::Command::registerCommand("colortolayer", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("colortomodel", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
 		if (argc < 1) {
 			const voxel::Voxel voxel = _modifier.cursorVoxel();
@@ -1818,7 +1818,7 @@ void SceneManager::construct() {
 		rotate(axis);
 	}).setHelp("Rotate active nodes around the given axis");
 
-	command::Command::registerCommand("layermerge", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("modelmerge", [&] (const command::CmdArgs& args) {
 		int nodeId1;
 		int nodeId2;
 		if (args.size() == 1) {
@@ -1834,15 +1834,15 @@ void SceneManager::construct() {
 		mergeNodes(nodeId1, nodeId2);
 	}).setHelp("Merge two given nodes or active model node with the next one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
-	command::Command::registerCommand("layermergeall", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("modelmergeall", [&] (const command::CmdArgs& args) {
 		mergeNodes(NodeMergeFlags::All);
 	}).setHelp("Merge all nodes");
 
-	command::Command::registerCommand("layermergevisible", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("modelsmergevisible", [&] (const command::CmdArgs& args) {
 		mergeNodes(NodeMergeFlags::Visible);
 	}).setHelp("Merge all visible nodes");
 
-	command::Command::registerCommand("layermergelocked", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("modelsmergelocked", [&] (const command::CmdArgs& args) {
 		mergeNodes(NodeMergeFlags::Locked);
 	}).setHelp("Merge all locked nodes");
 
@@ -1942,7 +1942,7 @@ void SceneManager::construct() {
 		setLockedAxis(axis, unlock);
 	}).setHelp("Toggle locked mode for the z axis at the current cursor position");
 
-	command::Command::registerCommand("layeradd", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("modeladd", [&] (const command::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
 		const char *width = args.size() > 1 ? args[1].c_str() : "64";
 		const char *height = args.size() > 2 ? args[2].c_str() : width;
@@ -1956,9 +1956,7 @@ void SceneManager::construct() {
 	command::Command::registerCommand("nodedelete", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
-			if (node->type() == scenegraph::SceneGraphNodeType::Model) {
-				nodeRemove(*node, false);
-			}
+			nodeRemove(*node, false);
 		}
 	}).setHelp("Delete a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
@@ -1983,7 +1981,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Unlock a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
-	command::Command::registerCommand("layeractive", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("nodeactivate", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			Log::info("Active node: %i", activeNode());
 			return;
@@ -2082,7 +2080,7 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Duplicates the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
 
-	command::Command::registerCommand("noderef", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("modelref", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			nodeReference(*node);

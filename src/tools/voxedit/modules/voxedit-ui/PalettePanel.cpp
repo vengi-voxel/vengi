@@ -149,7 +149,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, scenegraph::Scen
 		}
 
 		if (usableColor) {
-			const core::String &modelFromColorCmd = core::string::format("colortolayer %i", palIdx);
+			const core::String &modelFromColorCmd = core::string::format("colortomodel %i", palIdx);
 			ImGui::CommandMenuItem(ICON_FA_OBJECT_UNGROUP " Model from color" PALETTEACTIONPOPUP, modelFromColorCmd.c_str(), true, &listener);
 			if (palette.hasGlow(palIdx)) {
 				if (ImGui::MenuItem(ICON_FK_SUN_O " Remove Glow")) {

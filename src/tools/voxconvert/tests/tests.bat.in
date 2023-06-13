@@ -7,8 +7,8 @@ set SPLITFILE="@DATA_DIR@\tests\splitobjects.vox"
 set SPLITTARGETFILE="@CMAKE_BINARY_DIR@\splittedobjects.vox"
 
 xcopy /Y "@DATA_DIR@\voxedit\%FILE%" "@CMAKE_BINARY_DIR@"
-echo "export layers of @CMAKE_BINARY_DIR@\%FILE%"
-"%BINARY%" -f --input "@CMAKE_BINARY_DIR@\%FILE%" --export-layers
+echo "export models of @CMAKE_BINARY_DIR@\%FILE%"
+"%BINARY%" -f --input "@CMAKE_BINARY_DIR@\%FILE%" --export-models
 echo
 
 echo "export palette of @CMAKE_BINARY_DIR@\%FILE%"

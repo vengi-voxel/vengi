@@ -687,7 +687,7 @@ static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
 
 static int luaVoxel_scenegraphnode_tostring(lua_State *s) {
 	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	lua_pushfstring(s, "layer: [%d, %s]", node->id(), node->name().c_str());
+	lua_pushfstring(s, "node: [%d, %s]", node->id(), node->name().c_str());
 	return 1;
 }
 

@@ -182,7 +182,7 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::Seek
 bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette) {
 	const int size = (int)sceneGraph.size();
-	voxel::RawVolume *layerVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
+	voxel::RawVolume *modelVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 	uint32_t blockCount;
 
 	voxel::PaletteLookup palLookup(palette);
@@ -252,15 +252,15 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		// this will remove empty blocks and the final volume might have a smaller region.
 		// TODO: we should remove this once we have sparse volumes support
 		if (!empty) {
-			voxel::Region destReg(layerVolume->region());
+			voxel::Region destReg(modelVolume->region());
 			if (!destReg.containsRegion(blockRegion)) {
 				destReg.accumulate(blockRegion);
 				voxel::RawVolume *newVolume = new voxel::RawVolume(destReg);
-				voxelutil::copyIntoRegion(*layerVolume, *newVolume, layerVolume->region());
-				delete layerVolume;
-				layerVolume = newVolume;
+				voxelutil::copyIntoRegion(*modelVolume, *newVolume, modelVolume->region());
+				delete modelVolume;
+				modelVolume = newVolume;
 			}
-			voxelutil::mergeVolumes(layerVolume, blockVolume, blockRegion, blockRegion);
+			voxelutil::mergeVolumes(modelVolume, blockVolume, blockRegion, blockRegion);
 		}
 		delete blockVolume;
 	}
@@ -269,7 +269,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 	char dictValue[256];
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	scenegraph::SceneGraphNode node;
-	node.setName(core::string::format("layer %i", size));
+	node.setName(core::string::format("model %i", size));
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
 		if (!strcmp(dictKey, "name")) {
 			// "name" 255 chars max
@@ -288,7 +288,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			transform.setWorldMatrix(mat);
 			node.setTransform(keyFrameIdx, transform);
 		} else if (!strcmp(dictKey, "img-path") || !strcmp(dictKey, "id")) {
-			// "img-path" layer texture path
+			// "img-path" model texture path
 			// "id" unique id
 			node.setProperty(dictKey, dictValue);
 		} else if (!strcmp(dictKey, "base_id") || !strcmp(dictKey, "material")) {
@@ -300,11 +300,11 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			node.setColor(core::RGBA(color));
 		} else if (!strcmp(dictKey, "box") || !strcmp(dictKey, "shape")) {
 			// "box" 4x4 bounding box float
-			// "shape" layer layer - currently unsupported TODO
+			// "shape" - currently unsupported TODO
 		}
 	}
 
-	voxel::RawVolume *mirrored = voxelutil::mirrorAxis(layerVolume, math::Axis::X);
+	voxel::RawVolume *mirrored = voxelutil::mirrorAxis(modelVolume, math::Axis::X);
 	voxel::RawVolume *cropped = voxelutil::cropVolume(mirrored);
 	const glm::ivec3 mins = cropped->region().getLowerCorner();
 	cropped->translate(-mins);
@@ -316,7 +316,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 	node.setVisible(visible);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
-	delete layerVolume;
+	delete modelVolume;
 	delete mirrored;
 	return true;
 }

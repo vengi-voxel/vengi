@@ -43,17 +43,17 @@ TEST_F(AoSVXLFormatTest, testLoadSaveAndLoadSceneGraph) {
 TEST_F(AoSVXLFormatTest, testSave) {
 	AoSVXLFormat f;
 	voxel::Region region(glm::ivec3(0), glm::ivec3(255, 63, 255));
-	voxel::RawVolume layer1(region);
+	voxel::RawVolume model1(region);
 	const char *filename = "tests-aos.vxl";
 	for (int x = 0; x < region.getWidthInVoxels(); ++x) {
 		for (int z = 0; z < region.getDepthInVoxels(); ++z) {
-			EXPECT_TRUE(layer1.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-			EXPECT_TRUE(layer1.setVoxel(x, 1, z, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+			EXPECT_TRUE(model1.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+			EXPECT_TRUE(model1.setVoxel(x, 1, z, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		}
 	}
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node1;
-	node1.setVolume(&layer1, false);
+	node1.setVolume(&model1, false);
 	sceneGraph.emplace(core::move(node1));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 

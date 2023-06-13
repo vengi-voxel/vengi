@@ -140,7 +140,7 @@ protected:
 	virtual bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							io::SeekableWriteStream &stream, const SaveContext &ctx) = 0;
 	/**
-	 * @brief If the format supports multiple layers or groups, this method load them into the scene graph
+	 * @brief If the format supports multiple models or groups, this method load them into the scene graph
 	 */
 	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream &stream,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) = 0;

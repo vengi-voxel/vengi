@@ -421,7 +421,7 @@ bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &str
 		return false;
 	}
 	// newSceneGraph.node(newSceneGraph.root().id()).setProperty("Type", desc->name);
-	Log::info("Load model file %s with %i layers", filename.c_str(), (int)newSceneGraph.size());
+	Log::info("Load file %s with %i model nodes", filename.c_str(), (int)newSceneGraph.size());
 	return true;
 }
 

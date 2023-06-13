@@ -238,7 +238,7 @@ There are 3 possible components for this vector. You can also call `ivec3.new(1)
 
 * `y` going upwards.
 
-You have access to the `cvar` and `cmd` lua bindings, too. This means that you can access any `cvar` value or execute any command like `layeradd` or `layermerge` to modify the whole scene.
+You have access to the `cvar` and `cmd` lua bindings, too. This means that you can access any `cvar` value or execute any command like `modeladd` or `modelmerge` to modify the whole scene.
 
 ```lua
 cmd.execute("echo test")

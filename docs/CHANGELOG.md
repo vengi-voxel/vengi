@@ -27,6 +27,7 @@ General:
    - Improved `csm` and `nvm` format support
    - Added lua script for generating mazes
    - Added the ability to easily scale a volume up
+   - Unified naming of commands and parameters (`layer` is `model` now, ...)
 
 VoxConvert:
 
@@ -351,7 +352,7 @@ VoxConvert:
 
    - Added `--crop` parameter that reduces the volumes to their real voxel sizes
    - Added `--split` option to cut volumes into smaller pieces
-   - Added `--export-layers` to export all the layers of a scene into single files
+   - Added `--export-models` to export all the models of a scene into single files
    - Added `--dump` to dump the scene graph of the input file
    - Added `--resize` to resize the volumes by the given x, y and z values
 

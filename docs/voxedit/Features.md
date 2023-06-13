@@ -16,7 +16,7 @@ A few of the features are:
 * Import images as heightmaps, palettes or planes
 * Import meshes and voxelize them - see [supported formats](../Formats.md)
 * Import whole folders of single models into one scene
-* Exporting single layers or whole scenes into meshes and a lot of other formats
+* Exporting single models or whole scenes into meshes and a lot of other formats
 * Voxelize true type font text
 * Procedurally generated content like trees and a L-System integration
 * Generate level of details (LOD) volumes

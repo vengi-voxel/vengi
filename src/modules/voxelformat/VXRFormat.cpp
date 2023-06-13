@@ -180,7 +180,7 @@ bool VXRFormat::loadChildVXM(const core::String &vxmPath, scenegraph::SceneGraph
 		Log::error("No models found in vxm file: %i", modelCount);
 		return false;
 	}
-	Log::debug("Found %i layers in vxm", modelCount);
+	Log::debug("Found %i models in vxm", modelCount);
 
 	scenegraph::SceneGraphNode &childModelNode = *childSceneGraph.beginModel();
 	childModelNode.releaseOwnership();
@@ -191,7 +191,7 @@ bool VXRFormat::loadChildVXM(const core::String &vxmPath, scenegraph::SceneGraph
 	// restore old name
 	node.setName(nodeName);
 
-	// TODO: support loading all layers
+	// TODO: support loading all models
 #if 0
 	for (int i = 1; i < modelCount; ++i) {
 		SceneGraphNode child;

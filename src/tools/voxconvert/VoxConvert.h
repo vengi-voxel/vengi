@@ -26,22 +26,22 @@ private:
 	core::VarPtr _withColor;
 	core::VarPtr _withTexCoords;
 
-	bool _mergeVolumes = false;
-	bool _scaleVolumes = false;
-	bool _mirrorVolumes = false;
-	bool _rotateVolumes = false;
-	bool _translateVolumes = false;
+	bool _mergeModels = false;
+	bool _scaleModels = false;
+	bool _mirrorModels = false;
+	bool _rotateModels = false;
+	bool _translateModels = false;
 	bool _exportPalette = false;
-	bool _exportLayers = false;
-	bool _cropVolumes = false;
+	bool _exportModels = false;
+	bool _cropModels = false;
 	bool _surfaceOnly = false;
-	bool _splitVolumes = false;
+	bool _splitModels = false;
 	bool _dumpSceneGraph = false;
-	bool _resizeVolumes = false;
+	bool _resizeModels = false;
 
 protected:
 	glm::ivec3 getArgIvec3(const core::String &name);
-	core::String getFilenameForLayerName(const core::String& inputfile, const core::String &layerName, int id);
+	core::String getFilenameForModelName(const core::String& inputfile, const core::String &modelName, int id);
 	bool handleInputFile(const core::String &infile, scenegraph::SceneGraph &sceneGraph, bool multipleInputs);
 
 	void usage() const override;
@@ -55,8 +55,8 @@ protected:
 	void removeNonSurfaceVoxels(scenegraph::SceneGraph& sceneGraph);
 	int dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId, int indent);
 	void dump(const scenegraph::SceneGraph& sceneGraph);
-	void filterVolumes(scenegraph::SceneGraph& sceneGraph);
-	void exportLayersIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile);
+	void filterModels(scenegraph::SceneGraph& sceneGraph);
+	void exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile);
 	void split(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph);
 public:
 	VoxConvert(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
