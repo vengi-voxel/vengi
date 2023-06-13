@@ -169,9 +169,9 @@ int Command::execute(const core::String& command) {
 bool Command::execute(const core::String& command, const CmdArgs& args) {
 	if (command == "wait") {
 		if (args.size() == 1) {
-			_delaySeconds += 1000.0 * core_max(1, args[0].toInt());
+			_delaySeconds += core_max(1, args[0].toInt());
 		} else {
-			_delaySeconds += 1000.0;
+			_delaySeconds += 1.0;
 		}
 		return true;
 	}
