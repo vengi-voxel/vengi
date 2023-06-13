@@ -405,6 +405,10 @@ const char *CommandButton(const char *title, const char *command, const char *to
 	return nullptr;
 }
 
+const char *CommandButton(const char *title, const char *command, command::CommandExecutionListener& listener) {
+	return CommandButton(title, command, nullptr, {0.0f, 0.0f}, &listener);
+}
+
 bool URLButton(const char *title, const char *url) {
 	const core::String& cmd = core::String::format("url %s", url);
 	if (CommandButton(title, cmd.c_str())) {

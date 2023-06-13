@@ -102,6 +102,8 @@ IMGUI_API bool InputTextWithHint(const char *label, const char *hint, core::Stri
 								 ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);
 IMGUI_API const char *CommandButton(const char *title, const char *command, const char *tooltip = nullptr,
 									const ImVec2 &size = ImVec2(0.0f, 0.0f), command::CommandExecutionListener *listener = nullptr);
+IMGUI_API const char *CommandButton(const char *title, const char *command, command::CommandExecutionListener &listener);
+
 IMGUI_API bool URLButton(const char *title, const char *url);
 IMGUI_API const char *CommandMenuItem(const char *title, const char *command, bool enabled = true,
 									  command::CommandExecutionListener *listener = nullptr);
