@@ -129,15 +129,11 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 		veui::InputAxisInt(math::Axis::X, "X##translate", &translate.x, 1);
 		veui::InputAxisInt(math::Axis::X, "Y##translate", &translate.y, 1);
 		veui::InputAxisInt(math::Axis::X, "Z##translate", &translate.z, 1);
-		if (ImGui::Button(ICON_FA_BORDER_ALL " Volumes")) {
-			sceneMgr().shift(translate.x, translate.y, translate.z);
-		}
-		ImGui::TooltipText("Translate models by the given coordinates");
+		const core::String &shiftCmd = core::string::format("shift %i %i %i", translate.x, translate.y, translate.z);
+		ImGui::CommandButton(ICON_FA_BORDER_ALL " Volumes", shiftCmd.c_str(), listener);
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_CUBES " Voxels")) {
-			sceneMgr().move(translate.x, translate.y, translate.z);
-		}
-		ImGui::TooltipText("Translate the voxels without changing the volume boundaries");
+		const core::String &moveCmd = core::string::format("move %i %i %i", translate.x, translate.y, translate.z);
+		ImGui::CommandButton(ICON_FA_CUBES " Voxels", moveCmd.c_str(), listener);
 	}
 
 	ImGui::NewLine();
