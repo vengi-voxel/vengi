@@ -208,8 +208,8 @@ bool Format::convertCoordinateSystem(FormatCoordinateSystem from, scenegraph::Sc
 		return true;
 	case FormatCoordinateSystem::XRightYBackZUp:
 		fromRight = glm::vec3(1.0f, 0.0f, 0.0f);
-		fromUp = glm::vec3(1.0f, 0.0f, 0.0f);
-		fromForward = glm::vec3(1.0f, 0.0f, 0.0f);
+		fromUp = glm::vec3(0.0f, 0.0f, 1.0f);
+		fromForward = glm::vec3(0.0f, 1.0f, 0.0f);
 		break;
 	case FormatCoordinateSystem::Max:
 		break;
