@@ -657,10 +657,10 @@ void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name)
     }
 }
 
-void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 product_id)
+void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 vendor_id, Uint16 product_id)
 {
     /* Don't set the device product ID directly, or we'll constantly re-enumerate this device */
-    SDL_SetJoystickGUIDProduct(&device->guid, product_id);
+    device->guid = SDL_CreateJoystickGUID(device->guid.data[0], vendor_id, product_id, device->version, device->name, 'h', 0);
 }
 
 static void HIDAPI_UpdateJoystickSerial(SDL_HIDAPI_Device *device)
@@ -674,6 +674,22 @@ static void HIDAPI_UpdateJoystickSerial(SDL_HIDAPI_Device *device)
             joystick->serial = SDL_strdup(device->serial);
         }
     }
+}
+
+static SDL_bool HIDAPI_SerialIsEmpty(SDL_HIDAPI_Device *device)
+{
+    SDL_bool all_zeroes = SDL_TRUE;
+
+    if (device->serial) {
+        const char *serial = device->serial;
+        for (serial = device->serial; *serial; ++serial) {
+            if (*serial != '0') {
+                all_zeroes = SDL_FALSE;
+                break;
+            }
+        }
+    }
+    return all_zeroes;
 }
 
 void HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial)
@@ -1079,7 +1095,9 @@ static void HIDAPI_UpdateDeviceList(void)
                     device->seen = SDL_TRUE;
 
                     /* Check to see if the serial number is available now */
-                    HIDAPI_SetDeviceSerialW(device, info->serial_number);
+                    if(HIDAPI_SerialIsEmpty(device)) {
+                        HIDAPI_SetDeviceSerialW(device, info->serial_number);
+                    }
                 } else {
                     HIDAPI_AddDevice(info, 0, NULL);
                 }

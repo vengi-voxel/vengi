@@ -114,6 +114,7 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 static
 #endif
 SDL_mutex *SDL_joystick_lock = NULL; /* This needs to support recursive locks */
+static SDL_atomic_t SDL_joystick_lock_pending;
 static int SDL_joysticks_locked;
 static SDL_bool SDL_joysticks_initialized;
 static SDL_bool SDL_joysticks_quitting = SDL_FALSE;
@@ -122,10 +123,10 @@ static SDL_atomic_t SDL_next_joystick_instance_id SDL_GUARDED_BY(SDL_joystick_lo
 static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_joystick_lock) = 0;
 static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static SDL_bool SDL_joystick_allows_background_events = SDL_FALSE;
-static char joystick_magic;
+char SDL_joystick_magic;
 
 #define CHECK_JOYSTICK_MAGIC(joystick, retval)             \
-    if (!joystick || joystick->magic != &joystick_magic) { \
+    if (!joystick || joystick->magic != &SDL_joystick_magic) { \
         SDL_InvalidParamError("joystick");                 \
         SDL_UnlockJoysticks();                             \
         return retval;                                     \
@@ -143,23 +144,35 @@ SDL_bool SDL_JoysticksQuitting(void)
 
 void SDL_LockJoysticks(void)
 {
+    (void)SDL_AtomicIncRef(&SDL_joystick_lock_pending);
     SDL_LockMutex(SDL_joystick_lock);
+    (void)SDL_AtomicDecRef(&SDL_joystick_lock_pending);
 
     ++SDL_joysticks_locked;
 }
 
 void SDL_UnlockJoysticks(void)
 {
+    SDL_mutex *joystick_lock = SDL_joystick_lock;
+    SDL_bool last_unlock = SDL_FALSE;
+
     --SDL_joysticks_locked;
 
-    SDL_UnlockMutex(SDL_joystick_lock);
+    if (!SDL_joysticks_initialized) {
+        if (!SDL_joysticks_locked && SDL_AtomicGet(&SDL_joystick_lock_pending) == 0) {
+            /* NOTE: There's a small window here where another thread could lock the mutex */
+            SDL_joystick_lock = NULL;
+            last_unlock = SDL_TRUE;
+        }
+    }
+
+    SDL_UnlockMutex(joystick_lock);
 
     /* The last unlock after joysticks are uninitialized will cleanup the mutex,
      * allowing applications to lock joysticks while reinitializing the system.
      */
-    if (SDL_joystick_lock && !SDL_joysticks_locked && !SDL_joysticks_initialized) {
-        SDL_DestroyMutex(SDL_joystick_lock);
-        SDL_joystick_lock = NULL;
+    if (last_unlock) {
+        SDL_DestroyMutex(joystick_lock);
     }
 }
 
@@ -501,7 +514,7 @@ SDL_Joystick *SDL_JoystickOpen(int device_index)
         SDL_UnlockJoysticks();
         return NULL;
     }
-    joystick->magic = &joystick_magic;
+    joystick->magic = &SDL_joystick_magic;
     joystick->driver = driver;
     joystick->instance_id = instance_id;
     joystick->attached = SDL_TRUE;
@@ -710,7 +723,7 @@ int SDL_JoystickSetVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value)
 SDL_bool SDL_PrivateJoystickValid(SDL_Joystick *joystick)
 {
     SDL_AssertJoysticksLocked();
-    return (joystick && joystick->magic == &joystick_magic);
+    return (joystick && joystick->magic == &SDL_joystick_magic);
 }
 
 SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(int device_index, SDL_GamepadMapping *out)

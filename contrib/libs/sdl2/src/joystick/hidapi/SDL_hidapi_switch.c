@@ -619,8 +619,6 @@ static SDL_bool BReadDeviceInfo(SDL_DriverSwitch_Context *ctx)
         return SDL_TRUE;
     }
 
-    ctx->device->is_bluetooth = SDL_FALSE;
-
     return SDL_FALSE;
 }
 
@@ -720,13 +718,35 @@ static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, c
     }
 }
 
+static Uint8 GetDefaultInputMode(SDL_DriverSwitch_Context *ctx)
+{
+    Uint8 input_mode;
+
+    /* Determine the desired input mode */
+    if (ctx->device->is_bluetooth) {
+        input_mode = k_eSwitchInputReportIDs_SimpleControllerState;
+    } else {
+        input_mode = k_eSwitchInputReportIDs_FullControllerState;
+    }
+
+    /* The official Nintendo Switch Pro Controller supports FullControllerState over Bluetooth
+     * just fine. We really should use that, or else the epowerlevel code in HandleFullControllerState
+     * is completely pointless. We need full state if we want battery level and we only care about
+     * battery level over Bluetooth anyway.
+     */
+    if (ctx->device->vendor_id == USB_VENDOR_NINTENDO) {
+        input_mode = k_eSwitchInputReportIDs_FullControllerState;
+    }
+    return input_mode;
+}
+
 static SDL_bool SetIMUEnabled(SDL_DriverSwitch_Context *ctx, SDL_bool enabled)
 {
     Uint8 imu_data = enabled ? 1 : 0;
     return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableIMU, &imu_data, sizeof(imu_data), NULL);
 }
 
-static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx, Uint8 input_mode)
+static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 {
     Uint8 *pLeftStickCal;
     Uint8 *pRightStickCal;
@@ -1019,6 +1039,12 @@ static SDL_bool HasHomeLED(SDL_DriverSwitch_Context *ctx)
         return SDL_FALSE;
     }
 
+    /* Third party controllers don't have a home LED and will shut off if we try to set it */
+    if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_Unknown ||
+        ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_LicProController) {
+        return SDL_FALSE;
+    }
+
     /* The Nintendo Online classic controllers don't have a Home LED */
     if (vendor_id == USB_VENDOR_NINTENDO &&
         ctx->m_eControllerType > k_eSwitchDeviceInfoControllerType_ProController) {
@@ -1179,17 +1205,18 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     switch (ctx->m_eControllerType) {
     case k_eSwitchDeviceInfoControllerType_JoyConLeft:
         HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (L)");
-        HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT);
+        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT);
         device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
         break;
     case k_eSwitchDeviceInfoControllerType_JoyConRight:
         HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (R)");
-        HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT);
+        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT);
         device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
         break;
     case k_eSwitchDeviceInfoControllerType_ProController:
+    case k_eSwitchDeviceInfoControllerType_LicProController:
         HIDAPI_SetDeviceName(device, "Nintendo Switch Pro Controller");
-        HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SWITCH_PRO);
+        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_PRO);
         device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
         break;
     case k_eSwitchDeviceInfoControllerType_NESLeft:
@@ -1202,19 +1229,22 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         break;
     case k_eSwitchDeviceInfoControllerType_SNES:
         HIDAPI_SetDeviceName(device, "Nintendo SNES Controller");
-        HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SNES_CONTROLLER);
+        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SNES_CONTROLLER);
         device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
         break;
     case k_eSwitchDeviceInfoControllerType_N64:
         HIDAPI_SetDeviceName(device, "Nintendo N64 Controller");
-        HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_N64_CONTROLLER);
+        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_N64_CONTROLLER);
         device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
         break;
     case k_eSwitchDeviceInfoControllerType_SEGA_Genesis:
         HIDAPI_SetDeviceName(device, "Nintendo SEGA Genesis Controller");
-        HIDAPI_SetDeviceProduct(device, USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER);
+        HIDAPI_SetDeviceProduct(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER);
         device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
         break;
+    case k_eSwitchDeviceInfoControllerType_Unknown:
+        /* We couldn't read the device info for this controller, might not be fully compliant */
+        return;
     default:
         break;
     }
@@ -1253,12 +1283,11 @@ static SDL_bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
     /* Find out whether or not we can send output reports */
     ctx->m_bInputOnly = SDL_IsJoystickNintendoSwitchProInputOnly(device->vendor_id, device->product_id);
     if (!ctx->m_bInputOnly) {
-        if (!BReadDeviceInfo(ctx)) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "HIDAPI_DriverSwitch_InitDevice(): Couldn't read device info");
-            return SDL_FALSE;
-        }
+        /* Initialize rumble data, important for reading device info on the MOBAPAD M073  */
+        SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
+        SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[1]);
 
+        BReadDeviceInfo(ctx);
         UpdateDeviceIdentity(device);
     }
 
@@ -1294,7 +1323,6 @@ static void HIDAPI_DriverSwitch_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
-    Uint8 input_mode;
 
     SDL_AssertJoysticksLocked();
 
@@ -1314,54 +1342,34 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
             }
         }
 
-        /* Determine the desired input mode (needed before loading stick calibration) */
-        if (device->is_bluetooth) {
-            input_mode = k_eSwitchInputReportIDs_SimpleControllerState;
-        } else {
-            input_mode = k_eSwitchInputReportIDs_FullControllerState;
-        }
-
-        /* The official Nintendo Switch Pro Controller supports FullControllerState over bluetooth
-         * just fine. We really should use that, or else the epowerlevel code in
-         * HandleFullControllerState is completely pointless. We need full state if we want battery
-         * level and we only care about battery level over bluetooth anyway.
-         */
-        if (device->vendor_id == USB_VENDOR_NINTENDO) {
-            input_mode = k_eSwitchInputReportIDs_FullControllerState;
-        }
-
-        if (input_mode == k_eSwitchInputReportIDs_FullControllerState &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESLeft &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESRight &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SNES &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_N64 &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SEGA_Genesis) {
-            /* Use the right sensor in the combined Joy-Con pair */
-            if (!device->parent ||
-                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 200.0f);
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 200.0f);
-            }
-            if (device->parent &&
-                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO_L, 200.0f);
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_L, 200.0f);
-            }
-            if (device->parent &&
-                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO_R, 200.0f);
-                SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_R, 200.0f);
-            }
-        }
-
-        if (!LoadStickCalibration(ctx, input_mode)) {
+        if (!LoadStickCalibration(ctx)) {
             SDL_SetError("Couldn't load stick calibration");
             return SDL_FALSE;
         }
 
-        if (!LoadIMUCalibration(ctx)) {
-            SDL_SetError("Couldn't load sensor calibration");
-            return SDL_FALSE;
+        if (ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESLeft &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESRight &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SNES &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_N64 &&
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SEGA_Genesis) {
+            if (LoadIMUCalibration(ctx)) {
+                /* Use the right sensor in the combined Joy-Con pair */
+                if (!device->parent ||
+                    ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 200.0f);
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 200.0f);
+                }
+                if (device->parent &&
+                    ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO_L, 200.0f);
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_L, 200.0f);
+                }
+                if (device->parent &&
+                    ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO_R, 200.0f);
+                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_R, 200.0f);
+                }
+            }
         }
 
         if (!SetVibrationEnabled(ctx, 1)) {
@@ -1370,7 +1378,7 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
         }
 
         /* Set desired input mode */
-        if (!SetInputMode(ctx, input_mode)) {
+        if (!SetInputMode(ctx, GetDefaultInputMode(ctx))) {
             SDL_SetError("Couldn't set input mode");
             return SDL_FALSE;
         }
@@ -1569,6 +1577,14 @@ static int HIDAPI_DriverSwitch_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL
 static int HIDAPI_DriverSwitch_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
+    Uint8 input_mode;
+
+    if (enabled) {
+        input_mode = k_eSwitchInputReportIDs_FullControllerState;
+    } else {
+        input_mode = GetDefaultInputMode(ctx);
+    }
+    SetInputMode(ctx, input_mode);
 
     SetIMUEnabled(ctx, enabled);
     ctx->m_bReportSensors = enabled;
