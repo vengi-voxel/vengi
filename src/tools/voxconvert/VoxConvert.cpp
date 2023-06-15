@@ -18,6 +18,9 @@
 #include "io/Filesystem.h"
 #include "core/TimeProvider.h"
 #include "io/FormatDescription.h"
+#include "voxel/ChunkMesh.h"
+#include "voxel/CubicSurfaceExtractor.h"
+#include "voxel/MarchingCubesSurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
@@ -54,6 +57,7 @@ app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	registerArg("--crop").setDescription("Reduce the models to their real voxel sizes");
 	registerArg("--dump").setDescription("Dump the scene graph of the input file");
+	registerArg("--dump-mesh").setDescription("Dump the mesh details of the input file");
 	registerArg("--export-models").setDescription("Export all the models of a scene into single files");
 	registerArg("--export-palette").setDescription("Export the used palette data into an image");
 	registerArg("--filter").setDescription("Model filter. For example '1-4,6'");
@@ -191,6 +195,7 @@ app::AppState VoxConvert::onInit() {
 	_surfaceOnly      = hasArg("--surface-only");
 	_splitModels      = hasArg("--split");
 	_dumpSceneGraph   = hasArg("--dump");
+	_dumpMeshDetails  = hasArg("--dump-mesh");
 	_resizeModels     = hasArg("--resize");
 
 	Log::info("Options");
@@ -238,6 +243,7 @@ app::AppState VoxConvert::onInit() {
 		Log::info("* script:            - %s", scriptParameters.c_str());
 	}
 	Log::info("* dump scene graph:  - %s", (_dumpSceneGraph   ? "true" : "false"));
+	Log::info("* dump mesh details: - %s", (_dumpMeshDetails  ? "true" : "false"));
 	Log::info("* merge models:      - %s", (_mergeModels      ? "true" : "false"));
 	Log::info("* scale models:      - %s", (_scaleModels      ? "true" : "false"));
 	Log::info("* crop models:       - %s", (_cropModels       ? "true" : "false"));
@@ -267,7 +273,7 @@ app::AppState VoxConvert::onInit() {
 			Log::error("Could not open target file: %s", outfile.c_str());
 			return app::AppState::InitFailure;
 		}
-	} else if (!_exportModels && !_exportPalette && !_dumpSceneGraph) {
+	} else if (!_exportModels && !_exportPalette && !_dumpSceneGraph && !_dumpMeshDetails) {
 		Log::error("No output specified");
 		return app::AppState::InitFailure;
 	}
@@ -493,7 +499,9 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 			parent = sceneGraph.emplace(core::move(groupNode), parent);
 		}
 		scenegraph::addSceneGraphNodes(sceneGraph, newSceneGraph, parent);
-		if (_dumpSceneGraph) {
+		if (_dumpMeshDetails) {
+			dumpMeshDetails(sceneGraph);
+		} else if (_dumpSceneGraph) {
 			dump(sceneGraph);
 		}
 
@@ -547,7 +555,7 @@ void VoxConvert::split(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGrap
 	}
 }
 
-int VoxConvert::dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId, int indent) {
+VoxConvert::NodeStats VoxConvert::dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId, int indent, bool meshDetails) {
 	const scenegraph::SceneGraphNode& node = sceneGraph.node(nodeId);
 
 	const scenegraph::SceneGraphNodeType type = node.type();
@@ -557,14 +565,14 @@ int VoxConvert::dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId,
 	Log::info("%*s  |- type: %s", indent, " ", scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)]);
 	const glm::vec3 &pivot = node.pivot();
 	Log::info("%*s  |- pivot %f:%f:%f", indent, " ", pivot.x, pivot.y, pivot.z);
-	int voxels = 0;
+	NodeStats stats;
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		voxel::RawVolume *v = node.volume();
 		Log::info("%*s  |- volume: %s", indent, " ", v != nullptr ? v->region().toString().c_str() : "no volume");
 		if (v) {
-			voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &) { ++voxels; });
+			voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &) { ++stats.voxels; });
 		}
-		Log::info("%*s  |- voxels: %i", indent, " ", voxels);
+		Log::info("%*s  |- voxels: %i", indent, " ", stats.voxels);
 	} else if (type == scenegraph::SceneGraphNodeType::Camera) {
 		const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(node);
 		Log::info("%*s  |- field of view: %i", indent, " ", cameraNode.fieldOfView());
@@ -598,16 +606,48 @@ int VoxConvert::dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId,
 		const glm::vec3 &lsc = transform.localScale();
 		Log::info("%*s      |- local scale %f:%f:%f", indent, " ", lsc.x, lsc.y, lsc.z);
 	}
+	if (meshDetails && node.type() == scenegraph::SceneGraphNodeType::Model) {
+		const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
+		const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
+		const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
+		const int meshMode = core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
+		const bool marchingCubes = meshMode == 1;
+		voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
+		if (marchingCubes) {
+			voxel::Region extractRegion = node.region();
+			extractRegion.shrink(-1);
+			voxel::extractMarchingCubesMesh(node.volume(), node.palette(), extractRegion, mesh);
+		} else {
+			voxel::Region extractRegion = node.region();
+			extractRegion.shiftUpperCorner(1, 1, 1);
+			voxel::extractCubicMesh(node.volume(), extractRegion, mesh, glm::ivec3(0), mergeQuads, reuseVertices,
+									ambientOcclusion);
+		}
+		const size_t vertices = mesh->mesh[0].getNoOfVertices() + mesh->mesh[1].getNoOfVertices();
+		const size_t indices = mesh->mesh[0].getNoOfIndices() + mesh->mesh[1].getNoOfIndices();
+		Log::info("%*s  |- mesh", indent, " ");
+		Log::info("%*s    |- vertices: %i", indent, " ", (int)vertices);
+		Log::info("%*s    |- indices: %i", indent, " ", (int)indices);
+		stats.vertices += (int)vertices;
+		stats.indices += (int)indices;
+	}
 	Log::info("%*s  |- children: %i", indent, " ", (int)node.children().size());
 	for (int children : node.children()) {
-		voxels += dumpNode_r(sceneGraph, children, indent + 2);
+		stats += dumpNode_r(sceneGraph, children, indent + 2, meshDetails);
 	}
-	return voxels;
+	return stats;
+}
+
+void VoxConvert::dumpMeshDetails(const scenegraph::SceneGraph& sceneGraph) {
+	NodeStats stats = dumpNode_r(sceneGraph, sceneGraph.root().id(), 0, true);
+	Log::info("Voxel count: %i", stats.voxels);
+	Log::info("Vertex count: %i", stats.vertices);
+	Log::info("Index count: %i", stats.indices);
 }
 
 void VoxConvert::dump(const scenegraph::SceneGraph& sceneGraph) {
-	int voxels = dumpNode_r(sceneGraph, sceneGraph.root().id(), 0);
-	Log::info("Voxel count: %i", voxels);
+	NodeStats stats = dumpNode_r(sceneGraph, sceneGraph.root().id(), 0, false);
+	Log::info("Voxel count: %i", stats.voxels);
 }
 
 void VoxConvert::crop(scenegraph::SceneGraph& sceneGraph) {

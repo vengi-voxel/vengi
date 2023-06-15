@@ -34,6 +34,7 @@ VoxConvert:
    - Fixed `--input` handling if the value is a directory
    - Added option `--wildcard` to specify a wildcard in cases where the `--input` value is a directory
    - Added `--surface-only` parameter that removes any non surface voxel.
+   - Added `--dump-mesh` to also show mesh details (like vertex count).
 
 VoxEdit:
 

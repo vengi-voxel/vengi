@@ -37,8 +37,29 @@ private:
 	bool _surfaceOnly = false;
 	bool _splitModels = false;
 	bool _dumpSceneGraph = false;
+	bool _dumpMeshDetails = false;
 	bool _resizeModels = false;
 
+	struct NodeStats {
+		int voxels = 0;
+		int vertices = 0;
+		int indices = 0;
+
+		NodeStats operator+ (const NodeStats& other) const {
+			NodeStats result;
+			result.voxels = voxels + other.voxels;
+			result.vertices = vertices + other.vertices;
+			result.indices = indices + other.indices;
+			return result;
+		}
+
+		NodeStats &operator+= (const NodeStats& other) {
+			voxels += other.voxels;
+			vertices += other.vertices;
+			indices += other.indices;
+			return *this;
+		}
+	};
 protected:
 	glm::ivec3 getArgIvec3(const core::String &name);
 	core::String getFilenameForModelName(const core::String& inputfile, const core::String &modelName, int id);
@@ -53,8 +74,9 @@ protected:
 	void translate(const glm::ivec3& pos, scenegraph::SceneGraph& sceneGraph);
 	void crop(scenegraph::SceneGraph& sceneGraph);
 	void removeNonSurfaceVoxels(scenegraph::SceneGraph& sceneGraph);
-	int dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId, int indent);
+	NodeStats dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId, int indent, bool meshDetails);
 	void dump(const scenegraph::SceneGraph& sceneGraph);
+	void dumpMeshDetails(const scenegraph::SceneGraph& sceneGraph);
 	void filterModels(scenegraph::SceneGraph& sceneGraph);
 	void exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile);
 	void split(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph);

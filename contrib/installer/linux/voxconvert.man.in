@@ -24,6 +24,10 @@ Reduces the volume sizes to their voxel boundaries.
 Dump the scene graph of the input file.
 
 .TP
+\fB\--dump-mesh\fR
+Dump the mesh details of the input file. Useful for getting an idea of many vertices are produced.
+
+.TP
 \fB\--export-palette\fR
 Export the used palette data into an image.
 
