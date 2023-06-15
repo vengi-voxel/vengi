@@ -707,6 +707,10 @@ const SceneGraphKeyFramesMap &SceneGraphNode::allKeyFrames() const {
 	return _keyFramesMap;
 }
 
+SceneGraphKeyFramesMap &SceneGraphNode::allKeyFrames() {
+	return _keyFramesMap;
+}
+
 KeyFrameIndex SceneGraphNode::keyFrameForFrame(FrameIndex frameIdx) const {
 	const SceneGraphKeyFrames &kfs = keyFrames();
 	// this assumes that the key frames are sorted after their frame

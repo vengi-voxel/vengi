@@ -55,6 +55,12 @@ struct SaveContext {
 // the max amount of voxels - [0-255]
 static constexpr int MaxRegionSize = 256;
 
+enum class FormatCoordinateSystem {
+	XRightYUpZBack,
+	XRightYBackZUp,
+	Max
+};
+
 /**
  * @brief Base class for all voxel formats.
  *
@@ -144,6 +150,13 @@ protected:
 	 */
 	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream &stream,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) = 0;
+
+	/**
+	 * @param[in] from This specifies the natural coordinate system of the format and is used to perform the transform
+	 * into the natural coordinate system of vengi (x right, y up, z back)
+	 * @note This does not update the volume coordinates, only the node transforms.
+	 */
+	bool convertCoordinateSystem(FormatCoordinateSystem from, scenegraph::SceneGraph &sceneGraph) const;
 
 public:
 	Format();

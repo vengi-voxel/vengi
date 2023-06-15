@@ -7,6 +7,7 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/Common.h"
+#include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
@@ -196,6 +197,55 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 bool Format::load(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 				  const LoadContext &ctx) {
 	return loadGroups(filename, stream, sceneGraph, ctx);
+}
+
+bool Format::convertCoordinateSystem(FormatCoordinateSystem from, scenegraph::SceneGraph &sceneGraph) const {
+	glm::vec3 fromRight;
+	glm::vec3 fromUp;
+	glm::vec3 fromForward;
+	switch (from) {
+	case FormatCoordinateSystem::XRightYUpZBack:
+		return true;
+	case FormatCoordinateSystem::XRightYBackZUp:
+		fromRight = glm::vec3(1.0f, 0.0f, 0.0f);
+		fromUp = glm::vec3(1.0f, 0.0f, 0.0f);
+		fromForward = glm::vec3(1.0f, 0.0f, 0.0f);
+		break;
+	case FormatCoordinateSystem::Max:
+		break;
+	}
+
+	const glm::mat4 fromSystem(
+		glm::vec4(fromRight, 0.0f),
+		glm::vec4(fromUp, 0.0f),
+		glm::vec4(-fromForward, 0.0f),
+		glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+	);
+
+	static constexpr glm::mat4 toSystem(
+		glm::vec4(glm::right, 0.0f),
+		glm::vec4(glm::up, 0.0f),
+		glm::vec4(-glm::forward, 0.0f),
+		glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+	);
+
+	sceneGraph.updateTransforms();
+
+	for (auto iter = sceneGraph.beginAll(); iter != sceneGraph.end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
+		scenegraph::SceneGraphKeyFramesMap &allKeyFrames = node.allKeyFrames();
+		for (auto e : allKeyFrames) {
+			core::DynamicArray<scenegraph::SceneGraphKeyFrame> &frames = e->value;
+			for (scenegraph::SceneGraphKeyFrame &frame : frames) {
+				const glm::mat4x4 localMatrix = frame.transform().localMatrix();
+				frame.transform().setLocalMatrix(toSystem * glm::inverse(fromSystem) * localMatrix);
+			}
+		}
+	}
+
+	sceneGraph.updateTransforms();
+
+	return true;
 }
 
 glm::mat4 Format::transformMatrix() const {

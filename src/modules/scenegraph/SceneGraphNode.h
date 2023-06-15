@@ -354,6 +354,7 @@ public:
 	bool setKeyFrames(const SceneGraphKeyFrames&);
 	void setAllKeyFrames(const SceneGraphKeyFramesMap &map, const core::String &animation);
 	const SceneGraphKeyFramesMap &allKeyFrames() const;
+	SceneGraphKeyFramesMap &allKeyFrames();
 	bool hasActiveAnimation() const;
 	bool addAnimation(const core::String &anim);
 	bool removeAnimation(const core::String &anim);
