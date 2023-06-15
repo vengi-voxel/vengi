@@ -1,4 +1,4 @@
-// dear imgui, v1.89.6
+// dear imgui, v1.89.7 WIP
 // (tables and columns code)
 
 /*
@@ -3036,8 +3036,8 @@ void ImGui::TableHeader(const char* label)
     RenderTextEllipsis(window->DrawList, label_pos, ImVec2(ellipsis_max, label_pos.y + label_height + g.Style.FramePadding.y), ellipsis_max, ellipsis_max, label, label_end, &label_size);
 
     const bool text_clipped = label_size.x > (ellipsis_max - label_pos.x);
-    if (text_clipped && hovered && g.ActiveId == 0 && IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-        SetTooltip("%.*s", (int)(label_end - label), label);
+    if (text_clipped && hovered && g.ActiveId == 0)
+        SetItemTooltip("%.*s", (int)(label_end - label), label);
 
     // We don't use BeginPopupContextItem() because we want the popup to stay up even after the column is hidden
     if (IsMouseReleased(1) && IsItemHovered())
