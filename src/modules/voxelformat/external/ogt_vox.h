@@ -1389,7 +1389,7 @@
                     _vox_file_read_uint32(fp, &reserved_id);
                     _vox_file_read_uint32(fp, &layer_id);
                     _vox_file_read_uint32(fp, &num_frames);
-                    ogt_assert(reserved_id == UINT32_MAX, "unexpected values for reserved_id in nTRN chunk");
+                    //ogt_assert(reserved_id == UINT32_MAX, "unexpected values for reserved_id in nTRN chunk");
                     ogt_assert(num_frames > 0, "must have at least 1 frame in nTRN chunk");
 
                     // make space in misc_data array for the number of transforms we'll need for this node
