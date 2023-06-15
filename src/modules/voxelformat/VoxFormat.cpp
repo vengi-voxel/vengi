@@ -78,16 +78,19 @@ static glm::mat4 ogtTransformToMat(const ogt_vox_transform &t) {
 }
 
 static bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-						  const ogt_vox_keyframe_transform *transformKeyframes, uint32_t numKeyframes) {
+						  const ogt_vox_instance &ogtInstance, const ogt_vox_scene *scene) {
 	scenegraph::SceneGraphKeyFrames kf;
+
+	uint32_t numKeyframes = ogtInstance.transform_anim.num_keyframes;
 	Log::debug("Load %d keyframes", numKeyframes);
 	kf.reserve(numKeyframes);
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < numKeyframes; ++keyFrameIdx) {
-		const ogt_vox_keyframe_transform &transform_keyframe = transformKeyframes[keyFrameIdx];
-		const glm::mat4 worldMatrix = ogtTransformToMat(transform_keyframe.transform);
+		const uint32_t frameIdx = ogtInstance.transform_anim.keyframes[keyFrameIdx].frame_index;
+		ogt_vox_transform ogtTransform = ogt_vox_sample_instance_transform(&ogtInstance, frameIdx, scene);
+		const glm::mat4 worldMatrix = ogtTransformToMat(ogtTransform);
 		scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
 		// TODO: zUpMat?
-		sceneGraphKeyFrame.frameIdx = (scenegraph::FrameIndex)transform_keyframe.frame_index;
+		sceneGraphKeyFrame.frameIdx = (scenegraph::FrameIndex)frameIdx;
 		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
 		sceneGraphKeyFrame.transform().setWorldMatrix(worldMatrix);
@@ -185,7 +188,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 			name = "";
 		}
 	}
-	loadKeyFrames(sceneGraph, node, ogtInstance.transform_anim.keyframes, ogtInstance.transform_anim.num_keyframes);
+	loadKeyFrames(sceneGraph, node, ogtInstance, scene);
 	// TODO: we are overriding the keyframe data here
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
@@ -213,7 +216,6 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 		const core::RGBA color(layer.color.r, layer.color.g, layer.color.b, layer.color.a);
 		node.setColor(color);
 	}
-	loadKeyFrames(sceneGraph, node, ogt_group.transform_anim.keyframes, ogt_group.transform_anim.num_keyframes);
 	node.setName(name);
 	node.setVisible(!hidden);
 	const int groupId = parent == -1 ? sceneGraph.root().id() : sceneGraph.emplace(core::move(node), parent);
@@ -276,8 +278,9 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		core_free(buffer);
 		return false;
 	}
-	const uint32_t ogt_vox_flags = k_read_scene_flags_keyframes | k_read_scene_flags_keep_empty_models_instances |
-								   k_read_scene_flags_groups | k_read_scene_flags_keep_duplicate_models;
+	const uint32_t ogt_vox_flags = k_read_scene_flags_keyframes | k_read_scene_flags_groups |
+								   k_read_scene_flags_keep_empty_models_instances |
+								   k_read_scene_flags_keep_duplicate_models;
 	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, ogt_vox_flags);
 	core_free(buffer);
 	if (scene == nullptr) {
