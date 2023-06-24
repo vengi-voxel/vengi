@@ -25,32 +25,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// Version:
-//  - v2.8.1 Missed serialization texture sampler name fixed. PR#399.
-//  - v2.8.0 Add URICallbacks for custom URI handling in Buffer and Image. PR#397.
-//  - v2.7.0 Change WriteImageDataFunction user callback function signature. PR#393.
-//  - v2.6.3 Fix GLB file with empty BIN chunk was not handled. PR#382 and PR#383.
-//  - v2.6.2 Fix out-of-bounds access of accessors. PR#379.
-//  - v2.6.1 Better GLB validation check when loading.
-//  - v2.6.0 Support serializing sparse accessor(Thanks to @fynv).
-//           Disable expanding file path for security(no use of awkward `wordexp` anymore).
-//  - v2.5.0 Add SetPreserveImageChannels() option to load image data as is.
-//  - v2.4.3 Fix null object output when material has all default
-//  parameters.
-//  - v2.4.2 Decode percent-encoded URI.
-//  - v2.4.1 Fix some glTF object class does not have `extensions` and/or
-//  `extras` property.
-//  - v2.4.0 Experimental RapidJSON and C++14 support(Thanks to @jrkoone).
-//  - v2.3.1 Set default value of minFilter and magFilter in Sampler to -1.
-//  - v2.3.0 Modified Material representation according to glTF 2.0 schema
-//           (and introduced TextureInfo class)
-//           Change the behavior of `Value::IsNumber`. It return true either the
-//           value is int or real.
-//  - v2.2.0 Add loading 16bit PNG support. Add Sparse accessor support(Thanks
-//  to @Ybalrid)
-//  - v2.1.0 Add draco compression.
-//  - v2.0.1 Add comparison feature(Thanks to @Selmar).
-//  - v2.0.0 glTF 2.0!.
+// Version: - v2.8.10
+// See https://github.com/syoyo/tinygltf/releases for release history.
 //
 // Tiny glTF loader is using following third party libraries:
 //
@@ -75,10 +51,6 @@
 //Auto-detect C++14 standard version
 #if !defined(TINYGLTF_USE_CPP14) && defined(__cplusplus) && (__cplusplus >= 201402L)
 #define TINYGLTF_USE_CPP14
-#endif
-
-#ifndef TINYGLTF_USE_CPP14
-#include <functional>
 #endif
 
 #ifdef __ANDROID__
@@ -556,11 +528,13 @@ struct AnimationChannel {
                             // "rotation", "scale", "weights"]
   Value extras;
   ExtensionMap extensions;
+  Value target_extras;
   ExtensionMap target_extensions;
 
   // Filled when SetStoreOriginalJSONForExtrasAndExtensions is enabled.
   std::string extras_json_string;
   std::string extensions_json_string;
+  std::string target_extras_json_string;
   std::string target_extensions_json_string;
 
   AnimationChannel() : sampler(-1), target_node(-1) {}
@@ -880,19 +854,33 @@ struct Accessor {
   std::vector<double>
       maxValues;  // optional. integer value is promoted to double
 
-  struct {
+  struct Sparse {
     int count;
     bool isSparse;
     struct {
       int byteOffset;
       int bufferView;
       int componentType;  // a TINYGLTF_COMPONENT_TYPE_ value
+      Value extras;
+      ExtensionMap extensions;
+      std::string extras_json_string;
+      std::string extensions_json_string;
     } indices;
     struct {
       int bufferView;
       int byteOffset;
+      Value extras;
+      ExtensionMap extensions;
+      std::string extras_json_string;
+      std::string extensions_json_string;
     } values;
-  } sparse;
+    Value extras;
+    ExtensionMap extensions;
+    std::string extras_json_string;
+    std::string extensions_json_string;
+  };
+
+  Sparse sparse;
 
   ///
   /// Utility function to compute byteStride for a given bufferView object.
@@ -1051,17 +1039,19 @@ struct Mesh {
 
 class Node {
  public:
-  Node() : camera(-1), skin(-1), mesh(-1) {}
+  Node() : camera(-1), skin(-1), mesh(-1), light(-1), emitter(-1) {}
 
   DEFAULT_METHODS(Node)
 
   bool operator==(const Node &) const;
 
-  int camera;  // the index of the camera referenced by this node
+  int camera{-1};  // the index of the camera referenced by this node
 
   std::string name;
-  int skin;
-  int mesh;
+  int skin{-1};
+  int mesh{-1};
+  int light{-1};  // light source index (KHR_lights_punctual)
+  int emitter{-1}; // audio emitter index (KHR_audio)
   std::vector<int> children;
   std::vector<double> rotation;     // length must be 0 or 4
   std::vector<double> scale;        // length must be 0 or 3
@@ -1115,6 +1105,7 @@ struct Asset {
 struct Scene {
   std::string name;
   std::vector<int> nodes;
+  std::vector<int> audioEmitters; // KHR_audio global emitters
 
   ExtensionMap extensions;
   Value extras;
@@ -1165,6 +1156,93 @@ struct Light {
   std::string extensions_json_string;
 };
 
+struct PositionalEmitter {
+  double coneInnerAngle{6.283185307179586};
+  double coneOuterAngle{6.283185307179586};
+  double coneOuterGain{0.0};
+  double maxDistance{100.0};
+  double refDistance{1.0};
+  double rolloffFactor{1.0};
+
+  PositionalEmitter() : coneInnerAngle(6.283185307179586), coneOuterAngle(6.283185307179586) {}
+  DEFAULT_METHODS(PositionalEmitter)
+  bool operator==(const PositionalEmitter &) const;
+
+  ExtensionMap extensions;
+  Value extras;
+
+  // Filled when SetStoreOriginalJSONForExtrasAndExtensions is enabled.
+  std::string extras_json_string;
+  std::string extensions_json_string;
+};
+
+struct AudioEmitter {
+  std::string name;
+  double gain{1.0};
+  bool loop{false};
+  bool playing{false};
+  std::string
+      type;  // positional - Positional audio emitters. Using sound cones, the
+             // orientation is +Z having the same front side for a glTF asset.
+             // global - Global audio emitters are not affected by the position
+             // of audio listeners. coneInnerAngle, coneOuterAngle,
+             // coneOuterGain, distanceModel, maxDistance, refDistance, and
+             // rolloffFactor should all be ignored when set.
+  std::string
+      distanceModel;  // linear - A linear distance model calculating the
+                      // gain induced by the distance according to: 1.0
+                      // - rolloffFactor * (distance - refDistance) /
+                      // (maxDistance - refDistance)
+                      // inverse - (default) An inverse distance model
+                      // calculating the gain induced by the distance according
+                      // to: refDistance / (refDistance + rolloffFactor *
+                      // (Math.max(distance, refDistance) - refDistance))
+                      // exponential - An exponential distance model calculating
+                      // the gain induced by the distance according to:
+                      // pow((Math.max(distance, refDistance) / refDistance,
+                      // -rolloffFactor))
+  PositionalEmitter positional;
+  int source{-1};
+
+  AudioEmitter()
+      : gain(1.0),
+        loop(false),
+        playing(false),
+        type("global"),
+        distanceModel("inverse") {}
+  DEFAULT_METHODS(AudioEmitter)
+
+  bool operator==(const AudioEmitter &) const;
+
+  ExtensionMap extensions;
+  Value extras;
+
+  // Filled when SetStoreOriginalJSONForExtrasAndExtensions is enabled.
+  std::string extras_json_string;
+  std::string extensions_json_string;
+};
+
+struct AudioSource {
+    std::string name;
+    std::string uri;
+    int bufferView{-1};  // (required if no uri)
+    std::string mimeType;  // (required if no uri) The audio's MIME type. Required if
+                   // bufferView is defined. Unless specified by another
+                   // extension, the only supported mimeType is audio/mpeg.
+
+    AudioSource() {}
+    DEFAULT_METHODS(AudioSource)
+
+    bool operator==(const AudioSource &) const;
+
+    Value extras;
+    ExtensionMap extensions;
+
+    // Filled when SetStoreOriginalJSONForExtrasAndExtensions is enabled.
+    std::string extras_json_string;
+    std::string extensions_json_string;
+};
+
 class Model {
  public:
   Model() = default;
@@ -1186,6 +1264,8 @@ class Model {
   std::vector<Camera> cameras;
   std::vector<Scene> scenes;
   std::vector<Light> lights;
+  std::vector<AudioEmitter> audioEmitters;
+  std::vector<AudioSource> audioSources;
 
   int defaultScene = -1;
   std::vector<std::string> extensionsUsed;
@@ -1668,13 +1748,13 @@ class TinyGLTF {
 
 #ifndef TINYGLTF_NO_STB_IMAGE
 #ifndef TINYGLTF_NO_INCLUDE_STB_IMAGE
-#include <stb_image.h>
+#include "stb_image.h"
 #endif
 #endif
 
 #ifndef TINYGLTF_NO_STB_IMAGE_WRITE
 #ifndef TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE
-#include <stb_image_write.h>
+#include "stb_image_write.h"
 #endif
 #endif
 
@@ -1743,6 +1823,7 @@ namespace detail {
 // documents may be active at once.
 using json =
     rapidjson::GenericValue<rapidjson::UTF8<>, rapidjson::CrtAllocator>;
+using json_iterator = json::MemberIterator;
 using json_const_iterator = json::ConstMemberIterator;
 using json_const_array_iterator = json const *;
 using JsonDocument =
@@ -1754,6 +1835,7 @@ rapidjson::CrtAllocator &GetAllocator() { return s_CrtAllocator; }
 // not thread safe. Only a single JsonDocument may be active at any one time,
 // meaning only a single gltf load/save can be active any one time.
 using json = rapidjson::Value;
+using json_iterator = json::MemberIterator;
 using json_const_iterator = json::ConstMemberIterator;
 using json_const_array_iterator = json const *;
 rapidjson::Document *s_pActiveDocument = nullptr;
@@ -1800,6 +1882,7 @@ struct JsonDocument : public rapidjson::Document {
 
 #else
 using nlohmann::json;
+using json_iterator = json::iterator;
 using json_const_iterator = json::const_iterator;
 using json_const_array_iterator = json_const_iterator;
 using JsonDocument = json;
@@ -1958,6 +2041,15 @@ bool Light::operator==(const Light &other) const {
   return Equals(this->color, other.color) && this->name == other.name &&
          this->type == other.type;
 }
+bool AudioEmitter::operator==(const AudioEmitter &other) const {
+  return this->name == other.name && TINYGLTF_DOUBLE_EQUAL(this->gain, other.gain) &&
+         this->loop == other.loop && this->playing == other.playing &&
+         this->type == other.type && this->distanceModel == other.distanceModel &&
+         this->source == other.source;
+}
+bool AudioSource::operator == (const AudioSource &other) const {
+  return this->name == other.name && this->uri == other.uri;
+}
 bool Material::operator==(const Material &other) const {
   return (this->pbrMetallicRoughness == other.pbrMetallicRoughness) &&
          (this->normalTexture == other.normalTexture) &&
@@ -1997,6 +2089,8 @@ bool Node::operator==(const Node &other) const {
   return this->camera == other.camera && this->children == other.children &&
          this->extensions == other.extensions && this->extras == other.extras &&
          Equals(this->matrix, other.matrix) && this->mesh == other.mesh &&
+         (this->light == other.light) &&
+         (this->emitter == other.emitter) &&
          this->name == other.name && Equals(this->rotation, other.rotation) &&
          Equals(this->scale, other.scale) && this->skin == other.skin &&
          Equals(this->translation, other.translation) &&
@@ -2006,6 +2100,15 @@ bool SpotLight::operator==(const SpotLight &other) const {
   return this->extensions == other.extensions && this->extras == other.extras &&
          TINYGLTF_DOUBLE_EQUAL(this->innerConeAngle, other.innerConeAngle) &&
          TINYGLTF_DOUBLE_EQUAL(this->outerConeAngle, other.outerConeAngle);
+}
+bool PositionalEmitter::operator == (const PositionalEmitter& other) const {
+    return this->extensions == other.extensions && this->extras == other.extras &&
+        TINYGLTF_DOUBLE_EQUAL(this->coneInnerAngle, other.coneInnerAngle) &&
+        TINYGLTF_DOUBLE_EQUAL(this->coneOuterAngle, other.coneOuterAngle) &&
+        TINYGLTF_DOUBLE_EQUAL(this->coneOuterGain, other.coneOuterGain) &&
+        TINYGLTF_DOUBLE_EQUAL(this->maxDistance, other.maxDistance) &&
+        TINYGLTF_DOUBLE_EQUAL(this->refDistance, other.refDistance) &&
+        TINYGLTF_DOUBLE_EQUAL(this->rolloffFactor, other.rolloffFactor);
 }
 bool OrthographicCamera::operator==(const OrthographicCamera &other) const {
   return this->extensions == other.extensions && this->extras == other.extras &&
@@ -2915,7 +3018,7 @@ bool GetFileSizeInBytes(size_t *filesize_out, std::string *err,
   }
 
   // For directory(and pipe?), peek() will fail(Posix gnustl/libc++ only)
-  /*int buf =*/ f.peek();
+  f.peek();
   if (!f) {
     if (err) {
       (*err) += "File read error. Maybe empty file or invalid file : " + filepath + "\n";
@@ -3008,7 +3111,7 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err,
   }
 
   // For directory(and pipe?), peek() will fail(Posix gnustl/libc++ only)
-  /*int buf =*/ f.peek();
+  f.peek();
   if (!f) {
     if (err) {
       (*err) += "File read error. Maybe empty file or invalid file : " + filepath + "\n";
@@ -3411,7 +3514,44 @@ bool FindMember(const detail::json &o, const char *member, detail::json_const_it
 #endif
 }
 
+bool FindMember(detail::json &o, const char *member, detail::json_iterator &it) {
+#ifdef TINYGLTF_USE_RAPIDJSON
+  if (!o.IsObject()) {
+    return false;
+  }
+  it = o.FindMember(member);
+  return it != o.MemberEnd();
+#else
+  it = o.find(member);
+  return it != o.end();
+#endif
+}
+
+void Erase(detail::json & o, detail::json_iterator &it) {
+#ifdef TINYGLTF_USE_RAPIDJSON
+  o.EraseMember(it);
+#else
+  o.erase(it);
+#endif
+}
+
+bool IsEmpty(const detail::json & o) {
+#ifdef TINYGLTF_USE_RAPIDJSON
+  return o.ObjectEmpty();
+#else
+  return o.empty();
+#endif
+}
+
 const detail::json &GetValue(detail::json_const_iterator &it) {
+#ifdef TINYGLTF_USE_RAPIDJSON
+  return it->value;
+#else
+  return it.value();
+#endif
+}
+
+detail::json &GetValue(detail::json_iterator &it) {
 #ifdef TINYGLTF_USE_RAPIDJSON
   return it->value;
 #else
@@ -4031,6 +4171,30 @@ static bool ParseExtensionsProperty(ExtensionMap *ret, std::string *err,
   return true;
 }
 
+template <typename GltfType>
+static bool ParseExtrasAndExtensions(GltfType * target, std::string *err,
+    const detail::json & o, bool store_json_strings) {
+
+  ParseExtensionsProperty(&target->extensions, err, o);
+  ParseExtrasProperty(&target->extras, o);
+
+  if (store_json_strings) {
+    {
+      detail::json_const_iterator it;
+      if (detail::FindMember(o, "extensions", it)) {
+        target->extensions_json_string = detail::JsonToString(detail::GetValue(it));
+      }
+    }
+    {
+      detail::json_const_iterator it;
+      if (detail::FindMember(o, "extras", it)) {
+        target->extras_json_string = detail::JsonToString(detail::GetValue(it));
+      }
+    }
+  }
+  return true;
+}
+
 static bool ParseAsset(Asset *asset, std::string *err, const detail::json &o,
                        bool store_original_json_for_extras_and_extensions) {
   ParseStringProperty(&asset->version, err, o, "version", true, "Asset");
@@ -4038,26 +4202,7 @@ static bool ParseAsset(Asset *asset, std::string *err, const detail::json &o,
   ParseStringProperty(&asset->minVersion, err, o, "minVersion", false, "Asset");
   ParseStringProperty(&asset->copyright, err, o, "copyright", false, "Asset");
 
-  ParseExtensionsProperty(&asset->extensions, err, o);
-
-  // Unity exporter version is added as extra here
-  ParseExtrasProperty(&(asset->extras), o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        asset->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        asset->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
-
+  ParseExtrasAndExtensions(asset, err, o, store_original_json_for_extras_and_extensions);
   return true;
 }
 
@@ -4098,23 +4243,7 @@ static bool ParseImage(Image *image, const int image_idx, std::string *err,
     return false;
   }
 
-  ParseExtensionsProperty(&image->extensions, err, o);
-  ParseExtrasProperty(&image->extras, o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator eit;
-      if (detail::FindMember(o, "extensions", eit)) {
-        image->extensions_json_string = detail::JsonToString(detail::GetValue(eit));
-      }
-    }
-    {
-      detail::json_const_iterator eit;
-      if (detail::FindMember(o, "extras", eit)) {
-        image->extras_json_string = detail::JsonToString(detail::GetValue(eit));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(image, err, o, store_original_json_for_extras_and_extensions);
 
   if (hasBufferView) {
     int bufferView = -1;
@@ -4234,23 +4363,7 @@ static bool ParseTexture(Texture *texture, std::string *err, const detail::json 
   texture->sampler = sampler;
   texture->source = source;
 
-  ParseExtensionsProperty(&texture->extensions, err, o);
-  ParseExtrasProperty(&texture->extras, o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        texture->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        texture->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(texture, err, o, store_original_json_for_extras_and_extensions);
 
   ParseStringProperty(&texture->name, err, o, "name", false);
 
@@ -4271,23 +4384,7 @@ static bool ParseTextureInfo(
 
   ParseIntegerProperty(&texinfo->texCoord, err, o, "texCoord", false);
 
-  ParseExtensionsProperty(&texinfo->extensions, err, o);
-  ParseExtrasProperty(&texinfo->extras, o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        texinfo->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        texinfo->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(texinfo, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -4307,23 +4404,7 @@ static bool ParseNormalTextureInfo(
   ParseIntegerProperty(&texinfo->texCoord, err, o, "texCoord", false);
   ParseNumberProperty(&texinfo->scale, err, o, "scale", false);
 
-  ParseExtensionsProperty(&texinfo->extensions, err, o);
-  ParseExtrasProperty(&texinfo->extras, o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        texinfo->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        texinfo->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(texinfo, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -4343,23 +4424,7 @@ static bool ParseOcclusionTextureInfo(
   ParseIntegerProperty(&texinfo->texCoord, err, o, "texCoord", false);
   ParseNumberProperty(&texinfo->strength, err, o, "strength", false);
 
-  ParseExtensionsProperty(&texinfo->extensions, err, o);
-  ParseExtrasProperty(&texinfo->extras, o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        texinfo->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        texinfo->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(texinfo, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -4475,23 +4540,7 @@ static bool ParseBuffer(Buffer *buffer, std::string *err, const detail::json &o,
 
   ParseStringProperty(&buffer->name, err, o, "name", false);
 
-  ParseExtensionsProperty(&buffer->extensions, err, o);
-  ParseExtrasProperty(&buffer->extras, o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        buffer->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        buffer->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(buffer, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -4547,23 +4596,7 @@ static bool ParseBufferView(
 
   ParseStringProperty(&bufferView->name, err, o, "name", false);
 
-  ParseExtensionsProperty(&bufferView->extensions, err, o);
-  ParseExtrasProperty(&bufferView->extras, o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        bufferView->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        bufferView->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(bufferView, err, o, store_original_json_for_extras_and_extensions);
 
   bufferView->buffer = buffer;
   bufferView->byteOffset = byteOffset;
@@ -4572,14 +4605,17 @@ static bool ParseBufferView(
   return true;
 }
 
-static bool ParseSparseAccessor(Accessor *accessor, std::string *err,
-                                const detail::json &o) {
-  accessor->sparse.isSparse = true;
+static bool ParseSparseAccessor(Accessor::Sparse *sparse, std::string *err,
+                                const detail::json &o,
+                                bool store_original_json_for_extras_and_extensions) {
+  sparse->isSparse = true;
 
   int count = 0;
   if (!ParseIntegerProperty(&count, err, o, "count", true, "SparseAccessor")) {
     return false;
   }
+
+  ParseExtrasAndExtensions(sparse, err, o, store_original_json_for_extras_and_extensions);
 
   detail::json_const_iterator indices_iterator;
   detail::json_const_iterator values_iterator;
@@ -4616,12 +4652,17 @@ static bool ParseSparseAccessor(Accessor *accessor, std::string *err,
   ParseIntegerProperty(&values_byte_offset, err, values_obj, "byteOffset",
                        false);
 
-  accessor->sparse.count = count;
-  accessor->sparse.indices.bufferView = indices_buffer_view;
-  accessor->sparse.indices.byteOffset = indices_byte_offset;
-  accessor->sparse.indices.componentType = component_type;
-  accessor->sparse.values.bufferView = values_buffer_view;
-  accessor->sparse.values.byteOffset = values_byte_offset;
+  sparse->count = count;
+  sparse->indices.bufferView = indices_buffer_view;
+  sparse->indices.byteOffset = indices_byte_offset;
+  sparse->indices.componentType = component_type;
+  ParseExtrasAndExtensions(&sparse->indices, err, indices_obj,
+      store_original_json_for_extras_and_extensions);
+
+  sparse->values.bufferView = values_buffer_view;
+  sparse->values.byteOffset = values_byte_offset;
+  ParseExtrasAndExtensions(&sparse->values, err, values_obj,
+      store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -4706,29 +4747,14 @@ static bool ParseAccessor(Accessor *accessor, std::string *err, const detail::js
     }
   }
 
-  ParseExtensionsProperty(&(accessor->extensions), err, o);
-  ParseExtrasProperty(&(accessor->extras), o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        accessor->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        accessor->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(accessor, err, o, store_original_json_for_extras_and_extensions);
 
   // check if accessor has a "sparse" object:
   detail::json_const_iterator iterator;
   if (detail::FindMember(o, "sparse", iterator)) {
     // here this accessor has a "sparse" subobject
-    return ParseSparseAccessor(accessor, err, detail::GetValue(iterator));
+    return ParseSparseAccessor(&accessor->sparse, err, detail::GetValue(iterator),
+        store_original_json_for_extras_and_extensions);
   }
 
   return true;
@@ -4969,23 +4995,7 @@ static bool ParsePrimitive(Primitive *primitive, Model *model, std::string *err,
     }
   }
 
-  ParseExtrasProperty(&(primitive->extras), o);
-  ParseExtensionsProperty(&primitive->extensions, err, o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        primitive->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        primitive->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(primitive, err, o, store_original_json_for_extras_and_extensions);
 
 #ifdef TINYGLTF_ENABLE_DRACO
   auto dracoExtension =
@@ -5023,23 +5033,7 @@ static bool ParseMesh(Mesh *mesh, Model *model, std::string *err, const detail::
   // Should probably check if has targets and if dimensions fit
   ParseNumberArrayProperty(&mesh->weights, err, o, "weights", false);
 
-  ParseExtensionsProperty(&mesh->extensions, err, o);
-  ParseExtrasProperty(&(mesh->extras), o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        mesh->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        mesh->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(mesh, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -5072,21 +5066,67 @@ static bool ParseNode(Node *node, std::string *err, const detail::json &o,
 
   ParseNumberArrayProperty(&node->weights, err, o, "weights", false);
 
-  ParseExtensionsProperty(&node->extensions, err, o);
-  ParseExtrasProperty(&(node->extras), o);
+  ParseExtrasAndExtensions(node, err, o, store_original_json_for_extras_and_extensions);
 
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        node->extensions_json_string = detail::JsonToString(detail::GetValue(it));
+  // KHR_lights_punctual: parse light source reference
+  int light = -1;
+  if (node->extensions.count("KHR_lights_punctual") != 0) {
+    auto const& light_ext = node->extensions["KHR_lights_punctual"];
+    if (light_ext.Has("light")) {
+      light = light_ext.Get("light").GetNumberAsInt();
+    } else {
+      if (err) {
+        *err += "Node has extension KHR_lights_punctual, but does not reference "
+          "a light source.\n";
       }
+      return false;
     }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        node->extras_json_string = detail::JsonToString(detail::GetValue(it));
+  }
+  node->light = light;
+
+  // KHR_audio: parse audio source reference
+  int emitter = -1;
+  if (node->extensions.count("KHR_audio") != 0) {
+    auto const &audio_ext = node->extensions["KHR_audio"];
+    if (audio_ext.Has("emitter")) {
+      emitter = audio_ext.Get("emitter").GetNumberAsInt();
+    } else {
+      if (err) {
+        *err +=
+            "Node has extension KHR_audio, but does not reference "
+            "a audio emitter.\n";
       }
+      return false;
+    }
+  }
+  node->emitter = emitter;
+
+  return true;
+}
+
+static bool ParseScene(Scene *scene, std::string *err, const detail::json &o,
+                       bool store_original_json_for_extras_and_extensions) {
+  ParseStringProperty(&scene->name, err, o, "name", false);
+  ParseIntegerArrayProperty(&scene->nodes, err, o, "nodes", false);
+
+  ParseExtrasAndExtensions(scene, err, o,
+                           store_original_json_for_extras_and_extensions);
+
+  // Parse KHR_audio global emitters
+  if (scene->extensions.count("KHR_audio") != 0) {
+    auto const &audio_ext = scene->extensions["KHR_audio"];
+    if (audio_ext.Has("emitters")) {
+      auto emittersArr = audio_ext.Get("emitters");
+      for (size_t i = 0; i < emittersArr.ArrayLen(); ++i) {
+        scene->audioEmitters.emplace_back(emittersArr.Get(i).GetNumberAsInt());
+      }
+    } else {
+      if (err) {
+        *err +=
+            "Node has extension KHR_audio, but does not reference "
+            "a audio emitter.\n";
+      }
+      return false;
     }
   }
 
@@ -5134,23 +5174,7 @@ static bool ParsePbrMetallicRoughness(
   ParseNumberProperty(&pbr->metallicFactor, err, o, "metallicFactor", false);
   ParseNumberProperty(&pbr->roughnessFactor, err, o, "roughnessFactor", false);
 
-  ParseExtensionsProperty(&pbr->extensions, err, o);
-  ParseExtrasProperty(&pbr->extras, o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        pbr->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        pbr->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(pbr, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -5258,24 +5282,8 @@ static bool ParseMaterial(Material *material, std::string *err, const detail::js
     }
   }
 
-  material->extensions.clear();
-  ParseExtensionsProperty(&material->extensions, err, o);
-  ParseExtrasProperty(&(material->extras), o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator eit;
-      if (detail::FindMember(o, "extensions", eit)) {
-        material->extensions_json_string = detail::JsonToString(detail::GetValue(eit));
-      }
-    }
-    {
-      detail::json_const_iterator eit;
-      if (detail::FindMember(o, "extras", eit)) {
-        material->extras_json_string = detail::JsonToString(detail::GetValue(eit));
-      }
-    }
-  }
+  material->extensions.clear(); // Note(agnat): Why?
+  ParseExtrasAndExtensions(material, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -5307,10 +5315,19 @@ static bool ParseAnimationChannel(
       return false;
     }
     ParseExtensionsProperty(&channel->target_extensions, err, target_object);
+    ParseExtrasProperty(&channel->target_extras, target_object);
     if (store_original_json_for_extras_and_extensions) {
-      detail::json_const_iterator it;
-      if (detail::FindMember(target_object, "extensions", it)) {
-        channel->target_extensions_json_string = detail::JsonToString(detail::GetValue(it));
+      {
+        detail::json_const_iterator it;
+        if (detail::FindMember(target_object, "extensions", it)) {
+          channel->target_extensions_json_string = detail::JsonToString(detail::GetValue(it));
+        }
+      }
+      {
+        detail::json_const_iterator it;
+        if (detail::FindMember(target_object, "extras", it)) {
+          channel->target_extras_json_string = detail::JsonToString(detail::GetValue(it));
+        }
       }
     }
   }
@@ -5318,23 +5335,7 @@ static bool ParseAnimationChannel(
   channel->sampler = samplerIndex;
   channel->target_node = targetIndex;
 
-  ParseExtensionsProperty(&channel->extensions, err, o);
-  ParseExtrasProperty(&(channel->extras), o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        channel->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        channel->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(channel, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -5390,23 +5391,8 @@ static bool ParseAnimation(Animation *animation, std::string *err,
         }
         sampler.input = inputIndex;
         sampler.output = outputIndex;
-        ParseExtensionsProperty(&(sampler.extensions), err, o);
-        ParseExtrasProperty(&(sampler.extras), s);
-
-        if (store_original_json_for_extras_and_extensions) {
-          {
-            detail::json_const_iterator eit;
-            if (detail::FindMember(o, "extensions", eit)) {
-              sampler.extensions_json_string = detail::JsonToString(detail::GetValue(eit));
-            }
-          }
-          {
-            detail::json_const_iterator eit;
-            if (detail::FindMember(o, "extras", eit)) {
-              sampler.extras_json_string = detail::JsonToString(detail::GetValue(eit));
-            }
-          }
-        }
+        ParseExtrasAndExtensions(&sampler, err, o,
+            store_original_json_for_extras_and_extensions);
 
         animation->samplers.emplace_back(std::move(sampler));
       }
@@ -5415,23 +5401,7 @@ static bool ParseAnimation(Animation *animation, std::string *err,
 
   ParseStringProperty(&animation->name, err, o, "name", false);
 
-  ParseExtensionsProperty(&animation->extensions, err, o);
-  ParseExtrasProperty(&(animation->extras), o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        animation->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        animation->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(animation, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -5461,23 +5431,7 @@ static bool ParseSampler(Sampler *sampler, std::string *err, const detail::json 
   sampler->wrapT = wrapT;
   // sampler->wrapR = wrapR;
 
-  ParseExtensionsProperty(&(sampler->extensions), err, o);
-  ParseExtrasProperty(&(sampler->extras), o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        sampler->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        sampler->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(sampler, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -5500,23 +5454,7 @@ static bool ParseSkin(Skin *skin, std::string *err, const detail::json &o,
   ParseIntegerProperty(&invBind, err, o, "inverseBindMatrices", true, "Skin");
   skin->inverseBindMatrices = invBind;
 
-  ParseExtensionsProperty(&(skin->extensions), err, o);
-  ParseExtrasProperty(&(skin->extras), o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        skin->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        skin->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(skin, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -5547,23 +5485,7 @@ static bool ParsePerspectiveCamera(
   camera->yfov = yfov;
   camera->znear = znear;
 
-  ParseExtensionsProperty(&camera->extensions, err, o);
-  ParseExtrasProperty(&(camera->extras), o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        camera->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        camera->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(camera, err, o, store_original_json_for_extras_and_extensions);
 
   // TODO(syoyo): Validate parameter values.
 
@@ -5575,23 +5497,7 @@ static bool ParseSpotLight(SpotLight *light, std::string *err, const detail::jso
   ParseNumberProperty(&light->innerConeAngle, err, o, "innerConeAngle", false);
   ParseNumberProperty(&light->outerConeAngle, err, o, "outerConeAngle", false);
 
-  ParseExtensionsProperty(&light->extensions, err, o);
-  ParseExtrasProperty(&light->extras, o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        light->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        light->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(light, err, o, store_original_json_for_extras_and_extensions);
 
   // TODO(syoyo): Validate parameter values.
 
@@ -5622,23 +5528,7 @@ static bool ParseOrthographicCamera(
     return false;
   }
 
-  ParseExtensionsProperty(&camera->extensions, err, o);
-  ParseExtrasProperty(&(camera->extras), o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        camera->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        camera->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(camera, err, o, store_original_json_for_extras_and_extensions);
 
   camera->xmag = xmag;
   camera->ymag = ymag;
@@ -5720,23 +5610,7 @@ static bool ParseCamera(Camera *camera, std::string *err, const detail::json &o,
 
   ParseStringProperty(&camera->name, err, o, "name", false);
 
-  ParseExtensionsProperty(&camera->extensions, err, o);
-  ParseExtrasProperty(&(camera->extras), o);
-
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        camera->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        camera->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(camera, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
@@ -5778,26 +5652,108 @@ static bool ParseLight(Light *light, std::string *err, const detail::json &o,
   ParseNumberArrayProperty(&light->color, err, o, "color", false);
   ParseNumberProperty(&light->range, err, o, "range", false);
   ParseNumberProperty(&light->intensity, err, o, "intensity", false);
-  ParseExtensionsProperty(&light->extensions, err, o);
-  ParseExtrasProperty(&(light->extras), o);
 
-  if (store_original_json_for_extras_and_extensions) {
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extensions", it)) {
-        light->extensions_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-    {
-      detail::json_const_iterator it;
-      if (detail::FindMember(o, "extras", it)) {
-        light->extras_json_string = detail::JsonToString(detail::GetValue(it));
-      }
-    }
-  }
+  ParseExtrasAndExtensions(light, err, o, store_original_json_for_extras_and_extensions);
 
   return true;
 }
+
+static bool ParsePositionalEmitter(
+    PositionalEmitter *positional, std::string *err, const detail::json &o,
+    bool store_original_json_for_extras_and_extensions) {
+  ParseNumberProperty(&positional->coneInnerAngle, err, o, "coneInnerAngle", false);
+  ParseNumberProperty(&positional->coneOuterAngle, err, o, "coneOuterAngle", false);
+  ParseNumberProperty(&positional->coneOuterGain, err, o, "coneOuterGain", false);
+  ParseNumberProperty(&positional->maxDistance, err, o, "maxDistance", false);
+  ParseNumberProperty(&positional->refDistance, err, o, "refDistance", false);
+  ParseNumberProperty(&positional->rolloffFactor, err, o, "rolloffFactor", false);
+
+  ParseExtrasAndExtensions(positional, err, o, store_original_json_for_extras_and_extensions);
+
+  return true;
+}
+
+static bool ParseAudioEmitter(
+    AudioEmitter *emitter, std::string *err, const detail::json &o,
+    bool store_original_json_for_extras_and_extensions) {
+  if (!ParseStringProperty(&emitter->type, err, o, "type", true)) {
+    return false;
+  }
+
+  if (emitter->type == "positional") {
+    detail::json_const_iterator positionalIt;
+    if (!detail::FindMember(o, "positional", positionalIt)) {
+      if (err) {
+        std::stringstream ss;
+        ss << "Positional emitter description not found." << std::endl;
+        (*err) += ss.str();
+      }
+      return false;
+    }
+
+    const detail::json &v = detail::GetValue(positionalIt);
+    if (!detail::IsObject(v)) {
+      if (err) {
+        std::stringstream ss;
+        ss << "\"positional\" is not a JSON object." << std::endl;
+        (*err) += ss.str();
+      }
+      return false;
+    }
+
+    if (!ParsePositionalEmitter(&emitter->positional, err, v,
+                        store_original_json_for_extras_and_extensions)) {
+      return false;
+    }
+  }
+
+  ParseStringProperty(&emitter->name, err, o, "name", false);
+  ParseNumberProperty(&emitter->gain, err, o, "gain", false);
+  ParseBooleanProperty(&emitter->loop, err, o, "loop", false);
+  ParseBooleanProperty(&emitter->playing, err, o, "playing", false);
+  ParseStringProperty(&emitter->distanceModel, err, o, "distanceModel", false);
+  ParseIntegerProperty(&emitter->source, err, o, "source", true);
+
+  ParseExtrasAndExtensions(emitter, err, o,
+                           store_original_json_for_extras_and_extensions);
+
+  return true;
+}
+
+static bool ParseAudioSource(
+    AudioSource *source, std::string *err, const detail::json &o,
+    bool store_original_json_for_extras_and_extensions) {
+  ParseStringProperty(&source->name, err, o, "name", false);
+  ParseStringProperty(&source->uri, err, o, "uri", false);
+
+  if (source->uri.empty()) {
+    ParseIntegerProperty(&source->bufferView, err, o, "bufferView", true);
+    ParseStringProperty(&source->mimeType, err, o, "mimeType", true);
+  }
+
+  ParseExtrasAndExtensions(source, err, o,
+                           store_original_json_for_extras_and_extensions);
+
+  return true;
+}
+
+namespace detail {
+
+template <typename Callback>
+bool ForEachInArray(const detail::json &_v, const char *member, Callback && cb) {
+  detail::json_const_iterator itm;
+  if (detail::FindMember(_v, member, itm) && detail::IsArray(detail::GetValue(itm))) {
+    const detail::json &root = detail::GetValue(itm);
+    auto it = detail::ArrayBegin(root);
+    auto end = detail::ArrayEnd(root);
+    for (; it != end; ++it) {
+      if (!cb(*it)) return false;
+    }
+  }
+  return true;
+};
+
+} // end of namespace detail
 
 bool TinyGLTF::LoadFromString(Model *model, std::string *err, std::string *warn,
                               const char *json_str,
@@ -5948,28 +5904,7 @@ bool TinyGLTF::LoadFromString(Model *model, std::string *err, std::string *warn,
     }
   }
 
-#ifdef TINYGLTF_USE_CPP14
-  auto ForEachInArray = [](const detail::json &_v, const char *member,
-                           const auto &cb) -> bool
-#else
-  // The std::function<> implementation can be less efficient because it will
-  // allocate heap when the size of the captured lambda is above 16 bytes with
-  // clang and gcc, but it does not require C++14.
-  auto ForEachInArray = [](const detail::json &_v, const char *member,
-                           const std::function<bool(const detail::json &)> &cb) -> bool
-#endif
-  {
-    detail::json_const_iterator itm;
-    if (detail::FindMember(_v, member, itm) && detail::IsArray(detail::GetValue(itm))) {
-      const detail::json &root = detail::GetValue(itm);
-      auto it = detail::ArrayBegin(root);
-      auto end = detail::ArrayEnd(root);
-      for (; it != end; ++it) {
-        if (!cb(*it)) return false;
-      }
-    }
-    return true;
-  };
+  using detail::ForEachInArray;
 
   // 2. Parse extensionUsed
   {
@@ -6178,30 +6113,11 @@ bool TinyGLTF::LoadFromString(Model *model, std::string *err, std::string *warn,
         }
         return false;
       }
-      std::vector<int> nodes;
-      ParseIntegerArrayProperty(&nodes, err, o, "nodes", false);
 
       Scene scene;
-      scene.nodes = std::move(nodes);
-
-      ParseStringProperty(&scene.name, err, o, "name", false);
-
-      ParseExtensionsProperty(&scene.extensions, err, o);
-      ParseExtrasProperty(&scene.extras, o);
-
-      if (store_original_json_for_extras_and_extensions_) {
-        {
-          detail::json_const_iterator it;
-          if (detail::FindMember(o, "extensions", it)) {
-            scene.extensions_json_string = detail::JsonToString(detail::GetValue(it));
-          }
-        }
-        {
-          detail::json_const_iterator it;
-          if (detail::FindMember(o, "extras", it)) {
-            scene.extras_json_string = detail::JsonToString(detail::GetValue(it));
-          }
-        }
+      if (!ParseScene(&scene, err, o,
+                      store_original_json_for_extras_and_extensions_)) {
+        return false;
       }
 
       model->scenes.emplace_back(std::move(scene));
@@ -6449,8 +6365,8 @@ bool TinyGLTF::LoadFromString(Model *model, std::string *err, std::string *warn,
     }
   }
 
-  // 17. Parse Extensions
-  ParseExtensionsProperty(&model->extensions, err, v);
+  // 17. Parse Extras & Extensions
+  ParseExtrasAndExtensions(model, err, v, store_original_json_for_extras_and_extensions_);
 
   // 18. Specific extension implementations
   {
@@ -6484,16 +6400,50 @@ bool TinyGLTF::LoadFromString(Model *model, std::string *err, std::string *warn,
             }
           }
         }
+        // parse KHR_audio extension
+        if ((key == "KHR_audio") &&
+                   detail::IsObject(detail::GetValue(it))) {
+          const detail::json &object = detail::GetValue(it);
+          detail::json_const_iterator itKhrAudio;
+          if (detail::FindMember(object, "emitters", itKhrAudio)) {
+            const detail::json &emitters = detail::GetValue(itKhrAudio);
+            if (!detail::IsArray(emitters)) {
+              continue;
+            }
+
+            auto arrayIt(detail::ArrayBegin(emitters));
+            auto arrayItEnd(detail::ArrayEnd(emitters));
+            for (; arrayIt != arrayItEnd; ++arrayIt) {
+              AudioEmitter emitter;
+              if (!ParseAudioEmitter(&emitter, err, *arrayIt,
+                              store_original_json_for_extras_and_extensions_)) {
+                return false;
+              }
+              model->audioEmitters.emplace_back(std::move(emitter));
+            }
+          }
+
+          if (detail::FindMember(object, "sources", itKhrAudio)) {
+            const detail::json &sources = detail::GetValue(itKhrAudio);
+            if (!detail::IsArray(sources)) {
+              continue;
+            }
+
+            auto arrayIt(detail::ArrayBegin(sources));
+            auto arrayItEnd(detail::ArrayEnd(sources));
+            for (; arrayIt != arrayItEnd; ++arrayIt) {
+              AudioSource source;
+              if (!ParseAudioSource(
+                      &source, err, *arrayIt,
+                      store_original_json_for_extras_and_extensions_)) {
+                return false;
+              }
+              model->audioSources.emplace_back(std::move(source));
+            }
+          }
+        }
       }
     }
-  }
-
-  // 19. Parse Extras
-  ParseExtrasProperty(&model->extras, v);
-
-  if (store_original_json_for_extras_and_extensions_) {
-    model->extras_json_string = detail::JsonToString(v["extras"]);
-    model->extensions_json_string = detail::JsonToString(v["extensions"]);
   }
 
   return true;
@@ -6767,7 +6717,16 @@ void JsonAddMember(detail::json &o, const char *key, detail::json &&value) {
   if (!o.IsObject()) {
     o.SetObject();
   }
-  o.AddMember(detail::json(key, detail::GetAllocator()), std::move(value), detail::GetAllocator());
+
+  // Issue 420.
+  // AddMember may create duplicated key, so use [] API when a key already exists.
+  // https://github.com/Tencent/rapidjson/issues/771#issuecomment-254386863
+  detail::json_const_iterator it;
+  if (detail::FindMember(o, key, it)) {
+    o[key] = std::move(value); // replace
+  } else {
+    o.AddMember(detail::json(key, detail::GetAllocator()), std::move(value), detail::GetAllocator());
+  }
 #else
   o[key] = std::move(value);
 #endif
@@ -7060,6 +7019,17 @@ static void SerializeExtensionMap(const ExtensionMap &extensions, detail::json &
   detail::JsonAddMember(o, "extensions", std::move(extMap));
 }
 
+static void SerializeExtras(const Value & extras, detail::json & o) {
+  if (extras.Type() != NULL_TYPE)
+    SerializeValue("extras", extras, o);
+}
+
+template <typename GltfType>
+void SerializeExtrasAndExtensions(const GltfType & obj, detail::json & o) {
+  SerializeExtensionMap(obj.extensions, o);
+  SerializeExtras(obj.extras, o);
+}
+
 static void SerializeGltfAccessor(const Accessor &accessor, detail::json &o) {
   if (accessor.bufferView >= 0)
     SerializeNumberProperty<int>("bufferView", accessor.bufferView, o);
@@ -7126,9 +7096,7 @@ static void SerializeGltfAccessor(const Accessor &accessor, detail::json &o) {
   SerializeStringProperty("type", type, o);
   if (!accessor.name.empty()) SerializeStringProperty("name", accessor.name, o);
 
-  if (accessor.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", accessor.extras, o);
-  }
+  SerializeExtrasAndExtensions(accessor, o);
 
   // sparse
   if (accessor.sparse.isSparse)
@@ -7140,14 +7108,17 @@ static void SerializeGltfAccessor(const Accessor &accessor, detail::json &o) {
           SerializeNumberProperty<int>("bufferView", accessor.sparse.indices.bufferView, indices);
           SerializeNumberProperty<int>("byteOffset", accessor.sparse.indices.byteOffset, indices);
           SerializeNumberProperty<int>("componentType", accessor.sparse.indices.componentType, indices);
+          SerializeExtrasAndExtensions(accessor.sparse.indices, indices);
           detail::JsonAddMember(sparse, "indices", std::move(indices));
       }
       {
           detail::json values;
           SerializeNumberProperty<int>("bufferView", accessor.sparse.values.bufferView, values);
           SerializeNumberProperty<int>("byteOffset", accessor.sparse.values.byteOffset, values);
+          SerializeExtrasAndExtensions(accessor.sparse.values, values);
           detail::JsonAddMember(sparse, "values", std::move(values));
       }
+      SerializeExtrasAndExtensions(accessor.sparse, sparse);
       detail::JsonAddMember(o, "sparse", std::move(sparse));
   }
 }
@@ -7165,15 +7136,12 @@ static void SerializeGltfAnimationChannel(const AnimationChannel &channel,
     SerializeStringProperty("path", channel.target_path, target);
 
     SerializeExtensionMap(channel.target_extensions, target);
+    SerializeExtras(channel.target_extras, target);
 
     detail::JsonAddMember(o, "target", std::move(target));
   }
 
-  if (channel.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", channel.extras, o);
-  }
-
-  SerializeExtensionMap(channel.extensions, o);
+  SerializeExtrasAndExtensions(channel, o);
 }
 
 static void SerializeGltfAnimationSampler(const AnimationSampler &sampler,
@@ -7182,9 +7150,7 @@ static void SerializeGltfAnimationSampler(const AnimationSampler &sampler,
   SerializeNumberProperty("output", sampler.output, o);
   SerializeStringProperty("interpolation", sampler.interpolation, o);
 
-  if (sampler.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", sampler.extras, o);
-  }
+  SerializeExtrasAndExtensions(sampler, o);
 }
 
 static void SerializeGltfAnimation(const Animation &animation, detail::json &o) {
@@ -7216,11 +7182,7 @@ static void SerializeGltfAnimation(const Animation &animation, detail::json &o) 
     detail::JsonAddMember(o, "samplers", std::move(samplers));
   }
 
-  if (animation.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", animation.extras, o);
-  }
-
-  SerializeExtensionMap(animation.extensions, o);
+  SerializeExtrasAndExtensions(animation, o);
 }
 
 static void SerializeGltfAsset(const Asset &asset, detail::json &o) {
@@ -7242,11 +7204,7 @@ static void SerializeGltfAsset(const Asset &asset, detail::json &o) {
   // TODO(syoyo): Do we need to check if `version` is greater or equal to 2.0?
   SerializeStringProperty("version", version, o);
 
-  if (asset.extras.Keys().size()) {
-    SerializeValue("extras", asset.extras, o);
-  }
-
-  SerializeExtensionMap(asset.extensions, o);
+  SerializeExtrasAndExtensions(asset, o);
 }
 
 static void SerializeGltfBufferBin(const Buffer &buffer, detail::json &o,
@@ -7256,9 +7214,7 @@ static void SerializeGltfBufferBin(const Buffer &buffer, detail::json &o,
 
   if (buffer.name.size()) SerializeStringProperty("name", buffer.name, o);
 
-  if (buffer.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", buffer.extras, o);
-  }
+  SerializeExtrasAndExtensions(buffer, o);
 }
 
 static void SerializeGltfBuffer(const Buffer &buffer, detail::json &o) {
@@ -7267,9 +7223,7 @@ static void SerializeGltfBuffer(const Buffer &buffer, detail::json &o) {
 
   if (buffer.name.size()) SerializeStringProperty("name", buffer.name, o);
 
-  if (buffer.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", buffer.extras, o);
-  }
+  SerializeExtrasAndExtensions(buffer, o);
 }
 
 static bool SerializeGltfBuffer(const Buffer &buffer, detail::json &o,
@@ -7281,9 +7235,7 @@ static bool SerializeGltfBuffer(const Buffer &buffer, detail::json &o,
 
   if (buffer.name.size()) SerializeStringProperty("name", buffer.name, o);
 
-  if (buffer.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", buffer.extras, o);
-  }
+  SerializeExtrasAndExtensions(buffer, o);
   return true;
 }
 
@@ -7308,9 +7260,7 @@ static void SerializeGltfBufferView(const BufferView &bufferView, detail::json &
     SerializeStringProperty("name", bufferView.name, o);
   }
 
-  if (bufferView.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", bufferView.extras, o);
-  }
+  SerializeExtrasAndExtensions(bufferView, o);
 }
 
 static void SerializeGltfImage(const Image &image, const std::string &uri,
@@ -7328,11 +7278,7 @@ static void SerializeGltfImage(const Image &image, const std::string &uri,
     SerializeStringProperty("name", image.name, o);
   }
 
-  if (image.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", image.extras, o);
-  }
-
-  SerializeExtensionMap(image.extensions, o);
+  SerializeExtrasAndExtensions(image, o);
 }
 
 static void SerializeGltfTextureInfo(const TextureInfo &texinfo, detail::json &o) {
@@ -7342,11 +7288,7 @@ static void SerializeGltfTextureInfo(const TextureInfo &texinfo, detail::json &o
     SerializeNumberProperty("texCoord", texinfo.texCoord, o);
   }
 
-  if (texinfo.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", texinfo.extras, o);
-  }
-
-  SerializeExtensionMap(texinfo.extensions, o);
+  SerializeExtrasAndExtensions(texinfo, o);
 }
 
 static void SerializeGltfNormalTextureInfo(const NormalTextureInfo &texinfo,
@@ -7361,11 +7303,7 @@ static void SerializeGltfNormalTextureInfo(const NormalTextureInfo &texinfo,
     SerializeNumberProperty("scale", texinfo.scale, o);
   }
 
-  if (texinfo.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", texinfo.extras, o);
-  }
-
-  SerializeExtensionMap(texinfo.extensions, o);
+  SerializeExtrasAndExtensions(texinfo, o);
 }
 
 static void SerializeGltfOcclusionTextureInfo(
@@ -7380,11 +7318,7 @@ static void SerializeGltfOcclusionTextureInfo(
     SerializeNumberProperty("strength", texinfo.strength, o);
   }
 
-  if (texinfo.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", texinfo.extras, o);
-  }
-
-  SerializeExtensionMap(texinfo.extensions, o);
+  SerializeExtrasAndExtensions(texinfo, o);
 }
 
 static void SerializeGltfPbrMetallicRoughness(const PbrMetallicRoughness &pbr,
@@ -7415,11 +7349,7 @@ static void SerializeGltfPbrMetallicRoughness(const PbrMetallicRoughness &pbr,
     detail::JsonAddMember(o, "metallicRoughnessTexture", std::move(texinfo));
   }
 
-  SerializeExtensionMap(pbr.extensions, o);
-
-  if (pbr.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", pbr.extras, o);
-  }
+  SerializeExtrasAndExtensions(pbr, o);
 }
 
 static void SerializeGltfMaterial(const Material &material, detail::json &o) {
@@ -7491,11 +7421,7 @@ static void SerializeGltfMaterial(const Material &material, detail::json &o) {
 
 #endif
 
-  SerializeExtensionMap(material.extensions, o);
-
-  if (material.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", material.extras, o);
-  }
+  SerializeExtrasAndExtensions(material, o);
 }
 
 static void SerializeGltfMesh(const Mesh &mesh, detail::json &o) {
@@ -7542,11 +7468,7 @@ static void SerializeGltfMesh(const Mesh &mesh, detail::json &o) {
       detail::JsonAddMember(primitive, "targets", std::move(targets));
     }
 
-    SerializeExtensionMap(gltfPrimitive.extensions, primitive);
-
-    if (gltfPrimitive.extras.Type() != NULL_TYPE) {
-      SerializeValue("extras", gltfPrimitive.extras, primitive);
-    }
+    SerializeExtrasAndExtensions(gltfPrimitive, o);
 
     detail::JsonPushBack(primitives, std::move(primitive));
   }
@@ -7561,19 +7483,13 @@ static void SerializeGltfMesh(const Mesh &mesh, detail::json &o) {
     SerializeStringProperty("name", mesh.name, o);
   }
 
-  SerializeExtensionMap(mesh.extensions, o);
-  if (mesh.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", mesh.extras, o);
-  }
+  SerializeExtrasAndExtensions(mesh, o);
 }
 
 static void SerializeSpotLight(const SpotLight &spot, detail::json &o) {
   SerializeNumberProperty("innerConeAngle", spot.innerConeAngle, o);
   SerializeNumberProperty("outerConeAngle", spot.outerConeAngle, o);
-  SerializeExtensionMap(spot.extensions, o);
-  if (spot.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", spot.extras, o);
-  }
+  SerializeExtrasAndExtensions(spot, o);
 }
 
 static void SerializeGltfLight(const Light &light, detail::json &o) {
@@ -7589,10 +7505,62 @@ static void SerializeGltfLight(const Light &light, detail::json &o) {
     SerializeSpotLight(light.spot, spot);
     detail::JsonAddMember(o, "spot", std::move(spot));
   }
-  SerializeExtensionMap(light.extensions, o);
-  if (light.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", light.extras, o);
+  SerializeExtrasAndExtensions(light, o);
+}
+
+static void SerializeGltfPositionalEmitter(const PositionalEmitter &positional,
+                                           detail::json &o) {
+  if (!TINYGLTF_DOUBLE_EQUAL(positional.coneInnerAngle, 6.283185307179586))
+    SerializeNumberProperty("coneInnerAngle", positional.coneInnerAngle, o);
+  if (!TINYGLTF_DOUBLE_EQUAL(positional.coneOuterAngle, 6.283185307179586))
+    SerializeNumberProperty("coneOuterAngle", positional.coneOuterAngle, o);
+  if (positional.coneOuterGain > 0.0)
+    SerializeNumberProperty("coneOuterGain", positional.coneOuterGain, o);
+  if (!TINYGLTF_DOUBLE_EQUAL(positional.maxDistance, 100.0))
+    SerializeNumberProperty("maxDistance", positional.maxDistance, o);
+  if (!TINYGLTF_DOUBLE_EQUAL(positional.refDistance, 1.0))
+    SerializeNumberProperty("refDistance", positional.refDistance, o);
+  if (!TINYGLTF_DOUBLE_EQUAL(positional.rolloffFactor, 1.0))
+    SerializeNumberProperty("rolloffFactor", positional.rolloffFactor, o);
+
+  SerializeExtrasAndExtensions(positional, o);
+}
+
+static void SerializeGltfAudioEmitter(const AudioEmitter &emitter,
+                                      detail::json &o) {
+  if (!emitter.name.empty()) SerializeStringProperty("name", emitter.name, o);
+  if (!TINYGLTF_DOUBLE_EQUAL(emitter.gain, 1.0))
+    SerializeNumberProperty("gain", emitter.gain, o);
+  if (emitter.loop) SerializeNumberProperty("loop", emitter.loop, o);
+  if (emitter.playing) SerializeNumberProperty("playing", emitter.playing, o);
+  if (!emitter.type.empty()) SerializeStringProperty("type", emitter.type, o);
+  if (!emitter.distanceModel.empty())
+    SerializeStringProperty("distanceModel", emitter.distanceModel, o);
+  if (emitter.type == "positional") {
+    detail::json positional;
+    SerializeGltfPositionalEmitter(emitter.positional, positional);
+    detail::JsonAddMember(o, "positional", std::move(positional));
   }
+  SerializeNumberProperty("source", emitter.source, o);
+  SerializeExtrasAndExtensions(emitter, o);
+}
+
+static void SerializeGltfAudioSource(const AudioSource& source, detail::json& o) {
+  std::string name;
+  std::string uri;
+  int bufferView;        // (required if no uri)
+  std::string mimeType;  // (required if no uri) ["audio/mp3", "audio/ogg",
+                         // "audio/wav", "audio/m4a"]
+
+  if (!source.name.empty()) SerializeStringProperty("name", source.name, o);
+  if (source.uri.empty()) {
+    SerializeStringProperty("mimeType", source.mimeType, o);
+    SerializeNumberProperty<int>("bufferView", source.bufferView, o);
+  }
+  else {
+      SerializeStringProperty("uri", source.uri, o);
+  }
+  SerializeExtrasAndExtensions(source, o);
 }
 
 static void SerializeGltfNode(const Node &node, detail::json &o) {
@@ -7624,11 +7592,75 @@ static void SerializeGltfNode(const Node &node, detail::json &o) {
     SerializeNumberArrayProperty<double>("weights", node.weights, o);
   }
 
-  if (node.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", node.extras, o);
+  SerializeExtrasAndExtensions(node, o);
+
+  // Note(agnat): If the asset was loaded from disk, the node may already
+  // contain the KHR_lights_punctual extension. If it was constructed in
+  // memory it does not. In any case we update the JSON property using
+  // the value from the struct. Last, if the node does not have a light
+  // reference but the extension is still present, we remove it.
+  if (node.light != -1) {
+    detail::json_iterator it;
+    if (!detail::FindMember(o, "extensions", it)) {
+      detail::json extensions;
+      detail::JsonSetObject(extensions);
+      detail::JsonAddMember(o, "extensions", std::move(extensions));
+      detail::FindMember(o, "extensions", it);
+    }
+    auto & extensions = detail::GetValue(it);
+    if ( ! detail::FindMember(extensions, "KHR_lights_punctual", it)) {
+      detail::json lights_punctual;
+      detail::JsonSetObject(lights_punctual);
+      detail::JsonAddMember(extensions, "KHR_lights_punctual", std::move(lights_punctual));
+      detail::FindMember(o, "KHR_lights_punctual", it);
+    }
+    SerializeNumberProperty("light", node.light, detail::GetValue(it));
+  } else {
+    // node has no light ref (any longer)... so we clean up
+    detail::json_iterator ext_it;
+    if (detail::FindMember(o, "extensions", ext_it)) {
+      auto & extensions = detail::GetValue(ext_it);
+      detail::json_iterator lp_it;
+      if (detail::FindMember(extensions, "KHR_lights_punctual", lp_it)) {
+        detail::Erase(extensions, lp_it);
+      }
+      if (detail::IsEmpty(extensions)) {
+        detail::Erase(o, ext_it);
+      }
+    }
   }
 
-  SerializeExtensionMap(node.extensions, o);
+  // KHR_audio
+  if (node.emitter != -1) {
+    detail::json_iterator it;
+    if (!detail::FindMember(o, "extensions", it)) {
+      detail::json extensions;
+      detail::JsonSetObject(extensions);
+      detail::JsonAddMember(o, "extensions", std::move(extensions));
+      detail::FindMember(o, "extensions", it);
+    }
+    auto &extensions = detail::GetValue(it);
+    if (!detail::FindMember(extensions, "KHR_audio", it)) {
+      detail::json audio;
+      detail::JsonSetObject(audio);
+      detail::JsonAddMember(extensions, "KHR_audio", std::move(audio));
+      detail::FindMember(o, "KHR_audio", it);
+    }
+    SerializeNumberProperty("emitter", node.emitter, detail::GetValue(it));
+  } else {
+    detail::json_iterator ext_it;
+    if (detail::FindMember(o, "extensions", ext_it)) {
+      auto &extensions = detail::GetValue(ext_it);
+      detail::json_iterator lp_it;
+      if (detail::FindMember(extensions, "KHR_audio", lp_it)) {
+        detail::Erase(extensions, lp_it);
+      }
+      if (detail::IsEmpty(extensions)) {
+        detail::Erase(o, ext_it);
+      }
+    }
+  }
+
   if (!node.name.empty()) SerializeStringProperty("name", node.name, o);
   SerializeNumberArrayProperty<int>("children", node.children, o);
 }
@@ -7647,9 +7679,7 @@ static void SerializeGltfSampler(const Sampler &sampler, detail::json &o) {
   SerializeNumberProperty("wrapS", sampler.wrapS, o);
   SerializeNumberProperty("wrapT", sampler.wrapT, o);
 
-  if (sampler.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", sampler.extras, o);
-  }
+  SerializeExtrasAndExtensions(sampler, o);
 }
 
 static void SerializeGltfOrthographicCamera(const OrthographicCamera &camera,
@@ -7659,9 +7689,7 @@ static void SerializeGltfOrthographicCamera(const OrthographicCamera &camera,
   SerializeNumberProperty("xmag", camera.xmag, o);
   SerializeNumberProperty("ymag", camera.ymag, o);
 
-  if (camera.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", camera.extras, o);
-  }
+  SerializeExtrasAndExtensions(camera, o);
 }
 
 static void SerializeGltfPerspectiveCamera(const PerspectiveCamera &camera,
@@ -7676,9 +7704,7 @@ static void SerializeGltfPerspectiveCamera(const PerspectiveCamera &camera,
     SerializeNumberProperty("yfov", camera.yfov, o);
   }
 
-  if (camera.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", camera.extras, o);
-  }
+  SerializeExtrasAndExtensions(camera, o);
 }
 
 static void SerializeGltfCamera(const Camera &camera, detail::json &o) {
@@ -7699,10 +7725,7 @@ static void SerializeGltfCamera(const Camera &camera, detail::json &o) {
     // ???
   }
 
-  if (camera.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", camera.extras, o);
-  }
-  SerializeExtensionMap(camera.extensions, o);
+  SerializeExtrasAndExtensions(camera, o);
 }
 
 static void SerializeGltfScene(const Scene &scene, detail::json &o) {
@@ -7711,10 +7734,38 @@ static void SerializeGltfScene(const Scene &scene, detail::json &o) {
   if (scene.name.size()) {
     SerializeStringProperty("name", scene.name, o);
   }
-  if (scene.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", scene.extras, o);
+  SerializeExtrasAndExtensions(scene, o);
+
+  // KHR_audio
+  if (!scene.audioEmitters.empty()) {
+    detail::json_iterator it;
+    if (!detail::FindMember(o, "extensions", it)) {
+      detail::json extensions;
+      detail::JsonSetObject(extensions);
+      detail::JsonAddMember(o, "extensions", std::move(extensions));
+      detail::FindMember(o, "extensions", it);
+    }
+    auto &extensions = detail::GetValue(it);
+    if (!detail::FindMember(extensions, "KHR_audio", it)) {
+      detail::json audio;
+      detail::JsonSetObject(audio);
+      detail::JsonAddMember(extensions, "KHR_audio", std::move(audio));
+      detail::FindMember(o, "KHR_audio", it);
+    }
+    SerializeNumberArrayProperty("emitters", scene.audioEmitters, detail::GetValue(it));
+  } else {
+    detail::json_iterator ext_it;
+    if (detail::FindMember(o, "extensions", ext_it)) {
+      auto &extensions = detail::GetValue(ext_it);
+      detail::json_iterator lp_it;
+      if (detail::FindMember(extensions, "KHR_audio", lp_it)) {
+        detail::Erase(extensions, lp_it);
+      }
+      if (detail::IsEmpty(extensions)) {
+        detail::Erase(o, ext_it);
+      }
+    }
   }
-  SerializeExtensionMap(scene.extensions, o);
 }
 
 static void SerializeGltfSkin(const Skin &skin, detail::json &o) {
@@ -7732,6 +7783,8 @@ static void SerializeGltfSkin(const Skin &skin, detail::json &o) {
   if (skin.name.size()) {
     SerializeStringProperty("name", skin.name, o);
   }
+
+  SerializeExtrasAndExtensions(skin, o);
 }
 
 static void SerializeGltfTexture(const Texture &texture, detail::json &o) {
@@ -7744,10 +7797,7 @@ static void SerializeGltfTexture(const Texture &texture, detail::json &o) {
   if (texture.name.size()) {
     SerializeStringProperty("name", texture.name, o);
   }
-  if (texture.extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", texture.extras, o);
-  }
-  SerializeExtensionMap(texture.extensions, o);
+  SerializeExtrasAndExtensions(texture, o);
 }
 
 ///
@@ -7915,8 +7965,8 @@ static void SerializeGltfModel(const Model *model, detail::json &o) {
     detail::JsonAddMember(o, "cameras", std::move(cameras));
   }
 
-  // EXTENSIONS
-  SerializeExtensionMap(model->extensions, o);
+  // EXTRAS & EXTENSIONS
+  SerializeExtrasAndExtensions(*model, o);
 
   auto extensionsUsed = model->extensionsUsed;
 
@@ -7958,14 +8008,56 @@ static void SerializeGltfModel(const Model *model, detail::json &o) {
     }
   }
 
+  // KHR_audio
+  if (!model->audioEmitters.empty() || !model->audioSources.empty()) {
+    detail::json emitters;
+    detail::JsonReserveArray(emitters, model->audioEmitters.size());
+    for (unsigned int i = 0; i < model->audioEmitters.size(); ++i) {
+      detail::json emitter;
+      SerializeGltfAudioEmitter(model->audioEmitters[i], emitter);
+      detail::JsonPushBack(emitters, std::move(emitter));
+    }
+    detail::json khr_audio_cmn;
+    detail::JsonAddMember(khr_audio_cmn, "emitters", std::move(emitters));
+
+    detail::json sources;
+    detail::JsonReserveArray(sources, model->audioSources.size());
+    for (unsigned int i = 0; i < model->audioSources.size(); ++i) {
+      detail::json source;
+      SerializeGltfAudioSource(model->audioSources[i], source);
+      detail::JsonPushBack(sources, std::move(source));
+    }
+    detail::JsonAddMember(khr_audio_cmn, "sources", std::move(sources));
+
+    detail::json ext_j;
+    {
+      detail::json_const_iterator it;
+      if (detail::FindMember(o, "extensions", it)) {
+        detail::JsonAssign(ext_j, detail::GetValue(it));
+      }
+    }
+
+    detail::JsonAddMember(ext_j, "KHR_audio", std::move(khr_audio_cmn));
+
+    detail::JsonAddMember(o, "extensions", std::move(ext_j));
+
+    // Also add "KHR_audio" to `extensionsUsed`
+    {
+      auto has_khr_audio =
+          std::find_if(extensionsUsed.begin(), extensionsUsed.end(),
+                       [](const std::string &s) {
+                         return (s.compare("KHR_audio") == 0);
+                       });
+
+      if (has_khr_audio == extensionsUsed.end()) {
+        extensionsUsed.push_back("KHR_audio");
+      }
+    }
+  }
+
   // Extensions used
   if (extensionsUsed.size()) {
     SerializeStringArrayProperty("extensionsUsed", extensionsUsed, o);
-  }
-
-  // EXTRAS
-  if (model->extras.Type() != NULL_TYPE) {
-    SerializeValue("extras", model->extras, o);
   }
 }
 
