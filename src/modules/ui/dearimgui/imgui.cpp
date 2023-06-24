@@ -3631,6 +3631,7 @@ void ImGui::Initialize()
     viewport->Flags = ImGuiViewportFlags_OwnedByApp;
     g.Viewports.push_back(viewport);
     g.TempBuffer.resize(1024 * 3 + 1, 0);
+    g.ViewportCreatedCount++;
     g.PlatformIO.Viewports.push_back(g.Viewports[0]);
 
 #ifdef IMGUI_HAS_DOCK
@@ -4406,14 +4407,14 @@ void ImGui::UpdateMouseMovingWindowNewFrame()
         ImGuiWindow* moving_window = g.MovingWindow->RootWindowDockTree;
 
         // When a window stop being submitted while being dragged, it may will its viewport until next Begin()
-        const bool window_disappared = ((!moving_window->WasActive && !moving_window->Active) || moving_window->Viewport == NULL);
+        const bool window_disappared = (!moving_window->WasActive && !moving_window->Active);
         if (g.IO.MouseDown[0] && IsMousePosValid(&g.IO.MousePos) && !window_disappared)
         {
             ImVec2 pos = g.IO.MousePos - g.ActiveIdClickOffset;
             if (moving_window->Pos.x != pos.x || moving_window->Pos.y != pos.y)
             {
                 SetWindowPos(moving_window, pos, ImGuiCond_Always);
-                if (moving_window->ViewportOwned) // Synchronize viewport immediately because some overlays may relies on clipping rectangle before we Begin() into the window.
+                if (moving_window->Viewport && moving_window->ViewportOwned) // Synchronize viewport immediately because some overlays may relies on clipping rectangle before we Begin() into the window.
                 {
                     moving_window->Viewport->Pos = pos;
                     moving_window->Viewport->UpdateWorkRect();
@@ -4431,11 +4432,12 @@ void ImGui::UpdateMouseMovingWindowNewFrame()
                     UpdateTryMergeWindowIntoHostViewport(moving_window, g.MouseViewport);
 
                 // Restore the mouse viewport so that we don't hover the viewport _under_ the moved window during the frame we released the mouse button.
-                if (!IsDragDropPayloadBeingAccepted())
+                if (moving_window->Viewport && !IsDragDropPayloadBeingAccepted())
                     g.MouseViewport = moving_window->Viewport;
 
                 // Clear the NoInput window flag set by the Viewport system
-                moving_window->Viewport->Flags &= ~ImGuiViewportFlags_NoInputs; // FIXME-VIEWPORT: Test engine managed to crash here because Viewport was NULL.
+                if (moving_window->Viewport)
+                    moving_window->Viewport->Flags &= ~ImGuiViewportFlags_NoInputs;
             }
 
             g.MovingWindow = NULL;
@@ -4970,6 +4972,7 @@ static void AddWindowToDrawData(ImGuiWindow* window, int layer)
 {
     ImGuiContext& g = *GImGui;
     ImGuiViewportP* viewport = window->Viewport;
+    IM_ASSERT(viewport != NULL);
     g.IO.MetricsRenderWindows++;
     if (window->Flags & ImGuiWindowFlags_DockNodeHost)
         window->DrawList->ChannelsMerge();
@@ -8509,7 +8512,7 @@ const char* ImGui::GetKeyName(ImGuiKey key)
 {
     ImGuiContext& g = *GImGui;
 #ifdef IMGUI_DISABLE_OBSOLETE_KEYIO
-    IM_ASSERT((IsNamedKey(key) || key == ImGuiKey_None) && "Support for user key indices was dropped in favor of ImGuiKey. Please update backend and user code.");
+    IM_ASSERT((IsNamedKeyOrModKey(key) || key == ImGuiKey_None) && "Support for user key indices was dropped in favor of ImGuiKey. Please update backend and user code.");
 #else
     if (IsLegacyKey(key))
     {
@@ -14373,6 +14376,7 @@ ImGuiViewportP* ImGui::AddUpdateViewport(ImGuiWindow* window, ImGuiID id, const 
         viewport->Flags = flags;
         UpdateViewportPlatformMonitor(viewport);
         g.Viewports.push_back(viewport);
+        g.ViewportCreatedCount++;
         IMGUI_DEBUG_LOG_VIEWPORT("[viewport] Add Viewport %08X '%s'\n", id, window ? window->Name : "<NULL>");
 
         // We normally setup for all viewports in NewFrame() but here need to handle the mid-frame creation of a new viewport.
@@ -14467,6 +14471,11 @@ static void ImGui::WindowSelectViewport(ImGuiWindow* window)
         // Code explicitly request a viewport
         window->Viewport = (ImGuiViewportP*)FindViewportByID(g.NextWindowData.ViewportId);
         window->ViewportId = g.NextWindowData.ViewportId; // Store ID even if Viewport isn't resolved yet.
+        if (window->Viewport && (window->Flags & ImGuiWindowFlags_DockNodeHost) != 0 && window->Viewport->Window != NULL)
+        {
+            window->Viewport->Window = window;
+            window->Viewport->ID = window->ViewportId = window->ID; // Overwrite ID (always owned by node)
+        }
         lock_viewport = true;
     }
     else if ((flags & ImGuiWindowFlags_ChildWindow) || (flags & ImGuiWindowFlags_ChildMenu))
@@ -14685,6 +14694,7 @@ void ImGui::UpdatePlatformWindows()
             g.PlatformIO.Platform_CreateWindow(viewport);
             if (g.PlatformIO.Renderer_CreateWindow != NULL)
                 g.PlatformIO.Renderer_CreateWindow(viewport);
+            g.PlatformWindowsCreatedCount++;
             viewport->LastNameHash = 0;
             viewport->LastPlatformPos = viewport->LastPlatformSize = ImVec2(FLT_MAX, FLT_MAX); // By clearing those we'll enforce a call to Platform_SetWindowPos/Size below, before Platform_ShowWindow (FIXME: Is that necessary?)
             viewport->LastRendererSize = viewport->Size;                                       // We don't need to call Renderer_SetWindowSize() as it is expected Renderer_CreateWindow() already did it.
@@ -15776,6 +15786,7 @@ ImGuiDockNode::ImGuiDockNode(ImGuiID id)
     LastFocusedNodeId = 0;
     SelectedTabId = 0;
     WantCloseTabId = 0;
+    RefViewportId = 0;
     AuthorityForPos = AuthorityForSize = ImGuiDataAuthority_DockNode;
     AuthorityForViewport = ImGuiDataAuthority_Auto;
     IsVisible = true;
@@ -15882,6 +15893,16 @@ static void ImGui::DockNodeRemoveWindow(ImGuiDockNode* node, ImGuiWindow* window
         window->ParentWindow->DC.ChildWindows.find_erase(window);
     UpdateWindowParentAndRootLinks(window, window->Flags, NULL); // Update immediately
 
+    if (node->HostWindow && node->HostWindow->ViewportOwned)
+    {
+        // When undocking from a user interaction this will always run in NewFrame() and have not much effect.
+        // But mid-frame, if we clear viewport we need to mark window as hidden as well.
+        window->Viewport = NULL;
+        window->ViewportId = 0;
+        window->ViewportOwned = false;
+        window->Hidden = true;
+    }
+
     // Remove window
     bool erased = false;
     for (int n = 0; n < node->Windows.Size; n++)
@@ -15916,14 +15937,7 @@ static void ImGui::DockNodeRemoveWindow(ImGuiDockNode* node, ImGuiWindow* window
     if (node->Windows.Size == 1 && !node->IsCentralNode() && node->HostWindow)
     {
         ImGuiWindow* remaining_window = node->Windows[0];
-        if (node->HostWindow->ViewportOwned && node->IsRootNode())
-        {
-            // Transfer viewport back to the remaining loose window
-            IMGUI_DEBUG_LOG_VIEWPORT("[viewport] Node %08X transfer Viewport %08X=>%08X for Window '%s'\n", node->ID, node->HostWindow->Viewport->ID, remaining_window->ID, remaining_window->Name);
-            IM_ASSERT(node->HostWindow->Viewport->Window == node->HostWindow);
-            node->HostWindow->Viewport->Window = remaining_window;
-            node->HostWindow->Viewport->ID = remaining_window->ID;
-        }
+        // Note: we used to transport viewport ownership here.
         remaining_window->Collapsed = node->HostWindow->Collapsed;
     }
 
@@ -16254,14 +16268,17 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
                 FocusWindow(single_window);
             if (node->HostWindow)
             {
+                IMGUI_DEBUG_LOG_VIEWPORT("[viewport] Node %08X transfer Viewport %08X->%08X to Window '%s'\n", node->ID, node->HostWindow->Viewport->ID, single_window->ID, single_window->Name);
                 single_window->Viewport = node->HostWindow->Viewport;
                 single_window->ViewportId = node->HostWindow->ViewportId;
                 if (node->HostWindow->ViewportOwned)
                 {
+                    single_window->Viewport->ID = single_window->ID;
                     single_window->Viewport->Window = single_window;
                     single_window->ViewportOwned = true;
                 }
             }
+            node->RefViewportId = single_window->ViewportId;
         }
 
         DockNodeHideHostWindow(node);
@@ -16351,6 +16368,8 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
             // Sync Viewport
             if (node->AuthorityForViewport == ImGuiDataAuthority_Window && ref_window)
                 SetNextWindowViewport(ref_window->ViewportId);
+            else if (node->AuthorityForViewport == ImGuiDataAuthority_Window && node->RefViewportId != 0)
+                SetNextWindowViewport(node->RefViewportId);
 
             SetNextWindowClass(&node->WindowClass);
 
@@ -16393,6 +16412,7 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
         if (node->WantMouseMove && node->HostWindow)
             DockNodeStartMouseMovingWindow(node, node->HostWindow);
     }
+    node->RefViewportId = 0; // Clear when we have a host window
 
     // Update focused node (the one whose title bar is highlight) within a node tree
     if (node->IsSplitNode())
@@ -18407,7 +18427,7 @@ void ImGui::BeginDocked(ImGuiWindow* window, bool* p_open)
     {
         if (node->State == ImGuiDockNodeState_HostWindowHiddenBecauseWindowsAreResizing)
             window->DockIsActive = true;
-        if (node->Windows.Size > 1)
+        if (node->Windows.Size > 1 && window->Appearing) // Only hide appearing window
             DockNodeHideWindowDuringHostWindowCreation(window);
         return;
     }
