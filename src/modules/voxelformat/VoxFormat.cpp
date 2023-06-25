@@ -15,6 +15,7 @@
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "math/Math.h"
+#include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
@@ -148,7 +149,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 						  (float)(int)(ogtModel->size_z / 2), 0.0f);
 	const glm::ivec3 &transformedMins = calcTransform(ogtMat, glm::ivec3(0), pivot);
 	const glm::ivec3 &transformedMaxs = calcTransform(ogtMat, maxs, pivot);
-	const glm::mat4 zUpMat = transformMatrix();
+	const glm::mat4 zUpMat = scenegraph::transformMatrix();
 	const glm::ivec3 &zUpMins = calcTransform(zUpMat, transformedMins, glm::ivec4(0));
 	const glm::ivec3 &zUpMaxs = calcTransform(zUpMat, transformedMaxs, glm::ivec4(0));
 	voxel::Region region(glm::min(zUpMins, zUpMaxs), glm::max(zUpMins, zUpMaxs));

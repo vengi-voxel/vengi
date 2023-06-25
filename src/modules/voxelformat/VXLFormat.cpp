@@ -18,6 +18,7 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
+#include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
@@ -50,11 +51,11 @@ static const float Scale = 1.0f / 12.0f;
 }
 
 void VXLFormat::VXLMatrix::fromMat4(const glm::mat4 &in) {
-	matrix = switchYAndZ(in);
+	matrix = scenegraph::switchYAndZ(in);
 }
 
 glm::mat4 VXLFormat::VXLMatrix::toMat4() const {
-	return switchYAndZ(matrix);
+	return scenegraph::switchYAndZ(matrix);
 }
 
 void VXLFormat::convertRead(glm::mat4 &glmMatrix, const VXLLayerInfo &footer, bool hva) {

@@ -1,5 +1,7 @@
 set(LIB scenegraph)
 set(SRCS
+	CoordinateSystem.h
+	CoordinateSystemUtil.h CoordinateSystemUtil.cpp
 	SceneGraph.h SceneGraph.cpp
 	SceneGraphNode.h SceneGraphNode.cpp
 	SceneGraphUtil.h SceneGraphUtil.cpp
@@ -7,6 +9,7 @@ set(SRCS
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
 
 set(TEST_SRCS
+	tests/CoordinateSystemTest.cpp
 	tests/SceneGraphTest.cpp
 	tests/SceneGraphUtilTest.cpp
 	tests/TestHelper.h

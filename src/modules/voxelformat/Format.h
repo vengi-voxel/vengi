@@ -55,13 +55,6 @@ struct SaveContext {
 // the max amount of voxels - [0-255]
 static constexpr int MaxRegionSize = 256;
 
-enum class FormatCoordinateSystem {
-	XRightYUpZBack,
-	XRightYBackZUp, // vxl
-	XLeftYBackZUp, // magicavoxel
-	Max
-};
-
 /**
  * @brief Base class for all voxel formats.
  *
@@ -121,10 +114,6 @@ protected:
 	core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) const;
 	core::RGBA flattenRGB(core::RGBA rgba) const;
 
-	// convert the coordinate system from z up to y up
-	glm::mat4 transformMatrix() const;
-	static glm::mat4 switchYAndZ(const glm::mat4 &in);
-
 	/**
 	 * Some formats are running loop that the user might want to interrupt with CTRL+c or the like. Long lasting loops
 	 * should query this boolean and respect the users wish to quit the application.
@@ -152,16 +141,6 @@ protected:
 	 */
 	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream &stream,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) = 0;
-
-	/**
-	 * @param[in] from This specifies the natural coordinate system of the format and is used to perform the transform
-	 * into the natural coordinate system of vengi (x right, y up, z back)
-	 * @note This does not update the volume coordinates, only the node transforms.
-	 */
-	inline bool convertCoordinateSystem(FormatCoordinateSystem from, scenegraph::SceneGraph &sceneGraph) const {
-		return convertCoordinateSystem(from, FormatCoordinateSystem::XRightYUpZBack, sceneGraph);
-	}
-	bool convertCoordinateSystem(FormatCoordinateSystem from, FormatCoordinateSystem to, scenegraph::SceneGraph &sceneGraph) const;
 
 public:
 	Format();

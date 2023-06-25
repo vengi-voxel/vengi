@@ -70,7 +70,7 @@ private:
 		uint32_t spanDataOffset;  /* Offset into body section to span data */
 		float scale;			  /* Scaling vector for the image */
 		VXLMatrix transform;	  /* 4x3 right handed matrix - x, y and z axis point right, up and behind */
-		// this is the bouding box of the final rendered model. If the size of the bounding box is the same as the
+		// this is the bounding box of the final rendered model. If the size of the bounding box is the same as the
 		// below given size of the volume - the scaling value would be exactly one.
 		glm::vec3 mins;
 		glm::vec3 maxs;

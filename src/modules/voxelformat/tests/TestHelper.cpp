@@ -54,7 +54,7 @@ namespace glm {
 	os << to_string(v);
 	return os;
 }
-}
+} // namespace glm
 
 namespace voxel {
 
@@ -62,32 +62,35 @@ namespace voxel {
 	return os << voxel::Palette::print(palette).c_str();
 }
 
-int countVoxels(const voxel::RawVolume& volume, const voxel::Voxel &voxel) {
+int countVoxels(const voxel::RawVolume &volume, const voxel::Voxel &voxel) {
 	int cnt = 0;
-	voxelutil::visitVolume(volume, [&](int, int, int, const voxel::Voxel &v) {
-		if (v == voxel) {
-			++cnt;
-		}
-	}, voxelutil::VisitAll());
+	voxelutil::visitVolume(
+		volume,
+		[&](int, int, int, const voxel::Voxel &v) {
+			if (v == voxel) {
+				++cnt;
+			}
+		},
+		voxelutil::VisitAll());
 	return cnt;
 }
 
 void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta) {
 	ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < pal1.colorCount(); ++i) {
-		const core::RGBA& c1 = pal1.color(i);
-		const core::RGBA& c2 = pal2.color(i);
+		const core::RGBA &c1 = pal1.color(i);
+		const core::RGBA &c2 = pal2.color(i);
 		const float delta = core::Color::getDistance(c1, c2);
 		ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
 								   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
 								   << "\nPalette 1:\n"
-								   << voxel::Palette::print(pal1)
-								   << "\nPalette 2:\n"
+								   << voxel::Palette::print(pal1) << "\nPalette 2:\n"
 								   << voxel::Palette::print(pal2);
 	}
 }
 
-void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const scenegraph::SceneGraphKeyFrames &keyframes2, ValidateFlags flags) {
+void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1,
+						const scenegraph::SceneGraphKeyFrames &keyframes2, ValidateFlags flags) {
 	if ((flags & ValidateFlags::Animations) == ValidateFlags::Animations) {
 		ASSERT_EQ(keyframes1.size(), keyframes2.size());
 		for (size_t i = 0; i < keyframes1.size(); ++i) {
