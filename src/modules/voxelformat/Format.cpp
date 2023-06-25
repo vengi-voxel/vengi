@@ -199,64 +199,119 @@ bool Format::load(const core::String &filename, io::SeekableReadStream &stream, 
 	return loadGroups(filename, stream, sceneGraph, ctx);
 }
 
-bool Format::convertCoordinateSystem(FormatCoordinateSystem from, scenegraph::SceneGraph &sceneGraph) const {
-	glm::vec3 fromRight;
-	glm::vec3 fromUp;
-	glm::vec3 fromForward;
-	switch (from) {
+static bool coordinateSystemToMatrix(FormatCoordinateSystem sys, glm::mat4 &matrix) {
+	glm::vec3 right;
+	glm::vec3 up;
+	glm::vec3 forward;
+	switch (sys) {
 	case FormatCoordinateSystem::XRightYUpZBack:
-		return true;
+		right = glm::right;
+		up = glm::up;
+		forward = glm::forward;
+		break;
 	case FormatCoordinateSystem::XRightYBackZUp:
-		fromRight = glm::vec3(1.0f, 0.0f, 0.0f);
-		fromUp = glm::vec3(0.0f, 0.0f, 1.0f);
-		fromForward = glm::vec3(0.0f, 1.0f, 0.0f);
+		right = glm::vec3(1.0f, 0.0f, 0.0f);
+		up = glm::vec3(0.0f, 0.0f, 1.0f);
+		forward = glm::vec3(0.0f, 1.0f, 0.0f);
+		break;
+	case FormatCoordinateSystem::XLeftYBackZUp:
+		right = glm::vec3(-1.0f, 0.0f, 0.0f);
+		up = glm::vec3(0.0f, 0.0f, 1.0f);
+		forward = glm::vec3(0.0f, 1.0f, 0.0f);
 		break;
 	case FormatCoordinateSystem::Max:
-		break;
+	default:
+		return false;
+	}
+	// clang-format off
+	matrix = glm::mat4(
+		glm::vec4(right, 0.0f),
+		glm::vec4(up, 0.0f),
+		glm::vec4(forward, 0.0f),
+		glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+	);
+	// clang-format on
+	return true;
+}
+
+// https://stackoverflow.com/a/71168853/774082
+bool Format::convertCoordinateSystem(FormatCoordinateSystem from, FormatCoordinateSystem to,
+									 scenegraph::SceneGraph &sceneGraph) const {
+	if (from == to) {
+		return true;
 	}
 
-	const glm::mat4 fromSystem(
-		glm::vec4(fromRight, 0.0f),
-		glm::vec4(fromUp, 0.0f),
-		glm::vec4(-fromForward, 0.0f),
-		glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
-	);
+	glm::mat4 fromSystem;
+	if (!coordinateSystemToMatrix(from, fromSystem)) {
+		return false;
+	}
 
-	static constexpr glm::mat4 toSystem(
-		glm::vec4(glm::right, 0.0f),
-		glm::vec4(glm::up, 0.0f),
-		glm::vec4(-glm::forward, 0.0f),
-		glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
-	);
+	glm::mat4 toSystem;
+	if (!coordinateSystemToMatrix(to, toSystem)) {
+		return false;
+	}
 
+	const glm::mat4 &fromSystemInv = glm::inverse(fromSystem);
+
+	// Update the scene graph's transforms to ensure the matrix is updated before we
+	// apply the coordinate system change matrix
 	sceneGraph.updateTransforms();
 
+#if 0
+	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(0);
+	// there is only one frame in the root node
+	scenegraph::SceneGraphTransform &rootKeyFrame = rootNode.transform(0);
+	rootKeyFrame.setWorldMatrix(toSystem * fromSystemInv);
+#else
 	for (auto iter = sceneGraph.beginAll(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
 		scenegraph::SceneGraphKeyFramesMap &allKeyFrames = node.allKeyFrames();
 		for (auto e : allKeyFrames) {
 			core::DynamicArray<scenegraph::SceneGraphKeyFrame> &frames = e->value;
 			for (scenegraph::SceneGraphKeyFrame &frame : frames) {
-				const glm::mat4x4 localMatrix = frame.transform().localMatrix();
-				frame.transform().setLocalMatrix(toSystem * glm::inverse(fromSystem) * localMatrix);
+				// the local matrix is still in 'fromSystem' coordinates
+				const glm::mat4x4 fromLocalMatrix = frame.transform().localMatrix();
+				const glm::mat4x4 toLocalMatrix = toSystem * fromSystemInv * fromLocalMatrix;
+				frame.transform().setLocalMatrix(toLocalMatrix);
 			}
 		}
 	}
+#endif
 
+	// Update the scene graph's transforms again after we converted the coordinate system
 	sceneGraph.updateTransforms();
 
 	return true;
 }
 
+// convert from left handed coordinate system (z up) to right handed glm coordinate system (y up)
+// VXL
+glm::mat4 Format::switchYAndZ(const glm::mat4 &in) {
+	// clang-format off
+	static const glm::mat4 mat{
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f};
+	// clang-format on
+	return mat * in * glm::inverse(mat);
+}
+
+// Magicavoxel
 glm::mat4 Format::transformMatrix() const {
 	// rotation matrix to convert into our coordinate system (mv has z pointing upwards)
-	const glm::mat4 zUpMat{-1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-						   0.0f,  1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+	// clang-format off
+	const glm::mat4 zUpMat{
+		-1.0f, 0.0f, 0.0f, 0.0f,
+		 0.0f, 0.0f, 1.0f, 0.0f,
+		 0.0f, 1.0f, 0.0f, 0.0f,
+		 0.0f, 0.0f, 0.0f, 1.0f
+	};
+	// clang-format on
 	// glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
 	// glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	return zUpMat;
 }
-
 bool Format::stopExecution() {
 	return app::App::getInstance()->shouldQuit();
 }

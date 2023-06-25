@@ -57,7 +57,8 @@ static constexpr int MaxRegionSize = 256;
 
 enum class FormatCoordinateSystem {
 	XRightYUpZBack,
-	XRightYBackZUp,
+	XRightYBackZUp, // vxl
+	XLeftYBackZUp, // magicavoxel
 	Max
 };
 
@@ -122,6 +123,7 @@ protected:
 
 	// convert the coordinate system from z up to y up
 	glm::mat4 transformMatrix() const;
+	static glm::mat4 switchYAndZ(const glm::mat4 &in);
 
 	/**
 	 * Some formats are running loop that the user might want to interrupt with CTRL+c or the like. Long lasting loops
@@ -156,7 +158,10 @@ protected:
 	 * into the natural coordinate system of vengi (x right, y up, z back)
 	 * @note This does not update the volume coordinates, only the node transforms.
 	 */
-	bool convertCoordinateSystem(FormatCoordinateSystem from, scenegraph::SceneGraph &sceneGraph) const;
+	inline bool convertCoordinateSystem(FormatCoordinateSystem from, scenegraph::SceneGraph &sceneGraph) const {
+		return convertCoordinateSystem(from, FormatCoordinateSystem::XRightYUpZBack, sceneGraph);
+	}
+	bool convertCoordinateSystem(FormatCoordinateSystem from, FormatCoordinateSystem to, scenegraph::SceneGraph &sceneGraph) const;
 
 public:
 	Format();

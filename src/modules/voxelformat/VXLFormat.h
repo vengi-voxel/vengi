@@ -168,7 +168,6 @@ private:
 	bool loadFromFile(const core::String &filename, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
 					  const LoadContext &ctx);
 
-	static glm::mat4 switchYAndZ(const glm::mat4 &in);
 	static void convertRead(glm::mat4 &glmMatrix, const VXLLayerInfo &footer, bool hva);
 	static void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &glmMatrix, const glm::vec3 &mins, bool hva);
 
