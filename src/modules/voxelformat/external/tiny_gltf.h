@@ -7546,12 +7546,6 @@ static void SerializeGltfAudioEmitter(const AudioEmitter &emitter,
 }
 
 static void SerializeGltfAudioSource(const AudioSource& source, detail::json& o) {
-  std::string name;
-  std::string uri;
-  int bufferView;        // (required if no uri)
-  std::string mimeType;  // (required if no uri) ["audio/mp3", "audio/ogg",
-                         // "audio/wav", "audio/m4a"]
-
   if (!source.name.empty()) SerializeStringProperty("name", source.name, o);
   if (source.uri.empty()) {
     SerializeStringProperty("mimeType", source.mimeType, o);
