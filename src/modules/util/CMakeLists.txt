@@ -7,6 +7,7 @@ set(SRCS
 	KeybindingParser.h KeybindingParser.cpp
 	KeybindingHandler.h KeybindingHandler.cpp
 	IncludeUtil.h IncludeUtil.cpp
+	IniParser.h IniParser.cpp
 	Movement.cpp Movement.h
 	VarUtil.h
 )
@@ -19,6 +20,7 @@ set(TEST_SRCS
 	tests/ConsoleTest.cpp
 	tests/EMailValidatorTest.cpp
 	tests/IncludeUtilTest.cpp
+	tests/IniParserTest.cpp
 	tests/KeybindingParserTest.cpp
 	tests/KeybindingHandlerTest.cpp
 )
