@@ -76,14 +76,14 @@ void VXLFormat::convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, 
 	translation.z += footer.mins.y;
 }
 
-void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &mins, bool hva) {
+void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &localTranslate, bool hva) {
 	vxlMatrix.fromVengi(vengiMatrix);
 
 	// swap y and z here
 	// TODO: or the pivot?
-	vxlMatrix.matrix[3][0] -= mins.x;
-	vxlMatrix.matrix[3][1] -= mins.z;
-	vxlMatrix.matrix[3][2] -= mins.y;
+	vxlMatrix.matrix[3][0] -= localTranslate.x;
+	vxlMatrix.matrix[3][1] -= localTranslate.z;
+	vxlMatrix.matrix[3][2] -= localTranslate.y;
 
 	if (hva) {
 		// Calculate the ratio between screen units and voxels in all dimensions

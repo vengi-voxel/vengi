@@ -169,7 +169,7 @@ private:
 					  const LoadContext &ctx);
 
 	static void convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, bool hva);
-	static void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &mins, bool hva);
+	static void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &localTranslate, bool hva);
 
 protected:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
