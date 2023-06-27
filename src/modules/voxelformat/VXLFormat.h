@@ -37,56 +37,57 @@ private:
 	static constexpr size_t MaxLayers = 512;
 
 	struct VXLLayerHeader {
-		char name[16];		/* ASCIIZ string - name of section */
-		uint32_t infoIndex; /* Node id */
-		uint32_t unknown;	/* Always 1 - maybe which palette should be used? */
-		uint32_t unknown2;	/* Always 0 or 2 */
+		char name[16];		/**< ASCIIZ string - name of section */
+		uint32_t infoIndex; /**< Node id */
+		uint32_t unknown;	/**< Always 1 - maybe which palette should be used? */
+		uint32_t unknown2;	/**< Always 0 or 2 */
 	};
 
 	struct VXLLayerBody {
-		uint32_t *spanStart; /* List of span start addresses or -1 - number of node times */
-		uint32_t *spanEnd;	 /* List of span end addresses  or -1 - number of node times */
-		uint8_t *spanData;	 /* Byte data for each span length */
+		uint32_t *spanStart; /**< List of span start addresses or -1 - number of node times */
+		uint32_t *spanEnd;	 /**< List of span end addresses  or -1 - number of node times */
+		uint8_t *spanData;	 /**< Byte data for each span length */
 	};
 
 	struct VXLPalette {
-		uint8_t startPaletteRemap; /* Always 0x10 - player colors palette remapping? */
-		uint8_t endPaletteRemap;   /* Always 0x1f */
-		uint8_t palette[256][3];   /* 256 colour palette for the voxel in RGB format */
+		uint8_t startPaletteRemap; /**< Always 0x10 - player colors palette remapping? */
+		uint8_t endPaletteRemap;   /**< Always 0x1f */
+		uint8_t palette[256][3];   /**< 256 colour palette for the voxel in RGB format */
 	};
 
 	struct VXLHeader {
-		char filetype[16]; /* ASCIIZ string - "Voxel Animation" */
+		char filetype[16]; /**< ASCIIZ string - "Voxel Animation" */
 		uint32_t paletteCount;
-		uint32_t layerCount; /* Number of nodes */
+		uint32_t layerCount; /**< Number of nodes */
 		uint32_t layerInfoCount;
-		uint32_t dataSize; /* Total size in bytes of all node bodies */
+		uint32_t dataSize; /**< Total size in bytes of all node bodies */
 		VXLPalette palette;
 	};
 
 	struct VXLLayerInfo {
-		uint32_t spanStartOffset; /* Offset into body section to span start list */
-		uint32_t spanEndOffset;	  /* Offset into body section to span end list */
-		uint32_t spanDataOffset;  /* Offset into body section to span data */
-		float scale;			  /* Scaling vector for the image */
-		VXLMatrix transform;	  /* 4x3 right handed matrix - x, y and z axis point right, up and behind */
+		uint32_t spanStartOffset; /**< Offset into body section to span start list */
+		uint32_t spanEndOffset;	  /**< Offset into body section to span end list */
+		uint32_t spanDataOffset;  /**< Offset into body section to span data */
+		float scale;			  /**< Scaling vector for the image */
+		VXLMatrix transform;	  /**< 4x3 right handed matrix - x, y and z axis point right, up and back
+								   * @sa @c CoordinateSystem::XRightYBackZUp */
 		// this is the bounding box of the final rendered model. If the size of the bounding box is the same as the
 		// below given size of the volume - the scaling value would be exactly one.
 		glm::vec3 mins;
 		glm::vec3 maxs;
 
-		uint8_t xsize;		/* Width of the voxel node */
-		uint8_t ysize;		/* Breadth of the voxel node - this is our z */
-		uint8_t zsize;		/* Height of the voxel node - this is our y */
-		uint8_t normalType; /* 2 (TS) or 4 (RedAlert2) - normal encoding -
+		uint8_t xsize;		/**< Width of the voxel node */
+		uint8_t ysize;		/**< Breadth of the voxel node - this is our z */
+		uint8_t zsize;		/**< Height of the voxel node - this is our y */
+		uint8_t normalType; /**< 2 (TS) or 4 (RedAlert2) - normal encoding -
 							   https://xhp.xwis.net/documents/normals_tables.html */
 	};
 
 	struct VXLModel {
 		VXLHeader header;
-		VXLLayerHeader layerHeaders[MaxLayers]; /* number of node times */
-		VXLLayerBody layerBodies[MaxLayers];	/* number of node times */
-		VXLLayerInfo layerInfos[MaxLayers];		/* number of node times */
+		VXLLayerHeader layerHeaders[MaxLayers]; /**< number of node times */
+		VXLLayerBody layerBodies[MaxLayers];	/**< number of node times */
+		VXLLayerInfo layerInfos[MaxLayers];		/**< number of node times */
 
 		int findLayerByName(const core::String &name) const;
 	};
@@ -169,7 +170,8 @@ private:
 					  const LoadContext &ctx);
 
 	static void convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, bool hva);
-	static void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &localTranslate, bool hva);
+	static void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &localTranslate,
+							 bool hva);
 
 protected:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
