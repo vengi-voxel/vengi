@@ -43,6 +43,7 @@
 #include "voxelformat/STLFormat.h"
 #include "voxelformat/SchematicFormat.h"
 #include "voxelformat/SproxelFormat.h"
+#include "voxelformat/VBXFormat.h"
 #include "voxelformat/VENGIFormat.h"
 #include "voxelformat/VMaxFormat.h"
 #include "voxelformat/VXCFormat.h"
@@ -147,6 +148,7 @@ const io::FormatDescription *voxelLoad() {
 		{"Sproxel csv", {"csv"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"StarMade", {"sment"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"AnimaToon", {"scn"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"VoxelBuilder", {"vbx"}, [](uint32_t magic) { return magic == FourCC(';', ' ', 'V', 'o'); }, 0},
 		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"GL Transmission Format", {"gltf", "glb", "vrm"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
@@ -316,6 +318,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			format = core::make_shared<MD2Format>();
 		} else if (ext == "schematic") {
 			format = core::make_shared<SchematicFormat>();
+		} else if (ext == "vbx") {
+			format = core::make_shared<VBXFormat>();
 		} else if (ext == "gltf" || ext == "glb" || ext == "vrm") {
 			format = core::make_shared<GLTFFormat>();
 		} else {

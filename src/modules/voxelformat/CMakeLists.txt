@@ -31,6 +31,7 @@ set(SRCS
 	MCRFormat.h MCRFormat.cpp
 	MD2Format.h MD2Format.cpp
 	MTSFormat.h MTSFormat.cpp
+	VBXFormat.h VBXFormat.cpp
 	VXAFormat.h VXAFormat.cpp
 	VXCFormat.h VXCFormat.cpp
 	VXMFormat.h VXMFormat.cpp
@@ -82,6 +83,7 @@ set(TEST_SRCS
 	tests/SLAB6VoxFormatTest.cpp
 	tests/SMFormatTest.cpp
 	tests/STLFormatTest.cpp
+	tests/VBXFormatTest.cpp
 	tests/VolumeFormatTest.cpp
 	tests/VoxFormatTest.cpp
 	tests/VXLFormatTest.cpp
@@ -203,6 +205,7 @@ set(TEST_FILES
 	"tests/giant_dinosaur/Tail4_Reptiles_Biped_Medium_Dinosaur.vxm"
 	"tests/giant_dinosaur/Torax1_Reptiles_Biped_Medium_Dinosaur.vxm"
 	"tests/giant_dinosaur/Torax2_Reptiles_Biped_Medium_Dinosaur.vxm"
+	tests/voxelbuilder.vbx
 	voxedit/robo.vox
 	voxedit/robo.qb
 	voxedit/chr_knight.qb
