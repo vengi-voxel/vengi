@@ -54,8 +54,14 @@ static void _ogt_free(void *mem) {
 	core_free(mem);
 }
 
-static const ogt_vox_transform ogt_identity_transform{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-													  0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+// clang-format off
+static const ogt_vox_transform ogt_identity_transform{
+	1.0f, 0.0f, 0.0f, 0.0f,
+	0.0f, 1.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 0.0f, 1.0f
+};
+// clang-format on
 
 /**
  * @brief Calculate the scene graph object transformation. Used for the voxel and the AABB of the volume.
@@ -138,7 +144,8 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 }
 
 bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
-							 int parent, core::DynamicArray<ModelToNode> &models, const voxel::Palette &palette, bool groupHidden) {
+							 int parent, core::DynamicArray<ModelToNode> &models, const voxel::Palette &palette,
+							 bool groupHidden) {
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
 	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance.transform);
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
@@ -301,7 +308,8 @@ core::DynamicArray<VoxFormat::ModelToNode> VoxFormat::loadModels(const ogt_vox_s
 			models.push_back({nullptr, InvalidNodeId});
 			continue;
 		}
-		voxel::Region region(glm::ivec3(0), glm::ivec3(ogtModel->size_x - 1, ogtModel->size_z - 1, ogtModel->size_y - 1));
+		voxel::Region region(glm::ivec3(0),
+							 glm::ivec3(ogtModel->size_x - 1, ogtModel->size_z - 1, ogtModel->size_y - 1));
 		voxel::RawVolume *v = new voxel::RawVolume(region);
 
 		const uint8_t *ogtVoxel = ogtModel->voxel_data;

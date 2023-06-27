@@ -9,7 +9,6 @@
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include <cstdint>
 
 namespace voxelformat {
 
