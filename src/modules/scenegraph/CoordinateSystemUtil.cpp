@@ -88,8 +88,8 @@ static bool coordinateSystemTransformationMatrix(CoordinateSystem from, Coordina
 		return false;
 	}
 
-	transformationMatrix1 = /*toSystem **/ fromSystem;
-	transformationMatrix2 = glm::inverse(fromSystem);
+	transformationMatrix1 = toSystem * fromSystem;
+	transformationMatrix2 = glm::inverse(fromSystem) * glm::inverse(toSystem);
 	return true;
 }
 
