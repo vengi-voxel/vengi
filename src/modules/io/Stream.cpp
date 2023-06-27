@@ -549,6 +549,32 @@ int ReadStream::readInt64BE(int64_t &val) {
 	return -1;
 }
 
+bool SeekableReadStream::readLine(core::String &str) {
+	const int64_t n = remaining();
+	if (n == 0) {
+		return false;
+	}
+	str.clear();
+	for (int64_t i = 0; i < n; ++i) {
+		uint8_t chr;
+		if (readUInt8(chr) != 0) {
+			return false;
+		}
+		if (chr == '\r') {
+			if (read(&chr, sizeof(chr)) != sizeof(chr)) {
+				if (chr != '\n') {
+					seek(-1, SEEK_CUR);
+				}
+			}
+			return true;
+		} else if (chr == '\n' || chr == '\0') {
+			return true;
+		}
+		str += (char)chr;
+	}
+	return true;
+}
+
 bool SeekableReadStream::readLine(int length, char *strbuff) {
 	for (int i = 0; i < length; ++i) {
 		uint8_t chr;

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/String.h"
 #include "core/NonCopyable.h"
 #include <stdio.h>
 #include <stddef.h>
@@ -200,6 +201,7 @@ public:
 	 * @param strbuff The target buffer
 	 */
 	bool readLine(int length, char *strbuff);
+	bool readLine(core::String &str);
 
 	/**
 	 * @return The amount of bytes left in the stream to read
