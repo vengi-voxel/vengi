@@ -146,4 +146,25 @@
     </magic>
     <glob pattern="*.vengi"/>
   </mime-type>
+  <mime-type type="application/x-quake-md2">
+    <comment>Quake2 Model</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value="IDP2"/>
+    </magic>
+    <glob pattern="*.md2"/>
+  </mime-type>
+  <mime-type type="application/x-quake2-bsp">
+    <comment>Quake2 Map</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value="IBSP"/>
+    </magic>
+    <glob pattern="*.bsp"/>
+  </mime-type>
+  <mime-type type="application/x-voxelbuilder">
+    <comment>VoxelBuilder</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value="; Vo"/>
+    </magic>
+    <glob pattern="*.vbx"/>
+  </mime-type>
 </mime-info>
