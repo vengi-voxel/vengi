@@ -8,19 +8,6 @@
 
 namespace scenegraph {
 
-// convert from left handed coordinate system (z up) to right handed glm coordinate system (y up)
-// VXL
-glm::mat4 switchYAndZ(const glm::mat4 &in) {
-	// clang-format off
-	static const glm::mat4 mat{
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f};
-	// clang-format on
-	return mat * in * glm::inverse(mat);
-}
-
 // Magicavoxel
 glm::mat4 transformMatrix() {
 	// rotation matrix to convert into our coordinate system (mv has z pointing upwards)
@@ -47,10 +34,10 @@ static bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 		up = glm::up;
 		forward = glm::forward;
 		break;
-	case CoordinateSystem::XRightYForwardZUp:
+	case CoordinateSystem::XRightYBackZUp:
 		right = glm::vec3(1.0f, 0.0f, 0.0f);
 		up = glm::vec3(0.0f, 0.0f, 1.0f);
-		forward = glm::vec3(0.0f, 1.0f, 0.0f);
+		forward = glm::vec3(0.0f, -1.0f, 0.0f);
 		break;
 	case CoordinateSystem::XLeftYForwardZUp:
 		right = glm::vec3(-1.0f, 0.0f, 0.0f);

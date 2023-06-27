@@ -12,8 +12,6 @@ namespace scenegraph {
 // convert the coordinate system from z up to y up
 [[deprecated]] glm::mat4 transformMatrix();
 
-[[deprecated]] glm::mat4 switchYAndZ(const glm::mat4 &in);
-
 /**
  * @param[in] from This specifies the coordinate system of the format
  * @param[in] to This specifies the target coordinate system

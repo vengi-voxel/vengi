@@ -52,11 +52,13 @@ static const float Scale = 1.0f / 12.0f;
 }
 
 void VXLFormat::VXLMatrix::fromVengi(const glm::mat4 &vengiMatrix) {
-	matrix = scenegraph::switchYAndZ(vengiMatrix);
+	matrix = scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::Vengi, scenegraph::CoordinateSystem::VXL,
+												 vengiMatrix);
 }
 
 glm::mat4 VXLFormat::VXLMatrix::toVengi() const {
-	return scenegraph::switchYAndZ(matrix);
+	return scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::VXL, scenegraph::CoordinateSystem::Vengi,
+											   matrix);
 }
 
 void VXLFormat::convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, bool hva) {
