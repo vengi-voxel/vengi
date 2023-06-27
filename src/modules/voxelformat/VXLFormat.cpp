@@ -18,6 +18,7 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
+#include "scenegraph/CoordinateSystem.h"
 #include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -50,16 +51,16 @@ namespace priv {
 static const float Scale = 1.0f / 12.0f;
 }
 
-void VXLFormat::VXLMatrix::fromMat4(const glm::mat4 &in) {
-	matrix = scenegraph::switchYAndZ(in);
+void VXLFormat::VXLMatrix::fromVengi(const glm::mat4 &vengiMatrix) {
+	matrix = scenegraph::switchYAndZ(vengiMatrix);
 }
 
-glm::mat4 VXLFormat::VXLMatrix::toMat4() const {
+glm::mat4 VXLFormat::VXLMatrix::toVengi() const {
 	return scenegraph::switchYAndZ(matrix);
 }
 
-void VXLFormat::convertRead(glm::mat4 &glmMatrix, const VXLLayerInfo &footer, bool hva) {
-	glm::vec4 &translation = glmMatrix[3];
+void VXLFormat::convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, bool hva) {
+	glm::vec4 &translation = vengiMatrix[3];
 	if (hva) {
 		// swap y and z here
 		translation.x *= footer.scale;
@@ -73,8 +74,8 @@ void VXLFormat::convertRead(glm::mat4 &glmMatrix, const VXLLayerInfo &footer, bo
 	translation.z += footer.mins.y;
 }
 
-void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &mat, const glm::vec3 &mins, bool hva) {
-	vxlMatrix.fromMat4(mat);
+void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &mins, bool hva) {
+	vxlMatrix.fromVengi(vengiMatrix);
 
 	// swap y and z here
 	// TODO: or the pivot?
@@ -136,8 +137,9 @@ static bool spanIsEmpty(const voxel::RawVolume *v, int x, int z) {
 	return true;
 }
 
-bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-						   VXLLayerOffset &offsets, uint64_t nodeSectionOffset) const {
+bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+						   const scenegraph::SceneGraphNode &node, VXLLayerOffset &offsets,
+						   uint64_t nodeSectionOffset) const {
 	const voxel::Region &region = node.region();
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
 	if (size.x > 255 || size.y > 255 || size.z > 255) {
@@ -320,7 +322,8 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, 
 	return true;
 }
 
-bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph, core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
+bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
+						core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
 						io::SeekableWriteStream &stream) {
 	if (nodes.empty()) {
 		return false;
@@ -447,7 +450,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, VXLModel &mdl, uint32_
 		node.setPalette(palette);
 	}
 
-	glm::mat4 glmMatrix = footer.transform.toMat4();
+	glm::mat4 glmMatrix = footer.transform.toVengi();
 	convertRead(glmMatrix, footer, false);
 
 	scenegraph::SceneGraphTransform transform;
@@ -731,7 +734,7 @@ bool VXLFormat::loadHVA(const core::String &filename, const VXLModel &mdl, scene
 
 			const int nodeId = file.header.layerIds[vxlNodeId];
 			if (nodeId != InvalidNodeId) {
-				glm::mat4 glmMatrix = sectionMatrices[vxlNodeId].toMat4();
+				glm::mat4 glmMatrix = sectionMatrices[vxlNodeId].toVengi();
 				convertRead(glmMatrix, mdl.layerInfos[nodeId], true);
 
 				scenegraph::SceneGraphTransform transform;

@@ -26,8 +26,8 @@ public:
 		using Type = glm::mat4x3;
 		VXLMatrix() : matrix(1.0f) {
 		}
-		void fromMat4(const glm::mat4 &in);
-		glm::mat4 toMat4() const;
+		void fromVengi(const glm::mat4 &in);
+		glm::mat4 toVengi() const;
 		Type matrix;
 	};
 
@@ -168,8 +168,8 @@ private:
 	bool loadFromFile(const core::String &filename, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
 					  const LoadContext &ctx);
 
-	static void convertRead(glm::mat4 &glmMatrix, const VXLLayerInfo &footer, bool hva);
-	static void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &glmMatrix, const glm::vec3 &mins, bool hva);
+	static void convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, bool hva);
+	static void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &mins, bool hva);
 
 protected:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
