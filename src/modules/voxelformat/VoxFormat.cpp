@@ -308,12 +308,10 @@ core::DynamicArray<VoxFormat::ModelToNode> VoxFormat::loadModels(const ogt_vox_s
 			models.push_back({nullptr, InvalidNodeId});
 			continue;
 		}
-		const uint8_t *ogtVoxels = ogtModel->voxel_data;
-		const uint8_t *ogtVoxel = ogtVoxels;
-		const glm::ivec3 maxs(ogtModel->size_x - 1, ogtModel->size_z - 1, ogtModel->size_y - 1);
-		voxel::Region region(glm::ivec3(0), maxs);
+		voxel::Region region(glm::ivec3(0), glm::ivec3(ogtModel->size_x - 1, ogtModel->size_z - 1, ogtModel->size_y - 1));
 		voxel::RawVolume *v = new voxel::RawVolume(region);
 
+		const uint8_t *ogtVoxel = ogtModel->voxel_data;
 		for (uint32_t z = 0; z < ogtModel->size_z; ++z) {
 			for (uint32_t y = 0; y < ogtModel->size_y; ++y) {
 				for (uint32_t x = 0; x < ogtModel->size_x; ++x, ++ogtVoxel) {
@@ -321,7 +319,7 @@ core::DynamicArray<VoxFormat::ModelToNode> VoxFormat::loadModels(const ogt_vox_s
 						continue;
 					}
 					const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
-					v->setVoxel(maxs.x - (int)x, (int)z, (int)y, voxel);
+					v->setVoxel(region.getUpperX() - (int)x, (int)z, (int)y, voxel);
 				}
 			}
 		}
@@ -391,7 +389,6 @@ void VoxFormat::printDetails(const ogt_vox_scene *scene) {
 	}
 	Log::debug("vox models: %u", scene->num_models);
 	Log::debug("vox cameras: %u", scene->num_cameras);
-
 }
 
 void VoxFormat::loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph) {
