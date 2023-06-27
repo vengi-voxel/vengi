@@ -6,15 +6,12 @@
 
 #include "core/collection/Array.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
 #include "voxelformat/external/ogt_vox.h"
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/gtc/constants.hpp>
-#include <glm/gtc/matrix_access.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/transform.hpp>
 
 namespace voxel {
 class Palette;
+class RawVolume;
 } // namespace voxel
 
 namespace scenegraph {
@@ -24,7 +21,7 @@ class SceneGraphNode;
 
 namespace voxelformat {
 
-struct ogt_SceneContext {
+struct MVSceneContext {
 	core::Buffer<ogt_vox_group> groups;
 	core::Buffer<ogt_vox_model> models;
 	core::Buffer<ogt_vox_layer> layers;
@@ -67,7 +64,20 @@ void loadPaletteFromScene(const ogt_vox_scene *scene, voxel::Palette &palette);
 bool loadPaletteFromBuffer(const uint8_t *buffer, size_t size, voxel::Palette &palette);
 void printDetails(const ogt_vox_scene *scene);
 void checkRotation(const ogt_vox_transform &transform);
+/**
+ * we have to find a replacement for the first palette entry - as this is used
+ * as the empty voxel in magicavoxel
+ */
 int findClosestPaletteIndex(const voxel::Palette &palette);
 void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph);
+
+struct MVModelToNode {
+	MVModelToNode();
+	inline MVModelToNode(voxel::RawVolume *_volume, int _nodeId) : volume(_volume), nodeId(_nodeId) {
+	}
+	voxel::RawVolume *volume;
+	int nodeId;
+};
+core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const voxel::Palette &palette);
 
 } // namespace voxelformat

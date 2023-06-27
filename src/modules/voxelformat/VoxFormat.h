@@ -12,7 +12,8 @@ struct ogt_vox_scene;
 
 namespace voxelformat {
 
-struct ogt_SceneContext;
+struct MVSceneContext;
+struct MVModelToNode;
 
 /**
  * @brief MagicaVoxel vox format load and save functions
@@ -31,24 +32,19 @@ private:
 		return glm::ivec3(256);
 	}
 
-	struct ModelToNode {
-		voxel::RawVolume *volume = nullptr;
-		int nodeId = InvalidNodeId;
-	};
-	core::DynamicArray<ModelToNode> loadModels(const ogt_vox_scene *scene, const voxel::Palette &palette);
-	void addInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ogt_SceneContext &ctx,
+	void saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx,
 					 uint32_t parentGroupIdx, uint32_t layerIdx);
 	bool loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette);
 	bool loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
-					  int parent, core::DynamicArray<ModelToNode> &models, const voxel::Palette &palette, bool groupHidden = false);
+					  int parent, core::DynamicArray<MVModelToNode> &models, const voxel::Palette &palette, bool groupHidden = false);
 	bool loadGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, scenegraph::SceneGraph &sceneGraph,
-				   int parent, core::DynamicArray<ModelToNode> &models, core::Set<uint32_t> &addedInstances,
+				   int parent, core::DynamicArray<MVModelToNode> &models, core::Set<uint32_t> &addedInstances,
 				   const voxel::Palette &palette);
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
 						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
 						   const LoadContext &ctx) override;
 
-	void saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ogt_SceneContext &ctx,
+	void saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx,
 				  uint32_t parentGroupIdx, uint32_t layerIdx, const voxel::Palette &palette, uint8_t replacement);
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;

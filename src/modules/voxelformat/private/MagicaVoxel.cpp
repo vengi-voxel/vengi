@@ -10,6 +10,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Palette.h"
+#include "voxel/RawVolume.h"
 #include <SDL_endian.h>
 #define OGT_VOX_BIGENDIAN_SWAP32 SDL_SwapLE32
 #define OGT_VOX_IMPLEMENTATION
@@ -125,8 +126,6 @@ void checkRotation(const ogt_vox_transform &transform) {
 }
 
 int findClosestPaletteIndex(const voxel::Palette &palette) {
-	// we have to find a replacement for the first palette entry - as this is used
-	// as the empty voxel in magicavoxel
 	core::DynamicArray<glm::vec4> materialColors;
 	palette.toVec4f(materialColors);
 	const glm::vec4 first = materialColors[0];
@@ -164,6 +163,39 @@ void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph)
 			sceneGraph.emplace(core::move(camNode), sceneGraph.root().id());
 		}
 	}
+}
+
+MVModelToNode::MVModelToNode() : volume(nullptr), nodeId(InvalidNodeId) {
+}
+
+core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const voxel::Palette &palette) {
+	core::DynamicArray<MVModelToNode> models;
+	models.reserve(scene->num_models);
+	for (uint32_t i = 0; i < scene->num_models; ++i) {
+		const ogt_vox_model *ogtModel = scene->models[i];
+		if (ogtModel == nullptr) {
+			models.push_back({nullptr, InvalidNodeId});
+			continue;
+		}
+		voxel::Region region(glm::ivec3(0),
+							 glm::ivec3(ogtModel->size_x - 1, ogtModel->size_z - 1, ogtModel->size_y - 1));
+		voxel::RawVolume *v = new voxel::RawVolume(region);
+
+		const uint8_t *ogtVoxel = ogtModel->voxel_data;
+		for (uint32_t z = 0; z < ogtModel->size_z; ++z) {
+			for (uint32_t y = 0; y < ogtModel->size_y; ++y) {
+				for (uint32_t x = 0; x < ogtModel->size_x; ++x, ++ogtVoxel) {
+					if (ogtVoxel[0] == 0) {
+						continue;
+					}
+					const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
+					v->setVoxel(region.getUpperX() - (int)x, (int)z, (int)y, voxel);
+				}
+			}
+		}
+		models.push_back({v, InvalidNodeId});
+	}
+	return models;
 }
 
 } // namespace voxelformat

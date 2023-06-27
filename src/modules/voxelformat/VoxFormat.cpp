@@ -3,26 +3,22 @@
  */
 
 #include "VoxFormat.h"
-#include "core/ArrayLength.h"
-#include "core/Assert.h"
 #include "core/Color.h"
-#include "core/Common.h"
-#include "core/FourCC.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
-#include "core/StringUtil.h"
 #include "core/Var.h"
-#include "core/collection/DynamicArray.h"
-#include "math/Math.h"
-#include "private/MagicaVoxel.h"
 #include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxel/MaterialColor.h"
-#include "voxel/RawVolume.h"
-#include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "private/MagicaVoxel.h"
+
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/constants.hpp>
+#include <glm/gtc/matrix_access.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/transform.hpp>
 
 namespace voxelformat {
 
@@ -44,7 +40,7 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 }
 
 bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
-							 int parent, core::DynamicArray<ModelToNode> &models, const voxel::Palette &palette,
+							 int parent, core::DynamicArray<MVModelToNode> &models, const voxel::Palette &palette,
 							 bool groupHidden) {
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
 	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance.transform);
@@ -101,7 +97,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 }
 
 bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph,
-						  int parent, core::DynamicArray<ModelToNode> &models, core::Set<uint32_t> &addedInstances,
+						  int parent, core::DynamicArray<MVModelToNode> &models, core::Set<uint32_t> &addedInstances,
 						  const voxel::Palette &palette) {
 	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
@@ -180,40 +176,9 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	return true;
 }
 
-core::DynamicArray<VoxFormat::ModelToNode> VoxFormat::loadModels(const ogt_vox_scene *scene,
-																 const voxel::Palette &palette) {
-	core::DynamicArray<ModelToNode> models;
-	models.reserve(scene->num_models);
-	for (uint32_t i = 0; i < scene->num_models; ++i) {
-		const ogt_vox_model *ogtModel = scene->models[i];
-		if (ogtModel == nullptr) {
-			models.push_back({nullptr, InvalidNodeId});
-			continue;
-		}
-		voxel::Region region(glm::ivec3(0),
-							 glm::ivec3(ogtModel->size_x - 1, ogtModel->size_z - 1, ogtModel->size_y - 1));
-		voxel::RawVolume *v = new voxel::RawVolume(region);
-
-		const uint8_t *ogtVoxel = ogtModel->voxel_data;
-		for (uint32_t z = 0; z < ogtModel->size_z; ++z) {
-			for (uint32_t y = 0; y < ogtModel->size_y; ++y) {
-				for (uint32_t x = 0; x < ogtModel->size_x; ++x, ++ogtVoxel) {
-					if (ogtVoxel[0] == 0) {
-						continue;
-					}
-					const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
-					v->setVoxel(region.getUpperX() - (int)x, (int)z, (int)y, voxel);
-				}
-			}
-		}
-		models.push_back({v, InvalidNodeId});
-	}
-	return models;
-}
-
 bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph,
 						  const voxel::Palette &palette) {
-	core::DynamicArray<ModelToNode> models = loadModels(scene, palette);
+	core::DynamicArray<MVModelToNode> models = loadModels(scene, palette);
 	core::Set<uint32_t> addedInstances;
 	for (uint32_t i = 0; i < scene->num_groups; ++i) {
 		const ogt_vox_group &group = scene->groups[i];
@@ -241,7 +206,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 
 	loadCameras(scene, sceneGraph);
 
-	for (ModelToNode &i : models) {
+	for (MVModelToNode &i : models) {
 		if (i.volume != nullptr) {
 			delete i.volume;
 		}
@@ -251,8 +216,8 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 	return true;
 }
 
-void VoxFormat::addInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-							ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx) {
+void VoxFormat::saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+							 MVSceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx) {
 	const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames(sceneGraph.activeAnimation());
 	{
 		ogt_vox_instance ogt_instance;
@@ -289,7 +254,7 @@ void VoxFormat::addInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph
 }
 
 void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-						 ogt_SceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx,
+						 MVSceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx,
 						 const voxel::Palette &palette, uint8_t replacement) {
 	Log::debug("Save node '%s' with parent group %u and layer %u", node.name().c_str(), parentGroupIdx, layerIdx);
 	if (node.type() == scenegraph::SceneGraphNodeType::Root || node.type() == scenegraph::SceneGraphNodeType::Group) {
@@ -390,7 +355,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 
 			ctx.models.push_back(ogt_model);
 		}
-		addInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx);
+		saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx);
 		for (int childId : node.children()) {
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx, palette, replacement);
 		}
@@ -413,7 +378,7 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	core_assert(palReplacement != 0u);
 	Log::debug("Found closest palette slot %i as replacement", palReplacement);
 
-	ogt_SceneContext ctx;
+	MVSceneContext ctx;
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	saveNode(sceneGraph, sceneGraph.node(root.id()), ctx, k_invalid_group_index, 0, palette, palReplacement);
 
