@@ -11,6 +11,7 @@ set(SRCS
 	private/NamedBinaryTag.h private/NamedBinaryTag.cpp
 	private/SchematicIntReader.h private/SchematicIntWriter.h
 	private/Tri.h private/Tri.cpp
+	private/MagicaVoxel.h private/MagicaVoxel.cpp
 
 	Format.h Format.cpp
 	FormatConfig.h FormatConfig.cpp
