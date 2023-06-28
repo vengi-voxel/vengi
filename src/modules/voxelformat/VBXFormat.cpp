@@ -141,7 +141,7 @@ bool VBXFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 
 size_t VBXFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
 							  const LoadContext &ctx) {
-	core::StringMap<core::StringMap<core::String>> ini;
+	util::IniMap ini;
 	if (!util::parseIni(stream, ini)) {
 		Log::error("Failed to parse ini file: %s", filename.c_str());
 		return 0;
