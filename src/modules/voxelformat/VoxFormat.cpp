@@ -8,11 +8,11 @@
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/Var.h"
+#include "private/MagicaVoxel.h"
 #include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
-#include "private/MagicaVoxel.h"
 
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
@@ -43,15 +43,13 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 							 int parent, core::DynamicArray<MVModelToNode> &models, const voxel::Palette &palette,
 							 bool groupHidden) {
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
-	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance.transform);
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
-	const uint8_t *ogtVoxels = ogtModel->voxel_data;
-	const uint8_t *ogtVoxel = ogtVoxels;
-	const glm::ivec3 maxs(ogtModel->size_x - 1, ogtModel->size_y - 1, ogtModel->size_z - 1);
+	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance.transform, ogtModel);
 	const glm::vec4 pivot((float)(int)(ogtModel->size_x / 2), (float)(int)(ogtModel->size_y / 2),
 						  (float)(int)(ogtModel->size_z / 2), 0.0f);
 	const glm::ivec3 &transformedMins = calcTransform(ogtMat, glm::ivec3(0), pivot);
-	const glm::ivec3 &transformedMaxs = calcTransform(ogtMat, maxs, pivot);
+	const glm::ivec3 &transformedMaxs =
+		calcTransform(ogtMat, glm::ivec3(ogtModel->size_x - 1, ogtModel->size_y - 1, ogtModel->size_z - 1), pivot);
 	const glm::mat4 zUpMat = scenegraph::transformMatrix();
 	const glm::ivec3 &zUpMins = calcTransform(zUpMat, transformedMins, glm::ivec4(0));
 	const glm::ivec3 &zUpMaxs = calcTransform(zUpMat, transformedMaxs, glm::ivec4(0));
@@ -62,6 +60,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	scenegraph::SceneGraphTransform transform;
 	transform.setWorldTranslation(shift);
 
+	const uint8_t *ogtVoxel = ogtModel->voxel_data;
 	for (uint32_t k = 0; k < ogtModel->size_z; ++k) {
 		for (uint32_t j = 0; j < ogtModel->size_y; ++j) {
 			for (uint32_t i = 0; i < ogtModel->size_x; ++i, ++ogtVoxel) {
@@ -254,8 +253,8 @@ void VoxFormat::saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegrap
 }
 
 void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-						 MVSceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx,
-						 const voxel::Palette &palette, uint8_t replacement) {
+						 MVSceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx, const voxel::Palette &palette,
+						 uint8_t replacement) {
 	Log::debug("Save node '%s' with parent group %u and layer %u", node.name().c_str(), parentGroupIdx, layerIdx);
 	if (node.type() == scenegraph::SceneGraphNodeType::Root || node.type() == scenegraph::SceneGraphNodeType::Group) {
 		if (node.type() == scenegraph::SceneGraphNodeType::Root) {

@@ -19,7 +19,7 @@
 
 namespace voxelformat {
 
-glm::mat4 ogtTransformToMat(const ogt_vox_transform &t) {
+glm::mat4 ogtTransformToMat(const ogt_vox_transform &t, const ogt_vox_model *ogtModel) {
 	const glm::vec4 col0(t.m00, t.m01, t.m02, t.m03);
 	const glm::vec4 col1(t.m10, t.m11, t.m12, t.m13);
 	const glm::vec4 col2(t.m20, t.m21, t.m22, t.m23);
@@ -42,10 +42,11 @@ bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNod
 	uint32_t numKeyframes = ogtInstance.transform_anim.num_keyframes;
 	Log::debug("Load %d keyframes", numKeyframes);
 	kf.reserve(numKeyframes);
+	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < numKeyframes; ++keyFrameIdx) {
 		const uint32_t frameIdx = ogtInstance.transform_anim.keyframes[keyFrameIdx].frame_index;
 		ogt_vox_transform ogtTransform = ogt_vox_sample_instance_transform(&ogtInstance, frameIdx, scene);
-		const glm::mat4 worldMatrix = ogtTransformToMat(ogtTransform);
+		const glm::mat4 worldMatrix = ogtTransformToMat(ogtTransform, ogtModel);
 		scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
 		// TODO: zUpMat?
 		sceneGraphKeyFrame.frameIdx = (scenegraph::FrameIndex)frameIdx;

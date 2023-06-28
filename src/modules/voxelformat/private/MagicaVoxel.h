@@ -59,7 +59,7 @@ void _ogt_free(void *mem);
 
 bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 				   const ogt_vox_instance &ogtInstance, const ogt_vox_scene *scene);
-glm::mat4 ogtTransformToMat(const ogt_vox_transform &t);
+glm::mat4 ogtTransformToMat(const ogt_vox_transform &t, const ogt_vox_model *ogtModel);
 void loadPaletteFromScene(const ogt_vox_scene *scene, voxel::Palette &palette);
 bool loadPaletteFromBuffer(const uint8_t *buffer, size_t size, voxel::Palette &palette);
 void printDetails(const ogt_vox_scene *scene);
