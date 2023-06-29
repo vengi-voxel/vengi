@@ -212,7 +212,7 @@ core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const v
 	for (uint32_t i = 0; i < scene->num_models; ++i) {
 		const ogt_vox_model *ogtModel = scene->models[i];
 		if (ogtModel == nullptr) {
-			models.push_back({nullptr, InvalidNodeId});
+			models.emplace_back(nullptr, InvalidNodeId);
 			continue;
 		}
 		voxel::Region region(glm::ivec3(0),
@@ -231,7 +231,7 @@ core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const v
 				}
 			}
 		}
-		models.push_back({v, InvalidNodeId});
+		models.emplace_back(v, InvalidNodeId);
 	}
 	return models;
 }

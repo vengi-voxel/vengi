@@ -77,19 +77,13 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	const ogt_vox_layer &layer = scene->layers[ogtInstance.layer_index];
-	const char *name = ogtInstance.name == nullptr ? layer.name : ogtInstance.name;
-	const core::RGBA col(layer.color.r, layer.color.g, layer.color.b, layer.color.a);
-	if (name == nullptr) {
-		name = "";
-	}
 	loadKeyFrames(sceneGraph, node, ogtInstance, scene);
 	// TODO: we are overriding the keyframe data here
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
-	node.setColor(col);
-	node.setName(name);
-	node.setVisible(!ogtInstance.hidden && !groupHidden);
+	node.setColor(instanceColor(scene, ogtInstance));
+	node.setName(instanceName(scene, ogtInstance));
+	node.setVisible(!instanceHidden(scene, ogtInstance));
 	node.setVolume(v, true);
 	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node), parent) != -1;
