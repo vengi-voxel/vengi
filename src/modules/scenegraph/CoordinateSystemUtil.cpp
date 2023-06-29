@@ -24,7 +24,7 @@ glm::mat4 transformMatrix() {
 	return zUpMat;
 }
 
-static bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
+bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 	glm::vec3 right;
 	glm::vec3 up;
 	glm::vec3 forward;
@@ -34,12 +34,12 @@ static bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 		up = glm::up;
 		forward = glm::forward;
 		break;
-	case CoordinateSystem::XRightYBackZUp:
+	case CoordinateSystem::XRightYBackZUp: // VXL
 		right = glm::vec3(1.0f, 0.0f, 0.0f);
 		up = glm::vec3(0.0f, 0.0f, 1.0f);
 		forward = glm::vec3(0.0f, -1.0f, 0.0f);
 		break;
-	case CoordinateSystem::XLeftYForwardZUp:
+	case CoordinateSystem::XLeftYForwardZUp: // MagicaVoxel
 		right = glm::vec3(-1.0f, 0.0f, 0.0f);
 		up = glm::vec3(0.0f, 0.0f, 1.0f);
 		forward = glm::vec3(0.0f, 1.0f, 0.0f);
