@@ -44,7 +44,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 							 bool groupHidden) {
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
-	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance.transform, ogtModel);
+	const glm::mat4 ogtMat = ogtTransformToMat(ogt_vox_sample_instance_transform(&ogtInstance, 0, scene), ogtModel);
 	const glm::vec4 pivot((float)(int)(ogtModel->size_x / 2), (float)(int)(ogtModel->size_y / 2),
 						  (float)(int)(ogtModel->size_z / 2), 0.0f);
 	const glm::ivec3 &transformedMins = calcTransform(ogtMat, glm::ivec3(0), pivot);
