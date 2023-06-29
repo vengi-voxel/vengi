@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/RGBA.h"
 #include "core/collection/Array.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
@@ -70,9 +71,17 @@ void checkRotation(const ogt_vox_transform &transform);
  */
 int findClosestPaletteIndex(const voxel::Palette &palette);
 void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph);
+bool instanceHidden(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
+const char *instanceName(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
+core::RGBA instanceColor(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
+
+inline glm::ivec3 ogtVolumeSize(const ogt_vox_model *model) {
+	return glm::ivec3(model->size_x - 1, model->size_y - 1, model->size_z - 1);
+}
 
 struct MVModelToNode {
 	MVModelToNode();
+	~MVModelToNode();
 	inline MVModelToNode(voxel::RawVolume *_volume, int _nodeId) : volume(_volume), nodeId(_nodeId) {
 	}
 	voxel::RawVolume *volume;

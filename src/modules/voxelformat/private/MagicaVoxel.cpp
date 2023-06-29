@@ -4,6 +4,7 @@
 
 #include "MagicaVoxel.h"
 #include "core/Color.h"
+#include "core/GLM.h"
 #include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
@@ -12,6 +13,7 @@
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include <SDL_endian.h>
+#include <glm/gtx/transform.hpp>
 #define OGT_VOX_BIGENDIAN_SWAP32 SDL_SwapLE32
 #define OGT_VOX_IMPLEMENTATION
 #define ogt_assert(x, msg) core_assert_msg(x, "%s", msg)
@@ -167,6 +169,41 @@ void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph)
 }
 
 MVModelToNode::MVModelToNode() : volume(nullptr), nodeId(InvalidNodeId) {
+}
+
+MVModelToNode::~MVModelToNode() {
+	delete volume;
+}
+
+const char *instanceName(const ogt_vox_scene *scene, const ogt_vox_instance &instance) {
+	const ogt_vox_layer &layer = scene->layers[instance.layer_index];
+	const char *name = instance.name == nullptr ? layer.name : instance.name;
+	if (name == nullptr) {
+		name = "";
+	}
+	return name;
+}
+
+core::RGBA instanceColor(const ogt_vox_scene *scene, const ogt_vox_instance &instance) {
+	const ogt_vox_layer &layer = scene->layers[instance.layer_index];
+	const core::RGBA col(layer.color.r, layer.color.g, layer.color.b, layer.color.a);
+	return col;
+}
+
+bool instanceHidden(const ogt_vox_scene *scene, const ogt_vox_instance &instance) {
+	// check if this instance if it's hidden in the .vox file
+	if (instance.hidden) {
+		return true;
+	}
+	// check if this instance if it's part of a hidden layer in the .vox file
+	if (scene->layers[instance.layer_index].hidden) {
+		return true;
+	}
+	// check if this instance if it's part of a hidden group
+	if (instance.group_index != k_invalid_group_index && scene->groups[instance.group_index].hidden) {
+		return true;
+	}
+	return false;
 }
 
 core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const voxel::Palette &palette) {

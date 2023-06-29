@@ -205,13 +205,6 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 
 	loadCameras(scene, sceneGraph);
 
-	for (MVModelToNode &i : models) {
-		if (i.volume != nullptr) {
-			delete i.volume;
-		}
-	}
-	models.clear();
-
 	return true;
 }
 
