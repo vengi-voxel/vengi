@@ -38,11 +38,6 @@ TEST_F(RawVolumeRendererTest, testExtractRegion) {
 	renderer.extractRegion(0, region);
 	EXPECT_EQ(1, renderer.pendingExtractions());
 
-	renderer.visitPendingExtractions([region](int nodeIdx, const voxel::Region &extractRegion) {
-		EXPECT_TRUE(extractRegion.containsRegion(region));
-		EXPECT_EQ(glm::ivec3(0), extractRegion.getLowerCorner());
-		EXPECT_EQ(glm::ivec3(15), extractRegion.getUpperCorner()); // see cfg::VoxelMeshSize
-	});
 	renderer.shutdown();
 }
 

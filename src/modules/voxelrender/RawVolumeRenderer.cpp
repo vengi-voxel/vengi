@@ -195,12 +195,16 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 	const bool marchingCubes = _meshMode->intVal() == 1;
 	size_t i;
 	for (i = 0; i < n; ++i) {
-		const int idx = _extractRegions[i].idx;
+		ExtractRegion extractRegion;
+		if (!_extractRegions.pop(extractRegion)) {
+			break;
+		}
+		const int idx = extractRegion.idx;
 		const voxel::RawVolume *v = volume(idx);
 		if (v == nullptr) {
 			continue;
 		}
-		const voxel::Region& finalRegion = _extractRegions[i].region;
+		const voxel::Region& finalRegion = extractRegion.region;
 		bool onlyAir = true;
 		voxel::RawVolume copy(v, voxel::Region(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2), &onlyAir);
 		const glm::ivec3& mins = finalRegion.getLowerCorner();
@@ -231,7 +235,6 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 			break;
 		}
 	}
-	_extractRegions.erase(0, i + 1);
 
 	return true;
 }
@@ -430,7 +433,7 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 				}
 
 				Log::debug("extract region: %s", finalRegion.toString().c_str());
-				_extractRegions.emplace_back(finalRegion, bufferIndex);
+				_extractRegions.emplace(finalRegion, bufferIndex, hidden(bufferIndex));
 			}
 		}
 	}

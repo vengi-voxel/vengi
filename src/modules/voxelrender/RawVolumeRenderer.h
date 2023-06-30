@@ -8,6 +8,7 @@
 #include "core/NonCopyable.h"
 #include "core/Optional.h"
 #include "core/collection/ConcurrentPriorityQueue.h"
+#include "core/collection/PriorityQueue.h"
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Concurrency.h"
 #include "core/concurrent/ThreadPool.h"
@@ -112,12 +113,20 @@ protected:
 	core::VarPtr _meshMode;
 
 	struct ExtractRegion {
-		ExtractRegion(const voxel::Region &_region, int _idx) : region(_region), idx(_idx) {
+		ExtractRegion(const voxel::Region &_region, int _idx, bool _visible)
+			: region(_region), idx(_idx), visible(_visible) {
 		}
-		voxel::Region region;
-		int idx;
+		ExtractRegion() {
+		}
+		voxel::Region region{};
+		int idx = 0;
+		bool visible = false;
+
+		inline bool operator<(const ExtractRegion &rhs) const {
+			return idx < rhs.idx && visible < rhs.visible;
+		}
 	};
-	using RegionQueue = core::DynamicArray<ExtractRegion>;
+	using RegionQueue = core::PriorityQueue<ExtractRegion>;
 	RegionQueue _extractRegions;
 
 	struct ExtractionCtx {
@@ -155,13 +164,6 @@ public:
 	int pendingExtractions() const;
 	void clearPendingExtractions();
 	void waitForPendingExtractions();
-
-	template<class VISITOR>
-	void visitPendingExtractions(VISITOR && func) const {
-		for (const auto& e : _extractRegions) {
-			func(e.idx, e.region);
-		}
-	}
 
 	/**
 	 * @brief Updates the vertex buffers manually
