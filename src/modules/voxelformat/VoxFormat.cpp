@@ -40,11 +40,10 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 }
 
 bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
-							 int parent, core::DynamicArray<MVModelToNode> &models, const voxel::Palette &palette,
-							 bool groupHidden) {
+							 int parent, core::DynamicArray<MVModelToNode> &models, const voxel::Palette &palette) {
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
-	const glm::mat4 ogtMat = ogtTransformToMat(ogt_vox_sample_instance_transform(&ogtInstance, 0, scene), ogtModel);
+	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance, 0, scene, ogtModel);
 	const glm::vec4 pivot((float)(int)(ogtModel->size_x / 2), (float)(int)(ogtModel->size_y / 2),
 						  (float)(int)(ogtModel->size_z / 2), 0.0f);
 	const glm::ivec3 &transformedMins = calcTransform(ogtMat, glm::ivec3(0), pivot);
@@ -122,7 +121,7 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 		if (!addedInstances.insert(n)) {
 			continue;
 		}
-		if (!loadInstance(scene, n, sceneGraph, groupId, models, palette, hidden)) {
+		if (!loadInstance(scene, n, sceneGraph, groupId, models, palette)) {
 			return false;
 		}
 	}
@@ -163,6 +162,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	printDetails(scene);
 	loadPaletteFromScene(scene, palette);
 	if (!loadScene(scene, sceneGraph, palette)) {
+		ogt_vox_destroy_scene(scene);
 		return false;
 	}
 	ogt_vox_destroy_scene(scene);
@@ -181,7 +181,6 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 		}
 		Log::debug("Add root group %u/%u", i, scene->num_groups);
 		if (!loadGroup(scene, i, sceneGraph, -1, models, addedInstances, palette)) {
-			ogt_vox_destroy_scene(scene);
 			return false;
 		}
 		break;
@@ -192,13 +191,11 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 		}
 		// TODO: the parent is wrong
 		if (!loadInstance(scene, n, sceneGraph, sceneGraph.root().id(), models, palette)) {
-			ogt_vox_destroy_scene(scene);
 			return false;
 		}
 	}
 
 	loadCameras(scene, sceneGraph);
-
 	return true;
 }
 
