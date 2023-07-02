@@ -46,10 +46,11 @@ bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 		//     MV            GL
 		//
 		//     Z             Y
-		//     | Y           | X
-		//     |/            |/
-		//     o----X        o----Z
-		//
+		//     | Y           |
+		//     |/            |
+		//     o----X        o----X
+		//                  /
+		//                 Z
 		right = glm::vec3(-1.0f, 0.0f, 0.0f);
 		up = glm::vec3(0.0f, 0.0f, 1.0f);
 		forward = glm::vec3(0.0f, 1.0f, 0.0f);
