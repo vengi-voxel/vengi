@@ -46,12 +46,11 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance, 0, scene, ogtModel);
 	const glm::vec4 pivot((float)(int)(ogtModel->size_x / 2), (float)(int)(ogtModel->size_y / 2),
 						  (float)(int)(ogtModel->size_z / 2), 0.0f);
-	const glm::ivec3 &transformedMins = calcTransform(ogtMat, glm::ivec3(0), pivot);
-	const glm::ivec3 &transformedMaxs =
-		calcTransform(ogtMat, glm::ivec3(ogtModel->size_x - 1, ogtModel->size_y - 1, ogtModel->size_z - 1), pivot);
+	const glm::ivec3 &mins = calcTransform(ogtMat, glm::ivec3(0), pivot);
+	const glm::ivec3 &maxs = calcTransform(ogtMat, ogtVolumeSize(ogtModel), pivot);
 	const glm::mat4 zUpMat = scenegraph::transformMatrix();
-	const glm::ivec3 &zUpMins = calcTransform(zUpMat, transformedMins, glm::ivec4(0));
-	const glm::ivec3 &zUpMaxs = calcTransform(zUpMat, transformedMaxs, glm::ivec4(0));
+	const glm::ivec3 &zUpMins = calcTransform(zUpMat, mins, glm::ivec4(0));
+	const glm::ivec3 &zUpMaxs = calcTransform(zUpMat, maxs, glm::ivec4(0));
 	voxel::Region region(glm::min(zUpMins, zUpMaxs), glm::max(zUpMins, zUpMaxs));
 	const glm::ivec3 shift = region.getLowerCorner();
 	region.shift(-shift);
