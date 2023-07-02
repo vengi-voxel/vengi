@@ -254,7 +254,8 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 
 	const scenegraph::FrameIndex frameIdx = 0;
 	const scenegraph::SceneGraphTransform &transform = node.transform(frameIdx);
-	const glm::vec3 &mins = transform.localTranslation();
+	const voxel::Region &region = node.region();
+	const glm::vec3 &mins = region.getLowerCornerf() + transform.localTranslation();
 	VXLMatrix vxlMatrix;
 	convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), false);
 
@@ -268,19 +269,13 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 		wrapBool(stream.writeFloat(val))
 	}
 
-	const voxel::Region &region = node.region();
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
-	if (size.x > 0xFF || size.y > 0xFF || size.z > 0xFF) {
-		Log::error("Failed to write vxl layer footer - max volume size exceeded");
-		return false;
-	}
+	core_assert(!glm::any(glm::greaterThan(size, maxSize())));
 
 	// swap y and z here
-	// TODO: should we take the region mins into account here, too? Otherwise the
-	// result might be different from what you've seen in the editor
-	wrapBool(stream.writeFloat(mins.x /*+ region.getLowerX()*/))
-	wrapBool(stream.writeFloat(mins.z /*+ region.getLowerZ()*/))
-	wrapBool(stream.writeFloat(mins.y /*+ region.getLowerY()*/))
+	wrapBool(stream.writeFloat(mins.x))
+	wrapBool(stream.writeFloat(mins.z))
+	wrapBool(stream.writeFloat(mins.y))
 
 	const glm::vec3 maxs = mins + glm::vec3(size);
 	wrapBool(stream.writeFloat(maxs.x))
