@@ -37,7 +37,7 @@ private:
 	static constexpr size_t MaxLayers = 512;
 
 	glm::ivec3 maxSize() const override {
-		return glm::ivec3(256);
+		return glm::ivec3(255);
 	}
 
 	struct VXLLayerHeader {

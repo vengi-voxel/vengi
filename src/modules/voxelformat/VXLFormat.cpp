@@ -144,7 +144,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 						   uint64_t nodeSectionOffset) const {
 	const voxel::Region &region = node.region();
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
-	if (size.x > 255 || size.y > 255 || size.z > 255) {
+	if (glm::any(glm::greaterThan(size, maxSize()))) {
 		Log::error("Node %i exceeds max supported dimensions", node.id());
 		return false;
 	}
