@@ -8,6 +8,8 @@
 #include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
+#include "scenegraph/CoordinateSystem.h"
+#include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Palette.h"
@@ -33,7 +35,7 @@ glm::mat4 ogtTransformToMat(const ogt_vox_instance &ogtInstance, uint32_t frameI
 	const glm::vec4 col1(t.m10, t.m11, t.m12, t.m13);
 	const glm::vec4 col2(t.m20, t.m21, t.m22, t.m23);
 	const glm::vec4 col3(t.m30, t.m31, t.m32, t.m33);
-	return glm::mat4{col0, col1, col2, col3};
+	return scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::MagicaVoxel, glm::mat4{col0, col1, col2, col3});
 }
 
 void *_ogt_alloc(size_t size) {

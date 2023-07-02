@@ -48,10 +48,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 						  (float)(int)(ogtModel->size_z / 2), 0.0f);
 	const glm::ivec3 &mins = calcTransform(ogtMat, glm::ivec3(0), pivot);
 	const glm::ivec3 &maxs = calcTransform(ogtMat, ogtVolumeSize(ogtModel), pivot);
-	const glm::mat4 zUpMat = scenegraph::transformMatrix();
-	const glm::ivec3 &zUpMins = calcTransform(zUpMat, mins, glm::ivec4(0));
-	const glm::ivec3 &zUpMaxs = calcTransform(zUpMat, maxs, glm::ivec4(0));
-	voxel::Region region(glm::min(zUpMins, zUpMaxs), glm::max(zUpMins, zUpMaxs));
+	voxel::Region region(glm::min(mins, maxs), glm::max(mins, maxs));
 	const glm::ivec3 shift = region.getLowerCorner();
 	region.shift(-shift);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
@@ -67,8 +64,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 				}
 				const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
 				const glm::ivec3 &pos = calcTransform(ogtMat, glm::ivec3(i, j, k), pivot);
-				const glm::ivec3 &poszUp = calcTransform(zUpMat, pos, glm::ivec4(0));
-				const glm::ivec3 &regionPos = poszUp - shift;
+				const glm::ivec3 &regionPos = pos - shift;
 				v->setVoxel(regionPos, voxel);
 			}
 		}
