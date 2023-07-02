@@ -275,9 +275,12 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 		return false;
 	}
 
-	wrapBool(stream.writeFloat(mins.x))
-	wrapBool(stream.writeFloat(mins.z))
-	wrapBool(stream.writeFloat(mins.y))
+	// swap y and z here
+	// TODO: should we take the region mins into account here, too? Otherwise the
+	// result might be different from what you've seen in the editor
+	wrapBool(stream.writeFloat(mins.x /*+ region.getLowerX()*/))
+	wrapBool(stream.writeFloat(mins.z /*+ region.getLowerZ()*/))
+	wrapBool(stream.writeFloat(mins.y /*+ region.getLowerY()*/))
 
 	const glm::vec3 maxs = mins + glm::vec3(size);
 	wrapBool(stream.writeFloat(maxs.x))
