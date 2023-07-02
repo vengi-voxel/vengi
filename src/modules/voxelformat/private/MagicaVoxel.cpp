@@ -23,7 +23,12 @@ namespace voxelformat {
 
 glm::mat4 ogtTransformToMat(const ogt_vox_instance &ogtInstance, uint32_t frameIdx, const ogt_vox_scene *scene,
 							const ogt_vox_model *ogtModel) {
-	const ogt_vox_transform t = ogt_vox_sample_instance_transform(&ogtInstance, frameIdx, scene);
+	ogt_vox_transform t;
+	if (ogtInstance.group_index == k_invalid_group_index || ogtInstance.group_index >= scene->num_groups) {
+		t = ogtInstance.transform;
+	} else {
+		t = ogt_vox_sample_instance_transform(&ogtInstance, frameIdx, scene);
+	}
 	const glm::vec4 col0(t.m00, t.m01, t.m02, t.m03);
 	const glm::vec4 col1(t.m10, t.m11, t.m12, t.m13);
 	const glm::vec4 col2(t.m20, t.m21, t.m22, t.m23);
@@ -201,7 +206,8 @@ bool instanceHidden(const ogt_vox_scene *scene, const ogt_vox_instance &instance
 		return true;
 	}
 	// check if this instance if it's part of a hidden group
-	if (instance.group_index != k_invalid_group_index && scene->groups[instance.group_index].hidden) {
+	if (instance.group_index != k_invalid_group_index && instance.group_index < scene->num_groups &&
+		scene->groups[instance.group_index].hidden) {
 		return true;
 	}
 	return false;
