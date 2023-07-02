@@ -36,6 +36,10 @@ private:
 	static constexpr int NumNormalsTS = 36;
 	static constexpr size_t MaxLayers = 512;
 
+	glm::ivec3 maxSize() const override {
+		return glm::ivec3(256);
+	}
+
 	struct VXLLayerHeader {
 		char name[16];		/**< ASCIIZ string - name of section */
 		uint32_t infoIndex; /**< Node id */

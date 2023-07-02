@@ -371,7 +371,6 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	barrel.reserve(numNodes);
 	turret.reserve(numNodes);
 
-	// TODO: split the nodes into the max allowed size
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const core::String &lowerName = node.name().toLower();
