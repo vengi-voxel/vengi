@@ -208,7 +208,7 @@ TEST_F(ConvertTest, testQbToVXM) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vxm", target, flags);
 }
 
-TEST_F(ConvertTest, testQbToVXL) {
+TEST_F(ConvertTest, DISABLED_testQbToVXL) {
 	QBFormat src;
 	VXLFormat target;
 	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ

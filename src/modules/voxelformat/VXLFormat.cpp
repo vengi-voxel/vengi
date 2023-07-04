@@ -67,9 +67,9 @@ void VXLFormat::convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, 
 	if (hva) {
 		// the hva matrices have to be scaled
 		const glm::vec3 sectionScale{
-			(footer.maxs[0] - footer.mins[0]) / (float)footer.xsize,
-			(footer.maxs[1] - footer.mins[1]) / (float)footer.ysize,
-			(footer.maxs[2] - footer.mins[2]) / (float)footer.zsize
+			(footer.maxs.x - footer.mins.x) / (float)footer.xsize,
+			(footer.maxs.y - footer.mins.y) / (float)footer.ysize,
+			(footer.maxs.z - footer.mins.z) / (float)footer.zsize
 		};
 		// swap y and z here
 		translation.x *= footer.scale * sectionScale.x;
@@ -87,9 +87,9 @@ void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix,
 	vxlMatrix.fromVengi(vengiMatrix);
 
 	// swap y and z here
-	vxlMatrix.matrix[3][0] -= localTranslate.x;
-	vxlMatrix.matrix[3][1] -= localTranslate.z;
-	vxlMatrix.matrix[3][2] -= localTranslate.y;
+	vxlMatrix.matrix[3].x -= localTranslate.x;
+	vxlMatrix.matrix[3].y -= localTranslate.z;
+	vxlMatrix.matrix[3].z -= localTranslate.y;
 
 	if (hva) {
 		// the hva matrices have to be scaled
@@ -98,14 +98,14 @@ void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix,
 		const glm::vec3 &mins = region.getLowerCornerf() + localTranslate;
 		const glm::vec3 maxs = mins + glm::vec3(size);
 		const glm::vec3 sectionScale{
-			(maxs[0] - mins[0]) / (float)size[0],
-			(maxs[1] - mins[1]) / (float)size[1],
-			(maxs[2] - mins[2]) / (float)size[2]
+			(maxs.x - mins.x) / (float)size.x,
+			(maxs.y - mins.y) / (float)size.y,
+			(maxs.z - mins.z) / (float)size.z
 		};
 		// swap y and z here
-		vxlMatrix.matrix[3][0] /= (priv::Scale * sectionScale.x);
-		vxlMatrix.matrix[3][1] /= (priv::Scale * sectionScale.z);
-		vxlMatrix.matrix[3][2] /= (priv::Scale * sectionScale.y);
+		vxlMatrix.matrix[3].x /= (priv::Scale * sectionScale.x);
+		vxlMatrix.matrix[3].y /= (priv::Scale * sectionScale.z);
+		vxlMatrix.matrix[3].z /= (priv::Scale * sectionScale.y);
 	}
 }
 
