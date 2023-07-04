@@ -26,6 +26,7 @@
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "voxel/Voxel.h"
 
 #include <glm/gtc/matrix_access.hpp>
@@ -64,32 +65,47 @@ glm::mat4 VXLFormat::VXLMatrix::toVengi() const {
 void VXLFormat::convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, bool hva) {
 	glm::vec4 &translation = vengiMatrix[3];
 	if (hva) {
+		// the hva matrices have to be scaled
+		const glm::vec3 sectionScale{
+			(footer.maxs[0] - footer.mins[0]) / (float)footer.xsize,
+			(footer.maxs[1] - footer.mins[1]) / (float)footer.ysize,
+			(footer.maxs[2] - footer.mins[2]) / (float)footer.zsize
+		};
 		// swap y and z here
-		translation.x *= footer.scale;
-		translation.y *= footer.scale;
-		translation.z *= footer.scale;
+		translation.x *= footer.scale * sectionScale.x;
+		translation.y *= footer.scale * sectionScale.z;
+		translation.z *= footer.scale * sectionScale.y;
 	}
 
-	// TODO: or the pivot?
 	translation.x += footer.mins.x;
 	translation.y += footer.mins.z;
 	translation.z += footer.mins.y;
 }
 
-void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &localTranslate, bool hva) {
+void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &localTranslate,
+							 bool hva, const voxel::Region &region) {
 	vxlMatrix.fromVengi(vengiMatrix);
 
 	// swap y and z here
-	// TODO: or the pivot?
 	vxlMatrix.matrix[3][0] -= localTranslate.x;
 	vxlMatrix.matrix[3][1] -= localTranslate.z;
 	vxlMatrix.matrix[3][2] -= localTranslate.y;
 
 	if (hva) {
+		// the hva matrices have to be scaled
 		// Calculate the ratio between screen units and voxels in all dimensions
-		vxlMatrix.matrix[3][0] /= priv::Scale;
-		vxlMatrix.matrix[3][1] /= priv::Scale;
-		vxlMatrix.matrix[3][2] /= priv::Scale;
+		const glm::ivec3 &size = region.getDimensionsInVoxels();
+		const glm::vec3 &mins = region.getLowerCornerf() + localTranslate;
+		const glm::vec3 maxs = mins + glm::vec3(size);
+		const glm::vec3 sectionScale{
+			(maxs[0] - mins[0]) / (float)size[0],
+			(maxs[1] - mins[1]) / (float)size[1],
+			(maxs[2] - mins[2]) / (float)size[2]
+		};
+		// swap y and z here
+		vxlMatrix.matrix[3][0] /= (priv::Scale * sectionScale.x);
+		vxlMatrix.matrix[3][1] /= (priv::Scale * sectionScale.z);
+		vxlMatrix.matrix[3][2] /= (priv::Scale * sectionScale.y);
 	}
 }
 
@@ -257,7 +273,7 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	const voxel::Region &region = node.region();
 	const glm::vec3 &mins = region.getLowerCornerf() + transform.localTranslation();
 	VXLMatrix vxlMatrix;
-	convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), false);
+	convertWrite(vxlMatrix, transform.localMatrix(), mins, false, {});
 
 	// TODO: always 0.0833333358f?
 	wrapBool(stream.writeFloat(priv::Scale /*transform.localScale()*/))
@@ -791,7 +807,7 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream &stream, const scenegraph
 			scenegraph::SceneGraphNode &node = *iter;
 			const scenegraph::SceneGraphTransform &transform = node.transform(i);
 			VXLMatrix vxlMatrix;
-			convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), true);
+			convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), true, sceneGraph.resolveRegion(node));
 
 			for (int i = 0; i < 12; ++i) {
 				const int col = i % 4;

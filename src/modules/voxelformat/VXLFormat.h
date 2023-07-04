@@ -175,7 +175,7 @@ private:
 
 	static void convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, bool hva);
 	static void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &localTranslate,
-							 bool hva);
+							 bool hva, const voxel::Region &region);
 
 protected:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
