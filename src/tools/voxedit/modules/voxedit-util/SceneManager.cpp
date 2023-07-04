@@ -2647,21 +2647,20 @@ bool SceneManager::nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) 
 		});
 		return true;
 	}
-	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	return nodeAddKeyframe(node, frameIdx);
-}
-
-int SceneManager::nodeReference(int nodeId) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-		if (node->isReference()) {
-			return nodeReference(node->reference());
-		}
-		return nodeReference(*node);
+		return nodeAddKeyframe(*node, frameIdx);
 	}
-	return InvalidNodeId;
+	return false;
 }
 
 bool SceneManager::nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) {
+	if (nodeId == InvalidNodeId) {
+		nodeForeachGroup([&](int nodeId) {
+			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+			nodeRemoveKeyFrame(node, frameIdx);
+		});
+		return true;
+	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeRemoveKeyFrame(*node, frameIdx);
 	}
@@ -2712,6 +2711,16 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	markDirty();
 
 	return true;
+}
+
+int SceneManager::nodeReference(int nodeId) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		if (node->isReference()) {
+			return nodeReference(node->reference());
+		}
+		return nodeReference(*node);
+	}
+	return InvalidNodeId;
 }
 
 bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
