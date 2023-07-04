@@ -29,6 +29,7 @@ General:
    - Added the ability to easily scale a volume up
    - Unified naming of commands and parameters (`layer` is `model` now, ...)
    - Added VoxelBuilder (`vbx`) support
+   - Fixed missing group transform handling for MagicaVoxel files
 
 VoxConvert:
 
