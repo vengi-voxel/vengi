@@ -1023,9 +1023,6 @@ if(SDL_LIBC)
         sys/types.h
         wchar.h
     )
-    if(NOT EMSCRIPTEN)
-      list(APPEND headers_to_check libunwind.h)
-    endif()
     foreach(_HEADER ${headers_to_check})
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
       string(REGEX REPLACE "[./]" "_" _HAVE_H ${_UPPER})
@@ -1405,10 +1402,7 @@ elseif(EMSCRIPTEN)
   endif()
 
   CheckPTHREAD()
-
-  if(HAVE_LIBUNWIND_H)
-    list(APPEND EXTRA_TEST_LIBS unwind)
-  endif()
+  CheckLibUnwind()
 
 elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
   if(SDL_AUDIO)
@@ -1572,15 +1566,8 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
         endif()
       endif()
 
-      if(HAVE_LIBUNWIND_H)
-        # We've already found the header, so link the lib if present.
-        # NB: This .pc file is not present on FreeBSD where the implicitly
-        # linked base system libgcc_s includes all libunwind ABI.
-        pkg_search_module(UNWIND libunwind)
-        pkg_search_module(UNWIND_GENERIC libunwind-generic)
-        list(APPEND EXTRA_TEST_LIBS ${UNWIND_LIBRARIES} ${UNWIND_GENERIC_LIBRARIES})
-      endif()
     endif()
+    CheckLibUnwind()
 
     if(HAVE_DBUS_DBUS_H)
       list(APPEND SOURCE_FILES "${SDL2_SOURCE_DIR}/src/core/linux/SDL_dbus.c")
@@ -1766,7 +1753,7 @@ elseif(WINDOWS)
     check_include_file(ddraw.h HAVE_DDRAW_H)
     check_include_file(dsound.h HAVE_DSOUND_H)
     check_include_file(dinput.h HAVE_DINPUT_H)
-    if(WINDOWS_STORE OR CMAKE_GENERATOR_PLATFORM STREQUAL "ARM")
+    if(WINDOWS_STORE OR SDL_CPU_ARM32)
       set(HAVE_DINPUT_H 0)
     endif()
     check_include_file(dxgi.h HAVE_DXGI_H)
@@ -3334,6 +3321,7 @@ if(SDL_SHARED)
   # alias target for in-tree builds
   add_library(SDL2::SDL2 ALIAS SDL2)
   set_target_properties(SDL2 PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+  set_target_properties(SDL2 PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS FALSE)
   if(NOT SDL_LIBC)
     if(SDL_CPU_X86)
       # FIXME: should be added for all architectures (missing symbols for ARM)
@@ -3368,7 +3356,7 @@ if(SDL_SHARED)
       OUTPUT_NAME "SDL2")
   endif()
   # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
-  if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG AND NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM")
+  if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG AND NOT SDL_CPU_ARM32)
     # Don't try to link with the default set of libraries.
     if(NOT WINDOWS_STORE)
       set_property(TARGET SDL2 APPEND_STRING PROPERTY LINK_FLAGS " /NODEFAULTLIB")
@@ -3452,6 +3440,7 @@ if(SDL_TEST)
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>")
   target_link_libraries(SDL2_test PRIVATE ${EXTRA_TEST_LIBS})
+  target_include_directories(SDL2_test PRIVATE ${EXTRA_TEST_INCLUDES})
   set_property(TARGET SDL2_test APPEND PROPERTY COMPATIBLE_INTERFACE_STRING "SDL_VERSION")
   set_property(TARGET SDL2_test PROPERTY INTERFACE_SDL_VERSION "SDL2")
 endif()
