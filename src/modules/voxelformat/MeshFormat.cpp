@@ -21,8 +21,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/ChunkMesh.h"
-#include "voxel/CubicSurfaceExtractor.h"
-#include "voxel/MarchingCubesSurfaceExtractor.h"
+#include "voxel/SurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/PaletteLookup.h"
@@ -442,16 +441,11 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		const scenegraph::SceneGraphNode &node = *iter;
 		auto lambda = [&, volume = sceneGraph.resolveVolume(node), region = sceneGraph.resolveRegion(node)]() {
 			voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
-			if (marchingCubes) {
-				voxel::Region extractRegion = region;
-				extractRegion.shrink(-1);
-				voxel::extractMarchingCubesMesh(volume, node.palette(), extractRegion, mesh);
-			} else {
-				voxel::Region extractRegion = region;
-				extractRegion.shiftUpperCorner(1, 1, 1);
-				voxel::extractCubicMesh(volume, extractRegion, mesh, glm::ivec3(0), mergeQuads, reuseVertices,
-										ambientOcclusion);
-			}
+			voxel::SurfaceExtractionContext ctx =
+				marchingCubes ? voxel::buildMarchingCubesContext(volume, region, *mesh, node.palette())
+							  : voxel::buildCubicContext(volume, region, *mesh, glm::ivec3(0),
+														 mergeQuads, reuseVertices, ambientOcclusion);
+			voxel::extractSurface(ctx);
 			core::ScopedLock scoped(lock);
 			meshes.emplace_back(mesh, node, applyTransform);
 		};

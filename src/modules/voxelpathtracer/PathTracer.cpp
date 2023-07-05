@@ -11,8 +11,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/ChunkMesh.h"
-#include "voxel/CubicSurfaceExtractor.h"
-#include "voxel/MarchingCubesSurfaceExtractor.h"
+#include "voxel/SurfaceExtractor.h"
 #include "voxel/Mesh.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
@@ -127,6 +126,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 	_state->scene = {};
 	_state->lights = {};
 	const bool marchingCubes = core::Var::getSafe(cfg::VoxelMeshMode)->intVal() == 1;
+	// TODO: support references
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::RawVolume *v = node.volume();
@@ -136,13 +136,11 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 
 		voxel::ChunkMesh mesh(65536, 65536, true);
 		voxel::Region region = v->region();
-		if (marchingCubes) {
-			region.shrink(-1);
-			voxel::extractMarchingCubesMesh(v, node.palette(), region, &mesh);
-		} else {
-			region.shiftUpperCorner(1, 1, 1);
-			voxel::extractCubicMesh(v, region, &mesh, v->region().getLowerCorner());
-		}
+
+		voxel::SurfaceExtractionContext ctx =
+			marchingCubes ? voxel::buildMarchingCubesContext(v, region, mesh, node.palette())
+						  : voxel::buildCubicContext(v, region, mesh, v->region().getLowerCorner());
+		voxel::extractSurface(ctx);
 
 		if (!createScene(node.palette(), mesh.mesh[0])) {
 			return false;

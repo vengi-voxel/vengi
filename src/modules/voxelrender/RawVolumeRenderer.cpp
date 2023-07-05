@@ -12,9 +12,8 @@
 #include "video/Texture.h"
 #include "video/TextureConfig.h"
 #include "voxel/ChunkMesh.h"
-#include "voxel/CubicSurfaceExtractor.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxel/MarchingCubesSurfaceExtractor.h"
+#include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
@@ -214,14 +213,10 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 			_threadPool.enqueue([marchingCubes, movedPal = core::move(pal), movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
 				++_runningExtractorTasks;
 				voxel::ChunkMesh mesh(65536, 65536, true);
-				voxel::Region extractRegion = finalRegion;
-				if (marchingCubes) {
-					extractRegion.shrink(-1);
-					voxel::extractMarchingCubesMesh(&movedCopy, movedPal, extractRegion, &mesh);
-				} else {
-					extractRegion.shiftUpperCorner(1, 1, 1);
-					voxel::extractCubicMesh(&movedCopy, extractRegion, &mesh, mins);
-				}
+				voxel::SurfaceExtractionContext ctx =
+					marchingCubes ? voxel::buildMarchingCubesContext(&movedCopy, finalRegion, mesh, movedPal)
+								: voxel::buildCubicContext(&movedCopy, finalRegion, mesh, mins);
+				voxel::extractSurface(ctx);
 				_pendingQueue.emplace(mins, idx, core::move(mesh));
 				Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
 				--_runningExtractorTasks;

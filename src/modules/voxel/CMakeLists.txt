@@ -1,9 +1,10 @@
 set(LIB voxel)
 set(SRCS
+	private/CubicSurfaceExtractor.h private/CubicSurfaceExtractor.cpp
+	private/MarchingCubesSurfaceExtractor.h private/MarchingCubesSurfaceExtractor.cpp
+	private/MarchingCubesTables.h
+	SurfaceExtractor.h SurfaceExtractor.cpp
 	ChunkMesh.h
-	CubicSurfaceExtractor.h CubicSurfaceExtractor.cpp
-	MarchingCubesSurfaceExtractor.h MarchingCubesSurfaceExtractor.cpp
-	MarchingCubesTables.h
 	Face.h Face.cpp
 	MaterialColor.h MaterialColor.cpp
 	Mesh.h Mesh.cpp

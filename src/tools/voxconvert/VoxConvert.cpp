@@ -3,36 +3,35 @@
  */
 
 #include "VoxConvert.h"
+#include "command/Command.h"
 #include "core/Color.h"
 #include "core/Enum.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/TimeProvider.h"
 #include "core/Var.h"
-#include "command/Command.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
 #include "core/concurrent/Concurrency.h"
 #include "image/Image.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
-#include "core/TimeProvider.h"
 #include "io/FormatDescription.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "voxel/ChunkMesh.h"
-#include "voxel/CubicSurfaceExtractor.h"
-#include "voxel/MarchingCubesSurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
-#include "voxelformat/FormatConfig.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "scenegraph/SceneGraphUtil.h"
-#include "voxelformat/VolumeFormat.h"
+#include "voxel/SurfaceExtractor.h"
 #include "voxelformat/Format.h"
-#include "scenegraph/SceneGraph.h"
+#include "voxelformat/FormatConfig.h"
+#include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/LUAGenerator.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
@@ -612,19 +611,14 @@ VoxConvert::NodeStats VoxConvert::dumpNode_r(const scenegraph::SceneGraph& scene
 		const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
 		const int meshMode = core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 		const bool marchingCubes = meshMode == 1;
-		voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
-		if (marchingCubes) {
-			voxel::Region extractRegion = node.region();
-			extractRegion.shrink(-1);
-			voxel::extractMarchingCubesMesh(node.volume(), node.palette(), extractRegion, mesh);
-		} else {
-			voxel::Region extractRegion = node.region();
-			extractRegion.shiftUpperCorner(1, 1, 1);
-			voxel::extractCubicMesh(node.volume(), extractRegion, mesh, glm::ivec3(0), mergeQuads, reuseVertices,
-									ambientOcclusion);
-		}
-		const size_t vertices = mesh->mesh[0].getNoOfVertices() + mesh->mesh[1].getNoOfVertices();
-		const size_t indices = mesh->mesh[0].getNoOfIndices() + mesh->mesh[1].getNoOfIndices();
+		voxel::ChunkMesh mesh;
+		voxel::SurfaceExtractionContext ctx =
+			marchingCubes ? voxel::buildMarchingCubesContext(node.volume(), node.region(), mesh, node.palette())
+						  : voxel::buildCubicContext(node.volume(), node.region(), mesh, glm::ivec3(0), mergeQuads,
+													 reuseVertices, ambientOcclusion);
+		voxel::extractSurface(ctx);
+		const size_t vertices = mesh.mesh[0].getNoOfVertices() + mesh.mesh[1].getNoOfVertices();
+		const size_t indices = mesh.mesh[0].getNoOfIndices() + mesh.mesh[1].getNoOfIndices();
 		Log::info("%*s  |- mesh", indent, " ");
 		Log::info("%*s    |- vertices: %i", indent, " ", (int)vertices);
 		Log::info("%*s    |- indices: %i", indent, " ", (int)indices);

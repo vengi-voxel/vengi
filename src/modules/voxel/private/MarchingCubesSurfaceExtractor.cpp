@@ -5,7 +5,7 @@
 #include "MarchingCubesSurfaceExtractor.h"
 #include "core/Color.h"
 #include "core/collection/Array2DView.h"
-#include "voxel/MarchingCubesTables.h"
+#include "MarchingCubesTables.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"

@@ -24,7 +24,6 @@
 #include "video/ScopedState.h"
 #include "video/Shader.h"
 #include "video/Types.h"
-#include "voxel/CubicSurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraph.h"

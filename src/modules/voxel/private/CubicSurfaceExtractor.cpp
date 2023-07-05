@@ -4,17 +4,17 @@
 
 #include "CubicSurfaceExtractor.h"
 #include "core/Common.h"
-#include "ChunkMesh.h"
-#include "Voxel.h"
-#include "VoxelVertex.h"
+#include "voxel/ChunkMesh.h"
+#include "voxel/Voxel.h"
+#include "voxel/VoxelVertex.h"
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/Enum.h"
 #include "core/StandardLib.h"
 #include "core/NonCopyable.h"
-#include "Region.h"
+#include "voxel/Region.h"
 #include "core/Trace.h"
-#include "Face.h"
+#include "voxel/Face.h"
 #include <glm/vec3.hpp>
 #include <list>
 #include <vector>
