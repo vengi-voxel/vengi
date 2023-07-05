@@ -19,7 +19,7 @@ TEST_F(VXLFormatTest, testLoadRGB) {
 	testRGB("rgb.vxl");
 }
 
-TEST_F(VXLFormatTest, DISABLED_testSaveAndLoadSceneGraph) {
+TEST_F(VXLFormatTest, testSaveAndLoadSceneGraph) {
 	VXLFormat f;
 	testLoadSaveAndLoadSceneGraph("cc.vxl", f, "cc-save.vxl", f);
 }

@@ -64,32 +64,34 @@ glm::mat4 VXLFormat::VXLMatrix::toVengi() const {
 
 void VXLFormat::convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, bool hva) {
 	glm::vec4 &translation = vengiMatrix[3];
+	Log::debug("ConvertRead: Initial translation: %f %f %f", translation.x, translation.y, translation.z);
 	if (hva) {
 		// the hva matrices have to be scaled
-		const glm::vec3 sectionScale{
-			(footer.maxs.x - footer.mins.x) / (float)footer.xsize,
-			(footer.maxs.y - footer.mins.y) / (float)footer.ysize,
-			(footer.maxs.z - footer.mins.z) / (float)footer.zsize
-		};
+		const glm::vec3 sectionScale{(footer.maxs.x - footer.mins.x) / (float)footer.xsize,
+									 (footer.maxs.y - footer.mins.y) / (float)footer.ysize,
+									 (footer.maxs.z - footer.mins.z) / (float)footer.zsize};
 		// swap y and z here
 		translation.x *= footer.scale * sectionScale.x;
 		translation.y *= footer.scale * sectionScale.z;
 		translation.z *= footer.scale * sectionScale.y;
+		Log::debug("ConvertRead: HVA footer scale: %f", footer.scale);
+		Log::debug("ConvertRead: HVA section scale: %f %f %f", sectionScale.x, sectionScale.y, sectionScale.z);
+		Log::debug("ConvertRead: HVA translation: %f %f %f", translation.x, translation.y, translation.z);
 	}
 
 	translation.x += footer.mins.x;
 	translation.y += footer.mins.z;
 	translation.z += footer.mins.y;
+	Log::debug("ConvertRead: footer mins: %f %f %f", footer.mins.x, footer.mins.y, footer.mins.z);
+	Log::debug("ConvertRead: final translation: %f %f %f", translation.x, translation.y, translation.z);
 }
 
 void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &localTranslate,
 							 bool hva, const voxel::Region &region) {
-	vxlMatrix.fromVengi(vengiMatrix);
-
-	// swap y and z here
-	vxlMatrix.matrix[3].x -= localTranslate.x;
-	vxlMatrix.matrix[3].y -= localTranslate.z;
-	vxlMatrix.matrix[3].z -= localTranslate.y;
+	Log::debug("ConvertWrite: Initial translation: %f %f %f", vengiMatrix[3].x, vengiMatrix[3].y, vengiMatrix[3].z);
+	Log::debug("ConvertWrite: Local translate: %f %f %f", localTranslate.x, localTranslate.y, localTranslate.z);
+	glm::mat4 originalMatrix = vengiMatrix;
+	originalMatrix[3] -= glm::vec4(localTranslate, 0.0f);
 
 	if (hva) {
 		// the hva matrices have to be scaled
@@ -97,16 +99,21 @@ void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix,
 		const glm::ivec3 &size = region.getDimensionsInVoxels();
 		const glm::vec3 &mins = region.getLowerCornerf() + localTranslate;
 		const glm::vec3 maxs = mins + glm::vec3(size);
-		const glm::vec3 sectionScale{
-			(maxs.x - mins.x) / (float)size.x,
-			(maxs.y - mins.y) / (float)size.y,
-			(maxs.z - mins.z) / (float)size.z
-		};
+		const glm::vec3 sectionScale{(maxs.x - mins.x) / (float)size.x, (maxs.y - mins.y) / (float)size.y,
+									 (maxs.z - mins.z) / (float)size.z};
+		Log::debug("ConvertWrite: Section scale: %f %f %f", sectionScale.x, sectionScale.y, sectionScale.z);
 		// swap y and z here
-		vxlMatrix.matrix[3].x /= (priv::Scale * sectionScale.x);
-		vxlMatrix.matrix[3].y /= (priv::Scale * sectionScale.z);
-		vxlMatrix.matrix[3].z /= (priv::Scale * sectionScale.y);
+		originalMatrix[3].x /= (priv::Scale * sectionScale.x);
+		originalMatrix[3].y /= (priv::Scale * sectionScale.y);
+		originalMatrix[3].z /= (priv::Scale * sectionScale.z);
+		Log::debug("ConvertWrite: Final translation: %f %f %f", originalMatrix[3].x, originalMatrix[3].y,
+				   originalMatrix[3].z);
 	}
+
+	vxlMatrix.fromVengi(originalMatrix);
+
+	Log::debug("ConvertWrite: vxl translation: %f %f %f", vxlMatrix.matrix[3].x, vxlMatrix.matrix[3].y,
+			   vxlMatrix.matrix[3].z);
 }
 
 bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, uint8_t x,
@@ -807,7 +814,8 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream &stream, const scenegraph
 			scenegraph::SceneGraphNode &node = *iter;
 			const scenegraph::SceneGraphTransform &transform = node.transform(i);
 			VXLMatrix vxlMatrix;
-			convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), true, sceneGraph.resolveRegion(node));
+			convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), true,
+						 sceneGraph.resolveRegion(node));
 
 			for (int i = 0; i < 12; ++i) {
 				const int col = i % 4;
