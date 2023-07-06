@@ -7,14 +7,11 @@
 namespace scenegraph {
 
 enum class CoordinateSystem {
-	XRightYUpZBack,
-	XRightYBackZUp,
-	XLeftYForwardZUp,
+	Vengi,
+	MagicaVoxel,
+	VXL,
 	Max,
 
-	Vengi = XRightYUpZBack,
-	MagicaVoxel = XLeftYForwardZUp,
-	VXL = XRightYBackZUp
 };
 
 }

@@ -13,19 +13,15 @@ bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 	glm::vec3 up;
 	glm::vec3 forward;
 	switch (sys) {
-	case CoordinateSystem::XRightYUpZBack:
+	case CoordinateSystem::Vengi:
 		right = glm::right;
 		up = glm::up;
 		forward = glm::forward;
 		break;
-	case CoordinateSystem::XRightYBackZUp: // VXL
-		right = glm::vec3(1.0f, 0.0f, 0.0f);
-		up = glm::vec3(0.0f, 0.0f, 1.0f);
-		forward = glm::vec3(0.0f, 1.0f, 0.0f);
-		break;
-	case CoordinateSystem::XLeftYForwardZUp: // MagicaVoxel
+	case CoordinateSystem::MagicaVoxel:
+	case CoordinateSystem::VXL:
 		//
-		// MV uses Z-up coordinate system (like 3dsmax).
+		// Z-up coordinate system (like 3dsmax).
 		//
 		//     MV            GL
 		//
@@ -35,7 +31,7 @@ bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 		//     o----X        o----X
 		//                  /
 		//                 Z
-		right = glm::vec3(-1.0f, 0.0f, 0.0f);
+		right = glm::vec3(1.0f, 0.0f, 0.0f);
 		up = glm::vec3(0.0f, 0.0f, 1.0f);
 		forward = glm::vec3(0.0f, 1.0f, 0.0f);
 		break;

@@ -54,13 +54,14 @@ bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNod
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < numKeyframes; ++keyFrameIdx) {
 		const uint32_t frameIdx = ogtInstance.transform_anim.keyframes[keyFrameIdx].frame_index;
-		const glm::mat4 worldMatrix = ogtTransformToMat(ogtInstance, frameIdx, scene, ogtModel);
+		const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance, frameIdx, scene, ogtModel);
 		scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
 		// TODO: zUpMat?
 		sceneGraphKeyFrame.frameIdx = (scenegraph::FrameIndex)frameIdx;
 		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
-		sceneGraphKeyFrame.transform().setWorldMatrix(worldMatrix);
+		scenegraph::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
+		transform.setWorldMatrix(ogtMat);
 		kf.push_back(sceneGraphKeyFrame);
 	}
 	return node.setKeyFrames(kf);
