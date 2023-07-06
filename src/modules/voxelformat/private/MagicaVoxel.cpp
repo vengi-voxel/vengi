@@ -56,11 +56,11 @@ bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNod
 		const uint32_t frameIdx = ogtInstance.transform_anim.keyframes[keyFrameIdx].frame_index;
 		const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance, frameIdx, scene, ogtModel);
 		scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
-		// TODO: zUpMat?
 		sceneGraphKeyFrame.frameIdx = (scenegraph::FrameIndex)frameIdx;
 		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
 		scenegraph::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
+		// TODO: scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::MagicaVoxel, ogtMat));
 		transform.setWorldMatrix(ogtMat);
 		kf.push_back(sceneGraphKeyFrame);
 	}

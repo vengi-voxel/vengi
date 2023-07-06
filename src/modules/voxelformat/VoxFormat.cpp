@@ -80,6 +80,11 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	node.setName(instanceName(scene, ogtInstance));
 	node.setVisible(!instanceHidden(scene, ogtInstance));
 	node.setVolume(v, true);
+	// TODO: use already loaded models and create a model reference if needed
+	// TODO: node.setVolume(new voxel::RawVolume(models[ogtInstance.model_index].volume), true);
+	// TODO: set correct pivot
+	// TODO: node.setPivot({ogtPivot.x / (float)ogtModel->size_x, ogtPivot.z / (float)ogtModel->size_z, ogtPivot.y / (float)ogtModel->size_y});
+	// TODO: node.setPivot({(ogtPivot.x + 0.5f) / (float)ogtModel->size_x, (ogtPivot.z + 0.5f) / (float)ogtModel->size_z, (ogtPivot.y + 0.5f) / (float)ogtModel->size_y});
 	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node), parent) != -1;
 }
