@@ -9,9 +9,6 @@
 
 namespace scenegraph {
 
-// convert the coordinate system from z up to y up
-[[deprecated]] glm::mat4 transformMatrix();
-
 bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix);
 
 /**

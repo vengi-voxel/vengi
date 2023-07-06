@@ -8,22 +8,6 @@
 
 namespace scenegraph {
 
-// Magicavoxel
-glm::mat4 transformMatrix() {
-	// rotation matrix to convert into our coordinate system (mv has z pointing upwards)
-	// clang-format off
-	const glm::mat4 zUpMat{
-		-1.0f, 0.0f, 0.0f, 0.0f,
-		 0.0f, 0.0f, 1.0f, 0.0f,
-		 0.0f, 1.0f, 0.0f, 0.0f,
-		 0.0f, 0.0f, 0.0f, 1.0f
-	};
-	// clang-format on
-	// glm::rotate(glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
-	// glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	return zUpMat;
-}
-
 bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 	glm::vec3 right;
 	glm::vec3 up;
