@@ -80,6 +80,10 @@ inline glm::ivec3 ogtVolumeSize(const ogt_vox_model *model) {
 	return glm::ivec3(model->size_x - 1, model->size_y - 1, model->size_z - 1);
 }
 
+inline glm::vec4 ogtVolumePivot(const ogt_vox_model *model) {
+	return glm::vec4((float)(int)(model->size_x / 2), (float)(int)(model->size_y / 2), (float)(int)(model->size_z / 2),
+					 0.0f);
+}
 struct MVModelToNode {
 	MVModelToNode();
 	~MVModelToNode();
