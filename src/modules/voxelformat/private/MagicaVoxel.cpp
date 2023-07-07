@@ -8,6 +8,8 @@
 #include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
+#include "scenegraph/CoordinateSystem.h"
+#include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Palette.h"
@@ -60,8 +62,7 @@ bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNod
 		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
 		scenegraph::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
-		// TODO: scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::MagicaVoxel, ogtMat));
-		transform.setWorldMatrix(ogtMat);
+		transform.setWorldMatrix(scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::MagicaVoxel, ogtMat));
 		kf.push_back(sceneGraphKeyFrame);
 	}
 	return node.setKeyFrames(kf);
@@ -235,10 +236,13 @@ core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const v
 						continue;
 					}
 					const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
-					v->setVoxel(region.getUpperX() - (int)x, (int)z, (int)y, voxel);
+					v->setVoxel((int)x, (int)z, (int)y, voxel);
 				}
 			}
 		}
+		const glm::ivec3 shift(-(int)(ogtModel->size_x / 2), -(int)(ogtModel->size_z / 2), -(int)(ogtModel->size_y / 2));
+		v->translate(shift);
+
 		models.emplace_back(v, InvalidNodeId);
 	}
 	return models;
