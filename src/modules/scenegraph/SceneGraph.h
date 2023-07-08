@@ -171,6 +171,10 @@ public:
 	/**
 	 * Performs the recursive lookup in case of model references
 	 */
+	glm::vec3 resolvePivot(const SceneGraphNode& node) const;
+	/**
+	 * Performs the recursive lookup in case of model references
+	 */
 	voxel::RawVolume *resolveVolume(const SceneGraphNode &node) const;
 
 	/**

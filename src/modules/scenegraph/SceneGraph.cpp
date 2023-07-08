@@ -591,6 +591,13 @@ voxel::Region SceneGraph::resolveRegion(const SceneGraphNode &n) const {
 	return n.region();
 }
 
+glm::vec3 SceneGraph::resolvePivot(const SceneGraphNode &n) const {
+	if (n.type() == SceneGraphNodeType::ModelReference) {
+		return resolvePivot(node(n.reference()));
+	}
+	return n.pivot();
+}
+
 voxel::RawVolume *SceneGraph::resolveVolume(const SceneGraphNode &n) const {
 	if (n.type() == SceneGraphNodeType::ModelReference) {
 		return resolveVolume(node(n.reference()));
