@@ -667,12 +667,6 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 		return false;
 	}
 
-	ImGuiIO &io = ImGui::GetIO();
-	// TODO: this happens when you e.g. leave the window on linux
-	if (io.MousePos.x == -FLT_MAX || io.MousePos.y == -FLT_MAX) {
-		return false;
-	}
-
 	const bool orthographic = camera.mode() == video::CameraMode::Orthogonal;
 
 	ImGuizmo::BeginFrame();
