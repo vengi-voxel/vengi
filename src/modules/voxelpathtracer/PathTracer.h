@@ -18,6 +18,7 @@ class Palette;
 
 namespace scenegraph {
 class SceneGraph;
+class SceneGraphNode;
 }
 
 namespace voxelpathtracer {
@@ -28,7 +29,7 @@ class PathTracer {
 private:
 	PathTracerState *_state;
 
-	bool createScene(const voxel::Palette &palette, const voxel::Mesh &mesh);
+	bool createScene(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, const voxel::Mesh &mesh);
 	bool createScene(const scenegraph::SceneGraph &sceneGraph);
 
 public:

@@ -12,10 +12,10 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/ChunkMesh.h"
-#include "voxel/SurfaceExtractor.h"
 #include "voxel/Mesh.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
+#include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "yocto_scene.h"
 #include <yocto_trace.h>
@@ -84,7 +84,11 @@ PathTracer::~PathTracer() {
 	delete _state;
 }
 
-bool PathTracer::createScene(const voxel::Palette &palette, const voxel::Mesh &mesh) {
+bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+							 const voxel::Mesh &mesh) {
+	const voxel::Palette &palette = node.palette();
+	scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	// TODO: in order to use glowing, we have to use materials here and support multiple shapes
 	yocto::shape_data shape;
 	const voxel::IndexArray &indices = mesh.getIndexVector();
@@ -100,12 +104,17 @@ bool PathTracer::createScene(const voxel::Palette &palette, const voxel::Mesh &m
 	if (useNormals) {
 		shape.normals.reserve(normals.size());
 	}
+
+	const glm::vec3 size = glm::vec3(sceneGraph.resolveRegion(node).getDimensionsInVoxels());
+	const glm::vec3 pivot = sceneGraph.resolvePivot(node);
+
 	for (int i = 0; i < (int)vertices.size(); ++i) {
 		const auto &vertex = vertices[i];
 		const core::RGBA rgba = palette.color(vertex.colorIndex);
 		const glm::vec4 &color = core::Color::fromRGBA(rgba);
 		shape.colors.push_back({color[0], color[1], color[2], color[3]});
-		shape.positions.push_back({vertex.position[0], vertex.position[1], vertex.position[2]});
+		const glm::vec3 pos = transform.apply(vertex.position, pivot * size);
+		shape.positions.push_back({pos[0], pos[1], pos[2]});
 		const glm::vec2 &uv = image::Image::uv(vertex.colorIndex, 0, voxel::PaletteMaxColors, 1);
 		shape.texcoords.push_back({uv[0], uv[1]});
 		if (useNormals) {
@@ -168,10 +177,12 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 			material.color_tex = (int)_state->scene.textures.size() - 1;
 		}
 		_state->scene.materials.push_back(material);
-		if (!createScene(node.palette(), mesh.mesh[0])) {
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+		if (!createScene(sceneGraph, node, mesh.mesh[0])) {
 			return false;
 		}
-		if (!createScene(node.palette(), mesh.mesh[1])) {
+		if (!createScene(sceneGraph, node, mesh.mesh[1])) {
 			return false;
 		}
 	}
@@ -216,7 +227,7 @@ image::ImagePtr PathTracer::image() const {
 	if (!yocto::trace_done(_state->context)) {
 		image = yocto::make_image(_state->state.width, _state->state.height, true);
 		yocto::trace_preview(image, _state->context, _state->state, _state->scene, _state->bvh, _state->lights,
-					  _state->params);
+							 _state->params);
 	} else {
 		image = yocto::get_image(_state->state);
 	}
