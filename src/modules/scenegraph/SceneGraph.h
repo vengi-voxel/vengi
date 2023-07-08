@@ -19,7 +19,7 @@ class RawVolume;
 namespace scenegraph {
 
 using SceneGraphAnimationIds = core::DynamicArray<core::String>;
-
+using SceneGraphNodes = core::Map<int, SceneGraphNode, 251>;
 /**
  * @brief The internal format for the save/load methods.
  *
@@ -28,7 +28,7 @@ using SceneGraphAnimationIds = core::DynamicArray<core::String>;
  */
 class SceneGraph {
 protected:
-	core::Map<int, SceneGraphNode, 251> _nodes;
+	SceneGraphNodes _nodes;
 	int _nextNodeId = 0;
 	int _activeNodeId = InvalidNodeId;
 	SceneGraphAnimationIds _animations;
@@ -50,6 +50,10 @@ public:
 	 * @brief Returns the first valid palette from any of the nodes
 	 */
 	voxel::Palette &firstPalette() const;
+
+	inline const SceneGraphNodes &nodes() const {
+		return _nodes;
+	}
 
 	/**
 	 * @brief Merge the palettes of all scene graph model nodes

@@ -162,19 +162,24 @@ void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scene
 		}
 	}
 	_cameras.clear();
-	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(*iter);
-		if (!cameraNode.visible()) {
+	const int activeNode = sceneGraph.activeNode();
+	for (auto entry : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->second;
+		if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
+			const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(node);
+			if (!cameraNode.visible()) {
+				continue;
+			}
+			const glm::ivec2 size(cameraNode.width(), cameraNode.height());
+			video::Camera camera = toCamera(size, cameraNode);
+			_cameras.push_back(camera);
 			continue;
 		}
-		const glm::ivec2 size(cameraNode.width(), cameraNode.height());
-		video::Camera camera = toCamera(size, cameraNode);
-		_cameras.push_back(camera);
-	}
 
-	const int activeNode = sceneGraph.activeNode();
-	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Model); iter != sceneGraph.end(); ++iter) {
-		scenegraph::SceneGraphNode &node = *iter;
+		if (node.type() != scenegraph::SceneGraphNodeType::Model) {
+			continue;
+		}
+
 		const int id = getVolumeId(node);
 		if (id >= RawVolumeRenderer::MAX_VOLUMES) {
 			continue;

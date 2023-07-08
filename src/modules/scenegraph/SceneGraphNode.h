@@ -267,8 +267,7 @@ public:
 	bool setReference(int nodeId);
 	bool unreferenceModelNode(const SceneGraphNode &node);
 
-	const voxel::Palette &palette() const;
-	voxel::Palette &palette();
+	voxel::Palette &palette() const;
 	void setPalette(const voxel::Palette &palette);
 
 	bool setPivot(const glm::vec3 &pivot);

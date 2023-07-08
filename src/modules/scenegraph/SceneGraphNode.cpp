@@ -377,16 +377,7 @@ void SceneGraphNode::setPalette(const voxel::Palette &palette) {
 	_palette.value()->markDirty();
 }
 
-const voxel::Palette &SceneGraphNode::palette() const {
-	if (!_palette.hasValue()) {
-		voxel::Palette palette;
-		palette.nippon();
-		_palette.setValue(palette);
-	}
-	return *_palette.value();
-}
-
-voxel::Palette &SceneGraphNode::palette() {
+voxel::Palette &SceneGraphNode::palette() const {
 	if (!_palette.hasValue()) {
 		voxel::Palette palette;
 		palette.nippon();

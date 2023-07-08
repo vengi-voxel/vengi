@@ -158,8 +158,11 @@ void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, co
 void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
 								   scenegraph::FrameIndex frameIdx) {
 	_shapeBuilder.clear();
-	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNode &node = *iter;
+	for (auto entry : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->second;
+		if (!node.isModelNode()) {
+			continue;
+		}
 		if (!node.visible()) {
 			continue;
 		}
@@ -199,7 +202,6 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 								const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx) {
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	_volumeRenderer.setSceneMode(renderContext.sceneMode);
-	// TODO: only update if the scene changed or frame changed
 	updateAABBMesh(renderContext.sceneMode, sceneGraph, frameIdx);
 	_volumeRenderer.prepare(sceneGraph, frameIdx, _hideInactive->boolVal(), _grayInactive->boolVal());
 	_volumeRenderer.render(renderContext, camera, _renderShadow->boolVal(), false);

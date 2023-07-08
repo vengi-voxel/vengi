@@ -13,6 +13,7 @@
 #include "video/TextureConfig.h"
 #include "voxel/ChunkMesh.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxel/MaterialColor.h"
@@ -711,7 +712,7 @@ voxel::Region RawVolumeRenderer::region() const {
 	return region;
 }
 
-voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, scenegraph::SceneGraphNode& node, bool deleteMesh) {
+voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, const scenegraph::SceneGraphNode& node, bool deleteMesh) {
 	return setVolume(idx, node.volume(), &node.palette(), deleteMesh);
 }
 

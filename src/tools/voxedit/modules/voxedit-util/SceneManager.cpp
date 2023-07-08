@@ -2461,8 +2461,11 @@ void SceneManager::traceScene(bool force) {
 	float intersectDist = _camera->farPlane();
 	const math::Ray& ray = _camera->mouseRay(_mouseCursor);
 	const bool hideInactive = _hideInactive->boolVal();
-	for (auto iter = _sceneGraph.beginAllModels(); iter != _sceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNode& node = *iter;
+	for (auto entry : _sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode& node = entry->second;
+		if (!node.isModelNode()) {
+			continue;
+		}
 		if (!node.visible() || (hideInactive && node.id() != activeNode())) {
 			continue;
 		}

@@ -190,7 +190,7 @@ public:
 	 * @sa volume()
 	 */
 	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, voxel::Palette *palette, bool meshDelete = true);
-	voxel::RawVolume* setVolume(int idx, scenegraph::SceneGraphNode& node, bool deleteMesh = true);
+	voxel::RawVolume* setVolume(int idx, const scenegraph::SceneGraphNode& node, bool deleteMesh = true);
 	/**
 	 * @brief Allows to render the same model with different transforms
 	 */
