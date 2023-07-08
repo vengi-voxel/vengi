@@ -8,31 +8,29 @@
 
 namespace scenegraph {
 
-//
-// Generate right, forward and up direction vectors to express the desired coordinate system as it would have been in opengl
-//
-//     MV/VXL        GL          VENGI
-//
-//     Z             Y           Y
-//     | Y           |           | Z
-//     |/            |           |/
-//     o----X        o----X      o----X
-//                  /
-//                 Z
-//
 bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 	glm::vec3 right;
 	glm::vec3 up;
 	glm::vec3 forward;
 	switch (sys) {
 	case CoordinateSystem::Vengi:
-		right = glm::vec3(1.0f, 0.0f, 0.0f);
-		up = glm::vec3(0.0f, 1.0f, 0.0f);
-		forward = glm::vec3(0.0f, 0.0f, 1.0f);
+		right = glm::right;
+		up = glm::up;
+		forward = glm::forward;
 		break;
 	case CoordinateSystem::MagicaVoxel:
 	case CoordinateSystem::VXL:
+		//
 		// Z-up coordinate system (like 3dsmax).
+		//
+		//     MV            GL
+		//
+		//     Z             Y
+		//     | Y           |
+		//     |/            |
+		//     o----X        o----X
+		//                  /
+		//                 Z
 		right = glm::vec3(1.0f, 0.0f, 0.0f);
 		up = glm::vec3(0.0f, 0.0f, 1.0f);
 		forward = glm::vec3(0.0f, 1.0f, 0.0f);
