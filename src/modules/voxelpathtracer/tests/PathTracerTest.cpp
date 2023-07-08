@@ -30,8 +30,8 @@ public:
 	}
 };
 
-TEST_F(PathTracerTest, DISABLED_test) {
-	const io::FilePtr &file = io::filesystem()->open("cw.cub");
+TEST_F(PathTracerTest, testHMec) {
+	const io::FilePtr &file = io::filesystem()->open("hmec.vxl");
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
 	io::FileDescription fileDesc;
@@ -44,7 +44,7 @@ TEST_F(PathTracerTest, DISABLED_test) {
 
 	voxelpathtracer::PathTracer pathTracer;
 	int dimensions = 512;
-	ASSERT_TRUE(pathTracer.start(sceneGraph, dimensions));
+	ASSERT_TRUE(pathTracer.start(sceneGraph, dimensions, 8));
 	while (!pathTracer.update()) {
 		SDL_Delay(100);
 	}

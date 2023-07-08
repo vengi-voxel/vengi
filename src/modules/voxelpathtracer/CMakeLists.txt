@@ -9,7 +9,7 @@ set(TEST_SRCS
 	tests/PathTracerTest.cpp
 )
 set(TEST_FILES
-	tests/cw.cub
+	tests/hmec.vxl
 )
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS})

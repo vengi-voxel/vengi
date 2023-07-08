@@ -172,7 +172,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 		_state->scene.textures.push_back(texture);
 		// TODO: create proper material
 		yocto::material_data material;
-		material.color = {0.5f, 0.5f, 0.5f};
+		material.color = {1.0f, 1.0f, 1.0f};
 		if (!_state->scene.textures.empty()) {
 			material.color_tex = (int)_state->scene.textures.size() - 1;
 		}
