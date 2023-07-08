@@ -431,7 +431,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	const bool marchingCubes = meshMode == 1;
 
 	const glm::vec3 &scale = getScale();
-	const size_t models = sceneGraph.size();
+	const size_t models = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
 	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
 	Meshes meshes;
 	core::Map<int, int> meshIdxNodeMap;
