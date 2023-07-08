@@ -87,31 +87,38 @@ bool PathTracer::createScene(const voxel::Palette &palette, const voxel::Mesh &m
 	// TODO: in order to use glowing, we have to use materials here and support multiple shapes
 	yocto::shape_data shape;
 	const voxel::IndexArray &indices = mesh.getIndexVector();
+	if (indices.empty()) {
+		return true;
+	}
 	const voxel::VertexArray &vertices = mesh.getVertexVector();
 	const voxel::NormalArray &normals = mesh.getNormalVector();
 	const bool useNormals = normals.size() == vertices.size();
-	shape.colors.resize(vertices.size());
-	shape.positions.resize(vertices.size());
-	shape.normals.resize(normals.size());
+	shape.colors.reserve(vertices.size());
+	shape.positions.reserve(vertices.size());
+	shape.texcoords.reserve(vertices.size());
+	if (useNormals) {
+		shape.normals.reserve(normals.size());
+	}
 	for (int i = 0; i < (int)vertices.size(); ++i) {
 		const auto &vertex = vertices[i];
 		const core::RGBA rgba = palette.color(vertex.colorIndex);
 		const glm::vec4 &color = core::Color::fromRGBA(rgba);
-		shape.colors[i] = {color[0], color[1], color[2], color[3]};
-		shape.positions[i] = {vertex.position[0], vertex.position[1], vertex.position[2]};
+		shape.colors.push_back({color[0], color[1], color[2], color[3]});
+		shape.positions.push_back({vertex.position[0], vertex.position[1], vertex.position[2]});
+		const glm::vec2 &uv = image::Image::uv(vertex.colorIndex, 0, voxel::PaletteMaxColors, 1);
+		shape.texcoords.push_back({uv[0], uv[1]});
 		if (useNormals) {
-			shape.normals[i] = {normals[i][0], normals[i][1], normals[i][2]};
+			shape.normals.push_back({normals[i][0], normals[i][1], normals[i][2]});
 		}
 	}
 
+	core_assert((int)indices.size() % 3 == 0);
 	const int tris = (int)indices.size() / 3;
-	shape.triangles.resize(tris);
+	shape.triangles.reserve(tris);
 	for (int i = 0; i < tris; i++) {
-		shape.triangles[i] = {i * 3 + 0, i * 3 + 1, i * 3 + 2};
+		shape.triangles.push_back({(int)indices[i * 3 + 0], (int)indices[i * 3 + 1], (int)indices[i * 3 + 2]});
 	}
 	_state->scene.shapes.push_back(shape);
-	// TODO: create proper material
-	_state->scene.materials.push_back({});
 
 	const glm::vec3 &mins = mesh.getOffset();
 	yocto::instance_data instance_data;
@@ -142,6 +149,24 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 						  : voxel::buildCubicContext(v, region, mesh, v->region().getLowerCorner());
 		voxel::extractSurface(ctx);
 
+		yocto::texture_data texture;
+		texture.height = 1;
+		texture.width = voxel::PaletteMaxColors;
+		for (int i = 0; i < node.palette().colorCount(); ++i) {
+			const core::RGBA color = node.palette().color(i);
+			texture.pixelsb.push_back({color.r, color.g, color.b, color.a});
+		}
+		for (int i = node.palette().colorCount(); i < texture.width; ++i) {
+			texture.pixelsb.push_back({});
+		}
+		_state->scene.textures.push_back(texture);
+		// TODO: create proper material
+		yocto::material_data material;
+		material.color = {0.5f, 0.5f, 0.5f};
+		if (!_state->scene.textures.empty()) {
+			material.color_tex = (int)_state->scene.textures.size() - 1;
+		}
+		_state->scene.materials.push_back(material);
 		if (!createScene(node.palette(), mesh.mesh[0])) {
 			return false;
 		}
@@ -155,8 +180,6 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 	core_assert(_state->scene.environments.empty());
 	yocto::add_sky(_state->scene);
 
-	_state->bvh = make_trace_bvh(_state->scene, _state->params);
-	_state->lights = make_trace_lights(_state->scene, _state->params);
 	return true;
 }
 
@@ -164,8 +187,10 @@ bool PathTracer::start(const scenegraph::SceneGraph &sceneGraph, int dimensions,
 	createScene(sceneGraph);
 	_state->params.resolution = dimensions;
 	_state->params.samples = samples;
-	_state->state = make_trace_state(_state->scene, _state->params);
-	trace_start(_state->context, _state->state, _state->scene, _state->bvh, _state->lights, _state->params);
+	_state->bvh = yocto::make_trace_bvh(_state->scene, _state->params);
+	_state->lights = yocto::make_trace_lights(_state->scene, _state->params);
+	_state->state = yocto::make_trace_state(_state->scene, _state->params);
+	yocto::trace_start(_state->context, _state->state, _state->scene, _state->bvh, _state->lights, _state->params);
 	return true;
 }
 
@@ -182,7 +207,7 @@ image::ImagePtr PathTracer::image() const {
 	yocto::image_data image;
 	if (!yocto::trace_done(_state->context)) {
 		image = yocto::make_image(_state->state.width, _state->state.height, true);
-		trace_preview(image, _state->context, _state->state, _state->scene, _state->bvh, _state->lights,
+		yocto::trace_preview(image, _state->context, _state->state, _state->scene, _state->bvh, _state->lights,
 					  _state->params);
 	} else {
 		image = yocto::get_image(_state->state);
