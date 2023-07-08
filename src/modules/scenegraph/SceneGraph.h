@@ -28,7 +28,7 @@ using SceneGraphAnimationIds = core::DynamicArray<core::String>;
  */
 class SceneGraph {
 protected:
-	core::Map<int, SceneGraphNode> _nodes;
+	core::Map<int, SceneGraphNode, 251> _nodes;
 	int _nextNodeId = 0;
 	int _activeNodeId = InvalidNodeId;
 	SceneGraphAnimationIds _animations;
