@@ -29,7 +29,7 @@ namespace voxelformat {
  * @brief GL Transmission Format
  * https://raw.githubusercontent.com/KhronosGroup/glTF/main/specification/2.0/figures/gltfOverview-2.0.0b.png
  *
- * @li Viewer including animations:
+ * @li Viewer including animations: https://sandbox.babylonjs.com/
  * @li GLTF-Validator: https://github.khronos.org/glTF-Validator/
  *
  * @ingroup Formats
