@@ -8,6 +8,7 @@
 #include "core/collection/Array.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/Map.h"
 #include "voxelformat/external/ogt_vox.h"
 
 namespace voxel {
@@ -31,6 +32,7 @@ struct MVSceneContext {
 	core::Array<ogt_vox_keyframe_transform, 4096> keyframeTransforms;
 	core::Buffer<ogt_vox_cam> cameras;
 	bool paletteErrorPrinted = false;
+	core::Map<int, uint32_t> nodeToModel;
 };
 
 // clang-format off

@@ -203,6 +203,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 void VoxFormat::saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 							 MVSceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx) {
 	const scenegraph::SceneGraphKeyFrames &keyFrames = node.keyFrames(sceneGraph.activeAnimation());
+	ctx.nodeToModel.put(node.id(), modelIdx);
 	{
 		ogt_vox_instance ogt_instance;
 		core_memset(&ogt_instance, 0, sizeof(ogt_instance));
@@ -344,8 +345,12 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx, palette, replacement);
 		}
 	} else if (node.type() == scenegraph::SceneGraphNodeType::ModelReference) {
-		// TODO: saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx, [...]);
-		Log::error("Model references not yet supported");
+		auto iter = ctx.nodeToModel.find(node.reference());
+		if (iter == ctx.nodeToModel.end()) {
+			Log::error("Could not find model reference for node %i (references: %i)", node.id(), node.reference());
+		} else {
+			saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx, iter->second);
+		}
 		for (int childId : node.children()) {
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx, palette, replacement);
 		}
