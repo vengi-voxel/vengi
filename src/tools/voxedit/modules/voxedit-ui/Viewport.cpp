@@ -586,14 +586,20 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 		return false;
 	}
 
-	const glm::vec3 &shift = region.getLowerCornerf();
-	localMatrix = glm::translate(localMatrix, shift);
+	bool shiftRegionBoundaries = false; // TODO: make this an option
+	if (shiftRegionBoundaries) {
+		const glm::vec3 &shift = region.getLowerCornerf();
+		localMatrix = glm::translate(localMatrix, shift);
+	}
 	const bool manipulated = ImGuizmo::Manipulate(
 		glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()), (ImGuizmo::OPERATION)operation,
 		ImGuizmo::MODE::LOCAL, glm::value_ptr(localMatrix), glm::value_ptr(deltaMatrix),
 		_gizmoSnap->boolVal() ? snap : nullptr, bounds ? glm::value_ptr(_bounds.mins) : nullptr, boundsSnap);
 	if (sceneMode) {
-		localMatrix = glm::translate(localMatrix, -shift);
+		if (shiftRegionBoundaries) {
+			const glm::vec3 &shift = region.getLowerCornerf();
+			localMatrix = glm::translate(localMatrix, -shift);
+		}
 		handleGizmo(node, keyFrameIdx, localMatrix);
 
 		if (!_gizmoActivated && node.type() == scenegraph::SceneGraphNodeType::Model &&
