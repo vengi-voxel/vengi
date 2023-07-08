@@ -33,6 +33,7 @@ protected:
 	int _activeNodeId = InvalidNodeId;
 	SceneGraphAnimationIds _animations;
 	core::String _activeAnimation;
+	mutable FrameIndex _cachedMaxFrame = -1;
 
 	void updateTransforms_r(SceneGraphNode &node);
 
@@ -91,6 +92,7 @@ public:
 	const core::String &activeAnimation() const;
 
 	void updateTransforms();
+	void markMaxFramesDirty();
 
 	/**
 	 * @brief We move into the scene graph to make it clear who is owning the volume.

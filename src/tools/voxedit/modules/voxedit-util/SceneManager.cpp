@@ -2797,6 +2797,7 @@ bool SceneManager::nodeRemove(int nodeId, bool recursive) {
 }
 
 void SceneManager::markDirty() {
+	_sceneGraph.markMaxFramesDirty();
 	_needAutoSave = true;
 	_dirty = true;
 }

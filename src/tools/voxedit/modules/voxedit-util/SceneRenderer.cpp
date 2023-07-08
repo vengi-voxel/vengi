@@ -199,6 +199,7 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 								const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx) {
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	_volumeRenderer.setSceneMode(renderContext.sceneMode);
+	// TODO: only update if the scene changed or frame changed
 	updateAABBMesh(renderContext.sceneMode, sceneGraph, frameIdx);
 	_volumeRenderer.prepare(sceneGraph, frameIdx, _hideInactive->boolVal(), _grayInactive->boolVal());
 	_volumeRenderer.render(renderContext, camera, _renderShadow->boolVal(), false);

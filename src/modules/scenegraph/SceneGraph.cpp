@@ -114,13 +114,19 @@ const core::String &SceneGraph::activeAnimation() const {
 	return _activeAnimation;
 }
 
+void SceneGraph::markMaxFramesDirty() {
+	_cachedMaxFrame = -1;
+}
+
 FrameIndex SceneGraph::maxFrames(const core::String &animation) const {
-	FrameIndex maxFrame = 0;
-	for (auto iter = beginAllModels(); iter != end(); ++iter) {
-		const scenegraph::SceneGraphNode &modelNode = *iter;
-		maxFrame = core_max(modelNode.maxFrame(animation), maxFrame);
+	if (_cachedMaxFrame == -1) {
+		_cachedMaxFrame = 0;
+		for (auto iter = beginAllModels(); iter != end(); ++iter) {
+			const scenegraph::SceneGraphNode &modelNode = *iter;
+			_cachedMaxFrame = core_max(modelNode.maxFrame(animation), _cachedMaxFrame);
+		}
 	}
-	return maxFrame;
+	return _cachedMaxFrame;
 }
 
 int SceneGraph::activeNode() const {
