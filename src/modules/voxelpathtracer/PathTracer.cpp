@@ -4,6 +4,7 @@
 
 #include "PathTracer.h"
 #include "core/Color.h"
+#include "core/Log.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
@@ -200,7 +201,14 @@ bool PathTracer::stop() {
 }
 
 bool PathTracer::update() {
-	return yocto::trace_done(_state->context);
+	if (yocto::trace_done(_state->context)) {
+		if (_state->state.samples >= _state->params.samples) {
+			return true;
+		}
+		Log::debug("PathTracer sample: %i", _state->state.samples);
+	}
+	yocto::trace_start(_state->context, _state->state, _state->scene, _state->bvh, _state->lights, _state->params);
+	return false;
 }
 
 image::ImagePtr PathTracer::image() const {
