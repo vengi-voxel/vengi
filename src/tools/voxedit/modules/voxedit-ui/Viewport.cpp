@@ -586,7 +586,7 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 		return false;
 	}
 
-	bool shiftRegionBoundaries = false; // TODO: make this an option
+	bool shiftRegionBoundaries = true; // TODO: make this an option
 	if (shiftRegionBoundaries) {
 		const glm::vec3 &shift = region.getLowerCornerf();
 		localMatrix = glm::translate(localMatrix, shift);
