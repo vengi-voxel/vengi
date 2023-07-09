@@ -31,6 +31,7 @@ General:
    - Added VoxelBuilder (`vbx`) support
    - Fixed missing group transform handling for MagicaVoxel files
    - Added support for MagicaVoxel `xraw` format
+   - Added alpha support for MagicaVoxel materials
 
 VoxConvert:
 
