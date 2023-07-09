@@ -289,7 +289,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 		addCamera(scenegraph::toCameraNode(node));
 	}
 
-	if (_state.scene.cameras.size() == 1) {
+	if (_state.scene.cameras.size() <= 1) {
 		yocto::add_camera(_state.scene);
 	}
 	yocto::add_sky(_state.scene);
