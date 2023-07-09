@@ -8,6 +8,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "ui/IMGUIEx.h"
 #include "video/Texture.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelpathtracer/PathTracer.h"
 
@@ -18,7 +19,7 @@ bool RenderPanel::init() {
 
 	// default params
 	yocto::trace_params &params = _pathTracer.state().params;
-	params.samples = 32;
+	params.samples = 16;
 	params.envhidden = true;
 	params.resolution = 512;
 
@@ -43,7 +44,9 @@ void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneG
 		changed += ImGui::Checkbox("Filter", &params.tentfilter);
 		changed += ImGui::Checkbox("Denoise", &params.denoise);
 
-		// TODO: use the scene settings for ambient and diffuse color values
+		core::Var::getSafe(cfg::VoxEditDiffuseColor)->vec3Val(&state.diffuseColor[0]);
+		core::Var::getSafe(cfg::VoxEditAmbientColor)->vec3Val(&state.ambientColor[0]);
+
 		if (!state.scene.camera_names.empty()) {
 			changed += ImGui::ComboStl("Camera", &params.camera, state.scene.camera_names);
 		}
