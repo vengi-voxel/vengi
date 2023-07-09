@@ -3,6 +3,7 @@
  */
 
 #include "RenderPanel.h"
+#include "IMGUIApp.h"
 #include "core/SharedPtr.h"
 #include "imgui.h"
 #include "scenegraph/SceneGraph.h"
@@ -70,6 +71,13 @@ void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneG
 		}
 		if (_texture->isLoaded()) {
 			ImGui::Image(_texture->handle(), ImVec2((float)_texture->width(), (float)_texture->height()));
+			if (_image && _image->isLoaded()) {
+				if (ImGui::Button("Save image")) {
+					imguiApp()->saveDialog([=](const core::String &file,
+											   const io::FormatDescription *desc) { image::writeImage(_image, file); },
+										   {}, io::format::images(), "render.png");
+				}
+			}
 		}
 	}
 	ImGui::End();
