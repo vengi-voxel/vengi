@@ -18,16 +18,27 @@ Texture::Texture(const TextureConfig& cfg, int width, int height, const core::St
 }
 
 Texture::Texture(const image::ImagePtr &image) : _name(image->name()) {
-	core_assert(image->isLoading());
-	_image = image;
-	_state = io::IOSTATE_LOADING;
 	_config.type(TextureType::Texture2D);
-	_config.format(TextureFormat::RGBA);
-	_width = 1;
-	_height = 1;
-	_dummy = true;
-	const uint32_t empty = 0x00000000;
-	upload((const uint8_t *)&empty);
+	_width = image->width();
+	_height = image->height();
+	if (image->depth() == 4) {
+		_config.format(TextureFormat::RGBA);
+	} else {
+		_config.format(TextureFormat::RGB);
+	}
+
+	if (image->isLoading()) {
+		_image = image;
+		_state = io::IOSTATE_LOADING;
+		_width = 1;
+		_height = 1;
+		_dummy = true;
+		const uint32_t empty = 0x00000000;
+		upload((const uint8_t *)&empty);
+	} else if (image->isLoaded()) {
+		upload(image->width(), image->height(), image->data());
+		_state = io::IOSTATE_LOADED;
+	}
 }
 
 Texture::~Texture() {
@@ -39,6 +50,28 @@ Texture::~Texture() {
 
 void Texture::shutdown() {
 	video::deleteTexture(_handle);
+}
+
+void Texture::upload(const image::ImagePtr &image, int index) {
+	_width = image->width();
+	_height = image->height();
+	if (image->depth() == 4) {
+		_config.format(TextureFormat::RGBA);
+	} else {
+		_config.format(TextureFormat::RGB);
+	}
+	if (image->isLoading()) {
+		_image = image;
+		_state = io::IOSTATE_LOADING;
+		_width = 1;
+		_height = 1;
+		_dummy = true;
+		const uint32_t empty = 0x00000000;
+		upload((const uint8_t *)&empty);
+	} else if (image->isLoaded()) {
+		upload(image->width(), image->height(), image->data());
+		_state = io::IOSTATE_LOADED;
+	}
 }
 
 void Texture::upload(TextureFormat format, TextureFilter filter, int width, int height, const uint8_t* data, int index) {
