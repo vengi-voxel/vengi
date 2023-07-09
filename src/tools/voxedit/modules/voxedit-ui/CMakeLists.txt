@@ -13,6 +13,7 @@ set(SRCS
 	MementoPanel.h MementoPanel.cpp
 	ModifierPanel.h ModifierPanel.cpp
 	PalettePanel.h PalettePanel.cpp
+	RenderPanel.h RenderPanel.cpp
 	SceneGraphPanel.h SceneGraphPanel.cpp
 	ScriptPanel.h ScriptPanel.cpp
 	StatusBar.h StatusBar.cpp
@@ -40,5 +41,5 @@ foreach (vengi_model ${VENGI_MODELS})
 	list(APPEND SRCS ${header} ${pngheader})
 endforeach()
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ui voxedit-util)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ui voxedit-util voxelpathtracer)
 target_include_directories(${LIB} PRIVATE ${GENERATE_DIR})

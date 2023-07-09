@@ -46,6 +46,7 @@
 #define TITLE_MEMENTO ICON_FA_BOOK_OPEN " History##title"
 #define TITLE_ASSET ICON_FA_LIST_UL " Assets##title"
 #define TITLE_SCENEGRAPH ICON_FA_SHARE_NODES " Scene##title"
+#define TITLE_RENDER ICON_FA_IMAGE " Render##title"
 #define TITLE_MODIFIERS ICON_FA_TOOLBOX " Modifiers##title"
 #define TITLE_TREES ICON_FA_TREE " Trees##title"
 #define TITLE_SCRIPTPANEL ICON_FA_CODE " Script##title"
@@ -159,6 +160,7 @@ bool MainWindow::init() {
 		return false;
 	}
 
+	_renderPanel.init();
 	_sceneGraphPanel.init();
 	_lsystemPanel.init();
 	_treePanel.init();
@@ -190,6 +192,7 @@ void MainWindow::shutdown() {
 	for (size_t i = 0; i < _scenes.size(); ++i) {
 		_scenes[i]->shutdown();
 	}
+	_renderPanel.shutdown();
 	_lsystemPanel.shutdown();
 	_treePanel.shutdown();
 	_texturePool.shutdown();
@@ -340,6 +343,7 @@ void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_TREES, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_SCRIPTPANEL, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_RENDER, dockId);
 }
 
 void MainWindow::rightWidget() {
@@ -355,6 +359,7 @@ void MainWindow::rightWidget() {
 
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredScene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, _lastExecutedCommand);
+	_renderPanel.update(TITLE_RENDER, sceneMgr().sceneGraph());
 	if (!_simplifiedView->boolVal()) {
 		_treePanel.update(TITLE_TREES);
 		_lsystemPanel.update(TITLE_LSYSTEMPANEL);

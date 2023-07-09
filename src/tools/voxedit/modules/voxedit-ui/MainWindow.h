@@ -18,6 +18,7 @@
 #include "voxedit-ui/PositionsPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/QuitDisallowReason.h"
+#include "voxedit-ui/RenderPanel.h"
 #include "voxedit-ui/SceneGraphPanel.h"
 #include "voxedit-ui/MenuBar.h"
 #include "voxedit-ui/ToolsPanel.h"
@@ -69,6 +70,7 @@ private:
 	TreePanel _treePanel;
 	SceneGraphPanel _sceneGraphPanel;
 	AnimationPanel _animationPanel;
+	RenderPanel _renderPanel;
 	ToolsPanel _toolsPanel;
 	AssetPanel _assetPanel;
 	MementoPanel _mementoPanel;
