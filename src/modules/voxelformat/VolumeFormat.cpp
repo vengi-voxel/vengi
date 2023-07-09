@@ -52,6 +52,7 @@
 #include "voxelformat/VXRFormat.h"
 #include "voxelformat/VXTFormat.h"
 #include "voxelformat/VoxFormat.h"
+#include "voxelformat/XRawFormat.h"
 
 namespace voxelformat {
 
@@ -146,6 +147,7 @@ const io::FormatDescription *voxelLoad() {
 		 VOX_FORMAT_FLAG_MESH},
 		{"FBX", {"fbx"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Sproxel csv", {"csv"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Magicavoxel XRAW", {"xraw"}, [](uint32_t magic) { return magic == FourCC('X', 'R', 'A', 'W'); }, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"StarMade", {"sment"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"AnimaToon", {"scn"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"VoxelBuilder", {"vbx"}, [](uint32_t magic) { return magic == FourCC(';', ' ', 'V', 'o'); }, 0},
@@ -320,6 +322,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			format = core::make_shared<SchematicFormat>();
 		} else if (ext == "vbx") {
 			format = core::make_shared<VBXFormat>();
+		} else if (ext == "xraw") {
+			format = core::make_shared<XRawFormat>();
 		} else if (ext == "gltf" || ext == "glb" || ext == "vrm") {
 			format = core::make_shared<GLTFFormat>();
 		} else {

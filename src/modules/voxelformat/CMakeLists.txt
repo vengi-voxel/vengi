@@ -54,6 +54,7 @@ set(SRCS
 	VolumeFormat.h VolumeFormat.cpp
 	GLTFFormat.h GLTFFormat.cpp
 	VENGIFormat.h VENGIFormat.cpp
+	XRawFormat.h XRawFormat.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph json)
 

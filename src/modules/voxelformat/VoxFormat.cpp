@@ -13,6 +13,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
+#include "voxelformat/external/ogt_vox.h"
 #include "voxelutil/VolumeVisitor.h"
 
 #include <glm/ext/matrix_transform.hpp>
