@@ -67,7 +67,7 @@ PathTracer::~PathTracer() {
 }
 
 bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-							 const voxel::Mesh &mesh) {
+							 const voxel::Mesh &mesh, bool opaque) {
 	const voxel::Palette &palette = node.palette();
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
@@ -116,7 +116,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 	yocto::instance_data instance_data;
 	instance_data.frame = yocto::translation_frame({mins[0], mins[1], mins[2]}),
 	instance_data.shape = (int)_state.scene.shapes.size() - 1;
-	instance_data.material = (int)_state.scene.materials.size() - 1;
+	instance_data.material = opaque ? (int)_state.scene.materials.size() - 2 : (int)_state.scene.materials.size() - 1;
 	_state.scene.instances.push_back(instance_data);
 	return true;
 }
@@ -152,19 +152,27 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 			texture.pixelsb.push_back({});
 		}
 		_state.scene.textures.push_back(texture);
+
+		_state.scene.materials.clear();
+
 		// TODO: create proper material
-		yocto::material_data material;
-		material.color = {1.0f, 1.0f, 1.0f};
-		if (!_state.scene.textures.empty()) {
-			material.color_tex = (int)_state.scene.textures.size() - 1;
-		}
-		_state.scene.materials.push_back(material);
+		yocto::material_data materialOpaque;
+		materialOpaque.color = {1.0f, 1.0f, 1.0f};
+		materialOpaque.color_tex = (int)_state.scene.textures.size() - 1;
+		_state.scene.materials.push_back(materialOpaque);
+
+		yocto::material_data materialTransparent;
+		materialTransparent.type = yocto::material_type::transparent;
+		materialTransparent.color = {1.0f, 1.0f, 1.0f};
+		materialTransparent.color_tex = (int)_state.scene.textures.size() - 1;
+		_state.scene.materials.push_back(materialTransparent);
+
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-		if (!createScene(sceneGraph, node, mesh.mesh[0])) {
+		if (!createScene(sceneGraph, node, mesh.mesh[0], true)) {
 			return false;
 		}
-		if (!createScene(sceneGraph, node, mesh.mesh[1])) {
+		if (!createScene(sceneGraph, node, mesh.mesh[1], false)) {
 			return false;
 		}
 	}

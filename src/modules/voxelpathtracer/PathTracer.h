@@ -43,7 +43,7 @@ class PathTracer {
 private:
 	PathTracerState _state;
 
-	bool createScene(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, const voxel::Mesh &mesh);
+	bool createScene(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, const voxel::Mesh &mesh, bool opaque);
 	bool createScene(const scenegraph::SceneGraph &sceneGraph);
 
 public:
