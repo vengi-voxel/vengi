@@ -12,6 +12,7 @@
 #include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 
 #include <glm/ext/matrix_transform.hpp>
@@ -166,7 +167,16 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		ogt_vox_destroy_scene(scene);
 		return false;
 	}
+
 	ogt_vox_destroy_scene(scene);
+
+	if (sceneGraph.empty() && palette.colorCount() > 0) {
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setName(filename);
+		node.setVolume(new voxel::RawVolume(voxel::Region(0, 31)), true);
+		node.setPalette(palette);
+		return sceneGraph.emplace(core::move(node), 0) != InvalidNodeId;
+	}
 	return true;
 }
 

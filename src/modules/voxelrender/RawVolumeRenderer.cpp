@@ -514,7 +514,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		const int bufferIndex = resolveIdx(idx);
 		if (!_state[bufferIndex].hasData()) {
 			if (_state[bufferIndex]._rawVolume) {
-				Log::debug("No data, but volume: %i", bufferIndex);
+				Log::trace("No data, but volume: %i", bufferIndex);
 			}
 			continue;
 		}
