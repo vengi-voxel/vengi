@@ -180,20 +180,21 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				}
 
 				if (ImGui::BeginTabItem("Credits")) {
-					ImGui::URLItem("backward-cpp", "https://github.com/bombela/backward-cpp.git", w);
-					ImGui::URLItem("dearimgui", "https://github.com/ocornut/imgui.git", w);
-					ImGui::URLItem("glm", "https://github.com/g-truc/glm.git", w);
-					ImGui::URLItem("imguizmo", "https://github.com/CedricGuillemet/ImGuizmo.git", w);
-					ImGui::URLItem("im-neo-sequencer", "https://gitlab.com/GroGy/im-neo-sequencer.git", w);
-					ImGui::URLItem("libvxl", "https://github.com/xtreme8000/libvxl.git", w);
+					ImGui::URLItem("backward-cpp", "https://github.com/bombela/backward-cpp", w);
+					ImGui::URLItem("dearimgui", "https://github.com/ocornut/imgui", w);
+					ImGui::URLItem("glm", "https://github.com/g-truc/glm", w);
+					ImGui::URLItem("imguizmo", "https://github.com/CedricGuillemet/ImGuizmo", w);
+					ImGui::URLItem("im-neo-sequencer", "https://gitlab.com/GroGy/im-neo-sequencer", w);
+					ImGui::URLItem("libvxl", "https://github.com/xtreme8000/libvxl", w);
 					ImGui::URLItem("lua", "https://www.lua.org/", w);
 					ImGui::URLItem("ogt_vox", "https://github.com/jpaver/opengametools", w);
 					ImGui::URLItem("polyvox", "http://www.volumesoffun.com/", w);
-					ImGui::URLItem("SDL2", "https://github.com/libsdl-org/SDL.git", w);
-					ImGui::URLItem("stb/SOIL2", "https://github.com/SpartanJ/SOIL2.git", w);
-					ImGui::URLItem("tinygltf", "https://github.com/syoyo/tinygltf.git", w);
-					ImGui::URLItem("tinyobjloader", "https://github.com/tinyobjloader/tinyobjloader.git", w);
-					ImGui::URLItem("ufbx", "https://github.com/bqqbarbhg/ufbx.git", w);
+					ImGui::URLItem("SDL2", "https://github.com/libsdl-org/SDL", w);
+					ImGui::URLItem("stb/SOIL2", "https://github.com/SpartanJ/SOIL2", w);
+					ImGui::URLItem("tinygltf", "https://github.com/syoyo/tinygltf", w);
+					ImGui::URLItem("tinyobjloader", "https://github.com/tinyobjloader/tinyobjloader", w);
+					ImGui::URLItem("ufbx", "https://github.com/bqqbarbhg/ufbx", w);
+					ImGui::URLItem("Yocto/GL", "https://github.com/xelatihy/yocto-gl", w);
 					ImGui::EndTabItem();
 				}
 				if (ImGui::BeginTabItem("Formats")) {

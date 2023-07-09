@@ -50,6 +50,7 @@ VoxEdit:
    - Improved font quality
    - Fixed a few crashes
    - Added hollow functionality to remove invisible voxels
+   - Added pathtracer support (Yocto/GL)
 
 Thumbnailer:
 
