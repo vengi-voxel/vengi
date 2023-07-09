@@ -11,11 +11,13 @@
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "video/Camera.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxelrender/SceneGraphRenderer.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelpathtracer {
@@ -121,13 +123,41 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 	return true;
 }
 
+void PathTracer::addCamera(const scenegraph::SceneGraphNodeCamera &node) {
+	addCamera(node.name().c_str(), voxelrender::toCamera({}, node));
+}
+
+static inline yocto::vec3f toVec3f(const glm::vec3 &in) {
+	return yocto::vec3f{in.x, in.y, in.z};
+}
+
+void PathTracer::addCamera(const char *name, const video::Camera &cam) {
+	yocto::scene_data &scene = _state.scene;
+	scene.camera_names.emplace_back(name);
+	yocto::camera_data &camera = scene.cameras.emplace_back();
+	camera.orthographic = cam.mode() == video::CameraMode::Orthogonal;
+	camera.film = 0.036f;
+	camera.aspect = cam.aspect();
+	camera.aperture = 0;
+	camera.lens = 0.050f;
+	const yocto::vec3f &from = toVec3f(cam.eye());
+	const yocto::vec3f &to = toVec3f(cam.target());
+	const yocto::vec3f &up = toVec3f(cam.up());
+	camera.frame = yocto::lookat_frame(from, to, up);
+	camera.focus = yocto::length(from - to);
+}
+
 bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 	_state.scene = {};
 	_state.lights = {};
+
 	const bool marchingCubes = core::Var::getSafe(cfg::VoxelMeshMode)->intVal() == 1;
 	// TODO: support references
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
+		if (!node.visible()) {
+			continue;
+		}
 		const voxel::RawVolume *v = node.volume();
 		if (v == nullptr) {
 			continue;
@@ -176,10 +206,12 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 			return false;
 		}
 	}
+	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		addCamera(scenegraph::toCameraNode(node));
+	}
 
-	core_assert(_state.scene.cameras.empty());
 	yocto::add_camera(_state.scene);
-	core_assert(_state.scene.environments.empty());
 	yocto::add_sky(_state.scene);
 
 	return true;

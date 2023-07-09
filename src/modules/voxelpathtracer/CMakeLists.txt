@@ -3,7 +3,7 @@ set(SRCS
 	PathTracer.cpp PathTracer.h
 )
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES yocto scenegraph image)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES yocto voxelrender image)
 
 set(TEST_SRCS
 	tests/PathTracerTest.cpp

@@ -8,6 +8,10 @@
 #include <yocto_scene.h>
 #include <yocto_trace.h>
 
+namespace video {
+class Camera;
+}
+
 namespace image {
 class Image;
 typedef core::SharedPtr<Image> ImagePtr;
@@ -21,6 +25,7 @@ class Palette;
 namespace scenegraph {
 class SceneGraph;
 class SceneGraphNode;
+class SceneGraphNodeCamera;
 }
 
 namespace voxelpathtracer {
@@ -43,6 +48,8 @@ class PathTracer {
 private:
 	PathTracerState _state;
 
+	void addCamera(const scenegraph::SceneGraphNodeCamera &node);
+
 	bool createScene(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, const voxel::Mesh &mesh, bool opaque);
 	bool createScene(const scenegraph::SceneGraph &sceneGraph);
 
@@ -55,6 +62,8 @@ public:
 	bool restart(const scenegraph::SceneGraph &sceneGraph);
 	bool stop();
 	bool started() const;
+
+	void addCamera(const char *name, const video::Camera &cam);
 
 	/**
 	 * @return @c true if rendering is done, @c false otherwise

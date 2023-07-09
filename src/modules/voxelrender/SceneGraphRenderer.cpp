@@ -116,7 +116,7 @@ scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera& camera) {
 
 video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode) {
 	video::Camera camera;
-	// width, heigth and aspect of the cameraNode are not taken into account here
+	// width, height and aspect of the cameraNode are not taken into account here
 	camera.setSize(glm::max(glm::ivec2(1, 1), size));
 	if (cameraNode.isOrthographic()) {
 		camera.setMode(video::CameraMode::Orthogonal);
