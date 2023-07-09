@@ -39,7 +39,7 @@ void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneG
 		changed += ImGui::SliderInt("Bounces", &params.bounces, 1, 128);
 		changed += ImGui::SliderInt("Batch", &params.batch, 1, 16);
 		changed += ImGui::SliderFloat("Clamp", &params.clamp, 10, 1000);
-		changed += ImGui::SliderInt("Pratio", &params.pratio, 1, 64);
+		changed += ImGui::SliderInt("Preview ratio", &params.pratio, 1, 64);
 		changed += ImGui::Checkbox("Hide environment", &params.envhidden);
 		changed += ImGui::Checkbox("Filter", &params.tentfilter);
 		changed += ImGui::Checkbox("Denoise", &params.denoise);
