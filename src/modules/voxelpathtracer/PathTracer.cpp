@@ -17,8 +17,6 @@
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeVisitor.h"
-#include "yocto_scene.h"
-#include <yocto_trace.h>
 
 namespace voxelpathtracer {
 
@@ -64,24 +62,8 @@ public:
 
 } // namespace priv
 
-struct PathTracerState {
-	yocto::trace_context context;
-	yocto::scene_data scene;
-	yocto::trace_bvh bvh;
-	yocto::trace_params params;
-	yocto::trace_lights lights;
-	yocto::trace_state state;
-
-	PathTracerState() : context(yocto::make_trace_context({})) {
-	}
-};
-
-PathTracer::PathTracer() : _state(new PathTracerState()) {
-}
-
 PathTracer::~PathTracer() {
 	stop();
-	delete _state;
 }
 
 bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
@@ -128,20 +110,20 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 	for (int i = 0; i < tris; i++) {
 		shape.triangles.push_back({(int)indices[i * 3 + 0], (int)indices[i * 3 + 1], (int)indices[i * 3 + 2]});
 	}
-	_state->scene.shapes.push_back(shape);
+	_state.scene.shapes.push_back(shape);
 
 	const glm::vec3 &mins = mesh.getOffset();
 	yocto::instance_data instance_data;
 	instance_data.frame = yocto::translation_frame({mins[0], mins[1], mins[2]}),
-	instance_data.shape = (int)_state->scene.shapes.size() - 1;
-	instance_data.material = (int)_state->scene.materials.size() - 1;
-	_state->scene.instances.push_back(instance_data);
+	instance_data.shape = (int)_state.scene.shapes.size() - 1;
+	instance_data.material = (int)_state.scene.materials.size() - 1;
+	_state.scene.instances.push_back(instance_data);
 	return true;
 }
 
 bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
-	_state->scene = {};
-	_state->lights = {};
+	_state.scene = {};
+	_state.lights = {};
 	const bool marchingCubes = core::Var::getSafe(cfg::VoxelMeshMode)->intVal() == 1;
 	// TODO: support references
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
@@ -169,14 +151,14 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 		for (int i = node.palette().colorCount(); i < texture.width; ++i) {
 			texture.pixelsb.push_back({});
 		}
-		_state->scene.textures.push_back(texture);
+		_state.scene.textures.push_back(texture);
 		// TODO: create proper material
 		yocto::material_data material;
 		material.color = {1.0f, 1.0f, 1.0f};
-		if (!_state->scene.textures.empty()) {
-			material.color_tex = (int)_state->scene.textures.size() - 1;
+		if (!_state.scene.textures.empty()) {
+			material.color_tex = (int)_state.scene.textures.size() - 1;
 		}
-		_state->scene.materials.push_back(material);
+		_state.scene.materials.push_back(material);
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 		if (!createScene(sceneGraph, node, mesh.mesh[0])) {
@@ -187,49 +169,69 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 		}
 	}
 
-	core_assert(_state->scene.cameras.empty());
-	yocto::add_camera(_state->scene);
-	core_assert(_state->scene.environments.empty());
-	yocto::add_sky(_state->scene);
+	core_assert(_state.scene.cameras.empty());
+	yocto::add_camera(_state.scene);
+	core_assert(_state.scene.environments.empty());
+	yocto::add_sky(_state.scene);
 
 	return true;
 }
 
-bool PathTracer::start(const scenegraph::SceneGraph &sceneGraph, int dimensions, int samples) {
+bool PathTracer::start(const scenegraph::SceneGraph &sceneGraph) {
 	createScene(sceneGraph);
-	_state->params.resolution = dimensions;
-	_state->params.samples = samples;
-	_state->bvh = yocto::make_trace_bvh(_state->scene, _state->params);
-	_state->lights = yocto::make_trace_lights(_state->scene, _state->params);
-	_state->state = yocto::make_trace_state(_state->scene, _state->params);
-	yocto::trace_start(_state->context, _state->state, _state->scene, _state->bvh, _state->lights, _state->params);
+	_state.bvh = yocto::make_trace_bvh(_state.scene, _state.params);
+	_state.lights = yocto::make_trace_lights(_state.scene, _state.params);
+	_state.state = yocto::make_trace_state(_state.scene, _state.params);
+	yocto::trace_start(_state.context, _state.state, _state.scene, _state.bvh, _state.lights, _state.params);
+	_state.started = true;
 	return true;
+}
+
+bool PathTracer::restart(const scenegraph::SceneGraph &sceneGraph) {
+	if (!started()) {
+		return false;
+	}
+	stop();
+	return start(sceneGraph);
 }
 
 bool PathTracer::stop() {
-	yocto::trace_cancel(_state->context);
+	yocto::trace_cancel(_state.context);
+	_state.started = false;
 	return true;
 }
 
-bool PathTracer::update() {
-	if (yocto::trace_done(_state->context)) {
-		if (_state->state.samples >= _state->params.samples) {
+bool PathTracer::started() const {
+	return _state.started;
+}
+
+bool PathTracer::update(int *currentSample) {
+	if (!_state.started) {
+		*currentSample = 0;
+		return true;
+	}
+	if (yocto::trace_done(_state.context)) {
+		if (_state.state.samples >= _state.params.samples) {
+			_state.started = false;
 			return true;
 		}
-		Log::debug("PathTracer sample: %i", _state->state.samples);
+		if (currentSample) {
+			*currentSample = _state.state.samples;
+		}
+		Log::debug("PathTracer sample: %i", _state.state.samples);
 	}
-	yocto::trace_start(_state->context, _state->state, _state->scene, _state->bvh, _state->lights, _state->params);
+	yocto::trace_start(_state.context, _state.state, _state.scene, _state.bvh, _state.lights, _state.params);
 	return false;
 }
 
-image::ImagePtr PathTracer::image() const {
+image::ImagePtr PathTracer::image() {
 	yocto::image_data image;
-	if (!yocto::trace_done(_state->context)) {
-		image = yocto::make_image(_state->state.width, _state->state.height, true);
-		yocto::trace_preview(image, _state->context, _state->state, _state->scene, _state->bvh, _state->lights,
-							 _state->params);
+	if (!yocto::trace_done(_state.context)) {
+		image = yocto::make_image(_state.state.width, _state.state.height, true);
+		yocto::trace_preview(image, _state.context, _state.state, _state.scene, _state.bvh, _state.lights,
+							 _state.params);
 	} else {
-		image = yocto::get_image(_state->state);
+		image = yocto::get_image(_state.state);
 	}
 
 	priv::YoctoImageReadStream stream(image);

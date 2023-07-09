@@ -43,15 +43,16 @@ TEST_F(PathTracerTest, testHMec) {
 		<< "Could not load " << file->name();
 
 	voxelpathtracer::PathTracer pathTracer;
-	int dimensions = 512;
-	ASSERT_TRUE(pathTracer.start(sceneGraph, dimensions, 8));
+	pathTracer.state().params.resolution = 512;
+	pathTracer.state().params.samples = 8;
+	ASSERT_TRUE(pathTracer.start(sceneGraph));
 	while (!pathTracer.update()) {
 		SDL_Delay(100);
 	}
 	const image::ImagePtr &img = pathTracer.image();
 	ASSERT_TRUE(img);
 	ASSERT_TRUE(img->isLoaded());
-	ASSERT_EQ(dimensions, img->width());
+	ASSERT_EQ(512, img->width());
 	// ASSERT_EQ(dimensions, img->height());
 	image::writeImage(img, file->name() + ".png");
 	ASSERT_TRUE(pathTracer.stop());
