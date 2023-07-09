@@ -432,6 +432,11 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			mat.matl[i].type = ogt_matl_type::ogt_matl_type_emit;
 			mat.matl[i].emit = 1.0f;
 		}
+
+		if (pal.color[i].a < 255) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_alpha;
+			mat.matl[i].alpha = (float)pal.color[i].a / 255.0f;
+		}
 	}
 
 	uint32_t buffersize = 0;

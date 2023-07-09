@@ -74,8 +74,11 @@ void loadPaletteFromScene(const ogt_vox_scene *scene, voxel::Palette &palette) {
 		const ogt_vox_rgba color = scene->palette.color[(i + 1) & 255];
 		palette.color(palIdx) = core::RGBA(color.r, color.g, color.b, color.a);
 		const ogt_vox_matl &matl = scene->materials.matl[(i + 1) & 255];
-		if (matl.type == ogt_matl_type_emit) {
-			palette.glowColor(palIdx) = palette.color(palIdx);
+		if (matl.content_flags & k_ogt_vox_matl_have_emit) {
+			palette.glowColor(palIdx) = palette.color(palIdx); // TODO: matl.emit
+		}
+		if (matl.content_flags & k_ogt_vox_matl_have_alpha) {
+			palette.color(palIdx).a = (uint8_t)(matl.alpha * 255.0f);
 		}
 		++palIdx;
 		if (color.a != 0) {
