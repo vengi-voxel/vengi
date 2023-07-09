@@ -144,10 +144,10 @@ void PathTracer::addCamera(const char *name, const video::Camera &cam) {
 	const yocto::vec3f &to = toVec3f(cam.target());
 	const yocto::vec3f &up = toVec3f(cam.up());
 	camera.frame = yocto::lookat_frame(from, to, up);
-	camera.focus = yocto::length(from - to);
+	camera.focus = cam.targetDistance() * 2.0f;
 }
 
-bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
+bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
 	_state.scene = {};
 	_state.lights = {};
 
@@ -206,19 +206,26 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph) {
 			return false;
 		}
 	}
+
+	if (camera) {
+		addCamera("default", *camera);
+	}
+
 	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		addCamera(scenegraph::toCameraNode(node));
 	}
 
-	yocto::add_camera(_state.scene);
+	if (_state.scene.cameras.size() == 1) {
+		yocto::add_camera(_state.scene);
+	}
 	yocto::add_sky(_state.scene);
 
 	return true;
 }
 
-bool PathTracer::start(const scenegraph::SceneGraph &sceneGraph) {
-	createScene(sceneGraph);
+bool PathTracer::start(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
+	createScene(sceneGraph, camera);
 	_state.bvh = yocto::make_trace_bvh(_state.scene, _state.params);
 	_state.lights = yocto::make_trace_lights(_state.scene, _state.params);
 	_state.state = yocto::make_trace_state(_state.scene, _state.params);
@@ -227,12 +234,11 @@ bool PathTracer::start(const scenegraph::SceneGraph &sceneGraph) {
 	return true;
 }
 
-bool PathTracer::restart(const scenegraph::SceneGraph &sceneGraph) {
-	if (!started()) {
-		return false;
+bool PathTracer::restart(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
+	if (started()) {
+		stop();
 	}
-	stop();
-	return start(sceneGraph);
+	return start(sceneGraph, camera);
 }
 
 bool PathTracer::stop() {

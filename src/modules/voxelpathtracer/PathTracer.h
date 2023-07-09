@@ -49,21 +49,20 @@ private:
 	PathTracerState _state;
 
 	void addCamera(const scenegraph::SceneGraphNodeCamera &node);
+	void addCamera(const char *name, const video::Camera &cam);
 
 	bool createScene(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node, const voxel::Mesh &mesh, bool opaque);
-	bool createScene(const scenegraph::SceneGraph &sceneGraph);
+	bool createScene(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera);
 
 public:
 	~PathTracer();
 	PathTracerState &state() {
 		return _state;
 	}
-	bool start(const scenegraph::SceneGraph &sceneGraph);
-	bool restart(const scenegraph::SceneGraph &sceneGraph);
+	bool start(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera = nullptr);
+	bool restart(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera = nullptr);
 	bool stop();
 	bool started() const;
-
-	void addCamera(const char *name, const video::Camera &cam);
 
 	/**
 	 * @return @c true if rendering is done, @c false otherwise

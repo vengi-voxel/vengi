@@ -3,7 +3,6 @@
  */
 
 #include "voxelpathtracer/PathTracer.h"
-#include "SDL_timer.h"
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
 #include "core/Log.h"
@@ -14,6 +13,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
+#include <SDL_timer.h>
 
 class PathTracerTest : public app::AbstractTest {
 private:

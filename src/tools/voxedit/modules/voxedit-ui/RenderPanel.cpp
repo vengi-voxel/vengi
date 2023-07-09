@@ -8,6 +8,8 @@
 #include "scenegraph/SceneGraph.h"
 #include "ui/IMGUIEx.h"
 #include "video/Texture.h"
+#include "voxedit-util/SceneManager.h"
+#include "voxelpathtracer/PathTracer.h"
 
 namespace voxedit {
 
@@ -24,8 +26,10 @@ bool RenderPanel::init() {
 }
 
 void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneGraph) {
+	const video::Camera *camera = sceneMgr().activeCamera();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
-		yocto::trace_params &params = _pathTracer.state().params;
+		voxelpathtracer::PathTracerState &state = _pathTracer.state();
+		yocto::trace_params &params = state.params;
 		int changed = 0;
 		changed += ImGui::InputInt("Dimensions", &params.resolution, 180, 4096);
 		changed += ImGui::InputInt("Samples", &params.samples, 16, 4096);
@@ -38,14 +42,19 @@ void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneG
 		changed += ImGui::Checkbox("Hide environment", &params.envhidden);
 		changed += ImGui::Checkbox("Filter", &params.tentfilter);
 		changed += ImGui::Checkbox("Denoise", &params.denoise);
+
+		// TODO: use the scene settings for ambient and diffuse color values
+		if (!state.scene.camera_names.empty()) {
+			changed += ImGui::ComboStl("Camera", &params.camera, state.scene.camera_names);
+		}
 		if (changed > 0) {
-			_pathTracer.restart(sceneGraph);
+			_pathTracer.restart(sceneGraph, camera);
 		}
 		if (_pathTracer.started()) {
 			if (ImGui::Button("Stop path tracer")) {
 				_pathTracer.stop();
 			}
-			ImGui::TooltipText("Sample %i/%i", _currentSample, _pathTracer.state().params.samples);
+			ImGui::TooltipText("Sample %i/%i", _currentSample, params.samples);
 			_pathTracer.update(&_currentSample);
 			_image = _pathTracer.image();
 			if (_image->isLoaded()) {
@@ -53,7 +62,7 @@ void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneG
 			}
 		} else {
 			if (ImGui::Button("Start path tracer")) {
-				_pathTracer.start(sceneGraph);
+				_pathTracer.start(sceneGraph, camera);
 			}
 		}
 		if (_texture->isLoaded()) {
