@@ -4,6 +4,7 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "core/GameConfig.h"
+#include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
@@ -13,6 +14,8 @@
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
@@ -20,12 +23,9 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/FormatThumbnail.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"
 #include "voxelutil/VolumeVisitor.h"
-#include "core/Log.h"
 
 #define WRITE_TO_FILE 0
 
@@ -33,24 +33,25 @@ namespace voxelformat {
 
 const voxel::Voxel AbstractVoxFormatTest::Empty;
 
-image::ImagePtr AbstractVoxFormatTest::testThumbnailCreator(const scenegraph::SceneGraph &sceneGraph, const ThumbnailContext &ctx) {
+image::ImagePtr AbstractVoxFormatTest::testThumbnailCreator(const scenegraph::SceneGraph &sceneGraph,
+															const ThumbnailContext &ctx) {
 	return image::ImagePtr();
 }
 
-void AbstractVoxFormatTest::dump(const core::String& srcFilename, const scenegraph::SceneGraph &sceneGraph) {
+void AbstractVoxFormatTest::dump(const core::String &srcFilename, const scenegraph::SceneGraph &sceneGraph) {
 	int i = 0;
-	const core::String& prefix = core::string::extractFilename(srcFilename);
+	const core::String &prefix = core::string::extractFilename(srcFilename);
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
-		const core::String& file = core::string::format("%s-%02i-%s.txt", prefix.c_str(), i, node.name().c_str());
-		const core::String& structName = core::string::format("model_%i", i);
+		const core::String &file = core::string::format("%s-%02i-%s.txt", prefix.c_str(), i, node.name().c_str());
+		const core::String &structName = core::string::format("model_%i", i);
 		dump(structName, node.volume(), core::string::sanitizeFilename(file));
 		++i;
 	}
 }
 
-void AbstractVoxFormatTest::dump(const core::String& structName, voxel::RawVolume* v, const core::String& filename) {
-	const io::FilePtr& file = open(filename, io::FileMode::SysWrite);
+void AbstractVoxFormatTest::dump(const core::String &structName, voxel::RawVolume *v, const core::String &filename) {
+	const io::FilePtr &file = open(filename, io::FileMode::SysWrite);
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
 	stream.writeString(core::string::format("struct %s {\n", structName.c_str()), false);
@@ -63,13 +64,14 @@ void AbstractVoxFormatTest::dump(const core::String& structName, voxel::RawVolum
 	stream.writeString("\tcore::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);\n", false);
 	voxelutil::visitVolume(*v, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		stream.writeString(
-			core::string::format("\tv->setVoxel(%i, %i, %i, voxel::createVoxel(%i));\n", x,
-								 y, z, voxel.getColor()), false);
+			core::string::format("\tv->setVoxel(%i, %i, %i, voxel::createVoxel(%i));\n", x, y, z, voxel.getColor()),
+			false);
 	});
 	stream.writeString("\treturn v;\n}\n};\n", false);
 }
 
-void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &filename, Format *format, voxel::ValidateFlags flags) {
+void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &filename, Format *format,
+														 voxel::ValidateFlags flags) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(1));
 	voxel::RawVolume volume(region);
 	EXPECT_TRUE(volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)));
@@ -89,7 +91,8 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &fil
 	voxel::volumeComparator(volume, voxel::getPalette(), *loaded, merged.second, voxel::ValidateFlags::None);
 }
 
-void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String& destFilename, Format &destFormat, voxel::ValidateFlags flags) {
+void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &destFilename,
+																   Format &destFormat, voxel::ValidateFlags flags) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(1));
 	voxel::RawVolume original(region);
 	EXPECT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)));
@@ -100,7 +103,8 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 		scenegraph::SceneGraphNode node;
 		node.setVolume(&original, false);
 		sceneGraphsave.emplace(core::move(node));
-		EXPECT_TRUE(srcFormat.save(sceneGraphsave, destFilename, srcFormatStream, testSaveCtx)) << "Could not save " << destFilename;
+		EXPECT_TRUE(srcFormat.save(sceneGraphsave, destFilename, srcFormatStream, testSaveCtx))
+			<< "Could not save " << destFilename;
 	}
 	srcFormatStream.seek(0);
 	scenegraph::SceneGraph::MergedVolumePalette merged = load(destFilename, srcFormatStream, srcFormat);
@@ -117,7 +121,8 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 		scenegraph::SceneGraphNode node;
 		node.setVolume(merged.first, false);
 		sceneGraphsave.emplace(core::move(node));
-		EXPECT_TRUE(destFormat.save(sceneGraphsave, destFilename, stream, testSaveCtx)) << "Could not save " << destFilename;
+		EXPECT_TRUE(destFormat.save(sceneGraphsave, destFilename, stream, testSaveCtx))
+			<< "Could not save " << destFilename;
 	}
 	stream.seek(0);
 	scenegraph::SceneGraph::MergedVolumePalette merged2 = load(destFilename, stream, destFormat);
@@ -129,8 +134,9 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 	voxel::volumeComparator(original, voxel::getPalette(), *loaded, merged2.second, flags);
 }
 
-void AbstractVoxFormatTest::canLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename, size_t expectedVolumes) {
-	const io::FilePtr& file = open(filename);
+void AbstractVoxFormatTest::canLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+									size_t expectedVolumes) {
+	const io::FilePtr &file = open(filename);
 	ASSERT_TRUE(file->validHandle()) << "Could not open " << filename;
 	io::FileStream stream(file);
 	io::FileDescription fileDesc;
@@ -143,10 +149,11 @@ void AbstractVoxFormatTest::checkColor(core::RGBA c1, const voxel::Palette &pale
 	const core::RGBA c2 = palette.color(index);
 	const float delta = core::Color::getDistance(c1, c2);
 	ASSERT_LE(delta, maxDelta) << "color1[" << core::Color::print(c1) << "], color2[" << core::Color::print(c2)
-							 << "], delta[" << delta << "]";
+							   << "], delta[" << delta << "]";
 }
 
-void AbstractVoxFormatTest::testRGBSmall(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph) {
+void AbstractVoxFormatTest::testRGBSmall(const core::String &filename, io::SeekableReadStream &stream,
+										 scenegraph::SceneGraph &sceneGraph) {
 	io::FileDescription fileDesc;
 	fileDesc.set(filename);
 	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx));
@@ -162,16 +169,16 @@ void AbstractVoxFormatTest::testRGBSmall(const core::String &filename, io::Seeka
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::RawVolume *volume = node.volume();
-		EXPECT_EQ(3, voxelutil::visitVolume(*volume, [] (int, int, int, const voxel::Voxel&) {}));
-		checkColor(blue, node.palette(), volume->voxel( 0,  0,  0).getColor(), 0.0f);
-		checkColor(green, node.palette(), volume->voxel( 1,  0,  0).getColor(), 0.0f);
-		checkColor(red, node.palette(), volume->voxel( 2,  0, 0).getColor(), 0.0f);
+		EXPECT_EQ(3, voxelutil::visitVolume(*volume, [](int, int, int, const voxel::Voxel &) {}));
+		checkColor(blue, node.palette(), volume->voxel(0, 0, 0).getColor(), 0.0f);
+		checkColor(green, node.palette(), volume->voxel(1, 0, 0).getColor(), 0.0f);
+		checkColor(red, node.palette(), volume->voxel(2, 0, 0).getColor(), 0.0f);
 	}
 }
 
 void AbstractVoxFormatTest::testRGBSmall(const core::String &filename) {
 	scenegraph::SceneGraph sceneGraph;
-	const io::FilePtr& file = open(filename);
+	const io::FilePtr &file = open(filename);
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
 	testRGBSmall(filename, stream, sceneGraph);
@@ -216,12 +223,13 @@ void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename, c
 
 void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta) {
 	scenegraph::SceneGraph sceneGraph;
-	const io::FilePtr& file = open(filename);
+	const io::FilePtr &file = open(filename);
 	ASSERT_TRUE(file->validHandle()) << "Could not open " << filename.c_str();
 	io::FileStream stream(file);
 	io::FileDescription fileDesc;
 	fileDesc.set(filename);
-	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx)) << "Failed to load " << filename.c_str();
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx))
+		<< "Failed to load " << filename.c_str();
 	EXPECT_EQ(1u, sceneGraph.size()) << "Unexpected scene graph size for " << filename.c_str();
 
 	voxel::Palette palette;
@@ -234,24 +242,35 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::RawVolume *volume = node.volume();
-		EXPECT_EQ(99, voxelutil::visitVolume(*volume, [] (int, int, int, const voxel::Voxel&) {}));
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0,  0).getMaterial()) << "Failed rgb check for " << filename.c_str();
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0,  0).getMaterial()) << "Failed rgb check for " << filename.c_str();
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31,  0, 31).getMaterial()) << "Failed rgb check for " << filename.c_str();
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0,  0, 31).getMaterial()) << "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(99, voxelutil::visitVolume(*volume, [](int, int, int, const voxel::Voxel &) {}));
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(0, 0, 0).getMaterial())
+			<< "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 0, 0).getMaterial())
+			<< "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 0, 31).getMaterial())
+			<< "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(0, 0, 31).getMaterial())
+			<< "Failed rgb check for " << filename.c_str();
 
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0, 31,  0).getMaterial()) << "Failed rgb check for " << filename.c_str();
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31,  0).getMaterial()) << "Failed rgb check for " << filename.c_str();
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31, 31).getMaterial()) << "Failed rgb check for " << filename.c_str();
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 0, 31, 31).getMaterial()) << "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(0, 31, 0).getMaterial())
+			<< "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31, 0).getMaterial())
+			<< "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(31, 31, 31).getMaterial())
+			<< "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(0, 31, 31).getMaterial())
+			<< "Failed rgb check for " << filename.c_str();
 
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0,  4).getMaterial()) << "Failed rgb check for " << filename.c_str();
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 12).getMaterial()) << "Failed rgb check for " << filename.c_str();
-		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel( 9,  0, 19).getMaterial()) << "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(9, 0, 4).getMaterial())
+			<< "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(9, 0, 12).getMaterial())
+			<< "Failed rgb check for " << filename.c_str();
+		EXPECT_EQ(voxel::VoxelType::Generic, volume->voxel(9, 0, 19).getMaterial())
+			<< "Failed rgb check for " << filename.c_str();
 
-		checkColor(red, node.palette(), volume->voxel( 9,  0,  4).getColor(), maxDelta);
-		checkColor(green, node.palette(), volume->voxel( 9,  0,  12).getColor(), maxDelta);
-		checkColor(blue, node.palette(), volume->voxel( 9,  0,  19).getColor(), maxDelta);
+		checkColor(red, node.palette(), volume->voxel(9, 0, 4).getColor(), maxDelta);
+		checkColor(green, node.palette(), volume->voxel(9, 0, 12).getColor(), maxDelta);
+		checkColor(blue, node.palette(), volume->voxel(9, 0, 19).getColor(), maxDelta);
 	}
 }
 
@@ -272,14 +291,15 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename,
 }
 
 void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &srcFilename, Format &srcFormat,
-												const core::String &destFilename, Format &destFormat,
-												voxel::ValidateFlags flags, float maxDelta) {
+														  const core::String &destFilename, Format &destFormat,
+														  voxel::ValidateFlags flags, float maxDelta) {
 	scenegraph::SceneGraph srcSceneGraph;
 	ASSERT_TRUE(loadGroups(srcFilename, srcFormat, srcSceneGraph)) << "Failed to load " << srcFilename;
 #if WRITE_TO_FILE
 	{
 		io::FileStream stream(open(destFilename, io::FileMode::SysWrite));
-		ASSERT_TRUE(destFormat.save(srcSceneGraph, destFilename, stream, testSaveCtx)) << "Could not save " << destFilename;
+		ASSERT_TRUE(destFormat.save(srcSceneGraph, destFilename, stream, testSaveCtx))
+			<< "Could not save " << destFilename;
 	}
 #else
 	io::BufferedReadWriteStream stream((int64_t)(10 * 1024 * 1024));
@@ -290,15 +310,17 @@ void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &sr
 #if WRITE_TO_FILE
 	{
 		io::FileStream stream(open(destFilename));
-		ASSERT_TRUE(destFormat.load(destFilename, stream, destSceneGraph, testLoadCtx)) << "Failed to load the target format";
+		ASSERT_TRUE(destFormat.load(destFilename, stream, destSceneGraph, testLoadCtx))
+			<< "Failed to load the target format";
 	}
 #else
-	ASSERT_TRUE(destFormat.load(destFilename, stream, destSceneGraph, testLoadCtx)) << "Failed to load the target format";
+	ASSERT_TRUE(destFormat.load(destFilename, stream, destSceneGraph, testLoadCtx))
+		<< "Failed to load the target format";
 #endif
 	voxel::sceneGraphComparator(srcSceneGraph, destSceneGraph, flags, maxDelta);
 }
 
-void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Format* format) {
+void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String &filename, Format *format) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
 	voxel::RawVolume original(region);
 	original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
@@ -314,10 +336,11 @@ void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String& filename, Fo
 	scenegraph::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
 	core::ScopedPtr<voxel::RawVolume> loaded(mergedLoad.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load single voxel file " << filename;
-	voxel::volumeComparator(original, voxel::getPalette(), *loaded, mergedLoad.second, voxel::ValidateFlags::Color | voxel::ValidateFlags::Region);
+	voxel::volumeComparator(original, voxel::getPalette(), *loaded, mergedLoad.second,
+							voxel::ValidateFlags::Color | voxel::ValidateFlags::Region);
 }
 
-void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Format* format) {
+void AbstractVoxFormatTest::testSaveSmallVolume(const core::String &filename, Format *format) {
 	voxel::Palette pal;
 	pal.magicaVoxel();
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0, 1, 1));
@@ -339,7 +362,8 @@ void AbstractVoxFormatTest::testSaveSmallVolume(const core::String& filename, Fo
 	scenegraph::SceneGraph::MergedVolumePalette mergedLoad = load(filename, bufferedStream, *format);
 	core::ScopedPtr<voxel::RawVolume> loaded(mergedLoad.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load single voxel file " << filename;
-	voxel::volumeComparator(original, pal, *loaded, mergedLoad.second, voxel::ValidateFlags::Color | voxel::ValidateFlags::Region);
+	voxel::volumeComparator(original, pal, *loaded, mergedLoad.second,
+							voxel::ValidateFlags::Color | voxel::ValidateFlags::Region);
 }
 
 void AbstractVoxFormatTest::testSaveMultipleModels(const core::String &filename, Format *format) {
@@ -389,7 +413,8 @@ void AbstractVoxFormatTest::testSave(const core::String &filename, Format *forma
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
 
-void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Format *format, int mins, int maxs, voxel::ValidateFlags flags) {
+void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Format *format, int mins, int maxs,
+											  voxel::ValidateFlags flags) {
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume original(region);
 
@@ -406,7 +431,8 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 	testSaveLoadVolume(filename, original, format, flags);
 }
 
-void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, const voxel::RawVolume &original, Format *format, voxel::ValidateFlags flags) {
+void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, const voxel::RawVolume &original,
+											   Format *format, voxel::ValidateFlags flags) {
 	voxel::Palette pal;
 	pal.magicaVoxel();
 
@@ -431,7 +457,7 @@ void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, con
 		node.setName("second level #2");
 		node.setVolume(&original, false);
 		node.setPalette(pal);
-		/*nodeId =*/ sceneGraph.emplace(core::move(node), nodeId);
+		/*nodeId =*/sceneGraph.emplace(core::move(node), nodeId);
 	}
 
 	io::SeekableReadStream *readStream;
@@ -467,11 +493,12 @@ void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, con
 #undef WRITE_TO_FILE
 
 io::FilePtr AbstractVoxFormatTest::open(const core::String &filename, io::FileMode mode) {
-	const io::FilePtr& file = io::filesystem()->open(core::String(filename), mode);
+	const io::FilePtr &file = io::filesystem()->open(core::String(filename), mode);
 	return file;
 }
 
-scenegraph::SceneGraph::MergedVolumePalette AbstractVoxFormatTest::load(const core::String& filename, io::SeekableReadStream& stream, Format& format) {
+scenegraph::SceneGraph::MergedVolumePalette
+AbstractVoxFormatTest::load(const core::String &filename, io::SeekableReadStream &stream, Format &format) {
 	scenegraph::SceneGraph sceneGraph;
 	if (!format.load(filename, stream, sceneGraph, testLoadCtx)) {
 		Log::error("Failed to load %s", filename.c_str());
@@ -485,7 +512,7 @@ scenegraph::SceneGraph::MergedVolumePalette AbstractVoxFormatTest::load(const co
 	return sceneGraph.merge();
 }
 
-scenegraph::SceneGraph::MergedVolumePalette AbstractVoxFormatTest::load(const core::String& filename, Format& format) {
+scenegraph::SceneGraph::MergedVolumePalette AbstractVoxFormatTest::load(const core::String &filename, Format &format) {
 	scenegraph::SceneGraph sceneGraph;
 	if (!loadGroups(filename, format, sceneGraph)) {
 		return scenegraph::SceneGraph::MergedVolumePalette{};
@@ -497,8 +524,9 @@ scenegraph::SceneGraph::MergedVolumePalette AbstractVoxFormatTest::load(const co
 	return sceneGraph.merge();
 }
 
-bool AbstractVoxFormatTest::loadGroups(const core::String& filename, Format& format, scenegraph::SceneGraph &sceneGraph) {
-	const io::FilePtr& file = open(filename);
+bool AbstractVoxFormatTest::loadGroups(const core::String &filename, Format &format,
+									   scenegraph::SceneGraph &sceneGraph) {
+	const io::FilePtr &file = open(filename);
 	if (!file->validHandle()) {
 		Log::error("Could not open %s for reading", filename.c_str());
 		return false;
@@ -507,8 +535,8 @@ bool AbstractVoxFormatTest::loadGroups(const core::String& filename, Format& for
 	return format.load(filename, stream, sceneGraph, testLoadCtx);
 }
 
-int AbstractVoxFormatTest::loadPalette(const core::String& filename, Format& format, voxel::Palette &palette) {
-	const io::FilePtr& file = open(filename);
+int AbstractVoxFormatTest::loadPalette(const core::String &filename, Format &format, voxel::Palette &palette) {
+	const io::FilePtr &file = open(filename);
 	if (!file->validHandle()) {
 		Log::error("Could not open %s for reading the palette", filename.c_str());
 		return 0;
@@ -529,4 +557,4 @@ bool AbstractVoxFormatTest::onInitApp() {
 	return true;
 }
 
-} // namespace voxel
+} // namespace voxelformat
