@@ -22,6 +22,10 @@ protected:
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
 					   const LoadContext &ctx) override;
+
+	bool singleVolume() const override {
+		return true;
+	}
 };
 
 } // namespace voxelformat

@@ -22,6 +22,7 @@
 #include "voxelformat/VXRFormat.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/VoxFormat.h"
+#include "voxelformat/XRawFormat.h"
 
 namespace voxelformat {
 
@@ -250,6 +251,10 @@ TEST_F(ConvertTest, testKVXToQb) {
 
 TEST_F(ConvertTest, testLoadRGBSmallVoxToQb) {
 	testRGBSmallSaveLoad("rgb_small.vox", "test.qb");
+}
+
+TEST_F(ConvertTest, testLoadRGBSmallVoxToXRaw) {
+	testRGBSmallSaveLoad("rgb_small.vox", "test.xraw");
 }
 
 TEST_F(ConvertTest, testLoadRGBSmallQbToVox) {

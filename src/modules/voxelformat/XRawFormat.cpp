@@ -10,10 +10,12 @@
 #include "core/StringUtil.h"
 #include "io/FileStream.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 
@@ -164,12 +166,24 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 
 	ColorChannelDataType colorChannelDataType;
 	wrap(stream.readUInt8((uint8_t &)colorChannelDataType))
+	if (colorChannelDataType != ColorChannelDataType::TypeUnsignedInteger) {
+		Log::error("Could not load xraw file: Unsupported color channel data type: %i", (int)colorChannelDataType);
+		return 0;
+	}
 
 	ColorChannelCount colorChannelCount;
 	wrap(stream.readUInt8((uint8_t &)colorChannelCount))
+	if (colorChannelCount != ColorChannelCount::RGBA) {
+		Log::error("Could not load xraw file: Unsupported color channel count: %i", (int)colorChannelCount);
+		return 0;
+	}
 
 	uint8_t bitsPerColorChannel;
 	wrap(stream.readUInt8(bitsPerColorChannel))
+	if (bitsPerColorChannel != 8) {
+		Log::error("Could not load xraw file: Unsupported bits per color channel: %i", bitsPerColorChannel);
+		return 0;
+	}
 
 	uint8_t bitsPerIndex;
 	wrap(stream.readUInt8(bitsPerIndex))
@@ -206,7 +220,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 				}
 				const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
 				// we have to flip depth with height for our own coordinate system
-				volume->setVoxel((int)w, (int)h, (int)d, voxel);
+				volume->setVoxel((int)width - 1 - (int)w, (int)h, (int)d, voxel);
 			}
 		}
 	}
@@ -222,49 +236,53 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 
 bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-	if (merged.first == nullptr) {
-		Log::error("Failed to merge volumes");
-		return false;
-	}
-	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
+	const scenegraph::SceneGraphNode &node = *sceneGraph.begin(scenegraph::SceneGraphNodeType::Model);
+	const voxel::Region &region = node.region();
 
-	const voxel::Region &region = merged.first->region();
-	voxel::RawVolume::Sampler sampler(merged.first);
-	const glm::ivec3 &lower = region.getLowerCorner();
+	wrapBool(stream.writeUInt32(FourCC('X', 'R', 'A', 'W')))
 
-	const uint32_t width = region.getWidthInVoxels();
-	const uint32_t height = region.getHeightInVoxels();
-	const uint32_t depth = region.getDepthInVoxels();
+	wrapBool(stream.writeUInt8((uint8_t)ColorChannelDataType::TypeUnsignedInteger))
+	wrapBool(stream.writeUInt8((uint8_t)ColorChannelCount::RGBA))
+	wrapBool(stream.writeUInt8(8)) // bitsPerColorChannel
+	wrapBool(stream.writeUInt8(8)) // bitsPerIndex
 
 	// we have to flip depth with height for our own coordinate system
-	wrapBool(stream.writeUInt32(width))
-	wrapBool(stream.writeUInt32(depth))
-	wrapBool(stream.writeUInt32(height))
+	wrapBool(stream.writeUInt32(region.getWidthInVoxels()))
+	wrapBool(stream.writeUInt32(region.getDepthInVoxels()))
+	wrapBool(stream.writeUInt32(region.getHeightInVoxels()))
 
-	const voxel::Palette &palette = merged.second;
-	for (uint32_t y = 0u; y < height; ++y) {
-		for (uint32_t z = 0u; z < depth; ++z) {
-			for (uint32_t x = 0u; x < width; ++x) {
-				core_assert_always(sampler.setPosition(lower.x + x, lower.y + y, lower.z + z));
-				const voxel::Voxel &voxel = sampler.voxel();
-				if (voxel.getMaterial() == voxel::VoxelType::Air) {
-					wrapBool(stream.writeUInt8(0))
-					wrapBool(stream.writeUInt8(0))
-					wrapBool(stream.writeUInt8(0))
-					continue;
-				}
+	wrapBool(stream.writeUInt32(voxel::PaletteMaxColors))
 
-				core::RGBA rgba = palette.color(voxel.getColor());
-				if (rgba.r == 0u && rgba.g == 0u && rgba.b == 0u) {
-					rgba = palette.color(palette.findReplacement(voxel.getColor()));
-				}
-				wrapBool(stream.writeUInt8(rgba.r))
-				wrapBool(stream.writeUInt8(rgba.g))
-				wrapBool(stream.writeUInt8(rgba.b))
-			}
-		}
+	voxel::Palette palette = node.palette();
+	uint8_t replacement = palette.findReplacement(0);
+	const core::RGBA color = palette.color(0);
+	if (palette.colorCount() < voxel::PaletteMaxColors) {
+		palette.color(0) = core::RGBA(0, 0, 0, 0);
+		palette.addColorToPalette(color, false, &replacement, false, 0);
 	}
+	voxelutil::visitVolume(
+		*node.volume(),
+		[&stream, replacement](int, int, int, const voxel::Voxel &voxel) {
+			if (voxel.getMaterial() == voxel::VoxelType::Air) {
+				wrapBool(stream.writeUInt8(0))
+			} else if (voxel.getColor() == 0) {
+				wrapBool(stream.writeUInt8(replacement))
+			} else {
+				wrapBool(stream.writeUInt8(voxel.getColor()))
+			}
+			return true;
+		},
+		voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
+
+	wrapBool(stream.writeUInt32(0)) // first palette entry is always 0 - empty voxel
+	for (int i = 1; i < palette.colorCount(); ++i) {
+		const core::RGBA rgba = palette.color(i);
+		wrapBool(stream.writeUInt32(rgba.rgba))
+	}
+	for (int i = palette.colorCount(); i < voxel::PaletteMaxColors; ++i) {
+		wrapBool(stream.writeUInt32(0))
+	}
+
 	return true;
 }
 

@@ -178,6 +178,7 @@ const io::FormatDescription *voxelSave() {
 	static const io::FormatDescription desc[] = {{"Vengi", {"vengi"}, nullptr, 0u},
 												 {"Qubicle Binary", {"qb"}, nullptr, 0u},
 												 {"MagicaVoxel", {"vox"}, nullptr, 0u},
+												 {"MagicaVoxel", {"xraw"}, nullptr, 0u},
 												 {"AceOfSpades", {"kv6"}, nullptr, 0u},
 												 {"SLAB6 vox", {"vox"}, nullptr, 0u},
 												 {"Qubicle Binary Tree", {"qbt"}, nullptr, 0u},
