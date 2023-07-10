@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/private/MinecraftPaletteMap.h"
+#include "voxelformat/private/minecraft/MinecraftPaletteMap.h"
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
 #include "core/Color.h"

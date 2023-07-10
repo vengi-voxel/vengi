@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/VMaxFormat.h"
+#include "voxelformat/private/voxelmax/VMaxFormat.h"
 #include "AbstractVoxFormatTest.h"
 
 namespace voxelformat {

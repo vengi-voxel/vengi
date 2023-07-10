@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/KV6Format.h"
+#include "voxelformat/private/slab6/KV6Format.h"
 #include "AbstractVoxFormatTest.h"
 
 namespace voxelformat {

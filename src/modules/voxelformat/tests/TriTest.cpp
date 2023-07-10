@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/private/Tri.h"
+#include "voxelformat/private/mesh/Tri.h"
 #include "app/tests/AbstractTest.h"
 #include "core/Color.h"
 #include "image/Image.h"

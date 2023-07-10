@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxelformat/KVXFormat.h"
+#include "voxelformat/private/slab6/KVXFormat.h"
 
 namespace voxelformat {
 

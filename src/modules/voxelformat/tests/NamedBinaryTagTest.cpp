@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/private/NamedBinaryTag.h"
+#include "voxelformat/private/minecraft/NamedBinaryTag.h"
 #include "app/tests/AbstractTest.h"
 #include "io/BufferedReadWriteStream.h"
 

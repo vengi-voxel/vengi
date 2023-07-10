@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/VoxFormat.h"
+#include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "AbstractVoxFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/File.h"

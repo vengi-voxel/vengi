@@ -4,7 +4,7 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
-#include "voxelformat/AnimaToonFormat.h"
+#include "voxelformat/private/animatoon/AnimaToonFormat.h"
 #include "io/FileStream.h"
 #include "core/Var.h"
 #include "voxelformat/tests/TestHelper.h"

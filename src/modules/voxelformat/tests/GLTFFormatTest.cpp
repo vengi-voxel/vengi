@@ -2,10 +2,10 @@
  * @file
  */
 
-#include "voxelformat/GLTFFormat.h"
 #include "AbstractVoxFormatTest.h"
 #include "io/File.h"
-#include "voxelformat/QBFormat.h"
+#include "voxelformat/private/mesh/GLTFFormat.h"
+#include "voxelformat/private/qubicle/QBFormat.h"
 #include "io/FileStream.h"
 
 namespace voxelformat {

@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/private/BinaryPList.h"
+#include "voxelformat/private/voxelmax/BinaryPList.h"
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
 #include "core/Log.h"

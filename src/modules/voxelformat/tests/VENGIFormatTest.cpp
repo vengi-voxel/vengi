@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxelformat/VENGIFormat.h"
+#include "voxelformat/private/vengi/VENGIFormat.h"
 
 namespace voxelformat {
 

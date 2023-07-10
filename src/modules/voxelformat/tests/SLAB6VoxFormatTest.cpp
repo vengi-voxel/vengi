@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/SLAB6VoxFormat.h"
+#include "voxelformat/private/slab6/SLAB6VoxFormat.h"
 #include "AbstractVoxFormatTest.h"
 
 namespace voxelformat {

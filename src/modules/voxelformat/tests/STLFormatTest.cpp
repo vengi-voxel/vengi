@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/STLFormat.h"
+#include "voxelformat/private/mesh/STLFormat.h"
 #include "AbstractVoxFormatTest.h"
 #include "io/File.h"
 #include "io/FileStream.h"

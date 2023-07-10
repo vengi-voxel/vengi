@@ -4,8 +4,8 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "voxel/RawVolume.h"
-#include "voxelformat/MCRFormat.h"
-#include "voxelformat/QBFormat.h"
+#include "voxelformat/private/minecraft/MCRFormat.h"
+#include "voxelformat/private/qubicle/QBFormat.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelutil/VolumeVisitor.h"

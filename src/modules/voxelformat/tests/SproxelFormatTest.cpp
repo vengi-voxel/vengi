@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxelformat/SproxelFormat.h"
+#include "voxelformat/private/sproxel/SproxelFormat.h"
 
 namespace voxelformat {
 

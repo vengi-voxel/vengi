@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxelformat/BinVoxFormat.h"
+#include "voxelformat/private/binvox/BinVoxFormat.h"
 
 namespace voxelformat {
 

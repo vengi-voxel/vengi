@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/VBXFormat.h"
+#include "voxelformat/private/voxelbuilder/VBXFormat.h"
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/VolumeFormat.h"
 

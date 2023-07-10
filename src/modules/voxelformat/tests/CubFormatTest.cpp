@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxelformat/CubFormat.h"
+#include "voxelformat/private/cubeworld/CubFormat.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxelformat {

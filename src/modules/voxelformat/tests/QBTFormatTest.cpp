@@ -4,7 +4,7 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "io/FileStream.h"
-#include "voxelformat/QBTFormat.h"
+#include "voxelformat/private/qubicle/QBTFormat.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxelformat {

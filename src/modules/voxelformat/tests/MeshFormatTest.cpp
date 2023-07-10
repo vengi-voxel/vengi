@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/MeshFormat.h"
+#include "voxelformat/private/mesh/MeshFormat.h"
 #include "core/Color.h"
 #include "core/tests/TestColorHelper.h"
 #include "io/File.h"

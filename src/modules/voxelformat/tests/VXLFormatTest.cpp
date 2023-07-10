@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxelformat/VXLFormat.h"
+#include "voxelformat/private/commandconquer/VXLFormat.h"
 #include <glm/gtx/transform.hpp>
 
 namespace voxelformat {

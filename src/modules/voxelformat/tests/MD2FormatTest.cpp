@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/MD2Format.h"
+#include "voxelformat/private/mesh/quake/MD2Format.h"
 #include "AbstractVoxFormatTest.h"
 #include "io/File.h"
 #include "io/FileStream.h"

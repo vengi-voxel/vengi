@@ -6,55 +6,55 @@ set(SRCS
 	external/ufbx.h external/ufbx.c
 	external/libvxl.h external/libvxl.c
 
-	private/BinaryPList.h private/BinaryPList.cpp
-	private/MinecraftPaletteMap.h private/MinecraftPaletteMap.cpp
-	private/NamedBinaryTag.h private/NamedBinaryTag.cpp
-	private/SchematicIntReader.h private/SchematicIntWriter.h
-	private/Tri.h private/Tri.cpp
-	private/MagicaVoxel.h private/MagicaVoxel.cpp
-
 	Format.h Format.cpp
 	FormatConfig.h FormatConfig.cpp
 	FormatThumbnail.h
-	AnimaToonFormat.h AnimaToonFormat.cpp
-	AoSVXLFormat.h AoSVXLFormat.cpp
-	BinVoxFormat.h BinVoxFormat.cpp
-	CSMFormat.h CSMFormat.cpp
-	DatFormat.h DatFormat.cpp
-	FBXFormat.h FBXFormat.cpp
-	GoxFormat.h GoxFormat.cpp
-	KVXFormat.h KVXFormat.cpp
-	KV6Format.h KV6Format.cpp
-	QBTFormat.h QBTFormat.cpp
-	QBFormat.h QBFormat.cpp
-	QBCLFormat.h QBCLFormat.cpp
-	QEFFormat.h QEFFormat.cpp
-	MCRFormat.h MCRFormat.cpp
-	MD2Format.h MD2Format.cpp
-	MTSFormat.h MTSFormat.cpp
-	VBXFormat.h VBXFormat.cpp
-	VXAFormat.h VXAFormat.cpp
-	VXCFormat.h VXCFormat.cpp
-	VXMFormat.h VXMFormat.cpp
-	VXRFormat.h VXRFormat.cpp
-	VXTFormat.h VXTFormat.cpp
-	VXLFormat.h VXLFormat.cpp
-	VMaxFormat.h VMaxFormat.cpp
-	MeshFormat.h MeshFormat.cpp
-	CubFormat.h CubFormat.cpp
-	OBJFormat.h OBJFormat.cpp
-	PLYFormat.h PLYFormat.cpp
-	QuakeBSPFormat.h QuakeBSPFormat.cpp
-	SproxelFormat.h SproxelFormat.cpp
-	SchematicFormat.h SchematicFormat.cpp
-	SMFormat.h SMFormat.cpp
-	STLFormat.h STLFormat.cpp
-	VoxFormat.h VoxFormat.cpp
-	SLAB6VoxFormat.h SLAB6VoxFormat.cpp
 	VolumeFormat.h VolumeFormat.cpp
-	GLTFFormat.h GLTFFormat.cpp
-	VENGIFormat.h VENGIFormat.cpp
-	XRawFormat.h XRawFormat.cpp
+
+	private/aceofspades/AoSVXLFormat.h       private/aceofspades/AoSVXLFormat.cpp
+	private/animatoon/AnimaToonFormat.h      private/animatoon/AnimaToonFormat.cpp
+	private/binvox/BinVoxFormat.h            private/binvox/BinVoxFormat.cpp
+	private/chronovox/CSMFormat.h            private/chronovox/CSMFormat.cpp
+	private/commandconquer/VXLFormat.h       private/commandconquer/VXLFormat.cpp
+	private/cubeworld/CubFormat.h            private/cubeworld/CubFormat.cpp
+	private/goxel/GoxFormat.h                private/goxel/GoxFormat.cpp
+	private/magicavoxel/XRawFormat.h         private/magicavoxel/XRawFormat.cpp
+	private/magicavoxel/VoxFormat.h          private/magicavoxel/VoxFormat.cpp
+	private/magicavoxel/MagicaVoxel.h        private/magicavoxel/MagicaVoxel.cpp
+	private/mesh/MeshFormat.h                private/mesh/MeshFormat.cpp
+	private/mesh/OBJFormat.h                 private/mesh/OBJFormat.cpp
+	private/mesh/PLYFormat.h                 private/mesh/PLYFormat.cpp
+	private/mesh/STLFormat.h                 private/mesh/STLFormat.cpp
+	private/mesh/Tri.h                       private/mesh/Tri.cpp
+	private/mesh/quake/QuakeBSPFormat.h      private/mesh/quake/QuakeBSPFormat.cpp
+	private/mesh/quake/MD2Format.h           private/mesh/quake/MD2Format.cpp
+	private/mesh/FBXFormat.h                 private/mesh/FBXFormat.cpp
+	private/mesh/GLTFFormat.h                private/mesh/GLTFFormat.cpp
+	private/minecraft/DatFormat.h            private/minecraft/DatFormat.cpp
+	private/minecraft/MCRFormat.h            private/minecraft/MCRFormat.cpp
+	private/minecraft/MTSFormat.h            private/minecraft/MTSFormat.cpp
+	private/minecraft/SchematicFormat.h      private/minecraft/SchematicFormat.cpp
+	private/minecraft/MinecraftPaletteMap.h  private/minecraft/MinecraftPaletteMap.cpp
+	private/minecraft/NamedBinaryTag.h       private/minecraft/NamedBinaryTag.cpp
+	private/minecraft/SchematicIntReader.h   private/minecraft/SchematicIntWriter.h
+	private/qubicle/QBTFormat.h              private/qubicle/QBTFormat.cpp
+	private/qubicle/QBFormat.h               private/qubicle/QBFormat.cpp
+	private/qubicle/QBCLFormat.h             private/qubicle/QBCLFormat.cpp
+	private/qubicle/QEFFormat.h              private/qubicle/QEFFormat.cpp
+	private/sandbox/VXAFormat.h              private/sandbox/VXAFormat.cpp
+	private/sandbox/VXCFormat.h              private/sandbox/VXCFormat.cpp
+	private/sandbox/VXMFormat.h              private/sandbox/VXMFormat.cpp
+	private/sandbox/VXRFormat.h              private/sandbox/VXRFormat.cpp
+	private/sandbox/VXTFormat.h              private/sandbox/VXTFormat.cpp
+	private/slab6/KVXFormat.h                private/slab6/KVXFormat.cpp
+	private/slab6/KV6Format.h                private/slab6/KV6Format.cpp
+	private/slab6/SLAB6VoxFormat.h           private/slab6/SLAB6VoxFormat.cpp
+	private/sproxel/SproxelFormat.h          private/sproxel/SproxelFormat.cpp
+	private/starmade/SMFormat.h              private/starmade/SMFormat.cpp
+	private/vengi/VENGIFormat.h              private/vengi/VENGIFormat.cpp
+	private/voxelbuilder/VBXFormat.h         private/voxelbuilder/VBXFormat.cpp
+	private/voxelmax/BinaryPList.h           private/voxelmax/BinaryPList.cpp
+	private/voxelmax/VMaxFormat.h            private/voxelmax/VMaxFormat.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph json)
 

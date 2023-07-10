@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/SchematicFormat.h"
+#include "voxelformat/private/minecraft/SchematicFormat.h"
 #include "AbstractVoxFormatTest.h"
 
 namespace voxelformat {

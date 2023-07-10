@@ -3,8 +3,8 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxelformat/VXMFormat.h"
-#include "voxelformat/VXRFormat.h"
+#include "voxelformat/private/sandbox/VXMFormat.h"
+#include "voxelformat/private/sandbox/VXRFormat.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #define GLM_ENABLE_EXPERIMENTAL

@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxelformat/QEFFormat.h"
+#include "voxelformat/private/qubicle/QEFFormat.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxelformat {

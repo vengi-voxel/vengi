@@ -3,7 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "voxelformat/GoxFormat.h"
+#include "voxelformat/private/goxel/GoxFormat.h"
 
 namespace voxelformat {
 

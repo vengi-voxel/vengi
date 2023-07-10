@@ -4,7 +4,7 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
-#include "voxelformat/AoSVXLFormat.h"
+#include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "io/FileStream.h"
 #include "core/Var.h"
 #include "voxelformat/tests/TestHelper.h"

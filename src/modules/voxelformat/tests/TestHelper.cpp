@@ -10,7 +10,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
-#include "voxelformat/MeshFormat.h"
+#include "voxelformat/private/mesh/MeshFormat.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
