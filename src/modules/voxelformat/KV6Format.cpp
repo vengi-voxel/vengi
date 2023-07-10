@@ -288,14 +288,10 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-	if (merged.first == nullptr) {
-		Log::error("Failed to merge volumes");
-		return false;
-	}
+	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	core_assert(node);
 
-	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
-	const voxel::Region &region = merged.first->region();
+	const voxel::Region &region = node->region();
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
 
 	if (dim.x > 256 || dim.z > 256 || dim.y > 255) {
@@ -308,7 +304,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	core::DynamicArray<priv::voxtype> voxdata;
 	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(
-		*merged.first,
+		*node->volume(),
 		[&](int x, int y, int z, const voxel::Voxel &voxel) {
 			priv::voxtype vd;
 			const int x_low_w = x - region.getLowerX();
@@ -317,8 +313,8 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			vd.z_low_h = region.getHeightInCells() - (y - region.getLowerY());
 			vd.z_high = 0;
 			vd.col = voxel.getColor();
-			vd.vis = priv::calculateVisibility(merged.first, x, y, z);
-			vd.dir = priv::calculateDir(merged.first, x, y, z, voxel);
+			vd.vis = priv::calculateVisibility(node->volume(), x, y, z);
+			vd.dir = priv::calculateDir(node->volume(), x, y, z, voxel);
 			voxdata.push_back(vd);
 			++xlen[x_low_w];
 			++xyoffset[x_low_w][y_low_d];
@@ -349,7 +345,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream.writeUInt32(numvoxs))
 
 	for (const priv::voxtype &data : voxdata) {
-		const core::RGBA color = merged.second.color(data.col);
+		const core::RGBA color = node->palette().color(data.col);
 		wrapBool(stream.writeUInt8(color.b))
 		wrapBool(stream.writeUInt8(color.g))
 		wrapBool(stream.writeUInt8(color.r))
@@ -376,13 +372,13 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	const uint32_t palMagic = FourCC('S', 'P', 'a', 'l');
 	wrapBool(stream.writeUInt32(palMagic))
-	for (int i = 0; i < merged.second.colorCount(); ++i) {
-		const core::RGBA color = merged.second.color(i);
+	for (int i = 0; i < node->palette().colorCount(); ++i) {
+		const core::RGBA color = node->palette().color(i);
 		wrapBool(stream.writeUInt8(color.b))
 		wrapBool(stream.writeUInt8(color.g))
 		wrapBool(stream.writeUInt8(color.r))
 	}
-	for (int i = merged.second.colorCount(); i < voxel::PaletteMaxColors; ++i) {
+	for (int i = node->palette().colorCount(); i < voxel::PaletteMaxColors; ++i) {
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))

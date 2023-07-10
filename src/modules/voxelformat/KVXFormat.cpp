@@ -259,14 +259,10 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 #if 0
-	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-	if (merged.first == nullptr) {
-		Log::error("Failed to merge volumes");
-		return false;
-	}
+	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	core_assert(node);
 
-	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
-	const voxel::Region &region = merged.first->region();
+	const voxel::Region &region = node->volume()->region();
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
 
 	if (dim.x > 256 || dim.z > 256 || dim.y > 255) {
@@ -278,7 +274,7 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	uint16_t xyoffset[256][256] {}; // our z
 
 	core::DynamicArray<priv::slab> voxdata;
-	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(*merged.first, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		priv::slab vd;
 		vd.x_low_w = x - region.getLowerX();
 		// flip y and z here
@@ -286,7 +282,7 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		vd.col = voxel.getColor();
 		vd.slabzleng = 0; // TODO
 		vd.slabztop = region.getHeightInCells() - (y - region.getLowerY()); // TODO
-		vd.slabbackfacecullinfo = priv::calculateVisibility(merged.first, x, y, z);
+		vd.slabbackfacecullinfo = priv::calculateVisibility(node->volume(), x, y, z);
 		voxdata.push_back(vd);
 		++xlen[x];
 		++xyoffset[vd.x_low_w][vd.y_low_d];
@@ -327,7 +323,7 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	// TODO: this is not correct
 	for (const priv::slab &data : voxdata) {
-		const core::RGBA color = merged.second.color(data.col);
+		const core::RGBA color = node->palette().color(data.col);
 		wrapBool(stream.writeUInt8(color.b))
 		wrapBool(stream.writeUInt8(color.g))
 		wrapBool(stream.writeUInt8(color.r))
@@ -336,13 +332,13 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	}
 
 	// palette is last
-	for (int i = 0; i < merged.second.colorCount(); ++i) {
-		const core::RGBA color = merged.second.color(i);
+	for (int i = 0; i < node->palette().colorCount(); ++i) {
+		const core::RGBA color = node->palette().color(i);
 		wrapBool(stream.writeUInt8(color.b))
 		wrapBool(stream.writeUInt8(color.g))
 		wrapBool(stream.writeUInt8(color.r))
 	}
-	for (int i = merged.second.colorCount(); i < voxel::PaletteMaxColors; ++i) {
+	for (int i = node->palette().colorCount(); i < voxel::PaletteMaxColors; ++i) {
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))

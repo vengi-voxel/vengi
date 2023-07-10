@@ -50,6 +50,10 @@ public:
 	 * @brief Returns the first valid palette from any of the nodes
 	 */
 	voxel::Palette &firstPalette() const;
+	/**
+	 * @brief Returns the first model node or @c nullptr if no model node exists
+	 */
+	SceneGraphNode *firstModelNode() const;
 
 	inline const SceneGraphNodes &nodes() const {
 		return _nodes;

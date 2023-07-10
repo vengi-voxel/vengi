@@ -201,15 +201,15 @@ core::RGBA instanceColor(const ogt_vox_scene *scene, const ogt_vox_instance &ins
 }
 
 bool instanceHidden(const ogt_vox_scene *scene, const ogt_vox_instance &instance) {
-	// check if this instance if it's hidden in the .vox file
+	// check if this instance is hidden in the .vox file
 	if (instance.hidden) {
 		return true;
 	}
-	// check if this instance if it's part of a hidden layer in the .vox file
+	// check if this instance is part of a hidden layer in the .vox file
 	if (scene->layers[instance.layer_index].hidden) {
 		return true;
 	}
-	// check if this instance if it's part of a hidden group
+	// check if this instance is part of a hidden group
 	if (instance.group_index != k_invalid_group_index && instance.group_index < scene->num_groups &&
 		scene->groups[instance.group_index].hidden) {
 		return true;

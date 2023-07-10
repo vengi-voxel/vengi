@@ -109,15 +109,11 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 
 bool CubFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-	if (merged.first == nullptr) {
-		Log::error("Failed to merge volumes");
-		return false;
-	}
-	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
+	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	core_assert(node);
 
-	const voxel::Region &region = merged.first->region();
-	voxel::RawVolume::Sampler sampler(merged.first);
+	const voxel::Region &region = node->region();
+	voxel::RawVolume::Sampler sampler(node->volume());
 	const glm::ivec3 &lower = region.getLowerCorner();
 
 	const uint32_t width = region.getWidthInVoxels();
@@ -129,7 +125,7 @@ bool CubFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream.writeUInt32(depth))
 	wrapBool(stream.writeUInt32(height))
 
-	const voxel::Palette &palette = merged.second;
+	const voxel::Palette &palette = node->palette();
 	for (uint32_t y = 0u; y < height; ++y) {
 		for (uint32_t z = 0u; z < depth; ++z) {
 			for (uint32_t x = 0u; x < width; ++x) {

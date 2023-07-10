@@ -176,15 +176,12 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 
 bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							   io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-	if (merged.first == nullptr) {
-		Log::error("Failed to merge volumes");
-		return false;
-	}
+	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	core_assert(node);
 
-	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
-	const voxel::Region &region = merged.first->region();
-	voxel::RawVolume::Sampler sampler(merged.first);
+	const voxel::Region &region = node->region();
+	const voxel::Palette &palette = node->palette();
+	voxel::RawVolume::Sampler sampler(node->volume());
 	const glm::ivec3 &lower = region.getLowerCorner();
 
 	const int width = region.getWidthInVoxels();
@@ -195,7 +192,6 @@ bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const c
 		return false;
 	}
 
-	const voxel::Palette &palette = merged.second;
 	for (int y = height - 1; y >= 0; y--) {
 		for (int z = 0u; z < depth; ++z) {
 			for (int x = 0u; x < width; ++x) {

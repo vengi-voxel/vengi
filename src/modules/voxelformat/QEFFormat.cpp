@@ -123,22 +123,18 @@ bool QEFFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	stream.writeString("Version 0.2\n", false);
 	stream.writeString("www.minddesk.com\n", false);
 
-	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-	if (merged.first == nullptr) {
-		Log::error("Failed to merge volumes");
-		return false;
-	}
-	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
+	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	core_assert(node);
 
-	const voxel::Region &region = merged.first->region();
-	voxel::RawVolume::Sampler sampler(merged.first);
+	const voxel::Region &region = node->volume()->region();
+	voxel::RawVolume::Sampler sampler(node->volume());
 	const glm::ivec3 &lower = region.getLowerCorner();
 
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
 	const uint32_t depth = region.getDepthInVoxels();
 	stream.writeStringFormat(false, "%i %i %i\n", width, depth, height);
-	const voxel::Palette &palette = merged.second;
+	const voxel::Palette &palette = node->palette();
 	stream.writeStringFormat(false, "%i\n", palette.colorCount());
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::RGBA c = palette.color(i);

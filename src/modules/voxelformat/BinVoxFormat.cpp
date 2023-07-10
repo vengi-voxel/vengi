@@ -124,15 +124,10 @@ bool BinVoxFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 
 bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							  io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-	if (merged.first == nullptr) {
-		Log::error("Failed to merge volumes");
-		return false;
-	}
-	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
-
-	const voxel::Region &region = merged.first->region();
-	voxel::RawVolume::Sampler sampler(merged.first);
+	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	core_assert(node);
+	const voxel::Region &region = node->region();
+	voxel::RawVolume::Sampler sampler(node->volume());
 
 	const int32_t width = region.getWidthInVoxels();
 	const int32_t height = region.getHeightInVoxels();
@@ -153,10 +148,10 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	uint32_t voxels = 0u;
 	const int maxIndex = width * height * depth;
 	glm::ivec3 pos = mins;
-	const uint8_t emptyColorReplacement = merged.second.findReplacement(0);
+	const uint8_t emptyColorReplacement = node->palette().findReplacement(0);
 	Log::debug("found replacement for %s at index %u: %s at index %u",
-			   core::Color::print(merged.second.color(0)).c_str(), 0,
-			   core::Color::print(merged.second.color(emptyColorReplacement)).c_str(), emptyColorReplacement);
+			   core::Color::print(node->palette().color(0)).c_str(), 0,
+			   core::Color::print(node->palette().color(emptyColorReplacement)).c_str(), emptyColorReplacement);
 	for (int idx = 0; idx < maxIndex; ++idx) {
 		if (!sampler.setPosition(pos)) {
 			Log::error("Failed to set position for index %i (%i:%i:%i) (w:%i,h:%i,d:%i)", idx, pos.x, pos.y, pos.z,

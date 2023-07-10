@@ -236,8 +236,9 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 
 bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	const scenegraph::SceneGraphNode &node = *sceneGraph.begin(scenegraph::SceneGraphNodeType::Model);
-	const voxel::Region &region = node.region();
+	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	core_assert(node);
+	const voxel::Region &region = node->region();
 
 	wrapBool(stream.writeUInt32(FourCC('X', 'R', 'A', 'W')))
 
@@ -253,7 +254,7 @@ bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 
 	wrapBool(stream.writeUInt32(voxel::PaletteMaxColors))
 
-	voxel::Palette palette = node.palette();
+	voxel::Palette palette = node->palette();
 	uint8_t replacement = palette.findReplacement(0);
 	const core::RGBA color = palette.color(0);
 	if (palette.colorCount() < voxel::PaletteMaxColors) {
@@ -261,7 +262,7 @@ bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		palette.addColorToPalette(color, false, &replacement, false, 0);
 	}
 	voxelutil::visitVolume(
-		*node.volume(),
+		*node->volume(),
 		[&stream, replacement](int, int, int, const voxel::Voxel &voxel) {
 			if (voxel.getMaterial() == voxel::VoxelType::Air) {
 				wrapBool(stream.writeUInt8(0))

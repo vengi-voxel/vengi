@@ -141,6 +141,13 @@ bool SceneGraph::setActiveNode(int nodeId) {
 	return true;
 }
 
+SceneGraphNode *SceneGraph::firstModelNode() const {
+	for (auto iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
+		return &(*iter);
+	}
+	return nullptr;
+}
+
 voxel::Palette &SceneGraph::firstPalette() const {
 	for (auto iter = beginAllModels(); iter != end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;

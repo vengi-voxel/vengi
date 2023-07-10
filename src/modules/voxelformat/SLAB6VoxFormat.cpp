@@ -82,15 +82,11 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 
 bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 								io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-	if (merged.first == nullptr) {
-		Log::error("Failed to merge volumes");
-		return false;
-	}
+	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	core_assert(node);
 
-	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
-	const voxel::Region &region = merged.first->region();
-	const voxel::Palette &palette = merged.second;
+	const voxel::Region &region = node->region();
+	const voxel::Palette &palette = node->palette();
 	const uint8_t emptyColorReplacement = palette.findReplacement(255);
 
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
@@ -102,7 +98,7 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 	for (int w = region.getUpperX(); w >= region.getLowerX(); --w) {
 		for (int d = region.getLowerZ(); d <= region.getUpperZ(); ++d) {
 			for (int h = region.getUpperY(); h >= region.getLowerY(); --h) {
-				const voxel::Voxel &voxel = merged.first->voxel(w, h, d);
+				const voxel::Voxel &voxel = node->volume()->voxel(w, h, d);
 				if (voxel::isAir(voxel.getMaterial())) {
 					wrapBool(stream.writeUInt8(255))
 				} else if (voxel.getColor() == 255) {
