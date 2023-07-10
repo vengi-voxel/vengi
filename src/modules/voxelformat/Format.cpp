@@ -216,7 +216,7 @@ bool PaletteFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						 io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	if (onlyOnePalette()) {
-		// TODO: reduce palettes to one - construct a new scene graph
+		// TODO: reduce palettes to one - construct a new scene graph - see sceneGraph.mergePalettes() and the vox format
 	}
 	return Format::save(sceneGraph, filename, stream, ctx);
 }
