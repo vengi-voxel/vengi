@@ -14,6 +14,7 @@
 | CubeWorld                  | cub       | X       | X      | X          | X       |            |                                                                          |
 | Goxel                      | gox       | X       | X      | X          | X       |            |                                                                          |
 | MagicaVoxel                | vox       | X       | X      | X          | X       |            | [spec](https://github.com/ephtracy/voxel-model)                          |
+| MagicaVoxel                | xraw      | X       | X      | X          | X       |            |                                                                          |
 | Minecraft Level            | dat       | X       |        | X          | X       |            |                                                                          |
 | Minecraft Region           | mcr       | X       | X      | X          | X       |            | [spec](https://minecraft.gamepedia.com/Region_file_format)               |
 | Minecraft Schematics       | schematic | X       |        | X          | X       |            | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
