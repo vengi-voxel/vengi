@@ -206,7 +206,7 @@ public:
 
 /**
  * @brief A format that stores the voxels with rgba colors
- * @note These color are converted to an palette.
+ * @note These color are converted into a palette.
  *
  * @ingroup Formats
  */
