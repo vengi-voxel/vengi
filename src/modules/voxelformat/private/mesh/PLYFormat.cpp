@@ -9,7 +9,6 @@
 #include "core/Var.h"
 #include "engine-config.h"
 #include "io/File.h"
-#include "io/FileStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"

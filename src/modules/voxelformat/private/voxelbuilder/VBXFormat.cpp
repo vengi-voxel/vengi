@@ -7,7 +7,6 @@
 #include "core/Log.h"
 #include "core/RGBA.h"
 #include "core/StringUtil.h"
-#include "core/Tokenizer.h"
 #include "core/collection/DynamicSet.h"
 #include "core/collection/StringMap.h"
 #include "io/BufferedReadWriteStream.h"

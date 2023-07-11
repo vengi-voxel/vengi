@@ -5,9 +5,7 @@
 #include "SLAB6VoxFormat.h"
 #include "core/Color.h"
 #include "core/Log.h"
-#include "core/ScopedPtr.h"
 #include "scenegraph/SceneGraph.h"
-#include "voxel/MaterialColor.h"
 
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \

@@ -6,21 +6,12 @@
 #include "core/Color.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
-#include "core/StandardLib.h"
 #include "core/Var.h"
-#include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
-#include "voxelformat/external/ogt_vox.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "MagicaVoxel.h"
-
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/gtc/constants.hpp>
-#include <glm/gtc/matrix_access.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/transform.hpp>
 
 namespace voxelformat {
 

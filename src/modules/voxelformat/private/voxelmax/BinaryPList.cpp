@@ -8,7 +8,7 @@
 #include "core/UTF8.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Stream.h"
-#include <cstdint>
+#include <stdint.h>
 
 namespace voxelformat {
 

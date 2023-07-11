@@ -5,7 +5,6 @@
 #include "SproxelFormat.h"
 #include "core/Color.h"
 #include "core/Log.h"
-#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
 #include "scenegraph/SceneGraph.h"

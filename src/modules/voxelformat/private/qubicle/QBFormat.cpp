@@ -10,7 +10,6 @@
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "core/collection/DynamicMap.h"
-#include "io/FileStream.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"

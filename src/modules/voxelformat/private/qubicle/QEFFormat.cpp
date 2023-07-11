@@ -6,7 +6,6 @@
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/Log.h"
-#include "core/ScopedPtr.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Voxel.h"

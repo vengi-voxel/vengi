@@ -3,23 +3,19 @@
  */
 
 #include "VMaxFormat.h"
+#include "BinaryPList.h"
 #include "app/App.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "core/collection/Array3DView.h"
-#include <json.hpp>
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
-#include "io/FileStream.h"
 #include "io/LZFSEReadStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/StdStreamBuf.h"
 #include "io/Stream.h"
-#include "io/ZipArchive.h"
-#include "BinaryPList.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Morton.h"
@@ -31,6 +27,7 @@
 #include "voxelformat/Format.h"
 #include <glm/common.hpp>
 #include <glm/gtx/transform.hpp>
+#include <json.hpp>
 
 namespace voxelformat {
 

@@ -7,7 +7,6 @@
 #include "core/Enum.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
-#include "glm/gtc/type_ptr.hpp"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraph.h"
@@ -16,6 +15,8 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+
+#include <glm/gtc/type_ptr.hpp>
 
 #define wrapBool(action)                                                                                               \
 	if ((action) != true) {                                                                                            \

@@ -5,7 +5,6 @@
 #include "BinVoxFormat.h"
 #include "core/Color.h"
 #include "core/Log.h"
-#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/FileStream.h"
 #include "io/Stream.h"

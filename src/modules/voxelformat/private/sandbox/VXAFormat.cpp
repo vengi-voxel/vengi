@@ -14,8 +14,6 @@
 #include "core/MD5.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/FileStream.h"
-#include "io/Filesystem.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"

@@ -6,7 +6,6 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/Log.h"
-#include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
@@ -21,7 +20,6 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/ChunkMesh.h"
-#include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
 

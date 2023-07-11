@@ -3,19 +3,17 @@
  */
 
 #include "VXTFormat.h"
+#include "VXMFormat.h"
+#include "VXRFormat.h"
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "core/collection/StringSet.h"
-#include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/RawVolume.h"
-#include "VXMFormat.h"
-#include "VXRFormat.h"
 
 namespace voxelformat {
 

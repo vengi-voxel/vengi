@@ -3,6 +3,8 @@
  */
 
 #include "VXCFormat.h"
+#include "VXMFormat.h"
+#include "VXRFormat.h"
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
@@ -11,8 +13,6 @@
 #include "io/Filesystem.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
-#include "VXMFormat.h"
-#include "VXRFormat.h"
 
 namespace voxelformat {
 

@@ -14,7 +14,6 @@
 #include "core/Zip.h"
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/BufferedZipReadStream.h"
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"

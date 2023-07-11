@@ -5,7 +5,6 @@
 #include "AnimaToonFormat.h"
 #include "core/Log.h"
 #include "core/Tokenizer.h"
-#include "core/collection/DynamicArray.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"

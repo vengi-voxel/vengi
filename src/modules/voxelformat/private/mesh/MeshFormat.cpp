@@ -24,7 +24,6 @@
 #include "voxel/SurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
-#include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "Tri.h"
