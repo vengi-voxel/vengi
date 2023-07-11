@@ -28,9 +28,7 @@ struct MVModelToNode;
  */
 class VoxFormat : public PaletteFormat {
 private:
-	glm::ivec3 maxSize() const override {
-		return glm::ivec3(256);
-	}
+	glm::ivec3 maxSize() const override;
 
 	void saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx,
 					 uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx);

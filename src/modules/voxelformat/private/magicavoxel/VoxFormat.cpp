@@ -21,6 +21,10 @@ VoxFormat::VoxFormat() {
 	ogt_vox_set_memory_allocator(_ogt_alloc, _ogt_free);
 }
 
+glm::ivec3 VoxFormat::maxSize() const {
+	return glm::ivec3(256);
+}
+
 size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
 							  const LoadContext &ctx) {
 	const size_t size = stream.size();
