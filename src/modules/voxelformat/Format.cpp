@@ -217,6 +217,7 @@ bool PaletteFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						 io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	if (onlyOnePalette() && sceneGraph.hasMoreThanOnePalette()) {
+		Log::debug("Need to merge palettes before saving");
 		const voxel::Palette &palette = sceneGraph.mergePalettes(true, emptyPaletteIndex());
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
@@ -227,6 +228,7 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 		}
 		return Format::save(newSceneGraph, filename, stream, ctx);
 	} else if (emptyPaletteIndex() >= 0 && emptyPaletteIndex() < voxel::PaletteMaxColors) {
+		Log::debug("Need to convert voxels to a palette that has %i as an empty slot", emptyPaletteIndex());
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
 		for (auto iter = newSceneGraph.beginModel(); iter != newSceneGraph.end(); ++iter) {
@@ -235,6 +237,7 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 			if (palette.color(emptyPaletteIndex()).a > 0) {
 				Log::debug("Need to replace %i", emptyPaletteIndex());
 				if (palette.colorCount() < voxel::PaletteMaxColors) {
+					Log::debug("Shift colors in palettes to make slot %i empty", emptyPaletteIndex());
 					for (int i = palette.colorCount(); i >= 0; --i) {
 						palette.color(i) = palette.color(i - 1);
 						palette.glowColor(i) = palette.glowColor(i - 1);
