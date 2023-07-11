@@ -11,8 +11,10 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxelutil/VolumeVisitor.h"
 
 #include <glm/gtc/epsilon.hpp>
 #include <glm/ext/quaternion_common.hpp>
@@ -367,6 +369,23 @@ bool SceneGraphNode::setAnimation(const core::String &anim) {
 	_keyFrames = &iter->value;
 	core_assert_msg(!_keyFrames->empty(), "Empty keyframes for anim %s", anim.c_str());
 	return true;
+}
+
+voxel::Region SceneGraphNode::remapToPalette(const voxel::Palette &newPalette) {
+	if (type() != SceneGraphNodeType::Model) {
+		return voxel::Region::InvalidRegion;
+	}
+	voxel::RawVolumeWrapper wrapper(volume());
+	const voxel::Palette &oldPalette = palette();
+	voxelutil::visitVolume(wrapper, [&wrapper, &newPalette, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
+		const core::RGBA rgba = oldPalette.color(voxel.getColor());
+		const int newColor = newPalette.getClosestMatch(rgba);
+		if (newColor != voxel::PaletteColorNotFound) {
+			voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor);
+			wrapper.setVoxel(x, y, z, newVoxel);
+		}
+	});
+	return wrapper.dirtyRegion();
 }
 
 void SceneGraphNode::setPalette(const voxel::Palette &palette) {

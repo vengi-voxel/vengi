@@ -298,6 +298,11 @@ public:
 	 */
 	voxel::RawVolume *volume();
 	/**
+	 * @brief Remaps the voxel colors to the new given palette
+	 * @note The palette is not set by this method - you have to call @c setPalette() on your own.
+	 */
+	voxel::Region remapToPalette(const voxel::Palette &palette);
+	/**
 	 * @note If this node is a reference node ( @c SceneGraphNodeType::ModelReference ) then this will return an invalid
 	 * region - use @c SceneGraph::resolveRegion() instead.
 	 * @return voxel::Region instance that is invalid when the volume is not set for this instance.
