@@ -316,10 +316,8 @@ public:
 	void setVolume(voxel::RawVolume *volume, bool transferOwnership);
 	/**
 	 * @param volume voxel::RawVolume instance. Might be @c nullptr.
-	 * @param transferOwnership this is @c true if the volume should get deleted by this class, @c false if
-	 * you are going to manage the instance on your own.
 	 */
-	void setVolume(const voxel::RawVolume *volume, bool transferOwnership);
+	void setVolume(const voxel::RawVolume *volume);
 
 	// meta data
 

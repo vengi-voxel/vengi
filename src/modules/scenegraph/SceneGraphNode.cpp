@@ -438,6 +438,7 @@ void SceneGraphNode::translate(const glm::vec3 &translation) {
 void SceneGraphNode::release() {
 	if (_flags & VolumeOwned) {
 		delete _volume;
+		releaseOwnership();
 	}
 	_volume = nullptr;
 }
@@ -447,6 +448,8 @@ void SceneGraphNode::releaseOwnership() {
 }
 
 void SceneGraphNode::setVolume(voxel::RawVolume *volume, bool transferOwnership) {
+	core_assert_msg(_type == SceneGraphNodeType::Model, "Expected to get a model node, but got a node with type %i", (int)_type);
+	// keep the pivot - this is because it's stored in the region of the volume...
 	const glm::vec3 p = pivot();
 	release();
 	if (transferOwnership) {
@@ -458,14 +461,9 @@ void SceneGraphNode::setVolume(voxel::RawVolume *volume, bool transferOwnership)
 	setPivot(p);
 }
 
-void SceneGraphNode::setVolume(const voxel::RawVolume *volume, bool transferOwnership) {
+void SceneGraphNode::setVolume(const voxel::RawVolume *volume) {
 	core_assert_msg(_type == SceneGraphNodeType::Model, "Expected to get a model node, but got a node with type %i", (int)_type);
 	release();
-	if (transferOwnership) {
-		_flags |= VolumeOwned;
-	} else {
-		_flags &= ~VolumeOwned;
-	}
 	_volume = (voxel::RawVolume *)volume;
 }
 

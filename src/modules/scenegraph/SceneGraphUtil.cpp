@@ -31,6 +31,7 @@ static void copy(const SceneGraphNode &node, SceneGraphNode &target, bool copyKe
 	// target.setPivot(node.pivot());
 	target.setColor(node.color());
 	target.addProperties(node.properties());
+	// TODO: the reference node id might have changed - fix this
 	target.setReference(node.reference());
 	if (node.type() == SceneGraphNodeType::Model) {
 		target.setPalette(node.palette());
@@ -139,7 +140,7 @@ static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, co
 	for (int sourceNodeIdx : sourceNode.children()) {
 		core_assert(source.hasNode(sourceNodeIdx));
 		SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
-		nodesAdded += addSceneGraphNode_r(target, source, sourceChildNode, newNodeId);
+		nodesAdded += copySceneGraphNode_r(target, source, sourceChildNode, newNodeId);
 	}
 
 	return nodesAdded;
@@ -153,6 +154,9 @@ int copySceneGraph(SceneGraph &target, const SceneGraph &source) {
 	for (int sourceNodeId : sourceRoot.children()) {
 		nodesAdded += copySceneGraphNode_r(target, source, source.node(sourceNodeId), parent);
 	}
+
+	// TODO: fix references - see copy() above
+
 	return nodesAdded;
 }
 

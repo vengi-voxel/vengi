@@ -441,21 +441,21 @@ void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, con
 	{
 		scenegraph::SceneGraphNode node;
 		node.setName("first level #1");
-		node.setVolume(&original, false);
+		node.setVolume(&original);
 		node.setPalette(pal);
 		nodeId = sceneGraph.emplace(core::move(node), nodeId);
 	}
 	{
 		scenegraph::SceneGraphNode node;
 		node.setName("second level #1");
-		node.setVolume(&original, false);
+		node.setVolume(&original);
 		node.setPalette(pal);
 		sceneGraph.emplace(core::move(node), nodeId);
 	}
 	{
 		scenegraph::SceneGraphNode node;
 		node.setName("second level #2");
-		node.setVolume(&original, false);
+		node.setVolume(&original);
 		node.setPalette(pal);
 		/*nodeId =*/sceneGraph.emplace(core::move(node), nodeId);
 	}
