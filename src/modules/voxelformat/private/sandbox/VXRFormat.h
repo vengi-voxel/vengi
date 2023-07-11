@@ -19,7 +19,7 @@ namespace voxelformat {
  */
 class VXRFormat : public PaletteFormat {
 private:
-	bool onlyOnePalette() override {
+	bool onlyOnePalette() const override {
 		return false;
 	}
 	bool loadChildVXM(const core::String &vxmPath, scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,

@@ -191,7 +191,7 @@ protected:
 	/**
 	 * @brief This indicates whether the format only supports one palette for the whole scene graph
 	 */
-	virtual bool onlyOnePalette() {
+	virtual bool onlyOnePalette() const {
 		return true;
 	}
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
