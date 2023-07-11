@@ -25,6 +25,10 @@ glm::ivec3 VoxFormat::maxSize() const {
 	return glm::ivec3(256);
 }
 
+int VoxFormat::emptyPaletteIndex() const {
+	return EMPTY_PALETTE;
+}
+
 size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
 							  const LoadContext &ctx) {
 	const size_t size = stream.size();

@@ -215,8 +215,18 @@ bool PaletteFormat::loadGroups(const core::String &filename, io::SeekableReadStr
 
 bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						 io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	if (onlyOnePalette()) {
-		// TODO: reduce palettes to one - construct a new scene graph - see sceneGraph.mergePalettes() and the vox format
+	if (onlyOnePalette() && sceneGraph.hasMoreThanOnePalette()) {
+		const voxel::Palette &palette = sceneGraph.mergePalettes(true, emptyPaletteIndex());
+		scenegraph::SceneGraph newSceneGraph;
+		scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
+		for (auto iter = newSceneGraph.beginAllModels(); iter != newSceneGraph.end(); ++iter) {
+			scenegraph::SceneGraphNode &node = *iter;
+			node.remapToPalette(palette);
+			node.setPalette(palette);
+		}
+		return Format::save(newSceneGraph, filename, stream, ctx);
+	} else if (emptyPaletteIndex() >= 0 && emptyPaletteIndex() < voxel::PaletteMaxColors) {
+		// TODO: remap the palette to deliver a prepared scene graph to the save function
 	}
 	return Format::save(sceneGraph, filename, stream, ctx);
 }
