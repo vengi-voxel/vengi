@@ -23,6 +23,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeSplitter.h"
+#include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 #include <limits>
 
@@ -226,7 +227,45 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 		}
 		return Format::save(newSceneGraph, filename, stream, ctx);
 	} else if (emptyPaletteIndex() >= 0 && emptyPaletteIndex() < voxel::PaletteMaxColors) {
-		// TODO: remap the palette to deliver a prepared scene graph to the save function
+		scenegraph::SceneGraph newSceneGraph;
+		scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
+		for (auto iter = newSceneGraph.beginModel(); iter != newSceneGraph.end(); ++iter) {
+			scenegraph::SceneGraphNode &node = *iter;
+			voxel::Palette palette = node.palette();
+			if (palette.color(emptyPaletteIndex()).a > 0) {
+				Log::debug("Need to replace %i", emptyPaletteIndex());
+				if (palette.colorCount() < voxel::PaletteMaxColors) {
+					for (int i = palette.colorCount(); i >= 0; --i) {
+						palette.color(i) = palette.color(i - 1);
+						palette.glowColor(i) = palette.glowColor(i - 1);
+					}
+					palette.color(emptyPaletteIndex()) = core::RGBA(0);
+					palette.changeSize(1);
+					voxel::RawVolume *v = node.volume();
+					voxelutil::visitVolume(
+						*v, [v](int x, int y, int z, const voxel::Voxel &voxel) {
+							v->setVoxel(x, y, z, voxel::createVoxel(voxel.getMaterial(), voxel.getColor() + 1));
+						});
+				} else {
+					uint8_t replacement = palette.findReplacement(emptyPaletteIndex());
+					Log::debug("Looking for a similar color in the palette: %d", replacement);
+					if (replacement != emptyPaletteIndex()) {
+						Log::debug("Replace %i with %i", emptyPaletteIndex(), replacement);
+						voxel::RawVolume *v = node.volume();
+						voxelutil::visitVolume(
+							*v, [v, replaceFrom = emptyPaletteIndex(), replaceTo = replacement](int x, int y, int z, const voxel::Voxel &voxel) {
+								if (voxel.getColor() == replaceFrom) {
+									v->setVoxel(x, y, z, voxel::createVoxel(voxel.getMaterial(), replaceTo));
+								}
+							});
+					}
+				}
+				node.setPalette(palette);
+			} else {
+				node.remapToPalette(node.palette(), emptyPaletteIndex());
+			}
+		}
+		return Format::save(newSceneGraph, filename, stream, ctx);
 	}
 	return Format::save(sceneGraph, filename, stream, ctx);
 }
