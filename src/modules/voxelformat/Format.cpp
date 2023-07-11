@@ -238,16 +238,17 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 				Log::debug("Need to replace %i", emptyPaletteIndex());
 				if (palette.colorCount() < voxel::PaletteMaxColors) {
 					Log::debug("Shift colors in palettes to make slot %i empty", emptyPaletteIndex());
-					for (int i = palette.colorCount(); i >= 0; --i) {
+					for (int i = palette.colorCount(); i >= emptyPaletteIndex(); --i) {
 						palette.color(i) = palette.color(i - 1);
 						palette.glowColor(i) = palette.glowColor(i - 1);
 					}
-					palette.color(emptyPaletteIndex()) = core::RGBA(0);
 					palette.changeSize(1);
 					voxel::RawVolume *v = node.volume();
 					voxelutil::visitVolume(
-						*v, [v](int x, int y, int z, const voxel::Voxel &voxel) {
-							v->setVoxel(x, y, z, voxel::createVoxel(voxel.getMaterial(), voxel.getColor() + 1));
+						*v, [v, skip = emptyPaletteIndex()](int x, int y, int z, const voxel::Voxel &voxel) {
+							if (voxel.getColor() >= skip) {
+								v->setVoxel(x, y, z, voxel::createVoxel(voxel.getMaterial(), voxel.getColor() + 1));
+							}
 						});
 				} else {
 					uint8_t replacement = palette.findReplacement(emptyPaletteIndex());
