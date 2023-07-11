@@ -242,7 +242,9 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 						palette.color(i) = palette.color(i - 1);
 						palette.glowColor(i) = palette.glowColor(i - 1);
 					}
-					palette.changeSize(1);
+					if (emptyPaletteIndex() <= palette.colorCount()) {
+						palette.changeSize(1);
+					}
 					voxel::RawVolume *v = node.volume();
 					voxelutil::visitVolume(
 						*v, [v, skip = emptyPaletteIndex()](int x, int y, int z, const voxel::Voxel &voxel) {
