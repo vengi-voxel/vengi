@@ -44,10 +44,9 @@ private:
 						   const LoadContext &ctx) override;
 
 	void saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx,
-				  uint32_t parentGroupIdx, uint32_t layerIdx, const voxel::Palette &palette);
+				  uint32_t parentGroupIdx, uint32_t layerIdx);
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
-
 public:
 	VoxFormat();
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
