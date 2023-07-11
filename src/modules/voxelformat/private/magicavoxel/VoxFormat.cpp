@@ -15,6 +15,8 @@
 
 namespace voxelformat {
 
+static const uint8_t EMPTY_PALETTE = 0;
+
 VoxFormat::VoxFormat() {
 	ogt_vox_set_memory_allocator(_ogt_alloc, _ogt_free);
 }
@@ -325,7 +327,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 				[&](int, int, int, const voxel::Voxel &voxel) {
 					const core::RGBA rgba = nodePalette.color(voxel.getColor());
 					if (rgba.a == 0 || isAir(voxel.getMaterial())) {
-						*dataptr++ = 0;
+						*dataptr++ = EMPTY_PALETTE;
 					} else {
 						const uint8_t palIndex = palette.getClosestMatch(rgba, nullptr, 0);
 						if (palIndex == 0u && !ctx.paletteErrorPrinted) {
