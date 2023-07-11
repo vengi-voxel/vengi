@@ -526,6 +526,24 @@ void SceneGraph::clear() {
 	_nodes.emplace(0, core::move(node));
 }
 
+bool SceneGraph::hasMoreThanOnePalette() const {
+	uint64_t hash = 0;
+	for (auto entry : nodes()) {
+		if (!entry->second.isModelNode()) {
+			continue;
+		}
+		const SceneGraphNode &node = entry->second;
+		if (hash == 0) {
+			hash = node.palette().hash();
+		} else if (hash != node.palette().hash()) {
+			Log::debug("Scenegraph has more than one palette");
+			return true;
+		}
+	}
+	Log::debug("Scenegraph has only one palette");
+	return false;
+}
+
 voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) const {
 	voxel::Palette palette;
 	bool tooManyColors = false;

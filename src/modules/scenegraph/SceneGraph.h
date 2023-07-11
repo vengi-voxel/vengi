@@ -67,8 +67,17 @@ public:
 	 * one palette for all nodes
 	 * @param[in] emptyIndex Some formats can't e.g. use the first palette index because 0 indicates an empty voxel.
 	 * Inform the merge process about skipping that voxel slot
+	 * @sa hasMoreThanOnePalette()
 	 */
 	voxel::Palette mergePalettes(bool removeUnused, int emptyIndex = -1) const;
+	/**
+	 * @brief Checks if the scene graph model nodes are using the same palette.
+	 * @note This is important for some formats that only support one palette for all nodes and can be used to
+	 * decide whether the scene graph should be re-created with all model nodes using the same palette by
+	 * remapping the colors.
+	 * @sa mergePalettes()
+	 */
+	bool hasMoreThanOnePalette() const;
 
 	/**
 	 * @return The full region of the whole scene
