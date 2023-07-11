@@ -16,7 +16,6 @@ namespace voxelformat {
 
 namespace priv {
 
-#if 0
 enum KVXVisibility {
 	Left = 1,
 	Right = 2,
@@ -26,6 +25,7 @@ enum KVXVisibility {
 	Down = 32
 };
 
+#if 0
 static uint8_t calculateVisibility(const voxel::RawVolume *v, int x, int y, int z) {
 	uint8_t vis = 0;
 	voxel::FaceBits visBits = voxel::visibleFaces(*v, x, y, z);
@@ -230,12 +230,12 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				 * the format only saves the visible voxels - we have to take the face info to
 				 * fill the inner voxels
 				 */
-				if (!(header.slabbackfacecullinfo & (1 << 4))) {
+				if (!(header.slabbackfacecullinfo & priv::KVXVisibility::Up)) {
 					for (uint32_t i = lastZ + 1; i < header.slabztop; ++i) {
 						volume->setVoxel((int)x, (int)((zsiz_h - 1) - i), (int)y, lastCol);
 					}
 				}
-				if (!(header.slabbackfacecullinfo & (1 << 5))) {
+				if (!(header.slabbackfacecullinfo & priv::KVXVisibility::Down)) {
 					lastZ = header.slabztop + header.slabzleng;
 				}
 				n -= (int32_t)(header.slabzleng + sizeof(header));
