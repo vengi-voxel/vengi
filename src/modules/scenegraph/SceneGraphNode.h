@@ -301,7 +301,7 @@ public:
 	 * @brief Remaps the voxel colors to the new given palette
 	 * @note The palette is not set by this method - you have to call @c setPalette() on your own.
 	 */
-	voxel::Region remapToPalette(const voxel::Palette &palette);
+	voxel::Region remapToPalette(const voxel::Palette &palette, int skipColorIndex = -1);
 	/**
 	 * @note If this node is a reference node ( @c SceneGraphNodeType::ModelReference ) then this will return an invalid
 	 * region - use @c SceneGraph::resolveRegion() instead.
