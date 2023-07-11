@@ -23,7 +23,7 @@ int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent
 
 int addSceneGraphNodes(SceneGraph& target, SceneGraph& source, int parent);
 
-int copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent);
+int copySceneGraph(SceneGraph &target, const SceneGraph &source);
 
 int createNodeReference(SceneGraph &target, const SceneGraphNode &node);
 
