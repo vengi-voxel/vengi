@@ -154,7 +154,7 @@ jobs:
 
         - uses: mymindstorm/setup-emsdk@v12
           with:
-            version: latest
+            version: 3.1.40
 
         - name: ccache
           uses: actions/cache@v3
