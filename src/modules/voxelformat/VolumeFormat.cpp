@@ -112,7 +112,7 @@ const io::FormatDescription *voxelLoad() {
 					magic == FourCC('V', 'X', 'M', 'C') || magic == FourCC('V', 'X', 'M', '9') ||
 					magic == FourCC('V', 'X', 'M', '8') || magic == FourCC('V', 'X', 'M', '7') ||
 					magic == FourCC('V', 'X', 'M', '6') || magic == FourCC('V', 'X', 'M', '5') ||
-					magic == FourCC('V', 'X', 'M', '4');
+					magic == FourCC('V', 'X', 'M', '4') || magic == FourCC('V', 'X', 'M', '3');
 		 },
 		 VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
 		{"Sandbox VoxEdit Hierarchy",

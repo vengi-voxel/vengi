@@ -32,6 +32,7 @@ General:
    - Fixed missing group transform handling for MagicaVoxel files
    - Added support for MagicaVoxel `xraw` format
    - Added alpha support for MagicaVoxel materials
+   - Added support for loading Sandbox VXM format version 3
 
 VoxConvert:
 

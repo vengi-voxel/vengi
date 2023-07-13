@@ -275,7 +275,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	if (version < 4 || version > 12) {
+	if (version < 3 || version > 12) {
 		Log::error("Could not load vxm file: Unsupported version found (%i)", version);
 		return false;
 	}
@@ -362,6 +362,14 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			uint32_t size;
 			wrap(stream.readUInt32(size));
 			stream.skip(size); // zipped pixel data
+		} else if (version == 3) {
+			uint8_t byte;
+			do {
+				wrap(stream.readUInt8(byte));
+				if (byte != 0u) {
+					stream.skip(3);
+				}
+			} while (byte != 0);
 		} else {
 			uint32_t texAmount;
 			wrap(stream.readUInt32(texAmount));
@@ -461,11 +469,13 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt8(red));
 		uint8_t alpha;
 		wrap(stream.readUInt8(alpha));
-		uint8_t emissive;
-		wrap(stream.readUInt8(emissive));
-		palette.color(i) = core::RGBA(red, green, blue, alpha);
-		if (emissive) {
-			palette.glowColor(i) = palette.color(i);
+		if (version > 3) {
+			uint8_t emissive;
+			wrap(stream.readUInt8(emissive));
+			palette.color(i) = core::RGBA(red, green, blue, alpha);
+			if (emissive) {
+				palette.glowColor(i) = palette.color(i);
+			}
 		}
 	}
 	palette.setSize(materialAmount);
