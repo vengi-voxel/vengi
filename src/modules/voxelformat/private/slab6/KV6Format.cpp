@@ -5,6 +5,7 @@
 #include "KV6Format.h"
 #include "core/Color.h"
 #include "core/Common.h"
+#include "core/Enum.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/RGBA.h"
@@ -24,10 +25,11 @@ namespace voxelformat {
 
 namespace priv {
 
-enum KV6Visibility { Left = 1, Right = 2, Front = 4, Back = 8, Up = 16, Down = 32 };
+enum class KV6Visibility : uint8_t { None = 0, Left = 1, Right = 2, Front = 4, Back = 8, Up = 16, Down = 32 };
+CORE_ENUM_BIT_OPERATIONS(KV6Visibility)
 
-static uint8_t calculateVisibility(const voxel::RawVolume *v, int x, int y, int z) {
-	uint8_t vis = 0;
+static KV6Visibility calculateVisibility(const voxel::RawVolume *v, int x, int y, int z) {
+	KV6Visibility vis = KV6Visibility::None;
 	voxel::FaceBits visBits = voxel::visibleFaces(*v, x, y, z);
 	if (visBits == voxel::FaceBits::None) {
 		return vis;
@@ -64,7 +66,7 @@ struct voxtype {
 	uint8_t z_low_h = 0; ///< z coordinate of this surface voxel (height - our y)
 	uint8_t z_high = 0;	 ///< always 0
 	uint8_t col = 0;	 ///< palette index
-	uint8_t vis = 0;	 ///< Low 6 bits say if neighbor is solid or air - @sa priv::KV6Visibility
+	KV6Visibility vis = KV6Visibility::None;	 ///< Low 6 bits say if neighbor is solid or air - @sa priv::KV6Visibility
 	uint8_t dir = 0;	 ///< Uses 256-entry lookup table - lighting bit - @sa priv::directions
 };
 
@@ -215,11 +217,11 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		state->voxdata[c].col = palLookup.findClosestIndex(color);
 		wrap(stream.readUInt8(state->voxdata[c].z_low_h))
 		wrap(stream.readUInt8(state->voxdata[c].z_high))
-		wrap(stream.readUInt8(state->voxdata[c].vis))
+		wrap(stream.readUInt8((uint8_t&)state->voxdata[c].vis))
 		wrap(stream.readUInt8(state->voxdata[c].dir))
 		Log::debug("voxel %u/%u z-low: %u, z_high: %u, vis: %i. dir: %u, pal: %u", c, numvoxs,
-				   state->voxdata[c].z_low_h, state->voxdata[c].z_high, state->voxdata[c].vis, state->voxdata[c].dir,
-				   state->voxdata[c].col);
+				   state->voxdata[c].z_low_h, state->voxdata[c].z_high, (uint8_t)state->voxdata[c].vis,
+				   state->voxdata[c].dir, state->voxdata[c].col);
 	}
 	for (uint32_t x = 0u; x < xsiz_w; ++x) {
 		wrap(stream.readInt32(state->xlen[x]))
@@ -253,11 +255,11 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			uint32_t lastZ = 256;
 			for (int end = idx + state->xyoffset[x][y]; idx < end; ++idx) {
 				const priv::voxtype &vox = state->voxdata[idx];
-				if (vox.vis & priv::KV6Visibility::Up) {
+				if ((vox.vis & priv::KV6Visibility::Up) != priv::KV6Visibility::None) {
 					lastZ = vox.z_low_h;
 					lastCol = voxel::createVoxel(palette, vox.col);
 				}
-				if (vox.vis & priv::KV6Visibility::Down) {
+				if ((vox.vis & priv::KV6Visibility::Down) != priv::KV6Visibility::None) {
 					for (; lastZ < vox.z_low_h; ++lastZ) {
 						volume->setVoxel((int)x, (int)((zsiz_h - 1) - lastZ), (int)y, lastCol);
 					}
@@ -352,10 +354,10 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		wrapBool(stream.writeUInt8(128))
 		wrapBool(stream.writeUInt8(data.z_low_h))
 		wrapBool(stream.writeUInt8(data.z_high))
-		wrapBool(stream.writeUInt8(data.vis))
+		wrapBool(stream.writeUInt8((uint8_t)data.vis))
 		wrapBool(stream.writeUInt8(data.dir))
-		Log::debug("voxel z-low: %u, z_high: %u, vis: %i. dir: %u, pal: %u", data.z_low_h, data.z_high, data.vis,
-				   data.dir, data.col);
+		Log::debug("voxel z-low: %u, z_high: %u, vis: %i. dir: %u, pal: %u", data.z_low_h, data.z_high,
+				   (uint8_t)data.vis, data.dir, data.col);
 	}
 
 	for (int x = 0u; x < xsiz_w; ++x) {
