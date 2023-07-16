@@ -335,6 +335,17 @@ static int luaVoxel_palette_color(lua_State* s) {
 	return clua_push(s, rgba);
 }
 
+static int luaVoxel_palette_setcolor(lua_State* s) {
+	voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t color = luaL_checkinteger(s, 2);
+	const uint8_t r = luaL_checkinteger(s, 3);
+	const uint8_t g = luaL_checkinteger(s, 4);
+	const uint8_t b = luaL_checkinteger(s, 5);
+	const uint8_t a = luaL_optinteger(s, 6, 255);
+	palette->setColor(color, core::RGBA(r, g, b, a));
+	return 0;
+}
+
 static int luaVoxel_palette_closestmatch(lua_State* s) {
 	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
 	core::DynamicArray<glm::vec4> materialColors;
@@ -681,7 +692,11 @@ static int luaVoxel_scenegraphnode_setname(lua_State* s) {
 static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
 	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	voxel::Palette *palette = luaVoxel_toPalette(s, 2);
-	node->setPalette(*palette);
+	if (clua_optboolean(s, 3, false)) {
+		node->remapToPalette(*palette);
+	} else {
+		node->setPalette(*palette);
+	}
 	return 0;
 }
 
@@ -749,6 +764,7 @@ static void prepareState(lua_State* s) {
 	static const luaL_Reg paletteFuncs[] = {
 		{"colors", luaVoxel_palette_colors},
 		{"color", luaVoxel_palette_color},
+		{"setColor", luaVoxel_palette_setcolor},
 		{"match", luaVoxel_palette_closestmatch},
 		{"similar", luaVoxel_palette_similar},
 		{nullptr, nullptr}

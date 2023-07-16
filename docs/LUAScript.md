@@ -113,7 +113,7 @@ The functions are:
 
 * `palette()`: Returns the current palette of the node.
 
-* `setPalette(palette)`: Change the palette
+* `setPalette(palette, [remap])`: Change the palette or if remap is given and is true it remaps to the new palette
 
 * `volume()`: Gives you access to the volume of the node.
 
@@ -135,6 +135,8 @@ The functions are:
 * `colors()`: Returns the palette RGBA colors as vec4 values.
 
 * `match(r, g, b)`: Returns the closest possible palette color match for the given RGB (`0-255`) color. The returned palette index is in the range `0-255`. This value can then be used for the `setVoxel` method.
+
+* `setColor(paletteIndex, red, green, blue, [alpha])`: Change the color of a palette entry to the given rgba values in the range `[0-255]`.
 
 * `similar(paletteindex, [coloramount])`: Return a table with similar colors given by their palette index.
 
