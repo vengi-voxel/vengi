@@ -571,6 +571,12 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 
 			offset += intSize;
 		}
+		const size_t fillBytes = (offset * 4) % 16;
+		if (fillBytes > 0) {
+			// the minimum alignment is 16 bytes
+			ub += core::string::format("\t\tuint32_t _padding%i[%i];\n", paddingCnt, (16 - (int)fillBytes) / 4);
+			offset += fillBytes / 4;
+		}
 		ub += "\t};\n\t#pragma pack(pop)\n";
 		ub += "\tstatic_assert(sizeof(";
 		ub += uniformBufferStructName;
