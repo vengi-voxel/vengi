@@ -255,8 +255,6 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* export models:     - %s", (_exportModels     ? "true" : "false"));
 	Log::info("* resize models:     - %s", (_resizeModels     ? "true" : "false"));
 
-	voxel::Palette palette = voxel::getPalette();
-
 	io::FilePtr outputFile;
 	if (!outfile.empty()) {
 		const bool outfileExists = filesystem()->open(outfile)->exists();
