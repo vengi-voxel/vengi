@@ -42,6 +42,8 @@ public:
 		return _colors[_indices[i]];
 	}
 
+	void setColor(uint8_t i, const core::RGBA &rgba);
+
 	inline core::RGBA color(uint8_t i) const {
 		return _colors[_indices[i]];
 	}

@@ -3,6 +3,7 @@
  */
 
 #include "Palette.h"
+#include "core/Common.h"
 #include "core/StandardLib.h"
 #include "app/App.h"
 #include "core/Color.h"
@@ -81,6 +82,12 @@ bool Palette::hasColor(core::RGBA rgba) {
 		}
 	}
 	return false;
+}
+
+void Palette::setColor(uint8_t i, const core::RGBA &rgba) {
+	color(i) = rgba;
+	setSize(core_max(size(), i));
+	markDirty();
 }
 
 bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar, int skipSlotIndex) {
