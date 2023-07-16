@@ -182,6 +182,10 @@ float lineWidth(float width) {
 	return oldWidth;
 }
 
+float currentLineWidth() {
+	return glstate().lineWidth;
+}
+
 const glm::vec4& currentClearColor() {
 	return glstate().clearColor;
 }

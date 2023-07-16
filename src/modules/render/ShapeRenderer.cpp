@@ -3,17 +3,19 @@
  */
 #include "ShapeRenderer.h"
 #include "ColorData.h"
-#include "video/Renderer.h"
-#include "video/Shader.h"
-#include "video/ScopedPolygonMode.h"
 #include "core/Log.h"
 #include "video/Camera.h"
+#include "video/Renderer.h"
+#include "video/RendererInterface.h"
+#include "video/ScopedPolygonMode.h"
+#include "video/Shader.h"
+#include "video/Types.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace render {
 
-ShapeRenderer::ShapeRenderer() :
-		_colorShader(shader::ColorShader::getInstance()) {
+ShapeRenderer::ShapeRenderer()
+	: _colorShader(shader::ColorShader::getInstance()) {
 	for (int i = 0; i < MAX_MESHES; ++i) {
 		_vertexIndex[i] = -1;
 		_indexIndex[i] = -1;
@@ -31,10 +33,10 @@ bool ShapeRenderer::init() {
 		Log::error("Failed to setup color shader");
 		return false;
 	}
-
-	_uniformBlock.create(_uniformBlockData);
-
+	core_assert_always(_uniformBlock.create(_uniformBlockData));
 	core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
+
+
 	return true;
 }
 
@@ -55,7 +57,7 @@ bool ShapeRenderer::deleteMesh(int32_t meshIndex) {
 	return true;
 }
 
-void ShapeRenderer::createOrUpdate(int32_t& meshIndex, const video::ShapeBuilder& shapeBuilder) {
+void ShapeRenderer::createOrUpdate(int32_t &meshIndex, const video::ShapeBuilder &shapeBuilder) {
 	if (meshIndex < 0) {
 		meshIndex = create(shapeBuilder);
 	} else {
@@ -63,7 +65,7 @@ void ShapeRenderer::createOrUpdate(int32_t& meshIndex, const video::ShapeBuilder
 	}
 }
 
-int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
+int32_t ShapeRenderer::create(const video::ShapeBuilder &shapeBuilder) {
 	uint32_t meshIndex = _currentMeshIndex;
 	for (uint32_t i = 0u; i < _currentMeshIndex; ++i) {
 		if (!_vbo[i].isValid(0)) {
@@ -79,10 +81,11 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 
 	_vertices.clear();
 	_vertices.reserve(shapeBuilder.getVertices().size());
-	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
-		_vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
-	});
-	const void* verticesData = nullptr;
+	shapeBuilder.iterate(
+		[&](const glm::vec3 &pos, const glm::vec2 &uv, const glm::vec4 &color, const glm::vec3 &normal) {
+			_vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
+		});
+	const void *verticesData = nullptr;
 	if (!_vertices.empty()) {
 		verticesData = &_vertices.front();
 	}
@@ -92,13 +95,13 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 		return -1;
 	}
 
-	const video::ShapeBuilder::Indices& indices = shapeBuilder.getIndices();
-	const void* indicesData = nullptr;
+	const video::ShapeBuilder::Indices &indices = shapeBuilder.getIndices();
+	const void *indicesData = nullptr;
 	if (!indices.empty()) {
 		indicesData = &indices.front();
 	}
-	_indexIndex[meshIndex] = _vbo[meshIndex].create(indicesData, indices.size() * sizeof(video::ShapeBuilder::Indices::value_type),
-			video::BufferType::IndexBuffer);
+	_indexIndex[meshIndex] = _vbo[meshIndex].create(
+		indicesData, indices.size() * sizeof(video::ShapeBuilder::Indices::value_type), video::BufferType::IndexBuffer);
 	if (_indexIndex[meshIndex] == -1) {
 		_vertexIndex[meshIndex] = -1;
 		_vbo[meshIndex].shutdown();
@@ -119,28 +122,30 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder& shapeBuilder) {
 	return meshIndex;
 }
 
-void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder) {
+void ShapeRenderer::update(uint32_t meshIndex, const video::ShapeBuilder &shapeBuilder) {
 	if (meshIndex >= MAX_MESHES) {
 		Log::warn("Invalid mesh index given: %u", meshIndex);
 		return;
 	}
 	_vertices.clear();
 	_vertices.reserve(shapeBuilder.getVertices().size());
-	shapeBuilder.iterate([&] (const glm::vec3& pos, const glm::vec2& uv, const glm::vec4& color, const glm::vec3& normal) {
-		_vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
-	});
-	const void* verticesData = nullptr;
+	shapeBuilder.iterate(
+		[&](const glm::vec3 &pos, const glm::vec2 &uv, const glm::vec4 &color, const glm::vec3 &normal) {
+			_vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
+		});
+	const void *verticesData = nullptr;
 	if (!_vertices.empty()) {
 		verticesData = &_vertices.front();
 	}
-	video::Buffer& vbo = _vbo[meshIndex];
+	video::Buffer &vbo = _vbo[meshIndex];
 	core_assert_always(vbo.update(_vertexIndex[meshIndex], verticesData, _vertices.size() * sizeof(Vertex)));
-	const video::ShapeBuilder::Indices& indices = shapeBuilder.getIndices();
-	const void* indicesData = nullptr;
+	const video::ShapeBuilder::Indices &indices = shapeBuilder.getIndices();
+	const void *indicesData = nullptr;
 	if (!indices.empty()) {
 		indicesData = &indices.front();
 	}
-	core_assert_always(vbo.update(_indexIndex[meshIndex], indicesData, indices.size() * sizeof(video::ShapeBuilder::Indices::value_type)));
+	core_assert_always(vbo.update(_indexIndex[meshIndex], indicesData,
+								  indices.size() * sizeof(video::ShapeBuilder::Indices::value_type)));
 	_primitives[meshIndex] = shapeBuilder.primitive();
 }
 
@@ -167,13 +172,23 @@ bool ShapeRenderer::hiddenState(int32_t meshIndex) const {
 	return _hidden[meshIndex];
 }
 
-int ShapeRenderer::renderAll(const video::Camera& camera, const glm::mat4& model) const {
+int ShapeRenderer::renderAll(const video::Camera &camera, const glm::mat4 &model) const {
 	int cnt = 0;
 	cnt += renderAllColored(camera, model);
 	return cnt;
 }
 
-int ShapeRenderer::renderAllColored(const video::Camera& camera, const glm::mat4& model) const {
+void ShapeRenderer::activateShader(video::Primitive primitive, const video::Camera &camera, const glm::mat4 &model) const {
+	if (!_colorShader.isActive()) {
+		_colorShader.activate();
+		_uniformBlockData.model = model;
+		_uniformBlockData.viewprojection = camera.viewProjectionMatrix();
+		core_assert_always(_uniformBlock.update(_uniformBlockData));
+		core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
+	}
+}
+
+int ShapeRenderer::renderAllColored(const video::Camera &camera, const glm::mat4 &model) const {
 	int cnt = 0;
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
 		if (_vertexIndex[meshIndex] == -1) {
@@ -182,15 +197,10 @@ int ShapeRenderer::renderAllColored(const video::Camera& camera, const glm::mat4
 		if (_hidden[meshIndex]) {
 			continue;
 		}
-		if (!_colorShader.isActive()) {
-			_colorShader.activate();
-			_uniformBlockData.model = model;
-			_uniformBlockData.viewprojection = camera.viewProjectionMatrix();
-			core_assert_always(_uniformBlock.update(_uniformBlockData));
-			core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
-		}
+		activateShader(_primitives[meshIndex], camera, model);
 		core_assert_always(_vbo[meshIndex].bind());
-		const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
+		const uint32_t indices =
+			_vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
 		video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
 		_vbo[meshIndex].unbind();
 		++cnt;
@@ -201,7 +211,7 @@ int ShapeRenderer::renderAllColored(const video::Camera& camera, const glm::mat4
 	return cnt;
 }
 
-bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model) const {
+bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera &camera, const glm::mat4 &model) const {
 	if (meshIndex == (uint32_t)-1) {
 		return false;
 	}
@@ -216,13 +226,10 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 		return false;
 	}
 
-	const uint32_t indices = _vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
+	const uint32_t indices =
+		_vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
 
-	_uniformBlockData.model = model;
-	_uniformBlockData.viewprojection = camera.viewProjectionMatrix();
-	core_assert_always(_uniformBlock.update(_uniformBlockData));
-	core_assert_always(_colorShader.activate());
-	core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
+	activateShader(_primitives[meshIndex], camera, model);
 	core_assert_always(_vbo[meshIndex].bind());
 	video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
 	_colorShader.deactivate();
@@ -230,4 +237,4 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera& camera, cons
 	return true;
 }
 
-}
+} // namespace render

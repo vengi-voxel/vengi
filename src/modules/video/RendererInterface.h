@@ -58,6 +58,7 @@ void readBuffer(GBufferTextureType textureType);
  * @return The previous line width
  */
 float lineWidth(float width);
+float currentLineWidth();
 bool clearColor(const glm::vec4 &clearColor);
 const glm::vec4 &currentClearColor();
 void clear(ClearFlag flag);
