@@ -31,7 +31,6 @@
 #endif
 #include <unistd.h>
 #include <sys/types.h>
-#include <pulse/pulseaudio.h>
 
 #include "SDL_timer.h"
 #include "SDL_audio.h"
@@ -55,20 +54,6 @@ static char *default_source_path = NULL;
 static char *default_sink_name = NULL;
 static char *default_source_name = NULL;
 
-
-
-#if (PA_API_VERSION < 12)
-/** Return non-zero if the passed state is one of the connected states */
-static SDL_INLINE int PA_CONTEXT_IS_GOOD(pa_context_state_t x)
-{
-    return x == PA_CONTEXT_CONNECTING || x == PA_CONTEXT_AUTHORIZING || x == PA_CONTEXT_SETTING_NAME || x == PA_CONTEXT_READY;
-}
-/** Return non-zero if the passed state is one of the connected states */
-static SDL_INLINE int PA_STREAM_IS_GOOD(pa_stream_state_t x)
-{
-    return x == PA_STREAM_CREATING || x == PA_STREAM_READY;
-}
-#endif /* pulseaudio <= 0.9.10 */
 
 static const char *(*PULSEAUDIO_pa_get_library_version)(void);
 static pa_channel_map *(*PULSEAUDIO_pa_channel_map_init_auto)(
@@ -199,7 +184,6 @@ static int load_pulseaudio_syms(void)
 {
     SDL_PULSEAUDIO_SYM(pa_get_library_version);
     SDL_PULSEAUDIO_SYM(pa_threaded_mainloop_new);
-    SDL_PULSEAUDIO_SYM(pa_threaded_mainloop_set_name);
     SDL_PULSEAUDIO_SYM(pa_threaded_mainloop_get_api);
     SDL_PULSEAUDIO_SYM(pa_threaded_mainloop_start);
     SDL_PULSEAUDIO_SYM(pa_threaded_mainloop_stop);
@@ -242,6 +226,16 @@ static int load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_stream_set_write_callback);
     SDL_PULSEAUDIO_SYM(pa_stream_set_read_callback);
     SDL_PULSEAUDIO_SYM(pa_context_get_server_info);
+
+    /* optional */
+#ifdef SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
+    load_pulseaudio_sym("pa_threaded_mainloop_set_name", (void **)(char *)&PULSEAUDIO_pa_threaded_mainloop_set_name);
+#elif (PA_PROTOCOL_VERSION >= 29)
+    PULSEAUDIO_pa_threaded_mainloop_set_name = pa_threaded_mainloop_set_name;
+#else
+    PULSEAUDIO_pa_threaded_mainloop_set_name = NULL;
+#endif
+
     return 0;
 }
 
@@ -322,7 +316,9 @@ static int ConnectToPulseServer(void)
         return SDL_SetError("pa_threaded_mainloop_new() failed");
     }
 
-    PULSEAUDIO_pa_threaded_mainloop_set_name(pulseaudio_threaded_mainloop, "PulseMainloop");
+    if (PULSEAUDIO_pa_threaded_mainloop_set_name) {
+        PULSEAUDIO_pa_threaded_mainloop_set_name(pulseaudio_threaded_mainloop, "PulseMainloop");
+    }
 
     if (PULSEAUDIO_pa_threaded_mainloop_start(pulseaudio_threaded_mainloop) < 0) {
         PULSEAUDIO_pa_threaded_mainloop_free(pulseaudio_threaded_mainloop);
@@ -859,13 +855,29 @@ static void HotplugCallback(pa_context *c, pa_subscription_event_type_t t, uint3
 /* this runs as a thread while the Pulse target is initialized to catch hotplug events. */
 static int SDLCALL HotplugThread(void *data)
 {
+    pa_operation *op;
+
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
     PULSEAUDIO_pa_context_set_subscribe_callback(pulseaudio_context, HotplugCallback, NULL);
-    WaitForPulseOperation(PULSEAUDIO_pa_context_subscribe(pulseaudio_context, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE, NULL, NULL));
+
+    /* don't WaitForPulseOperation on the subscription; when it's done we'll be able to get hotplug events, but waiting doesn't changing anything. */
+    op = PULSEAUDIO_pa_context_subscribe(pulseaudio_context, PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE, NULL, NULL);
+
+    SDL_SemPost(data);
+
     while (SDL_AtomicGet(&pulseaudio_hotplug_thread_active)) {
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
+        if (op && PULSEAUDIO_pa_operation_get_state(op) != PA_OPERATION_RUNNING) {
+            PULSEAUDIO_pa_operation_unref(op);
+            op = NULL;
+        }
     }
+
+    if (op) {
+        PULSEAUDIO_pa_operation_unref(op);
+    }
+
     PULSEAUDIO_pa_context_set_subscribe_callback(pulseaudio_context, NULL, NULL);
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
     return 0;
@@ -873,6 +885,8 @@ static int SDLCALL HotplugThread(void *data)
 
 static void PULSEAUDIO_DetectDevices()
 {
+    SDL_sem *ready_sem = SDL_CreateSemaphore(0);
+
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
     WaitForPulseOperation(PULSEAUDIO_pa_context_get_server_info(pulseaudio_context, ServerInfoCallback, NULL));
     WaitForPulseOperation(PULSEAUDIO_pa_context_get_sink_info_list(pulseaudio_context, SinkInfoCallback, (void *)((intptr_t)SDL_TRUE)));
@@ -881,7 +895,9 @@ static void PULSEAUDIO_DetectDevices()
 
     /* ok, we have a sane list, let's set up hotplug notifications now... */
     SDL_AtomicSet(&pulseaudio_hotplug_thread_active, 1);
-    pulseaudio_hotplug_thread = SDL_CreateThreadInternal(HotplugThread, "PulseHotplug", 256 * 1024, NULL);  /* !!! FIXME: this can probably survive in significantly less stack space. */
+    pulseaudio_hotplug_thread = SDL_CreateThreadInternal(HotplugThread, "PulseHotplug", 256 * 1024, ready_sem);  /* !!! FIXME: this can probably survive in significantly less stack space. */
+    SDL_SemWait(ready_sem);
+    SDL_DestroySemaphore(ready_sem);
 }
 
 static int PULSEAUDIO_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
