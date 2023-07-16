@@ -16,6 +16,7 @@ set(LUA_SRCS
 	scripts/planet.lua
 	scripts/pyramid.lua
 	scripts/replacecolor.lua
+	scripts/replacepalette.lua
 	scripts/similarcolor.lua
 	scripts/splitcolor.lua
 	scripts/splitobjects.lua

@@ -84,6 +84,8 @@ TEST_F(LUAGeneratorTest, testExecute) {
 				node:volume():setVoxel(1, 0, 0, match)
 			end
 			local colors = node:palette():colors()
+			local newpal = palettemgr.new()
+			newpal:load("built-in:minecraft")
 		end
 	)";
 

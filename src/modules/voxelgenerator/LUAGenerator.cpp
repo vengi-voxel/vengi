@@ -89,8 +89,16 @@ static const char *luaVoxel_metavolumewrapper() {
 	return "__meta_volumewrapper";
 }
 
+static const char *luaVoxel_metapaletteglobal() {
+	return "__meta_palette_global";
+}
+
 static const char *luaVoxel_metapalette() {
 	return "__meta_palette";
+}
+
+static const char *luaVoxel_metapalette_gc() {
+	return "__meta_palette_gc";
 }
 
 static const char *luaVoxel_metanoise() {
@@ -106,6 +114,10 @@ static voxel::Region* luaVoxel_toRegion(lua_State* s, int n) {
 }
 
 static voxel::Palette* luaVoxel_toPalette(lua_State* s, int n) {
+	voxel::Palette** palette = (voxel::Palette**)luaL_testudata(s, n, luaVoxel_metapalette_gc());
+	if (palette != nullptr) {
+		return *palette;
+	}
 	return *(voxel::Palette**)clua_getudata<voxel::Palette*>(s, n, luaVoxel_metapalette());
 }
 
@@ -136,11 +148,15 @@ static int luaVoxel_pushvolumewrapper(lua_State* s, scenegraph::SceneGraphNode* 
 	return clua_pushudata(s, wrapper, luaVoxel_metavolumewrapper());
 }
 
+static int luaVoxel_pushpalette(lua_State* s, voxel::Palette& palette) {
+	return clua_pushudata(s, &palette, luaVoxel_metapalette());
+}
+
 static int luaVoxel_pushpalette(lua_State* s, voxel::Palette* palette) {
 	if (palette == nullptr) {
 		return clua_error(s, "No palette given - can't push");
 	}
-	return clua_pushudata(s, palette, luaVoxel_metapalette());
+	return clua_pushudata(s, palette, luaVoxel_metapalette_gc());
 }
 
 static int luaVoxel_volumewrapper_voxel(lua_State* s) {
@@ -316,6 +332,12 @@ static int luaVoxel_volumewrapper_gc(lua_State *s) {
 	return 0;
 }
 
+static int luaVoxel_palette_gc(lua_State *s) {
+	voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	delete palette;
+	return 0;
+}
+
 static int luaVoxel_palette_colors(lua_State* s) {
 	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
 	lua_createtable(s, palette->colorCount(), 0);
@@ -326,6 +348,32 @@ static int luaVoxel_palette_colors(lua_State* s) {
 		lua_settable(s, -3);
 	}
 	return 1;
+}
+
+static int luaVoxel_palette_load(lua_State* s) {
+	voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	const char *filename = luaL_checkstring(s, 2);
+	if (!palette->load(filename)) {
+		core::String builtInPalettes;
+		for (int i = 0; i < lengthof(voxel::Palette::builtIn); ++i) {
+			if (!builtInPalettes.empty()) {
+				builtInPalettes.append(", ");
+			}
+			builtInPalettes.append(voxel::Palette::builtIn[i]);
+		}
+		core::String supportedPaletteFormats;
+		for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
+			for (const core::String& ext : desc->exts) {
+				if (!supportedPaletteFormats.empty()) {
+					supportedPaletteFormats.append(", ");
+				}
+				supportedPaletteFormats.append(ext);
+			}
+		}
+		return clua_error(s, "Could not load palette %s, built-in palettes are: %s, supported formats are: %s",
+						  filename, builtInPalettes.c_str(), supportedPaletteFormats.c_str());
+	}
+	return 0;
 }
 
 static int luaVoxel_palette_color(lua_State* s) {
@@ -359,6 +407,10 @@ static int luaVoxel_palette_closestmatch(lua_State* s) {
 	}
 	lua_pushinteger(s, match);
 	return 1;
+}
+
+static int luaVoxel_palette_new(lua_State* s) {
+	return luaVoxel_pushpalette(s, new voxel::Palette());
 }
 
 static int luaVoxel_palette_similar(lua_State* s) {
@@ -673,7 +725,7 @@ static int luaVoxel_scenegraphnode_volume(lua_State* s) {
 static int luaVoxel_scenegraphnode_palette(lua_State* s) {
 	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	voxel::Palette &palette = node->palette();
-	return luaVoxel_pushpalette(s, &palette);
+	return luaVoxel_pushpalette(s, palette);
 }
 
 static int luaVoxel_scenegraphnode_name(lua_State* s) {
@@ -694,9 +746,8 @@ static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
 	voxel::Palette *palette = luaVoxel_toPalette(s, 2);
 	if (clua_optboolean(s, 3, false)) {
 		node->remapToPalette(*palette);
-	} else {
-		node->setPalette(*palette);
 	}
+	node->setPalette(*palette);
 	return 0;
 }
 
@@ -764,12 +815,31 @@ static void prepareState(lua_State* s) {
 	static const luaL_Reg paletteFuncs[] = {
 		{"colors", luaVoxel_palette_colors},
 		{"color", luaVoxel_palette_color},
+		{"load", luaVoxel_palette_load},
 		{"setColor", luaVoxel_palette_setcolor},
 		{"match", luaVoxel_palette_closestmatch},
 		{"similar", luaVoxel_palette_similar},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, paletteFuncs, luaVoxel_metapalette());
+
+	static const luaL_Reg paletteFuncs_gc[] = {
+		{"colors", luaVoxel_palette_colors},
+		{"color", luaVoxel_palette_color},
+		{"load", luaVoxel_palette_load},
+		{"setColor", luaVoxel_palette_setcolor},
+		{"match", luaVoxel_palette_closestmatch},
+		{"similar", luaVoxel_palette_similar},
+		{"__gc", luaVoxel_palette_gc},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncs(s, paletteFuncs_gc, luaVoxel_metapalette_gc());
+
+	static const luaL_Reg paletteGlobalsFuncs[] = {
+		{"new", luaVoxel_palette_new},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, paletteGlobalsFuncs, luaVoxel_metapaletteglobal(), "palettemgr");
 
 	static const luaL_Reg noiseFuncs[] = {
 		{"noise2", luaVoxel_noise_simplex2},

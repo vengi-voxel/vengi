@@ -134,6 +134,8 @@ The functions are:
 
 * `colors()`: Returns the palette RGBA colors as vec4 values.
 
+* `load(palette)`: Allows to load a [built-in palette](Palette.md) or a filename to a supported [palette format](Formats.md).
+
 * `match(r, g, b)`: Returns the closest possible palette color match for the given RGB (`0-255`) color. The returned palette index is in the range `0-255`. This value can then be used for the `setVoxel` method.
 
 * `setColor(paletteIndex, red, green, blue, [alpha])`: Change the color of a palette entry to the given rgba values in the range `[0-255]`.
@@ -141,6 +143,13 @@ The functions are:
 * `similar(paletteindex, [coloramount])`: Return a table with similar colors given by their palette index.
 
 They are available as e.g. `palette:color([...])`, `palette:match([...])` and so on.
+
+You can create new palettes with the `palettemgr` global by calling e.g.
+
+```lua
+local pal = palette.new()
+pal.load("built-in:minecraft")
+```
 
 ## Noise
 
