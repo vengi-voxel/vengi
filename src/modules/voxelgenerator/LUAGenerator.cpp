@@ -787,8 +787,8 @@ static void prepareState(lua_State* s) {
 		{"mins", luaVoxel_region_mins},
 		{"maxs", luaVoxel_region_maxs},
 		{"size", luaVoxel_region_size},
-		{"setMins", luaVoxel_region_setmins},
-		{"setMaxs", luaVoxel_region_setmaxs},
+		{"setMins", luaVoxel_region_setmins}, // TODO: dangerous - move into volume. The region of the volume is modified here without changing the allocated memory of the volume
+		{"setMaxs", luaVoxel_region_setmaxs}, // TODO: dangerous - move into volume. The region of the volume is modified here without changing the allocated memory of the volume
 		{"__tostring", luaVoxel_region_tostring},
 		{nullptr, nullptr}
 	};
