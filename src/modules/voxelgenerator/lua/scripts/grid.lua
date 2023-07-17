@@ -2,7 +2,7 @@ local vol = require "modules.volume"
 
 function arguments()
 	return {
-		{ name = 'gridcolor', desc = 'the color for the grid stripes', type = 'colorindex', default = '1', min = '0', max = '255' },
+		{ name = 'gridcolor', desc = 'the color for the grid stripes', type = 'colorindex' },
 		{ name = 'thickness', desc = 'the color for the non stripes part', type = 'int', default = '1', min = '1' },
 		{ name = 'size_x', desc = 'the x size of the grid', type = 'int', default = '5', min = '2' },
 		{ name = 'size_y', desc = 'the y size of the grid', type = 'int', default = '5', min = '2' },

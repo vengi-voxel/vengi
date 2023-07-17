@@ -6,7 +6,7 @@ local vol = require "modules.volume"
 
 function arguments()
 	return {
-		{ name = 'fillvoxel', desc = 'the palette index of the color to use', type = 'colorindex', default = '2', min = '-1', max = '255' },
+		{ name = 'fillvoxel', desc = 'the palette index of the color to use', type = 'colorindex' },
 	}
 end
 

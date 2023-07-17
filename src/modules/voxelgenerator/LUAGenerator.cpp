@@ -920,9 +920,12 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 		core::String name = "";
 		core::String description = "";
 		core::String defaultValue = "";
+		bool defaultSet = false;
 		core::String enumValues = "";
 		double minValue = 0.0;
 		double maxValue = 100.0;
+		bool minSet = false;
+		bool maxSet = false;
 		LUAParameterType type = LUAParameterType::Max;
 		lua_pushnil(lua);					// push nil, so lua_next removes it from stack and puts (k, v) on stack
 		while (lua_next(lua, -2) != 0) {	// -2, because we have table at -1
@@ -941,10 +944,13 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 				enumValues = value;
 			} else if (!SDL_strcmp(key, "default")) {
 				defaultValue = value;
+				defaultSet = true;
 			} else if (!SDL_strcmp(key, "min")) {
 				minValue = SDL_atof(value);
+				minSet = true;
 			} else if (!SDL_strcmp(key, "max")) {
 				maxValue = SDL_atof(value);
+				maxSet = true;
 			} else if (!SDL_strcmp(key, "type")) {
 				if (!SDL_strcmp(value, "int")) {
 					type = LUAParameterType::Integer;
@@ -952,6 +958,15 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 					type = LUAParameterType::Float;
 				} else if (!SDL_strcmp(value, "colorindex")) {
 					type = LUAParameterType::ColorIndex;
+					if (!minSet) {
+						minValue = -1; // empty voxel is lua bindings
+					}
+					if (!maxSet) {
+						maxValue = voxel::PaletteMaxColors;
+					}
+					if (!defaultSet) {
+						defaultValue = "1";
+					}
 				} else if (!SDL_strncmp(value, "str", 3)) {
 					type = LUAParameterType::String;
 				} else if (!SDL_strncmp(value, "enum", 4)) {
