@@ -42,33 +42,34 @@ void GridRenderer::update(const math::AABB<float>& aabb) {
 	if (!_dirty && _aabb == aabb) {
 		return;
 	}
+	const float thickness = 1.0f;
 	_aabb = aabb;
 	_shapeBuilder.clear();
-	_shapeBuilder.aabb(aabb, false);
+	_shapeBuilder.aabb(aabb, false, 1.0f, thickness);
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXY(aabb, false, (float)_resolution);
+	_shapeBuilder.aabbGridXY(aabb, false, (float)_resolution, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexXYFar, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXZ(aabb, false, (float)_resolution);
+	_shapeBuilder.aabbGridXZ(aabb, false, (float)_resolution, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexXZFar, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridYZ(aabb, false, (float)_resolution);
+	_shapeBuilder.aabbGridYZ(aabb, false, (float)_resolution, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexYZFar, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXY(aabb, true, (float)_resolution);
+	_shapeBuilder.aabbGridXY(aabb, true, (float)_resolution, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexXYNear, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridXZ(aabb, true, (float)_resolution);
+	_shapeBuilder.aabbGridXZ(aabb, true, (float)_resolution, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexXZNear, _shapeBuilder);
 
 	_shapeBuilder.clear();
-	_shapeBuilder.aabbGridYZ(aabb, true, (float)_resolution);
+	_shapeBuilder.aabbGridYZ(aabb, true, (float)_resolution, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexYZNear, _shapeBuilder);
 
 	_dirty = false;

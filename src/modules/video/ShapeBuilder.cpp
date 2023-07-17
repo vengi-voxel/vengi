@@ -31,54 +31,45 @@ void ShapeBuilder::setPrimitive(Primitive primitive) {
 	_primitive = primitive;
 }
 
-void ShapeBuilder::aabbGridXY(const math::AABB<float>& aabb, bool near, float stepWidth) {
-	setPrimitive(Primitive::Lines);
+void ShapeBuilder::aabbGridXY(const math::AABB<float>& aabb, bool near, float stepWidth, float thickness) {
 	const glm::vec3& mins = aabb.mins();
 	const glm::vec3& width = aabb.getWidth();
 	const float wz = near ? 0.0f : width.z;
-	const int n = (int)(width.x / stepWidth) + (int)(width.y / stepWidth) + 2;
+	const int n = (int)(width.y / stepWidth) + (int)(width.z / stepWidth) + 2;
 	reserve(n * 2, n * 2);
 	for (float x = 0.0f; x <= width.x; x += stepWidth) {
-		addIndex(addVertex(glm::vec3(x, 0.0f, wz) + mins));
-		addIndex(addVertex(glm::vec3(x, width.y, wz) + mins));
+		line(glm::vec3(x, 0.0f, wz) + mins, glm::vec3(x, width.y, wz) + mins, thickness);
 	}
 	for (float y = 0.0f; y <= width.y; y += stepWidth) {
-		addIndex(addVertex(glm::vec3(0.0f, y, wz) + mins));
-		addIndex(addVertex(glm::vec3(width.x, y, wz) + mins));
+		line(glm::vec3(0.0f, y, wz) + mins, glm::vec3(width.x, y, wz) + mins, thickness);
 	}
 }
 
-void ShapeBuilder::aabbGridYZ(const math::AABB<float>& aabb, bool near, float stepWidth) {
-	setPrimitive(Primitive::Lines);
+void ShapeBuilder::aabbGridYZ(const math::AABB<float>& aabb, bool near, float stepWidth, float thickness) {
 	const glm::vec3& mins = aabb.mins();
 	const glm::vec3& width = aabb.getWidth();
 	const float wx = near ? 0.0f : width.x;
 	const int n = (int)(width.y / stepWidth) + (int)(width.z / stepWidth) + 2;
 	reserve(n * 2, n * 2);
 	for (float y = 0.0f; y <= width.y; y += stepWidth) {
-		addIndex(addVertex(glm::vec3(wx, y, 0.0f) + mins));
-		addIndex(addVertex(glm::vec3(wx, y, width.z) + mins));
+		line(glm::vec3(wx, y, 0.0f) + mins, glm::vec3(wx, y, width.z) + mins, thickness);
 	}
 	for (float z = 0.0f; z <= width.z; z += stepWidth) {
-		addIndex(addVertex(glm::vec3(wx, 0.0f, z) + mins));
-		addIndex(addVertex(glm::vec3(wx, width.y, z) + mins));
+		line(glm::vec3(wx, 0.0f, z) + mins, glm::vec3(wx, width.y, z) + mins, thickness);
 	}
 }
 
-void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float stepWidth) {
-	setPrimitive(Primitive::Lines);
+void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float stepWidth, float thickness) {
 	const glm::vec3& mins = aabb.mins();
 	const glm::vec3& width = aabb.getWidth();
 	const float wy = near ? 0.0f : width.y;
-	const int n = (int)(width.x / stepWidth) + (int)(width.z / stepWidth) + 2;
+	const int n = (int)(width.y / stepWidth) + (int)(width.z / stepWidth) + 2;
 	reserve(n * 2, n * 2);
 	for (float x = 0.0f; x <= width.x; x += stepWidth) {
-		addIndex(addVertex(glm::vec3(x, wy, 0.0f) + mins));
-		addIndex(addVertex(glm::vec3(x, wy, width.z) + mins));
+		line(glm::vec3(x, wy, 0.0f) + mins, glm::vec3(x, wy, width.z) + mins, thickness);
 	}
 	for (float z = 0.0f; z <= width.z; z += stepWidth) {
-		addIndex(addVertex(glm::vec3(0.0f, wy, z) + mins));
-		addIndex(addVertex(glm::vec3(width.x, wy, z) + mins));
+		line(glm::vec3(0.0f, wy, z) + mins, glm::vec3(width.x, wy, z) + mins, thickness);
 	}
 }
 
@@ -97,6 +88,7 @@ void ShapeBuilder::line(const glm::vec3& start, const glm::vec3& end, float thic
 		}
 		d *= (thickness * 0.5f);
 
+		// TODO: this is broken - cube is of course not correct
 		const float dp = core_max(d.x, core_max(d.y, d.z));
 		const glm::vec3 mins(start.x + dp, start.y - dp, start.z - dp);
 		const glm::vec3 maxs(  end.x - dp,   end.y + dp,   end.z + dp);
@@ -152,9 +144,7 @@ void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuild
 	}
 }
 
-void ShapeBuilder::obb(const math::OBB<float>& obb) {
-	setPrimitive(Primitive::Lines);
-	const uint32_t startIndex = (uint32_t)_vertices.size();
+void ShapeBuilder::obb(const math::OBB<float>& obb, float thickness) {
 	glm::vec3 vecs[8] = {
 		glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, -1.0f,  1.0f),
 		glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3( 1.0f, -1.0f,  1.0f),
@@ -163,56 +153,34 @@ void ShapeBuilder::obb(const math::OBB<float>& obb) {
 	};
 	const glm::vec3& halfWidth = obb.extents();
 	const glm::vec3& center = obb.origin();
-	reserve(lengthof(vecs), 24);
 
 	for (size_t i = 0; i < lengthof(vecs); ++i) {
-		addVertex(glm::vec3(obb.rotation() * glm::vec4(vecs[i] * halfWidth, 1.0f)) + center);
+		vecs[i] = glm::vec3(obb.rotation() * glm::vec4(vecs[i] * halfWidth, 1.0f)) + center;
 	}
 
+	reserve(24, 24);
+
 	// front
-	addIndex(startIndex + 0);
-	addIndex(startIndex + 1);
-
-	addIndex(startIndex + 1);
-	addIndex(startIndex + 3);
-
-	addIndex(startIndex + 3);
-	addIndex(startIndex + 2);
-
-	addIndex(startIndex + 2);
-	addIndex(startIndex + 0);
+	line(vecs[0], vecs[1], thickness);
+	line(vecs[1], vecs[3], thickness);
+	line(vecs[3], vecs[2], thickness);
+	line(vecs[2], vecs[0], thickness);
 
 	// back
-	addIndex(startIndex + 4);
-	addIndex(startIndex + 5);
-
-	addIndex(startIndex + 5);
-	addIndex(startIndex + 7);
-
-	addIndex(startIndex + 7);
-	addIndex(startIndex + 6);
-
-	addIndex(startIndex + 6);
-	addIndex(startIndex + 4);
+	line(vecs[4], vecs[5], thickness);
+	line(vecs[5], vecs[7], thickness);
+	line(vecs[7], vecs[6], thickness);
+	line(vecs[6], vecs[4], thickness);
 
 	// connections
-	addIndex(startIndex + 0);
-	addIndex(startIndex + 4);
-
-	addIndex(startIndex + 2);
-	addIndex(startIndex + 6);
-
-	addIndex(startIndex + 1);
-	addIndex(startIndex + 5);
-
-	addIndex(startIndex + 3);
-	addIndex(startIndex + 7);
+	line(vecs[0], vecs[4], thickness);
+	line(vecs[2], vecs[6], thickness);
+	line(vecs[1], vecs[5], thickness);
+	line(vecs[3], vecs[7], thickness);
 }
 
-void ShapeBuilder::aabb(const math::AABB<float>& aabb, bool renderGrid, float stepWidth) {
-	setPrimitive(Primitive::Lines);
-	const uint32_t startIndex = (uint32_t)_vertices.size();
-	static const glm::vec3 vecs[8] = {
+void ShapeBuilder::aabb(const math::AABB<float>& aabb, bool renderGrid, float stepWidth, float thickness) {
+	glm::vec3 vecs[8] = {
 		glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, -1.0f,  1.0f),
 		glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3( 1.0f, -1.0f,  1.0f),
 		glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(-1.0f, -1.0f, -1.0f),
@@ -222,71 +190,43 @@ void ShapeBuilder::aabb(const math::AABB<float>& aabb, bool renderGrid, float st
 	const glm::vec3& halfWidth = width / 2.0f;
 	const glm::vec3& center = aabb.getCenter();
 
-	if (renderGrid) {
-		const int n = (int)(width.x / stepWidth) + (int)(width.y / stepWidth);
-		reserve(lengthof(vecs), 24 + n * 12);
-	} else {
-		reserve(lengthof(vecs), 24);
+	for (size_t i = 0; i < lengthof(vecs); ++i) {
+		vecs[i] = vecs[i] * halfWidth + center;
 	}
 
-	for (size_t i = 0; i < lengthof(vecs); ++i) {
-		addVertex(vecs[i] * halfWidth + center);
-	}
+	reserve(24, 24);
 
 	// front
-	addIndex(startIndex + 0);
-	addIndex(startIndex + 1);
-
-	addIndex(startIndex + 1);
-	addIndex(startIndex + 3);
-
-	addIndex(startIndex + 3);
-	addIndex(startIndex + 2);
-
-	addIndex(startIndex + 2);
-	addIndex(startIndex + 0);
+	line(vecs[0], vecs[1], thickness);
+	line(vecs[1], vecs[3], thickness);
+	line(vecs[3], vecs[2], thickness);
+	line(vecs[2], vecs[0], thickness);
 
 	// back
-	addIndex(startIndex + 4);
-	addIndex(startIndex + 5);
-
-	addIndex(startIndex + 5);
-	addIndex(startIndex + 7);
-
-	addIndex(startIndex + 7);
-	addIndex(startIndex + 6);
-
-	addIndex(startIndex + 6);
-	addIndex(startIndex + 4);
+	line(vecs[4], vecs[5], thickness);
+	line(vecs[5], vecs[7], thickness);
+	line(vecs[7], vecs[6], thickness);
+	line(vecs[6], vecs[4], thickness);
 
 	// connections
-	addIndex(startIndex + 0);
-	addIndex(startIndex + 4);
-
-	addIndex(startIndex + 2);
-	addIndex(startIndex + 6);
-
-	addIndex(startIndex + 1);
-	addIndex(startIndex + 5);
-
-	addIndex(startIndex + 3);
-	addIndex(startIndex + 7);
+	line(vecs[0], vecs[4], thickness);
+	line(vecs[2], vecs[6], thickness);
+	line(vecs[1], vecs[5], thickness);
+	line(vecs[3], vecs[7], thickness);
 
 	if (renderGrid) {
-		aabbGridXY(aabb, false, stepWidth);
-		aabbGridXZ(aabb, false, stepWidth);
-		aabbGridYZ(aabb, false, stepWidth);
+		aabbGridXY(aabb, false, stepWidth, thickness);
+		aabbGridXZ(aabb, false, stepWidth, thickness);
+		aabbGridYZ(aabb, false, stepWidth, thickness);
 
-		aabbGridXY(aabb, true, stepWidth);
-		aabbGridXZ(aabb, true, stepWidth);
-		aabbGridYZ(aabb, true, stepWidth);
+		aabbGridXY(aabb, true, stepWidth, thickness);
+		aabbGridXZ(aabb, true, stepWidth, thickness);
+		aabbGridYZ(aabb, true, stepWidth, thickness);
 	}
 }
 
-void ShapeBuilder::aabb(const glm::vec3& mins, const glm::vec3& maxs) {
-	setPrimitive(Primitive::Lines);
-	const uint32_t startIndex = (uint32_t)_vertices.size();
-	static const glm::vec3 vecs[8] = {
+void ShapeBuilder::aabb(const glm::vec3& mins, const glm::vec3& maxs, float thickness) {
+	glm::vec3 vecs[8] = {
 		glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, -1.0f,  1.0f),
 		glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3( 1.0f, -1.0f,  1.0f),
 		glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(-1.0f, -1.0f, -1.0f),
@@ -297,47 +237,26 @@ void ShapeBuilder::aabb(const glm::vec3& mins, const glm::vec3& maxs) {
 	const glm::vec3& halfWidth = width / 2.0f;
 	const glm::vec3& center = maxs - halfWidth;
 	for (size_t i = 0; i < lengthof(vecs); ++i) {
-		addVertex(vecs[i] * halfWidth + center);
+		vecs[i] = vecs[i] * halfWidth + center;
 	}
 
 	// front
-	addIndex(startIndex + 0);
-	addIndex(startIndex + 1);
-
-	addIndex(startIndex + 1);
-	addIndex(startIndex + 3);
-
-	addIndex(startIndex + 3);
-	addIndex(startIndex + 2);
-
-	addIndex(startIndex + 2);
-	addIndex(startIndex + 0);
+	line(vecs[0], vecs[1], thickness);
+	line(vecs[1], vecs[3], thickness);
+	line(vecs[3], vecs[2], thickness);
+	line(vecs[2], vecs[0], thickness);
 
 	// back
-	addIndex(startIndex + 4);
-	addIndex(startIndex + 5);
-
-	addIndex(startIndex + 5);
-	addIndex(startIndex + 7);
-
-	addIndex(startIndex + 7);
-	addIndex(startIndex + 6);
-
-	addIndex(startIndex + 6);
-	addIndex(startIndex + 4);
+	line(vecs[4], vecs[5], thickness);
+	line(vecs[5], vecs[7], thickness);
+	line(vecs[7], vecs[6], thickness);
+	line(vecs[6], vecs[4], thickness);
 
 	// connections
-	addIndex(startIndex + 0);
-	addIndex(startIndex + 4);
-
-	addIndex(startIndex + 2);
-	addIndex(startIndex + 6);
-
-	addIndex(startIndex + 1);
-	addIndex(startIndex + 5);
-
-	addIndex(startIndex + 3);
-	addIndex(startIndex + 7);
+	line(vecs[0], vecs[4], thickness);
+	line(vecs[2], vecs[6], thickness);
+	line(vecs[1], vecs[5], thickness);
+	line(vecs[3], vecs[7], thickness);
 }
 
 void ShapeBuilder::geom(const glm::vec3* vert, size_t vertCount, const uint32_t* indices, size_t indicesCount, Primitive primitive) {
@@ -617,57 +536,32 @@ void ShapeBuilder::cone(float baseRadius, float length, int slices) {
 
 void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	setPrimitive(Primitive::Lines);
-	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 	glm::vec3 out[math::FRUSTUM_VERTICES_MAX];
 	uint32_t indices[math::FRUSTUM_VERTICES_MAX * 3];
 	camera.frustumCorners(out, indices);
 
-	const int targetLineVertices = camera.rotationType() == CameraRotationType::Target ? 2 : 0;
-
 	if (splitFrustum > 0) {
-		int indexOffset = startIndex;
 		core::DynamicArray<float> planes(splitFrustum * 2);
-
 		camera.sliceFrustum(&planes[0], splitFrustum * 2, splitFrustum);
-
-		const int steps = splitFrustum;
-		const int nindices = steps * lengthof(indices) + targetLineVertices;
-		reserve(lengthof(out) * steps + targetLineVertices, nindices);
 
 		for (int splitStep = 0; splitStep < splitFrustum; ++splitStep) {
 			const float near = planes[splitStep * 2 + 0];
 			const float far = planes[splitStep * 2 + 1];
 			camera.splitFrustum(near, far, out);
 
-			for (size_t i = 0; i < lengthof(out); ++i) {
-				addVertex(out[i]);
+			for (size_t i = 0; i < lengthof(indices); i += 2) {
+				line(out[indices[i]], out[indices[i + 1]]);
 			}
-
-			for (size_t i = 0; i < lengthof(indices); ++i) {
-				addIndex(indexOffset + indices[i]);
-			}
-			indexOffset += math::FRUSTUM_VERTICES_MAX;
 		}
 	} else {
-		const int nindices = lengthof(indices) + targetLineVertices;
-		reserve(lengthof(out) + targetLineVertices, nindices);
-
-		for (size_t i = 0; i < lengthof(out); ++i) {
-			addVertex(out[i]);
-		}
-
-		for (size_t i = 0; i < lengthof(indices); ++i) {
-			addIndex(startIndex + indices[i]);
+		for (size_t i = 0; i < lengthof(indices); i += 2) {
+			line(out[indices[i]], out[indices[i + 1]]);
 		}
 	}
 
 	if (camera.rotationType() == CameraRotationType::Target) {
 		setColor(core::Color::Green);
-		addVertex(camera.worldPosition());
-		addVertex(camera.target());
-		// TODO: index looks wrong
-		addIndex(startIndex + math::FRUSTUM_VERTICES_MAX + 0);
-		addIndex(startIndex + math::FRUSTUM_VERTICES_MAX + 1);
+		line(camera.worldPosition(), camera.target());
 	}
 }
 

@@ -102,9 +102,9 @@ public:
 			reserve(_initialSize, _initialSize);
 		}
 	}
-	void aabbGridXY(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
-	void aabbGridYZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
-	void aabbGridXZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f);
+	void aabbGridXY(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f, float thickness = 1.0f);
+	void aabbGridYZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f, float thickness = 1.0f);
+	void aabbGridXZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f, float thickness = 1.0f);
 
 	void cylinder(float radius, float length, int slices = 20);
 
@@ -117,10 +117,10 @@ public:
 
 	void line(const glm::vec3& start, const glm::vec3& end, float thickness = 1.0f);
 
-	void aabb(const glm::vec3& mins, const glm::vec3& maxs);
-	void obb(const math::OBB<float>& obb);
-	void aabb(const math::AABB<float>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
-	void aabb(const math::AABB<int>& aabb, bool renderGrid = false, float stepWidth = 1.0f);
+	void aabb(const glm::vec3& mins, const glm::vec3& maxs, float thickness = 1.0f);
+	void obb(const math::OBB<float>& obb, float thickness = 1.0f);
+	void aabb(const math::AABB<float>& aabb, bool renderGrid = false, float stepWidth = 1.0f, float thickness = 1.0f);
+	void aabb(const math::AABB<int>& aabb, bool renderGrid = false, float stepWidth = 1.0f, float thickness = 1.0f);
 	/**
 	 * @param[in] tesselation The amount of splits on the plane that should be made
 	 */
@@ -185,9 +185,9 @@ public:
 	void setRotation(const glm::mat3& rotation);
 };
 
-inline void ShapeBuilder::aabb(const math::AABB<int>& aabb, bool renderGrid, float stepWidth) {
+inline void ShapeBuilder::aabb(const math::AABB<int>& aabb, bool renderGrid, float stepWidth, float thickness) {
 	const math::AABB<float> converted(glm::vec3(aabb.getLowerCorner()), glm::vec3(aabb.getUpperCorner()));
-	this->aabb(converted, renderGrid, stepWidth);
+	this->aabb(converted, renderGrid, stepWidth, thickness);
 }
 
 inline void ShapeBuilder::setColor(const glm::vec4& color) {
