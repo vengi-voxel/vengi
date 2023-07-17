@@ -16,6 +16,8 @@ namespace voxelgenerator {
 
 class LUAGeneratorTest : public app::AbstractTest {
 protected:
+	const voxel::Region _region{0, 0, 0, 7, 7, 7};
+
 	virtual bool onInitApp() {
 		app::AbstractTest::onInitApp();
 		_testApp->filesystem()->registerPath("scripts/");
@@ -31,11 +33,10 @@ protected:
 
 	void run(scenegraph::SceneGraph &sceneGraph, const core::String &script,
 			 const core::DynamicArray<core::String> &args = {}, bool validateDirtyRegion = false) {
-		const voxel::Region region(0, 0, 0, 7, 7, 7);
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 42);
 		int nodeId;
 		{
-			voxel::RawVolume *volume = new voxel::RawVolume(region);
+			voxel::RawVolume *volume = new voxel::RawVolume(_region);
 			volume->setVoxel(0, 0, 0, voxel);
 			volume->setVoxel(0, 1, 0, voxel);
 			volume->setVoxel(0, 2, 0, voxel);
@@ -51,7 +52,7 @@ protected:
 
 		LUAGenerator g;
 		ASSERT_TRUE(g.init());
-		EXPECT_TRUE(g.exec(script, sceneGraph, nodeId, region, voxel, dirtyRegion, args));
+		EXPECT_TRUE(g.exec(script, sceneGraph, nodeId, _region, voxel, dirtyRegion, args));
 		if (validateDirtyRegion) {
 			EXPECT_TRUE(dirtyRegion.isValid());
 		}
@@ -218,6 +219,21 @@ TEST_F(LUAGeneratorTest, testScriptSplitObjects) {
 TEST_F(LUAGeneratorTest, testScriptReplaceColor) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "replacecolor.lua");
+}
+
+TEST_F(LUAGeneratorTest, testScriptReplacePalette) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "replacepalette.lua", {"built-in:minecraft"});
+}
+
+TEST_F(LUAGeneratorTest, testScriptResize) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "resize.lua");
+	scenegraph::SceneGraphNode *model = sceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, model);
+	const voxel::Region &region = model->region();
+	EXPECT_EQ(region.getLowerCorner(), _region.getLowerCorner());
+	EXPECT_EQ(region.getUpperCorner(), _region.getUpperCorner() + 1);
 }
 
 } // namespace voxelgenerator
