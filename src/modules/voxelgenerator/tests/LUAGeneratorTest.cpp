@@ -17,6 +17,14 @@ namespace voxelgenerator {
 class LUAGeneratorTest : public app::AbstractTest {
 protected:
 	const voxel::Region _region{0, 0, 0, 7, 7, 7};
+	const glm::ivec3 voxels[6] {
+		glm::ivec3(0, 0, 0),
+		glm::ivec3(0, 1, 0),
+		glm::ivec3(0, 2, 0),
+		glm::ivec3(2, 0, 0),
+		glm::ivec3(2, 1, 0),
+		glm::ivec3(2, 2, 0)
+	};
 
 	virtual bool onInitApp() {
 		app::AbstractTest::onInitApp();
@@ -37,12 +45,9 @@ protected:
 		int nodeId;
 		{
 			voxel::RawVolume *volume = new voxel::RawVolume(_region);
-			volume->setVoxel(0, 0, 0, voxel);
-			volume->setVoxel(0, 1, 0, voxel);
-			volume->setVoxel(0, 2, 0, voxel);
-			volume->setVoxel(2, 0, 0, voxel);
-			volume->setVoxel(2, 1, 0, voxel);
-			volume->setVoxel(2, 2, 0, voxel);
+			for (int i = 0; i < lengthof(voxels); ++i) {
+				volume->setVoxel(voxels[i], voxel);
+			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(volume, true);
 			nodeId = sceneGraph.emplace(core::move(node));
@@ -199,6 +204,16 @@ TEST_F(LUAGeneratorTest, testScriptGrid) {
 TEST_F(LUAGeneratorTest, testScriptMaze) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "maze.lua");
+}
+
+TEST_F(LUAGeneratorTest, testScriptMove) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "move.lua", {"1", "1", "1"});
+	scenegraph::SceneGraphNode *model = sceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, model);
+	for (int i = 0; i < lengthof(voxels); ++i) {
+		EXPECT_TRUE(voxel::isBlocked(model->volume()->voxel(voxels[i] + 1).getMaterial()));
+	}
 }
 
 TEST_F(LUAGeneratorTest, testScriptNoiseBuiltin) {

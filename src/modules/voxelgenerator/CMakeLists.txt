@@ -11,6 +11,7 @@ set(LUA_SRCS
 	scripts/grass.lua
 	scripts/grid.lua
 	scripts/maze.lua
+	scripts/move.lua
 	scripts/noise.lua
 	scripts/noise-builtin.lua
 	scripts/planet.lua

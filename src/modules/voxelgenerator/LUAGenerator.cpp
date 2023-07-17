@@ -14,6 +14,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeMoveWrapper.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "commonlua/LUA.h"
@@ -27,6 +28,7 @@
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
+#include "voxelutil/VolumeMover.h"
 #include "voxelutil/VolumeResizer.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -184,6 +186,20 @@ static int luaVoxel_volumewrapper_translate(lua_State* s) {
 	const int y = (int)luaL_optinteger(s, 3, 0);
 	const int z = (int)luaL_optinteger(s, 4, 0);
 	volume->volume()->translate(glm::ivec3(x, y, z));
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_move(lua_State* s) {
+	LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
+	const int x = (int)luaL_checkinteger(s, 2);
+	const int y = (int)luaL_optinteger(s, 3, 0);
+	const int z = (int)luaL_optinteger(s, 4, 0);
+
+	voxel::RawVolume* newVolume = new voxel::RawVolume(volume->region());
+	voxel::RawVolumeMoveWrapper wrapper(newVolume);
+	glm::ivec3 offsets(x, y, z);
+	voxelutil::moveVolume(&wrapper, volume, offsets);
+	volume->setVolume(newVolume);
 	return 0;
 }
 
@@ -762,6 +778,7 @@ static void prepareState(lua_State* s) {
 		{"voxel", luaVoxel_volumewrapper_voxel},
 		{"region", luaVoxel_volumewrapper_region},
 		{"translate", luaVoxel_volumewrapper_translate},
+		{"move", luaVoxel_volumewrapper_move},
 		{"resize", luaVoxel_volumewrapper_resize},
 		{"crop", luaVoxel_volumewrapper_crop},
 		{"text", luaVoxel_volumewrapper_text},

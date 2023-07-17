@@ -218,6 +218,8 @@ local mins = region:mins()
 
 * `mirrorAxis([axis])`: Mirror along the given axis - `y` is default.
 
+* `move(x, [y], [z])`: Move the voxels by the given units without modifying the boundaries of the volume.
+
 * `rotateAxis([axis])`: Rotate along the given axis - `y` is default.
 
 * `translate(x, [y, z])`: Translates the region of the volume. Keep in mind that this is not supported by every output format.
