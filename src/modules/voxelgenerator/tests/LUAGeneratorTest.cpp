@@ -166,6 +166,26 @@ TEST_F(LUAGeneratorTest, testScriptCover) {
 	runFile(sceneGraph, "cover.lua");
 }
 
+TEST_F(LUAGeneratorTest, testScriptDeleteRGB) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "delete-rgb.lua");
+}
+
+TEST_F(LUAGeneratorTest, testScriptErode) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "erode.lua");
+}
+
+TEST_F(LUAGeneratorTest, testScriptFillHollow) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "fillhollow.lua");
+}
+
+TEST_F(LUAGeneratorTest, testScriptGradient) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "gradient.lua");
+}
+
 TEST_F(LUAGeneratorTest, testScriptGrass) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "grass.lua");
@@ -176,14 +196,19 @@ TEST_F(LUAGeneratorTest, testScriptGrid) {
 	runFile(sceneGraph, "grid.lua");
 }
 
+TEST_F(LUAGeneratorTest, testScriptMaze) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "maze.lua");
+}
+
+TEST_F(LUAGeneratorTest, testScriptNoiseBuiltin) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "noise-builtin.lua", {}, true);
+}
+
 TEST_F(LUAGeneratorTest, testScriptNoise) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "noise.lua", {}, true);
-}
-
-TEST_F(LUAGeneratorTest, testScriptPyramid) {
-	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "pyramid.lua", {}, true);
 }
 
 TEST_F(LUAGeneratorTest, testScriptPlanet) {
@@ -191,29 +216,9 @@ TEST_F(LUAGeneratorTest, testScriptPlanet) {
 	runFile(sceneGraph, "planet.lua", {}, true);
 }
 
-TEST_F(LUAGeneratorTest, testScriptThicken) {
+TEST_F(LUAGeneratorTest, testScriptPyramid) {
 	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "thicken.lua");
-}
-
-TEST_F(LUAGeneratorTest, testScriptSimilarColor) {
-	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "similarcolor.lua");
-}
-
-TEST_F(LUAGeneratorTest, testScriptSplitColor) {
-	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "splitcolor.lua");
-}
-
-TEST_F(LUAGeneratorTest, testScriptGradient) {
-	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "gradient.lua");
-}
-
-TEST_F(LUAGeneratorTest, testScriptSplitObjects) {
-	scenegraph::SceneGraph sceneGraph;
-	runFile(sceneGraph, "splitobjects.lua");
+	runFile(sceneGraph, "pyramid.lua", {}, true);
 }
 
 TEST_F(LUAGeneratorTest, testScriptReplaceColor) {
@@ -234,6 +239,26 @@ TEST_F(LUAGeneratorTest, testScriptResize) {
 	const voxel::Region &region = model->region();
 	EXPECT_EQ(region.getLowerCorner(), _region.getLowerCorner());
 	EXPECT_EQ(region.getUpperCorner(), _region.getUpperCorner() + 1);
+}
+
+TEST_F(LUAGeneratorTest, testScriptSimilarColor) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "similarcolor.lua");
+}
+
+TEST_F(LUAGeneratorTest, testScriptSplitColor) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "splitcolor.lua");
+}
+
+TEST_F(LUAGeneratorTest, testScriptSplitObjects) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "splitobjects.lua");
+}
+
+TEST_F(LUAGeneratorTest, testScriptThicken) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "thicken.lua");
 }
 
 } // namespace voxelgenerator
