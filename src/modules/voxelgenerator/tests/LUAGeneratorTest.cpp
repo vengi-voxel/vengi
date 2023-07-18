@@ -213,6 +213,7 @@ TEST_F(LUAGeneratorTest, testScriptMove) {
 	ASSERT_NE(nullptr, model);
 	for (int i = 0; i < lengthof(voxels); ++i) {
 		EXPECT_TRUE(voxel::isBlocked(model->volume()->voxel(voxels[i] + 1).getMaterial()));
+		EXPECT_TRUE(voxel::isAir(model->volume()->voxel(voxels[i]).getMaterial()));
 	}
 }
 
