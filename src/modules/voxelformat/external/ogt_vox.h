@@ -419,6 +419,13 @@
     void* ogt_vox_malloc(size_t size);
     void  ogt_vox_free(void* mem);
 
+    // progress feedback function with option to cancel a ogt_vox_write_scene operation. Percentage complete is approximately given by: 100.0f * progress.
+    typedef bool  (*ogt_vox_progress_callback_func)(float progress, void* user_data);
+
+    // set the progress callback function and user data to pass to it
+    void  ogt_vox_set_progress_callback_func(ogt_vox_progress_callback_func progress_callback_func, void* user_data);
+
+
     // flags for ogt_vox_read_scene_with_flags
     static const uint32_t k_read_scene_flags_groups                      = 1 << 0; // if not specified, all instance transforms will be flattened into world space. If specified, will read group information and keep all transforms as local transform relative to the group they are in.
     static const uint32_t k_read_scene_flags_keyframes                   = 1 << 1; // if specified, all instances and groups will contain keyframe data.
@@ -796,6 +803,17 @@
         size_t capacity;  // capacity of the array
         size_t count;      // size of the array
     };
+
+    // progress callback function.
+    static ogt_vox_progress_callback_func g_progress_callback_func = NULL;
+    static void* g_progress_callback_user_data = NULL;
+
+    // set the progress callback function.
+    void  ogt_vox_set_progress_callback_func(ogt_vox_progress_callback_func progress_callback_func, void* user_data)
+    {
+        g_progress_callback_func = progress_callback_func;
+        g_progress_callback_user_data = user_data;
+    }
 
     // matrix utilities
     static ogt_vox_transform _vox_transform_identity() {
@@ -1313,6 +1331,7 @@
                     _vox_file_read_uint32(fp, &size_x);
                     _vox_file_read_uint32(fp, &size_y);
                     _vox_file_read_uint32(fp, &size_z);
+                    ogt_assert(size_x && size_y && size_z, "SIZE chunk has zero size");
                     break;
                 }
                 case CHUNK_ID_XYZI:
@@ -1738,6 +1757,14 @@
                     break;
                 }
             } // end switch
+
+            if (g_progress_callback_func) {
+                // we indicate progress as 0.8f * amount of buffer read + 0.2f at end after processing
+                if (!g_progress_callback_func(0.8f*(float)(fp->offset)/(float)(fp->buffer_size), g_progress_callback_user_data))
+                {
+                    return 0;
+                }
+            }
         }
 
         // ok, now that we've parsed all scene nodes - walk the scene hierarchy, and generate instances
@@ -2059,6 +2086,11 @@
             // copy the materials.
             scene->materials = materials;
         }
+
+        if (g_progress_callback_func) {
+            // we indicate progress as complete, but don't check for cancel as finished
+            g_progress_callback_func(1.0f, g_progress_callback_user_data);
+        }
         return scene;
     }
 
@@ -2275,6 +2307,7 @@
             _vox_file_write_uint32(fp, 0);
 
             // write the SIZE chunk payload
+            ogt_assert(model->size_x && model->size_y && model->size_z, "model has zero size");
             _vox_file_write_uint32(fp, model->size_x);
             _vox_file_write_uint32(fp, model->size_y);
             _vox_file_write_uint32(fp, model->size_z);
@@ -2298,6 +2331,15 @@
                             _vox_file_write_uint8(fp, color_index);
                         }
                     }
+                }
+            }
+
+            if (g_progress_callback_func) {
+                // we indicate progress as number of models written, with an extra progress value for ending write
+                if (!g_progress_callback_func((float)(i + 1)/(float)(scene->num_models + 1), g_progress_callback_user_data))
+                {
+                    *buffer_size = 0;
+                    return NULL; // note: fp will be freed in dtor on exit
                 }
             }
         }
@@ -2584,6 +2626,14 @@
             _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
         }
 
+        // check that the buffer is not larger than the maximum file size, return nothing if would overflow
+        if (fp->data.count > UINT32_MAX ||  (fp->data.count - offset_post_main_chunk) > UINT32_MAX)
+        {
+            ogt_assert(0, "Generated file size exceeded 4GiB, which is too large for Magicavoxel to parse.");
+            *buffer_size = 0;
+            return NULL;  // note: fp will be freed in dtor on exit
+        }
+
         // we deliberately don't free the fp->data field, just pass the buffer pointer and size out to the caller
         *buffer_size = (uint32_t)fp->data.count;
         uint8_t* buffer_data = _vox_file_get_data(fp);
@@ -2594,6 +2644,11 @@
         {
             uint32_t* main_chunk_child_size = (uint32_t*)& buffer_data[offset_post_main_chunk - sizeof(uint32_t)];
             *main_chunk_child_size = *buffer_size - offset_post_main_chunk;
+        }
+
+        if (g_progress_callback_func) {
+            // we indicate progress as number of models written, with an extra progress value for ending write
+            g_progress_callback_func(1.0f,g_progress_callback_user_data); // we ignore the return as exiting here anyway
         }
 
         return buffer_data;
