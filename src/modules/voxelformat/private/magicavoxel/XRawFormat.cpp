@@ -38,9 +38,6 @@ enum class ColorChannelCount : uint8_t {
 	R = 1
 };
 
-/**
- * @param[in] bitsPerColorChannel 8, 16, 32
- */
 static core::RGBA readColor(io::SeekableReadStream &stream) {
 	core::RGBA rgba;
 	stream.readUInt32(rgba.rgba);
