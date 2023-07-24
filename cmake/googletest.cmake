@@ -5,7 +5,7 @@
 
 set(GOOGLETESTDIR ${CMAKE_CURRENT_LIST_DIR})
 
-find_package(GTest)
+include(GoogleTest)
 
 #-------------------------------------------------------------------------------
 #   gtest_suite_begin(name)
@@ -146,7 +146,8 @@ function(gtest_suite_end name)
 		set(GTEST_PCH "<gtest/gtest.h>")
 		target_precompile_headers(${name} PRIVATE ${GTEST_PCH})
 		set_target_properties(${name} PROPERTIES FOLDER ${name})
-		add_test(NAME ${name} COMMAND $<TARGET_FILE:${name}> --gtest_output=xml:${CMAKE_BINARY_DIR}/${name}.xml WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${name}")
+		gtest_add_tests(${name} "" AUTO)
+		gtest_discover_tests(${name})
 		add_custom_target(${name}-run COMMAND $<TARGET_FILE:${name}> --gtest_output=xml:${CMAKE_BINARY_DIR}/${name}.xml DEPENDS ${name} USES_TERMINAL WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${name}")
 		engine_add_debuggger(${name})
 		engine_add_valgrind(${name})
