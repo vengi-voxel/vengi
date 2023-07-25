@@ -206,6 +206,9 @@
     #include <inttypes.h>
 #elif __APPLE__
     // general Apple compiler
+    #include <stdint.h>
+    #include <limits.h>
+    #include <stdlib.h> // for size_t
 #elif defined(__GNUC__)
     // any GCC*
     #include <inttypes.h>
@@ -241,6 +244,9 @@
         float m20, m21, m22, m23;   // column 2 of 4x4 matrix, 1st three elements = z axis vector, last element always 0.0
         float m30, m31, m32, m33;   // column 3 of 4x4 matrix. 1st three elements = translation vector, last element always 1.0
     } ogt_vox_transform;
+
+    ogt_vox_transform ogt_vox_transform_get_identity();
+    ogt_vox_transform ogt_vox_transform_multiply(const ogt_vox_transform & a, const ogt_vox_transform & b);
 
     // a palette of colors
     typedef struct ogt_vox_palette
@@ -449,17 +455,20 @@
     // If you require specific colors in the merged scene palette, provide up to and including 255 of them via required_colors/required_color_count.
     ogt_vox_scene* ogt_vox_merge_scenes(const ogt_vox_scene** scenes, uint32_t scene_count, const ogt_vox_rgba* required_colors, const uint32_t required_color_count);
 
-    // samples which model_index the given animation produces at the given frame
-    uint32_t          ogt_vox_sample_anim_model(const ogt_vox_anim_model* anim, uint32_t frame_index);
-
-    // // sample which transform the given animation produces at the given frame
-    ogt_vox_transform ogt_vox_sample_anim_transform(const ogt_vox_anim_transform* anim, uint32_t frame_index);
-
-    // sample the model for a given instance at the given frame
+    // sample the model index for a given instance at the given frame
     uint32_t          ogt_vox_sample_instance_model(const ogt_vox_instance* instance, uint32_t frame_index);
 
-    // sample the flattened transform for a given instance at the given frame (takes into account group hierarchy and group animations)
-    ogt_vox_transform ogt_vox_sample_instance_transform(const ogt_vox_instance* instance, uint32_t frame_index, const ogt_vox_scene* scene);
+    // samples the transform for an instance at a given frame.
+    //   ogt_vox_sample_instance_transform_global returns the transform in world space (aka global)
+    //   ogt_vox_sample_instance_transform_local returns the transform relative to its parent group
+    ogt_vox_transform ogt_vox_sample_instance_transform_global(const ogt_vox_instance* instance, uint32_t frame_index, const ogt_vox_scene* scene);
+    ogt_vox_transform ogt_vox_sample_instance_transform_local(const ogt_vox_instance* instance, uint32_t frame_index);
+
+    // sample the transform for a group at a given frame
+    //  ogt_vox_sample_group_transform_global returns the transform in world space (aka global)
+    //  ogt_vox_sample_group_transform_local returns the transform relative to its parent group
+    ogt_vox_transform ogt_vox_sample_group_transform_global(const ogt_vox_group* group, uint32_t frame_index, const ogt_vox_scene* scene);
+    ogt_vox_transform ogt_vox_sample_group_transform_local(const ogt_vox_group* group, uint32_t frame_index);
 
 #endif // OGT_VOX_H__
 
@@ -816,7 +825,7 @@
     }
 
     // matrix utilities
-    static ogt_vox_transform _vox_transform_identity() {
+    ogt_vox_transform ogt_vox_transform_get_identity() {
         ogt_vox_transform t;
         t.m00 = 1.0f; t.m01 = 0.0f; t.m02 = 0.0f; t.m03 = 0.0f;
         t.m10 = 0.0f; t.m11 = 1.0f; t.m12 = 0.0f; t.m13 = 0.0f;
@@ -825,7 +834,7 @@
         return t;
     }
 
-    static ogt_vox_transform _vox_transform_multiply(const ogt_vox_transform& a, const ogt_vox_transform& b) {
+    ogt_vox_transform ogt_vox_transform_multiply(const ogt_vox_transform& a, const ogt_vox_transform& b) {
         ogt_vox_transform r;
         r.m00 = (a.m00 * b.m00) + (a.m01 * b.m10) + (a.m02 * b.m20) + (a.m03 * b.m30);
         r.m01 = (a.m00 * b.m01) + (a.m01 * b.m11) + (a.m02 * b.m21) + (a.m03 * b.m31);
@@ -938,7 +947,7 @@
 
 
     static ogt_vox_transform _vox_make_transform_from_dict_strings(const char* rotation_string, const char* translation_string) {
-        ogt_vox_transform transform = _vox_transform_identity();
+        ogt_vox_transform transform = ogt_vox_transform_get_identity();
 
         if (rotation_string != NULL) {
             // compute the per-row indexes into k_vectors[] array.
@@ -1237,22 +1246,42 @@
     }
 
     // computes the flattened transform for an instance on a given frame (pass the scene so that group transform hierarchy can also be considered)
-    ogt_vox_transform ogt_vox_sample_instance_transform(const ogt_vox_instance* instance, uint32_t frame_index, const ogt_vox_scene* scene)
+    ogt_vox_transform ogt_vox_sample_group_transform_global(const ogt_vox_group* group, uint32_t frame_index, const ogt_vox_scene* scene)
     {
-        ogt_vox_transform flattened_transform = instance->transform_anim.num_keyframes ? ogt_vox_sample_anim_transform(&instance->transform_anim, frame_index) : instance->transform;
-        uint32_t group_index = instance->group_index;
+        ogt_vox_transform flattened_transform = ogt_vox_sample_group_transform_local(group, frame_index);
+        uint32_t group_index = group->parent_group_index;
         while (group_index != k_invalid_group_index) {
-            const ogt_vox_group* group = &scene->groups[group_index];
-            ogt_vox_transform group_transform = group->transform_anim.num_keyframes ? ogt_vox_sample_anim_transform(&group->transform_anim, frame_index) : group->transform;
-            flattened_transform = _vox_transform_multiply(flattened_transform, group_transform);
+            group = &scene->groups[group_index];
+            ogt_vox_transform group_transform = ogt_vox_sample_group_transform_local(group, frame_index);
+            flattened_transform = ogt_vox_transform_multiply(flattened_transform, group_transform);
             group_index = group->parent_group_index;
         }
         return flattened_transform;
+    }
+    // computes the global transform of a group on a given frame (global = flattened = world space)
+    ogt_vox_transform ogt_vox_sample_instance_transform_global(const ogt_vox_instance* instance, uint32_t frame_index, const ogt_vox_scene* scene)
+    {
+        ogt_vox_transform final_transform = ogt_vox_sample_instance_transform_local(instance, frame_index);
+        uint32_t group_index = instance->group_index;
+        if (group_index == k_invalid_group_index)
+            return final_transform;
+        const ogt_vox_group* group = &scene->groups[group_index];
+        return ogt_vox_transform_multiply(final_transform, ogt_vox_sample_group_transform_global(group, frame_index, scene));
     }
 
     uint32_t ogt_vox_sample_instance_model(const ogt_vox_instance* instance, uint32_t frame_index)
     {
         return instance->model_anim.num_keyframes ? ogt_vox_sample_anim_model(&instance->model_anim, frame_index) : instance->model_index;
+    }
+
+    ogt_vox_transform ogt_vox_sample_instance_transform_local(const ogt_vox_instance* instance, uint32_t frame_index)
+    {
+        return instance->transform_anim.num_keyframes ? ogt_vox_sample_anim_transform(&instance->transform_anim, frame_index) : instance->transform;
+    }
+
+    ogt_vox_transform ogt_vox_sample_group_transform_local(const ogt_vox_group* group, uint32_t frame_index)
+    {
+        return group->transform_anim.num_keyframes ? ogt_vox_sample_anim_transform(&group->transform_anim, frame_index) : group->transform;
     }
 
     const ogt_vox_scene* ogt_vox_read_scene_with_flags(const uint8_t * buffer, uint32_t buffer_size, uint32_t read_flags) {
@@ -1820,7 +1849,7 @@
                                 const ogt_vox_group* group = &groups[group_index];
                                 const ogt_vox_keyframe_transform* group_keyframes = (const ogt_vox_keyframe_transform*)&misc_data[(size_t)group->transform_anim.keyframes];
                                 ogt_vox_transform group_transform = sample_keyframe_transform(group_keyframes, group->transform_anim.num_keyframes, group->transform_anim.loop, frame_index);
-                                flattened_transform = _vox_transform_multiply(flattened_transform, group_transform);
+                                flattened_transform = ogt_vox_transform_multiply(flattened_transform, group_transform);
                                 group_index = groups[group_index].parent_group_index;
                             }
                             new_keyframes[f].frame_index = frame_index;
@@ -1837,7 +1866,7 @@
                     ogt_vox_transform flattened_transform = instance->transform;
                     uint32_t group_index = instance->group_index;
                     while (group_index != k_invalid_group_index) {
-                        flattened_transform = _vox_transform_multiply(flattened_transform, groups[group_index].transform);
+                        flattened_transform = ogt_vox_transform_multiply(flattened_transform, groups[group_index].transform);
                         group_index = groups[group_index].parent_group_index;
                     }
                     instance->transform = flattened_transform;
@@ -1847,7 +1876,7 @@
                 groups.resize(0);
                 ogt_vox_group root_group;
                 root_group.name                         = 0;
-                root_group.transform                    = _vox_transform_identity();
+                root_group.transform                    = ogt_vox_transform_get_identity();
                 root_group.parent_group_index           = k_invalid_group_index;
                 root_group.layer_index                  = 0;
                 root_group.hidden                       = false;
@@ -1860,13 +1889,22 @@
             ogt_vox_instance new_instance;
             new_instance.model_index                = 0;
             new_instance.group_index                = 0;
-            new_instance.transform                  = _vox_transform_identity();
+            new_instance.transform                  = ogt_vox_transform_get_identity();
             new_instance.layer_index                = 0;
             new_instance.name                       = 0;
             new_instance.hidden                     = false;
             clear_anim_transform(&new_instance.transform_anim);
             clear_anim_model(&new_instance.model_anim);
             instances.push_back(new_instance);
+            // adds a single group
+            ogt_vox_group new_group;
+            new_group.hidden = false;
+            new_group.layer_index = 0;
+            new_group.transform = ogt_vox_transform_get_identity();
+            new_group.parent_group_index = k_invalid_group_index;
+            clear_anim_transform(&new_group.transform_anim);
+            new_group.name = 0;
+            groups.push_back(new_group);
         }
 
         // if we didn't get a layer chunk -- just create a default layer.
@@ -2677,7 +2715,7 @@
                 uint32_t parent_group_index = instance->group_index;
                 while (parent_group_index != k_invalid_group_index) {
                     const ogt_vox_group* group = &scene->groups[parent_group_index];
-                    instance_transform = _vox_transform_multiply(instance_transform, group->transform);
+                    instance_transform = ogt_vox_transform_multiply(instance_transform, group->transform);
                     parent_group_index = group->parent_group_index;
                 }
 
@@ -2852,7 +2890,7 @@
             root_group.hidden                  = false;
             root_group.layer_index             = 0;
             root_group.parent_group_index      = k_invalid_group_index;
-            root_group.transform               = _vox_transform_identity();
+            root_group.transform               = ogt_vox_transform_get_identity();
             clear_anim_transform(&root_group.transform_anim);
             groups[0] = root_group;
         }

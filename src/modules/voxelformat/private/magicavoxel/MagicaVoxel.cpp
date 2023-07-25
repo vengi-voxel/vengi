@@ -27,7 +27,7 @@ glm::mat4 ogtTransformToMat(const ogt_vox_instance &ogtInstance, uint32_t frameI
 	if (ogtInstance.group_index == k_invalid_group_index || ogtInstance.group_index >= scene->num_groups) {
 		t = ogtInstance.transform;
 	} else {
-		t = ogt_vox_sample_instance_transform(&ogtInstance, frameIdx, scene);
+		t = ogt_vox_sample_instance_transform_global(&ogtInstance, frameIdx, scene);
 	}
 	const glm::vec4 col0(t.m00, t.m01, t.m02, t.m03);
 	const glm::vec4 col1(t.m10, t.m11, t.m12, t.m13);
