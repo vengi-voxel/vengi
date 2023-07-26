@@ -31,7 +31,7 @@ class FilesystemTest : public testing::Test {};
 
 TEST_F(FilesystemTest, testListDirectory) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testListDirectory")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.createDir("listdirtest/dir1"));
 	EXPECT_TRUE(fs.syswrite("listdirtest/dir1/ignored", "ignore"));
 	EXPECT_TRUE(fs.syswrite("listdirtest/dir1/ignoredtoo", "ignore"));
@@ -57,7 +57,7 @@ TEST_F(FilesystemTest, testListDirectory) {
 
 TEST_F(FilesystemTest, testDirectoryExists) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testDirectoryExists")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.createDir("testdirexists"));
 	EXPECT_TRUE(fs.isReadableDir("testdirexists"));
 	EXPECT_TRUE(fs.exists("testdirexists"));
@@ -67,14 +67,14 @@ TEST_F(FilesystemTest, testDirectoryExists) {
 
 TEST_F(FilesystemTest, testFileExists) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testFileExists")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.exists("iotest.txt"));
 	EXPECT_FALSE(fs.exists("iotestdoesnotexist.txt"));
 }
 
 TEST_F(FilesystemTest, testListDirectoryFilter) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testListDirectoryFilter")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.createDir("listdirtestfilter"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/image.Png", "1"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.foo", "1"));
@@ -101,7 +101,7 @@ TEST_F(FilesystemTest, testListDirectoryFilter) {
 
 TEST_F(FilesystemTest, testAbsolutePath) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testAbsolutePath")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.createDir("absolutePathInCurDir"));
 	const core::String &absolutePathInCurDir = fs.absolutePath("absolutePathInCurDir");
 	EXPECT_EQ(core::string::path(fs.currentDir(), "absolutePathInCurDir"), absolutePathInCurDir);
@@ -113,7 +113,7 @@ TEST_F(FilesystemTest, testAbsolutePath) {
 
 TEST_F(FilesystemTest, testIsRelativePath) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testIsRelativePath")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.isRelativePath("./foo"));
 	EXPECT_TRUE(fs.isRelativePath("foo"));
 	EXPECT_TRUE(fs.isRelativePath("foo/bar"));
@@ -126,14 +126,14 @@ TEST_F(FilesystemTest, testIsRelativePath) {
 
 TEST_F(FilesystemTest, testIsReadableDir) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testIsReadableDir")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.isReadableDir(fs.homePath())) << fs.homePath().c_str() << " is not readable";
 	fs.shutdown();
 }
 
 TEST_F(FilesystemTest, testListFilter) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testListFilter")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.createDir("listdirtestfilter"));
 	EXPECT_TRUE(fs.createDir("listdirtestfilter/dirxyz"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/filexyz", "1"));
@@ -150,7 +150,7 @@ TEST_F(FilesystemTest, testListFilter) {
 
 TEST_F(FilesystemTest, testMkdir) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testMkdir")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.createDir("testdir"));
 	EXPECT_TRUE(fs.createDir("testdir2/subdir/other"));
 	EXPECT_TRUE(fs.removeDir("testdir2/subdir/other"));
@@ -161,7 +161,7 @@ TEST_F(FilesystemTest, testMkdir) {
 
 TEST_F(FilesystemTest, testPushPopDir) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testPushPopDir")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.createDir("testdir"));
 	EXPECT_TRUE(fs.pushDir("testdir"));
 	EXPECT_TRUE(fs.popDir());
@@ -170,7 +170,7 @@ TEST_F(FilesystemTest, testPushPopDir) {
 
 TEST_F(FilesystemTest, testWriteExplicitCurDir) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testWriteExplicitCurDir")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.write("./testfile", "123")) << "Failed to write content to testfile in " << fs.homePath().c_str();
 	const core::String &content = fs.load("./testfile");
 	EXPECT_EQ("123", content) << "Written content doesn't match expected";
@@ -179,7 +179,7 @@ TEST_F(FilesystemTest, testWriteExplicitCurDir) {
 
 TEST_F(FilesystemTest, testWrite) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testWrite")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.write("testfile", "123")) << "Failed to write content to testfile in " << fs.homePath().c_str();
 	const core::String &content = fs.load("testfile");
 	EXPECT_EQ("123", content) << "Written content doesn't match expected";
@@ -188,7 +188,7 @@ TEST_F(FilesystemTest, testWrite) {
 
 TEST_F(FilesystemTest, testWriteNewDir) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testWriteNewDir")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.write("dir123/testfile", "123")) << "Failed to write content to testfile in dir123";
 	core::String filename;
 	core::String filepath;
@@ -208,7 +208,7 @@ TEST_F(FilesystemTest, testWriteNewDir) {
 
 TEST_F(FilesystemTest, testCreateDirRecursive) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testCreateDirRecursive")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.createDir("dir1/dir2/dir3/dir4", true));
 	EXPECT_TRUE(fs.removeDir("dir1/dir2/dir3/dir4"));
 	EXPECT_TRUE(fs.removeDir("dir1/dir2/dir3"));
@@ -219,14 +219,14 @@ TEST_F(FilesystemTest, testCreateDirRecursive) {
 
 TEST_F(FilesystemTest, testCreateDirNonRecursiveFail) {
 	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "testCreateDirNonRecursiveFail")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_FALSE(fs.createDir("does/not/exist", false));
 	fs.shutdown();
 }
 
 TEST_F(FilesystemTest, testSearchPathFor) {
 	io::FilesystemPtr fs = core::make_shared<io::Filesystem>();
-	EXPECT_TRUE(fs->init("test", "testSearchPathFor")) << "Failed to initialize the filesystem";
+	EXPECT_TRUE(fs->init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_EQ(core::string::path(fs->currentDir(), "iotest.txt"), searchPathFor(fs, "foobar/does/not/exist", "iotest.txt"));
 	ASSERT_TRUE(fs->syswrite("dir123/testfile", "123")) << "Failed to write content to testfile in dir123";
 	EXPECT_EQ(core::string::path(fs->currentDir(), "dir123/testfile"), searchPathFor(fs, "/foobar/does/not/dir123", "TestFile"));
