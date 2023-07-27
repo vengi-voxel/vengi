@@ -1418,7 +1418,7 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 	const bool renderUI = (renderMask & RenderUI) != 0u;
 	if (renderUI) {
 		_sceneRenderer->renderUI(renderContext, camera, _sceneGraph);
-		_modifier.render(camera);
+		_modifier.render(camera, activePalette());
 	}
 }
 

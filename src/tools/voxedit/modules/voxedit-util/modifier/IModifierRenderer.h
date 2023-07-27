@@ -12,6 +12,10 @@
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
 
+namespace voxel {
+class Palette;
+}
+
 namespace voxedit {
 
 class IModifierRenderer : public core::IComponent {
@@ -22,19 +26,18 @@ public:
 	void shutdown() override {
 	}
 
-	virtual void render(const video::Camera &camera, const glm::mat4 &model) {
+	virtual void renderShape(const video::Camera &camera) {
 	}
-	virtual void renderAABBMode(const video::Camera &camera) {
+	virtual void render(const video::Camera &camera, const glm::mat4 &model) {
 	}
 	virtual void renderSelection(const video::Camera &camera) {
 	}
 
+	virtual void clearShapeMeshes() {
+	}
+	virtual void updateShapeMesh(int idx, voxel::RawVolume *volume, voxel::Palette *palette) {
+	}
 	virtual void updateReferencePosition(const glm::ivec3 &pos) {
-	}
-	virtual void updateAABBMesh(const glm::vec3 &mins, const glm::vec3 &maxs) {
-	}
-	virtual void updateAABBMirrorMesh(const glm::vec3 &mins, const glm::vec3 &maxs, const glm::vec3 &minsMirror,
-									  const glm::vec3 &maxsMirror) {
 	}
 	virtual void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos) {
 	}

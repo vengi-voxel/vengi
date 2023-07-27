@@ -14,12 +14,19 @@
 #include "voxedit-util/SceneManager.h"
 #include "../AxisUtil.h"
 #include "voxedit-util/modifier/Selection.h"
+#include "voxel/Palette.h"
 
 namespace voxedit {
 
 bool ModifierRenderer::init() {
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to initialize the shape renderer");
+		return false;
+	}
+
+	_volumeRenderer.construct();
+	if (!_volumeRenderer.init()) {
+		Log::error("Failed to initialize the volume renderer");
 		return false;
 	}
 
@@ -33,12 +40,13 @@ bool ModifierRenderer::init() {
 
 void ModifierRenderer::shutdown() {
 	_mirrorMeshIndex = -1;
-	_aabbMeshIndex = -1;
 	_selectionIndex = -1;
 	_voxelCursorMesh = -1;
 	_referencePointMesh = -1;
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
+	_volumeRendererCtx.shutdown();
+	_volumeRenderer.shutdown();
 }
 
 void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames face, bool flip) {
@@ -104,26 +112,27 @@ void ModifierRenderer::updateSelectionBuffers(const Selections& selections) {
 	_shapeRenderer.createOrUpdate(_selectionIndex, _shapeBuilder);
 }
 
-void ModifierRenderer::updateAABBMirrorMesh(const glm::vec3& mins, const glm::vec3& maxs,
-		const glm::vec3& minsMirror, const glm::vec3& maxsMirror) {
-	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.5f));
-	_shapeBuilder.cube(mins, maxs);
-	_shapeBuilder.cube(minsMirror, maxsMirror);
-	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
+void ModifierRenderer::clearShapeMeshes() {
+	_volumeRenderer.clear();
 }
 
-void ModifierRenderer::updateAABBMesh(const glm::vec3& mins, const glm::vec3& maxs) {
-	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.5f));
-	_shapeBuilder.cube(mins, maxs);
-	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
+void ModifierRenderer::updateShapeMesh(int idx, voxel::RawVolume *volume, voxel::Palette *palette) {
+	_volumeRenderer.setVolume(idx, volume, palette);
+	if (volume != nullptr) {
+		_volumeRenderer.extractRegion(idx, volume->region());
+	}
 }
 
-void ModifierRenderer::renderAABBMode(const video::Camera& camera) {
-	static const glm::vec2 offset(-0.25f, -0.5f);
-	video::ScopedPolygonMode polygonMode(camera.polygonMode(), offset);
-	_shapeRenderer.render(_aabbMeshIndex, camera);
+void ModifierRenderer::renderShape(const video::Camera &camera) {
+	if (_volumeRendererCtx.frameBuffer.dimension() != camera.size()) {
+		_volumeRendererCtx.shutdown();
+		_volumeRendererCtx.init(camera.size());
+	}
+	while (_volumeRenderer.scheduleExtractions(100)) {
+	}
+	_volumeRenderer.waitForPendingExtractions();
+	_volumeRenderer.update();
+	_volumeRenderer.render(_volumeRendererCtx, camera, false);
 }
 
 void ModifierRenderer::render(const video::Camera& camera, const glm::mat4& model) {

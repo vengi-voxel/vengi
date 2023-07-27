@@ -55,6 +55,7 @@ VoxEdit:
    - Fixed a few crashes
    - Added hollow functionality to remove invisible voxels
    - Added pathtracer support (Yocto/GL)
+   - Preview of modifier shapes in edit mode
 
 Thumbnailer:
 

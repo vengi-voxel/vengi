@@ -109,7 +109,7 @@ protected:
 	bool planeModifier(voxel::RawVolume *volume, const Callback &callback);
 	bool pathModifier(voxel::RawVolume *volume, const Callback &callback);
 
-	bool runModifier(voxel::RawVolume *volume, const Callback &callback);
+	bool runModifier(voxel::RawVolume *volume, const Callback &callback = [] (const voxel::Region &, ModifierType, bool) {});
 
 	math::AABB<int> aabb() const;
 public:

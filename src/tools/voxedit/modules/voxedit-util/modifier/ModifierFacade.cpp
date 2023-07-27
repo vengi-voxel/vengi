@@ -3,7 +3,9 @@
  */
 
 #include "ModifierFacade.h"
+#include "core/ScopedPtr.h"
 #include "voxel/Face.h"
+#include "voxel/RawVolume.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
@@ -37,7 +39,7 @@ void ModifierFacade::setReferencePosition(const glm::ivec3 &pos) {
 	_modifierRenderer->updateReferencePosition(_referencePos);
 }
 
-void ModifierFacade::render(const video::Camera &camera) {
+void ModifierFacade::render(const video::Camera &camera, voxel::Palette &palette) {
 	if (_locked) {
 		return;
 	}
@@ -57,20 +59,16 @@ void ModifierFacade::render(const video::Camera &camera) {
 			const glm::ivec3 &maxs = bbox.maxs();
 			glm::ivec3 minsMirror = mins;
 			glm::ivec3 maxsMirror = maxs;
+			_modifierRenderer->clearShapeMeshes();
 			if (getMirrorAABB(minsMirror, maxsMirror)) {
-				const math::AABB<int> first(mins, maxs);
-				const math::AABB<int> second(minsMirror, maxsMirror);
-				if (math::intersects(first, second)) {
-					_modifierRenderer->updateAABBMesh(mins, maxsMirror + 1);
-				} else {
-					_modifierRenderer->updateAABBMirrorMesh(mins, maxs + 1, minsMirror, maxsMirror + 1);
-				}
-			} else {
-				_modifierRenderer->updateAABBMesh(mins, maxs + 1);
+				_mirrorVolume = new voxel::RawVolume(voxel::Region(minsMirror, maxsMirror + 1));
+				runModifier(_mirrorVolume);
+				_modifierRenderer->updateShapeMesh(1, _mirrorVolume, &palette);
 			}
+			_volume = new voxel::RawVolume(voxel::Region(mins, maxs + 1));
+			runModifier(_volume);
+			_modifierRenderer->updateShapeMesh(0, _volume, &palette);
 		}
-
-		_modifierRenderer->renderAABBMode(camera);
 	}
 	const glm::ivec3 pos = aabbPosition();
 	const glm::mat4 &translate = glm::translate(glm::vec3(pos));
@@ -80,6 +78,9 @@ void ModifierFacade::render(const video::Camera &camera) {
 	_modifierRenderer->render(camera, scale);
 	if (_selectionValid) {
 		_modifierRenderer->renderSelection(camera);
+	}
+	if (aabbMode) {
+		_modifierRenderer->renderShape(camera);
 	}
 }
 
