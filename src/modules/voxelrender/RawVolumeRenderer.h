@@ -161,6 +161,7 @@ public:
 	void gray(int idx, bool gray);
 	bool grayed(int idx) const;
 
+	void clear();
 	int pendingExtractions() const;
 	void clearPendingExtractions();
 	void waitForPendingExtractions();

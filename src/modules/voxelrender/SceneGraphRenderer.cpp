@@ -84,13 +84,7 @@ void SceneGraphRenderer::shutdown() {
 }
 
 void SceneGraphRenderer::clear() {
-	_renderer.clearPendingExtractions();
-	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
-		const int nodeId = getNodeId(i);
-		if (_renderer.setVolume(nodeId, nullptr, nullptr, true) != nullptr) {
-			_renderer.updateBufferForVolume(nodeId);
-		}
-	}
+	_renderer.clear();
 }
 
 scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera& camera) {

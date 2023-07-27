@@ -442,6 +442,15 @@ void RawVolumeRenderer::waitForPendingExtractions() {
 	}
 }
 
+void RawVolumeRenderer::clear() {
+	clearPendingExtractions();
+	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
+		if (setVolume(i, nullptr, nullptr, true) != nullptr) {
+			updateBufferForVolume(i);
+		}
+	}
+}
+
 void RawVolumeRenderer::clearPendingExtractions() {
 	Log::debug("Clear pending extractions");
 	_threadPool.abort();

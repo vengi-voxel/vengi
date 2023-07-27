@@ -41,7 +41,8 @@ void ModifierFacade::render(const video::Camera &camera) {
 	if (_locked) {
 		return;
 	}
-	if (_aabbMode) {
+	const bool aabbMode = _aabbMode;
+	if (aabbMode) {
 		static glm::ivec3 lastCursor = aabbPosition();
 		static math::Axis lastMirrorAxis = _mirrorAxis;
 
