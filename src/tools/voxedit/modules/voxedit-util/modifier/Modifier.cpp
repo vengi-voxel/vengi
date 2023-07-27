@@ -503,6 +503,14 @@ bool Modifier::aabbAction(voxel::RawVolume *volume, const Callback &callback) {
 		return planeModifier(volume, callback);
 	}
 
+	runModifier(volume, callback);
+
+	_secondPosValid = false;
+	_aabbSecondActionDirection = math::Axis::None;
+	return true;
+}
+
+bool Modifier::runModifier(voxel::RawVolume *volume, const Callback &callback) {
 	ModifierVolumeWrapper wrapper(volume, _modifierType, _selections);
 	const math::AABB<int> a = aabb();
 	glm::ivec3 minsMirror = a.mins();
@@ -518,8 +526,6 @@ bool Modifier::aabbAction(voxel::RawVolume *volume, const Callback &callback) {
 		executeShapeAction(wrapper, a.mins(), a.maxs(), callback, false);
 		executeShapeAction(wrapper, minsMirror, maxsMirror, callback, true);
 	}
-	_secondPosValid = false;
-	_aabbSecondActionDirection = math::Axis::None;
 	return true;
 }
 
