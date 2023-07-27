@@ -8,8 +8,6 @@
 #include "core/UTF8.h"
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
-#include "lauxlib.h"
-#include "lua.h"
 #include "math/Axis.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/PaletteLookup.h"
