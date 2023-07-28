@@ -30,6 +30,8 @@
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/modifier/ModifierType.h"
 
+#define ENABLE_RENDER_PANEL 0
+
 namespace voxedit {
 
 class Viewport;
@@ -70,7 +72,9 @@ private:
 	TreePanel _treePanel;
 	SceneGraphPanel _sceneGraphPanel;
 	AnimationPanel _animationPanel;
+#if ENABLE_RENDER_PANEL
 	RenderPanel _renderPanel;
+#endif
 	ToolsPanel _toolsPanel;
 	AssetPanel _assetPanel;
 	MementoPanel _mementoPanel;

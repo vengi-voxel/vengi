@@ -160,7 +160,9 @@ bool MainWindow::init() {
 		return false;
 	}
 
+#if ENABLE_RENDER_PANEL
 	_renderPanel.init();
+#endif
 	_sceneGraphPanel.init();
 	_lsystemPanel.init();
 	_treePanel.init();
@@ -192,7 +194,9 @@ void MainWindow::shutdown() {
 	for (size_t i = 0; i < _scenes.size(); ++i) {
 		_scenes[i]->shutdown();
 	}
+#if ENABLE_RENDER_PANEL
 	_renderPanel.shutdown();
+#endif
 	_lsystemPanel.shutdown();
 	_treePanel.shutdown();
 	_texturePool.shutdown();
@@ -359,7 +363,9 @@ void MainWindow::rightWidget() {
 
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredScene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, _lastExecutedCommand);
+#if ENABLE_RENDER_PANEL
 	_renderPanel.update(TITLE_RENDER, sceneMgr().sceneGraph());
+#endif
 	if (!_simplifiedView->boolVal()) {
 		_treePanel.update(TITLE_TREES);
 		_lsystemPanel.update(TITLE_LSYSTEMPANEL);
