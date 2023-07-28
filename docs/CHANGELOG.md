@@ -12,6 +12,10 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 General:
 
+VoxEdit:
+
+   - Added pathtracer support (Yocto/GL)
+
 ## 0.0.25 (2023-07-28)
 
 General:
@@ -58,7 +62,6 @@ VoxEdit:
    - Improved font quality
    - Fixed a few crashes
    - Added hollow functionality to remove invisible voxels
-   - Added pathtracer support (Yocto/GL)
    - Preview of modifier shapes in edit mode
 
 Thumbnailer:
