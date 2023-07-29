@@ -10,7 +10,7 @@ set(SRCS
 	modifier/ModifierFacade.h modifier/ModifierFacade.cpp
 	modifier/ModifierType.h
 	modifier/ModifierButton.h modifier/ModifierButton.cpp
-	modifier/ModifierType.h
+	modifier/ShapeType.h
 
 	ISceneRenderer.h
 	SceneRenderer.h SceneRenderer.cpp

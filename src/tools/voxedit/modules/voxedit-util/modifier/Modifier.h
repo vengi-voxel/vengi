@@ -18,30 +18,9 @@
 #include "math/AABB.h"
 #include "Selection.h"
 #include "ModifierVolumeWrapper.h"
+#include "ShapeType.h"
 
 namespace voxedit {
-
-enum ShapeType {
-	AABB,
-	Torus,
-	Cylinder,
-	Cone,
-	Dome,
-	Ellipse,
-
-	Max,
-	Min = AABB,
-};
-
-static constexpr const char* ShapeTypeStr[ShapeType::Max] {
-	"AABB",
-	"Torus",
-	"Cylinder",
-	"Cone",
-	"Dome",
-	"Ellipse"
-};
-static_assert(lengthof(ShapeTypeStr) == (int)ShapeType::Max, "Array size mismatch");
 
 /**
  * @brief This class is responsible for manipulating the volume with the configured shape and for
