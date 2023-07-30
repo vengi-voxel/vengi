@@ -40,6 +40,38 @@ public:
 		int crownWidth, int crownHeight, int crownDepth, float branchSize, unsigned int seed, float trunkSizeFactor);
 };
 
+
+/**
+ * @brief Creates a L form
+ * @param[in,out] volume The volume (RawVolume) to place the voxels into
+ * @param[in] pos The position to place the object at (lower left corner)
+ * @param[in] width The width (x-axis) of the object
+ * @param[in] height The height (y-axis) of the object
+ * @param[in] depth The height (z-axis) of the object
+ * @param[in] voxel The Voxel to build the object with
+ */
+template<class Volume>
+static glm::ivec3 createL(Volume& volume, const glm::ivec3& pos, int width, int depth, int height, int thickness, const voxel::Voxel& voxel) {
+	glm::ivec3 p = pos;
+	if (width != 0) {
+		shape::createCubeNoCenter(volume, p, width, thickness, thickness, voxel);
+		p.x += width;
+		shape::createCubeNoCenter(volume, p, thickness, height, thickness, voxel);
+		p.x += thickness / 2;
+		p.z += thickness / 2;
+	} else if (depth != 0) {
+		shape::createCubeNoCenter(volume, p, thickness, thickness, depth, voxel);
+		p.z += depth;
+		shape::createCubeNoCenter(volume, p, thickness, height, thickness, voxel);
+		p.x += thickness / 2;
+		p.z += thickness / 2;
+	} else {
+		core_assert(false);
+	}
+	p.y += height;
+	return p;
+}
+
 /**
  * @brief Creates an ellipsis tree with side branches and smaller ellipsis on top of those branches
  * @sa createTreeEllipsis()
@@ -67,19 +99,19 @@ void createTreeBranchEllipsis(Volume& volume, const voxelgenerator::TreeBranchEl
 		switch (branches[i % 4]) {
 		case 1:
 			branch.x += delta;
-			leavesPos = shape::createL(volume, branch, 0, branchLength, branchHeight, thickness, trunkVoxel);
+			leavesPos = createL(volume, branch, 0, branchLength, branchHeight, thickness, trunkVoxel);
 			break;
 		case 2:
 			branch.x += delta;
-			leavesPos = shape::createL(volume, branch, 0, -branchLength, branchHeight, thickness, trunkVoxel);
+			leavesPos = createL(volume, branch, 0, -branchLength, branchHeight, thickness, trunkVoxel);
 			break;
 		case 3:
 			branch.z += delta;
-			leavesPos = shape::createL(volume, branch, branchLength, 0, branchHeight, thickness, trunkVoxel);
+			leavesPos = createL(volume, branch, branchLength, 0, branchHeight, thickness, trunkVoxel);
 			break;
 		case 4:
 			branch.z += delta;
-			leavesPos = shape::createL(volume, branch, -branchLength, 0, branchHeight, thickness, trunkVoxel);
+			leavesPos = createL(volume, branch, -branchLength, 0, branchHeight, thickness, trunkVoxel);
 			break;
 		}
 		leavesPos.y += branchHeight / 2;

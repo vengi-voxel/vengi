@@ -123,37 +123,6 @@ void createPlaneNoCenter(Volume& volume, const glm::ivec3& center, int width, in
 }
 
 /**
- * @brief Creates a L form
- * @param[in,out] volume The volume (RawVolume) to place the voxels into
- * @param[in] pos The position to place the object at (lower left corner)
- * @param[in] width The width (x-axis) of the object
- * @param[in] height The height (y-axis) of the object
- * @param[in] depth The height (z-axis) of the object
- * @param[in] voxel The Voxel to build the object with
- */
-template<class Volume>
-glm::ivec3 createL(Volume& volume, const glm::ivec3& pos, int width, int depth, int height, int thickness, const voxel::Voxel& voxel) {
-	glm::ivec3 p = pos;
-	if (width != 0) {
-		createCubeNoCenter(volume, p, width, thickness, thickness, voxel);
-		p.x += width;
-		createCubeNoCenter(volume, p, thickness, height, thickness, voxel);
-		p.x += thickness / 2;
-		p.z += thickness / 2;
-	} else if (depth != 0) {
-		createCubeNoCenter(volume, p, thickness, thickness, depth, voxel);
-		p.z += depth;
-		createCubeNoCenter(volume, p, thickness, height, thickness, voxel);
-		p.x += thickness / 2;
-		p.z += thickness / 2;
-	} else {
-		core_assert(false);
-	}
-	p.y += height;
-	return p;
-}
-
-/**
  * @brief Creates an ellipsis
  * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] center The position to place the object at
