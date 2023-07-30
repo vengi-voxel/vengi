@@ -105,24 +105,6 @@ void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, const glm::ivec3&
 }
 
 /**
- * @brief Creates a plane
- * @param[in,out] volume The volume (RawVolume) to place the voxels into
- * @param[in] center The position to place the object at
- * @param[in] width The width (x-axis) of the object
- * @param[in] depth The height (z-axis) of the object
- * @param[in] voxel The Voxel to build the object with
- */
-template<class Volume>
-void createPlane(Volume& volume, const glm::ivec3& center, int width, int depth, const voxel::Voxel& voxel) {
-	createCube(volume, center, width, 1, depth, voxel);
-}
-
-template<class Volume>
-void createPlaneNoCenter(Volume& volume, const glm::ivec3& center, int width, int depth, const voxel::Voxel& voxel) {
-	createCubeNoCenter(volume, center, width, 1, depth, voxel);
-}
-
-/**
  * @brief Creates an ellipsis
  * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] center The position to place the object at
