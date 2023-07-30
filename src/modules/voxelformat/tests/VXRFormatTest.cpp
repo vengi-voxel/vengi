@@ -37,6 +37,9 @@ TEST_F(VXRFormatTest, testGiantDinosaur) {
 		for (int i = 0; i < 16; ++i) {
 			ASSERT_FLOAT_EQ(expected[i], actual[i]) << i << ": " << glm::to_string(transform.worldMatrix());
 		}
+		EXPECT_FLOAT_EQ(node->pivot().x, 0.5f);
+		EXPECT_FLOAT_EQ(node->pivot().y, 0.29411766f);
+		EXPECT_FLOAT_EQ(node->pivot().z, 1.0f);
 	}
 	{
 		scenegraph::SceneGraphNode* node = sceneGraph.findNodeByName("Tail4");
@@ -49,6 +52,9 @@ TEST_F(VXRFormatTest, testGiantDinosaur) {
 		for (int i = 0; i < 16; ++i) {
 			ASSERT_FLOAT_EQ(expected[i], actual[i]) << i << ": " << glm::to_string(transform.worldMatrix());
 		}
+		EXPECT_FLOAT_EQ(node->pivot().x, 0.5f);
+		EXPECT_FLOAT_EQ(node->pivot().y, 0.45833331);
+		EXPECT_FLOAT_EQ(node->pivot().z, 1.0f);
 	}
 	{
 		scenegraph::SceneGraphNode* node = sceneGraph.findNodeByName("L_Arm");
@@ -61,6 +67,9 @@ TEST_F(VXRFormatTest, testGiantDinosaur) {
 		for (int i = 0; i < 16; ++i) {
 			ASSERT_FLOAT_EQ(expected[i], actual[i]) << i << ": " << glm::to_string(transform.worldMatrix());
 		}
+		EXPECT_FLOAT_EQ(node->pivot().x, 0.5f);
+		EXPECT_FLOAT_EQ(node->pivot().y, 0.76923078f);
+		EXPECT_FLOAT_EQ(node->pivot().z, 0.55555558f);
 	}
 }
 
