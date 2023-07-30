@@ -232,26 +232,30 @@ bool Modifier::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 	return true;
 }
 
-math::Axis Modifier::getSizeAndHeightFromAxisAndDim(math::Axis axis, const glm::ivec3& dimensions, double &size, double &height) const {
+math::Axis Modifier::getSizeAndHeightFromAxisAndDim(math::Axis axis, const glm::ivec3& dimensions, double &width, double &height, double &depth) const {
 	if (axis == math::Axis::None) {
 		axis = math::Axis::Y;
 	}
 	switch (axis) {
 	case math::Axis::X:
-		size = (glm::max)(dimensions.y, dimensions.z);
+		width = dimensions.y;
+		depth = dimensions.z;
 		height = dimensions.x;
 		break;
 	case math::Axis::Y:
-		size = (glm::max)(dimensions.x, dimensions.z);
+		width = dimensions.x;
+		depth = dimensions.z;
 		height = dimensions.y;
 		break;
 	case math::Axis::Z:
-		size = (glm::max)(dimensions.x, dimensions.y);
+		width = dimensions.x;
+		depth = dimensions.y;
 		height = dimensions.z;
 		break;
 	default:
-		size = 0.0;
+		width = 0.0;
 		height = 0.0;
+		depth = 0.0;
 		return math::Axis::None;
 	}
 	return axis;
@@ -267,14 +271,17 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 
 	const voxel::Region region(operateMins, operateMaxs);
 	voxel::logRegion("Shape action execution", region);
+
+	const glm::ivec3& dimensions = region.getDimensionsInVoxels();
+	double width = 0.0;
+	double height = 0.0;
+	double depth = 0.0;
+	const math::Axis axis = getSizeAndHeightFromAxisAndDim(_aabbSecondActionDirection, dimensions, width, height, depth);
+	const double size = (glm::max)(width, depth);
+
 	const glm::ivec3& center = region.getCenter();
 	glm::ivec3 centerBottom = center;
-	centerBottom.y = region.getLowerY();
-	const glm::ivec3& dimensions = region.getDimensionsInVoxels();
-
-	double size = 0.0;
-	double height = 0.0;
-	const math::Axis axis = getSizeAndHeightFromAxisAndDim(_aabbSecondActionDirection, dimensions, size, height);
+	centerBottom[math::getIndexForAxis(axis)] = region.getLowerCorner()[math::getIndexForAxis(axis)];
 
 	switch (_shapeType) {
 	case ShapeType::AABB:
