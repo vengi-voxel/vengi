@@ -5,15 +5,19 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/ScopedPtr.h"
+#include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "app/tests/AbstractTest.h"
+#include "math/Axis.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
+#include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxelgenerator/ShapeGenerator.h"
@@ -33,6 +37,18 @@ protected:
 	static constexpr int _depth { 32 };
 	static constexpr voxel::Voxel _voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	voxel::RawVolume *_volume = nullptr;
+
+	void save(const core::String &filename) const {
+#if 0
+		scenegraph::SceneGraph sceneGraph;
+		scenegraph::SceneGraphNode node1;
+		node1.setVolume(_volume, false);
+		sceneGraph.emplace(core::move(node1));
+		const io::FilePtr &file = io::filesystem()->open(filename, io::FileMode::SysWrite);
+		voxelformat::SaveContext saveCtx;
+		ASSERT_TRUE(voxelformat::saveFormat(file, nullptr, sceneGraph, saveCtx));
+#endif
+	}
 
 	inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal1, const voxel::RawVolume& volume2, const voxel::Palette &pal2) {
 		const voxel::Region& r1 = volume1.region();
@@ -84,6 +100,15 @@ protected:
 		core::ScopedPtr<voxel::RawVolume> v( merged.first);
 		ASSERT_NE(nullptr, v) << "Can't load " << filename;
 		volumeComparator(*v, voxel::getPalette(), *_volume, voxel::getPalette());
+	}
+
+	void testCreateCirclePlane(math::Axis axis) {
+		voxel::RawVolumeWrapper wrapper(_volume);
+		glm::ivec3 centerBottom = _center;
+		const int axisIdx = math::getIndexForAxis(axis);
+		centerBottom[axisIdx] = _region.getLowerCorner()[axisIdx];
+		shape::createCirclePlane(wrapper, centerBottom, _width, _depth, 10, _voxel, axis);
+		EXPECT_EQ(wrapper.dirtyRegion().getLowerCorner()[axisIdx], centerBottom[axisIdx]);
 	}
 public:
 	void SetUp() override {
@@ -142,6 +167,21 @@ TEST_F(ShapeGeneratorTest, testCreateCylinder) {
 	centerBottom.y = _region.getLowerY();
 	shape::createCylinder(wrapper, centerBottom, math::Axis::Y, _width / 2, _height, _voxel);
 	verify("cylinder.qb");
+}
+
+TEST_F(ShapeGeneratorTest, testCreateCirclePlaneX) {
+	testCreateCirclePlane(math::Axis::X);
+	save("circleplaneX.qb");
+}
+
+TEST_F(ShapeGeneratorTest, testCreateCirclePlaneY) {
+	testCreateCirclePlane(math::Axis::Y);
+	save("circleplaneY.qb");
+}
+
+TEST_F(ShapeGeneratorTest, testCreateCirclePlaneZ) {
+	testCreateCirclePlane(math::Axis::Z);
+	save("circleplaneZ.qb");
 }
 
 }
