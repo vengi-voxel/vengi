@@ -186,8 +186,10 @@ bool VXRFormat::loadChildVXM(const core::String &vxmPath, scenegraph::SceneGraph
 	childModelNode.releaseOwnership();
 
 	const core::String nodeName = node.name();
+	const glm::vec3 pivot = childModelNode.pivot();
 	scenegraph::copyNode(childModelNode, node, false, version >= 3);
 	node.setVolume(childModelNode.volume(), true);
+	node.setPivot(pivot);
 	// restore old name
 	node.setName(nodeName);
 

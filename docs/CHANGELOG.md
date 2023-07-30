@@ -12,6 +12,8 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 General:
 
+   - Fixed pivot handling in VXR format
+
 VoxEdit:
 
    - Added pathtracer support (Yocto/GL)
