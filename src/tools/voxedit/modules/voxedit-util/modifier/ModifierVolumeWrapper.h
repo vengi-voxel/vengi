@@ -146,6 +146,10 @@ public:
 		}
 		return true;
 	}
+
+	inline void setRegion(const voxel::Region &region) {
+		_region = region;
+	}
 };
 
 }

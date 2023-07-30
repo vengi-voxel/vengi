@@ -283,6 +283,7 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 	glm::ivec3 centerBottom = center;
 	centerBottom[math::getIndexForAxis(axis)] = region.getLowerCorner()[math::getIndexForAxis(axis)];
 
+	wrapper.setRegion(region);
 	switch (_shapeType) {
 	case ShapeType::AABB:
 		voxelgenerator::shape::createCubeNoCenter(wrapper, operateMins, dimensions, _cursorVoxel);
