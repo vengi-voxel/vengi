@@ -63,6 +63,7 @@ bool SceneGraph::setAnimation(const core::String &animation) {
 	for (const auto &entry : _nodes) {
 		entry->value.setAnimation(animation);
 	}
+	markMaxFramesDirty();
 	return true;
 }
 
@@ -120,10 +121,13 @@ void SceneGraph::markMaxFramesDirty() {
 
 FrameIndex SceneGraph::maxFrames(const core::String &animation) const {
 	if (_cachedMaxFrame == -1) {
-		_cachedMaxFrame = 0;
-		for (auto iter = beginAllModels(); iter != end(); ++iter) {
-			const scenegraph::SceneGraphNode &modelNode = *iter;
-			_cachedMaxFrame = core_max(modelNode.maxFrame(animation), _cachedMaxFrame);
+		for (const auto &entry : nodes()) {
+			const SceneGraphNode &node = entry->second;
+			if (node.allKeyFrames().empty()) {
+				continue;
+			}
+			const FrameIndex maxFrame = node.maxFrame(animation);
+			_cachedMaxFrame = core_max(maxFrame, _cachedMaxFrame);
 		}
 	}
 	return _cachedMaxFrame;
@@ -381,6 +385,7 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	node.setAnimation(_activeAnimation);
 	Log::debug("Adding scene graph node of type %i with id %i and parent %i", (int)node.type(), node.id(), node.parent());
 	_nodes.emplace(nodeId, core::forward<SceneGraphNode>(node));
+	markMaxFramesDirty();
 	return nodeId;
 }
 

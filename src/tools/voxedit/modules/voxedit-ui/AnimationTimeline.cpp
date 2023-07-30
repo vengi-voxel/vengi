@@ -40,6 +40,7 @@ void AnimationTimeline::header(scenegraph::FrameIndex &currentFrame, scenegraph:
 		if (ImGui::DisabledButton(ICON_FA_PLAY, maxFrame <= 0)) {
 			_play = true;
 		}
+		ImGui::TooltipText("Max frames for this animation: %i", maxFrame);
 	}
 }
 
