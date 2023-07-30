@@ -296,18 +296,18 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 		break;
 	}
 	case ShapeType::Cylinder: {
-		const double radius = size / 2.0;
-		voxelgenerator::shape::createCylinder(wrapper, centerBottom, axis, (int)glm::round(radius), (int)glm::round(height), _cursorVoxel);
+		const int radius =  (int)glm::round(size / 2.0);
+		voxelgenerator::shape::createCylinder(wrapper, centerBottom, axis, radius, height, _cursorVoxel);
 		break;
 	}
 	case ShapeType::Cone:
-		voxelgenerator::shape::createCone(wrapper, center, dimensions, _cursorVoxel);
+		voxelgenerator::shape::createCone(wrapper, centerBottom, axis, width, height, depth, _cursorVoxel);
 		break;
 	case ShapeType::Dome:
-		voxelgenerator::shape::createDome(wrapper, center, dimensions, _cursorVoxel);
+		voxelgenerator::shape::createDome(wrapper, centerBottom, axis, width, height, depth, _cursorVoxel);
 		break;
 	case ShapeType::Ellipse:
-		voxelgenerator::shape::createEllipse(wrapper, center, dimensions, _cursorVoxel);
+		voxelgenerator::shape::createEllipse(wrapper, centerBottom, axis, width, height, depth, _cursorVoxel);
 		break;
 	case ShapeType::Max:
 		Log::warn("Invalid shape type selected - can't perform action");

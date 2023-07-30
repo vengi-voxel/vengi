@@ -84,7 +84,7 @@ protected:
 		}
 		if (branch->_children.empty()) {
 			const glm::ivec3& s = size;
-			shape::createEllipse(volume, branch->_position, s.x, s.y, s.z, voxel);
+			shape::createEllipse(volume, branch->_position, math::Axis::Y, s.x, s.y, s.z, voxel);
 			return;
 		}
 		for (Branch* b : branch->_children) {
