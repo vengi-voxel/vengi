@@ -624,7 +624,8 @@ void FileDialog::showError(const TimedError &error) const {
 }
 
 bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String &buffer, video::OpenFileMode type, const io::FormatDescription **formatDesc) {
-	ImGui::SetNextWindowSize(ImVec2(100.0f * ImGui::GetFontSize(), 0.0f), ImGuiCond_FirstUseEver);
+	float width = core_min(100.0f * ImGui::GetFontSize(), ImGui::GetMainViewport()->Size.x * 0.95f);
+	ImGui::SetNextWindowSize(ImVec2(width, 0.0f), ImGuiCond_FirstUseEver);
 	const char *title;
 	switch (type) {
 	case video::OpenFileMode::Save:
