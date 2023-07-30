@@ -66,7 +66,7 @@ public:
 	}
 
 	constexpr void assign(const TYPE& value, size_t n) {
-		for (size_t i = 0u; i < n; ++i) {
+		for (size_t i = 0u; i < core_min(n, SIZE); ++i) {
 			if (i < _size) {
 				_items[i].~TYPE();
 			}
