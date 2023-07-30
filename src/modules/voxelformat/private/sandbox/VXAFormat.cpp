@@ -396,7 +396,7 @@ bool VXAFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream.writeString(animationId.c_str(), true))
 	Log::debug("Save animation %s", animationId.c_str());
 	wrapBool(stream.writeInt32(1)) // root node has one child
-	if (childCount != 1 || sceneGraph.node(children[0]).name() != "Controller") {
+	if (childCount != 1 || sceneGraph.node(children[0]).name() != SANDBOX_CONTROLLER_NODE) {
 		// add controller node (see VXRFormat)
 		wrapBool(stream.writeInt32(0)) // no key frames for controller node
 		wrapBool(stream.writeInt32(childCount))
