@@ -110,6 +110,32 @@ protected:
 		shape::createCirclePlane(wrapper, centerBottom, _width, _depth, 10, _voxel, axis);
 		EXPECT_EQ(wrapper.dirtyRegion().getLowerCorner()[axisIdx], centerBottom[axisIdx]);
 	}
+
+	void testCreateEllipse(math::Axis axis) {
+		voxel::RawVolumeWrapper wrapper(_volume);
+		glm::ivec3 centerBottom = _center;
+		const int axisIdx = math::getIndexForAxis(axis);
+		centerBottom[axisIdx] = _region.getLowerCorner()[axisIdx];
+		shape::createEllipse(wrapper, centerBottom, axis, _width, _height, _depth, _voxel);
+		EXPECT_EQ(wrapper.dirtyRegion().getLowerCorner()[axisIdx], centerBottom[axisIdx]);
+	}
+
+	void testCreateCone(math::Axis axis) {
+		voxel::RawVolumeWrapper wrapper(_volume);
+		glm::ivec3 centerBottom = _center;
+		const int axisIdx = math::getIndexForAxis(axis);
+		centerBottom[axisIdx] = _region.getLowerCorner()[axisIdx];
+		shape::createCone(wrapper, centerBottom, axis, _width, _height, _depth, _voxel);
+		EXPECT_EQ(wrapper.dirtyRegion().getLowerCorner()[axisIdx], centerBottom[axisIdx]);
+	}
+
+	void testCreateDome(math::Axis axis) {
+		voxel::RawVolumeWrapper wrapper(_volume);
+		glm::ivec3 centerBottom = _center;
+		const int axisIdx = math::getIndexForAxis(axis);
+		centerBottom[axisIdx] = _region.getLowerCorner()[axisIdx];
+		shape::createDome(wrapper, centerBottom, axis, _width, _height, _depth, _voxel);
+	}
 public:
 	void SetUp() override {
 		Super::SetUp();
@@ -143,22 +169,52 @@ TEST_F(ShapeGeneratorTest, testCreateCube) {
 	ASSERT_EQ((_width - 1) * (_height - 1) * (_depth - 1), count);
 }
 
-TEST_F(ShapeGeneratorTest, testCreateEllipse) {
-	voxel::RawVolumeWrapper wrapper(_volume);
-	shape::createEllipse(wrapper, _center, _width, _height, _depth, _voxel);
+TEST_F(ShapeGeneratorTest, testCreateEllipseX) {
+	testCreateEllipse(math::Axis::X);
+	save("ellipseX.qb");
+}
+
+TEST_F(ShapeGeneratorTest, testCreateEllipseY) {
+	testCreateEllipse(math::Axis::Y);
+	save("ellipseY.qb");
 	verify("ellipse.qb");
 }
 
-TEST_F(ShapeGeneratorTest, testCreateCone) {
-	voxel::RawVolumeWrapper wrapper(_volume);
-	shape::createCone(wrapper, _center, _width, _height, _depth, _voxel);
+TEST_F(ShapeGeneratorTest, testCreateEllipseZ) {
+	testCreateEllipse(math::Axis::Z);
+	save("ellipseZ.qb");
+}
+
+TEST_F(ShapeGeneratorTest, testCreateConeX) {
+	testCreateCone(math::Axis::X);
+	save("coneX.qb");
+}
+
+TEST_F(ShapeGeneratorTest, testCreateConeY) {
+	testCreateCone(math::Axis::Y);
+	save("coneY.qb");
 	verify("cone.qb");
 }
 
-TEST_F(ShapeGeneratorTest, testCreateDome) {
-	voxel::RawVolumeWrapper wrapper(_volume);
-	shape::createDome(wrapper, _center, _width, _height, _depth, _voxel);
+TEST_F(ShapeGeneratorTest, testCreateConeZ) {
+	testCreateCone(math::Axis::Z);
+	save("coneZ.qb");
+}
+
+TEST_F(ShapeGeneratorTest, testCreateDomeX) {
+	testCreateDome(math::Axis::X);
+	save("domeX.qb");
+}
+
+TEST_F(ShapeGeneratorTest, testCreateDomeY) {
+	testCreateDome(math::Axis::Y);
+	save("domeY.qb");
 	verify("dome.qb");
+}
+
+TEST_F(ShapeGeneratorTest, testCreateDomeZ) {
+	testCreateDome(math::Axis::Z);
+	save("domeZ.qb");
 }
 
 TEST_F(ShapeGeneratorTest, testCreateCylinder) {
