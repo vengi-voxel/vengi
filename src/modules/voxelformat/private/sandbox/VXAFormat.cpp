@@ -288,8 +288,8 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	vxa_priv::calculateHash(sceneGraph, hash);
 
 	if (SDL_memcmp(md5, hash, sizeof(hash))) {
-		Log::error("hash checksums differ from vxa to current scene graph nodes (version: %i)", version);
-		return false;
+		// this changed between versions - uses iso8859-1 for node names and might also skip decorative nodes (stored as node property)
+		Log::debug("hash checksums differ from vxa to current scene graph nodes (version: %i)", version);
 	}
 
 	char animId[1024];
