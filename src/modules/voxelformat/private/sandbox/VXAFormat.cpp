@@ -14,6 +14,7 @@
 #include "core/MD5.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -72,17 +73,9 @@ static void calculateHash(const scenegraph::SceneGraph &sceneGraph, uint64_t has
 	}
 	uint8_t digest[16];
 	core::md5sum(stream.getBuffer(), stream.size(), digest);
-	// TODO: use MemoryReadStream and two times the readUInt64
-	constexpr int half = lengthof(digest) / 2;
-	hash[0] = hash[1] = 0;
-	for (int i = 0; i < half; ++i) {
-		hash[0] <<= 8;
-		hash[0] |= digest[i];
-	}
-	for (int i = half; i < lengthof(digest); ++i) {
-		hash[1] <<= 8;
-		hash[1] |= digest[i];
-	}
+	io::MemoryReadStream md5stream(digest, sizeof(digest));
+	md5stream.readUInt64(hash[0]);
+	md5stream.readUInt64(hash[1]);
 	Log::debug("hash: %s", core::md5ToString(digest).c_str());
 }
 
