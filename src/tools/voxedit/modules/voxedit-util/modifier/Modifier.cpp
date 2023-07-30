@@ -232,7 +232,7 @@ bool Modifier::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 	return true;
 }
 
-math::Axis Modifier::getSizeAndHeightFromAxisAndDim(math::Axis axis, const glm::ivec3& dimensions, double &width, double &height, double &depth) const {
+math::Axis Modifier::getShapeDimensionForAxis(math::Axis axis, const glm::ivec3& dimensions, int &width, int &height, int &depth) const {
 	if (axis == math::Axis::None) {
 		axis = math::Axis::Y;
 	}
@@ -253,9 +253,9 @@ math::Axis Modifier::getSizeAndHeightFromAxisAndDim(math::Axis axis, const glm::
 		height = dimensions.z;
 		break;
 	default:
-		width = 0.0;
-		height = 0.0;
-		depth = 0.0;
+		width = 0;
+		height = 0;
+		depth = 0;
 		return math::Axis::None;
 	}
 	return axis;
@@ -273,15 +273,16 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 	voxel::logRegion("Shape action execution", region);
 
 	const glm::ivec3& dimensions = region.getDimensionsInVoxels();
-	double width = 0.0;
-	double height = 0.0;
-	double depth = 0.0;
-	const math::Axis axis = getSizeAndHeightFromAxisAndDim(_aabbSecondActionDirection, dimensions, width, height, depth);
+	int width = 0;
+	int height = 0;
+	int depth = 0;
+	const math::Axis axis = getShapeDimensionForAxis(_aabbSecondActionDirection, dimensions, width, height, depth);
 	const double size = (glm::max)(width, depth);
 
+	const int axisIdx = math::getIndexForAxis(axis);
 	const glm::ivec3& center = region.getCenter();
 	glm::ivec3 centerBottom = center;
-	centerBottom[math::getIndexForAxis(axis)] = region.getLowerCorner()[math::getIndexForAxis(axis)];
+	centerBottom[axisIdx] = region.getLowerCorner()[axisIdx];
 
 	wrapper.setRegion(region);
 	switch (_shapeType) {
