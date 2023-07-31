@@ -160,6 +160,7 @@ public:
 	ShapeType shapeType() const;
 	void setShapeType(ShapeType type);
 
+	bool aabbAborted() const;
 	bool aabbMode() const;
 	glm::ivec3 aabbDim() const;
 	glm::ivec3 aabbPosition() const;
@@ -231,6 +232,10 @@ inline bool Modifier::singleMode() const {
 
 inline bool Modifier::aabbMode() const {
 	return _aabbMode;
+}
+
+inline bool Modifier::aabbAborted() const {
+	return _aabbFace == voxel::FaceNames::Max;
 }
 
 inline bool Modifier::secondActionMode() const {

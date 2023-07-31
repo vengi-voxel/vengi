@@ -20,11 +20,11 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 	if (core::bindingContext() == core::BindingContext::Context1) {
 		return initialDown;
 	}
-	if (_secondAction) {
+	Modifier& modifier = sceneMgr().modifier();
+	if (_secondAction && !modifier.aabbAborted()) {
 		execute(false);
 		return initialDown;
 	}
-	Modifier& modifier = sceneMgr().modifier();
 	if (initialDown) {
 		if (_newType != ModifierType::None) {
 			_oldType = modifier.modifierType();
