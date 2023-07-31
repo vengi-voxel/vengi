@@ -107,7 +107,7 @@ protected:
 		glm::ivec3 centerBottom = _center;
 		const int axisIdx = math::getIndexForAxis(axis);
 		centerBottom[axisIdx] = _region.getLowerCorner()[axisIdx];
-		shape::createCirclePlane(wrapper, centerBottom, _width, _depth, 10, _voxel, axis);
+		shape::createCirclePlane(wrapper, centerBottom, axis, _width, _depth, 10, _voxel);
 		EXPECT_EQ(wrapper.dirtyRegion().getLowerCorner()[axisIdx], centerBottom[axisIdx]);
 	}
 

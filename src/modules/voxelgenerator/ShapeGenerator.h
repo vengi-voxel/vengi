@@ -31,7 +31,7 @@ constexpr int MAX_HEIGHT = 255;
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume>
-void createCirclePlane(Volume& volume, const glm::ivec3& center, int width, int depth, double radius, const voxel::Voxel& voxel, math::Axis axis = math::Axis::Y) {
+void createCirclePlane(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radius, const voxel::Voxel& voxel) {
 	const double xRadius = width / 2.0;
 	const double zRadius = depth / 2.0;
 
@@ -129,7 +129,7 @@ void createEllipse(Volume& volume, const glm::ivec3& centerBottom, const math::A
 		glm::ivec3 offset{0};
 		offset[axisIdx] = i;
 		glm::ivec3 circleCenter = centerBottom + offset;
-		createCirclePlane(volume, circleCenter, width, depth, circleRadius, voxel);
+		createCirclePlane(volume, circleCenter, axis, width, depth, circleRadius, voxel);
 	}
 }
 
@@ -157,7 +157,7 @@ void createCone(Volume& volume, const glm::ivec3& centerBottom, const math::Axis
 		glm::ivec3 offset{0};
 		offset[axisIdx] = i;
 		glm::ivec3 circleCenter = centerBottom + offset;
-		createCirclePlane(volume, circleCenter, width, depth, circleRadius, voxel, axis);
+		createCirclePlane(volume, circleCenter, axis, width, depth, circleRadius, voxel);
 	}
 }
 
@@ -188,7 +188,7 @@ void createDome(Volume& volume, const glm::ivec3& centerBottom, math::Axis axis,
 		glm::ivec3 offset{0};
 		offset[axisIdx] = i;
 		glm::ivec3 circleCenter = centerBottom + offset;
-		createCirclePlane(volume, circleCenter, width, depth, circleRadius, voxel);
+		createCirclePlane(volume, circleCenter, axis, width, depth, circleRadius, voxel);
 	}
 }
 
@@ -368,7 +368,7 @@ void createCylinder(Volume& volume, const glm::vec3& centerBottom, const math::A
 		glm::vec3 offset{0};
 		offset[axisIdx] = (float)i;
 		glm::ivec3 circleCenter = centerBottom + offset;
-		createCirclePlane(volume, circleCenter, radius * 2, radius * 2, radius, voxel, axis);
+		createCirclePlane(volume, circleCenter, axis, radius * 2, radius * 2, radius, voxel);
 	}
 }
 
