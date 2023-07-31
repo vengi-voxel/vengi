@@ -119,6 +119,9 @@ void createEllipse(Volume& volume, const glm::ivec3& centerBottom, const math::A
 	const double heightFactor = heightLow / adjustedMinRadius;
 	const double minRadius = glm::pow(adjustedMinRadius + 0.5, 2.0);
 	const int axisIdx = math::getIndexForAxis(axis);
+	glm::ivec3 circleCenter = centerBottom;
+	glm::ivec3 offset{0};
+	offset[axisIdx] = 1;
 	for (int i = 0; i < height; ++i) {
 		const double percent = glm::pow(glm::abs((i - heightLow + 1) / heightFactor), 2.0);
 		const double yRadiusSquared = minRadius - percent;
@@ -126,10 +129,8 @@ void createEllipse(Volume& volume, const glm::ivec3& centerBottom, const math::A
 			break;
 		}
 		const double circleRadius = glm::sqrt(yRadiusSquared);
-		glm::ivec3 offset{0};
-		offset[axisIdx] = i;
-		glm::ivec3 circleCenter = centerBottom + offset;
 		createCirclePlane(volume, circleCenter, axis, width, depth, circleRadius, voxel);
+		circleCenter += offset;
 	}
 }
 
@@ -153,13 +154,34 @@ void createCone(Volume& volume, const glm::ivec3& centerBottom, const math::Axis
 	const double minRadius = minDimension / 2.0;
 	const double dHeight = (double)height;
 	const int axisIdx = math::getIndexForAxis(axis);
+	glm::ivec3 circleCenter = centerBottom;
+	glm::ivec3 offset{0};
+	offset[axisIdx] = 1;
+	if (negative) {
+		circleCenter += offset * (height - 1);
+		offset *= -1;
+	}
 	for (int i = 0; i < height; ++i) {
-		const double percent = negative ? 1.0 - ((height - i) / dHeight) : 1.0 - (i / dHeight);
+		const double percent = 1.0 - (i / dHeight);
 		const double circleRadius = percent * minRadius;
-		glm::ivec3 offset{0};
-		offset[axisIdx] = i;
-		glm::ivec3 circleCenter = centerBottom + offset;
 		createCirclePlane(volume, circleCenter, axis, width, depth, circleRadius, voxel);
+		circleCenter += offset;
+	}
+}
+
+template<class Volume>
+void createCylinder(Volume& volume, const glm::vec3& centerBottom, const math::Axis axis, int radius, int height, const voxel::Voxel& voxel) {
+	if (axis == math::Axis::None) {
+		return;
+	}
+
+	const int axisIdx = math::getIndexForAxis(axis);
+	glm::ivec3 circleCenter = centerBottom;
+	glm::ivec3 offset{0};
+	offset[axisIdx] = 1;
+	for (int i = 0; i < height; ++i) {
+		createCirclePlane(volume, circleCenter, axis, radius * 2, radius * 2, radius, voxel);
+		circleCenter += offset;
 	}
 }
 
@@ -181,6 +203,13 @@ void createDome(Volume& volume, const glm::ivec3& centerBottom, math::Axis axis,
 	const double heightFactor = height / (minDimension / 2.0);
 
 	const int axisIdx = math::getIndexForAxis(axis);
+	glm::ivec3 circleCenter = centerBottom;
+	glm::ivec3 offset{0};
+	offset[axisIdx] = 1;
+	if (negative) {
+		circleCenter += offset * (height - 1);
+		offset *= -1;
+	}
 	for (int i = 0; i < height; ++i) {
 		const double percent = negative ? glm::abs((double)(height - i) / heightFactor) : glm::abs((double)i / heightFactor);
 		const double yRadius = glm::pow(percent, 2.0);
@@ -189,10 +218,8 @@ void createDome(Volume& volume, const glm::ivec3& centerBottom, math::Axis axis,
 			break;
 		}
 		const double circleRadius = glm::sqrt(circleRadiusSquared);
-		glm::ivec3 offset{0};
-		offset[axisIdx] = i;
-		glm::ivec3 circleCenter = centerBottom + offset;
 		createCirclePlane(volume, circleCenter, axis, width, depth, circleRadius, voxel);
+		circleCenter += offset;
 	}
 }
 
@@ -358,21 +385,6 @@ void createTorus(Volume& volume, const glm::ivec3& center, double minorRadius, d
 				volume.setVoxel(center.x + (int)x, center.y + (int)y, center.z + (int)z, voxel);
 			}
 		}
-	}
-}
-
-template<class Volume>
-void createCylinder(Volume& volume, const glm::vec3& centerBottom, const math::Axis axis, int radius, int height, const voxel::Voxel& voxel) {
-	if (axis == math::Axis::None) {
-		return;
-	}
-
-	const int axisIdx = math::getIndexForAxis(axis);
-	for (int i = 0; i < height; ++i) {
-		glm::vec3 offset{0};
-		offset[axisIdx] = (float)i;
-		glm::ivec3 circleCenter = centerBottom + offset;
-		createCirclePlane(volume, circleCenter, axis, radius * 2, radius * 2, radius, voxel);
 	}
 }
 
