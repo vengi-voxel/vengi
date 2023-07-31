@@ -37,7 +37,9 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatScaleZ, "1.0", core::CV_NOPERSIST, "Scale the vertices on Z axis by the given factor");
 	core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST,
 				   "Export as quads. If this false, triangles will be used.", core::Var::boolValidator);
-	core::Var::get(cfg::VoxformatWithcolor, "true", core::CV_NOPERSIST, "Export with vertex colors",
+	core::Var::get(cfg::VoxformatWithColor, "true", core::CV_NOPERSIST, "Export with vertex colors",
+				   core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatColorAsFloat, "true", core::CV_NOPERSIST, "Export with vertex colors as float values (if vertex colors are exported)",
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST,
 				   "Export with uv coordinates of the palette image", core::Var::boolValidator);

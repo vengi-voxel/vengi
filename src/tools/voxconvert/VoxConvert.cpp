@@ -91,7 +91,7 @@ app::AppState VoxConvert::onConstruct() {
 	_scaleY = core::Var::getSafe(cfg::VoxformatScaleY);
 	_scaleZ = core::Var::getSafe(cfg::VoxformatScaleZ);
 	_quads = core::Var::getSafe(cfg::VoxformatQuads);
-	_withColor = core::Var::getSafe(cfg::VoxformatWithcolor);
+	_withColor = core::Var::getSafe(cfg::VoxformatWithColor);
 	_withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords);
 
 	if (!filesystem()->registerPath("scripts/")) {

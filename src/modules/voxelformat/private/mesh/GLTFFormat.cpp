@@ -6,10 +6,12 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/FourCC.h"
+#include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/RGBA.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "image/Image.h"
@@ -196,6 +198,13 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	tinygltf::Model gltfModel;
 	tinygltf::Scene gltfScene;
 
+	const bool colorAsFloat = core::Var::get(cfg::VoxformatColorAsFloat)->boolVal();
+	if (colorAsFloat) {
+		Log::debug("Export colors as float");
+	} else {
+		Log::debug("Export colors as byte");
+	}
+
 	const size_t modelNodes = meshes.size();
 	const core::String &appname = app::App::getInstance()->appname();
 	const core::String &generator = core::string::format("%s " PROJECT_VERSION, appname.c_str());
@@ -372,9 +381,17 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 					os.writeFloat(uv.x);
 					os.writeFloat(uv.y);
 				} else if (withColor) {
-					const glm::vec4 &color = core::Color::fromRGBA(palette.color(vertices[j].colorIndex));
-					for (int colorIdx = 0; colorIdx < glm::vec4::length(); colorIdx++) {
-						os.writeFloat(color[colorIdx]);
+					const core::RGBA paletteColor = palette.color(vertices[j].colorIndex);
+					if (colorAsFloat) {
+						const glm::vec4 &color = core::Color::fromRGBA(paletteColor);
+						for (int colorIdx = 0; colorIdx < glm::vec4::length(); colorIdx++) {
+							os.writeFloat(color[colorIdx]);
+						}
+					} else {
+						os.writeUInt8(paletteColor.r);
+						os.writeUInt8(paletteColor.g);
+						os.writeUInt8(paletteColor.b);
+						os.writeUInt8(paletteColor.a);
 					}
 				}
 			}
@@ -396,7 +413,11 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			if (withTexCoords) {
 				gltfVerticesBufferView.byteStride += sizeof(glm::vec2);
 			} else if (withColor) {
-				gltfVerticesBufferView.byteStride += sizeof(glm::vec4);
+				if (colorAsFloat) {
+					gltfVerticesBufferView.byteStride += sizeof(glm::vec4);
+				} else {
+					gltfVerticesBufferView.byteStride += sizeof(glm::u8vec4);
+				}
 			}
 			gltfVerticesBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
 
@@ -437,10 +458,14 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				gltfColorAccessor.type = TINYGLTF_TYPE_VEC2;
 			} else if (withColor) {
 				gltfColorAccessor.bufferView = (int)gltfModel.bufferViews.size() + 1;
-				gltfColorAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 				gltfColorAccessor.count = nv;
-				gltfColorAccessor.byteOffset = (exportNormals ? 2 : 1) * sizeof(glm::vec3);
 				gltfColorAccessor.type = TINYGLTF_TYPE_VEC4;
+				gltfColorAccessor.byteOffset = (exportNormals ? 2 : 1) * sizeof(glm::vec3);
+				if (colorAsFloat) {
+					gltfColorAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+				} else {
+					gltfColorAccessor.componentType = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
+				}
 			}
 
 			{

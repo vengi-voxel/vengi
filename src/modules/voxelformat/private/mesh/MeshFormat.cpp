@@ -423,7 +423,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 	const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
 	const bool quads = core::Var::getSafe(cfg::VoxformatQuads)->boolVal();
-	const bool withColor = core::Var::getSafe(cfg::VoxformatWithcolor)->boolVal();
+	const bool withColor = core::Var::getSafe(cfg::VoxformatWithColor)->boolVal();
 	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
 	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
 	const int meshMode = core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
