@@ -16,7 +16,8 @@ General:
 
 VoxEdit:
 
-   - Added pathtracer support (Yocto/GL)
+   - Improved shape handling a lot
+   - Added (disabled) pathtracer support (Yocto/GL)
 
 ## 0.0.25 (2023-07-28)
 
