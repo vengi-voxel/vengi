@@ -32,7 +32,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 			ImGui::CheckboxVar("Apply transformations", cfg::VoxformatTransform);
 			ImGui::CheckboxVar("Exports quads", cfg::VoxformatQuads);
 			ImGui::CheckboxVar("Vertex colors", cfg::VoxformatWithColor);
-			ImGui::BeginDisabled(core::Var::get(cfg::VoxformatWithColor)->boolVal());
+			ImGui::BeginDisabled(!core::Var::get(cfg::VoxformatWithColor)->boolVal());
 			ImGui::CheckboxVar("Vertex colors as float", cfg::VoxformatColorAsFloat);
 			ImGui::EndDisabled();
 			ImGui::CheckboxVar("Texture coordinates", cfg::VoxformatWithtexcoords);
