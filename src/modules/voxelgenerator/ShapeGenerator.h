@@ -211,7 +211,7 @@ void createDome(Volume& volume, const glm::ivec3& centerBottom, math::Axis axis,
 		offset *= -1;
 	}
 	for (int i = 0; i < height; ++i) {
-		const double percent = negative ? glm::abs((double)(height - i) / heightFactor) : glm::abs((double)i / heightFactor);
+		const double percent = glm::abs((double)i / heightFactor);
 		const double yRadius = glm::pow(percent, 2.0);
 		const double circleRadiusSquared = minRadius - yRadius;
 		if (circleRadiusSquared < 0.0) {
