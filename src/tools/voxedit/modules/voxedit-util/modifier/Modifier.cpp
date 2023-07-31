@@ -234,7 +234,7 @@ bool Modifier::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 
 math::Axis Modifier::getShapeDimensionForAxis(math::Axis axis, const glm::ivec3& dimensions, int &width, int &height, int &depth) const {
 	if (axis == math::Axis::None) {
-		axis = math::Axis::Y;
+		axis = math::Axis::Y; // TODO: this produces invalid rendering - maybe it would be better to let this be baased on the face of the trace
 	}
 	switch (axis) {
 	case math::Axis::X:
@@ -269,6 +269,7 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 	glm::ivec3 operateMins = mins;
 	glm::ivec3 operateMaxs = maxs;
 
+	// TODO: this maxs is from aabb - should be -1
 	const voxel::Region region(operateMins, operateMaxs);
 	voxel::logRegion("Shape action execution", region);
 
@@ -278,6 +279,7 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 	int depth = 0;
 	const math::Axis axis = getShapeDimensionForAxis(_aabbSecondActionDirection, dimensions, width, height, depth);
 	const double size = (glm::max)(width, depth);
+	bool negative = false; // TODO:
 
 	const int axisIdx = math::getIndexForAxis(axis);
 	const glm::ivec3& center = region.getCenter();
@@ -301,10 +303,10 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 		break;
 	}
 	case ShapeType::Cone:
-		voxelgenerator::shape::createCone(wrapper, centerBottom, axis, width, height, depth, _cursorVoxel);
+		voxelgenerator::shape::createCone(wrapper, centerBottom, axis, negative, width, height, depth, _cursorVoxel);
 		break;
 	case ShapeType::Dome:
-		voxelgenerator::shape::createDome(wrapper, centerBottom, axis, width, height, depth, _cursorVoxel);
+		voxelgenerator::shape::createDome(wrapper, centerBottom, axis, negative, width, height, depth, _cursorVoxel);
 		break;
 	case ShapeType::Ellipse:
 		voxelgenerator::shape::createEllipse(wrapper, centerBottom, axis, width, height, depth, _cursorVoxel);

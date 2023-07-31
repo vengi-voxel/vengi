@@ -125,7 +125,7 @@ protected:
 		glm::ivec3 centerBottom = _center;
 		const int axisIdx = math::getIndexForAxis(axis);
 		centerBottom[axisIdx] = _region.getLowerCorner()[axisIdx];
-		shape::createCone(wrapper, centerBottom, axis, _width, _height, _depth, _voxel);
+		shape::createCone(wrapper, centerBottom, axis, false, _width, _height, _depth, _voxel);
 		EXPECT_EQ(wrapper.dirtyRegion().getLowerCorner()[axisIdx], centerBottom[axisIdx]);
 	}
 
@@ -134,7 +134,7 @@ protected:
 		glm::ivec3 centerBottom = _center;
 		const int axisIdx = math::getIndexForAxis(axis);
 		centerBottom[axisIdx] = _region.getLowerCorner()[axisIdx];
-		shape::createDome(wrapper, centerBottom, axis, _width, _height, _depth, _voxel);
+		shape::createDome(wrapper, centerBottom, axis, false, _width, _height, _depth, _voxel);
 	}
 public:
 	void SetUp() override {

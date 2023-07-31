@@ -137,13 +137,15 @@ void createEllipse(Volume& volume, const glm::ivec3& centerBottom, const math::A
  * @brief Creates a cone
  * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] centerBottom The position to place the object at
+ * @param[in] axis Defines the direction of the cone
+ * @param[in] negative If true the cone will be placed in the negative direction of the axis
  * @param[in] width The width of the object
  * @param[in] height The height of the object
  * @param[in] depth The height of the object
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume>
-void createCone(Volume& volume, const glm::ivec3& centerBottom, const math::Axis axis, int width, int height, int depth, const voxel::Voxel& voxel) {
+void createCone(Volume& volume, const glm::ivec3& centerBottom, const math::Axis axis, bool negative, int width, int height, int depth, const voxel::Voxel& voxel) {
 	if (axis == math::Axis::None) {
 		return;
 	}
@@ -152,7 +154,7 @@ void createCone(Volume& volume, const glm::ivec3& centerBottom, const math::Axis
 	const double dHeight = (double)height;
 	const int axisIdx = math::getIndexForAxis(axis);
 	for (int i = 0; i < height; ++i) {
-		const double percent = 1.0 - (i / dHeight);
+		const double percent = negative ? 1.0 - ((height - i) / dHeight) : 1.0 - (i / dHeight);
 		const double circleRadius = percent * minRadius;
 		glm::ivec3 offset{0};
 		offset[axisIdx] = i;
@@ -165,20 +167,22 @@ void createCone(Volume& volume, const glm::ivec3& centerBottom, const math::Axis
  * @brief Creates a dome
  * @param[in,out] volume The volume (RawVolume) to place the voxels into
  * @param[in] centerBottom The position to place the object at
+ * @param[in] axis Defines the direction of the dome
+ * @param[in] negative If true the dome will be placed in the negative direction of the axis
  * @param[in] width The width (x-axis) of the object
  * @param[in] height The height (y-axis) of the object
  * @param[in] depth The height (z-axis) of the object
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume>
-void createDome(Volume& volume, const glm::ivec3& centerBottom, math::Axis axis, int width, int height, int depth, const voxel::Voxel& voxel) {
+void createDome(Volume& volume, const glm::ivec3& centerBottom, math::Axis axis, bool negative, int width, int height, int depth, const voxel::Voxel& voxel) {
 	const double minDimension = core_min(width, depth);
 	const double minRadius = glm::pow(minDimension / 2.0, 2.0);
 	const double heightFactor = height / (minDimension / 2.0);
 
 	const int axisIdx = math::getIndexForAxis(axis);
 	for (int i = 0; i < height; ++i) {
-		const double percent = glm::abs((double)i / heightFactor);
+		const double percent = negative ? glm::abs((double)(height - i) / heightFactor) : glm::abs((double)i / heightFactor);
 		const double yRadius = glm::pow(percent, 2.0);
 		const double circleRadiusSquared = minRadius - yRadius;
 		if (circleRadiusSquared < 0.0) {
