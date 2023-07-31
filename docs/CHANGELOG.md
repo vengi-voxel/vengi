@@ -13,6 +13,7 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 General:
 
    - Fixed pivot handling in VXR format
+   - Allow to export the GLTF vertex colors as byte values
 
 VoxEdit:
 
