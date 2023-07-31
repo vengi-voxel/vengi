@@ -24,7 +24,7 @@ inline bool isNegativeFace(FaceNames face) {
 }
 
 inline bool isPositiveFace(FaceNames face) {
-	return !isNegativeFace(face);
+	return face == FaceNames::PositiveX || face == FaceNames::PositiveY || face == FaceNames::PositiveZ;
 }
 
 inline bool isVerticalFace(FaceNames face) {
