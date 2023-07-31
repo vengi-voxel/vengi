@@ -237,7 +237,9 @@ TEST_F(ConvertTest, testVXRToQb) {
 	QBFormat target;
 	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	// qb doesn't store a pivot
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
+	// qb doesn't allow animations
+	// qb stores translation as integer, vxr as float
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette | voxel::ValidateFlags::Animations | voxel::ValidateFlags::Translation);
 	testLoadSaveAndLoadSceneGraph("e2de1723/e2de1723.vxr", src, "convert-e2de1723.qb", target, flags);
 }
 
