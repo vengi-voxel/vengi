@@ -480,6 +480,9 @@ bool Modifier::aabbAction(voxel::RawVolume *volume, const Callback &callback) {
 	if (_locked) {
 		return false;
 	}
+	if (_aabbFace == voxel::FaceNames::Max) {
+		return false;
+	}
 	if (isMode(ModifierType::Select)) {
 		const math::AABB<int> a = aabb();
 		Log::debug("select mode");

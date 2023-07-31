@@ -69,11 +69,11 @@ void ModifierFacade::render(const video::Camera &camera, voxel::Palette &palette
 			}
 
 			if (getMirrorAABB(minsMirror, maxsMirror)) {
-				_mirrorVolume = new voxel::RawVolume(voxel::Region(minsMirror, maxsMirror + 1));
+				_mirrorVolume = new voxel::RawVolume(voxel::Region(minsMirror, maxsMirror));
 				runModifier(_mirrorVolume, modifierType);
 				_modifierRenderer->updateShapeMesh(1, _mirrorVolume, &palette);
 			}
-			_volume = new voxel::RawVolume(voxel::Region(mins, maxs + 1));
+			_volume = new voxel::RawVolume(voxel::Region(mins, maxs));
 			runModifier(_volume, modifierType);
 			_modifierRenderer->updateShapeMesh(0, _volume, &palette);
 		}
