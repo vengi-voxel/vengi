@@ -332,7 +332,17 @@ bool Modifier::needsSecondAction() {
 	if (singleMode() || isMode(ModifierType::Line)) {
 		return false;
 	}
-	return true;
+	const glm::ivec3 delta = aabbDim();
+	int greater = 0;
+	int equal = 0;
+	for (int i = 0; i < 3; ++i) {
+		if (delta[i] > _gridResolution) {
+			++greater;
+		} else if (delta[i] == _gridResolution) {
+			++equal;
+		}
+	}
+	return greater == 2 && equal == 1;
 }
 
 glm::ivec3 Modifier::firstPos() const {
