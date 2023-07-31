@@ -162,7 +162,8 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 	int32_t children;
 	wrap(stream.readInt32(children))
 	if (children != (int32_t)node.children().size()) {
-		Log::error("Child count mismatch between loaded node %i and the vxa (%i)", node.id(), children);
+		Log::error("Child count mismatch between loaded node %i and the vxa (%i/%i) (name: %s, version: %i)", node.id(), children,
+				   (int)node.children().size(), node.name().c_str(), version);
 		return false;
 	}
 	for (const int nodeId : node.children()) {
@@ -236,8 +237,8 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 	int32_t children;
 	wrap(stream.readInt32(children))
 	if (children != (int32_t)node.children().size()) {
-		Log::error("Child count mismatch between loaded node %i and the vxa (%i/%i)", node.id(), children,
-				   (int)node.children().size());
+		Log::error("Child count mismatch between loaded node %i and the vxa (%i/%i) (name: %s, version: %i)", node.id(), children,
+				   (int)node.children().size(), node.name().c_str(), version);
 		return false;
 	}
 	for (int32_t i = 0; i < children; ++i) {

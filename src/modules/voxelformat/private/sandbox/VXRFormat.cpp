@@ -138,7 +138,7 @@ bool VXRFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		wrapBool(stream.writeString("", true))
 
 		wrapBool(saveNodeProperties(nullptr, stream))
-
+		Log::debug("add controller node with %i children", childCount);
 		wrapBool(stream.writeInt32(childCount))
 	}
 	for (int child : children) {
