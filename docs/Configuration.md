@@ -90,6 +90,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | Name                          | Description                                                                              |
 | ----------------------------- | ---------------------------------------------------------------------------------------- |
 | `voxformat_ambientocclusion`  | Don't export extra quads for ambient occlusion voxels                                    |
+| `voxformat_colorasfloat`      | Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)    |
 | `voxformat_mergequads`        | Merge similar quads to optimize the mesh                                                 |
 | `voxformat_reusevertices`     | Reuse vertices or always create new ones                                                 |
 | `voxformat_scale`             | Scale the vertices on all axis by the given factor                                       |

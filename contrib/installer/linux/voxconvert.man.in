@@ -331,6 +331,8 @@ Config vars to control the meshing:
 .PP
 \fBvoxformat_ambientocclusion\fP: Don't export extra quads for ambient occlusion voxels
 .PP
+\fBvoxformat_colorasfloat\fP: Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)
+.PP
 \fBvoxformat_mergequads\fP: Merge similar quads to optimize the mesh
 .PP
 \fBvoxformat_reusevertices\fP: Reuse vertices or always create new ones
