@@ -4,6 +4,7 @@
 
 #include "ModifierFacade.h"
 #include "core/ScopedPtr.h"
+#include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #define GLM_ENABLE_EXPERIMENTAL
@@ -60,13 +61,20 @@ void ModifierFacade::render(const video::Camera &camera, voxel::Palette &palette
 			glm::ivec3 minsMirror = mins;
 			glm::ivec3 maxsMirror = maxs;
 			_modifierRenderer->clearShapeMeshes();
+
+			// even in erase mode we want the preview to create the models, not wipe them
+			ModifierType modifierType = _modifierType;
+			if ((modifierType & ModifierType::Erase) == ModifierType::Erase) {
+				modifierType &= ~ModifierType::Erase;
+			}
+
 			if (getMirrorAABB(minsMirror, maxsMirror)) {
 				_mirrorVolume = new voxel::RawVolume(voxel::Region(minsMirror, maxsMirror + 1));
-				runModifier(_mirrorVolume);
+				runModifier(_mirrorVolume, modifierType);
 				_modifierRenderer->updateShapeMesh(1, _mirrorVolume, &palette);
 			}
 			_volume = new voxel::RawVolume(voxel::Region(mins, maxs + 1));
-			runModifier(_volume);
+			runModifier(_volume, modifierType);
 			_modifierRenderer->updateShapeMesh(0, _volume, &palette);
 		}
 	}
