@@ -279,10 +279,32 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename,
 												voxel::ValidateFlags flags, float maxDelta) {
 	scenegraph::SceneGraph sceneGraph;
 	ASSERT_TRUE(loadGroups(srcFilename, srcFormat, sceneGraph)) << "Failed to load " << srcFilename;
-	io::BufferedReadWriteStream stream((int64_t)(10 * 1024 * 1024));
-	ASSERT_TRUE(destFormat.save(sceneGraph, destFilename, stream, testSaveCtx)) << "Could not save " << destFilename;
-	stream.seek(0);
-	scenegraph::SceneGraph::MergedVolumePalette mergedLoad = load(destFilename, stream, destFormat);
+
+	io::SeekableReadStream *readStream;
+	io::SeekableWriteStream *writeStream;
+
+#if WRITE_TO_FILE
+	io::FilePtr sfile = open(destFilename, io::FileMode::SysWrite);
+	io::FileStream fileWriteStream(sfile);
+	writeStream = &fileWriteStream;
+#else
+	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
+	writeStream = &bufferedStream;
+#endif
+
+	ASSERT_TRUE(destFormat.save(sceneGraph, destFilename, *writeStream, testSaveCtx)) << "Could not save " << destFilename;
+
+#if WRITE_TO_FILE
+	io::FilePtr readfile = open(destFilename);
+	io::FileStream fileReadStream(readfile);
+	readStream = &fileReadStream;
+#else
+	readStream = &bufferedStream;
+#endif
+
+	readStream->seek(0);
+
+	scenegraph::SceneGraph::MergedVolumePalette mergedLoad = load(destFilename, *readStream, destFormat);
 	core::ScopedPtr<voxel::RawVolume> loaded(mergedLoad.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load " << destFilename;
 	scenegraph::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
