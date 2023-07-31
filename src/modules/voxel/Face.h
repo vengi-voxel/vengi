@@ -19,6 +19,14 @@ inline bool isHorizontalFace(FaceNames face) {
 	return face == FaceNames::PositiveX || face == FaceNames::PositiveZ || face == FaceNames::NegativeX || face == FaceNames::NegativeZ;
 }
 
+inline bool isNegativeFace(FaceNames face) {
+	return face == FaceNames::NegativeX || face == FaceNames::NegativeY || face == FaceNames::NegativeZ;
+}
+
+inline bool isPositiveFace(FaceNames face) {
+	return !isNegativeFace(face);
+}
+
 inline bool isVerticalFace(FaceNames face) {
 	 return face == FaceNames::PositiveY || face == FaceNames::NegativeY;
 }
