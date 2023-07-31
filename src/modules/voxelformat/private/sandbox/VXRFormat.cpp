@@ -222,6 +222,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	char nodeId[1024];
 	wrapBool(stream.readString(sizeof(nodeId), nodeId, true))
+	Log::debug("load node %s", nodeId);
 	node.setName(nodeId);
 	node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
 	uint32_t animCnt;
@@ -313,9 +314,11 @@ bool VXRFormat::importChild(const core::String &vxmPath, io::SeekableReadStream 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	char id[1024];
 	wrapBool(stream.readString(sizeof(id), id, true))
+	Log::debug("load node %s", id);
 	char filename[1024];
 	wrapBool(stream.readString(sizeof(filename), filename, true))
 	if (filename[0] != '\0') {
+		Log::debug("load vxm %s", filename);
 		const core::String modelPath = core::string::path(core::string::extractPath(vxmPath), filename);
 		if (!loadChildVXM(modelPath, sceneGraph, node, version, ctx)) {
 			Log::warn("Failed to attach model for id '%s' with filename %s (%s)", id, filename, modelPath.c_str());
@@ -379,6 +382,7 @@ bool VXRFormat::importChild(const core::String &vxmPath, io::SeekableReadStream 
 			stream.readBool(); /* z clock wise allowed */
 		}
 	}
+	Log::debug("Add node %s with parent %i", id, parent);
 	const int nodeId = sceneGraph.emplace(core::move(node), parent);
 	if (version >= 4) {
 		int32_t children = 0;
