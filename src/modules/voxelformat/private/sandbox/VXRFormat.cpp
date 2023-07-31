@@ -494,10 +494,17 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	}
 
 	const core::String &basePath = core::string::extractPath(filename);
+	const core::String &baseName = core::string::extractFilename(filename);
 	core::DynamicArray<io::FilesystemEntry> entities;
 	io::filesystem()->list(basePath, entities, "*.vxa");
 
 	for (const io::FilesystemEntry &entry : entities) {
+		Log::debug("Found vxa: %s for name %s", entry.name.c_str(), baseName.c_str());
+		if (!core::string::startsWith(entry.name, baseName)) {
+			Log::debug("Skip vxa: %s", entry.name.c_str());
+			continue;
+		}
+		Log::debug("Load vxa: %s", entry.name.c_str());
 		const core::String &vxaPath = core::string::path(basePath, entry.name);
 		if (!loadVXA(sceneGraph, vxaPath, ctx)) {
 			Log::warn("Failed to load %s", vxaPath.c_str());
