@@ -48,13 +48,6 @@ protected:
 	glm::ivec3 _aabbFirstPos {0};
 	glm::ivec3 _aabbSecondPos {0};
 
-	/**
-	 * if the current modifier type allows or needs a second action to span the
-	 * volume to operate in, this is the direction into which the second action
-	 * points
-	 */
-	math::Axis _aabbSecondActionDirection = math::Axis::None;
-
 	ModifierType _modifierType = ModifierType::Place;
 
 	int _gridResolution = 1;
@@ -67,6 +60,12 @@ protected:
 
 	/** the face where the trace hit */
 	voxel::FaceNames _face = voxel::FaceNames::Max;
+	/**
+	 * if the current modifier type allows or needs a second action to span the
+	 * volume to operate in, this is the direction into which the second action
+	 * points
+	 */
+	voxel::FaceNames _aabbFace = voxel::FaceNames::Max;
 
 	/** the voxel that should get placed */
 	voxel::Voxel _cursorVoxel;
@@ -81,7 +80,7 @@ protected:
 
 	glm::ivec3 firstPos() const;
 	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
-	math::Axis getShapeDimensionForAxis(math::Axis axis, const glm::ivec3& dimensions, int &width, int &height, int &depth) const;
+	math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3& dimensions, int &width, int &height, int &depth) const;
 	bool executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type, bool markUndo)>& callback, bool markUndo);
 
 	bool lineModifier(voxel::RawVolume *volume, const Callback &callback);
@@ -125,14 +124,9 @@ public:
 	 */
 	bool secondActionMode() const;
 	/**
-	 * @return The axis along which the aabb may still be modified
-	 */
-	math::Axis secondActionDirection() const;
-	/**
 	 * @return @c true if the aabb that was formed has a side that is only 1 voxel
 	 * high. This is our indicator for allowing to modify the aabb according to
 	 * it's detected axis
-	 * @sa secondActionDirection()
 	 */
 	bool needsSecondAction();
 	const Selections& selections() const;
@@ -241,10 +235,6 @@ inline bool Modifier::aabbMode() const {
 
 inline bool Modifier::secondActionMode() const {
 	return _secondPosValid;
-}
-
-inline math::Axis Modifier::secondActionDirection() const {
-	return _aabbSecondActionDirection;
 }
 
 inline bool Modifier::centerMode() const {

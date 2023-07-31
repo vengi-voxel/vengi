@@ -9,6 +9,7 @@
 #include "command/Command.h"
 #include "ui/dearimgui/imgui_internal.h"
 #include "voxedit-util/modifier/Selection.h"
+#include "voxel/Face.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -120,10 +121,10 @@ void Modifier::reset() {
 	_gridResolution = 1;
 	_secondPosValid = false;
 	_aabbMode = false;
+	_aabbFace = voxel::FaceNames::Max;
 	_center = false;
 	_aabbFirstPos = glm::ivec3(0);
 	_aabbSecondPos = glm::ivec3(0);
-	_aabbSecondActionDirection = math::Axis::None;
 	_modifierType = ModifierType::Place;
 	_mirrorAxis = math::Axis::None;
 	_mirrorPos = glm::ivec3(0);
@@ -136,16 +137,19 @@ void Modifier::reset() {
 glm::ivec3 Modifier::aabbPosition() const {
 	glm::ivec3 pos = _cursorPosition;
 	if (_secondPosValid) {
-		switch (_aabbSecondActionDirection) {
-		case math::Axis::X:
+		switch (_aabbFace) {
+		case voxel::FaceNames::PositiveX:
+		case voxel::FaceNames::NegativeX:
 			pos.y = _aabbSecondPos.y;
 			pos.z = _aabbSecondPos.z;
 			break;
-		case math::Axis::Y:
+		case voxel::FaceNames::PositiveY:
+		case voxel::FaceNames::NegativeY:
 			pos.x = _aabbSecondPos.x;
 			pos.z = _aabbSecondPos.z;
 			break;
-		case math::Axis::Z:
+		case voxel::FaceNames::PositiveZ:
+		case voxel::FaceNames::NegativeZ:
 			pos.x = _aabbSecondPos.x;
 			pos.y = _aabbSecondPos.y;
 			break;
@@ -164,8 +168,8 @@ bool Modifier::aabbStart() {
 	// the order here matters - don't change _aabbMode earlier here
 	_aabbFirstPos = aabbPosition();
 	_secondPosValid = false;
-	_aabbSecondActionDirection = math::Axis::None;
 	_aabbMode = !singleMode();
+	_aabbFace = _face;
 	return true;
 }
 
@@ -232,33 +236,34 @@ bool Modifier::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 	return true;
 }
 
-math::Axis Modifier::getShapeDimensionForAxis(math::Axis axis, const glm::ivec3& dimensions, int &width, int &height, int &depth) const {
-	if (axis == math::Axis::None) {
-		axis = math::Axis::Y; // TODO: this produces invalid rendering - maybe it would be better to let this be baased on the face of the trace
-	}
-	switch (axis) {
-	case math::Axis::X:
+math::Axis Modifier::getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3& dimensions, int &width, int &height, int &depth) const {
+	core_assert(face != voxel::FaceNames::Max);
+	switch (face) {
+	case voxel::FaceNames::PositiveX:
+	case voxel::FaceNames::NegativeX:
 		width = dimensions.y;
 		depth = dimensions.z;
 		height = dimensions.x;
-		break;
-	case math::Axis::Y:
+		return math::Axis::X;
+	case voxel::FaceNames::PositiveY:
+	case voxel::FaceNames::NegativeY:
 		width = dimensions.x;
 		depth = dimensions.z;
 		height = dimensions.y;
-		break;
-	case math::Axis::Z:
+		return math::Axis::Y;
+	case voxel::FaceNames::PositiveZ:
+	case voxel::FaceNames::NegativeZ:
 		width = dimensions.x;
 		depth = dimensions.y;
 		height = dimensions.z;
-		break;
+		return math::Axis::Z;
 	default:
-		width = 0;
-		height = 0;
-		depth = 0;
-		return math::Axis::None;
+		break;
 	}
-	return axis;
+	width = 0;
+	height = 0;
+	depth = 0;
+	return math::Axis::None;
 }
 
 void Modifier::setReferencePosition(const glm::ivec3 &pos) {
@@ -277,9 +282,9 @@ bool Modifier::executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ive
 	int width = 0;
 	int height = 0;
 	int depth = 0;
-	const math::Axis axis = getShapeDimensionForAxis(_aabbSecondActionDirection, dimensions, width, height, depth);
+	const math::Axis axis = getShapeDimensionForAxis(_aabbFace, dimensions, width, height, depth);
 	const double size = (glm::max)(width, depth);
-	bool negative = false; // TODO:
+	const bool negative = voxel::isNegativeFace(_aabbFace);
 
 	const int axisIdx = math::getIndexForAxis(axis);
 	const glm::ivec3& center = region.getCenter();
@@ -327,17 +332,7 @@ bool Modifier::needsSecondAction() {
 	if (singleMode() || isMode(ModifierType::Line)) {
 		return false;
 	}
-	const glm::ivec3 delta = aabbDim();
-	if (delta.x > _gridResolution && delta.z > _gridResolution && delta.y == _gridResolution) {
-		_aabbSecondActionDirection = math::Axis::Y;
-	} else if (delta.y > _gridResolution && delta.z > _gridResolution && delta.x == _gridResolution) {
-		_aabbSecondActionDirection = math::Axis::X;
-	} else if (delta.x > _gridResolution && delta.y > _gridResolution && delta.z == _gridResolution) {
-		_aabbSecondActionDirection = math::Axis::Z;
-	} else {
-		_aabbSecondActionDirection = math::Axis::None;
-	}
-	return _aabbSecondActionDirection != math::Axis::None;
+	return true;
 }
 
 glm::ivec3 Modifier::firstPos() const {
@@ -517,7 +512,6 @@ bool Modifier::aabbAction(voxel::RawVolume *volume, const Callback &callback) {
 	runModifier(volume, callback);
 
 	_secondPosValid = false;
-	_aabbSecondActionDirection = math::Axis::None;
 	return true;
 }
 
@@ -542,8 +536,8 @@ bool Modifier::runModifier(voxel::RawVolume *volume, const Callback &callback) {
 
 void Modifier::aabbAbort() {
 	_secondPosValid = false;
-	_aabbSecondActionDirection = math::Axis::None;
 	_aabbMode = false;
+	_aabbFace = voxel::FaceNames::Max;
 }
 
 bool Modifier::modifierTypeRequiresExistingVoxel() const {
