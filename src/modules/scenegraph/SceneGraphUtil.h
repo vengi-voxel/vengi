@@ -27,4 +27,7 @@ int copySceneGraph(SceneGraph &target, const SceneGraph &source);
 
 int createNodeReference(SceneGraph &target, const SceneGraphNode &node);
 
+void splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph,
+				  const glm::ivec3 &maxSize = glm::ivec3(128), bool crop = false);
+
 } // namespace voxel

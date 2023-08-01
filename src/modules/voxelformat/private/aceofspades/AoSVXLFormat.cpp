@@ -10,6 +10,7 @@
 #include "core/collection/DynamicMap.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
@@ -71,7 +72,6 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRead
 
 	Log::debug("Read vxl of size %i:%i:%i", (int)mapSize, (int)mapHeight, (int)mapSize);
 
-	scenegraph::SceneGraph newSceneGraph;
 	const voxel::Region region(0, 0, 0, (int)mapSize - 1, (int)mapHeight - 1, (int)mapSize - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node;
@@ -97,8 +97,8 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRead
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
 	// TODO: workaround for issue #200 (huge memento states)
-	newSceneGraph.emplace(core::move(node));
-	splitVolumes(newSceneGraph, sceneGraph, glm::ivec3(256));
+	sceneGraph.emplace(core::move(node));
+	scenegraph::splitVolumes(sceneGraph, sceneGraph, glm::ivec3(256));
 	return true;
 }
 

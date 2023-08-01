@@ -6,6 +6,8 @@
 #include "core/Log.h"
 #include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxelutil/VolumeCropper.h"
+#include "voxelutil/VolumeSplitter.h"
 
 namespace scenegraph {
 
@@ -158,6 +160,43 @@ int copySceneGraph(SceneGraph &target, const SceneGraph &source) {
 	// TODO: fix references - see copy() above
 
 	return nodesAdded;
+}
+
+// TODO: split is destroying groups
+void splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph,
+				  const glm::ivec3 &maxSize, bool crop) {
+	destSceneGraph.reserve(srcSceneGraph.size());
+	for (auto iter = srcSceneGraph.beginModel(); iter != srcSceneGraph.end(); ++iter) {
+		const scenegraph::SceneGraphNode &node = *iter;
+		const voxel::Region &region = node.region();
+		if (!region.isValid()) {
+			Log::debug("invalid region for node %i", node.id());
+			continue;
+		}
+		if (glm::all(glm::lessThanEqual(region.getDimensionsInVoxels(), maxSize))) {
+			if (&srcSceneGraph != &destSceneGraph) {
+				scenegraph::SceneGraphNode newNode;
+				copyNode(node, newNode, true);
+				destSceneGraph.emplace(core::move(newNode));
+			}
+			Log::debug("No split needed for node '%s'", node.name().c_str());
+			continue;
+		}
+		Log::debug("Split needed for node '%s'", node.name().c_str());
+		core::DynamicArray<voxel::RawVolume *> rawVolumes;
+		voxelutil::splitVolume(node.volume(), maxSize, rawVolumes);
+		for (voxel::RawVolume *v : rawVolumes) {
+			scenegraph::SceneGraphNode newNode;
+			if (crop) {
+				voxel::RawVolume *cv = voxelutil::cropVolume(v);
+				delete v;
+				v = cv;
+			}
+			copyNode(node, newNode, false);
+			newNode.setVolume(v, true);
+			destSceneGraph.emplace(core::move(newNode));
+		}
+	}
 }
 
 } // namespace voxel

@@ -104,12 +104,6 @@ protected:
 	 * @param[out] maxs The extends of the aabb aligned with @c maxSize
 	 */
 	void calcMinsMaxs(const voxel::Region &region, const glm::ivec3 &maxSize, glm::ivec3 &mins, glm::ivec3 &maxs) const;
-	/**
-	 * @brief Split volumes according to their max size into several smaller volumes
-	 * Some formats only support small volumes sizes per object - but multiple objects.
-	 */
-	void splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph,
-					  const glm::ivec3 &maxSize, bool crop = false);
 
 	core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) const;
 	core::RGBA flattenRGB(core::RGBA rgba) const;
