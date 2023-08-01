@@ -19,6 +19,8 @@ VoxEdit:
 
    - Improved shape handling a lot
    - Added (disabled) pathtracer support (Yocto/GL)
+   - Fixed rendering order of overlapping bounding boxes for the active node
+   - Added warning popup to split volumes into smaller pieces
 
 ## 0.0.25 (2023-07-28)
 
