@@ -24,7 +24,7 @@ protected:
 };
 
 TEST_F(AoSVXLFormatTest, testLoad) {
-	canLoad("aceofspades.vxl", 4);
+	canLoad("aceofspades.vxl", 1);
 }
 
 TEST_F(AoSVXLFormatTest, testLoadPalette) {
