@@ -186,7 +186,7 @@ void splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 		core::DynamicArray<voxel::RawVolume *> rawVolumes;
 		voxelutil::splitVolume(node.volume(), maxSize, rawVolumes);
 		for (voxel::RawVolume *v : rawVolumes) {
-			scenegraph::SceneGraphNode newNode;
+			scenegraph::SceneGraphNode newNode(SceneGraphNodeType::Model);
 			if (crop) {
 				voxel::RawVolume *cv = voxelutil::cropVolume(v);
 				delete v;
