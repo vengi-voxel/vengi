@@ -168,7 +168,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		}
 		// TODO: these colors don't work in all the color themes
 		if (node.id() == sceneGraph.activeNode()) {
-			_shapeBuilder.setColor(core::Color::White);
+			continue;
 		} else if (node.isReference()) {
 			_shapeBuilder.setColor(core::Color::Yellow);
 		} else {
@@ -177,8 +177,18 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		const voxel::RawVolume *v = sceneGraph.resolveVolume(node);
 		core_assert(v != nullptr);
 		const voxel::Region &region = v->region();
-		_shapeBuilder.obb(toOBB(sceneMode, region, node.pivot(), node.transformForFrame(frameIdx)));
+		_shapeBuilder.obb(toOBB(sceneMode, region, sceneGraph.resolvePivot(node), node.transformForFrame(frameIdx)));
 	}
+
+	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
+	if (activeNode.isModelNode() && activeNode.visible()) {
+		_shapeBuilder.setColor(core::Color::White);
+		const voxel::RawVolume *v = sceneGraph.resolveVolume(activeNode);
+		core_assert(v != nullptr);
+		const voxel::Region &region = v->region();
+		_shapeBuilder.obb(toOBB(sceneMode, region, sceneGraph.resolvePivot(activeNode), activeNode.transformForFrame(frameIdx)));
+	}
+
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
 
