@@ -290,6 +290,11 @@ public:
 	int mergeNodes(int nodeId1, int nodeId2);
 	int mergeNodes(NodeMergeFlags flags);
 
+	/**
+	 * @brief Split volumes into smaller volumes to get optimized performance
+	 */
+	bool splitVolumes();
+
 	bool copy();
 	bool paste(const glm::ivec3 &pos);
 	bool pasteAsNewNode();

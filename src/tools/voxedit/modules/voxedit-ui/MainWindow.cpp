@@ -12,6 +12,9 @@
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "ui/FileDialog.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
@@ -60,6 +63,7 @@
 #define POPUP_TITLE_UNSAVED_SCENE "Unsaved scene##popuptitle"
 #define POPUP_TITLE_SCENE_SETTINGS "Scene settings##popuptitle"
 #define POPUP_TITLE_MODEL_NODE_SETTINGS "Model settings##popuptitle"
+#define POPUP_TITLE_VOLUME_SPLIT "Volume split##popuptitle"
 
 namespace voxedit {
 
@@ -254,6 +258,25 @@ void MainWindow::onNewScene() {
 void MainWindow::afterLoad(const core::String &file) {
 	_lastOpenedFile->setVal(file);
 	resetCamera();
+	checkPossibleVolumeSplit();
+}
+
+void MainWindow::checkPossibleVolumeSplit() {
+	const int maxDim = 128;
+	const int maxVoxels = maxDim * maxDim * maxDim;
+	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	for (const auto &entry : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->second;
+		if (node.type() != scenegraph::SceneGraphNodeType::Model) {
+			continue;
+		}
+		const voxel::Region &region = node.region();
+		const glm::ivec3 &dim = region.getDimensionsInVoxels();
+		if (dim.x * dim.y * dim.z > maxVoxels) {
+			_popupVolumeSplit = true;
+			return;
+		}
+	}
 }
 
 bool MainWindow::createNew(bool force) {
@@ -519,6 +542,23 @@ void MainWindow::popupSceneSettings() {
 	}
 }
 
+void MainWindow::popupVolumeSplit() {
+	if (ImGui::BeginPopupModal(POPUP_TITLE_VOLUME_SPLIT, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		dialog(ICON_FA_QUESTION, "Some model volumes are too big for optimal performance.\nIt's encouraged to split "
+								 "them into smaller volumes.\nDo you wish to split them now?");
+		if (ImGui::Button(ICON_FA_CHECK " Yes##volumesplit")) {
+			ImGui::CloseCurrentPopup();
+			sceneMgr().splitVolumes();
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_XMARK " No##volumesplit")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+}
+
 void MainWindow::popupModelNodeSettings() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_MODEL_NODE_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Name");
@@ -574,6 +614,10 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_FAILED_TO_SAVE);
 		_popupFailedToSave = false;
 	}
+	if (_popupVolumeSplit) {
+		ImGui::OpenPopup(POPUP_TITLE_VOLUME_SPLIT);
+		_popupVolumeSplit = false;
+	}
 	if (_menuBar._popupSceneSettings) {
 		ImGui::OpenPopup(POPUP_TITLE_SCENE_SETTINGS);
 		_menuBar._popupSceneSettings = false;
@@ -593,6 +637,7 @@ void MainWindow::registerPopups() {
 	popupUnsavedChanges();
 	popupFailedSave();
 	popupNewScene();
+	popupVolumeSplit();
 }
 
 QuitDisallowReason MainWindow::allowToQuit() {

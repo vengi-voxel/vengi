@@ -163,28 +163,28 @@ int copySceneGraph(SceneGraph &target, const SceneGraph &source) {
 }
 
 // TODO: split is destroying groups
-void splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph,
-				  const glm::ivec3 &maxSize, bool crop) {
+bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph, bool crop,
+				  bool createEmpty, const glm::ivec3 &maxSize) {
+	core_assert(&srcSceneGraph != &destSceneGraph);
 	destSceneGraph.reserve(srcSceneGraph.size());
 	for (auto iter = srcSceneGraph.beginModel(); iter != srcSceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::Region &region = node.region();
 		if (!region.isValid()) {
-			Log::debug("invalid region for node %i", node.id());
+			Log::warn("invalid region for node %i", node.id());
 			continue;
 		}
 		if (glm::all(glm::lessThanEqual(region.getDimensionsInVoxels(), maxSize))) {
-			if (&srcSceneGraph != &destSceneGraph) {
-				scenegraph::SceneGraphNode newNode;
-				copyNode(node, newNode, true);
-				destSceneGraph.emplace(core::move(newNode));
-			}
+			scenegraph::SceneGraphNode newNode;
+			copyNode(node, newNode, true);
+			destSceneGraph.emplace(core::move(newNode));
 			Log::debug("No split needed for node '%s'", node.name().c_str());
 			continue;
 		}
 		Log::debug("Split needed for node '%s'", node.name().c_str());
 		core::DynamicArray<voxel::RawVolume *> rawVolumes;
-		voxelutil::splitVolume(node.volume(), maxSize, rawVolumes);
+		voxelutil::splitVolume(node.volume(), maxSize, rawVolumes, createEmpty);
+		Log::debug("Created %i volumes", (int)rawVolumes.size());
 		for (voxel::RawVolume *v : rawVolumes) {
 			scenegraph::SceneGraphNode newNode(SceneGraphNodeType::Model);
 			if (crop) {
@@ -197,6 +197,7 @@ void splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 			destSceneGraph.emplace(core::move(newNode));
 		}
 	}
+	return !destSceneGraph.empty();
 }
 
 } // namespace voxel

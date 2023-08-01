@@ -149,7 +149,7 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 
 	if (needsSplit) {
 		scenegraph::SceneGraph newSceneGraph;
-		scenegraph::splitVolumes(sceneGraph, newSceneGraph, maxsize);
+		scenegraph::splitVolumes(sceneGraph, newSceneGraph, false, false, maxsize);
 		return saveGroups(newSceneGraph, filename, stream, ctx);
 	}
 	return saveGroups(sceneGraph, filename, stream, ctx);

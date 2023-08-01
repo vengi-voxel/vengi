@@ -57,6 +57,7 @@ private:
 	bool _popupUnsaved = false;
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;
+	bool _popupVolumeSplit = false;
 	bool _forceQuit = false;
 	bool _popupUnsavedChangesQuit = false;
 	bool _lastSceneMode = false;
@@ -110,7 +111,7 @@ private:
 	void dialog(const char *icon, const char *text);
 
 	void afterLoad(const core::String &file);
-
+	void checkPossibleVolumeSplit();
 	void newSceneTemplates();
 	void popupNewScene();
 	void popupFailedSave();
@@ -118,6 +119,7 @@ private:
 	void popupUnsavedDiscard();
 	void popupSceneSettings();
 	void popupModelNodeSettings();
+	void popupVolumeSplit();
 	void registerPopups();
 	void addTemplate(const TemplateModel &model);
 public:

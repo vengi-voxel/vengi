@@ -1230,6 +1230,16 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph) {
 	return true;
 }
 
+bool SceneManager::splitVolumes() {
+	scenegraph::SceneGraph newSceneGraph;
+	if (scenegraph::splitVolumes(_sceneGraph, newSceneGraph, false, false)) {
+		return loadSceneGraph(core::move(newSceneGraph));
+	} else if (scenegraph::splitVolumes(_sceneGraph, newSceneGraph, false, true)) {
+		return loadSceneGraph(core::move(newSceneGraph));
+	}
+	return false;
+}
+
 void SceneManager::updateGridRenderer(const voxel::Region& region) {
 	_sceneRenderer->updateGridRegion(region);
 }

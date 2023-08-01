@@ -96,9 +96,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRead
 
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
-	// TODO: workaround for issue #200 (huge memento states)
 	sceneGraph.emplace(core::move(node));
-	scenegraph::splitVolumes(sceneGraph, sceneGraph, glm::ivec3(256));
 	return true;
 }
 

@@ -11,7 +11,7 @@
 namespace voxelutil {
 
 void splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize,
-				 core::DynamicArray<voxel::RawVolume *> &rawVolumes) {
+				 core::DynamicArray<voxel::RawVolume *> &rawVolumes, bool createEmpty) {
 	const voxel::Region &region = volume->region();
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
@@ -25,12 +25,12 @@ void splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize,
 				const glm::ivec3 innerMaxs = glm::min(maxs, innerMins + maxSize - 1);
 				const voxel::Region innerRegion(innerMins, innerMaxs);
 				voxel::RawVolume *copy = new voxel::RawVolume(innerRegion);
-				if (!voxelutil::copy(*volume, innerRegion, *copy, innerRegion)) {
+				if (voxelutil::copy(*volume, innerRegion, *copy, innerRegion)) {
+					Log::debug("- split %s", innerRegion.toString().c_str());
+				} else if (!createEmpty) {
 					Log::debug("- skip empty %s", innerRegion.toString().c_str());
 					delete copy;
 					continue;
-				} else {
-					Log::debug("- split %s", innerRegion.toString().c_str());
 				}
 				rawVolumes.push_back(copy);
 			}
