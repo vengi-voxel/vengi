@@ -14,6 +14,7 @@ General:
 
    - Fixed pivot handling in VXR format
    - Allow to export the GLTF vertex colors as byte values
+   - Added NeuQuant color quantization algorithm
 
 VoxEdit:
 
