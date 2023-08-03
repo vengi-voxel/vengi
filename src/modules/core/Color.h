@@ -91,6 +91,7 @@ public:
 		Wu,
 		MedianCut,
 		KMeans,
+		NeuQuant,
 
 		Max
 	};
