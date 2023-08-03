@@ -43,22 +43,20 @@ void SparseVolume::copyFrom(const voxel::RawVolume &source) {
 	voxelutil::visitVolume(source, visitor);
 }
 
-SparseVolume::Sampler::Sampler(const SparseVolume* volume) :
-		_volume(const_cast<SparseVolume*>(volume)) {
+SparseVolume::Sampler::Sampler(const SparseVolume *volume) : _volume(const_cast<SparseVolume *>(volume)) {
 }
 
-SparseVolume::Sampler::Sampler(const SparseVolume& volume) :
-		_volume(const_cast<SparseVolume*>(&volume)) {
+SparseVolume::Sampler::Sampler(const SparseVolume &volume) : _volume(const_cast<SparseVolume *>(&volume)) {
 }
 
 SparseVolume::Sampler::~Sampler() {
 }
 
-bool SparseVolume::Sampler::setVoxel(const Voxel& voxel) {
+bool SparseVolume::Sampler::setVoxel(const Voxel &voxel) {
 	if (_currentPositionInvalid) {
 		return false;
 	}
-	_currentVoxel = voxel;
+	_volume->setVoxel(_posInVolume, voxel);
 	return true;
 }
 
@@ -67,16 +65,18 @@ bool SparseVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos
 	_posInVolume.y = yPos;
 	_posInVolume.z = zPos;
 
-	const voxel::Region& region = this->region();
+	const voxel::Region &region = this->region();
 	_currentPositionInvalid = 0u;
-	if (!region.containsPointInX(xPos)) {
-		_currentPositionInvalid |= SAMPLER_INVALIDX;
-	}
-	if (!region.containsPointInY(yPos)) {
-		_currentPositionInvalid |= SAMPLER_INVALIDY;
-	}
-	if (!region.containsPointInZ(zPos)) {
-		_currentPositionInvalid |= SAMPLER_INVALIDZ;
+	if (region.isValid()) {
+		if (!region.containsPointInX(xPos)) {
+			_currentPositionInvalid |= SAMPLER_INVALIDX;
+		}
+		if (!region.containsPointInY(yPos)) {
+			_currentPositionInvalid |= SAMPLER_INVALIDY;
+		}
+		if (!region.containsPointInZ(zPos)) {
+			_currentPositionInvalid |= SAMPLER_INVALIDZ;
+		}
 	}
 
 	// Then we update the voxel pointer
@@ -108,10 +108,12 @@ void SparseVolume::Sampler::movePositiveX(uint32_t offset) {
 
 	_posInVolume.x += (int)offset;
 
-	if (!region().containsPointInX(_posInVolume.x)) {
-		_currentPositionInvalid |= SAMPLER_INVALIDX;
-	} else {
-		_currentPositionInvalid &= ~SAMPLER_INVALIDX;
+	if (region().isValid()) {
+		if (!region().containsPointInX(_posInVolume.x)) {
+			_currentPositionInvalid |= SAMPLER_INVALIDX;
+		} else {
+			_currentPositionInvalid &= ~SAMPLER_INVALIDX;
+		}
 	}
 
 	// Then we update the voxel pointer
@@ -127,10 +129,12 @@ void SparseVolume::Sampler::movePositiveY(uint32_t offset) {
 
 	_posInVolume.y += (int)offset;
 
-	if (!region().containsPointInY(_posInVolume.y)) {
-		_currentPositionInvalid |= SAMPLER_INVALIDY;
-	} else {
-		_currentPositionInvalid &= ~SAMPLER_INVALIDY;
+	if (region().isValid()) {
+		if (!region().containsPointInY(_posInVolume.y)) {
+			_currentPositionInvalid |= SAMPLER_INVALIDY;
+		} else {
+			_currentPositionInvalid &= ~SAMPLER_INVALIDY;
+		}
 	}
 
 	// Then we update the voxel pointer
@@ -146,10 +150,12 @@ void SparseVolume::Sampler::movePositiveZ(uint32_t offset) {
 
 	_posInVolume.z += (int)offset;
 
-	if (!region().containsPointInZ(_posInVolume.z)) {
-		_currentPositionInvalid |= SAMPLER_INVALIDZ;
-	} else {
-		_currentPositionInvalid &= ~SAMPLER_INVALIDZ;
+	if (region().isValid()) {
+		if (!region().containsPointInZ(_posInVolume.z)) {
+			_currentPositionInvalid |= SAMPLER_INVALIDZ;
+		} else {
+			_currentPositionInvalid &= ~SAMPLER_INVALIDZ;
+		}
 	}
 
 	// Then we update the voxel pointer
@@ -181,10 +187,12 @@ void SparseVolume::Sampler::moveNegativeX(uint32_t offset) {
 
 	_posInVolume.x -= (int)offset;
 
-	if (!region().containsPointInX(_posInVolume.x)) {
-		_currentPositionInvalid |= SAMPLER_INVALIDX;
-	} else {
-		_currentPositionInvalid &= ~SAMPLER_INVALIDX;
+	if (region().isValid()) {
+		if (!region().containsPointInX(_posInVolume.x)) {
+			_currentPositionInvalid |= SAMPLER_INVALIDX;
+		} else {
+			_currentPositionInvalid &= ~SAMPLER_INVALIDX;
+		}
 	}
 
 	// Then we update the voxel pointer
@@ -200,10 +208,12 @@ void SparseVolume::Sampler::moveNegativeY(uint32_t offset) {
 
 	_posInVolume.y -= (int)offset;
 
-	if (!region().containsPointInY(_posInVolume.y)) {
-		_currentPositionInvalid |= SAMPLER_INVALIDY;
-	} else {
-		_currentPositionInvalid &= ~SAMPLER_INVALIDY;
+	if (region().isValid()) {
+		if (!region().containsPointInY(_posInVolume.y)) {
+			_currentPositionInvalid |= SAMPLER_INVALIDY;
+		} else {
+			_currentPositionInvalid &= ~SAMPLER_INVALIDY;
+		}
 	}
 
 	// Then we update the voxel pointer
@@ -219,10 +229,12 @@ void SparseVolume::Sampler::moveNegativeZ(uint32_t offset) {
 
 	_posInVolume.z -= (int)offset;
 
-	if (!region().containsPointInZ(_posInVolume.z)) {
-		_currentPositionInvalid |= SAMPLER_INVALIDZ;
-	} else {
-		_currentPositionInvalid &= ~SAMPLER_INVALIDZ;
+	if (region().isValid()) {
+		if (!region().containsPointInZ(_posInVolume.z)) {
+			_currentPositionInvalid |= SAMPLER_INVALIDZ;
+		} else {
+			_currentPositionInvalid &= ~SAMPLER_INVALIDZ;
+		}
 	}
 
 	// Then we update the voxel pointer
