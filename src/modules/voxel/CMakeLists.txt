@@ -14,6 +14,7 @@ set(SRCS
 	RawVolumeWrapper.h
 	RawVolumeMoveWrapper.h
 	Region.h Region.cpp
+	SparseVolume.h SparseVolume.cpp
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
 )
@@ -39,6 +40,7 @@ set(TEST_SRCS
 	tests/PaletteTest.cpp
 	tests/RawVolumeTest.cpp
 	tests/RegionTest.cpp
+	tests/SparseVolumeTest.cpp
 	tests/RawVolumeWrapperTest.cpp
 )
 
