@@ -10,10 +10,6 @@
 
 namespace voxel {
 
-static const uint8_t SAMPLER_INVALIDX = 1 << 0;
-static const uint8_t SAMPLER_INVALIDY = 1 << 1;
-static const uint8_t SAMPLER_INVALIDZ = 1 << 2;
-
 size_t RawVolume::size(const Region &region) {
 	const size_t w = region.getWidthInVoxels();
 	const size_t h = region.getHeightInVoxels();
