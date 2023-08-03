@@ -217,10 +217,10 @@ public:
 			} else {
 				prev->next = entry;
 			}
+			++_size;
 		} else {
 			entry->value = core::forward<VALUETYPE>(value);
 		}
-		++_size;
 	}
 
 	void put(const KEYTYPE& key, const VALUETYPE& value) {
@@ -240,10 +240,10 @@ public:
 			} else {
 				prev->next = entry;
 			}
+			++_size;
 		} else {
 			entry->value = value;
 		}
-		++_size;
 	}
 
 	iterator begin() const {
