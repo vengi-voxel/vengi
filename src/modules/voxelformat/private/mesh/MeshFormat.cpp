@@ -442,8 +442,8 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
 			voxel::SurfaceExtractionContext ctx =
 				marchingCubes ? voxel::buildMarchingCubesContext(volume, region, *mesh, node.palette())
-							  : voxel::buildCubicContext(volume, region, *mesh, glm::ivec3(0),
-														 mergeQuads, reuseVertices, ambientOcclusion);
+							  : voxel::buildCubicContext(volume, region, *mesh, glm::ivec3(0), mergeQuads,
+														 reuseVertices, ambientOcclusion);
 			voxel::extractSurface(ctx);
 			core::ScopedLock scoped(lock);
 			meshes.emplace_back(mesh, node, applyTransform);
