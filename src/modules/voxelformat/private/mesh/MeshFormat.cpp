@@ -24,9 +24,11 @@
 #include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
+#include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxel/Voxel.h"
 #include "voxelutil/VoxelUtil.h"
 #include <SDL_timer.h>
 #include <glm/ext/scalar_constants.hpp>
@@ -215,6 +217,9 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 	node.setVolume(new voxel::RawVolume(region), true);
 	node.setName(name);
 
+	// TODO: make this configurable
+	int voxelizeMode = 0;
+
 	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
 	if (axisAligned) {
 		const int maxVoxels = vdim.x * vdim.y * vdim.z;
@@ -222,6 +227,87 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		PosMap posMap(maxVoxels);
 		transformTrisAxisAligned(tris, posMap);
 		voxelizeTris(node, posMap, fillHollow);
+	} else if (voxelizeMode == 1) {
+		voxel::RawVolumeWrapper wrapper(node.volume());
+		voxel::Palette palette;
+		const glm::vec3 voxelHalf(0.5f);
+
+		const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
+		if (createPalette) {
+			RGBAMap colors;
+			Log::debug("create palette");
+			for (const Tri &tri : tris) {
+				const glm::vec3 &v0 = tri.vertices[0];
+				const glm::vec3 &v1 = tri.vertices[1];
+				const glm::vec3 &v2 = tri.vertices[2];
+				const glm::vec3 mins = tri.mins();
+				const glm::vec3 maxs = tri.maxs();
+				for (float x = mins.x; x <= maxs.x; ++x) {
+					for (float y = mins.y; y <= maxs.y; ++y) {
+						for (float z = mins.z; z <= maxs.z; ++z) {
+							const glm::vec3 center((float)x + voxelHalf.x, (float)y + voxelHalf.y, (float)z + voxelHalf.z);
+							if (glm::intersectTriangleAABB(center, voxelHalf, v0, v1, v2)) {
+								glm::vec2 uv;
+								if (!tri.calcUVs(glm::vec3(x, y, z), uv)) {
+									continue;
+								}
+								const core::RGBA rgba = flattenRGB(tri.colorAt(uv));
+								colors.put(rgba, true);
+							}
+						}
+					}
+				}
+			}
+
+			const size_t colorCount = colors.size();
+			core::Buffer<core::RGBA> colorBuffer;
+			colorBuffer.reserve(colorCount);
+			for (const auto &e : colors) {
+				colorBuffer.push_back(e->first);
+			}
+			palette.quantize(colorBuffer.data(), colorBuffer.size());
+		} else {
+			palette = voxel::getPalette();
+		}
+
+		voxel::PaletteLookup palLookup(palette);
+		for (const Tri &tri : tris) {
+			const glm::vec3 &v0 = tri.vertices[0];
+			const glm::vec3 &v1 = tri.vertices[1];
+			const glm::vec3 &v2 = tri.vertices[2];
+			const glm::vec3 mins = tri.mins();
+			const glm::vec3 maxs = tri.maxs();
+			const glm::ivec3 imins(glm::floor(mins));
+			const glm::ivec3 imaxs(glm::ceil(maxs));
+			for (int x = imins.x; x < imaxs.x; ++x) {
+				for (int y = imins.y; y < imaxs.y; ++y) {
+					for (int z = imins.z; z < imaxs.z; ++z) {
+						const glm::vec3 center((float)x + voxelHalf.x, (float)y + voxelHalf.y, (float)z + voxelHalf.z);
+						if (glm::intersectTriangleAABB(center, voxelHalf, v0, v1, v2)) {
+							glm::vec2 uv;
+							if (!tri.calcUVs(center, uv)) {
+								continue;
+							}
+							const core::RGBA color = tri.colorAt(uv);
+							const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color));
+							wrapper.setVoxel(x, y, z, voxel);
+						}
+					}
+				}
+			}
+		}
+
+		if (palette.colorCount() == 1) {
+			if (palette.colors()[0].a == 0) {
+				palette.color(0).a = 255;
+			}
+		}
+		node.setPalette(palette);
+		if (fillHollow && !stopExecution()) {
+			Log::debug("fill hollows");
+			const voxel::Voxel voxel = voxel::createVoxel(palette, FillColorIndex);
+			voxelutil::fillHollow(wrapper, voxel);
+		}
 	} else {
 		Log::debug("Subdivide triangles");
 		core::DynamicArray<std::future<TriCollection>> futures;
