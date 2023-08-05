@@ -103,6 +103,7 @@ inline ImagePtr createEmptyImage(const core::String& name) {
 uint8_t* createPng(const void *pixels, int width, int height, int depth, int *pngSize);
 ImagePtr loadImage(const io::FilePtr& file);
 ImagePtr loadImage(const core::String &name, io::SeekableReadStream &stream, int length = -1);
+ImagePtr palettize(const image::Image* image, const core::RGBA *colors, int ncolors);
 
 /**
  * @brief If there is no extension given, all supported extensions are tried
