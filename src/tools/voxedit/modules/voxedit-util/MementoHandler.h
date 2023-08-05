@@ -64,7 +64,7 @@ private:
 	MementoData(const uint8_t* buf, size_t bufSize, const voxel::Region& _region);
 	MementoData(uint8_t* buf, size_t bufSize, const voxel::Region& _region);
 public:
-	constexpr MementoData() {}
+	MementoData() {}
 	MementoData(MementoData&& o) noexcept;
 	MementoData(const MementoData& o);
 	~MementoData();
