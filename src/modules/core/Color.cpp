@@ -709,8 +709,8 @@ float Color::getDistance(const glm::vec4 &color, float hue, float saturation, fl
 	const float dH = chue - hue;
 	const float dS = csaturation - saturation;
 	const float dV = cbrightness - brightness;
-	const float val = weightHue * (float)glm::pow(dH, 2) + weightValue * (float)glm::pow(dV, 2) +
-					  weightSaturation * (float)glm::pow(dS, 2);
+	const float val = weightHue * (float)SDL_powf(dH, 2.0f) + weightValue * (float)SDL_powf(dV, 2.0f) +
+					  weightSaturation * (float)SDL_powf(dS, 2.0f);
 	return val;
 }
 
