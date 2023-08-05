@@ -392,7 +392,7 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, voxel::
 	wrap(stream.readInt32(tmp));
 
 	if (state._compressed == Compression::None) {
-		core::DynamicMap<core::RGBA, bool, 11, core::RGBAHasher> colors;
+		core::DynamicMap<core::RGBA, bool, 1031, core::RGBAHasher> colors;
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {

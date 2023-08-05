@@ -127,7 +127,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadS
 		return 0;
 	}
 
-	core::DynamicMap<core::RGBA, bool, 11, core::RGBAHasher> colors;
+	core::DynamicMap<core::RGBA, bool, 1031, core::RGBAHasher> colors;
 	for (int x = 0; x < (int)mapSize; x++) {
 		for (int y = 0; y < (int)mapSize; y++) {
 			for (int z = 0; z < (int)mapHeight; z++) {
