@@ -38,7 +38,7 @@ namespace voxel {
  */
 class Region {
 public:
-	constexpr Region();
+	Region();
 	Region(const glm::ivec3& mins, const glm::ivec3& maxs);
 	Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz);
 	Region(int mins, int maxs);
@@ -390,7 +390,7 @@ inline Region::Region(int mins, int maxs) :
 /**
  * Constructs a Region and clears all extents to zero.
  */
-inline constexpr Region::Region() :
+inline Region::Region() :
 		_mins(0), _maxs(0), _width(0), _voxels(1), _center(0), _stride(0) {
 }
 
