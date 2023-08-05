@@ -26,6 +26,13 @@ struct Tri {
 	constexpr glm::vec3 center() const {
 		return (vertices[0] + vertices[1] + vertices[2]) / 3.0f;
 	}
+
+	glm::vec3 calculateBarycentric(const glm::vec3 &pos) const;
+
+	/**
+	 * @return @c false if the given position is not within the triangle area. The value of uv should not be used in this case.
+	 */
+	[[nodiscard]] bool calcUVs(const glm::vec3 &pos, glm::vec2& uv) const;
 	/**
 	 * @return @c true if the triangle is lying flat on one axis
 	 */
