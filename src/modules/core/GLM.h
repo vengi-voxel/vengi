@@ -50,6 +50,9 @@ bool intersectLines(const glm::vec3& p1,
 		glm::vec3& pa, glm::vec3& pb, float *pmua = nullptr,
 		float *pmub = nullptr);
 
+bool intersectTriangleAABB(const glm::vec3 &center, const glm::vec3 &halfSize, glm::vec3 v0, glm::vec3 v1,
+						   glm::vec3 v2);
+
 vec3 transform(const mat4& mat, const vec3& v);
 
 vec3 rotate(const mat4& mat, const vec3& v);
