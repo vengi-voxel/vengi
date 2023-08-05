@@ -577,17 +577,6 @@ static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 	return (int)n;
 }
 
-void Color::quantize(RGBA *buf, size_t bufSize, int bitsPerChannel) {
-	const int numColors = (int)glm::pow(2.0, (double)bitsPerChannel);
-	const float step = 1.0f / (float)(numColors - 1);
-
-	for (size_t i = 0; i < bufSize; ++i) {
-		buf[i].r = (uint8_t)(glm::round((float)buf[i].r / step) * step);
-		buf[i].g = (uint8_t)(glm::round((float)buf[i].g / step) * step);
-		buf[i].b = (uint8_t)(glm::round((float)buf[i].b / step) * step);
-	}
-}
-
 int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors, ColorReductionType type) {
 	if (inputBufColors <= maxTargetBufColors) {
 		size_t n;
