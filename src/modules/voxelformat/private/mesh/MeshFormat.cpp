@@ -3,6 +3,7 @@
  */
 
 #include "MeshFormat.h"
+#include "Tri.h"
 #include "app/App.h"
 #include "core/Algorithm.h"
 #include "core/Color.h"
@@ -21,12 +22,11 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/ChunkMesh.h"
-#include "voxel/SurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
-#include "Tri.h"
+#include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VoxelUtil.h"
 #include <SDL_timer.h>
 #include <glm/ext/scalar_constants.hpp>
