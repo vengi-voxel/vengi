@@ -170,7 +170,7 @@ bool SMFormat::readSmd3(io::SeekableReadStream &stream, scenegraph::SceneGraph &
 	return true;
 }
 
-static constexpr glm::ivec3 posByIndex(uint32_t blockIndex) {
+static glm::ivec3 posByIndex(uint32_t blockIndex) {
 	const int z = (int)blockIndex / priv::planeBlocks;
 	const int divR = (int)blockIndex % priv::planeBlocks;
 	const int y = divR / priv::blocks;

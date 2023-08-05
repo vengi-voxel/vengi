@@ -121,7 +121,7 @@ public:
 
 			const auto& _aabb = aabb();
 			const glm::tvec3<TYPE>& _aabbSize = _aabb.getWidth();
-			const constexpr glm::tvec3<TYPE> one((TYPE)1);
+			const glm::tvec3<TYPE> one((TYPE)1);
 			if (_aabbSize.x <= one.x && _aabbSize.y <= one.y && _aabbSize.z <= one.z) {
 				return;
 			}

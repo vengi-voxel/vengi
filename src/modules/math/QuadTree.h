@@ -88,7 +88,7 @@ private:
 
 			const auto& rect = getRect();
 			const glm::tvec2<TYPE>& rectSize = rect.size();
-			const constexpr glm::tvec2<TYPE> one((TYPE)1);
+			const glm::tvec2<TYPE> one((TYPE)1);
 			if (rectSize.x <= one.x && rectSize.y <= one.y) {
 				return;
 			}

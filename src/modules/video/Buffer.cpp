@@ -230,7 +230,7 @@ int32_t Buffer::createSkyboxQuad() {
 	 *  -----------------
 	 *  -1/-1/1          1/-1/1
 	 */
-	alignas(16) static constexpr glm::vec3 vecs[] = {
+	alignas(16) static const glm::vec3 vecs[] = {
 		// side: right
 		{ 1.0f, -1.0f, -1.0f}, // tri(1): right, bottom, front
 		{ 1.0f, -1.0f,  1.0f}, // tri(1): right, bottom, back

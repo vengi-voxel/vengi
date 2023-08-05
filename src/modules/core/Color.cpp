@@ -230,7 +230,7 @@ static int quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 		octree.insert(inputBuf[i]);
 	}
 	size_t n = 0;
-	constexpr glm::ivec3 dim(8);
+	const glm::ivec3 dim(8);
 	const int rmax = aabb.getWidthX() + 1 - dim.r;
 	const int gmax = aabb.getWidthY() + 1 - dim.g;
 	const int bmax = aabb.getWidthZ() + 1 - dim.b;
