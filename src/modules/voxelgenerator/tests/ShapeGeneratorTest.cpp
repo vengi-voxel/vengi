@@ -31,7 +31,7 @@ private:
 	using Super = app::AbstractTest;
 protected:
 	static const voxel::Region _region;
-	static constexpr glm::ivec3 _center { 15 };
+	const glm::ivec3 _center { 15 };
 	static constexpr int _width { 32 };
 	static constexpr int _height { 32 };
 	static constexpr int _depth { 32 };

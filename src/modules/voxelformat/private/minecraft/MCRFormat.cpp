@@ -207,8 +207,8 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 	Log::debug("Parse block states");
 	const bool hasData = data.type() == priv::TagType::LONG_ARRAY && !data.longArray()->empty();
 
-	constexpr glm::ivec3 mins(0, 0, 0);
-	constexpr glm::ivec3 maxs(MAX_SIZE - 1, MAX_SIZE - 1, MAX_SIZE - 1);
+	const glm::ivec3 mins(0, 0, 0);
+	const glm::ivec3 maxs(MAX_SIZE - 1, MAX_SIZE - 1, MAX_SIZE - 1);
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	voxel::RawVolumeWrapper wrapper(v);

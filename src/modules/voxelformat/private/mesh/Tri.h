@@ -19,11 +19,11 @@ struct Tri {
 	image::TextureWrap wrapS = image::TextureWrap::Repeat;
 	image::TextureWrap wrapT = image::TextureWrap::Repeat;
 
-	constexpr glm::vec2 centerUV() const {
+	glm::vec2 centerUV() const {
 		return (uv[0] + uv[1] + uv[2]) / 3.0f;
 	}
 
-	constexpr glm::vec3 center() const {
+	glm::vec3 center() const {
 		return (vertices[0] + vertices[1] + vertices[2]) / 3.0f;
 	}
 
