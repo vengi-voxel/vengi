@@ -282,7 +282,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 	voxel::Palette palette;
 	const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 	if (createPalette) {
-		core::DynamicMap<core::RGBA, bool, 11, core::RGBAHasher> colors;
+		core::DynamicMap<core::RGBA, bool, 1031, core::RGBAHasher> colors;
 		Log::debug("create palette");
 		for (const auto &entry : posMap) {
 			if (stopExecution()) {
