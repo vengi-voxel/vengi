@@ -35,7 +35,7 @@ private:
 
 	// q1
 	struct BspTextureBase {
-		glm::vec4 st[2]{};		   // st - xyz+offset
+		glm::highp_vec4 st[2]{};   // st - xyz+offset
 		uint32_t surfaceFlags = 0; // miptex index in q1
 		uint32_t value = 0;
 	};
@@ -46,16 +46,16 @@ private:
 	static_assert(sizeof(BspTexture) == 72, "Unexpected size of BspTexture");
 
 	struct BspModel {
-		glm::vec3 mins{0.0f};
-		glm::vec3 maxs{0.0f};
-		glm::vec3 position{0.0f};
+		glm::highp_vec3 mins{0.0f};
+		glm::highp_vec3 maxs{0.0f};
+		glm::highp_vec3 position{0.0f};
 		int32_t node = 0;
 		int32_t faceId = 0;
 		int32_t faceCount = 0;
 	};
 	static_assert(sizeof(BspModel) == 48, "Unexpected size of BspModel");
 
-	using BspVertex = glm::vec3;
+	using BspVertex = glm::highp_vec3;
 	static_assert(sizeof(BspVertex) == 12, "Unexpected size of BspVertex");
 
 	struct BspFace {
