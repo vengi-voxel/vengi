@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "core/collection/DynamicMap.h"
 #include "image/Image.h"
 #include "io/Stream.h"
 #include "voxel/RawVolume.h"
@@ -25,6 +26,8 @@ class SceneGraphNode;
 } // namespace scenegraph
 
 namespace voxelformat {
+
+using RGBAMap = core::DynamicMap<core::RGBA, bool, 1031, core::RGBAHasher>;
 
 typedef void (*ProgressMonitor)(const char *name, int cur, int max);
 
