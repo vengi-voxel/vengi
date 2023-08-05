@@ -49,8 +49,7 @@
 
 namespace image {
 
-Image::Image(const core::String& name) :
-		io::IOResource(), _name(name) {
+Image::Image(const core::String &name) : io::IOResource(), _name(name) {
 }
 
 Image::~Image() {
@@ -59,15 +58,15 @@ Image::~Image() {
 	}
 }
 
-bool Image::load(const io::FilePtr& file) {
-	uint8_t* buffer;
-	const int length = file->read((void**) &buffer);
+bool Image::load(const io::FilePtr &file) {
+	uint8_t *buffer;
+	const int length = file->read((void **)&buffer);
 	const bool status = load(buffer, length);
 	delete[] buffer;
 	return status;
 }
 
-const uint8_t* Image::at(int x, int y) const {
+const uint8_t *Image::at(int x, int y) const {
 	core_assert_msg(x >= 0 && x < _width, "x out of bounds: x: %i, y: %i, w: %i, h: %i", x, y, _width, _height);
 	core_assert_msg(y >= 0 && y < _height, "y out of bounds: x: %i, y: %i, w: %i, h: %i", x, y, _width, _height);
 	const int colSpan = _width * _depth;
@@ -84,7 +83,7 @@ void Image::setColor(core::RGBA rgba, int x, int y) {
 	}
 	const int colSpan = _width * _depth;
 	const intptr_t offset = x * _depth + y * colSpan;
-	*(core::RGBA*)(_data + offset) = rgba;
+	*(core::RGBA *)(_data + offset) = rgba;
 }
 
 core::RGBA Image::colorAt(int x, int y) const {
@@ -113,8 +112,8 @@ bool writeImage(const image::ImagePtr &image, const core::String &filename) {
 	return image->writePng(pngstream);
 }
 
-ImagePtr loadImage(const io::FilePtr& file) {
-	const ImagePtr& i = createEmptyImage(file->name());
+ImagePtr loadImage(const io::FilePtr &file) {
+	const ImagePtr &i = createEmptyImage(file->name());
 	if (!i->load(file)) {
 		Log::warn("Failed to load image %s", i->name().c_str());
 	}
@@ -122,20 +121,20 @@ ImagePtr loadImage(const io::FilePtr& file) {
 }
 
 ImagePtr loadImage(const core::String &name, io::SeekableReadStream &stream, int length) {
-	const ImagePtr& i = createEmptyImage(name);
+	const ImagePtr &i = createEmptyImage(name);
 	if (!i->load(stream, length <= 0 ? (int)stream.size() : length)) {
 		Log::warn("Failed to load image %s", i->name().c_str());
 	}
 	return i;
 }
 
-ImagePtr loadImage(const core::String& filename) {
+ImagePtr loadImage(const core::String &filename) {
 	io::FilePtr file;
 	if (!core::string::extractExtension(filename).empty()) {
 		file = io::filesystem()->open(filename);
 	} else {
 		for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
-			for (const core::String& ext : desc->exts) {
+			for (const core::String &ext : desc->exts) {
 				const core::String &f = core::string::format("%s.%s", filename.c_str(), ext.c_str());
 				if (io::filesystem()->exists(f)) {
 					file = io::filesystem()->open(f);
@@ -163,18 +162,18 @@ bool Image::load(const uint8_t* buffer, int length) {
 }
 
 static int stream_read(void *user, char *data, int size) {
-	io::SeekableReadStream *stream = (io::SeekableReadStream*)user;
+	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
 	const int readSize = stream->read(data, size);
 	return readSize;
 }
 
 static void stream_skip(void *user, int n) {
-	io::SeekableReadStream *stream = (io::SeekableReadStream*)user;
+	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
 	stream->skip(n);
 }
 
 static int stream_eos(void *user) {
-	io::SeekableReadStream *stream = (io::SeekableReadStream*)user;
+	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
 	return stream->eos() ? 1 : 0;
 }
 
@@ -204,13 +203,13 @@ bool Image::load(io::SeekableReadStream &stream, int length) {
 	return true;
 }
 
-bool Image::loadRGBA(const uint8_t* buffer, int width, int height) {
+bool Image::loadRGBA(const uint8_t *buffer, int width, int height) {
 	const int length = width * height * 4;
 	io::MemoryReadStream stream(buffer, length);
 	return loadRGBA(stream, width, height);
 }
 
-bool Image::loadBGRA(io::ReadStream& stream, int w, int h) {
+bool Image::loadBGRA(io::ReadStream &stream, int w, int h) {
 	if (!loadRGBA(stream, w, h)) {
 		return false;
 	}
@@ -223,7 +222,7 @@ bool Image::loadBGRA(io::ReadStream& stream, int w, int h) {
 	return true;
 }
 
-bool Image::loadRGBA(io::ReadStream& stream, int w, int h) {
+bool Image::loadRGBA(io::ReadStream &stream, int w, int h) {
 	const int length = w * h * 4;
 	if (length <= 0) {
 		_state = io::IOSTATE_FAILED;
@@ -233,7 +232,7 @@ bool Image::loadRGBA(io::ReadStream& stream, int w, int h) {
 	if (_data) {
 		stbi_image_free(_data);
 	}
-	_data = (uint8_t*)STBI_MALLOC(length);
+	_data = (uint8_t *)STBI_MALLOC(length);
 	_width = w;
 	_height = h;
 	if (stream.read(_data, length) != length) {
@@ -329,12 +328,12 @@ glm::vec2 Image::uv(int x, int y, int w, int h) {
 	return glm::vec2((float)x / (float)w, ((float)h - (float)y) / (float)h);
 }
 
-uint8_t* createPng(const void *pixels, int width, int height, int depth, int *pngSize) {
-	return (uint8_t*)stbi_write_png_to_mem((const unsigned char*)pixels, 0, width, height, depth, pngSize);
+uint8_t *createPng(const void *pixels, int width, int height, int depth, int *pngSize) {
+	return (uint8_t *)stbi_write_png_to_mem((const unsigned char *)pixels, 0, width, height, depth, pngSize);
 }
 
 static void stream_write_func(void *context, void *data, int size) {
-	io::SeekableWriteStream *stream = (io::SeekableWriteStream*)context;
+	io::SeekableWriteStream *stream = (io::SeekableWriteStream *)context;
 	int64_t written = stream->write(data, size);
 	if (written != size) {
 		Log::error("Failed to write to image stream: %i vs %i", (int)written, size);
@@ -345,12 +344,14 @@ bool Image::writePng(io::SeekableWriteStream &stream) const {
 	return writePng(stream, _data, _width, _height, _depth);
 }
 
-bool Image::writeJPEG(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth, int quality) {
-	return stbi_write_jpg_to_func(stream_write_func, &stream, width, height, depth, (const void*)buffer, quality) != 0;
+bool Image::writeJPEG(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int depth,
+					  int quality) {
+	return stbi_write_jpg_to_func(stream_write_func, &stream, width, height, depth, (const void *)buffer, quality) != 0;
 }
 
-bool Image::writePng(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth) {
-	return stbi_write_png_to_func(stream_write_func, &stream, width, height, depth, (const void*)buffer, width * depth) != 0;
+bool Image::writePng(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int depth) {
+	return stbi_write_png_to_func(stream_write_func, &stream, width, height, depth, (const void *)buffer,
+								  width * depth) != 0;
 }
 
 core::String Image::pngBase64() const {
@@ -375,4 +376,4 @@ core::String print(const image::ImagePtr &image) {
 	return str;
 }
 
-}
+} // namespace image
