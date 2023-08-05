@@ -103,7 +103,9 @@ public:
 	 */
 	static int quantize(RGBA* targetBuf, size_t maxTargetBufColors, const RGBA* inputBuf, size_t inputBufColors, ColorReductionType type = ColorReductionType::MedianCut);
 
-	static glm::vec4 fromRGBA(const RGBA rgba);
+	static inline glm::vec4 fromRGBA(const RGBA rgba) {
+		return fromRGBA(rgba.r, rgba.g, rgba.b, rgba.a);
+	}
 	static glm::vec4 fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 	static glm::vec4 fromHSB(const float hue, const float saturation, const float brightness, const float alpha = 1.0f);
 	static glm::vec4 fromHex(const char* hex);

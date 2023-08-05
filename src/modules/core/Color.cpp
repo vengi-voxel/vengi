@@ -604,10 +604,6 @@ int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inpu
 	return -1;
 }
 
-glm::vec4 Color::fromRGBA(const RGBA rgba) {
-	return fromRGBA(rgba.r, rgba.g, rgba.b, rgba.a);
-}
-
 glm::vec4 Color::fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 	return glm::vec4(r, g, b, a) / Color::magnitudef;
 }
