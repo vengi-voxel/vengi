@@ -153,7 +153,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 	const glm::vec3 &scale = getScale();
 
 	TriCollection tris;
-	tris.resize(hdr.numTris);
+	tris.reserve(hdr.numTris);
 	if (stream.seek(startOffset + hdr.offsetTris) == -1) {
 		Log::error("Failed to seek to triangles");
 		return false;
