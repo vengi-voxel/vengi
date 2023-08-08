@@ -13,8 +13,10 @@
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "core/Zip.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "io/ZipReadStream.h"
+#include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
@@ -115,14 +117,6 @@ public:
 		return false;                                                                                                  \
 	}
 
-#define wrapSaveFree(write)                                                                                            \
-	if ((write) == false) {                                                                                            \
-		Log::error("Could not save qbt file: " CORE_STRINGIFY(write) " failed");                                       \
-		delete[] compressedBuf;                                                                                        \
-		delete[] zlibBuffer;                                                                                           \
-		return false;                                                                                                  \
-	}
-
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \
 		Log::error("Could not load qbt file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
@@ -144,85 +138,73 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sc
 	const glm::ivec3 &maxs = region.getUpperCorner();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
 
-	const int zlibBufSize = size.x * size.y * size.z * (int)sizeof(uint32_t);
-	core_assert(zlibBufSize > 0);
-	uint8_t *const zlibBuffer = new uint8_t[zlibBufSize];
-	const uint32_t compressedBufSize = core::zip::compressBound(zlibBufSize);
-	uint8_t *compressedBuf = new uint8_t[compressedBufSize];
 	const voxel::Palette &palette = node.palette();
 
-	uint8_t *zlibBuf = zlibBuffer;
+	const int zlibBufSize = size.x * size.y * size.z * (int)sizeof(uint32_t);
+	io::BufferedReadWriteStream bufferStream(zlibBufSize);
+	io::ZipWriteStream zipStream(bufferStream);
+
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
 			for (int y = mins.y; y <= maxs.y; ++y) {
 				const voxel::Voxel &voxel = node.volume()->voxel(x, y, z);
 				if (isAir(voxel.getMaterial())) {
-					*zlibBuf++ = (uint8_t)0;
-					*zlibBuf++ = (uint8_t)0;
-					*zlibBuf++ = (uint8_t)0;
-					*zlibBuf++ = (uint8_t)0; // mask 0 == air
+					zipStream.writeUInt8(0);
+					zipStream.writeUInt8(0);
+					zipStream.writeUInt8(0);
+					zipStream.writeUInt8(0); // mask 0 == air
 					continue;
 				}
 				if (colorMap) {
-					*zlibBuf++ = voxel.getColor();
-					*zlibBuf++ = 0;
-					*zlibBuf++ = 0;
+					zipStream.writeUInt8(voxel.getColor());
+					zipStream.writeUInt8(0);
+					zipStream.writeUInt8(0);
 				} else {
 					const core::RGBA voxelColor = palette.color(voxel.getColor());
 					// const uint8_t alpha = voxelColor.a * 255.0f;
-					*zlibBuf++ = voxelColor.r;
-					*zlibBuf++ = voxelColor.g;
-					*zlibBuf++ = voxelColor.b;
+					zipStream.writeUInt8(voxelColor.r);
+					zipStream.writeUInt8(voxelColor.g);
+					zipStream.writeUInt8(voxelColor.b);
 				}
 				// mask != 0 means solid, 1 is core (surrounded by others and not visible)
 				// TODO: const voxel::FaceBits faceBits = voxel::visibleFaces(*node.volume(), x, y, z);
-				*zlibBuf++ = 0xff;
+				zipStream.writeUInt8(0xff);
 			}
 		}
 	}
 
-	size_t realBufSize = 0;
-	if (!core::zip::compress(zlibBuffer, zlibBufSize, compressedBuf, compressedBufSize, &realBufSize)) {
-		Log::error("Could not save qbt file: failed to compress the voxel data buffer");
-		delete[] compressedBuf;
-		delete[] zlibBuffer;
-		return false;
-	}
+	zipStream.flush();
 
-	wrapSaveFree(stream.writePascalStringUInt32LE(node.name()));
+	wrapSave(stream.writePascalStringUInt32LE(node.name()));
 	Log::debug("Save matrix with name %s", node.name().c_str());
 
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const glm::ivec3 offset = glm::round(transform.localTranslation());
-	wrapSaveFree(stream.writeInt32(offset.x));
-	wrapSaveFree(stream.writeInt32(offset.y));
-	wrapSaveFree(stream.writeInt32(offset.z));
+	wrapSave(stream.writeInt32(offset.x));
+	wrapSave(stream.writeInt32(offset.y));
+	wrapSave(stream.writeInt32(offset.z));
 
 	const glm::uvec3 localScale{1};
-	wrapSaveFree(stream.writeUInt32(localScale.x));
-	wrapSaveFree(stream.writeUInt32(localScale.y));
-	wrapSaveFree(stream.writeUInt32(localScale.z));
+	wrapSave(stream.writeUInt32(localScale.x));
+	wrapSave(stream.writeUInt32(localScale.y));
+	wrapSave(stream.writeUInt32(localScale.z));
 
 	const glm::vec3 &pivot = node.pivot();
-	wrapSaveFree(stream.writeFloat(pivot.x));
-	wrapSaveFree(stream.writeFloat(pivot.y));
-	wrapSaveFree(stream.writeFloat(pivot.z));
+	wrapSave(stream.writeFloat(pivot.x));
+	wrapSave(stream.writeFloat(pivot.y));
+	wrapSave(stream.writeFloat(pivot.z));
 
-	wrapSaveFree(stream.writeUInt32(size.x));
-	wrapSaveFree(stream.writeUInt32(size.y));
-	wrapSaveFree(stream.writeUInt32(size.z));
+	wrapSave(stream.writeUInt32(size.x));
+	wrapSave(stream.writeUInt32(size.y));
+	wrapSave(stream.writeUInt32(size.z));
 
-	Log::debug("save %i compressed bytes", (int)realBufSize);
-	wrapSaveFree(stream.writeUInt32(realBufSize));
-	if (stream.write(compressedBuf, realBufSize) == -1) {
+	Log::debug("save %i compressed bytes", (int)bufferStream.size());
+	wrapSave(stream.writeUInt32(bufferStream.size()));
+	if (stream.write(bufferStream.getBuffer(), bufferStream.size()) == -1) {
 		Log::error("Could not save qbt file: failed to write the compressed buffer");
-		delete[] compressedBuf;
-		delete[] zlibBuffer;
 		return false;
 	}
-	delete[] compressedBuf;
-	delete[] zlibBuffer;
 
 	return true;
 }
@@ -705,7 +687,6 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 }
 
 #undef wrapSave
-#undef wrapSaveFree
 #undef wrap
 #undef wrapBool
 

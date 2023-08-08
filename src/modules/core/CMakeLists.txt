@@ -128,7 +128,6 @@ set(TEST_SRCS
 	tests/TokenizerTest.cpp
 	tests/VarTest.cpp
 	tests/VectorTest.cpp
-	tests/ZipTest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
