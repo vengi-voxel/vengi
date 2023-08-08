@@ -6,8 +6,6 @@
 
 #include "Stream.h"
 
-struct mz_stream_s;
-
 namespace io {
 
 /**
@@ -16,7 +14,7 @@ namespace io {
  */
 class ZipReadStream : public io::ReadStream {
 private:
-	struct mz_stream_s *_stream;
+	void *_stream;
 	io::SeekableReadStream &_readStream;
 	uint8_t _buf[256 * 1024] {};
 	const int _size;
