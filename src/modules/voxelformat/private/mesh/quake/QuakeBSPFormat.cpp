@@ -496,7 +496,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionModels(io::SeekableReadStream &stream, 
 	}
 	models.resize(modelCount);
 
-	const int64_t modelSkipSize = 3 * sizeof(glm::vec3) + sizeof(int32_t);
+	const int64_t modelSkipSize = 9 * sizeof(float) + sizeof(int32_t);
 	static_assert(sizeof(BspModel) == modelSkipSize + 2 * sizeof(int32_t), "Unexpected BspModel structure size");
 	for (int32_t i = 0; i < modelCount; ++i) {
 		if (stream.skip(modelSkipSize) == -1) {
@@ -652,19 +652,20 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 			const glm::vec3 sdir(texture.st[0]);
 			const glm::vec3 tdir(texture.st[1]);
 
+			const glm::vec3 vertex(vert->x, vert->y, vert->z);
 			if (texture.image) {
 				/* texture coordinates */
-				float s = glm::dot(*vert, sdir) + texture.st[0].w;
+				float s = glm::dot(vertex, sdir) + texture.st[0].w;
 				s /= (float)texture.image->width();
 
-				float t = glm::dot(*vert, tdir) + texture.st[1].w;
+				float t = glm::dot(vertex, tdir) + texture.st[1].w;
 				t /= (float)texture.image->height();
 				texcoords[offset] = glm::vec2(s, t);
 			} else {
 				texcoords[offset] = glm::vec2(0, 0);
 			}
 			textureIndices[offset] = face.textureId;
-			verts[offset] = *vert;
+			verts[offset] = vertex;
 			core::exchange(verts[offset].y, verts[offset].z);
 			++offset;
 		}

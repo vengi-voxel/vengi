@@ -81,9 +81,9 @@ void Tri::subdivide(Tri out[4]) const {
 }
 
 glm::vec3 Tri::calculateBarycentric(const glm::vec3 &pos) const {
-	const glm::aligned_vec4 v0 = glm::aligned_vec4(vertices[0] - vertices[2], 0.0f);
-	const glm::aligned_vec4 v1 = glm::aligned_vec4(vertices[1] - vertices[2], 0.0f);
-	const glm::aligned_vec4 v2 = glm::aligned_vec4(pos - vertices[2], 0.0f);
+	const glm::aligned_vec4 v0(vertices[0] - vertices[2], 0.0f);
+	const glm::aligned_vec4 v1(vertices[1] - vertices[2], 0.0f);
+	const glm::aligned_vec4 v2(pos - vertices[2], 0.0f);
 	const float d00 = glm::dot(v0, v0);
 	const float d01 = glm::dot(v0, v1);
 	const float d11 = glm::dot(v1, v1);

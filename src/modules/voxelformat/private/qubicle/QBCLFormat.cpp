@@ -250,10 +250,10 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream &stream, const scenegraph::Sc
 	wrapSave(stream.writeBool(true)) // unknown
 	wrapSave(stream.writeBool(node.locked()))
 	const glm::mat3x3 &mat = node.transformForFrame(0).worldMatrix();
-	static_assert(sizeof(mat) == (size_t)3 * (size_t)3 * sizeof(float), "Expected rotation matrix size");
-	if (stream.write(glm::value_ptr(mat), sizeof(mat)) == -1) {
-		Log::error("Failed to write array into stream");
-		return false;
+	for (int col = 0; col < 3; ++col) {
+		for (int row = 0; row < 3; ++row) {
+			wrapSave(stream.writeFloat(mat[col][row]))
+		}
 	}
 	wrapSave(stream.writeUInt32(children));
 

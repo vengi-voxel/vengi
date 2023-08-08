@@ -44,8 +44,8 @@ public:
 	static_assert(sizeof(MD2Vertex) == 4, "MD2Vertex size is wrong");
 
 	struct MD2FrameHeader {
-		glm::highp_vec3 scale;
-		glm::highp_vec3 translate;
+		float scale[3];
+		float translate[3];
 		char name[16];
 		// after this numVerts * MD2Vertex data follows
 	};
