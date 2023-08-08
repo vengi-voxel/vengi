@@ -19,7 +19,7 @@ size_t RawVolume::size(const Region &region) {
 }
 
 RawVolume::RawVolume(const Region& regValid) :
-		_region(regValid), _mins((std::numeric_limits<int>::max)()), _maxs((std::numeric_limits<int>::min)()), _boundsValid(false) {
+		_region(regValid) {
 	//Create a volume of the right size.
 	initialise(regValid);
 }
@@ -29,9 +29,6 @@ RawVolume::RawVolume(const RawVolume* copy) :
 	setBorderValue(copy->borderValue());
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
 	_data = (Voxel*)core_malloc(size);
-	_mins = copy->_mins;
-	_maxs = copy->_maxs;
-	_boundsValid = copy->_boundsValid;
 	_borderVoxel = copy->_borderVoxel;
 	core_memcpy((void*)_data, (void*)copy->_data, size);
 }
@@ -41,9 +38,6 @@ RawVolume::RawVolume(const RawVolume& copy) :
 	setBorderValue(copy.borderValue());
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
 	_data = (Voxel*)core_malloc(size);
-	_mins = copy._mins;
-	_maxs = copy._maxs;
-	_boundsValid = copy._boundsValid;
 	_borderVoxel = copy._borderVoxel;
 	core_memcpy((void*)_data, (void*)copy._data, size);
 }
@@ -92,9 +86,6 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
 	_data = (Voxel *)core_malloc(size);
 	if (src.region() == _region) {
-		_mins = src._mins;
-		_maxs = src._maxs;
-		_boundsValid = src._boundsValid;
 		core_memcpy((void *)_data, (void *)src._data, size);
 		if (onlyAir) {
 			*onlyAir = false;
@@ -103,9 +94,6 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		if (onlyAir) {
 			*onlyAir = true;
 		}
-		_mins = glm::ivec3((std::numeric_limits<int>::max)() / 2);
-		_maxs = glm::ivec3((std::numeric_limits<int>::min)() / 2);
-		_boundsValid = false;
 		const glm::ivec3 &tgtMins = _region.getLowerCorner();
 		const glm::ivec3 &tgtMaxs = _region.getUpperCorner();
 		const glm::ivec3 &srcMins = src._region.getLowerCorner();
@@ -140,10 +128,7 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 RawVolume::RawVolume(RawVolume&& move) noexcept {
 	_data = move._data;
 	move._data = nullptr;
-	_mins = move._mins;
-	_maxs = move._maxs;
 	_region = move._region;
-	_boundsValid = move._boundsValid;
 }
 
 RawVolume::RawVolume(const Voxel* data, const voxel::Region& region) {
@@ -154,8 +139,6 @@ RawVolume::RawVolume(const Voxel* data, const voxel::Region& region) {
 
 RawVolume::RawVolume(Voxel* data, const voxel::Region& region) :
 		_region(region), _data(data) {
-	_boundsValid = false;
-	_mins = _maxs = glm::ivec3();
 	core_assert_msg(width() > 0, "Volume width must be greater than zero.");
 	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
@@ -231,9 +214,6 @@ bool RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 	if (_data[index].isSame(voxel)) {
 		return false;
 	}
-	_mins = (glm::min)(_mins, pos);
-	_maxs = (glm::max)(_maxs, pos);
-	_boundsValid = true;
 	_data[index] = voxel;
 	return true;
 }
@@ -260,9 +240,6 @@ void RawVolume::initialise(const Region& regValidRegion) {
 void RawVolume::clear() {
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
 	core_memset(_data, 0, size);
-	_mins = glm::ivec3((std::numeric_limits<int>::max)() / 2);
-	_maxs = glm::ivec3((std::numeric_limits<int>::min)() / 2);
-	_boundsValid = false;
 }
 
 RawVolume::Sampler::Sampler(const RawVolume* volume) :
@@ -281,9 +258,6 @@ bool RawVolume::Sampler::setVoxel(const Voxel& voxel) {
 		return false;
 	}
 	*_currentVoxel = voxel;
-	_volume->_mins = (glm::min)(_volume->_mins, _posInVolume);
-	_volume->_maxs = (glm::max)(_volume->_maxs, _posInVolume);
-	_volume->_boundsValid = true;
 	return true;
 }
 

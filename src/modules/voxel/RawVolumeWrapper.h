@@ -32,7 +32,7 @@ public:
 
 		Sampler(RawVolumeWrapper& volume) : Super(volume.volume()), _rawVolumeWrapper(&volume), _region(volume.region()) {}
 
-		const Region region() const override {
+		const Region &region() const override {
 			return _region;
 		}
 
