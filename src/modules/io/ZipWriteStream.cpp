@@ -4,8 +4,13 @@
 
 #include "ZipWriteStream.h"
 #include "core/StandardLib.h"
+#include "engine-config.h"
+#if USE_ZLIB
+#include <zlib.h>
+#else
 #define MINIZ_NO_STDIO
 #include "io/external/miniz.h"
+#endif
 #include "core/Assert.h"
 
 namespace io {
