@@ -46,16 +46,20 @@ private:
 	static_assert(sizeof(BspTexture) == 72, "Unexpected size of BspTexture");
 
 	struct BspModel {
-		glm::highp_vec3 mins{0.0f};
-		glm::highp_vec3 maxs{0.0f};
-		glm::highp_vec3 position{0.0f};
+		float mins[3]{0.0f, 0.0f, 0.0f};
+		float maxs[3]{0.0f, 0.0f, 0.0f};
+		float position[3]{0.0f, 0.0f, 0.0f};
 		int32_t node = 0;
 		int32_t faceId = 0;
 		int32_t faceCount = 0;
 	};
 	static_assert(sizeof(BspModel) == 48, "Unexpected size of BspModel");
 
-	using BspVertex = glm::highp_vec3;
+	struct BspVertex {
+		float x = 0.0f;
+		float y = 0.0f;
+		float z = 0.0f;
+	};
 	static_assert(sizeof(BspVertex) == 12, "Unexpected size of BspVertex");
 
 	struct BspFace {

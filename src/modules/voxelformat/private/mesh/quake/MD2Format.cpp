@@ -108,14 +108,14 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		Log::error("Failed to seek to frame header");
 		return false;
 	}
-	wrap(stream.readFloat(frameHdr.scale.x))
-	wrap(stream.readFloat(frameHdr.scale.z))
-	wrap(stream.readFloat(frameHdr.scale.y))
-	Log::debug("Scale: %f %f %f", frameHdr.scale.x, frameHdr.scale.y, frameHdr.scale.z);
-	wrap(stream.readFloat(frameHdr.translate.x))
-	wrap(stream.readFloat(frameHdr.translate.z))
-	wrap(stream.readFloat(frameHdr.translate.y))
-	Log::debug("Translate: %f %f %f", frameHdr.translate.x, frameHdr.translate.y, frameHdr.translate.z);
+	wrap(stream.readFloat(frameHdr.scale[0]))
+	wrap(stream.readFloat(frameHdr.scale[1]))
+	wrap(stream.readFloat(frameHdr.scale[2]))
+	Log::debug("Scale: %f %f %f", frameHdr.scale[0], frameHdr.scale[1], frameHdr.scale[2]);
+	wrap(stream.readFloat(frameHdr.translate[0]))
+	wrap(stream.readFloat(frameHdr.translate[1]))
+	wrap(stream.readFloat(frameHdr.translate[2]))
+	Log::debug("Translate: %f %f %f", frameHdr.translate[0], frameHdr.translate[1], frameHdr.translate[2]);
 
 	if (!stream.readString(sizeof(frameHdr.name), frameHdr.name)) {
 		Log::error("Failed to read frame name");
@@ -132,7 +132,8 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		stream.readUInt8(vertex.y);
 		stream.readUInt8(vertex.w); // normal index
 		// uncompressed vertex
-		vertices.push_back(glm::vec3(vertex) * frameHdr.scale + frameHdr.translate);
+		vertices.push_back(glm::vec3(vertex) * glm::vec3(frameHdr.scale[0], frameHdr.scale[1], frameHdr.scale[2]) +
+						   glm::vec3(frameHdr.translate[0], frameHdr.translate[1], frameHdr.translate[2]));
 	}
 
 	Log::debug("Reading %i texture coordinates", hdr.numST);
