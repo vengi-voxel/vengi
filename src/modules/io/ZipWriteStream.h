@@ -11,7 +11,6 @@ struct mz_stream_s;
 namespace io {
 
 /**
- * @see BufferedZipReadStream
  * @see ZipReadStream
  * @see WriteStream
  * @ingroup IO

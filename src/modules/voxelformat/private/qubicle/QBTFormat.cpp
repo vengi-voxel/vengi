@@ -13,8 +13,8 @@
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "core/Zip.h"
-#include "io/BufferedZipReadStream.h"
 #include "io/FileStream.h"
+#include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
@@ -440,8 +440,7 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGrap
 		Log::warn("Size of matrix results in empty space - voxelDataSize: %u", voxelDataSize);
 		return false;
 	}
-	const uint32_t voxelDataSizeDecompressed = size.x * size.y * size.z * sizeof(uint32_t);
-	io::BufferedZipReadStream zipStream(stream, voxelDataSize, voxelDataSizeDecompressed * 2);
+	io::ZipReadStream zipStream(stream, voxelDataSize);
 
 	const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
 	if (!region.isValid()) {
