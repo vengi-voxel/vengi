@@ -13,27 +13,27 @@ namespace io {
 
 ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 	: _readStream(readStream), _size(size), _remaining(size) {
-	_stream = (mz_stream *)core_malloc(sizeof(*_stream));
-	core_memset(_stream, 0, sizeof(*_stream));
-	_stream->zalloc = Z_NULL;
-	_stream->zfree = Z_NULL;
+	_stream = (z_stream *)core_malloc(sizeof(z_stream));
+	core_memset(((z_stream*)_stream), 0, sizeof(z_stream));
+	((z_stream*)_stream)->zalloc = Z_NULL;
+	((z_stream*)_stream)->zfree = Z_NULL;
 	uint8_t gzipHeader[2];
 	readStream.readUInt8(gzipHeader[0]);
 	readStream.readUInt8(gzipHeader[1]);
 	if (gzipHeader[0] == 0x1F && gzipHeader[1] == 0x8B) {
 		readStream.skip(8); // gzip header is 10 bytes
-		mz_inflateInit2(_stream, -MZ_DEFAULT_WINDOW_BITS);
+		inflateInit2(((z_stream*)_stream), -Z_DEFAULT_WINDOW_BITS);
 	} else {
 		readStream.seek(-2, SEEK_CUR);
-		if (mz_inflateInit(_stream) != MZ_OK) {
+		if (inflateInit(((z_stream*)_stream)) != Z_OK) {
 			Log::error("Failed to initialize zip stream");
 		}
 	}
 }
 
 ZipReadStream::~ZipReadStream() {
-	mz_inflateEnd(_stream);
-	core_free(_stream);
+	inflateEnd(((z_stream*)_stream));
+	core_free(((z_stream*)_stream));
 }
 
 bool ZipReadStream::eos() const {
@@ -62,12 +62,12 @@ int ZipReadStream::read(void *buf, size_t size) {
 	uint8_t *targetPtr = (uint8_t *)buf;
 	const size_t originalSize = size;
 	while (size > 0) {
-		if (_stream->avail_in == 0) {
+		if (((z_stream*)_stream)->avail_in == 0) {
 			int64_t remainingSize = remaining();
-			_stream->next_in = _buf;
-			_stream->avail_in = (unsigned int)core_min(remainingSize, (int64_t)sizeof(_buf));
+			((z_stream*)_stream)->next_in = _buf;
+			((z_stream*)_stream)->avail_in = (unsigned int)core_min(remainingSize, (int64_t)sizeof(_buf));
 			if (remainingSize > 0) {
-				const int bytes = _readStream.read(_buf, _stream->avail_in);
+				const int bytes = _readStream.read(_buf, ((z_stream*)_stream)->avail_in);
 				if (bytes == -1) {
 					Log::debug("Failed to read from parent stream");
 					return -1;
@@ -78,25 +78,25 @@ int ZipReadStream::read(void *buf, size_t size) {
 			}
 		}
 
-		_stream->avail_out = (unsigned int)size;
-		_stream->next_out = targetPtr;
+		((z_stream*)_stream)->avail_out = (unsigned int)size;
+		((z_stream*)_stream)->next_out = targetPtr;
 
-		const int retval = mz_inflate(_stream, MZ_NO_FLUSH);
+		const int retval = inflate(((z_stream*)_stream), Z_NO_FLUSH);
 		switch (retval) {
-		case MZ_OK:
-		case MZ_STREAM_END:
+		case Z_OK:
+		case Z_STREAM_END:
 			break;
 		default:
-			Log::debug("error while reading the stream: '%s'", mz_error(retval));
+			Log::debug("error while reading the stream: '%s'", zError(retval));
 			return -1;
 		}
 
-		const size_t outputSize = size - (size_t)_stream->avail_out;
+		const size_t outputSize = size - (size_t)((z_stream*)_stream)->avail_out;
 		targetPtr += outputSize;
 		core_assert(size >= outputSize);
 		size -= outputSize;
 
-		if (retval == MZ_STREAM_END) {
+		if (retval == Z_STREAM_END) {
 			_eos = true;
 			if (size > 0) {
 				Log::debug("attempting to read past the end of the stream");
