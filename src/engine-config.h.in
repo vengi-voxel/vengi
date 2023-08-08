@@ -20,3 +20,4 @@
 #cmakedefine PKGDATADIR "@PKGDATADIR@"
 
 #cmakedefine USE_OPENGLES 1
+#cmakedefine USE_ZLIB 1

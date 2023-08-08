@@ -25,8 +25,14 @@ set(SRCS
 )
 
 set(LIB io)
+set(LIBS core lzfse)
+find_package(ZLIB)
+if (ZLIB_FOUND)
+  list(APPEND LIBS ZLIB::ZLIB)
+endif()
+set(USE_ZLIB ${ZLIB_FOUND} CACHE BOOL "Use zlib for zip compression")
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core lzfse)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 
 set(TEST_FILES
 	testio/iotest.txt

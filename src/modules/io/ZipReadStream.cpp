@@ -5,8 +5,16 @@
 #include "ZipReadStream.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
+#include "engine-config.h"
+#if USE_ZLIB
+#include <zlib.h>
+#ifndef Z_DEFAULT_WINDOW_BITS
+#define Z_DEFAULT_WINDOW_BITS 15
+#endif
+#else
 #define MINIZ_NO_STDIO
 #include "io/external/miniz.h"
+#endif
 #include "core/Assert.h"
 
 namespace io {
