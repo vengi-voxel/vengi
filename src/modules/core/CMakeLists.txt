@@ -64,7 +64,6 @@ set(SRCS
 	Trace.cpp Trace.h
 	UTF8.cpp UTF8.h
 	Var.cpp Var.h
-	Zip.cpp Zip.h
 )
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracy/TracyClient.cpp)
