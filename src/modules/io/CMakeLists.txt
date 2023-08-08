@@ -26,11 +26,12 @@ set(SRCS
 
 set(LIB io)
 set(LIBS core lzfse)
-find_package(ZLIB)
+#find_package(ZLIB)
+set(ZLIB_FOUND FALSE)
 if (ZLIB_FOUND)
   list(APPEND LIBS ZLIB::ZLIB)
 endif()
-set(USE_ZLIB ${ZLIB_FOUND} CACHE BOOL "Use zlib for zip compression")
+set(USE_ZLIB ${ZLIB_FOUND} CACHE BOOL "Use zlib for zip compression" FORCE)
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 
