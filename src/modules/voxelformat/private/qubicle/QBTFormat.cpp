@@ -12,7 +12,6 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
-#include "core/Zip.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "io/ZipReadStream.h"

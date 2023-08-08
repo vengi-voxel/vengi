@@ -19,7 +19,6 @@
 #include "core/Assert.h"
 #include "core/StandardLib.h"
 #include "core/Log.h"
-#include "core/Zip.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VoxelUtil.h"
 #include <inttypes.h>
@@ -112,8 +111,7 @@ MementoData MementoData::fromVolume(const voxel::RawVolume* volume, const voxel:
 	}
 
 	const int allVoxels = volume->region().voxels();
-	const uint32_t compressedBufferSize = core::zip::compressBound(allVoxels * sizeof(voxel::Voxel));
-	io::BufferedReadWriteStream outStream(compressedBufferSize);
+	io::BufferedReadWriteStream outStream(allVoxels * sizeof(voxel::Voxel));
 	io::ZipWriteStream stream(outStream);
 	if (partialMemento) {
 		voxel::RawVolume v(volume, region);

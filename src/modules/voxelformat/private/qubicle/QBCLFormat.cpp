@@ -11,7 +11,6 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
-#include "core/Zip.h"
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
