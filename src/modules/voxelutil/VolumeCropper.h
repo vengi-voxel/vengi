@@ -7,6 +7,7 @@
 #include "voxel/RawVolume.h"
 #include "VolumeMerger.h"
 #include "core/Common.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
 
@@ -38,22 +39,13 @@ voxel::RawVolume* cropVolume(const voxel::RawVolume* volume, const glm::ivec3& m
  * @brief Resizes a volume to cut off empty parts
  */
 template<class CropSkipCondition = CropSkipEmpty>
-voxel::RawVolume* cropVolume(const voxel::RawVolume* volume, CropSkipCondition condition = CropSkipCondition()) {
+voxel::RawVolume *cropVolume(const voxel::RawVolume *volume) {
 	core_trace_scoped(CropRawVolume);
-	const glm::ivec3& mins = volume->mins();
-	const glm::ivec3& maxs = volume->maxs();
 	glm::ivec3 newMins((std::numeric_limits<int>::max)() / 2);
 	glm::ivec3 newMaxs((std::numeric_limits<int>::min)() / 2);
-	voxel::RawVolume::Sampler volumeSampler(volume);
-	for (int32_t z = mins.z; z <= maxs.z; ++z) {
-		for (int32_t y = mins.y; y <= maxs.y; ++y) {
-			volumeSampler.setPosition(mins.x, y, z);
-			for (int32_t x = mins.x; x <= maxs.x; ++x) {
-				const voxel::Voxel& voxel = volumeSampler.voxel();
-				volumeSampler.movePositiveX();
-				if (condition(voxel)) {
-					continue;
-				}
+	if (visitVolume(
+			*volume,
+			[&newMins, &newMaxs](int x, int y, int z, const voxel::Voxel &) {
 				newMins.x = core_min(newMins.x, x);
 				newMins.y = core_min(newMins.y, y);
 				newMins.z = core_min(newMins.z, z);
@@ -61,13 +53,10 @@ voxel::RawVolume* cropVolume(const voxel::RawVolume* volume, CropSkipCondition c
 				newMaxs.x = core_max(newMaxs.x, x);
 				newMaxs.y = core_max(newMaxs.y, y);
 				newMaxs.z = core_max(newMaxs.z, z);
-			}
-		}
-	}
-	if (newMaxs.z == (std::numeric_limits<int>::min)() / 2) {
+			},
+			SkipEmpty()) == 0) {
 		return nullptr;
 	}
-	return cropVolume(volume, newMins, newMaxs, condition);
+	return cropVolume(volume, newMins, newMaxs);
 }
-
 }

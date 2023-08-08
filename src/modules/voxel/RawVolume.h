@@ -29,7 +29,7 @@ public:
 		virtual ~Sampler();
 
 		const Voxel &voxel() const;
-		virtual const Region region() const;
+		virtual const Region &region() const;
 
 		bool currentPositionValid() const;
 
@@ -209,8 +209,6 @@ public:
 	 */
 	void translate(const glm::ivec3 &t) {
 		_region.shift(t.x, t.y, t.z);
-		_mins += t;
-		_maxs += t;
 	}
 
 private:
@@ -224,10 +222,6 @@ private:
 
 	/** The voxel data */
 	Voxel *_data;
-
-	glm::ivec3 _mins;
-	glm::ivec3 _maxs;
-	bool _boundsValid;
 };
 
 inline const Region &RawVolume::region() const {
@@ -250,20 +244,6 @@ inline int32_t RawVolume::depth() const {
 	return _region.getDepthInVoxels();
 }
 
-inline glm::ivec3 RawVolume::mins() const {
-	if (!_boundsValid) {
-		return _region.getLowerCorner();
-	}
-	return _mins;
-}
-
-inline glm::ivec3 RawVolume::maxs() const {
-	if (!_boundsValid) {
-		return _region.getUpperCorner();
-	}
-	return _maxs;
-}
-
 inline const Voxel &RawVolume::voxel(const glm::ivec3 &pos) const {
 	return voxel(pos.x, pos.y, pos.z);
 }
@@ -275,7 +255,7 @@ inline const Voxel &RawVolume::voxel(const glm::ivec3 &pos) const {
 #define CAN_GO_NEG_Z(val) ((val) > region.getLowerZ())
 #define CAN_GO_POS_Z(val) ((val) < region.getUpperZ())
 
-inline const Region RawVolume::Sampler::region() const {
+inline const Region &RawVolume::Sampler::region() const {
 	return _volume->region();
 }
 

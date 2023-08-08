@@ -32,15 +32,17 @@ int mergeVolumes(Volume1* destination, const Volume2* source, const voxel::Regio
 	typename Volume2::Sampler sourceSampler(source);
 	typename Volume1::Sampler destSampler(destination);
 	const int relX = destReg.getLowerX();
+	sourceSampler.setPosition(sourceReg.getLowerCorner());
 	for (int32_t z = sourceReg.getLowerZ(); z <= sourceReg.getUpperZ(); ++z) {
 		const int destZ = destReg.getLowerZ() + z - sourceReg.getLowerZ();
+		typename Volume2::Sampler sourceSampler2 = sourceSampler;
 		for (int32_t y = sourceReg.getLowerY(); y <= sourceReg.getUpperY(); ++y) {
 			const int destY = destReg.getLowerY() + y - sourceReg.getLowerY();
-			sourceSampler.setPosition(sourceReg.getLowerX(), y, z);
+			typename Volume2::Sampler sourceSampler3 = sourceSampler2;
 			destSampler.setPosition(relX, destY, destZ);
 			for (int32_t x = sourceReg.getLowerX(); x <= sourceReg.getUpperX(); ++x) {
-				voxel::Voxel voxel = sourceSampler.voxel();
-				sourceSampler.movePositiveX();
+				voxel::Voxel voxel = sourceSampler3.voxel();
+				sourceSampler3.movePositiveX();
 				if (!mergeCondition(voxel)) {
 					destSampler.movePositiveX();
 					continue;
@@ -50,7 +52,9 @@ int mergeVolumes(Volume1* destination, const Volume2* source, const voxel::Regio
 				}
 				destSampler.movePositiveX();
 			}
+			sourceSampler2.movePositiveY();
 		}
+		sourceSampler.movePositiveZ();
 	}
 	return cnt;
 }
