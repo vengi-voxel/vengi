@@ -5,7 +5,7 @@
 #include "ZipWriteStream.h"
 #include "core/StandardLib.h"
 #define MINIZ_NO_STDIO
-#include "core/external/miniz.h"
+#include "io/external/miniz.h"
 #include "core/Assert.h"
 
 namespace io {
