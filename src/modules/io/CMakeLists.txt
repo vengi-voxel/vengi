@@ -3,22 +3,24 @@ set(SRCS
 
 	Archive.cpp Archive.h
 	BufferedReadWriteStream.cpp BufferedReadWriteStream.h
+	BufferedSeekableWriteStream.h
+	BufferedWriteStream.h
 	File.cpp File.h
 	FileStream.cpp FileStream.h
 	Filesystem.cpp Filesystem.h
 	FilesystemArchive.cpp FilesystemArchive.h
+	FilesystemEntry.h
 	FormatDescription.cpp FormatDescription.h
 	IOResource.h
+	LZFSEReadStream.cpp LZFSEReadStream.h
+	MemoryReadStream.cpp MemoryReadStream.h
 	StdStreamBuf.h
 	Stream.cpp Stream.h
-	LZFSEReadStream.h LZFSEReadStream.cpp
-	MemoryReadStream.cpp MemoryReadStream.h
-	BufferedWriteStream.h
-	BufferedSeekableWriteStream.h
 	StringStream.cpp StringStream.h
-	ZipArchive.h ZipArchive.cpp
-	ZipWriteStream.h ZipWriteStream.cpp
-	ZipReadStream.h ZipReadStream.cpp
+	ZipArchive.cpp ZipArchive.h
+	ZipReadStream.cpp ZipReadStream.h
+	ZipWriteStream.cpp ZipWriteStream.h
+
 	system/Null.cpp
 	system/Unix.cpp
 	system/Windows.cpp
