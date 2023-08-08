@@ -13,7 +13,6 @@ set(SRCS
 	MemoryReadStream.cpp MemoryReadStream.h
 	BufferedWriteStream.h
 	BufferedSeekableWriteStream.h
-	BufferedZipReadStream.cpp BufferedZipReadStream.h
 	StringStream.cpp StringStream.h
 	ZipArchive.h ZipArchive.cpp
 	ZipWriteStream.h ZipWriteStream.cpp
