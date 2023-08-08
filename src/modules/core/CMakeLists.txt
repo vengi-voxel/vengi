@@ -1,6 +1,4 @@
 set(SRCS
-	external/miniz.h external/miniz.c
-
 	collection/Array.h
 	collection/Array2DView.h
 	collection/Array3DView.h

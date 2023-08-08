@@ -1,4 +1,6 @@
 set(SRCS
+	external/miniz.h external/miniz.c
+
 	Archive.cpp Archive.h
 	BufferedReadWriteStream.cpp BufferedReadWriteStream.h
 	File.cpp File.h
