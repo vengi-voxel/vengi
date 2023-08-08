@@ -38,6 +38,27 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 			ImGui::CheckboxVar("Texture coordinates", cfg::VoxformatWithtexcoords);
 		} else if (mode == video::OpenFileMode::Open) {
 			ImGui::CheckboxVar("Fill hollow", cfg::VoxformatFillHollow);
+
+			const char *voxelizationModes[] = {"high quality", "faster and less memory"};
+			const core::VarPtr &voxelizationVar = core::Var::getSafe(cfg::VoxformatVoxelizeMode);
+			const int currentVoxelizationMode = voxelizationVar->intVal();
+
+			if (ImGui::BeginCombo("Voxelization mode", voxelizationModes[currentVoxelizationMode])) {
+				for (int i = 0; i < lengthof(voxelizationModes); ++i) {
+					const char *type = voxelizationModes[i];
+					if (type == nullptr) {
+						continue;
+					}
+					const bool selected = i == currentVoxelizationMode;
+					if (ImGui::Selectable(type, selected)) {
+						voxelizationVar->setVal(core::string::toString(i));
+					}
+					if (selected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
 		}
 	}
 

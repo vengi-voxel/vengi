@@ -217,9 +217,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 	node.setVolume(new voxel::RawVolume(region), true);
 	node.setName(name);
 
-	// TODO: make this configurable
-	int voxelizeMode = 0;
-
+	const int voxelizeMode = core::Var::getSafe(cfg::VoxformatVoxelizeMode)->intVal();
 	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
 	if (axisAligned) {
 		const int maxVoxels = vdim.x * vdim.y * vdim.z;
