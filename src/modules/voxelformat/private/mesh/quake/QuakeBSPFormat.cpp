@@ -18,7 +18,10 @@
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ThreadPool.h"
 #include "image/Image.h"
+#include "io/File.h"
+#include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/MemoryReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
@@ -177,7 +180,9 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 			texture.image = tex;
 #if 0
 			core::String png = tex->name() + ".png";
-			image::Image::writePng(png.c_str(), (const uint8_t*)buffer.data(), width, height, 4);
+			const io::FilePtr file = io::filesystem()->open(core::string::path(io::filesystem()->currentDir(), png), io::FileMode::SysWrite);
+			io::FileStream stream(file);
+			image::Image::writePng(stream, (const uint8_t*)buffer.data(), width, height, 4);
 			Log::error("write png file %s", png.c_str());
 #endif
 		} else {
