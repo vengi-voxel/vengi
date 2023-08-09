@@ -16,6 +16,8 @@ General:
    - Allow to export the GLTF vertex colors as byte values
    - Added NeuQuant color quantization algorithm
    - Optimized GLTF and MD2 import
+   - Fixed Quake1 texture handling
+   - General optimizations
 
 VoxEdit:
 
