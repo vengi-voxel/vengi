@@ -268,6 +268,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 			palette = voxel::getPalette();
 		}
 
+		Log::debug("create voxels");
 		voxel::PaletteLookup palLookup(palette);
 		for (const Tri &tri : tris) {
 			const glm::vec3 &v0 = tri.vertices[0];
