@@ -34,6 +34,7 @@ private:
 	const uint32_t _darkRedColor;
 	core::String _importPalette;
 	core::String _currentSelectedPalette;
+	core::String _lospecID;
 	core::DynamicArray<core::String> _availablePalettes;
 
 	void closestColor(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
