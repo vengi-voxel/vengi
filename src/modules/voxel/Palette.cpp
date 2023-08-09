@@ -449,7 +449,7 @@ bool Palette::load(const image::ImagePtr &img) {
 	}
 	_name = img->name();
 	markDirty();
-	Log::debug("Set up %i material _colors", _colorCount);
+	Log::debug("Set up %i material colors", _colorCount);
 	return true;
 }
 
