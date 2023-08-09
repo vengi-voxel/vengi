@@ -29,6 +29,9 @@ constexpr const char *UINotifyDismissMillis = "ui_notifydismiss";
 constexpr const char *UIMultiMonitor = "ui_multimonitor";
 constexpr const char *UIBookmarks = "ui_bookmarks";
 
+constexpr const char *HttpConnectTimeout = "http_connecttimeout";
+constexpr const char *HttpTimeout = "http_timeout";
+
 constexpr const char *ClientGamma = "cl_gamma";
 constexpr const char *ClientShadowMap = "cl_shadowmap";
 constexpr const char *ClientBloom = "cl_bloom";
