@@ -18,7 +18,7 @@ set(SRCS
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util image commonlua)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util image commonlua http)
 set(MARCH native)
 #set(MARCH generic)
 # http://christian-seiler.de/projekte/fpmath/
