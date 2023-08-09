@@ -109,10 +109,11 @@ SceneManager::~SceneManager() {
 	core_assert_msg(_initialized == 0, "SceneManager was not properly shut down");
 }
 
-bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestColors) {
+bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestColors, bool save) {
 	voxel::Palette palette;
 
-	if (core::string::startsWith(paletteName, "node:")) {
+	const bool isNodePalette = core::string::startsWith(paletteName, "node:");
+	if (isNodePalette) {
 		const size_t nodeDetails = paletteName.rfind("##");
 		if (nodeDetails != core::String::npos) {
 			const int nodeId = core::string::toInt(paletteName.substr(nodeDetails + 2, paletteName.size()));
@@ -131,6 +132,17 @@ bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestC
 		return false;
 	}
 	core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
+
+	if (save && !isNodePalette && !palette.isBuiltIn()) {
+		const core::String filename = core::string::extractFilename(palette.name());
+		const core::String &paletteFilename = core::string::format("palette-%s.png", filename.c_str());
+		const io::FilesystemPtr &fs = io::filesystem();
+		const io::FilePtr &pngFile = fs->open(paletteFilename, io::FileMode::Write);
+		if (!palette.save(pngFile->name().c_str())) {
+			Log::warn("Failed to write palette image: %s", paletteFilename.c_str());
+		}
+	}
+
 	return true;
 }
 
@@ -1670,8 +1682,8 @@ void SceneManager::construct() {
 			return;
 		}
 		bool searchBestColors = false;
-		loadPalette(args[0], searchBestColors);
-	}).setHelp("Load an existing palette by name. E.g. 'built-in:nippon'").setArgumentCompleter(paletteCompleter());
+		loadPalette(args[0], searchBestColors, true);
+	}).setHelp("Load a palette by name. E.g. 'built-in:nippon' or 'lospec:id'").setArgumentCompleter(paletteCompleter());
 
 	command::Command::registerCommand("cursor", [this] (const command::CmdArgs& args) {
 		if (args.size() < 3) {

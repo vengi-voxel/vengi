@@ -5,7 +5,6 @@
 #include "PalettePanel.h"
 #include "DragAndDropPayload.h"
 #include "core/StringUtil.h"
-#include "imgui.h"
 #include "io/FormatDescription.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -225,7 +224,7 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 		ImGui::TooltipText("Adopt the current voxels to the best fitting colors of\nthe new palette.");
 
 		if (ImGui::Button(ICON_FA_CHECK " OK##loadpalette")) {
-			sceneMgr().loadPalette(_currentSelectedPalette, _searchFittingColors);
+			sceneMgr().loadPalette(_currentSelectedPalette, _searchFittingColors, false);
 			sceneMgr().mementoHandler().markPaletteChange(node);
 			ImGui::CloseCurrentPopup();
 		}
@@ -249,6 +248,19 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 			}
 			if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " Export##savepalette")) {
 				imguiApp()->saveDialog([&](const core::String &file, const io::FormatDescription *desc) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
+			}
+			if (ImGui::BeginMenu(ICON_FA_DOWNLOAD " Lospec##lospecpalette")) {
+				const char *command = "loadpalette";
+				const core::String &keybinding = imguiApp()->getKeyBindingsString(command);
+				ImGui::InputText("ID##lospecpalette", &_lospecID);
+				if (ImGui::MenuItem("Ok", keybinding.c_str(), false, true)) {
+					core::String cmd = command;
+					cmd.append(" lospec:");
+					cmd.append(_lospecID);
+					command::executeCommands(cmd, &listener);
+				}
+				ImGui::TooltipCommand(command);
+				ImGui::EndMenu();
 			}
 			ImGui::TooltipText("Export the palette");
 			ImGui::EndMenu();
