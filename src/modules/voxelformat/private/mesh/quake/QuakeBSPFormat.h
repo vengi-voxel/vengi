@@ -16,6 +16,8 @@ namespace voxelformat {
  * @brief Quake bsp format
  *
  * @ingroup Formats
+ *
+ * https://www.gamers.org/dEngine/quake/spec/quake-spec34/qkspec_4.htm#CBSPF
  */
 class QuakeBSPFormat : public MeshFormat {
 private:
@@ -35,7 +37,10 @@ private:
 
 	// q1
 	struct BspTextureBase {
-		glm::highp_vec4 st[2]{};   // st - xyz+offset
+		float vecS[3];
+		float distS;
+		float vecT[3];
+		float distT;
 		uint32_t surfaceFlags = 0; // miptex index in q1
 		uint32_t value = 0;
 	};
@@ -82,8 +87,11 @@ private:
 
 	struct Quake1Texinfo {
 		char name[16];
-		unsigned width, height;
-		unsigned offsets[4];
+		uint32_t width, height; // must be a multiple of 8
+		uint32_t offset1; // offset to u_char Pix[width   * height]
+		uint32_t offset2; // offset to u_char Pix[width/2 * height/2]
+		uint32_t offset4; // offset to u_char Pix[width/4 * height/4]
+		uint32_t offset8; // offset to u_char Pix[width/8 * height/8]
 	};
 
 	// ----------------------------------------------

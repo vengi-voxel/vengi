@@ -111,9 +111,10 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 			stream.readString(sizeof(mt.name), mt.name, false);
 			stream.readUInt32(mt.width);
 			stream.readUInt32(mt.height);
-			for (int j = 0; j < lengthof(mt.offsets); j++) {
-				stream.readUInt32(mt.offsets[j]);
-			}
+			stream.readUInt32(mt.offset1);
+			stream.readUInt32(mt.offset2);
+			stream.readUInt32(mt.offset4);
+			stream.readUInt32(mt.offset8);
 		}
 	}
 
@@ -131,14 +132,17 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 	textures.resize(texInfoCount);
 	for (int32_t i = 0; i < texInfoCount; i++) {
 		Texture &texture = textures[i];
-		for (int k = 0; k < 2; ++k) {
-			for (int j = 0; j < 4; ++j) {
-				wrap(stream.readFloat(texture.st[k][j]))
-			}
+		for (int j = 0; j < 3; ++j) {
+			wrap(stream.readFloat(texture.vecS[j]))
 		}
-		wrap(stream.readUInt32(texture.surfaceFlags))
-		wrap(stream.readUInt32(texture.value))
-		SDL_strlcpy(texture.name, miptex[texture.value].name, sizeof(texture.name));
+		wrap(stream.readFloat(texture.distS))
+		for (int j = 0; j < 3; ++j) {
+			wrap(stream.readFloat(texture.vecT[j]))
+		}
+		wrap(stream.readFloat(texture.distT))
+		wrap(stream.readUInt32(texture.surfaceFlags)) // miptex index
+		wrap(stream.readUInt32(texture.value)) // 0 = solid, 1 = water
+		SDL_strlcpy(texture.name, miptex[texture.surfaceFlags].name, sizeof(texture.name));
 	}
 
 	voxel::Palette pal;
@@ -153,13 +157,13 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 			continue;
 		}
 
-		Quake1Texinfo &texinfo = miptex[texture.value];
+		Quake1Texinfo &texinfo = miptex[texture.surfaceFlags];
 
 		image::ImagePtr tex = image::createEmptyImage(texture.name);
 		const int width = (int)texinfo.width;
 		const int height = (int)texinfo.height;
 
-		if (stream.seek(baseOffset + m.dataofs[texture.value] + (int)sizeof(Quake1Texinfo)) == -1) {
+		if (stream.seek(baseOffset + m.dataofs[texture.surfaceFlags] + (int)texinfo.offset1) == -1) {
 			Log::error("Failed to seek to pixel data %i", i);
 			continue;
 		}
@@ -209,11 +213,14 @@ bool QuakeBSPFormat::loadUFOAlienInvasionTextures(const core::String &filename, 
 	textures.resize(textureCount);
 	for (int32_t i = 0; i < textureCount; i++) {
 		Texture &texture = textures[i];
-		for (int k = 0; k < 2; ++k) {
-			for (int j = 0; j < 4; ++j) {
-				wrap(stream.readFloat(texture.st[k][j]))
-			}
+		for (int j = 0; j < 3; ++j) {
+			wrap(stream.readFloat(texture.vecS[j]))
 		}
+		wrap(stream.readFloat(texture.distS))
+		for (int j = 0; j < 3; ++j) {
+			wrap(stream.readFloat(texture.vecT[j]))
+		}
+		wrap(stream.readFloat(texture.distT))
 		wrap(stream.readUInt32(texture.surfaceFlags))
 		wrap(stream.readUInt32(texture.value))
 		if (!stream.readString(lengthof(texture.name), texture.name, false)) {
@@ -272,8 +279,18 @@ bool QuakeBSPFormat::loadQuake1Faces(io::SeekableReadStream &stream, const BspHe
 			Log::debug("skip face with %s", texName);
 		}
 
-		stream.skip(4); // 4 byte styles
-		stream.skip(4); // lightofs
+		uint8_t lightType; // type of lighting, for the face
+		uint8_t baselight; // from 0xFF (dark) to 0 (bright)
+		uint8_t light[2];  // two additional light models
+		int32_t lightmap;  // Pointer inside the general light map, or -1
+						   // this define the start of the face light map
+
+		wrap(stream.readUInt8(lightType))
+		wrap(stream.readUInt8(baselight))
+		wrap(stream.readUInt8(light[0]))
+		wrap(stream.readUInt8(light[1]))
+
+		wrap(stream.readInt32(lightmap))
 	}
 	Log::debug("Loaded %i faces", faceCount);
 	return !faces.empty();
@@ -654,17 +671,18 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 			}
 
 			const Texture &texture = textures[face.textureId];
-			const glm::vec3 sdir(texture.st[0]);
-			const glm::vec3 tdir(texture.st[1]);
+			const glm::vec3 sdir(texture.vecS[0], texture.vecS[1], texture.vecS[2]);
+			const glm::vec3 tdir(texture.vecT[0], texture.vecT[1], texture.vecT[2]);
 
 			const glm::vec3 vertex(vert->x, vert->y, vert->z);
 			if (texture.image) {
 				/* texture coordinates */
-				float s = glm::dot(vertex, sdir) + texture.st[0].w;
+				float s = glm::dot(vertex, sdir) + texture.distS;
 				s /= (float)texture.image->width();
 
-				float t = glm::dot(vertex, tdir) + texture.st[1].w;
+				float t = glm::dot(vertex, tdir) + texture.distT;
 				t /= (float)texture.image->height();
+
 				texcoords[offset] = glm::vec2(s, t);
 			} else {
 				texcoords[offset] = glm::vec2(0, 0);
