@@ -393,6 +393,7 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 
 bool VENGIFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							 io::SeekableWriteStream &stream, const SaveContext &ctx) {
+	Log::debug("Save scenegraph as vengi");
 	wrapBool(stream.writeUInt32(FourCC('V', 'E', 'N', 'G')))
 	io::ZipWriteStream zipStream(stream);
 	wrapBool(zipStream.writeUInt32(3))
