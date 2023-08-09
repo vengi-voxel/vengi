@@ -15,6 +15,7 @@
 #include "core/collection/Buffer.h"
 #include "core/RGBA.h"
 #include "core/collection/Set.h"
+#include "http/Request.h"
 #include <glm/gtx/norm.hpp>
 #include "image/Image.h"
 #include "io/File.h"
@@ -457,6 +458,21 @@ bool Palette::load(const char *paletteName) {
 	if (paletteName == nullptr || paletteName[0] == '\0') {
 		return false;
 	}
+
+	if (SDL_strncmp(paletteName, "lospec:", 7) == 0) {
+		const core::String lospecId = paletteName + 7;
+		const core::String gimpPalette = lospecId + ".gpl";
+		const core::String url = "https://lospec.com/palette-list/" + gimpPalette;
+		http::Request request;
+		io::FilePtr file = io::filesystem()->open(gimpPalette, io::FileMode::Write);
+		io::FileStream stream(file);
+		if (request.request(url, stream)) {
+			return loadGimpPalette(gimpPalette.c_str());
+		}
+		Log::warn("Failed to download the lospec palette for id: %s from %s", lospecId.c_str(), url.c_str());
+		return false;
+	}
+
 	if (SDL_strncmp(paletteName, "node:", 5) == 0) {
 		if (_colorCount == 0) {
 			nippon();
