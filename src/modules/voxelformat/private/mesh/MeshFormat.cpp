@@ -187,6 +187,35 @@ bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
 	return true;
 }
 
+template<class FUNC>
+static void voxelizeTriangle(const glm::vec3 &trisMins, const Tri &tri, FUNC &&func) {
+	const glm::vec3 voxelHalf(0.5f);
+	const glm::vec3 shiftedTrisMins = trisMins - voxelHalf;
+	const glm::vec3 &v0 = tri.vertices[0];
+	const glm::vec3 &v1 = tri.vertices[1];
+	const glm::vec3 &v2 = tri.vertices[2];
+	const glm::vec3 mins = tri.mins();
+	const glm::vec3 maxs = tri.maxs();
+	const glm::ivec3 imins(glm::floor(mins - shiftedTrisMins));
+	const glm::ivec3 size(glm::round(maxs - mins));
+	const glm::ivec3 imaxs = 2 + imins + size;
+
+	for (int x = imins.x; x < imaxs.x; x++) {
+		for (int y = imins.y; y < imaxs.y; y++) {
+			for (int z = imins.z; z < imaxs.z; z++) {
+				const glm::vec3 center = trisMins + glm::vec3(x, y, z);
+				if (glm::intersectTriangleAABB(center, voxelHalf, v0, v1, v2)) {
+					glm::vec2 uv;
+					if (!tri.calcUVs(center, uv)) {
+						continue;
+					}
+					func(tri, uv, shiftedTrisMins.x + x, shiftedTrisMins.y + y, shiftedTrisMins.z + z);
+				}
+			}
+		}
+	}
+}
+
 int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris,
 							 int parent, bool resetOrigin) const {
 	if (tris.empty()) {
@@ -228,33 +257,16 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 	} else if (voxelizeMode == 1) {
 		voxel::RawVolumeWrapper wrapper(node.volume());
 		voxel::Palette palette;
-		const glm::vec3 voxelHalf(0.5f);
 
 		const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 		if (createPalette) {
 			RGBAMap colors;
 			Log::debug("create palette");
 			for (const Tri &tri : tris) {
-				const glm::vec3 &v0 = tri.vertices[0];
-				const glm::vec3 &v1 = tri.vertices[1];
-				const glm::vec3 &v2 = tri.vertices[2];
-				const glm::vec3 mins = tri.mins();
-				const glm::vec3 maxs = tri.maxs();
-				for (float x = mins.x; x <= maxs.x; ++x) {
-					for (float y = mins.y; y <= maxs.y; ++y) {
-						for (float z = mins.z; z <= maxs.z; ++z) {
-							const glm::vec3 center((float)x + voxelHalf.x, (float)y + voxelHalf.y, (float)z + voxelHalf.z);
-							if (glm::intersectTriangleAABB(center, voxelHalf, v0, v1, v2)) {
-								glm::vec2 uv;
-								if (!tri.calcUVs(glm::vec3(x, y, z), uv)) {
-									continue;
-								}
-								const core::RGBA rgba = flattenRGB(tri.colorAt(uv));
-								colors.put(rgba, true);
-							}
-						}
-					}
-				}
+				voxelizeTriangle(trisMins, tri, [this, &colors] (const Tri &tri, const glm::vec2 &uv, int x, int y, int z) {
+					const core::RGBA rgba = flattenRGB(tri.colorAt(uv));
+					colors.put(rgba, true);
+				});
 			}
 
 			const size_t colorCount = colors.size();
@@ -271,29 +283,11 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		Log::debug("create voxels");
 		voxel::PaletteLookup palLookup(palette);
 		for (const Tri &tri : tris) {
-			const glm::vec3 &v0 = tri.vertices[0];
-			const glm::vec3 &v1 = tri.vertices[1];
-			const glm::vec3 &v2 = tri.vertices[2];
-			const glm::vec3 mins = tri.mins();
-			const glm::vec3 maxs = tri.maxs();
-			const glm::ivec3 imins(glm::floor(mins));
-			const glm::ivec3 imaxs(glm::ceil(maxs));
-			for (int x = imins.x; x < imaxs.x; ++x) {
-				for (int y = imins.y; y < imaxs.y; ++y) {
-					for (int z = imins.z; z < imaxs.z; ++z) {
-						const glm::vec3 center((float)x + voxelHalf.x, (float)y + voxelHalf.y, (float)z + voxelHalf.z);
-						if (glm::intersectTriangleAABB(center, voxelHalf, v0, v1, v2)) {
-							glm::vec2 uv;
-							if (!tri.calcUVs(center, uv)) {
-								continue;
-							}
-							const core::RGBA color = tri.colorAt(uv);
-							const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color));
-							wrapper.setVoxel(x, y, z, voxel);
-						}
-					}
-				}
-			}
+			voxelizeTriangle(trisMins, tri, [&] (const Tri &tri, const glm::vec2 &uv, int x, int y, int z) {
+				const core::RGBA color = tri.colorAt(uv);
+				const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color));
+				wrapper.setVoxel(x, y, z, voxel);
+			});
 		}
 
 		if (palette.colorCount() == 1) {
