@@ -208,7 +208,7 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 	}
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
-	int volumeDepth = bothSides ? maxDepth * 2 : maxDepth;
+	int volumeDepth = bothSides ? maxDepth * 2 + 1 : maxDepth;
 	if (volumeDepth % 2 == 0) {
 		Log::warn("Make max volume depth uneven");
 		volumeDepth++;

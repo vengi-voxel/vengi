@@ -32,6 +32,8 @@ set(TEST_SRCS
 set(TEST_FILES
 	tests/test-palette-in.png
 	tests/test-fillplane.png
+	tests/test-heightmap.png
+	tests/test-heightmap-dm.png
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
