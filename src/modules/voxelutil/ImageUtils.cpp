@@ -231,7 +231,7 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 			const uint8_t index = palLookup.findClosestIndex(color);
 			const voxel::Voxel voxel = voxel::createVoxel(palLookup.palette(), index);
 			const core::RGBA heightdata = heightmap->colorAt(x, y);
-			const float thickness = (float)heightdata.rgba;
+			const float thickness = (float)heightdata.r;
 			const float maxthickness = maxDepth;
 			const float height = thickness * maxthickness / 255.0f;
 			if (bothSides) {
@@ -239,12 +239,12 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 				const int minZ = maxDepth - heighti;
 				const int maxZ = maxDepth + heighti;
 				for (int z = minZ; z <= maxZ; ++z) {
-					volume->setVoxel(x, (imageHeight - 1) - y, z, voxel);
+					volume->setVoxel(x, region.getUpperY() - y, z, voxel);
 				}
 			} else {
 				const int heighti = (int)glm::ceil(height);
-				for (int z = 0; z < heighti; ++z) {
-					volume->setVoxel(x, (imageHeight - 1) - y, z, voxel);
+				for (int z = region.getLowerZ(); z < region.getLowerZ() + heighti; ++z) {
+					volume->setVoxel(x, region.getUpperY() - y, z, voxel);
 				}
 			}
 		}
