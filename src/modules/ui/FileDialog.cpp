@@ -232,7 +232,7 @@ bool FileDialog::quickAccessEntry(video::OpenFileMode type, const core::String& 
 		const float x = ImGui::GetCursorPosX();
 		ImGui::TextUnformatted(icon);
 		ImGui::SameLine();
-		ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
+		ImGui::SetCursorPosX(x + 2.0f * ImGui::GetStyle().ItemInnerSpacing.x + 1.5f * (float)imguiApp()->fontSize());
 	}
 	const ImVec2 size(width, 0);
 	if (ImGui::Selectable(bookmarkTitle.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
