@@ -18,6 +18,7 @@ General:
    - Optimized GLTF and MD2 import
    - Fixed Quake1 texture handling
    - General optimizations
+   - Added a new voxelization algorithm and a cvar to use it (set `voxformat_voxelizemode` to 1)
 
 VoxEdit:
 
