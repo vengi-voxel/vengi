@@ -203,7 +203,7 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 		return nullptr;
 	}
 	if (heightmap->width() != image->width() || heightmap->height() != image->height()) {
-		Log::error("Image dimensions differ for color and heigtmap");
+		Log::error("Image dimensions differ for color and heightmap");
 		return nullptr;
 	}
 	const int imageWidth = image->width();
