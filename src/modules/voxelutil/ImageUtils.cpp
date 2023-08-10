@@ -221,6 +221,7 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, volumeDepth - 1);
 	voxel::PaletteLookup palLookup(voxel::getPalette());
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
+	voxel::RawVolumeWrapper wrapper(volume);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const core::RGBA data = image->colorAt(x, y);
@@ -239,12 +240,12 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 				const int minZ = maxDepth - heighti;
 				const int maxZ = maxDepth + heighti;
 				for (int z = minZ; z <= maxZ; ++z) {
-					volume->setVoxel(x, region.getUpperY() - y, z, voxel);
+					wrapper.setVoxel(x, region.getUpperY() - y, z, voxel);
 				}
 			} else {
 				const int heighti = (int)glm::ceil(height);
 				for (int z = region.getLowerZ(); z < region.getLowerZ() + heighti; ++z) {
-					volume->setVoxel(x, region.getUpperY() - y, z, voxel);
+					wrapper.setVoxel(x, region.getUpperY() - y, z, voxel);
 				}
 			}
 		}
