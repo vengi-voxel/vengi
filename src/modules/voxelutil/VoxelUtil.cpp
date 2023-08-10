@@ -417,6 +417,9 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
 	const voxel::Region &region = in.region();
 
 	auto check = [searchedVoxel](const voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
+		if (voxel::isAir(searchedVoxel.getMaterial())) {
+			return true;
+		}
 		const voxel::Voxel &v = in.voxel(pos);
 		return v.isSame(searchedVoxel);
 	};
@@ -432,7 +435,7 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
 		return in.setVoxel(pos, v);
 	};
 
-	return walkPlane(in, position, face, 0, check, exec);
+	return walkPlane(in, position, face, -1, check, exec);
 }
 
 } // namespace voxelutil

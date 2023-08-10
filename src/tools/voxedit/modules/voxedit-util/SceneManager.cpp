@@ -342,7 +342,7 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
 	const glm::ivec3 &pos = _modifier.cursorPosition();
 	const voxel::FaceNames face = _modifier.cursorFace();
-	const voxel::Voxel &hitVoxel = hitCursorVoxel();
+	const voxel::Voxel hitVoxel/* = hitCursorVoxel()*/; // TODO: should be an option
 	voxelutil::fillPlane(wrapper, image, hitVoxel, pos, face);
 	modified(nodeId, wrapper.dirtyRegion());
 }
