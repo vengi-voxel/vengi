@@ -243,11 +243,11 @@ void RawVolume::clear() {
 }
 
 RawVolume::Sampler::Sampler(const RawVolume* volume) :
-		_volume(const_cast<RawVolume*>(volume)) {
+		_volume(const_cast<RawVolume*>(volume)), _region(volume->region()) {
 }
 
 RawVolume::Sampler::Sampler(const RawVolume& volume) :
-		_volume(const_cast<RawVolume*>(&volume)) {
+		_volume(const_cast<RawVolume*>(&volume)), _region(volume.region()) {
 }
 
 RawVolume::Sampler::~Sampler() {

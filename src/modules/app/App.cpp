@@ -82,7 +82,6 @@ App::App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeP
 }
 
 App::~App() {
-	core_trace_set(nullptr);
 	Log::shutdown();
 	_threadPool = core::ThreadPoolPtr();
 }
@@ -115,18 +114,6 @@ void App::addBlocker(AppState blockedState) {
 
 void App::remBlocker(AppState blockedState) {
 	_blockers[(int)blockedState] = false;
-}
-
-void App::traceBeginFrame(const char *) {
-}
-
-void App::traceBegin(const char *, const char*) {
-}
-
-void App::traceEnd(const char *) {
-}
-
-void App::traceEndFrame(const char *) {
 }
 
 void App::onFrame() {
@@ -253,14 +240,6 @@ AppState App::onConstruct() {
 
 	command::Command::registerCommand("quit", [&] (const command::CmdArgs& args) {requestQuit();}).setHelp("Quit the application");
 
-	command::Command::registerCommand("core_trace", [&] (const command::CmdArgs& args) {
-		if (toggleTrace()) {
-			Log::info("Activated statsd based tracing metrics");
-		} else {
-			Log::info("Deactivated statsd based tracing metrics");
-		}
-	}).setHelp("Toggle application tracing via statsd");
-
 	AppCommand::init(_timeProvider);
 
 	for (int i = 0; i < _argc; ++i) {
@@ -309,14 +288,6 @@ AppState App::onConstruct() {
 	Log::init(logfilePath.c_str());
 
 	return AppState::Init;
-}
-
-bool App::toggleTrace() {
-	if (core_trace_set(this) == this) {
-		core_trace_set(nullptr);
-		return false;
-	}
-	return true;
 }
 
 void App::onBeforeInit() {

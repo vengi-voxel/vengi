@@ -29,7 +29,7 @@ public:
 		virtual ~Sampler();
 
 		const Voxel &voxel() const;
-		virtual const Region &region() const;
+		const Region &region() const;
 
 		bool currentPositionValid() const;
 
@@ -80,6 +80,8 @@ public:
 
 	protected:
 		RawVolume *_volume;
+
+		voxel::Region _region;
 
 		// The current position in the volume
 		glm::ivec3 _posInVolume{0, 0, 0};
@@ -256,7 +258,7 @@ inline const Voxel &RawVolume::voxel(const glm::ivec3 &pos) const {
 #define CAN_GO_POS_Z(val) ((val) < region.getUpperZ())
 
 inline const Region &RawVolume::Sampler::region() const {
-	return _volume->region();
+	return _region;
 }
 
 inline const glm::ivec3 &RawVolume::Sampler::position() const {

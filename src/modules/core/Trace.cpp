@@ -16,7 +16,6 @@ namespace core {
 
 namespace {
 
-static TraceCallback* _callback = nullptr;
 static thread_local const char* _threadName = "Unknown";
 
 }
@@ -72,21 +71,6 @@ Trace::~Trace() {
 #endif
 }
 
-TraceScoped::TraceScoped(const char* name, const char *msg) {
-	traceBegin(name);
-	traceMessage(msg);
-}
-
-TraceScoped::~TraceScoped() {
-	traceEnd();
-}
-
-TraceCallback* traceSet(TraceCallback* callback) {
-	TraceCallback* old = _callback;
-	_callback = callback;
-	return old;
-}
-
 void traceInit() {
 #ifdef USE_EMTRACE
 	Log::info("emtrace active");
@@ -100,11 +84,7 @@ void traceBeginFrame() {
 #ifdef USE_EMTRACE
 	emscripten_trace_record_frame_start();
 #else
-	if (_callback != nullptr) {
-		_callback->traceBeginFrame(_threadName);
-	} else {
-		traceBegin("Frame");
-	}
+	traceBegin("Frame");
 #endif
 }
 
@@ -112,31 +92,19 @@ void traceEndFrame() {
 #ifdef USE_EMTRACE
 	emscripten_trace_record_frame_end();
 #else
-	if (_callback != nullptr) {
-		_callback->traceEndFrame(_threadName);
-	} else {
-		traceEnd();
-	}
+	traceEnd();
 #endif
 }
 
 void traceBegin(const char* name) {
 #ifdef USE_EMTRACE
 	emscripten_trace_enter_context(name);
-#else
-	if (_callback != nullptr) {
-		_callback->traceBegin(_threadName, name);
-	}
 #endif
 }
 
 void traceEnd() {
 #ifdef USE_EMTRACE
 	emscripten_trace_exit_context();
-#else
-	if (_callback != nullptr) {
-		_callback->traceEnd(_threadName);
-	}
 #endif
 }
 

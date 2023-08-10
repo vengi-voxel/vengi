@@ -123,36 +123,35 @@ CORE_FORCE_INLINE bool isTransparentQuadNeeded(VoxelType back, VoxelType front, 
 	return true;
 }
 
-CORE_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
+static CORE_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
 	return v1.colorIndex == v2.colorIndex && v1.info == v2.info;
 }
 
-CORE_FORCE_INLINE bool isSameColor(const VoxelVertex& v1, const VoxelVertex& v2) {
+static CORE_FORCE_INLINE bool isSameColor(const VoxelVertex& v1, const VoxelVertex& v2) {
 	return v1.colorIndex == v2.colorIndex;
 }
 
-template<class FUNC>
-static bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent, FUNC&& equal) {
+static bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent) {
 	core_trace_scoped(MergeQuads);
 	const VertexArray& vv = meshCurrent->getVertexVector();
 	const VoxelVertex& v11 = vv[q1.vertices[0]];
 	const VoxelVertex& v21 = vv[q2.vertices[0]];
-	if (!equal(v11, v21)) {
+	if (!isSameColor(v11, v21)) {
 		return false;
 	}
 	const VoxelVertex& v12 = vv[q1.vertices[1]];
 	const VoxelVertex& v22 = vv[q2.vertices[1]];
-	if (!equal(v12, v22)) {
+	if (!isSameColor(v12, v22)) {
 		return false;
 	}
 	const VoxelVertex& v13 = vv[q1.vertices[2]];
 	const VoxelVertex& v23 = vv[q2.vertices[2]];
-	if (!equal(v13, v23)) {
+	if (!isSameColor(v13, v23)) {
 		return false;
 	}
 	const VoxelVertex& v14 = vv[q1.vertices[3]];
 	const VoxelVertex& v24 = vv[q2.vertices[3]];
-	if (!equal(v14, v24)) {
+	if (!isSameColor(v14, v24)) {
 		return false;
 	}
 	//Now check whether quad 2 is adjacent to quad one by comparing vertices.
@@ -183,14 +182,60 @@ static bool mergeQuads(Quad& q1, Quad& q2, Mesh* meshCurrent, FUNC&& equal) {
 	return false;
 }
 
-static bool performQuadMerging(QuadList& quads, Mesh* meshCurrent, bool ambientOcclusion) {
+static bool mergeQuadsAO(Quad& q1, Quad& q2, Mesh* meshCurrent) {
+	core_trace_scoped(MergeQuads);
+	const VertexArray& vv = meshCurrent->getVertexVector();
+	const VoxelVertex& v11 = vv[q1.vertices[0]];
+	const VoxelVertex& v21 = vv[q2.vertices[0]];
+	if (!isSameVertex(v11, v21)) {
+		return false;
+	}
+	const VoxelVertex& v12 = vv[q1.vertices[1]];
+	const VoxelVertex& v22 = vv[q2.vertices[1]];
+	if (!isSameVertex(v12, v22)) {
+		return false;
+	}
+	const VoxelVertex& v13 = vv[q1.vertices[2]];
+	const VoxelVertex& v23 = vv[q2.vertices[2]];
+	if (!isSameVertex(v13, v23)) {
+		return false;
+	}
+	const VoxelVertex& v14 = vv[q1.vertices[3]];
+	const VoxelVertex& v24 = vv[q2.vertices[3]];
+	if (!isSameVertex(v14, v24)) {
+		return false;
+	}
+	//Now check whether quad 2 is adjacent to quad one by comparing vertices.
+	//Adjacent quads must share two vertices, and the second quad could be to the
+	//top, bottom, left, of right of the first one. This gives four combinations to test.
+	if (q1.vertices[0] == q2.vertices[1] && q1.vertices[3] == q2.vertices[2]) {
+		q1.vertices[0] = q2.vertices[0];
+		q1.vertices[3] = q2.vertices[3];
+		return true;
+	}
+	if (q1.vertices[3] == q2.vertices[0] && q1.vertices[2] == q2.vertices[1]) {
+		q1.vertices[3] = q2.vertices[3];
+		q1.vertices[2] = q2.vertices[2];
+		return true;
+	}
+	if (q1.vertices[1] == q2.vertices[0] && q1.vertices[2] == q2.vertices[3]) {
+		q1.vertices[1] = q2.vertices[1];
+		q1.vertices[2] = q2.vertices[2];
+		return true;
+	}
+	if (q1.vertices[0] == q2.vertices[3] && q1.vertices[1] == q2.vertices[2]) {
+		q1.vertices[0] = q2.vertices[0];
+		q1.vertices[1] = q2.vertices[1];
+		return true;
+	}
+
+	// Quads cannot be merged.
+	return false;
+}
+
+static bool performQuadMergingAO(QuadList& quads, Mesh* meshCurrent) {
 	core_trace_scoped(PerformQuadMerging);
 	bool didMerge = false;
-
-	auto* equal = isSameVertex;
-	if (!ambientOcclusion) {
-		equal = isSameColor;
-	}
 
 	for (QuadList::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
 		QuadList::iterator innerIter = outerIter;
@@ -199,7 +244,32 @@ static bool performQuadMerging(QuadList& quads, Mesh* meshCurrent, bool ambientO
 			Quad& q1 = *outerIter;
 			Quad& q2 = *innerIter;
 
-			const bool result = mergeQuads(q1, q2, meshCurrent, equal);
+			const bool result = mergeQuadsAO(q1, q2, meshCurrent);
+
+			if (result) {
+				didMerge = true;
+				innerIter = quads.erase(innerIter);
+			} else {
+				++innerIter;
+			}
+		}
+	}
+
+	return didMerge;
+}
+
+static bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
+	core_trace_scoped(PerformQuadMerging);
+	bool didMerge = false;
+
+	for (QuadList::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
+		QuadList::iterator innerIter = outerIter;
+		++innerIter;
+		while (innerIter != quads.end()) {
+			Quad& q1 = *outerIter;
+			Quad& q2 = *innerIter;
+
+			const bool result = mergeQuads(q1, q2, meshCurrent);
 
 			if (result) {
 				didMerge = true;
@@ -241,7 +311,12 @@ static void meshify(Mesh* result, bool mergeQuads, bool ambientOcclusion, QuadLi
 			core_trace_scoped(MergeQuads);
 			// Repeatedly call this function until it returns
 			// false to indicate nothing more can be done.
-			while (performQuadMerging(listQuads, result, ambientOcclusion)) {
+			if (ambientOcclusion) {
+				while (performQuadMergingAO(listQuads, result)) {
+				}
+			} else {
+				while (performQuadMerging(listQuads, result)) {
+				}
 			}
 		}
 

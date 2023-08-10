@@ -48,7 +48,7 @@ enum class AppState : uint8_t {
 /**
  * @brief The app class controls the main loop and life-cycle of every application.
  */
-class App : public core::TraceCallback {
+class App {
 protected:
 	core::Trace _trace;
 	// the amount of command line arguments
@@ -107,13 +107,6 @@ protected:
 	core::TimeProviderPtr _timeProvider;
 	core::VarPtr _logLevelVar;
 	core::VarPtr _syslogVar;
-
-	bool toggleTrace();
-
-	virtual void traceBeginFrame(const char *threadName) override;
-	virtual void traceBegin(const char *threadName, const char* name) override;
-	virtual void traceEnd(const char *threadName) override;
-	virtual void traceEndFrame(const char *threadName) override;
 
 	virtual void usage() const;
 	void setArgs(int argc, char *argv[]);

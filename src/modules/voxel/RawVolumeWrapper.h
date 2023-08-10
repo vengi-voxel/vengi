@@ -22,18 +22,21 @@ public:
 	private:
 		using Super = RawVolume::Sampler;
 		RawVolumeWrapper* _rawVolumeWrapper = nullptr;
-		voxel::Region _region;
 	public:
-		Sampler(const RawVolumeWrapper* volume) : Super(volume->volume()), _region(volume->region()) {}
+		Sampler(const RawVolumeWrapper *volume) : Super(volume->volume()) {
+			_region = volume->region();
+		}
 
-		Sampler(const RawVolumeWrapper& volume) : Super(volume.volume()), _region(volume.region()) {}
+		Sampler(const RawVolumeWrapper &volume) : Super(volume.volume()) {
+			_region = volume.region();
+		}
 
-		Sampler(RawVolumeWrapper* volume) : Super(volume->volume()), _rawVolumeWrapper(volume), _region(volume->region()) {}
+		Sampler(RawVolumeWrapper *volume) : Super(volume->volume()), _rawVolumeWrapper(volume) {
+			_region = volume->region();
+		}
 
-		Sampler(RawVolumeWrapper& volume) : Super(volume.volume()), _rawVolumeWrapper(&volume), _region(volume.region()) {}
-
-		const Region &region() const override {
-			return _region;
+		Sampler(RawVolumeWrapper &volume) : Super(volume.volume()), _rawVolumeWrapper(&volume) {
+			_region = volume.region();
 		}
 
 		bool setVoxel(const Voxel& voxel) override {

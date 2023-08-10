@@ -27,6 +27,12 @@ bool core_report_assert(AssertData &data, const char *file, int line, const char
 #define CORE_NULL_WHILE_LOOP_CONDITION (0)
 #endif
 
+#ifdef NDEBUG
+
+#define core_assert(condition) do { } while (CORE_NULL_WHILE_LOOP_CONDITION)
+#define core_assert_msg(conditionCheck, ...) do { } while (CORE_NULL_WHILE_LOOP_CONDITION)
+
+#else
 #define core_assert(condition)                                                                                         \
 	do {                                                                                                               \
 		while (!(condition)) {                                                                                         \
@@ -56,9 +62,37 @@ bool core_assert_impl_message(AssertData &assert_data, char *buf, int bufSize, c
 			break; /* not retrying. */                                                                                 \
 		}                                                                                                              \
 	} while (CORE_NULL_WHILE_LOOP_CONDITION)
+#endif
 
-#define core_assert_always core_assert
-#define core_assert_msg_always core_assert_msg
+#define core_assert_always(condition)                                                                                         \
+	do {                                                                                                               \
+		while (!(condition)) {                                                                                         \
+			static struct AssertData assert_data = {0, 0, #condition, 0, 0, 0, 0};                                     \
+			if (core_report_assert(assert_data, CORE_FILE, CORE_LINE, CORE_FUNCTION)) {                                \
+				continue;                                                                                              \
+			}                                                                                                          \
+			break; /* not retrying. */                                                                                 \
+		}                                                                                                              \
+	} while (CORE_NULL_WHILE_LOOP_CONDITION)
+
+bool core_assert_impl_message(AssertData &assert_data, char *buf, int bufSize, const char *function, const char *file,
+							  int line, CORE_FORMAT_STRING const char *format, ...) CORE_PRINTF_VARARG_FUNC(7);
+
+#define core_assert_msg_always(conditionCheck, ...)                                                                           \
+	do {                                                                                                               \
+		while (!(conditionCheck)) {                                                                                    \
+			static struct AssertData assert_data = {0, 0, nullptr, 0, 0, 0, 0};                                        \
+			if (assert_data.always_ignore == 0) {                                                                      \
+				core_stacktrace();                                                                                     \
+			}                                                                                                          \
+			static char __assertBuf[1024];                                                                             \
+			if (core_assert_impl_message(assert_data, __assertBuf, sizeof(__assertBuf), CORE_FUNCTION, CORE_FILE,      \
+										 CORE_LINE, ##__VA_ARGS__)) {                                                  \
+				continue; /* go again. */                                                                              \
+			}                                                                                                          \
+			break; /* not retrying. */                                                                                 \
+		}                                                                                                              \
+	} while (CORE_NULL_WHILE_LOOP_CONDITION)
 
 #ifdef _MSC_VER
 #define core_assert_2byte_aligned(data)

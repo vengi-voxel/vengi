@@ -9,9 +9,9 @@
 
 namespace voxel {
 
-using VertexArray = core::DynamicArray<voxel::VoxelVertex>;
-using IndexArray = core::DynamicArray<voxel::IndexType>;
-using NormalArray = core::DynamicArray<glm::vec3>;
+using VertexArray = core::DynamicArray<voxel::VoxelVertex, 1024>;
+using IndexArray = core::DynamicArray<voxel::IndexType, 1024>;
+using NormalArray = core::DynamicArray<glm::vec3, 1024>;
 
 /**
  * @brief A simple and general-purpose mesh class to represent the data returned by the surface extraction functions.
