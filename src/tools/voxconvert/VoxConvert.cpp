@@ -474,7 +474,12 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 		}
 		if (importAsPlane) {
 			scenegraph::SceneGraphNode node;
-			node.setVolume(voxelutil::importAsPlane(image), true);
+			voxel::RawVolume *v = voxelutil::importAsPlane(image);
+			if (v == nullptr) {
+				Log::warn("Failed to import image as plane: '%s'", image->name().c_str());
+				return false;
+			}
+			node.setVolume(v, true);
 			node.setName(core::string::extractFilename(infile));
 			sceneGraph.emplace(core::move(node));
 		}
