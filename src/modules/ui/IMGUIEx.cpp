@@ -4,6 +4,7 @@
 
 #include "IMGUIEx.h"
 #include "IMGUIApp.h"
+#include "IconsFontAwesome6.h"
 #include "IconsForkAwesome.h"
 #include "ScopedStyle.h"
 #include "command/CommandHandler.h"
@@ -429,9 +430,24 @@ const char *CommandMenuItem(const char *title, const char *command, bool enabled
 	return nullptr;
 }
 
+static inline void AddUnderLine(ImColor color) {
+	ImVec2 min = ImGui::GetItemRectMin();
+	ImVec2 max = ImGui::GetItemRectMax();
+	min.y = max.y;
+	ImGui::GetWindowDrawList()->AddLine(min, max, color, 1.0f);
+}
+
+// https://gist.github.com/dougbinks/ef0962ef6ebe2cadae76c4e9f0586c69#file-imguiutils-h-L219
 void URLItem(const char *title, const char *url, float width) {
-	const core::String& cmd = core::String::format("url %s", url);
-	CommandButton(title, cmd.c_str(), nullptr, ImVec2(width, 0));
+	ImGui::Text("%s", title);
+	if (ImGui::IsItemHovered()) {
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+			const core::String &cmd = core::String::format("url %s", url);
+			command::executeCommands(cmd);
+		}
+		AddUnderLine(ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
+		ImGui::SetTooltip(ICON_FA_LINK "  Open in browser\n%s", url);
+	}
 }
 
 bool ButtonFullWidth(const char *title) {
