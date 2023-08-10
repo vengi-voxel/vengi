@@ -465,7 +465,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 			const bool bothSides = core::string::toBool(getArgVal("--image-as-volume-both-sides"));
 			voxel::RawVolume *v = voxelutil::importAsVolume(image, maxDepth, bothSides);
 			if (v == nullptr) {
-				Log::warn("Failed to import image as volume", image->name().c_str());
+				Log::warn("Failed to import image as volume: '%s'", image->name().c_str());
 				return false;
 			}
 			node.setVolume(v, true);
