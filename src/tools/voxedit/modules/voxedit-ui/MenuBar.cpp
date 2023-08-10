@@ -181,6 +181,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 
 				if (ImGui::BeginTabItem("Credits")) {
 					ImGui::URLItem("backward-cpp", "https://github.com/bombela/backward-cpp", w);
+#ifdef USE_CURL
+					ImGui::Text("libCURL");
+#endif
 					ImGui::URLItem("dearimgui", "https://github.com/ocornut/imgui", w);
 					ImGui::URLItem("glm", "https://github.com/g-truc/glm", w);
 					ImGui::URLItem("imguizmo", "https://github.com/CedricGuillemet/ImGuizmo", w);
@@ -195,6 +198,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 					ImGui::URLItem("tinyobjloader", "https://github.com/tinyobjloader/tinyobjloader", w);
 					ImGui::URLItem("ufbx", "https://github.com/bqqbarbhg/ufbx", w);
 					ImGui::URLItem("Yocto/GL", "https://github.com/xelatihy/yocto-gl", w);
+#ifdef USE_ZLIB
+					ImGui::Text("zlib");
+#endif
 					ImGui::EndTabItem();
 				}
 				if (ImGui::BeginTabItem("Formats")) {
