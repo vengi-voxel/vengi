@@ -405,7 +405,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 		bool error = false;
 		array.append(length, [&ctx, &error] (int i) {
 			int32_t val;
-			if (ctx.stream->readInt32(val) != 0) {
+			if (ctx.stream->readInt32BE(val) != 0) {
 				error = true;
 			}
 			return val;
@@ -422,7 +422,7 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 		bool error = false;
 		array.append(length, [&ctx, &error] (int i) {
 			int64_t val;
-			if (ctx.stream->readInt64(val) != 0) {
+			if (ctx.stream->readInt64BE(val) != 0) {
 				error = true;
 			}
 			return val;

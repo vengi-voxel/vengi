@@ -22,6 +22,11 @@ TEST_F(MCRFormatTest, testLoad117) {
 	ASSERT_EQ(node.type(), scenegraph::SceneGraphNodeType::Model);
 	const voxel::RawVolume *v = node.volume();
 	const int cnt = voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &v) {}, voxelutil::VisitAll());
+	EXPECT_EQ(v->voxel(0, 62, -576), voxel::Voxel(voxel::VoxelType::Generic, 8));
+	EXPECT_EQ(v->voxel(0, -45, -576), voxel::Voxel(voxel::VoxelType::Generic, 8));
+	EXPECT_EQ(v->voxel(0, -45, -566), voxel::Voxel(voxel::VoxelType::Generic, 2));
+	EXPECT_EQ(v->voxel(0, -62, -576), voxel::Voxel(voxel::VoxelType::Generic, 118));
+	EXPECT_EQ(v->voxel(0, -64, -576), voxel::Voxel(voxel::VoxelType::Generic, 7));
 	EXPECT_EQ(32512, cnt);
 }
 
