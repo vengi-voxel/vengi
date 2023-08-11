@@ -204,8 +204,11 @@ void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scene
 
 	if (_sceneMode) {
 		_renderer.resetReferences();
-		for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::ModelReference); iter != sceneGraph.end(); ++iter) {
-			const scenegraph::SceneGraphNode &node = *iter;
+		for (auto entry : sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &node = entry->second;
+			if (!node.isReference()) {
+				continue;
+			}
 			const int id = getVolumeId(node);
 			if (id >= RawVolumeRenderer::MAX_VOLUMES) {
 				continue;
