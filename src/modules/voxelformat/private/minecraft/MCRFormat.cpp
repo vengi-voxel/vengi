@@ -211,7 +211,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 	const glm::ivec3 maxs(MAX_SIZE - 1, MAX_SIZE - 1, MAX_SIZE - 1);
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
-	voxel::RawVolumeWrapper wrapper(v);
+	bool hasBlocks = false;
 
 	if (secPal.pal.empty()) {
 		if (data.type() != priv::TagType::BYTE_ARRAY) {
@@ -233,7 +233,8 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 					if (color) {
 						const uint8_t palColIdx = palette.getClosestMatch(secPal.mcpal.color(color));
 						const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
-						wrapper.setVoxel(sPos, voxel);
+						v->setVoxel(sPos, voxel);
+						hasBlocks = true;
 					}
 				}
 			}
@@ -260,6 +261,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 					const uint64_t blockIndex = (blockState >> bitCnt) & bitMask;
 					if (blockIndex < secPal.pal.size()) {
 						blocks[i] = secPal.pal[blockIndex];
+						hasBlocks = true;
 					} else {
 						blocks[i] = 0;
 					}
@@ -277,6 +279,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 					blockIndex += (blockState2 << (bitSize - bitCnt)) & bitMask;
 					if (blockIndex < secPal.pal.size()) {
 						blocks[i] = secPal.pal[blockIndex];
+						hasBlocks = true;
 					} else {
 						blocks[i] = 0;
 					}
@@ -290,6 +293,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 				const uint64_t blockIndex = (blockState >> bitCnt) & bitMask;
 				if (blockIndex < secPal.pal.size()) {
 					blocks[i] = secPal.pal[blockIndex];
+					hasBlocks = true;
 				} else {
 					blocks[i] = 0;
 				}
@@ -310,14 +314,14 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 					if (color) {
 						const uint8_t palColIdx = palette.getClosestMatch(secPal.mcpal.color(color));
 						const voxel::Voxel voxel = voxel::createVoxel(palette, palColIdx);
-						wrapper.setVoxel(sPos, voxel);
+						v->setVoxel(sPos, voxel);
 					}
 				}
 			}
 		}
 	}
 
-	if (wrapper.dirtyRegion().isValid()) {
+	if (hasBlocks) {
 		glm::ivec3 translate;
 		translate.x = 0;
 		translate.y = sectionY * MAX_SIZE;
