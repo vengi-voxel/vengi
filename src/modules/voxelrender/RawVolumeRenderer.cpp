@@ -7,6 +7,7 @@
 #include "core/Trace.h"
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/epsilon.hpp>
+#include "core/collection/DynamicArray.h"
 #include "video/FrameBufferConfig.h"
 #include "video/ScopedFrameBuffer.h"
 #include "video/Texture.h"
@@ -643,6 +644,8 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 
 	// --- transparency pass
 	{
+		core::DynamicArray<int> sorted;
+		sorted.reserve(MAX_VOLUMES);
 		video::ScopedState scopedBlend(video::State::Blend, true);
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			if (_state[idx]._hidden) {
@@ -654,6 +657,19 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 				continue;
 			}
 
+			sorted.push_back(idx);
+		}
+
+		const glm::vec3 &eye = camera.eye();
+		core::sort(sorted.begin(), sorted.end(), [this, eye] (int a, int b) {
+			const float d1 = glm::distance2(eye, glm::vec3(_state[a]._model[3]) + glm::vec3(_state[a]._rawVolume->region().getCenter()));
+			const float d2 = glm::distance2(eye, glm::vec3(_state[b]._model[3]) + glm::vec3(_state[b]._rawVolume->region().getCenter()));
+			return d1 < d2;
+		});
+
+		for (int idx : sorted) {
+			const int bufferIndex = resolveIdx(idx);
+			const uint32_t indices = _state[bufferIndex].indices(MeshType_Transparency);
 			updatePalette(idx);
 			_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 			_voxelShaderVertData.model = _state[idx]._model;
