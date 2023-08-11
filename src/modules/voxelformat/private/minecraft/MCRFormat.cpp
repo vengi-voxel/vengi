@@ -247,13 +247,14 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 
 		const core::DynamicArray<int64_t> &blockStates = *data.longArray();
 
-		uint8_t blocks[4096];
+		constexpr int blockCount = MAX_SIZE * MAX_SIZE * MAX_SIZE;
+		uint8_t blocks[blockCount];
 		int bsCnt = 0;
 		size_t bitCnt = 0;
 		if (dataVersion < 2529) {
-			const size_t bitSize = (data.longArray()->size()) * 64 / 4096;
+			const size_t bitSize = (data.longArray()->size()) * 64 / blockCount;
 			const uint32_t bitMask = (1 << bitSize) - 1;
-			for (int i = 0; i < 4096; i++) {
+			for (int i = 0; i < blockCount; i++) {
 				if (bitCnt + bitSize <= 64) {
 					const uint64_t blockState = blockStates[bsCnt];
 					const uint64_t blockIndex = (blockState >> bitCnt) & bitMask;
@@ -284,7 +285,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 		} else {
 			const size_t bitSize = secPal.numBits;
 			const uint32_t bitMask = (1 << bitSize) - 1;
-			for (int i = 0; i < 4096; i++) {
+			for (int i = 0; i < blockCount; i++) {
 				const uint64_t blockState = blockStates[bsCnt];
 				const uint64_t blockIndex = (blockState >> bitCnt) & bitMask;
 				if (blockIndex < secPal.pal.size()) {
