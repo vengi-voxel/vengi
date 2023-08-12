@@ -37,10 +37,10 @@ CORE_ENUM_BIT_OPERATIONS(ShapeBuilderCube);
  */
 class ShapeBuilder {
 public:
-	typedef core::DynamicArray<uint32_t> Indices;
-	typedef core::DynamicArray<glm::vec3> Vertices;
-	typedef core::DynamicArray<glm::vec2> Texcoords;
-	typedef core::DynamicArray<glm::vec4> Colors;
+	typedef core::DynamicArray<uint32_t, 256> Indices;
+	typedef core::DynamicArray<glm::vec3, 256> Vertices;
+	typedef core::DynamicArray<glm::vec2, 256> Texcoords;
+	typedef core::DynamicArray<glm::vec4, 256> Colors;
 private:
 	alignas(32) Indices _indices;
 	alignas(32) Texcoords _texcoords;
@@ -52,6 +52,7 @@ private:
 	int _initialSize;
 	glm::vec4 _color;
 	glm::vec3 _position {0.0f};
+	bool _applyRotation = false;
 public:
 	ShapeBuilder(int initialSize = 0);
 
@@ -98,6 +99,8 @@ public:
 		_texcoords.clear();
 		_normals.clear();
 		_position = glm::vec3(0.0f);
+		_rotation = glm::mat3(1.0f);
+		_applyRotation = false;
 		if (_initialSize > 0) {
 			reserve(_initialSize, _initialSize);
 		}
@@ -200,6 +203,7 @@ inline void ShapeBuilder::setPosition(const glm::vec3& position) {
 
 inline void ShapeBuilder::setRotation(const glm::mat3& rotation) {
 	_rotation = rotation;
+	_applyRotation = true;
 }
 
 inline const ShapeBuilder::Vertices& ShapeBuilder::getVertices() const {

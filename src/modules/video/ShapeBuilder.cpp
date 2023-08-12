@@ -395,7 +395,11 @@ uint32_t ShapeBuilder::addVertex(const glm::vec3& vertex, const glm::vec2& uv, c
 	core_assert(_colors.capacity() > _colors.size());
 	_colors.push_back(_color);
 	core_assert(_vertices.capacity() > _vertices.size());
-	_vertices.push_back(_position + _rotation * vertex);
+	if (_applyRotation) {
+		_vertices.push_back(_position + _rotation * vertex);
+	} else {
+		_vertices.push_back(_position + vertex);
+	}
 	core_assert(_normals.capacity() > _normals.size());
 	_normals.push_back(normal);
 	core_assert(_texcoords.capacity() > _texcoords.size());
@@ -408,7 +412,11 @@ uint32_t ShapeBuilder::addVertex(const glm::vec3& vertex, const glm::vec3& norma
 	core_assert(_colors.capacity() > _colors.size());
 	_colors.push_back(_color);
 	core_assert(_vertices.capacity() > _vertices.size());
-	_vertices.push_back(_position + _rotation * vertex);
+	if (_applyRotation) {
+		_vertices.push_back(_position + _rotation * vertex);
+	} else {
+		_vertices.push_back(_position + vertex);
+	}
 	core_assert(_normals.capacity() > _normals.size());
 	_normals.push_back(normal);
 	core_assert(_texcoords.empty());
