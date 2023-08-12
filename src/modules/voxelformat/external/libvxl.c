@@ -8,7 +8,7 @@
 
 #define LIBVXL_SPAN(base, off) ((struct libvxl_span*)((uint8_t*)(base) + (off)))
 
-static struct libvxl_chunk* chunk_fposition(struct libvxl_map* map, size_t x,
+static inline struct libvxl_chunk* chunk_fposition(struct libvxl_map* map, size_t x,
 											size_t y) {
 	libvxl_assert(map && x < map->width && y < map->height,
 				  "invalid input parameters");
@@ -19,7 +19,7 @@ static struct libvxl_chunk* chunk_fposition(struct libvxl_map* map, size_t x,
 	return map->chunks + chunk_x + chunk_y * chunk_cnt;
 }
 
-static bool libvxl_geometry_get(struct libvxl_map* map, size_t x, size_t y,
+static inline bool libvxl_geometry_get(struct libvxl_map* map, size_t x, size_t y,
 								size_t z) {
 	libvxl_assert(map && x < map->width && y < map->height && z < map->depth,
 				  "invalid input parameters");
@@ -30,7 +30,7 @@ static bool libvxl_geometry_get(struct libvxl_map* map, size_t x, size_t y,
 		> 0;
 }
 
-static void libvxl_geometry_set(struct libvxl_map* map, size_t x, size_t y,
+static inline void libvxl_geometry_set(struct libvxl_map* map, size_t x, size_t y,
 								size_t z, size_t state) {
 	libvxl_assert(map && x < map->width && y < map->height && z < map->depth,
 				  "invalid input parameters");
@@ -121,7 +121,7 @@ static void libvxl_chunk_insert(struct libvxl_chunk* chunk, uint32_t pos,
 	chunk->index++;
 }
 
-static size_t libvxl_span_length(struct libvxl_span* s) {
+static inline size_t libvxl_span_length(struct libvxl_span* s) {
 	libvxl_assert(s, "span pointer is null");
 
 	return s->length > 0 ? s->length * 4 :
