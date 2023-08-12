@@ -219,6 +219,17 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			}
 			ImGui::TooltipText("Reset");
 
+			if (ImGui::Button("Reset all")) {
+				if (_localSpace) {
+					transform.setLocalMatrix(glm::mat4(1.0f));
+				} else {
+					transform.setWorldMatrix(glm::mat4(1.0f));
+				}
+				node.setPivot({0.0f, 0.0f, 0.0f});
+				transform.update(sceneGraph, node, frame);
+				sceneMgr().mementoHandler().markNodeTransform(node, keyFrame);
+			}
+
 			{
 				ui::ScopedStyle style;
 				if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
