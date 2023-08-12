@@ -2495,7 +2495,7 @@ void SceneManager::traceScene(bool force) {
 		const glm::vec3 pivot = _sceneGraph.resolvePivot(node);
 		const scenegraph::SceneGraphTransform &transform = node.transformForFrame(_currentFrameIdx);
 		const math::OBB<float>& obb = toOBB(true, region, pivot, transform);
-		if (obb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
+		if (obb.intersect(ray.origin, ray.direction, distance)) {
 			if (distance < intersectDist) {
 				intersectDist = distance;
 				_sceneModeNodeIdTrace = node.id();

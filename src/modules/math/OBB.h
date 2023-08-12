@@ -112,7 +112,7 @@ public:
 	/**
 	 * @param[out] distance the distance to the hit point. Only valid if the method returns true.
 	 */
-	bool intersect(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, float rayLength, float &distance) const {
+	bool intersect(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, float &distance) const {
 		// Transform the ray into the OBB's local space
 		const glm::vec3 localRayOrigin = _inv * glm::vec4(rayOrigin - _origin, 1.0f);
 		const glm::vec3 localRayDirection = _inv * glm::vec4(rayDirection, 1.0f);
