@@ -26,6 +26,8 @@ private:
 
 public:
 	void header(scenegraph::FrameIndex &currentFrame, scenegraph::FrameIndex maxFrame);
+	void timelineEntry(scenegraph::FrameIndex currentFrame, core::Buffer<Selection> &selectionBuffer,
+				   core::Buffer<scenegraph::FrameIndex> &selectedFrames, const scenegraph::SceneGraphNode &modelNode);
 	void sequencer(scenegraph::FrameIndex &currentFrame);
 	bool update(const char *sequencerTitle, double deltaFrameSeconds);
 	void resetFrames();

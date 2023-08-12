@@ -44,6 +44,44 @@ void AnimationTimeline::header(scenegraph::FrameIndex &currentFrame, scenegraph:
 	}
 }
 
+void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core::Buffer<Selection> &selectionBuffer,
+								  core::Buffer<scenegraph::FrameIndex> &selectedFrames,
+								  const scenegraph::SceneGraphNode &modelNode) {
+	const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
+	if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
+		for (scenegraph::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
+			ImGui::NeoKeyframe(&kf.frameIdx);
+			if (kf.frameIdx < 0) {
+				kf.frameIdx = 0;
+			}
+
+			if (ImGui::IsNeoKeyframeHovered()) {
+				ImGui::BeginTooltip();
+				const char *interpolation = scenegraph::InterpolationTypeStr[(int)kf.interpolation];
+				ImGui::Text("Keyframe %i, Interpolation: %s", kf.frameIdx, interpolation);
+				ImGui::EndTooltip();
+			}
+		}
+
+		sceneMgr().setCurrentFrame(currentFrame);
+		if (ImGui::IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags_NewlySelected)) {
+			sceneMgr().nodeActivate(modelNode.id());
+		} else if (sceneMgr().sceneGraph().activeNode() == modelNode.id()) {
+			ImGui::SetSelectedTimeline(label.c_str());
+		}
+		uint32_t selectionCount = ImGui::GetNeoKeyframeSelectionSize();
+		if (selectionCount > 0) {
+			selectedFrames.clear();
+			selectedFrames.resizeIfNeeded(selectionCount);
+			ImGui::GetNeoKeyframeSelection(selectedFrames.data());
+			for (uint32_t i = 0; i < selectionCount; ++i) {
+				selectionBuffer.push_back(Selection{selectedFrames[i], modelNode.id()});
+			}
+		}
+		ImGui::EndNeoTimeLine();
+	}
+}
+
 void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 	ImGuiNeoSequencerFlags flags = ImGuiNeoSequencerFlags_AlwaysShowHeader;
 	flags |= ImGuiNeoSequencerFlags_EnableSelection;
@@ -59,41 +97,12 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		}
 		core::Buffer<scenegraph::FrameIndex> selectedFrames;
 		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
-		for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
-			const scenegraph::SceneGraphNode &modelNode = *iter;
-			const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
-			if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
-				for (scenegraph::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
-					ImGui::NeoKeyframe(&kf.frameIdx);
-					if (kf.frameIdx < 0) {
-						kf.frameIdx = 0;
-					}
-
-					if (ImGui::IsNeoKeyframeHovered()) {
-						ImGui::BeginTooltip();
-						const char *interpolation = scenegraph::InterpolationTypeStr[(int)kf.interpolation];
-						ImGui::Text("Keyframe %i, Interpolation: %s", kf.frameIdx, interpolation);
-						ImGui::EndTooltip();
-					}
-				}
-
-				sceneMgr().setCurrentFrame(currentFrame);
-				if (ImGui::IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags_NewlySelected)) {
-					sceneMgr().nodeActivate(modelNode.id());
-				} else if (sceneMgr().sceneGraph().activeNode() == modelNode.id()) {
-					ImGui::SetSelectedTimeline(label.c_str());
-				}
-				uint32_t selectionCount = ImGui::GetNeoKeyframeSelectionSize();
-				if (selectionCount > 0) {
-					selectedFrames.clear();
-					selectedFrames.resizeIfNeeded(selectionCount);
-					ImGui::GetNeoKeyframeSelection(selectedFrames.data());
-					for (uint32_t i = 0; i < selectionCount; ++i) {
-						selectionBuffer.push_back(Selection{selectedFrames[i], modelNode.id()});
-					}
-				}
-				ImGui::EndNeoTimeLine();
+		for (auto entry : sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &node = entry->second;
+			if (!node.isModelNode()) {
+				continue;
 			}
+			timelineEntry(currentFrame, selectionBuffer, selectedFrames, node);
 		}
 		bool selectionRightClicked = ImGui::IsNeoKeyframeSelectionRightClicked();
 
