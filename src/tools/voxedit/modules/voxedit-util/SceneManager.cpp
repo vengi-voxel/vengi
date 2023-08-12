@@ -2489,9 +2489,11 @@ void SceneManager::traceScene(bool force) {
 		if (!node.visible() || (hideInactive && node.id() != activeNode())) {
 			continue;
 		}
-		const voxel::Region& region = _sceneGraph.resolveRegion(node);
 		float distance = 0.0f;
-		const math::OBB<float>& obb = toOBB(true, region, node.pivot(), node.transformForFrame(_currentFrameIdx));
+		const voxel::Region& region = _sceneGraph.resolveRegion(node);
+		const glm::vec3 pivot = _sceneGraph.resolvePivot(node);
+		const scenegraph::SceneGraphTransform &transform = node.transformForFrame(_currentFrameIdx);
+		const math::OBB<float>& obb = toOBB(true, region, pivot, transform);
 		if (obb.intersect(ray.origin, ray.direction, _camera->farPlane(), distance)) {
 			if (distance < intersectDist) {
 				intersectDist = distance;

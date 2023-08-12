@@ -7,6 +7,7 @@
 #include "app/App.h"
 #include "core/TimeProvider.h"
 #include "core/Log.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
 #include "voxedit-util/AxisUtil.h"
@@ -177,10 +178,11 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		} else {
 			_shapeBuilder.setColor(core::Color::Gray);
 		}
-		const voxel::RawVolume *v = sceneGraph.resolveVolume(node);
-		core_assert(v != nullptr);
-		const voxel::Region &region = v->region();
-		_shapeBuilder.obb(toOBB(sceneMode, region, sceneGraph.resolvePivot(node), node.transformForFrame(frameIdx)));
+		const voxel::Region &region = sceneGraph.resolveRegion(node);
+		const glm::vec3 pivot = sceneGraph.resolvePivot(node);
+		const scenegraph::SceneGraphTransform &transform = node.transformForFrame(frameIdx);
+		const math::OBB<float>& obb = toOBB(true, region, pivot, transform);
+		_shapeBuilder.obb(obb);
 	}
 
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
