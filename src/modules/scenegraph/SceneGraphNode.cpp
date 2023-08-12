@@ -696,6 +696,11 @@ bool SceneGraphNode::removeKeyFrameByIndex(KeyFrameIndex keyFrameIdx) {
 	return true;
 }
 
+bool SceneGraphNode::duplicateKeyFrames(const core::String &fromAnimation, const core::String &toAnimation) {
+	_keyFramesMap.put(toAnimation, keyFrames(fromAnimation));
+	return true;
+}
+
 bool SceneGraphNode::setKeyFrames(const SceneGraphKeyFrames &kf) {
 	if (kf.empty()) {
 		return false;

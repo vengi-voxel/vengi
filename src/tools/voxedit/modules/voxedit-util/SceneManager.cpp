@@ -1287,6 +1287,15 @@ bool SceneManager::addAnimation(const core::String &animation) {
 	return false;
 }
 
+bool SceneManager::duplicateAnimation(const core::String &animation, const core::String &newName) {
+	if (_sceneGraph.duplicateAnimation(animation, newName)) {
+		// TODO: memento
+		//_mementoHandler.markAddedAnimation(animation);
+		return true;
+	}
+	return false;
+}
+
 bool SceneManager::removeAnimation(const core::String &animation) {
 	if (_sceneGraph.removeAnimation(animation)) {
 		// TODO: memento

@@ -346,6 +346,7 @@ public:
 	bool removeKeyFrameByIndex(KeyFrameIndex keyFrameIdx);
 	const SceneGraphKeyFrames &keyFrames() const;
 	const SceneGraphKeyFrames &keyFrames(const core::String &anim) const;
+	bool duplicateKeyFrames(const core::String &fromAnimation, const core::String &toAnimation);
 	/**
 	 * @sa hasActiveAnimation()
 	 */

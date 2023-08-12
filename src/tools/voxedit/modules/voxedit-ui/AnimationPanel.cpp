@@ -19,7 +19,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 		ImGui::InputText("##nameanimationpanel", &_newAnimation);
 		ImGui::SameLine();
 		if (ImGui::Button(ICON_FK_PLUS " Add##animationpanel")) {
-			if (!sceneMgr().addAnimation(_newAnimation)) {
+			if (!sceneMgr().duplicateAnimation(sceneMgr().sceneGraph().activeAnimation(), _newAnimation)) {
 				Log::error("Failed to add animation %s", _newAnimation.c_str());
 			} else {
 				_newAnimation = "";

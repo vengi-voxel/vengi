@@ -71,6 +71,30 @@ const SceneGraphAnimationIds& SceneGraph::animations() const {
 	return _animations;
 }
 
+bool SceneGraph::duplicateAnimation(const core::String &animation, const core::String &newName) {
+	if (animation.empty() || newName.empty()) {
+		Log::error("Invalid animation names given");
+		return false;
+	}
+	if (core::find(_animations.begin(), _animations.end(), animation) == _animations.end()) {
+		Log::error("Could not find animation %s", animation.c_str());
+		return false;
+	}
+	if (core::find(_animations.begin(), _animations.end(), newName) != _animations.end()) {
+		Log::error("Animation %s already exists", newName.c_str());
+		return false;
+	}
+	_animations.push_back(newName);
+	for (const auto &entry : _nodes) {
+		SceneGraphNode &node = entry->value;
+		if (!node.duplicateKeyFrames(animation, newName)) {
+			Log::warn("Failed to set keyframes for node %i and animation %s", node.id(), animation.c_str());
+		}
+	}
+	updateTransforms_r(node(0));
+	return true;
+}
+
 bool SceneGraph::addAnimation(const core::String &animation) {
 	if (animation.empty()) {
 		return false;

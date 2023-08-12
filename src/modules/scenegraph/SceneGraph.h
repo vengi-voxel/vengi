@@ -94,6 +94,7 @@ public:
 	 */
 	const SceneGraphAnimationIds &animations() const;
 	bool addAnimation(const core::String &animation);
+	bool duplicateAnimation(const core::String &animation, const core::String &newName);
 	bool removeAnimation(const core::String &animation);
 	FrameIndex maxFrames(const core::String &animation) const;
 	/**

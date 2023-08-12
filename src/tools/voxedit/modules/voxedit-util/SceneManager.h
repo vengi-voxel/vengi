@@ -223,6 +223,7 @@ public:
 
 	bool setAnimation(const core::String &animation);
 	bool addAnimation(const core::String &animation);
+	bool duplicateAnimation(const core::String &animation, const core::String &newName);
 	bool removeAnimation(const core::String &animation);
 
 	void setActiveCamera(video::Camera *camera);
