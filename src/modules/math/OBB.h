@@ -109,44 +109,32 @@ public:
 		return x >= min.x && x <= max.x && y >= min.y && y <= max.y && z >= min.z && z <= max.z;
 	}
 
-	bool intersect(const glm::vec3& inRayOrigin, const glm::vec3& inRayDirection, float rayLength, float& distance) const {
-		const Vec minsV = _origin - _extents;
-		const Vec maxsV = _origin + _extents;
+	/**
+	 * @param[out] distance the distance to the hit point. Only valid if the method returns true.
+	 */
+	bool intersect(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, float rayLength, float &distance) const {
+		// Transform the ray into the OBB's local space
+		const glm::vec3 localRayOrigin = _inv * glm::vec4(rayOrigin - _origin, 1.0f);
+		const glm::vec3 localRayDirection = _inv * glm::vec4(rayDirection, 1.0f);
 
-		const glm::vec3 &rayOrigin = _inv * glm::vec4(inRayOrigin, 1.0f);
-		const glm::vec3 &rayDirection = _inv* glm::vec4(inRayDirection, 1.0f);
-		glm::vec3 pos1;
-		glm::vec3 pos2;
-		double t_near = -rayLength;
-		double t_far = rayLength;
+		// Calculate the intersections with the local AABB
+		const glm::vec3 tMin = (-_extents - localRayOrigin) / localRayDirection;
+		const glm::vec3 tMax = (_extents - localRayOrigin) / localRayDirection;
 
-		for (int i = 0; i < 3; i++) {	 // we test slabs in every direction
-			if (rayDirection[i] == 0) { // ray parallel to planes in this direction
-				if (rayOrigin[i] < minsV[i] || rayOrigin[i] > maxsV[i]) {
-					return false; // parallel AND outside box : no intersection possible
-				}
-			} else { // ray not parallel to planes in this direction
-				pos1[i] = (minsV[i] - rayOrigin[i]) / rayDirection[i];
-				pos2[i] = (maxsV[i] - rayOrigin[i]) / rayDirection[i];
+		const glm::vec3 realTMin = glm::min(tMin, tMax);
+		const glm::vec3 realTMax = glm::max(tMin, tMax);
 
-				if (pos1[i] > pos2[i]) { // we want pos1 to hold values for intersection with near plane
-					core::exchange(pos1, pos2);
-				}
-				if (pos1[i] > t_near) {
-					t_near = pos1[i];
-				}
-				if (pos2[i] < t_far) {
-					t_far = pos2[i];
-				}
-				if (t_near > t_far || t_far < 0) {
-					return false;
-				}
-			}
+		const float maxTMin = glm::max(glm::max(realTMin.x, realTMin.y), realTMin.z);
+		const float minTMax = glm::min(glm::min(realTMax.x, realTMax.y), realTMax.z);
+
+		if (minTMax < maxTMin) {
+			return false;
 		}
-		distance = (float)t_far;
+
+		distance = maxTMin;
+
 		return true;
 	}
-
 };
 
 } // namespace math
