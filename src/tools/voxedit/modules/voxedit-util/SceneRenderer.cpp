@@ -157,6 +157,9 @@ void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, co
 
 void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
 								   scenegraph::FrameIndex frameIdx) {
+	if (!sceneMode|| !_showAABB->boolVal()) {
+		return;
+	}
 	_shapeBuilder.clear();
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
