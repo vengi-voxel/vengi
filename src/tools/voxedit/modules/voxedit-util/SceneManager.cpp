@@ -1175,6 +1175,7 @@ void SceneManager::resetSceneState() {
 	nodeActivate(node.id());
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
+	// TODO: what about the memento states of the other nodes
 	_mementoHandler.markInitialNodeState(node);
 	_dirty = false;
 	_result = voxelutil::PickResult();
