@@ -100,7 +100,7 @@ struct MementoState {
 	scenegraph::SceneGraphNodeType nodeType;
 	core::Optional<scenegraph::SceneGraphKeyFramesMap> keyFrames;
 	core::Optional<scenegraph::SceneGraphNodeProperties> properties;
-	scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	scenegraph::KeyFrameIndex keyFrameIdx = InvalidKeyFrame;
 	core::String name;
 	glm::mat4x4 worldMatrix{1.0f};
 	/**
