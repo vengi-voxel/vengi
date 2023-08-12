@@ -21,6 +21,7 @@ General:
    - Added a new voxelization algorithm and a cvar to use it (set `voxformat_voxelizemode` to 1)
    - Fixed issues with importing images with a depth-map
    - Fixed regression for reading minecraft voxel data
+   - Added support for loading Lospec palettes
 
 VoxEdit:
 

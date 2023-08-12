@@ -16,6 +16,12 @@ There are several built-in palettes available that can also be used as an identi
 * `built-in:nippon`
 * `built-in:quake1`
 
+You can also download and import palettes from Lospec by specifying a palette like this:
+
+* `lospec:paletteid`
+
+This would try to download a palette with the id `paletteid` from [lospec.com](https://lospec.com) in the Gimp (`gpl`) format and automatically imports it.
+
 There are several color or palette related cvars available:
 
 * `voxformat_createpalette`: Allows you to disable the palette creation and use the palette specified via `palette` cvar
