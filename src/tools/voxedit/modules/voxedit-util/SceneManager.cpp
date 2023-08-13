@@ -239,7 +239,7 @@ void SceneManager::autosave() {
 	}
 	io::FileDescription autoSaveFilename;
 	if (_lastFilename.empty()) {
-		autoSaveFilename.set("autosave-noname.vox");
+		autoSaveFilename.set("autosave-noname." + voxelformat::vengi().exts[0]);
 	} else {
 		if (core::string::startsWith(_lastFilename.c_str(), "autosave-")) {
 			autoSaveFilename = _lastFilename;
