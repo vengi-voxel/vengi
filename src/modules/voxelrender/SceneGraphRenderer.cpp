@@ -180,15 +180,18 @@ void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scene
 		}
 		voxel::RawVolume *v = _renderer.volume(id);
 		_renderer.setVolume(id, node, true);
+		const voxel::Region &region = node.region();
 		if (v != node.volume()) {
-			_renderer.extractRegion(id, node.region());
+			_renderer.extractRegion(id, region);
 		}
 		if (_sceneMode) {
 			const scenegraph::SceneGraphTransform &transform = node.transformForFrame(frame);
-			const glm::vec3 pivot = transform.worldScale() * node.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
-			_renderer.setModelMatrix(id, transform.worldMatrix(), pivot);
+			const glm::vec3 maxs = transform.worldMatrix() * glm::vec4(region.getUpperCorner(), 1.0f);
+			const glm::vec3 mins = transform.worldMatrix() * glm::vec4(region.getLowerCorner(), 1.0f);
+			const glm::vec3 pivot = transform.worldScale() * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
+			_renderer.setModelMatrix(id, transform.worldMatrix(), pivot, mins, maxs);
 		} else {
-			_renderer.setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f));
+			_renderer.setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(), region.getUpperCorner());
 		}
 		if (hideInactive) {
 			_renderer.hide(id, id != activeNode);
@@ -216,8 +219,11 @@ void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scene
 			const int referencedId = getVolumeId(node.reference());
 			_renderer.setVolumeReference(id, referencedId);
 			const scenegraph::SceneGraphTransform &transform = node.transformForFrame(frame);
-			const glm::vec3 pivot = transform.worldScale() * node.pivot() * glm::vec3(node.region().getDimensionsInVoxels());
-			_renderer.setModelMatrix(id, transform.worldMatrix(), pivot);
+			const voxel::Region region = sceneGraph.resolveRegion(node);
+			const glm::vec3 maxs = transform.worldMatrix() * glm::vec4(region.getUpperCorner(), 1.0f);
+			const glm::vec3 mins = transform.worldMatrix() * glm::vec4(region.getLowerCorner(), 1.0f);
+			const glm::vec3 pivot = transform.worldScale() * sceneGraph.resolvePivot(node) * glm::vec3(region.getDimensionsInVoxels());
+			_renderer.setModelMatrix(id, transform.worldMatrix(), pivot, mins, maxs);
 			if (hideInactive) {
 				_renderer.hide(id, id != activeNode);
 			} else {

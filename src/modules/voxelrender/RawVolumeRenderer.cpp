@@ -513,19 +513,39 @@ void RawVolumeRenderer::updatePalette(int idx) {
 	}
 }
 
+void RawVolumeRenderer::updateCulling(int idx, const video::Camera &camera) {
+	if (_state[idx]._hidden) {
+		_state[idx]._culled = true;
+		return;
+	}
+	const int bufferIndex = resolveIdx(idx);
+	if (!_state[bufferIndex].hasData()) {
+		if (_state[bufferIndex]._rawVolume) {
+			Log::trace("No data, but volume: %i", bufferIndex);
+		}
+		_state[idx]._culled = true;
+		return;
+	}
+	_state[idx]._culled = !camera.isVisible(_state[idx]._mins, _state[idx]._maxs);
+}
+
+bool RawVolumeRenderer::isVisible(int idx) const {
+	if (_state[idx]._hidden) {
+		return false;
+	}
+	if (_state[idx]._culled) {
+		return false;
+	}
+	return true;
+}
+
 void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera& camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
 
 	bool visible = false;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		if (_state[idx]._hidden) {
-			continue;
-		}
-		const int bufferIndex = resolveIdx(idx);
-		if (!_state[bufferIndex].hasData()) {
-			if (_state[bufferIndex]._rawVolume) {
-				Log::trace("No data, but volume: %i", bufferIndex);
-			}
+		updateCulling(idx, camera);
+		if (!isVisible(idx)) {
 			continue;
 		}
 		visible = true;
@@ -535,7 +555,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	}
 	for (auto& i : _meshes[MeshType_Transparency]) {
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-			if (_state[idx]._hidden) {
+			if (!isVisible(idx)) {
 				continue;
 			}
 			const int bufferIndex = resolveIdx(idx);
@@ -562,7 +582,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 				var.lightviewprojection = lightViewProjection;
 
 				for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-					if (_state[idx]._hidden) {
+					if (!isVisible(idx)) {
 						continue;
 					}
 					const int bufferIndex = resolveIdx(idx);
@@ -613,7 +633,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	_paletteHash = 0;
 	// --- opaque pass
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		if (_state[idx]._hidden) {
+		if (!isVisible(idx)) {
 			continue;
 		}
 		const int bufferIndex = resolveIdx(idx);
@@ -648,7 +668,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		sorted.reserve(MAX_VOLUMES);
 		video::ScopedState scopedBlend(video::State::Blend, true);
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-			if (_state[idx]._hidden) {
+			if (!isVisible(idx)) {
 				continue;
 			}
 			const int bufferIndex = resolveIdx(idx);
@@ -704,7 +724,8 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	}
 }
 
-bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4& model, const glm::vec3 &pivot, bool reset) {
+bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &pivot, const glm::vec3 &mins,
+									   const glm::vec3 &maxs) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		Log::error("Given id %i is out of bounds", idx);
 		return false;
@@ -716,6 +737,8 @@ bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4& model, const gl
 	}
 	state._model = model;
 	state._pivot = pivot;
+	state._mins = mins;
+	state._maxs = maxs;
 	return true;
 }
 

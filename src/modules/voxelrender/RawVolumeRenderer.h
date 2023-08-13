@@ -70,11 +70,14 @@ protected:
 	};
 	struct State {
 		bool _hidden = false;
+		bool _culled = false;
 		bool _gray = false;
 		int32_t _vertexBufferIndex[MeshType_Max] {-1, -1};
 		int32_t _indexBufferIndex[MeshType_Max] {-1, -1};
-		glm::mat4 _model;
-		glm::vec3 _pivot;
+		glm::mat4 _model{1.0f};
+		glm::vec3 _pivot{0.0f};
+		glm::vec3 _mins{0.0f};
+		glm::vec3 _maxs{0.0f};
 		video::Buffer _vertexBuffer[MeshType_Max];
 		int _reference = -1;
 		voxel::RawVolume* _rawVolume = nullptr;
@@ -151,6 +154,8 @@ protected:
 	bool updateBufferForVolume(int idx, MeshType type);
 	void clearMeshes();
 	void deleteMesh(int idx, MeshType meshType, Meshes &array);
+	void updateCulling(int idx, const video::Camera &camera);
+	bool isVisible(int idx) const;
 
 public:
 	RawVolumeRenderer();
@@ -197,7 +202,8 @@ public:
 	 */
 	void setVolumeReference(int idx, int referencedIdx);
 	void resetReferences();
-	bool setModelMatrix(int idx, const glm::mat4& model, const glm::vec3 &pivot, bool reset = true);
+	bool setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &pivot, const glm::vec3 &mins,
+						const glm::vec3 &maxs);
 
 	bool empty(int idx = 0) const;
 	/**
