@@ -229,6 +229,15 @@ void Mesh::compressIndices() {
 	util::indexCompress(&_vecIndices.front(), maxSize, _compressedIndexSize, _compressedIndices, maxSize);
 }
 
+void Mesh::calculateBounds() {
+	_mins = glm::vec3(std::numeric_limits<float>::max());
+	_maxs = glm::vec3(std::numeric_limits<float>::min());
+	for (const VoxelVertex &vertex : _vecVertices) {
+		_mins = glm::min(_mins, vertex.position);
+		_maxs = glm::max(_maxs, vertex.position);
+	}
+}
+
 bool Mesh::operator<(const Mesh& rhs) const {
 	return glm::all(glm::lessThan(getOffset(), rhs.getOffset()));
 }

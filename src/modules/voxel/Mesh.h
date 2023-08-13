@@ -57,6 +57,9 @@ public:
 	bool isEmpty() const;
 	void removeUnusedVertices();
 	void compressIndices();
+	void calculateBounds();
+	glm::vec3 mins() const { return _mins; }
+	glm::vec3 maxs() const { return _maxs; }
 
 	const uint8_t* compressedIndices() const;
 	size_t compressedIndexSize() const;
@@ -66,6 +69,8 @@ private:
 	alignas(16) IndexArray _vecIndices;
 	alignas(16) VertexArray _vecVertices;
 	alignas(16) NormalArray _normals; // marching cubes only
+	glm::highp_vec3 _mins {0};
+	glm::highp_vec3 _maxs {0};
 	uint8_t *_compressedIndices = nullptr;
 	size_t _compressedIndexSize = 0u;
 	glm::ivec3 _offset { 0 };
