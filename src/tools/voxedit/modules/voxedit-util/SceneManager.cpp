@@ -394,8 +394,8 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 		if (!autosave) {
 			_dirty = false;
 			_lastFilename = file;
+			core::Var::get(cfg::VoxEditLastFile)->setVal(filePtr->name());
 		}
-		core::Var::get(cfg::VoxEditLastFile)->setVal(filePtr->name());
 		_needAutoSave = false;
 		return true;
 	}
