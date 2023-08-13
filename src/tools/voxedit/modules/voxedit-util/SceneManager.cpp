@@ -1484,7 +1484,7 @@ void SceneManager::construct() {
 		} else {
 			Log::info("Executed script %s", args[0].c_str());
 		}
-	}).setHelp("Executes a lua script to modify the current active volume")
+	}).setHelp("Executes a lua script")
 		.setArgumentCompleter(voxelgenerator::scriptCompleter(io::filesystem()));
 
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
