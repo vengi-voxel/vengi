@@ -5,6 +5,7 @@ set(SRCS
 	BufferedReadWriteStream.cpp BufferedReadWriteStream.h
 	BufferedSeekableWriteStream.h
 	BufferedWriteStream.h
+	EndianStreamReadWrapper.h
 	File.cpp File.h
 	FileStream.cpp FileStream.h
 	Filesystem.cpp Filesystem.h

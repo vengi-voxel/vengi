@@ -8,6 +8,10 @@
     <comment>Voxel model binvox</comment>
     <glob pattern="*.binvox"/>
   </mime-type>
+  <mime-type type="application/x-polygonfileformat">
+    <comment>Polygon File Format (Stanford Triangle Format)</comment>
+    <glob pattern="*.ply"/>
+  </mime-type>
   <mime-type type="application/x-goxel">
     <comment>Voxel model Goxel</comment>
     <glob pattern="*.gox"/>

@@ -75,6 +75,7 @@ set(TEST_SRCS
 	tests/MCRFormatTest.cpp
 	tests/MD2FormatTest.cpp
 	tests/OBJFormatTest.cpp
+	tests/PLYFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp
 	tests/QBCLFormatTest.cpp
@@ -124,10 +125,12 @@ set(TEST_FILES
 	tests/minecraft_110.mca
 	tests/minecraft_113.mca
 	tests/magicavoxel.vox
-	tests/cube.obj
 	tests/cube.mtl
+	tests/cube.obj
+	tests/cube.ply
 	tests/cube.stl
 	tests/ascii.stl
+	tests/ascii.ply
 	tests/test.gox
 	tests/test.plist
 	tests/palette.settings.vmaxpsb

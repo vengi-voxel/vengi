@@ -38,6 +38,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 			ImGui::CheckboxVar("Texture coordinates", cfg::VoxformatWithtexcoords);
 		} else if (mode == video::OpenFileMode::Open) {
 			ImGui::CheckboxVar("Fill hollow", cfg::VoxformatFillHollow);
+			ImGui::InputVarInt("Point cloud size", cfg::VoxformatPointCloudSize);
 
 			const char *voxelizationModes[] = {"high quality", "faster and less memory"};
 			const core::VarPtr &voxelizationVar = core::Var::getSafe(cfg::VoxformatVoxelizeMode);

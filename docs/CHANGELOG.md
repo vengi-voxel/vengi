@@ -12,6 +12,9 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 General:
 
+   - Added cvar `voxformat_pointcloudsize` cvar for point cloud formats
+   - Added Polygon File Format (`ply`) mesh and point cloud support (ascii and binary)
+
 ## 0.0.26 (2023-08-13)
 
 General:

@@ -24,6 +24,7 @@ namespace voxelformat {
 class OBJFormat : public MeshFormat {
 private:
 	bool writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId, const core::String &mapKd) const;
+protected:
 	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 

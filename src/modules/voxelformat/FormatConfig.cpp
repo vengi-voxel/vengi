@@ -71,6 +71,7 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxelCreatePalette, "true", core::CV_NOPERSIST,
 				   "Create own palette from textures or colors - not used for palette formats",
 				   core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatPointCloudSize, "1", core::CV_NOPERSIST, "Specify the side length for the voxels when loading a point cloud");
 
 	return true;
 }

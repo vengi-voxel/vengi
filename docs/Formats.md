@@ -43,6 +43,7 @@
 | :------------------------- | --------- | ------- | --------- | ---------- |
 | Filmbox                    | fbx       | X       | X (ascii) |            |
 | GL Transmission Format     | gltf, glb | X       | X         | X          |
+| Polygon File Format        | ply       | X       | X         |            |
 | Quake 1/UFO:Alien Invasion | bsp       | X       |           |            |
 | Quake 2 Model              | md2       | X       |           |            |
 | Standard Triangle Language | stl       | X       | X         |            |
