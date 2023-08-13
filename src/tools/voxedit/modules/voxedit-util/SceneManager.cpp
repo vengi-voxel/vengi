@@ -233,8 +233,8 @@ void SceneManager::autosave() {
 		return;
 	}
 	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
-	const double delay = (double)_autoSaveSecondsDelay->intVal();
-	if (_lastAutoSave + delay > timeProvider->tickSeconds()) {
+	const int delay = _autoSaveSecondsDelay->intVal();
+	if (delay <= 0 || _lastAutoSave + (double)delay > timeProvider->tickSeconds()) {
 		return;
 	}
 	io::FileDescription autoSaveFilename;
@@ -1460,7 +1460,7 @@ void SceneManager::construct() {
 	_sceneRenderer->construct();
 	_movement.construct();
 
-	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180");
+	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180", -1, "Delay in second between autosaves - 0 disables autosaves");
 	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0f");
 
 	command::Command::registerCommand("xs", [&] (const command::CmdArgs& args) {

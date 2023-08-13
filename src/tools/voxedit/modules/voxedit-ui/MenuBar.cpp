@@ -120,6 +120,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				// TODO: activate me - but we first have to upload the normals - see voxel.frag
 				// ImGui::ComboVar("Mesh mode", cfg::VoxelMeshMode, {"Cubes", "Marching cubes"});
 				ImGui::InputVarInt("Model animation speed", cfg::VoxEditAnimationSpeed);
+				ImGui::InputVarInt("Autosave delay in seconds", cfg::VoxEditAutoSaveSeconds);
 				ImGui::InputVarInt("Viewports", cfg::VoxEditViewports, 1, 1);
 				ImGui::SliderVarFloat("Zoom speed", cfg::ClientCameraZoomSpeed, 0.1f, 200.0f);
 				ImGui::SliderVarInt("View distance", cfg::VoxEditViewdistance, 10, 5000);
