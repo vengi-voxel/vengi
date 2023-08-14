@@ -407,17 +407,17 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			gltfVerticesBufferView.buffer = (int)gltfModel.buffers.size();
 			gltfVerticesBufferView.byteOffset = FLOAT_BUFFER_OFFSET;
 			gltfVerticesBufferView.byteLength = os.size() - FLOAT_BUFFER_OFFSET;
-			gltfVerticesBufferView.byteStride = sizeof(glm::vec3);
+			gltfVerticesBufferView.byteStride = 3 * sizeof(float);
 			if (exportNormals) {
-				gltfVerticesBufferView.byteStride += sizeof(glm::vec3);
+				gltfVerticesBufferView.byteStride += 3 * sizeof(float);
 			}
 			if (withTexCoords) {
-				gltfVerticesBufferView.byteStride += sizeof(glm::vec2);
+				gltfVerticesBufferView.byteStride += 2 * sizeof(float);
 			} else if (withColor) {
 				if (colorAsFloat) {
-					gltfVerticesBufferView.byteStride += sizeof(glm::vec4);
+					gltfVerticesBufferView.byteStride += 4 * sizeof(float);
 				} else {
-					gltfVerticesBufferView.byteStride += sizeof(glm::u8vec4);
+					gltfVerticesBufferView.byteStride += 4 * sizeof(uint8_t);
 				}
 			}
 			gltfVerticesBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
@@ -445,7 +445,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			// Describe the layout of normals - they are followed
 			tinygltf::Accessor gltfNormalAccessor;
 			gltfNormalAccessor.bufferView = (int)gltfModel.bufferViews.size() + 1;
-			gltfNormalAccessor.byteOffset = sizeof(glm::vec3);
+			gltfNormalAccessor.byteOffset = 3 * sizeof(float);
 			gltfNormalAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 			gltfNormalAccessor.count = nv;
 			gltfNormalAccessor.type = TINYGLTF_TYPE_VEC3;
@@ -455,13 +455,13 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				gltfColorAccessor.bufferView = (int)gltfModel.bufferViews.size() + 1;
 				gltfColorAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 				gltfColorAccessor.count = nv;
-				gltfColorAccessor.byteOffset = (exportNormals ? 2 : 1) * sizeof(glm::vec3);
+				gltfColorAccessor.byteOffset = (exportNormals ? 2 : 1) * 3 * sizeof(float);
 				gltfColorAccessor.type = TINYGLTF_TYPE_VEC2;
 			} else if (withColor) {
 				gltfColorAccessor.bufferView = (int)gltfModel.bufferViews.size() + 1;
 				gltfColorAccessor.count = nv;
 				gltfColorAccessor.type = TINYGLTF_TYPE_VEC4;
-				gltfColorAccessor.byteOffset = (exportNormals ? 2 : 1) * sizeof(glm::vec3);
+				gltfColorAccessor.byteOffset = (exportNormals ? 2 : 1) * 3 * sizeof(float);
 				if (colorAsFloat) {
 					gltfColorAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
 				} else {

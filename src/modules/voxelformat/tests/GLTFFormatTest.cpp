@@ -4,6 +4,8 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "io/File.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "voxel/Voxel.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "io/FileStream.h"
@@ -54,10 +56,28 @@ TEST_F(GLTFFormatTest, testVoxelizeCube) {
 	io::FileStream stream(file);
 	scenegraph::SceneGraph sceneGraph;
 	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
-	EXPECT_TRUE(sceneGraph.size() > 0);
+	ASSERT_EQ(1u, sceneGraph.size());
+	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	const voxel::RawVolume *v = node->volume();
+	ASSERT_NE(nullptr, v);
+	EXPECT_TRUE(voxel::isBlocked(v->voxel(-1, -1, -1).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(v->voxel(-1,  1, -1).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(v->voxel( 1,  1,  1).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(v->voxel( 1, -1, -1).getMaterial()));
 }
 
-TEST_F(GLTFFormatTest, DISABLED_testVoxelizeLantern) {
+TEST_F(GLTFFormatTest, testRGB) {
+	testRGB("rgb.gltf");
+}
+
+TEST_F(GLTFFormatTest, testSaveLoadVoxel) {
+	GLTFFormat f;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testSaveLoadVoxel("bv-smallvolumesavetest.gltf", &f, 0, 10, flags);
+}
+
+TEST_F(GLTFFormatTest, testVoxelizeLantern) {
 	GLTFFormat f;
 	const core::String filename = "glTF/lantern/Lantern.gltf";
 	const io::FilePtr &file = open(filename);

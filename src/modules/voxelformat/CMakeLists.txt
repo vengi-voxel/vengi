@@ -149,6 +149,7 @@ set(TEST_FILES
 	tests/r.0.-2.qb
 	tests/rgb.vxl
 	tests/rgb.csv
+	tests/rgb.gltf
 	tests/rgb.vox
 	tests/rgb.gox
 	tests/rgb.qb

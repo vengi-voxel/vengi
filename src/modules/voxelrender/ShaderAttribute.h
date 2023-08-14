@@ -41,16 +41,4 @@ inline video::Attribute getInfoVertexAttribute(uint32_t bufferIndex, uint32_t at
 	return attrib;
 }
 
-inline video::Attribute getOffsetVertexAttribute(uint32_t bufferIndex, uint32_t attributeLocation, int components) {
-	video::Attribute voxelAttributeOffsets;
-	voxelAttributeOffsets.bufferIndex = (int32_t)bufferIndex;
-	voxelAttributeOffsets.location = (int32_t)attributeLocation;
-	voxelAttributeOffsets.stride = sizeof(glm::vec3);
-	voxelAttributeOffsets.size = components;
-	voxelAttributeOffsets.type = video::mapType<glm::vec3::value_type>();
-	voxelAttributeOffsets.divisor = 1;
-	voxelAttributeOffsets.offset = offsetof(glm::vec3, x);
-	return voxelAttributeOffsets;
-}
-
 }
