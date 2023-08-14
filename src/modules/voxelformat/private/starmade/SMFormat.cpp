@@ -252,7 +252,7 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 		auto palIter = blockPal.find((int)blockId);
 		uint8_t palIndex = 0;
 		if (palIter == blockPal.end()) {
-			Log::warn("Skip block id %i", (int)blockId);
+			Log::trace("Skip block id %i", (int)blockId);
 		} else {
 			palIndex = palIter->value;
 		}
