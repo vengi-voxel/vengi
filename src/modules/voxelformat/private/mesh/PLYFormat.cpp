@@ -479,6 +479,7 @@ void PLYFormat::convertToTris(TriCollection &tris, core::DynamicArray<Vertex> &v
 bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream &stream,
 								 core::DynamicArray<Face> &faces, const Header &header) const {
 	io::EndianStreamReadWrapper es(stream, header.format == PlyFormatType::BinaryBigEndian);
+	Log::debug("loading %i faces", element.count);
 	faces.reserve(element.count);
 	for (int i = 0; i < element.count; ++i) {
 		for (size_t i = 0; i < element.properties.size(); ++i) {
@@ -520,6 +521,7 @@ bool PLYFormat::parseVerticesBinary(const Element &element, io::SeekableReadStre
 									core::DynamicArray<Vertex> &vertices, const Header &header) const {
 	io::EndianStreamReadWrapper es(stream, header.format == PlyFormatType::BinaryBigEndian);
 	vertices.reserve(element.count);
+	Log::debug("loading %i vertices", element.count);
 	for (int i = 0; i < element.count; ++i) {
 		Vertex vertex;
 		for (size_t i = 0; i < element.properties.size(); ++i) {
@@ -567,7 +569,7 @@ bool PLYFormat::parseVerticesBinary(const Element &element, io::SeekableReadStre
 		}
 		vertices.push_back(vertex);
 	}
-	return false;
+	return true;
 }
 
 bool PLYFormat::skipElementBinary(const Element &element, io::SeekableReadStream &stream, const Header &header) {
@@ -612,6 +614,7 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 
 	return true;
 }
+
 bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 							   TriCollection &tris) const {
