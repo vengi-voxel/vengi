@@ -401,6 +401,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 		sceneGraphNode.setProperty(priv::_ufbx_to_string(prop.name), priv::_ufbx_to_string(prop.value_str));
 	}
 	sceneGraphNode.setTransform(keyFrameIdx, transform);
+	sceneGraphNode.setVisible(node->visible);
 	// TODO: animations - see ufbx_evaluate_transform
 	return nodeId;
 }
