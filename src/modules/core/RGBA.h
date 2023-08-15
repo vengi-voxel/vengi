@@ -9,7 +9,7 @@
 
 namespace core {
 
-union RGBA {
+union alignas(4) RGBA {
 	constexpr RGBA(uint32_t val = 0) : rgba(val) {
 	}
 	constexpr RGBA(uint8_t valr, uint8_t valg, uint8_t valb, uint8_t vala = 255)
