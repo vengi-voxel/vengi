@@ -3,6 +3,7 @@
  */
 
 #include "SceneGraphPanel.h"
+#include "IconsForkAwesome.h"
 #include "Util.h"
 #include "core/Optional.h"
 #include "core/StringUtil.h"
@@ -21,6 +22,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #define SCENEGRAPHPOPUP "##scenegraphpopup"
+#define SCENEGRAPHDRAGANDDROPPOPUP "##scenegraphdraganddroppopup"
 
 namespace voxedit {
 
@@ -186,7 +188,7 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 
 void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
 							  scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener,
-							  int depth, int referencedNodeId) const {
+							  int depth, int referencedNodeId) {
 	const int nodeId = node.id();
 	bool open = false;
 	const bool referenceNode = node.reference() == sceneGraph.activeNode();
@@ -290,19 +292,10 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		if (ImGui::BeginDragDropTarget()) {
 			const ImGuiPayload *payload = ImGui::GetDragDropPayload();
 			if (payload->IsDataType(dragdrop::SceneNodePayload)) {
-				const int sourceNodeId = *(int *)payload->Data;
-				const int targetNode = nodeId;
-				if (sceneGraph.canChangeParent(sceneGraph.node(sourceNodeId), targetNode)) {
-					if (ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload) != nullptr) {
-						if (!sceneMgr().nodeMove(sourceNodeId, targetNode)) {
-							Log::error("Failed to move node");
-						}
-						ImGui::EndDragDropTarget();
-						if (open) {
-							ImGui::TreePop();
-						}
-						return;
-					}
+				if (ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload) != nullptr) {
+					_dragDropSourceNodeId = *(int *)payload->Data;
+					_dragDropTargetNodeId = nodeId;
+					_popupDragAndDrop = true;
 				}
 			}
 			ImGui::EndDragDropTarget();
@@ -446,6 +439,38 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 		}
 	}
 	ImGui::End();
+
+	if (_popupDragAndDrop) {
+		ImGui::OpenPopup(SCENEGRAPHDRAGANDDROPPOPUP);
+		_popupDragAndDrop = false;
+	}
+	ImGuiWindowFlags popupFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings;
+	if (ImGui::BeginPopup(SCENEGRAPHDRAGANDDROPPOPUP, popupFlags)) {
+		const scenegraph::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
+		const scenegraph::SceneGraphNode *sourceNode = sceneMgr.sceneGraphNode(_dragDropSourceNodeId);
+		const scenegraph::SceneGraphNode *targetNode = sceneMgr.sceneGraphNode(_dragDropTargetNodeId);
+
+		if (sourceNode && targetNode) {
+			if (sourceNode->type() == scenegraph::SceneGraphNodeType::Model &&
+				targetNode->type() == scenegraph::SceneGraphNodeType::Model) {
+				if (ImGui::Button(ICON_FK_LINK " Merge onto##mergeonto")) {
+					sceneMgr.mergeNodes(_dragDropTargetNodeId, _dragDropSourceNodeId);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::TooltipText("Merge %s onto %s", sourceNode->name().c_str(), targetNode->name().c_str());
+			}
+		}
+		if (sceneGraph.canChangeParent(sceneGraph.node(_dragDropSourceNodeId), _dragDropTargetNodeId)) {
+			if (ImGui::Button(ICON_FK_INDENT " Move below")) {
+				if (!sceneMgr.nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId)) {
+					Log::error("Failed to move node");
+				}
+				ImGui::CloseCurrentPopup();
+			}
+		}
+
+		ImGui::EndPopup();
+	}
 }
 
 bool SceneGraphPanel::hasFocus() const {

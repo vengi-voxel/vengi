@@ -6,6 +6,7 @@
 
 #include "command/CommandHandler.h"
 #include "core/Var.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace video {
 class Camera;
@@ -26,13 +27,16 @@ private:
 	core::VarPtr _hideInactive;
 	bool _showNodeDetails = true;
 	bool _hasFocus = false;
+	bool _popupDragAndDrop = false;
 	core::String _propertyKey;
 	core::String _propertyValue;
+	int _dragDropSourceNodeId = InvalidNodeId;
+	int _dragDropTargetNodeId = InvalidNodeId;
 
 	void detailView(scenegraph::SceneGraphNode &node);
 	void recursiveAddNodes(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
 							  scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener,
-							  int depth, int referencedNodeId) const;
+							  int depth, int referencedNodeId);
 	/**
 	 * @return @c true if the property was handled with a special ui input widget - @c false if it should just be a
 	 * normal text input field
