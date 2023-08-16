@@ -222,3 +222,35 @@ jobs:
           with:
             name: windows-installer
             path: build/vengi-*-Windows.exe
+
+    windows-debug:
+        timeout-minutes: 45
+        runs-on: windows-2022
+
+        steps:
+        - uses: actions/checkout@v3
+
+        - name: Build
+          run: |
+            mkdir build
+            cd build
+            cmake .. -DCMAKE_BUILD_TYPE=Debug
+            cmake --build .
+
+        - name: Install
+          run: |
+            cd build
+            cmake --install . --component voxedit --prefix voxedit-install
+            cmake --install . --component voxconvert --prefix voxconvert-install
+
+        - name: Upload the voxedit artifacts
+          uses: actions/upload-artifact@v3
+          with:
+            name: voxedit-debug
+            path: build/voxedit-install/
+
+        - name: Upload the voxconvert artifacts
+          uses: actions/upload-artifact@v3
+          with:
+            name: voxconvert-debug
+            path: build/voxconvert-install/
