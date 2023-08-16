@@ -518,6 +518,7 @@ void RawVolumeRenderer::updateCulling(int idx, const video::Camera &camera) {
 		_state[idx]._culled = true;
 		return;
 	}
+	_state[idx]._culled = false;
 	const int bufferIndex = resolveIdx(idx);
 	if (!_state[bufferIndex].hasData()) {
 		if (_state[bufferIndex]._rawVolume) {
@@ -526,7 +527,11 @@ void RawVolumeRenderer::updateCulling(int idx, const video::Camera &camera) {
 		_state[idx]._culled = true;
 		return;
 	}
-	_state[idx]._culled = !camera.isVisible(_state[idx]._mins, _state[idx]._maxs);
+	const glm::vec3 size = _state[idx]._maxs - _state[idx]._mins;
+	// if no mins/maxs were given, we can't cull
+	if (size.x >= 1.0f && size.y >= 1.0f && size.z >= 1.0f) {
+		_state[idx]._culled = !camera.isVisible(_state[idx]._mins, _state[idx]._maxs);
+	}
 }
 
 bool RawVolumeRenderer::isVisible(int idx) const {
