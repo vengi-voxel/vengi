@@ -184,6 +184,15 @@ PLYFormat::PropertyUse PLYFormat::use(const core::String &in) {
 			return (PropertyUse)i;
 		}
 	}
+	if (in == "diffuse_red") {
+		return PropertyUse::red;
+	}
+	if (in == "diffuse_green") {
+		return PropertyUse::green;
+	}
+	if (in == "diffuse_blue") {
+		return PropertyUse::blue;
+	}
 	Log::debug("Failed to map %s", in.c_str());
 	return PropertyUse::Max;
 }
