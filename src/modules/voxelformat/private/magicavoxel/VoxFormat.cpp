@@ -316,7 +316,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		for (int childId : node.children()) {
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
 		}
-	} else if (node.type() == scenegraph::SceneGraphNodeType::Model) {
+	} else if (node.isModelNode()) {
 		Log::debug("Add model node");
 		const voxel::Region region = node.region();
 		{

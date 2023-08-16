@@ -223,12 +223,12 @@ int SceneGraph::prevModelNode(int nodeId) const {
 			}
 			return lastChild;
 		}
-		if (node(child).isModelNode()) {
+		if (node(child).isAnyModelNode()) {
 			lastChild = child;
 			continue;
 		}
 	}
-	if (parentNode.isModelNode()) {
+	if (parentNode.isAnyModelNode()) {
 		return parentNode.id();
 	}
 	return InvalidNodeId;
@@ -248,7 +248,7 @@ int SceneGraph::nextModelNode(int nodeId) const {
 		if (child == nodeId) {
 			continue;
 		}
-		if (node(child).isModelNode()) {
+		if (node(child).isAnyModelNode()) {
 			return child;
 		}
 	}
@@ -401,7 +401,7 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	}
 	if (_activeNodeId == InvalidNodeId) {
 		// try to set a sane default value for the active node
-		if (node.isModelNode()) {
+		if (node.isAnyModelNode()) {
 			_activeNodeId = nodeId;
 		}
 	}
@@ -533,7 +533,7 @@ size_t SceneGraph::size(SceneGraphNodeType type) const {
 		if (entry->value.type() == type) {
 			++n;
 		} else if (type == SceneGraphNodeType::AllModels) {
-			if (entry->value.isModelNode()) {
+			if (entry->value.isAnyModelNode()) {
 				++n;
 			}
 		}
@@ -558,7 +558,7 @@ void SceneGraph::clear() {
 bool SceneGraph::hasMoreThanOnePalette() const {
 	uint64_t hash = 0;
 	for (auto entry : nodes()) {
-		if (!entry->second.isModelNode()) {
+		if (!entry->second.isAnyModelNode()) {
 			continue;
 		}
 		const SceneGraphNode &node = entry->second;

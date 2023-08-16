@@ -317,7 +317,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		_hasFocus = ImGui::IsWindowHovered();
 		_colorHovered = false;
 
-		if (node.type() == scenegraph::SceneGraphNodeType::Model) {
+		if (node.isModelNode()) {
 			paletteMenuBar(node, listener);
 			const ImVec2 &pos = ImGui::GetCursorScreenPos();
 			for (int palIdx = 0; palIdx < voxel::PaletteMaxColors; ++palIdx) {

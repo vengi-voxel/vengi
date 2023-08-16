@@ -256,6 +256,7 @@ public:
 
 	bool isReference() const;
 	bool isReferenceable() const;
+	bool isAnyModelNode() const;
 	bool isModelNode() const;
 
 	core::RGBA color() const;

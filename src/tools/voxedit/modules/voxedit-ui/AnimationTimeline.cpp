@@ -99,7 +99,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 		for (auto entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
-			if (!node.isModelNode()) {
+			if (!node.isAnyModelNode()) {
 				continue;
 			}
 			timelineEntry(currentFrame, selectionBuffer, selectedFrames, node);

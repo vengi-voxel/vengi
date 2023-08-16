@@ -229,7 +229,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 		int materialId = -1;
 		int texcoordIndex = 0;
-		if (node.type() == scenegraph::SceneGraphNodeType::Model) {
+		if (node.isModelNode()) {
 			const auto palTexIter = paletteMaterialIndices.find(palette.hash());
 			if (palTexIter != paletteMaterialIndices.end()) {
 				materialId = palTexIter->second;

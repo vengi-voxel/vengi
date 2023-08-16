@@ -164,7 +164,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 	_shapeBuilder.clear();
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
-		if (!node.isModelNode()) {
+		if (!node.isAnyModelNode()) {
 			continue;
 		}
 		if (!node.visible()) {
@@ -186,7 +186,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 	}
 
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
-	if (activeNode.isModelNode() && activeNode.visible()) {
+	if (activeNode.isAnyModelNode() && activeNode.visible()) {
 		_shapeBuilder.setColor(core::Color::White);
 		const voxel::RawVolume *v = sceneGraph.resolveVolume(activeNode);
 		core_assert(v != nullptr);

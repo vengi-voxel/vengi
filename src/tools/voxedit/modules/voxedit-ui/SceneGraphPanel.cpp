@@ -363,7 +363,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 				const int nodeId = sceneGraph.activeNode();
 				modelNodeSettings->palette.setValue(nullptr);
 				scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-				if (node.type() == scenegraph::SceneGraphNodeType::Model) {
+				if (node.isModelNode()) {
 					const voxel::RawVolume* v = node.volume();
 					const voxel::Region& region = v->region();
 					modelNodeSettings->position = region.getLowerCorner();
@@ -451,8 +451,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 		const scenegraph::SceneGraphNode *targetNode = sceneMgr.sceneGraphNode(_dragDropTargetNodeId);
 
 		if (sourceNode && targetNode) {
-			if (sourceNode->type() == scenegraph::SceneGraphNodeType::Model &&
-				targetNode->type() == scenegraph::SceneGraphNodeType::Model) {
+			if (sourceNode->isModelNode() && targetNode->isModelNode()) {
 				if (ImGui::Button(ICON_FK_LINK " Merge onto##mergeonto")) {
 					sceneMgr.mergeNodes(_dragDropTargetNodeId, _dragDropSourceNodeId);
 					ImGui::CloseCurrentPopup();

@@ -471,8 +471,12 @@ bool SceneGraphNode::isReference() const {
 	return _type == SceneGraphNodeType::ModelReference;
 }
 
-bool SceneGraphNode::isModelNode() const {
+bool SceneGraphNode::isAnyModelNode() const {
 	return _type == SceneGraphNodeType::Model || _type == SceneGraphNodeType::ModelReference;
+}
+
+bool SceneGraphNode::isModelNode() const {
+	return _type == SceneGraphNodeType::Model;
 }
 
 bool SceneGraphNode::isReferenceable() const {

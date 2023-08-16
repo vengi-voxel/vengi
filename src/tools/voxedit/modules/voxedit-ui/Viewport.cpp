@@ -149,7 +149,7 @@ void Viewport::dragAndDrop(float headerSize) {
 			const int dragPalIdx = (int)(intptr_t)payload->Data;
 			const int nodeId = sceneMgr().sceneGraph().activeNode();
 			if (scenegraph::SceneGraphNode *node = sceneMgr().sceneGraphNode(nodeId)) {
-				if (node->visible() && node->type() == scenegraph::SceneGraphNodeType::Model) {
+				if (node->visible() && node->isModelNode()) {
 					updateViewportTrace(headerSize);
 					ModifierFacade &modifier = sceneMgr().modifier();
 					modifier.setCursorVoxel(voxel::createVoxel(node->palette(), dragPalIdx));
@@ -602,7 +602,7 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 		}
 		handleGizmo(node, keyFrameIdx, localMatrix);
 
-		if (!_gizmoActivated && node.type() == scenegraph::SceneGraphNodeType::Model &&
+		if (!_gizmoActivated && node.isModelNode() &&
 			ImGui::IsKeyPressed(ImGuiKey_LeftShift) && ImGui::IsKeyPressed(ImGuiKey_MouseLeft)) {
 			const int newNode = sceneMgr().nodeReference(node.id());
 			if (newNode != InvalidNodeId) {

@@ -613,7 +613,7 @@ VoxConvert::NodeStats VoxConvert::dumpNode_r(const scenegraph::SceneGraph& scene
 		const glm::vec3 &lsc = transform.localScale();
 		Log::info("%*s      |- local scale %f:%f:%f", indent, " ", lsc.x, lsc.y, lsc.z);
 	}
-	if (meshDetails && node.type() == scenegraph::SceneGraphNodeType::Model) {
+	if (meshDetails && node.isModelNode()) {
 		const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
 		const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 		const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();

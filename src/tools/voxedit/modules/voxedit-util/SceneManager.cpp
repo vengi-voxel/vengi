@@ -2266,7 +2266,7 @@ void SceneManager::animate(double nowSeconds) {
 	}
 
 	scenegraph::SceneGraphNode &prev = _sceneGraph.node(_currentAnimationNodeId);
-	if (prev.isModelNode()) {
+	if (prev.isAnyModelNode()) {
 		prev.setVisible(false);
 	}
 
@@ -2275,7 +2275,7 @@ void SceneManager::animate(double nowSeconds) {
 		_currentAnimationNodeId = _sceneGraph.nextModelNode(_sceneGraph.root().id());
 	}
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(_currentAnimationNodeId);
-	if (node.isModelNode()) {
+	if (node.isAnyModelNode()) {
 		node.setVisible(true);
 	}
 }
@@ -2484,7 +2484,7 @@ void SceneManager::traceScene(bool force) {
 	const bool hideInactive = _hideInactive->boolVal();
 	for (auto entry : _sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode& node = entry->second;
-		if (!node.isModelNode()) {
+		if (!node.isAnyModelNode()) {
 			continue;
 		}
 		if (!node.visible() || (hideInactive && node.id() != activeNode())) {
