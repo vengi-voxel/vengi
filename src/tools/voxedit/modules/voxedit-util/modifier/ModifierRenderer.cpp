@@ -117,7 +117,7 @@ void ModifierRenderer::clearShapeMeshes() {
 }
 
 void ModifierRenderer::updateShapeMesh(int idx, voxel::RawVolume *volume, voxel::Palette *palette) {
-	_volumeRenderer.setVolume(idx, volume, palette);
+	delete _volumeRenderer.setVolume(idx, volume, palette);
 	if (volume != nullptr) {
 		_volumeRenderer.extractRegion(idx, volume->region());
 	}
