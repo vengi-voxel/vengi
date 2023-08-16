@@ -20,6 +20,7 @@ set(LUA_SRCS
 	scripts/replacepalette.lua
 	scripts/resize.lua
 	scripts/similarcolor.lua
+	scripts/slice.lua
 	scripts/splitcolor.lua
 	scripts/splitobjects.lua
 	scripts/thicken.lua

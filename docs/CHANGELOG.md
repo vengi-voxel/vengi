@@ -15,6 +15,7 @@ General:
    - Added cvar `voxformat_pointcloudsize` for point cloud formats
    - Added Polygon File Format (`ply`) mesh and point cloud support (ascii and binary)
    - Fixed regression with GLTF exports
+   - Added a new lua script to slice a node into smaller pieces
 
 VoxEdit:
 

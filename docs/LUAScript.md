@@ -200,6 +200,16 @@ local region = [...]
 local mins = region:mins()
 ```
 
+To create new regions, you can use the `modelregion.new` function which needs the lower and upper boundaries. For example
+
+```lua
+local myregion = modelregion.new(0, 0, 0, 1, 1, 1) -- creates a region with 8 voxels
+```
+
+```lua
+local myregion = modelregion.new(0, 0, 0, 0, 0, 0) -- creates a region with 1 voxels
+```
+
 ## Volume
 
 * `voxel(x, y, z)`: Returns the palette index of the voxel at the given position in the volume `[0-255]`. Or `-1` if there is no voxel.

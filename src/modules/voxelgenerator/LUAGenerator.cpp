@@ -85,6 +85,14 @@ static const char *luaVoxel_metascenegraph() {
 	return "__meta_scenegraph";
 }
 
+static const char *luaVoxel_metaregionglobal() {
+	return "__meta_sceneregionglobal";
+}
+
+static const char *luaVoxel_metaregion_gc() {
+	return "__meta_region_gc";
+}
+
 static const char *luaVoxel_metavolumewrapper() {
 	return "__meta_volumewrapper";
 }
@@ -110,6 +118,10 @@ static inline const char *luaVoxel_metaregion() {
 }
 
 static voxel::Region* luaVoxel_toRegion(lua_State* s, int n) {
+	voxel::Region** region = (voxel::Region**)luaL_testudata(s, n, luaVoxel_metaregion_gc());
+	if (region != nullptr) {
+		return *region;
+	}
 	return *(voxel::Region**)clua_getudata<voxel::Region*>(s, n, luaVoxel_metaregion());
 }
 
@@ -127,6 +139,14 @@ static int luaVoxel_pushregion(lua_State* s, const voxel::Region* region) {
 	}
 	return clua_pushudata(s, region, luaVoxel_metaregion());
 }
+
+static int luaVoxel_pushregion(lua_State* s, voxel::Region* region) {
+	if (region == nullptr) {
+		return clua_error(s, "No region given - can't push");
+	}
+	return clua_pushudata(s, region, luaVoxel_metaregion_gc());
+}
+
 
 static scenegraph::SceneGraphNode* luaVoxel_toscenegraphnode(lua_State* s, int n) {
 	return *(scenegraph::SceneGraphNode**)clua_getudata<scenegraph::SceneGraphNode*>(s, n, luaVoxel_metascenegraphnode());
@@ -696,6 +716,22 @@ static int luaVoxel_noise_worley3(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_region_new(lua_State* s) {
+	const int minsx = (int)luaL_checkinteger(s, 1);
+	const int minsy = (int)luaL_checkinteger(s, 2);
+	const int minsz = (int)luaL_checkinteger(s, 3);
+	const int maxsx = (int)luaL_checkinteger(s, 4);
+	const int maxsy = (int)luaL_checkinteger(s, 5);
+	const int maxsz = (int)luaL_checkinteger(s, 6);
+	return luaVoxel_pushregion(s, new voxel::Region(minsx, minsy, minsz, maxsx, maxsy, maxsz));
+}
+
+static int luaVoxel_region_gc(lua_State *s) {
+	voxel::Region *region = luaVoxel_toRegion(s, 1);
+	delete region;
+	return 0;
+}
+
 static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	const char *name = lua_tostring(s, 1);
 	const voxel::Region* region = voxelgenerator::luaVoxel_toRegion(s, 2);
@@ -808,6 +844,31 @@ static void prepareState(lua_State* s) {
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, regionFuncs, luaVoxel_metaregion());
+
+	static const luaL_Reg regionFuncs_gc[] = {
+		{"width", luaVoxel_region_width},
+		{"height", luaVoxel_region_height},
+		{"depth", luaVoxel_region_depth},
+		{"x", luaVoxel_region_x},
+		{"y", luaVoxel_region_y},
+		{"z", luaVoxel_region_z},
+		{"center", luaVoxel_region_center},
+		{"mins", luaVoxel_region_mins},
+		{"maxs", luaVoxel_region_maxs},
+		{"size", luaVoxel_region_size},
+		{"setMins", luaVoxel_region_setmins},
+		{"setMaxs", luaVoxel_region_setmaxs},
+		{"__tostring", luaVoxel_region_tostring},
+		{"__gc", luaVoxel_region_gc},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncs(s, regionFuncs_gc, luaVoxel_metaregion_gc());
+
+	static const luaL_Reg globalRegionFuncs[] = {
+		{"new", luaVoxel_region_new},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, globalRegionFuncs, luaVoxel_metaregionglobal(), "modelregion");
 
 	static const luaL_Reg sceneGraphFuncs[] = {
 		{"new", luaVoxel_scenegraph_new_node},

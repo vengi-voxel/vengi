@@ -2244,7 +2244,9 @@ bool SceneManager::runScript(const core::String& script, const core::DynamicArra
 	const voxel::Region& region = _modifier.createRegion(v);
 	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
 	const bool retVal = _luaGenerator.exec(script, _sceneGraph, nodeId, region, _modifier.cursorVoxel(), dirtyRegion, args);
-	modified(nodeId, dirtyRegion);
+	if (_sceneGraph.hasNode(nodeId)) {
+		modified(nodeId, dirtyRegion);
+	}
 	return retVal;
 }
 
