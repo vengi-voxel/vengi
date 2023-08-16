@@ -16,6 +16,11 @@ General:
    - Added Polygon File Format (`ply`) mesh and point cloud support (ascii and binary)
    - Fixed regression with GLTF exports
 
+VoxEdit:
+
+   - Fixed regression about not rendering the shape volumes anymore
+   - Implemented scene graph panel drag and drop popup
+
 ## 0.0.26 (2023-08-13)
 
 General:
