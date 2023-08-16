@@ -8,6 +8,12 @@
 #include "core/collection/DynamicArray.h"
 
 namespace voxelformat {
+
+/** TODO:
+ * camera element support
+ * range_grid element: https://www.cs.jhu.edu/~misha/Code/PoissonMesh/TextureStitcher/range-grid.ply.html
+ */
+
 /**
  * @brief Polygon File Format or Stanford Triangle Format
  *
