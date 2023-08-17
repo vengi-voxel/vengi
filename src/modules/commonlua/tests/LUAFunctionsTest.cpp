@@ -24,7 +24,7 @@ public:
 TEST_F(LUAFunctionsTest, testVectorCtor) {
 	const char *script = R"(
 		function test()
-			return ivec3.new(0, 1, 0)
+			return g_ivec3.new(0, 1, 0)
 		end
 	)";
 	test(script, glm::ivec3(0, 1, 0));
@@ -33,8 +33,8 @@ TEST_F(LUAFunctionsTest, testVectorCtor) {
 TEST_F(LUAFunctionsTest, testVectorDistance) {
 	const char *script = R"(
 		function test()
-			local v1 = vec3.new(0, 1, 0)
-			local v2 = vec3.new(0, 2, 0)
+			local v1 = g_vec3.new(0, 1, 0)
+			local v2 = g_vec3.new(0, 2, 0)
 			return v1:distance(v2)
 		end
 	)";
@@ -49,9 +49,9 @@ TEST_F(LUAFunctionsTest, testVectorDistance) {
 TEST_F(LUAFunctionsTest, testVectorDistanceGlobal) {
 	const char *script = R"(
 		function test()
-			local v1 = vec3.new(0, 1, 0)
-			local v2 = vec3.new(0, 2, 0)
-			return vec3.distance(v1, v2)
+			local v1 = g_vec3.new(0, 1, 0)
+			local v2 = g_vec3.new(0, 2, 0)
+			return g_vec3.distance(v1, v2)
 		end
 	)";
 	LUA lua;
@@ -65,7 +65,7 @@ TEST_F(LUAFunctionsTest, testVectorDistanceGlobal) {
 TEST_F(LUAFunctionsTest, testVectorAddition) {
 	const char *script = R"(
 		function test()
-			return ivec3.new(0, 1, 0) + ivec3.new(0, 1, 1)
+			return g_ivec3.new(0, 1, 0) + g_ivec3.new(0, 1, 1)
 		end
 	)";
 	test(script, glm::ivec3(0, 2, 1));
@@ -74,7 +74,7 @@ TEST_F(LUAFunctionsTest, testVectorAddition) {
 TEST_F(LUAFunctionsTest, testVectorAdditionNonVector) {
 	const char *script = R"(
 		function test()
-			return ivec3.new(0, 1, 0) + 1
+			return g_ivec3.new(0, 1, 0) + 1
 		end
 	)";
 	test(script, glm::ivec3(1, 2, 1));
@@ -83,7 +83,7 @@ TEST_F(LUAFunctionsTest, testVectorAdditionNonVector) {
 TEST_F(LUAFunctionsTest, testVectorMultiplication) {
 	const char *script = R"(
 		function test()
-			return ivec3.new(0, 1, 2) * ivec3.new(0, 2, 2)
+			return g_ivec3.new(0, 1, 2) * g_ivec3.new(0, 2, 2)
 		end
 	)";
 	test(script, glm::ivec3(0, 2, 4));
@@ -92,7 +92,7 @@ TEST_F(LUAFunctionsTest, testVectorMultiplication) {
 TEST_F(LUAFunctionsTest, testVectorMultiplicationNonVector) {
 	const char *script = R"(
 		function test()
-			return ivec3.new(0, 1, 2) * 2
+			return g_ivec3.new(0, 1, 2) * 2
 		end
 	)";
 	test(script, glm::ivec3(0, 2, 4));
@@ -101,7 +101,7 @@ TEST_F(LUAFunctionsTest, testVectorMultiplicationNonVector) {
 TEST_F(LUAFunctionsTest, testVectorDivision) {
 	const char *script = R"(
 		function test()
-			return ivec3.new(0, 1, 2) / ivec3.new(1, 2, 2)
+			return g_ivec3.new(0, 1, 2) / g_ivec3.new(1, 2, 2)
 		end
 	)";
 	test(script, glm::ivec3(0, 0, 1));
@@ -110,7 +110,7 @@ TEST_F(LUAFunctionsTest, testVectorDivision) {
 TEST_F(LUAFunctionsTest, testVectorDivisionNonVector) {
 	const char *script = R"(
 		function test()
-			return ivec3.new(0, 1, 2) / 2
+			return g_ivec3.new(0, 1, 2) / 2
 		end
 	)";
 	test(script, glm::ivec3(0, 0, 1));
@@ -119,7 +119,7 @@ TEST_F(LUAFunctionsTest, testVectorDivisionNonVector) {
 TEST_F(LUAFunctionsTest, testVectorComponents) {
 	const char *script = R"(
 		function test()
-			local vec = ivec3.new(0, 0, 0)
+			local vec = g_ivec3.new(0, 0, 0)
 			vec.x = 1
 			vec.y = 2
 			vec.z = 3
