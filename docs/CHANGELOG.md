@@ -17,6 +17,9 @@ Breaking changes:
      * `scenegraph` is now `g_scenegraph`
      * `palettemgr` is now `g_palette`
      * `noise` is now `g_noise`
+     * `cmd` is now `g_cmd`
+     * `var` is now `g_var`
+     * `XvecX` is now `g_XvecX` (`ivec3` is for example `g_ivec3`)
 
 General:
 
