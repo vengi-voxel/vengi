@@ -866,14 +866,14 @@ static void prepareState(lua_State* s) {
 		{"new", luaVoxel_region_new},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, globalRegionFuncs, luaVoxel_metaregionglobal(), "modelregion");
+	clua_registerfuncsglobal(s, globalRegionFuncs, luaVoxel_metaregionglobal(), "g_region");
 
 	static const luaL_Reg sceneGraphFuncs[] = {
 		{"new", luaVoxel_scenegraph_new_node},
 		{"get", luaVoxel_scenegraph_get_node},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, sceneGraphFuncs, luaVoxel_metascenegraph(), "scenegraph");
+	clua_registerfuncsglobal(s, sceneGraphFuncs, luaVoxel_metascenegraph(), "g_scenegraph");
 
 	static const luaL_Reg sceneGraphNodeFuncs[] = {
 		{"name", luaVoxel_scenegraphnode_name},
@@ -913,7 +913,7 @@ static void prepareState(lua_State* s) {
 		{"new", luaVoxel_palette_new},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, paletteGlobalsFuncs, luaVoxel_metapaletteglobal(), "palettemgr");
+	clua_registerfuncsglobal(s, paletteGlobalsFuncs, luaVoxel_metapaletteglobal(), "g_palette");
 
 	static const luaL_Reg noiseFuncs[] = {
 		{"noise2", luaVoxel_noise_simplex2},
@@ -931,7 +931,7 @@ static void prepareState(lua_State* s) {
 		{"worley3", luaVoxel_noise_worley3},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, noiseFuncs, luaVoxel_metanoise(), "noise");
+	clua_registerfuncsglobal(s, noiseFuncs, luaVoxel_metanoise(), "g_noise");
 
 	clua_mathregister(s);
 }

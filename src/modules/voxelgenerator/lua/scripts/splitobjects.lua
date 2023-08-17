@@ -12,7 +12,7 @@ local palette = {}
 
 local function connectedVisitor(volume, x, y, z)
 	if needNewModel then
-		local newModel = scenegraph.new('splitobject', volume:region())
+		local newModel = g_scenegraph.new('splitobject', volume:region())
 		splitVolume = newModel:volume()
 		newModel:setPalette(palette)
 		needNewModel = false

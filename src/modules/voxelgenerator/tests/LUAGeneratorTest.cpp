@@ -90,7 +90,7 @@ TEST_F(LUAGeneratorTest, testExecute) {
 				node:volume():setVoxel(1, 0, 0, match)
 			end
 			local colors = node:palette():colors()
-			local newpal = palettemgr.new()
+			local newpal = g_palette.new()
 			newpal:load("built-in:minecraft")
 		end
 	)";
@@ -157,7 +157,7 @@ TEST_F(LUAGeneratorTest, testArguments) {
 TEST_F(LUAGeneratorTest, testSceneGraph) {
 	const core::String script = R"(
 		function main(node, region, color)
-			local model = scenegraph.get()
+			local model = g_scenegraph.get()
 			model:setName("foobar")
 			model:volume():setVoxel(0, 0, 0, color)
 		end

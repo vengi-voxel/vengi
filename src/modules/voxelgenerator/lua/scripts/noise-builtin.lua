@@ -15,7 +15,7 @@ local function noise2d(volume, region, color, freq, amplitude, type)
 		if noiseVolume == nil then
 			error("volume is nil")
 		end
-		local maxY = amplitude * noise.noise2(x * freq, z * freq) * region:height()
+		local maxY = amplitude * g_noise.noise2(x * freq, z * freq) * region:height()
 		for y = 0, maxY do
 			noiseVolume:setVoxel(x, y, z, color)
 		end
@@ -25,7 +25,7 @@ local function noise2d(volume, region, color, freq, amplitude, type)
 			if noiseVolume == nil then
 				error("volume is nil")
 			end
-			local maxY = amplitude * noise.worley2(x * freq, z * freq) * region:height()
+			local maxY = amplitude * g_noise.worley2(x * freq, z * freq) * region:height()
 			for y = 0, maxY do
 				noiseVolume:setVoxel(x, y, z, color)
 			end
@@ -39,7 +39,7 @@ local function noise3d(volume, region, color, freq, amplitude, threshold, type)
 		if noiseVolume == nil then
 			error("volume is nil")
 		end
-		local val = amplitude * noise.noise3(x * freq, y * freq, z * freq)
+		local val = amplitude * g_noise.noise3(x * freq, y * freq, z * freq)
 		if (val > threshold) then
 			noiseVolume:setVoxel(x, y, z, color)
 		end
@@ -49,7 +49,7 @@ local function noise3d(volume, region, color, freq, amplitude, threshold, type)
 		if noiseVolume == nil then
 			error("volume is nil")
 		end
-		local val = amplitude * noise.worley3(x * freq, y * freq, z * freq)
+		local val = amplitude * g_noise.worley3(x * freq, y * freq, z * freq)
 		if (val > threshold) then
 			noiseVolume:setVoxel(x, y, z, color)
 		end

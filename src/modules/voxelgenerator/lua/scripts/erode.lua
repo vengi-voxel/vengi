@@ -22,7 +22,7 @@ function main(node, region, color, emptycnt, octaves, lacunarity, gain, threshol
 		if (adjacent >= emptycnt) then
 			local size = region:size()
 			local p = vec3.new(x / size.x, y / size.y, z / size.z)
-			local r = noise.fBm3(p, octaves, lacunarity, gain)
+			local r = g_noise.fBm3(p, octaves, lacunarity, gain)
 			if r >= threshold then
 				volume:setVoxel(x, y, z, -1)
 			end

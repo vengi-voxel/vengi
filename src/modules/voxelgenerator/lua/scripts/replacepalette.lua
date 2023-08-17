@@ -10,7 +10,7 @@ function arguments()
 end
 
 function main(node, region, color, palettename, remap)
-	local newpalette = palettemgr.new()
+	local newpalette = g_palette.new()
 	newpalette:load(palettename)
 	node:setPalette(newpalette, remap)
 end

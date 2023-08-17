@@ -7,7 +7,7 @@ local vol = require "modules.volume"
 function main(node, region, color)
 	local volume = node:volume()
 
-	local newLayer = scenegraph.new('split', region)
+	local newLayer = g_scenegraph.new('split', region)
 	local newVolume = newLayer:volume()
 	newLayer:setPalette(node:palette())
 

@@ -34,8 +34,8 @@ function main(node, region, color, width, height, depth)
 				local maxsx = minsx + width - 1
 				local maxsy = minsy + height - 1
 				local maxsz = minsz + depth - 1
-				local slicedRegion = modelregion.new(minsx, minsy, minsz, maxsx, maxsy, maxsz)
-				local slicedNode = scenegraph.new('slice', slicedRegion)
+				local slicedRegion = g_region.new(minsx, minsy, minsz, maxsx, maxsy, maxsz)
+				local slicedNode = g_scenegraph.new('slice', slicedRegion)
 				local v = slicedNode:volume()
 				for d = 1, depth do
 					for h = 1, height do
