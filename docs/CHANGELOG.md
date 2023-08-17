@@ -13,7 +13,7 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 Breaking changes:
 
    - Renamed globals for lua scripts. Added a `g_` prefix to them. You have to adopt your scripts
-     to work the latest version if you use them
+     to work with the latest version with vengi (if you use them):
      * `scenegraph` is now `g_scenegraph`
      * `palettemgr` is now `g_palette`
      * `noise` is now `g_noise`
