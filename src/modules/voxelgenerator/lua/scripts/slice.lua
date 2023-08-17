@@ -38,9 +38,9 @@ function main(node, region, color, width, height, depth)
 				local slicedNode = g_scenegraph.new('slice', slicedRegion)
 				local v = slicedNode:volume()
 				for d = 1, depth do
+					local z = mins.z + (slice - 1) * depth + d - 1
 					for h = 1, height do
 						local y = mins.y + (row - 1) * height + h - 1
-						local z = mins.z + (slice - 1) * depth + d - 1
 						for w = 1, width do
 							local x = mins.x + (col - 1) * width + w - 1
 							local voxel = volume:voxel(x, y, z)
