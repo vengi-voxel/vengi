@@ -1125,14 +1125,18 @@ core::String LUAGenerator::load(const core::String& scriptName) const {
 }
 
 core::DynamicArray<LUAScript> LUAGenerator::listScripts() const {
-	lua::LUA lua;
 	core::DynamicArray<LUAScript> scripts;
 	core::DynamicArray<io::FilesystemEntry> entities;
 	io::filesystem()->list("scripts", entities, "*.lua");
 	scripts.reserve(entities.size());
 	for (const auto& e : entities) {
 		const core::String path = core::string::path("scripts", e.name);
-		lua.load(io::filesystem()->load(path));
+		lua::LUA lua;
+		if (!lua.load(io::filesystem()->load(path))) {
+			Log::warn("Failed to load %s", path.c_str());
+			scripts.push_back({e.name, false});
+			continue;
+		}
 		lua_getglobal(lua, "main");
 		if (!lua_isfunction(lua, -1)) {
 			Log::debug("No main() function found in %s", path.c_str());
