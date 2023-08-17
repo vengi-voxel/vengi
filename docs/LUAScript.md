@@ -97,7 +97,7 @@ The order in the arguments table defines the order in which the arguments are pa
 
 ## SceneGraph
 
-`scenegraph` lets you access different nodes or create new ones.
+`g_scenegraph` lets you access different nodes or create new ones.
 
 The functions are:
 
@@ -144,16 +144,16 @@ The functions are:
 
 They are available as e.g. `palette:color([...])`, `palette:match([...])` and so on.
 
-You can create new palettes with the `palettemgr` global by calling e.g.
+You can create new palettes with the `g_palette` global by calling e.g.
 
 ```lua
-local pal = palette.new()
+local pal = g_palette.new()
 pal.load("built-in:minecraft")
 ```
 
 ## Noise
 
-The global `noise` supports a few noise generators:
+The global `g_noise` supports a few noise generators:
 
 * `noise2(v)`, `noise3(v)`, `noise4(v)`: Simplex noise. Uses the given `vec2`, `vec3` or `vec4` and returns a float value between `0.0` and `1.0`.
 
@@ -177,9 +177,9 @@ They are available as e.g. `noise.noise2([...])`, `noise.fBm3([...])` and so on.
 
 * `size()`: The size of the region in voxels (`ivec3`).
 
-* `setMins(mins)`: The lower boundary of the region - given as `ivec3`.
+* `setMins(mins)`: The lower boundary of the region - given as `ivec3` (atm only available for palettes created with `new`).
 
-* `setMaxs(maxs)`: The upper boundary of the region - given as `ivec3`.
+* `setMaxs(maxs)`: The upper boundary of the region - given as `ivec3` (atm only available for palettes created with `new`).
 
 * `x()`: The lower x boundary of the region.
 
@@ -200,14 +200,14 @@ local region = [...]
 local mins = region:mins()
 ```
 
-To create new regions, you can use the `modelregion.new` function which needs the lower and upper boundaries. For example
+To create new regions, you can use the `g_region.new` function which needs the lower and upper boundaries. For example
 
 ```lua
-local myregion = modelregion.new(0, 0, 0, 1, 1, 1) -- creates a region with 8 voxels
+local myregion = g_region.new(0, 0, 0, 1, 1, 1) -- creates a region with 8 voxels
 ```
 
 ```lua
-local myregion = modelregion.new(0, 0, 0, 0, 0, 0) -- creates a region with 1 voxels
+local myregion = g_region.new(0, 0, 0, 0, 0, 0) -- creates a region with 1 voxels
 ```
 
 ## Volume
@@ -255,7 +255,7 @@ Access these functions like this:
 local v1 = ivec3.new(1, 1, 1)
 ```
 
-There are 3 possible components for this vector. You can also call `ivec3.new(1)` to fill all three values with a one. Or call it like this: `ivec3.new(1, 2)` to create a vector with the three components of `1, 2, 2`.
+There are 3 possible components for this vector. You can also call `g_ivec3.new(1)` to fill all three values with a one. Or call it like this: `g_ivec3.new(1, 2)` to create a vector with the three components of `1, 2, 2`.
 
 ## Other
 
@@ -264,8 +264,8 @@ There are 3 possible components for this vector. You can also call `ivec3.new(1)
 You have access to the `cvar` and `cmd` lua bindings, too. This means that you can access any `cvar` value or execute any command like `modeladd` or `modelmerge` to modify the whole scene.
 
 ```lua
-cmd.execute("echo test")
-var.int("cl_gamma")
+g_cmd.execute("echo test")
+g_var.int("cl_gamma")
 ```
 
 To get a full list of commands and cvars use the console command `cmdlist` and `cvarlist`.

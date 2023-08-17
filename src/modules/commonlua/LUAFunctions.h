@@ -41,19 +41,19 @@ template<> struct clua_meta<glm::quat> { static char const *name() {return "__me
 template<class T>
 struct clua_name {};
 
-template<> struct clua_name<glm::bvec2> { static char const *name() {return "bvec2";} };
-template<> struct clua_name<glm::bvec3> { static char const *name() {return "bvec3";} };
-template<> struct clua_name<glm::bvec4> { static char const *name() {return "bvec4";} };
-template<> struct clua_name<glm::dvec2> { static char const *name() {return "dvec2";} };
-template<> struct clua_name<glm::dvec3> { static char const *name() {return "dvec3";} };
-template<> struct clua_name<glm::dvec4> { static char const *name() {return "dvec4";} };
-template<> struct clua_name<glm::ivec2> { static char const *name() {return "ivec2";} };
-template<> struct clua_name<glm::ivec3> { static char const *name() {return "ivec3";} };
-template<> struct clua_name<glm::ivec4> { static char const *name() {return "ivec4";} };
-template<> struct clua_name<glm::vec2> { static char const *name() {return "vec2";} };
-template<> struct clua_name<glm::vec3> { static char const *name() {return "vec3";} };
-template<> struct clua_name<glm::vec4> { static char const *name() {return "vec4";} };
-template<> struct clua_name<glm::quat> { static char const *name() {return "quat";} };
+template<> struct clua_name<glm::bvec2> { static char const *name() {return "g_bvec2";} };
+template<> struct clua_name<glm::bvec3> { static char const *name() {return "g_bvec3";} };
+template<> struct clua_name<glm::bvec4> { static char const *name() {return "g_bvec4";} };
+template<> struct clua_name<glm::dvec2> { static char const *name() {return "g_dvec2";} };
+template<> struct clua_name<glm::dvec3> { static char const *name() {return "g_dvec3";} };
+template<> struct clua_name<glm::dvec4> { static char const *name() {return "g_dvec4";} };
+template<> struct clua_name<glm::ivec2> { static char const *name() {return "g_ivec2";} };
+template<> struct clua_name<glm::ivec3> { static char const *name() {return "g_ivec3";} };
+template<> struct clua_name<glm::ivec4> { static char const *name() {return "g_ivec4";} };
+template<> struct clua_name<glm::vec2> { static char const *name() {return "g_vec2";} };
+template<> struct clua_name<glm::vec3> { static char const *name() {return "g_vec3";} };
+template<> struct clua_name<glm::vec4> { static char const *name() {return "g_vec4";} };
+template<> struct clua_name<glm::quat> { static char const *name() {return "g_quat";} };
 
 extern int clua_assignmetatable(lua_State* s, const char *name);
 

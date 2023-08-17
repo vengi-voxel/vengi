@@ -210,7 +210,7 @@ void clua_cmdregister(lua_State* s) {
 		{"execute", clua_cmdexecute},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, funcs, "_metacmd", "cmd");
+	clua_registerfuncsglobal(s, funcs, "_metacmd", "g_cmd");
 }
 
 static int clua_vargetstr(lua_State *s) {
@@ -305,7 +305,7 @@ void clua_varregister(lua_State* s) {
 		{"setfloat", clua_varsetfloat},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, funcs, "_metavar", "var");
+	clua_registerfuncsglobal(s, funcs, "_metavar", "g_var");
 }
 
 static int clua_loginfo(lua_State *s) {
