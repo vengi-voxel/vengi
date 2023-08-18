@@ -16,27 +16,27 @@ template<class TYPE, size_t SIZE>
 struct Array {
 	TYPE _items[SIZE];
 
-	[[__nodiscard__]] constexpr size_t size() const {
+	[[nodiscard]] constexpr size_t size() const {
 		return SIZE;
 	}
 
-	[[__nodiscard__]] const TYPE* data() const {
+	[[nodiscard]] const TYPE* data() const {
 		return _items;
 	}
 
-	[[__nodiscard__]] TYPE* data() {
+	[[nodiscard]] TYPE* data() {
 		return _items;
 	}
 
-	[[__nodiscard__]] constexpr bool empty() const {
+	[[nodiscard]] constexpr bool empty() const {
 		return false;
 	}
 
-	[[__nodiscard__]] inline constexpr TYPE& operator[](size_t index) {
+	[[nodiscard]] inline constexpr TYPE& operator[](size_t index) {
 		return _items[index];
 	}
 
-	[[__nodiscard__]] inline constexpr const TYPE& operator[](size_t index) const {
+	[[nodiscard]] inline constexpr const TYPE& operator[](size_t index) const {
 		return _items[index];
 	}
 
@@ -46,19 +46,19 @@ struct Array {
 		}
 	}
 
-	[[__nodiscard__]] constexpr TYPE* begin() {
+	[[nodiscard]] constexpr TYPE* begin() {
 		return _items;
 	}
 
-	[[__nodiscard__]] constexpr const TYPE* begin() const {
+	[[nodiscard]] constexpr const TYPE* begin() const {
 		return _items;
 	}
 
-	[[__nodiscard__]] constexpr TYPE* end() {
+	[[nodiscard]] constexpr TYPE* end() {
 		return &_items[SIZE];
 	}
 
-	[[__nodiscard__]] constexpr const TYPE* end() const {
+	[[nodiscard]] constexpr const TYPE* end() const {
 		return &_items[SIZE];
 	}
 };
