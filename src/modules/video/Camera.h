@@ -69,29 +69,29 @@ protected:
 	PolygonMode _polygonMode = PolygonMode::Solid;
 	CameraRotationType _rotationType = CameraRotationType::Eye;
 
-	glm::ivec2 _windowSize {0};
+	glm::ivec2 _windowSize{0};
 	float _orthoZoom = 1.0f;
-	glm::vec3 _panOffset {0.0f};
+	glm::vec3 _panOffset{0.0f};
 	// the position of the camera in the world
-	glm::vec3 _worldPos {0.0f};
-	glm::quat _quat;
+	glm::vec3 _worldPos{0.0f};
+	glm::quat _quat{0.0f, 0.0f, 0.0f, 0.0f};
 	uint32_t _dirty = DIRTY_ALL;
 
-	glm::mat4 _viewMatrix = glm::mat4(1.0f);
-	glm::mat4 _invViewMatrix = glm::mat4(1.0f);
-	glm::mat4 _projectionMatrix = glm::mat4(1.0f);
-	glm::mat4 _invProjectionMatrix = glm::mat4(1.0f);
-	glm::mat4 _viewProjectionMatrix = glm::mat4(1.0f);
-	glm::mat4 _orientation = glm::mat4(1.0f);
+	glm::mat4 _viewMatrix{1.0f};
+	glm::mat4 _invViewMatrix{1.0f};
+	glm::mat4 _projectionMatrix{1.0f};
+	glm::mat4 _invProjectionMatrix{1.0f};
+	glm::mat4 _viewProjectionMatrix{1.0f};
+	glm::mat4 _orientation{1.0f};
 
 	// rotation speed over time for all three axis
-	glm::vec3 _omega {0.0f};
+	glm::vec3 _omega{0.0f};
 
 	float _nearPlane = 0.1f;
 	float _farPlane = 500.0f;
 	float _fieldOfView = 45.0f;
 
-	glm::vec3 _target {0.0f};
+	glm::vec3 _target{0.0f};
 	float _distance = 100.0f;
 
 	void updateFrustumPlanes();

@@ -15,7 +15,7 @@ enum class PlaneSide {
 
 class Plane {
 private:
-	glm::vec3 _norm;
+	glm::vec3 _norm {0.0f};
 	float _dist = 0.0f;
 public:
 	Plane();
