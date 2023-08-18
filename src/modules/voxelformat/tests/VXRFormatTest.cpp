@@ -53,7 +53,7 @@ TEST_F(VXRFormatTest, testGiantDinosaur) {
 			ASSERT_FLOAT_EQ(expected[i], actual[i]) << i << ": " << glm::to_string(transform.worldMatrix());
 		}
 		EXPECT_FLOAT_EQ(node->pivot().x, 0.5f);
-		EXPECT_FLOAT_EQ(node->pivot().y, 0.45833331);
+		EXPECT_FLOAT_EQ(node->pivot().y, 0.45833331f);
 		EXPECT_FLOAT_EQ(node->pivot().z, 1.0f);
 	}
 	{

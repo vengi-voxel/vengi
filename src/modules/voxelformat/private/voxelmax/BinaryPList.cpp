@@ -403,7 +403,7 @@ BinaryPList BinaryPList::readDate(io::SeekableReadStream &stream) {
 }
 
 BinaryPList BinaryPList::readInt(io::SeekableReadStream &stream, BPListFormats size) {
-	const uint64_t numberBytes = 1 << size;
+	const uint64_t numberBytes = (uint64_t)1 << size;
 	Log::debug("BPLIST: Read int with %i bytes", (int)numberBytes);
 	if (numberBytes == 1) {
 		uint8_t data;
