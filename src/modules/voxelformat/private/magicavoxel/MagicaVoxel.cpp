@@ -117,6 +117,7 @@ void printDetails(const ogt_vox_scene *scene) {
 	Log::debug("vox cameras: %u", scene->num_cameras);
 }
 
+#ifdef DEBUG
 static bool checkRotationRow(const glm::vec3 &vec) {
 	for (int i = 0; i < 3; i++) {
 		if (vec[i] == 1.0f || vec[i] == -1.0f) {
@@ -126,11 +127,14 @@ static bool checkRotationRow(const glm::vec3 &vec) {
 	}
 	return false;
 }
+#endif
 
 void checkRotation(const ogt_vox_transform &transform) {
+#ifdef DEBUG
 	core_assert(checkRotationRow({transform.m00, transform.m01, transform.m02}));
 	core_assert(checkRotationRow({transform.m10, transform.m11, transform.m12}));
 	core_assert(checkRotationRow({transform.m20, transform.m21, transform.m22}));
+#endif
 }
 
 int findClosestPaletteIndex(const voxel::Palette &palette) {

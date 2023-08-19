@@ -49,13 +49,13 @@ constexpr inline DataType mapType() {
 
 	constexpr bool isUnsigned = std::is_unsigned<typename _priv::to_type<DATATYPE>::type>();
 	if constexpr (size == 1u) {
-		if (isUnsigned) {
+		if constexpr (isUnsigned) {
 			return DataType::UnsignedByte;
 		}
 		return DataType::Byte;
 	}
 	if constexpr (size == 2u) {
-		if (isUnsigned) {
+		if constexpr (isUnsigned) {
 			return DataType::UnsignedShort;
 		}
 		return DataType::Short;

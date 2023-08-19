@@ -56,20 +56,20 @@ protected:
 		core::ScopedPtr<voxel::RawVolume> unRotated;
 		while (remaining.x >= 90 || remaining.y >= 90 || remaining.z >= 90) {
 			const voxel::RawVolume *input = unRotated == nullptr ? rotated : unRotated;
-			math::Axis axis;
+			math::Axis remainingAxis;
 			if (remaining.x >= 90) {
-				axis = math::Axis::X;
+				remainingAxis = math::Axis::X;
 				remaining.x -= 90;
 			} else if (remaining.y >= 90) {
-				axis = math::Axis::Y;
+				remainingAxis = math::Axis::Y;
 				remaining.y -= 90;
 			} else {
 				core_assert(remaining.z >= 90);
-				axis = math::Axis::Z;
+				remainingAxis = math::Axis::Z;
 				remaining.z -= 90;
 			}
 
-			unRotated = rotateAxis(input, axis);
+			unRotated = rotateAxis(input, remainingAxis);
 		}
 		ASSERT_EQ(unRotated->region(), region);
 		ASSERT_TRUE(voxel::isBlocked(unRotated->voxel(0, 0, 0).getMaterial())) << "Expected to find a voxel\n"

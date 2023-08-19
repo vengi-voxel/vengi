@@ -659,7 +659,7 @@ voxel::RawVolume *SceneGraph::resolveVolume(const SceneGraphNode &n) const {
 	return n.volume();
 }
 
-SceneGraph::MergedVolumePalette SceneGraph::merge(bool transform) const {
+SceneGraph::MergedVolumePalette SceneGraph::merge(bool applyTransform) const {
 	const size_t n = size(SceneGraphNodeType::AllModels);
 	if (n == 0) {
 		return MergedVolumePalette{};
@@ -682,7 +682,7 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool transform) const {
 		nodes.push_back(&node);
 
 		voxel::Region region = resolveRegion(node);
-		if (transform) {
+		if (applyTransform) {
 			const SceneGraphTransform &transform = node.transform(keyFrameIdx);
 			const glm::vec3 &translation = transform.worldTranslation();
 			region.shift(translation);
@@ -699,7 +699,7 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool transform) const {
 		const SceneGraphNode* node = nodes[i];
 		const voxel::Region& sourceRegion = resolveRegion(*node);
 		voxel::Region destRegion = sourceRegion;
-		if (transform) {
+		if (applyTransform) {
 			const SceneGraphTransform &transform = node->transform(keyFrameIdx);
 			const glm::vec3 &translation = transform.worldTranslation();
 			destRegion.shift(translation);

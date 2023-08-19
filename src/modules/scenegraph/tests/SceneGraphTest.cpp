@@ -259,13 +259,13 @@ TEST_F(SceneGraphTest, testKeyframes) {
 	SceneGraphNode node(SceneGraphNodeType::Group);
 	EXPECT_EQ(InvalidKeyFrame, node.addKeyFrame(0));
 	for (int i = 0; i < 10; ++i) {
-		EXPECT_EQ(0u, node.keyFrameForFrame(i)) << "Failed to get the correct key frame for frame " << i;
+		EXPECT_EQ((scenegraph::KeyFrameIndex)0, node.keyFrameForFrame(i)) << "Failed to get the correct key frame for frame " << i;
 	}
 	const SceneGraphKeyFrames &kfs = *node.keyFrames();
 	EXPECT_EQ(1u, kfs.size());
 	EXPECT_NE(InvalidKeyFrame, node.addKeyFrame(6));
 	for (int i = 6; i < 10; ++i) {
-		EXPECT_EQ(1u, node.keyFrameForFrame(i)) << "Failed to get the correct key frame for frame " << i;
+		EXPECT_EQ((scenegraph::KeyFrameIndex)1, node.keyFrameForFrame(i)) << "Failed to get the correct key frame for frame " << i;
 	}
 	EXPECT_EQ(2u, kfs.size());
 	EXPECT_TRUE(node.removeKeyFrame(6));

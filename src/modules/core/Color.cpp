@@ -598,9 +598,10 @@ int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inpu
 		return quantizeNeuQuant(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
 	case ColorReductionType::Octree:
 		return quantizeOctree(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
-	default:
 	case ColorReductionType::MedianCut:
 		return quantizeMedianCut(targetBuf, maxTargetBufColors, inputBuf, inputBufColors);
+	default:
+		break;
 	}
 	return -1;
 }

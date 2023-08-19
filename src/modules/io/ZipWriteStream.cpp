@@ -28,6 +28,7 @@ ZipWriteStream::~ZipWriteStream() {
 	const int retVal = deflateEnd(((z_stream*)_stream));
 	core_free(((z_stream*)_stream));
 	core_assert(retVal == Z_OK);
+	(void)retVal;
 }
 
 int ZipWriteStream::write(const void *buf, size_t size) {
