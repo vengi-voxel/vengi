@@ -95,10 +95,10 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		if (e.type != io::FilesystemEntry::Type::file) {
 			continue;
 		}
-		const core::String &filename = core::string::path(baseName, "region", e.name);
-		const io::FilePtr &file = io::filesystem()->open(filename);
+		const core::String &regionFilename = core::string::path(baseName, "region", e.name);
+		const io::FilePtr &file = io::filesystem()->open(regionFilename);
 		if (!file->validHandle()) {
-			Log::warn("Could not open %s", filename.c_str());
+			Log::warn("Could not open %s", regionFilename.c_str());
 			continue;
 		}
 		futures.emplace_back(threadPool.enqueue([file, &loadctx]() {

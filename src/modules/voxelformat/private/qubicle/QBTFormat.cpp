@@ -226,8 +226,8 @@ bool QBTFormat::saveCompound(io::SeekableWriteStream &stream, const scenegraph::
 	wrapSave(saveMatrix(stream, node, colorMap))
 	wrapSave(stream.writeUInt32((int)node.children().size()));
 	for (int nodeId : node.children()) {
-		const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-		wrapSave(saveNode(stream, sceneGraph, node, colorMap))
+		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
+		wrapSave(saveNode(stream, sceneGraph, cnode, colorMap))
 	}
 	return true;
 }

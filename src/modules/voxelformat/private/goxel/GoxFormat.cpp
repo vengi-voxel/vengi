@@ -205,6 +205,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		int w = img->width();
 		int h = img->height();
 		core_assert(w == 64 && h == 64 && bpp == 4);
+		(void)bpp;(void)w;(void)h;
 
 		int32_t x, y, z;
 		wrap(stream.readInt32(x))
@@ -279,10 +280,10 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		} else if (!strcmp(dictKey, "mat")) {
 			// "mat" (4x4 matrix)
 			scenegraph::SceneGraphTransform transform;
-			io::MemoryReadStream stream(dictValue, sizeof(float) * 16);
+			io::MemoryReadStream subStream(dictValue, sizeof(float) * 16);
 			glm::mat4 mat;
 			for (int i = 0; i < 16; ++i) {
-				stream.readFloat(mat[i / 4][i % 4]);
+				subStream.readFloat(mat[i / 4][i % 4]);
 			}
 			transform.setWorldMatrix(mat);
 			node.setTransform(keyFrameIdx, transform);
@@ -379,10 +380,10 @@ bool GoxFormat::loadChunk_CAMR(State &state, const GoxChunk &c, io::SeekableRead
 		} else if (!strcmp(dictKey, "mat")) {
 			// "mat" 4x4 float
 			scenegraph::SceneGraphTransform transform;
-			io::MemoryReadStream stream(dictValue, sizeof(float) * 16);
+			io::MemoryReadStream subStream(dictValue, sizeof(float) * 16);
 			glm::mat4 mat;
 			for (int i = 0; i < 16; ++i) {
-				stream.readFloat(mat[i / 4][i % 4]);
+				subStream.readFloat(mat[i / 4][i % 4]);
 			}
 			transform.setWorldMatrix(mat);
 			const scenegraph::KeyFrameIndex keyFrameIdx = 0;

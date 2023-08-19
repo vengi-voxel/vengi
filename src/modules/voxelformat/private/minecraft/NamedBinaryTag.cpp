@@ -319,14 +319,14 @@ NamedBinaryTag NamedBinaryTag::parseType(TagType type, NamedBinaryTagContext &ct
 	switch (type) {
 	case TagType::COMPOUND: {
 		NBTCompound compound;
-		TagType type;
-		while (readType(*ctx.stream, type) && type != TagType::END) {
+		TagType subType;
+		while (readType(*ctx.stream, subType) && subType != TagType::END) {
 			core::String name;
 			if (!ctx.stream->readPascalStringUInt16BE(name)) {
 				return NamedBinaryTag{};
 			}
-			Log::trace("%*sFound %s of type %i", level * 3, " ", name.c_str(), (int)type);
-			compound.emplace(name, parseType(type, ctx, level + 1));
+			Log::trace("%*sFound %s of type %i", level * 3, " ", name.c_str(), (int)subType);
+			compound.emplace(name, parseType(subType, ctx, level + 1));
 		}
 		return NamedBinaryTag{core::move(compound)};
 	}

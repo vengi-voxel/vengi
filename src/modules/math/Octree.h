@@ -119,15 +119,15 @@ public:
 				return;
 			}
 
-			const auto& _aabb = aabb();
-			const glm::tvec3<TYPE>& _aabbSize = _aabb.getWidth();
+			const auto& aabbRef = aabb();
+			const glm::tvec3<TYPE>& _aabbSize = aabbRef.getWidth();
 			const glm::tvec3<TYPE> one((TYPE)1);
 			if (_aabbSize.x <= one.x && _aabbSize.y <= one.y && _aabbSize.z <= one.z) {
 				return;
 			}
 
 			AABB<TYPE> subareas[8];
-			split(_aabb, subareas);
+			split(aabbRef, subareas);
 			_nodes.reserve(8);
 			for (size_t i = 0u; i < 8; ++i) {
 				_nodes.emplace_back(OctreeNode(subareas[i], _maxDepth, _depth + 1, _octree));

@@ -194,8 +194,11 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	uint8_t buf[4096];
 	struct libvxl_stream s;
 	libvxl_stream(&s, &map, sizeof(buf));
-	size_t read = 0;
-	while ((read = libvxl_stream_read(&s, buf))) {
+	for (;;) {
+		size_t read = libvxl_stream_read(&s, buf);
+		if (read == 0) {
+			break;
+		}
 		if (stream.write(buf, read) == -1) {
 			Log::error("Could not write AoE vxl file to stream");
 			libvxl_stream_free(&s);

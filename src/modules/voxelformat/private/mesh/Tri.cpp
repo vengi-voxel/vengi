@@ -57,9 +57,9 @@ core::RGBA Tri::centerColor() const {
 	return core::RGBA::mix(core::RGBA::mix(color[0], color[1]), color[2]);
 }
 
-core::RGBA Tri::colorAt(const glm::vec2 &uv) const {
+core::RGBA Tri::colorAt(const glm::vec2 &inputuv) const {
 	if (texture) {
-		return texture->colorAt(uv, wrapS, wrapT);
+		return texture->colorAt(inputuv, wrapS, wrapT);
 	}
 	return core::RGBA::mix(core::RGBA::mix(color[0], color[1]), color[2]);
 }

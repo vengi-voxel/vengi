@@ -41,20 +41,20 @@ constexpr inline DataType mapType() {
 	static_assert(size != 64u, "Invalid data type given (size 64)");
 	static_assert(size == 1u || size == 2u || size == 4u, "Only datatypes of size 1, 2 or 4 are supported");
 	if (std::is_floating_point<typename _priv::to_type<DATATYPE>::type>()) {
-		if (size == 4u) {
+		if constexpr (size == 4u) {
 			return DataType::Float;
 		}
 		return DataType::Double;
 	}
 
 	constexpr bool isUnsigned = std::is_unsigned<typename _priv::to_type<DATATYPE>::type>();
-	if (size == 1u) {
+	if constexpr (size == 1u) {
 		if (isUnsigned) {
 			return DataType::UnsignedByte;
 		}
 		return DataType::Byte;
 	}
-	if (size == 2u) {
+	if constexpr (size == 2u) {
 		if (isUnsigned) {
 			return DataType::UnsignedShort;
 		}
@@ -62,7 +62,7 @@ constexpr inline DataType mapType() {
 	}
 
 	static_assert(size <= 4u, "No match found");
-	if (isUnsigned) {
+	if constexpr (isUnsigned) {
 		return DataType::UnsignedInt;
 	}
 	return DataType::Int;

@@ -65,12 +65,10 @@ static int readVoxel(io::SeekableReadStream &stream, const voxel::Palette &palet
 		uint16_t index;
 		wrap(stream.readUInt16(index))
 		return index;
-	} else {
-		Log::error("Could not load xraw file: Invalid bits per index: %i", bitsPerIndex);
-		return -1;
 	}
 
-	return 0;
+	Log::error("Could not load xraw file: Invalid bits per index: %i", bitsPerIndex);
+	return -1;
 }
 
 size_t XRawFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,

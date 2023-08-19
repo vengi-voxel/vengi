@@ -181,11 +181,11 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRea
 			Log::debug("Skip to load object %s", obj.data.c_str());
 			continue;
 		}
-		voxel::Palette palette;
-		if (!loadPaletteFromArchive(archive, obj.pal, palette, ctx)) {
+		voxel::Palette vmaxPalette;
+		if (!loadPaletteFromArchive(archive, obj.pal, vmaxPalette, ctx)) {
 			return false;
 		}
-		if (!loadObjectFromArchive(filename, archive, sceneGraph, ctx, obj, palette)) {
+		if (!loadObjectFromArchive(filename, archive, sceneGraph, ctx, obj, vmaxPalette)) {
 			Log::error("Failed to load object %s", obj.n.c_str());
 			return false;
 		}

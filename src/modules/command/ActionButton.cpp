@@ -21,7 +21,7 @@ bool ActionButton::execute(double nowSeconds, double delayBetweenExecutions, con
 	return true;
 }
 
-bool ActionButton::handleDown(int32_t key, double pressedSeconds) {
+bool ActionButton::handleDown(int32_t key, double pressedDownSeconds) {
 	for (int pressedKey : pressedKeys) {
 		if (key == pressedKey) {
 			return false;
@@ -34,14 +34,14 @@ bool ActionButton::handleDown(int32_t key, double pressedSeconds) {
 		}
 		pressedKey = key;
 		if (!alreadyDown) {
-			this->pressedSeconds = pressedSeconds;
+			this->pressedSeconds = pressedDownSeconds;
 		}
 		return true;
 	}
 	return false;
 }
 
-bool ActionButton::handleUp(int32_t key, double releasedSeconds) {
+bool ActionButton::handleUp(int32_t key, double releasedUpSeconds) {
 	if (key == ACTION_BUTTON_ALL_KEYS) {
 		for (int & pressedKey : pressedKeys) {
 			pressedKey = ACTION_BUTTON_NO_KEY;
@@ -54,7 +54,7 @@ bool ActionButton::handleUp(int32_t key, double releasedSeconds) {
 		}
 		pressedKey = ACTION_BUTTON_NO_KEY;
 		if (!pressed()) {
-			durationSeconds = releasedSeconds - pressedSeconds;
+			durationSeconds = releasedUpSeconds - pressedSeconds;
 			return true;
 		}
 		break;

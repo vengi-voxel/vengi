@@ -25,8 +25,8 @@ protected:
 		return n;
 	}
 
-	void write(int limit) {
-		for (int i = 0; i < limit; ++i) {
+	void write(int loopLimit) {
+		for (int i = 0; i < loopLimit; ++i) {
 			core::ScopedWriteLock scoped(_rwLock);
 			++_value;
 		}
