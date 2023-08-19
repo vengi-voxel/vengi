@@ -137,7 +137,7 @@ bool RawVolumeRenderer::init() {
 	}
 
 	const int shaderMaterialColorsArraySize = lengthof(shader::VoxelData::VertData::materialcolor);
-	if (shaderMaterialColorsArraySize != voxel::PaletteMaxColors) {
+	if constexpr (shaderMaterialColorsArraySize != voxel::PaletteMaxColors) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
 				shaderMaterialColorsArraySize, voxel::PaletteMaxColors);
 		return false;

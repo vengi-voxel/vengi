@@ -114,12 +114,12 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 			// Set voxel type
 			++i;
 			int begin = i;
-			size_t length = 0u;
+			size_t slength = 0u;
 			while (sentence[i] >= '0' && sentence[i] <= '9') {
-				++length;
+				++slength;
 				++i;
 			}
-			core::String voxelString(sentence.c_str() + begin, length);
+			core::String voxelString(sentence.c_str() + begin, slength);
 			const int colorIndex = core::string::toInt(voxelString);
 			if (colorIndex == 0) {
 				step.voxel = voxel::Voxel();

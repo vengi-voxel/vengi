@@ -2753,8 +2753,7 @@ int SceneManager::nodeReference(int nodeId) {
 
 bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 	if (_sceneGraph.changeParent(sourceNodeId, targetNodeId)) {
-		scenegraph::SceneGraphNode *node = sceneGraphNode(sourceNodeId);
-		core_assert(node != nullptr);
+		core_assert(sceneGraphNode(sourceNodeId) != nullptr);
 		_mementoHandler.markNodeMoved(targetNodeId, sourceNodeId);
 		markDirty();
 		return true;

@@ -270,8 +270,8 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 		setupGlowMaterial(node);
 		setupBaseColorMaterial(node);
 
-		scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+		// scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		// const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 		if (!createScene(sceneGraph, node, mesh.mesh[0], true)) {
 			return false;
 		}

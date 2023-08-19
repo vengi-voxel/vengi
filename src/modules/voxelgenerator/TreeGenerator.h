@@ -95,7 +95,7 @@ void createTreeBranchEllipsis(Volume& volume, const voxelgenerator::TreeBranchEl
 		branch.y = random.random(ctx.pos.y + 2, top - 2);
 
 		const int delta = (ctx.trunkStrength - thickness) / 2;
-		glm::ivec3 leavesPos;
+		glm::ivec3 leavesPos{0};
 		switch (branches[i % 4]) {
 		case 1:
 			branch.x += delta;
