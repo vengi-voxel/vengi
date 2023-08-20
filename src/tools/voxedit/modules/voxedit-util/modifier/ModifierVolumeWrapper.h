@@ -89,6 +89,12 @@ public:
 	}
 
 	inline bool skip(int x, int y, int z) const {
+		// prevent out of bounds access with the real volume region
+		// the region in this wrapper can exceed the boundaries of
+		// the real volume
+		if (!_volume->region().containsPoint(x, y, z)) {
+			return true;
+		}
 		if (_selections.empty()) {
 			return !_region.containsPoint(x, y, z);
 		}
