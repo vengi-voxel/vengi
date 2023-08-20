@@ -277,7 +277,9 @@ bool KeyBindingHandler::load(int version) {
 
 bool KeyBindingHandler::registerBinding(const core::String &keys, const core::String &command, core::BindingContext context) {
 	KeybindingParser p(keys, command, "");
-	for (const auto &entry : p.getBindings()) {
+	const BindMap &bindings = p.getBindings();
+	if (!bindings.empty()) {
+		const auto &entry = *bindings.begin();
 		return registerBinding(command, entry.first, entry.second.modifier, context, entry.second.count);
 	}
 	return false;
@@ -285,7 +287,9 @@ bool KeyBindingHandler::registerBinding(const core::String &keys, const core::St
 
 bool KeyBindingHandler::registerBinding(const core::String &keys, const core::String &command, const core::String &context) {
 	KeybindingParser p(keys, command, context);
-	for (const auto &entry : p.getBindings()) {
+	const BindMap &bindings = p.getBindings();
+	if (!bindings.empty()) {
+		const auto &entry = *bindings.begin();
 		return registerBinding(command, entry.first, entry.second.modifier, entry.second.context, entry.second.count);
 	}
 	return false;
