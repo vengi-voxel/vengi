@@ -1052,6 +1052,7 @@ void NeoKeyframe(int32_t *value) {
 	IM_ASSERT(inSequencer && "Not in active sequencer!");
 	auto &context = sequencerData[currentSequencer];
 	IM_ASSERT(!context.TimelineStack.empty() && "Not in timeline!");
+	(void)context;
 
 	createKeyframe(value);
 }
