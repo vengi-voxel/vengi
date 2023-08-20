@@ -665,7 +665,8 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool applyTransform) const {
 	if (n == 0) {
 		return MergedVolumePalette{};
 	} else if (n == 1) {
-		for (auto iter = beginModel(); iter != end(); ++iter) {
+		auto iter = beginModel();
+		if (iter != end()) {
 			const SceneGraphNode &node = *iter;
 			return MergedVolumePalette{new voxel::RawVolume(node.volume()), node.palette()};
 		}
