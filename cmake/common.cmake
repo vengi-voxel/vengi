@@ -41,12 +41,15 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP /errorReport:queue /DWIN32 /DNOMINMAX /D
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /Zi /Od /Oy- /MTd /D_DEBUG /DDEBUG=1")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Ox /MT /DNDEBUG")
 
-# 4456: declaration of 'q' hides previous local declaration
-# 4244: possible loss of data (e.g. float/double)
-# 4201: nonstandard extension used
-# 4245: signed/unsigned mismatch
 # 4100: unreferenced formal parameter
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /DWIN32 /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS /D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS /wd4244 /wd4245 /wd4201 /wd4100 /wd4456 /wd4267")
+# 4201: nonstandard extension used
+# 4244: possible loss of data (e.g. float/double)
+# 4245: signed/unsigned mismatch
+# 4267: conversion from 'size_t' to 'int', possible loss of data
+# 4324: structure was padded due to alignment specifier
+# 4456: declaration of 'q' hides previous local declaration
+set(MSVC_DISABLED_WARNINGS "/wd4100 /wd4201 /wd4244 /wd4245 /wd4267 /wd4324 /wd4456")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /DWIN32 /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS /D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS ${MSVC_DISABLED_WARNINGS}")
 # Visual Studio 2018 15.8 implemented conformant support for std::aligned_storage, but the conformant
 # support is only enabled when the following flag is passed, to avoid
 # breaking backwards compatibility with code that relied on the non-conformant behavior

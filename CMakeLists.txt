@@ -65,6 +65,18 @@ else()
 	set(LINUX 1)
 endif()
 
+if (NOT CMAKE_TOOLCHAIN_FILE)
+	if (MSVC)
+		include(${SCRIPTS_CMAKE_DIR}/toolchains/msvc-toolchain.cmake)
+	elseif (WINDOWS)
+		include(${SCRIPTS_CMAKE_DIR}/toolchains/windows-toolchain.cmake)
+	elseif (DARWIN)
+		include(${SCRIPTS_CMAKE_DIR}/toolchains/darwin-toolchain.cmake)
+	else()
+		include(${SCRIPTS_CMAKE_DIR}/toolchains/linux-toolchain.cmake)
+	endif()
+endif()
+
 include(${SCRIPTS_CMAKE_DIR}/common.cmake)
 include(${SCRIPTS_CMAKE_DIR}/util.cmake)
 include(${SCRIPTS_CMAKE_DIR}/genshader.cmake)
@@ -79,27 +91,6 @@ include(${SCRIPTS_CMAKE_DIR}/lua.cmake)
 include(${SCRIPTS_CMAKE_DIR}/macros.cmake)
 include(${SCRIPTS_CMAKE_DIR}/pack.cmake)
 include(CPack)
-
-if (NOT CMAKE_TOOLCHAIN_FILE)
-	if (MSVC)
-		include(${SCRIPTS_CMAKE_DIR}/toolchains/msvc-toolchain.cmake)
-	elseif (WINDOWS)
-		include(${SCRIPTS_CMAKE_DIR}/toolchains/windows-toolchain.cmake)
-	elseif (DARWIN)
-		include(${SCRIPTS_CMAKE_DIR}/toolchains/darwin-toolchain.cmake)
-	else()
-		include(${SCRIPTS_CMAKE_DIR}/toolchains/linux-toolchain.cmake)
-	endif()
-else()
-	if (MSVC)
-		# 4456: declaration of 'q' hides previous local declaration
-		# 4244: possible loss of data (e.g. float/double)
-		# 4201: nonstandard extension used
-		# 4245: signed/unsigned mismatch
-		# 4100: unreferenced formal parameter
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT /wd4244 /wd4245 /wd4201 /wd4100 /wd4456 /wd4267")
-	endif()
-endif()
 
 if (MSVC)
 	foreach(flag_var
