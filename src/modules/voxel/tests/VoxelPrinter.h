@@ -11,6 +11,7 @@
 #include "voxel/Region.h"
 #include "voxel/Palette.h"
 #include "voxel/Voxel.h"
+#include <iomanip>
 
 namespace voxel {
 
