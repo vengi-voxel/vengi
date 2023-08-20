@@ -161,8 +161,9 @@ void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3& mirr
 		return;
 	}
 
-	updateShapeBuilderForPlane(_shapeBuilder, sceneMgr().sceneGraph().region(), true, mirrorPos, axis,
-			core::Color::alpha(core::Color::LightGray, 0.3f));
+	const voxel::Region region = sceneMgr().sceneGraph().region();
+	const glm::vec4 color = core::Color::alpha(core::Color::LightGray, 0.3f);
+	updateShapeBuilderForPlane(_shapeBuilder, region, true, mirrorPos, axis, color);
 	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }
 
