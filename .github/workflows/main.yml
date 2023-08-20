@@ -36,7 +36,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On
+            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=ON
             cmake --build .
 
         - name: Test
@@ -119,7 +119,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On
+            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=ON
             cmake --build .
             cmake --install . --component voxedit --prefix install-voxedit/usr
 
@@ -166,11 +166,11 @@ jobs:
 
         - name: Emscripten
           run: |
-            cmake -H. -Bbuild -GNinja
+            cmake -H. -Bbuild -GNinja -DUSE_SANITIZERS=ON
             cmake --build build --target codegen
             mkdir -p build/emscripten
             cp -r build/generated build/emscripten
-            emcmake cmake -H. -Bbuild/emscripten -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On
+            emcmake cmake -H. -Bbuild/emscripten -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=ON
             cmake --build build/emscripten --target voxedit
 
         - name: Upload the build artifacts
@@ -190,7 +190,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release
+            cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_SANITIZERS=OFF
             cmake --build .
 
         - name: Test
@@ -234,7 +234,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Debug
+            cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZERS=ON
             cmake --build .
 
         - name: Install
