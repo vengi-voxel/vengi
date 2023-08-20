@@ -17,6 +17,7 @@ private:
 	ModifierRendererPtr _modifierRenderer;
 	core::ScopedPtr<voxel::RawVolume> _mirrorVolume;
 	core::ScopedPtr<voxel::RawVolume> _volume;
+	void updateShapeRenderPreview(voxel::Palette &palette);
 
 public:
 	ModifierFacade(const ModifierRendererPtr &modifierRenderer);

@@ -40,45 +40,35 @@ void ModifierFacade::setReferencePosition(const glm::ivec3 &pos) {
 	_modifierRenderer->updateReferencePosition(_referencePos);
 }
 
+void ModifierFacade::updateShapeRenderPreview(voxel::Palette &palette) {
+	const math::AABB<int> &bbox = aabb();
+	const glm::ivec3 &mins = bbox.mins();
+	const glm::ivec3 &maxs = bbox.maxs();
+	glm::ivec3 minsMirror = mins;
+	glm::ivec3 maxsMirror = maxs;
+	_modifierRenderer->clearShapeMeshes();
+
+	// even in erase mode we want the preview to create the models, not wipe them
+	ModifierType modifierType = _modifierType;
+	if ((modifierType & ModifierType::Erase) == ModifierType::Erase) {
+		modifierType &= ~ModifierType::Erase;
+	}
+
+	if (getMirrorAABB(minsMirror, maxsMirror)) {
+		_mirrorVolume = new voxel::RawVolume(voxel::Region(minsMirror, maxsMirror));
+		runModifier(_mirrorVolume, modifierType);
+		_modifierRenderer->updateShapeMesh(1, _mirrorVolume, &palette);
+	}
+	_volume = new voxel::RawVolume(voxel::Region(mins, maxs));
+	runModifier(_volume, modifierType);
+	_modifierRenderer->updateShapeMesh(0, _volume, &palette);
+}
+
 void ModifierFacade::render(const video::Camera &camera, voxel::Palette &palette) {
 	if (_locked) {
 		return;
 	}
-	const bool aabbMode = _aabbMode;
-	if (aabbMode) {
-		static glm::ivec3 lastCursor = aabbPosition();
-		static math::Axis lastMirrorAxis = _mirrorAxis;
-
-		const glm::ivec3 &cursor = aabbPosition();
-		const bool needsUpdate = lastCursor != cursor || lastMirrorAxis != _mirrorAxis;
-
-		if (needsUpdate) {
-			lastMirrorAxis = _mirrorAxis;
-			lastCursor = cursor;
-			const math::AABB<int> &bbox = aabb();
-			const glm::ivec3 &mins = bbox.mins();
-			const glm::ivec3 &maxs = bbox.maxs();
-			glm::ivec3 minsMirror = mins;
-			glm::ivec3 maxsMirror = maxs;
-			_modifierRenderer->clearShapeMeshes();
-
-			// even in erase mode we want the preview to create the models, not wipe them
-			ModifierType modifierType = _modifierType;
-			if ((modifierType & ModifierType::Erase) == ModifierType::Erase) {
-				modifierType &= ~ModifierType::Erase;
-			}
-
-			if (getMirrorAABB(minsMirror, maxsMirror)) {
-				_mirrorVolume = new voxel::RawVolume(voxel::Region(minsMirror, maxsMirror));
-				runModifier(_mirrorVolume, modifierType);
-				_modifierRenderer->updateShapeMesh(1, _mirrorVolume, &palette);
-			}
-			_volume = new voxel::RawVolume(voxel::Region(mins, maxs));
-			runModifier(_volume, modifierType);
-			_modifierRenderer->updateShapeMesh(0, _volume, &palette);
-		}
-	}
-	const glm::ivec3 pos = aabbPosition();
+	const glm::ivec3 &pos = aabbPosition();
 	const glm::mat4 &translate = glm::translate(glm::vec3(pos));
 	const glm::mat4 &scale = glm::scale(translate, glm::vec3((float)_gridResolution));
 	const bool flip = voxel::isAir(_voxelAtCursor.getMaterial());
@@ -87,7 +77,16 @@ void ModifierFacade::render(const video::Camera &camera, voxel::Palette &palette
 	if (_selectionValid) {
 		_modifierRenderer->renderSelection(camera);
 	}
-	if (aabbMode) {
+	if (_aabbMode) {
+		static glm::ivec3 lastCursor = aabbPosition();
+		static math::Axis lastMirrorAxis = _mirrorAxis;
+
+		const bool needsRenderUpdate = lastCursor != pos || lastMirrorAxis != _mirrorAxis;
+		if (needsRenderUpdate) {
+			lastMirrorAxis = _mirrorAxis;
+			lastCursor = pos;
+			updateShapeRenderPreview(palette);
+		}
 		_modifierRenderer->renderShape(camera);
 	}
 }
