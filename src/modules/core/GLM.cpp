@@ -45,9 +45,9 @@ namespace glm {
 
 namespace priv {
 
-static bool planeBoxOverlap(const glm::aligned_vec3 &normal, const glm::aligned_vec3 &vert, const glm::aligned_vec3 &maxbox) {
+static bool planeBoxOverlap(const glm::vec3 &normal, const glm::vec3 &vert, const glm::vec3 &maxbox) {
 	int q;
-	glm::aligned_vec3 vmin, vmax;
+	glm::vec3 vmin, vmax;
 	for (q = 0; q <= 2; q++) {
 		const float v = vert[q];
 		if (normal[q] > 0.0f) {
@@ -191,9 +191,9 @@ bool intersectTriangleAABB(const glm::vec3 &boxcenter, const glm::vec3 &boxhalfs
 	v2 -= boxcenter;
 
 	/* compute triangle edges */
-	const glm::aligned_vec3 e0(v1 - v0); /* tri edge 0 */
-	const glm::aligned_vec3 e1(v2 - v1); /* tri edge 1 */
-	const glm::aligned_vec3 e2(v0 - v2); /* tri edge 2 */
+	const glm::vec3 e0(v1 - v0); /* tri edge 0 */
+	const glm::vec3 e1(v2 - v1); /* tri edge 1 */
+	const glm::vec3 e2(v0 - v2); /* tri edge 2 */
 
 	/* Bullet 3:  */
 

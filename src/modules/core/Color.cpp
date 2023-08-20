@@ -607,7 +607,7 @@ int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inpu
 }
 
 glm::vec4 Color::fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	return glm::aligned_vec4(r, g, b, a) / Color::magnitudef;
+	return glm::vec4(r, g, b, a) / Color::magnitudef;
 }
 
 glm::vec4 Color::fromHSB(const float hue, const float saturation, const float brightness, const float alpha) {
