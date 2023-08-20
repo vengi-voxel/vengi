@@ -170,18 +170,19 @@ bool SceneGraph::setActiveNode(int nodeId) {
 }
 
 SceneGraphNode *SceneGraph::firstModelNode() const {
-	for (auto iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
+	auto iter = begin(SceneGraphNodeType::Model);
+	if (iter != end()) {
 		return &(*iter);
 	}
 	return nullptr;
 }
 
 voxel::Palette &SceneGraph::firstPalette() const {
-	for (auto iter = beginAllModels(); iter != end(); ++iter) {
-		scenegraph::SceneGraphNode &node = *iter;
-		return node.palette();
+	SceneGraphNode *node = firstModelNode();
+	if (node == nullptr) {
+		return voxel::getPalette();
 	}
-	return voxel::getPalette();
+	return node->palette();
 }
 
 SceneGraphNode& SceneGraph::node(int nodeId) const {
@@ -361,8 +362,8 @@ const SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) const
 }
 
 SceneGraphNode* SceneGraph::first() {
-	for (const auto& entry : _nodes) {
-		return &entry->value;
+	if (!_nodes.empty()) {
+		return &_nodes.begin()->value;
 	}
 	return nullptr;
 }
