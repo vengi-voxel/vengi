@@ -73,4 +73,21 @@ if (NOT MSVC)
 	endif()
 	set_target_properties(SPIRV PROPERTIES COMPILE_FLAGS "-Wno-undef -Wno-reorder -Wno-shadow -Wno-unused-variable -Wno-non-virtual-dtor -Wno-missing-field-initializers -Wno-ignored-qualifiers ${ADDITIONAL_COMPILE_FLAGS}")
 	set_target_properties(OGLCompiler PROPERTIES COMPILE_FLAGS "-Wno-undef -Wno-reorder -Wno-shadow -Wno-unused-variable -Wno-non-virtual-dtor -Wno-missing-field-initializers -Wno-ignored-qualifiers ${ADDITIONAL_COMPILE_FLAGS}")
+else()
+	# 4127: conditional expression is constant
+	# 4389: signed/unsigned mismatch
+	# 4457: declaration hides function parameter
+	# 4458: declaration hides class member
+	# 4702: unreachable code
+	set(MSVC_DISABLED_WARNINGS "/wd4127 /wd4389 /wd4457 /wd4458 /wd4702")
+	set_target_properties(glslang PROPERTIES COMPILE_FLAGS "${MSVC_DISABLED_WARNINGS}")
+	set_target_properties(spirv-remap PROPERTIES COMPILE_FLAGS "${MSVC_DISABLED_WARNINGS}")
+	set_target_properties(glslangValidator PROPERTIES COMPILE_FLAGS "${MSVC_DISABLED_WARNINGS}")
+	set_target_properties(glslang-default-resource-limits PROPERTIES COMPILE_FLAGS "${MSVC_DISABLED_WARNINGS}")
+	set_target_properties(MachineIndependent PROPERTIES COMPILE_FLAGS "${MSVC_DISABLED_WARNINGS}")
+	if (ENABLE_SPVREMAPPER)
+		set_target_properties(SPVRemapper PROPERTIES COMPILE_FLAGS "${MSVC_DISABLED_WARNINGS}")
+	endif()
+	set_target_properties(SPIRV PROPERTIES COMPILE_FLAGS "${MSVC_DISABLED_WARNINGS}")
+	set_target_properties(OGLCompiler PROPERTIES COMPILE_FLAGS "${MSVC_DISABLED_WARNINGS}")
 endif()
