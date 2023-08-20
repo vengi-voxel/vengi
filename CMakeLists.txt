@@ -14,6 +14,7 @@ option(USE_DOXYGEN_CHECK "Use -Wdocumentation if available" OFF)
 option(USE_CPPCHECK "Enable cppcheck" OFF)
 option(USE_CLANG_TIDY "Enable Clang Tidy" OFF)
 option(USE_STACKTRACES "Enable stacktraces" ON)
+option(USE_SANITIZERS "Enable sanitizer" OFF)
 
 set(PKGDATADIR "" CACHE STRING "System directory to search for data files (must end on /)")
 

@@ -4,3 +4,7 @@ set(CMAKE_C_STANDARD_LIBRARIES "kernel32.lib user32.lib gdi32.lib winspool.lib w
 set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP /W4")
+if (USE_SANITIZERS)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fsanitize=address")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fsanitize=address")
+endif()
