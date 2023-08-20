@@ -40,6 +40,12 @@ namespace glm
 		mat<4, 4, T, Q> const& modelMatrix,
 		vec<3, T, Q> & scale, qua<T, Q> & orientation, vec<3, T, Q> & translation, vec<3, T, Q> & skew, vec<4, T, Q> & perspective);
 
+	// Recomposes a model matrix from a previously-decomposed matrix
+	template <typename T, qualifier Q>
+	GLM_FUNC_DECL mat<4, 4, T, Q> recompose(
+		vec<3, T, Q> const& scale, qua<T, Q> const& orientation, vec<3, T, Q> const& translation,
+		vec<3, T, Q> const& skew, vec<4, T, Q> const& perspective);
+
 	/// @}
 }//namespace glm
 

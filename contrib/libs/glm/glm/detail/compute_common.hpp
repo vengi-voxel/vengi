@@ -28,7 +28,7 @@ namespace detail
 	template<>
 	struct compute_abs<float, true>
 	{
-		GLM_FUNC_QUALIFIER GLM_CONSTEXPR static float call(float x)
+		GLM_FUNC_QUALIFIER static float call(float x)
 		{
 			return fabsf(x);
 		}

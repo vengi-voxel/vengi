@@ -97,16 +97,22 @@ namespace glm
 	GLM_FUNC_QUALIFIER bool isOrthogonal(mat<C, R, T, Q> const& m, T const& epsilon)
 	{
 		bool result = true;
-		for(length_t i(0); result && i < m.length() - 1; ++i)
-		for(length_t j(i + 1); result && j < m.length(); ++j)
-			result = areOrthogonal(m[i], m[j], epsilon);
+		for(length_t i(0); result && i < m.length(); ++i)
+		{
+			result = isNormalized(m[i], epsilon);
+			for(length_t j(i + 1); result && j < m.length(); ++j)
+				result = abs(dot(m[i], m[j])) <= epsilon;
+		}
 
 		if(result)
 		{
 			mat<C, R, T, Q> tmp = transpose(m);
-			for(length_t i(0); result && i < m.length() - 1 ; ++i)
-			for(length_t j(i + 1); result && j < m.length(); ++j)
-				result = areOrthogonal(tmp[i], tmp[j], epsilon);
+			for(length_t i(0); result && i < m.length(); ++i)
+			{
+				result = isNormalized(tmp[i], epsilon);
+				for(length_t j(i + 1); result && j < m.length(); ++j)
+					result = abs(dot(tmp[i], tmp[j])) <= epsilon;
+			}
 		}
 		return result;
 	}
