@@ -111,6 +111,10 @@ public:
 		setFlags(2); // FlagBloom
 	}
 
+	void setOutline() {
+		setFlags(1); // FlagOutline
+	}
+
 private:
 	VoxelType _material:5;
 	uint8_t _flags:3;

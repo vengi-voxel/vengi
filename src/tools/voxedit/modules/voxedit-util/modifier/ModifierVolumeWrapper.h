@@ -84,11 +84,22 @@ public:
 		return setVoxel(pos.x, pos.y, pos.z, voxel);
 	}
 
-	inline const voxel::Region& dirtyRegion() const {
+	const voxel::Region& dirtyRegion() const {
 		return _dirtyRegion;
 	}
 
-	inline bool skip(int x, int y, int z) const {
+	void addDirtyRegion(const voxel::Region& region) {
+		if (!region.isValid()) {
+			return;
+		}
+		if (_dirtyRegion.isValid()) {
+			_dirtyRegion.accumulate(region);
+		} else {
+			_dirtyRegion = region;
+		}
+	}
+
+	bool skip(int x, int y, int z) const {
 		// prevent out of bounds access with the real volume region
 		// the region in this wrapper can exceed the boundaries of
 		// the real volume
@@ -106,7 +117,7 @@ public:
 	 * true if the voxel was placed in the region.
 	 * @note The return values have a different meaning as for the wrapped voxel::RawVolume.
 	 */
-	inline bool setVoxel(int x, int y, int z, const voxel::Voxel& voxel) {
+	bool setVoxel(int x, int y, int z, const voxel::Voxel& voxel) {
 		if (!_force) {
 			const bool empty = voxel::isAir(this->voxel(x, y, z).getMaterial());
 			if (_update) {
@@ -153,7 +164,7 @@ public:
 		return true;
 	}
 
-	inline void setRegion(const voxel::Region &region) {
+	void setRegion(const voxel::Region &region) {
 		_region = region;
 	}
 };

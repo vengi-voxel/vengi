@@ -184,15 +184,16 @@ public:
 	 * @param[in] pos The position inside the volume - given in absolute world coordinates
 	 * @param[in] face The voxel::FaceNames values where the trace hits an existing voxel
 	 */
-	void setCursorPosition(const glm::ivec3& pos, voxel::FaceNames face);
-	const glm::ivec3& cursorPosition() const;
+	void setCursorPosition(const glm::ivec3 &pos, voxel::FaceNames face);
+	const glm::ivec3 &cursorPosition() const;
+	glm::ivec3 currentCursorPosition();
 
-	const glm::ivec3& referencePosition() const;
-	virtual void setReferencePosition(const glm::ivec3& pos);
+	const glm::ivec3 &referencePosition() const;
+	virtual void setReferencePosition(const glm::ivec3 &pos);
 
-	const voxel::Voxel& hitCursorVoxel() const;
-	void setHitCursorVoxel(const voxel::Voxel&);
-	void setVoxelAtCursor(const voxel::Voxel& voxel);
+	const voxel::Voxel &hitCursorVoxel() const;
+	void setHitCursorVoxel(const voxel::Voxel &);
+	void setVoxelAtCursor(const voxel::Voxel &voxel);
 
 	voxel::FaceNames cursorFace() const;
 
@@ -278,16 +279,16 @@ inline void Modifier::setCursorVoxel(const voxel::Voxel &voxel) {
 	_cursorVoxel = voxel;
 }
 
-inline const voxel::Voxel& Modifier::cursorVoxel() const {
+inline const voxel::Voxel &Modifier::cursorVoxel() const {
 	return _cursorVoxel;
 }
 
-inline const glm::ivec3& Modifier::cursorPosition() const {
+inline const glm::ivec3 &Modifier::cursorPosition() const {
 	return _cursorPosition;
 }
 
-inline const Selections& Modifier::selections() const {
+inline const Selections &Modifier::selections() const {
 	return _selections;
 }
 
-}
+} // namespace voxedit

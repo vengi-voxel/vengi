@@ -1275,6 +1275,10 @@ const scenegraph::SceneGraph &SceneManager::sceneGraph() const {
 	return _sceneGraph;
 }
 
+scenegraph::SceneGraph &SceneManager::sceneGraph() {
+	return _sceneGraph;
+}
+
 bool SceneManager::setAnimation(const core::String &animation) {
 	return _sceneGraph.setAnimation(animation);
 }

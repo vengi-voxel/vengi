@@ -404,6 +404,7 @@ public:
 	MementoHandler &mementoHandler();
 	voxelgenerator::LUAGenerator &luaGenerator();
 	const scenegraph::SceneGraph &sceneGraph() const;
+	scenegraph::SceneGraph &sceneGraph();
 
 private:
 	bool isValidReferenceNode(const scenegraph::SceneGraphNode &node) const;

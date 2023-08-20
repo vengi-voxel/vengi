@@ -21,67 +21,67 @@
 
 namespace voxedit {
 
-Modifier::Modifier() :
-				_deleteExecuteButton(ModifierType::Erase) {
+Modifier::Modifier() : _deleteExecuteButton(ModifierType::Erase) {
 }
 
 void Modifier::construct() {
 	command::Command::registerActionButton("actionexecute", _actionExecuteButton, "Execute the modifier action");
-	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton, "Execute the modifier action in delete mode");
+	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton,
+										   "Execute the modifier action in delete mode");
 
-	command::Command::registerCommand("actionselect", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("actionselect", [&](const command::CmdArgs &args) {
 		setModifierType(ModifierType::Select);
 	}).setHelp("Change the modifier type to 'select'");
 
-	command::Command::registerCommand("actioncolorpicker", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("actioncolorpicker", [&](const command::CmdArgs &args) {
 		setModifierType(ModifierType::ColorPicker);
 	}).setHelp("Change the modifier type to 'color picker'");
 
-	command::Command::registerCommand("actionpath", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("actionpath", [&](const command::CmdArgs &args) {
 		setModifierType(ModifierType::Path);
 	}).setHelp("Change the modifier type to 'path'");
 
-	command::Command::registerCommand("actionline", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("actionline", [&](const command::CmdArgs &args) {
 		setModifierType(ModifierType::Line);
 	}).setHelp("Change the modifier type to 'line'");
 
-	command::Command::registerCommand("actionerase", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("actionerase", [&](const command::CmdArgs &args) {
 		setModifierType(ModifierType::Erase);
 	}).setHelp("Change the modifier type to 'erase'");
 
-	command::Command::registerCommand("actionplace", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("actionplace", [&](const command::CmdArgs &args) {
 		setModifierType(ModifierType::Place);
 	}).setHelp("Change the modifier type to 'place'");
 
-	command::Command::registerCommand("actionpaint", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("actionpaint", [&](const command::CmdArgs &args) {
 		setModifierType(ModifierType::Paint);
 	}).setHelp("Change the modifier type to 'paint'");
 
-	command::Command::registerCommand("actionoverride", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("actionoverride", [&](const command::CmdArgs &args) {
 		setModifierType(ModifierType::Place | ModifierType::Erase);
 	}).setHelp("Change the modifier type to 'override'");
 
 	for (int type = ShapeType::Min; type < ShapeType::Max; ++type) {
 		const core::String &typeStr = core::String::lower(ShapeTypeStr[type]);
 		const core::String &cmd = "shape" + typeStr;
-		command::Command::registerCommand(cmd.c_str(), [&, type] (const command::CmdArgs& args) {
+		command::Command::registerCommand(cmd.c_str(), [&, type](const command::CmdArgs &args) {
 			setShapeType((ShapeType)type);
 		}).setHelp("Change the modifier shape type");
 	}
 
-	command::Command::registerCommand("mirroraxisx", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("mirroraxisx", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the x axis");
 
-	command::Command::registerCommand("mirroraxisy", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("mirroraxisy", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the y axis");
 
-	command::Command::registerCommand("mirroraxisz", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("mirroraxisz", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the z axis");
 
-	command::Command::registerCommand("mirroraxisnone", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("mirroraxisnone", [&](const command::CmdArgs &args) {
 		setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
 	}).setHelp("Disable mirror axis");
 
@@ -89,11 +89,11 @@ void Modifier::construct() {
 		setCenterMode(!centerMode());
 	}).setHelp("Toggle center plane building");
 
-	command::Command::registerCommand("togglemodeplane", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("togglemodeplane", [&](const command::CmdArgs &args) {
 		setPlaneMode(!planeMode());
 	}).setHelp("Toggle plane building mode (extrude)");
 
-	command::Command::registerCommand("togglemodesingle", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("togglemodesingle", [&](const command::CmdArgs &args) {
 		setSingleMode(!singleMode());
 	}).setHelp("Toggle single voxel building mode");
 }
@@ -380,11 +380,11 @@ glm::ivec3 Modifier::aabbDim() const {
 	return glm::abs(maxs + size - mins);
 }
 
-voxel::RawVolumeWrapper Modifier::createRawVolumeWrapper(voxel::RawVolume* volume) const {
+voxel::RawVolumeWrapper Modifier::createRawVolumeWrapper(voxel::RawVolume *volume) const {
 	return voxel::RawVolumeWrapper(volume, createRegion(volume));
 }
 
-voxel::Region Modifier::createRegion(const voxel::RawVolume* volume) const {
+voxel::Region Modifier::createRegion(const voxel::RawVolume *volume) const {
 	voxel::Region region = volume->region();
 	if (_selectionValid) {
 		voxel::Region srcRegion = accumulate(_selections);
@@ -394,11 +394,11 @@ voxel::Region Modifier::createRegion(const voxel::RawVolume* volume) const {
 	return region;
 }
 
-void Modifier::setHitCursorVoxel(const voxel::Voxel& voxel) {
+void Modifier::setHitCursorVoxel(const voxel::Voxel &voxel) {
 	_hitCursorVoxel = voxel;
 }
 
-void Modifier::setVoxelAtCursor(const voxel::Voxel& voxel) {
+void Modifier::setVoxelAtCursor(const voxel::Voxel &voxel) {
 	_voxelAtCursor = voxel;
 }
 
@@ -476,7 +476,7 @@ bool Modifier::pathModifier(voxel::RawVolume *volume, const Callback &callback) 
 		return false;
 	}
 	voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
-	for (const glm::ivec3& p : listResult) {
+	for (const glm::ivec3 &p : listResult) {
 		wrapper.setVoxel(p, cursorVoxel());
 	}
 	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
