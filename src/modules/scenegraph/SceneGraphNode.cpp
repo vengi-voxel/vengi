@@ -7,7 +7,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include <glm/gtx/matrix_decompose.hpp>
-#include "util/Easing.h"
+#include "math/Easing.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"

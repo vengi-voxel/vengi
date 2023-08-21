@@ -2,6 +2,7 @@ set(SRCS
 	AABB.h
 	Axis.cpp Axis.h
 	Bezier.h
+	Easing.h
 	Frustum.cpp Frustum.h
 	Functions.cpp Functions.h
 	OBB.h

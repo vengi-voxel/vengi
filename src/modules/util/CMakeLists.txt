@@ -3,7 +3,6 @@ set(SRCS
 	Base64.cpp Base64.h
 	BufferUtil.cpp BufferUtil.h
 	Console.h Console.cpp
-	Easing.h
 	KeybindingParser.h KeybindingParser.cpp
 	KeybindingHandler.h KeybindingHandler.cpp
 	IncludeUtil.h IncludeUtil.cpp
