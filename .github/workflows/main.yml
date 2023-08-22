@@ -181,7 +181,7 @@ jobs:
 
     windows:
         timeout-minutes: 45
-        runs-on: windows-2022
+        runs-on: windows-2019
 
         steps:
         - uses: actions/checkout@v3
@@ -225,7 +225,7 @@ jobs:
 
     windows-debug:
         timeout-minutes: 45
-        runs-on: windows-2022
+        runs-on: windows-2019
 
         steps:
         - uses: actions/checkout@v3
