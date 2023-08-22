@@ -12,6 +12,7 @@ namespace util {
  * @brief Other useful tween and easing functions can be found here
  * @li http://robertpenner.com/easing/penner_chapter7_tweening.pdf
  * @li https://iquilezles.org/articles/functions/
+ * @li https://iquilezles.org/articles/smoothsteps/
  */
 namespace easing {
 
