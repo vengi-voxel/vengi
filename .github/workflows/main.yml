@@ -277,3 +277,52 @@ jobs:
           with:
             name: voxconvert-debug
             path: build/voxconvert-install/
+
+    windows-msys:
+        timeout-minutes: 45
+        runs-on: windows-2022
+        defaults:
+          run:
+            shell: msys2 {0}
+
+        steps:
+        - uses: actions/checkout@v3
+
+        - name: Setup
+          uses: msys2/setup-msys2@v2
+          with:
+            msystem: mingw64
+            pacboy: >-
+              gcc:p
+              cmake:p
+              ccache:p
+              mbedtls:p
+              freetype:p
+              ninja:p
+              SDL2:p
+              curl-winssl:p
+
+        - name: Build
+          run: |
+            mkdir build
+            cd build
+            cmake .. -DCMAKE_BUILD_TYPE=Debug
+            cmake --build .
+
+        - name: Install
+          run: |
+            cd build
+            cmake --install . --component voxedit --prefix voxedit-install
+            cmake --install . --component voxconvert --prefix voxconvert-install
+
+        - name: Upload the voxedit artifacts
+          uses: actions/upload-artifact@v3
+          with:
+            name: voxedit-debug
+            path: build/voxedit-install/
+
+        - name: Upload the voxconvert artifacts
+          uses: actions/upload-artifact@v3
+          with:
+            name: voxconvert-debug
+            path: build/voxconvert-install/
