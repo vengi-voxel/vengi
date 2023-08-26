@@ -36,10 +36,13 @@ public:
 	}
 
 	template<class FUNC>
-	bool button(const char *icon, const char *tooltip, FUNC func) {
+	bool button(const char *icon, const char *tooltip, FUNC func, bool darken = false) {
 		newline();
 		ui::ScopedStyle style;
 		style.setFramePadding(ImVec2(0.0f, 0.0f));
+		if (darken) {
+			style.darker(ImGuiCol_Text);
+		}
 		const core::String &iconId = id(icon);
 		bool pressed = ImGui::Button(iconId.c_str(), _size);
 		if (pressed) {
