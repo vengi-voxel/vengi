@@ -11,7 +11,11 @@
 namespace voxedit {
 
 /**
- * @brief A wrapper for a voxel::RawVolume that performs a sanity check for the setVoxel call.
+ * @brief A wrapper for a @c voxel::RawVolume that performs a sanity check for
+ * the @c setVoxel() call and uses the @c ModifierType value to perform the
+ * desired action for the @c setVoxel() call.
+ * The sanity check also includes the @c Selections that are used to limit the
+ * area of the @c voxel::RawVolume that is affected by the @c setVoxel() call.
  */
 class ModifierVolumeWrapper {
 private:
