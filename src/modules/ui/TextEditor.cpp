@@ -2,7 +2,7 @@
 #include "TextEditor.h"
 #include "core/Common.h"
 #include "core/UTF8.h"
-#include "glm/common.hpp"
+#include <glm/common.hpp>
 #include <algorithm>
 
 #include <SDL.h>
