@@ -210,6 +210,15 @@ public:
 		new ((void *)&_buffer[_size++]) TYPE(val);
 	}
 
+	template<class COLLECTION>
+	void append(const COLLECTION& collection) {
+		const size_t n = collection.size();
+		checkBufferSize(_size + n);
+		for (size_t i = 0u; i < n; ++i) {
+			new ((void *)&_buffer[_size++]) TYPE(collection[i]);
+		}
+	}
+
 	void append(const TYPE* array, size_t n) {
 		checkBufferSize(_size + n);
 		for (size_t i = 0u; i < n; ++i) {
