@@ -371,6 +371,7 @@ bool SceneGraphNode::setAnimation(const core::String &anim) {
 	return true;
 }
 
+// TODO: extract into voxel-util module
 voxel::Region SceneGraphNode::remapToPalette(const voxel::Palette &newPalette, int skipColorIndex) {
 	if (type() != SceneGraphNodeType::Model) {
 		return voxel::Region::InvalidRegion;
