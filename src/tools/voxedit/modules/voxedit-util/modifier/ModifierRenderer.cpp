@@ -112,18 +112,18 @@ void ModifierRenderer::updateSelectionBuffers(const Selections& selections) {
 	_shapeRenderer.createOrUpdate(_selectionIndex, _shapeBuilder);
 }
 
-void ModifierRenderer::clearShapeMeshes() {
+void ModifierRenderer::clearBrushMeshes() {
 	_volumeRenderer.clear();
 }
 
-void ModifierRenderer::updateShapeMesh(int idx, voxel::RawVolume *volume, voxel::Palette *palette) {
+void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, voxel::Palette *palette) {
 	delete _volumeRenderer.setVolume(idx, volume, palette);
 	if (volume != nullptr) {
 		_volumeRenderer.extractRegion(idx, volume->region());
 	}
 }
 
-void ModifierRenderer::renderShape(const video::Camera &camera) {
+void ModifierRenderer::renderBrushVolume(const video::Camera &camera) {
 	if (_volumeRendererCtx.frameBuffer.dimension() != camera.size()) {
 		_volumeRendererCtx.shutdown();
 		_volumeRendererCtx.init(camera.size());

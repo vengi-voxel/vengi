@@ -4,26 +4,31 @@
 
 #pragma once
 
+#include "ModifierButton.h"
+#include "ModifierType.h"
+#include "ModifierVolumeWrapper.h"
+#include "Selection.h"
 #include "core/ArrayLength.h"
 #include "core/GLM.h"
 #include "core/IComponent.h"
 #include "core/collection/DynamicArray.h"
-#include "voxel/RawVolumeWrapper.h"
-#include "voxel/Voxel.h"
+#include "math/AABB.h"
 #include "math/Axis.h"
+#include "voxedit-util/modifier/brush/Brush.h"
+#include "voxedit-util/modifier/brush/BrushType.h"
+#include "voxedit-util/modifier/brush/PlaneBrush.h"
+#include "voxedit-util/modifier/brush/ScriptBrush.h"
+#include "voxedit-util/modifier/brush/ShapeBrush.h"
+#include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
-#include "ModifierType.h"
-#include "ModifierButton.h"
-#include "math/AABB.h"
-#include "Selection.h"
-#include "ModifierVolumeWrapper.h"
-#include "ShapeType.h"
+#include "voxel/RawVolumeWrapper.h"
+#include "voxel/Voxel.h"
 
 namespace voxedit {
 
 /**
- * @brief This class is responsible for manipulating the volume with the configured shape and for
+ * @brief This class is responsible for manipulating the volume with the configured @c Brush and for
  * doing the selection.
  *
  * There are several modes available. E.g. having the starting point of the aabb on a corner - or
@@ -32,72 +37,43 @@ namespace voxedit {
 class Modifier : public core::IComponent {
 public:
 	using Callback = std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)>;
+
 protected:
 	Selections _selections;
 	bool _selectionValid = false;
-	bool _secondPosValid = false;
-	bool _aabbMode = false; /** true if the current action spans an aabb */
-	bool _center = false;
 	bool _locked = false;
 	/**
 	 * timer value which indicates the next execution time in case you keep the
 	 * modifier triggered
 	 */
 	double _nextSingleExecution = 0;
-
-	glm::ivec3 _aabbFirstPos {0};
-	glm::ivec3 _aabbSecondPos {0};
-
 	ModifierType _modifierType = ModifierType::Place;
 
-	int _gridResolution = 1;
-
-	math::Axis _mirrorAxis = math::Axis::None;
-	glm::ivec3 _mirrorPos {0};
-
-	glm::ivec3 _cursorPosition {0};
-	glm::ivec3 _referencePos;
-
-	/** the face where the trace hit */
-	voxel::FaceNames _face = voxel::FaceNames::Max;
-	/**
-	 * if the current modifier type allows or needs a second action to span the
-	 * volume to operate in, this is the direction into which the second action
-	 * points
-	 */
-	voxel::FaceNames _aabbFace = voxel::FaceNames::Max;
-
-	/** the voxel that should get placed */
-	voxel::Voxel _cursorVoxel;
-	/** existing voxel under the cursor */
-	voxel::Voxel _hitCursorVoxel;
-	/** the voxel where the cursor is - can be air */
-	voxel::Voxel _voxelAtCursor;
+	BrushContext _brushContext;
+	BrushType _brushType = BrushType::Shape;
+	PlaneBrush _planeBrush;
+	ScriptBrush _scriptBrush;
+	ShapeBrush _shapeBrush;
+	StampBrush _stampBrush;
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
-	ShapeType _shapeType = ShapeType::AABB;
-
-	glm::ivec3 firstPos() const;
-	bool getMirrorAABB(glm::ivec3& mins, glm::ivec3& maxs) const;
-	math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3& dimensions, int &width, int &height, int &depth) const;
-	bool executeShapeAction(ModifierVolumeWrapper& wrapper, const glm::ivec3& mins, const glm::ivec3& maxs, const std::function<void(const voxel::Region& region, ModifierType type, bool markUndo)>& callback, bool markUndo);
 
 	bool lineModifier(voxel::RawVolume *volume, const Callback &callback);
-	bool planeModifier(voxel::RawVolume *volume, const Callback &callback);
 	bool pathModifier(voxel::RawVolume *volume, const Callback &callback);
 
-	bool runModifier(voxel::RawVolume *volume, ModifierType modifierType, const Callback &callback = [] (const voxel::Region &, ModifierType, bool) {});
+	bool runModifier(
+		scenegraph::SceneGraph &sceneGraph, voxel::RawVolume *volume, ModifierType modifierType,
+		const voxel::Voxel &voxel, const Callback &callback = [](const voxel::Region &, ModifierType, bool) {});
 
-	math::AABB<int> aabb() const;
+	Brush *activeBrush();
 public:
 	Modifier();
 
 	/**
 	 * @brief Create a Raw Volume Wrapper object while taking the selection into account
 	 */
-	voxel::RawVolumeWrapper createRawVolumeWrapper(voxel::RawVolume* volume) const;
-	voxel::Region createRegion(const voxel::RawVolume* volume) const;
+	voxel::RawVolumeWrapper createRawVolumeWrapper(voxel::RawVolume *volume) const;
 
 	void construct() override;
 	bool init() override;
@@ -108,75 +84,66 @@ public:
 	 */
 	void lock();
 	void unlock();
-	inline bool isLocked() const { return _locked; }
+	inline bool isLocked() const {
+		return _locked;
+	}
 
 	void shutdown() override;
 
-	virtual bool select(const glm::ivec3& mins, const glm::ivec3& maxs);
+	virtual bool select(const glm::ivec3 &mins, const glm::ivec3 &maxs);
 	virtual void unselect();
 	virtual void invert(const voxel::Region &region);
-
-	void translate(const glm::ivec3& v);
-
-	/**
-	 * @return @c true if the modifier aabb selection is not yet done, but
-	 * active already
-	 */
-	bool secondActionMode() const;
-	/**
-	 * @return @c true if the aabb that was formed has a side that is only 1 voxel
-	 * high. This is our indicator for allowing to modify the aabb according to
-	 * it's detected axis
-	 */
-	bool needsSecondAction();
-	const Selections& selections() const;
-
-	/**
-	 * @brief The modifier can build the aabb from the center of the current
-	 * cursor position.
-	 * Set this to @c true to activate this. The default is to build the aabb
-	 * from the corner(s)
-	 */
-	void setCenterMode(bool center);
-	bool centerMode() const;
-
-	math::Axis mirrorAxis() const;
-	virtual bool setMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
-	void toggleMirrorAxis(math::Axis axis, const glm::ivec3& mirrorPos);
+	const Selections &selections() const;
 
 	ModifierType modifierType() const;
 	void setModifierType(ModifierType type);
 
 	bool isMode(ModifierType modifierType) const;
-	void setPlaneMode(bool state);
-	bool planeMode() const;
 
-	void setSingleMode(bool state);
-	bool singleMode() const;
-
-	const voxel::Voxel& cursorVoxel() const;
-	virtual void setCursorVoxel(const voxel::Voxel& voxel);
-
-	ShapeType shapeType() const;
-	void setShapeType(ShapeType type);
-
-	bool aabbAborted() const;
-	bool aabbMode() const;
-	glm::ivec3 aabbDim() const;
-	glm::ivec3 aabbPosition() const;
+	const voxel::Voxel &cursorVoxel() const;
+	virtual void setCursorVoxel(const voxel::Voxel &voxel);
 
 	/**
 	 * @brief Pick the start position of the modifier execution bounding box
 	 */
-	bool aabbStart();
+	bool start();
 	/**
 	 * @brief End the current ModifierType execution and modify the given volume according to the type.
 	 * @param[out,in] volume The volume to modify
 	 * @param callback Called for every region that was modified for the current active modifier.
+	 * @note @c start() and @c stop() must be called before and after this method
 	 */
-	bool aabbAction(voxel::RawVolume *volume, const Callback &callback);
-	void aabbAbort();
-	void aabbStep();
+	bool execute(scenegraph::SceneGraph &sceneGraph, voxel::RawVolume *volume, const Callback &callback);
+	void stop();
+	/**
+	 * @brief Actions could get aborted by some external action like hitting esc
+	 */
+	bool aborted() const;
+
+	void setBrushType(BrushType type);
+	BrushType brushType() const;
+
+	const ShapeBrush *activeShapeBrush() const;
+	ShapeBrush *activeShapeBrush();
+	glm::ivec3 calcShapeBrushRegionSize();
+	voxel::Region calcBrushRegion();
+
+	ScriptBrush &scriptBrush();
+	ShapeBrush &shapeBrush();
+	StampBrush &stampBrush();
+	BrushContext &brushContext();
+
+	/**
+	 * @sa needsFurtherAction()
+	 */
+	void executeAdditionalAction();
+	/**
+	 * @return @c true if the aabb that was formed has a side that is only 1 voxel
+	 * high. This is our indicator for allowing to modify the aabb according to
+	 * it's detected axis
+	 * @sa executeAdditionalAction()
+	 */
+	bool needsFurtherAction();
 
 	bool modifierTypeRequiresExistingVoxel() const;
 
@@ -197,22 +164,42 @@ public:
 
 	voxel::FaceNames cursorFace() const;
 
-	void setGridResolution(int resolution);
+	void setGridResolution(int gridSize);
 	int gridResolution() const;
 
 	void reset();
 };
 
+inline BrushContext &Modifier::brushContext() {
+	return _brushContext;
+}
+
+inline BrushType Modifier::brushType() const {
+	return _brushType;
+}
+
+inline ShapeBrush &Modifier::shapeBrush() {
+	return _shapeBrush;
+}
+
+inline StampBrush &Modifier::stampBrush() {
+	return _stampBrush;
+}
+
+inline ScriptBrush &Modifier::scriptBrush() {
+	return _scriptBrush;
+}
+
 inline int Modifier::gridResolution() const {
-	return _gridResolution;
+	return _brushContext.gridResolution;
 }
 
-inline const voxel::Voxel& Modifier::hitCursorVoxel() const {
-	return _hitCursorVoxel;
+inline const voxel::Voxel &Modifier::hitCursorVoxel() const {
+	return _brushContext.hitCursorVoxel;
 }
 
-inline const glm::ivec3& Modifier::referencePosition() const {
-	return _referencePos;
+inline const glm::ivec3 &Modifier::referencePosition() const {
+	return _brushContext.referencePos;
 }
 
 inline ModifierType Modifier::modifierType() const {
@@ -223,68 +210,35 @@ inline bool Modifier::isMode(ModifierType modifierType) const {
 	return (_modifierType & modifierType) == modifierType;
 }
 
-inline bool Modifier::planeMode() const {
-	return isMode(ModifierType::Plane);
+inline bool Modifier::aborted() const {
+	if (const ShapeBrush *brush = activeShapeBrush()) {
+		return brush->aborted();
+	}
+	return false;
 }
 
-inline bool Modifier::singleMode() const {
-	return isMode(ModifierType::Single);
-}
-
-inline bool Modifier::aabbMode() const {
-	return _aabbMode;
-}
-
-inline bool Modifier::aabbAborted() const {
-	return _aabbFace == voxel::FaceNames::Max;
-}
-
-inline bool Modifier::secondActionMode() const {
-	return _secondPosValid;
-}
-
-inline bool Modifier::centerMode() const {
-	return _center;
-}
-
-inline void Modifier::setCenterMode(bool center) {
-	_center = center;
-}
-
-inline ShapeType Modifier::shapeType() const {
-	return _shapeType;
-}
-
-inline void Modifier::setShapeType(ShapeType type) {
-	_shapeType = type;
-}
-
-inline math::Axis Modifier::mirrorAxis() const {
-	return _mirrorAxis;
-}
-
-inline void Modifier::setCursorPosition(const glm::ivec3& pos, voxel::FaceNames face) {
-	_cursorPosition = pos;
-	_face = face;
+inline void Modifier::setCursorPosition(const glm::ivec3 &pos, voxel::FaceNames face) {
+	_brushContext.cursorPosition = pos;
+	_brushContext.cursorFace = face;
 }
 
 inline voxel::FaceNames Modifier::cursorFace() const {
-	return _face;
+	return _brushContext.cursorFace;
 }
 
 inline void Modifier::setCursorVoxel(const voxel::Voxel &voxel) {
 	if (voxel::isAir(voxel.getMaterial())) {
 		return;
 	}
-	_cursorVoxel = voxel;
+	_brushContext.cursorVoxel = voxel;
 }
 
 inline const voxel::Voxel &Modifier::cursorVoxel() const {
-	return _cursorVoxel;
+	return _brushContext.cursorVoxel;
 }
 
 inline const glm::ivec3 &Modifier::cursorPosition() const {
-	return _cursorPosition;
+	return _brushContext.cursorPosition;
 }
 
 inline const Selections &Modifier::selections() const {

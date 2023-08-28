@@ -76,6 +76,10 @@ public:
 		return _region;
 	}
 
+	inline ModifierType modifierType() const {
+		return _modifierType;
+	}
+
 	inline const voxel::Voxel& voxel(const glm::ivec3& pos) const {
 		return _volume->voxel(pos.x, pos.y, pos.z);
 	}
@@ -104,14 +108,11 @@ public:
 	}
 
 	bool skip(int x, int y, int z) const {
-		// prevent out of bounds access with the real volume region
-		// the region in this wrapper can exceed the boundaries of
-		// the real volume
-		if (!_volume->region().containsPoint(x, y, z)) {
+		if (!_region.containsPoint(x, y, z)) {
 			return true;
 		}
 		if (_selections.empty()) {
-			return !_region.containsPoint(x, y, z);
+			return false;
 		}
 		return !contains(_selections, x, y, z);
 	}
@@ -166,10 +167,6 @@ public:
 			}
 		}
 		return true;
-	}
-
-	void setRegion(const voxel::Region &region) {
-		_region = region;
 	}
 };
 

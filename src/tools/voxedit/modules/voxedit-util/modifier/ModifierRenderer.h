@@ -19,7 +19,7 @@ private:
 	voxelrender::RenderContext _volumeRendererCtx;
 	int32_t _selectionIndex = -1;
 	int32_t _mirrorMeshIndex = -1;
-	int32_t _voxelCursorMesh = -1;
+	int32_t _voxelCursorMesh = -1; // TODO: remove me - should be a brush - see issue #130
 	int32_t _referencePointMesh = -1;
 	glm::mat4 _referencePointModelMatrix{1.0f};
 
@@ -28,10 +28,10 @@ public:
 	void shutdown() override;
 
 	void render(const video::Camera& camera, const glm::mat4& model) override;
-	void renderShape(const video::Camera &camera) override;
+	void renderBrushVolume(const video::Camera &camera) override;
 	void renderSelection(const video::Camera& camera) override;
-	void clearShapeMeshes() override;
-	void updateShapeMesh(int idx, voxel::RawVolume *volume, voxel::Palette *palette) override;
+	void clearBrushMeshes() override;
+	void updateBrushVolume(int idx, voxel::RawVolume *volume, voxel::Palette *palette) override;
 	void updateReferencePosition(const glm::ivec3 &pos) override;
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos) override;
 	void updateSelectionBuffers(const Selections &selections) override;

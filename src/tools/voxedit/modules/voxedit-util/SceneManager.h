@@ -114,8 +114,6 @@ private:
 
 	voxelutil::PickResult _result;
 
-	voxelgenerator::LUAGenerator _luaGenerator;
-
 	/**
 	 * @note This might return @c nullptr in the case where the active node is no model node
 	 */
@@ -344,7 +342,7 @@ public:
 	bool import(const core::String &file);
 	bool importDirectory(const core::String &directory, const io::FormatDescription *format = nullptr, int depth = 3);
 
-	bool runScript(const core::String &script, const core::DynamicArray<core::String> &args);
+	bool runScript(const core::String &luaCode, const core::DynamicArray<core::String> &args);
 
 	bool newScene(bool force, const core::String &name, const voxel::Region &region);
 	int addNodeToSceneGraph(scenegraph::SceneGraphNode &node, int parent = 0);
@@ -402,7 +400,6 @@ public:
 	ModifierFacade &modifier();
 	const MementoHandler &mementoHandler() const;
 	MementoHandler &mementoHandler();
-	voxelgenerator::LUAGenerator &luaGenerator();
 	const scenegraph::SceneGraph &sceneGraph() const;
 	scenegraph::SceneGraph &sceneGraph();
 
@@ -454,10 +451,6 @@ inline void SceneManager::setCurrentFrame(scenegraph::FrameIndex frameIdx) {
 
 inline const core::String &SceneManager::filename() const {
 	return _lastFilename.name;
-}
-
-inline voxelgenerator::LUAGenerator &SceneManager::luaGenerator() {
-	return _luaGenerator;
 }
 
 inline void SceneManager::setActiveCamera(video::Camera *camera) {

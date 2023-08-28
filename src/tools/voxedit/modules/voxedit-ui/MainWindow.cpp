@@ -50,9 +50,8 @@
 #define TITLE_ASSET ICON_FA_LIST_UL " Assets##title"
 #define TITLE_SCENEGRAPH ICON_FA_SHARE_NODES " Scene##title"
 #define TITLE_RENDER ICON_FA_IMAGE " Render##title"
-#define TITLE_MODIFIERS ICON_FA_TOOLBOX " Modifiers##title"
 #define TITLE_TREES ICON_FA_TREE " Trees##title"
-#define TITLE_SCRIPTPANEL ICON_FA_CODE " Script##title"
+#define TITLE_BRUSHPANEL ICON_FA_BRUSH " Brush##title"
 #define TITLE_LSYSTEMPANEL ICON_FA_LEAF " L-System##title"
 #define TITLE_ANIMATION_SETTINGS ICON_FA_ARROWS_SPIN " Animation##animationsettings"
 #define TITLE_SCRIPT_EDITOR ICON_FK_CODE " Script Editor##scripteditor"
@@ -304,12 +303,12 @@ void MainWindow::configureLeftTopWidgetDock(ImGuiID dockId) {
 }
 
 void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
-	ImGui::DockBuilderDockWindow(TITLE_MODIFIERS, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_BRUSHPANEL, dockId);
 }
 
 void MainWindow::leftWidget() {
 	_palettePanel.update(TITLE_PALETTE, _lastExecutedCommand);
-	_modifierPanel.update(TITLE_MODIFIERS, _lastExecutedCommand);
+	_brushPanel.update(TITLE_BRUSHPANEL, _lastExecutedCommand);
 }
 
 // end of left side
@@ -338,7 +337,7 @@ void MainWindow::mainWidget() {
 	}
 
 	// bottom
-	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR, _app);
+	_brushPanel.updateEditor(TITLE_SCRIPT_EDITOR, _app);
 	if (isSceneMode()) {
 		_animationTimeline.update(TITLE_ANIMATION_TIMELINE, _app->deltaFrameSeconds());
 	}
@@ -369,7 +368,6 @@ void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_TREES, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockId);
-	ImGui::DockBuilderDockWindow(TITLE_SCRIPTPANEL, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_RENDER, dockId);
 }
 
@@ -392,7 +390,6 @@ void MainWindow::rightWidget() {
 	if (!_simplifiedView->boolVal()) {
 		_treePanel.update(TITLE_TREES);
 		_lsystemPanel.update(TITLE_LSYSTEMPANEL);
-		_scriptPanel.update(TITLE_SCRIPTPANEL);
 	}
 }
 

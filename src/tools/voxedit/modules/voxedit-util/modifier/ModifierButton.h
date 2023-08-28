@@ -21,7 +21,7 @@ private:
 	ModifierType _newType;
 	ModifierType _oldType = ModifierType::None;
 	// some actions might need a second action to complete the command
-	bool _secondAction = false;
+	bool _furtherAction = false;
 public:
 	/**
 	 * @param[in] newType This ModifierType is set if the action button is triggered. No matter which type is

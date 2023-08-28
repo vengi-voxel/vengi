@@ -37,16 +37,6 @@ void StatusBar::update(const char *title, float height, const core::String &last
 		ImGui::SetNextItemWidth(120.0f);
 		ImGui::InputVarInt("Grid size", cfg::VoxEditGridsize);
 		ImGui::SameLine();
-
-		const float afterSizeX = ImGui::GetCursorPosX();
-		if (modifier.aabbMode()) {
-			const glm::ivec3& dim = modifier.aabbDim();
-			ImGui::Text("w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
-		} else {
-			ImGui::TextUnformatted("w: 0, h: 0, d: 0");
-		}
-		ImGui::SameLine();
-		ImGui::SetCursorPosX(afterSizeX + 200.0f);
 		if (lastExecutedCommand.empty()) {
 			ImGui::TextUnformatted("Command: -");
 		} else {

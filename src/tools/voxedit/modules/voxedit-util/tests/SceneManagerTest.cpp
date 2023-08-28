@@ -60,8 +60,7 @@ protected:
 		Modifier &modifier = _sceneMgr.modifier();
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		modifier.setModifierType(ModifierType::Place);
-		modifier.setPlaneMode(false);
-		modifier.setSingleMode(true);
+		modifier.shapeBrush().setSingleMode(true);
 		MementoHandler &mementoHandler = _sceneMgr.mementoHandler();
 		EXPECT_FALSE(mementoHandler.canUndo());
 		EXPECT_FALSE(mementoHandler.canRedo());
@@ -71,28 +70,29 @@ protected:
 		Modifier &modifier = _sceneMgr.modifier();
 		modifier.setCursorPosition(pos, voxel::FaceNames::NegativeX);
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, paletteColorIndex));
-		modifier.aabbStart();
+		modifier.start();
 		const int nodeId = _sceneMgr.sceneGraph().activeNode();
 		voxel::RawVolume *v = _sceneMgr.volume(nodeId);
 		if (!voxel::isAir(v->voxel(pos).getMaterial())) {
 			modifier.setModifierType(ModifierType::Paint);
 		}
-		modifier.aabbAction(
+		scenegraph::SceneGraph sceneGraph;
+		modifier.execute(sceneGraph,
 			v, [&](const voxel::Region &region, ModifierType, bool) { _sceneMgr.modified(nodeId, region); });
 		modifier.setModifierType(ModifierType::Place);
 	}
 
 	void testSelect(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 		Modifier &modifier = _sceneMgr.modifier();
-		modifier.aabbAbort();
-		modifier.setSingleMode(false);
-		modifier.setPlaneMode(false);
+		modifier.stop();
+		modifier.shapeBrush().setSingleMode(false);
 		modifier.setModifierType(ModifierType::Select);
 		modifier.setCursorPosition(mins, voxel::FaceNames::NegativeX);
-		EXPECT_TRUE(modifier.aabbStart());
+		EXPECT_TRUE(modifier.start());
 		modifier.setCursorPosition(maxs, voxel::FaceNames::NegativeX);
-		modifier.aabbStep();
-		EXPECT_TRUE(modifier.aabbAction(nullptr, [&](const voxel::Region &, ModifierType, bool) {}));
+		modifier.executeAdditionalAction();
+		scenegraph::SceneGraph sceneGraph;
+		EXPECT_TRUE(modifier.execute(sceneGraph, nullptr, [&](const voxel::Region &, ModifierType, bool) {}));
 		modifier.setModifierType(ModifierType::Place);
 	}
 

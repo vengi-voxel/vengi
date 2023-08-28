@@ -17,6 +17,7 @@
 #include "video/Texture.h"
 #include "video/gl/GLTypes.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelutil/VoxelUtil.h"
 
@@ -69,6 +70,20 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 					ImGui::Selectable(label.c_str(), isSelected);
 					if (isSelected) {
 						ImGui::SetItemDefaultFocus();
+					}
+					if (ImGui::BeginPopupContextItem()) {
+						if (ImGui::MenuItem("Use stamp")) {
+							Modifier &modifier = sceneMgr().modifier();
+							StampBrush &brush = modifier.stampBrush();
+							if (brush.load(model)) {
+								modifier.setBrushType(BrushType::Stamp);
+							}
+						}
+						ImGui::TooltipText("This is only possible if the model doesn't exceed the max allowed stamp size");
+						if (ImGui::MenuItem("Add to scene")) {
+							sceneMgr().import(model);
+						}
+						ImGui::EndPopup();
 					}
 					// TODO: load file - check for unsaved changes
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {

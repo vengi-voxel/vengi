@@ -32,6 +32,7 @@ VoxEdit:
 
    - Fixed regression about not rendering the shape volumes anymore
    - Implemented scene graph panel drag and drop popup
+   - Added brush support and new editing features
 
 ## 0.0.26 (2023-08-13)
 
